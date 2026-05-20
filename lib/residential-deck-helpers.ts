@@ -66,13 +66,34 @@ export function residentialGrossCostInr(config: ResidentialProposalConfig): numb
 }
 
 export function residentialNetCostInr(config: ResidentialProposalConfig): number {
-  const gross = residentialGrossCostInr(config);
-  const discount = applyResidentialDiscountInr(gross, config.pricing?.discount);
-  const afterDiscount = Math.max(0, gross - discount);
-  const subsidy =
-    config.subsidy?.estimateInr ??
-    computePmSuryaGharSubsidy(config.solar.plantCapacityKw);
-  return Math.max(0, afterDiscount - subsidy);
+  return residentialCostBreakdown(config).netInr;
+}
+
+export type ResidentialCostBreakdown = {
+  grossInr: number;
+  discountInr: number;
+  afterDiscountInr: number;
+  subsidyInr: number;
+  netInr: number;
+  activeTierKw: number;
+};
+
+/** Gross → discount → post-discount → subsidy → net (web proposal + builder). */
+export function residentialCostBreakdown(config: ResidentialProposalConfig): ResidentialCostBreakdown {
+  const grossInr = residentialGrossCostInr(config);
+  const discountInr = applyResidentialDiscountInr(grossInr, config.pricing?.discount);
+  const afterDiscountInr = Math.max(0, grossInr - discountInr);
+  const subsidyInr =
+    config.subsidy?.estimateInr ?? computePmSuryaGharSubsidy(config.solar.plantCapacityKw);
+  const netInr = Math.max(0, afterDiscountInr - subsidyInr);
+  return {
+    grossInr,
+    discountInr,
+    afterDiscountInr,
+    subsidyInr,
+    netInr,
+    activeTierKw: config.solar.plantCapacityKw,
+  };
 }
 
 function wireBrandLabel(wire: ResidentialWireBrand | undefined): string {

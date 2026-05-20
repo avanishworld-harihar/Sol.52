@@ -1,7 +1,6 @@
 "use client";
 
-import { ResidentialBrandOptions } from "@/components/residential/residential-brand-options";
-import { ResidentialKwPricingSettings } from "@/components/residential/residential-kw-pricing-settings";
+import { ResidentialPricingStudio } from "@/components/residential/residential-pricing-studio";
 import { ResidentialRequirementBuilder } from "@/components/residential/residential-requirement-builder";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast-center";
@@ -163,10 +162,20 @@ export function ResidentialBomWorkspace({
         </Button>
       ) : null}
 
-      <ResidentialKwPricingSettings config={config} onChange={patchConfig} />
-      <ResidentialBrandOptions config={config} onChange={patchConfig} />
+      <ResidentialPricingStudio
+        config={config}
+        onChange={patchConfig}
+        proposalId={proposalId}
+        proposalLayout={getProposalLayout(pptInput)}
+        onSaved={() => {
+          onPptInputChange?.({
+            ...pptInput,
+            residentialConfig: config,
+          });
+        }}
+      />
 
-      <div className="sticky bottom-0 z-10 rounded-2xl border border-emerald-200/90 bg-white/95 p-3 shadow-lg backdrop-blur-md dark:border-emerald-900/40 dark:bg-[#0c1017]/95">
+      <div className="sticky bottom-0 z-10 rounded-2xl border border-slate-200/90 bg-white/95 p-3 shadow-lg backdrop-blur-md dark:border-white/10 dark:bg-[#0c1017]/95">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap gap-4 text-sm">
             <div>
@@ -175,7 +184,7 @@ export function ResidentialBomWorkspace({
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase text-slate-500">Net payable</p>
-              <p className="font-bold tabular-nums text-emerald-700 dark:text-emerald-300">
+              <p className="font-bold tabular-nums text-indigo-700 dark:text-indigo-300">
                 ₹{Math.round(net).toLocaleString("en-IN")}
               </p>
             </div>
@@ -184,7 +193,7 @@ export function ResidentialBomWorkspace({
               <p className="font-bold tabular-nums">{solar.plantCapacityKw} kW</p>
             </div>
           </div>
-          <Button type="button" className="min-w-[9rem] bg-emerald-600 font-semibold hover:bg-emerald-700" disabled={saving} onClick={() => void saveAll()}>
+          <Button type="button" className="min-w-[9rem] bg-slate-900 font-semibold hover:bg-slate-800" disabled={saving} onClick={() => void saveAll()}>
             {saving ? labels.saving : labels.save}
           </Button>
         </div>

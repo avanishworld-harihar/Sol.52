@@ -11,12 +11,7 @@ import {
   moduleCountForResidential,
   quoteResidentialSolar,
 } from "@/lib/residential-solar-engine";
-import {
-  RESIDENTIAL_BRAND_PRESETS,
-  RESIDENTIAL_WATT_PRESETS,
-  type ResidentialProposalConfig,
-} from "@/lib/residential-requirements-schema";
-import { PANEL_CATALOG } from "@/lib/commercial-panel-catalog";
+import type { ResidentialProposalConfig } from "@/lib/residential-requirements-schema";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Battery,
@@ -78,19 +73,6 @@ export function ResidentialRequirementBuilder({ config, onChange, netCostInr, an
 
   function patchSolar(partial: Partial<typeof solar>) {
     onChange({ ...config, solar: { ...solar, ...partial } });
-  }
-
-  function applyBrandPreset(brandId: string, brand: string, watt: number) {
-    const track = solar.panelTrack === "dcr" ? "DCR" : "NON_DCR";
-    const hit = PANEL_CATALOG.find((e) => e.brandId === brandId && e.watt === watt && e.panelType === track);
-    patchSolar({
-      brandId,
-      brand,
-      watt,
-      technology: hit?.technology,
-      ratePerWpInr: hit?.ratePerWpInr ?? solar.ratePerWpInr,
-      moduleCountOverride: undefined,
-    });
   }
 
   return (
@@ -161,75 +143,10 @@ export function ResidentialRequirementBuilder({ config, onChange, netCostInr, an
         </p>
       </section>
 
-      {/* DCR / Non-DCR */}
-      <section className="space-y-2">
-        <label className="text-xs font-bold text-slate-800 dark:text-slate-200">Panel category</label>
-        <div className="flex flex-wrap gap-2">
-          <Chip active={solar.panelTrack === "dcr"} onClick={() => patchSolar({ panelTrack: "dcr", moduleCountOverride: undefined })}>
-            DCR (subsidy-friendly)
-          </Chip>
-          <Chip active={solar.panelTrack === "non_dcr"} onClick={() => patchSolar({ panelTrack: "non_dcr", moduleCountOverride: undefined })}>
-            Non-DCR
-          </Chip>
-        </div>
-      </section>
-
-      {/* Brand + watt */}
-      <section className="space-y-2">
-        <label className="text-xs font-bold text-slate-800 dark:text-slate-200">Preferred brand</label>
-        <div className="flex flex-wrap gap-2">
-          {RESIDENTIAL_BRAND_PRESETS.map((b) => (
-            <Chip
-              key={b.brandId}
-              active={solar.brandId === b.brandId}
-              onClick={() => applyBrandPreset(b.brandId, b.brand, b.watt)}
-            >
-              {b.brand}
-            </Chip>
-          ))}
-        </div>
-        <label className="mt-2 block text-[10px] font-bold uppercase tracking-wide text-slate-500">Wattage</label>
-        <div className="flex flex-wrap gap-2">
-          {RESIDENTIAL_WATT_PRESETS.map((w) => (
-            <Chip
-              key={w}
-              active={solar.watt === w}
-              onClick={() => {
-                const track = solar.panelTrack === "dcr" ? "DCR" : "NON_DCR";
-                const hit =
-                  PANEL_CATALOG.find(
-                    (e) => e.brandId === solar.brandId && e.watt === w && e.panelType === track
-                  ) ?? PANEL_CATALOG.find((e) => e.watt === w && e.panelType === track);
-                patchSolar({
-                  watt: w,
-                  moduleCountOverride: undefined,
-                  ratePerWpInr: hit?.ratePerWpInr ?? solar.ratePerWpInr,
-                  technology: hit?.technology ?? solar.technology,
-                });
-              }}
-            >
-              {w}W
-            </Chip>
-          ))}
-        </div>
-        <div className="mt-2 flex items-center gap-2">
-          <span className="text-[10px] font-semibold text-slate-500">Custom</span>
-          <NumericTextInput
-            integer
-            value={solar.watt}
-            fallback={540}
-            onValueChange={(n) =>
-              patchSolar({
-                watt: n != null && n >= 100 ? n : solar.watt,
-                moduleCountOverride: undefined,
-              })
-            }
-            className="h-9 w-24 rounded-lg border border-slate-200 px-2 text-center text-sm font-bold tabular-nums dark:border-white/15 dark:bg-white/5"
-            aria-label="Custom panel wattage"
-          />
-          <span className="text-[10px] text-slate-500">Wp</span>
-        </div>
-      </section>
+      <p className="rounded-lg border border-slate-200/80 bg-slate-50/80 px-3 py-2 text-[11px] text-slate-600 dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-400">
+        DCR / Non-DCR, panel &amp; inverter brands, kW pricing, wire, and subsidy are configured in{" "}
+        <strong className="text-slate-800 dark:text-slate-200">Pricing &amp; system catalog</strong> below — synced to your web proposal.
+      </p>
 
       {/* Roof + budget */}
       <div className="grid gap-3 sm:grid-cols-2">
@@ -373,7 +290,7 @@ export function ResidentialRequirementBuilder({ config, onChange, netCostInr, an
 
       <p className="flex items-center gap-1.5 text-[11px] text-slate-500">
         <Zap className="h-3 w-3 text-emerald-500" />
-        Tip: After generating, open Proposals → BOM to fine-tune pricing or save a template.
+        Set kW above, then complete pricing below and tap Save pricing before sharing the link.
       </p>
     </div>
   );

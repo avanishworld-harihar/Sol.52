@@ -157,4 +157,13 @@ export const RESIDENTIAL_BRAND_PRESETS = [
   { brandId: "longi", brand: "LONGi", watt: 575 },
 ] as const;
 
+export const RESIDENTIAL_INVERTER_PRESETS = [
+  "Growatt",
+  "Deye",
+  "Solis",
+  "Fronius",
+  "GoodWe",
+  "Havells",
+] as const;
+
 export const RESIDENTIAL_WATT_PRESETS = [540, 550, 575, 625] as const;

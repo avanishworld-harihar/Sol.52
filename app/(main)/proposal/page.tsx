@@ -60,8 +60,7 @@ import {
   ResidentialProposalModePicker,
   type ResidentialInputMode,
 } from "@/components/residential/residential-proposal-mode-picker";
-import { ResidentialBrandOptions } from "@/components/residential/residential-brand-options";
-import { ResidentialKwPricingSettings } from "@/components/residential/residential-kw-pricing-settings";
+import { ResidentialPricingStudio } from "@/components/residential/residential-pricing-studio";
 import { ResidentialRequirementBuilder } from "@/components/residential/residential-requirement-builder";
 import {
   residentialAnnualGenerationUnits,
@@ -1829,17 +1828,31 @@ function ProposalPageContent() {
         ) : null}
 
         {isResidentialRequirement && residentialConfig ? (
-          <ResidentialRequirementBuilder
-            config={residentialConfig}
-            onChange={(next) => {
-              setResidentialConfig(next);
-              if (proposalLayout) {
-                setProposalLayout(applyResidentialFlagsToLayout(proposalLayout, next));
-              }
-            }}
-            netCostInr={effectiveResult.netCost}
-            annualSavingInr={effectiveResult.annualSavings}
-          />
+          <>
+            <ResidentialRequirementBuilder
+              config={residentialConfig}
+              onChange={(next) => {
+                setResidentialConfig(next);
+                if (proposalLayout) {
+                  setProposalLayout(applyResidentialFlagsToLayout(proposalLayout, next));
+                }
+              }}
+              netCostInr={effectiveResult.netCost}
+              annualSavingInr={effectiveResult.annualSavings}
+            />
+            <ResidentialPricingStudio
+              config={residentialConfig}
+              onChange={(next) => {
+                setResidentialConfig(next);
+                if (proposalLayout) {
+                  setProposalLayout(applyResidentialFlagsToLayout(proposalLayout, next));
+                }
+              }}
+              proposalId={draftProposalId}
+              proposalLayout={proposalLayout}
+              onLayoutChange={setProposalLayout}
+            />
+          </>
         ) : null}
 
         {osPresetId === "commercial_executive" ? (
@@ -2221,18 +2234,6 @@ function ProposalPageContent() {
               ) : null}
             </div>
           </div>
-        ) : null}
-        {isResidentialRequirement && residentialConfig ? (
-          <>
-            <ResidentialKwPricingSettings
-              config={residentialConfig}
-              onChange={setResidentialConfig}
-            />
-            <ResidentialBrandOptions
-              config={residentialConfig}
-              onChange={setResidentialConfig}
-            />
-          </>
         ) : null}
         {osPresetId === "commercial_executive" && commercialConfig && !isCommercialRequirement ? (
           <>
