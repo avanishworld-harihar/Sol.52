@@ -31,7 +31,10 @@ import {
   PiggyBank,
   type LucideIcon
 } from "lucide-react";
-import { residentialMonthlyGenerationUnits } from "@/lib/residential-deck-helpers";
+import {
+  residentialAnnualGenerationUnits,
+  residentialMonthlyGenerationUnits,
+} from "@/lib/residential-deck-helpers";
 import type { ProposalDeckSummary } from "@/lib/proposal-ppt";
 import { PROPOSAL_BRANDING_UPDATED_EVENT, readProposalBrandingSettings } from "@/lib/proposal-branding-settings";
 import {
@@ -263,6 +266,10 @@ const inrK = (v: number) => {
   return `₹${x.toLocaleString("en-IN")}`;
 };
 
+function inrFull(v: number) {
+  return `₹${Math.max(0, Math.round(v)).toLocaleString("en-IN")}`;
+}
+
 /** `contact` may be `phone · email` — `tel:` must use the phone segment only. */
 function telHrefFromInstallerContact(contact: string): string {
   const segment = contact.split("·")[0]?.trim() ?? contact.trim();
@@ -302,9 +309,12 @@ export function StatTile({
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-30px" });
   const counted = useCountUp(rawValue ?? 0, inView && rawValue !== undefined);
-  const displayValue = rawValue !== undefined
-    ? (value.startsWith("₹") ? `₹${counted.toLocaleString("en-IN")}` : counted.toLocaleString("en-IN") + value.replace(/^[\d,₹.]+/, ""))
-    : value;
+  const displayValue =
+    rawValue !== undefined
+      ? value.startsWith("₹")
+        ? `₹${counted.toLocaleString("en-IN")}`
+        : `${counted.toLocaleString("en-IN")}${value.replace(/^[\d,₹.\s]+/, "")}`
+      : value;
 
   return (
     <motion.div
@@ -332,7 +342,12 @@ export function StatTile({
       >
         {label}
       </p>
-      <p className={`mt-2 break-words text-2xl font-bold leading-tight sm:text-3xl ${toneClass}`}>{displayValue}</p>
+      <p
+        className={`mt-2 break-words text-2xl font-bold leading-none sm:text-3xl tabular-nums lining-nums ${toneClass}`}
+        style={{ fontFeatureSettings: '"tnum" 1, "lnum" 1' }}
+      >
+        {displayValue}
+      </p>
     </motion.div>
   );
 }
@@ -650,6 +665,9 @@ export function HeroCover({
   const metricDark = darkMode;
   const requirementBased = summary.requirementBased === true;
   const panelWatt = summary.panelWatt ?? 540;
+  const heroAnnualGen = requirementBased
+    ? residentialAnnualGenerationUnits(summary.systemKw)
+    : summary.annualGen;
 
   // Strict 12-col grid — every block declares its column span so nothing
   // floats or overlaps. On mobile the grid collapses to 1 column.
@@ -663,15 +681,6 @@ export function HeroCover({
           : "border-slate-200/90 bg-white shadow-[0_24px_80px_-24px_rgba(15,23,42,0.12)]"
       }`}
     >
-      {/* Soft document wash — screen only; print stays clean white via globals */}
-      <div
-        aria-hidden
-        className={`pointer-events-none absolute inset-0 ${
-          darkMode
-            ? "bg-[radial-gradient(ellipse_90%_70%_at_50%_-20%,rgba(56,189,248,0.12),transparent_55%)]"
-            : "bg-[radial-gradient(ellipse_100%_85%_at_50%_-30%,rgba(14,165,233,0.07),transparent_55%),radial-gradient(ellipse_70%_50%_at_100%_0%,rgba(16,185,129,0.05),transparent_50%)]"
-        }`}
-      />
       <div className="relative">
         {/* ── 1. INSTALLER BAR (Logo · Name · Tagline · Contact) ─────────── */}
         <div
@@ -804,9 +813,9 @@ export function HeroCover({
         {requirementBased ? (
           <div className="proposal-hero-metrics order-4 mt-5 grid grid-cols-2 gap-2 sm:mt-6 sm:gap-2.5 lg:grid-cols-4">
             <StatTile icon={Zap} label={D["common.system"]} value={`${summary.systemKw} kW`} delay={0.05} lang={lang} dark={metricDark} />
-            <StatTile icon={Sun} label={D["gen.annualGen"]} value={`${summary.annualGen.toLocaleString("en-IN")} u`} rawValue={summary.annualGen} delay={0.1} lang={lang} dark={metricDark} tone="green" />
+            <StatTile icon={Sun} label={D["gen.annualGen"]} value={`${heroAnnualGen.toLocaleString("en-IN")} u`} rawValue={heroAnnualGen} delay={0.1} lang={lang} dark={metricDark} tone="green" />
             <StatTile icon={BarChart3} label={D["req.estimatedUse"]} value={`${summary.annualUse > 0 ? summary.annualUse.toLocaleString("en-IN") : residentialMonthlyGenerationUnits(summary.systemKw).toLocaleString("en-IN")} u`} delay={0.15} lang={lang} dark={metricDark} tone="blue" />
-            <StatTile icon={PiggyBank} label={D["common.annualSaving"]} value={inrK(summary.annualSaving)} rawValue={summary.annualSaving} delay={0.2} lang={lang} dark={metricDark} tone="green" />
+            <StatTile icon={PiggyBank} label={D["common.annualSaving"]} value={inrFull(summary.annualSaving)} rawValue={summary.annualSaving} delay={0.2} lang={lang} dark={metricDark} tone="green" />
           </div>
         ) : (
         <div className="proposal-hero-metrics order-4 mt-5 grid grid-cols-2 gap-2 sm:mt-6 sm:gap-2.5 md:grid-cols-3 lg:grid-cols-5">
@@ -840,14 +849,14 @@ export function HeroCover({
           />
         </div>
 
-        {/* ── Bottom band — inside cover page (before footer note) ── */}
+        {/* Built near you — last block on cover page (before footer) */}
         {heroBottomImage ? (
           <motion.div
             initial={{ opacity: 0, y: 14 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className={`proposal-hero-bleed-inside relative mt-5 overflow-hidden rounded-2xl shadow-lg shadow-slate-900/15 sm:mt-6 ${requirementBased ? "max-h-48 sm:max-h-56" : "mt-7 sm:mt-8"}`}
+            className={`proposal-hero-bleed-inside proposal-hero-local-team order-6 relative mt-5 overflow-hidden rounded-2xl shadow-lg shadow-slate-900/15 sm:mt-6 ${requirementBased ? "max-h-48 sm:max-h-56" : "mt-7 sm:mt-8"}`}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={heroBottomImage} alt="Solar installation" className="h-44 w-full object-cover sm:h-56 lg:h-64" />
@@ -879,7 +888,7 @@ export function HeroCover({
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className={`proposal-hero-bleed-inside relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-800 via-emerald-900 to-slate-900 p-5 text-white shadow-lg sm:p-7 ${requirementBased ? "mt-5 max-h-44 sm:mt-6" : "mt-7 sm:mt-8"}`}
+            className={`proposal-hero-bleed-inside proposal-hero-local-team order-6 relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-800 via-emerald-900 to-slate-900 p-5 text-white shadow-lg sm:p-7 ${requirementBased ? "mt-5 max-h-44 sm:mt-6" : "mt-7 sm:mt-8"}`}
           >
             <p
               className={`text-[10px] font-bold text-emerald-300 sm:text-xs ${
@@ -894,7 +903,7 @@ export function HeroCover({
         )}
 
         <div
-          className={`proposal-hero-foot order-6 mt-5 flex flex-col gap-2 border-t pt-4 sm:mt-6 sm:flex-row sm:items-start sm:justify-between sm:gap-4 ${
+          className={`proposal-hero-foot order-7 mt-5 flex flex-col gap-2 border-t pt-4 sm:mt-6 sm:flex-row sm:items-start sm:justify-between sm:gap-4 ${
             darkMode ? "border-white/10" : "border-slate-200/80"
           }`}
         >
@@ -920,11 +929,16 @@ export function SystemRequirementSection({
   summary: ProposalDeckSummary;
   lang: ProposalLang;
 }) {
-  const monthlyGen = Math.round(summary.annualGen / 12);
+  const displayAnnualGen =
+    summary.requirementBased === true
+      ? residentialAnnualGenerationUnits(summary.systemKw)
+      : summary.annualGen;
+  const monthlyGen = Math.round(displayAnnualGen / 12);
+  const panelWattDisplay = summary.panelWatt ?? 540;
   const inverterLabel = summary.brands?.inverter ?? "—";
   const panelLabel = summary.panelBrand ?? summary.brands?.panel ?? "—";
   const wireLabel = summary.brands?.cables ?? "—";
-  const surplus = Math.max(0, summary.annualGen - summary.annualUse);
+  const surplus = Math.max(0, displayAnnualGen - summary.annualUse);
 
   return (
     <ProposalJourneySection id="system-requirement" className="proposal-system-requirement-section">
@@ -947,7 +961,7 @@ export function SystemRequirementSection({
             {summary.systemKw} kW
           </p>
           <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-            {summary.panels} × {summary.panelWatt ?? 540} W {D["common.panels"]}
+            {summary.panels} × {panelWattDisplay} W {D["common.panels"]}
           </p>
         </ProposalPanel>
         <ProposalPanel className="flex flex-col justify-center gap-1">
@@ -956,7 +970,7 @@ export function SystemRequirementSection({
             <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{D["gen.annualGen"]}</p>
           </div>
           <p className="text-2xl font-extrabold tabular-nums text-emerald-800 dark:text-emerald-300">
-            {summary.annualGen.toLocaleString("en-IN")} u
+            {displayAnnualGen.toLocaleString("en-IN")} u
           </p>
           <p className="text-xs text-slate-600">
             {D["req.monthlyGen"]}: ~{monthlyGen.toLocaleString("en-IN")} u · 4 u/kW/day
@@ -1006,7 +1020,7 @@ export function SystemRequirementSection({
             <StatTile label={D["common.netCost"]} value={inr(summary.netCost)} tone="blue" lang={lang} />
             <StatTile
               label={D["common.annualSaving"]}
-              value={inr(summary.annualSaving)}
+              value={inrFull(summary.annualSaving)}
               rawValue={summary.annualSaving}
               tone="green"
               lang={lang}
@@ -1730,7 +1744,7 @@ export function CompanyProfileSection({
 
 export function TechnicalProposalSection({ D, lang, summary }: { D: ProposalDict; lang: ProposalLang; summary: ProposalDeckSummary }) {
   const blocks = [
-    { title: lang === "hi" ? "सोलर पैनल" : "Solar Panels", sub: `${summary.panels} × 540W ${summary.brands.panel}` },
+    { title: lang === "hi" ? "सोलर पैनल" : "Solar Panels", sub: `${summary.panels} × ${summary.panelWatt ?? 540}W ${summary.brands.panel}` },
     { title: lang === "hi" ? "DC केबल + DCDB" : "DC Cabling + DCDB", sub: "TUV 4mm² · SPD" },
     { title: lang === "hi" ? "ऑन-ग्रिड इन्वर्टर" : "On-Grid Inverter", sub: `${summary.systemKw} kW · MPPT` },
     { title: lang === "hi" ? "AC केबल + ACDB" : "AC Cabling + ACDB", sub: "MCB · Earthing" },

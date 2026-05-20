@@ -25,6 +25,7 @@ import {
   BlockMetricRow,
 } from "@/components/proposal/blocks/proposal-block-utils";
 import { ProposalJourneySection } from "@/components/proposal/proposal-journey";
+import { residentialAnnualGenerationUnits } from "@/lib/residential-deck-helpers";
 
 type Props = Pick<BlockRenderContext, "summary" | "lang" | "D" | "darkMode">;
 
@@ -42,7 +43,12 @@ export function BlockSystemRequirements({ summary, lang, darkMode }: Props) {
     ? "क्षमता, उत्पादन और कवरेज — आपकी ऊर्जा आवश्यकता पर आधारित"
     : "Capacity, generation, and coverage — based on your energy requirement";
 
-  const monthlyGen = Math.round(summary.annualGen / 12);
+  const displayAnnualGen =
+    summary.requirementBased === true
+      ? residentialAnnualGenerationUnits(summary.systemKw)
+      : summary.annualGen;
+  const panelWatt = summary.panelWatt ?? 540;
+  const monthlyGen = Math.round(displayAnnualGen / 12);
   const coveragePct = Math.min(100, Math.round(summary.coverage));
 
   // Generate bar heights for a simple monthly generation chart
@@ -62,7 +68,7 @@ export function BlockSystemRequirements({ summary, lang, darkMode }: Props) {
     },
     {
       label: isHi ? "सौर पैनल" : "Solar Panels",
-      value: `${summary.panels} × 540W`,
+      value: `${summary.panels} × ${panelWatt}W`,
       icon: <Sun className="h-4 w-4 text-amber-500" />,
     },
     {
@@ -85,7 +91,7 @@ export function BlockSystemRequirements({ summary, lang, darkMode }: Props) {
       <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <BlockStatTile
           label={isHi ? "वार्षिक उत्पादन" : "Annual Generation"}
-          value={`${summary.annualGen.toLocaleString("en-IN")} kWh`}
+          value={`${displayAnnualGen.toLocaleString("en-IN")} u`}
           delay={0}
           tone="green"
           dark={dark}
@@ -149,8 +155,8 @@ export function BlockSystemRequirements({ summary, lang, darkMode }: Props) {
           </div>
           <p className={`mt-3 text-xs ${dark ? "text-slate-400" : "text-slate-500"}`}>
             {isHi
-              ? `औसत ${monthlyGen.toLocaleString("en-IN")} kWh / माह · वार्षिक कुल ${summary.annualGen.toLocaleString("en-IN")} kWh`
-              : `Avg ${monthlyGen.toLocaleString("en-IN")} kWh / mo · Annual total ${summary.annualGen.toLocaleString("en-IN")} kWh`}
+              ? `औसत ${monthlyGen.toLocaleString("en-IN")} u / माह · वार्षिक कुल ${displayAnnualGen.toLocaleString("en-IN")} u`
+              : `Avg ${monthlyGen.toLocaleString("en-IN")} u / mo · Annual total ${displayAnnualGen.toLocaleString("en-IN")} u`}
           </p>
         </BlockPanel>
 

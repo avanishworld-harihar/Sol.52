@@ -498,7 +498,7 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
     includedFreeAmcYears: amcSelectedYears,
   });
 
-  if (resRequirement && resCfg) {
+  if (resCfg?.solar) {
     const q = quoteResidentialSolar(resCfg.solar);
     deckSystemKw = resCfg.solar.plantCapacityKw;
     panelWatt = resCfg.solar.watt;
@@ -593,7 +593,7 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
     panelBrand: bom.find((r) => r.slot === 1)?.brand ?? brands.panel,
     panels,
     panelWatt,
-    requirementBased: resRequirement,
+    requirementBased: resRequirement || Boolean(resCfg?.solar && (resCfg.inputMode === "requirement" || input.dataSource === "requirement")),
     yearlyBill,
     afterSolar,
     annualSaving,

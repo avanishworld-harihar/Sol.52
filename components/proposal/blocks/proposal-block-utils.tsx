@@ -13,6 +13,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView, useReducedMotion } from "framer-motion";
 import type { ProposalLang } from "@/lib/proposal-i18n";
+import { cn } from "@/lib/utils";
 
 // ─── Count-up hook ────────────────────────────────────────────────────────────
 
@@ -74,7 +75,7 @@ export function BlockAnimatedINR({
   const counted = useBlockCountUp(value, inView);
   const shown = counted > 0 ? counted : normalizeTarget(value);
   return (
-    <span ref={ref} className={className}>
+    <span ref={ref} className={cn("tabular-nums lining-nums inline-block", className)} style={{ fontFeatureSettings: '"tnum" 1, "lnum" 1' }}>
       {prefix}{shown.toLocaleString("en-IN")}
     </span>
   );
@@ -136,7 +137,10 @@ export function BlockStatTile({
       >
         {label}
       </p>
-      <p className={`mt-2 break-words text-2xl font-bold leading-tight sm:text-3xl ${toneClass}`}>
+      <p
+        className={`mt-2 break-words text-2xl font-bold leading-none sm:text-3xl tabular-nums lining-nums ${toneClass}`}
+        style={{ fontFeatureSettings: '"tnum" 1, "lnum" 1' }}
+      >
         {displayValue}
       </p>
     </motion.div>
@@ -231,7 +235,10 @@ export function BlockMetricRow({
       accent ? "bg-sky-50 border border-sky-200" : "border border-slate-100 bg-slate-50/60"
     }`}>
       <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider">{label}</span>
-      <span className={`text-base font-bold tabular-nums ${accent ? "text-sky-900" : "text-slate-900"}`}>
+      <span
+        className={`text-base font-bold tabular-nums lining-nums ${accent ? "text-sky-900" : "text-slate-900"}`}
+        style={{ fontFeatureSettings: '"tnum" 1, "lnum" 1' }}
+      >
         {value}
       </span>
     </div>

@@ -368,13 +368,13 @@ export function defaultCompanyProfile(lang: "en" | "hi" = "en"): CompanyProfile 
   if (lang === "hi") {
     return {
       aboutUsParagraphs: [
-        "हरिहर सोलर मध्य प्रदेश के सतना ज़िले की एक स्थानीय रूफटॉप सोलर EPC कंपनी है। 2020 से हम 100% स्थानीय टीम के साथ घरों, दुकानों और छोटे उद्योगों के लिए ग्रिड-कनेक्टेड सोलर स्थापित कर रहे हैं।",
+        "हरिहर सोलर मध्य प्रदेश के सतना ज़िले की एक स्थानीय रूफटॉप सोलर EPC कंपनी है। 2026 से हम 100% स्थानीय टीम के साथ घरों, दुकानों और छोटे उद्योगों के लिए ग्रिड-कनेक्टेड सोलर स्थापित कर रहे हैं।",
         "हम भारत में निर्मित Tier-1 मॉड्यूल (Adani / Waaree), BIS-प्रमाणित ऑन-ग्रिड इनवर्टर और गैल्वनाइज्ड माउंटिंग का ही उपयोग करते हैं — कोई हरकत नहीं।"
       ],
-      founded: "2020",
+      founded: "2026",
       gstNumber: "",
       locations: "सतना · रीवा · जबलपुर · कटनी",
-      installationsDone: "200+",
+      installationsDone: "50+",
       installationsLabel: "सिस्टम स्थापित",
       bullets: [
         "100% स्थानीय टीम — हमेशा 24/7 उपलब्ध",
@@ -386,13 +386,13 @@ export function defaultCompanyProfile(lang: "en" | "hi" = "en"): CompanyProfile 
   }
   return {
     aboutUsParagraphs: [
-      "Harihar Solar is a Satna-based rooftop solar EPC company serving Madhya Pradesh since 2020. Our 100% local team installs grid-connected solar for homes, shops and small industries.",
+      "Harihar Solar is a Satna-based rooftop solar EPC company serving Madhya Pradesh since 2026. Our 100% local team installs grid-connected solar for homes, shops and small industries.",
       "We use only Indian-made Tier-1 modules (Adani / Waaree), BIS-certified on-grid inverters and galvanized mounting — no shortcuts."
     ],
-    founded: "2020",
+    founded: "2026",
     gstNumber: "",
     locations: "Satna · Rewa · Jabalpur · Katni",
-    installationsDone: "200+",
+    installationsDone: "50+",
     installationsLabel: "Systems installed",
     bullets: [
       "100% local team — 24/7 availability",

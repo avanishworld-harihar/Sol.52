@@ -230,7 +230,7 @@ export function HeroSavingsRibbon({
         className="proposal-hero-ribbon-tile proposal-hero-ribbon-tile--primary col-span-2 sm:col-span-1"
       >
         <p className="proposal-hero-ribbon-label">{labels.saving}</p>
-        <p className="proposal-hero-ribbon-value">{inr(annualSaving)}</p>
+        <p className="proposal-hero-ribbon-value tabular-nums lining-nums">{inr(annualSaving)}</p>
         <p className="proposal-hero-ribbon-hint">per year</p>
       </motion.div>
       <motion.div
@@ -241,7 +241,7 @@ export function HeroSavingsRibbon({
         className="proposal-hero-ribbon-tile"
       >
         <p className="proposal-hero-ribbon-label">{labels.payback}</p>
-        <p className="proposal-hero-ribbon-value">{paybackYears.toFixed(1)} yrs</p>
+        <p className="proposal-hero-ribbon-value tabular-nums lining-nums">{paybackYears.toFixed(1)} yrs</p>
       </motion.div>
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -251,7 +251,7 @@ export function HeroSavingsRibbon({
         className="proposal-hero-ribbon-tile"
       >
         <p className="proposal-hero-ribbon-label">{labels.net}</p>
-        <p className="proposal-hero-ribbon-value">{inr(netCost)}</p>
+        <p className="proposal-hero-ribbon-value tabular-nums lining-nums">{inr(netCost)}</p>
       </motion.div>
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -261,7 +261,7 @@ export function HeroSavingsRibbon({
         className="proposal-hero-ribbon-tile"
       >
         <p className="proposal-hero-ribbon-label">{labels.subsidy}</p>
-        <p className="proposal-hero-ribbon-value">{inr(subsidy)}</p>
+        <p className="proposal-hero-ribbon-value tabular-nums lining-nums">{inr(subsidy)}</p>
       </motion.div>
     </motion.div>
   );
