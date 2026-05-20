@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { commercialProposalConfigSchema } from "@/lib/commercial-proposal-config";
+import { residentialProposalConfigSchema } from "@/lib/residential-requirements-schema";
 import { proposalTemplateV1Schema } from "@/lib/proposal-template-schema";
 
 /**
@@ -102,5 +103,7 @@ export const proposalExtrasShape = {
    */
   proposalLayout: proposalTemplateV1Schema.optional(),
   /** C&I panel pricing, DCR compare, capacity scenarios, financing (see migration 028). */
-  commercialConfig: commercialProposalConfigSchema.optional()
+  commercialConfig: commercialProposalConfigSchema.optional(),
+  /** Homeowner requirement-based config (kW pricing, brands, discount). */
+  residentialConfig: residentialProposalConfigSchema.optional()
 } as const;

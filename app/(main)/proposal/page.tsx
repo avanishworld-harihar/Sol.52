@@ -60,7 +60,16 @@ import {
   ResidentialProposalModePicker,
   type ResidentialInputMode,
 } from "@/components/residential/residential-proposal-mode-picker";
+import { ResidentialBrandOptions } from "@/components/residential/residential-brand-options";
+import { ResidentialKwPricingSettings } from "@/components/residential/residential-kw-pricing-settings";
 import { ResidentialRequirementBuilder } from "@/components/residential/residential-requirement-builder";
+import {
+  residentialAnnualGenerationUnits,
+  residentialGrossCostInr,
+  residentialNetCostInr,
+} from "@/lib/residential-deck-helpers";
+import { moduleCountForResidential, quoteResidentialSolar } from "@/lib/residential-solar-engine";
+import { computePmSuryaGharSubsidy } from "@/lib/proposal-deck-helpers";
 import {
   applyCommercialFlagsToLayout,
   defaultCommercialConfig,
@@ -639,11 +648,48 @@ function ProposalPageContent() {
       }),
     [monthlyUnits, effectiveTariffContext, stateForSizing, discomQuery, connectedLoadKw, areaProfile, latestBill?.bill_month, additionalBills]
   );
+
+  const isCommercialRequirement =
+    osPresetId === "commercial_executive" && commercialInputMode === "requirement";
+  const isResidentialRequirement =
+    osPresetId === "residential_smart" && residentialInputMode === "requirement";
+
   const effectiveResult = useMemo(() => {
+    if (isResidentialRequirement && residentialConfig) {
+      const q = quoteResidentialSolar(residentialConfig.solar);
+      const solarKw = residentialConfig.solar.plantCapacityKw;
+      const panels = q.moduleCount;
+      const annualGeneration = residentialAnnualGenerationUnits(solarKw);
+      const grossCost = residentialGrossCostInr(residentialConfig);
+      const centralSubsidy =
+        residentialConfig.subsidy?.estimateInr ?? computePmSuryaGharSubsidy(solarKw);
+      const netCost = residentialNetCostInr(residentialConfig);
+      const annualSavings = Math.round(annualGeneration * 8 * 0.85);
+      const monthlySavings = Math.round(annualSavings / 12);
+      const paybackYears = annualSavings > 0 ? Number((netCost / annualSavings).toFixed(1)) : 0;
+      const savings25yr = annualSavings * 25;
+      const profit25yr = savings25yr - netCost;
+      return {
+        ...result,
+        solarKw,
+        panels,
+        annualGeneration,
+        annualSavings,
+        monthlySavings,
+        newMonthlyBill: Math.max(0, result.currentMonthlyBill - monthlySavings),
+        grossCost,
+        centralSubsidy,
+        netCost,
+        paybackYears,
+        paybackDisplay: `${paybackYears} years`,
+        savings25yr,
+        profit25yr,
+      };
+    }
     const kwRaw = parseFloat(overrideSolarKw);
     const solarKw = kwRaw > 0 ? Math.round(kwRaw * 10) / 10 : result.solarKw;
     const panelsRaw = parseInt(overridePanels);
-    const panels = panelsRaw > 0 ? panelsRaw : Math.ceil((solarKw * 1000) / 540);
+    const panels = panelsRaw > 0 ? panelsRaw : Math.ceil((solarKw * 1000) / (residentialConfig?.solar.watt ?? 540));
     const annualGeneration = Math.round(solarKw * 1500);
     const selfUse = Math.min(annualGeneration, result.annualUnits);
     const monthlySavings = Math.round((result.currentMonthlyBill * (selfUse / Math.max(result.annualUnits, 1))) * 0.9);
@@ -670,13 +716,17 @@ function ProposalPageContent() {
       savings25yr,
       profit25yr
     };
-  }, [overrideSolarKw, overridePanels, result]);
+  }, [overrideSolarKw, overridePanels, result, isResidentialRequirement, residentialConfig]);
 
   const autoPanelCount = useMemo(() => {
+    if (isResidentialRequirement && residentialConfig) {
+      return moduleCountForResidential(residentialConfig.solar);
+    }
     const kwRaw = parseFloat(overrideSolarKw);
     const solarKw = kwRaw > 0 ? kwRaw : result.solarKw;
-    return Math.ceil((solarKw * 1000) / 540);
-  }, [overrideSolarKw, result.solarKw]);
+    const watt = residentialConfig?.solar.watt ?? 540;
+    return Math.ceil((solarKw * 1000) / watt);
+  }, [overrideSolarKw, result.solarKw, isResidentialRequirement, residentialConfig]);
 
   const filledMonths = useMemo(() => countFilledMonths(monthlyUnits), [monthlyUnits]);
   const annualUnits = useMemo(
@@ -697,11 +747,6 @@ function ProposalPageContent() {
   // Reactive bill-backed status for live preview
   const isBillBackedLive = latestBill != null;
 
-  // â”€â”€ Builder stage progress tracking â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  const isCommercialRequirement =
-    osPresetId === "commercial_executive" && commercialInputMode === "requirement";
-  const isResidentialRequirement =
-    osPresetId === "residential_smart" && residentialInputMode === "requirement";
   const hideBillUploadSteps = isCommercialRequirement || isResidentialRequirement;
 
   const commercialFlowHasClient = Boolean(
@@ -2176,6 +2221,18 @@ function ProposalPageContent() {
               ) : null}
             </div>
           </div>
+        ) : null}
+        {isResidentialRequirement && residentialConfig ? (
+          <>
+            <ResidentialKwPricingSettings
+              config={residentialConfig}
+              onChange={setResidentialConfig}
+            />
+            <ResidentialBrandOptions
+              config={residentialConfig}
+              onChange={setResidentialConfig}
+            />
+          </>
         ) : null}
         {osPresetId === "commercial_executive" && commercialConfig && !isCommercialRequirement ? (
           <>

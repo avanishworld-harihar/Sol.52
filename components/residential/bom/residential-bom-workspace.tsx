@@ -1,5 +1,7 @@
 "use client";
 
+import { ResidentialBrandOptions } from "@/components/residential/residential-brand-options";
+import { ResidentialKwPricingSettings } from "@/components/residential/residential-kw-pricing-settings";
 import { ResidentialRequirementBuilder } from "@/components/residential/residential-requirement-builder";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast-center";
@@ -160,6 +162,9 @@ export function ResidentialBomWorkspace({
           Review proposal sections
         </Button>
       ) : null}
+
+      <ResidentialKwPricingSettings config={config} onChange={patchConfig} />
+      <ResidentialBrandOptions config={config} onChange={patchConfig} />
 
       <div className="sticky bottom-0 z-10 rounded-2xl border border-emerald-200/90 bg-white/95 p-3 shadow-lg backdrop-blur-md dark:border-emerald-900/40 dark:bg-[#0c1017]/95">
         <div className="flex flex-wrap items-center justify-between gap-3">

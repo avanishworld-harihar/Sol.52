@@ -1,0 +1,151 @@
+/**
+ * Residential requirement-based deck math & BOM (does not affect commercial).
+ */
+
+import {
+  buildBom,
+  pickBrandSet,
+  type BomFreeAmcYears,
+  type DeckBomItem,
+} from "@/lib/proposal-deck-helpers";
+import { computeGrossSystemCostInr } from "@/lib/solar-engine";
+import { computePmSuryaGharSubsidy } from "@/lib/proposal-deck-helpers";
+import { quoteResidentialSolar } from "@/lib/residential-solar-engine";
+import type {
+  ResidentialBrandOption,
+  ResidentialDiscount,
+  ResidentialKwTier,
+  ResidentialProposalConfig,
+  ResidentialWireBrand,
+} from "@/lib/residential-requirements-schema";
+
+/** 1 kW → 4 units/day → 120 units/month → 1,440 units/year (30-day months). */
+export function residentialDailyGenerationUnits(systemKw: number): number {
+  return Math.round(Math.max(0, systemKw) * 4);
+}
+
+export function residentialMonthlyGenerationUnits(systemKw: number): number {
+  return residentialDailyGenerationUnits(systemKw) * 30;
+}
+
+export function residentialAnnualGenerationUnits(systemKw: number): number {
+  return residentialMonthlyGenerationUnits(systemKw) * 12;
+}
+
+export function lookupResidentialKwPriceInr(
+  tiers: ResidentialKwTier[] | undefined,
+  plantKw: number
+): number | null {
+  if (!tiers?.length) return null;
+  const sorted = [...tiers].sort((a, b) => a.kw - b.kw);
+  const exact = sorted.find((t) => t.kw === plantKw);
+  if (exact && exact.priceInr > 0) return exact.priceInr;
+  let best: ResidentialKwTier | null = null;
+  for (const t of sorted) {
+    if (t.kw <= plantKw && t.priceInr > 0) best = t;
+  }
+  return best?.priceInr ?? sorted.find((t) => t.priceInr > 0)?.priceInr ?? null;
+}
+
+export function applyResidentialDiscountInr(
+  grossInr: number,
+  discount: ResidentialDiscount | undefined
+): number {
+  if (!discount?.enabled || discount.value <= 0) return 0;
+  if (discount.type === "fixed_inr") return Math.min(grossInr, Math.round(discount.value));
+  return Math.round((grossInr * Math.min(100, discount.value)) / 100);
+}
+
+export function residentialGrossCostInr(config: ResidentialProposalConfig): number {
+  const kw = config.solar.plantCapacityKw;
+  const fromTier = lookupResidentialKwPriceInr(config.pricing?.kwTiers, kw);
+  if (fromTier != null && fromTier > 0) return fromTier;
+  const q = quoteResidentialSolar(config.solar);
+  if (q.hardwareInr > 0) return q.hardwareInr;
+  return computeGrossSystemCostInr(kw);
+}
+
+export function residentialNetCostInr(config: ResidentialProposalConfig): number {
+  const gross = residentialGrossCostInr(config);
+  const discount = applyResidentialDiscountInr(gross, config.pricing?.discount);
+  const afterDiscount = Math.max(0, gross - discount);
+  const subsidy =
+    config.subsidy?.estimateInr ??
+    computePmSuryaGharSubsidy(config.solar.plantCapacityKw);
+  return Math.max(0, afterDiscount - subsidy);
+}
+
+function wireBrandLabel(wire: ResidentialWireBrand | undefined): string {
+  return wire === "havells" ? "Havells" : "Polycab";
+}
+
+function panelBrandsLabel(opts: ResidentialBrandOption[] | undefined, fallback: string): string {
+  const names = (opts ?? []).map((o) => o.brand.trim()).filter(Boolean);
+  if (names.length === 0) return fallback;
+  if (names.length === 1) return names[0]!;
+  return `${names.slice(0, -1).join(", ")} or ${names[names.length - 1]}`;
+}
+
+function inverterBrandsLabel(opts: ResidentialBrandOption[] | undefined, fallback: string): string {
+  const names = (opts ?? []).map((o) => o.brand.trim()).filter(Boolean);
+  if (names.length === 0) return fallback;
+  return names.join(" / ");
+}
+
+export function buildResidentialBomFromConfig(
+  config: ResidentialProposalConfig,
+  amcYears: BomFreeAmcYears = 1
+): DeckBomItem[] {
+  const q = quoteResidentialSolar(config.solar);
+  const kw = config.solar.plantCapacityKw;
+  const tech =
+    config.pricing?.panelTechnology?.trim() ||
+    config.solar.technology?.trim() ||
+    "Mono PERC / TOPCon";
+  const defaultBrands = pickBrandSet({ systemKw: kw });
+  const panelBrand = panelBrandsLabel(config.panelBrandOptions, config.solar.brand || defaultBrands.panel);
+  const inverterBrand = inverterBrandsLabel(
+    config.inverterBrandOptions,
+    defaultBrands.inverter
+  );
+  const wire = wireBrandLabel(config.pricing?.wireBrand);
+
+  const base = buildBom({
+    systemKw: kw,
+    preferredPanelBrand: defaultBrands.panel,
+    includedFreeAmcYears: amcYears,
+  });
+
+  return base.map((row) => {
+    if (row.slot === 1) {
+      return {
+        ...row,
+        spec: `${q.moduleCount} × ${config.solar.watt} Wp ${tech} (BIS, MNRE)`,
+        brand: panelBrand,
+      };
+    }
+    if (row.slot === 2) {
+      return {
+        ...row,
+        spec: `${kw} kW On-Grid String Inverter (MPPT, IP65)`,
+        brand: inverterBrand,
+      };
+    }
+    if (row.slot === 4) {
+      return {
+        ...row,
+        spec: "TUV-approved 4 mm² DC + 4 mm² AC, fire-resistant",
+        brand: `${wire} (DC/AC cabling)`,
+      };
+    }
+    return row;
+  });
+}
+
+export function isResidentialRequirementInput(
+  input: { residentialConfig?: ResidentialProposalConfig | null; dataSource?: string | null }
+): boolean {
+  return (
+    input.residentialConfig?.inputMode === "requirement" || input.dataSource === "requirement"
+  );
+}

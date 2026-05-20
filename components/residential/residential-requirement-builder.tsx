@@ -191,7 +191,23 @@ export function ResidentialRequirementBuilder({ config, onChange, netCostInr, an
         <label className="mt-2 block text-[10px] font-bold uppercase tracking-wide text-slate-500">Wattage</label>
         <div className="flex flex-wrap gap-2">
           {RESIDENTIAL_WATT_PRESETS.map((w) => (
-            <Chip key={w} active={solar.watt === w} onClick={() => patchSolar({ watt: w, moduleCountOverride: undefined })}>
+            <Chip
+              key={w}
+              active={solar.watt === w}
+              onClick={() => {
+                const track = solar.panelTrack === "dcr" ? "DCR" : "NON_DCR";
+                const hit =
+                  PANEL_CATALOG.find(
+                    (e) => e.brandId === solar.brandId && e.watt === w && e.panelType === track
+                  ) ?? PANEL_CATALOG.find((e) => e.watt === w && e.panelType === track);
+                patchSolar({
+                  watt: w,
+                  moduleCountOverride: undefined,
+                  ratePerWpInr: hit?.ratePerWpInr ?? solar.ratePerWpInr,
+                  technology: hit?.technology ?? solar.technology,
+                });
+              }}
+            >
               {w}W
             </Chip>
           ))}

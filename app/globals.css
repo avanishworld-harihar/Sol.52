@@ -3193,6 +3193,16 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     break-before: auto !important;
   }
 
+  .proposal-page[data-page="cover"] {
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
+  }
+
+  .proposal-hero--requirement .proposal-hero-bleed-inside {
+    page-break-before: avoid !important;
+    break-before: avoid !important;
+  }
+
   /* Tighten consecutive-section gap inside a single page for print */
   .proposal-page > section + section {
     margin-top: 6mm !important;

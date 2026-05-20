@@ -27,6 +27,14 @@ import {
   type EmiRow,
   type PaymentMilestone
 } from "@/lib/proposal-deck-helpers";
+import {
+  buildResidentialBomFromConfig,
+  isResidentialRequirementInput,
+  residentialAnnualGenerationUnits,
+  residentialGrossCostInr,
+  residentialNetCostInr,
+} from "@/lib/residential-deck-helpers";
+import { quoteResidentialSolar } from "@/lib/residential-solar-engine";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
 import { resolvedCompanyProfileForLang } from "@/lib/proposal-company-resolve";
 import { hindiHonoredDisplayName } from "@/lib/roman-name-to-devanagari";
@@ -207,6 +215,10 @@ export type ProposalDeckSummary = {
   annualGen: number;
   annualUse: number;
   coverage: number;
+  /** Module wattage (residential requirement path uses config, not 540 default). */
+  panelWatt?: number;
+  /** Requirement-based residential — hides bill-only fields on cover. */
+  requirementBased?: boolean;
   bom: DeckBomItem[];
   brands: ReturnType<typeof pickBrandSet>;
   emi: EmiRow[];
@@ -467,14 +479,39 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
   const annualSaving = n(yearlyBill - afterSolar);
   const totalReduction = yearlyBill > 0 ? Math.round((annualSaving / yearlyBill) * 100) : 0;
 
-  const brands = pickBrandSet({ preferredPanelBrand: input.panelBrand, systemKw: input.systemKw });
+  const resRequirement = isResidentialRequirementInput(input);
+  const resCfg = input.residentialConfig;
   const amcSelectedYears = (input.amcSelectedYears ?? 1) as 1 | 5 | 10;
-  const defaultBom = buildBom({
+
+  let deckSystemKw = input.systemKw;
+  let panelWatt = 540;
+  let panels = Math.max(1, Math.ceil((input.systemKw * 1000) / 540));
+  let grossSystemCost = n(input.grossSystemCostInr ?? computeGrossSystemCostInr(input.systemKw));
+  let pmSubsidy = n(input.pmSuryaGharSubsidyInr ?? computePmSuryaGharSubsidy(input.systemKw));
+  let annualGen = estimateAnnualGenerationUnits(input.systemKw);
+  let brands = pickBrandSet({ preferredPanelBrand: input.panelBrand, systemKw: input.systemKw });
+  let defaultBom = buildBom({
     systemKw: input.systemKw,
     preferredPanelBrand: input.panelBrand,
-    includedFreeAmcYears: amcSelectedYears
+    includedFreeAmcYears: amcSelectedYears,
   });
-  // Merge per-project BOM overrides on top of the default BOM, by slot.
+
+  if (resRequirement && resCfg) {
+    const q = quoteResidentialSolar(resCfg.solar);
+    deckSystemKw = resCfg.solar.plantCapacityKw;
+    panelWatt = resCfg.solar.watt;
+    panels = q.moduleCount;
+    annualGen = residentialAnnualGenerationUnits(deckSystemKw);
+    grossSystemCost = n(input.grossSystemCostInr ?? residentialGrossCostInr(resCfg));
+    pmSubsidy = n(
+      input.pmSuryaGharSubsidyInr ??
+        resCfg.subsidy?.estimateInr ??
+        computePmSuryaGharSubsidy(deckSystemKw)
+    );
+    brands = pickBrandSet({ preferredPanelBrand: input.panelBrand, systemKw: deckSystemKw });
+    defaultBom = buildResidentialBomFromConfig(resCfg, amcSelectedYears);
+  }
+
   const overridesBySlot = new Map<number, NonNullable<typeof input.bomOverrides>[number]>();
   for (const o of input.bomOverrides ?? []) {
     if (o && Number.isFinite(o.slot)) overridesBySlot.set(Number(o.slot), o);
@@ -487,25 +524,25 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
       title: (o.title ?? row.title).toString(),
       spec: (o.spec ?? row.spec).toString(),
       brand: (o.brand ?? row.brand).toString(),
-      warranty: (o.warranty ?? row.warranty).toString()
+      warranty: (o.warranty ?? row.warranty).toString(),
     };
   });
-  /** Default matches `computeGrossSystemCostInr` in `lib/solar-engine.ts`. Override via `grossSystemCostInr`. */
-  const grossSystemCost = n(input.grossSystemCostInr ?? computeGrossSystemCostInr(input.systemKw));
-  const pmSubsidy = n(input.pmSuryaGharSubsidyInr ?? computePmSuryaGharSubsidy(input.systemKw));
-  /** Default gross − subsidy; optional `commercialNetPayableInr` from `proposal_pricing` overrides net. */
-  const computedNet = n(Math.max(0, grossSystemCost - pmSubsidy));
+
+  const computedNet = resRequirement && resCfg
+    ? n(residentialNetCostInr(resCfg))
+    : n(Math.max(0, grossSystemCost - pmSubsidy));
   const overrideNet = input.commercialNetPayableInr;
   const netCost =
     overrideNet != null && Number.isFinite(overrideNet) && overrideNet >= 0 ? n(overrideNet) : computedNet;
   const paybackYears = honestPaybackYears({ paybackHint: input.paybackYears, netCostInr: netCost, annualSavingInr: annualSaving });
   const lifetime25Profit = n(annualSaving * 25 - netCost);
   const solarVsGrid = computeSolarVsGrid({ yearlyBill, netCostInr: netCost });
-  const environmental = computeEnvironmentalImpact(input.systemKw);
-  const annualGen = estimateAnnualGenerationUnits(input.systemKw);
+  const environmental = computeEnvironmentalImpact(deckSystemKw);
+  if (resRequirement) {
+    environmental.annualGenUnits = annualGen;
+  }
   const annualUse = MONTH_KEYS.reduce((sum, k) => sum + n(input.monthlyUnits[k]), 0);
   const coverage = annualUse > 0 ? Math.min(100, Math.round((annualGen / annualUse) * 100)) : 100;
-  const panels = Math.max(1, Math.ceil((input.systemKw * 1000) / 540));
 
   const finance = input.financeOption ?? {};
   const interestRatePct = Number.isFinite(finance.interestRatePct) ? Number(finance.interestRatePct) : 7;
@@ -544,9 +581,11 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
     installer: (input.installerName ?? "Harihar Solar").trim(),
     tagline: (input.installerTagline ?? "100% Local · Satna · Madhya Pradesh").trim(),
     contact: (input.installerContact ?? "+91-9993322267 · harihar@solar.com").trim(),
-    systemKw: input.systemKw,
-    panelBrand: brands.panel,
+    systemKw: deckSystemKw,
+    panelBrand: bom.find((r) => r.slot === 1)?.brand ?? brands.panel,
     panels,
+    panelWatt,
+    requirementBased: resRequirement,
     yearlyBill,
     afterSolar,
     annualSaving,

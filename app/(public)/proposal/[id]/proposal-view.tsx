@@ -24,8 +24,13 @@ import {
   Sun,
   TreeDeciduous,
   XCircle,
-  Zap
+  Zap,
+  BarChart3,
+  Activity,
+  PiggyBank,
+  type LucideIcon
 } from "lucide-react";
+import { residentialMonthlyGenerationUnits } from "@/lib/residential-deck-helpers";
 import type { ProposalDeckSummary } from "@/lib/proposal-ppt";
 import { PROPOSAL_BRANDING_UPDATED_EVENT, readProposalBrandingSettings } from "@/lib/proposal-branding-settings";
 import {
@@ -276,7 +281,8 @@ export function StatTile({
   tone = "ink",
   delay = 0,
   dark = false,
-  lang = "en"
+  lang = "en",
+  icon: Icon
 }: {
   label: string;
   value: string;
@@ -285,6 +291,7 @@ export function StatTile({
   delay?: number;
   dark?: boolean;
   lang?: ProposalLang;
+  icon?: LucideIcon;
 }) {
   const toneClass =
     tone === "blue" ? (dark ? "text-sky-300" : "text-sky-700") :
@@ -311,6 +318,12 @@ export function StatTile({
           : "border-white/60 bg-white/80 backdrop-blur-sm shadow-[0_4px_24px_rgba(0,0,0,0.06)]"
       }`}
     >
+      {Icon ? (
+        <Icon
+          className={`mb-2 h-5 w-5 ${tone === "green" ? "text-emerald-500" : tone === "blue" ? "text-sky-500" : "text-amber-500"}`}
+          aria-hidden
+        />
+      ) : null}
       <p
         className={`text-[10px] font-semibold ${dark ? "text-slate-400" : "text-slate-500"} ${
           lang === "hi" ? "tracking-normal normal-case" : "uppercase tracking-[0.18em]"
@@ -634,12 +647,16 @@ export function HeroCover({
       ? "truncate text-[11px] text-slate-500 sm:text-xs tracking-normal"
       : "truncate text-[11px] font-medium text-slate-500 sm:text-xs";
   const metricDark = darkMode;
+  const requirementBased = summary.requirementBased === true;
+  const panelWatt = summary.panelWatt ?? 540;
 
   // Strict 12-col grid — every block declares its column span so nothing
   // floats or overlaps. On mobile the grid collapses to 1 column.
   return (
     <section
       className={`proposal-hero proposal-hero-orchestrated relative overflow-hidden rounded-3xl border p-4 sm:p-8 md:p-9 lg:p-10 ${
+        requirementBased ? "proposal-hero--requirement " : ""
+      }${
         darkMode
           ? "border-white/10 bg-slate-900 shadow-[0_24px_80px_-20px_rgba(0,0,0,0.5)]"
           : "border-slate-200/90 bg-white shadow-[0_24px_80px_-24px_rgba(15,23,42,0.12)]"
@@ -717,22 +734,33 @@ export function HeroCover({
           ) : null}
         </div>
 
-        <div className="proposal-hero-ribbon-slot order-2 mt-5 md:order-5 md:mt-6">
-          <HeroSavingsRibbon
-            annualSaving={summary.annualSaving}
-            paybackYears={summary.paybackYears}
-            netCost={summary.netCost}
-            subsidy={summary.pmSubsidy}
-            labels={{
-              saving: D["common.annualSaving"],
-              payback: D["common.payback"],
-              net: D["common.netCost"],
-              subsidy: lang === "hi" ? "सब्सिडी" : "Subsidy"
-            }}
-          />
-        </div>
+        {/* ── 2b. ABOUT INSTALLER (above bill fields; requirement path) ───── */}
+        {cmp.aboutUsParagraphs?.[0] ? (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.08 }}
+            className={`proposal-hero-about order-2 mt-5 rounded-2xl border-l-4 p-4 sm:mt-6 sm:p-5 ${
+              darkMode
+                ? "border border-white/10 border-l-emerald-400 bg-emerald-950/25"
+                : "border border-emerald-100/90 border-l-emerald-500 bg-emerald-50/40"
+            }`}
+          >
+            <p
+              className={`text-[10px] font-bold ${
+                darkMode ? "text-emerald-400" : "text-emerald-800"
+              } ${lang === "hi" ? "tracking-normal normal-case" : "uppercase tracking-wide"}`}
+            >
+              {D["hero.aboutInstaller"].replace("%INSTALLER%", summary.installer)}
+            </p>
+            <p className={`mt-1.5 text-[13px] leading-relaxed sm:text-sm ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
+              {cmp.aboutUsParagraphs[0]}
+            </p>
+          </motion.div>
+        ) : null}
 
-        {/* ── 3. CUSTOMER PROFILE ───────────────────────────────────────── */}
+        {!requirementBased ? (
         <div className="proposal-hero-profile order-3 mt-5 grid grid-cols-1 gap-2 sm:mt-6 sm:grid-cols-2 sm:gap-2.5 md:grid-cols-3">
           {[
             { l: D["profile.consumerId"], v: profileFieldOrDash(cp.consumerId) },
@@ -770,34 +798,16 @@ export function HeroCover({
             </motion.div>
           ))}
         </div>
-
-        {/* ── 4. ABOUT-US BLURB (1 short paragraph from companyProfile) ──── */}
-        {cmp.aboutUsParagraphs?.[0] ? (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className={`mt-6 rounded-2xl border-l-4 p-4 sm:p-5 ${
-              darkMode
-                ? "border border-white/10 border-l-emerald-400 bg-emerald-950/25"
-                : "border border-emerald-100/90 border-l-emerald-500 bg-emerald-50/40"
-            }`}
-          >
-            <p
-              className={`text-[10px] font-bold ${
-                darkMode ? "text-emerald-400" : "text-emerald-800"
-              } ${lang === "hi" ? "tracking-normal normal-case" : "uppercase tracking-wide"}`}
-            >
-              {D["hero.aboutInstaller"].replace("%INSTALLER%", summary.installer)}
-            </p>
-            <p className={`mt-1.5 text-[13px] leading-relaxed sm:text-sm ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
-              {cmp.aboutUsParagraphs[0]}
-            </p>
-          </motion.div>
         ) : null}
 
-        {/* ── 5. SYSTEM SUMMARY ─────────────────────────────────────────── */}
+        {requirementBased ? (
+          <div className="proposal-hero-metrics order-4 mt-5 grid grid-cols-2 gap-2 sm:mt-6 sm:gap-2.5 lg:grid-cols-4">
+            <StatTile icon={Zap} label={D["common.system"]} value={`${summary.systemKw} kW`} delay={0.05} lang={lang} dark={metricDark} />
+            <StatTile icon={Sun} label={D["gen.annualGen"]} value={`${summary.annualGen.toLocaleString("en-IN")} u`} rawValue={summary.annualGen} delay={0.1} lang={lang} dark={metricDark} tone="green" />
+            <StatTile icon={BarChart3} label={D["req.estimatedUse"]} value={`${summary.annualUse > 0 ? summary.annualUse.toLocaleString("en-IN") : residentialMonthlyGenerationUnits(summary.systemKw).toLocaleString("en-IN")} u`} delay={0.15} lang={lang} dark={metricDark} tone="blue" />
+            <StatTile icon={PiggyBank} label={D["common.annualSaving"]} value={inrK(summary.annualSaving)} rawValue={summary.annualSaving} delay={0.2} lang={lang} dark={metricDark} tone="green" />
+          </div>
+        ) : (
         <div className="proposal-hero-metrics order-4 mt-5 grid grid-cols-2 gap-2 sm:mt-6 sm:gap-2.5 md:grid-cols-3 lg:grid-cols-5">
           <StatTile label={D["common.system"]} value={`${summary.systemKw} kW`} delay={0.05} lang={lang} dark={metricDark} />
           <StatTile label={D["common.panels"]} value={String(summary.panels)} rawValue={summary.panels} delay={0.1} lang={lang} dark={metricDark} />
@@ -812,29 +822,31 @@ export function HeroCover({
             dark={metricDark}
           />
         </div>
+        )}
 
-        <div
-          className={`proposal-hero-foot order-5 mt-5 flex flex-col gap-2 border-t pt-4 sm:mt-6 sm:flex-row sm:items-start sm:justify-between sm:gap-4 md:order-6 ${
-            darkMode ? "border-white/10" : "border-slate-200/80"
-          }`}
-        >
-          <p className={`text-[10px] leading-snug sm:max-w-[70%] sm:text-[11px] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
-            {D["common.engineNote"]}
-          </p>
-          <p className={`shrink-0 text-[10px] font-medium sm:text-right sm:text-[11px] ${darkMode ? "text-slate-500" : "text-slate-400"}`}>
-            {PROPOSAL_PLATFORM_CREDIT}
-          </p>
-        </div>
+        <div className="proposal-hero-ribbon-slot order-5 mt-5 md:mt-6">
+          <HeroSavingsRibbon
+            annualSaving={summary.annualSaving}
+            paybackYears={summary.paybackYears}
+            netCost={summary.netCost}
+            subsidy={summary.pmSubsidy}
+            labels={{
+              saving: D["common.annualSaving"],
+              payback: D["common.payback"],
+              net: D["common.netCost"],
+              subsidy: lang === "hi" ? "सब्सिडी" : "Subsidy"
+            }}
+          />
         </div>
 
-        {/* ── 6. WIDE BOTTOM IMAGE — bleed effect, strictly at page bottom ── */}
+        {/* ── Bottom band — inside cover page (before footer note) ── */}
         {heroBottomImage ? (
           <motion.div
             initial={{ opacity: 0, y: 14 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="relative mt-7 overflow-hidden rounded-2xl shadow-lg shadow-slate-900/15 sm:mt-8"
+            className={`proposal-hero-bleed-inside relative mt-5 overflow-hidden rounded-2xl shadow-lg shadow-slate-900/15 sm:mt-6 ${requirementBased ? "max-h-48 sm:max-h-56" : "mt-7 sm:mt-8"}`}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={heroBottomImage} alt="Solar installation" className="h-44 w-full object-cover sm:h-56 lg:h-64" />
@@ -866,7 +878,7 @@ export function HeroCover({
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="relative mt-7 overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-800 via-emerald-900 to-slate-900 p-5 text-white shadow-lg sm:mt-8 sm:p-7"
+            className={`proposal-hero-bleed-inside relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-800 via-emerald-900 to-slate-900 p-5 text-white shadow-lg sm:p-7 ${requirementBased ? "mt-5 max-h-44 sm:mt-6" : "mt-7 sm:mt-8"}`}
           >
             <p
               className={`text-[10px] font-bold text-emerald-300 sm:text-xs ${
@@ -879,6 +891,20 @@ export function HeroCover({
             <p className="mt-2 max-w-2xl text-xs leading-relaxed text-white/85 sm:text-sm">{D["hero.localTeamFine"]}</p>
           </motion.div>
         )}
+
+        <div
+          className={`proposal-hero-foot order-6 mt-5 flex flex-col gap-2 border-t pt-4 sm:mt-6 sm:flex-row sm:items-start sm:justify-between sm:gap-4 ${
+            darkMode ? "border-white/10" : "border-slate-200/80"
+          }`}
+        >
+          <p className={`text-[10px] leading-snug sm:max-w-[70%] sm:text-[11px] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+            {D["common.engineNote"]}
+          </p>
+          <p className={`shrink-0 text-[10px] font-medium sm:text-right sm:text-[11px] ${darkMode ? "text-slate-500" : "text-slate-400"}`}>
+            {PROPOSAL_PLATFORM_CREDIT}
+          </p>
+        </div>
+        </div>
       </div>
     </section>
   );
@@ -919,24 +945,30 @@ export function SystemRequirementSection({
             {summary.systemKw} kW
           </p>
           <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-            {summary.panels} × {D["common.panels"]} (540 W class)
+            {summary.panels} × {summary.panelWatt ?? 540} W {D["common.panels"]}
           </p>
         </ProposalPanel>
-        <ProposalPanel className="flex flex-col justify-center">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{D["gen.annualGen"]}</p>
-          <p className="mt-1 text-2xl font-extrabold tabular-nums text-emerald-800 dark:text-emerald-300">
+        <ProposalPanel className="flex flex-col justify-center gap-1">
+          <div className="flex items-center gap-2">
+            <Activity className="h-5 w-5 text-emerald-600" aria-hidden />
+            <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{D["gen.annualGen"]}</p>
+          </div>
+          <p className="text-2xl font-extrabold tabular-nums text-emerald-800 dark:text-emerald-300">
             {summary.annualGen.toLocaleString("en-IN")} u
           </p>
-          <p className="mt-0.5 text-xs text-slate-600">
-            {D["req.monthlyGen"]}: ~{monthlyGen.toLocaleString("en-IN")} u
+          <p className="text-xs text-slate-600">
+            {D["req.monthlyGen"]}: ~{monthlyGen.toLocaleString("en-IN")} u · 4 u/kW/day
           </p>
         </ProposalPanel>
-        <ProposalPanel className="flex flex-col justify-center">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{D["req.estimatedUse"]}</p>
-          <p className="mt-1 text-2xl font-extrabold tabular-nums text-sky-900 dark:text-sky-200">
-            {summary.annualUse.toLocaleString("en-IN")} u
+        <ProposalPanel className="flex flex-col justify-center gap-1">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5 text-sky-600" aria-hidden />
+            <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{D["req.estimatedUse"]}</p>
+          </div>
+          <p className="text-2xl font-extrabold tabular-nums text-sky-900 dark:text-sky-200">
+            {summary.annualUse > 0 ? summary.annualUse.toLocaleString("en-IN") : monthlyGen.toLocaleString("en-IN")} u
           </p>
-          <p className="mt-0.5 text-xs text-slate-600">
+          <p className="text-xs text-slate-600">
             {D["gen.coverage"]}: {summary.coverage}%
           </p>
         </ProposalPanel>

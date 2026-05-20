@@ -5,6 +5,7 @@
 
 import { z } from "zod";
 import { PANEL_CATALOG } from "@/lib/commercial-panel-catalog";
+import { computeGrossSystemCostInr } from "@/lib/solar-engine";
 
 export const residentialRoofTypeSchema = z.enum(["flat", "slope", "mixed", "unknown"]);
 export const residentialBudgetRangeSchema = z.enum(["economy", "balanced", "premium"]);
@@ -42,6 +43,31 @@ export const residentialSubsidySchema = z.object({
   estimateInr: z.number().min(0).optional(),
 });
 
+export const residentialKwTierSchema = z.object({
+  kw: z.number().min(1).max(100),
+  priceInr: z.number().min(0),
+});
+
+export const residentialDiscountSchema = z.object({
+  enabled: z.boolean().default(false),
+  type: z.enum(["percent", "fixed_inr"]).default("percent"),
+  value: z.number().min(0).default(0),
+});
+
+export const residentialBrandOptionSchema = z.object({
+  brand: z.string().min(1).max(80),
+  brandId: z.string().max(40).optional(),
+});
+
+export const residentialWireBrandSchema = z.enum(["havells", "polycab"]);
+
+export const residentialPricingSchema = z.object({
+  kwTiers: z.array(residentialKwTierSchema).max(24).optional(),
+  panelTechnology: z.string().max(80).optional(),
+  discount: residentialDiscountSchema.optional(),
+  wireBrand: residentialWireBrandSchema.default("polycab"),
+});
+
 export const residentialProposalConfigSchema = z.object({
   solar: residentialSolarSchema,
   roofType: residentialRoofTypeSchema.default("unknown"),
@@ -49,6 +75,12 @@ export const residentialProposalConfigSchema = z.object({
   battery: residentialBatterySchema.optional(),
   subsidy: residentialSubsidySchema.optional(),
   financing: residentialFinancingSchema.optional(),
+  /** kW-wise system price, technology, wire brand, per-customer discount */
+  pricing: residentialPricingSchema.optional(),
+  /** Up to 3 panel brands shown on proposal (any one may be installed) */
+  panelBrandOptions: z.array(residentialBrandOptionSchema).max(3).optional(),
+  /** Up to 2 inverter brands */
+  inverterBrandOptions: z.array(residentialBrandOptionSchema).max(2).optional(),
   notes: z.string().max(600).optional(),
   /** Builder path marker */
   inputMode: z.literal("requirement").optional(),
@@ -57,6 +89,16 @@ export const residentialProposalConfigSchema = z.object({
 export type ResidentialSolar = z.infer<typeof residentialSolarSchema>;
 export type ResidentialProposalConfig = z.infer<typeof residentialProposalConfigSchema>;
 export type ResidentialPanelTrack = z.infer<typeof residentialPanelTrackSchema>;
+export type ResidentialKwTier = z.infer<typeof residentialKwTierSchema>;
+export type ResidentialDiscount = z.infer<typeof residentialDiscountSchema>;
+export type ResidentialBrandOption = z.infer<typeof residentialBrandOptionSchema>;
+export type ResidentialWireBrand = z.infer<typeof residentialWireBrandSchema>;
+
+/** Default kW → gross price table for residential requirement proposals. */
+export function defaultResidentialKwTiers(): ResidentialKwTier[] {
+  const kws = [3, 5, 6, 7, 8, 9, 10];
+  return kws.map((kw) => ({ kw, priceInr: computeGrossSystemCostInr(kw) }));
+}
 
 function defaultRate(brandId: string, watt: number, track: "DCR" | "NON_DCR"): number {
   const hit = PANEL_CATALOG.find(
@@ -68,13 +110,14 @@ function defaultRate(brandId: string, watt: number, track: "DCR" | "NON_DCR"): n
 
 export function defaultResidentialConfig(plantKw = 5): ResidentialProposalConfig {
   const kw = Math.max(1, Math.min(50, plantKw));
+  const primary = { brandId: "adani", brand: "Adani Solar" };
   return {
     inputMode: "requirement",
     solar: {
       plantCapacityKw: kw,
       panelTrack: "dcr",
-      brand: "Adani Solar",
-      brandId: "adani",
+      brand: primary.brand,
+      brandId: primary.brandId,
       watt: 550,
       technology: "Mono PERC",
       ratePerWpInr: defaultRate("adani", 550, "DCR"),
@@ -89,6 +132,21 @@ export function defaultResidentialConfig(plantKw = 5): ResidentialProposalConfig
       selectedTenureYears: 5,
       tenuresYears: [3, 5, 7, 10],
     },
+    pricing: {
+      kwTiers: defaultResidentialKwTiers(),
+      panelTechnology: "Mono PERC",
+      wireBrand: "polycab",
+      discount: { enabled: false, type: "percent", value: 0 },
+    },
+    panelBrandOptions: [
+      primary,
+      { brandId: "waaree", brand: "Waaree" },
+      { brandId: "vikram", brand: "Vikram Solar" },
+    ],
+    inverterBrandOptions: [
+      { brand: "Growatt" },
+      { brand: "Deye" },
+    ],
   };
 }
 
