@@ -2011,8 +2011,8 @@ function ProposalPageContent() {
       </div>
       ) : null}
 
-      {/* Bill analysis charts — hidden in commercial requirement mode */}
-      {!(osPresetId === "commercial_executive" && commercialInputMode === "requirement") && (
+      {/* Bill analysis charts — bill-based paths only (includes Hidden reality chart) */}
+      {!hideBillUploadSteps && (
         <div className="ss-card p-4 sm:p-5">
           <BillAnalysisCharts
             monthlyUnits={monthlyUnits}
@@ -2023,8 +2023,8 @@ function ProposalPageContent() {
         </div>
       )}
 
-      {/* Connection & manual fields — hidden in commercial requirement mode (handled by CommercialInputModeSelector) */}
-      {!(osPresetId === "commercial_executive" && commercialInputMode === "requirement") && (
+      {/* Connection & bill details fields — bill-based paths only */}
+      {!hideBillUploadSteps && (
       <div className="ss-card space-y-3 p-4 sm:space-y-4 sm:p-5">
         <div>
           <h3 className="text-xs font-bold uppercase tracking-wide text-brand-700 sm:text-sm">{t("proposal_manualHeading")}</h3>
@@ -2131,8 +2131,8 @@ function ProposalPageContent() {
       )}
       {/* END: connection & manual fields */}
 
-      {/* Bill details summary — hidden in commercial requirement mode */}
-      {!(osPresetId === "commercial_executive" && commercialInputMode === "requirement") && (latestBill || previousBill || manual.officialBillName) && (
+      {/* Bill details summary — bill-based paths only */}
+      {!hideBillUploadSteps && (latestBill || previousBill || manual.officialBillName) && (
         <div className="ss-card space-y-2 p-4 sm:p-5">
           <h3 className="text-xs font-bold uppercase tracking-wide text-brand-700 sm:text-sm">{t("proposal_billDetails")}</h3>
           <div className="grid gap-1 text-xs font-semibold text-slate-800 sm:text-sm">
@@ -2160,8 +2160,8 @@ function ProposalPageContent() {
         </div>
       )}
 
-      {/* Recommended solar card — hidden in commercial requirement mode */}
-      {!(osPresetId === "commercial_executive" && commercialInputMode === "requirement") && (
+      {/* Recommended solar card — bill-based paths only */}
+      {!hideBillUploadSteps && (
         <div className="ss-card p-4 sm:p-5">
           <h2 className="text-base font-extrabold text-brand-900 sm:text-lg">{t("proposal_recommended")}</h2>
           <p className="mt-2 break-words text-2xl font-extrabold tabular-nums text-solar-600 sm:text-3xl lg:text-4xl">
@@ -2490,7 +2490,7 @@ function ProposalPageContent() {
               annualSaving={effectiveResult.annualSavings}
               netCost={effectiveResult.netCost}
               paybackLabel={effectiveResult.paybackDisplay}
-              isBillBacked={isBillBackedLive}
+              isBillBacked={isBillBackedLive && !hideBillUploadSteps}
               latestProposalUrl={latestWebProposalUrl}
               onGenerate={() => void generateWebProposal()}
               busy={isWebProposalBusy}
