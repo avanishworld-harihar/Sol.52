@@ -78,6 +78,8 @@ import { BlockEngineeringRationale } from "@/components/proposal/blocks/block-en
 // Wave 3 P7
 import { BrandComparisonCard } from "@/components/proposals/blocks/brand-comparison";
 import { BlockDcrComparison } from "@/components/proposal/blocks/commercial/block-dcr-comparison";
+import { ResidentialTrackCompareSection } from "@/components/proposal/blocks/residential/block-residential-track-compare";
+import { parseResidentialConfig } from "@/lib/residential-proposal-config";
 import { BlockCapacityScenarios } from "@/components/proposal/blocks/commercial/block-capacity-scenarios";
 import { BlockCommercialFinancing } from "@/components/proposal/blocks/commercial/block-commercial-financing";
 import { BlockDgHybrid } from "@/components/proposal/blocks/commercial/block-dg-hybrid";
@@ -500,6 +502,7 @@ function ProposalWebRendererInner({
     downloading,
     storyVariant,
     commercialConfig: rawInput.commercialConfig ?? null,
+    residentialConfig: parseResidentialConfig(rawInput.residentialConfig),
   };
 
   const eligibilityCtx = { billAuditBacked, presetId, showSurveySection: showSurveyWorkflowSection };

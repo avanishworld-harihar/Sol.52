@@ -36,6 +36,7 @@ import {
   Trash2,
   Zap,
 } from "lucide-react";
+import { ResidentialTrackComparePanel } from "@/components/residential/residential-track-compare-panel";
 import { useMemo, useState } from "react";
 
 type Props = {
@@ -636,6 +637,8 @@ export function ResidentialPricingStudio({
             />
           </div>
         </div>
+
+        <ResidentialTrackComparePanel config={config} onChange={onChange} />
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200/80 bg-slate-50/80 px-4 py-3 dark:border-white/10 dark:bg-white/[0.02] sm:px-5">

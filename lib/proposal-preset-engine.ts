@@ -95,7 +95,7 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
       "customer_documents_required",
       "amc_maintenance",
     ],
-    optional_blocks: [],
+    optional_blocks: ["dcr_comparison_card"],
   },
 
   commercial_executive: {

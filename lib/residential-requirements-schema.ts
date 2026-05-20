@@ -6,6 +6,7 @@
 import { z } from "zod";
 import { PANEL_CATALOG } from "@/lib/commercial-panel-catalog";
 import { computeGrossSystemCostInr } from "@/lib/solar-engine";
+import { defaultResidentialTrackCompare } from "@/lib/residential-track-compare";
 
 export const residentialRoofTypeSchema = z.enum(["flat", "slope", "mixed", "unknown"]);
 export const residentialBudgetRangeSchema = z.enum(["economy", "balanced", "premium"]);
@@ -61,6 +62,19 @@ export const residentialBrandOptionSchema = z.object({
 
 export const residentialWireBrandSchema = z.enum(["havells", "polycab"]);
 
+/** One row: same kW compared across Non-DCR vs DCR gross system cost. */
+export const residentialTrackCompareTierSchema = z.object({
+  kw: z.number().min(1).max(100),
+  nonDcrGrossInr: z.number().min(0),
+  dcrGrossInr: z.number().min(0),
+});
+
+export const residentialTrackCompareSchema = z.object({
+  enabled: z.boolean().default(false),
+  tiers: z.array(residentialTrackCompareTierSchema).max(8).optional(),
+  showPolicyNote: z.boolean().default(true),
+});
+
 export const residentialPricingSchema = z.object({
   kwTiers: z.array(residentialKwTierSchema).max(24).optional(),
   panelTechnology: z.string().max(80).optional(),
@@ -84,6 +98,8 @@ export const residentialProposalConfigSchema = z.object({
   panelBrandOptions: z.array(residentialBrandOptionSchema).max(3).optional(),
   /** Up to 2 inverter brands */
   inverterBrandOptions: z.array(residentialBrandOptionSchema).max(2).optional(),
+  /** Side-by-side Non-DCR vs DCR gross prices (shared kW rows) for web proposal */
+  trackCompare: residentialTrackCompareSchema.optional(),
   notes: z.string().max(600).optional(),
   /** Builder path marker */
   inputMode: z.literal("requirement").optional(),
@@ -96,6 +112,8 @@ export type ResidentialKwTier = z.infer<typeof residentialKwTierSchema>;
 export type ResidentialDiscount = z.infer<typeof residentialDiscountSchema>;
 export type ResidentialBrandOption = z.infer<typeof residentialBrandOptionSchema>;
 export type ResidentialWireBrand = z.infer<typeof residentialWireBrandSchema>;
+export type ResidentialTrackCompareTier = z.infer<typeof residentialTrackCompareTierSchema>;
+export type ResidentialTrackCompare = z.infer<typeof residentialTrackCompareSchema>;
 
 /** Default kW → gross price table for residential requirement proposals. */
 export function defaultResidentialKwTiers(): ResidentialKwTier[] {
@@ -151,6 +169,7 @@ export function defaultResidentialConfig(plantKw = 5): ResidentialProposalConfig
       { brand: "Growatt" },
       { brand: "Deye" },
     ],
+    trackCompare: defaultResidentialTrackCompare(false),
   };
 }
 

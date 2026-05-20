@@ -48,6 +48,7 @@ import { profileFieldOrDash, type EmiRow } from "@/lib/proposal-deck-helpers";
 import { hindiHonoredDisplayName } from "@/lib/roman-name-to-devanagari";
 import { resolvedCompanyProfileForLang } from "@/lib/proposal-company-resolve";
 import { PROPOSAL_PLATFORM_CREDIT } from "@/lib/platform-branding";
+import { ResidentialTrackCompareSection } from "@/components/proposal/blocks/residential/block-residential-track-compare";
 import {
   DEFAULT_EXPERTISE_CARD_IMAGES,
   expertiseCategoriesCopy,
@@ -216,6 +217,8 @@ type ProposalViewProps = {
   showSurveyWorkflowSection?: boolean;
   /** When false, hide bill audit + economics pages and show system-requirement page instead. */
   billAuditBacked?: boolean;
+  /** Residential requirement config (DCR vs Non-DCR table, etc.) */
+  residentialConfig?: import("@/lib/residential-proposal-config").ResidentialProposalConfig | null;
 };
 
 const inr = (v: number) => `₹${Math.max(0, Math.round(v)).toLocaleString("en-IN")}`;
@@ -2479,7 +2482,8 @@ export default function ProposalView({
   siteImages,
   installerLogoUrl,
   showSurveyWorkflowSection = false,
-  billAuditBacked = true
+  billAuditBacked = true,
+  residentialConfig = null
 }: ProposalViewProps) {
   const [downloading, setDownloading] = useState(false);
   const [lang, setLang] = useState<ProposalLang>(summary.lang ?? "en");
@@ -2693,6 +2697,20 @@ export default function ProposalView({
           <JourneyBridge text={journeyBridge(lang, "afterRequirement")} lang={lang} />
         </>
       )}
+
+      {residentialConfig?.trackCompare?.enabled ? (
+        <>
+          <div className="proposal-page" data-page="dcr-comparison">
+            <ResidentialTrackCompareSection
+              lang={lang}
+              darkMode={darkMode}
+              trackCompare={residentialConfig.trackCompare}
+              highlightPlantKw={residentialConfig.solar.plantCapacityKw}
+            />
+          </div>
+          <JourneyBridge text={journeyBridge(lang, "afterRequirement")} lang={lang} />
+        </>
+      ) : null}
 
       {/* PAGE 5 — ENVIRONMENT (Carbon offset + tree-planting equivalence) */}
       <div className="proposal-page" data-page="environment">

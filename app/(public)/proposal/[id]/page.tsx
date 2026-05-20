@@ -7,6 +7,7 @@ import { getProposalPricingByProposalId } from "@/lib/proposal-pricing-store";
 import { getProposalById, trackProposalView } from "@/lib/proposals-store";
 import { isProposalBillAuditBacked } from "@/lib/proposal-bill-audit-eligibility";
 import { summarizeProposalDeck } from "@/lib/proposal-ppt";
+import { parseResidentialConfig } from "@/lib/residential-proposal-config";
 import ProposalView from "./proposal-view";
 import CommercialProposalView from "@/components/proposal/commercial-proposal-view";
 
@@ -82,12 +83,14 @@ export default async function PublicProposalPage({ params }: PageProps) {
   const surveyStatus = await getLeadSurveyStatus(leadId);
   const showSurveyWorkflowSection = isLeadSurveyCompleteForProposal(surveyStatus);
   const billAuditBacked = isProposalBillAuditBacked(mergedInput);
+  const residentialConfig = parseResidentialConfig(mergedInput.residentialConfig);
 
   return (
     <ProposalView
       id={id}
       summary={liveSummary}
       billAuditBacked={billAuditBacked}
+      residentialConfig={residentialConfig}
       installer={installerProps}
       customerName={proposal.customer_name}
       generatedAt={proposal.generated_at}

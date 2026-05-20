@@ -11,6 +11,7 @@ import type { ProposalDeckSummary } from "@/lib/proposal-ppt";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import type { ProposalDict, ProposalLang } from "@/lib/proposal-i18n";
 import type { CommercialProposalConfig } from "@/lib/commercial-proposal-config";
+import type { ResidentialProposalConfig } from "@/lib/residential-proposal-config";
 import type { ProposalPresetId, StoryVariant } from "@/lib/proposal-preset-engine";
 
 export type BlockRenderContext = {
@@ -63,6 +64,8 @@ export type BlockRenderContext = {
 
   /** C&I configuration — panel, DCR, scenarios, financing */
   commercialConfig?: CommercialProposalConfig | null;
+  /** Residential requirement config — track compare, pricing, solar */
+  residentialConfig?: ResidentialProposalConfig | null;
 };
 
 // ─── Eligibility context (subset used by the registry) ───────────────────────

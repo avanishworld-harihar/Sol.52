@@ -73,6 +73,9 @@ const billBacked: BlockEligibilityFn = ({ billAuditBacked }) => billAuditBacked;
 const noBill: BlockEligibilityFn = ({ billAuditBacked, presetId }) =>
   !billAuditBacked || presetId === "commercial_executive";
 const commercialOnly: BlockEligibilityFn = ({ presetId }) => presetId === "commercial_executive";
+/** DCR comparison — commercial default; residential when trackCompare is enabled in layout. */
+const dcrComparisonEligible: BlockEligibilityFn = ({ presetId }) =>
+  presetId === "commercial_executive" || presetId === "residential_smart";
 const surveyOnly: BlockEligibilityFn = ({ showSurveySection }) => Boolean(showSurveySection);
 
 // ─── Registry ─────────────────────────────────────────────────────────────────
@@ -236,7 +239,7 @@ export const WEB_RENDERER_REGISTRY: Partial<Record<ProposalBlockId, WebBlockMeta
   dcr_comparison_card: {
     pageDataAttr: "dcr-comparison",
     bridgeKey: "afterRequirement",
-    eligibility: commercialOnly,
+    eligibility: dcrComparisonEligible,
     renderKey: "dcr_comparison",
   },
 

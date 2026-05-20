@@ -247,7 +247,7 @@ export const PROPOSAL_BLOCK_REGISTRY: Record<ProposalBlockId, ProposalBlockMeta>
     labelKey: "proposal_block_dcr_comparison",
     group: "commercial",
     defaultEnabled: true,
-    preset_affinity: ["commercial_executive"],
+    preset_affinity: ["commercial_executive", "residential_smart"],
   },
 
   capacity_scenarios_card: {
