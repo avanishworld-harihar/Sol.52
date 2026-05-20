@@ -45,6 +45,7 @@ export type ProposalDict = {
   "req.monthlyGen": string;
   "req.specPanels": string;
   "req.specInverter": string;
+  "req.specWire": string;
   "req.financialTitle": string;
   "slide.environment.kicker": string;
   "slide.environment.title": string;
@@ -244,6 +245,7 @@ const EN: ProposalDict = {
   "req.monthlyGen": "Typical monthly generation",
   "req.specPanels": "PV modules",
   "req.specInverter": "Inverter class",
+  "req.specWire": "DC / AC cabling",
   "req.financialTitle": "Commercial snapshot",
   "slide.environment.kicker": "Your Green Legacy",
   "slide.environment.title": "Carbon You'll Save Forever",
@@ -420,6 +422,7 @@ const HI: ProposalDict = {
   "req.monthlyGen": "औसत मासिक उत्पादन",
   "req.specPanels": "सोलर पैनल",
   "req.specInverter": "इन्वर्टर",
+  "req.specWire": "DC / AC वायर",
   "req.financialTitle": "वाणिज्यिक सारांश",
   "slide.environment.kicker": "आपकी हरित विरासत",
   "slide.environment.title": "आपके द्वारा बचाया जाने वाला कार्बन",

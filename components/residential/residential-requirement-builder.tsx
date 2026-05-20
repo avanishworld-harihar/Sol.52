@@ -144,8 +144,8 @@ export function ResidentialRequirementBuilder({ config, onChange, netCostInr, an
       </section>
 
       <p className="rounded-lg border border-slate-200/80 bg-slate-50/80 px-3 py-2 text-[11px] text-slate-600 dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-400">
-        DCR / Non-DCR, panel &amp; inverter brands, kW pricing, wire, and subsidy are configured in{" "}
-        <strong className="text-slate-800 dark:text-slate-200">Pricing &amp; system catalog</strong> below — synced to your web proposal.
+        Set module wattage in <strong className="text-slate-800 dark:text-slate-200">Pricing &amp; system catalog</strong> — panel count
+        updates automatically. Pick 2–3 panel brands, 2 inverters, and 2 wire brands for the web proposal &amp; BOM.
       </p>
 
       {/* Roof + budget */}

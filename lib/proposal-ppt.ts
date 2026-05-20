@@ -29,10 +29,12 @@ import {
 } from "@/lib/proposal-deck-helpers";
 import {
   buildResidentialBomFromConfig,
+  inverterBrandsLabel,
   isResidentialRequirementInput,
   residentialAnnualGenerationUnits,
   residentialGrossCostInr,
   residentialNetCostInr,
+  wireBrandsLabel,
 } from "@/lib/residential-deck-helpers";
 import { quoteResidentialSolar } from "@/lib/residential-solar-engine";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
@@ -508,7 +510,13 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
         resCfg.subsidy?.estimateInr ??
         computePmSuryaGharSubsidy(deckSystemKw)
     );
-    brands = pickBrandSet({ preferredPanelBrand: input.panelBrand, systemKw: deckSystemKw });
+    const fallbackBrands = pickBrandSet({ preferredPanelBrand: input.panelBrand, systemKw: deckSystemKw });
+    brands = {
+      ...fallbackBrands,
+      panel: fallbackBrands.panel,
+      inverter: inverterBrandsLabel(resCfg.inverterBrandOptions, fallbackBrands.inverter),
+      cables: wireBrandsLabel(resCfg.pricing, fallbackBrands.cables),
+    };
     defaultBom = buildResidentialBomFromConfig(resCfg, amcSelectedYears);
   }
 

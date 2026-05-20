@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Banknote,
   Building2,
+  Cable,
   CheckCircle2,
   Compass,
   Download,
@@ -920,8 +921,9 @@ export function SystemRequirementSection({
   lang: ProposalLang;
 }) {
   const monthlyGen = Math.round(summary.annualGen / 12);
-  const inverterLabel = summary.brands?.inverter ?? summary.panelBrand ?? "—";
-  const panelLabel = summary.brands?.panel ?? summary.panelBrand ?? "—";
+  const inverterLabel = summary.brands?.inverter ?? "—";
+  const panelLabel = summary.panelBrand ?? summary.brands?.panel ?? "—";
+  const wireLabel = summary.brands?.cables ?? "—";
   const surplus = Math.max(0, summary.annualGen - summary.annualUse);
 
   return (
@@ -988,6 +990,13 @@ export function SystemRequirementSection({
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{D["req.specInverter"]}</p>
               <p className="mt-1 text-base font-bold text-slate-900 dark:text-slate-50">{inverterLabel}</p>
+            </div>
+          </div>
+          <div className="mt-4 flex items-start gap-3 border-t border-slate-100 pt-4 dark:border-white/10">
+            <Cable className="mt-0.5 h-5 w-5 shrink-0 text-slate-600" aria-hidden />
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{D["req.specWire"]}</p>
+              <p className="mt-1 text-base font-bold text-slate-900 dark:text-slate-50">{wireLabel}</p>
             </div>
           </div>
         </ProposalPanel>

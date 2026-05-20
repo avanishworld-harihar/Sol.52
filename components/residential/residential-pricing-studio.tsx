@@ -10,11 +10,17 @@ import {
   RESIDENTIAL_BRAND_PRESETS,
   RESIDENTIAL_INVERTER_PRESETS,
   RESIDENTIAL_WATT_PRESETS,
+  RESIDENTIAL_WIRE_PRESETS,
   type ResidentialBrandOption,
   type ResidentialKwTier,
   type ResidentialProposalConfig,
+  type ResidentialWireBrand,
 } from "@/lib/residential-requirements-schema";
-import { residentialCostBreakdown } from "@/lib/residential-deck-helpers";
+import {
+  residentialCostBreakdown,
+  wireBrandDisplayName,
+} from "@/lib/residential-deck-helpers";
+import { moduleCountForResidential, quoteResidentialSolar } from "@/lib/residential-solar-engine";
 import { computePmSuryaGharSubsidy } from "@/lib/proposal-deck-helpers";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
 import { cn } from "@/lib/utils";
@@ -23,6 +29,7 @@ import {
   Check,
   Cpu,
   IndianRupee,
+  Layers,
   Plus,
   Save,
   Sun,
@@ -88,6 +95,13 @@ export function ResidentialPricingStudio({
   const discount = pricing.discount ?? { enabled: false, type: "percent" as const, value: 0 };
   const panelOpts = config.panelBrandOptions ?? [];
   const invOpts = config.inverterBrandOptions ?? [];
+  const wireOpts = pricing.wireBrandOptions?.length
+    ? pricing.wireBrandOptions
+    : pricing.wireBrand
+      ? [pricing.wireBrand]
+      : (["polycab"] as ResidentialWireBrand[]);
+  const panelQuote = useMemo(() => quoteResidentialSolar(solar), [solar]);
+  const panelCount = panelQuote.moduleCount;
   const costs = useMemo(() => residentialCostBreakdown(config), [config]);
   const defaultSubsidy = computePmSuryaGharSubsidy(solar.plantCapacityKw);
 
@@ -129,23 +143,46 @@ export function ResidentialPricingStudio({
     });
   }
 
-  function applyBrandPreset(brandId: string, brand: string, watt: number) {
-    const track = solar.panelTrack === "dcr" ? "DCR" : "NON_DCR";
-    const hit = PANEL_CATALOG.find((e) => e.brandId === brandId && e.watt === watt && e.panelType === track);
-    const nextSolar = {
-      brandId,
-      brand,
-      watt,
-      technology: hit?.technology ?? solar.technology,
-      ratePerWpInr: hit?.ratePerWpInr ?? solar.ratePerWpInr,
-      moduleCountOverride: undefined,
-    };
-    const key = brandId;
-    let nextPanels = panelOpts;
-    if (!panelOpts.some((p) => (p.brandId ?? p.brand) === key)) {
-      nextPanels = toggleBrand(panelOpts, { brandId, brand }, 3);
+  function patchWireOptions(next: ResidentialWireBrand[]) {
+    const wireBrandOptions = next.slice(0, 2);
+    patchPricing({ wireBrandOptions, wireBrand: wireBrandOptions[0] ?? "polycab" });
+  }
+
+  function toggleWire(wire: ResidentialWireBrand) {
+    const cur = wireOpts;
+    if (cur.includes(wire)) {
+      patchWireOptions(cur.filter((w) => w !== wire));
+      return;
     }
-    patch({ panelBrandOptions: nextPanels, solar: { ...solar, ...nextSolar } });
+    if (cur.length >= 2) return;
+    patchWireOptions([...cur, wire]);
+  }
+
+  function togglePanelBrandPreset(brandId: string, brand: string) {
+    const key = brandId;
+    const next = toggleBrand(panelOpts, { brandId, brand }, 3);
+    const primary = next[0];
+    patch({
+      panelBrandOptions: next,
+      solar: primary
+        ? { ...solar, brand: primary.brand, brandId: primary.brandId }
+        : solar,
+    });
+  }
+
+  function applyWatt(watt: number) {
+    const w = Math.max(100, Math.min(900, Math.round(watt)));
+    const track = solar.panelTrack === "dcr" ? "DCR" : "NON_DCR";
+    const hit =
+      PANEL_CATALOG.find(
+        (e) => e.brandId === solar.brandId && e.watt === w && e.panelType === track
+      ) ?? PANEL_CATALOG.find((e) => e.watt === w && e.panelType === track);
+    patchSolar({
+      watt: w,
+      moduleCountOverride: undefined,
+      ratePerWpInr: hit?.ratePerWpInr ?? solar.ratePerWpInr,
+      technology: hit?.technology ?? solar.technology,
+    });
   }
 
   function updateTier(index: number, patchTier: Partial<ResidentialKwTier>) {
@@ -231,14 +268,18 @@ export function ResidentialPricingStudio({
       </div>
 
       <div className="space-y-8 p-4 sm:p-5">
-        {/* DCR */}
-        <div>
-          <SectionTitle icon={Sun} title="Panel category" hint="DCR is subsidy-friendly; Non-DCR for premium installs." />
-          <div className="flex gap-2">
+        {/* Plant sizing — editable watt drives panel count */}
+        <div className="rounded-2xl border border-indigo-200/80 bg-indigo-50/30 p-4 dark:border-indigo-500/30 dark:bg-indigo-950/20">
+          <SectionTitle
+            icon={Layers}
+            title="Solar plant sizing"
+            hint="Panel count = plant kW × 1000 ÷ module wattage (rounded up)."
+          />
+          <div className="mb-3 flex gap-2">
             {(
               [
-                { id: "dcr" as const, label: "DCR", sub: "Subsidy track" },
-                { id: "non_dcr" as const, label: "Non-DCR", sub: "Open category" },
+                { id: "dcr" as const, label: "DCR" },
+                { id: "non_dcr" as const, label: "Non-DCR" },
               ] as const
             ).map((t) => (
               <button
@@ -246,216 +287,82 @@ export function ResidentialPricingStudio({
                 type="button"
                 onClick={() => applyTrack(t.id)}
                 className={cn(
-                  "flex-1 rounded-xl border px-3 py-2.5 text-left transition",
+                  "rounded-lg border px-4 py-2 text-xs font-bold",
                   solar.panelTrack === t.id
-                    ? "border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900"
-                    : "border-slate-200 bg-white hover:border-slate-300 dark:border-white/15 dark:bg-white/5"
+                    ? "border-slate-900 bg-slate-900 text-white"
+                    : "border-slate-200 bg-white dark:border-white/15"
                 )}
               >
-                <span className="block text-sm font-bold">{t.label}</span>
-                <span className="text-[10px] opacity-80">{t.sub}</span>
+                {t.label}
               </button>
             ))}
           </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {RESIDENTIAL_WATT_PRESETS.map((w) => (
-              <button
-                key={w}
-                type="button"
-                onClick={() => {
-                  const track = solar.panelTrack === "dcr" ? "DCR" : "NON_DCR";
-                  const hit =
-                    PANEL_CATALOG.find(
-                      (e) => e.brandId === solar.brandId && e.watt === w && e.panelType === track
-                    ) ?? PANEL_CATALOG.find((e) => e.watt === w && e.panelType === track);
-                  patchSolar({
-                    watt: w,
-                    moduleCountOverride: undefined,
-                    ratePerWpInr: hit?.ratePerWpInr ?? solar.ratePerWpInr,
-                    technology: hit?.technology ?? solar.technology,
-                  });
-                }}
-                className={cn(
-                  "rounded-lg border px-2.5 py-1 text-xs font-semibold tabular-nums",
-                  solar.watt === w
-                    ? "border-slate-800 bg-slate-800 text-white"
-                    : "border-slate-200 text-slate-600 dark:border-white/15"
-                )}
-              >
-                {w} Wp
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Panel brands */}
-        <div>
-          <SectionTitle
-            icon={Sun}
-            title="Panel brands"
-            hint="Pick up to 3 — customer may receive any one on site. Tap to edit names."
-          />
-          <div className="flex flex-wrap gap-2">
-            {RESIDENTIAL_BRAND_PRESETS.map((b) => {
-              const active = panelOpts.some((p) => (p.brandId ?? p.brand) === b.brandId);
-              return (
-                <button
-                  key={b.brandId}
-                  type="button"
-                  onClick={() => applyBrandPreset(b.brandId, b.brand, b.watt)}
-                  className={cn(
-                    "rounded-lg border px-3 py-1.5 text-xs font-semibold transition",
-                    active || solar.brandId === b.brandId
-                      ? "border-amber-500 bg-amber-50 text-amber-950 dark:bg-amber-950/40 dark:text-amber-100"
-                      : "border-slate-200 text-slate-700 dark:border-white/15"
-                  )}
-                >
-                  {b.brand}
-                </button>
-              );
-            })}
-            {panelOpts.length < 3 ? (
-              <button
-                type="button"
-                onClick={() => patchPanelOptions([...panelOpts, { brand: "Custom brand" }])}
-                className="inline-flex items-center gap-1 rounded-lg border border-dashed border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600"
-              >
-                <Plus className="h-3 w-3" /> Add
-              </button>
-            ) : null}
-          </div>
-          {panelOpts.length > 0 ? (
-            <ul className="mt-3 space-y-2">
-              {panelOpts.map((p, i) => (
-                <li key={`p-${i}`} className="flex items-end gap-2">
-                  <FloatingLabelInput
-                    label={`Panel brand ${i + 1}`}
-                    value={p.brand}
-                    onChange={(e) => {
-                      const next = [...panelOpts];
-                      next[i] = { ...p, brand: e.target.value };
-                      patchPanelOptions(next);
-                    }}
-                    className="h-10 flex-1 rounded-lg text-sm font-semibold"
-                  />
-                  <button
-                    type="button"
-                    title="Remove"
-                    onClick={() => patchPanelOptions(panelOpts.filter((_, j) => j !== i))}
-                    className="mb-0.5 flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </div>
-
-        {/* Inverter */}
-        <div>
-          <SectionTitle icon={Cpu} title="Inverter brands" hint="Up to 2 options shown on proposal BOM." />
-          <div className="flex flex-wrap gap-2">
-            {RESIDENTIAL_INVERTER_PRESETS.map((name) => {
-              const active = invOpts.some((p) => p.brand === name);
-              return (
-                <button
-                  key={name}
-                  type="button"
-                  onClick={() =>
-                    patch({
-                      inverterBrandOptions: toggleBrand(invOpts, { brand: name }, 2),
-                    })
-                  }
-                  className={cn(
-                    "rounded-lg border px-3 py-1.5 text-xs font-semibold",
-                    active
-                      ? "border-indigo-500 bg-indigo-600 text-white"
-                      : "border-slate-200 text-slate-700 dark:border-white/15"
-                  )}
-                >
-                  {name}
-                </button>
-              );
-            })}
-            {invOpts.length < 2 ? (
-              <button
-                type="button"
-                onClick={() => patch({ inverterBrandOptions: [...invOpts, { brand: "Custom inverter" }] })}
-                className="inline-flex items-center gap-1 rounded-lg border border-dashed border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600"
-              >
-                <Plus className="h-3 w-3" /> Add
-              </button>
-            ) : null}
-          </div>
-          {invOpts.length > 0 ? (
-            <ul className="mt-3 space-y-2">
-              {invOpts.map((p, i) => (
-                <li key={`inv-${i}`} className="flex items-end gap-2">
-                  <FloatingLabelInput
-                    label={`Inverter ${i + 1}`}
-                    value={p.brand}
-                    onChange={(e) => {
-                      const next = [...invOpts];
-                      next[i] = { brand: e.target.value };
-                      patch({ inverterBrandOptions: next });
-                    }}
-                    className="h-10 flex-1 rounded-lg text-sm font-semibold"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => patch({ inverterBrandOptions: invOpts.filter((_, j) => j !== i) })}
-                    className="mb-0.5 flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </div>
-
-        {/* Wire + technology */}
-        <div className="grid gap-6 sm:grid-cols-2">
-          <div>
-            <SectionTitle icon={Cable} title="DC / AC wire" />
-            <div className="flex gap-2">
-              {(["polycab", "havells"] as const).map((w) => (
+          <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+            <FloatingLabelNumericInput
+              label="Module wattage (Wp)"
+              integer
+              value={solar.watt}
+              onValueChange={(n) => applyWatt(n ?? solar.watt)}
+              className="h-11 rounded-xl text-sm font-bold"
+            />
+            <div className="flex flex-wrap gap-2 sm:col-span-2 sm:justify-end">
+              {RESIDENTIAL_WATT_PRESETS.map((w) => (
                 <button
                   key={w}
                   type="button"
-                  onClick={() => patchPricing({ wireBrand: w })}
+                  onClick={() => applyWatt(w)}
                   className={cn(
-                    "flex-1 rounded-xl border py-2.5 text-sm font-bold capitalize",
-                    (pricing.wireBrand ?? "polycab") === w
-                      ? "border-slate-900 bg-slate-900 text-white"
-                      : "border-slate-200 bg-white dark:border-white/15 dark:bg-white/5"
+                    "rounded-lg border px-2.5 py-1.5 text-xs font-semibold tabular-nums",
+                    solar.watt === w
+                      ? "border-indigo-600 bg-indigo-600 text-white"
+                      : "border-slate-200 text-slate-600"
                   )}
                 >
-                  {w}
+                  {w}W
                 </button>
               ))}
             </div>
           </div>
-          <div>
-            <SectionTitle icon={Sun} title="Panel technology" />
-            <select
-              value={pricing.panelTechnology ?? solar.technology ?? ""}
-              onChange={(e) => {
-                const panelTechnology = e.target.value;
-                patchPricing({ panelTechnology });
-                patchSolar({ technology: panelTechnology || solar.technology });
-              }}
-              className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold dark:border-white/15 dark:bg-white/5"
-            >
-              <option value="">—</option>
-              {PANEL_TECHNOLOGY_OPTIONS.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
+          <div className="mt-4 grid grid-cols-3 gap-2 rounded-xl border border-indigo-200/60 bg-white/80 p-3 text-center dark:border-indigo-500/20 dark:bg-white/5">
+            <div>
+              <p className="text-[10px] font-bold uppercase text-slate-500">Plant</p>
+              <p className="text-lg font-bold tabular-nums text-slate-900 dark:text-white">{solar.plantCapacityKw} kW</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase text-slate-500">Panels</p>
+              <p className="text-lg font-bold tabular-nums text-indigo-800 dark:text-indigo-200">
+                {panelCount} nos
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase text-slate-500">Installed DC</p>
+              <p className="text-lg font-bold tabular-nums text-slate-900 dark:text-white">{panelQuote.actualKw} kW</p>
+            </div>
           </div>
+          <p className="mt-2 text-[11px] text-slate-600 dark:text-slate-400">
+            Formula: ceil({solar.plantCapacityKw} × 1000 ÷ {solar.watt}) = <strong>{panelCount} panels</strong> — shown on
+            web proposal &amp; BOM spec line.
+          </p>
+        </div>
+
+        <div>
+          <SectionTitle icon={Sun} title="Panel technology" />
+          <select
+            value={pricing.panelTechnology ?? solar.technology ?? ""}
+            onChange={(e) => {
+              const panelTechnology = e.target.value;
+              patchPricing({ panelTechnology });
+              patchSolar({ technology: panelTechnology || solar.technology });
+            }}
+            className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold dark:border-white/15 dark:bg-white/5"
+          >
+            <option value="">—</option>
+            {PANEL_TECHNOLOGY_OPTIONS.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* kW tiers */}
@@ -515,6 +422,163 @@ export function ResidentialPricingStudio({
           >
             <Plus className="h-3.5 w-3.5" /> Add kW tier
           </Button>
+        </div>
+
+        {/* Equipment catalog — proposal + BOM brands */}
+        <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/60 p-4 dark:border-white/15 dark:bg-white/[0.02] sm:p-5">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Proposal &amp; BOM</p>
+          <h4 className="mt-1 text-base font-bold text-slate-900 dark:text-white">Equipment brands on customer link</h4>
+          <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
+            Pick panel (2–3), inverter (2), and wire (2). Edited names appear on the system-design page and BOM brand column.
+          </p>
+
+          <div className="mt-6 space-y-6">
+            <div>
+              <SectionTitle icon={Sun} title="Panel brands (2–3)" hint="Any one may be supplied on site." />
+              <div className="flex flex-wrap gap-2">
+                {RESIDENTIAL_BRAND_PRESETS.map((b) => {
+                  const active = panelOpts.some((p) => (p.brandId ?? p.brand) === b.brandId);
+                  return (
+                    <button
+                      key={b.brandId}
+                      type="button"
+                      onClick={() => togglePanelBrandPreset(b.brandId, b.brand)}
+                      className={cn(
+                        "rounded-lg border px-3 py-1.5 text-xs font-semibold",
+                        active
+                          ? "border-amber-500 bg-amber-50 text-amber-950 dark:bg-amber-950/40"
+                          : "border-slate-200 text-slate-700 dark:border-white/15"
+                      )}
+                    >
+                      {b.brand}
+                    </button>
+                  );
+                })}
+                {panelOpts.length < 3 ? (
+                  <button
+                    type="button"
+                    onClick={() => patchPanelOptions([...panelOpts, { brand: "Custom panel" }])}
+                    className="inline-flex items-center gap-1 rounded-lg border border-dashed px-3 py-1.5 text-xs font-semibold text-slate-600"
+                  >
+                    <Plus className="h-3 w-3" /> Add
+                  </button>
+                ) : null}
+              </div>
+              {panelOpts.length > 0 ? (
+                <ul className="mt-3 space-y-2">
+                  {panelOpts.map((p, i) => (
+                    <li key={`p-${i}`} className="flex items-end gap-2">
+                      <FloatingLabelInput
+                        label={`Panel ${i + 1}`}
+                        value={p.brand}
+                        onChange={(e) => {
+                          const next = [...panelOpts];
+                          next[i] = { ...p, brand: e.target.value };
+                          patchPanelOptions(next);
+                        }}
+                        className="h-10 flex-1 rounded-lg text-sm font-semibold"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => patchPanelOptions(panelOpts.filter((_, j) => j !== i))}
+                        className="mb-0.5 flex h-10 w-10 items-center justify-center rounded-lg border text-slate-400 hover:text-rose-600"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+
+            <div>
+              <SectionTitle icon={Cpu} title="Inverter brands (2)" />
+              <div className="flex flex-wrap gap-2">
+                {RESIDENTIAL_INVERTER_PRESETS.map((name) => {
+                  const active = invOpts.some((p) => p.brand === name);
+                  return (
+                    <button
+                      key={name}
+                      type="button"
+                      onClick={() => patch({ inverterBrandOptions: toggleBrand(invOpts, { brand: name }, 2) })}
+                      className={cn(
+                        "rounded-lg border px-3 py-1.5 text-xs font-semibold",
+                        active
+                          ? "border-indigo-500 bg-indigo-600 text-white"
+                          : "border-slate-200 text-slate-700 dark:border-white/15"
+                      )}
+                    >
+                      {name}
+                    </button>
+                  );
+                })}
+                {invOpts.length < 2 ? (
+                  <button
+                    type="button"
+                    onClick={() => patch({ inverterBrandOptions: [...invOpts, { brand: "Custom inverter" }] })}
+                    className="inline-flex items-center gap-1 rounded-lg border border-dashed px-3 py-1.5 text-xs font-semibold text-slate-600"
+                  >
+                    <Plus className="h-3 w-3" /> Add
+                  </button>
+                ) : null}
+              </div>
+              {invOpts.length > 0 ? (
+                <ul className="mt-3 space-y-2">
+                  {invOpts.map((p, i) => (
+                    <li key={`inv-${i}`} className="flex items-end gap-2">
+                      <FloatingLabelInput
+                        label={`Inverter ${i + 1}`}
+                        value={p.brand}
+                        onChange={(e) => {
+                          const next = [...invOpts];
+                          next[i] = { brand: e.target.value };
+                          patch({ inverterBrandOptions: next });
+                        }}
+                        className="h-10 flex-1 rounded-lg text-sm font-semibold"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => patch({ inverterBrandOptions: invOpts.filter((_, j) => j !== i) })}
+                        className="mb-0.5 flex h-10 w-10 items-center justify-center rounded-lg border text-slate-400 hover:text-rose-600"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+
+            <div>
+              <SectionTitle icon={Cable} title="DC / AC wire (2)" hint="Shown on BOM cabling row." />
+              <div className="flex flex-wrap gap-2">
+                {RESIDENTIAL_WIRE_PRESETS.map((w) => {
+                  const active = wireOpts.includes(w);
+                  return (
+                    <button
+                      key={w}
+                      type="button"
+                      onClick={() => toggleWire(w)}
+                      className={cn(
+                        "rounded-lg border px-4 py-2 text-sm font-bold",
+                        active
+                          ? "border-slate-900 bg-slate-900 text-white"
+                          : "border-slate-200 bg-white dark:border-white/15"
+                      )}
+                    >
+                      {wireBrandDisplayName(w)}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-2 text-xs font-medium text-slate-600 dark:text-slate-400">
+                On proposal:{" "}
+                <span className="font-bold text-slate-900 dark:text-white">
+                  {wireOpts.map(wireBrandDisplayName).join(" / ") || "—"}
+                </span>
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Discount + subsidy override */}

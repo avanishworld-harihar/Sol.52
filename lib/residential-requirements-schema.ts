@@ -65,7 +65,10 @@ export const residentialPricingSchema = z.object({
   kwTiers: z.array(residentialKwTierSchema).max(24).optional(),
   panelTechnology: z.string().max(80).optional(),
   discount: residentialDiscountSchema.optional(),
-  wireBrand: residentialWireBrandSchema.default("polycab"),
+  /** Legacy primary wire; kept in sync with first entry of wireBrandOptions. */
+  wireBrand: residentialWireBrandSchema.optional(),
+  /** Up to 2 DC/AC wire brands on proposal & BOM. */
+  wireBrandOptions: z.array(residentialWireBrandSchema).max(2).optional(),
 });
 
 export const residentialProposalConfigSchema = z.object({
@@ -136,6 +139,7 @@ export function defaultResidentialConfig(plantKw = 5): ResidentialProposalConfig
       kwTiers: defaultResidentialKwTiers(),
       panelTechnology: "Mono PERC",
       wireBrand: "polycab",
+      wireBrandOptions: ["polycab", "havells"],
       discount: { enabled: false, type: "percent", value: 0 },
     },
     panelBrandOptions: [
@@ -167,3 +171,5 @@ export const RESIDENTIAL_INVERTER_PRESETS = [
 ] as const;
 
 export const RESIDENTIAL_WATT_PRESETS = [540, 550, 575, 625] as const;
+
+export const RESIDENTIAL_WIRE_PRESETS = ["polycab", "havells"] as const;

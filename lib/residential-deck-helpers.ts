@@ -96,18 +96,37 @@ export function residentialCostBreakdown(config: ResidentialProposalConfig): Res
   };
 }
 
-function wireBrandLabel(wire: ResidentialWireBrand | undefined): string {
+export function wireBrandDisplayName(wire: ResidentialWireBrand): string {
   return wire === "havells" ? "Havells" : "Polycab";
 }
 
-function panelBrandsLabel(opts: ResidentialBrandOption[] | undefined, fallback: string): string {
+export function resolveWireBrandOptions(
+  pricing: ResidentialProposalConfig["pricing"]
+): ResidentialWireBrand[] {
+  const fromList = pricing?.wireBrandOptions?.filter(Boolean).slice(0, 2) ?? [];
+  if (fromList.length > 0) return fromList;
+  if (pricing?.wireBrand) return [pricing.wireBrand];
+  return ["polycab"];
+}
+
+export function wireBrandsLabel(
+  pricing: ResidentialProposalConfig["pricing"],
+  fallback = "Polycab"
+): string {
+  const names = resolveWireBrandOptions(pricing).map(wireBrandDisplayName);
+  if (names.length === 0) return fallback;
+  if (names.length === 1) return names[0]!;
+  return `${names[0]} / ${names[1]}`;
+}
+
+export function panelBrandsLabel(opts: ResidentialBrandOption[] | undefined, fallback: string): string {
   const names = (opts ?? []).map((o) => o.brand.trim()).filter(Boolean);
   if (names.length === 0) return fallback;
   if (names.length === 1) return names[0]!;
   return `${names.slice(0, -1).join(", ")} or ${names[names.length - 1]}`;
 }
 
-function inverterBrandsLabel(opts: ResidentialBrandOption[] | undefined, fallback: string): string {
+export function inverterBrandsLabel(opts: ResidentialBrandOption[] | undefined, fallback: string): string {
   const names = (opts ?? []).map((o) => o.brand.trim()).filter(Boolean);
   if (names.length === 0) return fallback;
   return names.join(" / ");
@@ -129,7 +148,7 @@ export function buildResidentialBomFromConfig(
     config.inverterBrandOptions,
     defaultBrands.inverter
   );
-  const wire = wireBrandLabel(config.pricing?.wireBrand);
+  const wire = wireBrandsLabel(config.pricing);
 
   const base = buildBom({
     systemKw: kw,
