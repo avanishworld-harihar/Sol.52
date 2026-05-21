@@ -4,7 +4,6 @@ import { ProposalCommercialSnapshotBar } from "@/components/proposals/proposal-c
 import { ProposalDetailActionsSheet } from "@/components/proposals/proposal-detail-actions-sheet";
 import { ProposalDetailSection } from "@/components/proposals/proposal-detail-section";
 import { ProposalHubHeader } from "@/components/proposals/proposal-hub-header";
-import { ProposalModulesStrip } from "@/components/proposals/proposal-modules-strip";
 import { CommercialBomWorkspace } from "@/components/commercial/bom/commercial-bom-workspace";
 import { ResidentialBomWorkspace } from "@/components/residential/bom/residential-bom-workspace";
 import { ProposalReviewSheet } from "@/components/commercial/proposal-review-sheet";
@@ -167,10 +166,6 @@ export function ProposalManageClient({
   const onPricingSaved = useCallback((row: ProposalPricingRow) => {
     setPricing(row);
     setPptInput((prev) => mergeProposalPricingIntoPptInput(prev, row));
-  }, []);
-
-  const onModulesSaved = useCallback((layout: ProposalTemplateV1) => {
-    setPptInput((prev) => ({ ...prev, proposalLayout: layout }));
   }, []);
 
   async function onStatusChange(next: ProposalStatus) {
@@ -402,10 +397,6 @@ export function ProposalManageClient({
             chrome="workspace"
           />
         ) : null}
-      </ProposalDetailSection>
-
-      <ProposalDetailSection id="sections" variant="workspace" title={t("proposals_section_modules")} subtitle={t("proposals_section_modulesSub")}>
-        <ProposalModulesStrip proposalId={proposalId} initialLayout={proposalLayout} onSaved={onModulesSaved} tone="embedded" />
       </ProposalDetailSection>
 
       <ProposalDetailSection id="attachments" variant="workspace" title={t("proposals_section_attachments")} subtitle={t("proposals_section_attachmentsSub")}>

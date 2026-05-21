@@ -1,0 +1,63 @@
+# Sol.52 — Cursor ignore (AI context + @-mentions)
+# Syntax: .gitignore rules. Cursor also respects .gitignore in this repo.
+
+# --- Dependencies & package caches ---
+node_modules/
+.npm-cache-temp/
+.pnp/
+.pnp.js
+
+# --- Next.js / build output ---
+.next/
+out/
+dist/
+build/
+.turbo/
+.vercel/
+
+# --- Test & coverage artifacts ---
+coverage/
+**/__snapshots__/
+**/*.snap
+.nyc_output/
+
+# --- Logs & debug ---
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Toolchain / incremental ---
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+.eslintcache
+.tmp-*.css
+
+# --- PWA generated (see .gitignore) ---
+public/sw.js
+public/sw.js.map
+public/workbox-*.js
+public/workbox-*.js.map
+public/swe-worker-*.js
+public/swe-worker-*.js.map
+
+# --- Secrets (never send to AI) ---
+.env
+.env.*
+!.env.example
+!.env*.example
+
+# --- Large binaries & generated media (rarely edited as code) ---
+**/*.pdf
+**/*.pptx
+**/*.zip
+**/*.min.js
+**/*.map
+public/proposal-expertise/
+
+# --- Lockfiles (large, low signal for edits) ---
+package-lock.json
+pnpm-lock.yaml
+yarn.lock

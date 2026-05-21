@@ -5,7 +5,6 @@
  *
  * Tab layout:
  *   Overview  → Deal health, intel, snapshot bar, ROI, quick actions
- *   Proposal  → Section layout editor (ProposalModulesStrip)
  *   Pricing   → Full BOM table (ProposalPricingConfigurator)
  *   Activity  → Append-only approval event timeline
  *   Files     → Attachments placeholder
@@ -26,7 +25,6 @@ import {
   BadgeCheck,
   Coins,
   CreditCard,
-  FileText,
   FolderOpen,
   Layers,
   LayoutGrid,
@@ -40,7 +38,6 @@ import {
 import { ProposalDetailActionsSheet } from "@/components/proposals/proposal-detail-actions-sheet";
 import { ProposalDetailSection } from "@/components/proposals/proposal-detail-section";
 import { ProposalHubHeader } from "@/components/proposals/proposal-hub-header";
-import { ProposalModulesStrip } from "@/components/proposals/proposal-modules-strip";
 import { ProposalPricingConfigurator, type ProposalPricingConfiguratorLabels } from "@/components/proposals/proposal-pricing-configurator";
 import { WorkspaceOverviewTab } from "@/components/workspace/tabs/workspace-overview-tab";
 import { WorkspaceActivityTab } from "@/components/workspace/tabs/workspace-activity-tab";
@@ -76,7 +73,6 @@ import { RequirementSetupBanner } from "@/components/workspace/commercial/requir
 // Note: "marketplace" tab is intentionally the last — it is disabled (P10 deferred).
 type TabId =
   | "overview"
-  | "proposal"
   | "commercial_config"
   | "panel_pricing"
   | "capacity"
@@ -98,7 +94,6 @@ function useTabs(isCommercial: boolean): TabConfig[] {
   return useMemo(() => {
     const core: TabConfig[] = [
       { id: "overview", label: "Overview", icon: <LayoutGrid className="h-3.5 w-3.5" /> },
-      { id: "proposal", label: "Proposal", icon: <FileText className="h-3.5 w-3.5" /> },
     ];
     if (isCommercial) {
       core.push(
@@ -346,10 +341,6 @@ export function WorkspaceDealClient({
     setPptInput((prev) => mergeProposalPricingIntoPptInput(prev, row));
   }, []);
 
-  const onModulesSaved = useCallback((layout: ProposalTemplateV1) => {
-    setPptInput((prev) => ({ ...prev, proposalLayout: layout }));
-  }, []);
-
   const commercialConfig = useMemo(
     () =>
       parseCommercialConfig(pptInput.commercialConfig) ??
@@ -485,35 +476,6 @@ export function WorkspaceDealClient({
               onStatusChange={onStatusChange}
               onMoreOpen={() => setMoreOpen(true)}
             />
-          </TabPanel>
-
-          {/* Proposal — section editor */}
-          <TabPanel id="proposal" active={activeTab}>
-            <div className="space-y-5">
-              <ProposalDetailSection
-                id="sections"
-                variant="workspace"
-                title={t("proposals_section_modules")}
-                subtitle={t("proposals_section_modulesSub")}
-              >
-                <ProposalModulesStrip
-                  proposalId={proposalId}
-                  initialLayout={proposalLayout}
-                  onSaved={onModulesSaved}
-                  tone="embedded"
-                />
-              </ProposalDetailSection>
-              <ProposalDetailSection
-                id="notes"
-                variant="workspace"
-                title={t("proposals_section_notes")}
-                subtitle={t("proposals_section_notesSub")}
-              >
-                <p className="rounded-lg bg-slate-50 px-4 py-8 text-center text-sm text-slate-500 dark:bg-white/[0.03] dark:text-slate-400">
-                  {t("proposals_notesPlaceholder")}
-                </p>
-              </ProposalDetailSection>
-            </div>
           </TabPanel>
 
           {isCommercial && (
