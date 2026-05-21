@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { FloatingLabelInput, FloatingLabelNumericInput } from "@/components/ui/floating-label-input";
 import { PANEL_CATALOG, PANEL_TECHNOLOGY_OPTIONS } from "@/lib/commercial-panel-catalog";
 import {
