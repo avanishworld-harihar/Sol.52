@@ -1,0 +1,30 @@
+# Sol.52 — indexing-only exclusions (semantic search / codebase index)
+# Files here can still be opened; they are omitted from the index.
+
+node_modules/
+.npm-cache-temp/
+.next/
+out/
+dist/
+build/
+.turbo/
+.vercel/
+coverage/
+logs/
+*.log
+
+public/sw.js
+public/sw.js.map
+public/workbox-*.js
+public/workbox-*.js.map
+public/swe-worker-*.js
+public/swe-worker-*.js.map
+
+**/__snapshots__/
+**/*.snap
+
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+public/proposal-expertise/

@@ -1,0 +1,82 @@
+{
+  // File system: skip heavy dirs (watchers + search + explorer noise)
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+    "**/.next/**": true,
+    "**/dist/**": true,
+    "**/out/**": true,
+    "**/coverage/**": true,
+    "**/.npm-cache-temp/**": true,
+    "**/.turbo/**": true,
+    "**/.vercel/**": true,
+    "**/logs/**": true,
+    "**/*.log": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.next": true,
+    "**/dist": true,
+    "**/out": true,
+    "**/coverage": true,
+    "**/.npm-cache-temp": true,
+    "**/.turbo": true,
+    "**/.vercel": true,
+    "**/logs": true,
+    "**/*.log": true,
+    "**/package-lock.json": true
+  },
+  "files.exclude": {
+    "**/.next": true,
+    "**/coverage": true,
+    "**/.npm-cache-temp": true,
+    "**/.turbo": true
+  },
+
+  // TypeScript: cap memory, fewer background fetches
+  "typescript.tsserver.maxTsServerMemory": 2048,
+  "typescript.disableAutomaticTypeAcquisition": true,
+  "typescript.tsserver.experimental.enableProjectDiagnostics": false,
+  "typescript.preferences.includePackageJsonAutoImports": "off",
+  "typescript.surveys.enabled": false,
+  "typescript.tsserver.watchOptions": {
+    "watchFile": "useFsEventsOnParentDirectory",
+    "watchDirectory": "useFsEvents",
+    "fallbackPolling": "dynamicPriorityPolling",
+    "synchronousWatchDirectory": false
+  },
+
+  // Editor: less UI work while coding
+  "editor.minimap.enabled": false,
+  "editor.codeLens": false,
+  "editor.smoothScrolling": false,
+  "editor.inlayHints.enabled": "off",
+  "editor.suggest.preview": false,
+  "editor.parameterHints.enabled": false,
+  "editor.quickSuggestions": {
+    "comments": false,
+    "strings": false,
+    "other": true
+  },
+
+  // Git: less polling; workspace overrides user autofetch for this repo
+  "git.autofetch": false,
+  "git.autorefresh": false,
+  "git.detectSubmodules": false,
+  "git.repositoryScanMaxDepth": 1,
+  "git.enableSmartCommit": true,
+  "diffEditor.ignoreTrimWhitespace": true,
+  "scm.diffDecorations": "gutter",
+
+  // NPM / search
+  "npm.autoDetect": "off",
+  "npm.fetchOnlinePackageInfo": false,
+  "search.followSymlinks": false,
+  "search.useIgnoreFiles": true,
+  "search.useGlobalIgnoreFiles": true,
+  "search.smartCase": true,
+
+  // Cursor retrieval
+  "cursor-retrieval.canAttemptGithubLogin": false
+}

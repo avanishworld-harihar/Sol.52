@@ -1,0 +1,30 @@
+---
+description: Low-resource agent behavior for Sol.52 (minimal context, scoped tools)
+alwaysApply: true
+---
+
+# Low-resource workspace
+
+## Scope and search
+
+- Prefer **changed files only** for reviews, diffs, and fixes. Do not run full-repo semantic search unless the user asks or a targeted grep/read fails.
+- Before broad exploration, try: open file → related imports → `Grep` with a narrow path/glob.
+- Avoid repeated full-project rescans in one session; reuse prior findings.
+
+## Agent execution
+
+- Use **lightweight review mode**: small diffs, no drive-by refactors, no extra docs/tests unless requested.
+- Do not spawn background subagents for narrow questions; use direct tools.
+- Stop when the task is done; do not leave exploratory tasks running.
+- Do not read `node_modules`, `.next`, `dist`, `coverage`, `logs`, or `.npm-cache-temp`.
+
+## Context and memory
+
+- Keep responses and tool usage **minimal**; avoid attaching large unrelated files.
+- Do not summarize or retain long conversation history unless the user needs it.
+- Do not create commits, PRs, or new markdown files unless explicitly asked.
+
+## Git
+
+- Never change git config. Use scoped `git diff` / `git status` on relevant paths when possible.
+- Preserve project structure; workspace optimizations are config-only unless the user requests code changes.
