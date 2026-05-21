@@ -1,10 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { FloatingLabelInput, FloatingLabelNumericInput } from "@/components/ui/floating-label-input";
-import { useToast } from "@/components/ui/toast-center";
 import { PANEL_CATALOG, PANEL_TECHNOLOGY_OPTIONS } from "@/lib/commercial-panel-catalog";
-import { applyResidentialFlagsToLayout } from "@/lib/residential-proposal-config";
 import {
   defaultResidentialKwTiers,
   RESIDENTIAL_BRAND_PRESETS,
@@ -16,28 +13,23 @@ import {
   type ResidentialProposalConfig,
   type ResidentialWireBrand,
 } from "@/lib/residential-requirements-schema";
-import {
-  residentialCostBreakdown,
-  wireBrandDisplayName,
-} from "@/lib/residential-deck-helpers";
+import { wireBrandDisplayName } from "@/lib/residential-deck-helpers";
 import { moduleCountForResidential, quoteResidentialSolar } from "@/lib/residential-solar-engine";
 import { computePmSuryaGharSubsidy } from "@/lib/proposal-deck-helpers";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
 import { cn } from "@/lib/utils";
 import {
   Cable,
-  Check,
   Cpu,
   IndianRupee,
   Layers,
   Plus,
-  Save,
   Sun,
   Trash2,
   Zap,
 } from "lucide-react";
 import { ResidentialTrackComparePanel } from "@/components/residential/residential-track-compare-panel";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 type Props = {
   config: ResidentialProposalConfig;
@@ -83,8 +75,6 @@ export function ResidentialPricingStudio({
   onSaved,
   className,
 }: Props) {
-  const toast = useToast();
-  const [saving, setSaving] = useState(false);
   const solar = config.solar;
   const pricing = config.pricing ?? {
     kwTiers: defaultResidentialKwTiers(),
@@ -103,7 +93,6 @@ export function ResidentialPricingStudio({
       : (["polycab"] as ResidentialWireBrand[]);
   const panelQuote = useMemo(() => quoteResidentialSolar(solar), [solar]);
   const panelCount = panelQuote.moduleCount;
-  const costs = useMemo(() => residentialCostBreakdown(config), [config]);
   const defaultSubsidy = computePmSuryaGharSubsidy(solar.plantCapacityKw);
 
   function patch(partial: Partial<ResidentialProposalConfig>) {
@@ -190,42 +179,6 @@ export function ResidentialPricingStudio({
     patchPricing({ kwTiers: tiers.map((t, i) => (i === index ? { ...t, ...patchTier } : t)) });
   }
 
-  async function saveToProposal() {
-    if (!proposalId) {
-      toast.push({
-        tone: "info",
-        title: "Save after generate",
-        description: "Create the web proposal first — then Save syncs pricing to the live link.",
-      });
-      return;
-    }
-    setSaving(true);
-    try {
-      const layout = applyResidentialFlagsToLayout(
-        proposalLayout ?? { version: 1, blocks: [] },
-        config
-      );
-      const res = await fetch(`/api/proposals/${proposalId}/residential-config`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ residentialConfig: { ...config, inputMode: "requirement" as const }, proposalLayout: layout }),
-      });
-      const json = (await res.json()) as { ok?: boolean; error?: string };
-      if (!res.ok || !json.ok) throw new Error(json.error ?? "Save failed");
-      onLayoutChange?.(layout);
-      onSaved?.();
-      toast.push({ tone: "success", title: "Residential pricing saved", description: "Web proposal updated." });
-    } catch (e) {
-      toast.push({
-        tone: "error",
-        title: "Save failed",
-        description: e instanceof Error ? e.message : "",
-      });
-    } finally {
-      setSaving(false);
-    }
-  }
-
   return (
     <section
       className={cn(
@@ -247,25 +200,6 @@ export function ResidentialPricingStudio({
             {solar.plantCapacityKw} kW · 4 u/kW/day
           </div>
         </div>
-      </div>
-
-      {/* Cost waterfall */}
-      <div className="grid grid-cols-2 gap-px border-b border-slate-200/80 bg-slate-50 sm:grid-cols-4 dark:border-white/10 dark:bg-white/[0.02]">
-        {[
-          { label: "Gross system", value: costs.grossInr, accent: "text-slate-900 dark:text-white" },
-          ...(costs.discountInr > 0
-            ? [{ label: "Discount", value: -costs.discountInr, accent: "text-amber-700 dark:text-amber-300" }]
-            : []),
-          { label: "PM subsidy", value: -costs.subsidyInr, accent: "text-emerald-700 dark:text-emerald-400" },
-          { label: "Net payable", value: costs.netInr, accent: "text-indigo-700 dark:text-indigo-300" },
-        ].map((row) => (
-          <div key={row.label} className="px-4 py-3">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">{row.label}</p>
-            <p className={cn("mt-0.5 text-lg font-bold tabular-nums", row.accent)}>
-              {row.value < 0 ? `−${inr(Math.abs(row.value))}` : inr(row.value)}
-            </p>
-          </div>
-        ))}
       </div>
 
       <div className="space-y-8 p-4 sm:p-5">
@@ -639,30 +573,6 @@ export function ResidentialPricingStudio({
         </div>
 
         <ResidentialTrackComparePanel config={config} onChange={onChange} />
-      </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200/80 bg-slate-50/80 px-4 py-3 dark:border-white/10 dark:bg-white/[0.02] sm:px-5">
-        <div className="flex flex-wrap items-center gap-4 text-sm">
-          <span className="font-semibold text-slate-700 dark:text-slate-300">
-            Net: <span className="tabular-nums text-indigo-700 dark:text-indigo-300">{inr(costs.netInr)}</span>
-          </span>
-          {proposalId ? (
-            <span className="flex items-center gap-1 text-xs text-emerald-700 dark:text-emerald-400">
-              <Check className="h-3.5 w-3.5" /> Linked to web proposal
-            </span>
-          ) : (
-            <span className="text-xs text-slate-500">Generate proposal to persist</span>
-          )}
-        </div>
-        <Button
-          type="button"
-          disabled={saving}
-          onClick={() => void saveToProposal()}
-          className="gap-2 bg-slate-900 font-semibold hover:bg-slate-800 dark:bg-white dark:text-slate-900"
-        >
-          <Save className="h-4 w-4" />
-          {saving ? "Saving…" : "Save pricing"}
-        </Button>
       </div>
     </section>
   );

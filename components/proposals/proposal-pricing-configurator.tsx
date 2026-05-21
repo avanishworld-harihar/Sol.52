@@ -609,49 +609,25 @@ export function ProposalPricingConfigurator({
         </Button>
       </div>
 
-      <div
-        className={cn(
-          isWorkspace &&
-            "sticky bottom-0 z-20 border-t border-slate-200/90 bg-white/95 pb-[max(0.35rem,env(safe-area-inset-bottom))] shadow-[0_-12px_32px_rgba(15,23,42,0.06)] backdrop-blur-md dark:border-white/10 dark:bg-[#0c1017]/95"
-        )}
-      >
-        <div
-          className={cn(
-            "flex flex-col flex-wrap gap-2 px-3 py-3 sm:flex-row dark:border-white/10",
-            isWorkspace
-              ? "gap-px bg-slate-100/90 p-px sm:grid sm:grid-cols-5 dark:bg-white/[0.06]"
-              : "border-b border-slate-100 bg-slate-50/50 dark:bg-white/[0.02]"
-          )}
-        >
-          <SummaryChip bare={isWorkspace} label={labels.summaryGross} value={`₹${gross.toLocaleString("en-IN")}`} />
-          <SummaryChip
-            bare={isWorkspace}
-            label={labels.summarySubsidy}
-            value={`−₹${Math.round(preview.subsidy_inr).toLocaleString("en-IN")}`}
-            valueClass="text-emerald-700 dark:text-emerald-400"
-          />
-          <SummaryChip
-            bare={isWorkspace}
-            label={labels.summaryDiscount}
-            value={`−₹${Math.round(preview.discount_inr).toLocaleString("en-IN")}`}
-            valueClass="text-amber-800 dark:text-amber-300"
-          />
-          <SummaryChip
-            bare={isWorkspace}
-            label={labels.summaryNet}
-            value={`₹${Math.round(net).toLocaleString("en-IN")}`}
-            valueClass="text-teal-800 dark:text-teal-200"
-          />
-          {isWorkspace ? (
-            <div className="flex min-h-[3.5rem] flex-col justify-center bg-white px-2.5 py-2 sm:min-h-0 dark:bg-[#0f1419]">
-              <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                {labels.ppwGross} / {labels.ppwNet}
-              </p>
-              <p className="mt-0.5 text-[11px] font-medium tabular-nums text-slate-800 dark:text-slate-100">
-                ₹{preview.price_per_watt_inr.toLocaleString("en-IN")}/W gross · ₹{ppwNet.toLocaleString("en-IN")}/W net
-              </p>
-            </div>
-          ) : (
+      {!isWorkspace ? (
+        <div>
+          <div className="flex flex-col flex-wrap gap-2 border-b border-slate-100 bg-slate-50/50 px-3 py-3 sm:flex-row dark:border-white/10 dark:bg-white/[0.02]">
+            <SummaryChip label={labels.summaryGross} value={`₹${gross.toLocaleString("en-IN")}`} />
+            <SummaryChip
+              label={labels.summarySubsidy}
+              value={`−₹${Math.round(preview.subsidy_inr).toLocaleString("en-IN")}`}
+              valueClass="text-emerald-700 dark:text-emerald-400"
+            />
+            <SummaryChip
+              label={labels.summaryDiscount}
+              value={`−₹${Math.round(preview.discount_inr).toLocaleString("en-IN")}`}
+              valueClass="text-amber-800 dark:text-amber-300"
+            />
+            <SummaryChip
+              label={labels.summaryNet}
+              value={`₹${Math.round(net).toLocaleString("en-IN")}`}
+              valueClass="text-teal-800 dark:text-teal-200"
+            />
             <div className="min-w-[10rem] flex-1 rounded-xl border border-teal-200/80 bg-teal-50/80 px-2.5 py-2 dark:border-teal-500/25 dark:bg-teal-950/30">
               <p className="text-[9px] font-extrabold uppercase tracking-wide text-teal-900/80 dark:text-teal-200/90">
                 {labels.ppwGross} / {labels.ppwNet}
@@ -660,63 +636,53 @@ export function ProposalPricingConfigurator({
                 ₹{preview.price_per_watt_inr.toLocaleString("en-IN")}/W gross · ₹{ppwNet.toLocaleString("en-IN")}/W net
               </p>
             </div>
-          )}
-        </div>
+          </div>
 
-        <div
-          className={cn(
-            "flex flex-col gap-3 px-3 py-3 sm:flex-row sm:items-center sm:justify-between",
-            isWorkspace && "border-t border-slate-100 dark:border-white/10"
-          )}
-        >
-          <label
-            className={cn(
-              "flex cursor-pointer items-center gap-2 rounded-lg px-1 py-1",
-              isWorkspace ? "text-slate-700 dark:text-slate-300" : "border border-slate-200/80 bg-white px-3 py-2 dark:border-white/10 dark:bg-white/[0.04]"
-            )}
-          >
-            <input
-              type="checkbox"
-              className="h-3.5 w-3.5 rounded border-slate-300 text-teal-600"
-              checked={manualFinal}
-              onChange={(e) => {
-                const on = e.target.checked;
-                if (on) {
-                  const autoNet = proposalPricingRowFromLineItems(
-                    { ...initial, system_kw: systemKw, manual_final_override: false, final_amount_inr: initial.final_amount_inr },
-                    lines,
-                    { system_kw: systemKw, manual_final_override: false }
-                  ).final_amount_inr;
-                  setManualFinalAmt(autoNet);
-                }
-                setManualFinal(on);
-              }}
-            />
-            <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-200">{labels.manualFinal}</span>
-          </label>
-          <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
-            {manualFinal ? (
-              <FloatingLabelInput
-                label={labels.summaryNet}
-                inputMode="decimal"
-                value={String(manualFinalAmt)}
-                onChange={(e) => setManualFinalAmt(num(e.target.value))}
-                className="h-10 max-w-[10rem] rounded-lg text-[12px]"
+          <div className="flex flex-col gap-3 px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200/80 bg-white px-3 py-2 dark:border-white/10 dark:bg-white/[0.04]">
+              <input
+                type="checkbox"
+                className="h-3.5 w-3.5 rounded border-slate-300 text-teal-600"
+                checked={manualFinal}
+                onChange={(e) => {
+                  const on = e.target.checked;
+                  if (on) {
+                    const autoNet = proposalPricingRowFromLineItems(
+                      { ...initial, system_kw: systemKw, manual_final_override: false, final_amount_inr: initial.final_amount_inr },
+                      lines,
+                      { system_kw: systemKw, manual_final_override: false }
+                    ).final_amount_inr;
+                    setManualFinalAmt(autoNet);
+                  }
+                  setManualFinal(on);
+                }}
               />
-            ) : null}
-            <Button
-              type="button"
-              variant={isWorkspace ? "default" : "emeraldCta"}
-              size="default"
-              className="min-w-[8.5rem] font-semibold"
-              disabled={saving}
-              onClick={() => void save()}
-            >
-              {saving ? labels.saving : labels.save}
-            </Button>
+              <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-200">{labels.manualFinal}</span>
+            </label>
+            <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+              {manualFinal ? (
+                <FloatingLabelInput
+                  label={labels.summaryNet}
+                  inputMode="decimal"
+                  value={String(manualFinalAmt)}
+                  onChange={(e) => setManualFinalAmt(num(e.target.value))}
+                  className="h-10 max-w-[10rem] rounded-lg text-[12px]"
+                />
+              ) : null}
+              <Button
+                type="button"
+                variant="emeraldCta"
+                size="default"
+                className="min-w-[8.5rem] font-semibold"
+                disabled={saving}
+                onClick={() => void save()}
+              >
+                {saving ? labels.saving : labels.save}
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      ) : null}
     </section>
   );
 }

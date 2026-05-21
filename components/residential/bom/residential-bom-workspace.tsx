@@ -3,9 +3,7 @@
 import { ResidentialPricingStudio } from "@/components/residential/residential-pricing-studio";
 import { ResidentialRequirementBuilder } from "@/components/residential/residential-requirement-builder";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/toast-center";
 import {
-  applyResidentialFlagsToLayout,
   defaultResidentialConfig,
   parseResidentialConfig,
   type ResidentialProposalConfig,
@@ -21,8 +19,6 @@ import type { ProposalPricingConfiguratorLabels } from "@/components/proposals/p
 import { getProposalLayout } from "@/lib/proposal-layout-merge";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { summarizeProposalDeck } from "@/lib/proposal-ppt";
-import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
-import { grossSubtotalInr } from "@/lib/proposal-pricing-merge";
 import {
   ensureResidentialSolarInConfig,
   syncResidentialSolarToLineItems,
@@ -43,12 +39,9 @@ export function ResidentialBomWorkspace({
   proposalId,
   initialPricing,
   pptInput,
-  labels,
-  onPricingSaved,
   onPptInputChange,
   onOpenReview,
 }: Props) {
-  const toast = useToast();
   const [pricing, setPricing] = useState(initialPricing);
   const [lines, setLines] = useState<PricingLineItem[]>(() => hydrateLineItems(initialPricing));
   const [config, setConfig] = useState<ResidentialProposalConfig>(() => {
@@ -57,8 +50,6 @@ export function ResidentialBomWorkspace({
       defaultResidentialConfig(initialPricing.system_kw);
     return ensureResidentialSolarInConfig(base, initialPricing.system_kw);
   });
-  const [saving, setSaving] = useState(false);
-
   useEffect(() => {
     setPricing(initialPricing);
     setLines(hydrateLineItems(initialPricing));
@@ -87,64 +78,6 @@ export function ResidentialBomWorkspace({
     setPricing((p) => ({ ...p, system_kw: next.solar.plantCapacityKw }));
   }, []);
 
-  async function saveAll() {
-    setSaving(true);
-    try {
-      const syncedLines = syncResidentialSolarToLineItems(solar, lines);
-      const layout: ProposalTemplateV1 = applyResidentialFlagsToLayout(getProposalLayout(pptInput), config);
-
-      const prRes = await fetch(`/api/proposals/${proposalId}/pricing`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          line_items: syncedLines,
-          system_kw: solar.plantCapacityKw,
-        }),
-      });
-      const prJson = (await prRes.json()) as { ok?: boolean; pricing?: ProposalPricingRow; error?: string };
-      if (!prRes.ok || !prJson.ok || !prJson.pricing) {
-        throw new Error(prJson.error || labels.saveFailed);
-      }
-
-      const cfgRes = await fetch(`/api/proposals/${proposalId}/residential-config`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ residentialConfig: config, proposalLayout: layout }),
-      });
-      const cfgJson = (await cfgRes.json()) as { ok?: boolean; error?: string };
-      if (!cfgRes.ok || !cfgJson.ok) {
-        throw new Error(cfgJson.error || "Residential config save failed");
-      }
-
-      setPricing(prJson.pricing);
-      setLines(hydrateLineItems(prJson.pricing));
-      onPricingSaved?.(prJson.pricing);
-      onPptInputChange?.({
-        ...pptInput,
-        residentialConfig: config,
-        proposalLayout: layout,
-        systemKw: solar.plantCapacityKw,
-        financeOption: config.financing?.enabled
-          ? {
-              interestRatePct: config.financing.interestRatePct,
-              tenuresYears: config.financing.tenuresYears ?? [3, 5, 7, 10],
-              selectedTenureYears: config.financing.selectedTenureYears,
-            }
-          : pptInput.financeOption,
-      });
-      toast.push({ tone: "success", title: labels.saved });
-    } catch (e) {
-      toast.push({
-        tone: "error",
-        title: labels.saveFailed,
-        description: e instanceof Error ? e.message : "",
-      });
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  const gross = grossSubtotalInr(preview);
   const net = preview.final_amount_inr;
 
   return (
@@ -174,30 +107,6 @@ export function ResidentialBomWorkspace({
           });
         }}
       />
-
-      <div className="sticky bottom-0 z-10 rounded-2xl border border-slate-200/90 bg-white/95 p-3 shadow-lg backdrop-blur-md dark:border-white/10 dark:bg-[#0c1017]/95">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap gap-4 text-sm">
-            <div>
-              <p className="text-[10px] font-bold uppercase text-slate-500">Gross</p>
-              <p className="font-bold tabular-nums">₹{gross.toLocaleString("en-IN")}</p>
-            </div>
-            <div>
-              <p className="text-[10px] font-bold uppercase text-slate-500">Net payable</p>
-              <p className="font-bold tabular-nums text-indigo-700 dark:text-indigo-300">
-                ₹{Math.round(net).toLocaleString("en-IN")}
-              </p>
-            </div>
-            <div>
-              <p className="text-[10px] font-bold uppercase text-slate-500">Plant</p>
-              <p className="font-bold tabular-nums">{solar.plantCapacityKw} kW</p>
-            </div>
-          </div>
-          <Button type="button" className="min-w-[9rem] bg-slate-900 font-semibold hover:bg-slate-800" disabled={saving} onClick={() => void saveAll()}>
-            {saving ? labels.saving : labels.save}
-          </Button>
-        </div>
-      </div>
     </div>
   );
 }
