@@ -8,6 +8,11 @@ import {
   type BomFreeAmcYears,
   type DeckBomItem,
 } from "@/lib/proposal-deck-helpers";
+import {
+  getActiveCatalogEntry,
+  lookupKwGrossForTrack,
+  nonDcrGrossFromDcrGross,
+} from "@/lib/residential-brand-catalog";
 import { computeGrossSystemCostInr } from "@/lib/solar-engine";
 import { isPmSuryaGharSubsidyEligible } from "@/lib/lead-connection-types";
 import { computePmSuryaGharSubsidy } from "@/lib/proposal-deck-helpers";
@@ -59,8 +64,19 @@ export function applyResidentialDiscountInr(
 
 export function residentialGrossCostInr(config: ResidentialProposalConfig): number {
   const kw = config.solar.plantCapacityKw;
+  const track = config.solar.panelTrack ?? "dcr";
+  const catalogEntry = getActiveCatalogEntry(config);
+  const fromCatalog = lookupKwGrossForTrack(
+    catalogEntry,
+    kw,
+    track,
+    config.pricing?.kwTiers
+  );
+  if (fromCatalog != null && fromCatalog > 0) return fromCatalog;
   const fromTier = lookupResidentialKwPriceInr(config.pricing?.kwTiers, kw);
-  if (fromTier != null && fromTier > 0) return fromTier;
+  if (fromTier != null && fromTier > 0) {
+    return track === "non_dcr" ? nonDcrGrossFromDcrGross(fromTier) : fromTier;
+  }
   const q = quoteResidentialSolar(config.solar);
   if (q.hardwareInr > 0) return q.hardwareInr;
   return computeGrossSystemCostInr(kw);

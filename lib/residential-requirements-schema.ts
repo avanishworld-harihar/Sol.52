@@ -71,10 +71,24 @@ export const residentialTrackCompareTierSchema = z.object({
   visible: z.boolean().default(true),
 });
 
+export const residentialBrandCatalogEntrySchema = z.object({
+  brandId: z.string().max(40),
+  brand: z.string().min(1).max(80),
+  dcrRatePerWpInr: z.number().min(0).max(500),
+  kwTiers: z.array(residentialKwTierSchema).max(24).optional(),
+});
+
+export const residentialBrandCatalogSchema = z.object({
+  activeBrandId: z.string().max(40).optional(),
+  entries: z.array(residentialBrandCatalogEntrySchema).max(16).optional(),
+});
+
 export const residentialTrackCompareSchema = z.object({
   enabled: z.boolean().default(false),
   tiers: z.array(residentialTrackCompareTierSchema).max(32).optional(),
   showPolicyNote: z.boolean().default(true),
+  /** Brand used for DCR vs Non-DCR rows (synced from smart catalog). */
+  compareBrandId: z.string().max(40).optional(),
 });
 
 export const residentialPricingSchema = z.object({
@@ -100,6 +114,8 @@ export const residentialProposalConfigSchema = z.object({
   panelBrandOptions: z.array(residentialBrandOptionSchema).max(3).optional(),
   /** Up to 2 inverter brands */
   inverterBrandOptions: z.array(residentialBrandOptionSchema).max(2).optional(),
+  /** Per-brand DCR rates + kW tier catalog (Non-DCR = 70% of DCR). */
+  brandCatalog: residentialBrandCatalogSchema.optional(),
   /** Side-by-side Non-DCR vs DCR gross prices (shared kW rows) for web proposal */
   trackCompare: residentialTrackCompareSchema.optional(),
   notes: z.string().max(600).optional(),
@@ -118,6 +134,8 @@ export type ResidentialBrandOption = z.infer<typeof residentialBrandOptionSchema
 export type ResidentialWireBrand = z.infer<typeof residentialWireBrandSchema>;
 export type ResidentialTrackCompareTier = z.infer<typeof residentialTrackCompareTierSchema>;
 export type ResidentialTrackCompare = z.infer<typeof residentialTrackCompareSchema>;
+export type ResidentialBrandCatalogEntry = z.infer<typeof residentialBrandCatalogEntrySchema>;
+export type ResidentialBrandCatalog = z.infer<typeof residentialBrandCatalogSchema>;
 
 /** Default kW → gross price table for residential requirement proposals. */
 export function defaultResidentialKwTiers(): ResidentialKwTier[] {
@@ -173,13 +191,17 @@ export function defaultResidentialConfig(plantKw = 5): ResidentialProposalConfig
       { brand: "Growatt" },
       { brand: "Deye" },
     ],
-    trackCompare: defaultResidentialTrackCompare(false),
+    trackCompare: {
+      ...defaultResidentialTrackCompare(false),
+      compareBrandId: primary.brandId,
+    },
   };
 }
 
 export const RESIDENTIAL_BRAND_PRESETS = [
   { brandId: "adani", brand: "Adani Solar", watt: 550 },
   { brandId: "waaree", brand: "Waaree", watt: 540 },
+  { brandId: "gautam", brand: "Gautam Solar", watt: 550 },
   { brandId: "vikram", brand: "Vikram Solar", watt: 560 },
   { brandId: "longi", brand: "LONGi", watt: 575 },
 ] as const;

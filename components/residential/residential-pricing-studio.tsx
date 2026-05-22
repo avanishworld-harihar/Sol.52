@@ -11,7 +11,6 @@ import {
   RESIDENTIAL_WATT_PRESETS,
   RESIDENTIAL_WIRE_PRESETS,
   type ResidentialBrandOption,
-  type ResidentialKwTier,
   type ResidentialProposalConfig,
   type ResidentialWireBrand,
 } from "@/lib/residential-requirements-schema";
@@ -24,7 +23,6 @@ import { cn } from "@/lib/utils";
 import {
   Cable,
   Cpu,
-  IndianRupee,
   Layers,
   Plus,
   Save,
@@ -32,7 +30,15 @@ import {
   Trash2,
   Zap,
 } from "lucide-react";
+import { ResidentialBrandCatalogPanel } from "@/components/residential/residential-brand-catalog-panel";
 import { ResidentialTrackComparePanel } from "@/components/residential/residential-track-compare-panel";
+import {
+  applyActiveBrandToConfig,
+  ensureBrandCatalog,
+  getActiveCatalogEntry,
+  rateForSolarTrack,
+  syncSolarAndPricingFromEntry,
+} from "@/lib/residential-brand-catalog";
 import type { PricingLineItem } from "@/lib/proposal-pricing-lines";
 import { saveResidentialRequirement } from "@/lib/save-residential-requirement-client";
 import { useMemo, useState } from "react";
@@ -99,8 +105,8 @@ export function ResidentialPricingStudio({
     wireBrand: "polycab" as const,
     discount: { enabled: false, type: "percent" as const, value: 0 },
   };
-  const tiers = pricing.kwTiers ?? defaultResidentialKwTiers();
   const discount = pricing.discount ?? { enabled: false, type: "percent" as const, value: 0 };
+  const catalogEntry = getActiveCatalogEntry(ensureBrandCatalog(config));
   const panelOpts = config.panelBrandOptions ?? [];
   const invOpts = config.inverterBrandOptions ?? [];
   const wireOpts = pricing.wireBrandOptions?.length
@@ -115,7 +121,7 @@ export function ResidentialPricingStudio({
     subsidyEligibleProp ?? isPmSuryaGharSubsidyEligible(config.connectionType);
 
   function patch(partial: Partial<ResidentialProposalConfig>) {
-    onChange({ ...config, ...partial });
+    onChange(ensureBrandCatalog({ ...config, ...partial }));
   }
 
   function patchPricing(partial: Partial<NonNullable<ResidentialProposalConfig["pricing"]>>) {
@@ -137,6 +143,12 @@ export function ResidentialPricingStudio({
   }
 
   function applyTrack(track: "dcr" | "non_dcr") {
+    const base = ensureBrandCatalog(config);
+    const entry = getActiveCatalogEntry(base);
+    if (entry) {
+      onChange(syncSolarAndPricingFromEntry(base, entry, track));
+      return;
+    }
     const catalogTrack = track === "dcr" ? "DCR" : "NON_DCR";
     const hit = PANEL_CATALOG.find(
       (e) =>
@@ -167,20 +179,18 @@ export function ResidentialPricingStudio({
     patchWireOptions([...cur, wire]);
   }
 
-  function togglePanelBrandPreset(brandId: string, brand: string) {
-    const key = brandId;
-    const next = toggleBrand(panelOpts, { brandId, brand }, 3);
-    const primary = next[0];
-    patch({
-      panelBrandOptions: next,
-      solar: primary
-        ? { ...solar, brand: primary.brand, brandId: primary.brandId }
-        : solar,
-    });
-  }
-
   function applyWatt(watt: number) {
     const w = Math.max(100, Math.min(900, Math.round(watt)));
+    const entry = catalogEntry;
+    if (entry) {
+      patchSolar({
+        watt: w,
+        moduleCountOverride: undefined,
+        ratePerWpInr: rateForSolarTrack(entry, solar.panelTrack ?? "dcr"),
+        technology: solar.technology,
+      });
+      return;
+    }
     const track = solar.panelTrack === "dcr" ? "DCR" : "NON_DCR";
     const hit =
       PANEL_CATALOG.find(
@@ -192,10 +202,6 @@ export function ResidentialPricingStudio({
       ratePerWpInr: hit?.ratePerWpInr ?? solar.ratePerWpInr,
       technology: hit?.technology ?? solar.technology,
     });
-  }
-
-  function updateTier(index: number, patchTier: Partial<ResidentialKwTier>) {
-    patchPricing({ kwTiers: tiers.map((t, i) => (i === index ? { ...t, ...patchTier } : t)) });
   }
 
   async function handleSave() {
@@ -262,7 +268,7 @@ export function ResidentialPricingStudio({
             <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Residential · Requirement</p>
             <h3 className="text-lg font-semibold tracking-tight">Pricing &amp; system catalog</h3>
             <p className="mt-1 max-w-xl text-xs text-slate-300">
-              DCR track, brands, kW rates, wire, and subsidy flow straight into the web proposal and BOM.
+              Brand catalog first — DCR ₹/Wp &amp; kW prices sync to plant sizing, comparison table, and saved proposal.
             </p>
           </div>
           <div className="flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-xs font-medium text-slate-200">
@@ -273,6 +279,11 @@ export function ResidentialPricingStudio({
       </div>
 
       <div className="space-y-8 p-4 sm:p-5">
+        <ResidentialBrandCatalogPanel
+          config={config}
+          onChange={(next) => onChange(ensureBrandCatalog(next))}
+        />
+
         {/* Plant sizing — editable watt drives panel count */}
         <div className="rounded-2xl border border-indigo-200/80 bg-indigo-50/30 p-4 dark:border-indigo-500/30 dark:bg-indigo-950/20">
           <SectionTitle
@@ -370,65 +381,6 @@ export function ResidentialPricingStudio({
           </select>
         </div>
 
-        {/* kW tiers */}
-        <div>
-          <SectionTitle
-            icon={IndianRupee}
-            title="System price by kW"
-            hint={`Active plant ${solar.plantCapacityKw} kW uses nearest tier below.`}
-          />
-          <ul className="space-y-2">
-            {tiers.map((tier, idx) => {
-              const isActive = tier.kw === solar.plantCapacityKw;
-              return (
-                <li
-                  key={`${tier.kw}-${idx}`}
-                  className={cn(
-                    "grid grid-cols-[1fr_1.2fr_auto] items-end gap-2 rounded-xl border p-2",
-                    isActive
-                      ? "border-indigo-300 bg-indigo-50/50 dark:border-indigo-500/40 dark:bg-indigo-950/20"
-                      : "border-slate-200/80 dark:border-white/10"
-                  )}
-                >
-                  <FloatingLabelNumericInput
-                    label="kW"
-                    integer
-                    value={tier.kw}
-                    onValueChange={(n) => updateTier(idx, { kw: n ?? tier.kw })}
-                    className="h-10 rounded-lg text-sm font-bold"
-                  />
-                  <FloatingLabelNumericInput
-                    label="Gross price (₹)"
-                    value={tier.priceInr}
-                    onValueChange={(n) => updateTier(idx, { priceInr: n ?? tier.priceInr })}
-                    className="h-10 rounded-lg text-sm font-bold"
-                  />
-                  <button
-                    type="button"
-                    disabled={tiers.length <= 1}
-                    onClick={() => patchPricing({ kwTiers: tiers.filter((_, i) => i !== idx) })}
-                    className="mb-0.5 flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-400 disabled:opacity-30"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="mt-2 gap-1 text-xs"
-            onClick={() => {
-              const maxKw = tiers.reduce((m, t) => Math.max(m, t.kw), 0);
-              patchPricing({ kwTiers: [...tiers, { kw: maxKw > 0 ? maxKw + 1 : 11, priceInr: 0 }] });
-            }}
-          >
-            <Plus className="h-3.5 w-3.5" /> Add kW tier
-          </Button>
-        </div>
-
         {/* Equipment catalog — proposal + BOM brands */}
         <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/60 p-4 dark:border-white/15 dark:bg-white/[0.02] sm:p-5">
           <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Proposal &amp; BOM</p>
@@ -441,13 +393,13 @@ export function ResidentialPricingStudio({
             <div>
               <SectionTitle icon={Sun} title="Panel brands (2–3)" hint="Any one may be supplied on site." />
               <div className="flex flex-wrap gap-2">
-                {RESIDENTIAL_BRAND_PRESETS.map((b) => {
+                {(config.brandCatalog?.entries ?? []).map((b) => {
                   const active = panelOpts.some((p) => (p.brandId ?? p.brand) === b.brandId);
                   return (
                     <button
                       key={b.brandId}
                       type="button"
-                      onClick={() => togglePanelBrandPreset(b.brandId, b.brand)}
+                      onClick={() => onChange(applyActiveBrandToConfig(ensureBrandCatalog(config), b.brandId))}
                       className={cn(
                         "rounded-lg border px-3 py-1.5 text-xs font-semibold",
                         active

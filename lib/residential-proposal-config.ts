@@ -9,6 +9,7 @@ import {
   type ResidentialProposalConfig,
   type ResidentialWireBrand,
 } from "@/lib/residential-requirements-schema";
+import { ensureBrandCatalog } from "@/lib/residential-brand-catalog";
 import { mergeTrackCompareIntoConfig } from "@/lib/residential-track-compare";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
 
@@ -17,7 +18,7 @@ export type { ResidentialProposalConfig };
 
 /** Ensures wireBrandOptions (max 2) and legacy wireBrand stay aligned. */
 export function normalizeResidentialConfig(config: ResidentialProposalConfig): ResidentialProposalConfig {
-  let next = mergeTrackCompareIntoConfig(config);
+  let next = ensureBrandCatalog(mergeTrackCompareIntoConfig(config));
   const pricing = next.pricing;
   if (!pricing) return next;
   const fromList = pricing.wireBrandOptions?.filter(Boolean).slice(0, 2) ?? [];

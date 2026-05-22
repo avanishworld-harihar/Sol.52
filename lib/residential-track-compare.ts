@@ -1,3 +1,8 @@
+import {
+  getCompareCatalogEntry,
+  nonDcrGrossFromDcrGross,
+  trackCompareTiersFromCatalogEntry,
+} from "@/lib/residential-brand-catalog";
 import { computeGrossSystemCostInr } from "@/lib/solar-engine";
 import type {
   ResidentialProposalConfig,
@@ -6,26 +11,39 @@ import type {
 } from "@/lib/residential-requirements-schema";
 
 export function defaultResidentialTrackCompareTiers(
-  sizes: number[] = [8, 10]
+  sizes: number[] = [8, 10],
+  config?: ResidentialProposalConfig
 ): ResidentialTrackCompareTier[] {
+  const entry = config ? getCompareCatalogEntry(config) : null;
+  if (entry?.kwTiers?.length) {
+    const filtered = entry.kwTiers.filter((t) => sizes.includes(t.kw));
+    const use =
+      filtered.length > 0
+        ? filtered
+        : entry.kwTiers.slice(0, Math.max(sizes.length, 2));
+    return trackCompareTiersFromCatalogEntry({ ...entry, kwTiers: use });
+  }
   return sizes.map((kw) => {
     const base = computeGrossSystemCostInr(kw);
+    const dcrGrossInr = Math.round(base);
     return {
       kw,
-      nonDcrGrossInr: Math.round(base * 0.94),
-      dcrGrossInr: Math.round(base * 1.1),
+      dcrGrossInr,
+      nonDcrGrossInr: nonDcrGrossFromDcrGross(dcrGrossInr),
       visible: true,
     };
   });
 }
 
 export function defaultResidentialTrackCompare(
-  enabled = false
+  enabled = false,
+  config?: ResidentialProposalConfig
 ): ResidentialTrackCompare {
   return {
     enabled,
-    tiers: defaultResidentialTrackCompareTiers([8, 10]),
+    tiers: defaultResidentialTrackCompareTiers([8, 10], config),
     showPolicyNote: true,
+    compareBrandId: config?.brandCatalog?.activeBrandId,
   };
 }
 
@@ -46,10 +64,19 @@ export function normalizeResidentialTrackCompare(
         }))
       : defaultResidentialTrackCompareTiers([8, 10]);
 
+  const synced = tiers.map((t) => ({
+    ...t,
+    nonDcrGrossInr:
+      t.nonDcrGrossInr > 0
+        ? t.nonDcrGrossInr
+        : nonDcrGrossFromDcrGross(t.dcrGrossInr),
+  }));
+
   return {
     enabled: raw?.enabled === true,
-    tiers,
+    tiers: synced,
     showPolicyNote: raw?.showPolicyNote !== false,
+    compareBrandId: raw?.compareBrandId,
   };
 }
 
