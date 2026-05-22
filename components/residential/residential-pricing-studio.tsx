@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { FloatingLabelInput, FloatingLabelNumericInput } from "@/components/ui/floating-label-input";
+import { useToast } from "@/components/ui/toast-center";
 import { PANEL_CATALOG, PANEL_TECHNOLOGY_OPTIONS } from "@/lib/commercial-panel-catalog";
 import {
   defaultResidentialKwTiers,
@@ -25,12 +26,15 @@ import {
   IndianRupee,
   Layers,
   Plus,
+  Save,
   Sun,
   Trash2,
   Zap,
 } from "lucide-react";
 import { ResidentialTrackComparePanel } from "@/components/residential/residential-track-compare-panel";
-import { useMemo } from "react";
+import type { PricingLineItem } from "@/lib/proposal-pricing-lines";
+import { saveResidentialRequirement } from "@/lib/save-residential-requirement-client";
+import { useMemo, useState } from "react";
 
 type Props = {
   config: ResidentialProposalConfig;
@@ -39,6 +43,10 @@ type Props = {
   proposalLayout?: ProposalTemplateV1 | null;
   onLayoutChange?: (layout: ProposalTemplateV1) => void;
   onSaved?: () => void;
+  /** Sync BOM line items when saving (Proposals workspace). */
+  lineItems?: PricingLineItem[];
+  /** Builder flow: create web proposal when none exists yet, return new id. */
+  onCreateProposal?: () => Promise<string | null>;
   className?: string;
 };
 
@@ -74,8 +82,12 @@ export function ResidentialPricingStudio({
   proposalLayout,
   onLayoutChange,
   onSaved,
+  lineItems,
+  onCreateProposal,
   className,
 }: Props) {
+  const toast = useToast();
+  const [saving, setSaving] = useState(false);
   const solar = config.solar;
   const pricing = config.pricing ?? {
     kwTiers: defaultResidentialKwTiers(),
@@ -178,6 +190,57 @@ export function ResidentialPricingStudio({
 
   function updateTier(index: number, patchTier: Partial<ResidentialKwTier>) {
     patchPricing({ kwTiers: tiers.map((t, i) => (i === index ? { ...t, ...patchTier } : t)) });
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      let id = proposalId?.trim() || null;
+      if (!id && onCreateProposal) {
+        id = await onCreateProposal();
+        if (!id) {
+          toast.push({
+            tone: "error",
+            title: "Could not save",
+            description: "Create the web proposal first, then try Save again.",
+          });
+          return;
+        }
+      }
+      if (!id) {
+        toast.push({
+          tone: "info",
+          title: "Generate proposal first",
+          description: "Tap Generate to create the web proposal, then Save will sync all pricing fields.",
+        });
+        return;
+      }
+
+      const result = await saveResidentialRequirement({
+        proposalId: id,
+        config,
+        proposalLayout,
+        lineItems,
+      });
+      if (!result.ok) {
+        throw new Error(result.error ?? "Save failed");
+      }
+      if (result.proposalLayout) onLayoutChange?.(result.proposalLayout);
+      onSaved?.();
+      toast.push({
+        tone: "success",
+        title: "Saved",
+        description: "Residential pricing and proposal settings are updated.",
+      });
+    } catch (e) {
+      toast.push({
+        tone: "error",
+        title: "Save failed",
+        description: e instanceof Error ? e.message : "",
+      });
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -552,13 +615,10 @@ export function ResidentialPricingStudio({
               </div>
             ) : null}
           </div>
-          <div className="rounded-xl border border-emerald-200/70 bg-emerald-50/40 p-3 dark:border-emerald-900/40 dark:bg-emerald-950/15">
-            <p className="text-xs font-bold text-emerald-950 dark:text-emerald-100">PM Surya Ghar subsidy (₹)</p>
-            <p className="mt-0.5 text-[11px] text-emerald-800/80 dark:text-emerald-200/70">
-              Default {inr(defaultSubsidy)} for {solar.plantCapacityKw} kW — override if needed.
-            </p>
+          <div className="rounded-xl border border-emerald-200/70 bg-emerald-50/40 px-3 pb-3 pt-4 dark:border-emerald-900/40 dark:bg-emerald-950/15">
+            <p className="mb-3 text-xs font-bold text-emerald-950 dark:text-emerald-100">PM Surya Ghar subsidy</p>
             <FloatingLabelNumericInput
-              label="Subsidy amount"
+              label="Subsidy amount (₹)"
               value={config.subsidy?.estimateInr ?? defaultSubsidy}
               onValueChange={(n) =>
                 patch({
@@ -568,12 +628,35 @@ export function ResidentialPricingStudio({
                   },
                 })
               }
-              className="mt-2 h-10 rounded-lg text-sm font-bold"
+              labelBackgroundClassName="bg-emerald-50 dark:bg-emerald-950/40"
+              className="h-11 rounded-lg pt-4 text-sm font-bold"
             />
+            <p className="mt-2 text-[11px] text-emerald-800/80 dark:text-emerald-200/70">
+              Default {inr(defaultSubsidy)} for {solar.plantCapacityKw} kW — override if needed.
+            </p>
           </div>
         </div>
 
         <ResidentialTrackComparePanel config={config} onChange={onChange} />
+      </div>
+
+      <div className="flex flex-col gap-3 border-t border-slate-200/80 bg-slate-50/80 px-4 py-4 dark:border-white/10 dark:bg-white/[0.02] sm:flex-row sm:items-center sm:justify-between sm:px-5">
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          {proposalId
+            ? "Saves plant sizing, brands, kW tiers, subsidy, and DCR comparison to this proposal."
+            : onCreateProposal
+              ? "Creates or updates the web proposal with all fields above."
+              : "Generate the web proposal first, then Save will sync these settings."}
+        </p>
+        <Button
+          type="button"
+          disabled={saving}
+          onClick={() => void handleSave()}
+          className="w-full gap-2 bg-slate-900 font-semibold hover:bg-slate-800 dark:bg-white dark:text-slate-900 sm:w-auto sm:min-w-[10rem]"
+        >
+          <Save className="h-4 w-4" aria-hidden />
+          {saving ? "Saving…" : "Save"}
+        </Button>
       </div>
     </section>
   );

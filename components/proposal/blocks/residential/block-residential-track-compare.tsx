@@ -28,7 +28,7 @@ export function ResidentialTrackCompareSection({
   highlightPlantKw,
 }: Props) {
   const compare = normalizeResidentialTrackCompare(raw ?? undefined);
-  const tiers = compare.tiers;
+  const tiers = compare.tiers.filter((t) => t.visible !== false);
   if (!compare.enabled || tiers.length === 0) return null;
 
   const isHi = lang === "hi";
@@ -104,13 +104,13 @@ export function ResidentialTrackCompareSection({
               </tr>
             </thead>
             <tbody>
-              {sortedTiers.map((t) => {
+              {sortedTiers.map((t, rowIdx) => {
                 const delta = deltaAtTier(t);
                 const highlight =
                   highlightPlantKw != null && Math.round(highlightPlantKw) === Math.round(t.kw);
                 return (
                   <tr
-                    key={t.kw}
+                    key={`${t.kw}-${rowIdx}`}
                     className={cn(
                       "border-t tabular-nums",
                       dark ? "border-white/10" : "border-slate-100",

@@ -67,11 +67,13 @@ export const residentialTrackCompareTierSchema = z.object({
   kw: z.number().min(1).max(100),
   nonDcrGrossInr: z.number().min(0),
   dcrGrossInr: z.number().min(0),
+  /** When false, row stays in BOM workspace but is omitted from the web proposal table. */
+  visible: z.boolean().default(true),
 });
 
 export const residentialTrackCompareSchema = z.object({
   enabled: z.boolean().default(false),
-  tiers: z.array(residentialTrackCompareTierSchema).max(8).optional(),
+  tiers: z.array(residentialTrackCompareTierSchema).max(32).optional(),
   showPolicyNote: z.boolean().default(true),
 });
 

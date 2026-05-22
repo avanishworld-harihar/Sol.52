@@ -14,6 +14,7 @@ export function defaultResidentialTrackCompareTiers(
       kw,
       nonDcrGrossInr: Math.round(base * 0.94),
       dcrGrossInr: Math.round(base * 1.1),
+      visible: true,
     };
   });
 }
@@ -41,6 +42,7 @@ export function normalizeResidentialTrackCompare(
           kw: Math.max(1, Math.min(100, t.kw)),
           nonDcrGrossInr: Math.max(0, Math.round(t.nonDcrGrossInr)),
           dcrGrossInr: Math.max(0, Math.round(t.dcrGrossInr)),
+          visible: t.visible !== false,
         }))
       : defaultResidentialTrackCompareTiers([8, 10]);
 

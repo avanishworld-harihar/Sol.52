@@ -4,6 +4,7 @@ import { ResidentialPricingStudio } from "@/components/residential/residential-p
 import { ResidentialRequirementBuilder } from "@/components/residential/residential-requirement-builder";
 import { Button } from "@/components/ui/button";
 import {
+  applyResidentialFlagsToLayout,
   defaultResidentialConfig,
   parseResidentialConfig,
   type ResidentialProposalConfig,
@@ -39,6 +40,7 @@ export function ResidentialBomWorkspace({
   proposalId,
   initialPricing,
   pptInput,
+  onPricingSaved,
   onPptInputChange,
   onOpenReview,
 }: Props) {
@@ -100,10 +102,20 @@ export function ResidentialBomWorkspace({
         onChange={patchConfig}
         proposalId={proposalId}
         proposalLayout={getProposalLayout(pptInput)}
+        lineItems={lines}
         onSaved={() => {
+          const syncedLines = syncResidentialSolarToLineItems(config.solar, lines);
+          const row = proposalPricingRowFromLineItems(pricing, syncedLines, {
+            system_kw: config.solar.plantCapacityKw,
+          });
+          setPricing(row);
+          setLines(hydrateLineItems(row));
+          onPricingSaved?.(row);
           onPptInputChange?.({
             ...pptInput,
             residentialConfig: config,
+            proposalLayout: applyResidentialFlagsToLayout(getProposalLayout(pptInput), config),
+            systemKw: config.solar.plantCapacityKw,
           });
         }}
       />

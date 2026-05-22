@@ -1851,6 +1851,11 @@ function ProposalPageContent() {
               proposalId={draftProposalId}
               proposalLayout={proposalLayout}
               onLayoutChange={setProposalLayout}
+              onCreateProposal={async () => {
+                const saved = await persistProposalToServer();
+                if (saved?.id) setDraftProposalId(saved.id);
+                return saved?.id ?? null;
+              }}
             />
           </>
         ) : null}

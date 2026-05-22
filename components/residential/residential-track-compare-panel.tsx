@@ -12,7 +12,7 @@ import type {
   ResidentialTrackCompareTier,
 } from "@/lib/residential-requirements-schema";
 import { cn } from "@/lib/utils";
-import { Plus, Scale, Trash2 } from "lucide-react";
+import { Eye, EyeOff, Plus, Scale, Trash2 } from "lucide-react";
 
 type Props = {
   config: ResidentialProposalConfig;
@@ -59,15 +59,16 @@ export function ResidentialTrackComparePanel({ config, onChange, className }: Pr
   }
 
   function addTier() {
-    if (tiers.length >= 4) return;
     const lastKw = tiers[tiers.length - 1]?.kw ?? 8;
     const nextKw = Math.min(100, lastKw + 2);
     const seeded = defaultResidentialTrackCompareTiers([nextKw])[0];
     patchCompare({ tiers: [...tiers, seeded] });
   }
 
-  function resetDefaults() {
-    patchCompare({ tiers: defaultResidentialTrackCompareTiers([8, 10]) });
+  function toggleTierVisible(index: number) {
+    const tier = tiers[index];
+    if (!tier) return;
+    updateTier(index, { visible: tier.visible === false });
   }
 
   return (
@@ -118,19 +119,21 @@ export function ResidentialTrackComparePanel({ config, onChange, className }: Pr
                   <th className="px-3 py-2.5">Non-DCR gross (₹)</th>
                   <th className="px-3 py-2.5">DCR gross (₹)</th>
                   <th className="px-3 py-2.5 w-20">Δ</th>
-                  <th className="w-10" />
+                  <th className="w-[4.5rem] px-1 text-center">Show</th>
                 </tr>
               </thead>
               <tbody>
                 {tiers.map((t, i) => {
                   const delta = Math.max(0, t.dcrGrossInr - t.nonDcrGrossInr);
                   const isPlant = t.kw === config.solar.plantCapacityKw;
+                  const rowVisible = t.visible !== false;
                   return (
                     <tr
                       key={`${t.kw}-${i}`}
                       className={cn(
                         "border-t border-slate-100 dark:border-white/10",
-                        isPlant && "bg-indigo-50/50 dark:bg-indigo-500/10"
+                        isPlant && rowVisible && "bg-indigo-50/50 dark:bg-indigo-500/10",
+                        !rowVisible && "opacity-55"
                       )}
                     >
                       <td className="px-3 py-2">
@@ -161,15 +164,31 @@ export function ResidentialTrackComparePanel({ config, onChange, className }: Pr
                         +{inr(delta)}
                       </td>
                       <td className="px-1 py-2">
-                        <button
-                          type="button"
-                          disabled={tiers.length <= 1}
-                          onClick={() => removeTier(i)}
-                          className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-red-600 disabled:opacity-30 dark:hover:bg-white/10"
-                          aria-label="Remove row"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <div className="flex items-center justify-center gap-0.5">
+                          <button
+                            type="button"
+                            onClick={() => toggleTierVisible(i)}
+                            className={cn(
+                              "rounded p-1.5 hover:bg-slate-100 dark:hover:bg-white/10",
+                              rowVisible
+                                ? "text-teal-700 dark:text-teal-300"
+                                : "text-slate-400 dark:text-slate-500"
+                            )}
+                            aria-label={rowVisible ? "Hide from web proposal" : "Show on web proposal"}
+                            title={rowVisible ? "Hide from web proposal" : "Show on web proposal"}
+                          >
+                            {rowVisible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                          </button>
+                          <button
+                            type="button"
+                            disabled={tiers.length <= 1}
+                            onClick={() => removeTier(i)}
+                            className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-red-600 disabled:opacity-30 dark:hover:bg-white/10"
+                            aria-label="Remove row"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -178,18 +197,15 @@ export function ResidentialTrackComparePanel({ config, onChange, className }: Pr
             </table>
           </div>
 
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Button type="button" variant="outline" size="sm" className="gap-1" onClick={addTier} disabled={tiers.length >= 4}>
+          <div className="mt-3">
+            <Button type="button" variant="outline" size="sm" className="gap-1" onClick={addTier}>
               <Plus className="h-3.5 w-3.5" />
               Add kW row
             </Button>
-            <Button type="button" variant="ghost" size="sm" onClick={resetDefaults}>
-              Reset 8 &amp; 10 kW
-            </Button>
           </div>
           <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
-            Edit the same kW values for both tracks so the comparison stays fair. Row matching your plant size (
-            {config.solar.plantCapacityKw} kW) is highlighted on the web proposal.
+            Edit the same kW values for both tracks. Only rows with the eye icon (visible) appear on the web
+            proposal. Row matching your plant size ({config.solar.plantCapacityKw} kW) is highlighted there.
           </p>
         </>
       )}
