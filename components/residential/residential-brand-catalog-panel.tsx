@@ -7,8 +7,6 @@ import {
   addCatalogBrand,
   ensureBrandCatalog,
   nonDcrGrossFromDcrGross,
-  nonDcrRateFromDcr,
-  rateForSolarTrack,
   removeCatalogBrand,
   syncSolarAndPricingFromEntry,
   syncTrackCompareFromBrand,
@@ -38,7 +36,13 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
   const kwTiers = activeEntryRaw.kwTiers ?? [];
   const activeEntry = { ...activeEntryRaw, kwTiers };
   const track = normalized.solar.panelTrack ?? "dcr";
-  const nonDcrRate = nonDcrRateFromDcr(activeEntry.dcrRatePerWpInr);
+  const plantKw = normalized.solar.plantCapacityKw;
+  const plantTier = kwTiers.find((t) => t.kw === plantKw);
+  const plantGrossDcr = plantTier?.priceInr ?? 0;
+  const plantGross =
+    track === "dcr"
+      ? plantGrossDcr
+      : nonDcrGrossFromDcrGross(plantGrossDcr);
 
   function emit(next: ResidentialProposalConfig) {
     onChange(ensureBrandCatalog(next));
@@ -68,17 +72,16 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
           <Sparkles className="h-4 w-4 text-amber-300" aria-hidden />
           <div>
             <p className="text-[10px] font-bold uppercase tracking-widest text-amber-200/90">Smart catalog</p>
-            <h4 className="text-base font-bold">Panel brands — DCR &amp; Non-DCR rates</h4>
+            <h4 className="text-base font-bold">Panel brands — plant cost by kW</h4>
           </div>
         </div>
         <p className="mt-1.5 text-[11px] leading-snug text-slate-300">
-          Set <strong className="text-white">DCR ₹/Wp</strong> per brand (required). Non-DCR auto = 30% lower. System
-          price by kW and comparison table stay in sync.
+          Set <strong className="text-white">complete plant gross (₹)</strong> per kW for each brand. Non-DCR is
+          automatically 30% lower than DCR for the same kW row.
         </p>
       </div>
 
       <div className="space-y-4 p-4 sm:p-5">
-        {/* Brand picker */}
         <div>
           <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">Brands</p>
           <div className="flex flex-wrap gap-2">
@@ -90,21 +93,13 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
                   type="button"
                   onClick={() => selectBrand(e.brandId)}
                   className={cn(
-                    "rounded-xl border px-3 py-2 text-left transition-all",
+                    "rounded-xl border px-4 py-2.5 text-sm font-bold transition-all",
                     isActive
                       ? "border-amber-500 bg-amber-500 text-white shadow-md"
                       : "border-slate-200 bg-white text-slate-800 hover:border-amber-300 dark:border-white/15 dark:bg-white/5 dark:text-slate-100"
                   )}
                 >
-                  <span className="block text-xs font-bold">{e.brand}</span>
-                  <span
-                    className={cn(
-                      "mt-0.5 block text-[10px] tabular-nums",
-                      isActive ? "text-amber-100" : "text-slate-500"
-                    )}
-                  >
-                    DCR {e.dcrRatePerWpInr}/Wp
-                  </span>
+                  {e.brand}
                 </button>
               );
             })}
@@ -114,14 +109,13 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
                 const name = window.prompt("New panel brand name");
                 if (name?.trim()) emit(addCatalogBrand(normalized, name.trim()));
               }}
-              className="inline-flex items-center gap-1 rounded-xl border border-dashed border-slate-300 px-3 py-2 text-xs font-bold text-slate-600 dark:border-white/20 dark:text-slate-300"
+              className="inline-flex items-center gap-1 rounded-xl border border-dashed border-slate-300 px-3 py-2.5 text-xs font-bold text-slate-600 dark:border-white/20 dark:text-slate-300"
             >
               <Plus className="h-3.5 w-3.5" /> Add brand
             </button>
           </div>
         </div>
 
-        {/* Active brand editor */}
         <div className="rounded-xl border border-slate-200/90 bg-white/90 p-4 dark:border-white/10 dark:bg-white/[0.03]">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -147,8 +141,8 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
           <div className="mt-4 flex flex-wrap gap-2">
             {(
               [
-                { id: "dcr" as const, label: "DCR (pricing track)" },
-                { id: "non_dcr" as const, label: "Non-DCR" },
+                { id: "dcr" as const, label: "DCR plant cost" },
+                { id: "non_dcr" as const, label: "Non-DCR (−30%)" },
               ] as const
             ).map((t) => (
               <button
@@ -167,37 +161,15 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
             ))}
           </div>
 
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <FloatingLabelNumericInput
-              label="DCR rate (₹/Wp) *"
-              value={activeEntry.dcrRatePerWpInr}
-              onValueChange={(n) =>
-                patchActiveEntry({ dcrRatePerWpInr: Math.max(0, n ?? activeEntry.dcrRatePerWpInr) })
-              }
-              className="h-11 rounded-xl text-sm font-bold"
-            />
-            <div className="flex flex-col justify-end rounded-xl border border-slate-200/80 bg-slate-50/80 px-3 py-2.5 dark:border-white/10 dark:bg-white/[0.02]">
-              <p className="text-[10px] font-bold uppercase text-slate-500">Non-DCR (auto −30%)</p>
-              <p className="text-lg font-bold tabular-nums text-slate-800 dark:text-white">{nonDcrRate}/Wp</p>
-              <p className="text-[10px] text-slate-500">Active plant uses {track === "dcr" ? "DCR" : "Non-DCR"} rate</p>
-            </div>
-          </div>
-          <p className="mt-2 text-[11px] text-slate-600 dark:text-slate-400">
-            Live on proposal: <strong>{rateForSolarTrack(activeEntry, track)}/Wp</strong> ·{" "}
-            {normalized.solar.plantCapacityKw} kW tier →{" "}
-            <strong>
-              {inr(
-                (track === "dcr"
-                  ? kwTiers.find((t) => t.kw === normalized.solar.plantCapacityKw)?.priceInr
-                  : nonDcrGrossFromDcrGross(
-                      kwTiers.find((t) => t.kw === normalized.solar.plantCapacityKw)?.priceInr ?? 0
-                    )) ?? 0
-              )}
-            </strong>
+          <p className="mt-3 rounded-lg bg-slate-50/90 px-3 py-2 text-[11px] text-slate-600 dark:bg-white/[0.03] dark:text-slate-400">
+            Active proposal ({plantKw} kW, {track === "dcr" ? "DCR" : "Non-DCR"}):{" "}
+            <strong className="text-slate-900 dark:text-white">{inr(plantGross)}</strong>
+            {track === "non_dcr" && plantGrossDcr > 0 ? (
+              <span className="text-slate-500"> — from DCR {inr(plantGrossDcr)}</span>
+            ) : null}
           </p>
         </div>
 
-        {/* kW tiers — DCR gross + computed Non-DCR */}
         <div>
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
             <p className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
@@ -205,7 +177,7 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
               System price by kW — {activeEntry.brand}
             </p>
             <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200">
-              DCR column editable
+              DCR = full plant · Non-DCR auto −30%
             </span>
           </div>
           <div className="overflow-x-auto rounded-xl border border-slate-200/90 dark:border-white/10">
@@ -213,14 +185,14 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
               <thead>
                 <tr className="border-b bg-slate-50 text-left text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:border-white/10 dark:bg-white/[0.03]">
                   <th className="px-3 py-2">kW</th>
-                  <th className="px-3 py-2">DCR gross (₹)</th>
-                  <th className="px-3 py-2">Non-DCR gross (₹)</th>
+                  <th className="px-3 py-2">DCR plant gross (₹)</th>
+                  <th className="px-3 py-2">Non-DCR plant gross (₹)</th>
                   <th className="w-10 px-2 py-2" />
                 </tr>
               </thead>
               <tbody>
                 {kwTiers.map((tier, idx) => {
-                  const isPlantKw = tier.kw === normalized.solar.plantCapacityKw;
+                  const isPlantKw = tier.kw === plantKw;
                   const nonDcr = nonDcrGrossFromDcrGross(tier.priceInr);
                   return (
                     <tr

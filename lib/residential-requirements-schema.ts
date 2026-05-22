@@ -74,7 +74,8 @@ export const residentialTrackCompareTierSchema = z.object({
 export const residentialBrandCatalogEntrySchema = z.object({
   brandId: z.string().max(40),
   brand: z.string().min(1).max(80),
-  dcrRatePerWpInr: z.number().min(0).max(500),
+  /** Legacy; pricing uses kW tier gross plant cost only. */
+  dcrRatePerWpInr: z.number().min(0).max(500).optional(),
   kwTiers: z.array(residentialKwTierSchema).max(24).optional(),
 });
 

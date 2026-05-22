@@ -3,6 +3,7 @@
  * Non-DCR = 70% of DCR (30% lower) for rates and kW gross prices.
  */
 
+import { moduleCountForResidential } from "@/lib/residential-solar-engine";
 import { computeGrossSystemCostInr } from "@/lib/solar-engine";
 import {
   defaultResidentialKwTiers,
@@ -18,9 +19,9 @@ export const RESIDENTIAL_NON_DCR_FACTOR = 0.7;
 export type ResidentialBrandCatalogEntry = {
   brandId: string;
   brand: string;
-  /** Required — DCR ₹ per Wp for this brand. */
-  dcrRatePerWpInr: number;
-  /** Per-kW gross system price (DCR track). Non-DCR derived on read. */
+  /** Legacy field — catalog pricing is kW gross plant cost only. */
+  dcrRatePerWpInr?: number;
+  /** Per-kW complete plant gross (DCR). Non-DCR = 70% of this. */
   kwTiers?: ResidentialKwTier[];
 };
 
@@ -32,13 +33,10 @@ export function normalizeCatalogEntry(
 
 export type ResidentialBrandCatalog = NonNullable<ResidentialProposalConfig["brandCatalog"]>;
 
-export const DEFAULT_RESIDENTIAL_CATALOG_BRANDS: Omit<
-  ResidentialBrandCatalogEntry,
-  "kwTiers"
->[] = [
-  { brandId: "adani", brand: "Adani Solar", dcrRatePerWpInr: 42 },
-  { brandId: "waaree", brand: "Waaree", dcrRatePerWpInr: 40 },
-  { brandId: "gautam", brand: "Gautam Solar", dcrRatePerWpInr: 41 },
+export const DEFAULT_RESIDENTIAL_CATALOG_BRANDS: Omit<ResidentialBrandCatalogEntry, "kwTiers">[] = [
+  { brandId: "adani", brand: "Adani Solar" },
+  { brandId: "waaree", brand: "Waaree" },
+  { brandId: "gautam", brand: "Gautam Solar" },
 ];
 
 export function nonDcrRateFromDcr(dcrRatePerWp: number): number {
@@ -163,12 +161,34 @@ export function trackCompareTiersFromCatalogEntry(
     });
 }
 
+/** BOM line-item hint only — derived from active kW tier plant gross ÷ module Wp. */
+export function impliedRatePerWpFromPlant(
+  solar: ResidentialSolar,
+  entry: ResidentialBrandCatalogEntry,
+  track: ResidentialSolar["panelTrack"] = solar.panelTrack ?? "dcr"
+): number {
+  const e = normalizeCatalogEntry(entry);
+  const gross = lookupKwGrossForTrack(e, solar.plantCapacityKw, track, e.kwTiers);
+  if (gross != null && gross > 0) {
+    const modules = moduleCountForResidential({ ...solar, panelTrack: track });
+    const wp = modules * solar.watt;
+    if (wp > 0) return Math.round((gross / wp) * 100) / 100;
+  }
+  const legacy = e.dcrRatePerWpInr ?? 0;
+  if (legacy > 0) return track === "non_dcr" ? nonDcrRateFromDcr(legacy) : legacy;
+  return 40;
+}
+
+/** @deprecated Use impliedRatePerWpFromPlant — catalog has no separate ₹/Wp rate. */
 export function rateForSolarTrack(
   entry: ResidentialBrandCatalogEntry,
-  track: ResidentialSolar["panelTrack"]
+  track: ResidentialSolar["panelTrack"],
+  solar?: ResidentialSolar
 ): number {
-  const dcr = Math.max(0, entry.dcrRatePerWpInr);
-  return track === "non_dcr" ? nonDcrRateFromDcr(dcr) : dcr;
+  if (solar) return impliedRatePerWpFromPlant(solar, entry, track);
+  const legacy = entry.dcrRatePerWpInr ?? 0;
+  if (legacy <= 0) return 40;
+  return track === "non_dcr" ? nonDcrRateFromDcr(legacy) : legacy;
 }
 
 function catalogEntries(catalog: ResidentialBrandCatalog | undefined): ResidentialBrandCatalogEntry[] {
@@ -210,7 +230,7 @@ export function syncSolarAndPricingFromEntry(
   track: ResidentialSolar["panelTrack"] = config.solar.panelTrack ?? "dcr"
 ): ResidentialProposalConfig {
   const e = normalizeCatalogEntry(entry);
-  const ratePerWpInr = rateForSolarTrack(e, track);
+  const ratePerWpInr = impliedRatePerWpFromPlant(config.solar, e, track);
   return {
     ...config,
     solar: {
@@ -305,7 +325,6 @@ export function addCatalogBrand(
   const entry: ResidentialBrandCatalogEntry = {
     brandId,
     brand,
-    dcrRatePerWpInr: 40,
     kwTiers: tiers,
   };
   return {
@@ -357,12 +376,6 @@ export function ensureBrandCatalog(config: ResidentialProposalConfig): Residenti
   }
 
   const brandId = config.solar.brandId ?? slugBrandId(config.solar.brand || "adani");
-  const dcrRate =
-    config.solar.panelTrack === "non_dcr"
-      ? nonDcrRateFromDcr(config.solar.ratePerWpInr) > 0
-        ? config.solar.ratePerWpInr / RESIDENTIAL_NON_DCR_FACTOR
-        : 42
-      : config.solar.ratePerWpInr || 42;
   const tiers = config.pricing?.kwTiers?.length
     ? config.pricing.kwTiers.map((t) => ({ ...t }))
     : defaultResidentialKwTiers();
@@ -370,7 +383,6 @@ export function ensureBrandCatalog(config: ResidentialProposalConfig): Residenti
   const migrated: ResidentialBrandCatalogEntry = {
     brandId,
     brand: config.solar.brand || "Adani Solar",
-    dcrRatePerWpInr: Math.round(dcrRate * 100) / 100,
     kwTiers: tiers,
   };
 

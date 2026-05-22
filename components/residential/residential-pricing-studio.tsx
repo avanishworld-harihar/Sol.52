@@ -36,7 +36,7 @@ import {
   applyActiveBrandToConfig,
   ensureBrandCatalog,
   getActiveCatalogEntry,
-  rateForSolarTrack,
+  impliedRatePerWpFromPlant,
   syncSolarAndPricingFromEntry,
 } from "@/lib/residential-brand-catalog";
 import type { PricingLineItem } from "@/lib/proposal-pricing-lines";
@@ -186,7 +186,7 @@ export function ResidentialPricingStudio({
       patchSolar({
         watt: w,
         moduleCountOverride: undefined,
-        ratePerWpInr: rateForSolarTrack(entry, solar.panelTrack ?? "dcr"),
+        ratePerWpInr: impliedRatePerWpFromPlant(solar, entry, solar.panelTrack ?? "dcr"),
         technology: solar.technology,
       });
       return;

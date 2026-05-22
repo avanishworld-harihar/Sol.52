@@ -119,7 +119,7 @@ export function ResidentialTrackComparePanel({ config, onChange, className }: Pr
       <div className="flex flex-wrap items-start justify-between gap-3">
         <SectionTitle
           title="DCR vs Non-DCR comparison"
-          hint="Choose a catalog brand — same kW rows use that brand's DCR prices; Non-DCR = 30% lower."
+          hint="Choose a catalog brand — same kW rows use that brand's DCR plant cost; Non-DCR = 30% lower."
         />
         <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 dark:border-white/15 dark:bg-white/5 dark:text-slate-200">
           <input
@@ -157,8 +157,7 @@ export function ResidentialTrackComparePanel({ config, onChange, className }: Pr
 
       {compareEntry ? (
         <p className="mb-3 text-[11px] font-medium text-amber-900/90 dark:text-amber-100/80">
-          {compareEntry.brand}: DCR {compareEntry.dcrRatePerWpInr}/Wp · Non-DCR{" "}
-          {Math.round(compareEntry.dcrRatePerWpInr * 70) / 100}/Wp
+          {compareEntry.brand} — plant gross by kW (Non-DCR = 30% below DCR for each row)
         </p>
       ) : null}
 
