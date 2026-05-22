@@ -122,8 +122,8 @@ export const residentialProposalConfigSchema = z.object({
   notes: z.string().max(600).optional(),
   /** CRM / requirement customer connection — drives PM Surya Ghar eligibility. */
   connectionType: z.string().max(40).optional(),
-  /** Builder path marker */
-  inputMode: z.literal("requirement").optional(),
+  /** Builder path: bill upload vs requirement sizing */
+  inputMode: z.enum(["bill", "requirement"]).optional(),
 });
 
 export type ResidentialSolar = z.infer<typeof residentialSolarSchema>;

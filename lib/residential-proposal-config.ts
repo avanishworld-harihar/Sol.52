@@ -10,6 +10,7 @@ import {
   type ResidentialWireBrand,
 } from "@/lib/residential-requirements-schema";
 import { ensureBrandCatalog } from "@/lib/residential-brand-catalog";
+import { mergeInstallerBrandCatalog } from "@/lib/residential-brand-catalog-storage";
 import { mergeTrackCompareIntoConfig } from "@/lib/residential-track-compare";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
 
@@ -37,6 +38,16 @@ export function normalizeResidentialConfig(config: ResidentialProposalConfig): R
 export function parseResidentialConfig(raw: unknown): ResidentialProposalConfig | null {
   const parsed = residentialProposalConfigSchema.safeParse(raw);
   return parsed.success ? normalizeResidentialConfig(parsed.data) : null;
+}
+
+/** New-proposal builder default — merges installer smart-catalog prices from local storage. */
+export function defaultResidentialConfigForBuilder(
+  plantKw = 5,
+  inputMode?: "bill" | "requirement"
+): ResidentialProposalConfig {
+  let base = defaultResidentialConfig(plantKw);
+  if (inputMode) base = { ...base, inputMode };
+  return normalizeResidentialConfig(mergeInstallerBrandCatalog(base));
 }
 
 /** Toggle proposal blocks from residential requirement flags (EMI, subsidy, requirement path). */

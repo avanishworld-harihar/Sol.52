@@ -121,6 +121,8 @@ type FloatingNumericProps = {
   fallback?: number;
   onValueChange: (next: number | undefined) => void;
   integer?: boolean;
+  /** Commit on each keystroke — use when sibling fields derive from this value. */
+  live?: boolean;
   list?: string;
 };
 
@@ -136,6 +138,7 @@ export function FloatingLabelNumericInput({
   fallback,
   onValueChange,
   integer,
+  live,
   list,
 }: FloatingNumericProps) {
   const generatedId = useId();
@@ -156,6 +159,7 @@ export function FloatingLabelNumericInput({
         id={fieldId}
         list={list}
         integer={integer}
+        live={live}
         value={value}
         fallback={fallback}
         onValueChange={onValueChange}

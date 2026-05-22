@@ -1,4 +1,6 @@
 import { applyResidentialFlagsToLayout } from "@/lib/residential-proposal-config";
+import { writeResidentialBrandCatalog } from "@/lib/residential-brand-catalog-storage";
+import { ensureBrandCatalog } from "@/lib/residential-brand-catalog";
 import { syncResidentialSolarToLineItems } from "@/lib/residential-solar-engine";
 import type { PricingLineItem } from "@/lib/proposal-pricing-lines";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
@@ -29,7 +31,8 @@ export async function saveResidentialRequirement(
     proposalLayout ?? { version: 1, blocks: [] },
     config
   );
-  const residentialConfig = { ...config, inputMode: "requirement" as const };
+  const residentialConfig = ensureBrandCatalog(config);
+  writeResidentialBrandCatalog(residentialConfig.brandCatalog);
 
   if (lineItems?.length) {
     const syncedLines = syncResidentialSolarToLineItems(residentialConfig.solar, lineItems);

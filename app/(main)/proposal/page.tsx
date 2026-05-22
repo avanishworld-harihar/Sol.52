@@ -79,9 +79,14 @@ import {
 } from "@/lib/commercial-proposal-config";
 import {
   applyResidentialFlagsToLayout,
-  defaultResidentialConfig,
+  defaultResidentialConfigForBuilder,
+  parseResidentialConfig,
   type ResidentialProposalConfig,
 } from "@/lib/residential-proposal-config";
+import {
+  readResidentialDraftProposalId,
+  writeResidentialDraftProposalId,
+} from "@/lib/residential-brand-catalog-storage";
 import { getPresetDefaultLayout } from "@/lib/proposal-preset-engine";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
 import useSWR, { useSWRConfig } from "swr";
@@ -1406,9 +1411,54 @@ function ProposalPageContent() {
   useEffect(() => {
     if (!isResidentialSmart) return;
     const kw = result.solarKw > 0 ? result.solarKw : urlPrefill.kw ?? 5;
-    setResidentialConfig((prev) => prev ?? defaultResidentialConfig(kw));
+    setResidentialConfig(
+      (prev) => prev ?? defaultResidentialConfigForBuilder(kw, residentialInputMode)
+    );
     setProposalLayout((prev) => prev ?? getPresetDefaultLayout("residential_smart"));
-  }, [isResidentialSmart, result.solarKw, urlPrefill.kw]);
+  }, [isResidentialSmart, result.solarKw, urlPrefill.kw, residentialInputMode]);
+
+  useEffect(() => {
+    if (!isResidentialSmart) return;
+    setResidentialConfig((prev) => {
+      if (!prev || prev.inputMode === residentialInputMode) return prev;
+      return { ...prev, inputMode: residentialInputMode };
+    });
+  }, [isResidentialSmart, residentialInputMode]);
+
+  useEffect(() => {
+    if (draftProposalId) writeResidentialDraftProposalId(draftProposalId);
+  }, [draftProposalId]);
+
+  /** Restore last saved residential draft from server after refresh. */
+  useEffect(() => {
+    if (!isResidentialSmart) return;
+    const draftId = readResidentialDraftProposalId();
+    if (!draftId) return;
+    setDraftProposalId((prev) => prev ?? draftId);
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch(`/api/proposals/${draftId}`, { cache: "no-store" });
+        if (!res.ok || cancelled) return;
+        const json = (await res.json()) as {
+          ok?: boolean;
+          pptInput?: { residentialConfig?: unknown; proposalLayout?: unknown };
+        };
+        const cfg = parseResidentialConfig(json.pptInput?.residentialConfig);
+        if (!cfg || cancelled) return;
+        setResidentialConfig(cfg);
+        const layout = json.pptInput?.proposalLayout;
+        if (layout && typeof layout === "object") {
+          setProposalLayout((prev) => prev ?? (layout as ProposalTemplateV1));
+        }
+      } catch {
+        /* offline — local catalog still applies via defaultResidentialConfigForBuilder */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isResidentialSmart]);
 
   /** Bill path: size plant from bill audit until user changes kW in catalog. */
   useEffect(() => {

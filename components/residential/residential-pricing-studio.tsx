@@ -40,6 +40,7 @@ import {
   syncSolarAndPricingFromEntry,
 } from "@/lib/residential-brand-catalog";
 import type { PricingLineItem } from "@/lib/proposal-pricing-lines";
+import { writeResidentialBrandCatalog } from "@/lib/residential-brand-catalog-storage";
 import { saveResidentialRequirement } from "@/lib/save-residential-requirement-client";
 import { useMemo, useState } from "react";
 
@@ -207,30 +208,27 @@ export function ResidentialPricingStudio({
   async function handleSave() {
     setSaving(true);
     try {
+      const catalogConfig = ensureBrandCatalog(config);
+      writeResidentialBrandCatalog(catalogConfig.brandCatalog);
+
       let id = proposalId?.trim() || null;
       if (!id && onCreateProposal) {
         id = await onCreateProposal();
-        if (!id) {
-          toast.push({
-            tone: "error",
-            title: "Could not save",
-            description: "Create the web proposal first, then try Save again.",
-          });
-          return;
-        }
       }
       if (!id) {
+        onSaved?.();
         toast.push({
-          tone: "info",
-          title: "Generate proposal first",
-          description: "Tap Generate to create the web proposal, then Save will sync all pricing fields.",
+          tone: "success",
+          title: "Catalog saved",
+          description:
+            "kW prices are saved for bill-based and requirement-based proposals. Generate a web proposal to sync this draft to the cloud.",
         });
         return;
       }
 
       const result = await saveResidentialRequirement({
         proposalId: id,
-        config,
+        config: catalogConfig,
         proposalLayout,
         lineItems,
       });
@@ -242,7 +240,8 @@ export function ResidentialPricingStudio({
       toast.push({
         tone: "success",
         title: "Saved",
-        description: "Residential pricing and proposal settings are updated.",
+        description:
+          "Smart catalog kW prices saved locally and on this proposal (bill & requirement paths).",
       });
     } catch (e) {
       toast.push({

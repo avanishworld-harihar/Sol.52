@@ -11,6 +11,8 @@ type Props = {
   onValueChange: (next: number | undefined) => void;
   /** Whole numbers only (no decimal point) */
   integer?: boolean;
+  /** When true, commits parsed value on every keystroke (for derived columns that must update immediately). */
+  live?: boolean;
   className?: string;
   placeholder?: string;
   disabled?: boolean;
@@ -28,11 +30,18 @@ const INTEGER_RE = /^[0-9]*$/;
  * Text-based numeric field — avoids browser `type="number"` quirks and
  * controlled-input fallbacks that block deleting digits (e.g. last "1" in 60).
  */
+function parseDraftValue(raw: string, integer: boolean): number | undefined {
+  if (raw === "" || raw === ".") return undefined;
+  const n = integer ? parseInt(raw, 10) : parseFloat(raw);
+  return Number.isFinite(n) ? n : undefined;
+}
+
 export function NumericTextInput({
   value,
   fallback,
   onValueChange,
   integer = false,
+  live = false,
   className,
   placeholder,
   disabled,
@@ -67,17 +76,13 @@ export function NumericTextInput({
         const re = integer ? INTEGER_RE : DECIMAL_RE;
         if (raw !== "" && !re.test(raw)) return;
         setDraft(raw);
+        if (live) onValueChange(parseDraftValue(raw, integer));
       }}
       onFocus={onFocus}
       onBlur={(e) => {
         const raw = draft ?? display;
         setDraft(null);
-        if (raw === "" || raw === ".") {
-          onValueChange(undefined);
-        } else {
-          const n = integer ? parseInt(raw, 10) : parseFloat(raw);
-          onValueChange(Number.isFinite(n) ? n : undefined);
-        }
+        onValueChange(parseDraftValue(raw, integer));
         onBlur?.(e);
       }}
       className={cn(className)}

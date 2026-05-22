@@ -208,21 +208,26 @@ export function ResidentialTrackComparePanel({ config, onChange, className }: Pr
                       />
                     </td>
                     <td className="px-2 py-1.5">
-                      <span className="flex h-9 items-center px-2 text-xs font-bold tabular-nums text-slate-600">
+                      <span
+                        className="flex h-9 items-center px-2 text-xs font-bold tabular-nums text-emerald-700 dark:text-emerald-300"
+                        aria-live="polite"
+                      >
                         {inr(tier.nonDcrGrossInr)}
-                        <span className="ml-1 text-[9px] font-normal text-slate-400">auto</span>
+                        <span className="ml-1 text-[9px] font-normal text-slate-400">−30%</span>
                       </span>
                     </td>
                     <td className="px-2 py-1.5">
                       <FloatingLabelNumericInput
                         label="DCR ₹"
+                        live
                         value={tier.dcrGrossInr}
-                        onValueChange={(n) =>
+                        onValueChange={(n) => {
+                          const dcr = n !== undefined ? Math.max(0, n) : 0;
                           updateTier(idx, {
-                            dcrGrossInr: n ?? tier.dcrGrossInr,
-                            nonDcrGrossInr: nonDcrGrossFromDcrGross(n ?? tier.dcrGrossInr),
-                          })
-                        }
+                            dcrGrossInr: dcr,
+                            nonDcrGrossInr: nonDcrGrossFromDcrGross(dcr),
+                          });
+                        }}
                         className="h-9 rounded-lg text-xs font-bold"
                       />
                     </td>

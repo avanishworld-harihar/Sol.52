@@ -214,14 +214,22 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
                       <td className="px-2 py-1.5">
                         <FloatingLabelNumericInput
                           label="DCR ₹"
+                          live
                           value={tier.priceInr}
-                          onValueChange={(n) => patchActiveTier(idx, { priceInr: n ?? tier.priceInr })}
+                          onValueChange={(n) =>
+                            patchActiveTier(idx, { priceInr: n !== undefined ? Math.max(0, n) : 0 })
+                          }
                           className="h-9 rounded-lg text-xs font-bold"
                         />
                       </td>
                       <td className="px-3 py-2 align-middle">
-                        <span className="text-xs font-bold tabular-nums text-slate-500">{inr(nonDcr)}</span>
-                        <span className="ml-1 text-[9px] text-slate-400">auto</span>
+                        <span
+                          className="text-xs font-bold tabular-nums text-emerald-700 transition-colors dark:text-emerald-300"
+                          aria-live="polite"
+                        >
+                          {inr(nonDcr)}
+                        </span>
+                        <span className="ml-1 text-[9px] font-medium text-slate-400">−30%</span>
                       </td>
                       <td className="px-1 py-1.5">
                         <button
