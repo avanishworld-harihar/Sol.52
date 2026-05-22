@@ -1883,7 +1883,7 @@ function ProposalPageContent() {
           />
         ) : null}
 
-        {isResidentialSmart ? (
+        {isResidentialRequirement ? (
           <ResidentialRequirementCustomerForm
             fields={{
               contactName: manual.leadContactName,
