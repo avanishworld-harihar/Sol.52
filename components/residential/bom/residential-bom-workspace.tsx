@@ -1,7 +1,6 @@
 "use client";
 
-import { ResidentialPricingStudio } from "@/components/residential/residential-pricing-studio";
-import { ResidentialRequirementBuilder } from "@/components/residential/residential-requirement-builder";
+import { ResidentialProposalConfigWorkspace } from "@/components/residential/residential-proposal-config-workspace";
 import { Button } from "@/components/ui/button";
 import {
   applyResidentialFlagsToLayout,
@@ -85,29 +84,24 @@ export function ResidentialBomWorkspace({
 
   return (
     <div className="space-y-5">
-      <ResidentialRequirementBuilder
-        config={config}
-        onChange={patchConfig}
-        netCostInr={Math.round(net)}
-        annualSavingInr={liveSummary.annualSaving}
-      />
-
       {onOpenReview ? (
         <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={onOpenReview}>
           Review proposal sections
         </Button>
       ) : null}
 
-      <ResidentialPricingStudio
+      <ResidentialProposalConfigWorkspace
         config={config}
+        onChange={patchConfig}
         subsidyEligible={isPmSuryaGharSubsidyEligible(
           config.connectionType ?? pptInput.connectionType
         )}
-        onChange={patchConfig}
+        netCostInr={Math.round(net)}
+        annualSavingInr={liveSummary.annualSaving}
         proposalId={proposalId}
         proposalLayout={getProposalLayout(pptInput)}
         lineItems={lines}
-        onSaved={() => {
+        onPricingSaved={() => {
           const syncedLines = syncResidentialSolarToLineItems(config.solar, lines);
           const row = proposalPricingRowFromLineItems(pricing, syncedLines, {
             system_kw: config.solar.plantCapacityKw,
@@ -122,6 +116,15 @@ export function ResidentialBomWorkspace({
             systemKw: config.solar.plantCapacityKw,
           });
         }}
+        onLayoutChange={(layout) => {
+          onPptInputChange?.({
+            ...pptInput,
+            residentialConfig: config,
+            proposalLayout: applyResidentialFlagsToLayout(layout, config),
+            systemKw: config.solar.plantCapacityKw,
+          });
+        }}
+        onCreateProposal={async () => proposalId}
       />
     </div>
   );

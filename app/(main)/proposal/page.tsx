@@ -61,7 +61,7 @@ import {
   type ResidentialInputMode,
 } from "@/components/residential/residential-proposal-mode-picker";
 import { ResidentialPricingStudio } from "@/components/residential/residential-pricing-studio";
-import { ResidentialRequirementBuilder } from "@/components/residential/residential-requirement-builder";
+import { ResidentialProposalConfigWorkspace } from "@/components/residential/residential-proposal-config-workspace";
 import { ResidentialRequirementCustomerForm } from "@/components/residential/residential-requirement-customer-form";
 import { isPmSuryaGharSubsidyEligible } from "@/lib/lead-connection-types";
 import {
@@ -661,11 +661,13 @@ function ProposalPageContent() {
 
   const isCommercialRequirement =
     osPresetId === "commercial_executive" && commercialInputMode === "requirement";
-  const isResidentialRequirement =
-    osPresetId === "residential_smart" && residentialInputMode === "requirement";
+  const isResidentialSmart = osPresetId === "residential_smart";
+  const isResidentialRequirement = isResidentialSmart && residentialInputMode === "requirement";
+  const isResidentialBill = isResidentialSmart && residentialInputMode === "bill";
+  const useResidentialCatalog = isResidentialSmart && Boolean(residentialConfig);
 
   const effectiveResult = useMemo(() => {
-    if (isResidentialRequirement && residentialConfig) {
+    if (useResidentialCatalog && residentialConfig) {
       const q = quoteResidentialSolar(residentialConfig.solar);
       const solarKw = residentialConfig.solar.plantCapacityKw;
       const panels = q.moduleCount;
@@ -734,21 +736,21 @@ function ProposalPageContent() {
     overrideSolarKw,
     overridePanels,
     result,
-    isResidentialRequirement,
+    useResidentialCatalog,
     residentialConfig,
     residentialSubsidyEligible,
     manual.connectionType,
   ]);
 
   const autoPanelCount = useMemo(() => {
-    if (isResidentialRequirement && residentialConfig) {
+    if (useResidentialCatalog && residentialConfig) {
       return moduleCountForResidential(residentialConfig.solar);
     }
     const kwRaw = parseFloat(overrideSolarKw);
     const solarKw = kwRaw > 0 ? kwRaw : result.solarKw;
     const watt = residentialConfig?.solar.watt ?? 540;
     return Math.ceil((solarKw * 1000) / watt);
-  }, [overrideSolarKw, result.solarKw, isResidentialRequirement, residentialConfig]);
+  }, [overrideSolarKw, result.solarKw, useResidentialCatalog, residentialConfig]);
 
   const filledMonths = useMemo(() => countFilledMonths(monthlyUnits), [monthlyUnits]);
   const annualUnits = useMemo(
@@ -769,7 +771,7 @@ function ProposalPageContent() {
   // Reactive bill-backed status for live preview
   const isBillBackedLive = latestBill != null;
 
-  const hideBillUploadSteps = isCommercialRequirement || isResidentialRequirement;
+  const hideBillUploadSteps = isCommercialRequirement;
 
   const commercialFlowHasClient = Boolean(
     manual.leadContactName?.trim() || manual.officialBillName?.trim() || selectedLeadId
@@ -1368,7 +1370,7 @@ function ProposalPageContent() {
       },
       proposalLayout: (() => {
         if (!proposalLayout) return undefined;
-        if (isResidentialRequirement && residentialConfig) {
+        if (useResidentialCatalog && residentialConfig) {
           return applyResidentialFlagsToLayout(proposalLayout, residentialConfig);
         }
         if (osPresetId === "commercial_executive") {
@@ -1379,10 +1381,10 @@ function ProposalPageContent() {
       commercialConfig:
         osPresetId === "commercial_executive" ? commercialConfig ?? undefined : undefined,
       residentialConfig:
-        isResidentialRequirement && residentialConfig
+        useResidentialCatalog && residentialConfig
           ? {
               ...residentialConfig,
-              inputMode: "requirement" as const,
+              inputMode: residentialInputMode,
               connectionType:
                 manual.connectionType.trim() || residentialConfig.connectionType || undefined,
             }
@@ -1402,20 +1404,25 @@ function ProposalPageContent() {
   }, [osPresetId, effectiveResult?.solarKw, urlPrefill.kw, urlPrefill.orgType, urlPrefill.story]);
 
   useEffect(() => {
-    if (osPresetId !== "residential_smart" || !isResidentialRequirement) return;
-    const kw = effectiveResult?.solarKw ?? urlPrefill.kw ?? 5;
+    if (!isResidentialSmart) return;
+    const kw = result.solarKw > 0 ? result.solarKw : urlPrefill.kw ?? 5;
     setResidentialConfig((prev) => prev ?? defaultResidentialConfig(kw));
     setProposalLayout((prev) => prev ?? getPresetDefaultLayout("residential_smart"));
-  }, [osPresetId, isResidentialRequirement, effectiveResult?.solarKw, urlPrefill.kw]);
+  }, [isResidentialSmart, result.solarKw, urlPrefill.kw]);
+
+  /** Bill path: size plant from bill audit until user changes kW in catalog. */
+  useEffect(() => {
+    if (!isResidentialBill || !residentialConfig) return;
+    const fromBill = result.solarKw;
+    if (fromBill <= 0) return;
+    setResidentialConfig((prev) => {
+      if (!prev || Math.abs(prev.solar.plantCapacityKw - fromBill) < 0.05) return prev;
+      return { ...prev, solar: { ...prev.solar, plantCapacityKw: fromBill, moduleCountOverride: undefined } };
+    });
+  }, [isResidentialBill, result.solarKw]);
 
   useEffect(() => {
-    if (!isResidentialRequirement || !residentialConfig) return;
-    setOverrideSolarKw(String(residentialConfig.solar.plantCapacityKw));
-    setOverridePanels("");
-  }, [isResidentialRequirement, residentialConfig?.solar.plantCapacityKw]);
-
-  useEffect(() => {
-    if (!isResidentialRequirement) return;
+    if (!isResidentialSmart) return;
     setResidentialConfig((prev) => {
       if (!prev) return prev;
       const conn = manual.connectionType.trim();
@@ -1430,7 +1437,7 @@ function ProposalPageContent() {
         subsidy: eligible ? prev.subsidy : { preference: "none", estimateInr: 0 },
       };
     });
-  }, [isResidentialRequirement, manual.connectionType]);
+  }, [isResidentialSmart, manual.connectionType]);
 
   async function downloadPremiumPpt() {
     setIsPptDownloading(true);
@@ -1570,7 +1577,7 @@ function ProposalPageContent() {
         pmSuryaGharSubsidyInr: effectiveResult.centralSubsidy,
         netCostInr: effectiveResult.netCost,
         panels: effectiveResult.panels,
-        dataSource: isResidentialRequirement ? "requirement" : billBacked ? "bill" : "requirement",
+        dataSource: isResidentialBill ? "bill" : isResidentialRequirement ? "requirement" : billBacked ? "bill" : "requirement",
         presetId: osPresetId ?? "residential_smart",
         ...buildProposalExtrasPayload(),
       }),
@@ -1735,7 +1742,7 @@ function ProposalPageContent() {
         />
       )}
 
-      {(osPresetId === "commercial_executive" || isResidentialRequirement) && proposalLayout ? (
+      {(osPresetId === "commercial_executive" || useResidentialCatalog) && proposalLayout ? (
         <ProposalReviewSheet
           open={showReviewSheet}
           onClose={() => setShowReviewSheet(false)}
@@ -1872,14 +1879,11 @@ function ProposalPageContent() {
             mode={residentialInputMode}
             onModeChange={(m) => {
               setResidentialInputMode(m);
-              if (m === "bill") {
-                setResidentialConfig(null);
-              }
             }}
           />
         ) : null}
 
-        {isResidentialRequirement ? (
+        {isResidentialSmart ? (
           <ResidentialRequirementCustomerForm
             fields={{
               contactName: manual.leadContactName,
@@ -1901,37 +1905,26 @@ function ProposalPageContent() {
         ) : null}
 
         {isResidentialRequirement && residentialConfig ? (
-          <>
-            <ResidentialRequirementBuilder
-              config={residentialConfig}
-              onChange={(next) => {
-                setResidentialConfig(next);
-                if (proposalLayout) {
-                  setProposalLayout(applyResidentialFlagsToLayout(proposalLayout, next));
-                }
-              }}
-              netCostInr={effectiveResult.netCost}
-              annualSavingInr={effectiveResult.annualSavings}
-            />
-            <ResidentialPricingStudio
-              config={residentialConfig}
-              subsidyEligible={residentialSubsidyEligible}
-              onChange={(next) => {
-                setResidentialConfig(next);
-                if (proposalLayout) {
-                  setProposalLayout(applyResidentialFlagsToLayout(proposalLayout, next));
-                }
-              }}
-              proposalId={draftProposalId}
-              proposalLayout={proposalLayout}
-              onLayoutChange={setProposalLayout}
-              onCreateProposal={async () => {
-                const saved = await persistProposalToServer();
-                if (saved?.id) setDraftProposalId(saved.id);
-                return saved?.id ?? null;
-              }}
-            />
-          </>
+          <ResidentialProposalConfigWorkspace
+            config={residentialConfig}
+            subsidyEligible={residentialSubsidyEligible}
+            netCostInr={effectiveResult.netCost}
+            annualSavingInr={effectiveResult.annualSavings}
+            onChange={(next) => {
+              setResidentialConfig(next);
+              if (proposalLayout) {
+                setProposalLayout(applyResidentialFlagsToLayout(proposalLayout, next));
+              }
+            }}
+            proposalId={draftProposalId}
+            proposalLayout={proposalLayout}
+            onLayoutChange={setProposalLayout}
+            onCreateProposal={async () => {
+              const saved = await persistProposalToServer();
+              if (saved?.id) setDraftProposalId(saved.id);
+              return saved?.id ?? null;
+            }}
+          />
         ) : null}
 
         {osPresetId === "commercial_executive" ? (
@@ -2252,8 +2245,8 @@ function ProposalPageContent() {
         </div>
       )}
 
-      {/* Recommended solar card — bill-based paths only */}
-      {!hideBillUploadSteps && (
+      {/* Recommended solar — legacy bill-only; residential uses smart catalog instead */}
+      {!hideBillUploadSteps && !isResidentialSmart && (
         <div className="ss-card p-4 sm:p-5">
           <h2 className="text-base font-extrabold text-brand-900 sm:text-lg">{t("proposal_recommended")}</h2>
           <p className="mt-2 break-words text-2xl font-extrabold tabular-nums text-solar-600 sm:text-3xl lg:text-4xl">
@@ -2262,6 +2255,30 @@ function ProposalPageContent() {
           <p className="mt-1 text-xs font-semibold text-slate-700 sm:text-sm">{t("proposal_annualSavingsLine")}</p>
         </div>
       )}
+
+      {isResidentialBill && residentialConfig ? (
+        <ResidentialProposalConfigWorkspace
+          config={residentialConfig}
+          subsidyEligible={residentialSubsidyEligible}
+          netCostInr={effectiveResult.netCost}
+          annualSavingInr={effectiveResult.annualSavings}
+          billBackedHint
+          onChange={(next) => {
+            setResidentialConfig(next);
+            if (proposalLayout) {
+              setProposalLayout(applyResidentialFlagsToLayout(proposalLayout, next));
+            }
+          }}
+          proposalId={draftProposalId}
+          proposalLayout={proposalLayout}
+          onLayoutChange={setProposalLayout}
+          onCreateProposal={async () => {
+            const saved = await persistProposalToServer();
+            if (saved?.id) setDraftProposalId(saved.id);
+            return saved?.id ?? null;
+          }}
+        />
+      ) : null}
 
       <div id="step-3-anchor" className={`ss-card space-y-4 p-4 sm:p-5 ${osPresetId === "commercial_executive" ? "ring-1 ring-sky-200/60" : ""}`}>
         {isCommercialRequirement ? (
@@ -2289,7 +2306,7 @@ function ProposalPageContent() {
             )}
           </div>
         ) : null}
-        {isResidentialRequirement ? (
+        {useResidentialCatalog ? (
           <div className="rounded-xl border border-emerald-200/80 bg-emerald-50/60 px-3 py-2.5 text-xs text-emerald-950 dark:border-emerald-800/50 dark:bg-emerald-950/30 dark:text-emerald-100">
             <p className="font-semibold">Ready to generate your homeowner proposal</p>
             <p className="mt-1 opacity-90">
@@ -2354,9 +2371,9 @@ function ProposalPageContent() {
           </>
         ) : null}
 
-        {!hideBillUploadSteps ? (
+        {!hideBillUploadSteps && !isResidentialSmart ? (
         <>
-        {/* Solar System Size — editable */}
+        {/* Solar System Size — editable (non-residential bill paths only) */}
         <div>
           <p className="mb-1 text-xs font-bold uppercase tracking-wide text-slate-500">
             {t("proposal_solarSizeLabel")}
