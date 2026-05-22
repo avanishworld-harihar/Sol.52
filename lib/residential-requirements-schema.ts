@@ -103,6 +103,8 @@ export const residentialProposalConfigSchema = z.object({
   /** Side-by-side Non-DCR vs DCR gross prices (shared kW rows) for web proposal */
   trackCompare: residentialTrackCompareSchema.optional(),
   notes: z.string().max(600).optional(),
+  /** CRM / requirement customer connection — drives PM Surya Ghar eligibility. */
+  connectionType: z.string().max(40).optional(),
   /** Builder path marker */
   inputMode: z.literal("requirement").optional(),
 });

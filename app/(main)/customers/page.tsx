@@ -38,6 +38,7 @@ import {
   writeInstallerRegion
 } from "@/lib/installer-region-storage";
 import { useLanguage } from "@/lib/language-context";
+import { LEAD_AREA_PROFILE_OPTIONS, LEAD_CONNECTION_TYPE_OPTIONS } from "@/lib/lead-connection-types";
 import type { CustomerLead } from "@/lib/types";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import type { FormEvent } from "react";
@@ -69,7 +70,9 @@ function CustomersPageContent() {
     status: "new",
     phone: "",
     consumer_id: "",
-    survey_status: ""
+    survey_status: "",
+    area: "",
+    connection_type: ""
   });
   const { options: leadDiscomOptions, loading: leadDiscomListLoading } = useInstallerDiscoms(form.state);
   const leadDiscomSelectOptions = useMemo(
@@ -294,7 +297,9 @@ function CustomersPageContent() {
       status: "new",
       phone: "",
       consumer_id: "",
-      survey_status: ""
+      survey_status: "",
+      area: "",
+      connection_type: ""
     });
   }
 
@@ -316,7 +321,9 @@ function CustomersPageContent() {
         const s = (customer.survey_status ?? "").trim().toLowerCase().replace(/-/g, "_");
         if (s === "not_started" || s === "scheduled" || s === "complete") return s;
         return "";
-      })()
+      })(),
+      area: (customer.area ?? "").trim(),
+      connection_type: (customer.connection_type ?? "").trim()
     });
   }
 
@@ -383,7 +390,9 @@ function CustomersPageContent() {
               consumer_id: form.consumer_id.trim() ? form.consumer_id.trim() : null,
               survey_status: form.survey_status.trim()
                 ? form.survey_status.trim().toLowerCase()
-                : null
+                : null,
+              area: form.area.trim() ? form.area.trim() : null,
+              connection_type: form.connection_type.trim() ? form.connection_type.trim() : null
             })
           });
           const j = (await r.json()) as { ok?: boolean; error?: string };
@@ -409,7 +418,9 @@ function CustomersPageContent() {
       status: payload.status,
       phone: payload.phone ?? null,
       consumer_id: form.consumer_id.trim() ? form.consumer_id.trim() : null,
-      survey_status: form.survey_status.trim() ? form.survey_status.trim().toLowerCase() : null
+      survey_status: form.survey_status.trim() ? form.survey_status.trim().toLowerCase() : null,
+      area: form.area.trim() || undefined,
+      connection_type: form.connection_type.trim() || undefined
     };
 
     void mutate((prev) => [optimisticRow, ...(prev ?? [])], { revalidate: false });
@@ -427,7 +438,9 @@ function CustomersPageContent() {
         status: "new",
         phone: "",
         consumer_id: "",
-        survey_status: ""
+        survey_status: "",
+        area: "",
+        connection_type: ""
       });
     }
     setLeadModal("none");
@@ -439,6 +452,8 @@ function CustomersPageContent() {
         const postBody: Record<string, unknown> = { ...payload, state: form.state.trim() || undefined };
         if (form.consumer_id.trim()) postBody.consumer_id = form.consumer_id.trim();
         if (form.survey_status.trim()) postBody.survey_status = form.survey_status.trim().toLowerCase();
+        if (form.area.trim()) postBody.area = form.area.trim();
+        if (form.connection_type.trim()) postBody.connection_type = form.connection_type.trim();
         const response = await fetch("/api/customers", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -648,6 +663,34 @@ function CustomersPageContent() {
                       ))}
                     </>
                   )}
+              </FloatingLabelSelect>
+              <FloatingLabelSelect
+                label={t("customers_labelConnectionType")}
+                containerClassName="my-4"
+                className={modalFloatingClass}
+                suppressHydrationWarning
+                value={form.connection_type}
+                onChange={(e) => setForm((p) => ({ ...p, connection_type: e.target.value }))}
+              >
+                {LEAD_CONNECTION_TYPE_OPTIONS.map((o) => (
+                  <option key={o.value || "unset"} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </FloatingLabelSelect>
+              <FloatingLabelSelect
+                label={t("customers_labelArea")}
+                containerClassName="my-4"
+                className={modalFloatingClass}
+                suppressHydrationWarning
+                value={form.area}
+                onChange={(e) => setForm((p) => ({ ...p, area: e.target.value }))}
+              >
+                {LEAD_AREA_PROFILE_OPTIONS.map((o) => (
+                  <option key={o.value || "unset"} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
               </FloatingLabelSelect>
               <FloatingLabelInput
                 label={t("customers_placeholderCity")}

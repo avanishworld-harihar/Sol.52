@@ -60,14 +60,19 @@
     "other": true
   },
 
-  // Git: less polling; workspace overrides user autofetch for this repo
-  "git.autofetch": false,
-  "git.autorefresh": false,
-  "git.detectSubmodules": false,
-  "git.repositoryScanMaxDepth": 1,
+  // Git / SCM — standard local workflow (review → commit → push in Source Control)
+  "git.enabled": true,
+  "git.autorefresh": true,
+  "git.autoRepositoryDetection": true,
+  "git.repositoryScanMaxDepth": 2,
+  "git.detectSubmodules": true,
   "git.enableSmartCommit": true,
+  "git.confirmSync": false,
+  "git.showPushSuccessNotification": true,
+  "git.untrackedChanges": "mixed",
+  "scm.defaultViewMode": "tree",
+  "scm.diffDecorations": "all",
   "diffEditor.ignoreTrimWhitespace": true,
-  "scm.diffDecorations": "gutter",
 
   // NPM / search
   "npm.autoDetect": "off",
@@ -75,8 +80,5 @@
   "search.followSymlinks": false,
   "search.useIgnoreFiles": true,
   "search.useGlobalIgnoreFiles": true,
-  "search.smartCase": true,
-
-  // Cursor retrieval
-  "cursor-retrieval.canAttemptGithubLogin": false
+  "search.smartCase": true
 }

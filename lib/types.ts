@@ -21,6 +21,10 @@ export type CustomerLead = {
   email?: string | null;
   /** Optional DISCOM consumer / CA number. */
   consumer_id?: string | null;
+  /** Tariff area: `urban` | `rural`. */
+  area?: string | null;
+  /** Connection category: domestic | commercial | industrial | agricultural | ht. */
+  connection_type?: string | null;
   /**
    * Site survey CRM step — when `complete`, the public web proposal shows the
    * survey + install workflow page (`not_started` | `scheduled` | `complete`).

@@ -62,6 +62,8 @@ import {
 } from "@/components/residential/residential-proposal-mode-picker";
 import { ResidentialPricingStudio } from "@/components/residential/residential-pricing-studio";
 import { ResidentialRequirementBuilder } from "@/components/residential/residential-requirement-builder";
+import { ResidentialRequirementCustomerForm } from "@/components/residential/residential-requirement-customer-form";
+import { isPmSuryaGharSubsidyEligible } from "@/lib/lead-connection-types";
 import {
   residentialAnnualGenerationUnits,
   residentialGrossCostInr,
@@ -220,6 +222,7 @@ const EMPTY_MANUAL: ManualProposalCustomer = {
   city: "",
   discom: "",
   state: "",
+  area: "",
   consumerId: "",
   meterNumber: "",
   connectionDate: "",
@@ -447,7 +450,15 @@ function ProposalPageContent() {
     latestBill,
     additionalBills
   ]);
-  const areaProfile = useMemo(() => inferAreaProfile(manual), [manual]);
+  const areaProfile = useMemo(() => {
+    const a = manual.area.trim().toLowerCase();
+    if (a === "urban" || a === "rural") return a;
+    return inferAreaProfile(manual);
+  }, [manual]);
+  const residentialSubsidyEligible = useMemo(
+    () => isPmSuryaGharSubsidyEligible(manual.connectionType),
+    [manual.connectionType]
+  );
   const billingRule = useMemo(() => getBillingRule(stateQuery, discomQuery), [stateQuery, discomQuery]);
   const learnedProfile = useMemo(() => {
     if (!stateQuery || !discomQuery) return null;
@@ -660,9 +671,13 @@ function ProposalPageContent() {
       const panels = q.moduleCount;
       const annualGeneration = residentialAnnualGenerationUnits(solarKw);
       const grossCost = residentialGrossCostInr(residentialConfig);
-      const centralSubsidy =
-        residentialConfig.subsidy?.estimateInr ?? computePmSuryaGharSubsidy(solarKw);
-      const netCost = residentialNetCostInr(residentialConfig);
+      const centralSubsidy = residentialSubsidyEligible
+        ? residentialConfig.subsidy?.estimateInr ?? computePmSuryaGharSubsidy(solarKw)
+        : 0;
+      const netCost = residentialNetCostInr(residentialConfig, {
+        connectionType: manual.connectionType,
+        subsidyEligible: residentialSubsidyEligible,
+      });
       const annualSavings = Math.round(annualGeneration * 8 * 0.85);
       const monthlySavings = Math.round(annualSavings / 12);
       const paybackYears = annualSavings > 0 ? Number((netCost / annualSavings).toFixed(1)) : 0;
@@ -715,7 +730,15 @@ function ProposalPageContent() {
       savings25yr,
       profit25yr
     };
-  }, [overrideSolarKw, overridePanels, result, isResidentialRequirement, residentialConfig]);
+  }, [
+    overrideSolarKw,
+    overridePanels,
+    result,
+    isResidentialRequirement,
+    residentialConfig,
+    residentialSubsidyEligible,
+    manual.connectionType,
+  ]);
 
   const autoPanelCount = useMemo(() => {
     if (isResidentialRequirement && residentialConfig) {
@@ -1194,6 +1217,7 @@ function ProposalPageContent() {
       city: "",
       discom: "",
       state: "",
+      area: "",
       consumerId: "",
       meterNumber: "",
       connectionDate: "",
@@ -1220,7 +1244,10 @@ function ProposalPageContent() {
       leadPhone: lead.phone ?? "",
       officialBillName: "",
       city: lead.city,
+      state: (lead.state ?? "").trim() || prev.state,
       discom: lead.discom,
+      area: (lead.area ?? "").trim() || prev.area,
+      connectionType: (lead.connection_type ?? "").trim() || prev.connectionType,
       purposeOfSupply: "",
       contractDemandKva: ""
     }));
@@ -1269,7 +1296,9 @@ function ProposalPageContent() {
         discom: manual.discom.trim() || installerDiscom || "Unknown",
         monthly_bill: Math.max(0, Math.round(effectiveResult.currentMonthlyBill || 0)),
         phone: proposalPhone || undefined,
-        status: "new"
+        status: "new",
+        area: manual.area.trim() || undefined,
+        connection_type: manual.connectionType.trim() || undefined
       })
     });
     if (!createLeadResp.ok) {
@@ -1351,7 +1380,12 @@ function ProposalPageContent() {
         osPresetId === "commercial_executive" ? commercialConfig ?? undefined : undefined,
       residentialConfig:
         isResidentialRequirement && residentialConfig
-          ? { ...residentialConfig, inputMode: "requirement" as const }
+          ? {
+              ...residentialConfig,
+              inputMode: "requirement" as const,
+              connectionType:
+                manual.connectionType.trim() || residentialConfig.connectionType || undefined,
+            }
           : undefined,
       storyMode: urlPrefill.story ?? commercialConfig?.storyMode,
       storySegment: commercialConfig?.orgType ?? urlPrefill.orgType,
@@ -1379,6 +1413,24 @@ function ProposalPageContent() {
     setOverrideSolarKw(String(residentialConfig.solar.plantCapacityKw));
     setOverridePanels("");
   }, [isResidentialRequirement, residentialConfig?.solar.plantCapacityKw]);
+
+  useEffect(() => {
+    if (!isResidentialRequirement) return;
+    setResidentialConfig((prev) => {
+      if (!prev) return prev;
+      const conn = manual.connectionType.trim();
+      const eligible = isPmSuryaGharSubsidyEligible(conn);
+      const subsidyBlocked =
+        !eligible &&
+        ((prev.subsidy?.estimateInr ?? 0) > 0 || prev.subsidy?.preference !== "none");
+      if (prev.connectionType === conn && !subsidyBlocked) return prev;
+      return {
+        ...prev,
+        connectionType: conn || undefined,
+        subsidy: eligible ? prev.subsidy : { preference: "none", estimateInr: 0 },
+      };
+    });
+  }, [isResidentialRequirement, manual.connectionType]);
 
   async function downloadPremiumPpt() {
     setIsPptDownloading(true);
@@ -1827,6 +1879,27 @@ function ProposalPageContent() {
           />
         ) : null}
 
+        {isResidentialRequirement ? (
+          <ResidentialRequirementCustomerForm
+            fields={{
+              contactName: manual.leadContactName,
+              state: manual.state,
+              discom: manual.discom,
+              connectionType: manual.connectionType,
+              area: manual.area,
+              city: manual.city,
+              phone: manual.leadPhone,
+            }}
+            onContactName={(v) => setManual((p) => ({ ...p, leadContactName: v }))}
+            onState={(v) => setManual((p) => ({ ...p, state: v, discom: v === p.state ? p.discom : "" }))}
+            onDiscom={(v) => setManual((p) => ({ ...p, discom: v }))}
+            onConnectionType={(v) => setManual((p) => ({ ...p, connectionType: v }))}
+            onArea={(v) => setManual((p) => ({ ...p, area: v }))}
+            onCity={(v) => setManual((p) => ({ ...p, city: v }))}
+            onPhone={(v) => setManual((p) => ({ ...p, leadPhone: v }))}
+          />
+        ) : null}
+
         {isResidentialRequirement && residentialConfig ? (
           <>
             <ResidentialRequirementBuilder
@@ -1842,6 +1915,7 @@ function ProposalPageContent() {
             />
             <ResidentialPricingStudio
               config={residentialConfig}
+              subsidyEligible={residentialSubsidyEligible}
               onChange={(next) => {
                 setResidentialConfig(next);
                 if (proposalLayout) {
@@ -2532,6 +2606,7 @@ function manualSnapshot(manual: ManualProposalCustomer): Record<string, string> 
     city: manual.city,
     discom: manual.discom,
     state: manual.state,
+    area: manual.area,
     consumerId: manual.consumerId,
     meterNumber: manual.meterNumber,
     connectionDate: manual.connectionDate,

@@ -25,6 +25,11 @@ export function mapCustomerRow(row: Record<string, unknown>): CustomerLead {
     survey_status:
       row.survey_status != null && String(row.survey_status).trim()
         ? String(row.survey_status).trim().toLowerCase()
+        : null,
+    area: row.area != null && String(row.area).trim() ? String(row.area).trim().toLowerCase() : null,
+    connection_type:
+      row.connection_type != null && String(row.connection_type).trim()
+        ? String(row.connection_type).trim().toLowerCase()
         : null
   };
 }

@@ -19,6 +19,7 @@ import type { ProposalPricingRow } from "@/lib/proposal-pricing-schema";
 import type { ProposalPricingConfiguratorLabels } from "@/components/proposals/proposal-pricing-configurator";
 import { getProposalLayout } from "@/lib/proposal-layout-merge";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
+import { isPmSuryaGharSubsidyEligible } from "@/lib/lead-connection-types";
 import { summarizeProposalDeck } from "@/lib/proposal-ppt";
 import {
   ensureResidentialSolarInConfig,
@@ -99,6 +100,9 @@ export function ResidentialBomWorkspace({
 
       <ResidentialPricingStudio
         config={config}
+        subsidyEligible={isPmSuryaGharSubsidyEligible(
+          config.connectionType ?? pptInput.connectionType
+        )}
         onChange={patchConfig}
         proposalId={proposalId}
         proposalLayout={getProposalLayout(pptInput)}

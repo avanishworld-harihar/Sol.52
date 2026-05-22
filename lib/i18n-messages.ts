@@ -101,6 +101,8 @@ export const EN = {
   customers_placeholderCity: "City",
   customers_labelState: "State / UT",
   customers_labelDiscom: "DISCOM",
+  customers_labelConnectionType: "Connection type (optional)",
+  customers_labelArea: "Area (optional)",
   customers_regionSyncHint:
     "Defaults match installer setup. Change here for another state or DISCOM — the app will keep using your latest choice.",
   customers_placeholderDiscom: "DISCOM",
@@ -607,6 +609,8 @@ export const HI: Partial<Record<keyof typeof EN, string>> = {
   customers_errorConnect: "एक बार ऑनलाइन पेज खोलकर लीड इस डिवाइस पर सेव करें।",
   customers_labelState: "राज्य / केंद्रशासित",
   customers_labelDiscom: "DISCOM",
+  customers_labelConnectionType: "कनेक्शन प्रकार (वैकल्पिक)",
+  customers_labelArea: "क्षेत्र (वैकल्पिक)",
   customers_regionSyncHint:
     "डिफ़ॉल्ट इंस्टॉलर सेटअप जैसा। यहाँ बदलने पर ऐप आगे भी यही उपयोग करेगा।",
   customers_placeholderName: "ग्राहक का नाम",
@@ -891,6 +895,8 @@ export const TA: Partial<Record<keyof typeof EN, string>> = {
   customers_errorConnect: "ஆன்லைனில் பக்கத்தைத் திறந்து லீடுகளைச் சேமிக்கவும்.",
   customers_labelState: "மாநிலம் / யூடி",
   customers_labelDiscom: "DISCOM",
+  customers_labelConnectionType: "இணைப்பு வகை (விரும்பினால்)",
+  customers_labelArea: "பகுதி (விரும்பினால்)",
   customers_regionSyncHint:
     "இயல்புநிலை நிறுவன அமைப்புடன் பொருந்தும். இங்கே மாற்றினால் பயன்பாடு தொடரும்.",
   customers_placeholderName: "வாடிக்கையாளர் பெயர்",

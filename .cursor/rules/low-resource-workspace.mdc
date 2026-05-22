@@ -24,7 +24,9 @@ alwaysApply: true
 - Do not summarize or retain long conversation history unless the user needs it.
 - Do not create commits, PRs, or new markdown files unless explicitly asked.
 
-## Git
+## Git (agent vs IDE)
 
-- Never change git config. Use scoped `git diff` / `git status` on relevant paths when possible.
-- Preserve project structure; workspace optimizations are config-only unless the user requests code changes.
+- **IDE workflow:** User commits via **Source Control** (sidebar) — review diff → **Commit** → **Sync/Push**. Do not steer them to PR-only or terminal git unless they ask.
+- **Agent:** Never change `git config`. Prefer scoped `git status` / `git diff` on changed paths. When the user wants to commit, help review changes; they can use the normal Commit / Push UI (or ask the agent to run git only if they request it).
+- Do not skip review or hide that the SCM panel is the default path for manual edits.
+- Preserve project structure; performance tweaks stay in `.vscode/settings.json` and must not disable `git.autorefresh` or SCM.

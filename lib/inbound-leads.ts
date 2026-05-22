@@ -19,6 +19,8 @@ export type InboundLeadInput = {
   consumer_id?: string | null;
   /** Site survey CRM step (`not_started` | `scheduled` | `complete`). */
   survey_status?: string | null;
+  area?: string | null;
+  connection_type?: string | null;
   source: LeadSource;
   source_meta?: Record<string, unknown> | null;
 };
@@ -59,7 +61,11 @@ export async function processInboundLead(input: InboundLeadInput): Promise<Inbou
     source: input.source,
     source_meta: input.source_meta ?? null,
     ...(consumerTrim ? { consumer_id: consumerTrim } : {}),
-    ...(surveyTrim ? { survey_status: surveyTrim } : {})
+    ...(surveyTrim ? { survey_status: surveyTrim } : {}),
+    ...(input.area?.trim() ? { area: input.area.trim().toLowerCase() } : {}),
+    ...(input.connection_type?.trim()
+      ? { connection_type: input.connection_type.trim().toLowerCase() }
+      : {})
   };
 
   if (phone) {

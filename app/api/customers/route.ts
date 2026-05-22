@@ -15,7 +15,9 @@ const customerSchema = z.object({
   state: z.string().optional(),
   email: z.string().email().optional(),
   consumer_id: z.string().max(160).optional(),
-  survey_status: z.string().max(40).optional()
+  survey_status: z.string().max(40).optional(),
+  area: z.enum(["urban", "rural"]).optional(),
+  connection_type: z.string().max(40).optional()
 });
 
 export async function GET() {
@@ -65,6 +67,8 @@ export async function POST(req: NextRequest) {
       email: payload.email ?? null,
       consumer_id: payload.consumer_id?.trim() || null,
       survey_status: payload.survey_status?.trim().toLowerCase() || null,
+      area: payload.area?.trim() || null,
+      connection_type: payload.connection_type?.trim().toLowerCase() || null,
       source: "manual"
     });
     const mappedData = mapCustomerRow(result.data as Record<string, unknown>);

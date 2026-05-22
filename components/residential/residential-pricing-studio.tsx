@@ -17,6 +17,7 @@ import {
 } from "@/lib/residential-requirements-schema";
 import { wireBrandDisplayName } from "@/lib/residential-deck-helpers";
 import { moduleCountForResidential, quoteResidentialSolar } from "@/lib/residential-solar-engine";
+import { isPmSuryaGharSubsidyEligible } from "@/lib/lead-connection-types";
 import { computePmSuryaGharSubsidy } from "@/lib/proposal-deck-helpers";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
 import { cn } from "@/lib/utils";
@@ -47,6 +48,8 @@ type Props = {
   lineItems?: PricingLineItem[];
   /** Builder flow: create web proposal when none exists yet, return new id. */
   onCreateProposal?: () => Promise<string | null>;
+  /** When false (e.g. commercial connection), subsidy is shown as ineligible and forced to ₹0. */
+  subsidyEligible?: boolean;
   className?: string;
 };
 
@@ -84,6 +87,7 @@ export function ResidentialPricingStudio({
   onSaved,
   lineItems,
   onCreateProposal,
+  subsidyEligible: subsidyEligibleProp,
   className,
 }: Props) {
   const toast = useToast();
@@ -107,6 +111,8 @@ export function ResidentialPricingStudio({
   const panelQuote = useMemo(() => quoteResidentialSolar(solar), [solar]);
   const panelCount = panelQuote.moduleCount;
   const defaultSubsidy = computePmSuryaGharSubsidy(solar.plantCapacityKw);
+  const subsidyEligible =
+    subsidyEligibleProp ?? isPmSuryaGharSubsidyEligible(config.connectionType);
 
   function patch(partial: Partial<ResidentialProposalConfig>) {
     onChange({ ...config, ...partial });
@@ -615,25 +621,51 @@ export function ResidentialPricingStudio({
               </div>
             ) : null}
           </div>
-          <div className="rounded-xl border border-emerald-200/70 bg-emerald-50/40 px-3 pb-3 pt-4 dark:border-emerald-900/40 dark:bg-emerald-950/15">
-            <p className="mb-3 text-xs font-bold text-emerald-950 dark:text-emerald-100">PM Surya Ghar subsidy</p>
-            <FloatingLabelNumericInput
-              label="Subsidy amount (₹)"
-              value={config.subsidy?.estimateInr ?? defaultSubsidy}
-              onValueChange={(n) =>
-                patch({
-                  subsidy: {
-                    preference: config.subsidy?.preference ?? "maximize",
-                    estimateInr: n ?? defaultSubsidy,
-                  },
-                })
-              }
-              labelBackgroundClassName="bg-emerald-50 dark:bg-emerald-950/40"
-              className="h-11 rounded-lg pt-4 text-sm font-bold"
-            />
-            <p className="mt-2 text-[11px] text-emerald-800/80 dark:text-emerald-200/70">
-              Default {inr(defaultSubsidy)} for {solar.plantCapacityKw} kW — override if needed.
+          <div
+            className={cn(
+              "rounded-xl border px-3 pb-3 pt-4",
+              subsidyEligible
+                ? "border-emerald-200/70 bg-emerald-50/40 dark:border-emerald-900/40 dark:bg-emerald-950/15"
+                : "border-slate-200/80 bg-slate-50/60 dark:border-white/10 dark:bg-white/[0.03]"
+            )}
+          >
+            <p
+              className={cn(
+                "mb-3 text-xs font-bold",
+                subsidyEligible ? "text-emerald-950 dark:text-emerald-100" : "text-slate-700 dark:text-slate-300"
+              )}
+            >
+              PM Surya Ghar subsidy
             </p>
+            {subsidyEligible ? (
+              <>
+                <FloatingLabelNumericInput
+                  label="Subsidy amount (₹)"
+                  value={config.subsidy?.estimateInr ?? defaultSubsidy}
+                  onValueChange={(n) =>
+                    patch({
+                      subsidy: {
+                        preference: config.subsidy?.preference ?? "maximize",
+                        estimateInr: n ?? defaultSubsidy,
+                      },
+                    })
+                  }
+                  labelBackgroundClassName="bg-emerald-50 dark:bg-emerald-950/40"
+                  className="h-11 rounded-lg pt-4 text-sm font-bold"
+                />
+                <p className="mt-2 text-[11px] text-emerald-800/80 dark:text-emerald-200/70">
+                  Default {inr(defaultSubsidy)} for {solar.plantCapacityKw} kW — override if needed.
+                </p>
+              </>
+            ) : (
+              <div className="rounded-lg border border-slate-200/90 bg-white/80 px-3 py-2.5 dark:border-white/10 dark:bg-white/5">
+                <p className="text-sm font-bold text-slate-800 dark:text-slate-200">Ineligible</p>
+                <p className="mt-1 text-[11px] leading-snug text-slate-600 dark:text-slate-400">
+                  PM Surya Ghar subsidy applies to domestic connections only. Commercial, industrial, and HT
+                  connections are not eligible — net cost equals price after discount.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 

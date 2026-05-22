@@ -9,6 +9,7 @@ import {
   type DeckBomItem,
 } from "@/lib/proposal-deck-helpers";
 import { computeGrossSystemCostInr } from "@/lib/solar-engine";
+import { isPmSuryaGharSubsidyEligible } from "@/lib/lead-connection-types";
 import { computePmSuryaGharSubsidy } from "@/lib/proposal-deck-helpers";
 import { quoteResidentialSolar } from "@/lib/residential-solar-engine";
 import type {
@@ -65,8 +66,11 @@ export function residentialGrossCostInr(config: ResidentialProposalConfig): numb
   return computeGrossSystemCostInr(kw);
 }
 
-export function residentialNetCostInr(config: ResidentialProposalConfig): number {
-  return residentialCostBreakdown(config).netInr;
+export function residentialNetCostInr(
+  config: ResidentialProposalConfig,
+  options?: { connectionType?: string | null; subsidyEligible?: boolean }
+): number {
+  return residentialCostBreakdown(config, options).netInr;
 }
 
 export type ResidentialCostBreakdown = {
@@ -79,12 +83,19 @@ export type ResidentialCostBreakdown = {
 };
 
 /** Gross → discount → post-discount → subsidy → net (web proposal + builder). */
-export function residentialCostBreakdown(config: ResidentialProposalConfig): ResidentialCostBreakdown {
+export function residentialCostBreakdown(
+  config: ResidentialProposalConfig,
+  options?: { connectionType?: string | null; subsidyEligible?: boolean }
+): ResidentialCostBreakdown {
   const grossInr = residentialGrossCostInr(config);
   const discountInr = applyResidentialDiscountInr(grossInr, config.pricing?.discount);
   const afterDiscountInr = Math.max(0, grossInr - discountInr);
-  const subsidyInr =
-    config.subsidy?.estimateInr ?? computePmSuryaGharSubsidy(config.solar.plantCapacityKw);
+  const eligible =
+    options?.subsidyEligible ??
+    isPmSuryaGharSubsidyEligible(options?.connectionType ?? config.connectionType);
+  const subsidyInr = eligible
+    ? config.subsidy?.estimateInr ?? computePmSuryaGharSubsidy(config.solar.plantCapacityKw)
+    : 0;
   const netInr = Math.max(0, afterDiscountInr - subsidyInr);
   return {
     grossInr,

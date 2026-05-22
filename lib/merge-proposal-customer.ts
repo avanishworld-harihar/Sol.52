@@ -13,6 +13,8 @@ export type ManualProposalCustomer = {
   city: string;
   discom: string;
   state: string;
+  /** Tariff area: urban | rural (optional). */
+  area: string;
   consumerId: string;
   meterNumber: string;
   connectionDate: string;

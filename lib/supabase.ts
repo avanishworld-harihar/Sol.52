@@ -50,6 +50,10 @@ export interface CustomerInput {
   /** Indian state / UT (free text from `INDIAN_STATES_AND_UTS`). */
   state?: string | null;
   email?: string | null;
+  /** Tariff area: urban | rural. */
+  area?: string | null;
+  /** Connection category (domestic, commercial, …). */
+  connection_type?: string | null;
 }
 
 async function countFirstAvailable(candidates: string[]) {
@@ -471,6 +475,14 @@ export async function createCustomer(payload: CustomerInput) {
   if (payload.survey_status !== undefined && payload.survey_status != null) {
     const s = String(payload.survey_status).trim().toLowerCase();
     if (s.length > 0) basePayload.survey_status = s;
+  }
+  if (payload.area !== undefined && payload.area != null) {
+    const a = String(payload.area).trim().toLowerCase();
+    if (a === "urban" || a === "rural") basePayload.area = a;
+  }
+  if (payload.connection_type !== undefined && payload.connection_type != null) {
+    const c = String(payload.connection_type).trim().toLowerCase();
+    if (c.length > 0) basePayload.connection_type = c;
   }
   basePayload.last_touched_at = new Date().toISOString();
 
