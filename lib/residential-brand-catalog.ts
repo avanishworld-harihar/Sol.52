@@ -3,6 +3,11 @@
  * Non-DCR = 70% of DCR (30% lower) for rates and kW gross prices.
  */
 
+import {
+  dcrPlantGrossFromRatePerWp,
+  plantGrossForTrack,
+  ratePerWpFromDcrPlantGross,
+} from "@/lib/pricing-engine";
 import { moduleCountForResidential } from "@/lib/residential-solar-engine";
 import { computeGrossSystemCostInr } from "@/lib/solar-engine";
 import {
@@ -105,6 +110,24 @@ export function getCompareCatalogEntry(config: ResidentialProposalConfig): Resid
   return getCatalogEntry(catalog, compareId) ?? getActiveCatalogEntry(config);
 }
 
+/** Keep tier `priceInr` (DCR gross) and `ratePerWpInr` in sync. */
+export function syncKwTierCanonical(tier: ResidentialKwTier): ResidentialKwTier {
+  if (tier.ratePerWpInr != null && tier.ratePerWpInr > 0) {
+    return {
+      ...tier,
+      priceInr: dcrPlantGrossFromRatePerWp(tier.ratePerWpInr, tier.kw),
+      ratePerWpInr: tier.ratePerWpInr,
+    };
+  }
+  if (tier.priceInr > 0) {
+    return {
+      ...tier,
+      ratePerWpInr: ratePerWpFromDcrPlantGross(tier.priceInr, tier.kw),
+    };
+  }
+  return tier;
+}
+
 export function lookupDcrKwGrossInr(
   entry: ResidentialBrandCatalogEntry | null,
   kw: number,
@@ -114,12 +137,17 @@ export function lookupDcrKwGrossInr(
   if (!tiers?.length) return null;
   const sorted = [...tiers].sort((a, b) => a.kw - b.kw);
   const exact = sorted.find((t) => t.kw === kw);
-  if (exact && exact.priceInr > 0) return exact.priceInr;
+  if (exact) {
+    const synced = syncKwTierCanonical(exact);
+    if (synced.priceInr > 0) return synced.priceInr;
+  }
   let best: ResidentialKwTier | null = null;
   for (const t of sorted) {
-    if (t.kw <= kw && t.priceInr > 0) best = t;
+    const synced = syncKwTierCanonical(t);
+    if (synced.kw <= kw && synced.priceInr > 0) best = synced;
   }
-  return best?.priceInr ?? sorted.find((t) => t.priceInr > 0)?.priceInr ?? null;
+  const hit = best ?? sorted.map(syncKwTierCanonical).find((t) => t.priceInr > 0);
+  return hit?.priceInr ?? null;
 }
 
 export function lookupKwGrossForTrack(
@@ -130,7 +158,7 @@ export function lookupKwGrossForTrack(
 ): number | null {
   const dcr = lookupDcrKwGrossInr(entry, kw, fallbackTiers);
   if (dcr == null) return null;
-  return track === "non_dcr" ? nonDcrGrossFromDcrGross(dcr) : dcr;
+  return plantGrossForTrack(dcr, track);
 }
 
 export function trackCompareTiersFromCatalogEntry(
@@ -288,7 +316,7 @@ export function updateCatalogEntry(
           ...e,
           ...patch,
           brandId: e.brandId,
-          kwTiers: patch.kwTiers ?? e.kwTiers ?? [],
+          kwTiers: (patch.kwTiers ?? e.kwTiers ?? []).map(syncKwTierCanonical),
         }
       : e
   );

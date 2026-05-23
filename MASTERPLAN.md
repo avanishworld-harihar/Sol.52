@@ -303,4 +303,56 @@ Phases can overlap; **do not** skip **B** before claiming production multi-tenan
 
 ---
 
+## 14. Quotation engine & installer rate card (pricing roadmap)
+
+**Canonical doc (Phase 1 shipped in app):** `lib/pricing-engine.ts` (₹/Wp internal), `lib/pricing-quote-snapshot.ts`, `installer_rate_cards` table, **More → Rate card**, `proposal_pricing_snapshots.quote_engine`.
+
+### 14.1 Architecture (target)
+
+| Layer | Responsibility |
+|-------|----------------|
+| **Rate card** | Master sell prices (₹/Wp canonical; residential UI shows ₹/kW plant gross). One row per org (`scope_key`), versioned in Phase 2. |
+| **Proposal / quotation** | Customer-specific offer; optional `pricingSource: customer_override`. |
+| **Snapshot** | Immutable freeze on generate/send (`quote_engine` JSONB + `snapshot_data`). |
+| **Engineering BOM** | Optional breakdown (panels, inverter, structure, BOS) — **not** the sell-price source of truth. |
+
+**Invariant:** All gross/net math goes through `pricing-engine`; residential and commercial UIs are views on the same engine.
+
+### 14.2 Phase 1 — DONE (baseline)
+
+- Central **More → Rate card** (residential kW catalog + commercial ₹/Wp overrides).
+- ₹/Wp normalization on kW tiers (`ratePerWpInr` + `syncKwTierCanonical`).
+- **Customer override** toggle on residential proposal builder (`pricingSource`).
+- **Quote freeze** on proposal create (`freezeProposalQuote` → `proposal_pricing_snapshots.quote_engine`).
+- Commercial catalog reads effective ₹/Wp from rate card cache.
+- BOM positioned as optional detail (labels); full BOM decouple continues incrementally.
+
+### 14.3 Phase 2 — FUTURE (rate card lifecycle)
+
+**Do not start until Phase 1 is stable in production.**
+
+- `rate_card_versions` table: `effective_from`, `effective_to`, `active_version`, publish workflow.
+- Rollback to prior published version (read-only history list).
+- Audit columns: `updated_by`, `change_reason`, `last_price_update`, `source_supplier` (nullable until import).
+- Align proposal lifecycle naming: `draft` → generated (`sent`) → `approved` → `revised` (new snapshot version, existing `triggered_by: revised`).
+- Enrich `quote_engine` snapshot: inverter rate line, margin %, full calculated totals from pricing row.
+- Org-scoped rate cards (`organization_id` on versions) when auth Phase B ships.
+
+### 14.4 Phase 3 — FUTURE (scale & supply)
+
+**After Phase 2 and real quoting volume.**
+
+- Supplier **CSV/XLSX** import: preview diff → approve → publish version.
+- Pricing studio tabs (only when needed): Residential, Commercial, Panels, Inverters, Structure, BOS, Subsidy, Margins, History — **not** all at once; add tab when that category has master data.
+- DB prep for **inventory**, **marketplace**, **multi-branch pricing** (nullable `branch_id`, `sku_id` on rate lines) without rewriting proposal engine.
+- Optional: sync `org_pricing_templates` into versioned rate card or deprecate in favor of versions table.
+
+### 14.5 Explicit non-goals (until Phase 3+)
+
+- Marketplace seller flows, stock ledger, warehouse.
+- Nine-tab pricing studio in MVP.
+- Replacing `proposal_pricing` line items for residential simple quotes.
+
+---
+
 *End of MASTERPLAN — keep implementations honest and the platform vision single-threaded.*

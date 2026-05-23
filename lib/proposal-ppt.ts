@@ -183,6 +183,9 @@ export type PremiumProposalPptInput = {
 
   /** Homeowner requirement-based residential — guided kW, EMI, subsidy, panel track */
   residentialConfig?: import("@/lib/residential-proposal-config").ResidentialProposalConfig | null;
+
+  /** Central rate card vs prices locked on this proposal only. */
+  pricingSource?: "rate_card" | "customer_override";
 };
 
 export type ProposalDeckSummary = {

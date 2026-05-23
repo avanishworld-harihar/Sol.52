@@ -9,10 +9,12 @@ import {
   nonDcrGrossFromDcrGross,
   removeCatalogBrand,
   syncSolarAndPricingFromEntry,
+  syncKwTierCanonical,
   syncTrackCompareFromBrand,
   updateCatalogEntry,
   type ResidentialBrandCatalogEntry,
 } from "@/lib/residential-brand-catalog";
+import { ratePerWpFromDcrPlantGross } from "@/lib/pricing-engine";
 import type { ResidentialKwTier, ResidentialProposalConfig } from "@/lib/residential-requirements-schema";
 import { cn } from "@/lib/utils";
 import { BookOpen, IndianRupee, Plus, Sparkles, Sun, Trash2 } from "lucide-react";
@@ -57,7 +59,17 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
   }
 
   function patchActiveTier(index: number, patchTier: Partial<ResidentialKwTier>) {
-    const nextTiers = kwTiers.map((t, i) => (i === index ? { ...t, ...patchTier } : t));
+    const nextTiers = kwTiers.map((t, i) => {
+      if (i !== index) return t;
+      const merged = { ...t, ...patchTier };
+      if (patchTier.priceInr != null && patchTier.ratePerWpInr === undefined) {
+        return syncKwTierCanonical({
+          ...merged,
+          ratePerWpInr: ratePerWpFromDcrPlantGross(merged.priceInr, merged.kw),
+        });
+      }
+      return syncKwTierCanonical(merged);
+    });
     emit(updateCatalogEntry(normalized, activeEntry.brandId, { kwTiers: nextTiers }));
   }
 

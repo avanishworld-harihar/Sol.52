@@ -5,6 +5,8 @@
  * Installers override `ratePerWpInr` per quote in commercialConfig.panel.ratePerWpInr.
  */
 
+import { getCachedCommercialPanelRates } from "@/lib/installer-rate-card-client";
+
 export type PanelType = "DCR" | "NON_DCR";
 
 /** Common module technologies (India commercial rooftop, 2024–2026). */
@@ -36,7 +38,7 @@ export type PanelCatalogEntry = {
   technology: string;
 };
 
-/** Default commercial rate card — update centrally; never hardcode in UI */
+/** Default commercial rate card — update in More → Rate Card; merged with DB overrides at runtime. */
 export const PANEL_CATALOG: PanelCatalogEntry[] = [
   { id: "waaree-540-dcr", brandId: "waaree", brandLabel: "Waaree", watt: 540, panelType: "DCR", ratePerWpInr: 42, subsidyEligible: true, almmListed: true, technology: "PERC" },
   { id: "waaree-540-non-dcr", brandId: "waaree", brandLabel: "Waaree", watt: 540, panelType: "NON_DCR", ratePerWpInr: 38, subsidyEligible: false, almmListed: false, technology: "PERC" },
@@ -48,17 +50,28 @@ export const PANEL_CATALOG: PanelCatalogEntry[] = [
   { id: "vikram-560-dcr", brandId: "vikram", brandLabel: "Vikram Solar", watt: 560, panelType: "DCR", ratePerWpInr: 44, subsidyEligible: true, almmListed: true, technology: "Mono PERC" },
 ];
 
+/** Catalog with installer ₹/Wp overrides from central rate card (client) or defaults (server). */
+export function getEffectivePanelCatalog(): PanelCatalogEntry[] {
+  const overrides = getCachedCommercialPanelRates();
+  if (!overrides.length) return PANEL_CATALOG;
+  const byId = new Map(overrides.map((o) => [o.id, o.ratePerWpInr]));
+  return PANEL_CATALOG.map((e) => {
+    const rate = byId.get(e.id);
+    return rate !== undefined ? { ...e, ratePerWpInr: rate } : e;
+  });
+}
+
 export function getPanelCatalogEntry(id: string): PanelCatalogEntry | null {
-  return PANEL_CATALOG.find((e) => e.id === id) ?? null;
+  return getEffectivePanelCatalog().find((e) => e.id === id) ?? null;
 }
 
 export function listPanelsByBrand(brandId: string): PanelCatalogEntry[] {
-  return PANEL_CATALOG.filter((e) => e.brandId === brandId);
+  return getEffectivePanelCatalog().filter((e) => e.brandId === brandId);
 }
 
 export function listBrandIds(): { id: string; label: string }[] {
   const seen = new Map<string, string>();
-  for (const e of PANEL_CATALOG) {
+  for (const e of getEffectivePanelCatalog()) {
     if (!seen.has(e.brandId)) seen.set(e.brandId, e.brandLabel);
   }
   return Array.from(seen.entries()).map(([id, label]) => ({ id, label }));
@@ -118,10 +131,11 @@ export function buildDcrComparison(
   dcrRateOverride?: number | null,
   nonDcrRateOverride?: number | null
 ): DcrComparisonResult | null {
-  const dcrEntry = PANEL_CATALOG.find(
+  const catalog = getEffectivePanelCatalog();
+  const dcrEntry = catalog.find(
     (e) => e.brandId === brandId && e.watt === watt && e.panelType === "DCR"
   );
-  const nonDcrEntry = PANEL_CATALOG.find(
+  const nonDcrEntry = catalog.find(
     (e) => e.brandId === brandId && e.watt === watt && e.panelType === "NON_DCR"
   );
   if (!dcrEntry || !nonDcrEntry) return null;

@@ -40,7 +40,7 @@ import {
   syncSolarAndPricingFromEntry,
 } from "@/lib/residential-brand-catalog";
 import type { PricingLineItem } from "@/lib/proposal-pricing-lines";
-import { writeResidentialBrandCatalog } from "@/lib/residential-brand-catalog-storage";
+import { saveInstallerResidentialCatalog } from "@/lib/installer-rate-card-client";
 import { saveResidentialRequirement } from "@/lib/save-residential-requirement-client";
 import { useMemo, useState } from "react";
 
@@ -209,7 +209,7 @@ export function ResidentialPricingStudio({
     setSaving(true);
     try {
       const catalogConfig = ensureBrandCatalog(config);
-      writeResidentialBrandCatalog(catalogConfig.brandCatalog);
+      await saveInstallerResidentialCatalog(catalogConfig.brandCatalog!);
 
       let id = proposalId?.trim() || null;
       if (!id && onCreateProposal) {
@@ -221,7 +221,7 @@ export function ResidentialPricingStudio({
           tone: "success",
           title: "Catalog saved",
           description:
-            "kW prices are saved for bill-based and requirement-based proposals. Generate a web proposal to sync this draft to the cloud.",
+            "kW prices saved to More → Rate card. Generate a web proposal to sync this customer draft to the cloud.",
         });
         return;
       }
@@ -241,7 +241,7 @@ export function ResidentialPricingStudio({
         tone: "success",
         title: "Saved",
         description:
-          "Smart catalog kW prices saved locally and on this proposal (bill & requirement paths).",
+          "Saved to central Rate card and this proposal (bill & requirement).",
       });
     } catch (e) {
       toast.push({

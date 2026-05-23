@@ -18,6 +18,10 @@
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase } from "@/lib/supabase";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  quoteEngineSnapshotSchema,
+  type QuoteEngineSnapshot,
+} from "@/lib/pricing-quote-snapshot";
 import { proposalPricingRowSchema, type ProposalPricingRow } from "@/lib/proposal-pricing-schema";
 
 type Row = Record<string, unknown>;
@@ -37,6 +41,8 @@ export type PricingSnapshotRow = {
   version: number;
   /** Full ProposalPricingRow payload — frozen at creation time. */
   snapshot_data: ProposalPricingRow;
+  /** Canonical quote engine freeze (₹/Wp, subsidy, net). */
+  quote_engine: QuoteEngineSnapshot | null;
   triggered_by: SnapshotTrigger;
   created_at: string;
   created_by: string | null;
@@ -55,11 +61,13 @@ function parseSnapshot(raw: Row): PricingSnapshotRow | null {
     const trigger = SNAPSHOT_TRIGGERS.includes(raw.triggered_by as SnapshotTrigger)
       ? (raw.triggered_by as SnapshotTrigger)
       : "manual";
+    const quoteParsed = quoteEngineSnapshotSchema.safeParse(raw.quote_engine);
     return {
       id: String(raw.id),
       proposal_id: String(raw.proposal_id),
       version: Number(raw.version) || 1,
       snapshot_data: data.data,
+      quote_engine: quoteParsed.success ? quoteParsed.data : null,
       triggered_by: trigger,
       created_at: String(raw.created_at ?? ""),
       created_by: raw.created_by != null ? String(raw.created_by) : null,
@@ -145,7 +153,8 @@ export async function createPricingSnapshot(
   proposalId: string,
   pricingRow: ProposalPricingRow,
   triggeredBy: SnapshotTrigger = "sent",
-  actor?: string
+  actor?: string,
+  quoteEngine?: QuoteEngineSnapshot | null
 ): Promise<PricingSnapshotRow | null> {
   const client = rwClient();
   if (!client) return null;
@@ -158,6 +167,7 @@ export async function createPricingSnapshot(
     proposal_id: proposalId,
     version: nextVersion,
     snapshot_data: pricingRow as unknown as Row,
+    quote_engine: quoteEngine ?? {},
     triggered_by: triggeredBy,
     created_by: actor ?? null,
     is_accepted: false,

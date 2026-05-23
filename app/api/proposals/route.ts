@@ -5,6 +5,7 @@ import { defaultProposalPricingFromDeck, mergeProposalPricingIntoPptInput } from
 import { ensureProposalPricingRow, getProposalPricingByProposalId } from "@/lib/proposal-pricing-store";
 import { persistProposalDeckAfterPricingChange } from "@/lib/proposal-pricing-sync";
 import { summarizeProposalDeck, type PremiumProposalPptInput } from "@/lib/proposal-ppt";
+import { freezeProposalQuote } from "@/lib/freeze-proposal-quote";
 import { createProposal, listRecentProposals } from "@/lib/proposals-store";
 import { proposalExtrasShape } from "@/lib/proposal-extras-schema";
 import { bumpLeadStatus, upsertPipelineProject } from "@/lib/supabase";
@@ -166,6 +167,9 @@ export async function POST(req: NextRequest) {
       if (pr) {
         responseSummary = summarizeProposalDeck(mergeProposalPricingIntoPptInput(pptInput, pr));
       }
+      void freezeProposalQuote(created.id, "manual").catch((err) => {
+        console.warn("[proposals POST] quote freeze:", err);
+      });
     } catch (err) {
       console.warn("[proposals POST] proposal_pricing seed / sync:", err);
     }

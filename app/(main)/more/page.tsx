@@ -44,6 +44,7 @@ import {
   Building2,
   ChevronDown,
   CreditCard,
+  IndianRupee,
   MapPin,
   QrCode,
   ReceiptText,
@@ -52,6 +53,7 @@ import {
   Sparkles,
   UploadCloud
 } from "lucide-react";
+import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useEffect, useMemo, useState, type ComponentType, type ReactNode } from "react";
 
@@ -460,6 +462,21 @@ export default function MorePage() {
           title="Brand & proposals"
           subtitle="Company, bank, QR, photos, and proposal look — tap to open."
         >
+          <Link
+            href="/more/rate-card"
+            className="mb-4 flex items-start gap-3 rounded-2xl border-2 border-amber-300/70 bg-gradient-to-r from-amber-50/90 to-emerald-50/60 p-4 transition hover:border-amber-400 dark:border-amber-600/40 dark:from-amber-950/25 dark:to-emerald-950/15"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-amber-300">
+              <IndianRupee className="h-5 w-5" />
+            </span>
+            <span className="min-w-0">
+              <span className="text-sm font-bold text-slate-900 dark:text-white">Rate card (master pricing)</span>
+              <span className="mt-0.5 block text-xs leading-snug text-slate-600 dark:text-slate-400">
+                Residential ₹/kW plant prices + commercial ₹/Wp — one place, all proposals sync here.
+              </span>
+            </span>
+          </Link>
+
           <Subsection title="Contact" description="Name, phone, and email on proposals.">
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <LabeledInput label="Installer / Company name" value={companyName} onChange={setCompanyName} placeholder="Harihar Solar" />

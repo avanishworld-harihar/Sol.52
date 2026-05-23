@@ -47,7 +47,21 @@ export function defaultResidentialConfigForBuilder(
 ): ResidentialProposalConfig {
   let base = defaultResidentialConfig(plantKw);
   if (inputMode) base = { ...base, inputMode };
-  return normalizeResidentialConfig(mergeInstallerBrandCatalog(base));
+  base = { ...base, pricingSource: base.pricingSource ?? "rate_card" };
+  if (base.pricingSource !== "customer_override") {
+    base = mergeInstallerBrandCatalog(base);
+  }
+  return normalizeResidentialConfig(base);
+}
+
+/** Apply central rate card unless this proposal uses customer-only overrides. */
+export function applyResidentialPricingSource(
+  config: ResidentialProposalConfig
+): ResidentialProposalConfig {
+  if (config.pricingSource === "customer_override") {
+    return normalizeResidentialConfig(ensureBrandCatalog(config));
+  }
+  return normalizeResidentialConfig(mergeInstallerBrandCatalog(config));
 }
 
 /** Toggle proposal blocks from residential requirement flags (EMI, subsidy, requirement path). */

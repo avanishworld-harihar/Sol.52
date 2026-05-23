@@ -105,5 +105,7 @@ export const proposalExtrasShape = {
   /** C&I panel pricing, DCR compare, capacity scenarios, financing (see migration 028). */
   commercialConfig: commercialProposalConfigSchema.optional(),
   /** Homeowner requirement-based config (kW pricing, brands, discount). */
-  residentialConfig: residentialProposalConfigSchema.optional()
+  residentialConfig: residentialProposalConfigSchema.optional(),
+  /** Central rate card vs per-proposal override (quotation engine Phase 1). */
+  pricingSource: z.enum(["rate_card", "customer_override"]).optional(),
 } as const;

@@ -79,10 +79,12 @@ import {
 } from "@/lib/commercial-proposal-config";
 import {
   applyResidentialFlagsToLayout,
+  applyResidentialPricingSource,
   defaultResidentialConfigForBuilder,
   parseResidentialConfig,
   type ResidentialProposalConfig,
 } from "@/lib/residential-proposal-config";
+import { loadInstallerRateCard } from "@/lib/installer-rate-card-client";
 import {
   readResidentialDraftProposalId,
   writeResidentialDraftProposalId,
@@ -308,6 +310,10 @@ function ProposalPageContent() {
   // useSearchParams() is safe here — the page is already a client component.
   const router = useRouter();
   const searchParams = useSearchParams();
+  useEffect(() => {
+    void loadInstallerRateCard();
+  }, []);
+
   const urlPrefill = useMemo(
     () => parsePrefillFromSearchParams(searchParams),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1390,9 +1396,14 @@ function ProposalPageContent() {
           ? {
               ...residentialConfig,
               inputMode: residentialInputMode,
+              pricingSource: residentialConfig.pricingSource ?? "rate_card",
               connectionType:
                 manual.connectionType.trim() || residentialConfig.connectionType || undefined,
             }
+          : undefined,
+      pricingSource:
+        useResidentialCatalog && residentialConfig
+          ? residentialConfig.pricingSource ?? "rate_card"
           : undefined,
       storyMode: urlPrefill.story ?? commercialConfig?.storyMode,
       storySegment: commercialConfig?.orgType ?? urlPrefill.orgType,
@@ -1416,6 +1427,22 @@ function ProposalPageContent() {
     );
     setProposalLayout((prev) => prev ?? getPresetDefaultLayout("residential_smart"));
   }, [isResidentialSmart, result.solarKw, urlPrefill.kw, residentialInputMode]);
+
+  useEffect(() => {
+    if (!isResidentialSmart) return;
+    let cancelled = false;
+    void loadInstallerRateCard().then(() => {
+      if (cancelled) return;
+      setResidentialConfig((prev) => {
+        const kw = prev?.solar.plantCapacityKw ?? (result.solarKw > 0 ? result.solarKw : urlPrefill.kw ?? 5);
+        const base = prev ?? defaultResidentialConfigForBuilder(kw, residentialInputMode);
+        return applyResidentialPricingSource(base);
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isResidentialSmart, residentialInputMode, result.solarKw, urlPrefill.kw]);
 
   useEffect(() => {
     if (!isResidentialSmart) return;
@@ -2394,9 +2421,10 @@ function ProposalPageContent() {
             onOpenReview={() => setShowReviewSheet(true)}
           />
           <div className="rounded-2xl border border-indigo-200/80 bg-gradient-to-r from-indigo-50/80 to-sky-50/60 p-4">
-            <p className="text-sm font-bold text-slate-900">Commercial BOM — DCR &amp; Non-DCR panels</p>
+            <p className="text-sm font-bold text-slate-900">Optional — engineering BOM detail</p>
             <p className="mt-1 text-xs text-slate-600">
-              DCR / Non-DCR modules and full BOM are configured in the Proposals tab — same workspace as before.
+              Customer quote uses central Rate card (₹/Wp). Open Proposals only when you need line-item BOM
+              breakdown — not required for a simple offer.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <button

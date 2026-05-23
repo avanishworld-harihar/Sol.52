@@ -1,19 +1,20 @@
 /**
- * Installer-wide residential smart catalog (kW tier prices per brand).
- * Shared across bill-based and requirement-based new proposals; survives page refresh.
+ * Residential catalog access for proposals — backed by central installer rate card.
  */
 
+import {
+  getCachedResidentialBrandCatalog,
+  saveInstallerResidentialCatalog,
+} from "@/lib/installer-rate-card-client";
 import {
   defaultBrandCatalog,
   type ResidentialBrandCatalog,
 } from "@/lib/residential-brand-catalog";
-import { residentialBrandCatalogSchema } from "@/lib/residential-requirements-schema";
 import type { ResidentialProposalConfig } from "@/lib/residential-requirements-schema";
 
-const STORAGE_KEY = "ss_residential_brand_catalog_v1";
 const DRAFT_SESSION_KEY = "ss_residential_proposal_draft_id";
 
-export const RESIDENTIAL_BRAND_CATALOG_UPDATED_EVENT = "ss-residential-brand-catalog-updated";
+export const RESIDENTIAL_BRAND_CATALOG_UPDATED_EVENT = "ss-installer-rate-card-updated";
 
 export function readResidentialDraftProposalId(): string | null {
   if (typeof window === "undefined") return null;
@@ -36,35 +37,19 @@ export function writeResidentialDraftProposalId(id: string | null) {
 }
 
 export function readResidentialBrandCatalog(): ResidentialBrandCatalog | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = residentialBrandCatalogSchema.safeParse(JSON.parse(raw));
-    if (!parsed.success || !parsed.data.entries?.length) return null;
-    return parsed.data;
-  } catch {
-    return null;
-  }
+  return getCachedResidentialBrandCatalog();
 }
 
 export function writeResidentialBrandCatalog(catalog: ResidentialBrandCatalog | undefined | null) {
-  if (typeof window === "undefined" || !catalog?.entries?.length) return;
-  try {
-    const parsed = residentialBrandCatalogSchema.safeParse(catalog);
-    if (!parsed.success) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed.data));
-    window.dispatchEvent(new Event(RESIDENTIAL_BRAND_CATALOG_UPDATED_EVENT));
-  } catch {
-    /* ignore quota / private mode */
-  }
+  if (!catalog?.entries?.length) return;
+  void saveInstallerResidentialCatalog(catalog);
 }
 
-/** Apply saved installer catalog onto a builder config (keeps plant kW, subsidy, etc.). */
+/** Apply installer rate card onto a builder config (keeps plant kW, subsidy, etc.). */
 export function mergeInstallerBrandCatalog(
   config: ResidentialProposalConfig
 ): ResidentialProposalConfig {
-  const saved = readResidentialBrandCatalog();
+  const saved = getCachedResidentialBrandCatalog();
   const fallback = defaultBrandCatalog(config.solar.brandId ?? "adani");
   const catalog = saved?.entries?.length ? saved : fallback;
   return {

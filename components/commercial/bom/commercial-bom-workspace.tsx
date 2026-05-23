@@ -113,6 +113,12 @@ export function CommercialBomWorkspace({
 
   return (
     <div className="space-y-6">
+      <p className="rounded-xl border border-slate-200/90 bg-slate-50/80 px-3 py-2.5 text-[11px] leading-snug text-slate-600 dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-400">
+        <strong className="text-slate-900 dark:text-white">Quote price</strong> comes from More → Rate card
+        (₹/Wp). This section is an <strong>optional engineering BOM breakdown</strong> — not required for a
+        simple customer offer.
+      </p>
+
       <CommercialPricingTemplatesPanel
         presetId="commercial_executive"
         systemKw={solar.plantCapacityKw}

@@ -85,6 +85,13 @@ function buildCrumbs(
   }
 
   // More / Settings
+  if (pathname.startsWith("/more/rate-card")) {
+    return [
+      home,
+      { label: t("nav_more"), href: "/more", active: false },
+      { label: "Rate card", href: "/more/rate-card", active: true },
+    ];
+  }
   if (pathname.startsWith("/more")) {
     return [home, { label: t("nav_more"), href: "/more", active: true }];
   }

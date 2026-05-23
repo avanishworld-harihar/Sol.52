@@ -1,6 +1,7 @@
 "use client";
 
 import { ResidentialPricingStudio } from "@/components/residential/residential-pricing-studio";
+import { ResidentialPricingSourceToggle } from "@/components/residential/residential-pricing-source-toggle";
 import { ResidentialRequirementBuilder } from "@/components/residential/residential-requirement-builder";
 import type { PricingLineItem } from "@/lib/proposal-pricing-lines";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
@@ -45,6 +46,8 @@ export function ResidentialProposalConfigWorkspace({
           pricing for the web proposal — including DCR vs Non-DCR comparison when enabled.
         </p>
       ) : null}
+
+      <ResidentialPricingSourceToggle config={config} onChange={onChange} />
 
       <ResidentialRequirementBuilder
         config={config}

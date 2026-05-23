@@ -46,7 +46,10 @@ export const residentialSubsidySchema = z.object({
 
 export const residentialKwTierSchema = z.object({
   kw: z.number().min(1).max(100),
+  /** DCR complete plant gross (₹) — primary residential UI field. */
   priceInr: z.number().min(0),
+  /** Canonical ₹/Wp (DCR) — derived by pricing engine; used for quotes & snapshots. */
+  ratePerWpInr: z.number().min(0).max(500).optional(),
 });
 
 export const residentialDiscountSchema = z.object({
@@ -124,6 +127,8 @@ export const residentialProposalConfigSchema = z.object({
   connectionType: z.string().max(40).optional(),
   /** Builder path: bill upload vs requirement sizing */
   inputMode: z.enum(["bill", "requirement"]).optional(),
+  /** `rate_card` = central More → Rate card; `customer_override` = prices only on this proposal. */
+  pricingSource: z.enum(["rate_card", "customer_override"]).optional(),
 });
 
 export type ResidentialSolar = z.infer<typeof residentialSolarSchema>;
