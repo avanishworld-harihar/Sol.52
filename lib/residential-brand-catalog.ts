@@ -97,18 +97,21 @@ export function getCompareCatalogEntry(config: ResidentialProposalConfig): Resid
   return getCatalogEntry(catalog, compareId) ?? getActiveCatalogEntry(config);
 }
 
-/** Keep tier DCR/Non-DCR gross and ₹/Wp fields in sync. */
+/**
+ * Normalize kW tier fields. Plant gross (₹) is canonical — never overwrite entered amounts
+ * from derived ₹/Wp (round-trip would drift, e.g. 190000 → 189990 at 3 kW).
+ */
 export function syncKwTierCanonical(tier: ResidentialKwTier): ResidentialKwTier {
   const next = { ...tier, nonDcrPriceInr: tier.nonDcrPriceInr ?? 0 };
-  if (next.ratePerWpInr != null && next.ratePerWpInr > 0) {
-    next.priceInr = plantGrossFromRatePerWp(next.ratePerWpInr, next.kw);
-  } else if (next.priceInr > 0) {
+  if (next.priceInr > 0) {
     next.ratePerWpInr = ratePerWpFromPlantGross(next.priceInr, next.kw);
+  } else if (next.ratePerWpInr != null && next.ratePerWpInr > 0) {
+    next.priceInr = plantGrossFromRatePerWp(next.ratePerWpInr, next.kw);
   }
-  if (next.nonDcrRatePerWpInr != null && next.nonDcrRatePerWpInr > 0) {
-    next.nonDcrPriceInr = plantGrossFromRatePerWp(next.nonDcrRatePerWpInr, next.kw);
-  } else if (next.nonDcrPriceInr > 0) {
+  if (next.nonDcrPriceInr > 0) {
     next.nonDcrRatePerWpInr = ratePerWpFromPlantGross(next.nonDcrPriceInr, next.kw);
+  } else if (next.nonDcrRatePerWpInr != null && next.nonDcrRatePerWpInr > 0) {
+    next.nonDcrPriceInr = plantGrossFromRatePerWp(next.nonDcrRatePerWpInr, next.kw);
   }
   return next;
 }

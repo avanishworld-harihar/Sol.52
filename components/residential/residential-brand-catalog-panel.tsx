@@ -14,7 +14,6 @@ import {
   updateCatalogEntry,
   type ResidentialBrandCatalogEntry,
 } from "@/lib/residential-brand-catalog";
-import { ratePerWpFromDcrPlantGross } from "@/lib/pricing-engine";
 import type { ResidentialKwTier, ResidentialProposalConfig } from "@/lib/residential-requirements-schema";
 import { cn } from "@/lib/utils";
 import { BookOpen, IndianRupee, Plus, Sparkles, Sun, Trash2 } from "lucide-react";
@@ -58,17 +57,9 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
   }
 
   function patchActiveTier(index: number, patchTier: Partial<ResidentialKwTier>) {
-    const nextTiers = kwTiers.map((t, i) => {
-      if (i !== index) return t;
-      const merged = { ...t, ...patchTier };
-      if (patchTier.priceInr != null && patchTier.ratePerWpInr === undefined) {
-        return syncKwTierCanonical({
-          ...merged,
-          ratePerWpInr: ratePerWpFromDcrPlantGross(merged.priceInr, merged.kw),
-        });
-      }
-      return syncKwTierCanonical(merged);
-    });
+    const nextTiers = kwTiers.map((t, i) =>
+      i === index ? syncKwTierCanonical({ ...t, ...patchTier }) : t
+    );
     emit(updateCatalogEntry(normalized, activeEntry.brandId, { kwTiers: nextTiers }));
   }
 
@@ -202,7 +193,6 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
               <tbody>
                 {kwTiers.map((tier, idx) => {
                   const isPlantKw = tier.kw === plantKw;
-                  const synced = syncKwTierCanonical(tier);
                   return (
                     <tr
                       key={`${tier.kw}-${idx}`}
@@ -235,7 +225,7 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
                         <FloatingLabelNumericInput
                           label="Non-DCR ₹"
                           live
-                          value={synced.nonDcrPriceInr}
+                          value={tier.nonDcrPriceInr ?? 0}
                           onValueChange={(n) =>
                             patchActiveTier(idx, {
                               nonDcrPriceInr: n !== undefined ? Math.max(0, n) : 0,
