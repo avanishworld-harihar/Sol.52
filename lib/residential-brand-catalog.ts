@@ -226,7 +226,7 @@ function catalogEntries(catalog: ResidentialBrandCatalog | undefined): Residenti
   return catalog?.entries ?? [];
 }
 
-/** Apply active catalog brand → solar + pricing.kwTiers (keeps other fields). */
+/** Apply active catalog brand → solar fields (pricing matrix lives in brandCatalog only). */
 export function applyActiveBrandToConfig(
   config: ResidentialProposalConfig,
   brandId: string
@@ -271,10 +271,6 @@ export function syncSolarAndPricingFromEntry(
       panelTrack: track,
       ratePerWpInr,
       moduleCountOverride: undefined,
-    },
-    pricing: {
-      ...config.pricing,
-      kwTiers: e.kwTiers.map((t) => syncKwTierCanonical({ ...t })),
     },
     panelBrandOptions: upsertPanelBrandOption(config.panelBrandOptions, e),
   };

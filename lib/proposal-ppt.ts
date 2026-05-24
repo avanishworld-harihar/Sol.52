@@ -40,6 +40,10 @@ import {
   commercialTrackFromPanelType,
   plantGrossFromSharedCatalogOrFallback,
 } from "@/lib/shared-plant-rate-card";
+import {
+  applyCommercialPanelTrackPolicy,
+  resolveCommercialPanelTrack,
+} from "@/lib/commercial-panel-track-policy";
 import { quoteResidentialSolar } from "@/lib/residential-solar-engine";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
 import { resolvedCompanyProfileForLang } from "@/lib/proposal-company-resolve";
@@ -492,7 +496,13 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
   const totalReduction = yearlyBill > 0 ? Math.round((annualSaving / yearlyBill) * 100) : 0;
 
   const resRequirement = isResidentialRequirementInput(input);
-  const resCfg = input.residentialConfig;
+  let resCfg = input.residentialConfig;
+  if (resCfg?.solar && input.commercialConfig) {
+    resCfg = applyCommercialPanelTrackPolicy(
+      resCfg,
+      input.connectionType ?? resCfg.connectionType ?? input.customerProfile?.connectionType
+    );
+  }
   const amcSelectedYears = (input.amcSelectedYears ?? 1) as 1 | 5 | 10;
 
   let deckSystemKw = input.systemKw;
@@ -529,8 +539,13 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
     };
     defaultBom = buildResidentialBomFromConfig(resCfg, amcSelectedYears);
   } else if (input.sharedPlantCatalog?.entries?.length) {
-    const cc = input.commercialConfig;
-    const track = commercialTrackFromPanelType(cc?.panel?.panelType);
+    const track =
+      input.commercialConfig != null
+        ? resolveCommercialPanelTrack(
+            input.connectionType ?? resCfg?.connectionType ?? input.customerProfile?.connectionType,
+            deckSystemKw
+          )
+        : "dcr";
     grossSystemCost = n(
       input.grossSystemCostInr ??
         plantGrossFromSharedCatalogOrFallback(deckSystemKw, track, input.sharedPlantCatalog)
@@ -554,9 +569,12 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
     };
   });
 
-  const computedNet = resRequirement && resCfg
-    ? n(residentialNetCostInr(resCfg))
-    : n(Math.max(0, grossSystemCost - pmSubsidy));
+  const computedNet =
+    resRequirement && resCfg
+      ? n(residentialNetCostInr(resCfg))
+      : input.commercialConfig && resCfg
+        ? n(residentialNetCostInr(resCfg, { subsidyEligible: false }))
+        : n(Math.max(0, grossSystemCost - pmSubsidy));
   const overrideNet = input.commercialNetPayableInr;
   const netCost =
     overrideNet != null && Number.isFinite(overrideNet) && overrideNet >= 0 ? n(overrideNet) : computedNet;

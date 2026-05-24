@@ -4,25 +4,19 @@
 
 import { z } from "zod";
 import {
-  plantGrossForTrackValues,
-  ratePerWpFromPlantGross,
-  ratePerWpForTrackValues,
   PRICING_ENGINE_VERSION,
   type PanelTrack,
 } from "@/lib/pricing-engine";
-import {
-  getActiveCatalogEntry,
-  lookupDcrKwGrossInr,
-  lookupKwGrossForTrack,
-  lookupNonDcrKwGrossInr,
-  syncKwTierCanonical,
-} from "@/lib/residential-brand-catalog";
+import { resolvePlantPriceFromConfig } from "@/lib/plant-pricing-resolver";
 import { applyResidentialDiscountInr, residentialNetCostInr } from "@/lib/residential-deck-helpers";
 import { isPmSuryaGharSubsidyEligible } from "@/lib/lead-connection-types";
 import { computePmSuryaGharSubsidy } from "@/lib/proposal-deck-helpers";
 import { getEffectivePanelCatalog, resolvePanelQuote } from "@/lib/commercial-panel-catalog";
 import {
-  commercialTrackFromPanelType,
+  applyCommercialPanelTrackPolicy,
+  resolveCommercialPanelTrack,
+} from "@/lib/commercial-panel-track-policy";
+import {
   plantGrossFromSharedCatalog,
   plantGrossFromSharedCatalogOrFallback,
 } from "@/lib/shared-plant-rate-card";
@@ -57,30 +51,13 @@ export function resolveResidentialRatePerWp(
   config: ResidentialProposalConfig,
   connectionType?: string
 ): { ratePerWp: number; plantGross: number; track: PanelTrack } {
-  const kw = config.solar.plantCapacityKw;
   const track = (config.solar.panelTrack ?? "dcr") as PanelTrack;
-  const watt = config.solar.watt ?? 550;
-  const entry = getActiveCatalogEntry(config);
-  const tier = entry?.kwTiers?.find((t) => t.kw === kw);
-  const synced = tier ? syncKwTierCanonical(tier) : null;
-  const dcrGross = synced?.priceInr ?? lookupDcrKwGrossInr(entry, kw) ?? 0;
-  const nonDcrGross = synced?.nonDcrPriceInr ?? lookupNonDcrKwGrossInr(entry, kw) ?? 0;
-  const plantGross =
-    lookupKwGrossForTrack(entry, kw, track, config.pricing?.kwTiers) ??
-    plantGrossForTrackValues(dcrGross, nonDcrGross, track);
-
-  const ratePerWp =
-    track === "dcr"
-      ? synced?.ratePerWpInr && synced.ratePerWpInr > 0
-        ? synced.ratePerWpInr
-        : ratePerWpFromPlantGross(dcrGross, kw)
-      : synced?.nonDcrRatePerWpInr && synced.nonDcrRatePerWpInr > 0
-        ? synced.nonDcrRatePerWpInr
-        : ratePerWpFromPlantGross(nonDcrGross, kw);
-
   void connectionType;
-  void watt;
-  return { ratePerWp, plantGross, track };
+  const resolved = resolvePlantPriceFromConfig(config, { mode: track });
+  if (resolved.ok) {
+    return { ratePerWp: resolved.ratePerWpInr, plantGross: resolved.plantGrossInr, track };
+  }
+  return { ratePerWp: 0, plantGross: 0, track };
 }
 
 export function buildResidentialQuoteSnapshot(
@@ -131,7 +108,16 @@ export function buildCommercialQuoteSnapshot(
   pricingRow: ProposalPricingRow | null
 ): QuoteEngineSnapshot {
   const kw = ppt.systemKw;
-  const track = commercialTrackFromPanelType(commercialConfig?.panel?.panelType);
+  const track =
+    ppt.residentialConfig?.solar && commercialConfig
+      ? applyCommercialPanelTrackPolicy(
+          ppt.residentialConfig,
+          ppt.connectionType ?? ppt.residentialConfig.connectionType ?? ppt.customerProfile?.connectionType
+        ).solar.panelTrack ?? "dcr"
+      : resolveCommercialPanelTrack(
+          ppt.connectionType ?? ppt.customerProfile?.connectionType,
+          kw
+        );
 
   const sharedGross = ppt.sharedPlantCatalog?.entries?.length
     ? plantGrossFromSharedCatalog(kw, track, ppt.sharedPlantCatalog)

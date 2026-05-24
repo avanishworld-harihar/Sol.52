@@ -4,12 +4,8 @@
  */
 
 import { applyResidentialDiscountInr } from "@/lib/residential-deck-helpers";
-import {
-  getActiveCatalogEntry,
-  lookupDcrKwGrossInr,
-  lookupNonDcrKwGrossInr,
-  type ResidentialBrandCatalogEntry,
-} from "@/lib/residential-brand-catalog";
+import { resolvePlantPrice } from "@/lib/plant-pricing-resolver";
+import { getActiveCatalogEntry, type ResidentialBrandCatalogEntry } from "@/lib/residential-brand-catalog";
 import type { ResidentialDiscount, ResidentialProposalConfig } from "@/lib/residential-requirements-schema";
 import type { ProposalDeckSummary } from "@/lib/proposal-ppt";
 
@@ -53,9 +49,13 @@ export function computeCapacityScenarioFromCatalog(
   const track = opts.panelTrack ?? "dcr";
   const kw = Math.max(1, scenario.systemKw);
   const moduleWatt = opts.moduleWatt ?? MODULE_WATT_DEFAULT;
-  const grossDcr = lookupDcrKwGrossInr(entry, kw) ?? 0;
-  const grossNon = lookupNonDcrKwGrossInr(entry, kw) ?? 0;
-  const grossCostInr = Math.max(0, Math.round(track === "dcr" ? grossDcr : grossNon));
+  const resolved = resolvePlantPrice({
+    catalog: entry ? { entries: [entry], activeBrandId: entry.brandId } : null,
+    brandId: entry?.brandId,
+    kw,
+    mode: track,
+  });
+  const grossCostInr = Math.max(0, Math.round(resolved.plantGrossInr));
   const discountInr = applyResidentialDiscountInr(grossCostInr, opts.discount);
   const netCostInr = Math.max(0, grossCostInr - discountInr - Math.max(0, opts.subsidyInr ?? 0));
   const annualGenKwh = Math.round(kw * GEN_KWH_PER_KW);

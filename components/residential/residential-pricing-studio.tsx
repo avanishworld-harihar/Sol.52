@@ -267,7 +267,7 @@ export function ResidentialPricingStudio({
             <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Residential · Requirement</p>
             <h3 className="text-lg font-semibold tracking-tight">Pricing &amp; system catalog</h3>
             <p className="mt-1 max-w-xl text-xs text-slate-300">
-              Brand catalog first — DCR ₹/Wp &amp; kW prices sync to plant sizing, comparison table, and saved proposal.
+              Smart catalog pricing matrix is the single source of truth — proposals read brand × kW × quote mode.
             </p>
           </div>
           <div className="flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-xs font-medium text-slate-200">
@@ -290,7 +290,10 @@ export function ResidentialPricingStudio({
             title="Solar plant sizing"
             hint="Panel count = plant kW × 1000 ÷ module wattage (rounded up)."
           />
-          <div className="mb-3 flex gap-2">
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+            Quote mode (DCR or Non-DCR column from pricing matrix)
+          </p>
+          <div className="mb-3 flex flex-wrap gap-2">
             {(
               [
                 { id: "dcr" as const, label: "DCR" },

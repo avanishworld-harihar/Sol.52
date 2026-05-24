@@ -2,11 +2,8 @@
  * Shared plant rate card — one kW-tier catalog for residential AND commercial turnkey quotes.
  */
 
-import {
-  getCatalogEntry,
-  lookupKwGrossForTrack,
-  type ResidentialBrandCatalog,
-} from "@/lib/residential-brand-catalog";
+import { resolvePlantPrice } from "@/lib/plant-pricing-resolver";
+import type { ResidentialBrandCatalog } from "@/lib/residential-brand-catalog";
 import { getCachedResidentialBrandCatalog } from "@/lib/installer-rate-card-client";
 import { computeGrossSystemCostInr } from "@/lib/solar-engine";
 
@@ -30,17 +27,25 @@ export function plantGrossFromSharedCatalog(
   if (!cat?.entries?.length || plantKw <= 0) return null;
 
   const activeId = brandId ?? cat.activeBrandId ?? cat.entries[0]?.brandId;
-  const entry = getCatalogEntry(cat, activeId);
-  const gross = lookupKwGrossForTrack(entry, plantKw, track);
-  return gross != null && gross > 0 ? gross : null;
+  const resolved = resolvePlantPrice({
+    catalog: cat,
+    brandId: activeId,
+    kw: plantKw,
+    mode: track,
+  });
+  return resolved.ok ? resolved.plantGrossInr : null;
 }
 
 export function plantGrossFromSharedCatalogOrFallback(
   plantKw: number,
   track: SharedPlantTrack = "dcr",
-  catalog?: ResidentialBrandCatalog | null
+  catalog?: ResidentialBrandCatalog | null,
+  brandId?: string
 ): number {
-  return plantGrossFromSharedCatalog(plantKw, track, catalog) ?? computeGrossSystemCostInr(plantKw);
+  return (
+    plantGrossFromSharedCatalog(plantKw, track, catalog, brandId) ??
+    computeGrossSystemCostInr(plantKw)
+  );
 }
 
 export function commercialTrackFromPanelType(

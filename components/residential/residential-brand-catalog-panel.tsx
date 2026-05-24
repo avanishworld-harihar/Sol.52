@@ -6,17 +6,17 @@ import {
   applyActiveBrandToConfig,
   addCatalogBrand,
   ensureBrandCatalog,
-  lookupKwGrossForTrack,
   removeCatalogBrand,
-  syncSolarAndPricingFromEntry,
   syncKwTierCanonical,
+  syncSolarAndPricingFromEntry,
   syncTrackCompareFromBrand,
   updateCatalogEntry,
   type ResidentialBrandCatalogEntry,
 } from "@/lib/residential-brand-catalog";
+import { resolvePlantPriceFromConfig } from "@/lib/plant-pricing-resolver";
 import type { ResidentialKwTier, ResidentialProposalConfig } from "@/lib/residential-requirements-schema";
 import { cn } from "@/lib/utils";
-import { BookOpen, IndianRupee, Plus, Sparkles, Sun, Trash2 } from "lucide-react";
+import { AlertTriangle, BookOpen, IndianRupee, Plus, Sparkles, Sun, Trash2 } from "lucide-react";
 import { useMemo } from "react";
 
 type Props = {
@@ -38,14 +38,20 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
   const activeEntry = { ...activeEntryRaw, kwTiers };
   const track = normalized.solar.panelTrack ?? "dcr";
   const plantKw = normalized.solar.plantCapacityKw;
-  const plantTier = kwTiers.find((t) => t.kw === plantKw);
-  const syncedPlantTier = plantTier ? syncKwTierCanonical(plantTier) : null;
-  const plantGross =
-    lookupKwGrossForTrack(activeEntry, plantKw, track, kwTiers) ??
-    (track === "dcr" ? syncedPlantTier?.priceInr ?? 0 : syncedPlantTier?.nonDcrPriceInr ?? 0);
+  const quote = useMemo(() => resolvePlantPriceFromConfig(normalized), [normalized]);
 
   function emit(next: ResidentialProposalConfig) {
-    onChange(ensureBrandCatalog(next));
+    const withCatalog = ensureBrandCatalog(next);
+    const entry = withCatalog.brandCatalog?.entries?.find(
+      (e) => e.brandId === (withCatalog.brandCatalog?.activeBrandId ?? activeEntry.brandId)
+    );
+    if (entry && withCatalog.brandCatalog?.activeBrandId === entry.brandId) {
+      onChange(
+        syncSolarAndPricingFromEntry(withCatalog, entry, withCatalog.solar.panelTrack ?? "dcr")
+      );
+      return;
+    }
+    onChange(withCatalog);
   }
 
   function selectBrand(brandId: string) {
@@ -63,10 +69,6 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
     emit(updateCatalogEntry(normalized, activeEntry.brandId, { kwTiers: nextTiers }));
   }
 
-  function setTrack(nextTrack: "dcr" | "non_dcr") {
-    emit(syncSolarAndPricingFromEntry(normalized, activeEntry, nextTrack));
-  }
-
   return (
     <div className="overflow-hidden rounded-2xl border-2 border-amber-300/70 bg-gradient-to-br from-amber-50/80 via-white to-teal-50/40 dark:border-amber-500/30 dark:from-amber-950/25 dark:via-[#0c1017] dark:to-teal-950/15">
       <div className="border-b border-amber-200/60 bg-slate-900 px-4 py-3.5 text-white dark:border-amber-900/40">
@@ -74,13 +76,12 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
           <Sparkles className="h-4 w-4 text-amber-300" aria-hidden />
           <div>
             <p className="text-[10px] font-bold uppercase tracking-widest text-amber-200/90">Smart catalog</p>
-            <h4 className="text-base font-bold">Panel brands — plant cost by kW</h4>
+            <h4 className="text-base font-bold">Panel brands — pricing matrix (kW × DCR × Non-DCR)</h4>
           </div>
         </div>
         <p className="mt-1.5 text-[11px] leading-snug text-slate-300">
-          Set <strong className="text-white">complete plant gross (₹)</strong> per kW for DCR and Non-DCR.
-          These rows power DCR comparison and multi-kW executive cards — use <strong>Add kW row</strong> for
-          commercial sizes (50, 100 kW, etc.).
+          Enter both DCR and Non-DCR plant gross (₹) per kW row. Proposals read directly from this table —
+          quote mode (DCR vs Non-DCR) is set in plant sizing, not here.
         </p>
       </div>
 
@@ -141,43 +142,39 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
             ) : null}
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-2">
-            {(
-              [
-                { id: "dcr" as const, label: "DCR plant cost" },
-                { id: "non_dcr" as const, label: "Non-DCR plant cost" },
-              ] as const
-            ).map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setTrack(t.id)}
-                className={cn(
-                  "rounded-lg border px-3 py-2 text-xs font-bold",
-                  track === t.id
-                    ? "border-slate-900 bg-slate-900 text-white dark:bg-white dark:text-slate-900"
-                    : "border-slate-200 bg-slate-50 dark:border-white/15"
-                )}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-
           <p className="mt-3 rounded-lg bg-slate-50/90 px-3 py-2 text-[11px] text-slate-600 dark:bg-white/[0.03] dark:text-slate-400">
-            Active proposal ({plantKw} kW, {track === "dcr" ? "DCR" : "Non-DCR"}):{" "}
-            <strong className="text-slate-900 dark:text-white">{inr(plantGross)}</strong>
+            Active proposal ({plantKw} kW, {track === "dcr" ? "DCR" : "Non-DCR"} quote):{" "}
+            <strong className="text-slate-900 dark:text-white">
+              {quote.ok ? inr(quote.plantGrossInr) : "—"}
+            </strong>
+            {!quote.ok && quote.errors[0] ? (
+              <span className="mt-1 block text-amber-700 dark:text-amber-300">{quote.errors[0]}</span>
+            ) : null}
           </p>
+
+          {(quote.warnings.includes("dcr_price_missing") ||
+            quote.warnings.includes("non_dcr_price_missing")) && (
+            <div className="mt-2 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900 dark:border-amber-800/50 dark:bg-amber-950/30 dark:text-amber-100">
+              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              <span>
+                {quote.warnings.includes("dcr_price_missing") ? "DCR price missing for this kW. " : ""}
+                {quote.warnings.includes("non_dcr_price_missing")
+                  ? "Non-DCR price missing for this kW. "
+                  : ""}
+                Fill both columns before generating proposals.
+              </span>
+            </div>
+          )}
         </div>
 
         <div>
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
             <p className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
               <IndianRupee className="h-4 w-4 text-emerald-600" />
-              System price by kW — {activeEntry.brand}
+              Pricing matrix — {activeEntry.brand}
             </p>
             <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200">
-              DCR & Non-DCR — enter both manually
+              Single source of truth
             </span>
           </div>
           <div className="overflow-x-auto rounded-xl border border-slate-200/90 dark:border-white/10">

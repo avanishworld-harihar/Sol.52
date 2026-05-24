@@ -100,10 +100,10 @@ function scrollToSection(anchor: string) {
 }
 
 // ─── Section background alternation ──────────────────────────────────────────
-// Cover is always dark-navy. Sections alternate white / very-light-slate.
+// Cover uses white canvas — handled by BlockCommercialCover.
 
 const SECTION_BG = [
-  "", // cover — dark, handled by block itself
+  "bg-white", // cover — unused by SECTION_BG map
   "bg-white",
   "bg-slate-50/70",
   "bg-white",
@@ -457,8 +457,8 @@ export default function CommercialProposalView({
           })}
         </div>
 
-        {/* ── Section 01 — Cover (full-height dark) ────────────────────── */}
-        <section id="comm-cover" className="proposal-page">
+        {/* ── Section 01 — Cover ─────────────────────────────────────── */}
+        <section id="comm-cover" className="proposal-page bg-white">
           <BlockCommercialCover ctx={ctx} />
         </section>
 

@@ -5,16 +5,13 @@
 import {
   buildBom,
   pickBrandSet,
+  computePmSuryaGharSubsidy,
   type BomFreeAmcYears,
   type DeckBomItem,
 } from "@/lib/proposal-deck-helpers";
-import {
-  getActiveCatalogEntry,
-  lookupKwGrossForTrack,
-} from "@/lib/residential-brand-catalog";
-import { computeGrossSystemCostInr } from "@/lib/solar-engine";
+import { resolvePlantPriceFromConfigOrFallback } from "@/lib/plant-pricing-resolver";
 import { isPmSuryaGharSubsidyEligible } from "@/lib/lead-connection-types";
-import { computePmSuryaGharSubsidy } from "@/lib/proposal-deck-helpers";
+import { computeGrossSystemCostInr } from "@/lib/solar-engine";
 import { quoteResidentialSolar } from "@/lib/residential-solar-engine";
 import type {
   ResidentialBrandOption,
@@ -62,16 +59,11 @@ export function applyResidentialDiscountInr(
 }
 
 export function residentialGrossCostInr(config: ResidentialProposalConfig): number {
+  if (config.brandCatalog?.entries?.length) {
+    return resolvePlantPriceFromConfigOrFallback(config);
+  }
   const kw = config.solar.plantCapacityKw;
   const track = config.solar.panelTrack ?? "dcr";
-  const catalogEntry = getActiveCatalogEntry(config);
-  const fromCatalog = lookupKwGrossForTrack(
-    catalogEntry,
-    kw,
-    track,
-    config.pricing?.kwTiers
-  );
-  if (fromCatalog != null && fromCatalog > 0) return fromCatalog;
   const fromTierDcr = lookupResidentialKwPriceInr(config.pricing?.kwTiers, kw);
   const fromTierNon = lookupResidentialKwPriceInr(
     config.pricing?.kwTiers?.map((t) => ({ ...t, priceInr: t.nonDcrPriceInr ?? 0 })),
@@ -187,9 +179,15 @@ export function buildResidentialBomFromConfig(
 
   return base.map((row) => {
     if (row.slot === 1) {
+      const trackLabel =
+        config.solar.panelTrack === "non_dcr"
+          ? "Non-DCR "
+          : config.solar.panelTrack === "dcr"
+            ? "DCR "
+            : "";
       return {
         ...row,
-        spec: `${q.moduleCount} × ${config.solar.watt} Wp ${tech} (BIS, MNRE)`,
+        spec: `${q.moduleCount} × ${config.solar.watt} Wp ${trackLabel}${tech} (BIS, MNRE)`,
         brand: panelBrand,
       };
     }
