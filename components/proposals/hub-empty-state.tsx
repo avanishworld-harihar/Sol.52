@@ -10,6 +10,7 @@
  */
 
 import Link from "next/link";
+import { prepareNewProposalNavigation } from "@/lib/proposal-builder-session";
 import { motion } from "framer-motion";
 import { FileText, Plus, Search, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -113,6 +114,7 @@ export function HubEmptyState({
 
         <Link
           href="/proposal"
+          onClick={prepareNewProposalNavigation}
           className={cn(
             "mt-8 inline-flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-bold",
             "bg-teal-600 text-white shadow-lg shadow-teal-500/25 transition hover:bg-teal-700 active:scale-[0.98]",

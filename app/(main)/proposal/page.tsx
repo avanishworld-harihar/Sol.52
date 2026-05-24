@@ -31,6 +31,13 @@ import {
 } from "@/lib/discom-billing-rules";
 import { pickProposalLeadPhone, patchLeadPhoneIfProvided } from "@/lib/lead-phone";
 import { mergeCustomerForProposal, type ManualProposalCustomer } from "@/lib/merge-proposal-customer";
+import {
+  clearProposalBuilderSession,
+  EMPTY_MANUAL_PROPOSAL_CUSTOMER,
+  isProposalBuilderReloadNavigation,
+  loadProposalBuilderSession,
+  saveProposalBuilderSession,
+} from "@/lib/proposal-builder-session";
 import { isBillBackedFromBuilderState } from "@/lib/proposal-bill-audit-eligibility";
 import { swrDiscomsWithOfflineCache, swrTariffWithOfflineCache } from "@/lib/proposal-swr-fetchers";
 import { CUSTOMERS_SWR_KEY, fetchCustomersLoose } from "@/lib/customers-client";
@@ -122,7 +129,6 @@ const BillAnalysisCharts = dynamic(
 const PIPELINE_SWR_KEY = "/api/pipeline";
 const CLIENT_REF_STORAGE_KEY = "ss_device_ref";
 const LEARNED_BILL_PROFILE_KEY = "ss_bill_upload_profile_v1";
-const SESSION_STATE_KEY = "ss_proposal_session_v2";
 
 type LearnedBillProfile = {
   requiredBills: number;
@@ -229,63 +235,6 @@ type UploadTask = {
   file: File;
 };
 
-type SessionSnap = {
-  manual: ManualProposalCustomer;
-  monthlyUnits: MonthlyUnits;
-  latestBill: ParsedBillShape | null;
-  additionalBills: (ParsedBillShape | null)[];
-  auditedMonthTotals: Partial<Record<keyof MonthlyUnits, number>>;
-  overrideSolarKw: string;
-  overridePanels: string;
-  requirementMonthlyKwh?: string;
-  requirementMonthlyBill?: string;
-};
-
-const EMPTY_MANUAL: ManualProposalCustomer = {
-  leadContactName: "",
-  leadPhone: "",
-  billPhone: "",
-  officialBillName: "",
-  city: "",
-  discom: "",
-  state: "",
-  area: "",
-  consumerId: "",
-  meterNumber: "",
-  connectionDate: "",
-  phase: "",
-  connectionType: "",
-  sanctionedLoad: "",
-  billingAddress: "",
-  tariffCategory: "",
-  purposeOfSupply: "",
-  contractDemandKva: "",
-};
-
-function loadSession(): SessionSnap | null {
-  try {
-    const raw = sessionStorage.getItem(SESSION_STATE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw) as SessionSnap;
-  } catch {
-    return null;
-  }
-}
-
-function saveSession(snap: SessionSnap) {
-  try {
-    sessionStorage.setItem(SESSION_STATE_KEY, JSON.stringify(snap));
-  } catch {
-    /* quota exceeded or private mode — ignore */
-  }
-}
-
-function isReloadNavigation(): boolean {
-  if (typeof window === "undefined") return false;
-  const nav = window.performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
-  return nav?.type === "reload";
-}
-
 function ProposalPageContent() {
   const { t } = useLanguage();
   const toast = useToast();
@@ -369,22 +318,18 @@ function ProposalPageContent() {
   const lastCalcPersistSignatureRef = useRef("");
   const uploadQueueRef = useRef<UploadTask[]>([]);
   const uploadWorkerRunningRef = useRef(false);
-  const [manual, setManual] = useState<ManualProposalCustomer>(EMPTY_MANUAL);
+  const [manual, setManual] = useState<ManualProposalCustomer>(EMPTY_MANUAL_PROPOSAL_CUSTOMER);
   const step1Label = stripStepPrefix(t("proposal_step1SelectLead"));
   const step2Label = stripStepPrefix(t("proposal_step2BillUploads"));
   const monthlyUnitsTitle = stripManualSuffix(t("proposal_monthlyUnitsTitle"));
 
   useEffect(() => {
-    if (isReloadNavigation()) {
-      try {
-        sessionStorage.removeItem(SESSION_STATE_KEY);
-      } catch {
-        /* ignore */
-      }
+    if (isProposalBuilderReloadNavigation()) {
+      clearProposalBuilderSession();
       skipServerRestoreRef.current = true;
       setHydratedFromServer(true);
     } else {
-      const snap = loadSession();
+      const snap = loadProposalBuilderSession();
       if (snap) {
         hadSessionOnMountRef.current = true;
         setManual(snap.manual);
@@ -429,7 +374,7 @@ function ProposalPageContent() {
   // Persist session across tab switches — debounced so typing does not freeze the UI.
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      saveSession({
+      saveProposalBuilderSession({
         manual,
         monthlyUnits,
         latestBill,
@@ -1362,11 +1307,7 @@ function ProposalPageContent() {
       purposeOfSupply: "",
       contractDemandKva: ""
     });
-    try {
-      sessionStorage.removeItem(SESSION_STATE_KEY);
-    } catch {
-      /* ignore */
-    }
+    clearProposalBuilderSession();
   }
 
   function applyLeadFromCrm(lead: CustomerLead) {

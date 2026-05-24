@@ -15,6 +15,7 @@ import {
   UserPlus
 } from "lucide-react";
 import Link from "next/link";
+import { prepareNewProposalNavigation } from "@/lib/proposal-builder-session";
 import { useEffect, useMemo, useState } from "react";
 
 type DashboardCommandCenterProps = {
@@ -202,6 +203,7 @@ export function DashboardCommandCenter({ name = "Avanish", stats, loading, class
             </Link>
             <Link
               href="/proposal"
+              onClick={prepareNewProposalNavigation}
               className="glass-hero-cta group inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white lg:px-5 lg:py-3 lg:text-base"
             >
               {t("actions_newProposal")}

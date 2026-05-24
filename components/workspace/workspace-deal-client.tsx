@@ -60,6 +60,7 @@ import type { ProposalHubRow } from "@/lib/proposal-hub-insights";
 import { useToast } from "@/components/ui/toast-center";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { prepareNewProposalNavigation } from "@/lib/proposal-builder-session";
 import {
   defaultCommercialConfig,
   parseCommercialConfig,
@@ -396,7 +397,7 @@ export function WorkspaceDealClient({
             Pricing is not yet available for this proposal. Please apply the pricing migrations and regenerate.
           </p>
           <Button asChild variant="default" className="mt-4 font-semibold">
-            <Link href="/proposal">{t("proposals_newProposalCta")}</Link>
+            <Link href="/proposal" onClick={prepareNewProposalNavigation}>{t("proposals_newProposalCta")}</Link>
           </Button>
         </div>
       </div>

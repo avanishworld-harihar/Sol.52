@@ -29,6 +29,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { prepareNewProposalNavigation } from "@/lib/proposal-builder-session";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Plus } from "lucide-react";
@@ -236,7 +237,7 @@ export default function ProposalsHubPage() {
         }
         action={
           <Button asChild size="default" className="proposal-hub-new-btn gap-2 font-semibold shadow-lg">
-            <Link href="/proposal">
+            <Link href="/proposal" onClick={prepareNewProposalNavigation}>
               <Plus className="h-4 w-4" aria-hidden />
               {t("proposals_newProposalCta")}
             </Link>
