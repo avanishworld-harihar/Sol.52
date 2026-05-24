@@ -49,6 +49,10 @@ import {
   commercialRequirementHasSizing,
   getCommercialWorkspaceBlockReason,
 } from "@/lib/commercial-requirement-readiness";
+import {
+  monthlyUnitsFromRequirementInput,
+  requirementHasConsumptionInput,
+} from "@/lib/requirement-consumption-sync";
 import { ProposalLivePreviewPanel } from "@/components/proposals/os/live-preview-panel";
 import { BlockPlaylistEditor } from "@/components/proposals/os/block-playlist-editor";
 import { CommercialNarrativePanel } from "@/components/commercial/commercial-narrative-panel";
@@ -232,6 +236,8 @@ type SessionSnap = {
   auditedMonthTotals: Partial<Record<keyof MonthlyUnits, number>>;
   overrideSolarKw: string;
   overridePanels: string;
+  requirementMonthlyKwh?: string;
+  requirementMonthlyBill?: string;
 };
 
 const EMPTY_MANUAL: ManualProposalCustomer = {
@@ -356,6 +362,7 @@ function ProposalPageContent() {
   const [commercialPricingConfig, setCommercialPricingConfig] = useState<ResidentialProposalConfig | null>(null);
   // Requirement-mode form fields (written to manual state on change)
   const [requirementMonthlyKwh, setRequirementMonthlyKwh] = useState("");
+  const [requirementMonthlyBill, setRequirementMonthlyBill] = useState("");
   const [requirementNotes, setRequirementNotes] = useState("");
 
   const lastCalcPersistSignatureRef = useRef("");
@@ -386,6 +393,8 @@ function ProposalPageContent() {
         setAuditedMonthTotals(snap.auditedMonthTotals);
         setOverrideSolarKw(snap.overrideSolarKw);
         setOverridePanels(snap.overridePanels);
+        if (snap.requirementMonthlyKwh != null) setRequirementMonthlyKwh(snap.requirementMonthlyKwh);
+        if (snap.requirementMonthlyBill != null) setRequirementMonthlyBill(snap.requirementMonthlyBill);
       }
     }
 
@@ -426,11 +435,13 @@ function ProposalPageContent() {
         additionalBills,
         auditedMonthTotals,
         overrideSolarKw,
-        overridePanels
+        overridePanels,
+        requirementMonthlyKwh,
+        requirementMonthlyBill,
       });
     }, 400);
     return () => window.clearTimeout(timer);
-  }, [manual, monthlyUnits, latestBill, additionalBills, auditedMonthTotals, overrideSolarKw, overridePanels]);
+  }, [manual, monthlyUnits, latestBill, additionalBills, auditedMonthTotals, overrideSolarKw, overridePanels, requirementMonthlyKwh, requirementMonthlyBill]);
 
   useEffect(() => {
     const sync = () => {
@@ -690,6 +701,40 @@ function ProposalPageContent() {
   const isResidentialSmart = osPresetId === "residential_smart";
   const isResidentialRequirement = isResidentialSmart && residentialInputMode === "requirement";
   const isResidentialBill = isResidentialSmart && residentialInputMode === "bill";
+  const canEstimateBillToKwh = Boolean(manual.state.trim() && manual.discom.trim());
+
+  const applyResidentialRequirementConsumption = useCallback(
+    (kwh: string, billInr: string) => {
+      const next = monthlyUnitsFromRequirementInput(
+        kwh,
+        canEstimateBillToKwh ? billInr : "",
+        effectiveTariffContext
+      );
+      if (next) setMonthlyUnits(next);
+      else if (!kwh.trim() && !billInr.trim()) setMonthlyUnits(emptyMonthlyUnits());
+    },
+    [canEstimateBillToKwh, effectiveTariffContext]
+  );
+
+  useEffect(() => {
+    if (!isResidentialRequirement) return;
+    applyResidentialRequirementConsumption(requirementMonthlyKwh, requirementMonthlyBill);
+  }, [
+    isResidentialRequirement,
+    requirementMonthlyKwh,
+    requirementMonthlyBill,
+    applyResidentialRequirementConsumption,
+  ]);
+
+  const requirementEstimatedKwh = useMemo(() => {
+    if (!isResidentialRequirement || !canEstimateBillToKwh) return null;
+    if (requirementMonthlyKwh.trim()) return null; // kWh entered directly — no need to show estimate
+    const bill = parseFloat(requirementMonthlyBill.replace(/,/g, "").trim());
+    if (!Number.isFinite(bill) || bill <= 0) return null;
+    const est = estimateMonthlyKwhFromBillAmount(bill, effectiveTariffContext);
+    return est > 0 ? Math.round(est) : null;
+  }, [isResidentialRequirement, canEstimateBillToKwh, requirementMonthlyKwh, requirementMonthlyBill, effectiveTariffContext]);
+
   const useResidentialCatalog = isResidentialSmart && Boolean(residentialConfig);
   const useCommercialCatalog =
     osPresetId === "commercial_executive" && Boolean(commercialPricingConfig) && !isCommercialRequirement;
@@ -846,7 +891,7 @@ function ProposalPageContent() {
   // Reactive bill-backed status for live preview
   const isBillBackedLive = latestBill != null;
 
-  const hideBillUploadSteps = isCommercialRequirement;
+  const hideBillUploadSteps = isCommercialRequirement || isResidentialRequirement;
 
   const commercialFlowHasClient = Boolean(
     manual.leadContactName?.trim() || manual.officialBillName?.trim() || selectedLeadId
@@ -859,7 +904,10 @@ function ProposalPageContent() {
   // Drives BuilderStageBar active/completed state in real-time.
   const osActiveStageIndex = useMemo(() => {
     const hasClient = Boolean(manual.leadContactName || manual.officialBillName || selectedLeadId);
-    const hasEnergy = isBillBackedLive || Object.values(monthlyUnits).some((v) => v > 0);
+    const hasEnergy =
+      isBillBackedLive ||
+      requirementHasConsumptionInput(requirementMonthlyKwh, requirementMonthlyBill) ||
+      Object.values(monthlyUnits).some((v) => v > 0);
     const hasSystem = effectiveResult.solarKw > 0;
     if (!hasClient) return 0;
     if (!hasEnergy) return 1;
@@ -871,13 +919,18 @@ function ProposalPageContent() {
     selectedLeadId,
     isBillBackedLive,
     monthlyUnits,
+    requirementMonthlyKwh,
+    requirementMonthlyBill,
     effectiveResult.solarKw,
   ]);
 
   const osCompletedStages = useMemo(() => {
     const stages: number[] = [];
     const hasClient = Boolean(manual.leadContactName || manual.officialBillName || selectedLeadId);
-    const hasEnergy = isBillBackedLive || Object.values(monthlyUnits).some((v) => v > 0);
+    const hasEnergy =
+      isBillBackedLive ||
+      requirementHasConsumptionInput(requirementMonthlyKwh, requirementMonthlyBill) ||
+      Object.values(monthlyUnits).some((v) => v > 0);
     const hasSystem = effectiveResult.solarKw > 0;
     if (hasClient) stages.push(0);
     if (hasEnergy) stages.push(1);
@@ -889,6 +942,8 @@ function ProposalPageContent() {
     selectedLeadId,
     isBillBackedLive,
     monthlyUnits,
+    requirementMonthlyKwh,
+    requirementMonthlyBill,
     effectiveResult.solarKw,
   ]);
 
@@ -2190,7 +2245,11 @@ function ProposalPageContent() {
               area: manual.area,
               city: manual.city,
               phone: manual.leadPhone,
+              monthlyKwh: requirementMonthlyKwh,
+              monthlyBillInr: requirementMonthlyBill,
             }}
+            canEstimateBillToKwh={canEstimateBillToKwh}
+            estimatedKwhFromBill={requirementEstimatedKwh ?? undefined}
             onContactName={(v) => setManual((p) => ({ ...p, leadContactName: v }))}
             onState={(v) => setManual((p) => ({ ...p, state: v, discom: v === p.state ? p.discom : "" }))}
             onDiscom={(v) => setManual((p) => ({ ...p, discom: v }))}
@@ -2198,6 +2257,16 @@ function ProposalPageContent() {
             onArea={(v) => setManual((p) => ({ ...p, area: v }))}
             onCity={(v) => setManual((p) => ({ ...p, city: v }))}
             onPhone={(v) => setManual((p) => ({ ...p, leadPhone: v }))}
+            onMonthlyKwh={(v) => {
+              setRequirementMonthlyKwh(v);
+              if (v.trim()) setRequirementMonthlyBill("");
+              applyResidentialRequirementConsumption(v, v.trim() ? "" : requirementMonthlyBill);
+            }}
+            onMonthlyBillInr={(v) => {
+              setRequirementMonthlyBill(v);
+              if (v.trim()) setRequirementMonthlyKwh("");
+              applyResidentialRequirementConsumption(requirementMonthlyKwh, v);
+            }}
           />
         ) : null}
 

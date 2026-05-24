@@ -1,6 +1,7 @@
 "use client";
 
 import { FloatingLabelInput, FloatingLabelSelect } from "@/components/ui/floating-label-input";
+import { FloatingLabelNumericInput } from "@/components/ui/floating-label-input";
 import { INDIAN_STATES_AND_UTS } from "@/lib/indian-states-uts";
 import {
   isPmSuryaGharSubsidyEligible,
@@ -10,7 +11,7 @@ import {
 import { useInstallerDiscoms } from "@/hooks/use-installer-discoms";
 import { mergeSavedDiscomOption, resolveDiscomCode } from "@/lib/installer-region-storage";
 import { cn } from "@/lib/utils";
-import { MapPin, Phone, User } from "lucide-react";
+import { IndianRupee, MapPin, Phone, User, Zap } from "lucide-react";
 import { useEffect, useMemo } from "react";
 
 export type ResidentialRequirementCustomerFields = {
@@ -21,6 +22,8 @@ export type ResidentialRequirementCustomerFields = {
   area: string;
   city: string;
   phone: string;
+  monthlyKwh: string;
+  monthlyBillInr: string;
 };
 
 type Props = {
@@ -32,6 +35,12 @@ type Props = {
   onArea: (v: string) => void;
   onCity: (v: string) => void;
   onPhone: (v: string) => void;
+  onMonthlyKwh: (v: string) => void;
+  onMonthlyBillInr: (v: string) => void;
+  /** When bill → kWh estimate needs state + DISCOM */
+  canEstimateBillToKwh?: boolean;
+  /** Estimated kWh from bill amount (computed externally from tariff engine) */
+  estimatedKwhFromBill?: number;
   className?: string;
 };
 
@@ -75,6 +84,10 @@ export function ResidentialRequirementCustomerForm({
   onArea,
   onCity,
   onPhone,
+  onMonthlyKwh,
+  onMonthlyBillInr,
+  canEstimateBillToKwh = true,
+  estimatedKwhFromBill,
   className,
 }: Props) {
   const { options: discomOptions, loading: discomLoading } = useInstallerDiscoms(fields.state);
@@ -179,6 +192,50 @@ export function ResidentialRequirementCustomerForm({
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         <Field icon={MapPin} placeholder="City *" value={fields.city} onChange={onCity} required />
         <Field icon={Phone} placeholder="Phone (optional)" value={fields.phone} onChange={onPhone} inputMode="tel" />
+      </div>
+      <div className="rounded-xl border border-slate-200/90 bg-white/80 p-3 dark:border-white/10 dark:bg-white/[0.03]">
+        <p className="mb-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+          <Zap className="h-3.5 w-3.5 text-amber-500" aria-hidden />
+          Electricity usage (for savings &amp; payback)
+        </p>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <FloatingLabelNumericInput
+            label="Monthly units (kWh)"
+            live
+            integer
+            value={fields.monthlyKwh.trim() ? parseFloat(fields.monthlyKwh) : undefined}
+            onValueChange={(n) => onMonthlyKwh(n != null && n > 0 ? String(Math.round(n)) : "")}
+            className="h-11 rounded-xl text-sm font-semibold"
+          />
+          <FloatingLabelNumericInput
+            label="Monthly bill (₹)"
+            live
+            integer
+            value={fields.monthlyBillInr.trim() ? parseFloat(fields.monthlyBillInr) : undefined}
+            onValueChange={(n) => onMonthlyBillInr(n != null && n > 0 ? String(Math.round(n)) : "")}
+            className="h-11 rounded-xl text-sm font-semibold"
+          />
+        </div>
+        <p className="mt-2 flex items-start gap-1.5 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
+          <Zap className="mt-0.5 h-3 w-3 shrink-0 opacity-60" aria-hidden />
+          <span>
+            Prefer <strong className="font-semibold text-slate-700 dark:text-slate-300">units (kWh)</strong> — check
+            last 3 bills and enter average. Units vary month to month; average gives best sizing.{" "}
+            Bill ₹ also works but accuracy depends on connection type (domestic vs commercial) and DISCOM slab.
+          </span>
+        </p>
+        {estimatedKwhFromBill != null ? (
+          <p className="mt-1.5 flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50/80 px-2 py-1.5 text-[10px] font-medium text-emerald-800 dark:border-emerald-800/40 dark:bg-emerald-950/30 dark:text-emerald-300">
+            <Zap className="h-3 w-3 shrink-0" aria-hidden />
+            ₹{parseInt(fields.monthlyBillInr).toLocaleString("en-IN")} ≈{" "}
+            <strong>{estimatedKwhFromBill} kWh/month</strong> (estimated from your DISCOM tariff)
+          </p>
+        ) : null}
+        {!canEstimateBillToKwh && fields.monthlyBillInr.trim() && !fields.monthlyKwh.trim() ? (
+          <p className="mt-1.5 text-[10px] font-medium text-amber-800 dark:text-amber-200">
+            Select state &amp; DISCOM above to convert bill ₹ → estimated kWh.
+          </p>
+        ) : null}
       </div>
       {!isPmSuryaGharSubsidyEligible(fields.connectionType) && fields.connectionType.trim() ? (
         <p className="rounded-lg border border-amber-200/80 bg-amber-50/80 px-2.5 py-2 text-[11px] font-medium text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100">
