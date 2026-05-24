@@ -6,7 +6,7 @@ import {
   applyActiveBrandToConfig,
   addCatalogBrand,
   ensureBrandCatalog,
-  nonDcrGrossFromDcrGross,
+  lookupKwGrossForTrack,
   removeCatalogBrand,
   syncSolarAndPricingFromEntry,
   syncKwTierCanonical,
@@ -40,11 +40,10 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
   const track = normalized.solar.panelTrack ?? "dcr";
   const plantKw = normalized.solar.plantCapacityKw;
   const plantTier = kwTiers.find((t) => t.kw === plantKw);
-  const plantGrossDcr = plantTier?.priceInr ?? 0;
+  const syncedPlantTier = plantTier ? syncKwTierCanonical(plantTier) : null;
   const plantGross =
-    track === "dcr"
-      ? plantGrossDcr
-      : nonDcrGrossFromDcrGross(plantGrossDcr);
+    lookupKwGrossForTrack(activeEntry, plantKw, track, kwTiers) ??
+    (track === "dcr" ? syncedPlantTier?.priceInr ?? 0 : syncedPlantTier?.nonDcrPriceInr ?? 0);
 
   function emit(next: ResidentialProposalConfig) {
     onChange(ensureBrandCatalog(next));
@@ -88,8 +87,9 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
           </div>
         </div>
         <p className="mt-1.5 text-[11px] leading-snug text-slate-300">
-          Set <strong className="text-white">complete plant gross (₹)</strong> per kW for each brand. Non-DCR is
-          automatically 30% lower than DCR for the same kW row.
+          Set <strong className="text-white">complete plant gross (₹)</strong> per kW for DCR and Non-DCR.
+          These rows power DCR comparison and multi-kW executive cards — use <strong>Add kW row</strong> for
+          commercial sizes (50, 100 kW, etc.).
         </p>
       </div>
 
@@ -154,7 +154,7 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
             {(
               [
                 { id: "dcr" as const, label: "DCR plant cost" },
-                { id: "non_dcr" as const, label: "Non-DCR (−30%)" },
+                { id: "non_dcr" as const, label: "Non-DCR plant cost" },
               ] as const
             ).map((t) => (
               <button
@@ -176,9 +176,6 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
           <p className="mt-3 rounded-lg bg-slate-50/90 px-3 py-2 text-[11px] text-slate-600 dark:bg-white/[0.03] dark:text-slate-400">
             Active proposal ({plantKw} kW, {track === "dcr" ? "DCR" : "Non-DCR"}):{" "}
             <strong className="text-slate-900 dark:text-white">{inr(plantGross)}</strong>
-            {track === "non_dcr" && plantGrossDcr > 0 ? (
-              <span className="text-slate-500"> — from DCR {inr(plantGrossDcr)}</span>
-            ) : null}
           </p>
         </div>
 
@@ -189,7 +186,7 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
               System price by kW — {activeEntry.brand}
             </p>
             <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200">
-              DCR = full plant · Non-DCR auto −30%
+              DCR & Non-DCR — enter both manually
             </span>
           </div>
           <div className="overflow-x-auto rounded-xl border border-slate-200/90 dark:border-white/10">
@@ -205,7 +202,7 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
               <tbody>
                 {kwTiers.map((tier, idx) => {
                   const isPlantKw = tier.kw === plantKw;
-                  const nonDcr = nonDcrGrossFromDcrGross(tier.priceInr);
+                  const synced = syncKwTierCanonical(tier);
                   return (
                     <tr
                       key={`${tier.kw}-${idx}`}
@@ -234,14 +231,18 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
                           className="h-9 rounded-lg text-xs font-bold"
                         />
                       </td>
-                      <td className="px-3 py-2 align-middle">
-                        <span
-                          className="text-xs font-bold tabular-nums text-emerald-700 transition-colors dark:text-emerald-300"
-                          aria-live="polite"
-                        >
-                          {inr(nonDcr)}
-                        </span>
-                        <span className="ml-1 text-[9px] font-medium text-slate-400">−30%</span>
+                      <td className="px-2 py-1.5">
+                        <FloatingLabelNumericInput
+                          label="Non-DCR ₹"
+                          live
+                          value={synced.nonDcrPriceInr}
+                          onValueChange={(n) =>
+                            patchActiveTier(idx, {
+                              nonDcrPriceInr: n !== undefined ? Math.max(0, n) : 0,
+                            })
+                          }
+                          className="h-9 rounded-lg text-xs font-bold"
+                        />
                       </td>
                       <td className="px-1 py-1.5">
                         <button
@@ -272,7 +273,7 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
               onClick={() => {
                 const maxKw = kwTiers.reduce((m, t) => Math.max(m, t.kw), 0);
                 patchActiveEntry({
-                  kwTiers: [...kwTiers, { kw: maxKw > 0 ? maxKw + 1 : 11, priceInr: 0 }],
+                  kwTiers: [...kwTiers, { kw: maxKw > 0 ? maxKw + 1 : 11, priceInr: 0, nonDcrPriceInr: 0 }],
                 });
               }}
             >

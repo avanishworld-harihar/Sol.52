@@ -141,7 +141,7 @@ export function defaultCommercialConfig(
     },
     dcrComparison: { enabled: true, brandId: "waaree", watt: 540 },
     capacityScenarios: {
-      enabled: true,
+      enabled: false,
       scenarios,
       recommendedId: "primary",
     },
@@ -175,8 +175,8 @@ export function applyCommercialFlagsToLayout(
   config: CommercialProposalConfig
 ): ProposalTemplateV1 {
   const flags: Partial<Record<ProposalBlockId, boolean>> = {
-    dcr_comparison_card: config.dcrComparison?.enabled !== false,
-    capacity_scenarios_card: config.capacityScenarios?.enabled !== false,
+    dcr_comparison_card: config.dcrComparison?.enabled === true,
+    capacity_scenarios_card: config.capacityScenarios?.enabled === true,
     commercial_financing_card: config.financing?.enabled === true,
     dg_hybrid_analysis_card: config.dgAssumptions?.enabled === true,
   };

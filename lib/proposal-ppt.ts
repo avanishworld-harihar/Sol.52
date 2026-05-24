@@ -36,6 +36,10 @@ import {
   residentialNetCostInr,
   wireBrandsLabel,
 } from "@/lib/residential-deck-helpers";
+import {
+  commercialTrackFromPanelType,
+  plantGrossFromSharedCatalogOrFallback,
+} from "@/lib/shared-plant-rate-card";
 import { quoteResidentialSolar } from "@/lib/residential-solar-engine";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
 import { resolvedCompanyProfileForLang } from "@/lib/proposal-company-resolve";
@@ -183,6 +187,9 @@ export type PremiumProposalPptInput = {
 
   /** Homeowner requirement-based residential — guided kW, EMI, subsidy, panel track */
   residentialConfig?: import("@/lib/residential-proposal-config").ResidentialProposalConfig | null;
+
+  /** Shared kW plant catalog snapshot — residential + commercial turnkey (More → Rate card). */
+  sharedPlantCatalog?: import("@/lib/residential-requirements-schema").ResidentialBrandCatalog | null;
 
   /** Central rate card vs prices locked on this proposal only. */
   pricingSource?: "rate_card" | "customer_override";
@@ -521,6 +528,14 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
       cables: wireBrandsLabel(resCfg.pricing, fallbackBrands.cables),
     };
     defaultBom = buildResidentialBomFromConfig(resCfg, amcSelectedYears);
+  } else if (input.sharedPlantCatalog?.entries?.length) {
+    const cc = input.commercialConfig;
+    const track = commercialTrackFromPanelType(cc?.panel?.panelType);
+    grossSystemCost = n(
+      input.grossSystemCostInr ??
+        plantGrossFromSharedCatalogOrFallback(deckSystemKw, track, input.sharedPlantCatalog)
+    );
+    pmSubsidy = n(input.pmSuryaGharSubsidyInr ?? 0);
   }
 
   const overridesBySlot = new Map<number, NonNullable<typeof input.bomOverrides>[number]>();

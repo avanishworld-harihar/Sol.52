@@ -17,11 +17,11 @@ type Props = {
   proposalLayout?: ProposalTemplateV1 | null;
   onLayoutChange?: (layout: ProposalTemplateV1) => void;
   onCreateProposal?: () => Promise<string | null>;
-  /** Proposals BOM tab: persist pricing lines after catalog save. */
   lineItems?: PricingLineItem[];
   onPricingSaved?: () => void;
-  /** Bill path: short hint that catalog pricing drives the web proposal. */
   billBackedHint?: boolean;
+  maxPlantKw?: number;
+  segmentLabel?: string;
 };
 
 export function ResidentialProposalConfigWorkspace({
@@ -37,6 +37,8 @@ export function ResidentialProposalConfigWorkspace({
   lineItems,
   onPricingSaved,
   billBackedHint,
+  maxPlantKw = 50,
+  segmentLabel = "homeowner",
 }: Props) {
   return (
     <div className="space-y-6">
@@ -44,6 +46,11 @@ export function ResidentialProposalConfigWorkspace({
         <p className="rounded-xl border border-emerald-200/80 bg-emerald-50/70 px-3 py-2.5 text-[11px] font-medium leading-snug text-emerald-950 dark:border-emerald-800/40 dark:bg-emerald-950/25 dark:text-emerald-100">
           Bill audit fills consumption below. <strong>Smart catalog</strong> sets plant kW, brands, and
           pricing for the web proposal — including DCR vs Non-DCR comparison when enabled.
+        </p>
+      ) : segmentLabel === "commercial" ? (
+        <p className="rounded-xl border border-sky-200/80 bg-sky-50/70 px-3 py-2.5 text-[11px] font-medium leading-snug text-sky-950 dark:border-sky-800/40 dark:bg-sky-950/25 dark:text-sky-100">
+          Same Smart catalog + pricing studio as residential — set plant ₹/kW (DCR & Non-DCR manually), brands,
+          discount, and optional DCR comparison for your commercial offer.
         </p>
       ) : null}
 
@@ -54,6 +61,7 @@ export function ResidentialProposalConfigWorkspace({
         onChange={onChange}
         netCostInr={netCostInr}
         annualSavingInr={annualSavingInr}
+        maxPlantKw={maxPlantKw}
       />
 
       <ResidentialPricingStudio

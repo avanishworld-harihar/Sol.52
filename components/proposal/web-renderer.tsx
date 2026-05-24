@@ -269,6 +269,16 @@ export function renderBlockByKey(
       );
 
     case "dcr_comparison":
+      if (ctx.residentialConfig?.trackCompare?.enabled) {
+        return (
+          <ResidentialTrackCompareSection
+            lang={lang}
+            darkMode={darkMode}
+            trackCompare={ctx.residentialConfig.trackCompare}
+            highlightPlantKw={ctx.residentialConfig.solar.plantCapacityKw}
+          />
+        );
+      }
       return (
         <BlockDcrComparison
           summary={summary}
@@ -285,6 +295,7 @@ export function renderBlockByKey(
           lang={lang}
           darkMode={darkMode}
           commercialConfig={ctx.commercialConfig}
+          residentialConfig={ctx.residentialConfig}
         />
       );
 

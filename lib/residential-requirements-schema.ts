@@ -14,7 +14,7 @@ export const residentialSubsidyPreferenceSchema = z.enum(["maximize", "standard"
 export const residentialPanelTrackSchema = z.enum(["dcr", "non_dcr"]);
 
 export const residentialSolarSchema = z.object({
-  plantCapacityKw: z.number().min(0.5).max(50),
+  plantCapacityKw: z.number().min(0.5).max(10000),
   panelTrack: residentialPanelTrackSchema.default("dcr"),
   brand: z.string().max(80),
   brandId: z.string().max(40).optional(),
@@ -45,11 +45,15 @@ export const residentialSubsidySchema = z.object({
 });
 
 export const residentialKwTierSchema = z.object({
-  kw: z.number().min(1).max(100),
-  /** DCR complete plant gross (₹) — primary residential UI field. */
+  kw: z.number().min(1).max(10000),
+  /** DCR complete plant gross (₹) — primary field. */
   priceInr: z.number().min(0),
+  /** Non-DCR complete plant gross (₹) — enter manually per kW row. */
+  nonDcrPriceInr: z.number().min(0).default(0),
   /** Canonical ₹/Wp (DCR) — derived by pricing engine; used for quotes & snapshots. */
   ratePerWpInr: z.number().min(0).max(500).optional(),
+  /** Canonical ₹/Wp (Non-DCR) — derived from nonDcrPriceInr when set. */
+  nonDcrRatePerWpInr: z.number().min(0).max(500).optional(),
 });
 
 export const residentialDiscountSchema = z.object({
@@ -118,7 +122,7 @@ export const residentialProposalConfigSchema = z.object({
   panelBrandOptions: z.array(residentialBrandOptionSchema).max(3).optional(),
   /** Up to 2 inverter brands */
   inverterBrandOptions: z.array(residentialBrandOptionSchema).max(2).optional(),
-  /** Per-brand DCR rates + kW tier catalog (Non-DCR = 70% of DCR). */
+  /** Per-brand DCR + Non-DCR kW tier catalog (manual plant gross per row). */
   brandCatalog: residentialBrandCatalogSchema.optional(),
   /** Side-by-side Non-DCR vs DCR gross prices (shared kW rows) for web proposal */
   trackCompare: residentialTrackCompareSchema.optional(),
@@ -146,7 +150,11 @@ export type ResidentialBrandCatalog = z.infer<typeof residentialBrandCatalogSche
 /** Default kW → gross price table for residential requirement proposals. */
 export function defaultResidentialKwTiers(): ResidentialKwTier[] {
   const kws = [3, 5, 6, 7, 8, 9, 10];
-  return kws.map((kw) => ({ kw, priceInr: computeGrossSystemCostInr(kw) }));
+  return kws.map((kw) => ({
+    kw,
+    priceInr: computeGrossSystemCostInr(kw),
+    nonDcrPriceInr: 0,
+  }));
 }
 
 function defaultRate(brandId: string, watt: number, track: "DCR" | "NON_DCR"): number {
@@ -158,7 +166,7 @@ function defaultRate(brandId: string, watt: number, track: "DCR" | "NON_DCR"): n
 }
 
 export function defaultResidentialConfig(plantKw = 5): ResidentialProposalConfig {
-  const kw = Math.max(1, Math.min(50, plantKw));
+  const kw = Math.max(1, Math.min(10000, plantKw));
   const primary = { brandId: "adani", brand: "Adani Solar" };
   return {
     inputMode: "requirement",

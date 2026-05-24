@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { commercialProposalConfigSchema } from "@/lib/commercial-proposal-config";
-import { residentialProposalConfigSchema } from "@/lib/residential-requirements-schema";
+import { residentialBrandCatalogSchema, residentialProposalConfigSchema } from "@/lib/residential-requirements-schema";
 import { proposalTemplateV1Schema } from "@/lib/proposal-template-schema";
 
 /**
@@ -106,6 +106,8 @@ export const proposalExtrasShape = {
   commercialConfig: commercialProposalConfigSchema.optional(),
   /** Homeowner requirement-based config (kW pricing, brands, discount). */
   residentialConfig: residentialProposalConfigSchema.optional(),
+  /** Shared kW plant catalog snapshot — residential + commercial turnkey quotes. */
+  sharedPlantCatalog: residentialBrandCatalogSchema.optional(),
   /** Central rate card vs per-proposal override (quotation engine Phase 1). */
   pricingSource: z.enum(["rate_card", "customer_override"]).optional(),
 } as const;

@@ -42,7 +42,7 @@ export function ResidentialKwPricingSettings({ config, onChange, className }: Pr
   function addTier() {
     const maxKw = tiers.reduce((m, t) => Math.max(m, t.kw), 0);
     patchPricing({
-      kwTiers: [...tiers, { kw: maxKw > 0 ? maxKw + 1 : 11, priceInr: 0 }],
+      kwTiers: [...tiers, { kw: maxKw > 0 ? maxKw + 1 : 11, priceInr: 0, nonDcrPriceInr: 0 }],
     });
   }
 

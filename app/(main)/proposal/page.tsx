@@ -38,7 +38,7 @@ import { DASHBOARD_STATS_SWR_KEY } from "@/lib/dashboard-stats-client";
 import { ProposalQuickPreview } from "@/components/proposal/proposal-quick-preview";
 import { WorkspacePage, WorkspacePageHero } from "@/components/workspace";
 import { cn } from "@/lib/utils";
-import { Building2, Download, ExternalLink, FileUp, Globe, MessageCircle, Send, Sparkles, Zap } from "lucide-react";
+import { Building2, ChevronDown, Download, ExternalLink, FileUp, Globe, MessageCircle, Send, Sparkles, Zap } from "lucide-react";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { parsePrefillFromSearchParams } from "@/lib/quick-actions";
@@ -52,6 +52,7 @@ import {
 import { ProposalLivePreviewPanel } from "@/components/proposals/os/live-preview-panel";
 import { BlockPlaylistEditor } from "@/components/proposals/os/block-playlist-editor";
 import { CommercialNarrativePanel } from "@/components/commercial/commercial-narrative-panel";
+import { CommercialCapacityScenariosPanel } from "@/components/commercial/commercial-capacity-scenarios-panel";
 import { ProposalReviewSheet } from "@/components/commercial/proposal-review-sheet";
 import { CommercialCategorySelector } from "@/components/commercial/commercial-category-selector";
 import { CommercialInputModeSelector } from "@/components/commercial/commercial-input-mode";
@@ -60,7 +61,6 @@ import {
   ResidentialProposalModePicker,
   type ResidentialInputMode,
 } from "@/components/residential/residential-proposal-mode-picker";
-import { ResidentialPricingStudio } from "@/components/residential/residential-pricing-studio";
 import { ResidentialProposalConfigWorkspace } from "@/components/residential/residential-proposal-config-workspace";
 import { ResidentialRequirementCustomerForm } from "@/components/residential/residential-requirement-customer-form";
 import { isPmSuryaGharSubsidyEligible } from "@/lib/lead-connection-types";
@@ -84,7 +84,11 @@ import {
   parseResidentialConfig,
   type ResidentialProposalConfig,
 } from "@/lib/residential-proposal-config";
-import { loadInstallerRateCard } from "@/lib/installer-rate-card-client";
+import { loadInstallerRateCard, getCachedResidentialBrandCatalog } from "@/lib/installer-rate-card-client";
+import {
+  commercialTrackFromPanelType,
+  plantGrossFromSharedCatalogOrFallback,
+} from "@/lib/shared-plant-rate-card";
 import {
   readResidentialDraftProposalId,
   writeResidentialDraftProposalId,
@@ -339,6 +343,8 @@ function ProposalPageContent() {
     urlPrefill.preset === "residential_smart" && !urlPrefill.inputMode
   );
   const [residentialConfig, setResidentialConfig] = useState<ResidentialProposalConfig | null>(null);
+  /** Commercial bill path — same Smart catalog + pricing studio as residential. */
+  const [commercialPricingConfig, setCommercialPricingConfig] = useState<ResidentialProposalConfig | null>(null);
   // Requirement-mode form fields (written to manual state on change)
   const [requirementMonthlyKwh, setRequirementMonthlyKwh] = useState("");
   const [requirementNotes, setRequirementNotes] = useState("");
@@ -676,6 +682,8 @@ function ProposalPageContent() {
   const isResidentialRequirement = isResidentialSmart && residentialInputMode === "requirement";
   const isResidentialBill = isResidentialSmart && residentialInputMode === "bill";
   const useResidentialCatalog = isResidentialSmart && Boolean(residentialConfig);
+  const useCommercialCatalog =
+    osPresetId === "commercial_executive" && Boolean(commercialPricingConfig) && !isCommercialRequirement;
 
   const effectiveResult = useMemo(() => {
     if (useResidentialCatalog && residentialConfig) {
@@ -713,6 +721,36 @@ function ProposalPageContent() {
         profit25yr,
       };
     }
+    if (useCommercialCatalog && commercialPricingConfig) {
+      const q = quoteResidentialSolar(commercialPricingConfig.solar);
+      const solarKw = commercialPricingConfig.solar.plantCapacityKw;
+      const panels = q.moduleCount;
+      const annualGeneration = Math.round(solarKw * 1500);
+      const grossCost = residentialGrossCostInr(commercialPricingConfig);
+      const centralSubsidy = 0;
+      const netCost = residentialNetCostInr(commercialPricingConfig, { subsidyEligible: false });
+      const annualSavings = Math.round(annualGeneration * 8 * 0.85);
+      const monthlySavings = Math.round(annualSavings / 12);
+      const paybackYears = annualSavings > 0 ? Number((netCost / annualSavings).toFixed(1)) : 0;
+      const savings25yr = annualSavings * 25;
+      const profit25yr = savings25yr - netCost;
+      return {
+        ...result,
+        solarKw,
+        panels,
+        annualGeneration,
+        annualSavings,
+        monthlySavings,
+        newMonthlyBill: Math.max(0, result.currentMonthlyBill - monthlySavings),
+        grossCost,
+        centralSubsidy,
+        netCost,
+        paybackYears,
+        paybackDisplay: `${paybackYears} years`,
+        savings25yr,
+        profit25yr,
+      };
+    }
     const kwRaw = parseFloat(overrideSolarKw);
     const solarKw = kwRaw > 0 ? Math.round(kwRaw * 10) / 10 : result.solarKw;
     const panelsRaw = parseInt(overridePanels);
@@ -721,8 +759,18 @@ function ProposalPageContent() {
     const selfUse = Math.min(annualGeneration, result.annualUnits);
     const monthlySavings = Math.round((result.currentMonthlyBill * (selfUse / Math.max(result.annualUnits, 1))) * 0.9);
     const annualSavings = monthlySavings * 12;
-    const grossCost = computeGrossSystemCostInr(solarKw);
-    const centralSubsidy = solarKw <= 2 ? Math.round(solarKw * 30000) : Math.min(78000, Math.round(60000 + (solarKw - 2) * 18000));
+
+    const isCommercial = osPresetId === "commercial_executive";
+    const sharedCatalog = getCachedResidentialBrandCatalog();
+    const commercialTrack = commercialTrackFromPanelType(commercialConfig?.panel?.panelType);
+    const grossCost = isCommercial
+      ? plantGrossFromSharedCatalogOrFallback(solarKw, commercialTrack, sharedCatalog)
+      : computeGrossSystemCostInr(solarKw);
+    const centralSubsidy = isCommercial
+      ? 0
+      : solarKw <= 2
+        ? Math.round(solarKw * 30000)
+        : Math.min(78000, Math.round(60000 + (solarKw - 2) * 18000));
     const netCost = Math.max(0, grossCost - centralSubsidy);
     const paybackYears = annualSavings > 0 ? Number((netCost / annualSavings).toFixed(1)) : 0;
     const savings25yr = annualSavings * 25;
@@ -749,8 +797,12 @@ function ProposalPageContent() {
     result,
     useResidentialCatalog,
     residentialConfig,
+    useCommercialCatalog,
+    commercialPricingConfig,
     residentialSubsidyEligible,
     manual.connectionType,
+    osPresetId,
+    commercialConfig?.panel?.panelType,
   ]);
 
   const autoPanelCount = useMemo(() => {
@@ -1384,8 +1436,16 @@ function ProposalPageContent() {
         if (useResidentialCatalog && residentialConfig) {
           return applyResidentialFlagsToLayout(proposalLayout, residentialConfig);
         }
-        if (osPresetId === "commercial_executive") {
-          return applyCommercialFlagsToLayout(proposalLayout, commercialConfig ?? {});
+        if (useCommercialCatalog && commercialPricingConfig) {
+          return applyCommercialFlagsToLayout(proposalLayout, {
+            ...(commercialConfig ?? {}),
+            dcrComparison: {
+              enabled: commercialPricingConfig.trackCompare?.enabled === true,
+              brandId: commercialPricingConfig.trackCompare?.compareBrandId,
+              watt: commercialPricingConfig.solar.watt,
+            },
+            capacityScenarios: commercialConfig?.capacityScenarios,
+          });
         }
         return proposalLayout;
       })(),
@@ -1400,11 +1460,28 @@ function ProposalPageContent() {
               connectionType:
                 manual.connectionType.trim() || residentialConfig.connectionType || undefined,
             }
-          : undefined,
+          : useCommercialCatalog && commercialPricingConfig
+            ? {
+                ...commercialPricingConfig,
+                inputMode: "bill",
+                pricingSource: commercialPricingConfig.pricingSource ?? "rate_card",
+              }
+            : undefined,
       pricingSource:
         useResidentialCatalog && residentialConfig
           ? residentialConfig.pricingSource ?? "rate_card"
-          : undefined,
+          : useCommercialCatalog && commercialPricingConfig
+            ? commercialPricingConfig.pricingSource ?? "rate_card"
+            : osPresetId === "commercial_executive"
+              ? "rate_card"
+              : undefined,
+      sharedPlantCatalog: (() => {
+        const cached = getCachedResidentialBrandCatalog();
+        if (cached?.entries?.length) return cached;
+        if (residentialConfig?.brandCatalog?.entries?.length) return residentialConfig.brandCatalog;
+        if (commercialPricingConfig?.brandCatalog?.entries?.length) return commercialPricingConfig.brandCatalog;
+        return undefined;
+      })(),
       storyMode: urlPrefill.story ?? commercialConfig?.storyMode,
       storySegment: commercialConfig?.orgType ?? urlPrefill.orgType,
     };
@@ -1416,8 +1493,47 @@ function ProposalPageContent() {
     setCommercialConfig((prev) =>
       prev ?? withOrgStory(defaultCommercialConfig(kw), urlPrefill.orgType, urlPrefill.story)
     );
+    setCommercialPricingConfig(
+      (prev) => prev ?? defaultResidentialConfigForBuilder(kw, "bill")
+    );
     setProposalLayout((prev) => prev ?? getPresetDefaultLayout("commercial_executive"));
   }, [osPresetId, effectiveResult?.solarKw, urlPrefill.kw, urlPrefill.orgType, urlPrefill.story]);
+
+  useEffect(() => {
+    if (osPresetId !== "commercial_executive") return;
+    let cancelled = false;
+    void loadInstallerRateCard().then(() => {
+      if (cancelled) return;
+      setCommercialPricingConfig((prev) => {
+        const kw = prev?.solar.plantCapacityKw ?? urlPrefill.kw ?? 60;
+        const base = prev ?? defaultResidentialConfigForBuilder(kw, "bill");
+        return applyResidentialPricingSource(base);
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [osPresetId, urlPrefill.kw]);
+
+  useEffect(() => {
+    if (!useCommercialCatalog || !commercialPricingConfig) return;
+    const kwRaw = parseFloat(overrideSolarKw);
+    const fromBill = kwRaw > 0 ? Math.round(kwRaw * 10) / 10 : result.solarKw;
+    if (fromBill <= 0) return;
+    if (Math.abs(commercialPricingConfig.solar.plantCapacityKw - fromBill) < 0.05) return;
+    setCommercialPricingConfig((prev) =>
+      prev
+        ? {
+            ...prev,
+            solar: {
+              ...prev.solar,
+              plantCapacityKw: fromBill,
+              moduleCountOverride: undefined,
+            },
+          }
+        : prev
+    );
+  }, [useCommercialCatalog, overrideSolarKw, result.solarKw, commercialPricingConfig?.solar.plantCapacityKw]);
 
   useEffect(() => {
     if (!isResidentialSmart) return;
@@ -2408,44 +2524,110 @@ function ProposalPageContent() {
             </div>
           </div>
         ) : null}
-        {osPresetId === "commercial_executive" && commercialConfig && !isCommercialRequirement ? (
+        {osPresetId === "commercial_executive" && commercialPricingConfig && !isCommercialRequirement ? (
           <>
-            <CommercialNarrativePanel
-            config={commercialConfig}
-            onChange={(next) => {
-              setCommercialConfig(next);
-              if (proposalLayout) {
-                setProposalLayout(applyCommercialFlagsToLayout(proposalLayout, next));
-              }
-            }}
-            onOpenReview={() => setShowReviewSheet(true)}
-          />
-          <div className="rounded-2xl border border-indigo-200/80 bg-gradient-to-r from-indigo-50/80 to-sky-50/60 p-4">
-            <p className="text-sm font-bold text-slate-900">Optional — engineering BOM detail</p>
-            <p className="mt-1 text-xs text-slate-600">
-              Customer quote uses central Rate card (₹/Wp). Open Proposals only when you need line-item BOM
-              breakdown — not required for a simple offer.
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <button
-                type="button"
-                disabled={!canOpenCommercialWorkspace || isWorkspaceBusy || isWebProposalBusy}
-                onClick={() => void goToProposalsCommercialBom()}
-                className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white disabled:opacity-50"
-              >
-                <ExternalLink className="h-3.5 w-3.5" />
-                {isWorkspaceBusy ? "Saving…" : "Go to Proposals — BOM"}
-              </button>
-              {draftProposalId ? (
-                <a
-                  href={`/proposals/${draftProposalId}#bom`}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700"
-                >
-                  Open Proposals workspace
-                </a>
-              ) : null}
-            </div>
-          </div>
+            <ResidentialProposalConfigWorkspace
+              config={commercialPricingConfig}
+              subsidyEligible={false}
+              maxPlantKw={2000}
+              segmentLabel="commercial"
+              netCostInr={effectiveResult.netCost}
+              annualSavingInr={effectiveResult.annualSavings}
+              onChange={(next) => {
+                setCommercialPricingConfig(next);
+                setCommercialConfig((prev) => {
+                  if (!prev) return prev;
+                  const merged: CommercialProposalConfig = {
+                    ...prev,
+                    panel: {
+                      catalogId: prev.panel?.catalogId ?? "waaree-540-dcr",
+                      brandId: next.solar.brandId ?? prev.panel?.brandId,
+                      watt: next.solar.watt,
+                      panelType: next.solar.panelTrack === "non_dcr" ? "NON_DCR" : "DCR",
+                      ratePerWpInr: next.solar.ratePerWpInr,
+                      technology: next.solar.technology,
+                    },
+                    dcrComparison: {
+                      enabled: next.trackCompare?.enabled === true,
+                      brandId: next.trackCompare?.compareBrandId ?? next.solar.brandId,
+                      watt: next.solar.watt,
+                    },
+                  };
+                  if (proposalLayout) {
+                    setProposalLayout(applyCommercialFlagsToLayout(proposalLayout, merged));
+                  }
+                  return merged;
+                });
+              }}
+              proposalId={draftProposalId}
+              proposalLayout={proposalLayout}
+              onLayoutChange={setProposalLayout}
+              onCreateProposal={async () => {
+                const saved = await persistProposalToServer();
+                if (saved?.id) setDraftProposalId(saved.id);
+                return saved?.id ?? null;
+              }}
+            />
+
+            {commercialConfig ? (
+              <CommercialCapacityScenariosPanel
+                pricingConfig={commercialPricingConfig}
+                commercialConfig={commercialConfig}
+                primaryKw={commercialPricingConfig.solar.plantCapacityKw}
+                onCommercialChange={(next) => {
+                  setCommercialConfig(next);
+                  if (proposalLayout) {
+                    setProposalLayout(applyCommercialFlagsToLayout(proposalLayout, next));
+                  }
+                }}
+              />
+            ) : null}
+
+            <details className="group rounded-2xl border border-slate-200/90 bg-slate-50/50 dark:border-white/10 dark:bg-white/[0.02]">
+              <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm font-bold text-slate-800 dark:text-slate-200 [&::-webkit-details-marker]:hidden">
+                <ChevronDown className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180" />
+                Optional — legacy commercial (narrative, ₹/Wp BOM workspace)
+              </summary>
+              <div className="space-y-4 border-t border-slate-200/80 px-4 pb-4 pt-3 dark:border-white/10">
+                {commercialConfig ? (
+                  <CommercialNarrativePanel
+                    config={commercialConfig}
+                    onChange={(next) => {
+                      setCommercialConfig(next);
+                      if (proposalLayout) {
+                        setProposalLayout(applyCommercialFlagsToLayout(proposalLayout, next));
+                      }
+                    }}
+                    onOpenReview={() => setShowReviewSheet(true)}
+                  />
+                ) : null}
+                <div className="rounded-xl border border-indigo-200/80 bg-indigo-50/40 p-3">
+                  <p className="text-xs text-slate-600">
+                    Engineering BOM with panel ₹/Wp line items — only if you need detailed breakdown. Simple
+                    quotes use Smart catalog above.
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      disabled={!canOpenCommercialWorkspace || isWorkspaceBusy || isWebProposalBusy}
+                      onClick={() => void goToProposalsCommercialBom()}
+                      className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white disabled:opacity-50"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      {isWorkspaceBusy ? "Saving…" : "Go to Proposals — legacy BOM"}
+                    </button>
+                    {draftProposalId ? (
+                      <a
+                        href={`/proposals/${draftProposalId}#bom`}
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700"
+                      >
+                        Open Proposals workspace
+                      </a>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            </details>
           </>
         ) : null}
 

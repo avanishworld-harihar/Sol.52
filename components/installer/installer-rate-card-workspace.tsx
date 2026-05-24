@@ -79,7 +79,7 @@ export function InstallerRateCardWorkspace() {
         tone: "success",
         title: "Rate card saved",
         description:
-          "Residential and commercial rates apply to all new proposals. Existing customer quotes keep their saved snapshot.",
+          "Smart catalog rates apply to residential and commercial proposals. Existing customer quotes keep their saved snapshot.",
       });
     } catch (e) {
       toast.push({
@@ -116,9 +116,9 @@ export function InstallerRateCardWorkspace() {
           One place for all customer rates
         </p>
         <p className="mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-          Update here once — <strong>Residential</strong> (bill & requirement proposals) and{" "}
-          <strong>Commercial</strong> (₹/Wp) both read from this card. Per-customer proposals only
-          snapshot prices when you generate or save a quote.
+          One Smart catalog — <strong>plant ₹ per kW</strong> for both{" "}
+          <strong>Residential</strong> and <strong>Commercial</strong>. Enter DCR and Non-DCR prices
+          manually for each kW row — no automatic 30% discount.
         </p>
         <p className="mt-2 text-[11px] text-slate-500">
           <Link href="/proposal" className="font-bold text-indigo-700 underline dark:text-indigo-300">
@@ -131,20 +131,26 @@ export function InstallerRateCardWorkspace() {
       <section>
         <div className="mb-3 flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-amber-500" />
-          <h2 className="text-base font-bold text-slate-900 dark:text-white">Residential — plant ₹ by kW</h2>
+          <h2 className="text-base font-bold text-slate-900 dark:text-white">
+            Smart catalog — plant ₹ by kW (Residential + Commercial)
+          </h2>
         </div>
         <ResidentialBrandCatalogPanel config={config} onChange={setConfig} />
       </section>
 
-      <section>
-        <div className="mb-3 flex items-center gap-2">
-          <IndianRupee className="h-4 w-4 text-emerald-600" />
-          <h2 className="text-base font-bold text-slate-900 dark:text-white">Commercial — ₹ per Wp</h2>
-        </div>
-        <p className="mb-3 text-xs text-slate-600 dark:text-slate-400">
-          Default module rate card for commercial BOM and proposals. Non-DCR rows are separate SKUs.
-        </p>
-        <div className="overflow-x-auto rounded-xl border border-slate-200/90 dark:border-white/10">
+      <details className="rounded-2xl border border-slate-200/90 bg-slate-50/50 dark:border-white/10 dark:bg-white/[0.02]">
+        <summary className="cursor-pointer list-none px-4 py-3 text-sm font-bold text-slate-800 dark:text-slate-200 [&::-webkit-details-marker]:hidden">
+          <span className="inline-flex items-center gap-2">
+            <IndianRupee className="h-4 w-4 text-emerald-600" />
+            Advanced — panel-only ₹/Wp (optional BOM detail)
+          </span>
+        </summary>
+        <div className="border-t border-slate-200/80 px-4 pb-4 pt-3 dark:border-white/10">
+          <p className="mb-3 text-xs text-slate-600 dark:text-slate-400">
+            Commercial proposals now use the Smart catalog above for turnkey plant price. These module
+            rates are only for optional engineering BOM line items — you can skip them for simple quotes.
+          </p>
+          <div className="overflow-x-auto rounded-xl border border-slate-200/90 dark:border-white/10">
           <table className="w-full min-w-[520px] border-collapse text-sm">
             <thead>
               <tr className="border-b bg-slate-50 text-left text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:border-white/10 dark:bg-white/[0.03]">
@@ -172,7 +178,8 @@ export function InstallerRateCardWorkspace() {
             </tbody>
           </table>
         </div>
-      </section>
+        </div>
+      </details>
 
       <div className="sticky bottom-[5.5rem] z-10 flex justify-end lg:bottom-4">
         <Button

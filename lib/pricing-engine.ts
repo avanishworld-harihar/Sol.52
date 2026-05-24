@@ -1,12 +1,9 @@
 /**
  * Sol.52 canonical pricing engine — all sell prices normalize to ₹/Wp internally.
- * UI may show ₹/kW plant gross (residential) or ₹/Wp (commercial); conversions live here only.
+ * UI may show ₹/kW plant gross (residential/commercial) or ₹/Wp (legacy BOM); conversions live here only.
  */
 
 export const PRICING_ENGINE_VERSION = 1;
-
-/** Non-DCR plant gross = 70% of DCR (30% lower). */
-export const PRICING_NON_DCR_FACTOR = 0.7;
 
 export type PanelTrack = "dcr" | "non_dcr";
 
@@ -15,31 +12,60 @@ export function nominalWpForKw(plantKw: number): number {
   return Math.max(0, plantKw) * 1000;
 }
 
-export function ratePerWpFromDcrPlantGross(dcrPlantGrossInr: number, plantKw: number): number {
+export function ratePerWpFromPlantGross(plantGrossInr: number, plantKw: number): number {
   const wp = nominalWpForKw(plantKw);
-  if (wp <= 0 || dcrPlantGrossInr <= 0) return 0;
-  return Math.round((dcrPlantGrossInr / wp) * 100) / 100;
+  if (wp <= 0 || plantGrossInr <= 0) return 0;
+  return Math.round((plantGrossInr / wp) * 100) / 100;
 }
 
-export function dcrPlantGrossFromRatePerWp(ratePerWpInr: number, plantKw: number): number {
+/** @deprecated Use ratePerWpFromPlantGross — kept for call-site compatibility. */
+export function ratePerWpFromDcrPlantGross(dcrPlantGrossInr: number, plantKw: number): number {
+  return ratePerWpFromPlantGross(dcrPlantGrossInr, plantKw);
+}
+
+export function plantGrossFromRatePerWp(ratePerWpInr: number, plantKw: number): number {
   return Math.round(Math.max(0, ratePerWpInr) * nominalWpForKw(plantKw));
 }
 
+/** @deprecated Use plantGrossFromRatePerWp */
+export function dcrPlantGrossFromRatePerWp(ratePerWpInr: number, plantKw: number): number {
+  return plantGrossFromRatePerWp(ratePerWpInr, plantKw);
+}
+
+/** Pick manually entered DCR or Non-DCR plant gross for the active track. */
+export function plantGrossForTrackValues(
+  dcrPlantGrossInr: number,
+  nonDcrPlantGrossInr: number,
+  track: PanelTrack
+): number {
+  return track === "dcr" ? Math.max(0, dcrPlantGrossInr) : Math.max(0, nonDcrPlantGrossInr);
+}
+
+/** @deprecated Use plantGrossForTrackValues with explicit Non-DCR gross. */
 export function plantGrossForTrack(dcrPlantGrossInr: number, track: PanelTrack): number {
-  const dcr = Math.max(0, dcrPlantGrossInr);
-  return track === "dcr" ? dcr : Math.round(dcr * PRICING_NON_DCR_FACTOR);
+  return plantGrossForTrackValues(dcrPlantGrossInr, 0, track);
 }
 
-export function nonDcrRatePerWpFromDcr(dcrRatePerWp: number): number {
-  return Math.round(Math.max(0, dcrRatePerWp) * PRICING_NON_DCR_FACTOR * 100) / 100;
+export function ratePerWpForTrackValues(
+  dcrRatePerWp: number,
+  nonDcrRatePerWp: number,
+  track: PanelTrack
+): number {
+  return track === "dcr" ? dcrRatePerWp : nonDcrRatePerWp;
 }
 
+/** @deprecated Use ratePerWpForTrackValues with explicit Non-DCR rate. */
 export function ratePerWpForTrack(dcrRatePerWp: number, track: PanelTrack): number {
-  return track === "dcr" ? dcrRatePerWp : nonDcrRatePerWpFromDcr(dcrRatePerWp);
+  return ratePerWpForTrackValues(dcrRatePerWp, 0, track);
 }
 
-/** Display helper: ₹/kW plant gross from ₹/Wp (DCR). */
-export function displayInrPerKwFromRatePerWp(ratePerWpInr: number, plantKw: number, track: PanelTrack = "dcr"): number {
+/** Display helper: ₹/kW plant gross from ₹/Wp. */
+export function displayInrPerKwFromRatePerWp(
+  ratePerWpInr: number,
+  plantKw: number,
+  track: PanelTrack = "dcr"
+): number {
   if (plantKw <= 0) return 0;
-  return Math.round(plantGrossForTrack(dcrPlantGrossFromRatePerWp(ratePerWpInr, plantKw), track) / plantKw);
+  const gross = plantGrossFromRatePerWp(ratePerWpInr, plantKw);
+  return Math.round(gross / plantKw);
 }

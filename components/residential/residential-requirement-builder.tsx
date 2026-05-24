@@ -29,6 +29,8 @@ type Props = {
   onChange: (next: ResidentialProposalConfig) => void;
   netCostInr: number;
   annualSavingInr: number;
+  /** Commercial plants can exceed 50 kW. */
+  maxPlantKw?: number;
   className?: string;
 };
 
@@ -57,7 +59,14 @@ function Chip({
   );
 }
 
-export function ResidentialRequirementBuilder({ config, onChange, netCostInr, annualSavingInr, className }: Props) {
+export function ResidentialRequirementBuilder({
+  config,
+  onChange,
+  netCostInr,
+  annualSavingInr,
+  maxPlantKw = 50,
+  className,
+}: Props) {
   const solar = config.solar;
   const quote = quoteResidentialSolar(solar);
   const modules = moduleCountForResidential(solar);
@@ -131,7 +140,7 @@ export function ResidentialRequirementBuilder({ config, onChange, netCostInr, an
           <NumericTextInput
             value={solar.plantCapacityKw}
             onValueChange={(n) => {
-              const kw = n != null && n > 0 ? Math.max(0.5, Math.min(50, n)) : solar.plantCapacityKw;
+              const kw = n != null && n > 0 ? Math.max(0.5, Math.min(maxPlantKw, n)) : solar.plantCapacityKw;
               patchSolar({ plantCapacityKw: kw, moduleCountOverride: undefined });
             }}
             className="w-20 rounded-xl border border-slate-200 bg-white px-2 py-2 text-center text-sm font-bold tabular-nums dark:border-white/15 dark:bg-white/5"

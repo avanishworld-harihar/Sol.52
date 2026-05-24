@@ -4,18 +4,29 @@
 
 import { z } from "zod";
 import {
-  dcrPlantGrossFromRatePerWp,
-  plantGrossForTrack,
-  ratePerWpForTrack,
-  ratePerWpFromDcrPlantGross,
+  plantGrossForTrackValues,
+  ratePerWpFromPlantGross,
+  ratePerWpForTrackValues,
   PRICING_ENGINE_VERSION,
   type PanelTrack,
 } from "@/lib/pricing-engine";
-import { getActiveCatalogEntry, lookupDcrKwGrossInr } from "@/lib/residential-brand-catalog";
+import {
+  getActiveCatalogEntry,
+  lookupDcrKwGrossInr,
+  lookupKwGrossForTrack,
+  lookupNonDcrKwGrossInr,
+  syncKwTierCanonical,
+} from "@/lib/residential-brand-catalog";
 import { applyResidentialDiscountInr, residentialNetCostInr } from "@/lib/residential-deck-helpers";
 import { isPmSuryaGharSubsidyEligible } from "@/lib/lead-connection-types";
 import { computePmSuryaGharSubsidy } from "@/lib/proposal-deck-helpers";
 import { getEffectivePanelCatalog, resolvePanelQuote } from "@/lib/commercial-panel-catalog";
+import {
+  commercialTrackFromPanelType,
+  plantGrossFromSharedCatalog,
+  plantGrossFromSharedCatalogOrFallback,
+} from "@/lib/shared-plant-rate-card";
+import { wattsFromSystemKw } from "@/lib/proposal-pricing-merge";
 import type { CommercialProposalConfig } from "@/lib/commercial-proposal-config";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import type { ProposalPricingRow } from "@/lib/proposal-pricing-schema";
@@ -51,23 +62,24 @@ export function resolveResidentialRatePerWp(
   const watt = config.solar.watt ?? 550;
   const entry = getActiveCatalogEntry(config);
   const tier = entry?.kwTiers?.find((t) => t.kw === kw);
-  const dcrGross =
-    tier?.ratePerWpInr && tier.ratePerWpInr > 0
-      ? dcrPlantGrossFromRatePerWp(tier.ratePerWpInr, kw)
-      : tier?.priceInr && tier.priceInr > 0
-        ? tier.priceInr
-        : lookupDcrKwGrossInr(entry, kw) ?? 0;
+  const synced = tier ? syncKwTierCanonical(tier) : null;
+  const dcrGross = synced?.priceInr ?? lookupDcrKwGrossInr(entry, kw) ?? 0;
+  const nonDcrGross = synced?.nonDcrPriceInr ?? lookupNonDcrKwGrossInr(entry, kw) ?? 0;
+  const plantGross =
+    lookupKwGrossForTrack(entry, kw, track, config.pricing?.kwTiers) ??
+    plantGrossForTrackValues(dcrGross, nonDcrGross, track);
 
   const ratePerWp =
-    tier?.ratePerWpInr && tier.ratePerWpInr > 0
-      ? ratePerWpForTrack(tier.ratePerWpInr, track)
-      : ratePerWpFromDcrPlantGross(
-          track === "dcr" ? dcrGross : Math.round(dcrGross / 0.7),
-          kw
-        );
+    track === "dcr"
+      ? synced?.ratePerWpInr && synced.ratePerWpInr > 0
+        ? synced.ratePerWpInr
+        : ratePerWpFromPlantGross(dcrGross, kw)
+      : synced?.nonDcrRatePerWpInr && synced.nonDcrRatePerWpInr > 0
+        ? synced.nonDcrRatePerWpInr
+        : ratePerWpFromPlantGross(nonDcrGross, kw);
 
-  const plantGross = plantGrossForTrack(dcrGross, track);
   void connectionType;
+  void watt;
   return { ratePerWp, plantGross, track };
 }
 
@@ -119,10 +131,46 @@ export function buildCommercialQuoteSnapshot(
   pricingRow: ProposalPricingRow | null
 ): QuoteEngineSnapshot {
   const kw = ppt.systemKw;
+  const track = commercialTrackFromPanelType(commercialConfig?.panel?.panelType);
+
+  const sharedGross = ppt.sharedPlantCatalog?.entries?.length
+    ? plantGrossFromSharedCatalog(kw, track, ppt.sharedPlantCatalog)
+    : null;
+
+  if (sharedGross != null && sharedGross > 0) {
+    const w = wattsFromSystemKw(kw);
+    const ratePerWp = w > 0 ? Math.round((sharedGross / w) * 10000) / 10000 : 0;
+    const subsidy = pricingRow?.subsidy_inr ?? ppt.pmSuryaGharSubsidyInr ?? 0;
+    const discount = pricingRow?.discount_inr ?? 0;
+    const net =
+      pricingRow?.final_amount_inr ??
+      ppt.commercialNetPayableInr ??
+      ppt.netCostInr ??
+      Math.max(0, sharedGross - subsidy - discount);
+
+    return quoteEngineSnapshotSchema.parse({
+      engineVersion: PRICING_ENGINE_VERSION,
+      frozenAt: new Date().toISOString(),
+      pricingSource: ppt.pricingSource ?? "rate_card",
+      segment: "commercial",
+      systemKw: kw,
+      panelTrack: track,
+      ratePerWpInr: ratePerWp,
+      plantGrossInr: sharedGross,
+      subsidyInr: subsidy,
+      discountInr: discount,
+      netPayableInr: net,
+    });
+  }
+
   const catalogId = commercialConfig?.panel?.catalogId ?? getEffectivePanelCatalog()[0]?.id ?? "";
   const quote = resolvePanelQuote(kw, catalogId, commercialConfig?.panel?.ratePerWpInr);
   const ratePerWp = quote?.ratePerWpInr ?? pricingRow?.price_per_watt_inr ?? 0;
-  const plantGross = quote?.hardwareInr ?? pricingRow?.hardware_inr ?? ppt.grossSystemCostInr ?? 0;
+  const plantGross =
+    quote?.hardwareInr ??
+    pricingRow?.hardware_inr ??
+    ppt.grossSystemCostInr ??
+    plantGrossFromSharedCatalogOrFallback(kw, track, ppt.sharedPlantCatalog);
   const subsidy = pricingRow?.subsidy_inr ?? ppt.pmSuryaGharSubsidyInr ?? 0;
   const discount = pricingRow?.discount_inr ?? 0;
   const net =
@@ -134,7 +182,7 @@ export function buildCommercialQuoteSnapshot(
   return quoteEngineSnapshotSchema.parse({
     engineVersion: PRICING_ENGINE_VERSION,
     frozenAt: new Date().toISOString(),
-    pricingSource: "rate_card",
+    pricingSource: ppt.pricingSource ?? "rate_card",
     segment: "commercial",
     systemKw: kw,
     moduleWatt: quote?.entry.watt,

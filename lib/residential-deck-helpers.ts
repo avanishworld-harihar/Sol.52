@@ -11,7 +11,6 @@ import {
 import {
   getActiveCatalogEntry,
   lookupKwGrossForTrack,
-  nonDcrGrossFromDcrGross,
 } from "@/lib/residential-brand-catalog";
 import { computeGrossSystemCostInr } from "@/lib/solar-engine";
 import { isPmSuryaGharSubsidyEligible } from "@/lib/lead-connection-types";
@@ -73,10 +72,13 @@ export function residentialGrossCostInr(config: ResidentialProposalConfig): numb
     config.pricing?.kwTiers
   );
   if (fromCatalog != null && fromCatalog > 0) return fromCatalog;
-  const fromTier = lookupResidentialKwPriceInr(config.pricing?.kwTiers, kw);
-  if (fromTier != null && fromTier > 0) {
-    return track === "non_dcr" ? nonDcrGrossFromDcrGross(fromTier) : fromTier;
-  }
+  const fromTierDcr = lookupResidentialKwPriceInr(config.pricing?.kwTiers, kw);
+  const fromTierNon = lookupResidentialKwPriceInr(
+    config.pricing?.kwTiers?.map((t) => ({ ...t, priceInr: t.nonDcrPriceInr ?? 0 })),
+    kw
+  );
+  if (track === "non_dcr" && fromTierNon != null && fromTierNon > 0) return fromTierNon;
+  if (fromTierDcr != null && fromTierDcr > 0) return fromTierDcr;
   const q = quoteResidentialSolar(config.solar);
   if (q.hardwareInr > 0) return q.hardwareInr;
   return computeGrossSystemCostInr(kw);

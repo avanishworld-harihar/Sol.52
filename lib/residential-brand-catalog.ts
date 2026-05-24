@@ -1,12 +1,11 @@
 /**
- * Residential smart brand catalog — DCR ₹/Wp + kW tier prices per brand.
- * Non-DCR = 70% of DCR (30% lower) for rates and kW gross prices.
+ * Residential smart brand catalog — DCR + Non-DCR plant gross (₹) per kW tier, entered manually.
  */
 
 import {
-  dcrPlantGrossFromRatePerWp,
-  plantGrossForTrack,
-  ratePerWpFromDcrPlantGross,
+  plantGrossForTrackValues,
+  plantGrossFromRatePerWp,
+  ratePerWpFromPlantGross,
 } from "@/lib/pricing-engine";
 import { moduleCountForResidential } from "@/lib/residential-solar-engine";
 import { computeGrossSystemCostInr } from "@/lib/solar-engine";
@@ -18,15 +17,12 @@ import {
   type ResidentialTrackCompareTier,
 } from "@/lib/residential-requirements-schema";
 
-/** Non-DCR is 30% below DCR (70% of DCR value). */
-export const RESIDENTIAL_NON_DCR_FACTOR = 0.7;
-
 export type ResidentialBrandCatalogEntry = {
   brandId: string;
   brand: string;
   /** Legacy field — catalog pricing is kW gross plant cost only. */
   dcrRatePerWpInr?: number;
-  /** Per-kW complete plant gross (DCR). Non-DCR = 70% of this. */
+  /** Per-kW complete plant gross — DCR and Non-DCR entered separately. */
   kwTiers?: ResidentialKwTier[];
 };
 
@@ -43,15 +39,6 @@ export const DEFAULT_RESIDENTIAL_CATALOG_BRANDS: Omit<ResidentialBrandCatalogEnt
   { brandId: "waaree", brand: "Waaree" },
   { brandId: "gautam", brand: "Gautam Solar" },
 ];
-
-export function nonDcrRateFromDcr(dcrRatePerWp: number): number {
-  const r = Math.max(0, dcrRatePerWp) * RESIDENTIAL_NON_DCR_FACTOR;
-  return Math.round(r * 100) / 100;
-}
-
-export function nonDcrGrossFromDcrGross(dcrGrossInr: number): number {
-  return Math.round(Math.max(0, dcrGrossInr) * RESIDENTIAL_NON_DCR_FACTOR);
-}
 
 export function defaultCatalogEntries(): ResidentialBrandCatalogEntry[] {
   const tiers = defaultResidentialKwTiers();
@@ -110,22 +97,37 @@ export function getCompareCatalogEntry(config: ResidentialProposalConfig): Resid
   return getCatalogEntry(catalog, compareId) ?? getActiveCatalogEntry(config);
 }
 
-/** Keep tier `priceInr` (DCR gross) and `ratePerWpInr` in sync. */
+/** Keep tier DCR/Non-DCR gross and ₹/Wp fields in sync. */
 export function syncKwTierCanonical(tier: ResidentialKwTier): ResidentialKwTier {
-  if (tier.ratePerWpInr != null && tier.ratePerWpInr > 0) {
-    return {
-      ...tier,
-      priceInr: dcrPlantGrossFromRatePerWp(tier.ratePerWpInr, tier.kw),
-      ratePerWpInr: tier.ratePerWpInr,
-    };
+  const next = { ...tier, nonDcrPriceInr: tier.nonDcrPriceInr ?? 0 };
+  if (next.ratePerWpInr != null && next.ratePerWpInr > 0) {
+    next.priceInr = plantGrossFromRatePerWp(next.ratePerWpInr, next.kw);
+  } else if (next.priceInr > 0) {
+    next.ratePerWpInr = ratePerWpFromPlantGross(next.priceInr, next.kw);
   }
-  if (tier.priceInr > 0) {
-    return {
-      ...tier,
-      ratePerWpInr: ratePerWpFromDcrPlantGross(tier.priceInr, tier.kw),
-    };
+  if (next.nonDcrRatePerWpInr != null && next.nonDcrRatePerWpInr > 0) {
+    next.nonDcrPriceInr = plantGrossFromRatePerWp(next.nonDcrRatePerWpInr, next.kw);
+  } else if (next.nonDcrPriceInr > 0) {
+    next.nonDcrRatePerWpInr = ratePerWpFromPlantGross(next.nonDcrPriceInr, next.kw);
   }
-  return tier;
+  return next;
+}
+
+function lookupTierGrossInr(
+  tiers: ResidentialKwTier[] | undefined,
+  kw: number,
+  field: "priceInr" | "nonDcrPriceInr"
+): number | null {
+  if (!tiers?.length) return null;
+  const sorted = [...tiers].map(syncKwTierCanonical).sort((a, b) => a.kw - b.kw);
+  const exact = sorted.find((t) => t.kw === kw);
+  if (exact && exact[field] > 0) return exact[field];
+  let best: ResidentialKwTier | null = null;
+  for (const t of sorted) {
+    if (t.kw <= kw && t[field] > 0) best = t;
+  }
+  const hit = best ?? sorted.find((t) => t[field] > 0);
+  return hit?.[field] ?? null;
 }
 
 export function lookupDcrKwGrossInr(
@@ -134,20 +136,16 @@ export function lookupDcrKwGrossInr(
   fallbackTiers?: ResidentialKwTier[]
 ): number | null {
   const tiers = entry?.kwTiers?.length ? entry.kwTiers : fallbackTiers;
-  if (!tiers?.length) return null;
-  const sorted = [...tiers].sort((a, b) => a.kw - b.kw);
-  const exact = sorted.find((t) => t.kw === kw);
-  if (exact) {
-    const synced = syncKwTierCanonical(exact);
-    if (synced.priceInr > 0) return synced.priceInr;
-  }
-  let best: ResidentialKwTier | null = null;
-  for (const t of sorted) {
-    const synced = syncKwTierCanonical(t);
-    if (synced.kw <= kw && synced.priceInr > 0) best = synced;
-  }
-  const hit = best ?? sorted.map(syncKwTierCanonical).find((t) => t.priceInr > 0);
-  return hit?.priceInr ?? null;
+  return lookupTierGrossInr(tiers, kw, "priceInr");
+}
+
+export function lookupNonDcrKwGrossInr(
+  entry: ResidentialBrandCatalogEntry | null,
+  kw: number,
+  fallbackTiers?: ResidentialKwTier[]
+): number | null {
+  const tiers = entry?.kwTiers?.length ? entry.kwTiers : fallbackTiers;
+  return lookupTierGrossInr(tiers, kw, "nonDcrPriceInr");
 }
 
 export function lookupKwGrossForTrack(
@@ -156,37 +154,41 @@ export function lookupKwGrossForTrack(
   track: ResidentialSolar["panelTrack"],
   fallbackTiers?: ResidentialKwTier[]
 ): number | null {
-  const dcr = lookupDcrKwGrossInr(entry, kw, fallbackTiers);
-  if (dcr == null) return null;
-  return plantGrossForTrack(dcr, track);
+  const dcr = lookupDcrKwGrossInr(entry, kw, fallbackTiers) ?? 0;
+  const nonDcr = lookupNonDcrKwGrossInr(entry, kw, fallbackTiers) ?? 0;
+  const gross = plantGrossForTrackValues(dcr, nonDcr, track);
+  return gross > 0 ? gross : null;
+}
+
+export function resolveCompareTierFromCatalog(
+  entry: ResidentialBrandCatalogEntry | null,
+  kw: number,
+  visible = true
+): ResidentialTrackCompareTier {
+  const dcrGrossInr = Math.max(0, Math.round(lookupDcrKwGrossInr(entry, kw) ?? 0));
+  const nonDcrGrossInr = Math.max(0, Math.round(lookupNonDcrKwGrossInr(entry, kw) ?? 0));
+  return {
+    kw: Math.max(1, Math.min(10000, kw)),
+    dcrGrossInr,
+    nonDcrGrossInr,
+    visible,
+  };
 }
 
 export function trackCompareTiersFromCatalogEntry(
   entry: ResidentialBrandCatalogEntry | null,
   existing?: ResidentialTrackCompareTier[]
 ): ResidentialTrackCompareTier[] {
-  if (!entry?.kwTiers?.length) {
-    return existing?.length
-      ? existing.map((t) => ({
-          ...t,
-          nonDcrGrossInr: nonDcrGrossFromDcrGross(t.dcrGrossInr),
-        }))
-      : [];
+  if (existing?.length) {
+    return existing.map((t) =>
+      resolveCompareTierFromCatalog(entry, t.kw, t.visible !== false)
+    );
   }
-  const visibleByKw = new Map(
-    (existing ?? []).map((t) => [t.kw, t.visible !== false] as const)
-  );
+  if (!entry?.kwTiers?.length) return [];
   return [...entry.kwTiers]
     .sort((a, b) => a.kw - b.kw)
-    .map((tier) => {
-      const dcrGrossInr = Math.max(0, Math.round(tier.priceInr));
-      return {
-        kw: tier.kw,
-        dcrGrossInr,
-        nonDcrGrossInr: nonDcrGrossFromDcrGross(dcrGrossInr),
-        visible: visibleByKw.get(tier.kw) ?? true,
-      };
-    });
+    .slice(0, 8)
+    .map((tier) => resolveCompareTierFromCatalog(entry, tier.kw, true));
 }
 
 /** BOM line-item hint only — derived from active kW tier plant gross ÷ module Wp. */
@@ -203,7 +205,7 @@ export function impliedRatePerWpFromPlant(
     if (wp > 0) return Math.round((gross / wp) * 100) / 100;
   }
   const legacy = e.dcrRatePerWpInr ?? 0;
-  if (legacy > 0) return track === "non_dcr" ? nonDcrRateFromDcr(legacy) : legacy;
+  if (legacy > 0) return legacy;
   return 40;
 }
 
@@ -214,9 +216,7 @@ export function rateForSolarTrack(
   solar?: ResidentialSolar
 ): number {
   if (solar) return impliedRatePerWpFromPlant(solar, entry, track);
-  const legacy = entry.dcrRatePerWpInr ?? 0;
-  if (legacy <= 0) return 40;
-  return track === "non_dcr" ? nonDcrRateFromDcr(legacy) : legacy;
+  return entry.dcrRatePerWpInr ?? 40;
 }
 
 function catalogEntries(catalog: ResidentialBrandCatalog | undefined): ResidentialBrandCatalogEntry[] {
@@ -271,7 +271,7 @@ export function syncSolarAndPricingFromEntry(
     },
     pricing: {
       ...config.pricing,
-      kwTiers: e.kwTiers.map((t) => ({ ...t })),
+      kwTiers: e.kwTiers.map((t) => syncKwTierCanonical({ ...t })),
     },
     panelBrandOptions: upsertPanelBrandOption(config.panelBrandOptions, e),
   };
@@ -348,7 +348,7 @@ export function addCatalogBrand(
     brandId = `${brandId}-${existing.length + 1}`;
   }
   const active = getActiveCatalogEntry(config);
-  const seedTiers = (active?.kwTiers ?? []).map((t) => ({ ...t }));
+  const seedTiers = (active?.kwTiers ?? []).map((t) => syncKwTierCanonical({ ...t }));
   const tiers = seedTiers.length > 0 ? seedTiers : defaultResidentialKwTiers();
   const entry: ResidentialBrandCatalogEntry = {
     brandId,
@@ -385,7 +385,12 @@ export function removeCatalogBrand(
 export function ensureBrandCatalog(config: ResidentialProposalConfig): ResidentialProposalConfig {
   if (config.brandCatalog?.entries?.length) {
     const catalog = config.brandCatalog;
-    const list = catalogEntries(catalog);
+    const list = catalogEntries(catalog).map((e) => ({
+      ...e,
+      kwTiers: (e.kwTiers ?? []).map((t) =>
+        syncKwTierCanonical({ ...t, nonDcrPriceInr: t.nonDcrPriceInr ?? 0 })
+      ),
+    }));
     const activeBrandId =
       catalog.activeBrandId && list.some((e) => e.brandId === catalog.activeBrandId)
         ? catalog.activeBrandId
@@ -405,7 +410,7 @@ export function ensureBrandCatalog(config: ResidentialProposalConfig): Residenti
 
   const brandId = config.solar.brandId ?? slugBrandId(config.solar.brand || "adani");
   const tiers = config.pricing?.kwTiers?.length
-    ? config.pricing.kwTiers.map((t) => ({ ...t }))
+    ? config.pricing.kwTiers.map((t) => syncKwTierCanonical({ ...t, nonDcrPriceInr: t.nonDcrPriceInr ?? 0 }))
     : defaultResidentialKwTiers();
 
   const migrated: ResidentialBrandCatalogEntry = {

@@ -3,28 +3,29 @@
 import { motion } from "framer-motion";
 import { Star } from "lucide-react";
 import type { BlockRenderContext } from "@/lib/proposal-block-context";
-import { resolveScenarioMetrics } from "@/lib/commercial-capacity-scenarios";
+import { resolveScenarioMetrics, catalogOptsFromResidentialConfig } from "@/lib/commercial-capacity-scenarios";
 import { buildDefaultScenarios } from "@/lib/commercial-capacity-scenarios";
 import { BlockPanel, BlockSectionTitle } from "@/components/proposal/blocks/proposal-block-utils";
 import { ProposalJourneySection } from "@/components/proposal/proposal-journey";
 
-type Props = Pick<BlockRenderContext, "summary" | "lang" | "darkMode" | "commercialConfig">;
+type Props = Pick<BlockRenderContext, "summary" | "lang" | "darkMode" | "commercialConfig" | "residentialConfig">;
 
 const inr = (v: number) => `₹${Math.max(0, Math.round(v)).toLocaleString("en-IN")}`;
 
-export function BlockCapacityScenarios({ summary, lang, darkMode, commercialConfig }: Props) {
+export function BlockCapacityScenarios({ summary, lang, darkMode, commercialConfig, residentialConfig }: Props) {
   const isHi = lang === "hi";
   const dark = darkMode;
   const cfg = commercialConfig?.capacityScenarios;
-  if (cfg?.enabled === false) return null;
+  if (cfg?.enabled !== true) return null;
 
   const scenarios =
     cfg?.scenarios?.length && cfg.scenarios.length > 0
       ? cfg.scenarios
       : buildDefaultScenarios(summary.systemKw);
   const recommendedId = cfg?.recommendedId ?? scenarios.find((s) => s.isRecommended)?.id ?? "primary";
-  const moduleWatt = commercialConfig?.panel?.watt ?? 540;
-  const metrics = resolveScenarioMetrics(summary, scenarios, moduleWatt);
+  const moduleWatt = commercialConfig?.panel?.watt ?? residentialConfig?.solar.watt ?? 540;
+  const catalogOpts = catalogOptsFromResidentialConfig(residentialConfig);
+  const metrics = resolveScenarioMetrics(summary, scenarios, moduleWatt, catalogOpts);
 
   return (
     <ProposalJourneySection id="capacity-scenarios">

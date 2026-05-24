@@ -472,7 +472,7 @@ export default function MorePage() {
             <span className="min-w-0">
               <span className="text-sm font-bold text-slate-900 dark:text-white">Rate card (master pricing)</span>
               <span className="mt-0.5 block text-xs leading-snug text-slate-600 dark:text-slate-400">
-                Residential ₹/kW plant prices + commercial ₹/Wp — one place, all proposals sync here.
+                Smart catalog — plant ₹/kW for residential & commercial. All new proposals sync here.
               </span>
             </span>
           </Link>

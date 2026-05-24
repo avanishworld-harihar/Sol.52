@@ -1,6 +1,6 @@
 import {
   getCompareCatalogEntry,
-  nonDcrGrossFromDcrGross,
+  resolveCompareTierFromCatalog,
   trackCompareTiersFromCatalogEntry,
 } from "@/lib/residential-brand-catalog";
 import { computeGrossSystemCostInr } from "@/lib/solar-engine";
@@ -24,12 +24,11 @@ export function defaultResidentialTrackCompareTiers(
     return trackCompareTiersFromCatalogEntry({ ...entry, kwTiers: use });
   }
   return sizes.map((kw) => {
-    const base = computeGrossSystemCostInr(kw);
-    const dcrGrossInr = Math.round(base);
+    const dcrGrossInr = Math.round(computeGrossSystemCostInr(kw));
     return {
       kw,
       dcrGrossInr,
-      nonDcrGrossInr: nonDcrGrossFromDcrGross(dcrGrossInr),
+      nonDcrGrossInr: 0,
       visible: true,
     };
   });
@@ -52,29 +51,29 @@ export type NormalizedResidentialTrackCompare = ResidentialTrackCompare & {
 };
 
 export function normalizeResidentialTrackCompare(
-  raw: ResidentialTrackCompare | undefined
+  raw: ResidentialTrackCompare | undefined,
+  config?: ResidentialProposalConfig
 ): NormalizedResidentialTrackCompare {
+  const entry = config ? getCompareCatalogEntry(config) : null;
   const tiers =
     raw?.tiers?.length && raw.tiers.length > 0
-      ? raw.tiers.map((t) => ({
-          kw: Math.max(1, Math.min(100, t.kw)),
-          nonDcrGrossInr: Math.max(0, Math.round(t.nonDcrGrossInr)),
-          dcrGrossInr: Math.max(0, Math.round(t.dcrGrossInr)),
-          visible: t.visible !== false,
-        }))
-      : defaultResidentialTrackCompareTiers([8, 10]);
-
-  const synced = tiers.map((t) => ({
-    ...t,
-    nonDcrGrossInr:
-      t.nonDcrGrossInr > 0
-        ? t.nonDcrGrossInr
-        : nonDcrGrossFromDcrGross(t.dcrGrossInr),
-  }));
+      ? raw.tiers.map((t) => {
+          const base = {
+            kw: Math.max(1, Math.min(10000, t.kw)),
+            nonDcrGrossInr: Math.max(0, Math.round(t.nonDcrGrossInr)),
+            dcrGrossInr: Math.max(0, Math.round(t.dcrGrossInr)),
+            visible: t.visible !== false,
+          };
+          if (entry) {
+            return resolveCompareTierFromCatalog(entry, base.kw, base.visible);
+          }
+          return base;
+        })
+      : defaultResidentialTrackCompareTiers([8, 10], config);
 
   return {
     enabled: raw?.enabled === true,
-    tiers: synced,
+    tiers,
     showPolicyNote: raw?.showPolicyNote !== false,
     compareBrandId: raw?.compareBrandId,
   };

@@ -16,7 +16,7 @@ export function BlockDcrComparison({ summary, lang, darkMode, commercialConfig }
   const isHi = lang === "hi";
   const dark = darkMode;
   const cfg = commercialConfig?.dcrComparison;
-  if (cfg?.enabled === false) return null;
+  if (cfg?.enabled !== true) return null;
 
   const solarCmp = commercialConfig?.solarPanels
     ? buildDcrCompareFromSolar(commercialConfig.solarPanels)
