@@ -1456,6 +1456,11 @@ function ProposalPageContent() {
               brandId: commercialPricingConfig.trackCompare?.compareBrandId,
               watt: commercialPricingConfig.solar.watt,
             },
+            brandComparison: {
+              enabled: commercialPricingConfig.brandCompare?.enabled === true,
+              brandIdA: commercialPricingConfig.brandCompare?.brandIdA,
+              brandIdB: commercialPricingConfig.brandCompare?.brandIdB,
+            },
             capacityScenarios: commercialConfig?.capacityScenarios,
           });
         }
@@ -2652,6 +2657,11 @@ function ProposalPageContent() {
                       enabled: synced.trackCompare?.enabled === true,
                       brandId: synced.trackCompare?.compareBrandId ?? synced.solar.brandId,
                       watt: synced.solar.watt,
+                    },
+                    brandComparison: {
+                      enabled: synced.brandCompare?.enabled === true,
+                      brandIdA: synced.brandCompare?.brandIdA,
+                      brandIdB: synced.brandCompare?.brandIdB,
                     },
                   };
                   if (proposalLayout) {

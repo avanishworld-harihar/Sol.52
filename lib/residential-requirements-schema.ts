@@ -99,6 +99,13 @@ export const residentialTrackCompareSchema = z.object({
   compareBrandId: z.string().max(40).optional(),
 });
 
+/** Side-by-side two panel brands — pricing from Smart catalog per brand. */
+export const residentialBrandCompareSchema = z.object({
+  enabled: z.boolean().default(false),
+  brandIdA: z.string().max(40).optional(),
+  brandIdB: z.string().max(40).optional(),
+});
+
 export const residentialPricingSchema = z.object({
   kwTiers: z.array(residentialKwTierSchema).max(24).optional(),
   panelTechnology: z.string().max(80).optional(),
@@ -126,6 +133,8 @@ export const residentialProposalConfigSchema = z.object({
   brandCatalog: residentialBrandCatalogSchema.optional(),
   /** Side-by-side Non-DCR vs DCR gross prices (shared kW rows) for web proposal */
   trackCompare: residentialTrackCompareSchema.optional(),
+  /** Compare two panel brands at proposal kW (Smart catalog pricing). */
+  brandCompare: residentialBrandCompareSchema.optional(),
   notes: z.string().max(600).optional(),
   /** CRM / requirement customer connection — drives PM Surya Ghar eligibility. */
   connectionType: z.string().max(40).optional(),
@@ -144,6 +153,7 @@ export type ResidentialBrandOption = z.infer<typeof residentialBrandOptionSchema
 export type ResidentialWireBrand = z.infer<typeof residentialWireBrandSchema>;
 export type ResidentialTrackCompareTier = z.infer<typeof residentialTrackCompareTierSchema>;
 export type ResidentialTrackCompare = z.infer<typeof residentialTrackCompareSchema>;
+export type ResidentialBrandCompare = z.infer<typeof residentialBrandCompareSchema>;
 export type ResidentialBrandCatalogEntry = z.infer<typeof residentialBrandCatalogEntrySchema>;
 export type ResidentialBrandCatalog = z.infer<typeof residentialBrandCatalogSchema>;
 
@@ -199,7 +209,7 @@ export function defaultResidentialConfig(plantKw = 5): ResidentialProposalConfig
     panelBrandOptions: [
       primary,
       { brandId: "waaree", brand: "Waaree" },
-      { brandId: "vikram", brand: "Vikram Solar" },
+      { brandId: "gautam", brand: "Gautam Solar" },
     ],
     inverterBrandOptions: [
       { brand: "Growatt" },
@@ -208,6 +218,11 @@ export function defaultResidentialConfig(plantKw = 5): ResidentialProposalConfig
     trackCompare: {
       ...defaultResidentialTrackCompare(false),
       compareBrandId: primary.brandId,
+    },
+    brandCompare: {
+      enabled: false,
+      brandIdA: primary.brandId,
+      brandIdB: "waaree",
     },
   };
 }

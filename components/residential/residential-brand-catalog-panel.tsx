@@ -7,6 +7,7 @@ import {
   addCatalogBrand,
   ensureBrandCatalog,
   removeCatalogBrand,
+  normalizeKwTierList,
   syncKwTierCanonical,
   syncSolarAndPricingFromEntry,
   syncTrackCompareFromBrand,
@@ -34,7 +35,10 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
   const entries = catalog.entries ?? [];
   const activeId = catalog.activeBrandId ?? entries[0]?.brandId;
   const activeEntryRaw = entries.find((e) => e.brandId === activeId) ?? entries[0]!;
-  const kwTiers = activeEntryRaw.kwTiers ?? [];
+  const kwTiers = useMemo(
+    () => normalizeKwTierList(activeEntryRaw.kwTiers ?? []),
+    [activeEntryRaw.kwTiers]
+  );
   const activeEntry = { ...activeEntryRaw, kwTiers };
   const track = normalized.solar.panelTrack ?? "dcr";
   const plantKw = normalized.solar.plantCapacityKw;
@@ -63,8 +67,8 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
   }
 
   function patchActiveTier(index: number, patchTier: Partial<ResidentialKwTier>) {
-    const nextTiers = kwTiers.map((t, i) =>
-      i === index ? syncKwTierCanonical({ ...t, ...patchTier }) : t
+    const nextTiers = normalizeKwTierList(
+      kwTiers.map((t, i) => (i === index ? syncKwTierCanonical({ ...t, ...patchTier }) : t))
     );
     emit(updateCatalogEntry(normalized, activeEntry.brandId, { kwTiers: nextTiers }));
   }
@@ -80,8 +84,7 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
           </div>
         </div>
         <p className="mt-1.5 text-[11px] leading-snug text-slate-300">
-          Enter both DCR and Non-DCR plant gross (₹) per kW row. Proposals read directly from this table —
-          quote mode (DCR vs Non-DCR) is set in plant sizing, not here.
+          kW rows sync across all brands (same sizes, ascending order). DCR / Non-DCR amounts stay per brand.
         </p>
       </div>
 
@@ -237,7 +240,7 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
                           disabled={kwTiers.length <= 1}
                           onClick={() =>
                             patchActiveEntry({
-                              kwTiers: kwTiers.filter((_, i) => i !== idx),
+                              kwTiers: normalizeKwTierList(kwTiers.filter((_, i) => i !== idx)),
                             })
                           }
                           className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 hover:text-rose-600 disabled:opacity-30"
@@ -260,7 +263,10 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
               onClick={() => {
                 const maxKw = kwTiers.reduce((m, t) => Math.max(m, t.kw), 0);
                 patchActiveEntry({
-                  kwTiers: [...kwTiers, { kw: maxKw > 0 ? maxKw + 1 : 11, priceInr: 0, nonDcrPriceInr: 0 }],
+                  kwTiers: normalizeKwTierList([
+                    ...kwTiers,
+                    { kw: maxKw > 0 ? maxKw + 1 : 11, priceInr: 0, nonDcrPriceInr: 0 },
+                  ]),
                 });
               }}
             >

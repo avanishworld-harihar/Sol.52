@@ -265,6 +265,23 @@ export function renderBlockByKey(
           summary={summary}
           lang={lang}
           darkMode={darkMode}
+          catalog={
+            ctx.residentialConfig?.brandCatalog ?? ctx.pptInput.sharedPlantCatalog ?? null
+          }
+          brandIdA={
+            ctx.residentialConfig?.brandCompare?.brandIdA ??
+            ctx.commercialConfig?.brandComparison?.brandIdA
+          }
+          brandIdB={
+            ctx.residentialConfig?.brandCompare?.brandIdB ??
+            ctx.commercialConfig?.brandComparison?.brandIdB
+          }
+          enabled={
+            ctx.presetId === "residential_smart"
+              ? ctx.residentialConfig?.brandCompare?.enabled === true
+              : ctx.residentialConfig?.brandCompare?.enabled === true ||
+                ctx.commercialConfig?.brandComparison?.enabled !== false
+          }
         />
       );
 

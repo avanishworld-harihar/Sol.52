@@ -33,7 +33,10 @@ export const commercialSolarPanelsSchema = z.object({
 
 export const brandComparisonConfigSchema = z.object({
   enabled: z.boolean().default(true),
-  /** brandId slugs for deck brand_comparison_card priority */
+  /** Two brands compared on proposal — Smart catalog pricing. */
+  brandIdA: z.string().max(40).optional(),
+  brandIdB: z.string().max(40).optional(),
+  /** @deprecated use brandIdA / brandIdB */
   priorityBrandIds: z.array(z.string().max(40)).max(8).optional(),
   tier: z.enum(["premium", "balanced", "budget"]).optional(),
 });

@@ -31,6 +31,7 @@ import {
   Zap,
 } from "lucide-react";
 import { ResidentialBrandCatalogPanel } from "@/components/residential/residential-brand-catalog-panel";
+import { ResidentialBrandComparePanel } from "@/components/residential/residential-brand-compare-panel";
 import { ResidentialTrackComparePanel } from "@/components/residential/residential-track-compare-panel";
 import {
   applyActiveBrandToConfig,
@@ -623,6 +624,7 @@ export function ResidentialPricingStudio({
           </div>
         </div>
 
+        <ResidentialBrandComparePanel config={config} onChange={onChange} />
         <ResidentialTrackComparePanel config={config} onChange={onChange} />
       </div>
 

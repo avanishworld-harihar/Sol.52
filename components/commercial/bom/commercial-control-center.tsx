@@ -11,6 +11,8 @@ import { buildDcrCompareFromSolar } from "@/lib/commercial-solar-engine";
 import { buildCommercialEmiTable, selectedCommercialEmi } from "@/lib/commercial-financing";
 import type { CommercialProposalConfig } from "@/lib/commercial-proposal-config";
 import type { ProposalDeckSummary } from "@/lib/proposal-ppt";
+import { BrandCompareConfigFields } from "@/components/shared/brand-compare-config-fields";
+import type { ResidentialBrandCatalog } from "@/lib/residential-brand-catalog";
 import { cn } from "@/lib/utils";
 import {
   Battery,
@@ -29,9 +31,11 @@ type Props = {
   summary: ProposalDeckSummary;
   onChange: (next: CommercialProposalConfig) => void;
   onOpenReview?: () => void;
+  /** Smart catalog brands (More → Rate card) */
+  brandCatalog?: ResidentialBrandCatalog | null;
 };
 
-export function CommercialControlCenter({ config, summary, onChange, onOpenReview }: Props) {
+export function CommercialControlCenter({ config, summary, onChange, onOpenReview, brandCatalog }: Props) {
   const fin = config.financing ?? { enabled: true };
   const dg = config.dgAssumptions ?? { enabled: false };
   const dgAnalysis = computeDgHybridAnalysis(dg, config.solarPanels?.plantCapacityKw ?? summary.systemKw);
@@ -72,7 +76,7 @@ export function CommercialControlCenter({ config, summary, onChange, onOpenRevie
         <ToggleCard
           icon={GitCompare}
           title="Brand comparison"
-          subtitle="Premium / budget panel brands in deck"
+          subtitle="Compare 2 panel brands — Smart catalog pricing"
           checked={config.brandComparison?.enabled !== false}
           onChange={(on) => onChange({ ...config, brandComparison: { ...config.brandComparison, enabled: on } })}
         />
@@ -97,6 +101,33 @@ export function CommercialControlCenter({ config, summary, onChange, onOpenRevie
           }
         />
       </div>
+
+      {config.brandComparison?.enabled !== false ? (
+        <div className="rounded-xl border border-indigo-200/70 bg-white/90 p-3 dark:border-indigo-500/25 dark:bg-[#0f1419]">
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+            Brand comparison — pick 2 brands
+          </p>
+          <BrandCompareConfigFields
+            catalog={brandCatalog}
+            value={{
+              enabled: true,
+              brandIdA: config.brandComparison?.brandIdA,
+              brandIdB: config.brandComparison?.brandIdB,
+            }}
+            onChange={(next) =>
+              onChange({
+                ...config,
+                brandComparison: {
+                  ...config.brandComparison,
+                  enabled: true,
+                  brandIdA: next.brandIdA,
+                  brandIdB: next.brandIdB,
+                },
+              })
+            }
+          />
+        </div>
+      ) : null}
 
       {fin.enabled ? (
         <div className="rounded-xl border border-slate-200/80 bg-white/90 p-3 dark:border-white/10 dark:bg-[#0f1419]">

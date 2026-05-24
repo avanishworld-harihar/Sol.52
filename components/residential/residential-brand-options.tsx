@@ -1,7 +1,8 @@
 "use client";
 
 import { FloatingLabelInput } from "@/components/ui/floating-label-input";
-import { RESIDENTIAL_BRAND_PRESETS, type ResidentialBrandOption, type ResidentialProposalConfig } from "@/lib/residential-requirements-schema";
+import { ensureBrandCatalog } from "@/lib/residential-brand-catalog";
+import type { ResidentialBrandOption, ResidentialProposalConfig } from "@/lib/residential-requirements-schema";
 import { cn } from "@/lib/utils";
 import { Cpu, Sun } from "lucide-react";
 
@@ -24,11 +25,13 @@ function toggleBrand(
 }
 
 export function ResidentialBrandOptions({ config, onChange }: Props) {
+  const normalized = ensureBrandCatalog(config);
+  const catalogBrands = normalized.brandCatalog?.entries ?? [];
   const panelOpts = config.panelBrandOptions ?? [];
   const invOpts = config.inverterBrandOptions ?? [];
 
   function patchPanelOptions(next: ResidentialBrandOption[]) {
-    const primary = next[0] ?? config.solar;
+    const primary = next[0];
     onChange({
       ...config,
       panelBrandOptions: next,
@@ -49,15 +52,19 @@ export function ResidentialBrandOptions({ config, onChange }: Props) {
           <Sun className="h-4 w-4 text-amber-500" />
           Preferred panel brands (pick 2–3)
         </p>
-        <p className="mt-0.5 text-[11px] text-slate-500">Customer may receive any one of these on site.</p>
+        <p className="mt-0.5 text-[11px] text-slate-500">
+          Brands from More → Rate card (Smart catalog). Customer may receive any one on site.
+        </p>
         <div className="mt-2 flex flex-wrap gap-2">
-          {RESIDENTIAL_BRAND_PRESETS.map((b) => {
+          {catalogBrands.map((b) => {
             const active = panelOpts.some((p) => (p.brandId ?? p.brand) === b.brandId);
             return (
               <button
                 key={b.brandId}
                 type="button"
-                onClick={() => patchPanelOptions(toggleBrand(panelOpts, b, 3))}
+                onClick={() =>
+                  patchPanelOptions(toggleBrand(panelOpts, { brandId: b.brandId, brand: b.brand }, 3))
+                }
                 className={cn(
                   "rounded-full border px-3 py-1.5 text-xs font-semibold",
                   active

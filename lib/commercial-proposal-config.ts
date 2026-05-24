@@ -132,7 +132,7 @@ export function defaultCommercialConfig(
   const scenarios = buildDefaultScenarios(systemKw);
   return {
     solarPanels: defaultSolarPanels(systemKw),
-    brandComparison: { enabled: true, priorityBrandIds: ["adani", "waaree", "longi"], tier: "balanced" },
+    brandComparison: { enabled: true, brandIdA: "adani", brandIdB: "waaree", tier: "balanced" },
     executionTimeline: defaultExecutionTimeline(),
     panel: { catalogId: "waaree-540-non-dcr", brandId: "waaree", watt: 540, panelType: "NON_DCR" },
     panelRegistry: {
@@ -179,6 +179,7 @@ export function applyCommercialFlagsToLayout(
     capacity_scenarios_card: config.capacityScenarios?.enabled === true,
     commercial_financing_card: config.financing?.enabled === true,
     dg_hybrid_analysis_card: config.dgAssumptions?.enabled === true,
+    brand_comparison_card: config.brandComparison?.enabled !== false,
   };
 
   return {

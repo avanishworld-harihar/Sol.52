@@ -77,7 +77,7 @@ export function applyResidentialFlagsToLayout(
     commercial_financing_card: fin?.enabled === true,
     payment_terms: fin?.enabled !== false,
     financial_summary: sub?.preference !== "none",
-    brand_comparison_card: false,
+    brand_comparison_card: config.brandCompare?.enabled === true,
     dcr_comparison_card: config.trackCompare?.enabled === true,
     capacity_scenarios_card: false,
     executive_summary: false,

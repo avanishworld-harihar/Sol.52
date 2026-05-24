@@ -3,7 +3,7 @@ import {
   INSTALLER_RATE_CARD_SCOPE,
   type InstallerRateCard,
 } from "@/lib/installer-rate-card-schema";
-import { defaultBrandCatalog, syncKwTierCanonical } from "@/lib/residential-brand-catalog";
+import { defaultBrandCatalog, syncCatalogKwStructure, syncKwTierCanonical } from "@/lib/residential-brand-catalog";
 import { residentialBrandCatalogSchema } from "@/lib/residential-requirements-schema";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase } from "@/lib/supabase";
@@ -65,13 +65,13 @@ export async function upsertInstallerRateCard(
   const rawCatalog =
     patch.residentialCatalog ?? existing?.residentialCatalog ?? defaultBrandCatalog();
   const residentialCatalog = rawCatalog?.entries?.length
-    ? {
+    ? syncCatalogKwStructure({
         ...rawCatalog,
         entries: rawCatalog.entries.map((e) => ({
           ...e,
           kwTiers: (e.kwTiers ?? []).map(syncKwTierCanonical),
         })),
-      }
+      })
     : rawCatalog;
 
   const merged: InstallerRateCard = {

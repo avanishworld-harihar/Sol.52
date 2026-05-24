@@ -28,6 +28,7 @@ import type { ProposalPricingRow } from "@/lib/proposal-pricing-schema";
 import type { ProposalPricingConfiguratorLabels } from "@/components/proposals/proposal-pricing-configurator";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { summarizeProposalDeck } from "@/lib/proposal-ppt";
+import { getCachedResidentialBrandCatalog } from "@/lib/installer-rate-card-client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 type Props = {
@@ -111,6 +112,11 @@ export function CommercialBomWorkspace({
     toast.push({ tone: "success", title: "Template applied", description: tpl.name });
   }
 
+  const brandCatalog =
+    pptInput.residentialConfig?.brandCatalog ??
+    pptInput.sharedPlantCatalog ??
+    getCachedResidentialBrandCatalog();
+
   return (
     <div className="space-y-6">
       <p className="rounded-xl border border-slate-200/90 bg-slate-50/80 px-3 py-2.5 text-[11px] leading-snug text-slate-600 dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-400">
@@ -136,6 +142,7 @@ export function CommercialBomWorkspace({
         summary={liveSummary}
         onChange={setConfig}
         onOpenReview={onOpenReview}
+        brandCatalog={brandCatalog}
       />
 
       <CommercialHardwareBom
