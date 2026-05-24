@@ -67,6 +67,7 @@ import {
 } from "@/components/residential/residential-proposal-mode-picker";
 import { ResidentialProposalConfigWorkspace } from "@/components/residential/residential-proposal-config-workspace";
 import { ResidentialRequirementCustomerForm } from "@/components/residential/residential-requirement-customer-form";
+import { ResidentialRequirementBuilder } from "@/components/residential/residential-requirement-builder";
 import { isPmSuryaGharSubsidyEligible } from "@/lib/lead-connection-types";
 import {
   residentialAnnualGenerationUnits,
@@ -2647,30 +2648,42 @@ function ProposalPageContent() {
       ) : null}
 
       <div id="step-3-anchor" className={`ss-card space-y-4 p-4 sm:p-5 ${osPresetId === "commercial_executive" ? "ring-1 ring-sky-200/60" : ""}`}>
-        {isCommercialRequirement ? (
-          <div className="rounded-xl border border-sky-200/80 bg-sky-50/60 px-3 py-2.5 text-xs text-sky-900">
-            <p className="font-semibold">Panel &amp; BOM configuration</p>
-            <p className="mt-1 text-sky-800/90">
-              Configure DCR / Non-DCR panels and BOM in the Proposals tab, then generate when ready.
-            </p>
-            {draftProposalId ? (
-              <a
-                href={`/proposals/${draftProposalId}#bom`}
-                className="mt-2 inline-flex text-[11px] font-bold text-indigo-700 underline"
-              >
-                Open Proposals — panel &amp; BOM
-              </a>
-            ) : (
-              <button
-                type="button"
-                disabled={!canOpenCommercialWorkspace || isWorkspaceBusy}
-                onClick={() => void goToProposalsCommercialBom()}
-                className="mt-2 text-[11px] font-bold text-indigo-700 underline disabled:opacity-50"
-              >
-                {isWorkspaceBusy ? "Saving…" : "Save & open Proposals workspace"}
-              </button>
-            )}
-          </div>
+        {isCommercialRequirement && commercialPricingConfig ? (
+          <ResidentialRequirementBuilder
+            config={commercialPricingConfig}
+            netCostInr={effectiveResult.netCost}
+            annualSavingInr={effectiveResult.annualSavings}
+            maxPlantKw={1000}
+            segmentLabel="commercial"
+            onChange={(next) => {
+              const synced = applyCommercialPanelTrackPolicy(next, manual.connectionType);
+              setCommercialPricingConfig(synced);
+              setCommercialConfig((prev) => {
+                if (!prev) return prev;
+                const track = synced.solar.panelTrack ?? "dcr";
+                const merged: CommercialProposalConfig = {
+                  ...prev,
+                  panel: {
+                    catalogId: prev.panel?.catalogId ?? "waaree-540-dcr",
+                    brandId: synced.solar.brandId ?? prev.panel?.brandId,
+                    watt: synced.solar.watt,
+                    panelType: panelTypeFromTrack(track),
+                    ratePerWpInr: synced.solar.ratePerWpInr,
+                    technology: synced.solar.technology,
+                  },
+                  dcrComparison: {
+                    enabled: synced.trackCompare?.enabled === true,
+                    brandId: synced.trackCompare?.compareBrandId ?? synced.solar.brandId,
+                    watt: synced.solar.watt,
+                  },
+                };
+                if (proposalLayout) {
+                  setProposalLayout(applyCommercialFlagsToLayout(proposalLayout, merged));
+                }
+                return merged;
+              });
+            }}
+          />
         ) : null}
         {useResidentialCatalog ? (
           <div className="rounded-xl border border-emerald-200/80 bg-emerald-50/60 px-3 py-2.5 text-xs text-emerald-950 dark:border-emerald-800/50 dark:bg-emerald-950/30 dark:text-emerald-100">
@@ -2697,118 +2710,128 @@ function ProposalPageContent() {
             </div>
           </div>
         ) : null}
-        {osPresetId === "commercial_executive" && commercialPricingConfig && !isCommercialRequirement ? (
-          <>
-            <ResidentialProposalConfigWorkspace
-              config={commercialPricingConfig}
-              subsidyEligible={false}
-              maxPlantKw={2000}
-              segmentLabel="commercial"
-              netCostInr={effectiveResult.netCost}
-              annualSavingInr={effectiveResult.annualSavings}
-              onChange={(next) => {
-                const synced = applyCommercialPanelTrackPolicy(next, manual.connectionType);
-                setCommercialPricingConfig(synced);
-                setCommercialConfig((prev) => {
-                  if (!prev) return prev;
-                  const track = synced.solar.panelTrack ?? "dcr";
-                  const merged: CommercialProposalConfig = {
-                    ...prev,
-                    panel: {
-                      catalogId: prev.panel?.catalogId ?? "waaree-540-dcr",
-                      brandId: synced.solar.brandId ?? prev.panel?.brandId,
-                      watt: synced.solar.watt,
-                      panelType: panelTypeFromTrack(track),
-                      ratePerWpInr: synced.solar.ratePerWpInr,
-                      technology: synced.solar.technology,
-                    },
-                    dcrComparison: {
-                      enabled: synced.trackCompare?.enabled === true,
-                      brandId: synced.trackCompare?.compareBrandId ?? synced.solar.brandId,
-                      watt: synced.solar.watt,
-                    },
-                    brandComparison: {
-                      enabled: synced.brandCompare?.enabled === true,
-                      brandIdA: synced.brandCompare?.brandIdA,
-                      brandIdB: synced.brandCompare?.brandIdB,
-                    },
-                  };
-                  if (proposalLayout) {
-                    setProposalLayout(applyCommercialFlagsToLayout(proposalLayout, merged));
-                  }
-                  return merged;
-                });
-              }}
-              proposalId={draftProposalId}
-              proposalLayout={proposalLayout}
-              onLayoutChange={setProposalLayout}
-              onCreateProposal={async () => {
-                const saved = await persistProposalToServer();
-                if (saved?.id) setDraftProposalId(saved.id);
-                return saved?.id ?? null;
-              }}
-            />
-
-            {commercialConfig ? (
-              <CommercialCapacityScenariosPanel
-                pricingConfig={commercialPricingConfig}
-                commercialConfig={commercialConfig}
-                primaryKw={commercialPricingConfig.solar.plantCapacityKw}
-                onCommercialChange={(next) => {
-                  setCommercialConfig(next);
-                  if (proposalLayout) {
-                    setProposalLayout(applyCommercialFlagsToLayout(proposalLayout, next));
-                  }
-                }}
-              />
-            ) : null}
-
-            <details className="group rounded-2xl border border-slate-200/90 bg-slate-50/50 dark:border-white/10 dark:bg-white/[0.02]">
-              <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm font-bold text-slate-800 dark:text-slate-200 [&::-webkit-details-marker]:hidden">
-                <ChevronDown className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180" />
-                Optional — legacy commercial (narrative, ₹/Wp BOM workspace)
-              </summary>
-              <div className="space-y-4 border-t border-slate-200/80 px-4 pb-4 pt-3 dark:border-white/10">
-                {commercialConfig ? (
-                  <CommercialNarrativePanel
-                    config={commercialConfig}
-                    onChange={(next) => {
-                      setCommercialConfig(next);
+        {osPresetId === "commercial_executive" && commercialPricingConfig ? (
+          <details className="group rounded-2xl border border-sky-200/80 bg-sky-50/30 shadow-sm dark:border-sky-500/20 dark:bg-sky-950/10">
+            <summary className="flex cursor-pointer list-none items-center gap-2.5 px-4 py-3 text-sm font-bold text-slate-800 dark:text-slate-200 [&::-webkit-details-marker]:hidden">
+              <ChevronDown className="h-4 w-4 shrink-0 text-sky-500 transition-transform group-open:rotate-180" />
+              <span className="flex-1">Commercial BOM &amp; Pricing</span>
+              <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold text-sky-700 dark:bg-sky-900/40 dark:text-sky-300">
+                {commercialPricingConfig.solar.plantCapacityKw} kW · {commercialPricingConfig.solar.panelTrack === "non_dcr" ? "Non-DCR" : "DCR"}
+              </span>
+            </summary>
+            <div className="space-y-4 border-t border-sky-200/60 px-4 pb-4 pt-4 dark:border-sky-500/20">
+              {!isCommercialRequirement ? (
+                <ResidentialProposalConfigWorkspace
+                  config={commercialPricingConfig}
+                  subsidyEligible={false}
+                  maxPlantKw={1000}
+                  segmentLabel="commercial"
+                  netCostInr={effectiveResult.netCost}
+                  annualSavingInr={effectiveResult.annualSavings}
+                  onChange={(next) => {
+                    const synced = applyCommercialPanelTrackPolicy(next, manual.connectionType);
+                    setCommercialPricingConfig(synced);
+                    setCommercialConfig((prev) => {
+                      if (!prev) return prev;
+                      const track = synced.solar.panelTrack ?? "dcr";
+                      const merged: CommercialProposalConfig = {
+                        ...prev,
+                        panel: {
+                          catalogId: prev.panel?.catalogId ?? "waaree-540-dcr",
+                          brandId: synced.solar.brandId ?? prev.panel?.brandId,
+                          watt: synced.solar.watt,
+                          panelType: panelTypeFromTrack(track),
+                          ratePerWpInr: synced.solar.ratePerWpInr,
+                          technology: synced.solar.technology,
+                        },
+                        dcrComparison: {
+                          enabled: synced.trackCompare?.enabled === true,
+                          brandId: synced.trackCompare?.compareBrandId ?? synced.solar.brandId,
+                          watt: synced.solar.watt,
+                        },
+                        brandComparison: {
+                          enabled: synced.brandCompare?.enabled === true,
+                          brandIdA: synced.brandCompare?.brandIdA,
+                          brandIdB: synced.brandCompare?.brandIdB,
+                        },
+                      };
                       if (proposalLayout) {
-                        setProposalLayout(applyCommercialFlagsToLayout(proposalLayout, next));
+                        setProposalLayout(applyCommercialFlagsToLayout(proposalLayout, merged));
                       }
-                    }}
-                    onOpenReview={() => setShowReviewSheet(true)}
-                  />
-                ) : null}
-                <div className="rounded-xl border border-indigo-200/80 bg-indigo-50/40 p-3">
-                  <p className="text-xs text-slate-600">
-                    Engineering BOM with panel ₹/Wp line items — only if you need detailed breakdown. Simple
-                    quotes use Smart catalog above.
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      disabled={!canOpenCommercialWorkspace || isWorkspaceBusy || isWebProposalBusy}
-                      onClick={() => void goToProposalsCommercialBom()}
-                      className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white disabled:opacity-50"
-                    >
-                      <ExternalLink className="h-3.5 w-3.5" />
-                      {isWorkspaceBusy ? "Saving…" : "Go to Proposals — legacy BOM"}
-                    </button>
-                    {draftProposalId ? (
-                      <a
-                        href={`/proposals/${draftProposalId}#bom`}
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700"
+                      return merged;
+                    });
+                  }}
+                  proposalId={draftProposalId}
+                  proposalLayout={proposalLayout}
+                  onLayoutChange={setProposalLayout}
+                  onCreateProposal={async () => {
+                    const saved = await persistProposalToServer();
+                    if (saved?.id) setDraftProposalId(saved.id);
+                    return saved?.id ?? null;
+                  }}
+                />
+              ) : null}
+
+              {commercialConfig ? (
+                <CommercialCapacityScenariosPanel
+                  pricingConfig={commercialPricingConfig}
+                  commercialConfig={commercialConfig}
+                  primaryKw={commercialPricingConfig.solar.plantCapacityKw}
+                  onCommercialChange={(next) => {
+                    setCommercialConfig(next);
+                    if (proposalLayout) {
+                      setProposalLayout(applyCommercialFlagsToLayout(proposalLayout, next));
+                    }
+                  }}
+                />
+              ) : null}
+
+              <details className="group/leg rounded-2xl border border-slate-200/90 bg-slate-50/50 dark:border-white/10 dark:bg-white/[0.02]">
+                <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm font-bold text-slate-800 dark:text-slate-200 [&::-webkit-details-marker]:hidden">
+                  <ChevronDown className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open/leg:rotate-180" />
+                  Optional — legacy commercial (narrative, ₹/Wp BOM workspace)
+                </summary>
+                <div className="space-y-4 border-t border-slate-200/80 px-4 pb-4 pt-3 dark:border-white/10">
+                  {commercialConfig ? (
+                    <CommercialNarrativePanel
+                      config={commercialConfig}
+                      onChange={(next) => {
+                        setCommercialConfig(next);
+                        if (proposalLayout) {
+                          setProposalLayout(applyCommercialFlagsToLayout(proposalLayout, next));
+                        }
+                      }}
+                      onOpenReview={() => setShowReviewSheet(true)}
+                    />
+                  ) : null}
+                  <div className="rounded-xl border border-indigo-200/80 bg-indigo-50/40 p-3">
+                    <p className="text-xs text-slate-600">
+                      Engineering BOM with panel ₹/Wp line items — only if you need detailed breakdown.
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        disabled={!canOpenCommercialWorkspace || isWorkspaceBusy || isWebProposalBusy}
+                        onClick={() => void goToProposalsCommercialBom()}
+                        className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white disabled:opacity-50"
                       >
-                        Open Proposals workspace
-                      </a>
-                    ) : null}
+                        <ExternalLink className="h-3.5 w-3.5" />
+                        {isWorkspaceBusy ? "Saving…" : "Go to Proposals — legacy BOM"}
+                      </button>
+                      {draftProposalId ? (
+                        <a
+                          href={`/proposals/${draftProposalId}#bom`}
+                          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700"
+                        >
+                          Open Proposals workspace
+                        </a>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </details>
-          </>
+              </details>
+            </div>
+          </details>
         ) : null}
 
         {!hideBillUploadSteps && !isResidentialSmart ? (

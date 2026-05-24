@@ -58,6 +58,8 @@ type Props = {
   onCreateProposal?: () => Promise<string | null>;
   /** When false (e.g. commercial connection), subsidy is shown as ineligible and forced to ₹0. */
   subsidyEligible?: boolean;
+  /** Hide the brand catalog matrix (editing is done in More → Rate card). */
+  hideCatalogPanel?: boolean;
   className?: string;
 };
 
@@ -96,6 +98,7 @@ export function ResidentialPricingStudio({
   lineItems,
   onCreateProposal,
   subsidyEligible: subsidyEligibleProp,
+  hideCatalogPanel = false,
   className,
 }: Props) {
   const toast = useToast();
@@ -279,10 +282,12 @@ export function ResidentialPricingStudio({
       </div>
 
       <div className="space-y-8 p-4 sm:p-5">
-        <ResidentialBrandCatalogPanel
-          config={config}
-          onChange={(next) => onChange(ensureBrandCatalog(next))}
-        />
+        {!hideCatalogPanel ? (
+          <ResidentialBrandCatalogPanel
+            config={config}
+            onChange={(next) => onChange(ensureBrandCatalog(next))}
+          />
+        ) : null}
 
         {/* Plant sizing — editable watt drives panel count */}
         <div className="rounded-2xl border border-indigo-200/80 bg-indigo-50/30 p-4 dark:border-indigo-500/30 dark:bg-indigo-950/20">
