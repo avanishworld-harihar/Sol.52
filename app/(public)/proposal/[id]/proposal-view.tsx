@@ -477,7 +477,10 @@ function GenVsUseChart({
           <span className="h-2 w-2 rounded-full bg-sky-500" /> {legendUse}
         </span>
       </div>
-      <div ref={ref} className="flex h-56 items-end gap-1 sm:h-72 lg:h-80">
+      <div
+        ref={ref}
+        className="proposal-gen-vs-use-chart flex h-56 items-end gap-1 sm:h-72 lg:h-80 print:!h-[22mm] print:max-h-[22mm] print:min-h-0"
+      >
         {safeLabels.map((label, i) => {
           const tg = (safeGen[i] / max) * 100;
           const tu = (safeUse[i] / max) * 100;
@@ -534,7 +537,11 @@ function SolarVsGridChart({
   const axisTicks = [0, 0.25, 0.5, 0.75, 1];
 
   return (
-    <svg ref={ref} viewBox={`0 0 ${W} ${H}`} className="h-72 w-full sm:h-80">
+    <svg
+      ref={ref}
+      viewBox={`0 0 ${W} ${H}`}
+      className="proposal-solar-vs-grid-chart h-72 w-full sm:h-80 print:!h-[22mm] print:max-h-[22mm]"
+    >
       {axisTicks.map((t, i) => {
         const y = pad.t + innerH - t * innerH;
         const v = Math.round(maxY * t);
@@ -1261,9 +1268,9 @@ export function EconomicsSection({
         </div>
       </motion.div>
 
-      <div className="proposal-economics-pair grid gap-4 md:grid-cols-2">
+      <div className="proposal-economics-pair grid gap-4 md:grid-cols-2 print:gap-2">
         {/* Generation vs Usage */}
-        <ProposalPanel className="sm:p-6">
+        <ProposalPanel className="proposal-economics-gen-panel sm:p-6 print:!p-2">
           <p
             className={`text-xs text-slate-500 ${
               lang === "hi" ? "font-bold tracking-normal" : "font-bold uppercase tracking-[0.18em]"
@@ -1305,7 +1312,7 @@ export function EconomicsSection({
         </ProposalPanel>
 
         {/* EMI calculator */}
-        <ProposalPanel className="sm:p-6">
+        <ProposalPanel className="proposal-economics-emi-panel sm:p-6 print:!p-2">
           <div className="flex items-center justify-between">
             <p
               className={`text-xs text-slate-500 ${
@@ -1327,7 +1334,7 @@ export function EconomicsSection({
             {" · "}
             {D["emi.rate"]}: 7% p.a.
           </p>
-          <div className="mt-4 space-y-2">
+          <div className="proposal-emi-options mt-4 space-y-2 print:space-y-1">
             {summary.emi.map((row) => {
               const selected = selectedTenure === row.tenureYears;
               return (
@@ -1335,7 +1342,7 @@ export function EconomicsSection({
                   type="button"
                   key={row.tenureYears}
                   onClick={() => setSelectedTenure(row.tenureYears)}
-                  className={`flex w-full items-center justify-between rounded-xl border p-3 text-left transition-all ${selected ? "border-emerald-500 bg-emerald-50 shadow-md" : "border-slate-200 bg-white hover:border-slate-300"}`}
+                  className={`proposal-emi-option flex w-full items-center justify-between rounded-xl border p-3 text-left transition-all print:!p-1 print:text-[8pt] ${selected ? "border-emerald-500 bg-emerald-50 shadow-md" : "border-slate-200 bg-white hover:border-slate-300"}`}
                 >
                   <div>
                     <p className={`text-sm font-bold ${selected ? "text-emerald-900" : "text-slate-900"}`}>
@@ -1360,7 +1367,7 @@ export function EconomicsSection({
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               transition={{ duration: 0.3 }}
-              className="mt-4 rounded-xl bg-slate-900 p-4 text-white"
+              className="proposal-economics-emi-finance-expanded mt-4 rounded-xl bg-slate-900 p-4 text-white"
             >
               <p className="text-xs font-bold tracking-wider text-sky-300">{D["emi.financeCta"]}</p>
               <p className="mt-2 text-xs text-slate-300">
@@ -1382,15 +1389,15 @@ export function EconomicsSection({
       </div>
 
       {/* 25-yr comparison */}
-      <div className="proposal-economics-longterm mt-7 grid gap-4 sm:mt-8 md:grid-cols-5">
-        <ProposalPanel emphasis="highlight" className="sm:col-span-3 sm:p-6">
+      <div className="proposal-economics-longterm mt-7 grid gap-4 sm:mt-8 md:grid-cols-5 print:mt-2 print:gap-2">
+        <ProposalPanel emphasis="highlight" className="proposal-economics-roi-panel sm:col-span-3 sm:p-6 print:!p-2">
           <SolarVsGridChart
             years={summary.solarVsGrid.years}
             grid={summary.solarVsGrid.gridCumulative}
             solar={summary.solarVsGrid.solarCumulative}
           />
         </ProposalPanel>
-        <div className="grid gap-3 sm:col-span-2">
+        <div className="proposal-economics-roi-stats grid gap-3 sm:col-span-2 print:gap-1.5">
           <StatTile label={D["econ.grid25"]} value={inr(summary.solarVsGrid.totalGrid)} tone="rose" lang={lang} />
           <StatTile label={D["econ.solar25"]} value={inr(summary.solarVsGrid.totalSolar)} tone="blue" lang={lang} />
           <StatTile label={D["econ.netSaving"]} value={inr(summary.solarVsGrid.netSaving)} tone="green" lang={lang} />
