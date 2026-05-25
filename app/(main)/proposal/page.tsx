@@ -1296,6 +1296,7 @@ function ProposalPageContent() {
       discom: "",
       state: "",
       area: "",
+      location: "",
       consumerId: "",
       meterNumber: "",
       connectionDate: "",
@@ -1321,6 +1322,7 @@ function ProposalPageContent() {
       state: (lead.state ?? "").trim() || prev.state,
       discom: lead.discom,
       area: (lead.area ?? "").trim() || prev.area,
+      location: (lead.location ?? "").trim() || prev.location,
       connectionType: (lead.connection_type ?? "").trim() || prev.connectionType,
       purposeOfSupply: "",
       contractDemandKva: ""
@@ -1714,7 +1716,7 @@ function ProposalPageContent() {
     try {
       const merged = mergeCustomerForProposal(manual, latestBill || previousBill);
       const customerName = merged?.name?.trim() || manual.officialBillName || manual.leadContactName || "Customer";
-      const location = [merged?.district || manual.city, merged?.state || manual.state].filter(Boolean).join(", ");
+      const location = formatProposalLocationLine(manual, merged?.district);
       const uploadedBills = [latestBill, ...additionalBills];
       const monthlyBillActuals = buildMonthlyBillActualsFromBills(uploadedBills, auditedMonthTotals);
       const monthlyAuditOverrides = buildMonthlyAuditOverridesFromBills(uploadedBills);
@@ -1827,7 +1829,7 @@ function ProposalPageContent() {
     const { leadId, created: leadCreated } = await ensureLeadIdForProposal();
     const merged = mergeCustomerForProposal(manual, latestBill || previousBill);
     const customerName = merged?.name?.trim() || manual.officialBillName || manual.leadContactName || "Customer";
-    const location = [merged?.district || manual.city, merged?.state || manual.state].filter(Boolean).join(", ");
+    const location = formatProposalLocationLine(manual, merged?.district);
     const uploadedBills = [latestBill, ...additionalBills];
     const monthlyBillActuals = buildMonthlyBillActualsFromBills(uploadedBills, auditedMonthTotals);
     const monthlyAuditOverrides = buildMonthlyAuditOverridesFromBills(uploadedBills);
@@ -2185,6 +2187,7 @@ function ProposalPageContent() {
               discom: manual.discom,
               connectionType: manual.connectionType,
               area: manual.area,
+              location: manual.location,
               city: manual.city,
               phone: manual.leadPhone,
               monthlyKwh: requirementMonthlyKwh,
@@ -2197,6 +2200,7 @@ function ProposalPageContent() {
             onDiscom={(v) => setManual((p) => ({ ...p, discom: v }))}
             onConnectionType={(v) => setManual((p) => ({ ...p, connectionType: v }))}
             onArea={(v) => setManual((p) => ({ ...p, area: v }))}
+            onLocation={(v) => setManual((p) => ({ ...p, location: v }))}
             onCity={(v) => setManual((p) => ({ ...p, city: v }))}
             onPhone={(v) => setManual((p) => ({ ...p, leadPhone: v }))}
             onMonthlyKwh={(v) => {
@@ -3018,6 +3022,11 @@ export default function ProposalPage() {
   );
 }
 
+function formatProposalLocationLine(manual: ManualProposalCustomer, districtFromBill?: string | null): string {
+  const cityPart = (districtFromBill ?? manual.city ?? "").trim();
+  return [manual.location?.trim(), cityPart, manual.state?.trim()].filter(Boolean).join(", ");
+}
+
 function manualSnapshot(manual: ManualProposalCustomer): Record<string, string> {
   return {
     leadContactName: manual.leadContactName,
@@ -3028,6 +3037,7 @@ function manualSnapshot(manual: ManualProposalCustomer): Record<string, string> 
     discom: manual.discom,
     state: manual.state,
     area: manual.area,
+    location: manual.location,
     consumerId: manual.consumerId,
     meterNumber: manual.meterNumber,
     connectionDate: manual.connectionDate,

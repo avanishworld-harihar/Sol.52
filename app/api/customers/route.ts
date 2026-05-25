@@ -17,6 +17,7 @@ const customerSchema = z.object({
   consumer_id: z.string().max(160).optional(),
   survey_status: z.string().max(40).optional(),
   area: z.enum(["urban", "rural"]).optional(),
+  location: z.string().max(200).optional(),
   connection_type: z.string().max(40).optional()
 });
 
@@ -68,6 +69,7 @@ export async function POST(req: NextRequest) {
       consumer_id: payload.consumer_id?.trim() || null,
       survey_status: payload.survey_status?.trim().toLowerCase() || null,
       area: payload.area?.trim() || null,
+      location: payload.location?.trim() || null,
       connection_type: payload.connection_type?.trim().toLowerCase() || null,
       source: "manual"
     });

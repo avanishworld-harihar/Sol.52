@@ -60,6 +60,7 @@ const patchSchema = z
     consumer_id: z.string().max(160).optional().nullable(),
     survey_status: z.string().max(40).optional().nullable(),
     area: z.enum(["urban", "rural"]).optional().nullable(),
+    location: z.string().max(200).optional().nullable(),
     connection_type: z.string().max(40).optional().nullable()
   })
   .refine((v) => Object.keys(v).length > 0, { message: "Empty patch" });

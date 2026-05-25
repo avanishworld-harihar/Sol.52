@@ -52,6 +52,8 @@ export interface CustomerInput {
   email?: string | null;
   /** Tariff area: urban | rural. */
   area?: string | null;
+  /** Site locality / landmark (optional). */
+  location?: string | null;
   /** Connection category (domestic, commercial, …). */
   connection_type?: string | null;
 }

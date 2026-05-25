@@ -20,6 +20,7 @@ export type ResidentialRequirementCustomerFields = {
   discom: string;
   connectionType: string;
   area: string;
+  location: string;
   city: string;
   phone: string;
   monthlyKwh: string;
@@ -33,6 +34,7 @@ type Props = {
   onDiscom: (v: string) => void;
   onConnectionType: (v: string) => void;
   onArea: (v: string) => void;
+  onLocation: (v: string) => void;
   onCity: (v: string) => void;
   onPhone: (v: string) => void;
   onMonthlyKwh: (v: string) => void;
@@ -82,6 +84,7 @@ export function ResidentialRequirementCustomerForm({
   onDiscom,
   onConnectionType,
   onArea,
+  onLocation,
   onCity,
   onPhone,
   onMonthlyKwh,
@@ -190,9 +193,15 @@ export function ResidentialRequirementCustomerForm({
         </FloatingLabelSelect>
       </div>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <Field
+          icon={MapPin}
+          placeholder="Location (colony, sector, landmark)"
+          value={fields.location}
+          onChange={onLocation}
+        />
         <Field icon={MapPin} placeholder="City *" value={fields.city} onChange={onCity} required />
-        <Field icon={Phone} placeholder="Phone (optional)" value={fields.phone} onChange={onPhone} inputMode="tel" />
       </div>
+      <Field icon={Phone} placeholder="Phone (optional)" value={fields.phone} onChange={onPhone} inputMode="tel" />
       <div className="rounded-xl border border-slate-200/90 bg-white/80 p-3 dark:border-white/10 dark:bg-white/[0.03]">
         <p className="mb-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
           <Zap className="h-3.5 w-3.5 text-amber-500" aria-hidden />

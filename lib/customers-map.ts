@@ -27,6 +27,8 @@ export function mapCustomerRow(row: Record<string, unknown>): CustomerLead {
         ? String(row.survey_status).trim().toLowerCase()
         : null,
     area: row.area != null && String(row.area).trim() ? String(row.area).trim().toLowerCase() : null,
+    location:
+      row.location != null && String(row.location).trim() ? String(row.location).trim() : null,
     connection_type:
       row.connection_type != null && String(row.connection_type).trim()
         ? String(row.connection_type).trim().toLowerCase()

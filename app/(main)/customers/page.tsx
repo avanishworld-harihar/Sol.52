@@ -72,6 +72,7 @@ function CustomersPageContent() {
     consumer_id: "",
     survey_status: "",
     area: "",
+    location: "",
     connection_type: ""
   });
   const { options: leadDiscomOptions, loading: leadDiscomListLoading } = useInstallerDiscoms(form.state);
@@ -299,6 +300,7 @@ function CustomersPageContent() {
       consumer_id: "",
       survey_status: "",
       area: "",
+      location: "",
       connection_type: ""
     });
   }
@@ -323,6 +325,7 @@ function CustomersPageContent() {
         return "";
       })(),
       area: (customer.area ?? "").trim(),
+      location: (customer.location ?? "").trim(),
       connection_type: (customer.connection_type ?? "").trim()
     });
   }
@@ -392,6 +395,7 @@ function CustomersPageContent() {
                 ? form.survey_status.trim().toLowerCase()
                 : null,
               area: form.area.trim() ? form.area.trim() : null,
+              location: form.location.trim() ? form.location.trim() : null,
               connection_type: form.connection_type.trim() ? form.connection_type.trim() : null
             })
           });
@@ -420,6 +424,7 @@ function CustomersPageContent() {
       consumer_id: form.consumer_id.trim() ? form.consumer_id.trim() : null,
       survey_status: form.survey_status.trim() ? form.survey_status.trim().toLowerCase() : null,
       area: form.area.trim() || undefined,
+      location: form.location.trim() || undefined,
       connection_type: form.connection_type.trim() || undefined
     };
 
@@ -440,6 +445,7 @@ function CustomersPageContent() {
         consumer_id: "",
         survey_status: "",
         area: "",
+        location: "",
         connection_type: ""
       });
     }
@@ -453,6 +459,7 @@ function CustomersPageContent() {
         if (form.consumer_id.trim()) postBody.consumer_id = form.consumer_id.trim();
         if (form.survey_status.trim()) postBody.survey_status = form.survey_status.trim().toLowerCase();
         if (form.area.trim()) postBody.area = form.area.trim();
+        if (form.location.trim()) postBody.location = form.location.trim();
         if (form.connection_type.trim()) postBody.connection_type = form.connection_type.trim();
         const response = await fetch("/api/customers", {
           method: "POST",
@@ -692,6 +699,14 @@ function CustomersPageContent() {
                   </option>
                 ))}
               </FloatingLabelSelect>
+              <FloatingLabelInput
+                label={t("customers_labelLocation")}
+                containerClassName="my-4"
+                className={modalFloatingClass}
+                value={form.location}
+                onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))}
+                placeholder={t("customers_placeholderLocation")}
+              />
               <FloatingLabelInput
                 label={t("customers_placeholderCity")}
                 containerClassName="my-4"

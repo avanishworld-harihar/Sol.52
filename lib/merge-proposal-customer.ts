@@ -15,6 +15,8 @@ export type ManualProposalCustomer = {
   state: string;
   /** Tariff area: urban | rural (optional). */
   area: string;
+  /** Site locality / landmark (optional). */
+  location: string;
   consumerId: string;
   meterNumber: string;
   connectionDate: string;

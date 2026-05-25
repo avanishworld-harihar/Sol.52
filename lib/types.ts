@@ -23,6 +23,8 @@ export type CustomerLead = {
   consumer_id?: string | null;
   /** Tariff area: `urban` | `rural`. */
   area?: string | null;
+  /** Site locality / landmark (optional). */
+  location?: string | null;
   /** Connection category: domestic | commercial | industrial | agricultural | ht. */
   connection_type?: string | null;
   /**

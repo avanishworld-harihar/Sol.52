@@ -44,6 +44,7 @@ export const EMPTY_MANUAL_PROPOSAL_CUSTOMER: ManualProposalCustomer = {
   discom: "",
   state: "",
   area: "",
+  location: "",
   consumerId: "",
   meterNumber: "",
   connectionDate: "",
