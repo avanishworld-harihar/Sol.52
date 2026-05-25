@@ -3240,14 +3240,167 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     break-inside: avoid-page !important;
   }
 
+  /* Cover: fit one A4 page — do not force whole page as unbreakable (clips bottom ribbon) */
   .proposal-page[data-page="cover"] {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  .proposal-page[data-page="cover"] .proposal-hero,
+  .proposal-page[data-page="cover"] section {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  .proposal-page[data-page="cover"] .proposal-hero-orchestrated {
+    padding: 5mm 6mm !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .proposal-page[data-page="cover"] .proposal-hero-body {
+    margin-top: 3mm !important;
+  }
+
+  .proposal-page[data-page="cover"] .proposal-hero-intro {
+    margin-bottom: 2mm !important;
+  }
+
+  .proposal-page[data-page="cover"] .proposal-hero-intro h1,
+  .proposal-page[data-page="cover"] .proposal-hero-intro .text-3xl,
+  .proposal-page[data-page="cover"] .proposal-hero-intro .text-4xl {
+    font-size: 1.35rem !important;
+    line-height: 1.15 !important;
+  }
+
+  .proposal-page[data-page="cover"] .proposal-hero-about {
+    margin-top: 2mm !important;
+    padding: 2.5mm 3mm !important;
+  }
+
+  .proposal-page[data-page="cover"] .proposal-hero-profile,
+  .proposal-page[data-page="cover"] .proposal-hero-metrics {
+    margin-top: 2mm !important;
+    gap: 1.5mm !important;
+  }
+
+  .proposal-page[data-page="cover"] .proposal-hero-profile > *,
+  .proposal-page[data-page="cover"] .proposal-hero-metrics > * {
+    padding: 2mm !important;
+  }
+
+  .proposal-page[data-page="cover"] .proposal-hero-metrics > * p:last-child {
+    font-size: 8pt !important;
+  }
+
+  .proposal-page[data-page="cover"] .proposal-hero-ribbon-slot {
+    margin-top: 2mm !important;
+  }
+
+  .proposal-page[data-page="cover"] .proposal-hero-ribbon {
+    margin-top: 0 !important;
+    gap: 1.5mm !important;
+  }
+
+  .proposal-page[data-page="cover"] .proposal-hero-ribbon-tile {
+    padding: 2mm 2.5mm !important;
+  }
+
+  .proposal-page[data-page="cover"] .proposal-hero-ribbon-value {
+    font-size: 10.5pt !important;
+    line-height: 1.1 !important;
+  }
+
+  .proposal-page[data-page="cover"] .proposal-hero-ribbon-label,
+  .proposal-page[data-page="cover"] .proposal-hero-ribbon-hint {
+    font-size: 7pt !important;
+  }
+
+  .proposal-page[data-page="cover"] .proposal-hero-local-team {
+    margin-top: 2mm !important;
+    max-height: 36mm !important;
+  }
+
+  .proposal-page[data-page="cover"] .proposal-hero-foot {
+    margin-top: 2mm !important;
+    padding-top: 2mm !important;
+  }
+
+  .proposal-page[data-page="cover"] .proposal-hero-ribbon-slot,
+  .proposal-page[data-page="cover"] .proposal-hero-bleed-inside,
+  .proposal-page[data-page="cover"] .proposal-hero-foot {
+    break-inside: avoid !important;
     page-break-inside: avoid !important;
-    break-inside: avoid-page !important;
   }
 
   .proposal-hero--requirement .proposal-hero-bleed-inside {
     page-break-before: avoid !important;
     break-before: avoid !important;
+  }
+
+  /* Environment (page 5): compact so content stays on one printed page */
+  .proposal-page[data-page="environment"] section {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  .proposal-page[data-page="environment"] .proposal-journey-header {
+    margin-bottom: 2mm !important;
+  }
+
+  .proposal-page[data-page="environment"] .proposal-journey-title {
+    font-size: 13pt !important;
+  }
+
+  .proposal-page[data-page="environment"] .grid.grid-cols-2 > div,
+  .proposal-page[data-page="environment"] .grid.sm\:grid-cols-4 > div {
+    padding: 2.5mm !important;
+  }
+
+  .proposal-page[data-page="environment"] .grid .text-3xl {
+    font-size: 1.1rem !important;
+    margin-top: 1.5mm !important;
+  }
+
+  .proposal-page[data-page="environment"] .grid svg {
+    height: 5mm !important;
+    width: 5mm !important;
+  }
+
+  .proposal-page[data-page="environment"] .mt-5.rounded-3xl,
+  .proposal-page[data-page="environment"] .mt-4.rounded-3xl {
+    margin-top: 2.5mm !important;
+    padding: 4mm 5mm !important;
+  }
+
+  .proposal-page[data-page="environment"] .mt-5.rounded-3xl .text-2xl,
+  .proposal-page[data-page="environment"] .mt-5.rounded-3xl .sm\:text-3xl {
+    font-size: 1.15rem !important;
+    margin-top: 1.5mm !important;
+  }
+
+  .proposal-page[data-page="environment"] .mt-5.rounded-3xl svg.h-16 {
+    height: 10mm !important;
+    width: 10mm !important;
+  }
+
+  .proposal-page[data-page="environment"] .mt-3.flex.flex-wrap {
+    margin-top: 1.5mm !important;
+    max-height: 14mm !important;
+    overflow: hidden !important;
+  }
+
+  /* Technical + BOM combined page */
+  .proposal-page[data-page="technical-bom"] > section {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  .proposal-page[data-page="technical-bom"] > section + section {
+    margin-top: 4mm !important;
+    page-break-before: auto !important;
+    break-before: auto !important;
   }
 
   /* Tighten consecutive-section gap inside a single page for print */
@@ -3525,9 +3678,15 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     border-radius: 0 !important;
   }
 
-  /* Hero bottom-bleed image — taller, full width */
+  /* Hero bottom-bleed image — capped for A4 (cover uses tighter rule in cover block above) */
   .proposal-hero img {
-    max-height: 55mm !important;
+    max-height: 40mm !important;
+    height: auto !important;
+  }
+
+  .proposal-page[data-page="cover"] .proposal-hero img {
+    max-height: 36mm !important;
+    height: 36mm !important;
   }
 
   /* QR code full resolution in print — strictly square, crisp edges */

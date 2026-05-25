@@ -45,7 +45,7 @@ import { DASHBOARD_STATS_SWR_KEY } from "@/lib/dashboard-stats-client";
 import { ProposalQuickPreview } from "@/components/proposal/proposal-quick-preview";
 import { WorkspacePage, WorkspacePageHero } from "@/components/workspace";
 import { cn } from "@/lib/utils";
-import { Building2, ChevronDown, Download, ExternalLink, FileUp, Globe, MessageCircle, Send, Sparkles, Zap } from "lucide-react";
+import { Building2, Check, ChevronDown, Download, ExternalLink, FileUp, Globe, MessageCircle, Send, Sparkles, Zap } from "lucide-react";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { parsePrefillFromSearchParams } from "@/lib/quick-actions";
@@ -3511,7 +3511,14 @@ function UploadCard({
                     : "border-slate-200 bg-slate-100 text-slate-500"
                 )}
               >
-                {checked ? `âœ“ ${MONTH_LABELS[month]}` : MONTH_LABELS[month]}
+                {checked ? (
+                  <span className="inline-flex items-center justify-center gap-0.5">
+                    <Check className="h-2.5 w-2.5 shrink-0" aria-hidden />
+                    {MONTH_LABELS[month]}
+                  </span>
+                ) : (
+                  MONTH_LABELS[month]
+                )}
               </span>
             );
           })}
@@ -3529,7 +3536,14 @@ function UploadCard({
                     : "border-slate-200 bg-slate-100 text-slate-500"
                 )}
               >
-                {checked ? `âœ“ ${MONTH_LABELS[month]}` : MONTH_LABELS[month]}
+                {checked ? (
+                  <span className="inline-flex items-center justify-center gap-0.5">
+                    <Check className="h-2.5 w-2.5 shrink-0" aria-hidden />
+                    {MONTH_LABELS[month]}
+                  </span>
+                ) : (
+                  MONTH_LABELS[month]
+                )}
               </span>
             );
           })}
