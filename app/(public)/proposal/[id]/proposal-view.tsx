@@ -479,7 +479,7 @@ function GenVsUseChart({
       </div>
       <div
         ref={ref}
-        className="proposal-gen-vs-use-chart flex h-56 items-end gap-1 sm:h-72 lg:h-80 print:!h-[22mm] print:max-h-[22mm] print:min-h-0"
+        className="proposal-gen-vs-use-chart flex h-56 items-end gap-1 sm:h-72 lg:h-80 print:!h-[36mm] print:max-h-[36mm] print:min-h-0"
       >
         {safeLabels.map((label, i) => {
           const tg = (safeGen[i] / max) * 100;
@@ -540,7 +540,7 @@ function SolarVsGridChart({
     <svg
       ref={ref}
       viewBox={`0 0 ${W} ${H}`}
-      className="proposal-solar-vs-grid-chart h-72 w-full sm:h-80 print:!h-[22mm] print:max-h-[22mm]"
+      className="proposal-solar-vs-grid-chart h-72 w-full sm:h-80 print:!h-[34mm] print:max-h-[34mm]"
     >
       {axisTicks.map((t, i) => {
         const y = pad.t + innerH - t * innerH;
@@ -1122,7 +1122,7 @@ export function DeepAuditSection({ D, summary, monthLbls, lang }: { D: ProposalD
                       <td className="border-b border-slate-100 bg-inherit px-3 py-3 text-right text-[15px] font-bold tabular-nums text-slate-800 sm:px-2.5 sm:py-2.5 sm:text-sm md:text-[15px]">
                         {inr(r.duty + r.fuel)}
                       </td>
-                      <td className="border-b border-slate-100 bg-inherit px-3 py-3 text-right align-top sm:px-2.5 sm:py-2.5">
+                      <td className="border-b border-slate-100 bg-inherit px-3 py-3 text-right align-middle sm:px-2.5 sm:py-2.5">
                         <AuditNetBillCell D={D} total={r.total} subsidy={r.subsidy} isPeak={isPeak} />
                       </td>
                     </tr>
@@ -1144,7 +1144,7 @@ export function DeepAuditSection({ D, summary, monthLbls, lang }: { D: ProposalD
                   <td className="border-b border-sky-100 bg-sky-50 px-3 py-3 text-right text-[15px] font-bold tabular-nums text-sky-950 sm:px-2.5 sm:py-2.5 sm:text-sm md:text-[15px]">
                     {inr(summary.auditTotals.duty + summary.auditTotals.fuel)}
                   </td>
-                  <td className="border-b border-sky-100 bg-sky-50 px-3 py-3 text-right align-top sm:px-2.5 sm:py-2.5">
+                  <td className="border-b border-sky-100 bg-sky-50 px-3 py-3 text-right align-middle sm:px-2.5 sm:py-2.5">
                     <AuditNetBillCell
                       D={D}
                       total={summary.auditTotals.total}

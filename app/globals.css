@@ -3262,10 +3262,16 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   .proposal-page[data-page="cover"] .proposal-hero-pm-surya-strip {
     border: none !important;
     box-shadow: none !important;
+    page-break-before: avoid !important;
+    break-before: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
+    max-height: 20mm !important;
+    overflow: hidden !important;
   }
 
   .proposal-page[data-page="cover"] .proposal-hero-pm-surya-strip img {
-    max-height: 32mm !important;
+    max-height: 20mm !important;
     width: 100% !important;
     height: auto !important;
     object-fit: contain !important;
@@ -3422,14 +3428,14 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   }
 
   .proposal-page[data-page="economics"] .proposal-solar-vs-grid-chart {
-    height: 22mm !important;
-    max-height: 22mm !important;
+    height: 34mm !important;
+    max-height: 34mm !important;
     width: 100% !important;
   }
 
   .proposal-page[data-page="economics"] .proposal-gen-vs-use-chart {
-    height: 22mm !important;
-    max-height: 22mm !important;
+    height: 36mm !important;
+    max-height: 36mm !important;
     min-height: 0 !important;
   }
 
@@ -3451,56 +3457,68 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     break-before: avoid !important;
   }
 
-  /* Environment (page 5): compact so content stays on one printed page */
+  /* Expertise / About Us (page 2): cap card images & clip gradient overlay */
+  .proposal-page[data-page="expertise"] section {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  .proposal-page[data-page="expertise"] .h-48,
+  .proposal-page[data-page="expertise"] .sm\:h-52 {
+    height: 28mm !important;
+    max-height: 28mm !important;
+    overflow: hidden !important;
+  }
+
+  .proposal-page[data-page="expertise"] .h-48 img,
+  .proposal-page[data-page="expertise"] .sm\:h-52 img {
+    height: 28mm !important;
+    max-height: 28mm !important;
+    object-fit: cover !important;
+  }
+
+  /* Hide the dark gradient overlay on expertise images — bleeds to page bottom in PDF */
+  .proposal-page[data-page="expertise"] .absolute.inset-0.bg-gradient-to-t {
+    display: none !important;
+  }
+
+  .proposal-page[data-page="expertise"] .absolute.bottom-3 {
+    position: relative !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: auto !important;
+    padding: 1.5mm 2mm !important;
+    background: rgba(15, 23, 42, 0.7) !important;
+  }
+
+  /* Environment / Green Legacy (page 5): light compaction — do NOT over-shrink */
   .proposal-page[data-page="environment"] section {
     page-break-inside: auto !important;
     break-inside: auto !important;
   }
 
   .proposal-page[data-page="environment"] .proposal-journey-header {
-    margin-bottom: 2mm !important;
-  }
-
-  .proposal-page[data-page="environment"] .proposal-journey-title {
-    font-size: 13pt !important;
+    margin-bottom: 3mm !important;
   }
 
   .proposal-page[data-page="environment"] .grid.grid-cols-2 > div,
   .proposal-page[data-page="environment"] .grid.sm\:grid-cols-4 > div {
-    padding: 2.5mm !important;
-  }
-
-  .proposal-page[data-page="environment"] .grid .text-3xl {
-    font-size: 1.1rem !important;
-    margin-top: 1.5mm !important;
-  }
-
-  .proposal-page[data-page="environment"] .grid svg {
-    height: 5mm !important;
-    width: 5mm !important;
+    padding: 3mm !important;
   }
 
   .proposal-page[data-page="environment"] .mt-5.rounded-3xl,
   .proposal-page[data-page="environment"] .mt-4.rounded-3xl {
-    margin-top: 2.5mm !important;
-    padding: 4mm 5mm !important;
-  }
-
-  .proposal-page[data-page="environment"] .mt-5.rounded-3xl .text-2xl,
-  .proposal-page[data-page="environment"] .mt-5.rounded-3xl .sm\:text-3xl {
-    font-size: 1.15rem !important;
-    margin-top: 1.5mm !important;
+    margin-top: 3mm !important;
+    padding: 5mm 6mm !important;
   }
 
   .proposal-page[data-page="environment"] .mt-5.rounded-3xl svg.h-16 {
-    height: 10mm !important;
-    width: 10mm !important;
+    height: 13mm !important;
+    width: 13mm !important;
   }
 
   .proposal-page[data-page="environment"] .mt-3.flex.flex-wrap {
-    margin-top: 1.5mm !important;
-    max-height: 14mm !important;
-    overflow: hidden !important;
+    margin-top: 2mm !important;
   }
 
   /* Technical + BOM combined page */
