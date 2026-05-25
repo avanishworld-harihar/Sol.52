@@ -3317,9 +3317,18 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     font-size: 7pt !important;
   }
 
-  .proposal-page[data-page="cover"] .proposal-hero-local-team {
+  .proposal-page[data-page="cover"] .proposal-hero-pm-surya-strip {
     margin-top: 2mm !important;
-    max-height: 36mm !important;
+    max-height: 32mm !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .proposal-page[data-page="cover"] .proposal-hero-pm-surya-strip img {
+    max-height: 32mm !important;
+    width: 100% !important;
+    height: auto !important;
+    object-fit: contain !important;
   }
 
   .proposal-page[data-page="cover"] .proposal-hero-foot {
@@ -3328,7 +3337,7 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   }
 
   .proposal-page[data-page="cover"] .proposal-hero-ribbon-slot,
-  .proposal-page[data-page="cover"] .proposal-hero-bleed-inside,
+  .proposal-page[data-page="cover"] .proposal-hero-pm-surya-strip,
   .proposal-page[data-page="cover"] .proposal-hero-foot {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
@@ -3684,9 +3693,9 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     height: auto !important;
   }
 
-  .proposal-page[data-page="cover"] .proposal-hero img {
-    max-height: 36mm !important;
-    height: 36mm !important;
+  .proposal-page[data-page="cover"] .proposal-hero-pm-surya-strip img {
+    max-height: 32mm !important;
+    height: auto !important;
   }
 
   /* QR code full resolution in print — strictly square, crisp edges */

@@ -659,8 +659,8 @@ export function HeroCover({
 }) {
   const cp = summary.customerProfile;
   const cmp = resolvedCompanyProfileForLang(summary.companyProfile, lang);
-  const heroBottomImage = siteImages?.[0];
   const displayName = lang === "hi" ? hindiHonoredDisplayName(summary.honoredName) : summary.honoredName;
+  const PM_SURYA_GHAR_COVER_STRIP = "/images/pm-surya-ghar-cover-strip.png";
   const taglineClass =
     lang === "hi"
       ? "truncate text-[11px] text-slate-500 sm:text-xs tracking-normal"
@@ -852,58 +852,21 @@ export function HeroCover({
           />
         </div>
 
-        {/* Built near you — last block on cover page (before footer) */}
-        {heroBottomImage ? (
-          <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className={`proposal-hero-bleed-inside proposal-hero-local-team order-6 relative mt-5 overflow-hidden rounded-2xl shadow-lg shadow-slate-900/15 sm:mt-6 ${requirementBased ? "max-h-48 sm:max-h-56" : "mt-7 sm:mt-8"}`}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={heroBottomImage} alt="Solar installation" className="h-44 w-full object-cover sm:h-56 lg:h-64" />
-            <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/85 via-slate-900/35 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-emerald-950 to-transparent px-4 pb-4 pt-16 sm:px-6 sm:pb-5 sm:pt-20">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <p
-                    className={`text-[10px] font-bold text-emerald-300/95 sm:text-xs ${
-                      lang === "hi" ? "tracking-normal normal-case" : "uppercase tracking-wide"
-                    }`}
-                  >
-                    {D["hero.engineeredEyebrow"]}
-                  </p>
-                  <p className="mt-0.5 text-base font-bold leading-tight text-white sm:text-lg">{D["hero.localTeamBold"]}</p>
-                  <p className="mt-1 max-w-xl text-[11px] leading-snug text-white/85 sm:text-sm">{D["hero.localTeamFine"]}</p>
-                </div>
-                <p className="text-[10px] font-semibold text-emerald-100/90 sm:text-right sm:text-xs">
-                  {summary.installer}
-                  <span className="mx-1.5 opacity-50">·</span>
-                  {cmp.installationsDone} {cmp.installationsLabel}
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className={`proposal-hero-bleed-inside proposal-hero-local-team order-6 relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-800 via-emerald-900 to-slate-900 p-5 text-white shadow-lg sm:p-7 ${requirementBased ? "mt-5 max-h-44 sm:mt-6" : "mt-7 sm:mt-8"}`}
-          >
-            <p
-              className={`text-[10px] font-bold text-emerald-300 sm:text-xs ${
-                lang === "hi" ? "tracking-normal normal-case" : "uppercase tracking-wide"
-              }`}
-            >
-              {D["hero.engineeredEyebrow"]}
-            </p>
-            <p className="mt-1 text-lg font-bold tracking-tight sm:text-2xl">{D["hero.localTeamBold"]}</p>
-            <p className="mt-2 max-w-2xl text-xs leading-relaxed text-white/85 sm:text-sm">{D["hero.localTeamFine"]}</p>
-          </motion.div>
-        )}
+        {/* PM Surya Ghar — cover footer strip (replaces legacy local-team banner) */}
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="proposal-hero-bleed-inside proposal-hero-pm-surya-strip order-6 mt-5 overflow-hidden rounded-xl border border-slate-200/80 shadow-sm sm:mt-6"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={PM_SURYA_GHAR_COVER_STRIP}
+            alt="Pradhan Mantri Surya Ghar — Muft Bijli Yojana"
+            className="block h-auto w-full object-contain object-center"
+          />
+        </motion.div>
 
         <div
           className={`proposal-hero-foot order-7 mt-5 flex flex-col gap-2 border-t pt-4 sm:mt-6 sm:flex-row sm:items-start sm:justify-between sm:gap-4 ${
