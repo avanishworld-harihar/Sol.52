@@ -844,38 +844,36 @@ export function HeroCover({
         </div>
         )}
 
-        <div className="proposal-hero-cover-bottom order-5 mt-5 md:mt-6 print:mt-1">
-          <div className="proposal-hero-ribbon-slot">
-            <HeroSavingsRibbon
-              annualSaving={summary.annualSaving}
-              paybackYears={summary.paybackYears}
-              netCost={summary.netCost}
-              subsidy={summary.pmSubsidy}
-              labels={{
-                saving: D["common.annualSaving"],
-                payback: D["common.payback"],
-                net: D["common.netCost"],
-                subsidy: lang === "hi" ? "सब्सिडी" : "Subsidy"
-              }}
-            />
-          </div>
-
-          {/* PM Surya Ghar — cover footer strip (replaces legacy local-team banner) */}
-          <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="proposal-hero-bleed-inside proposal-hero-pm-surya-strip mt-5 overflow-hidden rounded-xl border border-slate-200/80 shadow-sm sm:mt-6 print:mt-1"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={PM_SURYA_GHAR_COVER_STRIP}
-              alt="Pradhan Mantri Surya Ghar — Muft Bijli Yojana"
-              className="block h-auto w-full object-contain object-center print:max-h-[14mm]"
-            />
-          </motion.div>
+        <div className="proposal-hero-ribbon-slot order-5 mt-5 md:mt-6">
+          <HeroSavingsRibbon
+            annualSaving={summary.annualSaving}
+            paybackYears={summary.paybackYears}
+            netCost={summary.netCost}
+            subsidy={summary.pmSubsidy}
+            labels={{
+              saving: D["common.annualSaving"],
+              payback: D["common.payback"],
+              net: D["common.netCost"],
+              subsidy: lang === "hi" ? "सब्सिडी" : "Subsidy"
+            }}
+          />
         </div>
+
+        {/* PM Surya Ghar — cover footer strip (replaces legacy local-team banner) */}
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="proposal-hero-bleed-inside proposal-hero-pm-surya-strip order-6 mt-5 overflow-hidden rounded-xl border border-slate-200/80 shadow-sm sm:mt-6"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={PM_SURYA_GHAR_COVER_STRIP}
+            alt="Pradhan Mantri Surya Ghar — Muft Bijli Yojana"
+            className="block h-auto w-full object-contain object-center"
+          />
+        </motion.div>
 
         <div
           className={`proposal-hero-foot order-7 mt-5 flex flex-col gap-2 border-t pt-4 sm:mt-6 sm:flex-row sm:items-start sm:justify-between sm:gap-4 ${

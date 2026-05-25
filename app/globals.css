@@ -3240,130 +3240,39 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     break-inside: avoid-page !important;
   }
 
-  /* Cover: fit one A4 sheet — clip overflow (do NOT add break-after; next .proposal-page already has break-before) */
+  /* Cover: keep on-screen layout in PDF; only hide footnote strip that spilled to a blank page 2 */
   .proposal-page[data-page="cover"] {
-    max-height: 276mm !important;
-    overflow: hidden !important;
-    zoom: 0.92;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  .proposal-page[data-page="cover"] .proposal-hero,
+  .proposal-page[data-page="cover"] section {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
   }
 
   .proposal-page[data-page="cover"] .proposal-hero-orchestrated {
-    padding: 4mm 5mm !important;
+    padding: 5mm 6mm !important;
     border: none !important;
     border-radius: 0 !important;
     box-shadow: none !important;
   }
 
-  .proposal-page[data-page="cover"] .proposal-hero-installer-bar {
-    padding-bottom: 2mm !important;
-    margin-bottom: 0 !important;
-    gap: 2mm !important;
-  }
-
-  .proposal-page[data-page="cover"] .proposal-print-logo {
-    height: 3.25rem !important;
-    max-height: 14mm !important;
-  }
-
-  .proposal-page[data-page="cover"] .proposal-hero-body {
-    margin-top: 2mm !important;
-  }
-
-  .proposal-page[data-page="cover"] .proposal-hero-body > .order-4,
-  .proposal-page[data-page="cover"] .proposal-hero-body > .order-5,
-  .proposal-page[data-page="cover"] .proposal-hero-cover-bottom {
-    margin-top: 1.5mm !important;
-  }
-
-  .proposal-page[data-page="cover"] .proposal-hero-intro {
-    margin-bottom: 2mm !important;
-  }
-
-  .proposal-page[data-page="cover"] .proposal-hero-intro h1,
-  .proposal-page[data-page="cover"] .proposal-hero-intro .text-3xl,
-  .proposal-page[data-page="cover"] .proposal-hero-intro .text-4xl {
-    font-size: 1.35rem !important;
-    line-height: 1.15 !important;
-  }
-
-  .proposal-page[data-page="cover"] .proposal-hero-about {
-    margin-top: 2mm !important;
-    padding: 2.5mm 3mm !important;
-  }
-
-  /* Bill-backed cover: hide profile grid in PDF — frees space so ribbon/strip stay on page 1 */
-  .proposal-page[data-page="cover"] .proposal-hero-profile {
-    display: none !important;
-  }
-
-  .proposal-page[data-page="cover"] .proposal-hero-profile,
-  .proposal-page[data-page="cover"] .proposal-hero-metrics {
-    margin-top: 2mm !important;
-    gap: 1.5mm !important;
-  }
-
-  .proposal-page[data-page="cover"] .proposal-hero-profile > *,
-  .proposal-page[data-page="cover"] .proposal-hero-metrics > * {
-    padding: 2mm !important;
-  }
-
-  .proposal-page[data-page="cover"] .proposal-hero-metrics {
-    grid-template-columns: repeat(auto-fit, minmax(0, 1fr)) !important;
-  }
-
-  .proposal-page[data-page="cover"] .proposal-hero-metrics > * p:last-child {
-    font-size: 7pt !important;
-    line-height: 1.1 !important;
-  }
-
-  .proposal-page[data-page="cover"] .proposal-hero-ribbon-slot {
-    margin-top: 0 !important;
-  }
-
-  .proposal-page[data-page="cover"] .proposal-hero-ribbon {
-    margin-top: 0 !important;
-    gap: 1mm !important;
-    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-  }
-
-  .proposal-page[data-page="cover"] .proposal-hero-ribbon-label,
-  .proposal-page[data-page="cover"] .proposal-hero-ribbon-hint {
-    font-size: 7pt !important;
-  }
-
   .proposal-page[data-page="cover"] .proposal-hero-pm-surya-strip {
-    margin-top: 1.5mm !important;
-    max-height: 14mm !important;
     border: none !important;
     box-shadow: none !important;
   }
 
   .proposal-page[data-page="cover"] .proposal-hero-pm-surya-strip img {
-    max-height: 14mm !important;
+    max-height: 32mm !important;
     width: 100% !important;
     height: auto !important;
     object-fit: contain !important;
   }
 
-  /* Cover footer note — hidden in PDF to avoid orphan blank page 2 */
   .proposal-page[data-page="cover"] .proposal-hero-foot {
     display: none !important;
-  }
-
-  .proposal-page[data-page="cover"] .proposal-hero-ribbon-tile--primary {
-    grid-column: span 1 !important;
-  }
-
-  .proposal-page[data-page="cover"] .proposal-hero-ribbon-tile {
-    padding: 1.5mm 2mm !important;
-  }
-
-  .proposal-page[data-page="cover"] .proposal-hero-ribbon-value {
-    font-size: 9pt !important;
-  }
-
-  .proposal-page[data-page="cover"] .proposal-hero-ribbon-tile--primary .proposal-hero-ribbon-value {
-    font-size: 9.5pt !important;
   }
 
   /* Economics (page 4): fit ROI + 25-yr stats on one printed page */
@@ -3888,14 +3797,10 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     border-radius: 0 !important;
   }
 
-  /* Hero images — logo etc.; PM strip uses 14mm rule on cover page only */
+  /* Hero images — logo etc.; PM strip capped in cover block above */
   .proposal-hero img {
     max-height: 40mm !important;
     height: auto !important;
-  }
-
-  .proposal-page[data-page="cover"] .proposal-hero-pm-surya-strip img {
-    max-height: 14mm !important;
   }
 
   /* QR code full resolution in print — strictly square, crisp edges */
