@@ -844,21 +844,6 @@ export function HeroCover({
         </div>
         )}
 
-        <div className="proposal-hero-ribbon-slot order-5 mt-5 md:mt-6">
-          <HeroSavingsRibbon
-            annualSaving={summary.annualSaving}
-            paybackYears={summary.paybackYears}
-            netCost={summary.netCost}
-            subsidy={summary.pmSubsidy}
-            labels={{
-              saving: D["common.annualSaving"],
-              payback: D["common.payback"],
-              net: D["common.netCost"],
-              subsidy: lang === "hi" ? "सब्सिडी" : "Subsidy"
-            }}
-          />
-        </div>
-
         <div
           className={`proposal-hero-foot order-7 mt-5 flex flex-col gap-2 border-t pt-4 sm:mt-6 sm:flex-row sm:items-start sm:justify-between sm:gap-4 ${
             darkMode ? "border-white/10" : "border-slate-200/80"
@@ -874,21 +859,37 @@ export function HeroCover({
         </div>
       </div>
 
-      {/* PM Surya Ghar — full-width strip pinned to cover page bottom */}
-      <motion.div
-        initial={{ opacity: 0, y: 14 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-        className="proposal-hero-pm-surya-strip proposal-hero-bottom-banner mt-auto w-full shrink-0 overflow-hidden"
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={PM_SURYA_GHAR_COVER_STRIP}
-          alt="Pradhan Mantri Surya Ghar — Muft Bijli Yojana"
-          className="block h-auto w-full max-w-none object-cover object-center"
-        />
-      </motion.div>
+      {/* Savings ribbon + PM strip — full width, after main content (PDF: fits remaining space, no crop) */}
+      <div className="proposal-hero-cover-tail mt-auto w-full shrink-0">
+        <div className="proposal-hero-ribbon-slot px-4 pb-3 pt-2 sm:px-8 md:px-9 lg:px-10 print:px-[6mm] print:pb-2 print:pt-1">
+          <HeroSavingsRibbon
+            annualSaving={summary.annualSaving}
+            paybackYears={summary.paybackYears}
+            netCost={summary.netCost}
+            subsidy={summary.pmSubsidy}
+            labels={{
+              saving: D["common.annualSaving"],
+              payback: D["common.payback"],
+              net: D["common.netCost"],
+              subsidy: lang === "hi" ? "सब्सिडी" : "Subsidy"
+            }}
+          />
+        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="proposal-hero-pm-surya-strip proposal-hero-bottom-banner w-full"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={PM_SURYA_GHAR_COVER_STRIP}
+            alt="Pradhan Mantri Surya Ghar — Muft Bijli Yojana"
+            className="proposal-hero-pm-surya-strip-img block h-auto w-full max-w-none object-contain object-center"
+          />
+        </motion.div>
+      </div>
     </section>
   );
 }
