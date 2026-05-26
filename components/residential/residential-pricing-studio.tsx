@@ -43,6 +43,8 @@ import {
 import type { PricingLineItem } from "@/lib/proposal-pricing-lines";
 import { saveInstallerResidentialCatalog } from "@/lib/installer-rate-card-client";
 import { saveResidentialRequirement } from "@/lib/save-residential-requirement-client";
+import type { CommercialProposalConfig } from "@/lib/commercial-proposal-config";
+import { saveCommercialRequirement } from "@/lib/save-commercial-requirement-client";
 import { useMemo, useState } from "react";
 
 type Props = {
@@ -60,6 +62,9 @@ type Props = {
   subsidyEligible?: boolean;
   /** Hide the brand catalog matrix (editing is done in More → Rate card). */
   hideCatalogPanel?: boolean;
+  /** Commercial proposals hub — saves pricing + commercialConfig together. */
+  saveMode?: "residential" | "commercial";
+  commercialConfig?: CommercialProposalConfig;
   className?: string;
 };
 
@@ -97,6 +102,8 @@ export function ResidentialPricingStudio({
   onSaved,
   lineItems,
   onCreateProposal,
+  saveMode = "residential",
+  commercialConfig,
   subsidyEligible: subsidyEligibleProp,
   hideCatalogPanel = false,
   className,
@@ -230,12 +237,21 @@ export function ResidentialPricingStudio({
         return;
       }
 
-      const result = await saveResidentialRequirement({
-        proposalId: id,
-        config: catalogConfig,
-        proposalLayout,
-        lineItems,
-      });
+      const result =
+        saveMode === "commercial" && commercialConfig
+          ? await saveCommercialRequirement({
+              proposalId: id,
+              pricingConfig: catalogConfig,
+              commercialConfig,
+              proposalLayout,
+              lineItems,
+            })
+          : await saveResidentialRequirement({
+              proposalId: id,
+              config: catalogConfig,
+              proposalLayout,
+              lineItems,
+            });
       if (!result.ok) {
         throw new Error(result.error ?? "Save failed");
       }
@@ -245,7 +261,9 @@ export function ResidentialPricingStudio({
         tone: "success",
         title: "Saved",
         description:
-          "Saved to central Rate card and this proposal (bill & requirement).",
+          saveMode === "commercial"
+            ? "Commercial pricing and proposal options synced to this deal."
+            : "Saved to central Rate card and this proposal (bill & requirement).",
       });
     } catch (e) {
       toast.push({

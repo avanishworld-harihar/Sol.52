@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { commercialProposalConfigSchema } from "@/lib/commercial-proposal-config";
 import { persistCommercialConfigChange } from "@/lib/proposal-pricing-sync";
+import { residentialProposalConfigSchema } from "@/lib/residential-proposal-config";
 import { proposalTemplateV1Schema } from "@/lib/proposal-template-schema";
 import { getProposalById } from "@/lib/proposals-store";
 
@@ -13,6 +14,7 @@ const UUID_RX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-
 
 const bodySchema = z.object({
   commercialConfig: commercialProposalConfigSchema,
+  residentialConfig: residentialProposalConfigSchema.optional(),
   proposalLayout: proposalTemplateV1Schema.optional(),
 });
 
@@ -24,12 +26,17 @@ export async function PATCH(req: NextRequest, ctx: RouteCtx) {
     }
 
     const raw = await req.json();
-    const { commercialConfig, proposalLayout } = bodySchema.parse(raw);
+    const { commercialConfig, residentialConfig, proposalLayout } = bodySchema.parse(raw);
 
     const proposal = await getProposalById(id.trim());
     if (!proposal) return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
 
-    const ok = await persistCommercialConfigChange(id.trim(), commercialConfig, proposalLayout);
+    const ok = await persistCommercialConfigChange(
+      id.trim(),
+      commercialConfig,
+      proposalLayout,
+      residentialConfig
+    );
     if (!ok) {
       return NextResponse.json({ ok: false, error: "persist_failed" }, { status: 503 });
     }

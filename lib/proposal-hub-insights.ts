@@ -118,7 +118,7 @@ export function hubIntelForStatus(st: ProposalStatus, lang: "en" | "hi"): IntelI
   const en: Record<ProposalStatus, IntelInsight> = {
     draft: {
       title: "Finish the quote",
-      body: "Check pricing and BOM, then generate the web proposal link for the customer.",
+      body: "Set plant kW and pricing in the workspace, enable Solar + DG if needed, then share the web proposal link.",
       tone: "action"
     },
     sent: {
@@ -145,7 +145,7 @@ export function hubIntelForStatus(st: ProposalStatus, lang: "en" | "hi"): IntelI
   const hi: Record<ProposalStatus, IntelInsight> = {
     draft: {
       title: "कोट पूरा करें",
-      body: "प्राइसिंग और BOM चेक करें, फिर ग्राहक को वेब प्रस्ताव लिंक भेजें।",
+      body: "वर्कस्पेस में kW और प्राइसिंग सेट करें, ज़रूरत हो तो Solar + DG चालू करें, फिर वेब प्रस्ताव लिंक भेजें।",
       tone: "action"
     },
     sent: {

@@ -1,23 +1,15 @@
 "use client";
 
-import { CommercialControlCenter } from "@/components/commercial/bom/commercial-control-center";
-import { CommercialDcrPreview } from "@/components/commercial/bom/commercial-dcr-preview";
-import { CommercialHardwareBom } from "@/components/commercial/bom/commercial-hardware-bom";
-import { CommercialPricingTemplatesPanel } from "@/components/commercial/bom/commercial-pricing-templates-panel";
-import { CommercialSolarPanelSection } from "@/components/commercial/bom/commercial-solar-panel-section";
-import { useToast } from "@/components/ui/toast-center";
+import { CommercialProposalConfigWorkspace } from "@/components/commercial/commercial-proposal-config-workspace";
+import { Button } from "@/components/ui/button";
 import {
+  applyCommercialFlagsToLayout,
   defaultCommercialConfig,
   parseCommercialConfig,
   type CommercialProposalConfig,
 } from "@/lib/commercial-proposal-config";
-import {
-  ensureSolarPanelsInConfig,
-  solarPanelsFromLineItems,
-  syncLegacyPanelFieldsFromSolar,
-  syncSolarPanelsToLineItems,
-} from "@/lib/commercial-solar-engine";
-import { defaultSolarPanels } from "@/lib/commercial-solar-schema";
+import { applyCommercialPanelTrackPolicy } from "@/lib/commercial-panel-track-policy";
+import { getCachedResidentialBrandCatalog } from "@/lib/installer-rate-card-client";
 import { mergeProposalPricingIntoPptInput } from "@/lib/proposal-pricing-merge";
 import {
   hydrateLineItems,
@@ -26,9 +18,16 @@ import {
 } from "@/lib/proposal-pricing-lines";
 import type { ProposalPricingRow } from "@/lib/proposal-pricing-schema";
 import type { ProposalPricingConfiguratorLabels } from "@/components/proposals/proposal-pricing-configurator";
+import { getProposalLayout } from "@/lib/proposal-layout-merge";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { summarizeProposalDeck } from "@/lib/proposal-ppt";
-import { getCachedResidentialBrandCatalog } from "@/lib/installer-rate-card-client";
+import {
+  defaultResidentialConfigForBuilder,
+  parseResidentialConfig,
+  type ResidentialProposalConfig,
+} from "@/lib/residential-proposal-config";
+import { syncResidentialSolarToLineItems } from "@/lib/residential-solar-engine";
+import { mergeCommercialConfigWithPricing } from "@/lib/save-commercial-requirement-client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 type Props = {
@@ -45,114 +44,120 @@ export function CommercialBomWorkspace({
   proposalId,
   initialPricing,
   pptInput,
-  labels,
+  onPricingSaved,
   onPptInputChange,
   onOpenReview,
 }: Props) {
-  const toast = useToast();
   const [pricing, setPricing] = useState(initialPricing);
   const [lines, setLines] = useState<PricingLineItem[]>(() => hydrateLineItems(initialPricing));
-  const [config, setConfig] = useState<CommercialProposalConfig>(() => {
-    const base = parseCommercialConfig(pptInput.commercialConfig) ?? defaultCommercialConfig(initialPricing.system_kw);
-    return ensureSolarPanelsInConfig(base, initialPricing.system_kw);
+  const [commercialConfig, setCommercialConfig] = useState<CommercialProposalConfig>(() => {
+    return parseCommercialConfig(pptInput.commercialConfig) ?? defaultCommercialConfig(initialPricing.system_kw);
   });
-  const [manualFinal, setManualFinal] = useState(initialPricing.manual_final_override);
-  const [manualFinalAmt, setManualFinalAmt] = useState(initialPricing.final_amount_inr);
+  const [pricingConfig, setPricingConfig] = useState<ResidentialProposalConfig>(() => {
+    const base =
+      parseResidentialConfig(pptInput.residentialConfig) ??
+      defaultResidentialConfigForBuilder(initialPricing.system_kw, "bill");
+    return applyCommercialPanelTrackPolicy(base, pptInput.connectionType ?? base.connectionType);
+  });
 
   useEffect(() => {
     setPricing(initialPricing);
     setLines(hydrateLineItems(initialPricing));
-    setManualFinal(initialPricing.manual_final_override);
-    setManualFinalAmt(initialPricing.final_amount_inr);
   }, [initialPricing]);
 
-  const solar = useMemo(() => {
-    if (config.solarPanels) return config.solarPanels;
-    return defaultSolarPanels(pricing.system_kw);
-  }, [config.solarPanels, pricing.system_kw]);
-
   const preview = useMemo(() => {
-    const syncedLines = syncSolarPanelsToLineItems(solar, lines);
-    return proposalPricingRowFromLineItems(
-      { ...pricing, manual_final_override: manualFinal, final_amount_inr: manualFinalAmt },
-      syncedLines,
-      {
-        system_kw: solar.plantCapacityKw,
-        manual_final_override: manualFinal,
-        final_amount_inr: manualFinal ? manualFinalAmt : undefined,
-      }
-    );
-  }, [pricing, lines, solar, manualFinal, manualFinalAmt]);
+    const syncedLines = syncResidentialSolarToLineItems(pricingConfig.solar, lines);
+    return proposalPricingRowFromLineItems(pricing, syncedLines, {
+      system_kw: pricingConfig.solar.plantCapacityKw,
+    });
+  }, [pricing, lines, pricingConfig.solar]);
+
+  const mergedCommercial = useMemo(
+    () => mergeCommercialConfigWithPricing(commercialConfig, pricingConfig),
+    [commercialConfig, pricingConfig]
+  );
 
   const liveSummary = useMemo(() => {
     const merged = mergeProposalPricingIntoPptInput(
-      { ...pptInput, commercialConfig: syncLegacyPanelFieldsFromSolar({ ...config, solarPanels: solar }) },
+      { ...pptInput, commercialConfig: mergedCommercial, residentialConfig: pricingConfig },
       preview
     );
     return summarizeProposalDeck(merged);
-  }, [pptInput, config, solar, preview]);
+  }, [pptInput, mergedCommercial, pricingConfig, preview]);
 
-  const patchSolar = useCallback(
-    (nextSolar: typeof solar) => {
-      const kw = nextSolar.plantCapacityKw;
-      setConfig((c) => ({ ...c, solarPanels: nextSolar }));
-      setLines((prev) => syncSolarPanelsToLineItems(nextSolar, prev));
-      setPricing((p) => ({ ...p, system_kw: kw }));
-    },
-    []
-  );
+  const patchPricingConfig = useCallback((next: ResidentialProposalConfig) => {
+    const tracked = applyCommercialPanelTrackPolicy(next, next.connectionType ?? pptInput.connectionType);
+    setPricingConfig(tracked);
+    setLines((prev) => syncResidentialSolarToLineItems(tracked.solar, prev));
+    setPricing((p) => ({ ...p, system_kw: tracked.solar.plantCapacityKw }));
+  }, [pptInput.connectionType]);
 
-  function applyTemplate(tpl: import("@/lib/commercial-pricing-templates").CommercialPricingTemplate) {
-    setLines(tpl.lineItems);
-    const cfg = ensureSolarPanelsInConfig(tpl.commercialConfig, tpl.systemKw);
-    setConfig(cfg);
-    const sp =
-      cfg.solarPanels ?? solarPanelsFromLineItems(tpl.lineItems, tpl.systemKw) ?? defaultSolarPanels(tpl.systemKw);
-    patchSolar(sp);
-    toast.push({ tone: "success", title: "Template applied", description: tpl.name });
-  }
+  const net = preview.final_amount_inr;
 
   const brandCatalog =
-    pptInput.residentialConfig?.brandCatalog ??
-    pptInput.sharedPlantCatalog ??
-    getCachedResidentialBrandCatalog();
+    pricingConfig.brandCatalog ?? pptInput.sharedPlantCatalog ?? getCachedResidentialBrandCatalog();
 
   return (
-    <div className="space-y-6">
-      <p className="rounded-xl border border-slate-200/90 bg-slate-50/80 px-3 py-2.5 text-[11px] leading-snug text-slate-600 dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-400">
-        <strong className="text-slate-900 dark:text-white">Quote price</strong> comes from More → Rate card
-        (₹/Wp). This section is an <strong>optional engineering BOM breakdown</strong> — not required for a
-        simple customer offer.
+    <div className="space-y-5">
+      {onOpenReview ? (
+        <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={onOpenReview}>
+          Review proposal sections
+        </Button>
+      ) : null}
+
+      <p className="rounded-xl border border-indigo-200/60 bg-indigo-50/50 px-3 py-2.5 text-[11px] leading-snug text-indigo-900/90 dark:border-indigo-500/25 dark:bg-indigo-950/20 dark:text-indigo-200/90">
+        <strong>Rate-card pricing</strong> drives plant kW, brands, and net payable. Use{" "}
+        <strong>Solar + DG hybrid</strong> below when the site runs diesel backup — customers see a simple
+        architecture diagram on the web proposal.
       </p>
 
-      <CommercialPricingTemplatesPanel
-        presetId="commercial_executive"
-        systemKw={solar.plantCapacityKw}
-        lineItems={syncSolarPanelsToLineItems(solar, lines)}
-        commercialConfig={config}
-        onApply={applyTemplate}
-      />
-
-      <CommercialSolarPanelSection solar={solar} onChange={patchSolar} />
-
-      {config.dcrComparison?.enabled !== false ? <CommercialDcrPreview solar={solar} /> : null}
-
-      <CommercialControlCenter
-        config={config}
+      <CommercialProposalConfigWorkspace
+        pricingConfig={pricingConfig}
+        commercialConfig={commercialConfig}
+        onPricingConfigChange={patchPricingConfig}
+        onCommercialConfigChange={setCommercialConfig}
         summary={liveSummary}
-        onChange={setConfig}
-        onOpenReview={onOpenReview}
+        netCostInr={Math.round(net)}
+        annualSavingInr={liveSummary.annualSaving}
+        proposalId={proposalId}
+        proposalLayout={getProposalLayout(pptInput)}
+        lineItems={lines}
         brandCatalog={brandCatalog}
-      />
-
-      <CommercialHardwareBom
-        lines={lines}
-        onChange={setLines}
-        labels={{
-          title: "Hardware & services BOM",
-          subtitle: "Inverter, structure, installation — drag to reorder · actions on the left rail",
-          addLine: labels.addLine,
-          removeLine: labels.removeLine,
+        onOpenReview={onOpenReview}
+        onSaved={() => {
+          const syncedLines = syncResidentialSolarToLineItems(pricingConfig.solar, lines);
+          const row = proposalPricingRowFromLineItems(pricing, syncedLines, {
+            system_kw: pricingConfig.solar.plantCapacityKw,
+          });
+          const merged = mergeCommercialConfigWithPricing(commercialConfig, pricingConfig);
+          const layout = applyCommercialFlagsToLayout(getProposalLayout(pptInput), merged);
+          setPricing(row);
+          setLines(hydrateLineItems(row));
+          onPricingSaved?.(row);
+          onPptInputChange?.({
+            ...pptInput,
+            commercialConfig: merged,
+            residentialConfig: pricingConfig,
+            proposalLayout: layout,
+            systemKw: pricingConfig.solar.plantCapacityKw,
+          });
+        }}
+        onCommercialPersisted={(cfg, layout) => {
+          const merged = mergeCommercialConfigWithPricing(cfg, pricingConfig);
+          onPptInputChange?.({
+            ...pptInput,
+            commercialConfig: merged,
+            residentialConfig: pricingConfig,
+            proposalLayout: layout ?? applyCommercialFlagsToLayout(getProposalLayout(pptInput), merged),
+          });
+        }}
+        onLayoutChange={(layout) => {
+          onPptInputChange?.({
+            ...pptInput,
+            commercialConfig: mergedCommercial,
+            residentialConfig: pricingConfig,
+            proposalLayout: applyCommercialFlagsToLayout(layout, mergedCommercial),
+          });
         }}
       />
     </div>

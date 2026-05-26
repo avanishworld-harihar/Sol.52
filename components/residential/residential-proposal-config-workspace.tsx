@@ -4,6 +4,7 @@ import { ResidentialPricingStudio } from "@/components/residential/residential-p
 import { ResidentialRequirementBuilder } from "@/components/residential/residential-requirement-builder";
 import type { PricingLineItem } from "@/lib/proposal-pricing-lines";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
+import type { CommercialProposalConfig } from "@/lib/commercial-proposal-config";
 import type { ResidentialProposalConfig } from "@/lib/residential-requirements-schema";
 
 type Props = {
@@ -21,6 +22,8 @@ type Props = {
   billBackedHint?: boolean;
   maxPlantKw?: number;
   segmentLabel?: string;
+  saveMode?: "residential" | "commercial";
+  commercialConfig?: CommercialProposalConfig;
 };
 
 export function ResidentialProposalConfigWorkspace({
@@ -38,6 +41,8 @@ export function ResidentialProposalConfigWorkspace({
   billBackedHint,
   maxPlantKw = 50,
   segmentLabel = "homeowner",
+  saveMode = "residential",
+  commercialConfig,
 }: Props) {
   return (
     <div className="space-y-6">
@@ -61,6 +66,8 @@ export function ResidentialProposalConfigWorkspace({
         lineItems={lineItems}
         onSaved={onPricingSaved}
         hideCatalogPanel
+        saveMode={saveMode}
+        commercialConfig={commercialConfig}
       />
     </div>
   );

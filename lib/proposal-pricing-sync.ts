@@ -140,7 +140,8 @@ export async function persistProposalLayoutChange(proposalId: string, layout: Pr
 export async function persistCommercialConfigChange(
   proposalId: string,
   commercialConfig: CommercialProposalConfig,
-  proposalLayout?: ProposalTemplateV1
+  proposalLayout?: ProposalTemplateV1,
+  residentialConfig?: ResidentialProposalConfig
 ): Promise<boolean> {
   const proposal = await getProposalById(proposalId);
   if (!proposal) return false;
@@ -154,6 +155,7 @@ export async function persistCommercialConfigChange(
     {
       ...proposal.ppt_input,
       commercialConfig,
+      ...(residentialConfig ? { residentialConfig, pricingSource: residentialConfig.pricingSource ?? "rate_card" } : {}),
       proposalLayout: syncedLayout,
     },
     pricing

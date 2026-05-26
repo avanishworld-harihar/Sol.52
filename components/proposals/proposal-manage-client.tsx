@@ -360,10 +360,14 @@ export function ProposalManageClient({
       <ProposalDetailSection
         id="bom"
         variant="workspace"
-        title={t("proposals_section_bom")}
+        title={
+          presetId === "commercial_executive"
+            ? "Commercial quote & options"
+            : t("proposals_section_bom")
+        }
         subtitle={
           presetId === "commercial_executive"
-            ? "Requirement-based commercial BOM — plant kW, DCR / Non-DCR brands, scenarios, EMI, and reusable pricing."
+            ? "Rate-card plant sizing, brands, EMI, and Solar + DG hybrid — synced to the customer web proposal."
             : isResidentialRequirement
               ? "Guided home solar — kW, panels, EMI, subsidy & friendly homeowner story."
               : t("proposals_section_bomSub")
