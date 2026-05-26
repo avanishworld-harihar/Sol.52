@@ -683,7 +683,7 @@ export function HeroCover({
   // floats or overlaps. On mobile the grid collapses to 1 column.
   return (
     <section
-      className={`proposal-hero proposal-hero-orchestrated relative overflow-hidden rounded-3xl border p-4 sm:p-8 md:p-9 lg:p-10 ${
+      className={`proposal-hero proposal-hero-orchestrated relative flex flex-col overflow-hidden rounded-3xl border p-0 ${
         requirementBased ? "proposal-hero--requirement " : ""
       }${
         darkMode
@@ -691,7 +691,7 @@ export function HeroCover({
           : "border-slate-200/90 bg-white shadow-[0_24px_80px_-24px_rgba(15,23,42,0.12)]"
       }`}
     >
-      <div className="relative">
+      <div className="proposal-hero-main relative flex flex-1 flex-col p-4 sm:p-8 md:p-9 lg:p-10">
         {/* ── 1. INSTALLER BAR (Logo · Name · Tagline · Contact) ─────────── */}
         <div
           className={`proposal-hero-installer-bar grid grid-cols-12 items-center gap-4 border-b border-dashed pb-5 sm:pb-6 ${
@@ -859,22 +859,6 @@ export function HeroCover({
           />
         </div>
 
-        {/* PM Surya Ghar — cover footer strip (replaces legacy local-team banner) */}
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="proposal-hero-bleed-inside proposal-hero-pm-surya-strip order-6 mt-5 overflow-hidden rounded-xl border border-slate-200/80 shadow-sm sm:mt-6"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={PM_SURYA_GHAR_COVER_STRIP}
-            alt="Pradhan Mantri Surya Ghar — Muft Bijli Yojana"
-            className="block h-auto w-full object-contain object-center"
-          />
-        </motion.div>
-
         <div
           className={`proposal-hero-foot order-7 mt-5 flex flex-col gap-2 border-t pt-4 sm:mt-6 sm:flex-row sm:items-start sm:justify-between sm:gap-4 ${
             darkMode ? "border-white/10" : "border-slate-200/80"
@@ -889,6 +873,22 @@ export function HeroCover({
         </div>
         </div>
       </div>
+
+      {/* PM Surya Ghar — full-width strip pinned to cover page bottom */}
+      <motion.div
+        initial={{ opacity: 0, y: 14 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+        className="proposal-hero-pm-surya-strip proposal-hero-bottom-banner mt-auto w-full shrink-0 overflow-hidden"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={PM_SURYA_GHAR_COVER_STRIP}
+          alt="Pradhan Mantri Surya Ghar — Muft Bijli Yojana"
+          className="block h-auto w-full max-w-none object-cover object-center"
+        />
+      </motion.div>
     </section>
   );
 }

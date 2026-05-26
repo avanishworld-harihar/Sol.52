@@ -2432,6 +2432,53 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   margin-top: 1rem;
 }
 
+/* Cover — PM Surya banner full page width, pinned to bottom */
+.proposal-page[data-page="cover"] {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: 0;
+}
+
+@media (min-width: 768px) {
+  .proposal-page[data-page="cover"] {
+    padding-left: 0;
+    padding-right: 0;
+    min-height: min(297mm, calc(100vh - 6rem));
+  }
+
+  .proposal-page[data-page="cover"] .proposal-hero-orchestrated {
+    min-height: 100%;
+  }
+}
+
+.proposal-page[data-page="cover"] .proposal-hero-orchestrated {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.proposal-page[data-page="cover"] .proposal-hero-main {
+  flex: 1 1 auto;
+}
+
+.proposal-page[data-page="cover"] .proposal-hero-bottom-banner,
+.proposal-page[data-page="cover"] .proposal-hero-pm-surya-strip {
+  margin-top: auto;
+  width: 100%;
+  max-width: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.proposal-page[data-page="cover"] .proposal-hero-pm-surya-strip img {
+  width: 100%;
+  max-width: none;
+  object-fit: cover;
+  object-position: center bottom;
+}
+
 /* Stacked sections inside one .proposal-page (e.g. Tech+BOM, Banking+Closing)
    should not double-up vertical margins. The first child sits flush at the top;
    subsequent siblings get a smaller, consistent gap. */
@@ -3252,29 +3299,51 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     break-inside: auto !important;
   }
 
+  .proposal-page[data-page="cover"] {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 277mm !important;
+  }
+
   .proposal-page[data-page="cover"] .proposal-hero-orchestrated {
-    padding: 5mm 6mm !important;
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 0 !important;
     border: none !important;
     border-radius: 0 !important;
     box-shadow: none !important;
+    min-height: 100% !important;
   }
 
+  .proposal-page[data-page="cover"] .proposal-hero-main {
+    flex: 1 1 auto !important;
+    padding: 5mm 6mm 4mm !important;
+  }
+
+  .proposal-page[data-page="cover"] .proposal-hero-bottom-banner,
   .proposal-page[data-page="cover"] .proposal-hero-pm-surya-strip {
+    margin-top: auto !important;
+    width: 100% !important;
+    max-width: none !important;
     border: none !important;
+    border-radius: 0 !important;
     box-shadow: none !important;
     page-break-before: avoid !important;
     break-before: avoid !important;
     page-break-inside: avoid !important;
     break-inside: avoid-page !important;
-    max-height: 20mm !important;
     overflow: hidden !important;
   }
 
   .proposal-page[data-page="cover"] .proposal-hero-pm-surya-strip img {
-    max-height: 20mm !important;
     width: 100% !important;
+    max-width: none !important;
+    max-height: 26mm !important;
     height: auto !important;
-    object-fit: contain !important;
+    object-fit: cover !important;
+    object-position: center bottom !important;
+    display: block !important;
   }
 
   .proposal-page[data-page="cover"] .proposal-hero-foot {
