@@ -372,15 +372,17 @@ export function ResidentialPricingStudio({
         <div>
           <SectionTitle icon={Sun} title="Panel technology" />
           <select
-            value={pricing.panelTechnology ?? solar.technology ?? ""}
+            value={pricing.panelTechnology ?? solar.technology ?? "Mono PERC"}
             onChange={(e) => {
-              const panelTechnology = e.target.value;
-              patchPricing({ panelTechnology });
-              patchSolar({ technology: panelTechnology || solar.technology });
+              const panelTechnology = e.target.value || "Mono PERC";
+              onChange({
+                ...config,
+                pricing: { ...pricing, panelTechnology },
+                solar: { ...solar, technology: panelTechnology },
+              });
             }}
             className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold dark:border-white/15 dark:bg-white/5"
           >
-            <option value="">—</option>
             {PANEL_TECHNOLOGY_OPTIONS.map((t) => (
               <option key={t} value={t}>
                 {t}

@@ -43,6 +43,8 @@ type Props = {
   canEstimateBillToKwh?: boolean;
   /** Estimated kWh from bill amount (computed externally from tariff engine) */
   estimatedKwhFromBill?: number;
+  /** Recommended plant size from monthly consumption (kW) */
+  suggestedSolarKw?: number;
   className?: string;
 };
 
@@ -91,6 +93,7 @@ export function ResidentialRequirementCustomerForm({
   onMonthlyBillInr,
   canEstimateBillToKwh = true,
   estimatedKwhFromBill,
+  suggestedSolarKw,
   className,
 }: Props) {
   const { options: discomOptions, loading: discomLoading } = useInstallerDiscoms(fields.state);
@@ -238,6 +241,15 @@ export function ResidentialRequirementCustomerForm({
             <Zap className="h-3 w-3 shrink-0" aria-hidden />
             ₹{parseInt(fields.monthlyBillInr).toLocaleString("en-IN")} ≈{" "}
             <strong>{estimatedKwhFromBill} kWh/month</strong> (estimated from your DISCOM tariff)
+          </p>
+        ) : null}
+        {suggestedSolarKw != null && suggestedSolarKw > 0 ? (
+          <p className="mt-1.5 flex items-center gap-1.5 rounded-lg border border-sky-200 bg-sky-50/90 px-2 py-1.5 text-[10px] font-semibold text-sky-900 dark:border-sky-800/40 dark:bg-sky-950/30 dark:text-sky-200">
+            <Zap className="h-3 w-3 shrink-0 text-sky-600" aria-hidden />
+            Recommended solar size: <strong>{suggestedSolarKw.toFixed(1)} kW</strong>
+            <span className="font-normal text-sky-800/80 dark:text-sky-300/80">
+              — applied below in Panel &amp; Solar Plant Sizing
+            </span>
           </p>
         ) : null}
         {!canEstimateBillToKwh && fields.monthlyBillInr.trim() && !fields.monthlyKwh.trim() ? (

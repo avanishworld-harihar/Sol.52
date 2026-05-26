@@ -479,7 +479,7 @@ function GenVsUseChart({
       </div>
       <div
         ref={ref}
-        className="proposal-gen-vs-use-chart flex h-56 items-end gap-1 sm:h-72 lg:h-80 print:!h-[36mm] print:max-h-[36mm] print:min-h-0"
+        className="proposal-gen-vs-use-chart flex h-56 items-end gap-1 sm:h-72 lg:h-80 print:!h-[50mm] print:max-h-[50mm] print:min-h-[50mm]"
       >
         {safeLabels.map((label, i) => {
           const tg = (safeGen[i] / max) * 100;
@@ -540,7 +540,7 @@ function SolarVsGridChart({
     <svg
       ref={ref}
       viewBox={`0 0 ${W} ${H}`}
-      className="proposal-solar-vs-grid-chart h-72 w-full sm:h-80 print:!h-[34mm] print:max-h-[34mm]"
+      className="proposal-solar-vs-grid-chart h-72 w-full sm:h-80 print:!h-[44mm] print:max-h-[44mm]"
     >
       {axisTicks.map((t, i) => {
         const y = pad.t + innerH - t * innerH;
@@ -1241,7 +1241,7 @@ export function EconomicsSection({
     <ProposalJourneySection id="economics" className="proposal-economics-stage">
       <SectionHeader step={4} kicker={D["slide.economics.kicker"]} title={D["slide.economics.title"]} subtitle={D["slide.economics.subtitle"]} lang={lang} />
 
-      <motion.div className="proposal-financial-hero mb-6">
+      <motion.div className="proposal-financial-hero mb-6 print:mb-4">
         <div className="proposal-financial-hero-tile proposal-financial-hero-tile--saving">
           <p className="proposal-hero-ribbon-label">{D["common.annualSaving"]}</p>
           <p className="proposal-hero-ribbon-value">
@@ -1268,9 +1268,9 @@ export function EconomicsSection({
         </div>
       </motion.div>
 
-      <div className="proposal-economics-pair grid gap-4 md:grid-cols-2 print:gap-2">
+      <div className="proposal-economics-pair grid gap-4 md:grid-cols-2 print:gap-3">
         {/* Generation vs Usage */}
-        <ProposalPanel className="proposal-economics-gen-panel sm:p-6 print:!p-2">
+        <ProposalPanel className="proposal-economics-gen-panel sm:p-6 print:!p-4">
           <p
             className={`text-xs text-slate-500 ${
               lang === "hi" ? "font-bold tracking-normal" : "font-bold uppercase tracking-[0.18em]"
@@ -1312,7 +1312,7 @@ export function EconomicsSection({
         </ProposalPanel>
 
         {/* EMI calculator */}
-        <ProposalPanel className="proposal-economics-emi-panel sm:p-6 print:!p-2">
+        <ProposalPanel className="proposal-economics-emi-panel sm:p-6 print:!p-4">
           <div className="flex items-center justify-between">
             <p
               className={`text-xs text-slate-500 ${
@@ -1342,7 +1342,7 @@ export function EconomicsSection({
                   type="button"
                   key={row.tenureYears}
                   onClick={() => setSelectedTenure(row.tenureYears)}
-                  className={`proposal-emi-option flex w-full items-center justify-between rounded-xl border p-3 text-left transition-all print:!p-1 print:text-[8pt] ${selected ? "border-emerald-500 bg-emerald-50 shadow-md" : "border-slate-200 bg-white hover:border-slate-300"}`}
+                  className={`proposal-emi-option flex w-full items-center justify-between rounded-xl border p-3 text-left transition-all print:!p-2.5 ${selected ? "border-emerald-500 bg-emerald-50 shadow-md" : "border-slate-200 bg-white hover:border-slate-300"}`}
                 >
                   <div>
                     <p className={`text-sm font-bold ${selected ? "text-emerald-900" : "text-slate-900"}`}>
@@ -1389,8 +1389,8 @@ export function EconomicsSection({
       </div>
 
       {/* 25-yr comparison */}
-      <div className="proposal-economics-longterm mt-7 grid gap-4 sm:mt-8 md:grid-cols-5 print:mt-2 print:gap-2">
-        <ProposalPanel emphasis="highlight" className="proposal-economics-roi-panel sm:col-span-3 sm:p-6 print:!p-2">
+      <div className="proposal-economics-longterm mt-7 grid gap-4 sm:mt-8 md:grid-cols-5 print:mt-4 print:gap-3">
+        <ProposalPanel emphasis="highlight" className="proposal-economics-roi-panel sm:col-span-3 sm:p-6 print:!p-4">
           <SolarVsGridChart
             years={summary.solarVsGrid.years}
             grid={summary.solarVsGrid.gridCumulative}

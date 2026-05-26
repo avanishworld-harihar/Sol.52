@@ -1693,6 +1693,21 @@ function ProposalPageContent() {
     });
   }, [isResidentialBill, result.solarKw]);
 
+  /** Requirement path: size plant from monthly kWh / bill → solar engine. */
+  useEffect(() => {
+    if (!isResidentialRequirement || !residentialConfig) return;
+    if (!requirementHasConsumptionInput(requirementMonthlyKwh, requirementMonthlyBill)) return;
+    const fromRequirement = result.solarKw;
+    if (fromRequirement <= 0) return;
+    setResidentialConfig((prev) => {
+      if (!prev || Math.abs(prev.solar.plantCapacityKw - fromRequirement) < 0.05) return prev;
+      return {
+        ...prev,
+        solar: { ...prev.solar, plantCapacityKw: fromRequirement, moduleCountOverride: undefined },
+      };
+    });
+  }, [isResidentialRequirement, result.solarKw, requirementMonthlyKwh, requirementMonthlyBill]);
+
   useEffect(() => {
     if (!isResidentialSmart) return;
     setResidentialConfig((prev) => {
@@ -2195,6 +2210,11 @@ function ProposalPageContent() {
             }}
             canEstimateBillToKwh={canEstimateBillToKwh}
             estimatedKwhFromBill={requirementEstimatedKwh ?? undefined}
+            suggestedSolarKw={
+              requirementHasConsumptionInput(requirementMonthlyKwh, requirementMonthlyBill) && result.solarKw > 0
+                ? result.solarKw
+                : undefined
+            }
             onContactName={(v) => setManual((p) => ({ ...p, leadContactName: v }))}
             onState={(v) => setManual((p) => ({ ...p, state: v, discom: v === p.state ? p.discom : "" }))}
             onDiscom={(v) => setManual((p) => ({ ...p, discom: v }))}

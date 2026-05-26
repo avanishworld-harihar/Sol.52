@@ -3141,11 +3141,11 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
 @media print {
   @page {
     size: 210mm 297mm; /* Exact A4 portrait */
-    margin: 12mm 11mm;
+    margin: 10mm 9mm;
   }
 
   @page :first {
-    margin-top: 10mm;
+    margin-top: 9mm;
   }
 
   html,
@@ -3159,7 +3159,7 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
 
   .proposal-document {
     max-width: none !important;
-    width: 188mm !important; /* 210mm - 2×11mm margins */
+    width: 192mm !important; /* 210mm - 2×9mm margins */
     padding: 0 !important;
     margin: 0 auto !important;
     background: white !important;
@@ -3281,12 +3281,7 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     display: none !important;
   }
 
-  /* Economics (page 4): fit ROI + 25-yr stats on one printed page */
-  .proposal-page[data-page="economics"] {
-    page-break-inside: auto !important;
-    break-inside: auto !important;
-  }
-
+  /* Economics (page 4): balanced print — readable charts, stretch columns, no micro-shrink */
   .proposal-page[data-page="economics"] section,
   .proposal-page[data-page="economics"] .proposal-economics-stage {
     page-break-inside: auto !important;
@@ -3294,162 +3289,131 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   }
 
   .proposal-page[data-page="economics"] .proposal-journey-header {
-    margin-bottom: 2mm !important;
-  }
-
-  .proposal-page[data-page="economics"] .proposal-journey-title {
-    font-size: 13pt !important;
+    margin-bottom: 3.5mm !important;
   }
 
   .proposal-page[data-page="economics"] .proposal-financial-hero {
-    grid-template-columns: repeat(4, 1fr) !important;
-    gap: 1.5mm !important;
-    margin-bottom: 2mm !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 2.5mm !important;
+    margin-bottom: 4mm !important;
   }
 
   .proposal-page[data-page="economics"] .proposal-financial-hero-tile {
-    padding: 2mm !important;
+    padding: 3mm 3.5mm !important;
   }
 
-  .proposal-page[data-page="economics"] .proposal-financial-hero .proposal-hero-ribbon-value {
-    font-size: 9pt !important;
-    line-height: 1.1 !important;
-  }
-
-  .proposal-page[data-page="economics"] .proposal-financial-hero .proposal-hero-ribbon-label,
-  .proposal-page[data-page="economics"] .proposal-financial-hero .proposal-hero-ribbon-hint {
-    font-size: 6.5pt !important;
+  .proposal-page[data-page="economics"] .proposal-financial-hero-tile--saving {
+    grid-column: span 1 !important;
   }
 
   .proposal-page[data-page="economics"] .proposal-economics-pair {
-    grid-template-columns: 1.08fr 0.72fr !important;
-    gap: 2mm !important;
-    align-items: start !important;
-  }
-
-  .proposal-page[data-page="economics"] .proposal-economics-gen-panel > p:first-of-type,
-  .proposal-page[data-page="economics"] .proposal-economics-emi-panel > div > p:first-of-type {
-    margin-bottom: 0 !important;
-  }
-
-  .proposal-page[data-page="economics"] .proposal-economics-gen-panel .mt-4:first-of-type {
-    margin-top: 1.5mm !important;
-  }
-
-  .proposal-page[data-page="economics"] .proposal-economics-gen-panel .mt-4.grid.grid-cols-2 {
-    margin-top: 1.5mm !important;
-    gap: 1mm !important;
-  }
-
-  .proposal-page[data-page="economics"] .proposal-economics-gen-panel .mt-4.grid.grid-cols-2 > div {
-    padding: 1.5mm !important;
-  }
-
-  .proposal-page[data-page="economics"] .proposal-economics-emi-panel .mt-1.text-xs {
-    font-size: 7pt !important;
-    margin-top: 0.5mm !important;
-  }
-
-  .proposal-page[data-page="economics"] .proposal-economics-emi-finance-expanded {
-    display: none !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 3.5mm !important;
+    align-items: stretch !important;
   }
 
   .proposal-page[data-page="economics"] .proposal-economics-gen-panel,
   .proposal-page[data-page="economics"] .proposal-economics-emi-panel {
-    padding: 2mm !important;
+    padding: 4mm !important;
     min-width: 0 !important;
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
 
-  .proposal-page[data-page="economics"] .proposal-economics-gen-panel .text-lg {
-    font-size: 10pt !important;
+  .proposal-page[data-page="economics"] .proposal-economics-gen-panel .mt-4.grid.grid-cols-2 {
+    margin-top: 3mm !important;
+    gap: 2.5mm !important;
   }
 
+  .proposal-page[data-page="economics"] .proposal-economics-gen-panel .mt-4.grid.grid-cols-2 > div {
+    padding: 2.5mm !important;
+  }
+
+  .proposal-page[data-page="economics"] .proposal-economics-emi-finance-expanded,
   .proposal-page[data-page="economics"] .proposal-economics-emi-panel .rounded-full.bg-slate-900 {
     display: none !important;
   }
 
   .proposal-page[data-page="economics"] .proposal-emi-options {
-    gap: 1mm !important;
-  }
-
-  .proposal-page[data-page="economics"] .proposal-emi-option {
-    padding: 1.5mm 2mm !important;
-    font-size: 8pt !important;
-    line-height: 1.2 !important;
-  }
-
-  .proposal-page[data-page="economics"] .proposal-emi-option .text-base {
-    font-size: 9pt !important;
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-evenly !important;
+    gap: 2mm !important;
+    margin-top: 3mm !important;
   }
 
   .proposal-page[data-page="economics"] .proposal-emi-option {
     flex-direction: row !important;
     align-items: center !important;
     justify-content: space-between !important;
-    gap: 1mm !important;
+    padding: 2.5mm 3mm !important;
   }
 
-  .proposal-page[data-page="economics"] .proposal-emi-option .text-right {
-    text-align: right !important;
-    width: auto !important;
-    flex-shrink: 0 !important;
+  /* Override global print chart squish for economics */
+  .proposal-page[data-page="economics"] .proposal-gen-vs-use-chart {
+    height: 50mm !important;
+    max-height: 50mm !important;
+    min-height: 50mm !important;
+    flex: 1 1 auto !important;
   }
 
-  .proposal-page[data-page="economics"] .proposal-emi-option .text-sm {
-    font-size: 8pt !important;
+  .proposal-page[data-page="economics"] .proposal-gen-vs-use-chart.h-56,
+  .proposal-page[data-page="economics"] .proposal-gen-vs-use-chart.sm\:h-72,
+  .proposal-page[data-page="economics"] .proposal-gen-vs-use-chart.lg\:h-80 {
+    height: 50mm !important;
+    max-height: 50mm !important;
   }
 
-  .proposal-page[data-page="economics"] .proposal-emi-option .text-\[11px\] {
-    font-size: 6.5pt !important;
-  }
-
-  /* ROI chart on top, 25-yr stats in one row — shorter than side-by-side stack */
+  /* 25-yr ROI: chart left, stats stacked right — fills page width */
   .proposal-page[data-page="economics"] .proposal-economics-longterm {
     display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: 2mm !important;
-    margin-top: 2mm !important;
+    grid-template-columns: 1.55fr 1fr !important;
+    gap: 3.5mm !important;
+    margin-top: 4mm !important;
+    align-items: stretch !important;
     page-break-inside: avoid !important;
     break-inside: avoid-page !important;
   }
 
   .proposal-page[data-page="economics"] .proposal-economics-roi-panel {
     grid-column: 1 !important;
-  }
-
-  .proposal-page[data-page="economics"] .proposal-economics-roi-stats {
-    grid-template-columns: repeat(3, 1fr) !important;
-    grid-column: 1 !important;
-  }
-
-  .proposal-page[data-page="economics"] .proposal-economics-roi-panel {
-    padding: 2mm !important;
-    min-width: 0 !important;
+    padding: 4mm !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
   }
 
   .proposal-page[data-page="economics"] .proposal-solar-vs-grid-chart {
-    height: 34mm !important;
-    max-height: 34mm !important;
+    height: 44mm !important;
+    max-height: 44mm !important;
     width: 100% !important;
+    flex: 1 1 auto !important;
   }
 
-  .proposal-page[data-page="economics"] .proposal-gen-vs-use-chart {
-    height: 36mm !important;
-    max-height: 36mm !important;
-    min-height: 0 !important;
+  .proposal-page[data-page="economics"] .proposal-solar-vs-grid-chart.h-72,
+  .proposal-page[data-page="economics"] .proposal-solar-vs-grid-chart.sm\:h-80 {
+    height: 44mm !important;
+    max-height: 44mm !important;
   }
 
   .proposal-page[data-page="economics"] .proposal-economics-roi-stats {
-    gap: 1.5mm !important;
+    grid-column: 2 !important;
+    grid-template-columns: 1fr !important;
+    gap: 2.5mm !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    height: 100% !important;
   }
 
   .proposal-page[data-page="economics"] .proposal-economics-roi-stats > * {
-    padding: 2mm !important;
-  }
-
-  .proposal-page[data-page="economics"] .proposal-economics-roi-stats .text-2xl,
-  .proposal-page[data-page="economics"] .proposal-economics-roi-stats .text-3xl {
-    font-size: 11pt !important;
+    flex: 1 1 0 !important;
+    padding: 3mm !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
   }
 
   .proposal-hero--requirement .proposal-hero-bleed-inside {
