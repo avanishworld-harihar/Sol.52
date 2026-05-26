@@ -3288,9 +3288,68 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     color: #0f172a !important;
   }
 
+  /* Commercial — page 1: confidential cover only; page 2+ starts with executive summary */
+  .commercial-proposal .proposal-page {
+    padding: 0 !important;
+    margin-top: 0 !important;
+    page-break-before: always !important;
+    break-before: page !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  .commercial-proposal .proposal-page:first-of-type {
+    page-break-before: auto !important;
+    break-before: auto !important;
+  }
+
   .commercial-proposal #comm-cover {
     page-break-inside: avoid !important;
     break-inside: avoid-page !important;
+    page-break-after: always !important;
+    break-after: page !important;
+  }
+
+  .commercial-proposal #comm-cover .commercial-cover--confidential {
+    min-height: 277mm !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .commercial-proposal #comm-cover .commercial-cover-confidential-main {
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+  }
+
+  .commercial-proposal #comm-executive-summary {
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
+  }
+
+  .commercial-proposal #comm-executive-summary .commercial-executive-summary > div:first-child {
+    padding: 4mm 6mm 3mm !important;
+  }
+
+  .commercial-proposal #comm-executive-summary .commercial-executive-kpi-grid > div {
+    padding: 3mm 4mm !important;
+  }
+
+  .commercial-proposal #comm-executive-summary .commercial-executive-kpi-grid > div span.text-xl,
+  .commercial-proposal #comm-executive-summary .commercial-executive-kpi-grid > div span.md\:text-2xl {
+    font-size: 14pt !important;
+  }
+
+  .commercial-proposal .proposal-page > section,
+  .commercial-proposal .proposal-page > div {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  .commercial-proposal .proposal-page section {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
   }
 
   /* Cover: natural flow on one page — content first, full-width banner below (no crop) */

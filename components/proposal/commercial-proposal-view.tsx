@@ -32,6 +32,7 @@ import type { ProposalLang } from "@/lib/proposal-i18n";
 
 // Section blocks
 import { BlockCommercialCover } from "./blocks/commercial/block-commercial-cover";
+import { BlockCommercialExecutiveSummary } from "./blocks/commercial/block-commercial-executive-summary";
 import { BlockROIDashboard } from "./blocks/commercial/block-roi-dashboard";
 import { BlockCommercialFinancials } from "./blocks/commercial/block-commercial-financials";
 import { BlockCommercialEngineering } from "./blocks/commercial/block-commercial-engineering";
@@ -79,16 +80,17 @@ export type CommercialCtx = {
 // ─── Navigation sections ──────────────────────────────────────────────────────
 
 const NAV_SECTIONS = [
-  { num: "01", label: "Executive", anchor: "comm-cover" },
-  { num: "02", label: "ROI", anchor: "comm-roi" },
-  { num: "03", label: "Financials", anchor: "comm-financials" },
-  { num: "04", label: "Engineering", anchor: "comm-engineering" },
-  { num: "05", label: "Architecture", anchor: "comm-architecture" },
-  { num: "06", label: "BOM", anchor: "comm-bom" },
-  { num: "07", label: "Timeline", anchor: "comm-timeline" },
-  { num: "08", label: "Monitoring", anchor: "comm-monitoring" },
-  { num: "09", label: "Terms", anchor: "comm-terms" },
-  { num: "10", label: "Closing", anchor: "comm-closing" },
+  { num: "01", label: "Cover", anchor: "comm-cover" },
+  { num: "02", label: "Overview", anchor: "comm-executive-summary" },
+  { num: "03", label: "ROI", anchor: "comm-roi" },
+  { num: "04", label: "Financials", anchor: "comm-financials" },
+  { num: "05", label: "Engineering", anchor: "comm-engineering" },
+  { num: "06", label: "Architecture", anchor: "comm-architecture" },
+  { num: "07", label: "BOM", anchor: "comm-bom" },
+  { num: "08", label: "Timeline", anchor: "comm-timeline" },
+  { num: "09", label: "Monitoring", anchor: "comm-monitoring" },
+  { num: "10", label: "Terms", anchor: "comm-terms" },
+  { num: "11", label: "Closing", anchor: "comm-closing" },
 ] as const;
 
 type SectionAnchor = (typeof NAV_SECTIONS)[number]["anchor"];
@@ -457,14 +459,23 @@ export default function CommercialProposalView({
           })}
         </div>
 
-        {/* ── Section 01 — Cover ─────────────────────────────────────── */}
-        <section id="comm-cover" className="proposal-page bg-white">
+        {/* ── Page 1 — Confidential cover (client name + plant kW only) ─── */}
+        <section id="comm-cover" className="proposal-page bg-white" data-page="comm-cover">
           <BlockCommercialCover ctx={ctx} />
+        </section>
+
+        {/* ── Page 2+ — Executive overview & KPIs ─────────────────────── */}
+        <section
+          id="comm-executive-summary"
+          className="proposal-page border-b border-slate-100/80 bg-white"
+          data-page="comm-executive-summary"
+        >
+          <BlockCommercialExecutiveSummary ctx={ctx} />
         </section>
 
         {/* ── Optional C&I intelligence blocks (from commercialConfig) ─── */}
         {pptInput.commercialConfig?.dcrComparison?.enabled !== false ? (
-          <section id="comm-dcr" className="proposal-page border-b border-slate-100/80 bg-slate-50/70">
+          <section id="comm-dcr" className="proposal-page border-b border-slate-100/80 bg-slate-50/70" data-page="comm-dcr">
             <BlockDcrComparison
               summary={summary}
               lang={lang}
@@ -474,7 +485,7 @@ export default function CommercialProposalView({
           </section>
         ) : null}
         {pptInput.commercialConfig?.capacityScenarios?.enabled !== false ? (
-          <section id="comm-scenarios" className="proposal-page border-b border-slate-100/80 bg-white">
+          <section id="comm-scenarios" className="proposal-page border-b border-slate-100/80 bg-white" data-page="comm-scenarios">
             <BlockCapacityScenarios
               summary={summary}
               lang={lang}
@@ -484,7 +495,7 @@ export default function CommercialProposalView({
           </section>
         ) : null}
         {pptInput.commercialConfig?.dgAssumptions?.enabled === true ? (
-          <section id="comm-dg-hybrid" className="proposal-page border-b border-slate-100/80 bg-white">
+          <section id="comm-dg-hybrid" className="proposal-page border-b border-slate-100/80 bg-white" data-page="comm-dg-hybrid">
             <BlockDgHybrid
               summary={summary}
               lang={lang}
@@ -513,6 +524,7 @@ export default function CommercialProposalView({
               key={anchor}
               id={anchor}
               className={`proposal-page ${SECTION_BG[idx]} border-b border-slate-100/80 last:border-0`}
+              data-page={anchor}
             >
               <Block ctx={ctx} />
               {anchor === "comm-financials" && pptInput.commercialConfig?.financing?.enabled ? (
