@@ -58,12 +58,38 @@ function MethodCard({
       <div className={cn("relative mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl text-white shadow-md", accent)}>
         <Icon className="h-5 w-5" />
       </div>
-      <p className="relative text-[10px] font-bold uppercase tracking-widest text-emerald-200/90">{title}</p>
-      <h3 className="relative mt-1 text-lg font-bold text-white">{headline}</h3>
+      <p
+        className={cn(
+          "relative text-[10px] font-bold uppercase tracking-widest",
+          active ? "text-amber-800/90" : "text-emerald-200/90"
+        )}
+      >
+        {title}
+      </p>
+      <h3
+        className={cn(
+          "relative mt-1 text-lg font-bold",
+          active ? "text-slate-900" : "text-white"
+        )}
+      >
+        {headline}
+      </h3>
       <ul className="relative mt-3 space-y-1.5">
         {bullets.map((b) => (
-          <li key={b} className="flex items-start gap-2 text-xs text-slate-300/95">
-            <Sun className="mt-0.5 h-3 w-3 shrink-0 text-amber-400" aria-hidden />
+          <li
+            key={b}
+            className={cn(
+              "flex items-start gap-2 text-xs",
+              active ? "text-slate-700" : "text-slate-300/95"
+            )}
+          >
+            <Sun
+              className={cn(
+                "mt-0.5 h-3 w-3 shrink-0",
+                active ? "text-amber-600" : "text-amber-400"
+              )}
+              aria-hidden
+            />
             {b}
           </li>
         ))}
