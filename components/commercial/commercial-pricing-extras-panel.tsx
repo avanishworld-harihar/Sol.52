@@ -8,7 +8,8 @@ import { defaultExecutionTimeline } from "@/lib/commercial-solar-schema";
 import type { CommercialProposalConfig } from "@/lib/commercial-proposal-config";
 import type { ProposalDeckSummary } from "@/lib/proposal-ppt";
 import { cn } from "@/lib/utils";
-import { Building2, CalendarClock, Fuel } from "lucide-react";
+import { CommercialStepSection } from "@/components/commercial/commercial-step-section";
+import { Building2, CalendarClock, Fuel, Settings2 } from "lucide-react";
 
 const inr = (v: number) => `₹${Math.round(v).toLocaleString("en-IN")}`;
 
@@ -62,11 +63,13 @@ export function CommercialPricingExtrasPanel({ config, summary, systemKw, onChan
   const dgAnalysis = computeDgHybridAnalysis(dg, systemKw);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <p className="mb-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-          Commercial site options
-        </p>
+    <CommercialStepSection
+      step={5}
+      title="Site operations & scale"
+      subtitle="DG hybrid, project timeline, and multi-kW scenarios on the customer proposal."
+      icon={Settings2}
+    >
+      <div className="space-y-6">
         <ToggleRow
           icon={Fuel}
           title="Include DG hybrid analysis"
@@ -78,35 +81,35 @@ export function CommercialPricingExtrasPanel({ config, summary, systemKw, onChan
           checked={dg.enabled === true}
           onChange={(on) => onChange({ ...config, dgAssumptions: { ...dg, enabled: on } })}
         />
-      </div>
 
-      {dg.enabled ? (
-        <DgHybridConfigPanel config={config} systemKw={systemKw} onChange={onChange} />
-      ) : null}
+        {dg.enabled ? (
+          <DgHybridConfigPanel config={config} systemKw={systemKw} onChange={onChange} />
+        ) : null}
 
-      <div className="rounded-xl border border-slate-200/80 bg-slate-50/50 p-4 dark:border-white/10 dark:bg-white/[0.02]">
-        <div className="mb-3 flex items-center gap-2">
-          <CalendarClock className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-          <p className="text-sm font-bold text-slate-900 dark:text-slate-50">Project execution timeline</p>
+        <div>
+          <div className="mb-3 flex items-center gap-2">
+            <CalendarClock className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+            <p className="text-sm font-bold text-slate-900 dark:text-slate-50">Project execution timeline</p>
+          </div>
+          <CommercialExecutionTimeline
+            timeline={config.executionTimeline ?? defaultExecutionTimeline()}
+            onChange={(executionTimeline) => onChange({ ...config, executionTimeline })}
+          />
         </div>
-        <CommercialExecutionTimeline
-          timeline={config.executionTimeline ?? defaultExecutionTimeline()}
-          onChange={(executionTimeline) => onChange({ ...config, executionTimeline })}
-        />
-      </div>
 
-      <div className="rounded-xl border border-sky-200/60 bg-sky-50/40 p-4 dark:border-sky-500/20 dark:bg-sky-950/10">
-        <div className="mb-3 flex items-center gap-2">
-          <Building2 className="h-4 w-4 text-sky-600" />
-          <p className="text-sm font-bold text-slate-800 dark:text-slate-200">Multi-kW executive comparison</p>
+        <div className="rounded-xl border border-sky-200/60 bg-sky-50/40 p-3 dark:border-sky-500/20 dark:bg-sky-950/10">
+          <div className="mb-3 flex items-center gap-2">
+            <Building2 className="h-4 w-4 text-sky-600" />
+            <p className="text-sm font-bold text-slate-800 dark:text-slate-200">Multi-kW executive comparison</p>
+          </div>
+          <WorkspaceCapacityScenariosModule
+            systemKw={systemKw}
+            summary={summary}
+            config={config}
+            onChange={onChange}
+          />
         </div>
-        <WorkspaceCapacityScenariosModule
-          systemKw={systemKw}
-          summary={summary}
-          config={config}
-          onChange={onChange}
-        />
       </div>
-    </div>
+    </CommercialStepSection>
   );
 }

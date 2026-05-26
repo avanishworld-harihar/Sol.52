@@ -58,6 +58,7 @@ export function ResidentialProposalConfigWorkspace({
         annualSavingInr={annualSavingInr}
         maxPlantKw={maxPlantKw}
         segmentLabel={segmentLabel}
+        variant={saveMode === "commercial" ? "commercial" : "residential"}
       />
 
       <ResidentialPricingStudio
@@ -71,6 +72,8 @@ export function ResidentialProposalConfigWorkspace({
         lineItems={lineItems}
         onSaved={onPricingSaved}
         hideCatalogPanel
+        hidePlantSizing={saveMode === "commercial"}
+        variant={saveMode === "commercial" ? "commercial" : "residential"}
         saveMode={saveMode}
         commercialConfig={commercialConfig}
         onCommercialConfigChange={onCommercialConfigChange}

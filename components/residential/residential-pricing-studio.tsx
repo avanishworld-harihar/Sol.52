@@ -66,9 +66,11 @@ type Props = {
   hideCatalogPanel?: boolean;
   /** Commercial proposals hub — saves pricing + commercialConfig together. */
   saveMode?: "residential" | "commercial";
+  variant?: "residential" | "commercial";
   commercialConfig?: CommercialProposalConfig;
   onCommercialConfigChange?: (next: CommercialProposalConfig) => void;
   summary?: ProposalDeckSummary;
+  hidePlantSizing?: boolean;
   className?: string;
 };
 
@@ -107,16 +109,18 @@ export function ResidentialPricingStudio({
   lineItems,
   onCreateProposal,
   saveMode = "residential",
+  variant = saveMode === "commercial" ? "commercial" : "residential",
   commercialConfig,
   onCommercialConfigChange,
   summary,
   subsidyEligible: subsidyEligibleProp,
   hideCatalogPanel = false,
+  hidePlantSizing = false,
   className,
 }: Props) {
   const toast = useToast();
   const [saving, setSaving] = useState(false);
-  const isCommercial = saveMode === "commercial";
+  const isCommercial = variant === "commercial";
   const solar = config.solar;
   const pricing = config.pricing ?? {
     kwTiers: defaultResidentialKwTiers(),
@@ -286,20 +290,37 @@ export function ResidentialPricingStudio({
   return (
     <section
       className={cn(
-        "overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-white/10 dark:bg-[#0c1017]",
+        "overflow-hidden rounded-2xl border bg-white shadow-sm dark:bg-[#0c1017]",
+        isCommercial
+          ? "border-indigo-200/70 dark:border-indigo-500/25"
+          : "border-slate-200/90 dark:border-white/10",
         className
       )}
     >
-      <div className="border-b border-slate-200/80 bg-slate-900 px-4 py-4 text-white dark:border-white/10 sm:px-5">
+      <div
+        className={cn(
+          "border-b px-4 py-4 sm:px-5",
+          isCommercial
+            ? "border-indigo-500/20 bg-gradient-to-r from-indigo-950 via-indigo-900 to-slate-900 text-white"
+            : "border-slate-200/80 bg-slate-900 text-white dark:border-white/10"
+        )}
+      >
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-              {isCommercial ? "Commercial · Requirement" : "Residential · Requirement"}
+            <p
+              className={cn(
+                "text-[10px] font-bold uppercase tracking-widest",
+                isCommercial ? "text-indigo-300" : "text-slate-400"
+              )}
+            >
+              {isCommercial ? "Steps 2–5 · Proposal settings" : "Residential · Requirement"}
             </p>
-            <h3 className="text-lg font-semibold tracking-tight">Pricing &amp; system catalog</h3>
-            <p className="mt-1 max-w-xl text-xs text-slate-300">
+            <h3 className="text-lg font-semibold tracking-tight">
+              {isCommercial ? "Quote, equipment & site options" : "Pricing & system catalog"}
+            </h3>
+            <p className="mt-1 max-w-xl text-xs text-indigo-100/90">
               {isCommercial
-                ? "Plant kW, brands, DG hybrid, execution timeline, and multi-kW scenarios — synced to the customer proposal."
+                ? "Deal settings below. Central ₹/kW matrix: More → Rate card."
                 : "Smart catalog pricing matrix is the single source of truth — proposals read brand × kW × quote mode."}
             </p>
           </div>
@@ -318,7 +339,8 @@ export function ResidentialPricingStudio({
           />
         ) : null}
 
-        {/* Plant sizing — editable watt drives panel count */}
+        {/* Plant sizing — residential only (commercial: step 1 above) */}
+        {!hidePlantSizing ? (
         <div className="rounded-2xl border border-indigo-200/80 bg-indigo-50/30 p-4 dark:border-indigo-500/30 dark:bg-indigo-950/20">
           <SectionTitle
             icon={Layers}
@@ -397,6 +419,7 @@ export function ResidentialPricingStudio({
             web proposal &amp; BOM spec line.
           </p>
         </div>
+        ) : null}
 
         <div>
           <SectionTitle icon={Sun} title="Panel technology" />
@@ -577,7 +600,43 @@ export function ResidentialPricingStudio({
           </div>
         </div>
 
-        {/* Discount + subsidy override */}
+        {/* Discount + subsidy — residential full grid; commercial: discount note only */}
+        {isCommercial ? (
+          <div className="rounded-xl border border-indigo-200/60 bg-indigo-50/40 p-3 dark:border-indigo-500/20 dark:bg-indigo-950/15">
+            <label className="flex cursor-pointer items-center justify-between gap-2">
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Customer discount (this deal)</span>
+              <input
+                type="checkbox"
+                checked={discount.enabled}
+                onChange={(e) => patchPricing({ discount: { ...discount, enabled: e.target.checked } })}
+                className="h-4 w-4 rounded accent-indigo-600"
+              />
+            </label>
+            {discount.enabled ? (
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                <select
+                  value={discount.type}
+                  onChange={(e) =>
+                    patchPricing({
+                      discount: { ...discount, type: e.target.value as "percent" | "fixed_inr" },
+                    })
+                  }
+                  className="h-10 rounded-lg border border-slate-200 bg-white px-2 text-sm font-semibold dark:border-white/15 dark:bg-white/5"
+                >
+                  <option value="percent">Percent %</option>
+                  <option value="fixed_inr">Fixed ₹</option>
+                </select>
+                <FloatingLabelNumericInput
+                  label={discount.type === "percent" ? "Discount %" : "Discount ₹"}
+                  value={discount.value}
+                  onValueChange={(n) => patchPricing({ discount: { ...discount, value: n ?? 0 } })}
+                  className="h-10 rounded-lg text-sm font-bold"
+                />
+              </div>
+            ) : null}
+            <p className="mt-2 text-[11px] text-slate-500">No PM subsidy on commercial / HT — net = rate card − discount.</p>
+          </div>
+        ) : (
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="rounded-xl border border-slate-200/80 p-3 dark:border-white/10">
             <label className="flex cursor-pointer items-center justify-between gap-2">
@@ -659,6 +718,7 @@ export function ResidentialPricingStudio({
             )}
           </div>
         </div>
+        )}
 
         <ResidentialBrandComparePanel config={config} onChange={onChange} />
         <ResidentialTrackComparePanel config={config} onChange={onChange} />
@@ -677,7 +737,7 @@ export function ResidentialPricingStudio({
         <p className="text-xs text-slate-500 dark:text-slate-400">
           {proposalId
             ? isCommercial
-              ? "Saves pricing, DG hybrid, timeline, kW scenarios, and brand compare to this proposal."
+              ? "Saves all commercial proposal settings to this deal."
               : "Saves plant sizing, brands, kW tiers, subsidy, and DCR comparison to this proposal."
             : onCreateProposal
               ? "Creates or updates the web proposal with all fields above."
@@ -687,10 +747,15 @@ export function ResidentialPricingStudio({
           type="button"
           disabled={saving}
           onClick={() => void handleSave()}
-          className="w-full gap-2 bg-slate-900 font-semibold hover:bg-slate-800 dark:bg-white dark:text-slate-900 sm:w-auto sm:min-w-[10rem]"
+          className={cn(
+            "w-full gap-2 font-semibold sm:w-auto sm:min-w-[10rem]",
+            isCommercial
+              ? "bg-indigo-700 hover:bg-indigo-800 dark:bg-indigo-500"
+              : "bg-slate-900 hover:bg-slate-800 dark:bg-white dark:text-slate-900"
+          )}
         >
           <Save className="h-4 w-4" aria-hidden />
-          {saving ? "Saving…" : "Save"}
+          {saving ? "Saving…" : isCommercial ? "Save proposal" : "Save"}
         </Button>
       </div>
     </section>

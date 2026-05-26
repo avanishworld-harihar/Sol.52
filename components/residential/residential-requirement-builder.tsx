@@ -39,8 +39,9 @@ type Props = {
   annualSavingInr: number;
   /** Max plant capacity kW — drives slider range. Set 1000 for commercial. */
   maxPlantKw?: number;
-  /** "commercial" shows commercial-appropriate copy */
+  /** @deprecated use variant */
   segmentLabel?: string;
+  variant?: "residential" | "commercial";
   className?: string;
 };
 
@@ -76,6 +77,7 @@ export function ResidentialRequirementBuilder({
   annualSavingInr,
   maxPlantKw = 50,
   segmentLabel,
+  variant = segmentLabel?.toLowerCase().includes("commercial") ? "commercial" : "residential",
   className,
 }: Props) {
   const solar = config.solar;
@@ -86,7 +88,7 @@ export function ResidentialRequirementBuilder({
     ? estimateResidentialEmiInr(netCostInr, fin.interestRatePct ?? 10.5, fin.selectedTenureYears ?? 5)
     : 0;
   const monthlySaving = Math.round(annualSavingInr / 12);
-  const isCommercial = segmentLabel === "commercial";
+  const isCommercial = variant === "commercial";
 
   // Catalog brands for brand selector
   const catalogWithEntries = ensureBrandCatalog(config);
@@ -124,22 +126,41 @@ export function ResidentialRequirementBuilder({
   return (
     <div
       className={cn(
-        "space-y-4 rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/90 via-white to-amber-50/40 p-4 shadow-sm dark:border-emerald-900/40 dark:from-emerald-950/30 dark:via-[#0f1419] dark:to-amber-950/20 sm:p-5",
+        "space-y-4 rounded-2xl border p-4 shadow-sm sm:p-5",
+        isCommercial
+          ? "border-indigo-200/70 bg-gradient-to-br from-indigo-50/90 via-white to-slate-50/80 dark:border-indigo-500/25 dark:from-indigo-950/25 dark:via-[#0f1419] dark:to-slate-950/30"
+          : "border-emerald-200/80 bg-gradient-to-br from-emerald-50/90 via-white to-amber-50/40 dark:border-emerald-900/40 dark:from-emerald-950/30 dark:via-[#0f1419] dark:to-amber-950/20",
         className
       )}
     >
       <div className="flex items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow">
-          <Sun className="h-5 w-5" />
+        <div
+          className={cn(
+            "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white shadow",
+            isCommercial ? "bg-gradient-to-br from-indigo-600 to-sky-600" : "bg-gradient-to-br from-emerald-500 to-teal-600"
+          )}
+        >
+          {isCommercial ? (
+            <span className="text-sm font-bold tabular-nums">1</span>
+          ) : (
+            <Sun className="h-5 w-5" />
+          )}
         </div>
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
-            {isCommercial ? "Commercial · Requirement-based" : "Residential · Requirement-based"}
+          <p
+            className={cn(
+              "text-[10px] font-bold uppercase tracking-widest",
+              isCommercial ? "text-indigo-700 dark:text-indigo-300" : "text-emerald-700 dark:text-emerald-400"
+            )}
+          >
+            {isCommercial ? "Step 1 · Plant & brand" : "Residential · Requirement-based"}
           </p>
-          <h3 className="text-base font-bold text-slate-900 dark:text-white">Panel &amp; Solar Plant Sizing</h3>
+          <h3 className="text-base font-bold text-slate-900 dark:text-white">
+            {isCommercial ? "System size & panel selection" : "Panel & Solar Plant Sizing"}
+          </h3>
           <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">
             {isCommercial
-              ? "Set plant capacity, panel brand & DCR mode — system sizes up to 1000 kW."
+              ? "kW, active brand, and DCR / Non-DCR — rates from More → Rate card."
               : "No bill needed — size from requirements and generate a homeowner-friendly proposal."}
           </p>
         </div>
@@ -238,7 +259,8 @@ export function ResidentialRequirementBuilder({
         </p>
       </section>
 
-      {/* Roof + budget */}
+      {/* Roof + budget — residential homeowner path only */}
+      {!isCommercial ? (
       <div className="grid gap-3 sm:grid-cols-2">
         <section className="space-y-2">
           <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
@@ -265,8 +287,10 @@ export function ResidentialRequirementBuilder({
           </div>
         </section>
       </div>
+      ) : null}
 
-      {/* Battery + subsidy */}
+      {/* Battery + subsidy — residential only */}
+      {!isCommercial ? (
       <div className="grid gap-3 sm:grid-cols-2">
         <section className="rounded-xl border border-slate-200/80 bg-white/80 p-3 dark:border-white/10 dark:bg-white/5">
           <label className="flex cursor-pointer items-center justify-between gap-2">
@@ -320,12 +344,26 @@ export function ResidentialRequirementBuilder({
           </div>
         </section>
       </div>
+      ) : null}
 
       {/* EMI */}
-      <section className="rounded-xl border border-amber-200/80 bg-gradient-to-r from-amber-50/90 to-orange-50/50 p-4 dark:border-amber-900/40 dark:from-amber-950/20">
+      <section
+        className={cn(
+          "rounded-xl border p-4",
+          isCommercial
+            ? "border-indigo-200/80 bg-indigo-50/50 dark:border-indigo-500/25 dark:bg-indigo-950/15"
+            : "border-amber-200/80 bg-gradient-to-r from-amber-50/90 to-orange-50/50 dark:border-amber-900/40 dark:from-amber-950/20"
+        )}
+      >
         <label className="flex cursor-pointer items-center justify-between gap-2">
-          <span className="flex items-center gap-2 text-sm font-bold text-amber-950 dark:text-amber-100">
-            <Calculator className="h-4 w-4" /> Financing & EMI story
+          <span
+            className={cn(
+              "flex items-center gap-2 text-sm font-bold",
+              isCommercial ? "text-indigo-950 dark:text-indigo-100" : "text-amber-950 dark:text-amber-100"
+            )}
+          >
+            <Calculator className="h-4 w-4" />{" "}
+            {isCommercial ? "Financing & EMI (customer proposal)" : "Financing & EMI story"}
           </span>
           <input
             type="checkbox"
@@ -379,8 +417,10 @@ export function ResidentialRequirementBuilder({
       </section>
 
       <p className="flex items-center gap-1.5 text-[11px] text-slate-500">
-        <Zap className="h-3 w-3 text-emerald-500" />
-        Set kW above, complete pricing below, then tap Save at the bottom before sharing the link.
+        <Zap className={cn("h-3 w-3", isCommercial ? "text-indigo-500" : "text-emerald-500")} />
+        {isCommercial
+          ? "Continue with quote, equipment, and site options below — then Save once before sharing the link."
+          : "Set kW above, complete pricing below, then tap Save at the bottom before sharing the link."}
       </p>
     </div>
   );

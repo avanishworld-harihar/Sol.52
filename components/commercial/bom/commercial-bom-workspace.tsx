@@ -1,7 +1,6 @@
 "use client";
 
 import { CommercialProposalConfigWorkspace } from "@/components/commercial/commercial-proposal-config-workspace";
-import { Button } from "@/components/ui/button";
 import {
   applyCommercialFlagsToLayout,
   defaultCommercialConfig,
@@ -9,7 +8,6 @@ import {
   type CommercialProposalConfig,
 } from "@/lib/commercial-proposal-config";
 import { applyCommercialPanelTrackPolicy } from "@/lib/commercial-panel-track-policy";
-import { getCachedResidentialBrandCatalog } from "@/lib/installer-rate-card-client";
 import { mergeProposalPricingIntoPptInput } from "@/lib/proposal-pricing-merge";
 import {
   hydrateLineItems,
@@ -94,22 +92,8 @@ export function CommercialBomWorkspace({
 
   const net = preview.final_amount_inr;
 
-  const brandCatalog =
-    pricingConfig.brandCatalog ?? pptInput.sharedPlantCatalog ?? getCachedResidentialBrandCatalog();
-
   return (
     <div className="space-y-5">
-      {onOpenReview ? (
-        <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={onOpenReview}>
-          Review proposal sections
-        </Button>
-      ) : null}
-
-      <p className="rounded-xl border border-indigo-200/60 bg-indigo-50/50 px-3 py-2.5 text-[11px] leading-snug text-indigo-900/90 dark:border-indigo-500/25 dark:bg-indigo-950/20 dark:text-indigo-200/90">
-        <strong>Rate-card pricing</strong> drives plant kW, brands, and net payable. DG hybrid, execution timeline,
-        and multi-kW comparison live inside <strong>Pricing &amp; system catalog</strong> below.
-      </p>
-
       <CommercialProposalConfigWorkspace
         pricingConfig={pricingConfig}
         commercialConfig={commercialConfig}
@@ -121,7 +105,6 @@ export function CommercialBomWorkspace({
         proposalId={proposalId}
         proposalLayout={getProposalLayout(pptInput)}
         lineItems={lines}
-        brandCatalog={brandCatalog}
         onOpenReview={onOpenReview}
         onSaved={() => {
           const syncedLines = syncResidentialSolarToLineItems(pricingConfig.solar, lines);

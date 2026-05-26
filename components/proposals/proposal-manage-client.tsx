@@ -362,12 +362,12 @@ export function ProposalManageClient({
         variant="workspace"
         title={
           presetId === "commercial_executive"
-            ? "Commercial quote & options"
+            ? "Commercial proposal workspace"
             : t("proposals_section_bom")
         }
         subtitle={
           presetId === "commercial_executive"
-            ? "Rate-card plant sizing, brands, DG hybrid, execution timeline, and multi-kW scenarios — synced to the web proposal."
+            ? "Step-by-step deal setup — central ₹/kW rates in More → Rate card."
             : isResidentialRequirement
               ? "Guided home solar — kW, panels, EMI, subsidy & friendly homeowner story."
               : t("proposals_section_bomSub")
