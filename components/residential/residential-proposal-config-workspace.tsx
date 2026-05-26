@@ -5,6 +5,7 @@ import { ResidentialRequirementBuilder } from "@/components/residential/resident
 import type { PricingLineItem } from "@/lib/proposal-pricing-lines";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
 import type { CommercialProposalConfig } from "@/lib/commercial-proposal-config";
+import type { ProposalDeckSummary } from "@/lib/proposal-ppt";
 import type { ResidentialProposalConfig } from "@/lib/residential-requirements-schema";
 
 type Props = {
@@ -24,6 +25,8 @@ type Props = {
   segmentLabel?: string;
   saveMode?: "residential" | "commercial";
   commercialConfig?: CommercialProposalConfig;
+  onCommercialConfigChange?: (next: CommercialProposalConfig) => void;
+  summary?: ProposalDeckSummary;
 };
 
 export function ResidentialProposalConfigWorkspace({
@@ -43,6 +46,8 @@ export function ResidentialProposalConfigWorkspace({
   segmentLabel = "homeowner",
   saveMode = "residential",
   commercialConfig,
+  onCommercialConfigChange,
+  summary,
 }: Props) {
   return (
     <div className="space-y-6">
@@ -68,6 +73,8 @@ export function ResidentialProposalConfigWorkspace({
         hideCatalogPanel
         saveMode={saveMode}
         commercialConfig={commercialConfig}
+        onCommercialConfigChange={onCommercialConfigChange}
+        summary={summary}
       />
     </div>
   );

@@ -45,6 +45,8 @@ import { saveInstallerResidentialCatalog } from "@/lib/installer-rate-card-clien
 import { saveResidentialRequirement } from "@/lib/save-residential-requirement-client";
 import type { CommercialProposalConfig } from "@/lib/commercial-proposal-config";
 import { saveCommercialRequirement } from "@/lib/save-commercial-requirement-client";
+import { CommercialPricingExtrasPanel } from "@/components/commercial/commercial-pricing-extras-panel";
+import type { ProposalDeckSummary } from "@/lib/proposal-ppt";
 import { useMemo, useState } from "react";
 
 type Props = {
@@ -65,6 +67,8 @@ type Props = {
   /** Commercial proposals hub — saves pricing + commercialConfig together. */
   saveMode?: "residential" | "commercial";
   commercialConfig?: CommercialProposalConfig;
+  onCommercialConfigChange?: (next: CommercialProposalConfig) => void;
+  summary?: ProposalDeckSummary;
   className?: string;
 };
 
@@ -104,12 +108,15 @@ export function ResidentialPricingStudio({
   onCreateProposal,
   saveMode = "residential",
   commercialConfig,
+  onCommercialConfigChange,
+  summary,
   subsidyEligible: subsidyEligibleProp,
   hideCatalogPanel = false,
   className,
 }: Props) {
   const toast = useToast();
   const [saving, setSaving] = useState(false);
+  const isCommercial = saveMode === "commercial";
   const solar = config.solar;
   const pricing = config.pricing ?? {
     kwTiers: defaultResidentialKwTiers(),
@@ -262,7 +269,7 @@ export function ResidentialPricingStudio({
         title: "Saved",
         description:
           saveMode === "commercial"
-            ? "Commercial pricing and proposal options synced to this deal."
+            ? "Commercial pricing and site options synced to this deal."
             : "Saved to central Rate card and this proposal (bill & requirement).",
       });
     } catch (e) {
@@ -286,10 +293,14 @@ export function ResidentialPricingStudio({
       <div className="border-b border-slate-200/80 bg-slate-900 px-4 py-4 text-white dark:border-white/10 sm:px-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Residential · Requirement</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              {isCommercial ? "Commercial · Requirement" : "Residential · Requirement"}
+            </p>
             <h3 className="text-lg font-semibold tracking-tight">Pricing &amp; system catalog</h3>
             <p className="mt-1 max-w-xl text-xs text-slate-300">
-              Smart catalog pricing matrix is the single source of truth — proposals read brand × kW × quote mode.
+              {isCommercial
+                ? "Plant kW, brands, DG hybrid, execution timeline, and multi-kW scenarios — synced to the customer proposal."
+                : "Smart catalog pricing matrix is the single source of truth — proposals read brand × kW × quote mode."}
             </p>
           </div>
           <div className="flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-xs font-medium text-slate-200">
@@ -651,12 +662,23 @@ export function ResidentialPricingStudio({
 
         <ResidentialBrandComparePanel config={config} onChange={onChange} />
         <ResidentialTrackComparePanel config={config} onChange={onChange} />
+
+        {isCommercial && commercialConfig && onCommercialConfigChange && summary ? (
+          <CommercialPricingExtrasPanel
+            config={commercialConfig}
+            summary={summary}
+            systemKw={solar.plantCapacityKw}
+            onChange={onCommercialConfigChange}
+          />
+        ) : null}
       </div>
 
       <div className="flex flex-col gap-3 border-t border-slate-200/80 bg-slate-50/80 px-4 py-4 dark:border-white/10 dark:bg-white/[0.02] sm:flex-row sm:items-center sm:justify-between sm:px-5">
         <p className="text-xs text-slate-500 dark:text-slate-400">
           {proposalId
-            ? "Saves plant sizing, brands, kW tiers, subsidy, and DCR comparison to this proposal."
+            ? isCommercial
+              ? "Saves pricing, DG hybrid, timeline, kW scenarios, and brand compare to this proposal."
+              : "Saves plant sizing, brands, kW tiers, subsidy, and DCR comparison to this proposal."
             : onCreateProposal
               ? "Creates or updates the web proposal with all fields above."
               : "Generate the web proposal first, then Save will sync these settings."}

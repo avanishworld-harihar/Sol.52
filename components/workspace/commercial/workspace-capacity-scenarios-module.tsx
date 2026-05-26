@@ -54,7 +54,7 @@ export function WorkspaceCapacityScenariosModule({ systemKw, summary, config, on
       <div className="flex items-center justify-between gap-3 rounded-xl border border-sky-100 bg-sky-50/60 px-3 py-2.5">
         <div>
           <p className="text-sm font-bold text-slate-900">Multi-kW executive comparison</p>
-          <p className="text-xs text-slate-500">Shown in proposal when enabled from Commercial Config</p>
+          <p className="text-xs text-slate-500">Shown in proposal when enabled below</p>
         </div>
         <label className="flex items-center gap-2 text-xs font-bold text-slate-700">
           <input

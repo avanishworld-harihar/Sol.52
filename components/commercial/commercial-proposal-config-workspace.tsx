@@ -1,7 +1,5 @@
 "use client";
 
-import { CommercialControlCenter } from "@/components/commercial/bom/commercial-control-center";
-import { CommercialWorkspaceShell } from "@/components/workspace/commercial/commercial-workspace-shell";
 import { DgHybridDiagram } from "@/components/proposal/blocks/commercial/dg-hybrid-diagram";
 import { ResidentialProposalConfigWorkspace } from "@/components/residential/residential-proposal-config-workspace";
 import type { CommercialProposalConfig } from "@/lib/commercial-proposal-config";
@@ -10,7 +8,6 @@ import type { PricingLineItem } from "@/lib/proposal-pricing-lines";
 import type { ProposalDeckSummary } from "@/lib/proposal-ppt";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
 import type { ResidentialProposalConfig } from "@/lib/residential-requirements-schema";
-import type { ResidentialBrandCatalog } from "@/lib/residential-brand-catalog";
 import { Sun } from "lucide-react";
 
 type Props = {
@@ -26,9 +23,6 @@ type Props = {
   onLayoutChange?: (layout: ProposalTemplateV1) => void;
   onSaved?: () => void;
   lineItems?: PricingLineItem[];
-  brandCatalog?: ResidentialBrandCatalog | null;
-  onOpenReview?: () => void;
-  onCommercialPersisted?: (config: CommercialProposalConfig, layout?: ProposalTemplateV1) => void;
 };
 
 export function CommercialProposalConfigWorkspace({
@@ -44,9 +38,6 @@ export function CommercialProposalConfigWorkspace({
   onLayoutChange,
   onSaved,
   lineItems,
-  brandCatalog,
-  onOpenReview,
-  onCommercialPersisted,
 }: Props) {
   const systemKw = pricingConfig.solar.plantCapacityKw;
   const dg = commercialConfig.dgAssumptions ?? { enabled: false };
@@ -74,27 +65,9 @@ export function CommercialProposalConfigWorkspace({
         segmentLabel="commercial site"
         saveMode="commercial"
         commercialConfig={commercialConfig}
+        onCommercialConfigChange={onCommercialConfigChange}
+        summary={summary}
       />
-
-      <CommercialWorkspaceShell
-        proposalId={proposalId}
-        title="Commercial proposal options"
-        subtitle="DG hybrid, EMI, brand compare, and capacity scenarios — synced to the customer web proposal."
-        config={commercialConfig}
-        proposalLayout={proposalLayout ?? undefined}
-        onSaved={(cfg, layout) => {
-          onCommercialConfigChange(cfg);
-          onCommercialPersisted?.(cfg, layout);
-        }}
-      >
-        <CommercialControlCenter
-          config={commercialConfig}
-          summary={summary}
-          onChange={onCommercialConfigChange}
-          onOpenReview={onOpenReview}
-          brandCatalog={brandCatalog}
-        />
-      </CommercialWorkspaceShell>
 
       {showDiagram ? (
         <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm dark:border-white/10 dark:bg-[#0c1017]">

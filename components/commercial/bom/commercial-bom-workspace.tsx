@@ -106,9 +106,8 @@ export function CommercialBomWorkspace({
       ) : null}
 
       <p className="rounded-xl border border-indigo-200/60 bg-indigo-50/50 px-3 py-2.5 text-[11px] leading-snug text-indigo-900/90 dark:border-indigo-500/25 dark:bg-indigo-950/20 dark:text-indigo-200/90">
-        <strong>Rate-card pricing</strong> drives plant kW, brands, and net payable. Use{" "}
-        <strong>Solar + DG hybrid</strong> below when the site runs diesel backup — customers see a simple
-        architecture diagram on the web proposal.
+        <strong>Rate-card pricing</strong> drives plant kW, brands, and net payable. DG hybrid, execution timeline,
+        and multi-kW comparison live inside <strong>Pricing &amp; system catalog</strong> below.
       </p>
 
       <CommercialProposalConfigWorkspace
@@ -140,15 +139,6 @@ export function CommercialBomWorkspace({
             residentialConfig: pricingConfig,
             proposalLayout: layout,
             systemKw: pricingConfig.solar.plantCapacityKw,
-          });
-        }}
-        onCommercialPersisted={(cfg, layout) => {
-          const merged = mergeCommercialConfigWithPricing(cfg, pricingConfig);
-          onPptInputChange?.({
-            ...pptInput,
-            commercialConfig: merged,
-            residentialConfig: pricingConfig,
-            proposalLayout: layout ?? applyCommercialFlagsToLayout(getProposalLayout(pptInput), merged),
           });
         }}
         onLayoutChange={(layout) => {

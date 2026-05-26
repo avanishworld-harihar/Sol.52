@@ -367,7 +367,7 @@ export function ProposalManageClient({
         }
         subtitle={
           presetId === "commercial_executive"
-            ? "Rate-card plant sizing, brands, EMI, and Solar + DG hybrid — synced to the customer web proposal."
+            ? "Rate-card plant sizing, brands, DG hybrid, execution timeline, and multi-kW scenarios — synced to the web proposal."
             : isResidentialRequirement
               ? "Guided home solar — kW, panels, EMI, subsidy & friendly homeowner story."
               : t("proposals_section_bomSub")
