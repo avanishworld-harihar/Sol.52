@@ -1,14 +1,8 @@
 "use client";
 
 /**
- * Commercial Input Mode Selector
- * Shown in the commercial Step-2 area after category is selected.
- *
- * Bill-based: upload electricity bills → auto-fill customer + consumption data (existing flow)
- * Requirement-based: enter customer name, org name, monthly kWh need, notes (no bill upload)
- *
- * When "requirement" mode is active the component renders a simple inline form
- * that writes into the manual customer state — bill upload area is hidden.
+ * Commercial input mode — bill upload path vs requirement (monthly kWh) path.
+ * Panel, pricing, and DG options are configured in Step 1 below (commercial workspace).
  */
 
 import { motion, AnimatePresence } from "framer-motion";
@@ -24,11 +18,8 @@ import {
   Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ExternalLink } from "lucide-react";
 
 export type CommercialInputMode = "bill" | "requirement";
-
-// ─── Mode card ────────────────────────────────────────────────────────────────
 
 function ModeCard({
   active,
@@ -82,8 +73,6 @@ function ModeCard({
   );
 }
 
-// ─── Manual requirement fields ────────────────────────────────────────────────
-
 type RequirementFormProps = {
   contactName: string;
   orgName: string;
@@ -91,17 +80,13 @@ type RequirementFormProps = {
   city: string;
   monthlyKwh: string;
   notes: string;
+  suggestedSystemKw?: number;
   onContactName: (v: string) => void;
   onOrgName: (v: string) => void;
   onPhone: (v: string) => void;
   onCity: (v: string) => void;
   onMonthlyKwh: (v: string) => void;
   onNotes: (v: string) => void;
-  canOpenWorkspace?: boolean;
-  workspaceBusy?: boolean;
-  onOpenWorkspace?: () => void;
-  workspaceBlockReason?: string | null;
-  proposalsHref?: string | null;
 };
 
 function RequirementForm({
@@ -111,17 +96,13 @@ function RequirementForm({
   city,
   monthlyKwh,
   notes,
+  suggestedSystemKw,
   onContactName,
   onOrgName,
   onPhone,
   onCity,
   onMonthlyKwh,
   onNotes,
-  canOpenWorkspace = false,
-  workspaceBusy,
-  onOpenWorkspace,
-  workspaceBlockReason = null,
-  proposalsHref,
 }: RequirementFormProps) {
   return (
     <motion.div
@@ -132,34 +113,19 @@ function RequirementForm({
       className="mt-3 space-y-2.5 rounded-2xl border border-sky-200/80 bg-gradient-to-br from-sky-50/60 to-white p-4"
     >
       <p className="text-[11px] font-bold uppercase tracking-wider text-sky-700">
-        Client &amp; Requirement Details
+        Client &amp; requirement details
       </p>
 
-      {/* Name + Org */}
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        <Field
-          icon={User}
-          placeholder="Contact person name *"
-          value={contactName}
-          onChange={onContactName}
-          required
-        />
-        <Field
-          icon={Building2}
-          placeholder="Organisation / Company name *"
-          value={orgName}
-          onChange={onOrgName}
-          required
-        />
+        <Field icon={User} placeholder="Contact person name *" value={contactName} onChange={onContactName} required />
+        <Field icon={Building2} placeholder="Organisation / Company name *" value={orgName} onChange={onOrgName} required />
       </div>
 
-      {/* Phone + City */}
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         <Field icon={Phone} placeholder="Phone number" value={phone} onChange={onPhone} inputMode="tel" />
         <Field icon={MapPin} placeholder="City / Location" value={city} onChange={onCity} />
       </div>
 
-      {/* Monthly consumption */}
       <div>
         <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-500">
           Monthly electricity consumption (units / kWh)
@@ -169,16 +135,24 @@ function RequirementForm({
           <input
             type="text"
             inputMode="decimal"
-            placeholder="e.g. 12000 (leave blank to size from kW directly)"
+            placeholder="e.g. 12000"
             value={monthlyKwh}
             onChange={(e) => onMonthlyKwh(e.target.value)}
             className="flex-1 bg-transparent text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none"
           />
           <span className="text-[11px] text-slate-400">kWh/mo</span>
         </div>
+        {suggestedSystemKw != null && suggestedSystemKw > 0 ? (
+          <p className="mt-2 rounded-lg bg-indigo-50 px-2.5 py-2 text-[11px] font-semibold text-indigo-900">
+            Recommended system size: <strong>{suggestedSystemKw} kW</strong> — applied in Step 1 plant &amp; brand below.
+          </p>
+        ) : (
+          <p className="mt-1.5 text-[11px] text-slate-500">
+            Enter monthly units — required kW updates automatically in the plant sizing section below.
+          </p>
+        )}
       </div>
 
-      {/* Requirements / Notes */}
       <div>
         <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-500">
           Special requirements / notes (optional)
@@ -187,38 +161,12 @@ function RequirementForm({
           <StickyNote className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-slate-400" />
           <textarea
             rows={2}
-            placeholder="e.g. Rooftop area 5000 sq ft, net-metering preferred, no battery, urgency: 2 weeks"
+            placeholder="Rooftop area, urgency, net-metering preferences…"
             value={notes}
             onChange={(e) => onNotes(e.target.value)}
             className="flex-1 resize-none bg-transparent text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none"
           />
         </div>
-      </div>
-
-      <div className="mt-2 rounded-xl border border-indigo-200/70 bg-indigo-50/50 px-3 py-3">
-        <p className="text-[11px] font-semibold text-indigo-900">
-          DCR / Non-DCR solar modules are configured in Proposals → Commercial BOM (Solar panels group), not on this page.
-        </p>
-        {onOpenWorkspace ? (
-          <button
-            type="button"
-            disabled={!canOpenWorkspace || workspaceBusy}
-            onClick={onOpenWorkspace}
-            title={workspaceBlockReason ?? undefined}
-            className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-sky-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <ExternalLink className="h-4 w-4" />
-            {workspaceBusy ? "Saving…" : "Go to Proposals — configure panel & BOM"}
-          </button>
-        ) : null}
-        {!canOpenWorkspace && workspaceBlockReason ? (
-          <p className="mt-2 text-center text-[11px] font-medium text-amber-800">{workspaceBlockReason}</p>
-        ) : null}
-        {proposalsHref && canOpenWorkspace ? (
-          <p className="mt-2 text-center text-[10px] text-slate-500">
-            Opens your deal in Proposals → BOM with DCR & Non-DCR panel rows.
-          </p>
-        ) : null}
       </div>
     </motion.div>
   );
@@ -255,29 +203,22 @@ function Field({
   );
 }
 
-// ─── Main export ──────────────────────────────────────────────────────────────
-
 type Props = {
   mode: CommercialInputMode;
   onModeChange: (mode: CommercialInputMode) => void;
-  // Requirement mode fields
   contactName: string;
   orgName: string;
   phone: string;
   city: string;
   monthlyKwh: string;
   notes: string;
+  suggestedSystemKw?: number;
   onContactName: (v: string) => void;
   onOrgName: (v: string) => void;
   onPhone: (v: string) => void;
   onCity: (v: string) => void;
   onMonthlyKwh: (v: string) => void;
   onNotes: (v: string) => void;
-  canOpenWorkspace?: boolean;
-  workspaceBusy?: boolean;
-  onOpenWorkspace?: () => void;
-  workspaceBlockReason?: string | null;
-  proposalsHref?: string | null;
 };
 
 export function CommercialInputModeSelector({
@@ -289,21 +230,16 @@ export function CommercialInputModeSelector({
   city,
   monthlyKwh,
   notes,
+  suggestedSystemKw,
   onContactName,
   onOrgName,
   onPhone,
   onCity,
   onMonthlyKwh,
   onNotes,
-  canOpenWorkspace,
-  workspaceBusy,
-  onOpenWorkspace,
-  workspaceBlockReason,
-  proposalsHref,
 }: Props) {
   return (
     <div className="space-y-2">
-      {/* Mode toggle */}
       <div className="grid grid-cols-2 gap-2">
         <ModeCard
           active={mode === "bill"}
@@ -317,13 +253,12 @@ export function CommercialInputModeSelector({
           active={mode === "requirement"}
           icon={ClipboardList}
           title="Requirement-based"
-          description="Just enter name, org, and monthly need. No bill needed."
+          description="Enter monthly kWh — system size is calculated for Step 1."
           onSelect={() => onModeChange("requirement")}
           accent="bg-indigo-600"
         />
       </div>
 
-      {/* Requirement form (only in requirement mode) */}
       <AnimatePresence mode="wait">
         {mode === "requirement" && (
           <RequirementForm
@@ -334,17 +269,13 @@ export function CommercialInputModeSelector({
             city={city}
             monthlyKwh={monthlyKwh}
             notes={notes}
+            suggestedSystemKw={suggestedSystemKw}
             onContactName={onContactName}
             onOrgName={onOrgName}
             onPhone={onPhone}
             onCity={onCity}
             onMonthlyKwh={onMonthlyKwh}
             onNotes={onNotes}
-            canOpenWorkspace={canOpenWorkspace}
-            workspaceBusy={workspaceBusy}
-            onOpenWorkspace={onOpenWorkspace}
-            workspaceBlockReason={workspaceBlockReason}
-            proposalsHref={proposalsHref}
           />
         )}
       </AnimatePresence>

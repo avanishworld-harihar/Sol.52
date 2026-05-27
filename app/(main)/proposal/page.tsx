@@ -53,17 +53,13 @@ import { ProposalPresetPicker, type ProposalPresetId } from "@/components/propos
 import { ProposalOSHeader } from "@/components/proposals/os/proposal-os-header";
 import { BuilderStageBar } from "@/components/proposals/os/builder-stage-bar";
 import {
-  commercialRequirementHasSizing,
-  getCommercialWorkspaceBlockReason,
-} from "@/lib/commercial-requirement-readiness";
-import {
   monthlyUnitsFromRequirementInput,
   requirementHasConsumptionInput,
 } from "@/lib/requirement-consumption-sync";
 import { ProposalLivePreviewPanel } from "@/components/proposals/os/live-preview-panel";
 import { BlockPlaylistEditor } from "@/components/proposals/os/block-playlist-editor";
-import { CommercialNarrativePanel } from "@/components/commercial/commercial-narrative-panel";
-import { CommercialCapacityScenariosPanel } from "@/components/commercial/commercial-capacity-scenarios-panel";
+
+import { CommercialProposalWorkspace } from "@/components/commercial/commercial-proposal-workspace";
 import { ProposalReviewSheet } from "@/components/commercial/proposal-review-sheet";
 import { CommercialCategorySelector } from "@/components/commercial/commercial-category-selector";
 import { CommercialInputModeSelector } from "@/components/commercial/commercial-input-mode";
@@ -74,7 +70,6 @@ import {
 } from "@/components/residential/residential-proposal-mode-picker";
 import { ResidentialProposalConfigWorkspace } from "@/components/residential/residential-proposal-config-workspace";
 import { ResidentialRequirementCustomerForm } from "@/components/residential/residential-requirement-customer-form";
-import { ResidentialRequirementBuilder } from "@/components/residential/residential-requirement-builder";
 import { isPmSuryaGharSubsidyEligible } from "@/lib/lead-connection-types";
 import {
   residentialAnnualGenerationUnits,
@@ -256,7 +251,6 @@ function ProposalPageContent() {
   const [isPptDownloading, setIsPptDownloading] = useState(false);
   const [isCopyingSummary, setIsCopyingSummary] = useState(false);
   const [isWebProposalBusy, setIsWebProposalBusy] = useState(false);
-  const [isWorkspaceBusy, setIsWorkspaceBusy] = useState(false);
   const [latestWebProposalUrl, setLatestWebProposalUrl] = useState<string | null>(null);
   const [draftProposalId, setDraftProposalId] = useState<string | null>(null);
   // Proposal Builder Settings — language + EMI only (logo, bank, AMC, site photos live in More > Company Profile).
@@ -663,14 +657,21 @@ function ProposalPageContent() {
   );
 
   useEffect(() => {
-    if (!isResidentialRequirement) return;
+    if (!isResidentialRequirement && !isCommercialRequirement) return;
     applyResidentialRequirementConsumption(requirementMonthlyKwh, requirementMonthlyBill);
   }, [
     isResidentialRequirement,
+    isCommercialRequirement,
     requirementMonthlyKwh,
     requirementMonthlyBill,
     applyResidentialRequirementConsumption,
   ]);
+
+  const commercialRequirementSuggestedKw = useMemo(() => {
+    if (!isCommercialRequirement) return undefined;
+    if (!requirementHasConsumptionInput(requirementMonthlyKwh, requirementMonthlyBill)) return undefined;
+    return result.solarKw > 0 ? result.solarKw : undefined;
+  }, [isCommercialRequirement, requirementMonthlyKwh, requirementMonthlyBill, result.solarKw]);
 
   const requirementEstimatedKwh = useMemo(() => {
     if (!isResidentialRequirement || !canEstimateBillToKwh) return null;
@@ -683,7 +684,7 @@ function ProposalPageContent() {
 
   const useResidentialCatalog = isResidentialSmart && Boolean(residentialConfig);
   const useCommercialCatalog =
-    osPresetId === "commercial_executive" && Boolean(commercialPricingConfig) && !isCommercialRequirement;
+    osPresetId === "commercial_executive" && Boolean(commercialPricingConfig);
 
   const effectiveResult = useMemo(() => {
     if (useResidentialCatalog && residentialConfig) {
@@ -839,14 +840,6 @@ function ProposalPageContent() {
 
   const hideBillUploadSteps = isCommercialRequirement || isResidentialRequirement;
 
-  const commercialFlowHasClient = Boolean(
-    manual.leadContactName?.trim() || manual.officialBillName?.trim() || selectedLeadId
-  );
-  const commercialFlowHasSizing = commercialRequirementHasSizing(
-    requirementMonthlyKwh,
-    overrideSolarKw,
-    effectiveResult.solarKw
-  );
   // Drives BuilderStageBar active/completed state in real-time.
   const osActiveStageIndex = useMemo(() => {
     const hasClient = Boolean(manual.leadContactName || manual.officialBillName || selectedLeadId);
@@ -892,10 +885,6 @@ function ProposalPageContent() {
     requirementMonthlyBill,
     effectiveResult.solarKw,
   ]);
-
-  const proposalsBomHref = draftProposalId
-    ? `/proposals/${draftProposalId}#bom`
-    : null;
 
   useEffect(() => {
     setAdditionalBills((prev) => {
@@ -1547,7 +1536,10 @@ function ProposalPageContent() {
   useEffect(() => {
     if (!useCommercialCatalog || !commercialPricingConfig) return;
     const kwRaw = parseFloat(overrideSolarKw);
-    const fromBill = kwRaw > 0 ? Math.round(kwRaw * 10) / 10 : result.solarKw;
+    const fromBill =
+      isCommercialRequirement || !(kwRaw > 0)
+        ? result.solarKw
+        : Math.round(kwRaw * 10) / 10;
     if (fromBill <= 0) return;
     if (Math.abs(commercialPricingConfig.solar.plantCapacityKw - fromBill) < 0.05) return;
     setCommercialPricingConfig((prev) =>
@@ -1567,6 +1559,7 @@ function ProposalPageContent() {
     );
   }, [
     useCommercialCatalog,
+    isCommercialRequirement,
     overrideSolarKw,
     result.solarKw,
     commercialPricingConfig?.solar.plantCapacityKw,
@@ -1824,11 +1817,9 @@ function ProposalPageContent() {
         const cfg = applyCommercialPanelTrackPolicy(commercialPricingConfig, manual.connectionType);
         return proposalPricingBlocksGeneration(cfg);
       }
-      if (osPresetId === "commercial_executive" && !isCommercialRequirement) {
+      if (osPresetId === "commercial_executive" && !commercialPricingConfig) {
         const catalog =
-          residentialConfig?.brandCatalog ??
-          commercialPricingConfig?.brandCatalog ??
-          getCachedResidentialBrandCatalog();
+          residentialConfig?.brandCatalog ?? getCachedResidentialBrandCatalog();
         const kw = effectiveResult.solarKw;
         const track = resolveCommercialPanelTrack(manual.connectionType, kw);
         return proposalPricingBlocksFromSharedCatalog(catalog, kw, track);
@@ -1934,57 +1925,6 @@ function ProposalPageContent() {
       setIsWebProposalBusy(false);
     }
   }
-
-  /** Opens Proposals tab BOM (DCR / Non-DCR panel lines under Solar panels). */
-  async function goToProposalsCommercialBom() {
-    if (osPresetId !== "commercial_executive") return;
-    setIsWorkspaceBusy(true);
-    try {
-      const saved = await persistProposalToServer();
-      if (!saved) {
-        toast.error(
-          "Could not open Proposals",
-          "Draft was not saved. Check your connection or database, then try again."
-        );
-        return;
-      }
-      toast.success(
-        "Proposals workspace",
-        "Configure DCR / Non-DCR panels and commercial BOM, then return here to generate."
-      );
-      router.push(`/proposals/${saved.id}#bom`);
-    } catch (error) {
-      toast.error(
-        "Proposals unavailable",
-        error instanceof Error ? error.message : "Could not save draft proposal."
-      );
-    } finally {
-      setIsWorkspaceBusy(false);
-    }
-  }
-
-  const commercialWorkspaceBlockReason = useMemo(
-    () =>
-      osPresetId === "commercial_executive"
-        ? getCommercialWorkspaceBlockReason({
-            hasClient: commercialFlowHasClient,
-            hasSizing: commercialFlowHasSizing,
-            isRequirementMode: commercialInputMode === "requirement",
-            hasBillOrUsage: filledMonths >= 1 || Boolean(latestBill),
-          })
-        : null,
-    [
-      osPresetId,
-      commercialFlowHasClient,
-      commercialFlowHasSizing,
-      commercialInputMode,
-      filledMonths,
-      latestBill,
-    ]
-  );
-
-  const canOpenCommercialWorkspace =
-    osPresetId === "commercial_executive" && commercialWorkspaceBlockReason === null;
 
   function shareLatestOnWhatsApp() {
     if (!latestWebProposalUrl) return;
@@ -2281,22 +2221,76 @@ function ProposalPageContent() {
             onCity={(v) => setManual((p) => ({ ...p, city: v }))}
             onMonthlyKwh={(v) => {
               setRequirementMonthlyKwh(v);
-              const kwhPerMonth = parseFloat(v);
-              if (!isNaN(kwhPerMonth) && kwhPerMonth > 0) {
-                const flat = Math.round(kwhPerMonth);
-                const patch: Record<string, number> = {};
-                (["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"] as const).forEach((m) => {
-                  patch[m] = flat;
-                });
-                setMonthlyUnits((prev) => ({ ...prev, ...patch }));
-              }
+              applyResidentialRequirementConsumption(v, "");
             }}
             onNotes={setRequirementNotes}
-            canOpenWorkspace={canOpenCommercialWorkspace}
-            workspaceBusy={isWorkspaceBusy}
-            workspaceBlockReason={commercialWorkspaceBlockReason}
-            proposalsHref={proposalsBomHref}
-            onOpenWorkspace={() => void goToProposalsCommercialBom()}
+            suggestedSystemKw={commercialRequirementSuggestedKw}
+          />
+        ) : null}
+
+        {osPresetId === "commercial_executive" && commercialPricingConfig && commercialConfig ? (
+          <CommercialProposalWorkspace
+            pricingConfig={commercialPricingConfig}
+            commercialConfig={commercialConfig}
+            onPricingConfigChange={(next) => {
+              const synced = applyCommercialPanelTrackPolicy(next, manual.connectionType);
+              setCommercialPricingConfig(synced);
+              setCommercialConfig((prev) => {
+                if (!prev) return prev;
+                const track = synced.solar.panelTrack ?? "dcr";
+                const merged: CommercialProposalConfig = {
+                  ...prev,
+                  panel: {
+                    catalogId: prev.panel?.catalogId ?? "waaree-540-dcr",
+                    brandId: synced.solar.brandId ?? prev.panel?.brandId,
+                    watt: synced.solar.watt,
+                    panelType: panelTypeFromTrack(track),
+                    ratePerWpInr: synced.solar.ratePerWpInr,
+                    technology: synced.solar.technology,
+                  },
+                  dcrComparison: {
+                    enabled: synced.trackCompare?.enabled === true,
+                    brandId: synced.trackCompare?.compareBrandId ?? synced.solar.brandId,
+                    watt: synced.solar.watt,
+                  },
+                  brandComparison: {
+                    enabled: synced.brandCompare?.enabled === true,
+                    brandIdA: synced.brandCompare?.brandIdA,
+                    brandIdB: synced.brandCompare?.brandIdB,
+                  },
+                };
+                if (proposalLayout) {
+                  setProposalLayout(applyCommercialFlagsToLayout(proposalLayout, merged));
+                }
+                return merged;
+              });
+            }}
+            onCommercialConfigChange={(next) => {
+              setCommercialConfig(next);
+              if (proposalLayout) {
+                setProposalLayout(applyCommercialFlagsToLayout(proposalLayout, next));
+              }
+            }}
+            summary={{
+              systemKw: commercialPricingConfig.solar.plantCapacityKw,
+              annualSaving: effectiveResult.annualSavings,
+              netCost: effectiveResult.netCost,
+            } as import("@/lib/proposal-ppt").ProposalDeckSummary}
+            netCostInr={effectiveResult.netCost}
+            annualSavingInr={effectiveResult.annualSavings}
+            proposalId={draftProposalId ?? ""}
+            proposalLayout={proposalLayout}
+            onLayoutChange={setProposalLayout}
+            onOpenReview={() => setShowReviewSheet(true)}
+            onCreateProposal={async () => {
+              const saved = await persistProposalToServer();
+              if (saved?.id) setDraftProposalId(saved.id);
+              return saved?.id ?? null;
+            }}
+            onSaved={async () => {
+              const saved = await persistProposalToServer();
+              if (saved?.id) setDraftProposalId(saved.id);
+            }}
           />
         ) : null}
       </div>
@@ -2613,43 +2607,6 @@ function ProposalPageContent() {
       ) : null}
 
       <div id="step-3-anchor" className={`ss-card space-y-4 p-4 sm:p-5 ${osPresetId === "commercial_executive" ? "ring-1 ring-sky-200/60" : ""}`}>
-        {isCommercialRequirement && commercialPricingConfig ? (
-          <ResidentialRequirementBuilder
-            config={commercialPricingConfig}
-            netCostInr={effectiveResult.netCost}
-            annualSavingInr={effectiveResult.annualSavings}
-            maxPlantKw={1000}
-            segmentLabel="commercial"
-            onChange={(next) => {
-              const synced = applyCommercialPanelTrackPolicy(next, manual.connectionType);
-              setCommercialPricingConfig(synced);
-              setCommercialConfig((prev) => {
-                if (!prev) return prev;
-                const track = synced.solar.panelTrack ?? "dcr";
-                const merged: CommercialProposalConfig = {
-                  ...prev,
-                  panel: {
-                    catalogId: prev.panel?.catalogId ?? "waaree-540-dcr",
-                    brandId: synced.solar.brandId ?? prev.panel?.brandId,
-                    watt: synced.solar.watt,
-                    panelType: panelTypeFromTrack(track),
-                    ratePerWpInr: synced.solar.ratePerWpInr,
-                    technology: synced.solar.technology,
-                  },
-                  dcrComparison: {
-                    enabled: synced.trackCompare?.enabled === true,
-                    brandId: synced.trackCompare?.compareBrandId ?? synced.solar.brandId,
-                    watt: synced.solar.watt,
-                  },
-                };
-                if (proposalLayout) {
-                  setProposalLayout(applyCommercialFlagsToLayout(proposalLayout, merged));
-                }
-                return merged;
-              });
-            }}
-          />
-        ) : null}
         {useResidentialCatalog ? (
           <div className="rounded-xl border border-emerald-200/80 bg-emerald-50/60 px-3 py-2.5 text-xs text-emerald-950 dark:border-emerald-800/50 dark:bg-emerald-950/30 dark:text-emerald-100">
             <p className="font-semibold">Ready to generate your homeowner proposal</p>
@@ -2674,129 +2631,6 @@ function ProposalPageContent() {
               ) : null}
             </div>
           </div>
-        ) : null}
-        {osPresetId === "commercial_executive" && commercialPricingConfig ? (
-          <details className="group rounded-2xl border border-sky-200/80 bg-sky-50/30 shadow-sm dark:border-sky-500/20 dark:bg-sky-950/10">
-            <summary className="flex cursor-pointer list-none items-center gap-2.5 px-4 py-3 text-sm font-bold text-slate-800 dark:text-slate-200 [&::-webkit-details-marker]:hidden">
-              <ChevronDown className="h-4 w-4 shrink-0 text-sky-500 transition-transform group-open:rotate-180" />
-              <span className="flex-1">Commercial BOM &amp; Pricing</span>
-              <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold text-sky-700 dark:bg-sky-900/40 dark:text-sky-300">
-                {commercialPricingConfig.solar.plantCapacityKw} kW · {commercialPricingConfig.solar.panelTrack === "non_dcr" ? "Non-DCR" : "DCR"}
-              </span>
-            </summary>
-            <div className="space-y-4 border-t border-sky-200/60 px-4 pb-4 pt-4 dark:border-sky-500/20">
-              {!isCommercialRequirement ? (
-                <ResidentialProposalConfigWorkspace
-                  config={commercialPricingConfig}
-                  subsidyEligible={false}
-                  maxPlantKw={1000}
-                  segmentLabel="commercial"
-                  netCostInr={effectiveResult.netCost}
-                  annualSavingInr={effectiveResult.annualSavings}
-                  onChange={(next) => {
-                    const synced = applyCommercialPanelTrackPolicy(next, manual.connectionType);
-                    setCommercialPricingConfig(synced);
-                    setCommercialConfig((prev) => {
-                      if (!prev) return prev;
-                      const track = synced.solar.panelTrack ?? "dcr";
-                      const merged: CommercialProposalConfig = {
-                        ...prev,
-                        panel: {
-                          catalogId: prev.panel?.catalogId ?? "waaree-540-dcr",
-                          brandId: synced.solar.brandId ?? prev.panel?.brandId,
-                          watt: synced.solar.watt,
-                          panelType: panelTypeFromTrack(track),
-                          ratePerWpInr: synced.solar.ratePerWpInr,
-                          technology: synced.solar.technology,
-                        },
-                        dcrComparison: {
-                          enabled: synced.trackCompare?.enabled === true,
-                          brandId: synced.trackCompare?.compareBrandId ?? synced.solar.brandId,
-                          watt: synced.solar.watt,
-                        },
-                        brandComparison: {
-                          enabled: synced.brandCompare?.enabled === true,
-                          brandIdA: synced.brandCompare?.brandIdA,
-                          brandIdB: synced.brandCompare?.brandIdB,
-                        },
-                      };
-                      if (proposalLayout) {
-                        setProposalLayout(applyCommercialFlagsToLayout(proposalLayout, merged));
-                      }
-                      return merged;
-                    });
-                  }}
-                  proposalId={draftProposalId}
-                  proposalLayout={proposalLayout}
-                  onLayoutChange={setProposalLayout}
-                  onCreateProposal={async () => {
-                    const saved = await persistProposalToServer();
-                    if (saved?.id) setDraftProposalId(saved.id);
-                    return saved?.id ?? null;
-                  }}
-                />
-              ) : null}
-
-              {commercialConfig ? (
-                <CommercialCapacityScenariosPanel
-                  pricingConfig={commercialPricingConfig}
-                  commercialConfig={commercialConfig}
-                  primaryKw={commercialPricingConfig.solar.plantCapacityKw}
-                  onCommercialChange={(next) => {
-                    setCommercialConfig(next);
-                    if (proposalLayout) {
-                      setProposalLayout(applyCommercialFlagsToLayout(proposalLayout, next));
-                    }
-                  }}
-                />
-              ) : null}
-
-              <details className="group/leg rounded-2xl border border-slate-200/90 bg-slate-50/50 dark:border-white/10 dark:bg-white/[0.02]">
-                <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm font-bold text-slate-800 dark:text-slate-200 [&::-webkit-details-marker]:hidden">
-                  <ChevronDown className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open/leg:rotate-180" />
-                  Optional — legacy commercial (narrative, ₹/Wp BOM workspace)
-                </summary>
-                <div className="space-y-4 border-t border-slate-200/80 px-4 pb-4 pt-3 dark:border-white/10">
-                  {commercialConfig ? (
-                    <CommercialNarrativePanel
-                      config={commercialConfig}
-                      onChange={(next) => {
-                        setCommercialConfig(next);
-                        if (proposalLayout) {
-                          setProposalLayout(applyCommercialFlagsToLayout(proposalLayout, next));
-                        }
-                      }}
-                      onOpenReview={() => setShowReviewSheet(true)}
-                    />
-                  ) : null}
-                  <div className="rounded-xl border border-indigo-200/80 bg-indigo-50/40 p-3">
-                    <p className="text-xs text-slate-600">
-                      Engineering BOM with panel ₹/Wp line items — only if you need detailed breakdown.
-                    </p>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        disabled={!canOpenCommercialWorkspace || isWorkspaceBusy || isWebProposalBusy}
-                        onClick={() => void goToProposalsCommercialBom()}
-                        className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white disabled:opacity-50"
-                      >
-                        <ExternalLink className="h-3.5 w-3.5" />
-                        {isWorkspaceBusy ? "Saving…" : "Go to Proposals — legacy BOM"}
-                      </button>
-                      {draftProposalId ? (
-                        <a
-                          href={`/proposals/${draftProposalId}#bom`}
-                          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-700"
-                        >
-                          Open Proposals workspace
-                        </a>
-                      ) : null}
-                    </div>
-                  </div>
-                </div>
-              </details>
-            </div>
-          </details>
         ) : null}
 
         {!hideBillUploadSteps && !isResidentialSmart ? (

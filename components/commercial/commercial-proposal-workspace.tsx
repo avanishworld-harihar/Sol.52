@@ -24,6 +24,7 @@ type Props = {
   proposalLayout?: ProposalTemplateV1 | null;
   onLayoutChange?: (layout: ProposalTemplateV1) => void;
   onSaved?: () => void;
+  onCreateProposal?: () => Promise<string | null>;
   lineItems?: PricingLineItem[];
   onOpenReview?: () => void;
 };
@@ -41,6 +42,7 @@ export function CommercialProposalWorkspace({
   proposalLayout,
   onLayoutChange,
   onSaved,
+  onCreateProposal,
   lineItems,
   onOpenReview,
 }: Props) {
@@ -71,11 +73,12 @@ export function CommercialProposalWorkspace({
         config={pricingConfig}
         subsidyEligible={false}
         onChange={onPricingConfigChange}
-        proposalId={proposalId}
+        proposalId={proposalId || null}
         proposalLayout={proposalLayout}
         onLayoutChange={onLayoutChange}
         lineItems={lineItems}
         onSaved={onSaved}
+        onCreateProposal={onCreateProposal}
         hideCatalogPanel
         hidePlantSizing
         saveMode="commercial"
