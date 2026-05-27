@@ -2554,6 +2554,35 @@ function ProposalPageContent() {
       </div>
       )}
 
+      {/* Bill details summary — bill-based paths only */}
+      {!hideBillUploadSteps && (latestBill || previousBill || manual.officialBillName) && (
+        <div className="ss-card space-y-2 p-4 sm:p-5">
+          <h3 className="text-xs font-bold uppercase tracking-wide text-brand-700 sm:text-sm">{t("proposal_billDetails")}</h3>
+          <div className="grid gap-1 text-xs font-semibold text-slate-800 sm:text-sm">
+            {[
+              [t("proposal_rowLeadContact"), manual.leadContactName || "—"],
+              [t("proposal_rowOfficialBillName"), manual.officialBillName || latestBill?.name || previousBill?.name],
+              ["Consumer ID", latestBill?.consumer_id || previousBill?.consumer_id || manual.consumerId],
+              ["Meter", latestBill?.meter_number || previousBill?.meter_number || manual.meterNumber],
+              ["DISCOM", latestBill?.discom || previousBill?.discom || manual.discom],
+              ["State", latestBill?.state || previousBill?.state || manual.state],
+              ["Latest bill month", latestBill?.bill_month],
+              ["Previous bill month", previousBill?.bill_month]
+            ].map(([label, val]) =>
+              val ? (
+                <div
+                  key={String(label)}
+                  className="flex flex-col gap-0.5 border-b border-brand-50 py-1.5 last:border-0 sm:flex-row sm:justify-between sm:gap-2"
+                >
+                  <span className="shrink-0 text-slate-600 dark:text-slate-400">{label}</span>
+                  <span className="break-words text-right text-sm font-bold text-slate-900 dark:text-slate-50 sm:text-base">{String(val)}</span>
+                </div>
+              ) : null
+            )}
+          </div>
+        </div>
+      )}
+
       {osPresetId === "commercial_executive" &&
       isCommercialBillMode &&
       commercialBillsReady &&
@@ -2623,35 +2652,6 @@ function ProposalPageContent() {
           }}
         />
       ) : null}
-
-      {/* Bill details summary — bill-based paths only */}
-      {!hideBillUploadSteps && (latestBill || previousBill || manual.officialBillName) && (
-        <div className="ss-card space-y-2 p-4 sm:p-5">
-          <h3 className="text-xs font-bold uppercase tracking-wide text-brand-700 sm:text-sm">{t("proposal_billDetails")}</h3>
-          <div className="grid gap-1 text-xs font-semibold text-slate-800 sm:text-sm">
-            {[
-              [t("proposal_rowLeadContact"), manual.leadContactName || "—"],
-              [t("proposal_rowOfficialBillName"), manual.officialBillName || latestBill?.name || previousBill?.name],
-              ["Consumer ID", latestBill?.consumer_id || previousBill?.consumer_id || manual.consumerId],
-              ["Meter", latestBill?.meter_number || previousBill?.meter_number || manual.meterNumber],
-              ["DISCOM", latestBill?.discom || previousBill?.discom || manual.discom],
-              ["State", latestBill?.state || previousBill?.state || manual.state],
-              ["Latest bill month", latestBill?.bill_month],
-              ["Previous bill month", previousBill?.bill_month]
-            ].map(([label, val]) =>
-              val ? (
-                <div
-                  key={String(label)}
-                  className="flex flex-col gap-0.5 border-b border-brand-50 py-1.5 last:border-0 sm:flex-row sm:justify-between sm:gap-2"
-                >
-                  <span className="shrink-0 text-slate-600 dark:text-slate-400">{label}</span>
-                  <span className="break-words text-right text-sm font-bold text-slate-900 dark:text-slate-50 sm:text-base">{String(val)}</span>
-                </div>
-              ) : null
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Recommended solar — legacy bill-only; residential uses smart catalog instead */}
       {!hideBillUploadSteps && !isResidentialSmart && osPresetId !== "commercial_executive" && (
