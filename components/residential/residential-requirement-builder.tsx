@@ -13,13 +13,15 @@ import {
   quoteResidentialSolar,
 } from "@/lib/residential-solar-engine";
 import type { ResidentialProposalConfig } from "@/lib/residential-requirements-schema";
+import { COMMERCIAL_PANEL_WATT_PRESETS } from "@/lib/commercial-bom-panels";
+import { PANEL_CATALOG } from "@/lib/commercial-panel-catalog";
 import {
   applyActiveBrandToConfig,
   ensureBrandCatalog,
   getActiveCatalogEntry,
+  impliedRatePerWpFromPlant,
   syncSolarAndPricingFromEntry,
 } from "@/lib/residential-brand-catalog";
-import { PANEL_CATALOG } from "@/lib/commercial-panel-catalog";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Battery,
@@ -118,6 +120,31 @@ export function ResidentialRequirementBuilder({
       (e) => e.brandId === solar.brandId && e.watt === solar.watt && e.panelType === catalogTrack
     );
     patchSolar({ panelTrack: track, moduleCountOverride: undefined, ratePerWpInr: hit?.ratePerWpInr ?? solar.ratePerWpInr });
+  }
+
+  function applyWatt(watt: number) {
+    const w = Math.max(100, Math.min(900, Math.round(watt)));
+    const entry = getActiveCatalogEntry(catalogWithEntries);
+    if (entry) {
+      patchSolar({
+        watt: w,
+        moduleCountOverride: undefined,
+        ratePerWpInr: impliedRatePerWpFromPlant(solar, entry, solar.panelTrack ?? "dcr"),
+        technology: solar.technology,
+      });
+      return;
+    }
+    const catalogTrack = solar.panelTrack === "dcr" ? "DCR" : "NON_DCR";
+    const hit =
+      PANEL_CATALOG.find(
+        (e) => e.brandId === solar.brandId && e.watt === w && e.panelType === catalogTrack
+      ) ?? PANEL_CATALOG.find((e) => e.watt === w && e.panelType === catalogTrack);
+    patchSolar({
+      watt: w,
+      moduleCountOverride: undefined,
+      ratePerWpInr: hit?.ratePerWpInr ?? solar.ratePerWpInr,
+      technology: hit?.technology ?? solar.technology,
+    });
   }
 
   // Slider UX: step scales with range
@@ -229,6 +256,54 @@ export function ResidentialRequirementBuilder({
         </div>
       </section>
 
+      {/* Module wattage — commercial (residential uses pricing studio block) */}
+      {isCommercial ? (
+        <section className="space-y-3 rounded-xl border border-indigo-200/80 bg-indigo-50/40 p-3 dark:border-indigo-500/25 dark:bg-indigo-950/20">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-800 dark:text-indigo-300">
+            Module wattage (Wp)
+          </p>
+          <p className="text-[11px] text-slate-600 dark:text-slate-400">
+            Panel count = ceil(plant kW × 1000 ÷ Wp). Pick a preset or enter a custom value.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {COMMERCIAL_PANEL_WATT_PRESETS.map((w) => (
+              <button
+                key={w}
+                type="button"
+                onClick={() => applyWatt(w)}
+                className={cn(
+                  "rounded-lg border px-2.5 py-1.5 text-xs font-semibold tabular-nums transition-all",
+                  solar.watt === w
+                    ? "border-indigo-600 bg-indigo-600 text-white shadow-sm"
+                    : "border-slate-200 bg-white text-slate-700 hover:border-indigo-300 dark:border-white/15 dark:bg-white/5 dark:text-slate-200"
+                )}
+              >
+                {w}W
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-end gap-3">
+            <label className="flex flex-col gap-1">
+              <span className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Custom Wp</span>
+              <NumericTextInput
+                integer
+                value={solar.watt}
+                onValueChange={(n) => {
+                  if (n != null && n >= 100) applyWatt(n);
+                }}
+                className="w-24 rounded-xl border border-slate-200 bg-white px-2 py-2 text-center text-sm font-bold tabular-nums dark:border-white/15 dark:bg-white/5"
+                aria-label="Custom module wattage"
+              />
+            </label>
+            <p className="pb-2 text-xs text-slate-600 dark:text-slate-400">
+              <strong className="tabular-nums text-indigo-800 dark:text-indigo-200">{modules}</strong> panels @{" "}
+              <strong>{solar.watt}W</strong> → installed{" "}
+              <strong className="tabular-nums">{quote.actualKw} kW</strong> DC
+            </p>
+          </div>
+        </section>
+      ) : null}
+
       {/* Plant kW */}
       <section className="space-y-2">
         <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
@@ -242,7 +317,7 @@ export function ResidentialRequirementBuilder({
             step={sliderStep}
             value={Math.min(solar.plantCapacityKw, maxPlantKw)}
             onChange={(e) => patchSolar({ plantCapacityKw: parseFloat(e.target.value), moduleCountOverride: undefined })}
-            className="flex-1 accent-emerald-600"
+            className={cn("flex-1", isCommercial ? "accent-indigo-600" : "accent-emerald-600")}
           />
           <NumericTextInput
             value={solar.plantCapacityKw}

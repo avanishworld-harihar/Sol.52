@@ -13,7 +13,7 @@ import {
 } from "@/lib/proposal-pricing-lines";
 import { defaultCatalogCategoryForLineKind } from "@/lib/epc-component-catalog";
 
-export const COMMERCIAL_PANEL_WATT_PRESETS = [540, 580, 625, 700] as const;
+export const COMMERCIAL_PANEL_WATT_PRESETS = [540, 550, 575, 580, 590, 625, 700] as const;
 
 export function isTrackedCommercialPanelLine(L: PricingLineItem): boolean {
   return L.kind === "panels" && (L.panel_track === "dcr" || L.panel_track === "non_dcr");
