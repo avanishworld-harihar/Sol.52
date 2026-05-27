@@ -310,6 +310,9 @@ function ProposalPageContent() {
   const [requirementNotes, setRequirementNotes] = useState("");
 
   const lastCalcPersistSignatureRef = useRef("");
+  /** After user edits plant kW, block bill-audit from overwriting manual sizing. */
+  const commercialPlantKwTouchedRef = useRef(false);
+  const lastCommercialBillUploadKeyRef = useRef("");
   const uploadQueueRef = useRef<UploadTask[]>([]);
   const uploadWorkerRunningRef = useRef(false);
   const [manual, setManual] = useState<ManualProposalCustomer>(EMPTY_MANUAL_PROPOSAL_CUSTOMER);
@@ -1514,17 +1517,17 @@ function ProposalPageContent() {
     setCommercialConfig((prev) =>
       prev ?? withOrgStory(defaultCommercialConfig(kw), urlPrefill.orgType, urlPrefill.story)
     );
-    setCommercialPricingConfig(
-      (prev) =>
-        prev
-          ? applyCommercialPanelTrackPolicy(prev, manual.connectionType)
-          : applyCommercialPanelTrackPolicy(
-              defaultResidentialConfigForBuilder(kw, "bill"),
-              manual.connectionType
-            )
-    );
+    setCommercialPricingConfig((prev) => {
+      if (prev && commercialPlantKwTouchedRef.current) {
+        return applyCommercialPanelTrackPolicy(prev, manual.connectionType);
+      }
+      return applyCommercialPanelTrackPolicy(
+        defaultResidentialConfigForBuilder(kw, "bill"),
+        manual.connectionType
+      );
+    });
     setProposalLayout((prev) => prev ?? getPresetDefaultLayout("commercial_executive"));
-  }, [osPresetId, effectiveResult?.solarKw, urlPrefill.kw, urlPrefill.orgType, urlPrefill.story]);
+  }, [osPresetId, urlPrefill.kw, urlPrefill.orgType, urlPrefill.story, manual.connectionType]);
 
   useEffect(() => {
     if (osPresetId !== "commercial_executive") return;
@@ -1542,23 +1545,76 @@ function ProposalPageContent() {
     };
   }, [osPresetId, urlPrefill.kw]);
 
-  const commercialBillSizingSeedKey = useMemo(
-    () =>
-      `${latestBill?.bill_month ?? ""}|${additionalBills[0]?.bill_month ?? ""}|${Math.round(result.solarKw * 10)}`,
-    [latestBill?.bill_month, additionalBills, result.solarKw]
+  const commercialBillUploadKey = useMemo(
+    () => `${latestBill?.bill_month ?? ""}|${additionalBills[0]?.bill_month ?? ""}`,
+    [latestBill?.bill_month, additionalBills]
   );
-  const lastCommercialBillSizingSeedRef = useRef<string | null>(null);
 
-  /** Requirement: keep kW in sync with monthly kWh. Bill path: seed once per bill set — do not override manual slider. */
+  useEffect(() => {
+    if (commercialBillUploadKey !== lastCommercialBillUploadKeyRef.current) {
+      lastCommercialBillUploadKeyRef.current = commercialBillUploadKey;
+      commercialPlantKwTouchedRef.current = false;
+    }
+  }, [commercialBillUploadKey]);
+
+  const commitCommercialPricingConfig = useCallback(
+    (next: ResidentialProposalConfig) => {
+      setCommercialPricingConfig((prev) => {
+        if (prev && Math.abs(prev.solar.plantCapacityKw - next.solar.plantCapacityKw) > 0.05) {
+          commercialPlantKwTouchedRef.current = true;
+        }
+        const synced = applyCommercialPanelTrackPolicy(next, manual.connectionType);
+        return {
+          ...synced,
+          solar: {
+            ...synced.solar,
+            plantCapacityKw: next.solar.plantCapacityKw,
+            watt: next.solar.watt,
+            moduleCountOverride: next.solar.moduleCountOverride,
+          },
+        };
+      });
+      setCommercialConfig((prev) => {
+        if (!prev) return prev;
+        const track = next.solar.panelTrack ?? "dcr";
+        const merged: CommercialProposalConfig = {
+          ...prev,
+          panel: {
+            catalogId: prev.panel?.catalogId ?? "waaree-540-dcr",
+            brandId: next.solar.brandId ?? prev.panel?.brandId,
+            watt: next.solar.watt,
+            panelType: panelTypeFromTrack(track),
+            ratePerWpInr: next.solar.ratePerWpInr,
+            technology: next.solar.technology,
+          },
+          dcrComparison: {
+            enabled: next.trackCompare?.enabled === true,
+            brandId: next.trackCompare?.compareBrandId ?? next.solar.brandId,
+            watt: next.solar.watt,
+          },
+          brandComparison: {
+            enabled: next.brandCompare?.enabled === true,
+            brandIdA: next.brandCompare?.brandIdA,
+            brandIdB: next.brandCompare?.brandIdB,
+          },
+        };
+        if (proposalLayout) {
+          setProposalLayout(applyCommercialFlagsToLayout(proposalLayout, merged));
+        }
+        return merged;
+      });
+    },
+    [manual.connectionType, proposalLayout]
+  );
+
+  /** Requirement: sync kW from monthly kWh. Bill path: seed once per bill upload — never fight manual kW. */
   useEffect(() => {
     if (!useCommercialCatalog || !commercialPricingConfig) return;
 
     if (isCommercialBillMode) {
-      if (!commercialBillsReady) return;
+      if (!commercialBillsReady || commercialPlantKwTouchedRef.current) return;
       const fromBill = Math.round(result.solarKw * 10) / 10;
       if (fromBill <= 0) return;
-      if (lastCommercialBillSizingSeedRef.current === commercialBillSizingSeedKey) return;
-      lastCommercialBillSizingSeedRef.current = commercialBillSizingSeedKey;
       setCommercialPricingConfig((prev) => {
         if (!prev) return prev;
         if (Math.abs(prev.solar.plantCapacityKw - fromBill) < 0.05) return prev;
@@ -1577,33 +1633,30 @@ function ProposalPageContent() {
       return;
     }
 
-    if (!isCommercialRequirement) return;
+    if (!isCommercialRequirement || commercialPlantKwTouchedRef.current) return;
     const fromRequirement = result.solarKw;
     if (fromRequirement <= 0) return;
-    if (Math.abs(commercialPricingConfig.solar.plantCapacityKw - fromRequirement) < 0.05) return;
-    setCommercialPricingConfig((prev) =>
-      prev
-        ? applyCommercialPanelTrackPolicy(
-            {
-              ...prev,
-              solar: {
-                ...prev.solar,
-                plantCapacityKw: fromRequirement,
-                moduleCountOverride: undefined,
-              },
-            },
-            manual.connectionType
-          )
-        : prev
-    );
+    setCommercialPricingConfig((prev) => {
+      if (!prev || Math.abs(prev.solar.plantCapacityKw - fromRequirement) < 0.05) return prev;
+      return applyCommercialPanelTrackPolicy(
+        {
+          ...prev,
+          solar: {
+            ...prev.solar,
+            plantCapacityKw: fromRequirement,
+            moduleCountOverride: undefined,
+          },
+        },
+        manual.connectionType
+      );
+    });
   }, [
     useCommercialCatalog,
     isCommercialBillMode,
     isCommercialRequirement,
     commercialBillsReady,
-    commercialBillSizingSeedKey,
+    commercialBillUploadKey,
     result.solarKw,
-    commercialPricingConfig?.solar.plantCapacityKw,
     manual.connectionType,
   ]);
 
@@ -1619,9 +1672,17 @@ function ProposalPageContent() {
       ) {
         return prev;
       }
-      return next;
+      return {
+        ...next,
+        solar: {
+          ...next.solar,
+          plantCapacityKw: prev.solar.plantCapacityKw,
+          watt: prev.solar.watt,
+          moduleCountOverride: prev.solar.moduleCountOverride,
+        },
+      };
     });
-  }, [osPresetId, manual.connectionType, commercialPricingConfig?.solar.plantCapacityKw]);
+  }, [osPresetId, manual.connectionType]);
 
   useEffect(() => {
     if (osPresetId !== "commercial_executive" || !commercialPricingConfig) return;
@@ -2276,39 +2337,7 @@ function ProposalPageContent() {
           <CommercialProposalWorkspace
             pricingConfig={commercialPricingConfig}
             commercialConfig={commercialConfig}
-            onPricingConfigChange={(next) => {
-              const synced = applyCommercialPanelTrackPolicy(next, manual.connectionType);
-              setCommercialPricingConfig(synced);
-              setCommercialConfig((prev) => {
-                if (!prev) return prev;
-                const track = synced.solar.panelTrack ?? "dcr";
-                const merged: CommercialProposalConfig = {
-                  ...prev,
-                  panel: {
-                    catalogId: prev.panel?.catalogId ?? "waaree-540-dcr",
-                    brandId: synced.solar.brandId ?? prev.panel?.brandId,
-                    watt: synced.solar.watt,
-                    panelType: panelTypeFromTrack(track),
-                    ratePerWpInr: synced.solar.ratePerWpInr,
-                    technology: synced.solar.technology,
-                  },
-                  dcrComparison: {
-                    enabled: synced.trackCompare?.enabled === true,
-                    brandId: synced.trackCompare?.compareBrandId ?? synced.solar.brandId,
-                    watt: synced.solar.watt,
-                  },
-                  brandComparison: {
-                    enabled: synced.brandCompare?.enabled === true,
-                    brandIdA: synced.brandCompare?.brandIdA,
-                    brandIdB: synced.brandCompare?.brandIdB,
-                  },
-                };
-                if (proposalLayout) {
-                  setProposalLayout(applyCommercialFlagsToLayout(proposalLayout, merged));
-                }
-                return merged;
-              });
-            }}
+            onPricingConfigChange={commitCommercialPricingConfig}
             onCommercialConfigChange={(next) => {
               setCommercialConfig(next);
               if (proposalLayout) {
@@ -2623,39 +2652,7 @@ function ProposalPageContent() {
         <CommercialProposalWorkspace
           pricingConfig={commercialPricingConfig}
           commercialConfig={commercialConfig}
-          onPricingConfigChange={(next) => {
-            const synced = applyCommercialPanelTrackPolicy(next, manual.connectionType);
-            setCommercialPricingConfig(synced);
-            setCommercialConfig((prev) => {
-              if (!prev) return prev;
-              const track = synced.solar.panelTrack ?? "dcr";
-              const merged: CommercialProposalConfig = {
-                ...prev,
-                panel: {
-                  catalogId: prev.panel?.catalogId ?? "waaree-540-dcr",
-                  brandId: synced.solar.brandId ?? prev.panel?.brandId,
-                  watt: synced.solar.watt,
-                  panelType: panelTypeFromTrack(track),
-                  ratePerWpInr: synced.solar.ratePerWpInr,
-                  technology: synced.solar.technology,
-                },
-                dcrComparison: {
-                  enabled: synced.trackCompare?.enabled === true,
-                  brandId: synced.trackCompare?.compareBrandId ?? synced.solar.brandId,
-                  watt: synced.solar.watt,
-                },
-                brandComparison: {
-                  enabled: synced.brandCompare?.enabled === true,
-                  brandIdA: synced.brandCompare?.brandIdA,
-                  brandIdB: synced.brandCompare?.brandIdB,
-                },
-              };
-              if (proposalLayout) {
-                setProposalLayout(applyCommercialFlagsToLayout(proposalLayout, merged));
-              }
-              return merged;
-            });
-          }}
+          onPricingConfigChange={commitCommercialPricingConfig}
           onCommercialConfigChange={(next) => {
             setCommercialConfig(next);
             if (proposalLayout) {

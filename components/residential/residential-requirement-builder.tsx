@@ -152,8 +152,21 @@ export function ResidentialRequirementBuilder({
   const sliderMax = isCommercial
     ? Math.max(plantKwCap, solar.plantCapacityKw, 100)
     : maxPlantKw;
-  const sliderStep =
-    sliderMax > 500 ? 25 : sliderMax > 200 ? 5 : sliderMax > 50 ? 1 : 0.5;
+  const sliderStep = isCommercial
+    ? sliderMax > 500
+      ? 10
+      : sliderMax > 200
+        ? 5
+        : sliderMax > 50
+          ? 1
+          : 0.5
+    : sliderMax > 500
+      ? 25
+      : sliderMax > 200
+        ? 5
+        : sliderMax > 50
+          ? 1
+          : 0.5;
 
   function applyPlantKw(raw: number | undefined) {
     if (raw == null || !Number.isFinite(raw) || raw <= 0) return;
@@ -289,9 +302,10 @@ export function ResidentialRequirementBuilder({
             className={cn("flex-1", isCommercial ? "accent-indigo-600" : "accent-emerald-600")}
           />
           <NumericTextInput
+            live={isCommercial}
             value={solar.plantCapacityKw}
             onValueChange={(n) => applyPlantKw(n)}
-            className="w-24 rounded-xl border border-slate-200 bg-white px-2 py-2 text-center text-sm font-bold tabular-nums dark:border-white/15 dark:bg-white/5"
+            className="w-28 rounded-xl border border-slate-200 bg-white px-2 py-2 text-center text-sm font-bold tabular-nums dark:border-white/15 dark:bg-white/5"
             aria-label="System size kW"
           />
           <span className="text-sm font-bold text-slate-600">kW</span>
