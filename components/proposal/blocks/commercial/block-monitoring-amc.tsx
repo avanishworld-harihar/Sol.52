@@ -194,7 +194,7 @@ export function BlockMonitoringAMC({ ctx }: Props) {
       </div>
 
       {/* AMC tiers */}
-      <SectionReveal className="mt-8" delay={0.1}>
+      <SectionReveal className="mt-8 print:break-before-page" delay={0.1}>
         <div>
         <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">
           {isHi ? "वार्षिक रखरखाव अनुबंध — योजना तुलना" : "Annual Maintenance Contract — Plan Comparison"}

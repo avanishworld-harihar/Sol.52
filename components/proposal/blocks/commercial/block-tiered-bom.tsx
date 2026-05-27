@@ -476,7 +476,7 @@ export function BlockTieredBOM({ ctx }: Props) {
       </div>
 
       {/* Footer note */}
-      <div className="mt-4 flex items-start gap-2 rounded-lg bg-slate-50 p-4">
+      <div className="mt-4 flex items-start gap-2 rounded-lg bg-slate-50 p-4 print:break-before-page">
         <ListChecks className="mt-0.5 h-4 w-4 flex-shrink-0 text-slate-400" />
         <p className="text-[11px] leading-relaxed text-slate-500">
           {isHi

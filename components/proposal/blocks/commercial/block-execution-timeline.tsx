@@ -320,8 +320,8 @@ export function BlockExecutionTimeline({ ctx }: Props) {
         })}
       </div>
 
-      {/* Timeline footer note */}
-      <div className="mt-4 flex items-center gap-2 rounded-lg bg-slate-50 p-4">
+      {/* Timeline footer note — hidden in print to avoid extra blank page */}
+      <div className="mt-4 flex items-center gap-2 rounded-lg bg-slate-50 p-4 print:hidden">
         <Calendar className="h-4 w-4 flex-shrink-0 text-slate-400" />
         <p className="text-[11px] text-slate-500">
           {isHi

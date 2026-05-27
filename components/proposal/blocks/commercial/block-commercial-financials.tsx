@@ -198,7 +198,7 @@ export function BlockCommercialFinancials({ ctx }: Props) {
         </SectionReveal>
 
         {/* Profit chart + break-even callout */}
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-5 print:break-before-page">
           <SectionReveal delay={0.1}>
             <GlassPanel className="p-6">
               <div className="mb-5 flex items-center gap-2.5">

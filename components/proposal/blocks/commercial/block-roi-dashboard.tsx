@@ -205,7 +205,7 @@ export function BlockROIDashboard({ ctx }: Props) {
         </SectionReveal>
 
         {/* Right column — 2 columns */}
-        <div className="flex flex-col gap-5 lg:col-span-2">
+        <div className="flex flex-col gap-5 lg:col-span-2 print:break-before-page">
           {/* Grid vs Solar lifecycle */}
           <SectionReveal delay={0.12}>
             <GlassPanel className="p-6">

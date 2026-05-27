@@ -194,7 +194,7 @@ export function BlockPremiumClosing({ ctx }: Props) {
         </div>
 
         {/* Installer contact card + CTA */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 print:break-before-page">
           {/* Contact card */}
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">

@@ -268,7 +268,7 @@ export function BlockCommercialTerms({ ctx }: Props) {
       </div>
 
       {/* Warranty matrix */}
-      <SectionReveal className="mt-6" delay={0.12}>
+      <SectionReveal className="mt-6 print:break-before-page" delay={0.12}>
         <GlassPanel>
         <div className="flex items-center gap-2 border-b border-slate-100 px-5 py-3">
           <FileCheck className="h-4 w-4 text-violet-500" />
