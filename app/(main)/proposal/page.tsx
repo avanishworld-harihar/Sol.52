@@ -537,6 +537,11 @@ function ProposalPageContent() {
   const hasRequiredBillInputs = Boolean(latestBill) &&
     additionalBills.slice(0, requiredSecondaryCount).filter(Boolean).length === requiredSecondaryCount &&
     secondaryAlignment.every((item, idx) => idx >= requiredSecondaryCount || item.aligned);
+  /** Commercial bill flow: latest + one history bill is enough (no strict month alignment). */
+  const commercialBillsReady =
+    Boolean(latestBill) &&
+    additionalBills.slice(0, requiredSecondaryCount).filter(Boolean).length >= requiredSecondaryCount;
+  const billsReadyForCommercialFlow = isCommercialBillMode ? commercialBillsReady : hasRequiredBillInputs;
   const tariffUrl = `/api/tariff-context?state=${encodeURIComponent(stateQuery)}&discom=${encodeURIComponent(discomQuery)}`;
   const discomsUrl = `/api/discoms?state=${encodeURIComponent(stateQuery)}`;
 
@@ -645,7 +650,7 @@ function ProposalPageContent() {
   const isResidentialRequirement = isResidentialSmart && residentialInputMode === "requirement";
   const isResidentialBill = isResidentialSmart && residentialInputMode === "bill";
   const canEstimateBillToKwh = Boolean(manual.state.trim() && manual.discom.trim());
-  const showCommercialBillDetailsForm = !isCommercialBillMode || hasRequiredBillInputs;
+  const showCommercialBillDetailsForm = !isCommercialBillMode || billsReadyForCommercialFlow;
 
   const applyResidentialRequirementConsumption = useCallback(
     (kwh: string, billInr: string) => {
@@ -2233,9 +2238,9 @@ function ProposalPageContent() {
         ) : null}
 
         {osPresetId === "commercial_executive" &&
+        isCommercialRequirement &&
         commercialPricingConfig &&
-        commercialConfig &&
-        showCommercialBillDetailsForm ? (
+        commercialConfig ? (
           <CommercialProposalWorkspace
             pricingConfig={commercialPricingConfig}
             commercialConfig={commercialConfig}
@@ -2300,6 +2305,7 @@ function ProposalPageContent() {
             }}
           />
         ) : null}
+
       </div>
 
       {leadSelected && manual.leadContactName && !hideBillUploadSteps ? (
@@ -2394,7 +2400,7 @@ function ProposalPageContent() {
             ))}
           </div>
         </div>
-        {!hasRequiredBillInputs && billingRule.minBillsRequired > 1 ? (
+        {!hasRequiredBillInputs && billingRule.minBillsRequired > 1 && !(isCommercialBillMode && commercialBillsReady) ? (
           <p className="mt-2 text-xs font-bold text-amber-700 sm:text-sm">
             SOL.52 requirement: upload {uploadRequirement.requiredBills} bills ({billingRule.latestBillLabel} + required history bills) to continue.
           </p>
@@ -2547,7 +2553,76 @@ function ProposalPageContent() {
         </div>
       </div>
       )}
-      {/* END: connection & manual fields */}
+
+      {osPresetId === "commercial_executive" &&
+      isCommercialBillMode &&
+      commercialBillsReady &&
+      commercialPricingConfig &&
+      commercialConfig ? (
+        <CommercialProposalWorkspace
+          pricingConfig={commercialPricingConfig}
+          commercialConfig={commercialConfig}
+          onPricingConfigChange={(next) => {
+            const synced = applyCommercialPanelTrackPolicy(next, manual.connectionType);
+            setCommercialPricingConfig(synced);
+            setCommercialConfig((prev) => {
+              if (!prev) return prev;
+              const track = synced.solar.panelTrack ?? "dcr";
+              const merged: CommercialProposalConfig = {
+                ...prev,
+                panel: {
+                  catalogId: prev.panel?.catalogId ?? "waaree-540-dcr",
+                  brandId: synced.solar.brandId ?? prev.panel?.brandId,
+                  watt: synced.solar.watt,
+                  panelType: panelTypeFromTrack(track),
+                  ratePerWpInr: synced.solar.ratePerWpInr,
+                  technology: synced.solar.technology,
+                },
+                dcrComparison: {
+                  enabled: synced.trackCompare?.enabled === true,
+                  brandId: synced.trackCompare?.compareBrandId ?? synced.solar.brandId,
+                  watt: synced.solar.watt,
+                },
+                brandComparison: {
+                  enabled: synced.brandCompare?.enabled === true,
+                  brandIdA: synced.brandCompare?.brandIdA,
+                  brandIdB: synced.brandCompare?.brandIdB,
+                },
+              };
+              if (proposalLayout) {
+                setProposalLayout(applyCommercialFlagsToLayout(proposalLayout, merged));
+              }
+              return merged;
+            });
+          }}
+          onCommercialConfigChange={(next) => {
+            setCommercialConfig(next);
+            if (proposalLayout) {
+              setProposalLayout(applyCommercialFlagsToLayout(proposalLayout, next));
+            }
+          }}
+          summary={{
+            systemKw: commercialPricingConfig.solar.plantCapacityKw,
+            annualSaving: effectiveResult.annualSavings,
+            netCost: effectiveResult.netCost,
+          } as import("@/lib/proposal-ppt").ProposalDeckSummary}
+          netCostInr={effectiveResult.netCost}
+          annualSavingInr={effectiveResult.annualSavings}
+          proposalId={draftProposalId ?? ""}
+          proposalLayout={proposalLayout}
+          onLayoutChange={setProposalLayout}
+          onOpenReview={() => setShowReviewSheet(true)}
+          onCreateProposal={async () => {
+            const saved = await persistProposalToServer();
+            if (saved?.id) setDraftProposalId(saved.id);
+            return saved?.id ?? null;
+          }}
+          onSaved={async () => {
+            const saved = await persistProposalToServer();
+            if (saved?.id) setDraftProposalId(saved.id);
+          }}
+        />
+      ) : null}
 
       {/* Bill details summary — bill-based paths only */}
       {!hideBillUploadSteps && (latestBill || previousBill || manual.officialBillName) && (
@@ -2579,7 +2654,7 @@ function ProposalPageContent() {
       )}
 
       {/* Recommended solar — legacy bill-only; residential uses smart catalog instead */}
-      {!hideBillUploadSteps && !isResidentialSmart && (
+      {!hideBillUploadSteps && !isResidentialSmart && osPresetId !== "commercial_executive" && (
         <div className="ss-card p-4 sm:p-5">
           <h2 className="text-base font-extrabold text-brand-900 sm:text-lg">{t("proposal_recommended")}</h2>
           <p className="mt-2 break-words text-2xl font-extrabold tabular-nums text-solar-600 sm:text-3xl lg:text-4xl">
@@ -2613,12 +2688,12 @@ function ProposalPageContent() {
         />
       ) : null}
 
-      {isCommercialBillMode && !hasRequiredBillInputs ? (
+      {isCommercialBillMode && !commercialBillsReady ? (
         <div className="ss-card rounded-xl border border-sky-200/70 bg-sky-50/60 p-4 text-xs font-semibold text-sky-800 sm:p-5">
-          Upload latest + previous bill to unlock customer details, commercial executive setup, and proposal settings.
+          Upload latest bill + one previous bill to unlock customer details, commercial executive setup, and proposal settings.
         </div>
       ) : null}
-      {(!isCommercialBillMode || hasRequiredBillInputs) && (
+      {(!isCommercialBillMode || (commercialBillsReady && !commercialPricingConfig)) && (
       <div id="step-3-anchor" className={`ss-card space-y-4 p-4 sm:p-5 ${osPresetId === "commercial_executive" ? "ring-1 ring-sky-200/60" : ""}`}>
         {useResidentialCatalog ? (
           <div className="rounded-xl border border-emerald-200/80 bg-emerald-50/60 px-3 py-2.5 text-xs text-emerald-950 dark:border-emerald-800/50 dark:bg-emerald-950/30 dark:text-emerald-100">
