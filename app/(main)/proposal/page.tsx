@@ -1542,15 +1542,45 @@ function ProposalPageContent() {
     };
   }, [osPresetId, urlPrefill.kw]);
 
+  const commercialBillSizingSeedKey = useMemo(
+    () =>
+      `${latestBill?.bill_month ?? ""}|${additionalBills[0]?.bill_month ?? ""}|${Math.round(result.solarKw * 10)}`,
+    [latestBill?.bill_month, additionalBills, result.solarKw]
+  );
+  const lastCommercialBillSizingSeedRef = useRef<string | null>(null);
+
+  /** Requirement: keep kW in sync with monthly kWh. Bill path: seed once per bill set — do not override manual slider. */
   useEffect(() => {
     if (!useCommercialCatalog || !commercialPricingConfig) return;
-    const kwRaw = parseFloat(overrideSolarKw);
-    const fromBill =
-      isCommercialRequirement || !(kwRaw > 0)
-        ? result.solarKw
-        : Math.round(kwRaw * 10) / 10;
-    if (fromBill <= 0) return;
-    if (Math.abs(commercialPricingConfig.solar.plantCapacityKw - fromBill) < 0.05) return;
+
+    if (isCommercialBillMode) {
+      if (!commercialBillsReady) return;
+      const fromBill = Math.round(result.solarKw * 10) / 10;
+      if (fromBill <= 0) return;
+      if (lastCommercialBillSizingSeedRef.current === commercialBillSizingSeedKey) return;
+      lastCommercialBillSizingSeedRef.current = commercialBillSizingSeedKey;
+      setCommercialPricingConfig((prev) => {
+        if (!prev) return prev;
+        if (Math.abs(prev.solar.plantCapacityKw - fromBill) < 0.05) return prev;
+        return applyCommercialPanelTrackPolicy(
+          {
+            ...prev,
+            solar: {
+              ...prev.solar,
+              plantCapacityKw: fromBill,
+              moduleCountOverride: undefined,
+            },
+          },
+          manual.connectionType
+        );
+      });
+      return;
+    }
+
+    if (!isCommercialRequirement) return;
+    const fromRequirement = result.solarKw;
+    if (fromRequirement <= 0) return;
+    if (Math.abs(commercialPricingConfig.solar.plantCapacityKw - fromRequirement) < 0.05) return;
     setCommercialPricingConfig((prev) =>
       prev
         ? applyCommercialPanelTrackPolicy(
@@ -1558,7 +1588,7 @@ function ProposalPageContent() {
               ...prev,
               solar: {
                 ...prev.solar,
-                plantCapacityKw: fromBill,
+                plantCapacityKw: fromRequirement,
                 moduleCountOverride: undefined,
               },
             },
@@ -1568,8 +1598,10 @@ function ProposalPageContent() {
     );
   }, [
     useCommercialCatalog,
+    isCommercialBillMode,
     isCommercialRequirement,
-    overrideSolarKw,
+    commercialBillsReady,
+    commercialBillSizingSeedKey,
     result.solarKw,
     commercialPricingConfig?.solar.plantCapacityKw,
     manual.connectionType,

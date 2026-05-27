@@ -79,6 +79,12 @@ export function NumericTextInput({
         if (live) onValueChange(parseDraftValue(raw, integer));
       }}
       onFocus={onFocus}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          e.currentTarget.blur();
+        }
+      }}
       onBlur={(e) => {
         const raw = draft ?? display;
         setDraft(null);

@@ -147,8 +147,20 @@ export function ResidentialRequirementBuilder({
     });
   }
 
-  // Slider UX: step scales with range
-  const sliderStep = maxPlantKw > 200 ? 5 : maxPlantKw > 50 ? 1 : 0.5;
+  // Slider UX: step scales with range; commercial slider grows with typed kW up to schema max
+  const plantKwCap = isCommercial ? Math.min(10000, maxPlantKw) : maxPlantKw;
+  const sliderMax = isCommercial
+    ? Math.max(plantKwCap, solar.plantCapacityKw, 100)
+    : maxPlantKw;
+  const sliderStep =
+    sliderMax > 500 ? 25 : sliderMax > 200 ? 5 : sliderMax > 50 ? 1 : 0.5;
+
+  function applyPlantKw(raw: number | undefined) {
+    if (raw == null || !Number.isFinite(raw) || raw <= 0) return;
+    const cap = isCommercial ? 10000 : plantKwCap;
+    const kw = Math.max(0.5, Math.min(cap, Math.round(raw * 10) / 10));
+    patchSolar({ plantCapacityKw: kw, moduleCountOverride: undefined });
+  }
 
   return (
     <div
@@ -256,14 +268,49 @@ export function ResidentialRequirementBuilder({
         </div>
       </section>
 
-      {/* Module wattage — commercial (residential uses pricing studio block) */}
+      {/* Plant kW — commercial first, then wattage */}
+      <section className="space-y-2">
+        <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
+          Required system size (kW)
+        </label>
+        {isCommercial ? (
+          <p className="text-[11px] text-slate-500">
+            Set kW with slider or type a number and press Enter — then choose module wattage below.
+          </p>
+        ) : null}
+        <div className="flex items-center gap-3">
+          <input
+            type="range"
+            min={1}
+            max={sliderMax}
+            step={sliderStep}
+            value={Math.min(solar.plantCapacityKw, sliderMax)}
+            onChange={(e) => applyPlantKw(parseFloat(e.target.value))}
+            className={cn("flex-1", isCommercial ? "accent-indigo-600" : "accent-emerald-600")}
+          />
+          <NumericTextInput
+            value={solar.plantCapacityKw}
+            onValueChange={(n) => applyPlantKw(n)}
+            className="w-24 rounded-xl border border-slate-200 bg-white px-2 py-2 text-center text-sm font-bold tabular-nums dark:border-white/15 dark:bg-white/5"
+            aria-label="System size kW"
+          />
+          <span className="text-sm font-bold text-slate-600">kW</span>
+        </div>
+        {!isCommercial ? (
+          <p className="text-[11px] text-slate-500">
+            At {solar.watt}W per panel → <strong>{modules} panels</strong> · max {maxPlantKw} kW
+          </p>
+        ) : null}
+      </section>
+
+      {/* Module wattage — commercial (after kW is set) */}
       {isCommercial ? (
         <section className="space-y-3 rounded-xl border border-indigo-200/80 bg-indigo-50/40 p-3 dark:border-indigo-500/25 dark:bg-indigo-950/20">
           <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-800 dark:text-indigo-300">
             Module wattage (Wp)
           </p>
           <p className="text-[11px] text-slate-600 dark:text-slate-400">
-            Panel count = ceil(plant kW × 1000 ÷ Wp). Pick a preset or enter a custom value.
+            For <strong>{solar.plantCapacityKw} kW</strong>: panel count = ceil(kW × 1000 ÷ Wp).
           </p>
           <div className="flex flex-wrap gap-2">
             {COMMERCIAL_PANEL_WATT_PRESETS.map((w) => (
@@ -295,44 +342,23 @@ export function ResidentialRequirementBuilder({
                 aria-label="Custom module wattage"
               />
             </label>
-            <p className="pb-2 text-xs text-slate-600 dark:text-slate-400">
-              <strong className="tabular-nums text-indigo-800 dark:text-indigo-200">{modules}</strong> panels @{" "}
-              <strong>{solar.watt}W</strong> → installed{" "}
-              <strong className="tabular-nums">{quote.actualKw} kW</strong> DC
-            </p>
+          </div>
+          <div className="grid grid-cols-3 gap-2 rounded-xl border border-indigo-200/60 bg-white/90 p-3 text-center dark:border-indigo-500/20 dark:bg-white/5">
+            <div>
+              <p className="text-[10px] font-bold uppercase text-slate-500">Plant (AC)</p>
+              <p className="text-lg font-bold tabular-nums text-slate-900 dark:text-white">{solar.plantCapacityKw} kW</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase text-slate-500">Panels</p>
+              <p className="text-lg font-bold tabular-nums text-indigo-800 dark:text-indigo-200">{modules} nos</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase text-slate-500">Installed DC</p>
+              <p className="text-lg font-bold tabular-nums text-slate-900 dark:text-white">{quote.actualKw} kW</p>
+            </div>
           </div>
         </section>
       ) : null}
-
-      {/* Plant kW */}
-      <section className="space-y-2">
-        <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
-          Required system size (kW)
-        </label>
-        <div className="flex items-center gap-3">
-          <input
-            type="range"
-            min={1}
-            max={maxPlantKw}
-            step={sliderStep}
-            value={Math.min(solar.plantCapacityKw, maxPlantKw)}
-            onChange={(e) => patchSolar({ plantCapacityKw: parseFloat(e.target.value), moduleCountOverride: undefined })}
-            className={cn("flex-1", isCommercial ? "accent-indigo-600" : "accent-emerald-600")}
-          />
-          <NumericTextInput
-            value={solar.plantCapacityKw}
-            onValueChange={(n) => {
-              const kw = n != null && n > 0 ? Math.max(0.5, Math.min(maxPlantKw, n)) : solar.plantCapacityKw;
-              patchSolar({ plantCapacityKw: kw, moduleCountOverride: undefined });
-            }}
-            className="w-20 rounded-xl border border-slate-200 bg-white px-2 py-2 text-center text-sm font-bold tabular-nums dark:border-white/15 dark:bg-white/5"
-            aria-label="System size kW"
-          />
-        </div>
-        <p className="text-[11px] text-slate-500">
-          At {solar.watt}W per panel → <strong>{modules} panels</strong> · max {maxPlantKw} kW
-        </p>
-      </section>
 
       {/* Roof + budget — residential homeowner path only */}
       {!isCommercial ? (

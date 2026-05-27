@@ -65,7 +65,7 @@ export function CommercialProposalWorkspace({
         onChange={onPricingConfigChange}
         netCostInr={netCostInr}
         annualSavingInr={annualSavingInr}
-        maxPlantKw={1000}
+        maxPlantKw={10000}
       />
 
       <ResidentialPricingStudio
