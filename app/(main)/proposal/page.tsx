@@ -508,6 +508,8 @@ function ProposalPageContent() {
   );
   const previousBill = additionalBills[0] ?? null;
   const isAnySecondaryBusy = isAnalyzingAdditional.some(Boolean);
+  const isCommercialBillMode =
+    osPresetId === "commercial_executive" && commercialInputMode === "bill";
   const uploadedCoverageMonths = useMemo(() => {
     const merged = new Set<keyof MonthlyUnits>();
     const allBills = [latestBill, ...additionalBills].filter(Boolean) as ParsedBillShape[];
@@ -517,11 +519,12 @@ function ProposalPageContent() {
     return merged.size;
   }, [latestBill, additionalBills]);
   const requiredSecondaryCount = useMemo(() => {
+    if (isCommercialBillMode) return 1; // Commercial bill flow requires exactly latest + 1 previous bill.
     const base = Math.max(0, uploadRequirement.requiredBills - 1);
     if (uploadedCoverageMonths < 12) return base;
     // If we already covered all 12 months with uploaded bills, don't force extra slots.
     return Math.min(base, additionalBills.filter(Boolean).length);
-  }, [uploadRequirement.requiredBills, uploadedCoverageMonths, additionalBills]);
+  }, [isCommercialBillMode, uploadRequirement.requiredBills, uploadedCoverageMonths, additionalBills]);
   const secondaryAlignment = useMemo(
     () =>
       uploadRequirement.secondaryOffsets.map((offset, idx) => {
@@ -642,6 +645,7 @@ function ProposalPageContent() {
   const isResidentialRequirement = isResidentialSmart && residentialInputMode === "requirement";
   const isResidentialBill = isResidentialSmart && residentialInputMode === "bill";
   const canEstimateBillToKwh = Boolean(manual.state.trim() && manual.discom.trim());
+  const showCommercialBillDetailsForm = !isCommercialBillMode || hasRequiredBillInputs;
 
   const applyResidentialRequirementConsumption = useCallback(
     (kwh: string, billInr: string) => {
@@ -2228,7 +2232,10 @@ function ProposalPageContent() {
           />
         ) : null}
 
-        {osPresetId === "commercial_executive" && commercialPricingConfig && commercialConfig ? (
+        {osPresetId === "commercial_executive" &&
+        commercialPricingConfig &&
+        commercialConfig &&
+        showCommercialBillDetailsForm ? (
           <CommercialProposalWorkspace
             pricingConfig={commercialPricingConfig}
             commercialConfig={commercialConfig}
@@ -2435,7 +2442,7 @@ function ProposalPageContent() {
       )}
 
       {/* Connection & bill details fields — bill-based paths only */}
-      {!hideBillUploadSteps && (
+      {!hideBillUploadSteps && showCommercialBillDetailsForm && (
       <div className="ss-card space-y-3 p-4 sm:space-y-4 sm:p-5">
         <div>
           <h3 className="text-xs font-bold uppercase tracking-wide text-brand-700 sm:text-sm">{t("proposal_manualHeading")}</h3>
@@ -2606,6 +2613,12 @@ function ProposalPageContent() {
         />
       ) : null}
 
+      {isCommercialBillMode && !hasRequiredBillInputs ? (
+        <div className="ss-card rounded-xl border border-sky-200/70 bg-sky-50/60 p-4 text-xs font-semibold text-sky-800 sm:p-5">
+          Upload latest + previous bill to unlock customer details, commercial executive setup, and proposal settings.
+        </div>
+      ) : null}
+      {(!isCommercialBillMode || hasRequiredBillInputs) && (
       <div id="step-3-anchor" className={`ss-card space-y-4 p-4 sm:p-5 ${osPresetId === "commercial_executive" ? "ring-1 ring-sky-200/60" : ""}`}>
         {useResidentialCatalog ? (
           <div className="rounded-xl border border-emerald-200/80 bg-emerald-50/60 px-3 py-2.5 text-xs text-emerald-950 dark:border-emerald-800/50 dark:bg-emerald-950/30 dark:text-emerald-100">
@@ -2836,7 +2849,8 @@ function ProposalPageContent() {
             </div>
           </div>
         ) : null}
-      </div>{/* closes system size ss-card */}
+      </div>
+      )}
           </div>{/* end main builder column */}
 
           {/* Live preview panel — visible at lg+ (iPad Pro, desktop) */}
