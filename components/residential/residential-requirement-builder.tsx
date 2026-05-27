@@ -22,6 +22,7 @@ import {
   impliedRatePerWpFromPlant,
   syncSolarAndPricingFromEntry,
 } from "@/lib/residential-brand-catalog";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Battery,
@@ -37,6 +38,9 @@ import {
 type Props = {
   config: ResidentialProposalConfig;
   onChange: (next: ResidentialProposalConfig) => void;
+  /** Commercial: commit plant kW without stale full-config merges. */
+  onCommitPlantKw?: (kw: number) => void;
+  onPlantKwEditStart?: () => void;
   netCostInr: number;
   annualSavingInr: number;
   /** Max plant capacity kW — drives slider range. Set 1000 for commercial. */
@@ -72,9 +76,102 @@ function Chip({
   );
 }
 
+const DECIMAL_KW_RE = /^[0-9]*\.?[0-9]*$/;
+
+/** Commercial kW field — local draft until blur/Enter so parent state does not fight keystrokes. */
+function CommercialPlantKwControl({
+  kw,
+  sliderMax,
+  sliderStep,
+  onCommit,
+  onEditStart,
+}: {
+  kw: number;
+  sliderMax: number;
+  sliderStep: number;
+  onCommit: (kw: number) => void;
+  onEditStart?: () => void;
+}) {
+  const [draft, setDraft] = useState<string | null>(null);
+  const [focused, setFocused] = useState(false);
+  const draftRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!focused) {
+      setDraft(null);
+      draftRef.current = null;
+    }
+  }, [kw, focused]);
+
+  const display = focused && draft !== null ? draft : String(kw);
+
+  function commitRaw(raw: string) {
+    if (raw === "" || raw === ".") return;
+    const n = parseFloat(raw);
+    if (!Number.isFinite(n) || n <= 0) return;
+    onCommit(n);
+  }
+
+  function setDraftValue(raw: string) {
+    draftRef.current = raw;
+    setDraft(raw);
+  }
+
+  return (
+    <>
+      <input
+        type="range"
+        min={0.5}
+        max={sliderMax}
+        step={sliderStep}
+        value={Math.min(Math.max(kw, 0.5), sliderMax)}
+        onChange={(e) => onCommit(parseFloat(e.target.value))}
+        className="flex-1 accent-indigo-600"
+      />
+      <input
+        type="text"
+        inputMode="decimal"
+        value={display}
+        onFocus={() => {
+          onEditStart?.();
+          setFocused(true);
+          setDraftValue(String(kw));
+        }}
+        onChange={(e) => {
+          const raw = e.target.value;
+          if (raw !== "" && !DECIMAL_KW_RE.test(raw)) return;
+          setDraftValue(raw);
+        }}
+        onBlur={() => {
+          const raw = draftRef.current ?? draft ?? display;
+          commitRaw(raw);
+          setFocused(false);
+          setDraft(null);
+          draftRef.current = null;
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            const raw = draftRef.current ?? draft ?? display;
+            commitRaw(raw);
+            setFocused(false);
+            setDraft(null);
+            draftRef.current = null;
+            e.currentTarget.blur();
+          }
+        }}
+        className="w-28 rounded-xl border border-slate-200 bg-white px-2 py-2 text-center text-sm font-bold tabular-nums dark:border-white/15 dark:bg-white/5"
+        aria-label="System size kW"
+      />
+    </>
+  );
+}
+
 export function ResidentialRequirementBuilder({
   config,
   onChange,
+  onCommitPlantKw,
+  onPlantKwEditStart,
   netCostInr,
   annualSavingInr,
   maxPlantKw = 50,
@@ -96,6 +193,13 @@ export function ResidentialRequirementBuilder({
   const catalogWithEntries = ensureBrandCatalog(config);
   const catalogBrands = catalogWithEntries.brandCatalog?.entries ?? [];
   const activeBrandId = catalogWithEntries.brandCatalog?.activeBrandId ?? catalogBrands[0]?.brandId;
+  const rateCardMaxKw = useMemo(() => {
+    if (!isCommercial) return null;
+    const entry = getActiveCatalogEntry(catalogWithEntries);
+    const tiers = entry?.kwTiers ?? [];
+    if (!tiers.length) return null;
+    return Math.max(...tiers.map((t) => t.kw));
+  }, [isCommercial, catalogWithEntries]);
 
   function patch(partial: Partial<ResidentialProposalConfig>) {
     onChange({ ...config, ...partial });
@@ -172,6 +276,10 @@ export function ResidentialRequirementBuilder({
     if (raw == null || !Number.isFinite(raw) || raw <= 0) return;
     const cap = isCommercial ? 10000 : plantKwCap;
     const kw = Math.max(0.5, Math.min(cap, Math.round(raw * 10) / 10));
+    if (isCommercial && onCommitPlantKw) {
+      onCommitPlantKw(kw);
+      return;
+    }
     patchSolar({ plantCapacityKw: kw, moduleCountOverride: undefined });
   }
 
@@ -287,27 +395,44 @@ export function ResidentialRequirementBuilder({
           Required system size (kW)
         </label>
         {isCommercial ? (
-          <p className="text-[11px] text-slate-500">
-            Set kW with slider or type a number and press Enter — then choose module wattage below.
-          </p>
+          <div className="space-y-1 text-[11px] text-slate-500">
+            <p>Set kW with slider or type a number and press Enter — then choose module wattage below.</p>
+            {rateCardMaxKw != null ? (
+              <p className="text-amber-800/90 dark:text-amber-200/90">
+                Rate card pricing is set up to <strong>{rateCardMaxKw} kW</strong> — you can still enter any
+                system size (e.g. 5 kW or 100 kW); cost uses the nearest lower tier or ₹/Wp from the catalog.
+              </p>
+            ) : null}
+          </div>
         ) : null}
         <div className="flex items-center gap-3">
-          <input
-            type="range"
-            min={1}
-            max={sliderMax}
-            step={sliderStep}
-            value={Math.min(solar.plantCapacityKw, sliderMax)}
-            onChange={(e) => applyPlantKw(parseFloat(e.target.value))}
-            className={cn("flex-1", isCommercial ? "accent-indigo-600" : "accent-emerald-600")}
-          />
-          <NumericTextInput
-            live={isCommercial}
-            value={solar.plantCapacityKw}
-            onValueChange={(n) => applyPlantKw(n)}
-            className="w-28 rounded-xl border border-slate-200 bg-white px-2 py-2 text-center text-sm font-bold tabular-nums dark:border-white/15 dark:bg-white/5"
-            aria-label="System size kW"
-          />
+          {isCommercial && onCommitPlantKw ? (
+            <CommercialPlantKwControl
+              kw={solar.plantCapacityKw}
+              sliderMax={sliderMax}
+              sliderStep={sliderStep}
+              onCommit={applyPlantKw}
+              onEditStart={onPlantKwEditStart}
+            />
+          ) : (
+            <>
+              <input
+                type="range"
+                min={1}
+                max={sliderMax}
+                step={sliderStep}
+                value={Math.min(solar.plantCapacityKw, sliderMax)}
+                onChange={(e) => applyPlantKw(parseFloat(e.target.value))}
+                className={cn("flex-1", isCommercial ? "accent-indigo-600" : "accent-emerald-600")}
+              />
+              <NumericTextInput
+                value={solar.plantCapacityKw}
+                onValueChange={(n) => applyPlantKw(n)}
+                className="w-28 rounded-xl border border-slate-200 bg-white px-2 py-2 text-center text-sm font-bold tabular-nums dark:border-white/15 dark:bg-white/5"
+                aria-label="System size kW"
+              />
+            </>
+          )}
           <span className="text-sm font-bold text-slate-600">kW</span>
         </div>
         {!isCommercial ? (

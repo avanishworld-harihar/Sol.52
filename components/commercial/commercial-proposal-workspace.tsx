@@ -16,6 +16,10 @@ type Props = {
   pricingConfig: ResidentialProposalConfig;
   commercialConfig: CommercialProposalConfig;
   onPricingConfigChange: (next: ResidentialProposalConfig) => void;
+  /** Dedicated plant kW commit — avoids parent effects fighting typed values. */
+  onCommitPlantKw?: (kw: number) => void;
+  /** Fired when user focuses the kW field — blocks bill auto-size overwrite while typing. */
+  onPlantKwEditStart?: () => void;
   onCommercialConfigChange: (next: CommercialProposalConfig) => void;
   summary: ProposalDeckSummary;
   netCostInr: number;
@@ -34,6 +38,8 @@ export function CommercialProposalWorkspace({
   pricingConfig,
   commercialConfig,
   onPricingConfigChange,
+  onCommitPlantKw,
+  onPlantKwEditStart,
   onCommercialConfigChange,
   summary,
   netCostInr,
@@ -63,6 +69,8 @@ export function CommercialProposalWorkspace({
         variant="commercial"
         config={pricingConfig}
         onChange={onPricingConfigChange}
+        onCommitPlantKw={onCommitPlantKw}
+        onPlantKwEditStart={onPlantKwEditStart}
         netCostInr={netCostInr}
         annualSavingInr={annualSavingInr}
         maxPlantKw={10000}

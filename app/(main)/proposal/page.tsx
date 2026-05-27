@@ -313,6 +313,8 @@ function ProposalPageContent() {
   /** After user edits plant kW, block bill-audit from overwriting manual sizing. */
   const commercialPlantKwTouchedRef = useRef(false);
   const lastCommercialBillUploadKeyRef = useRef("");
+  /** Bill-path kW auto-seed runs once per bill upload — not on every tariff recalc. */
+  const lastCommercialBillKwSeedKeyRef = useRef("");
   const uploadQueueRef = useRef<UploadTask[]>([]);
   const uploadWorkerRunningRef = useRef(false);
   const [manual, setManual] = useState<ManualProposalCustomer>(EMPTY_MANUAL_PROPOSAL_CUSTOMER);
@@ -1518,7 +1520,7 @@ function ProposalPageContent() {
       prev ?? withOrgStory(defaultCommercialConfig(kw), urlPrefill.orgType, urlPrefill.story)
     );
     setCommercialPricingConfig((prev) => {
-      if (prev && commercialPlantKwTouchedRef.current) {
+      if (prev) {
         return applyCommercialPanelTrackPolicy(prev, manual.connectionType);
       }
       return applyCommercialPanelTrackPolicy(
@@ -1537,7 +1539,20 @@ function ProposalPageContent() {
       setCommercialPricingConfig((prev) => {
         const kw = prev?.solar.plantCapacityKw ?? urlPrefill.kw ?? 60;
         const base = prev ?? defaultResidentialConfigForBuilder(kw, "bill");
-        return applyCommercialPanelTrackPolicy(applyResidentialPricingSource(base), manual.connectionType);
+        const synced = applyCommercialPanelTrackPolicy(
+          applyResidentialPricingSource(base),
+          manual.connectionType
+        );
+        if (!prev) return synced;
+        return {
+          ...synced,
+          solar: {
+            ...synced.solar,
+            plantCapacityKw: prev.solar.plantCapacityKw,
+            watt: prev.solar.watt,
+            moduleCountOverride: prev.solar.moduleCountOverride,
+          },
+        };
       });
     });
     return () => {
@@ -1553,14 +1568,49 @@ function ProposalPageContent() {
   useEffect(() => {
     if (commercialBillUploadKey !== lastCommercialBillUploadKeyRef.current) {
       lastCommercialBillUploadKeyRef.current = commercialBillUploadKey;
+      lastCommercialBillKwSeedKeyRef.current = "";
       commercialPlantKwTouchedRef.current = false;
     }
   }, [commercialBillUploadKey]);
 
+  const markCommercialPlantKwTouched = useCallback(() => {
+    commercialPlantKwTouchedRef.current = true;
+  }, []);
+
+  const commitCommercialPlantKw = useCallback(
+    (kw: number) => {
+      commercialPlantKwTouchedRef.current = true;
+      setCommercialPricingConfig((prev) => {
+        const inputMode = isCommercialBillMode ? "bill" : "requirement";
+        const base =
+          prev ??
+          defaultResidentialConfigForBuilder(kw, inputMode);
+        const next: ResidentialProposalConfig = {
+          ...base,
+          solar: { ...base.solar, plantCapacityKw: kw, moduleCountOverride: undefined },
+        };
+        const synced = applyCommercialPanelTrackPolicy(next, manual.connectionType);
+        return {
+          ...synced,
+          solar: {
+            ...synced.solar,
+            plantCapacityKw: kw,
+            watt: prev?.solar.watt ?? synced.solar.watt,
+            moduleCountOverride: undefined,
+          },
+        };
+      });
+    },
+    [isCommercialBillMode, manual.connectionType]
+  );
+
   const commitCommercialPricingConfig = useCallback(
     (next: ResidentialProposalConfig) => {
       setCommercialPricingConfig((prev) => {
-        if (prev && Math.abs(prev.solar.plantCapacityKw - next.solar.plantCapacityKw) > 0.05) {
+        if (
+          prev &&
+          Math.abs(prev.solar.plantCapacityKw - next.solar.plantCapacityKw) > 0.001
+        ) {
           commercialPlantKwTouchedRef.current = true;
         }
         const synced = applyCommercialPanelTrackPolicy(next, manual.connectionType);
@@ -1613,8 +1663,10 @@ function ProposalPageContent() {
 
     if (isCommercialBillMode) {
       if (!commercialBillsReady || commercialPlantKwTouchedRef.current) return;
+      if (lastCommercialBillKwSeedKeyRef.current === commercialBillUploadKey) return;
       const fromBill = Math.round(result.solarKw * 10) / 10;
       if (fromBill <= 0) return;
+      lastCommercialBillKwSeedKeyRef.current = commercialBillUploadKey;
       setCommercialPricingConfig((prev) => {
         if (!prev) return prev;
         if (Math.abs(prev.solar.plantCapacityKw - fromBill) < 0.05) return prev;
@@ -2338,6 +2390,8 @@ function ProposalPageContent() {
             pricingConfig={commercialPricingConfig}
             commercialConfig={commercialConfig}
             onPricingConfigChange={commitCommercialPricingConfig}
+            onCommitPlantKw={commitCommercialPlantKw}
+            onPlantKwEditStart={markCommercialPlantKwTouched}
             onCommercialConfigChange={(next) => {
               setCommercialConfig(next);
               if (proposalLayout) {
@@ -2653,6 +2707,8 @@ function ProposalPageContent() {
           pricingConfig={commercialPricingConfig}
           commercialConfig={commercialConfig}
           onPricingConfigChange={commitCommercialPricingConfig}
+          onCommitPlantKw={commitCommercialPlantKw}
+          onPlantKwEditStart={markCommercialPlantKwTouched}
           onCommercialConfigChange={(next) => {
             setCommercialConfig(next);
             if (proposalLayout) {
