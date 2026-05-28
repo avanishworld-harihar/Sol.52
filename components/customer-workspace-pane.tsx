@@ -1,13 +1,30 @@
 "use client";
 
 import Link from "next/link";
-import { Building2, CalendarClock, IndianRupee, MapPin, MessageCircle, Phone, PhoneCall } from "lucide-react";
 import useSWR from "swr";
-
+import {
+  AlarmClock,
+  Building2,
+  CalendarClock,
+  CheckCircle2,
+  Clock3,
+  FileText,
+  IndianRupee,
+  MapPin,
+  MessageCircle,
+  NotebookPen,
+  Phone,
+  PhoneCall,
+  Plus,
+  StickyNote,
+  TimerReset,
+  UserRoundCheck,
+} from "lucide-react";
+import { useCallback, useEffect, useMemo, useState, type TouchEvent } from "react";
 import {
   LeadStatusBadge,
   LeadStatusPillSelect,
-  formatLeadLastActivity
+  formatLeadLastActivity,
 } from "@/components/customers-lead-list";
 import type { CustomerLead } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -33,29 +50,40 @@ import {
   patchReminder,
 } from "@/lib/followup-client";
 import type { ActivityEvent, FollowupReminder, LeadNote, LeadVisit } from "@/lib/followup-types";
-import { useCallback, useEffect, useMemo, useState } from "react";
 
 type CustomerStage = "lead" | "in-pipeline" | "active-project";
 type FollowupTab = "timeline" | "reminders" | "notes" | "visits" | "proposals";
+type QuickActionSheet = "none" | "reminder" | "visit" | "note";
 
 const CUSTOMER_STAGE_META: Record<CustomerStage, { labelKey: string; className: string }> = {
-  lead: {
-    labelKey: "customers_stageLead",
-    className: "border-slate-200/90 bg-slate-50/90 text-slate-700"
-  },
-  "in-pipeline": {
-    labelKey: "customers_stageInPipeline",
-    className: "border-amber-200/90 bg-amber-50/90 text-amber-800"
-  },
-  "active-project": {
-    labelKey: "customers_stageActiveProject",
-    className: "border-emerald-200/90 bg-emerald-50/90 text-emerald-800"
-  }
+  lead: { labelKey: "customers_stageLead", className: "border-slate-200/90 bg-slate-50/90 text-slate-700" },
+  "in-pipeline": { labelKey: "customers_stageInPipeline", className: "border-amber-200/90 bg-amber-50/90 text-amber-800" },
+  "active-project": { labelKey: "customers_stageActiveProject", className: "border-emerald-200/90 bg-emerald-50/90 text-emerald-800" },
 };
+
+const EVENT_ICON: Record<string, typeof Clock3> = {
+  proposal_created: FileText,
+  proposal_opened: FileText,
+  reminder_completed: CheckCircle2,
+  customer_contacted: PhoneCall,
+  status_changed: UserRoundCheck,
+  followup_created: AlarmClock,
+  followup_snoozed: TimerReset,
+  visit_scheduled: CalendarClock,
+  visit_completed: CheckCircle2,
+  note_added: NotebookPen,
+};
+
+function toDayKey(iso: string) {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime())
+    ? "Unknown"
+    : d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
 
 export function CustomerWorkspacePane({
   customer,
-  onStatusChange
+  onStatusChange,
 }: {
   customer: CustomerLead | null;
   onStatusChange?: (leadId: string, next: LeadStatusKey) => void;
@@ -64,6 +92,11 @@ export function CustomerWorkspacePane({
   const installerName = getInstallerBrandName();
   const [followMap, setFollowMap] = useState<Record<string, number>>({});
   const [activeTab, setActiveTab] = useState<FollowupTab>("timeline");
+  const [quickSheet, setQuickSheet] = useState<QuickActionSheet>("none");
+  const [timelineVisibleCount, setTimelineVisibleCount] = useState(14);
+  const [collapsedDays, setCollapsedDays] = useState<Record<string, boolean>>({});
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+
   const [newReminderTitle, setNewReminderTitle] = useState("");
   const [newReminderDueAt, setNewReminderDueAt] = useState("");
   const [newReminderType, setNewReminderType] = useState<FollowupReminder["followup_type"]>("call");
@@ -72,10 +105,9 @@ export function CustomerWorkspacePane({
   const [visitAt, setVisitAt] = useState("");
   const [visitSummary, setVisitSummary] = useState("");
   const [visitLocation, setVisitLocation] = useState("");
+  const [noteImagePreviewUrls, setNoteImagePreviewUrls] = useState<string[]>([]);
 
-  const refreshFollowMap = useCallback(() => {
-    setFollowMap({ ...readLeadFollowUpMap() });
-  }, []);
+  const refreshFollowMap = useCallback(() => setFollowMap({ ...readLeadFollowUpMap() }), []);
 
   useEffect(() => {
     refreshFollowMap();
@@ -123,23 +155,29 @@ export function CustomerWorkspacePane({
   const commercialCta = resolveCustomerCommercialCta(customer);
   const lastActivityLabel = formatLeadLastActivity(customer.last_touched_at, locale);
   const leadId = customer.id;
-  const timelineKey = leadId ? `/api/customers/${leadId}/timeline` : null;
-  const remindersKey = leadId ? `/api/customers/${leadId}/reminders` : null;
-  const notesKey = leadId ? `/api/customers/${leadId}/notes` : null;
-  const visitsKey = leadId ? `/api/customers/${leadId}/visits` : null;
-  const proposalsKey = leadId ? `/api/customers/${leadId}/proposals` : null;
 
-  const { data: timeline = [], mutate: mutateTimeline } = useSWR<ActivityEvent[]>(
-    timelineKey,
-    () => fetchLeadTimeline(leadId)
+  const { data: timeline = [], mutate: mutateTimeline } = useSWR<ActivityEvent[]>(`/api/customers/${leadId}/timeline`, () =>
+    fetchLeadTimeline(leadId)
   );
-  const { data: reminders = [], mutate: mutateReminders } = useSWR<FollowupReminder[]>(
-    remindersKey,
-    () => fetchLeadReminders(leadId)
+  const { data: reminders = [], mutate: mutateReminders } = useSWR<FollowupReminder[]>(`/api/customers/${leadId}/reminders`, () =>
+    fetchLeadReminders(leadId)
   );
-  const { data: notes = [], mutate: mutateNotes } = useSWR<LeadNote[]>(notesKey, () => fetchLeadNotes(leadId));
-  const { data: visits = [], mutate: mutateVisits } = useSWR<LeadVisit[]>(visitsKey, () => fetchLeadVisits(leadId));
-  const { data: proposals = [] } = useSWR<Record<string, unknown>[]>(proposalsKey, () => fetchLeadProposals(leadId));
+  const { data: notes = [], mutate: mutateNotes } = useSWR<LeadNote[]>(`/api/customers/${leadId}/notes`, () =>
+    fetchLeadNotes(leadId)
+  );
+  const { data: visits = [], mutate: mutateVisits } = useSWR<LeadVisit[]>(`/api/customers/${leadId}/visits`, () =>
+    fetchLeadVisits(leadId)
+  );
+  const { data: proposals = [] } = useSWR<Record<string, unknown>[]>(`/api/customers/${leadId}/proposals`, () =>
+    fetchLeadProposals(leadId)
+  );
+
+  useEffect(() => {
+    setTimelineVisibleCount(14);
+    setCollapsedDays({});
+    setQuickSheet("none");
+    setNoteImagePreviewUrls([]);
+  }, [leadId]);
 
   const tabCounts = useMemo(
     () => ({
@@ -149,95 +187,230 @@ export function CustomerWorkspacePane({
       visits: visits.length,
       proposals: proposals.length,
     }),
-    [notes.length, proposals.length, reminders.length, timeline.length, visits.length]
+    [timeline.length, reminders.length, notes.length, visits.length, proposals.length]
+  );
+
+  const timelineGroups = useMemo(() => {
+    const visible = timeline.slice(0, timelineVisibleCount);
+    return visible.reduce<Record<string, ActivityEvent[]>>((acc, ev) => {
+      const key = toDayKey(ev.occurred_at);
+      if (!acc[key]) acc[key] = [];
+      acc[key]!.push(ev);
+      return acc;
+    }, {});
+  }, [timeline, timelineVisibleCount]);
+
+  const overdueReminderIds = useMemo(() => {
+    const now = Date.now();
+    return new Set(reminders.filter((r) => r.status === "pending" && new Date(r.due_at).getTime() < now).map((r) => r.id));
+  }, [reminders]);
+
+  const sortedReminders = useMemo(
+    () =>
+      [...reminders].sort((a, b) => {
+        const aOver = overdueReminderIds.has(a.id) ? 0 : 1;
+        const bOver = overdueReminderIds.has(b.id) ? 0 : 1;
+        if (aOver !== bOver) return aOver - bOver;
+        return new Date(a.due_at).getTime() - new Date(b.due_at).getTime();
+      }),
+    [overdueReminderIds, reminders]
   );
 
   async function submitReminder() {
     if (!newReminderTitle.trim() || !newReminderDueAt) return;
     const dueAtIso = new Date(newReminderDueAt).toISOString();
-    await createReminder(leadId, {
+    const optimistic: FollowupReminder = {
+      id: `tmp-${Date.now()}`,
+      lead_id: leadId,
       title: newReminderTitle.trim(),
       due_at: dueAtIso,
       followup_type: newReminderType,
       priority: newReminderPriority,
       status: "pending",
-    });
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      notes: null,
+      snoozed_until: null,
+      completed_at: null,
+      proposal_id: null,
+      project_id: null,
+    };
+    await mutateReminders((prev = []) => [optimistic, ...prev], { revalidate: false });
+    setQuickSheet("none");
     setNewReminderTitle("");
     setNewReminderDueAt("");
-    await mutateReminders();
-    await mutateTimeline();
+    try {
+      await createReminder(leadId, {
+        title: optimistic.title,
+        due_at: optimistic.due_at,
+        followup_type: optimistic.followup_type,
+        priority: optimistic.priority,
+        status: "pending",
+      });
+    } finally {
+      await mutateReminders();
+      await mutateTimeline();
+    }
   }
 
   async function completeReminder(id: string) {
-    await patchReminder(id, { status: "completed" });
-    await mutateReminders();
-    await mutateTimeline();
+    await mutateReminders(
+      (prev = []) => prev.map((r) => (r.id === id ? { ...r, status: "completed", completed_at: new Date().toISOString() } : r)),
+      { revalidate: false }
+    );
+    try {
+      await patchReminder(id, { status: "completed" });
+    } finally {
+      await mutateReminders();
+      await mutateTimeline();
+    }
   }
 
   async function snoozeReminder(id: string, days: number) {
     const until = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
-    await patchReminder(id, { status: "snoozed", snoozed_until: until });
-    await mutateReminders();
-    await mutateTimeline();
+    await mutateReminders(
+      (prev = []) => prev.map((r) => (r.id === id ? { ...r, status: "snoozed", snoozed_until: until } : r)),
+      { revalidate: false }
+    );
+    try {
+      await patchReminder(id, { status: "snoozed", snoozed_until: until });
+    } finally {
+      await mutateReminders();
+      await mutateTimeline();
+    }
+  }
+
+  function onReminderTouchStart(e: TouchEvent<HTMLDivElement>) {
+    setTouchStartX(e.changedTouches[0]?.clientX ?? null);
+  }
+
+  function onReminderTouchEnd(e: TouchEvent<HTMLDivElement>, reminderId: string) {
+    if (touchStartX == null) return;
+    const endX = e.changedTouches[0]?.clientX ?? touchStartX;
+    const delta = endX - touchStartX;
+    setTouchStartX(null);
+    if (delta > 70) void completeReminder(reminderId);
+    if (delta < -70) void snoozeReminder(reminderId, 1);
   }
 
   async function submitNote() {
     if (!newNote.trim()) return;
-    await createLeadNote(leadId, { body_text: newNote.trim() });
+    const optimistic: LeadNote = {
+      id: `tmp-note-${Date.now()}`,
+      lead_id: leadId,
+      body_text: newNote.trim(),
+      attachments_json: noteImagePreviewUrls.map((url, idx) => ({ id: `img-${idx}`, url, kind: "image" })),
+      voice_ref: null,
+      sketch_ref: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    await mutateNotes((prev = []) => [optimistic, ...prev], { revalidate: false });
     setNewNote("");
-    await mutateNotes();
-    await mutateTimeline();
+    setNoteImagePreviewUrls([]);
+    setQuickSheet("none");
+    try {
+      await createLeadNote(leadId, { body_text: optimistic.body_text });
+    } finally {
+      await mutateNotes();
+      await mutateTimeline();
+    }
   }
 
   async function submitVisit() {
     if (!visitAt) return;
-    await createLeadVisit(leadId, {
+    const optimistic: LeadVisit = {
+      id: `tmp-visit-${Date.now()}`,
+      lead_id: leadId,
       scheduled_at: new Date(visitAt).toISOString(),
-      summary: visitSummary.trim() || undefined,
-      location: visitLocation.trim() || undefined,
       visit_status: "scheduled",
-    });
+      summary: visitSummary.trim() || null,
+      location: visitLocation.trim() || null,
+      proposal_id: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    await mutateVisits((prev = []) => [optimistic, ...prev], { revalidate: false });
     setVisitAt("");
     setVisitSummary("");
     setVisitLocation("");
-    await mutateVisits();
+    setQuickSheet("none");
+    try {
+      await createLeadVisit(leadId, {
+        scheduled_at: optimistic.scheduled_at,
+        summary: optimistic.summary ?? undefined,
+        location: optimistic.location ?? undefined,
+        visit_status: "scheduled",
+      });
+    } finally {
+      await mutateVisits();
+      await mutateTimeline();
+    }
+  }
+
+  async function addVisitOutcome(outcome: "visited" | "not_available" | "interested" | "callback_later") {
+    const label =
+      outcome === "visited"
+        ? "Visit done"
+        : outcome === "not_available"
+          ? "Customer not available"
+          : outcome === "interested"
+            ? "Customer interested"
+            : "Callback later";
+    await createLeadNote(leadId, { body_text: label });
+    if (outcome === "callback_later") {
+      await createReminder(leadId, {
+        title: "Callback after visit",
+        due_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        followup_type: "call",
+        priority: "medium",
+      });
+      await mutateReminders();
+    }
+    await mutateNotes();
     await mutateTimeline();
   }
 
   function eventLabel(ev: ActivityEvent) {
-    const when = new Date(ev.occurred_at).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+    const when = new Date(ev.occurred_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
     return `${ev.event_type.replaceAll("_", " ")} · ${when}`;
   }
 
+  function onNoteImagesSelected(files: FileList | null) {
+    if (!files) return;
+    setNoteImagePreviewUrls(Array.from(files).slice(0, 4).map((f) => URL.createObjectURL(f)));
+  }
+
+  function toggleDay(day: string) {
+    setCollapsedDays((p) => ({ ...p, [day]: !p[day] }));
+  }
+
+  const hasMoreTimeline = timelineVisibleCount < timeline.length;
+  const timelineDays = Object.entries(timelineGroups);
+  const quickActionButtons = [
+    { id: "reminder" as const, label: "Reminder", icon: AlarmClock },
+    { id: "visit" as const, label: "Visit", icon: CalendarClock },
+    { id: "note" as const, label: "Quick note", icon: StickyNote },
+  ];
+
   return (
     <div className="flex h-full min-h-0 flex-col rounded-2xl border border-slate-200/90 bg-white shadow-sm ring-1 ring-slate-200/40 dark:border-white/10 dark:bg-[#0c1017] dark:ring-white/[0.06]">
-      <div className="sticky top-0 z-10 shrink-0 border-b border-slate-100 bg-white/95 px-4 py-3 backdrop-blur-md dark:border-white/10 dark:bg-[#0c1017]/95">
+      <div className="sticky top-0 z-20 shrink-0 border-b border-slate-100 bg-white/95 px-4 py-3 backdrop-blur-md dark:border-white/10 dark:bg-[#0c1017]/95">
         <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">{t("customers_workspaceTitle")}</p>
         <h3 className="mt-1 text-lg font-extrabold text-slate-900 dark:text-slate-50">{customer.name}</h3>
         <div className="mt-2 flex flex-wrap items-center gap-2">
-          <span
-            className={cn(
-              "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide",
-              stageMeta.className
-            )}
-          >
+          <span className={cn("inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide", stageMeta.className)}>
             {t(stageMeta.labelKey)}
           </span>
           {onStatusChange ? (
-            <LeadStatusPillSelect
-              leadId={customer.id}
-              statusKey={statusKey}
-              label={statusLabel}
-              t={t}
-              onChange={onStatusChange}
-            />
+            <LeadStatusPillSelect leadId={customer.id} statusKey={statusKey} label={statusLabel} t={t} onChange={onStatusChange} />
           ) : (
             <LeadStatusBadge statusKey={statusKey} label={statusLabel} />
           )}
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-3">
+      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-3 pb-28">
         {customer.phone ? (
           <p className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
             <PhoneCall className="h-4 w-4 shrink-0 text-slate-400" strokeWidth={1.85} aria-hidden />
@@ -278,29 +451,18 @@ export function CustomerWorkspacePane({
 
         <div className="flex flex-col gap-2">
           {customer.phone ? (
-            <a
-              href={`tel:${customer.phone}`}
-              onClick={() => handlePhoneCall(customer.id)}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-3 text-sm font-bold text-white shadow-sm active:bg-indigo-700"
-            >
+            <a href={`tel:${customer.phone}`} onClick={() => handlePhoneCall(customer.id)} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-3 text-sm font-bold text-white shadow-sm active:bg-indigo-700">
               <Phone className="h-4 w-4" aria-hidden />
-              {t("customers_mobileCall")}
+              Call now
             </a>
           ) : null}
           {waUrl ? (
-            <button
-              type="button"
-              onClick={() => openWhatsApp(customer.id, waUrl)}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-emerald-200/90 bg-emerald-50 px-3 text-sm font-bold text-emerald-800 active:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-950/40 dark:text-emerald-200"
-            >
+            <button type="button" onClick={() => openWhatsApp(customer.id, waUrl)} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-emerald-200/90 bg-emerald-50 px-3 text-sm font-bold text-emerald-800 active:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-950/40 dark:text-emerald-200">
               <MessageCircle className="h-4 w-4" aria-hidden />
-              {t("customers_whatsappShort")}
+              WhatsApp
             </button>
           ) : null}
-          <Link
-            href={commercialCta.href}
-            className="ss-cta-primary min-h-11 w-full text-center text-sm"
-          >
+          <Link href={commercialCta.href} className="ss-cta-primary min-h-12 w-full text-center text-sm">
             {t(commercialCta.labelKey)}
           </Link>
         </div>
@@ -314,78 +476,60 @@ export function CustomerWorkspacePane({
               ["visits", "Visits"],
               ["proposals", "Proposals"],
             ] as [FollowupTab, string][]).map(([tab, label]) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setActiveTab(tab)}
-                className={cn(
-                  "rounded-lg px-2.5 py-1.5 text-[11px] font-bold",
-                  activeTab === tab ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900" : "bg-slate-100 text-slate-700 dark:bg-white/10 dark:text-slate-300"
-                )}
-              >
+              <button key={tab} type="button" onClick={() => setActiveTab(tab)} className={cn("rounded-lg px-3 py-2 text-[11px] font-bold", activeTab === tab ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900" : "bg-slate-100 text-slate-700 dark:bg-white/10 dark:text-slate-300")}>
                 {label} ({tabCounts[tab]})
               </button>
             ))}
           </div>
 
           {activeTab === "timeline" ? (
-            <div className="space-y-1.5">
-              {timeline.length === 0 ? <p className="text-xs text-slate-500">No activity yet.</p> : null}
-              {timeline.map((ev) => (
-                <p key={ev.id} className="rounded-lg border border-slate-200/80 px-2 py-1.5 text-xs text-slate-700 dark:border-white/10 dark:text-slate-200">
-                  {eventLabel(ev)}
-                </p>
+            <div className="space-y-2">
+              {timelineDays.length === 0 ? <p className="text-xs text-slate-500">No activity yet.</p> : null}
+              {timelineDays.map(([day, items]) => (
+                <div key={day} className="rounded-lg border border-slate-200/80 dark:border-white/10">
+                  <button type="button" onClick={() => toggleDay(day)} className="flex w-full items-center justify-between px-2.5 py-2 text-left text-xs font-bold text-slate-700 dark:text-slate-200">
+                    <span>{day}</span>
+                    <span>{collapsedDays[day] ? "+" : "-"}</span>
+                  </button>
+                  {!collapsedDays[day] ? (
+                    <div className="space-y-1.5 border-t border-slate-200/80 p-2 dark:border-white/10">
+                      {items.map((ev) => {
+                        const Icon = EVENT_ICON[ev.event_type] ?? Clock3;
+                        return (
+                          <div key={ev.id} className="flex items-center gap-2 rounded-lg bg-slate-50 px-2 py-1.5 text-xs dark:bg-white/5">
+                            <Icon className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-300" />
+                            <span className="text-slate-700 dark:text-slate-200">{eventLabel(ev)}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : null}
+                </div>
               ))}
+              {hasMoreTimeline ? (
+                <button type="button" onClick={() => setTimelineVisibleCount((n) => n + 12)} className="w-full rounded-lg border border-slate-200 px-2 py-2 text-xs font-semibold text-slate-700 dark:border-white/10 dark:text-slate-200">
+                  Load older activity
+                </button>
+              ) : null}
             </div>
           ) : null}
 
           {activeTab === "reminders" ? (
             <div className="space-y-2">
-              <div className="grid grid-cols-2 gap-1.5">
-                <input
-                  value={newReminderTitle}
-                  onChange={(e) => setNewReminderTitle(e.target.value)}
-                  placeholder="Reminder title"
-                  className="col-span-2 rounded-md border border-slate-200 px-2 py-1.5 text-xs dark:border-white/10 dark:bg-transparent"
-                />
-                <input
-                  type="datetime-local"
-                  value={newReminderDueAt}
-                  onChange={(e) => setNewReminderDueAt(e.target.value)}
-                  className="rounded-md border border-slate-200 px-2 py-1.5 text-xs dark:border-white/10 dark:bg-transparent"
-                />
-                <select
-                  value={newReminderType}
-                  onChange={(e) => setNewReminderType(e.target.value as FollowupReminder["followup_type"])}
-                  className="rounded-md border border-slate-200 px-2 py-1.5 text-xs dark:border-white/10 dark:bg-transparent"
-                >
-                  <option value="call">Call</option>
-                  <option value="visit">Visit</option>
-                  <option value="proposal">Proposal</option>
-                  <option value="payment">Payment</option>
-                  <option value="general">General</option>
-                </select>
-                <select
-                  value={newReminderPriority}
-                  onChange={(e) => setNewReminderPriority(e.target.value as FollowupReminder["priority"])}
-                  className="rounded-md border border-slate-200 px-2 py-1.5 text-xs dark:border-white/10 dark:bg-transparent"
-                >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                  <option value="urgent">Urgent</option>
-                </select>
-                <button type="button" onClick={() => void submitReminder()} className="rounded-md bg-indigo-600 px-2 py-1.5 text-xs font-bold text-white">
-                  Add
-                </button>
-              </div>
-              {reminders.map((r) => (
-                <div key={r.id} className="rounded-lg border border-slate-200/80 p-2 text-xs dark:border-white/10">
+              <p className="text-[11px] text-slate-500">Swipe right to complete, left to snooze 1 day.</p>
+              {sortedReminders.length === 0 ? <p className="text-xs text-slate-500">No reminders yet.</p> : null}
+              {sortedReminders.map((r) => (
+                <div key={r.id} onTouchStart={onReminderTouchStart} onTouchEnd={(e) => onReminderTouchEnd(e, r.id)} className={cn("rounded-xl border p-2.5 text-xs", overdueReminderIds.has(r.id) ? "border-rose-300 bg-rose-50/70 dark:border-rose-500/40 dark:bg-rose-950/20" : "border-slate-200/80 dark:border-white/10")}>
                   <p className="font-semibold">{r.title}</p>
-                  <p className="text-slate-500">{new Date(r.due_at).toLocaleString("en-IN")} · {r.followup_type} · {r.priority}</p>
-                  <div className="mt-1 flex gap-1">
-                    <button type="button" onClick={() => void completeReminder(r.id)} className="rounded bg-emerald-600 px-2 py-1 text-[10px] font-bold text-white">Complete</button>
-                    <button type="button" onClick={() => void snoozeReminder(r.id, 1)} className="rounded bg-amber-500 px-2 py-1 text-[10px] font-bold text-white">Snooze 1d</button>
+                  <p className="text-slate-600 dark:text-slate-300">{new Date(r.due_at).toLocaleString("en-IN")} · {r.followup_type} · {r.priority}</p>
+                  <div className="mt-2 flex gap-1.5">
+                    <button type="button" onClick={() => void completeReminder(r.id)} className="flex-1 rounded-lg bg-emerald-600 px-2 py-2 text-[11px] font-bold text-white">Complete</button>
+                    <button type="button" onClick={() => void snoozeReminder(r.id, 1)} className="flex-1 rounded-lg bg-amber-500 px-2 py-2 text-[11px] font-bold text-white">Snooze</button>
+                    {customer.phone ? (
+                      <a href={`tel:${customer.phone}`} onClick={() => handlePhoneCall(customer.id)} className="flex-1 rounded-lg border border-indigo-300 bg-indigo-50 px-2 py-2 text-center text-[11px] font-bold text-indigo-700 dark:border-indigo-500/40 dark:bg-indigo-950/30 dark:text-indigo-200">
+                        Call now
+                      </a>
+                    ) : null}
                   </div>
                 </div>
               ))}
@@ -394,30 +538,32 @@ export function CustomerWorkspacePane({
 
           {activeTab === "notes" ? (
             <div className="space-y-2">
-              <textarea
-                value={newNote}
-                onChange={(e) => setNewNote(e.target.value)}
-                placeholder="Write follow-up note..."
-                rows={3}
-                className="w-full rounded-md border border-slate-200 px-2 py-1.5 text-xs dark:border-white/10 dark:bg-transparent"
-              />
-              <button type="button" onClick={() => void submitNote()} className="rounded-md bg-indigo-600 px-2 py-1.5 text-xs font-bold text-white">Save note</button>
-              <p className="text-[10px] text-slate-500">Image notes supported now. Voice/Pencil sketch architecture reserved via `voice_ref` / `sketch_ref`.</p>
+              <p className="text-[11px] text-slate-500">Voice note + Apple Pencil sketch hooks are ready via `voice_ref` and `sketch_ref`.</p>
+              {noteImagePreviewUrls.length > 0 ? (
+                <div className="grid grid-cols-2 gap-2">
+                  {noteImagePreviewUrls.map((url) => (
+                    <img key={url} src={url} alt="Note attachment preview" className="h-20 w-full rounded-lg object-cover" />
+                  ))}
+                </div>
+              ) : null}
               {notes.map((n) => (
-                <p key={n.id} className="rounded-lg border border-slate-200/80 px-2 py-1.5 text-xs dark:border-white/10">{n.body_text || "—"}</p>
+                <div key={n.id} className="rounded-lg border border-slate-200/80 px-2 py-1.5 text-xs dark:border-white/10">
+                  <p>{n.body_text || "—"}</p>
+                </div>
               ))}
             </div>
           ) : null}
 
           {activeTab === "visits" ? (
             <div className="space-y-2">
+              <button type="button" onClick={() => setQuickSheet("visit")} className="inline-flex min-h-12 w-full items-center justify-center gap-1 rounded-lg bg-indigo-600 px-3 text-sm font-bold text-white">
+                <CalendarClock className="h-4 w-4" /> Schedule Visit
+              </button>
               <div className="grid grid-cols-2 gap-1.5">
-                <input type="datetime-local" value={visitAt} onChange={(e) => setVisitAt(e.target.value)} className="rounded-md border border-slate-200 px-2 py-1.5 text-xs dark:border-white/10 dark:bg-transparent" />
-                <input value={visitLocation} onChange={(e) => setVisitLocation(e.target.value)} placeholder="Visit location" className="rounded-md border border-slate-200 px-2 py-1.5 text-xs dark:border-white/10 dark:bg-transparent" />
-                <input value={visitSummary} onChange={(e) => setVisitSummary(e.target.value)} placeholder="Visit note" className="col-span-2 rounded-md border border-slate-200 px-2 py-1.5 text-xs dark:border-white/10 dark:bg-transparent" />
-                <button type="button" onClick={() => void submitVisit()} className="inline-flex items-center justify-center gap-1 rounded-md bg-indigo-600 px-2 py-1.5 text-xs font-bold text-white">
-                  <CalendarClock className="h-3 w-3" /> Schedule
-                </button>
+                <button type="button" onClick={() => void addVisitOutcome("visited")} className="rounded-lg border border-emerald-300 bg-emerald-50 px-2 py-2 text-[11px] font-bold text-emerald-700">Visited</button>
+                <button type="button" onClick={() => void addVisitOutcome("not_available")} className="rounded-lg border border-amber-300 bg-amber-50 px-2 py-2 text-[11px] font-bold text-amber-700">Not available</button>
+                <button type="button" onClick={() => void addVisitOutcome("interested")} className="rounded-lg border border-sky-300 bg-sky-50 px-2 py-2 text-[11px] font-bold text-sky-700">Interested</button>
+                <button type="button" onClick={() => void addVisitOutcome("callback_later")} className="rounded-lg border border-violet-300 bg-violet-50 px-2 py-2 text-[11px] font-bold text-violet-700">Callback later</button>
               </div>
               {visits.map((v) => (
                 <p key={v.id} className="rounded-lg border border-slate-200/80 px-2 py-1.5 text-xs dark:border-white/10">
@@ -442,6 +588,86 @@ export function CustomerWorkspacePane({
           ) : null}
         </div>
       </div>
+
+      <div className="sticky bottom-0 z-20 border-t border-slate-200/80 bg-white/95 p-2.5 backdrop-blur dark:border-white/10 dark:bg-[#0c1017]/95">
+        <div className="flex items-center gap-2">
+          {quickActionButtons.map((action) => {
+            const Icon = action.icon;
+            return (
+              <button key={action.id} type="button" onClick={() => setQuickSheet(action.id)} className={cn("inline-flex min-h-11 flex-1 items-center justify-center gap-1 rounded-xl px-2 text-xs font-bold", quickSheet === action.id ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900" : "bg-slate-100 text-slate-700 dark:bg-white/10 dark:text-slate-200")}>
+                <Icon className="h-3.5 w-3.5" />
+                {action.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {quickSheet !== "none" ? (
+        <div className="fixed inset-x-0 bottom-0 z-40 rounded-t-2xl border border-slate-200/80 bg-white p-3 shadow-2xl dark:border-white/10 dark:bg-[#0c1017]">
+          <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-slate-300 dark:bg-slate-700" />
+          {quickSheet === "reminder" ? (
+            <div className="space-y-2">
+              <p className="text-xs font-bold text-slate-700 dark:text-slate-100">Quick reminder</p>
+              <input value={newReminderTitle} onChange={(e) => setNewReminderTitle(e.target.value)} placeholder="Reminder title" className="w-full rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-white/10 dark:bg-transparent" />
+              <div className="grid grid-cols-2 gap-2">
+                <input type="datetime-local" value={newReminderDueAt} onChange={(e) => setNewReminderDueAt(e.target.value)} className="rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-white/10 dark:bg-transparent" />
+                <select value={newReminderType} onChange={(e) => setNewReminderType(e.target.value as FollowupReminder["followup_type"])} className="rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-white/10 dark:bg-transparent">
+                  <option value="call">Call</option>
+                  <option value="visit">Visit</option>
+                  <option value="proposal">Proposal</option>
+                  <option value="payment">Payment</option>
+                  <option value="general">General</option>
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <select value={newReminderPriority} onChange={(e) => setNewReminderPriority(e.target.value as FollowupReminder["priority"])} className="rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-white/10 dark:bg-transparent">
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+                <button type="button" onClick={() => void submitReminder()} className="inline-flex min-h-11 items-center justify-center gap-1 rounded-md bg-indigo-600 text-sm font-bold text-white">
+                  <Plus className="h-4 w-4" /> Add reminder
+                </button>
+              </div>
+            </div>
+          ) : null}
+
+          {quickSheet === "note" ? (
+            <div className="space-y-2">
+              <p className="text-xs font-bold text-slate-700 dark:text-slate-100">Quick note</p>
+              <textarea value={newNote} onChange={(e) => setNewNote(e.target.value)} placeholder="Field note..." rows={3} className="w-full rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-white/10 dark:bg-transparent" />
+              <label className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-slate-200 px-2 py-2 text-xs font-semibold text-slate-700 dark:border-white/10 dark:text-slate-200">
+                <Plus className="h-3.5 w-3.5" />
+                Add image preview
+                <input type="file" accept="image/*" className="hidden" multiple onChange={(e) => onNoteImagesSelected(e.target.files)} />
+              </label>
+              <button type="button" onClick={() => void submitNote()} className="inline-flex min-h-11 w-full items-center justify-center gap-1 rounded-md bg-indigo-600 text-sm font-bold text-white">
+                <StickyNote className="h-4 w-4" /> Save note
+              </button>
+            </div>
+          ) : null}
+
+          {quickSheet === "visit" ? (
+            <div className="space-y-2">
+              <p className="text-xs font-bold text-slate-700 dark:text-slate-100">Schedule visit</p>
+              <div className="grid grid-cols-2 gap-2">
+                <input type="datetime-local" value={visitAt} onChange={(e) => setVisitAt(e.target.value)} className="rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-white/10 dark:bg-transparent" />
+                <input value={visitLocation} onChange={(e) => setVisitLocation(e.target.value)} placeholder="Location" className="rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-white/10 dark:bg-transparent" />
+              </div>
+              <input value={visitSummary} onChange={(e) => setVisitSummary(e.target.value)} placeholder="Visit note" className="w-full rounded-md border border-slate-200 px-2 py-2 text-sm dark:border-white/10 dark:bg-transparent" />
+              <button type="button" onClick={() => void submitVisit()} className="inline-flex min-h-11 w-full items-center justify-center gap-1 rounded-md bg-indigo-600 text-sm font-bold text-white">
+                <CalendarClock className="h-4 w-4" /> Confirm visit
+              </button>
+            </div>
+          ) : null}
+
+          <button type="button" onClick={() => setQuickSheet("none")} className="mt-2 w-full rounded-md border border-slate-200 px-2 py-2 text-xs font-semibold text-slate-600 dark:border-white/10 dark:text-slate-300">
+            Close
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

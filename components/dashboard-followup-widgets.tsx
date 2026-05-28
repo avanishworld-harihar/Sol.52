@@ -53,20 +53,31 @@ export function DashboardFollowupWidgets() {
   const overdue = data?.overdue ?? [];
   const upcoming = data?.upcomingVisits ?? [];
 
+  const orderedOverdue = [...overdue].sort((a, b) => new Date(a.due_at).getTime() - new Date(b.due_at).getTime());
+  const orderedToday = [...today].sort((a, b) => new Date(a.due_at).getTime() - new Date(b.due_at).getTime());
+
   return (
     <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
       <Card title="Today follow-ups">
-        {today.length === 0 ? <p className="text-xs text-slate-500">No follow-ups due today.</p> : null}
-        {today.slice(0, 5).map((r) => (
-          <Link key={r.id} href={`/customers?lead=${encodeURIComponent(r.lead_id)}`} className="block py-1 text-xs hover:underline">
+        {orderedToday.length === 0 ? <p className="text-xs text-slate-500">No follow-ups due today.</p> : null}
+        {orderedToday.slice(0, 5).map((r) => (
+          <Link
+            key={r.id}
+            href={`/customers?lead=${encodeURIComponent(r.lead_id)}`}
+            className="mb-1 block rounded-lg border border-slate-200/70 bg-slate-50 px-2.5 py-2 text-xs font-semibold hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
+          >
             {r.title} · {new Date(r.due_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
           </Link>
         ))}
       </Card>
       <Card title="Overdue follow-ups">
-        {overdue.length === 0 ? <p className="text-xs text-slate-500">No overdue follow-ups.</p> : null}
-        {overdue.slice(0, 5).map((r) => (
-          <Link key={r.id} href={`/customers?lead=${encodeURIComponent(r.lead_id)}`} className="block py-1 text-xs text-rose-700 hover:underline dark:text-rose-300">
+        {orderedOverdue.length === 0 ? <p className="text-xs text-slate-500">No overdue follow-ups.</p> : null}
+        {orderedOverdue.slice(0, 5).map((r) => (
+          <Link
+            key={r.id}
+            href={`/customers?lead=${encodeURIComponent(r.lead_id)}`}
+            className="mb-1 block rounded-lg border border-rose-300/80 bg-rose-50 px-2.5 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 dark:border-rose-500/40 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/40"
+          >
             {r.title} · {new Date(r.due_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}
           </Link>
         ))}
@@ -74,7 +85,11 @@ export function DashboardFollowupWidgets() {
       <Card title="Upcoming visits">
         {upcoming.length === 0 ? <p className="text-xs text-slate-500">No visits in next 7 days.</p> : null}
         {upcoming.slice(0, 5).map((v) => (
-          <Link key={v.id} href={`/customers?lead=${encodeURIComponent(v.lead_id)}`} className="block py-1 text-xs hover:underline">
+          <Link
+            key={v.id}
+            href={`/customers?lead=${encodeURIComponent(v.lead_id)}`}
+            className="mb-1 block rounded-lg border border-sky-200/80 bg-sky-50 px-2.5 py-2 text-xs font-semibold text-sky-800 hover:bg-sky-100 dark:border-sky-500/30 dark:bg-sky-950/30 dark:text-sky-200 dark:hover:bg-sky-950/40"
+          >
             {new Date(v.scheduled_at).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
             {v.location ? ` · ${v.location}` : ""}
           </Link>
