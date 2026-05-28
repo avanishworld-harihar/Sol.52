@@ -2268,7 +2268,7 @@ function ProposalPageContent() {
               </option>
           {customers.map((c) => (
             <option key={c.id} value={c.id}>
-              {c.name} — {c.city} ({c.discom})
+              {c.name} — {c.city} ({c.discom}){c.phone ? ` · ${c.phone}` : ""}
             </option>
           ))}
         </FloatingLabelSelect>

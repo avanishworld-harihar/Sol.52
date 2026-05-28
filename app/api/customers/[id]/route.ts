@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { mapCustomerRow } from "@/lib/customers-map";
+import { appendActivityEvent } from "@/lib/followup-store";
 import { LEAD_STATUS_KEYS } from "@/lib/lead-status";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { bumpLeadStatus, supabase, resolveLeadsTable } from "@/lib/supabase";
@@ -82,6 +83,11 @@ export async function PATCH(req: NextRequest, ctx: RouteCtx) {
       if (!updated) {
         return NextResponse.json({ ok: false, error: "lead_not_found_or_db_unavailable" }, { status: 404 });
       }
+      void appendActivityEvent({
+        leadId: id,
+        eventType: "status_changed",
+        meta: { status: patch.status },
+      });
       return NextResponse.json({ ok: true, data: mapCustomerRow(updated) });
     }
 

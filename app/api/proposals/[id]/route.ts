@@ -12,6 +12,7 @@ import {
   getLatestSnapshot,
 } from "@/lib/proposal-snapshot-store";
 import { upsertPipelineProject } from "@/lib/supabase";
+import { appendActivityEvent } from "@/lib/followup-store";
 
 export const dynamic = "force-dynamic";
 
@@ -249,6 +250,13 @@ export async function GET(_req: NextRequest, ctx: RouteCtx) {
 
     // Fire-and-forget view counter.
     void trackProposalView(id).catch(() => undefined);
+    if (proposal.lead_id) {
+      void appendActivityEvent({
+        leadId: proposal.lead_id,
+        eventType: "proposal_opened",
+        meta: { proposalId: proposal.id, customerName: proposal.customer_name },
+      });
+    }
 
     return NextResponse.json(
       {

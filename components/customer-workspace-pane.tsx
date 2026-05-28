@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Building2, IndianRupee, MapPin, MessageCircle, Phone, PhoneCall } from "lucide-react";
+import { Building2, CalendarClock, IndianRupee, MapPin, MessageCircle, Phone, PhoneCall } from "lucide-react";
+import useSWR from "swr";
 
 import {
   LeadStatusBadge,
@@ -19,9 +20,23 @@ import { buildLeadWhatsAppUrl } from "@/lib/whatsapp-lead";
 import { readLeadFollowUpMap, recordLeadFollowUp } from "@/lib/lead-followup-storage";
 import { isLeadStale } from "@/lib/lead-source";
 import { resolveCustomerCommercialCta } from "@/lib/customer-crm-cta";
-import { useCallback, useEffect, useState } from "react";
+import {
+  createLeadNote,
+  createLeadVisit,
+  createReminder,
+  fetchLeadNotes,
+  fetchLeadProposals,
+  fetchLeadReminders,
+  fetchLeadTimeline,
+  fetchLeadVisits,
+  logCustomerContact,
+  patchReminder,
+} from "@/lib/followup-client";
+import type { ActivityEvent, FollowupReminder, LeadNote, LeadVisit } from "@/lib/followup-types";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 type CustomerStage = "lead" | "in-pipeline" | "active-project";
+type FollowupTab = "timeline" | "reminders" | "notes" | "visits" | "proposals";
 
 const CUSTOMER_STAGE_META: Record<CustomerStage, { labelKey: string; className: string }> = {
   lead: {
@@ -48,6 +63,15 @@ export function CustomerWorkspacePane({
   const { locale, t } = useLanguage();
   const installerName = getInstallerBrandName();
   const [followMap, setFollowMap] = useState<Record<string, number>>({});
+  const [activeTab, setActiveTab] = useState<FollowupTab>("timeline");
+  const [newReminderTitle, setNewReminderTitle] = useState("");
+  const [newReminderDueAt, setNewReminderDueAt] = useState("");
+  const [newReminderType, setNewReminderType] = useState<FollowupReminder["followup_type"]>("call");
+  const [newReminderPriority, setNewReminderPriority] = useState<FollowupReminder["priority"]>("medium");
+  const [newNote, setNewNote] = useState("");
+  const [visitAt, setVisitAt] = useState("");
+  const [visitSummary, setVisitSummary] = useState("");
+  const [visitLocation, setVisitLocation] = useState("");
 
   const refreshFollowMap = useCallback(() => {
     setFollowMap({ ...readLeadFollowUpMap() });
@@ -61,6 +85,7 @@ export function CustomerWorkspacePane({
     (leadId: string, url: string) => {
       recordLeadFollowUp(leadId);
       refreshFollowMap();
+      void logCustomerContact(leadId, "whatsapp");
       window.open(url, "_blank", "noopener,noreferrer");
     },
     [refreshFollowMap]
@@ -70,6 +95,7 @@ export function CustomerWorkspacePane({
     (leadId: string) => {
       recordLeadFollowUp(leadId);
       refreshFollowMap();
+      void logCustomerContact(leadId, "call");
     },
     [refreshFollowMap]
   );
@@ -96,6 +122,92 @@ export function CustomerWorkspacePane({
   const stageMeta = CUSTOMER_STAGE_META[stage];
   const commercialCta = resolveCustomerCommercialCta(customer);
   const lastActivityLabel = formatLeadLastActivity(customer.last_touched_at, locale);
+  const leadId = customer.id;
+  const timelineKey = leadId ? `/api/customers/${leadId}/timeline` : null;
+  const remindersKey = leadId ? `/api/customers/${leadId}/reminders` : null;
+  const notesKey = leadId ? `/api/customers/${leadId}/notes` : null;
+  const visitsKey = leadId ? `/api/customers/${leadId}/visits` : null;
+  const proposalsKey = leadId ? `/api/customers/${leadId}/proposals` : null;
+
+  const { data: timeline = [], mutate: mutateTimeline } = useSWR<ActivityEvent[]>(
+    timelineKey,
+    () => fetchLeadTimeline(leadId)
+  );
+  const { data: reminders = [], mutate: mutateReminders } = useSWR<FollowupReminder[]>(
+    remindersKey,
+    () => fetchLeadReminders(leadId)
+  );
+  const { data: notes = [], mutate: mutateNotes } = useSWR<LeadNote[]>(notesKey, () => fetchLeadNotes(leadId));
+  const { data: visits = [], mutate: mutateVisits } = useSWR<LeadVisit[]>(visitsKey, () => fetchLeadVisits(leadId));
+  const { data: proposals = [] } = useSWR<Record<string, unknown>[]>(proposalsKey, () => fetchLeadProposals(leadId));
+
+  const tabCounts = useMemo(
+    () => ({
+      timeline: timeline.length,
+      reminders: reminders.length,
+      notes: notes.length,
+      visits: visits.length,
+      proposals: proposals.length,
+    }),
+    [notes.length, proposals.length, reminders.length, timeline.length, visits.length]
+  );
+
+  async function submitReminder() {
+    if (!newReminderTitle.trim() || !newReminderDueAt) return;
+    const dueAtIso = new Date(newReminderDueAt).toISOString();
+    await createReminder(leadId, {
+      title: newReminderTitle.trim(),
+      due_at: dueAtIso,
+      followup_type: newReminderType,
+      priority: newReminderPriority,
+      status: "pending",
+    });
+    setNewReminderTitle("");
+    setNewReminderDueAt("");
+    await mutateReminders();
+    await mutateTimeline();
+  }
+
+  async function completeReminder(id: string) {
+    await patchReminder(id, { status: "completed" });
+    await mutateReminders();
+    await mutateTimeline();
+  }
+
+  async function snoozeReminder(id: string, days: number) {
+    const until = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+    await patchReminder(id, { status: "snoozed", snoozed_until: until });
+    await mutateReminders();
+    await mutateTimeline();
+  }
+
+  async function submitNote() {
+    if (!newNote.trim()) return;
+    await createLeadNote(leadId, { body_text: newNote.trim() });
+    setNewNote("");
+    await mutateNotes();
+    await mutateTimeline();
+  }
+
+  async function submitVisit() {
+    if (!visitAt) return;
+    await createLeadVisit(leadId, {
+      scheduled_at: new Date(visitAt).toISOString(),
+      summary: visitSummary.trim() || undefined,
+      location: visitLocation.trim() || undefined,
+      visit_status: "scheduled",
+    });
+    setVisitAt("");
+    setVisitSummary("");
+    setVisitLocation("");
+    await mutateVisits();
+    await mutateTimeline();
+  }
+
+  function eventLabel(ev: ActivityEvent) {
+    const when = new Date(ev.occurred_at).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+    return `${ev.event_type.replaceAll("_", " ")} · ${when}`;
+  }
 
   return (
     <div className="flex h-full min-h-0 flex-col rounded-2xl border border-slate-200/90 bg-white shadow-sm ring-1 ring-slate-200/40 dark:border-white/10 dark:bg-[#0c1017] dark:ring-white/[0.06]">
@@ -191,6 +303,143 @@ export function CustomerWorkspacePane({
           >
             {t(commercialCta.labelKey)}
           </Link>
+        </div>
+
+        <div className="rounded-xl border border-slate-200/90 bg-white/90 p-2 dark:border-white/10 dark:bg-white/[0.03]">
+          <div className="mb-2 flex flex-wrap gap-1.5">
+            {([
+              ["timeline", "Timeline"],
+              ["reminders", "Reminders"],
+              ["notes", "Notes"],
+              ["visits", "Visits"],
+              ["proposals", "Proposals"],
+            ] as [FollowupTab, string][]).map(([tab, label]) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setActiveTab(tab)}
+                className={cn(
+                  "rounded-lg px-2.5 py-1.5 text-[11px] font-bold",
+                  activeTab === tab ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900" : "bg-slate-100 text-slate-700 dark:bg-white/10 dark:text-slate-300"
+                )}
+              >
+                {label} ({tabCounts[tab]})
+              </button>
+            ))}
+          </div>
+
+          {activeTab === "timeline" ? (
+            <div className="space-y-1.5">
+              {timeline.length === 0 ? <p className="text-xs text-slate-500">No activity yet.</p> : null}
+              {timeline.map((ev) => (
+                <p key={ev.id} className="rounded-lg border border-slate-200/80 px-2 py-1.5 text-xs text-slate-700 dark:border-white/10 dark:text-slate-200">
+                  {eventLabel(ev)}
+                </p>
+              ))}
+            </div>
+          ) : null}
+
+          {activeTab === "reminders" ? (
+            <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-1.5">
+                <input
+                  value={newReminderTitle}
+                  onChange={(e) => setNewReminderTitle(e.target.value)}
+                  placeholder="Reminder title"
+                  className="col-span-2 rounded-md border border-slate-200 px-2 py-1.5 text-xs dark:border-white/10 dark:bg-transparent"
+                />
+                <input
+                  type="datetime-local"
+                  value={newReminderDueAt}
+                  onChange={(e) => setNewReminderDueAt(e.target.value)}
+                  className="rounded-md border border-slate-200 px-2 py-1.5 text-xs dark:border-white/10 dark:bg-transparent"
+                />
+                <select
+                  value={newReminderType}
+                  onChange={(e) => setNewReminderType(e.target.value as FollowupReminder["followup_type"])}
+                  className="rounded-md border border-slate-200 px-2 py-1.5 text-xs dark:border-white/10 dark:bg-transparent"
+                >
+                  <option value="call">Call</option>
+                  <option value="visit">Visit</option>
+                  <option value="proposal">Proposal</option>
+                  <option value="payment">Payment</option>
+                  <option value="general">General</option>
+                </select>
+                <select
+                  value={newReminderPriority}
+                  onChange={(e) => setNewReminderPriority(e.target.value as FollowupReminder["priority"])}
+                  className="rounded-md border border-slate-200 px-2 py-1.5 text-xs dark:border-white/10 dark:bg-transparent"
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+                <button type="button" onClick={() => void submitReminder()} className="rounded-md bg-indigo-600 px-2 py-1.5 text-xs font-bold text-white">
+                  Add
+                </button>
+              </div>
+              {reminders.map((r) => (
+                <div key={r.id} className="rounded-lg border border-slate-200/80 p-2 text-xs dark:border-white/10">
+                  <p className="font-semibold">{r.title}</p>
+                  <p className="text-slate-500">{new Date(r.due_at).toLocaleString("en-IN")} · {r.followup_type} · {r.priority}</p>
+                  <div className="mt-1 flex gap-1">
+                    <button type="button" onClick={() => void completeReminder(r.id)} className="rounded bg-emerald-600 px-2 py-1 text-[10px] font-bold text-white">Complete</button>
+                    <button type="button" onClick={() => void snoozeReminder(r.id, 1)} className="rounded bg-amber-500 px-2 py-1 text-[10px] font-bold text-white">Snooze 1d</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          {activeTab === "notes" ? (
+            <div className="space-y-2">
+              <textarea
+                value={newNote}
+                onChange={(e) => setNewNote(e.target.value)}
+                placeholder="Write follow-up note..."
+                rows={3}
+                className="w-full rounded-md border border-slate-200 px-2 py-1.5 text-xs dark:border-white/10 dark:bg-transparent"
+              />
+              <button type="button" onClick={() => void submitNote()} className="rounded-md bg-indigo-600 px-2 py-1.5 text-xs font-bold text-white">Save note</button>
+              <p className="text-[10px] text-slate-500">Image notes supported now. Voice/Pencil sketch architecture reserved via `voice_ref` / `sketch_ref`.</p>
+              {notes.map((n) => (
+                <p key={n.id} className="rounded-lg border border-slate-200/80 px-2 py-1.5 text-xs dark:border-white/10">{n.body_text || "—"}</p>
+              ))}
+            </div>
+          ) : null}
+
+          {activeTab === "visits" ? (
+            <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-1.5">
+                <input type="datetime-local" value={visitAt} onChange={(e) => setVisitAt(e.target.value)} className="rounded-md border border-slate-200 px-2 py-1.5 text-xs dark:border-white/10 dark:bg-transparent" />
+                <input value={visitLocation} onChange={(e) => setVisitLocation(e.target.value)} placeholder="Visit location" className="rounded-md border border-slate-200 px-2 py-1.5 text-xs dark:border-white/10 dark:bg-transparent" />
+                <input value={visitSummary} onChange={(e) => setVisitSummary(e.target.value)} placeholder="Visit note" className="col-span-2 rounded-md border border-slate-200 px-2 py-1.5 text-xs dark:border-white/10 dark:bg-transparent" />
+                <button type="button" onClick={() => void submitVisit()} className="inline-flex items-center justify-center gap-1 rounded-md bg-indigo-600 px-2 py-1.5 text-xs font-bold text-white">
+                  <CalendarClock className="h-3 w-3" /> Schedule
+                </button>
+              </div>
+              {visits.map((v) => (
+                <p key={v.id} className="rounded-lg border border-slate-200/80 px-2 py-1.5 text-xs dark:border-white/10">
+                  {new Date(v.scheduled_at).toLocaleString("en-IN")} · {v.visit_status} {v.location ? `· ${v.location}` : ""}
+                </p>
+              ))}
+            </div>
+          ) : null}
+
+          {activeTab === "proposals" ? (
+            <div className="space-y-1.5">
+              {proposals.length === 0 ? <p className="text-xs text-slate-500">No proposals linked yet.</p> : null}
+              {proposals.map((p) => {
+                const id = String(p.id ?? "");
+                return (
+                  <Link key={id} href={`/proposals/${id}`} className="block rounded-lg border border-slate-200/80 px-2 py-1.5 text-xs hover:bg-slate-50 dark:border-white/10 dark:hover:bg-white/5">
+                    {String(p.customer_name ?? "Proposal")} · {String(p.generated_at ?? "").slice(0, 10)}
+                  </Link>
+                );
+              })}
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

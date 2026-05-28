@@ -9,6 +9,7 @@ import { freezeProposalQuote } from "@/lib/freeze-proposal-quote";
 import { createProposal, listRecentProposals } from "@/lib/proposals-store";
 import { proposalExtrasShape } from "@/lib/proposal-extras-schema";
 import { bumpLeadStatus, upsertPipelineProject } from "@/lib/supabase";
+import { appendActivityEvent } from "@/lib/followup-store";
 import type { MonthlyUnits } from "@/lib/types";
 
 const SITE_SURVEY_NEXT_ACTION = "Site survey pending";
@@ -207,6 +208,16 @@ export async function POST(req: NextRequest) {
       } catch (err) {
         console.warn("[proposals POST] bumpLeadStatus failed:", err);
       }
+      void appendActivityEvent({
+        leadId: payload.leadId,
+        eventType: "proposal_created",
+        meta: {
+          proposalId: created.id,
+          customerName: payload.customerName,
+          systemKw: payload.systemKw,
+          projectId,
+        },
+      });
     }
 
     const origin = req.headers.get("origin") || `${req.nextUrl.protocol}//${req.nextUrl.host}`;

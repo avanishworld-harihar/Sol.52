@@ -274,13 +274,23 @@ export async function listCustomers() {
   if (!client) return [];
   const leadsTable = await resolveLeadsTable();
   if (!leadsTable) return [];
-  const { data, error } = await client
-    .from(leadsTable)
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(100);
-  if (error) throw error;
-  return data ?? [];
+  const pageSize = 500;
+  let offset = 0;
+  const rows: Record<string, unknown>[] = [];
+  while (true) {
+    const { data, error } = await client
+      .from(leadsTable)
+      .select("*")
+      .order("created_at", { ascending: false })
+      .range(offset, offset + pageSize - 1);
+    if (error) throw error;
+    const chunk = (data ?? []) as Record<string, unknown>[];
+    rows.push(...chunk);
+    if (chunk.length < pageSize) break;
+    offset += pageSize;
+    if (offset >= 5000) break;
+  }
+  return rows;
 }
 
 /** Latest proposal id per lead (for CRM → commercial hand-off). */
