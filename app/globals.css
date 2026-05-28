@@ -3356,14 +3356,14 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   .proposal-page[data-page="cover"] {
     display: block !important;
     min-height: 0 !important;
-    page-break-inside: auto !important;
-    break-inside: auto !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
   }
 
   .proposal-page[data-page="cover"] .proposal-hero,
   .proposal-page[data-page="cover"] section {
-    page-break-inside: auto !important;
-    break-inside: auto !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
   }
 
   .proposal-page[data-page="cover"] .proposal-hero-orchestrated {
@@ -3377,17 +3377,17 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
 
   .proposal-page[data-page="cover"] .proposal-hero-main {
     display: block !important;
-    padding: 4mm 6mm 2mm !important;
+    padding: 3mm 5mm 1mm !important;
   }
 
   .proposal-page[data-page="cover"] .proposal-hero-body {
-    margin-top: 2mm !important;
+    margin-top: 1.25mm !important;
   }
 
   .proposal-page[data-page="cover"] .proposal-hero-body > .order-3,
   .proposal-page[data-page="cover"] .proposal-hero-body > .order-4,
   .proposal-page[data-page="cover"] .proposal-hero-body > .order-5 {
-    margin-top: 2mm !important;
+    margin-top: 1.25mm !important;
   }
 
   .proposal-page[data-page="cover"] .proposal-hero-intro h1,
@@ -3398,14 +3398,14 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   }
 
   .proposal-page[data-page="cover"] .proposal-hero-about {
-    margin-top: 2mm !important;
-    padding: 2mm 3mm !important;
+    margin-top: 1.25mm !important;
+    padding: 1.5mm 2.5mm !important;
   }
 
   .proposal-page[data-page="cover"] .proposal-hero-profile,
   .proposal-page[data-page="cover"] .proposal-hero-metrics {
-    margin-top: 2mm !important;
-    gap: 1.25mm !important;
+    margin-top: 1.25mm !important;
+    gap: 1mm !important;
   }
 
   .proposal-page[data-page="cover"] .proposal-hero-profile > *,
@@ -3414,12 +3414,12 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   }
 
   .proposal-page[data-page="cover"] .proposal-hero-installer-bar {
-    padding-bottom: 2mm !important;
+    padding-bottom: 1.25mm !important;
   }
 
   .proposal-page[data-page="cover"] .proposal-hero-cover-tail {
     width: 100% !important;
-    margin-top: 2mm !important;
+    margin-top: 1mm !important;
     page-break-inside: avoid !important;
     break-inside: avoid-page !important;
   }
