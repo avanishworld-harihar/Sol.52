@@ -43,8 +43,12 @@ import type { CustomerLead } from "@/lib/types";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import type { FormEvent } from "react";
 import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
 import useSWR, { useSWRConfig } from "swr";
+
+/** Above `#ss-bottom-nav-portal` (9999) so lead sheet footer stays tappable on mobile. */
+const LEAD_MODAL_Z = "z-[10060]";
 
 type LeadModal = "none" | "add" | "edit";
 type StageFilter = "all" | "leads" | "proposal-sent" | "active-projects";
@@ -58,8 +62,22 @@ function CustomersPageContent() {
   const { mutate: mutateGlobal } = useSWRConfig();
   const openFromQuery = searchParams.get("add") === "1";
   const [leadModal, setLeadModal] = useState<LeadModal>(() => (openFromQuery ? "add" : "none"));
+
+  useEffect(() => {
+    setLeadModalPortalReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (leadModal === "none") return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [leadModal]);
   const [editLeadId, setEditLeadId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<CustomerLead | null>(null);
+  const [leadModalPortalReady, setLeadModalPortalReady] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({
     name: "",
@@ -601,15 +619,31 @@ function CustomersPageContent() {
         </WorkspaceStaggerItem>
       </WorkspacePage>
 
-      {leadModal !== "none" && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          className="fixed inset-0 z-[10050] flex items-end justify-center bg-slate-900/65 p-0 backdrop-blur-sm sm:items-center sm:p-4"
-        >
-          <div className="flex max-h-[min(92dvh,100%)] w-full max-w-md flex-col overflow-hidden rounded-t-2xl border border-white/55 bg-[hsl(var(--card))] shadow-[0_30px_70px_-26px_rgba(15,23,42,0.48),0_8px_20px_-10px_rgba(15,23,42,0.24)] sm:max-h-[90vh] sm:rounded-2xl">
+      {leadModal !== "none" &&
+        leadModalPortalReady &&
+        createPortal(
+          <div
+            className={cn(
+              "fixed inset-0 flex items-end justify-center touch-manipulation sm:items-center sm:p-4",
+              LEAD_MODAL_Z
+            )}
+            role="presentation"
+          >
+            <button
+              type="button"
+              className="absolute inset-0 cursor-default bg-slate-900/65 backdrop-blur-sm"
+              aria-label={t("actions_close")}
+              onClick={closeLeadModal}
+            />
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="lead-modal-title"
+              className="relative z-[1] flex h-[min(92dvh,100dvh)] max-h-[min(92dvh,100dvh)] w-full max-w-md min-h-0 flex-col overflow-hidden rounded-t-2xl border border-white/55 bg-[hsl(var(--card))] shadow-[0_30px_70px_-26px_rgba(15,23,42,0.48),0_8px_20px_-10px_rgba(15,23,42,0.24)] sm:h-auto sm:max-h-[min(90vh,920px)] sm:rounded-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
             <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-100/80 px-4 py-3 dark:border-white/10">
-              <h3 className="text-base font-extrabold text-brand-800 sm:text-lg">
+              <h3 id="lead-modal-title" className="text-base font-extrabold text-brand-800 sm:text-lg">
                 {leadModal === "edit" ? t("customers_editLeadTitle") : t("customers_addModalTitle")}
               </h3>
               <button
@@ -622,7 +656,7 @@ function CustomersPageContent() {
               </button>
             </div>
             <form id="lead-modal-form" className="flex min-h-0 flex-1 flex-col" onSubmit={onSubmit}>
-              <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto overscroll-contain px-4 py-3 sm:space-y-3">
+              <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto overscroll-contain px-4 py-3 pb-2 sm:space-y-3">
               <p className="text-[11px] font-semibold leading-snug text-slate-600">{t("customers_regionSyncHint")}</p>
               <FloatingLabelInput
                 label={t("customers_placeholderName")}
@@ -766,18 +800,19 @@ function CustomersPageContent() {
               </FloatingLabelSelect>
               {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
               </div>
-              <div className="shrink-0 border-t border-slate-100/80 bg-[hsl(var(--card))] px-4 py-3 pb-[max(1rem,env(safe-area-inset-bottom))] dark:border-white/10 sm:pb-3">
+              <div className="sticky bottom-0 z-10 shrink-0 border-t border-slate-100/80 bg-[hsl(var(--card))] px-4 py-3 shadow-[0_-10px_28px_-14px_rgba(15,23,42,0.28)] pb-[max(1rem,env(safe-area-inset-bottom,0px))] dark:border-white/10 sm:pb-3">
                 <button
-                  className="w-full rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-4 py-3.5 text-sm font-extrabold text-white shadow-[0_14px_30px_-16px_rgba(20,184,166,0.9)] transition-all duration-200 hover:brightness-105 active:scale-[0.99]"
+                  className="w-full min-h-12 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-4 py-3.5 text-sm font-extrabold text-white shadow-[0_14px_30px_-16px_rgba(20,184,166,0.9)] transition-all duration-200 hover:brightness-105 active:scale-[0.99]"
                   type="submit"
                 >
                   {leadModal === "edit" ? t("customers_saveLeadChanges") : t("actions_saveCustomer")}
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+            </div>
+          </div>,
+          document.body
+        )}
 
       {deleteTarget && (
         <div className="fixed inset-0 z-[10060] flex items-center justify-center bg-slate-900/55 p-4 backdrop-blur-sm">
