@@ -132,44 +132,27 @@ export function CustomerWorkspacePane({
     [refreshFollowMap]
   );
 
-  if (!customer) {
-    return (
-      <div className="flex h-full min-h-[280px] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300/80 bg-slate-50/50 p-6 text-center dark:border-white/15 dark:bg-white/[0.03]">
-        <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{t("customers_workspaceEmptyTitle")}</p>
-        <p className="mt-2 max-w-[16rem] text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
-          {t("customers_workspaceEmptySub")}
-        </p>
-      </div>
-    );
-  }
+  const leadId = customer?.id ?? "";
 
-  const statusKey = normalizeLeadStatus(customer.status);
-  const bill = Number(customer.monthly_bill || 0);
-  const ts = followMap[customer.id];
-  const followLabel = ts != null ? formatLastFollowUpLocale(locale, ts) : t("customers_neverFollowedUp");
-  const waUrl = customer.phone ? buildLeadWhatsAppUrl(customer.phone, customer.name, installerName, locale) : null;
-  const statusLabel = t(LEAD_STATUS_I18N_KEY[statusKey]);
-  const stale = isLeadStale(customer.last_touched_at);
-  const stage = (customer.customer_stage ?? "lead") as CustomerStage;
-  const stageMeta = CUSTOMER_STAGE_META[stage];
-  const commercialCta = resolveCustomerCommercialCta(customer);
-  const lastActivityLabel = formatLeadLastActivity(customer.last_touched_at, locale);
-  const leadId = customer.id;
-
-  const { data: timeline = [], mutate: mutateTimeline } = useSWR<ActivityEvent[]>(`/api/customers/${leadId}/timeline`, () =>
-    fetchLeadTimeline(leadId)
+  const { data: timeline = [], mutate: mutateTimeline } = useSWR<ActivityEvent[]>(
+    leadId ? `/api/customers/${leadId}/timeline` : null,
+    () => fetchLeadTimeline(leadId as string)
   );
-  const { data: reminders = [], mutate: mutateReminders } = useSWR<FollowupReminder[]>(`/api/customers/${leadId}/reminders`, () =>
-    fetchLeadReminders(leadId)
+  const { data: reminders = [], mutate: mutateReminders } = useSWR<FollowupReminder[]>(
+    leadId ? `/api/customers/${leadId}/reminders` : null,
+    () => fetchLeadReminders(leadId as string)
   );
-  const { data: notes = [], mutate: mutateNotes } = useSWR<LeadNote[]>(`/api/customers/${leadId}/notes`, () =>
-    fetchLeadNotes(leadId)
+  const { data: notes = [], mutate: mutateNotes } = useSWR<LeadNote[]>(
+    leadId ? `/api/customers/${leadId}/notes` : null,
+    () => fetchLeadNotes(leadId as string)
   );
-  const { data: visits = [], mutate: mutateVisits } = useSWR<LeadVisit[]>(`/api/customers/${leadId}/visits`, () =>
-    fetchLeadVisits(leadId)
+  const { data: visits = [], mutate: mutateVisits } = useSWR<LeadVisit[]>(
+    leadId ? `/api/customers/${leadId}/visits` : null,
+    () => fetchLeadVisits(leadId as string)
   );
-  const { data: proposals = [] } = useSWR<Record<string, unknown>[]>(`/api/customers/${leadId}/proposals`, () =>
-    fetchLeadProposals(leadId)
+  const { data: proposals = [] } = useSWR<Record<string, unknown>[]>(
+    leadId ? `/api/customers/${leadId}/proposals` : null,
+    () => fetchLeadProposals(leadId as string)
   );
 
   useEffect(() => {
@@ -392,6 +375,29 @@ export function CustomerWorkspacePane({
     { id: "visit" as const, label: "Visit", icon: CalendarClock },
     { id: "note" as const, label: "Quick note", icon: StickyNote },
   ];
+
+  if (!customer) {
+    return (
+      <div className="flex h-full min-h-[280px] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300/80 bg-slate-50/50 p-6 text-center dark:border-white/15 dark:bg-white/[0.03]">
+        <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{t("customers_workspaceEmptyTitle")}</p>
+        <p className="mt-2 max-w-[16rem] text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+          {t("customers_workspaceEmptySub")}
+        </p>
+      </div>
+    );
+  }
+
+  const statusKey = normalizeLeadStatus(customer.status);
+  const bill = Number(customer.monthly_bill || 0);
+  const ts = followMap[customer.id];
+  const followLabel = ts != null ? formatLastFollowUpLocale(locale, ts) : t("customers_neverFollowedUp");
+  const waUrl = customer.phone ? buildLeadWhatsAppUrl(customer.phone, customer.name, installerName, locale) : null;
+  const statusLabel = t(LEAD_STATUS_I18N_KEY[statusKey]);
+  const stale = isLeadStale(customer.last_touched_at);
+  const stage = (customer.customer_stage ?? "lead") as CustomerStage;
+  const stageMeta = CUSTOMER_STAGE_META[stage];
+  const commercialCta = resolveCustomerCommercialCta(customer);
+  const lastActivityLabel = formatLeadLastActivity(customer.last_touched_at, locale);
 
   return (
     <div className="flex h-full min-h-0 flex-col rounded-2xl border border-slate-200/90 bg-white shadow-sm ring-1 ring-slate-200/40 dark:border-white/10 dark:bg-[#0c1017] dark:ring-white/[0.06]">
