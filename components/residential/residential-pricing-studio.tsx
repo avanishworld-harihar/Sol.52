@@ -60,6 +60,8 @@ type Props = {
   lineItems?: PricingLineItem[];
   /** Builder flow: create web proposal when none exists yet, return new id. */
   onCreateProposal?: () => Promise<string | null>;
+  /** Saves pricing + generates the web proposal in one step (proposal builder). */
+  onSaveAndGenerate?: () => Promise<void>;
   /** When false (e.g. commercial connection), subsidy is shown as ineligible and forced to ₹0. */
   subsidyEligible?: boolean;
   /** Hide the brand catalog matrix (editing is done in More → Rate card). */
@@ -108,6 +110,7 @@ export function ResidentialPricingStudio({
   onSaved,
   lineItems,
   onCreateProposal,
+  onSaveAndGenerate,
   saveMode = "residential",
   variant = saveMode === "commercial" ? "commercial" : "residential",
   commercialConfig,
@@ -227,16 +230,42 @@ export function ResidentialPricingStudio({
     });
   }
 
+  async function runSaveToProposal(): Promise<string | null> {
+    const catalogConfig = ensureBrandCatalog(config);
+    await saveInstallerResidentialCatalog(catalogConfig.brandCatalog!);
+
+    let id = proposalId?.trim() || null;
+    if (!id && onCreateProposal) {
+      id = await onCreateProposal();
+    }
+    if (!id) return null;
+
+    const result =
+      saveMode === "commercial" && commercialConfig
+        ? await saveCommercialRequirement({
+            proposalId: id,
+            pricingConfig: catalogConfig,
+            commercialConfig,
+            proposalLayout,
+            lineItems,
+          })
+        : await saveResidentialRequirement({
+            proposalId: id,
+            config: catalogConfig,
+            proposalLayout,
+            lineItems,
+          });
+    if (!result.ok) {
+      throw new Error(result.error ?? "Save failed");
+    }
+    if (result.proposalLayout) onLayoutChange?.(result.proposalLayout);
+    return id;
+  }
+
   async function handleSave() {
     setSaving(true);
     try {
-      const catalogConfig = ensureBrandCatalog(config);
-      await saveInstallerResidentialCatalog(catalogConfig.brandCatalog!);
-
-      let id = proposalId?.trim() || null;
-      if (!id && onCreateProposal) {
-        id = await onCreateProposal();
-      }
+      const id = await runSaveToProposal();
       if (!id) {
         onSaved?.();
         toast.push({
@@ -247,26 +276,6 @@ export function ResidentialPricingStudio({
         });
         return;
       }
-
-      const result =
-        saveMode === "commercial" && commercialConfig
-          ? await saveCommercialRequirement({
-              proposalId: id,
-              pricingConfig: catalogConfig,
-              commercialConfig,
-              proposalLayout,
-              lineItems,
-            })
-          : await saveResidentialRequirement({
-              proposalId: id,
-              config: catalogConfig,
-              proposalLayout,
-              lineItems,
-            });
-      if (!result.ok) {
-        throw new Error(result.error ?? "Save failed");
-      }
-      if (result.proposalLayout) onLayoutChange?.(result.proposalLayout);
       onSaved?.();
       toast.push({
         tone: "success",
@@ -280,6 +289,26 @@ export function ResidentialPricingStudio({
       toast.push({
         tone: "error",
         title: "Save failed",
+        description: e instanceof Error ? e.message : "",
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleSaveAndGenerate() {
+    if (!onSaveAndGenerate) {
+      await handleSave();
+      return;
+    }
+    setSaving(true);
+    try {
+      await onSaveAndGenerate();
+      onSaved?.();
+    } catch (e) {
+      toast.push({
+        tone: "error",
+        title: "Save & generate failed",
         description: e instanceof Error ? e.message : "",
       });
     } finally {
@@ -735,28 +764,49 @@ export function ResidentialPricingStudio({
 
       <div className="flex flex-col gap-3 border-t border-slate-200/80 bg-slate-50/80 px-4 py-4 dark:border-white/10 dark:bg-white/[0.02] sm:flex-row sm:items-center sm:justify-between sm:px-5">
         <p className="text-xs text-slate-500 dark:text-slate-400">
-          {proposalId
-            ? isCommercial
-              ? "Saves all commercial proposal settings to this deal."
-              : "Saves plant sizing, brands, kW tiers, subsidy, and DCR comparison to this proposal."
-            : onCreateProposal
-              ? "Creates or updates the web proposal with all fields above."
-              : "Generate the web proposal first, then Save will sync these settings."}
+          {onSaveAndGenerate
+            ? "Saves plant & pricing from bills, updates the CRM lead, and opens the shareable web proposal."
+            : proposalId
+              ? isCommercial
+                ? "Saves all commercial proposal settings to this deal."
+                : "Saves plant sizing, brands, kW tiers, subsidy, and DCR comparison to this proposal."
+              : onCreateProposal
+                ? "Creates or updates the web proposal with all fields above."
+                : "Generate the web proposal first, then Save will sync these settings."}
         </p>
-        <Button
-          type="button"
-          disabled={saving}
-          onClick={() => void handleSave()}
-          className={cn(
-            "w-full gap-2 font-semibold sm:w-auto sm:min-w-[10rem]",
-            isCommercial
-              ? "bg-indigo-700 hover:bg-indigo-800 dark:bg-indigo-500"
-              : "bg-slate-900 hover:bg-slate-800 dark:bg-white dark:text-slate-900"
-          )}
-        >
-          <Save className="h-4 w-4" aria-hidden />
-          {saving ? "Saving…" : isCommercial ? "Save proposal" : "Save"}
-        </Button>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+          <Button
+            type="button"
+            disabled={saving}
+            onClick={() => void (onSaveAndGenerate ? handleSaveAndGenerate() : handleSave())}
+            className={cn(
+              "w-full gap-2 font-semibold sm:min-w-[12rem]",
+              isCommercial
+                ? "bg-indigo-700 hover:bg-indigo-800 dark:bg-indigo-500"
+                : "bg-slate-900 hover:bg-slate-800 dark:bg-white dark:text-slate-900"
+            )}
+          >
+            <Save className="h-4 w-4" aria-hidden />
+            {saving
+              ? "Working…"
+              : onSaveAndGenerate
+                ? "Save and generate proposal"
+                : isCommercial
+                  ? "Save proposal"
+                  : "Save"}
+          </Button>
+          {onSaveAndGenerate ? (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={saving}
+              onClick={() => void handleSave()}
+              className="w-full font-semibold sm:w-auto"
+            >
+              Save settings only
+            </Button>
+          ) : null}
+        </div>
       </div>
     </section>
   );

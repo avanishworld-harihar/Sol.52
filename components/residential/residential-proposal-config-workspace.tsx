@@ -18,6 +18,7 @@ type Props = {
   proposalLayout?: ProposalTemplateV1 | null;
   onLayoutChange?: (layout: ProposalTemplateV1) => void;
   onCreateProposal?: () => Promise<string | null>;
+  onSaveAndGenerate?: () => Promise<void>;
   lineItems?: PricingLineItem[];
   onPricingSaved?: () => void;
   billBackedHint?: boolean;
@@ -39,6 +40,7 @@ export function ResidentialProposalConfigWorkspace({
   proposalLayout,
   onLayoutChange,
   onCreateProposal,
+  onSaveAndGenerate,
   lineItems,
   onPricingSaved,
   billBackedHint,
@@ -69,6 +71,7 @@ export function ResidentialProposalConfigWorkspace({
         proposalLayout={proposalLayout}
         onLayoutChange={onLayoutChange}
         onCreateProposal={onCreateProposal}
+        onSaveAndGenerate={onSaveAndGenerate}
         lineItems={lineItems}
         onSaved={onPricingSaved}
         hideCatalogPanel

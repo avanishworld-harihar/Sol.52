@@ -30,7 +30,16 @@ import {
   isBillMonthAlignedForOffset
 } from "@/lib/discom-billing-rules";
 import { pickProposalLeadPhone, patchLeadPhoneIfProvided } from "@/lib/lead-phone";
-import { mergeCustomerForProposal, type ManualProposalCustomer } from "@/lib/merge-proposal-customer";
+import {
+  mergeCustomerForProposal,
+  mergeParsedBills,
+  type ManualProposalCustomer,
+} from "@/lib/merge-proposal-customer";
+import { buildLeadPatchFromProposal, patchLeadFromProposal } from "@/lib/sync-proposal-lead";
+import { saveResidentialRequirement } from "@/lib/save-residential-requirement-client";
+import { saveCommercialRequirement } from "@/lib/save-commercial-requirement-client";
+import { saveInstallerResidentialCatalog } from "@/lib/installer-rate-card-client";
+import { ensureBrandCatalog } from "@/lib/residential-brand-catalog";
 import {
   clearProposalBuilderSession,
   EMPTY_MANUAL_PROPOSAL_CUSTOMER,
@@ -1228,6 +1237,9 @@ function ProposalPageContent() {
         setBillAnalysisTone("success");
       }
       toast.success("Bill analyzed", `${modelLabel} updated bill details.`);
+      if (selectedLeadId) {
+        void syncSelectedLeadFromBills();
+      }
     } catch (error) {
       setScanTimingBadge("");
       setBillAnalysis(error instanceof Error ? error.message : t("proposal_errorAnalyze"));
@@ -1354,11 +1366,42 @@ function ProposalPageContent() {
     void mutateGlobal(DASHBOARD_STATS_SWR_KEY);
   }
 
+  const syncSelectedLeadFromBills = useCallback(async () => {
+    if (!selectedLeadId) return;
+    const patch = buildLeadPatchFromProposal(manual, latestBill, previousBill, {
+      monthlyBillInr: effectiveResult.currentMonthlyBill,
+      leadPhone: manual.leadPhone,
+      billPhone: manual.billPhone,
+    });
+    if (!patch) return;
+    const ok = await patchLeadFromProposal(selectedLeadId, patch);
+    if (ok) {
+      syncCrmCachesAfterProposal(selectedLeadId);
+      setManual((prev) => ({
+        ...prev,
+        leadContactName: prev.leadContactName || patch.name || prev.leadContactName,
+        officialBillName: prev.officialBillName || patch.name || prev.officialBillName,
+        city: prev.city || patch.city || prev.city,
+        state: prev.state || patch.state || prev.state,
+        discom: prev.discom || patch.discom || prev.discom,
+        consumerId: prev.consumerId || patch.consumer_id || prev.consumerId,
+      }));
+    }
+  }, [
+    selectedLeadId,
+    manual,
+    latestBill,
+    previousBill,
+    effectiveResult.currentMonthlyBill,
+    syncCrmCachesAfterProposal,
+  ]);
+
   async function ensureLeadIdForProposal(): Promise<{ leadId: string; created: boolean }> {
     if (selectedLeadId) {
+      await syncSelectedLeadFromBills();
       return { leadId: selectedLeadId, created: false };
     }
-    const merged = mergeCustomerForProposal(manual, latestBill || previousBill);
+    const merged = mergeCustomerForProposal(manual, mergeParsedBills(latestBill, previousBill));
     const customerName =
       merged?.name?.trim() || manual.officialBillName.trim() || manual.leadContactName.trim();
     if (!customerName) {
@@ -1987,7 +2030,7 @@ function ProposalPageContent() {
 
     setLastAutoLeadId(null);
     const { leadId, created: leadCreated } = await ensureLeadIdForProposal();
-    const merged = mergeCustomerForProposal(manual, latestBill || previousBill);
+    const merged = mergeCustomerForProposal(manual, mergeParsedBills(latestBill, previousBill));
     const customerName = merged?.name?.trim() || manual.officialBillName || manual.leadContactName || "Customer";
     const location = formatProposalLocationLine(manual, merged?.district);
     const uploadedBills = [latestBill, ...additionalBills];
@@ -2055,9 +2098,78 @@ function ProposalPageContent() {
     return { id: json.id, shareUrl, leadCreated, leadId };
   }
 
+  const saveAndGenerateWebProposal = useCallback(async () => {
+    setIsWebProposalBusy(true);
+    try {
+      await syncSelectedLeadFromBills();
+
+      if (useResidentialCatalog && residentialConfig?.brandCatalog) {
+        await saveInstallerResidentialCatalog(ensureBrandCatalog(residentialConfig).brandCatalog!);
+      } else if (useCommercialCatalog && commercialPricingConfig?.brandCatalog) {
+        await saveInstallerResidentialCatalog(ensureBrandCatalog(commercialPricingConfig).brandCatalog!);
+      }
+
+      const saved = await persistProposalToServer();
+      if (!saved?.id) return;
+
+      if (useResidentialCatalog && residentialConfig) {
+        const cfg = ensureBrandCatalog(residentialConfig);
+        await saveResidentialRequirement({
+          proposalId: saved.id,
+          config: cfg,
+          proposalLayout: proposalLayout ?? undefined,
+        });
+      } else if (useCommercialCatalog && commercialPricingConfig && commercialConfig) {
+        await saveCommercialRequirement({
+          proposalId: saved.id,
+          pricingConfig: ensureBrandCatalog(
+            applyCommercialPanelTrackPolicy(commercialPricingConfig, manual.connectionType)
+          ),
+          commercialConfig,
+          proposalLayout: proposalLayout ?? undefined,
+        });
+      }
+
+      try {
+        await navigator.clipboard.writeText(saved.shareUrl);
+        toast.success(
+          "Proposal saved & generated",
+          saved.leadCreated ? t("proposal_leadCreatedSub") : "Share link copied — paste on WhatsApp."
+        );
+      } catch {
+        toast.success(
+          "Proposal saved & generated",
+          saved.leadCreated ? t("proposal_leadCreatedSub") : "Share link saved below."
+        );
+      }
+      window.open(saved.shareUrl, "_blank", "noopener,noreferrer");
+    } catch (error) {
+      toast.error(
+        "Save & generate failed",
+        error instanceof Error ? error.message : "Could not save and generate proposal."
+      );
+      throw error;
+    } finally {
+      setIsWebProposalBusy(false);
+    }
+  }, [
+    syncSelectedLeadFromBills,
+    useResidentialCatalog,
+    residentialConfig,
+    useCommercialCatalog,
+    commercialPricingConfig,
+    commercialConfig,
+    proposalLayout,
+    manual.connectionType,
+    persistProposalToServer,
+    toast,
+    t,
+  ]);
+
   async function generateWebProposal() {
     setIsWebProposalBusy(true);
     try {
+      await syncSelectedLeadFromBills();
       const saved = await persistProposalToServer();
       if (!saved) return;
       try {
@@ -2350,6 +2462,7 @@ function ProposalPageContent() {
               if (saved?.id) setDraftProposalId(saved.id);
               return saved?.id ?? null;
             }}
+            onSaveAndGenerate={() => saveAndGenerateWebProposal()}
           />
         ) : null}
 
@@ -2418,6 +2531,7 @@ function ProposalPageContent() {
               const saved = await persistProposalToServer();
               if (saved?.id) setDraftProposalId(saved.id);
             }}
+            onSaveAndGenerate={() => saveAndGenerateWebProposal()}
           />
         ) : null}
 
@@ -2735,6 +2849,7 @@ function ProposalPageContent() {
             const saved = await persistProposalToServer();
             if (saved?.id) setDraftProposalId(saved.id);
           }}
+          onSaveAndGenerate={() => saveAndGenerateWebProposal()}
         />
       ) : null}
 
@@ -2770,6 +2885,7 @@ function ProposalPageContent() {
             if (saved?.id) setDraftProposalId(saved.id);
             return saved?.id ?? null;
           }}
+          onSaveAndGenerate={() => saveAndGenerateWebProposal()}
         />
       ) : null}
 

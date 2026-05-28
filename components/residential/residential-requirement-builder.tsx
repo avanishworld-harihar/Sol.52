@@ -659,8 +659,8 @@ export function ResidentialRequirementBuilder({
       <p className="flex items-center gap-1.5 text-[11px] text-slate-500">
         <Zap className={cn("h-3 w-3", isCommercial ? "text-indigo-500" : "text-emerald-500")} />
         {isCommercial
-          ? "Continue with quote, equipment, and site options below — then Save once before sharing the link."
-          : "Set kW above, complete pricing below, then tap Save at the bottom before sharing the link."}
+          ? "Continue with quote, equipment, and site options below — then use Save and generate proposal."
+          : "Set kW above, complete pricing below, then tap Save and generate proposal at the bottom."}
       </p>
     </div>
   );

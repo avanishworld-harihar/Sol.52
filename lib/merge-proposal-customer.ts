@@ -42,6 +42,40 @@ function manualHasAny(manual: ManualProposalCustomer) {
   return Object.values(manual).some((v) => String(v ?? "").trim().length > 0);
 }
 
+/** Merge latest + previous bill scans (latest wins per field). */
+export function mergeParsedBills(
+  latest: ParsedBillShape | null,
+  previous: ParsedBillShape | null
+): ParsedBillShape | null {
+  if (!latest && !previous) return null;
+  if (!previous) return latest;
+  if (!latest) return previous;
+  return {
+    ...previous,
+    ...latest,
+    name: latest.name?.trim() || previous.name?.trim() || undefined,
+    district: latest.district?.trim() || previous.district?.trim() || undefined,
+    discom: latest.discom?.trim() || previous.discom?.trim() || undefined,
+    state: latest.state?.trim() || previous.state?.trim() || undefined,
+    consumer_id: latest.consumer_id?.trim() || previous.consumer_id?.trim() || undefined,
+    meter_number: latest.meter_number?.trim() || previous.meter_number?.trim() || undefined,
+    connection_date: latest.connection_date?.trim() || previous.connection_date?.trim() || undefined,
+    phase: latest.phase?.trim() || previous.phase?.trim() || undefined,
+    connection_type: latest.connection_type?.trim() || previous.connection_type?.trim() || undefined,
+    sanctioned_load: latest.sanctioned_load?.trim() || previous.sanctioned_load?.trim() || undefined,
+    address: latest.address?.trim() || previous.address?.trim() || undefined,
+    tariff_category: latest.tariff_category?.trim() || previous.tariff_category?.trim() || undefined,
+    purpose_of_supply:
+      latest.purpose_of_supply?.trim() || previous.purpose_of_supply?.trim() || undefined,
+    contract_demand_kva: latest.contract_demand_kva ?? previous.contract_demand_kva,
+    bill_month: latest.bill_month ?? previous.bill_month,
+    months: latest.months ?? previous.months,
+    consumption_history: latest.consumption_history?.length
+      ? latest.consumption_history
+      : previous.consumption_history,
+  };
+}
+
 /** Prefer typed manual fields; fall back to parsed bill. */
 export function mergeCustomerForProposal(
   manual: ManualProposalCustomer,
