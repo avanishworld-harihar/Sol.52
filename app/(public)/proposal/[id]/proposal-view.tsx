@@ -667,7 +667,6 @@ export function HeroCover({
   const cp = summary.customerProfile;
   const cmp = resolvedCompanyProfileForLang(summary.companyProfile, lang);
   const displayName = lang === "hi" ? hindiHonoredDisplayName(summary.honoredName) : summary.honoredName;
-  const PM_SURYA_GHAR_COVER_STRIP = "/images/pm-surya-ghar-cover-strip.png";
   const taglineClass =
     lang === "hi"
       ? "truncate text-[11px] text-slate-500 sm:text-xs tracking-normal"
@@ -875,20 +874,6 @@ export function HeroCover({
             }}
           />
         </div>
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="proposal-hero-pm-surya-strip proposal-hero-bottom-banner w-full"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={PM_SURYA_GHAR_COVER_STRIP}
-            alt="Pradhan Mantri Surya Ghar — Muft Bijli Yojana"
-            className="proposal-hero-pm-surya-strip-img block h-auto w-full max-w-none object-contain object-center"
-          />
-        </motion.div>
       </div>
     </section>
   );
