@@ -100,9 +100,11 @@ export function residentialCostBreakdown(
   const grossInr = residentialGrossCostInr(config);
   const discountInr = applyResidentialDiscountInr(grossInr, config.pricing?.discount);
   const afterDiscountInr = Math.max(0, grossInr - discountInr);
+  const dcrEligible = (config.solar.panelTrack ?? "dcr") === "dcr";
   const eligible =
-    options?.subsidyEligible ??
-    isPmSuryaGharSubsidyEligible(options?.connectionType ?? config.connectionType);
+    dcrEligible &&
+    (options?.subsidyEligible ??
+      isPmSuryaGharSubsidyEligible(options?.connectionType ?? config.connectionType));
   const subsidyInr = eligible
     ? config.subsidy?.estimateInr ?? computePmSuryaGharSubsidy(config.solar.plantCapacityKw)
     : 0;

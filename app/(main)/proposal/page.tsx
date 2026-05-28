@@ -447,8 +447,10 @@ function ProposalPageContent() {
     return inferAreaProfile(manual);
   }, [manual]);
   const residentialSubsidyEligible = useMemo(
-    () => isPmSuryaGharSubsidyEligible(manual.connectionType),
-    [manual.connectionType]
+    () =>
+      isPmSuryaGharSubsidyEligible(manual.connectionType) &&
+      (residentialConfig?.solar.panelTrack ?? "dcr") === "dcr",
+    [manual.connectionType, residentialConfig?.solar.panelTrack]
   );
   const billingRule = useMemo(() => getBillingRule(stateQuery, discomQuery), [stateQuery, discomQuery]);
   const learnedProfile = useMemo(() => {
@@ -1903,7 +1905,7 @@ function ProposalPageContent() {
     setResidentialConfig((prev) => {
       if (!prev) return prev;
       const conn = manual.connectionType.trim();
-      const eligible = isPmSuryaGharSubsidyEligible(conn);
+      const eligible = isPmSuryaGharSubsidyEligible(conn) && (prev.solar.panelTrack ?? "dcr") === "dcr";
       const subsidyBlocked =
         !eligible &&
         ((prev.subsidy?.estimateInr ?? 0) > 0 || prev.subsidy?.preference !== "none");
