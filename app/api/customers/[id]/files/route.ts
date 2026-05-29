@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase } from "@/lib/supabase";
+import { appendActivityEvent } from "@/lib/followup-store";
 
 export const dynamic = "force-dynamic";
 
@@ -64,6 +65,13 @@ export async function POST(req: NextRequest, ctx: RouteCtx) {
       .single();
 
     if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 400 });
+
+    void appendActivityEvent({
+      leadId: id,
+      eventType: "file_uploaded",
+      meta: { file_name: parsed.file_name, file_type: parsed.file_type },
+    });
+
     return NextResponse.json({ ok: true, data }, { status: 201 });
   } catch (err) {
     const message =

@@ -8,7 +8,14 @@ export type ActivityEventType =
   | "followup_snoozed"
   | "visit_scheduled"
   | "visit_completed"
-  | "note_added";
+  | "note_added"
+  /* Phase 2 */
+  | "lead_created"
+  | "lead_edited"
+  | "call_logged"
+  | "file_uploaded"
+  | "pipeline_stage_changed"
+  | "proposal_downloaded";
 
 export type ReminderPriority = "low" | "medium" | "high" | "urgent";
 export type ReminderStatus = "pending" | "completed" | "snoozed";

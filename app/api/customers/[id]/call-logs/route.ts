@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase } from "@/lib/supabase";
+import { appendActivityEvent } from "@/lib/followup-store";
 
 export const dynamic = "force-dynamic";
 
@@ -11,10 +12,24 @@ function db() {
   return createSupabaseAdmin() ?? supabase;
 }
 
+export const CALL_OUTCOMES = [
+  "no_answer",
+  "busy",
+  "interested",
+  "followup_required",
+  "proposal_sent",
+  "not_interested",
+  "answered",
+  "voicemail",
+  "callback_requested",
+] as const;
+
+export type CallOutcome = (typeof CALL_OUTCOMES)[number];
+
 const postSchema = z.object({
   called_at: z.string().optional(),
   duration_seconds: z.number().int().nonnegative().optional(),
-  outcome: z.enum(["answered", "no_answer", "busy", "voicemail", "callback_requested"]).optional(),
+  outcome: z.enum(CALL_OUTCOMES).optional(),
   notes: z.string().max(2000).optional().nullable(),
 });
 
@@ -57,19 +72,35 @@ export async function POST(req: NextRequest, ctx: RouteCtx) {
     const body = await req.json();
     const parsed = postSchema.parse(body);
 
+    const calledAt = parsed.called_at ?? new Date().toISOString();
+    const outcome = parsed.outcome ?? "answered";
+
     const { data, error } = await client
       .from("call_logs")
       .insert({
         lead_id: id,
-        called_at: parsed.called_at ?? new Date().toISOString(),
+        called_at: calledAt,
         duration_seconds: parsed.duration_seconds ?? 0,
-        outcome: parsed.outcome ?? "answered",
+        outcome,
         notes: parsed.notes ?? null,
       })
       .select("*")
       .single();
 
     if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 400 });
+
+    // Auto-log activity event
+    void appendActivityEvent({
+      leadId: id,
+      eventType: "call_logged",
+      occurredAt: calledAt,
+      meta: {
+        outcome,
+        duration_seconds: parsed.duration_seconds ?? 0,
+        notes: parsed.notes ?? null,
+      },
+    });
+
     return NextResponse.json({ ok: true, data }, { status: 201 });
   } catch (err) {
     const message =

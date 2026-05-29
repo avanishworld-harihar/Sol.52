@@ -311,6 +311,61 @@ export async function mapLeadIdsToLatestProposalIds(leadIds: string[]): Promise<
   return out;
 }
 
+/** CRM Phase 2: batch-fetch next pending followup per lead. */
+export async function batchNextFollowups(
+  leadIds: string[]
+): Promise<Record<string, { due_at: string; title: string; priority: string }>> {
+  const uniq = [...new Set(leadIds.filter(Boolean))];
+  if (uniq.length === 0) return {};
+  const client = createSupabaseAdmin() ?? supabase;
+  if (!client) return {};
+  try {
+    const { data, error } = await client
+      .from("followup_reminders")
+      .select("lead_id, due_at, title, priority")
+      .in("lead_id", uniq)
+      .eq("status", "pending")
+      .order("due_at", { ascending: true });
+    if (error || !Array.isArray(data)) return {};
+    const out: Record<string, { due_at: string; title: string; priority: string }> = {};
+    for (const r of data as { lead_id: string; due_at: string; title: string; priority: string }[]) {
+      if (!out[r.lead_id]) {
+        out[r.lead_id] = { due_at: r.due_at, title: r.title, priority: r.priority };
+      }
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+/** CRM Phase 2: batch-fetch latest activity per lead. */
+export async function batchLastActivities(
+  leadIds: string[]
+): Promise<Record<string, { occurred_at: string; event_type: string }>> {
+  const uniq = [...new Set(leadIds.filter(Boolean))];
+  if (uniq.length === 0) return {};
+  const client = createSupabaseAdmin() ?? supabase;
+  if (!client) return {};
+  try {
+    const { data, error } = await client
+      .from("activity_events")
+      .select("lead_id, occurred_at, event_type")
+      .in("lead_id", uniq)
+      .order("occurred_at", { ascending: false });
+    if (error || !Array.isArray(data)) return {};
+    const out: Record<string, { occurred_at: string; event_type: string }> = {};
+    for (const r of data as { lead_id: string; occurred_at: string; event_type: string }[]) {
+      if (!out[r.lead_id]) {
+        out[r.lead_id] = { occurred_at: r.occurred_at, event_type: r.event_type };
+      }
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
 /**
  * Move a lead to a new pipeline status and stamp `last_touched_at = now()`.
  * Used by the proposal POST (auto bump → 'proposal-sent') and by the lead

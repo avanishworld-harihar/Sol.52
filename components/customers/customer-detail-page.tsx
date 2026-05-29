@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { FloatingLabelInput, FloatingLabelSelect } from "@/components/ui/floating-label-input";
+import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { useToast } from "@/components/ui/toast-center";
 import type { CustomerLead } from "@/lib/types";
 import {
@@ -49,12 +49,26 @@ import { useRouter } from "next/navigation";
 
 /* ---------- types ---------- */
 
+export const CALL_OUTCOMES = [
+  { value: "no_answer",         label: "No Answer",         cls: "text-slate-600 bg-slate-50 border-slate-200" },
+  { value: "busy",              label: "Busy",              cls: "text-amber-700 bg-amber-50 border-amber-200" },
+  { value: "interested",        label: "Interested",        cls: "text-emerald-700 bg-emerald-50 border-emerald-200" },
+  { value: "followup_required", label: "Follow-up Required", cls: "text-sky-700 bg-sky-50 border-sky-200" },
+  { value: "proposal_sent",     label: "Proposal Sent",     cls: "text-indigo-700 bg-indigo-50 border-indigo-200" },
+  { value: "not_interested",    label: "Not Interested",    cls: "text-rose-700 bg-rose-50 border-rose-200" },
+  { value: "answered",          label: "Answered",          cls: "text-teal-700 bg-teal-50 border-teal-200" },
+  { value: "voicemail",         label: "Voicemail",         cls: "text-violet-700 bg-violet-50 border-violet-200" },
+  { value: "callback_requested", label: "Callback Requested", cls: "text-cyan-700 bg-cyan-50 border-cyan-200" },
+] as const;
+
+type CallOutcomeValue = (typeof CALL_OUTCOMES)[number]["value"];
+
 type CallLog = {
   id: string;
   lead_id: string;
   called_at: string;
   duration_seconds: number;
-  outcome: "answered" | "no_answer" | "busy" | "voicemail" | "callback_requested";
+  outcome: CallOutcomeValue;
   notes: string | null;
   created_at: string;
 };
@@ -110,13 +124,23 @@ function dayLabel(iso: string) {
   return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-const OUTCOME_META: Record<CallLog["outcome"], { label: string; icon: typeof Phone; cls: string }> = {
-  answered: { label: "Answered", icon: PhoneCall, cls: "text-emerald-700 bg-emerald-50 border-emerald-200" },
-  no_answer: { label: "No answer", icon: PhoneMissed, cls: "text-slate-600 bg-slate-50 border-slate-200" },
-  busy: { label: "Busy", icon: PhoneMissed, cls: "text-amber-700 bg-amber-50 border-amber-200" },
-  voicemail: { label: "Voicemail", icon: Phone, cls: "text-violet-700 bg-violet-50 border-violet-200" },
-  callback_requested: { label: "Callback req.", icon: PhoneCall, cls: "text-sky-700 bg-sky-50 border-sky-200" },
-};
+function getOutcomeMeta(outcome: string) {
+  const found = CALL_OUTCOMES.find((o) => o.value === outcome);
+  return found
+    ? { label: found.label, cls: found.cls }
+    : { label: outcome.replace(/_/g, " "), cls: "text-slate-600 bg-slate-50 border-slate-200" };
+}
+
+function timeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
 
 const EVENT_META: Record<
   string,
@@ -217,7 +241,7 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
   const [callForm, setCallForm] = useState({
     called_at: new Date().toISOString().slice(0, 16),
     duration_seconds: "",
-    outcome: "answered" as CallLog["outcome"],
+    outcome: "no_answer" as CallOutcomeValue,
     notes: "",
   });
   const [savingCall, setSavingCall] = useState(false);
@@ -274,7 +298,7 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
       if (!j.ok) throw new Error(j.error ?? "Failed");
       await mutateCallLogs();
       setShowLogCall(false);
-      setCallForm({ called_at: new Date().toISOString().slice(0, 16), duration_seconds: "", outcome: "answered", notes: "" });
+      setCallForm({ called_at: new Date().toISOString().slice(0, 16), duration_seconds: "", outcome: "no_answer", notes: "" });
       toast.success("Call logged");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not log call");
@@ -369,8 +393,19 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
       {/* ── 1. Customer Summary ── */}
       <SectionCard title="Customer Summary" icon={UserRoundCheck}>
         <div className="space-y-3">
-          <div className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between">
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white">{lead.name}</h1>
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              {lead.consumer_name ? (
+                <>
+                  <h1 className="text-xl font-bold text-slate-900 dark:text-white">{lead.consumer_name}</h1>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Lead: <span className="font-semibold text-slate-700 dark:text-slate-300">{lead.name}</span>
+                  </p>
+                </>
+              ) : (
+                <h1 className="text-xl font-bold text-slate-900 dark:text-white">{lead.name}</h1>
+              )}
+            </div>
             {lead.consumer_id ? (
               <span className="text-xs font-mono text-slate-500">CA# {lead.consumer_id}</span>
             ) : null}
@@ -474,6 +509,15 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
                     const statusMeta = ev.meta_json?.status
                       ? LEAD_STATUS_BADGE[ev.meta_json.status as LeadStatusKey]
                       : null;
+                    // Rich detail per event type
+                    const fromStage = ev.meta_json?.from as string | undefined;
+                    const toStage = ev.meta_json?.to as string | undefined;
+                    const callOutcome = ev.meta_json?.outcome as string | undefined;
+                    const changedFields = Array.isArray(ev.meta_json?.fields)
+                      ? (ev.meta_json.fields as string[]).join(", ")
+                      : null;
+                    const fileType = ev.meta_json?.file_type as string | undefined;
+
                     return (
                       <li key={ev.id} className="flex items-start gap-3">
                         <span
@@ -487,13 +531,34 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
                         <div className="min-w-0 flex-1 pt-0.5">
                           <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
                             {meta.label}
-                            {statusMeta ? (
-                              <span className={cn("ml-2 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase", statusMeta.className)}>
-                                {statusMeta.label}
-                              </span>
-                            ) : null}
                           </p>
-                          <p className="text-[11px] text-slate-500">{fmtTime(ev.occurred_at)}</p>
+                          {/* Stage transition */}
+                          {(ev.event_type === "status_changed" || ev.event_type === "pipeline_stage_changed") && fromStage && toStage ? (
+                            <p className="mt-0.5 flex items-center gap-1 text-[11px] font-semibold">
+                              <span className="rounded bg-slate-100 px-1.5 py-0.5 text-slate-700 dark:bg-white/10 dark:text-slate-300">
+                                {LEAD_STATUS_BADGE[normalizeLeadStatus(fromStage)]?.label ?? fromStage}
+                              </span>
+                              <span className="text-slate-400">→</span>
+                              <span className="rounded bg-teal-100 px-1.5 py-0.5 text-teal-800 dark:bg-teal-950/60 dark:text-teal-200">
+                                {LEAD_STATUS_BADGE[normalizeLeadStatus(toStage)]?.label ?? toStage}
+                              </span>
+                            </p>
+                          ) : null}
+                          {/* Call outcome */}
+                          {ev.event_type === "call_logged" && callOutcome ? (
+                            <p className={cn("mt-0.5 inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold", getOutcomeMeta(callOutcome).cls)}>
+                              {getOutcomeMeta(callOutcome).label}
+                            </p>
+                          ) : null}
+                          {/* Lead edited fields */}
+                          {ev.event_type === "lead_edited" && changedFields ? (
+                            <p className="mt-0.5 text-[11px] text-slate-500">Fields: {changedFields}</p>
+                          ) : null}
+                          {/* File uploaded */}
+                          {ev.event_type === "file_uploaded" && fileType ? (
+                            <p className="mt-0.5 text-[11px] capitalize text-slate-500">{fileType.replace(/_/g, " ")}</p>
+                          ) : null}
+                          <p className="mt-0.5 text-[11px] text-slate-400">{fmtTime(ev.occurred_at)}</p>
                         </div>
                       </li>
                     );
@@ -552,14 +617,12 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
               <select
                 value={callForm.outcome}
                 onChange={(e) => setCallForm((p) => ({ ...p, outcome: e.target.value as CallLog["outcome"] }))}
-                className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold dark:border-white/15 dark:bg-white/5"
-              >
-                <option value="answered">Answered</option>
-                <option value="no_answer">No Answer</option>
-                <option value="busy">Busy</option>
-                <option value="voicemail">Voicemail</option>
-                <option value="callback_requested">Callback Requested</option>
-              </select>
+              className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold dark:border-white/15 dark:bg-white/5"
+                >
+                  {CALL_OUTCOMES.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
             </div>
             <div>
               <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-slate-500">Notes</label>
@@ -597,8 +660,7 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
               </thead>
               <tbody>
                 {callLogs.map((log) => {
-                  const om = OUTCOME_META[log.outcome] ?? OUTCOME_META.answered;
-                  const OIcon = om.icon;
+                  const om = getOutcomeMeta(log.outcome);
                   return (
                     <tr key={log.id} className="border-b border-slate-100 last:border-0 dark:border-white/[0.05]">
                       <td className="px-3 py-2.5">
@@ -609,8 +671,7 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
                         {fmtDuration(log.duration_seconds)}
                       </td>
                       <td className="px-3 py-2.5">
-                        <span className={cn("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold", om.cls)}>
-                          <OIcon className="h-3 w-3" aria-hidden />
+                        <span className={cn("inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-bold", om.cls)}>
                           {om.label}
                         </span>
                       </td>

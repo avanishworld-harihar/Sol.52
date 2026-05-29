@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { mapCustomerRow } from "@/lib/customers-map";
-import { listCustomers, listPipelineProjects, mapLeadIdsToLatestProposalIds } from "@/lib/supabase";
+import {
+  listCustomers,
+  listPipelineProjects,
+  mapLeadIdsToLatestProposalIds,
+  batchNextFollowups,
+  batchLastActivities,
+} from "@/lib/supabase";
 import { processInboundLead } from "@/lib/inbound-leads";
+import { appendActivityEvent } from "@/lib/followup-store";
 import type { CustomerLead } from "@/lib/types";
 import { z } from "zod";
 
@@ -15,6 +22,7 @@ const customerSchema = z.object({
   state: z.string().optional(),
   email: z.string().email().optional(),
   consumer_id: z.string().max(160).optional(),
+  consumer_name: z.string().max(200).optional().nullable(),
   survey_status: z.string().max(40).optional(),
   area: z.enum(["urban", "rural"]).optional(),
   location: z.string().max(200).optional(),
@@ -25,7 +33,15 @@ export async function GET() {
   try {
     const raw = await listCustomers();
     const customers = (raw as Record<string, unknown>[]).map(mapCustomerRow);
-    const pipeline = await listPipelineProjects();
+    const leadIds = customers.map((c) => c.id);
+
+    const [pipeline, proposalByLead, nextFollowups, lastActivities] = await Promise.all([
+      listPipelineProjects(),
+      mapLeadIdsToLatestProposalIds(leadIds),
+      batchNextFollowups(leadIds),
+      batchLastActivities(leadIds),
+    ]);
+
     const stageByLeadId = new Map<string, "in-pipeline" | "active-project">();
     for (const p of pipeline) {
       if (!p.lead_id) continue;
@@ -35,12 +51,17 @@ export async function GET() {
         : "in-pipeline";
       stageByLeadId.set(p.lead_id, stage);
     }
-    const proposalByLead = await mapLeadIdsToLatestProposalIds(customers.map((c) => c.id));
-    const decorated = customers.map((c) => ({
+
+    const decorated: CustomerLead[] = customers.map((c) => ({
       ...c,
       customer_stage: stageByLeadId.get(c.id) ?? "lead",
-      primary_proposal_id: proposalByLead[c.id] ?? null
+      primary_proposal_id: proposalByLead[c.id] ?? null,
+      next_followup_at: nextFollowups[c.id]?.due_at ?? null,
+      next_followup_title: nextFollowups[c.id]?.title ?? null,
+      last_activity_at: lastActivities[c.id]?.occurred_at ?? null,
+      last_activity_type: lastActivities[c.id]?.event_type ?? null,
     }));
+
     return NextResponse.json({ ok: true, data: decorated });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to load customers";
@@ -74,6 +95,13 @@ export async function POST(req: NextRequest) {
       source: "manual"
     });
     const mappedData = mapCustomerRow(result.data as Record<string, unknown>);
+    if (!result.deduped) {
+      void appendActivityEvent({
+        leadId: mappedData.id,
+        eventType: "lead_created",
+        meta: { name: payload.name, city: payload.city, source: "manual" },
+      });
+    }
     return NextResponse.json(
       { ok: true, deduped: result.deduped, data: mappedData },
       { status: result.deduped ? 200 : 201 }

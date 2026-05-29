@@ -6,7 +6,14 @@
  */
 export type CustomerLead = {
   id: string;
+  /** Lead name: person we met / talked with in the field. */
   name: string;
+  /**
+   * Consumer name: name on the electricity bill.
+   * May differ from `name` in field-sales scenarios.
+   * Display as "ConsumerName (LeadName)" when both are present.
+   */
+  consumer_name?: string | null;
   city: string;
   discom: string;
   monthly_bill: number;
@@ -36,6 +43,14 @@ export type CustomerLead = {
   customer_stage?: "lead" | "in-pipeline" | "active-project";
   /** Latest commercial proposal for this lead (CRM hand-off to /proposals/[id]). */
   primary_proposal_id?: string | null;
+  /** CRM Phase 2 — next pending follow-up (from followup_reminders). */
+  next_followup_at?: string | null;
+  /** CRM Phase 2 — title of next followup reminder. */
+  next_followup_title?: string | null;
+  /** CRM Phase 2 — latest activity ISO timestamp (from activity_events). */
+  last_activity_at?: string | null;
+  /** CRM Phase 2 — latest activity event type. */
+  last_activity_type?: string | null;
 };
 
 export type MonthKey = "jan" | "feb" | "mar" | "apr" | "may" | "jun" | "jul" | "aug" | "sep" | "oct" | "nov" | "dec";

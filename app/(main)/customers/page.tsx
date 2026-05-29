@@ -81,6 +81,7 @@ function CustomersPageContent() {
   const [error, setError] = useState("");
   const [form, setForm] = useState({
     name: "",
+    consumer_name: "",
     city: "",
     state: "",
     discom: "",
@@ -309,6 +310,7 @@ function CustomersPageContent() {
     const r = readInstallerRegion();
     setForm({
       name: "",
+      consumer_name: "",
       city: "",
       state: r.state,
       discom: r.discom,
@@ -335,6 +337,7 @@ function CustomersPageContent() {
       discom: customer.discom,
       monthly_bill: String(customer.monthly_bill ?? ""),
       status: normalizeLeadStatus(customer.status),
+      consumer_name: (customer.consumer_name ?? "").trim(),
       phone: (customer.phone ?? "").trim(),
       consumer_id: (customer.consumer_id ?? "").trim(),
       survey_status: (() => {
@@ -402,6 +405,7 @@ function CustomersPageContent() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               name: payload.name,
+              consumer_name: form.consumer_name.trim() || null,
               city: payload.city,
               state: form.state.trim() || undefined,
               discom: payload.discom,
@@ -454,6 +458,7 @@ function CustomersPageContent() {
       const r = readInstallerRegion();
       setForm({
         name: "",
+        consumer_name: "",
         city: "",
         state: r.state,
         discom: r.discom,
@@ -474,6 +479,7 @@ function CustomersPageContent() {
     void (async () => {
       try {
         const postBody: Record<string, unknown> = { ...payload, state: form.state.trim() || undefined };
+        if (form.consumer_name.trim()) postBody.consumer_name = form.consumer_name.trim();
         if (form.consumer_id.trim()) postBody.consumer_id = form.consumer_id.trim();
         if (form.survey_status.trim()) postBody.survey_status = form.survey_status.trim().toLowerCase();
         if (form.area.trim()) postBody.area = form.area.trim();
@@ -659,11 +665,18 @@ function CustomersPageContent() {
               <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto overscroll-contain px-4 py-3 pb-2 sm:space-y-3">
               <p className="text-[11px] font-semibold leading-snug text-slate-600">{t("customers_regionSyncHint")}</p>
               <FloatingLabelInput
-                label={t("customers_placeholderName")}
+                label="Lead name (person you met)"
                 containerClassName="my-4"
                 className={modalFloatingClass}
                 value={form.name}
                 onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+              />
+              <FloatingLabelInput
+                label="Consumer name (on bill) — optional"
+                containerClassName="my-4"
+                className={modalFloatingClass}
+                value={form.consumer_name}
+                onChange={(e) => setForm((p) => ({ ...p, consumer_name: e.target.value }))}
               />
               <FloatingLabelSelect
                 label={`${t("customers_labelState")} / UT`}

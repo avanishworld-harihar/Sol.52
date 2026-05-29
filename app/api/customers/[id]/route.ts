@@ -70,6 +70,7 @@ const patchSchema = z
   .object({
     status: z.enum(LEAD_STATUS_KEYS).optional(),
     name: z.string().min(1).max(160).optional(),
+    consumer_name: z.string().max(200).optional().nullable(),
     city: z.string().min(1).max(160).optional(),
     state: z.string().max(120).optional(),
     discom: z.string().max(160).optional(),
@@ -97,15 +98,46 @@ export async function PATCH(req: NextRequest, ctx: RouteCtx) {
      * stamped consistently with the proposal-sent auto-bump path.
      */
     if (patch.status && Object.keys(patch).length === 1) {
+      // Fetch current status for pipeline history
+      const db2 = createSupabaseAdmin() ?? supabase;
+      let prevStatus = "new";
+      if (db2) {
+        const leadsTable2 = await resolveLeadsTable();
+        if (leadsTable2) {
+          const { data: cur } = await db2.from(leadsTable2).select("status").eq("id", id).maybeSingle();
+          if (cur) prevStatus = String(cur.status ?? "new");
+        }
+      }
       const updated = await bumpLeadStatus(id, patch.status);
       if (!updated) {
         return NextResponse.json({ ok: false, error: "lead_not_found_or_db_unavailable" }, { status: 404 });
       }
-      void appendActivityEvent({
-        leadId: id,
-        eventType: "status_changed",
-        meta: { status: patch.status },
-      });
+      // Log status change + pipeline history in parallel
+      void Promise.all([
+        appendActivityEvent({
+          leadId: id,
+          eventType: "status_changed",
+          meta: { from: prevStatus, to: patch.status },
+        }),
+        appendActivityEvent({
+          leadId: id,
+          eventType: "pipeline_stage_changed",
+          meta: { from: prevStatus, to: patch.status },
+        }),
+        (async () => {
+          const dbClient = createSupabaseAdmin() ?? supabase;
+          if (dbClient) {
+            try {
+              await dbClient.from("pipeline_history").insert({
+                lead_id: id,
+                from_stage: prevStatus,
+                to_stage: patch.status,
+                changed_at: new Date().toISOString(),
+              });
+            } catch { /* best-effort */ }
+          }
+        })(),
+      ]);
       return NextResponse.json({ ok: true, data: mapCustomerRow(updated) });
     }
 
@@ -126,6 +158,12 @@ export async function PATCH(req: NextRequest, ctx: RouteCtx) {
     if (updateErr || !updatedRow) {
       return NextResponse.json({ ok: false, error: updateErr ?? "Lead update failed" }, { status: 400 });
     }
+    const changedFields = Object.keys(patch).filter((k) => k !== "last_touched_at");
+    void appendActivityEvent({
+      leadId: id,
+      eventType: "lead_edited",
+      meta: { fields: changedFields },
+    });
     return NextResponse.json({ ok: true, data: mapCustomerRow(updatedRow) });
   } catch (error) {
     const message =

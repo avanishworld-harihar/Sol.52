@@ -165,6 +165,29 @@ const CUSTOMER_STAGE_META: Record<CustomerStage, { labelKey: string; className: 
   }
 };
 
+export function fmtActivityType(type: string | null | undefined): string {
+  if (!type) return "Activity";
+  const MAP: Record<string, string> = {
+    lead_created: "Lead created",
+    lead_edited: "Profile updated",
+    status_changed: "Stage changed",
+    pipeline_stage_changed: "Stage changed",
+    proposal_created: "Proposal generated",
+    proposal_opened: "Proposal viewed",
+    proposal_downloaded: "Proposal downloaded",
+    customer_contacted: "Contacted",
+    call_logged: "Call logged",
+    followup_created: "Follow-up added",
+    reminder_completed: "Follow-up done",
+    visit_scheduled: "Visit scheduled",
+    visit_completed: "Visit done",
+    note_added: "Note added",
+    file_uploaded: "File uploaded",
+    followup_snoozed: "Snoozed",
+  };
+  return MAP[type] ?? type.replace(/_/g, " ");
+}
+
 export function formatLeadLastActivity(iso: string | null | undefined, locale: string): string {
   if (!iso) return "—";
   try {
@@ -269,7 +292,19 @@ export function CustomersLeadList({
               const commercialCta = resolveCustomerCommercialCta(customer);
               const bill = Number(customer.monthly_bill || 0);
               const ts = followMap[customer.id];
-              const followLabel = ts != null ? formatLastFollowUpLocale(locale, ts) : t("customers_neverFollowedUp");
+              // Phase 2: prefer server-side next followup; fall back to localStorage
+              const nextFollowupAt = customer.next_followup_at ?? null;
+              const nextFollowupTitle = customer.next_followup_title ?? null;
+              const nextFollowupOverdue = nextFollowupAt != null && new Date(nextFollowupAt).getTime() < Date.now();
+              const followupDisplay = nextFollowupAt
+                ? new Date(nextFollowupAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+                : ts != null ? formatLastFollowUpLocale(locale, ts) : t("customers_neverFollowedUp");
+              // Phase 2: last activity from server (activity_events)
+              const lastActivityAt = customer.last_activity_at ?? customer.last_touched_at ?? null;
+              const lastActivityType = customer.last_activity_type ?? null;
+              const lastActivityLabel = lastActivityAt
+                ? `${fmtActivityType(lastActivityType)} · ${formatLeadLastActivity(lastActivityAt, locale)}`
+                : formatLeadLastActivity(customer.last_touched_at, locale);
               const waUrl = customer.phone ? buildLeadWhatsAppUrl(customer.phone, customer.name, installerName, locale) : null;
               const statusLabel = t(LEAD_STATUS_I18N_KEY[statusKey]);
               const stale = isLeadStale(customer.last_touched_at);
@@ -278,7 +313,10 @@ export function CustomersLeadList({
               const activeProject = stage === "active-project";
               const canMutateLead =
                 Boolean(onEditLead || onDeleteLead) && !customer.id.startsWith("optimistic-");
-              const lastActivityLabel = formatLeadLastActivity(customer.last_touched_at, locale);
+              // Phase 2: display name — "ConsumerName (LeadName)" or just LeadName
+              const displayName = customer.consumer_name
+                ? `${customer.consumer_name} (${customer.name})`
+                : customer.name;
 
               return (
                 <article
@@ -342,7 +380,7 @@ export function CustomersLeadList({
                         )}
                         aria-hidden
                       >
-                        {initials(customer.name)}
+                        {initials(customer.consumer_name ?? customer.name)}
                       </div>
                       {stale ? (
                         <span
@@ -354,7 +392,7 @@ export function CustomersLeadList({
                     </div>
                     <div className="min-w-0 flex-1">
                       <h3 className="pr-2 text-lg font-extrabold leading-tight text-slate-900 dark:text-slate-50 md:max-lg:text-base">
-                        {customer.name}
+                        {displayName}
                       </h3>
                       <div className="mt-2 flex flex-wrap items-center gap-2 md:max-lg:mt-1 md:max-lg:gap-1.5">
                         <LeadSourceBadge sourceRaw={customer.source} />
@@ -401,12 +439,19 @@ export function CustomersLeadList({
                       </dd>
                     </div>
                     <div className="flex justify-between gap-3 border-t border-slate-200/80 pt-3 text-xs dark:border-white/10 md:max-lg:pt-2 md:max-lg:text-[11px]">
-                      <dt className="shrink-0 font-semibold text-slate-500 dark:text-slate-400">{t("customers_mobileLastActivity")}</dt>
+                      <dt className="shrink-0 font-semibold text-slate-500 dark:text-slate-400">Last activity</dt>
                       <dd className="font-bold text-slate-800 dark:text-slate-200">{lastActivityLabel}</dd>
                     </div>
                     <div className="flex justify-between gap-3 border-t border-slate-200/80 pt-3 text-xs dark:border-white/10 md:max-lg:pt-2 md:max-lg:text-[11px]">
-                      <dt className="shrink-0 font-semibold text-slate-500 dark:text-slate-400">{t("customers_lastFollowUpLabel")}</dt>
-                      <dd className="max-w-[58%] text-right font-semibold leading-snug text-slate-700 dark:text-slate-300">{followLabel}</dd>
+                      <dt className="shrink-0 font-semibold text-slate-500 dark:text-slate-400">Next follow-up</dt>
+                      <dd className={cn(
+                        "max-w-[58%] text-right font-semibold leading-snug",
+                        nextFollowupOverdue ? "text-rose-700 dark:text-rose-300" : "text-slate-700 dark:text-slate-300"
+                      )}>
+                        {nextFollowupTitle ? <span className="block truncate text-[10px] font-bold uppercase text-slate-400">{nextFollowupTitle}</span> : null}
+                        <span className={cn(nextFollowupOverdue && "font-black")}>{followupDisplay}</span>
+                        {nextFollowupOverdue ? <span className="ml-1 text-[10px] font-black uppercase text-rose-600">Overdue</span> : null}
+                      </dd>
                     </div>
                     {customer.phone ? (
                       <div className="flex justify-between gap-3 border-t border-slate-200/80 pt-3 dark:border-white/10 md:max-lg:pt-2">
@@ -485,7 +530,16 @@ export function CustomersLeadList({
                 const commercialCta = resolveCustomerCommercialCta(customer);
                 const bill = Number(customer.monthly_bill || 0);
                 const ts = followMap[customer.id];
-                const followLabel = ts != null ? formatLastFollowUpLocale(locale, ts) : t("customers_neverFollowedUp");
+                const nextFollowupAt = customer.next_followup_at ?? null;
+                const nextFollowupOverdue = nextFollowupAt != null && new Date(nextFollowupAt).getTime() < Date.now();
+                const followLabel = nextFollowupAt
+                  ? new Date(nextFollowupAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+                  : ts != null ? formatLastFollowUpLocale(locale, ts) : t("customers_neverFollowedUp");
+                const lastActivityAt = customer.last_activity_at ?? customer.last_touched_at ?? null;
+                const lastActivityType = customer.last_activity_type ?? null;
+                const desktopDisplayName = customer.consumer_name
+                  ? `${customer.consumer_name} (${customer.name})`
+                  : customer.name;
                 const waUrl = customer.phone ? buildLeadWhatsAppUrl(customer.phone, customer.name, installerName, locale) : null;
                 const statusLabel = t(LEAD_STATUS_I18N_KEY[statusKey]);
                 const stale = isLeadStale(customer.last_touched_at);
@@ -564,7 +618,7 @@ export function CustomersLeadList({
                             )}
                             aria-hidden
                           >
-                            {initials(customer.name)}
+                            {initials(customer.consumer_name ?? customer.name)}
                           </div>
                           {stale && (
                             <span
@@ -577,7 +631,7 @@ export function CustomersLeadList({
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-1.5">
                             <h3 className="truncate text-base font-extrabold tracking-tight text-slate-900 dark:text-slate-50 sm:text-lg">
-                              {customer.name}
+                              {desktopDisplayName}
                             </h3>
                             <LeadSourceBadge sourceRaw={customer.source} />
                             <span
@@ -643,9 +697,19 @@ export function CustomersLeadList({
                             </p>
                           )}
                           <p className="mt-1 text-[10px] font-semibold leading-snug text-slate-500 sm:text-[11px]">
-                            <span className="text-slate-400">{t("customers_lastFollowUpLabel")}: </span>
-                            {followLabel}
+                            <span className="text-slate-400">Last: </span>
+                            {lastActivityAt
+                              ? <span>{fmtActivityType(lastActivityType)} · {formatLeadLastActivity(lastActivityAt, locale)}</span>
+                              : <span>{formatLeadLastActivity(customer.last_touched_at, locale)}</span>
+                            }
                           </p>
+                          {nextFollowupAt ? (
+                            <p className={cn("mt-0.5 text-[10px] font-semibold sm:text-[11px]", nextFollowupOverdue ? "text-rose-600 dark:text-rose-400" : "text-emerald-700 dark:text-emerald-400")}>
+                              <span className="mr-1">{nextFollowupOverdue ? "⚠" : "→"}</span>
+                              Next: {followLabel}
+                              {nextFollowupOverdue ? <span className="ml-1 font-black uppercase">Overdue</span> : null}
+                            </p>
+                          ) : null}
                         </div>
                       </div>
                     </div>
