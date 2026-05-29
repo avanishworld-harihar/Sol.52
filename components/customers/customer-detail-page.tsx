@@ -1,0 +1,855 @@
+"use client";
+
+import Link from "next/link";
+import useSWR, { mutate as globalMutate } from "swr";
+import {
+  AlarmClock,
+  ArrowLeft,
+  Building2,
+  CalendarClock,
+  CheckCircle2,
+  ChevronDown,
+  Clock3,
+  FileText,
+  FilePlus,
+  Image as ImageIcon,
+  IndianRupee,
+  MapPin,
+  NotebookPen,
+  Paperclip,
+  Phone,
+  PhoneCall,
+  PhoneMissed,
+  Plus,
+  Save,
+  TimerReset,
+  UserRoundCheck,
+  Zap,
+} from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { FloatingLabelInput, FloatingLabelSelect } from "@/components/ui/floating-label-input";
+import { useToast } from "@/components/ui/toast-center";
+import type { CustomerLead } from "@/lib/types";
+import {
+  LEAD_STATUS_BADGE,
+  LEAD_STATUS_OPTIONS,
+  normalizeLeadStatus,
+  type LeadStatusKey,
+} from "@/lib/lead-status";
+import {
+  createReminder,
+  fetchLeadReminders,
+  fetchLeadTimeline,
+  patchReminder,
+} from "@/lib/followup-client";
+import type { ActivityEvent, FollowupReminder } from "@/lib/followup-types";
+import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+
+/* ---------- types ---------- */
+
+type CallLog = {
+  id: string;
+  lead_id: string;
+  called_at: string;
+  duration_seconds: number;
+  outcome: "answered" | "no_answer" | "busy" | "voicemail" | "callback_requested";
+  notes: string | null;
+  created_at: string;
+};
+
+type CustomerFile = {
+  id: string;
+  lead_id: string;
+  file_name: string;
+  file_url: string;
+  file_type: "bill" | "site_image" | "document";
+  file_size_kb?: number;
+  mime_type?: string | null;
+  created_at: string;
+};
+
+/* ---------- helpers ---------- */
+
+async function fetchJson<T>(url: string): Promise<T> {
+  const res = await fetch(url, { cache: "no-store" });
+  const json = (await res.json()) as { ok?: boolean; data?: T; error?: string };
+  if (!res.ok || !json.ok) throw new Error(json.error ?? "request_failed");
+  return json.data as T;
+}
+
+function fmtDate(iso: string) {
+  return new Date(iso).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function fmtTime(iso: string) {
+  return new Date(iso).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+}
+
+function fmtDuration(sec: number) {
+  if (!sec) return "—";
+  if (sec < 60) return `${sec}s`;
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return s ? `${m}m ${s}s` : `${m}m`;
+}
+
+function dayLabel(iso: string) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "Unknown";
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  if (d.toDateString() === today.toDateString()) return "Today";
+  if (d.toDateString() === yesterday.toDateString()) return "Yesterday";
+  return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+const OUTCOME_META: Record<CallLog["outcome"], { label: string; icon: typeof Phone; cls: string }> = {
+  answered: { label: "Answered", icon: PhoneCall, cls: "text-emerald-700 bg-emerald-50 border-emerald-200" },
+  no_answer: { label: "No answer", icon: PhoneMissed, cls: "text-slate-600 bg-slate-50 border-slate-200" },
+  busy: { label: "Busy", icon: PhoneMissed, cls: "text-amber-700 bg-amber-50 border-amber-200" },
+  voicemail: { label: "Voicemail", icon: Phone, cls: "text-violet-700 bg-violet-50 border-violet-200" },
+  callback_requested: { label: "Callback req.", icon: PhoneCall, cls: "text-sky-700 bg-sky-50 border-sky-200" },
+};
+
+const EVENT_META: Record<
+  string,
+  { icon: typeof Clock3; label: string; cls: string }
+> = {
+  proposal_created: { icon: FileText, label: "Proposal generated", cls: "bg-teal-100 text-teal-700" },
+  proposal_opened: { icon: FileText, label: "Proposal viewed", cls: "bg-teal-50 text-teal-600" },
+  customer_contacted: { icon: PhoneCall, label: "Contacted", cls: "bg-violet-100 text-violet-700" },
+  status_changed: { icon: UserRoundCheck, label: "Stage updated", cls: "bg-sky-100 text-sky-700" },
+  reminder_completed: { icon: CheckCircle2, label: "Reminder done", cls: "bg-emerald-100 text-emerald-700" },
+  followup_created: { icon: AlarmClock, label: "Follow-up added", cls: "bg-amber-100 text-amber-700" },
+  followup_snoozed: { icon: TimerReset, label: "Snoozed", cls: "bg-slate-100 text-slate-600" },
+  visit_scheduled: { icon: CalendarClock, label: "Visit scheduled", cls: "bg-indigo-100 text-indigo-700" },
+  visit_completed: { icon: CheckCircle2, label: "Visit done", cls: "bg-indigo-100 text-indigo-700" },
+  note_added: { icon: NotebookPen, label: "Note added", cls: "bg-rose-100 text-rose-600" },
+};
+
+const PIPELINE_STEPS: { key: LeadStatusKey; label: string }[] = [
+  { key: "new", label: "New" },
+  { key: "contacted", label: "Contacted" },
+  { key: "proposal-sent", label: "Proposal Sent" },
+  { key: "site-survey", label: "Site Survey" },
+  { key: "design", label: "Design" },
+  { key: "won", label: "Won" },
+];
+
+const PRIORITY_META = {
+  low: "bg-slate-100 text-slate-600 border-slate-200",
+  medium: "bg-amber-50 text-amber-800 border-amber-200",
+  high: "bg-orange-50 text-orange-800 border-orange-200",
+  urgent: "bg-rose-50 text-rose-800 border-rose-200",
+};
+
+/* ---------- sub-components ---------- */
+
+function SectionCard({ title, icon: Icon, children, action }: {
+  title: string;
+  icon: typeof Phone;
+  children: React.ReactNode;
+  action?: React.ReactNode;
+}) {
+  return (
+    <section className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-white/10 dark:bg-[#0c1017]">
+      <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-white/10">
+        <div className="flex items-center gap-2">
+          <Icon className="h-4 w-4 text-teal-600" aria-hidden />
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white">{title}</h2>
+        </div>
+        {action}
+      </div>
+      <div className="p-4">{children}</div>
+    </section>
+  );
+}
+
+/* ---------- main component ---------- */
+
+export function CustomerDetailPage({ leadId }: { leadId: string }) {
+  const router = useRouter();
+  const toast = useToast();
+
+  /* ------ fetch lead ------ */
+  const { data: leadData, mutate: mutateLead } = useSWR<CustomerLead>(
+    `/api/customers/${leadId}`,
+    () => fetchJson<CustomerLead>(`/api/customers/${leadId}`)
+  );
+
+  /* ------ fetch timeline ------ */
+  const { data: timeline = [] } = useSWR<ActivityEvent[]>(
+    `/api/customers/${leadId}/timeline`,
+    () => fetchLeadTimeline(leadId)
+  );
+
+  /* ------ fetch call logs ------ */
+  const { data: callLogs = [], mutate: mutateCallLogs } = useSWR<CallLog[]>(
+    `/api/customers/${leadId}/call-logs`,
+    () => fetchJson<CallLog[]>(`/api/customers/${leadId}/call-logs`)
+  );
+
+  /* ------ fetch reminders ------ */
+  const { data: reminders = [], mutate: mutateReminders } = useSWR<FollowupReminder[]>(
+    `/api/customers/${leadId}/reminders`,
+    () => fetchLeadReminders(leadId)
+  );
+
+  /* ------ fetch files ------ */
+  const { data: files = [], mutate: mutateFiles } = useSWR<CustomerFile[]>(
+    `/api/customers/${leadId}/files`,
+    () => fetchJson<CustomerFile[]>(`/api/customers/${leadId}/files`)
+  );
+
+  const lead = leadData ?? null;
+  const statusKey = normalizeLeadStatus(lead?.status ?? "new");
+  const currentStepIdx = PIPELINE_STEPS.findIndex((s) => s.key === statusKey);
+
+  /* ------ Log call state ------ */
+  const [showLogCall, setShowLogCall] = useState(false);
+  const [callForm, setCallForm] = useState({
+    called_at: new Date().toISOString().slice(0, 16),
+    duration_seconds: "",
+    outcome: "answered" as CallLog["outcome"],
+    notes: "",
+  });
+  const [savingCall, setSavingCall] = useState(false);
+
+  /* ------ Follow-up state ------ */
+  const [showAddFollowup, setShowAddFollowup] = useState(false);
+  const [followupForm, setFollowupForm] = useState({
+    title: "",
+    due_at: "",
+    priority: "medium" as FollowupReminder["priority"],
+    followup_type: "call" as FollowupReminder["followup_type"],
+    notes: "",
+  });
+  const [savingFollowup, setSavingFollowup] = useState(false);
+
+  /* ------ stage change ------ */
+  const [statusChanging, setStatusChanging] = useState(false);
+  async function handleStageChange(next: LeadStatusKey) {
+    if (next === statusKey || statusChanging) return;
+    setStatusChanging(true);
+    try {
+      const r = await fetch(`/api/customers/${leadId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: next }),
+      });
+      const j = (await r.json()) as { ok?: boolean; data?: CustomerLead; error?: string };
+      if (!j.ok) throw new Error(j.error ?? "Failed");
+      await mutateLead(j.data, { revalidate: false });
+      await globalMutate(`/api/customers/${leadId}/timeline`);
+      toast.success("Stage updated");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not update stage");
+    } finally {
+      setStatusChanging(false);
+    }
+  }
+
+  /* ------ log call submit ------ */
+  async function submitCall() {
+    setSavingCall(true);
+    try {
+      const r = await fetch(`/api/customers/${leadId}/call-logs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          called_at: new Date(callForm.called_at).toISOString(),
+          duration_seconds: Number(callForm.duration_seconds) || 0,
+          outcome: callForm.outcome,
+          notes: callForm.notes || null,
+        }),
+      });
+      const j = (await r.json()) as { ok?: boolean; error?: string };
+      if (!j.ok) throw new Error(j.error ?? "Failed");
+      await mutateCallLogs();
+      setShowLogCall(false);
+      setCallForm({ called_at: new Date().toISOString().slice(0, 16), duration_seconds: "", outcome: "answered", notes: "" });
+      toast.success("Call logged");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not log call");
+    } finally {
+      setSavingCall(false);
+    }
+  }
+
+  /* ------ followup submit ------ */
+  async function submitFollowup() {
+    if (!followupForm.title.trim() || !followupForm.due_at) return;
+    setSavingFollowup(true);
+    try {
+      await createReminder(leadId, {
+        title: followupForm.title.trim(),
+        due_at: new Date(followupForm.due_at).toISOString(),
+        priority: followupForm.priority,
+        followup_type: followupForm.followup_type,
+        status: "pending",
+        notes: followupForm.notes || null,
+      });
+      await mutateReminders();
+      setShowAddFollowup(false);
+      setFollowupForm({ title: "", due_at: "", priority: "medium", followup_type: "call", notes: "" });
+      toast.success("Follow-up added");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not add follow-up");
+    } finally {
+      setSavingFollowup(false);
+    }
+  }
+
+  /* ------ complete reminder ------ */
+  const completeReminder = useCallback(async (id: string) => {
+    await mutateReminders((prev = []) => prev.map((r) => r.id === id ? { ...r, status: "completed" as const } : r), { revalidate: false });
+    try { await patchReminder(id, { status: "completed" }); } finally { await mutateReminders(); }
+  }, [mutateReminders]);
+
+  /* ------ timeline groups ------ */
+  const timelineGroups = useMemo(() => {
+    return timeline.reduce<Record<string, ActivityEvent[]>>((acc, ev) => {
+      const key = dayLabel(ev.occurred_at);
+      if (!acc[key]) acc[key] = [];
+      acc[key]!.push(ev);
+      return acc;
+    }, {});
+  }, [timeline]);
+
+  /* ------ files grouped ------ */
+  const bills = files.filter((f) => f.file_type === "bill");
+  const siteImages = files.filter((f) => f.file_type === "site_image");
+  const documents = files.filter((f) => f.file_type === "document");
+
+  const pendingReminders = useMemo(
+    () => reminders.filter((r) => r.status === "pending").sort((a, b) => new Date(a.due_at).getTime() - new Date(b.due_at).getTime()),
+    [reminders]
+  );
+
+  if (!lead) {
+    return (
+      <div className="flex h-48 items-center justify-center">
+        <p className="text-sm text-slate-500">Loading customer…</p>
+      </div>
+    );
+  }
+
+  const badge = LEAD_STATUS_BADGE[statusKey];
+
+  return (
+    <div className="workspace-page workspace-page--customers mx-auto max-w-3xl space-y-4 px-3 pb-20 pt-4 sm:px-4">
+
+      {/* ── back nav ── */}
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm touch-manipulation hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
+        >
+          <ArrowLeft className="h-4 w-4" aria-hidden />
+          CRM
+        </button>
+        <span
+          className={cn(
+            "inline-flex rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-wide",
+            badge.className
+          )}
+        >
+          {badge.label}
+        </span>
+      </div>
+
+      {/* ── 1. Customer Summary ── */}
+      <SectionCard title="Customer Summary" icon={UserRoundCheck}>
+        <div className="space-y-3">
+          <div className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between">
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">{lead.name}</h1>
+            {lead.consumer_id ? (
+              <span className="text-xs font-mono text-slate-500">CA# {lead.consumer_id}</span>
+            ) : null}
+          </div>
+
+          <dl className="grid gap-y-2 gap-x-4 sm:grid-cols-2">
+            {lead.phone ? (
+              <div className="flex items-center gap-2">
+                <Phone className="h-4 w-4 shrink-0 text-slate-400" aria-hidden />
+                <a href={`tel:${lead.phone}`} className="text-sm font-semibold text-teal-700 dark:text-teal-400">
+                  {lead.phone}
+                </a>
+              </div>
+            ) : null}
+
+            <div className="flex items-center gap-2">
+              <Building2 className="h-4 w-4 shrink-0 text-slate-400" aria-hidden />
+              <span className="text-sm text-slate-700 dark:text-slate-300">{lead.discom || "—"}</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 shrink-0 text-slate-400" aria-hidden />
+              <span className="text-sm text-slate-700 dark:text-slate-300">
+                {[lead.location, lead.city, lead.state].filter(Boolean).join(", ") || "—"}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <IndianRupee className="h-4 w-4 shrink-0 text-slate-400" aria-hidden />
+              <span className="text-sm text-slate-700 dark:text-slate-300">
+                ₹{lead.monthly_bill.toLocaleString("en-IN")}/mo
+              </span>
+            </div>
+
+            {lead.connection_type ? (
+              <div className="flex items-center gap-2">
+                <Zap className="h-4 w-4 shrink-0 text-slate-400" aria-hidden />
+                <span className="text-sm capitalize text-slate-700 dark:text-slate-300">
+                  {lead.connection_type}
+                </span>
+              </div>
+            ) : null}
+          </dl>
+
+          {/* Pipeline stepper */}
+          <div className="mt-4 pt-3 border-t border-slate-100 dark:border-white/10">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Pipeline stage</p>
+            <div className="flex items-center gap-1 overflow-x-auto scrollbar-none pb-1">
+              {PIPELINE_STEPS.map((step, idx) => {
+                const done = idx < currentStepIdx;
+                const active = idx === currentStepIdx;
+                return (
+                  <button
+                    key={step.key}
+                    type="button"
+                    disabled={statusChanging}
+                    onClick={() => void handleStageChange(step.key)}
+                    className={cn(
+                      "flex shrink-0 flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] font-bold uppercase touch-manipulation transition-colors min-w-[3.5rem]",
+                      active
+                        ? "bg-teal-600 text-white shadow"
+                        : done
+                          ? "bg-teal-50 text-teal-700 dark:bg-teal-950/40 dark:text-teal-300"
+                          : "bg-slate-50 text-slate-500 hover:bg-slate-100 dark:bg-white/5 dark:text-slate-400"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-black",
+                        active ? "bg-white/20" : done ? "bg-teal-200/60 text-teal-800" : "bg-slate-200/80 text-slate-600"
+                      )}
+                    >
+                      {done ? "✓" : idx + 1}
+                    </span>
+                    {step.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </SectionCard>
+
+      {/* ── 2. Activity Timeline ── */}
+      <SectionCard title="Activity Timeline" icon={Clock3}>
+        {Object.keys(timelineGroups).length === 0 ? (
+          <p className="text-sm text-slate-500">No activity yet.</p>
+        ) : (
+          <ol className="space-y-4">
+            {Object.entries(timelineGroups).map(([day, events]) => (
+              <li key={day}>
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">{day}</p>
+                <ol className="space-y-2">
+                  {events.map((ev) => {
+                    const meta = EVENT_META[ev.event_type] ?? {
+                      icon: Clock3,
+                      label: ev.event_type.replace(/_/g, " "),
+                      cls: "bg-slate-100 text-slate-600",
+                    };
+                    const Icon = meta.icon;
+                    const statusMeta = ev.meta_json?.status
+                      ? LEAD_STATUS_BADGE[ev.meta_json.status as LeadStatusKey]
+                      : null;
+                    return (
+                      <li key={ev.id} className="flex items-start gap-3">
+                        <span
+                          className={cn(
+                            "mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg",
+                            meta.cls
+                          )}
+                        >
+                          <Icon className="h-3.5 w-3.5" aria-hidden />
+                        </span>
+                        <div className="min-w-0 flex-1 pt-0.5">
+                          <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                            {meta.label}
+                            {statusMeta ? (
+                              <span className={cn("ml-2 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase", statusMeta.className)}>
+                                {statusMeta.label}
+                              </span>
+                            ) : null}
+                          </p>
+                          <p className="text-[11px] text-slate-500">{fmtTime(ev.occurred_at)}</p>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </li>
+            ))}
+          </ol>
+        )}
+      </SectionCard>
+
+      {/* ── 3. Call History ── */}
+      <SectionCard
+        title="Call History"
+        icon={PhoneCall}
+        action={
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => setShowLogCall(true)}
+            className="h-8 gap-1.5 bg-teal-600 text-xs hover:bg-teal-700"
+          >
+            <Plus className="h-3.5 w-3.5" aria-hidden />
+            Log Call
+          </Button>
+        }
+      >
+        {/* Log call form */}
+        {showLogCall ? (
+          <div className="mb-4 space-y-3 rounded-xl border border-teal-200/80 bg-teal-50/50 p-3 dark:border-teal-800/40 dark:bg-teal-950/20">
+            <p className="text-xs font-bold text-teal-800 dark:text-teal-200">Log a call</p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-slate-500">Date & Time</label>
+                <input
+                  type="datetime-local"
+                  value={callForm.called_at}
+                  onChange={(e) => setCallForm((p) => ({ ...p, called_at: e.target.value }))}
+                  className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm dark:border-white/15 dark:bg-white/5"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-slate-500">Duration (seconds)</label>
+                <input
+                  type="number"
+                  min={0}
+                  placeholder="120"
+                  value={callForm.duration_seconds}
+                  onChange={(e) => setCallForm((p) => ({ ...p, duration_seconds: e.target.value }))}
+                  className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm dark:border-white/15 dark:bg-white/5"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-slate-500">Outcome</label>
+              <select
+                value={callForm.outcome}
+                onChange={(e) => setCallForm((p) => ({ ...p, outcome: e.target.value as CallLog["outcome"] }))}
+                className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold dark:border-white/15 dark:bg-white/5"
+              >
+                <option value="answered">Answered</option>
+                <option value="no_answer">No Answer</option>
+                <option value="busy">Busy</option>
+                <option value="voicemail">Voicemail</option>
+                <option value="callback_requested">Callback Requested</option>
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-slate-500">Notes</label>
+              <textarea
+                value={callForm.notes}
+                onChange={(e) => setCallForm((p) => ({ ...p, notes: e.target.value }))}
+                placeholder="What was discussed…"
+                rows={2}
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-white/15 dark:bg-white/5"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button type="button" size="sm" disabled={savingCall} onClick={() => void submitCall()} className="h-10 gap-1.5 bg-teal-600 hover:bg-teal-700">
+                <Save className="h-4 w-4" /> {savingCall ? "Saving…" : "Save"}
+              </Button>
+              <Button type="button" size="sm" variant="outline" onClick={() => setShowLogCall(false)} className="h-10">
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : null}
+
+        {callLogs.length === 0 && !showLogCall ? (
+          <p className="text-sm text-slate-500">No calls logged yet.</p>
+        ) : (
+          <div className="overflow-x-auto rounded-xl border border-slate-200/80 dark:border-white/10">
+            <table className="w-full min-w-[520px] border-collapse text-sm">
+              <thead>
+                <tr className="border-b bg-slate-50 text-left text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:border-white/10 dark:bg-white/[0.02]">
+                  <th className="px-3 py-2.5">Date</th>
+                  <th className="px-3 py-2.5">Duration</th>
+                  <th className="px-3 py-2.5">Outcome</th>
+                  <th className="px-3 py-2.5">Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {callLogs.map((log) => {
+                  const om = OUTCOME_META[log.outcome] ?? OUTCOME_META.answered;
+                  const OIcon = om.icon;
+                  return (
+                    <tr key={log.id} className="border-b border-slate-100 last:border-0 dark:border-white/[0.05]">
+                      <td className="px-3 py-2.5">
+                        <p className="font-semibold text-slate-800 dark:text-slate-100">{fmtDate(log.called_at)}</p>
+                        <p className="text-[11px] text-slate-500">{fmtTime(log.called_at)}</p>
+                      </td>
+                      <td className="px-3 py-2.5 font-mono text-xs text-slate-700 dark:text-slate-300">
+                        {fmtDuration(log.duration_seconds)}
+                      </td>
+                      <td className="px-3 py-2.5">
+                        <span className={cn("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold", om.cls)}>
+                          <OIcon className="h-3 w-3" aria-hidden />
+                          {om.label}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2.5 text-xs text-slate-600 dark:text-slate-400">
+                        {log.notes ?? <span className="text-slate-300">—</span>}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </SectionCard>
+
+      {/* ── 4. Follow-up Section ── */}
+      <SectionCard
+        title="Follow-ups"
+        icon={AlarmClock}
+        action={
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => setShowAddFollowup(true)}
+            className="h-8 gap-1.5 bg-teal-600 text-xs hover:bg-teal-700"
+          >
+            <Plus className="h-3.5 w-3.5" aria-hidden />
+            Add
+          </Button>
+        }
+      >
+        {/* Add follow-up form */}
+        {showAddFollowup ? (
+          <div className="mb-4 space-y-3 rounded-xl border border-amber-200/80 bg-amber-50/50 p-3 dark:border-amber-800/40 dark:bg-amber-950/15">
+            <p className="text-xs font-bold text-amber-800 dark:text-amber-200">New follow-up</p>
+            <FloatingLabelInput
+              label="Title"
+              value={followupForm.title}
+              onChange={(e) => setFollowupForm((p) => ({ ...p, title: e.target.value }))}
+              className="h-10 rounded-xl text-sm"
+            />
+            <div className="grid gap-2 sm:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-slate-500">Due date</label>
+                <input
+                  type="datetime-local"
+                  value={followupForm.due_at}
+                  onChange={(e) => setFollowupForm((p) => ({ ...p, due_at: e.target.value }))}
+                  className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm dark:border-white/15 dark:bg-white/5"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-slate-500">Priority</label>
+                <select
+                  value={followupForm.priority}
+                  onChange={(e) => setFollowupForm((p) => ({ ...p, priority: e.target.value as FollowupReminder["priority"] }))}
+                  className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold dark:border-white/15 dark:bg-white/5"
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-slate-500">Type</label>
+              <select
+                value={followupForm.followup_type}
+                onChange={(e) => setFollowupForm((p) => ({ ...p, followup_type: e.target.value as FollowupReminder["followup_type"] }))}
+                className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold dark:border-white/15 dark:bg-white/5"
+              >
+                <option value="call">Call</option>
+                <option value="visit">Visit</option>
+                <option value="proposal">Proposal</option>
+                <option value="payment">Payment</option>
+                <option value="general">General</option>
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-slate-500">Notes</label>
+              <textarea
+                value={followupForm.notes}
+                onChange={(e) => setFollowupForm((p) => ({ ...p, notes: e.target.value }))}
+                placeholder="Reminder context…"
+                rows={2}
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-white/15 dark:bg-white/5"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button type="button" size="sm" disabled={savingFollowup || !followupForm.title.trim() || !followupForm.due_at} onClick={() => void submitFollowup()} className="h-10 gap-1.5 bg-teal-600 hover:bg-teal-700">
+                <Save className="h-4 w-4" /> {savingFollowup ? "Saving…" : "Save"}
+              </Button>
+              <Button type="button" size="sm" variant="outline" onClick={() => setShowAddFollowup(false)} className="h-10">
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : null}
+
+        {pendingReminders.length === 0 && !showAddFollowup ? (
+          <p className="text-sm text-slate-500">No pending follow-ups.</p>
+        ) : (
+          <ol className="space-y-2">
+            {pendingReminders.map((r) => {
+              const overdue = new Date(r.due_at).getTime() < Date.now();
+              return (
+                <li
+                  key={r.id}
+                  className={cn(
+                    "flex items-start gap-3 rounded-xl border p-3",
+                    overdue
+                      ? "border-rose-200/80 bg-rose-50/60 dark:border-rose-900/40 dark:bg-rose-950/20"
+                      : "border-amber-200/70 bg-amber-50/40 dark:border-amber-800/30 dark:bg-amber-950/10"
+                  )}
+                >
+                  <AlarmClock className={cn("mt-0.5 h-4 w-4 shrink-0", overdue ? "text-rose-600" : "text-amber-600")} aria-hidden />
+                  <div className="min-w-0 flex-1 space-y-0.5">
+                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{r.title}</p>
+                    <p className="text-[11px] text-slate-500">
+                      Due: {fmtDate(r.due_at)} {fmtTime(r.due_at)}
+                      {overdue ? <span className="ml-2 font-bold text-rose-600">Overdue</span> : null}
+                    </p>
+                    {r.notes ? <p className="text-xs text-slate-600 dark:text-slate-400">{r.notes}</p> : null}
+                    <span className={cn("inline-block rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase", PRIORITY_META[r.priority])}>
+                      {r.priority}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void completeReminder(r.id)}
+                    className="shrink-0 rounded-lg border border-emerald-200 bg-emerald-50 p-1.5 text-emerald-700 hover:bg-emerald-100 touch-manipulation dark:border-emerald-800/40 dark:bg-emerald-950/20 dark:text-emerald-300"
+                    title="Mark complete"
+                  >
+                    <CheckCircle2 className="h-4 w-4" aria-hidden />
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+        )}
+      </SectionCard>
+
+      {/* ── 5. Attachments ── */}
+      <SectionCard title="Attachments" icon={Paperclip}>
+        <div className="space-y-4">
+          {/* Bills */}
+          <AttachmentGroup
+            label="Bills"
+            icon={FileText}
+            files={bills}
+            emptyText="No bills uploaded"
+          />
+          {/* Site Images */}
+          <AttachmentGroup
+            label="Site Images"
+            icon={ImageIcon}
+            files={siteImages}
+            emptyText="No site images"
+            isImage
+          />
+          {/* Documents */}
+          <AttachmentGroup
+            label="Documents"
+            icon={FilePlus}
+            files={documents}
+            emptyText="No documents"
+          />
+          <p className="text-[11px] text-slate-400">
+            Upload files via storage and link them using the API at{" "}
+            <code className="rounded bg-slate-100 px-1 dark:bg-white/10">/api/customers/{leadId}/files</code>
+          </p>
+        </div>
+      </SectionCard>
+
+    </div>
+  );
+}
+
+function AttachmentGroup({
+  label,
+  icon: Icon,
+  files,
+  emptyText,
+  isImage = false,
+}: {
+  label: string;
+  icon: typeof FileText;
+  files: CustomerFile[];
+  emptyText: string;
+  isImage?: boolean;
+}) {
+  return (
+    <div>
+      <div className="mb-2 flex items-center gap-2">
+        <Icon className="h-4 w-4 text-slate-400" aria-hidden />
+        <p className="text-xs font-bold text-slate-600 dark:text-slate-300">{label}</p>
+        {files.length > 0 ? (
+          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:bg-white/10">
+            {files.length}
+          </span>
+        ) : null}
+      </div>
+      {files.length === 0 ? (
+        <p className="text-[11px] text-slate-400">{emptyText}</p>
+      ) : (
+        <div className={cn("flex flex-wrap gap-2", isImage && "gap-2")}>
+          {files.map((f) =>
+            isImage ? (
+              <a
+                key={f.id}
+                href={f.file_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative h-20 w-20 overflow-hidden rounded-xl border border-slate-200 bg-slate-100 shadow-sm dark:border-white/10"
+              >
+                <img src={f.file_url} alt={f.file_name} className="h-full w-full object-cover" />
+                <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/60 to-transparent p-1 opacity-0 transition-opacity group-hover:opacity-100">
+                  <p className="truncate text-[9px] font-bold text-white">{f.file_name}</p>
+                </div>
+              </a>
+            ) : (
+              <a
+                key={f.id}
+                href={f.file_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-slate-300"
+              >
+                <Icon className="h-3.5 w-3.5 shrink-0 text-slate-400" aria-hidden />
+                <span className="max-w-[12rem] truncate">{f.file_name}</span>
+                {f.file_size_kb ? (
+                  <span className="text-[10px] text-slate-400">{Math.round(f.file_size_kb)}KB</span>
+                ) : null}
+              </a>
+            )
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

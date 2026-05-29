@@ -457,6 +457,12 @@ export function CustomersLeadList({
                     >
                       {t(commercialCta.labelKey)}
                     </Link>
+                    <Link
+                      href={`/customers/${customer.id}`}
+                      className="flex min-h-10 w-full items-center justify-center gap-1.5 rounded-xl border border-teal-200 bg-teal-50/70 px-3 text-xs font-bold text-teal-800 touch-manipulation hover:bg-teal-100 dark:border-teal-500/30 dark:bg-teal-950/30 dark:text-teal-200"
+                    >
+                      View profile →
+                    </Link>
                   </div>
                 </article>
               );
@@ -667,7 +673,7 @@ export function CustomersLeadList({
                       </div>
                     </div>
 
-                    <div className="relative mt-4 flex justify-end lg:col-span-2 lg:mt-0">
+                    <div className="relative mt-4 flex flex-col items-end gap-2 lg:col-span-2 lg:mt-0">
                       {onStatusChange ? (
                         <LeadStatusPillSelect
                           key={`${customer.id}-${statusKey}`}
@@ -680,6 +686,12 @@ export function CustomersLeadList({
                       ) : (
                         <LeadStatusBadge statusKey={statusKey} label={statusLabel} />
                       )}
+                      <Link
+                        href={`/customers/${customer.id}`}
+                        className="inline-flex h-7 items-center gap-1 rounded-lg border border-teal-200 bg-teal-50/70 px-2 text-[10px] font-bold text-teal-800 hover:bg-teal-100 dark:border-teal-500/30 dark:bg-teal-950/30 dark:text-teal-200"
+                      >
+                        View profile →
+                      </Link>
                     </div>
                   </article>
                 );

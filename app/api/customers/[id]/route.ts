@@ -11,6 +11,24 @@ export const dynamic = "force-dynamic";
 
 type RouteCtx = { params: Promise<{ id: string }> };
 
+export async function GET(_req: NextRequest, ctx: RouteCtx) {
+  try {
+    const { id } = await ctx.params;
+    if (!id) return NextResponse.json({ ok: false, error: "missing id" }, { status: 400 });
+    const db = createSupabaseAdmin() ?? supabase;
+    if (!db) return NextResponse.json({ ok: false, error: "db_unavailable" }, { status: 503 });
+    const leadsTable = await resolveLeadsTable();
+    if (!leadsTable) return NextResponse.json({ ok: false, error: "leads_table_missing" }, { status: 500 });
+    const { data, error } = await db.from(leadsTable).select("*").eq("id", id).maybeSingle();
+    if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 400 });
+    if (!data) return NextResponse.json({ ok: false, error: "lead_not_found" }, { status: 404 });
+    return NextResponse.json({ ok: true, data: mapCustomerRow(data as Record<string, unknown>) });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Get failed";
+    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+  }
+}
+
 /** PostgREST / Postgres: column not present on this deploy (migrations not run). */
 function missingColumnFromPgError(message: string): string | null {
   const m = /Could not find the '([^']+)' column/i.exec(message);
