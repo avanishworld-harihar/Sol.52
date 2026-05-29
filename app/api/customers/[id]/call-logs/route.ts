@@ -12,7 +12,7 @@ function db() {
   return createSupabaseAdmin() ?? supabase;
 }
 
-export const CALL_OUTCOMES = [
+const CALL_OUTCOMES = [
   "no_answer",
   "busy",
   "interested",
@@ -23,8 +23,6 @@ export const CALL_OUTCOMES = [
   "voicemail",
   "callback_requested",
 ] as const;
-
-export type CallOutcome = (typeof CALL_OUTCOMES)[number];
 
 const postSchema = z.object({
   called_at: z.string().optional(),
