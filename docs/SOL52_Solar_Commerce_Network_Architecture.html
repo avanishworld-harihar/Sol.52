@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>SOL.52 Solar Commerce Network Architecture</title>
+  <style>
+    @page { margin: 18mm 16mm; size: A4; }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      font-size: 10.5pt;
+      line-height: 1.45;
+      color: #0f172a;
+    }
+    h1 { font-size: 20pt; color: #0D2C54; border-bottom: 2px solid #00A88F; padding-bottom: 6px; }
+    h2 { font-size: 14pt; color: #0D2C54; margin-top: 1.4em; page-break-after: avoid; }
+    h3 { font-size: 12pt; color: #334155; page-break-after: avoid; }
+    blockquote {
+      border-left: 4px solid #FFB81C;
+      margin: 0.8em 0;
+      padding: 0.4em 0 0.4em 1em;
+      background: #f8fafc;
+    }
+    pre.code {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 8.5pt;
+      white-space: pre-wrap;
+      word-break: break-word;
+      page-break-inside: avoid;
+    }
+    code { font-family: Consolas, monospace; font-size: 9pt; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.8em 0;
+      font-size: 9pt;
+      page-break-inside: avoid;
+    }
+    th, td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; vertical-align: top; }
+    th { background: #0D2C54; color: #fff; }
+    tr:nth-child(even) td { background: #f8fafc; }
+    hr { border: none; border-top: 1px solid #e2e8f0; margin: 1.2em 0; }
+    .cover {
+      text-align: center;
+      padding: 40px 0 28px;
+      margin-bottom: 20px;
+      border-bottom: 3px solid #0D2C54;
+    }
+    .cover h1 { border: none; font-size: 22pt; margin: 0; }
+    .cover .meta { color: #64748b; font-size: 10pt; }
+  </style>
+</head>
+<body>
+  <div class="cover">
+    <h1>SOL.52 — Solar Commerce + Proposal Network</h1>
+    <p class="meta">Architecture Blueprint · May 2026</p>
+    <p class="meta"><strong>Status:</strong> DEFERRED INFRASTRUCTURE — Reference Only</p>
+  </div>
+  <h1>SOL.52 — Solar Commerce + Proposal Network Architecture</h1>
+<blockquote>Companion to the prior <strong>Instant Proposal + Quotation Architecture</strong> plan. That plan defines <em>how a single org sells</em>. This plan defines <em>how many orgs sell together</em> on one platform — sellers, listings, inventory, commissions, fulfillment, and the Commerce Workspace.</blockquote>
+<hr/>
+<h2>STATUS: DEFERRED INFRASTRUCTURE — DO NOT IMPLEMENT YET</h2>
+<p><strong>Decision (2026-05-19):</strong> This entire blueprint is <strong>frozen as deferred infrastructure</strong>. No phase below (E1–E7) is to be implemented in the current cycle.</p>
+<p><strong>Unlock condition — implementation may begin only when ALL of the following are true:</strong></p>
+<ol>
+<li>The Proposal OS has reached <strong>production-quality maturity</strong> — Phase D (Instant Proposal + Quotation) is fully shipped, the unified builder is stable on mobile + desktop, the canonical engine has zero open correctness bugs, and <code>proposal_pricing_snapshots</code> + <code>proposal_approval_events</code> audit flows are battle-tested with real customer data.</li>
+<li>The current Proposal OS roadmap (E0–E13 from the prior Experience Blueprint, plus Phase D from the Instant Proposal + Quotation Architecture plan) is signed off as "done" by the product owner.</li>
+<li>A go/no-go review explicitly references this document and re-confirms the architecture is still correct for the market reality at that future date.</li>
+</ol>
+<p><strong>Current priority — Proposal OS perfection.</strong> All design, engineering, and QA effort flows to the proposal engine, builder UX, residential/commercial parity, story modes, share flows, and intelligence (org-type defaults, AI quick suggestions). Marketplace, vendor onboarding, listings, orders, commissions, and Commerce Workspace are <strong>out of scope</strong> until the unlock condition is met.</p>
+<p><strong>What this document is for, in the meantime:</strong></p>
+<ul>
+<li>A <strong>preservation contract</strong> — every choice below (single-tenant root, additive pricing-line fields, snapshot-on-send, append-only commission ledger, organization-mode flags, layered architecture) is the agreed long-term shape. Day-to-day Proposal OS work must remain <em>compatible</em> with it (no destructive moves that would block these phases later), but must not <em>anticipate</em> it with premature scaffolding.</li>
+<li>A <strong>reference for safe seams</strong> — when Proposal OS work touches <code>organizations</code>, <code>proposal_pricing.line_items</code>, <code>proposal_pricing_snapshots</code>, or <code>proposal_approval_events</code>, contributors should keep this document open to ensure additive-only changes (per MASTERPLAN §5.2).</li>
+<li>A <strong>resumable plan</strong> — the phase breakdown (§13), data model (§3), and risks (§14) can be picked up unchanged once the unlock condition is met.</li>
+</ul>
+<p><strong>Explicit do-NOT list while deferred:</strong></p>
+<ul>
+<li>Do <strong>not</strong> create <code>seller_<em></code>, <code>marketplace_</em></code>, <code>commission_*</code> tables or migrations.</li>
+<li>Do <strong>not</strong> add <code>source_kind</code> / <code>catalog_listing_id</code> / <code>seller_org_id</code> / <code>price_lock</code> fields to the pricing-line Zod schema yet.</li>
+<li>Do <strong>not</strong> scaffold <code>/commerce</code>, <code>/marketplace</code>, or <code>/seller/[slug]</code> routes.</li>
+<li>Do <strong>not</strong> add seller-mode toggles to <code>organizations</code> migrations.</li>
+<li>Do <strong>not</strong> introduce a new top-level nav entry for "Commerce" in <code>components/shell/nav-rail.tsx</code> or <code>components/shell/top-bar.tsx</code>.</li>
+<li>Do <strong>not</strong> wire the command palette to marketplace actions.</li>
+</ul>
+<p>If a Proposal OS task ever appears to <em>require</em> one of the above, stop and re-open this document for a deliberate unlock review — do not bypass.</p>
+<hr/>
+<h2>0. North-star principle</h2>
+<blockquote><strong>One canonical engine. Many tenants. Layered surfaces.</strong></blockquote>
+<ul>
+<li>The proposal/quotation engine (<code>proposal_pricing</code> + IR + preset/block registry) stays the single source of commercial truth — for SOL.52, for every vendor, for every storefront.</li>
+<li>Sellers (SOL.52 itself + 3rd-party vendors) are just <strong>organizations with a seller mode enabled</strong>. No parallel tenant model.</li>
+<li>Marketplace, vendor storefronts, commerce workspace are <strong>read/write surfaces</strong> over the same engine. They don't fork pricing.</li>
+<li>Customer-facing experience stays "Shopify-simple" — under-the-hood multi-tenancy is invisible.</li>
+</ul>
+<p>This mandate is already locked in <code>MASTERPLAN.md</code> §3 (rule 4), §4, §5 — this plan operationalizes it.</p>
+<hr/>
+<h2>1. Architectural answer to Q7 (the most important question)</h2>
+<p><strong>Verdict: Layered modular system on a multi-tenant commerce substrate. Not a unified mega-engine. Not three separate silos.</strong></p>
+<p>Four discrete layers, each replaceable without breaking the others:</p>
+<pre class="code"><code>
+flowchart TB
+  subgraph L1 [Layer 1 - Canonical Solar Engine]
+    SE[solar-engine, tariff-engine, bill-parse]
+    PE[proposal_pricing line_items - canonical commercial truth]
+    PS[proposal_pricing_snapshots - immutable]
+    AE[proposal_approval_events - append only]
+  end
+
+  subgraph L2 [Layer 2 - Document Artifacts]
+    PROP[Proposal - narrative + savings story]
+    QUOT[Quotation - commercial commitment + BOM]
+    INV[Invoice - future, post-order]
+  end
+
+  subgraph L3 [Layer 3 - Multi-tenant Commerce]
+    ORG[organizations - tenant root]
+    SELL[seller mode - listings, warehouses, regions]
+    CAT[marketplace_listings - SKUs]
+    ORD[marketplace_orders + order_items]
+    COMM[commission_ledger]
+  end
+
+  subgraph L4 [Layer 4 - Experience Surfaces]
+    BUILDER[Builder - proposal + quotation]
+    HUB[Proposals Hub - pipeline]
+    CW[Commerce Workspace - NEW]
+    MKT[Marketplace - public discovery]
+    STORE[Seller Storefront - public]
+  end
+
+  SE --&gt; PE
+  PE --&gt; PROP
+  PE --&gt; QUOT
+  PE -.optional catalog ref.-&gt; CAT
+  ORG --&gt; SELL
+  SELL --&gt; CAT
+  CAT --&gt; ORD
+  ORD --&gt; COMM
+  L1 --&gt; BUILDER
+  L2 --&gt; HUB
+  L3 --&gt; CW
+  L3 --&gt; MKT
+  L3 --&gt; STORE
+</code></pre>
+<p><strong>Why this shape:</strong></p>
+<ul>
+<li><strong>Unified engine (option A)</strong> would force marketplace into proposal schema → bloated, slow, hard to evolve catalog independently.</li>
+<li><strong>Three silos (variant of B)</strong> would re-implement pricing logic in catalog/orders → inconsistent totals, snapshot drift, the exact bug pattern we've fought historically.</li>
+<li><strong>Layered + multi-tenant (the chosen direction)</strong> keeps the engine canonical (no silent forks), lets the commerce layer scale (catalog, inventory, commissions can change independently), and treats artifacts (proposal/quotation/invoice) as <strong>views</strong> over one priced BOM.</li>
+</ul>
+<p><strong>Concrete rule that enforces it:</strong> every line on every quotation, every order, every commission entry traces back to a <code>proposal_pricing.line_items</code> row (or a snapshot of one). No commerce surface inserts pricing directly.</p>
+<hr/>
+<h2>2. Tenant model: one org, many modes</h2>
+<p>Today an <code>organizations</code> row = an installer company. Tomorrow it can wear up to four <strong>modes</strong> simultaneously, all controlled by additive flags. No parallel tenant types.</p>
+<table>
+<tr><th>Mode</th><th>Flag (additive column on <code>organizations</code>)</th><th>What it unlocks</th></tr>
+<tr><td><strong>Installer</strong> (default)</td><td>always on</td><td>CRM, proposals, projects</td></tr>
+<tr><td><strong>Seller / Vendor</strong></td><td><code>marketplace_seller_enabled boolean</code></td><td>listings, warehouses, storefront, commissions</td></tr>
+<tr><td><strong>Buyer</strong></td><td><code>marketplace_buyer_enabled boolean</code> (default true)</td><td>purchase from marketplace</td></tr>
+<tr><td><strong>Platform-owned (SOL.52 itself)</strong></td><td><code>seller_kind enum('partner','platform_owned')</code></td><td>special seller org owned by super admins</td></tr>
+</table>
+<p><strong>SOL.52 as seller (Q1):</strong> a real <code>organizations</code> row with <code>seller_kind='platform_owned'</code>, owned and operated by super admins. Selling SOL.52-branded panels/inverters is just "this seller is a first-party". No special-casing in the engine.</p>
+<p><strong>Customers stay simple:</strong> end customers (hotel owners, homeowners) remain rows in <code>customers</code>/<code>leads</code> (not orgs). Only businesses that need to <em>sell</em> become orgs. This preserves the "low-tech sales person" flow.</p>
+<hr/>
+<h2>3. Data model — additive migrations only</h2>
+<p>Building strictly on the foundation already shipped in <code>supabase/migrations/020_organizations_foundation.sql</code>. Every change is additive (no destructive rewrites, MASTERPLAN §5.2 rule).</p>
+<h3>3.1 Extend organizations (Phase E1)</h3>
+<pre class="code"><code>
+ALTER TABLE organizations
+  ADD COLUMN seller_kind text DEFAULT 'partner' CHECK (seller_kind IN ('partner','platform_owned')),
+  ADD COLUMN marketplace_seller_enabled boolean DEFAULT false,
+  ADD COLUMN marketplace_buyer_enabled boolean DEFAULT true,
+  ADD COLUMN seller_verification_level text DEFAULT 'unverified'
+    CHECK (seller_verification_level IN ('unverified','verified','trusted','sol52_verified')),
+  ADD COLUMN gst_number text NULL,
+  ADD COLUMN legal_name text NULL,
+  ADD COLUMN logo_url text NULL,
+  ADD COLUMN seller_slug text NULL UNIQUE;
+</code></pre>
+<h3>3.2 Seller operating tables (Phase E2)</h3>
+<table>
+<tr><th>Table</th><th>Purpose</th></tr>
+<tr><td><code>seller_warehouses</code></td><td><code>(id, org_id, name, address, pincode, lat, lng)</code> — per-seller stock locations</td></tr>
+<tr><td><code>seller_delivery_regions</code></td><td><code>(seller_org_id, state, pincode_prefix, lead_time_days, freight_inr)</code> — where they ship</td></tr>
+<tr><td><code>marketplace_listings</code></td><td><code>(id, seller_org_id, epc_category, brand, model, wattage, unit_kind, unit_price_inr, warranty_years, datasheet_url, status, moderation_state)</code> — the SKU</td></tr>
+<tr><td><code>seller_inventory</code></td><td><code>(listing_id, warehouse_id, stock_qty, low_stock_threshold, updated_at)</code> — daily-snapshot stock</td></tr>
+<tr><td><code>marketplace_bundles</code></td><td><code>(id, owner_org_id, name, listing_ids[], discount_pct, target_system_kw_min, target_system_kw_max)</code> — kits</td></tr>
+</table>
+<h3>3.3 Commerce orchestration (Phase E3)</h3>
+<table>
+<tr><th>Table</th><th>Purpose</th></tr>
+<tr><td><code>marketplace_inquiries</code></td><td>proposal/quote → seller "interested" handshake, lives independently of orders</td></tr>
+<tr><td><code>marketplace_orders</code></td><td><code>(id, buyer_org_id NULL, buyer_lead_id NULL, status, source_proposal_id, source_quotation_id, total_inr, created_at)</code></td></tr>
+<tr><td><code>marketplace_order_items</code></td><td><code>(order_id, listing_id, seller_org_id, warehouse_id, quantity, unit_price_inr_snapshot, commission_inr_snapshot)</code></td></tr>
+<tr><td><code>commission_rules</code></td><td><code>(id, seller_org_id NULL, epc_category NULL, percentage, flat_fee_inr, effective_from)</code> — global defaults + per-seller overrides</td></tr>
+<tr><td><code>commission_ledger</code></td><td>append-only entries per <code>marketplace_order_items</code> row, mirrors <code>proposal_approval_events</code> pattern</td></tr>
+<tr><td><code>platform_featured_sellers</code></td><td>super-admin curated feature flags + boost score</td></tr>
+<tr><td><code>platform_recommendation_rules</code></td><td>"if proposal has 5kW residential in Maharashtra, recommend Listing X"</td></tr>
+</table>
+<h3>3.4 The single critical extension to the engine</h3>
+<p>The only change to existing canonical tables is <strong>two nullable columns</strong> on <code>proposal_pricing.line_items</code> (already pre-approved in MASTERPLAN §5.2):</p>
+<pre class="code"><code>
+-- inside the jsonb line_items shape (no SQL migration; schema-level Zod change)
+{
+  ...existing fields,
+  source_kind?: "installer_internal" | "seller_listing",
+  catalog_listing_id?: uuid | null,
+  seller_org_id?: uuid | null,
+  price_lock?: "snapshot" | "live"   // default "snapshot"
+}
+</code></pre>
+<p>This is the <strong>single seam</strong> that lets the marketplace plug into the canonical engine. Old proposals/quotations keep working unchanged (every field is optional).</p>
+<hr/>
+<h2>4. Pricing ownership — the rule that prevents chaos</h2>
+<p>Three explicit pricing sources, with <strong>deterministic precedence</strong>:</p>
+<pre class="code"><code>
+flowchart LR
+  L[New line item] --&gt; Q{Source?}
+  Q --&gt;|Installer types price| INT[installer_internal - frozen on save]
+  Q --&gt;|Picked from marketplace| LIST{price_lock?}
+  LIST --&gt;|snapshot - default| SNAP[Copy unit_price_inr at pick time, store catalog_listing_id]
+  LIST --&gt;|live| LIVE[Reference listing.unit_price_inr at read time, until quotation status = sent]
+  SNAP --&gt; CANON[proposal_pricing.line_items]
+  LIVE --&gt; CANON
+  INT --&gt; CANON
+  CANON --&gt; SNAPSHOT[On status transitions: proposal_pricing_snapshots immutable copy]
+</code></pre>
+<p><strong>Rules:</strong></p>
+<ul>
+<li>The moment a quotation is <code>sent</code>, even <code>live</code> lines auto-collapse to <code>snapshot</code> — the customer always sees a stable number.</li>
+<li>Each snapshot remains a row in <code>proposal_pricing_snapshots</code> (existing). Audit-grade.</li>
+<li>Approval events log the source change too: "line item X switched from installer_internal to seller_listing(Waaree 540W)".</li>
+</ul>
+<p>This answers <strong>pricing ownership + approval workflow</strong> in one mechanism that already exists.</p>
+<hr/>
+<h2>5. Order routing — keep it boringly simple</h2>
+<pre class="code"><code>
+flowchart LR
+  Q[Quotation accepted] --&gt; O[Create marketplace_order]
+  O --&gt; SPLIT{Line items}
+  SPLIT --&gt;|installer_internal| SKIP[no marketplace order item, installer ships]
+  SPLIT --&gt;|seller_listing| ROUTE{Match buyer pincode to seller_delivery_regions}
+  ROUTE --&gt;|match found| PICK[Pick nearest seller_warehouse with stock]
+  ROUTE --&gt;|no match| FALLBACK[Mark item as needs manual sourcing, notify super admin]
+  PICK --&gt; ITEM[marketplace_order_items row with warehouse_id + commission snapshot]
+</code></pre>
+<p><strong>No real-time stock juggling for MVP.</strong> Daily inventory snapshot + low-stock threshold alerts. Real-time integration is a Phase E6+ concern.</p>
+<hr/>
+<h2>6. Commission system — append-only, never silent</h2>
+<ul>
+<li>Default rule: 5% on all marketplace order items (configurable per category by super admin).</li>
+<li>Per-seller overrides allowed (premium sellers may negotiate down).</li>
+<li>On every <code>marketplace_order_items</code> insert: snapshot the commission rule at that moment into the item row (<code>commission_inr_snapshot</code>), and append a <code>commission_ledger</code> entry.</li>
+<li>Ledger never updates — disputes generate new compensating entries (same pattern as <code>proposal_approval_events</code>). This is what auditors and CFOs need.</li>
+</ul>
+<hr/>
+<h2>7. Role permissions — extends existing RBAC</h2>
+<p>Building on <code>MASTERPLAN.md</code> §3 — three roles already defined: Super Admin / Company Admin / Employee. Add <strong>scoped permissions</strong> within each role; no new role types.</p>
+<table>
+<tr><th>Capability</th><th>Super Admin</th><th>Company Admin</th><th>Employee</th><th>Seller Admin*</th><th>Customer (read-only via share token)</th></tr>
+<tr><td>Approve sellers globally</td><td>yes</td><td>no</td><td>no</td><td>no</td><td>no</td></tr>
+<tr><td>Set global commission defaults</td><td>yes</td><td>no</td><td>no</td><td>no</td><td>no</td></tr>
+<tr><td>Feature a seller</td><td>yes</td><td>no</td><td>no</td><td>no</td><td>no</td></tr>
+<tr><td>Toggle own org's <code>marketplace_seller_enabled</code></td><td>yes</td><td>yes</td><td>no</td><td>n/a</td><td>no</td></tr>
+<tr><td>Create/edit own listings</td><td>yes</td><td>yes</td><td>per perm</td><td>yes</td><td>no</td></tr>
+<tr><td>Manage own inventory</td><td>yes</td><td>yes</td><td>per perm</td><td>yes</td><td>no</td></tr>
+<tr><td>Create proposal/quotation</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td><td>no</td></tr>
+<tr><td>Convert quote to marketplace order</td><td>yes</td><td>yes</td><td>per perm</td><td>yes</td><td>no</td></tr>
+<tr><td>View own org's commission ledger</td><td>yes</td><td>yes</td><td>no</td><td>yes</td><td>no</td></tr>
+<tr><td>View any org's data</td><td>yes</td><td>no</td><td>no</td><td>no</td><td>no</td></tr>
+</table>
+<p>*Seller Admin = a sub-permission set on an existing org member with <code>role='company_admin'</code> whose org has seller mode enabled. Not a new top-level role — just a permission expansion.</p>
+<hr/>
+<h2>8. Solar Commerce Workspace (Q8) — the new module</h2>
+<p>A <strong>new top-level surface</strong> alongside Dashboard, Proposals, Customers, Projects. It's the "trading desk" view of the business.</p>
+<pre class="code"><code>
+flowchart TB
+  CW[Commerce Workspace] --&gt; ROW1
+  CW --&gt; ROW2
+  CW --&gt; ROW3
+  ROW1[Row 1 - Active Deals]
+  ROW2[Row 2 - Inbox]
+  ROW3[Row 3 - Intelligence]
+  ROW1 --&gt; Q1[Live Quotes - sent, awaiting response]
+  ROW1 --&gt; P1[Active Proposals - in builder]
+  ROW1 --&gt; H1[Hot Leads - high velocity, high health]
+  ROW2 --&gt; V1[Vendor Offers - inbound listings matched to my draft quotes]
+  ROW2 --&gt; A1[Approval Requests - my approvals + waiting on others]
+  ROW2 --&gt; N1[Negotiation Threads - customer counter-offers]
+  ROW3 --&gt; I1[Inventory Alerts - my low-stock SKUs if seller]
+  ROW3 --&gt; F1[Financing Matches - quotes matched to NBFC offers]
+  ROW3 --&gt; AI1[AI Recommendations - next best action per deal]
+</code></pre>
+<p><strong>Composition rule:</strong> every tile in Commerce Workspace is a <strong>filter over existing data + new commerce tables</strong>. No new "commerce" entities outside what §3 defines. This keeps the surface a <em>view</em>, not a silo.</p>
+<p><strong>Mobile-first card stack:</strong> on phone, three rows become a vertical stack with one card per screen; swipe between sections. Desktop = 3-column grid.</p>
+<p><strong>Lives at</strong> <code>/commerce</code> (new route). Hub at <code>/proposals</code> stays as-is (deal pipeline). They are siblings, not nested.</p>
+<hr/>
+<h2>9. Seller storefront + marketplace surfaces (Q2, Q3, Q5)</h2>
+<p>Three public surfaces — all read-only Next.js routes, share-token pattern reused:</p>
+<table>
+<tr><th>Route</th><th>Purpose</th><th>Note</th></tr>
+<tr><td><code>/marketplace</code></td><td>Public discovery — browse by category/region/brand, featured sellers ribbon</td><td>New</td></tr>
+<tr><td><code>/seller/[slug]</code></td><td>Per-seller storefront — brand, listings, ratings, "Get quote" CTA</td><td>New, uses <code>organizations.seller_slug</code></td></tr>
+<tr><td><code>/quote/[token]</code></td><td>Existing pattern from prior plan — quotation public view</td><td>Extend to embed branded product cards when <code>source_kind = seller_listing</code></td></tr>
+<tr><td><code>/proposal/[token]</code></td><td>Existing public proposal view</td><td>Unchanged; commerce is <em>additive</em></td></tr>
+</table>
+<p><strong>Seller-side flow (Q3) reuses existing engines end-to-end:</strong></p>
+<pre class="code"><code>
+flowchart LR
+  S[Seller logs in] --&gt; A[Quick Action - Create Quotation]
+  A --&gt; P{Inventory or external customer?}
+  P --&gt;|My inventory| B[Builder pre-filtered to my listings]
+  P --&gt;|External| C[Standard builder + can mix in SOL.52 marketplace items]
+  B --&gt; D[Branded PDF + web quote + WhatsApp share]
+  C --&gt; D
+  D --&gt; E[Customer accepts]
+  E --&gt; F[marketplace_order auto-created, routed]
+  F --&gt; G[commission_ledger entry if cross-seller]
+</code></pre>
+<p>No new builder. The same <code>/proposal</code> page + the Phase D <code>/quotation</code> builder — with a single new toggle: "Use my inventory only" / "Mix marketplace". Implementation = a <code>WHERE seller_org_id = me</code> filter on the catalog picker.</p>
+<hr/>
+<h2>10. Customer experience — Q5 in one screen</h2>
+<p>The 30–60 second flow already specified in the prior plan extends with marketplace intelligence — same Cmd-K command palette, same prefill URL pattern:</p>
+<pre class="code"><code>
+flowchart LR
+  CMD[Cmd-K - Create proposal for hotel] --&gt; WIZ[Quick Wizard]
+  WIZ --&gt; O[Org type - Hotel]
+  WIZ --&gt; K[System size - 50kW]
+  WIZ --&gt; BR[Preferred brands - Waaree, Adani]
+  WIZ --&gt; BT[Budget tier - Standard or Premium]
+  BR --&gt; GEN[Engine generates in less than 30s]
+  GEN --&gt; P[Proposal - story mode, executive_pitch]
+  GEN --&gt; Q[Quotation - BOM with branded cards]
+  GEN --&gt; CMP[Brand comparison view - Waaree vs Adani]
+  GEN --&gt; WA[WhatsApp deeplink ready]
+  GEN --&gt; FIN[Financing options - matched NBFCs]
+  GEN --&gt; UP[Upsell - BESS, AMC, monitoring]
+  GEN --&gt; MKT[Marketplace CTA - Order through SOL.52]
+</code></pre>
+<p>The "intelligence" (financing match, upsell, brand comparison) is a <strong>service layer</strong> call (<code>lib/ai-quick-suggest.ts</code> from prior plan, extended) — not new entities. Output renders into existing proposal blocks via the block registry — no new render pipeline.</p>
+<hr/>
+<h2>11. Simplicity manifesto (Q9) — non-negotiable rules</h2>
+<p>These become enforced UX laws in the design system:</p>
+<ol>
+<li><strong>No screen with more than 5 required fields.</strong> Always defaults from org type + region + brand prefs.</li>
+<li><strong>WhatsApp is the primary delivery channel</strong> for residential &amp; small commercial. Email is secondary. PDF is on-demand.</li>
+<li><strong>One word labels.</strong> "Items" not "BOM". "Total" not "Net Cost". "Send" not "Dispatch". Hindi parity for every label via <code>useLanguage</code>.</li>
+<li><strong>AI fills the unknown.</strong> Every form field has an "I don't know" / "Suggest" affordance backed by <code>ai-quick-suggest</code>.</li>
+<li><strong>Mobile is the design floor, not the ceiling.</strong> Every new surface designs phone first, scales up.</li>
+<li><strong>No nested modals.</strong> Drawers and full-screen sheets only on mobile.</li>
+<li><strong>Quick Actions reach everywhere.</strong> Cmd-K from any screen creates anything.</li>
+</ol>
+<p>These rules go into <code>lib/design-system.ts</code> as comments + a checklist in <code>docs/SIMPLICITY_LAWS.md</code> (new doc).</p>
+<hr/>
+<h2>12. What evolves vs preserves (Q10)</h2>
+<h3>Preserve (do not touch)</h3>
+<ul>
+<li><code>solar-engine</code>, <code>tariff-engine</code>, <code>bill-parse</code> — calculation truth</li>
+<li><code>proposal_pricing</code> line shape (only additive optional fields)</li>
+<li><code>proposal_pricing_snapshots</code>, <code>proposal_approval_events</code> — audit pattern</li>
+<li><code>WEB_RENDERER_REGISTRY</code>, <code>lib/proposal-block-registry.ts</code>, <code>lib/proposal-preset-engine.ts</code> — block IDs are stable</li>
+<li>Public share token model (<code>/proposal/[token]</code>)</li>
+<li>Residential vs commercial renderer split — existing <code>WebRenderer</code> + <code>CommercialProposalView</code></li>
+<li>E1 design tokens + E2 OsShell + E3 Proposals Hub — just shipped, don't refactor</li>
+</ul>
+<h3>Evolve additively</h3>
+<ul>
+<li><code>organizations</code> — add seller mode flags (§3.1)</li>
+<li><code>proposal_pricing.line_items</code> Zod schema — add optional <code>source_kind</code>, <code>catalog_listing_id</code>, <code>seller_org_id</code>, <code>price_lock</code></li>
+<li>Builder catalog picker (existing) — gains a "Marketplace" tab next to "My catalog"</li>
+<li>Command palette (<code>components/shell/command-palette.tsx</code>) — gains marketplace search + seller search</li>
+<li>OsShell breadcrumbs — gain "Seller &gt; Listings" trail when in seller mode</li>
+</ul>
+<h3>Become modular</h3>
+<ul>
+<li>Commerce surfaces — new <code>app/(main)/commerce/<em></code> and <code>app/marketplace/</em></code> route groups, isolated from <code>proposal/*</code></li>
+<li>Seller settings — new <code>app/(main)/settings/seller/*</code></li>
+</ul>
+<h3>Become AI-assisted</h3>
+<ul>
+<li>Brand recommendation per region/org type</li>
+<li>Quotation drafting from voice/text prompt</li>
+<li>Upsell card on every accepted quote</li>
+<li>Inventory low-stock natural-language alerts ("Waaree 540W will run out in 6 days at current pace")</li>
+</ul>
+<h3>Become marketplace-ready</h3>
+<ul>
+<li>Every <code>epc-component-catalog</code> category already has <code>marketplaceReady</code> flag — listings table reads it as a constraint</li>
+<li>Every <code>proposal_pricing.line_items</code> row already supports <code>catalog_category</code> — bridge column to <code>marketplace_listings.epc_category</code></li>
+</ul>
+<h3>Newly workspace-driven</h3>
+<ul>
+<li>"Active workspace" pill (E2) extends to active <strong>commerce context</strong> — current quote, current order, current listing draft</li>
+<li>Approval feed + commission feed appear inside Commerce Workspace, not buried in settings</li>
+</ul>
+<hr/>
+<h2>13. Phase E roadmap (sequenced, additive, shippable)</h2>
+<blockquote>Phase D (Instant Proposal + Quotation) is the prerequisite — already planned, partly underway. Phase E begins after Phase D ships D0–D3.</blockquote>
+<table>
+<tr><th>Phase</th><th>Scope</th><th>Ship-gate</th></tr>
+<tr><td><strong>E1 — Seller foundation</strong></td><td>Org table flag migration + Seller settings page + super admin seller-approval queue</td><td>One installer org can flip seller mode on</td></tr>
+<tr><td><strong>E2 — Listings + storefront</strong></td><td><code>marketplace_listings</code> + <code>seller_warehouses</code> + <code>seller_delivery_regions</code> + <code>/seller/[slug]</code> public page + listing CRUD UI</td><td>A seller can publish a listing visible at <code>/seller/their-slug</code></td></tr>
+<tr><td><strong>E3 — Catalog plug-in to engine</strong></td><td>Add <code>source_kind</code> / <code>catalog_listing_id</code> to pricing-line Zod + Builder catalog picker "Marketplace" tab + snapshot logic</td><td>An installer's quotation can pull a marketplace listing as a line item with proper price snapshot</td></tr>
+<tr><td><strong>E4 — Public marketplace + recommendations</strong></td><td><code>/marketplace</code> discovery + <code>platform_featured_sellers</code> + <code>platform_recommendation_rules</code> + featured ribbon on builder</td><td>A buyer can browse, compare, and add to quote</td></tr>
+<tr><td><strong>E5 — Orders + commissions</strong></td><td><code>marketplace_orders</code> + <code>marketplace_order_items</code> + <code>commission_ledger</code> + accept→order flow + super admin commission console</td><td>Accepted quote auto-creates routed order with commission entry</td></tr>
+<tr><td><strong>E6 — Commerce Workspace</strong></td><td><code>/commerce</code> route + tiles (live quotes, vendor offers, inventory alerts, financing matches, AI recs)</td><td>Mobile + desktop dashboards live</td></tr>
+<tr><td><strong>E7 — Inventory automation + verification badges</strong></td><td>Inventory snapshot jobs + low-stock alerts + SOL.52 Verified Vendor badge (<code>seller_verification_level</code>) on storefront + builder</td><td>Sellers get inventory pressure visibility; buyers see trust signals</td></tr>
+</table>
+<p>Each phase is independently shippable. No phase blocks a customer-visible feature for more than 2 weeks of work.</p>
+<hr/>
+<h2>14. Risks &amp; explicit non-goals</h2>
+<p><strong>Risks watched</strong></p>
+<ul>
+<li>Pricing drift between snapshot and live listings → mitigated by auto-collapse to snapshot on <code>sent</code> (§4)</li>
+<li>Commission disputes → mitigated by append-only ledger (§6)</li>
+<li>Seller spam → mitigated by super admin approval gate + verification levels (§7, E1)</li>
+<li>"ERP creep" — too many fields, too many screens → mitigated by simplicity manifesto (§11) enforced in code review</li>
+</ul>
+<p><strong>Non-goals (deferred)</strong></p>
+<ul>
+<li>Payment processing / settlement — Phase F+</li>
+<li>Multi-currency — Phase F+</li>
+<li>Real-time stock sync with vendor ERPs — Phase F+</li>
+<li>Logistics integration (Delhivery/Shadowfax APIs) — Phase F+</li>
+<li>Buyer-side org accounts — Phase E8+ (customers stay as <code>leads</code>/<code>customers</code> for now)</li>
+</ul>
+<hr/>
+<h2>15. Open questions to confirm before E1 begins</h2>
+<p>These will be raised when we move from plan to execution. No need to answer now:</p>
+<ol>
+<li>Should SOL.52 platform-owned seller org be seeded as a real migration row, or created via super-admin UI in E1?</li>
+<li>Default commission percentage at launch — 3%? 5%? Per-category split?</li>
+<li>Verification badge tiers — keep 4 (unverified → sol52_verified) or simplify to 3?</li>
+<li><code>/marketplace</code> discovery — search-first (IndiaMART style) or curated-first (Shopify-collections style) at launch?</li>
+<li>Cross-org employee invitations — out of scope for E1, or do we need read-only "customer" portal accounts before E5?</li>
+</ol>
+</body>
+</html>
