@@ -63,12 +63,7 @@ export function CommercialPricingExtrasPanel({ config, summary, systemKw, onChan
   const dgAnalysis = computeDgHybridAnalysis(dg, systemKw);
 
   return (
-    <CommercialStepSection
-      step={5}
-      title="Site operations & scale"
-      subtitle="DG hybrid, project timeline, and multi-kW scenarios on the customer proposal."
-      icon={Settings2}
-    >
+    <CommercialStepSection step={5} title="DG & timeline" icon={Settings2} defaultOpen={false}>
       <div className="space-y-6">
         <ToggleRow
           icon={Fuel}

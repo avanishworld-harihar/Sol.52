@@ -38,6 +38,11 @@ import type { CommercialProposalConfig } from "@/lib/commercial-proposal-config"
 import { saveCommercialRequirement } from "@/lib/save-commercial-requirement-client";
 import { CommercialPricingExtrasPanel } from "@/components/commercial/commercial-pricing-extras-panel";
 import { ResidentialStepSection } from "@/components/residential/residential-step-section";
+import {
+  WorkspaceFieldLabel,
+  WorkspaceOptionalFold,
+  workspaceStickySaveClass,
+} from "@/components/proposal/workspace-mobile-ui";
 import type { ProposalDeckSummary } from "@/lib/proposal-ppt";
 import { useState } from "react";
 
@@ -87,7 +92,7 @@ function SectionTitle({ icon: Icon, title, hint }: { icon: typeof Sun; title: st
         <Icon className="h-4 w-4 text-slate-500" aria-hidden />
         {title}
       </p>
-      {hint ? <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{hint}</p> : null}
+      {hint ? <p className="mt-0.5 hidden text-xs text-slate-500 sm:block dark:text-slate-400">{hint}</p> : null}
     </div>
   );
 }
@@ -510,34 +515,24 @@ export function ResidentialPricingStudio({
       >
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p
-              className={cn(
-                "text-[10px] font-bold uppercase tracking-widest",
-                isCommercial ? "text-indigo-300" : "text-emerald-300"
-              )}
-            >
-              {isCommercial ? "Steps 2–5 · Proposal settings" : "Steps 2–4 · Proposal settings"}
+            <p className={cn("text-[10px] font-bold uppercase tracking-widest", isCommercial ? "text-indigo-300" : "text-emerald-300")}>
+              Step 2+
             </p>
             <h3 className="text-lg font-semibold tracking-tight">
-              {isCommercial ? "Quote, equipment & site options" : "Equipment & proposal options"}
+              {isCommercial ? "Quote & equipment" : "Proposal options"}
             </h3>
-            <p
-              className={cn(
-                "mt-1 max-w-xl text-xs",
-                isCommercial ? "text-indigo-100/90" : "text-emerald-100/90"
-              )}
-            >
-              Deal settings below. Central ₹/kW matrix: More → Rate card.
+            <p className={cn("mt-0.5 text-xs", isCommercial ? "text-indigo-100/90" : "text-emerald-100/90")}>
+              Rates: More → Rate card
             </p>
           </div>
-          <div className="flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-xs font-medium text-slate-200">
-            <Zap className="h-3.5 w-3.5 text-amber-300" />
-            {solar.plantCapacityKw} kW · 4 u/kW/day
+          <div className="flex items-center gap-1.5 rounded-xl bg-white/10 px-3 py-2 text-sm font-bold tabular-nums">
+            <Zap className="h-4 w-4 text-amber-300 shrink-0" aria-hidden />
+            {solar.plantCapacityKw} kW
           </div>
         </div>
       </div>
 
-      <div className="space-y-8 p-4 sm:p-5">
+      <div className="space-y-3 p-3 sm:space-y-4 sm:p-4">
         {!hideCatalogPanel ? (
           <ResidentialBrandCatalogPanel
             config={config}
@@ -569,12 +564,7 @@ export function ResidentialPricingStudio({
             </select>
           </div>
         ) : (
-          <ResidentialStepSection
-            step={2}
-            title="Panel technology"
-            subtitle="Technology line shown on the customer proposal and BOM."
-            icon={Sun}
-          >
+          <ResidentialStepSection step={2} title="Panel type" icon={Sun} defaultOpen>
             <select
               value={pricing.panelTechnology ?? solar.technology ?? "Mono PERC"}
               onChange={(e) => {
@@ -598,22 +588,12 @@ export function ResidentialPricingStudio({
 
         {/* Equipment brands — proposal + BOM */}
         {isCommercial ? (
-          <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/60 p-4 dark:border-white/15 dark:bg-white/[0.02] sm:p-5">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Proposal &amp; BOM</p>
-            <h4 className="mt-1 text-base font-bold text-slate-900 dark:text-white">Equipment brands on customer link</h4>
-            <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-              Pick panel (2–3), inverter (2), and wire (2). Edited names appear on the system-design page and BOM brand
-              column.
-            </p>
-            <div className="mt-6">{equipmentBrandsContent}</div>
+          <div className="rounded-2xl border border-slate-200/80 bg-slate-50/60 p-3 dark:border-white/15 dark:bg-white/[0.02]">
+            <WorkspaceFieldLabel className="mb-3">Brands on proposal</WorkspaceFieldLabel>
+            {equipmentBrandsContent}
           </div>
         ) : (
-          <ResidentialStepSection
-            step={3}
-            title="Equipment on customer link"
-            subtitle="Panel, inverter, and wire brands shown on the web proposal and BOM."
-            icon={Cpu}
-          >
+          <ResidentialStepSection step={3} title="Brands on proposal" icon={Cpu} defaultOpen>
             {equipmentBrandsContent}
           </ResidentialStepSection>
         )}
@@ -652,21 +632,18 @@ export function ResidentialPricingStudio({
                 />
               </div>
             ) : null}
-            <p className="mt-2 text-[11px] text-slate-500">No PM subsidy on commercial / HT — net = rate card − discount.</p>
+            <p className="mt-2 hidden text-[11px] text-slate-500 sm:block">No PM subsidy — net = rate − discount.</p>
           </div>
         ) : (
-          <ResidentialStepSection
-            step={4}
-            title="Customer pricing"
-            subtitle="Discount and PM Surya Ghar subsidy for this proposal."
-            icon={Layers}
-          >
+          <ResidentialStepSection step={4} title="Discount & subsidy" icon={Layers} defaultOpen={false}>
             {residentialPricingAdjustments}
           </ResidentialStepSection>
         )}
 
-        <ResidentialBrandComparePanel config={config} onChange={onChange} />
-        <ResidentialTrackComparePanel config={config} onChange={onChange} />
+        <WorkspaceOptionalFold title="Compare brands & tracks" defaultOpen={false} theme={isCommercial ? "commercial" : "residential"}>
+          <ResidentialBrandComparePanel config={config} onChange={onChange} />
+          <ResidentialTrackComparePanel config={config} onChange={onChange} />
+        </WorkspaceOptionalFold>
 
         {isCommercial && commercialConfig && onCommercialConfigChange && summary ? (
           <CommercialPricingExtrasPanel
@@ -678,38 +655,24 @@ export function ResidentialPricingStudio({
         ) : null}
       </div>
 
-      <div className="flex flex-col gap-3 border-t border-slate-200/80 bg-slate-50/80 px-4 py-4 dark:border-white/10 dark:bg-white/[0.02] sm:flex-row sm:items-center sm:justify-between sm:px-5">
-        <p className="text-xs text-slate-500 dark:text-slate-400">
-          {onSaveAndGenerate
-            ? "Saves plant & pricing from bills, updates the CRM lead, and opens the shareable web proposal."
-            : proposalId
-              ? isCommercial
-                ? "Saves all commercial proposal settings to this deal."
-                : "Saves equipment brands, discount, subsidy, and DCR comparison to this proposal."
-              : onCreateProposal
-                ? "Creates or updates the web proposal with all fields above."
-                : "Generate the web proposal first, then Save will sync these settings."}
+      <div className={workspaceStickySaveClass()}>
+        <p className="mb-2 hidden text-xs text-slate-500 sm:block">
+          {onSaveAndGenerate ? "Saves settings and opens shareable proposal." : "Syncs to this proposal."}
         </p>
-        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+        <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
           <Button
             type="button"
             disabled={saving}
             onClick={() => void (onSaveAndGenerate ? handleSaveAndGenerate() : handleSave())}
             className={cn(
-              "w-full gap-2 font-semibold sm:min-w-[12rem]",
+              "h-12 w-full gap-2 text-base font-semibold sm:min-w-[11rem]",
               isCommercial
                 ? "bg-indigo-700 hover:bg-indigo-800 dark:bg-indigo-500"
-                : "bg-slate-900 hover:bg-slate-800 dark:bg-white dark:text-slate-900"
+                : "bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-600"
             )}
           >
-            <Save className="h-4 w-4" aria-hidden />
-            {saving
-              ? "Working…"
-              : onSaveAndGenerate
-                ? "Save and generate proposal"
-                : isCommercial
-                  ? "Save proposal"
-                  : "Save"}
+            <Save className="h-5 w-5" aria-hidden />
+            {saving ? "Saving…" : onSaveAndGenerate ? "Save & share proposal" : "Save"}
           </Button>
           {onSaveAndGenerate ? (
             <Button
@@ -717,9 +680,9 @@ export function ResidentialPricingStudio({
               variant="outline"
               disabled={saving}
               onClick={() => void handleSave()}
-              className="w-full font-semibold sm:w-auto"
+              className="h-12 w-full font-semibold sm:w-auto"
             >
-              Save settings only
+              Save only
             </Button>
           ) : null}
         </div>

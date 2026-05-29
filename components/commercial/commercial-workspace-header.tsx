@@ -29,14 +29,10 @@ export function CommercialWorkspaceHeader({ summary, netCostInr, onOpenReview, c
         className
       )}
     >
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-300">Commercial executive</p>
-          <h2 className="mt-1 text-lg font-bold tracking-tight sm:text-xl">Proposal workspace</h2>
-          <p className="mt-1.5 max-w-lg text-xs leading-relaxed text-indigo-100/90">
-            Configure this deal below. Central <strong className="text-white">₹/kW rates</strong> live in{" "}
-            <strong className="text-white">More → Rate card</strong> — this screen applies them to the customer link.
-          </p>
+          <h2 className="text-lg font-bold tracking-tight">Commercial proposal</h2>
+          <p className="mt-0.5 text-xs text-indigo-100/90">Rates in More → Rate card</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button

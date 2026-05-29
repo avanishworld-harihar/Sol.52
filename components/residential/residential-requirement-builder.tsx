@@ -26,15 +26,13 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Battery,
-  Building2,
-  Calculator,
-  IndianRupee,
-  Layers,
-  Leaf,
-  Sun,
-  Zap,
-} from "lucide-react";
+  WorkspaceFieldLabel,
+  WorkspaceMetricStrip,
+  WorkspaceOptionalFold,
+  WorkspaceTouchChip,
+  workspaceSliderClass,
+} from "@/components/proposal/workspace-mobile-ui";
+import { IndianRupee } from "lucide-react";
 
 type Props = {
   config: ResidentialProposalConfig;
@@ -51,31 +49,6 @@ type Props = {
   variant?: "residential" | "commercial";
   className?: string;
 };
-
-function Chip({
-  active,
-  children,
-  onClick,
-}: {
-  active: boolean;
-  children: React.ReactNode;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "rounded-full border px-3 py-1.5 text-xs font-semibold transition-all touch-manipulation",
-        active
-          ? "border-emerald-500 bg-emerald-600 text-white shadow-sm"
-          : "border-slate-200 bg-white text-slate-700 hover:border-emerald-300 dark:border-white/15 dark:bg-white/5 dark:text-slate-200"
-      )}
-    >
-      {children}
-    </button>
-  );
-}
 
 const DECIMAL_KW_RE = /^[0-9]*\.?[0-9]*$/;
 
@@ -127,7 +100,7 @@ function CommercialPlantKwControl({
         step={sliderStep}
         value={Math.min(Math.max(kw, 0.5), sliderMax)}
         onChange={(e) => onCommit(parseFloat(e.target.value))}
-        className="flex-1 accent-indigo-600"
+        className={workspaceSliderClass("commercial")}
       />
       <input
         type="text"
@@ -284,76 +257,60 @@ export function ResidentialRequirementBuilder({
     patchSolar({ plantCapacityKw: kw, moduleCountOverride: undefined });
   }
 
+  const theme = isCommercial ? "commercial" : "residential";
+  const wattPresets = isCommercial ? COMMERCIAL_PANEL_WATT_PRESETS : RESIDENTIAL_WATT_PRESETS;
+  const wattBoxBorder = isCommercial
+    ? "border-indigo-200/80 bg-indigo-50/40 dark:border-indigo-500/25 dark:bg-indigo-950/20"
+    : "border-emerald-200/80 bg-emerald-50/40 dark:border-emerald-500/25 dark:bg-emerald-950/20";
+
   return (
     <div
       className={cn(
-        "space-y-4 rounded-2xl border p-4 shadow-sm sm:p-5",
+        "space-y-3 rounded-2xl border p-3 shadow-sm sm:space-y-4 sm:p-5",
         isCommercial
-          ? "border-indigo-200/70 bg-gradient-to-br from-indigo-50/90 via-white to-slate-50/80 dark:border-indigo-500/25 dark:from-indigo-950/25 dark:via-[#0f1419] dark:to-slate-950/30"
-          : "border-emerald-200/80 bg-gradient-to-br from-emerald-50/90 via-white to-amber-50/40 dark:border-emerald-900/40 dark:from-emerald-950/30 dark:via-[#0f1419] dark:to-amber-950/20",
+          ? "border-indigo-200/70 bg-white dark:border-indigo-500/25 dark:bg-[#0c1017]"
+          : "border-emerald-200/80 bg-white dark:border-emerald-900/40 dark:bg-[#0c1017]",
         className
       )}
     >
-      <div className="flex items-start gap-3">
+      <div className="flex items-center gap-3">
         <div
           className={cn(
-            "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white shadow",
-            isCommercial ? "bg-gradient-to-br from-indigo-600 to-sky-600" : "bg-gradient-to-br from-emerald-500 to-teal-600"
+            "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white",
+            isCommercial ? "bg-indigo-600" : "bg-emerald-600"
           )}
         >
-          <span className="text-sm font-bold tabular-nums">1</span>
+          1
         </div>
-        <div>
-          <p
-            className={cn(
-              "text-[10px] font-bold uppercase tracking-widest",
-              isCommercial ? "text-indigo-700 dark:text-indigo-300" : "text-emerald-700 dark:text-emerald-400"
-            )}
-          >
-            Step 1 · Plant & brand
-          </p>
-          <h3 className="text-base font-bold text-slate-900 dark:text-white">Plant & panel selection</h3>
-          <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">
-            Set kW and module wattage, then brand and DCR / Non-DCR — rates from More → Rate card.
-          </p>
+        <div className="min-w-0">
+          <h3 className="text-base font-bold text-slate-900 dark:text-white">Plant & panels</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Rates in More → Rate card</p>
         </div>
       </div>
 
-      {/* Live summary strip */}
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        {[
+      <WorkspaceMetricStrip
+        items={[
           { label: "Plant", value: `${quote.actualKw} kW` },
-          { label: "Panels", value: `${modules} × ${solar.watt}W` },
-          { label: "Est. saving/mo", value: `₹${monthlySaving.toLocaleString("en-IN")}` },
-          { label: "EMI/mo", value: fin.enabled ? `₹${emi.toLocaleString("en-IN")}` : "—" },
-        ].map((s) => (
-          <div
-            key={s.label}
-            className="rounded-xl border border-white/80 bg-white/90 px-2.5 py-2 text-center shadow-sm dark:border-white/10 dark:bg-white/5"
-          >
-            <p className="text-[9px] font-bold uppercase tracking-wide text-slate-500">{s.label}</p>
-            <p className="mt-0.5 text-sm font-bold tabular-nums text-slate-900 dark:text-white">{s.value}</p>
-          </div>
-        ))}
-      </div>
+          { label: "Panels", value: `${modules}×${solar.watt}` },
+          {
+            label: "Save/mo",
+            value:
+              monthlySaving >= 100000
+                ? `₹${(monthlySaving / 100000).toFixed(1)}L`
+                : monthlySaving >= 1000
+                  ? `₹${Math.round(monthlySaving / 1000)}k`
+                  : `₹${monthlySaving}`,
+          },
+          { label: "EMI", value: fin.enabled ? `₹${emi.toLocaleString("en-IN")}` : "—" },
+        ]}
+      />
 
-      {/* Required kW — before brand (commercial + residential) */}
       <section className="space-y-2">
-        <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
-          Required system size (kW)
-        </label>
-        {isCommercial ? (
-          <div className="space-y-1 text-[11px] text-slate-500">
-            <p>Set kW with slider or type a number and press Enter — then module wattage, then brand below.</p>
-            {rateCardMaxKw != null ? (
-              <p className="text-amber-800/90 dark:text-amber-200/90">
-                Rate card pricing is set up to <strong>{rateCardMaxKw} kW</strong> — you can still enter any
-                system size (e.g. 5 kW or 100 kW); cost uses the nearest lower tier or ₹/Wp from the catalog.
-              </p>
-            ) : null}
-          </div>
+        <WorkspaceFieldLabel>Plant size (kW)</WorkspaceFieldLabel>
+        {isCommercial && rateCardMaxKw != null ? (
+          <p className="hidden text-xs text-slate-500 sm:block">Rate card up to {rateCardMaxKw} kW — larger sizes use nearest tier.</p>
         ) : null}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {isCommercial && onCommitPlantKw ? (
             <CommercialPlantKwControl
               kw={solar.plantCapacityKw}
@@ -371,7 +328,7 @@ export function ResidentialRequirementBuilder({
                 step={sliderStep}
                 value={Math.min(solar.plantCapacityKw, sliderMax)}
                 onChange={(e) => applyPlantKw(parseFloat(e.target.value))}
-                className={cn("flex-1", isCommercial ? "accent-indigo-600" : "accent-emerald-600")}
+                className={cn("flex-1", workspaceSliderClass(theme))}
               />
               <NumericTextInput
                 value={solar.plantCapacityKw}
@@ -385,204 +342,102 @@ export function ResidentialRequirementBuilder({
         </div>
       </section>
 
-      {/* Module wattage — after kW is set (same order as commercial) */}
-      {isCommercial ? (
-        <section className="space-y-3 rounded-xl border border-indigo-200/80 bg-indigo-50/40 p-3 dark:border-indigo-500/25 dark:bg-indigo-950/20">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-800 dark:text-indigo-300">
-            Module wattage (Wp)
-          </p>
-          <p className="text-[11px] text-slate-600 dark:text-slate-400">
-            For <strong>{solar.plantCapacityKw} kW</strong>: panel count = ceil(kW × 1000 ÷ Wp).
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {COMMERCIAL_PANEL_WATT_PRESETS.map((w) => (
-              <button
-                key={w}
-                type="button"
-                onClick={() => applyWatt(w)}
-                className={cn(
-                  "rounded-lg border px-2.5 py-1.5 text-xs font-semibold tabular-nums transition-all",
-                  solar.watt === w
-                    ? "border-indigo-600 bg-indigo-600 text-white shadow-sm"
-                    : "border-slate-200 bg-white text-slate-700 hover:border-indigo-300 dark:border-white/15 dark:bg-white/5 dark:text-slate-200"
-                )}
-              >
-                {w}W
-              </button>
-            ))}
-          </div>
-          <div className="flex flex-wrap items-end gap-3">
-            <label className="flex flex-col gap-1">
-              <span className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Custom Wp</span>
-              <NumericTextInput
-                integer
-                value={solar.watt}
-                onValueChange={(n) => {
-                  if (n != null && n >= 100) applyWatt(n);
-                }}
-                className="w-24 rounded-xl border border-slate-200 bg-white px-2 py-2 text-center text-sm font-bold tabular-nums dark:border-white/15 dark:bg-white/5"
-                aria-label="Custom module wattage"
-              />
-            </label>
-          </div>
-          <div className="grid grid-cols-3 gap-2 rounded-xl border border-indigo-200/60 bg-white/90 p-3 text-center dark:border-indigo-500/20 dark:bg-white/5">
-            <div>
-              <p className="text-[10px] font-bold uppercase text-slate-500">Plant (AC)</p>
-              <p className="text-lg font-bold tabular-nums text-slate-900 dark:text-white">{solar.plantCapacityKw} kW</p>
-            </div>
-            <div>
-              <p className="text-[10px] font-bold uppercase text-slate-500">Panels</p>
-              <p className="text-lg font-bold tabular-nums text-indigo-800 dark:text-indigo-200">{modules} nos</p>
-            </div>
-            <div>
-              <p className="text-[10px] font-bold uppercase text-slate-500">Installed DC</p>
-              <p className="text-lg font-bold tabular-nums text-slate-900 dark:text-white">{quote.actualKw} kW</p>
-            </div>
-          </div>
-        </section>
-      ) : (
-        <section className="space-y-3 rounded-xl border border-emerald-200/80 bg-emerald-50/40 p-3 dark:border-emerald-500/25 dark:bg-emerald-950/20">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
-            Module wattage (Wp)
-          </p>
-          <p className="text-[11px] text-slate-600 dark:text-slate-400">
-            For <strong>{solar.plantCapacityKw} kW</strong>: panel count = ceil(kW × 1000 ÷ Wp).
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {RESIDENTIAL_WATT_PRESETS.map((w) => (
-              <button
-                key={w}
-                type="button"
-                onClick={() => applyWatt(w)}
-                className={cn(
-                  "rounded-lg border px-2.5 py-1.5 text-xs font-semibold tabular-nums transition-all",
-                  solar.watt === w
-                    ? "border-emerald-600 bg-emerald-600 text-white shadow-sm"
-                    : "border-slate-200 bg-white text-slate-700 hover:border-emerald-300 dark:border-white/15 dark:bg-white/5 dark:text-slate-200"
-                )}
-              >
-                {w}W
-              </button>
-            ))}
-          </div>
-          <div className="flex flex-wrap items-end gap-3">
-            <label className="flex flex-col gap-1">
-              <span className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Custom Wp</span>
-              <NumericTextInput
-                integer
-                value={solar.watt}
-                onValueChange={(n) => {
-                  if (n != null && n >= 100) applyWatt(n);
-                }}
-                className="w-24 rounded-xl border border-slate-200 bg-white px-2 py-2 text-center text-sm font-bold tabular-nums dark:border-white/15 dark:bg-white/5"
-                aria-label="Custom module wattage"
-              />
-            </label>
-          </div>
-          <div className="grid grid-cols-3 gap-2 rounded-xl border border-emerald-200/60 bg-white/90 p-3 text-center dark:border-emerald-500/20 dark:bg-white/5">
-            <div>
-              <p className="text-[10px] font-bold uppercase text-slate-500">Plant (AC)</p>
-              <p className="text-lg font-bold tabular-nums text-slate-900 dark:text-white">{solar.plantCapacityKw} kW</p>
-            </div>
-            <div>
-              <p className="text-[10px] font-bold uppercase text-slate-500">Panels</p>
-              <p className="text-lg font-bold tabular-nums text-emerald-800 dark:text-emerald-200">{modules} nos</p>
-            </div>
-            <div>
-              <p className="text-[10px] font-bold uppercase text-slate-500">Installed DC</p>
-              <p className="text-lg font-bold tabular-nums text-slate-900 dark:text-white">{quote.actualKw} kW</p>
-            </div>
-          </div>
-        </section>
-      )}
+      <section className={cn("space-y-2.5 rounded-xl border p-3", wattBoxBorder)}>
+        <WorkspaceFieldLabel>Module (Wp)</WorkspaceFieldLabel>
+        <p className="text-xs tabular-nums text-slate-600 dark:text-slate-400">
+          {solar.plantCapacityKw} kW → <strong>{modules} panels</strong>
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {wattPresets.map((w) => (
+            <WorkspaceTouchChip key={w} active={solar.watt === w} theme={theme} onClick={() => applyWatt(w)}>
+              {w}W
+            </WorkspaceTouchChip>
+          ))}
+        </div>
+        <NumericTextInput
+          integer
+          value={solar.watt}
+          onValueChange={(n) => {
+            if (n != null && n >= 100) applyWatt(n);
+          }}
+          className="h-11 w-full max-w-[8rem] rounded-xl border border-slate-200 bg-white px-2 text-center text-sm font-bold tabular-nums dark:border-white/15 dark:bg-white/5"
+          aria-label="Custom module wattage"
+        />
+      </section>
 
-      {/* Panel brand + DCR/Non-DCR — after kW and module wattage */}
-      <section className="space-y-3 rounded-xl border border-slate-200/80 bg-white/80 p-3 dark:border-white/10 dark:bg-white/5">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Panel brand & quote mode</p>
+      <section className="space-y-2.5 rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-white/10 dark:bg-white/5">
+        <WorkspaceFieldLabel>Brand</WorkspaceFieldLabel>
         {catalogBrands.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {catalogBrands.map((entry) => (
-              <button
+              <WorkspaceTouchChip
                 key={entry.brandId}
-                type="button"
+                active={activeBrandId === entry.brandId}
+                theme={theme}
                 onClick={() => applyBrand(entry.brandId)}
-                className={cn(
-                  "rounded-full border px-3 py-1.5 text-xs font-semibold transition-all",
-                  activeBrandId === entry.brandId
-                    ? isCommercial
-                      ? "border-indigo-500 bg-indigo-600 text-white shadow-sm"
-                      : "border-emerald-500 bg-emerald-600 text-white shadow-sm"
-                    : isCommercial
-                      ? "border-slate-200 bg-white text-slate-700 hover:border-indigo-300 dark:border-white/15 dark:bg-white/5 dark:text-slate-200"
-                      : "border-slate-200 bg-white text-slate-700 hover:border-emerald-300 dark:border-white/15 dark:bg-white/5 dark:text-slate-200"
-                )}
+                className="min-w-[4.5rem] px-4"
               >
                 {entry.brandId}
-              </button>
+              </WorkspaceTouchChip>
             ))}
           </div>
         ) : (
-          <p className="text-[11px] text-slate-500">
-            Add brands in <strong>More → Rate card</strong> — they will appear here.
-          </p>
+          <p className="text-xs text-slate-500">Add brands in More → Rate card</p>
         )}
+        <WorkspaceFieldLabel className="mt-2">Quote mode</WorkspaceFieldLabel>
         <div className="flex flex-wrap gap-2">
           {(["dcr", "non_dcr"] as const).map((t) => (
-            <button
+            <WorkspaceTouchChip
               key={t}
-              type="button"
+              active={solar.panelTrack === t}
+              theme={theme}
               onClick={() => applyTrack(t)}
-              className={cn(
-                "rounded-lg border px-4 py-1.5 text-xs font-bold",
-                solar.panelTrack === t
-                  ? "border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900"
-                  : "border-slate-200 bg-white text-slate-700 dark:border-white/15 dark:bg-white/5 dark:text-slate-200"
-              )}
             >
               {t === "dcr" ? "DCR" : "Non-DCR"}
-            </button>
+            </WorkspaceTouchChip>
           ))}
         </div>
       </section>
 
-      {/* Roof + budget — residential homeowner path only */}
       {!isCommercial ? (
+      <WorkspaceOptionalFold title="Home & financing (optional)" theme="residential">
       <div className="grid gap-3 sm:grid-cols-2">
         <section className="space-y-2">
-          <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
-            <Building2 className="h-3.5 w-3.5" /> Roof type
-          </label>
+          <WorkspaceFieldLabel>Roof</WorkspaceFieldLabel>
           <div className="flex flex-wrap gap-2">
             {(["flat", "slope", "mixed", "unknown"] as const).map((r) => (
-              <Chip key={r} active={config.roofType === r} onClick={() => patch({ roofType: r })}>
-                {r === "unknown" ? "Not sure" : r.charAt(0).toUpperCase() + r.slice(1)}
-              </Chip>
+              <WorkspaceTouchChip
+                key={r}
+                active={config.roofType === r}
+                theme="residential"
+                onClick={() => patch({ roofType: r })}
+              >
+                {r === "unknown" ? "?" : r.charAt(0).toUpperCase() + r.slice(1)}
+              </WorkspaceTouchChip>
             ))}
           </div>
         </section>
         <section className="space-y-2">
-          <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
-            <Layers className="h-3.5 w-3.5" /> Budget range
-          </label>
+          <WorkspaceFieldLabel>Budget</WorkspaceFieldLabel>
           <div className="flex flex-wrap gap-2">
             {(["economy", "balanced", "premium"] as const).map((b) => (
-              <Chip key={b} active={config.budgetRange === b} onClick={() => patch({ budgetRange: b })}>
+              <WorkspaceTouchChip
+                key={b}
+                active={config.budgetRange === b}
+                theme="residential"
+                onClick={() => patch({ budgetRange: b })}
+              >
                 {b.charAt(0).toUpperCase() + b.slice(1)}
-              </Chip>
+              </WorkspaceTouchChip>
             ))}
           </div>
         </section>
       </div>
-      ) : null}
 
-      {/* Battery + subsidy — residential only */}
-      {!isCommercial ? (
       <div className="grid gap-3 sm:grid-cols-2">
         <section className="rounded-xl border border-slate-200/80 bg-white/80 p-3 dark:border-white/10 dark:bg-white/5">
           <label className="flex cursor-pointer items-center justify-between gap-2">
-            <span className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200">
-              <Battery className="h-4 w-4 text-violet-500" /> Battery backup
-            </span>
+            <span className="text-sm font-bold text-slate-800 dark:text-slate-200">Battery</span>
             <input
               type="checkbox"
               checked={config.battery?.required ?? false}
@@ -614,43 +469,25 @@ export function ResidentialRequirementBuilder({
           </AnimatePresence>
         </section>
         <section className="rounded-xl border border-slate-200/80 bg-white/80 p-3 dark:border-white/10 dark:bg-white/5">
-          <label className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200">
-            <Leaf className="h-4 w-4 text-emerald-500" /> Subsidy preference
-          </label>
-          <div className="mt-2 flex flex-wrap gap-2">
+          <WorkspaceFieldLabel>Subsidy slide</WorkspaceFieldLabel>
+          <div className="flex flex-wrap gap-2">
             {(["maximize", "standard", "none"] as const).map((s) => (
-              <Chip
+              <WorkspaceTouchChip
                 key={s}
                 active={(config.subsidy?.preference ?? "maximize") === s}
+                theme="residential"
                 onClick={() => patch({ subsidy: { preference: s } })}
               >
-                {s === "maximize" ? "Max subsidy" : s === "standard" ? "Standard" : "No subsidy slide"}
-              </Chip>
+                {s === "maximize" ? "Max" : s === "standard" ? "Std" : "Off"}
+              </WorkspaceTouchChip>
             ))}
           </div>
         </section>
       </div>
-      ) : null}
 
-      {/* EMI */}
-      <section
-        className={cn(
-          "rounded-xl border p-4",
-          isCommercial
-            ? "border-indigo-200/80 bg-indigo-50/50 dark:border-indigo-500/25 dark:bg-indigo-950/15"
-            : "border-amber-200/80 bg-gradient-to-r from-amber-50/90 to-orange-50/50 dark:border-amber-900/40 dark:from-amber-950/20"
-        )}
-      >
-        <label className="flex cursor-pointer items-center justify-between gap-2">
-          <span
-            className={cn(
-              "flex items-center gap-2 text-sm font-bold",
-              isCommercial ? "text-indigo-950 dark:text-indigo-100" : "text-amber-950 dark:text-amber-100"
-            )}
-          >
-            <Calculator className="h-4 w-4" />{" "}
-            {isCommercial ? "Financing & EMI (customer proposal)" : "Financing & EMI story"}
-          </span>
+      <section className="rounded-xl border border-amber-200/80 bg-amber-50/50 p-3 dark:border-amber-900/40 dark:bg-amber-950/20">
+        <label className="flex min-h-11 cursor-pointer items-center justify-between gap-2 touch-manipulation">
+          <span className="text-sm font-bold text-amber-950 dark:text-amber-100">EMI on proposal</span>
           <input
             type="checkbox"
             checked={fin.enabled}
@@ -697,17 +534,61 @@ export function ResidentialRequirementBuilder({
               <p className="text-[10px] text-slate-500">on net ₹{netCostInr.toLocaleString("en-IN")}</p>
             </div>
           </div>
-        ) : (
-          <p className="mt-2 text-xs text-amber-900/70 dark:text-amber-200/70">Enable to show EMI options on the proposal.</p>
-        )}
+        ) : null}
       </section>
-
-      <p className="flex items-center gap-1.5 text-[11px] text-slate-500">
-        <Zap className={cn("h-3 w-3", isCommercial ? "text-indigo-500" : "text-emerald-500")} />
-        {isCommercial
-          ? "Continue with quote, equipment, and site options below — then use Save and generate proposal."
-          : "Continue with equipment and proposal options below — then use Save and generate proposal."}
-      </p>
+      </WorkspaceOptionalFold>
+      ) : (
+      <section className="rounded-xl border border-indigo-200/80 bg-indigo-50/40 p-3 dark:border-indigo-500/25 dark:bg-indigo-950/15">
+        <label className="flex min-h-11 cursor-pointer items-center justify-between gap-2 touch-manipulation">
+          <span className="text-sm font-bold text-indigo-950 dark:text-indigo-100">EMI on proposal</span>
+          <input
+            type="checkbox"
+            checked={fin.enabled}
+            onChange={(e) => patch({ financing: { ...fin, enabled: e.target.checked } })}
+            className="h-5 w-5 rounded accent-indigo-600"
+          />
+        </label>
+        {fin.enabled ? (
+          <div className="mt-3 grid gap-3 sm:grid-cols-3">
+            <div>
+              <p className="text-xs font-bold text-slate-500">Rate %</p>
+              <NumericTextInput
+                value={fin.interestRatePct ?? 10.5}
+                fallback={10.5}
+                onValueChange={(n) =>
+                  patch({ financing: { ...fin, interestRatePct: n ?? fin.interestRatePct ?? 10.5 } })
+                }
+                className="mt-1 h-11 w-full rounded-xl border border-slate-200 bg-white px-2 text-sm font-semibold dark:border-white/15 dark:bg-white/5"
+                aria-label="Interest rate percent"
+              />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-slate-500">Years</p>
+              <select
+                value={fin.selectedTenureYears ?? 5}
+                onChange={(e) =>
+                  patch({ financing: { ...fin, selectedTenureYears: parseInt(e.target.value, 10) } })
+                }
+                className="mt-1 h-11 w-full rounded-xl border border-slate-200 bg-white px-2 text-sm font-semibold dark:border-white/15 dark:bg-white/5"
+              >
+                {[3, 5, 7, 10, 15].map((y) => (
+                  <option key={y} value={y}>
+                    {y}y
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-col justify-center rounded-xl bg-white/80 px-3 py-2 dark:bg-white/5">
+              <p className="text-xs font-bold text-slate-500">EMI/mo</p>
+              <p className="flex items-center gap-1 text-lg font-bold tabular-nums">
+                <IndianRupee className="h-4 w-4" />
+                {emi.toLocaleString("en-IN")}
+              </p>
+            </div>
+          </div>
+        ) : null}
+      </section>
+      )}
     </div>
   );
 }
