@@ -75,7 +75,6 @@ export function ResidentialProposalConfigWorkspace({
         lineItems={lineItems}
         onSaved={onPricingSaved}
         hideCatalogPanel
-        hidePlantSizing={saveMode === "commercial"}
         variant={saveMode === "commercial" ? "commercial" : "residential"}
         saveMode={saveMode}
         commercialConfig={commercialConfig}

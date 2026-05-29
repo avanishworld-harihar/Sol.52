@@ -91,7 +91,6 @@ export function CommercialProposalWorkspace({
         onCreateProposal={onCreateProposal}
         onSaveAndGenerate={onSaveAndGenerate}
         hideCatalogPanel
-        hidePlantSizing
         saveMode="commercial"
         commercialConfig={commercialConfig}
         onCommercialConfigChange={onCommercialConfigChange}

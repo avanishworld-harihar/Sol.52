@@ -14,6 +14,7 @@ import {
 } from "@/lib/residential-solar-engine";
 import type { ResidentialProposalConfig } from "@/lib/residential-requirements-schema";
 import { COMMERCIAL_PANEL_WATT_PRESETS } from "@/lib/commercial-bom-panels";
+import { RESIDENTIAL_WATT_PRESETS } from "@/lib/residential-requirements-schema";
 import { PANEL_CATALOG } from "@/lib/commercial-panel-catalog";
 import {
   applyActiveBrandToConfig,
@@ -300,11 +301,7 @@ export function ResidentialRequirementBuilder({
             isCommercial ? "bg-gradient-to-br from-indigo-600 to-sky-600" : "bg-gradient-to-br from-emerald-500 to-teal-600"
           )}
         >
-          {isCommercial ? (
-            <span className="text-sm font-bold tabular-nums">1</span>
-          ) : (
-            <Sun className="h-5 w-5" />
-          )}
+          <span className="text-sm font-bold tabular-nums">1</span>
         </div>
         <div>
           <p
@@ -313,15 +310,11 @@ export function ResidentialRequirementBuilder({
               isCommercial ? "text-indigo-700 dark:text-indigo-300" : "text-emerald-700 dark:text-emerald-400"
             )}
           >
-            {isCommercial ? "Step 1 · Plant & brand" : "Residential · Requirement-based"}
+            Step 1 · Plant & brand
           </p>
-          <h3 className="text-base font-bold text-slate-900 dark:text-white">
-            {isCommercial ? "System size & panel selection" : "Panel & Solar Plant Sizing"}
-          </h3>
+          <h3 className="text-base font-bold text-slate-900 dark:text-white">Plant & panel selection</h3>
           <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">
-            {isCommercial
-              ? "kW, active brand, and DCR / Non-DCR — rates from More → Rate card."
-              : "No bill needed — size from requirements and generate a homeowner-friendly proposal."}
+            Set kW and module wattage, then brand and DCR / Non-DCR — rates from More → Rate card.
           </p>
         </div>
       </div>
@@ -329,7 +322,7 @@ export function ResidentialRequirementBuilder({
       {/* Live summary strip */}
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {[
-          { label: "System", value: `${quote.actualKw} kW` },
+          { label: "Plant", value: `${quote.actualKw} kW` },
           { label: "Panels", value: `${modules} × ${solar.watt}W` },
           { label: "Est. saving/mo", value: `₹${monthlySaving.toLocaleString("en-IN")}` },
           { label: "EMI/mo", value: fin.enabled ? `₹${emi.toLocaleString("en-IN")}` : "—" },
@@ -344,59 +337,14 @@ export function ResidentialRequirementBuilder({
         ))}
       </div>
 
-      {/* Panel brand + DCR/Non-DCR */}
-      <section className="space-y-3 rounded-xl border border-slate-200/80 bg-white/80 p-3 dark:border-white/10 dark:bg-white/5">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Panel brand &amp; quote mode</p>
-        {catalogBrands.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
-            {catalogBrands.map((entry) => (
-              <button
-                key={entry.brandId}
-                type="button"
-                onClick={() => applyBrand(entry.brandId)}
-                className={cn(
-                  "rounded-full border px-3 py-1.5 text-xs font-semibold transition-all",
-                  activeBrandId === entry.brandId
-                    ? "border-indigo-500 bg-indigo-600 text-white shadow-sm"
-                    : "border-slate-200 bg-white text-slate-700 hover:border-indigo-300 dark:border-white/15 dark:bg-white/5 dark:text-slate-200"
-                )}
-              >
-                {entry.brandId}
-              </button>
-            ))}
-          </div>
-        ) : (
-          <p className="text-[11px] text-slate-500">
-            Add brands in <strong>More → Rate card</strong> — they will appear here.
-          </p>
-        )}
-        <div className="flex flex-wrap gap-2">
-          {(["dcr", "non_dcr"] as const).map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => applyTrack(t)}
-              className={cn(
-                "rounded-lg border px-4 py-1.5 text-xs font-bold",
-                solar.panelTrack === t
-                  ? "border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900"
-                  : "border-slate-200 bg-white text-slate-700 dark:border-white/15 dark:bg-white/5 dark:text-slate-200"
-              )}
-            >
-              {t === "dcr" ? "DCR" : "Non-DCR"}
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {/* Plant kW — commercial first, then wattage */}
+      {/* Required kW — before brand (commercial + residential) */}
       <section className="space-y-2">
         <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
           Required system size (kW)
         </label>
         {isCommercial ? (
           <div className="space-y-1 text-[11px] text-slate-500">
-            <p>Set kW with slider or type a number and press Enter — then choose module wattage below.</p>
+            <p>Set kW with slider or type a number and press Enter — then module wattage, then brand below.</p>
             {rateCardMaxKw != null ? (
               <p className="text-amber-800/90 dark:text-amber-200/90">
                 Rate card pricing is set up to <strong>{rateCardMaxKw} kW</strong> — you can still enter any
@@ -435,14 +383,9 @@ export function ResidentialRequirementBuilder({
           )}
           <span className="text-sm font-bold text-slate-600">kW</span>
         </div>
-        {!isCommercial ? (
-          <p className="text-[11px] text-slate-500">
-            At {solar.watt}W per panel → <strong>{modules} panels</strong> · max {maxPlantKw} kW
-          </p>
-        ) : null}
       </section>
 
-      {/* Module wattage — commercial (after kW is set) */}
+      {/* Module wattage — after kW is set (same order as commercial) */}
       {isCommercial ? (
         <section className="space-y-3 rounded-xl border border-indigo-200/80 bg-indigo-50/40 p-3 dark:border-indigo-500/25 dark:bg-indigo-950/20">
           <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-800 dark:text-indigo-300">
@@ -497,7 +440,110 @@ export function ResidentialRequirementBuilder({
             </div>
           </div>
         </section>
-      ) : null}
+      ) : (
+        <section className="space-y-3 rounded-xl border border-emerald-200/80 bg-emerald-50/40 p-3 dark:border-emerald-500/25 dark:bg-emerald-950/20">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+            Module wattage (Wp)
+          </p>
+          <p className="text-[11px] text-slate-600 dark:text-slate-400">
+            For <strong>{solar.plantCapacityKw} kW</strong>: panel count = ceil(kW × 1000 ÷ Wp).
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {RESIDENTIAL_WATT_PRESETS.map((w) => (
+              <button
+                key={w}
+                type="button"
+                onClick={() => applyWatt(w)}
+                className={cn(
+                  "rounded-lg border px-2.5 py-1.5 text-xs font-semibold tabular-nums transition-all",
+                  solar.watt === w
+                    ? "border-emerald-600 bg-emerald-600 text-white shadow-sm"
+                    : "border-slate-200 bg-white text-slate-700 hover:border-emerald-300 dark:border-white/15 dark:bg-white/5 dark:text-slate-200"
+                )}
+              >
+                {w}W
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-end gap-3">
+            <label className="flex flex-col gap-1">
+              <span className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Custom Wp</span>
+              <NumericTextInput
+                integer
+                value={solar.watt}
+                onValueChange={(n) => {
+                  if (n != null && n >= 100) applyWatt(n);
+                }}
+                className="w-24 rounded-xl border border-slate-200 bg-white px-2 py-2 text-center text-sm font-bold tabular-nums dark:border-white/15 dark:bg-white/5"
+                aria-label="Custom module wattage"
+              />
+            </label>
+          </div>
+          <div className="grid grid-cols-3 gap-2 rounded-xl border border-emerald-200/60 bg-white/90 p-3 text-center dark:border-emerald-500/20 dark:bg-white/5">
+            <div>
+              <p className="text-[10px] font-bold uppercase text-slate-500">Plant (AC)</p>
+              <p className="text-lg font-bold tabular-nums text-slate-900 dark:text-white">{solar.plantCapacityKw} kW</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase text-slate-500">Panels</p>
+              <p className="text-lg font-bold tabular-nums text-emerald-800 dark:text-emerald-200">{modules} nos</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase text-slate-500">Installed DC</p>
+              <p className="text-lg font-bold tabular-nums text-slate-900 dark:text-white">{quote.actualKw} kW</p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Panel brand + DCR/Non-DCR — after kW and module wattage */}
+      <section className="space-y-3 rounded-xl border border-slate-200/80 bg-white/80 p-3 dark:border-white/10 dark:bg-white/5">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Panel brand & quote mode</p>
+        {catalogBrands.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {catalogBrands.map((entry) => (
+              <button
+                key={entry.brandId}
+                type="button"
+                onClick={() => applyBrand(entry.brandId)}
+                className={cn(
+                  "rounded-full border px-3 py-1.5 text-xs font-semibold transition-all",
+                  activeBrandId === entry.brandId
+                    ? isCommercial
+                      ? "border-indigo-500 bg-indigo-600 text-white shadow-sm"
+                      : "border-emerald-500 bg-emerald-600 text-white shadow-sm"
+                    : isCommercial
+                      ? "border-slate-200 bg-white text-slate-700 hover:border-indigo-300 dark:border-white/15 dark:bg-white/5 dark:text-slate-200"
+                      : "border-slate-200 bg-white text-slate-700 hover:border-emerald-300 dark:border-white/15 dark:bg-white/5 dark:text-slate-200"
+                )}
+              >
+                {entry.brandId}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className="text-[11px] text-slate-500">
+            Add brands in <strong>More → Rate card</strong> — they will appear here.
+          </p>
+        )}
+        <div className="flex flex-wrap gap-2">
+          {(["dcr", "non_dcr"] as const).map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => applyTrack(t)}
+              className={cn(
+                "rounded-lg border px-4 py-1.5 text-xs font-bold",
+                solar.panelTrack === t
+                  ? "border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900"
+                  : "border-slate-200 bg-white text-slate-700 dark:border-white/15 dark:bg-white/5 dark:text-slate-200"
+              )}
+            >
+              {t === "dcr" ? "DCR" : "Non-DCR"}
+            </button>
+          ))}
+        </div>
+      </section>
 
       {/* Roof + budget — residential homeowner path only */}
       {!isCommercial ? (
@@ -660,7 +706,7 @@ export function ResidentialRequirementBuilder({
         <Zap className={cn("h-3 w-3", isCommercial ? "text-indigo-500" : "text-emerald-500")} />
         {isCommercial
           ? "Continue with quote, equipment, and site options below — then use Save and generate proposal."
-          : "Set kW above, complete pricing below, then tap Save and generate proposal at the bottom."}
+          : "Continue with equipment and proposal options below — then use Save and generate proposal."}
       </p>
     </div>
   );
