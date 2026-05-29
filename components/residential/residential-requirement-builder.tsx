@@ -17,12 +17,12 @@ import { COMMERCIAL_PANEL_WATT_PRESETS } from "@/lib/commercial-bom-panels";
 import { RESIDENTIAL_WATT_PRESETS } from "@/lib/residential-requirements-schema";
 import { PANEL_CATALOG } from "@/lib/commercial-panel-catalog";
 import {
-  applyActiveBrandToConfig,
   ensureBrandCatalog,
   getActiveCatalogEntry,
   impliedRatePerWpFromPlant,
   syncSolarAndPricingFromEntry,
 } from "@/lib/residential-brand-catalog";
+import { WorkspaceBrandCatalogSelector } from "@/components/proposal/workspace-brand-catalog-selector";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -165,8 +165,6 @@ export function ResidentialRequirementBuilder({
 
   // Catalog brands for brand selector
   const catalogWithEntries = ensureBrandCatalog(config);
-  const catalogBrands = catalogWithEntries.brandCatalog?.entries ?? [];
-  const activeBrandId = catalogWithEntries.brandCatalog?.activeBrandId ?? catalogBrands[0]?.brandId;
   const rateCardMaxKw = useMemo(() => {
     if (!isCommercial) return null;
     const entry = getActiveCatalogEntry(catalogWithEntries);
@@ -181,10 +179,6 @@ export function ResidentialRequirementBuilder({
 
   function patchSolar(partial: Partial<typeof solar>) {
     onChange({ ...config, solar: { ...solar, ...partial } });
-  }
-
-  function applyBrand(brandId: string) {
-    onChange(applyActiveBrandToConfig(catalogWithEntries, brandId));
   }
 
   function applyTrack(track: "dcr" | "non_dcr") {
@@ -366,24 +360,7 @@ export function ResidentialRequirementBuilder({
       </section>
 
       <section className="space-y-2.5 rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-white/10 dark:bg-white/5">
-        <WorkspaceFieldLabel>Brand</WorkspaceFieldLabel>
-        {catalogBrands.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
-            {catalogBrands.map((entry) => (
-              <WorkspaceTouchChip
-                key={entry.brandId}
-                active={activeBrandId === entry.brandId}
-                theme={theme}
-                onClick={() => applyBrand(entry.brandId)}
-                className="min-w-[4.5rem] px-4"
-              >
-                {entry.brandId}
-              </WorkspaceTouchChip>
-            ))}
-          </div>
-        ) : (
-          <p className="text-xs text-slate-500">Add brands in More → Rate card</p>
-        )}
+        <WorkspaceBrandCatalogSelector config={config} onChange={onChange} theme={theme} />
         <WorkspaceFieldLabel className="mt-2">Quote mode</WorkspaceFieldLabel>
         <div className="flex flex-wrap gap-2">
           {(["dcr", "non_dcr"] as const).map((t) => (

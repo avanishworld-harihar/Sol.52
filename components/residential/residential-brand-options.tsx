@@ -1,10 +1,12 @@
 "use client";
 
 import { FloatingLabelInput } from "@/components/ui/floating-label-input";
-import { ensureBrandCatalog } from "@/lib/residential-brand-catalog";
+import { addCatalogBrand, ensureBrandCatalog } from "@/lib/residential-brand-catalog";
 import type { ResidentialBrandOption, ResidentialProposalConfig } from "@/lib/residential-requirements-schema";
 import { cn } from "@/lib/utils";
-import { Cpu, Sun } from "lucide-react";
+import { Cpu, Plus, Sun } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   config: ResidentialProposalConfig;
@@ -29,6 +31,8 @@ export function ResidentialBrandOptions({ config, onChange }: Props) {
   const catalogBrands = normalized.brandCatalog?.entries ?? [];
   const panelOpts = config.panelBrandOptions ?? [];
   const invOpts = config.inverterBrandOptions ?? [];
+  const [addingBrand, setAddingBrand] = useState(false);
+  const [newBrandName, setNewBrandName] = useState("");
 
   function patchPanelOptions(next: ResidentialBrandOption[]) {
     const primary = next[0];
@@ -52,9 +56,7 @@ export function ResidentialBrandOptions({ config, onChange }: Props) {
           <Sun className="h-4 w-4 text-amber-500" />
           Preferred panel brands (pick 2–3)
         </p>
-        <p className="mt-0.5 text-[11px] text-slate-500">
-          Brands from More → Rate card (Smart catalog). Customer may receive any one on site.
-        </p>
+        <p className="mt-0.5 text-[11px] text-slate-500">Pick 2–3 for proposal · any one on site</p>
         <div className="mt-2 flex flex-wrap gap-2">
           {catalogBrands.map((b) => {
             const active = panelOpts.some((p) => (p.brandId ?? p.brand) === b.brandId);
@@ -66,7 +68,7 @@ export function ResidentialBrandOptions({ config, onChange }: Props) {
                   patchPanelOptions(toggleBrand(panelOpts, { brandId: b.brandId, brand: b.brand }, 3))
                 }
                 className={cn(
-                  "rounded-full border px-3 py-1.5 text-xs font-semibold",
+                  "min-h-10 rounded-full border px-3 py-2 text-xs font-semibold touch-manipulation",
                   active
                     ? "border-sky-500 bg-sky-600 text-white"
                     : "border-slate-200 bg-white text-slate-700 dark:border-white/15 dark:bg-white/5"
@@ -76,7 +78,42 @@ export function ResidentialBrandOptions({ config, onChange }: Props) {
               </button>
             );
           })}
+          {!addingBrand ? (
+            <button
+              type="button"
+              onClick={() => setAddingBrand(true)}
+              className="inline-flex min-h-10 items-center gap-1 rounded-full border border-dashed border-slate-300 px-3 text-xs font-semibold text-slate-600 dark:border-white/20"
+            >
+              <Plus className="h-3.5 w-3.5" /> Add
+            </button>
+          ) : null}
         </div>
+        {addingBrand ? (
+          <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-end">
+            <FloatingLabelInput
+              label="New brand"
+              value={newBrandName}
+              onChange={(e) => setNewBrandName(e.target.value)}
+              className="h-10 flex-1 rounded-lg text-sm font-semibold"
+              autoFocus
+            />
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => {
+                const name = newBrandName.trim();
+                if (name) onChange(addCatalogBrand(normalized, name));
+                setNewBrandName("");
+                setAddingBrand(false);
+              }}
+            >
+              Add
+            </Button>
+            <Button type="button" size="sm" variant="outline" onClick={() => setAddingBrand(false)}>
+              Cancel
+            </Button>
+          </div>
+        ) : null}
         <div className="mt-2 grid gap-2 sm:grid-cols-2">
           {panelOpts.map((p, i) => (
             <FloatingLabelInput
