@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase } from "@/lib/supabase";
 import { appendActivityEvent } from "@/lib/followup-store";
+import { maybeAutoBumpLeadToContacted } from "@/lib/crm-pipeline";
 
 export const dynamic = "force-dynamic";
 
@@ -99,7 +100,9 @@ export async function POST(req: NextRequest, ctx: RouteCtx) {
       },
     });
 
-    return NextResponse.json({ ok: true, data }, { status: 201 });
+    const stageUpdated = await maybeAutoBumpLeadToContacted(id, outcome, calledAt);
+
+    return NextResponse.json({ ok: true, data, stage_updated: stageUpdated }, { status: 201 });
   } catch (err) {
     const message =
       err instanceof z.ZodError

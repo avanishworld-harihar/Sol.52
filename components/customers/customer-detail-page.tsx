@@ -46,6 +46,14 @@ import {
 import type { ActivityEvent, FollowupReminder } from "@/lib/followup-types";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import {
+  crmDatetimeLocalToIso,
+  crmNowDatetimeLocal,
+  formatCrmDate,
+  formatCrmDateTime,
+  formatCrmDayLabel,
+  formatCrmTime,
+} from "@/lib/crm-datetime";
 
 /* ---------- types ---------- */
 
@@ -93,18 +101,6 @@ async function fetchJson<T>(url: string): Promise<T> {
   return json.data as T;
 }
 
-function fmtDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function fmtTime(iso: string) {
-  return new Date(iso).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
-}
-
 function fmtDuration(sec: number) {
   if (!sec) return "—";
   if (sec < 60) return `${sec}s`;
@@ -113,33 +109,11 @@ function fmtDuration(sec: number) {
   return s ? `${m}m ${s}s` : `${m}m`;
 }
 
-function dayLabel(iso: string) {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "Unknown";
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
-  if (d.toDateString() === today.toDateString()) return "Today";
-  if (d.toDateString() === yesterday.toDateString()) return "Yesterday";
-  return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-}
-
 function getOutcomeMeta(outcome: string) {
   const found = CALL_OUTCOMES.find((o) => o.value === outcome);
   return found
     ? { label: found.label, cls: found.cls }
     : { label: outcome.replace(/_/g, " "), cls: "text-slate-600 bg-slate-50 border-slate-200" };
-}
-
-function timeAgo(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  return `${days}d ago`;
 }
 
 const EVENT_META: Record<
@@ -209,7 +183,7 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
   );
 
   /* ------ fetch timeline ------ */
-  const { data: timeline = [] } = useSWR<ActivityEvent[]>(
+  const { data: timeline = [], mutate: mutateTimeline } = useSWR<ActivityEvent[]>(
     `/api/customers/${leadId}/timeline`,
     () => fetchLeadTimeline(leadId)
   );
@@ -239,7 +213,7 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
   /* ------ Log call state ------ */
   const [showLogCall, setShowLogCall] = useState(false);
   const [callForm, setCallForm] = useState({
-    called_at: new Date().toISOString().slice(0, 16),
+    called_at: crmNowDatetimeLocal(),
     duration_seconds: "",
     outcome: "no_answer" as CallOutcomeValue,
     notes: "",
@@ -288,18 +262,22 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          called_at: new Date(callForm.called_at).toISOString(),
+          called_at: crmDatetimeLocalToIso(callForm.called_at),
           duration_seconds: Number(callForm.duration_seconds) || 0,
           outcome: callForm.outcome,
           notes: callForm.notes || null,
         }),
       });
-      const j = (await r.json()) as { ok?: boolean; error?: string };
+      const j = (await r.json()) as {
+        ok?: boolean;
+        error?: string;
+        stage_updated?: { from: string; to: string } | null;
+      };
       if (!j.ok) throw new Error(j.error ?? "Failed");
-      await mutateCallLogs();
+      await Promise.all([mutateCallLogs(), mutateLead(), mutateTimeline()]);
       setShowLogCall(false);
-      setCallForm({ called_at: new Date().toISOString().slice(0, 16), duration_seconds: "", outcome: "no_answer", notes: "" });
-      toast.success("Call logged");
+      setCallForm({ called_at: crmNowDatetimeLocal(), duration_seconds: "", outcome: "no_answer", notes: "" });
+      toast.success(j.stage_updated ? "Call logged · moved to Contacted" : "Call logged");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not log call");
     } finally {
@@ -314,7 +292,7 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
     try {
       await createReminder(leadId, {
         title: followupForm.title.trim(),
-        due_at: new Date(followupForm.due_at).toISOString(),
+        due_at: crmDatetimeLocalToIso(followupForm.due_at),
         priority: followupForm.priority,
         followup_type: followupForm.followup_type,
         status: "pending",
@@ -340,7 +318,7 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
   /* ------ timeline groups ------ */
   const timelineGroups = useMemo(() => {
     return timeline.reduce<Record<string, ActivityEvent[]>>((acc, ev) => {
-      const key = dayLabel(ev.occurred_at);
+      const key = formatCrmDayLabel(ev.occurred_at);
       if (!acc[key]) acc[key] = [];
       acc[key]!.push(ev);
       return acc;
@@ -558,7 +536,7 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
                           {ev.event_type === "file_uploaded" && fileType ? (
                             <p className="mt-0.5 text-[11px] capitalize text-slate-500">{fileType.replace(/_/g, " ")}</p>
                           ) : null}
-                          <p className="mt-0.5 text-[11px] text-slate-400">{fmtTime(ev.occurred_at)}</p>
+                          <p className="mt-0.5 text-[11px] text-slate-400">{formatCrmDateTime(ev.occurred_at)}</p>
                         </div>
                       </li>
                     );
@@ -664,8 +642,8 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
                   return (
                     <tr key={log.id} className="border-b border-slate-100 last:border-0 dark:border-white/[0.05]">
                       <td className="px-3 py-2.5">
-                        <p className="font-semibold text-slate-800 dark:text-slate-100">{fmtDate(log.called_at)}</p>
-                        <p className="text-[11px] text-slate-500">{fmtTime(log.called_at)}</p>
+                        <p className="font-semibold text-slate-800 dark:text-slate-100">{formatCrmDate(log.called_at)}</p>
+                        <p className="text-[11px] text-slate-500">{formatCrmTime(log.called_at)}</p>
                       </td>
                       <td className="px-3 py-2.5 font-mono text-xs text-slate-700 dark:text-slate-300">
                         {fmtDuration(log.duration_seconds)}
@@ -792,7 +770,7 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
                   <div className="min-w-0 flex-1 space-y-0.5">
                     <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{r.title}</p>
                     <p className="text-[11px] text-slate-500">
-                      Due: {fmtDate(r.due_at)} {fmtTime(r.due_at)}
+                      Due: {formatCrmDate(r.due_at)} {formatCrmTime(r.due_at)}
                       {overdue ? <span className="ml-2 font-bold text-rose-600">Overdue</span> : null}
                     </p>
                     {r.notes ? <p className="text-xs text-slate-600 dark:text-slate-400">{r.notes}</p> : null}

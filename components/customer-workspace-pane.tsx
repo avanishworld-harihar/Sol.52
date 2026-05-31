@@ -50,6 +50,12 @@ import {
   patchReminder,
 } from "@/lib/followup-client";
 import type { ActivityEvent, FollowupReminder, LeadNote, LeadVisit } from "@/lib/followup-types";
+import {
+  crmDatetimeLocalToIso,
+  formatCrmDateTime,
+  formatCrmDayLabel,
+  formatCrmTime,
+} from "@/lib/crm-datetime";
 
 type CustomerStage = "lead" | "in-pipeline" | "active-project";
 type FollowupTab = "timeline" | "reminders" | "notes" | "visits" | "proposals";
@@ -75,10 +81,7 @@ const EVENT_ICON: Record<string, typeof Clock3> = {
 };
 
 function toDayKey(iso: string) {
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime())
-    ? "Unknown"
-    : d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  return formatCrmDayLabel(iso);
 }
 
 export function CustomerWorkspacePane({
@@ -201,7 +204,7 @@ export function CustomerWorkspacePane({
 
   async function submitReminder() {
     if (!newReminderTitle.trim() || !newReminderDueAt) return;
-    const dueAtIso = new Date(newReminderDueAt).toISOString();
+    const dueAtIso = crmDatetimeLocalToIso(newReminderDueAt);
     const optimistic: FollowupReminder = {
       id: `tmp-${Date.now()}`,
       lead_id: leadId,
@@ -305,7 +308,7 @@ export function CustomerWorkspacePane({
     const optimistic: LeadVisit = {
       id: `tmp-visit-${Date.now()}`,
       lead_id: leadId,
-      scheduled_at: new Date(visitAt).toISOString(),
+      scheduled_at: crmDatetimeLocalToIso(visitAt),
       visit_status: "scheduled",
       summary: visitSummary.trim() || null,
       location: visitLocation.trim() || null,
@@ -355,7 +358,7 @@ export function CustomerWorkspacePane({
   }
 
   function eventLabel(ev: ActivityEvent) {
-    const when = new Date(ev.occurred_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+    const when = formatCrmTime(ev.occurred_at);
     return `${ev.event_type.replaceAll("_", " ")} · ${when}`;
   }
 
@@ -390,14 +393,21 @@ export function CustomerWorkspacePane({
   const statusKey = normalizeLeadStatus(customer.status);
   const bill = Number(customer.monthly_bill || 0);
   const ts = followMap[customer.id];
-  const followLabel = ts != null ? formatLastFollowUpLocale(locale, ts) : t("customers_neverFollowedUp");
+  const followLabel = customer.next_followup_at
+    ? formatCrmDateTime(customer.next_followup_at)
+    : ts != null
+      ? formatLastFollowUpLocale(locale, ts)
+      : t("customers_neverFollowedUp");
   const waUrl = customer.phone ? buildLeadWhatsAppUrl(customer.phone, customer.name, installerName, locale) : null;
   const statusLabel = t(LEAD_STATUS_I18N_KEY[statusKey]);
   const stale = isLeadStale(customer.last_touched_at);
   const stage = (customer.customer_stage ?? "lead") as CustomerStage;
   const stageMeta = CUSTOMER_STAGE_META[stage];
   const commercialCta = resolveCustomerCommercialCta(customer);
-  const lastActivityLabel = formatLeadLastActivity(customer.last_touched_at, locale);
+  const lastActivityAt = customer.last_activity_at ?? customer.last_touched_at ?? null;
+  const lastActivityLabel = lastActivityAt
+    ? formatCrmDateTime(lastActivityAt)
+    : formatLeadLastActivity(customer.last_touched_at, locale);
 
   return (
     <div className="flex h-full min-h-0 flex-col rounded-2xl border border-slate-200/90 bg-white shadow-sm ring-1 ring-slate-200/40 dark:border-white/10 dark:bg-[#0c1017] dark:ring-white/[0.06]">
@@ -527,7 +537,7 @@ export function CustomerWorkspacePane({
               {sortedReminders.map((r) => (
                 <div key={r.id} onTouchStart={onReminderTouchStart} onTouchEnd={(e) => onReminderTouchEnd(e, r.id)} className={cn("rounded-xl border p-2.5 text-xs", overdueReminderIds.has(r.id) ? "border-rose-300 bg-rose-50/70 dark:border-rose-500/40 dark:bg-rose-950/20" : "border-slate-200/80 dark:border-white/10")}>
                   <p className="font-semibold">{r.title}</p>
-                  <p className="text-slate-600 dark:text-slate-300">{new Date(r.due_at).toLocaleString("en-IN")} · {r.followup_type} · {r.priority}</p>
+                  <p className="text-slate-600 dark:text-slate-300">{formatCrmDateTime(r.due_at)} · {r.followup_type} · {r.priority}</p>
                   <div className="mt-2 flex gap-1.5">
                     <button type="button" onClick={() => void completeReminder(r.id)} className="flex-1 rounded-lg bg-emerald-600 px-2 py-2 text-[11px] font-bold text-white">Complete</button>
                     <button type="button" onClick={() => void snoozeReminder(r.id, 1)} className="flex-1 rounded-lg bg-amber-500 px-2 py-2 text-[11px] font-bold text-white">Snooze</button>
@@ -573,7 +583,7 @@ export function CustomerWorkspacePane({
               </div>
               {visits.map((v) => (
                 <p key={v.id} className="rounded-lg border border-slate-200/80 px-2 py-1.5 text-xs dark:border-white/10">
-                  {new Date(v.scheduled_at).toLocaleString("en-IN")} · {v.visit_status} {v.location ? `· ${v.location}` : ""}
+                  {formatCrmDateTime(v.scheduled_at)} · {v.visit_status} {v.location ? `· ${v.location}` : ""}
                 </p>
               ))}
             </div>

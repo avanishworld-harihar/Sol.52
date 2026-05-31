@@ -22,6 +22,7 @@ import { buildLeadWhatsAppUrl } from "@/lib/whatsapp-lead";
 import { readLeadFollowUpMap, recordLeadFollowUp } from "@/lib/lead-followup-storage";
 import { normalizeSource, SOURCE_META, isLeadStale } from "@/lib/lead-source";
 import { resolveCustomerCommercialCta } from "@/lib/customer-crm-cta";
+import { formatCrmDateTime, formatCrmShortDate } from "@/lib/crm-datetime";
 
 export type { CustomerLead };
 
@@ -189,17 +190,7 @@ export function fmtActivityType(type: string | null | undefined): string {
 }
 
 export function formatLeadLastActivity(iso: string | null | undefined, locale: string): string {
-  if (!iso) return "—";
-  try {
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return "—";
-    return d.toLocaleDateString(locale === "hi" ? "hi-IN" : locale === "ta" ? "ta-IN" : "en-IN", {
-      day: "numeric",
-      month: "short"
-    });
-  } catch {
-    return "—";
-  }
+  return formatCrmShortDate(iso, locale);
 }
 
 export function CustomersLeadList({
@@ -297,13 +288,13 @@ export function CustomersLeadList({
               const nextFollowupTitle = customer.next_followup_title ?? null;
               const nextFollowupOverdue = nextFollowupAt != null && new Date(nextFollowupAt).getTime() < Date.now();
               const followupDisplay = nextFollowupAt
-                ? new Date(nextFollowupAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+                ? formatCrmDateTime(nextFollowupAt)
                 : ts != null ? formatLastFollowUpLocale(locale, ts) : t("customers_neverFollowedUp");
               // Phase 2: last activity from server (activity_events)
               const lastActivityAt = customer.last_activity_at ?? customer.last_touched_at ?? null;
               const lastActivityType = customer.last_activity_type ?? null;
               const lastActivityLabel = lastActivityAt
-                ? `${fmtActivityType(lastActivityType)} · ${formatLeadLastActivity(lastActivityAt, locale)}`
+                ? `${fmtActivityType(lastActivityType)} · ${formatCrmDateTime(lastActivityAt)}`
                 : formatLeadLastActivity(customer.last_touched_at, locale);
               const waUrl = customer.phone ? buildLeadWhatsAppUrl(customer.phone, customer.name, installerName, locale) : null;
               const statusLabel = t(LEAD_STATUS_I18N_KEY[statusKey]);
@@ -533,7 +524,7 @@ export function CustomersLeadList({
                 const nextFollowupAt = customer.next_followup_at ?? null;
                 const nextFollowupOverdue = nextFollowupAt != null && new Date(nextFollowupAt).getTime() < Date.now();
                 const followLabel = nextFollowupAt
-                  ? new Date(nextFollowupAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+                  ? formatCrmDateTime(nextFollowupAt)
                   : ts != null ? formatLastFollowUpLocale(locale, ts) : t("customers_neverFollowedUp");
                 const lastActivityAt = customer.last_activity_at ?? customer.last_touched_at ?? null;
                 const lastActivityType = customer.last_activity_type ?? null;
@@ -699,7 +690,7 @@ export function CustomersLeadList({
                           <p className="mt-1 text-[10px] font-semibold leading-snug text-slate-500 sm:text-[11px]">
                             <span className="text-slate-400">Last: </span>
                             {lastActivityAt
-                              ? <span>{fmtActivityType(lastActivityType)} · {formatLeadLastActivity(lastActivityAt, locale)}</span>
+                              ? <span>{fmtActivityType(lastActivityType)} · {formatCrmDateTime(lastActivityAt)}</span>
                               : <span>{formatLeadLastActivity(customer.last_touched_at, locale)}</span>
                             }
                           </p>
