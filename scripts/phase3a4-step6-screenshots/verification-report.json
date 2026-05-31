@@ -1,0 +1,22 @@
+{
+  "captured_at": "2026-05-31T20:07:51.827Z",
+  "base_url": "http://localhost:3001",
+  "populated_project_id": "ed95a541-fd01-4098-8400-84ef7d250340",
+  "empty_project_id": "ecdd6839-f029-4116-82c5-b2afd58ff4c4",
+  "survey_fields_rendered": 33,
+  "has_site_address": true,
+  "has_roof_details": true,
+  "has_electrical_details": true,
+  "cache_keys": [
+    "/api/projects/{id}/survey",
+    "/api/projects/{id}",
+    "/api/projects/{id}/activity",
+    "/api/projects/list",
+    "/api/projects/dashboard-stats"
+  ],
+  "files": [
+    "01-survey-populated-desktop.png",
+    "02-survey-empty-desktop.png",
+    "03-survey-populated-mobile.png"
+  ]
+}
