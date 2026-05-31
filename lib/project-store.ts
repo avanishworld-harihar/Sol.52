@@ -13,6 +13,7 @@
  * NEVER import in client components.
  */
 
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase } from "@/lib/supabase";
 import { calculateProjectHealth } from "@/lib/project-health";
@@ -26,6 +27,37 @@ function db() {
 // ---------------------------------------------------------------------------
 // Organization resolution (single-tenant Phase 3 helper)
 // ---------------------------------------------------------------------------
+
+/** PostgREST / Postgres: column not present on this deploy (migrations not run). */
+export function missingColumnFromPgError(message: string): string | null {
+  const m = /Could not find the '([^']+)' column/i.exec(message);
+  return m?.[1] ?? null;
+}
+
+/**
+ * Insert into `projects` — drop any key PostgREST rejects so create works on
+ * DBs that have Phase 3 columns but missed legacy pipeline columns (004/005).
+ */
+export async function insertProjectAdaptive(
+  client: SupabaseClient,
+  payload: Record<string, unknown>
+): Promise<{ data: Record<string, unknown> | null; error: string | null }> {
+  let attempt = { ...payload };
+  for (let guard = 0; guard < 40 && Object.keys(attempt).length > 0; guard++) {
+    const { data, error } = await client.from("projects").insert(attempt).select("*").single();
+    if (!error && data) {
+      return { data: data as Record<string, unknown>, error: null };
+    }
+    const msg = error?.message ?? "";
+    const miss = missingColumnFromPgError(msg);
+    if (miss && miss in attempt) {
+      delete attempt[miss];
+      continue;
+    }
+    return { data: null, error: msg || "Project insert failed" };
+  }
+  return { data: null, error: "Project insert exhausted retries" };
+}
 
 /** Returns the first active organization id, or null if none exists. */
 export async function resolveDefaultOrgId(): Promise<string | null> {

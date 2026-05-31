@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase } from "@/lib/supabase";
-import { resolveDefaultOrgId } from "@/lib/project-store";
+import { insertProjectAdaptive, resolveDefaultOrgId } from "@/lib/project-store";
 import { logProjectCreated } from "@/lib/project-activity-logger";
 import { getTaskTemplatesForStage } from "@/lib/project-task-templates";
 
@@ -46,10 +46,12 @@ export async function POST(req: NextRequest) {
     const orgId = await resolveDefaultOrgId();
 
     const now = new Date().toISOString();
+    const displayName = parsed.official_name?.trim() ?? null;
     const insertPayload: Record<string, unknown> = {
       lead_id: parsed.lead_id ?? null,
-      official_name: parsed.official_name?.trim() ?? null,
-      capacity_kw: parsed.capacity_kw?.trim() ?? null,
+      official_name: displayName,
+      // Legacy/custom schemas use customer_name (NOT NULL on some deploys)
+      ...(displayName ? { customer_name: displayName } : {}),
       detail: parsed.detail?.trim() ?? null,
       // Phase 3 defaults
       current_stage: "survey",
@@ -63,6 +65,12 @@ export async function POST(req: NextRequest) {
       updated_at: now,
     };
 
+    const cap = parsed.capacity_kw?.trim();
+    if (cap) {
+      insertPayload.capacity_kw = cap;
+      insertPayload.solar_kw = cap;
+    }
+
     if (orgId) insertPayload.organization_id = orgId;
     if (parsed.project_code) insertPayload.project_code = parsed.project_code.trim();
     if (parsed.start_date) insertPayload.start_date = parsed.start_date;
@@ -72,14 +80,14 @@ export async function POST(req: NextRequest) {
     if (parsed.contract_amount_inr != null) insertPayload.contract_amount_inr = parsed.contract_amount_inr;
     if (parsed.site_address) insertPayload.site_address = parsed.site_address.trim();
 
-    const { data, error } = await client
-      .from("projects")
-      .insert(insertPayload)
-      .select("*")
-      .single();
+    if (!displayName) {
+      insertPayload.customer_name = "Unnamed Project";
+    }
 
-    if (error) {
-      return NextResponse.json({ ok: false, error: error.message }, { status: 400 });
+    const { data, error } = await insertProjectAdaptive(client, insertPayload);
+
+    if (error || !data) {
+      return NextResponse.json({ ok: false, error: error ?? "insert_failed" }, { status: 400 });
     }
 
     const project = data as { id: string };
@@ -111,7 +119,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json(
-      { ok: true, data },
+      { ok: true, data: project },
       { status: 201, headers: { "Cache-Control": "no-store" } }
     );
   } catch (e) {
