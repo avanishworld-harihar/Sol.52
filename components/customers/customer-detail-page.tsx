@@ -23,10 +23,11 @@ import {
   Plus,
   Save,
   TimerReset,
+  Upload,
   UserRoundCheck,
   Zap,
 } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { useToast } from "@/components/ui/toast-center";
@@ -230,6 +231,33 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
     notes: "",
   });
   const [savingFollowup, setSavingFollowup] = useState(false);
+
+  /* ------ file upload ------ */
+  const [uploadingType, setUploadingType] = useState<CustomerFile["file_type"] | null>(null);
+  const billInputRef = useRef<HTMLInputElement>(null);
+  const siteImageInputRef = useRef<HTMLInputElement>(null);
+  const documentInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadFile = useCallback(
+    async (file: File, fileType: CustomerFile["file_type"]) => {
+      setUploadingType(fileType);
+      try {
+        const form = new FormData();
+        form.append("file", file);
+        form.append("file_type", fileType);
+        const res = await fetch(`/api/customers/${leadId}/files/upload`, { method: "POST", body: form });
+        const json = (await res.json()) as { ok?: boolean; error?: string };
+        if (!res.ok || !json.ok) throw new Error(json.error ?? "Upload failed");
+        await Promise.all([mutateFiles(), mutateTimeline()]);
+        toast.success(`${file.name} uploaded`);
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Could not upload file");
+      } finally {
+        setUploadingType(null);
+      }
+    },
+    [leadId, mutateFiles, mutateTimeline, toast]
+  );
 
   /* ------ stage change ------ */
   const [statusChanging, setStatusChanging] = useState(false);
@@ -796,32 +824,40 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
       {/* ── 5. Attachments ── */}
       <SectionCard title="Attachments" icon={Paperclip}>
         <div className="space-y-4">
-          {/* Bills */}
           <AttachmentGroup
             label="Bills"
             icon={FileText}
             files={bills}
             emptyText="No bills uploaded"
+            accept="image/*,application/pdf,.pdf"
+            uploading={uploadingType === "bill"}
+            onUploadClick={() => billInputRef.current?.click()}
+            onFileSelected={(file) => void uploadFile(file, "bill")}
+            inputRef={billInputRef}
           />
-          {/* Site Images */}
           <AttachmentGroup
             label="Site Images"
             icon={ImageIcon}
             files={siteImages}
             emptyText="No site images"
             isImage
+            accept="image/*"
+            uploading={uploadingType === "site_image"}
+            onUploadClick={() => siteImageInputRef.current?.click()}
+            onFileSelected={(file) => void uploadFile(file, "site_image")}
+            inputRef={siteImageInputRef}
           />
-          {/* Documents */}
           <AttachmentGroup
             label="Documents"
             icon={FilePlus}
             files={documents}
             emptyText="No documents"
+            accept="image/*,application/pdf,.pdf,.doc,.docx"
+            uploading={uploadingType === "document"}
+            onUploadClick={() => documentInputRef.current?.click()}
+            onFileSelected={(file) => void uploadFile(file, "document")}
+            inputRef={documentInputRef}
           />
-          <p className="text-[11px] text-slate-400">
-            Upload files via storage and link them using the API at{" "}
-            <code className="rounded bg-slate-100 px-1 dark:bg-white/10">/api/customers/{leadId}/files</code>
-          </p>
         </div>
       </SectionCard>
 
@@ -835,12 +871,22 @@ function AttachmentGroup({
   files,
   emptyText,
   isImage = false,
+  accept,
+  uploading = false,
+  onUploadClick,
+  onFileSelected,
+  inputRef,
 }: {
   label: string;
   icon: typeof FileText;
   files: CustomerFile[];
   emptyText: string;
   isImage?: boolean;
+  accept: string;
+  uploading?: boolean;
+  onUploadClick: () => void;
+  onFileSelected: (file: File) => void;
+  inputRef: React.RefObject<HTMLInputElement | null>;
 }) {
   return (
     <div>
@@ -852,6 +898,26 @@ function AttachmentGroup({
             {files.length}
           </span>
         ) : null}
+        <button
+          type="button"
+          onClick={onUploadClick}
+          disabled={uploading}
+          className="ml-auto inline-flex items-center gap-1 rounded-lg border border-teal-200 bg-teal-50 px-2.5 py-1 text-[11px] font-bold text-teal-700 transition-colors hover:bg-teal-100 disabled:opacity-60 dark:border-teal-800/40 dark:bg-teal-950/30 dark:text-teal-300"
+        >
+          <Upload className="h-3 w-3" aria-hidden />
+          {uploading ? "Uploading…" : "Upload"}
+        </button>
+        <input
+          ref={inputRef}
+          type="file"
+          accept={accept}
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) onFileSelected(file);
+            e.target.value = "";
+          }}
+        />
       </div>
       {files.length === 0 ? (
         <p className="text-[11px] text-slate-400">{emptyText}</p>
