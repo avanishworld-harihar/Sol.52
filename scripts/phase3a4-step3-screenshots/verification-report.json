@@ -1,0 +1,50 @@
+{
+  "captured_at": "2026-05-31T19:26:53.292Z",
+  "base_url": "http://localhost:3001",
+  "project_id": "ed95a541-fd01-4098-8400-84ef7d250340",
+  "stage_after_first_advance": "design",
+  "stage_after_nm_setup": "net_metering",
+  "nm_substatus": "application_filed",
+  "activity_events": [
+    {
+      "type": "nm_substatus_changed",
+      "title": "Net metering: application filed"
+    },
+    {
+      "type": "stage_changed",
+      "title": "Stage advanced to net metering"
+    },
+    {
+      "type": "stage_changed",
+      "title": "Stage advanced to installation"
+    },
+    {
+      "type": "stage_changed",
+      "title": "Stage advanced to approval"
+    },
+    {
+      "type": "stage_changed",
+      "title": "Stage advanced to design"
+    },
+    {
+      "type": "project_created",
+      "title": "Project created for Ravi Sharma"
+    }
+  ],
+  "stage_advance_logged": true,
+  "nm_change_logged": true,
+  "cache_keys_revalidated": [
+    "/api/projects/ed95a541-fd01-4098-8400-84ef7d250340",
+    "/api/projects/ed95a541-fd01-4098-8400-84ef7d250340/activity",
+    "/api/projects/ed95a541-fd01-4098-8400-84ef7d250340/tasks",
+    "/api/projects/list?view=active&limit=200",
+    "/api/projects/dashboard-stats"
+  ],
+  "files": [
+    "01-before-advance.png",
+    "02-advance-sheet-open.png",
+    "03-after-advance.png",
+    "04-nm-stage-selectors.png",
+    "05-nm-substatus-updated.png"
+  ]
+}
