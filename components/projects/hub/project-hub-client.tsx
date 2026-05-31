@@ -1,5 +1,6 @@
 "use client";
 
+import { ProjectHubAdvanceSheet } from "@/components/projects/hub/project-hub-advance-sheet";
 import { ProjectHubHeader } from "@/components/projects/hub/project-hub-header";
 import { ProjectHubOverviewTab } from "@/components/projects/hub/project-hub-overview-tab";
 import { ProjectHubSkeleton } from "@/components/projects/hub/project-hub-skeleton";
@@ -10,11 +11,22 @@ import {
 } from "@/components/projects/hub/project-hub-tab-bar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useToast } from "@/components/ui/toast-center";
 import { WorkspacePage, WorkspaceStaggerItem } from "@/components/workspace";
+import { revalidateProjectHubCaches } from "@/lib/project-hub-cache";
 import {
+  advanceProjectStage,
   fetchProjectDetail,
+  patchProject,
   projectDetailKey,
 } from "@/lib/project-api-client";
+import {
+  getNextStage,
+  isProjectStageId,
+  STAGE_LABELS,
+  type NmSubstatus,
+  type ProjectStageStatus,
+} from "@/lib/project-stages";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -23,11 +35,14 @@ import useSWR from "swr";
 export function ProjectHubClient({ projectId }: { projectId: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const toast = useToast();
   const detailKey = projectDetailKey(projectId);
 
   const tabFromUrl = searchParams.get("tab");
   const resolvedTab = useMemo(() => resolveProjectHubTab(tabFromUrl), [tabFromUrl]);
   const [activeTab, setActiveTab] = useState<ProjectHubTabId>(resolvedTab);
+  const [advanceOpen, setAdvanceOpen] = useState(false);
+  const [statusBusy, setStatusBusy] = useState(false);
 
   useEffect(() => {
     setActiveTab(resolvedTab);
@@ -51,6 +66,76 @@ export function ProjectHubClient({ projectId }: { projectId: string }) {
       dedupingInterval: 5_000,
     }
   );
+
+  const refreshHub = useCallback(async () => {
+    await revalidateProjectHubCaches(projectId);
+    await mutate();
+  }, [mutate, projectId]);
+
+  const handleStageStatusChange = useCallback(
+    async (stageStatus: ProjectStageStatus) => {
+      if (!project || stageStatus === project.stage_status) return;
+      setStatusBusy(true);
+      try {
+        const res = await patchProject(projectId, { stage_status: stageStatus });
+        if (!res.ok) throw new Error(res.error ?? "patch_failed");
+        await refreshHub();
+        toast.success("Stage status updated", stageStatus.replace(/_/g, " "));
+      } catch (e) {
+        toast.error(
+          "Could not update stage status",
+          e instanceof Error ? e.message : "Unknown error"
+        );
+      } finally {
+        setStatusBusy(false);
+      }
+    },
+    [project, projectId, refreshHub, toast]
+  );
+
+  const handleNmSubstatusChange = useCallback(
+    async (nmSubstatus: NmSubstatus) => {
+      if (!project || nmSubstatus === project.nm_substatus) return;
+      setStatusBusy(true);
+      try {
+        const res = await patchProject(projectId, { nm_substatus: nmSubstatus });
+        if (!res.ok) throw new Error(res.error ?? "patch_failed");
+        await refreshHub();
+        toast.success("Net metering status updated");
+      } catch (e) {
+        toast.error(
+          "Could not update net metering status",
+          e instanceof Error ? e.message : "Unknown error"
+        );
+      } finally {
+        setStatusBusy(false);
+      }
+    },
+    [project, projectId, refreshHub, toast]
+  );
+
+  const handleAdvanceConfirm = useCallback(async () => {
+    if (!project) return;
+    const currentStage = isProjectStageId(project.current_stage) ? project.current_stage : null;
+    const nextStage = currentStage ? getNextStage(currentStage) : null;
+    if (!nextStage) return;
+
+    setStatusBusy(true);
+    try {
+      const res = await advanceProjectStage(projectId);
+      if (!res.ok) throw new Error(res.error ?? "advance_failed");
+      await refreshHub();
+      setAdvanceOpen(false);
+      toast.success(
+        "Stage advanced",
+        `${STAGE_LABELS[currentStage!]} → ${STAGE_LABELS[nextStage]}`
+      );
+    } catch (e) {
+      toast.error("Could not advance stage", e instanceof Error ? e.message : "Unknown error");
+    } finally {
+      setStatusBusy(false);
+    }
+  }, [project, projectId, refreshHub, toast]);
 
   if (isLoading && !project) {
     return <ProjectHubSkeleton />;
@@ -88,7 +173,13 @@ export function ProjectHubClient({ projectId }: { projectId: string }) {
   return (
     <WorkspacePage tone="projects">
       <WorkspaceStaggerItem>
-        <ProjectHubHeader project={project} />
+        <ProjectHubHeader
+          project={project}
+          statusBusy={statusBusy}
+          onAdvanceClick={() => setAdvanceOpen(true)}
+          onStageStatusChange={handleStageStatusChange}
+          onNmSubstatusChange={handleNmSubstatusChange}
+        />
       </WorkspaceStaggerItem>
 
       <WorkspaceStaggerItem>
@@ -98,6 +189,14 @@ export function ProjectHubClient({ projectId }: { projectId: string }) {
       <WorkspaceStaggerItem>
         {activeTab === "overview" ? <ProjectHubOverviewTab project={project} /> : null}
       </WorkspaceStaggerItem>
+
+      <ProjectHubAdvanceSheet
+        open={advanceOpen}
+        project={project}
+        busy={statusBusy}
+        onClose={() => !statusBusy && setAdvanceOpen(false)}
+        onConfirm={handleAdvanceConfirm}
+      />
     </WorkspacePage>
   );
 }

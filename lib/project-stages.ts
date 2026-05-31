@@ -73,6 +73,13 @@ export const NM_SUBSTATUS_LABELS: Record<NmSubstatus, string> = {
   export_enabled: "Export Enabled",
 };
 
+export const STAGE_STATUS_LABELS: Record<ProjectStageStatus, string> = {
+  not_started: "Not started",
+  in_progress: "In progress",
+  blocked: "Blocked",
+  done: "Done",
+};
+
 /** Valid next stage for each current stage. null = terminal (completed). */
 const STAGE_NEXT_MAP: Record<ProjectStageId, ProjectStageId | null> = {
   survey: "design",

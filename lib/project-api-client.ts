@@ -300,11 +300,11 @@ export async function fetchNotificationsUnreadCount(): Promise<number> {
 
 export async function advanceProjectStage(
   projectId: string,
-  payload: { createdById?: string | null }
+  payload: { createdById?: string | null } = {}
 ): Promise<ApiResponse<ProjectListItem>> {
   return apiRequest<ProjectListItem>(`/api/projects/${projectId}/advance-stage`, {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: JSON.stringify({ created_by_id: payload.createdById ?? null }),
   });
 }
 

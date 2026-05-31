@@ -3,9 +3,18 @@
 import { ProjectHealthBadge } from "@/components/projects/project-health-badge";
 import { ProjectStageBadge } from "@/components/projects/project-stage-badge";
 import { ProjectStageProgressBar } from "@/components/projects/hub/project-stage-progress-bar";
+import { ProjectHubStageActions } from "@/components/projects/hub/project-hub-stage-actions";
 import { Button } from "@/components/ui/button";
 import type { ProjectListItem } from "@/lib/project-api-client";
 import { projectDisplayName } from "@/lib/project-list-utils";
+import {
+  getNextStage,
+  isNmSubstatus,
+  isProjectStageId,
+  NM_SUBSTATUS_LABELS,
+  type NmSubstatus,
+  type ProjectStageStatus,
+} from "@/lib/project-stages";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, ChevronRight, MoreHorizontal, User } from "lucide-react";
 import Link from "next/link";
@@ -14,12 +23,28 @@ import { useState } from "react";
 export function ProjectHubHeader({
   project,
   className,
+  statusBusy,
+  onAdvanceClick,
+  onStageStatusChange,
+  onNmSubstatusChange,
 }: {
   project: ProjectListItem;
   className?: string;
+  statusBusy?: boolean;
+  onAdvanceClick?: () => void;
+  onStageStatusChange?: (status: ProjectStageStatus) => void | Promise<void>;
+  onNmSubstatusChange?: (substatus: NmSubstatus) => void | Promise<void>;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const name = projectDisplayName(project);
+
+  const canAdvance =
+    isProjectStageId(project.current_stage) && getNextStage(project.current_stage) != null;
+
+  const nmLabel =
+    project.current_stage === "net_metering" && isNmSubstatus(project.nm_substatus)
+      ? NM_SUBSTATUS_LABELS[project.nm_substatus]
+      : null;
 
   return (
     <header
@@ -50,9 +75,16 @@ export function ProjectHubHeader({
           </div>
 
           <div className="flex shrink-0 flex-wrap items-center gap-2">
-            <Button type="button" variant="outline" size="sm" disabled className="gap-1">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={!canAdvance || statusBusy}
+              className="gap-1"
+              onClick={onAdvanceClick}
+            >
               Advance stage
-              <ChevronRight className="h-3.5 w-3.5 opacity-50" aria-hidden />
+              <ChevronRight className="h-3.5 w-3.5" aria-hidden />
             </Button>
             <div className="relative">
               <Button
@@ -107,7 +139,21 @@ export function ProjectHubHeader({
         <div className="flex flex-wrap items-center gap-2">
           <ProjectStageBadge stage={project.current_stage} />
           <ProjectHealthBadge health={project.health} />
+          {nmLabel ? (
+            <span className="inline-flex items-center rounded-md bg-purple-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-purple-800 dark:bg-purple-900/40 dark:text-purple-200">
+              NM: {nmLabel}
+            </span>
+          ) : null}
         </div>
+
+        {onStageStatusChange && onNmSubstatusChange ? (
+          <ProjectHubStageActions
+            project={project}
+            disabled={statusBusy}
+            onStageStatusChange={onStageStatusChange}
+            onNmSubstatusChange={onNmSubstatusChange}
+          />
+        ) : null}
 
         <div className="grid gap-2 text-xs font-medium text-slate-600 dark:text-slate-400 sm:grid-cols-2">
           <span className="inline-flex items-center gap-1.5">
