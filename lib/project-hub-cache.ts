@@ -6,6 +6,7 @@ import {
   PROJECT_DASHBOARD_STATS_KEY,
   projectActivityKey,
   projectDetailKey,
+  projectSurveyKey,
   projectTasksKey,
 } from "@/lib/project-api-client";
 import { buildProjectListUrl } from "@/lib/project-list-utils";
@@ -13,6 +14,7 @@ import { buildProjectListUrl } from "@/lib/project-list-utils";
 export async function revalidateProjectHubCaches(projectId: string): Promise<void> {
   await Promise.all([
     mutate(projectDetailKey(projectId)),
+    mutate(projectSurveyKey(projectId)),
     mutate(projectActivityKey(projectId)),
     mutate(
       (key) =>
