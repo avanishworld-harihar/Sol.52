@@ -14,6 +14,11 @@ export async function revalidateProjectHubCaches(projectId: string): Promise<voi
   await Promise.all([
     mutate(projectDetailKey(projectId)),
     mutate(projectActivityKey(projectId)),
+    mutate(
+      (key) =>
+        typeof key === "string" &&
+        key.startsWith(`/api/projects/${projectId}/activity`)
+    ),
     mutate(projectTasksKey(projectId)),
     mutate(
       (key) =>

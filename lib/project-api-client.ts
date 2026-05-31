@@ -40,8 +40,14 @@ export function projectTasksKey(id: string, stage?: string) {
   return stage ? `/api/projects/${id}/tasks?stage=${stage}` : `/api/projects/${id}/tasks`;
 }
 
-export function projectActivityKey(id: string) {
-  return `/api/projects/${id}/activity`;
+export function projectActivityKey(
+  id: string,
+  opts?: { limit?: number; before?: string | null }
+) {
+  const params = new URLSearchParams();
+  params.set("limit", String(opts?.limit ?? 30));
+  if (opts?.before) params.set("before", opts.before);
+  return `/api/projects/${id}/activity?${params.toString()}`;
 }
 
 export function projectCommentsKey(id: string) {
