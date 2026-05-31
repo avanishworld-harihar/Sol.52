@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { listProjects, resolveDefaultOrgId } from "@/lib/project-store";
+import { listProjects, resolveDefaultOrgId, syncWonLeadProjects } from "@/lib/project-store";
 import { isProjectStageId } from "@/lib/project-stages";
 
 export const dynamic = "force-dynamic";
@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
     const offset = Math.max(0, Number(offsetParam ?? 0));
 
     const orgId = await resolveDefaultOrgId();
+    await syncWonLeadProjects();
     const rows = await listProjects({ organizationId: orgId, stage, view, limit, offset });
 
     return NextResponse.json(

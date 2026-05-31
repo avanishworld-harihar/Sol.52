@@ -396,9 +396,28 @@ export async function bumpLeadStatus(
       .select("*")
       .single();
     if (retry.error) return null;
-    return retry.data as Record<string, unknown>;
+    const row = retry.data as Record<string, unknown>;
+    if (normalizeLeadStatus(status) === "won") {
+      const { ensureProjectForWonLead } = await import("@/lib/project-store");
+      await ensureProjectForWonLead(leadId, {
+        name: String(row.name ?? ""),
+        consumer_name:
+          row.consumer_name != null ? String(row.consumer_name) : null,
+        city: String(row.city ?? ""),
+      });
+    }
+    return row;
   }
-  return data as Record<string, unknown>;
+  const row = data as Record<string, unknown>;
+  if (normalizeLeadStatus(status) === "won") {
+    const { ensureProjectForWonLead } = await import("@/lib/project-store");
+    await ensureProjectForWonLead(leadId, {
+      name: String(row.name ?? ""),
+      consumer_name: row.consumer_name != null ? String(row.consumer_name) : null,
+      city: String(row.city ?? ""),
+    });
+  }
+  return row;
 }
 
 /** Bump only `last_touched_at` (call / WhatsApp / status-change without state move). */

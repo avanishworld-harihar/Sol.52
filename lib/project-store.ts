@@ -19,6 +19,9 @@ import { supabase } from "@/lib/supabase";
 import { calculateProjectHealth } from "@/lib/project-health";
 import type { ProjectHealth } from "@/lib/project-health";
 import type { ProjectStageId, ProjectStageStatus, NmSubstatus } from "@/lib/project-stages";
+import { logProjectCreated } from "@/lib/project-activity-logger";
+import { getTaskTemplatesForStage } from "@/lib/project-task-templates";
+import { normalizeLeadStatus } from "@/lib/lead-status";
 
 function db() {
   return createSupabaseAdmin() ?? supabase;
@@ -71,6 +74,166 @@ export async function resolveDefaultOrgId(): Promise<string | null> {
     .limit(1)
     .maybeSingle();
   return data?.id ?? null;
+}
+
+const SITE_SURVEY_NEXT_ACTION = "Site survey pending";
+
+export interface WonLeadProjectInput {
+  name?: string | null;
+  consumer_name?: string | null;
+  city?: string | null;
+}
+
+/**
+ * When a CRM lead is marked `won`, ensure a Phase 3 project row exists and is
+ * visible on /projects (organization_id + dashboard_visible + not archived).
+ */
+export async function ensureProjectForWonLead(
+  leadId: string,
+  lead?: WonLeadProjectInput
+): Promise<Record<string, unknown> | null> {
+  const client = db();
+  if (!client || !leadId.trim()) return null;
+
+  const orgId = await resolveDefaultOrgId();
+  const displayName =
+    lead?.consumer_name?.trim() ||
+    lead?.name?.trim() ||
+    "Unnamed Project";
+  const now = new Date().toISOString();
+
+  const { data: existing } = await client
+    .from("projects")
+    .select("*")
+    .eq("lead_id", leadId)
+    .maybeSingle();
+
+  if (existing) {
+    const patch: Record<string, unknown> = { updated_at: now };
+    if (orgId && !existing.organization_id) patch.organization_id = orgId;
+    if (!existing.official_name) patch.official_name = displayName;
+    if (!existing.customer_name) patch.customer_name = displayName;
+    if (existing.dashboard_visible === false) patch.dashboard_visible = true;
+    if (existing.archived_at != null) patch.archived_at = null;
+    if (!existing.current_stage) patch.current_stage = "survey";
+    if (!existing.stage_status) patch.stage_status = "in_progress";
+
+    if (Object.keys(patch).length <= 1) {
+      return existing as Record<string, unknown>;
+    }
+
+    const { data, error } = await client
+      .from("projects")
+      .update(patch)
+      .eq("id", existing.id)
+      .select("*")
+      .single();
+    if (error || !data) return existing as Record<string, unknown>;
+    return data as Record<string, unknown>;
+  }
+
+  const insertPayload: Record<string, unknown> = {
+    lead_id: leadId,
+    official_name: displayName,
+    customer_name: displayName,
+    current_stage: "survey",
+    stage_status: "in_progress",
+    nm_substatus: "not_started",
+    has_subsidy: false,
+    amount_received_inr: 0,
+    dashboard_visible: true,
+    status: "pending",
+    install_progress: 0,
+    next_action: SITE_SURVEY_NEXT_ACTION,
+    detail: lead?.city?.trim() ? `Site: ${lead.city.trim()}` : null,
+    updated_at: now,
+  };
+  if (orgId) insertPayload.organization_id = orgId;
+
+  const { data, error } = await insertProjectAdaptive(client, insertPayload);
+  if (error || !data) {
+    console.warn("[ensureProjectForWonLead] insert failed:", error);
+    return null;
+  }
+
+  const projectId = String(data.id);
+
+  if (orgId) {
+    const templates = getTaskTemplatesForStage("survey");
+    if (templates.length > 0) {
+      const taskRows = templates.map((t) => ({
+        organization_id: orgId,
+        project_id: projectId,
+        stage: "survey",
+        title: t.title,
+        description: t.description,
+        is_blocking: t.is_blocking,
+        sort_order: t.sort_order,
+        status: "pending",
+        is_template: true,
+      }));
+      await client.from("project_tasks").insert(taskRows);
+    }
+
+    await logProjectCreated({
+      organizationId: orgId,
+      projectId,
+      customerName: displayName,
+    });
+  }
+
+  return data;
+}
+
+/**
+ * Repair pass: won CRM leads must have a visible Phase 3 project row.
+ * Covers leads marked won before auto-create shipped (e.g. Bharti Gupta).
+ */
+export async function syncWonLeadProjects(): Promise<void> {
+  const client = db();
+  if (!client) return;
+
+  const { resolveLeadsTable } = await import("@/lib/supabase");
+  const leadsTable = await resolveLeadsTable();
+  if (!leadsTable) return;
+
+  const { data: wonLeads, error: leadsErr } = await client
+    .from(leadsTable)
+    .select("id, name, consumer_name, city, status")
+    .eq("status", "won")
+    .limit(100);
+  if (leadsErr || !wonLeads?.length) return;
+
+  const leadIds = wonLeads.map((l) => String(l.id));
+  const { data: linkedProjects } = await client
+    .from("projects")
+    .select("lead_id, organization_id")
+    .in("lead_id", leadIds);
+
+  const orgId = await resolveDefaultOrgId();
+  const linked = new Map<string, { organization_id: string | null }>();
+  for (const p of linkedProjects ?? []) {
+    if (p.lead_id) linked.set(String(p.lead_id), { organization_id: p.organization_id as string | null });
+  }
+
+  for (const lead of wonLeads) {
+    const id = String(lead.id);
+    const row = linked.get(id);
+    const needsCreate = !row;
+    const needsOrgRepair = Boolean(orgId && row && !row.organization_id);
+    if (!needsCreate && !needsOrgRepair) continue;
+    await ensureProjectForWonLead(id, {
+      name: String(lead.name ?? ""),
+      consumer_name:
+        lead.consumer_name != null ? String(lead.consumer_name) : null,
+      city: String(lead.city ?? ""),
+    });
+  }
+}
+
+/** Returns true when lead status is CRM-won (install handoff). */
+export function isWonLeadStatus(status: string | null | undefined): boolean {
+  return normalizeLeadStatus(String(status ?? "")) === "won";
 }
 
 // ---------------------------------------------------------------------------

@@ -6,6 +6,10 @@ import { appendActivityEvent } from "@/lib/followup-store";
 import { LEAD_STATUS_KEYS } from "@/lib/lead-status";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { bumpLeadStatus, supabase, resolveLeadsTable } from "@/lib/supabase";
+import {
+  ensureProjectForWonLead,
+  isWonLeadStatus,
+} from "@/lib/project-store";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +26,15 @@ export async function GET(_req: NextRequest, ctx: RouteCtx) {
     const { data, error } = await db.from(leadsTable).select("*").eq("id", id).maybeSingle();
     if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 400 });
     if (!data) return NextResponse.json({ ok: false, error: "lead_not_found" }, { status: 404 });
-    return NextResponse.json({ ok: true, data: mapCustomerRow(data as Record<string, unknown>) });
+    const mapped = mapCustomerRow(data as Record<string, unknown>);
+    if (isWonLeadStatus(mapped.status)) {
+      await ensureProjectForWonLead(id, {
+        name: mapped.name,
+        consumer_name: mapped.consumer_name,
+        city: mapped.city,
+      });
+    }
+    return NextResponse.json({ ok: true, data: mapped });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Get failed";
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
