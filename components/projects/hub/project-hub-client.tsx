@@ -1,19 +1,46 @@
 "use client";
 
 import { ProjectHubHeader } from "@/components/projects/hub/project-hub-header";
+import { ProjectHubOverviewTab } from "@/components/projects/hub/project-hub-overview-tab";
 import { ProjectHubSkeleton } from "@/components/projects/hub/project-hub-skeleton";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  ProjectHubTabBar,
+  resolveProjectHubTab,
+  type ProjectHubTabId,
+} from "@/components/projects/hub/project-hub-tab-bar";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { WorkspacePage, WorkspaceStaggerItem } from "@/components/workspace";
 import {
   fetchProjectDetail,
   projectDetailKey,
 } from "@/lib/project-api-client";
-import { WorkspacePage, WorkspaceStaggerItem } from "@/components/workspace";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 
 export function ProjectHubClient({ projectId }: { projectId: string }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const detailKey = projectDetailKey(projectId);
+
+  const tabFromUrl = searchParams.get("tab");
+  const resolvedTab = useMemo(() => resolveProjectHubTab(tabFromUrl), [tabFromUrl]);
+  const [activeTab, setActiveTab] = useState<ProjectHubTabId>(resolvedTab);
+
+  useEffect(() => {
+    setActiveTab(resolvedTab);
+  }, [resolvedTab]);
+
+  const handleTabChange = useCallback(
+    (tab: ProjectHubTabId) => {
+      setActiveTab(tab);
+      const qs = tab === "overview" ? "" : `?tab=${tab}`;
+      router.replace(`/projects/${encodeURIComponent(projectId)}${qs}`, { scroll: false });
+    },
+    [projectId, router]
+  );
 
   const { data: project, error, isLoading, mutate } = useSWR(
     detailKey,
@@ -65,16 +92,11 @@ export function ProjectHubClient({ projectId }: { projectId: string }) {
       </WorkspaceStaggerItem>
 
       <WorkspaceStaggerItem>
-        <Card className="page-lite-item border-dashed border-slate-200 dark:border-white/10">
-          <CardContent className="p-5 text-center">
-            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-              Hub tabs and overview content
-            </p>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              Step 2+ — Overview, Survey, Design, Tasks, Timeline, Comments
-            </p>
-          </CardContent>
-        </Card>
+        <ProjectHubTabBar active={activeTab} onChange={handleTabChange} />
+      </WorkspaceStaggerItem>
+
+      <WorkspaceStaggerItem>
+        {activeTab === "overview" ? <ProjectHubOverviewTab project={project} /> : null}
       </WorkspaceStaggerItem>
     </WorkspacePage>
   );

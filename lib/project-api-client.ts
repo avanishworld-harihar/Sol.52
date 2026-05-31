@@ -94,6 +94,13 @@ export interface ProjectListItem {
   actual_completion: string | null;
   assigned_manager_id: string | null;
   assigned_tech_id: string | null;
+  site_address: string | null;
+  roof_type: string | null;
+  system_type: string | null;
+  panel_brand: string | null;
+  inverter_brand: string | null;
+  panel_count: number | null;
+  structure_type: string | null;
   contract_amount_inr: number | null;
   amount_received_inr: number;
   has_subsidy: boolean;
@@ -102,7 +109,9 @@ export interface ProjectListItem {
   lead_phone: string | null;
   lead_city: string | null;
   manager_name: string | null;
+  manager_phone: string | null;
   tech_name: string | null;
+  tech_phone: string | null;
   // Computed
   health: ProjectHealth;
   // Legacy
