@@ -1,0 +1,16 @@
+{
+  "captured_at": "2026-05-31T20:29:35.579Z",
+  "base_url": "http://localhost:3001",
+  "populated_project_id": "48465bce-42fa-4931-bde0-6c7894057d16",
+  "empty_project_id": "746b5c3b-a23c-44fc-8a34-be11d999a128",
+  "comment_count": 4,
+  "pinned_count": 1,
+  "reply_count": 1,
+  "comment_added_logged": true,
+  "files": [
+    "01-comments-empty-desktop.png",
+    "02-comments-populated-desktop.png",
+    "03-after-new-comment.png",
+    "04-comments-mobile.png"
+  ]
+}
