@@ -8,6 +8,7 @@ import { ProjectListFiltersBar } from "@/components/projects/project-list-filter
 import { ProjectListPagination } from "@/components/projects/project-list-pagination";
 import { ProjectListSkeleton } from "@/components/projects/project-list-skeleton";
 import { ProjectListTable } from "@/components/projects/project-list-table";
+import { ProjectOpsDashboard } from "@/components/projects/ops/project-ops-dashboard";
 import { WorkflowLifecycleStrip } from "@/components/workflow-lifecycle-strip";
 import { FloatingLabelInput, FloatingLabelSelect } from "@/components/ui/floating-label-input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,8 +16,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast-center";
 import { useLanguage } from "@/lib/language-context";
 import {
+  fetchProjectDashboardStats,
   fetchProjectList,
   patchProject,
+  PROJECT_DASHBOARD_STATS_KEY,
   type ProjectListItem,
 } from "@/lib/project-api-client";
 import { DASHBOARD_STATS_SWR_KEY } from "@/lib/dashboard-stats-client";
@@ -165,6 +168,12 @@ function ProjectsBoard() {
     { revalidateOnFocus: false, dedupingInterval: 30_000 }
   );
 
+  const { data: opsStats, isLoading: opsStatsLoading } = useSWR(
+    PROJECT_DASHBOARD_STATS_KEY,
+    fetchProjectDashboardStats,
+    { revalidateOnFocus: false, dedupingInterval: 30_000 }
+  );
+
   const listPipeline = useMemo(() => {
     const rows = data ?? [];
     return applyProjectListPipeline(rows, filters);
@@ -244,6 +253,7 @@ function ProjectsBoard() {
     await mutateGlobal(buildProjectListUrl({ view: "hidden" }));
     await mutateGlobal(buildProjectListUrl({ view: "archived" }));
     await mutateGlobal(DASHBOARD_STATS_SWR_KEY, undefined, { revalidate: true });
+    await mutateGlobal(PROJECT_DASHBOARD_STATS_KEY, undefined, { revalidate: true });
   }, [mutateGlobal, mutateList]);
 
   const handlePatch = useCallback(
@@ -373,6 +383,14 @@ function ProjectsBoard() {
             title={t("projects_opsPipelineTitle")}
             subtitle={t("projects_opsPipelineSub")}
             footer={<WorkflowLifecycleStrip surface="projects" />}
+          />
+        </WorkspaceStaggerItem>
+
+        <WorkspaceStaggerItem>
+          <ProjectOpsDashboard
+            stats={opsStats}
+            projects={activeRows}
+            loading={opsStatsLoading}
           />
         </WorkspaceStaggerItem>
 
