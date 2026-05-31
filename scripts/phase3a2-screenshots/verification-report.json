@@ -1,0 +1,71 @@
+{
+  "base": "http://localhost:3002",
+  "checks": [
+    {
+      "endpoint": "/api/projects/list?view=active",
+      "ok": true,
+      "status": 200,
+      "count": 3
+    },
+    {
+      "endpoint": "/api/projects/list?view=hidden",
+      "ok": true,
+      "status": 200,
+      "count": 0
+    },
+    {
+      "endpoint": "/api/projects/list?view=archived",
+      "ok": true,
+      "status": 200,
+      "count": 0
+    },
+    {
+      "endpoint": "/api/projects/dashboard-stats",
+      "ok": true,
+      "status": 200,
+      "count": 3
+    },
+    {
+      "seedCount": 3
+    },
+    {
+      "searchPatel": true
+    },
+    {
+      "stageFilter": true
+    },
+    {
+      "healthFilter": false
+    },
+    {
+      "archive": true,
+      "status": 200
+    },
+    {
+      "archivedVisible": true
+    },
+    {
+      "archiveTabPopulated": false
+    },
+    {
+      "pagination": "skipped (<21 projects)"
+    },
+    {
+      "restore": true
+    }
+  ],
+  "errors": [],
+  "screenshots": [
+    "E:\\solar project\\Sol.52\\scripts\\phase3a2-screenshots\\06-loading-state.png",
+    "E:\\solar project\\Sol.52\\scripts\\phase3a2-screenshots\\01-desktop-populated.png",
+    "E:\\solar project\\Sol.52\\scripts\\phase3a2-screenshots\\03-filters-visible.png",
+    "E:\\solar project\\Sol.52\\scripts\\phase3a2-screenshots\\04-table-populated.png",
+    "E:\\solar project\\Sol.52\\scripts\\phase3a2-screenshots\\07-stage-filter-design.png",
+    "E:\\solar project\\Sol.52\\scripts\\phase3a2-screenshots\\08-health-filter-delayed.png",
+    "E:\\solar project\\Sol.52\\scripts\\phase3a2-screenshots\\09-archive-tab-populated.png",
+    "E:\\solar project\\Sol.52\\scripts\\phase3a2-screenshots\\02-mobile-populated.png",
+    "E:\\solar project\\Sol.52\\scripts\\phase3a2-screenshots\\05-empty-filtered.png",
+    "E:\\solar project\\Sol.52\\scripts\\phase3a2-screenshots\\05-empty-archived-tab.png"
+  ],
+  "consoleErrors": []
+}
