@@ -1,0 +1,27 @@
+{
+  "captured_at": "2026-05-31T20:00:02.057Z",
+  "base_url": "http://localhost:3001",
+  "project_id": "ed95a541-fd01-4098-8400-84ef7d250340",
+  "events_before_refresh": 5,
+  "top_event_after_refresh": "Task completed: Submit net metering application to DISCOM",
+  "top_event_type": "task_completed",
+  "task_completion_triggered": true,
+  "refresh_demonstrated": true,
+  "event_types_visible": [
+    "stage_changed",
+    "task_completed",
+    "nm_substatus_changed",
+    "project_created"
+  ],
+  "cache_keys_revalidated_on_mutations": [
+    "/api/projects/ed95a541-fd01-4098-8400-84ef7d250340/activity?*",
+    "/api/projects/ed95a541-fd01-4098-8400-84ef7d250340",
+    "/api/projects/list?*",
+    "/api/projects/dashboard-stats"
+  ],
+  "files": [
+    "01-timeline-initial.png",
+    "02-after-task-refresh.png",
+    "03-timeline-mobile.png"
+  ]
+}
