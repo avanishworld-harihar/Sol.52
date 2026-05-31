@@ -1,0 +1,23 @@
+{
+  "captured_at": "2026-05-31T20:16:26.424Z",
+  "base_url": "http://localhost:3001",
+  "populated_project_id": "56f74ace-b22c-42c3-93b0-512abf2a608c",
+  "empty_project_id": "abbc7d37-4c0f-4c4e-bd56-a2794d42ca9f",
+  "design_versions": 2,
+  "current_version": "V2 – Revision after survey",
+  "has_panel_info": true,
+  "has_inverter_info": true,
+  "has_string_layout": true,
+  "cache_keys": [
+    "/api/projects/{id}/designs",
+    "/api/projects/{id}",
+    "/api/projects/{id}/activity",
+    "/api/projects/list",
+    "/api/projects/dashboard-stats"
+  ],
+  "files": [
+    "01-design-populated-desktop.png",
+    "02-design-empty-desktop.png",
+    "03-design-populated-mobile.png"
+  ]
+}
