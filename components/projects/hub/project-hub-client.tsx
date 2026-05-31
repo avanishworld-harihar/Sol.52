@@ -3,6 +3,7 @@
 import { ProjectHubAdvanceSheet } from "@/components/projects/hub/project-hub-advance-sheet";
 import { ProjectHubHeader } from "@/components/projects/hub/project-hub-header";
 import { ProjectHubOverviewTab } from "@/components/projects/hub/project-hub-overview-tab";
+import { ProjectHubCommentsTab } from "@/components/projects/hub/project-hub-comments-tab";
 import { ProjectHubDesignTab } from "@/components/projects/hub/project-hub-design-tab";
 import { ProjectHubSurveyTab } from "@/components/projects/hub/project-hub-survey-tab";
 import { ProjectHubTasksTab } from "@/components/projects/hub/project-hub-tasks-tab";
@@ -196,6 +197,7 @@ export function ProjectHubClient({ projectId }: { projectId: string }) {
         <ProjectHubDesignTab project={project} enabled={activeTab === "design"} />
         <ProjectHubTasksTab project={project} enabled={activeTab === "tasks"} />
         <ProjectHubTimelineTab project={project} enabled={activeTab === "timeline"} />
+        <ProjectHubCommentsTab project={project} enabled={activeTab === "comments"} />
       </WorkspaceStaggerItem>
 
       <ProjectHubAdvanceSheet

@@ -6,6 +6,7 @@ import {
   PROJECT_DASHBOARD_STATS_KEY,
   projectActivityKey,
   projectDetailKey,
+  projectCommentsKey,
   projectDesignsKey,
   projectSurveyKey,
   projectTasksKey,
@@ -17,6 +18,7 @@ export async function revalidateProjectHubCaches(projectId: string): Promise<voi
     mutate(projectDetailKey(projectId)),
     mutate(projectSurveyKey(projectId)),
     mutate(projectDesignsKey(projectId)),
+    mutate(projectCommentsKey(projectId)),
     mutate(projectActivityKey(projectId)),
     mutate(
       (key) =>

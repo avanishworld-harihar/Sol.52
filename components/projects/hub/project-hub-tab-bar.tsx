@@ -22,7 +22,14 @@ export const PROJECT_HUB_TAB_IDS = [
 
 export type ProjectHubTabId = (typeof PROJECT_HUB_TAB_IDS)[number];
 
-const ENABLED_TABS = new Set<ProjectHubTabId>(["overview", "survey", "design", "tasks", "timeline"]);
+const ENABLED_TABS = new Set<ProjectHubTabId>([
+  "overview",
+  "survey",
+  "design",
+  "tasks",
+  "timeline",
+  "comments",
+]);
 
 const TAB_CONFIG: {
   id: ProjectHubTabId;
