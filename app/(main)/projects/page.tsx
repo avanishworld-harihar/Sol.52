@@ -1,19 +1,35 @@
 "use client";
 
 import { Send } from "lucide-react";
-import type { GlassProjectSummary, ProjectCardPatch } from "@/components/glass-project-card";
-import { ProjectKanbanBoard } from "@/components/project-kanban-board";
-import { ProjectPipelineAccordion } from "@/components/project-pipeline-accordion";
-import { ProjectPipelineList } from "@/components/project-pipeline-list";
+import type { GlassProjectSummary } from "@/components/glass-project-card";
+import { ProjectListCard, type ProjectListPatch } from "@/components/projects/project-list-card";
+import { ProjectListEmpty } from "@/components/projects/project-list-empty";
+import { ProjectListFiltersBar } from "@/components/projects/project-list-filters";
+import { ProjectListPagination } from "@/components/projects/project-list-pagination";
+import { ProjectListSkeleton } from "@/components/projects/project-list-skeleton";
+import { ProjectListTable } from "@/components/projects/project-list-table";
 import { WorkflowLifecycleStrip } from "@/components/workflow-lifecycle-strip";
 import { FloatingLabelInput, FloatingLabelSelect } from "@/components/ui/floating-label-input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast-center";
 import { useLanguage } from "@/lib/language-context";
-import { formatPipelineDisplayName, type PipelineProjectRow } from "@/lib/supabase";
+import {
+  fetchProjectList,
+  patchProject,
+  type ProjectListItem,
+} from "@/lib/project-api-client";
 import { DASHBOARD_STATS_SWR_KEY } from "@/lib/dashboard-stats-client";
-import { OPS_STAGE_ORDER } from "@/lib/project-pipeline-stage";
+import {
+  applyProjectListPipeline,
+  buildProjectListUrl,
+  DEFAULT_LIST_FILTERS,
+  type ProjectListFilters,
+} from "@/lib/project-list-utils";
+import type { ProjectHealth } from "@/lib/project-health";
+import type { ProjectStageId } from "@/lib/project-stages";
+import { isProjectStageId } from "@/lib/project-stages";
+import { formatPipelineDisplayName } from "@/lib/supabase";
 import { WorkspacePage, WorkspacePageHero, WorkspaceStaggerItem } from "@/components/workspace";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -22,8 +38,6 @@ import type { FormEvent } from "react";
 import { Suspense, useCallback, useMemo, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 
-const PIPELINE_SWR_KEY = "/api/pipeline";
-
 type ProjectsView = "active" | "hidden" | "archived";
 
 const TAB_DEFS: { id: ProjectsView; labelKey: string; fallback: string; description: string }[] = [
@@ -31,61 +45,65 @@ const TAB_DEFS: { id: ProjectsView; labelKey: string; fallback: string; descript
     id: "active",
     labelKey: "projects_tabActive",
     fallback: "Active",
-    description: "On the dashboard right now."
+    description: "On the dashboard right now.",
   },
   {
     id: "hidden",
     labelKey: "projects_tabHidden",
     fallback: "Hidden from dashboard",
-    description: "Decluttered from the home dashboard, still in the pipeline."
+    description: "Decluttered from the home dashboard, still in the pipeline.",
   },
   {
     id: "archived",
     labelKey: "projects_tabArchived",
     fallback: "Archived",
-    description: "End-of-life projects. Restore anytime."
-  }
+    description: "End-of-life projects. Restore anytime.",
+  },
 ];
 
-async function fetchPipeline(url: string): Promise<PipelineProjectRow[]> {
-  try {
-    const r = await fetch(url, { cache: "no-store" });
-    const j = (await r.json()) as { ok?: boolean; data?: unknown };
-    if (!j.ok || !Array.isArray(j.data)) return [];
-    return j.data as PipelineProjectRow[];
-  } catch {
-    return [];
-  }
+function resolveView(raw: string | null): ProjectsView {
+  if (raw === "hidden" || raw === "archived") return raw;
+  return "active";
 }
 
-function mapPipelineStatus(s: string): GlassProjectSummary["status"] {
-  const x = s.toLowerCase();
+function mapPipelineStatus(s: string | null): GlassProjectSummary["status"] {
+  const x = (s ?? "").toLowerCase();
   if (x.includes("done") || x.includes("complete") || x.includes("commission")) return "done";
   if (x.includes("active") || x.includes("install") || x.includes("progress")) return "active";
   return "pending";
 }
 
-function rowToGlass(p: PipelineProjectRow): GlassProjectSummary {
-  return {
-    id: p.id,
-    name: formatPipelineDisplayName(p.official_name, p.lead_name),
-    detail: p.detail?.trim() || "—",
-    capacityKw: p.capacity_kw?.trim() || "—",
-    status: mapPipelineStatus(p.status),
-    installProgress: Math.min(100, Math.max(0, p.install_progress)),
-    nextAction: p.next_action?.trim() || null,
-    updatedAt: p.updated_at,
-    dashboardVisible: p.dashboard_visible !== false,
-    archivedAt: p.archived_at,
-    officialName: p.official_name,
-    leadId: p.lead_id,
-    leadName: p.lead_name
-  };
-}
+function readFiltersFromParams(params: URLSearchParams): ProjectListFilters {
+  const stageRaw = params.get("stage");
+  const healthRaw = params.get("health");
+  const sortRaw = params.get("sort");
+  const dirRaw = params.get("dir");
+  const pageRaw = Number(params.get("page") ?? "1");
 
-function resolveView(raw: string | null): ProjectsView {
-  if (raw === "hidden" || raw === "archived") return raw;
-  return "active";
+  const validSorts = new Set([
+    "updated_at",
+    "name",
+    "value",
+    "stage",
+    "health",
+    "target_completion",
+  ]);
+
+  return {
+    ...DEFAULT_LIST_FILTERS,
+    search: params.get("q") ?? "",
+    stage: stageRaw && isProjectStageId(stageRaw) ? stageRaw : "all",
+    health:
+      healthRaw === "on_track" ||
+      healthRaw === "attention_needed" ||
+      healthRaw === "delayed" ||
+      healthRaw === "blocked"
+        ? (healthRaw as ProjectHealth)
+        : "all",
+    sort: validSorts.has(sortRaw ?? "") ? (sortRaw as ProjectListFilters["sort"]) : "updated_at",
+    sortDir: dirRaw === "asc" ? "asc" : "desc",
+    page: Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1,
+  };
 }
 
 type ProjectEditStatus = GlassProjectSummary["status"];
@@ -96,57 +114,105 @@ function ProjectsBoard() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const view = resolveView(searchParams.get("view"));
+  const filters = useMemo(() => readFiltersFromParams(searchParams), [searchParams]);
   const { mutate: mutateGlobal } = useSWRConfig();
+
   const [projectModal, setProjectModal] = useState<"none" | "edit">("none");
-  const [editProjectId, setEditProjectId] = useState<string | null>(null);
-  const [deleteProjectTarget, setDeleteProjectTarget] = useState<GlassProjectSummary | null>(null);
+  const [editProject, setEditProject] = useState<ProjectListItem | null>(null);
+  const [deleteProjectTarget, setDeleteProjectTarget] = useState<ProjectListItem | null>(null);
   const [projForm, setProjForm] = useState({
     official_name: "",
     detail: "",
     capacity_kw: "",
     next_action: "",
     install_progress: "0",
-    status: "pending" as ProjectEditStatus
+    status: "pending" as ProjectEditStatus,
   });
   const [projError, setProjError] = useState("");
 
   const modalFloatingClass =
     "h-12 rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 focus:border-teal-500 focus:ring-teal-200/70";
 
-  const { data, error, isLoading, mutate: mutatePipeline } = useSWR(PIPELINE_SWR_KEY, fetchPipeline, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: true,
-    dedupingInterval: 5_000,
-    keepPreviousData: true
+  const listUrl = buildProjectListUrl({
+    view,
+    stage: filters.stage !== "all" ? filters.stage : null,
   });
 
-  /**
-   * One GET → three views. Filtering client-side keeps the SWR cache small,
-   * lets us count tab badges instantly, and avoids re-fetching when the
-   * operator flips between Active and Hidden.
-   */
-  const partitions = useMemo(() => {
-    const rows = data ?? [];
-    return {
-      active: rows.filter((r) => r.dashboard_visible !== false && !r.archived_at),
-      hidden: rows.filter((r) => r.dashboard_visible === false && !r.archived_at),
-      archived: rows.filter((r) => Boolean(r.archived_at))
-    };
-  }, [data]);
+  const { data, error, isLoading, mutate: mutateList } = useSWR(
+    listUrl,
+    fetchProjectList,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: true,
+      dedupingInterval: 5_000,
+      keepPreviousData: true,
+    }
+  );
 
-  const enriched = useMemo(() => partitions[view].map((row) => ({ row, glass: rowToGlass(row) })), [partitions, view]);
+  const { data: activeRows } = useSWR(
+    buildProjectListUrl({ view: "active" }),
+    fetchProjectList,
+    { revalidateOnFocus: false, dedupingInterval: 30_000 }
+  );
+  const { data: hiddenRows } = useSWR(
+    buildProjectListUrl({ view: "hidden" }),
+    fetchProjectList,
+    { revalidateOnFocus: false, dedupingInterval: 30_000 }
+  );
+  const { data: archivedRows } = useSWR(
+    buildProjectListUrl({ view: "archived" }),
+    fetchProjectList,
+    { revalidateOnFocus: false, dedupingInterval: 30_000 }
+  );
+
+  const listPipeline = useMemo(() => {
+    const rows = data ?? [];
+    return applyProjectListPipeline(rows, filters);
+  }, [data, filters]);
+
+  const updateFilters = useCallback(
+    (patch: Partial<ProjectListFilters>) => {
+      const next = { ...filters, ...patch };
+      const params = new URLSearchParams(searchParams.toString());
+      if (view === "active") params.delete("view");
+      else params.set("view", view);
+
+      if (next.search.trim()) params.set("q", next.search.trim());
+      else params.delete("q");
+
+      if (next.stage !== "all") params.set("stage", next.stage);
+      else params.delete("stage");
+
+      if (next.health !== "all") params.set("health", next.health);
+      else params.delete("health");
+
+      if (next.sort !== "updated_at") params.set("sort", next.sort);
+      else params.delete("sort");
+
+      if (next.sortDir !== "desc") params.set("dir", next.sortDir);
+      else params.delete("dir");
+
+      if (next.page > 1) params.set("page", String(next.page));
+      else params.delete("page");
+
+      const qs = params.toString();
+      router.replace(qs ? `/projects?${qs}` : "/projects", { scroll: false });
+    },
+    [filters, router, searchParams, view]
+  );
 
   function setView(next: ProjectsView) {
     const params = new URLSearchParams(searchParams.toString());
     if (next === "active") params.delete("view");
     else params.set("view", next);
+    params.delete("page");
     const qs = params.toString();
     router.replace(qs ? `/projects?${qs}` : "/projects", { scroll: false });
   }
 
   function closeProjectEditModal() {
     setProjectModal("none");
-    setEditProjectId(null);
+    setEditProject(null);
     setProjError("");
     setProjForm({
       official_name: "",
@@ -154,27 +220,79 @@ function ProjectsBoard() {
       capacity_kw: "",
       next_action: "",
       install_progress: "0",
-      status: "pending"
+      status: "pending",
     });
   }
 
-  const openEditProject = useCallback(
-    (project: GlassProjectSummary) => {
-      const row = (data ?? []).find((r) => r.id === project.id);
-      if (!row) return;
-      setProjError("");
-      setEditProjectId(row.id);
-      setProjectModal("edit");
-      setProjForm({
-        official_name: row.official_name?.trim() ?? "",
-        detail: row.detail?.trim() ?? "",
-        capacity_kw: row.capacity_kw?.trim() ?? "",
-        next_action: row.next_action?.trim() ?? "",
-        install_progress: String(row.install_progress ?? 0),
-        status: mapPipelineStatus(row.status)
+  const openEditProject = useCallback((project: ProjectListItem) => {
+    setProjError("");
+    setEditProject(project);
+    setProjectModal("edit");
+    setProjForm({
+      official_name: project.official_name?.trim() ?? "",
+      detail: project.detail?.trim() ?? "",
+      capacity_kw: project.capacity_kw?.trim() ?? "",
+      next_action: project.next_action?.trim() ?? "",
+      install_progress: String(project.install_progress ?? 0),
+      status: mapPipelineStatus(project.status),
+    });
+  }, []);
+
+  const revalidateAllLists = useCallback(async () => {
+    await mutateList();
+    await mutateGlobal(buildProjectListUrl({ view: "active" }));
+    await mutateGlobal(buildProjectListUrl({ view: "hidden" }));
+    await mutateGlobal(buildProjectListUrl({ view: "archived" }));
+    await mutateGlobal(DASHBOARD_STATS_SWR_KEY, undefined, { revalidate: true });
+  }, [mutateGlobal, mutateList]);
+
+  const handlePatch = useCallback(
+    async (id: string, patch: ProjectListPatch) => {
+      const before = data ?? [];
+      const stamp = new Date().toISOString();
+
+      const optimistic = before.filter((row) => {
+        if (row.id !== id) return true;
+        if (patch.dashboard_visible === false && view === "active") return false;
+        if (patch.archived_at === true && view !== "archived") return false;
+        if (patch.archived_at === null && view === "archived") return false;
+        if (patch.dashboard_visible === true && view === "hidden") return false;
+        return true;
       });
+
+      void mutateList(optimistic, { revalidate: false });
+
+      const apiPatch: Parameters<typeof patchProject>[1] = {};
+      if (patch.dashboard_visible !== undefined) {
+        apiPatch.dashboard_visible = patch.dashboard_visible;
+      }
+      if (patch.archived_at === true) {
+        apiPatch.archived_at = stamp;
+      } else if (patch.archived_at !== undefined) {
+        apiPatch.archived_at = patch.archived_at;
+      }
+
+      const result = await patchProject(id, apiPatch);
+      if (!result.ok) {
+        void mutateList(before, { revalidate: false });
+        toast.error("Update failed", result.error ?? "Please try again.");
+        return;
+      }
+
+      await revalidateAllLists();
+
+      if (patch.dashboard_visible === false) {
+        toast.success("Hidden from dashboard", "Find it under Hidden tab anytime.");
+      } else if (patch.dashboard_visible === true) {
+        toast.success("Restored to dashboard", "Project is back on the home view.");
+      }
+      if (patch.archived_at === true) {
+        toast.success("Archived", "Project moved to Archived. Restore anytime.");
+      } else if (patch.archived_at === null) {
+        toast.success("Restored", "Project is back in the active pipeline.");
+      }
     },
-    [data]
+    [data, mutateList, revalidateAllLists, toast, view]
   );
 
   async function confirmDeleteProject() {
@@ -182,24 +300,26 @@ function ProjectsBoard() {
     const id = deleteProjectTarget.id;
     const prev = data ?? [];
     setDeleteProjectTarget(null);
-    void mutatePipeline((p) => (p ?? []).filter((r) => r.id !== id), { revalidate: false });
+    void mutateList(prev.filter((r) => r.id !== id), { revalidate: false });
     try {
       const r = await fetch(`/api/pipeline/${id}`, { method: "DELETE" });
       const j = (await r.json()) as { ok?: boolean; error?: string };
       if (!j.ok) throw new Error(j.error || "Delete failed");
-      await mutatePipeline();
-      await mutateGlobal(DASHBOARD_STATS_SWR_KEY, undefined, { revalidate: true });
+      await revalidateAllLists();
       toast.success(t("projects_projectDeleted"), t("projects_projectDeletedSub"));
     } catch (e) {
-      await mutatePipeline(prev, { revalidate: false });
-      toast.error(t("projects_projectDeleteFailed"), e instanceof Error ? e.message : "Please try again.");
+      void mutateList(prev, { revalidate: false });
+      toast.error(
+        t("projects_projectDeleteFailed"),
+        e instanceof Error ? e.message : "Please try again."
+      );
     }
   }
 
   function onSubmitProjectEdit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setProjError("");
-    if (!editProjectId) return;
+    if (!editProject) return;
     const progress = Number(projForm.install_progress);
     if (Number.isNaN(progress) || progress < 0 || progress > 100) {
       setProjError(t("customers_fillRequired"));
@@ -207,7 +327,7 @@ function ProjectsBoard() {
     }
     void (async () => {
       try {
-        const r = await fetch(`/api/pipeline/${editProjectId}`, {
+        const r = await fetch(`/api/pipeline/${editProject.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -216,90 +336,32 @@ function ProjectsBoard() {
             capacity_kw: projForm.capacity_kw.trim(),
             next_action: projForm.next_action.trim() || null,
             install_progress: progress,
-            status: projForm.status
-          })
+            status: projForm.status,
+          }),
         });
         const j = (await r.json()) as { ok?: boolean; error?: string };
         if (!j.ok) throw new Error(j.error || "Could not update project");
-        await mutatePipeline();
-        await mutateGlobal(DASHBOARD_STATS_SWR_KEY, undefined, { revalidate: true });
+        await revalidateAllLists();
         closeProjectEditModal();
         toast.success(t("projects_projectUpdated"), t("projects_projectUpdatedSub"));
       } catch (e) {
-        toast.error(t("projects_projectUpdateFailed"), e instanceof Error ? e.message : "Please try again.");
+        toast.error(
+          t("projects_projectUpdateFailed"),
+          e instanceof Error ? e.message : "Please try again."
+        );
       }
     })();
   }
 
-  const handlePatch = useCallback(
-    async (id: string, patch: ProjectCardPatch) => {
-      const before = data ?? [];
-      const stamp = new Date().toISOString();
-      /**
-       * Optimistic update: flip the row in the SWR cache instantly so the card
-       * jumps to the right tab without a round-trip wait. Roll back on error.
-       */
-      const optimistic: PipelineProjectRow[] = before.map((row) => {
-        if (row.id !== id) return row;
-        return {
-          ...row,
-          dashboard_visible:
-            patch.dashboard_visible !== undefined ? patch.dashboard_visible : row.dashboard_visible,
-          archived_at:
-            patch.archived_at === true
-              ? stamp
-              : patch.archived_at !== undefined
-                ? patch.archived_at
-                : row.archived_at,
-          status: patch.status ?? row.status,
-          next_action:
-            patch.next_action !== undefined ? patch.next_action : row.next_action,
-          install_progress:
-            patch.install_progress !== undefined ? patch.install_progress : row.install_progress,
-          updated_at: stamp
-        };
-      });
-      void mutatePipeline(optimistic, { revalidate: false });
-      try {
-        const r = await fetch(`/api/pipeline/${id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(patch)
-        });
-        const j = (await r.json()) as { ok?: boolean; error?: string };
-        if (!j.ok) throw new Error(j.error || "Could not update project");
-        await mutatePipeline();
-        await mutateGlobal(DASHBOARD_STATS_SWR_KEY, undefined, { revalidate: true });
-        if (patch.dashboard_visible === false) {
-          toast.success("Hidden from dashboard", "Find it under Hidden tab anytime.");
-        } else if (patch.dashboard_visible === true) {
-          toast.success("Restored to dashboard", "Project is back on the home view.");
-        }
-        if (patch.archived_at === true) {
-          toast.success("Archived", "Project moved to Archived. Restore anytime.");
-        } else if (patch.archived_at === null) {
-          toast.success("Restored", "Project is back in the active pipeline.");
-        }
-      } catch (e) {
-        void mutatePipeline(before, { revalidate: false });
-        toast.error("Update failed", e instanceof Error ? e.message : "Please try again.");
-      }
-    },
-    [data, mutateGlobal, mutatePipeline, toast]
-  );
-
   const counts: Record<ProjectsView, number> = {
-    active: partitions.active.length,
-    hidden: partitions.hidden.length,
-    archived: partitions.archived.length
+    active: activeRows?.length ?? 0,
+    hidden: hiddenRows?.length ?? 0,
+    archived: archivedRows?.length ?? 0,
   };
 
   const activeTabDef = TAB_DEFS.find((tab) => tab.id === view) ?? TAB_DEFS[0];
-
-  const editingPipelineRow = useMemo(() => {
-    if (projectModal !== "edit" || !editProjectId) return null;
-    return (data ?? []).find((r) => r.id === editProjectId) ?? null;
-  }, [projectModal, editProjectId, data]);
+  const showEmpty = !isLoading && !error && listPipeline.items.length === 0;
+  const hasRawData = (data?.length ?? 0) > 0;
 
   return (
     <>
@@ -315,120 +377,128 @@ function ProjectsBoard() {
         </WorkspaceStaggerItem>
 
         <WorkspaceStaggerItem>
-        <div
-          role="tablist"
-          aria-label="Projects view"
-          className="workspace-filter-rail"
-        >
-          {TAB_DEFS.map((tab) => {
-            const isActive = view === tab.id;
-            return (
-              <button
-                key={tab.id}
-                role="tab"
-                aria-selected={isActive}
-                type="button"
-                onClick={() => setView(tab.id)}
-                className={cn(
-                  "workspace-filter-pill flex-1 min-w-fit justify-center py-2 sm:text-sm",
-                  isActive ? "workspace-filter-pill--active" : "workspace-filter-pill--idle"
-                )}
-              >
-                <span>{tab.fallback}</span>
-                <span
+          <div role="tablist" aria-label="Projects view" className="workspace-filter-rail">
+            {TAB_DEFS.map((tab) => {
+              const isActive = view === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  role="tab"
+                  aria-selected={isActive}
+                  type="button"
+                  onClick={() => setView(tab.id)}
                   className={cn(
-                    "inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1.5 text-[10px] tabular-nums",
-                    isActive
-                      ? "bg-white/25 text-white"
-                      : "bg-slate-200/80 text-slate-700 dark:bg-slate-800/80 dark:text-slate-200"
+                    "workspace-filter-pill flex-1 min-w-fit justify-center py-2 sm:text-sm",
+                    isActive ? "workspace-filter-pill--active" : "workspace-filter-pill--idle"
                   )}
                 >
-                  {counts[tab.id]}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+                  <span>{tab.fallback}</span>
+                  <span
+                    className={cn(
+                      "inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1.5 text-[10px] tabular-nums",
+                      isActive
+                        ? "bg-white/25 text-white"
+                        : "bg-slate-200/80 text-slate-700 dark:bg-slate-800/80 dark:text-slate-200"
+                    )}
+                  >
+                    {counts[tab.id]}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </WorkspaceStaggerItem>
 
         <p className="page-lite-item -mt-1 px-1 text-xs font-semibold text-slate-500 dark:text-slate-400 sm:text-sm">
           {view === "active" ? t("projects_opsBoardHint") : activeTabDef.description}
         </p>
 
-        {error && (
-          <Card className="page-lite-item border-amber-200/90 bg-amber-50/90">
-            <CardContent className="p-4 text-sm font-semibold text-amber-950">{t("projects_pipelineLoadErr")}</CardContent>
-          </Card>
-        )}
+        <ProjectListFiltersBar
+          filters={filters}
+          onChange={updateFilters}
+          totalCount={data?.length ?? 0}
+          filteredCount={listPipeline.filtered.length}
+        />
 
-        {!isLoading && !error && enriched.length === 0 && (
-          <Card className="page-lite-item border-slate-200 bg-slate-50/80 dark:border-white/10 dark:bg-white/[0.03]">
-            <CardContent className="p-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
-              {view === "active"
+        {error ? (
+          <Card className="page-lite-item border-red-200/90 bg-red-50/90 dark:border-red-900/50 dark:bg-red-950/30">
+            <CardContent className="p-4">
+              <p className="text-sm font-extrabold text-red-800 dark:text-red-200">
+                Could not load projects
+              </p>
+              <p className="mt-1 text-xs font-medium text-red-700 dark:text-red-300">
+                {error instanceof Error ? error.message : t("projects_pipelineLoadErr")}
+              </p>
+              <button
+                type="button"
+                className="mt-3 rounded-lg bg-red-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-800"
+                onClick={() => void mutateList()}
+              >
+                Retry
+              </button>
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {isLoading && !data ? <ProjectListSkeleton count={6} /> : null}
+
+        {showEmpty && !hasRawData ? (
+          <ProjectListEmpty
+            title={
+              view === "active"
                 ? t("projects_pipelineEmpty")
                 : view === "hidden"
                   ? t("projects_hiddenEmpty")
-                  : t("projects_archivedEmpty")}
-            </CardContent>
-          </Card>
-        )}
+                  : t("projects_archivedEmpty")
+            }
+          />
+        ) : null}
 
-        {isLoading && enriched.length === 0 ? (
-          view === "active" ? (
-            <>
-              <div className="hidden gap-3 overflow-hidden pb-2 lg:flex">
-                {OPS_STAGE_ORDER.map((s) => (
-                  <Skeleton key={s} className="h-[min(70vh,480px)] w-[min(85vw,17.5rem)] shrink-0 rounded-xl" />
-                ))}
-              </div>
-              <div className="space-y-3 lg:hidden">
-                {[1, 2, 3, 4].map((i) => (
-                  <Skeleton key={i} className="h-14 w-full rounded-2xl" />
-                ))}
-              </div>
-            </>
-          ) : (
-            <div className="page-lite-item space-y-2">
-              {[1, 2, 3, 4].map((i) => (
-                <Skeleton key={i} className="h-14 w-full rounded-lg" />
+        {showEmpty && hasRawData ? (
+          <ProjectListEmpty
+            title="No projects match your filters"
+            description="Try clearing search or changing stage / health filters."
+          />
+        ) : null}
+
+        {!isLoading && listPipeline.items.length > 0 ? (
+          <>
+            <ProjectListTable
+              projects={listPipeline.items}
+              view={view}
+              onPatch={handlePatch}
+              onEdit={openEditProject}
+              onDelete={setDeleteProjectTarget}
+            />
+            <div className="page-lite-item space-y-3 lg:hidden">
+              {listPipeline.items.map((project) => (
+                <ProjectListCard
+                  key={project.id}
+                  project={project}
+                  view={view}
+                  onPatch={handlePatch}
+                  onEdit={openEditProject}
+                  onDelete={setDeleteProjectTarget}
+                />
               ))}
             </div>
-          )
-        ) : view === "active" ? (
-          <>
-            <div className="hidden lg:block">
-              <ProjectKanbanBoard
-                items={enriched}
-                onPatch={handlePatch}
-                onEditProject={openEditProject}
-                onDeleteProject={(p) => setDeleteProjectTarget(p)}
-              />
-            </div>
-            <div className="lg:hidden">
-              <ProjectPipelineAccordion
-                items={enriched}
-                onPatch={handlePatch}
-                onEditProject={openEditProject}
-                onDeleteProject={(p) => setDeleteProjectTarget(p)}
-              />
-            </div>
+            <ProjectListPagination
+              page={listPipeline.page}
+              totalPages={listPipeline.totalPages}
+              total={listPipeline.filtered.length}
+              onPageChange={(page) => updateFilters({ page })}
+            />
           </>
-        ) : (
-          <ProjectPipelineList
-            variant={view === "archived" ? "archived" : "hidden"}
-            items={enriched}
-            onPatch={handlePatch}
-            onEditProject={openEditProject}
-            onDeleteProject={(p) => setDeleteProjectTarget(p)}
-          />
-        )}
+        ) : null}
       </WorkspacePage>
 
-      {projectModal === "edit" && editProjectId && (
+      {projectModal === "edit" && editProject ? (
         <div className="fixed inset-0 z-[60] flex items-end justify-center bg-slate-900/50 p-0 backdrop-blur-[12px] sm:items-center sm:p-4">
           <div className="max-h-[92dvh] w-full max-w-md overflow-y-auto rounded-2xl border border-white/55 bg-[hsl(var(--card))/0.96] p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_30px_70px_-26px_rgba(15,23,42,0.48)] sm:max-h-[90vh] sm:pb-4">
             <div className="mb-3 flex items-center justify-between gap-3">
-              <h3 className="text-base font-extrabold text-brand-800 sm:text-lg">{t("projects_editProjectTitle")}</h3>
+              <h3 className="text-base font-extrabold text-brand-800 sm:text-lg">
+                {t("projects_editProjectTitle")}
+              </h3>
               <button
                 type="button"
                 className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-200"
@@ -441,11 +511,11 @@ function ProjectsBoard() {
             <form className="space-y-2.5 sm:space-y-3" onSubmit={onSubmitProjectEdit}>
               <p className="text-[11px] font-semibold text-slate-600">
                 <span className="text-slate-500">{t("projects_leadContactReadonly")}: </span>
-                {editingPipelineRow?.lead_name?.trim() || "—"}
+                {formatPipelineDisplayName(editProject.official_name, editProject.lead_name)}
               </p>
-              {editingPipelineRow?.lead_id ? (
+              {editProject.lead_id ? (
                 <Link
-                  href={`/proposal?leadId=${encodeURIComponent(editingPipelineRow.lead_id)}`}
+                  href={`/proposal?leadId=${encodeURIComponent(editProject.lead_id)}`}
                   className="mb-1 flex min-h-10 items-center justify-center gap-2 rounded-xl border border-teal-300 bg-teal-50 px-3 text-xs font-extrabold text-teal-900 shadow-sm transition hover:bg-teal-100 dark:border-teal-500/45 dark:bg-teal-950/40 dark:text-teal-100"
                   onClick={() => closeProjectEditModal()}
                 >
@@ -515,7 +585,7 @@ function ProjectsBoard() {
             </form>
           </div>
         </div>
-      )}
+      ) : null}
 
       {deleteProjectTarget ? (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/55 p-4 backdrop-blur-sm">
@@ -529,7 +599,12 @@ function ProjectsBoard() {
               {t("projects_deleteConfirmTitle")}
             </h3>
             <p className="mt-2 text-sm font-medium leading-relaxed text-slate-600">
-              {t("projects_deleteConfirmBody", { name: deleteProjectTarget.name })}
+              {t("projects_deleteConfirmBody", {
+                name: formatPipelineDisplayName(
+                  deleteProjectTarget.official_name,
+                  deleteProjectTarget.lead_name
+                ),
+              })}
             </p>
             <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <button
@@ -562,6 +637,7 @@ export default function ProjectsPage() {
           <Card className="page-lite-item border-brand-100 bg-brand-50/30 p-6">
             <Skeleton className="h-5 w-40 rounded-md" />
             <Skeleton className="mt-3 h-3 w-72 rounded-md" />
+            <ProjectListSkeleton count={4} />
           </Card>
         </div>
       }
