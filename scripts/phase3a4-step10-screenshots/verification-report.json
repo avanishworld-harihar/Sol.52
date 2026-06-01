@@ -1,0 +1,168 @@
+{
+  "captured_at": "2026-06-01T04:28:28.595Z",
+  "base_url": "http://localhost:3000",
+  "hub_href": "/projects/3cfd6369-4d9a-45d3-8c90-008de6c62a46",
+  "desktop_tabs": [
+    {
+      "tab": "overview",
+      "overflow": {
+        "body_scroll_width": 1366,
+        "body_client_width": 1366,
+        "doc_scroll_width": 1366,
+        "doc_client_width": 1366,
+        "page_horizontal_overflow": false
+      },
+      "screenshot": "desktop-tab-overview.png"
+    },
+    {
+      "tab": "survey",
+      "overflow": {
+        "body_scroll_width": 1366,
+        "body_client_width": 1366,
+        "doc_scroll_width": 1366,
+        "doc_client_width": 1366,
+        "page_horizontal_overflow": false
+      },
+      "screenshot": "desktop-tab-survey.png"
+    },
+    {
+      "tab": "design",
+      "overflow": {
+        "body_scroll_width": 1366,
+        "body_client_width": 1366,
+        "doc_scroll_width": 1366,
+        "doc_client_width": 1366,
+        "page_horizontal_overflow": false
+      },
+      "screenshot": "desktop-tab-design.png"
+    },
+    {
+      "tab": "tasks",
+      "overflow": {
+        "body_scroll_width": 1366,
+        "body_client_width": 1366,
+        "doc_scroll_width": 1366,
+        "doc_client_width": 1366,
+        "page_horizontal_overflow": false
+      },
+      "screenshot": "desktop-tab-tasks.png"
+    },
+    {
+      "tab": "timeline",
+      "overflow": {
+        "body_scroll_width": 1366,
+        "body_client_width": 1366,
+        "doc_scroll_width": 1366,
+        "doc_client_width": 1366,
+        "page_horizontal_overflow": false
+      },
+      "screenshot": "desktop-tab-timeline.png"
+    },
+    {
+      "tab": "comments",
+      "overflow": {
+        "body_scroll_width": 1366,
+        "body_client_width": 1366,
+        "doc_scroll_width": 1366,
+        "doc_client_width": 1366,
+        "page_horizontal_overflow": false
+      },
+      "screenshot": "desktop-tab-comments.png"
+    }
+  ],
+  "mobile_tabs": [
+    {
+      "tab": "overview",
+      "overflow": {
+        "body_scroll_width": 390,
+        "body_client_width": 390,
+        "doc_scroll_width": 390,
+        "doc_client_width": 390,
+        "page_horizontal_overflow": false
+      },
+      "screenshot": "mobile-tab-overview.png"
+    },
+    {
+      "tab": "survey",
+      "overflow": {
+        "body_scroll_width": 390,
+        "body_client_width": 390,
+        "doc_scroll_width": 390,
+        "doc_client_width": 390,
+        "page_horizontal_overflow": false
+      },
+      "screenshot": "mobile-tab-survey.png"
+    },
+    {
+      "tab": "design",
+      "overflow": {
+        "body_scroll_width": 390,
+        "body_client_width": 390,
+        "doc_scroll_width": 390,
+        "doc_client_width": 390,
+        "page_horizontal_overflow": false
+      },
+      "screenshot": "mobile-tab-design.png"
+    },
+    {
+      "tab": "tasks",
+      "overflow": {
+        "body_scroll_width": 390,
+        "body_client_width": 390,
+        "doc_scroll_width": 390,
+        "doc_client_width": 390,
+        "page_horizontal_overflow": false
+      },
+      "screenshot": "mobile-tab-tasks.png"
+    },
+    {
+      "tab": "timeline",
+      "overflow": {
+        "body_scroll_width": 390,
+        "body_client_width": 390,
+        "doc_scroll_width": 390,
+        "doc_client_width": 390,
+        "page_horizontal_overflow": false
+      },
+      "screenshot": "mobile-tab-timeline.png"
+    },
+    {
+      "tab": "comments",
+      "overflow": {
+        "body_scroll_width": 390,
+        "body_client_width": 390,
+        "doc_scroll_width": 390,
+        "doc_client_width": 390,
+        "page_horizontal_overflow": false
+      },
+      "screenshot": "mobile-tab-comments.png"
+    }
+  ],
+  "issues": [],
+  "api_project_endpoints_seen": 6,
+  "api_project_endpoints_sample": [
+    "http://localhost:3000/api/projects/3cfd6369-4d9a-45d3-8c90-008de6c62a46",
+    "http://localhost:3000/api/projects/3cfd6369-4d9a-45d3-8c90-008de6c62a46/survey",
+    "http://localhost:3000/api/projects/3cfd6369-4d9a-45d3-8c90-008de6c62a46/designs",
+    "http://localhost:3000/api/projects/3cfd6369-4d9a-45d3-8c90-008de6c62a46/tasks",
+    "http://localhost:3000/api/projects/3cfd6369-4d9a-45d3-8c90-008de6c62a46/activity",
+    "http://localhost:3000/api/projects/3cfd6369-4d9a-45d3-8c90-008de6c62a46/comments"
+  ],
+  "production_readiness_note": "No page-level horizontal overflow detected across hub tabs (desktop + mobile).",
+  "files": [
+    "01-hub-overview-desktop.png",
+    "02-hub-advance-area-desktop.png",
+    "desktop-tab-overview.png",
+    "desktop-tab-survey.png",
+    "desktop-tab-design.png",
+    "desktop-tab-tasks.png",
+    "desktop-tab-timeline.png",
+    "desktop-tab-comments.png",
+    "mobile-tab-overview.png",
+    "mobile-tab-survey.png",
+    "mobile-tab-design.png",
+    "mobile-tab-tasks.png",
+    "mobile-tab-timeline.png",
+    "mobile-tab-comments.png"
+  ]
+}
