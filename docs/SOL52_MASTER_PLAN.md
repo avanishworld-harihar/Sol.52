@@ -3,7 +3,37 @@
 **Owner:** Avanish Gupta | Harihar Solar | Satna, MP | 9993322267  
 **Vision:** Solar ka Zomato — App → Platform → Data → Marketplace → Finance
 
-> **Architecture source of truth:** Multi-tenancy, RBAC, marketplace, **separate acquisition-brand repos vs this platform repo**, **API-first ingestion**, org ownership, and phased scaling are defined in **[`MASTERPLAN.md`](../MASTERPLAN.md)** at the repo root. **Platform vs acquisition branding** (Powered by SOL.52, Intelligence Engine, proposal credits, shared APIs) is defined in **[`ACQUISITION_BRANDING_ARCHITECTURE.md`](ACQUISITION_BRANDING_ARCHITECTURE.md)**. Update those files when platform or permission model changes; keep this document for product narrative, brand, and screen-level history.
+> **Architecture source of truth:** Multi-tenancy, RBAC, marketplace, **separate acquisition-brand repos vs this platform repo**, **API-first ingestion**, org ownership, and phased scaling are defined in **[`MASTERPLAN.md`](../MASTERPLAN.md)** at the repo root. **Platform vs acquisition branding** (Powered by SOL.52, Intelligence Engine, proposal credits, shared APIs) is defined in **[`ACQUISITION_BRANDING_ARCHITECTURE.md`](ACQUISITION_BRANDING_ARCHITECTURE.md)**. **Product architecture principles** (mobile/desktop, Proposal Workspace, BOM, Design Studio) are defined in **§ Product Architecture Principles (Source of Truth)** below — **reference that section before future development decisions**. Update those files when platform or permission model changes; keep this document for product narrative, brand, and screen-level history.
+
+---
+
+## Product Architecture Principles (Source of Truth)
+
+> **Architecture Source of Truth – Do Not Remove**  
+> This section is permanent. Reference it before scoping or building any feature that touches proposals, BOMs, CRM, Project Hub, surveys, or Design Studio.
+
+**Core Principles:**
+
+1. Mobile-first business platform.
+2. Proposal Builder must work on both mobile and desktop.
+3. BOM Builder must work on both mobile and desktop.
+4. CRM functionality must work on both mobile and desktop.
+5. Project Hub must work on both mobile and desktop.
+6. Survey workflows must work on both mobile and desktop.
+7. Mobile users should be able to create, edit, generate, and send proposals.
+8. Mobile users should be able to configure and edit BOMs.
+9. Desktop provides all mobile capabilities plus advanced engineering tools.
+10. Design Studio is desktop-first.
+11. Future Design Studio includes:
+    - 2D roof layout
+    - 3D roof modeling
+    - Panel placement
+    - Shadow analysis
+    - Engineering visualization
+12. Mobile may view design outputs, screenshots, and generated layouts, but heavy design editing is optimized for desktop.
+13. Proposal Workspace and Design Studio must share the same project and BOM data model.
+14. Design Studio is an extension of the proposal workflow, not a separate product.
+15. No future feature should break mobile proposal creation or mobile BOM editing.
 
 ---
 

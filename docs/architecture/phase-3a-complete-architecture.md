@@ -308,6 +308,8 @@ Documented placeholders — **not implemented** in 3A-4:
 | **User name resolution** | Display names for assignees/authors | Truncated UUID display |
 | **Kanban view** | Board layout | Out of scope |
 
+**Cross-cutting (all future phases):** [Proposal Workspace & BOM — mobile/desktop architecture](./proposal-workspace-mobile-desktop.md) — proposal creation, BOM, pricing, PDF/share, and design snapshots must work on **mobile and desktop**; Design Studio is a desktop extension of the same workspace, not a separate product.
+
 ---
 
 ## 10. Verification & quality

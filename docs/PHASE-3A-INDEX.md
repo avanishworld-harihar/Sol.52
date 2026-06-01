@@ -29,6 +29,7 @@
 
 - [SOL52 Master Plan](./SOL52_MASTER_PLAN.md) — Product narrative
 - [MASTERPLAN.md](../MASTERPLAN.md) — Platform tenancy & RBAC source of truth
+- [Proposal Workspace — Mobile & Desktop](./architecture/proposal-workspace-mobile-desktop.md) — **Future requirement:** proposal/BOM parity + Design Studio extension model
 
 ---
 

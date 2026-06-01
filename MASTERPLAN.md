@@ -4,7 +4,7 @@
 **Audience:** Core team, future implementations, and AI-assisted development (keep this file aligned with reality as the product evolves).  
 **Product narrative & brand:** See `docs/SOL52_MASTER_PLAN.md` for historical product story and screen-level notes; **acquisition vs platform presentation** is defined in **`docs/ACQUISITION_BRANDING_ARCHITECTURE.md`**. **This file** owns **technical architecture**, **tenancy**, **permissions**, **ecosystem vs acquisition-brand boundaries**, and **roadmap sequencing**.
 
-**Rule:** Before large features (marketplace, auth hardening, new modules), update this document with the decision and the phase it belongs to.
+**Rule:** Before large features (marketplace, auth hardening, new modules), update this document with the decision and the phase it belongs to. **Product architecture principles** (mobile/desktop parity, Proposal Workspace, BOM, Design Studio) are defined in **`docs/SOL52_MASTER_PLAN.md` → § Product Architecture Principles (Source of Truth)** — reference that section before proposal, BOM, hub, or design work.
 
 ---
 
