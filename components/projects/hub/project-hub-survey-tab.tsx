@@ -231,7 +231,7 @@ function SurveyStatusStrip({
 function SurveyEmptyState({ project }: { project: ProjectListItem }) {
   return (
     <Card className="page-lite-item border-dashed border-slate-200 dark:border-white/10">
-      <CardContent className="px-3 py-5 text-center max-sm:py-4 sm:px-4 sm:py-8">
+      <CardContent className="px-3 py-3 text-center max-sm:py-2.5 sm:px-4 sm:py-8">
         <Ruler className="mx-auto h-10 w-10 text-slate-300 dark:text-slate-600" aria-hidden />
         <p className="mt-3 text-sm font-semibold text-slate-700 dark:text-slate-200">
           No site survey on file

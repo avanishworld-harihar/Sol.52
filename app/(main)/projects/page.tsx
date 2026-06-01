@@ -419,7 +419,7 @@ function ProjectsBoard() {
                   type="button"
                   onClick={() => setView(tab.id)}
                   className={cn(
-                    "workspace-filter-pill min-w-0 flex-1 justify-center py-1.5 max-sm:flex-col max-sm:gap-0.5 max-sm:px-1 max-sm:py-1.5 max-sm:text-[9px] sm:min-w-fit sm:flex-row sm:gap-1.5 sm:py-2 sm:text-sm",
+                    "workspace-filter-pill min-w-0 flex-1 justify-center max-sm:flex-col max-sm:gap-0 max-sm:px-0.5 max-sm:py-1 max-sm:text-[8px] sm:min-w-fit sm:flex-row sm:gap-1.5 sm:py-2 sm:text-sm",
                     isActive ? "workspace-filter-pill--active" : "workspace-filter-pill--idle"
                   )}
                 >
@@ -502,7 +502,7 @@ function ProjectsBoard() {
               onEdit={openEditProject}
               onDelete={setDeleteProjectTarget}
             />
-            <div className="page-lite-item space-y-2 max-sm:space-y-1.5 lg:hidden sm:space-y-3">
+            <div className="page-lite-item space-y-1.5 max-sm:space-y-1 lg:hidden sm:space-y-3">
               {listPipeline.items.map((project) => (
                 <ProjectListCard
                   key={project.id}

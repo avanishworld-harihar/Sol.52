@@ -288,8 +288,8 @@
     }
 
     .workspace-filter-rail--compact-mobile .workspace-filter-pill {
-      min-height: 2.75rem;
-      letter-spacing: 0.04em;
+      min-height: 2.25rem;
+      letter-spacing: 0.03em;
     }
   }
 

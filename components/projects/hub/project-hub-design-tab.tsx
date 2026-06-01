@@ -216,9 +216,9 @@ function DesignEmptyState({ project }: { project: ProjectListItem }) {
 
   return (
     <Card className="page-lite-item border-dashed border-slate-200 dark:border-white/10">
-      <CardContent className="px-3 py-5 text-center max-sm:py-4 sm:px-4 sm:py-8">
-        <PenTool className="mx-auto h-7 w-7 text-slate-300 dark:text-slate-600 sm:h-9 sm:w-9" aria-hidden />
-        <p className="mt-2 text-sm font-semibold text-slate-700 dark:text-slate-200 sm:mt-3">
+      <CardContent className="px-3 py-3 text-center max-sm:py-2.5 sm:px-4 sm:py-8">
+        <PenTool className="mx-auto h-5 w-5 text-slate-300 dark:text-slate-600 sm:h-9 sm:w-9" aria-hidden />
+        <p className="mt-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 sm:mt-3 sm:text-sm">
           No design version saved
         </p>
         <p className="mx-auto mt-1 max-w-md text-[11px] leading-snug text-slate-500 dark:text-slate-400 sm:text-xs sm:leading-relaxed">

@@ -456,7 +456,7 @@ export function ProjectHubCommentsTab({
 
       {threads.length === 0 ? (
         <Card className="page-lite-item border-dashed border-slate-200 dark:border-white/10">
-          <CardContent className="px-4 py-10 text-center">
+          <CardContent className="px-3 py-3 text-center max-sm:py-2.5 sm:px-4 sm:py-8">
             <MessageSquare
               className="mx-auto h-10 w-10 text-slate-300 dark:text-slate-600"
               aria-hidden

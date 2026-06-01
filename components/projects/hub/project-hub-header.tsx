@@ -16,7 +16,7 @@ import {
   type ProjectStageStatus,
 } from "@/lib/project-stages";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, ChevronRight, MoreHorizontal, User } from "lucide-react";
+import { ArrowLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -46,61 +46,69 @@ export function ProjectHubHeader({
       ? NM_SUBSTATUS_LABELS[project.nm_substatus]
       : null;
 
+  const teamLine = `Mgr ${project.manager_name?.trim() || "—"} · Tech ${project.tech_name?.trim() || "—"}`;
+
   return (
     <header
       className={cn(
-        "workspace-page-hero workspace-glass workspace-page-hero--projects overflow-hidden p-3 max-sm:p-3 sm:p-6 md:p-7",
+        "workspace-page-hero workspace-glass workspace-page-hero--projects overflow-hidden",
+        "max-sm:p-2 sm:p-6 md:p-7",
         className
       )}
     >
-      <div className="relative z-[1] space-y-2 max-sm:space-y-2 sm:space-y-4">
-        <div className="flex flex-col gap-2 max-sm:gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-          <div className="min-w-0 space-y-1 max-sm:space-y-0.5 sm:space-y-2">
+      <div className="relative z-[1] space-y-1.5 max-sm:space-y-1 sm:space-y-4">
+        <div className="flex items-start gap-2 max-sm:gap-1.5 sm:gap-3">
+          <div className="min-w-0 flex-1">
             <Link
               href="/projects"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-teal-800 dark:text-slate-400 dark:hover:text-teal-300"
+              className="inline-flex min-h-[28px] items-center gap-1 text-[11px] font-semibold text-slate-600 hover:text-teal-800 dark:text-slate-400 dark:hover:text-teal-300 sm:text-xs"
             >
-              <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
-              Projects
+              <ArrowLeft className="h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5" aria-hidden />
+              <span className="max-sm:sr-only sm:not-sr-only">Projects</span>
             </Link>
-            <div>
-              <p className="ws-type-eyebrow workspace-type-eyebrow max-sm:text-[10px] max-sm:tracking-[0.14em]">
-                Project Hub
-              </p>
-              <h1 className="ws-type-greeting workspace-type-greeting mt-0.5 text-balance text-base max-sm:leading-snug sm:mt-1 sm:text-xl lg:text-[1.65rem]">
+            <div className="mt-0.5 flex flex-wrap items-center gap-1 sm:mt-1 sm:gap-1.5">
+              <h1 className="min-w-0 flex-1 truncate text-[15px] font-extrabold leading-tight text-slate-900 dark:text-slate-50 sm:text-xl lg:text-[1.65rem]">
                 {name}
               </h1>
-              {project.project_code ? (
-                <p className="mt-0.5 font-mono text-[10px] font-semibold text-slate-500 dark:text-slate-400 sm:mt-1 sm:text-xs">
-                  {project.project_code}
-                </p>
-              ) : null}
+              <ProjectStageBadge stage={project.current_stage} compact />
+              <ProjectHealthBadge health={project.health} />
             </div>
+            {project.project_code ? (
+              <p className="mt-px truncate font-mono text-[9px] font-semibold text-slate-500 dark:text-slate-400 sm:mt-0.5 sm:text-xs">
+                {project.project_code}
+              </p>
+            ) : null}
+            {nmLabel ? (
+              <p className="mt-0.5 text-[9px] font-bold uppercase tracking-wide text-purple-700 dark:text-purple-300 sm:hidden">
+                NM: {nmLabel}
+              </p>
+            ) : null}
           </div>
 
-          <div className="flex shrink-0 flex-wrap items-center gap-1.5 max-sm:w-full max-sm:gap-1 sm:gap-2">
+          <div className="flex shrink-0 items-center gap-1">
             <Button
               type="button"
               variant="outline"
               size="sm"
               disabled={!canAdvance || statusBusy}
-              className="h-8 gap-1 px-2.5 text-xs max-sm:h-7 max-sm:flex-1 sm:h-9 sm:flex-none sm:px-3 sm:text-sm"
+              className="h-7 min-w-[28px] gap-0.5 px-2 text-[10px] max-sm:px-1.5 sm:h-9 sm:gap-1 sm:px-3 sm:text-sm"
               onClick={onAdvanceClick}
             >
-              Advance stage
-              <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+              <span className="sm:hidden">Adv</span>
+              <span className="hidden sm:inline">Advance stage</span>
+              <ChevronRight className="hidden h-3.5 w-3.5 sm:inline" aria-hidden />
             </Button>
             <div className="relative">
               <Button
                 type="button"
                 variant="outline"
                 size="icon"
-                className="h-8 w-8 max-sm:h-7 max-sm:w-7 sm:h-9 sm:w-9"
+                className="h-7 w-7 min-w-[28px] sm:h-9 sm:w-9"
                 aria-expanded={menuOpen}
                 aria-haspopup="menu"
                 onClick={() => setMenuOpen((o) => !o)}
               >
-                <MoreHorizontal className="h-4 w-4" aria-hidden />
+                <MoreHorizontal className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden />
                 <span className="sr-only">Project actions</span>
               </Button>
               {menuOpen ? (
@@ -140,11 +148,13 @@ export function ProjectHubHeader({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5 max-sm:gap-1 sm:gap-2">
-          <ProjectStageBadge stage={project.current_stage} />
-          <ProjectHealthBadge health={project.health} />
+        <p className="truncate text-[10px] font-medium text-slate-600 dark:text-slate-400 sm:hidden">
+          {teamLine}
+        </p>
+
+        <div className="hidden flex-wrap items-center gap-2 sm:flex">
           {nmLabel ? (
-            <span className="inline-flex items-center rounded-md bg-purple-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-purple-800 dark:bg-purple-900/40 dark:text-purple-200 max-sm:text-[8px] sm:px-2 sm:text-[10px]">
+            <span className="inline-flex items-center rounded-md bg-purple-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-purple-800 dark:bg-purple-900/40 dark:text-purple-200">
               NM: {nmLabel}
             </span>
           ) : null}
@@ -159,22 +169,11 @@ export function ProjectHubHeader({
           />
         ) : null}
 
-        <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[11px] font-medium text-slate-600 dark:text-slate-400 max-sm:text-[10px] sm:text-xs">
-          <span className="inline-flex min-w-0 items-center gap-1 truncate">
-            <User className="h-3 w-3 shrink-0 opacity-60" aria-hidden />
-            <span className="truncate">
-              Mgr: {project.manager_name?.trim() || "—"}
-            </span>
-          </span>
-          <span className="inline-flex min-w-0 items-center gap-1 truncate">
-            <User className="h-3 w-3 shrink-0 opacity-60" aria-hidden />
-            <span className="truncate">
-              Tech: {project.tech_name?.trim() || "—"}
-            </span>
-          </span>
-        </div>
+        <p className="hidden truncate text-xs font-medium text-slate-600 dark:text-slate-400 sm:block">
+          {teamLine}
+        </p>
 
-        <div className="border-t border-white/50 pt-2 dark:border-white/10 max-sm:pt-1.5 sm:pt-4">
+        <div className="border-t border-white/50 pt-1 dark:border-white/10 max-sm:pt-1 sm:pt-4">
           <ProjectStageProgressBar currentStage={project.current_stage} />
         </div>
       </div>
