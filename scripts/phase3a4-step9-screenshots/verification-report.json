@@ -1,0 +1,16 @@
+{
+  "captured_at": "2026-06-01T03:58:04.027Z",
+  "base_url": "http://localhost:3001",
+  "list_link_href": "/projects/87cead64-c68b-4018-85fb-65772f9869c5",
+  "dashboard_link_href": "/projects/87cead64-c68b-4018-85fb-65772f9869c5",
+  "mobile_link_href": "/projects/87cead64-c68b-4018-85fb-65772f9869c5",
+  "back_navigation_url": "http://localhost:3001/projects",
+  "open_in_new_tab_note": "All deep links are native anchor links (/projects/[id]), so browser open-in-new-tab works.",
+  "files": [
+    "01-projects-list-desktop.png",
+    "02-hub-from-list-desktop.png",
+    "03-hub-from-dashboard-desktop.png",
+    "04-projects-list-mobile.png",
+    "05-hub-mobile.png"
+  ]
+}
