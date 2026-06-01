@@ -58,12 +58,17 @@ export function ProjectListTable({
                 className="transition hover:bg-slate-50/80 dark:hover:bg-white/[0.03]"
               >
                 <td className="px-4 py-3">
-                  <p className="font-bold text-slate-900 dark:text-slate-100">
-                    {projectDisplayName(p)}
-                  </p>
-                  <p className="mt-0.5 font-mono text-[10px] font-semibold text-slate-500">
-                    {p.project_code ?? "—"}
-                  </p>
+                  <Link
+                    href={`/projects/${encodeURIComponent(p.id)}`}
+                    className="group inline-block"
+                  >
+                    <p className="font-bold text-slate-900 transition group-hover:text-teal-700 dark:text-slate-100 dark:group-hover:text-teal-300">
+                      {projectDisplayName(p)}
+                    </p>
+                    <p className="mt-0.5 font-mono text-[10px] font-semibold text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300">
+                      {p.project_code ?? "—"}
+                    </p>
+                  </Link>
                 </td>
                 <td className="px-3 py-3">
                   <ProjectStageBadge stage={p.current_stage} compact />

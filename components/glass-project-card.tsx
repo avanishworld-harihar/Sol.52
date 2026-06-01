@@ -262,11 +262,11 @@ function GlassProjectCardInner({
               </Link>
             ) : null}
             <Link
-              href="/projects"
+              href={`/projects/${encodeURIComponent(project.id)}`}
               className="inline-flex min-h-10 items-center justify-between rounded-xl border border-indigo-200/70 bg-indigo-50/80 px-3 text-xs font-extrabold text-indigo-800 transition active:scale-[0.99]"
               onClick={(e) => e.stopPropagation()}
             >
-              Update status / next action
+              Open project hub
               <PencilLine className="h-3.5 w-3.5" />
             </Link>
           </div>
@@ -386,11 +386,11 @@ function GlassProjectCardInner({
               </Link>
             ) : null}
             <Link
-              href="/projects"
+              href={`/projects/${encodeURIComponent(project.id)}`}
               className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-indigo-300 bg-indigo-50 px-3 text-sm font-extrabold text-indigo-800 dark:border-indigo-500/50 dark:bg-indigo-950/50 dark:text-indigo-200"
               onClick={() => setSheetOpen(false)}
             >
-              Open full projects board
+              Open project hub
             </Link>
           </div>
         </div>

@@ -70,9 +70,14 @@ export function ProjectListCard({
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="truncate text-sm font-extrabold text-slate-900 dark:text-slate-50 sm:text-base">
-              {name}
-            </h3>
+            <Link
+              href={`/projects/${encodeURIComponent(project.id)}`}
+              className="group inline-block min-w-0"
+            >
+              <h3 className="truncate text-sm font-extrabold text-slate-900 transition group-hover:text-teal-700 dark:text-slate-50 dark:group-hover:text-teal-300 sm:text-base">
+                {name}
+              </h3>
+            </Link>
             {project.project_code ? (
               <span className="shrink-0 rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] font-bold text-slate-600 dark:bg-white/10 dark:text-slate-300">
                 {project.project_code}

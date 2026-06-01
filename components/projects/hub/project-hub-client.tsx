@@ -19,6 +19,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/components/ui/toast-center";
 import { WorkspacePage, WorkspaceStaggerItem } from "@/components/workspace";
 import { revalidateProjectHubCaches } from "@/lib/project-hub-cache";
+import { projectDisplayName } from "@/lib/project-list-utils";
+import { useShell } from "@/lib/shell-context";
 import {
   advanceProjectStage,
   fetchProjectDetail,
@@ -41,6 +43,7 @@ export function ProjectHubClient({ projectId }: { projectId: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const toast = useToast();
+  const { setActiveWorkspace, clearActiveWorkspace } = useShell();
   const detailKey = projectDetailKey(projectId);
 
   const tabFromUrl = searchParams.get("tab");
@@ -71,6 +74,18 @@ export function ProjectHubClient({ projectId }: { projectId: string }) {
       dedupingInterval: 5_000,
     }
   );
+
+  useEffect(() => {
+    if (!project) return;
+    const href = `/projects/${encodeURIComponent(projectId)}`;
+    setActiveWorkspace({
+      id: project.id,
+      label: projectDisplayName(project),
+      href,
+      type: "project",
+    });
+    return () => clearActiveWorkspace();
+  }, [clearActiveWorkspace, project, projectId, setActiveWorkspace]);
 
   const refreshHub = useCallback(async () => {
     await revalidateProjectHubCaches(projectId);
@@ -150,7 +165,11 @@ export function ProjectHubClient({ projectId }: { projectId: string }) {
     return (
       <WorkspacePage tone="projects">
         <WorkspaceStaggerItem>
-          <Card className="border-red-200/90 bg-red-50/90 dark:border-red-900/50 dark:bg-red-950/30">
+          <Card
+            className="border-red-200/90 bg-red-50/90 dark:border-red-900/50 dark:bg-red-950/30"
+            role="alert"
+            aria-live="polite"
+          >
             <CardContent className="space-y-3 p-5">
               <p className="text-sm font-extrabold text-red-800 dark:text-red-200">
                 Project not found
@@ -191,13 +210,21 @@ export function ProjectHubClient({ projectId }: { projectId: string }) {
         <ProjectHubTabBar active={activeTab} onChange={handleTabChange} />
       </WorkspaceStaggerItem>
 
-      <WorkspaceStaggerItem>
+      <WorkspaceStaggerItem className="min-w-0 overflow-x-hidden">
         {activeTab === "overview" ? <ProjectHubOverviewTab project={project} /> : null}
-        <ProjectHubSurveyTab project={project} enabled={activeTab === "survey"} />
-        <ProjectHubDesignTab project={project} enabled={activeTab === "design"} />
-        <ProjectHubTasksTab project={project} enabled={activeTab === "tasks"} />
-        <ProjectHubTimelineTab project={project} enabled={activeTab === "timeline"} />
-        <ProjectHubCommentsTab project={project} enabled={activeTab === "comments"} />
+        {activeTab === "survey" ? (
+          <ProjectHubSurveyTab project={project} enabled />
+        ) : null}
+        {activeTab === "design" ? (
+          <ProjectHubDesignTab project={project} enabled />
+        ) : null}
+        {activeTab === "tasks" ? <ProjectHubTasksTab project={project} enabled /> : null}
+        {activeTab === "timeline" ? (
+          <ProjectHubTimelineTab project={project} enabled />
+        ) : null}
+        {activeTab === "comments" ? (
+          <ProjectHubCommentsTab project={project} enabled />
+        ) : null}
       </WorkspaceStaggerItem>
 
       <ProjectHubAdvanceSheet
