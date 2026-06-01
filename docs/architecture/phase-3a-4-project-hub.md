@@ -1,8 +1,9 @@
 # Phase 3A-4 — Project Hub Architecture
 
-**Status:** Approved with architecture notes (implementation not started)  
-**Last updated:** 31 May 2026  
+**Status:** Complete — frozen (signed off 1 Jun 2026)  
+**Last updated:** 1 June 2026  
 **Scope:** Project Hub UI on existing Phase 3A-1 APIs only  
+**Master docs:** [Complete Architecture](./phase-3a-complete-architecture.md) · [Database ERD](./phase-3a-database-erd.md) · [Projects API](../api/phase-3a-projects-api.md)  
 **Frozen out of 3A-4:** Documents module, Financial module (full), Team Assignment module (full)
 
 ---
@@ -234,6 +235,13 @@ No survey/design/install role matrix, no crew list, no assignment notifications.
 
 ## Final sign-off
 
-**Phase 3A-4 architecture is approved** including future-module placeholders (Documents, Financial, Team Assignment) documented in §16–§18. Those modules are explicitly deferred and must not expand 3A-4 implementation scope.
+**Phase 3A-4 is complete and frozen** (1 June 2026). Production readiness score: **92/100 — GO**.
 
-**Next step:** Begin coding only after explicit implementation kickoff. No code or migrations until then.
+Future-module placeholders (Documents, Financial, Team Assignment) remain documented in §16–§18 and are explicitly deferred to Phase 3A-5+.
+
+**Documentation index:**
+- [Phase 3A Complete Architecture](./phase-3a-complete-architecture.md)
+- [Phase 3A Database ERD](./phase-3a-database-erd.md)
+- [Phase 3A Projects API](../api/phase-3a-projects-api.md)
+
+**Next step:** Phase 3A-5 planning (no code until approved).
