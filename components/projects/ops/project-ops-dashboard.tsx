@@ -26,12 +26,12 @@ export function ProjectOpsDashboard({
 
   return (
     <section
-      className={cn("page-lite-item space-y-4", className)}
+      className={cn("page-lite-item space-y-2 max-sm:space-y-2 sm:space-y-4", className)}
       aria-label="Operations dashboard"
     >
       <ProjectOpsMetricsStrip stats={stats} />
 
-      <div className="grid gap-4 lg:grid-cols-12">
+      <div className="grid gap-2 max-sm:gap-2 sm:gap-4 lg:grid-cols-12">
         <ProjectOpsHealthRing stats={stats} className="lg:col-span-5" />
         <ProjectOpsStageBreakdown stats={stats} className="lg:col-span-7" />
         <ProjectOpsUrgentList projects={projects} className="lg:col-span-6" />

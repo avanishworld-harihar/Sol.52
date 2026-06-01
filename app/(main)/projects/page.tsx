@@ -43,23 +43,32 @@ import useSWR, { useSWRConfig } from "swr";
 
 type ProjectsView = "active" | "hidden" | "archived";
 
-const TAB_DEFS: { id: ProjectsView; labelKey: string; fallback: string; description: string }[] = [
+const TAB_DEFS: {
+  id: ProjectsView;
+  labelKey: string;
+  fallback: string;
+  shortLabel: string;
+  description: string;
+}[] = [
   {
     id: "active",
     labelKey: "projects_tabActive",
     fallback: "Active",
+    shortLabel: "Active",
     description: "On the dashboard right now.",
   },
   {
     id: "hidden",
     labelKey: "projects_tabHidden",
     fallback: "Hidden from dashboard",
+    shortLabel: "Hidden",
     description: "Decluttered from the home dashboard, still in the pipeline.",
   },
   {
     id: "archived",
     labelKey: "projects_tabArchived",
     fallback: "Archived",
+    shortLabel: "Archive",
     description: "End-of-life projects. Restore anytime.",
   },
 ];
@@ -395,7 +404,11 @@ function ProjectsBoard() {
         </WorkspaceStaggerItem>
 
         <WorkspaceStaggerItem>
-          <div role="tablist" aria-label="Projects view" className="workspace-filter-rail">
+          <div
+            role="tablist"
+            aria-label="Projects view"
+            className="workspace-filter-rail workspace-filter-rail--compact-mobile"
+          >
             {TAB_DEFS.map((tab) => {
               const isActive = view === tab.id;
               return (
@@ -406,14 +419,15 @@ function ProjectsBoard() {
                   type="button"
                   onClick={() => setView(tab.id)}
                   className={cn(
-                    "workspace-filter-pill flex-1 min-w-fit justify-center py-2 sm:text-sm",
+                    "workspace-filter-pill min-w-0 flex-1 justify-center py-1.5 max-sm:flex-col max-sm:gap-0.5 max-sm:px-1 max-sm:py-1.5 max-sm:text-[9px] sm:min-w-fit sm:flex-row sm:gap-1.5 sm:py-2 sm:text-sm",
                     isActive ? "workspace-filter-pill--active" : "workspace-filter-pill--idle"
                   )}
                 >
-                  <span>{tab.fallback}</span>
+                  <span className="truncate leading-tight sm:hidden">{tab.shortLabel}</span>
+                  <span className="hidden truncate sm:inline">{tab.fallback}</span>
                   <span
                     className={cn(
-                      "inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1.5 text-[10px] tabular-nums",
+                      "inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full px-1 text-[9px] tabular-nums max-sm:h-3.5 max-sm:min-w-[0.875rem] max-sm:text-[8px] sm:h-5 sm:min-w-[1.25rem] sm:px-1.5 sm:text-[10px]",
                       isActive
                         ? "bg-white/25 text-white"
                         : "bg-slate-200/80 text-slate-700 dark:bg-slate-800/80 dark:text-slate-200"
@@ -427,7 +441,7 @@ function ProjectsBoard() {
           </div>
         </WorkspaceStaggerItem>
 
-        <p className="page-lite-item -mt-1 px-1 text-xs font-semibold text-slate-500 dark:text-slate-400 sm:text-sm">
+        <p className="page-lite-item -mt-1 hidden px-1 text-xs font-semibold text-slate-500 dark:text-slate-400 sm:block sm:text-sm">
           {view === "active" ? t("projects_opsBoardHint") : activeTabDef.description}
         </p>
 
@@ -488,7 +502,7 @@ function ProjectsBoard() {
               onEdit={openEditProject}
               onDelete={setDeleteProjectTarget}
             />
-            <div className="page-lite-item space-y-3 lg:hidden">
+            <div className="page-lite-item space-y-2 max-sm:space-y-1.5 lg:hidden sm:space-y-3">
               {listPipeline.items.map((project) => (
                 <ProjectListCard
                   key={project.id}

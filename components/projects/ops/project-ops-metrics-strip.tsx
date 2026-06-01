@@ -31,18 +31,24 @@ function MetricCard({
   const body = (
     <div
       className={cn(
-        "flex min-w-[9.5rem] shrink-0 flex-col gap-2 rounded-xl border border-slate-200/90 bg-white px-3.5 py-3 dark:border-white/10 dark:bg-[#0c1017] sm:min-w-[10.5rem]",
+        "flex min-w-[8.25rem] shrink-0 flex-col gap-1.5 rounded-lg border border-slate-200/90 bg-white px-2.5 py-2 dark:border-white/10 dark:bg-[#0c1017] max-sm:min-w-[7.5rem] max-sm:gap-1 max-sm:px-2 max-sm:py-1.5 sm:min-w-[10.5rem] sm:gap-2 sm:rounded-xl sm:px-3.5 sm:py-3",
         href && "transition hover:border-teal-300/80 hover:shadow-sm dark:hover:border-teal-500/30"
       )}
     >
-      <span className={cn("ws-icon-well h-8 w-8", `ws-icon-well--${tone}`)} aria-hidden>
-        <Icon className="h-4 w-4" strokeWidth={2.25} />
+      <span
+        className={cn(
+          "ws-icon-well h-6 w-6 max-sm:h-5 max-sm:w-5 sm:h-8 sm:w-8",
+          `ws-icon-well--${tone}`
+        )}
+        aria-hidden
+      >
+        <Icon className="h-3 w-3 max-sm:h-2.5 max-sm:w-2.5 sm:h-4 sm:w-4" strokeWidth={2.25} />
       </span>
       <div>
-        <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+        <p className="text-[9px] font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500 max-sm:text-[8px] sm:text-[10px]">
           {label}
         </p>
-        <p className="mt-0.5 text-lg font-extrabold tabular-nums text-slate-900 dark:text-white sm:text-xl">
+        <p className="mt-0.5 text-base font-extrabold tabular-nums text-slate-900 dark:text-white max-sm:text-sm sm:text-xl">
           {value}
         </p>
       </div>

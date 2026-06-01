@@ -278,6 +278,21 @@
     @apply border-slate-200/80 bg-white/70 text-slate-600 hover:border-slate-300 hover:bg-white dark:border-slate-700/50 dark:bg-slate-800/60 dark:text-slate-300;
   }
 
+  /* Projects list — compact view tabs on mobile (3-column grid, no wrap) */
+  @media (max-width: 639px) {
+    .workspace-filter-rail--compact-mobile {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.25rem;
+      padding: 0.25rem;
+    }
+
+    .workspace-filter-rail--compact-mobile .workspace-filter-pill {
+      min-height: 2.75rem;
+      letter-spacing: 0.04em;
+    }
+  }
+
   .workspace-cta-primary {
     @apply glass-hero-cta inline-flex min-h-11 w-full items-center justify-center rounded-xl px-5 py-3 text-sm font-bold sm:w-auto;
   }

@@ -24,22 +24,22 @@ export function ProjectOpsUrgentList({
   return (
     <article
       className={cn(
-        "rounded-xl border border-slate-200/90 bg-white p-4 dark:border-white/10 dark:bg-[#0c1017] sm:p-5",
+        "rounded-xl border border-slate-200/90 bg-white p-3 dark:border-white/10 dark:bg-[#0c1017] max-sm:p-2.5 sm:p-5",
         className
       )}
     >
-      <div className="mb-3 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="ws-icon-well ws-icon-well--warning h-8 w-8" aria-hidden>
+      <div className="mb-2 flex items-center justify-between gap-2 max-sm:mb-1.5 sm:mb-3">
+        <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
+          <span className="ws-icon-well ws-icon-well--warning h-7 w-7 shrink-0 max-sm:h-6 max-sm:w-6 sm:h-8 sm:w-8" aria-hidden>
             <AlertTriangle className="h-4 w-4" strokeWidth={2.25} />
           </span>
-          <h3 className="text-xs font-black uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <h3 className="truncate text-[10px] font-black uppercase tracking-wide text-slate-500 dark:text-slate-400 max-sm:text-[9px] sm:text-xs">
             Urgent attention
           </h3>
         </div>
         <Link
           href={projectFilterHref({ health: "blocked" })}
-          className="text-[11px] font-bold text-teal-700 hover:text-teal-900 dark:text-teal-300"
+          className="shrink-0 text-[10px] font-bold text-teal-700 hover:text-teal-900 dark:text-teal-300 max-sm:text-[9px] sm:text-[11px]"
         >
           View all
         </Link>
@@ -55,10 +55,10 @@ export function ProjectOpsUrgentList({
             <li key={p.id}>
               <Link
                 href={`/projects/${encodeURIComponent(p.id)}`}
-                className="group flex items-start justify-between gap-3 py-2.5 transition hover:bg-slate-50/80 dark:hover:bg-white/[0.03]"
+                className="group flex items-start justify-between gap-2 py-1.5 transition hover:bg-slate-50/80 dark:hover:bg-white/[0.03] max-sm:py-1 sm:gap-3 sm:py-2.5"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-slate-800 dark:text-white">
+                  <p className="truncate text-xs font-semibold text-slate-800 dark:text-white sm:text-sm">
                     {urgentProjectSubtitle(p)}
                   </p>
                   <div className="mt-1.5 flex flex-wrap items-center gap-1.5">

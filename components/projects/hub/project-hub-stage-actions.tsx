@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 
 const selectClass = cn(
-  "h-9 min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-800",
+  "h-8 min-w-0 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-semibold text-slate-800 max-sm:h-7 max-sm:px-2 max-sm:text-[10px] sm:h-9 sm:px-2.5 sm:text-xs",
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/40",
   "disabled:cursor-not-allowed disabled:opacity-60",
   "dark:border-white/10 dark:bg-[#0c1017] dark:text-slate-100"
@@ -40,9 +40,9 @@ export function ProjectHubStageActions({
   const showNm = project.current_stage === "net_metering";
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
-      <label className="flex min-w-[10rem] flex-1 flex-col gap-1">
-        <span className="text-[10px] font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+    <div className="flex flex-col gap-2 max-sm:gap-1.5 sm:flex-row sm:flex-wrap sm:items-end sm:gap-3">
+      <label className="flex min-w-0 flex-1 flex-col gap-0.5 max-sm:gap-0 sm:min-w-[10rem] sm:gap-1">
+        <span className="text-[9px] font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500 max-sm:text-[8px] sm:text-[10px]">
           Stage status
         </span>
         <span className="relative inline-flex items-center">

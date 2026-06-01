@@ -30,23 +30,23 @@ export function ProjectListFiltersBar({
   className?: string;
 }) {
   const inputClass =
-    "h-11 rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 focus:border-teal-500 focus:ring-teal-200/70 dark:border-white/10 dark:bg-[#0c1017] dark:text-slate-100";
+    "h-9 rounded-lg border-slate-200 bg-white px-3 text-[13px] font-medium text-slate-800 focus:border-teal-500 focus:ring-teal-200/70 dark:border-white/10 dark:bg-[#0c1017] dark:text-slate-100 max-sm:h-8 max-sm:px-2.5 max-sm:text-xs sm:h-11 sm:rounded-xl sm:px-4 sm:text-sm";
 
   return (
-    <div className={cn("page-lite-item space-y-3", className)}>
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
+    <div className={cn("page-lite-item space-y-2 max-sm:space-y-1.5 sm:space-y-3", className)}>
+      <div className="flex flex-col gap-2 max-sm:gap-1.5 lg:flex-row lg:items-end lg:gap-3">
         <div className="relative min-w-0 flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 z-10 h-3.5 w-3.5 -translate-y-1/2 text-slate-400 sm:left-3 sm:h-4 sm:w-4" />
           <FloatingLabelInput
             label="Search projects"
             value={filters.search}
             onChange={(e) => onChange({ search: e.target.value, page: 1 })}
-            className={cn(inputClass, "pl-9")}
+            className={cn(inputClass, "pl-8 sm:pl-9")}
             containerClassName="my-0"
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:flex lg:flex-wrap lg:gap-2">
+        <div className="grid grid-cols-2 gap-1.5 max-sm:gap-1 sm:grid-cols-4 sm:gap-2 lg:flex lg:flex-wrap lg:gap-2">
           <FloatingLabelSelect
             label="Stage"
             value={filters.stage}
@@ -112,7 +112,7 @@ export function ProjectListFiltersBar({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
+      <div className="flex flex-wrap items-center justify-between gap-1.5 px-0.5 text-[11px] font-semibold text-slate-500 dark:text-slate-400 max-sm:py-0 sm:px-1 sm:text-xs">
         <span className="inline-flex items-center gap-1.5">
           <SlidersHorizontal className="h-3.5 w-3.5" />
           {filteredCount === totalCount

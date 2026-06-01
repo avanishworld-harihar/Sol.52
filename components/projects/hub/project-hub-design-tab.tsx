@@ -77,8 +77,8 @@ function DesignSection({
 }) {
   return (
     <Card className="page-lite-item border-slate-200/90 dark:border-white/10">
-      <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-sm font-extrabold">
+      <CardHeader className="pb-1 max-sm:px-3 max-sm:py-2 sm:pb-2">
+        <CardTitle className="flex items-center gap-1.5 text-xs font-extrabold sm:gap-2 sm:text-sm">
           {icon}
           {title}
         </CardTitle>
@@ -91,7 +91,7 @@ function DesignSection({
 function LinkedRecordsCard({ project }: { project: ProjectListItem }) {
   return (
     <Card className="page-lite-item border-slate-200/90 dark:border-white/10">
-      <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+      <CardContent className="flex flex-col gap-2 p-3 max-sm:p-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:p-4">
         <div className="min-w-0">
           <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">
             Design sources
@@ -161,9 +161,9 @@ function DesignStatusStrip({
 
   return (
     <Card className="page-lite-item border-slate-200/90 dark:border-white/10">
-      <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap items-center gap-2">
-          <PenTool className="h-4 w-4 text-blue-600 dark:text-blue-400" aria-hidden />
+      <CardContent className="flex flex-col gap-2 p-3 max-sm:p-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:p-4">
+        <div className="flex flex-wrap items-center gap-1.5 max-sm:gap-1 sm:gap-2">
+          <PenTool className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 sm:h-4 sm:w-4" aria-hidden />
           <span
             className={cn(
               "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide",
@@ -201,7 +201,7 @@ function DesignStatusStrip({
             </span>
           ) : null}
         </div>
-        <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+        <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 max-sm:leading-snug sm:text-[11px]">
           Read-only view · POST design API available for future editor
         </p>
       </CardContent>
@@ -216,12 +216,12 @@ function DesignEmptyState({ project }: { project: ProjectListItem }) {
 
   return (
     <Card className="page-lite-item border-dashed border-slate-200 dark:border-white/10">
-      <CardContent className="px-4 py-10 text-center">
-        <PenTool className="mx-auto h-10 w-10 text-slate-300 dark:text-slate-600" aria-hidden />
-        <p className="mt-3 text-sm font-semibold text-slate-700 dark:text-slate-200">
+      <CardContent className="px-3 py-5 text-center max-sm:py-4 sm:px-4 sm:py-8">
+        <PenTool className="mx-auto h-7 w-7 text-slate-300 dark:text-slate-600 sm:h-9 sm:w-9" aria-hidden />
+        <p className="mt-2 text-sm font-semibold text-slate-700 dark:text-slate-200 sm:mt-3">
           No design version saved
         </p>
-        <p className="mx-auto mt-1 max-w-md text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+        <p className="mx-auto mt-1 max-w-md text-[11px] leading-snug text-slate-500 dark:text-slate-400 sm:text-xs sm:leading-relaxed">
           Layout, panel, and inverter selections from the proposal BOM can be captured as a design
           version here. Continue sizing in the proposal workspace linked above.
         </p>
@@ -273,7 +273,7 @@ function CapacitySummary({ design }: { design: ProjectDesign }) {
         ].map((item) => (
           <div
             key={item.label}
-            className="rounded-lg border border-slate-100 bg-slate-50/80 px-3 py-2.5 dark:border-white/5 dark:bg-white/[0.04]"
+            className="rounded-lg border border-slate-100 bg-slate-50/80 px-2.5 py-1.5 dark:border-white/5 dark:bg-white/[0.04] max-sm:px-2 max-sm:py-1 sm:px-3 sm:py-2.5"
           >
             <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
               {item.label}
@@ -479,9 +479,9 @@ export function ProjectHubDesignTab({
       id="project-hub-panel-design"
       role="tabpanel"
       aria-labelledby="project-hub-tab-design"
-      className="space-y-4"
+      className="space-y-3 max-sm:space-y-2 sm:space-y-4"
     >
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-2 max-sm:gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
         {hasDesigns ? (
           <VersionPicker
             designs={sortedDesigns}
