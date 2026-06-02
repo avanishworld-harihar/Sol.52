@@ -42,7 +42,7 @@ import { LEAD_AREA_PROFILE_OPTIONS, LEAD_CONNECTION_TYPE_OPTIONS } from "@/lib/l
 import type { CustomerLead } from "@/lib/types";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import type { FormEvent } from "react";
-import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
 import useSWR, { useSWRConfig } from "swr";
@@ -177,7 +177,7 @@ function CustomersPageContent() {
 
   useLayoutEffect(() => {
     const boot = readCustomersCache();
-    if (boot !== undefined) void mutate(boot, { revalidate: false });
+    if (boot !== undefined) void mutate(boot, { revalidate: true });
   }, [mutate]);
 
   useEffect(() => {
@@ -351,46 +351,71 @@ function CustomersPageContent() {
     });
   }
 
+  const mergeLeadIntoListCache = useCallback(
+    (updated: CustomerLead) => {
+      void mutate(
+        (prev) => {
+          const list = prev ?? [];
+          const ix = list.findIndex((c) => c.id === updated.id);
+          if (ix >= 0) {
+            const next = [...list];
+            next[ix] = updated;
+            writeCustomersCache(next);
+            return next;
+          }
+          const next = [updated, ...list];
+          writeCustomersCache(next);
+          return next;
+        },
+        { revalidate: false }
+      );
+    },
+    [mutate]
+  );
+
+  const openEditLeadFresh = useCallback(
+    async (customerOrId: CustomerLead | string) => {
+      const id = typeof customerOrId === "string" ? customerOrId : customerOrId.id;
+      if (id.startsWith("optimistic-")) return;
+      try {
+        const res = await fetch(`/api/customers/${encodeURIComponent(id)}`, { cache: "no-store" });
+        const json = (await res.json()) as { ok?: boolean; data?: CustomerLead };
+        if (res.ok && json.ok && json.data) {
+          mergeLeadIntoListCache(json.data);
+          openEditLead(json.data);
+          return;
+        }
+      } catch {
+        /* fall back to list row */
+      }
+      const fallback =
+        typeof customerOrId === "string"
+          ? allCustomers.find((c) => c.id === customerOrId)
+          : customerOrId;
+      if (fallback) openEditLead(fallback);
+    },
+    [allCustomers, mergeLeadIntoListCache]
+  );
+
   const editLeadQs = searchParams.get("editLead")?.trim() ?? "";
-  const editLeadOpenedRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!editLeadQs || editLeadOpenedRef.current === editLeadQs) return;
-
-    const finishDeepLink = (customer: CustomerLead) => {
-      editLeadOpenedRef.current = editLeadQs;
-      openEditLead(customer);
-      setSelectedLeadId(customer.id);
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete("editLead");
-      params.set("lead", customer.id);
-      router.replace(`/customers?${params.toString()}`, { scroll: false });
-    };
-
-    const fromList = allCustomers.find((c) => c.id === editLeadQs);
-    if (fromList) {
-      finishDeepLink(fromList);
-      return;
-    }
-
+    if (!editLeadQs) return;
     let cancelled = false;
     void (async () => {
-      try {
-        const res = await fetch(`/api/customers/${encodeURIComponent(editLeadQs)}`, {
-          cache: "no-store",
-        });
-        const json = (await res.json()) as { ok?: boolean; data?: CustomerLead };
-        if (cancelled || !res.ok || !json.ok || !json.data) return;
-        finishDeepLink(json.data);
-      } catch {
-        /* list may load shortly — effect will retry when allCustomers updates */
-      }
+      await openEditLeadFresh(editLeadQs);
+      if (cancelled) return;
+      setSelectedLeadId(editLeadQs);
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("editLead");
+      params.set("lead", editLeadQs);
+      router.replace(`/customers?${params.toString()}`, { scroll: false });
     })();
     return () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editLeadQs, allCustomers]);
+  }, [editLeadQs]);
 
   async function confirmDeleteLead() {
     if (!deleteTarget) return;
@@ -462,9 +487,13 @@ function CustomersPageContent() {
               connection_type: form.connection_type.trim() ? form.connection_type.trim() : null
             })
           });
-          const j = (await r.json()) as { ok?: boolean; error?: string };
+          const j = (await r.json()) as { ok?: boolean; data?: CustomerLead; error?: string };
           if (!j.ok) throw new Error(j.error || "Could not update lead");
-          await mutate();
+          if (j.data) {
+            mergeLeadIntoListCache(j.data);
+          }
+          await mutate(undefined, { revalidate: true });
+          await mutateGlobal(CUSTOMERS_SWR_KEY, undefined, { revalidate: true });
           await mutateGlobal(DASHBOARD_STATS_SWR_KEY, undefined, { revalidate: true });
           closeLeadModal();
           toast.success(t("customers_leadUpdated"), t("customers_leadUpdatedSub"));
@@ -653,7 +682,7 @@ function CustomersPageContent() {
               customers={customers}
               loading={showListSkeleton}
               onStatusChange={handleStatusChange}
-              onEditLead={openEditLead}
+              onEditLead={(c) => void openEditLeadFresh(c)}
               onDeleteLead={(c) => setDeleteTarget(c)}
               selectedLeadId={selectedLeadId}
               onSelectLead={onWorkspaceSelectLead}
