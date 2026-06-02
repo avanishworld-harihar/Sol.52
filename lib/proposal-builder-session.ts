@@ -4,9 +4,12 @@
 
 import { emptyMonthlyUnits, type ParsedBillShape } from "@/lib/bill-parse";
 import type { ManualProposalCustomer } from "@/lib/merge-proposal-customer";
+import { writeResidentialDraftProposalId } from "@/lib/residential-brand-catalog-storage";
 import type { MonthKey, MonthlyUnits } from "@/lib/types";
 
 export const PROPOSAL_BUILDER_SESSION_KEY = "ss_proposal_session_v2";
+/** Set by prepareNewProposalNavigation — consumed once on /proposal mount. */
+export const PROPOSAL_FORCE_NEW_KEY = "ss_proposal_force_new";
 
 const MONTH_KEYS: MonthKey[] = [
   "jan",
@@ -131,9 +134,38 @@ export function clearProposalBuilderSession(): void {
   }
 }
 
+/** Fresh builder entry — use for “New proposal” CTAs (not edit/resume deep-links). */
+export function buildNewProposalHref(): string {
+  return "/proposal?new=1";
+}
+
 /** Call before navigating to /proposal for a fresh builder (avoids stale session crashes). */
 export function prepareNewProposalNavigation(): void {
   clearProposalBuilderSession();
+  writeResidentialDraftProposalId(null);
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.setItem(PROPOSAL_FORCE_NEW_KEY, "1");
+  } catch {
+    /* private mode */
+  }
+}
+
+/** Returns true once after prepareNewProposalNavigation, then clears the flag. */
+export function takeProposalForceNewIntent(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const active = sessionStorage.getItem(PROPOSAL_FORCE_NEW_KEY) === "1";
+    if (active) sessionStorage.removeItem(PROPOSAL_FORCE_NEW_KEY);
+    return active;
+  } catch {
+    return false;
+  }
+}
+
+export function isProposalForceNewFromUrl(search: string | URLSearchParams): boolean {
+  const params = typeof search === "string" ? new URLSearchParams(search) : search;
+  return params.get("new") === "1";
 }
 
 export function isProposalBuilderReloadNavigation(): boolean {

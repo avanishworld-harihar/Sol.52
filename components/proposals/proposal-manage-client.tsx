@@ -27,7 +27,7 @@ import type { ProposalStatus } from "@/lib/proposal-status";
 import { PROPOSAL_STATUS_ORDER } from "@/lib/proposal-status";
 import { ExternalLink, MessageCircle, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
-import { prepareNewProposalNavigation } from "@/lib/proposal-builder-session";
+import { buildNewProposalHref, prepareNewProposalNavigation } from "@/lib/proposal-builder-session";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 function customerInitials(name: string): string {
@@ -203,7 +203,9 @@ export function ProposalManageClient({
             <code className="font-mono text-xs">019_proposal_pricing_line_items.sql</code>, then generate a proposal from the bill builder.
           </p>
           <Button asChild variant="default" className="mt-4 font-semibold">
-            <Link href="/proposal" onClick={prepareNewProposalNavigation}>{t("proposals_newProposalCta")}</Link>
+            <Link href={buildNewProposalHref()} onClick={prepareNewProposalNavigation}>
+              {t("proposals_newProposalCta")}
+            </Link>
           </Button>
         </div>
       </div>

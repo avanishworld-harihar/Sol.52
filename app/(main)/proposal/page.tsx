@@ -44,8 +44,10 @@ import {
   clearProposalBuilderSession,
   EMPTY_MANUAL_PROPOSAL_CUSTOMER,
   isProposalBuilderReloadNavigation,
+  isProposalForceNewFromUrl,
   loadProposalBuilderSession,
   saveProposalBuilderSession,
+  takeProposalForceNewIntent,
 } from "@/lib/proposal-builder-session";
 import { isBillBackedFromBuilderState } from "@/lib/proposal-bill-audit-eligibility";
 import { swrDiscomsWithOfflineCache, swrTariffWithOfflineCache } from "@/lib/proposal-swr-fetchers";
@@ -248,6 +250,7 @@ function ProposalPageContent() {
 
   /** Set in mount effect — never read sessionStorage during useState (SSR/hydration safe). */
   const hadSessionOnMountRef = useRef(false);
+  const skipProposalRestoreRef = useRef(false);
   const skipServerRestoreRef = useRef(false);
   /** Opening `/proposal?proposalId=…` — do not wipe units/bills with CRM lead seed. */
   const restoringExistingProposalRef = useRef(false);
@@ -339,6 +342,41 @@ function ProposalPageContent() {
   const monthlyUnitsTitle = stripManualSuffix(t("proposal_monthlyUnitsTitle"));
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const forceNew =
+        isProposalForceNewFromUrl(params) || takeProposalForceNewIntent();
+      if (forceNew) {
+        skipProposalRestoreRef.current = true;
+        restoringExistingProposalRef.current = false;
+        proposalPlantLockedRef.current = false;
+        deepLinkProposalIdRef.current = null;
+        writeResidentialDraftProposalId(null);
+        setDraftProposalId(null);
+        clearProposalBuilderSession();
+        params.delete("new");
+        const qs = params.toString();
+        window.history.replaceState(
+          {},
+          "",
+          qs ? `${window.location.pathname}?${qs}` : window.location.pathname
+        );
+      }
+    }
+
+    if (skipProposalRestoreRef.current) {
+      const { state, discom } = readInstallerRegion();
+      if (state) setInstallerState(state);
+      if (discom) setInstallerDiscom(discom);
+      let ref = localStorage.getItem(CLIENT_REF_STORAGE_KEY);
+      if (!ref) {
+        ref = createClientRef();
+        localStorage.setItem(CLIENT_REF_STORAGE_KEY, ref);
+      }
+      setClientRef(ref);
+      return;
+    }
+
     if (isProposalBuilderReloadNavigation()) {
       clearProposalBuilderSession();
       skipServerRestoreRef.current = true;
@@ -615,6 +653,7 @@ function ProposalPageContent() {
   const deepLinkProposalIdRef = useRef<string | null>(null);
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (skipProposalRestoreRef.current) return;
     const params = new URLSearchParams(window.location.search);
     const leadId = params.get("leadId")?.trim();
     if (leadId) {
@@ -1894,6 +1933,7 @@ function ProposalPageContent() {
 
   /** Restore saved proposal (deep-link or session) into the builder. */
   useEffect(() => {
+    if (skipProposalRestoreRef.current) return;
     const draftId =
       deepLinkProposalIdRef.current?.trim() || readResidentialDraftProposalId();
     if (!draftId) return;

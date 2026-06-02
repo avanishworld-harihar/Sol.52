@@ -4,7 +4,7 @@ import { useLanguage } from "@/lib/language-context";
 import { cn } from "@/lib/utils";
 import { FileText, FolderPlus, Upload, UserPlus } from "lucide-react";
 import Link from "next/link";
-import { prepareNewProposalNavigation } from "@/lib/proposal-builder-session";
+import { buildNewProposalHref, prepareNewProposalNavigation } from "@/lib/proposal-builder-session";
 
 export function DashboardQuickActions({ className }: { className?: string }) {
   const { t } = useLanguage();
@@ -28,7 +28,7 @@ export function DashboardQuickActions({ className }: { className?: string }) {
       </Link>
 
       <Link
-        href="/proposal"
+        href={buildNewProposalHref()}
         onClick={prepareNewProposalNavigation}
         className="glass-quick-action glass-quick-action--featured group min-[520px]:col-span-2 lg:col-span-1"
       >
@@ -40,7 +40,7 @@ export function DashboardQuickActions({ className }: { className?: string }) {
       </Link>
 
       <Link
-        href="/proposal"
+        href={buildNewProposalHref()}
         onClick={prepareNewProposalNavigation}
         className="glass-quick-action-compact min-h-[5.5rem] min-[520px]:min-h-11 lg:min-h-[5.5rem]"
       >

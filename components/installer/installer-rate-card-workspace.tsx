@@ -16,7 +16,7 @@ import type { ResidentialProposalConfig } from "@/lib/residential-requirements-s
 import { cn } from "@/lib/utils";
 import { IndianRupee, Loader2, Save, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { prepareNewProposalNavigation } from "@/lib/proposal-builder-session";
+import { buildNewProposalHref, prepareNewProposalNavigation } from "@/lib/proposal-builder-session";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 function commercialRateMapFromCard(
@@ -123,7 +123,7 @@ export function InstallerRateCardWorkspace() {
         </p>
         <p className="mt-2 text-[11px] text-slate-500">
           <Link
-            href="/proposal"
+            href={buildNewProposalHref()}
             onClick={prepareNewProposalNavigation}
             className="font-bold text-indigo-700 underline dark:text-indigo-300"
           >
