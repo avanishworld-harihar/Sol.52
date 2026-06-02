@@ -135,6 +135,10 @@ async function onProposalApproved(
           lead_id: proposal.lead_id,
           official_name: proposal.customer_name,
           capacity_kw: `${proposal.ppt_input?.systemKw ?? ""} kW`,
+          contract_amount_inr:
+            typeof pricing?.final_amount_inr === "number"
+              ? pricing.final_amount_inr
+              : null,
           detail: proposal.location?.trim() || undefined,
           status: "pending",
           install_progress: 20,

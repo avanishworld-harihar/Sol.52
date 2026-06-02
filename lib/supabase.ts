@@ -262,26 +262,51 @@ export async function upsertPipelineProject(payload: {
   status?: string;
   install_progress?: number;
   next_action?: string | null;
+  contract_amount_inr?: number | null;
 }): Promise<Record<string, unknown> | null> {
   if (!supabase) return null;
   const now = new Date().toISOString();
-  const baseRow = {
+  const { data: existing, error: existingErr } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("lead_id", payload.lead_id)
+    .maybeSingle();
+  if (existingErr && !/no rows/i.test(existingErr.message)) throw existingErr;
+
+  if (existing) {
+    const patch: Record<string, unknown> = { updated_at: now };
+    if (payload.official_name !== undefined) patch.official_name = payload.official_name.trim() || null;
+    if (payload.capacity_kw !== undefined) patch.capacity_kw = payload.capacity_kw.trim() || null;
+    if (payload.detail !== undefined) patch.detail = payload.detail.trim() || null;
+    if (payload.status !== undefined) patch.status = payload.status;
+    if (payload.install_progress !== undefined) {
+      patch.install_progress = Math.min(100, Math.max(0, Math.round(payload.install_progress)));
+    }
+    if (payload.next_action !== undefined) patch.next_action = payload.next_action?.trim() || null;
+    if (payload.contract_amount_inr !== undefined) patch.contract_amount_inr = payload.contract_amount_inr;
+
+    const { data, error } = await supabase
+      .from("projects")
+      .update(patch)
+      .eq("id", String((existing as { id: unknown }).id))
+      .select("*")
+      .single();
+    if (error) throw error;
+    return data as Record<string, unknown>;
+  }
+
+  const baseRow: Record<string, unknown> = {
     lead_id: payload.lead_id,
     official_name: payload.official_name?.trim() || null,
-    capacity_kw: payload.capacity_kw ?? null,
-    detail: payload.detail ?? null,
+    capacity_kw: payload.capacity_kw?.trim() || null,
+    detail: payload.detail?.trim() || null,
     status: payload.status ?? "pending",
     install_progress: Math.min(100, Math.max(0, Math.round(payload.install_progress ?? 0))),
     updated_at: now,
-    ...(payload.next_action !== undefined
-      ? { next_action: payload.next_action?.trim() || null }
-      : {})
+    ...(payload.next_action !== undefined ? { next_action: payload.next_action?.trim() || null } : {}),
+    ...(payload.contract_amount_inr !== undefined ? { contract_amount_inr: payload.contract_amount_inr } : {}),
   };
-  const { data, error } = await supabase
-    .from("projects")
-    .upsert(baseRow, { onConflict: "lead_id" })
-    .select("*")
-    .single();
+  const { data, error } = await supabase.from("projects").insert(baseRow).select("*").single();
   if (error) throw error;
   return data as Record<string, unknown>;
 }

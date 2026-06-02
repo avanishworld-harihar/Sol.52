@@ -300,6 +300,67 @@ export interface ProjectDetailRow extends ProjectRow {
   health: ProjectHealth;
 }
 
+async function readProposalFallbackForLead(leadId: string | null): Promise<{
+  capacity_kw: string | null;
+  contract_amount_inr: number | null;
+}> {
+  const client = db();
+  if (!client || !leadId?.trim()) return { capacity_kw: null, contract_amount_inr: null };
+  const { data, error } = await client
+    .from("proposals")
+    .select("system_kw, net_cost_inr, gross_system_cost_inr")
+    .eq("lead_id", leadId)
+    .order("generated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error || !data) return { capacity_kw: null, contract_amount_inr: null };
+
+  const row = data as Record<string, unknown>;
+  const systemKw = Number(row.system_kw);
+  return {
+    capacity_kw: Number.isFinite(systemKw) ? `${systemKw} kW` : null,
+    contract_amount_inr:
+      typeof row.net_cost_inr === "number"
+        ? row.net_cost_inr
+        : typeof row.gross_system_cost_inr === "number"
+          ? row.gross_system_cost_inr
+          : null,
+  };
+}
+
+async function readLatestProposalFallbackByLeadIds(leadIds: string[]): Promise<
+  Record<string, { capacity_kw: string | null; contract_amount_inr: number | null }>
+> {
+  const uniq = [...new Set(leadIds.map((id) => id.trim()).filter(Boolean))];
+  if (uniq.length === 0) return {};
+  const client = db();
+  if (!client) return {};
+
+  const { data, error } = await client
+    .from("proposals")
+    .select("lead_id, system_kw, net_cost_inr, gross_system_cost_inr, generated_at")
+    .in("lead_id", uniq)
+    .order("generated_at", { ascending: false });
+  if (error || !Array.isArray(data)) return {};
+
+  const out: Record<string, { capacity_kw: string | null; contract_amount_inr: number | null }> = {};
+  for (const row of data as Record<string, unknown>[]) {
+    const leadId = row.lead_id != null ? String(row.lead_id) : "";
+    if (!leadId || out[leadId]) continue;
+    const systemKw = Number(row.system_kw);
+    out[leadId] = {
+      capacity_kw: Number.isFinite(systemKw) ? `${systemKw} kW` : null,
+      contract_amount_inr:
+        typeof row.net_cost_inr === "number"
+          ? row.net_cost_inr
+          : typeof row.gross_system_cost_inr === "number"
+            ? row.gross_system_cost_inr
+            : null,
+    };
+  }
+  return out;
+}
+
 export interface InstallerProfileRow {
   id: string;
   organization_id: string;
@@ -358,9 +419,15 @@ export async function getProjectDetail(projectId: string): Promise<ProjectDetail
   delete base.tech;
 
   const project = base as unknown as ProjectRow;
+  const proposalFallback = await readProposalFallbackForLead(project.lead_id);
+  const capacityKw = project.capacity_kw?.trim() ? project.capacity_kw : proposalFallback.capacity_kw;
+  const contractAmount =
+    project.contract_amount_inr != null ? project.contract_amount_inr : proposalFallback.contract_amount_inr;
 
   return {
     ...project,
+    capacity_kw: capacityKw,
+    contract_amount_inr: contractAmount,
     lead_name: leads ? String(leads.name ?? "") : null,
     lead_phone: leads ? String(leads.phone ?? "") : null,
     lead_city: leads ? String(leads.city ?? "") : null,
@@ -424,7 +491,12 @@ export async function listProjects(opts: {
   const { data, error } = await query;
   if (error || !Array.isArray(data)) return [];
 
-  return (data as Record<string, unknown>[]).map((row) => {
+  const rows = data as Record<string, unknown>[];
+  const proposalFallbackByLead = await readLatestProposalFallbackByLeadIds(
+    rows.map((row) => (row.lead_id != null ? String(row.lead_id) : "")).filter(Boolean)
+  );
+
+  return rows.map((row) => {
     const leads = row.leads as Record<string, unknown> | null;
     const manager = row.manager as Record<string, unknown> | null;
     const tech = row.tech as Record<string, unknown> | null;
@@ -435,8 +507,18 @@ export async function listProjects(opts: {
     delete base.tech;
 
     const project = base as unknown as ProjectRow;
+    const leadId = project.lead_id ?? null;
+    const fallback = leadId ? proposalFallbackByLead[leadId] : undefined;
+    const capacityKw = project.capacity_kw?.trim() ? project.capacity_kw : (fallback?.capacity_kw ?? null);
+    const contractAmount =
+      project.contract_amount_inr != null
+        ? project.contract_amount_inr
+        : (fallback?.contract_amount_inr ?? null);
+
     return {
       ...project,
+      capacity_kw: capacityKw,
+      contract_amount_inr: contractAmount,
       lead_name: leads ? String(leads.name ?? "") : null,
       lead_phone: leads ? String(leads.phone ?? "") : null,
       lead_city: leads ? String(leads.city ?? "") : null,

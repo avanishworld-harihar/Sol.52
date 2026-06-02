@@ -192,6 +192,10 @@ export async function POST(req: NextRequest) {
           lead_id: payload.leadId,
           official_name: payload.customerName,
           capacity_kw: `${payload.systemKw} kW`,
+          contract_amount_inr:
+            payload.netCostInr ??
+            payload.grossSystemCostInr ??
+            null,
           detail: detail ?? undefined,
           status: "pending",
           install_progress: 10,
