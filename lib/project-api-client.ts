@@ -54,6 +54,23 @@ export function projectCommentsKey(id: string) {
   return `/api/projects/${id}/comments`;
 }
 
+export function projectDocumentsKey(
+  id: string,
+  opts?: { category?: string; stage?: string }
+) {
+  const params = new URLSearchParams();
+  if (opts?.category) params.set("category", opts.category);
+  if (opts?.stage) params.set("stage", opts.stage);
+  const qs = params.toString();
+  return qs
+    ? `/api/projects/${id}/documents?${qs}`
+    : `/api/projects/${id}/documents`;
+}
+
+export function projectDocumentsSummaryKey(id: string) {
+  return `/api/projects/${id}/documents?summary=1`;
+}
+
 export const NOTIFICATIONS_UNREAD_KEY = "/api/notifications/unread-count";
 
 // ---------------------------------------------------------------------------
@@ -250,6 +267,30 @@ export interface NotificationsUnreadCount {
   count: number;
 }
 
+export interface ProjectDocument {
+  id: string;
+  organization_id: string;
+  project_id: string;
+  doc_category: string;
+  stage_at_upload: string;
+  storage_path: string;
+  filename: string;
+  mime_type: string;
+  size_bytes: number;
+  uploaded_by_id: string | null;
+  notes: string | null;
+  linked_entity_type: string | null;
+  linked_entity_id: string | null;
+  archived_at: string | null;
+  created_at: string;
+  download_url?: string | null;
+}
+
+export interface ProjectDocumentSummary {
+  total: number;
+  by_category: Record<string, number>;
+}
+
 // ---------------------------------------------------------------------------
 // API fetch functions (used as SWR fetchers or called directly)
 // ---------------------------------------------------------------------------
@@ -294,6 +335,18 @@ export async function fetchProjectActivity(url: string): Promise<ProjectActivity
 export async function fetchProjectComments(url: string): Promise<ProjectComment[]> {
   const res = await apiRequest<ProjectComment[]>(url);
   return res.ok ? (res.data ?? []) : [];
+}
+
+export async function fetchProjectDocuments(url: string): Promise<ProjectDocument[]> {
+  const res = await apiRequest<ProjectDocument[]>(url);
+  return res.ok ? (res.data ?? []) : [];
+}
+
+export async function fetchProjectDocumentsSummary(
+  url: string
+): Promise<ProjectDocumentSummary | null> {
+  const res = await apiRequest<ProjectDocumentSummary>(url);
+  return res.ok ? (res.data ?? null) : null;
 }
 
 export async function fetchNotificationsUnreadCount(): Promise<number> {
@@ -392,5 +445,45 @@ export async function toggleCommentPin(
       method: "PATCH",
       body: JSON.stringify({ is_pinned: isPinned }),
     }
+  );
+}
+
+export async function uploadProjectDocument(
+  projectId: string,
+  file: File,
+  opts: {
+    docCategory: string;
+    notes?: string;
+    uploadedById?: string | null;
+    linkedEntityType?: string;
+    linkedEntityId?: string;
+  }
+): Promise<ApiResponse<ProjectDocument>> {
+  try {
+    const form = new FormData();
+    form.append("file", file);
+    form.append("doc_category", opts.docCategory);
+    if (opts.notes?.trim()) form.append("notes", opts.notes.trim());
+    if (opts.uploadedById) form.append("uploaded_by_id", opts.uploadedById);
+    if (opts.linkedEntityType) form.append("linked_entity_type", opts.linkedEntityType);
+    if (opts.linkedEntityId) form.append("linked_entity_id", opts.linkedEntityId);
+
+    const res = await fetch(`/api/projects/${projectId}/documents`, {
+      method: "POST",
+      body: form,
+    });
+    return (await res.json()) as ApiResponse<ProjectDocument>;
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "upload_failed" };
+  }
+}
+
+export async function archiveProjectDocument(
+  projectId: string,
+  documentId: string
+): Promise<ApiResponse<ProjectDocument>> {
+  return apiRequest<ProjectDocument>(
+    `/api/projects/${projectId}/documents/${documentId}`,
+    { method: "DELETE" }
   );
 }

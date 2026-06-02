@@ -207,6 +207,30 @@ export async function logNmSubstatusChanged(opts: {
   });
 }
 
+export async function logDocumentUploaded(opts: {
+  organizationId: string;
+  projectId: string;
+  docCategory: string;
+  docName: string;
+  stage: string;
+  documentId?: string;
+  createdById?: string | null;
+}) {
+  return logProjectActivity({
+    organizationId: opts.organizationId,
+    projectId: opts.projectId,
+    eventType: "document_uploaded",
+    eventTitle: `Document uploaded: ${opts.docName}`,
+    metadata: {
+      doc_category: opts.docCategory,
+      doc_name: opts.docName,
+      stage: opts.stage,
+      document_id: opts.documentId ?? null,
+    },
+    createdById: opts.createdById,
+  });
+}
+
 export async function logCommentAdded(opts: {
   organizationId: string;
   projectId: string;

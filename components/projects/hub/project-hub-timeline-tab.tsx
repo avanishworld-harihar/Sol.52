@@ -89,6 +89,14 @@ function eventVisual(type: string): EventVisual {
         icon: <MessageSquare className="h-3.5 w-3.5" aria-hidden />,
         category: "user",
       };
+    case "document_uploaded":
+      return {
+        label: "Document",
+        badgeClass: "bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-200",
+        dotClass: "bg-violet-500",
+        icon: <FileText className="h-3.5 w-3.5" aria-hidden />,
+        category: "user",
+      };
     case "project_created":
       return {
         label: "Project created",
@@ -144,6 +152,13 @@ function eventDetail(event: ProjectActivityEvent): string | null {
       return meta.stage ? `Stage: ${String(meta.stage).replace(/_/g, " ")}` : null;
     case "nm_substatus_changed":
       return `${String(meta.from_substatus ?? "?").replace(/_/g, " ")} → ${String(meta.to_substatus ?? "?").replace(/_/g, " ")}`;
+    case "document_uploaded": {
+      const cat = String(meta.doc_category ?? "").replace(/_/g, " ");
+      const name = String(meta.doc_name ?? "").trim();
+      const stage = String(meta.stage ?? "").replace(/_/g, " ");
+      const bits = [name, cat, stage ? `Stage: ${stage}` : ""].filter(Boolean);
+      return bits.length > 0 ? bits.join(" · ") : null;
+    }
     default:
       return null;
   }

@@ -8,6 +8,8 @@ import {
   projectDetailKey,
   projectCommentsKey,
   projectDesignsKey,
+  projectDocumentsKey,
+  projectDocumentsSummaryKey,
   projectSurveyKey,
   projectTasksKey,
 } from "@/lib/project-api-client";
@@ -19,6 +21,13 @@ export async function revalidateProjectHubCaches(projectId: string): Promise<voi
     mutate(projectSurveyKey(projectId)),
     mutate(projectDesignsKey(projectId)),
     mutate(projectCommentsKey(projectId)),
+    mutate(projectDocumentsKey(projectId)),
+    mutate(projectDocumentsSummaryKey(projectId)),
+    mutate(
+      (key) =>
+        typeof key === "string" &&
+        key.startsWith(`/api/projects/${projectId}/documents`)
+    ),
     mutate(projectActivityKey(projectId)),
     mutate(
       (key) =>

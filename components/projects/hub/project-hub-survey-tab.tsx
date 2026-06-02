@@ -28,6 +28,7 @@ import {
 import Link from "next/link";
 import type { ReactNode } from "react";
 import useSWR from "swr";
+import { ProjectSurveyPhotosSection } from "@/components/projects/hub/project-survey-photos";
 
 const ROOF_LABELS: Record<string, string> = {
   rcc: "RCC",
@@ -482,6 +483,7 @@ export function ProjectHubSurveyTab({
 
       <LinkedRecordsCard project={project} />
       <SurveyStatusStrip survey={survey ?? null} project={project} />
+      <ProjectSurveyPhotosSection projectId={project.id} enabled />
 
       {hasSurvey ? <SurveyDataView survey={survey} /> : <SurveyEmptyState project={project} />}
     </div>

@@ -4,6 +4,7 @@ import { ProjectHubAdvanceSheet } from "@/components/projects/hub/project-hub-ad
 import { ProjectHubHeader } from "@/components/projects/hub/project-hub-header";
 import { ProjectHubOverviewTab } from "@/components/projects/hub/project-hub-overview-tab";
 import { ProjectHubCommentsTab } from "@/components/projects/hub/project-hub-comments-tab";
+import { ProjectHubDocumentsTab } from "@/components/projects/hub/project-hub-documents-tab";
 import { ProjectHubDesignTab } from "@/components/projects/hub/project-hub-design-tab";
 import { ProjectHubSurveyTab } from "@/components/projects/hub/project-hub-survey-tab";
 import { ProjectHubTasksTab } from "@/components/projects/hub/project-hub-tasks-tab";
@@ -219,6 +220,9 @@ export function ProjectHubClient({ projectId }: { projectId: string }) {
           <ProjectHubDesignTab project={project} enabled />
         ) : null}
         {activeTab === "tasks" ? <ProjectHubTasksTab project={project} enabled /> : null}
+        {activeTab === "documents" ? (
+          <ProjectHubDocumentsTab project={project} enabled />
+        ) : null}
         {activeTab === "timeline" ? (
           <ProjectHubTimelineTab project={project} enabled />
         ) : null}

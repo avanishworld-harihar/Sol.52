@@ -18,6 +18,7 @@ import {
 import Link from "next/link";
 import { buildProposalEditHref } from "@/lib/proposal-edit-url";
 import type { ReactNode } from "react";
+import { ProjectHubOverviewDocuments } from "@/components/projects/hub/project-hub-overview-documents";
 
 const ROOF_LABELS: Record<string, string> = {
   rcc: "RCC",
@@ -156,6 +157,8 @@ export function ProjectHubOverviewTab({ project }: { project: ProjectListItem })
           </CardContent>
         </Card>
       )}
+
+      <ProjectHubOverviewDocuments project={project} />
 
       <Card className="page-lite-item border-slate-200/90 dark:border-white/10">
         <CardHeader className="pb-2">
