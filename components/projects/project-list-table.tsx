@@ -6,6 +6,7 @@ import { ProjectStageBadge } from "@/components/projects/project-stage-badge";
 import type { ProjectListPatch } from "@/components/projects/project-list-card";
 import { useLanguage } from "@/lib/language-context";
 import type { ProjectListItem } from "@/lib/project-api-client";
+import { buildProposalEditHref } from "@/lib/proposal-edit-url";
 import { projectDisplayName } from "@/lib/project-list-utils";
 import { formatInrCompact } from "@/lib/proposal-hub-insights";
 import { cn } from "@/lib/utils";
@@ -89,7 +90,10 @@ export function ProjectListTable({
                   <div className="flex items-center justify-end gap-1">
                     {p.lead_id ? (
                       <Link
-                        href={`/customers/${encodeURIComponent(p.lead_id)}`}
+                        href={buildProposalEditHref({
+                          leadId: p.lead_id,
+                          proposalId: p.primary_proposal_id,
+                        })}
                         className="inline-flex h-8 items-center rounded-lg border border-slate-200 px-2 text-[10px] font-bold text-slate-700 dark:border-white/15 dark:text-slate-200"
                         title={t("projects_resumeProposal")}
                       >

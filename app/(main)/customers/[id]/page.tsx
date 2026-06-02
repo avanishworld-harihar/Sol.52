@@ -1,23 +1,11 @@
-import { Suspense } from "react";
-import { CustomerDetailPage } from "@/components/customers/customer-detail-page";
+import { redirect } from "next/navigation";
+import { buildCustomerLeadEditHref } from "@/lib/customer-lead-edit-url";
 
 type Props = { params: Promise<{ id: string }> };
 
+/** Legacy `/customers/[id]` → lead edit modal on the Customers list (avoids detail-page errors). */
 export default async function CustomerDetailRoute({ params }: Props) {
   const { id } = await params;
-  return (
-    <Suspense fallback={<CustomerDetailSkeleton />}>
-      <CustomerDetailPage leadId={id} />
-    </Suspense>
-  );
-}
-
-function CustomerDetailSkeleton() {
-  return (
-    <div className="animate-pulse space-y-4 p-4">
-      <div className="h-28 rounded-2xl bg-slate-200/80 dark:bg-white/5" />
-      <div className="h-48 rounded-2xl bg-slate-200/80 dark:bg-white/5" />
-      <div className="h-40 rounded-2xl bg-slate-200/80 dark:bg-white/5" />
-    </div>
-  );
+  if (!id?.trim()) redirect("/customers");
+  redirect(buildCustomerLeadEditHref(id.trim()));
 }

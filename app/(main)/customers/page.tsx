@@ -42,7 +42,7 @@ import { LEAD_AREA_PROFILE_OPTIONS, LEAD_CONNECTION_TYPE_OPTIONS } from "@/lib/l
 import type { CustomerLead } from "@/lib/types";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import type { FormEvent } from "react";
-import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
 import useSWR, { useSWRConfig } from "swr";
@@ -350,6 +350,47 @@ function CustomersPageContent() {
       connection_type: (customer.connection_type ?? "").trim()
     });
   }
+
+  const editLeadQs = searchParams.get("editLead")?.trim() ?? "";
+  const editLeadOpenedRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!editLeadQs || editLeadOpenedRef.current === editLeadQs) return;
+
+    const finishDeepLink = (customer: CustomerLead) => {
+      editLeadOpenedRef.current = editLeadQs;
+      openEditLead(customer);
+      setSelectedLeadId(customer.id);
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("editLead");
+      params.set("lead", customer.id);
+      router.replace(`/customers?${params.toString()}`, { scroll: false });
+    };
+
+    const fromList = allCustomers.find((c) => c.id === editLeadQs);
+    if (fromList) {
+      finishDeepLink(fromList);
+      return;
+    }
+
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch(`/api/customers/${encodeURIComponent(editLeadQs)}`, {
+          cache: "no-store",
+        });
+        const json = (await res.json()) as { ok?: boolean; data?: CustomerLead };
+        if (cancelled || !res.ok || !json.ok || !json.data) return;
+        finishDeepLink(json.data);
+      } catch {
+        /* list may load shortly — effect will retry when allCustomers updates */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editLeadQs, allCustomers]);
 
   async function confirmDeleteLead() {
     if (!deleteTarget) return;

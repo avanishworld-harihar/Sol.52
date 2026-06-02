@@ -151,22 +151,35 @@ const PRIORITY_META = {
 
 /* ---------- sub-components ---------- */
 
-function SectionCard({ title, icon: Icon, children, action }: {
+function SectionCard({
+  title,
+  icon: Icon,
+  children,
+  action,
+  open = true,
+}: {
   title: string;
   icon: typeof Phone;
   children: React.ReactNode;
   action?: React.ReactNode;
+  /** When false, only the header row is shown (collapsible sections). */
+  open?: boolean;
 }) {
   return (
     <section className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-white/10 dark:bg-[#0c1017]">
-      <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-white/10">
+      <div
+        className={cn(
+          "flex items-center justify-between px-4 py-3",
+          open && "border-b border-slate-100 dark:border-white/10"
+        )}
+      >
         <div className="flex items-center gap-2">
           <Icon className="h-4 w-4 text-teal-600" aria-hidden />
           <h2 className="text-sm font-bold text-slate-900 dark:text-white">{title}</h2>
         </div>
         {action}
       </div>
-      <div className="p-4">{children}</div>
+      {open ? <div className="p-4">{children}</div> : null}
     </section>
   );
 }
@@ -208,9 +221,7 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
   );
 
   const lead = leadData ?? null;
-  const [timelineFilter, setTimelineFilter] = useState<
-    "all" | "stage" | "lead" | "calls" | "followup" | "files" | "proposal"
-  >("all");
+  const [timelineOpen, setTimelineOpen] = useState(false);
 
   const statusKey = normalizeLeadStatus(lead?.status ?? "new");
   const currentStepIdx = PIPELINE_STEPS.findIndex((s) => s.key === statusKey);
@@ -347,30 +358,15 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
     try { await patchReminder(id, { status: "completed" }); } finally { await mutateReminders(); }
   }, [mutateReminders]);
 
-  const filteredTimeline = useMemo(() => {
-    if (timelineFilter === "all") return timeline;
-    const mapByFilter: Record<string, string[]> = {
-      stage: ["status_changed", "pipeline_stage_changed"],
-      lead: ["lead_edited", "lead_created"],
-      calls: ["call_logged", "customer_contacted"],
-      followup: ["followup_created", "followup_snoozed", "reminder_completed", "visit_scheduled", "visit_completed", "note_added"],
-      files: ["file_uploaded"],
-      proposal: ["proposal_created", "proposal_opened", "proposal_downloaded"],
-      all: [],
-    };
-    const allowed = new Set(mapByFilter[timelineFilter] ?? []);
-    return timeline.filter((ev) => allowed.has(ev.event_type));
-  }, [timeline, timelineFilter]);
-
   /* ------ timeline groups ------ */
   const timelineGroups = useMemo(() => {
-    return filteredTimeline.reduce<Record<string, ActivityEvent[]>>((acc, ev) => {
+    return timeline.reduce<Record<string, ActivityEvent[]>>((acc, ev) => {
       const key = formatCrmDayLabel(ev.occurred_at);
       if (!acc[key]) acc[key] = [];
       acc[key]!.push(ev);
       return acc;
     }, {});
-  }, [filteredTimeline]);
+  }, [timeline]);
 
   /* ------ files grouped ------ */
   const bills = files.filter((f) => f.file_type === "bill");
@@ -518,28 +514,20 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
       <SectionCard
         title="Activity Timeline"
         icon={Clock3}
+        open={timelineOpen}
         action={
-          <div className="relative">
-            <select
-              value={timelineFilter}
-              onChange={(e) =>
-                setTimelineFilter(
-                  e.target.value as "all" | "stage" | "lead" | "calls" | "followup" | "files" | "proposal"
-                )
-              }
-              className="h-8 rounded-lg border border-slate-200 bg-white px-2.5 pr-7 text-xs font-semibold text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
-              aria-label="Filter activity timeline"
-            >
-              <option value="all">All activity</option>
-              <option value="stage">Stage changes</option>
-              <option value="lead">Lead edits</option>
-              <option value="calls">Calls</option>
-              <option value="followup">Follow-ups</option>
-              <option value="files">Files</option>
-              <option value="proposal">Proposals</option>
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" aria-hidden />
-          </div>
+          <button
+            type="button"
+            onClick={() => setTimelineOpen((open) => !open)}
+            aria-expanded={timelineOpen}
+            aria-label={timelineOpen ? "Collapse activity timeline" : "Expand activity timeline"}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200/90 text-slate-600 transition hover:bg-slate-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5"
+          >
+            <ChevronDown
+              className={cn("h-4 w-4 transition-transform duration-200", timelineOpen && "rotate-180")}
+              aria-hidden
+            />
+          </button>
         }
       >
         {Object.keys(timelineGroups).length === 0 ? (

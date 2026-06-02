@@ -6,6 +6,7 @@ import { ProjectStageBadge } from "@/components/projects/project-stage-badge";
 import { useLanguage } from "@/lib/language-context";
 import type { ProjectListItem } from "@/lib/project-api-client";
 import { projectDisplayName } from "@/lib/project-list-utils";
+import { buildProposalEditHref } from "@/lib/proposal-edit-url";
 import { formatInrCompact } from "@/lib/proposal-hub-insights";
 import { cn } from "@/lib/utils";
 import { Archive, ArchiveRestore, Eye, EyeOff, Send } from "lucide-react";
@@ -131,7 +132,10 @@ export function ProjectListCard({
             <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
               {project.lead_id ? (
                 <Link
-                  href={`/customers/${encodeURIComponent(project.lead_id)}`}
+                  href={buildProposalEditHref({
+                    leadId: project.lead_id,
+                    proposalId: project.primary_proposal_id,
+                  })}
                   onClick={(e) => e.stopPropagation()}
                   onKeyDown={(e) => e.stopPropagation()}
                   className="inline-flex h-7 min-w-[28px] items-center justify-center rounded-md border border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/5 sm:h-8 sm:px-2"

@@ -34,6 +34,7 @@ import type { ProjectStageId } from "@/lib/project-stages";
 import { isProjectStageId } from "@/lib/project-stages";
 import { formatPipelineDisplayName } from "@/lib/supabase";
 import { WorkspacePage, WorkspacePageHero, WorkspaceStaggerItem } from "@/components/workspace";
+import { buildCustomerLeadEditHref } from "@/lib/customer-lead-edit-url";
 import { buildProposalEditHref } from "@/lib/proposal-edit-url";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -256,6 +257,18 @@ function ProjectsBoard() {
       status: mapPipelineStatus(project.status),
     });
   }, []);
+
+  const openProjectCardEdit = useCallback(
+    (project: ProjectListItem) => {
+      const leadId = project.lead_id?.trim();
+      if (leadId) {
+        router.push(buildCustomerLeadEditHref(leadId));
+        return;
+      }
+      openEditProject(project);
+    },
+    [router, openEditProject]
+  );
 
   const revalidateAllLists = useCallback(async () => {
     await mutateList();
@@ -500,7 +513,7 @@ function ProjectsBoard() {
               projects={listPipeline.items}
               view={view}
               onPatch={handlePatch}
-              onEdit={openEditProject}
+              onEdit={openProjectCardEdit}
               onDelete={setDeleteProjectTarget}
             />
             <div className="page-lite-item space-y-1.5 max-sm:space-y-1 lg:hidden sm:space-y-3">
@@ -510,7 +523,7 @@ function ProjectsBoard() {
                   project={project}
                   view={view}
                   onPatch={handlePatch}
-                  onEdit={openEditProject}
+                  onEdit={openProjectCardEdit}
                   onDelete={setDeleteProjectTarget}
                 />
               ))}

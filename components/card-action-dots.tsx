@@ -20,8 +20,8 @@ const iconBtnClass =
   "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border outline-none transition active:scale-95 focus-visible:ring-2 focus-visible:ring-offset-1";
 
 /**
- * Two action affordances: collapsed blue/red dots → on hover (desktop) or tap
- * (touch), expand into pencil (edit) and trash (delete) icon buttons.
+ * Collapsed blue/red dots → hover (desktop) or tap (touch) reveals pencil + trash.
+ * Tap outside collapses back to dots.
  */
 export function CardActionDots({
   className,
@@ -30,11 +30,16 @@ export function CardActionDots({
   onEdit,
   onDelete,
 }: CardActionDotsProps) {
+  const [hoverCapable, setHoverCapable] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [pinned, setPinned] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
 
-  const revealed = hovered || pinned;
+  const revealed = pinned || (hoverCapable && hovered);
+
+  useEffect(() => {
+    setHoverCapable(window.matchMedia("(hover: hover) and (pointer: fine)").matches);
+  }, []);
 
   useEffect(() => {
     if (!pinned) return;
@@ -44,13 +49,16 @@ export function CardActionDots({
       if (root.contains(event.target as Node)) return;
       setPinned(false);
     };
-    window.addEventListener("pointerdown", onPointerDown);
-    return () => window.removeEventListener("pointerdown", onPointerDown);
+    document.addEventListener("pointerdown", onPointerDown, true);
+    return () => document.removeEventListener("pointerdown", onPointerDown, true);
   }, [pinned]);
 
   if (!onEdit && !onDelete) return null;
 
-  const revealFromDots = () => setPinned(true);
+  const collapse = () => {
+    setPinned(false);
+    setHovered(false);
+  };
 
   return (
     <div
@@ -58,9 +66,11 @@ export function CardActionDots({
       role="toolbar"
       aria-label="Card actions"
       className={cn("pointer-events-auto", className)}
-      onMouseEnter={() => setHovered(true)}
+      onMouseEnter={() => {
+        if (hoverCapable) setHovered(true);
+      }}
       onMouseLeave={() => {
-        setHovered(false);
+        if (hoverCapable) setHovered(false);
       }}
       onClick={(e) => e.stopPropagation()}
       onPointerDown={(e) => e.stopPropagation()}
@@ -72,7 +82,7 @@ export function CardActionDots({
           aria-expanded={false}
           onClick={(e) => {
             e.stopPropagation();
-            revealFromDots();
+            setPinned(true);
           }}
           className="inline-flex items-center gap-3 rounded-full border border-transparent px-1.5 py-1.5 outline-none transition hover:border-slate-200/80 hover:bg-white/90 focus-visible:ring-2 focus-visible:ring-sky-400/50 dark:hover:border-white/15 dark:hover:bg-white/10"
         >
@@ -96,7 +106,7 @@ export function CardActionDots({
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                setPinned(false);
+                collapse();
                 onEdit();
               }}
               className={cn(
@@ -113,7 +123,7 @@ export function CardActionDots({
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                setPinned(false);
+                collapse();
                 onDelete();
               }}
               className={cn(
