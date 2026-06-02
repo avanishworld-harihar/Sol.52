@@ -126,7 +126,8 @@ export function PresenceStack({ proposalId, userName = "You", className = "" }: 
   const sessionKey = useRef(getSessionKey());
 
   useEffect(() => {
-    if (!supabase) return;
+    const client = supabase;
+    if (!client) return;
 
     let cancelled = false;
 
@@ -145,13 +146,13 @@ export function PresenceStack({ proposalId, userName = "You", className = "" }: 
 
     // Client-side navigation can leave a subscribed channel in the Supabase client.
     // Re-attaching `.on("presence")` on that channel throws after subscribe().
-    for (const existing of supabase.getChannels()) {
+    for (const existing of client.getChannels()) {
       if (existing.topic === realtimeTopic) {
-        void supabase.removeChannel(existing);
+        void client.removeChannel(existing);
       }
     }
 
-    const channel = supabase.channel(channelName, {
+    const channel = client.channel(channelName, {
       config: { presence: { key: me.key } },
     });
 
@@ -180,7 +181,7 @@ export function PresenceStack({ proposalId, userName = "You", className = "" }: 
 
     return () => {
       cancelled = true;
-      void supabase.removeChannel(channel);
+      void client.removeChannel(channel);
       channelRef.current = null;
     };
   }, [proposalId, userName]);
