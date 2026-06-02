@@ -109,6 +109,11 @@ export function ProjectHubOverviewTab({ project }: { project: ProjectListItem })
   const capacity =
     project.capacity_kw?.trim() ||
     (project.panel_count != null ? `${project.panel_count} panels` : null);
+  const proposalHref = project.primary_proposal_id
+    ? `/proposals/${encodeURIComponent(project.primary_proposal_id)}`
+    : project.lead_id
+      ? `/proposal?leadId=${encodeURIComponent(project.lead_id)}`
+      : "/proposals";
 
   return (
     <div
@@ -139,9 +144,7 @@ export function ProjectHubOverviewTab({ project }: { project: ProjectListItem })
                     </Link>
                   </Button>
                   <Button type="button" variant="outline" size="sm" className="gap-1.5" asChild>
-                    <Link
-                      href={`/proposal?leadId=${encodeURIComponent(project.lead_id)}`}
-                    >
+                    <Link href={proposalHref}>
                       <ExternalLink className="h-3.5 w-3.5" aria-hidden />
                       Open proposal
                       <ArrowUpRight className="h-3 w-3 opacity-60" aria-hidden />

@@ -114,6 +114,7 @@ export interface ProjectListItem {
   lead_name: string | null;
   lead_phone: string | null;
   lead_city: string | null;
+  primary_proposal_id: string | null;
   manager_name: string | null;
   manager_phone: string | null;
   tech_name: string | null;

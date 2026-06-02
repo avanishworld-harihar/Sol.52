@@ -89,6 +89,16 @@ function DesignSection({
 }
 
 function LinkedRecordsCard({ project }: { project: ProjectListItem }) {
+  const proposalHref = project.primary_proposal_id
+    ? `/proposals/${encodeURIComponent(project.primary_proposal_id)}`
+    : project.lead_id
+      ? `/proposal?leadId=${encodeURIComponent(project.lead_id)}`
+      : "/proposals";
+  const bomHref = project.primary_proposal_id
+    ? `/proposals/${encodeURIComponent(project.primary_proposal_id)}#bom`
+    : project.lead_id
+      ? `/proposal?leadId=${encodeURIComponent(project.lead_id)}#bom`
+      : "/proposals";
   return (
     <Card className="page-lite-item border-slate-200/90 dark:border-white/10">
       <CardContent className="flex flex-col gap-2 p-3 max-sm:p-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:p-4">
@@ -115,14 +125,14 @@ function LinkedRecordsCard({ project }: { project: ProjectListItem }) {
                 </Link>
               </Button>
               <Button type="button" variant="outline" size="sm" className="gap-1.5" asChild>
-                <Link href={`/proposal?leadId=${encodeURIComponent(project.lead_id)}`}>
+                <Link href={proposalHref}>
                   <ExternalLink className="h-3.5 w-3.5" aria-hidden />
                   Open proposal
                   <ArrowUpRight className="h-3 w-3 opacity-60" aria-hidden />
                 </Link>
               </Button>
               <Button type="button" variant="outline" size="sm" className="gap-1.5" asChild>
-                <Link href={`/proposal?leadId=${encodeURIComponent(project.lead_id)}#bom`}>
+                <Link href={bomHref}>
                   <Layers className="h-3.5 w-3.5" aria-hidden />
                   Open BOM workspace
                   <ArrowUpRight className="h-3 w-3 opacity-60" aria-hidden />

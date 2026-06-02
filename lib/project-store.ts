@@ -15,7 +15,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
-import { supabase } from "@/lib/supabase";
+import { mapLeadIdsToLatestProposalIds, supabase } from "@/lib/supabase";
 import { calculateProjectHealth } from "@/lib/project-health";
 import type { ProjectHealth } from "@/lib/project-health";
 import type { ProjectStageId, ProjectStageStatus, NmSubstatus } from "@/lib/project-stages";
@@ -293,6 +293,7 @@ export interface ProjectDetailRow extends ProjectRow {
   lead_name: string | null;
   lead_phone: string | null;
   lead_city: string | null;
+  primary_proposal_id: string | null;
   manager_name: string | null;
   manager_phone: string | null;
   tech_name: string | null;
@@ -420,6 +421,8 @@ export async function getProjectDetail(projectId: string): Promise<ProjectDetail
 
   const project = base as unknown as ProjectRow;
   const proposalFallback = await readProposalFallbackForLead(project.lead_id);
+  const proposalByLead =
+    project.lead_id ? await mapLeadIdsToLatestProposalIds([project.lead_id]) : {};
   const capacityKw = project.capacity_kw?.trim() ? project.capacity_kw : proposalFallback.capacity_kw;
   const contractAmount =
     project.contract_amount_inr != null ? project.contract_amount_inr : proposalFallback.contract_amount_inr;
@@ -428,6 +431,7 @@ export async function getProjectDetail(projectId: string): Promise<ProjectDetail
     ...project,
     capacity_kw: capacityKw,
     contract_amount_inr: contractAmount,
+    primary_proposal_id: project.lead_id ? proposalByLead[project.lead_id] ?? null : null,
     lead_name: leads ? String(leads.name ?? "") : null,
     lead_phone: leads ? String(leads.phone ?? "") : null,
     lead_city: leads ? String(leads.city ?? "") : null,
@@ -492,8 +496,12 @@ export async function listProjects(opts: {
   if (error || !Array.isArray(data)) return [];
 
   const rows = data as Record<string, unknown>[];
+  const leadIds = rows
+    .map((row) => (row.lead_id != null ? String(row.lead_id) : ""))
+    .filter(Boolean);
+  const proposalByLead = await mapLeadIdsToLatestProposalIds(leadIds);
   const proposalFallbackByLead = await readLatestProposalFallbackByLeadIds(
-    rows.map((row) => (row.lead_id != null ? String(row.lead_id) : "")).filter(Boolean)
+    leadIds
   );
 
   return rows.map((row) => {
@@ -519,6 +527,7 @@ export async function listProjects(opts: {
       ...project,
       capacity_kw: capacityKw,
       contract_amount_inr: contractAmount,
+      primary_proposal_id: leadId ? proposalByLead[leadId] ?? null : null,
       lead_name: leads ? String(leads.name ?? "") : null,
       lead_phone: leads ? String(leads.phone ?? "") : null,
       lead_city: leads ? String(leads.city ?? "") : null,

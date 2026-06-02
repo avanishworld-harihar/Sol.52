@@ -208,6 +208,10 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
   );
 
   const lead = leadData ?? null;
+  const [timelineFilter, setTimelineFilter] = useState<
+    "all" | "stage" | "lead" | "calls" | "followup" | "files" | "proposal"
+  >("all");
+
   const statusKey = normalizeLeadStatus(lead?.status ?? "new");
   const currentStepIdx = PIPELINE_STEPS.findIndex((s) => s.key === statusKey);
 
@@ -343,15 +347,30 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
     try { await patchReminder(id, { status: "completed" }); } finally { await mutateReminders(); }
   }, [mutateReminders]);
 
+  const filteredTimeline = useMemo(() => {
+    if (timelineFilter === "all") return timeline;
+    const mapByFilter: Record<string, string[]> = {
+      stage: ["status_changed", "pipeline_stage_changed"],
+      lead: ["lead_edited", "lead_created"],
+      calls: ["call_logged", "customer_contacted"],
+      followup: ["followup_created", "followup_snoozed", "reminder_completed", "visit_scheduled", "visit_completed", "note_added"],
+      files: ["file_uploaded"],
+      proposal: ["proposal_created", "proposal_opened", "proposal_downloaded"],
+      all: [],
+    };
+    const allowed = new Set(mapByFilter[timelineFilter] ?? []);
+    return timeline.filter((ev) => allowed.has(ev.event_type));
+  }, [timeline, timelineFilter]);
+
   /* ------ timeline groups ------ */
   const timelineGroups = useMemo(() => {
-    return timeline.reduce<Record<string, ActivityEvent[]>>((acc, ev) => {
+    return filteredTimeline.reduce<Record<string, ActivityEvent[]>>((acc, ev) => {
       const key = formatCrmDayLabel(ev.occurred_at);
       if (!acc[key]) acc[key] = [];
       acc[key]!.push(ev);
       return acc;
     }, {});
-  }, [timeline]);
+  }, [filteredTimeline]);
 
   /* ------ files grouped ------ */
   const bills = files.filter((f) => f.file_type === "bill");
@@ -496,7 +515,33 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
       </SectionCard>
 
       {/* ── 2. Activity Timeline ── */}
-      <SectionCard title="Activity Timeline" icon={Clock3}>
+      <SectionCard
+        title="Activity Timeline"
+        icon={Clock3}
+        action={
+          <div className="relative">
+            <select
+              value={timelineFilter}
+              onChange={(e) =>
+                setTimelineFilter(
+                  e.target.value as "all" | "stage" | "lead" | "calls" | "followup" | "files" | "proposal"
+                )
+              }
+              className="h-8 rounded-lg border border-slate-200 bg-white px-2.5 pr-7 text-xs font-semibold text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
+              aria-label="Filter activity timeline"
+            >
+              <option value="all">All activity</option>
+              <option value="stage">Stage changes</option>
+              <option value="lead">Lead edits</option>
+              <option value="calls">Calls</option>
+              <option value="followup">Follow-ups</option>
+              <option value="files">Files</option>
+              <option value="proposal">Proposals</option>
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" aria-hidden />
+          </div>
+        }
+      >
         {Object.keys(timelineGroups).length === 0 ? (
           <p className="text-sm text-slate-500">No activity yet.</p>
         ) : (

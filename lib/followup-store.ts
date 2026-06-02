@@ -30,6 +30,52 @@ export async function appendActivityEvent(input: {
 }): Promise<ActivityEvent | null> {
   const client = db();
   if (!client) return null;
+
+  if (input.eventType === "lead_edited") {
+    const nowIso = input.occurredAt ?? new Date().toISOString();
+    const mergeWindowMs = 2 * 60 * 1000;
+    const { data: latestEdited } = await client
+      .from("activity_events")
+      .select("id,occurred_at,meta_json")
+      .eq("lead_id", input.leadId)
+      .eq("event_type", "lead_edited")
+      .order("occurred_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (latestEdited) {
+      const latestAt = Date.parse(String(latestEdited.occurred_at ?? ""));
+      const nowAt = Date.parse(nowIso);
+      if (Number.isFinite(latestAt) && Number.isFinite(nowAt) && Math.abs(nowAt - latestAt) <= mergeWindowMs) {
+        const prevMeta =
+          latestEdited.meta_json && typeof latestEdited.meta_json === "object"
+            ? (latestEdited.meta_json as Record<string, unknown>)
+            : {};
+        const prevFields = Array.isArray(prevMeta.fields)
+          ? prevMeta.fields.map((f) => String(f))
+          : [];
+        const nextFields = Array.isArray(input.meta?.fields)
+          ? input.meta!.fields.map((f) => String(f))
+          : [];
+        const mergedMeta = {
+          ...prevMeta,
+          ...(input.meta ?? {}),
+          fields: [...new Set([...prevFields, ...nextFields])],
+        };
+        const { data: updated, error: updateErr } = await client
+          .from("activity_events")
+          .update({
+            meta_json: mergedMeta,
+            occurred_at: nowIso,
+          })
+          .eq("id", String(latestEdited.id))
+          .select("*")
+          .single();
+        if (!updateErr && updated) return updated as ActivityEvent;
+      }
+    }
+  }
+
   const { data, error } = await client
     .from("activity_events")
     .insert({

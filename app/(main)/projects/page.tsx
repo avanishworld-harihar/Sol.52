@@ -547,7 +547,11 @@ function ProjectsBoard() {
               </p>
               {editProject.lead_id ? (
                 <Link
-                  href={`/proposal?leadId=${encodeURIComponent(editProject.lead_id)}`}
+                  href={
+                    editProject.primary_proposal_id
+                      ? `/proposals/${encodeURIComponent(editProject.primary_proposal_id)}`
+                      : `/proposal?leadId=${encodeURIComponent(editProject.lead_id)}`
+                  }
                   className="mb-1 flex min-h-10 items-center justify-center gap-2 rounded-xl border border-teal-300 bg-teal-50 px-3 text-xs font-extrabold text-teal-900 shadow-sm transition hover:bg-teal-100 dark:border-teal-500/45 dark:bg-teal-950/40 dark:text-teal-100"
                   onClick={() => closeProjectEditModal()}
                 >
