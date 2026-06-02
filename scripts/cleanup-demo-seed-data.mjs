@@ -59,20 +59,29 @@ function loadEnvLocal() {
   }
 }
 
-function isDemoProject(row) {
+function isDemoProject(row, demoLeadIds) {
   const detail = String(row.detail ?? "");
   if (DEMO_DETAIL_MARKERS.some((m) => detail.includes(m))) return true;
   const name = String(row.official_name ?? row.customer_name ?? "");
   if (DEMO_OFFICIAL_NAMES.some((n) => name === n || name.startsWith(n))) return true;
+  if (name === "Ravi Sharma" || name.startsWith("Ravi Sharma —")) return true;
   const code = String(row.project_code ?? "");
   if (/^SOL-\d{6}-00[123]$/.test(code)) return true;
   if (code === "SOL-HUB-S3") return true;
+  const leadId = row.lead_id != null ? String(row.lead_id) : "";
+  if (leadId && demoLeadIds?.has(leadId)) return true;
   return false;
+}
+
+function isDemoSeedPhone(phone) {
+  const digits = String(phone ?? "").replace(/\D/g, "");
+  return /^9876[56]\d{5}$/.test(digits);
 }
 
 function isDemoLead(row, leadIdsFromDeletedProjects) {
   const id = row.id;
   if (leadIdsFromDeletedProjects.has(id)) return true;
+  if (isDemoSeedPhone(row.phone)) return true;
   const name = String(row.name ?? "").trim();
   const city = String(row.city ?? "").trim();
   if (!DEMO_LEAD_NAMES.includes(name)) return false;
@@ -109,26 +118,6 @@ async function main() {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 
-  const { data: projects, error: projErr } = await admin.from("projects").select("*");
-  if (projErr) {
-    console.error("projects select failed:", projErr.message);
-    process.exit(1);
-  }
-
-  const demoProjects = (projects ?? []).filter(isDemoProject);
-  const leadIdsFromDeleted = new Set(
-    demoProjects.map((p) => p.lead_id).filter(Boolean)
-  );
-
-  console.log(DRY_RUN ? "[dry-run]" : "[delete]", "Demo projects:", demoProjects.length);
-  for (const p of demoProjects) {
-    console.log("  -", p.official_name ?? p.customer_name, `(${p.id})`);
-    if (DRY_RUN) continue;
-    await deleteProjectChildren(admin, p.id);
-    const { error } = await admin.from("projects").delete().eq("id", p.id);
-    if (error) console.error("    delete failed:", error.message);
-  }
-
   let leadsTable = "leads";
   const probe = await admin.from("leads").select("id").limit(1);
   if (probe.error) {
@@ -146,9 +135,33 @@ async function main() {
     process.exit(1);
   }
 
+  const demoLeadIds = new Set(
+    (leads ?? []).filter((row) => isDemoLead(row, new Set())).map((row) => row.id)
+  );
+
+  const { data: projects, error: projErr } = await admin.from("projects").select("*");
+  if (projErr) {
+    console.error("projects select failed:", projErr.message);
+    process.exit(1);
+  }
+
+  const demoProjects = (projects ?? []).filter((p) => isDemoProject(p, demoLeadIds));
+  const leadIdsFromDeleted = new Set(
+    demoProjects.map((p) => p.lead_id).filter(Boolean)
+  );
+
+  console.log(DRY_RUN ? "[dry-run]" : "[delete]", "Demo projects:", demoProjects.length);
+  for (const p of demoProjects) {
+    console.log("  -", p.official_name ?? p.customer_name, `(${p.id})`);
+    if (DRY_RUN) continue;
+    await deleteProjectChildren(admin, p.id);
+    const { error } = await admin.from("projects").delete().eq("id", p.id);
+    if (error) console.error("    delete failed:", error.message);
+  }
+
   const remainingProjectLeadIds = new Set(
     (projects ?? [])
-      .filter((p) => !isDemoProject(p))
+      .filter((p) => !isDemoProject(p, demoLeadIds))
       .map((p) => p.lead_id)
       .filter(Boolean)
   );
