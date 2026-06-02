@@ -368,7 +368,7 @@ export function buildOperationalInsights(
         uiLang === "hi"
           ? `लीड → प्रस्ताव ${leadToProposalPct}% — नई प्रस्ताव बनाएँ।`
           : `Lead → proposal at ${leadToProposalPct}% — create proposals from top leads.`,
-      href: "/proposal",
+      href: "/proposal?new=1",
       cta: uiLang === "hi" ? "नया प्रस्ताव" : "New proposal"
     });
   }

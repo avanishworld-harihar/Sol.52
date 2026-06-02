@@ -252,6 +252,9 @@ function ProposalPageContent() {
   const hadSessionOnMountRef = useRef(false);
   const skipProposalRestoreRef = useRef(false);
   const skipServerRestoreRef = useRef(false);
+  /** Deep-link + restore refs — must be declared before mount effects that touch them. */
+  const deepLinkLeadIdRef = useRef<string | null>(null);
+  const deepLinkProposalIdRef = useRef<string | null>(null);
   /** Opening `/proposal?proposalId=…` — do not wipe units/bills with CRM lead seed. */
   const restoringExistingProposalRef = useRef(false);
   /** Saved plant kW from proposal — block bill auto-resize from clobbering catalog. */
@@ -647,10 +650,8 @@ function ProposalPageContent() {
    * `const` derived from SWR data above — referencing it earlier causes a
    * TypeScript "used before declaration" error).
    */
-  const deepLinkLeadIdRef = useRef<string | null>(null);
   /** Until CRM pick applies, keeps `leadId` from URL so `/api/calculations` can load saved bill/calc. */
   const [urlLeadIdForRestore, setUrlLeadIdForRestore] = useState("");
-  const deepLinkProposalIdRef = useRef<string | null>(null);
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (skipProposalRestoreRef.current) return;

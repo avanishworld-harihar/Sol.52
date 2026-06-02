@@ -128,6 +128,8 @@ export function PresenceStack({ proposalId, userName = "You", className = "" }: 
   useEffect(() => {
     if (!supabase) return;
 
+    let cancelled = false;
+
     const myInitials = nameToInitials(userName);
     const myColorSeed = nameToColorSeed(userName + sessionKey.current);
 
@@ -139,31 +141,46 @@ export function PresenceStack({ proposalId, userName = "You", className = "" }: 
     };
 
     const channelName = `presence:workspace:${proposalId}`;
+    const realtimeTopic = `realtime:${channelName}`;
+
+    // Client-side navigation can leave a subscribed channel in the Supabase client.
+    // Re-attaching `.on("presence")` on that channel throws after subscribe().
+    for (const existing of supabase.getChannels()) {
+      if (existing.topic === realtimeTopic) {
+        void supabase.removeChannel(existing);
+      }
+    }
+
     const channel = supabase.channel(channelName, {
       config: { presence: { key: me.key } },
     });
 
-    channel
-      .on("presence", { event: "sync" }, () => {
-        const state = channel.presenceState<PresenceUser>();
-        const users: PresenceUser[] = [];
-        for (const presences of Object.values(state)) {
-          for (const p of presences as PresenceUser[]) {
-            users.push(p);
-          }
+    channel.on("presence", { event: "sync" }, () => {
+      if (cancelled) return;
+      const state = channel.presenceState<PresenceUser>();
+      const users: PresenceUser[] = [];
+      for (const presences of Object.values(state)) {
+        for (const p of presences as PresenceUser[]) {
+          users.push(p);
         }
-        setPeers(users);
-      })
-      .subscribe(async (status) => {
-        if (status === "SUBSCRIBED") {
-          await channel.track(me);
-        }
-      });
+      }
+      setPeers(users);
+    });
+
+    channel.subscribe(async (status) => {
+      if (cancelled || status !== "SUBSCRIBED") return;
+      try {
+        await channel.track(me);
+      } catch {
+        /* channel removed during navigation */
+      }
+    });
 
     channelRef.current = channel;
 
     return () => {
-      channel.unsubscribe().catch(() => undefined);
+      cancelled = true;
+      void supabase.removeChannel(channel);
       channelRef.current = null;
     };
   }, [proposalId, userName]);
