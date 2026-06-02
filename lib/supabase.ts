@@ -1,4 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
+import {
+  buildDemoSeedLeadIdSet,
+  filterOutDemoSeedLeads,
+  filterOutDemoSeedProjects,
+} from "@/lib/demo-seed-data";
 import { normalizeLeadStatus } from "@/lib/lead-status";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 
@@ -144,17 +149,24 @@ export async function listPipelineProjects(options?: ListPipelineProjectsOptions
   const leadIds = [...new Set(rows.map((r) => projectRowLeadId(r)).filter(Boolean))] as string[];
   const leadMap = new Map<string, string>();
   const leadStatusMap = new Map<string, string>();
+  let demoLeadIds = new Set<string>();
 
   if (leadIds.length) {
     const leadsTable = await resolveLeadsTable();
     if (leadsTable) {
-      const { data: leads } = await supabase.from(leadsTable).select("id,name,status").in("id", leadIds);
+      const { data: leads } = await supabase
+        .from(leadsTable)
+        .select("id,name,status,city,phone")
+        .in("id", leadIds);
+      const leadRecords: Record<string, unknown>[] = [];
       for (const L of leads ?? []) {
-        const row = L as { id: unknown; name: unknown; status?: unknown };
+        const row = L as { id: unknown; name: unknown; status?: unknown; city?: unknown; phone?: unknown };
         const id = String(row.id);
+        leadRecords.push(row as Record<string, unknown>);
         leadMap.set(id, String(row.name ?? ""));
         if (row.status != null) leadStatusMap.set(id, String(row.status));
       }
+      demoLeadIds = buildDemoSeedLeadIdSet(leadRecords);
     }
   }
 
@@ -178,10 +190,15 @@ export async function listPipelineProjects(options?: ListPipelineProjectsOptions
     };
   });
 
+  const visible = filterOutDemoSeedProjects(
+    mapped as unknown as Record<string, unknown>[],
+    demoLeadIds
+  ) as typeof mapped;
+
   if (options?.wonLeadsOnly) {
-    return mapped.filter((row) => normalizeLeadStatus(row.lead_status) === "won");
+    return visible.filter((row) => normalizeLeadStatus(row.lead_status) === "won");
   }
-  return mapped;
+  return visible;
 }
 
 /**
@@ -290,7 +307,7 @@ export async function listCustomers() {
     offset += pageSize;
     if (offset >= 5000) break;
   }
-  return rows;
+  return filterOutDemoSeedLeads(rows);
 }
 
 /** Latest proposal id per lead (for CRM → commercial hand-off). */

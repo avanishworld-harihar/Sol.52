@@ -38,9 +38,6 @@ import { buildMetricTrendLines, writeTrendBaseline, type MetricTrendLines } from
 import { useLanguage } from "@/lib/language-context";
 import { useEffect, useLayoutEffect, useMemo, useState, type ReactNode } from "react";
 
-const _demoStale = new Date(Date.now() - 5 * 86_400_000).toISOString();
-const _demoFresh = new Date(Date.now() - 1 * 86_400_000).toISOString();
-const SHOW_DEMO_PROJECTS = process.env.NEXT_PUBLIC_SHOW_DEMO_PROJECTS !== "false";
 const dashboardStagger = {
   visible: { opacity: 1 },
   hidden: { opacity: 0 },
@@ -205,44 +202,10 @@ function DashboardPageContent() {
 
   const showMetricSkeleton = isLoading && data === undefined && !error;
   const stats = data;
-  const projectSummaries = useMemo((): GlassProjectSummary[] => {
-    const live = stats?.recentProjects ?? [];
-    if (live.length > 0) return live;
-    if (!SHOW_DEMO_PROJECTS) return [];
-    return [
-      {
-        id: "demo-1",
-        name: "Sharma Residence (Ravi Sharma)",
-        detail: `${t("dashboard_demo_p1_detail")} • Demo data`,
-        capacityKw: "5.4 kW",
-        status: "active",
-        installProgress: 60,
-        nextAction: `${t("dashboard_demo_p1_next")} • Demo`,
-        updatedAt: _demoStale
-      },
-      {
-        id: "demo-2",
-        name: "Patel Commercial (Jignesh Patel)",
-        detail: `${t("dashboard_demo_p2_detail")} • Demo data`,
-        capacityKw: "12 kW",
-        status: "pending",
-        installProgress: 35,
-        nextAction: `${t("dashboard_demo_p2_next")} • Demo`,
-        updatedAt: _demoFresh
-      },
-      {
-        id: "demo-3",
-        name: "Green Valley School (Trust office)",
-        detail: `${t("dashboard_demo_p3_detail")} • Demo data`,
-        capacityKw: "25 kW",
-        status: "done",
-        installProgress: 100,
-        nextAction: "Installation complete • Demo",
-        updatedAt: _demoFresh
-      }
-    ];
-  }, [stats?.recentProjects, t]);
-  const showingDemoProjects = (stats?.recentProjects?.length ?? 0) === 0 && projectSummaries.length > 0;
+  const projectSummaries = useMemo(
+    (): GlassProjectSummary[] => stats?.recentProjects ?? [],
+    [stats?.recentProjects]
+  );
   const shouldAnimateDashboard = !prefersReducedMotion && !isPointerCoarse;
 
   useEffect(() => {
@@ -414,9 +377,6 @@ function DashboardPageContent() {
               Manage visibility →
             </Link>
           </div>
-          {showingDemoProjects && (
-            <p className="mb-2 text-[11px] font-semibold text-indigo-600 dark:text-[#94A3B8] sm:text-xs">Showing demo projects for UI preview.</p>
-          )}
           {projectSummaries.length > 0 ? (
             <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 md:gap-5 lg:grid-cols-3 lg:gap-6">
               {projectSummaries.map((project) => (

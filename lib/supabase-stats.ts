@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import { formatPipelineDisplayName, listPipelineProjects } from "@/lib/supabase";
+import { formatPipelineDisplayName, listCustomers, listPipelineProjects } from "@/lib/supabase";
 
 function isNum(v: unknown): v is number {
   return typeof v === "number" && Number.isFinite(v);
@@ -144,8 +144,8 @@ export async function getDashboardStatsFast(): Promise<DashboardStatsResult> {
     };
   }
 
-  const [leadsInfo, proposalsInfo, ordersInfo, aggregates, recentProjects] = await Promise.all([
-    countWithFallback(["customers", "leads"]),
+  const [leadsRows, proposalsInfo, ordersInfo, aggregates, recentProjects] = await Promise.all([
+    listCustomers(),
     countWithFallback(["proposals"]),
     countWithFallback(["projects"]),
     aggregateFromProjects(),
@@ -153,7 +153,7 @@ export async function getDashboardStatsFast(): Promise<DashboardStatsResult> {
   ]);
 
   return {
-    totalLeads: leadsInfo.count,
+    totalLeads: leadsRows.length,
     proposalsSent: proposalsInfo.count,
     orders: ordersInfo.count,
     installedKw: aggregates.installedKw,
@@ -161,7 +161,7 @@ export async function getDashboardStatsFast(): Promise<DashboardStatsResult> {
     pendingPayments: aggregates.pendingPayments,
     recentProjects,
     sources: {
-      leadsTable: leadsInfo.table,
+      leadsTable: leadsRows.length > 0 ? "leads" : null,
       proposalsTable: proposalsInfo.table,
       ordersTable: ordersInfo.table
     }
