@@ -11,8 +11,48 @@ import { createClient } from "@supabase/supabase-js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
-const BASE = process.env.BASE_URL || "http://localhost:3000";
+const BASE = (process.env.BASE_URL || "http://localhost:3000").replace(/\/$/, "");
 const REPORT_DIR = join(ROOT, "docs", "verification", "3a51-documents");
+const TEST_PROJECT_ID = process.env.TEST_PROJECT_ID?.trim() || null;
+const AUTO_ARCHIVE = process.env.AUTO_ARCHIVE_TEST_PROJECT !== "0";
+
+function assertSafeBaseUrl() {
+  let host;
+  try {
+    host = new URL(BASE).hostname.toLowerCase();
+  } catch {
+    throw new Error(`Invalid BASE_URL: ${BASE}`);
+  }
+  const isProd =
+    host.includes("vercel.app") ||
+    host.endsWith(".sol.in") ||
+    (host !== "localhost" && host !== "127.0.0.1" && !host.endsWith(".local"));
+  if (isProd && process.env.ALLOW_PRODUCTION_VERIFY !== "1") {
+    throw new Error(
+      `Refusing to run against production host "${host}". ` +
+        `Use BASE_URL=http://localhost:3000, set TEST_PROJECT_ID for an existing local project, ` +
+        `or set ALLOW_PRODUCTION_VERIFY=1 only if you accept creating hidden test data.`
+    );
+  }
+}
+
+async function archiveTestProject(projectId, admin) {
+  const now = new Date().toISOString();
+  if (admin) {
+    const { error } = await admin
+      .from("projects")
+      .update({ archived_at: now, dashboard_visible: false, updated_at: now })
+      .eq("id", projectId);
+    if (error) console.warn(`Cleanup archive failed: ${error.message}`);
+    else console.log(`Archived test project ${projectId}`);
+    return;
+  }
+  await fetchJson(`${BASE}/api/projects/${projectId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ archived_at: now, dashboard_visible: false }),
+  });
+}
 
 const results = [];
 
@@ -91,39 +131,60 @@ async function checkMigrationDb() {
 
 async function main() {
   mkdirSync(REPORT_DIR, { recursive: true });
+  try {
+    assertSafeBaseUrl();
+  } catch (e) {
+    console.error(e instanceof Error ? e.message : String(e));
+    process.exit(1);
+  }
+
+  let createdProjectId = null;
+  let admin = null;
+  let exitCode = 0;
 
   try {
-    const health = await fetch(`${BASE}/api/projects/list?view=active`);
-    if (!health.ok) {
-      log("2-dev-server", "FAIL", `Cannot reach ${BASE} — start npm run dev`);
+    try {
+      const health = await fetch(`${BASE}/api/projects/list?view=active`);
+      if (!health.ok) {
+        log("2-dev-server", "FAIL", `Cannot reach ${BASE} — start npm run dev`);
+        writeReport();
+        exitCode = 1;
+        return;
+      }
+      log("2-dev-server", "PASS", `${BASE} responding`);
+    } catch (e) {
+      log("2-dev-server", "FAIL", e instanceof Error ? e.message : String(e));
       writeReport();
-      process.exit(1);
+      exitCode = 1;
+      return;
     }
-    log("2-dev-server", "PASS", `${BASE} responding`);
-  } catch (e) {
-    log("2-dev-server", "FAIL", e instanceof Error ? e.message : String(e));
-    writeReport();
-    process.exit(1);
-  }
 
-  const admin = await checkMigrationDb();
+    admin = await checkMigrationDb();
 
-  const { json: createJson } = await fetchJson(`${BASE}/api/projects`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      official_name: `3A51 Doc Test ${new Date().toISOString().slice(0, 16)}`,
-      capacity_kw: "5",
-      detail: "Automated verification project",
-    }),
-  });
-  if (!createJson.ok || !createJson.data?.id) {
-    log("3-create-project", "FAIL", createJson.error || "no id");
-    writeReport();
-    process.exit(1);
+    let projectId = TEST_PROJECT_ID;
+    if (projectId) {
+    log("3-create-project", "SKIP", `using TEST_PROJECT_ID=${projectId}`);
+  } else {
+    const { json: createJson } = await fetchJson(`${BASE}/api/projects`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        official_name: `3A51 Doc Test ${new Date().toISOString().slice(0, 16)}`,
+        capacity_kw: "5",
+        detail: "Automated verification project",
+        dashboard_visible: false,
+      }),
+    });
+    if (!createJson.ok || !createJson.data?.id) {
+      log("3-create-project", "FAIL", createJson.error || "no id");
+      writeReport();
+      exitCode = 1;
+      return;
+    }
+    projectId = createJson.data.id;
+    createdProjectId = projectId;
+    log("3-create-project", "PASS", `projectId=${projectId} (dashboard_visible=false)`);
   }
-  const projectId = createJson.data.id;
-  log("3-create-project", "PASS", `projectId=${projectId}`);
 
   log(
     "4-hub-docs-tab",
@@ -284,9 +345,15 @@ async function main() {
     }
   }
 
-  writeReport();
-  const failed = results.filter((r) => r.status === "FAIL").length;
-  process.exit(failed > 0 ? 1 : 0);
+    writeReport();
+    const failed = results.filter((r) => r.status === "FAIL").length;
+    exitCode = failed > 0 ? 1 : 0;
+  } finally {
+    if (createdProjectId && AUTO_ARCHIVE) {
+      await archiveTestProject(createdProjectId, admin);
+    }
+  }
+  process.exit(exitCode);
 }
 
 function writeReport() {

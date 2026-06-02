@@ -27,6 +27,8 @@ const postSchema = z.object({
   assigned_tech_id: z.string().uuid().optional().nullable(),
   contract_amount_inr: z.number().nonnegative().optional().nullable(),
   site_address: z.string().max(500).optional().nullable(),
+  /** When false, project is hidden from the active /projects dashboard list. */
+  dashboard_visible: z.boolean().optional(),
 });
 
 function db() {
@@ -59,7 +61,7 @@ export async function POST(req: NextRequest) {
       nm_substatus: "not_started",
       has_subsidy: false,
       amount_received_inr: 0,
-      dashboard_visible: true,
+      dashboard_visible: parsed.dashboard_visible ?? true,
       status: "pending",
       install_progress: 0,
       updated_at: now,
