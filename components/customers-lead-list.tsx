@@ -109,6 +109,111 @@ function LeadMobileCardSkeleton() {
   );
 }
 
+/** Compact blue/red dots; hover, focus, or tap reveals edit/delete icons in place. */
+function LeadRowActions({
+  onEdit,
+  onDelete,
+  editAria,
+  deleteAria,
+  className,
+  size = "md"
+}: {
+  onEdit?: () => void;
+  onDelete?: () => void;
+  editAria: string;
+  deleteAria: string;
+  className?: string;
+  size?: "md" | "sm";
+}) {
+  const [revealed, setRevealed] = useState(false);
+  const shell = size === "sm" ? "h-8 min-w-[2.75rem]" : "h-9 min-w-[3rem]";
+  const btn = size === "sm" ? "h-7 w-7" : "h-8 w-8";
+  const icon = size === "sm" ? "h-3.5 w-3.5" : "h-3.5 w-3.5";
+  const dot = size === "sm" ? "h-2 w-2" : "h-2.5 w-2.5";
+
+  const showIcons = revealed;
+
+  return (
+    <div
+      className={cn("relative shrink-0", className)}
+      onPointerDown={(e) => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div
+        role="group"
+        aria-label="Lead actions"
+        className={cn("group/actions relative flex items-center justify-end", shell)}
+        onMouseEnter={() => setRevealed(true)}
+        onMouseLeave={() => setRevealed(false)}
+        onFocusCapture={() => setRevealed(true)}
+        onBlurCapture={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setRevealed(false);
+        }}
+      >
+        <div
+          className={cn(
+            "pointer-events-none absolute inset-0 flex items-center justify-center gap-2 transition-all duration-150",
+            showIcons ? "scale-75 opacity-0" : "scale-100 opacity-100"
+          )}
+          aria-hidden
+        >
+          {onEdit ? (
+            <span className={cn(dot, "rounded-full bg-sky-500 shadow-sm ring-2 ring-sky-400/25")} />
+          ) : null}
+          {onDelete ? (
+            <span className={cn(dot, "rounded-full bg-red-500 shadow-sm ring-2 ring-red-400/25")} />
+          ) : null}
+        </div>
+
+        <div
+          className={cn(
+            "absolute inset-0 flex items-center justify-center gap-1 transition-all duration-150",
+            showIcons
+              ? "pointer-events-auto scale-100 opacity-100"
+              : "pointer-events-none scale-90 opacity-0"
+          )}
+        >
+          {onEdit ? (
+            <button
+              type="button"
+              onClick={onEdit}
+              className={cn(
+                btn,
+                "inline-flex touch-manipulation items-center justify-center rounded-lg border border-sky-200/90 bg-white text-sky-600 shadow-sm transition-colors hover:bg-sky-50 active:bg-sky-100 dark:border-sky-500/35 dark:bg-sky-950/40 dark:text-sky-300"
+              )}
+              aria-label={editAria}
+            >
+              <Pencil className={icon} strokeWidth={2} />
+            </button>
+          ) : null}
+          {onDelete ? (
+            <button
+              type="button"
+              onClick={onDelete}
+              className={cn(
+                btn,
+                "inline-flex touch-manipulation items-center justify-center rounded-lg border border-red-200/90 bg-white text-red-600 shadow-sm transition-colors hover:bg-red-50 active:bg-red-100 dark:border-red-500/35 dark:bg-red-950/40 dark:text-red-300"
+              )}
+              aria-label={deleteAria}
+            >
+              <Trash2 className={icon} strokeWidth={2} />
+            </button>
+          ) : null}
+        </div>
+
+        {!showIcons ? (
+          <button
+            type="button"
+            className="absolute inset-0 z-[1] touch-manipulation rounded-lg"
+            aria-label="Show edit and delete options"
+            onClick={() => setRevealed(true)}
+          />
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 function LeadRowSkeleton() {
   return (
     <div className="border-b border-slate-100 p-4 last:border-b-0 dark:border-white/[0.06] lg:grid lg:grid-cols-12 lg:items-center lg:gap-4 lg:px-5">
@@ -337,31 +442,17 @@ export function CustomersLeadList({
                   tabIndex={onSelectLead ? 0 : undefined}
                 >
                   {canMutateLead ? (
-                    <div className="absolute right-2 top-2 z-10 flex items-center gap-1">
-                      {onEditLead ? (
-                        <button
-                          type="button"
-                          onClick={() => onEditLead(customer)}
-                          className="inline-flex h-11 w-11 touch-manipulation items-center justify-center rounded-xl border-[0.5px] border-slate-200/90 bg-white/95 text-slate-600 shadow-sm active:bg-slate-50 md:max-lg:h-9 md:max-lg:w-9 md:max-lg:rounded-lg"
-                          aria-label={t("customers_editLeadAria")}
-                        >
-                          <Pencil className="h-4 w-4 md:max-lg:h-3.5 md:max-lg:w-3.5" strokeWidth={2} />
-                        </button>
-                      ) : null}
-                      {onDeleteLead ? (
-                        <button
-                          type="button"
-                          onClick={() => onDeleteLead(customer)}
-                          className="inline-flex h-11 w-11 touch-manipulation items-center justify-center rounded-xl border-[0.5px] border-red-200/90 bg-white/95 text-red-600 shadow-sm active:bg-red-50 md:max-lg:h-9 md:max-lg:w-9 md:max-lg:rounded-lg"
-                          aria-label={t("customers_deleteLeadAria")}
-                        >
-                          <Trash2 className="h-4 w-4 md:max-lg:h-3.5 md:max-lg:w-3.5" strokeWidth={2} />
-                        </button>
-                      ) : null}
-                    </div>
+                    <LeadRowActions
+                      className="absolute right-2 top-2 z-10"
+                      size="sm"
+                      onEdit={onEditLead ? () => onEditLead(customer) : undefined}
+                      onDelete={onDeleteLead ? () => onDeleteLead(customer) : undefined}
+                      editAria={t("customers_editLeadAria")}
+                      deleteAria={t("customers_deleteLeadAria")}
+                    />
                   ) : null}
 
-                  <div className={cn("flex gap-3", canMutateLead ? "pr-24 md:max-lg:pr-[4.5rem]" : "")}>
+                  <div className={cn("flex gap-3", canMutateLead ? "pr-12" : "")}>
                     <div className="relative shrink-0">
                       <div
                         className={cn(
@@ -569,38 +660,8 @@ export function CustomersLeadList({
                     role={onSelectLead ? "button" : undefined}
                     tabIndex={onSelectLead ? 0 : undefined}
                   >
-                    {canMutateLead ? (
-                      <div className="absolute right-3 top-3 z-20 flex items-center gap-1">
-                        {onEditLead ? (
-                          <button
-                            type="button"
-                            onClick={() => onEditLead(customer)}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-xl border-[0.5px] border-slate-200/90 bg-white/90 text-slate-600 shadow-sm transition-colors hover:bg-slate-50 hover:text-brand-700"
-                            aria-label={t("customers_editLeadAria")}
-                          >
-                            <Pencil className="h-3.5 w-3.5" strokeWidth={2} />
-                          </button>
-                        ) : null}
-                        {onDeleteLead ? (
-                          <button
-                            type="button"
-                            onClick={() => onDeleteLead(customer)}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-xl border-[0.5px] border-red-200/90 bg-white/90 text-red-600 shadow-sm transition-colors hover:bg-red-50 hover:text-red-700"
-                            aria-label={t("customers_deleteLeadAria")}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" strokeWidth={2} />
-                          </button>
-                        ) : null}
-                      </div>
-                    ) : null}
-
                     <div className="relative lg:col-span-5">
-                      <div
-                        className={cn(
-                          "relative flex items-start gap-3 lg:items-center lg:gap-4",
-                          canMutateLead ? "pr-14 sm:pr-16" : ""
-                        )}
-                      >
+                      <div className="relative flex items-start gap-3 lg:items-center lg:gap-4">
                         <div className="relative shrink-0">
                           <div
                             className={cn(
@@ -729,6 +790,14 @@ export function CustomersLeadList({
                     </div>
 
                     <div className="relative mt-4 flex flex-col items-end gap-2 lg:col-span-2 lg:mt-0">
+                      {canMutateLead ? (
+                        <LeadRowActions
+                          onEdit={onEditLead ? () => onEditLead(customer) : undefined}
+                          onDelete={onDeleteLead ? () => onDeleteLead(customer) : undefined}
+                          editAria={t("customers_editLeadAria")}
+                          deleteAria={t("customers_deleteLeadAria")}
+                        />
+                      ) : null}
                       {onStatusChange ? (
                         <LeadStatusPillSelect
                           key={`${customer.id}-${statusKey}`}
