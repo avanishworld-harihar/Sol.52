@@ -264,7 +264,16 @@ export async function getLatestPersistenceSnapshot(clientRef: string, leadId?: s
         savedAt: rowSavedAt(calcRow),
         monthlyUnits: firstObject<MonthlyUnits>(calcRow, ["monthly_units", "months"]),
         result: firstObject<SolarResult>(calcRow, ["result_json", "calculation_result", "result"]),
-        manualSnapshot: firstObject<Record<string, string>>(calcRow, ["customer_snapshot", "manual_snapshot"]),
+        manualSnapshot: (() => {
+          const snap = firstObject<Record<string, string>>(calcRow, [
+            "customer_snapshot",
+            "manual_snapshot",
+          ]);
+          const inputSnap = firstObject<{ manual?: Record<string, string> }>(calcRow, ["input_snapshot"]);
+          const fromInput = inputSnap?.manual;
+          if (!fromInput || typeof fromInput !== "object") return snap;
+          return { ...fromInput, ...snap };
+        })(),
         latestBill: firstObject<ParsedBillShape>(calcRow, ["latest_bill"]),
         previousBill: firstObject<ParsedBillShape>(calcRow, ["previous_bill"])
       }

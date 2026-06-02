@@ -119,6 +119,8 @@ import {
   writeResidentialDraftProposalId,
 } from "@/lib/residential-brand-catalog-storage";
 import { getPresetDefaultLayout } from "@/lib/proposal-preset-engine";
+import { builderStateFromPptInput } from "@/lib/proposal-builder-restore-from-deck";
+import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
 import useSWR, { useSWRConfig } from "swr";
 
@@ -247,6 +249,11 @@ function ProposalPageContent() {
   /** Set in mount effect — never read sessionStorage during useState (SSR/hydration safe). */
   const hadSessionOnMountRef = useRef(false);
   const skipServerRestoreRef = useRef(false);
+  /** Opening `/proposal?proposalId=…` — do not wipe units/bills with CRM lead seed. */
+  const restoringExistingProposalRef = useRef(false);
+  /** Saved plant kW from proposal — block bill auto-resize from clobbering catalog. */
+  const proposalPlantLockedRef = useRef(false);
+  const [deckRestoreReady, setDeckRestoreReady] = useState(false);
 
   const [monthlyUnits, setMonthlyUnits] = useState<MonthlyUnits>(() => emptyMonthlyUnits());
   const [latestBill, setLatestBill] = useState<ParsedBillShape | null>(null);
@@ -616,6 +623,7 @@ function ProposalPageContent() {
     }
     const proposalId = params.get("proposalId")?.trim();
     if (proposalId) {
+      restoringExistingProposalRef.current = true;
       deepLinkProposalIdRef.current = proposalId;
       writeResidentialDraftProposalId(proposalId);
       setDraftProposalId(proposalId);
@@ -634,16 +642,18 @@ function ProposalPageContent() {
     const lead = customers.find((c) => c.id === id);
     if (!lead) return;
     setSelectedLeadId(id);
-    applyLeadFromCrm(lead);
+    if (restoringExistingProposalRef.current) {
+      applyLeadFromCrmLight(lead);
+    } else {
+      applyLeadFromCrm(lead);
+      setUrlLeadIdForRestore("");
+    }
     deepLinkLeadIdRef.current = null;
-    setUrlLeadIdForRestore("");
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
       url.searchParams.delete("leadId");
       window.history.replaceState({}, "", url.toString());
     }
-    // applyLeadFromCrm is stable (reads only state setters); customers + selectedLeadId
-    // are the real reactive dependencies here.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [customers, selectedLeadId]);
   const restoreLeadKey = (selectedLeadId || urlLeadIdForRestore).trim();
@@ -942,25 +952,40 @@ function ProposalPageContent() {
   useEffect(() => {
     if (skipServerRestoreRef.current) return;
     if (!restoreRes || hydratedFromServer) return;
+    if (restoringExistingProposalRef.current && !deckRestoreReady) return;
+
     const calc = restoreRes.latestCalculation;
     const bill = restoreRes.latestBillUpload;
     const hasServerPayload = Boolean(calc || bill);
     if (!hasServerPayload) {
+      if (!restoringExistingProposalRef.current) setHydratedFromServer(true);
+      return;
+    }
+
+    if (hadSessionOnMountRef.current && !restoringExistingProposalRef.current) {
       setHydratedFromServer(true);
       return;
     }
 
-    // If sessionStorage already had a snapshot, session data takes priority —
-    // skip server overwrite to prevent stale server data clobbering fresher local state.
-    if (hadSessionOnMountRef.current) {
-      setHydratedFromServer(true);
-      return;
-    }
+    const mergeManualFields = (snap: Partial<Record<string, string>>, fillEmptyOnly: boolean) => {
+      setManual((prev) => {
+        const merged: ManualProposalCustomer = { ...prev };
+        for (const key of Object.keys(EMPTY_MANUAL_PROPOSAL_CUSTOMER) as (keyof ManualProposalCustomer)[]) {
+          const value = snap[key];
+          if (typeof value !== "string" || !value.trim()) continue;
+          if (fillEmptyOnly) {
+            if (!merged[key]?.trim()) merged[key] = value;
+          } else {
+            merged[key] = value;
+          }
+        }
+        return merged;
+      });
+    };
 
     if (calc?.monthlyUnits) {
       setMonthlyUnits((prev) => {
-        const hasCurrentData = countFilledMonths(prev) > 0;
-        if (hasCurrentData) return prev;
+        if (countFilledMonths(prev) > 0) return prev;
         return mergeParsedMonthsIntoUnits(emptyMonthlyUnits(), calc.monthlyUnits ?? undefined);
       });
     } else if (bill?.monthlyUnits) {
@@ -972,15 +997,10 @@ function ProposalPageContent() {
     }
 
     if (calc?.manualSnapshot) {
-      // Merge only empty fields — never overwrite data the user has already typed.
-      setManual((prev) => {
-        const snap = calc.manualSnapshot as Partial<ManualProposalCustomer>;
-        const merged: ManualProposalCustomer = { ...prev };
-        for (const key of Object.keys(snap) as (keyof ManualProposalCustomer)[]) {
-          if (!merged[key] && snap[key]) (merged as Record<string, string>)[key] = snap[key] as string;
-        }
-        return merged;
-      });
+      mergeManualFields(
+        calc.manualSnapshot as Partial<Record<string, string>>,
+        !restoringExistingProposalRef.current
+      );
     }
     if (calc?.latestBill) setLatestBill((prev) => prev ?? calc.latestBill ?? null);
     else if (bill?.parsedBill) setLatestBill((prev) => prev ?? bill.parsedBill ?? null);
@@ -998,7 +1018,7 @@ function ProposalPageContent() {
       setBillAnalysis(t("proposal_billAutofillDone"));
     }
     setHydratedFromServer(true);
-  }, [restoreRes, hydratedFromServer, billAnalysis, t]);
+  }, [restoreRes, hydratedFromServer, billAnalysis, t, deckRestoreReady]);
 
   useEffect(() => {
     if (!clientRef) return;
@@ -1341,6 +1361,20 @@ function ProposalPageContent() {
       contractDemandKva: ""
     });
     clearProposalBuilderSession();
+  }
+
+  function applyLeadFromCrmLight(lead: CustomerLead) {
+    setManual((prev) => ({
+      ...prev,
+      leadContactName: lead.name,
+      leadPhone: lead.phone ?? prev.leadPhone,
+      city: lead.city || prev.city,
+      state: (lead.state ?? "").trim() || prev.state,
+      discom: lead.discom || prev.discom,
+      area: (lead.area ?? "").trim() || prev.area,
+      location: (lead.location ?? "").trim() || prev.location,
+      connectionType: (lead.connection_type ?? "").trim() || prev.connectionType,
+    }));
   }
 
   function applyLeadFromCrm(lead: CustomerLead) {
@@ -1863,6 +1897,7 @@ function ProposalPageContent() {
     const draftId =
       deepLinkProposalIdRef.current?.trim() || readResidentialDraftProposalId();
     if (!draftId) return;
+    restoringExistingProposalRef.current = true;
     setDraftProposalId((prev) => prev ?? draftId);
     let cancelled = false;
     void (async () => {
@@ -1872,12 +1907,10 @@ function ProposalPageContent() {
         const json = (await res.json()) as {
           ok?: boolean;
           leadId?: string | null;
+          customerName?: string;
+          location?: string | null;
           presetId?: string;
-          pptInput?: {
-            residentialConfig?: unknown;
-            proposalLayout?: unknown;
-            dataSource?: string;
-          };
+          pptInput?: PremiumProposalPptInput;
         };
         if (!json.ok || cancelled) return;
 
@@ -1895,9 +1928,32 @@ function ProposalPageContent() {
           }
         }
 
+        if (json.pptInput && typeof json.pptInput === "object") {
+          const deck = builderStateFromPptInput(json.pptInput, {
+            customerName: json.customerName,
+            location: json.location,
+          });
+          if (countFilledMonths(deck.monthlyUnits) > 0) {
+            setMonthlyUnits(deck.monthlyUnits);
+          }
+          setManual((prev) => ({
+            ...prev,
+            ...deck.manual,
+            leadContactName: prev.leadContactName || deck.manual.leadContactName,
+            leadPhone: prev.leadPhone || deck.manual.leadPhone,
+          }));
+          if (deck.overrideSolarKw) setOverrideSolarKw(deck.overrideSolarKw);
+          if (deck.overridePanels) setOverridePanels(deck.overridePanels);
+          if (deck.residentialInputMode) {
+            setResidentialInputMode(deck.residentialInputMode);
+            setShowResidentialModePicker(false);
+          }
+        }
+
         const cfg = parseResidentialConfig(json.pptInput?.residentialConfig);
         if (cfg) {
           setResidentialConfig(cfg);
+          if (cfg.solar.plantCapacityKw > 0) proposalPlantLockedRef.current = true;
           const mode = cfg.inputMode;
           if (mode === "bill" || mode === "requirement") {
             setResidentialInputMode(mode);
@@ -1909,29 +1965,38 @@ function ProposalPageContent() {
         if (layout && typeof layout === "object") {
           setProposalLayout((prev) => prev ?? (layout as ProposalTemplateV1));
         }
+
+        if (!cancelled) {
+          setDeckRestoreReady(true);
+        }
       } catch {
-        /* offline — local catalog still applies via defaultResidentialConfigForBuilder */
+        if (!cancelled) {
+          setDeckRestoreReady(true);
+        }
       }
     })();
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /** Bill path: size plant from bill audit until user changes kW in catalog. */
   useEffect(() => {
     if (!isResidentialBill || !residentialConfig) return;
+    if (proposalPlantLockedRef.current) return;
     const fromBill = result.solarKw;
     if (fromBill <= 0) return;
     setResidentialConfig((prev) => {
       if (!prev || Math.abs(prev.solar.plantCapacityKw - fromBill) < 0.05) return prev;
       return { ...prev, solar: { ...prev.solar, plantCapacityKw: fromBill, moduleCountOverride: undefined } };
     });
-  }, [isResidentialBill, result.solarKw]);
+  }, [isResidentialBill, result.solarKw, residentialConfig]);
 
   /** Requirement path: size plant from monthly kWh / bill → solar engine. */
   useEffect(() => {
     if (!isResidentialRequirement || !residentialConfig) return;
+    if (proposalPlantLockedRef.current) return;
     if (!requirementHasConsumptionInput(requirementMonthlyKwh, requirementMonthlyBill)) return;
     const fromRequirement = result.solarKw;
     if (fromRequirement <= 0) return;
@@ -1942,7 +2007,7 @@ function ProposalPageContent() {
         solar: { ...prev.solar, plantCapacityKw: fromRequirement, moduleCountOverride: undefined },
       };
     });
-  }, [isResidentialRequirement, result.solarKw, requirementMonthlyKwh, requirementMonthlyBill]);
+  }, [isResidentialRequirement, result.solarKw, requirementMonthlyKwh, requirementMonthlyBill, residentialConfig]);
 
   useEffect(() => {
     if (!isResidentialSmart) return;

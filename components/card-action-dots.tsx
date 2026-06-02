@@ -11,14 +11,17 @@ type CardActionDotsProps = {
   deleteAriaLabel: string;
   onEdit?: () => void;
   onDelete?: () => void;
-  interaction?: "direct" | "menu";
-  editText?: string;
-  deleteText?: string;
 };
 
+const dotClass =
+  "block h-2.5 w-2.5 rounded-full shadow-[0_0_0_1px_rgba(255,255,255,0.35)] transition-transform duration-200";
+
+const iconBtnClass =
+  "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border outline-none transition active:scale-95 focus-visible:ring-2 focus-visible:ring-offset-1";
+
 /**
- * Minimal “traffic light” actions (Apple-style): two dots, stronger on card
- * hover or when hovering the dot itself.
+ * Two action affordances: collapsed blue/red dots → on hover (desktop) or tap
+ * (touch), expand into pencil (edit) and trash (delete) icon buttons.
  */
 export function CardActionDots({
   className,
@@ -26,132 +29,104 @@ export function CardActionDots({
   deleteAriaLabel,
   onEdit,
   onDelete,
-  interaction = "direct",
-  editText = "Edit",
-  deleteText = "Delete"
 }: CardActionDotsProps) {
-  const [open, setOpen] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [pinned, setPinned] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
 
+  const revealed = hovered || pinned;
+
   useEffect(() => {
-    if (!open) return;
+    if (!pinned) return;
     const onPointerDown = (event: PointerEvent) => {
       const root = rootRef.current;
       if (!root) return;
       if (root.contains(event.target as Node)) return;
-      setOpen(false);
+      setPinned(false);
     };
     window.addEventListener("pointerdown", onPointerDown);
     return () => window.removeEventListener("pointerdown", onPointerDown);
-  }, [open]);
+  }, [pinned]);
 
   if (!onEdit && !onDelete) return null;
 
-  if (interaction === "menu") {
-    return (
-      <div
-        ref={rootRef}
-        role="toolbar"
-        aria-label="Card actions"
-        className={cn("pointer-events-auto relative", className)}
-        onClick={(e) => e.stopPropagation()}
-        onPointerDown={(e) => e.stopPropagation()}
-      >
-        <button
-          type="button"
-          aria-label="Open card actions"
-          aria-expanded={open}
-          onClick={() => setOpen((v) => !v)}
-          className="inline-flex items-center gap-0.5 rounded-full border border-white/70 bg-white/80 px-1.5 py-1 shadow-sm backdrop-blur-sm transition hover:bg-white"
-        >
-          <span className="h-2 w-2 rounded-full bg-gradient-to-br from-sky-400 to-blue-600 opacity-90" />
-          <span className="h-2 w-2 rounded-full bg-gradient-to-br from-rose-500 to-red-600 opacity-90" />
-        </button>
-
-        {open ? (
-          <div className="absolute right-0 top-[calc(100%+0.35rem)] z-30 min-w-28 rounded-xl border border-white/70 bg-white/95 p-1.5 shadow-lg backdrop-blur">
-            {onEdit ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setOpen(false);
-                  onEdit();
-                }}
-                className="flex w-full items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-left text-xs font-semibold text-slate-700 transition hover:bg-sky-50"
-                aria-label={editAriaLabel}
-              >
-                <Pencil className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                {editText}
-              </button>
-            ) : null}
-            {onDelete ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setOpen(false);
-                  onDelete();
-                }}
-                className="flex w-full items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-left text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
-                aria-label={deleteAriaLabel}
-              >
-                <Trash2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                {deleteText}
-              </button>
-            ) : null}
-          </div>
-        ) : null}
-      </div>
-    );
-  }
+  const revealFromDots = () => setPinned(true);
 
   return (
     <div
+      ref={rootRef}
       role="toolbar"
       aria-label="Card actions"
-      className={cn("pointer-events-auto flex items-center gap-1.5", className)}
+      className={cn("pointer-events-auto", className)}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => {
+        setHovered(false);
+      }}
       onClick={(e) => e.stopPropagation()}
       onPointerDown={(e) => e.stopPropagation()}
     >
-      {onEdit ? (
+      {!revealed ? (
         <button
           type="button"
+          aria-label="Show edit and delete"
+          aria-expanded={false}
           onClick={(e) => {
             e.stopPropagation();
-            onEdit();
+            revealFromDots();
           }}
-          className="rounded-full p-2 outline-none transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-sky-400/70 focus-visible:ring-offset-2"
-          aria-label={editAriaLabel}
+          className="inline-flex items-center gap-3 rounded-full border border-transparent px-1.5 py-1.5 outline-none transition hover:border-slate-200/80 hover:bg-white/90 focus-visible:ring-2 focus-visible:ring-sky-400/50 dark:hover:border-white/15 dark:hover:bg-white/10"
         >
-          <span
-            className={cn(
-              "block h-2.5 w-2.5 rounded-full bg-gradient-to-br from-sky-400 to-blue-600 shadow-[0_0_0_1px_rgba(255,255,255,0.35)]",
-              "opacity-[0.42] transition-[opacity,transform,box-shadow] duration-200",
-              "group-hover/card:opacity-100 group-hover/card:shadow-md",
-              "hover:scale-125 hover:opacity-100"
-            )}
-          />
+          {onEdit ? (
+            <span
+              className={cn(dotClass, "bg-gradient-to-br from-sky-400 to-blue-600")}
+              aria-hidden
+            />
+          ) : null}
+          {onDelete ? (
+            <span
+              className={cn(dotClass, "bg-gradient-to-br from-rose-500 to-red-600")}
+              aria-hidden
+            />
+          ) : null}
         </button>
-      ) : null}
-      {onDelete ? (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete();
-          }}
-          className="rounded-full p-2 outline-none transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-rose-400/80 focus-visible:ring-offset-2"
-          aria-label={deleteAriaLabel}
-        >
-          <span
-            className={cn(
-              "block h-2.5 w-2.5 rounded-full bg-gradient-to-br from-rose-500 to-red-600 shadow-[0_0_0_1px_rgba(255,255,255,0.35)]",
-              "opacity-[0.42] transition-[opacity,transform,box-shadow] duration-200",
-              "group-hover/card:opacity-100 group-hover/card:shadow-md",
-              "hover:scale-125 hover:opacity-100"
-            )}
-          />
-        </button>
-      ) : null}
+      ) : (
+        <div className="flex items-center gap-2" aria-expanded>
+          {onEdit ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setPinned(false);
+                onEdit();
+              }}
+              className={cn(
+                iconBtnClass,
+                "border-sky-200/90 bg-sky-50 text-sky-700 hover:bg-sky-100 focus-visible:ring-sky-400/70 dark:border-sky-500/35 dark:bg-sky-950/50 dark:text-sky-200 dark:hover:bg-sky-950/80"
+              )}
+              aria-label={editAriaLabel}
+            >
+              <Pencil className="h-4 w-4" strokeWidth={2.25} aria-hidden />
+            </button>
+          ) : null}
+          {onDelete ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setPinned(false);
+                onDelete();
+              }}
+              className={cn(
+                iconBtnClass,
+                "border-rose-200/90 bg-rose-50 text-rose-700 hover:bg-rose-100 focus-visible:ring-rose-400/70 dark:border-rose-500/35 dark:bg-rose-950/45 dark:text-rose-200 dark:hover:bg-rose-950/70"
+              )}
+              aria-label={deleteAriaLabel}
+            >
+              <Trash2 className="h-4 w-4" strokeWidth={2.25} aria-hidden />
+            </button>
+          ) : null}
+        </div>
+      )}
     </div>
   );
 }

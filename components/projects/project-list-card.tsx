@@ -144,7 +144,6 @@ export function ProjectListCard({
               {onEdit || onDelete ? (
                 <CardActionDots
                   className="relative"
-                  interaction="menu"
                   editAriaLabel={t("projects_editProjectAria")}
                   deleteAriaLabel={t("projects_deleteProjectAria")}
                   onEdit={onEdit ? () => onEdit(project) : undefined}
