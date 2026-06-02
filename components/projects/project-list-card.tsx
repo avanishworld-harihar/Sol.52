@@ -10,6 +10,7 @@ import { formatInrCompact } from "@/lib/proposal-hub-insights";
 import { cn } from "@/lib/utils";
 import { Archive, ArchiveRestore, Eye, EyeOff, Send } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 
 export type ProjectListPatch = {
@@ -89,6 +90,7 @@ export function ProjectListCard({
   className?: string;
 }) {
   const { t } = useLanguage();
+  const router = useRouter();
   const name = projectDisplayName(project);
   const pending =
     project.contract_amount_inr != null
@@ -102,6 +104,16 @@ export function ProjectListCard({
 
   return (
     <article
+      role="link"
+      tabIndex={0}
+      aria-label={`Open ${name} project`}
+      onClick={() => router.push(`/projects/${encodeURIComponent(project.id)}`)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          router.push(`/projects/${encodeURIComponent(project.id)}`);
+        }
+      }}
       className={cn(
         "rounded-lg border border-slate-200 bg-white shadow-sm transition hover:border-teal-200/80 hover:shadow-md dark:border-white/10 dark:bg-[#0c1017] dark:hover:border-teal-500/30",
         "max-sm:p-2 sm:rounded-xl sm:p-4",
@@ -111,18 +123,17 @@ export function ProjectListCard({
       <div className="flex items-start gap-1.5 sm:gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-1">
-            <Link
-              href={`/projects/${encodeURIComponent(project.id)}`}
-              className="group min-w-0 flex-1"
-            >
+            <div className="group min-w-0 flex-1">
               <h3 className="truncate text-[13px] font-extrabold leading-tight text-slate-900 transition group-hover:text-teal-700 dark:text-slate-50 dark:group-hover:text-teal-300 sm:text-base">
                 {name}
               </h3>
-            </Link>
+            </div>
             <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
               {project.lead_id ? (
                 <Link
                   href={`/customers/${encodeURIComponent(project.lead_id)}`}
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => e.stopPropagation()}
                   className="inline-flex h-7 min-w-[28px] items-center justify-center rounded-md border border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/5 sm:h-8 sm:px-2"
                   title={t("projects_resumeProposal")}
                   aria-label={t("projects_resumeProposal")}
@@ -133,6 +144,7 @@ export function ProjectListCard({
               {onEdit || onDelete ? (
                 <CardActionDots
                   className="relative"
+                  interaction="menu"
                   editAriaLabel={t("projects_editProjectAria")}
                   deleteAriaLabel={t("projects_deleteProjectAria")}
                   onEdit={onEdit ? () => onEdit(project) : undefined}

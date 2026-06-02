@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Pencil, Trash2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -61,10 +62,10 @@ export function CardActionDots({
           aria-label="Open card actions"
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
-          className="inline-flex items-center gap-1 rounded-full border border-white/70 bg-white/80 px-2 py-1 shadow-sm backdrop-blur-sm transition hover:bg-white"
+          className="inline-flex items-center gap-0.5 rounded-full border border-white/70 bg-white/80 px-1.5 py-1 shadow-sm backdrop-blur-sm transition hover:bg-white"
         >
-          <span className="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-sky-400 to-blue-600 opacity-90" />
-          <span className="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-rose-500 to-red-600 opacity-90" />
+          <span className="h-2 w-2 rounded-full bg-gradient-to-br from-sky-400 to-blue-600 opacity-90" />
+          <span className="h-2 w-2 rounded-full bg-gradient-to-br from-rose-500 to-red-600 opacity-90" />
         </button>
 
         {open ? (
@@ -76,9 +77,10 @@ export function CardActionDots({
                   setOpen(false);
                   onEdit();
                 }}
-                className="block w-full rounded-lg px-2.5 py-1.5 text-left text-xs font-semibold text-slate-700 transition hover:bg-sky-50"
+                className="flex w-full items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-left text-xs font-semibold text-slate-700 transition hover:bg-sky-50"
                 aria-label={editAriaLabel}
               >
+                <Pencil className="h-3.5 w-3.5 shrink-0" aria-hidden />
                 {editText}
               </button>
             ) : null}
@@ -89,9 +91,10 @@ export function CardActionDots({
                   setOpen(false);
                   onDelete();
                 }}
-                className="block w-full rounded-lg px-2.5 py-1.5 text-left text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
+                className="flex w-full items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-left text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
                 aria-label={deleteAriaLabel}
               >
+                <Trash2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
                 {deleteText}
               </button>
             ) : null}
