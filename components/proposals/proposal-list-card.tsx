@@ -7,11 +7,13 @@ import { Button } from "@/components/ui/button";
 import type { ProposalStatus } from "@/lib/proposal-status";
 import { cn } from "@/lib/utils";
 import { ExternalLink, MoreHorizontal } from "lucide-react";
+import { buildProposalEditHref } from "@/lib/proposal-edit-url";
 import Link from "next/link";
 import { useState } from "react";
 
 export type ProposalListCardProps = {
   id: string;
+  leadId?: string | null;
   customerName: string;
   generatedAt: string;
   systemKw: number;
@@ -58,6 +60,7 @@ function formatShortDate(iso: string): string {
 
 export function ProposalListCard({
   id,
+  leadId,
   customerName,
   generatedAt,
   systemKw,
@@ -67,7 +70,7 @@ export function ProposalListCard({
   status,
   labels
 }: ProposalListCardProps) {
-  const manageHref = `/proposals/${id}`;
+  const manageHref = buildProposalEditHref({ leadId, proposalId: id });
   const [sheetOpen, setSheetOpen] = useState(false);
   const savingMo =
     annualSavingInr != null && Number.isFinite(annualSavingInr) ? Math.round(annualSavingInr / 12) : null;
@@ -215,6 +218,7 @@ export function ProposalListCard({
         open={sheetOpen}
         onClose={() => setSheetOpen(false)}
         proposalId={id}
+        leadId={leadId}
         labels={labels}
         annualSavingInr={annualSavingInr}
         shareMetrics={

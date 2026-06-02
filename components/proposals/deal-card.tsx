@@ -18,6 +18,7 @@
  */
 
 import Link from "next/link";
+import { buildProposalEditHref } from "@/lib/proposal-edit-url";
 import { motion } from "framer-motion";
 import {
   ArrowUpRight,
@@ -167,7 +168,7 @@ function PipelineCard({ row, active, lang = "en", onClick, delay = 0 }: DealCard
   const confidence = closingConfidence(row);
   const age = dealAgeInDays(row.generated_at);
   const intel = hubIntelForStatus(st, lang);
-  const manageHref = `/workspace/${row.id}`;
+  const manageHref = buildProposalEditHref({ leadId: row.lead_id, proposalId: row.id });
   
   return (
     <motion.article
@@ -328,7 +329,7 @@ function GridCard({ row, active, lang = "en", onClick, delay = 0 }: DealCardProp
   const isCommercial = isCommercialPreset(row.preset_id);
   const health = dealHealthScore(row);
   const age = dealAgeInDays(row.generated_at);
-  const manageHref = `/workspace/${row.id}`;
+  const manageHref = buildProposalEditHref({ leadId: row.lead_id, proposalId: row.id });
   
   return (
     <motion.article
@@ -399,7 +400,7 @@ function CompactCard({ row, active, lang = "en", onClick, delay = 0 }: DealCardP
   const velocity = dealVelocity(row);
   const velVis = velocityVisual(velocity);
   const age = dealAgeInDays(row.generated_at);
-  const manageHref = `/workspace/${row.id}`;
+  const manageHref = buildProposalEditHref({ leadId: row.lead_id, proposalId: row.id });
   
   return (
     <motion.article

@@ -605,12 +605,27 @@ function ProposalPageContent() {
   const deepLinkLeadIdRef = useRef<string | null>(null);
   /** Until CRM pick applies, keeps `leadId` from URL so `/api/calculations` can load saved bill/calc. */
   const [urlLeadIdForRestore, setUrlLeadIdForRestore] = useState("");
+  const deepLinkProposalIdRef = useRef<string | null>(null);
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const id = new URLSearchParams(window.location.search).get("leadId")?.trim();
-    if (id) {
-      deepLinkLeadIdRef.current = id;
-      setUrlLeadIdForRestore(id);
+    const params = new URLSearchParams(window.location.search);
+    const leadId = params.get("leadId")?.trim();
+    if (leadId) {
+      deepLinkLeadIdRef.current = leadId;
+      setUrlLeadIdForRestore(leadId);
+    }
+    const proposalId = params.get("proposalId")?.trim();
+    if (proposalId) {
+      deepLinkProposalIdRef.current = proposalId;
+      writeResidentialDraftProposalId(proposalId);
+      setDraftProposalId(proposalId);
+      params.delete("proposalId");
+      const qs = params.toString();
+      window.history.replaceState(
+        {},
+        "",
+        qs ? `${window.location.pathname}?${qs}` : window.location.pathname
+      );
     }
   }, []);
   useEffect(() => {
@@ -1843,10 +1858,10 @@ function ProposalPageContent() {
     if (draftProposalId) writeResidentialDraftProposalId(draftProposalId);
   }, [draftProposalId]);
 
-  /** Restore last saved residential draft from server after refresh. */
+  /** Restore saved proposal (deep-link or session) into the builder. */
   useEffect(() => {
-    if (!isResidentialSmart) return;
-    const draftId = readResidentialDraftProposalId();
+    const draftId =
+      deepLinkProposalIdRef.current?.trim() || readResidentialDraftProposalId();
     if (!draftId) return;
     setDraftProposalId((prev) => prev ?? draftId);
     let cancelled = false;
@@ -1856,11 +1871,40 @@ function ProposalPageContent() {
         if (!res.ok || cancelled) return;
         const json = (await res.json()) as {
           ok?: boolean;
-          pptInput?: { residentialConfig?: unknown; proposalLayout?: unknown };
+          leadId?: string | null;
+          presetId?: string;
+          pptInput?: {
+            residentialConfig?: unknown;
+            proposalLayout?: unknown;
+            dataSource?: string;
+          };
         };
+        if (!json.ok || cancelled) return;
+
+        const preset = json.presetId;
+        if (preset === "residential_smart" || preset === "commercial_executive") {
+          setOsPresetId((prev) => prev ?? preset);
+          setShowPresetPicker(false);
+        }
+
+        if (json.leadId) {
+          const lid = String(json.leadId).trim();
+          if (lid) {
+            deepLinkLeadIdRef.current = lid;
+            setUrlLeadIdForRestore((prev) => prev || lid);
+          }
+        }
+
         const cfg = parseResidentialConfig(json.pptInput?.residentialConfig);
-        if (!cfg || cancelled) return;
-        setResidentialConfig(cfg);
+        if (cfg) {
+          setResidentialConfig(cfg);
+          const mode = cfg.inputMode;
+          if (mode === "bill" || mode === "requirement") {
+            setResidentialInputMode(mode);
+            setShowResidentialModePicker(false);
+          }
+        }
+
         const layout = json.pptInput?.proposalLayout;
         if (layout && typeof layout === "object") {
           setProposalLayout((prev) => prev ?? (layout as ProposalTemplateV1));
@@ -1872,7 +1916,7 @@ function ProposalPageContent() {
     return () => {
       cancelled = true;
     };
-  }, [isResidentialSmart]);
+  }, []);
 
   /** Bill path: size plant from bill audit until user changes kW in catalog. */
   useEffect(() => {
@@ -2902,7 +2946,8 @@ function ProposalPageContent() {
           <div className="rounded-xl border border-emerald-200/80 bg-emerald-50/60 px-3 py-2.5 text-xs text-emerald-950 dark:border-emerald-800/50 dark:bg-emerald-950/30 dark:text-emerald-100">
             <p className="font-semibold">Ready to generate your homeowner proposal</p>
             <p className="mt-1 opacity-90">
-              Review sections, then tap Generate. Fine-tune pricing in Proposals → BOM after saving.
+              Review sections, then tap Generate. Adjust plant, panel brand, and pricing here before
+              sharing.
             </p>
             <div className="mt-2 flex flex-wrap gap-2">
               <button
@@ -2912,14 +2957,6 @@ function ProposalPageContent() {
               >
                 Review proposal sections
               </button>
-              {draftProposalId ? (
-                <a
-                  href={`/proposals/${draftProposalId}#bom`}
-                  className="inline-flex items-center gap-1 rounded-lg bg-emerald-700 px-3 py-1.5 text-[11px] font-bold text-white"
-                >
-                  Open Proposals — BOM
-                </a>
-              ) : null}
             </div>
           </div>
         ) : null}

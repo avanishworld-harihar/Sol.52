@@ -1,3 +1,4 @@
+import { buildProposalEditHref } from "@/lib/proposal-edit-url";
 import type { CustomerLead } from "@/lib/types";
 
 export type CustomerCommercialCta = {
@@ -18,7 +19,10 @@ export function resolveCustomerCommercialCta(customer: CustomerLead): CustomerCo
   }
   const pid = customer.primary_proposal_id?.trim();
   if (pid) {
-    return { labelKey: "customers_ctaOpenProposal", href: `/proposals/${pid}` };
+    return {
+      labelKey: "customers_ctaOpenProposal",
+      href: buildProposalEditHref({ leadId: customer.id, proposalId: pid }),
+    };
   }
   return { labelKey: "customers_ctaCreateQuote", href: `/proposal?leadId=${encodeURIComponent(customer.id)}` };
 }

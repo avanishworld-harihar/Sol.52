@@ -16,6 +16,7 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import { buildProposalEditHref } from "@/lib/proposal-edit-url";
 import type { ReactNode } from "react";
 
 const ROOF_LABELS: Record<string, string> = {
@@ -109,11 +110,10 @@ export function ProjectHubOverviewTab({ project }: { project: ProjectListItem })
   const capacity =
     project.capacity_kw?.trim() ||
     (project.panel_count != null ? `${project.panel_count} panels` : null);
-  const proposalHref = project.primary_proposal_id
-    ? `/proposals/${encodeURIComponent(project.primary_proposal_id)}`
-    : project.lead_id
-      ? `/proposal?leadId=${encodeURIComponent(project.lead_id)}`
-      : "/proposals";
+  const proposalHref = buildProposalEditHref({
+    leadId: project.lead_id,
+    proposalId: project.primary_proposal_id,
+  });
 
   return (
     <div

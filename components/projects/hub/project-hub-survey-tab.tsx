@@ -10,6 +10,7 @@ import {
   type ProjectListItem,
   type ProjectSurvey,
 } from "@/lib/project-api-client";
+import { buildProposalEditHref } from "@/lib/proposal-edit-url";
 import { cn } from "@/lib/utils";
 import {
   ArrowUpRight,
@@ -137,11 +138,10 @@ function SurveySection({
 
 function LinkedRecordsCard({ project }: { project: ProjectListItem }) {
   if (!project.lead_id && !project.lead_name) return null;
-  const proposalHref = project.primary_proposal_id
-    ? `/proposals/${encodeURIComponent(project.primary_proposal_id)}`
-    : project.lead_id
-      ? `/proposal?leadId=${encodeURIComponent(project.lead_id)}`
-      : "/proposals";
+  const proposalHref = buildProposalEditHref({
+    leadId: project.lead_id,
+    proposalId: project.primary_proposal_id,
+  });
 
   return (
     <Card className="page-lite-item border-slate-200/90 dark:border-white/10">

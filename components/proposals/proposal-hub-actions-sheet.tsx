@@ -2,6 +2,7 @@
 
 import { useToast } from "@/components/ui/toast-center";
 import type { ProposalListCardProps } from "@/components/proposals/proposal-list-card";
+import { buildProposalEditHref } from "@/lib/proposal-edit-url";
 import {
   deleteProposalById,
   downloadProposalPpt,
@@ -55,6 +56,7 @@ export function ProposalHubActionsSheet({
   open,
   onClose,
   proposalId,
+  leadId,
   labels,
   annualSavingInr,
   shareMetrics,
@@ -64,6 +66,7 @@ export function ProposalHubActionsSheet({
   open: boolean;
   onClose: () => void;
   proposalId: string;
+  leadId?: string | null;
   labels: Labels;
   annualSavingInr: number | null;
   shareMetrics: ProposalShareMetrics;
@@ -73,7 +76,7 @@ export function ProposalHubActionsSheet({
   const toast = useToast();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
-  const manageHref = `/proposals/${proposalId}`;
+  const manageHref = buildProposalEditHref({ leadId, proposalId });
   const publicHref = `/proposal/${proposalId}`;
   const savingMo =
     annualSavingInr != null && Number.isFinite(annualSavingInr) ? Math.round(annualSavingInr / 12) : null;

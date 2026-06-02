@@ -266,6 +266,7 @@ export async function GET(_req: NextRequest, ctx: RouteCtx) {
       {
         ok: true,
         id: proposal.id,
+        leadId: proposal.lead_id,
         customerName: proposal.customer_name,
         generatedAt: proposal.generated_at,
         presetId: proposal.preset_id ?? "residential_smart",

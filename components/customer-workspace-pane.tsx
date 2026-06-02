@@ -37,6 +37,7 @@ import { buildLeadWhatsAppUrl } from "@/lib/whatsapp-lead";
 import { readLeadFollowUpMap, recordLeadFollowUp } from "@/lib/lead-followup-storage";
 import { isLeadStale } from "@/lib/lead-source";
 import { resolveCustomerCommercialCta } from "@/lib/customer-crm-cta";
+import { buildProposalEditHref } from "@/lib/proposal-edit-url";
 import {
   createLeadNote,
   createLeadVisit,
@@ -595,7 +596,11 @@ export function CustomerWorkspacePane({
               {proposals.map((p) => {
                 const id = String(p.id ?? "");
                 return (
-                  <Link key={id} href={`/proposals/${id}`} className="block rounded-lg border border-slate-200/80 px-2 py-1.5 text-xs hover:bg-slate-50 dark:border-white/10 dark:hover:bg-white/5">
+                  <Link
+                    key={id}
+                    href={buildProposalEditHref({ leadId, proposalId: id })}
+                    className="block rounded-lg border border-slate-200/80 px-2 py-1.5 text-xs hover:bg-slate-50 dark:border-white/10 dark:hover:bg-white/5"
+                  >
                     {String(p.customer_name ?? "Proposal")} · {String(p.generated_at ?? "").slice(0, 10)}
                   </Link>
                 );

@@ -3,6 +3,7 @@
 import { ProposalHubActionsSheet } from "@/components/proposals/proposal-hub-actions-sheet";
 import { ProposalHubIntelPanel } from "@/components/proposals/proposal-hub-intel-panel";
 import type { ProposalListCardProps } from "@/components/proposals/proposal-list-card";
+import { buildProposalEditHref } from "@/lib/proposal-edit-url";
 import { Button } from "@/components/ui/button";
 import { hubNextActionHint, statusProgressPct, statusVisual } from "@/lib/proposal-hub-insights";
 import { shareMetricsFromHubRow } from "@/lib/proposal-hub-share";
@@ -77,7 +78,7 @@ export function ProposalWorkspacePreview({
 
   const st = normalizeProposalStatus(row.proposal_status);
   const vis = statusVisual(st);
-  const manageHref = `/proposals/${row.id}`;
+  const manageHref = buildProposalEditHref({ leadId: row.lead_id, proposalId: row.id });
   const publicHref = `/proposal/${row.id}`;
   const savingMo =
     row.annual_saving_inr != null && Number.isFinite(row.annual_saving_inr)
@@ -268,6 +269,7 @@ export function ProposalWorkspacePreview({
         open={sheetOpen}
         onClose={() => setSheetOpen(false)}
         proposalId={row.id}
+        leadId={row.lead_id}
         labels={labels}
         annualSavingInr={row.annual_saving_inr}
         shareMetrics={shareMetricsFromHubRow(row)}
