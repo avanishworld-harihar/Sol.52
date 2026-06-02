@@ -2,7 +2,7 @@
 
 /**
  * Guided requirement-based builder — homeowner & commercial-friendly.
- * Panel brand + DCR/Non-DCR live here; pricing matrix stays in More → Rate card.
+ * Panel brand + DCR pricing lives here; pricing matrix stays in More → Rate card.
  */
 
 import { NumericTextInput } from "@/components/ui/numeric-text-input";
@@ -173,6 +173,14 @@ export function ResidentialRequirementBuilder({
     return Math.max(...tiers.map((t) => t.kw));
   }, [isCommercial, catalogWithEntries]);
 
+  useEffect(() => {
+    if (solar.panelTrack === "non_dcr") {
+      patchSolar({ panelTrack: "dcr" });
+    }
+    // Intentional one-way normalization: Non-DCR is deprecated for new quotes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [solar.panelTrack]);
+
   function patch(partial: Partial<ResidentialProposalConfig>) {
     onChange({ ...config, ...partial });
   }
@@ -181,13 +189,13 @@ export function ResidentialRequirementBuilder({
     onChange({ ...config, solar: { ...solar, ...partial } });
   }
 
-  function applyTrack(track: "dcr" | "non_dcr") {
+  function applyTrack(track: "dcr") {
     const entry = getActiveCatalogEntry(catalogWithEntries);
     if (entry) {
       onChange(syncSolarAndPricingFromEntry(catalogWithEntries, entry, track));
       return;
     }
-    const catalogTrack = track === "dcr" ? "DCR" : "NON_DCR";
+    const catalogTrack = "DCR";
     const hit = PANEL_CATALOG.find(
       (e) => e.brandId === solar.brandId && e.watt === solar.watt && e.panelType === catalogTrack
     );
@@ -206,7 +214,7 @@ export function ResidentialRequirementBuilder({
       });
       return;
     }
-    const catalogTrack = solar.panelTrack === "dcr" ? "DCR" : "NON_DCR";
+    const catalogTrack = "DCR";
     const hit =
       PANEL_CATALOG.find(
         (e) => e.brandId === solar.brandId && e.watt === w && e.panelType === catalogTrack
@@ -363,16 +371,9 @@ export function ResidentialRequirementBuilder({
         <WorkspaceBrandCatalogSelector config={config} onChange={onChange} theme={theme} />
         <WorkspaceFieldLabel className="mt-2">Quote mode</WorkspaceFieldLabel>
         <div className="flex flex-wrap gap-2">
-          {(["dcr", "non_dcr"] as const).map((t) => (
-            <WorkspaceTouchChip
-              key={t}
-              active={solar.panelTrack === t}
-              theme={theme}
-              onClick={() => applyTrack(t)}
-            >
-              {t === "dcr" ? "DCR" : "Non-DCR"}
-            </WorkspaceTouchChip>
-          ))}
+          <WorkspaceTouchChip active theme={theme} onClick={() => applyTrack("dcr")}>
+            DCR
+          </WorkspaceTouchChip>
         </div>
       </section>
 

@@ -118,8 +118,8 @@ export function InstallerRateCardWorkspace() {
         </p>
         <p className="mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
           One Smart catalog — <strong>plant ₹ per kW</strong> for both{" "}
-          <strong>Residential</strong> and <strong>Commercial</strong>. Enter DCR and Non-DCR prices
-          manually for each kW row — no automatic 30% discount.
+          <strong>Residential</strong> and <strong>Commercial</strong>. Use DCR pricing only.
+          Non-DCR has been retired from quote flows.
         </p>
         <p className="mt-2 text-[11px] text-slate-500">
           <Link

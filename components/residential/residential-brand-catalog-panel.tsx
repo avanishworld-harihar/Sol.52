@@ -80,11 +80,11 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
           <Sparkles className="h-4 w-4 text-amber-300" aria-hidden />
           <div>
             <p className="text-[10px] font-bold uppercase tracking-widest text-amber-200/90">Smart catalog</p>
-            <h4 className="text-base font-bold">Panel brands — pricing matrix (kW × DCR × Non-DCR)</h4>
+            <h4 className="text-base font-bold">Panel brands — pricing matrix (kW × DCR)</h4>
           </div>
         </div>
         <p className="mt-1.5 text-[11px] leading-snug text-slate-300">
-          kW rows sync across all brands (same sizes, ascending order). DCR / Non-DCR amounts stay per brand.
+          kW rows sync across all brands (same sizes, ascending order). DCR amount is the active quote source.
         </p>
       </div>
 
@@ -146,7 +146,7 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
           </div>
 
           <p className="mt-3 rounded-lg bg-slate-50/90 px-3 py-2 text-[11px] text-slate-600 dark:bg-white/[0.03] dark:text-slate-400">
-            Active proposal ({plantKw} kW, {track === "dcr" ? "DCR" : "Non-DCR"} quote):{" "}
+            Active proposal ({plantKw} kW, DCR quote):{" "}
             <strong className="text-slate-900 dark:text-white">
               {quote.ok ? inr(quote.plantGrossInr) : "—"}
             </strong>
@@ -155,16 +155,11 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
             ) : null}
           </p>
 
-          {(quote.warnings.includes("dcr_price_missing") ||
-            quote.warnings.includes("non_dcr_price_missing")) && (
+          {quote.warnings.includes("dcr_price_missing") && (
             <div className="mt-2 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900 dark:border-amber-800/50 dark:bg-amber-950/30 dark:text-amber-100">
               <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
               <span>
-                {quote.warnings.includes("dcr_price_missing") ? "DCR price missing for this kW. " : ""}
-                {quote.warnings.includes("non_dcr_price_missing")
-                  ? "Non-DCR price missing for this kW. "
-                  : ""}
-                Fill both columns before generating proposals.
+                DCR price missing for this kW. Fill DCR column before generating proposals.
               </span>
             </div>
           )}
@@ -186,7 +181,6 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
                 <tr className="border-b bg-slate-50 text-left text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:border-white/10 dark:bg-white/[0.03]">
                   <th className="px-3 py-2">kW</th>
                   <th className="px-3 py-2">DCR plant gross (₹)</th>
-                  <th className="px-3 py-2">Non-DCR plant gross (₹)</th>
                   <th className="w-10 px-2 py-2" />
                 </tr>
               </thead>
@@ -217,19 +211,6 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
                           value={tier.priceInr}
                           onValueChange={(n) =>
                             patchActiveTier(idx, { priceInr: n !== undefined ? Math.max(0, n) : 0 })
-                          }
-                          className="h-9 rounded-lg text-xs font-bold"
-                        />
-                      </td>
-                      <td className="px-2 py-1.5">
-                        <FloatingLabelNumericInput
-                          label="Non-DCR ₹"
-                          live
-                          value={tier.nonDcrPriceInr ?? 0}
-                          onValueChange={(n) =>
-                            patchActiveTier(idx, {
-                              nonDcrPriceInr: n !== undefined ? Math.max(0, n) : 0,
-                            })
                           }
                           className="h-9 rounded-lg text-xs font-bold"
                         />

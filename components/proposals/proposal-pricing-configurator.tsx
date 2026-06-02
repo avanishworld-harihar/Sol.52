@@ -80,6 +80,13 @@ function num(s: string): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+function discountPercentFromLine(line: PricingLineItem, grossInr: number): number {
+  if (line.kind !== "discount") return 0;
+  if (grossInr <= 0) return 0;
+  const amount = lineItemTotalInr(line);
+  return Math.max(0, Math.round((amount / grossInr) * 10000) / 100);
+}
+
 function SummaryChip({
   label,
   value,
@@ -195,6 +202,17 @@ export function ProposalPricingConfigurator({
 
   function updateLine(id: string, patch: Partial<PricingLineItem>) {
     setLines((prev) => prev.map((L) => (L.id === id ? { ...L, ...patch } : L)));
+  }
+
+  function updateDiscountPercent(id: string, percent: number) {
+    const pct = Math.max(0, percent);
+    const amount = Math.round((Math.max(0, gross) * pct) / 100);
+    updateLine(id, {
+      quantity: 1,
+      unit: "lump",
+      unit_rate_inr: amount,
+      notes: `Discount ${pct.toFixed(2)}% of gross`,
+    });
   }
 
   function removeLine(id: string) {
@@ -420,6 +438,17 @@ export function ProposalPricingConfigurator({
                           onChange={(e) => updateLine(L.id, { unit_rate_inr: num(e.target.value) })}
                           className="h-9 w-full rounded-md border border-slate-200 bg-white px-1.5 text-right text-[11px] font-bold tabular-nums dark:border-white/10 dark:bg-white/5"
                         />
+                        {L.kind === "discount" ? (
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            value={String(discountPercentFromLine(L, gross))}
+                            onChange={(e) => updateDiscountPercent(L.id, num(e.target.value))}
+                            className="mt-1 h-8 w-full rounded-md border border-amber-200 bg-amber-50/70 px-1.5 text-right text-[10px] font-bold tabular-nums text-amber-900 dark:border-amber-500/30 dark:bg-amber-950/20 dark:text-amber-200"
+                            placeholder="%"
+                            aria-label="Discount percent"
+                          />
+                        ) : null}
                       </td>
                       <td className="px-2 py-1.5 align-middle text-right">
                         <span className="text-[12px] font-semibold tabular-nums text-slate-900 dark:text-slate-100">
@@ -567,6 +596,15 @@ export function ProposalPricingConfigurator({
                         onChange={(e) => updateLine(L.id, { unit_rate_inr: num(e.target.value) })}
                         className="h-11 rounded-xl text-sm"
                       />
+                      {L.kind === "discount" ? (
+                        <FloatingLabelInput
+                          label="Discount %"
+                          inputMode="decimal"
+                          value={String(discountPercentFromLine(L, gross))}
+                          onChange={(e) => updateDiscountPercent(L.id, num(e.target.value))}
+                          className="h-11 rounded-xl text-sm"
+                        />
+                      ) : null}
                       <FloatingLabelInput
                         label={labels.notesCol}
                         value={L.notes ?? ""}
