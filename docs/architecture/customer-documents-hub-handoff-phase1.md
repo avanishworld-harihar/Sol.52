@@ -341,4 +341,4 @@ Before coding, confirm Migration 048 is applied in Supabase and report row count
 | Real-world screenshots | `docs/verification/customer-documents-hub/realworld/` |
 
 **Customer ID (Bharti):** `eead2c0a-8f20-4c7a-8128-ce8fff874834`  
-**Phase 2 not started.**
+**Phase 2:** Implemented — see `customer-documents-hub-phase2-plan.md` and `customer-documents-hub-phase2-validation-report.md`. Set `DOCUMENTS_HUB_V2_WRITE=false` to roll back writes.

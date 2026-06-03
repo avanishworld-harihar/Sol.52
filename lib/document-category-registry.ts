@@ -185,6 +185,38 @@ export function legacyProjectDocDisplayOwner(docCategory: string): DocumentOwner
   return "project";
 }
 
+/** Phase 2 write router: project Hub doc_category → customer_assets vs project_assets */
+export function isCustomerOwnedProjectDocCategory(docCategory: string): boolean {
+  return legacyProjectDocDisplayOwner(docCategory) === "customer";
+}
+
+/** Map project_documents.doc_category to customer_assets.category CHECK value */
+export function projectDocCategoryToCustomerAssetCategory(
+  docCategory: string
+): DocumentCategoryDb | null {
+  const db = legacyProjectDocCategoryToDb(docCategory);
+  if (!db || getOwnerForCategoryDb(db) !== "customer") return null;
+  return db;
+}
+
+/** Map project_documents.doc_category to project_assets.category CHECK value */
+export function projectDocCategoryToProjectAssetCategory(
+  docCategory: string
+): DocumentCategoryDb | null {
+  const db = legacyProjectDocCategoryToDb(docCategory);
+  if (!db || getOwnerForCategoryDb(db) !== "project") return null;
+  return db;
+}
+
+/** asset_links.link_role values created on project bootstrap */
+export const AUTO_LINK_CUSTOMER_CATEGORIES: DocumentCategoryDb[] = [
+  "bill",
+  "roof_photo",
+  "meter_photo",
+  "db_photo",
+  "survey_media",
+];
+
 export type DocumentOwnerFilter = DocumentOwner | "all";
 
 export const FILTER_OWNER_OPTIONS: { value: DocumentOwnerFilter; label: string }[] = [

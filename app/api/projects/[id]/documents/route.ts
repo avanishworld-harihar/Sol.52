@@ -4,16 +4,14 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { logDocumentUploaded } from "@/lib/project-activity-logger";
-import {
-  buildProjectDocumentStoragePath,
-  uploadProjectDocumentFile,
-} from "@/lib/project-document-upload";
+import { uploadProjectDocumentFile } from "@/lib/project-document-upload";
 import {
   getProjectOrgContext,
   insertProjectDocument,
   listProjectDocuments,
   getProjectDocumentSummary,
 } from "@/lib/project-document-store";
+import { writeProjectDocumentUpload } from "@/lib/document-write-router";
 import {
   isProjectDocumentCategory,
   PROJECT_DOCUMENT_CATEGORY_LABELS,
@@ -151,44 +149,54 @@ export async function POST(req: NextRequest, ctx: RouteCtx) {
       return NextResponse.json({ ok: false, error: "missing_file" }, { status: 400 });
     }
 
-    const documentId = crypto.randomUUID();
-    const mimeType = file.type || "application/octet-stream";
-    const storagePath = buildProjectDocumentStoragePath({
-      organizationId: orgId,
-      projectId,
-      documentId,
-      mimeType,
-      fileName: file.name,
-    });
-
     const buffer = Buffer.from(await file.arrayBuffer());
-    const uploaded = await uploadProjectDocumentFile({
-      storagePath,
-      fileBuffer: buffer,
-      mimeType,
-    });
-    if (!uploaded.ok) {
-      return NextResponse.json({ ok: false, error: uploaded.error }, { status: 400 });
-    }
+    const mimeType = file.type || "application/octet-stream";
+    const leadId =
+      ctxProject.project.lead_id != null ? String(ctxProject.project.lead_id) : null;
 
-    const row = await insertProjectDocument({
+    const written = await writeProjectDocumentUpload({
       organizationId: orgId,
       projectId,
+      customerId: leadId,
       docCategory,
       stageAtUpload: ctxProject.project.current_stage,
-      storagePath,
-      filename: file.name || "upload",
+      fileBuffer: buffer,
       mimeType,
-      sizeBytes: file.size,
+      fileName: file.name || "upload",
       uploadedById,
       notes,
       linkedEntityType,
       linkedEntityId,
+      legacyInsert: async (storagePath, documentId) => {
+        const uploaded = await uploadProjectDocumentFile({
+          storagePath,
+          fileBuffer: buffer,
+          mimeType,
+        });
+        if (!uploaded.ok) return null;
+        const row = await insertProjectDocument({
+          organizationId: orgId,
+          projectId,
+          docCategory,
+          stageAtUpload: ctxProject.project.current_stage,
+          storagePath,
+          filename: file.name || "upload",
+          mimeType,
+          sizeBytes: file.size,
+          uploadedById,
+          notes,
+          linkedEntityType,
+          linkedEntityId,
+        });
+        return row as unknown as Record<string, unknown> | null;
+      },
     });
 
-    if (!row) {
-      return NextResponse.json({ ok: false, error: "insert_failed" }, { status: 500 });
+    if (!written.ok) {
+      return NextResponse.json({ ok: false, error: written.error }, { status: 400 });
     }
+
+    const row = written.data;
 
     const label =
       PROJECT_DOCUMENT_CATEGORY_LABELS[docCategory as ProjectDocumentCategory] ?? docCategory;
@@ -199,12 +207,12 @@ export async function POST(req: NextRequest, ctx: RouteCtx) {
       docCategory,
       docName: file.name || label,
       stage: ctxProject.project.current_stage,
-      documentId: row.id,
+      documentId: String(row.id),
       createdById: uploadedById,
     });
 
     const { getProjectDocumentById } = await import("@/lib/project-document-store");
-    const withUrl = await getProjectDocumentById(projectId, row.id, true);
+    const withUrl = await getProjectDocumentById(projectId, String(row.id), true);
 
     return NextResponse.json(
       { ok: true, data: withUrl ?? row },

@@ -118,6 +118,15 @@ export async function POST(req: NextRequest) {
         projectId: project.id,
         customerName: parsed.official_name ?? null,
       });
+
+      if (parsed.lead_id) {
+        const { linkCustomerAssetsOnProjectCreate } = await import("@/lib/asset-link-store");
+        void linkCustomerAssetsOnProjectCreate({
+          organizationId: orgId,
+          customerId: parsed.lead_id,
+          projectId: project.id,
+        });
+      }
     }
 
     return NextResponse.json(

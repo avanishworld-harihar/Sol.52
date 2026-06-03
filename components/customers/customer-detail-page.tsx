@@ -278,7 +278,13 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
         const res = await fetch(`/api/customers/${leadId}/files/upload`, { method: "POST", body: form });
         const json = (await res.json()) as { ok?: boolean; error?: string };
         if (!res.ok || !json.ok) throw new Error(json.error ?? "Upload failed");
-        await Promise.all([mutateFiles(), mutateTimeline()]);
+        await Promise.all([
+          mutateFiles(),
+          mutateTimeline(),
+          globalMutate(
+            (key) => typeof key === "string" && key.startsWith(`customer-documents|${leadId}`)
+          ),
+        ]);
         toast.success(`${file.name} uploaded`);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Could not upload file");

@@ -119,6 +119,14 @@ export async function ensureProjectForWonLead(
     if (!existing.stage_status) patch.stage_status = "in_progress";
 
     if (Object.keys(patch).length <= 1) {
+      if (orgId && existing.id) {
+        const { linkCustomerAssetsOnProjectCreate } = await import("@/lib/asset-link-store");
+        void linkCustomerAssetsOnProjectCreate({
+          organizationId: orgId,
+          customerId: leadId,
+          projectId: String(existing.id),
+        });
+      }
       return existing as Record<string, unknown>;
     }
 
@@ -129,6 +137,14 @@ export async function ensureProjectForWonLead(
       .select("*")
       .single();
     if (error || !data) return existing as Record<string, unknown>;
+    if (orgId) {
+      const { linkCustomerAssetsOnProjectCreate } = await import("@/lib/asset-link-store");
+      void linkCustomerAssetsOnProjectCreate({
+        organizationId: orgId,
+        customerId: leadId,
+        projectId: String(data.id),
+      });
+    }
     return data as Record<string, unknown>;
   }
 
@@ -179,6 +195,13 @@ export async function ensureProjectForWonLead(
       organizationId: orgId,
       projectId,
       customerName: displayName,
+    });
+
+    const { linkCustomerAssetsOnProjectCreate } = await import("@/lib/asset-link-store");
+    void linkCustomerAssetsOnProjectCreate({
+      organizationId: orgId,
+      customerId: leadId,
+      projectId,
     });
   }
 

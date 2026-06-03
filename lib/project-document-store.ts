@@ -9,6 +9,15 @@ import {
 } from "@/lib/project-document-upload";
 import type { ProjectDocumentCategory } from "@/lib/project-document-types";
 import type { ProjectRow } from "@/lib/project-store";
+import { isDocumentsHubV2WriteEnabled } from "@/lib/documents-hub-write-config";
+import {
+  listProjectAssets,
+  getProjectAssetById,
+  archiveProjectAsset,
+  projectAssetToLegacyDocumentRow,
+} from "@/lib/project-asset-store";
+import { listLinkedCustomerAssetsForProject } from "@/lib/asset-link-store";
+import { archiveCustomerAsset } from "@/lib/customer-asset-store";
 
 function db() {
   return createSupabaseAdmin() ?? supabase;
@@ -44,7 +53,18 @@ export type ProjectDocumentSummary = {
 export async function getProjectOrgContext(
   projectId: string
 ): Promise<
-  | { ok: true; project: Pick<ProjectRow, "id" | "organization_id" | "current_stage" | "assigned_manager_id" | "assigned_tech_id"> }
+  | {
+      ok: true;
+      project: Pick<
+        ProjectRow,
+        | "id"
+        | "organization_id"
+        | "current_stage"
+        | "assigned_manager_id"
+        | "assigned_tech_id"
+        | "lead_id"
+      >;
+    }
   | { ok: false; error: string }
 > {
   const client = db();
@@ -53,7 +73,7 @@ export async function getProjectOrgContext(
   const { data, error } = await client
     .from("projects")
     .select(
-      "id, organization_id, current_stage, assigned_manager_id, assigned_tech_id"
+      "id, organization_id, current_stage, assigned_manager_id, assigned_tech_id, lead_id"
     )
     .eq("id", projectId)
     .maybeSingle();
@@ -66,7 +86,12 @@ export async function getProjectOrgContext(
     ok: true,
     project: data as Pick<
       ProjectRow,
-      "id" | "organization_id" | "current_stage" | "assigned_manager_id" | "assigned_tech_id"
+      | "id"
+      | "organization_id"
+      | "current_stage"
+      | "assigned_manager_id"
+      | "assigned_tech_id"
+      | "lead_id"
     >,
   };
 }
@@ -118,12 +143,58 @@ export async function listProjectDocuments(
   }
 
   const { data, error } = await query;
-  if (error || !Array.isArray(data)) return [];
-  const rows = data as ProjectDocumentRow[];
-  if (opts?.withUrls) {
-    return attachSignedUrls(rows);
+  if (error || !Array.isArray(data)) {
+    if (!isDocumentsHubV2WriteEnabled()) return [];
   }
-  return rows;
+  const legacyRows = (error || !Array.isArray(data) ? [] : data) as ProjectDocumentRow[];
+
+  if (!isDocumentsHubV2WriteEnabled()) {
+    if (opts?.withUrls) return attachSignedUrls(legacyRows);
+    return legacyRows;
+  }
+
+  const v2Rows: ProjectDocumentRow[] = [];
+  const legacyIds = new Set(legacyRows.map((r) => r.id));
+
+  const assets = await listProjectAssets(projectId, {
+    category: opts?.category ?? null,
+  });
+  for (const a of assets) {
+    if (legacyIds.has(a.id)) continue;
+    v2Rows.push(projectAssetToLegacyDocumentRow(a) as unknown as ProjectDocumentRow);
+  }
+
+  const linked = await listLinkedCustomerAssetsForProject(projectId);
+  for (const { link, asset } of linked) {
+    if (legacyIds.has(asset.id)) continue;
+    if (opts?.category && asset.category !== opts.category) continue;
+    v2Rows.push({
+      id: asset.id,
+      organization_id: link.organization_id,
+      project_id: projectId,
+      doc_category: asset.category,
+      stage_at_upload: "survey",
+      storage_path: asset.storage_path,
+      filename: asset.filename,
+      mime_type: asset.mime_type,
+      size_bytes: asset.size_bytes,
+      uploaded_by_id: asset.uploaded_by_id,
+      notes: asset.notes,
+      linked_entity_type: "asset_link",
+      linked_entity_id: link.id,
+      archived_at: null,
+      created_at: asset.created_at,
+    });
+  }
+
+  const merged = [...v2Rows, ...legacyRows].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+
+  if (opts?.withUrls) {
+    return attachSignedUrls(merged);
+  }
+  return merged;
 }
 
 export async function getProjectDocumentSummary(
@@ -163,13 +234,58 @@ export async function getProjectDocumentById(
     .eq("id", documentId)
     .maybeSingle();
 
-  if (error || !data) return null;
-  const row = data as ProjectDocumentRow;
-  if (!withUrl || row.archived_at) {
-    return { ...row, download_url: null };
+  if (!error && data) {
+    const row = data as ProjectDocumentRow;
+    if (!withUrl || row.archived_at) {
+      return { ...row, download_url: null };
+    }
+    const signed = await createProjectDocumentSignedUrl(row.storage_path);
+    return { ...row, download_url: signed.ok ? signed.url : null };
   }
-  const signed = await createProjectDocumentSignedUrl(row.storage_path);
-  return { ...row, download_url: signed.ok ? signed.url : null };
+
+  if (isDocumentsHubV2WriteEnabled()) {
+    const asset = await getProjectAssetById(projectId, documentId);
+    if (asset) {
+      const row = projectAssetToLegacyDocumentRow(asset) as unknown as ProjectDocumentRow;
+      if (!withUrl) return { ...row, download_url: null };
+      const signed = await createProjectDocumentSignedUrl(row.storage_path);
+      return { ...row, download_url: signed.ok ? signed.url : null };
+    }
+    const linked = await listLinkedCustomerAssetsForProject(projectId);
+    const hit = linked.find((x) => x.asset.id === documentId);
+    if (hit) {
+      const row: ProjectDocumentRow = {
+        id: hit.asset.id,
+        organization_id: hit.link.organization_id,
+        project_id: projectId,
+        doc_category: hit.asset.category,
+        stage_at_upload: "survey",
+        storage_path: hit.asset.storage_path,
+        filename: hit.asset.filename,
+        mime_type: hit.asset.mime_type,
+        size_bytes: hit.asset.size_bytes,
+        uploaded_by_id: hit.asset.uploaded_by_id,
+        notes: hit.asset.notes,
+        linked_entity_type: "asset_link",
+        linked_entity_id: hit.link.id,
+        archived_at: null,
+        created_at: hit.asset.created_at,
+      };
+      if (!withUrl) return { ...row, download_url: null };
+      const admin = db();
+      let url: string | null = null;
+      if (admin && hit.asset.storage_path && !hit.asset.storage_path.startsWith("http")) {
+        const bucket = hit.asset.storage_bucket || "customer-files";
+        const { data: signed } = await admin.storage
+          .from(bucket)
+          .createSignedUrl(hit.asset.storage_path, 3600);
+        url = signed?.signedUrl ?? null;
+      }
+      return { ...row, download_url: url };
+    }
+  }
+
+  return null;
 }
 
 export async function insertProjectDocument(input: {
@@ -236,8 +352,16 @@ export async function updateProjectDocumentMeta(
     .select("*")
     .maybeSingle();
 
-  if (error || !data) return null;
-  return data as ProjectDocumentRow;
+  if (!error && data) return data as ProjectDocumentRow;
+
+  if (isDocumentsHubV2WriteEnabled()) {
+    const asset = await getProjectAssetById(projectId, documentId);
+    if (asset) {
+      return projectAssetToLegacyDocumentRow(asset) as unknown as ProjectDocumentRow;
+    }
+  }
+
+  return null;
 }
 
 export async function archiveProjectDocument(
@@ -256,6 +380,39 @@ export async function archiveProjectDocument(
     .select("*")
     .maybeSingle();
 
-  if (error || !data) return null;
-  return data as ProjectDocumentRow;
+  if (!error && data) return data as ProjectDocumentRow;
+
+  if (isDocumentsHubV2WriteEnabled()) {
+    const asset = await getProjectAssetById(projectId, documentId);
+    if (asset) {
+      const ok = await archiveProjectAsset(documentId);
+      if (!ok) return null;
+      return { ...asset, archived_at: new Date().toISOString() } as unknown as ProjectDocumentRow;
+    }
+    const linked = await listLinkedCustomerAssetsForProject(projectId);
+    const hit = linked.find((x) => x.asset.id === documentId);
+    if (hit) {
+      const ok = await archiveCustomerAsset(documentId);
+      if (!ok) return null;
+      return {
+        id: hit.asset.id,
+        organization_id: hit.link.organization_id,
+        project_id: projectId,
+        doc_category: hit.asset.category,
+        stage_at_upload: "survey",
+        storage_path: hit.asset.storage_path,
+        filename: hit.asset.filename,
+        mime_type: hit.asset.mime_type,
+        size_bytes: hit.asset.size_bytes,
+        uploaded_by_id: hit.asset.uploaded_by_id,
+        notes: hit.asset.notes,
+        linked_entity_type: null,
+        linked_entity_id: null,
+        archived_at: new Date().toISOString(),
+        created_at: hit.asset.created_at,
+      };
+    }
+  }
+
+  return null;
 }

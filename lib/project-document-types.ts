@@ -8,18 +8,36 @@ export const PROJECT_DOCUMENT_CATEGORIES = [
   "db_photo",
   "electricity_bill",
   "site_other",
+  /* Phase 2 registry-aligned project deliverables (→ project_assets) */
+  "aadhaar",
+  "pan",
+  "agreement",
+  "advance_receipt",
   "sld",
+  "net_metering",
+  "installation_photo",
+  /* Legacy / extended Hub categories (still valid uploads) */
   "layout",
   "structural_drawing",
   "nm_application",
   "nm_inspection",
   "nm_letter",
-  "installation_photo",
   "commissioning",
   "warranty",
   "handover",
   "other",
 ] as const;
+
+/** Registry project categories accepted by upload API (Phase 2). */
+export const PROJECT_REGISTRY_UPLOAD_CATEGORIES = [
+  "aadhaar",
+  "pan",
+  "agreement",
+  "advance_receipt",
+  "sld",
+  "net_metering",
+  "installation_photo",
+] as const satisfies readonly ProjectDocumentCategory[];
 
 export type ProjectDocumentCategory = (typeof PROJECT_DOCUMENT_CATEGORIES)[number];
 
@@ -54,13 +72,18 @@ export const PROJECT_DOCUMENT_CATEGORY_LABELS: Record<ProjectDocumentCategory, s
   db_photo: "DB photo",
   electricity_bill: "Electricity bill",
   site_other: "Site photo",
+  aadhaar: "Aadhaar",
+  pan: "PAN",
+  agreement: "Agreement",
+  advance_receipt: "Advance receipt",
   sld: "SLD",
+  net_metering: "Net metering",
+  installation_photo: "Installation photo",
   layout: "Layout drawing",
   structural_drawing: "Structural drawing",
   nm_application: "NM application",
   nm_inspection: "NM inspection",
   nm_letter: "DISCOM / NM letter",
-  installation_photo: "Installation photo",
   commissioning: "Commissioning report",
   warranty: "Warranty",
   handover: "Handover checklist",
