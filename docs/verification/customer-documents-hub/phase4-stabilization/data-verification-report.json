@@ -1,0 +1,37 @@
+{
+  "generated_at": "2026-06-03T13:20:23.757Z",
+  "checks": [
+    {
+      "name": "legacy_vs_map",
+      "customer_files_total": 3,
+      "project_documents_active_sample": 10,
+      "map_rows": 8,
+      "unmigrated_in_sample": {
+        "customer_files": 0,
+        "project_documents": 5
+      }
+    },
+    {
+      "name": "map_target_integrity_sample",
+      "sampled": 8,
+      "missing": []
+    },
+    {
+      "name": "backfill_source_channel",
+      "customer_assets_backfill_channel": 7
+    }
+  ],
+  "pass_fail": [
+    {
+      "id": "map_integrity_sample",
+      "result": "PASS",
+      "note": "0 broken of 8"
+    },
+    {
+      "id": "legacy_tables_readable",
+      "result": "PASS",
+      "note": "customer_files query ok"
+    }
+  ],
+  "summary": "PASS"
+}

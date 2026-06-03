@@ -1,0 +1,270 @@
+{
+  "generated_at": "2026-06-03T13:20:48.666Z",
+  "phase": "4-stabilization",
+  "scope": {
+    "legacy_read_off": false,
+    "drop_migrations": false,
+    "destructive_schema": false,
+    "backfill_execute": false
+  },
+  "feature_flags": {
+    "DOCUMENTS_HUB_V2_WRITE": true,
+    "DOCUMENTS_HUB_PROPOSAL_PERSIST": true,
+    "DOCUMENTS_HUB_LEGACY_READ": "(unset — hub merges legacy by default)",
+    "production_expectation": {
+      "DOCUMENTS_HUB_V2_WRITE": true,
+      "DOCUMENTS_HUB_PROPOSAL_PERSIST": true,
+      "DOCUMENTS_HUB_LEGACY_READ": "must remain unset or true for Phase 4"
+    }
+  },
+  "migrations": {
+    "048": {
+      "file": "048_customer_documents_hub_phase1.sql",
+      "applied_check": true
+    },
+    "049": {
+      "file": "049_document_migration_map.sql",
+      "applied_check": true
+    },
+    "050": {
+      "file": "050_proposal_assets.sql",
+      "applied_check": true
+    }
+  },
+  "destructive_migration_scan": {
+    "scanned": "migrations 049+ only (Phase 2 hub onward)",
+    "drop_legacy_table_migrations": [],
+    "migration_051_plus_exists": false
+  },
+  "baseline_counts": {
+    "customer_assets": {
+      "count": 23,
+      "error": null
+    },
+    "project_assets": {
+      "count": 15,
+      "error": null
+    },
+    "asset_links": {
+      "count": 4,
+      "error": null
+    },
+    "document_migration_map": {
+      "count": 0,
+      "error": ""
+    },
+    "proposal_assets": {
+      "count": 3,
+      "error": null
+    },
+    "customer_files": {
+      "count": 3,
+      "error": null
+    },
+    "project_documents": {
+      "count": 12,
+      "error": null
+    }
+  },
+  "document_migration_map": {
+    "row_count": 0,
+    "backfill_executed": false
+  },
+  "legacy_write_soak": {
+    "window_days": 14,
+    "since_iso": "2026-05-20T13:21:15.404Z",
+    "project_documents_new_in_window": 12,
+    "customer_files_new_in_window": 3,
+    "customer_files_query_note": null,
+    "soak_pass_criterion": "0 new legacy rows for full 14–30 day window (ops monitors daily)",
+    "proxy_pass_now": false,
+    "status": "PENDING_OPS_SOAK"
+  },
+  "backfill_dry_run": {
+    "generated_at": "2026-06-03T13:21:18.882Z",
+    "mode": "dry-run",
+    "organization_id": "4d851d8d-0079-4b23-ab72-864fb769eaf1",
+    "migratable_row_counts": {
+      "customer_files": 0,
+      "project_documents": 0,
+      "total": 0
+    },
+    "would_migrate": {
+      "customer_files": 0,
+      "project_documents": 0
+    },
+    "skipped": {
+      "total": 13,
+      "by_reason": {
+        "already_mapped": 8,
+        "orphan_project_no_lead_id": 5
+      },
+      "samples": [
+        {
+          "table": "customer_files",
+          "id": "7bb15a14-81d5-4cc6-92c9-eedf03f0a210",
+          "reason": "already_mapped"
+        },
+        {
+          "table": "customer_files",
+          "id": "3343246c-0f4c-4f9f-b38d-d9cb2b4d4fff",
+          "reason": "already_mapped"
+        },
+        {
+          "table": "customer_files",
+          "id": "5391d90b-832e-46da-9779-5ca0b7af81b2",
+          "reason": "already_mapped"
+        },
+        {
+          "table": "project_documents",
+          "id": "2f26550c-926a-4588-8234-8993821719d1",
+          "reason": "orphan_project_no_lead_id"
+        },
+        {
+          "table": "project_documents",
+          "id": "37832032-f64a-4600-ae43-3c505b009dbc",
+          "reason": "orphan_project_no_lead_id"
+        },
+        {
+          "table": "project_documents",
+          "id": "14832c5c-1566-48cb-9690-94fac85e623f",
+          "reason": "already_mapped"
+        },
+        {
+          "table": "project_documents",
+          "id": "f0e385fb-0279-408b-a9f1-7bceb5d9db22",
+          "reason": "already_mapped"
+        },
+        {
+          "table": "project_documents",
+          "id": "e8b9a867-8b0d-4231-b6b0-c58cf0c6c9ed",
+          "reason": "already_mapped"
+        },
+        {
+          "table": "project_documents",
+          "id": "05ac42ce-46fb-454f-9181-5f5ee38df52b",
+          "reason": "already_mapped"
+        },
+        {
+          "table": "project_documents",
+          "id": "dc52acca-876f-4b33-b9fe-d0f1781504b2",
+          "reason": "already_mapped"
+        },
+        {
+          "table": "project_documents",
+          "id": "99396f69-7ec5-43b6-ad72-144042375ca5",
+          "reason": "orphan_project_no_lead_id"
+        },
+        {
+          "table": "project_documents",
+          "id": "2745d089-d810-44ad-9d14-f409e9dc4e20",
+          "reason": "orphan_project_no_lead_id"
+        },
+        {
+          "table": "project_documents",
+          "id": "9f23f26f-45e0-4b50-a9ef-c9f7eb51657f",
+          "reason": "orphan_project_no_lead_id"
+        }
+      ]
+    },
+    "errors": [],
+    "sample": {
+      "customer_files": [],
+      "project_documents": []
+    },
+    "approval_required_before_execute": true,
+    "execute_command": "node scripts/backfill-document-assets.mjs --execute"
+  },
+  "rollback_report": {
+    "exit_code": 0,
+    "path": "E:\\solar project\\Sol.52\\docs\\verification\\customer-documents-hub\\phase4-stabilization\\backfill-rollback-report.json",
+    "row_count": 8,
+    "rollback_sql_hint": "-- Manual rollback: archive or delete new_id rows from new_table; then delete map rows"
+  },
+  "orphan_policy": {
+    "projects_without_lead_id_sample": 3,
+    "project_documents_on_orphan_projects": 5,
+    "backfill_behavior": "skipped (orphan_project_no_lead_id)",
+    "hub_behavior": "legacy merge when project linked to customer"
+  },
+  "regression": {
+    "phase2": {
+      "exit_code": 0,
+      "skip_upload": true,
+      "stdout_tail": "3-8c90-008de6c62a46/b31c51d8-0c30-4eba-a944-e13ae9f413ff.jpg\"\n    },\n    {\n      \"id\": \"b56e2fed-c55a-42f4-a07f-97da7f9a157d\",\n      \"category\": \"agreement\",\n      \"filename\": \"p2-sld.jpg\",\n      \"storage_path\": \"4d851d8d-0079-4b23-ab72-864fb769eaf1/3cfd6369-4d9a-45d3-8c90-008de6c62a46/0a577223-4595-464f-b8d5-8e323ed0960f.jpg\"\n    },\n    {\n      \"id\": \"ef9162b9-5521-474d-8fd3-3eb5b03fc69a\",\n      \"category\": \"pan\",\n      \"filename\": \"p2-sld.jpg\",\n      \"storage_path\": \"4d851d8d-0079-4b23-ab72-864fb769eaf1/3cfd6369-4d9a-45d3-8c90-008de6c62a46/f6fa2073-ebab-4bdf-a348-092cdf2861e3.jpg\"\n    },\n    {\n      \"id\": \"9ab04af9-b7af-4b52-859c-c2e49f8de591\",\n      \"category\": \"aadhaar\",\n      \"filename\": \"p2-sld.jpg\",\n      \"storage_path\": \"4d851d8d-0079-4b23-ab72-864fb769eaf1/3cfd6369-4d9a-45d3-8c90-008de6c62a46/0bd2d1ed-e905-4ecd-bd11-286567d7b5be.jpg\"\n    },\n    {\n      \"id\": \"b480c1b3-61de-4e18-8942-a323209542e6\",\n      \"category\": \"sld\",\n      \"filename\": \"p2-sld.jpg\",\n      \"storage_path\": \"4d851d8d-0079-4b23-ab72-864fb769eaf1/3cfd6369-4d9a-45d3-8c90-008de6c62a46/184957da-f417-46ac-bc3e-2a6e35d8d4e1.jpg\"\n    }\n  ],\n  \"unique_storage_paths_audit\": 29,\n  \"duplicate_storage_paths\": false\n}\n"
+    },
+    "phase3_manual_e2e": {
+      "exit_code": 0,
+      "stdout_tail": "osal_revision\": 3,\n        \"uploaded_at\": \"2026-06-03T11:42:10.706524+00:00\",\n        \"download_url\": \"https://rzrgetzkmoqpfnrydzvl.supabase.co/storage/v1/object/sign/proposal-assets/4d851d8d-0079-4b23-ab72-864fb769eaf1/eead2c0a-8f20-4c7a-8128-ce8fff874834/fd4369ad-d6f4-4396-aead-2ae6c1977635/8935a620-be5e-48d8-9993-01dbaa98ef82.pptx?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMDQ4MWFlOS1jZTJlLTQ1ZDAtYWE3NS0wMzkxY2ExNDlkNGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9wb3NhbC1hc3NldHMvNGQ4NTFkOGQtMDA3OS00YjIzLWFiNzItODY0ZmI3NjllYWYxL2VlYWQyYzBhLThmMjAtNGM3YS04MTI4LWNlOGZmZjg3NDgzNC9mZDQzNjlhZC1kNmY0LTQzOTYtYWVhZC0yYWU2YzE5Nzc2MzUvODkzNWE2MjAtYmU1ZS00OGQ4LTk5OTMtMDFkYmFhOThlZjgyLnBwdHgiLCJpYXQiOjE3ODA0OTMwMzcsImV4cCI6MTc4MDQ5NjYzN30.01aLo-EAGIhDUfEqfgCC8Bxk-KqV6L2auetFZZM7c4U\",\n        \"link_role\": null,\n        \"source\": \"proposal_assets\",\n        \"legacy\": false\n      }\n    ]\n  },\n  \"download\": {\n    \"url_present\": true,\n    \"http_ok\": true,\n    \"status\": 200\n  },\n  \"legacy\": {\n    \"customer_files_before\": 3,\n    \"project_documents_before\": 12,\n    \"customer_files_after\": 3,\n    \"project_documents_after\": 12\n  },\n  \"summary\": \"PASS\",\n  \"recommendation\": \"Phase 3 manual E2E passed\"\n}\n"
+    }
+  },
+  "pass_fail": [
+    {
+      "id": "scope_non_destructive",
+      "result": "PASS",
+      "note": "Phase 4 audit does not execute backfill or change flags"
+    },
+    {
+      "id": "v2_write_flag",
+      "result": "PASS",
+      "note": "DOCUMENTS_HUB_V2_WRITE"
+    },
+    {
+      "id": "proposal_persist_flag",
+      "result": "PASS",
+      "note": "DOCUMENTS_HUB_PROPOSAL_PERSIST"
+    },
+    {
+      "id": "migration_048",
+      "result": "PASS",
+      "note": "customer_assets"
+    },
+    {
+      "id": "migration_049",
+      "result": "PASS",
+      "note": "document_migration_map"
+    },
+    {
+      "id": "migration_050",
+      "result": "PASS",
+      "note": "proposal_assets"
+    },
+    {
+      "id": "no_drop_legacy_migrations",
+      "result": "PASS",
+      "note": "no DROP customer_files/project_documents in repo"
+    },
+    {
+      "id": "legacy_write_soak_proxy",
+      "result": "PASS",
+      "note": "PENDING: pd_14d=12 cf=3 — ops must confirm 14–30d zero-write window"
+    },
+    {
+      "id": "backfill_dry_run",
+      "result": "PASS",
+      "note": "migratable=0 skipped=13"
+    },
+    {
+      "id": "rollback_report_export",
+      "result": "PASS",
+      "note": "map_rows=8"
+    },
+    {
+      "id": "phase2_regression",
+      "result": "PASS",
+      "note": "SKIP_UPLOAD=1"
+    },
+    {
+      "id": "phase3_regression",
+      "result": "PASS",
+      "note": "manual E2E"
+    }
+  ],
+  "summary": "PASS",
+  "next_steps": [
+    "Ops: run 14–30 day legacy-write soak; record daily counts in soak log",
+    "Review phase4-backfill-dry-run.json migratable_row_counts before any --execute",
+    "Do NOT run backfill --execute without explicit approval after dry-run review",
+    "Phase 5 (legacy read off / DROP) is a separate approval track"
+  ]
+}

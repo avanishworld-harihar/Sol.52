@@ -1,0 +1,80 @@
+{
+  "generated_at": "2026-06-03T13:32:04.838Z",
+  "lead_id": "eead2c0a-8f20-4c7a-8128-ce8fff874834",
+  "checks": [
+    {
+      "query": "(all)",
+      "status": 200,
+      "ok": true,
+      "total": 40,
+      "by_source": {
+        "proposal_assets": 4,
+        "project_assets": 13,
+        "customer_assets": 19,
+        "project_documents": 2,
+        "customer_files": 2
+      },
+      "legacy_count": 4,
+      "with_download_url": 40
+    },
+    {
+      "query": "?limit=100",
+      "status": 200,
+      "ok": true,
+      "total": 50,
+      "by_source": {
+        "proposal_assets": 4,
+        "project_assets": 15,
+        "customer_assets": 23,
+        "project_documents": 5,
+        "customer_files": 3
+      },
+      "legacy_count": 8,
+      "with_download_url": 50
+    },
+    {
+      "query": "?owner=customer&limit=50",
+      "status": 200,
+      "ok": true,
+      "total": 30,
+      "by_source": {
+        "customer_assets": 23,
+        "project_documents": 4,
+        "customer_files": 3
+      },
+      "legacy_count": 7,
+      "with_download_url": 30
+    },
+    {
+      "query": "?owner=project&limit=50",
+      "status": 200,
+      "ok": true,
+      "total": 16,
+      "by_source": {
+        "project_assets": 15,
+        "project_documents": 1
+      },
+      "legacy_count": 1,
+      "with_download_url": 16
+    },
+    {
+      "query": "?owner=proposal&limit=50",
+      "status": 200,
+      "ok": true,
+      "total": 4,
+      "by_source": {
+        "proposal_assets": 4
+      },
+      "legacy_count": 0,
+      "with_download_url": 4
+    }
+  ],
+  "pass_fail": [
+    {
+      "id": "hub_api_all_sources",
+      "result": "PASS",
+      "note": "all query total=40 sources={\"proposal_assets\":4,\"project_assets\":13,\"customer_assets\":19,\"project_documents\":2,\"customer_files\":2}"
+    }
+  ],
+  "summary": "PASS"
+}
