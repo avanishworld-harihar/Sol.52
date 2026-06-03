@@ -1,0 +1,20 @@
+{
+  "generated_at": "2026-06-03T13:19:59.089Z",
+  "mode": "execute",
+  "organization_id": "4d851d8d-0079-4b23-ab72-864fb769eaf1",
+  "rows_migrated": 8,
+  "errors": 0,
+  "migratable_row_counts": {
+    "customer_files": 3,
+    "project_documents": 5,
+    "total": 8
+  },
+  "skipped": {
+    "total": 5,
+    "by_reason": {
+      "orphan_project_no_lead_id": 5
+    }
+  },
+  "map_entries_created": 8,
+  "legacy_tables_modified": false
+}

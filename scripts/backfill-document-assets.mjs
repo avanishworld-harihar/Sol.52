@@ -34,10 +34,17 @@ function loadEnvLocal() {
   }
 }
 
-const args = new Set(process.argv.slice(2));
+const argv = process.argv.slice(2);
+const args = new Set(argv);
 const dryRun = args.has("--dry-run") || (!args.has("--execute") && !args.has("--rollback-report"));
 const execute = args.has("--execute");
 const rollbackReport = args.has("--rollback-report");
+let jsonOut = null;
+let rollbackReportOut = null;
+for (const a of argv) {
+  if (a.startsWith("--json-out=")) jsonOut = a.slice("--json-out=".length);
+  if (a.startsWith("--rollback-report-out=")) rollbackReportOut = a.slice("--rollback-report-out=".length);
+}
 
 const env = { ...loadEnvLocal(), ...process.env };
 const url = env.NEXT_PUBLIC_SUPABASE_URL || env.SUPABASE_URL;
@@ -112,7 +119,9 @@ if (rollbackReport) {
     rollback_sql_hint:
       "-- Manual rollback: archive or delete new_id rows from new_table; then delete map rows",
   };
-  const outPath = "docs/verification/customer-documents-hub/backfill-rollback-report.json";
+  const outPath =
+    rollbackReportOut ||
+    "docs/verification/customer-documents-hub/phase4-stabilization/backfill-rollback-report.json";
   writeFileSync(outPath, JSON.stringify(report, null, 2));
   console.log("Wrote", outPath, "rows:", report.total);
   process.exit(0);
@@ -192,28 +201,48 @@ for (const r of pds ?? []) {
   });
 }
 
-console.log(
-  JSON.stringify(
-    {
-      mode: execute ? "execute" : "dry-run",
-      organization_id: orgId,
-      would_migrate: {
-        customer_files: plan.customer_files.length,
-        project_documents: plan.project_documents.length,
-      },
-      skipped: plan.skipped.length,
-      sample: {
-        customer_files: plan.customer_files.slice(0, 3),
-        project_documents: plan.project_documents.slice(0, 3),
-      },
-    },
-    null,
-    2
-  )
-);
+const skipByReason = {};
+for (const s of plan.skipped) {
+  const key = s.reason || "unknown";
+  skipByReason[key] = (skipByReason[key] ?? 0) + 1;
+}
+
+const dryRunPayload = {
+  generated_at: new Date().toISOString(),
+  mode: execute ? "execute" : "dry-run",
+  organization_id: orgId,
+  migratable_row_counts: {
+    customer_files: plan.customer_files.length,
+    project_documents: plan.project_documents.length,
+    total: plan.customer_files.length + plan.project_documents.length,
+  },
+  would_migrate: {
+    customer_files: plan.customer_files.length,
+    project_documents: plan.project_documents.length,
+  },
+  skipped: {
+    total: plan.skipped.length,
+    by_reason: skipByReason,
+    samples: plan.skipped.slice(0, 20),
+  },
+  errors: plan.errors,
+  sample: {
+    customer_files: plan.customer_files.slice(0, 3),
+    project_documents: plan.project_documents.slice(0, 3),
+  },
+  approval_required_before_execute: !execute,
+  execute_command: "node scripts/backfill-document-assets.mjs --execute",
+};
+
+console.log(JSON.stringify(dryRunPayload, null, 2));
+
+if (jsonOut) {
+  writeFileSync(jsonOut, JSON.stringify(dryRunPayload, null, 2));
+  console.log("Wrote", jsonOut);
+}
 
 if (!execute) {
-  console.log("\nDry-run only. Pass --execute to apply (after approval).");
+  console.log("\nDry-run only. Pass --execute to apply (after explicit approval).");
   process.exit(0);
 }
 

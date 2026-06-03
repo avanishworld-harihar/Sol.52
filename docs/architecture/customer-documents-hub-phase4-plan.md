@@ -1,371 +1,351 @@
-# Customer Documents Hub — Phase 4 Plan (Deprecation & Migration)
+# Customer Documents Hub — Phase 4 Plan (Stabilization — Non-Destructive)
 
-**Status:** Awaiting approval — **no implementation, no migrations, no commits**  
+**Status:** Stabilization tooling implemented — **awaiting review** (no commit/tag)  
+**No code, no migrations, no commits in this revision**  
 **Prerequisite tags:** `phase1-documents-hub-complete`, `phase2-documents-hub-complete`, `phase3-documents-hub-complete`  
-**Base production architecture:** Phases 1–3 on `main` (through `5ae72fc` / tag `phase3-documents-hub-complete`)  
+**Base:** `main` through `5ae72fc` (tag `phase3-documents-hub-complete`)  
 **Date:** June 2026
 
 ---
 
-## 0. Current production state (review summary)
+## Executive summary
 
-| Layer | State |
-|-------|--------|
-| **Schema (additive)** | `customer_assets`, `project_assets`, `asset_links` (048); `document_migration_map` (049); `proposal_assets` (050) |
-| **Legacy schema** | `customer_files`, `project_documents` — **still present**, still merged in hub read path |
-| **Storage buckets** | `customer-files`, `project-files`, `proposal-assets` — unchanged; backfill reuses paths (no blob copy) |
-| **Writes** | `DOCUMENTS_HUB_V2_WRITE` default **on** → new uploads go to v2 tables, not legacy (validated Phase 2) |
-| **Proposal persist** | `DOCUMENTS_HUB_PROPOSAL_PERSIST` default **on** → PPTX on pricing snapshot |
-| **Backfill** | `scripts/backfill-document-assets.mjs` — **dry-run only**; `--execute` **not** run in production |
-| **`document_migration_map`** | Expected **empty or near-empty** until backfill execute |
-| **Hub UI** | Unified hub + legacy Quick upload blocks (dual UI) |
-| **Known gaps** | Orphan `projects.lead_id IS NULL`; migration **021** (`proposal_status`) may be missing; test/audit filenames in DB |
+Phase 4 is redefined as a **non-destructive stabilization phase**: prove production is healthy on v2 writes, optionally **backfill historical legacy metadata** into v2 tables, and document rollback paths — **without** turning off legacy hub reads, **without** DROP migrations, and **without** any destructive schema change.
 
-**Implication for Phase 4:** Retirement is a **process + flag + verification** problem first; **DROP** is last and irreversible.
+| Approved for Phase 4 | Deferred (not approved — future phase) |
+|----------------------|----------------------------------------|
+| 4A — Legacy write verification & soak | Legacy read OFF (`DOCUMENTS_HUB_LEGACY_READ=false`) |
+| 4B — Backfill execute **planning and ops run** | DROP `customer_files` / `project_documents` |
+| Rollback planning (flags + row-level backfill) | Destructive migrations (051+) |
+| Data verification checklist | UI removal of legacy Quick upload (optional later) |
+| Production rollout checklist | |
 
 ---
 
-## 1. Legacy table retirement strategy
+## 0. Current production state
 
-### 1.1 Tables in scope
+| Layer | State |
+|-------|--------|
+| **V2 schema** | 048 `customer_assets`, `project_assets`, `asset_links`; 049 `document_migration_map`; 050 `proposal_assets` |
+| **Legacy schema** | `customer_files`, `project_documents` — **remain in place and in hub merge** for all of Phase 4 |
+| **Writes** | `DOCUMENTS_HUB_V2_WRITE` default **on** → new data → v2 tables |
+| **Reads** | Hub merges **legacy + v2 + proposal_assets** (unchanged) |
+| **Backfill** | Script exists; `--execute` **not** run |
+| **Risks** | Orphan `projects.lead_id`; dual upload UI; optional missing migration 021 |
 
-| Table | Bucket | Phase 4 action |
-|-------|--------|----------------|
-| `customer_files` | `customer-files` | Read-only → archive metadata → DROP (late) |
-| `project_documents` | `project-files` | Read-only → archive metadata → DROP (late) |
+---
 
-**Out of scope for DROP:** `customer_assets`, `project_assets`, `asset_links`, `proposal_assets`, `document_migration_map`, `proposals`, storage buckets.
+## 1. Stabilization strategy (non-destructive)
 
-### 1.2 Phased retirement (recommended)
+### 1.1 Objective
 
-```
-Phase 4A — Write retirement (reversible)
-  DOCUMENTS_HUB_V2_WRITE stays ON (already default)
-  Confirm no code path writes legacy when flag ON
-  Optional: DOCUMENTS_HUB_LEGACY_READ=true (default) — hub still merges legacy rows
+Stabilize the Documents Hub in production so that:
 
-Phase 4B — Historical migration (reversible per row)
-  Approved backfill --execute
-  Populate document_migration_map
-  Orphan / skip report for unmigrated legacy rows
+1. **No new legacy writes** occur while v2 is enabled.  
+2. **Historical legacy rows** are copied into v2 metadata (backfill) where migratable.  
+3. **Hub continues to show** legacy + v2 + proposal rows (no read-path change).  
+4. **Legacy tables and buckets** stay intact for rollback and audit.
 
-Phase 4C — Read retirement (reversible)
-  After backfill + soak: DOCUMENTS_HUB_LEGACY_READ=false
-  Hub reads v2 + proposal_assets only
-  Legacy tables remain in DB for emergency rollback window
+### 1.2 In scope — Phase 4A (validation)
 
-Phase 4D — Schema retirement (irreversible)
-  New migration 051+ (NOT 049 — already used): archive views optional, then DROP legacy tables
-  Keep document_migration_map indefinitely for audit
-```
+| Activity | Deliverable |
+|----------|-------------|
+| Confirm prod env flags | `DOCUMENTS_HUB_V2_WRITE=true`, `DOCUMENTS_HUB_PROPOSAL_PERSIST=true` |
+| Legacy write soak | 14–30 days: monitor `customer_files` / `project_documents` insert count → **0** |
+| Automated regression | `phase2-validation-audit.mjs`, `phase3-manual-e2e.mjs` (or scheduled) |
+| Code-path audit (read-only) | Confirm upload routes do not write legacy when v2 flag on |
+| Baseline artifact | `docs/verification/customer-documents-hub/phase4-stabilization/baseline-counts.json` |
 
-### 1.3 Timeline (default proposal)
+**No schema change.** Optional: `phase4-stabilization-audit.mjs` (counts + flag check only) — implement after approval.
 
-| Window | Duration | Activity |
-|--------|----------|----------|
-| **Soak** | 14–30 days post–Phase 3 deploy | Monitor v2 write volume; zero new legacy rows |
-| **Backfill** | Single maintenance window | Execute backfill; verification checklist |
-| **Legacy read soak** | 30–90 days post-backfill | Hub still merges legacy; compare counts |
-| **DROP gate** | After sign-off | Backup + DROP migration |
+### 1.3 In scope — Phase 4B (backfill execute)
 
-Adjust durations per org risk tolerance; **90-day read fallback** aligns with master plan.
+| Activity | Deliverable |
+|----------|-------------|
+| Dry-run + review | `phase4-backfill-dry-run.json` |
+| Approved `--execute` | Additive rows in `customer_assets` / `project_assets` + `document_migration_map` |
+| Post-execute verification | §4 checklist |
 
-### 1.4 Orphan and unmigrated rows
+**Explicit:** Backfill does **not** delete or alter legacy rows. Blobs are **not** copied.
 
-| Case | Strategy |
-|------|----------|
-| `project_documents` on projects with `lead_id IS NULL` | **Do not DROP** until linked or explicitly archived; backfill script skips (`orphan_project_no_lead_id`) |
-| Legacy rows without map entry after backfill | Keep in legacy tables until manual remediation or accept hub-only-v2 after read flag off |
-| Duplicate hub display (legacy + v2) | Expected until read flag off; dedupe in `unified-documents-store` prefers non-legacy |
+### 1.4 Out of scope (deferred)
 
-### 1.5 UI retirement (optional sub-phase)
+| Item | Why deferred |
+|------|----------------|
+| `DOCUMENTS_HUB_LEGACY_READ=false` | Not approved — hub must keep merging legacy |
+| DROP legacy tables | Destructive — not approved |
+| Migration 051+ | Not approved |
+| Collapse legacy Quick upload UI | Not required for stabilization |
+| `asset_links` backfill for old rows | Optional follow-up; not blocking |
 
-| Item | When |
-|------|------|
-| Collapse legacy Quick upload on customer profile | After 4A soak + stakeholder sign-off |
-| Project Hub docs tab | Already uses v2 API when flag on — no legacy write |
+### 1.5 Legacy tables end state (after Phase 4)
 
-**Not required for table DROP** but reduces user confusion.
+| Table | Phase 4 end state |
+|-------|-------------------|
+| `customer_files` | Unchanged; still readable in hub; no new writes (expected) |
+| `project_documents` | Unchanged; still readable in hub; no new writes (expected) |
+| `customer_assets` / `project_assets` | Grows via live v2 writes + backfill |
+| `document_migration_map` | Populated by backfill execute |
+
+### 1.6 Orphan policy (unchanged)
+
+`project_documents` on projects with `lead_id IS NULL` → backfill **skips**; hub **still** shows them via legacy merge when project is not customer-linked. Remediation = data fix (link `lead_id`), not Phase 4 DROP.
+
+### 1.7 Duplicate hub rows (accepted)
+
+After backfill, hub may show both legacy and v2 entries for the same file until a **future** read-retirement phase. Dedupe prefers non-legacy when match keys align; imperfect dedupe is acceptable for Phase 4.
 
 ---
 
 ## 2. Backfill execute strategy
 
-### 2.1 Tooling
+### 2.1 Tooling (existing)
 
-**Script:** `scripts/backfill-document-assets.mjs`
+`scripts/backfill-document-assets.mjs`
 
 | Mode | Command |
 |------|---------|
-| Dry-run (default) | `node scripts/backfill-document-assets.mjs` or `--dry-run` |
+| Dry-run (default) | `node scripts/backfill-document-assets.mjs` |
 | Execute | `node scripts/backfill-document-assets.mjs --execute` |
-| Rollback report | `node scripts/backfill-document-assets.mjs --rollback-report` |
-
-**Behavior:** Metadata-only; **reuses** `file_url` / `storage_path`; inserts `customer_assets` or `project_assets`; records `document_migration_map`; customer-owned project docs → `customer_assets` (no duplicate blobs).
+| Map export | `node scripts/backfill-document-assets.mjs --rollback-report` |
 
 ### 2.2 Pre-execute gates
 
-- [ ] Phase 4 plan approved  
-- [ ] Production row counts recorded (baseline JSON artifact)  
-- [ ] Dry-run reviewed: `would_migrate` vs `skipped` counts acceptable  
-- [ ] Orphan project list exported and reviewed  
-- [ ] Supabase backup / PITR checkpoint documented  
-- [ ] Maintenance window communicated (read-only not required; writes already v2)  
-- [ ] `DOCUMENTS_HUB_V2_WRITE=true` confirmed in production env  
+- [ ] This revised Phase 4 plan approved for **implementation** (ops + scripts)  
+- [ ] 4A soak shows **zero** new legacy writes (or documented exceptions)  
+- [ ] Baseline counts captured  
+- [ ] Dry-run reviewed: `would_migrate` / `skipped` / `errors`  
+- [ ] Orphan skip list reviewed and accepted  
+- [ ] Supabase backup / PITR checkpoint recorded  
+- [ ] `DOCUMENTS_HUB_V2_WRITE=true` in production  
 
-### 2.3 Execute procedure (ordered)
+### 2.3 Execute procedure
 
-1. Run dry-run; save output to `docs/verification/customer-documents-hub/phase4-backfill-dry-run.json`.  
-2. Stakeholder sign-off on counts + skip reasons.  
-3. Run `--execute` from operator machine with production `.env.local` (service role).  
-4. Re-run dry-run — expect skips = `already_mapped` for migrated ids.  
-5. Run data verification checklist (§4).  
-6. Spot-check hub for 3 customers: legacy filenames visible, download URLs work.  
-7. Archive execute log + `document_migration_map` row count.
+1. Save dry-run → `docs/verification/customer-documents-hub/phase4-stabilization/backfill-dry-run.json`  
+2. Sign-off on counts  
+3. Run `--execute` (service role, maintenance window optional)  
+4. Re-run dry-run (expect `already_mapped` skips)  
+5. Complete §4 verification  
+6. Spot-check ≥3 customers in hub (downloads)  
+7. Archive execute log + map row count  
 
-### 2.4 Post-execute
+### 2.4 Post-execute expectations
 
-| Action | Detail |
-|--------|--------|
-| **asset_links** | Backfill does **not** auto-create links; optional follow-up script or rely on new uploads + project create linking |
-| **Duplicates** | Hub dedupe may show legacy + v2 until read retirement; acceptable short term |
-| **Re-run safety** | Idempotent via `document_migration_map` + `alreadyMapped()` |
-
-### 2.5 Rollback of backfill (row-level)
-
-Not automated in script. Per row:
-
-1. Query `document_migration_map` for `legacy_table` / `legacy_id`.  
-2. Archive or delete `new_id` in `new_table`.  
-3. Delete map row.  
-4. Legacy row remains untouched.
-
-Use `--rollback-report` to export map for audit.
+- Legacy tables **unchanged** (row counts stable).  
+- Hub document count may **increase** (legacy + backfilled v2); expected.  
+- `source_channel='backfill'` on new asset rows.  
+- Re-run execute is **idempotent** via `document_migration_map`.
 
 ---
 
-## 3. Rollback strategy
+## 3. Rollback strategy (non-destructive)
 
-### 3.1 By phase (reversibility)
+### 3.1 Application rollback
 
-| Phase | Rollback | Data loss risk |
-|-------|----------|----------------|
-| **4A** Write off legacy | Set `DOCUMENTS_HUB_V2_WRITE=false` | None — legacy tables intact |
-| **4B** Backfill execute | Row-level map rollback (§2.5) | Low if legacy not dropped |
-| **4C** Legacy read off | Set `DOCUMENTS_HUB_LEGACY_READ=true` (to be implemented) | None |
-| **4D** DROP tables | **Restore from backup / PITR only** | **High — irreversible** |
+| Action | Effect | Reversible? |
+|--------|--------|-------------|
+| `DOCUMENTS_HUB_V2_WRITE=false` | Uploads go to legacy tables again | Yes |
+| `DOCUMENTS_HUB_PROPOSAL_PERSIST=false` | Stop new proposal_assets | Yes |
+| Redeploy prior app version | If flag behavior regresses | Yes |
 
-### 3.2 Feature flags (proposed Phase 4 additions)
+**Not used in Phase 4:** legacy read flag (not implemented / not approved).
 
-| Env | Default (during 4A–4C) | Effect |
-|-----|------------------------|--------|
-| `DOCUMENTS_HUB_V2_WRITE` | `true` | Keep current production behavior |
-| `DOCUMENTS_HUB_LEGACY_READ` | `true` → later `false` | When `false`, hub omits `customer_files` + `project_documents` merge |
-| `DOCUMENTS_HUB_PROPOSAL_PERSIST` | `true` | Unchanged from Phase 3 |
+### 3.2 Backfill rollback (row-level)
 
-**No flag for DROP** — migration-gated only.
+Per `document_migration_map` entry:
 
-### 3.3 Emergency rollback (operations)
+1. Archive or delete `new_id` in `customer_assets` or `project_assets`.  
+2. Delete map row.  
+3. Legacy row untouched.
 
-1. `DOCUMENTS_HUB_V2_WRITE=false` — all uploads to legacy.  
-2. `DOCUMENTS_HUB_LEGACY_READ=true` — hub shows legacy again.  
-3. Redeploy previous app build if needed.  
-4. If DROP already ran: Supabase PITR to pre-DROP timestamp (RTO/RPO per Supabase plan).
+Export: `--rollback-report` → `docs/verification/customer-documents-hub/backfill-rollback-report.json`
 
-### 3.4 Migration rollback SQL (051+ DROP only)
+### 3.3 What Phase 4 does **not** require
 
-**Before DROP:** export:
-
-```sql
--- Counts snapshot
-SELECT COUNT(*) FROM customer_files;
-SELECT COUNT(*) FROM project_documents;
-SELECT COUNT(*) FROM document_migration_map;
-```
-
-**DROP rollback:** none without restore. **Do not drop** `document_migration_map`.
+- PITR for normal rollback (only if catastrophic mistake during execute)  
+- DROP rollback SQL (no DROP)  
+- Disabling legacy hub reads  
 
 ---
 
 ## 4. Data verification checklist
 
-Run after backfill execute and before legacy read off / DROP.
+Run after 4A soak and again after 4B execute.
 
-### 4.1 Count reconciliation
+### 4.1 4A — Write verification
 
-| Check | SQL / script | Pass criteria |
-|-------|----------------|---------------|
-| Map rows | `SELECT COUNT(*) FROM document_migration_map` | = successful inserts |
-| Legacy CF unmigrated | CF rows not in map | Documented skips only |
-| Legacy PD unmigrated | PD rows not in map (non-archived) | Orphans + already-v2 duplicates only |
-| New CA growth | `customer_assets` where `source_channel='backfill'` | Matches CF migrated count ±0 |
-| New PA growth | `project_assets` where `source_channel='backfill'` | Matches PD migrated count ±0 |
-| No new legacy writes | `customer_files` count delta over 7 days | 0 while v2 flag on |
+| Check | Pass criteria |
+|-------|----------------|
+| `customer_files` count delta (7–30d soak) | **0** while v2 on |
+| `project_documents` count delta (non-archived) | **0** while v2 on |
+| Phase 2 audit | 16/16 PASS (or documented env caveat) |
+| Prod env flags | v2 + proposal persist enabled |
 
-### 4.2 Spot samples (minimum 5 customers)
+### 4.2 4B — Post-backfill verification
 
-- [ ] Hub `GET /documents` total ≥ pre-backfill visible docs for customer  
-- [ ] Download URL works for 1 backfilled customer asset  
-- [ ] Download URL works for 1 backfilled project asset  
-- [ ] `owner=project` / `owner=customer` filters correct  
-- [ ] `owner=proposal` unchanged (Phase 3)  
+| Check | Pass criteria |
+|-------|----------------|
+| `document_migration_map` count | Matches successful inserts |
+| `customer_assets` backfill rows | Matches CF migrated ±0 |
+| `project_assets` backfill rows | Matches PD migrated ±0 |
+| Skipped orphans | Documented and accepted |
+| Hub sample (≥3 customers) | Downloads work for backfilled + legacy rows |
+| Phase 3 proposal path | Still PASS |
+| Legacy table counts | **Unchanged** vs pre-execute snapshot |
 
 ### 4.3 Orphan audit
 
-- [ ] Export `project_documents` where `project_id` in (select id from projects where lead_id is null)  
-- [ ] Stakeholder accepts hub will not show these on customer profile until linked  
+- [ ] Export orphan `project_documents` list  
+- [ ] Support note: link `projects.lead_id` to surface on customer hub  
 
-### 4.4 Automated scripts (reuse / extend)
+### 4.4 Sign-off artifact
 
-| Script | Purpose |
-|--------|---------|
-| `phase2-validation-audit.mjs` | Regression: v2 uploads, no new legacy writes |
-| `phase3-manual-e2e.mjs` | Proposal path still PASS |
-| New `phase4-verification-audit.mjs` (future) | Counts + map coverage — implement in Phase 4 after approval |
-
-### 4.5 Sign-off record
-
-Store in `docs/verification/customer-documents-hub/phase4-verification/verification-signoff.json` (created at execute time, not now).
+`docs/verification/customer-documents-hub/phase4-stabilization/verification-signoff.json` (at execute time)
 
 ---
 
 ## 5. Production rollout checklist
 
-### 5.1 Pre-rollout (planning)
+### 5.1 Planning (before any execute)
 
-- [ ] Phase 4 plan approved (this document)  
-- [ ] Owner assigned (engineering + ops)  
-- [ ] Baseline metrics captured (table counts, storage bucket sizes)  
-- [ ] Backup / PITR verified  
+- [ ] Revised Phase 4 stabilization plan approved  
+- [ ] Owner: engineering + ops  
+- [ ] Baseline: table counts + storage sizes  
+- [ ] Backup / PITR documented  
 
-### 5.2 Rollout 4A — Write retirement confirmation
+### 5.2 Rollout — 4A stabilization
 
-- [ ] Confirm prod env: `DOCUMENTS_HUB_V2_WRITE` not `false`  
-- [ ] 7-day monitor: `customer_files` / `project_documents` insert rate → 0  
-- [ ] Deploy no change if already satisfied  
+- [ ] Capture baseline counts JSON  
+- [ ] Confirm production flags  
+- [ ] Start 14–30 day legacy-write soak monitor  
+- [ ] Run Phase 2 + Phase 3 regression audits  
+- [ ] Record 4A PASS in sign-off JSON  
 
-### 5.3 Rollout 4B — Backfill execute
+### 5.3 Rollout — 4B backfill (only after 4A PASS)
 
-- [ ] Maintenance note posted  
 - [ ] Dry-run approved  
 - [ ] `--execute` completed  
-- [ ] §4 verification PASS  
-- [ ] Artifacts committed (reports only, optional)  
+- [ ] §4.2 verification PASS  
+- [ ] Reports stored under `phase4-stabilization/`  
 
-### 5.4 Rollout 4C — Legacy read retirement
+### 5.4 Explicitly **not** in this rollout
 
-- [ ] Implement `DOCUMENTS_HUB_LEGACY_READ` + deploy  
-- [ ] Set `DOCUMENTS_HUB_LEGACY_READ=false` in staging → smoke test  
-- [ ] Production flip with monitoring  
-- [ ] 14-day soak; no P1 hub “missing file” reports  
+- [ ] ~~Legacy read OFF~~ — deferred  
+- [ ] ~~DROP migration~~ — deferred  
+- [ ] ~~Quick upload UI removal~~ — deferred  
 
-### 5.5 Rollout 4D — DROP (optional, separate approval)
+### 5.5 Communication
 
-- [ ] Written sign-off: “DROP approved”  
-- [ ] Fresh backup + PITR checkpoint  
-- [ ] Migration `051_deprecate_legacy_file_tables.sql` reviewed (additive rename/archive optional first)  
-- [ ] Apply during low-traffic window  
-- [ ] Post-DROP: hub + project hub smoke tests  
-- [ ] Tag `phase4-documents-hub-complete` (only after DROP or explicit “4C complete without DROP” decision)  
-
-### 5.6 Communication
-
-- [ ] Installers: legacy Quick upload removal (if UI collapsed)  
-- [ ] Support: orphan project linking procedure  
-- [ ] Docs: update handoff Phase 4 section when complete  
+- [ ] Ops: backfill window (low risk; additive only)  
+- [ ] Support: hub may show duplicate filenames briefly after backfill  
+- [ ] Engineering: future “Phase 5 retirement” is separate approval track  
 
 ---
 
-## 6. Risk assessment
+## 6. Risk assessment (stabilization scope)
 
 | Risk | Likelihood | Impact | Mitigation |
 |------|------------|--------|------------|
-| **DROP without backfill** | Low if gated | Critical — data invisible in hub | Enforce 4B before 4C/4D |
-| **Orphan project docs lost from hub** | Medium | Medium | Link `lead_id` or accept exclusion; document in support KB |
-| **Duplicate hub entries** | Medium | Low | Dedupe logic; legacy read off removes legacy leg |
-| **Backfill wrong category mapping** | Low | Medium | Dry-run sample review; spot-check downloads |
-| **Public `file_url` in customer_assets** | Low | Medium | Already supported in v2 read; verify signed URL path |
-| **Map / asset mismatch on partial failure** | Low | Medium | Script logs errors; re-run idempotent; rollback per §2.5 |
-| **Flag misconfiguration in prod** | Low | High | Env checklist in deploy pipeline |
-| **Irreversible DROP** | N/A if gated | Critical | 4C soak + backup + separate DROP approval |
-| **Storage costs** | Low | Low | No blob copy in backfill |
-| **Proposal path regression** | Low | Medium | Keep Phase 3 audit in regression suite |
-| **Missing proposal_status (021)** | Known | Low | Independent of Phase 4; optional parallel migration |
+| Legacy writes resume | Low | Medium | Env monitor + 4A soak |
+| Backfill category mismatch | Low | Medium | Dry-run samples + spot downloads |
+| Partial backfill failure | Low | Medium | Idempotent re-run; error log; row rollback |
+| Duplicate hub entries | Medium | Low | Accepted; dedupe; explain to support |
+| Orphan docs not on customer hub | Medium | Low | Document linking procedure |
+| Flag misconfiguration | Low | High | Pre-flight env checklist |
+| Accidental destructive migration | N/A | Critical | **No DROP migrations in Phase 4** |
+| Proposal regression | Low | Medium | Phase 3 audit in regression |
+| Storage cost spike | Low | Low | Metadata-only backfill |
+
+**Removed from Phase 4 risks:** DROP without backfill, legacy read-off missing files.
 
 ---
 
 ## 7. Success criteria
 
-Phase 4 is **complete** when all **approved sub-phases** meet their criteria:
+Phase 4 stabilization is **complete** when:
 
-### 7.1 Minimum success (4A + 4B + 4C, no DROP)
+| # | Criterion | Measure |
+|---|-----------|---------|
+| 1 | Legacy write soak | ≥14 days with **0** new `customer_files` / `project_documents` rows (v2 on) |
+| 2 | 4A verification | Baseline + soak PASS documented |
+| 3 | Backfill (if approved to run) | Execute completed; map populated; §4.2 PASS |
+| 4 | Legacy tables preserved | Row counts for legacy tables unchanged by backfill (only additive v2) |
+| 5 | Hub regression | Phase 2 + Phase 3 audits PASS |
+| 6 | Rollback docs | Flag rollback + backfill row rollback documented |
+| 7 | Artifacts archived | `phase4-stabilization/` verification folder |
 
-| Criterion | Measure |
-|-----------|---------|
-| Zero new legacy writes | 30-day count delta 0 on `customer_files` and `project_documents` |
-| Backfill coverage | ≥95% of migratable legacy rows in `document_migration_map` (orphans excluded) |
-| Hub functional | Phase 2 + Phase 3 audit scripts PASS on production-like data |
-| Legacy read off | `DOCUMENTS_HUB_LEGACY_READ=false` in prod with no increase in missing-file incidents |
-| Audit trail | `document_migration_map` retained; execute report archived |
+**Not required for Phase 4 success:**
 
-### 7.2 Full success (includes 4D DROP)
+- Legacy read OFF  
+- DROP tables  
+- Zero duplicate hub rows  
+- UI consolidation  
 
-| Criterion | Measure |
-|-----------|---------|
-| All minimum criteria | Met |
-| Legacy tables dropped | `customer_files`, `project_documents` absent from schema |
-| Hub unchanged UX | Customers still see backfilled + net-new v2 docs |
-| Rollback doc | PITR restore procedure tested or documented |
+### Suggested tag (after implementation + verification only)
 
-### 7.3 Explicit non-goals
-
-- PDF proposal exports  
-- Merging CRM and project timelines  
-- Consolidating storage buckets  
-- Auto-fixing all orphan projects  
+`phase4-documents-hub-stabilization-complete` — **not** “deprecation complete”.
 
 ---
 
-## 8. Proposed implementation order (after approval)
+## 8. Implementation order (after approval — non-destructive only)
 
 | Step | Deliverable | Destructive? |
 |------|-------------|--------------|
-| 1 | `DOCUMENTS_HUB_LEGACY_READ` config + unified store guard | No |
-| 2 | `phase4-verification-audit.mjs` | No |
-| 3 | Ops runbook + baseline capture | No |
-| 4 | Approved backfill `--execute` | No (additive rows) |
-| 5 | Flip legacy read flag | No |
-| 6 | Optional UI: collapse Quick upload | No |
-| 7 | Migration 051 DROP (separate approval) | **Yes** |
-| 8 | `customer-documents-hub-handoff-phase4.md` + tag | No / tag only |
+| 1 | `phase4-stabilization-audit.mjs` (counts, flags, legacy write delta) | No |
+| 2 | Ops: baseline + soak monitoring | No |
+| 3 | 4A sign-off | No |
+| 4 | Backfill dry-run + review | No |
+| 5 | Backfill `--execute` (ops) | No (additive) |
+| 6 | Post-execute verification + sign-off JSON | No |
+| 7 | `customer-documents-hub-handoff-phase4-stabilization.md` | No |
 
-**Migration numbering:** Use **051+** for DROP; **049** is `document_migration_map`.
-
----
-
-## 9. Approval checklist
-
-Before any Phase 4 code or execute:
-
-- [ ] Sub-phases approved: 4A / 4B / 4C / 4D (check which apply)  
-- [ ] Backfill execute window scheduled  
-- [ ] DROP explicitly approved or deferred  
-- [ ] Orphan project policy accepted  
-- [ ] Soak durations agreed  
-- [ ] Success criteria §7 agreed  
+**Not in implementation order:** `DOCUMENTS_HUB_LEGACY_READ`, migration 051, DROP, UI collapse.
 
 ---
 
-## 10. Related references
+## 9. Future phase pointer (deferred — do not implement)
+
+When separately approved, **Phase 5 (Retirement)** may include:
+
+- `DOCUMENTS_HUB_LEGACY_READ` flag and hub read change  
+- 30–90 day soak with legacy read off  
+- Migration to DROP `customer_files` / `project_documents`  
+- UI consolidation  
+
+Phase 4 must complete and remain stable before any Phase 5 discussion.
+
+---
+
+## 10. Approval checklist (implementation gate)
+
+**Plan review (this document):**
+
+- [x] 4A validation / legacy write verification — approved  
+- [x] Backfill execution planning — approved  
+- [x] Rollback planning — approved  
+- [x] Data verification — approved  
+- [x] Production rollout checklist — approved  
+- [x] Legacy read OFF — **not approved**  
+- [x] DROP / destructive schema — **not approved**  
+
+**Before code or backfill execute:**
+
+- [ ] Implementation of step §8 approved  
+- [ ] 4A soak duration agreed (14 vs 30 days)  
+- [ ] Backfill execute date scheduled (optional — can complete 4A only first)  
+- [ ] Orphan policy accepted  
+
+---
+
+## 11. Related references
 
 | Doc | Path |
 |-----|------|
-| Master plan | `customer-documents-hub-implementation-plan.md` §Phase 4 |
-| Phase 2 handoff | `customer-documents-hub-handoff-phase2.md` §7 backfill |
 | Phase 3 handoff | `customer-documents-hub-handoff-phase3.md` |
+| Phase 2 handoff (backfill) | `customer-documents-hub-handoff-phase2.md` |
+| Master plan (original Phase 4 deprecation) | `customer-documents-hub-implementation-plan.md` — superseded for execution by this doc |
 | Backfill script | `scripts/backfill-document-assets.mjs` |
-| Migrations | `048_*`, `049_*`, `050_*` (no 051 until approved) |
 
 ---
 
-*End of plan — awaiting approval. No implementation until sign-off.*
+*Revised stabilization plan — awaiting implementation approval. No code or migrations until sign-off on §8.*

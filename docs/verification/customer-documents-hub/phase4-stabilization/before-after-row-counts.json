@@ -1,0 +1,44 @@
+{
+  "generated_at": "2026-06-03T13:20:00.000Z",
+  "backfill_executed_at": "2026-06-03T13:19:59.089Z",
+  "rows_migrated": 8,
+  "errors": 0,
+  "before": {
+    "source": "baseline-counts.json (pre-execute, 2026-06-03)",
+    "customer_assets": 16,
+    "project_assets": 14,
+    "asset_links": 4,
+    "document_migration_map": 0,
+    "proposal_assets": 2,
+    "customer_files": 3,
+    "project_documents": 12
+  },
+  "after": {
+    "source": "post-execute stabilization audit (2026-06-03)",
+    "customer_assets": 23,
+    "project_assets": 15,
+    "asset_links": 4,
+    "document_migration_map": 8,
+    "proposal_assets": 3,
+    "customer_files": 3,
+    "project_documents": 12
+  },
+  "delta": {
+    "customer_assets": 7,
+    "project_assets": 1,
+    "asset_links": 0,
+    "document_migration_map": 8,
+    "proposal_assets": 1,
+    "customer_files": 0,
+    "project_documents": 0
+  },
+  "legacy_tables_unchanged": {
+    "customer_files": true,
+    "project_documents": true
+  },
+  "expected_v2_growth": {
+    "customer_assets_from_backfill": 7,
+    "project_assets_from_backfill": 1,
+    "note": "proposal_assets +1 unrelated to backfill (live persist during audit window)"
+  }
+}

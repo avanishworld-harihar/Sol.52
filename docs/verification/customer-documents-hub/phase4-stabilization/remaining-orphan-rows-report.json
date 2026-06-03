@@ -1,0 +1,38 @@
+{
+  "generated_at": "2026-06-03T13:21:00.000Z",
+  "summary": {
+    "orphan_project_documents": 5,
+    "projects_without_lead_id": 3,
+    "backfill_status": "skipped",
+    "hub_status": "visible via legacy project_documents merge when project is customer-linked"
+  },
+  "skip_reason": "orphan_project_no_lead_id",
+  "rows": [
+    {
+      "legacy_table": "project_documents",
+      "legacy_id": "2f26550c-926a-4588-8234-8993821719d1",
+      "reason": "orphan_project_no_lead_id"
+    },
+    {
+      "legacy_table": "project_documents",
+      "legacy_id": "37832032-f64a-4600-ae43-3c505b009dbc",
+      "reason": "orphan_project_no_lead_id"
+    },
+    {
+      "legacy_table": "project_documents",
+      "legacy_id": "99396f69-7ec5-43b6-ad72-144042375ca5",
+      "reason": "orphan_project_no_lead_id"
+    },
+    {
+      "legacy_table": "project_documents",
+      "legacy_id": "2745d089-d810-44ad-9d14-f409e9dc4e20",
+      "reason": "orphan_project_no_lead_id"
+    },
+    {
+      "legacy_table": "project_documents",
+      "legacy_id": "9f23f26f-45e0-4b50-a9ef-c9f7eb51657f",
+      "reason": "orphan_project_no_lead_id"
+    }
+  ],
+  "remediation": "Link projects.lead_id to customer, then re-run dry-run; or accept legacy-only visibility per Phase 4 orphan policy"
+}
