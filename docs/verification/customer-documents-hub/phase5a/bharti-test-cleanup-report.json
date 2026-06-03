@@ -1,0 +1,281 @@
+{
+  "generated_at": "2026-06-03T14:38:04.872Z",
+  "customer_id": "eead2c0a-8f20-4c7a-8128-ce8fff874834",
+  "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46",
+  "mode": "execute",
+  "to_archive": {
+    "customer_assets": [
+      {
+        "id": "6c0ea428-3c94-479f-b7e5-9c7c11715caa",
+        "filename": "phase2-audit-BILL.jpg",
+        "source_channel": "crm_ui"
+      },
+      {
+        "id": "21ff98a7-f792-4bc6-baed-acc57641f2e8",
+        "filename": "phase2-audit-BILL.jpg",
+        "source_channel": "crm_ui"
+      },
+      {
+        "id": "6a9a68c1-c3dc-4369-86fb-bbd6a0eb640d",
+        "filename": "phase2-audit-BILL.jpg",
+        "source_channel": "crm_ui"
+      },
+      {
+        "id": "ec0046bc-4734-42db-9b77-435d663c45b2",
+        "filename": "phase2-audit-BILL.jpg",
+        "source_channel": "crm_ui"
+      },
+      {
+        "id": "ae3aa7d9-0e81-47b5-becd-b4aae3dbd3d2",
+        "filename": "phase2-audit-BILL.jpg",
+        "source_channel": "backfill"
+      },
+      {
+        "id": "eed09cea-237b-41b7-926b-3905b5ed7bef",
+        "filename": "phase2-audit-METER_PHOTO.jpg",
+        "source_channel": "crm_ui"
+      },
+      {
+        "id": "35752e32-2ef2-4c95-a6fd-3d18f86555c5",
+        "filename": "phase2-audit-METER_PHOTO.jpg",
+        "source_channel": "crm_ui"
+      },
+      {
+        "id": "b8161cf8-fa61-4605-b35e-5ed4e5782b4d",
+        "filename": "phase2-audit-METER_PHOTO.jpg",
+        "source_channel": "crm_ui"
+      },
+      {
+        "id": "76c5142c-66b8-4722-841d-2be22fb27635",
+        "filename": "phase2-audit-METER_PHOTO.jpg",
+        "source_channel": "crm_ui"
+      },
+      {
+        "id": "41f3a01a-7f4a-41d7-8aee-646248a325c1",
+        "filename": "meter-test.jpg",
+        "source_channel": "backfill"
+      },
+      {
+        "id": "8066da83-054b-4a8c-a36b-bcbf41bfdab9",
+        "filename": "phase2-audit-METER_PHOTO.jpg",
+        "source_channel": "backfill"
+      },
+      {
+        "id": "fc35f30f-219a-4301-b69c-101f4266a18d",
+        "filename": "phase2-audit-ROOF_PHOTO.jpg",
+        "source_channel": "crm_ui"
+      },
+      {
+        "id": "7b0cb8f6-930f-4801-a485-c125b0811e07",
+        "filename": "phase2-audit-ROOF_PHOTO.jpg",
+        "source_channel": "crm_ui"
+      },
+      {
+        "id": "29266bfb-dae8-4a8d-9b13-6801b1ed1842",
+        "filename": "phase2-audit-ROOF_PHOTO.jpg",
+        "source_channel": "crm_ui"
+      },
+      {
+        "id": "a54fff04-9974-4f0d-8d69-31e042a7a424",
+        "filename": "phase2-audit-ROOF_PHOTO.jpg",
+        "source_channel": "crm_ui"
+      },
+      {
+        "id": "99dbb9dc-3811-4a22-8a4d-976cd9743623",
+        "filename": "roof-test.jpg",
+        "source_channel": "backfill"
+      },
+      {
+        "id": "dc6af095-b23d-4866-86a5-cb12833e7ea4",
+        "filename": "phase2-audit-ROOF_PHOTO.jpg",
+        "source_channel": "backfill"
+      },
+      {
+        "id": "7d667987-f7c6-48ad-92e5-cdf887976806",
+        "filename": "phase2-audit-ROOF_PHOTO-proxy.jpg",
+        "source_channel": "crm_ui"
+      },
+      {
+        "id": "eb757c0d-f4a4-40ff-b77b-5b31d3baebbc",
+        "filename": "phase2-audit-ROOF_PHOTO-proxy.jpg",
+        "source_channel": "crm_ui"
+      },
+      {
+        "id": "2d4a94b6-aa5e-40b3-bdde-0e217d8e3741",
+        "filename": "phase2-audit-ROOF_PHOTO-proxy.jpg",
+        "source_channel": "crm_ui"
+      },
+      {
+        "id": "7f993739-39e0-4528-909f-dde31b2b2187",
+        "filename": "phase2-audit-ROOF_PHOTO-proxy.jpg",
+        "source_channel": "crm_ui"
+      },
+      {
+        "id": "5ec4fc3c-1cac-4fc7-9b53-c97e6646761a",
+        "filename": "roof-test-customer-copy.jpg",
+        "source_channel": "backfill"
+      },
+      {
+        "id": "c9c0f64e-d115-4961-9a37-ca7aea952301",
+        "filename": "phase2-audit-ROOF_PHOTO-proxy.jpg",
+        "source_channel": "backfill"
+      }
+    ],
+    "project_assets": [
+      {
+        "id": "9ab04af9-b7af-4b52-859c-c2e49f8de591",
+        "filename": "p2-sld.jpg",
+        "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46"
+      },
+      {
+        "id": "6e55e3ae-c7b2-4e31-9fb4-b0dca7a06704",
+        "filename": "phase2-audit-AADHAAR.jpg",
+        "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46"
+      },
+      {
+        "id": "312cd433-26b9-4f0a-a67e-0ff1cbe1cd06",
+        "filename": "p2-sld.jpg",
+        "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46"
+      },
+      {
+        "id": "370d9f97-febc-4774-94e7-af90da79ed66",
+        "filename": "phase2-audit-AADHAAR.jpg",
+        "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46"
+      },
+      {
+        "id": "8bd6188e-9768-4a45-ba31-97e7bdf75a23",
+        "filename": "phase2-audit-AADHAAR.jpg",
+        "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46"
+      },
+      {
+        "id": "b56e2fed-c55a-42f4-a07f-97da7f9a157d",
+        "filename": "p2-sld.jpg",
+        "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46"
+      },
+      {
+        "id": "5a909e06-f633-4aef-842d-f06c9e23fe2b",
+        "filename": "phase2-audit-AGREEMENT.jpg",
+        "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46"
+      },
+      {
+        "id": "05bb29fb-bd14-4208-933c-3479ce29603d",
+        "filename": "phase2-audit-AGREEMENT.jpg",
+        "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46"
+      },
+      {
+        "id": "cab19384-476e-4e8d-acc0-cc0f89f09059",
+        "filename": "phase2-audit-AGREEMENT.jpg",
+        "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46"
+      },
+      {
+        "id": "ef9162b9-5521-474d-8fd3-3eb5b03fc69a",
+        "filename": "p2-sld.jpg",
+        "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46"
+      },
+      {
+        "id": "36ae009a-21ab-4718-a2bf-eeb087049f34",
+        "filename": "phase2-audit-PAN.jpg",
+        "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46"
+      },
+      {
+        "id": "b27e9f1d-37b9-43d0-97bc-f87459e4ae98",
+        "filename": "phase2-audit-PAN.jpg",
+        "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46"
+      },
+      {
+        "id": "a293e438-ba5a-4d44-bec8-e3067e88f61a",
+        "filename": "phase2-audit-PAN.jpg",
+        "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46"
+      },
+      {
+        "id": "b480c1b3-61de-4e18-8942-a323209542e6",
+        "filename": "p2-sld.jpg",
+        "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46"
+      },
+      {
+        "id": "45e9cfbb-9e8d-42ae-9ca1-3d9cd16d85f6",
+        "filename": "mgr-upload.jpg",
+        "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46"
+      }
+    ],
+    "proposal_assets": [
+      {
+        "id": "8763a16d-a613-41ad-a618-1cf47ceba88f",
+        "filename": "bharti gupta-proposal-v6.pptx",
+        "proposal_id": "a5c2122e-5fbc-4613-a8bb-d6a15b97cae9"
+      },
+      {
+        "id": "0258289a-4ed4-4e70-88b0-8689648574d7",
+        "filename": "bharti gupta-proposal-v5.pptx",
+        "proposal_id": "a5c2122e-5fbc-4613-a8bb-d6a15b97cae9"
+      },
+      {
+        "id": "656f3fea-cba0-4f67-9ca3-2c7b0aa3eae0",
+        "filename": "bharti gupta-proposal-v4.pptx",
+        "proposal_id": "a5c2122e-5fbc-4613-a8bb-d6a15b97cae9"
+      },
+      {
+        "id": "a2cae932-ba89-413a-baa1-e0dda407ca79",
+        "filename": "bharti gupta-proposal-v3.pptx",
+        "proposal_id": "a5c2122e-5fbc-4613-a8bb-d6a15b97cae9"
+      },
+      {
+        "id": "1640a8b1-3c88-4d24-a23c-96482286f104",
+        "filename": "bharti gupta-proposal-v2.pptx",
+        "proposal_id": "a5c2122e-5fbc-4613-a8bb-d6a15b97cae9"
+      },
+      {
+        "id": "8a574ce4-98e7-4b47-bdea-e8368d432155",
+        "filename": "bharti gupta-proposal-v3.pptx",
+        "proposal_id": "fd4369ad-d6f4-4396-aead-2ae6c1977635"
+      }
+    ]
+  },
+  "to_delete_legacy": {
+    "customer_files": [
+      {
+        "id": "7bb15a14-81d5-4cc6-92c9-eedf03f0a210",
+        "file_name": "roof-test-customer-copy.jpg"
+      },
+      {
+        "id": "3343246c-0f4c-4f9f-b38d-d9cb2b4d4fff",
+        "file_name": "phase2-audit-BILL.jpg"
+      },
+      {
+        "id": "5391d90b-832e-46da-9779-5ca0b7af81b2",
+        "file_name": "phase2-audit-ROOF_PHOTO-proxy.jpg"
+      }
+    ],
+    "project_documents": [
+      {
+        "id": "14832c5c-1566-48cb-9690-94fac85e623f",
+        "filename": "meter-test.jpg"
+      },
+      {
+        "id": "f0e385fb-0279-408b-a9f1-7bceb5d9db22",
+        "filename": "phase2-audit-METER_PHOTO.jpg"
+      },
+      {
+        "id": "e8b9a867-8b0d-4231-b6b0-c58cf0c6c9ed",
+        "filename": "roof-test.jpg"
+      },
+      {
+        "id": "05ac42ce-46fb-454f-9181-5f5ee38df52b",
+        "filename": "phase2-audit-ROOF_PHOTO.jpg"
+      },
+      {
+        "id": "dc52acca-876f-4b33-b9fe-d0f1781504b2",
+        "filename": "mgr-upload.jpg"
+      }
+    ]
+  },
+  "map_rows_removed": 44,
+  "asset_links_removed": 44,
+  "summary": {
+    "customer_assets": 23,
+    "project_assets": 15,
+    "proposal_assets": 6,
+    "legacy_customer_files": 3,
+    "legacy_project_documents": 5
+  }
+}
