@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-03T13:23:16.428Z",
+  "generated_at": "2026-06-03T13:50:56.544Z",
   "pass_fail": [
     {
       "id": "migration_050_applied",
@@ -19,12 +19,12 @@
     {
       "id": "proposal_assets_row",
       "result": "PASS",
-      "note": "proposal_revision v4"
+      "note": "proposal_revision v6"
     },
     {
       "id": "hub_owner_proposal",
       "result": "PASS",
-      "note": "hub proposal items: 4"
+      "note": "hub proposal items: 6"
     },
     {
       "id": "download_url",
@@ -61,32 +61,70 @@
     "direct_persist": "attempting via createPricingSnapshot",
     "direct_persist_result": {
       "status": 0,
-      "stdout": "snapshot bfc08e88-3dc7-4a8d-9dc8-a1e32320bd72 4 revised\npersist { ok: true }\n",
+      "stdout": "snapshot c9d5fda2-0d78-4821-bd3b-690bf811c656 6 revised\npersist { ok: true }\n",
       "stderr": ""
     }
   },
   "proposal_asset": {
-    "id": "656f3fea-cba0-4f67-9ca3-2c7b0aa3eae0",
+    "id": "8763a16d-a613-41ad-a618-1cf47ceba88f",
     "organization_id": "4d851d8d-0079-4b23-ab72-864fb769eaf1",
     "customer_id": "eead2c0a-8f20-4c7a-8128-ce8fff874834",
     "proposal_id": "a5c2122e-5fbc-4613-a8bb-d6a15b97cae9",
-    "pricing_snapshot_id": "bfc08e88-3dc7-4a8d-9dc8-a1e32320bd72",
+    "pricing_snapshot_id": "c9d5fda2-0d78-4821-bd3b-690bf811c656",
     "category": "proposal_revision",
-    "revision_number": 4,
+    "revision_number": 6,
     "storage_bucket": "proposal-assets",
-    "storage_path": "4d851d8d-0079-4b23-ab72-864fb769eaf1/eead2c0a-8f20-4c7a-8128-ce8fff874834/a5c2122e-5fbc-4613-a8bb-d6a15b97cae9/81b74117-17e3-4edd-8561-9bff0003bf3f.pptx",
-    "filename": "bharti gupta-proposal-v4.pptx",
+    "storage_path": "4d851d8d-0079-4b23-ab72-864fb769eaf1/eead2c0a-8f20-4c7a-8128-ce8fff874834/a5c2122e-5fbc-4613-a8bb-d6a15b97cae9/3c1d9296-e70d-4456-b082-13fde135f584.pptx",
+    "filename": "bharti gupta-proposal-v6.pptx",
     "mime_type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
     "size_bytes": 517010,
     "triggered_by": "revised",
     "archived_at": null,
-    "created_at": "2026-06-03T13:23:38.723357+00:00"
+    "created_at": "2026-06-03T13:51:43.571593+00:00"
   },
   "hub": {
     "status": 200,
     "ok": true,
-    "total": 4,
+    "total": 6,
     "proposal_items": [
+      {
+        "id": "8763a16d-a613-41ad-a618-1cf47ceba88f",
+        "owner": "proposal",
+        "category": "proposal_revision",
+        "category_label": "Proposal revision (PPTX)",
+        "filename": "bharti gupta-proposal-v6.pptx",
+        "mime_type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "size_bytes": 517010,
+        "customer_id": "eead2c0a-8f20-4c7a-8128-ce8fff874834",
+        "project_id": null,
+        "project_label": null,
+        "proposal_id": "a5c2122e-5fbc-4613-a8bb-d6a15b97cae9",
+        "proposal_revision": 6,
+        "uploaded_at": "2026-06-03T13:51:43.571593+00:00",
+        "download_url": "https://rzrgetzkmoqpfnrydzvl.supabase.co/storage/v1/object/sign/proposal-assets/4d851d8d-0079-4b23-ab72-864fb769eaf1/eead2c0a-8f20-4c7a-8128-ce8fff874834/a5c2122e-5fbc-4613-a8bb-d6a15b97cae9/3c1d9296-e70d-4456-b082-13fde135f584.pptx?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMDQ4MWFlOS1jZTJlLTQ1ZDAtYWE3NS0wMzkxY2ExNDlkNGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9wb3NhbC1hc3NldHMvNGQ4NTFkOGQtMDA3OS00YjIzLWFiNzItODY0ZmI3NjllYWYxL2VlYWQyYzBhLThmMjAtNGM3YS04MTI4LWNlOGZmZjg3NDgzNC9hNWMyMTIyZS01ZmJjLTQ2MTMtYThiYi1kNmExNWI5N2NhZTkvM2MxZDkyOTYtZTcwZC00NDU2LWIwODItMTNmZGUxMzVmNTg0LnBwdHgiLCJpYXQiOjE3ODA0OTQ3NDUsImV4cCI6MTc4MDQ5ODM0NX0.-x7USVQBzE_0CBjvdK9i4hvD3fa32ZXtolYjnfN8oZ0",
+        "link_role": null,
+        "source": "proposal_assets",
+        "legacy": false
+      },
+      {
+        "id": "0258289a-4ed4-4e70-88b0-8689648574d7",
+        "owner": "proposal",
+        "category": "proposal_revision",
+        "category_label": "Proposal revision (PPTX)",
+        "filename": "bharti gupta-proposal-v5.pptx",
+        "mime_type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "size_bytes": 517010,
+        "customer_id": "eead2c0a-8f20-4c7a-8128-ce8fff874834",
+        "project_id": null,
+        "project_label": null,
+        "proposal_id": "a5c2122e-5fbc-4613-a8bb-d6a15b97cae9",
+        "proposal_revision": 5,
+        "uploaded_at": "2026-06-03T13:48:51.913006+00:00",
+        "download_url": "https://rzrgetzkmoqpfnrydzvl.supabase.co/storage/v1/object/sign/proposal-assets/4d851d8d-0079-4b23-ab72-864fb769eaf1/eead2c0a-8f20-4c7a-8128-ce8fff874834/a5c2122e-5fbc-4613-a8bb-d6a15b97cae9/8d0e01ff-f4d1-4d9d-82eb-4d158cc3f639.pptx?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMDQ4MWFlOS1jZTJlLTQ1ZDAtYWE3NS0wMzkxY2ExNDlkNGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9wb3NhbC1hc3NldHMvNGQ4NTFkOGQtMDA3OS00YjIzLWFiNzItODY0ZmI3NjllYWYxL2VlYWQyYzBhLThmMjAtNGM3YS04MTI4LWNlOGZmZjg3NDgzNC9hNWMyMTIyZS01ZmJjLTQ2MTMtYThiYi1kNmExNWI5N2NhZTkvOGQwZTAxZmYtZjRkMS00ZDlkLTgyZWItNGQxNThjYzNmNjM5LnBwdHgiLCJpYXQiOjE3ODA0OTQ3NDUsImV4cCI6MTc4MDQ5ODM0NX0.kNV6b_95DfdSbql3ab7VMPyuvighhNcuLFlXpK86Jy0",
+        "link_role": null,
+        "source": "proposal_assets",
+        "legacy": false
+      },
       {
         "id": "656f3fea-cba0-4f67-9ca3-2c7b0aa3eae0",
         "owner": "proposal",
@@ -101,7 +139,7 @@
         "proposal_id": "a5c2122e-5fbc-4613-a8bb-d6a15b97cae9",
         "proposal_revision": 4,
         "uploaded_at": "2026-06-03T13:23:38.723357+00:00",
-        "download_url": "https://rzrgetzkmoqpfnrydzvl.supabase.co/storage/v1/object/sign/proposal-assets/4d851d8d-0079-4b23-ab72-864fb769eaf1/eead2c0a-8f20-4c7a-8128-ce8fff874834/a5c2122e-5fbc-4613-a8bb-d6a15b97cae9/81b74117-17e3-4edd-8561-9bff0003bf3f.pptx?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMDQ4MWFlOS1jZTJlLTQ1ZDAtYWE3NS0wMzkxY2ExNDlkNGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9wb3NhbC1hc3NldHMvNGQ4NTFkOGQtMDA3OS00YjIzLWFiNzItODY0ZmI3NjllYWYxL2VlYWQyYzBhLThmMjAtNGM3YS04MTI4LWNlOGZmZjg3NDgzNC9hNWMyMTIyZS01ZmJjLTQ2MTMtYThiYi1kNmExNWI5N2NhZTkvODFiNzQxMTctMTdlMy00ZWRkLTg1NjEtOWJmZjAwMDNiZjNmLnBwdHgiLCJpYXQiOjE3ODA0OTMwMzcsImV4cCI6MTc4MDQ5NjYzN30.0Pb65QtEinaDG9agt5UdU-8khkA_1JeE9akIDVW83-w",
+        "download_url": "https://rzrgetzkmoqpfnrydzvl.supabase.co/storage/v1/object/sign/proposal-assets/4d851d8d-0079-4b23-ab72-864fb769eaf1/eead2c0a-8f20-4c7a-8128-ce8fff874834/a5c2122e-5fbc-4613-a8bb-d6a15b97cae9/81b74117-17e3-4edd-8561-9bff0003bf3f.pptx?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMDQ4MWFlOS1jZTJlLTQ1ZDAtYWE3NS0wMzkxY2ExNDlkNGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9wb3NhbC1hc3NldHMvNGQ4NTFkOGQtMDA3OS00YjIzLWFiNzItODY0ZmI3NjllYWYxL2VlYWQyYzBhLThmMjAtNGM3YS04MTI4LWNlOGZmZjg3NDgzNC9hNWMyMTIyZS01ZmJjLTQ2MTMtYThiYi1kNmExNWI5N2NhZTkvODFiNzQxMTctMTdlMy00ZWRkLTg1NjEtOWJmZjAwMDNiZjNmLnBwdHgiLCJpYXQiOjE3ODA0OTQ3NDUsImV4cCI6MTc4MDQ5ODM0NX0.jGntYma_8qM9SML1ANMd5pZ7BQJm-f1aZ-lveFcFa3w",
         "link_role": null,
         "source": "proposal_assets",
         "legacy": false
@@ -120,7 +158,7 @@
         "proposal_id": "a5c2122e-5fbc-4613-a8bb-d6a15b97cae9",
         "proposal_revision": 3,
         "uploaded_at": "2026-06-03T13:14:46.648318+00:00",
-        "download_url": "https://rzrgetzkmoqpfnrydzvl.supabase.co/storage/v1/object/sign/proposal-assets/4d851d8d-0079-4b23-ab72-864fb769eaf1/eead2c0a-8f20-4c7a-8128-ce8fff874834/a5c2122e-5fbc-4613-a8bb-d6a15b97cae9/06021537-d217-46d7-a582-d891fde4110b.pptx?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMDQ4MWFlOS1jZTJlLTQ1ZDAtYWE3NS0wMzkxY2ExNDlkNGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9wb3NhbC1hc3NldHMvNGQ4NTFkOGQtMDA3OS00YjIzLWFiNzItODY0ZmI3NjllYWYxL2VlYWQyYzBhLThmMjAtNGM3YS04MTI4LWNlOGZmZjg3NDgzNC9hNWMyMTIyZS01ZmJjLTQ2MTMtYThiYi1kNmExNWI5N2NhZTkvMDYwMjE1MzctZDIxNy00NmQ3LWE1ODItZDg5MWZkZTQxMTBiLnBwdHgiLCJpYXQiOjE3ODA0OTMwMzcsImV4cCI6MTc4MDQ5NjYzN30.H7Wr4_wc2ZkUnBD8BhnYi6SK2wyPDP6TgFV1gRPGv10",
+        "download_url": "https://rzrgetzkmoqpfnrydzvl.supabase.co/storage/v1/object/sign/proposal-assets/4d851d8d-0079-4b23-ab72-864fb769eaf1/eead2c0a-8f20-4c7a-8128-ce8fff874834/a5c2122e-5fbc-4613-a8bb-d6a15b97cae9/06021537-d217-46d7-a582-d891fde4110b.pptx?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMDQ4MWFlOS1jZTJlLTQ1ZDAtYWE3NS0wMzkxY2ExNDlkNGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9wb3NhbC1hc3NldHMvNGQ4NTFkOGQtMDA3OS00YjIzLWFiNzItODY0ZmI3NjllYWYxL2VlYWQyYzBhLThmMjAtNGM3YS04MTI4LWNlOGZmZjg3NDgzNC9hNWMyMTIyZS01ZmJjLTQ2MTMtYThiYi1kNmExNWI5N2NhZTkvMDYwMjE1MzctZDIxNy00NmQ3LWE1ODItZDg5MWZkZTQxMTBiLnBwdHgiLCJpYXQiOjE3ODA0OTQ3NDUsImV4cCI6MTc4MDQ5ODM0NX0.ROuvMIRpPRrJWhE-hbjSVjUmYFFB2a5eZI4qGn6y6qE",
         "link_role": null,
         "source": "proposal_assets",
         "legacy": false
@@ -139,7 +177,7 @@
         "proposal_id": "a5c2122e-5fbc-4613-a8bb-d6a15b97cae9",
         "proposal_revision": 2,
         "uploaded_at": "2026-06-03T13:09:11.010961+00:00",
-        "download_url": "https://rzrgetzkmoqpfnrydzvl.supabase.co/storage/v1/object/sign/proposal-assets/4d851d8d-0079-4b23-ab72-864fb769eaf1/eead2c0a-8f20-4c7a-8128-ce8fff874834/a5c2122e-5fbc-4613-a8bb-d6a15b97cae9/caba820b-7803-4e34-89c0-1f34bd17ddbb.pptx?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMDQ4MWFlOS1jZTJlLTQ1ZDAtYWE3NS0wMzkxY2ExNDlkNGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9wb3NhbC1hc3NldHMvNGQ4NTFkOGQtMDA3OS00YjIzLWFiNzItODY0ZmI3NjllYWYxL2VlYWQyYzBhLThmMjAtNGM3YS04MTI4LWNlOGZmZjg3NDgzNC9hNWMyMTIyZS01ZmJjLTQ2MTMtYThiYi1kNmExNWI5N2NhZTkvY2FiYTgyMGItNzgwMy00ZTM0LTg5YzAtMWYzNGJkMTdkZGJiLnBwdHgiLCJpYXQiOjE3ODA0OTMwMzcsImV4cCI6MTc4MDQ5NjYzN30.1uc7RbQwJ8Wrai19BTqpOqGCx7lB5-WG8Mj61vqVzUI",
+        "download_url": "https://rzrgetzkmoqpfnrydzvl.supabase.co/storage/v1/object/sign/proposal-assets/4d851d8d-0079-4b23-ab72-864fb769eaf1/eead2c0a-8f20-4c7a-8128-ce8fff874834/a5c2122e-5fbc-4613-a8bb-d6a15b97cae9/caba820b-7803-4e34-89c0-1f34bd17ddbb.pptx?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMDQ4MWFlOS1jZTJlLTQ1ZDAtYWE3NS0wMzkxY2ExNDlkNGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9wb3NhbC1hc3NldHMvNGQ4NTFkOGQtMDA3OS00YjIzLWFiNzItODY0ZmI3NjllYWYxL2VlYWQyYzBhLThmMjAtNGM3YS04MTI4LWNlOGZmZjg3NDgzNC9hNWMyMTIyZS01ZmJjLTQ2MTMtYThiYi1kNmExNWI5N2NhZTkvY2FiYTgyMGItNzgwMy00ZTM0LTg5YzAtMWYzNGJkMTdkZGJiLnBwdHgiLCJpYXQiOjE3ODA0OTQ3NDYsImV4cCI6MTc4MDQ5ODM0Nn0.EtkcnFI_zwSWGT_dKhEikqWPdu76F960v3YZTdMaN5E",
         "link_role": null,
         "source": "proposal_assets",
         "legacy": false
@@ -158,7 +196,7 @@
         "proposal_id": "fd4369ad-d6f4-4396-aead-2ae6c1977635",
         "proposal_revision": 3,
         "uploaded_at": "2026-06-03T11:42:10.706524+00:00",
-        "download_url": "https://rzrgetzkmoqpfnrydzvl.supabase.co/storage/v1/object/sign/proposal-assets/4d851d8d-0079-4b23-ab72-864fb769eaf1/eead2c0a-8f20-4c7a-8128-ce8fff874834/fd4369ad-d6f4-4396-aead-2ae6c1977635/8935a620-be5e-48d8-9993-01dbaa98ef82.pptx?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMDQ4MWFlOS1jZTJlLTQ1ZDAtYWE3NS0wMzkxY2ExNDlkNGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9wb3NhbC1hc3NldHMvNGQ4NTFkOGQtMDA3OS00YjIzLWFiNzItODY0ZmI3NjllYWYxL2VlYWQyYzBhLThmMjAtNGM3YS04MTI4LWNlOGZmZjg3NDgzNC9mZDQzNjlhZC1kNmY0LTQzOTYtYWVhZC0yYWU2YzE5Nzc2MzUvODkzNWE2MjAtYmU1ZS00OGQ4LTk5OTMtMDFkYmFhOThlZjgyLnBwdHgiLCJpYXQiOjE3ODA0OTMwMzcsImV4cCI6MTc4MDQ5NjYzN30.01aLo-EAGIhDUfEqfgCC8Bxk-KqV6L2auetFZZM7c4U",
+        "download_url": "https://rzrgetzkmoqpfnrydzvl.supabase.co/storage/v1/object/sign/proposal-assets/4d851d8d-0079-4b23-ab72-864fb769eaf1/eead2c0a-8f20-4c7a-8128-ce8fff874834/fd4369ad-d6f4-4396-aead-2ae6c1977635/8935a620-be5e-48d8-9993-01dbaa98ef82.pptx?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMDQ4MWFlOS1jZTJlLTQ1ZDAtYWE3NS0wMzkxY2ExNDlkNGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9wb3NhbC1hc3NldHMvNGQ4NTFkOGQtMDA3OS00YjIzLWFiNzItODY0ZmI3NjllYWYxL2VlYWQyYzBhLThmMjAtNGM3YS04MTI4LWNlOGZmZjg3NDgzNC9mZDQzNjlhZC1kNmY0LTQzOTYtYWVhZC0yYWU2YzE5Nzc2MzUvODkzNWE2MjAtYmU1ZS00OGQ4LTk5OTMtMDFkYmFhOThlZjgyLnBwdHgiLCJpYXQiOjE3ODA0OTQ3NDYsImV4cCI6MTc4MDQ5ODM0Nn0.iuIMlZEaZUeJ6ViQW0TtVmplEZD-eFAw01fAy_mnFhs",
         "link_role": null,
         "source": "proposal_assets",
         "legacy": false
@@ -167,8 +205,7 @@
   },
   "download": {
     "url_present": true,
-    "http_ok": true,
-    "status": 200
+    "http_ok": true
   },
   "legacy": {
     "customer_files_before": 3,

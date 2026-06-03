@@ -1,10 +1,30 @@
 {
-  "customer_assets": { "count": 23, "error": null },
-  "project_assets": { "count": 15, "error": null },
-  "asset_links": { "count": 4, "error": null },
-  "document_migration_map": { "count": 8, "error": null },
-  "proposal_assets": { "count": 3, "error": null },
-  "customer_files": { "count": 3, "error": null },
-  "project_documents": { "count": 12, "error": null },
-  "_note": "Post-backfill baseline; pre-execute counts in before-after-row-counts.json"
+  "customer_assets": {
+    "count": 23,
+    "error": null
+  },
+  "project_assets": {
+    "count": 15,
+    "error": null
+  },
+  "asset_links": {
+    "count": 4,
+    "error": null
+  },
+  "document_migration_map": {
+    "count": 0,
+    "error": ""
+  },
+  "proposal_assets": {
+    "count": 5,
+    "error": null
+  },
+  "customer_files": {
+    "count": 3,
+    "error": null
+  },
+  "project_documents": {
+    "count": 12,
+    "error": null
+  }
 }

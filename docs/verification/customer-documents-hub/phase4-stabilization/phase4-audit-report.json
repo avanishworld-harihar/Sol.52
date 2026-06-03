@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-03T13:20:48.666Z",
+  "generated_at": "2026-06-03T13:49:34.382Z",
   "phase": "4-stabilization",
   "scope": {
     "legacy_read_off": false,
@@ -10,7 +10,7 @@
   "feature_flags": {
     "DOCUMENTS_HUB_V2_WRITE": true,
     "DOCUMENTS_HUB_PROPOSAL_PERSIST": true,
-    "DOCUMENTS_HUB_LEGACY_READ": "(unset — hub merges legacy by default)",
+    "DOCUMENTS_HUB_LEGACY_READ": "false",
     "production_expectation": {
       "DOCUMENTS_HUB_V2_WRITE": true,
       "DOCUMENTS_HUB_PROPOSAL_PERSIST": true,
@@ -54,7 +54,7 @@
       "error": ""
     },
     "proposal_assets": {
-      "count": 3,
+      "count": 5,
       "error": null
     },
     "customer_files": {
@@ -72,7 +72,7 @@
   },
   "legacy_write_soak": {
     "window_days": 14,
-    "since_iso": "2026-05-20T13:21:15.404Z",
+    "since_iso": "2026-05-20T13:50:01.836Z",
     "project_documents_new_in_window": 12,
     "customer_files_new_in_window": 3,
     "customer_files_query_note": null,
@@ -81,7 +81,7 @@
     "status": "PENDING_OPS_SOAK"
   },
   "backfill_dry_run": {
-    "generated_at": "2026-06-03T13:21:18.882Z",
+    "generated_at": "2026-06-03T13:50:06.630Z",
     "mode": "dry-run",
     "organization_id": "4d851d8d-0079-4b23-ab72-864fb769eaf1",
     "migratable_row_counts": {
@@ -195,7 +195,7 @@
     },
     "phase3_manual_e2e": {
       "exit_code": 0,
-      "stdout_tail": "osal_revision\": 3,\n        \"uploaded_at\": \"2026-06-03T11:42:10.706524+00:00\",\n        \"download_url\": \"https://rzrgetzkmoqpfnrydzvl.supabase.co/storage/v1/object/sign/proposal-assets/4d851d8d-0079-4b23-ab72-864fb769eaf1/eead2c0a-8f20-4c7a-8128-ce8fff874834/fd4369ad-d6f4-4396-aead-2ae6c1977635/8935a620-be5e-48d8-9993-01dbaa98ef82.pptx?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMDQ4MWFlOS1jZTJlLTQ1ZDAtYWE3NS0wMzkxY2ExNDlkNGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9wb3NhbC1hc3NldHMvNGQ4NTFkOGQtMDA3OS00YjIzLWFiNzItODY0ZmI3NjllYWYxL2VlYWQyYzBhLThmMjAtNGM3YS04MTI4LWNlOGZmZjg3NDgzNC9mZDQzNjlhZC1kNmY0LTQzOTYtYWVhZC0yYWU2YzE5Nzc2MzUvODkzNWE2MjAtYmU1ZS00OGQ4LTk5OTMtMDFkYmFhOThlZjgyLnBwdHgiLCJpYXQiOjE3ODA0OTMwMzcsImV4cCI6MTc4MDQ5NjYzN30.01aLo-EAGIhDUfEqfgCC8Bxk-KqV6L2auetFZZM7c4U\",\n        \"link_role\": null,\n        \"source\": \"proposal_assets\",\n        \"legacy\": false\n      }\n    ]\n  },\n  \"download\": {\n    \"url_present\": true,\n    \"http_ok\": true,\n    \"status\": 200\n  },\n  \"legacy\": {\n    \"customer_files_before\": 3,\n    \"project_documents_before\": 12,\n    \"customer_files_after\": 3,\n    \"project_documents_after\": 12\n  },\n  \"summary\": \"PASS\",\n  \"recommendation\": \"Phase 3 manual E2E passed\"\n}\n"
+      "stdout_tail": "635\",\n        \"proposal_revision\": 3,\n        \"uploaded_at\": \"2026-06-03T11:42:10.706524+00:00\",\n        \"download_url\": \"https://rzrgetzkmoqpfnrydzvl.supabase.co/storage/v1/object/sign/proposal-assets/4d851d8d-0079-4b23-ab72-864fb769eaf1/eead2c0a-8f20-4c7a-8128-ce8fff874834/fd4369ad-d6f4-4396-aead-2ae6c1977635/8935a620-be5e-48d8-9993-01dbaa98ef82.pptx?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMDQ4MWFlOS1jZTJlLTQ1ZDAtYWE3NS0wMzkxY2ExNDlkNGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9wb3NhbC1hc3NldHMvNGQ4NTFkOGQtMDA3OS00YjIzLWFiNzItODY0ZmI3NjllYWYxL2VlYWQyYzBhLThmMjAtNGM3YS04MTI4LWNlOGZmZjg3NDgzNC9mZDQzNjlhZC1kNmY0LTQzOTYtYWVhZC0yYWU2YzE5Nzc2MzUvODkzNWE2MjAtYmU1ZS00OGQ4LTk5OTMtMDFkYmFhOThlZjgyLnBwdHgiLCJpYXQiOjE3ODA0OTQ3NDYsImV4cCI6MTc4MDQ5ODM0Nn0.iuIMlZEaZUeJ6ViQW0TtVmplEZD-eFAw01fAy_mnFhs\",\n        \"link_role\": null,\n        \"source\": \"proposal_assets\",\n        \"legacy\": false\n      }\n    ]\n  },\n  \"download\": {\n    \"url_present\": true,\n    \"http_ok\": true\n  },\n  \"legacy\": {\n    \"customer_files_before\": 3,\n    \"project_documents_before\": 12,\n    \"customer_files_after\": 3,\n    \"project_documents_after\": 12\n  },\n  \"summary\": \"PASS\",\n  \"recommendation\": \"Phase 3 manual E2E passed\"\n}\n"
     }
   },
   "pass_fail": [

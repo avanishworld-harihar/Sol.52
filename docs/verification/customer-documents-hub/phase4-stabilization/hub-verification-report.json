@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-03T13:32:04.838Z",
+  "generated_at": "2026-06-03T13:53:04.142Z",
   "lead_id": "eead2c0a-8f20-4c7a-8128-ce8fff874834",
   "checks": [
     {
@@ -8,73 +8,73 @@
       "ok": true,
       "total": 40,
       "by_source": {
-        "proposal_assets": 4,
-        "project_assets": 13,
-        "customer_assets": 19,
-        "project_documents": 2,
-        "customer_files": 2
+        "proposal_assets": 6,
+        "project_assets": 15,
+        "customer_assets": 19
       },
-      "legacy_count": 4,
+      "legacy_count": 0,
       "with_download_url": 40
     },
     {
       "query": "?limit=100",
       "status": 200,
       "ok": true,
-      "total": 50,
+      "total": 44,
       "by_source": {
-        "proposal_assets": 4,
+        "proposal_assets": 6,
         "project_assets": 15,
-        "customer_assets": 23,
-        "project_documents": 5,
-        "customer_files": 3
+        "customer_assets": 23
       },
-      "legacy_count": 8,
-      "with_download_url": 50
+      "legacy_count": 0,
+      "with_download_url": 44
     },
     {
       "query": "?owner=customer&limit=50",
       "status": 200,
       "ok": true,
-      "total": 30,
+      "total": 23,
       "by_source": {
-        "customer_assets": 23,
-        "project_documents": 4,
-        "customer_files": 3
+        "customer_assets": 23
       },
-      "legacy_count": 7,
-      "with_download_url": 30
+      "legacy_count": 0,
+      "with_download_url": 23
     },
     {
       "query": "?owner=project&limit=50",
       "status": 200,
       "ok": true,
-      "total": 16,
+      "total": 15,
       "by_source": {
-        "project_assets": 15,
-        "project_documents": 1
+        "project_assets": 15
       },
-      "legacy_count": 1,
-      "with_download_url": 16
+      "legacy_count": 0,
+      "with_download_url": 15
     },
     {
       "query": "?owner=proposal&limit=50",
       "status": 200,
       "ok": true,
-      "total": 4,
+      "total": 6,
       "by_source": {
-        "proposal_assets": 4
+        "proposal_assets": 6
       },
       "legacy_count": 0,
-      "with_download_url": 4
+      "with_download_url": 6
     }
   ],
   "pass_fail": [
     {
       "id": "hub_api_all_sources",
       "result": "PASS",
-      "note": "all query total=40 sources={\"proposal_assets\":4,\"project_assets\":13,\"customer_assets\":19,\"project_documents\":2,\"customer_files\":2}"
+      "note": "total=40 sources={\"proposal_assets\":6,\"project_assets\":15,\"customer_assets\":19} legacy_sources=none"
+    },
+    {
+      "id": "no_legacy_hub_sources",
+      "result": "PASS",
+      "note": "v2-only hub"
     }
   ],
+  "phase5a_legacy_read_off": true,
+  "legacy_sources_in_hub": [],
   "summary": "PASS"
 }

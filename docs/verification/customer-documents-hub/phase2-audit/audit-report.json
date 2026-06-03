@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-03T13:21:31.774Z",
+  "generated_at": "2026-06-03T13:50:07.515Z",
   "migration_049": {
     "file": "supabase/migrations/049_document_migration_map.sql",
     "table_exists": true,
@@ -37,8 +37,20 @@
       "label": "all",
       "status": 200,
       "ok": true,
-      "total": 49,
+      "total": 43,
       "items": [
+        {
+          "filename": "bharti gupta-proposal-v5.pptx",
+          "owner": "proposal",
+          "source": "proposal_assets",
+          "legacy": false
+        },
+        {
+          "filename": "bharti gupta-proposal-v4.pptx",
+          "owner": "proposal",
+          "source": "proposal_assets",
+          "legacy": false
+        },
         {
           "filename": "mgr-upload.jpg",
           "owner": "project",
@@ -196,30 +208,6 @@
           "legacy": false
         },
         {
-          "filename": "phase2-audit-METER_PHOTO.jpg",
-          "owner": "customer",
-          "source": "project_documents",
-          "legacy": true
-        },
-        {
-          "filename": "phase2-audit-ROOF_PHOTO.jpg",
-          "owner": "customer",
-          "source": "project_documents",
-          "legacy": true
-        },
-        {
-          "filename": "phase2-audit-ROOF_PHOTO-proxy.jpg",
-          "owner": "customer",
-          "source": "customer_files",
-          "legacy": true
-        },
-        {
-          "filename": "phase2-audit-BILL.jpg",
-          "owner": "customer",
-          "source": "customer_files",
-          "legacy": true
-        },
-        {
           "filename": "phase2-audit-AGREEMENT.jpg",
           "owner": "project",
           "source": "project_assets",
@@ -308,30 +296,6 @@
           "owner": "customer",
           "source": "customer_assets",
           "legacy": false
-        },
-        {
-          "filename": "roof-test-customer-copy.jpg",
-          "owner": "customer",
-          "source": "customer_files",
-          "legacy": true
-        },
-        {
-          "filename": "mgr-upload.jpg",
-          "owner": "project",
-          "source": "project_documents",
-          "legacy": true
-        },
-        {
-          "filename": "meter-test.jpg",
-          "owner": "customer",
-          "source": "project_documents",
-          "legacy": true
-        },
-        {
-          "filename": "roof-test.jpg",
-          "owner": "customer",
-          "source": "project_documents",
-          "legacy": true
         }
       ]
     },
@@ -339,7 +303,7 @@
       "label": "owner_customer",
       "status": 200,
       "ok": true,
-      "total": 30,
+      "total": 23,
       "items": [
         {
           "filename": "phase2-audit-ROOF_PHOTO.jpg",
@@ -434,30 +398,6 @@
         {
           "filename": "phase2-audit-METER_PHOTO.jpg",
           "owner": "customer",
-          "source": "project_documents",
-          "legacy": true
-        },
-        {
-          "filename": "phase2-audit-ROOF_PHOTO.jpg",
-          "owner": "customer",
-          "source": "project_documents",
-          "legacy": true
-        },
-        {
-          "filename": "phase2-audit-ROOF_PHOTO-proxy.jpg",
-          "owner": "customer",
-          "source": "customer_files",
-          "legacy": true
-        },
-        {
-          "filename": "phase2-audit-BILL.jpg",
-          "owner": "customer",
-          "source": "customer_files",
-          "legacy": true
-        },
-        {
-          "filename": "phase2-audit-METER_PHOTO.jpg",
-          "owner": "customer",
           "source": "customer_assets",
           "legacy": false
         },
@@ -502,24 +442,6 @@
           "owner": "customer",
           "source": "customer_assets",
           "legacy": false
-        },
-        {
-          "filename": "roof-test-customer-copy.jpg",
-          "owner": "customer",
-          "source": "customer_files",
-          "legacy": true
-        },
-        {
-          "filename": "meter-test.jpg",
-          "owner": "customer",
-          "source": "project_documents",
-          "legacy": true
-        },
-        {
-          "filename": "roof-test.jpg",
-          "owner": "customer",
-          "source": "project_documents",
-          "legacy": true
         }
       ]
     },
@@ -527,7 +449,7 @@
       "label": "owner_project",
       "status": 200,
       "ok": true,
-      "total": 16,
+      "total": 15,
       "items": [
         {
           "filename": "mgr-upload.jpg",
@@ -618,12 +540,6 @@
           "owner": "project",
           "source": "project_assets",
           "legacy": false
-        },
-        {
-          "filename": "mgr-upload.jpg",
-          "owner": "project",
-          "source": "project_documents",
-          "legacy": true
         }
       ]
     },
@@ -631,7 +547,7 @@
       "label": "type_roof",
       "status": 200,
       "ok": true,
-      "total": 8,
+      "total": 6,
       "items": [
         {
           "filename": "phase2-audit-ROOF_PHOTO.jpg",
@@ -660,12 +576,6 @@
         {
           "filename": "phase2-audit-ROOF_PHOTO.jpg",
           "owner": "customer",
-          "source": "project_documents",
-          "legacy": true
-        },
-        {
-          "filename": "phase2-audit-ROOF_PHOTO.jpg",
-          "owner": "customer",
           "source": "customer_assets",
           "legacy": false
         },
@@ -674,12 +584,6 @@
           "owner": "customer",
           "source": "customer_assets",
           "legacy": false
-        },
-        {
-          "filename": "roof-test.jpg",
-          "owner": "customer",
-          "source": "project_documents",
-          "legacy": true
         }
       ]
     },
@@ -687,7 +591,7 @@
       "label": "project",
       "status": 200,
       "ok": true,
-      "total": 20,
+      "total": 15,
       "items": [
         {
           "filename": "mgr-upload.jpg",
@@ -738,18 +642,6 @@
           "legacy": false
         },
         {
-          "filename": "phase2-audit-METER_PHOTO.jpg",
-          "owner": "customer",
-          "source": "project_documents",
-          "legacy": true
-        },
-        {
-          "filename": "phase2-audit-ROOF_PHOTO.jpg",
-          "owner": "customer",
-          "source": "project_documents",
-          "legacy": true
-        },
-        {
           "filename": "phase2-audit-AGREEMENT.jpg",
           "owner": "project",
           "source": "project_assets",
@@ -790,24 +682,6 @@
           "owner": "project",
           "source": "project_assets",
           "legacy": false
-        },
-        {
-          "filename": "mgr-upload.jpg",
-          "owner": "project",
-          "source": "project_documents",
-          "legacy": true
-        },
-        {
-          "filename": "meter-test.jpg",
-          "owner": "customer",
-          "source": "project_documents",
-          "legacy": true
-        },
-        {
-          "filename": "roof-test.jpg",
-          "owner": "customer",
-          "source": "project_documents",
-          "legacy": true
         }
       ]
     },
@@ -815,7 +689,7 @@
       "label": "search",
       "status": 200,
       "ok": true,
-      "total": 33,
+      "total": 29,
       "items": [
         {
           "filename": "phase2-audit-ROOF_PHOTO.jpg",
@@ -924,30 +798,6 @@
           "owner": "customer",
           "source": "customer_assets",
           "legacy": false
-        },
-        {
-          "filename": "phase2-audit-METER_PHOTO.jpg",
-          "owner": "customer",
-          "source": "project_documents",
-          "legacy": true
-        },
-        {
-          "filename": "phase2-audit-ROOF_PHOTO.jpg",
-          "owner": "customer",
-          "source": "project_documents",
-          "legacy": true
-        },
-        {
-          "filename": "phase2-audit-ROOF_PHOTO-proxy.jpg",
-          "owner": "customer",
-          "source": "customer_files",
-          "legacy": true
-        },
-        {
-          "filename": "phase2-audit-BILL.jpg",
-          "owner": "customer",
-          "source": "customer_files",
-          "legacy": true
         },
         {
           "filename": "phase2-audit-AGREEMENT.jpg",
@@ -1051,7 +901,7 @@
   "legacy": {
     "customer_files_bharti": 3,
     "project_documents_bharti": 5,
-    "hub_shows_legacy": true
+    "hub_shows_legacy": false
   },
   "backfill_dry_run": null,
   "pass_fail": [

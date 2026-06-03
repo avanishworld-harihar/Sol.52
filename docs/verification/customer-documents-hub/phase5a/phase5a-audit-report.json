@@ -1,0 +1,148 @@
+{
+  "generated_at": "2026-06-03T13:46:59.677Z",
+  "phase": "5A",
+  "flags": {
+    "DOCUMENTS_HUB_LEGACY_READ": "false",
+    "NEXT_PUBLIC_DOCUMENTS_HUB_LEGACY_READ": "false"
+  },
+  "regressions": {
+    "phase2_validation_audit": {
+      "exit_code": 0,
+      "stderr_tail": ""
+    },
+    "phase3_manual_e2e": {
+      "exit_code": 0,
+      "stderr_tail": ""
+    },
+    "phase4_stabilization_audit": {
+      "exit_code": 0,
+      "stderr_tail": ""
+    },
+    "phase4_data_verification": {
+      "exit_code": 0,
+      "stderr_tail": ""
+    },
+    "phase4_hub_verification": {
+      "exit_code": 0,
+      "stderr_tail": ""
+    }
+  },
+  "hub": {
+    "generated_at": "2026-06-03T13:53:04.142Z",
+    "lead_id": "eead2c0a-8f20-4c7a-8128-ce8fff874834",
+    "checks": [
+      {
+        "query": "(all)",
+        "status": 200,
+        "ok": true,
+        "total": 40,
+        "by_source": {
+          "proposal_assets": 6,
+          "project_assets": 15,
+          "customer_assets": 19
+        },
+        "legacy_count": 0,
+        "with_download_url": 40
+      },
+      {
+        "query": "?limit=100",
+        "status": 200,
+        "ok": true,
+        "total": 44,
+        "by_source": {
+          "proposal_assets": 6,
+          "project_assets": 15,
+          "customer_assets": 23
+        },
+        "legacy_count": 0,
+        "with_download_url": 44
+      },
+      {
+        "query": "?owner=customer&limit=50",
+        "status": 200,
+        "ok": true,
+        "total": 23,
+        "by_source": {
+          "customer_assets": 23
+        },
+        "legacy_count": 0,
+        "with_download_url": 23
+      },
+      {
+        "query": "?owner=project&limit=50",
+        "status": 200,
+        "ok": true,
+        "total": 15,
+        "by_source": {
+          "project_assets": 15
+        },
+        "legacy_count": 0,
+        "with_download_url": 15
+      },
+      {
+        "query": "?owner=proposal&limit=50",
+        "status": 200,
+        "ok": true,
+        "total": 6,
+        "by_source": {
+          "proposal_assets": 6
+        },
+        "legacy_count": 0,
+        "with_download_url": 6
+      }
+    ],
+    "pass_fail": [
+      {
+        "id": "hub_api_all_sources",
+        "result": "PASS",
+        "note": "total=40 sources={\"proposal_assets\":6,\"project_assets\":15,\"customer_assets\":19} legacy_sources=none"
+      },
+      {
+        "id": "no_legacy_hub_sources",
+        "result": "PASS",
+        "note": "v2-only hub"
+      }
+    ],
+    "phase5a_legacy_read_off": true,
+    "legacy_sources_in_hub": [],
+    "summary": "PASS"
+  },
+  "pass_fail": [
+    {
+      "id": "legacy_read_flag_config",
+      "result": "PASS",
+      "note": "audit runs with DOCUMENTS_HUB_LEGACY_READ=false"
+    },
+    {
+      "id": "phase2_validation_audit",
+      "result": "PASS",
+      "note": "exit 0"
+    },
+    {
+      "id": "phase3_manual_e2e",
+      "result": "PASS",
+      "note": "exit 0"
+    },
+    {
+      "id": "phase4_stabilization_audit",
+      "result": "PASS",
+      "note": "exit 0"
+    },
+    {
+      "id": "phase4_data_verification",
+      "result": "PASS",
+      "note": "exit 0"
+    },
+    {
+      "id": "phase4_hub_verification",
+      "result": "PASS",
+      "note": "exit 0"
+    },
+    {
+      "id": "hub_zero_legacy_sources",
+      "result": "PASS",
+      "note": "none"
+    }
+  ],
+  "summary": "PASS"
+}
