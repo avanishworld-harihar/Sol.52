@@ -183,7 +183,7 @@ export function CustomerDocumentsHub({ customerId }: { customerId: string }) {
   return (
     <div className="space-y-4">
       <p className="text-xs font-medium leading-relaxed text-slate-600 dark:text-slate-400">
-        Customer, project, and proposal files from v2 asset tables. Legacy tables are not shown when Phase 5A read is off.
+        Upload bills, site photos, and documents here. Project and proposal files from linked records also appear below.
       </p>
 
       {!isLegacyDocumentUploadUiEnabled() ? (
