@@ -1,0 +1,124 @@
+{
+  "generated_at": "2026-06-03T11:41:51.036Z",
+  "pass_fail": [
+    {
+      "id": "migration_050_applied",
+      "result": "PASS",
+      "note": "proposal_assets table reachable"
+    },
+    {
+      "id": "linked_proposal",
+      "result": "PASS",
+      "note": "bharti gupta (fd4369ad…)"
+    },
+    {
+      "id": "has_pricing",
+      "result": "PASS",
+      "note": "proposal_pricing exists"
+    },
+    {
+      "id": "proposal_assets_row",
+      "result": "PASS",
+      "note": "proposal_revision v3"
+    },
+    {
+      "id": "hub_owner_proposal",
+      "result": "PASS",
+      "note": "hub proposal items: 1"
+    },
+    {
+      "id": "download_url",
+      "result": "PASS",
+      "note": "HEAD/GET ok"
+    },
+    {
+      "id": "legacy_customer_files_unchanged",
+      "result": "PASS",
+      "note": "delta: 0"
+    },
+    {
+      "id": "legacy_project_documents_unchanged",
+      "result": "PASS",
+      "note": "delta: 0"
+    }
+  ],
+  "migration_050_ready": true,
+  "proposal": {
+    "id": "fd4369ad-d6f4-4396-aead-2ae6c1977635",
+    "customer_name": "bharti gupta",
+    "lead_id": "eead2c0a-8f20-4c7a-8128-ce8fff874834",
+    "generated_at": "2026-05-31T17:52:50.34241+00:00"
+  },
+  "lead_id": "eead2c0a-8f20-4c7a-8128-ce8fff874834",
+  "lifecycle": {
+    "has_pricing": true,
+    "patch": {
+      "status": 503,
+      "ok": false,
+      "from": "draft",
+      "error": "update_failed"
+    },
+    "direct_persist": "attempting via createPricingSnapshot",
+    "direct_persist_result": {
+      "status": 0,
+      "stdout": "snapshot 14550952-e6a2-4feb-8575-5084be11833d 3 revised\npersist { ok: true }\n",
+      "stderr": ""
+    }
+  },
+  "proposal_asset": {
+    "id": "8a574ce4-98e7-4b47-bdea-e8368d432155",
+    "organization_id": "4d851d8d-0079-4b23-ab72-864fb769eaf1",
+    "customer_id": "eead2c0a-8f20-4c7a-8128-ce8fff874834",
+    "proposal_id": "fd4369ad-d6f4-4396-aead-2ae6c1977635",
+    "pricing_snapshot_id": "14550952-e6a2-4feb-8575-5084be11833d",
+    "category": "proposal_revision",
+    "revision_number": 3,
+    "storage_bucket": "proposal-assets",
+    "storage_path": "4d851d8d-0079-4b23-ab72-864fb769eaf1/eead2c0a-8f20-4c7a-8128-ce8fff874834/fd4369ad-d6f4-4396-aead-2ae6c1977635/8935a620-be5e-48d8-9993-01dbaa98ef82.pptx",
+    "filename": "bharti gupta-proposal-v3.pptx",
+    "mime_type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "size_bytes": 2859698,
+    "triggered_by": "revised",
+    "archived_at": null,
+    "created_at": "2026-06-03T11:42:10.706524+00:00"
+  },
+  "hub": {
+    "status": 200,
+    "ok": true,
+    "total": 1,
+    "proposal_items": [
+      {
+        "id": "8a574ce4-98e7-4b47-bdea-e8368d432155",
+        "owner": "proposal",
+        "category": "proposal_revision",
+        "category_label": "Proposal revision (PPTX)",
+        "filename": "bharti gupta-proposal-v3.pptx",
+        "mime_type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "size_bytes": 2859698,
+        "customer_id": "eead2c0a-8f20-4c7a-8128-ce8fff874834",
+        "project_id": null,
+        "project_label": null,
+        "proposal_id": "fd4369ad-d6f4-4396-aead-2ae6c1977635",
+        "proposal_revision": 3,
+        "uploaded_at": "2026-06-03T11:42:10.706524+00:00",
+        "download_url": "https://rzrgetzkmoqpfnrydzvl.supabase.co/storage/v1/object/sign/proposal-assets/4d851d8d-0079-4b23-ab72-864fb769eaf1/eead2c0a-8f20-4c7a-8128-ce8fff874834/fd4369ad-d6f4-4396-aead-2ae6c1977635/8935a620-be5e-48d8-9993-01dbaa98ef82.pptx?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMDQ4MWFlOS1jZTJlLTQ1ZDAtYWE3NS0wMzkxY2ExNDlkNGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9wb3NhbC1hc3NldHMvNGQ4NTFkOGQtMDA3OS00YjIzLWFiNzItODY0ZmI3NjllYWYxL2VlYWQyYzBhLThmMjAtNGM3YS04MTI4LWNlOGZmZjg3NDgzNC9mZDQzNjlhZC1kNmY0LTQzOTYtYWVhZC0yYWU2YzE5Nzc2MzUvODkzNWE2MjAtYmU1ZS00OGQ4LTk5OTMtMDFkYmFhOThlZjgyLnBwdHgiLCJpYXQiOjE3ODA0ODY5MzcsImV4cCI6MTc4MDQ5MDUzN30.zNiLBQi_byqb4_hi8NiYtf_yWMYG8i1haMJ4oyIyF7o",
+        "link_role": null,
+        "source": "proposal_assets",
+        "legacy": false
+      }
+    ]
+  },
+  "download": {
+    "url_present": true,
+    "http_ok": true,
+    "status": 200
+  },
+  "legacy": {
+    "customer_files_before": 3,
+    "project_documents_before": 12,
+    "customer_files_after": 3,
+    "project_documents_after": 12
+  },
+  "summary": "PASS",
+  "recommendation": "Phase 3 manual E2E passed"
+}

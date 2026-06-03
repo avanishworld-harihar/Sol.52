@@ -131,7 +131,7 @@ node scripts/backfill-document-assets.mjs
 | Test data | Bharti project `3cfd6369-…` used for audits; `phase2-audit-*` filenames in DB |
 | Stale production build | Rebuild/restart after deploy so KYC categories are in API bundle |
 
-**Phase 3:** `proposal_assets`, proposal PDF persistence, hub `owner=proposal` — see Phase 1 handoff §7.
+**Phase 3:** Complete — see `customer-documents-hub-handoff-phase3.md` (tag `phase3-documents-hub-complete`).
 
 ---
 

@@ -23,6 +23,7 @@ import {
   type QuoteEngineSnapshot,
 } from "@/lib/pricing-quote-snapshot";
 import { proposalPricingRowSchema, type ProposalPricingRow } from "@/lib/proposal-pricing-schema";
+import { persistProposalAssetForSnapshot } from "@/lib/proposal-asset-persist";
 
 type Row = Record<string, unknown>;
 
@@ -186,7 +187,16 @@ export async function createPricingSnapshot(
     return null;
   }
 
-  return data ? parseSnapshot(data as Row) : null;
+  const snap = data ? parseSnapshot(data as Row) : null;
+  if (snap) {
+    void persistProposalAssetForSnapshot(snap).catch((err) => {
+      console.warn(
+        "[proposal-snapshot-store] proposal asset persist:",
+        err instanceof Error ? err.message : err
+      );
+    });
+  }
+  return snap;
 }
 
 /**

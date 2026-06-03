@@ -4,7 +4,9 @@
  */
 
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
+import { createProposalAssetSignedUrl } from "@/lib/proposal-asset-upload";
 import { createProjectDocumentSignedUrl } from "@/lib/project-document-upload";
+import { listProposalAssetsByCustomer } from "@/lib/proposal-asset-store";
 import {
   getLabelForCategoryDb,
   legacyCustomerFileTypeToCategory,
@@ -141,10 +143,49 @@ async function fetchNewCustomerAssets(
       project_id: null,
       project_label: null,
       proposal_id: null,
+      proposal_revision: null,
       uploaded_at: String(r.created_at),
       download_url: downloadUrl,
       link_role: null,
       source: "customer_assets",
+      legacy: false,
+    });
+  }
+  return rows;
+}
+
+async function fetchProposalAssets(
+  customerId: string,
+  orgId: string | null
+): Promise<UnifiedDocumentRow[]> {
+  const assets = await listProposalAssetsByCustomer(customerId, orgId);
+  const rows: UnifiedDocumentRow[] = [];
+
+  for (const r of assets) {
+    const category = String(r.category) as DocumentCategoryDb;
+    const path = String(r.storage_path ?? "");
+    let downloadUrl: string | null = null;
+    if (path) {
+      const signed = await createProposalAssetSignedUrl(path);
+      downloadUrl = signed.ok ? signed.url : null;
+    }
+    rows.push({
+      id: String(r.id),
+      owner: "proposal",
+      category,
+      category_label: getLabelForCategoryDb(category),
+      filename: String(r.filename),
+      mime_type: r.mime_type != null ? String(r.mime_type) : null,
+      size_bytes: Number(r.size_bytes) || 0,
+      customer_id: customerId,
+      project_id: null,
+      project_label: null,
+      proposal_id: String(r.proposal_id),
+      proposal_revision: Number(r.revision_number) || null,
+      uploaded_at: String(r.created_at),
+      download_url: downloadUrl,
+      link_role: null,
+      source: "proposal_assets",
       legacy: false,
     });
   }
@@ -192,6 +233,7 @@ async function fetchNewProjectAssets(
       project_id: projectId,
       project_label: projectLabels.get(projectId) ?? null,
       proposal_id: null,
+      proposal_revision: null,
       uploaded_at: String(r.created_at),
       download_url: downloadUrl,
       link_role: null,
@@ -230,6 +272,7 @@ async function fetchLegacyCustomerFiles(customerId: string): Promise<UnifiedDocu
       project_id: null,
       project_label: null,
       proposal_id: null,
+      proposal_revision: null,
       uploaded_at: String(r.created_at),
       download_url: String(r.file_url),
       link_role: null,
@@ -285,6 +328,7 @@ async function fetchLegacyProjectDocuments(
       project_id: projectId,
       project_label: projectLabels.get(projectId) ?? null,
       proposal_id: null,
+      proposal_revision: null,
       uploaded_at: String(r.created_at),
       download_url: downloadUrl,
       link_role: null,
@@ -325,14 +369,15 @@ export async function listUnifiedCustomerDocuments(
   const orgId = await resolveDefaultOrgId();
   const projectLabels = await loadProjectLabels(customerId);
 
-  const [a, b, c, d] = await Promise.all([
+  const [a, b, pa, c, d] = await Promise.all([
     fetchNewCustomerAssets(customerId, orgId),
     fetchNewProjectAssets(customerId, orgId, projectLabels),
+    fetchProposalAssets(customerId, orgId),
     fetchLegacyCustomerFiles(customerId),
     fetchLegacyProjectDocuments(customerId, projectLabels),
   ]);
 
-  let merged = dedupeRows([...a, ...b, ...c, ...d]);
+  let merged = dedupeRows([...a, ...b, ...pa, ...c, ...d]);
   merged = merged.filter((row) => matchesFilters(row, query));
   merged.sort(
     (x, y) => new Date(y.uploaded_at).getTime() - new Date(x.uploaded_at).getTime()

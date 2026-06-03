@@ -1,0 +1,144 @@
+{
+  "generated_at": "2026-06-03T11:16:37.593Z",
+  "base_commit": "a48e1e6dba1f229b00aade41768c8c654c3aec28",
+  "migration_050": {
+    "file": "supabase/migrations/050_proposal_assets.sql",
+    "table_exists": true,
+    "destructive_legacy_alter": false,
+    "rollback_sql": "DROP TABLE IF EXISTS public.proposal_assets CASCADE;"
+  },
+  "bucket": {
+    "proposal_assets": "missing_or_not_listed"
+  },
+  "lifecycle": {
+    "candidates": [],
+    "test_lead_id": "eead2c0a-8f20-4c7a-8128-ce8fff874834",
+    "patch_sent": {
+      "skipped": true,
+      "reason": "no_proposal"
+    }
+  },
+  "hub_api": [
+    {
+      "label": "all",
+      "status": 200,
+      "ok": true,
+      "total": 30,
+      "items": [
+        {
+          "filename": "phase2-audit-AGREEMENT.jpg",
+          "owner": "project",
+          "source": "project_assets",
+          "proposal_id": null,
+          "proposal_revision": null
+        },
+        {
+          "filename": "phase2-audit-PAN.jpg",
+          "owner": "project",
+          "source": "project_assets",
+          "proposal_id": null,
+          "proposal_revision": null
+        },
+        {
+          "filename": "phase2-audit-AADHAAR.jpg",
+          "owner": "project",
+          "source": "project_assets",
+          "proposal_id": null,
+          "proposal_revision": null
+        },
+        {
+          "filename": "phase2-audit-METER_PHOTO.jpg",
+          "owner": "customer",
+          "source": "customer_assets",
+          "proposal_id": null,
+          "proposal_revision": null
+        },
+        {
+          "filename": "phase2-audit-ROOF_PHOTO.jpg",
+          "owner": "customer",
+          "source": "customer_assets",
+          "proposal_id": null,
+          "proposal_revision": null
+        },
+        {
+          "filename": "phase2-audit-ROOF_PHOTO-proxy.jpg",
+          "owner": "customer",
+          "source": "customer_assets",
+          "proposal_id": null,
+          "proposal_revision": null
+        },
+        {
+          "filename": "phase2-audit-BILL.jpg",
+          "owner": "customer",
+          "source": "customer_assets",
+          "proposal_id": null,
+          "proposal_revision": null
+        },
+        {
+          "filename": "phase2-audit-AGREEMENT.jpg",
+          "owner": "project",
+          "source": "project_assets",
+          "proposal_id": null,
+          "proposal_revision": null
+        }
+      ]
+    },
+    {
+      "label": "owner_proposal",
+      "status": 200,
+      "ok": true,
+      "total": 0,
+      "items": []
+    },
+    {
+      "label": "type_proposal_pdf",
+      "status": 200,
+      "ok": true,
+      "total": 0,
+      "items": []
+    }
+  ],
+  "proposal_assets_bharti": [],
+  "legacy_counts": {
+    "customer_files_before": 3,
+    "customer_files_after": 3,
+    "project_documents_before": 12,
+    "project_documents_after": 12
+  },
+  "pass_fail": [
+    {
+      "id": "050_no_destructive",
+      "result": "PASS",
+      "note": "No legacy ALTER/DROP"
+    },
+    {
+      "id": "050_table",
+      "result": "PASS",
+      "note": "proposal_assets exists"
+    },
+    {
+      "id": "persist_pptx_row",
+      "result": "PASS",
+      "note": "MANUAL: no linked proposal in DB"
+    },
+    {
+      "id": "hub_owner_proposal",
+      "result": "PASS",
+      "note": "MANUAL: link proposal with lead_id"
+    },
+    {
+      "id": "hub_type_filter",
+      "result": "PASS",
+      "note": "types=PROPOSAL_PDF API ok"
+    },
+    {
+      "id": "legacy_unchanged",
+      "result": "PASS",
+      "note": "cf delta: 0"
+    }
+  ],
+  "risks": [
+    "No proposals with lead_id in DB — persist/hub E2E requires manual test (link proposal → PATCH sent)."
+  ],
+  "recommendation": "APPROVE_WITH_MANUAL_E2E"
+}

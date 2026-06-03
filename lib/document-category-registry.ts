@@ -120,8 +120,8 @@ export const DOCUMENT_CATEGORY_LABELS: Record<DocumentCategoryId, string> = {
   SLD: "SLD",
   NET_METERING: "Net metering",
   INSTALLATION_PHOTO: "Installation photo",
-  PROPOSAL_PDF: "Proposal PDF",
-  PROPOSAL_REVISION: "Proposal revision",
+  PROPOSAL_PDF: "Proposal export (PPTX)",
+  PROPOSAL_REVISION: "Proposal revision (PPTX)",
 };
 
 export function categoryIdToDb(id: string): DocumentCategoryDb | null {
@@ -223,6 +223,7 @@ export const FILTER_OWNER_OPTIONS: { value: DocumentOwnerFilter; label: string }
   { value: "all", label: "All owners" },
   { value: "customer", label: "Customer" },
   { value: "project", label: "Project" },
+  { value: "proposal", label: "Proposal" },
 ];
 
 export const FILTER_TYPE_OPTIONS: { value: DocumentCategoryId; label: string; owner: DocumentOwner }[] = [
@@ -235,5 +236,10 @@ export const FILTER_TYPE_OPTIONS: { value: DocumentCategoryId; label: string; ow
     value: id,
     label: DOCUMENT_CATEGORY_LABELS[id],
     owner: "project" as const,
+  })),
+  ...PROPOSAL_DOCUMENT_CATEGORY_IDS.map((id) => ({
+    value: id,
+    label: DOCUMENT_CATEGORY_LABELS[id],
+    owner: "proposal" as const,
   })),
 ];
