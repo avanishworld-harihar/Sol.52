@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-03T10:44:46.872Z",
+  "generated_at": "2026-06-03T11:11:21.302Z",
   "migration_049": {
     "file": "supabase/migrations/049_document_migration_map.sql",
     "table_exists": true,
@@ -17,15 +17,15 @@
     }
   },
   "counts_before": {
-    "customer_assets": 8,
-    "project_assets": 8,
+    "customer_assets": 12,
+    "project_assets": 11,
     "asset_links": 2,
     "customer_files": 3,
     "project_documents": 12
   },
   "counts_after": {
-    "customer_assets": 12,
-    "project_assets": 11,
+    "customer_assets": 16,
+    "project_assets": 14,
     "asset_links": 2,
     "customer_files": 3,
     "project_documents": 12,
@@ -38,14 +38,14 @@
       "status": 201,
       "ok": true,
       "data": {
-        "id": "6a9a68c1-c3dc-4369-86fb-bbd6a0eb640d",
+        "id": "ec0046bc-4734-42db-9b77-435d663c45b2",
         "lead_id": "eead2c0a-8f20-4c7a-8128-ce8fff874834",
         "file_name": "phase2-audit-BILL.jpg",
-        "file_url": "eead2c0a-8f20-4c7a-8128-ce8fff874834/bill/9ae88132-4575-4dad-a8b9-9999b14a95d1.jpg",
+        "file_url": "eead2c0a-8f20-4c7a-8128-ce8fff874834/bill/ac631c46-acbd-443d-9892-9162a1ed6e0f.jpg",
         "file_type": "bill",
         "file_size_kb": 1,
         "mime_type": "image/jpeg",
-        "created_at": "2026-06-03T10:44:51.270125+00:00",
+        "created_at": "2026-06-03T11:11:27.015279+00:00",
         "_source": "customer_assets"
       }
     },
@@ -55,14 +55,14 @@
       "status": 201,
       "ok": true,
       "data": {
-        "id": "2d4a94b6-aa5e-40b3-bdde-0e217d8e3741",
+        "id": "7f993739-39e0-4528-909f-dde31b2b2187",
         "lead_id": "eead2c0a-8f20-4c7a-8128-ce8fff874834",
         "file_name": "phase2-audit-ROOF_PHOTO-proxy.jpg",
-        "file_url": "eead2c0a-8f20-4c7a-8128-ce8fff874834/site_image/33ab0c0f-62bc-4885-9365-e58e964e3253.jpg",
+        "file_url": "eead2c0a-8f20-4c7a-8128-ce8fff874834/site_image/886aa98c-d03b-4bb5-a137-073f8ff70414.jpg",
         "file_type": "site_image",
         "file_size_kb": 1,
         "mime_type": "image/jpeg",
-        "created_at": "2026-06-03T10:44:52.101202+00:00",
+        "created_at": "2026-06-03T11:11:27.887041+00:00",
         "_source": "customer_assets"
       }
     },
@@ -72,12 +72,12 @@
       "status": 201,
       "ok": true,
       "data": {
-        "id": "29266bfb-dae8-4a8d-9b13-6801b1ed1842",
+        "id": "a54fff04-9974-4f0d-8d69-31e042a7a424",
         "organization_id": "4d851d8d-0079-4b23-ab72-864fb769eaf1",
         "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46",
         "doc_category": "roof_photo",
         "stage_at_upload": "survey",
-        "storage_path": "eead2c0a-8f20-4c7a-8128-ce8fff874834/site_image/976f33ac-e327-4fd1-bba8-a487818a43e1.jpg",
+        "storage_path": "eead2c0a-8f20-4c7a-8128-ce8fff874834/site_image/045edd22-23c0-47e8-956c-85d88449c325.jpg",
         "filename": "phase2-audit-ROOF_PHOTO.jpg",
         "mime_type": "image/jpeg",
         "size_bytes": 286,
@@ -86,8 +86,8 @@
         "linked_entity_type": "asset_link",
         "linked_entity_id": "ae4a7147-ad54-41b6-9ac6-907fdb335ec2",
         "archived_at": null,
-        "created_at": "2026-06-03T10:44:52.874427+00:00",
-        "download_url": "https://rzrgetzkmoqpfnrydzvl.supabase.co/storage/v1/object/sign/customer-files/eead2c0a-8f20-4c7a-8128-ce8fff874834/site_image/976f33ac-e327-4fd1-bba8-a487818a43e1.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMDQ4MWFlOS1jZTJlLTQ1ZDAtYWE3NS0wMzkxY2ExNDlkNGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJjdXN0b21lci1maWxlcy9lZWFkMmMwYS04ZjIwLTRjN2EtODEyOC1jZThmZmY4NzQ4MzQvc2l0ZV9pbWFnZS85NzZmMzNhYy1lMzI3LTRmZDEtYmJhOC1hNDg3ODE4YTQzZTEuanBnIiwiaWF0IjoxNzgwNDgzNDk0LCJleHAiOjE3ODA0ODcwOTR9.imWXdR-EhCYiZ8sA7R3t-ZKWEsIdNquyzRjwuyXaomU"
+        "created_at": "2026-06-03T11:11:29.747541+00:00",
+        "download_url": "https://rzrgetzkmoqpfnrydzvl.supabase.co/storage/v1/object/sign/customer-files/eead2c0a-8f20-4c7a-8128-ce8fff874834/site_image/045edd22-23c0-47e8-956c-85d88449c325.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMDQ4MWFlOS1jZTJlLTQ1ZDAtYWE3NS0wMzkxY2ExNDlkNGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJjdXN0b21lci1maWxlcy9lZWFkMmMwYS04ZjIwLTRjN2EtODEyOC1jZThmZmY4NzQ4MzQvc2l0ZV9pbWFnZS8wNDVlZGQyMi0yM2MwLTQ3ZTgtOTU2Yy04NWQ4ODQ0OWMzMjUuanBnIiwiaWF0IjoxNzgwNDg1MDkxLCJleHAiOjE3ODA0ODg2OTF9.5Gn3AX6umXBzX97NaO67f4vxXTnBAHKpuygG6Ui-aew"
       }
     },
     {
@@ -96,12 +96,12 @@
       "status": 201,
       "ok": true,
       "data": {
-        "id": "b8161cf8-fa61-4605-b35e-5ed4e5782b4d",
+        "id": "76c5142c-66b8-4722-841d-2be22fb27635",
         "organization_id": "4d851d8d-0079-4b23-ab72-864fb769eaf1",
         "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46",
         "doc_category": "meter_photo",
         "stage_at_upload": "survey",
-        "storage_path": "eead2c0a-8f20-4c7a-8128-ce8fff874834/site_image/5c8322db-aeaa-4696-9b8d-99ab4568835c.jpg",
+        "storage_path": "eead2c0a-8f20-4c7a-8128-ce8fff874834/site_image/2078a64d-7249-4442-918e-d77845f5f015.jpg",
         "filename": "phase2-audit-METER_PHOTO.jpg",
         "mime_type": "image/jpeg",
         "size_bytes": 286,
@@ -110,8 +110,8 @@
         "linked_entity_type": "asset_link",
         "linked_entity_id": "7125bba4-8580-4ac8-b2e6-69b80319ab5a",
         "archived_at": null,
-        "created_at": "2026-06-03T10:44:54.809712+00:00",
-        "download_url": "https://rzrgetzkmoqpfnrydzvl.supabase.co/storage/v1/object/sign/customer-files/eead2c0a-8f20-4c7a-8128-ce8fff874834/site_image/5c8322db-aeaa-4696-9b8d-99ab4568835c.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMDQ4MWFlOS1jZTJlLTQ1ZDAtYWE3NS0wMzkxY2ExNDlkNGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJjdXN0b21lci1maWxlcy9lZWFkMmMwYS04ZjIwLTRjN2EtODEyOC1jZThmZmY4NzQ4MzQvc2l0ZV9pbWFnZS81YzgzMjJkYi1hZWFhLTQ2OTYtOWI4ZC05OWFiNDU2ODgzNWMuanBnIiwiaWF0IjoxNzgwNDgzNDk1LCJleHAiOjE3ODA0ODcwOTV9.eXB-Scwgqq8yOOtNszfUTbTrXB1RhXX-2-3jkS0OPbU"
+        "created_at": "2026-06-03T11:11:31.955893+00:00",
+        "download_url": "https://rzrgetzkmoqpfnrydzvl.supabase.co/storage/v1/object/sign/customer-files/eead2c0a-8f20-4c7a-8128-ce8fff874834/site_image/2078a64d-7249-4442-918e-d77845f5f015.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMDQ4MWFlOS1jZTJlLTQ1ZDAtYWE3NS0wMzkxY2ExNDlkNGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJjdXN0b21lci1maWxlcy9lZWFkMmMwYS04ZjIwLTRjN2EtODEyOC1jZThmZmY4NzQ4MzQvc2l0ZV9pbWFnZS8yMDc4YTY0ZC03MjQ5LTQ0NDItOTE4ZS1kNzc4NDVmNWYwMTUuanBnIiwiaWF0IjoxNzgwNDg1MDkzLCJleHAiOjE3ODA0ODg2OTN9.p2-VaiVtN-oVZMtTS31zic0Hi6NZvVtsJDFYo7Fvj60"
       }
     },
     {
@@ -120,12 +120,12 @@
       "status": 201,
       "ok": true,
       "data": {
-        "id": "370d9f97-febc-4774-94e7-af90da79ed66",
+        "id": "8bd6188e-9768-4a45-ba31-97e7bdf75a23",
         "organization_id": "4d851d8d-0079-4b23-ab72-864fb769eaf1",
         "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46",
         "doc_category": "aadhaar",
         "stage_at_upload": "survey",
-        "storage_path": "4d851d8d-0079-4b23-ab72-864fb769eaf1/3cfd6369-4d9a-45d3-8c90-008de6c62a46/8ad46989-47bd-4ed2-9ebb-b052a1427cd3.jpg",
+        "storage_path": "4d851d8d-0079-4b23-ab72-864fb769eaf1/3cfd6369-4d9a-45d3-8c90-008de6c62a46/9a379f53-bda4-4de2-b955-1d086de5fe8c.jpg",
         "filename": "phase2-audit-AADHAAR.jpg",
         "mime_type": "image/jpeg",
         "size_bytes": 286,
@@ -134,9 +134,9 @@
         "linked_entity_type": null,
         "linked_entity_id": null,
         "archived_at": null,
-        "created_at": "2026-06-03T10:44:56.750156+00:00",
+        "created_at": "2026-06-03T11:11:34.066703+00:00",
         "_source": "project_assets",
-        "download_url": "https://rzrgetzkmoqpfnrydzvl.supabase.co/storage/v1/object/sign/project-files/4d851d8d-0079-4b23-ab72-864fb769eaf1/3cfd6369-4d9a-45d3-8c90-008de6c62a46/8ad46989-47bd-4ed2-9ebb-b052a1427cd3.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMDQ4MWFlOS1jZTJlLTQ1ZDAtYWE3NS0wMzkxY2ExNDlkNGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9qZWN0LWZpbGVzLzRkODUxZDhkLTAwNzktNGIyMy1hYjcyLTg2NGZiNzY5ZWFmMS8zY2ZkNjM2OS00ZDlhLTQ1ZDMtOGM5MC0wMDhkZTZjNjJhNDYvOGFkNDY5ODktNDdiZC00ZWQyLTllYmItYjA1MmExNDI3Y2QzLmpwZyIsImlhdCI6MTc4MDQ4MzQ5NywiZXhwIjoxNzgwNDg3MDk3fQ.q_ng1fAJnUIMEEyk7H1tMvqS9g5y_b6pMj16dh4h03A"
+        "download_url": "https://rzrgetzkmoqpfnrydzvl.supabase.co/storage/v1/object/sign/project-files/4d851d8d-0079-4b23-ab72-864fb769eaf1/3cfd6369-4d9a-45d3-8c90-008de6c62a46/9a379f53-bda4-4de2-b955-1d086de5fe8c.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMDQ4MWFlOS1jZTJlLTQ1ZDAtYWE3NS0wMzkxY2ExNDlkNGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9qZWN0LWZpbGVzLzRkODUxZDhkLTAwNzktNGIyMy1hYjcyLTg2NGZiNzY5ZWFmMS8zY2ZkNjM2OS00ZDlhLTQ1ZDMtOGM5MC0wMDhkZTZjNjJhNDYvOWEzNzlmNTMtYmRhNC00ZGUyLWI5NTUtMWQwODZkZTVmZThjLmpwZyIsImlhdCI6MTc4MDQ4NTA5NCwiZXhwIjoxNzgwNDg4Njk0fQ.Ua3cyKw7FT69Bt-ioDQuhedKfckpvhpg3EFAyYAkLdU"
       }
     },
     {
@@ -145,12 +145,12 @@
       "status": 201,
       "ok": true,
       "data": {
-        "id": "b27e9f1d-37b9-43d0-97bc-f87459e4ae98",
+        "id": "a293e438-ba5a-4d44-bec8-e3067e88f61a",
         "organization_id": "4d851d8d-0079-4b23-ab72-864fb769eaf1",
         "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46",
         "doc_category": "pan",
         "stage_at_upload": "survey",
-        "storage_path": "4d851d8d-0079-4b23-ab72-864fb769eaf1/3cfd6369-4d9a-45d3-8c90-008de6c62a46/bfc51379-dfbe-466c-9e7c-6586c2288c1a.jpg",
+        "storage_path": "4d851d8d-0079-4b23-ab72-864fb769eaf1/3cfd6369-4d9a-45d3-8c90-008de6c62a46/915e3109-45ff-4250-9dd7-9782d7a46c9b.jpg",
         "filename": "phase2-audit-PAN.jpg",
         "mime_type": "image/jpeg",
         "size_bytes": 286,
@@ -159,9 +159,9 @@
         "linked_entity_type": null,
         "linked_entity_id": null,
         "archived_at": null,
-        "created_at": "2026-06-03T10:44:58.196696+00:00",
+        "created_at": "2026-06-03T11:11:35.475644+00:00",
         "_source": "project_assets",
-        "download_url": "https://rzrgetzkmoqpfnrydzvl.supabase.co/storage/v1/object/sign/project-files/4d851d8d-0079-4b23-ab72-864fb769eaf1/3cfd6369-4d9a-45d3-8c90-008de6c62a46/bfc51379-dfbe-466c-9e7c-6586c2288c1a.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMDQ4MWFlOS1jZTJlLTQ1ZDAtYWE3NS0wMzkxY2ExNDlkNGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9qZWN0LWZpbGVzLzRkODUxZDhkLTAwNzktNGIyMy1hYjcyLTg2NGZiNzY5ZWFmMS8zY2ZkNjM2OS00ZDlhLTQ1ZDMtOGM5MC0wMDhkZTZjNjJhNDYvYmZjNTEzNzktZGZiZS00NjZjLTllN2MtNjU4NmMyMjg4YzFhLmpwZyIsImlhdCI6MTc4MDQ4MzQ5OCwiZXhwIjoxNzgwNDg3MDk4fQ.vBCgRlP_tihO0IC07gOzuSQBcYqbG1CUz3p7claJ4ek"
+        "download_url": "https://rzrgetzkmoqpfnrydzvl.supabase.co/storage/v1/object/sign/project-files/4d851d8d-0079-4b23-ab72-864fb769eaf1/3cfd6369-4d9a-45d3-8c90-008de6c62a46/915e3109-45ff-4250-9dd7-9782d7a46c9b.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMDQ4MWFlOS1jZTJlLTQ1ZDAtYWE3NS0wMzkxY2ExNDlkNGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9qZWN0LWZpbGVzLzRkODUxZDhkLTAwNzktNGIyMy1hYjcyLTg2NGZiNzY5ZWFmMS8zY2ZkNjM2OS00ZDlhLTQ1ZDMtOGM5MC0wMDhkZTZjNjJhNDYvOTE1ZTMxMDktNDVmZi00MjUwLTlkZDctOTc4MmQ3YTQ2YzliLmpwZyIsImlhdCI6MTc4MDQ4NTA5NiwiZXhwIjoxNzgwNDg4Njk2fQ.dANqP5Kxqbfx0JY3yZt07-EDlJdpaVrzgV47IdFa_2w"
       }
     },
     {
@@ -170,12 +170,12 @@
       "status": 201,
       "ok": true,
       "data": {
-        "id": "05bb29fb-bd14-4208-933c-3479ce29603d",
+        "id": "cab19384-476e-4e8d-acc0-cc0f89f09059",
         "organization_id": "4d851d8d-0079-4b23-ab72-864fb769eaf1",
         "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46",
         "doc_category": "agreement",
         "stage_at_upload": "survey",
-        "storage_path": "4d851d8d-0079-4b23-ab72-864fb769eaf1/3cfd6369-4d9a-45d3-8c90-008de6c62a46/4c74aaa3-c43e-4227-ab29-5c38c8c0f442.jpg",
+        "storage_path": "4d851d8d-0079-4b23-ab72-864fb769eaf1/3cfd6369-4d9a-45d3-8c90-008de6c62a46/4238c829-0f3c-42b7-857e-8c33f7fae08c.jpg",
         "filename": "phase2-audit-AGREEMENT.jpg",
         "mime_type": "image/jpeg",
         "size_bytes": 286,
@@ -184,9 +184,9 @@
         "linked_entity_type": null,
         "linked_entity_id": null,
         "archived_at": null,
-        "created_at": "2026-06-03T10:44:59.53973+00:00",
+        "created_at": "2026-06-03T11:11:36.955524+00:00",
         "_source": "project_assets",
-        "download_url": "https://rzrgetzkmoqpfnrydzvl.supabase.co/storage/v1/object/sign/project-files/4d851d8d-0079-4b23-ab72-864fb769eaf1/3cfd6369-4d9a-45d3-8c90-008de6c62a46/4c74aaa3-c43e-4227-ab29-5c38c8c0f442.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMDQ4MWFlOS1jZTJlLTQ1ZDAtYWE3NS0wMzkxY2ExNDlkNGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9qZWN0LWZpbGVzLzRkODUxZDhkLTAwNzktNGIyMy1hYjcyLTg2NGZiNzY5ZWFmMS8zY2ZkNjM2OS00ZDlhLTQ1ZDMtOGM5MC0wMDhkZTZjNjJhNDYvNGM3NGFhYTMtYzQzZS00MjI3LWFiMjktNWMzOGM4YzBmNDQyLmpwZyIsImlhdCI6MTc4MDQ4MzUwMCwiZXhwIjoxNzgwNDg3MTAwfQ.J3a9r_hz2RiDk6T4eTK7DEUMrQvLxeHdemPwgL6GtHs"
+        "download_url": "https://rzrgetzkmoqpfnrydzvl.supabase.co/storage/v1/object/sign/project-files/4d851d8d-0079-4b23-ab72-864fb769eaf1/3cfd6369-4d9a-45d3-8c90-008de6c62a46/4238c829-0f3c-42b7-857e-8c33f7fae08c.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMDQ4MWFlOS1jZTJlLTQ1ZDAtYWE3NS0wMzkxY2ExNDlkNGUiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9qZWN0LWZpbGVzLzRkODUxZDhkLTAwNzktNGIyMy1hYjcyLTg2NGZiNzY5ZWFmMS8zY2ZkNjM2OS00ZDlhLTQ1ZDMtOGM5MC0wMDhkZTZjNjJhNDYvNDIzOGM4MjktMGYzYy00MmI3LTg1N2UtOGMzM2Y3ZmFlMDhjLmpwZyIsImlhdCI6MTc4MDQ4NTA5NywiZXhwIjoxNzgwNDg4Njk3fQ.5BShzj8xPteegZvfrl5Oigzg3IgMtXx97OBJOnBQxyw"
       }
     }
   ],
@@ -195,8 +195,50 @@
       "label": "all",
       "status": 200,
       "ok": true,
-      "total": 31,
+      "total": 38,
       "items": [
+        {
+          "filename": "phase2-audit-AGREEMENT.jpg",
+          "owner": "project",
+          "source": "project_assets",
+          "legacy": false
+        },
+        {
+          "filename": "phase2-audit-PAN.jpg",
+          "owner": "project",
+          "source": "project_assets",
+          "legacy": false
+        },
+        {
+          "filename": "phase2-audit-AADHAAR.jpg",
+          "owner": "project",
+          "source": "project_assets",
+          "legacy": false
+        },
+        {
+          "filename": "phase2-audit-METER_PHOTO.jpg",
+          "owner": "customer",
+          "source": "customer_assets",
+          "legacy": false
+        },
+        {
+          "filename": "phase2-audit-ROOF_PHOTO.jpg",
+          "owner": "customer",
+          "source": "customer_assets",
+          "legacy": false
+        },
+        {
+          "filename": "phase2-audit-ROOF_PHOTO-proxy.jpg",
+          "owner": "customer",
+          "source": "customer_assets",
+          "legacy": false
+        },
+        {
+          "filename": "phase2-audit-BILL.jpg",
+          "owner": "customer",
+          "source": "customer_assets",
+          "legacy": false
+        },
         {
           "filename": "phase2-audit-AGREEMENT.jpg",
           "owner": "project",
@@ -389,8 +431,32 @@
       "label": "owner_customer",
       "status": 200,
       "ok": true,
-      "total": 19,
+      "total": 23,
       "items": [
+        {
+          "filename": "phase2-audit-METER_PHOTO.jpg",
+          "owner": "customer",
+          "source": "customer_assets",
+          "legacy": false
+        },
+        {
+          "filename": "phase2-audit-ROOF_PHOTO.jpg",
+          "owner": "customer",
+          "source": "customer_assets",
+          "legacy": false
+        },
+        {
+          "filename": "phase2-audit-ROOF_PHOTO-proxy.jpg",
+          "owner": "customer",
+          "source": "customer_assets",
+          "legacy": false
+        },
+        {
+          "filename": "phase2-audit-BILL.jpg",
+          "owner": "customer",
+          "source": "customer_assets",
+          "legacy": false
+        },
         {
           "filename": "phase2-audit-METER_PHOTO.jpg",
           "owner": "customer",
@@ -511,8 +577,26 @@
       "label": "owner_project",
       "status": 200,
       "ok": true,
-      "total": 12,
+      "total": 15,
       "items": [
+        {
+          "filename": "phase2-audit-AGREEMENT.jpg",
+          "owner": "project",
+          "source": "project_assets",
+          "legacy": false
+        },
+        {
+          "filename": "phase2-audit-PAN.jpg",
+          "owner": "project",
+          "source": "project_assets",
+          "legacy": false
+        },
+        {
+          "filename": "phase2-audit-AADHAAR.jpg",
+          "owner": "project",
+          "source": "project_assets",
+          "legacy": false
+        },
         {
           "filename": "phase2-audit-AGREEMENT.jpg",
           "owner": "project",
@@ -591,8 +675,14 @@
       "label": "type_roof",
       "status": 200,
       "ok": true,
-      "total": 5,
+      "total": 6,
       "items": [
+        {
+          "filename": "phase2-audit-ROOF_PHOTO.jpg",
+          "owner": "customer",
+          "source": "customer_assets",
+          "legacy": false
+        },
         {
           "filename": "phase2-audit-ROOF_PHOTO.jpg",
           "owner": "customer",
@@ -629,8 +719,26 @@
       "label": "project",
       "status": 200,
       "ok": true,
-      "total": 16,
+      "total": 19,
       "items": [
+        {
+          "filename": "phase2-audit-AGREEMENT.jpg",
+          "owner": "project",
+          "source": "project_assets",
+          "legacy": false
+        },
+        {
+          "filename": "phase2-audit-PAN.jpg",
+          "owner": "project",
+          "source": "project_assets",
+          "legacy": false
+        },
+        {
+          "filename": "phase2-audit-AADHAAR.jpg",
+          "owner": "project",
+          "source": "project_assets",
+          "legacy": false
+        },
         {
           "filename": "phase2-audit-AGREEMENT.jpg",
           "owner": "project",
@@ -733,8 +841,50 @@
       "label": "search",
       "status": 200,
       "ok": true,
-      "total": 22,
+      "total": 29,
       "items": [
+        {
+          "filename": "phase2-audit-AGREEMENT.jpg",
+          "owner": "project",
+          "source": "project_assets",
+          "legacy": false
+        },
+        {
+          "filename": "phase2-audit-PAN.jpg",
+          "owner": "project",
+          "source": "project_assets",
+          "legacy": false
+        },
+        {
+          "filename": "phase2-audit-AADHAAR.jpg",
+          "owner": "project",
+          "source": "project_assets",
+          "legacy": false
+        },
+        {
+          "filename": "phase2-audit-METER_PHOTO.jpg",
+          "owner": "customer",
+          "source": "customer_assets",
+          "legacy": false
+        },
+        {
+          "filename": "phase2-audit-ROOF_PHOTO.jpg",
+          "owner": "customer",
+          "source": "customer_assets",
+          "legacy": false
+        },
+        {
+          "filename": "phase2-audit-ROOF_PHOTO-proxy.jpg",
+          "owner": "customer",
+          "source": "customer_assets",
+          "legacy": false
+        },
+        {
+          "filename": "phase2-audit-BILL.jpg",
+          "owner": "customer",
+          "source": "customer_assets",
+          "legacy": false
+        },
         {
           "filename": "phase2-audit-AGREEMENT.jpg",
           "owner": "project",
@@ -873,14 +1023,14 @@
   "asset_links": [
     {
       "id": "ae4a7147-ad54-41b6-9ac6-907fdb335ec2",
-      "asset_id": "29266bfb-dae8-4a8d-9b13-6801b1ed1842",
+      "asset_id": "a54fff04-9974-4f0d-8d69-31e042a7a424",
       "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46",
       "link_role": "roof_photo",
       "pinned": false
     },
     {
       "id": "7125bba4-8580-4ac8-b2e6-69b80319ab5a",
-      "asset_id": "b8161cf8-fa61-4605-b35e-5ed4e5782b4d",
+      "asset_id": "76c5142c-66b8-4722-841d-2be22fb27635",
       "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46",
       "link_role": "meter_photo",
       "pinned": false
@@ -941,7 +1091,7 @@
     {
       "id": "no_duplicate_blobs",
       "result": "PASS",
-      "note": "unique paths: 18"
+      "note": "unique paths: 25"
     },
     {
       "id": "hub_search",
@@ -976,6 +1126,38 @@
   ],
   "risks": [],
   "customer_assets_bharti": [
+    {
+      "id": "76c5142c-66b8-4722-841d-2be22fb27635",
+      "category": "meter_photo",
+      "filename": "phase2-audit-METER_PHOTO.jpg",
+      "storage_path": "eead2c0a-8f20-4c7a-8128-ce8fff874834/site_image/2078a64d-7249-4442-918e-d77845f5f015.jpg",
+      "storage_bucket": "customer-files",
+      "source_channel": "crm_ui"
+    },
+    {
+      "id": "a54fff04-9974-4f0d-8d69-31e042a7a424",
+      "category": "roof_photo",
+      "filename": "phase2-audit-ROOF_PHOTO.jpg",
+      "storage_path": "eead2c0a-8f20-4c7a-8128-ce8fff874834/site_image/045edd22-23c0-47e8-956c-85d88449c325.jpg",
+      "storage_bucket": "customer-files",
+      "source_channel": "crm_ui"
+    },
+    {
+      "id": "7f993739-39e0-4528-909f-dde31b2b2187",
+      "category": "survey_media",
+      "filename": "phase2-audit-ROOF_PHOTO-proxy.jpg",
+      "storage_path": "eead2c0a-8f20-4c7a-8128-ce8fff874834/site_image/886aa98c-d03b-4bb5-a137-073f8ff70414.jpg",
+      "storage_bucket": "customer-files",
+      "source_channel": "crm_ui"
+    },
+    {
+      "id": "ec0046bc-4734-42db-9b77-435d663c45b2",
+      "category": "bill",
+      "filename": "phase2-audit-BILL.jpg",
+      "storage_path": "eead2c0a-8f20-4c7a-8128-ce8fff874834/bill/ac631c46-acbd-443d-9892-9162a1ed6e0f.jpg",
+      "storage_bucket": "customer-files",
+      "source_channel": "crm_ui"
+    },
     {
       "id": "b8161cf8-fa61-4605-b35e-5ed4e5782b4d",
       "category": "meter_photo",
@@ -1075,6 +1257,24 @@
   ],
   "project_assets_bharti": [
     {
+      "id": "cab19384-476e-4e8d-acc0-cc0f89f09059",
+      "category": "agreement",
+      "filename": "phase2-audit-AGREEMENT.jpg",
+      "storage_path": "4d851d8d-0079-4b23-ab72-864fb769eaf1/3cfd6369-4d9a-45d3-8c90-008de6c62a46/4238c829-0f3c-42b7-857e-8c33f7fae08c.jpg"
+    },
+    {
+      "id": "a293e438-ba5a-4d44-bec8-e3067e88f61a",
+      "category": "pan",
+      "filename": "phase2-audit-PAN.jpg",
+      "storage_path": "4d851d8d-0079-4b23-ab72-864fb769eaf1/3cfd6369-4d9a-45d3-8c90-008de6c62a46/915e3109-45ff-4250-9dd7-9782d7a46c9b.jpg"
+    },
+    {
+      "id": "8bd6188e-9768-4a45-ba31-97e7bdf75a23",
+      "category": "aadhaar",
+      "filename": "phase2-audit-AADHAAR.jpg",
+      "storage_path": "4d851d8d-0079-4b23-ab72-864fb769eaf1/3cfd6369-4d9a-45d3-8c90-008de6c62a46/9a379f53-bda4-4de2-b955-1d086de5fe8c.jpg"
+    },
+    {
       "id": "05bb29fb-bd14-4208-933c-3479ce29603d",
       "category": "agreement",
       "filename": "phase2-audit-AGREEMENT.jpg",
@@ -1141,6 +1341,6 @@
       "storage_path": "4d851d8d-0079-4b23-ab72-864fb769eaf1/3cfd6369-4d9a-45d3-8c90-008de6c62a46/184957da-f417-46ac-bc3e-2a6e35d8d4e1.jpg"
     }
   ],
-  "unique_storage_paths_audit": 18,
+  "unique_storage_paths_audit": 25,
   "duplicate_storage_paths": false
 }
