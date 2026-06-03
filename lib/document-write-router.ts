@@ -7,6 +7,7 @@ import {
   buildProjectDocumentStoragePath,
   uploadProjectDocumentFile,
 } from "@/lib/project-document-upload";
+import { isDocumentsHubLegacyReadEnabled } from "@/lib/documents-hub-read-config";
 import { isDocumentsHubV2WriteEnabled } from "@/lib/documents-hub-write-config";
 import {
   customerFileTypeToAssetCategory,
@@ -222,28 +223,33 @@ export async function writeProjectDocumentUpload(input: {
   };
 }
 
-/** GET /files — merge customer_assets into legacy list when v2 enabled */
+/** GET /files — v2 customer_assets (legacy table merge only when legacy read ON). */
 export async function listCustomerFilesForApi(leadId: string): Promise<Record<string, unknown>[]> {
   const client = db();
   if (!client) return [];
 
-  const { data: legacy, error } = await client
-    .from("customer_files")
-    .select("*")
-    .eq("lead_id", leadId)
-    .order("created_at", { ascending: false })
-    .limit(100);
+  const legacyRead = isDocumentsHubLegacyReadEnabled();
+  const v2Write = isDocumentsHubV2WriteEnabled();
 
-  const legacyRows = error?.code === "42P01" ? [] : (legacy ?? []);
+  let legacyRows: Record<string, unknown>[] = [];
+  if (legacyRead) {
+    const { data: legacy, error } = await client
+      .from("customer_files")
+      .select("*")
+      .eq("lead_id", leadId)
+      .order("created_at", { ascending: false })
+      .limit(100);
+    legacyRows = error?.code === "42P01" ? [] : ((legacy ?? []) as Record<string, unknown>[]);
+  }
 
-  if (!isDocumentsHubV2WriteEnabled()) {
-    return legacyRows as Record<string, unknown>[];
+  if (!v2Write) {
+    return legacyRows;
   }
 
   const orgId = await resolveDefaultOrgId();
   const { listCustomerAssets } = await import("@/lib/customer-asset-store");
   const assets = await listCustomerAssets(leadId, orgId);
-  const legacyIds = new Set(legacyRows.map((r) => String((r as { id: unknown }).id)));
+  const legacyIds = new Set(legacyRows.map((r) => String(r.id)));
   const assetRows = assets
     .filter((a) => !legacyIds.has(a.id))
     .map((a) =>
@@ -253,7 +259,7 @@ export async function listCustomerFilesForApi(leadId: string): Promise<Record<st
       )
     );
 
-  return [...assetRows, ...(legacyRows as Record<string, unknown>[])].sort(
+  return [...assetRows, ...legacyRows].sort(
     (a, b) =>
       new Date(String(b.created_at)).getTime() - new Date(String(a.created_at)).getTime()
   );

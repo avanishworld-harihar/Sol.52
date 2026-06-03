@@ -20,6 +20,7 @@ import {
   type ProjectListItem,
 } from "@/lib/project-api-client";
 import { cn } from "@/lib/utils";
+import { isLegacyDocumentUploadUiEnabled } from "@/lib/documents-hub-legacy-ui-config";
 import {
   FileText,
   FolderOpen,
@@ -235,31 +236,37 @@ export function ProjectHubDocumentsTab({
         </Button>
       </div>
 
-      <Card className="page-lite-item border-slate-200/90 dark:border-white/10">
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-sm font-extrabold">
-            <ImageIcon className="h-4 w-4 text-sky-600" aria-hidden />
-            Quick upload
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-3 sm:grid-cols-3">
-          <ProjectDocumentUploadSlot
-            projectId={project.id}
-            docCategory="roof_photo"
-            onUploaded={() => void refresh()}
-          />
-          <ProjectDocumentUploadSlot
-            projectId={project.id}
-            docCategory="meter_photo"
-            onUploaded={() => void refresh()}
-          />
-          <ProjectDocumentUploadSlot
-            projectId={project.id}
-            docCategory="db_photo"
-            onUploaded={() => void refresh()}
-          />
-        </CardContent>
-      </Card>
+      {isLegacyDocumentUploadUiEnabled() ? (
+        <Card className="page-lite-item border-slate-200/90 dark:border-white/10">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm font-extrabold">
+              <ImageIcon className="h-4 w-4 text-sky-600" aria-hidden />
+              Quick upload
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-3 sm:grid-cols-3">
+            <ProjectDocumentUploadSlot
+              projectId={project.id}
+              docCategory="roof_photo"
+              onUploaded={() => void refresh()}
+            />
+            <ProjectDocumentUploadSlot
+              projectId={project.id}
+              docCategory="meter_photo"
+              onUploaded={() => void refresh()}
+            />
+            <ProjectDocumentUploadSlot
+              projectId={project.id}
+              docCategory="db_photo"
+              onUploaded={() => void refresh()}
+            />
+          </CardContent>
+        </Card>
+      ) : (
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          Survey photos upload on the Survey tab. Other files appear here from v2 project assets and the customer Documents Hub.
+        </p>
+      )}
 
       <div className="flex gap-1.5 overflow-x-auto pb-1">
         <button

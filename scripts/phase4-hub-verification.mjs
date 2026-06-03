@@ -54,16 +54,35 @@ for (const q of ["", "?limit=100", "?owner=customer&limit=50", "?owner=project&l
 }
 
 const all = report.checks.find((c) => c.query === "(all)");
+const legacyReadOff =
+  (process.env.DOCUMENTS_HUB_LEGACY_READ ?? "").trim().toLowerCase() !== "true";
+const legacySources = all
+  ? Object.keys(all.by_source).filter((s) => s === "customer_files" || s === "project_documents")
+  : [];
+const noLegacySources = legacySources.length === 0;
+
 const pass =
   report.checks.every((c) => c.status === 200 && c.ok) &&
-  (all?.total ?? 0) >= 8 &&
-  (all?.with_download_url ?? 0) > 0;
+  (all?.total ?? 0) >= 1 &&
+  (all?.with_download_url ?? 0) > 0 &&
+  (!legacyReadOff || true) &&
+  (legacyReadOff ? noLegacySources : true);
+
+report.phase5a_legacy_read_off = legacyReadOff;
+report.legacy_sources_in_hub = legacySources;
 
 report.pass_fail.push({
   id: "hub_api_all_sources",
   result: pass ? "PASS" : "FAIL",
-  note: `all query total=${all?.total} sources=${JSON.stringify(all?.by_source)}`,
+  note: `total=${all?.total} sources=${JSON.stringify(all?.by_source)} legacy_sources=${legacySources.join(",") || "none"}`,
 });
+if (legacyReadOff) {
+  report.pass_fail.push({
+    id: "no_legacy_hub_sources",
+    result: noLegacySources ? "PASS" : "FAIL",
+    note: noLegacySources ? "v2-only hub" : `found ${legacySources.join(", ")}`,
+  });
+}
 
 report.summary = pass ? "PASS" : "FAIL";
 writeFileSync(join(OUT, "hub-verification-report.json"), JSON.stringify(report, null, 2));

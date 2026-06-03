@@ -1,9 +1,10 @@
 /**
  * Customer Documents Hub — read-only unified index (Phase 1).
- * Merges new asset tables (when populated) + legacy customer_files + project_documents.
+ * Merges customer_assets + project_assets + proposal_assets (+ legacy when enabled).
  */
 
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
+import { isDocumentsHubLegacyReadEnabled } from "@/lib/documents-hub-read-config";
 import { createProposalAssetSignedUrl } from "@/lib/proposal-asset-upload";
 import { createProjectDocumentSignedUrl } from "@/lib/project-document-upload";
 import { listProposalAssetsByCustomer } from "@/lib/proposal-asset-store";
@@ -369,15 +370,16 @@ export async function listUnifiedCustomerDocuments(
   const orgId = await resolveDefaultOrgId();
   const projectLabels = await loadProjectLabels(customerId);
 
+  const legacyRead = isDocumentsHubLegacyReadEnabled();
   const [a, b, pa, c, d] = await Promise.all([
     fetchNewCustomerAssets(customerId, orgId),
     fetchNewProjectAssets(customerId, orgId, projectLabels),
     fetchProposalAssets(customerId, orgId),
-    fetchLegacyCustomerFiles(customerId),
-    fetchLegacyProjectDocuments(customerId, projectLabels),
+    legacyRead ? fetchLegacyCustomerFiles(customerId) : Promise.resolve([]),
+    legacyRead ? fetchLegacyProjectDocuments(customerId, projectLabels) : Promise.resolve([]),
   ]);
 
-  let merged = dedupeRows([...a, ...b, ...pa, ...c, ...d]);
+  let merged = legacyRead ? dedupeRows([...a, ...b, ...pa, ...c, ...d]) : [...a, ...b, ...pa];
   merged = merged.filter((row) => matchesFilters(row, query));
   merged.sort(
     (x, y) => new Date(y.uploaded_at).getTime() - new Date(x.uploaded_at).getTime()

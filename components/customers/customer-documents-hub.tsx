@@ -23,6 +23,8 @@ import {
 } from "@/lib/document-category-registry";
 import type { UnifiedDocumentRow } from "@/lib/unified-documents-types";
 import { formatCrmDateTime } from "@/lib/crm-datetime";
+import { isLegacyDocumentUploadUiEnabled } from "@/lib/documents-hub-legacy-ui-config";
+import { CustomerDocumentsHubUpload } from "@/components/customers/customer-documents-hub-upload";
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -181,8 +183,12 @@ export function CustomerDocumentsHub({ customerId }: { customerId: string }) {
   return (
     <div className="space-y-4">
       <p className="text-xs font-medium leading-relaxed text-slate-600 dark:text-slate-400">
-        All customer and project files in one place. Upload still uses the sections below until Phase 2.
+        Customer, project, and proposal files from v2 asset tables. Legacy tables are not shown when Phase 5A read is off.
       </p>
+
+      {!isLegacyDocumentUploadUiEnabled() ? (
+        <CustomerDocumentsHubUpload customerId={customerId} onUploaded={() => void mutate()} />
+      ) : null}
 
       <div className="space-y-3 rounded-xl border border-slate-200/90 bg-white p-3 dark:border-white/10 dark:bg-[#0c1017]">
         <div className="flex gap-2">

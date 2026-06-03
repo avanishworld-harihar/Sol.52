@@ -49,6 +49,7 @@ import {
 import type { FollowupReminder } from "@/lib/followup-types";
 import type { CustomerTimelineItem } from "@/lib/customer-timeline-store";
 import { CustomerDocumentsHub } from "@/components/customers/customer-documents-hub";
+import { isLegacyDocumentUploadUiEnabled } from "@/lib/documents-hub-legacy-ui-config";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import {
@@ -909,12 +910,13 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
         )}
       </SectionCard>
 
-      {/* ── 5. Documents Hub (unified read) + legacy upload ── */}
+      {/* ── 5. Documents Hub (v2 read; legacy Quick upload hidden in Phase 5A) ── */}
       <SectionCard title="Documents" icon={FolderOpen}>
         <CustomerDocumentsHub customerId={leadId} />
+        {isLegacyDocumentUploadUiEnabled() ? (
         <div className="mt-6 border-t border-slate-100 pt-4 dark:border-white/10">
           <p className="mb-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            Quick upload (Phase 1 — legacy path)
+            Quick upload (legacy UI — rollback via NEXT_PUBLIC_DOCUMENTS_HUB_LEGACY_READ=true)
           </p>
           <div className="space-y-4">
           <AttachmentGroup
@@ -953,6 +955,7 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
           />
           </div>
         </div>
+        ) : null}
       </SectionCard>
 
     </div>

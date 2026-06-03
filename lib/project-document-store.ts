@@ -9,6 +9,7 @@ import {
 } from "@/lib/project-document-upload";
 import type { ProjectDocumentCategory } from "@/lib/project-document-types";
 import type { ProjectRow } from "@/lib/project-store";
+import { isDocumentsHubLegacyReadEnabled } from "@/lib/documents-hub-read-config";
 import { isDocumentsHubV2WriteEnabled } from "@/lib/documents-hub-write-config";
 import {
   listProjectAssets,
@@ -114,15 +115,14 @@ async function attachSignedUrls(
   return out;
 }
 
-export async function listProjectDocuments(
+async function fetchLegacyProjectDocumentRows(
   projectId: string,
   opts?: {
     category?: ProjectDocumentCategory | null;
     stage?: string | null;
     includeArchived?: boolean;
-    withUrls?: boolean;
   }
-): Promise<ProjectDocumentRow[] | ProjectDocumentWithUrl[]> {
+): Promise<ProjectDocumentRow[]> {
   const client = db();
   if (!client) return [];
 
@@ -143,18 +143,19 @@ export async function listProjectDocuments(
   }
 
   const { data, error } = await query;
-  if (error || !Array.isArray(data)) {
-    if (!isDocumentsHubV2WriteEnabled()) return [];
-  }
-  const legacyRows = (error || !Array.isArray(data) ? [] : data) as ProjectDocumentRow[];
+  if (error || !Array.isArray(data)) return [];
+  return data as ProjectDocumentRow[];
+}
 
-  if (!isDocumentsHubV2WriteEnabled()) {
-    if (opts?.withUrls) return attachSignedUrls(legacyRows);
-    return legacyRows;
+async function listV2ProjectDocumentRows(
+  projectId: string,
+  opts?: {
+    category?: ProjectDocumentCategory | null;
+    legacyIds?: Set<string>;
   }
-
+): Promise<ProjectDocumentRow[]> {
+  const legacyIds = opts?.legacyIds ?? new Set<string>();
   const v2Rows: ProjectDocumentRow[] = [];
-  const legacyIds = new Set(legacyRows.map((r) => r.id));
 
   const assets = await listProjectAssets(projectId, {
     category: opts?.category ?? null,
@@ -187,6 +188,36 @@ export async function listProjectDocuments(
     });
   }
 
+  return v2Rows;
+}
+
+export async function listProjectDocuments(
+  projectId: string,
+  opts?: {
+    category?: ProjectDocumentCategory | null;
+    stage?: string | null;
+    includeArchived?: boolean;
+    withUrls?: boolean;
+  }
+): Promise<ProjectDocumentRow[] | ProjectDocumentWithUrl[]> {
+  const legacyRead = isDocumentsHubLegacyReadEnabled();
+  const v2Write = isDocumentsHubV2WriteEnabled();
+
+  const legacyRows = legacyRead
+    ? await fetchLegacyProjectDocumentRows(projectId, opts)
+    : [];
+
+  if (!v2Write) {
+    if (opts?.withUrls) return attachSignedUrls(legacyRows);
+    return legacyRows;
+  }
+
+  const legacyIds = new Set(legacyRows.map((r) => r.id));
+  const v2Rows = await listV2ProjectDocumentRows(projectId, {
+    category: opts?.category ?? null,
+    legacyIds,
+  });
+
   const merged = [...v2Rows, ...legacyRows].sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
@@ -200,23 +231,13 @@ export async function listProjectDocuments(
 export async function getProjectDocumentSummary(
   projectId: string
 ): Promise<ProjectDocumentSummary> {
-  const client = db();
-  if (!client) return { total: 0, by_category: {} };
-
-  const { data, error } = await client
-    .from("project_documents")
-    .select("doc_category")
-    .eq("project_id", projectId)
-    .is("archived_at", null);
-
-  if (error || !Array.isArray(data)) return { total: 0, by_category: {} };
-
+  const rows = await listProjectDocuments(projectId);
   const by_category: Record<string, number> = {};
-  for (const row of data as { doc_category: string }[]) {
+  for (const row of rows) {
     const cat = row.doc_category || "other";
     by_category[cat] = (by_category[cat] ?? 0) + 1;
   }
-  return { total: data.length, by_category };
+  return { total: rows.length, by_category };
 }
 
 export async function getProjectDocumentById(
@@ -227,20 +248,22 @@ export async function getProjectDocumentById(
   const client = db();
   if (!client) return null;
 
-  const { data, error } = await client
-    .from("project_documents")
-    .select("*")
-    .eq("project_id", projectId)
-    .eq("id", documentId)
-    .maybeSingle();
+  if (isDocumentsHubLegacyReadEnabled()) {
+    const { data, error } = await client
+      .from("project_documents")
+      .select("*")
+      .eq("project_id", projectId)
+      .eq("id", documentId)
+      .maybeSingle();
 
-  if (!error && data) {
-    const row = data as ProjectDocumentRow;
-    if (!withUrl || row.archived_at) {
-      return { ...row, download_url: null };
+    if (!error && data) {
+      const row = data as ProjectDocumentRow;
+      if (!withUrl || row.archived_at) {
+        return { ...row, download_url: null };
+      }
+      const signed = await createProjectDocumentSignedUrl(row.storage_path);
+      return { ...row, download_url: signed.ok ? signed.url : null };
     }
-    const signed = await createProjectDocumentSignedUrl(row.storage_path);
-    return { ...row, download_url: signed.ok ? signed.url : null };
   }
 
   if (isDocumentsHubV2WriteEnabled()) {
@@ -343,16 +366,18 @@ export async function updateProjectDocumentMeta(
   if (patch.doc_category) payload.doc_category = patch.doc_category;
   if (patch.notes !== undefined) payload.notes = patch.notes?.trim() || null;
 
-  const { data, error } = await client
-    .from("project_documents")
-    .update(payload)
-    .eq("project_id", projectId)
-    .eq("id", documentId)
-    .is("archived_at", null)
-    .select("*")
-    .maybeSingle();
+  if (isDocumentsHubLegacyReadEnabled()) {
+    const { data, error } = await client
+      .from("project_documents")
+      .update(payload)
+      .eq("project_id", projectId)
+      .eq("id", documentId)
+      .is("archived_at", null)
+      .select("*")
+      .maybeSingle();
 
-  if (!error && data) return data as ProjectDocumentRow;
+    if (!error && data) return data as ProjectDocumentRow;
+  }
 
   if (isDocumentsHubV2WriteEnabled()) {
     const asset = await getProjectAssetById(projectId, documentId);
@@ -371,16 +396,18 @@ export async function archiveProjectDocument(
   const client = db();
   if (!client) return null;
 
-  const { data, error } = await client
-    .from("project_documents")
-    .update({ archived_at: new Date().toISOString() })
-    .eq("project_id", projectId)
-    .eq("id", documentId)
-    .is("archived_at", null)
-    .select("*")
-    .maybeSingle();
+  if (isDocumentsHubLegacyReadEnabled()) {
+    const { data, error } = await client
+      .from("project_documents")
+      .update({ archived_at: new Date().toISOString() })
+      .eq("project_id", projectId)
+      .eq("id", documentId)
+      .is("archived_at", null)
+      .select("*")
+      .maybeSingle();
 
-  if (!error && data) return data as ProjectDocumentRow;
+    if (!error && data) return data as ProjectDocumentRow;
+  }
 
   if (isDocumentsHubV2WriteEnabled()) {
     const asset = await getProjectAssetById(projectId, documentId);
