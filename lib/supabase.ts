@@ -136,14 +136,23 @@ function projectRowLeadId(r: Record<string, unknown>): string | null {
   return String(v);
 }
 
+/** Server-side project reads — prefer service role (anon RLS can block `projects`). */
+function pipelineDb() {
+  return createSupabaseAdmin() ?? supabase;
+}
+
 export async function listPipelineProjects(options?: ListPipelineProjectsOptions): Promise<PipelineProjectRow[]> {
-  if (!supabase) return [];
-  const { data: projects, error } = await supabase
+  const client = pipelineDb();
+  if (!client) return [];
+  const { data: projects, error } = await client
     .from("projects")
     .select("*")
     .order("created_at", { ascending: false })
     .limit(100);
-  if (error) return [];
+  if (error) {
+    console.warn("[listPipelineProjects]", error.message);
+    return [];
+  }
 
   const rows = (projects ?? []) as Record<string, unknown>[];
   const leadIds = [...new Set(rows.map((r) => projectRowLeadId(r)).filter(Boolean))] as string[];
@@ -154,7 +163,7 @@ export async function listPipelineProjects(options?: ListPipelineProjectsOptions
   if (leadIds.length) {
     const leadsTable = await resolveLeadsTable();
     if (leadsTable) {
-      const { data: leads } = await supabase
+      const { data: leads } = await client
         .from(leadsTable)
         .select("id,name,status,city,phone")
         .in("id", leadIds);
