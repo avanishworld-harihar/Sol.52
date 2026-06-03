@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { listActivityTimeline } from "@/lib/followup-store";
+import { listCustomerTimelineMerged } from "@/lib/customer-timeline-store";
 
 type RouteCtx = { params: Promise<{ id: string }> };
 
@@ -11,6 +11,6 @@ export async function GET(req: NextRequest, ctx: RouteCtx) {
   const limit = Number(url.searchParams.get("limit") ?? 30);
   const offset = Number(url.searchParams.get("offset") ?? 0);
   if (!id) return NextResponse.json({ ok: false, error: "missing id" }, { status: 400 });
-  const data = await listActivityTimeline(id, { limit, offset });
-  return NextResponse.json({ ok: true, data });
+  const data = await listCustomerTimelineMerged(id, { limit, offset });
+  return NextResponse.json({ ok: true, data }, { headers: { "Cache-Control": "no-store" } });
 }

@@ -1,4 +1,5 @@
 import type { ActivityEvent, FollowupReminder, LeadNote, LeadVisit } from "@/lib/followup-types";
+import type { CustomerTimelineItem } from "@/lib/customer-timeline-store";
 
 async function fetchJson<T>(url: string): Promise<T> {
   const res = await fetch(url, { cache: "no-store" });
@@ -8,7 +9,9 @@ async function fetchJson<T>(url: string): Promise<T> {
 }
 
 export function fetchLeadTimeline(leadId: string) {
-  return fetchJson<ActivityEvent[]>(`/api/customers/${encodeURIComponent(leadId)}/timeline?limit=50`);
+  return fetchJson<CustomerTimelineItem[]>(
+    `/api/customers/${encodeURIComponent(leadId)}/timeline?limit=50`
+  );
 }
 
 export function fetchLeadReminders(leadId: string) {

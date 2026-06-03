@@ -26,6 +26,8 @@ import {
   Upload,
   UserRoundCheck,
   Zap,
+  FolderKanban,
+  FolderOpen,
 } from "lucide-react";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -44,7 +46,9 @@ import {
   fetchLeadTimeline,
   patchReminder,
 } from "@/lib/followup-client";
-import type { ActivityEvent, FollowupReminder } from "@/lib/followup-types";
+import type { FollowupReminder } from "@/lib/followup-types";
+import type { CustomerTimelineItem } from "@/lib/customer-timeline-store";
+import { CustomerDocumentsHub } from "@/components/customers/customer-documents-hub";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import {
@@ -131,6 +135,17 @@ const EVENT_META: Record<
   visit_scheduled: { icon: CalendarClock, label: "Visit scheduled", cls: "bg-indigo-100 text-indigo-700" },
   visit_completed: { icon: CheckCircle2, label: "Visit done", cls: "bg-indigo-100 text-indigo-700" },
   note_added: { icon: NotebookPen, label: "Note added", cls: "bg-rose-100 text-rose-600" },
+  file_uploaded: { icon: Paperclip, label: "File uploaded", cls: "bg-slate-100 text-slate-700" },
+  lead_created: { icon: UserRoundCheck, label: "Lead created", cls: "bg-teal-100 text-teal-700" },
+  lead_edited: { icon: UserRoundCheck, label: "Profile updated", cls: "bg-sky-100 text-sky-700" },
+  call_logged: { icon: PhoneCall, label: "Call logged", cls: "bg-violet-100 text-violet-700" },
+};
+
+const MILESTONE_META: Record<string, { icon: typeof Clock3; label: string; cls: string }> = {
+  project_created: { icon: FolderKanban, label: "Project created", cls: "bg-emerald-100 text-emerald-800" },
+  stage_changed: { icon: Zap, label: "Project stage", cls: "bg-amber-100 text-amber-800" },
+  project_completed: { icon: CheckCircle2, label: "Project completed", cls: "bg-teal-100 text-teal-800" },
+  project_archived: { icon: Clock3, label: "Project archived", cls: "bg-slate-100 text-slate-600" },
 };
 
 const PIPELINE_STEPS: { key: LeadStatusKey; label: string }[] = [
@@ -197,7 +212,7 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
   );
 
   /* ------ fetch timeline ------ */
-  const { data: timeline = [], mutate: mutateTimeline } = useSWR<ActivityEvent[]>(
+  const { data: timeline = [], mutate: mutateTimeline } = useSWR<CustomerTimelineItem[]>(
     `/api/customers/${leadId}/timeline`,
     () => fetchLeadTimeline(leadId)
   );
@@ -360,8 +375,9 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
 
   /* ------ timeline groups ------ */
   const timelineGroups = useMemo(() => {
-    return timeline.reduce<Record<string, ActivityEvent[]>>((acc, ev) => {
-      const key = formatCrmDayLabel(ev.occurred_at);
+    return timeline.reduce<Record<string, CustomerTimelineItem[]>>((acc, ev) => {
+      const at = ev.kind === "crm" ? ev.occurred_at : ev.occurred_at;
+      const key = formatCrmDayLabel(at);
       if (!acc[key]) acc[key] = [];
       acc[key]!.push(ev);
       return acc;
@@ -539,16 +555,53 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
                 <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">{day}</p>
                 <ol className="space-y-2">
                   {events.map((ev) => {
+                    if (ev.kind === "project_milestone") {
+                      const meta = MILESTONE_META[ev.event_type] ?? {
+                        icon: FolderKanban,
+                        label: ev.event_title,
+                        cls: "bg-indigo-100 text-indigo-800",
+                      };
+                      const Icon = meta.icon;
+                      const fromStage = ev.meta_json?.from_stage as string | undefined;
+                      const toStage = ev.meta_json?.to_stage as string | undefined;
+                      return (
+                        <li key={ev.id} className="flex items-start gap-3">
+                          <span
+                            className={cn(
+                              "mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg",
+                              meta.cls
+                            )}
+                          >
+                            <Icon className="h-3.5 w-3.5" aria-hidden />
+                          </span>
+                          <div className="min-w-0 flex-1 pt-0.5">
+                            <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                              {ev.event_title || meta.label}
+                            </p>
+                            {ev.project_label ? (
+                              <p className="mt-0.5 text-[11px] font-semibold text-indigo-700 dark:text-indigo-300">
+                                {ev.project_label}
+                              </p>
+                            ) : null}
+                            {ev.event_type === "stage_changed" && fromStage && toStage ? (
+                              <p className="mt-0.5 text-[11px] text-slate-600">
+                                {String(fromStage).replace(/_/g, " ")} → {String(toStage).replace(/_/g, " ")}
+                              </p>
+                            ) : null}
+                            <p className="mt-0.5 text-[11px] text-slate-400">
+                              {formatCrmDateTime(ev.occurred_at)}
+                            </p>
+                          </div>
+                        </li>
+                      );
+                    }
+
                     const meta = EVENT_META[ev.event_type] ?? {
                       icon: Clock3,
                       label: ev.event_type.replace(/_/g, " "),
                       cls: "bg-slate-100 text-slate-600",
                     };
                     const Icon = meta.icon;
-                    const statusMeta = ev.meta_json?.status
-                      ? LEAD_STATUS_BADGE[ev.meta_json.status as LeadStatusKey]
-                      : null;
-                    // Rich detail per event type
                     const fromStage = ev.meta_json?.from as string | undefined;
                     const toStage = ev.meta_json?.to as string | undefined;
                     const callOutcome = ev.meta_json?.outcome as string | undefined;
@@ -571,7 +624,6 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
                           <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
                             {meta.label}
                           </p>
-                          {/* Stage transition */}
                           {(ev.event_type === "status_changed" || ev.event_type === "pipeline_stage_changed") && fromStage && toStage ? (
                             <p className="mt-0.5 flex items-center gap-1 text-[11px] font-semibold">
                               <span className="rounded bg-slate-100 px-1.5 py-0.5 text-slate-700 dark:bg-white/10 dark:text-slate-300">
@@ -583,17 +635,14 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
                               </span>
                             </p>
                           ) : null}
-                          {/* Call outcome */}
                           {ev.event_type === "call_logged" && callOutcome ? (
                             <p className={cn("mt-0.5 inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold", getOutcomeMeta(callOutcome).cls)}>
                               {getOutcomeMeta(callOutcome).label}
                             </p>
                           ) : null}
-                          {/* Lead edited fields */}
                           {ev.event_type === "lead_edited" && changedFields ? (
                             <p className="mt-0.5 text-[11px] text-slate-500">Fields: {changedFields}</p>
                           ) : null}
-                          {/* File uploaded */}
                           {ev.event_type === "file_uploaded" && fileType ? (
                             <p className="mt-0.5 text-[11px] capitalize text-slate-500">{fileType.replace(/_/g, " ")}</p>
                           ) : null}
@@ -854,9 +903,14 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
         )}
       </SectionCard>
 
-      {/* ── 5. Attachments ── */}
-      <SectionCard title="Attachments" icon={Paperclip}>
-        <div className="space-y-4">
+      {/* ── 5. Documents Hub (unified read) + legacy upload ── */}
+      <SectionCard title="Documents" icon={FolderOpen}>
+        <CustomerDocumentsHub customerId={leadId} />
+        <div className="mt-6 border-t border-slate-100 pt-4 dark:border-white/10">
+          <p className="mb-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            Quick upload (Phase 1 — legacy path)
+          </p>
+          <div className="space-y-4">
           <AttachmentGroup
             label="Bills"
             icon={FileText}
@@ -891,6 +945,7 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
             onFileSelected={(file) => void uploadFile(file, "document")}
             inputRef={documentInputRef}
           />
+          </div>
         </div>
       </SectionCard>
 

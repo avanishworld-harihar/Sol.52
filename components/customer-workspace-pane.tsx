@@ -50,7 +50,8 @@ import {
   logCustomerContact,
   patchReminder,
 } from "@/lib/followup-client";
-import type { ActivityEvent, FollowupReminder, LeadNote, LeadVisit } from "@/lib/followup-types";
+import type { FollowupReminder, LeadNote, LeadVisit } from "@/lib/followup-types";
+import type { CustomerTimelineItem } from "@/lib/customer-timeline-store";
 import {
   crmDatetimeLocalToIso,
   formatCrmDateTime,
@@ -138,7 +139,7 @@ export function CustomerWorkspacePane({
 
   const leadId = customer?.id ?? "";
 
-  const { data: timeline = [], mutate: mutateTimeline } = useSWR<ActivityEvent[]>(
+  const { data: timeline = [], mutate: mutateTimeline } = useSWR<CustomerTimelineItem[]>(
     leadId ? `/api/customers/${leadId}/timeline` : null,
     () => fetchLeadTimeline(leadId as string)
   );
@@ -179,8 +180,9 @@ export function CustomerWorkspacePane({
 
   const timelineGroups = useMemo(() => {
     const visible = timeline.slice(0, timelineVisibleCount);
-    return visible.reduce<Record<string, ActivityEvent[]>>((acc, ev) => {
-      const key = toDayKey(ev.occurred_at);
+    return visible.reduce<Record<string, CustomerTimelineItem[]>>((acc, ev) => {
+      const at = ev.kind === "crm" ? ev.occurred_at : ev.occurred_at;
+      const key = toDayKey(at);
       if (!acc[key]) acc[key] = [];
       acc[key]!.push(ev);
       return acc;
@@ -358,8 +360,12 @@ export function CustomerWorkspacePane({
     await mutateTimeline();
   }
 
-  function eventLabel(ev: ActivityEvent) {
-    const when = formatCrmTime(ev.occurred_at);
+  function eventLabel(ev: CustomerTimelineItem) {
+    const at = ev.kind === "crm" ? ev.occurred_at : ev.occurred_at;
+    const when = formatCrmTime(at);
+    if (ev.kind === "project_milestone") {
+      return `${ev.event_title} · ${when}`;
+    }
     return `${ev.event_type.replaceAll("_", " ")} · ${when}`;
   }
 
@@ -511,7 +517,8 @@ export function CustomerWorkspacePane({
                   {!collapsedDays[day] ? (
                     <div className="space-y-1.5 border-t border-slate-200/80 p-2 dark:border-white/10">
                       {items.map((ev) => {
-                        const Icon = EVENT_ICON[ev.event_type] ?? Clock3;
+                        const iconKey = ev.kind === "crm" ? ev.event_type : ev.event_type;
+                        const Icon = EVENT_ICON[iconKey] ?? Clock3;
                         return (
                           <div key={ev.id} className="flex items-center gap-2 rounded-lg bg-slate-50 px-2 py-1.5 text-xs dark:bg-white/5">
                             <Icon className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-300" />
