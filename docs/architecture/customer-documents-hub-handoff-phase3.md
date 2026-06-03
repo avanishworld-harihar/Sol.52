@@ -47,7 +47,7 @@
 
 | Field | Value |
 |-------|--------|
-| **Commit** | `e4664a5dba1f229b00aade41768c8c654c3aec28` (short `e4664a5`) |
+| **Commit** | `5ae72fc62d6242821eadfe50e72e686dc8e6b74e` (short `5ae72fc`) |
 | **Tag** | `phase3-documents-hub-complete` |
 | **Message** | `feat(documents-hub): phase 3 proposal assets and hub` |
 
