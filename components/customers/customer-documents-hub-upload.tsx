@@ -21,7 +21,7 @@ export function CustomerDocumentsHubUpload({
   customerId: string;
   onUploaded?: () => void;
 }) {
-  const { push } = useToast();
+  const toast = useToast();
   const [uploading, setUploading] = useState<UploadType | null>(null);
   const inputRefs = {
     bill: useRef<HTMLInputElement>(null),
@@ -44,19 +44,18 @@ export function CustomerDocumentsHubUpload({
         if (!res.ok || !json?.ok) {
           throw new Error(json?.error ?? "Upload failed");
         }
-        push({ title: "Uploaded", description: file.name, variant: "success" });
+        toast.success("Uploaded", file.name);
         onUploaded?.();
       } catch (e) {
-        push({
-          title: "Upload failed",
-          description: e instanceof Error ? e.message : "Try again",
-          variant: "error",
-        });
+        toast.error(
+          "Upload failed",
+          e instanceof Error ? e.message : "Try again"
+        );
       } finally {
         setUploading(null);
       }
     },
-    [customerId, onUploaded, push]
+    [customerId, onUploaded, toast]
   );
 
   return (
