@@ -7,6 +7,7 @@ import {
   batchNextFollowups,
   batchLastActivities,
 } from "@/lib/supabase";
+import { syncWonLeadProjects } from "@/lib/project-store";
 import { processInboundLead } from "@/lib/inbound-leads";
 import { appendActivityEvent } from "@/lib/followup-store";
 import type { CustomerLead } from "@/lib/types";
@@ -31,6 +32,9 @@ const customerSchema = z.object({
 
 export async function GET() {
   try {
+    /** Link won leads → projects before stage decoration (e.g. Bharti Gupta). */
+    await syncWonLeadProjects();
+
     const raw = await listCustomers();
     const customers = (raw as Record<string, unknown>[]).map(mapCustomerRow);
     const leadIds = customers.map((c) => c.id);
@@ -44,12 +48,9 @@ export async function GET() {
 
     const stageByLeadId = new Map<string, "in-pipeline" | "active-project">();
     for (const p of pipeline) {
-      if (!p.lead_id) continue;
-      const status = String(p.status ?? "").toLowerCase();
-      const stage = status.includes("done") || status.includes("active") || status.includes("install")
-        ? "active-project"
-        : "in-pipeline";
-      stageByLeadId.set(p.lead_id, stage);
+      if (!p.lead_id || p.archived_at) continue;
+      // Phase 3 projects use status=pending + current_stage; any live linked row is an active install.
+      stageByLeadId.set(p.lead_id, "active-project");
     }
 
     const decorated: CustomerLead[] = customers.map((c) => ({

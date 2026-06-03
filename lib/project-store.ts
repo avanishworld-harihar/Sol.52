@@ -185,6 +185,32 @@ export async function ensureProjectForWonLead(
   return data;
 }
 
+/** Normalize a person/project name for orphan project ↔ won lead matching. */
+function normalizeLinkName(value: string | null | undefined): string {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
+function leadLinkNames(lead: { name?: unknown; consumer_name?: unknown }): Set<string> {
+  const names = new Set<string>();
+  const n = normalizeLinkName(String(lead.name ?? ""));
+  const c = normalizeLinkName(String(lead.consumer_name ?? ""));
+  if (n) names.add(n);
+  if (c) names.add(c);
+  return names;
+}
+
+function projectLinkNames(project: {
+  official_name?: unknown;
+  customer_name?: unknown;
+}): string[] {
+  return [project.official_name, project.customer_name]
+    .map((v) => normalizeLinkName(String(v ?? "")))
+    .filter(Boolean);
+}
+
 /**
  * Repair pass: won CRM leads must have a visible Phase 3 project row.
  * Covers leads marked won before auto-create shipped (e.g. Bharti Gupta).
@@ -210,15 +236,42 @@ export async function syncWonLeadProjects(): Promise<void> {
     .select("lead_id, organization_id")
     .in("lead_id", leadIds);
 
+  const { data: orphanProjects } = await client
+    .from("projects")
+    .select("id, official_name, customer_name")
+    .is("lead_id", null)
+    .is("archived_at", null)
+    .limit(200);
+
   const orgId = await resolveDefaultOrgId();
   const linked = new Map<string, { organization_id: string | null }>();
   for (const p of linkedProjects ?? []) {
     if (p.lead_id) linked.set(String(p.lead_id), { organization_id: p.organization_id as string | null });
   }
 
+  const now = new Date().toISOString();
+
   for (const lead of wonLeads) {
     const id = String(lead.id);
-    const row = linked.get(id);
+    let row = linked.get(id);
+    const names = leadLinkNames(lead);
+
+    if (!row && names.size > 0 && orphanProjects?.length) {
+      const match = orphanProjects.find((p) => {
+        const pNames = projectLinkNames(p);
+        return pNames.some((pn) => names.has(pn));
+      });
+      if (match) {
+        const patch: Record<string, unknown> = { lead_id: id, updated_at: now };
+        if (orgId) patch.organization_id = orgId;
+        const { error: linkErr } = await client.from("projects").update(patch).eq("id", match.id);
+        if (!linkErr) {
+          row = { organization_id: orgId };
+          linked.set(id, row);
+        }
+      }
+    }
+
     const needsCreate = !row;
     const needsOrgRepair = Boolean(orgId && row && !row.organization_id);
     if (!needsCreate && !needsOrgRepair) continue;
