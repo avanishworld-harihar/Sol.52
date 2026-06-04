@@ -1,0 +1,341 @@
+{
+  "generatedAt": "2026-06-04T18:40:00.325Z",
+  "url": "http://localhost:3002/proposal/31c823cc-7dd0-488a-bf6a-7b15ae0c803d",
+  "exportMethod": "Playwright page.pdf() — same Chromium print pipeline as window.print()",
+  "file": "E:\\solar project\\Sol.52\\scripts\\audit-pdf-output\\commercial-school-audit.pdf",
+  "dom": {
+    "imgs": [],
+    "canvases": [],
+    "motionHidden": 0,
+    "pages": 15,
+    "shadows": 71,
+    "gradients": 60,
+    "blur": 7
+  },
+  "analysis": {
+    "totalBytes": 26640703,
+    "totalMb": "25.41",
+    "pageCount": 8,
+    "avgMbPerPage": "3.18",
+    "imageCount": 363,
+    "imageBytes": 24504298,
+    "imageMb": "23.37",
+    "imagePct": "92.0",
+    "rasterLikeCount": 249,
+    "fonts": [
+      "NAAAAA+Consolas-Bold",
+      "QAAAAA+SegoeUI-Bold",
+      "SAAAAA+SegoeUI-Semibold",
+      "VAAAAA+SegoeUI",
+      "JBAAAA+ArialMT",
+      "ACAAAA+ArialMT"
+    ],
+    "fontCount": 6,
+    "topImages": [
+      {
+        "obj": "1 0",
+        "bytes": 664867,
+        "width": 851,
+        "height": 1233,
+        "filter": "FlateDecode",
+        "colorSpace": "DeviceRGB",
+        "bitsPerComponent": "8",
+        "megapixels": "1.05"
+      },
+      {
+        "obj": "55 0",
+        "bytes": 656826,
+        "width": 853,
+        "height": 1231,
+        "filter": "FlateDecode",
+        "colorSpace": "DeviceRGB",
+        "bitsPerComponent": "8",
+        "megapixels": "1.05"
+      },
+      {
+        "obj": "106 0",
+        "bytes": 656826,
+        "width": 853,
+        "height": 1231,
+        "filter": "FlateDecode",
+        "colorSpace": "DeviceRGB",
+        "bitsPerComponent": "8",
+        "megapixels": "1.05"
+      },
+      {
+        "obj": "257 0",
+        "bytes": 656826,
+        "width": 853,
+        "height": 1231,
+        "filter": "FlateDecode",
+        "colorSpace": "DeviceRGB",
+        "bitsPerComponent": "8",
+        "megapixels": "1.05"
+      },
+      {
+        "obj": "301 0",
+        "bytes": 656826,
+        "width": 853,
+        "height": 1231,
+        "filter": "FlateDecode",
+        "colorSpace": "DeviceRGB",
+        "bitsPerComponent": "8",
+        "megapixels": "1.05"
+      },
+      {
+        "obj": "357 0",
+        "bytes": 656826,
+        "width": 853,
+        "height": 1231,
+        "filter": "FlateDecode",
+        "colorSpace": "DeviceRGB",
+        "bitsPerComponent": "8",
+        "megapixels": "1.05"
+      },
+      {
+        "obj": "398 0",
+        "bytes": 656826,
+        "width": 853,
+        "height": 1231,
+        "filter": "FlateDecode",
+        "colorSpace": "DeviceRGB",
+        "bitsPerComponent": "8",
+        "megapixels": "1.05"
+      },
+      {
+        "obj": "471 0",
+        "bytes": 656826,
+        "width": 853,
+        "height": 1231,
+        "filter": "FlateDecode",
+        "colorSpace": "DeviceRGB",
+        "bitsPerComponent": "8",
+        "megapixels": "1.05"
+      },
+      {
+        "obj": "566 0",
+        "bytes": 656826,
+        "width": 853,
+        "height": 1231,
+        "filter": "FlateDecode",
+        "colorSpace": "DeviceRGB",
+        "bitsPerComponent": "8",
+        "megapixels": "1.05"
+      },
+      {
+        "obj": "612 0",
+        "bytes": 656826,
+        "width": 853,
+        "height": 1231,
+        "filter": "FlateDecode",
+        "colorSpace": "DeviceRGB",
+        "bitsPerComponent": "8",
+        "megapixels": "1.05"
+      },
+      {
+        "obj": "681 0",
+        "bytes": 656826,
+        "width": 853,
+        "height": 1231,
+        "filter": "FlateDecode",
+        "colorSpace": "DeviceRGB",
+        "bitsPerComponent": "8",
+        "megapixels": "1.05"
+      },
+      {
+        "obj": "737 0",
+        "bytes": 656826,
+        "width": 853,
+        "height": 1231,
+        "filter": "FlateDecode",
+        "colorSpace": "DeviceRGB",
+        "bitsPerComponent": "8",
+        "megapixels": "1.05"
+      },
+      {
+        "obj": "792 0",
+        "bytes": 656826,
+        "width": 853,
+        "height": 1231,
+        "filter": "FlateDecode",
+        "colorSpace": "DeviceRGB",
+        "bitsPerComponent": "8",
+        "megapixels": "1.05"
+      },
+      {
+        "obj": "824 0",
+        "bytes": 656826,
+        "width": 853,
+        "height": 1231,
+        "filter": "FlateDecode",
+        "colorSpace": "DeviceRGB",
+        "bitsPerComponent": "8",
+        "megapixels": "1.05"
+      },
+      {
+        "obj": "880 0",
+        "bytes": 656826,
+        "width": 853,
+        "height": 1231,
+        "filter": "FlateDecode",
+        "colorSpace": "DeviceRGB",
+        "bitsPerComponent": "8",
+        "megapixels": "1.05"
+      }
+    ],
+    "topContentStreams": [
+      {
+        "obj": "1069 0",
+        "bytes": 32319
+      },
+      {
+        "obj": "224 0",
+        "bytes": 27609
+      },
+      {
+        "obj": "1258 0",
+        "bytes": 26942
+      },
+      {
+        "obj": "867 0",
+        "bytes": 20151
+      },
+      {
+        "obj": "779 0",
+        "bytes": 20112
+      },
+      {
+        "obj": "1187 0",
+        "bytes": 17344
+      },
+      {
+        "obj": "344 0",
+        "bytes": 14855
+      },
+      {
+        "obj": "938 0",
+        "bytes": 14030
+      },
+      {
+        "obj": "458 0",
+        "bytes": 10194
+      },
+      {
+        "obj": "1288 0",
+        "bytes": 8968
+      },
+      {
+        "obj": "3834 0",
+        "bytes": 8362
+      },
+      {
+        "obj": "1105 0",
+        "bytes": 8215
+      },
+      {
+        "obj": "937 0",
+        "bytes": 8011
+      },
+      {
+        "obj": "855 0",
+        "bytes": 7837
+      },
+      {
+        "obj": "2741 0",
+        "bytes": 7747
+      },
+      {
+        "obj": "1000 0",
+        "bytes": 7709
+      },
+      {
+        "obj": "75 0",
+        "bytes": 6904
+      },
+      {
+        "obj": "1140 0",
+        "bytes": 6611
+      },
+      {
+        "obj": "664 0",
+        "bytes": 6568
+      },
+      {
+        "obj": "288 0",
+        "bytes": 6230
+      }
+    ],
+    "likelyFullPageRasters": 1
+  },
+  "pageBreakdown": [
+    {
+      "page": 1,
+      "section": "Cover",
+      "estImageKb": 649,
+      "estTotalKb": 729,
+      "dimensions": "851×1233",
+      "filter": "FlateDecode"
+    },
+    {
+      "page": 2,
+      "section": "Executive Summary",
+      "estImageKb": 641,
+      "estTotalKb": 721,
+      "dimensions": "853×1231",
+      "filter": "FlateDecode"
+    },
+    {
+      "page": 3,
+      "section": "Green Campus",
+      "estImageKb": 641,
+      "estTotalKb": 721,
+      "dimensions": "853×1231",
+      "filter": "FlateDecode"
+    },
+    {
+      "page": 4,
+      "section": "Learning Asset",
+      "estImageKb": 641,
+      "estTotalKb": 721,
+      "dimensions": "853×1231",
+      "filter": "FlateDecode"
+    },
+    {
+      "page": 5,
+      "section": "DCR Comparison",
+      "estImageKb": 641,
+      "estTotalKb": 721,
+      "dimensions": "853×1231",
+      "filter": "FlateDecode"
+    },
+    {
+      "page": 6,
+      "section": "Capacity Scenarios",
+      "estImageKb": 641,
+      "estTotalKb": 721,
+      "dimensions": "853×1231",
+      "filter": "FlateDecode"
+    },
+    {
+      "page": 7,
+      "section": "ROI Dashboard",
+      "estImageKb": 641,
+      "estTotalKb": 721,
+      "dimensions": "853×1231",
+      "filter": "FlateDecode"
+    },
+    {
+      "page": 8,
+      "section": "Financials",
+      "estImageKb": 641,
+      "estTotalKb": 721,
+      "dimensions": "853×1231",
+      "filter": "FlateDecode"
+    }
+  ],
+  "findings": [
+    "Total size 25.41 MB exceeds 10 MB target",
+    "92.0% of PDF is embedded images — likely page rasterization",
+    "1 full-page-scale raster images detected (≥1200×1500px)"
+  ]
+}
