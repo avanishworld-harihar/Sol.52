@@ -3,6 +3,16 @@
  */
 import { readFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
+import {
+  assertLegacyDocumentScriptMutationsAllowed,
+  assertNoLegacyWriteEnvFlags,
+} from "./lib/legacy-document-guard.mjs";
+
+assertNoLegacyWriteEnvFlags("cleanup-bharti-duplicate-docs.mjs");
+assertLegacyDocumentScriptMutationsAllowed(
+  "cleanup-bharti-duplicate-docs.mjs",
+  "delete project_documents rows"
+);
 
 function loadEnvLocal() {
   try {

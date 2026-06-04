@@ -1,0 +1,325 @@
+{
+  "generated_at": "2026-06-04T12:00:00.000Z",
+  "audit_type": "production_safety_and_drop_readiness",
+  "phase": "post_phase_c_e",
+  "method": "read_only_repo_scan",
+  "constraints_respected": {
+    "no_code_changes": true,
+    "no_database_changes": true
+  },
+  "executive_summary": {
+    "production_runtime_safe": true,
+    "api_legacy_io_safe": true,
+    "drop_tables_ready": false,
+    "verdict": "SAFE_TO_RUN_PRODUCTION — legacy tables are orphaned from app I/O. DROP customer_files / project_documents is a separate gated phase (migration + backup + soak + script retirement)."
+  },
+  "verification_checklist": {
+    "1_no_runtime_references_to_legacy_tables": {
+      "pass": true,
+      "detail": "Zero .from('customer_files') or .from('project_documents') in lib/, app/, components/. TypeScript matches are comments and category-mapping docs only."
+    },
+    "2_no_sql_queries_target_legacy_in_runtime": {
+      "pass": true,
+      "detail": "No raw SQL strings referencing customer_files or project_documents in lib/app/components. SQL exists only in supabase/migrations/ and docs/migrations/ (schema history)."
+    },
+    "3_no_api_writes_legacy": {
+      "pass": true,
+      "detail": "All document API routes delegate to customer_assets, project_assets, proposal_assets, asset_links via document-write-router, customer-asset-store, project-document-store, unified-documents-store."
+    },
+    "4_no_api_reads_legacy": {
+      "pass": true,
+      "detail": "app/api has zero identifiers for legacy table names. GET /files returns v2 rows mapped to legacy JSON shape (customerAssetToLegacyFileRow) without querying customer_files."
+    },
+    "5_repo_search_completed": true,
+    "6_classified_inventory": "see occurrences_by_classification",
+    "7_drop_readiness_report": "this file"
+  },
+  "runtime_code": {
+    "customer_files": [
+      {
+        "file": "lib/document-write-router.ts",
+        "lines": [3, 333],
+        "kind": "comment_only",
+        "db_io": false
+      },
+      {
+        "file": "lib/customer-asset-store.ts",
+        "lines": [134],
+        "kind": "comment_only",
+        "db_io": false
+      },
+      {
+        "file": "lib/document-category-registry.ts",
+        "lines": [151],
+        "kind": "comment_only_mapping_helper",
+        "db_io": false,
+        "note": "legacyCustomerFileTypeToCategory maps enum labels, not DB reads"
+      }
+    ],
+    "project_documents": [
+      {
+        "file": "lib/document-write-router.ts",
+        "lines": [3],
+        "kind": "comment_only",
+        "db_io": false
+      },
+      {
+        "file": "lib/document-category-registry.ts",
+        "lines": [163, 196, 205],
+        "kind": "comment_only_mapping_helper",
+        "db_io": false,
+        "note": "legacyProjectDocCategoryToDb / projectDocCategoryToDbCategory — label mapping only"
+      }
+    ],
+    "legacy_feature_flags": [],
+    "removed_symbols_still_present": false,
+    "unified_document_sources": ["customer_assets", "project_assets", "proposal_assets"],
+    "api_routes_traced": [
+      {
+        "route": "GET|POST /api/customers/[id]/files",
+        "read_table": "customer_assets",
+        "write_table": "customer_assets",
+        "legacy_table_io": false
+      },
+      {
+        "route": "POST /api/customers/[id]/files/upload",
+        "write_path": "document-write-router → customer_assets / project_assets / asset_links",
+        "legacy_table_io": false
+      },
+      {
+        "route": "GET /api/customers/[id]/documents",
+        "read_path": "unified-documents-store → customer_assets, project_assets, proposal_assets, asset_links",
+        "legacy_table_io": false
+      },
+      {
+        "route": "GET|POST /api/projects/[id]/documents",
+        "read_path": "project-document-store → listUnifiedProjectDocuments (v2)",
+        "write_path": "document-write-router.writeProjectDocumentUpload → project_assets / customer_assets + asset_links",
+        "legacy_table_io": false
+      },
+      {
+        "route": "GET|PATCH|DELETE /api/projects/[id]/documents/[docId]",
+        "path": "project-document-store resolves docId across project_assets, customer_assets (linked), proposal_assets; archive/update via v2 stores only",
+        "legacy_table_io": false
+      }
+    ],
+    "supabase_from_calls_in_lib": {
+      "document_write_router": ["projects", "customer_assets"],
+      "unified_documents_store": ["projects", "customer_assets", "project_assets", "storage"],
+      "project_document_store": ["projects", "project_assets", "customer_assets", "proposal_assets via stores"],
+      "customer_asset_store": ["customer_assets"],
+      "project_asset_store": ["project_assets"]
+    }
+  },
+  "migration_only": {
+    "customer_files": [
+      "docs/migrations/034_customer_detail_tables.sql — CREATE TABLE, indexes, RLS",
+      "supabase/migrations/048_customer_documents_hub_phase1.sql — COMMENT references legacy write path (historical)"
+    ],
+    "project_documents": [
+      "supabase/migrations/047_project_documents.sql — CREATE/ALTER TABLE, indexes, RLS, conditional empty-table DROP during apply",
+      "supabase/migrations/037_project_site_surveys.sql — COMMENT",
+      "supabase/migrations/038_project_designs.sql — COMMENT",
+      "supabase/migrations/048_customer_documents_hub_phase1.sql — COMMENT"
+    ],
+    "document_migration_map": [
+      "supabase/migrations/049_document_migration_map.sql"
+    ],
+    "drop_statements_in_repo": {
+      "customer_files_drop_migration": false,
+      "project_documents_drop_in_047": "conditional only if table empty at migration apply time",
+      "app_or_script_drop_legacy_tables": false
+    }
+  },
+  "script_only": {
+    "description": "Operational/audit scripts under scripts/ — not loaded by Next.js runtime. Legacy Supabase client access is intentional; mutating scripts require ALLOW_LEGACY_DOCUMENT_SCRIPT_MUTATIONS=true (Phase E).",
+    "customer_files_project_documents_from_calls": [
+      {
+        "file": "scripts/backfill-document-assets.mjs",
+        "access": "read customer_files + project_documents; write customer_assets, project_assets, document_migration_map",
+        "mutates_legacy_tables": false,
+        "guard": "assertNoLegacyWriteEnvFlags"
+      },
+      {
+        "file": "scripts/link-bharti-realworld-validation.mjs",
+        "access": "read/update/insert project_documents; optional insert customer_files",
+        "mutates_legacy_tables": true,
+        "guard": "assertLegacyDocumentScriptMutationsAllowed + assertNoLegacyWriteEnvFlags"
+      },
+      {
+        "file": "scripts/cleanup-bharti-test-documents.mjs",
+        "access": "read; on --execute delete customer_files, archive project_documents",
+        "mutates_legacy_tables": true,
+        "guard": "on execute when legacy targets present"
+      },
+      {
+        "file": "scripts/cleanup-bharti-duplicate-docs.mjs",
+        "access": "read + delete project_documents",
+        "mutates_legacy_tables": true,
+        "guard": "assertLegacyDocumentScriptMutationsAllowed"
+      },
+      {
+        "file": "scripts/phase1-validation-audit.mjs",
+        "access": "read/count only",
+        "mutates_legacy_tables": false
+      },
+      {
+        "file": "scripts/phase2-validation-audit.mjs",
+        "access": "read/count; may POST via HTTP API (v2)",
+        "mutates_legacy_tables": false
+      },
+      {
+        "file": "scripts/phase3-validation-audit.mjs",
+        "access": "read/count only",
+        "mutates_legacy_tables": false
+      },
+      {
+        "file": "scripts/phase3-manual-e2e.mjs",
+        "access": "read/count only",
+        "mutates_legacy_tables": false
+      },
+      {
+        "file": "scripts/phase4-data-verification.mjs",
+        "access": "read only",
+        "mutates_legacy_tables": false
+      },
+      {
+        "file": "scripts/phase4-stabilization-audit.mjs",
+        "access": "read/count; reports legacy soak",
+        "mutates_legacy_tables": false
+      },
+      {
+        "file": "scripts/phase4-hub-verification.mjs",
+        "access": "HTTP hub API only; checks DOCUMENTS_HUB_LEGACY_READ env (obsolete for app)",
+        "mutates_legacy_tables": false
+      },
+      {
+        "file": "scripts/phase5a-validation-audit.mjs",
+        "access": "HTTP hub API; sets legacy flag strings in report only",
+        "mutates_legacy_tables": false
+      },
+      {
+        "file": "scripts/verify-documents-3a51.mjs",
+        "access": "read project_documents for schema check",
+        "mutates_legacy_tables": false
+      },
+      {
+        "file": "scripts/legacy-retirement-verify.mjs",
+        "access": "static scan only",
+        "mutates_legacy_tables": false
+      },
+      {
+        "file": "scripts/lib/legacy-document-guard.mjs",
+        "access": "table name constants + env checks",
+        "mutates_legacy_tables": false
+      }
+    ],
+    "legacy_feature_flag_references_in_scripts": [
+      "scripts/phase4-stabilization-audit.mjs — reads env for audit report",
+      "scripts/phase4-hub-verification.mjs — DOCUMENTS_HUB_LEGACY_READ check (script-only)",
+      "scripts/phase5a-validation-audit.mjs — hardcoded false in audit payload",
+      "scripts/lib/legacy-document-guard.mjs — rejects DOCUMENTS_HUB_V2_WRITE=false"
+    ]
+  },
+  "docs_only": {
+    "approximate_file_counts": {
+      "customer_files_string_matches": 45,
+      "project_documents_string_matches": 52,
+      "legacy_flag_matches": 35
+    },
+    "note": "Matches are architecture handoffs, phase validation reports, verification JSON snapshots, soak logs, and master plan references. None execute at runtime.",
+    "stale_doc_warnings": [
+      "docs/architecture/customer-documents-hub-phase5a-rollback.md — describes re-enabling DOCUMENTS_HUB_LEGACY_READ (removed from app)",
+      "docs/architecture/customer-documents-hub-handoff-phase2.md — references deleted documents-hub-write-config.ts",
+      "docs/verification/.../phase4-audit-report.json — pre-Phase-C flag expectations"
+    ]
+  },
+  "verification_artifacts": {
+    "docs_only": [
+      "docs/verification/customer-documents-hub/legacy-retirement/phase-c-e-verification.json",
+      "docs/verification/customer-documents-hub/legacy-retirement/legacy-rows-investigation.json"
+    ]
+  },
+  "legacy_feature_flags": {
+    "runtime_code": {
+      "DOCUMENTS_HUB_LEGACY_READ": 0,
+      "DOCUMENTS_HUB_V2_WRITE": 0,
+      "NEXT_PUBLIC_DOCUMENTS_HUB_LEGACY_READ": 0
+    },
+    "env_example": {
+      "DOCUMENTS_HUB_LEGACY_READ": 0,
+      "DOCUMENTS_HUB_V2_WRITE": 0,
+      "NEXT_PUBLIC_DOCUMENTS_HUB_LEGACY_READ": 0,
+      "note": ".env.example documents ALLOW_LEGACY_DOCUMENT_SCRIPT_MUTATIONS for scripts only"
+    },
+    "deleted_modules": [
+      "lib/documents-hub-read-config.ts",
+      "lib/documents-hub-write-config.ts",
+      "lib/documents-hub-legacy-ui-config.ts"
+    ],
+    "remaining_active_config": "DOCUMENTS_HUB_PROPOSAL_PERSIST (proposal_assets only — unrelated to legacy tables)"
+  },
+  "evidence_removed_paths": [
+    "fetchLegacyCustomerFiles / fetchLegacyProjectDocuments — absent from lib/",
+    "legacyInsert / insertProjectDocument — absent from lib/ and app/",
+    "isDocumentsHubLegacyReadEnabled / isDocumentsHubV2WriteEnabled — absent from lib/ and app/",
+    "UnifiedDocumentSource no longer includes customer_files or project_documents",
+    "components/ — zero legacy table string matches"
+  ],
+  "drop_readiness": {
+    "status": "NOT_READY",
+    "runtime_blockers": [],
+    "operational_blockers": [
+      {
+        "id": "legacy_rows_in_database",
+        "severity": "high",
+        "detail": "Historical rows remain in customer_files, project_documents, document_migration_map. DROP requires explicit migration + backup after data audit."
+      },
+      {
+        "id": "orphan_project_documents",
+        "severity": "medium",
+        "detail": "docs/verification/.../remaining-orphan-rows-report.json documents project_documents on projects with lead_id IS NULL — not visible in v2 hub; must migrate or archive before DROP."
+      },
+      {
+        "id": "script_legacy_mutators",
+        "severity": "medium",
+        "detail": "Four scripts can still mutate legacy tables when ALLOW_LEGACY_DOCUMENT_SCRIPT_MUTATIONS=true. Retire or archive before production DROP."
+      },
+      {
+        "id": "document_migration_map",
+        "severity": "medium",
+        "detail": "Backfill and cleanup scripts read/write document_migration_map. DROP legacy tables should include map retirement strategy."
+      },
+      {
+        "id": "soak_and_ops_signoff",
+        "severity": "medium",
+        "detail": "legacy-write-soak-log.md criterion: 14–30 days zero new legacy rows with v2-only app — ops signoff required."
+      },
+      {
+        "id": "stale_documentation",
+        "severity": "low",
+        "detail": "Architecture docs still describe rollback via removed flags; update before DROP communication to avoid operator error."
+      }
+    ],
+    "recommended_pre_drop_sequence": [
+      "1. Confirm production env has no DOCUMENTS_HUB_* legacy flags set",
+      "2. Export row counts + storage orphan audit for customer_files, project_documents, document_migration_map",
+      "3. Complete backfill for unmigrated legacy rows (if any) or accept archival",
+      "4. Link or archive orphan project_documents on lead_id IS NULL projects",
+      "5. Archive/disable mutating ops scripts",
+      "6. Ops soak signoff (14–30d zero legacy writes)",
+      "7. New migration: DROP or rename legacy tables + document_migration_map (explicit approval)",
+      "8. Remove comment-only mapping helpers or rename for clarity (optional cleanup)"
+    ]
+  },
+  "production_safety_scorecard": {
+    "runtime_read_legacy": "PASS — none",
+    "runtime_write_legacy": "PASS — none",
+    "api_read_legacy": "PASS — none",
+    "api_write_legacy": "PASS — none",
+    "sql_in_application_code": "PASS — none",
+    "feature_flags_in_runtime": "PASS — removed",
+    "accidental_script_mutation_risk": "MITIGATED — Phase E guard",
+    "overall": "PASS"
+  }
+}

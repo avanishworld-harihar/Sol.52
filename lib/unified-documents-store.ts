@@ -1,20 +1,12 @@
 /**
- * Customer Documents Hub — read-only unified index (Phase 1).
- * Merges customer_assets + project_assets + proposal_assets (+ legacy when enabled).
+ * Customer Documents Hub — read-only unified index (v2 asset tables only).
  */
 
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
-import { isDocumentsHubLegacyReadEnabled } from "@/lib/documents-hub-read-config";
 import { createProposalAssetSignedUrl } from "@/lib/proposal-asset-upload";
 import { createProjectDocumentSignedUrl } from "@/lib/project-document-upload";
 import { listProposalAssetsByCustomer } from "@/lib/proposal-asset-store";
-import {
-  getLabelForCategoryDb,
-  legacyCustomerFileTypeToCategory,
-  legacyProjectDocCategoryToDb,
-  legacyProjectDocDisplayOwner,
-  type DocumentCategoryDb,
-} from "@/lib/document-category-registry";
+import { getLabelForCategoryDb, type DocumentCategoryDb } from "@/lib/document-category-registry";
 import { resolveDefaultOrgId } from "@/lib/project-store";
 import type {
   UnifiedDocumentRow,
@@ -151,7 +143,6 @@ async function fetchNewCustomerAssets(
       download_url: downloadUrl,
       link_role: null,
       source: "customer_assets",
-      legacy: false,
       notes: r.notes != null ? String(r.notes) : null,
     });
   }
@@ -190,7 +181,6 @@ async function fetchProposalAssets(
       download_url: downloadUrl,
       link_role: null,
       source: "proposal_assets",
-      legacy: false,
     });
   }
   return rows;
@@ -242,171 +232,19 @@ async function fetchNewProjectAssets(
       download_url: downloadUrl,
       link_role: null,
       source: "project_assets",
-      legacy: false,
     });
   }
   return rows;
 }
 
-async function fetchLegacyCustomerFiles(customerId: string): Promise<UnifiedDocumentRow[]> {
-  const client = db();
-  if (!client) return [];
-  const { data, error } = await client
-    .from("customer_files")
-    .select("*")
-    .eq("lead_id", customerId)
-    .order("created_at", { ascending: false })
-    .limit(500);
-  if (error) {
-    if (error.code === "42P01") return [];
-    return [];
-  }
-
-  return (data ?? []).map((r) => {
-    const category = legacyCustomerFileTypeToCategory(String(r.file_type));
-    return {
-      id: `legacy-cf-${r.id}`,
-      owner: "customer" as const,
-      category,
-      category_label: getLabelForCategoryDb(category),
-      filename: String(r.file_name),
-      mime_type: r.mime_type != null ? String(r.mime_type) : null,
-      size_bytes: Math.round(Number(r.file_size_kb) || 0) * 1024,
-      customer_id: customerId,
-      project_id: null,
-      project_label: null,
-      proposal_id: null,
-      proposal_revision: null,
-      uploaded_at: String(r.created_at),
-      download_url: String(r.file_url),
-      link_role: null,
-      source: "customer_files" as const,
-      legacy: true,
-    };
-  });
-}
-
-async function fetchLegacyProjectDocuments(
-  customerId: string,
-  projectLabels: Map<string, string>
-): Promise<UnifiedDocumentRow[]> {
-  const client = db();
-  if (!client) return [];
-  const { data: projects } = await client
-    .from("projects")
-    .select("id")
-    .eq("lead_id", customerId)
-    .limit(50);
-  const projectIds = (projects ?? []).map((p) => String(p.id));
-  if (projectIds.length === 0) return [];
-
-  const { data, error } = await client
-    .from("project_documents")
-    .select("*")
-    .in("project_id", projectIds)
-    .is("archived_at", null)
-    .order("created_at", { ascending: false })
-    .limit(500);
-  if (error) {
-    if (error.code === "42P01") return [];
-    return [];
-  }
-
-  const rows: UnifiedDocumentRow[] = [];
-  for (const r of data ?? []) {
-    const rawCat = String(r.doc_category ?? "other");
-    const mapped = legacyProjectDocCategoryToDb(rawCat) ?? "sld";
-    const owner = legacyProjectDocDisplayOwner(rawCat);
-    const path = String(r.storage_path ?? "");
-    const downloadUrl = path ? await signedProjectPath(path) : null;
-    const projectId = String(r.project_id);
-    rows.push({
-      id: `legacy-pd-${r.id}`,
-      owner,
-      category: mapped,
-      category_label: getLabelForCategoryDb(mapped),
-      filename: String(r.filename),
-      mime_type: r.mime_type != null ? String(r.mime_type) : null,
-      size_bytes: Number(r.size_bytes) || 0,
-      customer_id: customerId,
-      project_id: projectId,
-      project_label: projectLabels.get(projectId) ?? null,
-      proposal_id: null,
-      proposal_revision: null,
-      uploaded_at: String(r.created_at),
-      download_url: downloadUrl,
-      link_role: null,
-      source: "project_documents",
-      legacy: true,
-    });
-  }
-  return rows;
-}
-
-async function fetchLegacyProjectDocumentsForProject(
-  projectId: string,
-  projectLabel: string,
-  customerId: string
-): Promise<UnifiedDocumentRow[]> {
-  const client = db();
-  if (!client) return [];
-
-  const { data, error } = await client
-    .from("project_documents")
-    .select("*")
-    .eq("project_id", projectId)
-    .is("archived_at", null)
-    .order("created_at", { ascending: false })
-    .limit(500);
-  if (error) {
-    if (error.code === "42P01") return [];
-    return [];
-  }
-
-  const rows: UnifiedDocumentRow[] = [];
-  for (const r of data ?? []) {
-    const rawCat = String(r.doc_category ?? "other");
-    const mapped = legacyProjectDocCategoryToDb(rawCat) ?? "sld";
-    const owner = legacyProjectDocDisplayOwner(rawCat);
-    const path = String(r.storage_path ?? "");
-    const downloadUrl = path ? await signedProjectPath(path) : null;
-    rows.push({
-      id: `legacy-pd-${r.id}`,
-      owner,
-      category: mapped,
-      category_label: getLabelForCategoryDb(mapped),
-      filename: String(r.filename),
-      mime_type: r.mime_type != null ? String(r.mime_type) : null,
-      size_bytes: Number(r.size_bytes) || 0,
-      customer_id: customerId,
-      project_id: projectId,
-      project_label: projectLabel,
-      proposal_id: null,
-      proposal_revision: null,
-      uploaded_at: String(r.created_at),
-      download_url: downloadUrl,
-      link_role: null,
-      source: "project_documents",
-      legacy: true,
-    });
-  }
-  return rows;
-}
-function dedupeRows(rows: UnifiedDocumentRow[]): UnifiedDocumentRow[] {
+function dedupeRowsBySourceId(rows: UnifiedDocumentRow[]): UnifiedDocumentRow[] {
   const seen = new Set<string>();
   const out: UnifiedDocumentRow[] = [];
   const sorted = [...rows].sort(
     (a, b) => new Date(b.uploaded_at).getTime() - new Date(a.uploaded_at).getTime()
   );
   for (const row of sorted) {
-    if (!row.legacy) {
-      const key = `${row.source}:${row.id}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      out.push(row);
-      continue;
-    }
-    const key = `legacy:${row.project_id ?? "c"}:${row.category}:${row.filename}:${row.uploaded_at.slice(0, 10)}`;
+    const key = `${row.source}:${row.id}`;
     if (seen.has(key)) continue;
     seen.add(key);
     out.push(row);
@@ -421,16 +259,13 @@ export async function listUnifiedCustomerDocuments(
   const orgId = await resolveDefaultOrgId();
   const projectLabels = await loadProjectLabels(customerId);
 
-  const legacyRead = isDocumentsHubLegacyReadEnabled();
-  const [a, b, pa, c, d] = await Promise.all([
+  const [a, b, pa] = await Promise.all([
     fetchNewCustomerAssets(customerId, orgId),
     fetchNewProjectAssets(customerId, orgId, projectLabels),
     fetchProposalAssets(customerId, orgId),
-    legacyRead ? fetchLegacyCustomerFiles(customerId) : Promise.resolve([]),
-    legacyRead ? fetchLegacyProjectDocuments(customerId, projectLabels) : Promise.resolve([]),
   ]);
 
-  let merged = legacyRead ? dedupeRows([...a, ...b, ...pa, ...c, ...d]) : [...a, ...b, ...pa];
+  let merged = dedupeRowsBySourceId([...a, ...b, ...pa]);
   merged = merged.filter((row) => matchesFilters(row, query));
   merged.sort(
     (x, y) => new Date(y.uploaded_at).getTime() - new Date(x.uploaded_at).getTime()
@@ -521,24 +356,18 @@ export async function listUnifiedProjectDocuments(
     String(project.customer_name ?? "").trim() ||
     "Project";
 
-  const legacyRead = isDocumentsHubLegacyReadEnabled();
   const rows: UnifiedDocumentRow[] = [];
 
   if (leadId) {
     const projectLabels = new Map([[projectId, projectLabel]]);
-    const [customerRows, projectRows, proposalRows, legacyPd, legacyCf] = await Promise.all([
+    const [customerRows, projectRows, proposalRows] = await Promise.all([
       fetchNewCustomerAssets(leadId, orgId),
       fetchNewProjectAssets(leadId, orgId, projectLabels),
       fetchProposalAssets(leadId, orgId),
-      legacyRead ? fetchLegacyProjectDocuments(leadId, projectLabels) : Promise.resolve([]),
-      legacyRead ? fetchLegacyCustomerFiles(leadId) : Promise.resolve([]),
     ]);
 
-    rows.push(...customerRows, ...proposalRows, ...legacyCf);
-    rows.push(
-      ...projectRows.filter((r) => r.project_id === projectId),
-      ...legacyPd.filter((r) => r.project_id === projectId)
-    );
+    rows.push(...customerRows, ...proposalRows);
+    rows.push(...projectRows.filter((r) => r.project_id === projectId));
   } else {
     const orgIdOnly = orgId;
     let queryPa = client
@@ -571,38 +400,16 @@ export async function listUnifiedProjectDocuments(
         download_url: downloadUrl,
         link_role: null,
         source: "project_assets",
-        legacy: false,
       });
-    }
-    if (legacyRead) {
-      rows.push(
-        ...(await fetchLegacyProjectDocumentsForProject(projectId, projectLabel, ""))
-      );
     }
   }
 
-  const deduped = legacyRead ? dedupeRows(rows) : dedupeRowsBySourceId(rows);
+  const deduped = dedupeRowsBySourceId(rows);
   const filtered = deduped
     .filter((row) => matchesProjectQuery(row, query, projectId))
     .sort((a, b) => new Date(b.uploaded_at).getTime() - new Date(a.uploaded_at).getTime());
 
   return { items: filtered, summary: summarizeProjectDocuments(filtered) };
-}
-
-/** Prefer newest row per source:id (no legacy dedupe key collapse). */
-function dedupeRowsBySourceId(rows: UnifiedDocumentRow[]): UnifiedDocumentRow[] {
-  const seen = new Set<string>();
-  const out: UnifiedDocumentRow[] = [];
-  const sorted = [...rows].sort(
-    (a, b) => new Date(b.uploaded_at).getTime() - new Date(a.uploaded_at).getTime()
-  );
-  for (const row of sorted) {
-    const key = `${row.source}:${row.id}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    out.push(row);
-  }
-  return out;
 }
 
 export async function getUnifiedProjectDocumentsSummary(

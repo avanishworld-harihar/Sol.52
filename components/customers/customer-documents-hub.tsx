@@ -13,20 +13,20 @@ import {
   uploadCustomerHubDocument,
 } from "@/lib/customer-documents-client";
 import {
-  CUSTOMER_HUB_CATEGORIES,
-  countByCustomerHubCategory,
-  customerHubUploadAccept,
-  unifiedRowMatchesCustomerHubCategory,
-  type CustomerHubCategoryId,
-  type CustomerHubUploadCategory,
+  HUB_DOCUMENT_CATEGORY_CHIPS,
+  countByHubCategoryFromUnifiedRows,
+  hubUploadAccept,
+  unifiedRowMatchesHubCategory,
+  type HubDocumentCategoryFilter,
 } from "@/lib/documents-hub-ui-categories";
 import type { UnifiedDocumentRow } from "@/lib/unified-documents-types";
+import type { ProjectDocumentCategory } from "@/lib/project-document-types";
 
 export function CustomerDocumentsHub({ customerId }: { customerId: string }) {
   const toast = useToast();
   const [search, setSearch] = useState("");
   const [searchDebounced, setSearchDebounced] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<CustomerHubCategoryId>("all");
+  const [categoryFilter, setCategoryFilter] = useState<HubDocumentCategoryFilter>("all");
   const [cursors, setCursors] = useState<string[]>([]);
   const [extraItems, setExtraItems] = useState<UnifiedDocumentRow[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -66,17 +66,17 @@ export function CustomerDocumentsHub({ customerId }: { customerId: string }) {
       categoryFilter === "all" && !searchDebounced
         ? allItems
         : (countData?.items ?? allItems);
-    return source.filter((row) => unifiedRowMatchesCustomerHubCategory(row, categoryFilter));
+    return source.filter((row) => unifiedRowMatchesHubCategory(row, categoryFilter));
   }, [allItems, countData?.items, categoryFilter, searchDebounced]);
 
   const counts = useMemo(
-    () => countByCustomerHubCategory(countData?.items ?? []),
+    () => countByHubCategoryFromUnifiedRows(countData?.items ?? []),
     [countData?.items]
   );
 
   const chips = useMemo(
     () =>
-      CUSTOMER_HUB_CATEGORIES.map((c) => ({
+      HUB_DOCUMENT_CATEGORY_CHIPS.map((c) => ({
         id: c.id,
         label: c.label,
         count: counts[c.id] ?? 0,
@@ -84,7 +84,7 @@ export function CustomerDocumentsHub({ customerId }: { customerId: string }) {
     [counts]
   );
 
-  const activeCategory = CUSTOMER_HUB_CATEGORIES.find((c) => c.id === categoryFilter);
+  const activeCategory = HUB_DOCUMENT_CATEGORY_CHIPS.find((c) => c.id === categoryFilter);
   const canUpload = categoryFilter !== "all" && activeCategory?.uploadable;
 
   const refreshAll = useCallback(async () => {
@@ -112,7 +112,7 @@ export function CustomerDocumentsHub({ customerId }: { customerId: string }) {
       const res = await uploadCustomerHubDocument(
         customerId,
         file,
-        categoryFilter as CustomerHubUploadCategory
+        categoryFilter as ProjectDocumentCategory
       );
       if (!res.ok) throw new Error(res.error ?? "upload_failed");
       toast.success("Uploaded", file.name);
@@ -147,7 +147,7 @@ export function CustomerDocumentsHub({ customerId }: { customerId: string }) {
         chips={chips}
         activeId={categoryFilter}
         onSelect={(id) => {
-          setCategoryFilter(id as CustomerHubCategoryId);
+          setCategoryFilter(id as HubDocumentCategoryFilter);
           setCursors([]);
           setExtraItems([]);
         }}
@@ -156,7 +156,7 @@ export function CustomerDocumentsHub({ customerId }: { customerId: string }) {
       {canUpload && activeCategory ? (
         <HubCategoryUpload
           categoryLabel={activeCategory.label}
-          accept={customerHubUploadAccept(categoryFilter as CustomerHubUploadCategory)}
+          accept={hubUploadAccept(categoryFilter as ProjectDocumentCategory)}
           uploading={uploading}
           onFile={handleUpload}
         />

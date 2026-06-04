@@ -1,5 +1,8 @@
 "use client";
 
+import { useCallback, useMemo, useState } from "react";
+import useSWR from "swr";
+import { FolderOpen, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -8,14 +11,11 @@ import { HubCategoryChips } from "@/components/documents/hub-category-chips";
 import { HubCategoryUpload } from "@/components/documents/hub-category-upload";
 import { HubDocumentCard } from "@/components/documents/hub-document-card";
 import { revalidateProjectHubCaches } from "@/lib/project-hub-cache";
+import type { ProjectDocumentCategory } from "@/lib/project-document-types";
 import {
-  PROJECT_DOCUMENT_CATEGORIES,
-  PROJECT_DOCUMENT_CATEGORY_LABELS,
-  type ProjectDocumentCategory,
-} from "@/lib/project-document-types";
-import {
-  countByProjectDocCategory,
-  projectHubUploadAccept,
+  HUB_DOCUMENT_CATEGORY_CHIPS,
+  countByHubCategoryFromProjectDocs,
+  hubUploadAccept,
 } from "@/lib/documents-hub-ui-categories";
 import {
   archiveProjectDocument,
@@ -27,9 +27,6 @@ import {
 } from "@/lib/project-api-client";
 import { cn } from "@/lib/utils";
 import type { DocumentOwner } from "@/lib/document-category-registry";
-import { FolderOpen, Loader2, RefreshCw } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
-import useSWR from "swr";
 
 function inferOwner(doc: ProjectDocument): DocumentOwner {
   if (doc.owner === "customer" || doc.owner === "project" || doc.owner === "proposal") {
@@ -69,19 +66,19 @@ export function ProjectHubDocumentsTab({
   }, [mutate, project.id]);
 
   const counts = useMemo(
-    () => countByProjectDocCategory(documents ?? []),
+    () => countByHubCategoryFromProjectDocs(documents ?? []),
     [documents]
   );
 
-  const chips = useMemo(() => {
-    const all = [{ id: "all", label: "All", count: counts.all ?? 0 }];
-    const rest = PROJECT_DOCUMENT_CATEGORIES.map((cat) => ({
-      id: cat,
-      label: PROJECT_DOCUMENT_CATEGORY_LABELS[cat],
-      count: counts[cat] ?? 0,
-    }));
-    return [...all, ...rest];
-  }, [counts]);
+  const chips = useMemo(
+    () =>
+      HUB_DOCUMENT_CATEGORY_CHIPS.map((c) => ({
+        id: c.id,
+        label: c.label,
+        count: counts[c.id] ?? 0,
+      })),
+    [counts]
+  );
 
   const filtered = useMemo(() => {
     const list = documents ?? [];
@@ -89,11 +86,9 @@ export function ProjectHubDocumentsTab({
     return list.filter((d) => d.doc_category === categoryFilter);
   }, [documents, categoryFilter]);
 
-  const canUpload = categoryFilter !== "all";
-  const categoryLabel =
-    categoryFilter === "all"
-      ? ""
-      : PROJECT_DOCUMENT_CATEGORY_LABELS[categoryFilter as ProjectDocumentCategory];
+  const activeChip = HUB_DOCUMENT_CATEGORY_CHIPS.find((c) => c.id === categoryFilter);
+  const canUpload = categoryFilter !== "all" && activeChip?.uploadable;
+  const categoryLabel = activeChip?.label ?? "";
 
   async function handleUpload(file: File) {
     if (categoryFilter === "all") return;
@@ -179,10 +174,10 @@ export function ProjectHubDocumentsTab({
         onSelect={(id) => setCategoryFilter(id as ProjectDocumentCategory | "all")}
       />
 
-      {canUpload ? (
+      {canUpload && activeChip ? (
         <HubCategoryUpload
           categoryLabel={categoryLabel}
-          accept={projectHubUploadAccept(categoryFilter as ProjectDocumentCategory)}
+          accept={hubUploadAccept(categoryFilter as ProjectDocumentCategory)}
           uploading={uploading}
           onFile={handleUpload}
         />

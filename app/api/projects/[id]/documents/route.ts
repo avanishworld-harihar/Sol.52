@@ -4,10 +4,8 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { logDocumentUploaded } from "@/lib/project-activity-logger";
-import { uploadProjectDocumentFile } from "@/lib/project-document-upload";
 import {
   getProjectOrgContext,
-  insertProjectDocument,
   listProjectDocuments,
   getProjectDocumentSummary,
 } from "@/lib/project-document-store";
@@ -177,29 +175,6 @@ export async function POST(req: NextRequest, ctx: RouteCtx) {
       notes,
       linkedEntityType,
       linkedEntityId,
-      legacyInsert: async (storagePath, documentId) => {
-        const uploaded = await uploadProjectDocumentFile({
-          storagePath,
-          fileBuffer: buffer,
-          mimeType,
-        });
-        if (!uploaded.ok) return null;
-        const row = await insertProjectDocument({
-          organizationId: orgId,
-          projectId,
-          docCategory,
-          stageAtUpload: ctxProject.project.current_stage,
-          storagePath,
-          filename: file.name || "upload",
-          mimeType,
-          sizeBytes: file.size,
-          uploadedById,
-          notes,
-          linkedEntityType,
-          linkedEntityId,
-        });
-        return row as unknown as Record<string, unknown> | null;
-      },
     });
 
     if (!written.ok) {

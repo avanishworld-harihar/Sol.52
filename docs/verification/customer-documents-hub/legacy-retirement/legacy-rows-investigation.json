@@ -1,0 +1,102 @@
+{
+  "generated_at": "2026-06-04T07:29:19.705Z",
+  "soak_window": {
+    "days": 14,
+    "since_iso": "2026-05-21T07:29:18.954Z"
+  },
+  "project_documents": {
+    "total": 5,
+    "in_14d_window": 5,
+    "on_orphan_projects": 0,
+    "likely_test_filenames": 5,
+    "rows": [
+      {
+        "id": "f0e385fb-0279-408b-a9f1-7bceb5d9db22",
+        "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46",
+        "doc_category": "meter_photo",
+        "filename": "phase2-audit-METER_PHOTO.jpg",
+        "storage_path": "4d851d8d-0079-4b23-ab72-864fb769eaf1/3cfd6369-4d9a-45d3-8c90-008de6c62a46/802ca5e9-f32e-4878-b213-127cc15f165a.jpg",
+        "created_at": "2026-06-03T10:43:04.161153+00:00",
+        "archived_at": "2026-06-03T14:38:04.873+00:00",
+        "organization_id": "4d851d8d-0079-4b23-ab72-864fb769eaf1",
+        "project_lead_id": "eead2c0a-8f20-4c7a-8128-ce8fff874834",
+        "project_customer_name": "bharti gupta",
+        "project_created_at": "2026-05-31T18:36:35.303371",
+        "in_14d_window": true,
+        "orphan_project": false,
+        "likely_test_file": true
+      },
+      {
+        "id": "05ac42ce-46fb-454f-9181-5f5ee38df52b",
+        "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46",
+        "doc_category": "roof_photo",
+        "filename": "phase2-audit-ROOF_PHOTO.jpg",
+        "storage_path": "4d851d8d-0079-4b23-ab72-864fb769eaf1/3cfd6369-4d9a-45d3-8c90-008de6c62a46/e495e4b7-8596-41a9-95ef-99b4feac3729.jpg",
+        "created_at": "2026-06-03T10:43:02.811086+00:00",
+        "archived_at": "2026-06-03T14:38:04.873+00:00",
+        "organization_id": "4d851d8d-0079-4b23-ab72-864fb769eaf1",
+        "project_lead_id": "eead2c0a-8f20-4c7a-8128-ce8fff874834",
+        "project_customer_name": "bharti gupta",
+        "project_created_at": "2026-05-31T18:36:35.303371",
+        "in_14d_window": true,
+        "orphan_project": false,
+        "likely_test_file": true
+      },
+      {
+        "id": "dc52acca-876f-4b33-b9fe-d0f1781504b2",
+        "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46",
+        "doc_category": "sld",
+        "filename": "mgr-upload.jpg",
+        "storage_path": "4d851d8d-0079-4b23-ab72-864fb769eaf1/30b286d8-7993-49e5-8045-8c54d8578ac4/0a949823-4da3-48ff-9fba-17ecf28f9bea.jpg",
+        "created_at": "2026-06-02T15:41:56.042626+00:00",
+        "archived_at": "2026-06-03T14:38:04.873+00:00",
+        "organization_id": "4d851d8d-0079-4b23-ab72-864fb769eaf1",
+        "project_lead_id": "eead2c0a-8f20-4c7a-8128-ce8fff874834",
+        "project_customer_name": "bharti gupta",
+        "project_created_at": "2026-05-31T18:36:35.303371",
+        "in_14d_window": true,
+        "orphan_project": false,
+        "likely_test_file": true
+      },
+      {
+        "id": "14832c5c-1566-48cb-9690-94fac85e623f",
+        "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46",
+        "doc_category": "meter_photo",
+        "filename": "meter-test.jpg",
+        "storage_path": "4d851d8d-0079-4b23-ab72-864fb769eaf1/393ef93e-a90e-4c53-9cf7-ef541dcd632d/f42276ea-8846-4923-894a-ff864d359aba.jpg",
+        "created_at": "2026-06-02T15:26:17.058125+00:00",
+        "archived_at": "2026-06-03T14:38:04.873+00:00",
+        "organization_id": "4d851d8d-0079-4b23-ab72-864fb769eaf1",
+        "project_lead_id": "eead2c0a-8f20-4c7a-8128-ce8fff874834",
+        "project_customer_name": "bharti gupta",
+        "project_created_at": "2026-05-31T18:36:35.303371",
+        "in_14d_window": true,
+        "orphan_project": false,
+        "likely_test_file": true
+      },
+      {
+        "id": "e8b9a867-8b0d-4231-b6b0-c58cf0c6c9ed",
+        "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46",
+        "doc_category": "roof_photo",
+        "filename": "roof-test.jpg",
+        "storage_path": "4d851d8d-0079-4b23-ab72-864fb769eaf1/393ef93e-a90e-4c53-9cf7-ef541dcd632d/4b04621c-51af-437c-be3a-8c7c1abff36a.jpg",
+        "created_at": "2026-06-02T15:26:15.895697+00:00",
+        "archived_at": "2026-06-03T14:38:04.873+00:00",
+        "organization_id": "4d851d8d-0079-4b23-ab72-864fb769eaf1",
+        "project_lead_id": "eead2c0a-8f20-4c7a-8128-ce8fff874834",
+        "project_customer_name": "bharti gupta",
+        "project_created_at": "2026-05-31T18:36:35.303371",
+        "in_14d_window": true,
+        "orphan_project": false,
+        "likely_test_file": true
+      }
+    ]
+  },
+  "customer_files": {
+    "total": 0,
+    "rows": []
+  },
+  "interpretation": [
+    "All project_documents rows have created_at inside the 14-day soak window — metric counts entire legacy table age, not necessarily 5 new writes during soak."
+  ]
+}

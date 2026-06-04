@@ -1,6 +1,6 @@
 # Phase 5B — Unified Project Documents Validation
 
-Generated: 2026-06-04T05:05:00.377Z
+Generated: 2026-06-04T06:12:13.011Z
 
 ## Scope
 - **Option A:** Project hub reads `project_assets` + linked customer `customer_assets` + `proposal_assets`

@@ -8,6 +8,10 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
+import {
+  assertLegacyDocumentScriptMutationsAllowed,
+  assertNoLegacyWriteEnvFlags,
+} from "./lib/legacy-document-guard.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = join(__dirname, "..", "docs", "verification", "customer-documents-hub", "phase5a");
@@ -127,6 +131,16 @@ const allV2Ids = [
 ];
 
 if (execute) {
+  assertNoLegacyWriteEnvFlags("cleanup-bharti-test-documents.mjs");
+  const touchesLegacy =
+    report.to_delete_legacy.customer_files.length > 0 ||
+    report.to_delete_legacy.project_documents.length > 0;
+  if (touchesLegacy) {
+    assertLegacyDocumentScriptMutationsAllowed(
+      "cleanup-bharti-test-documents.mjs",
+      "delete/archive customer_files or project_documents"
+    );
+  }
   for (const id of allV2Ids) {
     await sb.from("asset_links").delete().eq("asset_id", id);
     report.asset_links_removed += 1;

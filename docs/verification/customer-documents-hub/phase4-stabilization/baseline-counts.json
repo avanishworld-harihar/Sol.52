@@ -1,6 +1,6 @@
 {
   "customer_assets": {
-    "count": 23,
+    "count": 30,
     "error": null
   },
   "project_assets": {
@@ -8,7 +8,7 @@
     "error": null
   },
   "asset_links": {
-    "count": 4,
+    "count": 7,
     "error": null
   },
   "document_migration_map": {
@@ -16,15 +16,15 @@
     "error": ""
   },
   "proposal_assets": {
-    "count": 5,
+    "count": 6,
     "error": null
   },
   "customer_files": {
-    "count": 3,
+    "count": 0,
     "error": null
   },
   "project_documents": {
-    "count": 12,
+    "count": 5,
     "error": null
   }
 }

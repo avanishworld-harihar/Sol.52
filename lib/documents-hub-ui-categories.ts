@@ -1,177 +1,107 @@
 /**
- * Field-staff category chips for Customer / Project Documents Hub UI.
- * Maps unified rows ↔ hub categories without schema changes.
+ * Shared Documents Hub category chips — single source of truth with Project Hub.
+ * Registry: lib/project-document-types.ts (PROJECT_DOCUMENT_CATEGORIES + labels).
+ * Write routing: lib/document-category-registry.ts + lib/document-write-router.ts
  */
 
-import type { DocumentCategoryDb } from "@/lib/document-category-registry";
 import { documentCategoryDbToProjectDocCategory } from "@/lib/document-category-registry";
-import type { ProjectDocumentCategory } from "@/lib/project-document-types";
+import {
+  PROJECT_DOCUMENT_CATEGORIES,
+  PROJECT_DOCUMENT_CATEGORY_LABELS,
+  isProjectDocumentCategory,
+  type ProjectDocumentCategory,
+} from "@/lib/project-document-types";
 import type { UnifiedDocumentRow } from "@/lib/unified-documents-types";
 import type { ProjectDocument } from "@/lib/project-api-client";
 
-export type CustomerHubCategoryId =
-  | "all"
-  | "electricity_bill"
-  | "aadhaar"
-  | "pan"
-  | "agreement"
-  | "advance_receipt"
-  | "site_photo"
-  | "other";
+/** Single source of truth for hub chip ids (excludes "all"). */
+export { PROJECT_DOCUMENT_CATEGORIES, PROJECT_DOCUMENT_CATEGORY_LABELS };
+export type { ProjectDocumentCategory };
 
-export type CustomerHubUploadCategory = Exclude<CustomerHubCategoryId, "all">;
+export type HubDocumentCategoryFilter = ProjectDocumentCategory | "all";
 
-export const CUSTOMER_HUB_CATEGORIES: {
-  id: CustomerHubCategoryId;
+export type HubCategoryChipDef = {
+  id: HubDocumentCategoryFilter;
   label: string;
   uploadable: boolean;
-}[] = [
+};
+
+/** All + every project document category — identical on Customer and Project hubs. */
+export const HUB_DOCUMENT_CATEGORY_CHIPS: HubCategoryChipDef[] = [
   { id: "all", label: "All", uploadable: false },
-  { id: "electricity_bill", label: "Electricity Bill", uploadable: true },
-  { id: "aadhaar", label: "Aadhaar", uploadable: true },
-  { id: "pan", label: "PAN", uploadable: true },
-  { id: "agreement", label: "Agreement", uploadable: true },
-  { id: "advance_receipt", label: "Advance Receipt", uploadable: true },
-  { id: "site_photo", label: "Site Photo", uploadable: true },
-  { id: "other", label: "Other", uploadable: true },
+  ...PROJECT_DOCUMENT_CATEGORIES.map((id) => ({
+    id,
+    label: PROJECT_DOCUMENT_CATEGORY_LABELS[id],
+    uploadable: true as const,
+  })),
 ];
 
-const SITE_PHOTO_DB: DocumentCategoryDb[] = [
-  "survey_media",
-  "roof_photo",
-  "meter_photo",
-  "db_photo",
-];
-
-const KYC_DB: DocumentCategoryDb[] = ["aadhaar", "pan", "agreement", "advance_receipt"];
-
-function hubCategoryFromNotes(notes: string | null | undefined): CustomerHubUploadCategory | null {
+export function parseHubCategoryNotes(
+  notes: string | null | undefined
+): ProjectDocumentCategory | null {
   if (!notes?.trim()) return null;
   const m = notes.match(/^\[hub_category:([a-z_]+)\]/);
-  if (!m?.[1]) return null;
-  const id = m[1] as CustomerHubUploadCategory;
-  return CUSTOMER_HUB_CATEGORIES.some((c) => c.id === id && c.uploadable) ? id : null;
+  const id = m?.[1];
+  if (id && isProjectDocumentCategory(id)) return id;
+  return null;
 }
 
-/** Map unified row → customer hub chip (for counts / filter). */
-export function unifiedRowCustomerHubCategory(row: UnifiedDocumentRow): CustomerHubCategoryId {
+export function formatHubCategoryNotes(docCategory: ProjectDocumentCategory): string {
+  return `[hub_category:${docCategory}]`;
+}
+
+/** Map unified row → hub chip id (matches project API doc_category rules). */
+export function unifiedRowHubCategory(row: UnifiedDocumentRow): ProjectDocumentCategory {
   const fromNotes = parseHubCategoryNotes(row.notes);
   if (fromNotes) return fromNotes;
 
-  if (row.category === "bill") return "electricity_bill";
-  if (row.category === "aadhaar") return "aadhaar";
-  if (row.category === "pan") return "pan";
-  if (row.category === "agreement") return "agreement";
-  if (row.category === "advance_receipt") return "advance_receipt";
-  if (SITE_PHOTO_DB.includes(row.category)) return "site_photo";
+  const mapped = documentCategoryDbToProjectDocCategory(row.category);
+  if (mapped) return mapped;
+
   if (row.owner === "proposal") return "other";
-  if (KYC_DB.includes(row.category)) return row.category as CustomerHubCategoryId;
-  const projCat = documentCategoryDbToProjectDocCategory(row.category);
-  if (projCat === "electricity_bill") return "electricity_bill";
-  if (projCat === "site_other") return "site_photo";
-  if (projCat === "aadhaar") return "aadhaar";
-  if (projCat === "pan") return "pan";
-  if (projCat === "agreement") return "agreement";
-  if (projCat === "advance_receipt") return "advance_receipt";
-  if (projCat === "other") return "other";
   return "other";
 }
 
-export function unifiedRowMatchesCustomerHubCategory(
+export function unifiedRowMatchesHubCategory(
   row: UnifiedDocumentRow,
-  category: CustomerHubCategoryId
+  category: HubDocumentCategoryFilter
 ): boolean {
   if (category === "all") return true;
-  return unifiedRowCustomerHubCategory(row) === category;
+  return unifiedRowHubCategory(row) === category;
 }
 
-export function projectDocCustomerHubCategory(doc: ProjectDocument): CustomerHubCategoryId {
-  const cat = doc.doc_category as ProjectDocumentCategory;
-  if (cat === "electricity_bill") return "electricity_bill";
-  if (cat === "aadhaar") return "aadhaar";
-  if (cat === "pan") return "pan";
-  if (cat === "agreement" || cat === "warranty" || cat === "handover") return "agreement";
-  if (cat === "advance_receipt") return "advance_receipt";
-  if (
-    cat === "site_other" ||
-    cat === "roof_photo" ||
-    cat === "meter_photo" ||
-    cat === "db_photo"
-  ) {
-    return "site_photo";
-  }
+export function projectDocHubCategory(doc: ProjectDocument): ProjectDocumentCategory {
+  const cat = doc.doc_category;
+  if (cat && isProjectDocumentCategory(cat)) return cat;
   return "other";
 }
 
-export function countByCustomerHubCategory(
+export function countByHubCategoryFromUnifiedRows(
   rows: UnifiedDocumentRow[]
-): Record<CustomerHubCategoryId, number> {
-  const counts = Object.fromEntries(
-    CUSTOMER_HUB_CATEGORIES.map((c) => [c.id, 0])
-  ) as Record<CustomerHubCategoryId, number>;
-  counts.all = rows.length;
+): Record<string, number> {
+  const counts: Record<string, number> = { all: rows.length };
+  for (const id of PROJECT_DOCUMENT_CATEGORIES) counts[id] = 0;
   for (const row of rows) {
-    counts[unifiedRowCustomerHubCategory(row)] += 1;
+    const hub = unifiedRowHubCategory(row);
+    counts[hub] = (counts[hub] ?? 0) + 1;
   }
   return counts;
 }
 
-export function countByProjectDocCategory(
+export function countByHubCategoryFromProjectDocs(
   docs: ProjectDocument[]
 ): Record<string, number> {
   const counts: Record<string, number> = { all: docs.length };
+  for (const id of PROJECT_DOCUMENT_CATEGORIES) counts[id] = 0;
   for (const doc of docs) {
-    const cat = doc.doc_category || "other";
-    counts[cat] = (counts[cat] ?? 0) + 1;
+    const hub = projectDocHubCategory(doc);
+    counts[hub] = (counts[hub] ?? 0) + 1;
   }
   return counts;
 }
 
-/** Project doc_category for customer-hub KYC upload (project write path). */
-export function customerHubCategoryToProjectDocCategory(
-  hubCategory: CustomerHubUploadCategory
-): ProjectDocumentCategory | null {
-  switch (hubCategory) {
-    case "electricity_bill":
-      return "electricity_bill";
-    case "aadhaar":
-      return "aadhaar";
-    case "pan":
-      return "pan";
-    case "agreement":
-      return "agreement";
-    case "advance_receipt":
-      return "advance_receipt";
-    case "site_photo":
-      return "site_other";
-    case "other":
-      return "other";
-    default:
-      return null;
-  }
-}
-
-export function formatHubCategoryNotes(hubCategory: CustomerHubUploadCategory): string {
-  return `[hub_category:${hubCategory}]`;
-}
-
-export function parseHubCategoryNotes(notes: string | null | undefined): CustomerHubUploadCategory | null {
-  return hubCategoryFromNotes(notes);
-}
-
-export const HUB_OWNER_LABELS: Record<string, string> = {
-  customer: "Customer",
-  project: "Project",
-  proposal: "Proposal",
-};
-
-export function customerHubUploadAccept(category: CustomerHubUploadCategory): string {
-  if (category === "electricity_bill") return "image/*,application/pdf,.pdf";
-  if (category === "site_photo") return "image/*";
-  return "image/*,application/pdf,.pdf,.doc,.docx";
-}
-
-export function projectHubUploadAccept(category: ProjectDocumentCategory): string {
+/** MIME accept string for hub upload zones. */
+export function hubUploadAccept(category: ProjectDocumentCategory): string {
   if (
     category === "roof_photo" ||
     category === "meter_photo" ||
@@ -182,4 +112,15 @@ export function projectHubUploadAccept(category: ProjectDocumentCategory): strin
     return "image/*";
   }
   return "image/*,application/pdf,.pdf,.doc,.docx";
+}
+
+export const HUB_OWNER_LABELS: Record<string, string> = {
+  customer: "Customer",
+  project: "Project",
+  proposal: "Proposal",
+};
+
+/** Verification helper: category ids exposed by both hubs. */
+export function hubCategoryRegistryIds(): string[] {
+  return ["all", ...PROJECT_DOCUMENT_CATEGORIES];
 }

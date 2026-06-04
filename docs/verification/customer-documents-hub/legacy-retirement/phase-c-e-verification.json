@@ -1,0 +1,1441 @@
+{
+  "generated_at": "2026-06-04T08:06:09.987Z",
+  "phase": "C+E legacy document runtime retirement",
+  "constraints": {
+    "no_table_drops": true,
+    "no_migrations": true,
+    "no_production_data_changes": true,
+    "legacy_tables_preserved": [
+      "customer_files",
+      "project_documents",
+      "document_migration_map"
+    ]
+  },
+  "runtime_legacy_table_access": {
+    "customer_files_or_project_documents_from": [],
+    "pass": true
+  },
+  "references": {
+    "customer_files": {
+      "runtime": [
+        {
+          "file": "lib\\customer-asset-store.ts",
+          "line": 134,
+          "snippet": "/** Map asset row → legacy customer_files shape for GET /files compat */"
+        },
+        {
+          "file": "lib\\document-category-registry.ts",
+          "line": 151,
+          "snippet": "/** Legacy customer_files.file_type → registry db category */"
+        },
+        {
+          "file": "lib\\document-write-router.ts",
+          "line": 3,
+          "snippet": "* Legacy tables customer_files / project_documents are not read or written at runtime."
+        },
+        {
+          "file": "lib\\document-write-router.ts",
+          "line": 333,
+          "snippet": "/** GET /files — customer_assets shaped like legacy customer_files for CRM compat. */"
+        }
+      ],
+      "scripts": [
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 139,
+          "snippet": "const plan = { customer_files: [], project_documents: [], skipped: [], errors: [] };"
+        },
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 141,
+          "snippet": "const { data: cfs } = await sb.from(\"customer_files\").select(\"*\").limit(5000);"
+        },
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 144,
+          "snippet": "if (await alreadyMapped(\"customer_files\", legacyId)) {"
+        },
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 145,
+          "snippet": "plan.skipped.push({ table: \"customer_files\", id: legacyId, reason: \"already_mapped\" });"
+        },
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 153,
+          "snippet": "plan.customer_files.push({"
+        },
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 218,
+          "snippet": "customer_files: plan.customer_files.length,"
+        },
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 220,
+          "snippet": "total: plan.customer_files.length + plan.project_documents.length,"
+        },
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 223,
+          "snippet": "customer_files: plan.customer_files.length,"
+        },
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 233,
+          "snippet": "customer_files: plan.customer_files.slice(0, 3),"
+        },
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 254,
+          "snippet": "for (const row of plan.customer_files) {"
+        },
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 275,
+          "snippet": "legacy_table: \"customer_files\","
+        },
+        {
+          "file": "scripts\\cleanup-bharti-test-documents.mjs",
+          "line": 72,
+          "snippet": "to_delete_legacy: { customer_files: [], project_documents: [] },"
+        },
+        {
+          "file": "scripts\\cleanup-bharti-test-documents.mjs",
+          "line": 109,
+          "snippet": "const { data: cf } = await sb.from(\"customer_files\").select(\"id, file_name\").eq(\"lead_id\", BHARTI_LEAD);"
+        },
+        {
+          "file": "scripts\\cleanup-bharti-test-documents.mjs",
+          "line": 111,
+          "snippet": "if (isTestDocument({ filename: r.file_name })) report.to_delete_legacy.customer_files.push(r);"
+        },
+        {
+          "file": "scripts\\cleanup-bharti-test-documents.mjs",
+          "line": 136,
+          "snippet": "report.to_delete_legacy.customer_files.length > 0 ||"
+        },
+        {
+          "file": "scripts\\cleanup-bharti-test-documents.mjs",
+          "line": 141,
+          "snippet": "\"delete/archive customer_files or project_documents\""
+        },
+        {
+          "file": "scripts\\cleanup-bharti-test-documents.mjs",
+          "line": 164,
+          "snippet": "for (const r of report.to_delete_legacy.customer_files) {"
+        },
+        {
+          "file": "scripts\\cleanup-bharti-test-documents.mjs",
+          "line": 165,
+          "snippet": "await sb.from(\"customer_files\").delete().eq(\"id\", r.id);"
+        },
+        {
+          "file": "scripts\\cleanup-bharti-test-documents.mjs",
+          "line": 169,
+          "snippet": ".eq(\"legacy_table\", \"customer_files\")"
+        },
+        {
+          "file": "scripts\\cleanup-bharti-test-documents.mjs",
+          "line": 190,
+          "snippet": "legacy_customer_files: report.to_delete_legacy.customer_files.length,"
+        },
+        {
+          "file": "scripts\\legacy-retirement-verify.mjs",
+          "line": 22,
+          "snippet": "const LEGACY_TABLES = [\"customer_files\", \"project_documents\", \"document_migration_map\"];"
+        },
+        {
+          "file": "scripts\\legacy-retirement-verify.mjs",
+          "line": 98,
+          "snippet": "const runtimeFromLegacy = scanFiles(RUNTIME_DIRS, String.raw`\\.from\\(['\"]customer_files['\"]\\)|\\.from\\(['\"]project_documents['\"]\\)`);"
+        },
+        {
+          "file": "scripts\\legacy-retirement-verify.mjs",
+          "line": 99,
+          "snippet": "const scriptsFromLegacy = scanFiles([\"scripts\"], String.raw`\\.from\\(['\"]customer_files['\"]\\)|\\.from\\(['\"]project_documents['\"]\\)`);"
+        },
+        {
+          "file": "scripts\\legacy-retirement-verify.mjs",
+          "line": 111,
+          "snippet": "customer_files_or_project_documents_from: runtimeFromLegacy,"
+        },
+        {
+          "file": "scripts\\legacy-retirement-verify.mjs",
+          "line": 163,
+          "snippet": "report.blockers.push(\"Runtime code still queries customer_files or project_documents via .from()\");"
+        },
+        {
+          "file": "scripts\\lib\\legacy-document-guard.mjs",
+          "line": 8,
+          "snippet": "\"customer_files\","
+        },
+        {
+          "file": "scripts\\link-bharti-realworld-validation.mjs",
+          "line": 16,
+          "snippet": "\"link/revert customer_files or project_documents\""
+        },
+        {
+          "file": "scripts\\link-bharti-realworld-validation.mjs",
+          "line": 160,
+          "snippet": "// Optional: one legacy customer_files row (reuses roof storage from linked doc)"
+        },
+        {
+          "file": "scripts\\link-bharti-realworld-validation.mjs",
+          "line": 164,
+          "snippet": ".from(\"customer_files\")"
+        },
+        {
+          "file": "scripts\\link-bharti-realworld-validation.mjs",
+          "line": 174,
+          "snippet": "const { error: cfErr } = await sb.from(\"customer_files\").insert({"
+        },
+        {
+          "file": "scripts\\link-bharti-realworld-validation.mjs",
+          "line": 182,
+          "snippet": "if (cfErr) console.warn(\"customer_files insert skipped:\", cfErr.message);"
+        },
+        {
+          "file": "scripts\\link-bharti-realworld-validation.mjs",
+          "line": 183,
+          "snippet": "else console.log(\"Inserted customer_files row (legacy customer path)\");"
+        },
+        {
+          "file": "scripts\\phase1-validation-audit.mjs",
+          "line": 58,
+          "snippet": "const { data: cf } = await sb.from(\"customer_files\").select(\"lead_id\").limit(2000);"
+        },
+        {
+          "file": "scripts\\phase1-validation-audit.mjs",
+          "line": 93,
+          "snippet": "customer_files: cfByLead.get(lead_id) ?? 0,"
+        },
+        {
+          "file": "scripts\\phase1-validation-audit.mjs",
+          "line": 107,
+          "snippet": "out.tables.customer_files = await countTable(\"customer_files\");"
+        },
+        {
+          "file": "scripts\\phase1-validation-audit.mjs",
+          "line": 121,
+          "snippet": ".from(\"customer_files\")"
+        },
+        {
+          "file": "scripts\\phase1-validation-audit.mjs",
+          "line": 140,
+          "snippet": "customer_files: bhartiCf?.length ?? 0,"
+        },
+        {
+          "file": "scripts\\phase1-validation-audit.mjs",
+          "line": 214,
+          "snippet": "\"customer_files.lead_id = customer id\","
+        },
+        {
+          "file": "scripts\\phase1-validation-audit.mjs",
+          "line": 227,
+          "snippet": "const { data: bCf } = await sb.from(\"customer_files\").select(\"id, file_name\").eq(\"lead_id\", bhartiId);"
+        },
+        {
+          "file": "scripts\\phase1-validation-audit.mjs",
+          "line": 271,
+          "snippet": "legacy_customer_files: bCf?.length ?? 0,"
+        },
+        {
+          "file": "scripts\\phase2-validation-audit.mjs",
+          "line": 96,
+          "snippet": "\"customer_files\","
+        },
+        {
+          "file": "scripts\\phase2-validation-audit.mjs",
+          "line": 196,
+          "snippet": ".from(\"customer_files\")"
+        },
+        {
+          "file": "scripts\\phase2-validation-audit.mjs",
+          "line": 211,
+          "snippet": "\"customer_files\","
+        },
+        {
+          "file": "scripts\\phase2-validation-audit.mjs",
+          "line": 249,
+          "snippet": "customer_files_bharti: legacyCf?.length ?? 0,"
+        },
+        {
+          "file": "scripts\\phase2-validation-audit.mjs",
+          "line": 340,
+          "snippet": "(report.counts_after.customer_files ?? 0) - (report.counts_before.customer_files ?? 0);"
+        },
+        {
+          "file": "scripts\\phase2-validation-audit.mjs",
+          "line": 344,
+          "snippet": "`customer_files delta: ${newCf}`"
+        },
+        {
+          "file": "scripts\\phase3-manual-e2e.mjs",
+          "line": 86,
+          "snippet": "report.legacy.customer_files_before = await count(\"customer_files\", (q) =>"
+        },
+        {
+          "file": "scripts\\phase3-manual-e2e.mjs",
+          "line": 90,
+          "snippet": "report.legacy.customer_files_after = report.legacy.customer_files_before;"
+        },
+        {
+          "file": "scripts\\phase3-manual-e2e.mjs",
+          "line": 107,
+          "snippet": "\"legacy_customer_files_unchanged\","
+        },
+        {
+          "file": "scripts\\phase3-manual-e2e.mjs",
+          "line": 108,
+          "snippet": "report.legacy.customer_files_before === report.legacy.customer_files_after,"
+        },
+        {
+          "file": "scripts\\phase3-manual-e2e.mjs",
+          "line": 109,
+          "snippet": "`count: ${report.legacy.customer_files_before}`"
+        },
+        {
+          "file": "scripts\\phase3-manual-e2e.mjs",
+          "line": 163,
+          "snippet": "report.legacy.customer_files_before = await count(\"customer_files\", (q) => q.eq(\"lead_id\", leadId));"
+        },
+        {
+          "file": "scripts\\phase3-manual-e2e.mjs",
+          "line": 266,
+          "snippet": "report.legacy.customer_files_after = await count(\"customer_files\", (q) => q.eq(\"lead_id\", leadId));"
+        },
+        {
+          "file": "scripts\\phase3-manual-e2e.mjs",
+          "line": 290,
+          "snippet": "\"legacy_customer_files_unchanged\","
+        },
+        {
+          "file": "scripts\\phase3-manual-e2e.mjs",
+          "line": 291,
+          "snippet": "report.legacy.customer_files_before === report.legacy.customer_files_after,"
+        },
+        {
+          "file": "scripts\\phase3-manual-e2e.mjs",
+          "line": 292,
+          "snippet": "`delta: ${(report.legacy.customer_files_after ?? 0) - (report.legacy.customer_files_before ?? 0)}`"
+        },
+        {
+          "file": "scripts\\phase3-validation-audit.mjs",
+          "line": 129,
+          "snippet": "let cfBefore = await countTable(\"customer_files\");"
+        },
+        {
+          "file": "scripts\\phase3-validation-audit.mjs",
+          "line": 192,
+          "snippet": "customer_files_before: cfBefore,"
+        },
+        {
+          "file": "scripts\\phase3-validation-audit.mjs",
+          "line": 193,
+          "snippet": "customer_files_after: await countTable(\"customer_files\"),"
+        },
+        {
+          "file": "scripts\\phase3-validation-audit.mjs",
+          "line": 250,
+          "snippet": "report.legacy_counts.customer_files_after === report.legacy_counts.customer_files_before &&"
+        },
+        {
+          "file": "scripts\\phase3-validation-audit.mjs",
+          "line": 252,
+          "snippet": "`cf delta: ${(report.legacy_counts.customer_files_after ?? 0) - (report.legacy_counts.customer_files_before ?? 0)}`"
+        },
+        {
+          "file": "scripts\\phase4-data-verification.mjs",
+          "line": 65,
+          "snippet": "const { data: legacyCf } = await sb.from(\"customer_files\").select(\"id\").limit(5000);"
+        },
+        {
+          "file": "scripts\\phase4-data-verification.mjs",
+          "line": 74,
+          "snippet": "(maps ?? []).filter((m) => m.legacy_table === \"customer_files\").map((m) => String(m.legacy_id))"
+        },
+        {
+          "file": "scripts\\phase4-data-verification.mjs",
+          "line": 85,
+          "snippet": "customer_files_total: legacyCf?.length ?? 0,"
+        },
+        {
+          "file": "scripts\\phase4-data-verification.mjs",
+          "line": 88,
+          "snippet": "unmigrated_in_sample: { customer_files: unmigratedCf, project_documents: unmigratedPd },"
+        },
+        {
+          "file": "scripts\\phase4-data-verification.mjs",
+          "line": 104,
+          "snippet": "pf(\"legacy_tables_readable\", (legacyCf?.length ?? 0) >= 0, \"customer_files query ok\");"
+        },
+        {
+          "file": "scripts\\phase4-hub-verification.mjs",
+          "line": 60,
+          "snippet": "? Object.keys(all.by_source).filter((s) => s === \"customer_files\" || s === \"project_documents\")"
+        },
+        {
+          "file": "scripts\\phase4-stabilization-audit.mjs",
+          "line": 133,
+          "snippet": "/DROP\\s+TABLE\\s+.*customer_files/i.test(text) ||"
+        },
+        {
+          "file": "scripts\\phase4-stabilization-audit.mjs",
+          "line": 154,
+          "snippet": "\"customer_files\","
+        },
+        {
+          "file": "scripts\\phase4-stabilization-audit.mjs",
+          "line": 177,
+          "snippet": ".from(\"customer_files\")"
+        },
+        {
+          "file": "scripts\\phase4-stabilization-audit.mjs",
+          "line": 181,
+          "snippet": "const cfAll = await countTable(\"customer_files\");"
+        },
+        {
+          "file": "scripts\\phase4-stabilization-audit.mjs",
+          "line": 191,
+          "snippet": "customer_files_new_in_window: cfRecent.count,"
+        },
+        {
+          "file": "scripts\\phase4-stabilization-audit.mjs",
+          "line": 192,
+          "snippet": "customer_files_query_note: cfRecent.error ?? null,"
+        },
+        {
+          "file": "scripts\\phase4-stabilization-audit.mjs",
+          "line": 298,
+          "snippet": "dropHits.length ? dropHits.join(\", \") : \"no DROP customer_files/project_documents in repo\""
+        },
+        {
+          "file": "scripts\\phase4-stabilization-audit.mjs",
+          "line": 308,
+          "snippet": ": `PENDING: pd_${SOAK_DAYS}d=${report.legacy_write_soak.project_documents_new_in_window} cf=${report.legacy_write_soak.customer_files_new_in_window} — ops must "
+        }
+      ]
+    },
+    "project_documents": {
+      "runtime": [
+        {
+          "file": "lib\\document-category-registry.ts",
+          "line": 163,
+          "snippet": "/** Legacy project_documents.doc_category → project registry db where possible */"
+        },
+        {
+          "file": "lib\\document-category-registry.ts",
+          "line": 196,
+          "snippet": "/** Map project_documents.doc_category to customer_assets.category CHECK value */"
+        },
+        {
+          "file": "lib\\document-category-registry.ts",
+          "line": 205,
+          "snippet": "/** Map project_documents.doc_category to project_assets.category CHECK value */"
+        },
+        {
+          "file": "lib\\document-write-router.ts",
+          "line": 3,
+          "snippet": "* Legacy tables customer_files / project_documents are not read or written at runtime."
+        }
+      ],
+      "scripts": [
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 139,
+          "snippet": "const plan = { customer_files: [], project_documents: [], skipped: [], errors: [] };"
+        },
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 163,
+          "snippet": ".from(\"project_documents\")"
+        },
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 182,
+          "snippet": "if (await alreadyMapped(\"project_documents\", legacyId)) {"
+        },
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 183,
+          "snippet": "plan.skipped.push({ table: \"project_documents\", id: legacyId, reason: \"already_mapped\" });"
+        },
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 190,
+          "snippet": "table: \"project_documents\","
+        },
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 196,
+          "snippet": "plan.project_documents.push({"
+        },
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 219,
+          "snippet": "project_documents: plan.project_documents.length,"
+        },
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 220,
+          "snippet": "total: plan.customer_files.length + plan.project_documents.length,"
+        },
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 224,
+          "snippet": "project_documents: plan.project_documents.length,"
+        },
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 234,
+          "snippet": "project_documents: plan.project_documents.slice(0, 3),"
+        },
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 283,
+          "snippet": "for (const row of plan.project_documents) {"
+        },
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 305,
+          "snippet": "legacy_table: \"project_documents\","
+        },
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 354,
+          "snippet": "legacy_table: \"project_documents\","
+        },
+        {
+          "file": "scripts\\cleanup-bharti-duplicate-docs.mjs",
+          "line": 2,
+          "snippet": "* Remove duplicate project_documents on Bharti project (keep oldest per filename)."
+        },
+        {
+          "file": "scripts\\cleanup-bharti-duplicate-docs.mjs",
+          "line": 14,
+          "snippet": "\"delete project_documents rows\""
+        },
+        {
+          "file": "scripts\\cleanup-bharti-duplicate-docs.mjs",
+          "line": 44,
+          "snippet": ".from(\"project_documents\")"
+        },
+        {
+          "file": "scripts\\cleanup-bharti-duplicate-docs.mjs",
+          "line": 62,
+          "snippet": "await sb.from(\"project_documents\").delete().eq(\"id\", id);"
+        },
+        {
+          "file": "scripts\\cleanup-bharti-test-documents.mjs",
+          "line": 72,
+          "snippet": "to_delete_legacy: { customer_files: [], project_documents: [] },"
+        },
+        {
+          "file": "scripts\\cleanup-bharti-test-documents.mjs",
+          "line": 115,
+          "snippet": ".from(\"project_documents\")"
+        },
+        {
+          "file": "scripts\\cleanup-bharti-test-documents.mjs",
+          "line": 120,
+          "snippet": "if (isTestDocument(r)) report.to_delete_legacy.project_documents.push(r);"
+        },
+        {
+          "file": "scripts\\cleanup-bharti-test-documents.mjs",
+          "line": 137,
+          "snippet": "report.to_delete_legacy.project_documents.length > 0;"
+        },
+        {
+          "file": "scripts\\cleanup-bharti-test-documents.mjs",
+          "line": 141,
+          "snippet": "\"delete/archive customer_files or project_documents\""
+        },
+        {
+          "file": "scripts\\cleanup-bharti-test-documents.mjs",
+          "line": 173,
+          "snippet": "for (const r of report.to_delete_legacy.project_documents) {"
+        },
+        {
+          "file": "scripts\\cleanup-bharti-test-documents.mjs",
+          "line": 175,
+          "snippet": ".from(\"project_documents\")"
+        },
+        {
+          "file": "scripts\\cleanup-bharti-test-documents.mjs",
+          "line": 181,
+          "snippet": ".eq(\"legacy_table\", \"project_documents\")"
+        },
+        {
+          "file": "scripts\\cleanup-bharti-test-documents.mjs",
+          "line": 191,
+          "snippet": "legacy_project_documents: report.to_delete_legacy.project_documents.length,"
+        },
+        {
+          "file": "scripts\\legacy-retirement-verify.mjs",
+          "line": 22,
+          "snippet": "const LEGACY_TABLES = [\"customer_files\", \"project_documents\", \"document_migration_map\"];"
+        },
+        {
+          "file": "scripts\\legacy-retirement-verify.mjs",
+          "line": 98,
+          "snippet": "const runtimeFromLegacy = scanFiles(RUNTIME_DIRS, String.raw`\\.from\\(['\"]customer_files['\"]\\)|\\.from\\(['\"]project_documents['\"]\\)`);"
+        },
+        {
+          "file": "scripts\\legacy-retirement-verify.mjs",
+          "line": 99,
+          "snippet": "const scriptsFromLegacy = scanFiles([\"scripts\"], String.raw`\\.from\\(['\"]customer_files['\"]\\)|\\.from\\(['\"]project_documents['\"]\\)`);"
+        },
+        {
+          "file": "scripts\\legacy-retirement-verify.mjs",
+          "line": 111,
+          "snippet": "customer_files_or_project_documents_from: runtimeFromLegacy,"
+        },
+        {
+          "file": "scripts\\legacy-retirement-verify.mjs",
+          "line": 163,
+          "snippet": "report.blockers.push(\"Runtime code still queries customer_files or project_documents via .from()\");"
+        },
+        {
+          "file": "scripts\\lib\\legacy-document-guard.mjs",
+          "line": 9,
+          "snippet": "\"project_documents\","
+        },
+        {
+          "file": "scripts\\link-bharti-realworld-validation.mjs",
+          "line": 2,
+          "snippet": "* Real-world Phase 1 validation — link orphan project_documents to Bharti Gupta's project."
+        },
+        {
+          "file": "scripts\\link-bharti-realworld-validation.mjs",
+          "line": 16,
+          "snippet": "\"link/revert customer_files or project_documents\""
+        },
+        {
+          "file": "scripts\\link-bharti-realworld-validation.mjs",
+          "line": 92,
+          "snippet": ".from(\"project_documents\")"
+        },
+        {
+          "file": "scripts\\link-bharti-realworld-validation.mjs",
+          "line": 101,
+          "snippet": ".from(\"project_documents\")"
+        },
+        {
+          "file": "scripts\\link-bharti-realworld-validation.mjs",
+          "line": 127,
+          "snippet": ".from(\"project_documents\")"
+        },
+        {
+          "file": "scripts\\link-bharti-realworld-validation.mjs",
+          "line": 140,
+          "snippet": ".from(\"project_documents\")"
+        },
+        {
+          "file": "scripts\\link-bharti-realworld-validation.mjs",
+          "line": 151,
+          "snippet": ".from(\"project_documents\")"
+        },
+        {
+          "file": "scripts\\link-bharti-realworld-validation.mjs",
+          "line": 188,
+          "snippet": ".from(\"project_documents\")"
+        },
+        {
+          "file": "scripts\\phase1-validation-audit.mjs",
+          "line": 60,
+          "snippet": ".from(\"project_documents\")"
+        },
+        {
+          "file": "scripts\\phase1-validation-audit.mjs",
+          "line": 94,
+          "snippet": "project_documents: pdByLead.get(lead_id) ?? 0,"
+        },
+        {
+          "file": "scripts\\phase1-validation-audit.mjs",
+          "line": 108,
+          "snippet": "out.tables.project_documents = await countTable(\"project_documents\");"
+        },
+        {
+          "file": "scripts\\phase1-validation-audit.mjs",
+          "line": 132,
+          "snippet": ".from(\"project_documents\")"
+        },
+        {
+          "file": "scripts\\phase1-validation-audit.mjs",
+          "line": 141,
+          "snippet": "project_documents: bhartiPd.length,"
+        },
+        {
+          "file": "scripts\\phase1-validation-audit.mjs",
+          "line": 147,
+          "snippet": ".from(\"project_documents\")"
+        },
+        {
+          "file": "scripts\\phase1-validation-audit.mjs",
+          "line": 159,
+          "snippet": "out.samples.all_project_documents = (allPd ?? []).map((d) => {"
+        },
+        {
+          "file": "scripts\\phase1-validation-audit.mjs",
+          "line": 171,
+          "snippet": "for (const row of out.samples.all_project_documents) {"
+        },
+        {
+          "file": "scripts\\phase1-validation-audit.mjs",
+          "line": 201,
+          "snippet": ".from(\"project_documents\")"
+        },
+        {
+          "file": "scripts\\phase1-validation-audit.mjs",
+          "line": 211,
+          "snippet": "project_documents_on_linked_projects: pdOnLinked,"
+        },
+        {
+          "file": "scripts\\phase1-validation-audit.mjs",
+          "line": 212,
+          "snippet": "project_documents_on_orphan_projects: (out.tables.project_documents.count ?? 0) - pdOnLinked,"
+        },
+        {
+          "file": "scripts\\phase1-validation-audit.mjs",
+          "line": 215,
+          "snippet": "\"project_documents.project_id IN projects WHERE lead_id = customer id\","
+        },
+        {
+          "file": "scripts\\phase1-validation-audit.mjs",
+          "line": 231,
+          "snippet": ".from(\"project_documents\")"
+        },
+        {
+          "file": "scripts\\phase1-validation-audit.mjs",
+          "line": 272,
+          "snippet": "legacy_project_documents: bPd.length,"
+        },
+        {
+          "file": "scripts\\phase1-validation-audit.mjs",
+          "line": 286,
+          "snippet": "project_documents_total: out.tables.project_documents.count,"
+        },
+        {
+          "file": "scripts\\phase1-validation-audit.mjs",
+          "line": 288,
+          "snippet": "reason: \"All project_documents belong to projects with lead_id IS NULL\","
+        },
+        {
+          "file": "scripts\\phase1-validation-audit.mjs",
+          "line": 301,
+          "snippet": "const sampleRows = (out.samples.all_project_documents ?? []).slice(0, 4).map((d, i) => ({"
+        },
+        {
+          "file": "scripts\\phase2-validation-audit.mjs",
+          "line": 97,
+          "snippet": "\"project_documents\","
+        },
+        {
+          "file": "scripts\\phase2-validation-audit.mjs",
+          "line": 201,
+          "snippet": ".from(\"project_documents\")"
+        },
+        {
+          "file": "scripts\\phase2-validation-audit.mjs",
+          "line": 212,
+          "snippet": "\"project_documents\","
+        },
+        {
+          "file": "scripts\\phase2-validation-audit.mjs",
+          "line": 250,
+          "snippet": "project_documents_bharti: legacyPd?.length ?? 0,"
+        },
+        {
+          "file": "scripts\\phase3-manual-e2e.mjs",
+          "line": 89,
+          "snippet": "report.legacy.project_documents_before = await count(\"project_documents\");"
+        },
+        {
+          "file": "scripts\\phase3-manual-e2e.mjs",
+          "line": 91,
+          "snippet": "report.legacy.project_documents_after = report.legacy.project_documents_before;"
+        },
+        {
+          "file": "scripts\\phase3-manual-e2e.mjs",
+          "line": 112,
+          "snippet": "\"legacy_project_documents_unchanged\","
+        },
+        {
+          "file": "scripts\\phase3-manual-e2e.mjs",
+          "line": 113,
+          "snippet": "report.legacy.project_documents_before === report.legacy.project_documents_after,"
+        },
+        {
+          "file": "scripts\\phase3-manual-e2e.mjs",
+          "line": 114,
+          "snippet": "`count: ${report.legacy.project_documents_before}`"
+        },
+        {
+          "file": "scripts\\phase3-manual-e2e.mjs",
+          "line": 164,
+          "snippet": "report.legacy.project_documents_before = await count(\"project_documents\");"
+        },
+        {
+          "file": "scripts\\phase3-manual-e2e.mjs",
+          "line": 267,
+          "snippet": "report.legacy.project_documents_after = await count(\"project_documents\");"
+        },
+        {
+          "file": "scripts\\phase3-manual-e2e.mjs",
+          "line": 295,
+          "snippet": "\"legacy_project_documents_unchanged\","
+        },
+        {
+          "file": "scripts\\phase3-manual-e2e.mjs",
+          "line": 296,
+          "snippet": "report.legacy.project_documents_before === report.legacy.project_documents_after,"
+        },
+        {
+          "file": "scripts\\phase3-manual-e2e.mjs",
+          "line": 297,
+          "snippet": "`delta: ${(report.legacy.project_documents_after ?? 0) - (report.legacy.project_documents_before ?? 0)}`"
+        },
+        {
+          "file": "scripts\\phase3-validation-audit.mjs",
+          "line": 130,
+          "snippet": "let pdBefore = await countTable(\"project_documents\");"
+        },
+        {
+          "file": "scripts\\phase3-validation-audit.mjs",
+          "line": 194,
+          "snippet": "project_documents_before: pdBefore,"
+        },
+        {
+          "file": "scripts\\phase3-validation-audit.mjs",
+          "line": 195,
+          "snippet": "project_documents_after: await countTable(\"project_documents\"),"
+        },
+        {
+          "file": "scripts\\phase3-validation-audit.mjs",
+          "line": 251,
+          "snippet": "report.legacy_counts.project_documents_after === report.legacy_counts.project_documents_before,"
+        },
+        {
+          "file": "scripts\\phase4-data-verification.mjs",
+          "line": 67,
+          "snippet": ".from(\"project_documents\")"
+        },
+        {
+          "file": "scripts\\phase4-data-verification.mjs",
+          "line": 77,
+          "snippet": "(maps ?? []).filter((m) => m.legacy_table === \"project_documents\").map((m) => String(m.legacy_id))"
+        },
+        {
+          "file": "scripts\\phase4-data-verification.mjs",
+          "line": 86,
+          "snippet": "project_documents_active_sample: legacyPd?.length ?? 0,"
+        },
+        {
+          "file": "scripts\\phase4-data-verification.mjs",
+          "line": 88,
+          "snippet": "unmigrated_in_sample: { customer_files: unmigratedCf, project_documents: unmigratedPd },"
+        },
+        {
+          "file": "scripts\\phase4-hub-verification.mjs",
+          "line": 60,
+          "snippet": "? Object.keys(all.by_source).filter((s) => s === \"customer_files\" || s === \"project_documents\")"
+        },
+        {
+          "file": "scripts\\phase4-stabilization-audit.mjs",
+          "line": 134,
+          "snippet": "/DROP\\s+TABLE\\s+.*project_documents/i.test(text)"
+        },
+        {
+          "file": "scripts\\phase4-stabilization-audit.mjs",
+          "line": 155,
+          "snippet": "\"project_documents\","
+        },
+        {
+          "file": "scripts\\phase4-stabilization-audit.mjs",
+          "line": 172,
+          "snippet": ".from(\"project_documents\")"
+        },
+        {
+          "file": "scripts\\phase4-stabilization-audit.mjs",
+          "line": 190,
+          "snippet": "project_documents_new_in_window: pdRecent.count ?? 0,"
+        },
+        {
+          "file": "scripts\\phase4-stabilization-audit.mjs",
+          "line": 207,
+          "snippet": ".from(\"project_documents\")"
+        },
+        {
+          "file": "scripts\\phase4-stabilization-audit.mjs",
+          "line": 215,
+          "snippet": "project_documents_on_orphan_projects: orphanDocCount,"
+        },
+        {
+          "file": "scripts\\phase4-stabilization-audit.mjs",
+          "line": 298,
+          "snippet": "dropHits.length ? dropHits.join(\", \") : \"no DROP customer_files/project_documents in repo\""
+        },
+        {
+          "file": "scripts\\phase4-stabilization-audit.mjs",
+          "line": 308,
+          "snippet": ": `PENDING: pd_${SOAK_DAYS}d=${report.legacy_write_soak.project_documents_new_in_window} cf=${report.legacy_write_soak.customer_files_new_in_window} — ops must "
+        },
+        {
+          "file": "scripts\\verify-documents-3a51.mjs",
+          "line": 112,
+          "snippet": ".from(\"project_documents\")"
+        },
+        {
+          "file": "scripts\\verify-documents-3a51.mjs",
+          "line": 117,
+          "snippet": "log(\"1-migration\", \"FAIL\", `project_documents table missing: ${error.message}`);"
+        },
+        {
+          "file": "scripts\\verify-documents-3a51.mjs",
+          "line": 127,
+          "snippet": "`project_documents readable; storage bucket project-files: ${bucket ? \"exists\" : \"will be created on upload\"}`"
+        },
+        {
+          "file": "scripts\\verify-documents-3a51.mjs",
+          "line": 276,
+          "snippet": ".from(\"project_documents\")"
+        }
+      ]
+    },
+    "document_migration_map": {
+      "runtime": [],
+      "scripts": [
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 106,
+          "snippet": ".from(\"document_migration_map\")"
+        },
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 115,
+          "snippet": "const { data } = await sb.from(\"document_migration_map\").select(\"*\").order(\"migrated_at\", {"
+        },
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 274,
+          "snippet": "await sb.from(\"document_migration_map\").insert({"
+        },
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 304,
+          "snippet": "await sb.from(\"document_migration_map\").insert({"
+        },
+        {
+          "file": "scripts\\backfill-document-assets.mjs",
+          "line": 353,
+          "snippet": "await sb.from(\"document_migration_map\").insert({"
+        },
+        {
+          "file": "scripts\\cleanup-bharti-test-documents.mjs",
+          "line": 150,
+          "snippet": "await sb.from(\"document_migration_map\").delete().eq(\"new_id\", id);"
+        },
+        {
+          "file": "scripts\\cleanup-bharti-test-documents.mjs",
+          "line": 167,
+          "snippet": ".from(\"document_migration_map\")"
+        },
+        {
+          "file": "scripts\\cleanup-bharti-test-documents.mjs",
+          "line": 179,
+          "snippet": ".from(\"document_migration_map\")"
+        },
+        {
+          "file": "scripts\\legacy-retirement-verify.mjs",
+          "line": 22,
+          "snippet": "const LEGACY_TABLES = [\"customer_files\", \"project_documents\", \"document_migration_map\"];"
+        },
+        {
+          "file": "scripts\\phase2-validation-audit.mjs",
+          "line": 75,
+          "snippet": "file: \"supabase/migrations/049_document_migration_map.sql\","
+        },
+        {
+          "file": "scripts\\phase2-validation-audit.mjs",
+          "line": 76,
+          "snippet": "table_exists: await tableExists(\"document_migration_map\"),"
+        },
+        {
+          "file": "scripts\\phase2-validation-audit.mjs",
+          "line": 79,
+          "snippet": "\"DROP TABLE IF EXISTS public.document_migration_map CASCADE;\","
+        },
+        {
+          "file": "scripts\\phase2-validation-audit.mjs",
+          "line": 81,
+          "snippet": "document_migration_map: ["
+        },
+        {
+          "file": "scripts\\phase2-validation-audit.mjs",
+          "line": 213,
+          "snippet": "\"document_migration_map\","
+        },
+        {
+          "file": "scripts\\phase2-validation-audit.mjs",
+          "line": 263,
+          "snippet": "? \"document_migration_map exists\""
+        },
+        {
+          "file": "scripts\\phase4-data-verification.mjs",
+          "line": 55,
+          "snippet": "const { data: maps } = await sb.from(\"document_migration_map\").select(\"*\").limit(50);"
+        },
+        {
+          "file": "scripts\\phase4-data-verification.mjs",
+          "line": 71,
+          "snippet": "const { data: maps } = await sb.from(\"document_migration_map\").select(\"legacy_table, legacy_id\");"
+        },
+        {
+          "file": "scripts\\phase4-stabilization-audit.mjs",
+          "line": 68,
+          "snippet": "document_migration_map: {},"
+        },
+        {
+          "file": "scripts\\phase4-stabilization-audit.mjs",
+          "line": 122,
+          "snippet": "report.migrations[\"049\"].applied_check = await tableReady(\"document_migration_map\");"
+        },
+        {
+          "file": "scripts\\phase4-stabilization-audit.mjs",
+          "line": 152,
+          "snippet": "\"document_migration_map\","
+        },
+        {
+          "file": "scripts\\phase4-stabilization-audit.mjs",
+          "line": 164,
+          "snippet": "const mapCount = (await countTable(\"document_migration_map\")).count;"
+        },
+        {
+          "file": "scripts\\phase4-stabilization-audit.mjs",
+          "line": 165,
+          "snippet": "report.document_migration_map = {"
+        },
+        {
+          "file": "scripts\\phase4-stabilization-audit.mjs",
+          "line": 293,
+          "snippet": "pf(\"migration_049\", report.migrations[\"049\"].applied_check === true, \"document_migration_map\");"
+        }
+      ]
+    }
+  },
+  "legacy_feature_flags": {
+    "env_example": [],
+    "runtime_code": [],
+    "scripts_only": [
+      {
+        "file": "scripts\\legacy-retirement-verify.mjs",
+        "line": 24,
+        "snippet": "\"DOCUMENTS_HUB_LEGACY_READ\","
+      },
+      {
+        "file": "scripts\\legacy-retirement-verify.mjs",
+        "line": 25,
+        "snippet": "\"DOCUMENTS_HUB_V2_WRITE\","
+      },
+      {
+        "file": "scripts\\legacy-retirement-verify.mjs",
+        "line": 26,
+        "snippet": "\"NEXT_PUBLIC_DOCUMENTS_HUB_LEGACY_READ\","
+      },
+      {
+        "file": "scripts\\lib\\legacy-document-guard.mjs",
+        "line": 34,
+        "snippet": "* Fail if DOCUMENTS_HUB_V2_WRITE would disable v2 writes (removed from app; guard for old env)."
+      },
+      {
+        "file": "scripts\\lib\\legacy-document-guard.mjs",
+        "line": 37,
+        "snippet": "const raw = process.env.DOCUMENTS_HUB_V2_WRITE?.trim().toLowerCase();"
+      },
+      {
+        "file": "scripts\\lib\\legacy-document-guard.mjs",
+        "line": 40,
+        "snippet": "`[legacy-document-guard] ${scriptName}: DOCUMENTS_HUB_V2_WRITE=false is no longer supported (legacy writes removed from app).`"
+      },
+      {
+        "file": "scripts\\lib\\legacy-document-guard.mjs",
+        "line": 44,
+        "snippet": "const legacyRead = process.env.DOCUMENTS_HUB_LEGACY_READ?.trim().toLowerCase();"
+      },
+      {
+        "file": "scripts\\lib\\legacy-document-guard.mjs",
+        "line": 47,
+        "snippet": "`[legacy-document-guard] ${scriptName}: DOCUMENTS_HUB_LEGACY_READ is set but app ignores it after Phase C retirement.`"
+      },
+      {
+        "file": "scripts\\phase4-hub-verification.mjs",
+        "line": 58,
+        "snippet": "(process.env.DOCUMENTS_HUB_LEGACY_READ ?? \"\").trim().toLowerCase() !== \"true\";"
+      },
+      {
+        "file": "scripts\\phase4-stabilization-audit.mjs",
+        "line": 106,
+        "snippet": "DOCUMENTS_HUB_V2_WRITE: readFlag(\"DOCUMENTS_HUB_V2_WRITE\", true),"
+      },
+      {
+        "file": "scripts\\phase4-stabilization-audit.mjs",
+        "line": 108,
+        "snippet": "DOCUMENTS_HUB_LEGACY_READ: env.DOCUMENTS_HUB_LEGACY_READ ?? \"(unset — hub merges legacy by default)\","
+      },
+      {
+        "file": "scripts\\phase4-stabilization-audit.mjs",
+        "line": 110,
+        "snippet": "DOCUMENTS_HUB_V2_WRITE: true,"
+      },
+      {
+        "file": "scripts\\phase4-stabilization-audit.mjs",
+        "line": 112,
+        "snippet": "DOCUMENTS_HUB_LEGACY_READ: \"must remain unset or true for Phase 4\","
+      },
+      {
+        "file": "scripts\\phase4-stabilization-audit.mjs",
+        "line": 290,
+        "snippet": "pf(\"v2_write_flag\", report.feature_flags.DOCUMENTS_HUB_V2_WRITE, \"DOCUMENTS_HUB_V2_WRITE\");"
+      },
+      {
+        "file": "scripts\\phase5a-validation-audit.mjs",
+        "line": 18,
+        "snippet": "DOCUMENTS_HUB_LEGACY_READ: \"false\","
+      },
+      {
+        "file": "scripts\\phase5a-validation-audit.mjs",
+        "line": 19,
+        "snippet": "NEXT_PUBLIC_DOCUMENTS_HUB_LEGACY_READ: \"false\","
+      },
+      {
+        "file": "scripts\\phase5a-validation-audit.mjs",
+        "line": 26,
+        "snippet": "DOCUMENTS_HUB_LEGACY_READ: \"false\","
+      },
+      {
+        "file": "scripts\\phase5a-validation-audit.mjs",
+        "line": 27,
+        "snippet": "NEXT_PUBLIC_DOCUMENTS_HUB_LEGACY_READ: \"false\","
+      },
+      {
+        "file": "scripts\\phase5a-validation-audit.mjs",
+        "line": 48,
+        "snippet": "pf(\"legacy_read_flag_config\", true, \"audit runs with DOCUMENTS_HUB_LEGACY_READ=false\");"
+      }
+    ]
+  },
+  "removed_symbols": {
+    "legacyInsert": {
+      "runtime": [],
+      "scripts": [
+        {
+          "file": "scripts\\legacy-retirement-verify.mjs",
+          "line": 29,
+          "snippet": "\"legacyInsert\","
+        }
+      ]
+    },
+    "fetchLegacyCustomerFiles": {
+      "runtime": [],
+      "scripts": [
+        {
+          "file": "scripts\\legacy-retirement-verify.mjs",
+          "line": 30,
+          "snippet": "\"fetchLegacyCustomerFiles\","
+        }
+      ]
+    },
+    "fetchLegacyProjectDocuments": {
+      "runtime": [],
+      "scripts": [
+        {
+          "file": "scripts\\legacy-retirement-verify.mjs",
+          "line": 31,
+          "snippet": "\"fetchLegacyProjectDocuments\","
+        }
+      ]
+    },
+    "insertProjectDocument": {
+      "runtime": [],
+      "scripts": [
+        {
+          "file": "scripts\\legacy-retirement-verify.mjs",
+          "line": 32,
+          "snippet": "\"insertProjectDocument\","
+        }
+      ]
+    },
+    "isDocumentsHubLegacyReadEnabled": {
+      "runtime": [],
+      "scripts": [
+        {
+          "file": "scripts\\legacy-retirement-verify.mjs",
+          "line": 33,
+          "snippet": "\"isDocumentsHubLegacyReadEnabled\","
+        }
+      ]
+    },
+    "isDocumentsHubV2WriteEnabled": {
+      "runtime": [],
+      "scripts": [
+        {
+          "file": "scripts\\legacy-retirement-verify.mjs",
+          "line": 34,
+          "snippet": "\"isDocumentsHubV2WriteEnabled\","
+        }
+      ]
+    },
+    "documents-hub-read-config": {
+      "runtime": [],
+      "scripts": [
+        {
+          "file": "scripts\\legacy-retirement-verify.mjs",
+          "line": 35,
+          "snippet": "\"documents-hub-read-config\","
+        }
+      ]
+    },
+    "documents-hub-write-config": {
+      "runtime": [],
+      "scripts": [
+        {
+          "file": "scripts\\legacy-retirement-verify.mjs",
+          "line": 36,
+          "snippet": "\"documents-hub-write-config\","
+        }
+      ]
+    },
+    "documents-hub-legacy-ui-config": {
+      "runtime": [],
+      "scripts": [
+        {
+          "file": "scripts\\legacy-retirement-verify.mjs",
+          "line": 37,
+          "snippet": "\"documents-hub-legacy-ui-config\","
+        }
+      ]
+    }
+  },
+  "script_legacy_from_queries": [
+    {
+      "file": "scripts\\backfill-document-assets.mjs",
+      "line": 141,
+      "snippet": "const { data: cfs } = await sb.from(\"customer_files\").select(\"*\").limit(5000);"
+    },
+    {
+      "file": "scripts\\backfill-document-assets.mjs",
+      "line": 163,
+      "snippet": ".from(\"project_documents\")"
+    },
+    {
+      "file": "scripts\\cleanup-bharti-duplicate-docs.mjs",
+      "line": 44,
+      "snippet": ".from(\"project_documents\")"
+    },
+    {
+      "file": "scripts\\cleanup-bharti-duplicate-docs.mjs",
+      "line": 62,
+      "snippet": "await sb.from(\"project_documents\").delete().eq(\"id\", id);"
+    },
+    {
+      "file": "scripts\\cleanup-bharti-test-documents.mjs",
+      "line": 109,
+      "snippet": "const { data: cf } = await sb.from(\"customer_files\").select(\"id, file_name\").eq(\"lead_id\", BHARTI_LEAD);"
+    },
+    {
+      "file": "scripts\\cleanup-bharti-test-documents.mjs",
+      "line": 115,
+      "snippet": ".from(\"project_documents\")"
+    },
+    {
+      "file": "scripts\\cleanup-bharti-test-documents.mjs",
+      "line": 165,
+      "snippet": "await sb.from(\"customer_files\").delete().eq(\"id\", r.id);"
+    },
+    {
+      "file": "scripts\\cleanup-bharti-test-documents.mjs",
+      "line": 175,
+      "snippet": ".from(\"project_documents\")"
+    },
+    {
+      "file": "scripts\\link-bharti-realworld-validation.mjs",
+      "line": 92,
+      "snippet": ".from(\"project_documents\")"
+    },
+    {
+      "file": "scripts\\link-bharti-realworld-validation.mjs",
+      "line": 101,
+      "snippet": ".from(\"project_documents\")"
+    },
+    {
+      "file": "scripts\\link-bharti-realworld-validation.mjs",
+      "line": 127,
+      "snippet": ".from(\"project_documents\")"
+    },
+    {
+      "file": "scripts\\link-bharti-realworld-validation.mjs",
+      "line": 140,
+      "snippet": ".from(\"project_documents\")"
+    },
+    {
+      "file": "scripts\\link-bharti-realworld-validation.mjs",
+      "line": 151,
+      "snippet": ".from(\"project_documents\")"
+    },
+    {
+      "file": "scripts\\link-bharti-realworld-validation.mjs",
+      "line": 164,
+      "snippet": ".from(\"customer_files\")"
+    },
+    {
+      "file": "scripts\\link-bharti-realworld-validation.mjs",
+      "line": 174,
+      "snippet": "const { error: cfErr } = await sb.from(\"customer_files\").insert({"
+    },
+    {
+      "file": "scripts\\link-bharti-realworld-validation.mjs",
+      "line": 188,
+      "snippet": ".from(\"project_documents\")"
+    },
+    {
+      "file": "scripts\\phase1-validation-audit.mjs",
+      "line": 58,
+      "snippet": "const { data: cf } = await sb.from(\"customer_files\").select(\"lead_id\").limit(2000);"
+    },
+    {
+      "file": "scripts\\phase1-validation-audit.mjs",
+      "line": 60,
+      "snippet": ".from(\"project_documents\")"
+    },
+    {
+      "file": "scripts\\phase1-validation-audit.mjs",
+      "line": 121,
+      "snippet": ".from(\"customer_files\")"
+    },
+    {
+      "file": "scripts\\phase1-validation-audit.mjs",
+      "line": 132,
+      "snippet": ".from(\"project_documents\")"
+    },
+    {
+      "file": "scripts\\phase1-validation-audit.mjs",
+      "line": 147,
+      "snippet": ".from(\"project_documents\")"
+    },
+    {
+      "file": "scripts\\phase1-validation-audit.mjs",
+      "line": 201,
+      "snippet": ".from(\"project_documents\")"
+    },
+    {
+      "file": "scripts\\phase1-validation-audit.mjs",
+      "line": 227,
+      "snippet": "const { data: bCf } = await sb.from(\"customer_files\").select(\"id, file_name\").eq(\"lead_id\", bhartiId);"
+    },
+    {
+      "file": "scripts\\phase1-validation-audit.mjs",
+      "line": 231,
+      "snippet": ".from(\"project_documents\")"
+    },
+    {
+      "file": "scripts\\phase2-validation-audit.mjs",
+      "line": 196,
+      "snippet": ".from(\"customer_files\")"
+    },
+    {
+      "file": "scripts\\phase2-validation-audit.mjs",
+      "line": 201,
+      "snippet": ".from(\"project_documents\")"
+    },
+    {
+      "file": "scripts\\phase4-data-verification.mjs",
+      "line": 65,
+      "snippet": "const { data: legacyCf } = await sb.from(\"customer_files\").select(\"id\").limit(5000);"
+    },
+    {
+      "file": "scripts\\phase4-data-verification.mjs",
+      "line": 67,
+      "snippet": ".from(\"project_documents\")"
+    },
+    {
+      "file": "scripts\\phase4-stabilization-audit.mjs",
+      "line": 172,
+      "snippet": ".from(\"project_documents\")"
+    },
+    {
+      "file": "scripts\\phase4-stabilization-audit.mjs",
+      "line": 177,
+      "snippet": ".from(\"customer_files\")"
+    },
+    {
+      "file": "scripts\\phase4-stabilization-audit.mjs",
+      "line": 207,
+      "snippet": ".from(\"project_documents\")"
+    },
+    {
+      "file": "scripts\\verify-documents-3a51.mjs",
+      "line": 112,
+      "snippet": ".from(\"project_documents\")"
+    },
+    {
+      "file": "scripts\\verify-documents-3a51.mjs",
+      "line": 276,
+      "snippet": ".from(\"project_documents\")"
+    }
+  ],
+  "phase_e_guard": {
+    "module": "scripts/lib/legacy-document-guard.mjs",
+    "wired_scripts": [
+      "scripts/link-bharti-realworld-validation.mjs",
+      "scripts/cleanup-bharti-duplicate-docs.mjs",
+      "scripts/cleanup-bharti-test-documents.mjs (execute + legacy targets)",
+      "scripts/backfill-document-assets.mjs (assertNoLegacyWriteEnvFlags)"
+    ],
+    "allow_env": "ALLOW_LEGACY_DOCUMENT_SCRIPT_MUTATIONS"
+  },
+  "apis_changed_phase_c": [
+    "GET/POST app/api/customers/[id]/files",
+    "POST app/api/customers/[id]/files/upload",
+    "GET/POST app/api/projects/[id]/documents",
+    "GET app/api/customers/[id]/documents (unified hub)"
+  ],
+  "files_modified_summary": [
+    "lib/document-write-router.ts",
+    "lib/unified-documents-store.ts",
+    "lib/project-document-store.ts",
+    "lib/unified-documents-types.ts",
+    "app/api/customers/[id]/files/*",
+    "app/api/projects/[id]/documents/route.ts",
+    "components/customers/customer-detail-page.tsx",
+    "scripts/lib/legacy-document-guard.mjs",
+    "deleted: lib/documents-hub-*-config.ts"
+  ],
+  "typecheck": {
+    "label": "typecheck",
+    "status": "pass",
+    "output_tail": "\n> sol.52-next@1.0.0 typecheck\n> tsc --noEmit\n\n"
+  },
+  "build": {
+    "label": "build",
+    "status": "pass",
+    "note": "next build completed 2026-06-04 (verified separately before report patch)"
+  },
+  "lint": {
+    "label": "lint",
+    "status": "pass",
+    "output_tail": "react-hooks/exhaustive-deps\n\n./components/customer-workspace-pane.tsx\n569:21  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element\n\n./components/customers/customer-documents-hub.tsx\n58:9  Warning: The 'pageItems' logical expression could make the dependencies of useMemo Hook (at line 61) change on every render. To fix this, wrap the initialization of 'pageItems' in its own useMemo() Hook.  react-hooks/exhaustive-deps\n58:9  Warning: The 'pageItems' logical expression could make the dependencies of useCallback Hook (at line 106) change on every render. To fix this, wrap the initialization of 'pageItems' in its own useMemo() Hook.  react-hooks/exhaustive-deps\n\n./components/proposal/web-renderer.tsx\n429:6  Warning: React Hook useEffect has a missing dependency: 'setDarkMode'. Either include it or remove the dependency array. If 'setDarkMode' changes too often, find the parent component that defines it and wrap that definition in useCallback.  react-hooks/exhaustive-deps\n447:6  Warning: React Hook useEffect has a missing dependency: 'setDisplayInstallerLogoUrl'. Either include it or remove the dependency array. If 'setDisplayInstallerLogoUrl' changes too often, find the parent component that defines it and wrap that definition in useCallback.  react-hooks/exhaustive-deps\n\n./components/workspace/commercial/commercial-intelligence-module.tsx\n114:6  Warning: React Hook useEffect has a missing dependency: 'setCustomWatt'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps\n\ninfo  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules\n✓ Marketplace guard passed — no forbidden marketplace/seller/commission patterns found.\n"
+  },
+  "test": {
+    "status": "skipped",
+    "note": "No test script in package.json"
+  },
+  "blockers": [],
+  "success_criteria": {
+    "no_runtime_legacy_reads": true,
+    "no_runtime_legacy_writes": true,
+    "legacy_tables_in_db": "not verified by this script (schema/migrations unchanged)",
+    "script_mutations_gated": true,
+    "overall": true
+  }
+}

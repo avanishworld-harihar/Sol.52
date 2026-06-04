@@ -5,9 +5,7 @@ export type UnifiedDocumentOwner = DocumentOwner;
 export type UnifiedDocumentSource =
   | "customer_assets"
   | "project_assets"
-  | "proposal_assets"
-  | "customer_files"
-  | "project_documents";
+  | "proposal_assets";
 
 export type UnifiedDocumentRow = {
   id: string;
@@ -26,7 +24,6 @@ export type UnifiedDocumentRow = {
   download_url: string | null;
   link_role: string | null;
   source: UnifiedDocumentSource;
-  legacy: boolean;
   notes?: string | null;
 };
 

@@ -11,6 +11,9 @@
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
+import { assertNoLegacyWriteEnvFlags } from "./lib/legacy-document-guard.mjs";
+
+assertNoLegacyWriteEnvFlags("backfill-document-assets.mjs");
 
 function loadEnvLocal() {
   try {

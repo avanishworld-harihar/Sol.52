@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createSupabaseAdmin } from "@/lib/supabase-admin";
-import { supabase } from "@/lib/supabase";
 import { appendActivityEvent } from "@/lib/followup-store";
-import { isDocumentsHubV2WriteEnabled } from "@/lib/documents-hub-write-config";
-import { listCustomerFilesForApi, writeCustomerFileUpload } from "@/lib/document-write-router";
+import { listCustomerFilesForApi } from "@/lib/document-write-router";
 import { resolveDefaultOrgId } from "@/lib/project-store";
 import {
   customerFileTypeToAssetCategory,
@@ -16,10 +13,6 @@ import type { CustomerFileType } from "@/lib/customer-file-upload";
 export const dynamic = "force-dynamic";
 
 type RouteCtx = { params: Promise<{ id: string }> };
-
-function db() {
-  return createSupabaseAdmin() ?? supabase;
-}
 
 const postSchema = z.object({
   file_name: z.string().min(1).max(255),
@@ -46,54 +39,34 @@ export async function POST(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id: leadId } = await ctx.params;
     if (!leadId) return NextResponse.json({ ok: false, error: "missing id" }, { status: 400 });
-    const client = db();
-    if (!client) return NextResponse.json({ ok: false, error: "db_unavailable" }, { status: 503 });
 
     const body = await req.json();
     const parsed = postSchema.parse(body);
 
-    if (isDocumentsHubV2WriteEnabled()) {
-      const orgId = await resolveDefaultOrgId();
-      if (!orgId) {
-        return NextResponse.json({ ok: false, error: "organization_not_configured" }, { status: 400 });
-      }
-      const category = customerFileTypeToAssetCategory(parsed.file_type as CustomerFileType);
-      const asset = await insertCustomerAsset({
-        organizationId: orgId,
-        customerId: leadId,
-        category,
-        storagePath: parsed.file_url,
-        publicUrl: parsed.file_url,
-        filename: parsed.file_name,
-        mimeType: parsed.mime_type ?? "application/octet-stream",
-        sizeBytes: (parsed.file_size_kb ?? 1) * 1024,
-      });
-      if (!asset) {
-        return NextResponse.json({ ok: false, error: "customer_asset_insert_failed" }, { status: 400 });
-      }
-      const data = customerAssetToLegacyFileRow(asset, parsed.file_type as CustomerFileType);
-      void appendActivityEvent({
-        leadId,
-        eventType: "file_uploaded",
-        meta: { file_name: parsed.file_name, file_type: parsed.file_type, storage_v2: true },
-      });
-      return NextResponse.json({ ok: true, data }, { status: 201 });
+    const orgId = await resolveDefaultOrgId();
+    if (!orgId) {
+      return NextResponse.json({ ok: false, error: "organization_not_configured" }, { status: 400 });
     }
-
-    const { data, error } = await client
-      .from("customer_files")
-      .insert({ lead_id: leadId, ...parsed })
-      .select("*")
-      .single();
-
-    if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 400 });
-
+    const category = customerFileTypeToAssetCategory(parsed.file_type as CustomerFileType);
+    const asset = await insertCustomerAsset({
+      organizationId: orgId,
+      customerId: leadId,
+      category,
+      storagePath: parsed.file_url,
+      publicUrl: parsed.file_url,
+      filename: parsed.file_name,
+      mimeType: parsed.mime_type ?? "application/octet-stream",
+      sizeBytes: (parsed.file_size_kb ?? 1) * 1024,
+    });
+    if (!asset) {
+      return NextResponse.json({ ok: false, error: "customer_asset_insert_failed" }, { status: 400 });
+    }
+    const data = customerAssetToLegacyFileRow(asset, parsed.file_type as CustomerFileType);
     void appendActivityEvent({
       leadId,
       eventType: "file_uploaded",
-      meta: { file_name: parsed.file_name, file_type: parsed.file_type },
+      meta: { file_name: parsed.file_name, file_type: parsed.file_type, storage_v2: true },
     });
-
     return NextResponse.json({ ok: true, data }, { status: 201 });
   } catch (err) {
     const message =

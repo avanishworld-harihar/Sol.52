@@ -5,6 +5,16 @@
  */
 import { readFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
+import {
+  assertLegacyDocumentScriptMutationsAllowed,
+  assertNoLegacyWriteEnvFlags,
+} from "./lib/legacy-document-guard.mjs";
+
+assertNoLegacyWriteEnvFlags("link-bharti-realworld-validation.mjs");
+assertLegacyDocumentScriptMutationsAllowed(
+  "link-bharti-realworld-validation.mjs",
+  "link/revert customer_files or project_documents"
+);
 
 const BHARTI_LEAD = "eead2c0a-8f20-4c7a-8128-ce8fff874834";
 const BHARTI_PROJECT = "3cfd6369-4d9a-45d3-8c90-008de6c62a46";

@@ -11,8 +11,6 @@ import {
   ChevronDown,
   Clock3,
   FileText,
-  FilePlus,
-  Image as ImageIcon,
   IndianRupee,
   MapPin,
   NotebookPen,
@@ -23,13 +21,12 @@ import {
   Plus,
   Save,
   TimerReset,
-  Upload,
   UserRoundCheck,
   Zap,
   FolderKanban,
   FolderOpen,
 } from "lucide-react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { useToast } from "@/components/ui/toast-center";
@@ -49,7 +46,6 @@ import {
 import type { FollowupReminder } from "@/lib/followup-types";
 import type { CustomerTimelineItem } from "@/lib/customer-timeline-store";
 import { CustomerDocumentsHub } from "@/components/customers/customer-documents-hub";
-import { isLegacyDocumentUploadUiEnabled } from "@/lib/documents-hub-legacy-ui-config";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import {
@@ -84,17 +80,6 @@ type CallLog = {
   duration_seconds: number;
   outcome: CallOutcomeValue;
   notes: string | null;
-  created_at: string;
-};
-
-type CustomerFile = {
-  id: string;
-  lead_id: string;
-  file_name: string;
-  file_url: string;
-  file_type: "bill" | "site_image" | "document";
-  file_size_kb?: number;
-  mime_type?: string | null;
   created_at: string;
 };
 
@@ -230,12 +215,6 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
     () => fetchLeadReminders(leadId)
   );
 
-  /* ------ fetch files ------ */
-  const { data: files = [], mutate: mutateFiles } = useSWR<CustomerFile[]>(
-    `/api/customers/${leadId}/files`,
-    () => fetchJson<CustomerFile[]>(`/api/customers/${leadId}/files`)
-  );
-
   const lead = leadData ?? null;
   const [timelineOpen, setTimelineOpen] = useState(false);
 
@@ -262,39 +241,6 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
     notes: "",
   });
   const [savingFollowup, setSavingFollowup] = useState(false);
-
-  /* ------ file upload ------ */
-  const [uploadingType, setUploadingType] = useState<CustomerFile["file_type"] | null>(null);
-  const billInputRef = useRef<HTMLInputElement>(null);
-  const siteImageInputRef = useRef<HTMLInputElement>(null);
-  const documentInputRef = useRef<HTMLInputElement>(null);
-
-  const uploadFile = useCallback(
-    async (file: File, fileType: CustomerFile["file_type"]) => {
-      setUploadingType(fileType);
-      try {
-        const form = new FormData();
-        form.append("file", file);
-        form.append("file_type", fileType);
-        const res = await fetch(`/api/customers/${leadId}/files/upload`, { method: "POST", body: form });
-        const json = (await res.json()) as { ok?: boolean; error?: string };
-        if (!res.ok || !json.ok) throw new Error(json.error ?? "Upload failed");
-        await Promise.all([
-          mutateFiles(),
-          mutateTimeline(),
-          globalMutate(
-            (key) => typeof key === "string" && key.startsWith(`customer-documents|${leadId}`)
-          ),
-        ]);
-        toast.success(`${file.name} uploaded`);
-      } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Could not upload file");
-      } finally {
-        setUploadingType(null);
-      }
-    },
-    [leadId, mutateFiles, mutateTimeline, toast]
-  );
 
   /* ------ stage change ------ */
   const [statusChanging, setStatusChanging] = useState(false);
@@ -390,11 +336,6 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
       return acc;
     }, {});
   }, [timeline]);
-
-  /* ------ files grouped ------ */
-  const bills = files.filter((f) => f.file_type === "bill");
-  const siteImages = files.filter((f) => f.file_type === "site_image");
-  const documents = files.filter((f) => f.file_type === "document");
 
   const pendingReminders = useMemo(
     () => reminders.filter((r) => r.status === "pending").sort((a, b) => new Date(a.due_at).getTime() - new Date(b.due_at).getTime()),
@@ -910,148 +851,11 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
         )}
       </SectionCard>
 
-      {/* ── 5. Documents Hub (v2 read; legacy Quick upload hidden in Phase 5A) ── */}
+      {/* ── 5. Documents Hub ── */}
       <SectionCard title="Documents" icon={FolderOpen}>
         <CustomerDocumentsHub customerId={leadId} />
-        {isLegacyDocumentUploadUiEnabled() ? (
-        <div className="mt-6 border-t border-slate-100 pt-4 dark:border-white/10">
-          <p className="mb-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            Quick upload (legacy UI — rollback via NEXT_PUBLIC_DOCUMENTS_HUB_LEGACY_READ=true)
-          </p>
-          <div className="space-y-4">
-          <AttachmentGroup
-            label="Bills"
-            icon={FileText}
-            files={bills}
-            emptyText="No bills uploaded"
-            accept="image/*,application/pdf,.pdf"
-            uploading={uploadingType === "bill"}
-            onUploadClick={() => billInputRef.current?.click()}
-            onFileSelected={(file) => void uploadFile(file, "bill")}
-            inputRef={billInputRef}
-          />
-          <AttachmentGroup
-            label="Site Images"
-            icon={ImageIcon}
-            files={siteImages}
-            emptyText="No site images"
-            isImage
-            accept="image/*"
-            uploading={uploadingType === "site_image"}
-            onUploadClick={() => siteImageInputRef.current?.click()}
-            onFileSelected={(file) => void uploadFile(file, "site_image")}
-            inputRef={siteImageInputRef}
-          />
-          <AttachmentGroup
-            label="Documents"
-            icon={FilePlus}
-            files={documents}
-            emptyText="No documents"
-            accept="image/*,application/pdf,.pdf,.doc,.docx"
-            uploading={uploadingType === "document"}
-            onUploadClick={() => documentInputRef.current?.click()}
-            onFileSelected={(file) => void uploadFile(file, "document")}
-            inputRef={documentInputRef}
-          />
-          </div>
-        </div>
-        ) : null}
       </SectionCard>
 
-    </div>
-  );
-}
-
-function AttachmentGroup({
-  label,
-  icon: Icon,
-  files,
-  emptyText,
-  isImage = false,
-  accept,
-  uploading = false,
-  onUploadClick,
-  onFileSelected,
-  inputRef,
-}: {
-  label: string;
-  icon: typeof FileText;
-  files: CustomerFile[];
-  emptyText: string;
-  isImage?: boolean;
-  accept: string;
-  uploading?: boolean;
-  onUploadClick: () => void;
-  onFileSelected: (file: File) => void;
-  inputRef: React.RefObject<HTMLInputElement | null>;
-}) {
-  return (
-    <div>
-      <div className="mb-2 flex items-center gap-2">
-        <Icon className="h-4 w-4 text-slate-400" aria-hidden />
-        <p className="text-xs font-bold text-slate-600 dark:text-slate-300">{label}</p>
-        {files.length > 0 ? (
-          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:bg-white/10">
-            {files.length}
-          </span>
-        ) : null}
-        <button
-          type="button"
-          onClick={onUploadClick}
-          disabled={uploading}
-          className="ml-auto inline-flex items-center gap-1 rounded-lg border border-teal-200 bg-teal-50 px-2.5 py-1 text-[11px] font-bold text-teal-700 transition-colors hover:bg-teal-100 disabled:opacity-60 dark:border-teal-800/40 dark:bg-teal-950/30 dark:text-teal-300"
-        >
-          <Upload className="h-3 w-3" aria-hidden />
-          {uploading ? "Uploading…" : "Upload"}
-        </button>
-        <input
-          ref={inputRef}
-          type="file"
-          accept={accept}
-          className="hidden"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) onFileSelected(file);
-            e.target.value = "";
-          }}
-        />
-      </div>
-      {files.length === 0 ? (
-        <p className="text-[11px] text-slate-400">{emptyText}</p>
-      ) : (
-        <div className={cn("flex flex-wrap gap-2", isImage && "gap-2")}>
-          {files.map((f) =>
-            isImage ? (
-              <a
-                key={f.id}
-                href={f.file_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group relative h-20 w-20 overflow-hidden rounded-xl border border-slate-200 bg-slate-100 shadow-sm dark:border-white/10"
-              >
-                <img src={f.file_url} alt={f.file_name} className="h-full w-full object-cover" />
-                <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/60 to-transparent p-1 opacity-0 transition-opacity group-hover:opacity-100">
-                  <p className="truncate text-[9px] font-bold text-white">{f.file_name}</p>
-                </div>
-              </a>
-            ) : (
-              <a
-                key={f.id}
-                href={f.file_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-slate-300"
-              >
-                <Icon className="h-3.5 w-3.5 shrink-0 text-slate-400" aria-hidden />
-                <span className="max-w-[12rem] truncate">{f.file_name}</span>
-                {f.file_size_kb ? (
-                  <span className="text-[10px] text-slate-400">{Math.round(f.file_size_kb)}KB</span>
-                ) : null}
-              </a>
-            )
-          )}
-        </div>
-      )}
     </div>
   );
 }

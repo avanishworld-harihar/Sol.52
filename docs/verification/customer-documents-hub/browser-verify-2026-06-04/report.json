@@ -1,0 +1,78 @@
+{
+  "base_url": "http://localhost:3002",
+  "console_errors": {
+    "customer": [],
+    "project": []
+  },
+  "network_500": [],
+  "chips": {
+    "customer": [
+      "All(7)",
+      "Roof photo(0)",
+      "Meter photo(0)",
+      "DB photo(0)",
+      "Electricity bill(1)",
+      "Site photo(6)",
+      "Aadhaar(0)",
+      "PAN(0)",
+      "Agreement(0)",
+      "Advance receipt(0)",
+      "SLD(0)",
+      "Net metering(0)",
+      "Installation photo(0)",
+      "Layout drawing(0)",
+      "Structural drawing(0)",
+      "NM application(0)",
+      "NM inspection(0)",
+      "DISCOM / NM letter(0)",
+      "Commissioning report(0)",
+      "Warranty(0)",
+      "Handover checklist(0)",
+      "Other document(0)"
+    ],
+    "project": [
+      "All(7)",
+      "Roof photo(0)",
+      "Meter photo(0)",
+      "DB photo(0)",
+      "Electricity bill(1)",
+      "Site photo(6)",
+      "Aadhaar(0)",
+      "PAN(0)",
+      "Agreement(0)",
+      "Advance receipt(0)",
+      "SLD(0)",
+      "Net metering(0)",
+      "Installation photo(0)",
+      "Layout drawing(0)",
+      "Structural drawing(0)",
+      "NM application(0)",
+      "NM inspection(0)",
+      "DISCOM / NM letter(0)",
+      "Commissioning report(0)",
+      "Warranty(0)",
+      "Handover checklist(0)",
+      "Other document(0)"
+    ]
+  },
+  "chip_parity": true,
+  "upload_visible": {
+    "customer": true,
+    "project": true
+  },
+  "doc_cards": {
+    "customer": 0,
+    "project": 0
+  },
+  "thumbnails": {
+    "customer": 7,
+    "project": 6
+  },
+  "screenshots": [
+    "E:\\solar project\\Sol.52\\docs\\verification\\customer-documents-hub\\browser-verify-2026-06-04\\01-customer-documents-hub-all.png",
+    "E:\\solar project\\Sol.52\\docs\\verification\\customer-documents-hub\\browser-verify-2026-06-04\\02-customer-hub-site-photo-selected.png",
+    "E:\\solar project\\Sol.52\\docs\\verification\\customer-documents-hub\\browser-verify-2026-06-04\\03-project-documents-hub-all.png",
+    "E:\\solar project\\Sol.52\\docs\\verification\\customer-documents-hub\\browser-verify-2026-06-04\\04-project-hub-site-photo-selected.png"
+  ],
+  "pass": true
+}

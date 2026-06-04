@@ -1,63 +1,6 @@
 {
-  "generated_at": "2026-06-03T13:50:07.137Z",
-  "total": 8,
-  "rows": [
-    {
-      "legacy_table": "project_documents",
-      "legacy_id": "dc52acca-876f-4b33-b9fe-d0f1781504b2",
-      "new_table": "project_assets",
-      "new_id": "45e9cfbb-9e8d-42ae-9ca1-3d9cd16d85f6",
-      "migrated_at": "2026-06-03T13:20:02.238569+00:00"
-    },
-    {
-      "legacy_table": "project_documents",
-      "legacy_id": "05ac42ce-46fb-454f-9181-5f5ee38df52b",
-      "new_table": "customer_assets",
-      "new_id": "dc6af095-b23d-4866-86a5-cb12833e7ea4",
-      "migrated_at": "2026-06-03T13:20:01.685715+00:00"
-    },
-    {
-      "legacy_table": "project_documents",
-      "legacy_id": "e8b9a867-8b0d-4231-b6b0-c58cf0c6c9ed",
-      "new_table": "customer_assets",
-      "new_id": "99dbb9dc-3811-4a22-8a4d-976cd9743623",
-      "migrated_at": "2026-06-03T13:20:01.208509+00:00"
-    },
-    {
-      "legacy_table": "project_documents",
-      "legacy_id": "f0e385fb-0279-408b-a9f1-7bceb5d9db22",
-      "new_table": "customer_assets",
-      "new_id": "8066da83-054b-4a8c-a36b-bcbf41bfdab9",
-      "migrated_at": "2026-06-03T13:20:00.741812+00:00"
-    },
-    {
-      "legacy_table": "project_documents",
-      "legacy_id": "14832c5c-1566-48cb-9690-94fac85e623f",
-      "new_table": "customer_assets",
-      "new_id": "41f3a01a-7f4a-41d7-8aee-646248a325c1",
-      "migrated_at": "2026-06-03T13:20:00.27409+00:00"
-    },
-    {
-      "legacy_table": "customer_files",
-      "legacy_id": "5391d90b-832e-46da-9779-5ca0b7af81b2",
-      "new_table": "customer_assets",
-      "new_id": "c9c0f64e-d115-4961-9a37-ca7aea952301",
-      "migrated_at": "2026-06-03T13:20:00.031782+00:00"
-    },
-    {
-      "legacy_table": "customer_files",
-      "legacy_id": "3343246c-0f4c-4f9f-b38d-d9cb2b4d4fff",
-      "new_table": "customer_assets",
-      "new_id": "ae3aa7d9-0e81-47b5-becd-b4aae3dbd3d2",
-      "migrated_at": "2026-06-03T13:19:59.800521+00:00"
-    },
-    {
-      "legacy_table": "customer_files",
-      "legacy_id": "7bb15a14-81d5-4cc6-92c9-eedf03f0a210",
-      "new_table": "customer_assets",
-      "new_id": "5ec4fc3c-1cac-4fc7-9b53-c97e6646761a",
-      "migrated_at": "2026-06-03T13:19:59.564288+00:00"
-    }
-  ],
+  "generated_at": "2026-06-04T07:13:46.230Z",
+  "total": 0,
+  "rows": [],
   "rollback_sql_hint": "-- Manual rollback: archive or delete new_id rows from new_table; then delete map rows"
 }

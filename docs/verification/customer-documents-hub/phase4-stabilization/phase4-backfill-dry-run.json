@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-03T13:50:06.630Z",
+  "generated_at": "2026-06-04T07:13:45.450Z",
   "mode": "dry-run",
   "organization_id": "4d851d8d-0079-4b23-ab72-864fb769eaf1",
   "migratable_row_counts": {
@@ -12,78 +12,9 @@
     "project_documents": 0
   },
   "skipped": {
-    "total": 13,
-    "by_reason": {
-      "already_mapped": 8,
-      "orphan_project_no_lead_id": 5
-    },
-    "samples": [
-      {
-        "table": "customer_files",
-        "id": "7bb15a14-81d5-4cc6-92c9-eedf03f0a210",
-        "reason": "already_mapped"
-      },
-      {
-        "table": "customer_files",
-        "id": "3343246c-0f4c-4f9f-b38d-d9cb2b4d4fff",
-        "reason": "already_mapped"
-      },
-      {
-        "table": "customer_files",
-        "id": "5391d90b-832e-46da-9779-5ca0b7af81b2",
-        "reason": "already_mapped"
-      },
-      {
-        "table": "project_documents",
-        "id": "2f26550c-926a-4588-8234-8993821719d1",
-        "reason": "orphan_project_no_lead_id"
-      },
-      {
-        "table": "project_documents",
-        "id": "37832032-f64a-4600-ae43-3c505b009dbc",
-        "reason": "orphan_project_no_lead_id"
-      },
-      {
-        "table": "project_documents",
-        "id": "14832c5c-1566-48cb-9690-94fac85e623f",
-        "reason": "already_mapped"
-      },
-      {
-        "table": "project_documents",
-        "id": "f0e385fb-0279-408b-a9f1-7bceb5d9db22",
-        "reason": "already_mapped"
-      },
-      {
-        "table": "project_documents",
-        "id": "e8b9a867-8b0d-4231-b6b0-c58cf0c6c9ed",
-        "reason": "already_mapped"
-      },
-      {
-        "table": "project_documents",
-        "id": "05ac42ce-46fb-454f-9181-5f5ee38df52b",
-        "reason": "already_mapped"
-      },
-      {
-        "table": "project_documents",
-        "id": "dc52acca-876f-4b33-b9fe-d0f1781504b2",
-        "reason": "already_mapped"
-      },
-      {
-        "table": "project_documents",
-        "id": "99396f69-7ec5-43b6-ad72-144042375ca5",
-        "reason": "orphan_project_no_lead_id"
-      },
-      {
-        "table": "project_documents",
-        "id": "2745d089-d810-44ad-9d14-f409e9dc4e20",
-        "reason": "orphan_project_no_lead_id"
-      },
-      {
-        "table": "project_documents",
-        "id": "9f23f26f-45e0-4b50-a9ef-c9f7eb51657f",
-        "reason": "orphan_project_no_lead_id"
-      }
-    ]
+    "total": 0,
+    "by_reason": {},
+    "samples": []
   },
   "errors": [],
   "sample": {
