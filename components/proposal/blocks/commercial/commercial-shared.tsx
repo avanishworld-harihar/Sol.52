@@ -23,12 +23,15 @@ export function CountUp({
   suffix = "",
   decimals = 0,
   className = "",
+  immediate = false,
 }: {
   target: number;
   prefix?: string;
   suffix?: string;
   decimals?: number;
   className?: string;
+  /** When true, animate on mount (no viewport wait). Also renders static value for print. */
+  immediate?: boolean;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
   const motionVal = useMotionValue(0);
@@ -38,8 +41,9 @@ export function CountUp({
     decimals > 0 ? (0).toFixed(decimals) : "0"
   );
 
-  // Start counting once the element enters the viewport
+  // Start counting once the element enters the viewport (unless immediate)
   useEffect(() => {
+    if (immediate) return;
     const el = ref.current;
     if (!el) return;
     const obs = new IntersectionObserver(
@@ -53,11 +57,16 @@ export function CountUp({
     );
     obs.observe(el);
     return () => obs.disconnect();
-  }, []);
+  }, [immediate]);
 
   useEffect(() => {
     if (started) motionVal.set(target);
   }, [started, target, motionVal]);
+
+  // Start immediately when requested (e.g. above-the-fold executive KPIs)
+  useEffect(() => {
+    if (immediate) setStarted(true);
+  }, [immediate]);
 
   useEffect(() => {
     return spring.on("change", (latest) => {
@@ -69,12 +78,46 @@ export function CountUp({
     });
   }, [spring, decimals]);
 
+  const finalDisplay =
+    decimals > 0
+      ? target.toFixed(decimals)
+      : Math.round(target).toLocaleString("en-IN");
+
   return (
     <span ref={ref} className={className}>
-      {prefix}
-      {display}
-      {suffix}
+      <span className="hidden print:inline" aria-hidden={started}>
+        {prefix}
+        {finalDisplay}
+        {suffix}
+      </span>
+      <span className="print:hidden">
+        {prefix}
+        {display}
+        {suffix}
+      </span>
     </span>
+  );
+}
+
+/** Compact ₹ display for KPI ribbons — no viewport-gated animation. */
+export function formatInrCompact(v: number): { int: string; unit: string } {
+  if (v >= 10_000_000) return { int: (v / 10_000_000).toFixed(1), unit: "Cr" };
+  if (v >= 100_000) return { int: (v / 100_000).toFixed(1), unit: "L" };
+  if (v >= 1_000) return { int: (v / 1_000).toFixed(0), unit: "k" };
+  return { int: Math.round(v).toLocaleString("en-IN"), unit: "" };
+}
+
+export function StaticInrKpi({ amount, valueClassName = "text-slate-900", unitClassName = "text-slate-500" }: {
+  amount: number;
+  valueClassName?: string;
+  unitClassName?: string;
+}) {
+  const { int, unit } = formatInrCompact(amount);
+  return (
+    <>
+      ₹<span className={valueClassName}>{int}</span>
+      {unit ? <span className={`ml-0.5 text-sm font-bold ${unitClassName}`}>{unit}</span> : null}
+    </>
   );
 }
 
@@ -202,6 +245,8 @@ type KpiCardProps = {
   accent: "emerald" | "sky" | "indigo" | "violet" | "amber" | "rose";
   delay?: number;
   icon?: React.ReactNode;
+  /** Smaller value typography — use on dense 4-column grids (e.g. school impact). */
+  compact?: boolean;
 };
 
 const ACCENT_MAP: Record<
@@ -258,7 +303,7 @@ const ACCENT_MAP: Record<
   },
 };
 
-export function KpiCard({ label, value, sub, accent, delay = 0, icon }: KpiCardProps) {
+export function KpiCard({ label, value, sub, accent, delay = 0, icon, compact = false }: KpiCardProps) {
   const ac = ACCENT_MAP[accent];
   return (
     <motion.div
@@ -266,18 +311,22 @@ export function KpiCard({ label, value, sub, accent, delay = 0, icon }: KpiCardP
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ delay, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className={`rounded-2xl border p-6 ${ac.bg} ${ac.border}`}
+      className={`min-w-0 overflow-hidden rounded-2xl border ${compact ? "p-4 sm:p-5" : "p-6"} ${ac.bg} ${ac.border}`}
     >
       {/* Icon + label row */}
-      <div className="mb-3 flex items-center gap-2">
-        {icon && <span className={`flex h-7 w-7 items-center justify-center rounded-lg bg-white/70 ${ac.icon}`}>{icon}</span>}
-        <span className={`text-[10px] font-bold uppercase tracking-[0.18em] ${ac.label}`}>
+      <div className="mb-3 flex items-start gap-2">
+        {icon && <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/70 ${ac.icon}`}>{icon}</span>}
+        <span className={`min-w-0 text-[10px] font-bold uppercase leading-snug tracking-[0.16em] ${ac.label}`}>
           {label}
         </span>
       </div>
 
       {/* Main value */}
-      <div className={`text-4xl font-black leading-none tabular-nums tracking-tight md:text-5xl ${ac.value}`}>
+      <div
+        className={`min-w-0 break-words font-black leading-tight tabular-nums tracking-tight ${
+          compact ? "text-2xl sm:text-3xl" : "text-4xl md:text-5xl"
+        } ${ac.value}`}
+      >
         {value}
       </div>
 

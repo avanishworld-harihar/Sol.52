@@ -170,6 +170,22 @@ export function buildEscalatedCashflow25(
   return rows;
 }
 
+export function buildCashflowChartRows(
+  cashflow25: { year: number; saving: number; cumulative: number }[],
+  breakEvenYear: number
+): { year: number; saving: number; cumulative: number }[] {
+  const years = new Set<number>();
+  cashflow25.forEach((row, i) => {
+    if (i % 2 === 0) years.add(row.year);
+  });
+  if (breakEvenYear > 0) {
+    years.add(breakEvenYear);
+    if (breakEvenYear > 1) years.add(breakEvenYear - 1);
+  }
+  years.add(25);
+  return cashflow25.filter((row) => years.has(row.year));
+}
+
 export function isSchoolInstitutionOrg(orgType?: string | null): boolean {
   return orgType === "school";
 }

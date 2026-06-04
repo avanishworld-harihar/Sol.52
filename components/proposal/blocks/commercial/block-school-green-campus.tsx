@@ -41,10 +41,10 @@ export function BlockSchoolGreenCampus({ ctx }: Props) {
     {
       icon: <Zap className="h-4 w-4" />,
       label: isHi ? "स्वच्छ ऊर्जा" : "Clean Energy Generated",
-      rawValue: Math.round(impact.annualGenKwh / 1000 * 10) / 10,
-      suffix: " MWh/yr",
+      rawValue: Math.round((impact.annualGenKwh / 1000) * 10) / 10,
+      suffix: "",
       decimals: 1,
-      sub: isHi ? "ऑन-साइट सौर उत्पादन" : "on-site solar output",
+      sub: isHi ? "MWh/yr · ऑन-साइट सौर" : "MWh/yr · on-site solar output",
       accent: "violet" as const,
     },
     {
@@ -102,6 +102,7 @@ export function BlockSchoolGreenCampus({ ctx }: Props) {
         {kpis.map((kpi, i) => (
           <SectionReveal key={kpi.label} delay={i * 0.05}>
             <KpiCard
+              compact
               icon={kpi.icon}
               label={kpi.label}
               value={
@@ -109,6 +110,7 @@ export function BlockSchoolGreenCampus({ ctx }: Props) {
                   target={kpi.rawValue}
                   suffix={kpi.suffix}
                   decimals={kpi.decimals}
+                  immediate
                 />
               }
               sub={kpi.sub}

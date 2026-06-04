@@ -8,14 +8,7 @@ import { motion } from "framer-motion";
 import { Building2, CalendarDays, FileText, MapPin } from "lucide-react";
 import { installerLogoAlt } from "@/lib/proposal-branding-settings";
 import type { CommercialCtx } from "@/components/proposal/commercial-proposal-view";
-import { CountUp } from "./commercial-shared";
-
-const fmtInrL = (v: number) => {
-  if (v >= 10_000_000) return { int: (v / 10_000_000).toFixed(1), unit: "Cr" };
-  if (v >= 100_000) return { int: (v / 100_000).toFixed(1), unit: "L" };
-  if (v >= 1_000) return { int: (v / 1_000).toFixed(0), unit: "k" };
-  return { int: Math.round(v).toLocaleString("en-IN"), unit: "" };
-};
+import { StaticInrKpi } from "./commercial-shared";
 
 type Props = { ctx: CommercialCtx };
 
@@ -41,10 +34,6 @@ export function BlockCommercialExecutiveSummary({ ctx }: Props) {
         year: "numeric",
       })
     : new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-
-  const savingFmt = fmtInrL(summary.annualSaving);
-  const costFmt = fmtInrL(summary.netCost);
-  const profitFmt = fmtInrL(profit25);
 
   return (
     <div className="commercial-executive-summary bg-white text-slate-900">
@@ -120,8 +109,7 @@ export function BlockCommercialExecutiveSummary({ ctx }: Props) {
               {isHi ? "वार्षिक बचत" : "Annual Saving"}
             </span>
             <span className="text-xl font-black tabular-nums text-slate-900 md:text-2xl">
-              ₹<CountUp target={parseFloat(savingFmt.int)} decimals={savingFmt.int.includes(".") ? 1 : 0} />
-              <span className="ml-0.5 text-sm font-bold text-slate-500">{savingFmt.unit}</span>
+              <StaticInrKpi amount={summary.annualSaving} />
             </span>
           </motion.div>
 
@@ -136,8 +124,7 @@ export function BlockCommercialExecutiveSummary({ ctx }: Props) {
               {isHi ? "शुद्ध निवेश" : "Net Investment"}
             </span>
             <span className="text-xl font-black tabular-nums text-slate-900 md:text-2xl">
-              ₹<CountUp target={parseFloat(costFmt.int)} decimals={costFmt.int.includes(".") ? 1 : 0} />
-              <span className="ml-0.5 text-sm font-bold text-slate-500">{costFmt.unit}</span>
+              <StaticInrKpi amount={summary.netCost} />
             </span>
           </motion.div>
 
@@ -152,7 +139,9 @@ export function BlockCommercialExecutiveSummary({ ctx }: Props) {
               {isHi ? "पेबैक" : "Payback"}
             </span>
             <span className="text-xl font-black tabular-nums text-slate-900 md:text-2xl">
-              <CountUp target={summary.paybackYears} decimals={1} suffix=" yr" />
+              {summary.paybackYears >= 99
+                ? "—"
+                : `${summary.paybackYears.toFixed(1)} yr`}
             </span>
           </motion.div>
 
@@ -167,7 +156,7 @@ export function BlockCommercialExecutiveSummary({ ctx }: Props) {
               {isHi ? "25 वर्ष ROI" : "25-Year ROI"}
             </span>
             <span className="text-xl font-black tabular-nums text-sky-700 md:text-2xl">
-              <CountUp target={roiPct} decimals={1} suffix="%" />
+              {roiPct.toFixed(1)}%
             </span>
           </motion.div>
 
@@ -182,8 +171,7 @@ export function BlockCommercialExecutiveSummary({ ctx }: Props) {
               {isHi ? "25 वर्ष लाभ" : "25-Year Profit"}
             </span>
             <span className="text-xl font-black tabular-nums text-emerald-700 md:text-2xl">
-              ₹<CountUp target={parseFloat(profitFmt.int)} decimals={profitFmt.int.includes(".") ? 1 : 0} />
-              <span className="ml-0.5 text-sm font-bold text-emerald-600">{profitFmt.unit}</span>
+              <StaticInrKpi amount={profit25} valueClassName="text-emerald-700" unitClassName="text-emerald-600" />
             </span>
           </motion.div>
         </div>

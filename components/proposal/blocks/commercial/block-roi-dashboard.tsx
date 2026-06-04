@@ -13,6 +13,7 @@
 import { motion } from "framer-motion";
 import { TrendingUp, DollarSign, Clock, Leaf } from "lucide-react";
 import type { CommercialCtx } from "@/components/proposal/commercial-proposal-view";
+import { buildCashflowChartRows } from "@/lib/commercial-proposal-financials";
 import {
   CommercialSectionHeader,
   CountUp,
@@ -56,7 +57,8 @@ export function BlockROIDashboard({ ctx }: Props) {
     {
       icon: <Clock className="h-4 w-4" />,
       label: isHi ? "ब्रेक-ईवन वर्ष" : "Break-Even Year",
-      rawValue: breakEvenYear,
+      rawValue: null,
+      displayValue: breakEvenYear > 0 ? String(breakEvenYear) : "—",
       suffix: "",
       decimals: 0,
       sub: isHi ? "कुल पुनर्प्राप्ति" : "full investment recovery",
@@ -74,8 +76,8 @@ export function BlockROIDashboard({ ctx }: Props) {
     },
   ];
 
-  // Break-even chart: every 2 years
-  const chartRows = cashflow25.filter((_, i) => i % 2 === 0);
+  // Break-even chart — include break-even year so label matches first green bar
+  const chartRows = buildCashflowChartRows(cashflow25, breakEvenYear);
   const maxAbs = Math.max(summary.netCost, Math.abs(profit25), 1);
   const ZERO_PCT = (summary.netCost / maxAbs) * 100;
 

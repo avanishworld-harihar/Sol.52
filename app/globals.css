@@ -3367,6 +3367,14 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     break-inside: avoid-page !important;
   }
 
+  .commercial-proposal #comm-school-green .rounded-2xl.border {
+    overflow: hidden !important;
+  }
+
+  .commercial-proposal .commercial-executive-kpi-grid span {
+    print-color-adjust: exact !important;
+  }
+
   .commercial-proposal .proposal-page > section,
   .commercial-proposal .proposal-page > div {
     page-break-inside: auto !important;
