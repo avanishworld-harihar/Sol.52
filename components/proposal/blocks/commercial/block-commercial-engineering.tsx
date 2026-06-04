@@ -16,6 +16,8 @@ import { motion } from "framer-motion";
 import { Gauge, ShieldCheck, Cpu } from "lucide-react";
 import type { CommercialCtx } from "@/components/proposal/commercial-proposal-view";
 import { CommercialSectionHeader, GlassPanel, SectionReveal } from "./commercial-shared";
+import { isSchoolInstitutionOrg } from "@/lib/commercial-proposal-financials";
+import { BlockSchoolSafetyCard } from "./block-school-safety-card";
 
 function MetricRow({ label, value, highlight = false }: { label: string; value: string; highlight?: boolean }) {
   return (
@@ -31,6 +33,7 @@ type Props = { ctx: CommercialCtx };
 export function BlockCommercialEngineering({ ctx }: Props) {
   const {
     summary,
+    pptInput,
     dcCapacityKwp,
     dcAcRatio,
     capacityFactor,
@@ -185,6 +188,10 @@ export function BlockCommercialEngineering({ ctx }: Props) {
           </div>
         </GlassPanel>
       </SectionReveal>
+
+      {isSchoolInstitutionOrg(pptInput.commercialConfig?.orgType) ? (
+        <BlockSchoolSafetyCard ctx={ctx} />
+      ) : null}
     </div>
   );
 }

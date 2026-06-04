@@ -227,10 +227,16 @@ export function honestPaybackYears(opts: {
   netCostInr: number;
   annualSavingInr: number;
 }): number {
+  if (opts.annualSavingInr <= 0 || opts.netCostInr <= 0) return 99;
+  const computed = Math.round((opts.netCostInr / opts.annualSavingInr) * 10) / 10;
   const hint = Number(opts.paybackHint);
-  if (Number.isFinite(hint) && hint > 0 && hint < 99) return Math.round(hint * 10) / 10;
-  if (opts.annualSavingInr <= 0) return 99;
-  return Math.round((opts.netCostInr / opts.annualSavingInr) * 10) / 10;
+  if (Number.isFinite(hint) && hint > 0 && hint < 99) {
+    const impliedSaving = opts.netCostInr / hint;
+    const drift =
+      Math.abs(impliedSaving - opts.annualSavingInr) / Math.max(opts.annualSavingInr, 1);
+    if (drift <= 0.25) return Math.round(hint * 10) / 10;
+  }
+  return computed;
 }
 
 // ---------------------------------------------------------------------------

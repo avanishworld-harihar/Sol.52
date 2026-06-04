@@ -851,10 +851,16 @@ function ProposalPageContent() {
     const panels = panelsRaw > 0 ? panelsRaw : Math.ceil((solarKw * 1000) / (residentialConfig?.solar.watt ?? 540));
     const annualGeneration = Math.round(solarKw * 1500);
     const selfUse = Math.min(annualGeneration, result.annualUnits);
-    const monthlySavings = Math.round((result.currentMonthlyBill * (selfUse / Math.max(result.annualUnits, 1))) * 0.9);
-    const annualSavings = monthlySavings * 12;
-
+    const billBasedMonthlySavings = Math.round(
+      (result.currentMonthlyBill * (selfUse / Math.max(result.annualUnits, 1))) * 0.9
+    );
+    const genBasedAnnualSavings = Math.round(annualGeneration * 8 * 0.85);
     const isCommercial = osPresetId === "commercial_executive";
+    const annualSavings =
+      isCommercial && result.currentMonthlyBill <= 0
+        ? genBasedAnnualSavings
+        : billBasedMonthlySavings * 12;
+    const monthlySavings = Math.round(annualSavings / 12);
     const sharedCatalog = getCachedResidentialBrandCatalog();
     const commercialTrack = isCommercial
       ? resolveCommercialPanelTrack(manual.connectionType, solarKw)

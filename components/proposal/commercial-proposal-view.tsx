@@ -15,7 +15,7 @@
  *   - Mobile + iPad responsive
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import {
   Download,
@@ -34,6 +34,10 @@ import {
 } from "@/lib/proposal-branding-settings";
 import type { ProposalLang } from "@/lib/proposal-i18n";
 import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposal-ppt";
+import {
+  isSchoolInstitutionOrg,
+  reconcileCommercialFinancialMetrics,
+} from "@/lib/commercial-proposal-financials";
 
 // Section blocks
 import { BlockCommercialCover } from "./blocks/commercial/block-commercial-cover";
@@ -51,6 +55,8 @@ import { BlockDcrComparison } from "./blocks/commercial/block-dcr-comparison";
 import { BlockCapacityScenarios } from "./blocks/commercial/block-capacity-scenarios";
 import { BlockCommercialFinancing } from "./blocks/commercial/block-commercial-financing";
 import { BlockDgHybrid } from "./blocks/commercial/block-dg-hybrid";
+import { BlockSchoolGreenCampus } from "./blocks/commercial/block-school-green-campus";
+import { BlockSchoolLearningAsset } from "./blocks/commercial/block-school-learning-asset";
 
 // ─── Shared context ───────────────────────────────────────────────────────────
 
@@ -84,7 +90,7 @@ export type CommercialCtx = {
 
 // ─── Navigation sections ──────────────────────────────────────────────────────
 
-const NAV_SECTIONS = [
+const BASE_NAV_SECTIONS = [
   { num: "01", label: "Cover", anchor: "comm-cover" },
   { num: "02", label: "Overview", anchor: "comm-executive-summary" },
   { num: "03", label: "ROI", anchor: "comm-roi" },
@@ -98,7 +104,19 @@ const NAV_SECTIONS = [
   { num: "11", label: "Closing", anchor: "comm-closing" },
 ] as const;
 
-type SectionAnchor = (typeof NAV_SECTIONS)[number]["anchor"];
+const SCHOOL_NAV_INSERTS = [
+  { num: "S1", label: "Green Campus", anchor: "comm-school-green" },
+  { num: "S2", label: "Learning", anchor: "comm-school-learning" },
+] as const;
+
+function buildNavSections(isSchool: boolean) {
+  if (!isSchool) return [...BASE_NAV_SECTIONS];
+  const head = BASE_NAV_SECTIONS.slice(0, 2);
+  const tail = BASE_NAV_SECTIONS.slice(2);
+  return [...head, ...SCHOOL_NAV_INSERTS, ...tail];
+}
+
+type SectionAnchor = (typeof BASE_NAV_SECTIONS)[number]["anchor"] | (typeof SCHOOL_NAV_INSERTS)[number]["anchor"];
 
 function scrollToSection(anchor: string) {
   if (typeof document === "undefined") return;
@@ -172,8 +190,11 @@ export default function CommercialProposalView({
   }, [installer, installerLogoUrl]);
 
   // ── Active-section tracking via IntersectionObserver ─────────────────────
+  const isSchoolProposal = isSchoolInstitutionOrg(pptInput.commercialConfig?.orgType);
+  const navSections = buildNavSections(isSchoolProposal);
+
   useEffect(() => {
-    const sections = NAV_SECTIONS.map((s) => document.getElementById(s.anchor)).filter(Boolean) as HTMLElement[];
+    const sections = navSections.map((s) => document.getElementById(s.anchor)).filter(Boolean) as HTMLElement[];
     const obs = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
@@ -186,14 +207,14 @@ export default function CommercialProposalView({
     );
     sections.forEach((el) => obs.observe(el));
     return () => obs.disconnect();
-  }, []);
+  }, [navSections]);
 
   // ── Presentation-mode keyboard navigation ─────────────────────────────────
   useEffect(() => {
     if (!presentMode) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === "ArrowRight" || e.key === "ArrowDown") {
-        setPresentIdx((i) => Math.min(i + 1, NAV_SECTIONS.length - 1));
+        setPresentIdx((i) => Math.min(i + 1, navSections.length - 1));
       } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
         setPresentIdx((i) => Math.max(i - 1, 0));
       } else if (e.key === "Escape") {
@@ -207,20 +228,44 @@ export default function CommercialProposalView({
   // Scroll to active section in presentation mode
   useEffect(() => {
     if (!presentMode) return;
-    scrollToSection(NAV_SECTIONS[presentIdx].anchor);
-  }, [presentMode, presentIdx]);
+    scrollToSection(navSections[presentIdx].anchor);
+  }, [presentMode, presentIdx, navSections]);
 
-  // ── Derived commercial metrics ────────────────────────────────────────────
+  // ── Derived commercial metrics (single reconciled source) ───────────────
 
-  const roiPct =
-    summary.netCost > 0
-      ? Math.round((summary.annualSaving / summary.netCost) * 100 * 10) / 10
-      : 0;
+  const financials = reconcileCommercialFinancialMetrics({
+    annualGen: summary.annualGen,
+    netCost: summary.netCost,
+    yearlyBill: summary.yearlyBill,
+    afterSolar: summary.afterSolar,
+    billDerivedAnnualSaving: summary.annualSaving,
+    paybackHint: summary.paybackYears,
+    savingHintInr: pptInput.saving,
+    effectiveTariffInrPerKwh: summary.effectiveTariffRateInrPerKwh,
+    preferGenerationPath: Boolean(pptInput.commercialConfig),
+  });
 
-  const irr =
-    summary.paybackYears > 0
-      ? Math.round((72 / summary.paybackYears) * 10) / 10
-      : 0;
+  const roiPct = financials.roiPctFirstYear;
+  const irr = financials.irrEstimate;
+  const cashflow25 = financials.cashflow25;
+  const breakEvenYear = financials.breakEvenYear;
+  const profit25 = financials.profit25;
+
+  const displaySummary = useMemo(
+    () => ({
+      ...summary,
+      annualSaving: financials.annualSaving,
+      yearlyBill: financials.yearlyBill,
+      afterSolar: financials.afterSolar,
+      paybackYears: financials.paybackYears,
+      lifetime25Profit: financials.lifetime25Profit,
+      totalReduction:
+        financials.yearlyBill > 0
+          ? Math.round((financials.annualSaving / financials.yearlyBill) * 100)
+          : summary.totalReduction,
+    }),
+    [summary, financials]
+  );
 
   const PANEL_WATT = 540;
   const dcCapacityKwp = (summary.panels * PANEL_WATT) / 1000;
@@ -241,19 +286,6 @@ export default function CommercialProposalView({
     summary.netCost > 0 && summary.annualGen > 0
       ? Math.round((summary.netCost / (summary.annualGen * 25)) * 100) / 100
       : 0;
-
-  // 25-year escalated cashflow (6% tariff escalation)
-  const cashflow25: { year: number; saving: number; cumulative: number }[] = [];
-  let cumulative = -summary.netCost;
-  let annualSaving = summary.annualSaving;
-  for (let yr = 1; yr <= 25; yr++) {
-    cumulative += annualSaving;
-    cashflow25.push({ year: yr, saving: Math.round(annualSaving), cumulative: Math.round(cumulative) });
-    annualSaving *= 1.06;
-  }
-  const breakEvenYear =
-    cashflow25.find((r) => r.cumulative >= 0)?.year ?? Math.round(summary.paybackYears);
-  const profit25 = cashflow25[24]?.cumulative ?? summary.lifetime25Profit;
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -282,7 +314,7 @@ export default function CommercialProposalView({
   // ── Context object ────────────────────────────────────────────────────────
 
   const ctx: CommercialCtx = {
-    summary,
+    summary: displaySummary,
     pptInput,
     installer: displayInstaller,
     installerLogoUrl: displayLogoUrl,
@@ -337,7 +369,7 @@ export default function CommercialProposalView({
 
                 {/* Section nav — scrollable */}
                 <div className="flex flex-1 overflow-x-auto">
-                  {NAV_SECTIONS.map((s) => {
+                  {navSections.map((s) => {
                     const isActive = activeSection === s.anchor;
                     return (
                       <button
@@ -426,7 +458,7 @@ export default function CommercialProposalView({
                   PRESENTATION MODE
                 </span>
                 <span className="text-[10px] text-slate-600">
-                  {presentIdx + 1} / {NAV_SECTIONS.length} · {NAV_SECTIONS[presentIdx].label}
+                  {presentIdx + 1} / {navSections.length} · {navSections[presentIdx].label}
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -438,8 +470,8 @@ export default function CommercialProposalView({
                   <ChevronUp className="h-4 w-4" />
                 </button>
                 <button
-                  onClick={() => setPresentIdx((i) => Math.min(i + 1, NAV_SECTIONS.length - 1))}
-                  disabled={presentIdx === NAV_SECTIONS.length - 1}
+                  onClick={() => setPresentIdx((i) => Math.min(i + 1, navSections.length - 1))}
+                  disabled={presentIdx === navSections.length - 1}
                   className="flex h-7 w-7 items-center justify-center rounded text-slate-500 hover:bg-white/10 hover:text-white disabled:opacity-30"
                 >
                   <ChevronDown className="h-4 w-4" />
@@ -457,7 +489,7 @@ export default function CommercialProposalView({
 
         {/* ── Floating vertical progress bar (desktop) ─────────────────── */}
         <div className="fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 flex-col items-center gap-1.5 xl:flex">
-          {NAV_SECTIONS.map((s, i) => {
+          {navSections.map((s, i) => {
             const isActive = activeSection === s.anchor;
             return (
               <button
@@ -494,6 +526,25 @@ export default function CommercialProposalView({
         >
           <BlockCommercialExecutiveSummary ctx={ctx} />
         </section>
+
+        {isSchoolProposal ? (
+          <>
+            <section
+              id="comm-school-green"
+              className="proposal-page border-b border-slate-100/80 bg-emerald-50/40"
+              data-page="comm-school-green"
+            >
+              <BlockSchoolGreenCampus ctx={ctx} />
+            </section>
+            <section
+              id="comm-school-learning"
+              className="proposal-page border-b border-slate-100/80 bg-white"
+              data-page="comm-school-learning"
+            >
+              <BlockSchoolLearningAsset ctx={ctx} />
+            </section>
+          </>
+        ) : null}
 
         {/* ── Optional C&I intelligence blocks (from commercialConfig) ─── */}
         {pptInput.commercialConfig?.dcrComparison?.enabled !== false ? (
@@ -571,7 +622,7 @@ export default function CommercialProposalView({
               exit={{ opacity: 0 }}
               className="mb-1 overflow-hidden rounded-2xl border border-white/10 bg-slate-950/98 py-2 shadow-2xl backdrop-blur-md"
             >
-              {NAV_SECTIONS.map((s) => (
+              {navSections.map((s) => (
                 <button
                   key={s.anchor}
                   onClick={() => { scrollToSection(s.anchor); setMobileNavOpen(false); }}

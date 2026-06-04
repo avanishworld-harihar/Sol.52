@@ -15,7 +15,6 @@ import {
   computeSolarVsGrid,
   defaultCompanyProfile,
   estimateAnnualGenerationUnits,
-  honestPaybackYears,
   pickBrandSet,
   profileFieldOrDash,
   withHonorific,
@@ -49,6 +48,7 @@ import {
 import { quoteResidentialSolar } from "@/lib/residential-solar-engine";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
 import { resolvedCompanyProfileForLang, adaptCompanyProfileForInstaller } from "@/lib/proposal-company-resolve";
+import { reconcileCommercialFinancialMetrics } from "@/lib/commercial-proposal-financials";
 import { resolveInstallerNameForProposal } from "@/lib/proposal-branding-settings";
 import { hindiHonoredDisplayName } from "@/lib/roman-name-to-devanagari";
 import { dict, monthLabels, type ProposalDict, type ProposalLang } from "@/lib/proposal-i18n";
@@ -582,12 +582,32 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
   const overrideNet = input.commercialNetPayableInr;
   const netCost =
     overrideNet != null && Number.isFinite(overrideNet) && overrideNet >= 0 ? n(overrideNet) : computedNet;
-  const paybackYears = honestPaybackYears({ paybackHint: input.paybackYears, netCostInr: netCost, annualSavingInr: annualSaving });
-  const lifetime25Profit = n(annualSaving * 25 - netCost);
-  const solarVsGrid = computeSolarVsGrid({ yearlyBill, netCostInr: netCost });
+
+  const isCommercialDeck = Boolean(input.commercialConfig);
+  const reconciled = reconcileCommercialFinancialMetrics({
+    annualGen,
+    netCost,
+    yearlyBill,
+    afterSolar,
+    billDerivedAnnualSaving: annualSaving,
+    paybackHint: input.paybackYears,
+    savingHintInr: input.saving,
+    effectiveTariffInrPerKwh: smartBilling?.effectiveTariffRateInrPerKwh ?? null,
+    preferGenerationPath: isCommercialDeck || resRequirement,
+  });
+
+  const finalAnnualSaving = reconciled.annualSaving;
+  const finalYearlyBill = reconciled.yearlyBill;
+  const finalAfterSolar = reconciled.afterSolar;
+  const paybackYears = reconciled.paybackYears;
+  const lifetime25Profit = reconciled.lifetime25Profit;
+  const solarVsGrid = computeSolarVsGrid({ yearlyBill: finalYearlyBill, netCostInr: netCost });
   const environmental = computeEnvironmentalImpact(deckSystemKw);
-  if (resRequirement) {
+  if (resRequirement || isCommercialDeck) {
     environmental.annualGenUnits = annualGen;
+    environmental.annualCo2KgSaved = Math.round(annualGen * 0.82);
+    environmental.lifetimeCo2TonsSaved = Math.round((environmental.annualCo2KgSaved * 25) / 1000);
+    environmental.treeEquivalent = Math.round((environmental.annualCo2KgSaved * 25) / 22);
   }
   const annualUse = MONTH_KEYS.reduce((sum, k) => sum + n(input.monthlyUnits[k]), 0);
   const coverage = annualUse > 0 ? Math.min(100, Math.round((annualGen / annualUse) * 100)) : 100;
@@ -639,10 +659,11 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
     panels,
     panelWatt,
     requirementBased: resRequirement || Boolean(resCfg?.solar && (resCfg.inputMode === "requirement" || input.dataSource === "requirement")),
-    yearlyBill,
-    afterSolar,
-    annualSaving,
-    totalReduction,
+    yearlyBill: finalYearlyBill,
+    afterSolar: finalAfterSolar,
+    annualSaving: finalAnnualSaving,
+    totalReduction:
+      finalYearlyBill > 0 ? Math.round((finalAnnualSaving / finalYearlyBill) * 100) : totalReduction,
     grossSystemCost,
     pmSubsidy,
     netCost,
