@@ -1,0 +1,14 @@
+{
+  "fixtureId": "golden-residential",
+  "financial": {
+    "annualSaving": 34701,
+    "netCost": 197000,
+    "paybackYears": 5.5,
+    "roiPctFirstYear": 17.6,
+    "lifetime25Profit": 670525,
+    "breakEvenYear": 6,
+    "profit25": 1706853,
+    "npv": 450711,
+    "irrEstimate": 13.1
+  }
+}

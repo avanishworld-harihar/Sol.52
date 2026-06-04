@@ -1,0 +1,44 @@
+{
+  "fixtureId": "golden-school",
+  "financial": {
+    "annualSaving": 510000,
+    "netCost": 4250000,
+    "paybackYears": 8.3,
+    "roiPctFirstYear": 12,
+    "lifetime25Profit": 8500000,
+    "breakEvenYear": 7,
+    "profit25": 23730901,
+    "npv": 5269405,
+    "irrEstimate": 8.7
+  },
+  "layout": {
+    "isSchool": true,
+    "estimatedPageCount": 15,
+    "navSections": [
+      "comm-cover",
+      "comm-executive-summary",
+      "comm-school-green",
+      "comm-school-learning",
+      "comm-roi",
+      "comm-financials",
+      "comm-engineering",
+      "comm-architecture",
+      "comm-bom",
+      "comm-timeline",
+      "comm-monitoring",
+      "comm-terms",
+      "comm-closing"
+    ],
+    "executiveKpiLabels": [
+      "Annual Saving",
+      "Net Investment",
+      "Payback",
+      "25-Year ROI",
+      "25-Year Profit"
+    ],
+    "schoolSections": [
+      "comm-school-green",
+      "comm-school-learning"
+    ]
+  }
+}
