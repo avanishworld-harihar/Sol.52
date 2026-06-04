@@ -19,10 +19,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { id } = await params;
   const proposal = await getProposalById(id);
   if (!proposal) return { title: "Solar Proposal" };
-  const installer = proposal.installer_name ?? "Harihar Solar";
   const pricing = await getProposalPricingByProposalId(proposal.id);
   const merged = mergeProposalPricingIntoPptInput(proposal.ppt_input, pricing);
   const summary = summarizeProposalDeck(merged);
+  const installer = (() => {
+    const fromPpt =
+      typeof merged.installerName === "string" ? merged.installerName.trim() : "";
+    const fromDb = proposal.installer_name?.trim();
+    const name =
+      fromPpt ||
+      (fromDb && fromDb !== "Harihar Solar" ? fromDb : summary.installer !== "Harihar Solar" ? summary.installer : "");
+    return name || "Solar Proposal";
+  })();
   const saving = summary?.annualSaving ?? 0;
   const isCommercial = proposal.preset_id === "commercial_executive";
   return {
@@ -57,7 +65,13 @@ export default async function PublicProposalPage({ params }: PageProps) {
       : undefined;
 
   const installerProps = {
-    name: proposal.installer_name ?? liveSummary.installer,
+    name:
+      (typeof mergedInput.installerName === "string" ? mergedInput.installerName.trim() : "") ||
+      (proposal.installer_name?.trim() && proposal.installer_name !== "Harihar Solar"
+        ? proposal.installer_name.trim()
+        : liveSummary.installer !== "Harihar Solar"
+          ? liveSummary.installer
+          : ""),
     contact: proposal.installer_contact ?? liveSummary.contact,
     tagline: proposal.installer_tagline ?? liveSummary.tagline,
   };

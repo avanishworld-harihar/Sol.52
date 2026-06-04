@@ -36,7 +36,7 @@ import {
   residentialMonthlyGenerationUnits,
 } from "@/lib/residential-deck-helpers";
 import type { ProposalDeckSummary } from "@/lib/proposal-ppt";
-import { PROPOSAL_BRANDING_UPDATED_EVENT, readProposalBrandingSettings } from "@/lib/proposal-branding-settings";
+import { PROPOSAL_BRANDING_UPDATED_EVENT, readProposalBrandingSettings, resolveInstallerDisplayName } from "@/lib/proposal-branding-settings";
 import {
   applyProposalRouteShellTheme,
   readProposalWebTheme,
@@ -771,7 +771,11 @@ export function HeroCover({
                 darkMode ? "text-emerald-400" : "text-emerald-800"
               } ${lang === "hi" ? "tracking-normal normal-case" : "uppercase tracking-wide"}`}
             >
-              {D["hero.aboutInstaller"].replace("%INSTALLER%", summary.installer)}
+              {summary.installer
+                ? D["hero.aboutInstaller"].replace("%INSTALLER%", summary.installer)
+                : lang === "hi"
+                  ? "हमारे बारे में"
+                  : "About us"}
             </p>
             <p className={`mt-1.5 text-[13px] leading-relaxed sm:text-sm ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
               {cmp.aboutUsParagraphs[0]}
@@ -2420,7 +2424,7 @@ export function ClosingSection({
         </div>
       </motion.div>
       <p className="mt-8 text-center text-[11px] uppercase tracking-[0.24em] text-slate-400 proposal-journey-subtitle">
-        {installer.name} · {installer.contact} · {installer.tagline}
+        {[installer.name, installer.contact, installer.tagline].filter(Boolean).join(" · ")}
       </p>
     </ProposalJourneySection>
   );
@@ -2464,9 +2468,16 @@ export default function ProposalView({
     typeof window !== "undefined" ? readProposalBrandingSettings().companyGstNumber?.trim() ?? "" : ""
   );
 
+  const [displayInstaller, setDisplayInstaller] = useState(installer);
+
   useEffect(() => {
     const sync = () => {
       const branding = readProposalBrandingSettings();
+      const resolved = resolveInstallerDisplayName(branding);
+      const name =
+        resolved ||
+        (installer.name.trim() && installer.name !== "Harihar Solar" ? installer.name.trim() : "");
+      setDisplayInstaller({ ...installer, name });
       const fromServer = installerLogoUrl?.trim() ?? "";
       const fromLocal = branding.installerLogoUrl?.trim() ?? "";
       setDisplayInstallerLogoUrl(fromServer || fromLocal);
@@ -2475,16 +2486,22 @@ export default function ProposalView({
     sync();
     window.addEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
     return () => window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
-  }, [installerLogoUrl]);
+  }, [installer, installerLogoUrl]);
 
   const displaySummary = useMemo(() => {
     const gst = companyGstFromBranding;
-    if (gst === (summary.companyProfile.gstNumber?.trim() ?? "")) return summary;
-    return {
-      ...summary,
-      companyProfile: { ...summary.companyProfile, gstNumber: gst }
-    };
-  }, [summary, companyGstFromBranding]);
+    const installerLabel =
+      displayInstaller.name ||
+      (summary.installer !== "Harihar Solar" ? summary.installer : "");
+    const base =
+      gst === (summary.companyProfile.gstNumber?.trim() ?? "")
+        ? summary
+        : {
+            ...summary,
+            companyProfile: { ...summary.companyProfile, gstNumber: gst },
+          };
+    return { ...base, installer: installerLabel };
+  }, [summary, companyGstFromBranding, displayInstaller.name]);
 
   const D = dict(lang);
   const monthLbls = monthLabels(lang);
@@ -2727,7 +2744,7 @@ export default function ProposalView({
           siteImages={siteImages}
           onShare={shareWhatsApp}
           onDownload={downloadPpt}
-          installer={installer}
+          installer={displayInstaller}
           downloading={downloading}
           lang={lang}
           honoredDisplay={honoredDisplay}

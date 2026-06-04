@@ -86,7 +86,10 @@ export function readProposalBrandingSettings(): ProposalBrandingSettings {
     if (!raw) return { ...DEFAULT_PROPOSAL_BRANDING_SETTINGS };
     const parsed = JSON.parse(raw) as Partial<ProposalBrandingSettings>;
     return {
-      installerName: parsed.installerName?.trim() || DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerName,
+      installerName:
+        typeof parsed.installerName === "string"
+          ? parsed.installerName.trim()
+          : DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerName,
       installerContact: parsed.installerContact?.trim() || DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerContact,
       installerEmail: typeof parsed.installerEmail === "string" ? parsed.installerEmail.trim() : "",
       installerLogoUrl: parsed.installerLogoUrl?.trim() || "",
@@ -100,7 +103,10 @@ export function readProposalBrandingSettings(): ProposalBrandingSettings {
           : DEFAULT_PROPOSAL_BRANDING_SETTINGS.themePreset,
       paymentQrCodeUrl: parsed.paymentQrCodeUrl?.trim() || "",
       amcSelectedYears: parseProposalAmcYears(parsed.amcSelectedYears),
-      bankAccountName: parsed.bankAccountName?.trim() || DEFAULT_PROPOSAL_BRANDING_SETTINGS.bankAccountName,
+      bankAccountName:
+        typeof parsed.bankAccountName === "string"
+          ? parsed.bankAccountName.trim()
+          : DEFAULT_PROPOSAL_BRANDING_SETTINGS.bankAccountName,
       bankAccountNumber: typeof parsed.bankAccountNumber === "string" ? parsed.bankAccountNumber.trim() : "",
       bankIfsc: typeof parsed.bankIfsc === "string" ? parsed.bankIfsc.trim() : "",
       bankBranch: typeof parsed.bankBranch === "string" ? parsed.bankBranch.trim() : "",
@@ -122,4 +128,19 @@ export function writeProposalBrandingSettings(next: ProposalBrandingSettings) {
   } catch {
     /* ignore storage errors */
   }
+}
+
+/** Name shown on proposals — empty string allowed (logo-only branding). */
+export function resolveInstallerDisplayName(settings: ProposalBrandingSettings): string {
+  return settings.installerName.trim();
+}
+
+export function resolveInstallerNameForProposal(input: {
+  installerName?: string | null;
+}): string {
+  return input.installerName?.trim() ?? "";
+}
+
+export function installerLogoAlt(name: string): string {
+  return name.trim() || "Company logo";
 }

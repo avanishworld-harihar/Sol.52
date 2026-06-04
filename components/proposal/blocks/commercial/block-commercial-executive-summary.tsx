@@ -6,6 +6,7 @@
 
 import { motion } from "framer-motion";
 import { Building2, CalendarDays, FileText, MapPin } from "lucide-react";
+import { installerLogoAlt } from "@/lib/proposal-branding-settings";
 import type { CommercialCtx } from "@/components/proposal/commercial-proposal-view";
 import { CountUp } from "./commercial-shared";
 
@@ -52,14 +53,22 @@ export function BlockCommercialExecutiveSummary({ ctx }: Props) {
           <div className="flex items-center gap-3">
             {installerLogoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={installerLogoUrl} alt={installer.name} className="h-8 w-auto object-contain" />
+              <img
+                src={installerLogoUrl}
+                alt={installerLogoAlt(installer.name)}
+                className="h-8 w-auto object-contain"
+              />
             ) : null}
-            <div>
-              <p className="text-sm font-bold text-slate-900">{installer.name}</p>
-              {installer.tagline ? (
-                <p className="text-[10px] text-slate-500">{installer.tagline}</p>
-              ) : null}
-            </div>
+            {installer.name || installer.tagline ? (
+              <div>
+                {installer.name ? (
+                  <p className="text-sm font-bold text-slate-900">{installer.name}</p>
+                ) : null}
+                {installer.tagline ? (
+                  <p className="text-[10px] text-slate-500">{installer.tagline}</p>
+                ) : null}
+              </div>
+            ) : null}
           </div>
           <div className="flex items-center gap-2 text-slate-600">
             <CalendarDays className="h-3.5 w-3.5 text-slate-400" />

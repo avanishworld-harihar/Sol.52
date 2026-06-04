@@ -31,6 +31,8 @@ import {
   buildResidentialBomFromConfig,
   inverterBrandsLabel,
   isResidentialRequirementInput,
+  panelBrandsLabel,
+  resolveProposalPanelBrand,
   residentialAnnualGenerationUnits,
   residentialGrossCostInr,
   residentialNetCostInr,
@@ -46,7 +48,8 @@ import {
 } from "@/lib/commercial-panel-track-policy";
 import { quoteResidentialSolar } from "@/lib/residential-solar-engine";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
-import { resolvedCompanyProfileForLang } from "@/lib/proposal-company-resolve";
+import { resolvedCompanyProfileForLang, adaptCompanyProfileForInstaller } from "@/lib/proposal-company-resolve";
+import { resolveInstallerNameForProposal } from "@/lib/proposal-branding-settings";
 import { hindiHonoredDisplayName } from "@/lib/roman-name-to-devanagari";
 import { dict, monthLabels, type ProposalDict, type ProposalLang } from "@/lib/proposal-i18n";
 import { ATAL_GRIHA_JYOTI } from "@/lib/mp-tariff-2025-26";
@@ -531,9 +534,10 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
         computePmSuryaGharSubsidy(deckSystemKw)
     );
     const fallbackBrands = pickBrandSet({ preferredPanelBrand: input.panelBrand, systemKw: deckSystemKw });
+    const panelLabel = resolveProposalPanelBrand(resCfg, fallbackBrands.panel);
     brands = {
       ...fallbackBrands,
-      panel: fallbackBrands.panel,
+      panel: panelLabel,
       inverter: inverterBrandsLabel(resCfg.inverterBrandOptions, fallbackBrands.inverter),
       cables: wireBrandsLabel(resCfg.pricing, fallbackBrands.cables),
     };
@@ -596,8 +600,13 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
   const paymentMilestones = buildPaymentMilestones(grossSystemCost);
   const amcOptions = buildAmcOptions(grossSystemCost, lang);
   const baseCompany = defaultCompanyProfile(lang);
+  const installerLabel = resolveInstallerNameForProposal({ installerName: input.installerName });
   const companyProfile: CompanyProfile = resolvedCompanyProfileForLang(
-    { ...baseCompany, ...(input.companyProfile ?? {}) },
+    adaptCompanyProfileForInstaller(
+      { ...baseCompany, ...(input.companyProfile ?? {}) },
+      installerLabel,
+      input.companyProfile?.gstNumber ?? ""
+    ),
     lang
   );
 
@@ -607,7 +616,7 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
   const upiLink = bankDetails.upiId
     ? buildUpiDeepLink({
         upiId: bankDetails.upiId,
-        payeeName: bankDetails.accountName ?? input.installerName ?? "Harihar Solar",
+        payeeName: bankDetails.accountName ?? input.installerName?.trim() ?? "",
         amountInr: paymentMilestones[0]?.amountInr ?? null,
         note: `${input.systemKw}kW Solar Advance`
       })
@@ -622,7 +631,7 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
   return {
     honoredName:
       lang === "hi" ? hindiHonoredDisplayName(withHonorific(input.customerName)) : withHonorific(input.customerName),
-    installer: (input.installerName ?? "Harihar Solar").trim(),
+    installer: resolveInstallerNameForProposal({ installerName: input.installerName }),
     tagline: (input.installerTagline ?? "100% Local · Satna · Madhya Pradesh").trim(),
     contact: (input.installerContact ?? "+91-9993322267 · harihar@solar.com").trim(),
     systemKw: deckSystemKw,
@@ -817,7 +826,7 @@ const TOTAL_PAGES = 12;
 export async function buildPremiumProposalPptBuffer(input: PremiumProposalPptInput): Promise<Buffer> {
   const pptx = new PptxGenJS();
   pptx.layout = "LAYOUT_16x9";
-  pptx.author = input.installerName ?? "Harihar Solar";
+  pptx.author = resolveInstallerNameForProposal({ installerName: input.installerName }) || "Solar Proposal";
   pptx.subject = "Premium solar proposal";
   pptx.title = `Premium proposal — ${input.customerName}`;
 

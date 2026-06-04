@@ -27,8 +27,13 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import type { ProposalDeckSummary, PremiumProposalPptInput } from "@/lib/proposal-ppt";
+import {
+  PROPOSAL_BRANDING_UPDATED_EVENT,
+  readProposalBrandingSettings,
+  resolveInstallerDisplayName,
+} from "@/lib/proposal-branding-settings";
 import type { ProposalLang } from "@/lib/proposal-i18n";
+import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposal-ppt";
 
 // Section blocks
 import { BlockCommercialCover } from "./blocks/commercial/block-commercial-cover";
@@ -148,6 +153,23 @@ export default function CommercialProposalView({
   const [presentMode, setPresentMode] = useState(false);
   const [presentIdx, setPresentIdx] = useState(0);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [displayInstaller, setDisplayInstaller] = useState(installer);
+  const [displayLogoUrl, setDisplayLogoUrl] = useState(installerLogoUrl);
+
+  useEffect(() => {
+    const sync = () => {
+      const branding = readProposalBrandingSettings();
+      const resolved = resolveInstallerDisplayName(branding);
+      const name =
+        resolved ||
+        (installer.name.trim() && installer.name !== "Harihar Solar" ? installer.name.trim() : "");
+      setDisplayInstaller({ ...installer, name });
+      setDisplayLogoUrl(installerLogoUrl?.trim() || branding.installerLogoUrl.trim() || undefined);
+    };
+    sync();
+    window.addEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
+    return () => window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
+  }, [installer, installerLogoUrl]);
 
   // ── Active-section tracking via IntersectionObserver ─────────────────────
   useEffect(() => {
@@ -262,8 +284,8 @@ export default function CommercialProposalView({
   const ctx: CommercialCtx = {
     summary,
     pptInput,
-    installer,
-    installerLogoUrl,
+    installer: displayInstaller,
+    installerLogoUrl: displayLogoUrl,
     siteImages,
     proposalId: id,
     customerName,

@@ -58,10 +58,14 @@ export function withHonorific(rawName: string | null | undefined): string {
  * Default panel/inverter/structure brands by system size & customer preference.
  */
 export function pickBrandSet(opts: {
-  preferredPanelBrand?: DeckBrand;
+  preferredPanelBrand?: DeckBrand | string;
   systemKw: number;
-}): { panel: DeckBrand; inverter: string; mounting: string; cables: string } {
-  const panel: DeckBrand = opts.preferredPanelBrand ?? (opts.systemKw <= 3 ? "Adani" : opts.systemKw <= 7 ? "Waaree" : "JSW");
+}): { panel: string; inverter: string; mounting: string; cables: string } {
+  const panel: string =
+    (typeof opts.preferredPanelBrand === "string" && opts.preferredPanelBrand.trim()
+      ? opts.preferredPanelBrand.trim()
+      : undefined) ??
+    (opts.systemKw <= 3 ? "Adani" : opts.systemKw <= 7 ? "Waaree" : "JSW");
   return {
     panel,
     inverter: "Growatt / Deye (BIS-certified)",
@@ -87,7 +91,7 @@ function bomNetMeterAmcCopy(freeAmcYears: BomFreeAmcYears): { spec: string; warr
 
 export function buildBom(opts: {
   systemKw: number;
-  preferredPanelBrand?: DeckBrand;
+  preferredPanelBrand?: DeckBrand | string;
   /** Included free AMC on the BOM; defaults to 1 year. */
   includedFreeAmcYears?: BomFreeAmcYears;
 }): DeckBomItem[] {

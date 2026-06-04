@@ -7,6 +7,24 @@ import { hasDevanagari } from "@/lib/roman-name-to-devanagari";
  * (merged from CRM defaults), fall back to Hindi marketing copy so the
  * customer sees one coherent language.
  */
+export function adaptCompanyProfileForInstaller(
+  profile: CompanyProfile,
+  installerName: string,
+  gstNumber?: string
+): CompanyProfile {
+  const label = installerName.trim();
+  const gst = gstNumber?.trim() ?? profile.gstNumber?.trim() ?? "";
+  const stripHarihar = (text: string) =>
+    text
+      .replace(/\bHarihar Solar\b/gi, label || "Our team")
+      .replace(/हरिहर सोलर/g, label || "हमारी टीम");
+  return {
+    ...profile,
+    gstNumber: gst,
+    aboutUsParagraphs: profile.aboutUsParagraphs.map(stripHarihar),
+  };
+}
+
 export function resolvedCompanyProfileForLang(profile: CompanyProfile, lang: ProposalLang): CompanyProfile {
   if (lang !== "hi") return profile;
   const def = defaultCompanyProfile("hi");

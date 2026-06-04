@@ -153,6 +153,17 @@ export function panelBrandsLabel(opts: ResidentialBrandOption[] | undefined, fal
   return `${names.slice(0, -1).join(", ")} or ${names[names.length - 1]}`;
 }
 
+/** Primary panel brand for proposal/BOM — active catalog selection wins over kW defaults. */
+export function resolveProposalPanelBrand(
+  config: ResidentialProposalConfig,
+  fallback: string
+): string {
+  const activeId = config.brandCatalog?.activeBrandId;
+  const activeEntry = config.brandCatalog?.entries?.find((e) => e.brandId === activeId);
+  if (activeEntry?.brand?.trim()) return activeEntry.brand.trim();
+  return panelBrandsLabel(config.panelBrandOptions, config.solar.brand?.trim() || fallback);
+}
+
 export function inverterBrandsLabel(opts: ResidentialBrandOption[] | undefined, fallback: string): string {
   const names = (opts ?? []).map((o) => o.brand.trim()).filter(Boolean);
   if (names.length === 0) return fallback;
@@ -170,7 +181,7 @@ export function buildResidentialBomFromConfig(
     config.solar.technology?.trim() ||
     "Mono PERC / TOPCon";
   const defaultBrands = pickBrandSet({ systemKw: kw });
-  const panelBrand = panelBrandsLabel(config.panelBrandOptions, config.solar.brand || defaultBrands.panel);
+  const panelBrand = resolveProposalPanelBrand(config, config.solar.brand || defaultBrands.panel);
   const inverterBrand = inverterBrandsLabel(
     config.inverterBrandOptions,
     defaultBrands.inverter

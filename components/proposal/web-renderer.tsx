@@ -48,7 +48,7 @@ import {
   readProposalWebTheme,
   writeProposalWebTheme,
 } from "@/lib/proposal-web-theme";
-import { PROPOSAL_BRANDING_UPDATED_EVENT, readProposalBrandingSettings } from "@/lib/proposal-branding-settings";
+import { PROPOSAL_BRANDING_UPDATED_EVENT, readProposalBrandingSettings, resolveInstallerDisplayName } from "@/lib/proposal-branding-settings";
 import { JourneyBridge, ProposalJourneyProgress } from "@/components/proposal/proposal-journey";
 import { isProposalBillAuditBacked } from "@/lib/proposal-bill-audit-eligibility";
 
@@ -461,9 +461,15 @@ function ProposalWebRendererInner({
 
   const presetId = doc.preset_id as ProposalPresetId;
 
-  // Installer data from IR
+  // Installer data from IR — overlay local branding (logo + name) when saved in More tab
+  const branding = readProposalBrandingSettings();
+  const resolvedInstallerName = resolveInstallerDisplayName(branding);
   const installer = {
-    name: doc.installer.name,
+    name:
+      resolvedInstallerName ||
+      (doc.installer.name?.trim() && doc.installer.name !== "Harihar Solar"
+        ? doc.installer.name.trim()
+        : ""),
     contact: doc.installer.contact ?? "",
     tagline: doc.installer.tagline ?? "",
   };

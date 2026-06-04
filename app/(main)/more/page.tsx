@@ -297,7 +297,7 @@ export default function MorePage() {
 
   function brandingSnapshot(overrides: Partial<ProposalBrandingSettings> = {}): ProposalBrandingSettings {
     return {
-      installerName: companyName.trim() || DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerName,
+      installerName: companyName.trim(),
       installerContact: companyContact.trim() || DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerContact,
       installerEmail: companyEmail.trim(),
       installerLogoUrl: companyLogo.trim(),
@@ -305,7 +305,7 @@ export default function MorePage() {
       themePreset,
       paymentQrCodeUrl: paymentQrCodeUrl.trim(),
       amcSelectedYears: amcYears,
-      bankAccountName: bankAccName.trim() || DEFAULT_PROPOSAL_BRANDING_SETTINGS.bankAccountName,
+      bankAccountName: bankAccName.trim(),
       bankAccountNumber: bankAccNo.trim(),
       bankIfsc: bankIfsc.trim(),
       bankBranch: bankBranch.trim(),

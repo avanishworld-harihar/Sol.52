@@ -13,6 +13,7 @@
 
 import { motion } from "framer-motion";
 import { Download, Mail, Phone, Share2, Zap } from "lucide-react";
+import { installerLogoAlt } from "@/lib/proposal-branding-settings";
 import type { CommercialCtx } from "@/components/proposal/commercial-proposal-view";
 import { CommercialSectionHeader, GlassPanel, SectionReveal } from "./commercial-shared";
 
@@ -164,7 +165,7 @@ export function BlockPremiumClosing({ ctx }: Props) {
           <div className="grid grid-cols-2 gap-6">
             {[
               { label: isHi ? "ग्राहक हस्ताक्षर" : "Client Signature", sub: isHi ? "नाम एवं पदनाम" : "Name & Designation" },
-              { label: isHi ? "EPC अधिकृत हस्ताक्षर" : "EPC Authorised Signatory", sub: installer.name },
+              { label: isHi ? "EPC अधिकृत हस्ताक्षर" : "EPC Authorised Signatory", sub: installer.name || (isHi ? "EPC पक्ष" : "EPC Partner") },
             ].map((sig, i) => (
               <div key={i}>
                 <div className="mb-2 h-12 rounded-md border border-dashed border-slate-300" />
@@ -205,7 +206,7 @@ export function BlockPremiumClosing({ ctx }: Props) {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={installerLogoUrl}
-                  alt={installer.name}
+                  alt={installerLogoAlt(installer.name)}
                   className="h-12 w-auto rounded object-contain"
                 />
               ) : (
@@ -214,7 +215,9 @@ export function BlockPremiumClosing({ ctx }: Props) {
                 </div>
               )}
               <div>
-                <p className="text-base font-bold text-slate-900">{installer.name}</p>
+                {installer.name ? (
+                  <p className="text-base font-bold text-slate-900">{installer.name}</p>
+                ) : null}
                 {installer.tagline && (
                   <p className="text-xs text-slate-500">{installer.tagline}</p>
                 )}

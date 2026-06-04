@@ -9,7 +9,7 @@ import { ensureBrandCatalog } from "@/lib/residential-brand-catalog";
 import { syncEquipmentPresetsFromConfig } from "@/lib/residential-equipment-presets";
 import {
   inverterBrandsLabel,
-  panelBrandsLabel,
+  resolveProposalPanelBrand,
   wireBrandsLabel,
 } from "@/lib/residential-deck-helpers";
 import { syncResidentialSolarToLineItems } from "@/lib/residential-solar-engine";
@@ -30,7 +30,7 @@ export function syncQuoteEquipmentToLineItems(
   lines: PricingLineItem[],
   pricing: ResidentialProposalConfig
 ): PricingLineItem[] {
-  const panelBrand = panelBrandsLabel(pricing.panelBrandOptions, pricing.solar.brand ?? "Waaree");
+  const panelBrand = resolveProposalPanelBrand(pricing, pricing.solar.brand ?? "Waaree");
   const inverterBrand = inverterBrandsLabel(pricing.inverterBrandOptions, "");
   const wireBrand = wireBrandsLabel(pricing.pricing);
 

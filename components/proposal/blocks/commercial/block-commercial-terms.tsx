@@ -163,9 +163,9 @@ export function BlockCommercialTerms({ ctx }: Props) {
               <span className="text-lg font-bold tabular-nums text-slate-900">{fmtL(totalCost)}</span>
             </div>
             <div className="space-y-2">
-              {paymentMilestones.map((m, i) => {
-                const pct = "pct" in m ? (m as { label: string; pct: number; amount?: number }).pct : 0;
-                const amount = "amount" in m ? (m as { amount?: number }).amount ?? 0 : Math.round((pct / 100) * totalCost);
+              {paymentMilestones.map((m: { label: string; pct?: number; amount?: number; amountInr?: number }, i: number) => {
+                const pct = m.pct ?? 0;
+                const amount = m.amount ?? m.amountInr ?? Math.round((pct / 100) * totalCost);
                 return (
                   <motion.div
                     key={i}
@@ -307,8 +307,8 @@ export function BlockCommercialTerms({ ctx }: Props) {
         </div>
         <p className="px-5 py-2.5 text-[10px] text-slate-400">
           {isHi
-            ? `* वारंटी दावे के लिए ${installer.name} से संपर्क करें। सभी वारंटी नियमित रखरखाव की शर्त पर लागू हैं।`
-            : `* Contact ${installer.name} for warranty claims. All warranties subject to normal maintenance and use conditions.`}
+            ? `* वारंटी दावे के लिए ${installer.name || "EPC पक्ष"} से संपर्क करें। सभी वारंटी नियमित रखरखाव की शर्त पर लागू हैं।`
+            : `* Contact ${installer.name || "your EPC partner"} for warranty claims. All warranties subject to normal maintenance and use conditions.`}
         </p>
         </GlassPanel>
       </SectionReveal>

@@ -1,5 +1,6 @@
 import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposal-ppt";
 import { summarizeProposalDeck } from "@/lib/proposal-ppt";
+import { resolveProposalPanelBrand } from "@/lib/residential-deck-helpers";
 import { computeGrossSystemCostInr } from "@/lib/solar-engine";
 import { computePmSuryaGharSubsidy } from "@/lib/proposal-deck-helpers";
 import { defaultCommercialPanelLineItems } from "@/lib/commercial-bom-panels";
@@ -51,6 +52,19 @@ export function hardwareFromPerWatt(systemKw: number, pricePerWattInr: number): 
  */
 export type ProposalPricingInsert = Omit<ProposalPricingRow, "id" | "updated_at">;
 
+/** Panel brand for BOM line_items — prefer Quote & equipment selection over kW default. */
+function panelBrandHintFromPpt(ppt: PremiumProposalPptInput): string | null {
+  const cfg = ppt.residentialConfig;
+  if (cfg) {
+    const hint = resolveProposalPanelBrand(
+      cfg,
+      cfg.solar.brand ?? (typeof ppt.panelBrand === "string" ? ppt.panelBrand : "Waaree")
+    );
+    if (hint.trim()) return hint;
+  }
+  return typeof ppt.panelBrand === "string" ? ppt.panelBrand : null;
+}
+
 export function defaultProposalPricingFromDeck(
   proposalId: string,
   ppt: PremiumProposalPptInput,
@@ -70,7 +84,7 @@ export function defaultProposalPricingFromDeck(
   const w = wattsFromSystemKw(systemKw);
   const pricePerWatt = w > 0 ? Math.round((gross / w) * 10000) / 10000 : 0;
 
-  const panelBrandHint = typeof ppt.panelBrand === "string" ? ppt.panelBrand : null;
+  const panelBrandHint = panelBrandHintFromPpt(ppt);
   const line_items =
     opts?.presetId === "commercial_executive"
       ? defaultCommercialPanelLineItems({

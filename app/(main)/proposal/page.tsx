@@ -19,7 +19,7 @@ import {
 } from "@/lib/bill-parse";
 import { INDIAN_STATES_AND_UTS } from "@/lib/indian-states-uts";
 import { INSTALLER_REGION_EVENT, readInstallerRegion } from "@/lib/installer-region-storage";
-import { formatInstallerContactLine, readProposalBrandingSettings } from "@/lib/proposal-branding-settings";
+import { formatInstallerContactLine, readProposalBrandingSettings, resolveInstallerDisplayName } from "@/lib/proposal-branding-settings";
 import { FloatingLabelInput, FloatingLabelSelect } from "@/components/ui/floating-label-input";
 import { NumericTextInput } from "@/components/ui/numeric-text-input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -1558,7 +1558,10 @@ function ProposalPageContent() {
       lang: proposalLang,
       amcSelectedYears: branding.amcSelectedYears,
       financeOption: { interestRatePct: financeRatePct, tenuresYears: [3, 5, 7] as number[] },
-      installerName: branding.installerName.trim() || undefined,
+      installerName: (() => {
+        const n = resolveInstallerDisplayName(branding);
+        return n || undefined;
+      })(),
       installerContact: installerContactLine,
       customerProfile: {
         consumerId: manual.consumerId || undefined,

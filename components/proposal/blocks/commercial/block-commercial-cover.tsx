@@ -7,6 +7,7 @@
 
 import { motion } from "framer-motion";
 import { Zap } from "lucide-react";
+import { installerLogoAlt } from "@/lib/proposal-branding-settings";
 import type { CommercialCtx } from "@/components/proposal/commercial-proposal-view";
 
 type Props = { ctx: CommercialCtx };
@@ -38,7 +39,7 @@ export function BlockCommercialCover({ ctx }: Props) {
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={installerLogoUrl}
-              alt={installer.name}
+              alt={installerLogoAlt(installer.name)}
               className="h-9 w-auto max-w-[140px] object-contain object-left"
             />
           ) : (
@@ -46,7 +47,9 @@ export function BlockCommercialCover({ ctx }: Props) {
               <Zap className="h-4 w-4 text-sky-600" />
             </div>
           )}
-          <p className="truncate text-sm font-bold text-slate-900">{installer.name}</p>
+          {installer.name ? (
+            <p className="truncate text-sm font-bold text-slate-900">{installer.name}</p>
+          ) : null}
         </div>
         <span className="shrink-0 rounded border border-slate-300 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-600">
           {isHi ? "गोपनीय" : "Confidential"}
@@ -75,8 +78,12 @@ export function BlockCommercialCover({ ctx }: Props) {
       </main>
 
       <footer className="commercial-cover-confidential-footer border-t border-slate-200 px-6 py-3 text-center text-[10px] text-slate-500">
-        {installer.name}
-        <span className="mx-2 text-slate-300">·</span>
+        {installer.name ? (
+          <>
+            {installer.name}
+            <span className="mx-2 text-slate-300">·</span>
+          </>
+        ) : null}
         {dateStr}
       </footer>
     </motion.div>
