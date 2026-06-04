@@ -13,7 +13,7 @@
 import { motion } from "framer-motion";
 import { TrendingUp, DollarSign, Clock, Leaf } from "lucide-react";
 import type { CommercialCtx } from "@/components/proposal/commercial-proposal-view";
-import { buildCashflowChartRows } from "@/lib/commercial-proposal-financials";
+import { buildCashflowChartRows } from "@/lib/proposal-financial-engine";
 import {
   CommercialSectionHeader,
   CountUp,

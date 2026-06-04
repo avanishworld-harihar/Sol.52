@@ -48,7 +48,7 @@ import {
 import { quoteResidentialSolar } from "@/lib/residential-solar-engine";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
 import { resolvedCompanyProfileForLang, adaptCompanyProfileForInstaller } from "@/lib/proposal-company-resolve";
-import { reconcileCommercialFinancialMetrics } from "@/lib/commercial-proposal-financials";
+import { computeProposalFinancials } from "@/lib/proposal-financial-engine";
 import { resolveInstallerNameForProposal } from "@/lib/proposal-branding-settings";
 import { hindiHonoredDisplayName } from "@/lib/roman-name-to-devanagari";
 import { dict, monthLabels, type ProposalDict, type ProposalLang } from "@/lib/proposal-i18n";
@@ -584,7 +584,7 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
     overrideNet != null && Number.isFinite(overrideNet) && overrideNet >= 0 ? n(overrideNet) : computedNet;
 
   const isCommercialDeck = Boolean(input.commercialConfig);
-  const reconciled = reconcileCommercialFinancialMetrics({
+  const reconciled = computeProposalFinancials({
     annualGen,
     netCost,
     yearlyBill,

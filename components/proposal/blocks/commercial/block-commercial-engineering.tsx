@@ -16,7 +16,7 @@ import { motion } from "framer-motion";
 import { Gauge, ShieldCheck, Cpu } from "lucide-react";
 import type { CommercialCtx } from "@/components/proposal/commercial-proposal-view";
 import { CommercialSectionHeader, GlassPanel, SectionReveal } from "./commercial-shared";
-import { isSchoolInstitutionOrg } from "@/lib/commercial-proposal-financials";
+import { isSchoolInstitutionOrg } from "@/lib/proposal-financial-engine";
 import { BlockSchoolSafetyCard } from "./block-school-safety-card";
 
 function MetricRow({ label, value, highlight = false }: { label: string; value: string; highlight?: boolean }) {

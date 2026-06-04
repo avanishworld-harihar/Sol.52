@@ -1,0 +1,39 @@
+{
+  "id": "golden-school",
+  "description": "50 kW commercial executive — School / Institution",
+  "input": {
+    "customerName": "Golden Valley Public School",
+    "location": "Bhopal, MP",
+    "systemKw": 50,
+    "yearlyBill": 0,
+    "afterSolar": 0,
+    "saving": 510000,
+    "paybackYears": 8.3,
+    "monthlyUnits": {
+      "jan": 0,
+      "feb": 0,
+      "mar": 0,
+      "apr": 0,
+      "may": 0,
+      "jun": 0,
+      "jul": 0,
+      "aug": 0,
+      "sep": 0,
+      "oct": 0,
+      "nov": 0,
+      "dec": 0
+    },
+    "state": "Madhya Pradesh",
+    "discom": "MPPKVVCL",
+    "connectionType": "LT",
+    "dataSource": "requirement",
+    "grossSystemCostInr": 4250000,
+    "pmSuryaGharSubsidyInr": 0,
+    "netCostInr": 4250000,
+    "commercialConfig": {
+      "orgType": "school",
+      "dcrComparison": { "enabled": true },
+      "capacityScenarios": { "enabled": true }
+    }
+  }
+}

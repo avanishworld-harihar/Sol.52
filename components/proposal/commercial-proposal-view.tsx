@@ -35,9 +35,9 @@ import {
 import type { ProposalLang } from "@/lib/proposal-i18n";
 import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposal-ppt";
 import {
+  computeProposalFinancialsFromDeck,
   isSchoolInstitutionOrg,
-  reconcileCommercialFinancialMetrics,
-} from "@/lib/commercial-proposal-financials";
+} from "@/lib/proposal-financial-engine";
 
 // Section blocks
 import { BlockCommercialCover } from "./blocks/commercial/block-commercial-cover";
@@ -233,17 +233,7 @@ export default function CommercialProposalView({
 
   // ── Derived commercial metrics (single reconciled source) ───────────────
 
-  const financials = reconcileCommercialFinancialMetrics({
-    annualGen: summary.annualGen,
-    netCost: summary.netCost,
-    yearlyBill: summary.yearlyBill,
-    afterSolar: summary.afterSolar,
-    billDerivedAnnualSaving: summary.annualSaving,
-    paybackHint: summary.paybackYears,
-    savingHintInr: pptInput.saving,
-    effectiveTariffInrPerKwh: summary.effectiveTariffRateInrPerKwh,
-    preferGenerationPath: Boolean(pptInput.commercialConfig),
-  });
+  const financials = computeProposalFinancialsFromDeck(summary, pptInput);
 
   const roiPct = financials.roiPctFirstYear;
   const irr = financials.irrEstimate;

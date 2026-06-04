@@ -1,0 +1,34 @@
+{
+  "id": "golden-residential",
+  "description": "Bill-backed 5 kW residential smart proposal",
+  "input": {
+    "customerName": "Golden Residential Customer",
+    "location": "Satna, MP",
+    "systemKw": 5,
+    "yearlyBill": 72000,
+    "afterSolar": 18000,
+    "saving": 54000,
+    "paybackYears": 5.5,
+    "monthlyUnits": {
+      "jan": 420,
+      "feb": 380,
+      "mar": 400,
+      "apr": 450,
+      "may": 520,
+      "jun": 580,
+      "jul": 600,
+      "aug": 590,
+      "sep": 480,
+      "oct": 420,
+      "nov": 400,
+      "dec": 410
+    },
+    "state": "Madhya Pradesh",
+    "discom": "MPPKVVCL",
+    "connectionType": "LT",
+    "dataSource": "bill",
+    "grossSystemCostInr": 275000,
+    "pmSuryaGharSubsidyInr": 78000,
+    "netCostInr": 197000
+  }
+}

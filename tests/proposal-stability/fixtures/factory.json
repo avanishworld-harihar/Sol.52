@@ -1,0 +1,39 @@
+{
+  "id": "golden-factory",
+  "description": "100 kW commercial executive — Factory",
+  "input": {
+    "customerName": "Golden Satna Industrial Works",
+    "location": "Satna, MP",
+    "systemKw": 100,
+    "yearlyBill": 0,
+    "afterSolar": 0,
+    "saving": 1020000,
+    "paybackYears": 8.3,
+    "monthlyUnits": {
+      "jan": 0,
+      "feb": 0,
+      "mar": 0,
+      "apr": 0,
+      "may": 0,
+      "jun": 0,
+      "jul": 0,
+      "aug": 0,
+      "sep": 0,
+      "oct": 0,
+      "nov": 0,
+      "dec": 0
+    },
+    "state": "Madhya Pradesh",
+    "discom": "MPPKVVCL",
+    "connectionType": "LT",
+    "dataSource": "requirement",
+    "grossSystemCostInr": 8500000,
+    "pmSuryaGharSubsidyInr": 0,
+    "netCostInr": 8500000,
+    "commercialConfig": {
+      "orgType": "factory",
+      "dcrComparison": { "enabled": true },
+      "capacityScenarios": { "enabled": true }
+    }
+  }
+}
