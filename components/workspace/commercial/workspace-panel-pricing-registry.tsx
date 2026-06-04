@@ -5,11 +5,9 @@ import {
   PANEL_CATALOG,
   PANEL_TECHNOLOGY_OPTIONS,
   type PanelCatalogEntry,
-  type PanelType,
 } from "@/lib/commercial-panel-catalog";
 import type { CommercialProposalConfig } from "@/lib/commercial-proposal-config";
 import { NumericTextInput } from "@/components/ui/numeric-text-input";
-import { WorkspaceDcrComparisonEngine } from "@/components/workspace/commercial/workspace-dcr-comparison-engine";
 import type { ProposalDeckSummary } from "@/lib/proposal-ppt";
 import { cn } from "@/lib/utils";
 
@@ -31,43 +29,38 @@ function effectiveRate(entry: PanelCatalogEntry, config: CommercialProposalConfi
   return getOverride(config, entry.id).ratePerWpInr ?? entry.ratePerWpInr;
 }
 
-export function WorkspacePanelPricingRegistry({ systemKw, summary, config, onChange }: Props) {
+export function WorkspacePanelPricingRegistry({ config, onChange }: Props) {
   const reg = config.panelRegistry ?? {};
   const dcrPanels = PANEL_CATALOG.filter((e) => e.panelType === "DCR");
-  const nonDcrPanels = PANEL_CATALOG.filter((e) => e.panelType === "NON_DCR");
 
   function patchRegistry(partial: NonNullable<CommercialProposalConfig["panelRegistry"]>) {
     const nextReg = { ...reg, ...partial };
     onChange({ ...config, panelRegistry: nextReg });
   }
 
-  function selectPanel(type: PanelType, catalogId: string) {
-    const entry = PANEL_CATALOG.find((e) => e.id === catalogId);
+  function selectPanel(catalogId: string) {
+    const entry = PANEL_CATALOG.find((e) => e.id === catalogId && e.panelType === "DCR");
     if (!entry) return;
 
     const nextReg = {
       ...reg,
-      ...(type === "DCR"
-        ? { selectedDcrCatalogId: catalogId }
-        : { selectedNonDcrCatalogId: catalogId }),
+      selectedDcrCatalogId: catalogId,
+      selectedNonDcrCatalogId: undefined,
     };
-
-    const primaryId = nextReg.selectedNonDcrCatalogId ?? catalogId;
-    const primary = PANEL_CATALOG.find((e) => e.id === primaryId) ?? entry;
 
     onChange({
       ...config,
       panelRegistry: nextReg,
       panel: {
-        catalogId: primary.id,
-        brandId: primary.brandId,
-        watt: primary.watt,
-        panelType: primary.panelType,
-        ratePerWpInr: effectiveRate(primary, { ...config, panelRegistry: nextReg }),
-        technology: primary.technology,
+        catalogId: entry.id,
+        brandId: entry.brandId,
+        watt: entry.watt,
+        panelType: "DCR",
+        ratePerWpInr: effectiveRate(entry, { ...config, panelRegistry: nextReg }),
+        technology: entry.technology,
       },
       dcrComparison: {
-        enabled: config.dcrComparison?.enabled !== false,
+        enabled: false,
         brandId: entry.brandId,
         watt: entry.watt,
       },
@@ -89,28 +82,14 @@ export function WorkspacePanelPricingRegistry({ systemKw, summary, config, onCha
     <div className="space-y-8">
       <RegistrySection
         title="DCR panel registry"
-        subtitle="ALMM-listed modules — subsidy-eligible path"
+        subtitle="ALMM-listed modules — proposal pricing uses More → Rate card"
         accent="emerald"
         entries={dcrPanels}
         selectedId={reg.selectedDcrCatalogId}
         config={config}
-        onSelect={(id) => selectPanel("DCR", id)}
+        onSelect={(id) => selectPanel(id)}
         onPatchOverride={patchOverride}
       />
-      <RegistrySection
-        title="Non-DCR panel registry"
-        subtitle="Import / non-ALMM modules — value path"
-        accent="slate"
-        entries={nonDcrPanels}
-        selectedId={reg.selectedNonDcrCatalogId}
-        config={config}
-        onSelect={(id) => selectPanel("NON_DCR", id)}
-        onPatchOverride={patchOverride}
-      />
-
-      <div className="border-t border-slate-200/80 pt-6">
-        <WorkspaceDcrComparisonEngine systemKw={systemKw} summary={summary} config={config} />
-      </div>
 
       <div className="rounded-xl border border-sky-100 bg-sky-50/50 px-3 py-2.5">
         <p className="text-[11px] font-semibold text-sky-900">Inverter phase (BOM)</p>

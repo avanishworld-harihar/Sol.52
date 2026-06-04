@@ -27,7 +27,7 @@ const META: Record<WorkspaceCommercialSection, { title: string; subtitle: string
   },
   panel: {
     title: "Panel & Pricing",
-    subtitle: "DCR and Non-DCR pricing intelligence registries with live plant comparison.",
+    subtitle: "DCR panel registry — rates align with More → Rate card on proposals.",
   },
   scenarios: {
     title: "Capacity Scenarios",

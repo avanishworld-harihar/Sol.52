@@ -17,11 +17,13 @@ type Props = {
   config: ResidentialProposalConfig;
   onChange: (next: ResidentialProposalConfig) => void;
   className?: string;
+  /** Commercial — show DCR rate-card prices only. */
+  dcrOnly?: boolean;
 };
 
 const inr = (n: number) => `₹${Math.round(n).toLocaleString("en-IN")}`;
 
-export function ResidentialBrandComparePanel({ config, onChange, className }: Props) {
+export function ResidentialBrandComparePanel({ config, onChange, className, dcrOnly = false }: Props) {
   const base = ensureBrandCatalog(config);
   const catalog = base.brandCatalog;
   const raw = base.brandCompare ?? { enabled: false };
@@ -56,7 +58,9 @@ export function ResidentialBrandComparePanel({ config, onChange, className }: Pr
             <ChevronDown className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180" />
           </p>
           <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-            Pick two panel brands — DCR &amp; Non-DCR ₹ come from each brand&apos;s Smart catalog table.
+            {dcrOnly
+              ? "Pick two brands — plant gross (₹) from More → Rate card (DCR)."
+              : "Pick two panel brands — DCR & Non-DCR ₹ come from each brand's Smart catalog table."}
           </p>
         </div>
         <label
@@ -106,15 +110,17 @@ export function ResidentialBrandComparePanel({ config, onChange, className }: Pr
                     {snapshot.brandB.dcrOk ? inr(snapshot.brandB.dcrGrossInr) : "—"}
                   </td>
                 </tr>
-                <tr>
-                  <td className="px-3 py-2 text-xs font-bold text-slate-600">Non-DCR @ {snapshot.kw} kW</td>
-                  <td className="px-3 py-2 text-xs font-bold tabular-nums text-emerald-700 dark:text-emerald-300">
-                    {snapshot.brandA.nonDcrOk ? inr(snapshot.brandA.nonDcrGrossInr) : "—"}
-                  </td>
-                  <td className="px-3 py-2 text-xs font-bold tabular-nums text-emerald-700 dark:text-emerald-300">
-                    {snapshot.brandB.nonDcrOk ? inr(snapshot.brandB.nonDcrGrossInr) : "—"}
-                  </td>
-                </tr>
+                {!dcrOnly ? (
+                  <tr>
+                    <td className="px-3 py-2 text-xs font-bold text-slate-600">Non-DCR @ {snapshot.kw} kW</td>
+                    <td className="px-3 py-2 text-xs font-bold tabular-nums text-emerald-700 dark:text-emerald-300">
+                      {snapshot.brandA.nonDcrOk ? inr(snapshot.brandA.nonDcrGrossInr) : "—"}
+                    </td>
+                    <td className="px-3 py-2 text-xs font-bold tabular-nums text-emerald-700 dark:text-emerald-300">
+                      {snapshot.brandB.nonDcrOk ? inr(snapshot.brandB.nonDcrGrossInr) : "—"}
+                    </td>
+                  </tr>
+                ) : null}
               </tbody>
             </table>
           </div>

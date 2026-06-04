@@ -134,12 +134,11 @@ export function defaultCommercialConfig(
     solarPanels: defaultSolarPanels(systemKw),
     brandComparison: { enabled: true, brandIdA: "adani", brandIdB: "waaree", tier: "balanced" },
     executionTimeline: defaultExecutionTimeline(),
-    panel: { catalogId: "waaree-540-non-dcr", brandId: "waaree", watt: 540, panelType: "NON_DCR" },
+    panel: { catalogId: "waaree-540-dcr", brandId: "waaree", watt: 540, panelType: "DCR" },
     panelRegistry: {
       selectedDcrCatalogId: "waaree-540-dcr",
-      selectedNonDcrCatalogId: "waaree-540-non-dcr",
     },
-    dcrComparison: { enabled: true, brandId: "waaree", watt: 540 },
+    dcrComparison: { enabled: false, brandId: "waaree", watt: 540 },
     capacityScenarios: {
       enabled: false,
       scenarios,
@@ -175,7 +174,7 @@ export function applyCommercialFlagsToLayout(
   config: CommercialProposalConfig
 ): ProposalTemplateV1 {
   const flags: Partial<Record<ProposalBlockId, boolean>> = {
-    dcr_comparison_card: config.dcrComparison?.enabled === true,
+    dcr_comparison_card: config.dcrComparison?.enabled === true, // default off — Non-DCR retired
     capacity_scenarios_card: config.capacityScenarios?.enabled === true,
     commercial_financing_card: config.financing?.enabled === true,
     dg_hybrid_analysis_card: config.dgAssumptions?.enabled === true,

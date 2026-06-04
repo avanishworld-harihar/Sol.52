@@ -83,24 +83,24 @@ export function createCommercialPanelLine(
   };
 }
 
-/** Ensures exactly one DCR and one Non-DCR panel line in the BOM. */
+/** Ensures one DCR panel line in the BOM (Non-DCR lines removed). */
 export function ensureCommercialPanelLines(lines: PricingLineItem[], systemKw: number): PricingLineItem[] {
-  let next = [...lines];
-  const tracks: PanelTrack[] = ["dcr", "non_dcr"];
+  let next = lines.filter((l) => !(l.kind === "panels" && l.panel_track === "non_dcr"));
+  const tracks: PanelTrack[] = ["dcr"];
 
   for (const track of tracks) {
     const existing = next.findIndex((l) => l.kind === "panels" && l.panel_track === track);
     if (existing >= 0) continue;
 
     const untrackedIdx = next.findIndex((l) => l.kind === "panels" && !l.panel_track);
-    if (untrackedIdx >= 0 && track === "non_dcr") {
+    if (untrackedIdx >= 0) {
       const u = next[untrackedIdx];
       next[untrackedIdx] = {
         ...u,
-        panel_track: "non_dcr",
-        label: "Solar modules (Non-DCR)",
+        panel_track: "dcr",
+        label: "Solar modules (DCR)",
         watt: u.watt ?? 540,
-        technology: u.technology ?? "PERC",
+        technology: u.technology ?? "Mono PERC",
       };
       continue;
     }
@@ -108,17 +108,13 @@ export function ensureCommercialPanelLines(lines: PricingLineItem[], systemKw: n
     const firstPanelIdx = next.findIndex((l) => l.kind === "panels");
     const line = createCommercialPanelLine(track, systemKw);
     if (firstPanelIdx >= 0) {
-      const insertAt = track === "dcr" ? firstPanelIdx : firstPanelIdx + 1;
-      next.splice(insertAt, 0, line);
+      next.splice(firstPanelIdx, 0, line);
     } else {
       next.unshift(line);
     }
   }
 
-  const hasBoth = tracks.every((t) => next.some((l) => l.kind === "panels" && l.panel_track === t));
-  if (hasBoth) {
-    next = next.filter((l) => !(l.kind === "panels" && !l.panel_track));
-  }
+  next = next.filter((l) => !(l.kind === "panels" && !l.panel_track));
 
   return next;
 }
@@ -144,7 +140,6 @@ export function defaultCommercialPanelLineItems(
 ): PricingLineItem[] {
   const brand = (opts.panelBrandHint ?? "").trim() || "Waaree";
   const dcr = createCommercialPanelLine("dcr", opts.system_kw, { brand });
-  const nonDcr = createCommercialPanelLine("non_dcr", opts.system_kw, { brand });
 
   const seed = (
     kind: PricingLineItem["kind"],
@@ -162,14 +157,11 @@ export function defaultCommercialPanelLineItems(
 
   const panelHardware = Math.max(0, Math.round(opts.hardware_inr));
   if (panelHardware > 0) {
-    const half = Math.round(panelHardware / 2);
-    dcr.unit_rate_inr = Math.round(half / Math.max(1, dcr.quantity));
-    nonDcr.unit_rate_inr = Math.round((panelHardware - half) / Math.max(1, nonDcr.quantity));
+    dcr.unit_rate_inr = Math.round(panelHardware / Math.max(1, dcr.quantity));
   }
 
   return [
     dcr,
-    nonDcr,
     seed("inverter", {}),
     seed("structure", { unit_rate_inr: Math.max(0, Math.round(opts.structure_inr)) }),
     seed("acdb_dcdb", {}),
@@ -192,55 +184,35 @@ export function syncCommercialConfigFromPanelLines(
   _systemKw: number
 ): CommercialProposalConfig {
   const dcrLine = lines.find((l) => l.kind === "panels" && l.panel_track === "dcr");
-  const nonLine = lines.find((l) => l.kind === "panels" && l.panel_track === "non_dcr");
-  if (!dcrLine && !nonLine) return config;
+  if (!dcrLine) return config;
 
   const reg = { ...(config.panelRegistry ?? {}) };
   const overrides = { ...(reg.overrides ?? {}) };
-
-  for (const [line, track] of [
-    [dcrLine, "dcr"] as const,
-    [nonLine, "non_dcr"] as const,
-  ]) {
-    if (!line) continue;
-    const watt = Math.max(100, Math.round(Number(line.watt) || 540));
-    const brandId = brandIdFromLineBrand(line.brand);
-    const catalogId =
-      findCatalogIdForTrack(brandId, watt, track) ??
-      `${brandId}-${watt}-${track === "dcr" ? "dcr" : "non-dcr"}`;
-    const rate = ratePerWpFromPanelLine(line);
-    overrides[catalogId] = { ...overrides[catalogId], ratePerWpInr: rate };
-    if (track === "dcr") reg.selectedDcrCatalogId = catalogId;
-    else reg.selectedNonDcrCatalogId = catalogId;
-  }
+  const watt = Math.max(100, Math.round(Number(dcrLine.watt) || 540));
+  const brandId = brandIdFromLineBrand(dcrLine.brand);
+  const catalogId =
+    findCatalogIdForTrack(brandId, watt, "dcr") ?? `${brandId}-${watt}-dcr`;
+  const rate = ratePerWpFromPanelLine(dcrLine);
+  overrides[catalogId] = { ...overrides[catalogId], ratePerWpInr: rate };
+  reg.selectedDcrCatalogId = catalogId;
 
   const next: CommercialProposalConfig = {
     ...config,
-    panelRegistry: { ...reg, overrides },
-  };
-
-  if (nonLine) {
-    const watt = Math.max(100, Math.round(Number(nonLine.watt) || 540));
-    const brandId = brandIdFromLineBrand(nonLine.brand);
-    const catalogId = reg.selectedNonDcrCatalogId ?? "waaree-540-non-dcr";
-    next.panel = {
+    panelRegistry: { ...reg, overrides, selectedNonDcrCatalogId: undefined },
+    panel: {
       catalogId,
       brandId,
       watt,
-      panelType: "NON_DCR",
-      ratePerWpInr: ratePerWpFromPanelLine(nonLine),
-      technology: nonLine.technology,
-    };
-  }
-
-  if (dcrLine) {
-    const watt = Math.max(100, Math.round(Number(dcrLine.watt) || 540));
-    next.dcrComparison = {
-      enabled: config.dcrComparison?.enabled ?? true,
-      brandId: brandIdFromLineBrand(dcrLine.brand),
+      panelType: "DCR",
+      ratePerWpInr: rate,
+      technology: dcrLine.technology,
+    },
+    dcrComparison: {
+      enabled: false,
+      brandId,
       watt,
-    };
-  }
+    },
+  };
 
   return next;
 }

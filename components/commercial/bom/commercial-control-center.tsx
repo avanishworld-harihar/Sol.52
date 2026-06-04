@@ -67,16 +67,9 @@ export function CommercialControlCenter({ config, summary, onChange, onOpenRevie
 
       <div className="grid gap-3 sm:grid-cols-2">
         <ToggleCard
-          icon={Scale}
-          title="DCR vs Non-DCR compare"
-          subtitle={dcrCmp ? `${inr(dcrCmp.deltaInr)} panel delta` : "Configure primary brands in solar section"}
-          checked={config.dcrComparison?.enabled !== false}
-          onChange={(on) => onChange({ ...config, dcrComparison: { ...config.dcrComparison, enabled: on } })}
-        />
-        <ToggleCard
           icon={GitCompare}
           title="Brand comparison"
-          subtitle="Compare 2 panel brands — Smart catalog pricing"
+          subtitle="Compare 2 panel brands — Rate card (DCR) pricing"
           checked={config.brandComparison?.enabled !== false}
           onChange={(on) => onChange({ ...config, brandComparison: { ...config.brandComparison, enabled: on } })}
         />

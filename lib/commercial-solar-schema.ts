@@ -107,13 +107,9 @@ export function defaultSolarPanels(plantCapacityKw: number): CommercialSolarPane
       ],
     },
     nonDcr: {
-      enabled: true,
-      collapsed: false,
-      rows: [
-        seedRow("LONGi", "longi", 575, "HiMO6", "NON_DCR", true),
-        seedRow("JinkoSolar", "jinko", 615, "Tiger Neo", "NON_DCR"),
-        seedRow("Waaree", "waaree", 625, "TOPCon (N-Type)", "NON_DCR"),
-      ],
+      enabled: false,
+      collapsed: true,
+      rows: [],
     },
   };
 }

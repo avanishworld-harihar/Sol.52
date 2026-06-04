@@ -24,6 +24,8 @@ type Props = Pick<BlockRenderContext, "summary" | "lang" | "darkMode"> & {
   brandIdA?: string;
   brandIdB?: string;
   enabled?: boolean;
+  /** Commercial — DCR plant gross only (rate card). */
+  dcrOnly?: boolean;
 };
 
 const inr = (v: number) => `₹${Math.max(0, Math.round(v)).toLocaleString("en-IN")}`;
@@ -36,6 +38,7 @@ export function BrandComparisonCard({
   brandIdA,
   brandIdB,
   enabled = true,
+  dcrOnly = false,
 }: Props) {
   const isHi = lang === "hi";
   const dark = darkMode;
@@ -60,8 +63,12 @@ export function BrandComparisonCard({
     ? `${snapshot.brandA.brandLabel} बनाम ${snapshot.brandB.brandLabel}`
     : `${snapshot.brandA.brandLabel} vs ${snapshot.brandB.brandLabel}`;
   const subtitle = isHi
-    ? `${snapshot.kw} kW — Smart catalog से DCR और Non-DCR plant gross (₹)`
-    : `${snapshot.kw} kW — DCR & Non-DCR plant gross (₹) from Smart catalog`;
+    ? dcrOnly
+      ? `${snapshot.kw} kW — Rate card से DCR plant gross (₹)`
+      : `${snapshot.kw} kW — Smart catalog से DCR और Non-DCR plant gross (₹)`
+    : dcrOnly
+      ? `${snapshot.kw} kW — DCR plant gross (₹) from Rate card`
+      : `${snapshot.kw} kW — DCR & Non-DCR plant gross (₹) from Smart catalog`;
 
   return (
     <ProposalJourneySection id="brand-comparison">
@@ -77,14 +84,14 @@ export function BrandComparisonCard({
                   dark ? "bg-white/5 text-slate-400" : "bg-slate-50 text-slate-500"
                 )}
               >
-                <th className="px-4 py-3">{isHi ? "ट्रैक" : "Track"}</th>
+                <th className="px-4 py-3">{dcrOnly ? (isHi ? "दर" : "Rate") : isHi ? "ट्रैक" : "Track"}</th>
                 <th className="px-4 py-3">{snapshot.brandA.brandLabel}</th>
                 <th className="px-4 py-3">{snapshot.brandB.brandLabel}</th>
               </tr>
             </thead>
             <tbody>
               <tr className={cn("border-t tabular-nums", dark ? "border-white/10" : "border-slate-100")}>
-                <td className="px-4 py-3 font-semibold">DCR</td>
+                <td className="px-4 py-3 font-semibold">{dcrOnly ? (isHi ? "Plant gross (DCR)" : "Plant gross (DCR)") : "DCR"}</td>
                 <td className={cn("px-4 py-3 font-medium", dark ? "text-slate-200" : "text-slate-800")}>
                   {snapshot.brandA.dcrOk ? inr(snapshot.brandA.dcrGrossInr) : "—"}
                 </td>
@@ -92,15 +99,17 @@ export function BrandComparisonCard({
                   {snapshot.brandB.dcrOk ? inr(snapshot.brandB.dcrGrossInr) : "—"}
                 </td>
               </tr>
-              <tr className={cn("border-t tabular-nums", dark ? "border-white/10" : "border-slate-100")}>
-                <td className="px-4 py-3 font-semibold">Non-DCR</td>
-                <td className={cn("px-4 py-3 font-medium", dark ? "text-emerald-300" : "text-emerald-800")}>
-                  {snapshot.brandA.nonDcrOk ? inr(snapshot.brandA.nonDcrGrossInr) : "—"}
-                </td>
-                <td className={cn("px-4 py-3 font-medium", dark ? "text-emerald-300" : "text-emerald-800")}>
-                  {snapshot.brandB.nonDcrOk ? inr(snapshot.brandB.nonDcrGrossInr) : "—"}
-                </td>
-              </tr>
+              {!dcrOnly ? (
+                <tr className={cn("border-t tabular-nums", dark ? "border-white/10" : "border-slate-100")}>
+                  <td className="px-4 py-3 font-semibold">Non-DCR</td>
+                  <td className={cn("px-4 py-3 font-medium", dark ? "text-emerald-300" : "text-emerald-800")}>
+                    {snapshot.brandA.nonDcrOk ? inr(snapshot.brandA.nonDcrGrossInr) : "—"}
+                  </td>
+                  <td className={cn("px-4 py-3 font-medium", dark ? "text-emerald-300" : "text-emerald-800")}>
+                    {snapshot.brandB.nonDcrOk ? inr(snapshot.brandB.nonDcrGrossInr) : "—"}
+                  </td>
+                </tr>
+              ) : null}
             </tbody>
           </table>
         </div>

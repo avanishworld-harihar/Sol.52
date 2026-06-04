@@ -10,7 +10,6 @@ import {
   Building2,
   Eye,
   LayoutGrid,
-  Scale,
   Sparkles,
   TrendingUp,
   CreditCard,
@@ -58,7 +57,6 @@ export function CommercialNarrativePanel({
 }: Props) {
   const orgSpec = config.orgType ? getOrgType(config.orgType) : null;
   const storyMode = config.storyMode ?? "executive_pitch";
-  const dcrOn = config.dcrComparison?.enabled !== false;
   const scenariosOn = config.capacityScenarios?.enabled !== false;
   const financingOn = config.financing?.enabled === true;
 
@@ -144,14 +142,6 @@ export function CommercialNarrativePanel({
         </p>
         <div className="space-y-2">
           {[
-            {
-              key: "dcr",
-              on: dcrOn,
-              icon: Scale,
-              title: "DCR vs Non-DCR",
-              desc: "Subsidy-aware cost comparison card",
-              patch: (v: boolean) => update({ dcrComparison: { ...config.dcrComparison, enabled: v } }),
-            },
             {
               key: "scenarios",
               on: scenariosOn,

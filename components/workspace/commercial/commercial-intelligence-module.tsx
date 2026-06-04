@@ -23,7 +23,6 @@ import { cn } from "@/lib/utils";
 import {
   ChevronDown,
   Zap,
-  Scale,
   TrendingUp,
   Layers,
   CreditCard,
@@ -92,12 +91,12 @@ export function CommercialIntelligenceModule({
         catalogId: CUSTOM_CATALOG_ID,
         brandId: b.toLowerCase().replace(/\s+/g, "_"),
         watt: watt && watt > 0 ? watt : undefined,
-        panelType: "NON_DCR",
+        panelType: "DCR",
         ratePerWpInr: rate ?? config.panel?.ratePerWpInr,
         technology: technology ?? config.panel?.technology ?? "Mono PERC",
       },
       dcrComparison: {
-        enabled: config.dcrComparison?.enabled !== false,
+        enabled: false,
         brandId: b.toLowerCase().replace(/\s+/g, "_"),
         watt: watt || undefined,
       },
@@ -117,18 +116,27 @@ export function CommercialIntelligenceModule({
     config.panel?.technology ?? entry?.technology ?? "Mono PERC";
 
   function setCatalogId(id: string) {
-    const e = getPanelCatalogEntry(id);
+    let e = getPanelCatalogEntry(id);
+    if (e?.panelType === "NON_DCR") {
+      const dcr = PANEL_CATALOG.find(
+        (p) => p.brandId === e!.brandId && p.watt === e!.watt && p.panelType === "DCR"
+      );
+      if (dcr) {
+        id = dcr.id;
+        e = dcr;
+      }
+    }
     update({
       panel: {
         catalogId: id,
         brandId: e?.brandId,
         watt: e?.watt,
-        panelType: e?.panelType,
+        panelType: "DCR",
         ratePerWpInr: config.panel?.ratePerWpInr ?? e?.ratePerWpInr,
         technology: e?.technology ?? config.panel?.technology,
       },
       dcrComparison: {
-        enabled: config.dcrComparison?.enabled !== false,
+        enabled: false,
         brandId: e?.brandId,
         watt: e?.watt,
       },
@@ -141,10 +149,10 @@ export function CommercialIntelligenceModule({
       applyCustomPanel(customBrand, watt, config.panel?.ratePerWpInr, panelTechnology);
       return;
     }
-    // Find the nearest catalog entry with that wattage (prefer NON_DCR for flexibility)
+    // Find the nearest catalog entry with that wattage (DCR catalog)
     const match =
-      PANEL_CATALOG.find((p) => p.watt === watt && p.panelType === entry?.panelType) ??
-      PANEL_CATALOG.find((p) => p.watt === watt);
+      PANEL_CATALOG.find((p) => p.watt === watt && p.panelType === "DCR") ??
+      PANEL_CATALOG.find((p) => p.watt === watt && p.panelType === "DCR");
     if (match) setCatalogId(match.id);
   }
 
@@ -152,15 +160,14 @@ export function CommercialIntelligenceModule({
     config.capacityScenarios?.scenarios ?? buildDefaultScenarios(systemKw);
   const recommendedId = config.capacityScenarios?.recommendedId ?? "primary";
 
-  const dcrEnabled = config.dcrComparison?.enabled !== false;
   const scenariosEnabled = config.capacityScenarios?.enabled !== false;
   const financingEnabled = config.financing?.enabled === true;
 
-  const sectionCount = [dcrEnabled, scenariosEnabled, financingEnabled].filter(Boolean).length;
+  const sectionCount = [scenariosEnabled, financingEnabled].filter(Boolean).length;
 
   // Summary pills for collapsed header
   const panels = isCustom
-    ? `${activeWatt || "?"}W ${customBrand || "Custom"} NON-DCR`
+    ? `${activeWatt || "?"}W ${customBrand || "Custom"} DCR`
     : entry
     ? `${entry.watt}W ${entry.brandLabel} ${entry.panelType}`
     : "Not set";
@@ -210,7 +217,7 @@ export function CommercialIntelligenceModule({
                     update({
                       panel: {
                         catalogId: CUSTOM_CATALOG_ID,
-                        panelType: "NON_DCR",
+                        panelType: "DCR",
                         ratePerWpInr: config.panel?.ratePerWpInr ?? entry?.ratePerWpInr,
                         technology: config.panel?.technology ?? entry?.technology ?? "Mono PERC",
                       },
@@ -261,7 +268,7 @@ export function CommercialIntelligenceModule({
                   update({
                     panel: {
                       catalogId: CUSTOM_CATALOG_ID,
-                      panelType: "NON_DCR",
+                      panelType: "DCR",
                       ratePerWpInr: config.panel?.ratePerWpInr ?? entry?.ratePerWpInr,
                       technology: config.panel?.technology ?? entry?.technology ?? "Mono PERC",
                     },
@@ -397,41 +404,6 @@ export function CommercialIntelligenceModule({
             </div>
           </div>
 
-          {/* DCR toggle — visual card */}
-          <div
-            className={cn(
-              "flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-all",
-              dcrEnabled
-                ? "border-emerald-200 bg-emerald-50"
-                : "border-slate-200 bg-slate-50/60 opacity-70"
-            )}
-            onClick={() =>
-              update({
-                dcrComparison: {
-                  ...config.dcrComparison,
-                  enabled: !dcrEnabled,
-                  brandId: entry?.brandId,
-                  watt: entry?.watt,
-                },
-              })
-            }
-          >
-            <div
-              className={cn(
-                "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg transition-colors",
-                dcrEnabled ? "bg-emerald-600 text-white" : "bg-slate-200 text-slate-500"
-              )}
-            >
-              <Scale className="h-4 w-4" />
-            </div>
-            <div className="flex-1">
-              <p className="text-[12px] font-bold text-slate-900">DCR vs Non-DCR Comparison</p>
-              <p className="text-[10px] text-slate-500">
-                Side-by-side cost card in the proposal · subsidy impact noted
-              </p>
-            </div>
-            <Toggle checked={dcrEnabled} />
-          </div>
         </Section>
         )}
 

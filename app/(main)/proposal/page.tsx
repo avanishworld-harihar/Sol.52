@@ -1590,7 +1590,7 @@ function ProposalPageContent() {
           return applyCommercialFlagsToLayout(proposalLayout, {
             ...(commercialConfig ?? {}),
             dcrComparison: {
-              enabled: commercialPricingConfig.trackCompare?.enabled === true,
+              enabled: false,
               brandId: commercialPricingConfig.trackCompare?.compareBrandId,
               watt: commercialPricingConfig.solar.watt,
             },

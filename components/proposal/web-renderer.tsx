@@ -265,6 +265,7 @@ export function renderBlockByKey(
           summary={summary}
           lang={lang}
           darkMode={darkMode}
+          dcrOnly={ctx.presetId === "commercial_executive"}
           catalog={
             ctx.residentialConfig?.brandCatalog ?? ctx.pptInput.sharedPlantCatalog ?? null
           }
@@ -286,6 +287,7 @@ export function renderBlockByKey(
       );
 
     case "dcr_comparison":
+      if (ctx.presetId === "commercial_executive") return null;
       if (ctx.residentialConfig?.trackCompare?.enabled) {
         return (
           <ResidentialTrackCompareSection

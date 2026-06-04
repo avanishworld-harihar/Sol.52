@@ -200,6 +200,15 @@ export function ResidentialPricingStudio({
       throw new Error(result.error ?? "Save failed");
     }
     if (result.proposalLayout) onLayoutChange?.(result.proposalLayout);
+    if (
+      saveMode === "commercial" &&
+      "commercialConfig" in result &&
+      result.commercialConfig &&
+      onCommercialConfigChange
+    ) {
+      onCommercialConfigChange(result.commercialConfig);
+    }
+    onChange(catalogConfig);
     return id;
   }
 
@@ -640,9 +649,11 @@ export function ResidentialPricingStudio({
           </ResidentialStepSection>
         )}
 
-        <WorkspaceOptionalFold title="Compare brands & tracks" defaultOpen={false} theme={isCommercial ? "commercial" : "residential"}>
-          <ResidentialBrandComparePanel config={config} onChange={onChange} />
-          <ResidentialTrackComparePanel config={config} onChange={onChange} />
+        <WorkspaceOptionalFold title="Compare brands" defaultOpen={false} theme={isCommercial ? "commercial" : "residential"}>
+          <ResidentialBrandComparePanel config={config} onChange={onChange} dcrOnly={isCommercial} />
+          {!isCommercial ? (
+            <ResidentialTrackComparePanel config={config} onChange={onChange} />
+          ) : null}
         </WorkspaceOptionalFold>
 
         {isCommercial && commercialConfig && onCommercialConfigChange && summary ? (

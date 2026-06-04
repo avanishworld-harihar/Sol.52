@@ -112,12 +112,13 @@ export function ensureSolarPanelsInConfig(
   config: CommercialProposalConfig,
   systemKw: number
 ): CommercialProposalConfig {
-  if (config.solarPanels?.dcr?.rows?.length && config.solarPanels?.nonDcr?.rows?.length) {
+  if (config.solarPanels?.dcr?.rows?.length) {
     return {
       ...config,
       solarPanels: {
         ...config.solarPanels,
         plantCapacityKw: config.solarPanels.plantCapacityKw || systemKw,
+        nonDcr: { enabled: false, collapsed: true, rows: [] },
       },
     };
   }
@@ -143,24 +144,31 @@ export function syncLegacyPanelFieldsFromSolar(
     reg.selectedDcrCatalogId = catalogId;
     overrides[catalogId] = { ...overrides[catalogId], ratePerWpInr: q.ratePerWpInr };
   }
-  if (nonPrimary) {
-    const q = quotePanelRow(solar.plantCapacityKw, nonPrimary, "non_dcr");
-    const catalogId = `${brandIdFromLineBrand(nonPrimary.brand)}-${nonPrimary.watt}-non-dcr`;
-    reg.selectedNonDcrCatalogId = catalogId;
+  const primary = dcrPrimary ?? nonPrimary;
+  if (primary) {
+    const track = dcrPrimary ? "dcr" : "non_dcr";
+    const q = quotePanelRow(solar.plantCapacityKw, primary, track);
+    const catalogId =
+      track === "dcr"
+        ? `${brandIdFromLineBrand(primary.brand)}-${primary.watt}-dcr`
+        : `${brandIdFromLineBrand(primary.brand)}-${primary.watt}-non-dcr`;
+    if (track === "dcr") {
+      reg.selectedDcrCatalogId = catalogId;
+    }
     overrides[catalogId] = { ...overrides[catalogId], ratePerWpInr: q.ratePerWpInr };
   }
 
   return {
     ...config,
     panelRegistry: { ...reg, overrides },
-    panel: nonPrimary
+    panel: primary
       ? {
-          catalogId: reg.selectedNonDcrCatalogId ?? "waaree-540-non-dcr",
-          brandId: brandIdFromLineBrand(nonPrimary.brand),
-          watt: nonPrimary.watt,
-          panelType: "NON_DCR",
-          ratePerWpInr: quotePanelRow(solar.plantCapacityKw, nonPrimary, "non_dcr").ratePerWpInr,
-          technology: nonPrimary.technology,
+          catalogId: reg.selectedDcrCatalogId ?? `${brandIdFromLineBrand(primary.brand)}-${primary.watt}-dcr`,
+          brandId: brandIdFromLineBrand(primary.brand),
+          watt: primary.watt,
+          panelType: "DCR",
+          ratePerWpInr: quotePanelRow(solar.plantCapacityKw, primary, "dcr").ratePerWpInr,
+          technology: primary.technology,
         }
       : config.panel,
     dcrComparison: {
