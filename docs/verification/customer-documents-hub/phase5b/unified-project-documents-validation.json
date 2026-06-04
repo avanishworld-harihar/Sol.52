@@ -1,0 +1,110 @@
+{
+  "generated_at": "2026-06-04T05:05:00.377Z",
+  "phase": "5B",
+  "lead_id": "eead2c0a-8f20-4c7a-8128-ce8fff874834",
+  "project_id": "3cfd6369-4d9a-45d3-8c90-008de6c62a46",
+  "db": {
+    "project_lead_match": true,
+    "customer_assets": 7,
+    "project_assets": 0,
+    "proposal_assets": 0,
+    "asset_links": 7,
+    "customer_asset_filenames": [
+      "IMG-20260603-WA0002.jpg",
+      "1906001180.pdf",
+      "IMG-20260408-WA0001(1).jpg",
+      "IMG-20260408-WA0002(1).jpg",
+      "IMG-20260506-WA0003.jpg",
+      "IMG-20260506-WA0003.jpg",
+      "IMG-20260408-WA0003.jpg"
+    ]
+  },
+  "api": {
+    "customer_hub": {
+      "status": 200,
+      "ok": true,
+      "total": 7
+    },
+    "project_hub": {
+      "list_status": 200,
+      "list_ok": true,
+      "total": 7,
+      "by_owner": {
+        "customer": 7
+      },
+      "with_owner_field": 7,
+      "with_category_label": 7
+    },
+    "project_summary": {
+      "status": 200,
+      "ok": true,
+      "total": 7,
+      "by_category": {
+        "site_other": 6,
+        "electricity_bill": 1
+      },
+      "by_owner": {
+        "customer": 7
+      }
+    },
+    "missing_customer_assets_on_project": []
+  },
+  "pass_fail": [
+    {
+      "id": "project_linked_to_bharti_lead",
+      "result": "PASS",
+      "note": "lead_id=eead2c0a-8f20-4c7a-8128-ce8fff874834"
+    },
+    {
+      "id": "customer_hub_api",
+      "result": "PASS",
+      "note": "status=200 items=7"
+    },
+    {
+      "id": "project_hub_api",
+      "result": "PASS",
+      "note": "status=200 items=7"
+    },
+    {
+      "id": "project_summary_api",
+      "result": "PASS",
+      "note": "total=7"
+    },
+    {
+      "id": "summary_matches_list_total",
+      "result": "PASS",
+      "note": "summary=7 list=7"
+    },
+    {
+      "id": "unified_includes_all_v2_sources",
+      "result": "PASS",
+      "note": "project_items=7 expected_min=7 (ca=7 pa=0 prop=0)"
+    },
+    {
+      "id": "customer_uploads_visible_on_project",
+      "result": "PASS",
+      "note": "all 7 customer_assets on project hub"
+    },
+    {
+      "id": "owner_badges_on_api_rows",
+      "result": "PASS",
+      "note": "owners=customer"
+    },
+    {
+      "id": "owner_filter_customer",
+      "result": "PASS",
+      "note": "count=7"
+    },
+    {
+      "id": "owner_filter_project",
+      "result": "PASS",
+      "note": "count=0"
+    },
+    {
+      "id": "owner_filter_proposal",
+      "result": "PASS",
+      "note": "count=0"
+    }
+  ],
+  "summary": "PASS"
+}
