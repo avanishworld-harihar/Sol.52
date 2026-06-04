@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-06-04T18:40:00.325Z",
-  "url": "http://localhost:3002/proposal/31c823cc-7dd0-488a-bf6a-7b15ae0c803d",
+  "generatedAt": "2026-06-04T19:19:33.973Z",
+  "url": "http://localhost:3005/proposal/427d4121-a3e7-449c-b576-f4a95af6ccb8",
   "exportMethod": "Playwright page.pdf() — same Chromium print pipeline as window.print()",
   "file": "E:\\solar project\\Sol.52\\scripts\\audit-pdf-output\\commercial-school-audit.pdf",
   "dom": {
@@ -8,26 +8,26 @@
     "canvases": [],
     "motionHidden": 0,
     "pages": 15,
-    "shadows": 71,
-    "gradients": 60,
+    "shadows": 72,
+    "gradients": 57,
     "blur": 7
   },
   "analysis": {
-    "totalBytes": 26640703,
-    "totalMb": "25.41",
+    "totalBytes": 23222374,
+    "totalMb": "22.15",
     "pageCount": 8,
-    "avgMbPerPage": "3.18",
-    "imageCount": 363,
-    "imageBytes": 24504298,
-    "imageMb": "23.37",
-    "imagePct": "92.0",
-    "rasterLikeCount": 249,
+    "avgMbPerPage": "2.77",
+    "imageCount": 186,
+    "imageBytes": 21284441,
+    "imageMb": "20.30",
+    "imagePct": "91.7",
+    "rasterLikeCount": 138,
     "fonts": [
       "NAAAAA+Consolas-Bold",
       "QAAAAA+SegoeUI-Bold",
-      "SAAAAA+SegoeUI-Semibold",
-      "VAAAAA+SegoeUI",
-      "JBAAAA+ArialMT",
+      "RAAAAA+SegoeUI-Semibold",
+      "UAAAAA+SegoeUI",
+      "KBAAAA+ArialMT",
       "ACAAAA+ArialMT"
     ],
     "fontCount": 6,
@@ -43,7 +43,7 @@
         "megapixels": "1.05"
       },
       {
-        "obj": "55 0",
+        "obj": "48 0",
         "bytes": 656826,
         "width": 853,
         "height": 1231,
@@ -53,7 +53,7 @@
         "megapixels": "1.05"
       },
       {
-        "obj": "106 0",
+        "obj": "99 0",
         "bytes": 656826,
         "width": 853,
         "height": 1231,
@@ -63,7 +63,7 @@
         "megapixels": "1.05"
       },
       {
-        "obj": "257 0",
+        "obj": "171 0",
         "bytes": 656826,
         "width": 853,
         "height": 1231,
@@ -73,7 +73,7 @@
         "megapixels": "1.05"
       },
       {
-        "obj": "301 0",
+        "obj": "192 0",
         "bytes": 656826,
         "width": 853,
         "height": 1231,
@@ -83,7 +83,7 @@
         "megapixels": "1.05"
       },
       {
-        "obj": "357 0",
+        "obj": "213 0",
         "bytes": 656826,
         "width": 853,
         "height": 1231,
@@ -93,7 +93,7 @@
         "megapixels": "1.05"
       },
       {
-        "obj": "398 0",
+        "obj": "243 0",
         "bytes": 656826,
         "width": 853,
         "height": 1231,
@@ -103,7 +103,7 @@
         "megapixels": "1.05"
       },
       {
-        "obj": "471 0",
+        "obj": "269 0",
         "bytes": 656826,
         "width": 853,
         "height": 1231,
@@ -113,7 +113,7 @@
         "megapixels": "1.05"
       },
       {
-        "obj": "566 0",
+        "obj": "302 0",
         "bytes": 656826,
         "width": 853,
         "height": 1231,
@@ -123,7 +123,7 @@
         "megapixels": "1.05"
       },
       {
-        "obj": "612 0",
+        "obj": "332 0",
         "bytes": 656826,
         "width": 853,
         "height": 1231,
@@ -133,7 +133,7 @@
         "megapixels": "1.05"
       },
       {
-        "obj": "681 0",
+        "obj": "365 0",
         "bytes": 656826,
         "width": 853,
         "height": 1231,
@@ -143,7 +143,7 @@
         "megapixels": "1.05"
       },
       {
-        "obj": "737 0",
+        "obj": "390 0",
         "bytes": 656826,
         "width": 853,
         "height": 1231,
@@ -153,7 +153,7 @@
         "megapixels": "1.05"
       },
       {
-        "obj": "792 0",
+        "obj": "416 0",
         "bytes": 656826,
         "width": 853,
         "height": 1231,
@@ -163,7 +163,7 @@
         "megapixels": "1.05"
       },
       {
-        "obj": "824 0",
+        "obj": "437 0",
         "bytes": 656826,
         "width": 853,
         "height": 1231,
@@ -173,7 +173,7 @@
         "megapixels": "1.05"
       },
       {
-        "obj": "880 0",
+        "obj": "470 0",
         "bytes": 656826,
         "width": 853,
         "height": 1231,
@@ -185,87 +185,87 @@
     ],
     "topContentStreams": [
       {
-        "obj": "1069 0",
-        "bytes": 32319
+        "obj": "117 0",
+        "bytes": 35824
       },
       {
-        "obj": "224 0",
-        "bytes": 27609
+        "obj": "574 0",
+        "bytes": 33516
       },
       {
-        "obj": "1258 0",
-        "bytes": 26942
+        "obj": "690 0",
+        "bytes": 26292
       },
       {
-        "obj": "867 0",
-        "bytes": 20151
+        "obj": "403 0",
+        "bytes": 22160
       },
       {
-        "obj": "779 0",
-        "bytes": 20112
+        "obj": "457 0",
+        "bytes": 20919
       },
       {
-        "obj": "1187 0",
-        "bytes": 17344
+        "obj": "496 0",
+        "bytes": 18460
       },
       {
-        "obj": "344 0",
-        "bytes": 14855
+        "obj": "646 0",
+        "bytes": 17772
       },
       {
-        "obj": "938 0",
-        "bytes": 14030
+        "obj": "200 0",
+        "bytes": 15435
       },
       {
-        "obj": "458 0",
-        "bytes": 10194
+        "obj": "596 0",
+        "bytes": 12605
       },
       {
-        "obj": "1288 0",
-        "bytes": 8968
+        "obj": "256 0",
+        "bytes": 11163
       },
       {
-        "obj": "3834 0",
+        "obj": "289 0",
+        "bytes": 10865
+      },
+      {
+        "obj": "179 0",
+        "bytes": 10281
+      },
+      {
+        "obj": "352 0",
+        "bytes": 9402
+      },
+      {
+        "obj": "3284 0",
         "bytes": 8362
       },
       {
-        "obj": "1105 0",
-        "bytes": 8215
+        "obj": "724 0",
+        "bytes": 8125
       },
       {
-        "obj": "937 0",
+        "obj": "2194 0",
+        "bytes": 8080
+      },
+      {
+        "obj": "495 0",
         "bytes": 8011
       },
       {
-        "obj": "855 0",
+        "obj": "539 0",
         "bytes": 7837
       },
       {
-        "obj": "2741 0",
+        "obj": "373 0",
         "bytes": 7747
       },
       {
-        "obj": "1000 0",
-        "bytes": 7709
-      },
-      {
-        "obj": "75 0",
+        "obj": "68 0",
         "bytes": 6904
-      },
-      {
-        "obj": "1140 0",
-        "bytes": 6611
-      },
-      {
-        "obj": "664 0",
-        "bytes": 6568
-      },
-      {
-        "obj": "288 0",
-        "bytes": 6230
       }
     ],
-    "likelyFullPageRasters": 1
+    "likelyFullPageRasters": 0
   },
   "pageBreakdown": [
     {
@@ -334,8 +334,7 @@
     }
   ],
   "findings": [
-    "Total size 25.41 MB exceeds 10 MB target",
-    "92.0% of PDF is embedded images — likely page rasterization",
-    "1 full-page-scale raster images detected (≥1200×1500px)"
+    "Total size 22.15 MB exceeds 10 MB target",
+    "91.7% of PDF is embedded images — likely page rasterization"
   ]
 }
