@@ -275,6 +275,14 @@ export const PROPOSAL_BLOCK_REGISTRY: Record<ProposalBlockId, ProposalBlockMeta>
     defaultEnabled: false,
     preset_affinity: ["commercial_executive"],
   },
+
+  school_institution_insight_card: {
+    id: "school_institution_insight_card",
+    labelKey: "proposal_block_school_institution",
+    group: "intro",
+    defaultEnabled: false,
+    preset_affinity: ["commercial_executive"],
+  },
 };
 
 /** Default narrative order used when no preset is active. Maintains backward compatibility. */
@@ -300,4 +308,5 @@ export const DEFAULT_PROPOSAL_BLOCK_ORDER: ProposalBlockId[] = [
   "capacity_scenarios_card",
   "commercial_financing_card",
   "dg_hybrid_analysis_card",
+  "school_institution_insight_card",
 ];

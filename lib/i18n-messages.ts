@@ -484,6 +484,7 @@ export const EN = {
   proposal_block_gallery: "Project gallery",
   proposal_block_customer_docs: "Customer documents required",
   proposal_block_amc: "AMC / maintenance",
+  proposal_block_school_institution: "School / institution insight",
 
   more_title: "More",
   more_languageLine: "Language: English, Hindi, Tamil, and more — Coming soon",
