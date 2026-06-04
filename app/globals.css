@@ -3356,6 +3356,17 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     font-size: 14pt !important;
   }
 
+  /* BOM — keep each category intact; Electrical & Protection starts on a fresh page */
+  .commercial-proposal #comm-bom [data-bom-category="electrical"] {
+    page-break-before: always !important;
+    break-before: page !important;
+  }
+
+  .commercial-proposal #comm-bom [data-bom-category] {
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
+  }
+
   .commercial-proposal .proposal-page > section,
   .commercial-proposal .proposal-page > div {
     page-break-inside: auto !important;

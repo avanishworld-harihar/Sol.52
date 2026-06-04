@@ -427,11 +427,14 @@ export function BlockTieredBOM({ ctx }: Props) {
           return (
             <motion.div
               key={cat.id}
+              data-bom-category={cat.id}
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: catIdx * 0.05 }}
-              className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_2px_16px_rgba(15,23,42,0.05)]"
+              className={`overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_2px_16px_rgba(15,23,42,0.05)] print:break-inside-avoid ${
+                cat.id === "electrical" ? "print:break-before-page" : ""
+              }`}
             >
               {/* Category header */}
               <div className={`flex items-center gap-2 px-5 py-3 ${c.header}`}>
@@ -475,8 +478,8 @@ export function BlockTieredBOM({ ctx }: Props) {
         })}
       </div>
 
-      {/* Footer note */}
-      <div className="mt-4 flex items-start gap-2 rounded-lg bg-slate-50 p-4 print:break-before-page">
+      {/* Footer note — keep on same page as BOM; no forced page break (was causing blank print page) */}
+      <div className="mt-4 flex items-start gap-2 rounded-lg bg-slate-50 p-4">
         <ListChecks className="mt-0.5 h-4 w-4 flex-shrink-0 text-slate-400" />
         <p className="text-[11px] leading-relaxed text-slate-500">
           {isHi
