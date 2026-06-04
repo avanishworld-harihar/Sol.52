@@ -252,7 +252,7 @@ export function ResidentialRequirementBuilder({
     if (raw == null || !Number.isFinite(raw) || raw <= 0) return;
     const cap = isCommercial ? 10000 : plantKwCap;
     const kw = Math.max(0.5, Math.min(cap, Math.round(raw * 10) / 10));
-    if (isCommercial && onCommitPlantKw) {
+    if (onCommitPlantKw) {
       onCommitPlantKw(kw);
       return;
     }
@@ -329,11 +329,13 @@ export function ResidentialRequirementBuilder({
                 max={sliderMax}
                 step={sliderStep}
                 value={Math.min(solar.plantCapacityKw, sliderMax)}
+                onPointerDown={onPlantKwEditStart}
                 onChange={(e) => applyPlantKw(parseFloat(e.target.value))}
                 className={cn("flex-1", workspaceSliderClass(theme))}
               />
               <NumericTextInput
                 value={solar.plantCapacityKw}
+                onFocus={onPlantKwEditStart}
                 onValueChange={(n) => applyPlantKw(n)}
                 className="w-28 rounded-xl border border-slate-200 bg-white px-2 py-2 text-center text-sm font-bold tabular-nums dark:border-white/15 dark:bg-white/5"
                 aria-label="System size kW"

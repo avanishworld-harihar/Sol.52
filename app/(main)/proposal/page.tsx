@@ -337,6 +337,8 @@ function ProposalPageContent() {
   const lastCommercialBillUploadKeyRef = useRef("");
   /** Bill-path kW auto-seed runs once per bill upload — not on every tariff recalc. */
   const lastCommercialBillKwSeedKeyRef = useRef("");
+  const residentialPlantKwTouchedRef = useRef(false);
+  const lastResidentialBillKwSeedKeyRef = useRef("");
   const uploadQueueRef = useRef<UploadTask[]>([]);
   const uploadWorkerRunningRef = useRef(false);
   const [manual, setManual] = useState<ManualProposalCustomer>(EMPTY_MANUAL_PROPOSAL_CUSTOMER);
@@ -1704,8 +1706,27 @@ function ProposalPageContent() {
       lastCommercialBillUploadKeyRef.current = commercialBillUploadKey;
       lastCommercialBillKwSeedKeyRef.current = "";
       commercialPlantKwTouchedRef.current = false;
+      lastResidentialBillKwSeedKeyRef.current = "";
+      residentialPlantKwTouchedRef.current = false;
     }
   }, [commercialBillUploadKey]);
+
+  const markResidentialPlantKwTouched = useCallback(() => {
+    residentialPlantKwTouchedRef.current = true;
+    proposalPlantLockedRef.current = true;
+  }, []);
+
+  const commitResidentialPlantKw = useCallback((kw: number) => {
+    residentialPlantKwTouchedRef.current = true;
+    proposalPlantLockedRef.current = true;
+    setResidentialConfig((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        solar: { ...prev.solar, plantCapacityKw: kw, moduleCountOverride: undefined },
+      };
+    });
+  }, []);
 
   const markCommercialPlantKwTouched = useCallback(() => {
     commercialPlantKwTouchedRef.current = true;
@@ -2022,22 +2043,24 @@ function ProposalPageContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /** Bill path: size plant from bill audit until user changes kW in catalog. */
+  /** Bill path: seed kW once per bill upload — never fight manual kW (same as commercial bill). */
   useEffect(() => {
     if (!isResidentialBill || !residentialConfig) return;
-    if (proposalPlantLockedRef.current) return;
-    const fromBill = result.solarKw;
+    if (residentialPlantKwTouchedRef.current) return;
+    if (lastResidentialBillKwSeedKeyRef.current === commercialBillUploadKey) return;
+    const fromBill = Math.round(result.solarKw * 10) / 10;
     if (fromBill <= 0) return;
+    lastResidentialBillKwSeedKeyRef.current = commercialBillUploadKey;
     setResidentialConfig((prev) => {
       if (!prev || Math.abs(prev.solar.plantCapacityKw - fromBill) < 0.05) return prev;
       return { ...prev, solar: { ...prev.solar, plantCapacityKw: fromBill, moduleCountOverride: undefined } };
     });
-  }, [isResidentialBill, result.solarKw, residentialConfig]);
+  }, [isResidentialBill, commercialBillUploadKey, result.solarKw, residentialConfig]);
 
-  /** Requirement path: size plant from monthly kWh / bill → solar engine. */
+  /** Requirement path: size plant from monthly kWh / bill until user edits kW. */
   useEffect(() => {
     if (!isResidentialRequirement || !residentialConfig) return;
-    if (proposalPlantLockedRef.current) return;
+    if (residentialPlantKwTouchedRef.current || proposalPlantLockedRef.current) return;
     if (!requirementHasConsumptionInput(requirementMonthlyKwh, requirementMonthlyBill)) return;
     const fromRequirement = result.solarKw;
     if (fromRequirement <= 0) return;
@@ -2048,7 +2071,13 @@ function ProposalPageContent() {
         solar: { ...prev.solar, plantCapacityKw: fromRequirement, moduleCountOverride: undefined },
       };
     });
-  }, [isResidentialRequirement, result.solarKw, requirementMonthlyKwh, requirementMonthlyBill, residentialConfig]);
+  }, [
+    isResidentialRequirement,
+    result.solarKw,
+    requirementMonthlyKwh,
+    requirementMonthlyBill,
+    residentialConfig,
+  ]);
 
   useEffect(() => {
     if (!isResidentialSmart) return;
@@ -3023,8 +3052,19 @@ function ProposalPageContent() {
           netCostInr={effectiveResult.netCost}
           annualSavingInr={effectiveResult.annualSavings}
           billBackedHint
+          onCommitPlantKw={commitResidentialPlantKw}
+          onPlantKwEditStart={markResidentialPlantKwTouched}
           onChange={(next) => {
-            setResidentialConfig(next);
+            setResidentialConfig((prev) => {
+              if (
+                prev &&
+                Math.abs(prev.solar.plantCapacityKw - next.solar.plantCapacityKw) > 0.001
+              ) {
+                residentialPlantKwTouchedRef.current = true;
+                proposalPlantLockedRef.current = true;
+              }
+              return next;
+            });
             if (proposalLayout) {
               setProposalLayout(applyResidentialFlagsToLayout(proposalLayout, next));
             }

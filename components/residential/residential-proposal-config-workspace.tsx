@@ -22,6 +22,8 @@ type Props = {
   lineItems?: PricingLineItem[];
   onPricingSaved?: () => void;
   billBackedHint?: boolean;
+  onCommitPlantKw?: (kw: number) => void;
+  onPlantKwEditStart?: () => void;
   maxPlantKw?: number;
   segmentLabel?: string;
   saveMode?: "residential" | "commercial";
@@ -44,6 +46,8 @@ export function ResidentialProposalConfigWorkspace({
   lineItems,
   onPricingSaved,
   billBackedHint,
+  onCommitPlantKw,
+  onPlantKwEditStart,
   maxPlantKw = 50,
   segmentLabel = "homeowner",
   saveMode = "residential",
@@ -56,6 +60,8 @@ export function ResidentialProposalConfigWorkspace({
       <ResidentialRequirementBuilder
         config={config}
         onChange={onChange}
+        onCommitPlantKw={onCommitPlantKw}
+        onPlantKwEditStart={onPlantKwEditStart}
         netCostInr={netCostInr}
         annualSavingInr={annualSavingInr}
         maxPlantKw={maxPlantKw}
