@@ -63,6 +63,10 @@ export function mergeInstallerBrandCatalog(
         ...e,
         kwTiers: e.kwTiers?.map((t) => ({ ...t })),
       })),
+      inverterPresets: catalog.inverterPresets?.length
+        ? [...catalog.inverterPresets]
+        : fallback.inverterPresets,
+      wirePresets: catalog.wirePresets?.length ? [...catalog.wirePresets] : fallback.wirePresets,
     },
   };
 }

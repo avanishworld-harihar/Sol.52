@@ -120,7 +120,11 @@ export function residentialCostBreakdown(
 }
 
 export function wireBrandDisplayName(wire: ResidentialWireBrand): string {
-  return wire === "havells" ? "Havells" : "Polycab";
+  const w = wire.trim();
+  if (!w) return "Polycab";
+  if (w.toLowerCase() === "havells") return "Havells";
+  if (w.toLowerCase() === "polycab") return "Polycab";
+  return w;
 }
 
 export function resolveWireBrandOptions(

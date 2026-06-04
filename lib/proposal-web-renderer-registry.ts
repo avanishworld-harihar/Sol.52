@@ -54,7 +54,8 @@ export type BlockRenderKey =
   | "dcr_comparison"
   | "capacity_scenarios"
   | "commercial_financing"
-  | "dg_hybrid";
+  | "dg_hybrid"
+  | "school_institution";
 
 export type WebBlockMeta = {
   /** Value for `data-page` attribute on the `.proposal-page` wrapper div. */

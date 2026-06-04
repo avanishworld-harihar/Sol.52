@@ -10,7 +10,13 @@ import {
 import { moduleCountForResidential } from "@/lib/residential-solar-engine";
 import { computeGrossSystemCostInr } from "@/lib/solar-engine";
 import {
+  mergeEquipmentPresetsIntoCatalog,
+  wireDisplayName,
+} from "@/lib/residential-equipment-presets";
+import {
   defaultResidentialKwTiers,
+  RESIDENTIAL_INVERTER_PRESETS,
+  RESIDENTIAL_WIRE_PRESETS,
   type ResidentialKwTier,
   type ResidentialProposalConfig,
   type ResidentialSolar,
@@ -52,10 +58,12 @@ export function defaultCatalogEntries(): ResidentialBrandCatalogEntry[] {
 
 export function defaultBrandCatalog(activeBrandId = "adani"): ResidentialBrandCatalog {
   const entries = defaultCatalogEntries();
-  return {
+  return mergeEquipmentPresetsIntoCatalog({
     activeBrandId: entries.some((e) => e.brandId === activeBrandId) ? activeBrandId : "adani",
     entries,
-  };
+    inverterPresets: [...RESIDENTIAL_INVERTER_PRESETS],
+    wirePresets: RESIDENTIAL_WIRE_PRESETS.map((w) => wireDisplayName(w)),
+  });
 }
 
 function slugBrandId(name: string): string {
@@ -485,7 +493,11 @@ export function ensureBrandCatalog(config: ResidentialProposalConfig): Residenti
     }).entries!;
     return {
       ...config,
-      brandCatalog: { ...catalog, activeBrandId, entries: syncedEntries },
+      brandCatalog: mergeEquipmentPresetsIntoCatalog({
+        ...catalog,
+        activeBrandId,
+        entries: syncedEntries,
+      }),
       trackCompare: {
         enabled: config.trackCompare?.enabled === true,
         showPolicyNote: config.trackCompare?.showPolicyNote !== false,
@@ -515,7 +527,7 @@ export function ensureBrandCatalog(config: ResidentialProposalConfig): Residenti
 
   return {
     ...config,
-    brandCatalog: catalog,
+    brandCatalog: mergeEquipmentPresetsIntoCatalog(catalog),
     trackCompare: {
       enabled: config.trackCompare?.enabled === true,
       showPolicyNote: config.trackCompare?.showPolicyNote !== false,

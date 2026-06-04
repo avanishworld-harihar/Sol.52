@@ -74,6 +74,8 @@ export type BlockEligibilityContext = {
   billAuditBacked: boolean;
   presetId: ProposalPresetId;
   showSurveySection?: boolean;
+  /** Commercial business category — drives school-only insight page */
+  commercialOrgType?: string | null;
 };
 
 export type BlockEligibilityFn = (ctx: BlockEligibilityContext) => boolean;

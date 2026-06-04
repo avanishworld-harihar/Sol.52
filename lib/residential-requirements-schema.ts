@@ -67,7 +67,8 @@ export const residentialBrandOptionSchema = z.object({
   brandId: z.string().max(40).optional(),
 });
 
-export const residentialWireBrandSchema = z.enum(["havells", "polycab"]);
+/** Legacy ids `polycab` / `havells` or custom installer-added names. */
+export const residentialWireBrandSchema = z.string().min(1).max(80);
 
 /** One row: same kW compared across Non-DCR vs DCR gross system cost. */
 export const residentialTrackCompareTierSchema = z.object({
@@ -89,6 +90,10 @@ export const residentialBrandCatalogEntrySchema = z.object({
 export const residentialBrandCatalogSchema = z.object({
   activeBrandId: z.string().max(40).optional(),
   entries: z.array(residentialBrandCatalogEntrySchema).max(16).optional(),
+  /** Installer-added inverter names — shown on next proposal. */
+  inverterPresets: z.array(z.string().min(1).max(80)).max(32).optional(),
+  /** Installer-added DC/AC wire brands — shown on next proposal. */
+  wirePresets: z.array(z.string().min(1).max(80)).max(32).optional(),
 });
 
 export const residentialTrackCompareSchema = z.object({

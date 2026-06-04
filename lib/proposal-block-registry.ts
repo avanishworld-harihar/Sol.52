@@ -41,6 +41,8 @@ export const PROPOSAL_BLOCK_IDS = [
   "commercial_financing_card",
   /** C&I — Solar + DG hybrid architecture, savings, operation scenarios */
   "dg_hybrid_analysis_card",
+  /** C&I — School / institution segment insight page (auto when orgType = school) */
+  "school_institution_insight_card",
 ] as const;
 
 export type ProposalBlockId = (typeof PROPOSAL_BLOCK_IDS)[number];

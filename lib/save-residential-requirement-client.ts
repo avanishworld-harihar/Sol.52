@@ -1,6 +1,7 @@
 import { applyResidentialFlagsToLayout } from "@/lib/residential-proposal-config";
 import { saveInstallerResidentialCatalog } from "@/lib/installer-rate-card-client";
 import { ensureBrandCatalog } from "@/lib/residential-brand-catalog";
+import { syncEquipmentPresetsFromConfig } from "@/lib/residential-equipment-presets";
 import { syncResidentialSolarToLineItems } from "@/lib/residential-solar-engine";
 import type { PricingLineItem } from "@/lib/proposal-pricing-lines";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
@@ -31,7 +32,7 @@ export async function saveResidentialRequirement(
     proposalLayout ?? { version: 1, blocks: [] },
     config
   );
-  const residentialConfig = ensureBrandCatalog(config);
+  const residentialConfig = syncEquipmentPresetsFromConfig(config);
   if (residentialConfig.brandCatalog) {
     void saveInstallerResidentialCatalog(residentialConfig.brandCatalog);
   }

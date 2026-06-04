@@ -6,6 +6,7 @@ import { applyCommercialPanelTrackPolicy } from "@/lib/commercial-panel-track-po
 import { findCatalogIdForTrack } from "@/lib/commercial-bom-panels";
 import { saveInstallerResidentialCatalog } from "@/lib/installer-rate-card-client";
 import { ensureBrandCatalog } from "@/lib/residential-brand-catalog";
+import { syncEquipmentPresetsFromConfig } from "@/lib/residential-equipment-presets";
 import {
   inverterBrandsLabel,
   panelBrandsLabel,
@@ -127,7 +128,7 @@ export async function saveCommercialRequirement(
 ): Promise<SaveCommercialRequirementResult> {
   const { proposalId, commercialConfig, proposalLayout, lineItems } = input;
   const pricing = applyCommercialPanelTrackPolicy(
-    ensureBrandCatalog(input.pricingConfig),
+    syncEquipmentPresetsFromConfig(ensureBrandCatalog(input.pricingConfig)),
     input.pricingConfig.connectionType
   );
   const mergedCommercial = mergeCommercialConfigWithPricing(commercialConfig, pricing);
