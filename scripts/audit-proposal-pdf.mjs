@@ -208,19 +208,25 @@ async function main() {
 
   // Scroll entire document so framer-motion whileInView content materializes before print
   await page.evaluate(async () => {
+    document.documentElement.classList.add("commercial-print-snap");
     const step = Math.max(400, window.innerHeight * 0.85);
     const max = document.documentElement.scrollHeight;
-    for (let y = 0; y < max; y += step) {
+    for (let y = 0; y <= max; y += step) {
       window.scrollTo(0, y);
-      await new Promise((r) => setTimeout(r, 120));
+      await new Promise((r) => setTimeout(r, 80));
     }
     window.scrollTo(0, 0);
   });
   await page.waitForTimeout(1500);
 
   // Match user print dialog
-  await page.emulateMedia({ media: "print" });
+  await page.emulateMedia({ media: "print", reducedMotion: "reduce" });
   await page.waitForTimeout(500);
+
+  await page.screenshot({
+    path: path.join(OUT, "commercial-print-preview.png"),
+    fullPage: true,
+  });
 
   const dom = await collectDomMetrics(page);
   const pdfPath = path.join(OUT, "commercial-school-audit.pdf");

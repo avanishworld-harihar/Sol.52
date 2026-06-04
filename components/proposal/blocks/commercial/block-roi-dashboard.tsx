@@ -150,8 +150,8 @@ export function BlockROIDashboard({ ctx }: Props) {
               </div>
             </div>
 
-            {/* Bar chart */}
-            <div className="relative">
+            {/* Bar chart — screen (animated) */}
+            <div className="relative print:hidden">
               <div
                 className="absolute inset-x-0 border-b-2 border-dashed border-slate-200"
                 style={{ top: `${ZERO_PCT}%` }}
@@ -189,7 +189,6 @@ export function BlockROIDashboard({ ctx }: Props) {
                         )}
                       </div>
                       <span className="mt-1.5 text-[9px] font-medium text-slate-400">{row.year}</span>
-                      {/* Hover tooltip */}
                       <div className="pointer-events-none absolute -top-10 left-1/2 z-10 hidden -translate-x-1/2 rounded-lg bg-slate-900 px-2.5 py-1.5 text-[10px] font-semibold text-white shadow-xl group-hover:block whitespace-nowrap">
                         {row.cumulative >= 0 ? "+" : ""}
                         {fmtL(row.cumulative)}
@@ -200,6 +199,40 @@ export function BlockROIDashboard({ ctx }: Props) {
                 })}
               </div>
               <p className="mt-3 text-right text-[10px] font-medium text-slate-400">
+                {isHi ? "वर्ष →" : "Year →"}
+              </p>
+            </div>
+
+            {/* Bar chart — print (static flat bars, no motion) */}
+            <div className="relative hidden print:block">
+              <div
+                className="absolute inset-x-0 border-b-2 border-dashed border-slate-300"
+                style={{ top: `${ZERO_PCT}%` }}
+              >
+                <span className="absolute -top-4 right-0 text-[9px] font-semibold text-slate-500">₹0</span>
+              </div>
+              <div className="commercial-cashflow-chart flex h-56 items-end gap-0.5">
+                {chartRows.map((row) => {
+                  const isPos = row.cumulative >= 0;
+                  const h = Math.min((Math.abs(row.cumulative) / maxAbs) * 100, 100);
+                  return (
+                    <div
+                      key={`print-${row.year}`}
+                      className="flex flex-1 flex-col items-center"
+                      style={{ height: "100%" }}
+                    >
+                      <div className="relative flex h-full w-full flex-col items-center justify-end">
+                        <div
+                          className={`w-full ${isPos ? "rounded-t bg-emerald-500" : "rounded-b bg-rose-500"}`}
+                          style={{ height: `${h}%` }}
+                        />
+                      </div>
+                      <span className="mt-1.5 text-[9px] font-medium text-slate-500">{row.year}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="mt-3 text-right text-[10px] font-medium text-slate-500">
                 {isHi ? "वर्ष →" : "Year →"}
               </p>
             </div>
@@ -220,13 +253,13 @@ export function BlockROIDashboard({ ctx }: Props) {
                   {
                     label: isHi ? "ग्रिड ऊर्जा (6% p.a.)" : "Grid Energy Cost",
                     value: gridCost,
-                    barClass: "bg-gradient-to-r from-rose-500 to-rose-400",
+                    barClass: "bg-rose-500",
                     textClass: "text-rose-700",
                   },
                   {
                     label: isHi ? "सौर + बकाया ग्रिड" : "Solar + Residual Grid",
                     value: solarCost,
-                    barClass: "bg-gradient-to-r from-sky-500 to-sky-400",
+                    barClass: "bg-sky-500",
                     textClass: "text-sky-700",
                   },
                 ].map((item) => (
@@ -243,7 +276,11 @@ export function BlockROIDashboard({ ctx }: Props) {
                         whileInView={{ width: `${(item.value / maxCost) * 100}%` }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.9, ease: "easeOut" }}
-                        className={`h-full rounded-full ${item.barClass}`}
+                        className={`commercial-compare-bar h-full rounded-full print:hidden ${item.barClass}`}
+                      />
+                      <div
+                        className={`commercial-compare-bar hidden h-full rounded-full print:block ${item.barClass}`}
+                        style={{ width: `${(item.value / maxCost) * 100}%` }}
                       />
                     </div>
                   </div>
@@ -251,13 +288,7 @@ export function BlockROIDashboard({ ctx }: Props) {
               </div>
 
               {/* Net saving callout */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.97 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.3 }}
-                className="mt-5 rounded-xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50 to-emerald-100/50 p-4"
-              >
+              <div className="commercial-callout-emerald mt-5 rounded-xl border border-emerald-200/80 bg-emerald-50 p-4">
                 <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-emerald-600">
                   {isHi ? "कुल बचत" : "Net Lifecycle Saving"}
                 </p>
@@ -267,13 +298,13 @@ export function BlockROIDashboard({ ctx }: Props) {
                 <p className="mt-0.5 text-[10px] text-emerald-600">
                   {isHi ? "25 वर्ष में ग्रिड बनाम सौर" : "grid vs solar over 25 years"}
                 </p>
-              </motion.div>
+              </div>
             </GlassPanel>
           </SectionReveal>
 
           {/* Environmental ROI */}
           <SectionReveal delay={0.2}>
-            <div className="rounded-2xl border border-emerald-200/70 bg-gradient-to-br from-emerald-50 to-emerald-100/40 p-6">
+            <div className="commercial-callout-emerald rounded-2xl border border-emerald-200/70 bg-emerald-50 p-6">
               <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-600">
                 {isHi ? "पर्यावरण ROI" : "Environmental ROI"}
               </p>

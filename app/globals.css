@@ -3289,8 +3289,8 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
 
   .commercial-proposal .commercial-cover,
   .commercial-proposal .commercial-cover * {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: economy !important;
+    print-color-adjust: economy !important;
   }
 
   .commercial-proposal .commercial-cover {
@@ -3384,6 +3384,145 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   .commercial-proposal .proposal-page section {
     padding-left: 0 !important;
     padding-right: 0 !important;
+  }
+
+  /* ── Commercial PDF: reduce rasterization + fix blank iOS pages ─────────── */
+  .commercial-proposal {
+    print-color-adjust: economy !important;
+    -webkit-print-color-adjust: economy !important;
+  }
+
+  .commercial-proposal,
+  .commercial-proposal * {
+    box-shadow: none !important;
+    filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    text-shadow: none !important;
+  }
+
+  .commercial-proposal .proposal-page {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+  }
+
+  .commercial-proposal [class*="bg-slate-50"],
+  .commercial-proposal [class*="bg-white"],
+  .commercial-proposal [class*="bg-emerald"] {
+    background-color: #ffffff !important;
+    background-image: none !important;
+  }
+
+  /* Tailwind opacity modifiers (/70, /80) force compositor layers → raster tiles */
+  .commercial-proposal [class*="bg-"][class*="/"] {
+    background-color: #ffffff !important;
+    background-image: none !important;
+  }
+
+  .commercial-proposal [class*="border-"][class*="/"] {
+    border-color: #e2e8f0 !important;
+  }
+
+  .commercial-proposal [class*="from-"][class*="/"],
+  .commercial-proposal [class*="to-"][class*="/"] {
+    background-image: none !important;
+  }
+
+  .commercial-proposal [class*="bg-gradient-to"] {
+    background-image: none !important;
+  }
+
+  .commercial-proposal .commercial-executive-kpi-grid > div,
+  .commercial-proposal .KpiCard,
+  .commercial-proposal [class*="rounded-2xl"][class*="border-emerald"],
+  .commercial-proposal [class*="rounded-2xl"][class*="border-sky"],
+  .commercial-proposal [class*="rounded-2xl"][class*="border-indigo"],
+  .commercial-proposal [class*="rounded-2xl"][class*="border-violet"],
+  .commercial-proposal [class*="rounded-2xl"][class*="border-amber"],
+  .commercial-proposal [class*="rounded-2xl"][class*="border-rose"] {
+    background-color: #f8fafc !important;
+    background-image: none !important;
+  }
+
+  .commercial-proposal [class*="from-emerald-50"],
+  .commercial-proposal [class*="from-emerald-100"],
+  .commercial-proposal .commercial-callout-emerald,
+  .commercial-proposal [class*="to-emerald-100"] {
+    background-color: #f0fdf4 !important;
+  }
+
+  .commercial-proposal [class*="from-sky-50"],
+  .commercial-proposal [class*="from-sky-100"] {
+    background-color: #f0f9ff !important;
+  }
+
+  .commercial-proposal [class*="from-indigo-50"],
+  .commercial-proposal [class*="from-indigo-100"] {
+    background-color: #eef2ff !important;
+  }
+
+  .commercial-proposal [class*="from-violet-50"],
+  .commercial-proposal [class*="from-violet-100"] {
+    background-color: #f5f3ff !important;
+  }
+
+  .commercial-proposal [class*="from-amber-50"],
+  .commercial-proposal [class*="from-amber-100"] {
+    background-color: #fffbeb !important;
+  }
+
+  .commercial-proposal [class*="from-rose-50"],
+  .commercial-proposal [class*="from-rose-100"] {
+    background-color: #fff1f2 !important;
+  }
+
+  .commercial-proposal .commercial-cover-plant-badge {
+    background: #f0f9ff !important;
+    border-color: #bae6fd !important;
+  }
+
+  .commercial-proposal .bg-emerald-500,
+  .commercial-proposal .commercial-cashflow-chart .bg-emerald-500 {
+    background-color: #10b981 !important;
+  }
+
+  .commercial-proposal .bg-rose-500,
+  .commercial-proposal .commercial-cashflow-chart .bg-rose-500 {
+    background-color: #f43f5e !important;
+  }
+
+  .commercial-proposal .bg-sky-500,
+  .commercial-proposal .commercial-compare-bar.bg-sky-500 {
+    background-color: #0ea5e9 !important;
+  }
+
+  .commercial-proposal .commercial-compare-bar.bg-rose-500 {
+    background-color: #f43f5e !important;
+  }
+
+  .commercial-proposal * {
+    isolation: auto !important;
+    contain: none !important;
+    will-change: auto !important;
+  }
+
+  /* Framer Motion — force final visible state (fixes iOS blank pages) */
+  .commercial-proposal *,
+  html.commercial-print-snap .commercial-proposal * {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .commercial-proposal .commercial-executive-kpi-grid > div {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .commercial-proposal .commercial-cashflow-chart > div > div > div {
+    min-height: 1px !important;
   }
 
   /* Cover: natural flow on one page — content first, full-width banner below (no crop) */
@@ -3718,10 +3857,9 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     margin-top: 6mm !important;
   }
 
-  /* Force vibrant colors & gradients in PDF */
-  *,
-  .proposal-page *,
-  .proposal-document * {
+  /* Force vibrant colors & gradients in PDF — residential only (commercial uses flat print palette above) */
+  .proposal-document:not(.commercial-proposal) *,
+  .proposal-document:not(.commercial-proposal) .proposal-page * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     color-adjust: exact !important;

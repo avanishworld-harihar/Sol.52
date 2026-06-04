@@ -57,6 +57,12 @@ import { BlockCommercialFinancing } from "./blocks/commercial/block-commercial-f
 import { BlockDgHybrid } from "./blocks/commercial/block-dg-hybrid";
 import { BlockSchoolGreenCampus } from "./blocks/commercial/block-school-green-campus";
 import { BlockSchoolLearningAsset } from "./blocks/commercial/block-school-learning-asset";
+import {
+  clearCommercialPrintSnap,
+  installCommercialPrintListeners,
+  prepareCommercialPrint,
+  subscribeCommercialPrintSnap,
+} from "./blocks/commercial/commercial-print-mode";
 
 // ─── Shared context ───────────────────────────────────────────────────────────
 
@@ -171,6 +177,7 @@ export default function CommercialProposalView({
   const [presentMode, setPresentMode] = useState(false);
   const [presentIdx, setPresentIdx] = useState(0);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [printSnap, setPrintSnap] = useState(false);
   const [displayInstaller, setDisplayInstaller] = useState(installer);
   const [displayLogoUrl, setDisplayLogoUrl] = useState(installerLogoUrl);
 
@@ -188,6 +195,10 @@ export default function CommercialProposalView({
     window.addEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
     return () => window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
   }, [installer, installerLogoUrl]);
+
+  useEffect(() => installCommercialPrintListeners(), []);
+
+  useEffect(() => subscribeCommercialPrintSnap(setPrintSnap), []);
 
   // ── Active-section tracking via IntersectionObserver ─────────────────────
   const isSchoolProposal = isSchoolInstitutionOrg(pptInput.commercialConfig?.orgType);
@@ -288,7 +299,12 @@ export default function CommercialProposalView({
   }, [id]);
 
   const handleDownloadPdf = useCallback(() => {
-    if (typeof window !== "undefined") window.print();
+    if (typeof window === "undefined") return;
+    void (async () => {
+      await prepareCommercialPrint();
+      window.print();
+      window.setTimeout(() => clearCommercialPrintSnap(), 500);
+    })();
   }, []);
 
   const handleShare = useCallback(() => {
@@ -332,7 +348,7 @@ export default function CommercialProposalView({
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <MotionConfig reducedMotion="user">
+    <MotionConfig reducedMotion={printSnap ? "always" : "user"}>
       <div
         className="commercial-proposal proposal-document mx-auto min-h-screen max-w-[210mm] font-sans antialiased print:max-w-none"
         style={{ colorScheme: "light" }}
@@ -347,7 +363,7 @@ export default function CommercialProposalView({
               animate={{ y: 0 }}
               exit={{ y: -56 }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="sticky top-0 z-50 border-b border-white/8 bg-slate-950/97 backdrop-blur-md"
+              className="sticky top-0 z-50 border-b border-white/8 bg-slate-950/97 backdrop-blur-md print:hidden"
             >
               <div className="flex items-center">
                 {/* Brand cell */}

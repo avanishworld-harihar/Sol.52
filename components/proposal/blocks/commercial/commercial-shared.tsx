@@ -313,15 +313,16 @@ export function KpiCard({ label, value, sub, accent, delay = 0, icon, compact = 
       transition={{ delay, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       className={`min-w-0 overflow-hidden rounded-2xl border ${compact ? "p-4 sm:p-5" : "p-6"} ${ac.bg} ${ac.border}`}
     >
-      {/* Icon + label row */}
       <div className="mb-3 flex items-start gap-2">
-        {icon && <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/70 ${ac.icon}`}>{icon}</span>}
+        {icon && (
+          <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/70 ${ac.icon}`}>
+            {icon}
+          </span>
+        )}
         <span className={`min-w-0 text-[10px] font-bold uppercase leading-snug tracking-[0.16em] ${ac.label}`}>
           {label}
         </span>
       </div>
-
-      {/* Main value */}
       <div
         className={`min-w-0 break-words font-black leading-tight tabular-nums tracking-tight ${
           compact ? "text-2xl sm:text-3xl" : "text-4xl md:text-5xl"
@@ -329,11 +330,7 @@ export function KpiCard({ label, value, sub, accent, delay = 0, icon, compact = 
       >
         {value}
       </div>
-
-      {/* Sub-label */}
-      {sub && (
-        <p className={`mt-2 text-[11px] font-medium leading-snug ${ac.sub}`}>{sub}</p>
-      )}
+      {sub && <p className={`mt-2 text-[11px] font-medium leading-snug ${ac.sub}`}>{sub}</p>}
     </motion.div>
   );
 }
