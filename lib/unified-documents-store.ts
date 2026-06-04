@@ -20,6 +20,8 @@ import type {
   UnifiedDocumentRow,
   UnifiedDocumentsQuery,
   UnifiedDocumentsResult,
+  UnifiedProjectDocumentsQuery,
+  UnifiedProjectDocumentsSummary,
 } from "@/lib/unified-documents-types";
 
 function db() {
@@ -150,6 +152,7 @@ async function fetchNewCustomerAssets(
       link_role: null,
       source: "customer_assets",
       legacy: false,
+      notes: r.notes != null ? String(r.notes) : null,
     });
   }
   return rows;
@@ -340,7 +343,55 @@ async function fetchLegacyProjectDocuments(
   return rows;
 }
 
-/** Dedupe: prefer non-legacy when same filename+project+category within 2s */
+async function fetchLegacyProjectDocumentsForProject(
+  projectId: string,
+  projectLabel: string,
+  customerId: string
+): Promise<UnifiedDocumentRow[]> {
+  const client = db();
+  if (!client) return [];
+
+  const { data, error } = await client
+    .from("project_documents")
+    .select("*")
+    .eq("project_id", projectId)
+    .is("archived_at", null)
+    .order("created_at", { ascending: false })
+    .limit(500);
+  if (error) {
+    if (error.code === "42P01") return [];
+    return [];
+  }
+
+  const rows: UnifiedDocumentRow[] = [];
+  for (const r of data ?? []) {
+    const rawCat = String(r.doc_category ?? "other");
+    const mapped = legacyProjectDocCategoryToDb(rawCat) ?? "sld";
+    const owner = legacyProjectDocDisplayOwner(rawCat);
+    const path = String(r.storage_path ?? "");
+    const downloadUrl = path ? await signedProjectPath(path) : null;
+    rows.push({
+      id: `legacy-pd-${r.id}`,
+      owner,
+      category: mapped,
+      category_label: getLabelForCategoryDb(mapped),
+      filename: String(r.filename),
+      mime_type: r.mime_type != null ? String(r.mime_type) : null,
+      size_bytes: Number(r.size_bytes) || 0,
+      customer_id: customerId,
+      project_id: projectId,
+      project_label: projectLabel,
+      proposal_id: null,
+      proposal_revision: null,
+      uploaded_at: String(r.created_at),
+      download_url: downloadUrl,
+      link_role: null,
+      source: "project_documents",
+      legacy: true,
+    });
+  }
+  return rows;
+}
 function dedupeRows(rows: UnifiedDocumentRow[]): UnifiedDocumentRow[] {
   const seen = new Set<string>();
   const out: UnifiedDocumentRow[] = [];
@@ -411,4 +462,152 @@ export async function listUnifiedCustomerDocuments(
     total_in_page: page.length,
     facets,
   };
+}
+
+function matchesProjectQuery(
+  row: UnifiedDocumentRow,
+  q: UnifiedProjectDocumentsQuery,
+  projectId: string
+): boolean {
+  if (q.owner && row.owner !== q.owner) return false;
+  if (q.category && row.category !== q.category) return false;
+  if (q.q?.trim()) {
+    const needle = q.q.trim().toLowerCase();
+    if (!row.filename.toLowerCase().includes(needle)) return false;
+  }
+  if (row.owner === "project" && row.project_id && row.project_id !== projectId) {
+    return false;
+  }
+  return true;
+}
+
+function summarizeProjectDocuments(items: UnifiedDocumentRow[]): UnifiedProjectDocumentsSummary {
+  const by_category: Record<string, number> = {};
+  const by_owner: Record<string, number> = {};
+  for (const row of items) {
+    by_category[row.category] = (by_category[row.category] ?? 0) + 1;
+    by_owner[row.owner] = (by_owner[row.owner] ?? 0) + 1;
+  }
+  return { total: items.length, by_category, by_owner };
+}
+
+/**
+ * Unified project hub read: project_assets for this project + all customer_assets
+ * for linked lead + proposal_assets for linked customer.
+ */
+export async function listUnifiedProjectDocuments(
+  projectId: string,
+  query: UnifiedProjectDocumentsQuery = {}
+): Promise<{ items: UnifiedDocumentRow[]; summary: UnifiedProjectDocumentsSummary }> {
+  const client = db();
+  if (!client) {
+    return { items: [], summary: { total: 0, by_category: {}, by_owner: {} } };
+  }
+
+  const { data: project } = await client
+    .from("projects")
+    .select("id, lead_id, official_name, customer_name")
+    .eq("id", projectId)
+    .maybeSingle();
+
+  if (!project) {
+    return { items: [], summary: { total: 0, by_category: {}, by_owner: {} } };
+  }
+
+  const leadId = project.lead_id != null ? String(project.lead_id) : null;
+  const orgId = await resolveDefaultOrgId();
+  const projectLabel =
+    String(project.official_name ?? "").trim() ||
+    String(project.customer_name ?? "").trim() ||
+    "Project";
+
+  const legacyRead = isDocumentsHubLegacyReadEnabled();
+  const rows: UnifiedDocumentRow[] = [];
+
+  if (leadId) {
+    const projectLabels = new Map([[projectId, projectLabel]]);
+    const [customerRows, projectRows, proposalRows, legacyPd, legacyCf] = await Promise.all([
+      fetchNewCustomerAssets(leadId, orgId),
+      fetchNewProjectAssets(leadId, orgId, projectLabels),
+      fetchProposalAssets(leadId, orgId),
+      legacyRead ? fetchLegacyProjectDocuments(leadId, projectLabels) : Promise.resolve([]),
+      legacyRead ? fetchLegacyCustomerFiles(leadId) : Promise.resolve([]),
+    ]);
+
+    rows.push(...customerRows, ...proposalRows, ...legacyCf);
+    rows.push(
+      ...projectRows.filter((r) => r.project_id === projectId),
+      ...legacyPd.filter((r) => r.project_id === projectId)
+    );
+  } else {
+    const orgIdOnly = orgId;
+    let queryPa = client
+      .from("project_assets")
+      .select("*")
+      .eq("project_id", projectId)
+      .is("archived_at", null)
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (orgIdOnly) queryPa = queryPa.eq("organization_id", orgIdOnly);
+    const { data: pas } = await queryPa;
+    for (const r of pas ?? []) {
+      const category = String(r.category) as DocumentCategoryDb;
+      const path = String(r.storage_path ?? "");
+      const downloadUrl = path ? await signedProjectPath(path) : null;
+      rows.push({
+        id: String(r.id),
+        owner: "project",
+        category,
+        category_label: getLabelForCategoryDb(category),
+        filename: String(r.filename),
+        mime_type: r.mime_type != null ? String(r.mime_type) : null,
+        size_bytes: Number(r.size_bytes) || 0,
+        customer_id: String(r.customer_id ?? ""),
+        project_id: projectId,
+        project_label: projectLabel,
+        proposal_id: null,
+        proposal_revision: null,
+        uploaded_at: String(r.created_at),
+        download_url: downloadUrl,
+        link_role: null,
+        source: "project_assets",
+        legacy: false,
+      });
+    }
+    if (legacyRead) {
+      rows.push(
+        ...(await fetchLegacyProjectDocumentsForProject(projectId, projectLabel, ""))
+      );
+    }
+  }
+
+  const deduped = legacyRead ? dedupeRows(rows) : dedupeRowsBySourceId(rows);
+  const filtered = deduped
+    .filter((row) => matchesProjectQuery(row, query, projectId))
+    .sort((a, b) => new Date(b.uploaded_at).getTime() - new Date(a.uploaded_at).getTime());
+
+  return { items: filtered, summary: summarizeProjectDocuments(filtered) };
+}
+
+/** Prefer newest row per source:id (no legacy dedupe key collapse). */
+function dedupeRowsBySourceId(rows: UnifiedDocumentRow[]): UnifiedDocumentRow[] {
+  const seen = new Set<string>();
+  const out: UnifiedDocumentRow[] = [];
+  const sorted = [...rows].sort(
+    (a, b) => new Date(b.uploaded_at).getTime() - new Date(a.uploaded_at).getTime()
+  );
+  for (const row of sorted) {
+    const key = `${row.source}:${row.id}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(row);
+  }
+  return out;
+}
+
+export async function getUnifiedProjectDocumentsSummary(
+  projectId: string
+): Promise<UnifiedProjectDocumentsSummary> {
+  const { summary } = await listUnifiedProjectDocuments(projectId);
+  return summary;
 }

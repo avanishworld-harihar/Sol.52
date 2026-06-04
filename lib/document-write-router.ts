@@ -18,7 +18,7 @@ import {
   insertProjectAsset,
   projectAssetToLegacyDocumentRow,
 } from "@/lib/project-asset-store";
-import { upsertAssetLink } from "@/lib/asset-link-store";
+import { upsertAssetLink, linkCustomerAssetToActiveProjects } from "@/lib/asset-link-store";
 import {
   isCustomerOwnedProjectDocCategory,
   projectDocCategoryToCustomerAssetCategory,
@@ -28,6 +28,11 @@ import type { ProjectDocumentCategory } from "@/lib/project-document-types";
 import { resolveDefaultOrgId } from "@/lib/project-store";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase } from "@/lib/supabase";
+import type { CustomerHubUploadCategory } from "@/lib/documents-hub-ui-categories";
+import {
+  customerHubCategoryToProjectDocCategory,
+  formatHubCategoryNotes,
+} from "@/lib/documents-hub-ui-categories";
 
 function db() {
   return createSupabaseAdmin() ?? supabase;
@@ -80,11 +85,158 @@ export async function writeCustomerFileUpload(input: {
 
   if (!asset) return { ok: false, error: "customer_asset_insert_failed" };
 
+  await linkCustomerAssetToActiveProjects({
+    organizationId: orgId,
+    customerId: input.leadId,
+    assetId: asset.id,
+    category,
+  });
+
   return {
     ok: true,
     v2: true,
     data: customerAssetToLegacyFileRow(asset, input.fileType),
   };
+}
+
+async function findFirstActiveProjectForCustomer(
+  customerId: string,
+  organizationId: string
+): Promise<{ id: string; current_stage: string } | null> {
+  const client = db();
+  if (!client) return null;
+  const { data } = await client
+    .from("projects")
+    .select("id, current_stage")
+    .eq("lead_id", customerId)
+    .eq("organization_id", organizationId)
+    .is("archived_at", null)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!data?.id) return null;
+  return { id: String(data.id), current_stage: String(data.current_stage ?? "survey") };
+}
+
+/**
+ * Customer Documents Hub — category-tab upload (no popup).
+ * Customer-owned categories → customer_assets; KYC → project_assets when a project exists.
+ */
+export async function writeCustomerHubCategoryUpload(input: {
+  leadId: string;
+  hubCategory: CustomerHubUploadCategory;
+  fileBuffer: Buffer;
+  mimeType: string;
+  fileName: string;
+  legacyInsert: (fileType: CustomerFileType) => Promise<Record<string, unknown> | null>;
+}): Promise<CustomerUploadResult | ProjectUploadResult> {
+  const orgId = await resolveDefaultOrgId();
+  if (!orgId) return { ok: false, error: "organization_not_configured" };
+
+  if (input.hubCategory === "electricity_bill") {
+    return writeCustomerFileUpload({
+      leadId: input.leadId,
+      fileBuffer: input.fileBuffer,
+      mimeType: input.mimeType,
+      fileType: "bill",
+      fileName: input.fileName,
+      legacyInsert: () => input.legacyInsert("bill"),
+    });
+  }
+
+  if (input.hubCategory === "site_photo") {
+    return writeCustomerFileUpload({
+      leadId: input.leadId,
+      fileBuffer: input.fileBuffer,
+      mimeType: input.mimeType,
+      fileType: "site_image",
+      fileName: input.fileName,
+      legacyInsert: () => input.legacyInsert("site_image"),
+    });
+  }
+
+  if (input.hubCategory === "other") {
+    return writeCustomerFileUpload({
+      leadId: input.leadId,
+      fileBuffer: input.fileBuffer,
+      mimeType: input.mimeType,
+      fileType: "document",
+      fileName: input.fileName,
+      legacyInsert: () => input.legacyInsert("document"),
+    });
+  }
+
+  const docCategory = customerHubCategoryToProjectDocCategory(input.hubCategory);
+  if (!docCategory) return { ok: false, error: "invalid_hub_category" };
+
+  const project = await findFirstActiveProjectForCustomer(input.leadId, orgId);
+  if (!project) {
+    if (
+      input.hubCategory === "aadhaar" ||
+      input.hubCategory === "pan" ||
+      input.hubCategory === "agreement" ||
+      input.hubCategory === "advance_receipt"
+    ) {
+      const uploaded = await writeCustomerFileUpload({
+        leadId: input.leadId,
+        fileBuffer: input.fileBuffer,
+        mimeType: input.mimeType,
+        fileType: "document",
+        fileName: input.fileName,
+        legacyInsert: () => input.legacyInsert("document"),
+      });
+      if (!uploaded.ok) return uploaded;
+      if (uploaded.v2 && isDocumentsHubV2WriteEnabled()) {
+        const assetId = String(uploaded.data.id ?? "");
+        const client = db();
+        if (client && assetId) {
+          await client
+            .from("customer_assets")
+            .update({ notes: formatHubCategoryNotes(input.hubCategory) })
+            .eq("id", assetId);
+        }
+      }
+      return uploaded;
+    }
+    return { ok: false, error: "no_active_project_for_kyc_upload" };
+  }
+
+  return writeProjectDocumentUpload({
+    organizationId: orgId,
+    projectId: project.id,
+    customerId: input.leadId,
+    docCategory,
+    stageAtUpload: project.current_stage,
+    fileBuffer: input.fileBuffer,
+    mimeType: input.mimeType,
+    fileName: input.fileName,
+    legacyInsert: async (storagePath, documentId) => {
+      const uploaded = await uploadProjectDocumentFile({
+        storagePath,
+        fileBuffer: input.fileBuffer,
+        mimeType: input.mimeType,
+      });
+      if (!uploaded.ok) return null;
+      const client = db();
+      if (!client) return null;
+      const { data, error } = await client
+        .from("project_documents")
+        .insert({
+          organization_id: orgId,
+          project_id: project.id,
+          doc_category: docCategory,
+          stage_at_upload: project.current_stage,
+          storage_path: storagePath,
+          filename: input.fileName || "upload",
+          mime_type: input.mimeType,
+          size_bytes: input.fileBuffer.length,
+        })
+        .select("*")
+        .single();
+      if (error) return null;
+      return data as Record<string, unknown>;
+    },
+  });
 }
 
 export type ProjectUploadResult =

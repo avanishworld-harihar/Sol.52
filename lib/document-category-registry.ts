@@ -4,6 +4,9 @@
  * API filters may use registry ids (SCREAMING_SNAKE) via normalizeCategoryFilter().
  */
 
+import type { ProjectDocumentCategory } from "@/lib/project-document-types";
+import { PROJECT_DOCUMENT_CATEGORIES } from "@/lib/project-document-types";
+
 export const DOCUMENT_OWNERS = ["customer", "project", "proposal"] as const;
 export type DocumentOwner = (typeof DOCUMENT_OWNERS)[number];
 
@@ -216,6 +219,32 @@ export const AUTO_LINK_CUSTOMER_CATEGORIES: DocumentCategoryDb[] = [
   "db_photo",
   "survey_media",
 ];
+
+/** Unified hub db category → project Hub doc_category (API compat). */
+export function documentCategoryDbToProjectDocCategory(
+  db: string
+): ProjectDocumentCategory | null {
+  const c = db.trim().toLowerCase().replace(/-/g, "_") as DocumentCategoryDb;
+  switch (c) {
+    case "bill":
+      return "electricity_bill";
+    case "survey_media":
+      return "site_other";
+    case "proposal_pdf":
+    case "proposal_revision":
+      return "other";
+    default:
+      if ((PROJECT_DOCUMENT_CATEGORIES as readonly string[]).includes(c)) {
+        return c as ProjectDocumentCategory;
+      }
+      return null;
+  }
+}
+
+/** Project Hub doc_category filter → unified db category. */
+export function projectDocCategoryToDbCategory(docCategory: string): DocumentCategoryDb | null {
+  return legacyProjectDocCategoryToDb(docCategory);
+}
 
 export type DocumentOwnerFilter = DocumentOwner | "all";
 

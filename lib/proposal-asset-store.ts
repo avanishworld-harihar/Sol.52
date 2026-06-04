@@ -119,3 +119,27 @@ export async function listProposalAssetsByCustomer(
   }
   return (data ?? []) as ProposalAssetRow[];
 }
+
+export async function getProposalAssetById(assetId: string): Promise<ProposalAssetRow | null> {
+  const client = db();
+  if (!client) return null;
+  const { data, error } = await client
+    .from("proposal_assets")
+    .select("*")
+    .eq("id", assetId)
+    .is("archived_at", null)
+    .maybeSingle();
+  if (error || !data) return null;
+  return data as ProposalAssetRow;
+}
+
+export async function archiveProposalAsset(assetId: string): Promise<boolean> {
+  const client = db();
+  if (!client) return false;
+  const { error } = await client
+    .from("proposal_assets")
+    .update({ archived_at: new Date().toISOString() })
+    .eq("id", assetId)
+    .is("archived_at", null);
+  return !error;
+}

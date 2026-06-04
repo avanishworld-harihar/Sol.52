@@ -284,11 +284,15 @@ export interface ProjectDocument {
   archived_at: string | null;
   created_at: string;
   download_url?: string | null;
+  owner?: "customer" | "project" | "proposal";
+  category_label?: string;
+  source?: string;
 }
 
 export interface ProjectDocumentSummary {
   total: number;
   by_category: Record<string, number>;
+  by_owner?: Record<string, number>;
 }
 
 // ---------------------------------------------------------------------------

@@ -9,7 +9,27 @@ export type CustomerDocumentsQuery = {
   from?: string;
   to?: string;
   cursor?: string;
+  limit?: number;
 };
+
+export async function uploadCustomerHubDocument(
+  customerId: string,
+  file: File,
+  hubCategory: string
+): Promise<{ ok: boolean; error?: string }> {
+  const form = new FormData();
+  form.append("file", file);
+  form.append("hub_category", hubCategory);
+  const res = await fetch(`/api/customers/${encodeURIComponent(customerId)}/files/upload`, {
+    method: "POST",
+    body: form,
+  });
+  const json = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+  if (!res.ok || !json.ok) {
+    return { ok: false, error: json.error ?? "upload_failed" };
+  }
+  return { ok: true };
+}
 
 export async function fetchCustomerDocuments(
   customerId: string,
@@ -23,7 +43,7 @@ export async function fetchCustomerDocuments(
   if (query.from) params.set("from", query.from);
   if (query.to) params.set("to", query.to);
   if (query.cursor) params.set("cursor", query.cursor);
-  params.set("limit", "40");
+  params.set("limit", String(query.limit ?? 40));
 
   const res = await fetch(
     `/api/customers/${encodeURIComponent(customerId)}/documents?${params.toString()}`,

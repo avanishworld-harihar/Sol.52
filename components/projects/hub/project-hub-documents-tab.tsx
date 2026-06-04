@@ -1,16 +1,22 @@
 "use client";
 
-import { ProjectDocumentUploadSlot } from "@/components/projects/documents/project-document-upload-slot";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast-center";
+import { HubCategoryChips } from "@/components/documents/hub-category-chips";
+import { HubCategoryUpload } from "@/components/documents/hub-category-upload";
+import { HubDocumentCard } from "@/components/documents/hub-document-card";
 import { revalidateProjectHubCaches } from "@/lib/project-hub-cache";
 import {
   PROJECT_DOCUMENT_CATEGORIES,
   PROJECT_DOCUMENT_CATEGORY_LABELS,
   type ProjectDocumentCategory,
 } from "@/lib/project-document-types";
+import {
+  countByProjectDocCategory,
+  projectHubUploadAccept,
+} from "@/lib/documents-hub-ui-categories";
 import {
   archiveProjectDocument,
   fetchProjectDocuments,
@@ -20,124 +26,18 @@ import {
   type ProjectListItem,
 } from "@/lib/project-api-client";
 import { cn } from "@/lib/utils";
-import { isLegacyDocumentUploadUiEnabled } from "@/lib/documents-hub-legacy-ui-config";
-import {
-  FileText,
-  FolderOpen,
-  ImageIcon,
-  Loader2,
-  RefreshCw,
-  Trash2,
-} from "lucide-react";
+import type { DocumentOwner } from "@/lib/document-category-registry";
+import { FolderOpen, Loader2, RefreshCw } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import useSWR from "swr";
 
-function formatDocDate(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function formatBytes(n: number): string {
-  if (n < 1024) return `${n} B`;
-  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
-  return `${(n / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-function DocumentCard({
-  doc,
-  projectId,
-  onArchived,
-}: {
-  doc: ProjectDocument;
-  projectId: string;
-  onArchived: () => void;
-}) {
-  const toast = useToast();
-  const [busy, setBusy] = useState(false);
-  const label =
-    PROJECT_DOCUMENT_CATEGORY_LABELS[doc.doc_category as ProjectDocumentCategory] ??
-    doc.doc_category.replace(/_/g, " ");
-  const isImage = doc.mime_type.startsWith("image/");
-
-  async function handleDelete() {
-    if (!window.confirm(`Remove "${doc.filename}"?`)) return;
-    setBusy(true);
-    try {
-      const res = await archiveProjectDocument(projectId, doc.id);
-      if (!res.ok) throw new Error(res.error ?? "delete_failed");
-      await revalidateProjectHubCaches(projectId);
-      toast.success("Document removed");
-      onArchived();
-    } catch (e) {
-      toast.error(
-        "Could not remove",
-        e instanceof Error ? e.message : "Delete failed"
-      );
-    } finally {
-      setBusy(false);
-    }
+function inferOwner(doc: ProjectDocument): DocumentOwner {
+  if (doc.owner === "customer" || doc.owner === "project" || doc.owner === "proposal") {
+    return doc.owner;
   }
-
-  return (
-    <article className="flex flex-col overflow-hidden rounded-xl border border-slate-200/90 bg-white dark:border-white/10 dark:bg-[#0c1017]">
-      {isImage && doc.download_url ? (
-        <a href={doc.download_url} target="_blank" rel="noopener noreferrer">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={doc.download_url}
-            alt={doc.filename}
-            className="h-32 w-full object-cover"
-          />
-        </a>
-      ) : (
-        <div className="flex h-32 items-center justify-center bg-slate-50 dark:bg-white/5">
-          <FileText className="h-10 w-10 text-slate-300 dark:text-slate-600" aria-hidden />
-        </div>
-      )}
-      <div className="flex flex-1 flex-col gap-2 p-3">
-        <div>
-          <p className="line-clamp-2 text-xs font-bold text-slate-900 dark:text-slate-50">
-            {doc.filename}
-          </p>
-          <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-            {label}
-          </p>
-        </div>
-        <p className="text-[10px] text-slate-500 dark:text-slate-400">
-          {formatDocDate(doc.created_at)} · {formatBytes(doc.size_bytes)}
-        </p>
-        <div className="mt-auto flex gap-2">
-          {doc.download_url ? (
-            <Button type="button" variant="outline" size="sm" className="flex-1 text-xs" asChild>
-              <a href={doc.download_url} target="_blank" rel="noopener noreferrer">
-                Open
-              </a>
-            </Button>
-          ) : null}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={busy}
-            className="shrink-0 text-rose-600"
-            aria-label="Remove document"
-            onClick={() => void handleDelete()}
-          >
-            {busy ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Trash2 className="h-3.5 w-3.5" />
-            )}
-          </Button>
-        </div>
-      </div>
-    </article>
-  );
+  if (doc.source === "customer_assets") return "customer";
+  if (doc.source === "proposal_assets") return "proposal";
+  return "project";
 }
 
 export function ProjectHubDocumentsTab({
@@ -149,9 +49,8 @@ export function ProjectHubDocumentsTab({
 }) {
   const toast = useToast();
   const docsKey = enabled ? projectDocumentsKey(project.id) : null;
-  const [categoryFilter, setCategoryFilter] = useState<ProjectDocumentCategory | "all">(
-    "all"
-  );
+  const [categoryFilter, setCategoryFilter] = useState<ProjectDocumentCategory | "all">("all");
+  const [uploading, setUploading] = useState(false);
 
   const {
     data: documents,
@@ -169,11 +68,49 @@ export function ProjectHubDocumentsTab({
     await mutate();
   }, [mutate, project.id]);
 
+  const counts = useMemo(
+    () => countByProjectDocCategory(documents ?? []),
+    [documents]
+  );
+
+  const chips = useMemo(() => {
+    const all = [{ id: "all", label: "All", count: counts.all ?? 0 }];
+    const rest = PROJECT_DOCUMENT_CATEGORIES.map((cat) => ({
+      id: cat,
+      label: PROJECT_DOCUMENT_CATEGORY_LABELS[cat],
+      count: counts[cat] ?? 0,
+    }));
+    return [...all, ...rest];
+  }, [counts]);
+
   const filtered = useMemo(() => {
     const list = documents ?? [];
     if (categoryFilter === "all") return list;
     return list.filter((d) => d.doc_category === categoryFilter);
   }, [documents, categoryFilter]);
+
+  const canUpload = categoryFilter !== "all";
+  const categoryLabel =
+    categoryFilter === "all"
+      ? ""
+      : PROJECT_DOCUMENT_CATEGORY_LABELS[categoryFilter as ProjectDocumentCategory];
+
+  async function handleUpload(file: File) {
+    if (categoryFilter === "all") return;
+    setUploading(true);
+    try {
+      const res = await uploadProjectDocument(project.id, file, {
+        docCategory: categoryFilter,
+      });
+      if (!res.ok) throw new Error(res.error ?? "upload_failed");
+      toast.success("Uploaded", file.name);
+      await refresh();
+    } catch (e) {
+      toast.error("Upload failed", e instanceof Error ? e.message : "Unknown error");
+    } finally {
+      setUploading(false);
+    }
+  }
 
   if (!enabled) return null;
 
@@ -218,7 +155,7 @@ export function ProjectHubDocumentsTab({
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-          {(documents ?? []).length} file{(documents ?? []).length === 1 ? "" : "s"} on this project
+          {counts.all ?? 0} file{(counts.all ?? 0) === 1 ? "" : "s"} linked to this project
         </p>
         <Button
           type="button"
@@ -236,121 +173,65 @@ export function ProjectHubDocumentsTab({
         </Button>
       </div>
 
-      {isLegacyDocumentUploadUiEnabled() ? (
-        <Card className="page-lite-item border-slate-200/90 dark:border-white/10">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-extrabold">
-              <ImageIcon className="h-4 w-4 text-sky-600" aria-hidden />
-              Quick upload
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-3 sm:grid-cols-3">
-            <ProjectDocumentUploadSlot
-              projectId={project.id}
-              docCategory="roof_photo"
-              onUploaded={() => void refresh()}
-            />
-            <ProjectDocumentUploadSlot
-              projectId={project.id}
-              docCategory="meter_photo"
-              onUploaded={() => void refresh()}
-            />
-            <ProjectDocumentUploadSlot
-              projectId={project.id}
-              docCategory="db_photo"
-              onUploaded={() => void refresh()}
-            />
-          </CardContent>
-        </Card>
+      <HubCategoryChips
+        chips={chips}
+        activeId={categoryFilter}
+        onSelect={(id) => setCategoryFilter(id as ProjectDocumentCategory | "all")}
+      />
+
+      {canUpload ? (
+        <HubCategoryUpload
+          categoryLabel={categoryLabel}
+          accept={projectHubUploadAccept(categoryFilter as ProjectDocumentCategory)}
+          uploading={uploading}
+          onFile={handleUpload}
+        />
       ) : (
         <p className="text-xs text-slate-500 dark:text-slate-400">
-          Survey photos upload on the Survey tab. Other files appear here from v2 project assets and the customer Documents Hub.
+          Select a category above to upload. Files are stored under that category automatically.
         </p>
       )}
-
-      <div className="flex gap-1.5 overflow-x-auto pb-1">
-        <button
-          type="button"
-          onClick={() => setCategoryFilter("all")}
-          className={cn(
-            "shrink-0 rounded-full border px-3 py-1 text-[11px] font-bold",
-            categoryFilter === "all"
-              ? "border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900"
-              : "border-slate-200 text-slate-600 dark:border-white/10 dark:text-slate-400"
-          )}
-        >
-          All
-        </button>
-        {PROJECT_DOCUMENT_CATEGORIES.map((cat) => (
-          <button
-            key={cat}
-            type="button"
-            onClick={() => setCategoryFilter(cat)}
-            className={cn(
-              "shrink-0 rounded-full border px-3 py-1 text-[11px] font-bold",
-              categoryFilter === cat
-                ? "border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900"
-                : "border-slate-200 text-slate-600 dark:border-white/10 dark:text-slate-400"
-            )}
-          >
-            {PROJECT_DOCUMENT_CATEGORY_LABELS[cat]}
-          </button>
-        ))}
-      </div>
 
       {filtered.length === 0 ? (
         <Card className="page-lite-item border-dashed border-slate-200 dark:border-white/10">
           <CardContent className="flex flex-col items-center gap-2 py-10 text-center">
             <FolderOpen className="h-10 w-10 text-slate-300 dark:text-slate-600" aria-hidden />
             <p className="text-sm font-bold text-slate-700 dark:text-slate-200">No documents yet</p>
-            <p className="max-w-sm text-xs text-slate-500 dark:text-slate-400">
-              Upload survey photos, bills, net-metering letters, and installation images here.
-            </p>
+            {canUpload ? (
+              <p className="max-w-sm text-xs text-slate-500 dark:text-slate-400">
+                Upload {categoryLabel.toLowerCase()} files using the area above.
+              </p>
+            ) : null}
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((doc) => (
-            <DocumentCard
-              key={doc.id}
-              doc={doc}
-              projectId={project.id}
-              onArchived={() => void refresh()}
-            />
-          ))}
+          {filtered.map((doc) => {
+            const owner = inferOwner(doc);
+            return (
+              <HubDocumentCard
+                key={doc.id}
+                id={doc.id}
+                filename={doc.filename}
+                mimeType={doc.mime_type}
+                downloadUrl={doc.download_url ?? null}
+                uploadedAt={doc.created_at}
+                sizeBytes={doc.size_bytes}
+                owner={owner}
+                onDelete={
+                  owner !== "proposal"
+                    ? async () => {
+                        const res = await archiveProjectDocument(project.id, doc.id);
+                        if (!res.ok) throw new Error(res.error ?? "delete_failed");
+                        await refresh();
+                      }
+                    : undefined
+                }
+              />
+            );
+          })}
         </div>
       )}
-
-      <Card className="page-lite-item border-slate-200/90 dark:border-white/10">
-        <CardContent className="p-4">
-          <label className="flex flex-col gap-2">
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
-              Upload other file
-            </span>
-            <input
-              type="file"
-              accept="image/*,application/pdf,.doc,.docx"
-              className="text-xs file:mr-2 file:rounded-lg file:border-0 file:bg-slate-900 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                void (async () => {
-                  const res = await uploadProjectDocument(project.id, file, {
-                    docCategory: "other",
-                  });
-                  if (res.ok) {
-                    toast.success("Uploaded", file.name);
-                    await refresh();
-                  } else {
-                    toast.error("Upload failed", res.error ?? "Unknown error");
-                  }
-                  e.target.value = "";
-                })();
-              }}
-            />
-          </label>
-        </CardContent>
-      </Card>
     </div>
   );
 }

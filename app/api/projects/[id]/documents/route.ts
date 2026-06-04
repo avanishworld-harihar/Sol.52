@@ -17,6 +17,8 @@ import {
   PROJECT_DOCUMENT_CATEGORY_LABELS,
   type ProjectDocumentCategory,
 } from "@/lib/project-document-types";
+import type { DocumentOwner } from "@/lib/document-category-registry";
+import { DOCUMENT_OWNERS } from "@/lib/document-category-registry";
 import {
   assertProjectDocumentPermission,
   parseInstallerPermissionRole,
@@ -64,11 +66,19 @@ export async function GET(req: NextRequest, ctx: RouteCtx) {
         ? (categoryParam as ProjectDocumentCategory)
         : null;
     const stage = req.nextUrl.searchParams.get("stage");
+    const ownerParam = req.nextUrl.searchParams.get("owner");
+    const owner =
+      ownerParam && (DOCUMENT_OWNERS as readonly string[]).includes(ownerParam)
+        ? (ownerParam as DocumentOwner)
+        : null;
+    const q = req.nextUrl.searchParams.get("q");
 
     const data = await listProjectDocuments(projectId, {
       category,
       stage: stage?.trim() || null,
       withUrls: true,
+      owner,
+      q: q?.trim() || null,
     });
 
     return NextResponse.json(

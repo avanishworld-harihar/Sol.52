@@ -107,6 +107,19 @@ export async function listCustomerAssets(
   return (data ?? []) as CustomerAssetRow[];
 }
 
+export async function getCustomerAssetById(assetId: string): Promise<CustomerAssetRow | null> {
+  const client = db();
+  if (!client) return null;
+  const { data, error } = await client
+    .from("customer_assets")
+    .select("*")
+    .eq("id", assetId)
+    .is("archived_at", null)
+    .maybeSingle();
+  if (error || !data) return null;
+  return data as CustomerAssetRow;
+}
+
 export async function archiveCustomerAsset(assetId: string): Promise<boolean> {
   const client = db();
   if (!client) return false;

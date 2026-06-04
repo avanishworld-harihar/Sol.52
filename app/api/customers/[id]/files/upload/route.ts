@@ -4,7 +4,8 @@ import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase } from "@/lib/supabase";
 import { appendActivityEvent } from "@/lib/followup-store";
 import type { CustomerFileType } from "@/lib/customer-file-upload";
-import { writeCustomerFileUpload } from "@/lib/document-write-router";
+import { writeCustomerHubCategoryUpload } from "@/lib/document-write-router";
+import type { CustomerHubUploadCategory } from "@/lib/documents-hub-ui-categories";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -17,6 +18,15 @@ function db() {
 }
 
 const fileTypeSchema = z.enum(["bill", "site_image", "document"]);
+const hubCategorySchema = z.enum([
+  "electricity_bill",
+  "aadhaar",
+  "pan",
+  "agreement",
+  "advance_receipt",
+  "site_photo",
+  "other",
+]);
 
 export async function POST(req: NextRequest, ctx: RouteCtx) {
   try {
@@ -29,51 +39,80 @@ export async function POST(req: NextRequest, ctx: RouteCtx) {
     const form = await req.formData();
     const file = form.get("file");
     const fileTypeRaw = form.get("file_type");
+    const hubCategoryRaw = form.get("hub_category");
 
     if (!(file instanceof File)) {
       return NextResponse.json({ ok: false, error: "file is required" }, { status: 400 });
     }
 
-    const fileType = fileTypeSchema.parse(typeof fileTypeRaw === "string" ? fileTypeRaw : "document");
     const bytes = Buffer.from(await file.arrayBuffer());
+    const mimeType = file.type || "application/octet-stream";
 
-    const result = await writeCustomerFileUpload({
-      leadId,
-      fileBuffer: bytes,
-      mimeType: file.type || "application/octet-stream",
-      fileType: fileType as CustomerFileType,
-      fileName: file.name,
-      legacyInsert: async () => {
-        const { uploadCustomerFile } = await import("@/lib/customer-file-upload");
-        const uploaded = await uploadCustomerFile(
-          leadId,
-          bytes,
-          file.type || "application/octet-stream",
-          fileType as CustomerFileType,
-          file.name
-        );
-        if (!uploaded.ok || !uploaded.url) return null;
-        const fileSizeKb = Math.round(bytes.length / 1024);
-        const { data, error } = await client
-          .from("customer_files")
-          .insert({
-            lead_id: leadId,
-            file_name: file.name.slice(0, 255),
-            file_url: uploaded.url,
-            file_type: fileType,
-            file_size_kb: fileSizeKb,
-            mime_type: file.type || null,
-          })
-          .select("*")
-          .single();
-        if (error) return null;
-        return data as Record<string, unknown>;
-      },
-    });
+    const legacyInsert = async (fileType: CustomerFileType) => {
+      const { uploadCustomerFile } = await import("@/lib/customer-file-upload");
+      const uploaded = await uploadCustomerFile(
+        leadId,
+        bytes,
+        mimeType,
+        fileType,
+        file.name
+      );
+      if (!uploaded.ok || !uploaded.url) return null;
+      const fileSizeKb = Math.round(bytes.length / 1024);
+      const { data, error } = await client
+        .from("customer_files")
+        .insert({
+          lead_id: leadId,
+          file_name: file.name.slice(0, 255),
+          file_url: uploaded.url,
+          file_type: fileType,
+          file_size_kb: fileSizeKb,
+          mime_type: file.type || null,
+        })
+        .select("*")
+        .single();
+      if (error) return null;
+      return data as Record<string, unknown>;
+    };
+
+    let result;
+    if (typeof hubCategoryRaw === "string" && hubCategoryRaw.trim()) {
+      const hubCategory = hubCategorySchema.parse(hubCategoryRaw.trim());
+      result = await writeCustomerHubCategoryUpload({
+        leadId,
+        hubCategory: hubCategory as CustomerHubUploadCategory,
+        fileBuffer: bytes,
+        mimeType,
+        fileName: file.name,
+        legacyInsert,
+      });
+    } else {
+      const fileType = fileTypeSchema.parse(typeof fileTypeRaw === "string" ? fileTypeRaw : "document");
+      const { writeCustomerFileUpload } = await import("@/lib/document-write-router");
+      result = await writeCustomerFileUpload({
+        leadId,
+        fileBuffer: bytes,
+        mimeType,
+        fileType: fileType as CustomerFileType,
+        fileName: file.name,
+        legacyInsert: () => legacyInsert(fileType as CustomerFileType),
+      });
+    }
 
     if (!result.ok) {
       return NextResponse.json({ ok: false, error: result.error }, { status: 400 });
     }
+
+    const fileType =
+      typeof fileTypeRaw === "string"
+        ? fileTypeSchema.safeParse(fileTypeRaw).success
+          ? fileTypeRaw
+          : typeof hubCategoryRaw === "string"
+            ? hubCategoryRaw
+            : "document"
+        : typeof hubCategoryRaw === "string"
+          ? hubCategoryRaw
+          : "document";
 
     void appendActivityEvent({
       leadId,

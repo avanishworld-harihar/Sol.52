@@ -124,6 +124,57 @@ export async function linkCustomerAssetsOnProjectCreate(input: {
   return { linked, roles };
 }
 
+/**
+ * After customer hub upload: link asset to all active projects for this customer.
+ * Uses same category roles as project-create bootstrap (upsert per project+role).
+ */
+export async function linkCustomerAssetToActiveProjects(input: {
+  organizationId: string;
+  customerId: string;
+  assetId: string;
+  category: DocumentCategoryDb;
+}): Promise<{ linked: number; projectIds: string[] }> {
+  const client = db();
+  if (!client || !input.customerId?.trim()) {
+    return { linked: 0, projectIds: [] };
+  }
+
+  if (!AUTO_LINK_CUSTOMER_CATEGORIES.includes(input.category)) {
+    return { linked: 0, projectIds: [] };
+  }
+
+  const { data: projects, error } = await client
+    .from("projects")
+    .select("id")
+    .eq("lead_id", input.customerId)
+    .eq("organization_id", input.organizationId)
+    .is("archived_at", null);
+
+  if (error || !projects?.length) {
+    return { linked: 0, projectIds: [] };
+  }
+
+  const projectIds: string[] = [];
+  let linked = 0;
+
+  for (const p of projects) {
+    const projectId = String(p.id);
+    const link = await upsertAssetLink({
+      organizationId: input.organizationId,
+      assetId: input.assetId,
+      customerId: input.customerId,
+      projectId,
+      linkRole: input.category,
+    });
+    if (link) {
+      linked += 1;
+      projectIds.push(projectId);
+    }
+  }
+
+  return { linked, projectIds };
+}
+
 export async function listLinkedCustomerAssetsForProject(
   projectId: string
 ): Promise<

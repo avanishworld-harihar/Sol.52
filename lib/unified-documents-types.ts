@@ -27,6 +27,7 @@ export type UnifiedDocumentRow = {
   link_role: string | null;
   source: UnifiedDocumentSource;
   legacy: boolean;
+  notes?: string | null;
 };
 
 export type UnifiedDocumentsQuery = {
@@ -47,4 +48,16 @@ export type UnifiedDocumentsResult = {
   facets: {
     projects: { id: string; label: string }[];
   };
+};
+
+export type UnifiedProjectDocumentsQuery = {
+  owner?: UnifiedDocumentOwner | null;
+  category?: string | null;
+  q?: string;
+};
+
+export type UnifiedProjectDocumentsSummary = {
+  total: number;
+  by_category: Record<string, number>;
+  by_owner: Record<string, number>;
 };
