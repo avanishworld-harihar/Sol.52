@@ -7,6 +7,7 @@ import { getProposalPricingByProposalId } from "@/lib/proposal-pricing-store";
 import { getProposalById, trackProposalView } from "@/lib/proposals-store";
 import { isProposalBillAuditBacked } from "@/lib/proposal-bill-audit-eligibility";
 import { summarizeProposalDeck } from "@/lib/proposal-ppt";
+import { resolveProposalBrandConfig } from "@/lib/proposal-branding-settings";
 import { parseResidentialConfig } from "@/lib/residential-proposal-config";
 import ProposalView from "./proposal-view";
 import CommercialProposalView from "@/components/proposal/commercial-proposal-view";
@@ -64,6 +65,8 @@ export default async function PublicProposalPage({ params }: PageProps) {
       ? (rawPptInput?.installerLogoUrl as string)
       : undefined;
 
+  const brandConfigFromSnapshot = resolveProposalBrandConfig({ pptInput: mergedInput });
+
   const installerProps = {
     name:
       (typeof mergedInput.installerName === "string" ? mergedInput.installerName.trim() : "") ||
@@ -110,6 +113,7 @@ export default async function PublicProposalPage({ params }: PageProps) {
       generatedAt={proposal.generated_at}
       siteImages={siteImages}
       installerLogoUrl={installerLogoUrl}
+      brandConfigFromSnapshot={brandConfigFromSnapshot}
       showSurveyWorkflowSection={showSurveyWorkflowSection}
     />
   );

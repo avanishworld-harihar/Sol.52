@@ -32,6 +32,7 @@ import {
 
 import type { ProposalDocument } from "@/lib/proposal-document-ir";
 import type { BlockRenderContext } from "@/lib/proposal-block-context";
+import { resolveProposalBrandConfig } from "@/lib/proposal-branding-settings";
 import type { BlockRenderKey } from "@/lib/proposal-web-renderer-registry";
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 import { resolveStoryVariant } from "@/lib/proposal-preset-engine";
@@ -255,6 +256,8 @@ export default function ProposalPresentClient({
     );
   }
 
+  const brandConfig = resolveProposalBrandConfig({ pptInput: rawInput });
+
   const ctx: BlockRenderContext = {
     summary,
     pptInput: rawInput,
@@ -267,6 +270,7 @@ export default function ProposalPresentClient({
     presetId,
     installer,
     installerLogoUrl: doc.installer.logo_url ?? undefined,
+    brandConfig,
     siteImages: rawInput.siteImages,
     billAuditBacked,
     showSurveyWorkflowSection,

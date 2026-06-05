@@ -49,7 +49,11 @@ import { quoteResidentialSolar } from "@/lib/residential-solar-engine";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
 import { resolvedCompanyProfileForLang, adaptCompanyProfileForInstaller } from "@/lib/proposal-company-resolve";
 import { computeProposalFinancials } from "@/lib/proposal-financial-engine";
-import { resolveInstallerNameForProposal } from "@/lib/proposal-branding-settings";
+import {
+  resolveInstallerNameForProposal,
+  resolveProposalBrandConfig,
+  shouldShowInstallerName,
+} from "@/lib/proposal-branding-settings";
 import { hindiHonoredDisplayName } from "@/lib/roman-name-to-devanagari";
 import { dict, monthLabels, type ProposalDict, type ProposalLang } from "@/lib/proposal-i18n";
 import { ATAL_GRIHA_JYOTI } from "@/lib/mp-tariff-2025-26";
@@ -128,6 +132,10 @@ export type PremiumProposalPptInput = {
   installerContact?: string;
   /** Optional company logo (data URL or http(s) URL). */
   installerLogoUrl?: string;
+
+  /** Frozen proposal branding display config (logo vs logo+name per surface). */
+  brandDisplayMode?: import("@/lib/proposal-branding-settings").ProposalBrandDisplayMode;
+  brandSectionConfig?: import("@/lib/proposal-branding-settings").ProposalBrandSectionConfig;
 
   /**
    * `bill` — show bill audit + economics pages (uploaded bill or varied monthly units).
@@ -705,10 +713,12 @@ function topBar(pptx: PptxGenJS, slide: PptxGenJS.Slide, opts: {
   pageNum: number;
   totalPages: number;
   logoUrl?: string;
+  showInstallerName?: boolean;
 }) {
   slide.background = { color: T.white };
   slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 10, h: 0.04, fill: { color: T.ink }, line: { color: T.ink, width: 0 } });
 
+  const showName = opts.showInstallerName !== false && opts.installer.trim().length > 0;
   let titleX = 0.5;
   if (opts.logoUrl) {
     try {
@@ -716,14 +726,16 @@ function topBar(pptx: PptxGenJS, slide: PptxGenJS.Slide, opts: {
       titleX = 0.95;
     } catch { /* logo embed failed — fall through */ }
   }
-  slide.addText(opts.installer.toUpperCase(), {
-    x: titleX, y: 0.18, w: 5, h: 0.3,
-    fontSize: 11, bold: true, color: T.ink, fontFace: FONT, charSpacing: 4
-  });
-  slide.addText(opts.tagline.toUpperCase(), {
-    x: titleX, y: 0.42, w: 7, h: 0.22,
-    fontSize: 8, color: T.mute, fontFace: FONT, charSpacing: 6
-  });
+  if (showName) {
+    slide.addText(opts.installer.toUpperCase(), {
+      x: titleX, y: 0.18, w: 5, h: 0.3,
+      fontSize: 11, bold: true, color: T.ink, fontFace: FONT, charSpacing: 4
+    });
+    slide.addText(opts.tagline.toUpperCase(), {
+      x: titleX, y: 0.42, w: 7, h: 0.22,
+      fontSize: 8, color: T.mute, fontFace: FONT, charSpacing: 6
+    });
+  }
   slide.addShape(pptx.ShapeType.ellipse, { x: 9.25, y: 0.27, w: 0.16, h: 0.16, fill: { color: T.blue }, line: { color: T.blue, width: 0 } });
   slide.addText(`${String(opts.pageNum).padStart(2, "0")} / ${String(opts.totalPages).padStart(2, "0")}`, {
     x: 8.5, y: 5.3, w: 1.0, h: 0.22, fontSize: 9, color: T.mute, fontFace: FONT, align: "right"
@@ -878,11 +890,27 @@ export async function buildPremiumProposalPptBuffer(input: PremiumProposalPptInp
   // Up to 6 site / past-installation photos (already validated upstream).
   const siteImages = (input.siteImages ?? []).filter((u) => typeof u === "string" && u.length > 0).slice(0, 6);
 
+  const brandConfig = resolveProposalBrandConfig({ pptInput: input });
+  const showClosingName = shouldShowInstallerName(brandConfig, "closing");
+  const proposalTopBar = (
+    slide: PptxGenJS.Slide,
+    pageNum: number,
+    surface: "cover" | "header" = "header"
+  ) =>
+    topBar(pptx, slide, {
+      installer,
+      tagline,
+      pageNum,
+      totalPages: TOTAL_PAGES,
+      logoUrl,
+      showInstallerName: shouldShowInstallerName(brandConfig, surface),
+    });
+
   // ---------------------------------------------------------------------------
   // SLIDE 1 — HERO COVER (logo top, customer profile center, system summary bottom)
   // ---------------------------------------------------------------------------
   const s1 = pptx.addSlide();
-  topBar(pptx, s1, { installer, tagline, pageNum: 1, totalPages: TOTAL_PAGES, logoUrl });
+  proposalTopBar(s1, 1, "cover");
 
   // Solar-blue hero band.
   s1.addShape(pptx.ShapeType.rect, { x: 0, y: 0.72, w: 10, h: 0.08, fill: { color: T.blue }, line: { color: T.blue, width: 0 } });
@@ -944,7 +972,7 @@ export async function buildPremiumProposalPptBuffer(input: PremiumProposalPptInp
   // SLIDE 2 — DEEP AUDIT (12-month table + summer-trap bar chart)
   // ---------------------------------------------------------------------------
   const s2 = pptx.addSlide();
-  topBar(pptx, s2, { installer, tagline, pageNum: 2, totalPages: TOTAL_PAGES, logoUrl });
+  proposalTopBar(s2, 2);
   sectionHeader(pptx, s2, { kicker: D["slide.audit.kicker"], title: D["slide.audit.title"], subtitle: D["slide.audit.subtitle"] });
 
   // 12-row table (split into 2 sub-tables of 6 rows for compact layout).
@@ -1051,7 +1079,7 @@ export async function buildPremiumProposalPptBuffer(input: PremiumProposalPptInp
   // SLIDE 3 — ECONOMICS (Generation vs Usage + EMI Table)
   // ---------------------------------------------------------------------------
   const s3 = pptx.addSlide();
-  topBar(pptx, s3, { installer, tagline, pageNum: 3, totalPages: TOTAL_PAGES, logoUrl });
+  proposalTopBar(s3, 3);
   sectionHeader(pptx, s3, { kicker: D["slide.economics.kicker"], title: D["slide.economics.title"], subtitle: D["slide.economics.subtitle"] });
 
   // Generation vs Usage chart on the left.
@@ -1143,7 +1171,7 @@ export async function buildPremiumProposalPptBuffer(input: PremiumProposalPptInp
   // SLIDE 4 — ENVIRONMENTAL — YOUR GREEN LEGACY
   // ---------------------------------------------------------------------------
   const s4 = pptx.addSlide();
-  topBar(pptx, s4, { installer, tagline, pageNum: 4, totalPages: TOTAL_PAGES, logoUrl });
+  proposalTopBar(s4, 4);
   sectionHeader(pptx, s4, { kicker: D["slide.environment.kicker"], title: D["slide.environment.title"], subtitle: D["slide.environment.subtitle"] });
 
   const envTiles = [
@@ -1190,7 +1218,7 @@ export async function buildPremiumProposalPptBuffer(input: PremiumProposalPptInp
   // SLIDE 5 — ABOUT US (Harihar Solar) + 3 site-photo placeholders
   // ---------------------------------------------------------------------------
   const s5 = pptx.addSlide();
-  topBar(pptx, s5, { installer, tagline, pageNum: 5, totalPages: TOTAL_PAGES, logoUrl });
+  proposalTopBar(s5, 5);
   sectionHeader(pptx, s5, { kicker: D["slide.about.kicker"], title: D["slide.about.title"] });
 
   const aboutLeftW = 4.4;
@@ -1243,7 +1271,7 @@ export async function buildPremiumProposalPptBuffer(input: PremiumProposalPptInp
   // SLIDE 6 — TECHNICAL PROPOSAL — System Architecture & Project Scheme
   // ---------------------------------------------------------------------------
   const s6 = pptx.addSlide();
-  topBar(pptx, s6, { installer, tagline, pageNum: 6, totalPages: TOTAL_PAGES, logoUrl });
+  proposalTopBar(s6, 6);
   sectionHeader(pptx, s6, { kicker: D["slide.technical.kicker"], title: D["slide.technical.title"] });
 
   // Architecture flow blocks.
@@ -1329,7 +1357,7 @@ export async function buildPremiumProposalPptBuffer(input: PremiumProposalPptInp
   // SLIDE 7 — TECHNICAL SPEC & BOM
   // ---------------------------------------------------------------------------
   const s7 = pptx.addSlide();
-  topBar(pptx, s7, { installer, tagline, pageNum: 7, totalPages: TOTAL_PAGES, logoUrl });
+  proposalTopBar(s7, 7);
   sectionHeader(pptx, s7, { kicker: D["slide.bom.kicker"], title: D["slide.bom.title"] });
 
   const bomTop = 2.1;
@@ -1380,7 +1408,7 @@ export async function buildPremiumProposalPptBuffer(input: PremiumProposalPptInp
   // SLIDE 8 — PAYMENT TERMS (25 / 50 / 20 / 5)
   // ---------------------------------------------------------------------------
   const s8 = pptx.addSlide();
-  topBar(pptx, s8, { installer, tagline, pageNum: 8, totalPages: TOTAL_PAGES, logoUrl });
+  proposalTopBar(s8, 8);
   sectionHeader(pptx, s8, { kicker: D["slide.payment.kicker"], title: D["slide.payment.title"] });
 
   // Big horizontal progress bar with 4 segments.
@@ -1443,7 +1471,7 @@ export async function buildPremiumProposalPptBuffer(input: PremiumProposalPptInp
   // SLIDE 9 — COMMERCIAL TERMS + AMC selection (1 / 5 / 10 yr)
   // ---------------------------------------------------------------------------
   const s9 = pptx.addSlide();
-  topBar(pptx, s9, { installer, tagline, pageNum: 9, totalPages: TOTAL_PAGES, logoUrl });
+  proposalTopBar(s9, 9);
   sectionHeader(pptx, s9, { kicker: D["slide.commercial.kicker"], title: D["slide.commercial.title"] });
 
   // Left column: cost breakdown.
@@ -1512,7 +1540,7 @@ export async function buildPremiumProposalPptBuffer(input: PremiumProposalPptInp
   // SLIDE 10 — SERVICE & AMC plan details (Included / Excluded / Response / Escalation)
   // ---------------------------------------------------------------------------
   const s10 = pptx.addSlide();
-  topBar(pptx, s10, { installer, tagline, pageNum: 10, totalPages: TOTAL_PAGES, logoUrl });
+  proposalTopBar(s10, 10);
   sectionHeader(pptx, s10, { kicker: D["slide.amc.kicker"], title: D["slide.amc.title"] });
 
   const includedBullets = lang === "hi"
@@ -1593,7 +1621,7 @@ export async function buildPremiumProposalPptBuffer(input: PremiumProposalPptInp
   // SLIDE 11 — BANKING & PAYMENTS (Bank details + UPI QR)
   // ---------------------------------------------------------------------------
   const s11 = pptx.addSlide();
-  topBar(pptx, s11, { installer, tagline, pageNum: 11, totalPages: TOTAL_PAGES, logoUrl });
+  proposalTopBar(s11, 11);
   sectionHeader(pptx, s11, { kicker: D["slide.banking.kicker"], title: D["slide.banking.title"] });
 
   // Left column: bank details.
@@ -1716,7 +1744,7 @@ export async function buildPremiumProposalPptBuffer(input: PremiumProposalPptInp
   // SLIDE 12 — CLOSING — Thank You + photos + contact
   // ---------------------------------------------------------------------------
   const s12 = pptx.addSlide();
-  topBar(pptx, s12, { installer, tagline, pageNum: 12, totalPages: TOTAL_PAGES, logoUrl });
+  proposalTopBar(s12, 12);
 
   s12.addShape(pptx.ShapeType.rect, {
     x: 0, y: 0.7, w: 10, h: 5.0, fill: { color: T.ink }, line: { color: T.ink, width: 0 }
@@ -1760,12 +1788,18 @@ export async function buildPremiumProposalPptBuffer(input: PremiumProposalPptInp
   }
 
   // Contact strip.
-  s12.addText(installer.toUpperCase(), {
-    x: 0.5, y: 4.75, w: 5, h: 0.3, fontSize: 11, bold: true, color: T.white, fontFace: FONT, charSpacing: 4
-  });
-  s12.addText(contact, {
-    x: 0.5, y: 5.05, w: 5, h: 0.25, fontSize: 10, color: T.muteSoft, fontFace: FONT
-  });
+  if (showClosingName && installer.trim()) {
+    s12.addText(installer.toUpperCase(), {
+      x: 0.5, y: 4.75, w: 5, h: 0.3, fontSize: 11, bold: true, color: T.white, fontFace: FONT, charSpacing: 4
+    });
+    s12.addText(contact, {
+      x: 0.5, y: 5.05, w: 5, h: 0.25, fontSize: 10, color: T.muteSoft, fontFace: FONT
+    });
+  } else {
+    s12.addText(contact, {
+      x: 0.5, y: 4.85, w: 5, h: 0.35, fontSize: 10, color: T.muteSoft, fontFace: FONT, valign: "middle"
+    });
+  }
   s12.addText(tagline, {
     x: 5.5, y: 4.85, w: 4, h: 0.5, fontSize: 10, color: T.muteSoft, fontFace: FONT, align: "right", valign: "middle"
   });

@@ -36,7 +36,14 @@ import {
   residentialMonthlyGenerationUnits,
 } from "@/lib/residential-deck-helpers";
 import type { ProposalDeckSummary } from "@/lib/proposal-ppt";
-import { PROPOSAL_BRANDING_UPDATED_EVENT, readProposalBrandingSettings, resolveInstallerDisplayName } from "@/lib/proposal-branding-settings";
+import {
+  PROPOSAL_BRANDING_UPDATED_EVENT,
+  readProposalBrandingSettings,
+  resolveInstallerDisplayName,
+  resolveProposalBrandConfig,
+  type ProposalBrandConfig,
+} from "@/lib/proposal-branding-settings";
+import { ProposalBrandMark, ProposalBrandTextLine } from "@/components/proposal/proposal-brand-mark";
 import {
   applyProposalRouteShellTheme,
   readProposalWebTheme,
@@ -219,6 +226,8 @@ type ProposalViewProps = {
   billAuditBacked?: boolean;
   /** Residential requirement config (DCR vs Non-DCR table, etc.) */
   residentialConfig?: import("@/lib/residential-proposal-config").ResidentialProposalConfig | null;
+  /** Frozen branding display config from proposal snapshot (ppt_input). */
+  brandConfigFromSnapshot?: ProposalBrandConfig;
 };
 
 const inr = (v: number) => `₹${Math.max(0, Math.round(v)).toLocaleString("en-IN")}`;
@@ -652,6 +661,7 @@ export function HeroCover({
   lang,
   summary,
   installerLogoUrl,
+  brandConfig,
   location,
   siteImages,
   darkMode = false
@@ -660,6 +670,7 @@ export function HeroCover({
   lang: ProposalLang;
   summary: ProposalDeckSummary;
   installerLogoUrl?: string;
+  brandConfig: ProposalBrandConfig;
   location?: string;
   siteImages?: string[];
   darkMode?: boolean;
@@ -698,26 +709,21 @@ export function HeroCover({
           }`}
         >
           <div className="col-span-12 flex min-w-0 items-center sm:col-span-7">
-            {installerLogoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={installerLogoUrl}
-                alt=""
-                className="proposal-print-logo h-16 w-auto max-w-[min(320px,80vw)] object-contain object-left sm:h-20 sm:max-w-[380px] print:h-[4.5rem] print:max-w-[min(72mm,100%)]"
-              />
-            ) : (
-              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 via-sky-500 to-emerald-600 text-white shadow-md sm:h-14 sm:w-14">
-                <Sun className="h-6 w-6 sm:h-7 sm:w-7" />
-              </div>
-            )}
-            {!installerLogoUrl ? (
-              <motion.div className="min-w-0">
-                <p className={`truncate text-lg font-bold tracking-tight sm:text-xl ${darkMode ? "text-white" : "text-slate-900"}`}>
-                  {summary.installer}
-                </p>
-                <p className={darkMode ? `${taglineClass} text-slate-400` : taglineClass}>{summary.tagline}</p>
-              </motion.div>
-            ) : null}
+            <ProposalBrandMark
+              surface="cover"
+              brandConfig={brandConfig}
+              installerName={summary.installer}
+              logoUrl={installerLogoUrl}
+              tagline={summary.tagline}
+              logoClassName="proposal-print-logo h-16 w-auto max-w-[min(320px,80vw)] object-contain object-left sm:h-20 sm:max-w-[380px] print:h-[4.5rem] print:max-w-[min(72mm,100%)]"
+              nameClassName={`truncate text-lg font-bold tracking-tight sm:text-xl ${darkMode ? "text-white" : "text-slate-900"}`}
+              taglineClassName={darkMode ? `${taglineClass} text-slate-400` : taglineClass}
+              fallbackIcon={
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 via-sky-500 to-emerald-600 text-white shadow-md sm:h-14 sm:w-14">
+                  <Sun className="h-6 w-6 sm:h-7 sm:w-7" />
+                </div>
+              }
+            />
           </div>
           <div className={`col-span-12 sm:col-span-5 sm:text-right ${darkMode ? "text-slate-200" : ""}`}>
             <p className={`text-[10px] font-semibold ${darkMode ? "text-slate-500" : "text-slate-400"} ${lang === "hi" ? "tracking-normal" : "uppercase tracking-wide"}`}>
@@ -2360,6 +2366,7 @@ export function ClosingSection({
   onShare,
   onDownload,
   installer,
+  brandConfig,
   downloading,
   lang,
   honoredDisplay
@@ -2370,6 +2377,7 @@ export function ClosingSection({
   onShare: () => void;
   onDownload: () => void;
   installer: { name: string; contact: string; tagline: string };
+  brandConfig: ProposalBrandConfig;
   downloading: boolean;
   lang: ProposalLang;
   honoredDisplay: string;
@@ -2424,7 +2432,12 @@ export function ClosingSection({
         </div>
       </motion.div>
       <p className="mt-8 text-center text-[11px] uppercase tracking-[0.24em] text-slate-400 proposal-journey-subtitle">
-        {[installer.name, installer.contact, installer.tagline].filter(Boolean).join(" · ")}
+        <ProposalBrandTextLine
+          surface="closing"
+          brandConfig={brandConfig}
+          installerName={installer.name}
+          parts={[installer.name, installer.contact, installer.tagline]}
+        />
       </p>
     </ProposalJourneySection>
   );
@@ -2443,7 +2456,8 @@ export default function ProposalView({
   installerLogoUrl,
   showSurveyWorkflowSection = false,
   billAuditBacked = true,
-  residentialConfig = null
+  residentialConfig = null,
+  brandConfigFromSnapshot,
 }: ProposalViewProps) {
   const [downloading, setDownloading] = useState(false);
   const [lang, setLang] = useState<ProposalLang>(summary.lang ?? "en");
@@ -2469,6 +2483,9 @@ export default function ProposalView({
   );
 
   const [displayInstaller, setDisplayInstaller] = useState(installer);
+  const [displayBrandConfig, setDisplayBrandConfig] = useState<ProposalBrandConfig>(() =>
+    brandConfigFromSnapshot ?? resolveProposalBrandConfig({ settings: readProposalBrandingSettings() })
+  );
 
   useEffect(() => {
     const sync = () => {
@@ -2482,11 +2499,22 @@ export default function ProposalView({
       const fromLocal = branding.installerLogoUrl?.trim() ?? "";
       setDisplayInstallerLogoUrl(fromServer || fromLocal);
       setCompanyGstFromBranding(branding.companyGstNumber?.trim() ?? "");
+      setDisplayBrandConfig(
+        resolveProposalBrandConfig({
+          pptInput: brandConfigFromSnapshot
+            ? {
+                brandDisplayMode: brandConfigFromSnapshot.brandDisplayMode,
+                brandSectionConfig: brandConfigFromSnapshot.brandSectionConfig,
+              }
+            : undefined,
+          settings: branding,
+        })
+      );
     };
     sync();
     window.addEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
     return () => window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
-  }, [installer, installerLogoUrl]);
+  }, [installer, installerLogoUrl, brandConfigFromSnapshot]);
 
   const displaySummary = useMemo(() => {
     const gst = companyGstFromBranding;
@@ -2636,6 +2664,7 @@ export default function ProposalView({
           lang={lang}
           summary={displaySummary}
           installerLogoUrl={displayInstallerLogoUrl || undefined}
+          brandConfig={displayBrandConfig}
           location={undefined}
           siteImages={siteImages}
           darkMode={darkMode}
@@ -2745,6 +2774,7 @@ export default function ProposalView({
           onShare={shareWhatsApp}
           onDownload={downloadPpt}
           installer={displayInstaller}
+          brandConfig={displayBrandConfig}
           downloading={downloading}
           lang={lang}
           honoredDisplay={honoredDisplay}

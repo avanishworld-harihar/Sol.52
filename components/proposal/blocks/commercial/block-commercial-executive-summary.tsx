@@ -6,7 +6,7 @@
 
 import { motion } from "framer-motion";
 import { Building2, CalendarDays, FileText, MapPin } from "lucide-react";
-import { installerLogoAlt } from "@/lib/proposal-branding-settings";
+import { ProposalBrandMark } from "@/components/proposal/proposal-brand-mark";
 import type { CommercialCtx } from "@/components/proposal/commercial-proposal-view";
 import { StaticInrKpi } from "./commercial-shared";
 
@@ -17,6 +17,7 @@ export function BlockCommercialExecutiveSummary({ ctx }: Props) {
     summary,
     installer,
     installerLogoUrl,
+    brandConfig,
     customerName,
     generatedAt,
     roiPct,
@@ -39,26 +40,14 @@ export function BlockCommercialExecutiveSummary({ ctx }: Props) {
     <div className="commercial-executive-summary bg-white text-slate-900">
       <div className="border-b border-slate-200 px-6 py-5 md:px-10 md:py-6">
         <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
-            {installerLogoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={installerLogoUrl}
-                alt={installerLogoAlt(installer.name)}
-                className="h-8 w-auto object-contain"
-              />
-            ) : null}
-            {installer.name || installer.tagline ? (
-              <div>
-                {installer.name ? (
-                  <p className="text-sm font-bold text-slate-900">{installer.name}</p>
-                ) : null}
-                {installer.tagline ? (
-                  <p className="text-[10px] text-slate-500">{installer.tagline}</p>
-                ) : null}
-              </div>
-            ) : null}
-          </div>
+          <ProposalBrandMark
+            surface="header"
+            brandConfig={brandConfig}
+            installerName={installer.name}
+            logoUrl={installerLogoUrl}
+            tagline={installer.tagline}
+            logoClassName="h-8 w-auto object-contain"
+          />
           <div className="flex items-center gap-2 text-slate-600">
             <CalendarDays className="h-3.5 w-3.5 text-slate-400" />
             <span className="text-[11px] font-medium">{dateStr}</span>

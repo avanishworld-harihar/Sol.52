@@ -48,7 +48,12 @@ import {
   readProposalWebTheme,
   writeProposalWebTheme,
 } from "@/lib/proposal-web-theme";
-import { PROPOSAL_BRANDING_UPDATED_EVENT, readProposalBrandingSettings, resolveInstallerDisplayName } from "@/lib/proposal-branding-settings";
+import {
+  PROPOSAL_BRANDING_UPDATED_EVENT,
+  readProposalBrandingSettings,
+  resolveInstallerDisplayName,
+  resolveProposalBrandConfig,
+} from "@/lib/proposal-branding-settings";
 import { JourneyBridge, ProposalJourneyProgress } from "@/components/proposal/proposal-journey";
 import { isProposalBillAuditBacked } from "@/lib/proposal-bill-audit-eligibility";
 
@@ -110,6 +115,7 @@ export function renderBlockByKey(
           lang={lang}
           summary={summary}
           installerLogoUrl={ctx.installerLogoUrl}
+          brandConfig={ctx.brandConfig}
           siteImages={siteImages}
           darkMode={darkMode}
         />
@@ -217,6 +223,7 @@ export function renderBlockByKey(
             onShare={ctx.onShare}
             onDownload={ctx.onDownload}
             installer={ctx.installer}
+            brandConfig={ctx.brandConfig}
             downloading={ctx.downloading}
             lang={lang}
             honoredDisplay={honoredDisplay}
@@ -516,6 +523,8 @@ function ProposalWebRendererInner({
   );
 
   // Build render context
+  const brandConfig = resolveProposalBrandConfig({ pptInput: rawInput, settings: branding });
+
   const ctx: BlockRenderContext = {
     summary,
     pptInput: rawInput,
@@ -528,6 +537,7 @@ function ProposalWebRendererInner({
     presetId,
     installer,
     installerLogoUrl: displayInstallerLogoUrl || undefined,
+    brandConfig,
     siteImages: rawInput.siteImages,
     billAuditBacked,
     showSurveyWorkflowSection,

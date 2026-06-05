@@ -13,7 +13,7 @@
 
 import { motion } from "framer-motion";
 import { Download, Mail, Phone, Share2, Zap } from "lucide-react";
-import { installerLogoAlt } from "@/lib/proposal-branding-settings";
+import { ProposalBrandMark } from "@/components/proposal/proposal-brand-mark";
 import type { CommercialCtx } from "@/components/proposal/commercial-proposal-view";
 import { CommercialSectionHeader, GlassPanel, SectionReveal } from "./commercial-shared";
 
@@ -31,6 +31,7 @@ export function BlockPremiumClosing({ ctx }: Props) {
     summary,
     installer,
     installerLogoUrl,
+    brandConfig,
     proposalId,
     roiPct,
     irr,
@@ -201,28 +202,21 @@ export function BlockPremiumClosing({ ctx }: Props) {
             <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">
               {isHi ? "अपने EPC भागीदार से संपर्क करें" : "Contact Your EPC Partner"}
             </p>
-            <div className="flex items-start gap-4">
-              {installerLogoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={installerLogoUrl}
-                  alt={installerLogoAlt(installer.name)}
-                  className="h-12 w-auto rounded object-contain"
-                />
-              ) : (
+            <ProposalBrandMark
+              surface="closing"
+              brandConfig={brandConfig}
+              installerName={installer.name}
+              logoUrl={installerLogoUrl}
+              tagline={installer.tagline}
+              logoClassName="h-12 w-auto rounded object-contain"
+              nameClassName="text-base font-bold text-slate-900"
+              taglineClassName="text-xs text-slate-500"
+              fallbackIcon={
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-sky-100">
                   <Zap className="h-6 w-6 text-sky-600" />
                 </div>
-              )}
-              <div>
-                {installer.name ? (
-                  <p className="text-base font-bold text-slate-900">{installer.name}</p>
-                ) : null}
-                {installer.tagline && (
-                  <p className="text-xs text-slate-500">{installer.tagline}</p>
-                )}
-              </div>
-            </div>
+              }
+            />
 
             <div className="mt-4 space-y-2">
               {installer.contact && (

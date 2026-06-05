@@ -7,13 +7,14 @@
 
 import { motion } from "framer-motion";
 import { Zap } from "lucide-react";
-import { installerLogoAlt } from "@/lib/proposal-branding-settings";
+import { shouldShowInstallerName } from "@/lib/proposal-branding-settings";
+import { ProposalBrandMark } from "@/components/proposal/proposal-brand-mark";
 import type { CommercialCtx } from "@/components/proposal/commercial-proposal-view";
 
 type Props = { ctx: CommercialCtx };
 
 export function BlockCommercialCover({ ctx }: Props) {
-  const { summary, installer, installerLogoUrl, customerName, generatedAt, lang } = ctx;
+  const { summary, installer, installerLogoUrl, brandConfig, customerName, generatedAt, lang } = ctx;
   const isHi = lang === "hi";
 
   const dateStr = generatedAt
@@ -34,23 +35,17 @@ export function BlockCommercialCover({ ctx }: Props) {
       className="commercial-cover commercial-cover--confidential flex min-h-[min(100dvh,297mm)] flex-col bg-white text-slate-900 print:min-h-[277mm]"
     >
       <header className="commercial-cover-confidential-header flex items-center justify-between border-b border-slate-200 px-6 py-4 md:px-10">
-        <div className="flex min-w-0 items-center gap-3">
-          {installerLogoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={installerLogoUrl}
-              alt={installerLogoAlt(installer.name)}
-              className="h-9 w-auto max-w-[140px] object-contain object-left"
-            />
-          ) : (
+        <ProposalBrandMark
+          surface="cover"
+          brandConfig={brandConfig}
+          installerName={installer.name}
+          logoUrl={installerLogoUrl}
+          fallbackIcon={
             <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-sky-200 bg-sky-50">
               <Zap className="h-4 w-4 text-sky-600" />
             </div>
-          )}
-          {installer.name ? (
-            <p className="truncate text-sm font-bold text-slate-900">{installer.name}</p>
-          ) : null}
-        </div>
+          }
+        />
         <span className="shrink-0 rounded border border-slate-300 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-600">
           {isHi ? "गोपनीय" : "Confidential"}
         </span>
@@ -78,7 +73,7 @@ export function BlockCommercialCover({ ctx }: Props) {
       </main>
 
       <footer className="commercial-cover-confidential-footer border-t border-slate-200 px-6 py-3 text-center text-[10px] text-slate-500">
-        {installer.name ? (
+        {shouldShowInstallerName(brandConfig, "footer") && installer.name ? (
           <>
             {installer.name}
             <span className="mx-2 text-slate-300">·</span>

@@ -1,5 +1,37 @@
 export type ProposalThemePreset = "greenBlueClassic" | "greenBlueVivid";
 
+/** Per-surface logo vs logo+name choice (used when brandDisplayMode is customPerSection). */
+export type BrandSectionDisplayMode = "logoOnly" | "logoAndName";
+
+/** Global brand display strategy for proposals (web, print/PDF, PPT). */
+export type ProposalBrandDisplayMode = "logoOnly" | "logoAndName" | "customPerSection";
+
+export type ProposalBrandSurface = "cover" | "header" | "footer" | "closing";
+
+export type ProposalBrandSectionConfig = {
+  cover: BrandSectionDisplayMode;
+  header: BrandSectionDisplayMode;
+  footer: BrandSectionDisplayMode;
+  closing: BrandSectionDisplayMode;
+};
+
+export type ProposalBrandConfig = {
+  brandDisplayMode: ProposalBrandDisplayMode;
+  brandSectionConfig: ProposalBrandSectionConfig;
+};
+
+export const DEFAULT_PROPOSAL_BRAND_SECTION_CONFIG: ProposalBrandSectionConfig = {
+  cover: "logoOnly",
+  header: "logoOnly",
+  footer: "logoOnly",
+  closing: "logoAndName",
+};
+
+export const DEFAULT_PROPOSAL_BRAND_CONFIG: ProposalBrandConfig = {
+  brandDisplayMode: "customPerSection",
+  brandSectionConfig: DEFAULT_PROPOSAL_BRAND_SECTION_CONFIG,
+};
+
 /** Default AMC term shown on commercial / service slides when generating a proposal. */
 export type ProposalAmcYears = 1 | 5 | 10;
 
@@ -33,6 +65,10 @@ export type ProposalBrandingSettings = {
   proposalSiteImages: string[];
   /** GSTIN shown on proposal About / commercial slides (set in More → Company profile). */
   companyGstNumber: string;
+  /** How installer logo/name appear across proposal surfaces. */
+  brandDisplayMode: ProposalBrandDisplayMode;
+  /** Per-section overrides when brandDisplayMode is customPerSection. */
+  brandSectionConfig: ProposalBrandSectionConfig;
 };
 
 const STORAGE_KEY = "ss_proposal_branding_settings_v1";
@@ -67,8 +103,42 @@ export const DEFAULT_PROPOSAL_BRANDING_SETTINGS: ProposalBrandingSettings = {
   bankBranch: "",
   bankUpiId: "",
   proposalSiteImages: [],
-  companyGstNumber: ""
+  companyGstNumber: "",
+  ...DEFAULT_PROPOSAL_BRAND_CONFIG,
 };
+
+function parseBrandSectionDisplayMode(value: unknown): BrandSectionDisplayMode | null {
+  return value === "logoOnly" || value === "logoAndName" ? value : null;
+}
+
+function parseBrandSectionConfig(raw: unknown): ProposalBrandSectionConfig {
+  const o = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  return {
+    cover: parseBrandSectionDisplayMode(o.cover) ?? DEFAULT_PROPOSAL_BRAND_SECTION_CONFIG.cover,
+    header: parseBrandSectionDisplayMode(o.header) ?? DEFAULT_PROPOSAL_BRAND_SECTION_CONFIG.header,
+    footer: parseBrandSectionDisplayMode(o.footer) ?? DEFAULT_PROPOSAL_BRAND_SECTION_CONFIG.footer,
+    closing: parseBrandSectionDisplayMode(o.closing) ?? DEFAULT_PROPOSAL_BRAND_SECTION_CONFIG.closing,
+  };
+}
+
+function parseBrandDisplayMode(value: unknown): ProposalBrandDisplayMode | null {
+  return value === "logoOnly" || value === "logoAndName" || value === "customPerSection" ? value : null;
+}
+
+/** Migrate legacy personalizedBranding when brandDisplayMode is absent. */
+function migrateBrandConfig(parsed: Partial<ProposalBrandingSettings>): ProposalBrandConfig {
+  const fromMode = parseBrandDisplayMode(parsed.brandDisplayMode);
+  if (fromMode) {
+    return {
+      brandDisplayMode: fromMode,
+      brandSectionConfig: parseBrandSectionConfig(parsed.brandSectionConfig),
+    };
+  }
+  if (parsed.personalizedBranding === false) {
+    return { brandDisplayMode: "logoOnly", brandSectionConfig: { ...DEFAULT_PROPOSAL_BRAND_SECTION_CONFIG } };
+  }
+  return { ...DEFAULT_PROPOSAL_BRAND_CONFIG };
+}
 
 function parseSiteImages(raw: unknown): string[] {
   if (!Array.isArray(raw)) return [];
@@ -113,7 +183,8 @@ export function readProposalBrandingSettings(): ProposalBrandingSettings {
       bankUpiId: typeof parsed.bankUpiId === "string" ? parsed.bankUpiId.trim() : "",
       proposalSiteImages: parseSiteImages(parsed.proposalSiteImages),
       companyGstNumber:
-        typeof parsed.companyGstNumber === "string" ? parsed.companyGstNumber.trim().toUpperCase() : ""
+        typeof parsed.companyGstNumber === "string" ? parsed.companyGstNumber.trim().toUpperCase() : "",
+      ...migrateBrandConfig(parsed),
     };
   } catch {
     return { ...DEFAULT_PROPOSAL_BRANDING_SETTINGS };
@@ -143,4 +214,66 @@ export function resolveInstallerNameForProposal(input: {
 
 export function installerLogoAlt(name: string): string {
   return name.trim() || "Company logo";
+}
+
+export function resolveBrandSectionMode(
+  config: ProposalBrandConfig,
+  surface: ProposalBrandSurface
+): BrandSectionDisplayMode {
+  if (config.brandDisplayMode === "logoOnly") return "logoOnly";
+  if (config.brandDisplayMode === "logoAndName") return "logoAndName";
+  return config.brandSectionConfig[surface];
+}
+
+export function shouldShowInstallerName(config: ProposalBrandConfig, surface: ProposalBrandSurface): boolean {
+  return resolveBrandSectionMode(config, surface) === "logoAndName";
+}
+
+export type ProposalBrandPresentation = {
+  showLogo: boolean;
+  showName: boolean;
+  showTagline: boolean;
+  installerName: string;
+  logoUrl: string;
+  tagline: string;
+};
+
+export function resolveProposalBrandPresentation(
+  config: ProposalBrandConfig,
+  surface: ProposalBrandSurface,
+  identity: { installerName?: string; logoUrl?: string; tagline?: string },
+  options?: { includeTagline?: boolean }
+): ProposalBrandPresentation {
+  const installerName = (identity.installerName ?? "").trim();
+  const logoUrl = (identity.logoUrl ?? "").trim();
+  const tagline = (identity.tagline ?? "").trim();
+  const showName = shouldShowInstallerName(config, surface) && installerName.length > 0;
+  const showLogo = logoUrl.length > 0;
+  const showTagline =
+    showName && (options?.includeTagline !== false) && tagline.length > 0;
+  return { showLogo, showName, showTagline, installerName, logoUrl, tagline };
+}
+
+/** Resolve branding config from a frozen proposal snapshot (ppt_input) with settings fallback. */
+export function resolveProposalBrandConfig(sources: {
+  pptInput?: { brandDisplayMode?: unknown; brandSectionConfig?: unknown } | null;
+  settings?: Partial<ProposalBrandingSettings> | null;
+}): ProposalBrandConfig {
+  const fromPptMode = parseBrandDisplayMode(sources.pptInput?.brandDisplayMode);
+  if (fromPptMode) {
+    return {
+      brandDisplayMode: fromPptMode,
+      brandSectionConfig: parseBrandSectionConfig(sources.pptInput?.brandSectionConfig),
+    };
+  }
+  const settings = sources.settings ?? DEFAULT_PROPOSAL_BRANDING_SETTINGS;
+  return {
+    brandDisplayMode: settings.brandDisplayMode ?? DEFAULT_PROPOSAL_BRAND_CONFIG.brandDisplayMode,
+    brandSectionConfig: settings.brandSectionConfig ?? DEFAULT_PROPOSAL_BRAND_SECTION_CONFIG,
+  };
+}
+
+/** Sync legacy personalizedBranding flag from brand display mode. */
+export function personalizedBrandingFromBrandConfig(config: ProposalBrandConfig): boolean {
+  return config.brandDisplayMode !== "logoOnly";
 }

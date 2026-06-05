@@ -63,6 +63,21 @@ export const siteImagesSchema = z.array(z.string().max(600000)).max(6).optional(
 
 export const amcSelectedYearsSchema = z.union([z.literal(1), z.literal(5), z.literal(10)]).optional();
 
+export const brandSectionDisplayModeSchema = z.enum(["logoOnly", "logoAndName"]);
+
+export const proposalBrandSectionConfigSchema = z
+  .object({
+    cover: brandSectionDisplayModeSchema,
+    header: brandSectionDisplayModeSchema,
+    footer: brandSectionDisplayModeSchema,
+    closing: brandSectionDisplayModeSchema,
+  })
+  .optional();
+
+export const proposalBrandDisplayModeSchema = z
+  .enum(["logoOnly", "logoAndName", "customPerSection"])
+  .optional();
+
 /**
  * Per-project BOM override entries. Anything omitted keeps the default
  * value from `buildBom()` in lib/proposal-deck-helpers.ts.
@@ -93,6 +108,8 @@ export const proposalExtrasShape = {
   bankDetails: bankDetailsSchema,
   siteImages: siteImagesSchema,
   installerLogoUrl: z.string().max(600000).optional(),
+  brandDisplayMode: proposalBrandDisplayModeSchema,
+  brandSectionConfig: proposalBrandSectionConfigSchema,
   bomOverrides: bomOverridesSchema,
   /** Optional public web URL of this proposal — used by the PPT to render
    *  a "Scan to view this proposal" QR fallback when no site photos exist. */

@@ -10,13 +10,18 @@ import {
   writePerformanceMode
 } from "@/lib/performance-mode";
 import {
+  DEFAULT_PROPOSAL_BRAND_SECTION_CONFIG,
   DEFAULT_PROPOSAL_BRANDING_SETTINGS,
   parseProposalAmcYears,
+  personalizedBrandingFromBrandConfig,
   readProposalBrandingSettings,
+  type BrandSectionDisplayMode,
   type ProposalAmcYears,
+  type ProposalBrandDisplayMode,
+  type ProposalBrandSectionConfig,
   type ProposalBrandingSettings,
   type ProposalThemePreset,
-  writeProposalBrandingSettings
+  writeProposalBrandingSettings,
 } from "@/lib/proposal-branding-settings";
 import { ProposalImageUploader } from "@/components/proposal-image-uploader";
 import { useInstallerDiscoms } from "@/hooks/use-installer-discoms";
@@ -84,6 +89,12 @@ export default function MorePage() {
   const [companyLogo, setCompanyLogo] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerLogoUrl);
   const [paymentQrCodeUrl, setPaymentQrCodeUrl] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.paymentQrCodeUrl);
   const [personalizedBranding, setPersonalizedBranding] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.personalizedBranding);
+  const [brandDisplayMode, setBrandDisplayMode] = useState<ProposalBrandDisplayMode>(
+    DEFAULT_PROPOSAL_BRANDING_SETTINGS.brandDisplayMode
+  );
+  const [brandSectionConfig, setBrandSectionConfig] = useState<ProposalBrandSectionConfig>({
+    ...DEFAULT_PROPOSAL_BRAND_SECTION_CONFIG,
+  });
   const [themePreset, setThemePreset] = useState<ProposalThemePreset>(DEFAULT_PROPOSAL_BRANDING_SETTINGS.themePreset);
   const [uploadingQr, setUploadingQr] = useState(false);
   const [lastRateReportAt, setLastRateReportAt] = useState<string | null>(null);
@@ -128,6 +139,8 @@ export default function MorePage() {
       setCompanyLogo(settings.installerLogoUrl);
       setPaymentQrCodeUrl(settings.paymentQrCodeUrl ?? "");
       setPersonalizedBranding(settings.personalizedBranding);
+      setBrandDisplayMode(settings.brandDisplayMode);
+      setBrandSectionConfig(settings.brandSectionConfig);
       setThemePreset(settings.themePreset);
       const last = localStorage.getItem(STORAGE_LAST_RATE_REPORT_AT);
       if (last) setLastRateReportAt(last);
@@ -296,12 +309,20 @@ export default function MorePage() {
   }
 
   function brandingSnapshot(overrides: Partial<ProposalBrandingSettings> = {}): ProposalBrandingSettings {
+    const resolvedBrandDisplayMode = overrides.brandDisplayMode ?? brandDisplayMode;
+    const resolvedBrandSectionConfig = overrides.brandSectionConfig ?? brandSectionConfig;
+    const brandConfig = {
+      brandDisplayMode: resolvedBrandDisplayMode,
+      brandSectionConfig: resolvedBrandSectionConfig,
+    };
     return {
       installerName: companyName.trim(),
       installerContact: companyContact.trim() || DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerContact,
       installerEmail: companyEmail.trim(),
       installerLogoUrl: companyLogo.trim(),
-      personalizedBranding,
+      personalizedBranding: personalizedBrandingFromBrandConfig(brandConfig),
+      brandDisplayMode: resolvedBrandDisplayMode,
+      brandSectionConfig: resolvedBrandSectionConfig,
       themePreset,
       paymentQrCodeUrl: paymentQrCodeUrl.trim(),
       amcSelectedYears: amcYears,
@@ -312,7 +333,7 @@ export default function MorePage() {
       bankUpiId: bankUpi.trim(),
       proposalSiteImages,
       companyGstNumber: companyGst.trim().toUpperCase(),
-      ...overrides
+      ...overrides,
     };
   }
 
@@ -613,33 +634,87 @@ export default function MorePage() {
           </button>
 
           <div className="border-t border-slate-200/80 pt-4 dark:border-white/10">
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">Proposal look</p>
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+              Proposal branding
+            </p>
             <p className="mt-1 text-[11px] text-slate-600 dark:text-slate-400">
-              Installer-led branding and theme for new web proposals and PPTs.
+              Logo and company name on cover, headers, footers, and closing — web, PDF, and PPT.
             </p>
             <div className="mt-3 space-y-3">
-          <div className="rounded-xl border border-white/50 bg-white/60 p-3">
-            <div className="flex items-center justify-between gap-2">
-              <div>
-                <p className="text-xs font-extrabold text-brand-900 sm:text-sm">Installer as star</p>
-                <p className="text-[11px] font-medium text-slate-600 sm:text-xs">
-                  Keeps Sol.52 minimal in the footer and your logo prominent.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setPersonalizedBranding((v) => !v);
-                  markSaved(`Personalized branding ${!personalizedBranding ? "enabled" : "disabled"}.`);
-                }}
-                className={cn(
-                  "inline-flex h-8 min-w-20 items-center justify-center rounded-full px-3 text-xs font-bold transition",
-                  personalizedBranding ? "bg-emerald-600 text-white" : "bg-slate-200 text-slate-700"
-                )}
-              >
-                {personalizedBranding ? "ON" : "OFF"}
-              </button>
+          <div className="rounded-xl border border-white/50 bg-white/60 p-3 space-y-3">
+            <p className="text-xs font-extrabold text-brand-900 sm:text-sm">Brand display mode</p>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              {(
+                [
+                  { id: "logoOnly" as const, label: "Logo only", desc: "Hide company name everywhere" },
+                  { id: "logoAndName" as const, label: "Logo + company name", desc: "Show both on all sections" },
+                  { id: "customPerSection" as const, label: "Custom per section", desc: "Pick per cover, header, footer, closing" },
+                ] as const
+              ).map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => {
+                    setBrandDisplayMode(opt.id);
+                    setPersonalizedBranding(personalizedBrandingFromBrandConfig({
+                      brandDisplayMode: opt.id,
+                      brandSectionConfig,
+                    }));
+                    markSaved(`${opt.label} selected.`);
+                  }}
+                  className={cn(
+                    "rounded-xl border px-3 py-3 text-left transition",
+                    brandDisplayMode === opt.id
+                      ? "border-brand-500 bg-brand-50"
+                      : "border-slate-200 bg-white/80 hover:border-brand-300"
+                  )}
+                >
+                  <p className="text-sm font-extrabold text-brand-900">{opt.label}</p>
+                  <p className="mt-1 text-[11px] font-semibold text-slate-600">{opt.desc}</p>
+                </button>
+              ))}
             </div>
+
+            {brandDisplayMode === "customPerSection" ? (
+              <div className="space-y-2 border-t border-slate-200/70 pt-3">
+                <BrandSectionModeRow
+                  label="Cover page"
+                  value={brandSectionConfig.cover}
+                  onChange={(mode) => {
+                    const next = { ...brandSectionConfig, cover: mode };
+                    setBrandSectionConfig(next);
+                    markSaved(`Cover page: ${mode === "logoOnly" ? "logo only" : "logo + name"}.`);
+                  }}
+                />
+                <BrandSectionModeRow
+                  label="Header"
+                  value={brandSectionConfig.header}
+                  onChange={(mode) => {
+                    const next = { ...brandSectionConfig, header: mode };
+                    setBrandSectionConfig(next);
+                    markSaved(`Header: ${mode === "logoOnly" ? "logo only" : "logo + name"}.`);
+                  }}
+                />
+                <BrandSectionModeRow
+                  label="Footer"
+                  value={brandSectionConfig.footer}
+                  onChange={(mode) => {
+                    const next = { ...brandSectionConfig, footer: mode };
+                    setBrandSectionConfig(next);
+                    markSaved(`Footer: ${mode === "logoOnly" ? "logo only" : "logo + name"}.`);
+                  }}
+                />
+                <BrandSectionModeRow
+                  label="Closing / acceptance page"
+                  value={brandSectionConfig.closing}
+                  onChange={(mode) => {
+                    const next = { ...brandSectionConfig, closing: mode };
+                    setBrandSectionConfig(next);
+                    markSaved(`Closing page: ${mode === "logoOnly" ? "logo only" : "logo + name"}.`);
+                  }}
+                />
+              </div>
+            ) : null}
           </div>
 
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -1056,6 +1131,42 @@ function InfoChip({ label, value }: { label: string; value: string }) {
     <div className="rounded-xl border border-white/55 bg-white/70 p-3">
       <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{label}</p>
       <p className="mt-1 text-sm font-extrabold text-brand-900">{value}</p>
+    </div>
+  );
+}
+
+function BrandSectionModeRow({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: BrandSectionDisplayMode;
+  onChange: (mode: BrandSectionDisplayMode) => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200/80 bg-white/70 px-3 py-2.5">
+      <p className="text-xs font-bold text-slate-800">{label}</p>
+      <div className="inline-flex rounded-full border border-slate-200 bg-slate-50 p-0.5">
+        {(
+          [
+            { id: "logoOnly" as const, label: "Logo only" },
+            { id: "logoAndName" as const, label: "Logo + name" },
+          ] as const
+        ).map((opt) => (
+          <button
+            key={opt.id}
+            type="button"
+            onClick={() => onChange(opt.id)}
+            className={cn(
+              "rounded-full px-2.5 py-1 text-[10px] font-bold transition",
+              value === opt.id ? "bg-brand-600 text-white" : "text-slate-600 hover:text-slate-900"
+            )}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

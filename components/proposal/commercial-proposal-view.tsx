@@ -31,6 +31,8 @@ import {
   PROPOSAL_BRANDING_UPDATED_EVENT,
   readProposalBrandingSettings,
   resolveInstallerDisplayName,
+  resolveProposalBrandConfig,
+  type ProposalBrandConfig,
 } from "@/lib/proposal-branding-settings";
 import type { ProposalLang } from "@/lib/proposal-i18n";
 import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposal-ppt";
@@ -71,6 +73,7 @@ export type CommercialCtx = {
   pptInput: PremiumProposalPptInput;
   installer: { name: string; contact: string; tagline: string };
   installerLogoUrl?: string;
+  brandConfig: ProposalBrandConfig;
   siteImages?: string[];
   proposalId: string;
   customerName: string;
@@ -180,6 +183,9 @@ export default function CommercialProposalView({
   const [printSnap, setPrintSnap] = useState(false);
   const [displayInstaller, setDisplayInstaller] = useState(installer);
   const [displayLogoUrl, setDisplayLogoUrl] = useState(installerLogoUrl);
+  const [displayBrandConfig, setDisplayBrandConfig] = useState<ProposalBrandConfig>(() =>
+    resolveProposalBrandConfig({ pptInput, settings: readProposalBrandingSettings() })
+  );
 
   useEffect(() => {
     const sync = () => {
@@ -190,11 +196,12 @@ export default function CommercialProposalView({
         (installer.name.trim() && installer.name !== "Harihar Solar" ? installer.name.trim() : "");
       setDisplayInstaller({ ...installer, name });
       setDisplayLogoUrl(installerLogoUrl?.trim() || branding.installerLogoUrl.trim() || undefined);
+      setDisplayBrandConfig(resolveProposalBrandConfig({ pptInput, settings: branding }));
     };
     sync();
     window.addEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
     return () => window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
-  }, [installer, installerLogoUrl]);
+  }, [installer, installerLogoUrl, pptInput]);
 
   useEffect(() => installCommercialPrintListeners(), []);
 
@@ -324,6 +331,7 @@ export default function CommercialProposalView({
     pptInput,
     installer: displayInstaller,
     installerLogoUrl: displayLogoUrl,
+    brandConfig: displayBrandConfig,
     siteImages,
     proposalId: id,
     customerName,

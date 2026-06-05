@@ -1587,6 +1587,8 @@ function ProposalPageContent() {
       },
       siteImages: siteImages.length > 0 ? siteImages : undefined,
       installerLogoUrl: branding.installerLogoUrl.trim() || undefined,
+      brandDisplayMode: branding.brandDisplayMode,
+      brandSectionConfig: branding.brandSectionConfig,
       companyProfile: {
         gstNumber: branding.companyGstNumber.trim() || undefined
       },

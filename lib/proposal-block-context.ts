@@ -13,6 +13,7 @@ import type { ProposalDict, ProposalLang } from "@/lib/proposal-i18n";
 import type { CommercialProposalConfig } from "@/lib/commercial-proposal-config";
 import type { ResidentialProposalConfig } from "@/lib/residential-proposal-config";
 import type { ProposalPresetId, StoryVariant } from "@/lib/proposal-preset-engine";
+import type { ProposalBrandConfig } from "@/lib/proposal-branding-settings";
 
 export type BlockRenderContext = {
   // ── Core proposal data ──────────────────────────────────────────────────
@@ -35,6 +36,7 @@ export type BlockRenderContext = {
   // ── Installer ───────────────────────────────────────────────────────────
   installer: { name: string; contact: string; tagline: string };
   installerLogoUrl?: string;
+  brandConfig: ProposalBrandConfig;
 
   // ── Media ───────────────────────────────────────────────────────────────
   siteImages?: string[];
