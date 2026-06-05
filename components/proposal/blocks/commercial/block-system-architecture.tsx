@@ -15,6 +15,10 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Cpu, Shield, Wifi } from "lucide-react";
 import type { CommercialCtx } from "@/components/proposal/commercial-proposal-view";
+import {
+  commercialInverterQuantity,
+  resolveCommercialPanelSpec,
+} from "@/lib/commercial-proposal-panel-spec";
 import { CommercialSectionHeader, GlassPanel, SectionReveal } from "./commercial-shared";
 
 type ArchNode = {
@@ -35,21 +39,24 @@ const colorMap: Record<string, { bg: string; border: string; text: string; sub: 
 type Props = { ctx: CommercialCtx };
 
 export function BlockSystemArchitecture({ ctx }: Props) {
-  const { summary, dcCapacityKwp, dcAcRatio, lang } = ctx;
+  const { summary, dcCapacityKwp, dcAcRatio, lang, pptInput } = ctx;
   const isHi = lang === "hi";
 
-  const stringsCount = Math.ceil(summary.panels / 14); // ~14 panels per string (typical for 540W)
-  const panelWp = 540;
-  const panelVoc = 49.5; // typical 540W monopepi Voc
-  const stringsInverter = Math.ceil(stringsCount / 2);
+  const { panelWatt, moduleCount, panelSpecLabel } = resolveCommercialPanelSpec(
+    summary.systemKw,
+    pptInput.commercialConfig,
+    summary
+  );
+  const stringsCount = Math.ceil(moduleCount / 14);
+  const inverterQty = commercialInverterQuantity(summary.systemKw);
 
   const archNodes: ArchNode[] = [
     {
       id: "panels",
       label: isHi ? "सौर पैनल" : "PV Array",
       sub: isHi
-        ? `${summary.panels} पैनल × ${panelWp} Wp`
-        : `${summary.panels} × ${panelWp} Wp · ${stringsCount} strings`,
+        ? `${moduleCount} पैनल × ${panelWatt} Wp`
+        : `${moduleCount} × ${panelWatt} Wp · ${stringsCount} strings`,
       color: "sky",
     },
     {
@@ -89,16 +96,16 @@ export function BlockSystemArchitecture({ ctx }: Props) {
   const componentSpecs = [
     {
       component: isHi ? "सौर पैनल" : "Solar PV Modules",
-      spec: `${panelWp} Wp Mono PERC Half-cut`,
+      spec: panelSpecLabel,
       brand: summary.brands.panel || "Tier-1 ALMM-listed",
-      qty: `${summary.panels} nos`,
+      qty: `${moduleCount} nos`,
       warranty: "25 yr linear power",
     },
     {
       component: isHi ? "स्ट्रिंग इन्वर्टर" : "String Inverter",
       spec: `${summary.systemKw} kW Grid-Tie, IP65`,
       brand: summary.brands.inverter || "IEC-62109 certified",
-      qty: `${stringsInverter > 1 ? stringsInverter : 1} nos`,
+      qty: `${inverterQty} nos`,
       warranty: "5 yr standard",
     },
     {

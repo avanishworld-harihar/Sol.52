@@ -16,7 +16,7 @@ import { motion } from "framer-motion";
 import { Gauge, ShieldCheck, Cpu } from "lucide-react";
 import type { CommercialCtx } from "@/components/proposal/commercial-proposal-view";
 import { CommercialSectionHeader, GlassPanel, SectionReveal } from "./commercial-shared";
-import { moduleCountForPlant } from "@/lib/commercial-bom-panels";
+import { resolveCommercialPanelSpec } from "@/lib/commercial-proposal-panel-spec";
 import { isSchoolInstitutionOrg } from "@/lib/proposal-financial-engine";
 import { BlockSchoolSafetyCard } from "./block-school-safety-card";
 
@@ -44,9 +44,13 @@ export function BlockCommercialEngineering({ ctx }: Props) {
   } = ctx;
   const isHi = lang === "hi";
 
-  const panelWp = summary.panelWatt ?? 540;
-  const moduleCount = moduleCountForPlant(summary.systemKw, panelWp);
-  const panelEfficiency = Math.round((panelWp / (2.1 * 1000)) * 100 * 10) / 10; // ~540W / 2.1 m²
+  const { panelWatt, moduleCount, panelTechnology } = resolveCommercialPanelSpec(
+    summary.systemKw,
+    pptInput.commercialConfig,
+    summary
+  );
+  const panelWp = panelWatt;
+  const panelEfficiency = Math.round((panelWp / (2.1 * 1000)) * 100 * 10) / 10;
 
   const designParams = [
     { label: "DC Capacity (STC)", value: `${dcCapacityKwp.toFixed(2)} kWp`, highlight: true },
@@ -58,7 +62,7 @@ export function BlockCommercialEngineering({ ctx }: Props) {
     { label: "Specific Yield", value: `${specificYield} kWh/kWp/yr`, highlight: true },
     { label: "Annual Generation", value: `${(summary.annualGen / 1000).toFixed(1)} MWh/yr` },
     { label: "Panel Efficiency (STC)", value: `~${panelEfficiency}%` },
-    { label: "Module Wattage", value: `${panelWp} Wp per panel` },
+    { label: "Module Wattage", value: `${panelWp} Wp per panel (${panelTechnology})` },
     { label: "Panel Count", value: `${moduleCount} nos` },
     { label: "Load Coverage", value: `${Math.round(summary.coverage)}%` },
   ];

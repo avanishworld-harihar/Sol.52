@@ -24,6 +24,10 @@ import type { CommercialCtx } from "@/components/proposal/commercial-proposal-vi
 import { CommercialSectionHeader, GlassPanel, SectionReveal } from "./commercial-shared";
 import type { CommercialProposalConfig } from "@/lib/commercial-proposal-config";
 import { PANEL_CATALOG } from "@/lib/commercial-panel-catalog";
+import {
+  commercialInverterQuantity,
+  resolveCommercialPanelSpec,
+} from "@/lib/commercial-proposal-panel-spec";
 
 const fmtL = (v: number) => {
   if (v >= 10_000_000) return `₹${(v / 10_000_000).toFixed(2)} Cr`;
@@ -57,11 +61,12 @@ function buildBom(
   inverterBrand: string,
   inverterPhase: "single" | "three" = "three",
   panelWatt = 540,
+  panelTechnology = "Mono PERC",
 ): BomCategory[] {
   const strings = Math.ceil(panels / 14);
-  const inverterCount = Math.max(1, Math.ceil(systemKw / 50));
+  const inverterCount = commercialInverterQuantity(systemKw);
   const phaseLabel = inverterPhase === "single" ? "Single-phase" : "Three-phase";
-  const panelSpec = `${panelWatt} Wp Mono PERC Half-cut, η ≥ ${(panelWatt / 2590 * 100).toFixed(1)}%`;
+  const panelSpec = `${panelWatt} Wp ${panelTechnology}, η ≥ ${((panelWatt / 2590) * 100).toFixed(1)}%`;
 
   return [
     {
@@ -268,6 +273,11 @@ export function BlockTieredBOM({ ctx }: Props) {
     ? PANEL_CATALOG.find((p) => p.id === cc.panel!.catalogId) ?? null
     : null;
   const panelWatt = cc?.panel?.watt ?? activeCatalogEntry?.watt ?? 540;
+  const panelTechnology =
+    cc?.panel?.technology?.trim() ||
+    activeCatalogEntry?.technology ||
+    "Mono PERC";
+  const { moduleCount } = resolveCommercialPanelSpec(summary.systemKw, cc, summary);
   const inverterPhase = (cc as { inverterPhase?: "single" | "three" } | null | undefined)
     ?.inverterPhase ?? "three";
 
@@ -282,16 +292,17 @@ export function BlockTieredBOM({ ctx }: Props) {
   const dcrRate = cc?.panel?.ratePerWpInr ?? dcrEntry?.ratePerWpInr ?? 42;
   const nonDcrRate = nonDcrEntry?.ratePerWpInr ?? dcrRate - 4;
   const dcrDelta = dcrRate - nonDcrRate;
-  const dcrCost = dcrRate * panelWatt * summary.panels;
-  const nonDcrCost = nonDcrRate * panelWatt * summary.panels;
+  const dcrCost = dcrRate * panelWatt * moduleCount;
+  const nonDcrCost = nonDcrRate * panelWatt * moduleCount;
 
   const categories = buildBom(
     summary.systemKw,
-    summary.panels,
+    moduleCount,
     summary.brands.panel,
     summary.brands.inverter,
     inverterPhase,
     panelWatt,
+    panelTechnology,
   );
 
   return (
@@ -358,7 +369,7 @@ export function BlockTieredBOM({ ctx }: Props) {
                 {isHi ? "DCR बनाम Non-DCR पैनल मूल्य तुलना" : "DCR vs Non-DCR Panel Pricing"}
               </p>
               <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold text-sky-700">
-                {summary.panels} modules · {panelWatt}W
+                {moduleCount} modules · {panelWatt}W · {panelTechnology}
               </span>
             </div>
 
