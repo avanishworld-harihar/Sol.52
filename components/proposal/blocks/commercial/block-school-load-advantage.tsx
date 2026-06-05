@@ -23,9 +23,9 @@ function HourCurve({
 }) {
   const peak = Math.max(...profile, 0.01);
   return (
-    <div>
+    <div className="commercial-print-keep-together print:break-inside-avoid">
       <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">{label}</p>
-      <div className="commercial-hour-chart flex h-20 items-end gap-[2px] rounded-lg border border-slate-100 bg-slate-50/80 px-2 py-2">
+      <div className="commercial-hour-chart commercial-print-keep-together flex h-20 items-end gap-[2px] rounded-lg border border-slate-100 bg-slate-50/80 px-2 py-2 print:break-inside-avoid">
         {profile.map((v, hour) => {
           const barPx = Math.max(4, (v / peak) * HOUR_CHART_PX);
           const dimmed = hour < 8 || hour > 16;
@@ -126,8 +126,8 @@ export function BlockSchoolLoadAdvantage({ ctx, embedded = false }: Props) {
 
   if (embedded) {
     return (
-      <SectionReveal className="mt-6" delay={0.14}>
-        <GlassPanel className="p-5">{content}</GlassPanel>
+      <SectionReveal className="commercial-school-load-block mt-6 print:break-before-page" delay={0.14}>
+        <GlassPanel className="p-5 print:break-inside-avoid">{content}</GlassPanel>
       </SectionReveal>
     );
   }

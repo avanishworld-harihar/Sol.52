@@ -101,7 +101,7 @@ export function BlockROIDashboard({ ctx }: Props) {
       />
 
       {/* KPI tiles — giant animated numbers */}
-      <div className="mb-12 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="commercial-roi-kpi-grid mb-12 grid grid-cols-2 gap-4 lg:grid-cols-4 print:break-inside-avoid">
         {kpis.map((kpi, i) => (
           <KpiCard
             key={kpi.label}
@@ -127,8 +127,8 @@ export function BlockROIDashboard({ ctx }: Props) {
 
       <div className="grid gap-6 lg:grid-cols-5">
         {/* Break-even chart — 3 columns */}
-        <SectionReveal className="lg:col-span-3" delay={0.05}>
-          <GlassPanel className="p-6">
+        <SectionReveal className="commercial-print-keep-together lg:col-span-3 print:break-inside-avoid" delay={0.05}>
+          <GlassPanel className="p-6 print:break-inside-avoid">
             <div className="mb-6 flex items-start justify-between">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">

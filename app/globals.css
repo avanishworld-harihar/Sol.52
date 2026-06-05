@@ -3399,22 +3399,62 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   }
 
   .commercial-proposal #comm-school-green .rounded-2xl.border {
-    overflow: hidden !important;
+    overflow: visible !important;
+  }
+
+  /* School pages — charts / load panel start on a fresh page if prior content fills the sheet */
+  .commercial-proposal #comm-school-green .commercial-school-load-block {
+    page-break-before: always !important;
+    break-before: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
+  }
+
+  .commercial-proposal #comm-school-learning {
+    page-break-after: always !important;
+    break-after: page !important;
   }
 
   .commercial-proposal .commercial-executive-kpi-grid span {
     print-color-adjust: exact !important;
   }
 
+  /* Keep cards, panels, and charts intact — cut content moves to next page */
+  .commercial-proposal .commercial-print-keep-together,
+  .commercial-proposal .commercial-hour-chart {
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
+  }
+
+  .commercial-proposal .commercial-section-header-block {
+    page-break-after: avoid !important;
+    break-after: avoid-page !important;
+  }
+
+  .commercial-proposal .commercial-roi-kpi-grid > * {
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
+  }
+
+  .commercial-proposal #comm-roi .commercial-roi-kpi-grid {
+    page-break-before: avoid !important;
+    break-before: avoid-page !important;
+  }
+
+  /* Section pages may span multiple sheets; do not force-split inner cards */
   .commercial-proposal .proposal-page > section,
   .commercial-proposal .proposal-page > div {
-    page-break-inside: auto !important;
-    break-inside: auto !important;
+    break-inside: auto;
   }
 
   .commercial-proposal .proposal-page section {
     padding-left: 0 !important;
     padding-right: 0 !important;
+  }
+
+  .commercial-proposal .mx-auto.max-w-6xl {
+    padding-top: 10mm !important;
+    padding-bottom: 10mm !important;
   }
 
   /* ── Commercial PDF: reduce rasterization + fix blank iOS pages ─────────── */

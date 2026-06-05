@@ -139,7 +139,7 @@ export function SectionReveal({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-72px" }}
       transition={{ duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }}
-      className={className}
+      className={`commercial-print-keep-together print:break-inside-avoid ${className}`}
     >
       {children}
     </motion.div>
@@ -164,7 +164,7 @@ export function CommercialSectionHeader({
   subtitle?: string;
 }) {
   return (
-    <SectionReveal className="mb-12">
+    <SectionReveal className="commercial-section-header-block mb-12">
       {/* Section number + label */}
       <div className="mb-5 flex items-center gap-4">
         <span className="font-mono text-[11px] font-bold uppercase tracking-[0.28em] text-slate-300 tabular-nums">
@@ -205,7 +205,7 @@ export function GlassPanel({
 }) {
   return (
     <div
-      className={`overflow-hidden rounded-2xl border bg-white ${
+      className={`commercial-print-keep-together overflow-hidden rounded-2xl border bg-white print:break-inside-avoid ${
         glow
           ? "border-sky-200/70 shadow-[0_4px_32px_rgba(14,165,233,0.10)]"
           : "border-slate-200/80 shadow-[0_2px_24px_rgba(15,23,42,0.06)]"
@@ -311,7 +311,7 @@ export function KpiCard({ label, value, sub, accent, delay = 0, icon, compact = 
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ delay, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className={`min-w-0 overflow-hidden rounded-2xl border ${compact ? "p-4 sm:p-5" : "p-6"} ${ac.bg} ${ac.border}`}
+      className={`commercial-print-keep-together min-w-0 overflow-hidden rounded-2xl border print:break-inside-avoid ${compact ? "p-4 sm:p-5" : "p-6"} ${ac.bg} ${ac.border}`}
     >
       <div className="mb-3 flex items-start gap-2">
         {icon && (
