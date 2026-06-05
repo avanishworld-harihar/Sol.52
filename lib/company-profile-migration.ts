@@ -1,5 +1,6 @@
 /**
- * Parse + migrate company profile v2 fields from localStorage payloads.
+ * Parse + migrate company profile fields from localStorage payloads.
+ * Canonical sources: companyProfile.gstNumber, proposalAppearance, brandDisplayPreference + brandSectionRules.
  */
 
 import {
@@ -10,6 +11,7 @@ import {
   type CompanyCredentials,
   type CompanyProfileCore,
   type PortfolioProject,
+  type PortfolioSector,
   type ProposalAppearanceSettings,
   type ProposalColorStyle,
   type ProposalTypographyPreset,
@@ -29,6 +31,12 @@ function str(raw: unknown, max = 500): string {
 
 function parsePreference(value: unknown): BrandSectionDisplayPreference | null {
   return value === "logoOnly" || value === "logoAndName" || value === "nameOnly" ? value : null;
+}
+
+function parsePortfolioSector(raw: unknown): PortfolioSector | "" {
+  return raw === "residential" || raw === "commercial" || raw === "school" || raw === "industrial"
+    ? raw
+    : "";
 }
 
 export function parseBrandSectionRules(raw: unknown, fallback: ProposalBrandSectionConfig): BrandSectionRules {
@@ -53,13 +61,33 @@ export function proposalActiveSectionConfig(rules: BrandSectionRules): ProposalB
   };
 }
 
-export function parseCompanyProfileCore(raw: unknown): CompanyProfileCore {
+export function parseCompanyProfileCore(raw: unknown, legacyFlatGst?: unknown): CompanyProfileCore {
   const o = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  const fromProfile = str(o.gstNumber, 40).toUpperCase();
+  const fromFlat =
+    typeof legacyFlatGst === "string" ? legacyFlatGst.trim().toUpperCase().slice(0, 40) : "";
   return {
+    tagline: str(o.tagline, 160),
     legalName: str(o.legalName, 200),
     contactPerson: str(o.contactPerson, 120),
+    contactPersonDesignation: str(o.contactPersonDesignation, 80),
     address: str(o.address, 600),
     website: str(o.website, 300),
+    gstNumber: fromProfile || fromFlat,
+    pan: str(o.pan, 20).toUpperCase(),
+    registrationNumber: str(o.registrationNumber, 40).toUpperCase(),
+  };
+}
+
+/** Sync canonical GST on profile and legacy flat alias. */
+export function syncCanonicalGst(
+  profile: CompanyProfileCore,
+  legacyFlatGst?: string
+): { companyProfile: CompanyProfileCore; companyGstNumber: string } {
+  const gst = profile.gstNumber.trim().toUpperCase() || (legacyFlatGst?.trim().toUpperCase() ?? "");
+  return {
+    companyProfile: { ...profile, gstNumber: gst },
+    companyGstNumber: gst,
   };
 }
 
@@ -74,6 +102,7 @@ export function parseCompanyCredentials(raw: unknown): CompanyCredentials {
     certifications: str(o.certifications, 600),
     awards: str(o.awards, 600),
     oemPartnerships: str(o.oemPartnerships, 600),
+    mnreEmpanelmentNo: str(o.mnreEmpanelmentNo, 80),
   };
 }
 
@@ -94,6 +123,8 @@ export function parsePortfolioProjects(raw: unknown): PortfolioProject[] {
         location: str(o.location, 200),
         description: str(o.description, 800),
         photoUrl,
+        sector: parsePortfolioSector(o.sector),
+        completedYear: str(o.completedYear, 8),
       };
     })
     .filter((p): p is PortfolioProject => p !== null)
@@ -108,6 +139,8 @@ export function migratePortfolioFromLegacySiteImages(urls: string[]): PortfolioP
     location: "",
     description: "",
     photoUrl,
+    sector: "" as const,
+    completedYear: "",
   }));
 }
 
@@ -120,15 +153,17 @@ function parseTypography(raw: unknown): ProposalTypographyPreset {
   return raw === "inter" || raw === "system" || raw === "montserrat" ? raw : "montserrat";
 }
 
+function parseThemePreset(raw: unknown): ProposalThemePreset | null {
+  return raw === "greenBlueClassic" || raw === "greenBlueVivid" ? raw : null;
+}
+
+/** Canonical appearance — legacy top-level themePreset is fallback only. */
 export function parseProposalAppearance(
   raw: unknown,
-  themePreset: ProposalThemePreset
+  legacyThemeFallback: ProposalThemePreset
 ): ProposalAppearanceSettings {
   const o = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
-  const theme =
-    o.themePreset === "greenBlueVivid" || o.themePreset === "greenBlueClassic"
-      ? o.themePreset
-      : themePreset;
+  const theme = parseThemePreset(o.themePreset) ?? legacyThemeFallback;
   return {
     themePreset: theme,
     colorStyle: parseColorStyle(o.colorStyle, theme),
@@ -136,10 +171,53 @@ export function parseProposalAppearance(
   };
 }
 
+/** Derive legacy top-level theme from canonical appearance. */
+export function syncCanonicalTheme(
+  appearance: ProposalAppearanceSettings,
+  legacyThemeFallback?: ProposalThemePreset
+): { proposalAppearance: ProposalAppearanceSettings; themePreset: ProposalThemePreset } {
+  const theme =
+    parseThemePreset(appearance.themePreset) ??
+    legacyThemeFallback ??
+    DEFAULT_PROPOSAL_APPEARANCE.themePreset;
+  return {
+    proposalAppearance: { ...appearance, themePreset: theme },
+    themePreset: theme,
+  };
+}
+
 export function parseGlobalBrandPreference(raw: unknown): ProposalBrandDisplayMode | "nameOnly" | null {
   return raw === "logoOnly" || raw === "logoAndName" || raw === "customPerSection" || raw === "nameOnly"
     ? raw
     : null;
+}
+
+/** Infer global preference from per-surface rules when not explicitly stored. */
+export function inferBrandDisplayPreference(
+  rules: BrandSectionRules
+): ProposalBrandDisplayMode | "nameOnly" {
+  const surfaces = [rules.cover, rules.header, rules.footer, rules.closing];
+  if (surfaces.every((s) => s === "nameOnly")) return "nameOnly";
+  if (surfaces.every((s) => s === "logoOnly")) return "logoOnly";
+  if (surfaces.every((s) => s === "logoAndName")) return "logoAndName";
+  return "customPerSection";
+}
+
+/** Apply global preference to all surfaces (UI helper). */
+export function brandSectionRulesFromPreference(
+  pref: ProposalBrandDisplayMode | "nameOnly"
+): BrandSectionRules {
+  if (pref === "customPerSection") {
+    return {
+      cover: "logoOnly",
+      header: "logoOnly",
+      footer: "logoOnly",
+      closing: "logoAndName",
+    };
+  }
+  const mode: BrandSectionDisplayPreference =
+    pref === "nameOnly" ? "nameOnly" : pref === "logoAndName" ? "logoAndName" : "logoOnly";
+  return { cover: mode, header: mode, footer: mode, closing: mode };
 }
 
 /** Active proposal brand mode — nameOnly not applied until Phase 2. */

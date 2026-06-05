@@ -14,17 +14,13 @@ import {
   type CompanyCredentials,
   type CompanyProfileCore,
   type PortfolioProject,
+  type PortfolioSector,
   type ProposalColorStyle,
   type ProposalTypographyPreset,
 } from "@/lib/company-profile-schema";
 import {
-  proposalActiveBrandDisplayMode,
-  proposalActiveSectionConfig,
-} from "@/lib/company-profile-migration";
-import {
   DEFAULT_PROPOSAL_BRANDING_SETTINGS,
   PROPOSAL_BRANDING_UPDATED_EVENT,
-  personalizedBrandingFromBrandConfig,
   readProposalBrandingSettings,
   type ProposalAmcYears,
   type ProposalBrandDisplayMode,
@@ -69,7 +65,6 @@ export function BrandProposalsSettingsPanel({ markSaved, markIssue }: Props) {
   );
   const [companyContact, setCompanyContact] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerContact);
   const [companyEmail, setCompanyEmail] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerEmail);
-  const [companyGst, setCompanyGst] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.companyGstNumber);
   const [companyLogo, setCompanyLogo] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerLogoUrl);
 
   const [brandDisplayPreference, setBrandDisplayPreference] = useState<
@@ -110,7 +105,6 @@ export function BrandProposalsSettingsPanel({ markSaved, markIssue }: Props) {
     setCompanyProfile(s.companyProfile);
     setCompanyContact(s.installerContact);
     setCompanyEmail(s.installerEmail);
-    setCompanyGst(s.companyGstNumber);
     setCompanyLogo(s.installerLogoUrl);
     setBrandDisplayPreference(s.brandDisplayPreference);
     setBrandSectionRules(s.brandSectionRules);
@@ -135,23 +129,23 @@ export function BrandProposalsSettingsPanel({ markSaved, markIssue }: Props) {
     return () => window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, onUpdate);
   }, [hydrate]);
 
-  function buildSnapshot(overrides: Partial<ProposalBrandingSettings> = {}): ProposalBrandingSettings {
-    const activeBrand = {
-      brandDisplayMode: proposalActiveBrandDisplayMode(brandDisplayPreference),
-      brandSectionConfig: proposalActiveSectionConfig(brandSectionRules),
-    };
+  function buildSnapshot(overrides: Partial<ProposalBrandingSettings> = {}): Partial<ProposalBrandingSettings> {
     const appearance = {
       themePreset,
       colorStyle,
       typographyPreset,
+    };
+    const profile = {
+      ...companyProfile,
+      gstNumber: companyProfile.gstNumber.trim().toUpperCase(),
+      pan: companyProfile.pan.trim().toUpperCase(),
+      registrationNumber: companyProfile.registrationNumber.trim().toUpperCase(),
     };
     return {
       installerName: companyName.trim(),
       installerContact: companyContact.trim() || DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerContact,
       installerEmail: companyEmail.trim(),
       installerLogoUrl: companyLogo.trim(),
-      personalizedBranding: personalizedBrandingFromBrandConfig(activeBrand),
-      themePreset,
       paymentQrCodeUrl: paymentQrCodeUrl.trim(),
       amcSelectedYears: amcYears,
       bankAccountName: bankAccName.trim(),
@@ -160,15 +154,12 @@ export function BrandProposalsSettingsPanel({ markSaved, markIssue }: Props) {
       bankBranch: bankBranch.trim(),
       bankUpiId: bankUpi.trim(),
       proposalSiteImages: readProposalBrandingSettings().proposalSiteImages,
-      companyGstNumber: companyGst.trim().toUpperCase(),
-      schemaVersion: DEFAULT_PROPOSAL_BRANDING_SETTINGS.schemaVersion,
-      companyProfile,
+      companyProfile: profile,
       companyCredentials: credentials,
       portfolioProjects,
       brandSectionRules,
       brandDisplayPreference,
       proposalAppearance: appearance,
-      ...activeBrand,
       ...overrides,
     };
   }
@@ -291,11 +282,17 @@ export function BrandProposalsSettingsPanel({ markSaved, markIssue }: Props) {
       content: (
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <LabeledInput label="Company name" value={companyName} onChange={setCompanyName} placeholder="Shivangan Solar" />
+          <div className="sm:col-span-2">
+            <LabeledInput label="Tagline (optional)" value={companyProfile.tagline} onChange={(v) => setCompanyProfile({ ...companyProfile, tagline: v })} placeholder="100% Local · Satna · Madhya Pradesh" />
+          </div>
           <LabeledInput label="Legal name (optional)" value={companyProfile.legalName} onChange={(v) => setCompanyProfile({ ...companyProfile, legalName: v })} placeholder="Registered entity name" />
           <LabeledInput label="Contact person (optional)" value={companyProfile.contactPerson} onChange={(v) => setCompanyProfile({ ...companyProfile, contactPerson: v })} placeholder="Director / Owner" />
+          <LabeledInput label="Contact designation (optional)" value={companyProfile.contactPersonDesignation} onChange={(v) => setCompanyProfile({ ...companyProfile, contactPersonDesignation: v })} placeholder="Director, Proprietor" />
           <LabeledInput label="Phone" value={companyContact} onChange={setCompanyContact} placeholder="+91-9993322267" />
           <LabeledInput label="Email" value={companyEmail} onChange={setCompanyEmail} placeholder="contact@company.com" />
-          <LabeledInput label="GSTIN (optional)" value={companyGst} onChange={(v) => setCompanyGst(v.toUpperCase())} placeholder="23AAAAA0000A1Z5" />
+          <LabeledInput label="GSTIN (optional)" value={companyProfile.gstNumber} onChange={(v) => setCompanyProfile({ ...companyProfile, gstNumber: v.toUpperCase() })} placeholder="23AAAAA0000A1Z5" />
+          <LabeledInput label="PAN (optional)" value={companyProfile.pan} onChange={(v) => setCompanyProfile({ ...companyProfile, pan: v.toUpperCase() })} placeholder="AAAAA0000A" />
+          <LabeledInput label="Registration no. (optional)" value={companyProfile.registrationNumber} onChange={(v) => setCompanyProfile({ ...companyProfile, registrationNumber: v.toUpperCase() })} placeholder="CIN / LLPIN" />
           <div className="sm:col-span-2">
             <LabeledInput label="Address (optional)" value={companyProfile.address} onChange={(v) => setCompanyProfile({ ...companyProfile, address: v })} placeholder="Office / workshop address" />
           </div>
@@ -379,7 +376,10 @@ export function BrandProposalsSettingsPanel({ markSaved, markIssue }: Props) {
             <LabeledInput label="Service coverage areas" value={credentials.serviceCoverageAreas} onChange={(v) => patchCredential("serviceCoverageAreas", v)} placeholder="Madhya Pradesh, Chhattisgarh, …" />
           </div>
           <div className="sm:col-span-2">
-            <LabeledInput label="Certifications" value={credentials.certifications} onChange={(v) => patchCredential("certifications", v)} placeholder="ISO, MNRE empanelment, …" />
+            <LabeledInput label="MNRE empanelment no. (optional)" value={credentials.mnreEmpanelmentNo} onChange={(v) => patchCredential("mnreEmpanelmentNo", v)} placeholder="MNRE registration / empanelment ID" />
+          </div>
+          <div className="sm:col-span-2">
+            <LabeledInput label="Certifications" value={credentials.certifications} onChange={(v) => patchCredential("certifications", v)} placeholder="ISO, BIS, …" />
           </div>
           <div className="sm:col-span-2">
             <LabeledInput label="Awards" value={credentials.awards} onChange={(v) => patchCredential("awards", v)} placeholder="Optional" />
@@ -417,6 +417,21 @@ export function BrandProposalsSettingsPanel({ markSaved, markIssue }: Props) {
                 <LabeledInput label="Project name" value={project.projectName} onChange={(v) => patchPortfolio(project.id, { projectName: v })} placeholder="Hotel rooftop — Indore" />
                 <LabeledInput label="Capacity" value={project.capacity} onChange={(v) => patchPortfolio(project.id, { capacity: v })} placeholder="100 kW" />
                 <LabeledInput label="Location" value={project.location} onChange={(v) => patchPortfolio(project.id, { location: v })} placeholder="City, State" />
+                <label className="block">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Sector (optional)</span>
+                  <select
+                    value={project.sector}
+                    onChange={(e) => patchPortfolio(project.id, { sector: e.target.value as PortfolioSector | "" })}
+                    className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800"
+                  >
+                    <option value="">—</option>
+                    <option value="residential">Residential</option>
+                    <option value="commercial">Commercial</option>
+                    <option value="school">School / Institution</option>
+                    <option value="industrial">Industrial</option>
+                  </select>
+                </label>
+                <LabeledInput label="Completed year (optional)" value={project.completedYear} onChange={(v) => patchPortfolio(project.id, { completedYear: v })} placeholder="e.g. 2024" />
                 <div className="sm:col-span-2">
                   <LabeledInput label="Description (optional)" value={project.description} onChange={(v) => patchPortfolio(project.id, { description: v })} placeholder="Brief scope or outcome" />
                 </div>

@@ -12,6 +12,7 @@
     "lint": "next lint && node scripts/check-marketplace-guard.cjs",
     "typecheck": "tsc --noEmit",
     "test:proposal-stability": "node scripts/run-proposal-stability.mjs",
+    "test:phase1-validation": "node scripts/run-phase1-validation.mjs",
     "guard:marketplace": "node scripts/check-marketplace-guard.cjs",
     "ppt:investment": "node scripts/generate-investment-ppt.cjs",
     "ppt:premium": "node scripts/generate-premium-proposal-ppt.cjs"

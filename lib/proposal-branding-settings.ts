@@ -19,9 +19,11 @@ import {
   parseGlobalBrandPreference,
   parsePortfolioProjects,
   parseProposalAppearance,
-  parseStoredSchemaVersion,
+  inferBrandDisplayPreference,
   proposalActiveBrandDisplayMode,
   proposalActiveSectionConfig,
+  syncCanonicalGst,
+  syncCanonicalTheme,
   STORAGE_KEY_V1,
   defaultProposalAppearance,
 } from "@/lib/company-profile-migration";
@@ -87,6 +89,7 @@ export type ProposalBrandingSettings = {
   installerEmail: string;
   installerLogoUrl: string;
   personalizedBranding: boolean;
+  /** @deprecated Derived from `proposalAppearance.themePreset` on read/write. */
   themePreset: ProposalThemePreset;
   /** Payment QR code image URL (Supabase Storage). Shown on the Banking slide. */
   paymentQrCodeUrl: string;
@@ -100,13 +103,13 @@ export type ProposalBrandingSettings = {
   bankUpiId: string;
   /** Past installation photo URLs (max 6) for web proposal + deck. */
   proposalSiteImages: string[];
-  /** GSTIN shown on proposal About / commercial slides (set in More → Company profile). */
+  /** @deprecated Read alias — canonical value is `companyProfile.gstNumber`. Kept for proposal snapshot compat. */
   companyGstNumber: string;
-  /** How installer logo/name appear across proposal surfaces. */
+  /** @deprecated Derived from `brandDisplayPreference` + `brandSectionRules` on read/write. */
   brandDisplayMode: ProposalBrandDisplayMode;
-  /** Per-section overrides when brandDisplayMode is customPerSection. */
+  /** @deprecated Derived from `brandSectionRules` on read/write. */
   brandSectionConfig: ProposalBrandSectionConfig;
-  /** Structured company profile (Phase 1 — settings UI; flat fields remain source for proposals). */
+  /** Structured company profile — canonical installer identity fields. */
   schemaVersion: number;
   companyProfile: CompanyProfileCore;
   companyCredentials: CompanyCredentials;
@@ -202,15 +205,20 @@ function parseSiteImages(raw: unknown): string[] {
     .slice(0, 6);
 }
 
-function normalizeBrandingSettings(parsed: Partial<ProposalBrandingSettings>): ProposalBrandingSettings {
+/** Single normalization path — canonical fields win; legacy aliases derived for compat. */
+export function finalizeBrandingSettings(parsed: Partial<ProposalBrandingSettings>): ProposalBrandingSettings {
   const brandFromLegacy = migrateBrandConfig(parsed);
-  const themePreset =
+
+  const legacyThemeFallback =
     parsed.themePreset === "greenBlueVivid" || parsed.themePreset === "greenBlueClassic"
       ? parsed.themePreset
-      : parsed.proposalAppearance?.themePreset === "greenBlueVivid" ||
-          parsed.proposalAppearance?.themePreset === "greenBlueClassic"
-        ? parsed.proposalAppearance.themePreset
-        : DEFAULT_PROPOSAL_BRANDING_SETTINGS.themePreset;
+      : DEFAULT_PROPOSAL_BRANDING_SETTINGS.themePreset;
+
+  const proposalAppearance = parseProposalAppearance(parsed.proposalAppearance, legacyThemeFallback);
+  const { proposalAppearance: syncedAppearance, themePreset } = syncCanonicalTheme(
+    proposalAppearance,
+    legacyThemeFallback
+  );
 
   const legacySiteImages = parseSiteImages(parsed.proposalSiteImages);
   let portfolioProjects = parsePortfolioProjects(parsed.portfolioProjects);
@@ -224,12 +232,18 @@ function normalizeBrandingSettings(parsed: Partial<ProposalBrandingSettings>): P
   );
   const brandDisplayPreference =
     parseGlobalBrandPreference(parsed.brandDisplayPreference) ??
-    brandFromLegacy.brandDisplayMode;
+    inferBrandDisplayPreference(brandSectionRules);
 
   const proposalActiveBrand = {
     brandDisplayMode: proposalActiveBrandDisplayMode(brandDisplayPreference),
     brandSectionConfig: proposalActiveSectionConfig(brandSectionRules),
   };
+
+  const companyProfile = parseCompanyProfileCore(parsed.companyProfile, parsed.companyGstNumber);
+  const { companyProfile: syncedProfile, companyGstNumber } = syncCanonicalGst(
+    companyProfile,
+    parsed.companyGstNumber
+  );
 
   return {
     installerName:
@@ -252,17 +266,20 @@ function normalizeBrandingSettings(parsed: Partial<ProposalBrandingSettings>): P
     bankBranch: typeof parsed.bankBranch === "string" ? parsed.bankBranch.trim() : "",
     bankUpiId: typeof parsed.bankUpiId === "string" ? parsed.bankUpiId.trim() : "",
     proposalSiteImages: legacySiteImages,
-    companyGstNumber:
-      typeof parsed.companyGstNumber === "string" ? parsed.companyGstNumber.trim().toUpperCase() : "",
-    schemaVersion: parseStoredSchemaVersion(parsed.schemaVersion) || COMPANY_PROFILE_SCHEMA_VERSION,
-    companyProfile: parseCompanyProfileCore(parsed.companyProfile),
+    companyGstNumber,
+    schemaVersion: COMPANY_PROFILE_SCHEMA_VERSION,
+    companyProfile: syncedProfile,
     companyCredentials: parseCompanyCredentials(parsed.companyCredentials),
     portfolioProjects,
     brandSectionRules,
     brandDisplayPreference,
-    proposalAppearance: parseProposalAppearance(parsed.proposalAppearance, themePreset),
+    proposalAppearance: syncedAppearance,
     ...proposalActiveBrand,
   };
+}
+
+function normalizeBrandingSettings(parsed: Partial<ProposalBrandingSettings>): ProposalBrandingSettings {
+  return finalizeBrandingSettings(parsed);
 }
 
 export function readProposalBrandingSettings(): ProposalBrandingSettings {
@@ -282,27 +299,23 @@ export function readProposalBrandingSettings(): ProposalBrandingSettings {
   }
 }
 
-export function writeProposalBrandingSettings(next: ProposalBrandingSettings) {
+export function writeProposalBrandingSettings(next: Partial<ProposalBrandingSettings>) {
   if (typeof window === "undefined") return;
   try {
-    const proposalActiveBrand = {
-      brandDisplayMode: proposalActiveBrandDisplayMode(next.brandDisplayPreference),
-      brandSectionConfig: proposalActiveSectionConfig(next.brandSectionRules),
-    };
-    const payload: ProposalBrandingSettings = {
+    const payload = finalizeBrandingSettings({
       ...next,
-      schemaVersion: COMPANY_PROFILE_SCHEMA_VERSION,
-      personalizedBranding: personalizedBrandingFromBrandConfig(proposalActiveBrand),
-      themePreset: next.proposalAppearance?.themePreset ?? next.themePreset,
-      ...proposalActiveBrand,
-      // Legacy site images untouched in Phase 1 — existing proposals keep prior banking gallery.
       proposalSiteImages: next.proposalSiteImages,
-    };
+    });
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     window.dispatchEvent(new Event(PROPOSAL_BRANDING_UPDATED_EVENT));
   } catch {
     /* ignore storage errors */
   }
+}
+
+/** Resolve GST for proposal snapshots — prefers canonical profile field. */
+export function resolveCompanyGstNumber(settings: ProposalBrandingSettings): string {
+  return settings.companyProfile.gstNumber.trim() || settings.companyGstNumber.trim();
 }
 
 /** Name shown on proposals — empty string allowed (logo-only branding). */
