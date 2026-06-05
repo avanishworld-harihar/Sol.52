@@ -56,6 +56,21 @@ function cloneInput(input: PremiumProposalPptInput): PremiumProposalPptInput {
   return JSON.parse(JSON.stringify(input)) as PremiumProposalPptInput;
 }
 
+/** Skip stale fixture payback — honestPaybackYears derives from netCost/annualSaving when hint ≥ 99. */
+const PAYBACK_DERIVE = 99;
+
+function capacityScenariosForKw(kw: number) {
+  return {
+    enabled: true as const,
+    recommendedId: "primary" as const,
+    scenarios: [
+      { id: "primary", label: "Recommended", systemKw: kw, isRecommended: true },
+      { id: "option_a", label: "Conservative", systemKw: Math.round(kw * 0.8) },
+      { id: "option_b", label: "Expansion", systemKw: Math.round(kw * 1.2) },
+    ],
+  };
+}
+
 function residentialVariants(base: PremiumProposalPptInput): { label: string; input: PremiumProposalPptInput }[] {
   const kwSteps = [3, 4, 5, 5, 6, 7, 8, 9, 10, 12];
   const amcSteps: (1 | 5 | 10)[] = [1, 1, 5, 5, 10, 1, 5, 10, 1, 5];
@@ -66,7 +81,7 @@ function residentialVariants(base: PremiumProposalPptInput): { label: string; in
     input.netCostInr = Math.round(input.grossSystemCostInr! * 0.72);
     input.amcSelectedYears = amcSteps[i];
     input.customerName = `Residential Batch ${i + 1}`;
-    if (i > 0) delete input.paybackYears;
+    if (i > 0) input.paybackYears = PAYBACK_DERIVE;
     return { label: `${kw} kW · AMC ${amcSteps[i]}yr`, input };
   });
 }
@@ -85,9 +100,9 @@ function commercialVariants(base: PremiumProposalPptInput): { label: string; inp
       ...(input.commercialConfig ?? {}),
       orgType,
       dcrComparison: { enabled: i % 2 === 0 },
-      capacityScenarios: { enabled: true },
+      capacityScenarios: capacityScenariosForKw(kw),
     };
-    if (i > 0) delete input.paybackYears;
+    if (i > 0) input.paybackYears = PAYBACK_DERIVE;
     return { label: `${orgType} · ${kw} kW`, input };
   });
 }
@@ -100,7 +115,7 @@ function schoolVariants(base: PremiumProposalPptInput): { label: string; input: 
     input.grossSystemCostInr = Math.round(kw * 85000);
     input.netCostInr = input.grossSystemCostInr;
     input.customerName = `School Batch ${i + 1}`;
-    if (i > 0) delete input.paybackYears;
+    if (i > 0) input.paybackYears = PAYBACK_DERIVE;
     return { label: `${kw} kW school`, input };
   });
 }
@@ -113,7 +128,7 @@ function factoryVariants(base: PremiumProposalPptInput): { label: string; input:
     input.grossSystemCostInr = Math.round(kw * 85000);
     input.netCostInr = input.grossSystemCostInr;
     input.customerName = `Factory Batch ${i + 1}`;
-    if (i > 0) delete input.paybackYears;
+    if (i > 0) input.paybackYears = PAYBACK_DERIVE;
     return { label: `${kw} kW factory`, input };
   });
 }
@@ -304,7 +319,7 @@ export function runPhase1BatchValidation(rootDir: string): BatchValidationReport
   commercialBase.commercialConfig = {
     orgType: "generic",
     dcrComparison: { enabled: true },
-    capacityScenarios: { enabled: true },
+    capacityScenarios: capacityScenariosForKw(100),
   };
   commercialBase.systemKw = 100;
   commercialBase.grossSystemCostInr = 8500000;
