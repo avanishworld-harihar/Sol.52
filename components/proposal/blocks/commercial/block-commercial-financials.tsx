@@ -82,6 +82,8 @@ export function BlockCommercialFinancials({ ctx }: Props) {
   }
 
   const maxBarH = Math.max(summary.netCost, Math.abs(profit25), 1);
+  const profitChartRows = cashflow25.filter((_, i) => i % 2 === 0);
+  const PROFIT_CHART_PX = 192; // h-48
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8 md:px-12 md:py-24">
@@ -207,43 +209,74 @@ export function BlockCommercialFinancials({ ctx }: Props) {
                   {isHi ? "संचयी लाभ (25 वर्ष)" : "Cumulative Profit Trajectory"}
                 </p>
               </div>
-              <div className="flex h-48 items-end gap-0.5">
-                {cashflow25.filter((_, i) => i % 2 === 0).map((row, i) => {
-                  const isPos = row.cumulative >= 0;
-                  const h = Math.min((Math.abs(row.cumulative) / maxBarH) * 100, 100);
-                  return (
-                    <div
-                      key={row.year}
-                      className="relative flex flex-1 flex-col items-center"
-                      style={{ height: "100%" }}
-                    >
-                      <div className="relative flex h-full w-full flex-col items-center justify-end">
-                        {isPos ? (
-                          <motion.div
-                            initial={{ height: 0 }}
-                            whileInView={{ height: `${h}%` }}
-                            viewport={{ once: true }}
-                            transition={{ delay: i * 0.03, type: "spring", stiffness: 80, damping: 18 }}
-                            className="w-full rounded-t bg-gradient-to-t from-emerald-700 to-emerald-400"
-                          />
-                        ) : (
-                          <motion.div
-                            initial={{ height: 0 }}
-                            whileInView={{ height: `${h}%` }}
-                            viewport={{ once: true }}
-                            transition={{ delay: i * 0.03, type: "spring", stiffness: 80, damping: 18 }}
-                            className="mt-auto w-full rounded-b bg-gradient-to-b from-rose-400 to-rose-600"
-                          />
-                        )}
+              {/* Screen — animated bars */}
+              <div className="print:hidden">
+                <div className="flex h-48 items-end gap-0.5">
+                  {profitChartRows.map((row, i) => {
+                    const isPos = row.cumulative >= 0;
+                    const h = Math.min((Math.abs(row.cumulative) / maxBarH) * 100, 100);
+                    return (
+                      <div
+                        key={row.year}
+                        className="relative flex flex-1 flex-col items-center"
+                        style={{ height: "100%" }}
+                      >
+                        <div className="relative flex h-full w-full flex-col items-center justify-end">
+                          {isPos ? (
+                            <motion.div
+                              initial={{ height: 0 }}
+                              whileInView={{ height: `${h}%` }}
+                              viewport={{ once: true }}
+                              transition={{ delay: i * 0.03, type: "spring", stiffness: 80, damping: 18 }}
+                              className="w-full rounded-t bg-gradient-to-t from-emerald-700 to-emerald-400"
+                            />
+                          ) : (
+                            <motion.div
+                              initial={{ height: 0 }}
+                              whileInView={{ height: `${h}%` }}
+                              viewport={{ once: true }}
+                              transition={{ delay: i * 0.03, type: "spring", stiffness: 80, damping: 18 }}
+                              className="mt-auto w-full rounded-b bg-gradient-to-b from-rose-400 to-rose-600"
+                            />
+                          )}
+                        </div>
+                        <span className="mt-1 text-[9px] text-slate-400">{row.year}</span>
                       </div>
-                      <span className="mt-1 text-[9px] text-slate-400">{row.year}</span>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
+                <p className="mt-2 text-right text-[10px] font-medium text-slate-400">
+                  {isHi ? "वर्ष →" : "Year →"}
+                </p>
               </div>
-              <p className="mt-2 text-right text-[10px] font-medium text-slate-400">
-                {isHi ? "वर्ष →" : "Year →"}
-              </p>
+
+              {/* Print — static pixel-height bars (no motion / no % height) */}
+              <div className="hidden print:block">
+                <div className="commercial-cashflow-chart flex h-48 items-end gap-0.5">
+                  {profitChartRows.map((row) => {
+                    const isPos = row.cumulative >= 0;
+                    const h = Math.min((Math.abs(row.cumulative) / maxBarH) * 100, 100);
+                    return (
+                      <div
+                        key={`print-${row.year}`}
+                        className="flex flex-1 flex-col items-center"
+                        style={{ height: "100%" }}
+                      >
+                        <div className="relative flex h-full w-full flex-col items-center justify-end">
+                          <div
+                            className={`commercial-print-chart-bar w-full shrink-0 ${isPos ? "rounded-t bg-emerald-500" : "rounded-b bg-rose-500"}`}
+                            style={{ height: `${(h / 100) * PROFIT_CHART_PX}px` }}
+                          />
+                        </div>
+                        <span className="mt-1 text-[9px] text-slate-500">{row.year}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="mt-2 text-right text-[10px] font-medium text-slate-500">
+                  {isHi ? "वर्ष →" : "Year →"}
+                </p>
+              </div>
             </GlassPanel>
           </SectionReveal>
 

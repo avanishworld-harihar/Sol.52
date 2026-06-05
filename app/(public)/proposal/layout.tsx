@@ -18,7 +18,7 @@ export default function ProposalRouteLayout({ children }: { children: ReactNode 
   return (
     <div
       id="proposal-route-root"
-      className={`${notoDeva.variable} min-h-[100dvh] bg-[#f8fafc] text-slate-900 transition-colors duration-300`}
+      className={`${notoDeva.variable} min-h-[100dvh] bg-[#f8fafc] text-slate-900 transition-colors duration-300 print:bg-white`}
       suppressHydrationWarning
     >
       <script dangerouslySetInnerHTML={{ __html: PROPOSAL_THEME_BOOTSTRAP }} />

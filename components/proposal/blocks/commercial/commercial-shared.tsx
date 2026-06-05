@@ -171,7 +171,7 @@ export function CommercialSectionHeader({
           {num}
         </span>
         <div className="h-px flex-1 bg-gradient-to-r from-slate-200 to-transparent" />
-        <span className="rounded-full border border-sky-200/80 bg-sky-50 px-3 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-sky-600">
+        <span className="commercial-section-kicker rounded-full border border-sky-200/80 bg-sky-50 px-3 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-sky-600">
           {label}
         </span>
       </div>

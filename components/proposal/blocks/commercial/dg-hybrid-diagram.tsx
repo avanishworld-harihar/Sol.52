@@ -50,7 +50,7 @@ export function DgHybridDiagram({ systemKw, capacityKva, presentation = false, c
       viewport={{ once: true }}
       transition={{ duration: 0.45 }}
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(56,189,248,0.12),_transparent_55%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(56,189,248,0.12),_transparent_55%)] print:hidden" />
       <p className="relative mb-4 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-sky-400/90">
         Single-line · Solar + DG hybrid
       </p>

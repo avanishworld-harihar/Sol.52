@@ -80,6 +80,7 @@ export function BlockROIDashboard({ ctx }: Props) {
   const chartRows = buildCashflowChartRows(cashflow25, breakEvenYear);
   const maxAbs = Math.max(summary.netCost, Math.abs(profit25), 1);
   const ZERO_PCT = (summary.netCost / maxAbs) * 100;
+  const CASHFLOW_CHART_PX = 224; // h-56
 
   // Grid vs Solar
   const gridCost = summary.solarVsGrid.totalGrid;
@@ -223,8 +224,8 @@ export function BlockROIDashboard({ ctx }: Props) {
                     >
                       <div className="relative flex h-full w-full flex-col items-center justify-end">
                         <div
-                          className={`w-full ${isPos ? "rounded-t bg-emerald-500" : "rounded-b bg-rose-500"}`}
-                          style={{ height: `${h}%` }}
+                          className={`commercial-print-chart-bar w-full shrink-0 ${isPos ? "rounded-t bg-emerald-500" : "rounded-b bg-rose-500"}`}
+                          style={{ height: `${(h / 100) * CASHFLOW_CHART_PX}px` }}
                         />
                       </div>
                       <span className="mt-1.5 text-[9px] font-medium text-slate-500">{row.year}</span>

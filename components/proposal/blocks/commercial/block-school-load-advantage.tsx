@@ -10,6 +10,8 @@ import {
 
 type Props = { ctx: CommercialCtx; embedded?: boolean };
 
+const HOUR_CHART_PX = 64; // inner height of h-20 container after padding
+
 function HourCurve({
   profile,
   colorClass,
@@ -23,15 +25,19 @@ function HourCurve({
   return (
     <div>
       <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">{label}</p>
-      <div className="flex h-20 items-end gap-[2px] rounded-lg border border-slate-100 bg-slate-50/80 px-2 py-2">
-        {profile.map((v, h) => (
-          <div
-            key={h}
-            className={`flex-1 rounded-sm ${colorClass} ${h >= 8 && h <= 16 ? "opacity-100" : "opacity-35"}`}
-            style={{ height: `${Math.max(8, (v / peak) * 100)}%` }}
-            title={`${h}:00 — ${Math.round(v * 100)}%`}
-          />
-        ))}
+      <div className="commercial-hour-chart flex h-20 items-end gap-[2px] rounded-lg border border-slate-100 bg-slate-50/80 px-2 py-2">
+        {profile.map((v, hour) => {
+          const barPx = Math.max(4, (v / peak) * HOUR_CHART_PX);
+          const dimmed = hour < 8 || hour > 16;
+          return (
+            <div
+              key={hour}
+              className={`commercial-print-chart-bar flex-1 shrink-0 rounded-sm ${colorClass} ${dimmed ? "opacity-35 print:opacity-60" : ""}`}
+              style={{ height: `${barPx}px` }}
+              title={`${hour}:00 — ${Math.round(v * 100)}%`}
+            />
+          );
+        })}
       </div>
       <div className="mt-1 flex justify-between text-[9px] text-slate-400">
         <span>6 AM</span>

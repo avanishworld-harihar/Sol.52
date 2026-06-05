@@ -350,7 +350,7 @@ export default function CommercialProposalView({
   return (
     <MotionConfig reducedMotion={printSnap ? "always" : "user"}>
       <div
-        className="commercial-proposal proposal-document mx-auto min-h-screen max-w-[210mm] font-sans antialiased print:max-w-none"
+        className="commercial-proposal proposal-document mx-auto min-h-screen max-w-[210mm] bg-slate-50 font-sans antialiased print:max-w-none print:bg-white"
         style={{ colorScheme: "light" }}
       >
 

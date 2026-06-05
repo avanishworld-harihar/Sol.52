@@ -3217,12 +3217,43 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   }
 
   html,
-  body {
-    background: white !important;
+  body,
+  body.mesh-gradient-bg {
+    background: #ffffff !important;
+    background-image: none !important;
     color: #0b132b !important;
     font-size: 13px !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+  }
+
+  /* Fixed mesh grain + radial blobs repeat on every printed page — remove entirely */
+  body.mesh-gradient-bg::before,
+  body.mesh-gradient-bg::after,
+  .mesh-gradient-bg::before,
+  .mesh-gradient-bg::after {
+    display: none !important;
+    content: none !important;
+    background: none !important;
+    background-image: none !important;
+    opacity: 0 !important;
+  }
+
+  #proposal-route-root,
+  #proposal-route-root .commercial-proposal,
+  #proposal-route-root .proposal-document {
+    background: #ffffff !important;
+    background-image: none !important;
+  }
+
+  /* Decorative radial / circular overlays (not content) */
+  .commercial-proposal .pointer-events-none.absolute.inset-0,
+  .proposal-document .pointer-events-none.absolute.inset-0,
+  .commercial-proposal [class*="radial-gradient"],
+  .proposal-document [class*="radial-gradient"] {
+    display: none !important;
+    background: none !important;
+    background-image: none !important;
   }
 
   .proposal-document {
@@ -3387,11 +3418,6 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   }
 
   /* ── Commercial PDF: reduce rasterization + fix blank iOS pages ─────────── */
-  .commercial-proposal {
-    print-color-adjust: economy !important;
-    -webkit-print-color-adjust: economy !important;
-  }
-
   .commercial-proposal,
   .commercial-proposal * {
     box-shadow: none !important;
@@ -3406,15 +3432,17 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     background-color: #ffffff !important;
   }
 
-  .commercial-proposal [class*="bg-slate-50"],
-  .commercial-proposal [class*="bg-white"],
-  .commercial-proposal [class*="bg-emerald"] {
+  /* Flatten only solid light panels — avoid substring matches (e.g. bg-slate-500) */
+  .commercial-proposal [class~="bg-white"] {
     background-color: #ffffff !important;
     background-image: none !important;
   }
 
   /* Tailwind opacity modifiers (/70, /80) force compositor layers → raster tiles */
-  .commercial-proposal [class*="bg-"][class*="/"] {
+  .commercial-proposal
+    [class*="bg-"][class*="/"]:not(.commercial-print-accent):not(
+      .commercial-print-table-head
+    ) {
     background-color: #ffffff !important;
     background-image: none !important;
   }
@@ -3500,6 +3528,52 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     background-color: #f43f5e !important;
   }
 
+  /* Preserve section badges, BOM category bars, and table column headers in PDF */
+  .commercial-proposal .commercial-print-accent,
+  .commercial-proposal .commercial-section-kicker,
+  .commercial-proposal .commercial-print-table-head,
+  .commercial-proposal thead tr {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .commercial-proposal .commercial-print-accent.bg-sky-700 {
+    background-color: #0369a1 !important;
+    color: #ffffff !important;
+  }
+
+  .commercial-proposal .commercial-print-accent.bg-amber-700 {
+    background-color: #b45309 !important;
+    color: #ffffff !important;
+  }
+
+  .commercial-proposal .commercial-print-accent.bg-violet-700 {
+    background-color: #6d28d9 !important;
+    color: #ffffff !important;
+  }
+
+  .commercial-proposal .commercial-print-accent.bg-rose-700 {
+    background-color: #be123c !important;
+    color: #ffffff !important;
+  }
+
+  .commercial-proposal .commercial-print-accent.bg-emerald-700 {
+    background-color: #047857 !important;
+    color: #ffffff !important;
+  }
+
+  .commercial-proposal .commercial-section-kicker {
+    background-color: #f0f9ff !important;
+    border-color: #bae6fd !important;
+    color: #0284c7 !important;
+  }
+
+  .commercial-proposal .commercial-print-table-head,
+  .commercial-proposal thead tr {
+    background-color: #f8fafc !important;
+    color: #94a3b8 !important;
+  }
+
   .commercial-proposal * {
     isolation: auto !important;
     contain: none !important;
@@ -3521,8 +3595,22 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     print-color-adjust: exact !important;
   }
 
-  .commercial-proposal .commercial-cashflow-chart > div > div > div {
-    min-height: 1px !important;
+  .commercial-proposal .commercial-print-chart-bar,
+  .commercial-proposal .commercial-hour-chart .commercial-print-chart-bar,
+  .commercial-proposal .commercial-cashflow-chart .commercial-print-chart-bar {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    flex-shrink: 0 !important;
+  }
+
+  .commercial-proposal .bg-violet-500,
+  .commercial-proposal .commercial-hour-chart .bg-violet-500 {
+    background-color: #8b5cf6 !important;
+  }
+
+  .commercial-proposal .bg-amber-500,
+  .commercial-proposal .commercial-hour-chart .bg-amber-500 {
+    background-color: #f59e0b !important;
   }
 
   /* Cover: natural flow on one page — content first, full-width banner below (no crop) */
