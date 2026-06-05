@@ -1,116 +1,135 @@
 {
-  "generatedAt": "2026-06-05T04:28:28.071Z",
-  "url": "http://localhost:3000/proposal/9d7d30fd-f00f-41d0-89cc-0fcce9abd08b",
+  "generatedAt": "2026-06-05T05:34:30.288Z",
+  "url": "http://localhost:3000/proposal/5cca4f09-f0f1-4cdd-ba29-1cb85854150b",
   "exportMethod": "Playwright page.pdf() — same Chromium print pipeline as window.print()",
   "file": "E:\\solar project\\Sol.52\\scripts\\audit-pdf-output\\commercial-school-audit.pdf",
   "dom": {
-    "imgs": [],
+    "imgs": [
+      {
+        "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAlgAAAJYCAYAAAC+ZpjcAAAAAXNSR0IArs4c6QAAIABJREFUeF7t3TGSZFmPnNH5dYpcBve/Ei",
+        "naturalW": 600,
+        "naturalH": 600,
+        "displayW": 141,
+        "displayH": 208
+      }
+    ],
     "canvases": [],
-    "motionHidden": 26,
+    "motionHidden": 25,
     "pages": 15,
-    "shadows": 72,
+    "shadows": 75,
     "gradients": 57,
     "blur": 7
   },
   "analysis": {
-    "totalBytes": 1751805,
-    "totalMb": "1.67",
+    "totalBytes": 1790705,
+    "totalMb": "1.71",
     "pageCount": 8,
     "avgMbPerPage": "0.21",
-    "imageCount": 0,
-    "imageBytes": 0,
-    "imageMb": "0.00",
-    "imagePct": "0.0",
+    "imageCount": 1,
+    "imageBytes": 14983,
+    "imageMb": "0.01",
+    "imagePct": "0.8",
     "rasterLikeCount": 0,
     "fonts": [
-      "NAAAAA+Consolas-Bold",
-      "QAAAAA+SegoeUI-Bold",
-      "RAAAAA+SegoeUI-Semibold",
-      "UAAAAA+SegoeUI",
-      "KBAAAA+ArialMT",
-      "ACAAAA+ArialMT"
+      "RAAAAA+Consolas-Bold",
+      "UAAAAA+SegoeUI-Bold",
+      "VAAAAA+SegoeUI-Semibold",
+      "XAAAAA+SegoeUI",
+      "NBAAAA+ArialMT",
+      "CCAAAA+ArialMT"
     ],
     "fontCount": 6,
-    "topImages": [],
+    "topImages": [
+      {
+        "obj": "226 0",
+        "bytes": 14983,
+        "width": 600,
+        "height": 600,
+        "filter": "FlateDecode",
+        "colorSpace": "?",
+        "bitsPerComponent": "8",
+        "megapixels": "0.36"
+      }
+    ],
     "topContentStreams": [
       {
-        "obj": "192 0",
-        "bytes": 33730
+        "obj": "47 0",
+        "bytes": 37857
       },
       {
-        "obj": "213 0",
-        "bytes": 26194
-      },
-      {
-        "obj": "64 0",
-        "bytes": 24351
-      },
-      {
-        "obj": "151 0",
-        "bytes": 20939
-      },
-      {
-        "obj": "171 0",
-        "bytes": 18654
-      },
-      {
-        "obj": "134 0",
-        "bytes": 18394
-      },
-      {
-        "obj": "207 0",
-        "bytes": 18001
-      },
-      {
-        "obj": "98 0",
-        "bytes": 16245
-      },
-      {
-        "obj": "40 0",
-        "bytes": 15937
-      },
-      {
-        "obj": "66 0",
-        "bytes": 15331
-      },
-      {
-        "obj": "123 0",
-        "bytes": 9364
-      },
-      {
-        "obj": "195 0",
-        "bytes": 8625
-      },
-      {
-        "obj": "2773 0",
-        "bytes": 8362
+        "obj": "193 0",
+        "bytes": 33699
       },
       {
         "obj": "228 0",
-        "bytes": 8152
+        "bytes": 22010
       },
       {
-        "obj": "1684 0",
+        "obj": "153 0",
+        "bytes": 20891
+      },
+      {
+        "obj": "172 0",
+        "bytes": 18702
+      },
+      {
+        "obj": "136 0",
+        "bytes": 18260
+      },
+      {
+        "obj": "207 0",
+        "bytes": 17953
+      },
+      {
+        "obj": "101 0",
+        "bytes": 16286
+      },
+      {
+        "obj": "233 0",
+        "bytes": 15732
+      },
+      {
+        "obj": "69 0",
+        "bytes": 15454
+      },
+      {
+        "obj": "125 0",
+        "bytes": 9412
+      },
+      {
+        "obj": "196 0",
+        "bytes": 8638
+      },
+      {
+        "obj": "2799 0",
+        "bytes": 8362
+      },
+      {
+        "obj": "1770 0",
         "bytes": 8080
       },
       {
-        "obj": "170 0",
+        "obj": "171 0",
         "bytes": 8011
       },
       {
-        "obj": "176 0",
-        "bytes": 7861
+        "obj": "177 0",
+        "bytes": 7915
       },
       {
-        "obj": "27 0",
+        "obj": "34 0",
         "bytes": 6904
       },
       {
-        "obj": "109 0",
-        "bytes": 6162
+        "obj": "112 0",
+        "bytes": 6229
       },
       {
-        "obj": "1124 0",
+        "obj": "213 0",
+        "bytes": 6102
+      },
+      {
+        "obj": "59 0",
         "bytes": 6088
       }
     ],
@@ -121,7 +140,7 @@
       "page": 1,
       "section": "Cover",
       "estImageKb": 0,
-      "estTotalKb": 214,
+      "estTotalKb": 219,
       "dimensions": "text/vector",
       "filter": "—"
     },
@@ -129,7 +148,7 @@
       "page": 2,
       "section": "Executive Summary",
       "estImageKb": 0,
-      "estTotalKb": 214,
+      "estTotalKb": 219,
       "dimensions": "text/vector",
       "filter": "—"
     },
@@ -137,7 +156,7 @@
       "page": 3,
       "section": "Green Campus",
       "estImageKb": 0,
-      "estTotalKb": 214,
+      "estTotalKb": 219,
       "dimensions": "text/vector",
       "filter": "—"
     },
@@ -145,7 +164,7 @@
       "page": 4,
       "section": "Learning Asset",
       "estImageKb": 0,
-      "estTotalKb": 214,
+      "estTotalKb": 219,
       "dimensions": "text/vector",
       "filter": "—"
     },
@@ -153,7 +172,7 @@
       "page": 5,
       "section": "DCR Comparison",
       "estImageKb": 0,
-      "estTotalKb": 214,
+      "estTotalKb": 219,
       "dimensions": "text/vector",
       "filter": "—"
     },
@@ -161,7 +180,7 @@
       "page": 6,
       "section": "Capacity Scenarios",
       "estImageKb": 0,
-      "estTotalKb": 214,
+      "estTotalKb": 219,
       "dimensions": "text/vector",
       "filter": "—"
     },
@@ -169,7 +188,7 @@
       "page": 7,
       "section": "ROI Dashboard",
       "estImageKb": 0,
-      "estTotalKb": 214,
+      "estTotalKb": 219,
       "dimensions": "text/vector",
       "filter": "—"
     },
@@ -177,12 +196,12 @@
       "page": 8,
       "section": "Financials",
       "estImageKb": 0,
-      "estTotalKb": 214,
+      "estTotalKb": 219,
       "dimensions": "text/vector",
       "filter": "—"
     }
   ],
   "findings": [
-    "26 elements still at opacity:0 — white-page risk on iOS"
+    "25 elements still at opacity:0 — white-page risk on iOS"
   ]
 }
