@@ -528,14 +528,14 @@ export default function CommercialProposalView({
         </div>
 
         {/* ── Page 1 — Confidential cover (client name + plant kW only) ─── */}
-        <section id="comm-cover" className="proposal-page bg-white" data-page="comm-cover">
+        <section id="comm-cover" className="commercial-print-page proposal-page bg-white" data-page="comm-cover">
           <BlockCommercialCover ctx={ctx} />
         </section>
 
         {/* ── Page 2+ — Executive overview & KPIs ─────────────────────── */}
         <section
           id="comm-executive-summary"
-          className="proposal-page border-b border-slate-100/80 bg-white"
+          className="commercial-print-page proposal-page border-b border-slate-100/80 bg-white"
           data-page="comm-executive-summary"
         >
           <BlockCommercialExecutiveSummary ctx={ctx} />
@@ -545,14 +545,14 @@ export default function CommercialProposalView({
           <>
             <section
               id="comm-school-green"
-              className="proposal-page border-b border-slate-100/80 bg-emerald-50/40"
+              className="commercial-print-page proposal-page border-b border-slate-100/80 bg-emerald-50/40"
               data-page="comm-school-green"
             >
               <BlockSchoolGreenCampus ctx={ctx} />
             </section>
             <section
               id="comm-school-learning"
-              className="proposal-page border-b border-slate-100/80 bg-white"
+              className="commercial-print-page proposal-page border-b border-slate-100/80 bg-white"
               data-page="comm-school-learning"
             >
               <BlockSchoolLearningAsset ctx={ctx} />
@@ -562,7 +562,7 @@ export default function CommercialProposalView({
 
         {/* ── Optional C&I intelligence blocks (from commercialConfig) ─── */}
         {pptInput.commercialConfig?.dcrComparison?.enabled !== false ? (
-          <section id="comm-dcr" className="proposal-page border-b border-slate-100/80 bg-slate-50/70" data-page="comm-dcr">
+          <section id="comm-dcr" className="commercial-print-page proposal-page border-b border-slate-100/80 bg-slate-50/70" data-page="comm-dcr">
             <BlockDcrComparison
               summary={summary}
               lang={lang}
@@ -572,7 +572,7 @@ export default function CommercialProposalView({
           </section>
         ) : null}
         {pptInput.commercialConfig?.capacityScenarios?.enabled !== false ? (
-          <section id="comm-scenarios" className="proposal-page border-b border-slate-100/80 bg-white" data-page="comm-scenarios">
+          <section id="comm-scenarios" className="commercial-print-page proposal-page border-b border-slate-100/80 bg-white" data-page="comm-scenarios">
             <BlockCapacityScenarios
               summary={summary}
               lang={lang}
@@ -582,7 +582,7 @@ export default function CommercialProposalView({
           </section>
         ) : null}
         {pptInput.commercialConfig?.dgAssumptions?.enabled === true ? (
-          <section id="comm-dg-hybrid" className="proposal-page border-b border-slate-100/80 bg-white" data-page="comm-dg-hybrid">
+          <section id="comm-dg-hybrid" className="commercial-print-page proposal-page border-b border-slate-100/80 bg-white" data-page="comm-dg-hybrid">
             <BlockDgHybrid
               summary={summary}
               lang={lang}
@@ -593,38 +593,36 @@ export default function CommercialProposalView({
         ) : null}
 
         {/* ── Content sections — alternating white/light backgrounds ───── */}
-        <div>
-          {(
-            [
-              { anchor: "comm-roi", idx: 1, Block: BlockROIDashboard },
-              { anchor: "comm-financials", idx: 2, Block: BlockCommercialFinancials },
-              { anchor: "comm-engineering", idx: 3, Block: BlockCommercialEngineering },
-              { anchor: "comm-architecture", idx: 4, Block: BlockSystemArchitecture },
-              { anchor: "comm-bom", idx: 5, Block: BlockTieredBOM },
-              { anchor: "comm-timeline", idx: 6, Block: BlockExecutionTimeline },
-              { anchor: "comm-monitoring", idx: 7, Block: BlockMonitoringAMC },
-              { anchor: "comm-terms", idx: 8, Block: BlockCommercialTerms },
-              { anchor: "comm-closing", idx: 9, Block: BlockPremiumClosing },
-            ] as const
-          ).map(({ anchor, idx, Block }) => (
-            <section
-              key={anchor}
-              id={anchor}
-              className={`proposal-page ${SECTION_BG[idx]} border-b border-slate-100/80 last:border-0`}
-              data-page={anchor}
-            >
-              <Block ctx={ctx} />
-              {anchor === "comm-financials" && pptInput.commercialConfig?.financing?.enabled ? (
-                <BlockCommercialFinancing
-                  summary={summary}
-                  lang={lang}
-                  darkMode={false}
-                  commercialConfig={pptInput.commercialConfig}
-                />
-              ) : null}
-            </section>
-          ))}
-        </div>
+        {(
+          [
+            { anchor: "comm-roi", idx: 1, Block: BlockROIDashboard },
+            { anchor: "comm-financials", idx: 2, Block: BlockCommercialFinancials },
+            { anchor: "comm-engineering", idx: 3, Block: BlockCommercialEngineering },
+            { anchor: "comm-architecture", idx: 4, Block: BlockSystemArchitecture },
+            { anchor: "comm-bom", idx: 5, Block: BlockTieredBOM },
+            { anchor: "comm-timeline", idx: 6, Block: BlockExecutionTimeline },
+            { anchor: "comm-monitoring", idx: 7, Block: BlockMonitoringAMC },
+            { anchor: "comm-terms", idx: 8, Block: BlockCommercialTerms },
+            { anchor: "comm-closing", idx: 9, Block: BlockPremiumClosing },
+          ] as const
+        ).map(({ anchor, idx, Block }) => (
+          <section
+            key={anchor}
+            id={anchor}
+            className={`commercial-print-page proposal-page ${SECTION_BG[idx]} border-b border-slate-100/80 last:border-0`}
+            data-page={anchor}
+          >
+            <Block ctx={ctx} />
+            {anchor === "comm-financials" && pptInput.commercialConfig?.financing?.enabled ? (
+              <BlockCommercialFinancing
+                summary={summary}
+                lang={lang}
+                darkMode={false}
+                commercialConfig={pptInput.commercialConfig}
+              />
+            ) : null}
+          </section>
+        ))}
 
         {/* ── Mobile FAB ───────────────────────────────────────────────── */}
         <div className="fixed bottom-5 right-4 z-40 flex flex-col items-end gap-2 md:hidden">

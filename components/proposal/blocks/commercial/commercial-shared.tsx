@@ -311,7 +311,7 @@ export function KpiCard({ label, value, sub, accent, delay = 0, icon, compact = 
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ delay, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className={`commercial-print-keep-together min-w-0 overflow-hidden rounded-2xl border print:break-inside-avoid ${compact ? "p-4 sm:p-5" : "p-6"} ${ac.bg} ${ac.border}`}
+      className={`commercial-kpi-card commercial-kpi-card--${accent} commercial-print-keep-together min-w-0 overflow-hidden rounded-2xl border print:break-inside-avoid ${compact ? "p-4 sm:p-5" : "p-6"} ${ac.bg} ${ac.border}`}
     >
       <div className="mb-3 flex items-start gap-2">
         {icon && (

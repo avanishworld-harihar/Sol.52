@@ -25,7 +25,7 @@ function HourCurve({
   return (
     <div className="commercial-print-keep-together print:break-inside-avoid">
       <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">{label}</p>
-      <div className="commercial-hour-chart commercial-print-keep-together flex h-20 items-end gap-[2px] rounded-lg border border-slate-100 bg-slate-50/80 px-2 py-2 print:break-inside-avoid">
+      <div className="commercial-hour-chart commercial-print-keep-together flex h-20 items-end gap-[2px] rounded-lg border border-slate-100 bg-slate-50/80 px-2 py-2 print:h-14 print:break-inside-avoid print:px-1.5 print:py-1.5">
         {profile.map((v, hour) => {
           const barPx = Math.max(4, (v / peak) * HOUR_CHART_PX);
           const dimmed = hour < 8 || hour > 16;
@@ -94,7 +94,7 @@ export function BlockSchoolLoadAdvantage({ ctx, embedded = false }: Props) {
         </p>
       )}
 
-      <div className="mb-4 grid gap-2 sm:grid-cols-3">
+      <div className="mb-4 grid gap-2 sm:grid-cols-3 print:mb-3 print:grid-cols-3 print:gap-1.5">
         {bullets.map(({ icon: Icon, text }) => (
           <div key={text} className="flex items-start gap-2 rounded-lg bg-white/80 p-3 text-xs text-slate-600">
             <Icon className="mt-0.5 h-4 w-4 shrink-0 text-sky-600" />
@@ -103,7 +103,7 @@ export function BlockSchoolLoadAdvantage({ ctx, embedded = false }: Props) {
         ))}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="commercial-school-charts-row mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 print:mb-3 print:grid-cols-2 print:gap-3">
         <HourCurve
           profile={SCHOOL_LOAD_HOUR_PROFILE}
           colorClass="bg-violet-500"
@@ -126,8 +126,8 @@ export function BlockSchoolLoadAdvantage({ ctx, embedded = false }: Props) {
 
   if (embedded) {
     return (
-      <SectionReveal className="commercial-school-load-block mt-6 print:break-before-page" delay={0.14}>
-        <GlassPanel className="p-5 print:break-inside-avoid">{content}</GlassPanel>
+      <SectionReveal className="commercial-school-load-block mt-6 print:mt-4" delay={0.14}>
+        <GlassPanel className="p-5 print:p-4">{content}</GlassPanel>
       </SectionReveal>
     );
   }

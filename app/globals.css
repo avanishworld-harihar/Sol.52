@@ -3320,8 +3320,20 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
 
   .commercial-proposal .commercial-cover,
   .commercial-proposal .commercial-cover * {
-    -webkit-print-color-adjust: economy !important;
-    print-color-adjust: economy !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Full-fidelity commercial PDF — backgrounds, KPI tints, charts (target ~10–15 MB) */
+  .commercial-proposal {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .commercial-proposal img,
+  .commercial-proposal svg {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   .commercial-proposal .commercial-cover {
@@ -3334,7 +3346,36 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     color: #0f172a !important;
   }
 
-  /* Commercial — page 1: confidential cover only; page 2+ starts with executive summary */
+  /* Commercial — each section = own sheet + full color fidelity */
+  .commercial-proposal section.proposal-page.commercial-print-page {
+    padding: 0 !important;
+    margin-top: 0 !important;
+    display: block !important;
+    overflow: visible !important;
+    page-break-before: always !important;
+    break-before: page !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+    min-height: 277mm !important;
+    box-sizing: border-box !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .commercial-proposal section.proposal-page.commercial-print-page:first-of-type {
+    page-break-before: auto !important;
+    break-before: auto !important;
+  }
+
+  .commercial-proposal section.proposal-page.commercial-print-page:last-of-type {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+
+  .commercial-proposal #comm-cover.commercial-print-page {
+    min-height: 277mm !important;
+  }
+
   .commercial-proposal .proposal-page {
     padding: 0 !important;
     margin-top: 0 !important;
@@ -3402,12 +3443,30 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     overflow: visible !important;
   }
 
-  /* School pages — charts / load panel start on a fresh page if prior content fills the sheet */
+  /* School load charts — stay on Green Campus page, side by side in PDF */
   .commercial-proposal #comm-school-green .commercial-school-load-block {
-    page-break-before: always !important;
-    break-before: page !important;
+    page-break-before: avoid !important;
+    break-before: avoid-page !important;
+  }
+
+  .commercial-proposal #comm-school-green .commercial-school-charts-row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 3mm !important;
     page-break-inside: avoid !important;
     break-inside: avoid-page !important;
+  }
+
+  .commercial-proposal #comm-school-green .commercial-school-charts-row > * {
+    min-width: 0 !important;
+  }
+
+  .commercial-proposal #comm-school-green .commercial-hour-chart {
+    height: 52px !important;
+  }
+
+  .commercial-proposal #comm-school-green .commercial-hour-chart .commercial-print-chart-bar {
+    max-height: 44px !important;
   }
 
   .commercial-proposal #comm-school-learning {
@@ -3470,6 +3529,7 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   .commercial-proposal .proposal-page {
     background: #ffffff !important;
     background-color: #ffffff !important;
+    overflow: visible !important;
   }
 
   /* Flatten only solid light panels — avoid substring matches (e.g. bg-slate-500) */
@@ -3478,13 +3538,51 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     background-image: none !important;
   }
 
-  /* Tailwind opacity modifiers (/70, /80) force compositor layers → raster tiles */
+  /* Tailwind opacity modifiers — map to solid tints (not white) so PDF retains color */
   .commercial-proposal
     [class*="bg-"][class*="/"]:not(.commercial-print-accent):not(
       .commercial-print-table-head
+    ):not(.commercial-kpi-card) {
+    background-image: none !important;
+  }
+
+  .commercial-proposal [class*="bg-slate-50/"] {
+    background-color: #f8fafc !important;
+  }
+
+  .commercial-proposal [class*="bg-emerald-50/"] {
+    background-color: #f0fdf4 !important;
+  }
+
+  .commercial-proposal [class*="bg-sky-50/"] {
+    background-color: #f0f9ff !important;
+  }
+
+  .commercial-proposal [class*="bg-indigo-50/"] {
+    background-color: #eef2ff !important;
+  }
+
+  .commercial-proposal [class*="bg-violet-50/"] {
+    background-color: #f5f3ff !important;
+  }
+
+  .commercial-proposal [class*="bg-amber-50/"] {
+    background-color: #fffbeb !important;
+  }
+
+  .commercial-proposal [class*="bg-rose-50/"] {
+    background-color: #fff1f2 !important;
+  }
+
+  .commercial-proposal
+    [class*="bg-"][class*="/"]:not(.commercial-print-accent):not(
+      .commercial-print-table-head
+    ):not(.commercial-kpi-card):not([class*="bg-slate-50/"]):not([class*="bg-emerald-50/"]):not(
+      [class*="bg-sky-50/"]
+    ):not([class*="bg-indigo-50/"]):not([class*="bg-violet-50/"]):not([class*="bg-amber-50/"]):not(
+      [class*="bg-rose-50/"]
     ) {
     background-color: #ffffff !important;
-    background-image: none !important;
   }
 
   .commercial-proposal [class*="border-"][class*="/"] {
@@ -3501,15 +3599,50 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   }
 
   .commercial-proposal .commercial-executive-kpi-grid > div,
-  .commercial-proposal .KpiCard,
-  .commercial-proposal [class*="rounded-2xl"][class*="border-emerald"],
-  .commercial-proposal [class*="rounded-2xl"][class*="border-sky"],
-  .commercial-proposal [class*="rounded-2xl"][class*="border-indigo"],
-  .commercial-proposal [class*="rounded-2xl"][class*="border-violet"],
-  .commercial-proposal [class*="rounded-2xl"][class*="border-amber"],
-  .commercial-proposal [class*="rounded-2xl"][class*="border-rose"] {
+  .commercial-proposal [class*="rounded-2xl"][class*="border-emerald"]:not(.commercial-kpi-card),
+  .commercial-proposal [class*="rounded-2xl"][class*="border-sky"]:not(.commercial-kpi-card),
+  .commercial-proposal [class*="rounded-2xl"][class*="border-indigo"]:not(.commercial-kpi-card),
+  .commercial-proposal [class*="rounded-2xl"][class*="border-violet"]:not(.commercial-kpi-card),
+  .commercial-proposal [class*="rounded-2xl"][class*="border-amber"]:not(.commercial-kpi-card),
+  .commercial-proposal [class*="rounded-2xl"][class*="border-rose"]:not(.commercial-kpi-card) {
     background-color: #f8fafc !important;
     background-image: none !important;
+  }
+
+  .commercial-proposal .commercial-kpi-card {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background-image: none !important;
+  }
+
+  .commercial-proposal .commercial-kpi-card--emerald {
+    background-color: #ecfdf5 !important;
+    border-color: #a7f3d0 !important;
+  }
+
+  .commercial-proposal .commercial-kpi-card--sky {
+    background-color: #f0f9ff !important;
+    border-color: #bae6fd !important;
+  }
+
+  .commercial-proposal .commercial-kpi-card--indigo {
+    background-color: #eef2ff !important;
+    border-color: #c7d2fe !important;
+  }
+
+  .commercial-proposal .commercial-kpi-card--violet {
+    background-color: #f5f3ff !important;
+    border-color: #ddd6fe !important;
+  }
+
+  .commercial-proposal .commercial-kpi-card--amber {
+    background-color: #fffbeb !important;
+    border-color: #fde68a !important;
+  }
+
+  .commercial-proposal .commercial-kpi-card--rose {
+    background-color: #fff1f2 !important;
+    border-color: #fecdd3 !important;
   }
 
   .commercial-proposal [class*="from-emerald-50"],
@@ -3638,9 +3771,18 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   .commercial-proposal .commercial-print-chart-bar,
   .commercial-proposal .commercial-hour-chart .commercial-print-chart-bar,
   .commercial-proposal .commercial-cashflow-chart .commercial-print-chart-bar {
+    flex-shrink: 0 !important;
+  }
+
+  .commercial-proposal .commercial-print-chart-bar,
+  .commercial-proposal .commercial-hour-chart .commercial-print-chart-bar,
+  .commercial-proposal .commercial-cashflow-chart .commercial-print-chart-bar,
+  .commercial-proposal .commercial-cashflow-chart,
+  .commercial-proposal .commercial-hour-chart,
+  .commercial-proposal .commercial-callout-emerald,
+  .commercial-proposal .commercial-print-keep-together {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    flex-shrink: 0 !important;
   }
 
   .commercial-proposal .bg-violet-500,
