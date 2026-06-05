@@ -8,7 +8,8 @@ import { motion } from "framer-motion";
 import { Building2, CalendarDays, FileText, MapPin } from "lucide-react";
 import { ProposalBrandMark } from "@/components/proposal/proposal-brand-mark";
 import type { CommercialCtx } from "@/components/proposal/commercial-proposal-view";
-import { StaticInrKpi } from "./commercial-shared";
+import { CommercialInvestmentSummary } from "./commercial-investment-price";
+import { fmtInr, StaticInrKpi } from "./commercial-shared";
 
 type Props = { ctx: CommercialCtx };
 
@@ -27,6 +28,7 @@ export function BlockCommercialExecutiveSummary({ ctx }: Props) {
 
   const isHi = lang === "hi";
   const displayName = customerName || summary.honoredName;
+  const hasSubsidy = summary.pmSubsidy > 0;
 
   const dateStr = generatedAt
     ? new Date(generatedAt).toLocaleDateString("en-IN", {
@@ -83,6 +85,8 @@ export function BlockCommercialExecutiveSummary({ ctx }: Props) {
         </div>
       </div>
 
+      <CommercialInvestmentSummary summary={summary} lang={lang} />
+
       <div className="border-b border-slate-200 bg-slate-50">
         <p className="px-6 pt-4 text-[9px] font-bold uppercase tracking-[0.22em] text-slate-500 md:px-10">
           {isHi ? "मुख्य संकेतक" : "Key Performance Indicators"}
@@ -107,7 +111,7 @@ export function BlockCommercialExecutiveSummary({ ctx }: Props) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.04 }}
-            className="flex flex-col gap-1 px-4 py-4 md:px-5 md:py-5"
+            className="commercial-kpi-net-investment flex flex-col gap-1 border-l-2 border-sky-200 px-4 py-4 md:px-5 md:py-5"
           >
             <span className="text-[9px] font-bold uppercase tracking-[0.16em] text-slate-500">
               {isHi ? "शुद्ध निवेश" : "Net Investment"}
@@ -115,6 +119,19 @@ export function BlockCommercialExecutiveSummary({ ctx }: Props) {
             <span className="text-xl font-black tabular-nums text-slate-900 md:text-2xl">
               <StaticInrKpi amount={summary.netCost} />
             </span>
+            {hasSubsidy ? (
+              <span className="text-[10px] leading-snug text-slate-500">
+                {isHi ? "सकल" : "Gross"} {fmtInr(summary.grossSystemCost)}
+                <span className="mx-1 text-slate-300">·</span>
+                {isHi ? "सब्सिडी" : "Subsidy"} −{fmtInr(summary.pmSubsidy)}
+              </span>
+            ) : (
+              <span className="text-[10px] text-slate-400">
+                {summary.systemKw > 0
+                  ? `${fmtInr(Math.round(summary.netCost / summary.systemKw))}/kW`
+                  : null}
+              </span>
+            )}
           </motion.div>
 
           <motion.div

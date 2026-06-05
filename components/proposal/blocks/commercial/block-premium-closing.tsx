@@ -15,7 +15,8 @@ import { motion } from "framer-motion";
 import { Download, Mail, Phone, Share2, Zap } from "lucide-react";
 import { ProposalBrandMark } from "@/components/proposal/proposal-brand-mark";
 import type { CommercialCtx } from "@/components/proposal/commercial-proposal-view";
-import { CommercialSectionHeader, GlassPanel, SectionReveal } from "./commercial-shared";
+import { CommercialBankingPayment } from "./commercial-banking-payment";
+import { CommercialSectionHeader, SectionReveal } from "./commercial-shared";
 
 const fmtL = (v: number) => {
   if (v >= 10_000_000) return `₹${(v / 10_000_000).toFixed(2)} Cr`;
@@ -150,6 +151,9 @@ export function BlockPremiumClosing({ ctx }: Props) {
         </p>
       </motion.div>
 
+      {/* Payment & bank details — end of proposal */}
+      <CommercialBankingPayment ctx={ctx} />
+
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Acceptance section */}
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -196,7 +200,7 @@ export function BlockPremiumClosing({ ctx }: Props) {
         </div>
 
         {/* Installer contact card + CTA */}
-        <div className="flex flex-col gap-4 print:break-before-page">
+        <div className="flex flex-col gap-4">
           {/* Contact card */}
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">
@@ -236,7 +240,7 @@ export function BlockPremiumClosing({ ctx }: Props) {
           </div>
 
           {/* CTA buttons */}
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm print:hidden">
             <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">
               {isHi ? "इस प्रस्ताव को साझा करें" : "Share This Proposal"}
             </p>

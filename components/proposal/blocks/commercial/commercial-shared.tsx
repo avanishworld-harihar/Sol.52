@@ -99,6 +99,46 @@ export function CountUp({
   );
 }
 
+/** Full ₹ label — e.g. ₹12.5 L, ₹1.02 Cr */
+export function fmtInr(v: number): string {
+  if (v >= 10_000_000) return `₹${(v / 10_000_000).toFixed(2)} Cr`;
+  if (v >= 100_000) return `₹${(v / 100_000).toFixed(1)} L`;
+  if (v >= 1_000) return `₹${(v / 1_000).toFixed(0)} k`;
+  return `₹${Math.round(v).toLocaleString("en-IN")}`;
+}
+
+export type CommercialPaymentMilestone = {
+  label: string;
+  pct: number;
+  amount: number;
+};
+
+export function buildCommercialPaymentMilestones(
+  summary: { netCost: number; paymentMilestones?: { label: string; pct?: number; amount?: number; amountInr?: number }[] },
+  isHi: boolean
+): CommercialPaymentMilestone[] {
+  const totalCost = summary.netCost;
+  if (summary.paymentMilestones?.length) {
+    return summary.paymentMilestones.map((m) => {
+      const pct = m.pct ?? 0;
+      return {
+        label: m.label,
+        pct,
+        amount: m.amount ?? m.amountInr ?? Math.round((pct / 100) * totalCost),
+      };
+    });
+  }
+  return [
+    { label: isHi ? "कार्य आदेश / अग्रिम" : "Work Order / Advance", pct: 30 },
+    { label: isHi ? "सामग्री वितरण पर" : "On Material Delivery", pct: 30 },
+    { label: isHi ? "स्थापना पूर्ण होने पर" : "On Installation Completion", pct: 30 },
+    { label: isHi ? "DISCOM कमीशनिंग पर" : "On DISCOM Commissioning", pct: 10 },
+  ].map((m) => ({
+    ...m,
+    amount: Math.round((m.pct / 100) * totalCost),
+  }));
+}
+
 /** Compact ₹ display for KPI ribbons — no viewport-gated animation. */
 export function formatInrCompact(v: number): { int: string; unit: string } {
   if (v >= 10_000_000) return { int: (v / 10_000_000).toFixed(1), unit: "Cr" };

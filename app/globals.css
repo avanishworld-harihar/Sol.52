@@ -3682,6 +3682,14 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     border-color: #bae6fd !important;
   }
 
+  .commercial-proposal .commercial-investment-summary {
+    background: #f8fafc !important;
+  }
+
+  .commercial-proposal .commercial-kpi-net-investment {
+    border-left-color: #bae6fd !important;
+  }
+
   .commercial-proposal .bg-emerald-500,
   .commercial-proposal .commercial-cashflow-chart .bg-emerald-500 {
     background-color: #10b981 !important;
