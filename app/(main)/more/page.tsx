@@ -9,21 +9,8 @@ import {
   type PerformanceMode,
   writePerformanceMode
 } from "@/lib/performance-mode";
-import {
-  DEFAULT_PROPOSAL_BRAND_SECTION_CONFIG,
-  DEFAULT_PROPOSAL_BRANDING_SETTINGS,
-  parseProposalAmcYears,
-  personalizedBrandingFromBrandConfig,
-  readProposalBrandingSettings,
-  type BrandSectionDisplayMode,
-  type ProposalAmcYears,
-  type ProposalBrandDisplayMode,
-  type ProposalBrandSectionConfig,
-  type ProposalBrandingSettings,
-  type ProposalThemePreset,
-  writeProposalBrandingSettings,
-} from "@/lib/proposal-branding-settings";
-import { ProposalImageUploader } from "@/components/proposal-image-uploader";
+import { readProposalBrandingSettings } from "@/lib/proposal-branding-settings";
+import { BrandProposalsSettingsPanel } from "@/components/settings/brand-proposals-settings-panel";
 import { useInstallerDiscoms } from "@/hooks/use-installer-discoms";
 import { supabase } from "@/lib/supabase";
 import { INDIAN_STATES_AND_UTS } from "@/lib/indian-states-uts";
@@ -49,16 +36,12 @@ import {
   Building2,
   ChevronDown,
   CreditCard,
-  IndianRupee,
   MapPin,
-  QrCode,
   ReceiptText,
   Settings2,
   ShieldCheck,
   Sparkles,
-  UploadCloud
 } from "lucide-react";
-import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useEffect, useMemo, useState, type ComponentType, type ReactNode } from "react";
 
@@ -75,32 +58,9 @@ export default function MorePage() {
     () => mergeSavedDiscomOption(installerDiscom, discomOptions),
     [installerDiscom, discomOptions]
   );
-  const [companyName, setCompanyName] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerName);
-  const [companyContact, setCompanyContact] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerContact);
-  const [companyEmail, setCompanyEmail] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerEmail);
-  const [amcYears, setAmcYears] = useState<ProposalAmcYears>(DEFAULT_PROPOSAL_BRANDING_SETTINGS.amcSelectedYears);
-  const [bankAccName, setBankAccName] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.bankAccountName);
-  const [bankAccNo, setBankAccNo] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.bankAccountNumber);
-  const [bankIfsc, setBankIfsc] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.bankIfsc);
-  const [bankBranch, setBankBranch] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.bankBranch);
-  const [bankUpi, setBankUpi] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.bankUpiId);
-  const [proposalSiteImages, setProposalSiteImages] = useState<string[]>(DEFAULT_PROPOSAL_BRANDING_SETTINGS.proposalSiteImages);
-  const [companyGst, setCompanyGst] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.companyGstNumber);
-  const [companyLogo, setCompanyLogo] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerLogoUrl);
-  const [paymentQrCodeUrl, setPaymentQrCodeUrl] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.paymentQrCodeUrl);
-  const [personalizedBranding, setPersonalizedBranding] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.personalizedBranding);
-  const [brandDisplayMode, setBrandDisplayMode] = useState<ProposalBrandDisplayMode>(
-    DEFAULT_PROPOSAL_BRANDING_SETTINGS.brandDisplayMode
-  );
-  const [brandSectionConfig, setBrandSectionConfig] = useState<ProposalBrandSectionConfig>({
-    ...DEFAULT_PROPOSAL_BRAND_SECTION_CONFIG,
-  });
-  const [themePreset, setThemePreset] = useState<ProposalThemePreset>(DEFAULT_PROPOSAL_BRANDING_SETTINGS.themePreset);
-  const [uploadingQr, setUploadingQr] = useState(false);
   const [lastRateReportAt, setLastRateReportAt] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [reportingRateChange, setReportingRateChange] = useState(false);
-  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [tariffReportStatus, setTariffReportStatus] = useState<"none" | "pending_admin_approval" | "verified">("none");
   const [tariffStatusUpdatedAt, setTariffStatusUpdatedAt] = useState<string | null>(null);
   const [adminReady, setAdminReady] = useState(false);
@@ -124,24 +84,6 @@ export default function MorePage() {
       const { state, discom } = readInstallerRegion();
       if (state?.trim()) setInstallerState(state.trim());
       if (discom?.trim()) setInstallerDiscom(discom.trim());
-      const settings = readProposalBrandingSettings();
-      setCompanyName(settings.installerName);
-      setCompanyContact(settings.installerContact);
-      setCompanyEmail(settings.installerEmail);
-      setAmcYears(parseProposalAmcYears(settings.amcSelectedYears));
-      setBankAccName(settings.bankAccountName);
-      setBankAccNo(settings.bankAccountNumber);
-      setBankIfsc(settings.bankIfsc);
-      setBankBranch(settings.bankBranch);
-      setBankUpi(settings.bankUpiId);
-      setProposalSiteImages(settings.proposalSiteImages ?? []);
-      setCompanyGst(settings.companyGstNumber ?? "");
-      setCompanyLogo(settings.installerLogoUrl);
-      setPaymentQrCodeUrl(settings.paymentQrCodeUrl ?? "");
-      setPersonalizedBranding(settings.personalizedBranding);
-      setBrandDisplayMode(settings.brandDisplayMode);
-      setBrandSectionConfig(settings.brandSectionConfig);
-      setThemePreset(settings.themePreset);
       const last = localStorage.getItem(STORAGE_LAST_RATE_REPORT_AT);
       if (last) setLastRateReportAt(last);
       const perf = readPerformanceMode();
@@ -308,64 +250,6 @@ export default function MorePage() {
     markSaved(`Performance mode set to ${PERFORMANCE_MODE_OPTIONS.find((o) => o.id === mode)?.label ?? mode}.`);
   }
 
-  function brandingSnapshot(overrides: Partial<ProposalBrandingSettings> = {}): ProposalBrandingSettings {
-    const resolvedBrandDisplayMode = overrides.brandDisplayMode ?? brandDisplayMode;
-    const resolvedBrandSectionConfig = overrides.brandSectionConfig ?? brandSectionConfig;
-    const brandConfig = {
-      brandDisplayMode: resolvedBrandDisplayMode,
-      brandSectionConfig: resolvedBrandSectionConfig,
-    };
-    return {
-      installerName: companyName.trim(),
-      installerContact: companyContact.trim() || DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerContact,
-      installerEmail: companyEmail.trim(),
-      installerLogoUrl: companyLogo.trim(),
-      personalizedBranding: personalizedBrandingFromBrandConfig(brandConfig),
-      brandDisplayMode: resolvedBrandDisplayMode,
-      brandSectionConfig: resolvedBrandSectionConfig,
-      themePreset,
-      paymentQrCodeUrl: paymentQrCodeUrl.trim(),
-      amcSelectedYears: amcYears,
-      bankAccountName: bankAccName.trim(),
-      bankAccountNumber: bankAccNo.trim(),
-      bankIfsc: bankIfsc.trim(),
-      bankBranch: bankBranch.trim(),
-      bankUpiId: bankUpi.trim(),
-      proposalSiteImages,
-      companyGstNumber: companyGst.trim().toUpperCase(),
-      ...overrides,
-    };
-  }
-
-  function saveCompanyProfile() {
-    writeProposalBrandingSettings(brandingSnapshot());
-    markSaved("Company profile saved — used when you generate the next web proposal or PPT.");
-  }
-
-  function saveProposalStyles() {
-    writeProposalBrandingSettings(brandingSnapshot());
-    markSaved("Proposal style updated with smooth preview settings.");
-  }
-
-  async function uploadPaymentQr(file: File | null) {
-    if (!file) return;
-    setUploadingQr(true);
-    try {
-      const form = new FormData();
-      form.append("file", file);
-      const res = await fetch("/api/company-logo-upload", { method: "POST", body: form });
-      const payload = (await res.json()) as { ok?: boolean; url?: string; error?: string };
-      if (!res.ok || !payload.ok || !payload.url) throw new Error(payload.error || "QR upload failed.");
-      setPaymentQrCodeUrl(payload.url);
-      writeProposalBrandingSettings(brandingSnapshot({ paymentQrCodeUrl: payload.url }));
-      markSaved("Payment QR code uploaded and saved.");
-    } catch (e) {
-      markIssue(e instanceof Error ? e.message : "QR upload failed.");
-    } finally {
-      setUploadingQr(false);
-    }
-  }
-
   function saveOperatingRegion() {
     const next = installerState.trim();
     const d = installerDiscom.trim();
@@ -400,7 +284,7 @@ export default function MorePage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          installerName: companyName || "Unknown Installer",
+          installerName: readProposalBrandingSettings().installerName || "Unknown Installer",
           installerState,
           activeTariff: tariff.discomLabel,
           note: "Reported from More > Tariff Center"
@@ -421,26 +305,6 @@ export default function MorePage() {
       markIssue(e instanceof Error ? e.message : "Rate-change logging failed.");
     } finally {
       setReportingRateChange(false);
-    }
-  }
-
-  async function uploadLogo(file: File | null) {
-    if (!file) return;
-    setUploadingLogo(true);
-    try {
-      const form = new FormData();
-      form.append("file", file);
-      const res = await fetch("/api/company-logo-upload", { method: "POST", body: form });
-      const payload = (await res.json()) as { ok?: boolean; url?: string; error?: string };
-      if (!res.ok || !payload.ok || !payload.url) throw new Error(payload.error || "Logo upload failed.");
-      const nextUrl = payload.url;
-      setCompanyLogo(nextUrl);
-      writeProposalBrandingSettings(brandingSnapshot({ installerLogoUrl: nextUrl }));
-      markSaved("Logo uploaded and saved for proposals & header.");
-    } catch (e) {
-      markIssue(e instanceof Error ? e.message : "Logo upload failed.");
-    } finally {
-      setUploadingLogo(false);
     }
   }
 
@@ -481,273 +345,9 @@ export default function MorePage() {
           id="more-section-brand"
           icon={Building2}
           title="Brand & proposals"
-          subtitle="Company, bank, QR, photos, and proposal look — tap to open."
+          subtitle="Company profile, branding, portfolio, banking, and proposal appearance."
         >
-          <Link
-            href="/more/rate-card"
-            className="mb-4 flex items-start gap-3 rounded-2xl border-2 border-amber-300/70 bg-gradient-to-r from-amber-50/90 to-emerald-50/60 p-4 transition hover:border-amber-400 dark:border-amber-600/40 dark:from-amber-950/25 dark:to-emerald-950/15"
-          >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-amber-300">
-              <IndianRupee className="h-5 w-5" />
-            </span>
-            <span className="min-w-0">
-              <span className="text-sm font-bold text-slate-900 dark:text-white">Rate card (master pricing)</span>
-              <span className="mt-0.5 block text-xs leading-snug text-slate-600 dark:text-slate-400">
-                Smart catalog — plant ₹/kW for residential & commercial. All new proposals sync here.
-              </span>
-            </span>
-          </Link>
-
-          <Subsection title="Contact" description="Name, phone, and email on proposals.">
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <LabeledInput label="Installer / Company name" value={companyName} onChange={setCompanyName} placeholder="Harihar Solar" />
-              <LabeledInput label="Contact number" value={companyContact} onChange={setCompanyContact} placeholder="+91-9993322267" />
-              <div className="sm:col-span-2">
-                <LabeledInput label="Email" value={companyEmail} onChange={setCompanyEmail} placeholder="harihar@solar.com" />
-              </div>
-              <div className="sm:col-span-2">
-                <LabeledInput
-                  label="GSTIN (GST number)"
-                  value={companyGst}
-                  onChange={(v) => setCompanyGst(v.toUpperCase())}
-                  placeholder="e.g. 23AAAAA0000A1Z5"
-                />
-                <p className="mt-1 text-[11px] font-medium text-slate-500">
-                  Printed on web proposals and PPT — leave blank until registered.
-                </p>
-              </div>
-            </div>
-          </Subsection>
-
-          <Subsection title="Logo" description="Cover and header. Paste a URL or upload a file (Supabase: installer-branding).">
-            <div className="space-y-2">
-              <LabeledInput
-                label="Logo URL"
-                value={companyLogo}
-                onChange={setCompanyLogo}
-                placeholder="https://.../installer-logo.png"
-              />
-              <label className="inline-flex min-h-10 w-fit cursor-pointer items-center justify-center rounded-xl border border-brand-300 bg-brand-50 px-4 text-xs font-bold text-brand-800 hover:bg-brand-100">
-                {uploadingLogo ? <Skeleton className="mr-2 h-4 w-4 rounded-full" /> : <UploadCloud className="mr-2 h-4 w-4" />}
-                Upload logo file
-                <input
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp,image/svg+xml"
-                  className="hidden"
-                  onChange={(e) => void uploadLogo(e.target.files?.[0] ?? null)}
-                  disabled={uploadingLogo}
-                />
-              </label>
-            </div>
-          </Subsection>
-
-          <Subsection title="Default AMC" description="Shown on every new web proposal and PPT.">
-            <div className="inline-flex rounded-full border border-slate-300 bg-white p-0.5">
-              {([1, 5, 10] as const).map((y) => (
-                <button
-                  key={y}
-                  type="button"
-                  onClick={() => setAmcYears(y)}
-                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
-                    amcYears === y ? "bg-emerald-600 text-white shadow-sm" : "text-slate-600 hover:bg-slate-50"
-                  }`}
-                >
-                  {y} yr{y === 1 ? "" : "s"}
-                </button>
-              ))}
-            </div>
-          </Subsection>
-
-          <Subsection title="Bank account" description="Printed on the banking slide with your UPI ID.">
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <LabeledInput label="Account name" value={bankAccName} onChange={setBankAccName} placeholder="Harihar Solar" />
-              <LabeledInput label="Account number" value={bankAccNo} onChange={setBankAccNo} placeholder="Account No." />
-              <LabeledInput label="IFSC" value={bankIfsc} onChange={setBankIfsc} placeholder="IFSC" />
-              <LabeledInput label="Branch" value={bankBranch} onChange={setBankBranch} placeholder="Branch" />
-              <LabeledInput label="UPI ID" value={bankUpi} onChange={setBankUpi} placeholder="e.g. harihar@hdfc" />
-            </div>
-          </Subsection>
-
-          <Subsection title="Payment QR" description="Optional. High-res UPI/bank QR replaces the auto-generated QR on the banking slide.">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="space-y-2">
-                <label className="inline-flex min-h-10 w-fit cursor-pointer items-center justify-center rounded-xl border border-brand-300 bg-brand-50 px-4 text-xs font-bold text-brand-800 hover:bg-brand-100">
-                  {uploadingQr ? <Skeleton className="mr-2 h-4 w-4 rounded-full" /> : <UploadCloud className="mr-2 h-4 w-4" />}
-                  Upload QR image
-                  <input
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp"
-                    className="hidden"
-                    onChange={(e) => void uploadPaymentQr(e.target.files?.[0] ?? null)}
-                    disabled={uploadingQr}
-                  />
-                </label>
-                {paymentQrCodeUrl ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPaymentQrCodeUrl("");
-                      writeProposalBrandingSettings(brandingSnapshot({ paymentQrCodeUrl: "" }));
-                      markSaved("Payment QR code removed.");
-                    }}
-                    className="block text-left text-[11px] font-semibold text-rose-600 hover:underline"
-                  >
-                    Remove QR
-                  </button>
-                ) : null}
-              </div>
-              {paymentQrCodeUrl ? (
-                <div className="flex flex-col items-center gap-2 sm:items-end">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={paymentQrCodeUrl}
-                    alt="Payment QR preview"
-                    className="h-28 w-28 rounded-xl border border-slate-200 object-contain p-1 shadow-sm"
-                  />
-                  <p className="text-[10px] font-semibold text-emerald-700">Shows on proposal banking slide</p>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-200 py-6 sm:py-4">
-                  <QrCode className="h-7 w-7 text-slate-300" />
-                  <p className="text-[11px] text-slate-400">Preview after upload</p>
-                </div>
-              )}
-            </div>
-          </Subsection>
-
-          <Subsection title="Site photos" description="Up to 6 install photos (JPEG / PNG / WebP) for the deck and web proposal.">
-            <ProposalImageUploader
-              mode="sites"
-              label="Past installation photos"
-              hint="Saved with your profile when you add or remove."
-              values={proposalSiteImages}
-              max={6}
-              onChange={(urls) => {
-                setProposalSiteImages(urls);
-                writeProposalBrandingSettings(brandingSnapshot({ proposalSiteImages: urls }));
-              }}
-            />
-          </Subsection>
-
-          <button type="button" onClick={saveCompanyProfile} className="ss-cta-primary w-full sm:w-auto">
-            Save company profile
-          </button>
-
-          <div className="border-t border-slate-200/80 pt-4 dark:border-white/10">
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
-              Proposal branding
-            </p>
-            <p className="mt-1 text-[11px] text-slate-600 dark:text-slate-400">
-              Logo and company name on cover, headers, footers, and closing — web, PDF, and PPT.
-            </p>
-            <div className="mt-3 space-y-3">
-          <div className="rounded-xl border border-white/50 bg-white/60 p-3 space-y-3">
-            <p className="text-xs font-extrabold text-brand-900 sm:text-sm">Brand display mode</p>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-              {(
-                [
-                  { id: "logoOnly" as const, label: "Logo only", desc: "Hide company name everywhere" },
-                  { id: "logoAndName" as const, label: "Logo + company name", desc: "Show both on all sections" },
-                  { id: "customPerSection" as const, label: "Custom per section", desc: "Pick per cover, header, footer, closing" },
-                ] as const
-              ).map((opt) => (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => {
-                    setBrandDisplayMode(opt.id);
-                    setPersonalizedBranding(personalizedBrandingFromBrandConfig({
-                      brandDisplayMode: opt.id,
-                      brandSectionConfig,
-                    }));
-                    markSaved(`${opt.label} selected.`);
-                  }}
-                  className={cn(
-                    "rounded-xl border px-3 py-3 text-left transition",
-                    brandDisplayMode === opt.id
-                      ? "border-brand-500 bg-brand-50"
-                      : "border-slate-200 bg-white/80 hover:border-brand-300"
-                  )}
-                >
-                  <p className="text-sm font-extrabold text-brand-900">{opt.label}</p>
-                  <p className="mt-1 text-[11px] font-semibold text-slate-600">{opt.desc}</p>
-                </button>
-              ))}
-            </div>
-
-            {brandDisplayMode === "customPerSection" ? (
-              <div className="space-y-2 border-t border-slate-200/70 pt-3">
-                <BrandSectionModeRow
-                  label="Cover page"
-                  value={brandSectionConfig.cover}
-                  onChange={(mode) => {
-                    const next = { ...brandSectionConfig, cover: mode };
-                    setBrandSectionConfig(next);
-                    markSaved(`Cover page: ${mode === "logoOnly" ? "logo only" : "logo + name"}.`);
-                  }}
-                />
-                <BrandSectionModeRow
-                  label="Header"
-                  value={brandSectionConfig.header}
-                  onChange={(mode) => {
-                    const next = { ...brandSectionConfig, header: mode };
-                    setBrandSectionConfig(next);
-                    markSaved(`Header: ${mode === "logoOnly" ? "logo only" : "logo + name"}.`);
-                  }}
-                />
-                <BrandSectionModeRow
-                  label="Footer"
-                  value={brandSectionConfig.footer}
-                  onChange={(mode) => {
-                    const next = { ...brandSectionConfig, footer: mode };
-                    setBrandSectionConfig(next);
-                    markSaved(`Footer: ${mode === "logoOnly" ? "logo only" : "logo + name"}.`);
-                  }}
-                />
-                <BrandSectionModeRow
-                  label="Closing / acceptance page"
-                  value={brandSectionConfig.closing}
-                  onChange={(mode) => {
-                    const next = { ...brandSectionConfig, closing: mode };
-                    setBrandSectionConfig(next);
-                    markSaved(`Closing page: ${mode === "logoOnly" ? "logo only" : "logo + name"}.`);
-                  }}
-                />
-              </div>
-            ) : null}
-          </div>
-
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <ThemePresetCard
-              title="Green/Blue Classic"
-              desc="Trusted enterprise tone"
-              active={themePreset === "greenBlueClassic"}
-              onClick={() => {
-                setThemePreset("greenBlueClassic");
-                markSaved("Classic Green/Blue style selected.");
-              }}
-            />
-            <ThemePresetCard
-              title="Green/Blue Vivid"
-              desc="High-energy conversion look"
-              active={themePreset === "greenBlueVivid"}
-              onClick={() => {
-                setThemePreset("greenBlueVivid");
-                markSaved("Vivid Green/Blue style selected.");
-              }}
-            />
-          </div>
-
-          <div className="rounded-xl border border-indigo-200/70 bg-indigo-50/80 p-3">
-            <p className="text-xs font-semibold text-indigo-900 sm:text-sm">
-              Proposals use Montserrat-first typography with the preset you pick here.
-            </p>
-          </div>
-          <button type="button" onClick={saveProposalStyles} className="ss-cta-primary mt-1 w-full sm:w-auto">
-            Save proposal styles
-          </button>
-            </div>
-          </div>
+          <BrandProposalsSettingsPanel markSaved={markSaved} markIssue={markIssue} />
         </MoreGroup>
 
         <MoreGroup
@@ -1132,68 +732,6 @@ function InfoChip({ label, value }: { label: string; value: string }) {
       <p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">{label}</p>
       <p className="mt-1 text-sm font-extrabold text-brand-900">{value}</p>
     </div>
-  );
-}
-
-function BrandSectionModeRow({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: BrandSectionDisplayMode;
-  onChange: (mode: BrandSectionDisplayMode) => void;
-}) {
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200/80 bg-white/70 px-3 py-2.5">
-      <p className="text-xs font-bold text-slate-800">{label}</p>
-      <div className="inline-flex rounded-full border border-slate-200 bg-slate-50 p-0.5">
-        {(
-          [
-            { id: "logoOnly" as const, label: "Logo only" },
-            { id: "logoAndName" as const, label: "Logo + name" },
-          ] as const
-        ).map((opt) => (
-          <button
-            key={opt.id}
-            type="button"
-            onClick={() => onChange(opt.id)}
-            className={cn(
-              "rounded-full px-2.5 py-1 text-[10px] font-bold transition",
-              value === opt.id ? "bg-brand-600 text-white" : "text-slate-600 hover:text-slate-900"
-            )}
-          >
-            {opt.label}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ThemePresetCard({
-  title,
-  desc,
-  active,
-  onClick
-}: {
-  title: string;
-  desc: string;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "rounded-xl border px-3 py-3 text-left transition",
-        active ? "border-brand-500 bg-brand-50" : "border-slate-200 bg-white/80 hover:border-brand-300"
-      )}
-    >
-      <p className="text-sm font-extrabold text-brand-900">{title}</p>
-      <p className="mt-1 text-[11px] font-semibold text-slate-600">{desc}</p>
-    </button>
   );
 }
 

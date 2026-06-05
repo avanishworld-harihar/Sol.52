@@ -1,5 +1,42 @@
 export type ProposalThemePreset = "greenBlueClassic" | "greenBlueVivid";
 
+import {
+  COMPANY_PROFILE_SCHEMA_VERSION,
+  DEFAULT_BRAND_SECTION_RULES,
+  DEFAULT_COMPANY_CREDENTIALS,
+  DEFAULT_COMPANY_PROFILE_CORE,
+  type BrandSectionRules,
+  type CompanyCredentials,
+  type CompanyProfileCore,
+  type PortfolioProject,
+  type ProposalAppearanceSettings,
+} from "@/lib/company-profile-schema";
+import {
+  migratePortfolioFromLegacySiteImages,
+  parseBrandSectionRules,
+  parseCompanyCredentials,
+  parseCompanyProfileCore,
+  parseGlobalBrandPreference,
+  parsePortfolioProjects,
+  parseProposalAppearance,
+  parseStoredSchemaVersion,
+  proposalActiveBrandDisplayMode,
+  proposalActiveSectionConfig,
+  STORAGE_KEY_V1,
+  defaultProposalAppearance,
+} from "@/lib/company-profile-migration";
+
+export type {
+  BrandSectionRules,
+  BrandSectionDisplayPreference,
+  CompanyProfileCore,
+  CompanyCredentials,
+  PortfolioProject,
+  ProposalAppearanceSettings,
+  ProposalColorStyle,
+  ProposalTypographyPreset,
+} from "@/lib/company-profile-schema";
+
 /** Per-surface logo vs logo+name choice (used when brandDisplayMode is customPerSection). */
 export type BrandSectionDisplayMode = "logoOnly" | "logoAndName";
 
@@ -69,9 +106,18 @@ export type ProposalBrandingSettings = {
   brandDisplayMode: ProposalBrandDisplayMode;
   /** Per-section overrides when brandDisplayMode is customPerSection. */
   brandSectionConfig: ProposalBrandSectionConfig;
+  /** Structured company profile (Phase 1 — settings UI; flat fields remain source for proposals). */
+  schemaVersion: number;
+  companyProfile: CompanyProfileCore;
+  companyCredentials: CompanyCredentials;
+  portfolioProjects: PortfolioProject[];
+  /** UI rules incl. nameOnly — proposal output uses brandSectionConfig until Phase 2. */
+  brandSectionRules: BrandSectionRules;
+  brandDisplayPreference: ProposalBrandDisplayMode | "nameOnly";
+  proposalAppearance: ProposalAppearanceSettings;
 };
 
-const STORAGE_KEY = "ss_proposal_branding_settings_v1";
+const STORAGE_KEY = "ss_proposal_branding_settings_v2";
 
 /** Dispatched on `window` after `writeProposalBrandingSettings` updates localStorage. */
 export const PROPOSAL_BRANDING_UPDATED_EVENT = "ss-proposal-branding-updated";
@@ -104,6 +150,13 @@ export const DEFAULT_PROPOSAL_BRANDING_SETTINGS: ProposalBrandingSettings = {
   bankUpiId: "",
   proposalSiteImages: [],
   companyGstNumber: "",
+  schemaVersion: COMPANY_PROFILE_SCHEMA_VERSION,
+  companyProfile: { ...DEFAULT_COMPANY_PROFILE_CORE },
+  companyCredentials: { ...DEFAULT_COMPANY_CREDENTIALS },
+  portfolioProjects: [],
+  brandSectionRules: { ...DEFAULT_BRAND_SECTION_RULES },
+  brandDisplayPreference: "customPerSection",
+  proposalAppearance: defaultProposalAppearance("greenBlueClassic"),
   ...DEFAULT_PROPOSAL_BRAND_CONFIG,
 };
 
@@ -149,43 +202,81 @@ function parseSiteImages(raw: unknown): string[] {
     .slice(0, 6);
 }
 
+function normalizeBrandingSettings(parsed: Partial<ProposalBrandingSettings>): ProposalBrandingSettings {
+  const brandFromLegacy = migrateBrandConfig(parsed);
+  const themePreset =
+    parsed.themePreset === "greenBlueVivid" || parsed.themePreset === "greenBlueClassic"
+      ? parsed.themePreset
+      : parsed.proposalAppearance?.themePreset === "greenBlueVivid" ||
+          parsed.proposalAppearance?.themePreset === "greenBlueClassic"
+        ? parsed.proposalAppearance.themePreset
+        : DEFAULT_PROPOSAL_BRANDING_SETTINGS.themePreset;
+
+  const legacySiteImages = parseSiteImages(parsed.proposalSiteImages);
+  let portfolioProjects = parsePortfolioProjects(parsed.portfolioProjects);
+  if (portfolioProjects.length === 0 && legacySiteImages.length > 0) {
+    portfolioProjects = migratePortfolioFromLegacySiteImages(legacySiteImages);
+  }
+
+  const brandSectionRules = parseBrandSectionRules(
+    parsed.brandSectionRules ?? parsed.brandSectionConfig,
+    brandFromLegacy.brandSectionConfig
+  );
+  const brandDisplayPreference =
+    parseGlobalBrandPreference(parsed.brandDisplayPreference) ??
+    brandFromLegacy.brandDisplayMode;
+
+  const proposalActiveBrand = {
+    brandDisplayMode: proposalActiveBrandDisplayMode(brandDisplayPreference),
+    brandSectionConfig: proposalActiveSectionConfig(brandSectionRules),
+  };
+
+  return {
+    installerName:
+      typeof parsed.installerName === "string"
+        ? parsed.installerName.trim()
+        : DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerName,
+    installerContact: parsed.installerContact?.trim() || DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerContact,
+    installerEmail: typeof parsed.installerEmail === "string" ? parsed.installerEmail.trim() : "",
+    installerLogoUrl: parsed.installerLogoUrl?.trim() || "",
+    personalizedBranding: personalizedBrandingFromBrandConfig(proposalActiveBrand),
+    themePreset,
+    paymentQrCodeUrl: parsed.paymentQrCodeUrl?.trim() || "",
+    amcSelectedYears: parseProposalAmcYears(parsed.amcSelectedYears),
+    bankAccountName:
+      typeof parsed.bankAccountName === "string"
+        ? parsed.bankAccountName.trim()
+        : DEFAULT_PROPOSAL_BRANDING_SETTINGS.bankAccountName,
+    bankAccountNumber: typeof parsed.bankAccountNumber === "string" ? parsed.bankAccountNumber.trim() : "",
+    bankIfsc: typeof parsed.bankIfsc === "string" ? parsed.bankIfsc.trim() : "",
+    bankBranch: typeof parsed.bankBranch === "string" ? parsed.bankBranch.trim() : "",
+    bankUpiId: typeof parsed.bankUpiId === "string" ? parsed.bankUpiId.trim() : "",
+    proposalSiteImages: legacySiteImages,
+    companyGstNumber:
+      typeof parsed.companyGstNumber === "string" ? parsed.companyGstNumber.trim().toUpperCase() : "",
+    schemaVersion: parseStoredSchemaVersion(parsed.schemaVersion) || COMPANY_PROFILE_SCHEMA_VERSION,
+    companyProfile: parseCompanyProfileCore(parsed.companyProfile),
+    companyCredentials: parseCompanyCredentials(parsed.companyCredentials),
+    portfolioProjects,
+    brandSectionRules,
+    brandDisplayPreference,
+    proposalAppearance: parseProposalAppearance(parsed.proposalAppearance, themePreset),
+    ...proposalActiveBrand,
+  };
+}
+
 export function readProposalBrandingSettings(): ProposalBrandingSettings {
   if (typeof window === "undefined") return { ...DEFAULT_PROPOSAL_BRANDING_SETTINGS };
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { ...DEFAULT_PROPOSAL_BRANDING_SETTINGS };
-    const parsed = JSON.parse(raw) as Partial<ProposalBrandingSettings>;
-    return {
-      installerName:
-        typeof parsed.installerName === "string"
-          ? parsed.installerName.trim()
-          : DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerName,
-      installerContact: parsed.installerContact?.trim() || DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerContact,
-      installerEmail: typeof parsed.installerEmail === "string" ? parsed.installerEmail.trim() : "",
-      installerLogoUrl: parsed.installerLogoUrl?.trim() || "",
-      personalizedBranding:
-        typeof parsed.personalizedBranding === "boolean"
-          ? parsed.personalizedBranding
-          : DEFAULT_PROPOSAL_BRANDING_SETTINGS.personalizedBranding,
-      themePreset:
-        parsed.themePreset === "greenBlueVivid" || parsed.themePreset === "greenBlueClassic"
-          ? parsed.themePreset
-          : DEFAULT_PROPOSAL_BRANDING_SETTINGS.themePreset,
-      paymentQrCodeUrl: parsed.paymentQrCodeUrl?.trim() || "",
-      amcSelectedYears: parseProposalAmcYears(parsed.amcSelectedYears),
-      bankAccountName:
-        typeof parsed.bankAccountName === "string"
-          ? parsed.bankAccountName.trim()
-          : DEFAULT_PROPOSAL_BRANDING_SETTINGS.bankAccountName,
-      bankAccountNumber: typeof parsed.bankAccountNumber === "string" ? parsed.bankAccountNumber.trim() : "",
-      bankIfsc: typeof parsed.bankIfsc === "string" ? parsed.bankIfsc.trim() : "",
-      bankBranch: typeof parsed.bankBranch === "string" ? parsed.bankBranch.trim() : "",
-      bankUpiId: typeof parsed.bankUpiId === "string" ? parsed.bankUpiId.trim() : "",
-      proposalSiteImages: parseSiteImages(parsed.proposalSiteImages),
-      companyGstNumber:
-        typeof parsed.companyGstNumber === "string" ? parsed.companyGstNumber.trim().toUpperCase() : "",
-      ...migrateBrandConfig(parsed),
-    };
+    const rawV2 = localStorage.getItem(STORAGE_KEY);
+    if (rawV2) {
+      return normalizeBrandingSettings(JSON.parse(rawV2) as Partial<ProposalBrandingSettings>);
+    }
+    const rawV1 = localStorage.getItem(STORAGE_KEY_V1);
+    if (rawV1) {
+      return normalizeBrandingSettings(JSON.parse(rawV1) as Partial<ProposalBrandingSettings>);
+    }
+    return { ...DEFAULT_PROPOSAL_BRANDING_SETTINGS };
   } catch {
     return { ...DEFAULT_PROPOSAL_BRANDING_SETTINGS };
   }
@@ -194,7 +285,20 @@ export function readProposalBrandingSettings(): ProposalBrandingSettings {
 export function writeProposalBrandingSettings(next: ProposalBrandingSettings) {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    const proposalActiveBrand = {
+      brandDisplayMode: proposalActiveBrandDisplayMode(next.brandDisplayPreference),
+      brandSectionConfig: proposalActiveSectionConfig(next.brandSectionRules),
+    };
+    const payload: ProposalBrandingSettings = {
+      ...next,
+      schemaVersion: COMPANY_PROFILE_SCHEMA_VERSION,
+      personalizedBranding: personalizedBrandingFromBrandConfig(proposalActiveBrand),
+      themePreset: next.proposalAppearance?.themePreset ?? next.themePreset,
+      ...proposalActiveBrand,
+      // Legacy site images untouched in Phase 1 — existing proposals keep prior banking gallery.
+      proposalSiteImages: next.proposalSiteImages,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     window.dispatchEvent(new Event(PROPOSAL_BRANDING_UPDATED_EVENT));
   } catch {
     /* ignore storage errors */
