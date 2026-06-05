@@ -105,15 +105,15 @@ function buildBom(
           item: "Solar DC Cable (4 mm²)",
           spec: "TÜV 2Pfg 1169, UV-rated, 1 kV",
           make: "Polycab / Havells",
-          qty: `${Math.round(systemKw * 8)}`,
+          qty: "As per required",
           unit: "metres",
           warranty: "25 yr UV",
         },
         {
-          item: "AC Power Cable (16 mm²)",
+          item: "AC Power Cable (16 mm² / 25 mm² / 35 mm²)",
           spec: "XLPE armoured, IS 1554",
           make: "Finolex / KEI",
-          qty: `${Math.round(systemKw * 4)}`,
+          qty: "As per required",
           unit: "metres",
           warranty: "10 yr",
         },
@@ -126,7 +126,7 @@ function buildBom(
           warranty: "25 yr",
         },
         {
-          item: "Cable Management (HDPE conduit)",
+          item: "Cable Management",
           spec: "25 mm / 40 mm IS 9537, UV-rated",
           make: "Finolex / Sudhakar",
           qty: "As per layout",
@@ -144,7 +144,7 @@ function buildBom(
       rows: [
         {
           item: "Module Mounting Structure",
-          spec: "Hot-dip galvanised MS, wind-load designed",
+          spec: "Hot-dip galvanised MS / Aluminium mono rail, wind speed 120",
           make: "IS 2062, zinc ≥ 85 µm",
           qty: `${systemKw} kW`,
           unit: "capacity",
@@ -153,7 +153,7 @@ function buildBom(
         {
           item: "Foundation / Anchor bolts",
           spec: "M12/M16 SS 304, chemical anchor",
-          make: "Hilti / Fischer equiv.",
+          make: "Fischer equiv.",
           qty: `${panels * 2} approx`,
           unit: "nos",
           warranty: "10 yr",
@@ -161,7 +161,7 @@ function buildBom(
         {
           item: "Cable Tray / Ladder",
           spec: "GI 2.0 mm perforated, IS 2062",
-          make: "ABB / Legrand equiv.",
+          make: "Legrand equiv.",
           qty: "As per layout",
           unit: "lot",
           warranty: "10 yr",

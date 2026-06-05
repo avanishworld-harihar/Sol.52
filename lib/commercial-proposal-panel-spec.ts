@@ -38,7 +38,6 @@ export function resolveCommercialPanelSpec(
 }
 
 /** Central string inverter qty for C&I rooftop proposals. */
-export function commercialInverterQuantity(systemKw: number): number {
-  if (systemKw <= 150) return 1;
-  return Math.max(1, Math.ceil(systemKw / 100));
+export function commercialInverterQuantity(_systemKw: number): number {
+  return 1;
 }
