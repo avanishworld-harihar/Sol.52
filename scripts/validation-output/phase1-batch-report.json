@@ -1,0 +1,981 @@
+{
+  "generatedAt": "2026-06-05T16:44:53.189Z",
+  "ok": true,
+  "stabilityOk": true,
+  "variantResults": [
+    {
+      "family": "residential",
+      "index": 0,
+      "label": "golden baseline (5 kW)",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 34701,
+        "netCost": 197000,
+        "paybackYears": 5.5,
+        "roiPctFirstYear": 17.6,
+        "lifetime25Profit": 670525,
+        "breakEvenYear": 6,
+        "profit25": 1706853,
+        "npv": 450711,
+        "irrEstimate": 13.1
+      },
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "residential",
+      "index": 1,
+      "label": "4 kW · AMC 1yr",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 34701,
+        "netCost": 142000,
+        "paybackYears": 4.1,
+        "roiPctFirstYear": 24.4,
+        "lifetime25Profit": 725525,
+        "breakEvenYear": 4,
+        "profit25": 1761853,
+        "npv": 505711,
+        "irrEstimate": 17.6
+      },
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "residential",
+      "index": 2,
+      "label": "5 kW · AMC 5yr",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 34701,
+        "netCost": 197000,
+        "paybackYears": 5.7,
+        "roiPctFirstYear": 17.6,
+        "lifetime25Profit": 670525,
+        "breakEvenYear": 6,
+        "profit25": 1706853,
+        "npv": 450711,
+        "irrEstimate": 12.6
+      },
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "residential",
+      "index": 3,
+      "label": "5 kW · AMC 5yr",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 34701,
+        "netCost": 197000,
+        "paybackYears": 5.7,
+        "roiPctFirstYear": 17.6,
+        "lifetime25Profit": 670525,
+        "breakEvenYear": 6,
+        "profit25": 1706853,
+        "npv": 450711,
+        "irrEstimate": 12.6
+      },
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "residential",
+      "index": 4,
+      "label": "6 kW · AMC 10yr",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 34701,
+        "netCost": 252000,
+        "paybackYears": 7.3,
+        "roiPctFirstYear": 13.8,
+        "lifetime25Profit": 615525,
+        "breakEvenYear": 7,
+        "profit25": 1651853,
+        "npv": 395711,
+        "irrEstimate": 9.9
+      },
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "residential",
+      "index": 5,
+      "label": "7 kW · AMC 1yr",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 34701,
+        "netCost": 307000,
+        "paybackYears": 8.8,
+        "roiPctFirstYear": 11.3,
+        "lifetime25Profit": 560525,
+        "breakEvenYear": 8,
+        "profit25": 1596853,
+        "npv": 340711,
+        "irrEstimate": 8.2
+      },
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "residential",
+      "index": 6,
+      "label": "8 kW · AMC 5yr",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 34701,
+        "netCost": 362000,
+        "paybackYears": 10.4,
+        "roiPctFirstYear": 9.6,
+        "lifetime25Profit": 505525,
+        "breakEvenYear": 9,
+        "profit25": 1541853,
+        "npv": 285711,
+        "irrEstimate": 6.9
+      },
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "residential",
+      "index": 7,
+      "label": "9 kW · AMC 10yr",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 34701,
+        "netCost": 417000,
+        "paybackYears": 12,
+        "roiPctFirstYear": 8.3,
+        "lifetime25Profit": 450525,
+        "breakEvenYear": 10,
+        "profit25": 1486853,
+        "npv": 230711,
+        "irrEstimate": 6
+      },
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "residential",
+      "index": 8,
+      "label": "10 kW · AMC 1yr",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 34701,
+        "netCost": 472000,
+        "paybackYears": 13.6,
+        "roiPctFirstYear": 7.4,
+        "lifetime25Profit": 395525,
+        "breakEvenYear": 11,
+        "profit25": 1431853,
+        "npv": 175711,
+        "irrEstimate": 5.3
+      },
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "residential",
+      "index": 9,
+      "label": "12 kW · AMC 5yr",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 34701,
+        "netCost": 582000,
+        "paybackYears": 16.8,
+        "roiPctFirstYear": 6,
+        "lifetime25Profit": 285525,
+        "breakEvenYear": 12,
+        "profit25": 1321853,
+        "npv": 65711,
+        "irrEstimate": 4.3
+      },
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "commercial",
+      "index": 0,
+      "label": "golden baseline (generic 100 kW)",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 1020000,
+        "netCost": 8500000,
+        "paybackYears": 8.3,
+        "roiPctFirstYear": 12,
+        "lifetime25Profit": 17000000,
+        "breakEvenYear": 7,
+        "profit25": 47461802,
+        "npv": 10538811,
+        "irrEstimate": 8.7
+      },
+      "layoutPageCount": 13,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "commercial",
+      "index": 1,
+      "label": "hotel · 40 kW",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 312732,
+        "netCost": 3400000,
+        "paybackYears": 10.9,
+        "roiPctFirstYear": 9.2,
+        "lifetime25Profit": 4418300,
+        "breakEvenYear": 9,
+        "profit25": 13757889,
+        "npv": 2437299,
+        "irrEstimate": 6.6
+      },
+      "layoutPageCount": 12,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "commercial",
+      "index": 2,
+      "label": "hospital · 50 kW",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 390918,
+        "netCost": 4250000,
+        "paybackYears": 10.9,
+        "roiPctFirstYear": 9.2,
+        "lifetime25Profit": 5522950,
+        "breakEvenYear": 9,
+        "profit25": 17197525,
+        "npv": 3046681,
+        "irrEstimate": 6.6
+      },
+      "layoutPageCount": 13,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "commercial",
+      "index": 3,
+      "label": "warehouse · 60 kW",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 469098,
+        "netCost": 5100000,
+        "paybackYears": 10.9,
+        "roiPctFirstYear": 9.2,
+        "lifetime25Profit": 6627450,
+        "breakEvenYear": 9,
+        "profit25": 20636833,
+        "npv": 3655949,
+        "irrEstimate": 6.6
+      },
+      "layoutPageCount": 12,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "commercial",
+      "index": 4,
+      "label": "dairy · 75 kW",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 586371,
+        "netCost": 6375000,
+        "paybackYears": 10.9,
+        "roiPctFirstYear": 9.2,
+        "lifetime25Profit": 8284275,
+        "breakEvenYear": 9,
+        "profit25": 25795959,
+        "npv": 4569908,
+        "irrEstimate": 6.6
+      },
+      "layoutPageCount": 13,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "commercial",
+      "index": 5,
+      "label": "generic · 80 kW",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 625464,
+        "netCost": 6800000,
+        "paybackYears": 10.9,
+        "roiPctFirstYear": 9.2,
+        "lifetime25Profit": 8836600,
+        "breakEvenYear": 9,
+        "profit25": 27515777,
+        "npv": 4874600,
+        "irrEstimate": 6.6
+      },
+      "layoutPageCount": 12,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "commercial",
+      "index": 6,
+      "label": "hotel · 90 kW",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 1020000,
+        "netCost": 7650000,
+        "paybackYears": 7.5,
+        "roiPctFirstYear": 13.3,
+        "lifetime25Profit": 17850000,
+        "breakEvenYear": 7,
+        "profit25": 48311802,
+        "npv": 11388811,
+        "irrEstimate": 9.6
+      },
+      "layoutPageCount": 13,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "commercial",
+      "index": 7,
+      "label": "hospital · 100 kW",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 1020000,
+        "netCost": 8500000,
+        "paybackYears": 8.3,
+        "roiPctFirstYear": 12,
+        "lifetime25Profit": 17000000,
+        "breakEvenYear": 7,
+        "profit25": 47461802,
+        "npv": 10538811,
+        "irrEstimate": 8.7
+      },
+      "layoutPageCount": 12,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "commercial",
+      "index": 8,
+      "label": "warehouse · 110 kW",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 1020000,
+        "netCost": 9350000,
+        "paybackYears": 9.2,
+        "roiPctFirstYear": 10.9,
+        "lifetime25Profit": 16150000,
+        "breakEvenYear": 8,
+        "profit25": 46611802,
+        "npv": 9688811,
+        "irrEstimate": 7.8
+      },
+      "layoutPageCount": 13,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "commercial",
+      "index": 9,
+      "label": "dairy · 120 kW",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 1020000,
+        "netCost": 10200000,
+        "paybackYears": 10,
+        "roiPctFirstYear": 10,
+        "lifetime25Profit": 15300000,
+        "breakEvenYear": 9,
+        "profit25": 45761802,
+        "npv": 8838811,
+        "irrEstimate": 7.2
+      },
+      "layoutPageCount": 12,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "school",
+      "index": 0,
+      "label": "golden baseline (50 kW school)",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 510000,
+        "netCost": 4250000,
+        "paybackYears": 8.3,
+        "roiPctFirstYear": 12,
+        "lifetime25Profit": 8500000,
+        "breakEvenYear": 7,
+        "profit25": 23730901,
+        "npv": 5269405,
+        "irrEstimate": 8.7
+      },
+      "layoutPageCount": 15,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "school",
+      "index": 1,
+      "label": "30 kW school",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 234552,
+        "netCost": 2550000,
+        "paybackYears": 10.9,
+        "roiPctFirstYear": 9.2,
+        "lifetime25Profit": 3313800,
+        "breakEvenYear": 9,
+        "profit25": 10318581,
+        "npv": 1828030,
+        "irrEstimate": 6.6
+      },
+      "layoutPageCount": 15,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "school",
+      "index": 2,
+      "label": "40 kW school",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 312732,
+        "netCost": 3400000,
+        "paybackYears": 10.9,
+        "roiPctFirstYear": 9.2,
+        "lifetime25Profit": 4418300,
+        "breakEvenYear": 9,
+        "profit25": 13757889,
+        "npv": 2437299,
+        "irrEstimate": 6.6
+      },
+      "layoutPageCount": 15,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "school",
+      "index": 3,
+      "label": "50 kW school",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 510000,
+        "netCost": 4250000,
+        "paybackYears": 8.3,
+        "roiPctFirstYear": 12,
+        "lifetime25Profit": 8500000,
+        "breakEvenYear": 7,
+        "profit25": 23730901,
+        "npv": 5269405,
+        "irrEstimate": 8.7
+      },
+      "layoutPageCount": 15,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "school",
+      "index": 4,
+      "label": "50 kW school",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 510000,
+        "netCost": 4250000,
+        "paybackYears": 8.3,
+        "roiPctFirstYear": 12,
+        "lifetime25Profit": 8500000,
+        "breakEvenYear": 7,
+        "profit25": 23730901,
+        "npv": 5269405,
+        "irrEstimate": 8.7
+      },
+      "layoutPageCount": 15,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "school",
+      "index": 5,
+      "label": "60 kW school",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 510000,
+        "netCost": 5100000,
+        "paybackYears": 10,
+        "roiPctFirstYear": 10,
+        "lifetime25Profit": 7650000,
+        "breakEvenYear": 9,
+        "profit25": 22880901,
+        "npv": 4419405,
+        "irrEstimate": 7.2
+      },
+      "layoutPageCount": 15,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "school",
+      "index": 6,
+      "label": "70 kW school",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 510000,
+        "netCost": 5950000,
+        "paybackYears": 11.7,
+        "roiPctFirstYear": 8.6,
+        "lifetime25Profit": 6800000,
+        "breakEvenYear": 10,
+        "profit25": 22030901,
+        "npv": 3569405,
+        "irrEstimate": 6.2
+      },
+      "layoutPageCount": 15,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "school",
+      "index": 7,
+      "label": "75 kW school",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 510000,
+        "netCost": 6375000,
+        "paybackYears": 12.5,
+        "roiPctFirstYear": 8,
+        "lifetime25Profit": 6375000,
+        "breakEvenYear": 10,
+        "profit25": 21605901,
+        "npv": 3144405,
+        "irrEstimate": 5.8
+      },
+      "layoutPageCount": 15,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "school",
+      "index": 8,
+      "label": "80 kW school",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 510000,
+        "netCost": 6800000,
+        "paybackYears": 13.3,
+        "roiPctFirstYear": 7.5,
+        "lifetime25Profit": 5950000,
+        "breakEvenYear": 11,
+        "profit25": 21180901,
+        "npv": 2719405,
+        "irrEstimate": 5.4
+      },
+      "layoutPageCount": 15,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "school",
+      "index": 9,
+      "label": "100 kW school",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 781830,
+        "netCost": 8500000,
+        "paybackYears": 10.9,
+        "roiPctFirstYear": 9.2,
+        "lifetime25Profit": 11045750,
+        "breakEvenYear": 9,
+        "profit25": 34394721,
+        "npv": 6093249,
+        "irrEstimate": 6.6
+      },
+      "layoutPageCount": 15,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "factory",
+      "index": 0,
+      "label": "golden baseline (100 kW factory)",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 1020000,
+        "netCost": 8500000,
+        "paybackYears": 8.3,
+        "roiPctFirstYear": 12,
+        "lifetime25Profit": 17000000,
+        "breakEvenYear": 7,
+        "profit25": 47461802,
+        "npv": 10538811,
+        "irrEstimate": 8.7
+      },
+      "layoutPageCount": 13,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "factory",
+      "index": 1,
+      "label": "75 kW factory",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 586371,
+        "netCost": 6375000,
+        "paybackYears": 10.9,
+        "roiPctFirstYear": 9.2,
+        "lifetime25Profit": 8284275,
+        "breakEvenYear": 9,
+        "profit25": 25795959,
+        "npv": 4569908,
+        "irrEstimate": 6.6
+      },
+      "layoutPageCount": 13,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "factory",
+      "index": 2,
+      "label": "100 kW factory",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 1020000,
+        "netCost": 8500000,
+        "paybackYears": 8.3,
+        "roiPctFirstYear": 12,
+        "lifetime25Profit": 17000000,
+        "breakEvenYear": 7,
+        "profit25": 47461802,
+        "npv": 10538811,
+        "irrEstimate": 8.7
+      },
+      "layoutPageCount": 13,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "factory",
+      "index": 3,
+      "label": "100 kW factory",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 1020000,
+        "netCost": 8500000,
+        "paybackYears": 8.3,
+        "roiPctFirstYear": 12,
+        "lifetime25Profit": 17000000,
+        "breakEvenYear": 7,
+        "profit25": 47461802,
+        "npv": 10538811,
+        "irrEstimate": 8.7
+      },
+      "layoutPageCount": 13,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "factory",
+      "index": 4,
+      "label": "125 kW factory",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 1020000,
+        "netCost": 10625000,
+        "paybackYears": 10.4,
+        "roiPctFirstYear": 9.6,
+        "lifetime25Profit": 14875000,
+        "breakEvenYear": 9,
+        "profit25": 45336802,
+        "npv": 8413811,
+        "irrEstimate": 6.9
+      },
+      "layoutPageCount": 13,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "factory",
+      "index": 5,
+      "label": "150 kW factory",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 1020000,
+        "netCost": 12750000,
+        "paybackYears": 12.5,
+        "roiPctFirstYear": 8,
+        "lifetime25Profit": 12750000,
+        "breakEvenYear": 10,
+        "profit25": 43211802,
+        "npv": 6288811,
+        "irrEstimate": 5.8
+      },
+      "layoutPageCount": 13,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "factory",
+      "index": 6,
+      "label": "175 kW factory",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 1020000,
+        "netCost": 14875000,
+        "paybackYears": 14.6,
+        "roiPctFirstYear": 6.9,
+        "lifetime25Profit": 10625000,
+        "breakEvenYear": 11,
+        "profit25": 41086802,
+        "npv": 4163811,
+        "irrEstimate": 4.9
+      },
+      "layoutPageCount": 13,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "factory",
+      "index": 7,
+      "label": "200 kW factory",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 1563660,
+        "netCost": 17000000,
+        "paybackYears": 10.9,
+        "roiPctFirstYear": 9.2,
+        "lifetime25Profit": 22091500,
+        "breakEvenYear": 9,
+        "profit25": 68789443,
+        "npv": 12186498,
+        "irrEstimate": 6.6
+      },
+      "layoutPageCount": 13,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "factory",
+      "index": 8,
+      "label": "250 kW factory",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 1954578,
+        "netCost": 21250000,
+        "paybackYears": 10.9,
+        "roiPctFirstYear": 9.2,
+        "lifetime25Profit": 27614450,
+        "breakEvenYear": 9,
+        "profit25": 85986968,
+        "npv": 15233179,
+        "irrEstimate": 6.6
+      },
+      "layoutPageCount": 13,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    },
+    {
+      "family": "factory",
+      "index": 9,
+      "label": "300 kW factory",
+      "ok": true,
+      "errors": [],
+      "financial": {
+        "annualSaving": 2345490,
+        "netCost": 25500000,
+        "paybackYears": 10.9,
+        "roiPctFirstYear": 9.2,
+        "lifetime25Profit": 33137250,
+        "breakEvenYear": 9,
+        "profit25": 103184164,
+        "npv": 18279747,
+        "irrEstimate": 6.6
+      },
+      "layoutPageCount": 13,
+      "branding": {
+        "coverShowLogo": false,
+        "coverShowName": false,
+        "closingShowName": true
+      }
+    }
+  ],
+  "migrationErrors": [],
+  "summary": {
+    "total": 40,
+    "passed": 40,
+    "failed": 0,
+    "byFamily": {
+      "residential": {
+        "passed": 10,
+        "failed": 0
+      },
+      "commercial": {
+        "passed": 10,
+        "failed": 0
+      },
+      "school": {
+        "passed": 10,
+        "failed": 0
+      },
+      "factory": {
+        "passed": 10,
+        "failed": 0
+      }
+    }
+  }
+}

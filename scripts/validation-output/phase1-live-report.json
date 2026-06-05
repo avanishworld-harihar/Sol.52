@@ -1,0 +1,137 @@
+{
+  "generatedAt": "2026-06-05T17:00:14.899Z",
+  "baseUrl": "http://localhost:3002",
+  "priorAuditReference": "E:\\solar project\\Sol.52\\scripts\\audit-pdf-output\\audit-report.json",
+  "results": [
+    {
+      "family": "residential",
+      "url": "http://localhost:3002/proposal/ddfa1075-7999-4b69-a205-a438dae16f26",
+      "branding": {
+        "imgCount": 4,
+        "logoLikeCount": 0,
+        "hasMainContent": true,
+        "sampleHeadings": [
+          "Contact+91-9993322267 · harihar@solar.com",
+          "Phase1 Residential Audit जी",
+          "Solutions for Every Scale",
+          "Your Electricity Bill — A Deep Audit",
+          "How Your Solar Will Pay Itself Off"
+        ]
+      },
+      "pdf": {
+        "totalBytes": 10450365,
+        "totalMb": "9.97",
+        "pageCount": 8,
+        "imageCount": 247,
+        "imageMb": "8.74",
+        "imagePct": "87.7",
+        "path": "E:\\solar project\\Sol.52\\scripts\\validation-output\\residential-phase1-audit.pdf"
+      },
+      "mobile": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "bodyTextLen": 7113,
+        "rootExists": true
+      }
+    },
+    {
+      "family": "commercial",
+      "url": "http://localhost:3002/proposal/10a50f13-4286-42c1-a5be-e21a31c6abe2",
+      "branding": {
+        "imgCount": 1,
+        "logoLikeCount": 0,
+        "hasMainContent": true,
+        "sampleHeadings": [
+          "Phase1 Commercial Audit",
+          "Phase1 Commercial Audit",
+          "DCR vs Non-DCR — Cost Impact",
+          "Plant Capacity Scenarios",
+          "Investment Analysis Dashboard"
+        ]
+      },
+      "pdf": {
+        "totalBytes": 1638365,
+        "totalMb": "1.56",
+        "pageCount": 8,
+        "imageCount": 1,
+        "imageMb": "0.01",
+        "imagePct": "0.9",
+        "path": "E:\\solar project\\Sol.52\\scripts\\validation-output\\commercial-phase1-audit.pdf"
+      },
+      "mobile": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "bodyTextLen": 15038,
+        "rootExists": true
+      }
+    },
+    {
+      "family": "school",
+      "url": "http://localhost:3002/proposal/8a38053b-0d85-4c91-8e6d-c132247c834c",
+      "branding": {
+        "imgCount": 1,
+        "logoLikeCount": 0,
+        "hasMainContent": true,
+        "sampleHeadings": [
+          "Phase1 School Audit",
+          "Phase1 School Audit",
+          "Green Campus & Sustainability Impact",
+          "Solar as a Learning Asset",
+          "DCR vs Non-DCR — Cost Impact"
+        ]
+      },
+      "pdf": {
+        "totalBytes": 1819451,
+        "totalMb": "1.74",
+        "pageCount": 8,
+        "imageCount": 1,
+        "imageMb": "0.01",
+        "imagePct": "0.8",
+        "path": "E:\\solar project\\Sol.52\\scripts\\validation-output\\school-phase1-audit.pdf"
+      },
+      "mobile": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "bodyTextLen": 17549,
+        "rootExists": true
+      }
+    },
+    {
+      "family": "factory",
+      "url": "http://localhost:3002/proposal/32f6823d-778f-4bdf-acb7-8193dd6d5b88",
+      "branding": {
+        "imgCount": 1,
+        "logoLikeCount": 0,
+        "hasMainContent": true,
+        "sampleHeadings": [
+          "Phase1 Factory Audit",
+          "Phase1 Factory Audit",
+          "DCR vs Non-DCR — Cost Impact",
+          "Plant Capacity Scenarios",
+          "Investment Analysis Dashboard"
+        ]
+      },
+      "pdf": {
+        "totalBytes": 1636712,
+        "totalMb": "1.56",
+        "pageCount": 8,
+        "imageCount": 1,
+        "imageMb": "0.01",
+        "imagePct": "0.9",
+        "path": "E:\\solar project\\Sol.52\\scripts\\validation-output\\factory-phase1-audit.pdf"
+      },
+      "mobile": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasHorizontalOverflow": false,
+        "bodyTextLen": 15062,
+        "rootExists": true
+      }
+    }
+  ],
+  "findings": [],
+  "ok": true
+}
