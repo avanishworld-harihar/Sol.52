@@ -211,10 +211,9 @@ export function BlockPremiumClosing({ ctx }: Props) {
               brandConfig={brandConfig}
               installerName={installer.name}
               logoUrl={installerLogoUrl}
-              tagline={installer.tagline}
+              includeTagline={false}
               logoClassName="h-12 w-auto rounded object-contain"
               nameClassName="text-base font-bold text-slate-900"
-              taglineClassName="text-xs text-slate-500"
               fallbackIcon={
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-sky-100">
                   <Zap className="h-6 w-6 text-sky-600" />

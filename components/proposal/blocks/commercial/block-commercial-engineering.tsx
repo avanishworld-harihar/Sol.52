@@ -16,6 +16,7 @@ import { motion } from "framer-motion";
 import { Gauge, ShieldCheck, Cpu } from "lucide-react";
 import type { CommercialCtx } from "@/components/proposal/commercial-proposal-view";
 import { CommercialSectionHeader, GlassPanel, SectionReveal } from "./commercial-shared";
+import { moduleCountForPlant } from "@/lib/commercial-bom-panels";
 import { isSchoolInstitutionOrg } from "@/lib/proposal-financial-engine";
 import { BlockSchoolSafetyCard } from "./block-school-safety-card";
 
@@ -43,7 +44,8 @@ export function BlockCommercialEngineering({ ctx }: Props) {
   } = ctx;
   const isHi = lang === "hi";
 
-  const panelWp = 540;
+  const panelWp = summary.panelWatt ?? 540;
+  const moduleCount = moduleCountForPlant(summary.systemKw, panelWp);
   const panelEfficiency = Math.round((panelWp / (2.1 * 1000)) * 100 * 10) / 10; // ~540W / 2.1 m²
 
   const designParams = [
@@ -57,7 +59,7 @@ export function BlockCommercialEngineering({ ctx }: Props) {
     { label: "Annual Generation", value: `${(summary.annualGen / 1000).toFixed(1)} MWh/yr` },
     { label: "Panel Efficiency (STC)", value: `~${panelEfficiency}%` },
     { label: "Module Wattage", value: `${panelWp} Wp per panel` },
-    { label: "Panel Count", value: `${summary.panels} nos` },
+    { label: "Panel Count", value: `${moduleCount} nos` },
     { label: "Load Coverage", value: `${Math.round(summary.coverage)}%` },
   ];
 

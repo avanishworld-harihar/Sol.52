@@ -65,6 +65,7 @@ import {
   prepareCommercialPrint,
   subscribeCommercialPrintSnap,
 } from "./blocks/commercial/commercial-print-mode";
+import { commercialDcCapacityKwp } from "@/lib/commercial-bom-panels";
 
 // ─── Shared context ───────────────────────────────────────────────────────────
 
@@ -275,8 +276,8 @@ export default function CommercialProposalView({
     [summary, financials]
   );
 
-  const PANEL_WATT = 540;
-  const dcCapacityKwp = (summary.panels * PANEL_WATT) / 1000;
+  const panelWatt = summary.panelWatt ?? 540;
+  const dcCapacityKwp = commercialDcCapacityKwp(summary.systemKw, panelWatt);
   const dcAcRatio =
     summary.systemKw > 0
       ? Math.round((dcCapacityKwp / summary.systemKw) * 100) / 100

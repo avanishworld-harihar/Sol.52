@@ -26,6 +26,13 @@ export function moduleCountForPlant(systemKw: number, watt: number): number {
   return Math.max(1, Math.ceil((kw * 1000) / w));
 }
 
+/** DC nameplate (kWp) from AC plant size — e.g. 100 kW @ 540 Wp → 100.44 kWp */
+export function commercialDcCapacityKwp(systemKw: number, watt = 540): number {
+  const w = Math.max(100, Math.round(Number(watt) || 540));
+  const modules = moduleCountForPlant(systemKw, w);
+  return Math.round((modules * w) / 10) / 100;
+}
+
 export function ratePerWpFromPanelLine(line: PricingLineItem): number {
   const watt = Math.max(100, Math.round(Number(line.watt) || 540));
   const qty = Math.max(1, Number(line.quantity) || 1);
