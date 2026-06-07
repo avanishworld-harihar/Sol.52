@@ -18,6 +18,7 @@ import {
 import Link from "next/link";
 import { buildProposalEditHref } from "@/lib/proposal-edit-url";
 import type { ReactNode } from "react";
+import { ProjectContractValueForm } from "@/components/projects/hub/project-contract-value-form";
 import { ProjectHubOverviewDocuments } from "@/components/projects/hub/project-hub-overview-documents";
 
 const ROOF_LABELS: Record<string, string> = {
@@ -56,11 +57,6 @@ function labelOrDash(
 ): string {
   if (!value?.trim()) return "—";
   return labels?.[value] ?? value.replace(/_/g, " ");
-}
-
-function projectPendingInr(project: ProjectListItem): number | null {
-  if (project.contract_amount_inr == null) return null;
-  return Math.max(0, project.contract_amount_inr - (project.amount_received_inr ?? 0));
 }
 
 function SummaryCell({
@@ -103,7 +99,6 @@ function DetailRow({ label, value }: { label: string; value: ReactNode }) {
 }
 
 export function ProjectHubOverviewTab({ project }: { project: ProjectListItem }) {
-  const pending = projectPendingInr(project);
   const siteLine =
     project.site_address?.trim() ||
     [project.lead_city?.trim()].filter(Boolean).join(", ") ||
@@ -170,22 +165,37 @@ export function ProjectHubOverviewTab({ project }: { project: ProjectListItem })
         <CardContent className="space-y-3 pt-0">
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
             <SummaryCell
-              label="Project value"
-              value={formatInrCompact(project.contract_amount_inr)}
+              label="Stored contract"
+              value={formatInrCompact(project.stored_contract_amount_inr)}
+            />
+            <SummaryCell
+              label="Suggested (proposal)"
+              value={formatInrCompact(project.proposal_suggested_contract_inr)}
+            />
+            <SummaryCell
+              label="Pending"
+              value={
+                project.pending_inr != null ? formatInrCompact(project.pending_inr) : "—"
+              }
+              className={
+                project.pending_inr != null && project.pending_inr > 0
+                  ? "border-amber-200/80 bg-amber-50/60 dark:border-amber-500/20 dark:bg-amber-950/20"
+                  : undefined
+              }
             />
             <SummaryCell
               label="Received"
               value={formatInrCompact(project.amount_received_inr ?? 0)}
             />
-            <SummaryCell
-              label="Pending"
-              value={pending != null ? formatInrCompact(pending) : "—"}
-            />
-            <SummaryCell
-              label="Next due date"
-              value={formatHubDate(project.target_completion)}
-            />
           </div>
+
+          <ProjectContractValueForm project={project} />
+
+          <SummaryCell
+            label="Next due date"
+            value={formatHubDate(project.target_completion)}
+            className="max-w-xs"
+          />
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
             Subsidy:{" "}
             <span className="font-semibold text-slate-700 dark:text-slate-200">
@@ -193,7 +203,7 @@ export function ProjectHubOverviewTab({ project }: { project: ProjectListItem })
             </span>
             <span className="text-slate-400 dark:text-slate-500">
               {" "}
-              · Target completion used as due-date proxy until milestones exist
+              · Pending uses stored contract only · Target completion is due-date proxy
             </span>
           </p>
         </CardContent>

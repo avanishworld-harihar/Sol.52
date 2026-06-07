@@ -126,6 +126,12 @@ export interface ProjectListItem {
   structure_type: string | null;
   contract_amount_inr: number | null;
   amount_received_inr: number;
+  /** Raw DB contract — pending / collections source of truth. */
+  stored_contract_amount_inr: number | null;
+  /** Latest proposal pricing suggestion; not persisted until saved. */
+  proposal_suggested_contract_inr: number | null;
+  /** max(0, stored − received); null when stored contract unset. */
+  pending_inr: number | null;
   has_subsidy: boolean;
   // Joined fields
   lead_name: string | null;
@@ -157,6 +163,7 @@ export interface ProjectDashboardStats {
   total_pipeline_value_inr: number;
   total_received_inr: number;
   total_pending_inr: number;
+  projects_with_balance_count: number;
   today_installations: number;
   nm_pending: number;
   approval_pending: number;

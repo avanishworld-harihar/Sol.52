@@ -22,6 +22,13 @@ import type { ProjectStageId, ProjectStageStatus, NmSubstatus } from "@/lib/proj
 import { logProjectCreated } from "@/lib/project-activity-logger";
 import { getTaskTemplatesForStage } from "@/lib/project-task-templates";
 import { normalizeLeadStatus } from "@/lib/lead-status";
+import {
+  computePendingInr,
+  countProjectsWithBalance,
+  hasStoredContract,
+  normalizeReceivedInr,
+  sumPendingInr,
+} from "@/lib/project-pending";
 
 function db() {
   return createSupabaseAdmin() ?? supabase;
@@ -366,6 +373,12 @@ export interface ProjectRow {
 }
 
 export interface ProjectDetailRow extends ProjectRow {
+  /** Raw DB value — source of truth for pending / collections. */
+  stored_contract_amount_inr: number | null;
+  /** Latest linked proposal pricing; not persisted until user sets contract. */
+  proposal_suggested_contract_inr: number | null;
+  /** max(0, stored − received); null when stored contract unset. */
+  pending_inr: number | null;
   lead_name: string | null;
   lead_phone: string | null;
   lead_city: string | null;
@@ -377,15 +390,79 @@ export interface ProjectDetailRow extends ProjectRow {
   health: ProjectHealth;
 }
 
-async function readProposalFallbackForLead(leadId: string | null): Promise<{
+type ProposalLeadFallback = {
   capacity_kw: string | null;
   contract_amount_inr: number | null;
-}> {
+};
+
+function suggestedContractFromProposalRow(row: Record<string, unknown>): number | null {
+  const nested = row.proposal_pricing;
+  if (Array.isArray(nested) && nested.length > 0) {
+    const v = (nested[0] as { final_amount_inr?: unknown }).final_amount_inr;
+    if (typeof v === "number" && Number.isFinite(v)) return v;
+  } else if (nested && typeof nested === "object") {
+    const v = (nested as { final_amount_inr?: unknown }).final_amount_inr;
+    if (typeof v === "number" && Number.isFinite(v)) return v;
+  }
+  if (typeof row.net_cost_inr === "number" && Number.isFinite(row.net_cost_inr)) {
+    return row.net_cost_inr;
+  }
+  if (
+    typeof row.gross_system_cost_inr === "number" &&
+    Number.isFinite(row.gross_system_cost_inr)
+  ) {
+    return row.gross_system_cost_inr;
+  }
+  return null;
+}
+
+function enrichProjectDetailRow(
+  project: ProjectRow,
+  opts: {
+    proposalFallback: ProposalLeadFallback;
+    primaryProposalId: string | null;
+    leadName: string | null;
+    leadPhone: string | null;
+    leadCity: string | null;
+    managerName: string | null;
+    managerPhone: string | null;
+    techName: string | null;
+    techPhone: string | null;
+  }
+): ProjectDetailRow {
+  const storedContract = project.contract_amount_inr;
+  const suggested = opts.proposalFallback.contract_amount_inr;
+  const displayContract = storedContract != null ? storedContract : suggested;
+  const capacityKw =
+    project.capacity_kw?.trim() ? project.capacity_kw : opts.proposalFallback.capacity_kw;
+
+  return {
+    ...project,
+    stored_contract_amount_inr: storedContract,
+    proposal_suggested_contract_inr: suggested,
+    pending_inr: computePendingInr(storedContract, project.amount_received_inr),
+    capacity_kw: capacityKw,
+    contract_amount_inr: displayContract,
+    primary_proposal_id: opts.primaryProposalId,
+    lead_name: opts.leadName,
+    lead_phone: opts.leadPhone,
+    lead_city: opts.leadCity,
+    manager_name: opts.managerName,
+    manager_phone: opts.managerPhone,
+    tech_name: opts.techName,
+    tech_phone: opts.techPhone,
+    health: calculateProjectHealth(project),
+  };
+}
+
+async function readProposalFallbackForLead(leadId: string | null): Promise<ProposalLeadFallback> {
   const client = db();
   if (!client || !leadId?.trim()) return { capacity_kw: null, contract_amount_inr: null };
   const { data, error } = await client
     .from("proposals")
-    .select("system_kw, net_cost_inr, gross_system_cost_inr")
+    .select(
+      "system_kw, net_cost_inr, gross_system_cost_inr, proposal_pricing(final_amount_inr)"
+    )
     .eq("lead_id", leadId)
     .order("generated_at", { ascending: false })
     .limit(1)
@@ -396,18 +473,13 @@ async function readProposalFallbackForLead(leadId: string | null): Promise<{
   const systemKw = Number(row.system_kw);
   return {
     capacity_kw: Number.isFinite(systemKw) ? `${systemKw} kW` : null,
-    contract_amount_inr:
-      typeof row.net_cost_inr === "number"
-        ? row.net_cost_inr
-        : typeof row.gross_system_cost_inr === "number"
-          ? row.gross_system_cost_inr
-          : null,
+    contract_amount_inr: suggestedContractFromProposalRow(row),
   };
 }
 
-async function readLatestProposalFallbackByLeadIds(leadIds: string[]): Promise<
-  Record<string, { capacity_kw: string | null; contract_amount_inr: number | null }>
-> {
+async function readLatestProposalFallbackByLeadIds(
+  leadIds: string[]
+): Promise<Record<string, ProposalLeadFallback>> {
   const uniq = [...new Set(leadIds.map((id) => id.trim()).filter(Boolean))];
   if (uniq.length === 0) return {};
   const client = db();
@@ -415,24 +487,21 @@ async function readLatestProposalFallbackByLeadIds(leadIds: string[]): Promise<
 
   const { data, error } = await client
     .from("proposals")
-    .select("lead_id, system_kw, net_cost_inr, gross_system_cost_inr, generated_at")
+    .select(
+      "lead_id, system_kw, net_cost_inr, gross_system_cost_inr, generated_at, proposal_pricing(final_amount_inr)"
+    )
     .in("lead_id", uniq)
     .order("generated_at", { ascending: false });
   if (error || !Array.isArray(data)) return {};
 
-  const out: Record<string, { capacity_kw: string | null; contract_amount_inr: number | null }> = {};
+  const out: Record<string, ProposalLeadFallback> = {};
   for (const row of data as Record<string, unknown>[]) {
     const leadId = row.lead_id != null ? String(row.lead_id) : "";
     if (!leadId || out[leadId]) continue;
     const systemKw = Number(row.system_kw);
     out[leadId] = {
       capacity_kw: Number.isFinite(systemKw) ? `${systemKw} kW` : null,
-      contract_amount_inr:
-        typeof row.net_cost_inr === "number"
-          ? row.net_cost_inr
-          : typeof row.gross_system_cost_inr === "number"
-            ? row.gross_system_cost_inr
-            : null,
+      contract_amount_inr: suggestedContractFromProposalRow(row),
     };
   }
   return out;
@@ -499,24 +568,18 @@ export async function getProjectDetail(projectId: string): Promise<ProjectDetail
   const proposalFallback = await readProposalFallbackForLead(project.lead_id);
   const proposalByLead =
     project.lead_id ? await mapLeadIdsToLatestProposalIds([project.lead_id]) : {};
-  const capacityKw = project.capacity_kw?.trim() ? project.capacity_kw : proposalFallback.capacity_kw;
-  const contractAmount =
-    project.contract_amount_inr != null ? project.contract_amount_inr : proposalFallback.contract_amount_inr;
 
-  return {
-    ...project,
-    capacity_kw: capacityKw,
-    contract_amount_inr: contractAmount,
-    primary_proposal_id: project.lead_id ? proposalByLead[project.lead_id] ?? null : null,
-    lead_name: leads ? String(leads.name ?? "") : null,
-    lead_phone: leads ? String(leads.phone ?? "") : null,
-    lead_city: leads ? String(leads.city ?? "") : null,
-    manager_name: manager ? String(manager.display_name ?? "") : null,
-    manager_phone: manager ? String(manager.phone ?? "") : null,
-    tech_name: tech ? String(tech.display_name ?? "") : null,
-    tech_phone: tech ? String(tech.phone ?? "") : null,
-    health: calculateProjectHealth(project),
-  };
+  return enrichProjectDetailRow(project, {
+    proposalFallback,
+    primaryProposalId: project.lead_id ? proposalByLead[project.lead_id] ?? null : null,
+    leadName: leads ? String(leads.name ?? "") : null,
+    leadPhone: leads ? String(leads.phone ?? "") : null,
+    leadCity: leads ? String(leads.city ?? "") : null,
+    managerName: manager ? String(manager.display_name ?? "") : null,
+    managerPhone: manager ? String(manager.phone ?? "") : null,
+    techName: tech ? String(tech.display_name ?? "") : null,
+    techPhone: tech ? String(tech.phone ?? "") : null,
+  });
 }
 
 /** List projects with optional filters. Returns rows with computed health. */
@@ -593,26 +656,18 @@ export async function listProjects(opts: {
     const project = base as unknown as ProjectRow;
     const leadId = project.lead_id ?? null;
     const fallback = leadId ? proposalFallbackByLead[leadId] : undefined;
-    const capacityKw = project.capacity_kw?.trim() ? project.capacity_kw : (fallback?.capacity_kw ?? null);
-    const contractAmount =
-      project.contract_amount_inr != null
-        ? project.contract_amount_inr
-        : (fallback?.contract_amount_inr ?? null);
 
-    return {
-      ...project,
-      capacity_kw: capacityKw,
-      contract_amount_inr: contractAmount,
-      primary_proposal_id: leadId ? proposalByLead[leadId] ?? null : null,
-      lead_name: leads ? String(leads.name ?? "") : null,
-      lead_phone: leads ? String(leads.phone ?? "") : null,
-      lead_city: leads ? String(leads.city ?? "") : null,
-      manager_name: manager ? String(manager.display_name ?? "") : null,
-      manager_phone: manager ? String(manager.phone ?? "") : null,
-      tech_name: tech ? String(tech.display_name ?? "") : null,
-      tech_phone: tech ? String(tech.phone ?? "") : null,
-      health: calculateProjectHealth(project),
-    };
+    return enrichProjectDetailRow(project, {
+      proposalFallback: fallback ?? { capacity_kw: null, contract_amount_inr: null },
+      primaryProposalId: leadId ? proposalByLead[leadId] ?? null : null,
+      leadName: leads ? String(leads.name ?? "") : null,
+      leadPhone: leads ? String(leads.phone ?? "") : null,
+      leadCity: leads ? String(leads.city ?? "") : null,
+      managerName: manager ? String(manager.display_name ?? "") : null,
+      managerPhone: manager ? String(manager.phone ?? "") : null,
+      techName: tech ? String(tech.display_name ?? "") : null,
+      techPhone: tech ? String(tech.phone ?? "") : null,
+    });
   });
 }
 
@@ -660,10 +715,14 @@ export async function getProjectDashboardStats(organizationId?: string | null) {
   };
   let totalPipelineValue = 0;
   let totalReceived = 0;
-  let totalPending = 0;
   let todaysInstallations = 0;
   let nmPending = 0;
   let approvalPending = 0;
+
+  const financialRows = rows.map((row) => ({
+    stored_contract_amount_inr: row.contract_amount_inr,
+    amount_received_inr: row.amount_received_inr,
+  }));
 
   for (const row of rows) {
     // Stage counts
@@ -673,12 +732,11 @@ export async function getProjectDashboardStats(organizationId?: string | null) {
     const health = calculateProjectHealth(row);
     healthCounts[health] = (healthCounts[health] ?? 0) + 1;
 
-    // Financial
-    const contractVal = Number(row.contract_amount_inr ?? 0);
-    const receivedVal = Number(row.amount_received_inr ?? 0);
-    totalPipelineValue += contractVal;
-    totalReceived += receivedVal;
-    totalPending += Math.max(0, contractVal - receivedVal);
+    // Pipeline value / received (all active rows; unchanged from Phase 3A)
+    if (hasStoredContract(row.contract_amount_inr)) {
+      totalPipelineValue += Number(row.contract_amount_inr);
+    }
+    totalReceived += normalizeReceivedInr(row.amount_received_inr);
 
     // Operational counts
     if (row.current_stage === "installation" && row.stage_status === "in_progress") {
@@ -688,6 +746,9 @@ export async function getProjectDashboardStats(organizationId?: string | null) {
     if (row.current_stage === "approval") approvalPending++;
   }
 
+  const totalPending = sumPendingInr(financialRows);
+  const projectsWithBalance = countProjectsWithBalance(financialRows);
+
   return {
     total_projects: rows.length,
     stage_counts: stageCounts,
@@ -695,6 +756,7 @@ export async function getProjectDashboardStats(organizationId?: string | null) {
     total_pipeline_value_inr: totalPipelineValue,
     total_received_inr: totalReceived,
     total_pending_inr: totalPending,
+    projects_with_balance_count: projectsWithBalance,
     today_installations: todaysInstallations,
     nm_pending: nmPending,
     approval_pending: approvalPending,
