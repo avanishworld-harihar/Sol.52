@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-09T16:08:07.539Z",
+  "generatedAt": "2026-06-09T16:30:20.740Z",
   "baseUrl": "http://localhost:3002",
   "scenarios": {
     "billBacked": {
@@ -90,6 +90,12 @@
         "investmentVisible": true,
         "appendixShell": true
       },
+      "pricingConsistent": {
+        "ok": true,
+        "heroNet": 202000,
+        "rowNet": 202000,
+        "paymentNet": 202000
+      },
       "title": "SP Review Bill — Solar Proposal · Solar Proposal"
     },
     "requirementBased": {
@@ -179,6 +185,12 @@
         "systemReqVisible": true,
         "investmentVisible": true,
         "appendixShell": true
+      },
+      "pricingConsistent": {
+        "ok": true,
+        "heroNet": 202000,
+        "rowNet": 202000,
+        "paymentNet": 202000
       },
       "title": "SP Review Requirement — Solar Proposal · Solar Proposal"
     }
