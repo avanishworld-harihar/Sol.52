@@ -42,6 +42,7 @@ import {
 } from "@/lib/proposal-financial-engine";
 
 // Section blocks
+import { PROPOSAL_PREMIUM_DOC_CLASS } from "@/lib/proposal-premium-design";
 import { BlockCommercialCover } from "./blocks/commercial/block-commercial-cover";
 import { BlockCommercialExecutiveSummary } from "./blocks/commercial/block-commercial-executive-summary";
 import { BlockROIDashboard } from "./blocks/commercial/block-roi-dashboard";
@@ -359,7 +360,7 @@ export default function CommercialProposalView({
   return (
     <MotionConfig reducedMotion={printSnap ? "always" : "user"}>
       <div
-        className="commercial-proposal proposal-document mx-auto min-h-screen max-w-[210mm] bg-slate-50 font-sans antialiased print:max-w-none print:bg-white"
+        className={`commercial-proposal proposal-document ${PROPOSAL_PREMIUM_DOC_CLASS} mx-auto min-h-screen max-w-[210mm] bg-[#fafafa] font-sans antialiased print:max-w-none print:bg-white`}
         style={{ colorScheme: "light" }}
       >
 

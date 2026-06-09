@@ -124,10 +124,10 @@ export function BlockStatTile({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.5, delay, ease: [0.21, 1.02, 0.73, 1] }}
-      className={`rounded-2xl border p-4 shadow-sm sm:p-5 ${
+      className={`border p-4 sm:p-5 ${
         dark
-          ? "border-white/10 bg-white/5 backdrop-blur-sm"
-          : "border-white/60 bg-white/80 backdrop-blur-sm shadow-[0_4px_24px_rgba(0,0,0,0.06)]"
+          ? "border-neutral-800 bg-neutral-900/30"
+          : "border-neutral-200 bg-white"
       }`}
     >
       <p
@@ -152,7 +152,7 @@ export function BlockStatTile({
 export function BlockKicker({ text, lang, dark }: { text: string; lang?: ProposalLang; dark?: boolean }) {
   return (
     <p
-      className={`text-xs font-semibold sm:text-sm ${dark ? "text-sky-400" : "text-sky-700"} ${
+      className={`text-xs font-semibold sm:text-sm ${dark ? "text-neutral-400" : "text-neutral-500"} ${
         lang === "hi" ? "tracking-normal" : "tracking-wide uppercase"
       }`}
     >

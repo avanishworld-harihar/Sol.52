@@ -54,7 +54,7 @@ export type CreateProposalInput = {
   consumerId?: string | null;
   createdBy?: string | null;
   expiresAt?: Date | null;
-  /** Phase A — Proposal OS preset. Defaults to "residential_smart". */
+  /** Proposal OS preset. Defaults to "residential_sales_premium" for new proposals. */
   presetId?: string | null;
 };
 
@@ -119,7 +119,7 @@ export async function createProposal(input: CreateProposalInput): Promise<Stored
 
     created_by: input.createdBy ?? null,
     expires_at: input.expiresAt?.toISOString() ?? null,
-    preset_id: input.presetId ?? "residential_smart",
+    preset_id: input.presetId ?? "residential_sales_premium",
   };
 
   return await insertAdaptive<StoredProposal>(client, "proposals", payload, "id, share_token, customer_name, generated_at");
@@ -231,7 +231,7 @@ function mapProposalListRow(r: Record<string, unknown>): ProposalListItem {
     panel_brand: typeof brand === "string" && brand.trim() ? brand.trim() : null,
     annual_saving_inr: typeof saving === "number" && Number.isFinite(saving) ? saving : null,
     proposal_status: normalizeProposalStatus(typeof r.proposal_status === "string" ? r.proposal_status : "draft"),
-    preset_id: typeof r.preset_id === "string" && r.preset_id ? r.preset_id : "residential_smart",
+    preset_id: typeof r.preset_id === "string" && r.preset_id ? r.preset_id : "residential_sales_premium",
   };
 }
 

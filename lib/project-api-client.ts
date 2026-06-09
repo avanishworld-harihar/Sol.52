@@ -16,6 +16,9 @@ import type { ProjectHealth } from "@/lib/project-health";
 
 export const PROJECT_DASHBOARD_STATS_KEY = "/api/projects/dashboard-stats";
 
+export const PROJECT_OUTSTANDING_COLLECTIONS_KEY =
+  "/api/projects/dashboard-stats?collections=1";
+
 export function projectListKey(opts?: { stage?: string; view?: string }): string {
   const params = new URLSearchParams();
   if (opts?.stage) params.set("stage", opts.stage);
@@ -169,6 +172,19 @@ export interface ProjectDashboardStats {
   approval_pending: number;
 }
 
+export interface OutstandingCollectionRow {
+  project_id: string;
+  official_name: string | null;
+  lead_name: string | null;
+  stored_contract_amount_inr: number;
+  amount_received_inr: number;
+  pending_inr: number;
+}
+
+export interface ProjectDashboardStatsWithCollections extends ProjectDashboardStats {
+  collections: OutstandingCollectionRow[];
+}
+
 export interface ProjectSurvey {
   id: string;
   project_id: string;
@@ -308,6 +324,13 @@ export interface ProjectDocumentSummary {
 
 export async function fetchProjectDashboardStats(): Promise<ProjectDashboardStats | null> {
   const res = await apiRequest<ProjectDashboardStats>(PROJECT_DASHBOARD_STATS_KEY);
+  return res.ok ? (res.data ?? null) : null;
+}
+
+export async function fetchOutstandingCollections(): Promise<ProjectDashboardStatsWithCollections | null> {
+  const res = await apiRequest<ProjectDashboardStatsWithCollections>(
+    PROJECT_OUTSTANDING_COLLECTIONS_KEY
+  );
   return res.ok ? (res.data ?? null) : null;
 }
 

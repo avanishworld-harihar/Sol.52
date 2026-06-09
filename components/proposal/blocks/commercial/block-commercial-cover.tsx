@@ -41,8 +41,8 @@ export function BlockCommercialCover({ ctx }: Props) {
           installerName={installer.name}
           logoUrl={installerLogoUrl}
           fallbackIcon={
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-sky-200 bg-sky-50">
-              <Zap className="h-4 w-4 text-sky-600" />
+            <div className="flex h-9 w-9 items-center justify-center border border-neutral-300 bg-neutral-50">
+              <Zap className="h-4 w-4 text-neutral-600" strokeWidth={1.5} />
             </div>
           }
         />
@@ -64,8 +64,8 @@ export function BlockCommercialCover({ ctx }: Props) {
           {displayName}
         </h1>
 
-        <div className="commercial-cover-plant-badge mt-10 inline-flex flex-col items-center rounded-2xl border-2 border-sky-200 bg-gradient-to-b from-sky-50 to-white px-10 py-6 shadow-sm">
-          <p className="text-4xl font-black tabular-nums text-sky-900 sm:text-5xl">{summary.systemKw} kW</p>
+        <div className="commercial-cover-plant-badge mt-10 inline-flex flex-col items-center border border-neutral-900 bg-white px-10 py-6">
+          <p className="text-4xl font-semibold tabular-nums text-neutral-900 sm:text-5xl">{summary.systemKw} kW</p>
           <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-600">
             {isHi ? "वाणिज्यिक सौर प्लांट" : "Commercial Solar Plant"}
           </p>

@@ -18,7 +18,7 @@
  * correct preset + story combination. It does NOT touch proposal engine internals.
  */
 
-import type { ProposalPresetId } from "@/components/proposals/os/preset-picker";
+import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 import type { OrgType } from "@/lib/org-type-defaults";
 import type { StoryMode } from "@/lib/proposal-story-copy";
 
@@ -67,8 +67,15 @@ export function parsePrefillFromSearchParams(params: URLSearchParams): BuilderPr
   const prefill: BuilderPrefill = {};
 
   const preset = params.get("preset");
-  if (preset === "residential_smart" || preset === "commercial_executive") {
-    prefill.preset = preset;
+  const KNOWN_PRESETS: ReadonlyArray<string> = [
+    "residential_smart",
+    "commercial_executive",
+    "residential_sales_premium",
+    "residential_bank_loan",
+    "residential_executive",
+  ];
+  if (preset && KNOWN_PRESETS.includes(preset)) {
+    prefill.preset = preset as ProposalPresetId;
   }
 
   const inputMode = params.get("inputMode");
@@ -143,8 +150,8 @@ export const QUICK_ACTIONS: QuickAction[] = [
   {
     id: "new-residential",
     label: "New Residential Proposal",
-    description: "Start a residential solar proposal (residential_smart preset)",
-    href: buildProposalUrl({ preset: "residential_smart" }),
+    description: "Start a residential solar proposal",
+    href: buildProposalUrl({ preset: "residential_sales_premium" }),
     iconName: "plus",
     category: "Quick Actions",
     shortcut: "N",

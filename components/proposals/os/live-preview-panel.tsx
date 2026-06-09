@@ -25,7 +25,7 @@ import {
   Sparkles,
   TrendingUp,
 } from "lucide-react";
-import type { ProposalPresetId } from "@/components/proposals/os/preset-picker";
+import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 
 // ─── Block playlist chip data ─────────────────────────────────────────────────
 

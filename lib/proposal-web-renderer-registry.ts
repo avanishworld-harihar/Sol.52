@@ -25,6 +25,7 @@
 
 import type { ProposalBlockId } from "@/lib/proposal-block-registry";
 import { ALWAYS_ELIGIBLE, type BlockEligibilityContext, type BlockEligibilityFn } from "@/lib/proposal-block-context";
+import { RESIDENTIAL_WEB_RENDERER_PRESETS } from "@/lib/proposal-preset-engine";
 
 // ─── Render key — maps to specific WebRenderer switch branches ───────────────
 
@@ -70,13 +71,27 @@ export type WebBlockMeta = {
 
 // ─── Eligibility helpers ─────────────────────────────────────────────────────
 
+/** True for any preset rendered by ProposalWebRenderer (all except legacy residential_smart). */
+const isResidentialWebPreset = (presetId: string) =>
+  (RESIDENTIAL_WEB_RENDERER_PRESETS as ReadonlyArray<string>).includes(presetId);
+
 const billBacked: BlockEligibilityFn = ({ billAuditBacked }) => billAuditBacked;
+
+/**
+ * roi_savings: show when bill-backed OR when using a new residential web-renderer preset
+ * (those presets always include ROI as first content page regardless of bill path).
+ */
+const roiSavingsEligible: BlockEligibilityFn = ({ billAuditBacked, presetId }) =>
+  billAuditBacked || isResidentialWebPreset(presetId);
+
 const noBill: BlockEligibilityFn = ({ billAuditBacked, presetId }) =>
   !billAuditBacked || presetId === "commercial_executive";
 const commercialOnly: BlockEligibilityFn = ({ presetId }) => presetId === "commercial_executive";
-/** DCR comparison — commercial default; residential when trackCompare is enabled in layout. */
+/** DCR comparison — commercial + any residential preset. */
 const dcrComparisonEligible: BlockEligibilityFn = ({ presetId }) =>
-  presetId === "commercial_executive" || presetId === "residential_smart";
+  presetId === "commercial_executive" ||
+  presetId === "residential_smart" ||
+  isResidentialWebPreset(presetId);
 const surveyOnly: BlockEligibilityFn = ({ showSurveySection }) => Boolean(showSurveySection);
 
 // ─── Registry ─────────────────────────────────────────────────────────────────
@@ -120,13 +135,15 @@ export const WEB_RENDERER_REGISTRY: Partial<Record<ProposalBlockId, WebBlockMeta
   },
 
   /**
-   * Economics / ROI page — only when bill data is present.
-   * Without bill data, replaced by system_requirements.
+   * Economics / ROI page.
+   * Bill-backed: shows actual bill-vs-solar savings.
+   * New residential web-renderer presets: shows requirement-based savings summary.
+   * Without bill data on legacy path: replaced by system_requirements.
    */
   roi_savings: {
     pageDataAttr: "economics",
     bridgeKey: "afterSavings",
-    eligibility: billBacked,
+    eligibility: roiSavingsEligible,
     renderKey: "economics",
   },
 

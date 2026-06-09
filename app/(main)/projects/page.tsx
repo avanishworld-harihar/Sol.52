@@ -9,6 +9,7 @@ import { ProjectListPagination } from "@/components/projects/project-list-pagina
 import { ProjectListSkeleton } from "@/components/projects/project-list-skeleton";
 import { ProjectListTable } from "@/components/projects/project-list-table";
 import { ProjectOpsDashboard } from "@/components/projects/ops/project-ops-dashboard";
+import { OutstandingCollectionsSheet } from "@/components/money/outstanding-collections-sheet";
 import { WorkflowLifecycleStrip } from "@/components/workflow-lifecycle-strip";
 import { FloatingLabelInput, FloatingLabelSelect } from "@/components/ui/floating-label-input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,10 +17,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast-center";
 import { useLanguage } from "@/lib/language-context";
 import {
+  fetchOutstandingCollections,
   fetchProjectDashboardStats,
   fetchProjectList,
   patchProject,
   PROJECT_DASHBOARD_STATS_KEY,
+  PROJECT_OUTSTANDING_COLLECTIONS_KEY,
   type ProjectListItem,
 } from "@/lib/project-api-client";
 import { DASHBOARD_STATS_SWR_KEY } from "@/lib/dashboard-stats-client";
@@ -143,6 +146,7 @@ function ProjectsBoard() {
     status: "pending" as ProjectEditStatus,
   });
   const [projError, setProjError] = useState("");
+  const [collectionsOpen, setCollectionsOpen] = useState(false);
 
   const modalFloatingClass =
     "h-12 rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 focus:border-teal-500 focus:ring-teal-200/70";
@@ -183,6 +187,12 @@ function ProjectsBoard() {
     PROJECT_DASHBOARD_STATS_KEY,
     fetchProjectDashboardStats,
     { revalidateOnFocus: false, dedupingInterval: 30_000 }
+  );
+
+  const { data: collectionsPayload, isLoading: collectionsLoading } = useSWR(
+    collectionsOpen ? PROJECT_OUTSTANDING_COLLECTIONS_KEY : null,
+    fetchOutstandingCollections,
+    { revalidateOnFocus: false, dedupingInterval: 10_000 }
   );
 
   const listPipeline = useMemo(() => {
@@ -414,6 +424,7 @@ function ProjectsBoard() {
             stats={opsStats}
             projects={activeRows}
             loading={opsStatsLoading}
+            onPendingCollectionClick={() => setCollectionsOpen(true)}
           />
         </WorkspaceStaggerItem>
 
@@ -674,6 +685,15 @@ function ProjectsBoard() {
           </div>
         </div>
       ) : null}
+
+      <OutstandingCollectionsSheet
+        open={collectionsOpen}
+        onClose={() => setCollectionsOpen(false)}
+        rows={collectionsPayload?.collections ?? []}
+        totalPendingInr={collectionsPayload?.total_pending_inr ?? 0}
+        projectCount={collectionsPayload?.projects_with_balance_count ?? 0}
+        loading={collectionsLoading}
+      />
     </>
   );
 }

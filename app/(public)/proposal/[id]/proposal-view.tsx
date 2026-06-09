@@ -54,6 +54,7 @@ import { ATAL_GRIHA_JYOTI } from "@/lib/mp-tariff-2025-26";
 import { profileFieldOrDash, type EmiRow } from "@/lib/proposal-deck-helpers";
 import { hindiHonoredDisplayName } from "@/lib/roman-name-to-devanagari";
 import { resolvedCompanyProfileForLang } from "@/lib/proposal-company-resolve";
+import { PROPOSAL_PREMIUM_DOC_CLASS } from "@/lib/proposal-premium-design";
 import { PROPOSAL_PLATFORM_CREDIT } from "@/lib/platform-branding";
 import { ResidentialTrackCompareSection } from "@/components/proposal/blocks/residential/block-residential-track-compare";
 import {
@@ -335,10 +336,10 @@ export function StatTile({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.5, delay, ease: [0.21, 1.02, 0.73, 1] }}
-      className={`rounded-2xl border p-4 shadow-sm sm:p-5 ${
+      className={`border p-4 sm:p-5 ${
         dark
-          ? "border-white/10 bg-white/5 backdrop-blur-sm"
-          : "border-white/60 bg-white/80 backdrop-blur-sm shadow-[0_4px_24px_rgba(0,0,0,0.06)]"
+          ? "border-neutral-800 bg-neutral-900/30"
+          : "border-neutral-200 bg-white"
       }`}
     >
       {Icon ? (
@@ -693,12 +694,12 @@ export function HeroCover({
   // floats or overlaps. On mobile the grid collapses to 1 column.
   return (
     <section
-      className={`proposal-hero proposal-hero-orchestrated relative flex flex-col overflow-hidden rounded-3xl border p-0 ${
+      className={`proposal-hero proposal-hero-orchestrated relative flex flex-col overflow-hidden border p-0 ${
         requirementBased ? "proposal-hero--requirement " : ""
       }${
         darkMode
-          ? "border-white/10 bg-slate-900 shadow-[0_24px_80px_-20px_rgba(0,0,0,0.5)]"
-          : "border-slate-200/90 bg-white shadow-[0_24px_80px_-24px_rgba(15,23,42,0.12)]"
+          ? "border-neutral-800 bg-neutral-950"
+          : "border-neutral-200 bg-white"
       }`}
     >
       <div className="proposal-hero-main relative flex flex-1 flex-col p-4 sm:p-8 md:p-9 lg:p-10">
@@ -719,8 +720,8 @@ export function HeroCover({
               nameClassName={`truncate text-lg font-bold tracking-tight sm:text-xl ${darkMode ? "text-white" : "text-slate-900"}`}
               taglineClassName={darkMode ? `${taglineClass} text-slate-400` : taglineClass}
               fallbackIcon={
-                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 via-sky-500 to-emerald-600 text-white shadow-md sm:h-14 sm:w-14">
-                  <Sun className="h-6 w-6 sm:h-7 sm:w-7" />
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center border border-neutral-300 bg-neutral-50 text-neutral-700 sm:h-14 sm:w-14">
+                  <Sun className="h-6 w-6 sm:h-7 sm:w-7" strokeWidth={1.5} />
                 </div>
               }
             />
@@ -740,7 +741,7 @@ export function HeroCover({
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className={`text-xs font-semibold sm:text-sm ${darkMode ? "text-sky-400" : "text-sky-700"} ${lang === "hi" ? "tracking-normal" : "tracking-wide"}`}
+            className={`text-xs font-semibold sm:text-sm ${darkMode ? "text-neutral-400" : "text-neutral-500"} ${lang === "hi" ? "tracking-normal" : "tracking-wide"}`}
           >
             {D["slide.cover.kicker"]}
           </motion.p>
@@ -766,15 +767,15 @@ export function HeroCover({
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.08 }}
-            className={`proposal-hero-about order-2 mt-5 rounded-2xl border-l-4 p-4 sm:mt-6 sm:p-5 ${
+            className={`proposal-hero-about order-2 mt-5 border-l-[3px] p-4 sm:mt-6 sm:p-5 ${
               darkMode
-                ? "border border-white/10 border-l-emerald-400 bg-emerald-950/25"
-                : "border border-emerald-100/90 border-l-emerald-500 bg-emerald-50/40"
+                ? "border border-neutral-800 border-l-neutral-200 bg-neutral-900/40"
+                : "border border-neutral-200 border-l-neutral-900 bg-neutral-50"
             }`}
           >
             <p
               className={`text-[10px] font-bold ${
-                darkMode ? "text-emerald-400" : "text-emerald-800"
+                darkMode ? "text-neutral-400" : "text-neutral-500"
               } ${lang === "hi" ? "tracking-normal normal-case" : "uppercase tracking-wide"}`}
             >
               {summary.installer
@@ -2605,7 +2606,7 @@ export default function ProposalView({
   return (
     <MotionConfig transition={{ duration: 0.35, ease: "easeOut" }} reducedMotion="user">
       <div
-        className={`proposal-document proposal-journey-connected proposal-responsive-doc mx-auto w-full max-w-[210mm] px-4 pb-32 pt-6 sm:px-8 sm:pt-10 print:max-w-none print:p-0 print:pb-0 transition-colors duration-300 ${
+        className={`proposal-document ${PROPOSAL_PREMIUM_DOC_CLASS} proposal-journey-connected proposal-responsive-doc mx-auto w-full max-w-[210mm] px-4 pb-32 pt-6 sm:px-8 sm:pt-10 print:max-w-none print:p-0 print:pb-0 transition-colors duration-300 ${
           lang === "hi" ? "lang-hi " : ""
         }${darkMode ? "text-white" : ""}`}
         data-theme={darkMode ? "dark" : "light"}

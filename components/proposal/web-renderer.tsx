@@ -56,6 +56,7 @@ import {
 } from "@/lib/proposal-branding-settings";
 import { JourneyBridge, ProposalJourneyProgress } from "@/components/proposal/proposal-journey";
 import { isProposalBillAuditBacked } from "@/lib/proposal-bill-audit-eligibility";
+import { PROPOSAL_PREMIUM_DOC_CLASS } from "@/lib/proposal-premium-design";
 
 // ── Residential section components (re-exported from proposal-view.tsx) ───────
 import {
@@ -585,7 +586,7 @@ function ProposalWebRendererInner({
   return (
     <MotionConfig transition={{ duration: 0.35, ease: "easeOut" }} reducedMotion="user">
       <div
-        className={`proposal-document proposal-journey-connected proposal-responsive-doc mx-auto w-full max-w-[210mm] px-4 pb-32 pt-6 sm:px-8 sm:pt-10 print:max-w-none print:p-0 print:pb-0 transition-colors duration-300 ${
+        className={`proposal-document ${PROPOSAL_PREMIUM_DOC_CLASS} proposal-journey-connected proposal-responsive-doc mx-auto w-full max-w-[210mm] px-4 pb-32 pt-6 sm:px-8 sm:pt-10 print:max-w-none print:p-0 print:pb-0 transition-colors duration-300 ${
           lang === "hi" ? "lang-hi " : ""
         }${darkMode ? "text-white" : ""}`}
         data-theme={darkMode ? "dark" : "light"}

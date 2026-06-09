@@ -19,20 +19,24 @@ function MetricCard({
   label,
   value,
   href,
+  onClick,
   icon: Icon,
   tone,
 }: {
   label: string;
   value: string;
   href?: string;
+  onClick?: () => void;
   icon: typeof Layers;
   tone: MetricTone;
 }) {
+  const interactive = Boolean(href || onClick);
   const body = (
     <div
       className={cn(
         "flex min-w-[8.25rem] shrink-0 flex-col gap-1.5 rounded-lg border border-slate-200/90 bg-white px-2.5 py-2 dark:border-white/10 dark:bg-[#0c1017] max-sm:min-w-[7.5rem] max-sm:gap-1 max-sm:px-2 max-sm:py-1.5 sm:min-w-[10.5rem] sm:gap-2 sm:rounded-xl sm:px-3.5 sm:py-3",
-        href && "transition hover:border-teal-300/80 hover:shadow-sm dark:hover:border-teal-500/30"
+        interactive &&
+          "cursor-pointer transition hover:border-teal-300/80 hover:shadow-sm dark:hover:border-teal-500/30"
       )}
     >
       <span
@@ -62,15 +66,24 @@ function MetricCard({
       </Link>
     );
   }
+  if (onClick) {
+    return (
+      <button type="button" className="block text-left" onClick={onClick}>
+        {body}
+      </button>
+    );
+  }
   return body;
 }
 
 export function ProjectOpsMetricsStrip({
   stats,
   className,
+  onPendingCollectionClick,
 }: {
   stats: ProjectDashboardStats | null | undefined;
   className?: string;
+  onPendingCollectionClick?: () => void;
 }) {
   const metrics = [
     {
@@ -134,6 +147,7 @@ export function ProjectOpsMetricsStrip({
           label={m.label}
           value={m.value}
           href={m.href}
+          onClick={m.key === "pending" ? onPendingCollectionClick : undefined}
           icon={m.icon}
           tone={m.tone}
         />

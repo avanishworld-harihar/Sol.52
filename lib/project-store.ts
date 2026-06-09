@@ -763,6 +763,79 @@ export async function getProjectDashboardStats(organizationId?: string | null) {
   };
 }
 
+/** Row for Outstanding Collections sheet — active projects with stored contract and pending > 0. */
+export interface OutstandingCollectionRow {
+  project_id: string;
+  official_name: string | null;
+  lead_name: string | null;
+  stored_contract_amount_inr: number;
+  amount_received_inr: number;
+  pending_inr: number;
+}
+
+/**
+ * Outstanding collections list for Financial Module.
+ * Filters: not archived, dashboard visible, stored contract set, pending_inr > 0.
+ * Sort: pending_inr DESC (server-side).
+ */
+export async function listOutstandingCollections(
+  organizationId?: string | null
+): Promise<OutstandingCollectionRow[]> {
+  const client = db();
+  if (!client) return [];
+
+  let query = client
+    .from("projects")
+    .select(
+      `
+      id,
+      official_name,
+      contract_amount_inr,
+      amount_received_inr,
+      leads!projects_lead_id_fkey ( name )
+    `
+    )
+    .is("archived_at", null)
+    .eq("dashboard_visible", true)
+    .not("contract_amount_inr", "is", null);
+
+  if (organizationId) {
+    query = query.eq("organization_id", organizationId);
+  }
+
+  const { data, error } = await query;
+  if (error || !Array.isArray(data)) return [];
+
+  const rows: OutstandingCollectionRow[] = [];
+
+  for (const raw of data as Record<string, unknown>[]) {
+    const leads = raw.leads as Record<string, unknown> | null;
+    const stored = raw.contract_amount_inr;
+    const received = raw.amount_received_inr;
+    const pending = computePendingInr(
+      stored as number | null,
+      received as number | null | undefined
+    );
+    if (pending == null || pending <= 0) continue;
+
+    rows.push({
+      project_id: String(raw.id),
+      official_name:
+        raw.official_name != null && String(raw.official_name).trim()
+          ? String(raw.official_name)
+          : null,
+      lead_name:
+        leads?.name != null && String(leads.name).trim() ? String(leads.name) : null,
+      stored_contract_amount_inr: Number(stored),
+      amount_received_inr: normalizeReceivedInr(received as number | null | undefined),
+      pending_inr: pending,
+    });
+  }
+
+  rows.sort((a, b) => b.pending_inr - a.pending_inr);
+  return rows;
+}
+
 // ---------------------------------------------------------------------------
 // Installer profiles
 // ---------------------------------------------------------------------------

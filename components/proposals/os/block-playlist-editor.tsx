@@ -18,7 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
-import type { ProposalPresetId } from "@/components/proposals/os/preset-picker";
+import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 
 type BlockDef = {
   id: string;

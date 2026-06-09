@@ -11,6 +11,9 @@ import { resolveProposalBrandConfig } from "@/lib/proposal-branding-settings";
 import { parseResidentialConfig } from "@/lib/residential-proposal-config";
 import ProposalView from "./proposal-view";
 import CommercialProposalView from "@/components/proposal/commercial-proposal-view";
+import { ProposalWebRenderer } from "@/components/proposal/web-renderer";
+import { compileProposalDocument } from "@/lib/proposal-document-ir";
+import { RESIDENTIAL_WEB_RENDERER_PRESETS } from "@/lib/proposal-preset-engine";
 
 export const dynamic = "force-dynamic";
 
@@ -34,8 +37,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   })();
   const saving = summary?.annualSaving ?? 0;
   const isCommercial = proposal.preset_id === "commercial_executive";
+  const isBankPack = proposal.preset_id === "residential_bank_loan";
+  const proposalLabel = isCommercial
+    ? "Commercial Solar Proposal"
+    : isBankPack
+      ? "Solar Project — Bank Submission"
+      : "Solar Proposal";
   return {
-    title: `${proposal.customer_name} — ${isCommercial ? "Commercial Solar Proposal" : "Solar Proposal"} · ${installer}`,
+    title: `${proposal.customer_name} — ${proposalLabel} · ${installer}`,
     description: `${isCommercial ? "Commercial" : "Personalised"} ${summary?.systemKw ?? ""} kW solar proposal · ${saving > 0 ? `₹${saving.toLocaleString("en-IN")}/yr saving · ` : ""}Net cost ₹${(summary?.netCost ?? 0).toLocaleString("en-IN")}.`,
     openGraph: {
       title: `${proposal.customer_name}${isCommercial ? " — Commercial Solar Intelligence Report" : "'s Solar Proposal"}`,
@@ -95,7 +104,23 @@ export default async function PublicProposalPage({ params }: PageProps) {
     );
   }
 
-  // ── Residential / legacy — render existing ProposalView ──────────────────
+  // ── New residential presets — render via ProposalWebRenderer ─────────────
+  if ((RESIDENTIAL_WEB_RENDERER_PRESETS as ReadonlyArray<string>).includes(proposal.preset_id ?? "")) {
+    const leadId = proposal.lead_id?.trim() ? proposal.lead_id.trim() : null;
+    const surveyStatus = await getLeadSurveyStatus(leadId);
+    const showSurvey = isLeadSurveyCompleteForProposal(surveyStatus);
+    const doc = compileProposalDocument(id, mergedInput, liveSummary, {
+      presetId: proposal.preset_id ?? "residential_sales_premium",
+    });
+    return (
+      <ProposalWebRenderer
+        document={doc}
+        showSurveyWorkflowSection={showSurvey}
+      />
+    );
+  }
+
+  // ── Residential Legacy (residential_smart) — existing ProposalView ────────
   const leadId = proposal.lead_id?.trim() ? proposal.lead_id.trim() : null;
   const surveyStatus = await getLeadSurveyStatus(leadId);
   const showSurveyWorkflowSection = isLeadSurveyCompleteForProposal(surveyStatus);

@@ -4,6 +4,7 @@
 import { mutate } from "swr";
 import {
   PROJECT_DASHBOARD_STATS_KEY,
+  PROJECT_OUTSTANDING_COLLECTIONS_KEY,
   projectActivityKey,
   projectDetailKey,
   projectCommentsKey,
@@ -44,5 +45,6 @@ export async function revalidateProjectHubCaches(projectId: string): Promise<voi
     mutate(buildProjectListUrl({ view: "hidden" })),
     mutate(buildProjectListUrl({ view: "archived" })),
     mutate(PROJECT_DASHBOARD_STATS_KEY),
+    mutate(PROJECT_OUTSTANDING_COLLECTIONS_KEY),
   ]);
 }

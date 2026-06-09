@@ -24,7 +24,7 @@ import {
   User,
   Zap,
 } from "lucide-react";
-import type { ProposalPresetId } from "@/components/proposals/os/preset-picker";
+import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 
 export type BuilderStage = {
   id: string;
@@ -210,7 +210,15 @@ export function BuilderStageBar({
                   : "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
               }`}
             >
-              {presetId === "commercial_executive" ? "Commercial" : "Residential"}
+              {presetId === "commercial_executive"
+                ? "Commercial"
+                : presetId === "residential_sales_premium"
+                ? "Sales Premium"
+                : presetId === "residential_bank_loan"
+                ? "Bank Loan"
+                : presetId === "residential_executive"
+                ? "Executive"
+                : "Residential"}
             </span>
           </div>
         )}

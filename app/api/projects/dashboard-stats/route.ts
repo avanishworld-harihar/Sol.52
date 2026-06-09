@@ -1,9 +1,13 @@
-import { NextResponse } from "next/server";
-import { getProjectDashboardStats, resolveDefaultOrgId } from "@/lib/project-store";
+import { NextRequest, NextResponse } from "next/server";
+import {
+  getProjectDashboardStats,
+  listOutstandingCollections,
+  resolveDefaultOrgId,
+} from "@/lib/project-store";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const orgId = await resolveDefaultOrgId();
     const stats = await getProjectDashboardStats(orgId);
@@ -13,8 +17,18 @@ export async function GET() {
         { status: 503 }
       );
     }
+
+    const includeCollections = req.nextUrl.searchParams.get("collections") === "1";
+    if (!includeCollections) {
+      return NextResponse.json(
+        { ok: true, data: stats },
+        { headers: { "Cache-Control": "no-store" } }
+      );
+    }
+
+    const collections = await listOutstandingCollections(orgId);
     return NextResponse.json(
-      { ok: true, data: stats },
+      { ok: true, data: { ...stats, collections } },
       { headers: { "Cache-Control": "no-store" } }
     );
   } catch (e) {

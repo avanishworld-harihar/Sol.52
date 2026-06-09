@@ -18,7 +18,7 @@ import {
 import Link from "next/link";
 import { buildProposalEditHref } from "@/lib/proposal-edit-url";
 import type { ReactNode } from "react";
-import { ProjectContractValueForm } from "@/components/projects/hub/project-contract-value-form";
+import { ProjectContractValueForm, ProjectReceivedAmountForm } from "@/components/projects/hub/project-contract-value-form";
 import { ProjectHubOverviewDocuments } from "@/components/projects/hub/project-hub-overview-documents";
 
 const ROOF_LABELS: Record<string, string> = {
@@ -190,6 +190,7 @@ export function ProjectHubOverviewTab({ project }: { project: ProjectListItem })
           </div>
 
           <ProjectContractValueForm project={project} />
+          <ProjectReceivedAmountForm project={project} />
 
           <SummaryCell
             label="Next due date"

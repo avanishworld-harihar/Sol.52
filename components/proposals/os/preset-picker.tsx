@@ -3,13 +3,12 @@
 /**
  * ProposalPresetPicker — full-screen preset selection overlay.
  *
- * Appears on first load of the proposal builder. The user picks a proposal
- * "operating mode" before filling in customer data. Visual language is
- * premium and decisive — like choosing a product tier.
+ * Layout:
+ *   - Residential group: 3 cards (Sales Premium / Bank Loan / Executive Premium)
+ *     + 1 small "Legacy" option
+ *   - Commercial card: 1 card
  *
- * Presets:
- *   residential_smart    — standard rooftop solar proposal with bill audit
- *   commercial_executive — high-impact commercial proposal with executive summary
+ * Sales Premium is the default (highlighted) residential option.
  */
 
 import { AnimatePresence, motion } from "framer-motion";
@@ -17,12 +16,15 @@ import {
   ArrowRight,
   Building2,
   CheckCircle2,
+  FileText,
   Home,
   Sparkles,
+  Star,
   Zap,
 } from "lucide-react";
+import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 
-export type ProposalPresetId = "residential_smart" | "commercial_executive";
+export type { ProposalPresetId };
 
 type Props = {
   currentPresetId: ProposalPresetId | null;
@@ -30,74 +32,177 @@ type Props = {
   onSkip: () => void;
 };
 
-type PresetDefinition = {
+type PresetCard = {
   id: ProposalPresetId;
   icon: React.ReactNode;
-  badge: string;
-  title: string;
+  label: string;
   subtitle: string;
   audience: string;
   sections: string[];
   accentFrom: string;
   accentTo: string;
   borderColor: string;
-  badgeBg: string;
-  badgeText: string;
   ctaClass: string;
+  isDefault?: boolean;
 };
 
-const PRESETS: PresetDefinition[] = [
+const RESIDENTIAL_PRESETS: PresetCard[] = [
   {
-    id: "residential_smart",
-    icon: <Home className="h-7 w-7" />,
-    badge: "Residential Smart",
-    title: "Residential Proposal",
-    subtitle: "Complete rooftop solar proposal with bill audit, savings analysis, and payment terms.",
-    audience: "Individual homeowners · Small rooftops · 1–10 kW",
+    id: "residential_sales_premium",
+    icon: <Star className="h-6 w-6" />,
+    label: "Sales Premium",
+    subtitle: "Conversion-first. Savings and ROI lead — system detail follows.",
+    audience: "Homeowners · 1–10 kW · ₹5L–₹25L projects",
     sections: [
-      "Bill audit & monthly cost deep-dive",
-      "25-year savings vs grid comparison",
-      "System BOM & technical specifications",
-      "Payment schedule & EMI calculator",
-      "Environment impact (carbon offset)",
-      "AMC & after-sales service plan",
+      "Savings headline & 25-year ROI upfront",
+      "Net cost after subsidy, payback period",
+      "Technical specs & equipment BOM",
+      "AMC & payment schedule",
     ],
     accentFrom: "from-amber-500",
     accentTo: "to-orange-600",
     borderColor: "border-amber-200/70",
-    badgeBg: "bg-amber-100",
-    badgeText: "text-amber-800",
     ctaClass:
-      "bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:from-amber-600 hover:to-orange-700 shadow-amber-200",
+      "bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:from-amber-600 hover:to-orange-700",
+    isDefault: true,
   },
   {
-    id: "commercial_executive",
-    icon: <Building2 className="h-7 w-7" />,
-    badge: "Commercial Executive",
-    title: "Commercial Proposal",
-    subtitle:
-      "Executive-grade commercial solar proposal with financial intelligence and engineering rationale.",
-    audience: "Businesses · Industries · Schools · 10 kW and above",
+    id: "residential_bank_loan",
+    icon: <FileText className="h-6 w-6" />,
+    label: "Bank Loan Pack",
+    subtitle: "Formatted for bank loan submission. Clean documentation style.",
+    audience: "Bank & subsidy applications · Any size",
     sections: [
-      "Executive summary with ROI headline",
-      "System design & engineering rationale",
-      "Financial intelligence (NPV / IRR / cashflow)",
-      "DC/AC specifications & certifications",
-      "Payment milestones & commercial terms",
-      "Net-metering & DISCOM compliance",
+      "Project title & cost summary sheet",
+      "Itemised cost breakup",
+      "Vendor & product details",
+      "Declaration & signature pages",
     ],
     accentFrom: "from-sky-500",
-    accentTo: "to-indigo-600",
+    accentTo: "to-cyan-600",
     borderColor: "border-sky-200/70",
-    badgeBg: "bg-sky-100",
-    badgeText: "text-sky-800",
     ctaClass:
-      "bg-gradient-to-r from-sky-500 to-indigo-600 text-white hover:from-sky-600 hover:to-indigo-700 shadow-sky-200",
+      "bg-gradient-to-r from-sky-500 to-cyan-600 text-white hover:from-sky-600 hover:to-cyan-700",
+  },
+  {
+    id: "residential_executive",
+    icon: <Sparkles className="h-6 w-6" />,
+    label: "Executive Premium",
+    subtitle: "Minimalist luxury. Architecture-portfolio feel for premium clients.",
+    audience: "Premium homeowners · High-value residential",
+    sections: [
+      "Clean cover with financials first",
+      "Minimal marketing, maximum clarity",
+      "Premium typography & whitespace",
+      "Selective, high-trust page order",
+    ],
+    accentFrom: "from-violet-500",
+    accentTo: "to-purple-600",
+    borderColor: "border-violet-200/70",
+    ctaClass:
+      "bg-gradient-to-r from-violet-500 to-purple-600 text-white hover:from-violet-600 hover:to-purple-700",
   },
 ];
 
-/** Above `#ss-bottom-nav-portal` (z-index 9999) so modals fully cover mobile chrome. */
+const COMMERCIAL_PRESET: PresetCard = {
+  id: "commercial_executive",
+  icon: <Building2 className="h-6 w-6" />,
+  label: "Commercial Executive",
+  subtitle:
+    "Executive-grade C&I proposal with financial intelligence and engineering rationale.",
+  audience: "Businesses · Industries · Schools · 10 kW and above",
+  sections: [
+    "Executive summary with ROI headline",
+    "Financial intelligence (NPV / IRR / cashflow)",
+    "System design & engineering rationale",
+    "Net-metering & DISCOM compliance",
+  ],
+  accentFrom: "from-slate-600",
+  accentTo: "to-slate-800",
+  borderColor: "border-slate-300/70",
+  ctaClass:
+    "bg-gradient-to-r from-slate-600 to-slate-800 text-white hover:from-slate-700 hover:to-slate-900",
+};
+
 const MODAL_Z = "z-[10050]";
+
+function PresetCardButton({
+  preset,
+  isSelected,
+  onSelect,
+  delay,
+}: {
+  preset: PresetCard;
+  isSelected: boolean;
+  onSelect: (id: ProposalPresetId) => void;
+  delay: number;
+}) {
+  return (
+    <motion.button
+      type="button"
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+      onClick={() => onSelect(preset.id)}
+      className={`proposal-os-glass-card group relative w-full rounded-2xl p-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400/50 sm:p-5 ${
+        isSelected ? "proposal-os-glass-card--selected ring-2 ring-teal-400/30" : ""
+      }`}
+    >
+      {/* Accent wash */}
+      <div
+        className={`pointer-events-none absolute inset-0 z-0 rounded-2xl bg-gradient-to-br ${preset.accentFrom} ${preset.accentTo} opacity-0 transition-opacity duration-300 group-hover:opacity-[0.12]`}
+        aria-hidden
+      />
+
+      {/* Icon + badges */}
+      <div className="relative z-[1] mb-3 flex items-start justify-between">
+        <div
+          className={`inline-flex items-center justify-center rounded-xl bg-gradient-to-br ${preset.accentFrom} ${preset.accentTo} p-2.5 text-white shadow-md`}
+        >
+          {preset.icon}
+        </div>
+        <div className="flex items-center gap-1.5">
+          {preset.isDefault && (
+            <span className="rounded-full border border-amber-400/40 bg-amber-400/20 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-200">
+              Default
+            </span>
+          )}
+          {isSelected && <CheckCircle2 className="h-5 w-5 text-emerald-400" />}
+        </div>
+      </div>
+
+      {/* Title + subtitle */}
+      <h3 className="relative z-[1] text-base font-bold text-white">{preset.label}</h3>
+      <p className="relative z-[1] mt-1 text-xs leading-relaxed text-slate-300/90">
+        {preset.subtitle}
+      </p>
+
+      {/* Audience pill */}
+      <div className="relative z-[1] mt-2.5 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[10px] font-semibold text-slate-200 backdrop-blur-sm">
+        <Zap className="h-2.5 w-2.5" aria-hidden />
+        {preset.audience}
+      </div>
+
+      {/* Sections list */}
+      <ul className="relative z-[1] mt-3 space-y-1">
+        {preset.sections.map((s) => (
+          <li key={s} className="flex items-start gap-2 text-[11px] text-slate-300/85">
+            <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-400" />
+            {s}
+          </li>
+        ))}
+      </ul>
+
+      {/* CTA */}
+      <div
+        className={`relative z-[1] mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold shadow-lg transition-all ${preset.ctaClass}`}
+      >
+        Select
+        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+      </div>
+    </motion.button>
+  );
+}
 
 export function ProposalPresetPicker({ currentPresetId, onSelect, onSkip }: Props) {
   return (
@@ -118,104 +223,93 @@ export function ProposalPresetPicker({ currentPresetId, onSelect, onSkip }: Prop
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 16, scale: 0.97 }}
           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className="proposal-os-glass-sheet flex max-h-[min(96dvh,100%)] w-full max-w-3xl flex-col rounded-t-3xl sm:max-h-[min(90vh,920px)] sm:rounded-3xl"
+          className="proposal-os-glass-sheet flex max-h-[min(96dvh,100%)] w-full max-w-4xl flex-col rounded-t-3xl sm:max-h-[min(92vh,960px)] sm:rounded-3xl"
         >
           <div className="proposal-os-glass-sheet-inner flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain p-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:p-6 sm:pb-6">
-          {/* Header */}
-          <div className="mb-6 text-center">
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3 py-1.5 text-xs font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-md">
-              <Sparkles className="h-3 w-3 text-amber-400" />
-              SOL.52 Proposal OS
+            {/* Header */}
+            <div className="mb-5 text-center">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/15 px-3 py-1.5 text-xs font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-md">
+                <Sparkles className="h-3 w-3 text-amber-400" />
+                SOL.52 Proposal OS
+              </div>
+              <h2
+                id="preset-picker-title"
+                className="text-2xl font-bold tracking-tight text-white sm:text-3xl"
+              >
+                Choose your proposal type
+              </h2>
+              <p className="mt-2 text-sm text-slate-400">
+                Select the format that fits your customer. You can change this at any time.
+              </p>
             </div>
-            <h2
-              id="preset-picker-title"
-              className="text-2xl font-bold tracking-tight text-white sm:text-3xl"
-            >
-              Choose your proposal type
-            </h2>
-            <p className="mt-2 text-sm text-slate-400">
-              Select the mode that matches your customer. You can change this at any time.
-            </p>
-          </div>
 
-          {/* Preset cards */}
-          <div className="grid gap-4 sm:grid-cols-2">
-            {PRESETS.map((preset, i) => {
-              const isSelected = currentPresetId === preset.id;
-              return (
-                <motion.button
-                  key={preset.id}
+            {/* Residential group */}
+            <div className="mb-4">
+              <div className="mb-3 flex items-center gap-2">
+                <Home className="h-4 w-4 text-slate-400" aria-hidden />
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
+                  Residential
+                </p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {RESIDENTIAL_PRESETS.map((preset, i) => (
+                  <PresetCardButton
+                    key={preset.id}
+                    preset={preset}
+                    isSelected={currentPresetId === preset.id}
+                    onSelect={onSelect}
+                    delay={i * 0.06 + 0.08}
+                  />
+                ))}
+              </div>
+
+              {/* Legacy option — small link */}
+              <div className="mt-3 text-center">
+                <button
                   type="button"
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.07 + 0.1, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                  onClick={() => onSelect(preset.id)}
-                  className={`proposal-os-glass-card group w-full rounded-2xl p-5 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400/50 sm:p-6 ${
-                    isSelected ? "proposal-os-glass-card--selected ring-2 ring-teal-400/30" : ""
+                  onClick={() => onSelect("residential_smart")}
+                  className={`text-xs transition-colors ${
+                    currentPresetId === "residential_smart"
+                      ? "font-semibold text-white underline"
+                      : "text-slate-500 hover:text-slate-300"
                   }`}
                 >
-                  {/* Accent wash on hover */}
-                  <div
-                    className={`pointer-events-none absolute inset-0 z-0 bg-gradient-to-br ${preset.accentFrom} ${preset.accentTo} opacity-0 transition-opacity duration-300 group-hover:opacity-[0.12]`}
-                    aria-hidden
-                  />
+                  Use Residential Legacy (classic view)
+                </button>
+              </div>
+            </div>
 
-                  {/* Icon + badge */}
-                  <div className="relative z-[1] mb-4 flex items-start justify-between">
-                    <div
-                      className={`inline-flex items-center justify-center rounded-xl bg-gradient-to-br ${preset.accentFrom} ${preset.accentTo} p-3 text-white shadow-lg`}
-                    >
-                      {preset.icon}
-                    </div>
-                    {isSelected && (
-                      <CheckCircle2 className="h-5 w-5 text-emerald-400" />
-                    )}
-                  </div>
+            {/* Divider */}
+            <div className="my-2 border-t border-white/10" />
 
-                  {/* Title + subtitle */}
-                  <h3 className="relative z-[1] text-lg font-bold text-white">{preset.title}</h3>
-                  <p className="relative z-[1] mt-1 text-sm leading-relaxed text-slate-300/95">
-                    {preset.subtitle}
-                  </p>
+            {/* Commercial group */}
+            <div className="mt-3">
+              <div className="mb-3 flex items-center gap-2">
+                <Building2 className="h-4 w-4 text-slate-400" aria-hidden />
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
+                  Commercial &amp; Industrial
+                </p>
+              </div>
+              <div className="max-w-sm">
+                <PresetCardButton
+                  preset={COMMERCIAL_PRESET}
+                  isSelected={currentPresetId === "commercial_executive"}
+                  onSelect={onSelect}
+                  delay={0.28}
+                />
+              </div>
+            </div>
 
-                  {/* Audience */}
-                  <div className="relative z-[1] mt-3 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[10px] font-semibold text-slate-200 backdrop-blur-sm">
-                    <Zap className="h-2.5 w-2.5" aria-hidden />
-                    {preset.audience}
-                  </div>
-
-                  {/* Included sections */}
-                  <ul className="relative z-[1] mt-4 space-y-1.5">
-                    {preset.sections.map((s) => (
-                      <li key={s} className="flex items-start gap-2 text-xs text-slate-300/90">
-                        <span className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-500" />
-                        {s}
-                      </li>
-                    ))}
-                  </ul>
-
-                  {/* CTA */}
-                  <div
-                    className={`relative z-[1] mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold shadow-lg backdrop-blur-sm transition-all ${preset.ctaClass}`}
-                  >
-                    Start Building
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                  </div>
-                </motion.button>
-              );
-            })}
-          </div>
-
-          {/* Skip option */}
-          <div className="mt-4 text-center">
-            <button
-              type="button"
-              onClick={onSkip}
-              className="text-xs text-slate-400/90 underline-offset-2 transition-colors hover:text-white hover:underline"
-            >
-              Skip and use Residential Smart (default)
-            </button>
-          </div>
+            {/* Skip */}
+            <div className="mt-5 text-center">
+              <button
+                type="button"
+                onClick={onSkip}
+                className="text-xs text-slate-500/90 underline-offset-2 transition-colors hover:text-white hover:underline"
+              >
+                Skip — use Sales Premium (default)
+              </button>
+            </div>
           </div>
         </motion.div>
       </motion.div>

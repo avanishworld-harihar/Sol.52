@@ -1,0 +1,331 @@
+/**
+ * Premium proposal design system — investment document, not marketing flyer.
+ * Scoped to `.proposal-doc-premium` on public proposal routes.
+ */
+
+.proposal-doc-premium {
+  --pp-ink: #171717;
+  --pp-muted: #737373;
+  --pp-border: #e5e5e5;
+  --pp-surface: #ffffff;
+  --pp-canvas: #fafafa;
+  --pp-accent: #404040;
+  --pp-chart: #525252;
+  --pp-chart-peak: #262626;
+  --proposal-rhythm-section: 3rem;
+  --proposal-rhythm-breath: 4rem;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Canvas */
+.proposal-doc-premium.proposal-journey-connected[data-theme="light"],
+#proposal-route-root:has(.proposal-doc-premium) {
+  background: var(--pp-canvas) !important;
+}
+
+.proposal-doc-premium.proposal-journey-connected[data-theme="dark"] {
+  background: #0a0a0a;
+  color: #f5f5f5;
+}
+
+/* Pages — flat sheets, no glass glow */
+@media (min-width: 768px) {
+  .proposal-doc-premium .proposal-page {
+    background: var(--pp-surface) !important;
+    border: 1px solid var(--pp-border) !important;
+    border-radius: 0 !important;
+    padding: 2rem 2.25rem !important;
+    margin-top: 2rem !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    transition: none !important;
+  }
+
+  .proposal-doc-premium .proposal-page:hover {
+    box-shadow: none !important;
+  }
+}
+
+.commercial-proposal.proposal-doc-premium {
+  background: var(--pp-canvas);
+}
+
+.commercial-proposal.proposal-doc-premium .proposal-page {
+  border-radius: 0 !important;
+  border-color: var(--pp-border) !important;
+}
+
+/* Typography hierarchy */
+.proposal-doc-premium .proposal-journey-kicker {
+  color: var(--pp-muted) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.14em !important;
+}
+
+.proposal-doc-premium .proposal-journey-title {
+  color: var(--pp-ink) !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.025em !important;
+  line-height: 1.15 !important;
+}
+
+.proposal-doc-premium .proposal-journey-subtitle {
+  color: var(--pp-muted) !important;
+  line-height: 1.65 !important;
+  max-width: 36rem;
+}
+
+.proposal-doc-premium .proposal-journey-step-badge {
+  border-radius: 0 !important;
+  padding: 0.15rem 0.45rem !important;
+  font-size: 9px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.1em !important;
+  color: var(--pp-muted) !important;
+  background: transparent !important;
+  border: 1px solid var(--pp-border) !important;
+}
+
+/* Journey bridge — editorial aside, not marketing callout */
+.proposal-doc-premium .proposal-journey-bridge {
+  border-left: 2px solid var(--pp-ink) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  padding: 0.75rem 0 0.75rem 1.25rem !important;
+  color: var(--pp-muted) !important;
+}
+
+.proposal-doc-premium[data-theme="dark"] .proposal-journey-bridge {
+  border-left-color: #a3a3a3 !important;
+  color: #a3a3a3 !important;
+}
+
+/* Panels — flat, bordered */
+.proposal-doc-premium .proposal-panel {
+  border: 1px solid var(--pp-border) !important;
+  background: var(--pp-surface) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-radius: 0 !important;
+}
+
+.proposal-doc-premium .proposal-panel--highlight {
+  border-color: var(--pp-ink) !important;
+  background: var(--pp-surface) !important;
+  box-shadow: none !important;
+}
+
+.proposal-doc-premium .proposal-panel--muted {
+  background: #fafafa !important;
+}
+
+.proposal-doc-premium .proposal-panel--surface {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Hero cover */
+.proposal-doc-premium .proposal-hero {
+  border-radius: 0 !important;
+  border-color: var(--pp-border) !important;
+  box-shadow: none !important;
+}
+
+.proposal-doc-premium .proposal-hero-installer-bar {
+  border-bottom-style: solid !important;
+  border-color: var(--pp-border) !important;
+}
+
+.proposal-doc-premium .proposal-hero-intro p:first-child {
+  color: var(--pp-muted) !important;
+}
+
+.proposal-doc-premium .proposal-hero-about {
+  border-radius: 0 !important;
+  border: 1px solid var(--pp-border) !important;
+  border-left: 3px solid var(--pp-ink) !important;
+  background: #fafafa !important;
+}
+
+.proposal-doc-premium .proposal-hero-about p:first-child {
+  color: var(--pp-muted) !important;
+}
+
+.proposal-doc-premium .proposal-hero-profile > div,
+.proposal-doc-premium .proposal-hero-metrics > div {
+  border-radius: 0 !important;
+  border-color: var(--pp-border) !important;
+  background: var(--pp-surface) !important;
+  box-shadow: none !important;
+}
+
+/* Stat tiles inside hero */
+.proposal-doc-premium .proposal-hero-metrics svg,
+.proposal-doc-premium .proposal-hero-metrics [class*="lucide"] {
+  display: none !important;
+}
+
+.proposal-doc-premium .proposal-hero-metrics > div {
+  padding: 1rem 1.15rem !important;
+}
+
+.proposal-doc-premium .proposal-hero-metrics p:last-child {
+  color: var(--pp-ink) !important;
+  font-weight: 600 !important;
+}
+
+/* Savings ribbon — clean data grid */
+.proposal-doc-premium .proposal-hero-ribbon-tile {
+  border-radius: 0 !important;
+  border: 1px solid var(--pp-border) !important;
+  background: var(--pp-surface) !important;
+  padding: 0.85rem 1rem !important;
+}
+
+.proposal-doc-premium .proposal-hero-ribbon-tile--primary {
+  border-color: var(--pp-ink) !important;
+  background: var(--pp-surface) !important;
+  box-shadow: none !important;
+}
+
+.proposal-doc-premium .proposal-hero-ribbon-tile--primary .proposal-hero-ribbon-value {
+  color: var(--pp-ink) !important;
+  font-weight: 600 !important;
+}
+
+.proposal-doc-premium .proposal-hero-ribbon-value {
+  font-weight: 600 !important;
+  font-size: 1.125rem !important;
+}
+
+.proposal-doc-premium .proposal-hero-ribbon-label {
+  color: var(--pp-muted) !important;
+  letter-spacing: 0.12em !important;
+}
+
+/* Charts — restrained, print-safe */
+.proposal-doc-premium .proposal-chart-bar--glass {
+  background-color: var(--pp-chart) !important;
+  background-image: none !important;
+  border: 1px solid #737373 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.proposal-doc-premium .proposal-chart-bar--glass-peak {
+  background-color: var(--pp-chart-peak) !important;
+  border-color: var(--pp-ink) !important;
+  box-shadow: none !important;
+}
+
+.proposal-doc-premium .proposal-chart-label {
+  color: var(--pp-muted) !important;
+}
+
+/* Financial hero tiles */
+.proposal-doc-premium .proposal-financial-hero-tile--saving {
+  border-color: var(--pp-border) !important;
+  background: #fafafa !important;
+  border-radius: 0 !important;
+}
+
+/* Commercial cover */
+.proposal-doc-premium .commercial-cover-plant-badge {
+  border-radius: 0 !important;
+  border: 1px solid var(--pp-ink) !important;
+  background: var(--pp-surface) !important;
+  box-shadow: none !important;
+  padding: 1.5rem 2.5rem !important;
+}
+
+.proposal-doc-premium .commercial-cover-plant-badge p:first-child {
+  color: var(--pp-ink) !important;
+  font-weight: 600 !important;
+}
+
+/* Hide decorative PM / scheme strips if present */
+.proposal-doc-premium .proposal-hero-pm-surya-strip {
+  display: none !important;
+}
+
+/* Progress nav — minimal chrome (screen only) */
+.proposal-doc-premium .proposal-journey-progress {
+  border-radius: 0 !important;
+  border-color: var(--pp-border) !important;
+  background: var(--pp-surface) !important;
+  backdrop-filter: none !important;
+}
+
+.proposal-doc-premium .proposal-journey-progress-link:hover {
+  background: #f5f5f5 !important;
+  color: var(--pp-ink) !important;
+}
+
+/* Insight cards */
+.proposal-doc-premium .proposal-audit-insight-card {
+  border-radius: 0 !important;
+}
+
+.proposal-doc-premium .proposal-audit-insight-value {
+  color: var(--pp-ink) !important;
+  font-weight: 600 !important;
+}
+
+/* Tone overrides — single ink palette for colored stat tones */
+.proposal-doc-premium .text-sky-700,
+.proposal-doc-premium .text-emerald-700,
+.proposal-doc-premium .text-emerald-800,
+.proposal-doc-premium .text-rose-700,
+.proposal-doc-premium .text-sky-400,
+.proposal-doc-premium .text-emerald-300,
+.proposal-doc-premium .text-emerald-400,
+.proposal-doc-premium .text-amber-500 {
+  color: var(--pp-ink) !important;
+}
+
+/* Print + B&W — bank submission ready */
+@media print {
+  .proposal-doc-premium,
+  .proposal-doc-premium .proposal-page,
+  .proposal-doc-premium .proposal-hero,
+  .proposal-doc-premium .proposal-panel {
+    background: #fff !important;
+    color: #171717 !important;
+    box-shadow: none !important;
+  }
+
+  .proposal-doc-premium .proposal-page {
+    border: none !important;
+    padding: 0 !important;
+  }
+
+  .proposal-doc-premium .proposal-chart-bar--glass {
+    background-color: #525252 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .proposal-doc-premium .proposal-chart-bar--glass-peak {
+    background-color: #171717 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .proposal-doc-premium .proposal-hero-ribbon-tile--primary {
+    border: 1.5px solid #171717 !important;
+  }
+
+  .proposal-doc-premium [class*="gradient"],
+  .proposal-doc-premium [class*="from-"],
+  .proposal-doc-premium [class*="to-"] {
+    background-image: none !important;
+  }
+
+  .proposal-doc-premium .text-white,
+  .proposal-doc-premium[data-theme="dark"] .text-white {
+    color: #171717 !important;
+  }
+}

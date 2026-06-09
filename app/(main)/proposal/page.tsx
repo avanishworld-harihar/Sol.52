@@ -60,7 +60,8 @@ import { Building2, Check, ChevronDown, Download, ExternalLink, FileUp, Globe, M
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { parsePrefillFromSearchParams } from "@/lib/quick-actions";
-import { ProposalPresetPicker, type ProposalPresetId } from "@/components/proposals/os/preset-picker";
+import { ProposalPresetPicker } from "@/components/proposals/os/preset-picker";
+import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 import { ProposalOSHeader } from "@/components/proposals/os/proposal-os-header";
 import { BuilderStageBar } from "@/components/proposals/os/builder-stage-bar";
 import {
@@ -320,6 +321,7 @@ function ProposalPageContent() {
   const [residentialInputMode, setResidentialInputMode] = useState<ResidentialInputMode>(
     urlPrefill.inputMode === "requirement" ? "requirement" : "bill"
   );
+  // Mode picker (bill vs requirement) — only relevant for legacy residential_smart
   const [showResidentialModePicker, setShowResidentialModePicker] = useState(
     urlPrefill.preset === "residential_smart" && !urlPrefill.inputMode
   );
@@ -730,8 +732,14 @@ function ProposalPageContent() {
   const isCommercialRequirement =
     osPresetId === "commercial_executive" && commercialInputMode === "requirement";
   const isResidentialSmart = osPresetId === "residential_smart";
-  const isResidentialRequirement = isResidentialSmart && residentialInputMode === "requirement";
-  const isResidentialBill = isResidentialSmart && residentialInputMode === "bill";
+  // New residential web-renderer presets share the same residential input/sizing flow
+  const isResidentialWebPreset =
+    osPresetId === "residential_sales_premium" ||
+    osPresetId === "residential_bank_loan" ||
+    osPresetId === "residential_executive";
+  const isAnyResidential = isResidentialSmart || isResidentialWebPreset;
+  const isResidentialRequirement = isAnyResidential && residentialInputMode === "requirement";
+  const isResidentialBill = isAnyResidential && residentialInputMode === "bill";
   const canEstimateBillToKwh = Boolean(manual.state.trim() && manual.discom.trim());
   const showCommercialBillDetailsForm = !isCommercialBillMode || billsReadyForCommercialFlow;
 
@@ -774,7 +782,7 @@ function ProposalPageContent() {
     return est > 0 ? Math.round(est) : null;
   }, [isResidentialRequirement, canEstimateBillToKwh, requirementMonthlyKwh, requirementMonthlyBill, effectiveTariffContext]);
 
-  const useResidentialCatalog = isResidentialSmart && Boolean(residentialConfig);
+  const useResidentialCatalog = isAnyResidential && Boolean(residentialConfig);
   const useCommercialCatalog =
     osPresetId === "commercial_executive" && Boolean(commercialPricingConfig);
 
@@ -1928,16 +1936,28 @@ function ProposalPageContent() {
   ]);
 
   useEffect(() => {
-    if (!isResidentialSmart) return;
+    if (!isAnyResidential) return;
     const kw = result.solarKw > 0 ? result.solarKw : urlPrefill.kw ?? 5;
     setResidentialConfig(
       (prev) => prev ?? defaultResidentialConfigForBuilder(kw, residentialInputMode)
     );
-    setProposalLayout((prev) => prev ?? getPresetDefaultLayout("residential_smart"));
-  }, [isResidentialSmart, result.solarKw, urlPrefill.kw, residentialInputMode]);
+    const presetForLayout = osPresetId ?? "residential_sales_premium";
+    setProposalLayout(
+      (prev) =>
+        prev ??
+        getPresetDefaultLayout(
+          presetForLayout === "residential_smart" ||
+          presetForLayout === "residential_sales_premium" ||
+          presetForLayout === "residential_bank_loan" ||
+          presetForLayout === "residential_executive"
+            ? presetForLayout
+            : "residential_sales_premium"
+        )
+    );
+  }, [isAnyResidential, osPresetId, result.solarKw, urlPrefill.kw, residentialInputMode]);
 
   useEffect(() => {
-    if (!isResidentialSmart) return;
+    if (!isAnyResidential) return;
     let cancelled = false;
     void loadInstallerRateCard().then(() => {
       if (cancelled) return;
@@ -1950,15 +1970,15 @@ function ProposalPageContent() {
     return () => {
       cancelled = true;
     };
-  }, [isResidentialSmart, residentialInputMode, result.solarKw, urlPrefill.kw]);
+  }, [isAnyResidential, residentialInputMode, result.solarKw, urlPrefill.kw]);
 
   useEffect(() => {
-    if (!isResidentialSmart) return;
+    if (!isAnyResidential) return;
     setResidentialConfig((prev) => {
       if (!prev || prev.inputMode === residentialInputMode) return prev;
       return { ...prev, inputMode: residentialInputMode };
     });
-  }, [isResidentialSmart, residentialInputMode]);
+  }, [isAnyResidential, residentialInputMode]);
 
   useEffect(() => {
     if (draftProposalId) writeResidentialDraftProposalId(draftProposalId);
@@ -1988,8 +2008,15 @@ function ProposalPageContent() {
         if (!json.ok || cancelled) return;
 
         const preset = json.presetId;
-        if (preset === "residential_smart" || preset === "commercial_executive") {
-          setOsPresetId((prev) => prev ?? preset);
+        const KNOWN_PRESETS = [
+          "residential_smart",
+          "commercial_executive",
+          "residential_sales_premium",
+          "residential_bank_loan",
+          "residential_executive",
+        ] as const;
+        if (preset && (KNOWN_PRESETS as ReadonlyArray<string>).includes(preset)) {
+          setOsPresetId((prev) => prev ?? (preset as typeof KNOWN_PRESETS[number]));
           setShowPresetPicker(false);
         }
 
@@ -2091,7 +2118,7 @@ function ProposalPageContent() {
   ]);
 
   useEffect(() => {
-    if (!isResidentialSmart) return;
+    if (!isAnyResidential) return;
     setResidentialConfig((prev) => {
       if (!prev) return prev;
       const conn = manual.connectionType.trim();
@@ -2106,7 +2133,7 @@ function ProposalPageContent() {
         subsidy: eligible ? prev.subsidy : { preference: "none", estimateInr: 0 },
       };
     });
-  }, [isResidentialSmart, manual.connectionType]);
+  }, [isAnyResidential, manual.connectionType]);
 
   async function downloadPremiumPpt() {
     setIsPptDownloading(true);
@@ -2269,7 +2296,7 @@ function ProposalPageContent() {
         netCostInr: effectiveResult.netCost,
         panels: effectiveResult.panels,
         dataSource: isResidentialBill ? "bill" : isResidentialRequirement ? "requirement" : billBacked ? "bill" : "requirement",
-        presetId: osPresetId ?? "residential_smart",
+        presetId: osPresetId ?? "residential_sales_premium",
         ...buildProposalExtrasPayload(),
       }),
     });
@@ -2415,19 +2442,20 @@ function ProposalPageContent() {
           onSelect={(id) => {
             setOsPresetId(id);
             setShowPresetPicker(false);
+            // Legacy residential: show mode picker (bill vs requirement)
             if (id === "residential_smart" && !urlPrefill.inputMode) {
               setShowResidentialModePicker(true);
             }
           }}
           onSkip={() => {
-            setOsPresetId("residential_smart");
+            setOsPresetId("residential_sales_premium");
             setResidentialInputMode("bill");
             setShowPresetPicker(false);
           }}
         />
       )}
 
-      {showResidentialModePicker && osPresetId === "residential_smart" ? (
+      {showResidentialModePicker && (osPresetId === "residential_smart") ? (
         <ResidentialProposalModePicker
           open
           currentMode={residentialInputMode}
@@ -2455,7 +2483,15 @@ function ProposalPageContent() {
         <ProposalReviewSheet
           open={showReviewSheet}
           onClose={() => setShowReviewSheet(false)}
-          presetId={osPresetId === "commercial_executive" ? "commercial_executive" : "residential_smart"}
+          presetId={
+            osPresetId === "commercial_executive"
+              ? "commercial_executive"
+              : osPresetId === "residential_sales_premium" ||
+                osPresetId === "residential_bank_loan" ||
+                osPresetId === "residential_executive"
+              ? osPresetId
+              : "residential_smart"
+          }
           layout={proposalLayout}
           onLayoutChange={setProposalLayout}
         />

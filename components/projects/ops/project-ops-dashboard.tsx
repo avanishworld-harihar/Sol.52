@@ -15,17 +15,22 @@ function OpsDashboardBody({
   stats,
   projects,
   className,
+  onPendingCollectionClick,
 }: {
   stats: ProjectDashboardStats | null | undefined;
   projects: ProjectListItem[] | null | undefined;
   className?: string;
+  onPendingCollectionClick?: () => void;
 }) {
   return (
     <section
       className={cn("page-lite-item space-y-2 max-sm:space-y-1.5 sm:space-y-4", className)}
       aria-label="Operations dashboard"
     >
-      <ProjectOpsMetricsStrip stats={stats} />
+      <ProjectOpsMetricsStrip
+        stats={stats}
+        onPendingCollectionClick={onPendingCollectionClick}
+      />
 
       <div className="grid gap-2 max-sm:gap-1.5 sm:gap-4 lg:grid-cols-12">
         <ProjectOpsHealthRing stats={stats} className="lg:col-span-5" />
@@ -42,11 +47,13 @@ export function ProjectOpsDashboard({
   projects,
   loading,
   className,
+  onPendingCollectionClick,
 }: {
   stats: ProjectDashboardStats | null | undefined;
   projects: ProjectListItem[] | null | undefined;
   loading?: boolean;
   className?: string;
+  onPendingCollectionClick?: () => void;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -71,13 +78,23 @@ export function ProjectOpsDashboard({
         </button>
         {mobileOpen ? (
           <div className="mt-1">
-            <OpsDashboardBody stats={stats} projects={projects} className="!p-0" />
+            <OpsDashboardBody
+              stats={stats}
+              projects={projects}
+              className="!p-0"
+              onPendingCollectionClick={onPendingCollectionClick}
+            />
           </div>
         ) : null}
       </div>
 
       <div className="hidden sm:block">
-        <OpsDashboardBody stats={stats} projects={projects} className={className} />
+        <OpsDashboardBody
+          stats={stats}
+          projects={projects}
+          className={className}
+          onPendingCollectionClick={onPendingCollectionClick}
+        />
       </div>
     </>
   );

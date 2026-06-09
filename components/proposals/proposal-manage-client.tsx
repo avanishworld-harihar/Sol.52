@@ -7,7 +7,7 @@ import { ProposalHubHeader } from "@/components/proposals/proposal-hub-header";
 import { CommercialBomWorkspace } from "@/components/commercial/bom/commercial-bom-workspace";
 import { ResidentialBomWorkspace } from "@/components/residential/bom/residential-bom-workspace";
 import { ProposalReviewSheet } from "@/components/commercial/proposal-review-sheet";
-import type { ProposalPresetId } from "@/components/proposals/os/preset-picker";
+import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 import {
   ProposalPricingConfigurator,
   type ProposalPricingConfiguratorLabels,

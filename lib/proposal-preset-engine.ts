@@ -6,13 +6,13 @@
  * in proposal-document-ir.ts assembles the final ProposalDocument.
  *
  * Phase A presets:
- *   1. residential_smart     — residential rooftop (bill or requirement path)
- *   2. commercial_executive  — C&I/commercial (no bill required)
+ *   1. residential_smart          — legacy residential (bill or requirement path)
+ *   2. commercial_executive       — C&I/commercial (no bill required)
  *
- * Future presets (Phase B+):
- *   - industrial_preliminary
- *   - financing_special
- *   - luxury_residential
+ * Phase B presets (Residential Proposal Presets):
+ *   3. residential_sales_premium  — conversion-first, Apple/Tesla feel (DEFAULT)
+ *   4. residential_bank_loan      — bank-submission documentation pack (Phase 3)
+ *   5. residential_executive      — minimalist luxury residential (Phase 4)
  */
 
 import type { ProposalBlockId } from "@/lib/proposal-block-registry";
@@ -25,9 +25,19 @@ import { getStoryCopy, type StoryMode, type StorySegment, type StoryCopy, type S
 export const PROPOSAL_PRESET_IDS = [
   "residential_smart",
   "commercial_executive",
+  "residential_sales_premium",
+  "residential_bank_loan",
+  "residential_executive",
 ] as const;
 
 export type ProposalPresetId = (typeof PROPOSAL_PRESET_IDS)[number];
+
+/** Residential preset IDs routed to ProposalWebRenderer (not legacy ProposalView). */
+export const RESIDENTIAL_WEB_RENDERER_PRESETS: ReadonlyArray<ProposalPresetId> = [
+  "residential_sales_premium",
+  "residential_bank_loan",
+  "residential_executive",
+];
 
 export function isValidPresetId(id: unknown): id is ProposalPresetId {
   return typeof id === "string" && PROPOSAL_PRESET_IDS.includes(id as ProposalPresetId);
@@ -35,7 +45,15 @@ export function isValidPresetId(id: unknown): id is ProposalPresetId {
 
 export function normalizePresetId(raw: string | null | undefined): ProposalPresetId {
   if (raw && isValidPresetId(raw)) return raw;
-  return "residential_smart";
+  return "residential_sales_premium";
+}
+
+/** Returns true for presets rendered by ProposalWebRenderer (not the legacy ProposalView). */
+export function isWebRendererPreset(presetId: ProposalPresetId): boolean {
+  return (
+    presetId === "commercial_executive" ||
+    (RESIDENTIAL_WEB_RENDERER_PRESETS as ReadonlyArray<string>).includes(presetId)
+  );
 }
 
 // ─── Preset shape ────────────────────────────────────────────────────────────
@@ -70,6 +88,72 @@ export type ProposalPreset = {
 // ─── Preset registry ─────────────────────────────────────────────────────────
 
 export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> = {
+  // ── Residential Phase B presets ──────────────────────────────────────────
+
+  residential_sales_premium: {
+    id: "residential_sales_premium",
+    label: "Sales Premium",
+    description:
+      "Conversion-first residential proposal. Savings and ROI lead — " +
+      "technical detail follows. Designed for ₹5L–₹25L residential projects.",
+    bill_requirement: "optional",
+    theme_hint: "residential",
+    default_data_source: "bill",
+    default_blocks: [
+      "cover_page",
+      "roi_savings",
+      "financial_summary",
+      "about_company",
+      "technical_specifications",
+      "bom_material_list",
+      "amc_maintenance",
+      "payment_terms",
+      "terms_conditions",
+    ],
+    optional_blocks: ["customer_documents_required", "dcr_comparison_card", "warranty"],
+  },
+
+  residential_bank_loan: {
+    id: "residential_bank_loan",
+    label: "Bank Loan Pack",
+    description:
+      "Documentation pack formatted for bank loan submission. " +
+      "Includes cost breakdown, vendor details, declaration, and signature pages.",
+    bill_requirement: "optional",
+    theme_hint: "residential",
+    default_data_source: "bill",
+    default_blocks: [
+      "cover_page",
+      "financial_summary",
+      "technical_specifications",
+      "bom_material_list",
+      "terms_conditions",
+    ],
+    optional_blocks: ["warranty", "amc_maintenance"],
+  },
+
+  residential_executive: {
+    id: "residential_executive",
+    label: "Executive Premium",
+    description:
+      "Minimalist luxury residential proposal. Architecture-portfolio feel — " +
+      "high whitespace, premium typography, less marketing density.",
+    bill_requirement: "optional",
+    theme_hint: "residential",
+    default_data_source: "bill",
+    default_blocks: [
+      "cover_page",
+      "financial_summary",
+      "roi_savings",
+      "technical_specifications",
+      "about_company",
+      "payment_terms",
+    ],
+    optional_blocks: ["bom_material_list", "amc_maintenance", "terms_conditions"],
+  },
+
+  // ── Legacy presets ────────────────────────────────────────────────────────
+
   residential_smart: {
     id: "residential_smart",
     label: "Residential Smart Proposal",
