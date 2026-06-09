@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-09T15:18:09.407Z",
+  "generatedAt": "2026-06-09T16:08:07.539Z",
   "baseUrl": "http://localhost:3002",
   "scenarios": {
     "billBacked": {
@@ -47,24 +47,6 @@
           "dataPage": "commercial",
           "journeyId": "journey-payment",
           "heading": "How You Will Pay (25 / 50 / 20 / 5)"
-        },
-        {
-          "index": 8,
-          "dataPage": "expertise",
-          "journeyId": "journey-expertise",
-          "heading": "Solutions for Every Scale"
-        },
-        {
-          "index": 9,
-          "dataPage": "environment",
-          "journeyId": "journey-environment",
-          "heading": "Carbon You'll Save Forever"
-        },
-        {
-          "index": 10,
-          "dataPage": "dcr-comparison",
-          "journeyId": null,
-          "heading": null
         }
       ],
       "appendixOrder": [
@@ -101,8 +83,8 @@
         "savings25": true,
         "bomInFlow": false,
         "bomInAppendix": true,
-        "aboutCompany": true,
-        "dcrComparison": true,
+        "aboutCompany": false,
+        "dcrComparison": false,
         "billAuditVisible": true,
         "systemReqVisible": false,
         "investmentVisible": true,
@@ -155,24 +137,6 @@
           "dataPage": "commercial",
           "journeyId": "journey-payment",
           "heading": "How You Will Pay (25 / 50 / 20 / 5)"
-        },
-        {
-          "index": 8,
-          "dataPage": "expertise",
-          "journeyId": "journey-expertise",
-          "heading": "Solutions for Every Scale"
-        },
-        {
-          "index": 9,
-          "dataPage": "environment",
-          "journeyId": "journey-environment",
-          "heading": "Carbon You'll Save Forever"
-        },
-        {
-          "index": 10,
-          "dataPage": "dcr-comparison",
-          "journeyId": null,
-          "heading": null
         }
       ],
       "appendixOrder": [
@@ -209,8 +173,8 @@
         "savings25": true,
         "bomInFlow": false,
         "bomInAppendix": true,
-        "aboutCompany": true,
-        "dcrComparison": true,
+        "aboutCompany": false,
+        "dcrComparison": false,
         "billAuditVisible": false,
         "systemReqVisible": true,
         "investmentVisible": true,
