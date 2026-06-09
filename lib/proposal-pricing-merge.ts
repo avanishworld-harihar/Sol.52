@@ -136,7 +136,8 @@ export function mergeProposalPricingIntoPptInput(
     systemKw: pricing.system_kw > 0 ? pricing.system_kw : ppt.systemKw,
     grossSystemCostInr: grossDisplay > 0 ? grossDisplay : ppt.grossSystemCostInr,
     pmSuryaGharSubsidyInr: Math.max(0, Math.round(pricing.subsidy_inr)),
-    commercialNetPayableInr: finalNet
+    commercialNetPayableInr: finalNet,
+    netCostInr: finalNet,
   };
 }
 

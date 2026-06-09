@@ -2,7 +2,6 @@
 
 import type { ProposalDeckSummary } from "@/lib/proposal-ppt";
 import type { ProposalDict, ProposalLang } from "@/lib/proposal-i18n";
-import { AnimatedINR } from "@/app/(public)/proposal/[id]/proposal-view";
 
 function fmtInr(v: number) {
   return `₹${Math.round(v).toLocaleString("en-IN")}`;
@@ -29,7 +28,7 @@ export function BlockSubsidyClarity({ summary, lang, D }: Props) {
       </p>
       <p className="mt-2 text-sm text-slate-600">{subtitle}</p>
       <p className="mt-4 text-3xl font-bold tracking-tight text-sky-950 sm:text-4xl">
-        <AnimatedINR value={summary.netCost} />
+        {fmtInr(summary.netCost)}
       </p>
       <div className="mt-5 space-y-2 border-t border-sky-100 pt-4 text-sm">
         <div className="flex items-center justify-between">

@@ -141,7 +141,28 @@ async function reviewProposal(browser, scenario, url) {
       appendixShell: !!document.querySelector(".proposal-appendix-shell"),
     };
 
-    return { flowOrder, appendixOrder, checks, title: document.title };
+    const pricingConsistent = (() => {
+      const gross = allText.match(/Gross System Cost|सकल सिस्टम लागत/i)
+        ? [...allText.matchAll(/₹[\d,]+/g)].map((m) => m[0])
+        : [];
+      void gross;
+      const investmentPage = document.querySelector("#journey-investment-summary");
+      const paymentPage = document.querySelector("#journey-payment");
+      const parseInr = (s) => {
+        const m = (s || "").replace(/[^\d]/g, "");
+        return m ? parseInt(m, 10) : null;
+      };
+      const heroNet = investmentPage?.querySelector(".text-3xl, .text-4xl")?.textContent;
+      const rowNet = investmentPage?.querySelector(".bg-sky-100\\/80 .font-bold:last-child, .bg-sky-100 .font-bold:last-child")?.textContent;
+      const paymentNet = paymentPage?.querySelector(".text-sky-300, .text-sky-900")?.textContent;
+      const h = parseInr(heroNet);
+      const r = parseInr(rowNet);
+      const p = parseInr(paymentNet);
+      if (h == null || r == null) return { ok: false, heroNet: h, rowNet: r, paymentNet: p };
+      return { ok: h === r && (p == null || p === h), heroNet: h, rowNet: r, paymentNet: p };
+    })();
+
+    return { flowOrder, appendixOrder, checks, pricingConsistent, title: document.title };
   });
 
   // Screenshot each flow page

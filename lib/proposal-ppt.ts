@@ -26,6 +26,7 @@ import {
   type EmiRow,
   type PaymentMilestone
 } from "@/lib/proposal-deck-helpers";
+import { resolveProposalCommercialPricing } from "@/lib/proposal-commercial-pricing";
 import {
   buildResidentialBomFromConfig,
   inverterBrandsLabel,
@@ -33,8 +34,6 @@ import {
   panelBrandsLabel,
   resolveProposalPanelBrand,
   residentialAnnualGenerationUnits,
-  residentialGrossCostInr,
-  residentialNetCostInr,
   wireBrandsLabel,
 } from "@/lib/residential-deck-helpers";
 import {
@@ -519,8 +518,6 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
   let deckSystemKw = input.systemKw;
   let panelWatt = 540;
   let panels = Math.max(1, Math.ceil((input.systemKw * 1000) / 540));
-  let grossSystemCost = n(input.grossSystemCostInr ?? computeGrossSystemCostInr(input.systemKw));
-  let pmSubsidy = n(input.pmSuryaGharSubsidyInr ?? computePmSuryaGharSubsidy(input.systemKw));
   let annualGen = estimateAnnualGenerationUnits(input.systemKw);
   let brands = pickBrandSet({ preferredPanelBrand: input.panelBrand, systemKw: input.systemKw });
   let defaultBom = buildBom({
@@ -535,12 +532,6 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
     panelWatt = resCfg.solar.watt;
     panels = q.moduleCount;
     annualGen = residentialAnnualGenerationUnits(deckSystemKw);
-    grossSystemCost = n(input.grossSystemCostInr ?? residentialGrossCostInr(resCfg));
-    pmSubsidy = n(
-      input.pmSuryaGharSubsidyInr ??
-        resCfg.subsidy?.estimateInr ??
-        computePmSuryaGharSubsidy(deckSystemKw)
-    );
     const fallbackBrands = pickBrandSet({ preferredPanelBrand: input.panelBrand, systemKw: deckSystemKw });
     const panelLabel = resolveProposalPanelBrand(resCfg, fallbackBrands.panel);
     brands = {
@@ -550,7 +541,10 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
       cables: wireBrandsLabel(resCfg.pricing, fallbackBrands.cables),
     };
     defaultBom = buildResidentialBomFromConfig(resCfg, amcSelectedYears);
-  } else if (input.sharedPlantCatalog?.entries?.length) {
+  }
+
+  let pricingInput = input;
+  if (!resCfg?.solar && input.sharedPlantCatalog?.entries?.length) {
     const track =
       input.commercialConfig != null
         ? resolveCommercialPanelTrack(
@@ -558,11 +552,13 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
             deckSystemKw
           )
         : "dcr";
-    grossSystemCost = n(
-      input.grossSystemCostInr ??
-        plantGrossFromSharedCatalogOrFallback(deckSystemKw, track, input.sharedPlantCatalog)
-    );
-    pmSubsidy = n(input.pmSuryaGharSubsidyInr ?? 0);
+    pricingInput = {
+      ...input,
+      grossSystemCostInr:
+        input.grossSystemCostInr ??
+        n(plantGrossFromSharedCatalogOrFallback(deckSystemKw, track, input.sharedPlantCatalog)),
+      pmSuryaGharSubsidyInr: input.pmSuryaGharSubsidyInr ?? 0,
+    };
   }
 
   const overridesBySlot = new Map<number, NonNullable<typeof input.bomOverrides>[number]>();
@@ -581,17 +577,16 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
     };
   });
 
-  const computedNet =
-    resRequirement && resCfg
-      ? n(residentialNetCostInr(resCfg))
-      : input.commercialConfig && resCfg
-        ? n(residentialNetCostInr(resCfg, { subsidyEligible: false }))
-        : n(Math.max(0, grossSystemCost - pmSubsidy));
-  const overrideNet = input.commercialNetPayableInr;
-  const netCost =
-    overrideNet != null && Number.isFinite(overrideNet) && overrideNet >= 0 ? n(overrideNet) : computedNet;
-
   const isCommercialDeck = Boolean(input.commercialConfig);
+  const commercial = resolveProposalCommercialPricing(pricingInput, {
+    systemKw: deckSystemKw,
+    resCfg,
+    isCommercialDeck,
+  });
+  const grossSystemCost = commercial.grossSystemCost;
+  const pmSubsidy = commercial.pmSubsidy;
+  const netCost = commercial.netCost;
+
   const reconciled = computeProposalFinancials({
     annualGen,
     netCost,
@@ -625,7 +620,7 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
   const tenuresYears = finance.tenuresYears && finance.tenuresYears.length > 0 ? finance.tenuresYears : [3, 5, 7];
   const emi = buildEmiTable(netCost, interestRatePct, tenuresYears);
 
-  const paymentMilestones = buildPaymentMilestones(grossSystemCost);
+  const paymentMilestones = buildPaymentMilestones(netCost);
   const amcOptions = buildAmcOptions(grossSystemCost, lang);
   const baseCompany = defaultCompanyProfile(lang);
   const installerLabel = resolveInstallerNameForProposal({ installerName: input.installerName });
