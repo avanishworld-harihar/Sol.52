@@ -122,7 +122,7 @@ export type ProposalDocument = {
 
 import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposal-ppt";
 import type { ProposalLang as _L } from "@/lib/proposal-i18n";
-import { getPresetDefaultLayout, normalizePresetId } from "@/lib/proposal-preset-engine";
+import { getPresetDefaultLayout, isValidPresetId, normalizePresetId } from "@/lib/proposal-preset-engine";
 import { normalizeProposalTemplateV1, parseProposalTemplateV1 } from "@/lib/proposal-template-schema";
 
 /**
@@ -145,7 +145,10 @@ export function compileProposalDocument(
     documentVersion?: number;
   }
 ): ProposalDocument {
-  const presetId = normalizePresetId(options?.presetId ?? null);
+  const presetId =
+    options?.presetId && isValidPresetId(options.presetId)
+      ? options.presetId
+      : normalizePresetId(options?.presetId ?? null);
 
   // Resolve layout: use stored layout if valid, else fall back to preset default.
   const storedLayout = parseProposalTemplateV1(input.proposalLayout);

@@ -30,6 +30,7 @@ import { MotionConfig } from "framer-motion";
 import { Download, Languages, MessageCircle, Moon, Sun, Presentation } from "lucide-react";
 
 import type { ProposalDocument } from "@/lib/proposal-document-ir";
+import { summarizeProposalDeck, type PremiumProposalPptInput, type ProposalDeckSummary } from "@/lib/proposal-ppt";
 import type { ProposalBlockId } from "@/lib/proposal-block-registry";
 import type { BlockRenderContext } from "@/lib/proposal-block-context";
 import { resolveStoryVariant, type ProposalPresetId } from "@/lib/proposal-preset-engine";
@@ -95,6 +96,8 @@ import { BlockDgHybrid } from "@/components/proposal/blocks/commercial/block-dg-
 export type ProposalWebRendererProps = {
   /** The compiled ProposalDocument IR from Phase A compiler. */
   document: ProposalDocument;
+  /** Deck summary — required for section components. Pass from server when raw_input has no embedded summary. */
+  summary?: ProposalDeckSummary;
   /** Optional override — when true, show site survey page. */
   showSurveyWorkflowSection?: boolean;
 };
@@ -355,6 +358,7 @@ export function renderBlockByKey(
 
 export function ProposalWebRenderer({
   document: doc,
+  summary: summaryProp,
   showSurveyWorkflowSection = false,
 }: ProposalWebRendererProps) {
   const [lang, setLang] = useState<ProposalLang>(doc.lang ?? "en");
@@ -363,22 +367,30 @@ export function ProposalWebRenderer({
   const [downloading, setDownloading] = useState(false);
   const [displayInstallerLogoUrl, setDisplayInstallerLogoUrl] = useState("");
 
-  const summary = doc.raw_input
-    ? (doc.raw_input as { summary?: unknown }).summary as typeof doc.technical extends infer _ ? ReturnType<typeof import("@/lib/proposal-ppt").summarizeProposalDeck> : never
-    : null;
-
-  // The WebRenderer receives the full ProposalDocument IR. However, the section
-  // components still consume ProposalDeckSummary directly. We read it from raw_input
-  // (the summary was stored there during compile) or derive it if missing.
-  // This maintains backward compatibility with existing section components.
-  const rawSummary = (doc.raw_input as Record<string, unknown> | undefined)?.summary as
-    import("@/lib/proposal-ppt").ProposalDeckSummary | undefined;
-
-  // Fallback: if summary is not in raw_input, we can't render. This shouldn't
-  // happen in practice since compileProposalDocument always stores raw_input.
-  if (!rawSummary) {
-    console.warn("[ProposalWebRenderer] No summary in ProposalDocument.raw_input — cannot render.");
+  const rawSummary = useMemo((): ProposalDeckSummary | null => {
+    if (summaryProp) return summaryProp;
+    const embedded = (doc.raw_input as Record<string, unknown> | undefined)?.summary;
+    if (embedded && typeof embedded === "object") {
+      return embedded as ProposalDeckSummary;
+    }
+    const ppt = doc.raw_input as PremiumProposalPptInput | undefined;
+    if (ppt?.monthlyUnits) {
+      try {
+        return summarizeProposalDeck(ppt);
+      } catch {
+        return null;
+      }
+    }
     return null;
+  }, [summaryProp, doc.raw_input]);
+
+  if (!rawSummary) {
+    console.warn("[ProposalWebRenderer] No proposal summary available — cannot render.");
+    return (
+      <div className="mx-auto max-w-lg px-4 py-16 text-center text-sm text-slate-600">
+        This proposal could not be loaded. Please regenerate from the builder or contact your installer.
+      </div>
+    );
   }
 
   return (

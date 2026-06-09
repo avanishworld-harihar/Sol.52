@@ -115,6 +115,7 @@ export default async function PublicProposalPage({ params }: PageProps) {
     return (
       <ProposalWebRenderer
         document={doc}
+        summary={liveSummary}
         showSurveyWorkflowSection={showSurvey}
       />
     );
