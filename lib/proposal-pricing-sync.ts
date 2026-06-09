@@ -28,6 +28,11 @@ import { mergeProposalPricingIntoPptInput } from "@/lib/proposal-pricing-merge";
 import { normalizeLineItems } from "@/lib/proposal-pricing-lines";
 import { getProposalPricingByProposalId } from "@/lib/proposal-pricing-store";
 import {
+  isValidPresetId,
+  normalizeProposalLayoutForPreset,
+  type ProposalPresetId,
+} from "@/lib/proposal-preset-engine";
+import {
   normalizeProposalTemplateV1,
   type ProposalTemplateV1,
 } from "@/lib/proposal-template-schema";
@@ -128,7 +133,10 @@ export async function persistProposalLayoutChange(proposalId: string, layout: Pr
   const proposal = await getProposalById(proposalId);
   if (!proposal) return false;
   const pricing = await getProposalPricingByProposalId(proposalId);
-  const normalized = normalizeProposalTemplateV1(layout);
+  const presetId = isValidPresetId(proposal.preset_id)
+    ? proposal.preset_id
+    : ("residential_sales_premium" as ProposalPresetId);
+  const normalized = normalizeProposalLayoutForPreset(layout, presetId);
   const mergedPpt = mergeProposalPricingIntoPptInput(
     { ...proposal.ppt_input, proposalLayout: normalized },
     pricing

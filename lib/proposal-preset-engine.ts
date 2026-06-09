@@ -17,7 +17,11 @@
 
 import type { ProposalBlockId } from "@/lib/proposal-block-registry";
 import { DEFAULT_PROPOSAL_BLOCK_ORDER, PROPOSAL_BLOCK_REGISTRY } from "@/lib/proposal-block-registry";
-import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
+import {
+  normalizeProposalTemplateV1,
+  type ProposalTemplateBlock,
+  type ProposalTemplateV1,
+} from "@/lib/proposal-template-schema";
 import { getStoryCopy, type StoryMode, type StorySegment, type StoryCopy, type StoryLang } from "@/lib/proposal-story-copy";
 
 // ─── Preset identifiers ──────────────────────────────────────────────────────
@@ -276,6 +280,64 @@ export function getPresetDefaultLayout(presetId: ProposalPresetId): ProposalTemp
 
   void optionalSet; // referenced above; suppress unused-var
   return { version: 1, blocks: ordered };
+}
+
+/** Block IDs permitted on Sales Premium v1 — no legacy registry injection. */
+export function getSalesPremiumAllowedBlockIds(): ProposalBlockId[] {
+  const preset = PROPOSAL_PRESET_REGISTRY.residential_sales_premium;
+  return [
+    ...preset.default_blocks,
+    ...(preset.appendix_blocks ?? []),
+    ...preset.optional_blocks,
+  ];
+}
+
+/**
+ * Sales Premium v1 uses a closed-world layout: only preset-allowed blocks exist.
+ * Legacy blocks (about_company, warranty, dcr_comparison_card, …) are never injected.
+ */
+export function normalizeSalesPremiumProposalLayout(input: ProposalTemplateV1): ProposalTemplateV1 {
+  const preset = PROPOSAL_PRESET_REGISTRY.residential_sales_premium;
+  const allowedOrder = getSalesPremiumAllowedBlockIds();
+  const appendixSet = new Set<ProposalBlockId>(preset.appendix_blocks ?? []);
+  const canonical = getPresetDefaultLayout("residential_sales_premium");
+  const canonicalById = new Map(canonical.blocks.map((b) => [b.id, b]));
+  const inputById = new Map(input.blocks.map((b) => [b.id, b]));
+
+  const blocks: ProposalTemplateBlock[] = allowedOrder.map((id) => {
+    const fromInput = inputById.get(id);
+    const fromCanonical = canonicalById.get(id);
+    const base = fromCanonical ?? {
+      id,
+      enabled: false,
+      section: appendixSet.has(id) ? ("appendix" as const) : ("flow" as const),
+    };
+    if (!fromInput) return base;
+    return {
+      id,
+      enabled: fromInput.enabled,
+      section:
+        fromInput.section ??
+        base.section ??
+        (appendixSet.has(id) ? "appendix" : "flow"),
+    };
+  });
+
+  return { version: 1, blocks };
+}
+
+/**
+ * Preset-aware layout normalization. Sales Premium v1 uses closed-world rules;
+ * all other presets keep generic registry merge behaviour.
+ */
+export function normalizeProposalLayoutForPreset(
+  input: ProposalTemplateV1,
+  presetId: ProposalPresetId
+): ProposalTemplateV1 {
+  if (presetId === "residential_sales_premium") {
+    return normalizeSalesPremiumProposalLayout(input);
+  }
+  return normalizeProposalTemplateV1(input);
 }
 
 /**

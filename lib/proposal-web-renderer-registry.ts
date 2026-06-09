@@ -93,11 +93,10 @@ const roiSavingsEligible: BlockEligibilityFn = ({ billAuditBacked, presetId }) =
 const noBill: BlockEligibilityFn = ({ billAuditBacked, presetId }) =>
   !billAuditBacked || presetId === "commercial_executive";
 const commercialOnly: BlockEligibilityFn = ({ presetId }) => presetId === "commercial_executive";
-/** DCR comparison — commercial + any residential preset. */
+/** DCR comparison — commercial + legacy residential only (not Sales Premium v1). */
 const dcrComparisonEligible: BlockEligibilityFn = ({ presetId }) =>
   presetId === "commercial_executive" ||
-  presetId === "residential_smart" ||
-  isResidentialWebPreset(presetId);
+  presetId === "residential_smart";
 const surveyOnly: BlockEligibilityFn = ({ showSurveySection }) => Boolean(showSurveySection);
 
 const salesPremiumOnly: BlockEligibilityFn = ({ presetId }) => presetId === "residential_sales_premium";
