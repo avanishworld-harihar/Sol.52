@@ -355,4 +355,261 @@ Phases can overlap; **do not** skip **B** before claiming production multi-tenan
 
 ---
 
+## 15. Residential Proposal Presets (approved architecture & roadmap)
+
+**Status:** Architecture approved. **Phase 1 + Phase 2 shipped** in codebase (preset IDs, Sales Premium default, picker UI, public routing). **Phase 3 + Phase 4 not started** — do not implement without explicit approval.
+
+**Scope rule:** Multiple residential proposal formats sharing one data layer. **Do not modify** `CommercialProposalView`, commercial block components, or legacy `ProposalView` (`residential_smart`). **No styling passes** until a phase explicitly calls for them.
+
+**Related code (source of truth when resuming):**
+
+| Area | Path |
+|------|------|
+| Preset registry & block order | `lib/proposal-preset-engine.ts` |
+| Block IDs & metadata | `lib/proposal-block-registry.ts` |
+| Web renderer eligibility | `lib/proposal-web-renderer-registry.ts` |
+| Document IR compiler | `lib/proposal-document-ir.ts` |
+| Layout merge | `lib/proposal-layout-merge.ts`, `lib/proposal-template-schema.ts` |
+| Public routing | `app/(public)/proposal/[id]/page.tsx` |
+| Builder preset picker | `components/proposals/os/preset-picker.tsx` |
+| Block-loop renderer | `components/proposal/web-renderer.tsx` |
+| Legacy residential (frozen) | `app/(public)/proposal/[id]/proposal-view.tsx` |
+| DB constraint | `supabase/migrations/051_residential_proposal_presets.sql` |
+
+---
+
+### 15.1 Vision
+
+Residential installers need **more than one proposal format** for the same underlying project data:
+
+| Preset | UI label | Purpose |
+|--------|----------|---------|
+| `residential_smart` | Residential Legacy | Existing 12-slide monolith — **unchanged** |
+| `residential_sales_premium` | Sales Premium | Conversion-first; savings/ROI lead (**default for new proposals**) |
+| `residential_bank_loan` | Bank Loan Pack | Bank / subsidy submission documentation |
+| `residential_executive` | Executive Premium | Luxury residential; minimalist portfolio feel |
+| `commercial_executive` | Commercial Executive | **Out of scope** for this initiative |
+
+**Target feeling (Sales Premium / Executive):** premium investment document — not a typical Indian solar marketing flyer. **Bank Loan Pack:** clean formal documentation suitable for print and bank submission.
+
+---
+
+### 15.2 Architecture (frozen)
+
+```mermaid
+flowchart TD
+  DB[proposals.preset_id] -->|commercial_executive| CommercialProposalView
+  DB -->|residential_smart| ProposalView["ProposalView legacy monolith"]
+  DB -->|residential_sales_premium| WebRenderer["ProposalWebRenderer"]
+  DB -->|residential_bank_loan| WebRenderer
+  DB -->|residential_executive| WebRenderer
+```
+
+**Key decisions:**
+
+1. **`preset_id` column** on `proposals` drives renderer selection — no separate `proposal_template` column. Block playlist lives in `ppt_input.proposalLayout` (JSONB).
+2. **New residential presets** (except Legacy) route to **`ProposalWebRenderer`** — same block-loop engine as commercial, with residential block playlists and eligibility rules.
+3. **`residential_smart`** continues to use **`ProposalView`** with zero layout changes.
+4. **Preset = configuration**, not duplicate business logic. Pricing, sizing, and summary still flow through `proposal_pricing`, `summarizeProposalDeck`, and `compileProposalDocument`.
+5. **Helpers:** `RESIDENTIAL_WEB_RENDERER_PRESETS`, `isWebRendererPreset()`, `normalizePresetId()` default = `residential_sales_premium`.
+
+---
+
+### 15.3 Data model
+
+**Database (`proposals.preset_id`):**
+
+```sql
+CHECK (preset_id IN (
+  'residential_smart',
+  'commercial_executive',
+  'residential_sales_premium',
+  'residential_bank_loan',
+  'residential_executive'
+))
+```
+
+Migration: `051_residential_proposal_presets.sql`. **Additive only** — existing `residential_smart` rows untouched.
+
+**No new columns required** for Phase 3–4. Bank-specific fields (GSTIN, registration no., empanelment) may come from existing `ppt_input`, `proposal-branding-settings`, company profile, or pricing line items until a dedicated schema is justified.
+
+**Default handling:**
+
+| Context | Default `preset_id` |
+|---------|---------------------|
+| New proposal create (`proposals-store`, builder save) | `residential_sales_premium` |
+| `normalizePresetId()` fallback | `residential_sales_premium` |
+| Legacy rows / missing value (read) | `residential_smart` preserved as stored |
+| Preset picker skip | `residential_sales_premium` |
+
+---
+
+### 15.4 Reusable section system
+
+**Existing `ProposalBlockId` values** (22 blocks in `lib/proposal-block-registry.ts`) are reused across presets. Toggle + order = `ProposalTemplateV1` on `ppt_input.proposalLayout`.
+
+**Per-preset default block order** (from `PROPOSAL_PRESET_REGISTRY`):
+
+**Sales Premium** (`residential_sales_premium`) — conversion narrative:
+
+1. `cover_page` → 2. `roi_savings` → 3. `financial_summary` → 4. `about_company` → 5. `technical_specifications` → 6. `bom_material_list` → 7. `amc_maintenance` → 8. `payment_terms` → 9. `terms_conditions`  
+Optional: `customer_documents_required`, `dcr_comparison_card`, `warranty`
+
+**Bank Loan Pack** (`residential_bank_loan`) — formal documentation (Phase 3 adds dedicated blocks):
+
+1. `bank_cover_sheet` *(new)* → 2. `financial_summary` → 3. `cost_breakup_sheet` *(new)* → 4. `vendor_details_sheet` *(new)* → 5. `technical_specifications` → 6. `bom_material_list` → 7. `terms_conditions` → 8. `declaration_signature` *(new)*  
+Optional: `warranty`, `amc_maintenance`
+
+*Interim (Phase 1–2):* registry entry uses existing blocks only until Phase 3 components ship; update `default_blocks` when new IDs are registered.
+
+**Executive Premium** (`residential_executive`):
+
+1. `cover_page` → 2. `financial_summary` → 3. `roi_savings` → 4. `technical_specifications` → 5. `about_company` → 6. `payment_terms`  
+Optional: `bom_material_list`, `amc_maintenance`, `terms_conditions`
+
+**Residential Legacy** (`residential_smart`) — frozen; see `PROPOSAL_PRESET_REGISTRY.residential_smart`.
+
+---
+
+### 15.5 UI flow
+
+**Builder (`/proposal`):**
+
+1. Preset picker overlay on first load (unless `?preset=` URL prefill).
+2. **Residential group:** Sales Premium (Default badge), Bank Loan Pack, Executive Premium + link “Residential Legacy (classic view)”.
+3. **Commercial group:** Commercial Executive (unchanged).
+4. Skip → Sales Premium + bill input mode.
+5. Selected preset → `osPresetId` → saved as `preset_id` on generate.
+6. Legacy `residential_smart` still shows bill vs requirement mode picker.
+
+**Public (`/proposal/[id]`):**
+
+| `preset_id` | Renderer |
+|-------------|----------|
+| `commercial_executive` | `CommercialProposalView` |
+| `residential_sales_premium`, `residential_bank_loan`, `residential_executive` | `ProposalWebRenderer` via `compileProposalDocument` |
+| `residential_smart` (and any unknown) | `ProposalView` (legacy) |
+
+---
+
+### 15.6 Implementation phases & status
+
+| Phase | Scope | Status | Est. effort |
+|-------|--------|--------|-------------|
+| **1 — Architecture** | DB CHECK constraint; `PROPOSAL_PRESET_IDS` + registry stubs for all 5 presets; web-renderer eligibility helpers; types compile | **Done** | 0.5 day |
+| **2 — Sales Premium** | Public routing; picker UI; builder default; `roi_savings` eligibility for web presets; existing blocks only | **Done** | 1.5 days |
+| **3 — Bank Loan Pack** | 4 new block IDs + components; registry + renderer wiring; print/B&W-safe layouts | **Not started** | 2.5 days |
+| **4 — Executive Premium** | Finalize block order; optional `theme_variant` / executive layout flag on WebRenderer; styling pass (separate approval) | **Not started** | 0.5 day architecture + styling TBD |
+
+**Do not start Phase 3 or 4 without explicit product approval.**
+
+---
+
+### 15.7 Phase 3 — Bank Loan Pack (pending)
+
+**Goal:** Bank-submission-ready documentation — system size, total project cost, cost breakup, vendor details, technical specs, declaration, signature page.
+
+**New block IDs** (add to `PROPOSAL_BLOCK_IDS` + `PROPOSAL_BLOCK_REGISTRY`):
+
+| Block ID | Purpose | Data sources |
+|----------|---------|--------------|
+| `bank_cover_sheet` | Formal title: project, property, applicant, system kW, total cost, date | `ProposalDocument.customer`, `technical`, `commercial` |
+| `cost_breakup_sheet` | Itemised: equipment, installation, subsidy, net payable | `commercial` slice + `proposal_pricing` line items |
+| `vendor_details_sheet` | Installer GSTIN, registration, empanelment, panel/inverter brands, warranties | `installer`, branding settings, `ppt_input`, BOM |
+| `declaration_signature` | Pre-printed declaration + signature boxes (Applicant, Installer, Witness) + date lines | Static copy + customer/installer names |
+
+**Pending files (create):**
+
+- `components/proposal/blocks/residential-bank/block-bank-cover-sheet.tsx`
+- `components/proposal/blocks/residential-bank/block-cost-breakup-sheet.tsx`
+- `components/proposal/blocks/residential-bank/block-vendor-details-sheet.tsx`
+- `components/proposal/blocks/residential-bank/block-declaration-signature.tsx`
+
+**Pending files (modify):**
+
+- `lib/proposal-block-registry.ts` — register 4 IDs; `preset_affinity: ["residential_bank_loan"]`
+- `lib/proposal-preset-engine.ts` — update `residential_bank_loan.default_blocks` to approved order (replace interim `cover_page`-only list)
+- `lib/proposal-web-renderer-registry.ts` — `renderKey`s: `bank_cover`, `cost_breakup`, `vendor_details`, `declaration_sig`; eligibility: `bankLoanOnly`
+- `components/proposal/web-renderer.tsx` — `renderBlockByKey` cases + imports
+- `lib/proposal-web-renderer-registry.ts` — extend `BlockRenderKey` union
+
+**Dependencies:**
+
+- Phase 1–2 complete (preset routing, WebRenderer path live)
+- Pricing line items available on proposal (`getProposalPricingByProposalId`, `mergeProposalPricingIntoPptInput`)
+- Company / installer branding fields for vendor sheet (may need branding schema extension for GSTIN, MNRE empanelment — document before coding)
+- Print CSS in `app/globals.css` / `app/proposal-premium.css` — B&W safe borders, no gradient reliance
+
+**Acceptance criteria (Phase 3):**
+
+- [ ] Selecting **Bank Loan Pack** in builder saves `preset_id = residential_bank_loan`
+- [ ] Public URL renders 8 pages in documented order (enabled default blocks)
+- [ ] Cost breakup matches frozen `proposal_pricing` / net payable (no client-side recalc drift)
+- [ ] Vendor sheet shows installer name, contact, panel/inverter from BOM/config
+- [ ] Declaration page prints with blank signature areas and readable B&W output (Ctrl+P / PDF)
+- [ ] No changes to `ProposalView`, `CommercialProposalView`, or `residential_smart` behavior
+- [ ] `npm run typecheck` passes; proposal stability tests unchanged or updated for new block IDs
+
+---
+
+### 15.8 Phase 4 — Executive Premium (pending)
+
+**Goal:** Luxury residential — minimalist architecture-portfolio feel; less marketing density; premium typography and whitespace (styling pass **after** architecture, with separate approval).
+
+**Scope:** No new block IDs required — playlist uses existing components. Optional **`theme_variant: "executive"`** on `ProposalDocument` or `data-preset` on `.proposal-document` for CSS scoping.
+
+**Pending files (modify):**
+
+- `lib/proposal-preset-engine.ts` — confirm `residential_executive.default_blocks` final order
+- `components/proposal/web-renderer.tsx` — pass executive variant flag if needed
+- `app/proposal-premium.css` (or preset-scoped CSS) — executive-specific spacing/typography **only when styling phase approved**
+- `components/proposals/os/preset-picker.tsx` — already lists Executive Premium; verify copy
+
+**Dependencies:**
+
+- Phase 2 complete (WebRenderer renders executive preset with existing blocks)
+- Premium design tokens (`lib/proposal-premium-design.ts`, `proposal-doc-premium` class) — reuse, do not fork legacy `ProposalView`
+
+**Acceptance criteria (Phase 4):**
+
+- [ ] Executive preset public URL renders 6 default pages in registry order
+- [ ] Fewer journey bridges / less marketing copy density than Sales Premium (product copy review)
+- [ ] Optional blocks (BOM, AMC, terms) toggle correctly in block playlist editor
+- [ ] Print output remains clean at A4; no regression on Sales Premium or Legacy
+- [ ] Styling acceptance: user sign-off on 390px mobile + print sample
+
+---
+
+### 15.9 Cross-phase dependencies
+
+```mermaid
+flowchart LR
+  P1[Phase 1 Architecture] --> P2[Phase 2 Sales Premium]
+  P2 --> P3[Phase 3 Bank Loan Pack]
+  P2 --> P4[Phase 4 Executive Premium]
+  P3 -.->|optional shared print CSS| P4
+```
+
+| Dependency | Blocks |
+|------------|--------|
+| Auth / org (§8 Phase B) | Not required for preset rendering; org-scoped branding improves vendor sheet |
+| Pricing engine (§14) | Required for cost breakup accuracy |
+| Premium design system | Applied to WebRenderer output; Executive styling builds on same tokens |
+| Proposal stability tests | Run after Phase 3 block ID additions |
+| Migration 051 | Must be applied in Supabase before creating proposals with new preset IDs in production |
+
+---
+
+### 15.10 Future implementation notes
+
+1. **Block playlist persistence:** Layout already stored in `ppt_input.proposalLayout`. Future: sync default layout when user switches preset (confirm UX — merge vs replace).
+2. **Bank Loan Pack data gaps:** If GSTIN / empanelment not in DB, add to `company-profile` / proposal branding settings — prefer additive fields over new tables.
+3. **Hindi mode:** All new bank blocks must use `proposal-i18n` / `ProposalLang` patterns from existing blocks.
+4. **Pro gating / Razorpay:** Out of scope for preset work (see Financial Module Collections Radar roadmap).
+5. **Legacy export path:** `lib/proposal-export.ts` (HTML slides) is separate from WebRenderer — do not assume preset routing applies to old PPT/HTML export until explicitly migrated.
+6. **Testing URLs after Phase 2:** Builder `http://localhost:3000/proposal` → pick Sales Premium → generate → open share link. Legacy: existing proposals with `preset_id = residential_smart` unchanged.
+7. **Quota / pause:** When API quota exhausted, **documentation-only** updates (this section) are safe; no further code until approval for Phase 3+.
+
+---
+
 *End of MASTERPLAN — keep implementations honest and the platform vision single-threaded.*
