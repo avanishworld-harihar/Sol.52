@@ -6,6 +6,7 @@ import { ensureProposalPricingRow, getProposalPricingByProposalId } from "@/lib/
 import { persistProposalDeckAfterPricingChange } from "@/lib/proposal-pricing-sync";
 import { summarizeProposalDeck, type PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { freezeProposalQuote } from "@/lib/freeze-proposal-quote";
+import { PROPOSAL_PRESET_IDS } from "@/lib/proposal-preset-engine";
 import { createProposal, listRecentProposals } from "@/lib/proposals-store";
 import { proposalExtrasShape } from "@/lib/proposal-extras-schema";
 import { bumpLeadStatus, upsertPipelineProject } from "@/lib/supabase";
@@ -86,8 +87,8 @@ const bodySchema = z.object({
   pmSuryaGharSubsidyInr: z.number().min(0).max(500000).optional(),
   netCostInr: z.number().min(0).max(50000000).optional(),
   dataSource: z.enum(["bill", "requirement"]).optional(),
-  /** Phase A — Proposal OS preset. Defaults to "residential_smart". */
-  presetId: z.enum(["residential_smart", "commercial_executive"]).optional(),
+  /** Proposal OS preset — all registered residential + commercial presets. */
+  presetId: z.enum(PROPOSAL_PRESET_IDS).optional(),
   panelBrand: z.enum(["Adani", "Waaree", "JSW", "Tata", "Vikram", "RenewSys"]).optional(),
   installerName: z.string().max(120).optional(),
   installerTagline: z.string().max(160).optional(),
@@ -144,7 +145,7 @@ export async function POST(req: NextRequest) {
       clientRef: payload.clientRef ?? null,
       leadId: payload.leadId ?? null,
       consumerId: payload.consumerId ?? null,
-      presetId: payload.presetId ?? "residential_smart",
+      presetId: payload.presetId ?? "residential_sales_premium",
     });
 
     if (!created) {
@@ -160,7 +161,7 @@ export async function POST(req: NextRequest) {
     try {
       await ensureProposalPricingRow(
         defaultProposalPricingFromDeck(created.id, pptInput, summary, {
-          presetId: payload.presetId ?? "residential_smart",
+          presetId: payload.presetId ?? "residential_sales_premium",
         })
       );
       await persistProposalDeckAfterPricingChange(created.id);
@@ -235,7 +236,7 @@ export async function POST(req: NextRequest) {
         shareToken: created.share_token,
         customerName: created.customer_name,
         generatedAt: created.generated_at,
-        presetId: payload.presetId ?? "residential_smart",
+        presetId: payload.presetId ?? "residential_sales_premium",
         shareUrl,
         summary: responseSummary,
         projectId,

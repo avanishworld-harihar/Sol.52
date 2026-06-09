@@ -2442,8 +2442,8 @@ function ProposalPageContent() {
           onSelect={(id) => {
             setOsPresetId(id);
             setShowPresetPicker(false);
-            // Legacy residential: show mode picker (bill vs requirement)
-            if (id === "residential_smart" && !urlPrefill.inputMode) {
+            // All residential presets: bill vs requirement mode (same as legacy flow)
+            if (id !== "commercial_executive" && !urlPrefill.inputMode) {
               setShowResidentialModePicker(true);
             }
           }}
@@ -2455,7 +2455,7 @@ function ProposalPageContent() {
         />
       )}
 
-      {showResidentialModePicker && (osPresetId === "residential_smart") ? (
+      {showResidentialModePicker && isAnyResidential ? (
         <ResidentialProposalModePicker
           open
           currentMode={residentialInputMode}
@@ -2619,7 +2619,7 @@ function ProposalPageContent() {
           </p>
         ) : null}
 
-        {osPresetId === "residential_smart" ? (
+        {isAnyResidential ? (
           <ResidentialInputModeSelector
             mode={residentialInputMode}
             onModeChange={(m) => {
