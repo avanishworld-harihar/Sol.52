@@ -1,0 +1,222 @@
+{
+  "generatedAt": "2026-06-09T15:18:09.407Z",
+  "baseUrl": "http://localhost:3002",
+  "scenarios": {
+    "billBacked": {
+      "url": "http://localhost:3002/proposal/441491dd-8246-4d5c-89bd-bad8dd1a12d0",
+      "id": "441491dd-8246-4d5c-89bd-bad8dd1a12d0",
+      "flowOrder": [
+        {
+          "index": 1,
+          "dataPage": "cover",
+          "journeyId": null,
+          "heading": null
+        },
+        {
+          "index": 2,
+          "dataPage": "bill-audit",
+          "journeyId": "journey-bill-audit",
+          "heading": "Your Electricity Bill — A Deep Audit"
+        },
+        {
+          "index": 3,
+          "dataPage": "economics",
+          "journeyId": "journey-economics",
+          "heading": "How Your Solar Will Pay Itself Off"
+        },
+        {
+          "index": 4,
+          "dataPage": "investment-summary",
+          "journeyId": "journey-investment-summary",
+          "heading": "The numbers confirm what you felt"
+        },
+        {
+          "index": 5,
+          "dataPage": "technical-bom",
+          "journeyId": "journey-technical-bom",
+          "heading": "Built for your roof"
+        },
+        {
+          "index": 6,
+          "dataPage": "amc",
+          "journeyId": "journey-amc",
+          "heading": "Aftercare You Can Count On"
+        },
+        {
+          "index": 7,
+          "dataPage": "commercial",
+          "journeyId": "journey-payment",
+          "heading": "How You Will Pay (25 / 50 / 20 / 5)"
+        },
+        {
+          "index": 8,
+          "dataPage": "expertise",
+          "journeyId": "journey-expertise",
+          "heading": "Solutions for Every Scale"
+        },
+        {
+          "index": 9,
+          "dataPage": "environment",
+          "journeyId": "journey-environment",
+          "heading": "Carbon You'll Save Forever"
+        },
+        {
+          "index": 10,
+          "dataPage": "dcr-comparison",
+          "journeyId": null,
+          "heading": null
+        }
+      ],
+      "appendixOrder": [
+        {
+          "index": "A1",
+          "dataPage": "terms",
+          "journeyId": "journey-terms"
+        },
+        {
+          "index": "A2",
+          "dataPage": "customer-documents",
+          "journeyId": "journey-customer-documents"
+        },
+        {
+          "index": "A3",
+          "dataPage": "bom",
+          "journeyId": "journey-bom"
+        },
+        {
+          "index": "A4",
+          "dataPage": "closing",
+          "journeyId": "journey-banking"
+        }
+      ],
+      "checks": {
+        "billEnergyCharge": true,
+        "billFixedCharge": true,
+        "billDutyFuel": true,
+        "billTotal": true,
+        "grossCost": true,
+        "subsidy": true,
+        "netCost": true,
+        "payback": true,
+        "savings25": true,
+        "bomInFlow": false,
+        "bomInAppendix": true,
+        "aboutCompany": true,
+        "dcrComparison": true,
+        "billAuditVisible": true,
+        "systemReqVisible": false,
+        "investmentVisible": true,
+        "appendixShell": true
+      },
+      "title": "SP Review Bill — Solar Proposal · Solar Proposal"
+    },
+    "requirementBased": {
+      "url": "http://localhost:3002/proposal/05a15a64-daf5-4163-9811-a50f3e3c320d",
+      "id": "05a15a64-daf5-4163-9811-a50f3e3c320d",
+      "flowOrder": [
+        {
+          "index": 1,
+          "dataPage": "cover",
+          "journeyId": null,
+          "heading": null
+        },
+        {
+          "index": 2,
+          "dataPage": "system-requirement",
+          "journeyId": "journey-system-requirement",
+          "heading": "System Designed for Your Requirement"
+        },
+        {
+          "index": 3,
+          "dataPage": "economics",
+          "journeyId": "journey-economics",
+          "heading": "How Your Solar Will Pay Itself Off"
+        },
+        {
+          "index": 4,
+          "dataPage": "investment-summary",
+          "journeyId": "journey-investment-summary",
+          "heading": "The numbers confirm what you felt"
+        },
+        {
+          "index": 5,
+          "dataPage": "technical-bom",
+          "journeyId": "journey-technical-bom",
+          "heading": "Built for your roof"
+        },
+        {
+          "index": 6,
+          "dataPage": "amc",
+          "journeyId": "journey-amc",
+          "heading": "Aftercare You Can Count On"
+        },
+        {
+          "index": 7,
+          "dataPage": "commercial",
+          "journeyId": "journey-payment",
+          "heading": "How You Will Pay (25 / 50 / 20 / 5)"
+        },
+        {
+          "index": 8,
+          "dataPage": "expertise",
+          "journeyId": "journey-expertise",
+          "heading": "Solutions for Every Scale"
+        },
+        {
+          "index": 9,
+          "dataPage": "environment",
+          "journeyId": "journey-environment",
+          "heading": "Carbon You'll Save Forever"
+        },
+        {
+          "index": 10,
+          "dataPage": "dcr-comparison",
+          "journeyId": null,
+          "heading": null
+        }
+      ],
+      "appendixOrder": [
+        {
+          "index": "A1",
+          "dataPage": "terms",
+          "journeyId": "journey-terms"
+        },
+        {
+          "index": "A2",
+          "dataPage": "customer-documents",
+          "journeyId": "journey-customer-documents"
+        },
+        {
+          "index": "A3",
+          "dataPage": "bom",
+          "journeyId": "journey-bom"
+        },
+        {
+          "index": "A4",
+          "dataPage": "closing",
+          "journeyId": "journey-banking"
+        }
+      ],
+      "checks": {
+        "billEnergyCharge": false,
+        "billFixedCharge": false,
+        "billDutyFuel": false,
+        "billTotal": true,
+        "grossCost": true,
+        "subsidy": true,
+        "netCost": true,
+        "payback": true,
+        "savings25": true,
+        "bomInFlow": false,
+        "bomInAppendix": true,
+        "aboutCompany": true,
+        "dcrComparison": true,
+        "billAuditVisible": false,
+        "systemReqVisible": true,
+        "investmentVisible": true,
+        "appendixShell": true
+      },
+      "title": "SP Review Requirement — Solar Proposal · Solar Proposal"
+    }
+  }
+}
