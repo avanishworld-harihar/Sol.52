@@ -20,3 +20,13 @@ export function withDefaultProposalLayout(ppt: PremiumProposalPptInput): Premium
 export function getEnabledProposalBlocksInOrder(layout: ProposalTemplateV1): ProposalBlockId[] {
   return layout.blocks.filter((b) => b.enabled).map((b) => b.id);
 }
+
+/** Enabled blocks in playlist order, optionally filtered by `section` (defaults to flow when omitted). */
+export function getEnabledProposalBlocksInSection(
+  layout: ProposalTemplateV1,
+  section: "flow" | "appendix"
+): ProposalBlockId[] {
+  return layout.blocks
+    .filter((b) => b.enabled && (b.section ?? "flow") === section)
+    .map((b) => b.id);
+}

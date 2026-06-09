@@ -1223,13 +1223,17 @@ export function EconomicsSection({
   D,
   summary,
   monthLbls,
-  lang
+  lang,
+  mode = "full",
 }: {
   D: ProposalDict;
   summary: ProposalDeckSummary;
   monthLbls: string[];
   lang: ProposalLang;
+  /** Sales Premium P3 — savings narrative without payback/net-cost/EMI duplication. */
+  mode?: "full" | "savings_narrative";
 }) {
+  const savingsNarrative = mode === "savings_narrative";
   const monthlyGen = Math.round(summary.annualGen / 12);
   const [selectedTenure, setSelectedTenure] = useState<number | null>(summary.emi[1]?.tenureYears ?? null);
   const [showFinance, setShowFinance] = useState(false);
@@ -1246,10 +1250,12 @@ export function EconomicsSection({
           </p>
           <p className="proposal-hero-ribbon-hint">{D["common.perYr"]}</p>
         </div>
-        <div className="proposal-financial-hero-tile proposal-panel">
-          <p className="proposal-hero-ribbon-label">{D["common.payback"]}</p>
-          <p className="proposal-hero-ribbon-value">{summary.paybackYears.toFixed(1)} {D["emi.years"]}</p>
-        </div>
+        {!savingsNarrative ? (
+          <div className="proposal-financial-hero-tile proposal-panel">
+            <p className="proposal-hero-ribbon-label">{D["common.payback"]}</p>
+            <p className="proposal-hero-ribbon-value">{summary.paybackYears.toFixed(1)} {D["emi.years"]}</p>
+          </div>
+        ) : null}
         <div className="proposal-financial-hero-tile proposal-panel">
           <p className="proposal-hero-ribbon-label">{D["econ.netSaving"]}</p>
           <p className="proposal-hero-ribbon-value">
@@ -1257,15 +1263,17 @@ export function EconomicsSection({
           </p>
           <p className="proposal-hero-ribbon-hint">25 {D["emi.years"]}</p>
         </div>
-        <div className="proposal-financial-hero-tile proposal-panel">
-          <p className="proposal-hero-ribbon-label">{D["common.netCost"]}</p>
-          <p className="proposal-hero-ribbon-value">
-            <AnimatedINR value={summary.netCost} />
-          </p>
-        </div>
+        {!savingsNarrative ? (
+          <div className="proposal-financial-hero-tile proposal-panel">
+            <p className="proposal-hero-ribbon-label">{D["common.netCost"]}</p>
+            <p className="proposal-hero-ribbon-value">
+              <AnimatedINR value={summary.netCost} />
+            </p>
+          </div>
+        ) : null}
       </motion.div>
 
-      <div className="proposal-economics-pair grid gap-4 md:grid-cols-2 print:gap-3">
+      <div className={`proposal-economics-pair grid gap-4 print:gap-3 ${savingsNarrative ? "" : "md:grid-cols-2"}`}>
         {/* Generation vs Usage */}
         <ProposalPanel className="proposal-economics-gen-panel sm:p-6 print:!p-4">
           <p
@@ -1308,7 +1316,8 @@ export function EconomicsSection({
           </div>
         </ProposalPanel>
 
-        {/* EMI calculator */}
+        {/* EMI calculator — hidden in Sales Premium savings narrative (P4 carries investment detail). */}
+        {!savingsNarrative ? (
         <ProposalPanel className="proposal-economics-emi-panel sm:p-6 print:!p-4">
           <div className="flex items-center justify-between">
             <p
@@ -1383,6 +1392,7 @@ export function EconomicsSection({
             </motion.div>
           ) : null}
         </ProposalPanel>
+        ) : null}
       </div>
 
       {/* 25-yr comparison */}

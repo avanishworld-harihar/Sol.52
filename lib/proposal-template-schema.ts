@@ -1,9 +1,15 @@
 import { z } from "zod";
 import { proposalBlockIdSchema, type ProposalBlockId, DEFAULT_PROPOSAL_BLOCK_ORDER, PROPOSAL_BLOCK_REGISTRY } from "@/lib/proposal-block-registry";
 
+export const proposalBlockSectionSchema = z.enum(["flow", "appendix"]);
+
+export type ProposalBlockSection = z.infer<typeof proposalBlockSectionSchema>;
+
 export const proposalTemplateBlockSchema = z.object({
   id: proposalBlockIdSchema,
-  enabled: z.boolean()
+  enabled: z.boolean(),
+  /** `appendix` blocks render after the active reading flow (Sales Premium v1). */
+  section: proposalBlockSectionSchema.optional(),
 });
 
 export type ProposalTemplateBlock = z.infer<typeof proposalTemplateBlockSchema>;
@@ -37,7 +43,11 @@ export function normalizeProposalTemplateV1(input: ProposalTemplateV1): Proposal
   for (const b of input.blocks) {
     if (seen.has(b.id)) continue;
     seen.add(b.id);
-    blocks.push({ id: b.id, enabled: b.enabled });
+    blocks.push({
+      id: b.id,
+      enabled: b.enabled,
+      ...(b.section ? { section: b.section } : {}),
+    });
   }
   for (const id of DEFAULT_PROPOSAL_BLOCK_ORDER) {
     if (!seen.has(id)) {

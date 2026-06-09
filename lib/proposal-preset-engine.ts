@@ -76,6 +76,8 @@ export type ProposalPreset = {
   default_blocks: ProposalBlockId[];
   /** Block IDs supported by this preset but off by default. */
   optional_blocks: ProposalBlockId[];
+  /** Blocks rendered in the appendix (after the active reading flow). */
+  appendix_blocks?: ProposalBlockId[];
   /** Visual theme hint — renderers use this to apply appropriate styling. */
   theme_hint: ThemeHint;
   /**
@@ -94,23 +96,28 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     id: "residential_sales_premium",
     label: "Sales Premium",
     description:
-      "Conversion-first residential proposal. Savings and ROI lead — " +
-      "technical detail follows. Designed for ₹5L–₹25L residential projects.",
+      "Conversion-first residential proposal. Bill intelligence → savings → investment case → " +
+      "system proof → support → payment. Designed for ₹5L–₹25L residential projects.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "bill",
     default_blocks: [
       "cover_page",
+      "bill_intelligence",
+      "system_requirements",
       "roi_savings",
-      "financial_summary",
-      "about_company",
+      "investment_summary",
       "technical_specifications",
-      "bom_material_list",
       "amc_maintenance",
       "payment_terms",
-      "terms_conditions",
     ],
-    optional_blocks: ["customer_documents_required", "dcr_comparison_card", "warranty"],
+    appendix_blocks: [
+      "terms_conditions",
+      "customer_documents_required",
+      "bom_material_list",
+      "financial_summary",
+    ],
+    optional_blocks: ["warranty"],
   },
 
   residential_bank_loan: {
@@ -231,28 +238,39 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
 export function getPresetDefaultLayout(presetId: ProposalPresetId): ProposalTemplateV1 {
   const preset = PROPOSAL_PRESET_REGISTRY[presetId];
   const defaultSet = new Set<ProposalBlockId>(preset.default_blocks);
+  const appendixSet = new Set<ProposalBlockId>(preset.appendix_blocks ?? []);
   const optionalSet = new Set<ProposalBlockId>(preset.optional_blocks);
 
   // Ordered: default blocks first (in preset order), optional blocks, then remaining.
   const seen = new Set<ProposalBlockId>();
-  const ordered: Array<{ id: ProposalBlockId; enabled: boolean }> = [];
+  const ordered: Array<{ id: ProposalBlockId; enabled: boolean; section?: "flow" | "appendix" }> = [];
 
   for (const id of preset.default_blocks) {
     if (!seen.has(id)) {
       seen.add(id);
-      ordered.push({ id, enabled: true });
+      ordered.push({ id, enabled: true, section: appendixSet.has(id) ? "appendix" : "flow" });
+    }
+  }
+  for (const id of preset.appendix_blocks ?? []) {
+    if (!seen.has(id)) {
+      seen.add(id);
+      ordered.push({ id, enabled: true, section: "appendix" });
     }
   }
   for (const id of preset.optional_blocks) {
     if (!seen.has(id)) {
       seen.add(id);
-      ordered.push({ id, enabled: false });
+      ordered.push({ id, enabled: false, section: appendixSet.has(id) ? "appendix" : "flow" });
     }
   }
   for (const id of DEFAULT_PROPOSAL_BLOCK_ORDER) {
     if (!seen.has(id)) {
       seen.add(id);
-      ordered.push({ id, enabled: PROPOSAL_BLOCK_REGISTRY[id].defaultEnabled && defaultSet.has(id) });
+      ordered.push({
+        id,
+        enabled: PROPOSAL_BLOCK_REGISTRY[id].defaultEnabled && defaultSet.has(id),
+        section: appendixSet.has(id) ? "appendix" : "flow",
+      });
     }
   }
 

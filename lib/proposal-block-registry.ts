@@ -19,10 +19,12 @@ export const PROPOSAL_BLOCK_IDS = [
   "about_company",
   "executive_summary",
   "technical_proposal",
+  "bill_intelligence",
   "system_requirements",
   "technical_specifications",
   "bom_material_list",
   "financial_summary",
+  "investment_summary",
   "roi_savings",
   "payback_analysis",
   "warranty",
@@ -124,6 +126,14 @@ export const PROPOSAL_BLOCK_REGISTRY: Record<ProposalBlockId, ProposalBlockMeta>
     preset_affinity: "all",
   },
 
+  bill_intelligence: {
+    id: "bill_intelligence",
+    labelKey: "proposal_block_bill_intelligence",
+    group: "technical",
+    defaultEnabled: false,
+    preset_affinity: ["residential_smart"],
+  },
+
   /**
    * System requirement block — shown instead of bill audit pages
    * when no bill was uploaded (dataSource = "requirement").
@@ -160,6 +170,14 @@ export const PROPOSAL_BLOCK_REGISTRY: Record<ProposalBlockId, ProposalBlockMeta>
     group: "commercial",
     defaultEnabled: true,
     preset_affinity: "all",
+  },
+
+  investment_summary: {
+    id: "investment_summary",
+    labelKey: "proposal_block_investment_summary",
+    group: "commercial",
+    defaultEnabled: false,
+    preset_affinity: ["residential_smart"],
   },
 
   roi_savings: {
@@ -291,10 +309,12 @@ export const DEFAULT_PROPOSAL_BLOCK_ORDER: ProposalBlockId[] = [
   "about_company",
   "executive_summary",
   "technical_proposal",
+  "bill_intelligence",
   "system_requirements",
   "technical_specifications",
   "bom_material_list",
   "financial_summary",
+  "investment_summary",
   "roi_savings",
   "payback_analysis",
   "warranty",

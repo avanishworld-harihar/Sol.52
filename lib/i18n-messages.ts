@@ -474,6 +474,8 @@ export const EN = {
   proposal_block_cover_page: "Cover page",
   proposal_block_about_company: "About company",
   proposal_block_technical_proposal: "Technical proposal",
+  proposal_block_bill_intelligence: "Bill intelligence",
+  proposal_block_investment_summary: "Investment summary",
   proposal_block_technical_specifications: "Technical specifications",
   proposal_block_bom: "BOM / material list",
   proposal_block_financial: "Financial summary",

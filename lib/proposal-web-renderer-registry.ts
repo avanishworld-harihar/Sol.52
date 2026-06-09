@@ -46,6 +46,12 @@ export type BlockRenderKey =
   | "amc"
   | "commercial_payment"
   | "banking_closing"
+  | "investment_summary"
+  | "technical_summary"
+  | "bom_only"
+  | "payment_milestones_only"
+  | "terms_conditions"
+  | "customer_documents"
   | "survey_workflow"
   | "financial_intelligence"
   | "engineering_rationale"
@@ -94,6 +100,8 @@ const dcrComparisonEligible: BlockEligibilityFn = ({ presetId }) =>
   isResidentialWebPreset(presetId);
 const surveyOnly: BlockEligibilityFn = ({ showSurveySection }) => Boolean(showSurveySection);
 
+const salesPremiumOnly: BlockEligibilityFn = ({ presetId }) => presetId === "residential_sales_premium";
+
 // ─── Registry ─────────────────────────────────────────────────────────────────
 
 export const WEB_RENDERER_REGISTRY: Partial<Record<ProposalBlockId, WebBlockMeta>> = {
@@ -132,6 +140,21 @@ export const WEB_RENDERER_REGISTRY: Partial<Record<ProposalBlockId, WebBlockMeta
     bridgeKey: "afterBill",
     eligibility: billBacked,
     renderKey: "bill_audit",
+  },
+
+  /** Sales Premium P2 — customer bill intelligence (bill-backed path). */
+  bill_intelligence: {
+    pageDataAttr: "bill-audit",
+    bridgeKey: "afterBill",
+    eligibility: billBacked,
+    renderKey: "bill_audit",
+  },
+
+  investment_summary: {
+    pageDataAttr: "investment-summary",
+    bridgeKey: "afterInvestment",
+    eligibility: salesPremiumOnly,
+    renderKey: "investment_summary",
   },
 
   /**
@@ -224,6 +247,18 @@ export const WEB_RENDERER_REGISTRY: Partial<Record<ProposalBlockId, WebBlockMeta
   /**
    * Project gallery / survey workflow — only when CRM marks site survey complete.
    */
+  terms_conditions: {
+    pageDataAttr: "terms",
+    eligibility: ALWAYS_ELIGIBLE,
+    renderKey: "terms_conditions",
+  },
+
+  customer_documents_required: {
+    pageDataAttr: "customer-documents",
+    eligibility: ALWAYS_ELIGIBLE,
+    renderKey: "customer_documents",
+  },
+
   project_gallery: {
     pageDataAttr: "survey",
     bridgeKey: "afterInstall",
@@ -312,11 +347,13 @@ export function getJourneyBridgeText(key: string | undefined, lang: "en" | "hi")
     afterBill: "From your bill pattern, here is how much you can save each year.",
     afterRequirement: "Here is the system we sized for your requirement — generation, coverage, and commercial snapshot.",
     afterSavings: "Along with savings, solar also cuts pollution and helps the planet.",
+    afterSavingsPremium: "You have seen what is at stake — now let us confirm the investment case.",
     afterImpact: "This is the system size and parts we recommend for your roof.",
     afterSystem: "Here is how we install, support, and stay with you after go-live.",
     afterInstall: "Clear yearly care so your panels keep working for decades.",
     afterSupport: "Payment steps, subsidy, and commercial terms — all in one place.",
     afterPay: "Bank details and a simple way to say yes — we are ready when you are.",
+    afterInvestment: "The numbers confirm what you felt — here is what you are investing in.",
     afterExecutive: "Here is the technical system we have sized for your facility.",
     afterPayback: "Along with financial returns, solar also delivers environmental impact.",
   };
@@ -326,11 +363,13 @@ export function getJourneyBridgeText(key: string | undefined, lang: "en" | "hi")
     afterBill: "बिल के हिसाब से, हर साल आप कितना बचा सकते हैं — यहाँ है।",
     afterRequirement: "आपकी ज़रूरत के हिसाब से सिस्टम — उत्पादन, कवरेज और वाणिज्यिक सारांश।",
     afterSavings: "बचत के साथ, सोलर से प्रदूषण भी कम होता है।",
+    afterSavingsPremium: "आपने देखा क्या दांव पर है — अब निवेश केस की पुष्टि करें।",
     afterImpact: "आपकी छत के लिए सिस्टम साइज़ और सामान — यहाँ है।",
     afterSystem: "इंस्टॉल, सपोर्ट और बाद की देखभाल — कैसे करते हैं।",
     afterInstall: "सालाना AMC — ताकि पैनल सालों तक चलें।",
     afterSupport: "भुगतान, सब्सिडी और शर्तें — सब एक जगह।",
     afterPay: "बैंक विवरण और अगला कदम — जब आप तैयार हों।",
+    afterInvestment: "आंकड़े पुष्टि करते हैं — यहाँ है आपका निवेश।",
     afterExecutive: "आपकी सुविधा के लिए हमने जो सिस्टम तैयार किया है — यहाँ है।",
     afterPayback: "वित्तीय लाभ के साथ, सोलर पर्यावरण पर भी असर डालता है।",
   };

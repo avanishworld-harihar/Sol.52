@@ -34,7 +34,10 @@ import { summarizeProposalDeck, type PremiumProposalPptInput, type ProposalDeckS
 import type { ProposalBlockId } from "@/lib/proposal-block-registry";
 import type { BlockRenderContext } from "@/lib/proposal-block-context";
 import { resolveStoryVariant, type ProposalPresetId } from "@/lib/proposal-preset-engine";
-import { getEnabledProposalBlocksInOrder } from "@/lib/proposal-layout-merge";
+import {
+  getEnabledProposalBlocksInOrder,
+  getEnabledProposalBlocksInSection,
+} from "@/lib/proposal-layout-merge";
 import {
   WEB_RENDERER_REGISTRY,
   isBlockEligible,
@@ -90,6 +93,11 @@ import { parseResidentialConfig } from "@/lib/residential-proposal-config";
 import { BlockCapacityScenarios } from "@/components/proposal/blocks/commercial/block-capacity-scenarios";
 import { BlockCommercialFinancing } from "@/components/proposal/blocks/commercial/block-commercial-financing";
 import { BlockDgHybrid } from "@/components/proposal/blocks/commercial/block-dg-hybrid";
+import { BlockInvestmentSummary } from "@/components/proposal/blocks/residential/block-investment-summary";
+import { BlockTechnicalSummary } from "@/components/proposal/blocks/residential/block-technical-summary";
+import { BlockResidentialTerms } from "@/components/proposal/blocks/residential/block-residential-terms";
+import { BlockCustomerDocuments } from "@/components/proposal/blocks/residential/block-customer-documents";
+import { ProposalAppendixShell } from "@/components/proposal/appendix/proposal-appendix-shell";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -101,6 +109,24 @@ export type ProposalWebRendererProps = {
   /** Optional override — when true, show site survey page. */
   showSurveyWorkflowSection?: boolean;
 };
+
+// ─── Sales Premium render overrides (inline — no generic resolver module) ───
+
+function resolveSalesPremiumRenderKey(
+  blockId: ProposalBlockId,
+  defaultKey: BlockRenderKey
+): BlockRenderKey {
+  switch (blockId) {
+    case "technical_specifications":
+      return "technical_summary";
+    case "bom_material_list":
+      return "bom_only";
+    case "payment_terms":
+      return "payment_milestones_only";
+    default:
+      return defaultKey;
+  }
+}
 
 // ─── Block render dispatch ────────────────────────────────────────────────────
 
@@ -165,8 +191,27 @@ export function renderBlockByKey(
           summary={summary}
           monthLbls={monthLbls}
           lang={lang}
+          mode={ctx.presetId === "residential_sales_premium" ? "savings_narrative" : "full"}
         />
       );
+
+    case "investment_summary":
+      return <BlockInvestmentSummary summary={summary} lang={lang} D={D} />;
+
+    case "technical_summary":
+      return <BlockTechnicalSummary summary={summary} lang={lang} D={D} />;
+
+    case "bom_only":
+      return <BomSection D={D} lang={lang} summary={summary} />;
+
+    case "payment_milestones_only":
+      return <PaymentSection D={D} summary={summary} lang={lang} />;
+
+    case "terms_conditions":
+      return <BlockResidentialTerms lang={lang} installerName={ctx.installer.name} />;
+
+    case "customer_documents":
+      return <BlockCustomerDocuments lang={lang} />;
 
     case "system_requirements":
       return (
@@ -565,35 +610,52 @@ function ProposalWebRendererInner({
   };
 
   const eligibilityCtx = { billAuditBacked, presetId, showSurveySection: showSurveyWorkflowSection };
+  const isSalesPremium = presetId === "residential_sales_premium";
 
-  // Get the ordered, enabled block list from the layout
-  const enabledBlocks = getEnabledProposalBlocksInOrder(doc.layout);
-
-  // Track which renderKeys we've already rendered to avoid duplicate pages
-  // (e.g. technical_specifications and bom_material_list both map to technical_and_bom)
-  const renderedKeys = new Set<BlockRenderKey>();
-
-  const pages: Array<{
+  type PageEntry = {
     blockId: ProposalBlockId;
     renderKey: BlockRenderKey;
     pageDataAttr: string;
     bridgeKey?: string;
-  }> = [];
+  };
 
-  for (const blockId of enabledBlocks) {
-    const meta = WEB_RENDERER_REGISTRY[blockId];
-    if (!meta) continue;
-    if (!isBlockEligible(blockId, eligibilityCtx)) continue;
-    // Skip if this renderKey was already added (merged pages)
-    if (renderedKeys.has(meta.renderKey)) continue;
-    renderedKeys.add(meta.renderKey);
-    pages.push({
-      blockId,
-      renderKey: meta.renderKey,
-      pageDataAttr: meta.pageDataAttr,
-      bridgeKey: meta.bridgeKey,
-    });
+  function buildPageList(blockIds: ProposalBlockId[]): PageEntry[] {
+    const renderedKeys = new Set<BlockRenderKey>();
+    const pages: PageEntry[] = [];
+
+    for (const blockId of blockIds) {
+      const meta = WEB_RENDERER_REGISTRY[blockId];
+      if (!meta) continue;
+      if (!isBlockEligible(blockId, eligibilityCtx)) continue;
+
+      const renderKey = isSalesPremium
+        ? resolveSalesPremiumRenderKey(blockId, meta.renderKey)
+        : meta.renderKey;
+
+      if (!isSalesPremium && renderedKeys.has(renderKey)) continue;
+      if (isSalesPremium && renderKey !== "bom_only" && renderedKeys.has(renderKey)) continue;
+
+      renderedKeys.add(renderKey);
+      pages.push({
+        blockId,
+        renderKey,
+        pageDataAttr: meta.pageDataAttr,
+        bridgeKey: meta.bridgeKey,
+      });
+    }
+
+    return pages;
   }
+
+  const flowBlockIds = isSalesPremium
+    ? getEnabledProposalBlocksInSection(doc.layout, "flow")
+    : getEnabledProposalBlocksInOrder(doc.layout);
+  const appendixBlockIds = isSalesPremium
+    ? getEnabledProposalBlocksInSection(doc.layout, "appendix")
+    : [];
+
+  const flowPages = buildPageList(flowBlockIds);
+  const appendixPages = buildPageList(appendixBlockIds);
 
   return (
     <MotionConfig transition={{ duration: 0.35, ease: "easeOut" }} reducedMotion="user">
@@ -609,6 +671,7 @@ function ProposalWebRendererInner({
           <ProposalJourneyProgress
             showSurvey={showSurveyWorkflowSection}
             billAuditBacked={billAuditBacked}
+            presetId={presetId}
             className="flex-1 min-w-0"
           />
         </div>
@@ -662,20 +725,34 @@ function ProposalWebRendererInner({
           </a>
         </div>
 
-        {/* Block loop — the core rendering engine */}
-        {pages.map(({ blockId, renderKey, pageDataAttr, bridgeKey }) => (
-          <div key={`${blockId}-${renderKey}`}>
+        {/* Active reading flow */}
+        {flowPages.map(({ blockId, renderKey, pageDataAttr, bridgeKey }) => (
+          <div key={`flow-${blockId}-${renderKey}`}>
             <div className="proposal-page" data-page={pageDataAttr}>
               {renderBlockByKey(renderKey, ctx)}
             </div>
             {bridgeKey ? (
               <JourneyBridge
-                text={getJourneyBridgeText(bridgeKey, lang)}
+                text={getJourneyBridgeText(
+                  isSalesPremium && bridgeKey === "afterSavings" ? "afterSavingsPremium" : bridgeKey,
+                  lang
+                )}
                 lang={lang}
               />
             ) : null}
           </div>
         ))}
+
+        {/* Appendix — Sales Premium v1 only */}
+        {appendixPages.length > 0 ? (
+          <ProposalAppendixShell lang={lang}>
+            {appendixPages.map(({ blockId, renderKey, pageDataAttr }) => (
+              <div key={`appendix-${blockId}-${renderKey}`} className="proposal-page proposal-page--appendix" data-page={pageDataAttr}>
+                {renderBlockByKey(renderKey, ctx)}
+              </div>
+            ))}
+          </ProposalAppendixShell>
+        ) : null}
 
         {/* Sticky mobile action bar */}
         <div

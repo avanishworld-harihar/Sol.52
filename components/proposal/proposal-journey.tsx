@@ -29,17 +29,46 @@ const JOURNEY_STEPS_REQUIREMENT = [
   { id: "closing", label: "Next" }
 ] as const;
 
+const JOURNEY_STEPS_SALES_PREMIUM_BILL = [
+  { id: "cover", label: "Start" },
+  { id: "bill-audit", label: "Your bill" },
+  { id: "economics", label: "Savings" },
+  { id: "investment-summary", label: "Investment" },
+  { id: "technical-bom", label: "System" },
+  { id: "amc", label: "Support" },
+  { id: "commercial", label: "Pay" },
+] as const;
+
+const JOURNEY_STEPS_SALES_PREMIUM_REQ = [
+  { id: "cover", label: "Start" },
+  { id: "system-requirement", label: "Design" },
+  { id: "economics", label: "Savings" },
+  { id: "investment-summary", label: "Investment" },
+  { id: "technical-bom", label: "System" },
+  { id: "amc", label: "Support" },
+  { id: "commercial", label: "Pay" },
+] as const;
+
 export function ProposalJourneyProgress({
   showSurvey,
   billAuditBacked = true,
+  presetId,
   className
 }: {
   showSurvey?: boolean;
   /** When false, bill audit + economics nav items are replaced by system design. */
   billAuditBacked?: boolean;
+  presetId?: string;
   className?: string;
 }) {
-  const base = billAuditBacked ? JOURNEY_STEPS_BILL : JOURNEY_STEPS_REQUIREMENT;
+  const base =
+    presetId === "residential_sales_premium"
+      ? billAuditBacked
+        ? JOURNEY_STEPS_SALES_PREMIUM_BILL
+        : JOURNEY_STEPS_SALES_PREMIUM_REQ
+      : billAuditBacked
+        ? JOURNEY_STEPS_BILL
+        : JOURNEY_STEPS_REQUIREMENT;
   const steps = base.filter((s) => s.id !== "survey" || showSurvey);
 
   return (
