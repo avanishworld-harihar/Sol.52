@@ -55,7 +55,7 @@ export function ExecutiveBillIntelligence({ billData }: Props) {
         </>
       }
       supporting={
-        <div className="w-full max-w-lg text-left">
+        <div className="w-full max-w-lg text-center">
           <p className="ep-body" style={{ marginBottom: "var(--ep-space-4)" }}>
             {i1}
           </p>

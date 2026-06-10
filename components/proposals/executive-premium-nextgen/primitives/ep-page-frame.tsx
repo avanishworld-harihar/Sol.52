@@ -38,20 +38,14 @@ export function EpPageFrame({
 
   if (variant === "fullBleed") {
     return (
-      <section
-        className={cn("ep-page relative flex w-full flex-col", className)}
-        style={{ minHeight: "100svh", backgroundColor: EP_SURFACE }}
-      >
+      <section className={cn("ep-page ep-page--cover relative flex w-full flex-col", className)}>
         {children}
       </section>
     );
   }
 
   return (
-    <section
-      className={cn("ep-page relative flex w-full flex-col", className)}
-      style={{ minHeight: "100svh", backgroundColor: EP_SURFACE }}
-    >
+    <section className={cn("ep-page ep-page--sheet relative flex w-full flex-col", className)}>
       <div
         className={cn(
           "mx-auto flex w-full flex-1 flex-col justify-center",
@@ -99,7 +93,7 @@ export function EpPageFrame({
 
 export function EpDocumentCanvas({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("w-full", className)} style={{ backgroundColor: EP_CANVAS }}>
+    <div className={cn("ep-document-canvas w-full", className)} style={{ backgroundColor: EP_CANVAS }}>
       {children}
     </div>
   );

@@ -3,7 +3,7 @@
 import type { NextgenInvestment } from "@/lib/executive-premium-nextgen/types";
 import { PP_INK, PP_MUTED, PP_BORDER } from "@/lib/proposal-premium-design";
 import { EpCurrency } from "@/components/proposals/executive-premium-nextgen/primitives/ep-currency";
-import { NextgenPageShell } from "@/components/proposals/executive-premium-nextgen/primitives/nextgen-page-shell";
+import { EpPageFrame } from "@/components/proposals/executive-premium-nextgen/primitives/ep-page-frame";
 import { fmtInr } from "@/components/proposals/executive-premium-nextgen/primitives/nextgen-format";
 
 type Props = {
@@ -63,8 +63,8 @@ export function InvestmentDecisionPage({ investmentData }: Props) {
   const recIdx = investmentData.recommended_option === "B" ? 1 : 0;
 
   return (
-    <NextgenPageShell className="px-6 py-12 sm:px-12 sm:py-16">
-      <div className="mx-auto flex h-full max-w-5xl flex-col">
+    <EpPageFrame variant="contained">
+      <div className="mx-auto flex w-full max-w-5xl flex-col">
         <div
           className="flex flex-col items-center text-center"
           style={{
@@ -104,6 +104,6 @@ export function InvestmentDecisionPage({ investmentData }: Props) {
           {investmentData.validity_statement}
         </p>
       </div>
-    </NextgenPageShell>
+    </EpPageFrame>
   );
 }

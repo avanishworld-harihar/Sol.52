@@ -4,6 +4,7 @@ import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposa
 import { transformToNextgenModel } from "@/lib/executive-premium-nextgen/transform-to-nextgen-model";
 import { EpFontRoot } from "@/components/proposals/executive-premium-nextgen/primitives/ep-font-root";
 import { EpDocumentCanvas } from "@/components/proposals/executive-premium-nextgen/primitives/ep-page-frame";
+import { EpProposalShell } from "@/components/proposals/executive-premium-nextgen/primitives/ep-proposal-shell";
 import { AssetDeclarationCover } from "@/components/proposals/executive-premium-nextgen/asset-declaration-cover";
 import { ExecutiveBillIntelligence } from "@/components/proposals/executive-premium-nextgen/executive-bill-intelligence";
 import { SystemContextRequirementAnalysis } from "@/components/proposals/executive-premium-nextgen/system-context-requirement-analysis";
@@ -42,7 +43,8 @@ export function ExecutivePremiumNextgenRenderer({
 
   return (
     <EpFontRoot className="ep-nextgen-mvp w-full max-w-none">
-      <EpDocumentCanvas>
+      <EpProposalShell proposalId={proposalId}>
+        <EpDocumentCanvas>
         <AssetDeclarationCover
           assetData={{
             property: model.property,
@@ -60,7 +62,8 @@ export function ExecutivePremiumNextgenRenderer({
         <PropertyAssetView assetData={model.asset} />
         <GovernanceStructure governanceData={model.governance} />
         <InvestmentDecisionPage investmentData={model.investment} />
-      </EpDocumentCanvas>
+        </EpDocumentCanvas>
+      </EpProposalShell>
     </EpFontRoot>
   );
 }
