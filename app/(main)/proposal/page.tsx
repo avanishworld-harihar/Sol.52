@@ -2676,8 +2676,19 @@ function ProposalPageContent() {
             subsidyEligible={residentialSubsidyEligible}
             netCostInr={effectiveResult.netCost}
             annualSavingInr={effectiveResult.annualSavings}
+            onCommitPlantKw={commitResidentialPlantKw}
+            onPlantKwEditStart={markResidentialPlantKwTouched}
             onChange={(next) => {
-              setResidentialConfig(next);
+              setResidentialConfig((prev) => {
+                if (
+                  prev &&
+                  Math.abs(prev.solar.plantCapacityKw - next.solar.plantCapacityKw) > 0.001
+                ) {
+                  residentialPlantKwTouchedRef.current = true;
+                  proposalPlantLockedRef.current = true;
+                }
+                return next;
+              });
               if (proposalLayout) {
                 setProposalLayout(applyResidentialFlagsToLayout(proposalLayout, next));
               }
