@@ -21,7 +21,7 @@ import {
   type PanelTrackGroup,
 } from "@/lib/commercial-solar-schema";
 import { cn } from "@/lib/utils";
-import { ChevronDown, Leaf, Plus, Star, Trash2 } from "lucide-react";
+import { ChevronDown, Leaf, Plus, Star, Sun, Trash2 } from "lucide-react";
 import { useMemo } from "react";
 
 const inr = (v: number) => `₹${Math.round(v).toLocaleString("en-IN")}`;
@@ -65,7 +65,17 @@ export function CommercialSolarPanelSection({ solar, onChange }: Props) {
         group={solar.dcr}
         track="dcr"
         plantKw={solar.plantCapacityKw}
-        onChange={(dcr) => onChange({ ...solar, dcr, nonDcr: { enabled: false, collapsed: true, rows: [] } })}
+        onChange={(dcr) => onChange({ ...solar, dcr })}
+      />
+      <TrackGroup
+        title="Non-DCR panels"
+        subtitle="Import / lower module rate options"
+        icon={Sun}
+        tone="slate"
+        group={solar.nonDcr}
+        track="non_dcr"
+        plantKw={solar.plantCapacityKw}
+        onChange={(nonDcr) => onChange({ ...solar, nonDcr })}
       />
     </section>
   );

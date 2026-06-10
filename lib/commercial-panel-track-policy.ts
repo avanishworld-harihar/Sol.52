@@ -1,6 +1,7 @@
 /**
- * Commercial panel track policy — DCR (ALMM) only for new quotes.
- * Non-DCR retired from commercial flows (May 2026 compliance path).
+ * Commercial panel track policy — Non-DCR panels + catalog rates when:
+ *   • connection is commercial / industrial / HT, OR
+ *   • plant size is above 8 kW
  */
 
 import { isPmSuryaGharSubsidyEligible } from "@/lib/lead-connection-types";
@@ -10,7 +11,6 @@ import {
 } from "@/lib/residential-brand-catalog";
 import type { ResidentialProposalConfig } from "@/lib/residential-requirements-schema";
 
-/** @deprecated Non-DCR no longer offered — kept for type compat only. */
 export const COMMERCIAL_NON_DCR_KW_THRESHOLD = 8;
 
 export type CommercialPanelTrack = "dcr" | "non_dcr";
@@ -27,28 +27,29 @@ export function isCommercialConnectionType(connectionType: string | null | undef
   return /commercial|industrial|\bht\b|high tension|extra high/i.test(raw);
 }
 
-/** @deprecated Always false — commercial quotes use DCR only. */
+/** Non-DCR when C&I connection or plant strictly above 8 kW. */
 export function commercialRequiresNonDcrTrack(
-  _connectionType: string | null | undefined,
-  _plantKw: number
+  connectionType: string | null | undefined,
+  plantKw: number
 ): boolean {
-  return false;
+  if (isCommercialConnectionType(connectionType)) return true;
+  return plantKw > COMMERCIAL_NON_DCR_KW_THRESHOLD;
 }
 
 export function resolveCommercialPanelTrack(
-  _connectionType: string | null | undefined,
-  _plantKw: number
+  connectionType: string | null | undefined,
+  plantKw: number
 ): CommercialPanelTrack {
-  return "dcr";
+  return commercialRequiresNonDcrTrack(connectionType, plantKw) ? "non_dcr" : "dcr";
 }
 
-/** Apply DCR track + refresh Smart catalog gross / implied ₹/Wp from rate card. */
+/** Apply track + refresh Smart catalog gross / implied ₹/Wp on the pricing config. */
 export function applyCommercialPanelTrackPolicy(
   config: ResidentialProposalConfig,
   connectionType?: string | null
 ): ResidentialProposalConfig {
   const conn = (connectionType ?? config.connectionType ?? "").trim();
-  const track: CommercialPanelTrack = "dcr";
+  const track = resolveCommercialPanelTrack(conn, config.solar.plantCapacityKw);
   const entry = getActiveCatalogEntry(config);
 
   let next: ResidentialProposalConfig = {

@@ -90,24 +90,24 @@ export function createCommercialPanelLine(
   };
 }
 
-/** Ensures one DCR panel line in the BOM (Non-DCR lines removed). */
+/** Ensures DCR + Non-DCR panel lines exist in the commercial BOM. */
 export function ensureCommercialPanelLines(lines: PricingLineItem[], systemKw: number): PricingLineItem[] {
-  let next = lines.filter((l) => !(l.kind === "panels" && l.panel_track === "non_dcr"));
-  const tracks: PanelTrack[] = ["dcr"];
+  let next = [...lines];
+  const tracks: PanelTrack[] = ["dcr", "non_dcr"];
 
   for (const track of tracks) {
     const existing = next.findIndex((l) => l.kind === "panels" && l.panel_track === track);
     if (existing >= 0) continue;
 
     const untrackedIdx = next.findIndex((l) => l.kind === "panels" && !l.panel_track);
-    if (untrackedIdx >= 0) {
+    if (untrackedIdx >= 0 && track === "non_dcr") {
       const u = next[untrackedIdx];
       next[untrackedIdx] = {
         ...u,
-        panel_track: "dcr",
-        label: "Solar modules (DCR)",
+        panel_track: "non_dcr",
+        label: "Solar modules (Non-DCR)",
         watt: u.watt ?? 540,
-        technology: u.technology ?? "Mono PERC",
+        technology: u.technology ?? "PERC",
       };
       continue;
     }
@@ -115,13 +115,17 @@ export function ensureCommercialPanelLines(lines: PricingLineItem[], systemKw: n
     const firstPanelIdx = next.findIndex((l) => l.kind === "panels");
     const line = createCommercialPanelLine(track, systemKw);
     if (firstPanelIdx >= 0) {
-      next.splice(firstPanelIdx, 0, line);
+      const insertAt = track === "dcr" ? firstPanelIdx : firstPanelIdx + 1;
+      next.splice(insertAt, 0, line);
     } else {
       next.unshift(line);
     }
   }
 
-  next = next.filter((l) => !(l.kind === "panels" && !l.panel_track));
+  const hasBoth = tracks.every((t) => next.some((l) => l.kind === "panels" && l.panel_track === t));
+  if (hasBoth) {
+    next = next.filter((l) => !(l.kind === "panels" && !l.panel_track));
+  }
 
   return next;
 }

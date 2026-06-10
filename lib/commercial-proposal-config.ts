@@ -174,7 +174,7 @@ export function applyCommercialFlagsToLayout(
   config: CommercialProposalConfig
 ): ProposalTemplateV1 {
   const flags: Partial<Record<ProposalBlockId, boolean>> = {
-    dcr_comparison_card: config.dcrComparison?.enabled === true, // default off — Non-DCR retired
+    dcr_comparison_card: config.dcrComparison?.enabled === true,
     capacity_scenarios_card: config.capacityScenarios?.enabled === true,
     commercial_financing_card: config.financing?.enabled === true,
     dg_hybrid_analysis_card: config.dgAssumptions?.enabled === true,
