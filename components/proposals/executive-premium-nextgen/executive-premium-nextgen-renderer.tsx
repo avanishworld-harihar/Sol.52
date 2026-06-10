@@ -1,0 +1,66 @@
+"use client";
+
+import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposal-ppt";
+import { transformToNextgenModel } from "@/lib/executive-premium-nextgen/transform-to-nextgen-model";
+import { PROPOSAL_PREMIUM_DOC_CLASS } from "@/lib/proposal-premium-design";
+import { NextgenDocumentCanvas } from "@/components/proposals/executive-premium-nextgen/primitives/nextgen-page-shell";
+import { AssetDeclarationCover } from "@/components/proposals/executive-premium-nextgen/asset-declaration-cover";
+import { ExecutiveBillIntelligence } from "@/components/proposals/executive-premium-nextgen/executive-bill-intelligence";
+import { SystemContextRequirementAnalysis } from "@/components/proposals/executive-premium-nextgen/system-context-requirement-analysis";
+import { OwnershipLedger } from "@/components/proposals/executive-premium-nextgen/ownership-ledger";
+import { PropertyAssetView } from "@/components/proposals/executive-premium-nextgen/property-asset-view";
+import { GovernanceStructure } from "@/components/proposals/executive-premium-nextgen/governance-structure";
+import { InvestmentDecisionPage } from "@/components/proposals/executive-premium-nextgen/investment-decision-page";
+
+export type ExecutivePremiumNextgenRendererProps = {
+  proposalId: string;
+  generatedAt: string;
+  pptInput: PremiumProposalPptInput;
+  summary: ProposalDeckSummary;
+  siteImages?: string[];
+};
+
+/**
+ * Executive Premium NextGen — 6-page isolated renderer.
+ * Page 2 branches: bill intelligence (audit data) vs requirement context.
+ * Does not import legacy proposal section components.
+ */
+export function ExecutivePremiumNextgenRenderer({
+  proposalId,
+  generatedAt,
+  pptInput,
+  summary,
+  siteImages,
+}: ExecutivePremiumNextgenRendererProps) {
+  const model = transformToNextgenModel({
+    proposalId,
+    generatedAt,
+    pptInput,
+    summary,
+    siteImages,
+  });
+
+  return (
+    <div className={`proposal-document ${PROPOSAL_PREMIUM_DOC_CLASS} ep-nextgen-mvp`}>
+      <NextgenDocumentCanvas>
+        <AssetDeclarationCover
+          assetData={{
+            property: model.property,
+            financials: model.financials,
+            document: model.document,
+            config: model.config,
+          }}
+        />
+        {model.flow_mode === "bill" && model.bill_intelligence ? (
+          <ExecutiveBillIntelligence billData={model.bill_intelligence} />
+        ) : model.requirement_context ? (
+          <SystemContextRequirementAnalysis contextData={model.requirement_context} />
+        ) : null}
+        <OwnershipLedger ledgerData={model.ledger} />
+        <PropertyAssetView assetData={model.asset} />
+        <GovernanceStructure governanceData={model.governance} />
+        <InvestmentDecisionPage investmentData={model.investment} />
+      </NextgenDocumentCanvas>
+    </div>
+  );
+}

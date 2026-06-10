@@ -1,3 +1,25 @@
 {
-  "extends": ["next/core-web-vitals"]
+  "extends": ["next/core-web-vitals"],
+  "overrides": [
+    {
+      "files": ["components/proposals/executive-premium-nextgen/**/*.{ts,tsx}"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@/components/proposal/**", "@/components/proposal/*"],
+                "message": "Executive Premium NextGen must not import legacy proposal components (Rule 1)."
+              },
+              {
+                "group": ["@/app/(public)/proposal/**"],
+                "message": "Executive Premium NextGen must not import proposal-view sections."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
 }

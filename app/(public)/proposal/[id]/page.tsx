@@ -12,6 +12,7 @@ import { parseResidentialConfig } from "@/lib/residential-proposal-config";
 import ProposalView from "./proposal-view";
 import CommercialProposalView from "@/components/proposal/commercial-proposal-view";
 import { ProposalWebRenderer } from "@/components/proposal/web-renderer";
+import { ExecutivePremiumNextgenRenderer } from "@/components/proposals/executive-premium-nextgen/executive-premium-nextgen-renderer";
 import { compileProposalDocument } from "@/lib/proposal-document-ir";
 import { RESIDENTIAL_WEB_RENDERER_PRESETS } from "@/lib/proposal-preset-engine";
 
@@ -100,6 +101,19 @@ export default async function PublicProposalPage({ params }: PageProps) {
         installer={installerProps}
         siteImages={siteImages}
         installerLogoUrl={installerLogoUrl}
+      />
+    );
+  }
+
+  // ── Executive Premium NextGen MVP — isolated 5-page renderer ─────────────
+  if (proposal.preset_id === "residential_executive") {
+    return (
+      <ExecutivePremiumNextgenRenderer
+        proposalId={id}
+        generatedAt={proposal.generated_at}
+        pptInput={mergedInput}
+        summary={liveSummary}
+        siteImages={siteImages}
       />
     );
   }

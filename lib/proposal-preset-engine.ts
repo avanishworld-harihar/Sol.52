@@ -147,20 +147,14 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     id: "residential_executive",
     label: "Executive Premium",
     description:
-      "Minimalist luxury residential proposal. Architecture-portfolio feel — " +
-      "high whitespace, premium typography, less marketing density.",
+      "NextGen executive document — property-first, ledger-style economics. " +
+      "6 pages: cover → bill intelligence or requirement context → ledger → asset → governance → investment.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "bill",
-    default_blocks: [
-      "cover_page",
-      "financial_summary",
-      "roi_savings",
-      "technical_specifications",
-      "about_company",
-      "payment_terms",
-    ],
-    optional_blocks: ["bom_material_list", "amc_maintenance", "terms_conditions"],
+    /** Legacy block IDs — not used by ExecutivePremiumNextgenRenderer (MVP). */
+    default_blocks: [],
+    optional_blocks: [],
   },
 
   // ── Legacy presets ────────────────────────────────────────────────────────
