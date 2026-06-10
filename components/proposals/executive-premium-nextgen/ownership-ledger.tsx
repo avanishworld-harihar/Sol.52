@@ -40,7 +40,7 @@ export function OwnershipLedger({ ledgerData }: Props) {
 
   return (
     <EpPageFrame variant="contained">
-      <div className="flex min-h-[calc(100dvh-10rem)] flex-col justify-center">
+      <div className="flex w-full flex-col" style={{ gap: "var(--ep-space-6)" }}>
         <table className="ep-ledger-table w-full border-collapse">
           <thead>
             <tr>

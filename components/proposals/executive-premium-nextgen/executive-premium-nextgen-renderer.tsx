@@ -41,7 +41,7 @@ export function ExecutivePremiumNextgenRenderer({
   });
 
   return (
-    <EpFontRoot className="proposal-document ep-nextgen-mvp">
+    <EpFontRoot className="ep-nextgen-mvp w-full max-w-none">
       <EpDocumentCanvas>
         <AssetDeclarationCover
           assetData={{

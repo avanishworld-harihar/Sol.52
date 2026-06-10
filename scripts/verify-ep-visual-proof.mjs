@@ -61,7 +61,7 @@ const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 // —— Executive Premium: all 6 pages ——
 await page.goto(`${BASE}/proposal/${EP_ID}`, { waitUntil: "networkidle", timeout: 120000 });
 await page.waitForSelector(".ep-nextgen-root", { timeout: 60000 });
-const epSections = await page.locator("section.snap-start").all();
+const epSections = await page.locator("section.ep-page").all();
 const epNames = [
   "01-cover",
   "02-bill-intelligence",
