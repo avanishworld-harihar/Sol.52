@@ -1,0 +1,255 @@
+/**
+ * Executive Premium NextGen — scoped visual foundation (Phase A).
+ * Applied only under `.ep-nextgen-root`.
+ */
+
+.ep-nextgen-root {
+  --ep-ink: #141414;
+  --ep-muted: #6b6b6b;
+  --ep-border: rgba(20, 20, 20, 0.12);
+  --ep-surface: #ffffff;
+  --ep-canvas: #f7f7f5;
+
+  --ep-display-size: 72px;
+  --ep-display-lh: 80px;
+  --ep-h1-size: 48px;
+  --ep-h1-lh: 56px;
+  --ep-h2-size: 32px;
+  --ep-h2-lh: 40px;
+  --ep-title-size: 20px;
+  --ep-title-lh: 28px;
+  --ep-body-size: 16px;
+  --ep-body-lh: 26px;
+  --ep-caption-size: 12px;
+  --ep-caption-lh: 18px;
+  --ep-label-size: 11px;
+  --ep-label-lh: 16px;
+  --ep-label-tracking: 0.08em;
+
+  --ep-space-1: 8px;
+  --ep-space-2: 16px;
+  --ep-space-3: 24px;
+  --ep-space-4: 32px;
+  --ep-space-6: 48px;
+  --ep-space-10: 80px;
+  --ep-space-12: 96px;
+  --ep-space-15: 120px;
+
+  --ep-content-max: 1200px;
+  --ep-margin-desktop: 120px;
+  --ep-margin-tablet: 48px;
+  --ep-margin-mobile: 24px;
+
+  font-family: var(--ep-font-data), system-ui, sans-serif;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  color: var(--ep-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+.ep-nextgen-root .ep-display {
+  font-family: var(--ep-font-display), "Cormorant Garamond", Georgia, serif;
+  font-size: var(--ep-display-size);
+  line-height: var(--ep-display-lh);
+  font-weight: 300;
+  font-variant-numeric: proportional-nums;
+  letter-spacing: -0.02em;
+}
+
+.ep-nextgen-root .ep-h1 {
+  font-family: var(--ep-font-display), "Cormorant Garamond", Georgia, serif;
+  font-size: var(--ep-h1-size);
+  line-height: var(--ep-h1-lh);
+  font-weight: 400;
+  font-variant-numeric: proportional-nums;
+  letter-spacing: -0.015em;
+}
+
+.ep-nextgen-root .ep-h2 {
+  font-family: var(--ep-font-data), system-ui, sans-serif;
+  font-size: var(--ep-h2-size);
+  line-height: var(--ep-h2-lh);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+.ep-nextgen-root .ep-title {
+  font-size: var(--ep-title-size);
+  line-height: var(--ep-title-lh);
+  font-weight: 500;
+}
+
+.ep-nextgen-root .ep-body {
+  font-size: var(--ep-body-size);
+  line-height: var(--ep-body-lh);
+  font-weight: 400;
+}
+
+.ep-nextgen-root .ep-caption {
+  font-size: var(--ep-caption-size);
+  line-height: var(--ep-caption-lh);
+  font-weight: 400;
+}
+
+.ep-nextgen-root .ep-label {
+  font-size: var(--ep-label-size);
+  line-height: var(--ep-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--ep-label-tracking);
+  text-transform: uppercase;
+}
+
+@media (max-width: 1024px) {
+  .ep-nextgen-root {
+    --ep-display-size: 56px;
+    --ep-display-lh: 64px;
+    --ep-h1-size: 40px;
+    --ep-h1-lh: 48px;
+    --ep-margin-desktop: var(--ep-margin-tablet);
+  }
+}
+
+@media (max-width: 640px) {
+  .ep-nextgen-root {
+    --ep-display-size: 48px;
+    --ep-display-lh: 56px;
+    --ep-h1-size: 36px;
+    --ep-h1-lh: 44px;
+    --ep-margin-desktop: var(--ep-margin-mobile);
+  }
+}
+
+/* Ownership Ledger — Design Bible table rules (Phase C) */
+.ep-nextgen-root .ep-ledger-table {
+  color: var(--ep-ink);
+}
+
+.ep-nextgen-root .ep-ledger-th {
+  padding-bottom: var(--ep-space-6);
+  font-size: var(--ep-label-size);
+  line-height: var(--ep-label-lh);
+  font-weight: 500;
+  letter-spacing: var(--ep-label-tracking);
+  text-transform: uppercase;
+  color: var(--ep-muted);
+  vertical-align: bottom;
+}
+
+.ep-nextgen-root .ep-ledger-th-year {
+  width: 28%;
+  text-align: left;
+}
+
+.ep-nextgen-root .ep-ledger-th-amount {
+  width: 36%;
+  text-align: right;
+  padding-right: var(--ep-space-2);
+}
+
+.ep-nextgen-root .ep-ledger-row {
+  border-bottom: 0.5px solid rgba(20, 20, 20, 0.15);
+}
+
+.ep-nextgen-root .ep-ledger-td {
+  padding-top: var(--ep-space-4);
+  padding-bottom: var(--ep-space-4);
+  vertical-align: baseline;
+}
+
+.ep-nextgen-root .ep-ledger-td-year {
+  text-align: left;
+  padding-right: var(--ep-space-4);
+}
+
+.ep-nextgen-root .ep-ledger-td-amount {
+  text-align: right;
+  padding-right: var(--ep-space-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Property Asset View — diagram dominance (Phase D) */
+.ep-nextgen-root .ep-asset-diagram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: min(62vh, 520px);
+}
+
+.ep-nextgen-root .ep-asset-diagram-img {
+  width: 100%;
+  height: 100%;
+  max-height: min(62vh, 520px);
+  object-fit: contain;
+  object-position: center;
+}
+
+.ep-nextgen-root .ep-asset-diagram-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: min(62vh, 520px);
+  background-color: var(--ep-canvas);
+}
+
+/* Governance Structure — three-column advisory layout (Phase D) */
+.ep-nextgen-root .ep-governance-zones {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: min(50vh, 420px);
+}
+
+@media (min-width: 640px) {
+  .ep-nextgen-root .ep-governance-zones {
+    flex-direction: row;
+    align-items: stretch;
+  }
+}
+
+.ep-nextgen-root .ep-governance-zone-wrap {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .ep-nextgen-root .ep-governance-zone-wrap {
+    flex-direction: row;
+  }
+}
+
+.ep-nextgen-root .ep-governance-vrule {
+  flex-shrink: 0;
+  width: 1px;
+  align-self: stretch;
+  background-color: rgba(20, 20, 20, 0.2);
+}
+
+@media (max-width: 639px) {
+  .ep-nextgen-root .ep-governance-vrule {
+    width: 100%;
+    height: 1px;
+    margin: var(--ep-space-6) 0;
+  }
+}
+
+.ep-nextgen-root .ep-governance-zone {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  padding-right: var(--ep-space-4);
+  padding-left: var(--ep-space-4);
+}
+
+@media (min-width: 640px) {
+  .ep-nextgen-root .ep-governance-zone-wrap:first-child .ep-governance-zone {
+    padding-left: 0;
+  }
+
+  .ep-nextgen-root .ep-governance-zone-wrap:last-child .ep-governance-zone {
+    padding-right: 0;
+  }
+}

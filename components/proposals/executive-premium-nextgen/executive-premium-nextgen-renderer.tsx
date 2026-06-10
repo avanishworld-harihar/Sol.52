@@ -2,8 +2,8 @@
 
 import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposal-ppt";
 import { transformToNextgenModel } from "@/lib/executive-premium-nextgen/transform-to-nextgen-model";
-import { PROPOSAL_PREMIUM_DOC_CLASS } from "@/lib/proposal-premium-design";
-import { NextgenDocumentCanvas } from "@/components/proposals/executive-premium-nextgen/primitives/nextgen-page-shell";
+import { EpFontRoot } from "@/components/proposals/executive-premium-nextgen/primitives/ep-font-root";
+import { EpDocumentCanvas } from "@/components/proposals/executive-premium-nextgen/primitives/ep-page-frame";
 import { AssetDeclarationCover } from "@/components/proposals/executive-premium-nextgen/asset-declaration-cover";
 import { ExecutiveBillIntelligence } from "@/components/proposals/executive-premium-nextgen/executive-bill-intelligence";
 import { SystemContextRequirementAnalysis } from "@/components/proposals/executive-premium-nextgen/system-context-requirement-analysis";
@@ -41,8 +41,8 @@ export function ExecutivePremiumNextgenRenderer({
   });
 
   return (
-    <div className={`proposal-document ${PROPOSAL_PREMIUM_DOC_CLASS} ep-nextgen-mvp`}>
-      <NextgenDocumentCanvas>
+    <EpFontRoot className="proposal-document ep-nextgen-mvp">
+      <EpDocumentCanvas>
         <AssetDeclarationCover
           assetData={{
             property: model.property,
@@ -60,7 +60,7 @@ export function ExecutivePremiumNextgenRenderer({
         <PropertyAssetView assetData={model.asset} />
         <GovernanceStructure governanceData={model.governance} />
         <InvestmentDecisionPage investmentData={model.investment} />
-      </NextgenDocumentCanvas>
-    </div>
+      </EpDocumentCanvas>
+    </EpFontRoot>
   );
 }

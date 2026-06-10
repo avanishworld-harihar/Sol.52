@@ -2,6 +2,7 @@
 
 import type { NextgenInvestment } from "@/lib/executive-premium-nextgen/types";
 import { PP_INK, PP_MUTED, PP_BORDER } from "@/lib/proposal-premium-design";
+import { EpCurrency } from "@/components/proposals/executive-premium-nextgen/primitives/ep-currency";
 import { NextgenPageShell } from "@/components/proposals/executive-premium-nextgen/primitives/nextgen-page-shell";
 import { fmtInr } from "@/components/proposals/executive-premium-nextgen/primitives/nextgen-format";
 
@@ -64,13 +65,19 @@ export function InvestmentDecisionPage({ investmentData }: Props) {
   return (
     <NextgenPageShell className="px-6 py-12 sm:px-12 sm:py-16">
       <div className="mx-auto flex h-full max-w-5xl flex-col">
-        <div className="text-center">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em]" style={{ color: PP_MUTED }}>
+        <div
+          className="flex flex-col items-center text-center"
+          style={{
+            paddingTop: "var(--ep-space-6)",
+            paddingBottom: "var(--ep-space-12)",
+            minHeight: "38vh",
+            justifyContent: "center",
+          }}
+        >
+          <p className="ep-label" style={{ color: "var(--ep-muted)" }}>
             Net capital commitment
           </p>
-          <p className="mt-4 text-[clamp(2.25rem,7vw,4rem)] font-light tabular-nums" style={{ color: PP_INK }}>
-            {fmtInr(investmentData.net_commitment_inr)}
-          </p>
+          <EpCurrency value={investmentData.net_commitment_inr} tier="display" centered />
         </div>
 
         <div className="mt-14 flex flex-col gap-6 sm:flex-row">

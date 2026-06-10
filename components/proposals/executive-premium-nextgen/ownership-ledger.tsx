@@ -1,22 +1,35 @@
 "use client";
 
 import type { NextgenLedger } from "@/lib/executive-premium-nextgen/types";
-import { PP_INK, PP_MUTED, PP_BORDER } from "@/lib/proposal-premium-design";
-import { NextgenPageShell } from "@/components/proposals/executive-premium-nextgen/primitives/nextgen-page-shell";
-import { NextgenHorizontalRule } from "@/components/proposals/executive-premium-nextgen/primitives/nextgen-rules";
-import { fmtInr } from "@/components/proposals/executive-premium-nextgen/primitives/nextgen-format";
+import { cn } from "@/lib/utils";
+import { EpCurrency } from "@/components/proposals/executive-premium-nextgen/primitives/ep-currency";
+import { EpPageFrame } from "@/components/proposals/executive-premium-nextgen/primitives/ep-page-frame";
+import { EpTableAmount } from "@/components/proposals/executive-premium-nextgen/primitives/ep-table-amount";
 
 type Props = {
   ledgerData: NextgenLedger;
 };
 
-const ROW_WEIGHT: Record<number, string> = {
-  1: "font-normal",
-  5: "font-medium",
-  10: "font-semibold",
-  15: "font-semibold",
-  25: "font-bold",
+/** Design Bible progressive size ladder — not weight escalation. */
+const ROW_TIER: Record<
+  number,
+  { year: "caption" | "body" | "title" | "h2"; amount: "caption" | "body" | "title" | "h2"; medium?: boolean }
+> = {
+  1: { year: "caption", amount: "caption" },
+  5: { year: "body", amount: "body" },
+  10: { year: "body", amount: "body", medium: true },
+  15: { year: "title", amount: "title" },
+  25: { year: "h2", amount: "h2" },
 };
+
+const YEAR_CLASS = {
+  caption: "ep-caption",
+  body: "ep-body",
+  title: "ep-title",
+  h2: "ep-h2",
+} as const;
+
+const COL_RULE = "1px solid rgba(20, 20, 20, 0.2)";
 
 export function OwnershipLedger({ ledgerData }: Props) {
   const rows = ledgerData.without_solar.map((w, i) => ({
@@ -26,54 +39,72 @@ export function OwnershipLedger({ ledgerData }: Props) {
   }));
 
   return (
-    <NextgenPageShell className="px-6 py-14 sm:px-16 sm:py-20">
-      <div className="mx-auto flex h-full max-w-4xl flex-col justify-center">
-        <table className="w-full border-collapse text-left" style={{ color: PP_INK }}>
+    <EpPageFrame variant="contained">
+      <div className="flex min-h-[calc(100dvh-10rem)] flex-col justify-center">
+        <table className="ep-ledger-table w-full border-collapse">
           <thead>
             <tr>
-              <th className="pb-6 pr-4 text-[10px] font-semibold uppercase tracking-[0.22em]" style={{ color: PP_MUTED }}>
-                Horizon
-              </th>
-              <th className="pb-6 pr-4 text-[10px] font-semibold uppercase tracking-[0.22em]" style={{ color: PP_MUTED }}>
-                {ledgerData.column_header_left}
-              </th>
-              <th className="pb-6 text-[10px] font-semibold uppercase tracking-[0.22em]" style={{ color: PP_MUTED }}>
-                {ledgerData.column_header_right}
-              </th>
+              <th className="ep-ledger-th ep-ledger-th-year" aria-hidden />
+              <th className="ep-ledger-th ep-ledger-th-amount">{ledgerData.column_header_left}</th>
+              <th className="ep-ledger-th ep-ledger-th-amount">{ledgerData.column_header_right}</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => (
-              <tr key={row.year} className="border-t" style={{ borderColor: PP_BORDER }}>
-                <td className={`py-5 pr-4 text-sm tabular-nums ${ROW_WEIGHT[row.year] ?? "font-normal"}`}>
-                  Year {row.year}
-                </td>
-                <td className={`py-5 pr-4 text-lg tabular-nums sm:text-xl ${ROW_WEIGHT[row.year] ?? "font-normal"}`}>
-                  {fmtInr(row.without)}
-                </td>
-                <td className={`py-5 text-lg tabular-nums sm:text-xl ${ROW_WEIGHT[row.year] ?? "font-normal"}`}>
-                  {fmtInr(row.with)}
-                </td>
-              </tr>
-            ))}
+            {rows.map((row) => {
+              const tier = ROW_TIER[row.year] ?? { year: "body" as const, amount: "body" as const };
+              return (
+                <tr key={row.year} className="ep-ledger-row">
+                  <td className="ep-ledger-td ep-ledger-td-year">
+                    <span className={cn(YEAR_CLASS[tier.year], "tabular-nums")}>Year {row.year}</span>
+                  </td>
+                  <td className="ep-ledger-td ep-ledger-td-amount" style={{ borderLeft: COL_RULE }}>
+                    <EpTableAmount value={row.without} tier={tier.amount} medium={tier.medium} />
+                  </td>
+                  <td className="ep-ledger-td ep-ledger-td-amount" style={{ borderLeft: COL_RULE }}>
+                    <EpTableAmount value={row.with} tier={tier.amount} medium={tier.medium} />
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
 
-        <NextgenHorizontalRule className="my-8" />
+        <hr
+          className="ep-ledger-summary-rule"
+          style={{
+            border: 0,
+            borderTop: "1px solid var(--ep-border)",
+            marginTop: "var(--ep-space-12)",
+            marginBottom: 0,
+          }}
+        />
 
-        <div className="flex items-baseline justify-between gap-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: PP_MUTED }}>
+        <div
+          className="flex flex-col items-center text-center"
+          style={{
+            paddingTop: "var(--ep-space-12)",
+            paddingBottom: "var(--ep-space-12)",
+            minHeight: "var(--ep-h1-lh)",
+          }}
+        >
+          <p className="ep-label" style={{ color: "var(--ep-muted)" }}>
             The difference
           </p>
-          <p className="text-3xl font-light tabular-nums sm:text-4xl" style={{ color: PP_INK }}>
-            {fmtInr(ledgerData.difference_year25_inr)}
-          </p>
+          <EpCurrency value={ledgerData.difference_year25_inr} tier="h1" centered />
         </div>
 
-        <p className="mt-16 text-center text-sm leading-relaxed" style={{ color: PP_MUTED }}>
+        <p
+          className="ep-body text-center"
+          style={{
+            color: "var(--ep-muted)",
+            marginTop: "var(--ep-space-10)",
+            maxWidth: "36rem",
+            marginInline: "auto",
+          }}
+        >
           {ledgerData.closing_statement}
         </p>
       </div>
-    </NextgenPageShell>
+    </EpPageFrame>
   );
 }
