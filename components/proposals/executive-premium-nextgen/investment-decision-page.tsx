@@ -1,7 +1,6 @@
 "use client";
 
 import type { NextgenInvestment } from "@/lib/executive-premium-nextgen/types";
-import { PP_INK, PP_MUTED, PP_BORDER } from "@/lib/proposal-premium-design";
 import { EpCurrency } from "@/components/proposals/executive-premium-nextgen/primitives/ep-currency";
 import { EpPageFrame } from "@/components/proposals/executive-premium-nextgen/primitives/ep-page-frame";
 import { fmtInr } from "@/components/proposals/executive-premium-nextgen/primitives/nextgen-format";
@@ -10,48 +9,43 @@ type Props = {
   investmentData: NextgenInvestment;
 };
 
-function OptionBlock({
-  option,
-  highlighted,
-}: {
-  option: NextgenInvestment["options"][number];
-  highlighted: boolean;
-}) {
+function formatOptionInr(value: number): string {
+  return fmtInr(value);
+}
+
+function OptionBlock({ option }: { option: NextgenInvestment["options"][number] }) {
   return (
-    <div
-      className="flex flex-1 flex-col rounded-sm border p-6 sm:p-8"
-      style={{
-        borderColor: highlighted ? PP_INK : PP_BORDER,
-        backgroundColor: highlighted ? "rgba(23,23,23,0.02)" : "transparent",
-      }}
-    >
-      <p className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: PP_MUTED }}>
+    <div className="ep-investment-option flex flex-1 flex-col min-w-0">
+      <p className="ep-label" style={{ color: "var(--ep-muted)" }}>
         {option.option_label}
       </p>
-      <dl className="mt-6 space-y-4 text-sm">
-        <div className="flex justify-between gap-4">
-          <dt style={{ color: PP_MUTED }}>Monthly outflow</dt>
-          <dd className="font-medium tabular-nums" style={{ color: PP_INK }}>
-            {fmtInr(option.monthly_outflow_inr)}
-          </dd>
+      <dl className="mt-6 w-full space-y-4">
+        <div className="flex items-baseline justify-between gap-4">
+          <dt className="ep-caption" style={{ color: "var(--ep-muted)" }}>
+            Monthly outflow
+          </dt>
+          <dd className="ep-body tabular-nums">{formatOptionInr(option.monthly_outflow_inr)}</dd>
         </div>
-        <div className="flex justify-between gap-4">
-          <dt style={{ color: PP_MUTED }}>Monthly return</dt>
-          <dd className="font-medium tabular-nums" style={{ color: PP_INK }}>
-            {fmtInr(option.monthly_return_inr)}
-          </dd>
+        <div className="flex items-baseline justify-between gap-4">
+          <dt className="ep-caption" style={{ color: "var(--ep-muted)" }}>
+            Monthly return
+          </dt>
+          <dd className="ep-body tabular-nums">{formatOptionInr(option.monthly_return_inr)}</dd>
         </div>
-        <div className="flex justify-between gap-4 border-t pt-4" style={{ borderColor: PP_BORDER }}>
-          <dt style={{ color: PP_MUTED }}>Monthly net</dt>
-          <dd className="text-lg font-medium tabular-nums" style={{ color: PP_INK }}>
-            {fmtInr(option.monthly_net_inr)}
-          </dd>
+        <div
+          className="flex items-baseline justify-between gap-4 border-t pt-4"
+          style={{ borderColor: "var(--ep-border)" }}
+        >
+          <dt className="ep-label" style={{ color: "var(--ep-muted)" }}>
+            Monthly net
+          </dt>
+          <dd className="ep-h2 tabular-nums">{formatOptionInr(option.monthly_net_inr)}</dd>
         </div>
-        <div className="flex justify-between gap-4">
-          <dt style={{ color: PP_MUTED }}>IRR</dt>
-          <dd className="font-medium tabular-nums" style={{ color: PP_INK }}>
-            {option.irr_percent.toFixed(1)}%
-          </dd>
+        <div className="flex items-baseline justify-between gap-4">
+          <dt className="ep-label" style={{ color: "var(--ep-muted)" }}>
+            IRR
+          </dt>
+          <dd className="ep-h2 tabular-nums">{option.irr_percent.toFixed(1)}%</dd>
         </div>
       </dl>
     </div>
@@ -60,50 +54,60 @@ function OptionBlock({
 
 export function InvestmentDecisionPage({ investmentData }: Props) {
   const [optA, optB] = investmentData.options;
-  const recIdx = investmentData.recommended_option === "B" ? 1 : 0;
 
   return (
-    <EpPageFrame variant="contained">
-      <div className="mx-auto flex w-full max-w-5xl flex-col">
-        <div
-          className="flex flex-col items-center text-center"
-          style={{
-            paddingTop: "var(--ep-space-6)",
-            paddingBottom: "var(--ep-space-12)",
-            minHeight: "38vh",
-            justifyContent: "center",
-          }}
-        >
+    <EpPageFrame
+      variant="containedCentre"
+      primary={
+        <>
           <p className="ep-label" style={{ color: "var(--ep-muted)" }}>
             Net capital commitment
           </p>
           <EpCurrency value={investmentData.net_commitment_inr} tier="display" centered />
+        </>
+      }
+      supporting={
+        <div className="w-full">
+          <div
+            className="flex w-full flex-col sm:flex-row"
+            style={{ gap: "var(--ep-space-4)" }}
+          >
+            <OptionBlock option={optA} />
+            <OptionBlock option={optB} />
+          </div>
+          <p
+            className="ep-body text-center"
+            style={{
+              color: "var(--ep-muted)",
+              marginTop: "var(--ep-space-10)",
+              maxWidth: "40rem",
+              marginInline: "auto",
+            }}
+          >
+            {investmentData.recommendation_text}
+          </p>
         </div>
-
-        <div className="mt-14 flex flex-col gap-6 sm:flex-row">
-          <OptionBlock option={optA} highlighted={recIdx === 0} />
-          <OptionBlock option={optB} highlighted={recIdx === 1} />
+      }
+      grounding={
+        <div className="w-full">
+          <ol className="max-w-xl space-y-3 text-left" style={{ marginInline: "auto" }}>
+            {investmentData.next_steps.map((step, i) => (
+              <li key={step} className="flex gap-3">
+                <span className="ep-caption tabular-nums" style={{ color: "var(--ep-muted)" }}>
+                  {i + 1}.
+                </span>
+                <span className="ep-body">{step}</span>
+              </li>
+            ))}
+          </ol>
+          <p
+            className="ep-caption text-right"
+            style={{ color: "var(--ep-muted)", marginTop: "var(--ep-space-10)" }}
+          >
+            {investmentData.validity_statement}
+          </p>
         </div>
-
-        <p className="mt-12 text-center text-base font-normal leading-relaxed" style={{ color: PP_MUTED }}>
-          {investmentData.recommendation_text}
-        </p>
-
-        <ol className="mt-12 max-w-xl space-y-3 text-sm" style={{ color: PP_INK }}>
-          {investmentData.next_steps.map((step, i) => (
-            <li key={step} className="flex gap-3">
-              <span className="tabular-nums" style={{ color: PP_MUTED }}>
-                {i + 1}.
-              </span>
-              <span>{step}</span>
-            </li>
-          ))}
-        </ol>
-
-        <p className="mt-auto pt-16 text-right text-[10px]" style={{ color: PP_MUTED }}>
-          {investmentData.validity_statement}
-        </p>
-      </div>
-    </EpPageFrame>
+      }
+    />
   );
 }

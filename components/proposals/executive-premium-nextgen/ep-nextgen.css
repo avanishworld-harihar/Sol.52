@@ -368,6 +368,19 @@
   }
 }
 
+/* Investment Decision — equal option columns, no card chrome (Phase E) */
+.ep-nextgen-root .ep-investment-option {
+  padding-top: var(--ep-space-2);
+  padding-bottom: var(--ep-space-2);
+}
+
+@media (min-width: 640px) {
+  .ep-nextgen-root .ep-investment-option + .ep-investment-option {
+    border-left: 1px solid rgba(20, 20, 20, 0.12);
+    padding-left: var(--ep-space-4);
+  }
+}
+
 .ep-nextgen-root .ep-governance-zone {
   display: flex;
   flex: 1;
