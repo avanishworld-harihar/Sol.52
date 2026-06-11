@@ -137,6 +137,17 @@
     break-after: page;
     page-break-after: always;
   }
+
+  .ep-nextgen-root .ep-page--sheet:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+
+  .ep-nextgen-root .ep-ledger-page,
+  .ep-nextgen-root .ep-ledger-outcome {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
 }
 
 .ep-nextgen-root {
@@ -302,6 +313,53 @@
   font-variant-numeric: tabular-nums;
 }
 
+.ep-nextgen-root .ep-ledger-page {
+  gap: var(--ep-space-4);
+}
+
+.ep-nextgen-root .ep-ledger-outcome {
+  margin-top: var(--ep-space-2);
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.ep-nextgen-root .ep-ledger-outcome-divider {
+  height: 1px;
+  margin-bottom: var(--ep-space-4);
+  background: var(--ep-border);
+}
+
+.ep-nextgen-root .ep-ledger-closing {
+  margin-top: var(--ep-space-3);
+}
+
+/* Bill intelligence — three fact columns */
+.ep-nextgen-root .ep-bill-facts {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--ep-space-4);
+  max-width: 48rem;
+}
+
+@media (min-width: 640px) {
+  .ep-nextgen-root .ep-bill-facts {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--ep-space-6);
+  }
+}
+
+.ep-nextgen-root .ep-bill-fact {
+  padding-top: var(--ep-space-2);
+  padding-bottom: var(--ep-space-2);
+}
+
+@media (min-width: 640px) {
+  .ep-nextgen-root .ep-bill-fact + .ep-bill-fact {
+    border-left: 1px solid rgba(20, 20, 20, 0.12);
+    padding-left: var(--ep-space-4);
+  }
+}
+
 /* Property Asset View — diagram dominance (Phase D) */
 .ep-nextgen-root .ep-asset-diagram {
   display: flex;
@@ -313,18 +371,10 @@
 
 .ep-nextgen-root .ep-asset-diagram-img {
   width: 100%;
-  max-height: min(36vh, 300px);
-  object-fit: contain;
+  max-height: min(40vh, 360px);
+  object-fit: cover;
   object-position: center;
-}
-
-.ep-nextgen-root .ep-asset-diagram-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-height: min(36vh, 300px);
-  background-color: var(--ep-canvas);
+  border-radius: 2px;
 }
 
 /* Governance Structure — three-column advisory layout (Phase D) */
@@ -369,17 +419,44 @@
   }
 }
 
-/* Investment Decision — equal option columns, no card chrome (Phase E) */
-.ep-nextgen-root .ep-investment-option {
-  padding-top: var(--ep-space-2);
-  padding-bottom: var(--ep-space-2);
+/* Investment Decision — editorial two-column layout */
+.ep-nextgen-root .ep-investment-editorial {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ep-space-6);
 }
 
 @media (min-width: 640px) {
-  .ep-nextgen-root .ep-investment-option + .ep-investment-option {
-    border-left: 1px solid rgba(20, 20, 20, 0.12);
-    padding-left: var(--ep-space-4);
+  .ep-nextgen-root .ep-investment-editorial {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--ep-space-10);
   }
+}
+
+.ep-nextgen-root .ep-investment-editorial-col {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .ep-nextgen-root .ep-investment-editorial-col + .ep-investment-editorial-col {
+    border-left: 1px solid rgba(20, 20, 20, 0.12);
+    padding-left: var(--ep-space-6);
+  }
+}
+
+.ep-nextgen-root .ep-investment-rec-mark {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--ep-ink);
+}
+
+.ep-nextgen-root .ep-investment-recommendation {
+  max-width: 40rem;
+  border-left: 2px solid var(--ep-border);
+  padding-left: var(--ep-space-3);
 }
 
 .ep-nextgen-root .ep-governance-zone {

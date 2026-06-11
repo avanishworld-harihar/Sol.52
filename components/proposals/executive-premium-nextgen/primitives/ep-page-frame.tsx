@@ -9,6 +9,8 @@ type Props = {
   children?: React.ReactNode;
   variant?: Variant;
   className?: string;
+  /** Vertical alignment of page content (default centres on sheet). */
+  contentAlign?: "start" | "center";
   /** Primary beat — thesis / dominant element */
   primary?: React.ReactNode;
   supporting?: React.ReactNode;
@@ -30,6 +32,7 @@ export function EpPageFrame({
   children,
   variant = "contained",
   className,
+  contentAlign = "center",
   primary,
   supporting,
   grounding,
@@ -48,7 +51,8 @@ export function EpPageFrame({
     <section className={cn("ep-page ep-page--sheet relative flex w-full flex-col", className)}>
       <div
         className={cn(
-          "mx-auto flex w-full flex-1 flex-col justify-center",
+          "mx-auto flex w-full flex-1 flex-col",
+          contentAlign === "center" ? "justify-center" : "justify-start",
           variant === "containedCentre" && "items-center text-center"
         )}
         style={{

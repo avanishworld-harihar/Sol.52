@@ -2,6 +2,7 @@
 
 import type { ExecutivePremiumNextgenModel } from "@/lib/executive-premium-nextgen/types";
 import { EP_COPY } from "@/lib/executive-premium-nextgen/ep-copy";
+import { EP_FALLBACK_PROPERTY_IMAGE } from "@/lib/executive-premium-nextgen/resolve-ep-images";
 import { EpPageFrame } from "@/components/proposals/executive-premium-nextgen/primitives/ep-page-frame";
 
 type Props = {
@@ -14,19 +15,16 @@ export function AssetDeclarationCover({ assetData, customerName, overlayOpacity 
   const { property, document, config } = assetData;
   const [w1, w2, w3] = config.outcome_words;
   const preparedFor = customerName?.trim();
+  const coverImage = property.photograph_url || EP_FALLBACK_PROPERTY_IMAGE;
 
   return (
     <EpPageFrame variant="fullBleed" className="overflow-hidden">
-      {property.photograph_url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={property.photograph_url}
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-      ) : (
-        <div className="absolute inset-0 bg-neutral-900" aria-hidden />
-      )}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={coverImage}
+        alt=""
+        className="absolute inset-0 h-full w-full object-cover"
+      />
       <div
         className="absolute inset-0"
         style={{ backgroundColor: `rgba(8, 8, 8, ${overlayOpacity})` }}

@@ -2,6 +2,7 @@
 
 import type { NextgenAsset } from "@/lib/executive-premium-nextgen/types";
 import { EP_COPY } from "@/lib/executive-premium-nextgen/ep-copy";
+import { EP_FALLBACK_PROPERTY_IMAGE } from "@/lib/executive-premium-nextgen/resolve-ep-images";
 import { EpPageFrame } from "@/components/proposals/executive-premium-nextgen/primitives/ep-page-frame";
 import { EpPageHeader } from "@/components/proposals/executive-premium-nextgen/primitives/ep-page-header";
 
@@ -10,25 +11,15 @@ type Props = {
 };
 
 export function PropertyAssetView({ assetData }: Props) {
+  const imageUrl = assetData.rooftop_layout_image_url || EP_FALLBACK_PROPERTY_IMAGE;
+
   return (
-    <EpPageFrame variant="contained">
+    <EpPageFrame variant="contained" contentAlign="start">
       <EpPageHeader title={EP_COPY.asset.pageTitle} />
       <div className="flex w-full flex-col" style={{ gap: "var(--ep-space-6)" }}>
         <div className="ep-asset-diagram w-full">
-          {assetData.rooftop_layout_image_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={assetData.rooftop_layout_image_url}
-              alt=""
-              className="ep-asset-diagram-img"
-            />
-          ) : (
-            <div className="ep-asset-diagram-placeholder" aria-hidden>
-              <p className="ep-body" style={{ color: "var(--ep-muted)" }}>
-                {EP_COPY.asset.placeholder}
-              </p>
-            </div>
-          )}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={imageUrl} alt="" className="ep-asset-diagram-img" />
         </div>
 
         <div

@@ -20,7 +20,7 @@ const ROW_TIER: Record<
   5: { year: "body", amount: "body" },
   10: { year: "body", amount: "body", medium: true },
   15: { year: "title", amount: "title" },
-  25: { year: "h2", amount: "h2" },
+  25: { year: "title", amount: "title", medium: true },
 };
 
 const YEAR_CLASS = {
@@ -40,9 +40,9 @@ export function OwnershipLedger({ ledgerData }: Props) {
   }));
 
   return (
-    <EpPageFrame variant="contained">
+    <EpPageFrame variant="contained" contentAlign="start">
       <EpPageHeader title={EP_COPY.ledger.pageTitle} subtitle={EP_COPY.ledger.pageSub} />
-      <div className="ep-ledger-page flex w-full flex-col" style={{ gap: "var(--ep-space-6)" }}>
+      <div className="ep-ledger-page flex w-full flex-col">
         <table className="ep-ledger-table w-full border-collapse">
           <thead>
             <tr>
@@ -71,27 +71,21 @@ export function OwnershipLedger({ ledgerData }: Props) {
           </tbody>
         </table>
 
-        <hr
-          style={{
-            border: 0,
-            borderTop: "1px solid var(--ep-border)",
-            margin: 0,
-          }}
-        />
-
-        <div className="flex flex-col items-center text-center">
-          <p className="ep-label" style={{ color: "var(--ep-muted)" }}>
-            {EP_COPY.ledger.differenceLabel}
-          </p>
-          <EpCurrency value={ledgerData.difference_year25_inr} tier="h1" centered className="!py-4" />
+        <div className="ep-ledger-outcome">
+          <div className="ep-ledger-outcome-divider" aria-hidden />
+          <div className="flex flex-col items-center text-center">
+            <p className="ep-label" style={{ color: "var(--ep-muted)" }}>
+              {EP_COPY.ledger.differenceLabel}
+            </p>
+            <EpCurrency value={ledgerData.difference_year25_inr} tier="h1" centered className="!py-3" />
+            <p
+              className="ep-body ep-ledger-closing"
+              style={{ color: "var(--ep-muted)", maxWidth: "36rem", marginInline: "auto" }}
+            >
+              {ledgerData.closing_statement}
+            </p>
+          </div>
         </div>
-
-        <p
-          className="ep-body text-center"
-          style={{ color: "var(--ep-muted)", maxWidth: "36rem", marginInline: "auto" }}
-        >
-          {ledgerData.closing_statement}
-        </p>
       </div>
     </EpPageFrame>
   );
