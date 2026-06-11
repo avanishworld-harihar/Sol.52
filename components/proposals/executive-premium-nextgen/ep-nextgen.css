@@ -106,6 +106,19 @@
   box-shadow: none;
 }
 
+/* Cover — typography-led, no photography */
+.ep-nextgen-root .ep-cover-canvas {
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 0%, rgba(255, 255, 255, 0.06), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 100% 100%, rgba(255, 255, 255, 0.04), transparent 50%),
+    linear-gradient(165deg, #0c0c0c 0%, #141414 45%, #0a0a0a 100%);
+}
+
+.ep-nextgen-root .ep-cover-rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+}
+
 @media (min-width: 768px) {
   .ep-nextgen-root .ep-page--sheet + .ep-page--sheet,
   .ep-nextgen-root .ep-page--cover + .ep-page--sheet {
@@ -143,8 +156,7 @@
     page-break-after: auto;
   }
 
-  .ep-nextgen-root .ep-ledger-page,
-  .ep-nextgen-root .ep-ledger-outcome {
+  .ep-nextgen-root .ep-ledger-sheet {
     break-inside: avoid;
     page-break-inside: avoid;
   }
@@ -270,8 +282,26 @@
   color: var(--ep-ink);
 }
 
+.ep-nextgen-root .ep-ledger-sheet {
+  gap: var(--ep-space-4);
+}
+
+.ep-nextgen-root .ep-ledger-outcome {
+  margin-top: var(--ep-space-2);
+}
+
+.ep-nextgen-root .ep-ledger-outcome-divider {
+  height: 1px;
+  margin-bottom: var(--ep-space-4);
+  background: var(--ep-border);
+}
+
+.ep-nextgen-root .ep-ledger-closing {
+  margin-top: var(--ep-space-3);
+}
+
 .ep-nextgen-root .ep-ledger-th {
-  padding-bottom: var(--ep-space-6);
+  padding-bottom: var(--ep-space-4);
   font-size: var(--ep-label-size);
   line-height: var(--ep-label-lh);
   font-weight: 500;
@@ -297,8 +327,8 @@
 }
 
 .ep-nextgen-root .ep-ledger-td {
-  padding-top: var(--ep-space-4);
-  padding-bottom: var(--ep-space-4);
+  padding-top: var(--ep-space-3);
+  padding-bottom: var(--ep-space-3);
   vertical-align: baseline;
 }
 
@@ -313,53 +343,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.ep-nextgen-root .ep-ledger-page {
-  gap: var(--ep-space-4);
-}
-
-.ep-nextgen-root .ep-ledger-outcome {
-  margin-top: var(--ep-space-2);
-  break-inside: avoid;
-  page-break-inside: avoid;
-}
-
-.ep-nextgen-root .ep-ledger-outcome-divider {
-  height: 1px;
-  margin-bottom: var(--ep-space-4);
-  background: var(--ep-border);
-}
-
-.ep-nextgen-root .ep-ledger-closing {
-  margin-top: var(--ep-space-3);
-}
-
-/* Bill intelligence — three fact columns */
-.ep-nextgen-root .ep-bill-facts {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--ep-space-4);
-  max-width: 48rem;
-}
-
-@media (min-width: 640px) {
-  .ep-nextgen-root .ep-bill-facts {
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--ep-space-6);
-  }
-}
-
-.ep-nextgen-root .ep-bill-fact {
-  padding-top: var(--ep-space-2);
-  padding-bottom: var(--ep-space-2);
-}
-
-@media (min-width: 640px) {
-  .ep-nextgen-root .ep-bill-fact + .ep-bill-fact {
-    border-left: 1px solid rgba(20, 20, 20, 0.12);
-    padding-left: var(--ep-space-4);
-  }
-}
-
 /* Property Asset View — diagram dominance (Phase D) */
 .ep-nextgen-root .ep-asset-diagram {
   display: flex;
@@ -371,10 +354,32 @@
 
 .ep-nextgen-root .ep-asset-diagram-img {
   width: 100%;
-  max-height: min(40vh, 360px);
-  object-fit: cover;
+  max-height: min(36vh, 300px);
+  object-fit: contain;
   object-position: center;
-  border-radius: 2px;
+}
+
+.ep-nextgen-root .ep-asset-diagram-schematic {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: min(36vh, 300px);
+  padding: var(--ep-space-4);
+  background-color: var(--ep-canvas);
+}
+
+.ep-nextgen-root .ep-rooftop-schematic {
+  width: 100%;
+  max-width: 28rem;
+  height: auto;
+  color: var(--ep-ink);
+}
+
+.ep-nextgen-root .ep-asset-diagram-caption {
+  margin-top: var(--ep-space-3);
+  text-align: center;
 }
 
 /* Governance Structure — three-column advisory layout (Phase D) */
@@ -419,44 +424,17 @@
   }
 }
 
-/* Investment Decision — editorial two-column layout */
-.ep-nextgen-root .ep-investment-editorial {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ep-space-6);
+/* Investment Decision — equal option columns, no card chrome (Phase E) */
+.ep-nextgen-root .ep-investment-option {
+  padding-top: var(--ep-space-2);
+  padding-bottom: var(--ep-space-2);
 }
 
 @media (min-width: 640px) {
-  .ep-nextgen-root .ep-investment-editorial {
-    flex-direction: row;
-    align-items: flex-start;
-    gap: var(--ep-space-10);
-  }
-}
-
-.ep-nextgen-root .ep-investment-editorial-col {
-  flex: 1;
-  min-width: 0;
-}
-
-@media (min-width: 640px) {
-  .ep-nextgen-root .ep-investment-editorial-col + .ep-investment-editorial-col {
+  .ep-nextgen-root .ep-investment-option + .ep-investment-option {
     border-left: 1px solid rgba(20, 20, 20, 0.12);
-    padding-left: var(--ep-space-6);
+    padding-left: var(--ep-space-4);
   }
-}
-
-.ep-nextgen-root .ep-investment-rec-mark {
-  font-weight: 400;
-  text-transform: none;
-  letter-spacing: normal;
-  color: var(--ep-ink);
-}
-
-.ep-nextgen-root .ep-investment-recommendation {
-  max-width: 40rem;
-  border-left: 2px solid var(--ep-border);
-  padding-left: var(--ep-space-3);
 }
 
 .ep-nextgen-root .ep-governance-zone {

@@ -11,65 +11,72 @@ type Props = {
   investmentData: NextgenInvestment;
 };
 
-function EditorialOption({
-  option,
-  recommended,
-}: {
-  option: NextgenInvestment["options"][number];
-  recommended: boolean;
-}) {
+function OptionBlock({ option }: { option: NextgenInvestment["options"][number] }) {
   return (
-    <div className={recommended ? "ep-investment-editorial-col ep-investment-editorial-col--lead" : "ep-investment-editorial-col"}>
+    <div className="ep-investment-option flex flex-1 flex-col min-w-0">
       <p className="ep-label" style={{ color: "var(--ep-muted)" }}>
         {option.option_label}
-        {recommended ? (
-          <span className="ep-investment-rec-mark" style={{ marginLeft: "var(--ep-space-1)" }}>
-            · {EP_COPY.investment.recommended}
-          </span>
-        ) : null}
       </p>
-      <p className="ep-caption" style={{ color: "var(--ep-muted)", marginTop: "var(--ep-space-2)" }}>
-        {EP_COPY.investment.monthlyOutcome}
-      </p>
-      <EpCurrency value={option.monthly_net_inr} tier="h1" className="!py-3" />
-      <p className="ep-body" style={{ color: "var(--ep-muted)", marginTop: "var(--ep-space-2)" }}>
-        {EP_COPY.investment.savingsLine(fmtInr(option.monthly_return_inr))}
-        {option.monthly_outflow_inr > 0
-          ? ` · ${EP_COPY.investment.paymentLine(fmtInr(option.monthly_outflow_inr))}`
-          : ` · ${EP_COPY.investment.noPaymentLine}`}
-      </p>
-      <p className="ep-caption tabular-nums" style={{ color: "var(--ep-muted)", marginTop: "var(--ep-space-2)" }}>
-        IRR {option.irr_percent.toFixed(1)}%
-      </p>
+      <dl className="mt-4 w-full space-y-3">
+        <div className="flex items-baseline justify-between gap-4">
+          <dt className="ep-caption" style={{ color: "var(--ep-muted)" }}>
+            {EP_COPY.investment.outflow}
+          </dt>
+          <dd className="ep-body tabular-nums">{fmtInr(option.monthly_outflow_inr)}</dd>
+        </div>
+        <div className="flex items-baseline justify-between gap-4">
+          <dt className="ep-caption" style={{ color: "var(--ep-muted)" }}>
+            {EP_COPY.investment.return}
+          </dt>
+          <dd className="ep-body tabular-nums">{fmtInr(option.monthly_return_inr)}</dd>
+        </div>
+        <div
+          className="flex items-baseline justify-between gap-4 border-t pt-3"
+          style={{ borderColor: "var(--ep-border)" }}
+        >
+          <dt className="ep-label" style={{ color: "var(--ep-muted)" }}>
+            {EP_COPY.investment.net}
+          </dt>
+          <dd className="ep-h2 tabular-nums">{fmtInr(option.monthly_net_inr)}</dd>
+        </div>
+        <div className="flex items-baseline justify-between gap-4">
+          <dt className="ep-label" style={{ color: "var(--ep-muted)" }}>
+            IRR
+          </dt>
+          <dd className="ep-h2 tabular-nums">{option.irr_percent.toFixed(1)}%</dd>
+        </div>
+      </dl>
     </div>
   );
 }
 
 export function InvestmentDecisionPage({ investmentData }: Props) {
   const [optA, optB] = investmentData.options;
-  const recIsB = investmentData.recommended_option === "B";
 
   return (
-    <EpPageFrame variant="contained" contentAlign="start">
+    <EpPageFrame variant="contained">
       <EpPageHeader title={EP_COPY.investment.pageTitle} />
       <div className="ep-investment-page flex w-full flex-col" style={{ gap: "var(--ep-space-6)" }}>
-        <div className="text-left">
+        <div className="flex flex-col items-center text-center">
           <p className="ep-label" style={{ color: "var(--ep-muted)" }}>
             {EP_COPY.investment.heroLabel}
           </p>
-          <EpCurrency value={investmentData.net_commitment_inr} tier="display" className="!py-2" />
+          <EpCurrency value={investmentData.net_commitment_inr} tier="display" centered className="!py-4" />
         </div>
 
-        <div className="ep-investment-editorial w-full">
-          <EditorialOption option={optA} recommended={!recIsB} />
-          <EditorialOption option={optB} recommended={recIsB} />
+        <div className="flex w-full flex-col sm:flex-row" style={{ gap: "var(--ep-space-4)" }}>
+          <OptionBlock option={optA} />
+          <OptionBlock option={optB} />
         </div>
 
-        <p className="ep-body ep-investment-recommendation" style={{ color: "var(--ep-muted)" }}>
+        <p
+          className="ep-body text-center"
+          style={{ color: "var(--ep-muted)", maxWidth: "40rem", marginInline: "auto" }}
+        >
           {investmentData.recommendation_text}
         </p>
 
-        <ol className="ep-investment-steps max-w-xl space-y-2">
+        <ol className="max-w-xl space-y-2" style={{ marginInline: "auto", width: "100%" }}>
           {investmentData.next_steps.map((step, i) => (
             <li key={step} className="flex gap-3">
               <span className="ep-caption tabular-nums" style={{ color: "var(--ep-muted)" }}>

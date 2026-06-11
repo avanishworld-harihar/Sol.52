@@ -9,9 +9,6 @@ export const EP_COPY = {
   bill: {
     pageTitle: "Your electricity bill today",
     heroLabel: "What you pay for electricity in a year (estimate)",
-    factMonthly: "Average month",
-    factFixed: "Fixed charges",
-    factSummer: "Summer impact",
   },
   requirement: {
     pageTitle: "Your power requirement",
@@ -25,6 +22,7 @@ export const EP_COPY = {
   },
   asset: {
     pageTitle: "What we propose for your roof",
+    schematicCaption: "Layout confirmed after site survey",
     horizonLine: (years: number) => `Designed for a ${years}-year operating life.`,
   },
   governance: {
@@ -33,11 +31,6 @@ export const EP_COPY = {
   investment: {
     pageTitle: "What it costs and what to do next",
     heroLabel: "Net amount after subsidy",
-    monthlyOutcome: "What you keep each month",
-    recommended: "Suggested",
-    savingsLine: (amount: string) => `Solar saves ${amount}/mo`,
-    paymentLine: (amount: string) => `payment ${amount}/mo`,
-    noPaymentLine: "no monthly payment",
     outflow: "Monthly payment",
     return: "Monthly savings from solar",
     net: "Monthly net",

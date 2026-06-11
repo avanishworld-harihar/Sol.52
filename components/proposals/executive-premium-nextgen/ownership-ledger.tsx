@@ -40,9 +40,10 @@ export function OwnershipLedger({ ledgerData }: Props) {
   }));
 
   return (
-    <EpPageFrame variant="contained" contentAlign="start">
-      <EpPageHeader title={EP_COPY.ledger.pageTitle} subtitle={EP_COPY.ledger.pageSub} />
-      <div className="ep-ledger-page flex w-full flex-col">
+    <EpPageFrame variant="contained">
+      <div className="ep-ledger-sheet flex w-full flex-col">
+        <EpPageHeader title={EP_COPY.ledger.pageTitle} subtitle={EP_COPY.ledger.pageSub} compact />
+
         <table className="ep-ledger-table w-full border-collapse">
           <thead>
             <tr>
@@ -73,18 +74,16 @@ export function OwnershipLedger({ ledgerData }: Props) {
 
         <div className="ep-ledger-outcome">
           <div className="ep-ledger-outcome-divider" aria-hidden />
-          <div className="flex flex-col items-center text-center">
-            <p className="ep-label" style={{ color: "var(--ep-muted)" }}>
-              {EP_COPY.ledger.differenceLabel}
-            </p>
-            <EpCurrency value={ledgerData.difference_year25_inr} tier="h1" centered className="!py-3" />
-            <p
-              className="ep-body ep-ledger-closing"
-              style={{ color: "var(--ep-muted)", maxWidth: "36rem", marginInline: "auto" }}
-            >
-              {ledgerData.closing_statement}
-            </p>
-          </div>
+          <p className="ep-label text-center" style={{ color: "var(--ep-muted)" }}>
+            {EP_COPY.ledger.differenceLabel}
+          </p>
+          <EpCurrency value={ledgerData.difference_year25_inr} tier="h1" centered className="!py-3" />
+          <p
+            className="ep-body ep-ledger-closing text-center"
+            style={{ color: "var(--ep-muted)", maxWidth: "36rem", marginInline: "auto" }}
+          >
+            {ledgerData.closing_statement}
+          </p>
         </div>
       </div>
     </EpPageFrame>

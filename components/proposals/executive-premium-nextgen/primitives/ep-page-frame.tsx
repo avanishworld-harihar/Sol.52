@@ -1,6 +1,6 @@
 "use client";
 
-import { EP_CANVAS, EP_SURFACE } from "@/lib/executive-premium-nextgen/ep-design-tokens";
+import { EP_CANVAS } from "@/lib/executive-premium-nextgen/ep-design-tokens";
 import { cn } from "@/lib/utils";
 
 type Variant = "fullBleed" | "contained" | "containedCentre";
@@ -9,8 +9,6 @@ type Props = {
   children?: React.ReactNode;
   variant?: Variant;
   className?: string;
-  /** Vertical alignment of page content (default centres on sheet). */
-  contentAlign?: "start" | "center";
   /** Primary beat — thesis / dominant element */
   primary?: React.ReactNode;
   supporting?: React.ReactNode;
@@ -26,13 +24,12 @@ const SHELL_PADDING = {
 
 /**
  * Page frame — 1200px max, 120px margins.
- * Beats stack with fixed gaps (not stretched across 100vh zones).
+ * Content stacks from the top; no vertical stretch across viewport.
  */
 export function EpPageFrame({
   children,
   variant = "contained",
   className,
-  contentAlign = "center",
   primary,
   supporting,
   grounding,
@@ -51,8 +48,7 @@ export function EpPageFrame({
     <section className={cn("ep-page ep-page--sheet relative flex w-full flex-col", className)}>
       <div
         className={cn(
-          "mx-auto flex w-full flex-1 flex-col",
-          contentAlign === "center" ? "justify-center" : "justify-start",
+          "mx-auto flex w-full flex-col",
           variant === "containedCentre" && "items-center text-center"
         )}
         style={{

@@ -2,24 +2,37 @@
 
 import type { NextgenAsset } from "@/lib/executive-premium-nextgen/types";
 import { EP_COPY } from "@/lib/executive-premium-nextgen/ep-copy";
-import { EP_FALLBACK_PROPERTY_IMAGE } from "@/lib/executive-premium-nextgen/resolve-ep-images";
 import { EpPageFrame } from "@/components/proposals/executive-premium-nextgen/primitives/ep-page-frame";
 import { EpPageHeader } from "@/components/proposals/executive-premium-nextgen/primitives/ep-page-header";
+import { EpRooftopSchematic } from "@/components/proposals/executive-premium-nextgen/primitives/ep-rooftop-schematic";
 
 type Props = {
   assetData: NextgenAsset;
 };
 
 export function PropertyAssetView({ assetData }: Props) {
-  const imageUrl = assetData.rooftop_layout_image_url || EP_FALLBACK_PROPERTY_IMAGE;
+  const hasSitePhoto = Boolean(assetData.rooftop_layout_image_url);
 
   return (
-    <EpPageFrame variant="contained" contentAlign="start">
+    <EpPageFrame variant="contained">
       <EpPageHeader title={EP_COPY.asset.pageTitle} />
       <div className="flex w-full flex-col" style={{ gap: "var(--ep-space-6)" }}>
         <div className="ep-asset-diagram w-full">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={imageUrl} alt="" className="ep-asset-diagram-img" />
+          {hasSitePhoto ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={assetData.rooftop_layout_image_url!}
+              alt=""
+              className="ep-asset-diagram-img"
+            />
+          ) : (
+            <div className="ep-asset-diagram-schematic">
+              <EpRooftopSchematic />
+              <p className="ep-caption ep-asset-diagram-caption" style={{ color: "var(--ep-muted)" }}>
+                {EP_COPY.asset.schematicCaption}
+              </p>
+            </div>
+          )}
         </div>
 
         <div

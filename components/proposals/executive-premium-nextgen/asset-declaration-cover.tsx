@@ -2,34 +2,26 @@
 
 import type { ExecutivePremiumNextgenModel } from "@/lib/executive-premium-nextgen/types";
 import { EP_COPY } from "@/lib/executive-premium-nextgen/ep-copy";
-import { EP_FALLBACK_PROPERTY_IMAGE } from "@/lib/executive-premium-nextgen/resolve-ep-images";
 import { EpPageFrame } from "@/components/proposals/executive-premium-nextgen/primitives/ep-page-frame";
 
 type Props = {
   assetData: Pick<ExecutivePremiumNextgenModel, "property" | "document" | "config">;
   customerName?: string;
-  overlayOpacity?: number;
 };
 
-export function AssetDeclarationCover({ assetData, customerName, overlayOpacity = 0.52 }: Props) {
+/**
+ * Cover — typography-led executive declaration.
+ * No stock or install photos; imagery belongs on the system page only.
+ */
+export function AssetDeclarationCover({ assetData, customerName }: Props) {
   const { property, document, config } = assetData;
   const [w1, w2, w3] = config.outcome_words;
   const preparedFor = customerName?.trim();
-  const coverImage = property.photograph_url || EP_FALLBACK_PROPERTY_IMAGE;
+  const location = [property.address_line1, property.city].filter(Boolean).join(" · ");
 
   return (
-    <EpPageFrame variant="fullBleed" className="overflow-hidden">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={coverImage}
-        alt=""
-        className="absolute inset-0 h-full w-full object-cover"
-      />
-      <div
-        className="absolute inset-0"
-        style={{ backgroundColor: `rgba(8, 8, 8, ${overlayOpacity})` }}
-        aria-hidden
-      />
+    <EpPageFrame variant="fullBleed" className="ep-cover overflow-hidden">
+      <div className="ep-cover-canvas absolute inset-0" aria-hidden />
 
       <div
         className="relative z-10 flex min-h-[100dvh] flex-col text-white"
@@ -40,32 +32,30 @@ export function AssetDeclarationCover({ assetData, customerName, overlayOpacity 
           paddingBottom: "var(--ep-space-10)",
         }}
       >
-        <header className="max-w-lg shrink-0 text-left">
-          <p className="ep-label" style={{ color: "rgba(255,255,255,0.6)" }}>
+        <header className="max-w-2xl shrink-0 text-left">
+          <p className="ep-label" style={{ color: "rgba(255,255,255,0.55)" }}>
             {EP_COPY.cover.kicker}
           </p>
-          <p className="ep-title mt-3" style={{ color: "rgba(255,255,255,0.95)", fontWeight: 500 }}>
-            {EP_COPY.cover.title}
-          </p>
           {preparedFor ? (
-            <p className="ep-body mt-2" style={{ color: "rgba(255,255,255,0.88)" }}>
-              Prepared for {preparedFor}
-            </p>
-          ) : null}
-          <p className="ep-caption mt-3" style={{ color: "rgba(255,255,255,0.72)" }}>
-            {property.address_line1}
-            {property.city ? ` · ${property.city}` : ""}
-          </p>
-        </header>
-
-        <div
-          className="flex flex-1 flex-col items-center justify-center text-center"
-          style={{ padding: "var(--ep-space-10) 0" }}
-        >
-          <p className="ep-body max-w-md" style={{ color: "rgba(255,255,255,0.82)" }}>
+            <h1 className="ep-display mt-6" style={{ color: "rgba(255,255,255,0.97)" }}>
+              {preparedFor}
+            </h1>
+          ) : (
+            <h1 className="ep-display mt-6" style={{ color: "rgba(255,255,255,0.97)" }}>
+              {EP_COPY.cover.title}
+            </h1>
+          )}
+          <p className="ep-body mt-5 max-w-md" style={{ color: "rgba(255,255,255,0.78)" }}>
             {EP_COPY.cover.subtitle}
           </p>
-        </div>
+          {location ? (
+            <p className="ep-caption mt-4" style={{ color: "rgba(255,255,255,0.55)" }}>
+              {location}
+            </p>
+          ) : null}
+        </header>
+
+        <div className="ep-cover-rule my-auto w-full max-w-3xl self-center" aria-hidden />
 
         <div
           className="flex w-full max-w-3xl shrink-0 justify-between self-center"
@@ -82,11 +72,11 @@ export function AssetDeclarationCover({ assetData, customerName, overlayOpacity 
           </span>
         </div>
 
-        <footer className="mt-auto shrink-0 self-end text-right" style={{ paddingTop: "var(--ep-space-10)" }}>
-          <p className="ep-caption" style={{ color: "rgba(255,255,255,0.72)" }}>
+        <footer className="mt-auto shrink-0 flex items-end justify-between pt-10">
+          <p className="ep-caption" style={{ color: "rgba(255,255,255,0.4)" }}>
             {document.reference_id}
           </p>
-          <p className="ep-caption mt-1" style={{ color: "rgba(255,255,255,0.5)" }}>
+          <p className="ep-caption" style={{ color: "rgba(255,255,255,0.4)" }}>
             {document.created_date}
           </p>
         </footer>

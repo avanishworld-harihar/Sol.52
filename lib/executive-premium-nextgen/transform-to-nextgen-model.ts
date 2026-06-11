@@ -10,7 +10,6 @@ import { buildOwnershipLedgerFromSummary } from "@/lib/executive-premium-nextgen
 import { buildRequirementContextData } from "@/lib/executive-premium-nextgen/requirement-context-data";
 import type { ExecutivePremiumNextgenModel } from "@/lib/executive-premium-nextgen/types";
 import { DEFAULT_OUTCOME_WORDS } from "@/lib/executive-premium-nextgen/ep-copy";
-import { resolveEpPropertyImages } from "@/lib/executive-premium-nextgen/resolve-ep-images";
 
 function formatReferenceId(proposalId: string): string {
   const compact = proposalId.replace(/-/g, "").slice(0, 12).toUpperCase();
@@ -87,7 +86,7 @@ export type TransformToNextgenInput = {
 /** Map existing proposal payload → NextGen MVP model. */
 export function transformToNextgenModel(input: TransformToNextgenInput): ExecutivePremiumNextgenModel {
   const { proposalId, generatedAt, pptInput, summary, siteImages = [] } = input;
-  const { coverUrl, assetUrl } = resolveEpPropertyImages(siteImages);
+  const photos = siteImages.filter((u) => typeof u === "string" && u.length > 0);
   const address = splitPropertyAddress(pptInput.location);
 
   const lifetime_energy_value_inr = Math.round(summary.annualSaving * 25);
@@ -107,7 +106,7 @@ export function transformToNextgenModel(input: TransformToNextgenInput): Executi
       : null;
 
   const asset = {
-    rooftop_layout_image_url: assetUrl,
+    rooftop_layout_image_url: photos[0] ?? null,
     annual_generation_kwh: summary.annualGen,
     export_percentage: exportPct,
     storage_kwh: storageKwh,
@@ -210,7 +209,7 @@ export function transformToNextgenModel(input: TransformToNextgenInput): Executi
   return {
     flow_mode,
     property: {
-      photograph_url: coverUrl,
+      photograph_url: null,
       ...address,
     },
     document: {
