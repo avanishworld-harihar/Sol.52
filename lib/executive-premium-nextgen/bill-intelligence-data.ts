@@ -39,13 +39,13 @@ export function buildBillIntelligenceData(
 
   const insight1 =
     summary.summerPct > 0
-      ? `Peak-season months run ${summary.summerPct}% higher than the annual average.`
-      : "Consumption is distributed relatively evenly across the year.";
+      ? `Summer months cost about ${summary.summerPct}% more than your average month.`
+      : "Your use is fairly even across the year.";
 
   const insight2 =
     summary.fixedAnnual > 0
-      ? `Fixed charges total ${inr(summary.fixedAnnual)} annually — independent of units consumed.`
-      : "Variable energy charges dominate the annual spend profile.";
+      ? `You pay ${inr(summary.fixedAnnual)} in fixed charges every year — even if use is low.`
+      : "Most of your bill depends on how much power you use.";
 
   const insight3 =
     effective_rate_inr_per_unit != null

@@ -48,10 +48,12 @@ export function ExecutivePremiumNextgenRenderer({
         <AssetDeclarationCover
           assetData={{
             property: model.property,
-            financials: model.financials,
             document: model.document,
             config: model.config,
           }}
+          customerName={
+            typeof pptInput.customerName === "string" ? pptInput.customerName : undefined
+          }
         />
         {model.flow_mode === "bill" && model.bill_intelligence ? (
           <ExecutiveBillIntelligence billData={model.bill_intelligence} />

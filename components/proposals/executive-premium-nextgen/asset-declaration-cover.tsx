@@ -1,17 +1,19 @@
 "use client";
 
 import type { ExecutivePremiumNextgenModel } from "@/lib/executive-premium-nextgen/types";
-import { EpCurrency } from "@/components/proposals/executive-premium-nextgen/primitives/ep-currency";
+import { EP_COPY } from "@/lib/executive-premium-nextgen/ep-copy";
 import { EpPageFrame } from "@/components/proposals/executive-premium-nextgen/primitives/ep-page-frame";
 
 type Props = {
-  assetData: Pick<ExecutivePremiumNextgenModel, "property" | "financials" | "document" | "config">;
+  assetData: Pick<ExecutivePremiumNextgenModel, "property" | "document" | "config">;
+  customerName?: string;
   overlayOpacity?: number;
 };
 
-export function AssetDeclarationCover({ assetData, overlayOpacity = 0.52 }: Props) {
-  const { property, financials, document, config } = assetData;
+export function AssetDeclarationCover({ assetData, customerName, overlayOpacity = 0.52 }: Props) {
+  const { property, document, config } = assetData;
   const [w1, w2, w3] = config.outcome_words;
+  const preparedFor = customerName?.trim();
 
   return (
     <EpPageFrame variant="fullBleed" className="overflow-hidden">
@@ -40,44 +42,49 @@ export function AssetDeclarationCover({ assetData, overlayOpacity = 0.52 }: Prop
           paddingBottom: "var(--ep-space-10)",
         }}
       >
-        <header className="max-w-md shrink-0 text-left">
-          <p className="ep-label" style={{ color: "rgba(255,255,255,0.72)" }}>
-            {property.address_line1}
+        <header className="max-w-lg shrink-0 text-left">
+          <p className="ep-label" style={{ color: "rgba(255,255,255,0.6)" }}>
+            {EP_COPY.cover.kicker}
           </p>
-          <p className="ep-body mt-2" style={{ color: "rgba(255,255,255,0.88)" }}>
-            {[property.address_line2, property.city].filter(Boolean).join(", ")}
+          <p className="ep-title mt-3" style={{ color: "rgba(255,255,255,0.95)", fontWeight: 500 }}>
+            {EP_COPY.cover.title}
+          </p>
+          {preparedFor ? (
+            <p className="ep-body mt-2" style={{ color: "rgba(255,255,255,0.88)" }}>
+              Prepared for {preparedFor}
+            </p>
+          ) : null}
+          <p className="ep-caption mt-3" style={{ color: "rgba(255,255,255,0.72)" }}>
+            {property.address_line1}
+            {property.city ? ` · ${property.city}` : ""}
           </p>
         </header>
 
         <div
           className="flex flex-1 flex-col items-center justify-center text-center"
-          style={{ padding: "var(--ep-space-12) 0" }}
+          style={{ padding: "var(--ep-space-10) 0" }}
         >
-          <EpCurrency value={financials.lifetime_energy_value_inr} tier="display" centered inverted />
-          <p
-            className="ep-label mt-4"
-            style={{ color: "rgba(255,255,255,0.55)", marginTop: "var(--ep-space-4)" }}
-          >
-            Lifetime energy value
+          <p className="ep-body max-w-md" style={{ color: "rgba(255,255,255,0.82)" }}>
+            {EP_COPY.cover.subtitle}
           </p>
         </div>
 
         <div
           className="flex w-full max-w-3xl shrink-0 justify-between self-center"
-          style={{ marginTop: "var(--ep-space-12)", gap: "var(--ep-space-4)" }}
+          style={{ gap: "var(--ep-space-4)" }}
         >
-          <span className="ep-title font-normal tracking-wide" style={{ color: "rgba(255,255,255,0.92)" }}>
+          <span className="ep-body" style={{ color: "rgba(255,255,255,0.88)" }}>
             {w1}
           </span>
-          <span className="ep-title font-normal tracking-wide" style={{ color: "rgba(255,255,255,0.92)" }}>
+          <span className="ep-body" style={{ color: "rgba(255,255,255,0.88)" }}>
             {w2}
           </span>
-          <span className="ep-title font-normal tracking-wide" style={{ color: "rgba(255,255,255,0.92)" }}>
+          <span className="ep-body" style={{ color: "rgba(255,255,255,0.88)" }}>
             {w3}
           </span>
         </div>
 
-        <footer className="mt-auto shrink-0 self-end text-right" style={{ paddingTop: "var(--ep-space-12)" }}>
+        <footer className="mt-auto shrink-0 self-end text-right" style={{ paddingTop: "var(--ep-space-10)" }}>
           <p className="ep-caption" style={{ color: "rgba(255,255,255,0.72)" }}>
             {document.reference_id}
           </p>

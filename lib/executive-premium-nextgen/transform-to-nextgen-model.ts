@@ -9,8 +9,7 @@ import {
 import { buildOwnershipLedgerFromSummary } from "@/lib/executive-premium-nextgen/ownership-ledger-engine";
 import { buildRequirementContextData } from "@/lib/executive-premium-nextgen/requirement-context-data";
 import type { ExecutivePremiumNextgenModel } from "@/lib/executive-premium-nextgen/types";
-
-const DEFAULT_OUTCOME_WORDS: [string, string, string] = ["Independence", "Certainty", "Legacy"];
+import { DEFAULT_OUTCOME_WORDS } from "@/lib/executive-premium-nextgen/ep-copy";
 
 function formatReferenceId(proposalId: string): string {
   const compact = proposalId.replace(/-/g, "").slice(0, 12).toUpperCase();
@@ -113,24 +112,24 @@ export function transformToNextgenModel(input: TransformToNextgenInput): Executi
     storage_kwh: storageKwh,
     characteristics: [
       {
-        label: "Annual production",
+        label: "Power per year",
         value: fmtUnits(summary.annualGen),
-        unit: "units / year",
+        unit: "units",
       },
       {
-        label: "Grid export",
+        label: "Sent to grid",
         value: String(exportPct),
-        unit: "% of generation",
+        unit: "% of power",
       },
       {
-        label: "Operating horizon",
+        label: "System life",
         value: "25",
         unit: "years",
       },
     ] as ExecutivePremiumNextgenModel["asset"]["characteristics"],
     lifespan_years: 25,
     performance_assurance_text:
-      "Generation profile is modelled for local irradiance and maintained under structured performance oversight.",
+      "We track your system’s output. If it underperforms, we make it right.",
   };
 
   const contactMethod = summary.contact?.trim() || "Contact on file";
@@ -138,29 +137,29 @@ export function transformToNextgenModel(input: TransformToNextgenInput): Executi
     zones: [
       {
         zone_name: "Performance",
-        coverage_line1: "Annual yield reviewed against modelled baseline.",
-        coverage_line2: "Variance triggers structured review, not reactive support.",
-        response_timeline: "Reviewed monthly",
+        coverage_line1: "We check your system’s output against what we promised.",
+        coverage_line2: "If numbers fall short, we review and fix — not just send a ticket.",
+        response_timeline: "Checked every month",
       },
       {
         zone_name: "Monitoring",
-        coverage_line1: "Remote visibility across production and export.",
-        coverage_line2: "Alerts routed before they become site issues.",
-        response_timeline: "Continuous oversight",
+        coverage_line1: "Your system is watched remotely, day and night.",
+        coverage_line2: "We act before small issues become big problems.",
+        response_timeline: "Always on",
       },
       {
-        zone_name: "Response",
-        coverage_line1: "Field coordination when intervention is required.",
-        coverage_line2: "Single accountable contact — no ticket queues.",
+        zone_name: "Support",
+        coverage_line1: "If a visit is needed, we coordinate the work for you.",
+        coverage_line2: "You speak to one person — not a call centre queue.",
         response_timeline: "Within 48 hours",
       },
     ] as ExecutivePremiumNextgenModel["governance"]["zones"],
     contact: {
       first_name: contactFirstName(summary.installer),
-      title: "Account lead",
+      title: "Your contact",
       contact_method: contactMethod,
     },
-    closing_statement: "Accountability is assigned by outcome zone — not by contract clause.",
+    closing_statement: "One named person is responsible — not a department.",
   };
 
   const metrics = computeProposalFinancialsFromDeck(summary, pptInput);
@@ -180,14 +179,14 @@ export function transformToNextgenModel(input: TransformToNextgenInput): Executi
     net_commitment_inr: summary.netCost,
     options: [
       {
-        option_label: "Option A — Full deployment",
+        option_label: "Option A — Pay in full",
         monthly_outflow_inr: 0,
         monthly_return_inr: monthlyReturn,
         monthly_net_inr: monthlyReturn,
         irr_percent: metrics.irrEstimate,
       },
       {
-        option_label: "Option B — Financed",
+        option_label: "Option B — Finance",
         monthly_outflow_inr: monthlyOutflowFinanced,
         monthly_return_inr: monthlyReturn,
         monthly_net_inr: monthlyNetFinanced,
@@ -197,12 +196,12 @@ export function transformToNextgenModel(input: TransformToNextgenInput): Executi
     recommended_option: monthlyNetFinanced > monthlyReturn * 0.35 ? ("B" as const) : ("A" as const),
     recommendation_text:
       monthlyNetFinanced > 0
-        ? "Financed deployment preserves liquidity while returns exceed scheduled outflow."
-        : "Full deployment minimises lifetime cost of capital when liquidity is available.",
+        ? "Finance keeps cash in hand while solar savings cover most of the EMI."
+        : "Paying in full costs less over 25 years if you have the funds available.",
     next_steps: [
-      "Confirm property details and site access window.",
-      "Select capital structure and sign engagement letter.",
-      "Schedule technical survey and grid application.",
+      "Confirm your address and when we can visit the site.",
+      "Choose pay-in-full or finance and sign the agreement.",
+      "We schedule the site survey and grid paperwork.",
     ] as ExecutivePremiumNextgenModel["investment"]["next_steps"],
     validity_statement: `Valid for 30 days from ${formatDocumentDate(generatedAt)}.`,
   };

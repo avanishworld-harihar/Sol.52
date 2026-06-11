@@ -87,10 +87,11 @@
 }
 
 .ep-nextgen-root .ep-page--sheet {
-  min-height: min(100svh, 920px);
+  min-height: auto;
   background: var(--ep-surface);
   border: 1px solid var(--ep-border);
   box-shadow: 0 1px 0 rgba(20, 20, 20, 0.04);
+  padding: var(--ep-space-6) 0;
 }
 
 .ep-nextgen-root .ep-page--sheet + .ep-page--sheet,

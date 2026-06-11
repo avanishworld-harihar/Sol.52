@@ -78,9 +78,9 @@ export function buildOwnershipLedgerFromSummary(
     without_solar,
     with_solar,
     difference_year25_inr: Math.max(0, difference_year25_inr),
-    column_header_left: "Without this decision",
-    column_header_right: "With this decision",
+    column_header_left: "Without solar",
+    column_header_right: "With solar",
     closing_statement:
-      "Cumulative figures assume prevailing tariff escalation and include capital commitment where applicable.",
+      "This saving stays with your home — not with the electricity company. Figures assume tariff rises of about 5% per year.",
   };
 }

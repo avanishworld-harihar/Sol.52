@@ -1,16 +1,17 @@
 "use client";
 
 import type { NextgenLedger } from "@/lib/executive-premium-nextgen/types";
+import { EP_COPY } from "@/lib/executive-premium-nextgen/ep-copy";
 import { cn } from "@/lib/utils";
 import { EpCurrency } from "@/components/proposals/executive-premium-nextgen/primitives/ep-currency";
 import { EpPageFrame } from "@/components/proposals/executive-premium-nextgen/primitives/ep-page-frame";
+import { EpPageHeader } from "@/components/proposals/executive-premium-nextgen/primitives/ep-page-header";
 import { EpTableAmount } from "@/components/proposals/executive-premium-nextgen/primitives/ep-table-amount";
 
 type Props = {
   ledgerData: NextgenLedger;
 };
 
-/** Design Bible progressive size ladder — not weight escalation. */
 const ROW_TIER: Record<
   number,
   { year: "caption" | "body" | "title" | "h2"; amount: "caption" | "body" | "title" | "h2"; medium?: boolean }
@@ -40,7 +41,8 @@ export function OwnershipLedger({ ledgerData }: Props) {
 
   return (
     <EpPageFrame variant="contained">
-      <div className="flex w-full flex-col" style={{ gap: "var(--ep-space-6)" }}>
+      <EpPageHeader title={EP_COPY.ledger.pageTitle} subtitle={EP_COPY.ledger.pageSub} />
+      <div className="ep-ledger-page flex w-full flex-col" style={{ gap: "var(--ep-space-6)" }}>
         <table className="ep-ledger-table w-full border-collapse">
           <thead>
             <tr>
@@ -70,37 +72,23 @@ export function OwnershipLedger({ ledgerData }: Props) {
         </table>
 
         <hr
-          className="ep-ledger-summary-rule"
           style={{
             border: 0,
             borderTop: "1px solid var(--ep-border)",
-            marginTop: "var(--ep-space-12)",
-            marginBottom: 0,
+            margin: 0,
           }}
         />
 
-        <div
-          className="flex flex-col items-center text-center"
-          style={{
-            paddingTop: "var(--ep-space-12)",
-            paddingBottom: "var(--ep-space-12)",
-            minHeight: "var(--ep-h1-lh)",
-          }}
-        >
+        <div className="flex flex-col items-center text-center">
           <p className="ep-label" style={{ color: "var(--ep-muted)" }}>
-            The difference
+            {EP_COPY.ledger.differenceLabel}
           </p>
-          <EpCurrency value={ledgerData.difference_year25_inr} tier="h1" centered />
+          <EpCurrency value={ledgerData.difference_year25_inr} tier="h1" centered className="!py-4" />
         </div>
 
         <p
           className="ep-body text-center"
-          style={{
-            color: "var(--ep-muted)",
-            marginTop: "var(--ep-space-10)",
-            maxWidth: "36rem",
-            marginInline: "auto",
-          }}
+          style={{ color: "var(--ep-muted)", maxWidth: "36rem", marginInline: "auto" }}
         >
           {ledgerData.closing_statement}
         </p>

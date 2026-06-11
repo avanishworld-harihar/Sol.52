@@ -1,7 +1,9 @@
 "use client";
 
 import type { NextgenAsset } from "@/lib/executive-premium-nextgen/types";
+import { EP_COPY } from "@/lib/executive-premium-nextgen/ep-copy";
 import { EpPageFrame } from "@/components/proposals/executive-premium-nextgen/primitives/ep-page-frame";
+import { EpPageHeader } from "@/components/proposals/executive-premium-nextgen/primitives/ep-page-header";
 
 type Props = {
   assetData: NextgenAsset;
@@ -9,9 +11,9 @@ type Props = {
 
 export function PropertyAssetView({ assetData }: Props) {
   return (
-    <EpPageFrame
-      variant="contained"
-      primary={
+    <EpPageFrame variant="contained">
+      <EpPageHeader title={EP_COPY.asset.pageTitle} />
+      <div className="flex w-full flex-col" style={{ gap: "var(--ep-space-6)" }}>
         <div className="ep-asset-diagram w-full">
           {assetData.rooftop_layout_image_url ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -22,14 +24,13 @@ export function PropertyAssetView({ assetData }: Props) {
             />
           ) : (
             <div className="ep-asset-diagram-placeholder" aria-hidden>
-              <p className="ep-caption" style={{ color: "var(--ep-muted)" }}>
-                Awaiting site survey
+              <p className="ep-body" style={{ color: "var(--ep-muted)" }}>
+                {EP_COPY.asset.placeholder}
               </p>
             </div>
           )}
         </div>
-      }
-      supporting={
+
         <div
           className="grid w-full grid-cols-1 sm:grid-cols-3"
           style={{ gap: "var(--ep-space-4)" }}
@@ -39,7 +40,7 @@ export function PropertyAssetView({ assetData }: Props) {
               <p className="ep-label" style={{ color: "var(--ep-muted)" }}>
                 {c.label}
               </p>
-              <p className="ep-h2 tabular-nums" style={{ marginTop: "var(--ep-space-3)" }}>
+              <p className="ep-h2 tabular-nums" style={{ marginTop: "var(--ep-space-2)" }}>
                 {c.value}
               </p>
               <p className="ep-caption" style={{ color: "var(--ep-muted)", marginTop: "var(--ep-space-1)" }}>
@@ -48,27 +49,16 @@ export function PropertyAssetView({ assetData }: Props) {
             </div>
           ))}
         </div>
-      }
-      grounding={
-        <div className="w-full text-left">
-          <hr
-            style={{
-              border: 0,
-              borderTop: "1px solid var(--ep-border)",
-              marginBottom: "var(--ep-space-6)",
-            }}
-          />
-          <p className="ep-body">
-            Designed for a {assetData.lifespan_years}-year operating horizon.
-          </p>
-          <p
-            className="ep-body"
-            style={{ color: "var(--ep-muted)", marginTop: "var(--ep-space-3)", maxWidth: "40rem" }}
-          >
+
+        <hr style={{ border: 0, borderTop: "1px solid var(--ep-border)", margin: 0 }} />
+
+        <div className="text-left">
+          <p className="ep-body">{EP_COPY.asset.horizonLine(assetData.lifespan_years)}</p>
+          <p className="ep-body" style={{ color: "var(--ep-muted)", marginTop: "var(--ep-space-2)", maxWidth: "40rem" }}>
             {assetData.performance_assurance_text}
           </p>
         </div>
-      }
-    />
+      </div>
+    </EpPageFrame>
   );
 }

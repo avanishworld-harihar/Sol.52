@@ -28,10 +28,10 @@ export function buildRequirementContextData(
 
   const insight1 =
     declared_monthly_units > 0
-      ? `Declared draw: ${declared_monthly_units.toLocaleString("en-IN")} units per month (${annual_requirement_units.toLocaleString("en-IN")} annually).`
-      : "Energy requirement derived from sizing inputs.";
+      ? `You stated about ${declared_monthly_units.toLocaleString("en-IN")} units per month (${annual_requirement_units.toLocaleString("en-IN")} per year).`
+      : "Your power need is based on the sizing form.";
 
-  const insight2 = `Modelled on-site production covers ${coverage_pct}% of the stated requirement.`;
+  const insight2 = `This system is expected to cover ${coverage_pct}% of that need.`;
 
   const insight3 =
     pptInput.state?.trim()
