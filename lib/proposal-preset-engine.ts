@@ -37,10 +37,9 @@ export const PROPOSAL_PRESET_IDS = [
 export type ProposalPresetId = (typeof PROPOSAL_PRESET_IDS)[number];
 
 /** Residential preset IDs routed to ProposalWebRenderer (not legacy ProposalView). */
+/** Presets still using ProposalWebRenderer block loop (not isolated document renderers). */
 export const RESIDENTIAL_WEB_RENDERER_PRESETS: ReadonlyArray<ProposalPresetId> = [
-  "residential_sales_premium",
   "residential_bank_loan",
-  "residential_executive",
 ];
 
 export function isValidPresetId(id: unknown): id is ProposalPresetId {
@@ -100,28 +99,15 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     id: "residential_sales_premium",
     label: "Sales Premium",
     description:
-      "Conversion-first residential proposal. Bill intelligence → savings → investment case → " +
-      "system proof → support → payment. Designed for ₹5L–₹25L residential projects.",
+      "Institutional Apple-style 5-page document: cover → bill audit → capital breakdown → " +
+      "technical BOM → execution & banking. Default residential template.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "bill",
-    default_blocks: [
-      "cover_page",
-      "bill_intelligence",
-      "system_requirements",
-      "roi_savings",
-      "investment_summary",
-      "technical_specifications",
-      "amc_maintenance",
-      "payment_terms",
-    ],
-    appendix_blocks: [
-      "terms_conditions",
-      "customer_documents_required",
-      "bom_material_list",
-      "financial_summary",
-    ],
-    optional_blocks: ["warranty"],
+    /** Institutional renderer — fixed 5-page document; blocks unused at view time. */
+    default_blocks: [],
+    appendix_blocks: [],
+    optional_blocks: [],
   },
 
   residential_bank_loan: {

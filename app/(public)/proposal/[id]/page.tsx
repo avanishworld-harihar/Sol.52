@@ -13,6 +13,7 @@ import ProposalView from "./proposal-view";
 import CommercialProposalView from "@/components/proposal/commercial-proposal-view";
 import { ProposalWebRenderer } from "@/components/proposal/web-renderer";
 import { ExecutivePremiumNextgenRenderer } from "@/components/proposals/executive-premium-nextgen/executive-premium-nextgen-renderer";
+import { SalesPremiumInstitutionalRenderer } from "@/components/proposals/sales-premium-institutional/sales-premium-institutional-renderer";
 import { compileProposalDocument } from "@/lib/proposal-document-ir";
 import { RESIDENTIAL_WEB_RENDERER_PRESETS } from "@/lib/proposal-preset-engine";
 
@@ -102,6 +103,13 @@ export default async function PublicProposalPage({ params }: PageProps) {
         siteImages={siteImages}
         installerLogoUrl={installerLogoUrl}
       />
+    );
+  }
+
+  // ── Sales Premium Institutional — 5-page Apple-style renderer ────────────
+  if (proposal.preset_id === "residential_sales_premium") {
+    return (
+      <SalesPremiumInstitutionalRenderer pptInput={mergedInput} summary={liveSummary} />
     );
   }
 
