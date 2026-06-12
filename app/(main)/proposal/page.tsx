@@ -61,6 +61,7 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "rea
 import { useRouter, useSearchParams } from "next/navigation";
 import { parsePrefillFromSearchParams } from "@/lib/quick-actions";
 import { ProposalPresetPicker } from "@/components/proposals/os/preset-picker";
+import { readDefaultResidentialPreset } from "@/lib/proposal-default-preset-storage";
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 import { ProposalOSHeader } from "@/components/proposals/os/proposal-os-header";
 import { BuilderStageBar } from "@/components/proposals/os/builder-stage-bar";
@@ -2438,17 +2439,20 @@ function ProposalPageContent() {
       {/* Proposal OS — Preset Picker overlay */}
       {showPresetPicker && (
         <ProposalPresetPicker
-          currentPresetId={osPresetId}
-          onSelect={(id) => {
+          onSelectResidential={() => {
+            const id = readDefaultResidentialPreset();
             setOsPresetId(id);
             setShowPresetPicker(false);
-            // All residential presets: bill vs requirement mode (same as legacy flow)
-            if (id !== "commercial_executive" && !urlPrefill.inputMode) {
+            if (!urlPrefill.inputMode) {
               setShowResidentialModePicker(true);
             }
           }}
+          onSelectCommercial={() => {
+            setOsPresetId("commercial_executive");
+            setShowPresetPicker(false);
+          }}
           onSkip={() => {
-            setOsPresetId("residential_sales_premium");
+            setOsPresetId(readDefaultResidentialPreset());
             setResidentialInputMode("bill");
             setShowPresetPicker(false);
           }}
