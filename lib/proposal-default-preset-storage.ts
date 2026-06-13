@@ -25,24 +25,24 @@ export type ResidentialTemplateOption = {
 
 export const RESIDENTIAL_TEMPLATE_OPTIONS: ResidentialTemplateOption[] = [
   {
+    id: "residential_executive",
+    label: "Executive Premium",
+    subtitle: "Onyx split-page layout for high-trust clients.",
+  },
+  {
     id: "residential_sales_premium",
     label: "Sales Premium",
-    subtitle: "Multiple styles — Institutional, Journey, Savings Focus.",
+    subtitle: "Clean, premium 5-page sales proposal.",
   },
   {
     id: "residential_bank_loan",
     label: "Bank Loan Pack",
-    subtitle: "Documentation style for bank & subsidy submissions.",
-  },
-  {
-    id: "residential_executive",
-    label: "Executive Premium",
-    subtitle: "Minimal, luxury layout for high-trust clients.",
+    subtitle: "Documentation-first pack for bank & subsidy.",
   },
   {
     id: "residential_smart",
     label: "Residential Legacy",
-    subtitle: "Classic Sol.52 view — bill audit & full section stack.",
+    subtitle: "Full Sol.52 audit & section stack.",
   },
 ];
 
