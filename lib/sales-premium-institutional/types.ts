@@ -1,85 +1,84 @@
-/** Sales Premium Institutional — 5-page Apple-style document model. */
+/** Sales Premium Pearl — 5-page Apple Pro document model. */
 
 export type InstitutionalAuditMonth = {
   label: string;
   units: number;
   energy_inr: number;
   fixed_inr: number;
-  duty_fuel_inr: number;
+  duty_inr: number;
   net_inr: number;
   is_summer_peak: boolean;
   bar_height_pct: number;
 };
 
-export type InstitutionalBillPage = {
-  billing_caption: string;
-  months: InstitutionalAuditMonth[];
-  totals: Omit<InstitutionalAuditMonth, "is_summer_peak" | "bar_height_pct" | "label"> & { label: string };
-  summer_trap_pct: number;
-  fixed_liability_display: string;
-  surcharges_display: string;
-  offset_potential_pct: number;
-  offset_retention_display: string;
-};
-
-export type InstitutionalCapitalPage = {
-  gross_cost_inr: number;
-  subsidy_inr: number;
-  net_cost_inr: number;
-  payback_years: number;
-  wealth_25yr_lakhs: number;
-};
-
-export type InstitutionalFlowNode = {
-  title: string;
-  sub: string;
-  highlight?: boolean;
+export type InstitutionalEmiRow = {
+  tenure_label: string;
+  interest_inr: number;
+  monthly_inr: number;
 };
 
 export type InstitutionalBomRow = {
+  index: number;
   component: string;
   specification: string;
   brand: string;
   warranty: string;
-  warranty_tone?: "green" | "blue" | "default";
+  warranty_tone: "green" | "blue" | "default";
+};
+
+export type InstitutionalCheckoutStep = {
+  num: string;
+  title: string;
+  description: string;
+  highlight_title?: boolean;
+};
+
+export type InstitutionalCoverPage = {
+  brand_display: string;
+  customer_name: string;
+  location_line: string;
+  system_kw_line: string;
+  system_architecture_line: string;
+  savings_lakhs: number;
+};
+
+export type InstitutionalBillPage = {
+  current_annual_inr: number;
+  cost_after_solar_inr: number;
+  annual_savings_inr: number;
+  months: InstitutionalAuditMonth[];
+  totals: {
+    units: number;
+    energy_inr: number;
+    fixed_inr: number;
+    duty_inr: number;
+    net_inr: number;
+  };
+};
+
+export type InstitutionalCapitalPage = {
+  net_investment_lakhs: number;
+  lifetime_returns_lakhs: number;
+  gross_cost_inr: number;
+  subsidy_inr: number;
+  net_cost_inr: number;
+  emi_rows: InstitutionalEmiRow[];
 };
 
 export type InstitutionalTechnicalPage = {
-  flow_nodes: InstitutionalFlowNode[];
   bom_rows: InstitutionalBomRow[];
-};
-
-export type InstitutionalTimelineStep = {
-  day_label: string;
-  title: string;
-  description: string;
-  complete?: boolean;
-};
-
-export type InstitutionalPaymentRow = {
-  label: string;
-  amount_inr: number;
-  is_total?: boolean;
+  co2_tons: number;
+  trees: number;
 };
 
 export type InstitutionalExecutionPage = {
-  team_city: string;
-  timeline: InstitutionalTimelineStep[];
-  payments: InstitutionalPaymentRow[];
+  steps: InstitutionalCheckoutStep[];
   bank: {
     beneficiary: string;
     account_number: string;
     ifsc: string;
     upi_id: string;
   };
-};
-
-export type InstitutionalCoverPage = {
-  brand_primary: string;
-  brand_secondary: string;
-  customer_name: string;
-  location_line: string;
-  system_profile: string;
 };
 
 export type SalesPremiumInstitutionalModel = {

@@ -4,48 +4,34 @@ import type { InstitutionalCoverPage } from "@/lib/sales-premium-institutional/t
 
 type Props = {
   data: InstitutionalCoverPage;
-  pageNum: number;
-  pageTotal: number;
 };
 
-export function SpCoverPage({ data, pageNum, pageTotal }: Props) {
+export function SpCoverPage({ data }: Props) {
   return (
-    <section className="sp-page sp-cover-page">
-      <div className="sp-cover-content">
-        <div className="sp-brand-name">
-          {data.brand_primary}
-          {data.brand_secondary ? (
-            <>
-              {" "}
-              <span className="sp-brand-sub">{data.brand_secondary}</span>
-            </>
-          ) : null}
-        </div>
-        <div className="sp-section-tag" style={{ marginBottom: 12 }}>
-          Energy Masterplan Prepared For
-        </div>
-        <h1 className="sp-h1" style={{ fontSize: "52pt", marginBottom: 30 }}>
-          {data.customer_name}
-        </h1>
-        <div className="sp-cover-rule" />
-        <p className="sp-cover-tagline">
-          A comprehensive architectural blueprint for transitioning your estate to independent,
-          zero-bill renewable energy.
-        </p>
-      </div>
+    <section className="sp-page bg-gray">
+      <div className="sp-cover-container">
+        <div className="sp-cover-content">
+          <p className="sp-logo-text">{data.brand_display.toUpperCase()}</p>
+          <h1 className="sp-hero-title">Your home will generate its own electricity.</h1>
+          <p className="sp-cover-sub">For the next 25 years.</p>
+          <p className="sp-cover-savings">
+            Saving you over ₹{data.savings_lakhs} Lakhs, starting this year.
+          </p>
 
-      <div style={{ position: "absolute", bottom: 0, left: 0 }}>
-        <p className="sp-cover-footer-label">Location</p>
-        <p className="sp-cover-footer-value">{data.location_line}</p>
+          <div className="sp-client-box">
+            <div className="sp-cb-left">
+              <p className="sp-field-label">Prepared For</p>
+              <p className="sp-field-value">{data.customer_name}</p>
+              <p className="sp-field-sub">{data.location_line}</p>
+            </div>
+            <div className="sp-cb-right">
+              <p className="sp-field-label">System Profile</p>
+              <p className="sp-field-value sp-system-kw">{data.system_kw_line}</p>
+              <p className="sp-field-sub">{data.system_architecture_line}</p>
+            </div>
+          </div>
+        </div>
       </div>
-      <div style={{ position: "absolute", bottom: 0, right: 0, textAlign: "right" }}>
-        <p className="sp-cover-footer-label">System Profile</p>
-        <p className="sp-cover-footer-value">{data.system_profile}</p>
-      </div>
-
-      <p className="sp-page-num">
-        {pageNum} / {pageTotal}
-      </p>
     </section>
   );
 }

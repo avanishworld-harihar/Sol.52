@@ -11,7 +11,7 @@ export function SpProposalShell({ children }: Props) {
     <div className="sp-proposal-shell w-full">
       <div className="sp-toolbar print:hidden">
         <div className="sp-toolbar-inner">
-          <p className="sp-toolbar-label">Sales Premium · Institutional</p>
+          <p className="sp-toolbar-label">Pearl · Apple Pro</p>
           <button
             type="button"
             onClick={() => {

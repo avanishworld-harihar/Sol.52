@@ -15,10 +15,8 @@ export type SalesPremiumInstitutionalRendererProps = {
   summary: ProposalDeckSummary;
 };
 
-const PAGE_TOTAL = 5;
-
 /**
- * Sales Premium — Institutional Edition (5-page Apple-style document).
+ * Sales Premium Pearl — 5-page Apple Pro document.
  * Replaces legacy block-loop Sales Premium web renderer.
  */
 export function SalesPremiumInstitutionalRenderer({
@@ -31,11 +29,11 @@ export function SalesPremiumInstitutionalRenderer({
     <div className="sp-institutional-root w-full">
       <SpProposalShell>
         <div className="sp-doc-canvas">
-          <SpCoverPage data={model.cover} pageNum={1} pageTotal={PAGE_TOTAL} />
-          <SpBillIntelligencePage data={model.bill} pageNum={2} pageTotal={PAGE_TOTAL} />
-          <SpCapitalBreakdownPage data={model.capital} pageNum={3} pageTotal={PAGE_TOTAL} />
-          <SpTechnicalBomPage data={model.technical} pageNum={4} pageTotal={PAGE_TOTAL} />
-          <SpExecutionPage data={model.execution} pageNum={5} pageTotal={PAGE_TOTAL} />
+          <SpCoverPage data={model.cover} />
+          <SpBillIntelligencePage data={model.bill} />
+          <SpCapitalBreakdownPage data={model.capital} />
+          <SpTechnicalBomPage data={model.technical} />
+          <SpExecutionPage data={model.execution} />
         </div>
       </SpProposalShell>
     </div>

@@ -1,141 +1,71 @@
 "use client";
 
-import { fmtInrPlain } from "@/lib/sales-premium-institutional/format";
+import { fmtInrSpaced } from "@/lib/sales-premium-institutional/format";
 import type { InstitutionalCapitalPage } from "@/lib/sales-premium-institutional/types";
 
 type Props = {
   data: InstitutionalCapitalPage;
-  pageNum: number;
-  pageTotal: number;
 };
 
-export function SpCapitalBreakdownPage({ data, pageNum, pageTotal }: Props) {
+export function SpCapitalBreakdownPage({ data }: Props) {
   return (
-    <section className="sp-page">
-      <div className="sp-section-tag">02 / Financial Architecture</div>
-      <h1 className="sp-h1">The Capital Breakdown.</h1>
-      <div className="sp-subtitle">Leveraging the PM Surya Ghar Yojana for rapid ROI.</div>
+    <section className="sp-page bg-gray">
+      <p className="sp-eyebrow">The Investment</p>
+      <h1>The path to wealth.</h1>
+      <p className="sp-lead">A secure investment protected from utility inflation for 25 years.</p>
 
-      <div className="sp-box">
-        <table className="sp-table" style={{ marginBottom: 0 }}>
-          <tbody>
-            <tr>
-              <td style={{ textAlign: "left", borderBottom: "1px solid #e5e7eb", paddingBottom: 15 }}>
-                <strong style={{ color: "#111827", fontSize: "10pt", fontFamily: "inherit" }}>
-                  Gross Infrastructure Cost
-                </strong>
-                <br />
-                <span style={{ fontSize: "8pt", color: "#6b7280", fontFamily: "inherit" }}>
-                  Tier-1 Panels, Inverter &amp; Turnkey Installation
-                </span>
-              </td>
-              <td
-                style={{
-                  borderBottom: "1px solid #e5e7eb",
-                  fontSize: "14pt",
-                  color: "#111827",
-                  paddingBottom: 15,
-                }}
-              >
-                {fmtInrPlain(data.gross_cost_inr)}
-              </td>
-            </tr>
-            <tr>
-              <td style={{ textAlign: "left", borderBottom: "1px solid #e5e7eb", padding: "15px 0" }}>
-                <strong style={{ color: "#111827", fontSize: "10pt", fontFamily: "inherit" }}>
-                  Government Grant (PM Surya Ghar)
-                </strong>
-                <br />
-                <span style={{ fontSize: "8pt", color: "#059669", fontFamily: "inherit" }}>
-                  Direct subsidy applied to your project
-                </span>
-              </td>
-              <td
-                className="sp-text-green"
-                style={{
-                  borderBottom: "1px solid #e5e7eb",
-                  fontSize: "14pt",
-                  padding: "15px 0",
-                }}
-              >
-                - {fmtInrPlain(data.subsidy_inr)}
-              </td>
-            </tr>
-            <tr>
-              <td style={{ textAlign: "left", borderBottom: "none", paddingTop: 15 }}>
-                <strong style={{ color: "#111827", fontSize: "11pt", fontFamily: "inherit" }}>
-                  Net Capital Requirement
-                </strong>
-                <br />
-                <span style={{ fontSize: "8pt", color: "#6b7280", fontFamily: "inherit" }}>
-                  Final out-of-pocket investment
-                </span>
-              </td>
-              <td
-                style={{
-                  borderBottom: "none",
-                  fontSize: "20pt",
-                  color: "#2563eb",
-                  fontWeight: 600,
-                  paddingTop: 15,
-                }}
-              >
-                {fmtInrPlain(data.net_cost_inr)}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div className="sp-grid-2">
-        <div className="sp-col-half">
-          <div className="sp-data-block">
-            <p className="sp-data-value">
-              {data.payback_years}{" "}
-              <span
-                style={{
-                  fontSize: "12pt",
-                  color: "#6b7280",
-                  fontFamily: "inherit",
-                  fontWeight: 400,
-                }}
-              >
-                Yrs
-              </span>
-            </p>
-            <p className="sp-data-label">Break-Even Period</p>
-            <p style={{ fontSize: "9.5pt", color: "#4b5563", marginTop: 8 }}>
-              Your investment pays for itself entirely within{" "}
-              {Math.round(data.payback_years * 12)} months through bill savings.
-            </p>
-          </div>
+      <div className="sp-value-flow">
+        <div className="sp-v-node">
+          <p className="sp-v-num">₹{data.net_investment_lakhs}L</p>
+          <p className="sp-v-lbl">Net Investment</p>
         </div>
-        <div className="sp-col-half">
-          <div className="sp-data-block">
-            <p className="sp-data-value">
-              {data.wealth_25yr_lakhs}{" "}
-              <span
-                style={{
-                  fontSize: "12pt",
-                  color: "#6b7280",
-                  fontFamily: "inherit",
-                  fontWeight: 400,
-                }}
-              >
-                Lakhs
-              </span>
-            </p>
-            <p className="sp-data-label">25-Yr Wealth Generation</p>
-            <p style={{ fontSize: "9.5pt", color: "#4b5563", marginTop: 8 }}>
-              The total capital retained in your estate over the lifetime of the solar asset.
-            </p>
-          </div>
+        <div className="sp-v-arrow">➔</div>
+        <div className="sp-v-node">
+          <p className="sp-v-num green">₹{data.lifetime_returns_lakhs}L</p>
+          <p className="sp-v-lbl">Lifetime Returns</p>
+        </div>
+        <div className="sp-v-arrow">➔</div>
+        <div className="sp-v-node">
+          <p className="sp-v-num blue">25 Yrs</p>
+          <p className="sp-v-lbl">Energy Protection</p>
         </div>
       </div>
 
-      <p className="sp-page-num">
-        {pageNum} / {pageTotal}
-      </p>
+      <div style={{ marginTop: 30 }}>
+        <div className="sp-calc-row">
+          <div className="sp-calc-left">
+            Gross System Cost
+            <span className="sp-calc-desc">Tier-1 hardware &amp; turnkey installation.</span>
+          </div>
+          <div className="sp-calc-right">{fmtInrSpaced(data.gross_cost_inr)}</div>
+        </div>
+        <div className="sp-calc-row">
+          <div className="sp-calc-left">
+            PM Surya Ghar Subsidy
+            <span className="sp-calc-desc">Government grant applied directly.</span>
+          </div>
+          <div className="sp-calc-right green">- {fmtInrSpaced(data.subsidy_inr)}</div>
+        </div>
+        <div className="sp-calc-row" style={{ borderBottom: "none" }}>
+          <div className="sp-calc-left" style={{ fontWeight: 700 }}>
+            Final Amount To Pay
+          </div>
+          <div className="sp-calc-right large">{fmtInrSpaced(data.net_cost_inr)}</div>
+        </div>
+      </div>
+
+      {data.emi_rows.length > 0 ? (
+        <div className="sp-apple-card">
+          <h3 className="sp-card-title">Flexible Financing (Solar Loan)</h3>
+          {data.emi_rows.map((row) => (
+            <div key={row.tenure_label} className="sp-emi-row">
+              <div className="sp-emi-col1">{row.tenure_label}</div>
+              <div className="sp-emi-col2">Total Interest: {fmtInrSpaced(row.interest_inr)}</div>
+              <div className="sp-emi-col3">{fmtInrSpaced(row.monthly_inr)} /mo</div>
+            </div>
+          ))}
+        </div>
+      ) : null}
     </section>
   );
 }
