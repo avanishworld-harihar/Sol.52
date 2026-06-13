@@ -138,7 +138,7 @@ export function ProposalTemplateGallery({ markSaved }: Props) {
         {activeCategoryMeta.description}
         {category === "residential" ? (
           <span className="block mt-1 text-slate-500">
-            Showing {residentialCount} themes — Golden, Pearl, Horizon, Ember, plus Ledger & Classic.
+            Showing {residentialCount} themes — Golden, Apple Pro, Horizon, Ember, plus Ledger & Classic.
           </span>
         ) : null}
       </p>

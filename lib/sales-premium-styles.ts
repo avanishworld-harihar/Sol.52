@@ -52,8 +52,8 @@ export type SalesPremiumStyleMeta = {
 export const SALES_PREMIUM_STYLE_REGISTRY: Record<SalesPremiumStyleId, SalesPremiumStyleMeta> = {
   institutional: {
     id: "institutional",
-    label: "Pearl",
-    subtitle: "5-page institutional PDF — audit, capital, BOM, execution.",
+    label: "Apple Pro",
+    subtitle: "5-page Apple/Tesla minimalist PDF — audit, capital, BOM, execution.",
     renderer: "institutional",
     flowBlocks: [],
     appendixBlocks: [],
@@ -110,7 +110,7 @@ export function resolveSalesPremiumStyle(
 }
 
 export function labelForSalesPremiumStyle(id: SalesPremiumStyleId): string {
-  return SALES_PREMIUM_STYLE_REGISTRY[id]?.label ?? "Pearl";
+  return SALES_PREMIUM_STYLE_REGISTRY[id]?.label ?? "Apple Pro";
 }
 
 export function getSalesPremiumLayoutForStyle(style: SalesPremiumStyleId): ProposalTemplateV1 {

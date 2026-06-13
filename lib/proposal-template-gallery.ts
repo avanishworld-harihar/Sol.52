@@ -5,7 +5,7 @@ import type { SalesPremiumStyleId } from "@/lib/sales-premium-styles";
 /** Visual codename for thumbnail CSS. */
 export type ProposalTemplateThumbnailVariant =
   | "golden"
-  | "pearl"
+  | "apple_pro"
   | "horizon"
   | "ember"
   | "ledger"
@@ -17,7 +17,7 @@ export type ProposalTemplateCategory = "residential" | "commercial";
 /** Unique key per gallery card (one preset can map to multiple theme cards). */
 export type ProposalTemplateGalleryKey =
   | "golden"
-  | "pearl"
+  | "apple_pro"
   | "horizon"
   | "ember"
   | "ledger"
@@ -65,14 +65,15 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
     thumbnailVariant: "golden",
   },
   {
-    key: "pearl",
+    key: "apple_pro",
     presetId: "residential_sales_premium",
     salesPremiumStyle: "institutional",
     category: "residential",
-    name: "Pearl",
-    description: "Clean 5-page institutional sales deck.",
+    name: "Apple Pro",
+    description:
+      "Ultra-premium 5-page Apple/Tesla minimalist deck — bill audit, investment, BOM & execution.",
     recommended: true,
-    thumbnailVariant: "pearl",
+    thumbnailVariant: "apple_pro",
   },
   {
     key: "horizon",
@@ -150,9 +151,9 @@ export function resolveActiveGalleryKey(
   if (presetId === "residential_sales_premium") {
     if (salesPremiumStyle === "journey") return "horizon";
     if (salesPremiumStyle === "savings_focus") return "ember";
-    return "pearl";
+    return "apple_pro";
   }
-  return "pearl";
+  return "apple_pro";
 }
 
 export function galleryItemById(id: ProposalPresetId): ProposalTemplateGalleryItem | undefined {

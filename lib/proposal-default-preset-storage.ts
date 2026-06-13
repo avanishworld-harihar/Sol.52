@@ -31,8 +31,8 @@ export const RESIDENTIAL_TEMPLATE_OPTIONS: ResidentialTemplateOption[] = [
   },
   {
     id: "residential_sales_premium",
-    label: "Sales Premium",
-    subtitle: "Clean, premium 5-page sales proposal.",
+    label: "Apple Pro",
+    subtitle: "Ultra-premium 5-page Apple/Tesla minimalist sales proposal.",
   },
   {
     id: "residential_bank_loan",
