@@ -1,18 +1,34 @@
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 import type { ResidentialTemplatePresetId } from "@/lib/proposal-default-preset-storage";
+import type { SalesPremiumStyleId } from "@/lib/sales-premium-styles";
 
-/** Visual codename for thumbnail CSS — not shown as a separate selectable option. */
+/** Visual codename for thumbnail CSS. */
 export type ProposalTemplateThumbnailVariant =
   | "golden"
   | "pearl"
+  | "horizon"
+  | "ember"
   | "ledger"
   | "classic"
   | "commercial";
 
 export type ProposalTemplateCategory = "residential" | "commercial";
 
+/** Unique key per gallery card (one preset can map to multiple theme cards). */
+export type ProposalTemplateGalleryKey =
+  | "golden"
+  | "pearl"
+  | "horizon"
+  | "ember"
+  | "ledger"
+  | "classic"
+  | "commercial_executive";
+
 export type ProposalTemplateGalleryItem = {
-  id: ResidentialTemplatePresetId | "commercial_executive";
+  key: ProposalTemplateGalleryKey;
+  presetId: ResidentialTemplatePresetId | "commercial_executive";
+  /** When preset is Sales Premium, which visual style to apply. */
+  salesPremiumStyle?: SalesPremiumStyleId;
   category: ProposalTemplateCategory;
   name: string;
   description: string;
@@ -30,7 +46,7 @@ export const PROPOSAL_TEMPLATE_CATEGORIES: ProposalTemplateCategoryMeta[] = [
   {
     id: "residential",
     label: "Residential",
-    description: "Homes & rooftops up to ~10 kW — pick your default sales format.",
+    description: "Homes & rooftops up to ~10 kW — pick your default theme.",
   },
   {
     id: "commercial",
@@ -41,39 +57,63 @@ export const PROPOSAL_TEMPLATE_CATEGORIES: ProposalTemplateCategoryMeta[] = [
 
 export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
   {
-    id: "residential_executive",
+    key: "golden",
+    presetId: "residential_executive",
     category: "residential",
-    name: "Executive Premium",
-    description: "Champagne gold editorial layout for high-trust clients.",
+    name: "Golden",
+    description: "Champagne gold editorial — Executive Premium for HNI clients.",
     thumbnailVariant: "golden",
   },
   {
-    id: "residential_sales_premium",
+    key: "pearl",
+    presetId: "residential_sales_premium",
+    salesPremiumStyle: "institutional",
     category: "residential",
-    name: "Sales Premium",
-    description: "Clean, premium 5-page sales proposal.",
+    name: "Pearl",
+    description: "Clean 5-page institutional sales deck.",
     recommended: true,
     thumbnailVariant: "pearl",
   },
   {
-    id: "residential_bank_loan",
+    key: "horizon",
+    presetId: "residential_sales_premium",
+    salesPremiumStyle: "journey",
     category: "residential",
-    name: "Bank Loan Pack",
+    name: "Horizon",
+    description: "Scroll story — bill, savings, system, and payment flow.",
+    thumbnailVariant: "horizon",
+  },
+  {
+    key: "ember",
+    presetId: "residential_sales_premium",
+    salesPremiumStyle: "savings_focus",
+    category: "residential",
+    name: "Ember",
+    description: "Short savings-first deck — bill, ROI, and investment.",
+    thumbnailVariant: "ember",
+  },
+  {
+    key: "ledger",
+    presetId: "residential_bank_loan",
+    category: "residential",
+    name: "Ledger",
     description: "Documentation-first pack for bank & subsidy.",
     thumbnailVariant: "ledger",
   },
   {
-    id: "residential_smart",
+    key: "classic",
+    presetId: "residential_smart",
     category: "residential",
-    name: "Residential Legacy",
-    description: "Full Sol.52 audit & section stack.",
+    name: "Classic",
+    description: "Full Sol.52 audit & legacy section stack.",
     thumbnailVariant: "classic",
   },
 ];
 
 export const COMMERCIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
   {
-    id: "commercial_executive",
+    key: "commercial_executive",
+    presetId: "commercial_executive",
     category: "commercial",
     name: "Commercial Executive",
     description: "Full C&I proposal — executive summary, BOM, ROI, financing & gallery.",
@@ -90,9 +130,31 @@ export function galleryForCategory(category: ProposalTemplateCategory): Proposal
 }
 
 export function galleryItemForPreset(id: ResidentialTemplatePresetId): ProposalTemplateGalleryItem {
-  return RESIDENTIAL_TEMPLATE_GALLERY.find((g) => g.id === id) ?? RESIDENTIAL_TEMPLATE_GALLERY[1]!;
+  const match =
+    RESIDENTIAL_TEMPLATE_GALLERY.find((g) => g.presetId === id && g.recommended) ??
+    RESIDENTIAL_TEMPLATE_GALLERY.find((g) => g.presetId === id);
+  return match ?? RESIDENTIAL_TEMPLATE_GALLERY[1]!;
+}
+
+export function galleryItemByKey(key: ProposalTemplateGalleryKey): ProposalTemplateGalleryItem | undefined {
+  return [...RESIDENTIAL_TEMPLATE_GALLERY, ...COMMERCIAL_TEMPLATE_GALLERY].find((g) => g.key === key);
+}
+
+export function resolveActiveGalleryKey(
+  presetId: ResidentialTemplatePresetId,
+  salesPremiumStyle?: SalesPremiumStyleId
+): ProposalTemplateGalleryKey {
+  if (presetId === "residential_executive") return "golden";
+  if (presetId === "residential_bank_loan") return "ledger";
+  if (presetId === "residential_smart") return "classic";
+  if (presetId === "residential_sales_premium") {
+    if (salesPremiumStyle === "journey") return "horizon";
+    if (salesPremiumStyle === "savings_focus") return "ember";
+    return "pearl";
+  }
+  return "pearl";
 }
 
 export function galleryItemById(id: ProposalPresetId): ProposalTemplateGalleryItem | undefined {
-  return [...RESIDENTIAL_TEMPLATE_GALLERY, ...COMMERCIAL_TEMPLATE_GALLERY].find((g) => g.id === id);
+  return [...RESIDENTIAL_TEMPLATE_GALLERY, ...COMMERCIAL_TEMPLATE_GALLERY].find((g) => g.presetId === id);
 }

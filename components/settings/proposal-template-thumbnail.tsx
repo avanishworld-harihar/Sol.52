@@ -22,6 +22,8 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
     >
       {variant === "golden" ? <GoldenThumb size={size} /> : null}
       {variant === "pearl" ? <PearlThumb size={size} /> : null}
+      {variant === "horizon" ? <HorizonThumb size={size} /> : null}
+      {variant === "ember" ? <EmberThumb size={size} /> : null}
       {variant === "ledger" ? <LedgerThumb size={size} /> : null}
       {variant === "classic" ? <ClassicThumb size={size} /> : null}
       {variant === "commercial" ? <CommercialThumb size={size} /> : null}
@@ -92,6 +94,39 @@ function PearlThumb({ size }: { size: "card" | "preview" }) {
         <div className={cn("mt-[10%] space-y-[5%]", size === "preview" ? "space-y-[6%]" : "")}>
           <div className={cn("w-full rounded-full bg-slate-200", size === "preview" ? "h-[2px]" : "h-[1.5px]")} />
           <div className={cn("w-[75%] rounded-full bg-slate-100", size === "preview" ? "h-[2px]" : "h-[1.5px]")} />
+        </div>
+      </MiniSlide>
+    </div>
+  );
+}
+
+function HorizonThumb({ size }: { size: "card" | "preview" }) {
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-teal-400 to-sky-500">
+      <MiniSlide bg="#fff" size={size}>
+        <div className={cn("rounded-[2px] bg-gradient-to-r from-emerald-400 to-teal-500", size === "preview" ? "mb-[6%] h-[18%]" : "mb-[6%] h-[18%] w-full")} />
+        <div className={cn("mt-[6%] flex gap-[4%]")}>
+          <div className="h-[12%] flex-1 rounded-[1px] bg-amber-100" />
+          <div className="h-[12%] flex-1 rounded-[1px] bg-emerald-100" />
+        </div>
+      </MiniSlide>
+    </div>
+  );
+}
+
+function EmberThumb({ size }: { size: "card" | "preview" }) {
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-slate-800">
+      <MiniSlide bg="#1e293b" size={size}>
+        <div className={cn("uppercase tracking-wider text-slate-400", size === "preview" ? "text-[7px]" : "text-[3px]")}>
+          Savings
+        </div>
+        <div className={cn("font-bold text-emerald-400", size === "preview" ? "mt-[6%] text-[11px]" : "mt-[6%] text-[7px]")}>
+          ROI
+        </div>
+        <div className={cn("mt-[8%] flex h-[20%] items-end gap-[5%]")}>
+          <div className="w-[22%] rounded-t-[1px] bg-slate-600" style={{ height: "55%" }} />
+          <div className="w-[22%] rounded-t-[1px] bg-red-300/80" style={{ height: "100%" }} />
         </div>
       </MiniSlide>
     </div>

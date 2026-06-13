@@ -11,9 +11,16 @@ import {
 import {
   PROPOSAL_TEMPLATE_CATEGORIES,
   galleryForCategory,
+  resolveActiveGalleryKey,
   type ProposalTemplateCategory,
   type ProposalTemplateGalleryItem,
+  type ProposalTemplateGalleryKey,
 } from "@/lib/proposal-template-gallery";
+import {
+  readDefaultSalesPremiumStyle,
+  SALES_PREMIUM_STYLE_UPDATED_EVENT,
+  writeDefaultSalesPremiumStyle,
+} from "@/lib/sales-premium-styles";
 import { Check, Eye, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -21,23 +28,45 @@ type Props = {
   markSaved: (message: string) => void;
 };
 
+const TAB_STORAGE_KEY = "ss_proposal_template_tab_v1";
+
+function readInitialTab(): ProposalTemplateCategory {
+  if (typeof window === "undefined") return "residential";
+  try {
+    const raw = sessionStorage.getItem(TAB_STORAGE_KEY);
+    if (raw === "commercial" || raw === "residential") return raw;
+  } catch {
+    /* ignore */
+  }
+  return "residential";
+}
+
 export function ProposalTemplateGallery({ markSaved }: Props) {
   const [category, setCategory] = useState<ProposalTemplateCategory>("residential");
-  const [selectedResidential, setSelectedResidential] = useState<ResidentialTemplatePresetId>(
-    readDefaultResidentialPreset
+  const [activeKey, setActiveKey] = useState<ProposalTemplateGalleryKey>(() =>
+    resolveActiveGalleryKey(readDefaultResidentialPreset(), readDefaultSalesPremiumStyle())
   );
   const [previewItem, setPreviewItem] = useState<ProposalTemplateGalleryItem | null>(null);
 
   const items = galleryForCategory(category);
+  const residentialCount = galleryForCategory("residential").length;
+  const commercialCount = galleryForCategory("commercial").length;
 
   const sync = useCallback(() => {
-    setSelectedResidential(readDefaultResidentialPreset());
+    setActiveKey(
+      resolveActiveGalleryKey(readDefaultResidentialPreset(), readDefaultSalesPremiumStyle())
+    );
   }, []);
 
   useEffect(() => {
+    setCategory(readInitialTab());
     sync();
     window.addEventListener(PROPOSAL_DEFAULT_PRESET_UPDATED_EVENT, sync);
-    return () => window.removeEventListener(PROPOSAL_DEFAULT_PRESET_UPDATED_EVENT, sync);
+    window.addEventListener(SALES_PREMIUM_STYLE_UPDATED_EVENT, sync);
+    return () => {
+      window.removeEventListener(PROPOSAL_DEFAULT_PRESET_UPDATED_EVENT, sync);
+      window.removeEventListener(SALES_PREMIUM_STYLE_UPDATED_EVENT, sync);
+    };
   }, [sync]);
 
   useEffect(() => {
@@ -49,9 +78,13 @@ export function ProposalTemplateGallery({ markSaved }: Props) {
     return () => window.removeEventListener("keydown", onKey);
   }, [previewItem]);
 
-  function isActive(item: ProposalTemplateGalleryItem): boolean {
-    if (item.category === "commercial") return true;
-    return selectedResidential === item.id;
+  function switchCategory(next: ProposalTemplateCategory) {
+    setCategory(next);
+    try {
+      sessionStorage.setItem(TAB_STORAGE_KEY, next);
+    } catch {
+      /* ignore */
+    }
   }
 
   function choose(item: ProposalTemplateGalleryItem) {
@@ -59,10 +92,13 @@ export function ProposalTemplateGallery({ markSaved }: Props) {
       markSaved("Commercial proposals use the Commercial Executive deck — no change needed.");
       return;
     }
-    const id = item.id as ResidentialTemplatePresetId;
-    setSelectedResidential(id);
-    writeDefaultResidentialPreset(id);
-    markSaved(`Default residential template set to ${item.name}. New proposals will use this format.`);
+    const presetId = item.presetId as ResidentialTemplatePresetId;
+    writeDefaultResidentialPreset(presetId);
+    if (item.salesPremiumStyle) {
+      writeDefaultSalesPremiumStyle(item.salesPremiumStyle);
+    }
+    setActiveKey(item.key);
+    markSaved(`Default residential theme set to ${item.name}. New proposals will use this format.`);
   }
 
   function selectFromPreview() {
@@ -78,11 +114,12 @@ export function ProposalTemplateGallery({ markSaved }: Props) {
       <div className="flex flex-wrap gap-1 rounded-xl border border-slate-200 bg-slate-50/80 p-1 dark:border-white/10 dark:bg-white/[0.04]">
         {PROPOSAL_TEMPLATE_CATEGORIES.map((cat) => {
           const active = category === cat.id;
+          const count = cat.id === "residential" ? residentialCount : commercialCount;
           return (
             <button
               key={cat.id}
               type="button"
-              onClick={() => setCategory(cat.id)}
+              onClick={() => switchCategory(cat.id)}
               className={cn(
                 "rounded-lg px-4 py-2 text-xs font-bold transition",
                 active
@@ -91,24 +128,32 @@ export function ProposalTemplateGallery({ markSaved }: Props) {
               )}
             >
               {cat.label}
+              <span className="ml-1.5 font-semibold text-slate-400">({count})</span>
             </button>
           );
         })}
       </div>
 
-      <p className="text-[11px] leading-snug text-slate-600 dark:text-slate-400">{activeCategoryMeta.description}</p>
+      <p className="text-[11px] leading-snug text-slate-600 dark:text-slate-400">
+        {activeCategoryMeta.description}
+        {category === "residential" ? (
+          <span className="block mt-1 text-slate-500">
+            Showing {residentialCount} themes — Golden, Pearl, Horizon, Ember, plus Ledger & Classic.
+          </span>
+        ) : null}
+      </p>
 
       <div
         className={cn(
           "grid grid-cols-1 gap-4",
-          category === "residential" ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-2 lg:max-w-sm lg:grid-cols-1"
+          category === "residential" ? "sm:grid-cols-2 lg:grid-cols-3" : "sm:grid-cols-2 lg:max-w-sm lg:grid-cols-1"
         )}
       >
         {items.map((item) => {
-          const active = isActive(item);
+          const active = item.category === "commercial" ? true : activeKey === item.key;
           return (
             <article
-              key={item.id}
+              key={item.key}
               className={cn(
                 "flex flex-col overflow-hidden rounded-xl border bg-white/80 transition dark:bg-white/[0.04]",
                 active
@@ -195,7 +240,7 @@ export function ProposalTemplateGallery({ markSaved }: Props) {
                 onClick={selectFromPreview}
                 className="mt-4 w-full rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
               >
-                {previewItem.category === "commercial" ? "Got it" : "Use this template"}
+                {previewItem.category === "commercial" ? "Got it" : "Use this theme"}
               </button>
             </div>
           </div>
