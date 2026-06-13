@@ -27,7 +27,7 @@ export const RESIDENTIAL_TEMPLATE_OPTIONS: ResidentialTemplateOption[] = [
   {
     id: "residential_sales_premium",
     label: "Sales Premium",
-    subtitle: "Institutional 5-page PDF — bill audit, capital, BOM & execution.",
+    subtitle: "Multiple styles — Institutional, Journey, Savings Focus.",
   },
   {
     id: "residential_bank_loan",

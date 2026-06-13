@@ -127,4 +127,6 @@ export const proposalExtrasShape = {
   sharedPlantCatalog: residentialBrandCatalogSchema.optional(),
   /** Central rate card vs per-proposal override (quotation engine Phase 1). */
   pricingSource: z.enum(["rate_card", "customer_override"]).optional(),
+  /** Sales Premium sub-style — institutional / journey / savings_focus. */
+  salesPremiumStyle: z.enum(["institutional", "journey", "savings_focus"]).optional(),
 } as const;

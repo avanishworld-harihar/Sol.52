@@ -14,6 +14,11 @@ import CommercialProposalView from "@/components/proposal/commercial-proposal-vi
 import { ProposalWebRenderer } from "@/components/proposal/web-renderer";
 import { ExecutivePremiumNextgenRenderer } from "@/components/proposals/executive-premium-nextgen/executive-premium-nextgen-renderer";
 import { SalesPremiumInstitutionalRenderer } from "@/components/proposals/sales-premium-institutional/sales-premium-institutional-renderer";
+import {
+  getSalesPremiumLayoutForStyle,
+  resolveSalesPremiumStyle,
+  usesInstitutionalRenderer,
+} from "@/lib/sales-premium-styles";
 import { compileProposalDocument } from "@/lib/proposal-document-ir";
 import { RESIDENTIAL_WEB_RENDERER_PRESETS } from "@/lib/proposal-preset-engine";
 
@@ -106,10 +111,30 @@ export default async function PublicProposalPage({ params }: PageProps) {
     );
   }
 
-  // ── Sales Premium Institutional — 5-page Apple-style renderer ────────────
+  // ── Sales Premium — style-specific renderer ───────────────────────────────
   if (proposal.preset_id === "residential_sales_premium") {
+    const spStyle = resolveSalesPremiumStyle(mergedInput);
+    if (usesInstitutionalRenderer(spStyle)) {
+      return (
+        <SalesPremiumInstitutionalRenderer pptInput={mergedInput} summary={liveSummary} />
+      );
+    }
+    const leadId = proposal.lead_id?.trim() ? proposal.lead_id.trim() : null;
+    const surveyStatus = await getLeadSurveyStatus(leadId);
+    const showSurvey = isLeadSurveyCompleteForProposal(surveyStatus);
+    const layout = getSalesPremiumLayoutForStyle(spStyle);
+    const doc = compileProposalDocument(
+      id,
+      { ...mergedInput, proposalLayout: layout },
+      liveSummary,
+      { presetId: "residential_sales_premium" }
+    );
     return (
-      <SalesPremiumInstitutionalRenderer pptInput={mergedInput} summary={liveSummary} />
+      <ProposalWebRenderer
+        document={doc}
+        summary={liveSummary}
+        showSurveyWorkflowSection={showSurvey}
+      />
     );
   }
 

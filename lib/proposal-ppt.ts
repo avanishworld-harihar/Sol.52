@@ -207,6 +207,9 @@ export type PremiumProposalPptInput = {
 
   /** Central rate card vs prices locked on this proposal only. */
   pricingSource?: "rate_card" | "customer_override";
+
+  /** Sales Premium visual style (institutional | journey | savings_focus). */
+  salesPremiumStyle?: import("@/lib/sales-premium-styles").SalesPremiumStyleId;
 };
 
 export type ProposalDeckSummary = {
