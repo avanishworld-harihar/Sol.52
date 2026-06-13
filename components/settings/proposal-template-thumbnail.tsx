@@ -21,12 +21,25 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
       aria-hidden
     >
       {variant === "golden" ? <GoldenThumb size={size} /> : null}
+      {variant === "pearl" ? <PearlThumb size={size} /> : null}
       {variant === "apple_pro" ? <AppleProThumb size={size} /> : null}
       {variant === "horizon" ? <HorizonThumb size={size} /> : null}
       {variant === "ember" ? <EmberThumb size={size} /> : null}
       {variant === "ledger" ? <LedgerThumb size={size} /> : null}
       {variant === "classic" ? <ClassicThumb size={size} /> : null}
       {variant === "commercial" ? <CommercialThumb size={size} /> : null}
+      {![
+        "golden",
+        "pearl",
+        "apple_pro",
+        "horizon",
+        "ember",
+        "ledger",
+        "classic",
+        "commercial",
+      ].includes(variant) ? (
+        <GenericThumb size={size} label={variant} />
+      ) : null}
     </div>
   );
 }
@@ -78,6 +91,40 @@ function GoldenThumb({ size }: { size: "card" | "preview" }) {
         <div className={cn("bg-[#b59a57]", size === "preview" ? "mt-[8%] h-[2px] w-[1px] min-h-[20px]" : "mt-[8%] h-[12px] w-[1px]")} />
         <div className={cn("mt-[8%] text-[#718096] uppercase tracking-widest", size === "preview" ? "text-[6px]" : "text-[3px]")}>
           Body
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PearlThumb({ size }: { size: "card" | "preview" }) {
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-[#f4f4f5]">
+      <MiniSlide bg="#fff" size={size}>
+        <div
+          className={cn("bg-blue-600", size === "preview" ? "mt-[8%] h-[2px] w-[22%]" : "mt-[8%] h-[1px] w-[22%]")}
+        />
+        <div className={cn("mt-[10%] space-y-[5%]", size === "preview" ? "space-y-[6%]" : "")}>
+          <div className={cn("w-full rounded-full bg-slate-200", size === "preview" ? "h-[2px]" : "h-[1.5px]")} />
+          <div className={cn("w-[75%] rounded-full bg-slate-100", size === "preview" ? "h-[2px]" : "h-[1.5px]")} />
+        </div>
+      </MiniSlide>
+    </div>
+  );
+}
+
+function GenericThumb({ size, label }: { size: "card" | "preview"; label: string }) {
+  const textSize = size === "preview" ? "text-[10px]" : "text-[5px]";
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-slate-100">
+      <div
+        className={cn(
+          "flex flex-col items-center justify-center rounded-[3px] border border-slate-200 bg-white shadow-sm",
+          size === "preview" ? "h-[62%] w-[68%] p-[8%]" : "h-[58%] w-[72%] p-[7%]"
+        )}
+      >
+        <div className={cn("font-bold uppercase tracking-wider text-slate-500", textSize)}>
+          {label.replace(/_/g, " ")}
         </div>
       </div>
     </div>

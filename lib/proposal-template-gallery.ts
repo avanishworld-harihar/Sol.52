@@ -2,27 +2,21 @@ import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 import type { ResidentialTemplatePresetId } from "@/lib/proposal-default-preset-storage";
 import type { SalesPremiumStyleId } from "@/lib/sales-premium-styles";
 
-/** Visual codename for thumbnail CSS. */
-export type ProposalTemplateThumbnailVariant =
-  | "golden"
-  | "apple_pro"
-  | "horizon"
-  | "ember"
-  | "ledger"
-  | "classic"
-  | "commercial";
+/**
+ * Gallery theme registry — add entries to RESIDENTIAL_TEMPLATE_GALLERY / COMMERCIAL_TEMPLATE_GALLERY.
+ * No max count: the UI renders whatever is in these arrays.
+ *
+ * To add a theme: push a new item with a unique `key`, optional `salesPremiumStyle`, and `thumbnailVariant`.
+ * Register a matching thumb in proposal-template-thumbnail.tsx (or use a generic fallback).
+ */
+
+/** Thumbnail id — string so new themes need no type union update. */
+export type ProposalTemplateThumbnailVariant = string;
 
 export type ProposalTemplateCategory = "residential" | "commercial";
 
-/** Unique key per gallery card (one preset can map to multiple theme cards). */
-export type ProposalTemplateGalleryKey =
-  | "golden"
-  | "apple_pro"
-  | "horizon"
-  | "ember"
-  | "ledger"
-  | "classic"
-  | "commercial_executive";
+/** Stable id per gallery card — string so new themes need no type union update. */
+export type ProposalTemplateGalleryKey = string;
 
 export type ProposalTemplateGalleryItem = {
   key: ProposalTemplateGalleryKey;
@@ -65,13 +59,22 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
     thumbnailVariant: "golden",
   },
   {
+    key: "pearl",
+    presetId: "residential_sales_premium",
+    salesPremiumStyle: "institutional",
+    category: "residential",
+    name: "Pearl",
+    description: "Clean 5-page institutional sales deck — white & gray minimalist layout.",
+    thumbnailVariant: "pearl",
+  },
+  {
     key: "apple_pro",
     presetId: "residential_sales_premium",
     salesPremiumStyle: "institutional",
     category: "residential",
     name: "Apple Pro",
     description:
-      "Ultra-premium 5-page Apple/Tesla minimalist deck — bill audit, investment, BOM & execution.",
+      "Ultra-premium Apple/Tesla HNI deck — hero cover, bill chart, investment flow & BOM.",
     recommended: true,
     thumbnailVariant: "apple_pro",
   },
@@ -123,11 +126,22 @@ export const COMMERCIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
   },
 ];
 
+export const ALL_PROPOSAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
+  ...RESIDENTIAL_TEMPLATE_GALLERY,
+  ...COMMERCIAL_TEMPLATE_GALLERY,
+];
+
 /** @deprecated Use category-specific galleries */
 export const PROPOSAL_TEMPLATE_GALLERY = RESIDENTIAL_TEMPLATE_GALLERY;
 
 export function galleryForCategory(category: ProposalTemplateCategory): ProposalTemplateGalleryItem[] {
   return category === "commercial" ? COMMERCIAL_TEMPLATE_GALLERY : RESIDENTIAL_TEMPLATE_GALLERY;
+}
+
+export function galleryThemeNames(category: ProposalTemplateCategory): string {
+  return galleryForCategory(category)
+    .map((g) => g.name)
+    .join(", ");
 }
 
 export function galleryItemForPreset(id: ResidentialTemplatePresetId): ProposalTemplateGalleryItem {
@@ -138,9 +152,10 @@ export function galleryItemForPreset(id: ResidentialTemplatePresetId): ProposalT
 }
 
 export function galleryItemByKey(key: ProposalTemplateGalleryKey): ProposalTemplateGalleryItem | undefined {
-  return [...RESIDENTIAL_TEMPLATE_GALLERY, ...COMMERCIAL_TEMPLATE_GALLERY].find((g) => g.key === key);
+  return ALL_PROPOSAL_TEMPLATE_GALLERY.find((g) => g.key === key);
 }
 
+/** Default gallery key when no saved preference exists. */
 export function resolveActiveGalleryKey(
   presetId: ResidentialTemplatePresetId,
   salesPremiumStyle?: SalesPremiumStyleId
@@ -157,5 +172,5 @@ export function resolveActiveGalleryKey(
 }
 
 export function galleryItemById(id: ProposalPresetId): ProposalTemplateGalleryItem | undefined {
-  return [...RESIDENTIAL_TEMPLATE_GALLERY, ...COMMERCIAL_TEMPLATE_GALLERY].find((g) => g.presetId === id);
+  return ALL_PROPOSAL_TEMPLATE_GALLERY.find((g) => g.presetId === id);
 }

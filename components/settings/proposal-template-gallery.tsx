@@ -11,11 +11,16 @@ import {
 import {
   PROPOSAL_TEMPLATE_CATEGORIES,
   galleryForCategory,
-  resolveActiveGalleryKey,
+  galleryThemeNames,
   type ProposalTemplateCategory,
   type ProposalTemplateGalleryItem,
   type ProposalTemplateGalleryKey,
 } from "@/lib/proposal-template-gallery";
+import {
+  PROPOSAL_TEMPLATE_GALLERY_KEY_UPDATED_EVENT,
+  resolveActiveTemplateGalleryKey,
+  writeDefaultGalleryKey,
+} from "@/lib/proposal-template-gallery-storage";
 import {
   readDefaultSalesPremiumStyle,
   SALES_PREMIUM_STYLE_UPDATED_EVENT,
@@ -44,7 +49,7 @@ function readInitialTab(): ProposalTemplateCategory {
 export function ProposalTemplateGallery({ markSaved }: Props) {
   const [category, setCategory] = useState<ProposalTemplateCategory>("residential");
   const [activeKey, setActiveKey] = useState<ProposalTemplateGalleryKey>(() =>
-    resolveActiveGalleryKey(readDefaultResidentialPreset(), readDefaultSalesPremiumStyle())
+    resolveActiveTemplateGalleryKey(readDefaultResidentialPreset(), readDefaultSalesPremiumStyle())
   );
   const [previewItem, setPreviewItem] = useState<ProposalTemplateGalleryItem | null>(null);
 
@@ -54,7 +59,7 @@ export function ProposalTemplateGallery({ markSaved }: Props) {
 
   const sync = useCallback(() => {
     setActiveKey(
-      resolveActiveGalleryKey(readDefaultResidentialPreset(), readDefaultSalesPremiumStyle())
+      resolveActiveTemplateGalleryKey(readDefaultResidentialPreset(), readDefaultSalesPremiumStyle())
     );
   }, []);
 
@@ -63,9 +68,11 @@ export function ProposalTemplateGallery({ markSaved }: Props) {
     sync();
     window.addEventListener(PROPOSAL_DEFAULT_PRESET_UPDATED_EVENT, sync);
     window.addEventListener(SALES_PREMIUM_STYLE_UPDATED_EVENT, sync);
+    window.addEventListener(PROPOSAL_TEMPLATE_GALLERY_KEY_UPDATED_EVENT, sync);
     return () => {
       window.removeEventListener(PROPOSAL_DEFAULT_PRESET_UPDATED_EVENT, sync);
       window.removeEventListener(SALES_PREMIUM_STYLE_UPDATED_EVENT, sync);
+      window.removeEventListener(PROPOSAL_TEMPLATE_GALLERY_KEY_UPDATED_EVENT, sync);
     };
   }, [sync]);
 
@@ -97,6 +104,7 @@ export function ProposalTemplateGallery({ markSaved }: Props) {
     if (item.salesPremiumStyle) {
       writeDefaultSalesPremiumStyle(item.salesPremiumStyle);
     }
+    writeDefaultGalleryKey(item.key);
     setActiveKey(item.key);
     markSaved(`Default residential theme set to ${item.name}. New proposals will use this format.`);
   }
@@ -138,9 +146,13 @@ export function ProposalTemplateGallery({ markSaved }: Props) {
         {activeCategoryMeta.description}
         {category === "residential" ? (
           <span className="block mt-1 text-slate-500">
-            Showing {residentialCount} themes — Golden, Apple Pro, Horizon, Ember, plus Ledger & Classic.
+            {residentialCount} themes — {galleryThemeNames("residential")}.
           </span>
-        ) : null}
+        ) : (
+          <span className="block mt-1 text-slate-500">
+            {commercialCount} theme{commercialCount === 1 ? "" : "s"} — {galleryThemeNames("commercial")}.
+          </span>
+        )}
       </p>
 
       <div
