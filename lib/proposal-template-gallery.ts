@@ -1,7 +1,7 @@
 import type { ResidentialTemplatePresetId } from "@/lib/proposal-default-preset-storage";
 
 /** Visual codename for thumbnail CSS — not shown as a separate selectable option. */
-export type ProposalTemplateThumbnailVariant = "onyx" | "pearl" | "ledger" | "classic";
+export type ProposalTemplateThumbnailVariant = "golden" | "pearl" | "ledger" | "classic";
 
 export type ProposalTemplateGalleryItem = {
   id: ResidentialTemplatePresetId;
@@ -15,8 +15,8 @@ export const PROPOSAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
   {
     id: "residential_executive",
     name: "Executive Premium",
-    description: "Onyx split-page layout for high-trust clients.",
-    thumbnailVariant: "onyx",
+    description: "Champagne gold editorial layout for high-trust clients.",
+    thumbnailVariant: "golden",
   },
   {
     id: "residential_sales_premium",

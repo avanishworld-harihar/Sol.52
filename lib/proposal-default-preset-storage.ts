@@ -27,7 +27,7 @@ export const RESIDENTIAL_TEMPLATE_OPTIONS: ResidentialTemplateOption[] = [
   {
     id: "residential_executive",
     label: "Executive Premium",
-    subtitle: "Onyx split-page layout for high-trust clients.",
+    subtitle: "Champagne gold editorial layout for high-trust clients.",
   },
   {
     id: "residential_sales_premium",

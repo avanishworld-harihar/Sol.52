@@ -9,7 +9,7 @@ import { EpEconomicsPage } from "@/components/proposals/executive-premium-editor
 import { EpImpactPage } from "@/components/proposals/executive-premium-editorial/pages/ep-impact-page";
 import { EpBomPage } from "@/components/proposals/executive-premium-editorial/pages/ep-bom-page";
 import { EpExecutionPage } from "@/components/proposals/executive-premium-editorial/pages/ep-execution-page";
-import "@/components/proposals/executive-premium-editorial/ep-editorial.css";
+import "@/components/proposals/executive-premium-editorial/ep-golden.css";
 
 export type ExecutivePremiumEditorialRendererProps = {
   pptInput: PremiumProposalPptInput;
@@ -17,8 +17,7 @@ export type ExecutivePremiumEditorialRendererProps = {
 };
 
 /**
- * Executive Premium — Editorial Split-Page (6-page HNI document).
- * Replaces legacy NextGen block-style renderer.
+ * Executive Premium — Golden / Elite Luxury (6-page HNI document).
  */
 export function ExecutivePremiumEditorialRenderer({
   pptInput,
@@ -27,23 +26,21 @@ export function ExecutivePremiumEditorialRenderer({
   const model = transformToEditorialModel(pptInput, summary);
 
   return (
-    <div className="ep-editorial-root w-full">
+    <div className="ep-golden-root w-full">
       <EpProposalShell>
-        <div className="ep-ed-doc-canvas">
+        <div className="ep-gl-doc-canvas">
           <EpCoverPage
             data={{
-              brand_primary: model.brand_primary,
-              brand_secondary: model.brand_secondary,
+              brand_display: model.brand_display,
               customer_name: model.customer_name,
               location_line: model.location_line,
-              system_size_line: model.system_size_line,
-              cover_tagline: model.cover_tagline,
+              asset_profile_line: model.asset_profile_line,
             }}
           />
           <EpBillPage data={model.bill} />
           <EpEconomicsPage data={model.economics} />
           <EpImpactPage data={model.impact} />
-          <EpBomPage flowNodes={model.architecture.flow_nodes} bomRows={model.architecture.bom_rows} />
+          <EpBomPage bomRows={model.architecture.bom_rows} />
           <EpExecutionPage data={model.execution} />
         </div>
       </EpProposalShell>

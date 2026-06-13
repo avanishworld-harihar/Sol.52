@@ -1,0 +1,638 @@
+/**
+ * Executive Premium — Golden / Elite Luxury (WeasyPrint-aligned).
+ * Scoped under `.ep-golden-root`.
+ */
+
+.ep-golden-root {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+  background-color: #f3f4f6;
+  color: #2c3e50;
+}
+
+.ep-golden-root .ep-gl-doc-canvas {
+  max-width: 210mm;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.ep-golden-root .ep-gl-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  border-bottom: 1px solid #e5e7eb;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+}
+
+.ep-golden-root .ep-gl-toolbar-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  max-width: 210mm;
+  margin: 0 auto;
+  padding: 12px 16px;
+}
+
+.ep-golden-root .ep-gl-toolbar-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.ep-golden-root .ep-gl-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 9999px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #111827;
+  cursor: pointer;
+}
+
+.ep-golden-root .ep-gl-page {
+  width: 210mm;
+  height: 260mm;
+  position: relative;
+  overflow: hidden;
+  background-color: #fdfcf9;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.ep-golden-root .ep-gl-luxury-border {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 1px solid rgba(181, 154, 87, 0.2);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.ep-golden-root .ep-gl-page-body {
+  padding: 20mm;
+  position: relative;
+  z-index: 5;
+  height: 100%;
+}
+
+.ep-golden-root .ep-gl-cover-page {
+  display: table;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  position: relative;
+  z-index: 5;
+}
+
+.ep-golden-root .ep-gl-cover-content {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.ep-golden-root h1.ep-gl-h1 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 40pt;
+  font-weight: 400;
+  color: #111e38;
+  margin: 0 0 10px 0;
+  line-height: 1.1;
+  letter-spacing: -1px;
+}
+
+.ep-golden-root .ep-gl-section-tag {
+  font-size: 9pt;
+  font-weight: 600;
+  color: #b59a57;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 20px;
+  display: inline-block;
+}
+
+.ep-golden-root .ep-gl-lead {
+  font-size: 14pt;
+  color: #4a5568;
+  font-weight: 300;
+  line-height: 1.6;
+  margin-bottom: 30px;
+  max-width: 90%;
+}
+
+.ep-golden-root .ep-gl-brand-name {
+  font-size: 12pt;
+  font-weight: 700;
+  letter-spacing: 6px;
+  color: #b59a57;
+  text-transform: uppercase;
+  margin-bottom: 50px;
+}
+
+.ep-golden-root .ep-gl-cover-title {
+  font-size: 50pt;
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  color: #111e38;
+  margin-bottom: 30px;
+  line-height: 1;
+  font-weight: 400;
+}
+
+.ep-golden-root .ep-gl-cover-divider {
+  width: 1px;
+  height: 60px;
+  background-color: #b59a57;
+  margin: 0 auto 30px;
+}
+
+.ep-golden-root .ep-gl-prepared-for {
+  font-size: 10pt;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 10px;
+}
+
+.ep-golden-root .ep-gl-client-name {
+  font-size: 24pt;
+  font-family: Georgia, "Times New Roman", serif;
+  color: #111e38;
+  margin: 0;
+}
+
+.ep-golden-root .ep-gl-audit-metrics-row {
+  display: table;
+  width: 100%;
+  margin-bottom: 25px;
+}
+
+.ep-golden-root .ep-gl-audit-metric-box {
+  display: table-cell;
+  width: 33.33%;
+  border-right: 1px solid rgba(181, 154, 87, 0.3);
+  padding-right: 15px;
+  vertical-align: top;
+}
+
+.ep-golden-root .ep-gl-audit-metric-box:nth-child(2) {
+  padding-left: 15px;
+}
+
+.ep-golden-root .ep-gl-audit-metric-box:last-child {
+  border-right: none;
+  padding-right: 0;
+  padding-left: 15px;
+}
+
+.ep-golden-root .ep-gl-huge-number {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 28pt;
+  color: #111e38;
+  margin: 0;
+  line-height: 1;
+}
+
+.ep-golden-root .ep-gl-huge-number.gold {
+  color: #b59a57;
+}
+
+.ep-golden-root .ep-gl-huge-number.green {
+  color: #10b981;
+}
+
+.ep-golden-root .ep-gl-huge-label {
+  font-size: 8pt;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #718096;
+  margin-top: 8px;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.ep-golden-root .ep-gl-chart-container {
+  width: 100%;
+  height: 100px;
+  border-bottom: 1px solid rgba(181, 154, 87, 0.3);
+  position: relative;
+  margin-bottom: 25px;
+}
+
+.ep-golden-root .ep-gl-thin-bar-wrapper {
+  float: left;
+  width: 8.33%;
+  height: 100%;
+  position: relative;
+}
+
+.ep-golden-root .ep-gl-thin-bar {
+  width: 6px;
+  background-color: #e2e8f0;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 2px 2px 0 0;
+}
+
+.ep-golden-root .ep-gl-thin-bar.highlight {
+  background-color: #b59a57;
+}
+
+.ep-golden-root .ep-gl-chart-label {
+  position: absolute;
+  bottom: -20px;
+  width: 100%;
+  text-align: center;
+  font-size: 7pt;
+  color: #718096;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.ep-golden-root .ep-gl-clearfix::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+.ep-golden-root .ep-gl-invoice-table {
+  width: 100%;
+  font-size: 8.5pt;
+  border-collapse: collapse;
+  margin-top: 5px;
+}
+
+.ep-golden-root .ep-gl-invoice-table th {
+  text-align: right;
+  padding: 4px 2px;
+  border-bottom: 1px solid #111e38;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 7pt;
+  color: #b59a57;
+  letter-spacing: 0.5px;
+}
+
+.ep-golden-root .ep-gl-invoice-table th:first-child {
+  text-align: left;
+}
+
+.ep-golden-root .ep-gl-invoice-table td {
+  text-align: right;
+  padding: 4px 2px;
+  border-bottom: 1px solid #f1f5f9;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 9.5pt;
+  color: #4a5568;
+}
+
+.ep-golden-root .ep-gl-invoice-table td:first-child {
+  text-align: left;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 8.5pt;
+  font-weight: 500;
+}
+
+.ep-golden-root .ep-gl-invoice-table .ep-gl-total-row td {
+  border-top: 1px solid #111e38;
+  border-bottom: none;
+  font-weight: 600;
+  color: #111e38;
+  font-size: 10pt;
+  padding-top: 6px;
+}
+
+.ep-golden-root .ep-gl-net-gold {
+  color: #b59a57 !important;
+  font-weight: 600;
+}
+
+.ep-golden-root .ep-gl-grid-2 {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+  margin-top: 10px;
+}
+
+.ep-golden-root .ep-gl-col-half {
+  display: table-cell;
+  width: 50%;
+  vertical-align: top;
+}
+
+.ep-golden-root .ep-gl-col-left {
+  padding-right: 30px;
+}
+
+.ep-golden-root .ep-gl-col-right {
+  padding-left: 30px;
+}
+
+.ep-golden-root .ep-gl-waterfall-row {
+  margin-bottom: 25px;
+}
+
+.ep-golden-root .ep-gl-waterfall-label {
+  font-size: 9.5pt;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #718096;
+  margin-bottom: 5px;
+}
+
+.ep-golden-root .ep-gl-waterfall-label.gold {
+  color: #b59a57;
+}
+
+.ep-golden-root .ep-gl-waterfall-value {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 24pt;
+  color: #111e38;
+  line-height: 1;
+  margin-bottom: 5px;
+}
+
+.ep-golden-root .ep-gl-waterfall-value.green {
+  color: #10b981;
+}
+
+.ep-golden-root .ep-gl-waterfall-value.large {
+  font-size: 32pt;
+}
+
+.ep-golden-root .ep-gl-waterfall-sub {
+  font-size: 9pt;
+  color: #a0aec0;
+  margin-top: 4px;
+}
+
+.ep-golden-root .ep-gl-waterfall-line {
+  width: 100%;
+  height: 1px;
+  background-color: rgba(181, 154, 87, 0.3);
+  margin: 15px 0;
+}
+
+.ep-golden-root .ep-gl-emi-container {
+  background-color: #ffffff;
+  border: 1px solid rgba(181, 154, 87, 0.2);
+  padding: 25px;
+  margin-top: 20px;
+}
+
+.ep-golden-root .ep-gl-emi-title {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 18pt;
+  color: #111e38;
+  margin: 0 0 15px 0;
+  font-weight: 400;
+}
+
+.ep-golden-root .ep-gl-emi-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ep-golden-root .ep-gl-emi-table th {
+  text-align: left;
+  padding: 10px 0;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 8pt;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+.ep-golden-root .ep-gl-emi-table th:nth-child(2) {
+  text-align: center;
+}
+
+.ep-golden-root .ep-gl-emi-table th:last-child {
+  text-align: right;
+}
+
+.ep-golden-root .ep-gl-emi-table td {
+  padding: 12px 0;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 9.5pt;
+  color: #4a5568;
+}
+
+.ep-golden-root .ep-gl-emi-table td:first-child {
+  font-weight: 600;
+  color: #111e38;
+}
+
+.ep-golden-root .ep-gl-emi-table td:nth-child(2) {
+  text-align: center;
+}
+
+.ep-golden-root .ep-gl-emi-table td:last-child {
+  text-align: right;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11pt;
+  font-weight: 600;
+  color: #b59a57;
+}
+
+.ep-golden-root .ep-gl-impact-container {
+  text-align: center;
+  margin-top: 60px;
+}
+
+.ep-golden-root .ep-gl-impact-block {
+  margin-bottom: 50px;
+}
+
+.ep-golden-root .ep-gl-impact-number {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 54pt;
+  color: #b59a57;
+  line-height: 1;
+  margin: 0;
+}
+
+.ep-golden-root .ep-gl-impact-label {
+  font-size: 12pt;
+  color: #111e38;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-top: 10px;
+  margin-bottom: 15px;
+}
+
+.ep-golden-root .ep-gl-impact-desc {
+  font-size: 11pt;
+  color: #4a5568;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.ep-golden-root .ep-gl-impact-divider {
+  width: 60px;
+  height: 2px;
+  background-color: #b59a57;
+  margin: 0 auto;
+}
+
+.ep-golden-root .ep-gl-manifest-list {
+  display: table;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.ep-golden-root .ep-gl-manifest-row {
+  display: table-row;
+}
+
+.ep-golden-root .ep-gl-manifest-left {
+  display: table-cell;
+  width: 35%;
+  padding: 15px 15px 15px 0;
+  border-bottom: 1px solid rgba(181, 154, 87, 0.2);
+  vertical-align: middle;
+}
+
+.ep-golden-root .ep-gl-manifest-right {
+  display: table-cell;
+  width: 65%;
+  padding: 15px 0;
+  border-bottom: 1px solid rgba(181, 154, 87, 0.2);
+  vertical-align: middle;
+}
+
+.ep-golden-root .ep-gl-manifest-comp {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14pt;
+  color: #111e38;
+  margin: 0 0 4px 0;
+}
+
+.ep-golden-root .ep-gl-manifest-spec {
+  font-size: 10pt;
+  color: #4a5568;
+  margin: 0 0 6px 0;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+.ep-golden-root .ep-gl-manifest-desc {
+  font-size: 10pt;
+  color: #4a5568;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.ep-golden-root .ep-gl-manifest-warr {
+  font-size: 7.5pt;
+  font-weight: 600;
+  color: #b59a57;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0;
+  display: inline-block;
+  border: 1px solid #b59a57;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.ep-golden-root .ep-gl-exec-step {
+  margin-bottom: 25px;
+  position: relative;
+  padding-left: 45px;
+}
+
+.ep-golden-root .ep-gl-exec-num {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 20pt;
+  color: #b59a57;
+  line-height: 1;
+}
+
+.ep-golden-root .ep-gl-exec-title {
+  font-size: 11pt;
+  font-weight: 600;
+  color: #111e38;
+  margin: 0 0 4px 0;
+  padding-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.ep-golden-root .ep-gl-exec-desc {
+  font-size: 10pt;
+  color: #4a5568;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.ep-golden-root .ep-gl-receipt-card {
+  border: 1px solid #111e38;
+  padding: 25px;
+  margin-top: 10px;
+  background-color: #ffffff;
+}
+
+.ep-golden-root .ep-gl-receipt-title {
+  font-size: 9pt;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #111e38;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #111e38;
+  padding-bottom: 8px;
+}
+
+@media print {
+  .ep-golden-root {
+    background: #fdfcf9;
+  }
+
+  .ep-golden-root .ep-gl-toolbar {
+    display: none !important;
+  }
+
+  .ep-golden-root .ep-gl-doc-canvas {
+    padding: 0;
+    max-width: none;
+  }
+
+  .ep-golden-root .ep-gl-page {
+    margin: 0;
+    box-shadow: none;
+    page-break-after: always;
+    break-after: page;
+  }
+
+  .ep-golden-root .ep-gl-page:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  @page {
+    size: A4;
+    margin: 15mm;
+    background-color: #fdfcf9;
+  }
+}

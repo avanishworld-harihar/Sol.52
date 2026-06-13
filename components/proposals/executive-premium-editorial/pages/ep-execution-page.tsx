@@ -1,5 +1,5 @@
-import { EpSplitPage } from "@/components/proposals/executive-premium-editorial/primitives/ep-split-page";
-import { fmtInr } from "@/lib/executive-premium-editorial/format";
+import { EpLuxuryPage } from "@/components/proposals/executive-premium-editorial/primitives/ep-luxury-page";
+import { fmtInrSpaced } from "@/lib/executive-premium-editorial/format";
 import type { ExecutivePremiumEditorialModel } from "@/lib/executive-premium-editorial/types";
 
 type Props = {
@@ -8,102 +8,120 @@ type Props = {
 
 export function EpExecutionPage({ data }: Props) {
   return (
-    <EpSplitPage
-      sidebar={
-        <>
-          <h2>05. Next Steps</h2>
-          <div style={{ marginTop: "40px" }}>
-            <p
+    <EpLuxuryPage>
+      <div className="ep-gl-section-tag">05 / Execution & Settlement</div>
+      <h1 className="ep-gl-h1">Installation Process.</h1>
+      <p className="ep-gl-lead">We handle all the paperwork and hard work so you can simply enjoy free electricity.</p>
+
+      <div className="ep-gl-grid-2">
+        <div className="ep-gl-col-half ep-gl-col-left">
+          {data.steps.map((step, i) => (
+            <div
+              key={step.num}
+              className="ep-gl-exec-step"
+              style={i === data.steps.length - 1 ? { marginBottom: 0 } : undefined}
+            >
+              <span className="ep-gl-exec-num">{step.num}</span>
+              <p className="ep-gl-exec-title">{step.title}</p>
+              <p className="ep-gl-exec-desc">{step.description}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="ep-gl-col-half ep-gl-col-right">
+          <div className="ep-gl-receipt-card">
+            <p className="ep-gl-receipt-title">Payment Schedule</p>
+            <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "25px" }}>
+              <tbody>
+                {data.payments.map((p, i) => {
+                  const isLast = p.is_total;
+                  const borderBottom = i === data.payments.length - 2 ? "1px solid #e2e8f0" : undefined;
+                  const padding = isLast ? "10px 0 0 0" : "6px 0";
+                  return (
+                    <tr key={p.label}>
+                      <td
+                        style={{
+                          padding,
+                          borderBottom,
+                          fontSize: isLast ? "10pt" : "9.5pt",
+                          fontWeight: isLast ? 600 : 400,
+                          color: "#4a5568",
+                          paddingBottom: i === data.payments.length - 2 ? "10px" : undefined,
+                        }}
+                      >
+                        {p.label}{" "}
+                        <span style={{ fontSize: "8pt", color: "#a0aec0", fontWeight: 400 }}>({p.pct_label})</span>
+                      </td>
+                      <td
+                        style={{
+                          padding,
+                          borderBottom,
+                          textAlign: "right",
+                          fontFamily: "monospace",
+                          fontSize: isLast ? "12pt" : "11pt",
+                          fontWeight: 600,
+                          color: isLast ? "#b59a57" : "#111e38",
+                          paddingBottom: i === data.payments.length - 2 ? "10px" : undefined,
+                        }}
+                      >
+                        {fmtInrSpaced(p.amount_inr)}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            <p className="ep-gl-receipt-title">Secure Routing Details</p>
+            <div style={{ backgroundColor: "#f8fafc", border: "1px solid #e2e8f0", padding: "15px" }}>
+              <p style={{ fontSize: "7.5pt", color: "#718096", textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 2px 0" }}>
+                Beneficiary
+              </p>
+              <p style={{ fontSize: "11pt", color: "#111e38", fontFamily: "Georgia, serif", margin: "0 0 10px 0" }}>
+                {data.company}
+              </p>
+              <p style={{ fontSize: "7.5pt", color: "#718096", textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 2px 0" }}>
+                Account No.
+              </p>
+              <p style={{ fontSize: "11pt", color: "#111e38", fontFamily: "monospace", fontWeight: 600, margin: "0 0 10px 0" }}>
+                {data.account_number}
+              </p>
+              <p style={{ fontSize: "7.5pt", color: "#718096", textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 2px 0" }}>
+                IFSC Code
+              </p>
+              <p style={{ fontSize: "11pt", color: "#111e38", fontFamily: "monospace", fontWeight: 600, margin: 0 }}>
+                {data.ifsc}
+              </p>
+            </div>
+
+            <div
               style={{
-                fontSize: "8pt",
-                color: "#888",
-                textTransform: "uppercase",
-                letterSpacing: "1px",
-                margin: "0 0 5px 0",
+                marginTop: "15px",
+                border: "1px dashed #b59a57",
+                padding: "12px",
+                textAlign: "center",
+                backgroundColor: "#fffaf0",
               }}
             >
-              Company
-            </p>
-            <p style={{ fontSize: "11pt", color: "#FFF", fontWeight: 600, margin: "0 0 25px 0" }}>{data.company}</p>
-
-            <p
-              style={{
-                fontSize: "8pt",
-                color: "#888",
-                textTransform: "uppercase",
-                letterSpacing: "1px",
-                margin: "0 0 5px 0",
-              }}
-            >
-              Account Number
-            </p>
-            <p style={{ fontSize: "12pt", color: "#FFF", fontFamily: "monospace", margin: "0 0 25px 0" }}>
-              {data.account_number}
-            </p>
-
-            <p
-              style={{
-                fontSize: "8pt",
-                color: "#888",
-                textTransform: "uppercase",
-                letterSpacing: "1px",
-                margin: "0 0 5px 0",
-              }}
-            >
-              IFSC Code
-            </p>
-            <p style={{ fontSize: "12pt", color: "#FFF", fontFamily: "monospace", margin: "0 0 25px 0" }}>
-              {data.ifsc}
-            </p>
-
-            <div style={{ borderTop: "1px solid #333", paddingTop: "20px" }}>
               <p
                 style={{
                   fontSize: "8pt",
-                  color: "#B87333",
+                  color: "#b59a57",
                   textTransform: "uppercase",
                   letterSpacing: "1px",
+                  fontWeight: 600,
                   margin: "0 0 5px 0",
                 }}
               >
-                UPI ID
+                Express UPI Payment
               </p>
-              <p style={{ fontSize: "10pt", color: "#FFF", margin: 0 }}>{data.upi_id}</p>
+              <p style={{ fontSize: "12pt", color: "#111e38", fontFamily: "monospace", fontWeight: 600, margin: 0 }}>
+                {data.upi_id}
+              </p>
             </div>
           </div>
-        </>
-      }
-    >
-      <h1 className="ep-ed-h1">Installation Process.</h1>
-      <p className="ep-ed-subtitle">We handle all the paperwork and hard work for you.</p>
-
-      <div style={{ marginTop: "50px" }}>
-        {data.steps.map((step) => (
-          <div key={step.num} className="ep-ed-process-item">
-            <div className="ep-ed-process-num">{step.num}</div>
-            <div className="ep-ed-process-content">
-              <p className="ep-ed-process-title">{step.title}</p>
-              <p className="ep-ed-process-desc">{step.description}</p>
-            </div>
-          </div>
-        ))}
+        </div>
       </div>
-
-      <table className="ep-ed-clean-receipt">
-        <thead>
-          <tr>
-            <th colSpan={2}>Payment Schedule</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.payments.map((p) => (
-            <tr key={p.label} className={p.is_total ? "ep-ed-total-tr" : undefined}>
-              <td style={p.is_total ? { color: "#1A1A1A" } : undefined}>{p.label}</td>
-              <td>{fmtInr(p.amount_inr)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </EpSplitPage>
+    </EpLuxuryPage>
   );
 }

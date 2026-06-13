@@ -1,4 +1,4 @@
-import { EpSplitPage } from "@/components/proposals/executive-premium-editorial/primitives/ep-split-page";
+import { EpLuxuryPage } from "@/components/proposals/executive-premium-editorial/primitives/ep-luxury-page";
 import { fmtInr } from "@/lib/executive-premium-editorial/format";
 import type { ExecutivePremiumEditorialModel } from "@/lib/executive-premium-editorial/types";
 
@@ -8,60 +8,53 @@ type Props = {
 
 export function EpBillPage({ data }: Props) {
   return (
-    <EpSplitPage
-      sidebar={
-        <>
-          <h2>01. Your Bill Audit</h2>
-          <p className="ep-ed-huge-data">
-            {data.summer_trap_pct}
-            <span>%</span>
-          </p>
-          <p className="ep-ed-data-label">The Summer Bill</p>
-          <p style={{ fontSize: "9pt", color: "#888", marginTop: "-20px", marginBottom: "40px", lineHeight: 1.4 }}>
-            You pay more than 35% of your yearly bill in just 4 months (Apr-Jul).
-          </p>
-          <p className="ep-ed-huge-data">
-            ₹{data.fixed_charges_display}
-            <span>k</span>
-          </p>
-          <p className="ep-ed-data-label">Fixed Charges</p>
-          <p style={{ fontSize: "9pt", color: "#888", marginTop: "-20px", marginBottom: "40px", lineHeight: 1.4 }}>
-            The amount you must pay to the electricity board even if you use no power.
-          </p>
-          <p className="ep-ed-huge-data ep-ed-copper-text">
-            {data.solar_savings_pct}
-            <span>%</span>
-          </p>
-          <p className="ep-ed-data-label ep-ed-copper-text">Solar Savings</p>
-          <p style={{ fontSize: "9pt", color: "#888", marginTop: "-20px", lineHeight: 1.4 }}>
-            How much of your current bill will be completely wiped out by solar.
-          </p>
-        </>
-      }
-    >
-      <h1 className="ep-ed-h1">Electricity Bill Analysis.</h1>
-      <p className="ep-ed-subtitle">A clear breakdown of what you paid for electricity last year.</p>
+    <EpLuxuryPage>
+      <div className="ep-gl-section-tag">01 / Electrical Audit</div>
+      <h1 className="ep-gl-h1">Your Energy Audit.</h1>
+      <p className="ep-gl-lead" style={{ marginBottom: "20px" }}>
+        A clear breakdown of what you paid for electricity last year based on your MP Smart Billing usage.
+      </p>
 
-      <div className="ep-ed-chart-container ep-ed-clearfix">
+      <div className="ep-gl-audit-metrics-row">
+        <div className="ep-gl-audit-metric-box">
+          <p className="ep-gl-huge-number gold">
+            {data.summer_trap_pct}%
+          </p>
+          <p className="ep-gl-huge-label">The Summer Bill</p>
+          <p style={{ fontSize: "8.5pt", color: "#4a5568", lineHeight: 1.3 }}>Paid in 4 months (Apr-Jul)</p>
+        </div>
+        <div className="ep-gl-audit-metric-box">
+          <p className="ep-gl-huge-number">₹{data.fixed_charges_display}</p>
+          <p className="ep-gl-huge-label">Fixed Liability</p>
+          <p style={{ fontSize: "8.5pt", color: "#4a5568", lineHeight: 1.3 }}>Mandatory baseline cost</p>
+        </div>
+        <div className="ep-gl-audit-metric-box">
+          <p className="ep-gl-huge-number green">{data.solar_savings_pct}%</p>
+          <p className="ep-gl-huge-label">Solar Savings</p>
+          <p style={{ fontSize: "8.5pt", color: "#4a5568", lineHeight: 1.3 }}>Estimated bill reduction</p>
+        </div>
+      </div>
+
+      <div className="ep-gl-chart-container ep-gl-clearfix">
         {data.months.map((m) => (
-          <div key={m.label} className="ep-ed-thin-bar-wrapper">
+          <div key={m.label} className="ep-gl-thin-bar-wrapper">
             <div
-              className={`ep-ed-thin-bar${m.is_summer_peak ? " alert" : ""}`}
+              className={`ep-gl-thin-bar${m.is_summer_peak ? " highlight" : ""}`}
               style={{ height: `${m.bar_height_pct}%` }}
             />
-            <div className="ep-ed-chart-label">{m.label}</div>
+            <div className="ep-gl-chart-label">{m.label}</div>
           </div>
         ))}
       </div>
 
-      <table className="ep-ed-invoice-table">
+      <table className="ep-gl-invoice-table">
         <thead>
           <tr>
             <th>Month</th>
             <th>Units</th>
-            <th>Energy</th>
-            <th>Fixed</th>
-            <th>Tax</th>
+            <th>Energy (₹)</th>
+            <th>Fixed (₹)</th>
+            <th>Duty (₹)</th>
             <th>Net Bill (₹)</th>
           </tr>
         </thead>
@@ -72,22 +65,23 @@ export function EpBillPage({ data }: Props) {
               <td>{m.units}</td>
               <td>{fmtInr(m.energy_inr)}</td>
               <td>{fmtInr(m.fixed_inr)}</td>
-              <td>{fmtInr(m.tax_inr)}</td>
-              <td className={m.is_summer_peak ? "ep-ed-red-text" : undefined} style={m.is_summer_peak ? { fontWeight: "bold" } : undefined}>
-                {fmtInr(m.net_inr)}
-              </td>
+              <td>{fmtInr(m.duty_inr)}</td>
+              <td className={m.highlight_net ? "ep-gl-net-gold" : undefined}>{fmtInr(m.net_inr)}</td>
             </tr>
           ))}
-          <tr className="ep-ed-total-row">
+          <tr className="ep-gl-total-row">
             <td>Total</td>
             <td>{data.totals.units}</td>
             <td>{fmtInr(data.totals.energy_inr)}</td>
             <td>{fmtInr(data.totals.fixed_inr)}</td>
-            <td>{fmtInr(data.totals.tax_inr)}</td>
-            <td className="ep-ed-copper-text">{fmtInr(data.totals.net_inr)}</td>
+            <td>{fmtInr(data.totals.duty_inr)}</td>
+            <td className="ep-gl-net-gold">{fmtInr(data.totals.net_inr)}</td>
           </tr>
         </tbody>
       </table>
-    </EpSplitPage>
+      <p style={{ fontSize: "7.5pt", color: "#a0aec0", textAlign: "right", marginTop: "5px", fontStyle: "italic" }}>
+        *(Subsidy) adjusted before Net Bill
+      </p>
+    </EpLuxuryPage>
   );
 }
