@@ -138,7 +138,7 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "bill",
-    /** Legacy block IDs — not used by ExecutivePremiumNextgenRenderer (MVP). */
+    /** Legacy block IDs — not used by Editorial Split-Page renderer. */
     default_blocks: [],
     optional_blocks: [],
   },
