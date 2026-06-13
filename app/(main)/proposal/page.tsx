@@ -61,6 +61,7 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "rea
 import { useRouter, useSearchParams } from "next/navigation";
 import { parsePrefillFromSearchParams } from "@/lib/quick-actions";
 import { ProposalPresetPicker } from "@/components/proposals/os/preset-picker";
+import { readDefaultResidentialPreset } from "@/lib/proposal-default-preset-storage";
 import { readDefaultSalesPremiumStyle } from "@/lib/sales-premium-styles";
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 import { ProposalOSHeader } from "@/components/proposals/os/proposal-os-header";
