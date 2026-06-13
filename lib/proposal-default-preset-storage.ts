@@ -32,7 +32,7 @@ export const RESIDENTIAL_TEMPLATE_OPTIONS: ResidentialTemplateOption[] = [
   {
     id: "residential_sales_premium",
     label: "Sales Premium",
-    subtitle: "Pearl, Apple Pro, Horizon & Ember theme family.",
+    subtitle: "Pearl, Slate, Horizon & Ember theme family.",
   },
   {
     id: "residential_bank_loan",

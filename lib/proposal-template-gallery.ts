@@ -68,15 +68,15 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
     thumbnailVariant: "pearl",
   },
   {
-    key: "apple_pro",
+    key: "slate",
     presetId: "residential_sales_premium",
     salesPremiumStyle: "institutional",
     category: "residential",
-    name: "Apple Pro",
+    name: "Slate",
     description:
-      "Ultra-premium Apple/Tesla HNI deck — hero cover, bill chart, investment flow & BOM.",
+      "Ultra-premium HNI deck — hero cover, bill chart, investment flow, BOM & execution.",
     recommended: true,
-    thumbnailVariant: "apple_pro",
+    thumbnailVariant: "slate",
   },
   {
     key: "horizon",
@@ -166,9 +166,9 @@ export function resolveActiveGalleryKey(
   if (presetId === "residential_sales_premium") {
     if (salesPremiumStyle === "journey") return "horizon";
     if (salesPremiumStyle === "savings_focus") return "ember";
-    return "apple_pro";
+    return "slate";
   }
-  return "apple_pro";
+  return "slate";
 }
 
 export function galleryItemById(id: ProposalPresetId): ProposalTemplateGalleryItem | undefined {

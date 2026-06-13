@@ -22,7 +22,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
     >
       {variant === "golden" ? <GoldenThumb size={size} /> : null}
       {variant === "pearl" ? <PearlThumb size={size} /> : null}
-      {variant === "apple_pro" ? <AppleProThumb size={size} /> : null}
+      {variant === "slate" ? <SlateThumb size={size} /> : null}
       {variant === "horizon" ? <HorizonThumb size={size} /> : null}
       {variant === "ember" ? <EmberThumb size={size} /> : null}
       {variant === "ledger" ? <LedgerThumb size={size} /> : null}
@@ -31,7 +31,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
       {![
         "golden",
         "pearl",
-        "apple_pro",
+        "slate",
         "horizon",
         "ember",
         "ledger",
@@ -131,7 +131,7 @@ function GenericThumb({ size, label }: { size: "card" | "preview"; label: string
   );
 }
 
-function AppleProThumb({ size }: { size: "card" | "preview" }) {
+function SlateThumb({ size }: { size: "card" | "preview" }) {
   const titleSize = size === "preview" ? "text-[9px]" : "text-[4px]";
   const heroSize = size === "preview" ? "text-[7px]" : "text-[3px]";
   const labelSize = size === "preview" ? "text-[5px]" : "text-[2.5px]";
