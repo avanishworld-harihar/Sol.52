@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import type { SalesPremiumStyleId } from "@/lib/sales-premium-styles";
 
@@ -8,12 +9,12 @@ type Props = {
   className?: string;
 };
 
-/** Mini page mockup for Gamma-style template thumbnails. */
+/** Gamma-style square theme preview — outer swatch + inner mini slide. */
 export function SalesPremiumStyleThumbnail({ styleId, className }: Props) {
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-lg border border-slate-200/90 bg-white shadow-sm dark:border-white/15 dark:bg-slate-900",
+        "relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-lg",
         className
       )}
       aria-hidden
@@ -25,71 +26,68 @@ export function SalesPremiumStyleThumbnail({ styleId, className }: Props) {
   );
 }
 
+function MiniSlide({
+  bg,
+  children,
+}: {
+  bg: string;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      className="flex h-[58%] w-[72%] flex-col rounded-[3px] border border-black/5 bg-white p-[7%] shadow-sm"
+      style={{ backgroundColor: bg === "white" ? "#fff" : bg }}
+    >
+      {children}
+    </div>
+  );
+}
+
 function InstitutionalThumb() {
   return (
-    <div className="flex h-full flex-col p-[8%] text-left">
-      <div className="text-[5px] font-bold tracking-[0.2em] text-slate-800">
-        HARIHAR <span className="font-light text-slate-400">SOLAR</span>
-      </div>
-      <div className="mt-[10%] text-[3px] font-semibold uppercase tracking-wider text-blue-600">
-        Energy masterplan
-      </div>
-      <div className="mt-[4%] text-[7px] font-semibold leading-tight text-slate-900">Customer Name</div>
-      <div className="mt-[6%] h-[1px] w-[18%] bg-blue-600" />
-      <div className="mt-[6%] space-y-[3px]">
-        <div className="h-[2px] w-[70%] rounded-full bg-slate-200" />
-        <div className="h-[2px] w-[55%] rounded-full bg-slate-100" />
-      </div>
-      <div className="mt-auto flex justify-between pt-[8%] text-[2.5px] text-slate-400">
-        <span>Location</span>
-        <span>3 kW</span>
-      </div>
+    <div className="flex h-full w-full items-center justify-center bg-[#f4f4f5]">
+      <MiniSlide bg="white">
+        <div className="text-[5px] font-bold tracking-[0.15em] text-slate-800">TITLE</div>
+        <div className="mt-[8%] h-[1px] w-[22%] bg-blue-600" />
+        <div className="mt-[10%] space-y-[5%]">
+          <div className="h-[1.5px] w-full rounded-full bg-slate-200" />
+          <div className="h-[1.5px] w-[75%] rounded-full bg-slate-100" />
+        </div>
+        <div className="mt-auto text-[4px] text-blue-600">Body &amp; link</div>
+      </MiniSlide>
     </div>
   );
 }
 
 function JourneyThumb() {
   return (
-    <div className="flex h-full flex-col">
-      <div className="h-[28%] bg-gradient-to-br from-teal-500 via-emerald-500 to-sky-600" />
-      <div className="flex flex-1 flex-col gap-[6%] p-[8%]">
-        <div className="h-[8%] rounded-sm bg-slate-100" />
-        <div className="flex gap-[4%]">
-          <div className="h-[14%] flex-1 rounded-sm bg-amber-100" />
-          <div className="h-[14%] flex-1 rounded-sm bg-emerald-100" />
+    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-teal-400 to-sky-500">
+      <MiniSlide bg="white">
+        <div className="mb-[6%] h-[18%] w-full rounded-[2px] bg-gradient-to-r from-emerald-400 to-teal-500" />
+        <div className="text-[5px] font-bold text-slate-800">Title</div>
+        <div className="mt-[8%] flex gap-[4%]">
+          <div className="h-[12%] flex-1 rounded-[1px] bg-amber-100" />
+          <div className="h-[12%] flex-1 rounded-[1px] bg-emerald-100" />
         </div>
-        <div className="h-[10%] rounded-sm bg-slate-50" />
-        <div className="mt-auto grid grid-cols-3 gap-[3%]">
-          <div className="h-[12%] rounded-sm bg-slate-100" />
-          <div className="h-[12%] rounded-sm bg-slate-100" />
-          <div className="h-[12%] rounded-sm bg-slate-100" />
-        </div>
-      </div>
+        <div className="mt-auto text-[4px] text-slate-500">Body &amp; link</div>
+      </MiniSlide>
     </div>
   );
 }
 
 function SavingsFocusThumb() {
   return (
-    <div className="flex h-full flex-col p-[8%]">
-      <div className="rounded-md bg-slate-900 px-[6%] py-[10%] text-center">
-        <div className="text-[3px] uppercase tracking-wider text-slate-400">Annual saving</div>
-        <div className="mt-[4%] text-[8px] font-bold text-emerald-400">₹97k</div>
-      </div>
-      <div className="mt-[8%] flex gap-[4%]">
-        {[40, 65, 50].map((h, i) => (
-          <div key={i} className="flex flex-1 flex-col justify-end">
-            <div
-              className={cn("rounded-t-sm", i === 1 ? "bg-red-200" : "bg-slate-200")}
-              style={{ height: `${h * 0.22}%` }}
-            />
-          </div>
-        ))}
-      </div>
-      <div className="mt-[8%] space-y-[4%]">
-        <div className="h-[6%] rounded-sm bg-blue-50" />
-        <div className="h-[6%] rounded-sm bg-slate-100" />
-      </div>
+    <div className="flex h-full w-full items-center justify-center bg-slate-800">
+      <MiniSlide bg="#1e293b">
+        <div className="text-[4px] uppercase tracking-wider text-slate-400">Saving</div>
+        <div className="mt-[6%] text-[7px] font-bold text-emerald-400">₹97k</div>
+        <div className="mt-[10%] flex h-[20%] items-end gap-[5%]">
+          <div className="w-[22%] rounded-t-[1px] bg-slate-600" style={{ height: "55%" }} />
+          <div className="w-[22%] rounded-t-[1px] bg-red-300/80" style={{ height: "100%" }} />
+          <div className="w-[22%] rounded-t-[1px] bg-slate-600" style={{ height: "70%" }} />
+        </div>
+        <div className="mt-auto text-[4px] text-sky-400">Body &amp; link</div>
+      </MiniSlide>
     </div>
   );
 }

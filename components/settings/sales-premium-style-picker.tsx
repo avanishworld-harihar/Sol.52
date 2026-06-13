@@ -9,12 +9,10 @@ import {
   type SalesPremiumStyleId,
 } from "@/lib/sales-premium-styles";
 import { SalesPremiumStyleThumbnail } from "@/components/proposals/sales-premium-institutional/sales-premium-style-thumbnail";
-import { CheckCircle2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 type Props = {
   markSaved: (message: string) => void;
-  /** Compact grid when nested inside Sales Premium card. */
   compact?: boolean;
 };
 
@@ -35,23 +33,21 @@ export function SalesPremiumStylePicker({ markSaved, compact = false }: Props) {
     setSelected(id);
     writeDefaultSalesPremiumStyle(id);
     const label = SALES_PREMIUM_STYLE_LIST.find((s) => s.id === id)?.label ?? id;
-    markSaved(`Sales Premium style set to ${label}. New residential proposals will use this look.`);
+    markSaved(`Sales Premium style set to ${label}.`);
   }
 
   return (
-    <div className={cn("space-y-3", compact ? "pt-1" : "")}>
+    <div className={cn("space-y-2", compact ? "pt-0" : "")}>
       {!compact ? (
-        <p className="text-[11px] leading-snug text-slate-600 dark:text-slate-400">
-          Pick a visual style for <strong className="font-semibold">Sales Premium</strong> — like choosing a
-          theme in Gamma AI. Each style changes layout and page count.
+        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+          Choose a style — same as picking a theme in Gamma.
         </p>
-      ) : null}
-      <div
-        className={cn(
-          "grid gap-3",
-          compact ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-        )}
-      >
+      ) : (
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          Styles
+        </p>
+      )}
+      <div className="flex flex-wrap gap-x-4 gap-y-5 sm:gap-x-5">
         {SALES_PREMIUM_STYLE_LIST.map((style) => {
           const active = selected === style.id;
           return (
@@ -59,28 +55,29 @@ export function SalesPremiumStylePicker({ markSaved, compact = false }: Props) {
               key={style.id}
               type="button"
               onClick={() => choose(style.id)}
-              className={cn(
-                "group rounded-xl border p-2 text-left transition",
-                active
-                  ? "border-brand-500 bg-brand-50/90 ring-1 ring-brand-400/40 dark:border-brand-400 dark:bg-brand-500/10"
-                  : "border-slate-200 bg-white/80 hover:border-brand-300 dark:border-white/10 dark:bg-white/[0.04]"
-              )}
+              className="group flex w-[88px] flex-col items-stretch text-left sm:w-[96px]"
+              title={style.subtitle}
             >
-              <div className="relative">
-                <SalesPremiumStyleThumbnail styleId={style.id} className="aspect-[3/4] w-full" />
-                {active ? (
-                  <CheckCircle2
-                    className="absolute right-1.5 top-1.5 h-5 w-5 text-emerald-600 drop-shadow-sm"
-                    aria-hidden
-                  />
-                ) : null}
+              <div
+                className={cn(
+                  "overflow-hidden rounded-lg transition",
+                  active
+                    ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-offset-slate-900"
+                    : "ring-1 ring-slate-200/90 hover:ring-slate-300 dark:ring-white/15 dark:hover:ring-white/25"
+                )}
+              >
+                <SalesPremiumStyleThumbnail styleId={style.id} />
               </div>
-              <p className="mt-2 px-1 text-xs font-extrabold text-slate-900 dark:text-slate-100">
+              <span
+                className={cn(
+                  "mt-1.5 truncate text-[11px] leading-tight sm:text-xs",
+                  active
+                    ? "font-semibold text-slate-900 dark:text-slate-100"
+                    : "font-medium text-slate-600 group-hover:text-slate-800 dark:text-slate-400 dark:group-hover:text-slate-200"
+                )}
+              >
                 {style.label}
-              </p>
-              <p className="mt-0.5 px-1 pb-1 text-[10px] font-medium leading-snug text-slate-600 dark:text-slate-400">
-                {style.subtitle}
-              </p>
+              </span>
             </button>
           );
         })}

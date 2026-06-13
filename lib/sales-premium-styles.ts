@@ -60,7 +60,7 @@ export const SALES_PREMIUM_STYLE_REGISTRY: Record<SalesPremiumStyleId, SalesPrem
   },
   journey: {
     id: "journey",
-    label: "Conversion Journey",
+    label: "Journey",
     subtitle: "Scroll story — bill → savings → system → support → pay.",
     renderer: "web_blocks",
     flowBlocks: JOURNEY_FLOW_BLOCKS,
@@ -68,7 +68,7 @@ export const SALES_PREMIUM_STYLE_REGISTRY: Record<SalesPremiumStyleId, SalesPrem
   },
   savings_focus: {
     id: "savings_focus",
-    label: "Savings Focus",
+    label: "Savings",
     subtitle: "Short deck — bill, ROI hero, investment, payment.",
     renderer: "web_blocks",
     flowBlocks: SAVINGS_FOCUS_BLOCKS,
