@@ -9,7 +9,9 @@ import {
   type ResidentialTemplatePresetId,
 } from "@/lib/proposal-default-preset-storage";
 import {
-  PROPOSAL_TEMPLATE_GALLERY,
+  PROPOSAL_TEMPLATE_CATEGORIES,
+  galleryForCategory,
+  type ProposalTemplateCategory,
   type ProposalTemplateGalleryItem,
 } from "@/lib/proposal-template-gallery";
 import { Check, Eye, X } from "lucide-react";
@@ -20,11 +22,16 @@ type Props = {
 };
 
 export function ProposalTemplateGallery({ markSaved }: Props) {
-  const [selected, setSelected] = useState<ResidentialTemplatePresetId>(readDefaultResidentialPreset);
+  const [category, setCategory] = useState<ProposalTemplateCategory>("residential");
+  const [selectedResidential, setSelectedResidential] = useState<ResidentialTemplatePresetId>(
+    readDefaultResidentialPreset
+  );
   const [previewItem, setPreviewItem] = useState<ProposalTemplateGalleryItem | null>(null);
 
+  const items = galleryForCategory(category);
+
   const sync = useCallback(() => {
-    setSelected(readDefaultResidentialPreset());
+    setSelectedResidential(readDefaultResidentialPreset());
   }, []);
 
   useEffect(() => {
@@ -42,24 +49,63 @@ export function ProposalTemplateGallery({ markSaved }: Props) {
     return () => window.removeEventListener("keydown", onKey);
   }, [previewItem]);
 
-  function choose(id: ResidentialTemplatePresetId) {
-    setSelected(id);
+  function isActive(item: ProposalTemplateGalleryItem): boolean {
+    if (item.category === "commercial") return true;
+    return selectedResidential === item.id;
+  }
+
+  function choose(item: ProposalTemplateGalleryItem) {
+    if (item.category === "commercial") {
+      markSaved("Commercial proposals use the Commercial Executive deck — no change needed.");
+      return;
+    }
+    const id = item.id as ResidentialTemplatePresetId;
+    setSelectedResidential(id);
     writeDefaultResidentialPreset(id);
-    const name = PROPOSAL_TEMPLATE_GALLERY.find((g) => g.id === id)?.name ?? id;
-    markSaved(`Default residential template set to ${name}. New proposals will use this format.`);
+    markSaved(`Default residential template set to ${item.name}. New proposals will use this format.`);
   }
 
   function selectFromPreview() {
     if (!previewItem) return;
-    choose(previewItem.id);
+    choose(previewItem);
     setPreviewItem(null);
   }
 
+  const activeCategoryMeta = PROPOSAL_TEMPLATE_CATEGORIES.find((c) => c.id === category)!;
+
   return (
     <>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {PROPOSAL_TEMPLATE_GALLERY.map((item) => {
-          const active = selected === item.id;
+      <div className="flex flex-wrap gap-1 rounded-xl border border-slate-200 bg-slate-50/80 p-1 dark:border-white/10 dark:bg-white/[0.04]">
+        {PROPOSAL_TEMPLATE_CATEGORIES.map((cat) => {
+          const active = category === cat.id;
+          return (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => setCategory(cat.id)}
+              className={cn(
+                "rounded-lg px-4 py-2 text-xs font-bold transition",
+                active
+                  ? "bg-white text-slate-900 shadow-sm dark:bg-slate-800 dark:text-slate-100"
+                  : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
+              )}
+            >
+              {cat.label}
+            </button>
+          );
+        })}
+      </div>
+
+      <p className="text-[11px] leading-snug text-slate-600 dark:text-slate-400">{activeCategoryMeta.description}</p>
+
+      <div
+        className={cn(
+          "grid grid-cols-1 gap-4",
+          category === "residential" ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-2 lg:max-w-sm lg:grid-cols-1"
+        )}
+      >
+        {items.map((item) => {
+          const active = isActive(item);
           return (
             <article
               key={item.id}
@@ -94,14 +140,14 @@ export function ProposalTemplateGallery({ markSaved }: Props) {
 
               <button
                 type="button"
-                onClick={() => choose(item.id)}
+                onClick={() => choose(item)}
                 className="flex flex-1 flex-col p-3 pt-2 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
               >
                 <div className="flex flex-wrap items-center gap-1.5">
                   <span className="text-xs font-extrabold text-slate-900 dark:text-slate-100">{item.name}</span>
                   {item.recommended ? (
                     <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-800 dark:bg-amber-500/20 dark:text-amber-200">
-                      Recommended
+                      {category === "commercial" ? "Default" : "Recommended"}
                     </span>
                   ) : null}
                 </div>
@@ -149,7 +195,7 @@ export function ProposalTemplateGallery({ markSaved }: Props) {
                 onClick={selectFromPreview}
                 className="mt-4 w-full rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
               >
-                Use this template
+                {previewItem.category === "commercial" ? "Got it" : "Use this template"}
               </button>
             </div>
           </div>

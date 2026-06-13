@@ -24,6 +24,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
       {variant === "pearl" ? <PearlThumb size={size} /> : null}
       {variant === "ledger" ? <LedgerThumb size={size} /> : null}
       {variant === "classic" ? <ClassicThumb size={size} /> : null}
+      {variant === "commercial" ? <CommercialThumb size={size} /> : null}
     </div>
   );
 }
@@ -125,6 +126,25 @@ function ClassicThumb({ size }: { size: "card" | "preview" }) {
           <div className="h-[12%] flex-1 rounded-[1px] bg-teal-100" />
           <div className="h-[12%] flex-1 rounded-[1px] bg-amber-100" />
           <div className="h-[12%] flex-1 rounded-[1px] bg-slate-100" />
+        </div>
+      </MiniSlide>
+    </div>
+  );
+}
+
+function CommercialThumb({ size }: { size: "card" | "preview" }) {
+  const rowH = size === "preview" ? "h-[2px]" : "h-[1px]";
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-800 to-slate-950">
+      <MiniSlide bg="#0f172a" size={size}>
+        <div className={cn("font-bold uppercase tracking-wider text-teal-400", size === "preview" ? "text-[7px]" : "text-[3px]")}>
+          Executive
+        </div>
+        <div className={cn("mt-[8%] space-y-[5%]")}>
+          <div className={cn("w-full rounded-full bg-teal-500/40", rowH)} />
+          <div className={cn("w-[85%] rounded-full bg-slate-600", rowH)} />
+          <div className={cn("w-full rounded-full bg-slate-600", rowH)} />
+          <div className={cn("w-[70%] rounded-full bg-amber-500/50", rowH)} />
         </div>
       </MiniSlide>
     </div>

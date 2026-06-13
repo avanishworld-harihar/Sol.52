@@ -346,7 +346,7 @@ export default function MorePage() {
           id="more-section-proposal-templates"
           icon={Sparkles}
           title="Proposal templates"
-          subtitle="Default residential format for new proposals — like Gamma AI themes."
+          subtitle="Default proposal themes — Residential & Commercial."
           defaultOpen
         >
           <ProposalTemplateSettingsPanel markSaved={markSaved} />
