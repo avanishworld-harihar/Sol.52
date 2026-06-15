@@ -12,6 +12,7 @@ import {
 import { readProposalBrandingSettings } from "@/lib/proposal-branding-settings";
 import { BrandProposalsSettingsPanel } from "@/components/settings/brand-proposals-settings-panel";
 import { ProposalTemplateSettingsPanel } from "@/components/settings/proposal-template-settings-panel";
+import { SubscriptionUsageCard } from "@/components/settings/subscription-usage-card";
 import { useInstallerDiscoms } from "@/hooks/use-installer-discoms";
 import { supabase } from "@/lib/supabase";
 import { INDIAN_STATES_AND_UTS } from "@/lib/indian-states-uts";
@@ -341,6 +342,16 @@ export default function MorePage() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        <MoreGroup
+          id="more-section-subscription"
+          icon={CreditCard}
+          title="Subscription"
+          subtitle="Your plan, trial days, and proposal usage."
+          defaultOpen
+        >
+          <SubscriptionUsageCard />
+        </MoreGroup>
 
         <MoreGroup
           id="more-section-proposal-templates"

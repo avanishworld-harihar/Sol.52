@@ -6,3 +6,4 @@ export * from "@/lib/billing/subscription-store";
 export * from "@/lib/billing/usage";
 export * from "@/lib/billing/trial-abuse";
 export * from "@/lib/billing/entitlements";
+export * from "@/lib/billing/usage-summary";
