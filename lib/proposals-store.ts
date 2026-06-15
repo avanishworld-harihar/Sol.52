@@ -56,6 +56,7 @@ export type CreateProposalInput = {
   expiresAt?: Date | null;
   /** Proposal OS preset. Defaults to "residential_sales_premium" for new proposals. */
   presetId?: string | null;
+  organizationId?: string | null;
 };
 
 export type StoredProposal = {
@@ -120,6 +121,7 @@ export async function createProposal(input: CreateProposalInput): Promise<Stored
     created_by: input.createdBy ?? null,
     expires_at: input.expiresAt?.toISOString() ?? null,
     preset_id: input.presetId ?? "residential_sales_premium",
+    organization_id: input.organizationId ?? null,
   };
 
   return await insertAdaptive<StoredProposal>(client, "proposals", payload, "id, share_token, customer_name, generated_at");
@@ -145,6 +147,7 @@ export type ProposalRecord = StoredProposal & {
    * Defaults to "residential_smart" for all legacy proposals.
    */
   preset_id?: string | null;
+  organization_id?: string | null;
   /**
    * Phase A — Proposal OS: FK to `proposal_pricing_snapshots.id`.
    * Set when a customer formally approves the proposal.

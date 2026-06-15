@@ -7,10 +7,17 @@ import { persistProposalDeckAfterPricingChange } from "@/lib/proposal-pricing-sy
 import { summarizeProposalDeck, type PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { freezeProposalQuote } from "@/lib/freeze-proposal-quote";
 import { PROPOSAL_PRESET_IDS } from "@/lib/proposal-preset-engine";
-import { createProposal, listRecentProposals } from "@/lib/proposals-store";
+import { resolveDefaultOrgId } from "@/lib/project-store";
+import {
+  assertCanCreateProposal,
+  extractTrialIdentityFromRequest,
+  isBillingEntitlementError,
+  recordProposalCreated,
+} from "@/lib/billing";
 import { proposalExtrasShape } from "@/lib/proposal-extras-schema";
 import { bumpLeadStatus, upsertPipelineProject } from "@/lib/supabase";
 import { appendActivityEvent } from "@/lib/followup-store";
+import { createProposal, listRecentProposals } from "@/lib/proposals-store";
 import type { MonthlyUnits } from "@/lib/types";
 
 const SITE_SURVEY_NEXT_ACTION = "Site survey pending";
@@ -93,6 +100,10 @@ const bodySchema = z.object({
   installerName: z.string().max(120).optional(),
   installerTagline: z.string().max(160).optional(),
   installerContact: z.string().max(220).optional(),
+  galleryThemeKey: z.string().max(40).optional(),
+  verifiedPhone: z.string().max(20).optional(),
+  verifiedEmail: z.string().max(120).optional(),
+  deviceFingerprint: z.string().max(200).optional(),
   ...proposalExtrasShape
 });
 
@@ -139,6 +150,37 @@ export async function POST(req: NextRequest) {
     };
     const summary = summarizeProposalDeck(pptInput);
 
+    const orgId = await resolveDefaultOrgId();
+    const identity = extractTrialIdentityFromRequest(req, {
+      verifiedPhone: payload.verifiedPhone,
+      verifiedEmail: payload.verifiedEmail,
+      deviceFingerprint: payload.deviceFingerprint,
+    });
+
+    let billingSub = null;
+    try {
+      billingSub = await assertCanCreateProposal({
+        organizationId: orgId ?? "",
+        presetId: payload.presetId ?? "residential_sales_premium",
+        salesPremiumStyle: payload.salesPremiumStyle,
+        galleryKey: payload.galleryThemeKey,
+        identity,
+      });
+    } catch (billingErr) {
+      if (isBillingEntitlementError(billingErr)) {
+        return NextResponse.json(
+          {
+            ok: false,
+            error: billingErr.message,
+            code: billingErr.code,
+            details: billingErr.details ?? null,
+          },
+          { status: 402 }
+        );
+      }
+      throw billingErr;
+    }
+
     const created = await createProposal({
       pptInput,
       summary,
@@ -146,7 +188,12 @@ export async function POST(req: NextRequest) {
       leadId: payload.leadId ?? null,
       consumerId: payload.consumerId ?? null,
       presetId: payload.presetId ?? "residential_sales_premium",
+      organizationId: orgId,
     });
+
+    if (created && orgId && billingSub) {
+      await recordProposalCreated(orgId, billingSub);
+    }
 
     if (!created) {
       // Supabase unavailable — return ephemeral summary so the dashboard can

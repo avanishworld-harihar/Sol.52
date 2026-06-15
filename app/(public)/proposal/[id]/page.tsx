@@ -21,6 +21,8 @@ import {
 } from "@/lib/sales-premium-styles";
 import { compileProposalDocument } from "@/lib/proposal-document-ir";
 import { RESIDENTIAL_WEB_RENDERER_PRESETS } from "@/lib/proposal-preset-engine";
+import { shouldShowPdfWatermark } from "@/lib/billing/entitlements";
+import { ProposalWatermarkShell } from "@/components/proposals/proposal-watermark-shell";
 
 export const dynamic = "force-dynamic";
 
@@ -95,19 +97,27 @@ export default async function PublicProposalPage({ params }: PageProps) {
     tagline: proposal.installer_tagline ?? liveSummary.tagline,
   };
 
+  const orgId =
+    typeof (proposal as { organization_id?: string | null }).organization_id === "string"
+      ? (proposal as { organization_id: string }).organization_id
+      : null;
+  const showWatermark = await shouldShowPdfWatermark(orgId);
+
   // ── Commercial executive preset — render the premium commercial view ──────
   if (proposal.preset_id === "commercial_executive") {
     return (
-      <CommercialProposalView
-        id={id}
-        customerName={proposal.customer_name}
-        generatedAt={proposal.generated_at}
-        summary={liveSummary}
-        pptInput={mergedInput}
-        installer={installerProps}
-        siteImages={siteImages}
-        installerLogoUrl={installerLogoUrl}
-      />
+      <ProposalWatermarkShell enabled={showWatermark}>
+        <CommercialProposalView
+          id={id}
+          customerName={proposal.customer_name}
+          generatedAt={proposal.generated_at}
+          summary={liveSummary}
+          pptInput={mergedInput}
+          installer={installerProps}
+          siteImages={siteImages}
+          installerLogoUrl={installerLogoUrl}
+        />
+      </ProposalWatermarkShell>
     );
   }
 
@@ -116,7 +126,9 @@ export default async function PublicProposalPage({ params }: PageProps) {
     const spStyle = resolveSalesPremiumStyle(mergedInput);
     if (usesInstitutionalRenderer(spStyle)) {
       return (
-        <SalesPremiumInstitutionalRenderer pptInput={mergedInput} summary={liveSummary} />
+        <ProposalWatermarkShell enabled={showWatermark}>
+          <SalesPremiumInstitutionalRenderer pptInput={mergedInput} summary={liveSummary} />
+        </ProposalWatermarkShell>
       );
     }
     const leadId = proposal.lead_id?.trim() ? proposal.lead_id.trim() : null;
@@ -130,24 +142,28 @@ export default async function PublicProposalPage({ params }: PageProps) {
       { presetId: "residential_sales_premium" }
     );
     return (
-      <ProposalWebRenderer
-        document={doc}
-        summary={liveSummary}
-        showSurveyWorkflowSection={showSurvey}
-      />
+      <ProposalWatermarkShell enabled={showWatermark}>
+        <ProposalWebRenderer
+          document={doc}
+          summary={liveSummary}
+          showSurveyWorkflowSection={showSurvey}
+        />
+      </ProposalWatermarkShell>
     );
   }
 
   // ── Executive Premium NextGen MVP — isolated 5-page renderer ─────────────
   if (proposal.preset_id === "residential_executive") {
     return (
-      <ExecutivePremiumNextgenRenderer
-        proposalId={id}
-        generatedAt={proposal.generated_at}
-        pptInput={mergedInput}
-        summary={liveSummary}
-        siteImages={siteImages}
-      />
+      <ProposalWatermarkShell enabled={showWatermark}>
+        <ExecutivePremiumNextgenRenderer
+          proposalId={id}
+          generatedAt={proposal.generated_at}
+          pptInput={mergedInput}
+          summary={liveSummary}
+          siteImages={siteImages}
+        />
+      </ProposalWatermarkShell>
     );
   }
 
@@ -160,11 +176,13 @@ export default async function PublicProposalPage({ params }: PageProps) {
       presetId: proposal.preset_id ?? "residential_sales_premium",
     });
     return (
-      <ProposalWebRenderer
-        document={doc}
-        summary={liveSummary}
-        showSurveyWorkflowSection={showSurvey}
-      />
+      <ProposalWatermarkShell enabled={showWatermark}>
+        <ProposalWebRenderer
+          document={doc}
+          summary={liveSummary}
+          showSurveyWorkflowSection={showSurvey}
+        />
+      </ProposalWatermarkShell>
     );
   }
 
@@ -176,7 +194,8 @@ export default async function PublicProposalPage({ params }: PageProps) {
   const residentialConfig = parseResidentialConfig(mergedInput.residentialConfig);
 
   return (
-    <ProposalView
+    <ProposalWatermarkShell enabled={showWatermark}>
+      <ProposalView
       id={id}
       summary={liveSummary}
       billAuditBacked={billAuditBacked}
@@ -189,5 +208,6 @@ export default async function PublicProposalPage({ params }: PageProps) {
       brandConfigFromSnapshot={brandConfigFromSnapshot}
       showSurveyWorkflowSection={showSurveyWorkflowSection}
     />
+    </ProposalWatermarkShell>
   );
 }

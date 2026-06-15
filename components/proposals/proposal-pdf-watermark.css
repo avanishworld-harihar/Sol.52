@@ -1,0 +1,24 @@
+/**
+ * Trial PDF watermark — visible only when parent has `.sol52-watermark-on` during print.
+ */
+.sol52-watermark-on .sol52-pdf-watermark {
+  display: none;
+}
+
+@media print {
+  .sol52-watermark-on .sol52-pdf-watermark {
+    display: block;
+    position: fixed;
+    bottom: 6mm;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 8pt;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: #86868b;
+    z-index: 99999;
+    pointer-events: none;
+  }
+}
