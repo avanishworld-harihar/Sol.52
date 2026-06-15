@@ -4,6 +4,7 @@ import { CustomersLeadList } from "@/components/customers-lead-list";
 import { CustomerWorkspacePane } from "@/components/customer-workspace-pane";
 import { WorkflowLifecycleStrip } from "@/components/workflow-lifecycle-strip";
 import { FloatingLabelInput, FloatingLabelSelect } from "@/components/ui/floating-label-input";
+import { HelpHint } from "@/components/ui/help-hint";
 import { useToast } from "@/components/ui/toast-center";
 import {
   CUSTOMERS_SWR_KEY,
@@ -625,6 +626,7 @@ function CustomersPageContent() {
             eyebrow={t("customers_sectionLabel")}
             title={t("customers_heading")}
             subtitle={t("customers_sub")}
+            subtitleDetail={t("customers_sub_detail")}
             action={
               <button
                 type="button"
@@ -733,7 +735,10 @@ function CustomersPageContent() {
             </div>
             <form id="lead-modal-form" className="flex min-h-0 flex-1 flex-col" onSubmit={onSubmit}>
               <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto overscroll-contain px-4 py-3 pb-2 sm:space-y-3">
-              <p className="text-[11px] font-semibold leading-snug text-slate-600">{t("customers_regionSyncHint")}</p>
+              <HelpHint
+                label={t("customers_regionSyncHint")}
+                detail={t("customers_regionSyncHint_detail")}
+              />
               <FloatingLabelInput
                 label="Lead name (person you met)"
                 containerClassName="my-4"

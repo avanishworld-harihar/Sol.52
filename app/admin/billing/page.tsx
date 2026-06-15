@@ -185,7 +185,7 @@ export default function AdminBillingPage() {
           <div>
             <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">Billing & Complimentary Access</h1>
             <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-              Super Admin — assign plans, grant complimentary access (14 / 30 / 60 days or custom). No promo codes.
+              Assign plans and grant complimentary access. Payments in Phase 2.
             </p>
           </div>
           <button
@@ -362,7 +362,7 @@ export default function AdminBillingPage() {
                                       Grant complimentary access — {org.name}
                                     </p>
                                     <p className="mt-0.5 text-[11px] text-slate-500">
-                                      Behaves like a paid plan until expiry, then downgrades to cancelled Starter.
+                                      Paid plan access until expiry — then Starter (cancelled).
                                     </p>
                                   </div>
                                   <button

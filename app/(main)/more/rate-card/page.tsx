@@ -20,7 +20,7 @@ export default function InstallerRateCardPage() {
           tone="settings"
           eyebrow="Master pricing"
           title="Rate card"
-          subtitle="One Smart catalog — plant ₹/kW for residential and commercial turnkey quotes. Optional panel ₹/Wp for BOM detail only."
+          subtitle="One catalog for residential and commercial quotes."
         />
       </WorkspaceStaggerItem>
       <WorkspaceStaggerItem>

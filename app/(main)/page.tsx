@@ -8,7 +8,8 @@ import { DashboardFollowupWidgets } from "@/components/dashboard-followup-widget
 import { OfflineDataNotice } from "@/components/offline-data-notice";
 import { GlassProjectCard, type GlassProjectSummary } from "@/components/glass-project-card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { HelpHint } from "@/components/ui/help-hint";
 import { FloatingLabelSelect } from "@/components/ui/floating-label-input";
 import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
@@ -267,10 +268,11 @@ function DashboardPageContent() {
                     {t("dashboard_installerSetup")}
                   </CardTitle>
                 </div>
-                <CardDescription className="text-xs font-semibold leading-snug text-muted-foreground sm:text-sm">
-                  {t("dashboard_installerSetupSub")}{" "}
-                  <strong className="text-foreground">{INDIAN_STATES_AND_UTS.length}</strong> options (28 states + 8 UTs).
-                </CardDescription>
+                <HelpHint
+                  className="text-xs sm:text-sm"
+                  label={t("dashboard_installerSetupSub")}
+                  detail={`${t("dashboard_installerSetupSub_detail")} ${INDIAN_STATES_AND_UTS.length} states and UTs available.`}
+                />
               </CardHeader>
               <CardContent className="space-y-3 p-4 pt-0 sm:p-6 sm:pt-0">
                 <div className="flex flex-col gap-2 md:flex-row md:flex-nowrap md:items-center md:gap-3">

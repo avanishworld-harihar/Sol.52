@@ -38,7 +38,7 @@ export function WorkspaceCommercialConfigTab({
     <CommercialWorkspaceShell
       proposalId={proposalId}
       title="Commercial Config"
-      subtitle="Organization profile, narrative tone, DG assumptions, and deck section visibility — executive layer only."
+      subtitle="Org profile, narrative, DG, and deck sections."
       config={config}
       proposalLayout={proposalLayout}
       onSaved={onSaved}

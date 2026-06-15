@@ -155,12 +155,9 @@ export function BillingDashboard({ variant = "page" }: Props) {
           <p className="text-[10px] font-bold uppercase tracking-wider text-violet-700 dark:text-violet-300">
             Complimentary access
           </p>
-          <p className="mt-1 text-sm text-violet-900 dark:text-violet-100">
-            {data.trialDaysRemainingLabel ?? (data.complimentaryExpiresAt ? `Expires ${new Date(data.complimentaryExpiresAt).toLocaleDateString("en-IN")}` : "Active")}
-          </p>
-          {data.complimentaryReason ? (
-            <p className="mt-1 text-[11px] text-violet-700/80 dark:text-violet-300/80">{data.complimentaryReason}</p>
-          ) : null}
+              <p className="mt-1 text-[11px] text-violet-700/80 dark:text-violet-300/80">
+                {data.trialDaysRemainingLabel ?? (data.complimentaryExpiresAt ? `Ends ${new Date(data.complimentaryExpiresAt).toLocaleDateString("en-IN")}` : "Active")}
+              </p>
         </div>
       ) : null}
 

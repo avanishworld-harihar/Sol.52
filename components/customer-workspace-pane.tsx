@@ -30,6 +30,7 @@ import type { CustomerLead } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { LEAD_STATUS_I18N_KEY, normalizeLeadStatus, type LeadStatusKey } from "@/lib/lead-status";
 import { getInstallerBrandName } from "@/lib/installer-brand";
+import { HelpHint } from "@/components/ui/help-hint";
 import { useLanguage } from "@/lib/language-context";
 import { formatLastFollowUpLocale } from "@/lib/time-i18n";
 import { formatLeadPhoneForDisplay } from "@/lib/lead-phone";
@@ -390,9 +391,11 @@ export function CustomerWorkspacePane({
     return (
       <div className="flex h-full min-h-[280px] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300/80 bg-slate-50/50 p-6 text-center dark:border-white/15 dark:bg-white/[0.03]">
         <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{t("customers_workspaceEmptyTitle")}</p>
-        <p className="mt-2 max-w-[16rem] text-xs font-medium leading-relaxed text-slate-500 dark:text-slate-400">
-          {t("customers_workspaceEmptySub")}
-        </p>
+        <HelpHint
+          className="mt-2 max-w-[16rem] justify-center text-center [&_p]:text-center"
+          label={t("customers_workspaceEmptySub")}
+          detail={t("customers_workspaceEmptySub_detail")}
+        />
       </div>
     );
   }

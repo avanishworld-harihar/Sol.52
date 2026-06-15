@@ -3,6 +3,7 @@
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { HelpHint } from "@/components/ui/help-hint";
 import { cn } from "@/lib/utils";
 import type { WorkspacePageTone } from "@/lib/workspace-design";
 
@@ -10,6 +11,7 @@ export function WorkspacePageHero({
   eyebrow,
   title,
   subtitle,
+  subtitleDetail,
   action,
   tone = "customers",
   footer,
@@ -18,6 +20,8 @@ export function WorkspacePageHero({
   eyebrow: string;
   title: string;
   subtitle?: string;
+  /** Longer guidance — behind ⓘ on the hero subtitle line. */
+  subtitleDetail?: string;
   action?: ReactNode;
   tone?: WorkspacePageTone;
   /** Lifecycle strip or tabs below the headline row */
@@ -36,7 +40,13 @@ export function WorkspacePageHero({
         <div className="min-w-0">
           <p className="ws-type-eyebrow workspace-type-eyebrow">{eyebrow}</p>
           <h1 className="ws-type-greeting workspace-type-greeting mt-2 text-balance">{title}</h1>
-          {subtitle ? <p className="ws-type-body workspace-type-body mt-2 max-w-2xl">{subtitle}</p> : null}
+          {subtitle ? (
+            subtitleDetail ? (
+              <HelpHint className="mt-2 max-w-2xl" label={subtitle} detail={subtitleDetail} />
+            ) : (
+              <p className="ws-type-body workspace-type-body mt-2 max-w-2xl text-pretty">{subtitle}</p>
+            )
+          ) : null}
         </div>
         {action ? <div className="w-full shrink-0 sm:w-auto">{action}</div> : null}
       </div>

@@ -20,6 +20,7 @@ import {
 import { INDIAN_STATES_AND_UTS } from "@/lib/indian-states-uts";
 import { INSTALLER_REGION_EVENT, readInstallerRegion } from "@/lib/installer-region-storage";
 import { formatInstallerContactLine, readProposalBrandingSettings, resolveInstallerDisplayName } from "@/lib/proposal-branding-settings";
+import { HelpHint } from "@/components/ui/help-hint";
 import { FloatingLabelInput, FloatingLabelSelect } from "@/components/ui/floating-label-input";
 import { NumericTextInput } from "@/components/ui/numeric-text-input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -2641,11 +2642,16 @@ function ProposalPageContent() {
             </option>
           ))}
         </FloatingLabelSelect>
-        <p className="text-[11px] font-medium leading-snug text-slate-600 sm:text-xs">{t("proposal_step1LeadHint")}</p>
+        <HelpHint
+          label={t("proposal_step1LeadHint")}
+          detail={t("proposal_step1LeadHint_detail")}
+        />
         {!leadSelected ? (
-          <p className="rounded-xl border border-sky-100 bg-sky-50/80 px-3 py-2 text-[11px] font-medium leading-snug text-sky-800">
-            {t("proposal_walkInCrmHint")}
-          </p>
+          <HelpHint
+            tone="tip"
+            label={t("proposal_walkInCrmHint")}
+            detail={t("proposal_walkInCrmHint_detail")}
+          />
         ) : null}
 
         {isAnyResidential ? (
@@ -2829,23 +2835,28 @@ function ProposalPageContent() {
             <span className="leading-snug">{step2Label}</span>
           </span>
         </h2>
-        <p className="mt-2 text-xs font-medium leading-snug text-slate-600 sm:text-sm">
-          {t("proposal_step2BillUploadsSub")} {billingRule.averagingHint}
-        </p>
+        <HelpHint
+          className="mt-2"
+          label={`${t("proposal_step2BillUploadsSub")}${billingRule.averagingHint ? ` ${billingRule.averagingHint}` : ""}`}
+          detail={t("proposal_step2BillUploadsSub_detail")}
+        />
 
         <>
         {!leadSelected ? (
-          <p className="mt-2 rounded-lg border border-amber-200/90 bg-amber-50/90 px-2.5 py-2 text-[11px] font-semibold leading-snug text-amber-950 sm:text-xs">
-            {t("proposal_billPersistLeadHint")}
-          </p>
+          <HelpHint
+            className="mt-2"
+            tone="warn"
+            label={t("proposal_billPersistLeadHint")}
+            detail={t("proposal_billPersistLeadHint_detail")}
+          />
         ) : null}
         {uploadRequirement.requiredBills > 1 ? (
           <p className="mt-1 text-[11px] font-semibold text-indigo-700 sm:text-xs">
-            SOL.52 upload planner: this DISCOM currently needs {uploadRequirement.requiredBills} bills for 12-month coverage.
+            {t("proposal_uploadPlannerMulti", { n: uploadRequirement.requiredBills })}
           </p>
         ) : (
           <p className="mt-1 text-[11px] font-semibold text-slate-500 sm:text-xs">
-            Unknown/new format: upload latest bill first. SOL.52 will auto-learn and update required bill count.
+            {t("proposal_uploadPlannerLearn")}
           </p>
         )}
         <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">

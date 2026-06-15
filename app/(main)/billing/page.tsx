@@ -20,7 +20,7 @@ export default function BillingPage() {
           tone="settings"
           eyebrow="Company Admin"
           title="Billing"
-          subtitle="Your plan, subscription status, trial days, and proposal usage."
+          subtitle="Plan, status, trial days, and usage."
         />
       </WorkspaceStaggerItem>
       <WorkspaceStaggerItem>

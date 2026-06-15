@@ -53,8 +53,8 @@ function CategoryCardButton({ card, delay }: { card: CategoryCard; delay: number
         {card.icon}
       </div>
       <h3 className="relative z-[1] text-lg font-bold text-white sm:text-xl">{card.label}</h3>
-      <p className="relative z-[1] mt-2 text-sm leading-relaxed text-slate-300/90">{card.subtitle}</p>
-      <p className="relative z-[1] mt-3 text-xs text-slate-400">{card.detail}</p>
+      <p className="relative z-[1] mt-2 text-sm text-slate-300/90">{card.subtitle}</p>
+      <p className="relative z-[1] mt-2 text-[11px] text-slate-400">{card.detail}</p>
       <div
         className={`relative z-[1] mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold shadow-lg transition-all ${card.ctaClass}`}
       >
@@ -73,8 +73,8 @@ export function ProposalPresetPicker({ onSelectResidential, onSelectCommercial, 
       id: "residential",
       icon: <Home className="h-7 w-7" />,
       label: "Residential",
-      subtitle: "Homes, apartments, and rooftop solar up to ~10 kW.",
-      detail: `Default template: ${defaultResidentialLabel} · change in More`,
+      subtitle: "Homes and apartments up to ~10 kW.",
+      detail: `Template: ${defaultResidentialLabel} · More → Proposal templates`,
       accentFrom: "from-amber-500",
       accentTo: "to-orange-600",
       ctaClass:
@@ -85,8 +85,8 @@ export function ProposalPresetPicker({ onSelectResidential, onSelectCommercial, 
       id: "commercial",
       icon: <Building2 className="h-7 w-7" />,
       label: "Commercial",
-      subtitle: "Businesses, schools, and industrial sites — executive C&I format.",
-      detail: "Uses Commercial Executive template",
+      subtitle: "Businesses and industrial sites.",
+      detail: "Commercial Executive template",
       accentFrom: "from-slate-600",
       accentTo: "to-slate-800",
       ctaClass:

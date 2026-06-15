@@ -325,7 +325,7 @@ export default function MorePage() {
             tone="settings"
             eyebrow="Workspace"
             title="More"
-            subtitle="Company profile, region, language, performance, and plans — expand a section below."
+            subtitle="Company profile, region, language, and plans."
           />
         </WorkspaceStaggerItem>
 
@@ -347,7 +347,7 @@ export default function MorePage() {
           id="more-section-subscription"
           icon={CreditCard}
           title="Subscription"
-          subtitle="Your plan, trial days, and proposal usage — open Billing for the full dashboard."
+          subtitle="Plan, trial days, and proposal usage."
           defaultOpen
         >
           <SubscriptionUsageCard />
@@ -357,7 +357,7 @@ export default function MorePage() {
           id="more-section-proposal-templates"
           icon={Sparkles}
           title="Proposal templates"
-          subtitle="Default proposal themes — Residential & Commercial."
+          subtitle="Default themes for residential and commercial."
           defaultOpen
         >
           <ProposalTemplateSettingsPanel markSaved={markSaved} />
@@ -367,7 +367,7 @@ export default function MorePage() {
           id="more-section-brand"
           icon={Building2}
           title="Brand & proposals"
-          subtitle="Company profile, branding, portfolio, banking, and proposal appearance."
+          subtitle="Branding, portfolio, banking, and proposal look."
         >
           <BrandProposalsSettingsPanel markSaved={markSaved} markIssue={markIssue} />
         </MoreGroup>
@@ -376,7 +376,7 @@ export default function MorePage() {
           id="more-section-tariff"
           icon={ReceiptText}
           title="Tariff"
-          subtitle="Model status, slab preview, and reporting — tap to open."
+          subtitle="Tariff status and reporting."
         >
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <InfoChip label="Active tariff" value={tariff.discomLabel} />
@@ -463,7 +463,7 @@ export default function MorePage() {
           id="more-section-app"
           icon={Settings2}
           title="App"
-          subtitle="Region, language, theme, and performance — tap to open."
+          subtitle="Region, language, theme, and performance."
         >
           <Subsection
             title="Operating region"

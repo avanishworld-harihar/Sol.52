@@ -12,6 +12,7 @@ import { ProjectOpsDashboard } from "@/components/projects/ops/project-ops-dashb
 import { OutstandingCollectionsSheet } from "@/components/money/outstanding-collections-sheet";
 import { WorkflowLifecycleStrip } from "@/components/workflow-lifecycle-strip";
 import { FloatingLabelInput, FloatingLabelSelect } from "@/components/ui/floating-label-input";
+import { HelpHint } from "@/components/ui/help-hint";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/toast-center";
@@ -415,6 +416,7 @@ function ProjectsBoard() {
             eyebrow={t("projects_opsModuleTag")}
             title={t("projects_opsPipelineTitle")}
             subtitle={t("projects_opsPipelineSub")}
+            subtitleDetail={t("projects_opsPipelineSub_detail")}
             footer={<WorkflowLifecycleStrip surface="projects" />}
           />
         </WorkspaceStaggerItem>
@@ -466,9 +468,17 @@ function ProjectsBoard() {
           </div>
         </WorkspaceStaggerItem>
 
-        <p className="page-lite-item -mt-1 hidden px-1 text-xs font-semibold text-slate-500 dark:text-slate-400 sm:block sm:text-sm">
-          {view === "active" ? t("projects_opsBoardHint") : activeTabDef.description}
-        </p>
+        {view === "active" ? (
+          <HelpHint
+            className="page-lite-item -mt-1 hidden px-1 sm:block"
+            label={t("projects_opsBoardHint")}
+            detail={t("projects_opsBoardHint_detail")}
+          />
+        ) : (
+          <p className="page-lite-item -mt-1 hidden px-1 text-xs font-semibold text-slate-500 dark:text-slate-400 sm:block sm:text-sm">
+            {activeTabDef.description}
+          </p>
+        )}
 
         <ProjectListFiltersBar
           filters={filters}
