@@ -59,6 +59,10 @@ export type OrganizationSubscription = {
   current_period_start: string | null;
   current_period_end: string | null;
   cancel_at_period_end: boolean;
+  is_complimentary: boolean;
+  expires_at: string | null;
+  granted_by: string | null;
+  granted_reason: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -84,6 +88,19 @@ export type BillingEntitlementCode =
   | "theme_not_allowed"
   | "commercial_not_allowed"
   | "no_subscription"
-  | "trial_abuse_denied";
+  | "trial_abuse_denied"
+  | "team_limit_reached"
+  | "team_not_enabled";
+
+export type ComplimentaryDurationPreset = 14 | 30 | 60;
+
+export type AdminComplimentaryGrantInput = {
+  organizationId: string;
+  planCode: Exclude<PlanCode, "trial">;
+  durationDays?: ComplimentaryDurationPreset;
+  expiresAt?: Date;
+  grantedBy: string;
+  grantedReason: string;
+};
 
 export const BILLING_WATERMARK_TEXT = "Generated with Sol.52";

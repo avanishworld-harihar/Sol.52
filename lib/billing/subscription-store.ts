@@ -32,6 +32,10 @@ function mapSubscriptionRow(row: Row, plan: SubscriptionPlan): OrganizationSubsc
     current_period_start: row.current_period_start ? String(row.current_period_start) : null,
     current_period_end: row.current_period_end ? String(row.current_period_end) : null,
     cancel_at_period_end: row.cancel_at_period_end === true,
+    is_complimentary: row.is_complimentary === true,
+    expires_at: row.expires_at ? String(row.expires_at) : null,
+    granted_by: row.granted_by ? String(row.granted_by) : null,
+    granted_reason: row.granted_reason ? String(row.granted_reason) : null,
     created_at: String(row.created_at ?? ""),
     updated_at: String(row.updated_at ?? ""),
   };
@@ -113,6 +117,13 @@ export async function upsertOrgSubscription(input: {
   periodStart?: Date | null;
   periodEnd?: Date | null;
   actor?: string;
+  complimentary?: {
+    isComplimentary: boolean;
+    expiresAt?: Date | null;
+    grantedBy?: string | null;
+    grantedReason?: string | null;
+  };
+  clearComplimentary?: boolean;
 }): Promise<OrganizationSubscription | null> {
   const client = db();
   if (!client) return null;
@@ -131,6 +142,18 @@ export async function upsertOrgSubscription(input: {
     current_period_end: input.periodEnd?.toISOString() ?? null,
     updated_at: now,
   };
+
+  if (input.clearComplimentary || input.complimentary?.isComplimentary === false) {
+    payload.is_complimentary = false;
+    payload.expires_at = null;
+    payload.granted_by = null;
+    payload.granted_reason = null;
+  } else if (input.complimentary?.isComplimentary) {
+    payload.is_complimentary = true;
+    payload.expires_at = input.complimentary.expiresAt?.toISOString() ?? null;
+    payload.granted_by = input.complimentary.grantedBy ?? null;
+    payload.granted_reason = input.complimentary.grantedReason ?? null;
+  }
 
   const { data, error } = await client
     .from("organization_subscriptions")
@@ -155,6 +178,8 @@ export async function upsertOrgSubscription(input: {
       plan_code: input.planCode,
       status: input.status,
       actor: input.actor ?? "system",
+      is_complimentary: input.complimentary?.isComplimentary === true,
+      expires_at: input.complimentary?.expiresAt?.toISOString() ?? null,
     },
   });
 

@@ -92,6 +92,13 @@ function buildCrumbs(
       { label: "Rate card", href: "/more/rate-card", active: true },
     ];
   }
+  if (pathname.startsWith("/billing")) {
+    return [
+      home,
+      { label: t("nav_more"), href: "/more", active: false },
+      { label: "Billing", href: "/billing", active: true },
+    ];
+  }
   if (pathname.startsWith("/more")) {
     return [home, { label: t("nav_more"), href: "/more", active: true }];
   }

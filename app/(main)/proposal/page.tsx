@@ -72,6 +72,7 @@ import {
 } from "@/lib/requirement-consumption-sync";
 import { ProposalLivePreviewPanel } from "@/components/proposals/os/live-preview-panel";
 import { BlockPlaylistEditor } from "@/components/proposals/os/block-playlist-editor";
+import { ProposalLimitUpgradeModal } from "@/components/billing/proposal-limit-upgrade-modal";
 
 import { CommercialProposalWorkspace } from "@/components/commercial/commercial-proposal-workspace";
 import { ProposalReviewSheet } from "@/components/commercial/proposal-review-sheet";
@@ -276,6 +277,8 @@ function ProposalPageContent() {
   const [isPptDownloading, setIsPptDownloading] = useState(false);
   const [isCopyingSummary, setIsCopyingSummary] = useState(false);
   const [isWebProposalBusy, setIsWebProposalBusy] = useState(false);
+  const [proposalLimitModalOpen, setProposalLimitModalOpen] = useState(false);
+  const [proposalLimitPlanName, setProposalLimitPlanName] = useState<string | null>(null);
   const [latestWebProposalUrl, setLatestWebProposalUrl] = useState<string | null>(null);
   const [draftProposalId, setDraftProposalId] = useState<string | null>(null);
   // Proposal Builder Settings — language + EMI only (logo, bank, AMC, site photos live in More > Company Profile).
@@ -2224,6 +2227,17 @@ function ProposalPageContent() {
     }
   }
 
+  async function openProposalLimitModal() {
+    try {
+      const res = await fetch("/api/billing/usage", { cache: "no-store" });
+      const json = (await res.json()) as { data?: { planName?: string } | null };
+      setProposalLimitPlanName(json.data?.planName ?? null);
+    } catch {
+      setProposalLimitPlanName(null);
+    }
+    setProposalLimitModalOpen(true);
+  }
+
   async function persistProposalToServer(): Promise<{
     id: string;
     shareUrl: string;
@@ -2306,7 +2320,14 @@ function ProposalPageContent() {
       }),
     });
     if (!response.ok) {
-      const json = (await response.json().catch(() => ({}))) as { error?: string };
+      const json = (await response.json().catch(() => ({}))) as {
+        error?: string;
+        code?: string;
+      };
+      if (response.status === 402 && json.code === "proposal_limit_reached") {
+        await openProposalLimitModal();
+        return null;
+      }
       throw new Error(json.error || "Web proposal failed");
     }
     const json = (await response.json()) as { ok: boolean; id?: string; shareUrl?: string; persisted?: boolean };
@@ -3399,6 +3420,11 @@ function ProposalPageContent() {
           </div>
         </div>{/* end OS layout flex */}
       </WorkspacePage>
+      <ProposalLimitUpgradeModal
+        open={proposalLimitModalOpen}
+        onClose={() => setProposalLimitModalOpen(false)}
+        planName={proposalLimitPlanName}
+      />
     </>
   );
 }

@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit",
     "test:proposal-stability": "node scripts/run-proposal-stability.mjs",
     "test:phase1-validation": "node scripts/run-phase1-validation.mjs",
+    "test:billing-phase1": "node scripts/run-billing-phase1-tests.mjs",
     "test:project-pending": "node scripts/run-project-pending-checks.mjs",
     "guard:marketplace": "node scripts/check-marketplace-guard.cjs",
     "ppt:investment": "node scripts/generate-investment-ppt.cjs",

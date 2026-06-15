@@ -1,6 +1,7 @@
 import { getMonthlyUsage } from "@/lib/billing/usage";
 import { getOrgSubscription, listSubscriptionPlans } from "@/lib/billing/subscription-store";
 import type { OrganizationSubscription, PlanCode, SubscriptionStatus } from "@/lib/billing/types";
+import { getActiveOrgSubscription } from "@/lib/billing/subscription-lifecycle";
 import { isBillingAvailable } from "@/lib/billing/entitlements";
 
 export type OrgUsageSummary = {
@@ -8,13 +9,20 @@ export type OrgUsageSummary = {
   planName: string;
   planCode: PlanCode | null;
   status: SubscriptionStatus | null;
+  statusLabel: string;
   daysLeft: number | null;
+  trialDaysRemainingLabel: string | null;
   proposalsUsed: number;
   proposalsLimit: number | null;
   proposalsDisplay: string;
+  proposalsLimitLabel: string;
   isUnlimited: boolean;
   showDaysLeft: boolean;
   showUpgrade: boolean;
+  isComplimentary: boolean;
+  complimentaryExpiresAt: string | null;
+  complimentaryGrantedBy: string | null;
+  complimentaryReason: string | null;
   upgradePlans: Array<{
     code: PlanCode;
     name: string;
@@ -23,25 +31,73 @@ export type OrgUsageSummary = {
   }>;
 };
 
+export type AdminOrgBillingSnapshot = {
+  planName: string;
+  planCode: PlanCode | null;
+  status: SubscriptionStatus | null;
+  proposalsUsed: number;
+  proposalsDisplay: string;
+  trialEndDate: string | null;
+  isComplimentary: boolean;
+  expiresAt: string | null;
+  grantedBy: string | null;
+  grantedReason: string | null;
+};
+
 function daysUntil(iso: string | null): number | null {
   if (!iso) return null;
   const ms = new Date(iso).getTime() - Date.now();
   return Math.max(0, Math.ceil(ms / (24 * 60 * 60 * 1000)));
 }
 
+function formatStatusLabel(status: SubscriptionStatus | null): string {
+  if (!status) return "—";
+  const labels: Record<SubscriptionStatus, string> = {
+    trialing: "Trial",
+    active: "Active",
+    past_due: "Past due",
+    cancelled: "Cancelled",
+  };
+  return labels[status] ?? status;
+}
+
+export function formatProposalUsageDisplay(input: {
+  planCode: PlanCode | null;
+  used: number;
+  limit: number | null;
+  isUnlimited: boolean;
+}): { display: string; limitLabel: string } {
+  if (input.isUnlimited || input.planCode === "pro" || input.planCode === "business") {
+    return { display: "Unlimited", limitLabel: "Unlimited" };
+  }
+  const limit = input.limit ?? 0;
+  return {
+    display: `${input.used} / ${limit}`,
+    limitLabel: String(limit),
+  };
+}
+
 function proposalsFromSubscription(sub: OrganizationSubscription, monthlyUsed: number): {
   used: number;
   limit: number | null;
   display: string;
+  limitLabel: string;
   isUnlimited: boolean;
 } {
   if (sub.plan.code === "trial") {
     const limit = sub.plan.features.max_proposals_total ?? 10;
     const used = sub.trial_proposals_used;
+    const formatted = formatProposalUsageDisplay({
+      planCode: "trial",
+      used,
+      limit,
+      isUnlimited: false,
+    });
     return {
       used,
       limit,
-      display: `${used} / ${limit}`,
+      display: formatted.display,
+      limitLabel: formatted.limitLabel,
       isUnlimited: false,
     };
   }
@@ -49,19 +105,33 @@ function proposalsFromSubscription(sub: OrganizationSubscription, monthlyUsed: n
   if (sub.plan.max_proposals_per_month != null) {
     const limit = sub.plan.max_proposals_per_month;
     const used = monthlyUsed;
+    const formatted = formatProposalUsageDisplay({
+      planCode: sub.plan.code,
+      used,
+      limit,
+      isUnlimited: false,
+    });
     return {
       used,
       limit,
-      display: `${used} / ${limit}`,
+      display: formatted.display,
+      limitLabel: formatted.limitLabel,
       isUnlimited: false,
     };
   }
 
   const used = monthlyUsed;
+  const formatted = formatProposalUsageDisplay({
+    planCode: sub.plan.code,
+    used,
+    limit: null,
+    isUnlimited: true,
+  });
   return {
     used,
     limit: null,
-    display: `${used}`,
+    display: formatted.display,
+    limitLabel: formatted.limitLabel,
     isUnlimited: true,
   };
 }
@@ -80,19 +150,26 @@ export async function buildOrgUsageSummary(organizationId: string): Promise<OrgU
       planName: "—",
       planCode: null,
       status: null,
+      statusLabel: "—",
       daysLeft: null,
+      trialDaysRemainingLabel: null,
       proposalsUsed: 0,
       proposalsLimit: null,
       proposalsDisplay: "—",
+      proposalsLimitLabel: "—",
       isUnlimited: false,
       showDaysLeft: false,
       showUpgrade: false,
+      isComplimentary: false,
+      complimentaryExpiresAt: null,
+      complimentaryGrantedBy: null,
+      complimentaryReason: null,
       upgradePlans: [],
     };
   }
 
   const [sub, allPlans] = await Promise.all([
-    getOrgSubscription(organizationId),
+    getActiveOrgSubscription(organizationId),
     listSubscriptionPlans(),
   ]);
 
@@ -113,34 +190,92 @@ export async function buildOrgUsageSummary(organizationId: string): Promise<OrgU
       planName: "No active plan",
       planCode: null,
       status: sub?.status ?? null,
+      statusLabel: formatStatusLabel(sub?.status ?? null),
       daysLeft: null,
+      trialDaysRemainingLabel: null,
       proposalsUsed: 0,
       proposalsLimit: limit,
       proposalsDisplay: `0 / ${limit}`,
+      proposalsLimitLabel: String(limit),
       isUnlimited: false,
       showDaysLeft: false,
       showUpgrade: true,
+      isComplimentary: false,
+      complimentaryExpiresAt: null,
+      complimentaryGrantedBy: null,
+      complimentaryReason: null,
       upgradePlans,
     };
   }
 
   const monthlyUsed = await getMonthlyUsage(organizationId);
-  const { used, limit, display, isUnlimited } = proposalsFromSubscription(sub, monthlyUsed);
+  const { used, limit, display, limitLabel, isUnlimited } = proposalsFromSubscription(sub, monthlyUsed);
   const isTrial = sub.plan.code === "trial" && sub.status === "trialing";
   const daysLeft = isTrial ? daysUntil(sub.trial_ends_at) : null;
+  const complimentaryDaysLeft =
+    sub.is_complimentary && sub.expires_at ? daysUntil(sub.expires_at) : null;
+  const trialDaysRemainingLabel =
+    isTrial && daysLeft != null
+      ? `${daysLeft} Day${daysLeft === 1 ? "" : "s"} Remaining`
+      : sub.is_complimentary && complimentaryDaysLeft != null
+        ? `${complimentaryDaysLeft} Day${complimentaryDaysLeft === 1 ? "" : "s"} Remaining (complimentary)`
+        : null;
 
   return {
     available: true,
+    planName: sub.is_complimentary ? `${sub.plan.name} (Complimentary)` : sub.plan.name,
+    planCode: sub.plan.code,
+    status: sub.status,
+    statusLabel: sub.is_complimentary ? "Complimentary" : formatStatusLabel(sub.status),
+    daysLeft: isTrial ? daysLeft : complimentaryDaysLeft,
+    trialDaysRemainingLabel,
+    proposalsUsed: used,
+    proposalsLimit: limit,
+    proposalsDisplay: display,
+    proposalsLimitLabel: limitLabel,
+    isUnlimited,
+    showDaysLeft: (isTrial && daysLeft != null) || (sub.is_complimentary && complimentaryDaysLeft != null),
+    showUpgrade: sub.plan.code === "trial" || sub.plan.code === "starter",
+    isComplimentary: sub.is_complimentary,
+    complimentaryExpiresAt: sub.expires_at,
+    complimentaryGrantedBy: sub.granted_by,
+    complimentaryReason: sub.granted_reason,
+    upgradePlans,
+  };
+}
+
+export async function buildAdminOrgBillingSnapshot(
+  organizationId: string
+): Promise<AdminOrgBillingSnapshot> {
+  const sub = await getActiveOrgSubscription(organizationId);
+  if (!sub) {
+    return {
+      planName: "—",
+      planCode: null,
+      status: null,
+      proposalsUsed: 0,
+      proposalsDisplay: "—",
+      trialEndDate: null,
+      isComplimentary: false,
+      expiresAt: null,
+      grantedBy: null,
+      grantedReason: null,
+    };
+  }
+
+  const monthlyUsed = await getMonthlyUsage(organizationId);
+  const { used, display } = proposalsFromSubscription(sub, monthlyUsed);
+
+  return {
     planName: sub.plan.name,
     planCode: sub.plan.code,
     status: sub.status,
-    daysLeft,
     proposalsUsed: used,
-    proposalsLimit: limit,
-    proposalsDisplay: isUnlimited ? `${used} (unlimited)` : display,
-    isUnlimited,
-    showDaysLeft: isTrial && daysLeft != null,
-    showUpgrade: sub.plan.code === "trial" || sub.plan.code === "starter",
-    upgradePlans,
+    proposalsDisplay: display,
+    trialEndDate: sub.plan.code === "trial" ? sub.trial_ends_at : null,
+    isComplimentary: sub.is_complimentary,
+    expiresAt: sub.is_complimentary ? sub.expires_at : null,
+    grantedBy: sub.is_complimentary ? sub.granted_by : null,
+    grantedReason: sub.is_complimentary ? sub.granted_reason : null,
   };
 }

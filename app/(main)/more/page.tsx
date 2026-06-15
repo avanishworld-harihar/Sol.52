@@ -347,7 +347,7 @@ export default function MorePage() {
           id="more-section-subscription"
           icon={CreditCard}
           title="Subscription"
-          subtitle="Your plan, trial days, and proposal usage."
+          subtitle="Your plan, trial days, and proposal usage — open Billing for the full dashboard."
           defaultOpen
         >
           <SubscriptionUsageCard />

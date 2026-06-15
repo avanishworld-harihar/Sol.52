@@ -9,9 +9,15 @@ import {
   upsertOrgSubscription,
 } from "@/lib/billing/subscription-store";
 import { isCommercialPreset, resolveResidentialThemeKey } from "@/lib/billing/theme-keys";
-import type { OrganizationSubscription, ResidentialThemeKey, TrialIdentityInput } from "@/lib/billing/types";
+import type {
+  AdminComplimentaryGrantInput,
+  OrganizationSubscription,
+  ResidentialThemeKey,
+  TrialIdentityInput,
+} from "@/lib/billing/types";
 import { getMonthlyUsage, incrementProposalUsage, logBillingEvent } from "@/lib/billing/usage";
 import { checkTrialAbuse } from "@/lib/billing/trial-abuse";
+import { countOrgMembers } from "@/lib/billing/team";
 
 export async function isBillingAvailable(): Promise<boolean> {
   const plan = await getPlanByCode("trial");
@@ -25,12 +31,7 @@ function isBillingEnforced(): boolean {
   return true;
 }
 
-function isTrialExpired(sub: OrganizationSubscription): boolean {
-  if (sub.plan.code !== "trial") return false;
-  if (!sub.trial_ends_at) return false;
-  return new Date(sub.trial_ends_at).getTime() < Date.now();
-}
-
+import { getActiveOrgSubscription, applySubscriptionExpiry, isTrialExpired } from "@/lib/billing/subscription-lifecycle";
 function isThemeAllowed(
   sub: OrganizationSubscription,
   themeKey: ResidentialThemeKey
@@ -82,15 +83,7 @@ export async function resolveOrgBilling(
 
   let sub = await getOrgSubscription(organizationId);
   if (sub) {
-    if (isTrialExpired(sub)) {
-      await upsertOrgSubscription({
-        organizationId,
-        planCode: "starter",
-        status: "cancelled",
-        actor: "system_trial_expired",
-      });
-      sub = await getOrgSubscription(organizationId);
-    }
+    sub = (await applySubscriptionExpiry(organizationId, sub)) ?? sub;
     return sub;
   }
 
@@ -233,9 +226,53 @@ export async function recordProposalCreated(
   });
 }
 
+export async function assertCanAddTeamMember(input: {
+  organizationId: string;
+  sub?: OrganizationSubscription | null;
+}): Promise<OrganizationSubscription> {
+  if (!input.organizationId) {
+    throw new BillingEntitlementError("no_subscription", "Organization is required.");
+  }
+  if (!(await isBillingAvailable()) || !isBillingEnforced()) {
+    const sub = input.sub ?? (await getOrgSubscription(input.organizationId));
+    if (!sub) {
+      throw new BillingEntitlementError("no_subscription", "No active subscription for this organization.");
+    }
+    return sub;
+  }
+
+  const sub = input.sub ?? (await resolveOrgBilling(input.organizationId)) ?? null;
+  if (!sub || sub.status === "cancelled") {
+    throw new BillingEntitlementError(
+      "no_subscription",
+      "Subscription is inactive. Upgrade to add team members."
+    );
+  }
+
+  if (!sub.plan.features.team_members_enabled) {
+    throw new BillingEntitlementError(
+      "team_not_enabled",
+      "Team members are not included in your current plan. Upgrade to Pro or Business.",
+      { plan: sub.plan.code, max_users: sub.plan.max_users }
+    );
+  }
+
+  const memberCount = await countOrgMembers(input.organizationId);
+  const maxUsers = sub.plan.max_users ?? sub.plan.features.max_users ?? 1;
+  if (memberCount >= maxUsers) {
+    throw new BillingEntitlementError(
+      "team_limit_reached",
+      `Team member limit reached (${maxUsers}). Upgrade your plan to add more members.`,
+      { limit: maxUsers, used: memberCount, plan: sub.plan.code }
+    );
+  }
+
+  return sub;
+}
+
 export async function shouldShowPdfWatermark(organizationId: string | null): Promise<boolean> {
   if (!organizationId) return false;
-  const sub = await getOrgSubscription(organizationId);
+  const sub = await getActiveOrgSubscription(organizationId);
   if (!sub) return false;
   return sub.plan.features.watermark === true && sub.status === "trialing";
 }
@@ -268,7 +305,84 @@ export async function adminAssignPlan(input: {
     status,
     trialEndsAt,
     trialProposalsUsed: 0,
+    clearComplimentary: true,
     actor: input.actor,
+  });
+}
+
+function resolveComplimentaryExpiry(input: Pick<AdminComplimentaryGrantInput, "durationDays" | "expiresAt">): Date {
+  if (input.expiresAt) {
+    if (input.expiresAt.getTime() <= Date.now()) {
+      throw new Error("Complimentary expiry must be in the future.");
+    }
+    return input.expiresAt;
+  }
+  const days = input.durationDays ?? 14;
+  const expiresAt = new Date();
+  expiresAt.setUTCDate(expiresAt.getUTCDate() + days);
+  return expiresAt;
+}
+
+export async function adminGrantComplimentary(
+  input: AdminComplimentaryGrantInput
+): Promise<OrganizationSubscription | null> {
+  const reason = input.grantedReason.trim();
+  if (!reason) {
+    throw new Error("A grant reason is required.");
+  }
+
+  const expiresAt = resolveComplimentaryExpiry(input);
+  const periodStart = new Date();
+
+  const sub = await upsertOrgSubscription({
+    organizationId: input.organizationId,
+    planCode: input.planCode,
+    status: "active",
+    trialEndsAt: null,
+    periodStart,
+    periodEnd: expiresAt,
+    clearComplimentary: false,
+    complimentary: {
+      isComplimentary: true,
+      expiresAt,
+      grantedBy: input.grantedBy,
+      grantedReason: reason,
+    },
+    actor: input.grantedBy,
+  });
+
+  if (sub) {
+    await logBillingEvent({
+      organizationId: input.organizationId,
+      eventType: "complimentary.granted",
+      payload: {
+        plan_code: input.planCode,
+        expires_at: expiresAt.toISOString(),
+        granted_by: input.grantedBy,
+        granted_reason: reason,
+      },
+    });
+  }
+
+  return sub;
+}
+
+export async function adminRevokeComplimentary(
+  organizationId: string,
+  actor: string,
+  reason?: string
+): Promise<void> {
+  await upsertOrgSubscription({
+    organizationId,
+    planCode: "starter",
+    status: "cancelled",
+    clearComplimentary: true,
+    actor,
+  });
+  await logBillingEvent({
+    organizationId,
+    eventType: "complimentary.revoked",
+    payload: { actor, reason: reason?.trim() || null },
   });
 }
 
@@ -277,6 +391,7 @@ export async function adminEndTrial(organizationId: string, actor: string): Prom
     organizationId,
     planCode: "starter",
     status: "cancelled",
+    clearComplimentary: true,
     actor,
   });
   await logBillingEvent({
