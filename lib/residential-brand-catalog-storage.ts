@@ -67,6 +67,16 @@ export function mergeInstallerBrandCatalog(
         ? [...catalog.inverterPresets]
         : fallback.inverterPresets,
       wirePresets: catalog.wirePresets?.length ? [...catalog.wirePresets] : fallback.wirePresets,
+      moduleWattPresets: catalog.moduleWattPresets?.length
+        ? [...catalog.moduleWattPresets]
+        : config.brandCatalog?.moduleWattPresets,
     },
+    pricing:
+      config.pricing?.moduleWattPresets?.length || !catalog.moduleWattPresets?.length
+        ? config.pricing
+        : {
+            ...(config.pricing ?? {}),
+            moduleWattPresets: [...catalog.moduleWattPresets],
+          },
   };
 }

@@ -10,7 +10,10 @@ import { getCachedCommercialPanelRates } from "@/lib/installer-rate-card-client"
 export type PanelType = "DCR" | "NON_DCR";
 
 /** Common module technologies (India commercial rooftop, 2024–2026). */
+export const DEFAULT_PANEL_TECHNOLOGY = "TOPCon (N-Type)" as const;
+
 export const PANEL_TECHNOLOGY_OPTIONS = [
+  DEFAULT_PANEL_TECHNOLOGY,
   "Mono PERC",
   "Multi PERC",
   "Half-cut Mono PERC",

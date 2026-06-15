@@ -4,7 +4,7 @@
  */
 
 import { z } from "zod";
-import { PANEL_CATALOG } from "@/lib/commercial-panel-catalog";
+import { PANEL_CATALOG, DEFAULT_PANEL_TECHNOLOGY } from "@/lib/commercial-panel-catalog";
 import { computeGrossSystemCostInr } from "@/lib/solar-engine";
 import { defaultResidentialTrackCompare } from "@/lib/residential-track-compare";
 
@@ -94,6 +94,8 @@ export const residentialBrandCatalogSchema = z.object({
   inverterPresets: z.array(z.string().min(1).max(80)).max(32).optional(),
   /** Installer-added DC/AC wire brands — shown on next proposal. */
   wirePresets: z.array(z.string().min(1).max(80)).max(32).optional(),
+  /** Installer-edited module Wp chips — shown on next proposal. */
+  moduleWattPresets: z.array(z.number().int().min(100).max(900)).max(16).optional(),
 });
 
 export const residentialTrackCompareSchema = z.object({
@@ -114,6 +116,8 @@ export const residentialBrandCompareSchema = z.object({
 export const residentialPricingSchema = z.object({
   kwTiers: z.array(residentialKwTierSchema).max(24).optional(),
   panelTechnology: z.string().max(80).optional(),
+  /** Editable Wp chips in proposal builder (residential + commercial). */
+  moduleWattPresets: z.array(z.number().int().min(100).max(900)).max(16).optional(),
   discount: residentialDiscountSchema.optional(),
   /** Legacy primary wire; kept in sync with first entry of wireBrandOptions. */
   wireBrand: residentialWireBrandSchema.optional(),
@@ -191,7 +195,7 @@ export function defaultResidentialConfig(plantKw = 5): ResidentialProposalConfig
       brand: primary.brand,
       brandId: primary.brandId,
       watt: 550,
-      technology: "Mono PERC",
+      technology: DEFAULT_PANEL_TECHNOLOGY,
       ratePerWpInr: defaultRate("adani", 550, "DCR"),
     },
     roofType: "flat",
@@ -206,7 +210,7 @@ export function defaultResidentialConfig(plantKw = 5): ResidentialProposalConfig
     },
     pricing: {
       kwTiers: defaultResidentialKwTiers(),
-      panelTechnology: "Mono PERC",
+      panelTechnology: DEFAULT_PANEL_TECHNOLOGY,
       wireBrand: "polycab",
       wireBrandOptions: ["polycab", "havells"],
       discount: { enabled: false, type: "percent", value: 0 },

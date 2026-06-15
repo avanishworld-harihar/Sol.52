@@ -13,8 +13,6 @@ import {
   quoteResidentialSolar,
 } from "@/lib/residential-solar-engine";
 import type { ResidentialProposalConfig } from "@/lib/residential-requirements-schema";
-import { COMMERCIAL_PANEL_WATT_PRESETS } from "@/lib/commercial-bom-panels";
-import { RESIDENTIAL_WATT_PRESETS } from "@/lib/residential-requirements-schema";
 import { PANEL_CATALOG } from "@/lib/commercial-panel-catalog";
 import {
   ensureBrandCatalog,
@@ -23,6 +21,7 @@ import {
   syncSolarAndPricingFromEntry,
 } from "@/lib/residential-brand-catalog";
 import { WorkspaceBrandCatalogSelector } from "@/components/proposal/workspace-brand-catalog-selector";
+import { WorkspaceModuleWattSelector } from "@/components/proposal/workspace-module-watt-selector";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -252,7 +251,6 @@ export function ResidentialRequirementBuilder({
   }
 
   const theme = isCommercial ? "commercial" : "residential";
-  const wattPresets = isCommercial ? COMMERCIAL_PANEL_WATT_PRESETS : RESIDENTIAL_WATT_PRESETS;
   const wattBoxBorder = isCommercial
     ? "border-indigo-200/80 bg-indigo-50/40 dark:border-indigo-500/25 dark:bg-indigo-950/20"
     : "border-emerald-200/80 bg-emerald-50/40 dark:border-emerald-500/25 dark:bg-emerald-950/20";
@@ -339,25 +337,14 @@ export function ResidentialRequirementBuilder({
       </section>
 
       <section className={cn("space-y-2.5 rounded-xl border p-3", wattBoxBorder)}>
-        <WorkspaceFieldLabel>Module (Wp)</WorkspaceFieldLabel>
-        <p className="text-xs tabular-nums text-slate-600 dark:text-slate-400">
-          {solar.plantCapacityKw} kW → <strong>{modules} panels</strong>
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {wattPresets.map((w) => (
-            <WorkspaceTouchChip key={w} active={solar.watt === w} theme={theme} onClick={() => applyWatt(w)}>
-              {w}W
-            </WorkspaceTouchChip>
-          ))}
-        </div>
-        <NumericTextInput
-          integer
-          value={solar.watt}
-          onValueChange={(n) => {
-            if (n != null && n >= 100) applyWatt(n);
-          }}
-          className="h-11 w-full max-w-[8rem] rounded-xl border border-slate-200 bg-white px-2 text-center text-sm font-bold tabular-nums dark:border-white/15 dark:bg-white/5"
-          aria-label="Custom module wattage"
+        <WorkspaceModuleWattSelector
+          config={config}
+          onChange={onChange}
+          onSelectWatt={applyWatt}
+          isCommercial={isCommercial}
+          theme={theme}
+          plantKw={solar.plantCapacityKw}
+          modules={modules}
         />
       </section>
 

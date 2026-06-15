@@ -102,5 +102,10 @@ export function syncEquipmentPresetsFromConfig(
     catalog = addWirePresetToCatalog(catalog, w);
   }
 
-  return { ...base, brandCatalog: catalog };
+  const moduleWattPresets = config.pricing?.moduleWattPresets ?? config.brandCatalog?.moduleWattPresets;
+  if (moduleWattPresets?.length) {
+    catalog = { ...catalog, moduleWattPresets };
+  }
+
+  return { ...base, brandCatalog: catalog, pricing: { ...(base.pricing ?? {}), moduleWattPresets } };
 }

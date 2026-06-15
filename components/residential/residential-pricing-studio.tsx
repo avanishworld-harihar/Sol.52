@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { FloatingLabelInput, FloatingLabelNumericInput } from "@/components/ui/floating-label-input";
 import { useToast } from "@/components/ui/toast-center";
-import { PANEL_TECHNOLOGY_OPTIONS } from "@/lib/commercial-panel-catalog";
+import { DEFAULT_PANEL_TECHNOLOGY, PANEL_TECHNOLOGY_OPTIONS } from "@/lib/commercial-panel-catalog";
 import { defaultResidentialKwTiers, type ResidentialProposalConfig } from "@/lib/residential-requirements-schema";
 import { syncEquipmentPresetsFromConfig } from "@/lib/residential-equipment-presets";
 import { isPmSuryaGharSubsidyEligible } from "@/lib/lead-connection-types";
@@ -98,7 +98,7 @@ export function ResidentialPricingStudio({
   const solar = config.solar;
   const pricing = config.pricing ?? {
     kwTiers: defaultResidentialKwTiers(),
-    panelTechnology: solar.technology ?? "Mono PERC",
+    panelTechnology: solar.technology ?? DEFAULT_PANEL_TECHNOLOGY,
     wireBrand: "polycab" as const,
     discount: { enabled: false, type: "percent" as const, value: 0 },
   };
@@ -348,9 +348,9 @@ export function ResidentialPricingStudio({
           <div>
             <SectionTitle icon={Sun} title="Panel technology" />
             <select
-              value={pricing.panelTechnology ?? solar.technology ?? "Mono PERC"}
+              value={pricing.panelTechnology ?? solar.technology ?? DEFAULT_PANEL_TECHNOLOGY}
               onChange={(e) => {
-                const panelTechnology = e.target.value || "Mono PERC";
+                const panelTechnology = e.target.value || DEFAULT_PANEL_TECHNOLOGY;
                 onChange({
                   ...config,
                   pricing: { ...pricing, panelTechnology },
@@ -369,9 +369,9 @@ export function ResidentialPricingStudio({
         ) : (
           <ResidentialStepSection step={2} title="Panel type" icon={Sun} defaultOpen>
             <select
-              value={pricing.panelTechnology ?? solar.technology ?? "Mono PERC"}
+              value={pricing.panelTechnology ?? solar.technology ?? DEFAULT_PANEL_TECHNOLOGY}
               onChange={(e) => {
-                const panelTechnology = e.target.value || "Mono PERC";
+                const panelTechnology = e.target.value || DEFAULT_PANEL_TECHNOLOGY;
                 onChange({
                   ...config,
                   pricing: { ...pricing, panelTechnology },

@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { FloatingLabelNumericInput } from "@/components/ui/floating-label-input";
-import { PANEL_TECHNOLOGY_OPTIONS } from "@/lib/commercial-panel-catalog";
+import { DEFAULT_PANEL_TECHNOLOGY, PANEL_TECHNOLOGY_OPTIONS } from "@/lib/commercial-panel-catalog";
 import {
   defaultResidentialKwTiers,
   type ResidentialKwTier,
@@ -20,7 +20,7 @@ type Props = {
 export function ResidentialKwPricingSettings({ config, onChange, className }: Props) {
   const pricing = config.pricing ?? {
     kwTiers: defaultResidentialKwTiers(),
-    panelTechnology: config.solar.technology ?? "Mono PERC",
+    panelTechnology: config.solar.technology ?? DEFAULT_PANEL_TECHNOLOGY,
     wireBrand: "polycab" as const,
     discount: { enabled: false, type: "percent" as const, value: 0 },
   };

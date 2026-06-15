@@ -2943,7 +2943,7 @@ function ProposalPageContent() {
       </div>
       ) : null}
 
-      {/* Bill analysis charts — bill-based paths only (includes Hidden reality chart) */}
+      {/* Bill analysis charts — bill-based paths only */}
       {!hideBillUploadSteps && (
         <div className="ss-card p-4 sm:p-5">
           <BillAnalysisCharts

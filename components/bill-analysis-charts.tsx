@@ -63,8 +63,6 @@ export function BillAnalysisCharts({ monthlyUnits, result, tariffContext, parsed
   const breakdown = estimateMonthlyBillBreakdown(avgU, ctx);
   const bTotal = breakdown.total || 1;
   const pct = (n: number) => `${Math.round((n / bTotal) * 100)}%`;
-  const yearlyNow = result.currentMonthlyBill * 12;
-  const yearlyAfter = result.newMonthlyBill * 12;
   const billFixed = toBillInr(parsedBill?.fixed_charges_inr);
   const billEnergy = toBillInr(parsedBill?.energy_charges_inr);
   const billTotal = toBillInr(parsedBill?.total_amount_payable_inr);
@@ -241,34 +239,6 @@ export function BillAnalysisCharts({ monthlyUnits, result, tariffContext, parsed
         </div>
       )}
 
-      <div className="ss-card border-red-200/45 bg-gradient-to-br from-red-50/85 to-orange-50/70 p-4 dark:border-red-900/40 dark:from-red-950/50 dark:to-orange-950/35 sm:p-5">
-        <p className="text-xs font-extrabold text-red-900 dark:text-red-200 sm:text-sm">{t("charts_hiddenTitle")}</p>
-        <p className="mt-1 text-[11px] font-medium leading-snug text-red-900/80 dark:text-red-200/85 sm:text-xs">{t("charts_hiddenSub")}</p>
-        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div className="ss-card-subtle border-red-200/60 p-4 dark:border-red-800/40 dark:bg-white/[0.06]">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-red-700 dark:text-red-300">{t("charts_yearlyGrid")}</p>
-            <p className="mt-1 text-2xl font-black tabular-nums text-red-700 dark:text-red-200 sm:text-3xl">
-              ₹{yearlyNow.toLocaleString("en-IN")}
-            </p>
-          </div>
-          <div className="ss-card-subtle border-solar-200/60 p-4 dark:border-solar-800/40 dark:bg-white/[0.06]">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-solar-800 dark:text-solar-300">{t("charts_yearlySolar")}</p>
-            <p className="mt-1 text-2xl font-black tabular-nums text-solar-700 dark:text-solar-300 sm:text-3xl">
-              ₹{yearlyAfter.toLocaleString("en-IN")}
-            </p>
-          </div>
-        </div>
-        <div className="mt-3 h-3 w-full overflow-hidden rounded-full bg-slate-200/80 dark:bg-slate-800/90">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-solar-500 to-brand-500 transition-all duration-500"
-            style={{
-              width: `${yearlyNow > 0 ? Math.min(100, Math.round((1 - yearlyAfter / yearlyNow) * 100)) : 0}%`
-            }}
-            title={t("charts_estimatedReductionTitle")}
-          />
-        </div>
-        <p className="mt-2 text-[10px] font-semibold text-slate-600 dark:text-slate-400 sm:text-xs">{t("charts_reductionNote")}</p>
-      </div>
     </div>
   );
 }
