@@ -62,6 +62,13 @@ export const residentialDiscountSchema = z.object({
   value: z.number().min(0).default(0),
 });
 
+export const residentialConnectionPhaseSchema = z.enum(["single_phase", "three_phase"]);
+
+export const residentialPhaseSurchargeSchema = z.object({
+  enabled: z.boolean().default(false),
+  amountInr: z.number().min(0).default(0),
+});
+
 export const residentialBrandOptionSchema = z.object({
   brand: z.string().min(1).max(80),
   brandId: z.string().max(40).optional(),
@@ -119,6 +126,10 @@ export const residentialPricingSchema = z.object({
   /** Editable Wp chips in proposal builder (residential + commercial). */
   moduleWattPresets: z.array(z.number().int().min(100).max(900)).max(16).optional(),
   discount: residentialDiscountSchema.optional(),
+  /** Supply connection phase — drives three-phase surcharge reminder. */
+  connectionPhase: residentialConnectionPhaseSchema.optional(),
+  /** Manual three-phase extra charge (installer-entered ₹ only). */
+  phaseSurcharge: residentialPhaseSurchargeSchema.optional(),
   /** Legacy primary wire; kept in sync with first entry of wireBrandOptions. */
   wireBrand: residentialWireBrandSchema.optional(),
   /** DC/AC wire brands on proposal — selected items appear on BOM & deck. */
@@ -158,6 +169,8 @@ export type ResidentialProposalConfig = z.infer<typeof residentialProposalConfig
 export type ResidentialPanelTrack = z.infer<typeof residentialPanelTrackSchema>;
 export type ResidentialKwTier = z.infer<typeof residentialKwTierSchema>;
 export type ResidentialDiscount = z.infer<typeof residentialDiscountSchema>;
+export type ResidentialConnectionPhase = z.infer<typeof residentialConnectionPhaseSchema>;
+export type ResidentialPhaseSurcharge = z.infer<typeof residentialPhaseSurchargeSchema>;
 export type ResidentialBrandOption = z.infer<typeof residentialBrandOptionSchema>;
 export type ResidentialWireBrand = z.infer<typeof residentialWireBrandSchema>;
 export type ResidentialTrackCompareTier = z.infer<typeof residentialTrackCompareTierSchema>;

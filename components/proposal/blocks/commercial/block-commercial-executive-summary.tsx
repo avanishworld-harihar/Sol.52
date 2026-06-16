@@ -119,11 +119,27 @@ export function BlockCommercialExecutiveSummary({ ctx }: Props) {
             <span className="text-xl font-black tabular-nums text-slate-900 md:text-2xl">
               <StaticInrKpi amount={summary.netCost} />
             </span>
-            {hasSubsidy ? (
+            {hasSubsidy || summary.phaseSurchargeInr > 0 || summary.discountInr > 0 ? (
               <span className="text-[10px] leading-snug text-slate-500">
-                {isHi ? "सकल" : "Gross"} {fmtInr(summary.grossSystemCost)}
-                <span className="mx-1 text-slate-300">·</span>
-                {isHi ? "सब्सिडी" : "Subsidy"} −{fmtInr(summary.pmSubsidy)}
+                {isHi ? "प्लांट" : "Plant"} {fmtInr(summary.grossSystemCost)}
+                {summary.phaseSurchargeInr > 0 ? (
+                  <>
+                    <span className="mx-1 text-slate-300">·</span>
+                    {isHi ? "3-फेज" : "3-phase"} +{fmtInr(summary.phaseSurchargeInr)}
+                  </>
+                ) : null}
+                {summary.discountInr > 0 ? (
+                  <>
+                    <span className="mx-1 text-slate-300">·</span>
+                    {isHi ? "छूट" : "Discount"} −{fmtInr(summary.discountInr)}
+                  </>
+                ) : null}
+                {hasSubsidy ? (
+                  <>
+                    <span className="mx-1 text-slate-300">·</span>
+                    {isHi ? "सब्सिडी" : "Subsidy"} −{fmtInr(summary.pmSubsidy)}
+                  </>
+                ) : null}
               </span>
             ) : (
               <span className="text-[10px] text-slate-400">

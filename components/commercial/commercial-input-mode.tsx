@@ -18,6 +18,8 @@ import {
   Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ConnectionPhaseChips } from "@/components/residential/connection-phase-chips";
+import type { ConnectionPhase } from "@/lib/connection-phase-pricing";
 
 export type CommercialInputMode = "bill" | "requirement";
 
@@ -81,6 +83,8 @@ type RequirementFormProps = {
   monthlyKwh: string;
   notes: string;
   suggestedSystemKw?: number;
+  connectionPhase?: ConnectionPhase;
+  onConnectionPhase?: (phase: ConnectionPhase) => void;
   onContactName: (v: string) => void;
   onOrgName: (v: string) => void;
   onPhone: (v: string) => void;
@@ -97,6 +101,8 @@ function RequirementForm({
   monthlyKwh,
   notes,
   suggestedSystemKw,
+  connectionPhase,
+  onConnectionPhase,
   onContactName,
   onOrgName,
   onPhone,
@@ -125,6 +131,15 @@ function RequirementForm({
         <Field icon={Phone} placeholder="Phone number" value={phone} onChange={onPhone} inputMode="tel" />
         <Field icon={MapPin} placeholder="City / Location" value={city} onChange={onCity} />
       </div>
+
+      {onConnectionPhase ? (
+        <ConnectionPhaseChips
+          value={connectionPhase}
+          onChange={onConnectionPhase}
+          theme="commercial"
+          className="rounded-xl border border-sky-200/80 bg-white/90 px-3 py-2.5"
+        />
+      ) : null}
 
       <div>
         <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-500">
@@ -213,6 +228,8 @@ type Props = {
   monthlyKwh: string;
   notes: string;
   suggestedSystemKw?: number;
+  connectionPhase?: ConnectionPhase;
+  onConnectionPhase?: (phase: ConnectionPhase) => void;
   onContactName: (v: string) => void;
   onOrgName: (v: string) => void;
   onPhone: (v: string) => void;
@@ -231,6 +248,8 @@ export function CommercialInputModeSelector({
   monthlyKwh,
   notes,
   suggestedSystemKw,
+  connectionPhase,
+  onConnectionPhase,
   onContactName,
   onOrgName,
   onPhone,
@@ -270,6 +289,8 @@ export function CommercialInputModeSelector({
             monthlyKwh={monthlyKwh}
             notes={notes}
             suggestedSystemKw={suggestedSystemKw}
+            connectionPhase={connectionPhase}
+            onConnectionPhase={onConnectionPhase}
             onContactName={onContactName}
             onOrgName={onOrgName}
             onPhone={onPhone}

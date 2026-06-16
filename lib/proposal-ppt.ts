@@ -225,7 +225,9 @@ export type ProposalDeckSummary = {
   annualSaving: number;
   totalReduction: number;
   grossSystemCost: number;
+  phaseSurchargeInr: number;
   pmSubsidy: number;
+  discountInr: number;
   netCost: number;
   paybackYears: number;
   lifetime25Profit: number;
@@ -587,6 +589,8 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
     isCommercialDeck,
   });
   const grossSystemCost = commercial.grossSystemCost;
+  const phaseSurchargeInr = commercial.phaseSurchargeInr;
+  const discountInr = commercial.discountInr;
   const pmSubsidy = commercial.pmSubsidy;
   const netCost = commercial.netCost;
 
@@ -671,6 +675,8 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
     totalReduction:
       finalYearlyBill > 0 ? Math.round((finalAnnualSaving / finalYearlyBill) * 100) : totalReduction,
     grossSystemCost,
+    phaseSurchargeInr,
+    discountInr,
     pmSubsidy,
     netCost,
     paybackYears,
@@ -1461,7 +1467,16 @@ export async function buildPremiumProposalPptBuffer(input: PremiumProposalPptInp
   s8.addShape(pptx.ShapeType.roundRect, {
     x: 0.5, y: 4.85, w: 9, h: 0.5, fill: { color: T.ink }, line: { color: T.ink, width: 0 }, rectRadius: 0.06
   });
-  s8.addText(`${D["commercial.gross"]}: ${inr(summary.grossSystemCost)}  •  ${D["commercial.subsidy"]}: −${inr(summary.pmSubsidy)}  •  ${D["commercial.net"]}: ${inr(summary.netCost)}`, {
+  const costSummaryParts = [
+    `${D["commercial.gross"]}: ${inr(summary.grossSystemCost)}`,
+    ...(summary.phaseSurchargeInr > 0
+      ? [`${D["commercial.phaseSurcharge"]}: ${inr(summary.phaseSurchargeInr)}`]
+      : []),
+    ...(summary.discountInr > 0 ? [`${D["commercial.discount"]}: −${inr(summary.discountInr)}`] : []),
+    `${D["commercial.subsidy"]}: −${inr(summary.pmSubsidy)}`,
+    `${D["commercial.net"]}: ${inr(summary.netCost)}`,
+  ];
+  s8.addText(costSummaryParts.join("  •  "), {
     x: 0.7, y: 4.88, w: 8.6, h: 0.45, fontSize: 11, bold: true, color: T.white, fontFace: FONT, valign: "middle"
   });
 
@@ -1475,8 +1490,14 @@ export async function buildPremiumProposalPptBuffer(input: PremiumProposalPptInp
   // Left column: cost breakdown.
   const costRows = [
     { l: D["commercial.gross"], v: inr(summary.grossSystemCost), tone: T.ink },
+    ...(summary.phaseSurchargeInr > 0
+      ? [{ l: D["commercial.phaseSurcharge"], v: inr(summary.phaseSurchargeInr), tone: T.ink }]
+      : []),
+    ...(summary.discountInr > 0
+      ? [{ l: D["commercial.discount"], v: `−${inr(summary.discountInr)}`, tone: T.green }]
+      : []),
     { l: D["commercial.subsidy"], v: `−${inr(summary.pmSubsidy)}`, tone: T.green },
-    { l: D["commercial.net"], v: inr(summary.netCost), tone: T.blueDeep, bold: true }
+    { l: D["commercial.net"], v: inr(summary.netCost), tone: T.blueDeep, bold: true },
   ];
   const costX = 0.5;
   const costY = 2.1;

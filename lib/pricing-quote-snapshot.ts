@@ -8,6 +8,7 @@ import {
   type PanelTrack,
 } from "@/lib/pricing-engine";
 import { resolvePlantPriceFromConfig } from "@/lib/plant-pricing-resolver";
+import { resolvePhaseSurchargeInr } from "@/lib/connection-phase-pricing";
 import { applyResidentialDiscountInr, residentialNetCostInr } from "@/lib/residential-deck-helpers";
 import { isPmSuryaGharSubsidyEligible } from "@/lib/lead-connection-types";
 import { computePmSuryaGharSubsidy } from "@/lib/proposal-deck-helpers";
@@ -69,7 +70,8 @@ export function buildResidentialQuoteSnapshot(
   }
 ): QuoteEngineSnapshot {
   const { ratePerWp, plantGross, track } = resolveResidentialRatePerWp(config, opts.connectionType);
-  const discount = applyResidentialDiscountInr(plantGross, config.pricing?.discount);
+  const phaseSurcharge = resolvePhaseSurchargeInr(config.pricing);
+  const discount = applyResidentialDiscountInr(plantGross + phaseSurcharge, config.pricing?.discount);
   const eligible =
     opts.subsidyEligible ?? isPmSuryaGharSubsidyEligible(opts.connectionType ?? config.connectionType);
   const subsidyPref = config.subsidy?.preference ?? "maximize";

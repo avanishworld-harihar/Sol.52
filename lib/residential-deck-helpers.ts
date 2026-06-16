@@ -2,6 +2,7 @@
  * Residential requirement-based deck math & BOM (does not affect commercial).
  */
 
+import { resolvePhaseSurchargeInr } from "@/lib/connection-phase-pricing";
 import {
   buildBom,
   pickBrandSet,
@@ -85,6 +86,8 @@ export function residentialNetCostInr(
 
 export type ResidentialCostBreakdown = {
   grossInr: number;
+  phaseSurchargeInr: number;
+  subtotalBeforeDiscountInr: number;
   discountInr: number;
   afterDiscountInr: number;
   subsidyInr: number;
@@ -92,14 +95,16 @@ export type ResidentialCostBreakdown = {
   activeTierKw: number;
 };
 
-/** Gross → discount → post-discount → subsidy → net (web proposal + builder). */
+/** Plant price + phase surcharge → discount → subsidy → net (web proposal + builder). */
 export function residentialCostBreakdown(
   config: ResidentialProposalConfig,
   options?: { connectionType?: string | null; subsidyEligible?: boolean }
 ): ResidentialCostBreakdown {
   const grossInr = residentialGrossCostInr(config);
-  const discountInr = applyResidentialDiscountInr(grossInr, config.pricing?.discount);
-  const afterDiscountInr = Math.max(0, grossInr - discountInr);
+  const phaseSurchargeInr = resolvePhaseSurchargeInr(config.pricing);
+  const subtotalBeforeDiscountInr = grossInr + phaseSurchargeInr;
+  const discountInr = applyResidentialDiscountInr(subtotalBeforeDiscountInr, config.pricing?.discount);
+  const afterDiscountInr = Math.max(0, subtotalBeforeDiscountInr - discountInr);
   const dcrEligible = (config.solar.panelTrack ?? "dcr") === "dcr";
   const eligible =
     dcrEligible &&
@@ -111,6 +116,8 @@ export function residentialCostBreakdown(
   const netInr = Math.max(0, afterDiscountInr - subsidyInr);
   return {
     grossInr,
+    phaseSurchargeInr,
+    subtotalBeforeDiscountInr,
     discountInr,
     afterDiscountInr,
     subsidyInr,

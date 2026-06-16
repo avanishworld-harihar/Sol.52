@@ -35,6 +35,18 @@ export function BlockSubsidyClarity({ summary, lang, D }: Props) {
           <span className="text-slate-600">{D["commercial.gross"]}</span>
           <span className="font-semibold text-slate-900">{fmtInr(summary.grossSystemCost)}</span>
         </div>
+        {summary.phaseSurchargeInr > 0 ? (
+          <div className="flex items-center justify-between">
+            <span className="text-slate-600">{D["commercial.phaseSurcharge"]}</span>
+            <span className="font-semibold text-slate-900">{fmtInr(summary.phaseSurchargeInr)}</span>
+          </div>
+        ) : null}
+        {summary.discountInr > 0 ? (
+          <div className="flex items-center justify-between">
+            <span className="text-slate-600">{D["commercial.discount"]}</span>
+            <span className="font-semibold text-emerald-700">−{fmtInr(summary.discountInr)}</span>
+          </div>
+        ) : null}
         <div className="flex items-center justify-between">
           <span className="text-slate-600">{D["commercial.subsidy"]}</span>
           <span className="font-semibold text-emerald-700">−{fmtInr(summary.pmSubsidy)}</span>

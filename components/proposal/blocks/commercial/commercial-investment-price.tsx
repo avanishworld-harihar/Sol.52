@@ -17,9 +17,13 @@ type Props = {
 export function CommercialInvestmentSummary({ summary, lang }: Props) {
   const isHi = lang === "hi";
   const gross = summary.grossSystemCost;
+  const phaseSurcharge = summary.phaseSurchargeInr;
+  const discount = summary.discountInr;
   const subsidy = summary.pmSubsidy;
   const net = summary.netCost;
   const hasSubsidy = subsidy > 0;
+  const hasPhaseSurcharge = phaseSurcharge > 0;
+  const hasDiscount = discount > 0;
   const perKw = summary.systemKw > 0 ? Math.round(net / summary.systemKw) : 0;
 
   return (
@@ -28,16 +32,30 @@ export function CommercialInvestmentSummary({ summary, lang }: Props) {
         <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
           {isHi ? "निवेश" : "Investment"}
         </span>
-        {hasSubsidy ? (
+        {hasSubsidy || hasPhaseSurcharge || hasDiscount ? (
           <>
             <span className="text-slate-600">
-              <span className="text-[11px] text-slate-400">{isHi ? "सकल" : "Gross"}</span>{" "}
+              <span className="text-[11px] text-slate-400">{isHi ? "प्लांट" : "Plant"}</span>{" "}
               <span className="font-semibold tabular-nums text-slate-800">{fmtInr(gross)}</span>
             </span>
+            {hasPhaseSurcharge ? (
+              <span className="text-slate-600">
+                <span className="text-[11px] text-slate-400">{isHi ? "3-फेज" : "3-phase"}</span>{" "}
+                <span className="font-semibold tabular-nums text-slate-800">{fmtInr(phaseSurcharge)}</span>
+              </span>
+            ) : null}
+            {hasDiscount ? (
+              <span className="text-slate-600">
+                <span className="text-[11px] text-slate-400">{isHi ? "छूट" : "Discount"}</span>{" "}
+                <span className="font-semibold tabular-nums text-emerald-700">−{fmtInr(discount)}</span>
+              </span>
+            ) : null}
+            {hasSubsidy ? (
             <span className="text-slate-600">
               <span className="text-[11px] text-slate-400">{isHi ? "सब्सिडी" : "Subsidy"}</span>{" "}
               <span className="font-semibold tabular-nums text-emerald-700">−{fmtInr(subsidy)}</span>
             </span>
+            ) : null}
           </>
         ) : null}
         <span className="text-slate-700">

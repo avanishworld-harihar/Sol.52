@@ -180,6 +180,8 @@ export type ProposalDict = {
 
   // Commercial.
   "commercial.gross": string;
+  "commercial.phaseSurcharge": string;
+  "commercial.discount": string;
   "commercial.subsidy": string;
   "commercial.net": string;
   "commercial.gst": string;
@@ -360,6 +362,8 @@ const EN: ProposalDict = {
   "pay.commissioning": "Against Commissioning",
 
   "commercial.gross": "Gross System Cost",
+  "commercial.phaseSurcharge": "Three-Phase Extra Charge",
+  "commercial.discount": "Customer Discount",
   "commercial.subsidy": "PM Surya Ghar Subsidy",
   "commercial.net": "Net Customer Pays",
   "commercial.gst": "Including 13.8% GST",
@@ -537,6 +541,8 @@ const HI: ProposalDict = {
   "pay.commissioning": "कमीशनिंग पर",
 
   "commercial.gross": "सकल सिस्टम लागत",
+  "commercial.phaseSurcharge": "थ्री-फेज अतिरिक्त शुल्क",
+  "commercial.discount": "ग्राहक छूट",
   "commercial.subsidy": "PM सूर्य घर सब्सिडी",
   "commercial.net": "ग्राहक का भुगतान",
   "commercial.gst": "13.8% GST सहित",

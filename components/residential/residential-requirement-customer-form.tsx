@@ -10,6 +10,8 @@ import {
 } from "@/lib/lead-connection-types";
 import { useInstallerDiscoms } from "@/hooks/use-installer-discoms";
 import { mergeSavedDiscomOption, resolveDiscomCode } from "@/lib/installer-region-storage";
+import { ConnectionPhaseChips } from "@/components/residential/connection-phase-chips";
+import type { ConnectionPhase } from "@/lib/connection-phase-pricing";
 import { cn } from "@/lib/utils";
 import { IndianRupee, MapPin, Phone, User, Zap } from "lucide-react";
 import { useEffect, useMemo } from "react";
@@ -45,6 +47,8 @@ type Props = {
   estimatedKwhFromBill?: number;
   /** Recommended plant size from monthly consumption (kW) */
   suggestedSolarKw?: number;
+  connectionPhase?: ConnectionPhase;
+  onConnectionPhase?: (phase: ConnectionPhase) => void;
   className?: string;
 };
 
@@ -94,6 +98,8 @@ export function ResidentialRequirementCustomerForm({
   canEstimateBillToKwh = true,
   estimatedKwhFromBill,
   suggestedSolarKw,
+  connectionPhase,
+  onConnectionPhase,
   className,
 }: Props) {
   const { options: discomOptions, loading: discomLoading } = useInstallerDiscoms(fields.state);
@@ -195,6 +201,14 @@ export function ResidentialRequirementCustomerForm({
           ))}
         </FloatingLabelSelect>
       </div>
+      {onConnectionPhase ? (
+        <ConnectionPhaseChips
+          value={connectionPhase}
+          onChange={onConnectionPhase}
+          theme="residential"
+          className="rounded-xl border border-slate-200/90 bg-white/80 px-3 py-2.5 dark:border-white/10 dark:bg-white/[0.03]"
+        />
+      ) : null}
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         <Field
           icon={MapPin}

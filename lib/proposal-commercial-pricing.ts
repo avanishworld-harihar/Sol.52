@@ -13,6 +13,7 @@ import { parseResidentialConfig, type ResidentialProposalConfig } from "@/lib/re
 
 export type ProposalCommercialPricing = {
   grossSystemCost: number;
+  phaseSurchargeInr: number;
   pmSubsidy: number;
   discountInr: number;
   netCost: number;
@@ -33,14 +34,21 @@ function readNetOverride(input: PremiumProposalPptInput): number | null {
   return null;
 }
 
-function fromTriple(gross: number, pmSubsidy: number, netCost: number): ProposalCommercialPricing {
+function fromTriple(
+  gross: number,
+  pmSubsidy: number,
+  netCost: number,
+  phaseSurchargeInr = 0
+): ProposalCommercialPricing {
   const g = Math.max(0, n(gross));
+  const phase = Math.max(0, n(phaseSurchargeInr));
   const s = Math.max(0, n(pmSubsidy));
   const net = Math.max(0, n(netCost));
   return {
     grossSystemCost: g,
+    phaseSurchargeInr: phase,
     pmSubsidy: s,
-    discountInr: Math.max(0, g - s - net),
+    discountInr: Math.max(0, g + phase - s - net),
     netCost: net,
   };
 }
@@ -74,10 +82,16 @@ export function resolveProposalCommercialPricing(
       subsidyEligible: ctx.isCommercialDeck ? false : undefined,
     });
     if (netOverride != null) {
-      return fromTriple(breakdown.grossInr, breakdown.subsidyInr, netOverride);
+      return fromTriple(
+        breakdown.grossInr,
+        breakdown.subsidyInr,
+        netOverride,
+        breakdown.phaseSurchargeInr
+      );
     }
     return {
       grossSystemCost: breakdown.grossInr,
+      phaseSurchargeInr: breakdown.phaseSurchargeInr,
       pmSubsidy: breakdown.subsidyInr,
       discountInr: breakdown.discountInr,
       netCost: breakdown.netInr,

@@ -192,9 +192,21 @@ export function BlockSystemRequirements({ summary, lang, darkMode }: Props) {
             </p>
             <div className="flex flex-col gap-2">
               <BlockMetricRow
-                label={isHi ? "कुल लागत" : "Gross Cost"}
+                label={isHi ? "प्लांट मूल्य" : "Plant price"}
                 value={inr(summary.grossSystemCost)}
               />
+              {summary.phaseSurchargeInr > 0 ? (
+                <BlockMetricRow
+                  label={isHi ? "थ्री-फेज अतिरिक्त शुल्क" : "Three-Phase Extra Charge"}
+                  value={inr(summary.phaseSurchargeInr)}
+                />
+              ) : null}
+              {summary.discountInr > 0 ? (
+                <BlockMetricRow
+                  label={isHi ? "ग्राहक छूट" : "Customer discount"}
+                  value={`−${inr(summary.discountInr)}`}
+                />
+              ) : null}
               <BlockMetricRow
                 label={isHi ? "PM सूर्य घर अनुदान" : "PM Surya Ghar Subsidy"}
                 value={`−${inr(summary.pmSubsidy)}`}

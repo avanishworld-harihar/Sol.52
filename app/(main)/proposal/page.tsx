@@ -108,6 +108,7 @@ import {
   parseResidentialConfig,
   type ResidentialProposalConfig,
 } from "@/lib/residential-proposal-config";
+import { mergeConnectionPhaseFromBillText, applyConnectionPhaseSelection, connectionPhaseToManualLabel, detectConnectionPhaseFromText, type ConnectionPhase } from "@/lib/connection-phase-pricing";
 import { loadInstallerRateCard, getCachedResidentialBrandCatalog } from "@/lib/installer-rate-card-client";
 import {
   applyCommercialPanelTrackPolicy,
@@ -773,6 +774,36 @@ function ProposalPageContent() {
     requirementMonthlyBill,
     applyResidentialRequirementConsumption,
   ]);
+
+  /** Auto-select three-phase + enable surcharge toggle when bill OCR indicates 3-phase. */
+  useEffect(() => {
+    const phaseText = manual.phase?.trim();
+    if (!phaseText) return;
+    setResidentialConfig((prev) => {
+      if (!prev) return prev;
+      const next = mergeConnectionPhaseFromBillText(prev, phaseText);
+      return next === prev ? prev : next;
+    });
+    setCommercialPricingConfig((prev) => {
+      if (!prev) return prev;
+      const next = mergeConnectionPhaseFromBillText(prev, phaseText);
+      return next === prev ? prev : next;
+    });
+  }, [manual.phase, Boolean(residentialConfig), Boolean(commercialPricingConfig)]);
+
+  const requirementConnectionPhase = useMemo((): ConnectionPhase | undefined => {
+    return (
+      detectConnectionPhaseFromText(manual.phase) ??
+      residentialConfig?.pricing?.connectionPhase ??
+      commercialPricingConfig?.pricing?.connectionPhase
+    );
+  }, [manual.phase, residentialConfig?.pricing?.connectionPhase, commercialPricingConfig?.pricing?.connectionPhase]);
+
+  const handleRequirementConnectionPhase = useCallback((phase: ConnectionPhase) => {
+    setManual((p) => ({ ...p, phase: connectionPhaseToManualLabel(phase) }));
+    setResidentialConfig((prev) => (prev ? applyConnectionPhaseSelection(prev, phase) : prev));
+    setCommercialPricingConfig((prev) => (prev ? applyConnectionPhaseSelection(prev, phase) : prev));
+  }, []);
 
   const commercialRequirementSuggestedKw = useMemo(() => {
     if (!isCommercialRequirement) return undefined;
@@ -2715,6 +2746,8 @@ function ProposalPageContent() {
               if (v.trim()) setRequirementMonthlyKwh("");
               applyResidentialRequirementConsumption(requirementMonthlyKwh, v);
             }}
+            connectionPhase={requirementConnectionPhase}
+            onConnectionPhase={handleRequirementConnectionPhase}
           />
         ) : null}
 
@@ -2786,6 +2819,8 @@ function ProposalPageContent() {
             }}
             onNotes={setRequirementNotes}
             suggestedSystemKw={commercialRequirementSuggestedKw}
+            connectionPhase={requirementConnectionPhase}
+            onConnectionPhase={handleRequirementConnectionPhase}
           />
         ) : null}
 

@@ -11,6 +11,7 @@ import { computePmSuryaGharSubsidy } from "@/lib/proposal-deck-helpers";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
 import { cn } from "@/lib/utils";
 import { Cpu, Download, Globe, Layers, MessageCircle, Save, Sun, Zap } from "lucide-react";
+import { ConnectionPhasePricingPanel } from "@/components/residential/connection-phase-pricing-panel";
 import { ResidentialEquipmentBrandsSection } from "@/components/residential/residential-equipment-brands-section";
 import { ResidentialBrandCatalogPanel } from "@/components/residential/residential-brand-catalog-panel";
 import { ResidentialBrandComparePanel } from "@/components/residential/residential-brand-compare-panel";
@@ -232,7 +233,9 @@ export function ResidentialPricingStudio({
   );
 
   const residentialPricingAdjustments = (
-    <div className="grid gap-4 lg:grid-cols-2">
+    <div className="grid gap-4">
+      <ConnectionPhasePricingPanel config={config} onChange={onChange} className="lg:col-span-2" />
+      <div className="grid gap-4 lg:grid-cols-2">
       <div className="rounded-xl border border-slate-200/80 p-3 dark:border-white/10">
         <label className="flex cursor-pointer items-center justify-between gap-2">
           <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Customer discount</span>
@@ -311,6 +314,7 @@ export function ResidentialPricingStudio({
             </p>
           </div>
         )}
+      </div>
       </div>
     </div>
   );
@@ -420,7 +424,9 @@ export function ResidentialPricingStudio({
 
         {/* Discount + subsidy — residential step 4; commercial: discount only */}
         {isCommercial ? (
-          <div className="rounded-xl border border-indigo-200/60 bg-indigo-50/40 p-3 dark:border-indigo-500/20 dark:bg-indigo-950/15">
+          <div className="space-y-3">
+            <ConnectionPhasePricingPanel config={config} onChange={onChange} />
+            <div className="rounded-xl border border-indigo-200/60 bg-indigo-50/40 p-3 dark:border-indigo-500/20 dark:bg-indigo-950/15">
             <label className="flex cursor-pointer items-center justify-between gap-2">
               <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Customer discount (this deal)</span>
               <input
@@ -452,10 +458,11 @@ export function ResidentialPricingStudio({
                 />
               </div>
             ) : null}
-            <p className="mt-2 hidden text-[11px] text-slate-500 sm:block">No PM subsidy — net = rate − discount.</p>
+            <p className="mt-2 hidden text-[11px] text-slate-500 sm:block">No PM subsidy — net = plant + surcharge − discount.</p>
+          </div>
           </div>
         ) : (
-          <ResidentialStepSection step={4} title="Discount & subsidy" icon={Layers} defaultOpen={false}>
+          <ResidentialStepSection step={4} title="Pricing adjustments" icon={Layers} defaultOpen={false}>
             {residentialPricingAdjustments}
           </ResidentialStepSection>
         )}
