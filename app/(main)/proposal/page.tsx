@@ -952,6 +952,14 @@ function ProposalPageContent() {
   const isBillBackedLive = latestBill != null;
 
   const hideBillUploadSteps = isCommercialRequirement || isResidentialRequirement;
+  const catalogBuilderActive =
+    Boolean(residentialConfig && (isResidentialRequirement || isResidentialBill)) ||
+    Boolean(
+      commercialPricingConfig &&
+        commercialConfig &&
+        osPresetId === "commercial_executive" &&
+        (isCommercialRequirement || (isCommercialBillMode && commercialBillsReady))
+    );
 
   // Drives BuilderStageBar active/completed state in real-time.
   const osActiveStageIndex = useMemo(() => {
@@ -2541,7 +2549,9 @@ function ProposalPageContent() {
           <button
             type="button"
             disabled={isWebProposalBusy}
-            onClick={() => void generateWebProposal()}
+            onClick={() =>
+              void (catalogBuilderActive ? saveAndGenerateWebProposal() : generateWebProposal())
+            }
             aria-label={osPresetId === "commercial_executive" ? "Generate Commercial Proposal" : "Generate Web Proposal"}
             className={cn(
               "flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold text-white shadow-[0_8px_24px_rgba(0,0,0,0.22)] transition-all active:scale-95",
@@ -2740,6 +2750,13 @@ function ProposalPageContent() {
               return saved?.id ?? null;
             }}
             onSaveAndGenerate={() => saveAndGenerateWebProposal()}
+            onOpenReview={() => setShowReviewSheet(true)}
+            paybackDisplay={effectiveResult.paybackDisplay}
+            onDownloadPpt={() => void downloadPremiumPpt()}
+            onCopySummary={() => void copyWhatsAppSummary()}
+            pptDownloading={isPptDownloading}
+            copySummaryBusy={isCopyingSummary}
+            generateBusy={isWebProposalBusy}
           />
         ) : null}
 
@@ -2809,6 +2826,12 @@ function ProposalPageContent() {
               if (saved?.id) setDraftProposalId(saved.id);
             }}
             onSaveAndGenerate={() => saveAndGenerateWebProposal()}
+            paybackDisplay={effectiveResult.paybackDisplay}
+            onDownloadPpt={() => void downloadPremiumPpt()}
+            onCopySummary={() => void copyWhatsAppSummary()}
+            pptDownloading={isPptDownloading}
+            copySummaryBusy={isCopyingSummary}
+            generateBusy={isWebProposalBusy}
           />
         ) : null}
 
@@ -3132,6 +3155,12 @@ function ProposalPageContent() {
             if (saved?.id) setDraftProposalId(saved.id);
           }}
           onSaveAndGenerate={() => saveAndGenerateWebProposal()}
+          paybackDisplay={effectiveResult.paybackDisplay}
+          onDownloadPpt={() => void downloadPremiumPpt()}
+          onCopySummary={() => void copyWhatsAppSummary()}
+          pptDownloading={isPptDownloading}
+          copySummaryBusy={isCopyingSummary}
+          generateBusy={isWebProposalBusy}
         />
       ) : null}
 
@@ -3179,6 +3208,13 @@ function ProposalPageContent() {
             return saved?.id ?? null;
           }}
           onSaveAndGenerate={() => saveAndGenerateWebProposal()}
+          onOpenReview={() => setShowReviewSheet(true)}
+          paybackDisplay={effectiveResult.paybackDisplay}
+          onDownloadPpt={() => void downloadPremiumPpt()}
+          onCopySummary={() => void copyWhatsAppSummary()}
+          pptDownloading={isPptDownloading}
+          copySummaryBusy={isCopyingSummary}
+          generateBusy={isWebProposalBusy}
         />
       ) : null}
 
@@ -3187,7 +3223,8 @@ function ProposalPageContent() {
           Upload latest bill + one previous bill to unlock customer details, commercial executive setup, and proposal settings.
         </div>
       ) : null}
-      {(!isCommercialBillMode || (commercialBillsReady && !commercialPricingConfig)) && (
+      {(!isCommercialBillMode || (commercialBillsReady && !commercialPricingConfig)) &&
+        !catalogBuilderActive && (
       <div id="step-3-anchor" className={`ss-card space-y-4 p-4 sm:p-5 ${osPresetId === "commercial_executive" ? "ring-1 ring-sky-200/60" : ""}`}>
         {useResidentialCatalog ? (
           <div className="rounded-xl border border-emerald-200/80 bg-emerald-50/60 px-3 py-2.5 text-xs text-emerald-950 dark:border-emerald-800/50 dark:bg-emerald-950/30 dark:text-emerald-100">
@@ -3413,6 +3450,40 @@ function ProposalPageContent() {
         ) : null}
       </div>
       )}
+
+      {catalogBuilderActive && latestWebProposalUrl ? (
+        <div className="ss-card mt-4 rounded-xl border border-teal-200 bg-teal-50/60 p-4 text-xs sm:text-sm">
+          <p className="font-semibold text-teal-900">Web proposal link ready</p>
+          <p className="mt-1 break-all font-mono text-[11px] text-teal-800 sm:text-xs">{latestWebProposalUrl}</p>
+          {lastAutoLeadId ? (
+            <p className="mt-2 text-[11px] text-teal-800">
+              {t("proposal_leadCreatedSub")}{" "}
+              <button
+                type="button"
+                className="font-bold underline underline-offset-2"
+                onClick={() => router.push(`/customers?lead=${encodeURIComponent(lastAutoLeadId)}`)}
+              >
+                Open in Customers
+              </button>
+            </p>
+          ) : null}
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button
+              type="button"
+              className="ss-cta-secondary text-xs sm:text-sm"
+              onClick={() => {
+                navigator.clipboard.writeText(latestWebProposalUrl).catch(() => undefined);
+                toast.success("Link copied", "Web proposal URL copied to clipboard.");
+              }}
+            >
+              Copy link
+            </button>
+            <button type="button" className="ss-cta-primary text-xs sm:text-sm" onClick={shareLatestOnWhatsApp}>
+              <Send className="mr-1.5 h-3.5 w-3.5" /> Send on WhatsApp
+            </button>
+          </div>
+        </div>
+      ) : null}
           </div>{/* end main builder column */}
 
           {/* Live preview panel — visible at lg+ (iPad Pro, desktop) */}

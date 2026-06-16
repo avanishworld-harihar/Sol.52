@@ -32,6 +32,12 @@ type Props = {
   onSaveAndGenerate?: () => Promise<void>;
   lineItems?: PricingLineItem[];
   onOpenReview?: () => void;
+  paybackDisplay?: string;
+  onDownloadPpt?: () => void;
+  onCopySummary?: () => void;
+  pptDownloading?: boolean;
+  copySummaryBusy?: boolean;
+  generateBusy?: boolean;
 };
 
 /** Commercial deal workspace — ordered steps, executive theme, rate card in More. */
@@ -53,6 +59,12 @@ export function CommercialProposalWorkspace({
   onSaveAndGenerate,
   lineItems,
   onOpenReview,
+  paybackDisplay,
+  onDownloadPpt,
+  onCopySummary,
+  pptDownloading,
+  copySummaryBusy,
+  generateBusy,
 }: Props) {
   const systemKw = pricingConfig.solar.plantCapacityKw;
   const dg = commercialConfig.dgAssumptions ?? { enabled: false };
@@ -65,7 +77,7 @@ export function CommercialProposalWorkspace({
 
   return (
     <div className="space-y-5">
-      <CommercialWorkspaceHeader summary={summary} netCostInr={netCostInr} onOpenReview={onOpenReview} />
+      <CommercialWorkspaceHeader summary={summary} netCostInr={netCostInr} />
 
       <ResidentialRequirementBuilder
         variant="commercial"
@@ -95,6 +107,14 @@ export function CommercialProposalWorkspace({
         commercialConfig={commercialConfig}
         onCommercialConfigChange={onCommercialConfigChange}
         summary={summary}
+        onOpenReview={onOpenReview}
+        netCostInr={netCostInr}
+        paybackDisplay={paybackDisplay}
+        onDownloadPpt={onDownloadPpt}
+        onCopySummary={onCopySummary}
+        pptDownloading={pptDownloading}
+        copySummaryBusy={copySummaryBusy}
+        generateBusy={generateBusy}
       />
 
       {showDiagram ? (

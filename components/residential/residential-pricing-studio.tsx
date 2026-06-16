@@ -10,7 +10,7 @@ import { isPmSuryaGharSubsidyEligible } from "@/lib/lead-connection-types";
 import { computePmSuryaGharSubsidy } from "@/lib/proposal-deck-helpers";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
 import { cn } from "@/lib/utils";
-import { Cpu, Layers, Save, Sun, Zap } from "lucide-react";
+import { Cpu, Download, Globe, Layers, MessageCircle, Save, Sun, Zap } from "lucide-react";
 import { ResidentialEquipmentBrandsSection } from "@/components/residential/residential-equipment-brands-section";
 import { ResidentialBrandCatalogPanel } from "@/components/residential/residential-brand-catalog-panel";
 import { ResidentialBrandComparePanel } from "@/components/residential/residential-brand-compare-panel";
@@ -55,6 +55,15 @@ type Props = {
   onCommercialConfigChange?: (next: CommercialProposalConfig) => void;
   summary?: ProposalDeckSummary;
   className?: string;
+  /** Unified proposal actions (builder flow — avoids duplicate generate bar below). */
+  onOpenReview?: () => void;
+  netCostInr?: number;
+  paybackDisplay?: string;
+  onDownloadPpt?: () => void;
+  onCopySummary?: () => void;
+  pptDownloading?: boolean;
+  copySummaryBusy?: boolean;
+  generateBusy?: boolean;
 };
 
 function inr(n: number) {
@@ -91,6 +100,14 @@ export function ResidentialPricingStudio({
   subsidyEligible: subsidyEligibleProp,
   hideCatalogPanel = false,
   className,
+  onOpenReview,
+  netCostInr,
+  paybackDisplay,
+  onDownloadPpt,
+  onCopySummary,
+  pptDownloading = false,
+  copySummaryBusy = false,
+  generateBusy = false,
 }: Props) {
   const toast = useToast();
   const [saving, setSaving] = useState(false);
@@ -461,33 +478,107 @@ export function ResidentialPricingStudio({
       </div>
 
       <div className={workspaceStickySaveClass()}>
-        <p className="mb-2 hidden text-xs text-slate-500 sm:block">
-          {onSaveAndGenerate ? "Saves settings and opens shareable proposal." : "Syncs to this proposal."}
-        </p>
-        <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-          <Button
-            type="button"
-            disabled={saving}
-            onClick={() => void (onSaveAndGenerate ? handleSaveAndGenerate() : handleSave())}
-            className={cn(
-              "h-12 w-full gap-2 text-base font-semibold sm:min-w-[11rem]",
-              isCommercial
-                ? "bg-indigo-700 hover:bg-indigo-800 dark:bg-indigo-500"
-                : "bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-600"
+        {(netCostInr != null || paybackDisplay) && onSaveAndGenerate ? (
+          <div className="mb-3 grid grid-cols-2 gap-2 border-b border-slate-200/80 pb-3 text-xs font-semibold text-slate-700 dark:border-white/10 dark:text-slate-300 sm:text-sm">
+            {netCostInr != null ? (
+              <p>
+                Net cost:{" "}
+                <span className="font-extrabold text-brand-700 dark:text-brand-400">{inr(netCostInr)}</span>
+              </p>
+            ) : (
+              <span />
             )}
-          >
-            <Save className="h-5 w-5" aria-hidden />
-            {saving ? "Saving…" : onSaveAndGenerate ? "Save & share proposal" : "Save"}
-          </Button>
+            {paybackDisplay ? (
+              <p className="text-right sm:text-left">
+                Payback: <span className="font-extrabold text-brand-700 dark:text-brand-400">{paybackDisplay}</span>
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+
+        {onOpenReview ? (
+          <div className="mb-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onOpenReview}
+              className={cn(
+                "h-10 w-full gap-2 text-sm font-semibold",
+                isCommercial
+                  ? "border-indigo-200 text-indigo-800 dark:border-indigo-500/30 dark:text-indigo-200"
+                  : "border-emerald-200 text-emerald-800 dark:border-emerald-500/30 dark:text-emerald-200"
+              )}
+            >
+              Review proposal sections
+            </Button>
+          </div>
+        ) : null}
+
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
+          {onSaveAndGenerate ? (
+            <Button
+              type="button"
+              disabled={saving || generateBusy}
+              onClick={() => void handleSaveAndGenerate()}
+              className={cn(
+                "h-12 w-full gap-2 text-base font-semibold sm:min-w-[12rem] sm:flex-1",
+                isCommercial
+                  ? "bg-indigo-700 hover:bg-indigo-800 dark:bg-indigo-500"
+                  : "bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-600"
+              )}
+            >
+              <Globe className="h-5 w-5 shrink-0" aria-hidden />
+              {saving || generateBusy ? "Generating…" : "Generate & share proposal"}
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              disabled={saving}
+              onClick={() => void handleSave()}
+              className={cn(
+                "h-12 w-full gap-2 text-base font-semibold sm:min-w-[11rem]",
+                isCommercial
+                  ? "bg-indigo-700 hover:bg-indigo-800 dark:bg-indigo-500"
+                  : "bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-600"
+              )}
+            >
+              <Save className="h-5 w-5" aria-hidden />
+              {saving ? "Saving…" : "Save"}
+            </Button>
+          )}
           {onSaveAndGenerate ? (
             <Button
               type="button"
               variant="outline"
-              disabled={saving}
+              disabled={saving || generateBusy}
               onClick={() => void handleSave()}
               className="h-12 w-full font-semibold sm:w-auto"
             >
-              Save only
+              Save settings only
+            </Button>
+          ) : null}
+          {onDownloadPpt ? (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={pptDownloading || generateBusy}
+              onClick={onDownloadPpt}
+              className="h-12 w-full gap-2 font-semibold sm:w-auto"
+            >
+              <Download className="h-4 w-4 shrink-0" aria-hidden />
+              {pptDownloading ? "Downloading…" : "Download PPT"}
+            </Button>
+          ) : null}
+          {onCopySummary ? (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={copySummaryBusy || generateBusy}
+              onClick={onCopySummary}
+              className="h-12 w-full gap-2 font-semibold sm:w-auto"
+            >
+              <MessageCircle className="h-4 w-4 shrink-0" aria-hidden />
+              {copySummaryBusy ? "Copying…" : "Copy summary"}
             </Button>
           ) : null}
         </div>

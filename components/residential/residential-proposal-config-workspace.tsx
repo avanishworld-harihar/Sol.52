@@ -30,6 +30,13 @@ type Props = {
   commercialConfig?: CommercialProposalConfig;
   onCommercialConfigChange?: (next: CommercialProposalConfig) => void;
   summary?: ProposalDeckSummary;
+  onOpenReview?: () => void;
+  paybackDisplay?: string;
+  onDownloadPpt?: () => void;
+  onCopySummary?: () => void;
+  pptDownloading?: boolean;
+  copySummaryBusy?: boolean;
+  generateBusy?: boolean;
 };
 
 export function ResidentialProposalConfigWorkspace({
@@ -54,6 +61,13 @@ export function ResidentialProposalConfigWorkspace({
   commercialConfig,
   onCommercialConfigChange,
   summary,
+  onOpenReview,
+  paybackDisplay,
+  onDownloadPpt,
+  onCopySummary,
+  pptDownloading,
+  copySummaryBusy,
+  generateBusy,
 }: Props) {
   return (
     <div className="space-y-6">
@@ -86,6 +100,14 @@ export function ResidentialProposalConfigWorkspace({
         commercialConfig={commercialConfig}
         onCommercialConfigChange={onCommercialConfigChange}
         summary={summary}
+        onOpenReview={onOpenReview}
+        netCostInr={netCostInr}
+        paybackDisplay={paybackDisplay}
+        onDownloadPpt={onDownloadPpt}
+        onCopySummary={onCopySummary}
+        pptDownloading={pptDownloading}
+        copySummaryBusy={copySummaryBusy}
+        generateBusy={generateBusy}
       />
     </div>
   );
