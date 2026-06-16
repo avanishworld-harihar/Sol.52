@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { FloatingLabelInput } from "@/components/ui/floating-label-input";
-import { NumericTextInput } from "@/components/ui/numeric-text-input";
 import {
   WorkspaceFieldLabel,
   WorkspaceTouchChip,
@@ -12,7 +11,6 @@ import {
   addModuleWattPreset,
   clampModuleWatt,
   removeModuleWattPreset,
-  replaceModuleWattPreset,
   resolveModuleWattPresets,
 } from "@/lib/module-watt-presets";
 import type { ResidentialProposalConfig } from "@/lib/residential-requirements-schema";
@@ -22,8 +20,8 @@ import { useState } from "react";
 
 type Props = {
   config: ResidentialProposalConfig;
-  onChange: (next: ResidentialProposalConfig) => void;
-  onSelectWatt: (watt: number) => void;
+  /** Apply preset list changes and optional watt selection in one update (avoids stale config overwrites). */
+  onChange: (next: ResidentialProposalConfig, selectWatt?: number) => void;
   isCommercial: boolean;
   theme?: WorkspaceTheme;
   plantKw: number;
@@ -31,11 +29,10 @@ type Props = {
   className?: string;
 };
 
-/** Step 1 module Wp chips — select, add, edit, or remove preset wattages. */
+/** Step 1 module Wp chips — select, add, or remove preset wattages. */
 export function WorkspaceModuleWattSelector({
   config,
   onChange,
-  onSelectWatt,
   isCommercial,
   theme = "residential",
   plantKw,
@@ -48,15 +45,6 @@ export function WorkspaceModuleWattSelector({
   const [adding, setAdding] = useState(false);
   const [newWatt, setNewWatt] = useState("");
 
-  function emit(next: ResidentialProposalConfig, selectWatt?: number) {
-    onChange(next);
-    if (selectWatt != null) onSelectWatt(selectWatt);
-  }
-
-  function selectWatt(w: number) {
-    onSelectWatt(clampModuleWatt(w));
-  }
-
   function commitAdd() {
     const parsed = Number(newWatt);
     if (!Number.isFinite(parsed) || parsed < 100) {
@@ -65,34 +53,26 @@ export function WorkspaceModuleWattSelector({
       return;
     }
     const w = clampModuleWatt(parsed);
-    emit(addModuleWattPreset(config, w, isCommercial), w);
+    onChange(addModuleWattPreset(config, w, isCommercial), w);
     setNewWatt("");
     setAdding(false);
   }
 
-  function commitRemove(watt: number) {
-    const next = removeModuleWattPreset(config, watt, isCommercial);
+  function commitRemove() {
+    if (presets.length <= 1) return;
+    const next = removeModuleWattPreset(config, activeWatt, isCommercial);
     const remaining = resolveModuleWattPresets(next, isCommercial);
     if (remaining.length === presets.length) return;
-    if (clampModuleWatt(watt) === activeWatt) {
-      emit(next, remaining[0]!);
-      return;
-    }
-    emit(next);
+    const fallback = remaining.includes(activeWatt) ? activeWatt : remaining[0]!;
+    onChange(next, fallback);
   }
 
-  function commitEdit(fromWatt: number, toRaw: number | undefined) {
-    if (toRaw == null || !Number.isFinite(toRaw) || toRaw < 100) return;
-    const to = clampModuleWatt(toRaw);
-    const from = clampModuleWatt(fromWatt);
-    if (from === to) return;
-    const next = replaceModuleWattPreset(config, from, to, isCommercial);
-    if (activeWatt === from) {
-      emit(next, to);
-      return;
-    }
-    emit(next);
-  }
+  const actionBtnClass = cn(
+    "inline-flex min-h-11 items-center gap-1 rounded-xl border border-dashed px-2.5 text-sm font-semibold touch-manipulation",
+    theme === "commercial"
+      ? "border-indigo-300 text-indigo-700 dark:border-indigo-500/40 dark:text-indigo-300"
+      : "border-emerald-300 text-emerald-800 dark:border-emerald-500/40 dark:text-emerald-300"
+  );
 
   return (
     <div className={cn("space-y-2.5", className)}>
@@ -100,32 +80,39 @@ export function WorkspaceModuleWattSelector({
       <p className="text-xs tabular-nums text-slate-600 dark:text-slate-400">
         {plantKw} kW → <strong>{modules} panels</strong>
       </p>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {presets.map((w) => (
           <WorkspaceTouchChip
             key={w}
             active={activeWatt === w}
             theme={theme}
-            onClick={() => selectWatt(w)}
+            onClick={() => onChange(config, w)}
             className="min-w-[4rem] px-3"
           >
             {w}W
           </WorkspaceTouchChip>
         ))}
         {!adding ? (
-          <button
-            type="button"
-            onClick={() => setAdding(true)}
-            className={cn(
-              "inline-flex min-h-11 items-center gap-1 rounded-xl border border-dashed px-3 text-sm font-semibold touch-manipulation",
-              theme === "commercial"
-                ? "border-indigo-300 text-indigo-700 dark:border-indigo-500/40 dark:text-indigo-300"
-                : "border-emerald-300 text-emerald-800 dark:border-emerald-500/40 dark:text-emerald-300"
-            )}
-          >
-            <Plus className="h-4 w-4 shrink-0" aria-hidden />
-            Add
-          </button>
+          <>
+            <button type="button" onClick={() => setAdding(true)} className={actionBtnClass}>
+              <Plus className="h-4 w-4 shrink-0" aria-hidden />
+              Add
+            </button>
+            {presets.length > 1 ? (
+              <button
+                type="button"
+                onClick={commitRemove}
+                title={`Remove ${activeWatt}W from list`}
+                className={cn(
+                  actionBtnClass,
+                  "border-rose-200 text-rose-700 dark:border-rose-900/50 dark:text-rose-300"
+                )}
+              >
+                <Trash2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                <span className="text-xs">Remove</span>
+              </button>
+            ) : null}
+          </>
         ) : null}
       </div>
 
@@ -165,59 +152,6 @@ export function WorkspaceModuleWattSelector({
           </div>
         </div>
       ) : null}
-
-      {presets.includes(activeWatt) ? (
-        <div className="flex flex-col gap-2 rounded-xl border border-slate-200/80 bg-white/90 p-2.5 dark:border-white/10 dark:bg-white/[0.03] sm:flex-row sm:items-center">
-          <div className="min-w-0 flex-1">
-            <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-              Edit {activeWatt}W
-            </label>
-            <NumericTextInput
-              integer
-              value={activeWatt}
-              onValueChange={(n) => commitEdit(activeWatt, n)}
-              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-2 text-center text-sm font-bold tabular-nums dark:border-white/15 dark:bg-white/5"
-              aria-label="Edit module wattage"
-            />
-          </div>
-          {presets.length > 1 ? (
-            <button
-              type="button"
-              onClick={() => commitRemove(activeWatt)}
-              className="inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-rose-200 px-3 text-sm font-semibold text-rose-700 touch-manipulation dark:border-rose-900/50 dark:text-rose-300"
-            >
-              <Trash2 className="h-4 w-4" aria-hidden />
-              Remove
-            </button>
-          ) : null}
-        </div>
-      ) : (
-        <div className="flex flex-col gap-2 rounded-xl border border-amber-200/80 bg-amber-50/50 p-2.5 dark:border-amber-900/40 dark:bg-amber-950/20 sm:flex-row sm:items-center">
-          <div className="min-w-0 flex-1">
-            <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-              Custom Wp
-            </label>
-            <NumericTextInput
-              integer
-              value={activeWatt}
-              onValueChange={(n) => {
-                if (n != null && n >= 100) onSelectWatt(clampModuleWatt(n));
-              }}
-              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-2 text-center text-sm font-bold tabular-nums dark:border-white/15 dark:bg-white/5"
-              aria-label="Custom module wattage"
-            />
-          </div>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            className="h-11 shrink-0"
-            onClick={() => emit(addModuleWattPreset(config, activeWatt, isCommercial), activeWatt)}
-          >
-            Save to list
-          </Button>
-        </div>
-      )}
     </div>
   );
 }

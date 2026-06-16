@@ -193,28 +193,42 @@ export function ResidentialRequirementBuilder({
     patchSolar({ panelTrack: track, moduleCountOverride: undefined, ratePerWpInr: hit?.ratePerWpInr ?? solar.ratePerWpInr });
   }
 
-  function applyWatt(watt: number) {
-    const w = Math.max(100, Math.min(900, Math.round(watt)));
-    const entry = getActiveCatalogEntry(catalogWithEntries);
+  /** Module preset list + watt — single onChange so preset edits are not wiped by stale config. */
+  function applyModuleConfigChange(next: ResidentialProposalConfig, selectWatt?: number) {
+    if (selectWatt == null) {
+      onChange(next);
+      return;
+    }
+    const w = Math.max(100, Math.min(900, Math.round(selectWatt)));
+    const catalog = ensureBrandCatalog(next);
+    const entry = getActiveCatalogEntry(catalog);
     if (entry) {
-      patchSolar({
-        watt: w,
-        moduleCountOverride: undefined,
-        ratePerWpInr: impliedRatePerWpFromPlant(solar, entry, solar.panelTrack ?? "dcr"),
-        technology: solar.technology,
+      onChange({
+        ...next,
+        solar: {
+          ...next.solar,
+          watt: w,
+          moduleCountOverride: undefined,
+          ratePerWpInr: impliedRatePerWpFromPlant(next.solar, entry, next.solar.panelTrack ?? "dcr"),
+          technology: next.solar.technology,
+        },
       });
       return;
     }
-    const catalogTrack = solar.panelTrack === "dcr" ? "DCR" : "NON_DCR";
+    const catalogTrack = next.solar.panelTrack === "dcr" ? "DCR" : "NON_DCR";
     const hit =
       PANEL_CATALOG.find(
-        (e) => e.brandId === solar.brandId && e.watt === w && e.panelType === catalogTrack
+        (e) => e.brandId === next.solar.brandId && e.watt === w && e.panelType === catalogTrack
       ) ?? PANEL_CATALOG.find((e) => e.watt === w && e.panelType === catalogTrack);
-    patchSolar({
-      watt: w,
-      moduleCountOverride: undefined,
-      ratePerWpInr: hit?.ratePerWpInr ?? solar.ratePerWpInr,
-      technology: hit?.technology ?? solar.technology,
+    onChange({
+      ...next,
+      solar: {
+        ...next.solar,
+        watt: w,
+        moduleCountOverride: undefined,
+        ratePerWpInr: hit?.ratePerWpInr ?? next.solar.ratePerWpInr,
+        technology: hit?.technology ?? next.solar.technology,
+      },
     });
   }
 
@@ -339,8 +353,7 @@ export function ResidentialRequirementBuilder({
       <section className={cn("space-y-2.5 rounded-xl border p-3", wattBoxBorder)}>
         <WorkspaceModuleWattSelector
           config={config}
-          onChange={onChange}
-          onSelectWatt={applyWatt}
+          onChange={applyModuleConfigChange}
           isCommercial={isCommercial}
           theme={theme}
           plantKw={solar.plantCapacityKw}

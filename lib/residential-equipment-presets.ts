@@ -4,6 +4,7 @@
 
 import type { ResidentialBrandCatalog } from "@/lib/residential-brand-catalog";
 import { ensureBrandCatalog } from "@/lib/residential-brand-catalog";
+import { saveInstallerResidentialCatalog } from "@/lib/installer-rate-card-client";
 import {
   RESIDENTIAL_INVERTER_PRESETS,
   RESIDENTIAL_WIRE_PRESETS,
@@ -108,4 +109,10 @@ export function syncEquipmentPresetsFromConfig(
   }
 
   return { ...base, brandCatalog: catalog, pricing: { ...(base.pricing ?? {}), moduleWattPresets } };
+}
+
+/** Persist installer inverter/wire presets to rate card (local + API). */
+export function persistEquipmentCatalog(catalog: ResidentialBrandCatalog): void {
+  if (typeof window === "undefined") return;
+  void saveInstallerResidentialCatalog(mergeEquipmentPresetsIntoCatalog(catalog));
 }

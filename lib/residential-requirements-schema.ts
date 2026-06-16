@@ -121,8 +121,8 @@ export const residentialPricingSchema = z.object({
   discount: residentialDiscountSchema.optional(),
   /** Legacy primary wire; kept in sync with first entry of wireBrandOptions. */
   wireBrand: residentialWireBrandSchema.optional(),
-  /** Up to 2 DC/AC wire brands on proposal & BOM. */
-  wireBrandOptions: z.array(residentialWireBrandSchema).max(2).optional(),
+  /** DC/AC wire brands on proposal — selected items appear on BOM & deck. */
+  wireBrandOptions: z.array(residentialWireBrandSchema).max(32).optional(),
 });
 
 export const residentialProposalConfigSchema = z.object({
@@ -134,10 +134,10 @@ export const residentialProposalConfigSchema = z.object({
   financing: residentialFinancingSchema.optional(),
   /** kW-wise system price, technology, wire brand, per-customer discount */
   pricing: residentialPricingSchema.optional(),
-  /** Up to 3 panel brands shown on proposal (any one may be installed) */
-  panelBrandOptions: z.array(residentialBrandOptionSchema).max(3).optional(),
-  /** Up to 2 inverter brands */
-  inverterBrandOptions: z.array(residentialBrandOptionSchema).max(2).optional(),
+  /** Up to 5 panel brands shown on proposal (any one may be installed) */
+  panelBrandOptions: z.array(residentialBrandOptionSchema).max(5).optional(),
+  /** Inverter brands on proposal — no fixed cap (installer presets + selections). */
+  inverterBrandOptions: z.array(residentialBrandOptionSchema).max(32).optional(),
   /** Per-brand DCR + Non-DCR kW tier catalog (manual plant gross per row). */
   brandCatalog: residentialBrandCatalogSchema.optional(),
   /** Side-by-side Non-DCR vs DCR gross prices (shared kW rows) for web proposal */
@@ -235,6 +235,11 @@ export function defaultResidentialConfig(plantKw = 5): ResidentialProposalConfig
     },
   };
 }
+
+export const PANEL_PROPOSAL_BRAND_MIN = 3;
+export const PANEL_PROPOSAL_BRAND_MAX = 5;
+export const INVERTER_PROPOSAL_BRAND_MAX = 32;
+export const WIRE_PROPOSAL_BRAND_MAX = 32;
 
 export const RESIDENTIAL_BRAND_PRESETS = [
   { brandId: "adani", brand: "Adani Solar", watt: 550 },

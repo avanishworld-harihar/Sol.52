@@ -353,7 +353,7 @@ function upsertPanelBrandOption(
   const cur = list ?? [];
   const key = entry.brandId;
   if (cur.some((p) => (p.brandId ?? p.brand) === key)) return cur;
-  return [{ brandId: entry.brandId, brand: entry.brand }, ...cur].slice(0, 3);
+  return [{ brandId: entry.brandId, brand: entry.brand }, ...cur].slice(0, 5);
 }
 
 export function syncTrackCompareFromBrand(

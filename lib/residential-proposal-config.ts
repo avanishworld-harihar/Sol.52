@@ -17,12 +17,12 @@ import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
 export { residentialProposalConfigSchema, defaultResidentialConfig };
 export type { ResidentialProposalConfig };
 
-/** Ensures wireBrandOptions (max 2) and legacy wireBrand stay aligned. */
+/** Ensures wireBrandOptions and legacy wireBrand stay aligned. */
 export function normalizeResidentialConfig(config: ResidentialProposalConfig): ResidentialProposalConfig {
   let next = ensureBrandCatalog(mergeTrackCompareIntoConfig(config));
   const pricing = next.pricing;
   if (!pricing) return next;
-  const fromList = pricing.wireBrandOptions?.filter(Boolean).slice(0, 2) ?? [];
+  const fromList = pricing.wireBrandOptions?.filter(Boolean).slice(0, 32) ?? [];
   const wireBrandOptions: ResidentialWireBrand[] =
     fromList.length > 0 ? [...fromList] : pricing.wireBrand ? [pricing.wireBrand] : ["polycab"];
   return {

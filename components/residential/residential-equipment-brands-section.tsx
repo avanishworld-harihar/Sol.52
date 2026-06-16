@@ -13,12 +13,19 @@ import {
   addWirePresetToCatalog,
   listInverterPresets,
   listWirePresets,
+  persistEquipmentCatalog,
   wirePresetId,
 } from "@/lib/residential-equipment-presets";
 import type {
   ResidentialBrandOption,
   ResidentialProposalConfig,
   ResidentialWireBrand,
+} from "@/lib/residential-requirements-schema";
+import {
+  INVERTER_PROPOSAL_BRAND_MAX,
+  PANEL_PROPOSAL_BRAND_MAX,
+  PANEL_PROPOSAL_BRAND_MIN,
+  WIRE_PROPOSAL_BRAND_MAX,
 } from "@/lib/residential-requirements-schema";
 import { cn } from "@/lib/utils";
 import { Cable, Cpu, Plus, Sun, Trash2 } from "lucide-react";
@@ -33,13 +40,13 @@ type Props = {
 function toggleBrand(
   list: ResidentialBrandOption[] | undefined,
   option: ResidentialBrandOption,
-  max: number
+  max?: number
 ): ResidentialBrandOption[] {
   const cur = list ?? [];
-  const key = option.brandId ?? option.brand;
-  const exists = cur.some((b) => (b.brandId ?? b.brand) === key);
-  if (exists) return cur.filter((b) => (b.brandId ?? b.brand) !== key);
-  if (cur.length >= max) return cur;
+  const key = (option.brandId ?? option.brand).toLowerCase();
+  const exists = cur.some((b) => (b.brandId ?? b.brand).toLowerCase() === key);
+  if (exists) return cur.filter((b) => (b.brandId ?? b.brand).toLowerCase() !== key);
+  if (max != null && cur.length >= max) return cur;
   return [...cur, option];
 }
 
@@ -93,28 +100,30 @@ export function ResidentialEquipmentBrandsSection({ config, onChange, isCommerci
     ? "border-slate-900 bg-slate-900 text-white"
     : "border-emerald-700 bg-emerald-700 text-white";
 
-  function patch(partial: Partial<ResidentialProposalConfig>) {
-    onChange(ensureBrandCatalog({ ...config, ...partial }));
+  function emit(next: ResidentialProposalConfig) {
+    onChange(ensureBrandCatalog(next));
   }
 
-  function patchCatalog(nextCatalog: typeof catalog) {
-    onChange({ ...config, brandCatalog: nextCatalog });
+  function patch(partial: Partial<ResidentialProposalConfig>) {
+    emit({ ...config, ...partial });
   }
 
   function patchPricing(partial: Partial<NonNullable<ResidentialProposalConfig["pricing"]>>) {
-    onChange({ ...config, pricing: { ...pricing, ...partial } });
+    emit({ ...config, pricing: { ...pricing, ...partial } });
   }
 
   function patchPanelOptions(next: ResidentialBrandOption[]) {
-    const primary = next[0];
-    patch({
-      panelBrandOptions: next,
+    const trimmed = next.slice(0, PANEL_PROPOSAL_BRAND_MAX);
+    const primary = trimmed[0];
+    emit({
+      ...config,
+      panelBrandOptions: trimmed,
       solar: primary ? { ...solar, brand: primary.brand, brandId: primary.brandId } : solar,
     });
   }
 
   function patchWireOptions(next: ResidentialWireBrand[]) {
-    const wireBrandOptions = next.slice(0, 2);
+    const wireBrandOptions = next.slice(0, WIRE_PROPOSAL_BRAND_MAX);
     patchPricing({ wireBrandOptions, wireBrand: wireBrandOptions[0] ?? "polycab" });
   }
 
@@ -125,22 +134,39 @@ export function ResidentialEquipmentBrandsSection({ config, onChange, isCommerci
       patchWireOptions(cur.filter((w) => wirePresetId(w) !== id));
       return;
     }
-    if (cur.length >= 2) return;
+    if (cur.length >= WIRE_PROPOSAL_BRAND_MAX) return;
     patchWireOptions([...cur, id]);
+  }
+
+  function addPanelSlot() {
+    if (panelOpts.length >= PANEL_PROPOSAL_BRAND_MAX) return;
+    const unused = catalogBrands.find(
+      (b) => !panelOpts.some((p) => (p.brandId ?? p.brand) === b.brandId)
+    );
+    if (unused) {
+      patchPanelOptions([...panelOpts, { brandId: unused.brandId, brand: unused.brand }]);
+      return;
+    }
+    patchPanelOptions([...panelOpts, { brand: `Panel ${panelOpts.length + 1}` }]);
   }
 
   function commitNewInverter() {
     const name = newInverter.trim();
     if (!name) {
       setAddingInverter(false);
+      setNewInverter("");
       return;
     }
     const nextCatalog = addInverterPresetToCatalog(catalog, name);
-    patchCatalog(nextCatalog);
-    const cur = invOpts;
-    if (cur.length < 2 && !cur.some((p) => p.brand.toLowerCase() === name.toLowerCase())) {
-      patch({ inverterBrandOptions: [...cur, { brand: name }] });
-    }
+    const alreadySelected = invOpts.some((p) => p.brand.toLowerCase() === name.toLowerCase());
+    const nextInv = alreadySelected ? invOpts : [...invOpts, { brand: name }].slice(0, INVERTER_PROPOSAL_BRAND_MAX);
+    const next = ensureBrandCatalog({
+      ...config,
+      brandCatalog: nextCatalog,
+      inverterBrandOptions: nextInv,
+    });
+    emit(next);
+    persistEquipmentCatalog(next.brandCatalog!);
     setNewInverter("");
     setAddingInverter(false);
   }
@@ -149,23 +175,57 @@ export function ResidentialEquipmentBrandsSection({ config, onChange, isCommerci
     const name = newWire.trim();
     if (!name) {
       setAddingWire(false);
+      setNewWire("");
       return;
     }
     const nextCatalog = addWirePresetToCatalog(catalog, name);
-    patchCatalog(nextCatalog);
     const id = wirePresetId(name);
     const cur = wireOpts;
-    if (cur.length < 2 && !cur.some((w) => wirePresetId(w) === id)) {
-      patchWireOptions([...cur, id]);
-    }
+    const nextWire =
+      cur.some((w) => wirePresetId(w) === id) ? cur : [...cur, id].slice(0, WIRE_PROPOSAL_BRAND_MAX);
+    const next = ensureBrandCatalog({
+      ...config,
+      brandCatalog: nextCatalog,
+      pricing: { ...pricing, wireBrandOptions: nextWire, wireBrand: nextWire[0] ?? "polycab" },
+    });
+    emit(next);
+    persistEquipmentCatalog(next.brandCatalog!);
     setNewWire("");
     setAddingWire(false);
+  }
+
+  function commitNewPanel() {
+    const name = newPanel.trim();
+    if (!name) {
+      setAddingPanel(false);
+      setNewPanel("");
+      return;
+    }
+    let next = addCatalogBrand(normalized, name);
+    const entry = next.brandCatalog?.entries?.find(
+      (e) => e.brand.toLowerCase() === name.toLowerCase()
+    );
+    const cur = panelOpts;
+    if (entry && cur.length < PANEL_PROPOSAL_BRAND_MAX && !cur.some((p) => p.brandId === entry.brandId)) {
+      next = {
+        ...next,
+        panelBrandOptions: [...cur, { brandId: entry.brandId, brand: entry.brand }],
+      };
+    }
+    emit(next);
+    persistEquipmentCatalog(next.brandCatalog!);
+    setNewPanel("");
+    setAddingPanel(false);
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <SectionTitle icon={Sun} title="Panel brands (2–3)" hint="Saved to More → Rate card · any one on site." />
+        <SectionTitle
+          icon={Sun}
+          title={`Panel brands (${PANEL_PROPOSAL_BRAND_MIN}–${PANEL_PROPOSAL_BRAND_MAX})`}
+          hint="Saved to More → Rate card · any one on site."
+        />
         <div className="flex flex-wrap gap-2">
           {catalogBrands.map((b) => {
             const active = panelOpts.some((p) => (p.brandId ?? p.brand) === b.brandId);
@@ -173,7 +233,7 @@ export function ResidentialEquipmentBrandsSection({ config, onChange, isCommerci
               <button
                 key={b.brandId}
                 type="button"
-                onClick={() => onChange(applyActiveBrandToConfig(ensureBrandCatalog(config), b.brandId))}
+                onClick={() => emit(applyActiveBrandToConfig(ensureBrandCatalog(config), b.brandId))}
                 className={cn(
                   "rounded-lg border px-3 py-1.5 text-xs font-semibold",
                   active
@@ -185,13 +245,22 @@ export function ResidentialEquipmentBrandsSection({ config, onChange, isCommerci
               </button>
             );
           })}
-          {!addingPanel && panelOpts.length < 3 ? (
+          {!addingPanel && panelOpts.length < PANEL_PROPOSAL_BRAND_MAX ? (
             <button
               type="button"
               onClick={() => setAddingPanel(true)}
               className="inline-flex items-center gap-1 rounded-lg border border-dashed px-3 py-1.5 text-xs font-semibold text-slate-600"
             >
               <Plus className="h-3 w-3" /> Add brand
+            </button>
+          ) : null}
+          {panelOpts.length < PANEL_PROPOSAL_BRAND_MAX ? (
+            <button
+              type="button"
+              onClick={addPanelSlot}
+              className="inline-flex items-center gap-1 rounded-lg border border-dashed px-3 py-1.5 text-xs font-semibold text-slate-600"
+            >
+              <Plus className="h-3 w-3" /> Add slot
             </button>
           ) : null}
         </div>
@@ -201,19 +270,11 @@ export function ResidentialEquipmentBrandsSection({ config, onChange, isCommerci
               label="New panel brand"
               value={newPanel}
               onChange={(e) => setNewPanel(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && commitNewPanel()}
               className="h-10 flex-1 rounded-lg text-sm font-semibold"
               autoFocus
             />
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => {
-                const name = newPanel.trim();
-                if (name) onChange(addCatalogBrand(normalized, name));
-                setNewPanel("");
-                setAddingPanel(false);
-              }}
-            >
+            <Button type="button" size="sm" onClick={commitNewPanel}>
               Save
             </Button>
             <Button type="button" size="sm" variant="outline" onClick={() => setAddingPanel(false)}>
@@ -237,8 +298,14 @@ export function ResidentialEquipmentBrandsSection({ config, onChange, isCommerci
                 />
                 <button
                   type="button"
+                  disabled={panelOpts.length <= PANEL_PROPOSAL_BRAND_MIN}
                   onClick={() => patchPanelOptions(panelOpts.filter((_, j) => j !== i))}
-                  className="mb-0.5 flex h-10 w-10 items-center justify-center rounded-lg border text-slate-400 hover:text-rose-600"
+                  className="mb-0.5 flex h-10 w-10 items-center justify-center rounded-lg border text-slate-400 hover:text-rose-600 disabled:opacity-30"
+                  title={
+                    panelOpts.length <= PANEL_PROPOSAL_BRAND_MIN
+                      ? `At least ${PANEL_PROPOSAL_BRAND_MIN} panel brands required`
+                      : "Remove"
+                  }
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
@@ -251,7 +318,7 @@ export function ResidentialEquipmentBrandsSection({ config, onChange, isCommerci
       <div>
         <SectionTitle
           icon={Cpu}
-          title="Inverter brands (2)"
+          title="Inverter brands"
           hint="Add a brand once — it appears here on every future proposal."
         />
         <div className="flex flex-wrap gap-2">
@@ -261,7 +328,11 @@ export function ResidentialEquipmentBrandsSection({ config, onChange, isCommerci
               <button
                 key={name}
                 type="button"
-                onClick={() => patch({ inverterBrandOptions: toggleBrand(invOpts, { brand: name }, 2) })}
+                onClick={() =>
+                  patch({
+                    inverterBrandOptions: toggleBrand(invOpts, { brand: name }, INVERTER_PROPOSAL_BRAND_MAX),
+                  })
+                }
                 className={cn(
                   "rounded-lg border px-3 py-1.5 text-xs font-semibold",
                   active ? activeChip : "border-slate-200 text-slate-700 dark:border-white/15"
@@ -271,7 +342,7 @@ export function ResidentialEquipmentBrandsSection({ config, onChange, isCommerci
               </button>
             );
           })}
-          {!addingInverter && invOpts.length < 2 ? (
+          {!addingInverter ? (
             <button
               type="button"
               onClick={() => setAddingInverter(true)}
@@ -329,8 +400,8 @@ export function ResidentialEquipmentBrandsSection({ config, onChange, isCommerci
       <div>
         <SectionTitle
           icon={Cable}
-          title="DC / AC wire (2)"
-          hint="Add custom wire brands — saved for next proposal · shown on BOM."
+          title="DC / AC wire"
+          hint="Add custom wire brands — saved for next proposal · selected brands appear on proposal."
         />
         <div className="flex flex-wrap gap-2">
           {wirePresets.map((label) => {
@@ -342,15 +413,15 @@ export function ResidentialEquipmentBrandsSection({ config, onChange, isCommerci
                 type="button"
                 onClick={() => toggleWire(label)}
                 className={cn(
-                  "rounded-lg border px-4 py-2 text-sm font-bold",
-                  active ? wireActiveChip : "border-slate-200 bg-white dark:border-white/15"
+                  "rounded-lg border px-3 py-1.5 text-xs font-semibold",
+                  active ? wireActiveChip : "border-slate-200 text-slate-700 dark:border-white/15"
                 )}
               >
                 {wireBrandDisplayName(id)}
               </button>
             );
           })}
-          {!addingWire && wireOpts.length < 2 ? (
+          {!addingWire ? (
             <button
               type="button"
               onClick={() => setAddingWire(true)}
@@ -377,6 +448,31 @@ export function ResidentialEquipmentBrandsSection({ config, onChange, isCommerci
               Cancel
             </Button>
           </div>
+        ) : null}
+        {wireOpts.length > 0 ? (
+          <ul className="mt-3 space-y-2">
+            {wireOpts.map((w, i) => (
+              <li key={`wire-${i}-${wirePresetId(w)}`} className="flex items-end gap-2">
+                <FloatingLabelInput
+                  label={`Wire ${i + 1}`}
+                  value={wireBrandDisplayName(w)}
+                  onChange={(e) => {
+                    const next = [...wireOpts];
+                    next[i] = wirePresetId(e.target.value);
+                    patchWireOptions(next);
+                  }}
+                  className="h-10 flex-1 rounded-lg text-sm font-semibold"
+                />
+                <button
+                  type="button"
+                  onClick={() => patchWireOptions(wireOpts.filter((_, j) => j !== i))}
+                  className="mb-0.5 flex h-10 w-10 items-center justify-center rounded-lg border text-slate-400 hover:text-rose-600"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </li>
+            ))}
+          </ul>
         ) : null}
         <p className="mt-2 text-xs font-medium text-slate-600 dark:text-slate-400">
           On proposal:{" "}

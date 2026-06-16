@@ -40,6 +40,7 @@ import { buildLeadPatchFromProposal, patchLeadFromProposal } from "@/lib/sync-pr
 import { saveResidentialRequirement } from "@/lib/save-residential-requirement-client";
 import { saveCommercialRequirement } from "@/lib/save-commercial-requirement-client";
 import { saveInstallerResidentialCatalog } from "@/lib/installer-rate-card-client";
+import { syncEquipmentPresetsFromConfig } from "@/lib/residential-equipment-presets";
 import { ensureBrandCatalog } from "@/lib/residential-brand-catalog";
 import {
   clearProposalBuilderSession,
@@ -2350,9 +2351,11 @@ function ProposalPageContent() {
       await syncSelectedLeadFromBills();
 
       if (useResidentialCatalog && residentialConfig?.brandCatalog) {
-        await saveInstallerResidentialCatalog(ensureBrandCatalog(residentialConfig).brandCatalog!);
+        const synced = syncEquipmentPresetsFromConfig(ensureBrandCatalog(residentialConfig));
+        await saveInstallerResidentialCatalog(synced.brandCatalog!);
       } else if (useCommercialCatalog && commercialPricingConfig?.brandCatalog) {
-        await saveInstallerResidentialCatalog(ensureBrandCatalog(commercialPricingConfig).brandCatalog!);
+        const synced = syncEquipmentPresetsFromConfig(ensureBrandCatalog(commercialPricingConfig));
+        await saveInstallerResidentialCatalog(synced.brandCatalog!);
       }
 
       const saved = await persistProposalToServer();

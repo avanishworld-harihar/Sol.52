@@ -130,7 +130,7 @@ export function wireBrandDisplayName(wire: ResidentialWireBrand): string {
 export function resolveWireBrandOptions(
   pricing: ResidentialProposalConfig["pricing"]
 ): ResidentialWireBrand[] {
-  const fromList = pricing?.wireBrandOptions?.filter(Boolean).slice(0, 2) ?? [];
+  const fromList = pricing?.wireBrandOptions?.filter(Boolean).slice(0, 32) ?? [];
   if (fromList.length > 0) return fromList;
   if (pricing?.wireBrand) return [pricing.wireBrand];
   return ["polycab"];
@@ -142,8 +142,7 @@ export function wireBrandsLabel(
 ): string {
   const names = resolveWireBrandOptions(pricing).map(wireBrandDisplayName);
   if (names.length === 0) return fallback;
-  if (names.length === 1) return names[0]!;
-  return `${names[0]} / ${names[1]}`;
+  return names.join(" / ");
 }
 
 export function panelBrandsLabel(opts: ResidentialBrandOption[] | undefined, fallback: string): string {
