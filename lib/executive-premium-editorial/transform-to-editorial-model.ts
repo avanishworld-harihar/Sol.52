@@ -1,4 +1,5 @@
 import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposal-ppt";
+import { resolveInstallerNameForProposal } from "@/lib/proposal-branding-settings";
 import { fmtCompactK } from "@/lib/executive-premium-editorial/format";
 import type { ExecutivePremiumEditorialModel } from "@/lib/executive-premium-editorial/types";
 
@@ -99,7 +100,8 @@ export function transformToEditorialModel(
   });
 
   return {
-    brand_display: summary.installer.trim() || "Harihar Solar",
+    brand_display:
+      resolveInstallerNameForProposal({ installerName: pptInput.installerName }) || summary.installer.trim(),
     brand_logo_url: pptInput.installerLogoUrl?.trim() || undefined,
     customer_name: customer,
     location_line: locationLine(pptInput),

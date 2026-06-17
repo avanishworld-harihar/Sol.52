@@ -4,19 +4,19 @@
  */
 
 .ep-golden-root {
-  --ep-gl-gold: #8a6b24;
-  --ep-gl-gold-dark: #6d5418;
+  --ep-gl-gold: #b59a57;
+  --ep-gl-gold-dark: #b59a57;
   --ep-gl-ink: #111e38;
   --ep-gl-text: #1f2937;
-  --ep-gl-text-secondary: #334155;
-  --ep-gl-text-muted: #475569;
-  --ep-gl-text-faint: #64748b;
-  --ep-gl-bar: #4b5563;
-  --ep-gl-border-gold: rgba(122, 98, 40, 0.42);
-  --ep-gl-border-muted: #9ca3af;
-  --ep-gl-row-border: #cbd5e1;
-  --ep-gl-line: rgba(122, 98, 40, 0.42);
-  --ep-gl-caption: #475569;
+  --ep-gl-text-secondary: #404a58;
+  --ep-gl-text-muted: #65748b;
+  --ep-gl-text-faint: #919aab;
+  --ep-gl-bar: #e2e8f0;
+  --ep-gl-border-gold: rgba(181, 154, 87, 0.3);
+  --ep-gl-border-muted: #e2e8f0;
+  --ep-gl-row-border: #f1f5f9;
+  --ep-gl-line: rgba(181, 154, 87, 0.3);
+  --ep-gl-caption: #404a58;
 
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   margin: 0;
@@ -129,7 +129,7 @@
 .ep-golden-root .ep-gl-section-tag {
   font-size: 9pt;
   font-weight: 600;
-  color: var(--ep-gl-gold-dark);
+  color: var(--ep-gl-gold);
   text-transform: uppercase;
   letter-spacing: 3px;
   margin-bottom: 20px;
@@ -185,16 +185,18 @@
   font-family: Georgia, "Times New Roman", serif;
   font-size: 28pt;
   font-weight: 400;
-  color: var(--ep-gl-gold-dark);
+  color: var(--ep-gl-gold);
 }
 
-.ep-golden-root .ep-gl-brand-name {
-  font-size: 20pt;
-  font-weight: 700;
-  letter-spacing: 5px;
-  color: var(--ep-gl-gold-dark);
+.ep-golden-root .ep-gl-cover-brand {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22pt;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  color: var(--ep-gl-gold);
   text-transform: uppercase;
-  margin: 0;
+  margin: 0 0 36px 0;
+  line-height: 1.2;
 }
 
 .ep-golden-root .ep-gl-label-upper {
@@ -241,7 +243,7 @@
 .ep-golden-root .ep-gl-cover-divider {
   width: 1px;
   height: 60px;
-  background-color: var(--ep-gl-gold-dark);
+  background-color: var(--ep-gl-gold);
   margin: 0 auto 30px;
 }
 
@@ -260,12 +262,14 @@
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 25px;
+  --ep-gl-payment-label-color: #353f4d;
+  --ep-gl-payment-pct-color: #65748b;
 }
 
 .ep-golden-root .ep-gl-payment-label {
   padding: 6px 0;
   font-size: 9.5pt;
-  color: var(--ep-gl-text-secondary);
+  color: var(--ep-gl-payment-label-color);
 }
 
 .ep-golden-root .ep-gl-payment-label.ep-gl-payment-final {
@@ -276,7 +280,7 @@
 
 .ep-golden-root .ep-gl-payment-pct {
   font-size: 8pt;
-  color: var(--ep-gl-text-faint);
+  color: var(--ep-gl-payment-pct-color);
   font-weight: 400;
 }
 
@@ -292,7 +296,7 @@
 .ep-golden-root .ep-gl-payment-amt.ep-gl-payment-final {
   padding: 10px 0 0;
   font-size: 12pt;
-  color: var(--ep-gl-gold-dark);
+  color: var(--ep-gl-gold);
 }
 
 .ep-golden-root .ep-gl-payment-row-divider td {
@@ -335,7 +339,7 @@
 
 .ep-golden-root .ep-gl-upi-box {
   margin-top: 15px;
-  border: 1px dashed var(--ep-gl-gold-dark);
+  border: 1px dashed var(--ep-gl-gold);
   padding: 12px;
   text-align: center;
   background-color: #fffaf0;
@@ -343,7 +347,7 @@
 
 .ep-golden-root .ep-gl-upi-label {
   font-size: 8pt;
-  color: var(--ep-gl-gold-dark);
+  color: var(--ep-gl-gold);
   text-transform: uppercase;
   letter-spacing: 1px;
   font-weight: 600;
@@ -361,8 +365,22 @@
 .ep-golden-root .ep-gl-client-name {
   font-size: 24pt;
   font-family: Georgia, "Times New Roman", serif;
+  color: var(--ep-gl-gold);
+  margin: 0;
+}
+
+.ep-golden-root .ep-gl-cover-location {
+  font-size: 11pt;
+  color: var(--ep-gl-ink);
+  margin: 0 0 20px;
+}
+
+.ep-golden-root .ep-gl-cover-asset-profile {
+  font-size: 14pt;
   color: var(--ep-gl-ink);
   margin: 0;
+  font-weight: 500;
+  line-height: 1.35;
 }
 
 .ep-golden-root .ep-gl-audit-metrics-row {
@@ -398,7 +416,7 @@
 }
 
 .ep-golden-root .ep-gl-huge-number.gold {
-  color: var(--ep-gl-gold-dark);
+  color: var(--ep-gl-gold);
 }
 
 .ep-golden-root .ep-gl-huge-number.green {
@@ -441,7 +459,7 @@
 }
 
 .ep-golden-root .ep-gl-thin-bar.highlight {
-  background-color: var(--ep-gl-gold-dark);
+  background-color: var(--ep-gl-gold);
 }
 
 .ep-golden-root .ep-gl-chart-label {
@@ -466,6 +484,8 @@
   font-size: 8.5pt;
   border-collapse: collapse;
   margin-top: 5px;
+  --ep-gl-invoice-gold: #967838;
+  --ep-gl-invoice-num: #384352;
 }
 
 .ep-golden-root .ep-gl-invoice-table th {
@@ -475,7 +495,7 @@
   font-weight: 600;
   text-transform: uppercase;
   font-size: 7pt;
-  color: var(--ep-gl-gold-dark);
+  color: var(--ep-gl-invoice-gold);
   letter-spacing: 0.5px;
 }
 
@@ -489,7 +509,7 @@
   border-bottom: 1px solid #f1f5f9;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 9.5pt;
-  color: var(--ep-gl-text-secondary);
+  color: var(--ep-gl-invoice-num);
 }
 
 .ep-golden-root .ep-gl-invoice-table td:first-child {
@@ -497,6 +517,7 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-size: 8.5pt;
   font-weight: 500;
+  color: var(--ep-gl-invoice-num);
 }
 
 .ep-golden-root .ep-gl-invoice-table .ep-gl-total-row td {
@@ -508,8 +529,8 @@
   padding-top: 6px;
 }
 
-.ep-golden-root .ep-gl-net-gold {
-  color: var(--ep-gl-gold-dark) !important;
+.ep-golden-root .ep-gl-invoice-table .ep-gl-net-gold {
+  color: var(--ep-gl-invoice-gold) !important;
   font-weight: 600;
 }
 
@@ -548,7 +569,7 @@
 }
 
 .ep-golden-root .ep-gl-waterfall-label.gold {
-  color: var(--ep-gl-gold-dark);
+  color: var(--ep-gl-gold);
 }
 
 .ep-golden-root .ep-gl-waterfall-value {
@@ -640,7 +661,7 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 11pt;
   font-weight: 600;
-  color: var(--ep-gl-gold-dark);
+  color: var(--ep-gl-gold);
 }
 
 .ep-golden-root .ep-gl-impact-container {
@@ -655,7 +676,7 @@
 .ep-golden-root .ep-gl-impact-number {
   font-family: Georgia, "Times New Roman", serif;
   font-size: 54pt;
-  color: var(--ep-gl-gold-dark);
+  color: var(--ep-gl-gold);
   line-height: 1;
   margin: 0;
 }
@@ -681,7 +702,7 @@
 .ep-golden-root .ep-gl-impact-divider {
   width: 60px;
   height: 2px;
-  background-color: var(--ep-gl-gold-dark);
+  background-color: var(--ep-gl-gold);
   margin: 0 auto;
 }
 
@@ -736,12 +757,12 @@
 .ep-golden-root .ep-gl-manifest-warr {
   font-size: 7.5pt;
   font-weight: 600;
-  color: var(--ep-gl-gold-dark);
+  color: var(--ep-gl-gold);
   text-transform: uppercase;
   letter-spacing: 1px;
   margin: 0;
   display: inline-block;
-  border: 1px solid var(--ep-gl-gold-dark);
+  border: 1px solid var(--ep-gl-gold);
   padding: 2px 6px;
   border-radius: 3px;
 }
@@ -758,7 +779,7 @@
   top: 0;
   font-family: Georgia, "Times New Roman", serif;
   font-size: 20pt;
-  color: var(--ep-gl-gold-dark);
+  color: var(--ep-gl-gold);
   line-height: 1;
 }
 
@@ -799,8 +820,6 @@
 
 @media print {
   .ep-golden-root {
-    --ep-gl-bar: #374151;
-    --ep-gl-text-faint: #4b5563;
     background: #fdfcf9;
   }
 

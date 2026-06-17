@@ -121,7 +121,7 @@ export function buildBom(opts: {
       title: "Mounting Structure",
       spec: "Hot-Dip Galvanized GI, wind-load 150 km/h rated",
       brand: brands.mounting,
-      warranty: "25 yr rust-proof"
+      warranty: "10 yr"
     },
     {
       slot: 4,

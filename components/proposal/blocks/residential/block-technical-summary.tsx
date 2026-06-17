@@ -37,7 +37,7 @@ export function BlockTechnicalSummary({ summary, lang, D }: Props) {
       icon: ShieldCheck,
       title: isHi ? "माउंटिंग" : "Mounting structure",
       spec: isHi ? "GI रेल्स, छत-अनुकूल" : "GI rails, roof-safe design",
-      signal: isHi ? "25 वर्ष डिज़ाइन लाइफ" : "25-year design life",
+      signal: isHi ? "10 वर्ष वारंटी" : "10-year warranty",
       iconClass: "text-emerald-600",
       signalClass: "text-emerald-700",
     },
