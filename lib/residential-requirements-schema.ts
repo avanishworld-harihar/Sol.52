@@ -145,8 +145,8 @@ export const residentialProposalConfigSchema = z.object({
   financing: residentialFinancingSchema.optional(),
   /** kW-wise system price, technology, wire brand, per-customer discount */
   pricing: residentialPricingSchema.optional(),
-  /** Up to 5 panel brands shown on proposal (any one may be installed) */
-  panelBrandOptions: z.array(residentialBrandOptionSchema).max(5).optional(),
+  /** Panel brands shown on proposal (any one may be installed). */
+  panelBrandOptions: z.array(residentialBrandOptionSchema).max(32).optional(),
   /** Inverter brands on proposal — no fixed cap (installer presets + selections). */
   inverterBrandOptions: z.array(residentialBrandOptionSchema).max(32).optional(),
   /** Per-brand DCR + Non-DCR kW tier catalog (manual plant gross per row). */
@@ -249,8 +249,7 @@ export function defaultResidentialConfig(plantKw = 5): ResidentialProposalConfig
   };
 }
 
-export const PANEL_PROPOSAL_BRAND_MIN = 3;
-export const PANEL_PROPOSAL_BRAND_MAX = 5;
+export const PANEL_PROPOSAL_BRAND_MAX = 32;
 export const INVERTER_PROPOSAL_BRAND_MAX = 32;
 export const WIRE_PROPOSAL_BRAND_MAX = 32;
 

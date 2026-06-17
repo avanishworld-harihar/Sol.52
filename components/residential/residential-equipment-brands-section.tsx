@@ -24,7 +24,6 @@ import type {
 import {
   INVERTER_PROPOSAL_BRAND_MAX,
   PANEL_PROPOSAL_BRAND_MAX,
-  PANEL_PROPOSAL_BRAND_MIN,
   WIRE_PROPOSAL_BRAND_MAX,
 } from "@/lib/residential-requirements-schema";
 import { cn } from "@/lib/utils";
@@ -117,8 +116,10 @@ export function ResidentialEquipmentBrandsSection({ config, onChange, isCommerci
     const primary = trimmed[0];
     emit({
       ...config,
-      panelBrandOptions: trimmed,
-      solar: primary ? { ...solar, brand: primary.brand, brandId: primary.brandId } : solar,
+      panelBrandOptions: trimmed.length > 0 ? trimmed : undefined,
+      solar: primary
+        ? { ...solar, brand: primary.brand, brandId: primary.brandId }
+        : solar,
     });
   }
 
@@ -223,7 +224,7 @@ export function ResidentialEquipmentBrandsSection({ config, onChange, isCommerci
       <div>
         <SectionTitle
           icon={Sun}
-          title={`Panel brands (${PANEL_PROPOSAL_BRAND_MIN}–${PANEL_PROPOSAL_BRAND_MAX})`}
+          title="Panel brands"
           hint="Saved to More → Rate card · any one on site."
         />
         <div className="flex flex-wrap gap-2">
@@ -298,14 +299,9 @@ export function ResidentialEquipmentBrandsSection({ config, onChange, isCommerci
                 />
                 <button
                   type="button"
-                  disabled={panelOpts.length <= PANEL_PROPOSAL_BRAND_MIN}
                   onClick={() => patchPanelOptions(panelOpts.filter((_, j) => j !== i))}
-                  className="mb-0.5 flex h-10 w-10 items-center justify-center rounded-lg border text-slate-400 hover:text-rose-600 disabled:opacity-30"
-                  title={
-                    panelOpts.length <= PANEL_PROPOSAL_BRAND_MIN
-                      ? `At least ${PANEL_PROPOSAL_BRAND_MIN} panel brands required`
-                      : "Remove"
-                  }
+                  className="mb-0.5 flex h-10 w-10 items-center justify-center rounded-lg border text-slate-400 hover:text-rose-600"
+                  title="Remove"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
