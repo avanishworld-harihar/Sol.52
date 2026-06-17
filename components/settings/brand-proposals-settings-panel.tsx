@@ -40,7 +40,6 @@ import {
   Trash2,
   UploadCloud,
 } from "lucide-react";
-import Link from "next/link";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 
 type Props = {
@@ -551,21 +550,6 @@ export function BrandProposalsSettingsPanel({ markSaved, markIssue }: Props) {
 
   return (
     <>
-      <Link
-        href="/more/rate-card"
-        className="mb-4 flex items-start gap-3 rounded-2xl border-2 border-amber-300/70 bg-gradient-to-r from-amber-50/90 to-emerald-50/60 p-4 transition hover:border-amber-400 dark:border-amber-600/40 dark:from-amber-950/25 dark:to-emerald-950/15"
-      >
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-amber-300">
-          <Landmark className="h-5 w-5" />
-        </span>
-        <span className="min-w-0">
-          <span className="text-sm font-bold text-slate-900 dark:text-white">Rate card (master pricing)</span>
-          <span className="mt-0.5 block text-xs leading-snug text-slate-600 dark:text-slate-400">
-            Smart catalog — plant ₹/kW for residential & commercial. All new proposals sync here.
-          </span>
-        </span>
-      </Link>
-
       <div className="space-y-2">
         {sections.map((section) => {
           const Icon = section.icon;

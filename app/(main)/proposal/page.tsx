@@ -2365,8 +2365,15 @@ function ProposalPageContent() {
         error?: string;
         code?: string;
       };
-      if (response.status === 402 && json.code === "proposal_limit_reached") {
-        await openProposalLimitModal();
+      if (response.status === 402) {
+        if (
+          json.code === "proposal_limit_reached" ||
+          json.code === "trial_expired" ||
+          json.code === "no_subscription"
+        ) {
+          await openProposalLimitModal();
+        }
+        toast.error("Cannot create proposal", json.error || "Billing or plan limit blocked this proposal.");
         return null;
       }
       throw new Error(json.error || "Web proposal failed");
@@ -2402,13 +2409,16 @@ function ProposalPageContent() {
 
       if (useResidentialCatalog && residentialConfig) {
         const cfg = ensureBrandCatalog(residentialConfig);
-        await saveResidentialRequirement({
+        const savedCfg = await saveResidentialRequirement({
           proposalId: saved.id,
           config: cfg,
           proposalLayout: proposalLayout ?? undefined,
         });
+        if (!savedCfg.ok) {
+          throw new Error(savedCfg.error ?? "Could not save residential pricing config.");
+        }
       } else if (useCommercialCatalog && commercialPricingConfig && commercialConfig) {
-        await saveCommercialRequirement({
+        const savedComm = await saveCommercialRequirement({
           proposalId: saved.id,
           pricingConfig: ensureBrandCatalog(
             applyCommercialPanelTrackPolicy(commercialPricingConfig, manual.connectionType)
@@ -2416,6 +2426,9 @@ function ProposalPageContent() {
           commercialConfig,
           proposalLayout: proposalLayout ?? undefined,
         });
+        if (!savedComm.ok) {
+          throw new Error(savedComm.error ?? "Could not save commercial pricing config.");
+        }
       }
 
       try {

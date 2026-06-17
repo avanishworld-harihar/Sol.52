@@ -145,6 +145,24 @@ export async function resolveOrgBilling(
   return sub;
 }
 
+/** Bootstrap trialing subscription when org has no row yet (first proposal / usage check). */
+async function bootstrapTrialSubscription(
+  organizationId: string
+): Promise<OrganizationSubscription | null> {
+  const trialPlan = await getPlanByCode("trial");
+  if (!trialPlan) return null;
+  const trialEnds = new Date();
+  trialEnds.setUTCDate(trialEnds.getUTCDate() + (trialPlan.features.trial_days ?? 14));
+  return upsertOrgSubscription({
+    organizationId,
+    planCode: "trial",
+    status: "trialing",
+    trialEndsAt: trialEnds,
+    trialProposalsUsed: 0,
+    actor: "system_proposal_bootstrap",
+  });
+}
+
 export async function assertCanCreateProposal(input: {
   organizationId: string;
   presetId: string;
@@ -155,9 +173,19 @@ export async function assertCanCreateProposal(input: {
   if (!input.organizationId) return null;
   if (!(await isBillingAvailable()) || !isBillingEnforced()) return null;
 
-  const sub = (await resolveOrgBilling(input.organizationId, input.identity)) ?? null;
+  let sub = (await resolveOrgBilling(input.organizationId, input.identity)) ?? null;
   if (!sub) {
-    throw new BillingEntitlementError("no_subscription", "No active subscription for this organization.");
+    const consumed = await isOrgTrialConsumed(input.organizationId);
+    if (!consumed) {
+      sub = await bootstrapTrialSubscription(input.organizationId);
+    }
+  }
+  if (!sub) {
+    console.warn(
+      "[billing] no subscription for org %s — allowing proposal (billing row missing or upsert failed)",
+      input.organizationId
+    );
+    return null;
   }
 
   if (sub.status === "cancelled") {

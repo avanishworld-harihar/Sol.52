@@ -675,8 +675,8 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
     totalReduction:
       finalYearlyBill > 0 ? Math.round((finalAnnualSaving / finalYearlyBill) * 100) : totalReduction,
     grossSystemCost,
-    phaseSurchargeInr,
-    discountInr,
+    phaseSurchargeInr: commercial.phaseSurchargeInr ?? 0,
+    discountInr: commercial.discountInr ?? 0,
     pmSubsidy,
     netCost,
     paybackYears,

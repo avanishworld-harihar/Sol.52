@@ -11,6 +11,7 @@ import {
 } from "@/lib/performance-mode";
 import { readProposalBrandingSettings } from "@/lib/proposal-branding-settings";
 import { BrandProposalsSettingsPanel } from "@/components/settings/brand-proposals-settings-panel";
+import { MoreRateCardGroup } from "@/components/settings/more-rate-card-group";
 import { ProposalTemplateSettingsPanel } from "@/components/settings/proposal-template-settings-panel";
 import { SubscriptionUsageCard } from "@/components/settings/subscription-usage-card";
 import { useInstallerDiscoms } from "@/hooks/use-installer-discoms";
@@ -363,11 +364,13 @@ export default function MorePage() {
           <ProposalTemplateSettingsPanel markSaved={markSaved} />
         </MoreGroup>
 
+        <MoreRateCardGroup />
+
         <MoreGroup
           id="more-section-brand"
           icon={Building2}
           title="Brand & proposals"
-          subtitle="Branding, portfolio, banking, and proposal look."
+          subtitle="Company profile, logo, portfolio, banking, and proposal look."
         >
           <BrandProposalsSettingsPanel markSaved={markSaved} markIssue={markIssue} />
         </MoreGroup>
