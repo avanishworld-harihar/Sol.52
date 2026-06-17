@@ -1,7 +1,12 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposal-ppt";
 import { transformToEditorialModel } from "@/lib/executive-premium-editorial/transform-to-editorial-model";
+import {
+  PROPOSAL_BRANDING_UPDATED_EVENT,
+  readProposalBrandingSettings,
+} from "@/lib/proposal-branding-settings";
 import { EpProposalShell } from "@/components/proposals/executive-premium-editorial/primitives/ep-proposal-shell";
 import { EpCoverPage } from "@/components/proposals/executive-premium-editorial/pages/ep-cover-page";
 import { EpBillPage } from "@/components/proposals/executive-premium-editorial/pages/ep-bill-page";
@@ -24,6 +29,24 @@ export function ExecutivePremiumEditorialRenderer({
   summary,
 }: ExecutivePremiumEditorialRendererProps) {
   const model = transformToEditorialModel(pptInput, summary);
+  const [coverLogoUrl, setCoverLogoUrl] = useState<string | undefined>(() => {
+    return (
+      model.brand_logo_url?.trim() ||
+      pptInput.installerLogoUrl?.trim() ||
+      undefined
+    );
+  });
+
+  useEffect(() => {
+    const sync = () => {
+      const fromPpt = pptInput.installerLogoUrl?.trim() ?? "";
+      const fromLocal = readProposalBrandingSettings().installerLogoUrl?.trim() ?? "";
+      setCoverLogoUrl(model.brand_logo_url?.trim() || fromPpt || fromLocal || undefined);
+    };
+    sync();
+    window.addEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
+    return () => window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
+  }, [model.brand_logo_url, pptInput.installerLogoUrl]);
 
   return (
     <div className="ep-golden-root w-full">
@@ -32,6 +55,7 @@ export function ExecutivePremiumEditorialRenderer({
           <EpCoverPage
             data={{
               brand_display: model.brand_display,
+              brand_logo_url: coverLogoUrl,
               customer_name: model.customer_name,
               location_line: model.location_line,
               asset_profile_line: model.asset_profile_line,

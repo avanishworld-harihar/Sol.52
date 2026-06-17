@@ -94,6 +94,7 @@ export function buildBom(opts: {
   preferredPanelBrand?: DeckBrand | string;
   /** Included free AMC on the BOM; defaults to 1 year. */
   includedFreeAmcYears?: BomFreeAmcYears;
+  installerName?: string;
 }): DeckBomItem[] {
   const kw = Math.max(1, Math.round(opts.systemKw || 1));
   const panelWatt = 540;
@@ -101,6 +102,9 @@ export function buildBom(opts: {
   const brands = pickBrandSet({ preferredPanelBrand: opts.preferredPanelBrand, systemKw: kw });
   const freeAmcYears = opts.includedFreeAmcYears ?? 1;
   const netMeterAmc = bomNetMeterAmcCopy(freeAmcYears);
+  const serviceDesk = opts.installerName?.trim()
+    ? `${opts.installerName.trim()} Service Desk`
+    : "Harihar Solar Service Desk";
   return [
     {
       slot: 1,
@@ -141,7 +145,7 @@ export function buildBom(opts: {
       slot: 6,
       title: "Net Metering & AMC",
       spec: netMeterAmc.spec,
-      brand: "Harihar Solar Service Desk",
+      brand: serviceDesk,
       warranty: netMeterAmc.warranty
     }
   ];

@@ -1,6 +1,8 @@
 import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposal-ppt";
 import { summarizeProposalDeck } from "@/lib/proposal-ppt";
 import { resolveProposalPanelBrand } from "@/lib/residential-deck-helpers";
+import { defaultResidentialConfig, parseResidentialConfig } from "@/lib/residential-proposal-config";
+import { solarFromResidentialPanelLine } from "@/lib/residential-solar-engine";
 import { computeGrossSystemCostInr } from "@/lib/solar-engine";
 import { computePmSuryaGharSubsidy } from "@/lib/proposal-deck-helpers";
 import { defaultCommercialPanelLineItems } from "@/lib/commercial-bom-panels";
@@ -120,6 +122,32 @@ export function defaultProposalPricingFromDeck(
   };
 }
 
+/** Keep residentialConfig solar + equipment brands aligned with saved pricing line items. */
+function syncResidentialConfigFromPricingLines(
+  ppt: PremiumProposalPptInput,
+  pricing: ProposalPricingRow
+): PremiumProposalPptInput["residentialConfig"] {
+  const lines = pricing.line_items;
+  if (!lines?.length) return ppt.residentialConfig;
+
+  const panelLine = lines.find((l) => l.kind === "panels");
+  const invLine = lines.find((l) => l.kind === "inverter" && l.brand?.trim());
+  if (!panelLine && !invLine) return ppt.residentialConfig;
+
+  let cfg =
+    parseResidentialConfig(ppt.residentialConfig) ??
+    defaultResidentialConfig(pricing.system_kw || ppt.systemKw);
+
+  if (panelLine) {
+    const solar = solarFromResidentialPanelLine(panelLine, pricing.system_kw || ppt.systemKw);
+    if (solar) cfg = { ...cfg, solar: { ...cfg.solar, ...solar } };
+  }
+  if (invLine) {
+    cfg = { ...cfg, inverterBrandOptions: [{ brand: invLine.brand.trim() }] };
+  }
+  return cfg;
+}
+
 /** Apply DB pricing onto `ppt_input` so `summarizeProposalDeck` stays the single summarizer. */
 export function mergeProposalPricingIntoPptInput(
   ppt: PremiumProposalPptInput,
@@ -138,6 +166,8 @@ export function mergeProposalPricingIntoPptInput(
     pmSuryaGharSubsidyInr: Math.max(0, Math.round(pricing.subsidy_inr)),
     commercialNetPayableInr: finalNet,
     netCostInr: finalNet,
+    pricingLineItems: pricing.line_items,
+    residentialConfig: syncResidentialConfigFromPricingLines(ppt, pricing),
   };
 }
 

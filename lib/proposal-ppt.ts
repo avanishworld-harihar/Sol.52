@@ -172,6 +172,12 @@ export type PremiumProposalPptInput = {
     warranty?: string;
   }>;
 
+  /**
+   * Hydrated from `proposal_pricing.line_items` at render time (pricing merge).
+   * Not required on persisted `ppt_input`.
+   */
+  pricingLineItems?: import("@/lib/proposal-pricing-lines").PricingLineItem[];
+
   /** Public web proposal URL — embedded as QR fallback on slide 11 when
    *  no site photos are uploaded ("Scan to view this proposal"). */
   webProposalUrl?: string;
@@ -525,10 +531,12 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
   let panels = Math.max(1, Math.ceil((input.systemKw * 1000) / 540));
   let annualGen = estimateAnnualGenerationUnits(input.systemKw);
   let brands = pickBrandSet({ preferredPanelBrand: input.panelBrand, systemKw: input.systemKw });
+  const installerLabel = resolveInstallerNameForProposal({ installerName: input.installerName });
   let defaultBom = buildBom({
     systemKw: input.systemKw,
     preferredPanelBrand: input.panelBrand,
     includedFreeAmcYears: amcSelectedYears,
+    installerName: installerLabel || undefined,
   });
 
   if (resCfg?.solar) {
@@ -545,7 +553,10 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
       inverter: inverterBrandsLabel(resCfg.inverterBrandOptions, fallbackBrands.inverter),
       cables: wireBrandsLabel(resCfg.pricing, fallbackBrands.cables),
     };
-    defaultBom = buildResidentialBomFromConfig(resCfg, amcSelectedYears);
+    defaultBom = buildResidentialBomFromConfig(resCfg, amcSelectedYears, {
+      installerName: installerLabel || undefined,
+      lineItems: input.pricingLineItems,
+    });
   }
 
   let pricingInput = input;
@@ -630,7 +641,6 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
   const paymentMilestones = buildPaymentMilestones(netCost);
   const amcOptions = buildAmcOptions(grossSystemCost, lang);
   const baseCompany = defaultCompanyProfile(lang);
-  const installerLabel = resolveInstallerNameForProposal({ installerName: input.installerName });
   const companyProfile: CompanyProfile = resolvedCompanyProfileForLang(
     adaptCompanyProfileForInstaller(
       { ...baseCompany, ...(input.companyProfile ?? {}) },

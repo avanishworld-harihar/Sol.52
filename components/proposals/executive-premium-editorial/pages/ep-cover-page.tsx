@@ -4,15 +4,26 @@ import type { ExecutivePremiumEditorialModel } from "@/lib/executive-premium-edi
 type Props = {
   data: Pick<
     ExecutivePremiumEditorialModel,
-    "brand_display" | "customer_name" | "location_line" | "asset_profile_line"
+    "brand_display" | "brand_logo_url" | "customer_name" | "location_line" | "asset_profile_line"
   >;
 };
 
 export function EpCoverPage({ data }: Props) {
+  const logoUrl = data.brand_logo_url?.trim();
+  const brandName = data.brand_display?.trim();
+
   return (
     <EpLuxuryPage cover>
       <div className="ep-gl-cover-content">
-        {data.brand_display ? <p className="ep-gl-cover-brand">{data.brand_display}</p> : null}
+        {logoUrl || brandName ? (
+          <div className="ep-gl-cover-brand-lockup">
+            {logoUrl ? (
+              <img src={logoUrl} alt={brandName || "Company logo"} className="ep-gl-cover-logo" />
+            ) : brandName ? (
+              <p className="ep-gl-cover-brand">{brandName}</p>
+            ) : null}
+          </div>
+        ) : null}
 
         <h1 className="ep-gl-cover-title">
           Personalized Energy

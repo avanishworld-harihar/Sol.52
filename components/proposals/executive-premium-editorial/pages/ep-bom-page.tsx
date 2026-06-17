@@ -11,7 +11,7 @@ export function EpBomPage({ bomRows }: Props) {
       <div className="ep-gl-section-tag">04 / Hardware Intelligence</div>
       <h1 className="ep-gl-h1">System Parts.</h1>
       <p className="ep-gl-lead" style={{ marginBottom: "20px" }}>
-        We use only top-tier, certified components designed to last for decades.
+        Components selected for your project — make and specification as per your proposal.
       </p>
 
       <div className="ep-gl-manifest-list">

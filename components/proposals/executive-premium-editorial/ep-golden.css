@@ -188,6 +188,26 @@
   color: var(--ep-gl-gold);
 }
 
+.ep-golden-root .ep-gl-cover-brand-lockup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 0 36px 0;
+}
+
+.ep-golden-root .ep-gl-cover-logo {
+  display: block;
+  max-width: 300px;
+  max-height: 130px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  /* Tint any logo to theme gold (#b59a57) — no box/border */
+  filter: brightness(0) saturate(100%) invert(68%) sepia(38%) saturate(620%) hue-rotate(358deg) brightness(0.9)
+    contrast(0.95);
+}
+
 .ep-golden-root .ep-gl-cover-brand {
   font-family: Georgia, "Times New Roman", serif;
   font-size: 22pt;
@@ -195,7 +215,7 @@
   letter-spacing: 0.14em;
   color: var(--ep-gl-gold);
   text-transform: uppercase;
-  margin: 0 0 36px 0;
+  margin: 0;
   line-height: 1.2;
 }
 

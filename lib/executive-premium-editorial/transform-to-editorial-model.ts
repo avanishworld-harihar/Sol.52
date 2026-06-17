@@ -22,25 +22,17 @@ function normalizeWarranty(w: string): string {
   return w.replace(/\byr\b/gi, "Year").replace(/\byears?\b/gi, "Year").trim();
 }
 
-function bomDescription(title: string, brand: string): string {
-  const b = brand.trim() || "certified manufacturers";
+function bomLineNote(title: string, brand: string): string {
+  const make = brand.trim();
+  if (!make) return "";
   const key = title.toLowerCase();
-  if (key.includes("panel")) {
-    return `High-efficiency silicon modules from ${b} engineered for peak absorption.`;
-  }
-  if (key.includes("inverter")) {
-    return `Aerospace-grade waterproof enclosure from ${b} with advanced tracking.`;
-  }
-  if (key.includes("mount") || key.includes("structure")) {
-    return `Industrial mounting structures from ${b} built to survive 150 km/h wind velocities.`;
-  }
-  if (key.includes("cabl")) {
-    return `Fire-resistant ${b} wiring ensures near-zero transmission loss to the grid.`;
-  }
-  if (key.includes("protect") || key.includes("safety") || key.includes("dcdb")) {
-    return "Dedicated safety units with Surge Protection Devices and proper copper earthing.";
-  }
-  return `Premium-grade component from ${b}, certified for long-term rooftop performance.`;
+  if (key.includes("panel")) return `Panel make: ${make}.`;
+  if (key.includes("inverter")) return `Inverter make: ${make}.`;
+  if (key.includes("mount") || key.includes("structure")) return `Structure make: ${make}.`;
+  if (key.includes("cabl")) return `Cable make: ${make}.`;
+  if (key.includes("protect") || key.includes("safety")) return `Protection make: ${make}.`;
+  if (key.includes("net meter") || key.includes("amc")) return `Handled by: ${make}.`;
+  return `Make: ${make}.`;
 }
 
 export function transformToEditorialModel(
@@ -79,7 +71,7 @@ export function transformToEditorialModel(
     name: item.title.replace(/^Solar /, ""),
     spec: item.spec.replace(/\s*×\s*/g, " × ").replace(/\s*x\s*/gi, " × "),
     warranty: normalizeWarranty(item.warranty),
-    description: bomDescription(item.title, item.brand),
+    description: bomLineNote(item.title, item.brand),
   }));
 
   const emi_rows = summary.emi.slice(0, 3).map((row) => ({
