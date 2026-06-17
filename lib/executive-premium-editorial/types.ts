@@ -40,6 +40,7 @@ export type EditorialPaymentRow = {
 
 export type ExecutivePremiumEditorialModel = {
   brand_display: string;
+  brand_logo_url?: string;
   customer_name: string;
   location_line: string;
   asset_profile_line: string;

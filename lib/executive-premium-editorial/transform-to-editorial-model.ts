@@ -100,6 +100,7 @@ export function transformToEditorialModel(
 
   return {
     brand_display: summary.installer.trim() || "Harihar Solar",
+    brand_logo_url: pptInput.installerLogoUrl?.trim() || undefined,
     customer_name: customer,
     location_line: locationLine(pptInput),
     asset_profile_line: `${summary.systemKw} kW Premium Grid-Architecture`,

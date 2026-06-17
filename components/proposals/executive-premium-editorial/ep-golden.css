@@ -4,12 +4,26 @@
  */
 
 .ep-golden-root {
+  --ep-gl-gold: #8a6b24;
+  --ep-gl-gold-dark: #6d5418;
+  --ep-gl-ink: #111e38;
+  --ep-gl-text: #1f2937;
+  --ep-gl-text-secondary: #334155;
+  --ep-gl-text-muted: #475569;
+  --ep-gl-text-faint: #64748b;
+  --ep-gl-bar: #4b5563;
+  --ep-gl-border-gold: rgba(122, 98, 40, 0.42);
+  --ep-gl-border-muted: #9ca3af;
+  --ep-gl-row-border: #cbd5e1;
+  --ep-gl-line: rgba(122, 98, 40, 0.42);
+  --ep-gl-caption: #475569;
+
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   margin: 0;
   padding: 0;
   line-height: 1.6;
   background-color: #f3f4f6;
-  color: #2c3e50;
+  color: var(--ep-gl-text);
 }
 
 .ep-golden-root .ep-gl-doc-canvas {
@@ -43,7 +57,7 @@
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #6b7280;
+  color: var(--ep-gl-caption);
 }
 
 .ep-golden-root .ep-gl-toolbar-btn {
@@ -76,7 +90,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  border: 1px solid rgba(181, 154, 87, 0.2);
+  border: 1px solid var(--ep-gl-line);
   pointer-events: none;
   z-index: 10;
 }
@@ -106,7 +120,7 @@
   font-family: Georgia, "Times New Roman", serif;
   font-size: 40pt;
   font-weight: 400;
-  color: #111e38;
+  color: var(--ep-gl-ink);
   margin: 0 0 10px 0;
   line-height: 1.1;
   letter-spacing: -1px;
@@ -115,7 +129,7 @@
 .ep-golden-root .ep-gl-section-tag {
   font-size: 9pt;
   font-weight: 600;
-  color: #b59a57;
+  color: var(--ep-gl-gold-dark);
   text-transform: uppercase;
   letter-spacing: 3px;
   margin-bottom: 20px;
@@ -124,27 +138,101 @@
 
 .ep-golden-root .ep-gl-lead {
   font-size: 14pt;
-  color: #4a5568;
-  font-weight: 300;
+  color: var(--ep-gl-text-secondary);
+  font-weight: 400;
   line-height: 1.6;
   margin-bottom: 30px;
   max-width: 90%;
 }
 
+.ep-golden-root .ep-gl-brand-lockup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 36px;
+}
+
+.ep-golden-root .ep-gl-brand-logo-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 76px;
+  padding: 10px;
+  border: 1.5px solid var(--ep-gl-gold);
+  border-radius: 12px;
+  background: linear-gradient(145deg, rgba(138, 107, 36, 0.14), rgba(138, 107, 36, 0.05));
+  box-shadow: 0 1px 0 rgba(109, 84, 24, 0.12);
+}
+
+.ep-golden-root .ep-gl-brand-logo {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: sepia(0.3) saturate(1.45) hue-rotate(358deg) brightness(0.88) contrast(1.08);
+}
+
+.ep-golden-root .ep-gl-brand-monogram {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 76px;
+  border: 1.5px solid var(--ep-gl-gold);
+  border-radius: 12px;
+  background: linear-gradient(145deg, rgba(138, 107, 36, 0.18), rgba(138, 107, 36, 0.06));
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 28pt;
+  font-weight: 400;
+  color: var(--ep-gl-gold-dark);
+}
+
 .ep-golden-root .ep-gl-brand-name {
-  font-size: 12pt;
+  font-size: 20pt;
   font-weight: 700;
-  letter-spacing: 6px;
-  color: #b59a57;
+  letter-spacing: 5px;
+  color: var(--ep-gl-gold-dark);
   text-transform: uppercase;
-  margin-bottom: 50px;
+  margin: 0;
+}
+
+.ep-golden-root .ep-gl-label-upper {
+  font-size: 9pt;
+  color: var(--ep-gl-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 5px;
+}
+
+.ep-golden-root .ep-gl-caption {
+  font-size: 8.5pt;
+  color: var(--ep-gl-text-secondary);
+  line-height: 1.35;
+  margin: 0;
+}
+
+.ep-golden-root .ep-gl-footnote {
+  font-size: 7.5pt;
+  color: var(--ep-gl-text-faint);
+  text-align: right;
+  margin-top: 5px;
+  font-style: italic;
+}
+
+.ep-golden-root .ep-gl-prepared-for {
+  font-size: 10pt;
+  color: var(--ep-gl-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 10px;
 }
 
 .ep-golden-root .ep-gl-cover-title {
   font-size: 50pt;
   font-family: Georgia, "Times New Roman", serif;
   font-style: italic;
-  color: #111e38;
+  color: var(--ep-gl-ink);
   margin-bottom: 30px;
   line-height: 1;
   font-weight: 400;
@@ -153,22 +241,127 @@
 .ep-golden-root .ep-gl-cover-divider {
   width: 1px;
   height: 60px;
-  background-color: #b59a57;
+  background-color: var(--ep-gl-gold-dark);
   margin: 0 auto 30px;
 }
 
-.ep-golden-root .ep-gl-prepared-for {
+.ep-golden-root .ep-gl-cover-meta-block {
+  margin-top: 60px;
+}
+
+.ep-golden-root .ep-gl-metric-caption {
+  font-size: 8.5pt;
+  color: var(--ep-gl-text-secondary);
+  line-height: 1.3;
+  margin: 0;
+}
+
+.ep-golden-root .ep-gl-payment-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 25px;
+}
+
+.ep-golden-root .ep-gl-payment-label {
+  padding: 6px 0;
+  font-size: 9.5pt;
+  color: var(--ep-gl-text-secondary);
+}
+
+.ep-golden-root .ep-gl-payment-label.ep-gl-payment-final {
+  padding: 10px 0 0;
   font-size: 10pt;
-  color: #718096;
+  font-weight: 600;
+}
+
+.ep-golden-root .ep-gl-payment-pct {
+  font-size: 8pt;
+  color: var(--ep-gl-text-faint);
+  font-weight: 400;
+}
+
+.ep-golden-root .ep-gl-payment-amt {
+  padding: 6px 0;
+  text-align: right;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11pt;
+  font-weight: 600;
+  color: var(--ep-gl-ink);
+}
+
+.ep-golden-root .ep-gl-payment-amt.ep-gl-payment-final {
+  padding: 10px 0 0;
+  font-size: 12pt;
+  color: var(--ep-gl-gold-dark);
+}
+
+.ep-golden-root .ep-gl-payment-row-divider td {
+  border-bottom: 1px solid var(--ep-gl-border-muted);
+  padding-bottom: 10px !important;
+}
+
+.ep-golden-root .ep-gl-bank-box {
+  background-color: #f8fafc;
+  border: 1px solid var(--ep-gl-border-muted);
+  padding: 15px;
+}
+
+.ep-golden-root .ep-gl-bank-label {
+  font-size: 7.5pt;
+  color: var(--ep-gl-text-muted);
   text-transform: uppercase;
-  letter-spacing: 3px;
-  margin-bottom: 10px;
+  letter-spacing: 1px;
+  margin: 0 0 2px;
+}
+
+.ep-golden-root .ep-gl-bank-value {
+  font-size: 11pt;
+  color: var(--ep-gl-ink);
+  margin: 0 0 10px;
+}
+
+.ep-golden-root .ep-gl-bank-value.serif {
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.ep-golden-root .ep-gl-bank-value.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 600;
+}
+
+.ep-golden-root .ep-gl-bank-value:last-child {
+  margin-bottom: 0;
+}
+
+.ep-golden-root .ep-gl-upi-box {
+  margin-top: 15px;
+  border: 1px dashed var(--ep-gl-gold-dark);
+  padding: 12px;
+  text-align: center;
+  background-color: #fffaf0;
+}
+
+.ep-golden-root .ep-gl-upi-label {
+  font-size: 8pt;
+  color: var(--ep-gl-gold-dark);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+  margin: 0 0 5px;
+}
+
+.ep-golden-root .ep-gl-upi-id {
+  font-size: 12pt;
+  color: var(--ep-gl-ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 600;
+  margin: 0;
 }
 
 .ep-golden-root .ep-gl-client-name {
   font-size: 24pt;
   font-family: Georgia, "Times New Roman", serif;
-  color: #111e38;
+  color: var(--ep-gl-ink);
   margin: 0;
 }
 
@@ -181,7 +374,7 @@
 .ep-golden-root .ep-gl-audit-metric-box {
   display: table-cell;
   width: 33.33%;
-  border-right: 1px solid rgba(181, 154, 87, 0.3);
+  border-right: 1px solid var(--ep-gl-border-gold);
   padding-right: 15px;
   vertical-align: top;
 }
@@ -199,13 +392,13 @@
 .ep-golden-root .ep-gl-huge-number {
   font-family: Georgia, "Times New Roman", serif;
   font-size: 28pt;
-  color: #111e38;
+  color: var(--ep-gl-ink);
   margin: 0;
   line-height: 1;
 }
 
 .ep-golden-root .ep-gl-huge-number.gold {
-  color: #b59a57;
+  color: var(--ep-gl-gold-dark);
 }
 
 .ep-golden-root .ep-gl-huge-number.green {
@@ -216,7 +409,7 @@
   font-size: 8pt;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #718096;
+  color: var(--ep-gl-text-muted);
   margin-top: 8px;
   font-weight: 600;
   margin-bottom: 5px;
@@ -225,7 +418,7 @@
 .ep-golden-root .ep-gl-chart-container {
   width: 100%;
   height: 100px;
-  border-bottom: 1px solid rgba(181, 154, 87, 0.3);
+  border-bottom: 1px solid var(--ep-gl-border-gold);
   position: relative;
   margin-bottom: 25px;
 }
@@ -239,7 +432,7 @@
 
 .ep-golden-root .ep-gl-thin-bar {
   width: 6px;
-  background-color: #e2e8f0;
+  background-color: var(--ep-gl-bar);
   position: absolute;
   bottom: 0;
   left: 50%;
@@ -248,7 +441,7 @@
 }
 
 .ep-golden-root .ep-gl-thin-bar.highlight {
-  background-color: #b59a57;
+  background-color: var(--ep-gl-gold-dark);
 }
 
 .ep-golden-root .ep-gl-chart-label {
@@ -257,7 +450,7 @@
   width: 100%;
   text-align: center;
   font-size: 7pt;
-  color: #718096;
+  color: var(--ep-gl-text-muted);
   font-weight: 600;
   text-transform: uppercase;
 }
@@ -282,7 +475,7 @@
   font-weight: 600;
   text-transform: uppercase;
   font-size: 7pt;
-  color: #b59a57;
+  color: var(--ep-gl-gold-dark);
   letter-spacing: 0.5px;
 }
 
@@ -296,7 +489,7 @@
   border-bottom: 1px solid #f1f5f9;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 9.5pt;
-  color: #4a5568;
+  color: var(--ep-gl-text-secondary);
 }
 
 .ep-golden-root .ep-gl-invoice-table td:first-child {
@@ -310,13 +503,13 @@
   border-top: 1px solid #111e38;
   border-bottom: none;
   font-weight: 600;
-  color: #111e38;
+  color: var(--ep-gl-ink);
   font-size: 10pt;
   padding-top: 6px;
 }
 
 .ep-golden-root .ep-gl-net-gold {
-  color: #b59a57 !important;
+  color: var(--ep-gl-gold-dark) !important;
   font-weight: 600;
 }
 
@@ -350,18 +543,18 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #718096;
+  color: var(--ep-gl-text-muted);
   margin-bottom: 5px;
 }
 
 .ep-golden-root .ep-gl-waterfall-label.gold {
-  color: #b59a57;
+  color: var(--ep-gl-gold-dark);
 }
 
 .ep-golden-root .ep-gl-waterfall-value {
   font-family: Georgia, "Times New Roman", serif;
   font-size: 24pt;
-  color: #111e38;
+  color: var(--ep-gl-ink);
   line-height: 1;
   margin-bottom: 5px;
 }
@@ -376,20 +569,20 @@
 
 .ep-golden-root .ep-gl-waterfall-sub {
   font-size: 9pt;
-  color: #a0aec0;
+  color: var(--ep-gl-text-faint);
   margin-top: 4px;
 }
 
 .ep-golden-root .ep-gl-waterfall-line {
   width: 100%;
   height: 1px;
-  background-color: rgba(181, 154, 87, 0.3);
+  background-color: var(--ep-gl-border-gold);
   margin: 15px 0;
 }
 
 .ep-golden-root .ep-gl-emi-container {
   background-color: #ffffff;
-  border: 1px solid rgba(181, 154, 87, 0.2);
+  border: 1px solid var(--ep-gl-line);
   padding: 25px;
   margin-top: 20px;
 }
@@ -397,7 +590,7 @@
 .ep-golden-root .ep-gl-emi-title {
   font-family: Georgia, "Times New Roman", serif;
   font-size: 18pt;
-  color: #111e38;
+  color: var(--ep-gl-ink);
   margin: 0 0 15px 0;
   font-weight: 400;
 }
@@ -410,9 +603,9 @@
 .ep-golden-root .ep-gl-emi-table th {
   text-align: left;
   padding: 10px 0;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--ep-gl-border-muted);
   font-size: 8pt;
-  color: #718096;
+  color: var(--ep-gl-text-muted);
   text-transform: uppercase;
   letter-spacing: 1px;
   font-weight: 600;
@@ -430,12 +623,12 @@
   padding: 12px 0;
   border-bottom: 1px solid #f1f5f9;
   font-size: 9.5pt;
-  color: #4a5568;
+  color: var(--ep-gl-text-secondary);
 }
 
 .ep-golden-root .ep-gl-emi-table td:first-child {
   font-weight: 600;
-  color: #111e38;
+  color: var(--ep-gl-ink);
 }
 
 .ep-golden-root .ep-gl-emi-table td:nth-child(2) {
@@ -447,7 +640,7 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 11pt;
   font-weight: 600;
-  color: #b59a57;
+  color: var(--ep-gl-gold-dark);
 }
 
 .ep-golden-root .ep-gl-impact-container {
@@ -462,14 +655,14 @@
 .ep-golden-root .ep-gl-impact-number {
   font-family: Georgia, "Times New Roman", serif;
   font-size: 54pt;
-  color: #b59a57;
+  color: var(--ep-gl-gold-dark);
   line-height: 1;
   margin: 0;
 }
 
 .ep-golden-root .ep-gl-impact-label {
   font-size: 12pt;
-  color: #111e38;
+  color: var(--ep-gl-ink);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 2px;
@@ -479,7 +672,7 @@
 
 .ep-golden-root .ep-gl-impact-desc {
   font-size: 11pt;
-  color: #4a5568;
+  color: var(--ep-gl-text-secondary);
   max-width: 600px;
   margin: 0 auto;
   line-height: 1.6;
@@ -488,7 +681,7 @@
 .ep-golden-root .ep-gl-impact-divider {
   width: 60px;
   height: 2px;
-  background-color: #b59a57;
+  background-color: var(--ep-gl-gold-dark);
   margin: 0 auto;
 }
 
@@ -506,7 +699,7 @@
   display: table-cell;
   width: 35%;
   padding: 15px 15px 15px 0;
-  border-bottom: 1px solid rgba(181, 154, 87, 0.2);
+  border-bottom: 1px solid var(--ep-gl-row-border);
   vertical-align: middle;
 }
 
@@ -514,20 +707,20 @@
   display: table-cell;
   width: 65%;
   padding: 15px 0;
-  border-bottom: 1px solid rgba(181, 154, 87, 0.2);
+  border-bottom: 1px solid var(--ep-gl-row-border);
   vertical-align: middle;
 }
 
 .ep-golden-root .ep-gl-manifest-comp {
   font-family: Georgia, "Times New Roman", serif;
   font-size: 14pt;
-  color: #111e38;
+  color: var(--ep-gl-ink);
   margin: 0 0 4px 0;
 }
 
 .ep-golden-root .ep-gl-manifest-spec {
   font-size: 10pt;
-  color: #4a5568;
+  color: var(--ep-gl-text-secondary);
   margin: 0 0 6px 0;
   line-height: 1.4;
   font-weight: 600;
@@ -535,7 +728,7 @@
 
 .ep-golden-root .ep-gl-manifest-desc {
   font-size: 10pt;
-  color: #4a5568;
+  color: var(--ep-gl-text-secondary);
   margin: 0;
   line-height: 1.4;
 }
@@ -543,12 +736,12 @@
 .ep-golden-root .ep-gl-manifest-warr {
   font-size: 7.5pt;
   font-weight: 600;
-  color: #b59a57;
+  color: var(--ep-gl-gold-dark);
   text-transform: uppercase;
   letter-spacing: 1px;
   margin: 0;
   display: inline-block;
-  border: 1px solid #b59a57;
+  border: 1px solid var(--ep-gl-gold-dark);
   padding: 2px 6px;
   border-radius: 3px;
 }
@@ -565,14 +758,14 @@
   top: 0;
   font-family: Georgia, "Times New Roman", serif;
   font-size: 20pt;
-  color: #b59a57;
+  color: var(--ep-gl-gold-dark);
   line-height: 1;
 }
 
 .ep-golden-root .ep-gl-exec-title {
   font-size: 11pt;
   font-weight: 600;
-  color: #111e38;
+  color: var(--ep-gl-ink);
   margin: 0 0 4px 0;
   padding-top: 4px;
   text-transform: uppercase;
@@ -581,7 +774,7 @@
 
 .ep-golden-root .ep-gl-exec-desc {
   font-size: 10pt;
-  color: #4a5568;
+  color: var(--ep-gl-text-secondary);
   margin: 0;
   line-height: 1.5;
 }
@@ -598,7 +791,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 2px;
-  color: #111e38;
+  color: var(--ep-gl-ink);
   margin-bottom: 15px;
   border-bottom: 1px solid #111e38;
   padding-bottom: 8px;
@@ -606,6 +799,8 @@
 
 @media print {
   .ep-golden-root {
+    --ep-gl-bar: #374151;
+    --ep-gl-text-faint: #4b5563;
     background: #fdfcf9;
   }
 

@@ -41,7 +41,7 @@ export function EpEconomicsPage({ data }: Props) {
               <span style={{ fontSize: "14pt", fontFamily: "-apple-system, sans-serif" }}>Yrs</span>
             </p>
             <p className="ep-gl-huge-label">Payback Period</p>
-            <p style={{ fontSize: "10pt", color: "#4a5568" }}>
+            <p className="ep-gl-caption" style={{ fontSize: "10pt" }}>
               The time it takes for the solar system to pay for itself completely through bill savings.
             </p>
           </div>

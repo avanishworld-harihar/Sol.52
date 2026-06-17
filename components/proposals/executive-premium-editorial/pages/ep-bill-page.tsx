@@ -21,17 +21,17 @@ export function EpBillPage({ data }: Props) {
             {data.summer_trap_pct}%
           </p>
           <p className="ep-gl-huge-label">The Summer Bill</p>
-          <p style={{ fontSize: "8.5pt", color: "#4a5568", lineHeight: 1.3 }}>Paid in 4 months (Apr-Jul)</p>
+          <p className="ep-gl-metric-caption">Paid in 4 months (Apr-Jul)</p>
         </div>
         <div className="ep-gl-audit-metric-box">
           <p className="ep-gl-huge-number">₹{data.fixed_charges_display}</p>
           <p className="ep-gl-huge-label">Fixed Liability</p>
-          <p style={{ fontSize: "8.5pt", color: "#4a5568", lineHeight: 1.3 }}>Mandatory baseline cost</p>
+          <p className="ep-gl-metric-caption">Mandatory baseline cost</p>
         </div>
         <div className="ep-gl-audit-metric-box">
           <p className="ep-gl-huge-number green">{data.solar_savings_pct}%</p>
           <p className="ep-gl-huge-label">Solar Savings</p>
-          <p style={{ fontSize: "8.5pt", color: "#4a5568", lineHeight: 1.3 }}>Estimated bill reduction</p>
+          <p className="ep-gl-metric-caption">Estimated bill reduction</p>
         </div>
       </div>
 
@@ -79,9 +79,7 @@ export function EpBillPage({ data }: Props) {
           </tr>
         </tbody>
       </table>
-      <p style={{ fontSize: "7.5pt", color: "#a0aec0", textAlign: "right", marginTop: "5px", fontStyle: "italic" }}>
-        *(Subsidy) adjusted before Net Bill
-      </p>
+      <p className="ep-gl-footnote">*(Subsidy) adjusted before Net Bill</p>
     </EpLuxuryPage>
   );
 }

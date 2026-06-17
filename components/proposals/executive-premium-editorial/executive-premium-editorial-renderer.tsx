@@ -32,6 +32,7 @@ export function ExecutivePremiumEditorialRenderer({
           <EpCoverPage
             data={{
               brand_display: model.brand_display,
+              brand_logo_url: model.brand_logo_url,
               customer_name: model.customer_name,
               location_line: model.location_line,
               asset_profile_line: model.asset_profile_line,

@@ -31,39 +31,19 @@ export function EpExecutionPage({ data }: Props) {
         <div className="ep-gl-col-half ep-gl-col-right">
           <div className="ep-gl-receipt-card">
             <p className="ep-gl-receipt-title">Payment Schedule</p>
-            <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "25px" }}>
+            <table className="ep-gl-payment-table">
               <tbody>
                 {data.payments.map((p, i) => {
                   const isLast = p.is_total;
-                  const borderBottom = i === data.payments.length - 2 ? "1px solid #e2e8f0" : undefined;
-                  const padding = isLast ? "10px 0 0 0" : "6px 0";
+                  const isDivider = i === data.payments.length - 2;
+                  const rowClass = isDivider ? "ep-gl-payment-row-divider" : undefined;
                   return (
-                    <tr key={p.label}>
-                      <td
-                        style={{
-                          padding,
-                          borderBottom,
-                          fontSize: isLast ? "10pt" : "9.5pt",
-                          fontWeight: isLast ? 600 : 400,
-                          color: "#4a5568",
-                          paddingBottom: i === data.payments.length - 2 ? "10px" : undefined,
-                        }}
-                      >
+                    <tr key={p.label} className={rowClass}>
+                      <td className={`ep-gl-payment-label${isLast ? " ep-gl-payment-final" : ""}`}>
                         {p.label}{" "}
-                        <span style={{ fontSize: "8pt", color: "#a0aec0", fontWeight: 400 }}>({p.pct_label})</span>
+                        <span className="ep-gl-payment-pct">({p.pct_label})</span>
                       </td>
-                      <td
-                        style={{
-                          padding,
-                          borderBottom,
-                          textAlign: "right",
-                          fontFamily: "monospace",
-                          fontSize: isLast ? "12pt" : "11pt",
-                          fontWeight: 600,
-                          color: isLast ? "#b59a57" : "#111e38",
-                          paddingBottom: i === data.payments.length - 2 ? "10px" : undefined,
-                        }}
-                      >
+                      <td className={`ep-gl-payment-amt${isLast ? " ep-gl-payment-final" : ""}`}>
                         {fmtInrSpaced(p.amount_inr)}
                       </td>
                     </tr>
@@ -73,51 +53,18 @@ export function EpExecutionPage({ data }: Props) {
             </table>
 
             <p className="ep-gl-receipt-title">Secure Routing Details</p>
-            <div style={{ backgroundColor: "#f8fafc", border: "1px solid #e2e8f0", padding: "15px" }}>
-              <p style={{ fontSize: "7.5pt", color: "#718096", textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 2px 0" }}>
-                Beneficiary
-              </p>
-              <p style={{ fontSize: "11pt", color: "#111e38", fontFamily: "Georgia, serif", margin: "0 0 10px 0" }}>
-                {data.company}
-              </p>
-              <p style={{ fontSize: "7.5pt", color: "#718096", textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 2px 0" }}>
-                Account No.
-              </p>
-              <p style={{ fontSize: "11pt", color: "#111e38", fontFamily: "monospace", fontWeight: 600, margin: "0 0 10px 0" }}>
-                {data.account_number}
-              </p>
-              <p style={{ fontSize: "7.5pt", color: "#718096", textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 2px 0" }}>
-                IFSC Code
-              </p>
-              <p style={{ fontSize: "11pt", color: "#111e38", fontFamily: "monospace", fontWeight: 600, margin: 0 }}>
-                {data.ifsc}
-              </p>
+            <div className="ep-gl-bank-box">
+              <p className="ep-gl-bank-label">Beneficiary</p>
+              <p className="ep-gl-bank-value serif">{data.company}</p>
+              <p className="ep-gl-bank-label">Account No.</p>
+              <p className="ep-gl-bank-value mono">{data.account_number}</p>
+              <p className="ep-gl-bank-label">IFSC Code</p>
+              <p className="ep-gl-bank-value mono">{data.ifsc}</p>
             </div>
 
-            <div
-              style={{
-                marginTop: "15px",
-                border: "1px dashed #b59a57",
-                padding: "12px",
-                textAlign: "center",
-                backgroundColor: "#fffaf0",
-              }}
-            >
-              <p
-                style={{
-                  fontSize: "8pt",
-                  color: "#b59a57",
-                  textTransform: "uppercase",
-                  letterSpacing: "1px",
-                  fontWeight: 600,
-                  margin: "0 0 5px 0",
-                }}
-              >
-                Express UPI Payment
-              </p>
-              <p style={{ fontSize: "12pt", color: "#111e38", fontFamily: "monospace", fontWeight: 600, margin: 0 }}>
-                {data.upi_id}
-              </p>
+            <div className="ep-gl-upi-box">
+              <p className="ep-gl-upi-label">Express UPI Payment</p>
+              <p className="ep-gl-upi-id">{data.upi_id}</p>
             </div>
           </div>
         </div>
