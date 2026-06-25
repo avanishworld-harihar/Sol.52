@@ -1,3 +1,5 @@
+import { galleryItemByKey } from "@/lib/proposal-template-gallery";
+import { readDefaultGalleryKey } from "@/lib/proposal-template-gallery-storage";
 import type { ProposalBlockId } from "@/lib/proposal-block-registry";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
@@ -93,6 +95,22 @@ export function readDefaultSalesPremiumStyle(): SalesPremiumStyleId {
     /* ignore */
   }
   return DEFAULT_SALES_PREMIUM_STYLE;
+}
+
+/**
+ * Style used when generating a Sales Premium proposal — prefers the saved gallery
+ * card (Slate / Horizon / …) so style storage cannot drift from the visible theme.
+ */
+export function readActiveSalesPremiumStyle(): SalesPremiumStyleId {
+  if (typeof window === "undefined") return DEFAULT_SALES_PREMIUM_STYLE;
+  const galleryKey = readDefaultGalleryKey();
+  if (galleryKey) {
+    const item = galleryItemByKey(galleryKey);
+    if (item?.presetId === "residential_sales_premium" && item.salesPremiumStyle) {
+      return item.salesPremiumStyle;
+    }
+  }
+  return readDefaultSalesPremiumStyle();
 }
 
 export function writeDefaultSalesPremiumStyle(id: SalesPremiumStyleId): void {

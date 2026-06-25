@@ -64,7 +64,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { parsePrefillFromSearchParams } from "@/lib/quick-actions";
 import { ProposalPresetPicker } from "@/components/proposals/os/preset-picker";
 import { readDefaultResidentialPreset } from "@/lib/proposal-default-preset-storage";
-import { readDefaultSalesPremiumStyle } from "@/lib/sales-premium-styles";
+import { readActiveSalesPremiumStyle } from "@/lib/sales-premium-styles";
+import { readDefaultGalleryKey } from "@/lib/proposal-template-gallery-storage";
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 import { ProposalOSHeader } from "@/components/proposals/os/proposal-os-header";
 import { BuilderStageBar } from "@/components/proposals/os/builder-stage-bar";
@@ -1647,7 +1648,10 @@ function ProposalPageContent() {
         gstNumber: branding.companyGstNumber.trim() || undefined
       },
       ...(osPresetId === "residential_sales_premium"
-        ? { salesPremiumStyle: readDefaultSalesPremiumStyle() }
+        ? {
+            salesPremiumStyle: readActiveSalesPremiumStyle(),
+            galleryThemeKey: readDefaultGalleryKey() ?? undefined,
+          }
         : {}),
       proposalLayout: (() => {
         if (!proposalLayout) return undefined;

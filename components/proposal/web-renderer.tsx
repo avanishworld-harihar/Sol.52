@@ -657,6 +657,15 @@ function ProposalWebRendererInner({
   const flowPages = buildPageList(flowBlockIds);
   const appendixPages = buildPageList(appendixBlockIds);
 
+  if (flowPages.length === 0 && appendixPages.length === 0) {
+    return (
+      <div className="mx-auto max-w-lg px-4 py-16 text-center text-sm text-slate-600">
+        This proposal has no visible sections. Regenerate from the builder or pick a theme in Settings →
+        Proposal templates.
+      </div>
+    );
+  }
+
   return (
     <MotionConfig transition={{ duration: 0.35, ease: "easeOut" }} reducedMotion="user">
       <div

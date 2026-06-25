@@ -23,6 +23,7 @@ import {
   type ProposalTemplateV1,
 } from "@/lib/proposal-template-schema";
 import { getStoryCopy, type StoryMode, type StorySegment, type StoryCopy, type StoryLang } from "@/lib/proposal-story-copy";
+import { SALES_PREMIUM_STYLE_LIST } from "@/lib/sales-premium-styles";
 
 // ─── Preset identifiers ──────────────────────────────────────────────────────
 
@@ -265,11 +266,27 @@ export function getPresetDefaultLayout(presetId: ProposalPresetId): ProposalTemp
 /** Block IDs permitted on Sales Premium v1 — no legacy registry injection. */
 export function getSalesPremiumAllowedBlockIds(): ProposalBlockId[] {
   const preset = PROPOSAL_PRESET_REGISTRY.residential_sales_premium;
-  return [
+  const fromPreset = [
     ...preset.default_blocks,
     ...(preset.appendix_blocks ?? []),
     ...preset.optional_blocks,
   ];
+  if (fromPreset.length > 0) return fromPreset;
+
+  // Institutional (Slate/Pearl) uses an isolated 5-page renderer — no web blocks.
+  // Horizon / Ember use ProposalWebRenderer; union their playlist IDs here so
+  // normalizeSalesPremiumProposalLayout does not strip them to an empty layout.
+  const seen = new Set<ProposalBlockId>();
+  const ordered: ProposalBlockId[] = [];
+  for (const meta of SALES_PREMIUM_STYLE_LIST) {
+    if (meta.renderer !== "web_blocks") continue;
+    for (const id of [...meta.flowBlocks, ...meta.appendixBlocks]) {
+      if (seen.has(id)) continue;
+      seen.add(id);
+      ordered.push(id);
+    }
+  }
+  return ordered;
 }
 
 /**

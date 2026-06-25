@@ -58,6 +58,7 @@ type SlideEntry = {
 
 type Props = {
   document: ProposalDocument;
+  summary: import("@/lib/proposal-ppt").ProposalDeckSummary;
   billAuditBacked: boolean;
   showSurveyWorkflowSection?: boolean;
 };
@@ -122,6 +123,7 @@ function ProgressDots({
 
 export default function ProposalPresentClient({
   document: doc,
+  summary,
   billAuditBacked,
   showSurveyWorkflowSection = false,
 }: Props) {
@@ -181,12 +183,14 @@ export default function ProposalPresentClient({
     tagline: doc.installer.tagline ?? "",
   };
 
-  const summary = useMemo(() => {
+  const summaryFromDoc = useMemo(() => {
     const raw = (doc.raw_input as Record<string, unknown> | undefined)?.summary as
       | import("@/lib/proposal-ppt").ProposalDeckSummary
       | undefined;
     return raw;
   }, [doc]);
+
+  const resolvedSummary = summary ?? summaryFromDoc;
 
   const storyVariant = resolveStoryVariant(
     presetId,
@@ -248,7 +252,7 @@ export default function ProposalPresentClient({
     [go]
   );
 
-  if (!summary) {
+  if (!resolvedSummary) {
     return (
       <div className="flex h-screen items-center justify-center bg-slate-950 text-white">
         <p className="text-sm opacity-60">Unable to render presentation — missing summary data.</p>
@@ -259,7 +263,7 @@ export default function ProposalPresentClient({
   const brandConfig = resolveProposalBrandConfig({ pptInput: rawInput });
 
   const ctx: BlockRenderContext = {
-    summary,
+    summary: resolvedSummary,
     pptInput: rawInput,
     lang,
     monthLbls,

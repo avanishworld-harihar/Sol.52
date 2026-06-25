@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { mergeProposalPricingIntoPptInput } from "@/lib/proposal-pricing-merge";
 import { getProposalPricingByProposalId } from "@/lib/proposal-pricing-store";
 import { getProposalById } from "@/lib/proposals-store";
@@ -8,6 +8,11 @@ import { compileProposalDocument } from "@/lib/proposal-document-ir";
 import { isProposalBillAuditBacked } from "@/lib/proposal-bill-audit-eligibility";
 import { isLeadSurveyCompleteForProposal } from "@/lib/proposal-survey-gate";
 import { getLeadSurveyStatus } from "@/lib/supabase";
+import {
+  getSalesPremiumLayoutForStyle,
+  resolveSalesPremiumStyle,
+  usesInstitutionalRenderer,
+} from "@/lib/sales-premium-styles";
 import ProposalPresentClient from "@/components/proposal/present/proposal-present-client";
 
 export const dynamic = "force-dynamic";
@@ -39,13 +44,38 @@ export default async function ProposalPresentPage({ params }: PageProps) {
   const showSurveyWorkflowSection = isLeadSurveyCompleteForProposal(surveyStatus);
   const billAuditBacked = isProposalBillAuditBacked(mergedInput);
 
-  const doc = compileProposalDocument(id, mergedInput, summary, {
-    presetId: proposal.preset_id ?? "residential_smart",
-  });
+  if (proposal.preset_id === "residential_executive") {
+    redirect(`/proposal/${id}`);
+  }
+  if (proposal.preset_id === "residential_sales_premium") {
+    const spStyle = resolveSalesPremiumStyle(mergedInput);
+    if (usesInstitutionalRenderer(spStyle)) {
+      redirect(`/proposal/${id}`);
+    }
+  }
+
+  const spStyle =
+    proposal.preset_id === "residential_sales_premium"
+      ? resolveSalesPremiumStyle(mergedInput)
+      : null;
+  const layoutOverride =
+    spStyle && !usesInstitutionalRenderer(spStyle)
+      ? getSalesPremiumLayoutForStyle(spStyle)
+      : undefined;
+
+  const doc = compileProposalDocument(
+    id,
+    layoutOverride ? { ...mergedInput, proposalLayout: layoutOverride } : mergedInput,
+    summary,
+    {
+      presetId: proposal.preset_id ?? "residential_smart",
+    }
+  );
 
   return (
     <ProposalPresentClient
       document={doc}
+      summary={summary}
       billAuditBacked={billAuditBacked}
       showSurveyWorkflowSection={showSurveyWorkflowSection}
     />
