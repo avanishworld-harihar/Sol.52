@@ -2,16 +2,17 @@
 
 import { ProposalHubActionsSheet } from "@/components/proposals/proposal-hub-actions-sheet";
 import { ProposalHubIntelPanel } from "@/components/proposals/proposal-hub-intel-panel";
+import { ProposalHubEngagementMetrics } from "@/components/proposals/proposal-hub-engagement-metrics";
 import type { ProposalListCardProps } from "@/components/proposals/proposal-list-card";
 import { buildProposalEditHref } from "@/lib/proposal-edit-url";
 import { Button } from "@/components/ui/button";
-import { hubNextActionHint, statusProgressPct, statusVisual } from "@/lib/proposal-hub-insights";
+import { dealHealthScore, healthScoreTone, hubNextActionHint, statusVisual } from "@/lib/proposal-hub-insights";
 import { shareMetricsFromHubRow } from "@/lib/proposal-hub-share";
 import { markProposalSent, openWhatsAppWithProposal } from "@/lib/proposal-share-actions";
 import { normalizeProposalStatus } from "@/lib/proposal-status";
 import { cn } from "@/lib/utils";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowLeft, ArrowRight, ExternalLink, MessageCircle, MoreHorizontal, PencilLine } from "lucide-react";
+import { ArrowLeft, ArrowRight, ExternalLink, MoreHorizontal, PencilLine, Send } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import type { ProposalHubDealRow } from "./proposal-hub-deal-list";
@@ -84,7 +85,8 @@ export function ProposalWorkspacePreview({
     row.annual_saving_inr != null && Number.isFinite(row.annual_saving_inr)
       ? Math.round(row.annual_saving_inr / 12)
       : null;
-  const pct = statusProgressPct(st);
+  const pct = dealHealthScore(row);
+  const healthTone = healthScoreTone(pct);
   const dynamicHint = hubNextActionHint(st, lang);
 
   const metrics = [
@@ -134,7 +136,7 @@ export function ProposalWorkspacePreview({
                 : "proposal-hub-workspace-scroll h-auto overflow-visible px-5 py-5 sm:px-6 sm:py-6"
           )}
         >
-        <header className={cn("proposal-hub-workspace-head shrink-0", isMobile ? "pb-3" : "pb-4 sm:pb-5")}>
+        <header className={cn("proposal-hub-workspace-head shrink-0", isMobile ? "pb-3" : "pb-3 sm:pb-4")}>
           {paneEyebrow && !isMobile ? (
             <p className="proposal-hub-workspace-eyebrow text-[10px] font-bold uppercase tracking-[0.2em]">{paneEyebrow}</p>
           ) : null}
@@ -147,30 +149,40 @@ export function ProposalWorkspacePreview({
             <div className="min-w-0 flex-1">
               <h2
                 className={cn(
-                  "proposal-hub-text-primary font-bold tracking-tight",
-                  isMobile ? "text-xl leading-tight" : "text-2xl sm:text-3xl"
+                  "proposal-hub-text-primary font-black tracking-tight",
+                  isMobile ? "text-xl leading-tight" : "text-2xl sm:text-[1.65rem]"
                 )}
               >
                 {row.customer_name}
               </h2>
               <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
-                <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1", vis.pillClass)}>
+                <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-bold ring-1", vis.pillClass)}>
                   <span className={cn("h-1.5 w-1.5 rounded-full", vis.dotClass)} aria-hidden />
                   {labels.statusLabel(st)}
                 </span>
-                <span className="proposal-hub-text-muted">{formatShortDate(row.generated_at)}</span>
+                <span className="proposal-hub-text-muted text-xs font-semibold">{formatShortDate(row.generated_at)}</span>
               </div>
             </div>
-            <div className="text-right">
-              <p className="proposal-hub-text-muted text-[10px] font-semibold uppercase tracking-wide">
-                {lang === "hi" ? "प्रगति" : "Health"}
-              </p>
-              <p className="proposal-hub-text-accent mt-0.5 text-lg font-bold tabular-nums">{pct}%</p>
+            <div
+              className="proposal-hub-health-ring flex h-[4.25rem] w-[4.25rem] shrink-0 flex-col items-center justify-center rounded-2xl border-2 bg-black/20"
+              style={{ borderColor: `color-mix(in srgb, currentColor 35%, transparent)` }}
+            >
+              <p className="proposal-hub-text-muted text-[9px] font-bold uppercase tracking-wide">Health</p>
+              <p className={cn("text-2xl font-black tabular-nums leading-none", healthTone.text)}>{pct}</p>
             </div>
           </div>
         </header>
 
-        <section aria-labelledby="hub-commercial-heading" className="shrink-0">
+        <section aria-labelledby="hub-engagement-heading" className="shrink-0">
+          <h3 id="hub-engagement-heading" className="proposal-hub-text-muted text-[10px] font-bold uppercase tracking-[0.18em]">
+            {lang === "hi" ? "एंगेजमेंट" : "Proposal intelligence"}
+          </h3>
+          <div className="mt-2">
+            <ProposalHubEngagementMetrics row={row} lang={lang} compact={isMobile} />
+          </div>
+        </section>
+
+        <section aria-labelledby="hub-commercial-heading" className="mt-4 shrink-0">
           <h3 id="hub-commercial-heading" className="proposal-hub-text-muted text-[10px] font-bold uppercase tracking-[0.18em]">
             {summaryTitle}
           </h3>
@@ -201,37 +213,30 @@ export function ProposalWorkspacePreview({
           </div>
         </section>
 
-        <motion.div className={cn("mt-5 grid gap-4", isPane && "lg:grid-cols-[1fr_minmax(200px,0.42fr)]")}>
+        <motion.div className={cn("mt-4 grid gap-3", isPane && "lg:grid-cols-[1fr_minmax(220px,0.38fr)]")}>
           <section className="proposal-hub-glass-card proposal-hub-workspace-next rounded-xl border p-4">
             {nextStepLabel ? (
               <p className="proposal-hub-text-muted text-[10px] font-bold uppercase tracking-[0.18em]">{nextStepLabel}</p>
             ) : null}
-            <p className={cn("proposal-hub-text-body text-sm leading-relaxed", nextStepLabel && "mt-2")}>{dynamicHint}</p>
-            <p className="proposal-hub-text-muted mt-3 text-[11px] leading-relaxed">{nextActionHint}</p>
+            <p className={cn("proposal-hub-text-body text-sm font-medium leading-relaxed", nextStepLabel && "mt-2")}>{dynamicHint}</p>
           </section>
-          <ProposalHubIntelPanel row={row} lang={lang} title={intelTitle} />
+          <ProposalHubIntelPanel row={row} lang={lang} title={intelTitle} variant="rail" />
         </motion.div>
         </div>
 
-        <footer className="proposal-hub-workspace-actions proposal-hub-glass-bar shrink-0 border-t border-[var(--hub-border)] px-4 py-4 sm:px-5 lg:px-7">
-          <div className={cn("flex gap-2", isMobile || !isPane ? "flex-col" : "flex-col sm:flex-row sm:flex-wrap")}>
-            <Button asChild size="lg" className="proposal-hub-cta-primary min-h-11 w-full gap-2 font-semibold sm:w-auto sm:min-w-[200px]">
+        <footer className="proposal-hub-workspace-actions proposal-hub-glass-bar shrink-0 border-t border-[var(--hub-border)] px-4 py-3 sm:px-5 lg:px-6">
+          <div className={cn("flex flex-wrap items-stretch gap-2", isPane ? "sm:flex-row" : "flex-col")}>
+            <Button asChild size="lg" className="proposal-hub-cta-primary min-h-12 flex-1 gap-2 px-5 text-base font-extrabold shadow-lg sm:min-w-[12rem] sm:flex-[1.2]">
               <Link href={manageHref}>
                 {labels.openWorkspace}
                 <ArrowRight className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg" className="proposal-hub-cta-secondary min-h-11 w-full gap-2 font-semibold sm:w-auto">
-              <Link href={publicHref} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="h-4 w-4 shrink-0" aria-hidden />
-                <span className="truncate">{labels.previewPublic}</span>
               </Link>
             </Button>
             <Button
               type="button"
               variant="outline"
               size="lg"
-              className="proposal-hub-cta-secondary min-h-11 w-full gap-2 font-semibold sm:w-auto"
+              className="proposal-hub-cta-send min-h-12 flex-1 gap-2 border-2 px-4 text-sm font-bold sm:min-w-[9rem]"
               onClick={() => {
                 openWhatsAppWithProposal(shareMetricsFromHubRow(row), row.id);
                 void markProposalSent(row.id).then((ok) => {
@@ -239,14 +244,20 @@ export function ProposalWorkspacePreview({
                 });
               }}
             >
-              <MessageCircle className="h-4 w-4 shrink-0" aria-hidden />
+              <Send className="h-4 w-4 shrink-0" aria-hidden />
               {labels.send}
+            </Button>
+            <Button asChild variant="ghost" size="lg" className="proposal-hub-cta-preview min-h-12 flex-1 gap-2 px-4 text-sm font-semibold sm:min-w-[9rem]">
+              <Link href={publicHref} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="h-4 w-4 shrink-0 opacity-80" aria-hidden />
+                <span className="truncate">{labels.previewPublic}</span>
+              </Link>
             </Button>
             <Button
               type="button"
               size="icon"
               variant="ghost"
-              className="proposal-hub-cta-ghost h-11 w-11 shrink-0 self-end sm:self-auto"
+              className="proposal-hub-cta-ghost h-12 w-12 shrink-0"
               aria-label={labels.moreActions}
               aria-expanded={sheetOpen}
               onClick={() => setSheetOpen(true)}

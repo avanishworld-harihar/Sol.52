@@ -4682,6 +4682,59 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   color: rgb(125 211 252);
 }
 
+.proposal-hub-header--workspace {
+  padding: 0.85rem 1rem 0.95rem;
+}
+
+@media (min-width: 640px) {
+  .proposal-hub-header--workspace {
+    padding: 1rem 1.25rem 1.1rem;
+  }
+}
+
+.proposal-hub-command-bar {
+  border-color: var(--hub-border);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.proposal-hub-engagement-tile {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.proposal-hub-deal-row--v2 {
+  border-color: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.proposal-hub-intel--rail {
+  border-color: rgba(56, 189, 248, 0.22);
+  background: linear-gradient(160deg, rgba(14, 165, 233, 0.1), rgba(255, 255, 255, 0.02));
+}
+
+.proposal-hub-cta-send {
+  border-color: rgba(52, 211, 153, 0.45) !important;
+  background: rgba(16, 185, 129, 0.12) !important;
+  color: rgb(167 243 208) !important;
+}
+
+.proposal-hub-cta-send:hover {
+  background: rgba(16, 185, 129, 0.22) !important;
+}
+
+.proposal-hub-cta-preview {
+  color: rgb(148 163 184) !important;
+}
+
+.proposal-hub-cta-preview:hover {
+  color: rgb(226 232 240) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.proposal-hub-health-ring {
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
 .proposal-hub-lifecycle {
   border-color: var(--hub-border);
   background: rgba(255, 255, 255, 0.02);
@@ -5087,6 +5140,26 @@ html:not(.dark) .proposal-hub.workspace-page--proposals .proposal-hub-shell-work
 
 html:not(.dark) .proposal-hub.workspace-page--proposals .proposal-hub-list-group-head {
   background: rgba(255, 255, 255, 0.92);
+}
+
+html:not(.dark) .proposal-hub.workspace-page--proposals .proposal-hub-deal-row--v2 {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+html:not(.dark) .proposal-hub.workspace-page--proposals .proposal-hub-engagement-tile {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(15, 23, 42, 0.1);
+}
+
+html:not(.dark) .proposal-hub.workspace-page--proposals .proposal-hub-intel--rail {
+  background: linear-gradient(160deg, rgba(14, 165, 233, 0.08), rgba(255, 255, 255, 0.9));
+  border-color: rgba(14, 165, 233, 0.25);
+}
+
+html:not(.dark) .proposal-hub.workspace-page--proposals .proposal-hub-command-bar {
+  background: rgba(255, 255, 255, 0.75);
+  border-color: rgba(15, 23, 42, 0.1);
 }
 
 html:not(.dark) .proposal-hub.workspace-page--proposals .proposal-hub-deal-row {

@@ -88,8 +88,8 @@ export default function ProposalsHubPage() {
   );
   const hiddenCount = useMemo(() => countHiddenByDedupe(allRows, rows), [allRows, rows]);
 
-  // View mode — persisted to localStorage
-  const [viewMode, setViewMode] = useState<HubViewMode>("pipeline");
+  // View mode — persisted to localStorage (list = mission control split pane)
+  const [viewMode, setViewMode] = useState<HubViewMode>("list");
   useEffect(() => { setViewMode(readViewMode()); }, []);
   const handleViewChange = (mode: HubViewMode) => {
     setViewMode(mode);
@@ -245,14 +245,39 @@ export default function ProposalsHubPage() {
         }
       />
 
-      {/* ── Lifecycle strip ──────────────────────────────────────────────── */}
-      <div className="proposal-hub-lifecycle mt-5 rounded-xl border px-3 py-3 sm:px-4">
-        <WorkflowLifecycleStrip surface="proposals-hub" proposalStatus={focused?.proposal_status} />
-      </div>
+      {/* ── Compact command bar: lifecycle + controls ─────────────────── */}
+      {hasData || isLoading ? (
+        <div className="proposal-hub-command-bar mt-2 space-y-2.5 rounded-xl border px-3 py-2.5 sm:px-4">
+          <WorkflowLifecycleStrip surface="proposals-hub" proposalStatus={focused?.proposal_status} />
+          {!isLoading && allRows.length > 0 ? (
+            <>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <HubViewToggle value={viewMode} onChange={handleViewChange} />
+                <label className="flex cursor-pointer items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-slate-300 dark:border-slate-600"
+                    checked={showAllVersions}
+                    onChange={(e) => setShowAllVersions(e.target.checked)}
+                  />
+                  {showAllVersions ? t("proposals_showAllVersions") : t("proposals_showLatestOnly")}
+                </label>
+              </div>
+              <HubSearchFilter
+                query={searchQuery}
+                onQueryChange={setSearchQuery}
+                activeStatus={activeStatus}
+                onStatusChange={setActiveStatus}
+                resultCount={filteredRows.length}
+              />
+            </>
+          ) : null}
+        </div>
+      ) : null}
 
       {/* ── Error ────────────────────────────────────────────────────────── */}
       {error ? (
-        <p className="proposal-hub-error mt-5 rounded-xl border p-4 text-sm font-semibold">
+        <p className="proposal-hub-error mt-3 rounded-xl border p-4 text-sm font-semibold">
           Could not load proposals.
         </p>
       ) : null}
@@ -286,45 +311,9 @@ export default function ProposalsHubPage() {
       {/* ── Main content ─────────────────────────────────────────────────── */}
       {hasData ? (
         <>
-          {/* Controls bar: view toggle + version dedupe
-               Mobile: stacked column so neither item wraps unexpectedly.
-               sm+: single flex row with space-between. */}
-          <div className="mt-5 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-            <HubViewToggle value={viewMode} onChange={handleViewChange} />
-
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              {/* Version dedupe toggle */}
-              <label className="flex cursor-pointer items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-slate-300 dark:border-slate-600"
-                  checked={showAllVersions}
-                  onChange={(e) => setShowAllVersions(e.target.checked)}
-                />
-                {showAllVersions ? t("proposals_showAllVersions") : t("proposals_showLatestOnly")}
-              </label>
-              {!showAllVersions && hiddenCount > 0 ? (
-                <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                  {t("proposals_hiddenVersionsHint", { n: hiddenCount })}
-                </p>
-              ) : null}
-            </div>
-          </div>
-
-          {/* Search + filter bar */}
-          <div className="mt-4">
-            <HubSearchFilter
-              query={searchQuery}
-              onQueryChange={setSearchQuery}
-              activeStatus={activeStatus}
-              onStatusChange={setActiveStatus}
-              resultCount={filteredRows.length}
-            />
-          </div>
-
-          {/* ── Pipeline view (default) ──────────────────────────────────── */}
+          {/* ── Pipeline view ──────────────────────────────────────────────── */}
           {viewMode === "pipeline" && (
-            <div className="mt-5">
+            <div className="mt-3">
               {hasFiltered ? (
                 <HubPipelineBoard
                   rows={filteredRows}
@@ -343,7 +332,7 @@ export default function ProposalsHubPage() {
 
           {/* ── Grid view ────────────────────────────────────────────────── */}
           {viewMode === "grid" && (
-            <div className="mt-5">
+            <div className="mt-3">
               {hasFiltered ? (
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -374,7 +363,7 @@ export default function ProposalsHubPage() {
           {/* ── List view (existing split-pane — fully preserved) ────────── */}
           {viewMode === "list" && (
             <>
-              <p className="proposal-hub-hint mt-5 hidden text-xs text-slate-500 lg:block">
+              <p className="proposal-hub-hint mt-3 hidden text-xs text-slate-500 lg:block">
                 {t("proposals_hubSplitHint")}
               </p>
 
@@ -408,6 +397,7 @@ export default function ProposalsHubPage() {
                       groupCountLabel={pipelineLabels.groupCount}
                       pipelineLabel={pipelineLabels.pipeline}
                       showVersionTag={showAllVersions}
+                      lang={uiLang}
                     />
                   </section>
                   <section
@@ -445,8 +435,8 @@ export default function ProposalsHubPage() {
               {/* Desktop split pane (lg+) — fully original */}
               <div
                 className={cn(
-                  "proposal-hub-shell proposal-hub-glass-panel mt-5 hidden min-h-0 md:grid",
-                  "md:h-[min(calc(100dvh-11rem),720px)]",
+                  "proposal-hub-shell proposal-hub-glass-panel mt-3 hidden min-h-0 md:grid",
+                  "md:h-[min(calc(100dvh-9.5rem),760px)]",
                   "md:grid-cols-[minmax(240px,0.34fr)_minmax(0,1fr)] md:grid-rows-[minmax(0,1fr)]",
                   "md:overflow-hidden md:rounded-2xl md:border",
                   "lg:h-[min(calc(100dvh-12rem),760px)] lg:grid-cols-[minmax(280px,0.32fr)_minmax(0,1fr)]"
@@ -462,6 +452,7 @@ export default function ProposalsHubPage() {
                     pipelineLabel={pipelineLabels.pipeline}
                     className="h-full min-h-0"
                     showVersionTag={showAllVersions}
+                    lang={uiLang}
                   />
                 </div>
                 <div className="proposal-hub-shell-workspace flex h-full min-h-0 flex-col overflow-hidden">

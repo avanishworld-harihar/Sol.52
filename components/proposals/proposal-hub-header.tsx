@@ -38,9 +38,10 @@ export function ProposalHubHeader({
             "radial-gradient(ellipse 80% 60% at 0% 0%, rgba(16, 185, 129, 0.12), transparent 55%), radial-gradient(ellipse 60% 50% at 100% 0%, rgba(56, 189, 248, 0.08), transparent 50%)"
         }}
       />
-      <div className="relative flex flex-col gap-5">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="min-w-0 space-y-2">
+      <div className="relative flex flex-col gap-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0 flex items-start gap-3 sm:items-center">
+            <div className="min-w-0">
             {backHref ? (
               <Link href={backHref} className="proposal-hub-back inline-flex items-center gap-1.5 text-xs font-semibold">
                 <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
@@ -52,12 +53,27 @@ export function ProposalHubHeader({
                 SOL.52 · Proposal OS
               </span>
             )}
-            <h1 className="proposal-hub-title text-2xl font-bold tracking-tight sm:text-[1.85rem]">{title}</h1>
-            <p className="proposal-hub-subtitle max-w-2xl text-sm leading-relaxed">{subtitle}</p>
+            <div className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+              <h1 className={cn("proposal-hub-title font-black tracking-tight", isWorkspace ? "text-xl sm:text-2xl" : "text-2xl sm:text-[1.85rem]")}>{title}</h1>
+              {isWorkspace ? (
+                <p className="proposal-hub-subtitle hidden text-xs font-medium sm:inline">{subtitle}</p>
+              ) : (
+                <p className="proposal-hub-subtitle max-w-2xl text-sm leading-relaxed">{subtitle}</p>
+              )}
+            </div>
+            {isWorkspace ? (
+              <p className="proposal-hub-subtitle mt-0.5 text-xs font-medium sm:hidden">{subtitle}</p>
+            ) : null}
+            </div>
           </div>
-          {action ? <div className="flex shrink-0 flex-wrap items-center gap-2">{action}</div> : null}
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            {analytics && isWorkspace ? <div className="hidden lg:block">{analytics}</div> : null}
+            {action ? action : null}
+          </div>
         </div>
-        {analytics ? <div className="relative">{analytics}</div> : null}
+        {analytics ? (
+          <div className={cn("relative", isWorkspace && "lg:hidden")}>{analytics}</div>
+        ) : null}
       </div>
     </header>
   );

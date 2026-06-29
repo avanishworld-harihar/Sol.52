@@ -14,6 +14,9 @@ export type ProposalHubRow = {
   preset_id?: string | null;
   /** Optional: company / organisation name for commercial proposals */
   company_name?: string | null;
+  /** Engagement — from proposals table when available */
+  view_count?: number | null;
+  last_viewed_at?: string | null;
 };
 
 export type ProposalHubStats = {
@@ -299,4 +302,116 @@ export function formatInrCompact(v: number | null): string {
   if (v >= 1_00_000) return `₹${(v / 1_00_000).toFixed(1)}L`;
   if (v >= 1_000) return `₹${(v / 1_000).toFixed(0)}K`;
   return `₹${Math.round(v).toLocaleString("en-IN")}`;
+}
+
+export type DealUrgency = "act_now" | "due_soon" | "on_track" | "stale";
+
+export function dealUrgency(row: ProposalHubRow): DealUrgency {
+  const st = normalizeProposalStatus(row.proposal_status);
+  const vel = dealVelocity(row);
+  const health = dealHealthScore(row);
+  if (st === "viewed" || st === "negotiation") return "act_now";
+  if (vel === "hot" || health < 35) return "act_now";
+  if (vel === "cold" || health < 50) return "stale";
+  if (st === "sent" || vel === "warm") return "due_soon";
+  return "on_track";
+}
+
+export function dealUrgencyVisual(u: DealUrgency): { label: string; className: string } {
+  switch (u) {
+    case "act_now":
+      return {
+        label: "Act now",
+        className:
+          "border-rose-500/60 bg-rose-500/15 text-rose-200 ring-1 ring-rose-500/30",
+      };
+    case "due_soon":
+      return {
+        label: "Follow up",
+        className:
+          "border-amber-500/55 bg-amber-500/12 text-amber-100 ring-1 ring-amber-500/25",
+      };
+    case "stale":
+      return {
+        label: "Stale",
+        className:
+          "border-slate-500/40 bg-slate-500/10 text-slate-300 ring-1 ring-slate-500/20",
+      };
+    default:
+      return {
+        label: "On track",
+        className:
+          "border-sky-500/45 bg-sky-500/10 text-sky-100 ring-1 ring-sky-500/20",
+      };
+  }
+}
+
+export function healthScoreTone(score: number): {
+  ring: string;
+  text: string;
+  bar: string;
+} {
+  if (score < 40)
+    return {
+      ring: "text-rose-400",
+      text: "text-rose-300",
+      bar: "from-rose-500 to-orange-500",
+    };
+  if (score < 70)
+    return {
+      ring: "text-amber-400",
+      text: "text-amber-200",
+      bar: "from-amber-500 to-yellow-500",
+    };
+  return {
+    ring: "text-emerald-400",
+    text: "text-emerald-300",
+    bar: "from-emerald-500 to-teal-400",
+  };
+}
+
+export type ProposalEngagement = {
+  viewCount: number;
+  lastViewedLabel: string;
+  avgSessionLabel: string;
+  shareLabel: string;
+};
+
+function formatRelativeView(iso: string | null | undefined, lang: "en" | "hi"): string {
+  if (!iso) return lang === "hi" ? "कभी नहीं" : "Never";
+  const ms = Date.now() - Date.parse(iso);
+  if (!Number.isFinite(ms)) return "—";
+  const mins = Math.round(ms / 60_000);
+  if (mins < 1) return lang === "hi" ? "अभी" : "Just now";
+  if (mins < 60) return lang === "hi" ? `${mins} मि पहले` : `${mins}m ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 48) return lang === "hi" ? `${hrs} घंटे पहले` : `${hrs}h ago`;
+  const days = Math.round(hrs / 24);
+  return lang === "hi" ? `${days} दिन पहले` : `${days}d ago`;
+}
+
+export function proposalEngagementFromRow(row: ProposalHubRow, lang: "en" | "hi" = "en"): ProposalEngagement {
+  const st = normalizeProposalStatus(row.proposal_status);
+  const views = row.view_count ?? 0;
+  const lastViewedLabel = formatRelativeView(row.last_viewed_at, lang);
+  let shareLabel =
+    lang === "hi"
+      ? st === "draft"
+        ? "अभी शेयर नहीं"
+        : "लिंक भेजा"
+      : st === "draft"
+        ? "Not shared yet"
+        : "Link shared";
+  if (views > 0) {
+    shareLabel =
+      lang === "hi" ? `${views} बार खोला` : `Opened ${views}×`;
+  } else if (st === "viewed" || st === "negotiation") {
+    shareLabel = lang === "hi" ? "ग्राहक ने देखा" : "Customer viewed";
+  }
+  return {
+    viewCount: views,
+    lastViewedLabel,
+    avgSessionLabel: views > 0 ? (lang === "hi" ? "—" : "—") : "—",
+    shareLabel,
+  };
 }

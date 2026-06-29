@@ -38,7 +38,7 @@ export function HubSearchFilter({
   const hasFilter = !!query || activeStatus !== null;
 
   return (
-    <div className={cn("flex flex-col gap-3", className)}>
+    <div className={cn("flex flex-col gap-2", className)}>
       {/* Search input */}
       <div className="relative flex items-center">
         <Search

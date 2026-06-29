@@ -1,19 +1,29 @@
 "use client";
 
-import { hubIntelForStatus, statusProgressPct, type ProposalHubRow } from "@/lib/proposal-hub-insights";
+import {
+  closingConfidence,
+  dealHealthScore,
+  dealVelocity,
+  hubIntelForStatus,
+  proposalEngagementFromRow,
+  velocityVisual,
+  type ProposalHubRow,
+} from "@/lib/proposal-hub-insights";
 import { normalizeProposalStatus } from "@/lib/proposal-status";
 import { cn } from "@/lib/utils";
 import { motion, useReducedMotion } from "framer-motion";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Zap } from "lucide-react";
 
 export function ProposalHubIntelPanel({
   row,
   lang,
-  title
+  title,
+  variant = "default",
 }: {
   row: ProposalHubRow | null;
   lang: "en" | "hi";
   title: string;
+  variant?: "default" | "rail";
 }) {
   const reduced = useReducedMotion();
   if (!row) {
@@ -26,53 +36,71 @@ export function ProposalHubIntelPanel({
 
   const st = normalizeProposalStatus(row.proposal_status);
   const intel = hubIntelForStatus(st, lang);
-  const pct = statusProgressPct(st);
+  const health = dealHealthScore(row);
+  const confidence = closingConfidence(row);
+  const vel = velocityVisual(dealVelocity(row));
+  const engagement = proposalEngagementFromRow(row, lang);
 
   return (
     <motion.aside
       initial={reduced ? false : { opacity: 0, x: 8 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.35 }}
-      className="proposal-hub-intel rounded-xl border p-4 sm:p-5"
+      className={cn(
+        "proposal-hub-intel rounded-xl border p-4",
+        variant === "rail" && "proposal-hub-intel--rail"
+      )}
       aria-label={title}
     >
-      <div className="proposal-hub-text-accent flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wide">
+      <div className="proposal-hub-text-accent flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.14em]">
         <Sparkles className="h-3.5 w-3.5" aria-hidden />
         {title}
       </div>
 
-      <div className="mt-4">
-        <div className="proposal-hub-text-muted flex items-center justify-between gap-2 text-[11px]">
-          <span>{lang === "hi" ? "डील प्रगति" : "Deal progress"}</span>
-          <span className="proposal-hub-text-primary font-semibold tabular-nums">{pct}%</span>
-        </div>
-        <div className="proposal-hub-progress-track mt-2 h-1.5 overflow-hidden rounded-full">
-          <motion.div
-            className="proposal-hub-progress-fill h-full rounded-full"
-            initial={reduced ? { width: `${pct}%` } : { width: 0 }}
-            animate={{ width: `${pct}%` }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          />
-        </div>
-      </div>
-
       <div
         className={cn(
-          "mt-4 rounded-lg border px-3 py-3",
+          "mt-3 rounded-lg border px-3 py-3",
           intel.tone === "action" && "proposal-hub-intel-callout--action",
           intel.tone === "warn" && "proposal-hub-intel-callout--warn",
           intel.tone === "success" && "proposal-hub-intel-callout--success",
           intel.tone === "neutral" && "proposal-hub-intel-callout--neutral"
         )}
       >
-        <p className="proposal-hub-text-primary text-sm font-semibold">{intel.title}</p>
-        <p className="proposal-hub-text-secondary mt-1.5 text-xs leading-relaxed">{intel.body}</p>
+        <div className="flex items-start gap-2">
+          <Zap className="proposal-hub-text-accent mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+          <div>
+            <p className="proposal-hub-text-primary text-sm font-extrabold leading-snug">{intel.title}</p>
+            <p className="proposal-hub-text-secondary mt-1.5 text-xs font-medium leading-relaxed">{intel.body}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-3 space-y-2 rounded-lg border border-white/10 bg-black/15 p-3 text-[11px]">
+        <div className="flex items-center justify-between gap-2">
+          <span className="proposal-hub-text-muted font-semibold">{lang === "hi" ? "स्वास्थ्य" : "Health"}</span>
+          <span className="proposal-hub-text-primary font-black tabular-nums">{health}/100</span>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <span className="proposal-hub-text-muted font-semibold">{lang === "hi" ? "विश्वास" : "Close confidence"}</span>
+          <span className="proposal-hub-text-accent font-bold tabular-nums">{confidence}%</span>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <span className="proposal-hub-text-muted font-semibold">{lang === "hi" ? "गति" : "Velocity"}</span>
+          <span className={cn("inline-flex items-center gap-1 font-bold", vel.color)}>
+            <span className={cn("h-1.5 w-1.5 rounded-full", vel.dot)} aria-hidden />
+            {vel.label}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-2 border-t border-white/10 pt-2">
+          <span className="proposal-hub-text-muted font-semibold">{lang === "hi" ? "शेयर" : "Engagement"}</span>
+          <span className="proposal-hub-text-primary text-right font-bold leading-snug">{engagement.shareLabel}</span>
+        </div>
       </div>
 
       {row.annual_saving_inr != null && row.annual_saving_inr > 0 ? (
-        <p className="proposal-hub-text-muted mt-3 text-[11px]">
+        <p className="proposal-hub-text-muted mt-3 text-[11px] font-medium">
           {lang === "hi" ? "अनुमानित वार्षिक बचत" : "Est. annual saving"}:{" "}
-          <span className="proposal-hub-text-accent font-semibold tabular-nums">
+          <span className="proposal-hub-text-accent font-bold tabular-nums">
             ₹{Math.round(row.annual_saving_inr).toLocaleString("en-IN")}
           </span>
         </p>

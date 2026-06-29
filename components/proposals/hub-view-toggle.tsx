@@ -15,10 +15,10 @@ export type HubViewMode = "pipeline" | "grid" | "list";
 const STORAGE_KEY = "ss_proposals_view_mode";
 
 export function readViewMode(): HubViewMode {
-  if (typeof window === "undefined") return "pipeline";
+  if (typeof window === "undefined") return "list";
   const v = localStorage.getItem(STORAGE_KEY);
   if (v === "pipeline" || v === "grid" || v === "list") return v;
-  return "pipeline";
+  return "list";
 }
 
 export function writeViewMode(mode: HubViewMode): void {

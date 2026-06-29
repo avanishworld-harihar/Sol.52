@@ -1,11 +1,12 @@
 "use client";
 
-import { avatarHue, customerInitials, statusVisual, type ProposalHubRow } from "@/lib/proposal-hub-insights";
-
-export type ProposalHubDealRow = ProposalHubRow;
+import { avatarHue, customerInitials, dealHealthScore, dealUrgency, dealUrgencyVisual, dealVelocity, formatInrCompact, healthScoreTone, statusVisual, velocityVisual, type ProposalHubRow } from "@/lib/proposal-hub-insights";
 import { normalizeProposalStatus, PROPOSAL_STATUS_ORDER, type ProposalStatus } from "@/lib/proposal-status";
+import { DealHeatPill } from "@/components/proposals/proposal-hub-engagement-metrics";
 import { cn } from "@/lib/utils";
 import { motion, useReducedMotion } from "framer-motion";
+
+export type ProposalHubDealRow = ProposalHubRow;
 
 function formatShortDate(iso: string): string {
   try {
@@ -27,6 +28,21 @@ function groupRows(rows: ProposalHubDealRow[]): Map<ProposalStatus, ProposalHubD
   return map;
 }
 
+function HealthMini({ score }: { score: number }) {
+  const tone = healthScoreTone(score);
+  return (
+    <div className="flex shrink-0 flex-col items-center gap-0.5" title={`Health ${score}`}>
+      <span className={cn("text-[11px] font-black tabular-nums", tone.text)}>{score}</span>
+      <div className="h-1 w-10 overflow-hidden rounded-full bg-white/10">
+        <div
+          className={cn("h-full rounded-full bg-gradient-to-r", tone.bar)}
+          style={{ width: `${Math.min(100, score)}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export function ProposalHubDealList({
   rows,
   focusId,
@@ -35,7 +51,8 @@ export function ProposalHubDealList({
   groupCountLabel,
   pipelineLabel,
   className,
-  showVersionTag = false
+  showVersionTag = false,
+  lang = "en",
 }: {
   rows: ProposalHubDealRow[];
   focusId: string | null;
@@ -44,15 +61,15 @@ export function ProposalHubDealList({
   groupCountLabel: (n: number) => string;
   pipelineLabel: string;
   className?: string;
-  /** When true, show short id so duplicate test rows are distinguishable */
   showVersionTag?: boolean;
+  lang?: "en" | "hi";
 }) {
   const grouped = groupRows(rows);
   const reduced = useReducedMotion();
 
   return (
     <div className={cn("proposal-hub-list flex min-h-0 flex-1 flex-col overflow-hidden", className)}>
-      <div className="proposal-hub-list-head shrink-0 pb-3">
+      <div className="proposal-hub-list-head shrink-0 pb-2">
         <p className="proposal-hub-text-muted text-[10px] font-bold uppercase tracking-[0.18em]">{pipelineLabel}</p>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-2 [-webkit-overflow-scrolling:touch]">
@@ -62,20 +79,19 @@ export function ProposalHubDealList({
           const vis = statusVisual(st);
           return (
             <div key={st} className="proposal-hub-list-group">
-              <div className="proposal-hub-list-group-head sticky top-0 z-[2] flex items-center justify-between gap-2 py-2.5">
+              <div className="proposal-hub-list-group-head sticky top-0 z-[2] flex items-center justify-between gap-2 py-2">
                 <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1", vis.pillClass)}>
                   <span className={cn("h-1.5 w-1.5 rounded-full", vis.dotClass)} aria-hidden />
                   {statusLabel(st)}
                 </span>
                 <span className="proposal-hub-text-muted text-[10px] tabular-nums">{groupCountLabel(bucket.length)}</span>
               </div>
-              <ul className="space-y-1.5" role="list">
+              <ul className="space-y-2" role="list">
                 {bucket.map((row, i) => {
                   const active = row.id === focusId;
-                  const rowSt = normalizeProposalStatus(row.proposal_status);
-                  const rowVis = statusVisual(rowSt);
-                  const amt =
-                    row.final_amount_inr != null ? `₹${Math.round(row.final_amount_inr).toLocaleString("en-IN")}` : "—";
+                  const health = dealHealthScore(row);
+                  const urgency = dealUrgencyVisual(dealUrgency(row));
+                  const vel = velocityVisual(dealVelocity(row));
                   const hue = avatarHue(row.customer_name);
                   const initials = customerInitials(row.customer_name);
                   return (
@@ -87,49 +103,52 @@ export function ProposalHubDealList({
                         initial={reduced ? false : { opacity: 0, x: -6 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.25, delay: i * 0.03 }}
-                        whileHover={reduced ? undefined : { scale: 1.01 }}
-                        whileTap={reduced ? undefined : { scale: 0.99 }}
                         className={cn(
-                          "proposal-hub-deal-row flex w-full items-center gap-3 rounded-xl border px-2.5 py-2.5 text-left transition-shadow",
+                          "proposal-hub-deal-row proposal-hub-deal-row--v2 flex w-full flex-col gap-2 rounded-xl border px-3 py-2.5 text-left transition-shadow touch-manipulation",
                           active && "proposal-hub-deal-row--active"
                         )}
                       >
-                        <span
-                          className="proposal-hub-avatar flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold text-white shadow-inner"
-                          style={{
-                            background: `linear-gradient(135deg, hsl(${hue} 55% 42%), hsl(${(hue + 40) % 360} 50% 32%))`
-                          }}
-                          aria-hidden
-                        >
-                          {initials}
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <p className="proposal-hub-text-primary truncate text-[13px] font-semibold leading-snug sm:text-sm">{row.customer_name}</p>
-                          <p className="proposal-hub-text-muted mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[11px]">
-                            <span>{row.system_kw} kW</span>
-                            <span className="proposal-hub-text-secondary">·</span>
-                            <span className="truncate">{formatShortDate(row.generated_at)}</span>
-                            {showVersionTag ? (
-                              <>
-                                <span className="proposal-hub-text-secondary">·</span>
-                                <span className="font-mono text-[10px] opacity-70">{row.id.slice(0, 8)}</span>
-                              </>
-                            ) : null}
-                          </p>
-                        </div>
-                        <div className="hidden shrink-0 flex-col items-end sm:flex">
-                          <p className="proposal-hub-text-primary text-[13px] font-semibold tabular-nums">{amt}</p>
+                        <div className="flex items-start gap-2.5">
                           <span
-                            className={cn(
-                              "mt-1 h-0.5 w-8 rounded-full bg-gradient-to-r",
-                              rowVis.barClass,
-                              active && "w-12 opacity-100"
-                            )}
+                            className="proposal-hub-avatar flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold text-white shadow-inner"
+                            style={{
+                              background: `linear-gradient(135deg, hsl(${hue} 55% 42%), hsl(${(hue + 40) % 360} 50% 32%))`,
+                            }}
                             aria-hidden
-                          />
+                          >
+                            {initials}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <p className="proposal-hub-text-primary truncate text-[13px] font-bold leading-snug sm:text-sm">
+                                {row.customer_name}
+                              </p>
+                              <DealHeatPill row={row} lang={lang} />
+                            </div>
+                            <p className="proposal-hub-text-muted mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[11px] font-semibold">
+                              <span>{row.system_kw} kW</span>
+                              <span className="opacity-50">·</span>
+                              <span className="proposal-hub-text-primary tabular-nums">{formatInrCompact(row.final_amount_inr)}</span>
+                              <span className="opacity-50">·</span>
+                              <span>{formatShortDate(row.generated_at)}</span>
+                              {showVersionTag ? (
+                                <>
+                                  <span className="opacity-50">·</span>
+                                  <span className="font-mono text-[10px] opacity-70">{row.id.slice(0, 8)}</span>
+                                </>
+                              ) : null}
+                            </p>
+                          </div>
+                          <HealthMini score={health} />
                         </div>
-                        <div className="shrink-0 text-right sm:hidden">
-                          <p className="proposal-hub-text-primary text-[12px] font-semibold tabular-nums">{amt}</p>
+                        <div className="flex flex-wrap items-center justify-between gap-1.5 pl-12">
+                          <span className={cn("inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wide", urgency.className)}>
+                            {urgency.label}
+                          </span>
+                          <span className={cn("inline-flex items-center gap-1 text-[10px] font-bold", vel.color)}>
+                            <span className={cn("h-1.5 w-1.5 rounded-full", vel.dot)} aria-hidden />
+                            {vel.label}
+                          </span>
                         </div>
                       </motion.button>
                     </li>

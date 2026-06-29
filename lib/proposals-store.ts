@@ -210,6 +210,8 @@ export type ProposalListItem = {
   proposal_status: ProposalStatus;
   /** Phase A — Proposal OS preset. Legacy rows default to "residential_smart". */
   preset_id: string;
+  view_count?: number | null;
+  last_viewed_at?: string | null;
 };
 
 /**
@@ -235,6 +237,8 @@ function mapProposalListRow(r: Record<string, unknown>): ProposalListItem {
     annual_saving_inr: typeof saving === "number" && Number.isFinite(saving) ? saving : null,
     proposal_status: normalizeProposalStatus(typeof r.proposal_status === "string" ? r.proposal_status : "draft"),
     preset_id: typeof r.preset_id === "string" && r.preset_id ? r.preset_id : "residential_sales_premium",
+    view_count: typeof r.view_count === "number" ? r.view_count : null,
+    last_viewed_at: r.last_viewed_at != null ? String(r.last_viewed_at) : null,
   };
 }
 
@@ -244,7 +248,7 @@ export async function listRecentProposals(limit = 50): Promise<ProposalListItem[
   const { data, error } = await client
     .from("proposals")
     .select(
-      "id, customer_name, generated_at, system_kw, lead_id, panel_brand, annual_saving_inr, proposal_status, preset_id, proposal_pricing(final_amount_inr)"
+      "id, customer_name, generated_at, system_kw, lead_id, panel_brand, annual_saving_inr, proposal_status, preset_id, view_count, last_viewed_at, proposal_pricing(final_amount_inr)"
     )
     .order("generated_at", { ascending: false })
     .limit(limit);
