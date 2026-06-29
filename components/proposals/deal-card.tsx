@@ -31,7 +31,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
-  avatarHue,
   closingConfidence,
   customerInitials,
   dealAgeInDays,
@@ -83,21 +82,16 @@ function Avatar({
   isCommercial: boolean;
   size?: "sm" | "md" | "lg";
 }) {
-  const hue = avatarHue(name);
   const initials = customerInitials(name);
   const sizeClass = size === "sm" ? "h-8 w-8 text-xs" : size === "lg" ? "h-12 w-12 text-base" : "h-10 w-10 text-xs";
 
   return (
     <span
       className={cn(
-        "flex shrink-0 items-center justify-center rounded-2xl font-black text-white shadow-md",
+        "proposal-hub-avatar flex shrink-0 items-center justify-center rounded-2xl font-black shadow-md",
+        isCommercial && "proposal-hub-avatar--commercial",
         sizeClass
       )}
-      style={{
-        background: isCommercial
-          ? `linear-gradient(135deg, hsl(${hue} 40% 25%), hsl(${(hue + 30) % 360} 35% 18%))`
-          : `linear-gradient(135deg, hsl(${hue} 55% 42%), hsl(${(hue + 40) % 360} 50% 32%))`,
-      }}
       aria-hidden
     >
       {initials}

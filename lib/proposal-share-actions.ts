@@ -100,6 +100,37 @@ export async function downloadProposalPpt(proposalId: string, customerName: stri
   URL.revokeObjectURL(objectUrl);
 }
 
+export type DuplicateProposalResult = {
+  ok: boolean;
+  id?: string;
+  customerName?: string;
+  error?: string;
+  code?: string;
+};
+
+/** Clone sizing, equipment, pricing, and layout into a fresh draft (no CRM lead link). */
+export async function duplicateProposalById(proposalId: string): Promise<DuplicateProposalResult> {
+  try {
+    const res = await fetch(`/api/proposals/${proposalId}/duplicate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+    const json = (await res.json().catch(() => ({}))) as {
+      ok?: boolean;
+      id?: string;
+      customerName?: string;
+      error?: string;
+      code?: string;
+    };
+    if (!res.ok || !json.ok || !json.id) {
+      return { ok: false, error: json.error || "duplicate_failed", code: json.code };
+    }
+    return { ok: true, id: json.id, customerName: json.customerName };
+  } catch {
+    return { ok: false, error: "duplicate_failed" };
+  }
+}
+
 export async function deleteProposalById(proposalId: string): Promise<{ ok: boolean; error?: string }> {
   const res = await fetch(`/api/proposals/${proposalId}`, { method: "DELETE" });
   const json = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };

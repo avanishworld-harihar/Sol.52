@@ -7,6 +7,7 @@ import {
   copyPublicProposalLink,
   deleteProposalById,
   downloadProposalPpt,
+  duplicateProposalById,
   markProposalSentIfDraft,
   openWhatsAppWithProposal,
   type ProposalShareMetrics,
@@ -32,6 +33,8 @@ type Labels = ProposalListCardProps["labels"] & {
   copyShareLink?: string;
   copyShareLinkDone?: string;
   pptFailed?: string;
+  duplicateDone?: string;
+  duplicateFailed?: string;
 };
 
 const actionBtnClass = cn(
@@ -67,6 +70,7 @@ export function ProposalHubActionsSheet({
   shareMetrics,
   onDeleted,
   onSent,
+  onDuplicated,
 }: {
   open: boolean;
   onClose: () => void;
@@ -77,6 +81,7 @@ export function ProposalHubActionsSheet({
   shareMetrics: ProposalShareMetrics;
   onDeleted?: () => void;
   onSent?: (proposalId: string, status?: string) => void;
+  onDuplicated?: (newProposalId: string) => void;
 }) {
   const toast = useToast();
   const router = useRouter();
@@ -85,7 +90,7 @@ export function ProposalHubActionsSheet({
   const publicHref = `/proposal/${proposalId}`;
   const savingMo =
     annualSavingInr != null && Number.isFinite(annualSavingInr) ? Math.round(annualSavingInr / 12) : null;
-  const [busy, setBusy] = useState<"send" | "mark" | "copy" | "ppt" | "delete" | null>(null);
+  const [busy, setBusy] = useState<"send" | "mark" | "copy" | "ppt" | "delete" | "duplicate" | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -113,10 +118,6 @@ export function ProposalHubActionsSheet({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, handleClose]);
 
-  function soon(feature: string) {
-    toast.info(labels.comingSoon, feature);
-    handleClose();
-  }
 
   async function handleSend() {
     setBusy("send");
@@ -171,6 +172,30 @@ export function ProposalHubActionsSheet({
       handleClose();
     } catch (e) {
       toast.error(labels.pptFailed ?? "Download failed", e instanceof Error ? e.message : labels.comingSoon);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function handleDuplicate() {
+    setBusy("duplicate");
+    try {
+      const result = await duplicateProposalById(proposalId);
+      if (!result.ok || !result.id) {
+        throw new Error(result.error || "duplicate_failed");
+      }
+      toast.success(
+        labels.duplicateProposal,
+        labels.duplicateDone ?? "Copy ready — update customer name and send."
+      );
+      onDuplicated?.(result.id);
+      handleClose();
+      router.push(buildProposalEditHref({ proposalId: result.id }));
+    } catch (e) {
+      toast.error(
+        labels.duplicateFailed ?? "Could not duplicate",
+        e instanceof Error ? e.message : ""
+      );
     } finally {
       setBusy(null);
     }
@@ -259,9 +284,9 @@ export function ProposalHubActionsSheet({
             <CheckCircle2 className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400" aria-hidden />
             {busy === "mark" ? "Saving…" : (labels.markAsSent ?? "Mark as sent")}
           </ActionRow>
-          <ActionRow onClick={() => soon(labels.duplicateProposal)}>
+          <ActionRow disabled={busy === "duplicate"} onClick={() => void handleDuplicate()}>
             <Copy className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400" aria-hidden />
-            {labels.duplicateProposal}
+            {busy === "duplicate" ? "Copying…" : labels.duplicateProposal}
           </ActionRow>
           <ActionRow
             disabled={busy === "delete"}

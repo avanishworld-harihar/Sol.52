@@ -169,6 +169,8 @@ export default function ProposalsHubPage() {
       copyShareLink: t("proposals_copyShareLink"),
       copyShareLinkDone: t("proposals_copyShareLinkDone"),
       pptFailed: t("proposals_pptFailed"),
+      duplicateDone: t("proposals_duplicateDone"),
+      duplicateFailed: t("proposals_duplicateFailed"),
     }),
     [t]
   );
@@ -223,6 +225,14 @@ export default function ProposalsHubPage() {
       refreshList({ id: proposalId, proposal_status: status });
     },
     [refreshList]
+  );
+
+  const handleProposalDuplicated = useCallback(
+    (newProposalId: string) => {
+      void mutate();
+      setFocusId(newProposalId);
+    },
+    [mutate]
   );
 
   useEffect(() => {
@@ -459,6 +469,7 @@ export default function ProposalsHubPage() {
                       onScrollToPipeline={scrollToPipeline}
                       onDeleted={refreshList}
                       onSent={handleProposalSent}
+                      onDuplicated={handleProposalDuplicated}
                     />
                   </section>
                 </div>
@@ -508,6 +519,7 @@ export default function ProposalsHubPage() {
                     layout="pane"
                     onDeleted={refreshList}
                     onSent={handleProposalSent}
+                    onDuplicated={handleProposalDuplicated}
                   />
                 </div>
               </div>

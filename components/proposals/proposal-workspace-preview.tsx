@@ -45,7 +45,8 @@ export function ProposalWorkspacePreview({
   onScrollToPipeline,
   onBack,
   onDeleted,
-  onSent
+  onSent,
+  onDuplicated
 }: {
   row: ProposalHubDealRow | null;
   labels: ProposalListCardProps["labels"];
@@ -63,6 +64,7 @@ export function ProposalWorkspacePreview({
   onBack?: () => void;
   onDeleted?: () => void;
   onSent?: (proposalId: string, status?: string) => void;
+  onDuplicated?: (newProposalId: string) => void;
 }) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [markingSent, setMarkingSent] = useState(false);
@@ -337,6 +339,7 @@ export function ProposalWorkspacePreview({
         shareMetrics={shareMetricsFromHubRow(row)}
         onDeleted={onDeleted}
         onSent={onSent}
+        onDuplicated={onDuplicated}
       />
     </>
   );

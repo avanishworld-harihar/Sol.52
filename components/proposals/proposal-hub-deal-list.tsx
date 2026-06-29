@@ -1,6 +1,6 @@
 "use client";
 
-import { avatarHue, customerInitials, dealHealthScore, dealUrgency, dealUrgencyVisual, dealVelocity, formatInrCompact, healthScoreTone, statusVisual, velocityVisual, type ProposalHubRow } from "@/lib/proposal-hub-insights";
+import { customerInitials, dealHealthScore, dealUrgency, dealUrgencyVisual, dealVelocity, formatInrCompact, healthScoreTone, statusVisual, velocityVisual, type ProposalHubRow } from "@/lib/proposal-hub-insights";
 import { normalizeProposalStatus, PROPOSAL_STATUS_ORDER, type ProposalStatus } from "@/lib/proposal-status";
 import { DealHeatPill } from "@/components/proposals/proposal-hub-engagement-metrics";
 import { cn } from "@/lib/utils";
@@ -92,7 +92,6 @@ export function ProposalHubDealList({
                   const health = dealHealthScore(row);
                   const urgency = dealUrgencyVisual(dealUrgency(row));
                   const vel = velocityVisual(dealVelocity(row));
-                  const hue = avatarHue(row.customer_name);
                   const initials = customerInitials(row.customer_name);
                   return (
                     <li key={row.id}>
@@ -110,10 +109,7 @@ export function ProposalHubDealList({
                       >
                         <div className="flex items-start gap-2.5">
                           <span
-                            className="proposal-hub-avatar flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold text-white shadow-inner"
-                            style={{
-                              background: `linear-gradient(135deg, hsl(${hue} 55% 42%), hsl(${(hue + 40) % 360} 50% 32%))`,
-                            }}
+                            className="proposal-hub-avatar flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold shadow-inner"
                             aria-hidden
                           >
                             {initials}
