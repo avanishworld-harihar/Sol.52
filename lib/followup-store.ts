@@ -224,7 +224,7 @@ export async function listLeadProposalHistory(leadId: string, page?: FollowupPag
 
 export async function getFollowupDashboardWidgets() {
   const client = db();
-  if (!client) return { today: [], overdue: [], upcomingVisits: [] };
+  if (!client) return { today: [], overdue: [], upcoming: [], upcomingVisits: [], counts: { overdue: 0, today: 0, upcoming: 0 } };
   const now = new Date();
   const start = new Date(now);
   start.setHours(0, 0, 0, 0);
@@ -232,23 +232,36 @@ export async function getFollowupDashboardWidgets() {
   end.setDate(end.getDate() + 1);
   const weekEnd = new Date(start);
   weekEnd.setDate(weekEnd.getDate() + 7);
+  const horizonEnd = new Date(start);
+  horizonEnd.setDate(horizonEnd.getDate() + 90);
 
-  const [today, overdue, upcomingVisits] = await Promise.all([
+  const reminderSelect =
+    "id, lead_id, title, due_at, priority, followup_type, status, notes";
+
+  const [today, overdue, upcoming, upcomingVisits] = await Promise.all([
     client
       .from("followup_reminders")
-      .select("id, lead_id, title, due_at, priority, followup_type, status")
+      .select(reminderSelect)
       .eq("status", "pending")
       .gte("due_at", start.toISOString())
       .lt("due_at", end.toISOString())
       .order("due_at", { ascending: true })
-      .limit(20),
+      .limit(25),
     client
       .from("followup_reminders")
-      .select("id, lead_id, title, due_at, priority, followup_type, status")
+      .select(reminderSelect)
       .eq("status", "pending")
       .lt("due_at", now.toISOString())
       .order("due_at", { ascending: true })
-      .limit(20),
+      .limit(25),
+    client
+      .from("followup_reminders")
+      .select(reminderSelect)
+      .eq("status", "pending")
+      .gte("due_at", end.toISOString())
+      .lt("due_at", horizonEnd.toISOString())
+      .order("due_at", { ascending: true })
+      .limit(25),
     client
       .from("lead_visits")
       .select("id, lead_id, scheduled_at, visit_status, summary, location")
@@ -259,9 +272,19 @@ export async function getFollowupDashboardWidgets() {
       .limit(20),
   ]);
 
+  const todayRows = today.data ?? [];
+  const overdueRows = overdue.data ?? [];
+  const upcomingRows = upcoming.data ?? [];
+
   return {
-    today: today.data ?? [],
-    overdue: overdue.data ?? [],
+    today: todayRows,
+    overdue: overdueRows,
+    upcoming: upcomingRows,
     upcomingVisits: upcomingVisits.data ?? [],
+    counts: {
+      overdue: overdueRows.length,
+      today: todayRows.length,
+      upcoming: upcomingRows.length,
+    },
   };
 }

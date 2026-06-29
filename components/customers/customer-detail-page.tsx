@@ -38,7 +38,6 @@ import {
   type LeadStatusKey,
 } from "@/lib/lead-status";
 import {
-  createReminder,
   fetchLeadReminders,
   fetchLeadTimeline,
   patchReminder,
@@ -46,6 +45,9 @@ import {
 import type { FollowupReminder } from "@/lib/followup-types";
 import type { CustomerTimelineItem } from "@/lib/customer-timeline-store";
 import { CustomerDocumentsHub } from "@/components/customers/customer-documents-hub";
+import { ScheduleCallbackSheet } from "@/components/crm/schedule-callback-sheet";
+import { CallbackStatusBadge } from "@/components/crm/callback-status-badge";
+import { describeCallback } from "@/lib/crm-callback-display";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import {
@@ -231,16 +233,8 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
   });
   const [savingCall, setSavingCall] = useState(false);
 
-  /* ------ Follow-up state ------ */
-  const [showAddFollowup, setShowAddFollowup] = useState(false);
-  const [followupForm, setFollowupForm] = useState({
-    title: "",
-    due_at: "",
-    priority: "medium" as FollowupReminder["priority"],
-    followup_type: "call" as FollowupReminder["followup_type"],
-    notes: "",
-  });
-  const [savingFollowup, setSavingFollowup] = useState(false);
+  /* ------ Follow-up / callback state ------ */
+  const [scheduleOpen, setScheduleOpen] = useState(false);
 
   /* ------ stage change ------ */
   const [statusChanging, setStatusChanging] = useState(false);
@@ -296,31 +290,16 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
     }
   }
 
-  /* ------ followup submit ------ */
-  async function submitFollowup() {
-    if (!followupForm.title.trim() || !followupForm.due_at) return;
-    setSavingFollowup(true);
-    try {
-      await createReminder(leadId, {
-        title: followupForm.title.trim(),
-        due_at: crmDatetimeLocalToIso(followupForm.due_at),
-        priority: followupForm.priority,
-        followup_type: followupForm.followup_type,
-        status: "pending",
-        notes: followupForm.notes || null,
-      });
-      await mutateReminders();
-      setShowAddFollowup(false);
-      setFollowupForm({ title: "", due_at: "", priority: "medium", followup_type: "call", notes: "" });
-      toast.success("Follow-up added");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not add follow-up");
-    } finally {
-      setSavingFollowup(false);
-    }
-  }
+  const pendingReminders = useMemo(
+    () => reminders.filter((r) => r.status === "pending").sort((a, b) => new Date(a.due_at).getTime() - new Date(b.due_at).getTime()),
+    [reminders]
+  );
 
-  /* ------ complete reminder ------ */
+  const nextCallback = useMemo(() => {
+    const next = pendingReminders[0];
+    return next ? describeCallback(next.due_at) : describeCallback(null);
+  }, [pendingReminders]);
+
   const completeReminder = useCallback(async (id: string) => {
     await mutateReminders((prev = []) => prev.map((r) => r.id === id ? { ...r, status: "completed" as const } : r), { revalidate: false });
     try { await patchReminder(id, { status: "completed" }); } finally { await mutateReminders(); }
@@ -336,11 +315,6 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
       return acc;
     }, {});
   }, [timeline]);
-
-  const pendingReminders = useMemo(
-    () => reminders.filter((r) => r.status === "pending").sort((a, b) => new Date(a.due_at).getTime() - new Date(b.due_at).getTime()),
-    [reminders]
-  );
 
   if (!lead) {
     return (
@@ -723,113 +697,56 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
         )}
       </SectionCard>
 
-      {/* ── 4. Follow-up Section ── */}
+      {/* ── 4. Smart callbacks ── */}
       <SectionCard
-        title="Follow-ups"
+        title="Smart callbacks"
         icon={AlarmClock}
         action={
           <Button
             type="button"
             size="sm"
-            onClick={() => setShowAddFollowup(true)}
+            onClick={() => setScheduleOpen(true)}
             className="h-8 gap-1.5 bg-teal-600 text-xs hover:bg-teal-700"
           >
-            <Plus className="h-3.5 w-3.5" aria-hidden />
-            Add
+            <CalendarClock className="h-3.5 w-3.5" aria-hidden />
+            Schedule
           </Button>
         }
       >
-        {/* Add follow-up form */}
-        {showAddFollowup ? (
-          <div className="mb-4 space-y-3 rounded-xl border border-amber-200/80 bg-amber-50/50 p-3 dark:border-amber-800/40 dark:bg-amber-950/15">
-            <p className="text-xs font-bold text-amber-800 dark:text-amber-200">New follow-up</p>
-            <FloatingLabelInput
-              label="Title"
-              value={followupForm.title}
-              onChange={(e) => setFollowupForm((p) => ({ ...p, title: e.target.value }))}
-              className="h-10 rounded-xl text-sm"
+        {pendingReminders.length > 0 ? (
+          <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-slate-200/80 bg-slate-50/80 px-3 py-2 dark:border-white/10 dark:bg-white/[0.04]">
+            <CallbackStatusBadge
+              dueAt={pendingReminders[0]?.due_at}
+              title={pendingReminders[0]?.title}
             />
-            <div className="grid gap-2 sm:grid-cols-2">
-              <div>
-                <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-slate-500">Due date</label>
-                <input
-                  type="datetime-local"
-                  value={followupForm.due_at}
-                  onChange={(e) => setFollowupForm((p) => ({ ...p, due_at: e.target.value }))}
-                  className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm dark:border-white/15 dark:bg-white/5"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-slate-500">Priority</label>
-                <select
-                  value={followupForm.priority}
-                  onChange={(e) => setFollowupForm((p) => ({ ...p, priority: e.target.value as FollowupReminder["priority"] }))}
-                  className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold dark:border-white/15 dark:bg-white/5"
-                >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                  <option value="urgent">Urgent</option>
-                </select>
-              </div>
-            </div>
-            <div>
-              <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-slate-500">Type</label>
-              <select
-                value={followupForm.followup_type}
-                onChange={(e) => setFollowupForm((p) => ({ ...p, followup_type: e.target.value as FollowupReminder["followup_type"] }))}
-                className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold dark:border-white/15 dark:bg-white/5"
-              >
-                <option value="call">Call</option>
-                <option value="visit">Visit</option>
-                <option value="proposal">Proposal</option>
-                <option value="payment">Payment</option>
-                <option value="general">General</option>
-              </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-slate-500">Notes</label>
-              <textarea
-                value={followupForm.notes}
-                onChange={(e) => setFollowupForm((p) => ({ ...p, notes: e.target.value }))}
-                placeholder="Reminder context…"
-                rows={2}
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-white/15 dark:bg-white/5"
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button type="button" size="sm" disabled={savingFollowup || !followupForm.title.trim() || !followupForm.due_at} onClick={() => void submitFollowup()} className="h-10 gap-1.5 bg-teal-600 hover:bg-teal-700">
-                <Save className="h-4 w-4" /> {savingFollowup ? "Saving…" : "Save"}
-              </Button>
-              <Button type="button" size="sm" variant="outline" onClick={() => setShowAddFollowup(false)} className="h-10">
-                Cancel
-              </Button>
-            </div>
+            <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">{nextCallback.label}</span>
           </div>
         ) : null}
 
-        {pendingReminders.length === 0 && !showAddFollowup ? (
-          <p className="text-sm text-slate-500">No pending follow-ups.</p>
+        {pendingReminders.length === 0 ? (
+          <p className="text-sm text-slate-500">No callback scheduled. Use Schedule for 3-month, post-monsoon, or custom dates.</p>
         ) : (
           <ol className="space-y-2">
             {pendingReminders.map((r) => {
-              const overdue = new Date(r.due_at).getTime() < Date.now();
+              const info = describeCallback(r.due_at);
               return (
                 <li
                   key={r.id}
                   className={cn(
                     "flex items-start gap-3 rounded-xl border p-3",
-                    overdue
+                    info.isOverdue
                       ? "border-rose-200/80 bg-rose-50/60 dark:border-rose-900/40 dark:bg-rose-950/20"
-                      : "border-amber-200/70 bg-amber-50/40 dark:border-amber-800/30 dark:bg-amber-950/10"
+                      : info.state === "today"
+                        ? "border-amber-200/70 bg-amber-50/40 dark:border-amber-800/30 dark:bg-amber-950/10"
+                        : "border-sky-200/70 bg-sky-50/40 dark:border-sky-800/30 dark:bg-sky-950/10"
                   )}
                 >
-                  <AlarmClock className={cn("mt-0.5 h-4 w-4 shrink-0", overdue ? "text-rose-600" : "text-amber-600")} aria-hidden />
+                  <AlarmClock className={cn("mt-0.5 h-4 w-4 shrink-0", info.isOverdue ? "text-rose-600" : "text-amber-600")} aria-hidden />
                   <div className="min-w-0 flex-1 space-y-0.5">
                     <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{r.title}</p>
                     <p className="text-[11px] text-slate-500">
-                      Due: {formatCrmDate(r.due_at)} {formatCrmTime(r.due_at)}
-                      {overdue ? <span className="ml-2 font-bold text-rose-600">Overdue</span> : null}
+                      {info.label}
+                      {info.isOverdue ? <span className="ml-2 font-bold text-rose-600">Overdue</span> : null}
                     </p>
                     {r.notes ? <p className="text-xs text-slate-600 dark:text-slate-400">{r.notes}</p> : null}
                     <span className={cn("inline-block rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase", PRIORITY_META[r.priority])}>
@@ -855,6 +772,14 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
       <SectionCard title="Documents" icon={FolderOpen}>
         <CustomerDocumentsHub customerId={leadId} />
       </SectionCard>
+
+      <ScheduleCallbackSheet
+        open={scheduleOpen}
+        onClose={() => setScheduleOpen(false)}
+        leadId={leadId}
+        customerName={lead.name}
+        onScheduled={() => void mutateReminders()}
+      />
 
     </div>
   );

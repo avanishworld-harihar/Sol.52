@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { Building2, IndianRupee, MapPin, MessageCircle, Pencil, Phone, PhoneCall, Trash2, Users, Wifi } from "lucide-react";
+import { Building2, CalendarClock, IndianRupee, MapPin, MessageCircle, Pencil, Phone, PhoneCall, Trash2, Users, Wifi } from "lucide-react";
 
 import type { CustomerLead } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,6 +23,9 @@ import { readLeadFollowUpMap, recordLeadFollowUp } from "@/lib/lead-followup-sto
 import { normalizeSource, SOURCE_META, isLeadStale } from "@/lib/lead-source";
 import { resolveCustomerCommercialCta } from "@/lib/customer-crm-cta";
 import { formatCrmDateTime, formatCrmShortDate } from "@/lib/crm-datetime";
+import { describeCallback } from "@/lib/crm-callback-display";
+import { CallbackStatusBadge } from "@/components/crm/callback-status-badge";
+import { ScheduleCallbackSheet } from "@/components/crm/schedule-callback-sheet";
 
 export type { CustomerLead };
 
@@ -325,6 +328,7 @@ export function CustomersLeadList({
   const showHeader = !loading && customers.length > 0;
   const installerName = getInstallerBrandName();
   const [followMap, setFollowMap] = useState<Record<string, number>>({});
+  const [scheduleTarget, setScheduleTarget] = useState<CustomerLead | null>(null);
 
   const refreshFollowMap = useCallback(() => {
     setFollowMap({ ...readLeadFollowUpMap() });
@@ -391,10 +395,7 @@ export function CustomersLeadList({
               // Phase 2: prefer server-side next followup; fall back to localStorage
               const nextFollowupAt = customer.next_followup_at ?? null;
               const nextFollowupTitle = customer.next_followup_title ?? null;
-              const nextFollowupOverdue = nextFollowupAt != null && new Date(nextFollowupAt).getTime() < Date.now();
-              const followupDisplay = nextFollowupAt
-                ? formatCrmDateTime(nextFollowupAt)
-                : ts != null ? formatLastFollowUpLocale(locale, ts) : t("customers_neverFollowedUp");
+              const callbackInfo = describeCallback(nextFollowupAt);
               // Phase 2: last activity from server (activity_events)
               const lastActivityAt = customer.last_activity_at ?? customer.last_touched_at ?? null;
               const lastActivityType = customer.last_activity_type ?? null;
@@ -478,6 +479,7 @@ export function CustomersLeadList({
                       </h3>
                       <div className="mt-2 flex flex-wrap items-center gap-2 md:max-lg:mt-1 md:max-lg:gap-1.5">
                         <LeadSourceBadge sourceRaw={customer.source} />
+                        <CallbackStatusBadge dueAt={nextFollowupAt} title={nextFollowupTitle} compact />
                         <span
                           className={cn(
                             "inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide",
@@ -525,14 +527,13 @@ export function CustomersLeadList({
                       <dd className="font-bold text-slate-800 dark:text-slate-200">{lastActivityLabel}</dd>
                     </div>
                     <div className="flex justify-between gap-3 border-t border-slate-200/80 pt-3 text-xs dark:border-white/10 md:max-lg:pt-2 md:max-lg:text-[11px]">
-                      <dt className="shrink-0 font-semibold text-slate-500 dark:text-slate-400">Next follow-up</dt>
+                      <dt className="shrink-0 font-semibold text-slate-500 dark:text-slate-400">Next callback</dt>
                       <dd className={cn(
                         "max-w-[58%] text-right font-semibold leading-snug",
-                        nextFollowupOverdue ? "text-rose-700 dark:text-rose-300" : "text-slate-700 dark:text-slate-300"
+                        callbackInfo.isOverdue ? "text-rose-700 dark:text-rose-300" : "text-slate-700 dark:text-slate-300"
                       )}>
                         {nextFollowupTitle ? <span className="block truncate text-[10px] font-bold uppercase text-slate-400">{nextFollowupTitle}</span> : null}
-                        <span className={cn(nextFollowupOverdue && "font-black")}>{followupDisplay}</span>
-                        {nextFollowupOverdue ? <span className="ml-1 text-[10px] font-black uppercase text-rose-600">Overdue</span> : null}
+                        <span>{nextFollowupAt ? callbackInfo.label : ts != null ? formatLastFollowUpLocale(locale, ts) : t("customers_neverFollowedUp")}</span>
                       </dd>
                     </div>
                     {customer.phone ? (
@@ -552,6 +553,14 @@ export function CustomersLeadList({
                   </dl>
 
                   <div className="mt-4 flex flex-col gap-2 md:max-lg:mt-2.5 md:max-lg:gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setScheduleTarget(customer)}
+                      className="flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border border-amber-200 bg-amber-50/90 px-3 text-sm font-bold text-amber-900 touch-manipulation hover:bg-amber-100 dark:border-amber-500/35 dark:bg-amber-950/25 dark:text-amber-100"
+                    >
+                      <CalendarClock className="h-4 w-4 shrink-0" aria-hidden />
+                      Schedule callback
+                    </button>
                     {customer.phone || waUrl ? (
                       <div className="flex w-full min-w-0 gap-2">
                         {customer.phone ? (
@@ -613,9 +622,10 @@ export function CustomersLeadList({
                 const bill = Number(customer.monthly_bill || 0);
                 const ts = followMap[customer.id];
                 const nextFollowupAt = customer.next_followup_at ?? null;
-                const nextFollowupOverdue = nextFollowupAt != null && new Date(nextFollowupAt).getTime() < Date.now();
+                const nextFollowupTitle = customer.next_followup_title ?? null;
+                const callbackInfo = describeCallback(nextFollowupAt);
                 const followLabel = nextFollowupAt
-                  ? formatCrmDateTime(nextFollowupAt)
+                  ? callbackInfo.label
                   : ts != null ? formatLastFollowUpLocale(locale, ts) : t("customers_neverFollowedUp");
                 const lastActivityAt = customer.last_activity_at ?? customer.last_touched_at ?? null;
                 const lastActivityType = customer.last_activity_type ?? null;
@@ -686,6 +696,7 @@ export function CustomersLeadList({
                               {desktopDisplayName}
                             </h3>
                             <LeadSourceBadge sourceRaw={customer.source} />
+                            <CallbackStatusBadge dueAt={nextFollowupAt} title={nextFollowupTitle} compact />
                             <span
                               className={cn(
                                 "inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider sm:text-[10px]",
@@ -756,12 +767,18 @@ export function CustomersLeadList({
                             }
                           </p>
                           {nextFollowupAt ? (
-                            <p className={cn("mt-0.5 text-[10px] font-semibold sm:text-[11px]", nextFollowupOverdue ? "text-rose-600 dark:text-rose-400" : "text-emerald-700 dark:text-emerald-400")}>
-                              <span className="mr-1">{nextFollowupOverdue ? "⚠" : "→"}</span>
-                              Next: {followLabel}
-                              {nextFollowupOverdue ? <span className="ml-1 font-black uppercase">Overdue</span> : null}
+                            <p className={cn("mt-0.5 text-[10px] font-semibold sm:text-[11px]", callbackInfo.isOverdue ? "text-rose-600 dark:text-rose-400" : "text-sky-800 dark:text-sky-200")}>
+                              Next callback: {followLabel}
                             </p>
                           ) : null}
+                          <button
+                            type="button"
+                            onClick={() => setScheduleTarget(customer)}
+                            className="mt-2 inline-flex h-8 items-center gap-1.5 rounded-lg border border-amber-200/90 bg-amber-50 px-2.5 text-[10px] font-bold uppercase tracking-wide text-amber-900 hover:bg-amber-100 dark:border-amber-500/35 dark:bg-amber-950/25 dark:text-amber-100"
+                          >
+                            <CalendarClock className="h-3.5 w-3.5" aria-hidden />
+                            Schedule
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -823,6 +840,16 @@ export function CustomersLeadList({
             </div>
           </div>
         </>
+      ) : null}
+
+      {scheduleTarget ? (
+        <ScheduleCallbackSheet
+          open={Boolean(scheduleTarget)}
+          onClose={() => setScheduleTarget(null)}
+          leadId={scheduleTarget.id}
+          customerName={scheduleTarget.consumer_name ?? scheduleTarget.name}
+          onScheduled={() => setScheduleTarget(null)}
+        />
       ) : null}
     </div>
   );

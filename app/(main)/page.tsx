@@ -1,10 +1,10 @@
 ﻿"use client";
 
 import { DashboardCommandCenter } from "@/components/dashboard-command-center";
+import { CrmCommandCenter } from "@/components/crm/crm-command-center";
 import { DashboardOperationalInsights } from "@/components/dashboard-operational-insights";
 import { DashboardQuickActions } from "@/components/dashboard-quick-actions";
 import { DashboardSectionTitle } from "@/components/dashboard-section-title";
-import { DashboardFollowupWidgets } from "@/components/dashboard-followup-widgets";
 import { OfflineDataNotice } from "@/components/offline-data-notice";
 import { GlassProjectCard, type GlassProjectSummary } from "@/components/glass-project-card";
 import { Button } from "@/components/ui/button";
@@ -232,6 +232,10 @@ function DashboardPageContent() {
     <div className="workspace-dashboard">
     <DashboardStaggerRoot animate={shouldAnimateDashboard}>
         <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-command">
+          <CrmCommandCenter />
+        </DashboardItem>
+
+        <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-command">
           <DashboardCommandCenter name="Avanish" stats={stats} loading={showMetricSkeleton} />
         </DashboardItem>
 
@@ -359,13 +363,6 @@ function DashboardPageContent() {
           <div className="ws-zone-surface">
             <DashboardSectionTitle>{t("dashboard_operationalInsights")}</DashboardSectionTitle>
             <DashboardOperationalInsights stats={stats} trends={metricTrends} loading={showMetricSkeleton} />
-          </div>
-        </DashboardItem>
-
-        <DashboardItem animate={shouldAnimateDashboard}>
-          <div className="ws-zone-surface">
-            <DashboardSectionTitle tier="quiet">Follow-up cockpit</DashboardSectionTitle>
-            <DashboardFollowupWidgets />
           </div>
         </DashboardItem>
 
