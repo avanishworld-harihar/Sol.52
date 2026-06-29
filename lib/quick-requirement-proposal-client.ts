@@ -22,10 +22,15 @@ export async function createQuickRequirementProposal(input: {
   leadId?: string | null;
 }): Promise<QuickRequirementCreateResult> {
   try {
+    const body: Record<string, unknown> = { kw: input.kw };
+    if (input.customerName?.trim()) body.customerName = input.customerName.trim();
+    if (input.presetId) body.presetId = input.presetId;
+    if (input.leadId?.trim()) body.leadId = input.leadId.trim();
+
     const res = await fetch("/api/proposals/quick-requirement", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(input),
+      body: JSON.stringify(body),
     });
     const json = (await res.json().catch(() => ({}))) as QuickRequirementCreateResult & {
       ok?: boolean;

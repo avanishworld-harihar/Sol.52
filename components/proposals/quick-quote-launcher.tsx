@@ -126,7 +126,10 @@ export function QuickQuoteLauncher({
     setBusyKw(kw);
     setSuccess(null);
     try {
-      const result = await createQuickRequirementProposal({ kw, leadId: leadId ?? null });
+      const result = await createQuickRequirementProposal({
+        kw,
+        ...(leadId?.trim() ? { leadId: leadId.trim() } : {}),
+      });
       if (!result.ok || !result.id) {
         if (result.code === "proposal_limit_reached" || result.code === "trial_expired" || result.code === "no_subscription") {
           toast.error(labels.createError, labels.limitError);

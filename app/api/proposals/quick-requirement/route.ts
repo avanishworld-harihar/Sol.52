@@ -28,7 +28,7 @@ const bodySchema = z.object({
   kw: z.coerce.number().min(0.5).max(10000),
   customerName: z.string().max(120).optional(),
   presetId: z.enum(PROPOSAL_PRESET_IDS).optional(),
-  leadId: z.string().max(120).optional(),
+  leadId: z.string().max(120).nullish(),
 });
 
 export async function POST(req: NextRequest) {
