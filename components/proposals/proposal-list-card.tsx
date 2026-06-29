@@ -32,6 +32,7 @@ export type ProposalListCardProps = {
     pdfQuote: string;
     send: string;
     comingSoon: string;
+    markAsSent?: string;
     panelBrand: string;
     estSavingMo: string;
     netPayable: string;

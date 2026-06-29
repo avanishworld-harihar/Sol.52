@@ -3,7 +3,7 @@ import { z } from "zod";
 import { mergeProposalPricingIntoPptInput } from "@/lib/proposal-pricing-merge";
 import { getProposalPricingByProposalId } from "@/lib/proposal-pricing-store";
 import { proposalStatusSchema, type ProposalStatus } from "@/lib/proposal-status";
-import { deleteProposal, getProposalById, trackProposalView, updateProposalStatus } from "@/lib/proposals-store";
+import { deleteProposal, getProposalById, updateProposalStatus } from "@/lib/proposals-store";
 import { summarizeProposalDeck } from "@/lib/proposal-ppt";
 import { appendApprovalEvent } from "@/lib/proposal-approval-events";
 import {
@@ -12,7 +12,6 @@ import {
   getLatestSnapshot,
 } from "@/lib/proposal-snapshot-store";
 import { upsertPipelineProject } from "@/lib/supabase";
-import { appendActivityEvent } from "@/lib/followup-store";
 
 export const dynamic = "force-dynamic";
 
@@ -202,6 +201,14 @@ export async function PATCH(req: NextRequest, ctx: RouteCtx) {
 
     const fromStatus = proposal.proposal_status ?? "draft";
     const toStatus: ProposalStatus = body.proposal_status;
+
+    if (toStatus === "sent" && fromStatus !== "draft" && fromStatus !== "sent") {
+      return NextResponse.json(
+        { ok: true, proposal_status: fromStatus },
+        { status: 200 }
+      );
+    }
+
     const actor = body.actor;
 
     // Persist the status change first.
@@ -251,16 +258,6 @@ export async function GET(_req: NextRequest, ctx: RouteCtx) {
     const pricing = await getProposalPricingByProposalId(proposal.id);
     const mergedInput = mergeProposalPricingIntoPptInput(proposal.ppt_input, pricing);
     const liveSummary = summarizeProposalDeck(mergedInput);
-
-    // Fire-and-forget view counter.
-    void trackProposalView(id).catch(() => undefined);
-    if (proposal.lead_id) {
-      void appendActivityEvent({
-        leadId: proposal.lead_id,
-        eventType: "proposal_opened",
-        meta: { proposalId: proposal.id, customerName: proposal.customer_name },
-      });
-    }
 
     return NextResponse.json(
       {

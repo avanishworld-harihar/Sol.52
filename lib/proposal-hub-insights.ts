@@ -218,12 +218,12 @@ export function hubIntelForRow(row: ProposalHubRow, lang: "en" | "hi"): IntelIns
     return lang === "hi"
       ? {
           title: "फॉलो-अप करें",
-          body: "कोट तैयार लगता है। ग्राहक को PDF/लिंक मिला या नहीं पुष्टि करें। ट्रैकिंग के लिए नीचे Send दबाएँ।",
+          body: "कोट तैयार लगता है। ग्राहक को PDF/लिंक मिला या नहीं पुष्टि करें। ट्रैकिंग के लिए Mark as sent दबाएँ।",
           tone: "action",
         }
       : {
           title: "Follow up on your send",
-          body: "Your quote looks ready. Confirm the customer got your PDF or link. Tap Send below to keep tracking in sync.",
+          body: "Your quote looks ready. Confirm the customer got your PDF or link. Tap Mark as sent to update tracking.",
           tone: "action",
         };
   }

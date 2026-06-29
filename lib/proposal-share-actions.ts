@@ -9,6 +9,11 @@ export type ProposalShareMetrics = {
   phone?: string;
 };
 
+export type MarkProposalSentResult = {
+  ok: boolean;
+  proposalStatus?: string;
+};
+
 export function publicProposalPath(proposalId: string): string {
   return `/proposal/${proposalId}`;
 }
@@ -28,7 +33,7 @@ export function buildWhatsAppProposalMessage(metrics: ProposalShareMetrics, url:
     `• Annual saving: ₹${Math.round(metrics.annualSavingInr).toLocaleString("en-IN")}`,
     `• Payback: ${metrics.paybackLabel}`,
     "",
-    `Full interactive proposal: ${url}`
+    `Full interactive proposal: ${url}`,
   ].join("\n");
 }
 
@@ -43,16 +48,37 @@ export function openWhatsAppWithProposal(metrics: ProposalShareMetrics, proposal
 }
 
 export async function markProposalSent(proposalId: string): Promise<boolean> {
+  const result = await markProposalSentIfDraft(proposalId);
+  return result.ok;
+}
+
+/** Marks draft → sent; no-op when already sent / viewed / approved. */
+export async function markProposalSentIfDraft(proposalId: string): Promise<MarkProposalSentResult> {
   try {
     const res = await fetch(`/api/proposals/${proposalId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ proposal_status: "sent" })
+      body: JSON.stringify({ proposal_status: "sent" }),
     });
-    const json = (await res.json().catch(() => ({}))) as { ok?: boolean };
-    return res.ok && json.ok === true;
+    const json = (await res.json().catch(() => ({}))) as {
+      ok?: boolean;
+      proposal_status?: string;
+    };
+    return {
+      ok: res.ok && json.ok === true,
+      proposalStatus: json.proposal_status,
+    };
   } catch {
-    return false;
+    return { ok: false };
+  }
+}
+
+export async function copyPublicProposalLink(proposalId: string): Promise<MarkProposalSentResult> {
+  try {
+    await navigator.clipboard.writeText(absolutePublicProposalUrl(proposalId));
+    return markProposalSentIfDraft(proposalId);
+  } catch {
+    return { ok: false };
   }
 }
 

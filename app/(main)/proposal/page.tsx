@@ -40,6 +40,7 @@ import { buildLeadPatchFromProposal, patchLeadFromProposal } from "@/lib/sync-pr
 import { saveResidentialRequirement } from "@/lib/save-residential-requirement-client";
 import { saveCommercialRequirement } from "@/lib/save-commercial-requirement-client";
 import { saveInstallerResidentialCatalog } from "@/lib/installer-rate-card-client";
+import { markProposalSentIfDraft } from "@/lib/proposal-share-actions";
 import { syncEquipmentPresetsFromConfig } from "@/lib/residential-equipment-presets";
 import { ensureBrandCatalog } from "@/lib/residential-brand-catalog";
 import {
@@ -2410,6 +2411,8 @@ function ProposalPageContent() {
 
       const saved = await persistProposalToServer();
       if (!saved?.id) return;
+
+      await markProposalSentIfDraft(saved.id);
 
       if (useResidentialCatalog && residentialConfig) {
         const cfg = ensureBrandCatalog(residentialConfig);

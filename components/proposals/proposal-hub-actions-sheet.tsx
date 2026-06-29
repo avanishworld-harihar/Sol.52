@@ -4,15 +4,16 @@ import { useToast } from "@/components/ui/toast-center";
 import type { ProposalListCardProps } from "@/components/proposals/proposal-list-card";
 import { buildProposalEditHref } from "@/lib/proposal-edit-url";
 import {
+  copyPublicProposalLink,
   deleteProposalById,
   downloadProposalPpt,
-  markProposalSent,
+  markProposalSentIfDraft,
   openWhatsAppWithProposal,
   type ProposalShareMetrics,
 } from "@/lib/proposal-share-actions";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
-import { Copy, ExternalLink, FileDown, MessageCircle, PencilLine, Trash2, X } from "lucide-react";
+import { Copy, ExternalLink, FileDown, MessageCircle, PencilLine, Trash2, X, CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
@@ -26,6 +27,10 @@ type Labels = ProposalListCardProps["labels"] & {
   deleteFailed?: string;
   deleteDone?: string;
   sendDone?: string;
+  markAsSent?: string;
+  markAsSentDone?: string;
+  copyShareLink?: string;
+  copyShareLinkDone?: string;
   pptFailed?: string;
 };
 
@@ -71,7 +76,7 @@ export function ProposalHubActionsSheet({
   annualSavingInr: number | null;
   shareMetrics: ProposalShareMetrics;
   onDeleted?: () => void;
-  onSent?: () => void;
+  onSent?: (proposalId: string, status?: string) => void;
 }) {
   const toast = useToast();
   const router = useRouter();
@@ -80,7 +85,7 @@ export function ProposalHubActionsSheet({
   const publicHref = `/proposal/${proposalId}`;
   const savingMo =
     annualSavingInr != null && Number.isFinite(annualSavingInr) ? Math.round(annualSavingInr / 12) : null;
-  const [busy, setBusy] = useState<"send" | "ppt" | "delete" | null>(null);
+  const [busy, setBusy] = useState<"send" | "mark" | "copy" | "ppt" | "delete" | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -117,9 +122,39 @@ export function ProposalHubActionsSheet({
     setBusy("send");
     try {
       openWhatsAppWithProposal(shareMetrics, proposalId);
-      const ok = await markProposalSent(proposalId);
-      if (ok) onSent?.();
+      const result = await markProposalSentIfDraft(proposalId);
+      if (result.ok) onSent?.(proposalId, result.proposalStatus ?? "sent");
       toast.success(labels.send, labels.sendDone ?? "WhatsApp opened — link included.");
+      handleClose();
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function handleMarkAsSent() {
+    setBusy("mark");
+    try {
+      const result = await markProposalSentIfDraft(proposalId);
+      if (result.ok) onSent?.(proposalId, result.proposalStatus ?? "sent");
+      toast.success(
+        labels.markAsSent ?? "Mark as sent",
+        labels.markAsSentDone ?? "Proposal moved to Sent — follow-up tracking is on."
+      );
+      handleClose();
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function handleCopyLink() {
+    setBusy("copy");
+    try {
+      const result = await copyPublicProposalLink(proposalId);
+      if (result.ok) onSent?.(proposalId, result.proposalStatus ?? "sent");
+      toast.success(
+        labels.copyShareLink ?? "Link copied",
+        labels.copyShareLinkDone ?? "Share link copied to clipboard."
+      );
       handleClose();
     } finally {
       setBusy(null);
@@ -130,6 +165,8 @@ export function ProposalHubActionsSheet({
     setBusy("ppt");
     try {
       await downloadProposalPpt(proposalId, shareMetrics.customerName);
+      const result = await markProposalSentIfDraft(proposalId);
+      if (result.ok) onSent?.(proposalId, result.proposalStatus ?? "sent");
       toast.success(labels.pdfQuote, "Download started.");
       handleClose();
     } catch (e) {
@@ -206,6 +243,10 @@ export function ProposalHubActionsSheet({
             <ExternalLink className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400" aria-hidden />
             {labels.previewPublic}
           </ActionRow>
+          <ActionRow disabled={busy === "copy"} onClick={() => void handleCopyLink()}>
+            <Copy className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400" aria-hidden />
+            {busy === "copy" ? "Copying…" : (labels.copyShareLink ?? "Copy share link")}
+          </ActionRow>
           <ActionRow disabled={busy === "ppt"} onClick={() => void handlePpt()}>
             <FileDown className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400" aria-hidden />
             {busy === "ppt" ? "Downloading…" : labels.pdfQuote}
@@ -213,6 +254,10 @@ export function ProposalHubActionsSheet({
           <ActionRow disabled={busy === "send"} onClick={() => void handleSend()}>
             <MessageCircle className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400" aria-hidden />
             {busy === "send" ? "Opening…" : labels.send}
+          </ActionRow>
+          <ActionRow disabled={busy === "mark"} onClick={() => void handleMarkAsSent()}>
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400" aria-hidden />
+            {busy === "mark" ? "Saving…" : (labels.markAsSent ?? "Mark as sent")}
           </ActionRow>
           <ActionRow onClick={() => soon(labels.duplicateProposal)}>
             <Copy className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400" aria-hidden />

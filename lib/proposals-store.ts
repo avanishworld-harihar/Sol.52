@@ -5,6 +5,7 @@
  * so the customer's WhatsApp link and the PPT show identical numbers.
  */
 
+import { appendActivityEvent } from "@/lib/followup-store";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase } from "@/lib/supabase";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -317,7 +318,25 @@ export async function trackProposalView(id: string): Promise<void> {
       .from("proposals")
       .update({ proposal_status: "viewed", last_viewed_at: now })
       .eq("id", id)
-      .eq("proposal_status", "sent");
+      .in("proposal_status", ["draft", "sent"]);
+  } catch {
+    /* ignore */
+  }
+  try {
+    const { data } = await client
+      .from("proposals")
+      .select("lead_id, customer_name")
+      .eq("id", id)
+      .maybeSingle();
+    const leadId = (data as { lead_id?: string | null } | null)?.lead_id;
+    const customerName = (data as { customer_name?: string | null } | null)?.customer_name;
+    if (leadId) {
+      void appendActivityEvent({
+        leadId,
+        eventType: "proposal_opened",
+        meta: { proposalId: id, customerName: customerName ?? undefined },
+      });
+    }
   } catch {
     /* ignore */
   }

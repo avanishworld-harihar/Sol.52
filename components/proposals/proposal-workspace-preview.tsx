@@ -8,11 +8,11 @@ import { buildProposalEditHref } from "@/lib/proposal-edit-url";
 import { Button } from "@/components/ui/button";
 import { dealHealthScore, healthScoreTone, hubNextActionHintForRow, statusVisual } from "@/lib/proposal-hub-insights";
 import { shareMetricsFromHubRow } from "@/lib/proposal-hub-share";
-import { markProposalSent, openWhatsAppWithProposal } from "@/lib/proposal-share-actions";
+import { markProposalSent, markProposalSentIfDraft, openWhatsAppWithProposal } from "@/lib/proposal-share-actions";
 import { normalizeProposalStatus } from "@/lib/proposal-status";
 import { cn } from "@/lib/utils";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowLeft, ArrowRight, ExternalLink, MoreHorizontal, PencilLine, Send } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, ExternalLink, MoreHorizontal, PencilLine, Send } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import type { ProposalHubDealRow } from "./proposal-hub-deal-list";
@@ -62,9 +62,10 @@ export function ProposalWorkspacePreview({
   onScrollToPipeline?: () => void;
   onBack?: () => void;
   onDeleted?: () => void;
-  onSent?: () => void;
+  onSent?: (proposalId: string, status?: string) => void;
 }) {
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [markingSent, setMarkingSent] = useState(false);
   const reduced = useReducedMotion();
   const showPipelineNav = isMobileLayout(layout) && (onScrollToPipeline ?? onBack);
   const goToPipeline = onScrollToPipeline ?? onBack;
@@ -78,6 +79,7 @@ export function ProposalWorkspacePreview({
   }
 
   const st = normalizeProposalStatus(row.proposal_status);
+  const deal = row;
   const vis = statusVisual(st);
   const manageHref = buildProposalEditHref({ leadId: row.lead_id, proposalId: row.id });
   const publicHref = `/proposal/${row.id}`;
@@ -100,6 +102,17 @@ export function ProposalWorkspacePreview({
 
   const isPane = layout === "pane";
   const isMobile = layout === "mobile";
+  const isDraft = st === "draft";
+
+  async function handleMarkAsSent() {
+    setMarkingSent(true);
+    try {
+      const result = await markProposalSentIfDraft(deal.id);
+      if (result.ok) onSent?.(deal.id, result.proposalStatus ?? "sent");
+    } finally {
+      setMarkingSent(false);
+    }
+  }
 
   return (
     <>
@@ -216,6 +229,25 @@ export function ProposalWorkspacePreview({
         </section>
 
         <motion.div className={cn("mt-4 grid gap-3", isPane && "lg:grid-cols-[1fr_minmax(220px,0.38fr)]")}>
+          {isDraft ? (
+            <div className="rounded-xl border border-amber-200 bg-amber-50/90 px-3 py-2.5 text-xs font-medium text-amber-950 dark:border-amber-500/30 dark:bg-amber-950/20 dark:text-amber-100 lg:col-span-2">
+              {lang === "hi"
+                ? "PDF या लिंक भेज चुके हैं? "
+                : "Already shared PDF or link? "}
+              <button
+                type="button"
+                className="font-extrabold underline underline-offset-2"
+                disabled={markingSent}
+                onClick={() => void handleMarkAsSent()}
+              >
+                {markingSent
+                  ? lang === "hi"
+                    ? "सेव हो रहा है…"
+                    : "Saving…"
+                  : labels.markAsSent ?? (lang === "hi" ? "भेजा मार्क करें" : "Mark as sent")}
+              </button>
+            </div>
+          ) : null}
           <section className="proposal-hub-glass-card proposal-hub-workspace-next rounded-xl border p-4">
             {nextStepLabel ? (
               <p className="proposal-hub-text-muted text-[10px] font-bold uppercase tracking-[0.18em]">{nextStepLabel}</p>
@@ -242,13 +274,30 @@ export function ProposalWorkspacePreview({
               onClick={() => {
                 openWhatsAppWithProposal(shareMetricsFromHubRow(row), row.id);
                 void markProposalSent(row.id).then((ok) => {
-                  if (ok) onSent?.();
+                  if (ok) onSent?.(row.id, "sent");
                 });
               }}
             >
               <Send className="h-4 w-4 shrink-0" aria-hidden />
               {labels.send}
             </Button>
+            {isDraft ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                disabled={markingSent}
+                className="proposal-hub-cta-send min-h-12 flex-1 gap-2 border-2 px-4 text-sm font-bold sm:min-w-[9rem]"
+                onClick={() => void handleMarkAsSent()}
+              >
+                <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden />
+                {markingSent
+                  ? lang === "hi"
+                    ? "सेव…"
+                    : "Saving…"
+                  : labels.markAsSent ?? (lang === "hi" ? "भेजा मार्क" : "Mark sent")}
+              </Button>
+            ) : null}
             <Button asChild variant="ghost" size="lg" className="proposal-hub-cta-preview min-h-12 flex-1 gap-2 px-4 text-sm font-semibold sm:min-w-[9rem]">
               <Link href={publicHref} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="h-4 w-4 shrink-0 opacity-80" aria-hidden />

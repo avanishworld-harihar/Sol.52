@@ -164,6 +164,10 @@ export default function ProposalsHubPage() {
       deleteDone: t("proposals_deleteDone"),
       deleteFailed: t("proposals_deleteFailed"),
       sendDone: t("proposals_sendDone"),
+      markAsSent: t("proposals_markAsSent"),
+      markAsSentDone: t("proposals_markAsSentDone"),
+      copyShareLink: t("proposals_copyShareLink"),
+      copyShareLinkDone: t("proposals_copyShareLinkDone"),
       pptFailed: t("proposals_pptFailed"),
     }),
     [t]
@@ -194,7 +198,42 @@ export default function ProposalsHubPage() {
 
   const intelTitle = uiLang === "hi" ? "अगला कदम" : "Recommended next";
 
-  const refreshList = useCallback(() => { void mutate(); }, [mutate]);
+  const refreshList = useCallback(
+    (patch?: { id: string; proposal_status?: string; view_count?: number; last_viewed_at?: string | null }) => {
+      if (patch) {
+        void mutate(
+          (current) => {
+            if (!current?.data) return current;
+            return {
+              ...current,
+              data: current.data.map((r) => (r.id === patch.id ? { ...r, ...patch } : r)),
+            };
+          },
+          { revalidate: true }
+        );
+        return;
+      }
+      void mutate();
+    },
+    [mutate]
+  );
+
+  const handleProposalSent = useCallback(
+    (proposalId: string, status = "sent") => {
+      refreshList({ id: proposalId, proposal_status: status });
+    },
+    [refreshList]
+  );
+
+  useEffect(() => {
+    if (!focused) return;
+    const st = normalizeProposalStatus(focused.proposal_status);
+    if (st !== "draft" && st !== "sent") return;
+    const timer = window.setInterval(() => {
+      void mutate();
+    }, 45_000);
+    return () => window.clearInterval(timer);
+  }, [focused?.id, focused?.proposal_status, mutate]);
 
   const scrollToPipeline = useCallback(() => {
     pipelineRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -419,7 +458,7 @@ export default function ProposalsHubPage() {
                       layout="mobile"
                       onScrollToPipeline={scrollToPipeline}
                       onDeleted={refreshList}
-                      onSent={refreshList}
+                      onSent={handleProposalSent}
                     />
                   </section>
                 </div>
@@ -468,7 +507,7 @@ export default function ProposalsHubPage() {
                     intelTitle={intelTitle}
                     layout="pane"
                     onDeleted={refreshList}
-                    onSent={refreshList}
+                    onSent={handleProposalSent}
                   />
                 </div>
               </div>
