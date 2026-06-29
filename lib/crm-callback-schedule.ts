@@ -32,6 +32,14 @@ export const CALLBACK_PRESETS: CallbackPreset[] = [
   { id: "custom_datetime", label: "Date & time", hint: "Full control" },
 ];
 
+/** One-tap presets shown prominently in schedule sheet */
+export const QUICK_CALLBACK_PRESETS: CallbackPresetId[] = [
+  "tomorrow",
+  "next_week",
+  "in_3_months",
+  "custom_date",
+];
+
 const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
 
 function istParts(d: Date): { y: number; m: number; day: number } {

@@ -1,6 +1,6 @@
 import { formatCrmDate, formatCrmDateTime, formatCrmTime } from "@/lib/crm-datetime";
 
-export type CallbackDisplayState = "none" | "overdue" | "today" | "upcoming";
+export type CallbackDisplayState = "none" | "overdue" | "due_soon" | "today" | "upcoming";
 
 export type CallbackDisplay = {
   state: CallbackDisplayState;
@@ -11,6 +11,8 @@ export type CallbackDisplay = {
 };
 
 const DAY_MS = 86_400_000;
+/** Callbacks within this many days use amber "due soon" styling */
+const DUE_SOON_DAYS = 3;
 
 function startOfIstDay(d: Date): number {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -65,8 +67,18 @@ export function describeCallback(dueAtIso: string | null | undefined, now = Date
     return {
       state: "today",
       daysRemaining: 0,
-      label: `Today · ${formatCrmTime(dueAtIso)}`,
+      label: `Due today · ${formatCrmTime(dueAtIso)}`,
       shortLabel: `Today ${formatCrmTime(dueAtIso)}`,
+      isOverdue: false,
+    };
+  }
+
+  if (diffDays <= DUE_SOON_DAYS) {
+    return {
+      state: "due_soon",
+      daysRemaining: diffDays,
+      label: `Due in ${diffDays} day${diffDays === 1 ? "" : "s"} · ${formatCrmDate(dueAtIso)}`,
+      shortLabel: `In ${diffDays}d`,
       isOverdue: false,
     };
   }
@@ -74,8 +86,43 @@ export function describeCallback(dueAtIso: string | null | undefined, now = Date
   return {
     state: "upcoming",
     daysRemaining: diffDays,
-    label: `In ${diffDays} day${diffDays === 1 ? "" : "s"} · ${formatCrmDate(dueAtIso)}`,
+    label: `Next callback in ${diffDays} days · ${formatCrmDate(dueAtIso)}`,
     shortLabel: `In ${diffDays}d`,
     isOverdue: false,
   };
+}
+
+/** Tailwind classes for callback urgency surfaces */
+export function callbackUrgencyClasses(state: CallbackDisplayState): {
+  shell: string;
+  text: string;
+  icon: string;
+} {
+  switch (state) {
+    case "overdue":
+      return {
+        shell: "border-red-300/90 bg-red-50/90 dark:border-red-500/45 dark:bg-red-950/35",
+        text: "text-red-800 dark:text-red-200",
+        icon: "text-red-600 dark:text-red-400",
+      };
+    case "today":
+    case "due_soon":
+      return {
+        shell: "border-amber-300/90 bg-amber-50/90 dark:border-amber-500/45 dark:bg-amber-950/35",
+        text: "text-amber-950 dark:text-amber-100",
+        icon: "text-amber-700 dark:text-amber-300",
+      };
+    case "upcoming":
+      return {
+        shell: "border-sky-300/90 bg-sky-50/90 dark:border-sky-500/40 dark:bg-sky-950/30",
+        text: "text-sky-900 dark:text-sky-100",
+        icon: "text-sky-700 dark:text-sky-300",
+      };
+    default:
+      return {
+        shell: "border-slate-200/90 bg-slate-50/80 dark:border-white/10 dark:bg-white/[0.04]",
+        text: "text-slate-600 dark:text-slate-400",
+        icon: "text-slate-500",
+      };
+  }
 }
