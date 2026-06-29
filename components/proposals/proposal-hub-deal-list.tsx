@@ -33,7 +33,7 @@ function HealthMini({ score }: { score: number }) {
   return (
     <div className="flex shrink-0 flex-col items-center gap-0.5" title={`Health ${score}`}>
       <span className={cn("text-[11px] font-black tabular-nums", tone.text)}>{score}</span>
-      <div className="h-1 w-10 overflow-hidden rounded-full bg-white/10">
+      <div className="h-1 w-10 overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
         <div
           className={cn("h-full rounded-full bg-gradient-to-r", tone.bar)}
           style={{ width: `${Math.min(100, score)}%` }}

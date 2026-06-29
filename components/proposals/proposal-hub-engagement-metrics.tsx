@@ -57,12 +57,12 @@ export function ProposalHubEngagementMetrics({
             className="proposal-hub-engagement-tile rounded-xl border p-2.5 sm:p-3"
           >
             <div className="flex items-center gap-1.5">
-              <Icon className="proposal-hub-text-accent h-3.5 w-3.5 shrink-0 opacity-90" aria-hidden />
-              <p className="proposal-hub-text-muted text-[9px] font-bold uppercase tracking-wide sm:text-[10px]">
+              <Icon className="h-3.5 w-3.5 shrink-0 text-emerald-700 dark:text-[color:var(--hub-text-accent-strong)]" aria-hidden />
+              <p className="text-[9px] font-bold uppercase tracking-wide text-slate-600 sm:text-[10px] dark:text-[color:var(--hub-text-muted)]">
                 {item.label}
               </p>
             </div>
-            <p className="proposal-hub-text-primary mt-1 truncate text-sm font-bold tabular-nums sm:text-base">
+            <p className="mt-1 truncate text-sm font-bold tabular-nums text-slate-900 sm:text-base dark:text-[color:var(--hub-text-primary)]">
               {item.value}
             </p>
           </div>
@@ -78,7 +78,7 @@ export function DealHeatPill({ row, lang = "en" }: { row: ProposalHubRow; lang?:
   const hot = (row.view_count ?? 0) > 0;
   if (!hot) return null;
   return (
-    <span className="inline-flex items-center gap-0.5 rounded-full border border-violet-500/45 bg-violet-500/15 px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-violet-200">
+    <span className="inline-flex items-center gap-0.5 rounded-full border border-violet-300 bg-violet-100 px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-violet-900 dark:border-violet-500/45 dark:bg-violet-500/15 dark:text-violet-200">
       <Flame className="h-2.5 w-2.5" aria-hidden />
       {lang === "hi" ? "गर्म" : "Hot"}
     </span>

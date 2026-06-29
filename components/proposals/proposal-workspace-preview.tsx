@@ -164,8 +164,10 @@ export function ProposalWorkspacePreview({
               </div>
             </div>
             <div
-              className="proposal-hub-health-ring flex h-[4.25rem] w-[4.25rem] shrink-0 flex-col items-center justify-center rounded-2xl border-2 bg-black/20"
-              style={{ borderColor: `color-mix(in srgb, currentColor 35%, transparent)` }}
+              className={cn(
+                "proposal-hub-health-ring flex h-[4.25rem] w-[4.25rem] shrink-0 flex-col items-center justify-center rounded-2xl border-2 bg-slate-50 dark:bg-black/20",
+                healthTone.ring
+              )}
             >
               <p className="proposal-hub-text-muted text-[9px] font-bold uppercase tracking-wide">Health</p>
               <p className={cn("text-2xl font-black tabular-nums leading-none", healthTone.text)}>{pct}</p>

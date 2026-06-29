@@ -67,39 +67,45 @@ export function statusVisual(st: ProposalStatus): StatusVisual {
   switch (st) {
     case "draft":
       return {
-        pillClass: "bg-slate-500/15 text-slate-300 ring-slate-500/25",
-        dotClass: "bg-slate-400",
-        barClass: "from-slate-500/40 to-slate-600/20"
+        pillClass:
+          "bg-slate-100 text-slate-700 ring-slate-200 dark:bg-slate-500/15 dark:text-slate-300 dark:ring-slate-500/25",
+        dotClass: "bg-slate-500 dark:bg-slate-400",
+        barClass: "from-slate-500/40 to-slate-600/20",
       };
     case "sent":
       return {
-        pillClass: "bg-sky-500/15 text-sky-200 ring-sky-500/30",
-        dotClass: "bg-sky-400",
-        barClass: "from-sky-500/50 to-sky-600/20"
+        pillClass:
+          "bg-sky-50 text-sky-800 ring-sky-200 dark:bg-sky-500/15 dark:text-sky-200 dark:ring-sky-500/30",
+        dotClass: "bg-sky-600 dark:bg-sky-400",
+        barClass: "from-sky-500/50 to-sky-600/20",
       };
     case "viewed":
       return {
-        pillClass: "bg-violet-500/15 text-violet-200 ring-violet-500/30",
-        dotClass: "bg-violet-400",
-        barClass: "from-violet-500/50 to-violet-600/20"
+        pillClass:
+          "bg-violet-50 text-violet-800 ring-violet-200 dark:bg-violet-500/15 dark:text-violet-200 dark:ring-violet-500/30",
+        dotClass: "bg-violet-600 dark:bg-violet-400",
+        barClass: "from-violet-500/50 to-violet-600/20",
       };
     case "negotiation":
       return {
-        pillClass: "bg-amber-500/15 text-amber-100 ring-amber-500/35",
-        dotClass: "bg-amber-400",
-        barClass: "from-amber-500/50 to-amber-600/20"
+        pillClass:
+          "bg-amber-50 text-amber-800 ring-amber-200 dark:bg-amber-500/15 dark:text-amber-100 dark:ring-amber-500/35",
+        dotClass: "bg-amber-600 dark:bg-amber-400",
+        barClass: "from-amber-500/50 to-amber-600/20",
       };
     case "approved":
       return {
-        pillClass: "bg-emerald-500/15 text-emerald-100 ring-emerald-500/35",
-        dotClass: "bg-emerald-400",
-        barClass: "from-emerald-500/50 to-emerald-600/20"
+        pillClass:
+          "bg-emerald-50 text-emerald-800 ring-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-100 dark:ring-emerald-500/35",
+        dotClass: "bg-emerald-600 dark:bg-emerald-400",
+        barClass: "from-emerald-500/50 to-emerald-600/20",
       };
     default:
       return {
-        pillClass: "bg-slate-500/15 text-slate-300 ring-slate-500/25",
-        dotClass: "bg-slate-400",
-        barClass: "from-slate-500/40 to-slate-600/20"
+        pillClass:
+          "bg-slate-100 text-slate-700 ring-slate-200 dark:bg-slate-500/15 dark:text-slate-300 dark:ring-slate-500/25",
+        dotClass: "bg-slate-500 dark:bg-slate-400",
+        barClass: "from-slate-500/40 to-slate-600/20",
       };
   }
 }
@@ -262,11 +268,23 @@ export function closingConfidence(row: ProposalHubRow): number {
 export function velocityVisual(v: DealVelocity): { label: string; color: string; dot: string } {
   switch (v) {
     case "hot":
-      return { label: "Hot", color: "text-rose-500", dot: "bg-rose-500" };
+      return {
+        label: "Hot",
+        color: "text-rose-700 dark:text-rose-500",
+        dot: "bg-rose-600 dark:bg-rose-500",
+      };
     case "warm":
-      return { label: "Active", color: "text-amber-500", dot: "bg-amber-400" };
+      return {
+        label: "Active",
+        color: "text-amber-700 dark:text-amber-500",
+        dot: "bg-amber-600 dark:bg-amber-400",
+      };
     case "cold":
-      return { label: "Stale", color: "text-slate-400", dot: "bg-slate-400" };
+      return {
+        label: "Stale",
+        color: "text-slate-600 dark:text-slate-400",
+        dot: "bg-slate-500 dark:bg-slate-400",
+      };
   }
 }
 
@@ -323,25 +341,25 @@ export function dealUrgencyVisual(u: DealUrgency): { label: string; className: s
       return {
         label: "Act now",
         className:
-          "border-rose-200 bg-rose-50 text-rose-700 ring-1 ring-rose-200/90 dark:border-rose-500/60 dark:bg-rose-500/15 dark:text-rose-200 dark:ring-rose-500/30",
+          "border-rose-300 bg-rose-100 text-rose-900 ring-1 ring-rose-300 dark:border-rose-500/60 dark:bg-rose-500/15 dark:text-rose-200 dark:ring-rose-500/30",
       };
     case "due_soon":
       return {
         label: "Follow up",
         className:
-          "border-amber-200 bg-amber-50 text-amber-700 ring-1 ring-amber-200/90 dark:border-amber-500/55 dark:bg-amber-500/12 dark:text-amber-100 dark:ring-amber-500/25",
+          "border-amber-300 bg-amber-100 text-amber-900 ring-1 ring-amber-300 dark:border-amber-500/55 dark:bg-amber-500/12 dark:text-amber-100 dark:ring-amber-500/25",
       };
     case "stale":
       return {
         label: "Stale",
         className:
-          "border-slate-200 bg-slate-100 text-slate-600 ring-1 ring-slate-200/90 dark:border-slate-500/40 dark:bg-slate-500/10 dark:text-slate-300 dark:ring-slate-500/20",
+          "border-slate-300 bg-slate-200 text-slate-800 ring-1 ring-slate-300 dark:border-slate-500/40 dark:bg-slate-500/10 dark:text-slate-300 dark:ring-slate-500/20",
       };
     default:
       return {
         label: "On track",
         className:
-          "border-sky-200 bg-sky-50 text-sky-700 ring-1 ring-sky-200/90 dark:border-sky-500/45 dark:bg-sky-500/10 dark:text-sky-100 dark:ring-sky-500/20",
+          "border-sky-300 bg-sky-100 text-sky-900 ring-1 ring-sky-300 dark:border-sky-500/45 dark:bg-sky-500/10 dark:text-sky-100 dark:ring-sky-500/20",
       };
   }
 }
@@ -353,19 +371,19 @@ export function healthScoreTone(score: number): {
 } {
   if (score < 40)
     return {
-      ring: "text-rose-400",
-      text: "text-rose-300",
+      ring: "text-rose-600 dark:text-rose-400",
+      text: "text-rose-700 dark:text-rose-300",
       bar: "from-rose-500 to-orange-500",
     };
   if (score < 70)
     return {
-      ring: "text-amber-400",
-      text: "text-amber-200",
+      ring: "text-amber-600 dark:text-amber-400",
+      text: "text-amber-700 dark:text-amber-200",
       bar: "from-amber-500 to-yellow-500",
     };
   return {
-    ring: "text-emerald-400",
-    text: "text-emerald-300",
+    ring: "text-emerald-600 dark:text-emerald-400",
+    text: "text-emerald-700 dark:text-emerald-300",
     bar: "from-emerald-500 to-teal-400",
   };
 }

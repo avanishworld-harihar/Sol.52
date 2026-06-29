@@ -52,7 +52,7 @@ export function ProposalHubIntelPanel({
       )}
       aria-label={title}
     >
-      <div className="proposal-hub-text-accent flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.14em]">
+      <div className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[0.14em] text-sky-800 dark:text-[color:var(--hub-text-accent-strong)]">
         <Sparkles className="h-3.5 w-3.5" aria-hidden />
         {title}
       </div>
@@ -67,33 +67,51 @@ export function ProposalHubIntelPanel({
         )}
       >
         <div className="flex items-start gap-2">
-          <Zap className="proposal-hub-text-accent mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+          <Zap className="mt-0.5 h-4 w-4 shrink-0 text-sky-700 dark:text-[color:var(--hub-text-accent-strong)]" aria-hidden />
           <div>
-            <p className="proposal-hub-text-primary text-sm font-extrabold leading-snug">{intel.title}</p>
-            <p className="proposal-hub-text-secondary mt-1.5 text-xs font-medium leading-relaxed">{intel.body}</p>
+            <p className="text-sm font-extrabold leading-snug text-slate-900 dark:text-[color:var(--hub-text-primary)]">
+              {intel.title}
+            </p>
+            <p className="mt-1.5 text-xs font-medium leading-relaxed text-slate-700 dark:text-[color:var(--hub-text-secondary)]">
+              {intel.body}
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="mt-3 space-y-2 rounded-lg border border-white/10 bg-black/15 p-3 text-[11px]">
+      <div className="mt-3 space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-[11px] dark:border-white/10 dark:bg-black/15">
         <div className="flex items-center justify-between gap-2">
-          <span className="proposal-hub-text-muted font-semibold">{lang === "hi" ? "स्वास्थ्य" : "Health"}</span>
-          <span className="proposal-hub-text-primary font-black tabular-nums">{health}/100</span>
+          <span className="font-semibold text-slate-600 dark:text-[color:var(--hub-text-muted)]">
+            {lang === "hi" ? "स्वास्थ्य" : "Health"}
+          </span>
+          <span className="font-black tabular-nums text-slate-900 dark:text-[color:var(--hub-text-primary)]">
+            {health}/100
+          </span>
         </div>
         <div className="flex items-center justify-between gap-2">
-          <span className="proposal-hub-text-muted font-semibold">{lang === "hi" ? "विश्वास" : "Close confidence"}</span>
-          <span className="proposal-hub-text-accent font-bold tabular-nums">{confidence}%</span>
+          <span className="font-semibold text-slate-600 dark:text-[color:var(--hub-text-muted)]">
+            {lang === "hi" ? "विश्वास" : "Close confidence"}
+          </span>
+          <span className="font-bold tabular-nums text-emerald-700 dark:text-[color:var(--hub-text-accent-strong)]">
+            {confidence}%
+          </span>
         </div>
         <div className="flex items-center justify-between gap-2">
-          <span className="proposal-hub-text-muted font-semibold">{lang === "hi" ? "गति" : "Velocity"}</span>
+          <span className="font-semibold text-slate-600 dark:text-[color:var(--hub-text-muted)]">
+            {lang === "hi" ? "गति" : "Velocity"}
+          </span>
           <span className={cn("inline-flex items-center gap-1 font-bold", vel.color)}>
             <span className={cn("h-1.5 w-1.5 rounded-full", vel.dot)} aria-hidden />
             {vel.label}
           </span>
         </div>
-        <div className="flex items-center justify-between gap-2 border-t border-white/10 pt-2">
-          <span className="proposal-hub-text-muted font-semibold">{lang === "hi" ? "शेयर" : "Engagement"}</span>
-          <span className="proposal-hub-text-primary text-right font-bold leading-snug">{engagement.shareLabel}</span>
+        <div className="flex items-center justify-between gap-2 border-t border-slate-200 pt-2 dark:border-white/10">
+          <span className="font-semibold text-slate-600 dark:text-[color:var(--hub-text-muted)]">
+            {lang === "hi" ? "शेयर" : "Engagement"}
+          </span>
+          <span className="text-right font-bold leading-snug text-slate-900 dark:text-[color:var(--hub-text-primary)]">
+            {engagement.shareLabel}
+          </span>
         </div>
       </div>
 

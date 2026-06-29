@@ -5078,7 +5078,7 @@ html:not(.dark) .proposal-hub.workspace-page--proposals {
   --hub-glow: rgba(16, 185, 129, 0.14);
   --hub-text-primary: rgb(15 23 42);
   --hub-text-secondary: rgb(71 85 105);
-  --hub-text-muted: rgb(100 116 139);
+  --hub-text-muted: rgb(71 85 105);
   --hub-text-body: rgb(51 65 85);
   --hub-text-accent: rgb(5 150 105);
   --hub-text-accent-strong: rgb(4 120 87);
@@ -5148,8 +5148,9 @@ html:not(.dark) .proposal-hub.workspace-page--proposals .proposal-hub-deal-row--
 }
 
 html:not(.dark) .proposal-hub.workspace-page--proposals .proposal-hub-engagement-tile {
-  background: rgba(255, 255, 255, 0.85);
-  border-color: rgba(15, 23, 42, 0.1);
+  background: rgb(255 255 255);
+  border-color: rgba(15, 23, 42, 0.14);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 html:not(.dark) .proposal-hub.workspace-page--proposals .proposal-hub-intel--rail {
@@ -5212,13 +5213,50 @@ html:not(.dark) .proposal-hub.workspace-page--proposals .proposal-hub-cta-ghost:
   color: rgb(15 23 42) !important;
 }
 
-html:not(.dark) .proposal-hub.workspace-page--proposals .proposal-hub-intel-callout--action,
-html:not(.dark) .proposal-hub.workspace-page--proposals .proposal-hub-intel-callout--warn,
-html:not(.dark) .proposal-hub.workspace-page--proposals .proposal-hub-intel-callout--success,
+html:not(.dark) .proposal-hub.workspace-page--proposals .proposal-hub-cta-ghost:hover {
+  background: rgba(15, 23, 42, 0.06) !important;
+  color: rgb(15 23 42) !important;
+}
+
+html:not(.dark) .proposal-hub.workspace-page--proposals .proposal-hub-cta-send {
+  border-color: rgb(5 150 105) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  color: rgb(4 120 87) !important;
+}
+
+html:not(.dark) .proposal-hub.workspace-page--proposals .proposal-hub-cta-send:hover {
+  background: rgba(16, 185, 129, 0.1) !important;
+}
+
+html:not(.dark) .proposal-hub.workspace-page--proposals .proposal-hub-cta-preview {
+  color: rgb(71 85 105) !important;
+}
+
+html:not(.dark) .proposal-hub.workspace-page--proposals .proposal-hub-cta-preview:hover {
+  color: rgb(15 23 42) !important;
+  background: rgba(15, 23, 42, 0.06) !important;
+}
+
+html:not(.dark) .proposal-hub.workspace-page--proposals .proposal-hub-intel-callout--action {
+  border-color: rgba(3, 105, 161, 0.35);
+  background: rgba(224, 242, 254, 0.95);
+}
+
+html:not(.dark) .proposal-hub.workspace-page--proposals .proposal-hub-intel-callout--warn {
+  border-color: rgba(180, 83, 9, 0.35);
+  background: rgba(254, 243, 199, 0.9);
+}
+
+html:not(.dark) .proposal-hub.workspace-page--proposals .proposal-hub-intel-callout--success {
+  border-color: rgba(4, 120, 87, 0.35);
+  background: rgba(209, 250, 229, 0.9);
+}
+
 html:not(.dark) .proposal-hub.workspace-page--proposals .proposal-hub-intel-callout--neutral {
-  color: inherit;
+  border-color: rgba(15, 23, 42, 0.12);
+  background: rgba(248, 250, 252, 0.95);
 }
 
 html:not(.dark) .proposal-hub.workspace-page--proposals .proposal-hub-workspace-eyebrow {
-  color: rgb(100 116 139);
+  color: rgb(71 85 105);
 }
