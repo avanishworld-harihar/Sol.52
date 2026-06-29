@@ -323,25 +323,25 @@ export function dealUrgencyVisual(u: DealUrgency): { label: string; className: s
       return {
         label: "Act now",
         className:
-          "border-rose-500/60 bg-rose-500/15 text-rose-200 ring-1 ring-rose-500/30",
+          "border-rose-200 bg-rose-50 text-rose-700 ring-1 ring-rose-200/90 dark:border-rose-500/60 dark:bg-rose-500/15 dark:text-rose-200 dark:ring-rose-500/30",
       };
     case "due_soon":
       return {
         label: "Follow up",
         className:
-          "border-amber-500/55 bg-amber-500/12 text-amber-100 ring-1 ring-amber-500/25",
+          "border-amber-200 bg-amber-50 text-amber-700 ring-1 ring-amber-200/90 dark:border-amber-500/55 dark:bg-amber-500/12 dark:text-amber-100 dark:ring-amber-500/25",
       };
     case "stale":
       return {
         label: "Stale",
         className:
-          "border-slate-500/40 bg-slate-500/10 text-slate-300 ring-1 ring-slate-500/20",
+          "border-slate-200 bg-slate-100 text-slate-600 ring-1 ring-slate-200/90 dark:border-slate-500/40 dark:bg-slate-500/10 dark:text-slate-300 dark:ring-slate-500/20",
       };
     default:
       return {
         label: "On track",
         className:
-          "border-sky-500/45 bg-sky-500/10 text-sky-100 ring-1 ring-sky-500/20",
+          "border-sky-200 bg-sky-50 text-sky-700 ring-1 ring-sky-200/90 dark:border-sky-500/45 dark:bg-sky-500/10 dark:text-sky-100 dark:ring-sky-500/20",
       };
   }
 }
