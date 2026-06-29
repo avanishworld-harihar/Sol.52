@@ -7,6 +7,9 @@ import {
   saveInstallerResidentialCatalog,
 } from "@/lib/installer-rate-card-client";
 import {
+  applyEquipmentDefaults,
+} from "@/lib/residential-equipment-presets";
+import {
   defaultBrandCatalog,
   type ResidentialBrandCatalog,
 } from "@/lib/residential-brand-catalog";
@@ -52,7 +55,7 @@ export function mergeInstallerBrandCatalog(
   const saved = getCachedResidentialBrandCatalog();
   const fallback = defaultBrandCatalog(config.solar.brandId ?? "adani");
   const catalog = saved?.entries?.length ? saved : fallback;
-  return {
+  const merged: ResidentialProposalConfig = {
     ...config,
     brandCatalog: {
       activeBrandId:
@@ -70,6 +73,9 @@ export function mergeInstallerBrandCatalog(
       moduleWattPresets: catalog.moduleWattPresets?.length
         ? [...catalog.moduleWattPresets]
         : config.brandCatalog?.moduleWattPresets,
+      equipmentDefaults: catalog.equipmentDefaults
+        ? { ...catalog.equipmentDefaults }
+        : config.brandCatalog?.equipmentDefaults,
     },
     pricing:
       config.pricing?.moduleWattPresets?.length || !catalog.moduleWattPresets?.length
@@ -79,4 +85,5 @@ export function mergeInstallerBrandCatalog(
             moduleWattPresets: [...catalog.moduleWattPresets],
           },
   };
+  return applyEquipmentDefaults(merged, catalog.equipmentDefaults);
 }

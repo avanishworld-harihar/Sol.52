@@ -1,10 +1,14 @@
 /**
- * Manual three-phase connection surcharge — no per-kW or auto-calculated defaults.
+ * Three-phase connection surcharge — installer default with optional override.
  */
 
+import type { ResidentialBrandCatalog } from "@/lib/residential-brand-catalog";
 import type { ResidentialProposalConfig } from "@/lib/residential-requirements-schema";
 
 export type ConnectionPhase = "single_phase" | "three_phase";
+
+/** Typical residential three-phase inverter / wiring upgrade (₹). Installers can override. */
+export const DEFAULT_THREE_PHASE_SURCHARGE_INR = 18_000;
 
 /** Detect single vs three phase from bill OCR or customer record text. */
 export function detectConnectionPhaseFromText(raw?: string | null): ConnectionPhase | null {
@@ -16,6 +20,14 @@ export function detectConnectionPhaseFromText(raw?: string | null): ConnectionPh
   return null;
 }
 
+export function resolveDefaultThreePhaseSurchargeInr(
+  catalog?: ResidentialBrandCatalog | null
+): number {
+  const saved = catalog?.equipmentDefaults?.threePhaseSurchargeInr;
+  if (saved != null && Number.isFinite(saved) && saved > 0) return Math.round(saved);
+  return DEFAULT_THREE_PHASE_SURCHARGE_INR;
+}
+
 export function resolvePhaseSurchargeInr(
   pricing?: ResidentialProposalConfig["pricing"] | null
 ): number {
@@ -25,11 +37,17 @@ export function resolvePhaseSurchargeInr(
   return Number.isFinite(amt) && amt > 0 ? Math.round(amt) : 0;
 }
 
-export function defaultPhaseSurchargeForConnection(phase: ConnectionPhase): {
+export function defaultPhaseSurchargeForConnection(
+  phase: ConnectionPhase,
+  catalog?: ResidentialBrandCatalog | null
+): {
   enabled: boolean;
   amountInr: number;
 } {
-  return phase === "three_phase" ? { enabled: true, amountInr: 0 } : { enabled: false, amountInr: 0 };
+  if (phase === "three_phase") {
+    return { enabled: true, amountInr: resolveDefaultThreePhaseSurchargeInr(catalog) };
+  }
+  return { enabled: false, amountInr: 0 };
 }
 
 export const CONNECTION_PHASE_OPTIONS: { id: ConnectionPhase; label: string }[] = [
@@ -47,14 +65,17 @@ export function applyConnectionPhaseSelection(
   phase: ConnectionPhase
 ): ResidentialProposalConfig {
   const pricing = config.pricing ?? {};
+  const catalog = config.brandCatalog;
   const current = pricing.phaseSurcharge;
-  const defaults = defaultPhaseSurchargeForConnection(phase);
+  const defaults = defaultPhaseSurchargeForConnection(phase, catalog);
   const nextPhaseSurcharge = {
     enabled: defaults.enabled,
     amountInr:
-      phase === "three_phase" && pricing.connectionPhase === "three_phase"
-        ? current?.amountInr ?? 0
-        : defaults.amountInr,
+      phase === "three_phase"
+        ? current?.amountInr && current.amountInr > 0
+          ? current.amountInr
+          : defaults.amountInr
+        : 0,
   };
   if (pricing.connectionPhase === phase && pricing.phaseSurcharge?.enabled === nextPhaseSurcharge.enabled) {
     return config;
@@ -88,8 +109,7 @@ export function mergeConnectionPhaseFromBillText(
       ...pricing,
       connectionPhase: detected,
       phaseSurcharge: {
-        ...defaultPhaseSurchargeForConnection(detected),
-        amountInr: 0,
+        ...defaultPhaseSurchargeForConnection(detected, config.brandCatalog),
       },
     },
   };

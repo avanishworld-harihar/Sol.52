@@ -31,6 +31,7 @@ import {
   WorkspaceTouchChip,
   workspaceSliderClass,
 } from "@/components/proposal/workspace-mobile-ui";
+import { persistEquipmentSelectionsFromConfig } from "@/lib/residential-equipment-presets";
 import { IndianRupee } from "lucide-react";
 
 type Props = {
@@ -180,30 +181,43 @@ export function ResidentialRequirementBuilder({
     onChange({ ...config, solar: { ...solar, ...partial } });
   }
 
+  function commitConfig(next: ResidentialProposalConfig) {
+    onChange(next);
+    persistEquipmentSelectionsFromConfig(next);
+  }
+
   function applyTrack(track: "dcr" | "non_dcr") {
     const entry = getActiveCatalogEntry(catalogWithEntries);
     if (entry) {
-      onChange(syncSolarAndPricingFromEntry(catalogWithEntries, entry, track));
+      commitConfig(syncSolarAndPricingFromEntry(catalogWithEntries, entry, track));
       return;
     }
     const catalogTrack = track === "dcr" ? "DCR" : "NON_DCR";
     const hit = PANEL_CATALOG.find(
       (e) => e.brandId === solar.brandId && e.watt === solar.watt && e.panelType === catalogTrack
     );
-    patchSolar({ panelTrack: track, moduleCountOverride: undefined, ratePerWpInr: hit?.ratePerWpInr ?? solar.ratePerWpInr });
+    commitConfig({
+      ...config,
+      solar: {
+        ...solar,
+        panelTrack: track,
+        moduleCountOverride: undefined,
+        ratePerWpInr: hit?.ratePerWpInr ?? solar.ratePerWpInr,
+      },
+    });
   }
 
   /** Module preset list + watt — single onChange so preset edits are not wiped by stale config. */
   function applyModuleConfigChange(next: ResidentialProposalConfig, selectWatt?: number) {
     if (selectWatt == null) {
-      onChange(next);
+      commitConfig(next);
       return;
     }
     const w = Math.max(100, Math.min(900, Math.round(selectWatt)));
     const catalog = ensureBrandCatalog(next);
     const entry = getActiveCatalogEntry(catalog);
     if (entry) {
-      onChange({
+      commitConfig({
         ...next,
         solar: {
           ...next.solar,
@@ -220,7 +234,7 @@ export function ResidentialRequirementBuilder({
       PANEL_CATALOG.find(
         (e) => e.brandId === next.solar.brandId && e.watt === w && e.panelType === catalogTrack
       ) ?? PANEL_CATALOG.find((e) => e.watt === w && e.panelType === catalogTrack);
-    onChange({
+    commitConfig({
       ...next,
       solar: {
         ...next.solar,
@@ -362,7 +376,7 @@ export function ResidentialRequirementBuilder({
       </section>
 
       <section className="space-y-2.5 rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-white/10 dark:bg-white/5">
-        <WorkspaceBrandCatalogSelector config={config} onChange={onChange} theme={theme} />
+        <WorkspaceBrandCatalogSelector config={config} onChange={commitConfig} theme={theme} />
         <WorkspaceFieldLabel className="mt-2">Quote mode</WorkspaceFieldLabel>
         <div className="flex flex-wrap gap-2">
           {(["dcr", "non_dcr"] as const).map((t) => (

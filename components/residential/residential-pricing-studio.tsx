@@ -5,9 +5,10 @@ import { FloatingLabelInput, FloatingLabelNumericInput } from "@/components/ui/f
 import { useToast } from "@/components/ui/toast-center";
 import { DEFAULT_PANEL_TECHNOLOGY, PANEL_TECHNOLOGY_OPTIONS } from "@/lib/commercial-panel-catalog";
 import { defaultResidentialKwTiers, type ResidentialProposalConfig } from "@/lib/residential-requirements-schema";
-import { syncEquipmentPresetsFromConfig } from "@/lib/residential-equipment-presets";
+import { syncEquipmentPresetsFromConfig, persistEquipmentSelectionsFromConfig } from "@/lib/residential-equipment-presets";
 import { isPmSuryaGharSubsidyEligible } from "@/lib/lead-connection-types";
 import { computePmSuryaGharSubsidy } from "@/lib/proposal-deck-helpers";
+import { residentialCostBreakdown } from "@/lib/residential-deck-helpers";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
 import { cn } from "@/lib/utils";
 import { Cpu, Download, Globe, Layers, MessageCircle, Save, Sun, Zap } from "lucide-react";
@@ -30,7 +31,7 @@ import {
   workspaceStickySaveClass,
 } from "@/components/proposal/workspace-mobile-ui";
 import type { ProposalDeckSummary } from "@/lib/proposal-ppt";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 type Props = {
   config: ResidentialProposalConfig;
@@ -124,13 +125,25 @@ export function ResidentialPricingStudio({
   const defaultSubsidy = computePmSuryaGharSubsidy(solar.plantCapacityKw);
   const subsidyEligible =
     subsidyEligibleProp ?? isPmSuryaGharSubsidyEligible(config.connectionType);
+  const costBreakdown = useMemo(
+    () =>
+      residentialCostBreakdown(config, {
+        connectionType: config.connectionType,
+        subsidyEligible,
+      }),
+    [config, subsidyEligible]
+  );
 
   function patch(partial: Partial<ResidentialProposalConfig>) {
-    onChange(ensureBrandCatalog({ ...config, ...partial }));
+    const next = ensureBrandCatalog({ ...config, ...partial });
+    onChange(next);
+    persistEquipmentSelectionsFromConfig(next);
   }
 
   function patchPricing(partial: Partial<NonNullable<ResidentialProposalConfig["pricing"]>>) {
-    onChange({ ...config, pricing: { ...pricing, ...partial } });
+    const next = { ...config, pricing: { ...pricing, ...partial } };
+    onChange(next);
+    persistEquipmentSelectionsFromConfig(next);
   }
 
   async function runSaveToProposal(): Promise<string | null> {
@@ -234,7 +247,12 @@ export function ResidentialPricingStudio({
 
   const residentialPricingAdjustments = (
     <div className="grid gap-4">
-      <ConnectionPhasePricingPanel config={config} onChange={onChange} className="lg:col-span-2" />
+      <ConnectionPhasePricingPanel
+        config={config}
+        onChange={onChange}
+        subsidyEligible={subsidyEligible}
+        className="lg:col-span-2"
+      />
       <div className="grid gap-4 lg:grid-cols-2">
       <div className="rounded-xl border border-slate-200/80 p-3 dark:border-white/10">
         <label className="flex cursor-pointer items-center justify-between gap-2">
@@ -425,7 +443,11 @@ export function ResidentialPricingStudio({
         {/* Discount + subsidy — residential step 4; commercial: discount only */}
         {isCommercial ? (
           <div className="space-y-3">
-            <ConnectionPhasePricingPanel config={config} onChange={onChange} />
+            <ConnectionPhasePricingPanel
+              config={config}
+              onChange={onChange}
+              subsidyEligible={subsidyEligible}
+            />
             <div className="rounded-xl border border-indigo-200/60 bg-indigo-50/40 p-3 dark:border-indigo-500/20 dark:bg-indigo-950/15">
             <label className="flex cursor-pointer items-center justify-between gap-2">
               <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Customer discount (this deal)</span>
@@ -486,17 +508,31 @@ export function ResidentialPricingStudio({
 
       <div className={workspaceStickySaveClass()}>
         {(netCostInr != null || paybackDisplay) && onSaveAndGenerate ? (
-          <div className="mb-3 grid grid-cols-2 gap-2 border-b border-slate-200/80 pb-3 text-xs font-semibold text-slate-700 dark:border-white/10 dark:text-slate-300 sm:text-sm">
-            {netCostInr != null ? (
-              <p>
-                Net cost:{" "}
-                <span className="font-extrabold text-brand-700 dark:text-brand-400">{inr(netCostInr)}</span>
-              </p>
-            ) : (
-              <span />
-            )}
+          <div className="mb-3 space-y-2 border-b border-slate-200/80 pb-3 text-xs font-semibold text-slate-700 dark:border-white/10 dark:text-slate-300 sm:text-sm">
+            <div className="grid gap-1 rounded-lg bg-slate-50/90 p-2.5 dark:bg-white/[0.03]">
+              <div className="flex justify-between gap-2">
+                <span>Plant cost</span>
+                <span className="tabular-nums">{inr(costBreakdown.grossInr)}</span>
+              </div>
+              {costBreakdown.phaseSurchargeInr > 0 ? (
+                <div className="flex justify-between gap-2">
+                  <span>Three-phase upgrade</span>
+                  <span className="tabular-nums">+{inr(costBreakdown.phaseSurchargeInr)}</span>
+                </div>
+              ) : null}
+              {costBreakdown.subsidyInr > 0 ? (
+                <div className="flex justify-between gap-2 text-emerald-700">
+                  <span>Subsidy</span>
+                  <span className="tabular-nums">−{inr(costBreakdown.subsidyInr)}</span>
+                </div>
+              ) : null}
+              <div className="flex justify-between gap-2 border-t border-slate-200/80 pt-1.5 font-extrabold text-brand-800 dark:border-white/10 dark:text-brand-300">
+                <span>Net cost</span>
+                <span className="tabular-nums">{inr(costBreakdown.netInr)}</span>
+              </div>
+            </div>
             {paybackDisplay ? (
-              <p className="text-right sm:text-left">
+              <p>
                 Payback: <span className="font-extrabold text-brand-700 dark:text-brand-400">{paybackDisplay}</span>
               </p>
             ) : null}

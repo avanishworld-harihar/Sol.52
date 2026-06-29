@@ -11,6 +11,7 @@ import { wireBrandDisplayName } from "@/lib/residential-deck-helpers";
 import {
   addInverterPresetToCatalog,
   addWirePresetToCatalog,
+  commitInstallerEquipmentSelections,
   listInverterPresets,
   listWirePresets,
   persistEquipmentCatalog,
@@ -100,7 +101,7 @@ export function ResidentialEquipmentBrandsSection({ config, onChange, isCommerci
     : "border-emerald-700 bg-emerald-700 text-white";
 
   function emit(next: ResidentialProposalConfig) {
-    onChange(ensureBrandCatalog(next));
+    onChange(commitInstallerEquipmentSelections(ensureBrandCatalog(next)));
   }
 
   function patch(partial: Partial<ResidentialProposalConfig>) {
@@ -225,7 +226,7 @@ export function ResidentialEquipmentBrandsSection({ config, onChange, isCommerci
         <SectionTitle
           icon={Sun}
           title="Panel brands"
-          hint="Saved to More → Rate card · any one on site."
+          hint="Selections saved for your next proposal · also in More → Rate card."
         />
         <div className="flex flex-wrap gap-2">
           {catalogBrands.map((b) => {
@@ -315,7 +316,7 @@ export function ResidentialEquipmentBrandsSection({ config, onChange, isCommerci
         <SectionTitle
           icon={Cpu}
           title="Inverter brands"
-          hint="Add a brand once — it appears here on every future proposal."
+          hint="Selections saved for your next proposal."
         />
         <div className="flex flex-wrap gap-2">
           {inverterPresets.map((name) => {
@@ -397,7 +398,7 @@ export function ResidentialEquipmentBrandsSection({ config, onChange, isCommerci
         <SectionTitle
           icon={Cable}
           title="DC / AC wire"
-          hint="Add custom wire brands — saved for next proposal · selected brands appear on proposal."
+          hint="Add custom wire brands — selections saved for your next proposal."
         />
         <div className="flex flex-wrap gap-2">
           {wirePresets.map((label) => {

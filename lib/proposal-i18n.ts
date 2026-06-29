@@ -361,8 +361,8 @@ const EN: ProposalDict = {
   "pay.installation": "On Installation",
   "pay.commissioning": "Against Commissioning",
 
-  "commercial.gross": "Gross System Cost",
-  "commercial.phaseSurcharge": "Three-Phase Extra Charge",
+  "commercial.gross": "Plant cost",
+  "commercial.phaseSurcharge": "Three-phase upgrade",
   "commercial.discount": "Customer Discount",
   "commercial.subsidy": "PM Surya Ghar Subsidy",
   "commercial.net": "Net Customer Pays",

@@ -103,6 +103,21 @@ export const residentialBrandCatalogSchema = z.object({
   wirePresets: z.array(z.string().min(1).max(80)).max(32).optional(),
   /** Installer-edited module Wp chips — shown on next proposal. */
   moduleWattPresets: z.array(z.number().int().min(100).max(900)).max(16).optional(),
+  /** Last-used equipment picks — pre-selected on the next proposal (residential + commercial). */
+  equipmentDefaults: z
+    .object({
+      panelBrandOptions: z.array(residentialBrandOptionSchema).max(32).optional(),
+      inverterBrandOptions: z.array(residentialBrandOptionSchema).max(32).optional(),
+      wireBrandOptions: z.array(residentialWireBrandSchema).max(32).optional(),
+      moduleWatt: z.number().int().min(100).max(900).optional(),
+      panelTechnology: z.string().max(80).optional(),
+      panelTrack: residentialPanelTrackSchema.optional(),
+      primaryBrandId: z.string().max(40).optional(),
+      primaryBrand: z.string().max(80).optional(),
+      connectionPhase: residentialConnectionPhaseSchema.optional(),
+      threePhaseSurchargeInr: z.number().min(0).max(500_000).optional(),
+    })
+    .optional(),
 });
 
 export const residentialTrackCompareSchema = z.object({
@@ -178,6 +193,7 @@ export type ResidentialTrackCompare = z.infer<typeof residentialTrackCompareSche
 export type ResidentialBrandCompare = z.infer<typeof residentialBrandCompareSchema>;
 export type ResidentialBrandCatalogEntry = z.infer<typeof residentialBrandCatalogEntrySchema>;
 export type ResidentialBrandCatalog = z.infer<typeof residentialBrandCatalogSchema>;
+export type InstallerEquipmentDefaults = NonNullable<ResidentialBrandCatalog["equipmentDefaults"]>;
 
 /** Default kW → gross price table for residential requirement proposals. */
 export function defaultResidentialKwTiers(): ResidentialKwTier[] {

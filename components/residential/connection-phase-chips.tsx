@@ -44,8 +44,7 @@ export function ConnectionPhaseChips({ value, onChange, theme = "residential", c
       </div>
       {value === "three_phase" ? (
         <p className="mt-2 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
-          Three-phase selected — extra charge toggle will turn on in Pricing adjustments (Step 4). Enter amount
-          manually.
+          Three-phase adds a wiring / inverter upgrade line to the proposal (default ₹18,000 — editable below).
         </p>
       ) : null}
     </div>
