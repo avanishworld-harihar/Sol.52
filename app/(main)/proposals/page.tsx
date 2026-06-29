@@ -170,7 +170,20 @@ export default function ProposalsHubPage() {
       copyShareLinkDone: t("proposals_copyShareLinkDone"),
       pptFailed: t("proposals_pptFailed"),
       duplicateDone: t("proposals_duplicateDone"),
+      duplicateDoneTemplate: t("proposals_duplicateDoneTemplate"),
+      duplicateDoneRevision: t("proposals_duplicateDoneRevision"),
       duplicateFailed: t("proposals_duplicateFailed"),
+      duplicateModal: {
+        title: t("proposals_duplicateModalTitle"),
+        subtitle: t("proposals_duplicateModalSubtitle"),
+        templateTitle: t("proposals_duplicateTemplateTitle"),
+        templateDesc: t("proposals_duplicateTemplateDesc"),
+        revisionTitle: t("proposals_duplicateRevisionTitle"),
+        revisionDesc: t("proposals_duplicateRevisionDesc"),
+        cancel: t("proposals_duplicateCancel"),
+        confirm: t("proposals_duplicateConfirm"),
+        confirming: t("proposals_duplicateConfirming"),
+      },
     }),
     [t]
   );

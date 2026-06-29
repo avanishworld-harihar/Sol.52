@@ -100,32 +100,45 @@ export async function downloadProposalPpt(proposalId: string, customerName: stri
   URL.revokeObjectURL(objectUrl);
 }
 
+import type { DuplicateProposalMode } from "@/lib/duplicate-proposal";
+
 export type DuplicateProposalResult = {
   ok: boolean;
   id?: string;
   customerName?: string;
+  mode?: DuplicateProposalMode;
   error?: string;
   code?: string;
 };
 
-/** Clone sizing, equipment, pricing, and layout into a fresh draft (no CRM lead link). */
-export async function duplicateProposalById(proposalId: string): Promise<DuplicateProposalResult> {
+/** Clone proposal — `template` strips bill audit; `revision` keeps full customer data. */
+export async function duplicateProposalById(
+  proposalId: string,
+  mode: DuplicateProposalMode = "template"
+): Promise<DuplicateProposalResult> {
   try {
     const res = await fetch(`/api/proposals/${proposalId}/duplicate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mode }),
     });
     const json = (await res.json().catch(() => ({}))) as {
       ok?: boolean;
       id?: string;
       customerName?: string;
+      mode?: DuplicateProposalMode;
       error?: string;
       code?: string;
     };
     if (!res.ok || !json.ok || !json.id) {
       return { ok: false, error: json.error || "duplicate_failed", code: json.code };
     }
-    return { ok: true, id: json.id, customerName: json.customerName };
+    return {
+      ok: true,
+      id: json.id,
+      customerName: json.customerName,
+      mode: json.mode ?? mode,
+    };
   } catch {
     return { ok: false, error: "duplicate_failed" };
   }

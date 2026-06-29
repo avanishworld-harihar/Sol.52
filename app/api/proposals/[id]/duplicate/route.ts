@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import {
   assertCanCreateProposal,
   extractTrialIdentityFromRequest,
   isBillingEntitlementError,
   recordProposalCreated,
 } from "@/lib/billing";
+import {
+  buildDuplicatePptInput,
+  duplicateCustomerNameForMode,
+  type DuplicateProposalMode,
+} from "@/lib/duplicate-proposal";
 import { mergeProposalPricingIntoPptInput } from "@/lib/proposal-pricing-merge";
 import {
   ensureProposalPricingRow,
@@ -22,14 +28,9 @@ type RouteCtx = { params: Promise<{ id: string }> };
 
 const UUID_RX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-function duplicateCustomerName(name: string): string {
-  const base = name.trim() || "Customer";
-  const suffix = " (copy)";
-  if (base.toLowerCase().endsWith("(copy)")) {
-    return base.slice(0, 120);
-  }
-  return (base + suffix).slice(0, 120);
-}
+const bodySchema = z.object({
+  mode: z.enum(["template", "revision"]).default("template"),
+});
 
 export async function POST(req: NextRequest, ctx: RouteCtx) {
   try {
@@ -38,17 +39,18 @@ export async function POST(req: NextRequest, ctx: RouteCtx) {
       return NextResponse.json({ ok: false, error: "invalid_id" }, { status: 400 });
     }
 
+    const rawBody = await req.json().catch(() => ({}));
+    const { mode } = bodySchema.parse(rawBody);
+
     const source = await getProposalById(id.trim());
     if (!source?.ppt_input) {
       return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
     }
 
     const srcPpt = source.ppt_input as PremiumProposalPptInput;
-    const customerName = duplicateCustomerName(srcPpt.customerName ?? source.customer_name ?? "");
-    const pptInput: PremiumProposalPptInput = {
-      ...srcPpt,
-      customerName,
-    };
+    const srcName = srcPpt.customerName ?? source.customer_name ?? "";
+    const customerName = duplicateCustomerNameForMode(srcName, mode);
+    const pptInput = buildDuplicatePptInput(srcPpt, mode, customerName);
     const summary = summarizeProposalDeck(pptInput);
     const presetId = source.preset_id ?? "residential_sales_premium";
 
@@ -79,12 +81,14 @@ export async function POST(req: NextRequest, ctx: RouteCtx) {
       throw billingErr;
     }
 
+    const keepCrmLink = mode === "revision";
+
     const created = await createProposal({
       pptInput,
       summary,
-      leadId: null,
-      clientRef: null,
-      consumerId: null,
+      leadId: keepCrmLink ? (source.lead_id ?? null) : null,
+      clientRef: keepCrmLink ? ((source as { client_ref?: string | null }).client_ref ?? null) : null,
+      consumerId: keepCrmLink ? ((source as { customer_id?: string | null }).customer_id ?? null) : null,
       presetId,
       organizationId: orgId,
     });
@@ -129,11 +133,17 @@ export async function POST(req: NextRequest, ctx: RouteCtx) {
         customerName: created.customer_name,
         shareUrl,
         presetId,
+        mode,
       },
       { status: 200, headers: { "Cache-Control": "no-store" } }
     );
   } catch (error) {
-    const message = error instanceof Error ? error.message : "duplicate_failed";
+    const message =
+      error instanceof z.ZodError
+        ? error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(", ")
+        : error instanceof Error
+          ? error.message
+          : "duplicate_failed";
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }

@@ -1,8 +1,10 @@
 "use client";
 
+import { ProposalDuplicateModal, type ProposalDuplicateModalLabels } from "@/components/proposals/proposal-duplicate-modal";
 import { useToast } from "@/components/ui/toast-center";
 import type { ProposalListCardProps } from "@/components/proposals/proposal-list-card";
 import { buildProposalEditHref } from "@/lib/proposal-edit-url";
+import type { DuplicateProposalMode } from "@/lib/duplicate-proposal";
 import {
   copyPublicProposalLink,
   deleteProposalById,
@@ -34,7 +36,10 @@ type Labels = ProposalListCardProps["labels"] & {
   copyShareLinkDone?: string;
   pptFailed?: string;
   duplicateDone?: string;
+  duplicateDoneTemplate?: string;
+  duplicateDoneRevision?: string;
   duplicateFailed?: string;
+  duplicateModal?: ProposalDuplicateModalLabels;
 };
 
 const actionBtnClass = cn(
@@ -91,6 +96,7 @@ export function ProposalHubActionsSheet({
   const savingMo =
     annualSavingInr != null && Number.isFinite(annualSavingInr) ? Math.round(annualSavingInr / 12) : null;
   const [busy, setBusy] = useState<"send" | "mark" | "copy" | "ppt" | "delete" | "duplicate" | null>(null);
+  const [duplicateModalOpen, setDuplicateModalOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -177,20 +183,25 @@ export function ProposalHubActionsSheet({
     }
   }
 
-  async function handleDuplicate() {
+  async function handleDuplicateConfirm(mode: DuplicateProposalMode) {
     setBusy("duplicate");
     try {
-      const result = await duplicateProposalById(proposalId);
+      const result = await duplicateProposalById(proposalId, mode);
       if (!result.ok || !result.id) {
         throw new Error(result.error || "duplicate_failed");
       }
-      toast.success(
-        labels.duplicateProposal,
-        labels.duplicateDone ?? "Copy ready — update customer name and send."
-      );
+      const doneMsg =
+        mode === "revision"
+          ? (labels.duplicateDoneRevision ??
+            "Revision created — bill audit and savings kept for this customer.")
+          : (labels.duplicateDoneTemplate ??
+            labels.duplicateDone ??
+            "Template ready — add a new bill and customer details.");
+      toast.success(labels.duplicateProposal, doneMsg);
       onDuplicated?.(result.id);
+      setDuplicateModalOpen(false);
       handleClose();
-      router.push(buildProposalEditHref({ proposalId: result.id }));
+      router.push(buildProposalEditHref({ proposalId: result.id, leadId: mode === "revision" ? leadId : null }));
     } catch (e) {
       toast.error(
         labels.duplicateFailed ?? "Could not duplicate",
@@ -218,9 +229,24 @@ export function ProposalHubActionsSheet({
     }
   }
 
-  if (!mounted || !open) return null;
+  if (!mounted) return null;
 
-  return createPortal(
+  const duplicateModalLabels: ProposalDuplicateModalLabels = labels.duplicateModal ?? {
+    title: "Duplicate proposal",
+    subtitle: "Choose how to copy this quote.",
+    templateTitle: "As template",
+    templateDesc: "Equipment, pricing & layout only — no bill audit or customer data.",
+    revisionTitle: "As revision",
+    revisionDesc: "Same customer — keeps bill audit, savings, and CRM link.",
+    cancel: "Cancel",
+    confirm: "Create copy",
+    confirming: "Creating…",
+  };
+
+  return (
+    <>
+      {open
+        ? createPortal(
     <div
       className={cn("fixed inset-0 flex items-end justify-center md:items-center md:p-6", SHEET_Z)}
       role="presentation"
@@ -284,9 +310,15 @@ export function ProposalHubActionsSheet({
             <CheckCircle2 className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400" aria-hidden />
             {busy === "mark" ? "Saving…" : (labels.markAsSent ?? "Mark as sent")}
           </ActionRow>
-          <ActionRow disabled={busy === "duplicate"} onClick={() => void handleDuplicate()}>
+          <ActionRow
+            disabled={busy === "duplicate"}
+            onClick={() => {
+              handleClose();
+              setDuplicateModalOpen(true);
+            }}
+          >
             <Copy className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400" aria-hidden />
-            {busy === "duplicate" ? "Copying…" : labels.duplicateProposal}
+            {labels.duplicateProposal}
           </ActionRow>
           <ActionRow
             disabled={busy === "delete"}
@@ -308,5 +340,17 @@ export function ProposalHubActionsSheet({
       </div>
     </div>,
     document.body
+        )
+        : null}
+      <ProposalDuplicateModal
+        open={duplicateModalOpen}
+        onClose={() => {
+          if (busy !== "duplicate") setDuplicateModalOpen(false);
+        }}
+        onConfirm={(mode) => void handleDuplicateConfirm(mode)}
+        labels={duplicateModalLabels}
+        busy={busy === "duplicate"}
+      />
+    </>
   );
 }
