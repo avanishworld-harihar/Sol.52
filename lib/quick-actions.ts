@@ -21,6 +21,7 @@
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 import type { OrgType } from "@/lib/org-type-defaults";
 import type { StoryMode } from "@/lib/proposal-story-copy";
+import { FEATURED_REQUIREMENT_KW } from "@/lib/requirement-size-presets";
 
 // ─── Builder URL param types ───────────────────────────────────────────────
 
@@ -113,6 +114,7 @@ export function parsePrefillFromSearchParams(params: URLSearchParams): BuilderPr
 
 export type QuickActionCategory =
   | "Quick Actions"
+  | "Quick Quotes"
   | "Commercial Segments"
   | "Navigation";
 
@@ -141,6 +143,8 @@ export type QuickAction = {
   category: QuickActionCategory;
   /** Optional keyboard shortcut label (display only) */
   shortcut?: string;
+  /** When set, Cmd+K creates a requirement quick-quote draft instead of navigating */
+  quickRequirementKw?: number;
 };
 
 // ─── Action definitions ────────────────────────────────────────────────────
@@ -180,6 +184,17 @@ export const QUICK_ACTIONS: QuickAction[] = [
     iconName: "layout-grid",
     category: "Quick Actions",
   },
+
+  ...FEATURED_REQUIREMENT_KW.map((kw) => ({
+    id: `quick-quote-${kw}kw`,
+    label: `${kw} kW Quick Quote`,
+    description: "Create requirement proposal from your rate card — no bill",
+    href: "/proposals",
+    quickRequirementKw: kw,
+    iconName: "zap" as const,
+    category: "Quick Quotes" as const,
+  })),
+
   {
     id: "settings",
     label: "Settings & Branding",
@@ -300,6 +315,7 @@ export const QUICK_ACTIONS: QuickAction[] = [
 
 export const QUICK_ACTION_CATEGORIES: QuickActionCategory[] = [
   "Quick Actions",
+  "Quick Quotes",
   "Commercial Segments",
   "Navigation",
 ];

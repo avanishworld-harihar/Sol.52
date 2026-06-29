@@ -23,6 +23,7 @@ import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { getProposalLayout } from "@/lib/proposal-layout-merge";
 import { summarizeProposalDeck } from "@/lib/proposal-ppt";
 import { markProposalSent, openWhatsAppWithProposal, type ProposalShareMetrics } from "@/lib/proposal-share-actions";
+import { proposalShareMetricsFromConfig } from "@/lib/proposal-share-metrics";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
 import type { ProposalStatus } from "@/lib/proposal-status";
 import { PROPOSAL_STATUS_ORDER } from "@/lib/proposal-status";
@@ -156,14 +157,16 @@ export function ProposalManageClient({
   );
 
   const shareMetrics: ProposalShareMetrics = useMemo(
-    () => ({
-      customerName,
-      systemKw: summary.systemKw,
-      netCostInr: summary.netCost,
-      annualSavingInr: Math.max(0, annualSavingInr || summary.annualSaving),
-      paybackLabel: summary.paybackYears > 0 ? `${summary.paybackYears} years` : "—"
-    }),
-    [customerName, summary, annualSavingInr]
+    () =>
+      proposalShareMetricsFromConfig({
+        customerName,
+        systemKw: summary.systemKw,
+        netCostInr: summary.netCost,
+        annualSavingInr: Math.max(0, annualSavingInr || summary.annualSaving),
+        paybackLabel: summary.paybackYears > 0 ? `${summary.paybackYears} years` : "—",
+        residentialConfig: pptInput.residentialConfig,
+      }),
+    [customerName, summary, annualSavingInr, pptInput.residentialConfig]
   );
 
   const onPricingSaved = useCallback((row: ProposalPricingRow) => {

@@ -45,10 +45,14 @@ import {
 import type { FollowupReminder } from "@/lib/followup-types";
 import type { CustomerTimelineItem } from "@/lib/customer-timeline-store";
 import { CustomerDocumentsHub } from "@/components/customers/customer-documents-hub";
+import { QuickQuoteLauncher } from "@/components/proposals/quick-quote-launcher";
 import { ScheduleCallbackSheet } from "@/components/crm/schedule-callback-sheet";
 import { CallbackStatusBadge } from "@/components/crm/callback-status-badge";
 import { describeCallback } from "@/lib/crm-callback-display";
 import { cn } from "@/lib/utils";
+import { buildProposalEditHref } from "@/lib/proposal-edit-url";
+import { quickQuoteLabelsFromT } from "@/lib/proposal-hub-i18n";
+import { useLanguage } from "@/lib/language-context";
 import { useRouter } from "next/navigation";
 import {
   crmDatetimeLocalToIso,
@@ -192,6 +196,8 @@ function SectionCard({
 export function CustomerDetailPage({ leadId }: { leadId: string }) {
   const router = useRouter();
   const toast = useToast();
+  const { t } = useLanguage();
+  const quickQuoteLabels = useMemo(() => quickQuoteLabelsFromT(t), [t]);
 
   /* ------ fetch lead ------ */
   const { data: leadData, mutate: mutateLead } = useSWR<CustomerLead>(
@@ -447,6 +453,18 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
           </div>
         </div>
       </SectionCard>
+
+      <QuickQuoteLauncher
+        leadId={leadId}
+        customerName={lead.consumer_name?.trim() || lead.name?.trim() || undefined}
+        customerPhone={lead.phone}
+        connectionPhaseHint={lead.connection_type}
+        labels={quickQuoteLabels}
+        onCreated={(proposalId) => {
+          void Promise.all([mutateTimeline(), mutateLead()]);
+          router.push(buildProposalEditHref({ proposalId, leadId }));
+        }}
+      />
 
       {/* ── 2. Activity Timeline ── */}
       <SectionCard

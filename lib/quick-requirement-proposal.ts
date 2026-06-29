@@ -12,6 +12,7 @@ import { syncResidentialSolarToLineItems } from "@/lib/residential-solar-engine"
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { summarizeProposalDeck } from "@/lib/proposal-ppt";
 import { getPresetDefaultLayout, type ProposalPresetId } from "@/lib/proposal-preset-engine";
+import { applyConnectionPhaseSelection, type ConnectionPhase } from "@/lib/connection-phase-pricing";
 import { templateCustomerName } from "@/lib/duplicate-proposal";
 import type { ResidentialProposalConfig } from "@/lib/residential-requirements-schema";
 
@@ -20,6 +21,7 @@ export type QuickRequirementProposalPayload = {
   customerName?: string;
   presetId?: ProposalPresetId;
   leadId?: string | null;
+  connectionPhase?: ConnectionPhase;
 };
 
 export type QuickRequirementProposalBuild = {
@@ -38,7 +40,10 @@ export async function buildQuickRequirementProposal(
   const rateCard = await getInstallerRateCard();
   const catalog = rateCard?.residentialCatalog ?? null;
 
-  const residentialConfig = buildResidentialConfigForQuickQuote(kw, catalog);
+  let residentialConfig = buildResidentialConfigForQuickQuote(kw, catalog);
+  if (input.connectionPhase === "three_phase" || input.connectionPhase === "single_phase") {
+    residentialConfig = applyConnectionPhaseSelection(residentialConfig, input.connectionPhase);
+  }
   const breakdown = residentialCostBreakdown(residentialConfig);
   const customerName = (input.customerName?.trim() || templateCustomerName()).slice(0, 120);
 

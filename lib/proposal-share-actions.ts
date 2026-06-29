@@ -1,5 +1,7 @@
 "use client";
 
+import type { ConnectionPhase } from "@/lib/connection-phase-pricing";
+
 export type ProposalShareMetrics = {
   customerName: string;
   systemKw: number;
@@ -7,6 +9,8 @@ export type ProposalShareMetrics = {
   annualSavingInr: number;
   paybackLabel: string;
   phone?: string;
+  phaseSurchargeInr?: number;
+  connectionPhase?: ConnectionPhase;
 };
 
 export type MarkProposalSentResult = {
@@ -25,16 +29,25 @@ export function absolutePublicProposalUrl(proposalId: string): string {
 
 export function buildWhatsAppProposalMessage(metrics: ProposalShareMetrics, url: string): string {
   const name = metrics.customerName.trim() || "Customer";
-  return [
+  const lines = [
     `Namaste ${name} 🌞`,
     "",
     `${metrics.systemKw} kW solar proposal aapke liye taiyaar hai:`,
+  ];
+
+  if (metrics.phaseSurchargeInr != null && metrics.phaseSurchargeInr > 0) {
+    lines.push(`• Three-phase upgrade: +₹${Math.round(metrics.phaseSurchargeInr).toLocaleString("en-IN")}`);
+  }
+
+  lines.push(
     `• Net cost: ₹${Math.round(metrics.netCostInr).toLocaleString("en-IN")}`,
     `• Annual saving: ₹${Math.round(metrics.annualSavingInr).toLocaleString("en-IN")}`,
     `• Payback: ${metrics.paybackLabel}`,
     "",
-    `Full interactive proposal: ${url}`,
-  ].join("\n");
+    `Full interactive proposal: ${url}`
+  );
+
+  return lines.join("\n");
 }
 
 export function openWhatsAppWithProposal(metrics: ProposalShareMetrics, proposalId: string): void {

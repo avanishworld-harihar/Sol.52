@@ -27,6 +27,9 @@ import {
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
+import { useToast } from "@/components/ui/toast-center";
+import { buildProposalEditHref } from "@/lib/proposal-edit-url";
+import { createQuickRequirementProposal } from "@/lib/quick-requirement-proposal-client";
 import {
   Building2,
   Factory,
@@ -86,21 +89,42 @@ function getIcon(name: string): IconComponent {
 function PaletteInner() {
   const { commandPaletteOpen, closeCommandPalette } = useShell();
   const router = useRouter();
+  const toast = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [creatingKw, setCreatingKw] = useState<number | null>(null);
 
   const filtered = filterQuickActions(query);
 
   const handleSelect = useCallback(
-    (item: QuickAction) => {
+    async (item: QuickAction) => {
+      if (item.quickRequirementKw != null) {
+        const kw = item.quickRequirementKw;
+        closeCommandPalette();
+        setQuery("");
+        setSelectedIndex(0);
+        setCreatingKw(kw);
+        try {
+          const result = await createQuickRequirementProposal({ kw });
+          if (!result.ok || !result.id) {
+            toast.error("Could not create proposal", result.error ?? "");
+            return;
+          }
+          toast.success("Proposal ready", `${kw} kW draft created`);
+          router.push(buildProposalEditHref({ proposalId: result.id }));
+        } finally {
+          setCreatingKw(null);
+        }
+        return;
+      }
       router.push(item.href);
       closeCommandPalette();
       setQuery("");
       setSelectedIndex(0);
     },
-    [router, closeCommandPalette]
+    [router, closeCommandPalette, toast]
   );
 
   // Auto-focus + reset when opened

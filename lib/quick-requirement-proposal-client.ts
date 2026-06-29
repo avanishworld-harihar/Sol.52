@@ -20,12 +20,14 @@ export async function createQuickRequirementProposal(input: {
   customerName?: string;
   presetId?: ProposalPresetId;
   leadId?: string | null;
+  connectionPhase?: "single_phase" | "three_phase";
 }): Promise<QuickRequirementCreateResult> {
   try {
     const body: Record<string, unknown> = { kw: input.kw };
     if (input.customerName?.trim()) body.customerName = input.customerName.trim();
     if (input.presetId) body.presetId = input.presetId;
     if (input.leadId?.trim()) body.leadId = input.leadId.trim();
+    if (input.connectionPhase) body.connectionPhase = input.connectionPhase;
 
     const res = await fetch("/api/proposals/quick-requirement", {
       method: "POST",

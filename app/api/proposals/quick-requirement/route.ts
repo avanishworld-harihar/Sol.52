@@ -17,6 +17,9 @@ import {
 } from "@/lib/proposal-pricing-sync";
 import { summarizeProposalDeck } from "@/lib/proposal-ppt";
 import { PROPOSAL_PRESET_IDS } from "@/lib/proposal-preset-engine";
+import { appendActivityEvent } from "@/lib/followup-store";
+import { residentialConnectionPhaseSchema } from "@/lib/residential-requirements-schema";
+import { bumpLeadStatus, upsertPipelineProject } from "@/lib/supabase";
 import { buildQuickRequirementProposal } from "@/lib/quick-requirement-proposal";
 import { resolveDefaultOrgId } from "@/lib/project-store";
 import { createProposal } from "@/lib/proposals-store";
@@ -24,11 +27,14 @@ import { createProposal } from "@/lib/proposals-store";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
+const SITE_SURVEY_NEXT_ACTION = "Site survey pending";
+
 const bodySchema = z.object({
   kw: z.coerce.number().min(0.5).max(10000),
   customerName: z.string().max(120).optional(),
   presetId: z.enum(PROPOSAL_PRESET_IDS).optional(),
   leadId: z.string().max(120).nullish(),
+  connectionPhase: residentialConnectionPhaseSchema.optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -39,6 +45,7 @@ export async function POST(req: NextRequest) {
       customerName: payload.customerName,
       presetId: payload.presetId,
       leadId: payload.leadId ?? null,
+      connectionPhase: payload.connectionPhase,
     });
 
     const orgId = await resolveDefaultOrgId();
@@ -84,6 +91,43 @@ export async function POST(req: NextRequest) {
 
     if (orgId && billingSub) {
       await recordProposalCreated(orgId, billingSub);
+    }
+
+    let projectId: string | null = null;
+    const leadId = payload.leadId?.trim() || null;
+    if (leadId) {
+      try {
+        const project = await upsertPipelineProject({
+          lead_id: leadId,
+          official_name: created.customer_name,
+          capacity_kw: `${built.residentialConfig.solar.plantCapacityKw} kW`,
+          contract_amount_inr: built.summary.netCost ?? null,
+          status: "pending",
+          install_progress: 10,
+          next_action: SITE_SURVEY_NEXT_ACTION,
+        });
+        if (project && typeof project["id"] === "string") {
+          projectId = project["id"] as string;
+        }
+      } catch (err) {
+        console.warn("[quick-requirement] pipeline upsert failed:", err);
+      }
+      try {
+        await bumpLeadStatus(leadId, "proposal-sent");
+      } catch (err) {
+        console.warn("[quick-requirement] bumpLeadStatus failed:", err);
+      }
+      void appendActivityEvent({
+        leadId,
+        eventType: "proposal_created",
+        meta: {
+          proposalId: created.id,
+          customerName: created.customer_name,
+          systemKw: built.residentialConfig.solar.plantCapacityKw,
+          projectId,
+          source: "quick_requirement",
+        },
+      });
     }
 
     await ensureProposalPricingRow({

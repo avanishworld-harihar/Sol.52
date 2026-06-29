@@ -1,6 +1,7 @@
 "use client";
 
 import { ResidentialBrandCatalogPanel } from "@/components/residential/residential-brand-catalog-panel";
+import { ConnectionPhasePricingPanel } from "@/components/residential/connection-phase-pricing-panel";
 import { Button } from "@/components/ui/button";
 import { FloatingLabelNumericInput } from "@/components/ui/floating-label-input";
 import { useToast } from "@/components/ui/toast-center";
@@ -10,6 +11,7 @@ import {
   type PanelCatalogEntry,
 } from "@/lib/commercial-panel-catalog";
 import { ensureBrandCatalog } from "@/lib/residential-brand-catalog";
+import { applyEquipmentDefaults, syncEquipmentPresetsFromConfig } from "@/lib/residential-equipment-presets";
 import { loadInstallerRateCard, saveInstallerRateCard } from "@/lib/installer-rate-card-client";
 import { defaultResidentialConfigForBuilder } from "@/lib/residential-proposal-config";
 import type { ResidentialProposalConfig } from "@/lib/residential-requirements-schema";
@@ -47,11 +49,15 @@ export function InstallerRateCardWorkspace() {
     setLoading(true);
     try {
       const card = await loadInstallerRateCard(true);
+      const base = defaultResidentialConfigForBuilder(5, "requirement");
       setConfig(
-        ensureBrandCatalog({
-          ...defaultResidentialConfigForBuilder(5, "requirement"),
-          brandCatalog: card.residentialCatalog,
-        })
+        applyEquipmentDefaults(
+          ensureBrandCatalog({
+            ...base,
+            brandCatalog: card.residentialCatalog,
+          }),
+          card.residentialCatalog?.equipmentDefaults
+        )
       );
       setCommercialRates(commercialRateMapFromCard(card.commercialPanelRates));
     } finally {
@@ -68,7 +74,8 @@ export function InstallerRateCardWorkspace() {
   async function handleSave() {
     setSaving(true);
     try {
-      const normalized = ensureBrandCatalog(config);
+      const normalized = syncEquipmentPresetsFromConfig(ensureBrandCatalog(config));
+      setConfig(normalized);
       await saveInstallerRateCard({
         residentialCatalog: normalized.brandCatalog,
         commercialPanelRates: commercialRows.map((e) => ({
@@ -141,6 +148,19 @@ export function InstallerRateCardWorkspace() {
           </h2>
         </div>
         <ResidentialBrandCatalogPanel config={config} onChange={setConfig} />
+      </section>
+
+      <section>
+        <div className="mb-3 flex items-center gap-2">
+          <IndianRupee className="h-4 w-4 text-emerald-600" />
+          <h2 className="text-base font-bold text-slate-900 dark:text-white">
+            Three-phase default
+          </h2>
+        </div>
+        <p className="mb-3 text-xs text-slate-600 dark:text-slate-400">
+          Default upgrade amount for three-phase connections — used in quick quotes and new proposals.
+        </p>
+        <ConnectionPhasePricingPanel config={config} onChange={setConfig} />
       </section>
 
       <details className="rounded-2xl border border-slate-200/90 bg-slate-50/50 dark:border-white/10 dark:bg-white/[0.02]">

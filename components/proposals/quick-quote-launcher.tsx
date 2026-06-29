@@ -10,6 +10,7 @@ import {
   loadInstallerRateCard,
 } from "@/lib/installer-rate-card-client";
 import { createQuickRequirementProposal } from "@/lib/quick-requirement-proposal-client";
+import { detectConnectionPhaseFromText, type ConnectionPhase } from "@/lib/connection-phase-pricing";
 import {
   copyPublicProposalLink,
   openWhatsAppWithProposal,
@@ -66,18 +67,27 @@ type SuccessState = {
   systemKw: number;
   netCostInr: number;
   customerName: string;
+  phaseSurchargeInr: number;
+  phone?: string;
 };
 
 export function QuickQuoteLauncher({
   className,
   labels: labelOverrides,
   leadId,
+  customerName,
+  customerPhone,
+  connectionPhaseHint,
   onCreated,
   compact,
 }: {
   className?: string;
   labels?: Partial<QuickQuoteLauncherLabels>;
   leadId?: string | null;
+  customerName?: string | null;
+  customerPhone?: string | null;
+  /** Bill OCR or CRM connection type text — auto-applies three-phase when detected. */
+  connectionPhaseHint?: string | null;
   onCreated?: (proposalId: string) => void;
   compact?: boolean;
 }) {
@@ -121,14 +131,24 @@ export function QuickQuoteLauncher({
       .join(" · ");
   }, [tiles, catalog]);
 
+  const resolvedConnectionPhase = useMemo((): ConnectionPhase | undefined => {
+    const detected = detectConnectionPhaseFromText(connectionPhaseHint);
+    return detected ?? undefined;
+  }, [connectionPhaseHint]);
+
+  const resolvedCustomerName = customerName?.trim() || undefined;
+
   async function handleCreate(kw: number) {
     if (busyKw != null) return;
     setBusyKw(kw);
     setSuccess(null);
     try {
+      const preview = previewQuickRequirementQuote(kw, catalog);
       const result = await createQuickRequirementProposal({
         kw,
+        ...(resolvedCustomerName ? { customerName: resolvedCustomerName } : {}),
         ...(leadId?.trim() ? { leadId: leadId.trim() } : {}),
+        ...(resolvedConnectionPhase ? { connectionPhase: resolvedConnectionPhase } : {}),
       });
       if (!result.ok || !result.id) {
         if (result.code === "proposal_limit_reached" || result.code === "trial_expired" || result.code === "no_subscription") {
@@ -146,7 +166,9 @@ export function QuickQuoteLauncher({
         shareUrl,
         systemKw: result.systemKw ?? kw,
         netCostInr: result.netCostInr ?? 0,
-        customerName: result.customerName ?? "New customer",
+        customerName: result.customerName ?? resolvedCustomerName ?? "New customer",
+        phaseSurchargeInr: preview.phaseSurchargeInr,
+        phone: customerPhone?.trim() || undefined,
       });
       onCreated?.(result.id);
       toast.success(labels.createdTitle, `${kw} kW · ${formatQuickQuoteInr(result.netCostInr ?? 0)} net`);
@@ -162,6 +184,9 @@ export function QuickQuoteLauncher({
       netCostInr: s.netCostInr,
       annualSavingInr: 0,
       paybackLabel: "—",
+      phone: s.phone,
+      phaseSurchargeInr: s.phaseSurchargeInr > 0 ? s.phaseSurchargeInr : undefined,
+      connectionPhase: s.phaseSurchargeInr > 0 ? "three_phase" : undefined,
     };
   }
 
