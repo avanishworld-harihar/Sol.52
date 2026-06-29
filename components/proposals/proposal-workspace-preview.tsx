@@ -6,7 +6,7 @@ import { ProposalHubEngagementMetrics } from "@/components/proposals/proposal-hu
 import type { ProposalListCardProps } from "@/components/proposals/proposal-list-card";
 import { buildProposalEditHref } from "@/lib/proposal-edit-url";
 import { Button } from "@/components/ui/button";
-import { dealHealthScore, healthScoreTone, hubNextActionHint, statusVisual } from "@/lib/proposal-hub-insights";
+import { dealHealthScore, healthScoreTone, hubNextActionHintForRow, statusVisual } from "@/lib/proposal-hub-insights";
 import { shareMetricsFromHubRow } from "@/lib/proposal-hub-share";
 import { markProposalSent, openWhatsAppWithProposal } from "@/lib/proposal-share-actions";
 import { normalizeProposalStatus } from "@/lib/proposal-status";
@@ -87,7 +87,7 @@ export function ProposalWorkspacePreview({
       : null;
   const pct = dealHealthScore(row);
   const healthTone = healthScoreTone(pct);
-  const dynamicHint = hubNextActionHint(st, lang);
+  const dynamicHint = hubNextActionHintForRow(row, lang);
 
   const metrics = [
     { label: labels.kw, value: `${row.system_kw}`, accent: false },

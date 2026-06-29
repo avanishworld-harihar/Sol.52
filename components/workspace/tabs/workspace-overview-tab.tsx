@@ -41,7 +41,7 @@ import {
   dealHealthScore,
   dealVelocity,
   closingConfidence,
-  hubIntelForStatus,
+  hubIntelForRow,
   isCommercialPreset,
   statusVisualLight,
   velocityVisual,
@@ -125,8 +125,8 @@ export function WorkspaceOverviewTab({
   const [sendingWhatsApp, setSendingWhatsApp] = useState(false);
 
   const intel = useMemo(
-    () => hubIntelForStatus(proposalStatus, (locale === "hi" ? "hi" : "en") as "en" | "hi"),
-    [proposalStatus, locale]
+    () => hubIntelForRow(row, (locale === "hi" ? "hi" : "en") as "en" | "hi"),
+    [row, locale]
   );
 
   const health = useMemo(() => dealHealthScore(row), [row]);

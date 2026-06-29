@@ -181,8 +181,62 @@ export function hubIntelForStatus(st: ProposalStatus, lang: "en" | "hi"): IntelI
   return lang === "hi" ? hi[st] : en[st];
 }
 
+/** True when workspace has enough economics to treat the quote as built (not an empty shell). */
+export function isQuoteReady(row: ProposalHubRow): boolean {
+  if (!row.system_kw || row.system_kw <= 0) return false;
+  const hasNet =
+    row.final_amount_inr != null && Number.isFinite(row.final_amount_inr) && row.final_amount_inr > 0;
+  const hasSaving =
+    row.annual_saving_inr != null && Number.isFinite(row.annual_saving_inr) && row.annual_saving_inr > 0;
+  return hasNet || hasSaving;
+}
+
+/**
+ * Context-aware recommendation — uses status plus engagement and quote completeness.
+ * Fixes "Finish the quote" when the installer already shared a ready proposal outside Send.
+ */
+export function hubIntelForRow(row: ProposalHubRow, lang: "en" | "hi"): IntelInsight {
+  const st = normalizeProposalStatus(row.proposal_status);
+  const views = row.view_count ?? 0;
+  const ready = isQuoteReady(row);
+
+  if (st === "draft" && views > 0) {
+    return lang === "hi"
+      ? {
+          title: "ग्राहक ने लिंक खोला",
+          body: "वे प्रस्ताव देख चुके हैं। सब्सिडी और पेबैक पर अभी कॉल करें।",
+          tone: "warn",
+        }
+      : {
+          title: "Customer opened the link",
+          body: "They viewed the proposal online. Call now to answer subsidy and payback questions.",
+          tone: "warn",
+        };
+  }
+
+  if (st === "draft" && ready) {
+    return lang === "hi"
+      ? {
+          title: "फॉलो-अप करें",
+          body: "कोट तैयार लगता है। ग्राहक को PDF/लिंक मिला या नहीं पुष्टि करें। ट्रैकिंग के लिए नीचे Send दबाएँ।",
+          tone: "action",
+        }
+      : {
+          title: "Follow up on your send",
+          body: "Your quote looks ready. Confirm the customer got your PDF or link. Tap Send below to keep tracking in sync.",
+          tone: "action",
+        };
+  }
+
+  return hubIntelForStatus(st, lang);
+}
+
 export function hubNextActionHint(st: ProposalStatus, lang: "en" | "hi"): string {
   return hubIntelForStatus(st, lang).body;
+}
+
+export function hubNextActionHintForRow(row: ProposalHubRow, lang: "en" | "hi"): string {
+  return hubIntelForRow(row, lang).body;
 }
 
 // ─── E3: Health, velocity, confidence, preset helpers ────────────────────────
@@ -412,13 +466,18 @@ export function proposalEngagementFromRow(row: ProposalHubRow, lang: "en" | "hi"
   const st = normalizeProposalStatus(row.proposal_status);
   const views = row.view_count ?? 0;
   const lastViewedLabel = formatRelativeView(row.last_viewed_at, lang);
+  const ready = isQuoteReady(row);
   let shareLabel =
     lang === "hi"
       ? st === "draft"
-        ? "अभी शेयर नहीं"
+        ? ready
+          ? "ऐप में ट्रैक नहीं"
+          : "अभी शेयर नहीं"
         : "लिंक भेजा"
       : st === "draft"
-        ? "Not shared yet"
+        ? ready
+          ? "Not tracked in app"
+          : "Not shared yet"
         : "Link shared";
   if (views > 0) {
     shareLabel =

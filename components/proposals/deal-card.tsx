@@ -37,7 +37,7 @@ import {
   dealAgeInDays,
   dealHealthScore,
   dealVelocity,
-  hubIntelForStatus,
+  hubIntelForRow,
   isCommercialPreset,
   formatInrCompact,
   statusVisualLight,
@@ -167,7 +167,7 @@ function PipelineCard({ row, active, lang = "en", onClick, delay = 0 }: DealCard
   const velVis = velocityVisual(velocity);
   const confidence = closingConfidence(row);
   const age = dealAgeInDays(row.generated_at);
-  const intel = hubIntelForStatus(st, lang);
+  const intel = hubIntelForRow(row, lang);
   const manageHref = buildProposalEditHref({ leadId: row.lead_id, proposalId: row.id });
   
   return (

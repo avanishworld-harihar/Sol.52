@@ -4,12 +4,11 @@ import {
   closingConfidence,
   dealHealthScore,
   dealVelocity,
-  hubIntelForStatus,
+  hubIntelForRow,
   proposalEngagementFromRow,
   velocityVisual,
   type ProposalHubRow,
 } from "@/lib/proposal-hub-insights";
-import { normalizeProposalStatus } from "@/lib/proposal-status";
 import { cn } from "@/lib/utils";
 import { motion, useReducedMotion } from "framer-motion";
 import { Sparkles, Zap } from "lucide-react";
@@ -34,8 +33,7 @@ export function ProposalHubIntelPanel({
     );
   }
 
-  const st = normalizeProposalStatus(row.proposal_status);
-  const intel = hubIntelForStatus(st, lang);
+  const intel = hubIntelForRow(row, lang);
   const health = dealHealthScore(row);
   const confidence = closingConfidence(row);
   const vel = velocityVisual(dealVelocity(row));
