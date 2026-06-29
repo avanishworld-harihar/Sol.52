@@ -14,6 +14,7 @@ import { buildNewProposalHref, prepareNewProposalNavigation } from "@/lib/propos
 import { motion } from "framer-motion";
 import { FileText, Plus, Search, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { ReactNode } from "react";
 
 export type EmptyStateVariant = "no-proposals" | "no-results";
 
@@ -21,10 +22,13 @@ export function HubEmptyState({
   variant = "no-proposals",
   onClearFilter,
   className,
+  quickQuote,
 }: {
   variant?: EmptyStateVariant;
   onClearFilter?: () => void;
   className?: string;
+  /** Requirement quick-quote launcher (1-tap kW chips). */
+  quickQuote?: ReactNode;
 }) {
   if (variant === "no-results") {
     return (
@@ -92,16 +96,16 @@ export function HubEmptyState({
           Your proposal pipeline is empty
         </h2>
         <p className="mt-3 max-w-md text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-          Generate your first solar proposal in under 2 minutes. Upload a customer bill,
-          configure the system, and get a professional shareable proposal instantly.
+          Start with a quick kW quote from your rate card — no bill needed. Or open the full builder for bill-based proposals.
         </p>
 
-        {/* Steps */}
+        {quickQuote ? <div className="mt-6 w-full max-w-lg text-left">{quickQuote}</div> : null}
+
         <div className="mt-8 grid max-w-xs grid-cols-3 gap-4 text-center">
           {[
-            { step: "1", label: "Upload bill" },
-            { step: "2", label: "Set system" },
-            { step: "3", label: "Generate" },
+            { step: "1", label: "Pick kW" },
+            { step: "2", label: "Add name" },
+            { step: "3", label: "Share" },
           ].map(({ step, label }) => (
             <div key={step} className="flex flex-col items-center gap-1.5">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-600 text-xs font-black text-white dark:bg-teal-500">
@@ -116,13 +120,12 @@ export function HubEmptyState({
           href={buildNewProposalHref()}
           onClick={prepareNewProposalNavigation}
           className={cn(
-            "mt-8 inline-flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-bold",
-            "bg-teal-600 text-white shadow-lg shadow-teal-500/25 transition hover:bg-teal-700 active:scale-[0.98]",
-            "dark:bg-teal-500 dark:shadow-teal-500/20 dark:hover:bg-teal-400"
+            "mt-6 inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-teal-300 hover:text-teal-800",
+            "dark:border-white/15 dark:bg-white/5 dark:text-slate-200 dark:hover:border-teal-500/40"
           )}
         >
           <Plus className="h-4 w-4" aria-hidden />
-          Create first proposal
+          Full builder (bill or custom)
         </Link>
       </div>
     </motion.div>

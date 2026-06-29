@@ -4,6 +4,8 @@ import { DashboardCommandCenter } from "@/components/dashboard-command-center";
 import { CrmCommandCenter } from "@/components/crm/crm-command-center";
 import { DashboardOperationalInsights } from "@/components/dashboard-operational-insights";
 import { DashboardQuickActions } from "@/components/dashboard-quick-actions";
+import { duplicateSheetExtrasFromT, quickQuoteLabelsFromT } from "@/lib/proposal-hub-i18n";
+import { QuickQuoteLauncher } from "@/components/proposals/quick-quote-launcher";
 import { DashboardSectionTitle } from "@/components/dashboard-section-title";
 import { OfflineDataNotice } from "@/components/offline-data-notice";
 import { GlassProjectCard, type GlassProjectSummary } from "@/components/glass-project-card";
@@ -390,6 +392,10 @@ function DashboardPageContent() {
         </DashboardItem>
 
         <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-tertiary">
+          <QuickQuoteLauncher
+            className="mb-4"
+            labels={quickQuoteLabelsFromT(t)}
+          />
           <div className="glass-panel-premium p-4 sm:p-5 md:p-6">
             <DashboardSectionTitle tier="quiet">{t("dashboard_quickActions")}</DashboardSectionTitle>
             <p className="mb-4 -mt-1 text-xs font-medium text-slate-500 dark:text-[#8B949E] sm:text-sm">

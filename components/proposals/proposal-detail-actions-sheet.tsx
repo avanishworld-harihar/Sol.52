@@ -1,9 +1,13 @@
 "use client";
 
+import { ProposalDuplicateModal, type ProposalDuplicateModalLabels } from "@/components/proposals/proposal-duplicate-modal";
 import { useToast } from "@/components/ui/toast-center";
+import { buildProposalEditHref } from "@/lib/proposal-edit-url";
+import type { DuplicateProposalMode } from "@/lib/duplicate-proposal";
 import {
   deleteProposalById,
   downloadProposalPpt,
+  duplicateProposalById,
   markProposalSent,
   openWhatsAppWithProposal,
   type ProposalShareMetrics,
@@ -56,30 +60,40 @@ export type ProposalDetailActionsSheetLabels = {
   deleteDone?: string;
   sendDone?: string;
   pptFailed?: string;
+  duplicateDone?: string;
+  duplicateDoneTemplate?: string;
+  duplicateDoneRevision?: string;
+  duplicateFailed?: string;
+  duplicateModal?: ProposalDuplicateModalLabels;
 };
 
 export function ProposalDetailActionsSheet({
   open,
   onClose,
   proposalId,
+  leadId,
   labels,
   primaryIsSend,
   shareMetrics,
   onSent,
+  onDuplicated,
 }: {
   open: boolean;
   onClose: () => void;
   proposalId: string;
+  leadId?: string | null;
   labels: ProposalDetailActionsSheetLabels;
   primaryIsSend: boolean;
   shareMetrics: ProposalShareMetrics;
   onSent?: () => void;
+  onDuplicated?: (newProposalId: string) => void;
 }) {
   const toast = useToast();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const publicHref = `/proposal/${proposalId}`;
-  const [busy, setBusy] = useState<"send" | "ppt" | "delete" | null>(null);
+  const [busy, setBusy] = useState<"send" | "ppt" | "delete" | "duplicate" | null>(null);
+  const [duplicateModalOpen, setDuplicateModalOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -106,11 +120,6 @@ export function ProposalDetailActionsSheet({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, handleClose]);
-
-  function soon(feature: string) {
-    toast.info(labels.comingSoon, feature);
-    handleClose();
-  }
 
   function jumpToPricing() {
     document.getElementById("bom")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -143,6 +152,32 @@ export function ProposalDetailActionsSheet({
     }
   }
 
+  async function handleDuplicateConfirm(mode: DuplicateProposalMode) {
+    setBusy("duplicate");
+    try {
+      const result = await duplicateProposalById(proposalId, mode);
+      if (!result.ok || !result.id) {
+        throw new Error(result.error || "duplicate_failed");
+      }
+      const doneMsg =
+        mode === "revision"
+          ? (labels.duplicateDoneRevision ??
+            "Revision created — bill audit and savings kept for this customer.")
+          : (labels.duplicateDoneTemplate ??
+            labels.duplicateDone ??
+            "Template ready — add a new bill and customer details.");
+      toast.success(labels.duplicate, doneMsg);
+      onDuplicated?.(result.id);
+      setDuplicateModalOpen(false);
+      handleClose();
+      router.push(buildProposalEditHref({ proposalId: result.id, leadId: mode === "revision" ? leadId : null }));
+    } catch (e) {
+      toast.error(labels.duplicateFailed ?? "Could not duplicate", e instanceof Error ? e.message : "");
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function handleDelete() {
     const msg = labels.deleteConfirm ?? "Remove this proposal? This cannot be undone.";
     if (!window.confirm(msg)) return;
@@ -161,9 +196,24 @@ export function ProposalDetailActionsSheet({
     }
   }
 
-  if (!mounted || !open) return null;
+  if (!mounted) return null;
 
-  return createPortal(
+  const duplicateModalLabels: ProposalDuplicateModalLabels = labels.duplicateModal ?? {
+    title: "Duplicate proposal",
+    subtitle: "Choose how to copy this quote.",
+    templateTitle: "As template",
+    templateDesc: "Equipment, pricing & layout only — no bill audit or customer data.",
+    revisionTitle: "As revision",
+    revisionDesc: "Same customer — keeps bill audit, savings, and CRM link.",
+    cancel: "Cancel",
+    confirm: "Create copy",
+    confirming: "Creating…",
+  };
+
+  return (
+    <>
+      {open
+        ? createPortal(
     <div
       className={cn("fixed inset-0 flex items-end justify-center md:items-center md:p-6", SHEET_Z)}
       role="presentation"
@@ -217,7 +267,13 @@ export function ProposalDetailActionsSheet({
             <FileDown className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400" aria-hidden />
             {busy === "ppt" ? "Downloading…" : labels.pdfQuote}
           </ActionRow>
-          <ActionRow onClick={() => soon(labels.duplicate)}>
+          <ActionRow
+            disabled={busy === "duplicate"}
+            onClick={() => {
+              handleClose();
+              setDuplicateModalOpen(true);
+            }}
+          >
             <Copy className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400" aria-hidden />
             {labels.duplicate}
           </ActionRow>
@@ -233,5 +289,17 @@ export function ProposalDetailActionsSheet({
       </div>
     </div>,
     document.body
+        )
+        : null}
+      <ProposalDuplicateModal
+        open={duplicateModalOpen}
+        onClose={() => {
+          if (busy !== "duplicate") setDuplicateModalOpen(false);
+        }}
+        onConfirm={(mode) => void handleDuplicateConfirm(mode)}
+        labels={duplicateModalLabels}
+        busy={busy === "duplicate"}
+      />
+    </>
   );
 }

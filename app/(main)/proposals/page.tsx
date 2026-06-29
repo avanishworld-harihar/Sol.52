@@ -53,6 +53,7 @@ import { HubViewToggle, readViewMode, writeViewMode, type HubViewMode } from "@/
 import { HubSearchFilter } from "@/components/proposals/hub-search-filter";
 import { HubEmptyState } from "@/components/proposals/hub-empty-state";
 import { DealCard } from "@/components/proposals/deal-card";
+import { QuickQuoteLauncher } from "@/components/proposals/quick-quote-launcher";
 
 // Lib
 import { countHiddenByDedupe, dedupeLatestProposals } from "@/lib/proposal-hub-dedupe";
@@ -61,6 +62,7 @@ import { normalizeProposalStatus } from "@/lib/proposal-status";
 import { useLanguage } from "@/lib/language-context";
 import { cn } from "@/lib/utils";
 import type { ProposalStatus } from "@/lib/proposal-status";
+import { duplicateSheetExtrasFromT, quickQuoteLabelsFromT } from "@/lib/proposal-hub-i18n";
 
 const PROPOSALS_SWR_KEY = "/api/proposals";
 
@@ -169,23 +171,19 @@ export default function ProposalsHubPage() {
       copyShareLink: t("proposals_copyShareLink"),
       copyShareLinkDone: t("proposals_copyShareLinkDone"),
       pptFailed: t("proposals_pptFailed"),
-      duplicateDone: t("proposals_duplicateDone"),
-      duplicateDoneTemplate: t("proposals_duplicateDoneTemplate"),
-      duplicateDoneRevision: t("proposals_duplicateDoneRevision"),
-      duplicateFailed: t("proposals_duplicateFailed"),
-      duplicateModal: {
-        title: t("proposals_duplicateModalTitle"),
-        subtitle: t("proposals_duplicateModalSubtitle"),
-        templateTitle: t("proposals_duplicateTemplateTitle"),
-        templateDesc: t("proposals_duplicateTemplateDesc"),
-        revisionTitle: t("proposals_duplicateRevisionTitle"),
-        revisionDesc: t("proposals_duplicateRevisionDesc"),
-        cancel: t("proposals_duplicateCancel"),
-        confirm: t("proposals_duplicateConfirm"),
-        confirming: t("proposals_duplicateConfirming"),
-      },
+      ...duplicateSheetExtrasFromT(t),
     }),
     [t]
+  );
+
+  const quickQuoteLabels = useMemo(() => quickQuoteLabelsFromT(t), [t]);
+
+  const handleQuickQuoteCreated = useCallback(
+    (id: string) => {
+      void mutate();
+      setFocusId(id);
+    },
+    [mutate]
   );
 
   const pipelineLabels = useMemo(
@@ -310,6 +308,13 @@ export default function ProposalsHubPage() {
       {/* ── Compact command bar: lifecycle + controls ─────────────────── */}
       {hasData || isLoading ? (
         <div className="proposal-hub-command-bar mt-2 space-y-2.5 rounded-xl border px-3 py-2.5 sm:px-4">
+          {!isLoading && allRows.length > 0 ? (
+            <QuickQuoteLauncher
+              compact
+              labels={quickQuoteLabels}
+              onCreated={handleQuickQuoteCreated}
+            />
+          ) : null}
           <WorkflowLifecycleStrip surface="proposals-hub" proposalStatus={focused?.proposal_status} />
           {!isLoading && allRows.length > 0 ? (
             <>
@@ -366,7 +371,12 @@ export default function ProposalsHubPage() {
       {/* ── Empty state (no proposals at all) ───────────────────────────── */}
       {!isLoading && allRows.length === 0 ? (
         <div className="mt-6">
-          <HubEmptyState variant="no-proposals" />
+          <HubEmptyState
+            variant="no-proposals"
+            quickQuote={
+              <QuickQuoteLauncher labels={quickQuoteLabels} onCreated={handleQuickQuoteCreated} />
+            }
+          />
         </div>
       ) : null}
 

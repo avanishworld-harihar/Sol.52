@@ -1,0 +1,103 @@
+import { emptyMonthlyUnits } from "@/lib/bill-parse";
+import { getInstallerRateCard } from "@/lib/installer-rate-card-store";
+import { defaultLineItemsFromSeed } from "@/lib/proposal-pricing-lines";
+import type { ProposalPricingInsert } from "@/lib/proposal-pricing-merge";
+import {
+  applyResidentialFlagsToLayout,
+  normalizeResidentialConfig,
+} from "@/lib/residential-proposal-config";
+import { buildResidentialConfigForQuickQuote } from "@/lib/requirement-size-presets";
+import { residentialCostBreakdown } from "@/lib/residential-deck-helpers";
+import { syncResidentialSolarToLineItems } from "@/lib/residential-solar-engine";
+import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
+import { summarizeProposalDeck } from "@/lib/proposal-ppt";
+import { getPresetDefaultLayout, type ProposalPresetId } from "@/lib/proposal-preset-engine";
+import { templateCustomerName } from "@/lib/duplicate-proposal";
+import type { ResidentialProposalConfig } from "@/lib/residential-requirements-schema";
+
+export type QuickRequirementProposalPayload = {
+  kw: number;
+  customerName?: string;
+  presetId?: ProposalPresetId;
+  leadId?: string | null;
+};
+
+export type QuickRequirementProposalBuild = {
+  pptInput: PremiumProposalPptInput;
+  summary: ReturnType<typeof summarizeProposalDeck>;
+  residentialConfig: ResidentialProposalConfig;
+  pricingInsert: ProposalPricingInsert;
+  presetId: ProposalPresetId;
+};
+
+export async function buildQuickRequirementProposal(
+  input: QuickRequirementProposalPayload
+): Promise<QuickRequirementProposalBuild> {
+  const kw = Math.max(0.5, Math.min(10000, Number(input.kw) || 5));
+  const presetId = input.presetId ?? "residential_sales_premium";
+  const rateCard = await getInstallerRateCard();
+  const catalog = rateCard?.residentialCatalog ?? null;
+
+  const residentialConfig = buildResidentialConfigForQuickQuote(kw, catalog);
+  const breakdown = residentialCostBreakdown(residentialConfig);
+  const customerName = (input.customerName?.trim() || templateCustomerName()).slice(0, 120);
+
+  const baseLayout = getPresetDefaultLayout(presetId);
+  const proposalLayout = applyResidentialFlagsToLayout(baseLayout, residentialConfig);
+
+  const pptInput: PremiumProposalPptInput = {
+    customerName,
+    location: "",
+    systemKw: residentialConfig.solar.plantCapacityKw,
+    yearlyBill: 0,
+    afterSolar: 0,
+    saving: 0,
+    paybackYears: 0,
+    monthlyUnits: emptyMonthlyUnits(),
+    dataSource: "requirement",
+    grossSystemCostInr: breakdown.grossInr,
+    pmSuryaGharSubsidyInr: breakdown.subsidyInr,
+    netCostInr: breakdown.netInr,
+    commercialNetPayableInr: breakdown.netInr,
+    residentialConfig: normalizeResidentialConfig(residentialConfig),
+    proposalLayout,
+    pricingSource: "rate_card",
+  };
+
+  const summary = summarizeProposalDeck(pptInput);
+  const grossWithPhase = breakdown.grossInr + breakdown.phaseSurchargeInr;
+  const w = Math.round(residentialConfig.solar.plantCapacityKw * 1000);
+  const pricePerWatt = w > 0 ? Math.round((breakdown.grossInr / w) * 10000) / 10000 : 0;
+
+  const seedLines = defaultLineItemsFromSeed({
+    hardware_inr: grossWithPhase,
+    installation_inr: 0,
+    structure_inr: 0,
+    subsidy_inr: breakdown.subsidyInr,
+    discount_inr: breakdown.discountInr,
+    panelBrandHint: residentialConfig.solar.brand,
+  });
+  const line_items = syncResidentialSolarToLineItems(residentialConfig.solar, seedLines);
+
+  const pricingInsert: ProposalPricingInsert = {
+    proposal_id: "",
+    system_kw: residentialConfig.solar.plantCapacityKw,
+    price_per_watt_inr: pricePerWatt,
+    hardware_inr: grossWithPhase,
+    installation_inr: 0,
+    structure_inr: 0,
+    subsidy_inr: breakdown.subsidyInr,
+    discount_inr: breakdown.discountInr,
+    final_amount_inr: breakdown.netInr,
+    manual_final_override: false,
+    line_items,
+  };
+
+  return {
+    pptInput,
+    summary,
+    residentialConfig,
+    pricingInsert,
+    presetId,
+  };
+}

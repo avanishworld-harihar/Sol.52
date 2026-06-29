@@ -49,10 +49,10 @@ export function writeResidentialBrandCatalog(catalog: ResidentialBrandCatalog | 
 }
 
 /** Apply installer rate card onto a builder config (keeps plant kW, subsidy, etc.). */
-export function mergeInstallerBrandCatalog(
-  config: ResidentialProposalConfig
+export function mergeInstallerBrandCatalogWith(
+  config: ResidentialProposalConfig,
+  saved: ResidentialBrandCatalog | null | undefined
 ): ResidentialProposalConfig {
-  const saved = getCachedResidentialBrandCatalog();
   const fallback = defaultBrandCatalog(config.solar.brandId ?? "adani");
   const catalog = saved?.entries?.length ? saved : fallback;
   const merged: ResidentialProposalConfig = {
@@ -86,4 +86,10 @@ export function mergeInstallerBrandCatalog(
           },
   };
   return applyEquipmentDefaults(merged, catalog.equipmentDefaults);
+}
+
+export function mergeInstallerBrandCatalog(
+  config: ResidentialProposalConfig
+): ResidentialProposalConfig {
+  return mergeInstallerBrandCatalogWith(config, getCachedResidentialBrandCatalog());
 }

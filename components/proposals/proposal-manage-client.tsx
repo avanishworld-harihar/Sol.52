@@ -16,6 +16,7 @@ import { WorkflowLifecycleStrip } from "@/components/workflow-lifecycle-strip";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast-center";
 import { useLanguage } from "@/lib/language-context";
+import { duplicateSheetExtrasFromT } from "@/lib/proposal-hub-i18n";
 import { mergeProposalPricingIntoPptInput } from "@/lib/proposal-pricing-merge";
 import type { ProposalPricingRow } from "@/lib/proposal-pricing-schema";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
@@ -148,7 +149,8 @@ export function ProposalManageClient({
       deleteDone: t("proposals_deleteDone"),
       deleteFailed: t("proposals_deleteFailed"),
       sendDone: t("proposals_sendDone"),
-      pptFailed: t("proposals_pptFailed")
+      pptFailed: t("proposals_pptFailed"),
+      ...duplicateSheetExtrasFromT(t),
     }),
     [t]
   );
