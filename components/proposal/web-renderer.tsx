@@ -61,6 +61,7 @@ import {
 import { JourneyBridge, ProposalJourneyProgress } from "@/components/proposal/proposal-journey";
 import { isProposalBillAuditBacked } from "@/lib/proposal-bill-audit-eligibility";
 import { PROPOSAL_PREMIUM_DOC_CLASS } from "@/lib/proposal-premium-design";
+import { resolveSalesPremiumStyle } from "@/lib/sales-premium-styles";
 
 // ── Residential section components (re-exported from proposal-view.tsx) ───────
 import {
@@ -488,12 +489,22 @@ function ProposalWebRendererInner({
   setDisplayInstallerLogoUrl: (u: string) => void;
   showSurveyWorkflowSection: boolean;
 }) {
-  // Theme sync
+  // Theme sync — Ember defaults dark; Horizon defaults light; others follow saved preference.
   useEffect(() => {
-    const preferred = readProposalWebTheme() === "dark";
+    const rawInput = (doc.raw_input as PremiumProposalPptInput) ?? ({} as PremiumProposalPptInput);
+    const spStyle =
+      (doc.preset_id as ProposalPresetId) === "residential_sales_premium"
+        ? resolveSalesPremiumStyle(rawInput)
+        : null;
+    const preferred =
+      spStyle === "savings_focus"
+        ? true
+        : spStyle === "journey"
+          ? false
+          : readProposalWebTheme() === "dark";
     setDarkMode(preferred);
     applyProposalRouteShellTheme(preferred ? "dark" : "light");
-  }, []);
+  }, [doc.preset_id, doc.raw_input]);
 
   useEffect(() => {
     writeProposalWebTheme(darkMode ? "dark" : "light");
@@ -525,6 +536,11 @@ function ProposalWebRendererInner({
   );
 
   const presetId = doc.preset_id as ProposalPresetId;
+  const rawInput =
+    (doc.raw_input as import("@/lib/proposal-ppt").PremiumProposalPptInput) ??
+    ({} as import("@/lib/proposal-ppt").PremiumProposalPptInput);
+  const salesPremiumStyle =
+    presetId === "residential_sales_premium" ? resolveSalesPremiumStyle(rawInput) : null;
 
   // Installer data from IR — overlay local branding (logo + name) when saved in More tab
   const branding = readProposalBrandingSettings();
@@ -572,7 +588,6 @@ function ProposalWebRendererInner({
   }
 
   // Wave 3 P6: resolve story variant from pptInput fields (additive, null-safe)
-  const rawInput = (doc.raw_input as import("@/lib/proposal-ppt").PremiumProposalPptInput) ?? ({} as import("@/lib/proposal-ppt").PremiumProposalPptInput);
   const storyVariant = resolveStoryVariant(
     presetId,
     rawInput.storySegment ?? null,
@@ -674,6 +689,7 @@ function ProposalWebRendererInner({
         }${darkMode ? "text-white" : ""}`}
         data-theme={darkMode ? "dark" : "light"}
         data-preset={presetId}
+        data-sp-style={salesPremiumStyle ?? undefined}
       >
         {/* Floating controls */}
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2 print:hidden">

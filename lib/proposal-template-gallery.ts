@@ -61,7 +61,7 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
   {
     key: "pearl",
     presetId: "residential_sales_premium",
-    salesPremiumStyle: "institutional",
+    salesPremiumStyle: "pearl",
     category: "residential",
     name: "Pearl",
     description: "Clean 5-page institutional sales deck — white & gray minimalist layout.",
@@ -70,7 +70,7 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
   {
     key: "slate",
     presetId: "residential_sales_premium",
-    salesPremiumStyle: "institutional",
+    salesPremiumStyle: "slate",
     category: "residential",
     name: "Slate",
     description:
@@ -166,6 +166,7 @@ export function resolveActiveGalleryKey(
   if (presetId === "residential_sales_premium") {
     if (salesPremiumStyle === "journey") return "horizon";
     if (salesPremiumStyle === "savings_focus") return "ember";
+    if (salesPremiumStyle === "pearl") return "pearl";
     return "slate";
   }
   return "slate";

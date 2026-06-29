@@ -214,8 +214,10 @@ export type PremiumProposalPptInput = {
   /** Central rate card vs prices locked on this proposal only. */
   pricingSource?: "rate_card" | "customer_override";
 
-  /** Sales Premium visual style (institutional | journey | savings_focus). */
+  /** Sales Premium visual style (pearl | slate | journey | savings_focus). */
   salesPremiumStyle?: import("@/lib/sales-premium-styles").SalesPremiumStyleId;
+  /** Gallery theme key when the proposal was generated (Pearl, Slate, Horizon, …). */
+  galleryThemeKey?: string;
 };
 
 export type ProposalDeckSummary = {

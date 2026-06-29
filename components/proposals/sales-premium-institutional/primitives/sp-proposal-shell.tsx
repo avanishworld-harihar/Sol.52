@@ -4,14 +4,16 @@ import { Download } from "lucide-react";
 
 type Props = {
   children: React.ReactNode;
+  variant?: "pearl" | "slate";
 };
 
-export function SpProposalShell({ children }: Props) {
+export function SpProposalShell({ children, variant = "slate" }: Props) {
+  const label = variant === "pearl" ? "Pearl" : "Slate";
   return (
     <div className="sp-proposal-shell w-full">
       <div className="sp-toolbar print:hidden">
         <div className="sp-toolbar-inner">
-          <p className="sp-toolbar-label">Slate</p>
+          <p className="sp-toolbar-label">{label}</p>
           <button
             type="button"
             onClick={() => {

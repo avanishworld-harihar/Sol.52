@@ -15,6 +15,7 @@ import {
   recordProposalCreated,
 } from "@/lib/billing";
 import { proposalExtrasShape } from "@/lib/proposal-extras-schema";
+import { normalizeSalesPremiumStyle } from "@/lib/sales-premium-styles";
 import { bumpLeadStatus, upsertPipelineProject } from "@/lib/supabase";
 import { appendActivityEvent } from "@/lib/followup-store";
 import { createProposal, listRecentProposals } from "@/lib/proposals-store";
@@ -100,7 +101,6 @@ const bodySchema = z.object({
   installerName: z.string().max(120).optional(),
   installerTagline: z.string().max(160).optional(),
   installerContact: z.string().max(220).optional(),
-  galleryThemeKey: z.string().max(40).optional(),
   verifiedPhone: z.string().max(20).optional(),
   verifiedEmail: z.string().max(120).optional(),
   deviceFingerprint: z.string().max(200).optional(),
@@ -143,10 +143,15 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const { salesPremiumStyle: rawSalesPremiumStyle, ...proposalFields } = payload;
+
     const pptInput: PremiumProposalPptInput = {
-      ...payload,
+      ...proposalFields,
       monthlyUnits: payload.monthlyUnits as MonthlyUnits,
-      monthlyAuditOverrides: auditOverrides
+      monthlyAuditOverrides: auditOverrides,
+      ...(rawSalesPremiumStyle
+        ? { salesPremiumStyle: normalizeSalesPremiumStyle(rawSalesPremiumStyle) }
+        : {}),
     };
     const summary = summarizeProposalDeck(pptInput);
 

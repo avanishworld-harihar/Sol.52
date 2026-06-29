@@ -5,11 +5,14 @@ import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 
 /** Visual style within Sales Premium (`preset_id = residential_sales_premium`). */
-export const SALES_PREMIUM_STYLE_IDS = ["institutional", "journey", "savings_focus"] as const;
+export const SALES_PREMIUM_STYLE_IDS = ["pearl", "slate", "journey", "savings_focus"] as const;
 
 export type SalesPremiumStyleId = (typeof SALES_PREMIUM_STYLE_IDS)[number];
 
-export const DEFAULT_SALES_PREMIUM_STYLE: SalesPremiumStyleId = "institutional";
+/** @deprecated Stored on older proposals — maps to Slate at read time. */
+export type LegacySalesPremiumStyleId = "institutional";
+
+export const DEFAULT_SALES_PREMIUM_STYLE: SalesPremiumStyleId = "slate";
 
 const STYLE_STORAGE_KEY = "ss_default_sales_premium_style_v1";
 
@@ -41,22 +44,35 @@ const SAVINGS_FOCUS_BLOCKS: ProposalBlockId[] = [
   "payment_terms",
 ];
 
+export type SalesPremiumInstitutionalVariant = "pearl" | "slate";
+
 export type SalesPremiumStyleMeta = {
   id: SalesPremiumStyleId;
   label: string;
   subtitle: string;
-  /** `institutional` = isolated 5-page doc; others = ProposalWebRenderer block loop. */
+  /** Pearl & Slate = isolated 5-page doc; Horizon & Ember = ProposalWebRenderer block loop. */
   renderer: "institutional" | "web_blocks";
+  institutionalVariant?: SalesPremiumInstitutionalVariant;
   flowBlocks: ProposalBlockId[];
   appendixBlocks: ProposalBlockId[];
 };
 
 export const SALES_PREMIUM_STYLE_REGISTRY: Record<SalesPremiumStyleId, SalesPremiumStyleMeta> = {
-  institutional: {
-    id: "institutional",
-    label: "Slate",
-    subtitle: "5-page minimalist PDF — audit, capital, BOM, execution.",
+  pearl: {
+    id: "pearl",
+    label: "Pearl",
+    subtitle: "Clean white 5-page deck — minimalist lines and blue accents.",
     renderer: "institutional",
+    institutionalVariant: "pearl",
+    flowBlocks: [],
+    appendixBlocks: [],
+  },
+  slate: {
+    id: "slate",
+    label: "Slate",
+    subtitle: "Apple-style HNI document — hero cover, audit chart, BOM & execution.",
+    renderer: "institutional",
+    institutionalVariant: "slate",
     flowBlocks: [],
     appendixBlocks: [],
   },
@@ -86,11 +102,18 @@ function isSalesPremiumStyleId(raw: string): raw is SalesPremiumStyleId {
   return (SALES_PREMIUM_STYLE_IDS as readonly string[]).includes(raw);
 }
 
+/** Normalize legacy `institutional` and unknown values. */
+export function normalizeSalesPremiumStyle(raw: string | null | undefined): SalesPremiumStyleId {
+  if (raw === "institutional") return "slate";
+  if (typeof raw === "string" && isSalesPremiumStyleId(raw)) return raw;
+  return DEFAULT_SALES_PREMIUM_STYLE;
+}
+
 export function readDefaultSalesPremiumStyle(): SalesPremiumStyleId {
   if (typeof window === "undefined") return DEFAULT_SALES_PREMIUM_STYLE;
   try {
     const raw = localStorage.getItem(STYLE_STORAGE_KEY)?.trim();
-    if (raw && isSalesPremiumStyleId(raw)) return raw;
+    if (raw) return normalizeSalesPremiumStyle(raw);
   } catch {
     /* ignore */
   }
@@ -99,7 +122,7 @@ export function readDefaultSalesPremiumStyle(): SalesPremiumStyleId {
 
 /**
  * Style used when generating a Sales Premium proposal — prefers the saved gallery
- * card (Slate / Horizon / …) so style storage cannot drift from the visible theme.
+ * card (Pearl / Slate / Horizon / Ember) so style storage cannot drift.
  */
 export function readActiveSalesPremiumStyle(): SalesPremiumStyleId {
   if (typeof window === "undefined") return DEFAULT_SALES_PREMIUM_STYLE;
@@ -107,7 +130,7 @@ export function readActiveSalesPremiumStyle(): SalesPremiumStyleId {
   if (galleryKey) {
     const item = galleryItemByKey(galleryKey);
     if (item?.presetId === "residential_sales_premium" && item.salesPremiumStyle) {
-      return item.salesPremiumStyle;
+      return normalizeSalesPremiumStyle(item.salesPremiumStyle);
     }
   }
   return readDefaultSalesPremiumStyle();
@@ -120,11 +143,26 @@ export function writeDefaultSalesPremiumStyle(id: SalesPremiumStyleId): void {
 }
 
 export function resolveSalesPremiumStyle(
-  input: Pick<PremiumProposalPptInput, "salesPremiumStyle"> | null | undefined
+  input:
+    | Pick<PremiumProposalPptInput, "salesPremiumStyle" | "galleryThemeKey">
+    | null
+    | undefined
 ): SalesPremiumStyleId {
-  const raw = input?.salesPremiumStyle;
-  if (typeof raw === "string" && isSalesPremiumStyleId(raw)) return raw;
+  if (input?.salesPremiumStyle) {
+    return normalizeSalesPremiumStyle(input.salesPremiumStyle);
+  }
+  const galleryKey = input?.galleryThemeKey?.trim();
+  if (galleryKey) {
+    const item = galleryItemByKey(galleryKey);
+    if (item?.presetId === "residential_sales_premium" && item.salesPremiumStyle) {
+      return normalizeSalesPremiumStyle(item.salesPremiumStyle);
+    }
+  }
   return DEFAULT_SALES_PREMIUM_STYLE;
+}
+
+export function institutionalVariantForStyle(style: SalesPremiumStyleId): SalesPremiumInstitutionalVariant {
+  return SALES_PREMIUM_STYLE_REGISTRY[style].institutionalVariant ?? "slate";
 }
 
 export function labelForSalesPremiumStyle(id: SalesPremiumStyleId): string {

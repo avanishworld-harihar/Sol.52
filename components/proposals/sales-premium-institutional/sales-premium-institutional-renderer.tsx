@@ -1,6 +1,10 @@
 "use client";
 
 import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposal-ppt";
+import {
+  institutionalVariantForStyle,
+  resolveSalesPremiumStyle,
+} from "@/lib/sales-premium-styles";
 import { transformToInstitutionalModel } from "@/lib/sales-premium-institutional/transform-to-institutional-model";
 import { SpProposalShell } from "@/components/proposals/sales-premium-institutional/primitives/sp-proposal-shell";
 import { SpCoverPage } from "@/components/proposals/sales-premium-institutional/pages/sp-cover-page";
@@ -16,21 +20,23 @@ export type SalesPremiumInstitutionalRendererProps = {
 };
 
 /**
- * Sales Premium Pearl — 5-page Apple Pro document.
- * Replaces legacy block-loop Sales Premium web renderer.
+ * Sales Premium Pearl / Slate — 5-page institutional document.
+ * Pearl = clean white minimalist; Slate = Apple Pro HNI layout.
  */
 export function SalesPremiumInstitutionalRenderer({
   pptInput,
   summary,
 }: SalesPremiumInstitutionalRendererProps) {
+  const style = resolveSalesPremiumStyle(pptInput);
+  const variant = institutionalVariantForStyle(style);
   const model = transformToInstitutionalModel(pptInput, summary);
 
   return (
-    <div className="sp-institutional-root w-full">
-      <SpProposalShell>
+    <div className={`sp-institutional-root sp-theme-${variant} w-full`}>
+      <SpProposalShell variant={variant}>
         <div className="sp-doc-canvas">
-          <SpCoverPage data={model.cover} />
-          <SpBillIntelligencePage data={model.bill} />
+          <SpCoverPage data={model.cover} variant={variant} />
+          <SpBillIntelligencePage data={model.bill} variant={variant} />
           <SpCapitalBreakdownPage data={model.capital} />
           <SpTechnicalBomPage data={model.technical} />
           <SpExecutionPage data={model.execution} />

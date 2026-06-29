@@ -4,7 +4,7 @@ import {
   type ProposalTemplateGalleryKey,
 } from "@/lib/proposal-template-gallery";
 import type { ResidentialTemplatePresetId } from "@/lib/proposal-default-preset-storage";
-import type { SalesPremiumStyleId } from "@/lib/sales-premium-styles";
+import { normalizeSalesPremiumStyle, type SalesPremiumStyleId } from "@/lib/sales-premium-styles";
 
 const STORAGE_KEY = "ss_default_proposal_template_gallery_key_v1";
 
@@ -42,7 +42,7 @@ export function resolveActiveTemplateGalleryKey(
   if (saved) {
     const item = galleryItemByKey(saved);
     if (item && item.category === "residential" && item.presetId === presetId) {
-      if (!item.salesPremiumStyle || item.salesPremiumStyle === salesPremiumStyle) {
+      if (!item.salesPremiumStyle || item.salesPremiumStyle === normalizeSalesPremiumStyle(salesPremiumStyle)) {
         return saved;
       }
     }

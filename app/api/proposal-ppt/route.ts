@@ -3,6 +3,7 @@ import { z } from "zod";
 import { buildPremiumProposalPptBuffer } from "@/lib/proposal-ppt";
 import { fetchMpAuditOverridesByRef } from "@/lib/mp-bill-audit-fetch";
 import { proposalExtrasShape } from "@/lib/proposal-extras-schema";
+import { normalizeSalesPremiumStyle } from "@/lib/sales-premium-styles";
 import type { MonthlyUnits } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -161,10 +162,15 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const { salesPremiumStyle: rawSalesPremiumStyle, ...proposalFields } = payload;
+
     const buffer = await buildPremiumProposalPptBuffer({
-      ...payload,
+      ...proposalFields,
       monthlyUnits: payload.monthlyUnits as MonthlyUnits,
-      monthlyAuditOverrides: auditOverrides
+      monthlyAuditOverrides: auditOverrides,
+      ...(rawSalesPremiumStyle
+        ? { salesPremiumStyle: normalizeSalesPremiumStyle(rawSalesPremiumStyle) }
+        : {}),
     });
     const fileName = `${safeName(payload.customerName)}-premium-proposal.pptx`;
     return new NextResponse(new Uint8Array(buffer), {

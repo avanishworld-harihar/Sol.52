@@ -19,7 +19,8 @@ export function SalesPremiumStyleThumbnail({ styleId, className }: Props) {
       )}
       aria-hidden
     >
-      {styleId === "institutional" ? <InstitutionalThumb /> : null}
+      {styleId === "pearl" ? <PearlThumb /> : null}
+      {styleId === "slate" ? <SlateThumb /> : null}
       {styleId === "journey" ? <JourneyThumb /> : null}
       {styleId === "savings_focus" ? <SavingsFocusThumb /> : null}
     </div>
@@ -43,7 +44,7 @@ function MiniSlide({
   );
 }
 
-function InstitutionalThumb() {
+function PearlThumb() {
   return (
     <div className="flex h-full w-full items-center justify-center bg-[#f4f4f5]">
       <MiniSlide bg="white">
@@ -55,6 +56,20 @@ function InstitutionalThumb() {
         </div>
         <div className="mt-auto text-[4px] text-blue-600">Body &amp; link</div>
       </MiniSlide>
+    </div>
+  );
+}
+
+function SlateThumb() {
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-[#f5f5f7]">
+      <div className="flex h-[58%] w-[72%] flex-col rounded-[3px] border border-[#d2d2d7]/60 bg-[#f5f5f7] p-[7%] shadow-sm">
+        <div className="text-[4px] font-bold uppercase tracking-[0.2em] text-[#86868b]">Brand</div>
+        <div className="mt-[10%] text-[3px] font-bold leading-tight text-[#1d1d1f]">
+          Your home will generate electricity.
+        </div>
+        <div className="mt-[8%] h-[1px] w-full bg-[#d2d2d7]" />
+      </div>
     </div>
   );
 }

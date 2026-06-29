@@ -2,15 +2,22 @@
 
 import { fmtInrPlain } from "@/lib/sales-premium-institutional/format";
 import type { InstitutionalBillPage } from "@/lib/sales-premium-institutional/types";
+import type { SalesPremiumInstitutionalVariant } from "@/lib/sales-premium-styles";
 
 type Props = {
   data: InstitutionalBillPage;
+  variant?: SalesPremiumInstitutionalVariant;
 };
 
-export function SpBillIntelligencePage({ data }: Props) {
+export function SpBillIntelligencePage({ data, variant = "slate" }: Props) {
+  const pageClass = variant === "pearl" ? "sp-page sp-page-pearl" : "sp-page";
   return (
-    <section className="sp-page">
-      <p className="sp-eyebrow">The Baseline</p>
+    <section className={pageClass}>
+      {variant === "pearl" ? (
+        <p className="sp-pearl-section-label">Bill intelligence</p>
+      ) : (
+        <p className="sp-eyebrow">The Baseline</p>
+      )}
       <h1>The financial impact.</h1>
       <p className="sp-lead">A clear look at your current expenditure vs. your solar future.</p>
 

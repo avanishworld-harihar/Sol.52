@@ -30,7 +30,9 @@ export function resolveResidentialThemeKey(input: {
     const style = input.salesPremiumStyle;
     if (style === "journey") return "horizon";
     if (style === "savings_focus") return "ember";
-    return "pearl";
+    if (style === "pearl") return "pearl";
+    if (style === "slate" || style === "institutional") return "slate";
+    return "slate";
   }
 
   return "classic";

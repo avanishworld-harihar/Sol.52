@@ -1,12 +1,41 @@
 "use client";
 
 import type { InstitutionalCoverPage } from "@/lib/sales-premium-institutional/types";
+import type { SalesPremiumInstitutionalVariant } from "@/lib/sales-premium-styles";
 
 type Props = {
   data: InstitutionalCoverPage;
+  variant?: SalesPremiumInstitutionalVariant;
 };
 
-export function SpCoverPage({ data }: Props) {
+export function SpCoverPage({ data, variant = "slate" }: Props) {
+  if (variant === "pearl") {
+    return (
+      <section className="sp-page sp-page-pearl">
+        <p className="sp-pearl-brand">{data.brand_display}</p>
+        <div className="sp-pearl-accent" aria-hidden />
+        <h1 className="sp-pearl-title">{data.customer_name}</h1>
+        <p className="sp-pearl-lead">
+          {data.system_kw_line} · {data.location_line}
+        </p>
+        <p className="sp-pearl-savings">
+          Estimated 25-year savings: ₹{data.savings_lakhs} Lakhs
+        </p>
+        <div className="sp-pearl-meta">
+          <div>
+            <p className="sp-field-label">Prepared for</p>
+            <p className="sp-field-value">{data.customer_name}</p>
+          </div>
+          <div>
+            <p className="sp-field-label">System</p>
+            <p className="sp-field-value">{data.system_kw_line}</p>
+            <p className="sp-field-sub">{data.system_architecture_line}</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="sp-page bg-gray">
       <div className="sp-cover-container">

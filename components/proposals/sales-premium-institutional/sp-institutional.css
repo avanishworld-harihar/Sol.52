@@ -872,3 +872,89 @@
     display: none !important;
   }
 }
+
+/* ── Pearl variant — clean white deck (distinct from Slate Apple Pro) ─────── */
+
+.sp-institutional-root.sp-theme-pearl {
+  background-color: #f4f4f5;
+}
+
+.sp-institutional-root.sp-theme-pearl .sp-page-pearl {
+  background-color: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+.sp-institutional-root.sp-theme-pearl .sp-pearl-brand {
+  font-size: 11pt;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #334155;
+  margin: 0 0 12px 0;
+}
+
+.sp-institutional-root.sp-theme-pearl .sp-pearl-accent {
+  width: 48px;
+  height: 3px;
+  background-color: #2563eb;
+  border-radius: 9999px;
+  margin-bottom: 28px;
+}
+
+.sp-institutional-root.sp-theme-pearl .sp-pearl-title {
+  font-size: 36pt;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+  margin: 0 0 12px 0;
+  line-height: 1.08;
+}
+
+.sp-institutional-root.sp-theme-pearl .sp-pearl-lead {
+  font-size: 14pt;
+  font-weight: 500;
+  color: #64748b;
+  margin: 0 0 20px 0;
+}
+
+.sp-institutional-root.sp-theme-pearl .sp-pearl-savings {
+  font-size: 12pt;
+  font-weight: 600;
+  color: #2563eb;
+  margin: 0 0 48px 0;
+}
+
+.sp-institutional-root.sp-theme-pearl .sp-pearl-meta {
+  display: table;
+  width: 100%;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 24px;
+}
+
+.sp-institutional-root.sp-theme-pearl .sp-pearl-meta > div {
+  display: table-cell;
+  width: 50%;
+  vertical-align: top;
+  padding-right: 16px;
+}
+
+.sp-institutional-root.sp-theme-pearl .sp-pearl-section-label {
+  font-size: 9pt;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #2563eb;
+  margin: 0 0 8px 0;
+}
+
+.sp-institutional-root.sp-theme-pearl .sp-bar-inner {
+  background-color: #94a3b8;
+}
+
+.sp-institutional-root.sp-theme-pearl .sp-bar-inner.alert {
+  background-color: #2563eb;
+}
+
+.sp-institutional-root.sp-theme-pearl .sp-audit-hero.green {
+  color: #2563eb;
+}
