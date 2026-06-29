@@ -3,6 +3,7 @@ import { mapCustomerRow } from "@/lib/customers-map";
 import { normalizeLeadStatus, type LeadStatusKey } from "@/lib/lead-status";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase } from "@/lib/supabase";
+import { deriveActionTitle, inferCallbackIntelligence } from "@/lib/crm-command-center-display";
 import type {
   CommandActionItem,
   CommandCenterKpis,
@@ -19,7 +20,7 @@ function db() {
 
 function emptyPayload(): CommandCenterPayload {
   return {
-    kpis: { hot_leads: 0, overdue_followups: 0, today_tasks: 0, pipeline_at_risk_inr: 0 },
+    kpis: { hot_leads: 0, overdue_followups: 0, today_tasks: 0, pipeline_at_risk_inr: 0, critical_count: 0 },
     actions: [],
     generated_at: new Date().toISOString(),
   };
@@ -58,6 +59,12 @@ function formatMinutesAgo(mins: number): string {
   return `${Math.round(h / 24)}d ago`;
 }
 
+function overdueUrgency(priority: string, dueMs: number, nowMs: number): CommandUrgency {
+  const daysOverdue = Math.floor((nowMs - dueMs) / 86_400_000);
+  if (priority === "urgent" || daysOverdue >= 7) return "critical";
+  return "overdue";
+}
+
 type LeadCtx = {
   name: string;
   phone: string | null;
@@ -70,6 +77,21 @@ type ProposalCtx = {
   net_cost_inr: number | null;
 };
 
+function buildAction(
+  base: Omit<CommandActionItem, "reason" | "action_title" | "event_context"> & {
+    reason: string;
+    action_title?: string;
+    event_context?: string;
+  }
+): CommandActionItem {
+  return {
+    ...base,
+    action_title: base.action_title ?? base.reason,
+    event_context: base.event_context ?? "",
+    reason: base.event_context ? `${base.action_title ?? base.reason} — ${base.event_context}` : base.reason,
+  };
+}
+
 export async function getCommandCenterPayload(): Promise<CommandCenterPayload> {
   const client = db();
   if (!client) return emptyPayload();
@@ -81,7 +103,7 @@ export async function getCommandCenterPayload(): Promise<CommandCenterPayload> {
   const staleBefore = new Date(nowMs - STALE_MS).toISOString();
 
   const reminderSelect =
-    "id, lead_id, title, due_at, priority, followup_type, status, notes";
+    "id, lead_id, title, due_at, priority, followup_type, status, notes, created_at";
 
   const [rawLeads, remindersRes, visitsRes, hotEventsRes, proposalsRes] = await Promise.all([
     listCustomers(),
@@ -161,58 +183,62 @@ export async function getCommandCenterPayload(): Promise<CommandCenterPayload> {
       priority: string;
       followup_type: string;
       notes?: string | null;
+      created_at?: string | null;
     };
     const dueMs = Date.parse(r.due_at);
     const ctx = ctxForLead(r.lead_id);
-    let urgency: CommandUrgency = "low";
+    let urgency: CommandUrgency = "upcoming";
     let kind: CommandActionItem["kind"] = "reminder_upcoming";
     let sort_score = 100;
     let reason_icon = "📅";
-    let reason = r.title;
+    const actionTitle = deriveActionTitle("reminder_upcoming", r.followup_type, r.title);
+    let eventContext = "";
+    const callbackIntel = inferCallbackIntelligence(r.title, r.notes, r.created_at, nowMs);
 
     if (dueMs < nowMs) {
-      urgency = "critical";
+      urgency =
+        r.followup_type === "payment" && (r.priority === "urgent" || r.priority === "high")
+          ? "critical"
+          : overdueUrgency(r.priority, dueMs, nowMs);
       kind = r.followup_type === "payment" ? "payment_pending" : "reminder_overdue";
-      sort_score = 1000 + priorityBoost(r.priority);
+      sort_score = urgency === "critical" ? 2100 + priorityBoost(r.priority) : 1600 + priorityBoost(r.priority);
       reason_icon = r.followup_type === "payment" ? "💰" : "⚠️";
-      reason =
-        r.followup_type === "payment"
-          ? `Advance payment pending — ${r.title}`
-          : `Overdue callback — ${r.title}`;
+      eventContext = callbackIntel ?? `Overdue since ${formatMinutesAgo(minutesAgo(r.due_at, nowMs))}`;
     } else if (dueMs >= start.getTime() && dueMs < end.getTime()) {
       urgency = "today";
       kind = r.followup_type === "payment" ? "payment_pending" : "reminder_today";
-      sort_score = 800 + priorityBoost(r.priority);
+      sort_score = 1100 + priorityBoost(r.priority);
       reason_icon = r.followup_type === "payment" ? "💰" : "📞";
-      reason =
-        r.followup_type === "payment"
-          ? `Payment due today — ${r.title}`
-          : `Callback due today — ${r.title}`;
+      eventContext =
+        callbackIntel ?? (r.notes?.trim() ? r.notes.trim() : `Due today — ${r.title}`);
     } else if (dueMs < weekEnd.getTime()) {
       urgency = "upcoming";
       kind = "reminder_upcoming";
-      sort_score = 400 - Math.floor((dueMs - nowMs) / 86_400_000);
+      sort_score = 420 - Math.floor((dueMs - nowMs) / 86_400_000);
       reason_icon = "📅";
-      reason = `Upcoming — ${r.title}`;
+      eventContext = r.notes?.trim() || `Scheduled — ${r.title}`;
     } else {
-      urgency = "low";
-      sort_score = 100 - Math.floor((dueMs - nowMs) / 86_400_000);
+      urgency = "upcoming";
+      sort_score = 120 - Math.floor((dueMs - nowMs) / 86_400_000);
+      eventContext = r.title;
     }
 
-    if (r.notes?.trim()) reason = `${reason} · ${r.notes.trim()}`;
-
-    actions.push({
-      id: `reminder-${r.id}`,
-      lead_id: r.lead_id,
-      reminder_id: r.id,
-      ...ctx,
-      reason,
-      reason_icon,
-      due_at: r.due_at,
-      urgency,
-      kind,
-      sort_score,
-    });
+    actions.push(
+      buildAction({
+        id: `reminder-${r.id}`,
+        lead_id: r.lead_id,
+        reminder_id: r.id,
+        ...ctx,
+        action_title: deriveActionTitle(kind, r.followup_type, r.title),
+        event_context: eventContext,
+        reason: `${actionTitle} — ${eventContext}`,
+        reason_icon,
+        due_at: r.due_at,
+        urgency,
+        kind,
+        sort_score,
+      })
+    );
   }
 
   for (const row of visitsRes.data ?? []) {
@@ -229,18 +255,23 @@ export async function getCommandCenterPayload(): Promise<CommandCenterPayload> {
     const urgency: CommandUrgency = isToday ? "today" : "upcoming";
     const kind = isToday ? "visit_today" : "visit_upcoming";
     const loc = v.location?.trim() ? ` at ${v.location.trim()}` : "";
-    actions.push({
-      id: `visit-${v.id}`,
-      lead_id: v.lead_id,
-      visit_id: v.id,
-      ...ctx,
-      reason: isToday ? `Site visit today${loc}` : `Site visit scheduled${loc}`,
-      reason_icon: "📍",
-      due_at: v.scheduled_at,
-      urgency,
-      kind,
-      sort_score: isToday ? 750 : 380 - Math.floor((schedMs - nowMs) / 86_400_000),
-    });
+    const summary = v.summary?.trim();
+    actions.push(
+      buildAction({
+        id: `visit-${v.id}`,
+        lead_id: v.lead_id,
+        visit_id: v.id,
+        ...ctx,
+        action_title: "Site visit",
+        event_context: summary || (isToday ? `Today${loc}` : `Scheduled${loc}`),
+        reason: isToday ? `Site visit today${loc}` : `Site visit scheduled${loc}`,
+        reason_icon: "📍",
+        due_at: v.scheduled_at,
+        urgency,
+        kind,
+        sort_score: isToday ? 1050 : 400 - Math.floor((schedMs - nowMs) / 86_400_000),
+      })
+    );
   }
 
   for (const row of hotEventsRes.data ?? []) {
@@ -250,19 +281,26 @@ export async function getCommandCenterPayload(): Promise<CommandCenterPayload> {
     const mins = minutesAgo(e.occurred_at, nowMs);
     const ctx = ctxForLead(e.lead_id);
     const isProposal = e.event_type === "proposal_opened";
-    actions.push({
-      id: `hot-${e.lead_id}-${e.event_type}`,
-      lead_id: e.lead_id,
-      ...ctx,
-      reason: isProposal
-        ? `Proposal opened ${formatMinutesAgo(mins)}`
-        : `Bill uploaded ${formatMinutesAgo(mins)}`,
-      reason_icon: "🔥",
-      due_at: e.occurred_at,
-      urgency: mins <= 120 ? "critical" : "today",
-      kind: isProposal ? "hot_proposal" : "hot_bill",
-      sort_score: 700 - Math.min(mins, 300),
-    });
+    const urgency: CommandUrgency = "hot";
+    actions.push(
+      buildAction({
+        id: `hot-${e.lead_id}-${e.event_type}`,
+        lead_id: e.lead_id,
+        action_title: isProposal ? "Follow up — proposal viewed" : "Follow up — bill uploaded",
+        event_context: isProposal
+          ? `Proposal opened ${formatMinutesAgo(mins)}`
+          : `Bill uploaded ${formatMinutesAgo(mins)}`,
+        ...ctx,
+        reason: isProposal
+          ? `Proposal opened ${formatMinutesAgo(mins)}`
+          : `Bill uploaded ${formatMinutesAgo(mins)}`,
+        reason_icon: "🔥",
+        due_at: e.occurred_at,
+        urgency,
+        kind: isProposal ? "hot_proposal" : "hot_bill",
+        sort_score: 850 - Math.min(mins, 300),
+      })
+    );
   }
 
   actions.sort((a, b) => b.sort_score - a.sort_score);
@@ -271,6 +309,8 @@ export async function getCommandCenterPayload(): Promise<CommandCenterPayload> {
     const row = r as { due_at: string };
     return Date.parse(row.due_at) < nowMs;
   }).length;
+
+  const criticalCount = actions.filter((a) => a.urgency === "critical").length;
 
   const todayReminderCount = (remindersRes.data ?? []).filter((r) => {
     const row = r as { due_at: string };
@@ -301,11 +341,12 @@ export async function getCommandCenterPayload(): Promise<CommandCenterPayload> {
     overdue_followups: overdueCount,
     today_tasks: todayReminderCount + todayVisitCount,
     pipeline_at_risk_inr: Math.round(pipelineAtRisk),
+    critical_count: criticalCount,
   };
 
   return {
     kpis,
-    actions: actions.slice(0, 40),
+    actions: actions.slice(0, 50),
     generated_at: now.toISOString(),
   };
 }

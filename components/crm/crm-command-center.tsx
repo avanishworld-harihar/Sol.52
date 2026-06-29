@@ -12,25 +12,29 @@ import {
   MessageCircle,
   Check,
   Clock,
-  ChevronRight,
   Loader2,
+  RefreshCw,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DashboardSectionTitle } from "@/components/dashboard-section-title";
 import { formatCrmDateTime, formatCrmTime, crmDatetimeLocalToIso } from "@/lib/crm-datetime";
 import { resolveCallbackDueAt } from "@/lib/crm-callback-schedule";
 import { createReminder, logCustomerContact, patchReminder } from "@/lib/followup-client";
 import { buildCommandActionWhatsAppUrl } from "@/lib/crm-command-center-messages";
 import { getInstallerBrandName } from "@/lib/installer-brand";
 import { formatInrCompact } from "@/lib/proposal-hub-insights";
-import { LEAD_STATUS_BADGE, LEAD_STATUS_I18N_KEY, normalizeLeadStatus } from "@/lib/lead-status";
-import { useLanguage } from "@/lib/language-context";
+import {
+  countForFilter,
+  matchesFilter,
+  URGENCY_VISUAL,
+} from "@/lib/crm-command-center-display";
 import type {
   CommandActionItem,
   CommandCenterPayload,
-  CommandUrgency,
+  CommandFilterId,
 } from "@/lib/crm-command-center-types";
+import { cn } from "@/lib/utils";
 
 async function fetchCommandCenter(): Promise<CommandCenterPayload> {
   const res = await fetch("/api/crm/command-center", { cache: "no-store" });
@@ -38,38 +42,20 @@ async function fetchCommandCenter(): Promise<CommandCenterPayload> {
   if (!res.ok || !json.ok) throw new Error(json.error || "command_center_load_failed");
   return (
     json.data ?? {
-      kpis: { hot_leads: 0, overdue_followups: 0, today_tasks: 0, pipeline_at_risk_inr: 0 },
+      kpis: { hot_leads: 0, overdue_followups: 0, today_tasks: 0, pipeline_at_risk_inr: 0, critical_count: 0 },
       actions: [],
       generated_at: new Date().toISOString(),
     }
   );
 }
 
-const URGENCY_STYLES: Record<
-  CommandUrgency,
-  { label: string; badge: string; ring: string }
-> = {
-  critical: {
-    label: "Critical",
-    badge: "border-rose-400/70 bg-rose-100 text-rose-900 dark:border-rose-500/50 dark:bg-rose-950/50 dark:text-rose-100",
-    ring: "border-rose-300/80 dark:border-rose-500/40",
-  },
-  today: {
-    label: "Today",
-    badge: "border-amber-400/70 bg-amber-100 text-amber-950 dark:border-amber-500/45 dark:bg-amber-950/40 dark:text-amber-100",
-    ring: "border-amber-300/80 dark:border-amber-500/35",
-  },
-  upcoming: {
-    label: "Upcoming",
-    badge: "border-sky-400/70 bg-sky-100 text-sky-950 dark:border-sky-500/40 dark:bg-sky-950/35 dark:text-sky-100",
-    ring: "border-sky-300/80 dark:border-sky-500/30",
-  },
-  low: {
-    label: "Low",
-    badge: "border-slate-300/80 bg-slate-100 text-slate-700 dark:border-slate-600/50 dark:bg-slate-900/50 dark:text-slate-300",
-    ring: "border-slate-200/90 dark:border-slate-700/50",
-  },
-};
+const FILTERS: { id: CommandFilterId; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "critical", label: "Critical" },
+  { id: "today", label: "Today" },
+  { id: "hot", label: "Hot Leads" },
+  { id: "upcoming", label: "Upcoming" },
+];
 
 type SnoozePreset = "1h" | "tomorrow" | "next_week" | "custom";
 
@@ -82,6 +68,38 @@ function snoozeIso(preset: SnoozePreset, customLocal?: string): string {
   return resolveCallbackDueAt("tomorrow");
 }
 
+type KpiTone = "rose" | "amber" | "violet" | "cyan";
+
+const KPI_TONES: Record<
+  KpiTone,
+  { shell: string; glow: string; value: string; icon: string }
+> = {
+  rose: {
+    shell: "border-red-300/70 bg-gradient-to-br from-red-50 to-white dark:from-red-950/40 dark:to-[#0a1018]",
+    glow: "shadow-[0_0_24px_rgba(239,68,68,0.12)]",
+    value: "text-red-700 dark:text-red-300",
+    icon: "bg-red-500/15 text-red-600 dark:bg-red-500/20 dark:text-red-300",
+  },
+  amber: {
+    shell: "border-amber-300/70 bg-gradient-to-br from-amber-50 to-white dark:from-amber-950/35 dark:to-[#0a1018]",
+    glow: "shadow-[0_0_20px_rgba(245,158,11,0.1)]",
+    value: "text-amber-800 dark:text-amber-200",
+    icon: "bg-amber-500/15 text-amber-700 dark:bg-amber-500/20 dark:text-amber-200",
+  },
+  violet: {
+    shell: "border-violet-300/70 bg-gradient-to-br from-violet-50 to-white dark:from-violet-950/35 dark:to-[#0a1018]",
+    glow: "shadow-[0_0_20px_rgba(139,92,246,0.1)]",
+    value: "text-violet-800 dark:text-violet-200",
+    icon: "bg-violet-500/15 text-violet-700 dark:bg-violet-500/20 dark:text-violet-200",
+  },
+  cyan: {
+    shell: "border-cyan-300/70 bg-gradient-to-br from-cyan-50 to-white dark:from-cyan-950/30 dark:to-[#0a1018]",
+    glow: "shadow-[0_0_20px_rgba(6,182,212,0.1)]",
+    value: "text-cyan-800 dark:text-cyan-200",
+    icon: "bg-cyan-500/15 text-cyan-700 dark:bg-cyan-500/20 dark:text-cyan-200",
+  },
+};
+
 function KpiCard({
   label,
   value,
@@ -89,41 +107,56 @@ function KpiCard({
   tone,
   icon: Icon,
   loading,
+  emphasis,
+  onClick,
 }: {
   label: string;
   value: string;
-  sub?: string;
-  tone: "rose" | "amber" | "sky" | "orange";
+  sub: string;
+  tone: KpiTone;
   icon: typeof Flame;
   loading?: boolean;
+  emphasis?: boolean;
+  onClick?: () => void;
 }) {
-  const toneClass =
-    tone === "rose"
-      ? "from-rose-500/15 to-rose-400/5 text-rose-700 dark:text-rose-300"
-      : tone === "amber"
-        ? "from-amber-500/15 to-amber-400/5 text-amber-800 dark:text-amber-200"
-        : tone === "orange"
-          ? "from-orange-500/15 to-orange-400/5 text-orange-800 dark:text-orange-200"
-          : "from-sky-500/15 to-sky-400/5 text-sky-800 dark:text-sky-200";
-
+  const t = KPI_TONES[tone];
+  const Tag = onClick ? "button" : "div";
   return (
-    <div
-      className={`min-w-[9.5rem] shrink-0 snap-start rounded-xl border border-white/60 bg-gradient-to-br p-3 shadow-sm backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.04] sm:min-w-0 sm:flex-1 sm:p-3.5 ${toneClass}`}
+    <Tag
+      type={onClick ? "button" : undefined}
+      onClick={onClick}
+      className={cn(
+        "cc-kpi-card min-w-[10.5rem] shrink-0 snap-start rounded-2xl border p-3.5 text-left backdrop-blur-md transition sm:min-w-0 sm:flex-1 sm:p-4",
+        t.shell,
+        t.glow,
+        emphasis && "ring-2 ring-red-400/40 dark:ring-red-500/30",
+        onClick && "cursor-pointer hover:brightness-[1.02] active:scale-[0.99]"
+      )}
     >
-      <div className="flex items-center gap-2">
-        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/70 dark:bg-white/10">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-slate-600 dark:text-slate-400 sm:text-[11px]">
+          {label}
+        </p>
+        <span className={cn("flex h-7 w-7 items-center justify-center rounded-lg", t.icon)}>
           <Icon className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden />
         </span>
-        <p className="text-[10px] font-bold uppercase tracking-wide opacity-80 sm:text-[11px]">{label}</p>
       </div>
       {loading ? (
-        <Skeleton className="mt-2 h-7 w-12 rounded-md" />
+        <Skeleton className="mt-2.5 h-8 w-14 rounded-lg" />
       ) : (
-        <p className="mt-1.5 text-xl font-extrabold tabular-nums tracking-tight sm:text-2xl">{value}</p>
+        <p className={cn("mt-2 text-2xl font-black tabular-nums tracking-tight sm:text-3xl", t.value)}>{value}</p>
       )}
-      {sub ? <p className="mt-0.5 text-[10px] font-semibold opacity-75 sm:text-[11px]">{sub}</p> : null}
-    </div>
+      <p className="mt-1 text-[10px] font-semibold text-slate-500 dark:text-slate-400 sm:text-[11px]">{sub}</p>
+    </Tag>
   );
+}
+
+function kindIcon(kind: CommandActionItem["kind"]): string {
+  if (kind.startsWith("visit")) return "📍";
+  if (kind.startsWith("hot")) return "🔥";
+  if (kind === "payment_pending") return "💰";
+  if (kind === "reminder_overdue") return "⚠️";
+  return "📞";
 }
 
 function ActionRow({
@@ -137,17 +170,13 @@ function ActionRow({
   onMutate: () => void;
   onDismiss: (id: string) => void;
 }) {
-  const { t } = useLanguage();
   const [busy, setBusy] = useState(false);
   const [snoozeOpen, setSnoozeOpen] = useState(false);
   const [customSnooze, setCustomSnooze] = useState("");
 
-  const urgency = URGENCY_STYLES[action.urgency];
-  const statusKey = normalizeLeadStatus(action.stage);
-  const statusBadge = LEAD_STATUS_BADGE[statusKey];
-  const statusLabel = t(LEAD_STATUS_I18N_KEY[statusKey]);
+  const visual = URGENCY_VISUAL[action.urgency];
   const waUrl = action.phone
-    ? buildCommandActionWhatsAppUrl(action.phone, action.customer_name, installerName, action.reason)
+    ? buildCommandActionWhatsAppUrl(action.phone, action.customer_name, installerName, action.event_context || action.reason)
     : null;
 
   const dueLabel = action.due_at
@@ -164,7 +193,7 @@ function ActionRow({
         await fn();
         onMutate();
       } catch {
-        /* keep row visible on failure */
+        /* keep row */
       } finally {
         setBusy(false);
       }
@@ -194,10 +223,10 @@ function ActionRow({
         });
       } else {
         await createReminder(action.lead_id, {
-          title: `Follow-up — ${action.reason.replace(/^[\p{Emoji_Presentation}\p{Extended_Pictographic}\s]+/u, "").slice(0, 80)}`,
+          title: `Follow-up — ${(action.event_context || action.action_title).slice(0, 80)}`,
           due_at: until,
           followup_type: "call",
-          priority: action.urgency === "critical" ? "high" : "medium",
+          priority: action.urgency === "critical" || action.urgency === "overdue" ? "high" : "medium",
         });
       }
       onDismiss(action.id);
@@ -213,99 +242,109 @@ function ActionRow({
 
   return (
     <article
-      className={`rounded-xl border bg-white/80 p-3 shadow-sm backdrop-blur-sm dark:bg-[#0a1018]/80 sm:p-3.5 ${urgency.ring}`}
+      className={cn(
+        "cc-action-row group rounded-xl border border-slate-200/80 p-3 shadow-sm backdrop-blur-sm transition hover:border-slate-300/90 hover:shadow-md dark:border-white/10 dark:hover:border-white/20 sm:p-3.5",
+        visual.row,
+        visual.pulse && "cc-row-pulse"
+      )}
     >
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
+        {/* LEFT — context */}
+        <div className="flex min-w-0 flex-1 items-start gap-3">
+          <span
+            className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/80 text-base shadow-sm dark:bg-white/10"
+            aria-hidden
+          >
+            {kindIcon(action.kind)}
+          </span>
+          <div className="min-w-0 flex-1">
             <Link
               href={`/customers?lead=${encodeURIComponent(action.lead_id)}`}
-              className="truncate text-sm font-bold text-slate-900 hover:underline dark:text-white sm:text-base"
+              className="block truncate text-sm font-extrabold text-slate-900 hover:text-brand-700 dark:text-white dark:hover:text-brand-300 sm:text-[15px]"
             >
               {action.customer_name}
             </Link>
-            <span
-              className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-bold ${statusBadge.className}`}
-            >
-              {statusLabel}
-            </span>
-            <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-bold ${urgency.badge}`}>
-              {urgency.label}
-            </span>
-          </div>
-
-          <p className="mt-1.5 text-xs font-semibold leading-snug text-slate-800 dark:text-slate-200 sm:text-sm">
-            <span aria-hidden>{action.reason_icon} </span>
-            {action.reason}
-          </p>
-
-          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-semibold text-slate-500 dark:text-slate-400 sm:text-xs">
-            {action.system_kw != null ? <span>{action.system_kw} kW</span> : null}
-            {action.deal_value_inr != null && action.deal_value_inr > 0 ? (
-              <span>{formatInrCompact(action.deal_value_inr)}</span>
-            ) : null}
-            <span>Due {dueLabel}</span>
+            <p className="mt-0.5 text-xs font-bold text-slate-800 dark:text-slate-200 sm:text-sm">{action.action_title}</p>
+            <p className="mt-1 text-[11px] font-medium leading-snug text-slate-500 dark:text-slate-400 sm:text-xs">
+              {action.system_kw != null ? <span>{action.system_kw} kW</span> : null}
+              {action.system_kw != null && action.event_context ? <span> · </span> : null}
+              {action.event_context ? <span>{action.event_context}</span> : null}
+              {action.deal_value_inr != null && action.deal_value_inr > 0 ? (
+                <span className="ml-1.5 font-semibold text-slate-600 dark:text-slate-300">
+                  · {formatInrCompact(action.deal_value_inr)}
+                </span>
+              ) : null}
+            </p>
           </div>
         </div>
 
-        <ChevronRight className="hidden h-4 w-4 shrink-0 text-slate-400 sm:block" aria-hidden />
-      </div>
+        {/* CENTER — urgency + time */}
+        <div className="flex shrink-0 items-center gap-2 pl-12 lg:flex-col lg:items-end lg:pl-0 lg:text-right">
+          <span className={cn("rounded-full border px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide", visual.badge)}>
+            {visual.label}
+          </span>
+          <span className="text-[11px] font-bold tabular-nums text-slate-600 dark:text-slate-300">{dueLabel}</span>
+        </div>
 
-      <div className="mt-3 flex flex-wrap gap-1.5 sm:gap-2">
-        {action.phone ? (
-          <>
+        {/* RIGHT — actions (Call primary) */}
+        <div className="flex flex-wrap items-center gap-1.5 pl-12 sm:gap-2 lg:shrink-0 lg:pl-0">
+          {action.phone ? (
             <Button
               type="button"
+              variant="emeraldCta"
               size="sm"
-              variant="outline"
-              className="h-8 flex-1 gap-1 text-[11px] sm:h-9 sm:flex-none sm:px-3"
+              className="cc-call-btn h-10 min-w-[5.5rem] flex-1 gap-1.5 px-4 text-xs font-extrabold shadow-md shadow-emerald-600/20 sm:h-10 sm:flex-none"
               asChild
               disabled={busy}
             >
               <a href={`tel:${action.phone}`} onClick={() => void logCustomerContact(action.lead_id, "call")}>
-                <Phone className="h-3.5 w-3.5" aria-hidden />
+                <Phone className="h-4 w-4" strokeWidth={2.5} aria-hidden />
                 Call
               </a>
             </Button>
+          ) : null}
+          {action.phone && waUrl ? (
             <Button
               type="button"
               size="sm"
               variant="outline"
-              className="h-8 flex-1 gap-1 text-[11px] sm:h-9 sm:flex-none sm:px-3"
-              disabled={busy || !waUrl}
+              className="h-9 w-9 shrink-0 p-0 sm:h-9 sm:w-auto sm:px-3"
+              disabled={busy}
               onClick={() => void handleWhatsApp()}
+              aria-label="WhatsApp"
             >
-              <MessageCircle className="h-3.5 w-3.5" aria-hidden />
-              WhatsApp
+              <MessageCircle className="h-4 w-4" aria-hidden />
+              <span className="hidden sm:inline sm:ml-1">WA</span>
             </Button>
-          </>
-        ) : null}
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          className="h-8 flex-1 gap-1 text-[11px] sm:h-9 sm:flex-none sm:px-3"
-          disabled={busy}
-          onClick={() => void handleMarkDone()}
-        >
-          {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
-          Done
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          className="h-8 flex-1 gap-1 text-[11px] sm:h-9 sm:flex-none sm:px-3"
-          disabled={busy}
-          onClick={() => setSnoozeOpen((v) => !v)}
-        >
-          <Clock className="h-3.5 w-3.5" aria-hidden />
-          Snooze
-        </Button>
+          ) : null}
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="h-9 w-9 shrink-0 p-0 sm:h-9 sm:w-auto sm:px-3"
+            disabled={busy}
+            onClick={() => void handleMarkDone()}
+            aria-label="Mark done"
+          >
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" aria-hidden />}
+            <span className="hidden sm:inline sm:ml-1">Done</span>
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className="h-9 shrink-0 px-2 text-[11px] font-bold text-slate-600"
+            disabled={busy}
+            onClick={() => setSnoozeOpen((v) => !v)}
+          >
+            <Clock className="h-3.5 w-3.5 sm:mr-1" aria-hidden />
+            <span className="hidden sm:inline">Snooze</span>
+          </Button>
+        </div>
       </div>
 
       {snoozeOpen ? (
-        <div className="mt-2 space-y-2 rounded-lg border border-slate-200/80 bg-slate-50/90 p-2.5 dark:border-slate-700/60 dark:bg-slate-900/40">
+        <div className="mt-3 space-y-2 rounded-lg border border-slate-200/80 bg-slate-50/95 p-2.5 dark:border-slate-700/60 dark:bg-slate-900/50">
           <div className="flex flex-wrap gap-1.5">
             {(
               [
@@ -342,7 +381,7 @@ function ActionRow({
               disabled={busy || !customSnooze.trim()}
               onClick={() => void handleSnooze("custom")}
             >
-              Custom date
+              Custom
             </Button>
           </div>
         </div>
@@ -354,13 +393,20 @@ function ActionRow({
 export function CrmCommandCenter() {
   const installerName = getInstallerBrandName();
   const [dismissed, setDismissed] = useState<Set<string>>(() => new Set());
+  const [filter, setFilter] = useState<CommandFilterId>("all");
+  const [refreshing, setRefreshing] = useState(false);
 
-  const { data, error, isLoading, mutate } = useSWR("crm-command-center", fetchCommandCenter, {
+  const { data, error, isLoading, mutate, isValidating } = useSWR("crm-command-center", fetchCommandCenter, {
     refreshInterval: 60_000,
     revalidateOnFocus: true,
   });
 
-  const actions = useMemo(
+  const visibleActions = useMemo(() => {
+    const base = (data?.actions ?? []).filter((a) => !dismissed.has(a.id));
+    return base.filter((a) => matchesFilter(a, filter));
+  }, [data?.actions, dismissed, filter]);
+
+  const allActions = useMemo(
     () => (data?.actions ?? []).filter((a) => !dismissed.has(a.id)),
     [data?.actions, dismissed]
   );
@@ -371,91 +417,170 @@ export function CrmCommandCenter() {
 
   const loading = isLoading && !data;
 
+  async function handleRefresh() {
+    setRefreshing(true);
+    try {
+      await mutate();
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
   return (
-    <section className="ws-zone-surface">
-      <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-        <div>
-          <DashboardSectionTitle>Command Center</DashboardSectionTitle>
-          <p className="-mt-1 text-xs font-medium text-slate-500 dark:text-slate-400 sm:text-sm">
-            Your daily action list — overdue, hot leads, visits, and callbacks in one place.
+    <section className="cc-hero-shell">
+      {/* Header */}
+      <div className="mb-3 flex flex-wrap items-start justify-between gap-2 sm:mb-4">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-red-500/20 to-amber-500/15 text-red-600 dark:from-red-500/25 dark:to-amber-500/20 dark:text-red-300">
+              <Zap className="h-4 w-4" strokeWidth={2.5} aria-hidden />
+            </span>
+            <h2 className="text-sm font-black uppercase tracking-[0.18em] text-slate-800 dark:text-white sm:text-base">
+              Command Center
+            </h2>
+          </div>
+          <p className="mt-1 pl-10 text-xs font-medium text-slate-500 dark:text-slate-400 sm:text-sm">
+            Aaj kya karna hai — overdue, callbacks, hot leads, visits.
           </p>
         </div>
-        {!loading && data ? (
-          <p className="text-[10px] font-semibold text-slate-400 sm:text-xs">
-            Updated {formatCrmTime(data.generated_at)}
-          </p>
-        ) : null}
+        <div className="flex shrink-0 items-center gap-2">
+          {!loading && data ? (
+            <p className="text-[10px] font-semibold text-slate-400 sm:text-xs">
+              Updated {formatCrmTime(data.generated_at)}
+            </p>
+          ) : null}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0"
+            onClick={() => void handleRefresh()}
+            disabled={refreshing || isValidating}
+            aria-label="Refresh command center"
+          >
+            <RefreshCw className={cn("h-4 w-4", (refreshing || isValidating) && "animate-spin")} />
+          </Button>
+        </div>
       </div>
 
-      <div className="-mx-1 mb-4 flex gap-2 overflow-x-auto px-1 pb-1 snap-x snap-mandatory sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-3 sm:overflow-visible sm:px-0 lg:grid-cols-4">
-        <KpiCard
-          label="Hot Leads"
-          value={String(data?.kpis.hot_leads ?? 0)}
-          sub="Proposal / bill activity"
-          tone="orange"
-          icon={Flame}
-          loading={loading}
-        />
+      {/* KPI strip — Overdue first (highest weight) */}
+      <div className="-mx-0.5 mb-4 flex gap-2.5 overflow-x-auto px-0.5 pb-1 snap-x snap-mandatory sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-3 sm:overflow-visible lg:grid-cols-4">
         <KpiCard
           label="Overdue"
           value={String(data?.kpis.overdue_followups ?? 0)}
-          sub="Follow-ups past due"
+          sub="Follow-ups pending"
           tone="rose"
           icon={AlarmClock}
           loading={loading}
+          emphasis={(data?.kpis.overdue_followups ?? 0) > 0}
+          onClick={() => setFilter("critical")}
         />
         <KpiCard
           label="Today"
           value={String(data?.kpis.today_tasks ?? 0)}
-          sub="Callbacks & visits"
+          sub="Tasks due today"
           tone="amber"
           icon={CalendarCheck}
           loading={loading}
+          onClick={() => setFilter("today")}
+        />
+        <KpiCard
+          label="Hot Leads"
+          value={String(data?.kpis.hot_leads ?? 0)}
+          sub="Active engagement"
+          tone="violet"
+          icon={Flame}
+          loading={loading}
+          onClick={() => setFilter("hot")}
         />
         <KpiCard
           label="Pipeline at risk"
           value={formatInrCompact(data?.kpis.pipeline_at_risk_inr ?? 0)}
           sub="Inactive 7+ days"
-          tone="sky"
+          tone="cyan"
           icon={IndianRupee}
           loading={loading}
         />
       </div>
 
       {error ? (
-        <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-800 dark:border-rose-500/40 dark:bg-rose-950/30 dark:text-rose-200">
-          Could not load command center. Pull to refresh or try again shortly.
+        <p className="mb-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-800 dark:border-rose-500/40 dark:bg-rose-950/30 dark:text-rose-200">
+          Could not load command center. Tap refresh to try again.
         </p>
       ) : null}
 
-      <div className="space-y-2 sm:space-y-2.5">
-        {loading ? (
-          <>
-            <Skeleton className="h-28 w-full rounded-xl" />
-            <Skeleton className="h-28 w-full rounded-xl" />
-          </>
-        ) : actions.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-300/80 bg-slate-50/60 px-4 py-8 text-center dark:border-slate-600/50 dark:bg-slate-900/30">
-            <p className="text-sm font-bold text-slate-800 dark:text-slate-200">All clear for now</p>
-            <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
-              No overdue follow-ups, hot leads, or today&apos;s tasks. Check back after new proposal views or schedule
-              callbacks from Customers.
-            </p>
-            <Button type="button" variant="outline" size="sm" className="mt-4" asChild>
-              <Link href="/customers">Open customers</Link>
-            </Button>
-          </div>
-        ) : (
-          actions.map((action) => (
-            <ActionRow
-              key={action.id}
-              action={action}
-              installerName={installerName}
-              onMutate={() => void mutate()}
-              onDismiss={dismiss}
-            />
-          ))
-        )}
+      {/* Priority actions */}
+      <div className="cc-actions-panel rounded-2xl border border-white/70 bg-white/55 p-3 backdrop-blur-xl dark:border-white/10 dark:bg-[#070b12]/75 sm:p-4">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-slate-700 dark:text-slate-200 sm:text-sm">
+            Today&apos;s priority actions
+          </h3>
+          {!loading ? (
+            <span className="text-[10px] font-bold text-slate-400 sm:text-xs">{visibleActions.length} shown</span>
+          ) : null}
+        </div>
+
+        {/* Filters */}
+        <div className="mb-3 flex gap-1.5 overflow-x-auto pb-0.5 snap-x">
+          {FILTERS.map((f) => {
+            const count = countForFilter(allActions, f.id);
+            const active = filter === f.id;
+            return (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => setFilter(f.id)}
+                className={cn(
+                  "shrink-0 snap-start rounded-full border px-3 py-1.5 text-[11px] font-bold transition",
+                  active
+                    ? "border-slate-800 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900"
+                    : "border-slate-200/90 bg-white/80 text-slate-600 hover:border-slate-300 dark:border-white/15 dark:bg-white/5 dark:text-slate-300"
+                )}
+              >
+                {f.label}
+                <span className={cn("ml-1.5 tabular-nums", active ? "opacity-80" : "opacity-50")}>{count}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="space-y-2">
+          {loading ? (
+            <>
+              <Skeleton className="h-[4.5rem] w-full rounded-xl" />
+              <Skeleton className="h-[4.5rem] w-full rounded-xl" />
+              <Skeleton className="h-[4.5rem] w-full rounded-xl" />
+            </>
+          ) : visibleActions.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-slate-300/80 bg-slate-50/60 px-4 py-8 text-center dark:border-slate-600/50 dark:bg-slate-900/30">
+              <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                {filter === "all" ? "All clear for now" : `No ${FILTERS.find((f) => f.id === filter)?.label.toLowerCase()} actions`}
+              </p>
+              <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+                Schedule callbacks from Customers — 3/5 month follow-ups surface here automatically.
+              </p>
+              {filter !== "all" ? (
+                <Button type="button" variant="outline" size="sm" className="mt-3" onClick={() => setFilter("all")}>
+                  Show all
+                </Button>
+              ) : (
+                <Button type="button" variant="outline" size="sm" className="mt-3" asChild>
+                  <Link href="/customers">Open customers</Link>
+                </Button>
+              )}
+            </div>
+          ) : (
+            visibleActions.map((action) => (
+              <ActionRow
+                key={action.id}
+                action={action}
+                installerName={installerName}
+                onMutate={() => void mutate()}
+                onDismiss={dismiss}
+              />
+            ))
+          )}
+        </div>
       </div>
     </section>
   );

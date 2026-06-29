@@ -972,6 +972,54 @@
     @apply relative z-[3] pt-0;
   }
 
+  /* CRM Command Center — hero mission control */
+  .cc-hero-shell {
+    @apply relative rounded-2xl border border-white/70 bg-white/45 p-3 backdrop-blur-xl dark:border-white/10 dark:bg-[#070b12]/60 sm:p-4 md:p-5;
+    box-shadow:
+      0 4px 32px rgba(11, 34, 64, 0.07),
+      inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  }
+
+  .dashboard-zone-command.cc-hero-zone {
+    @apply -mt-1 pt-0;
+  }
+
+  .cc-hero-shell.cc-sticky-ready {
+    @apply sticky top-0 z-20;
+  }
+
+  @keyframes cc-row-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.22);
+    }
+    50% {
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+  }
+
+  .cc-row-pulse {
+    animation: cc-row-pulse 2.8s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cc-row-pulse {
+      animation: none;
+    }
+  }
+
+  .cc-call-btn:active {
+    transform: scale(0.97);
+  }
+
+  .dashboard-zone-greeting {
+    @apply relative z-[2] pt-0;
+  }
+
+  .dashboard-zone-greeting::before {
+    display: none !important;
+  }
+
   .dashboard-zone-command::before {
     display: none !important;
   }

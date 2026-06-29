@@ -1,6 +1,8 @@
 /** CRM Command Center — daily action engine types. */
 
-export type CommandUrgency = "critical" | "today" | "upcoming" | "low";
+export type CommandUrgency = "critical" | "overdue" | "today" | "hot" | "upcoming";
+
+export type CommandFilterId = "all" | "critical" | "today" | "hot" | "upcoming";
 
 export type CommandActionKind =
   | "reminder_overdue"
@@ -20,6 +22,11 @@ export type CommandActionItem = {
   stage: string;
   system_kw: number | null;
   deal_value_inr: number | null;
+  /** Short action label — e.g. "Call for decision", "Site visit" */
+  action_title: string;
+  /** Event / scheduling context — e.g. "Proposal opened 44h ago" */
+  event_context: string;
+  /** @deprecated use action_title + event_context */
   reason: string;
   reason_icon: string;
   due_at: string | null;
@@ -35,6 +42,7 @@ export type CommandCenterKpis = {
   overdue_followups: number;
   today_tasks: number;
   pipeline_at_risk_inr: number;
+  critical_count: number;
 };
 
 export type CommandCenterPayload = {
