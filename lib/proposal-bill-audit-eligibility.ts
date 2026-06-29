@@ -1,5 +1,6 @@
 import type { MonthlyUnits } from "@/lib/types";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
+import { isResidentialRequirementInput } from "@/lib/residential-deck-helpers";
 
 const MONTH_KEYS: (keyof MonthlyUnits)[] = [
   "jan",
@@ -23,8 +24,10 @@ function n(v: unknown): number {
 
 /** True when proposal was built from uploaded bills and/or real monthly bill/units data. */
 export function isProposalBillAuditBacked(input: PremiumProposalPptInput): boolean {
-  if (input.dataSource === "bill") return true;
   if (input.dataSource === "requirement") return false;
+  if (isResidentialRequirementInput(input)) return false;
+
+  if (input.dataSource === "bill") return true;
 
   const actuals = input.monthlyBillActuals ?? {};
   if (MONTH_KEYS.some((k) => n(actuals[k]) > 0)) return true;

@@ -71,9 +71,16 @@ export function applyResidentialFlagsToLayout(
 ): ProposalTemplateV1 {
   const fin = config.financing;
   const sub = config.subsidy;
+  const isRequirement = config.inputMode === "requirement";
+  const isBill = config.inputMode === "bill";
 
   const flags: Partial<Record<ProposalBlockId, boolean>> = {
-    system_requirements: config.inputMode === "requirement",
+    system_requirements: isRequirement,
+    ...(isRequirement
+      ? { bill_intelligence: false, technical_proposal: false }
+      : isBill
+        ? { bill_intelligence: true, technical_proposal: true, system_requirements: false }
+        : {}),
     commercial_financing_card: fin?.enabled === true,
     payment_terms: fin?.enabled !== false,
     financial_summary: sub?.preference !== "none",

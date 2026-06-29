@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { DashboardCommandCenter } from "@/components/dashboard-command-center";
 import { CrmCommandCenter } from "@/components/crm/crm-command-center";
