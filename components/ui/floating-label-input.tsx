@@ -40,7 +40,7 @@ function FloatingLabel({
     <label
       htmlFor={htmlFor}
       className={cn(
-        "pointer-events-none absolute left-3 z-20 whitespace-nowrap leading-none transition-all duration-200",
+        "pointer-events-none absolute left-3 z-20 max-w-[calc(100%-1.5rem)] truncate leading-none transition-all duration-200",
         "top-0 -translate-y-1/2 px-1 text-[11px] font-semibold",
         labelBackgroundClassName ?? "bg-[hsl(var(--card))] dark:bg-[#161B22]",
         active ? "text-teal-600 dark:text-teal-300" : "top-1/2 -translate-y-1/2 px-0 text-sm text-slate-500 dark:text-[#94A3B8]"
@@ -74,7 +74,7 @@ export function FloatingLabelInput({
   const floated = focused || hasNonEmptyValue(currentValue);
 
   return (
-    <div className={cn("relative w-full overflow-visible", containerClassName)}>
+    <div className={cn("relative w-full min-w-0 overflow-hidden", containerClassName)}>
       <FloatingLabel
         htmlFor={fieldId}
         label={`${label}${required ? " *" : ""}`}
@@ -148,7 +148,7 @@ export function FloatingLabelNumericInput({
   const floated = focused || hasValue;
 
   return (
-    <div className={cn("relative w-full overflow-visible", containerClassName)}>
+    <div className={cn("relative w-full min-w-0 overflow-hidden", containerClassName)}>
       <FloatingLabel
         htmlFor={fieldId}
         label={`${label}${required ? " *" : ""}`}
@@ -199,7 +199,7 @@ export function FloatingLabelSelect({
   const floated = focused || hasNonEmptyValue(currentValue);
 
   return (
-    <div className={cn("relative w-full overflow-visible", containerClassName)}>
+    <div className={cn("relative w-full min-w-0 overflow-hidden", containerClassName)}>
       <FloatingLabel
         htmlFor={fieldId}
         label={`${label}${required ? " *" : ""}`}

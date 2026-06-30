@@ -53,7 +53,7 @@ export function ProjectListFiltersBar({
       : `${filteredCount} of ${totalCount} projects`;
 
   const advancedFilters = (
-    <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4 sm:gap-2 lg:flex lg:flex-wrap lg:gap-2">
+    <div className="grid w-full grid-cols-2 gap-2 sm:grid-cols-4">
       <FloatingLabelSelect
         label="Stage"
         value={filters.stage}
@@ -61,7 +61,7 @@ export function ProjectListFiltersBar({
           onChange({ stage: e.target.value as ProjectListFilters["stage"], page: 1 })
         }
         className={inputClass}
-        containerClassName="my-0 min-w-[8rem]"
+        containerClassName="my-0 w-full min-w-0"
       >
         <option value="all">All stages</option>
         {PROJECT_STAGE_ORDER.map((s) => (
@@ -78,7 +78,7 @@ export function ProjectListFiltersBar({
           onChange({ health: e.target.value as ProjectListFilters["health"], page: 1 })
         }
         className={inputClass}
-        containerClassName="my-0 min-w-[8rem]"
+        containerClassName="my-0 w-full min-w-0"
       >
         <option value="all">All health</option>
         {(Object.keys(HEALTH_LABELS) as ProjectHealth[]).map((h) => (
@@ -93,7 +93,7 @@ export function ProjectListFiltersBar({
         value={filters.sort}
         onChange={(e) => onChange({ sort: e.target.value as ProjectSortKey, page: 1 })}
         className={inputClass}
-        containerClassName="my-0 min-w-[8rem]"
+        containerClassName="my-0 w-full min-w-0"
       >
         {SORT_OPTIONS.map((o) => (
           <option key={o.value} value={o.value}>
@@ -109,7 +109,7 @@ export function ProjectListFiltersBar({
           onChange({ sortDir: e.target.value as ProjectListFilters["sortDir"], page: 1 })
         }
         className={inputClass}
-        containerClassName="my-0 min-w-[7rem]"
+        containerClassName="my-0 w-full min-w-0"
       >
         <option value="desc">Newest first</option>
         <option value="asc">Oldest first</option>
@@ -166,21 +166,19 @@ export function ProjectListFiltersBar({
         <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">{countLabel}</p>
       </div>
 
-      {/* Desktop: full filter row */}
+      {/* Desktop / tablet: search on top, filters in one row below */}
       <div className="hidden space-y-3 sm:block">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
-          <div className="relative min-w-0 flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <FloatingLabelInput
-              label="Search projects"
-              value={filters.search}
-              onChange={(e) => onChange({ search: e.target.value, page: 1 })}
-              className={cn(inputClass, "pl-9")}
-              containerClassName="my-0"
-            />
-          </div>
-          {advancedFilters}
+        <div className="relative min-w-0 w-full">
+          <Search className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <FloatingLabelInput
+            label="Search projects"
+            value={filters.search}
+            onChange={(e) => onChange({ search: e.target.value, page: 1 })}
+            className={cn(inputClass, "pl-9")}
+            containerClassName="my-0"
+          />
         </div>
+        {advancedFilters}
 
         <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
           <span className="inline-flex items-center gap-1.5">

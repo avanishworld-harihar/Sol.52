@@ -470,12 +470,12 @@ function ProjectsBoard() {
 
         {view === "active" ? (
           <HelpHint
-            className="page-lite-item -mt-1 hidden px-1 sm:block"
+            className="page-lite-item -mt-1 hidden px-1 sm:block lg:hidden"
             label={t("projects_opsBoardHint")}
             detail={t("projects_opsBoardHint_detail")}
           />
         ) : (
-          <p className="page-lite-item -mt-1 hidden px-1 text-xs font-semibold text-slate-500 dark:text-slate-400 sm:block sm:text-sm">
+          <p className="page-lite-item -mt-1 hidden px-1 text-xs font-semibold text-slate-500 dark:text-slate-400 sm:block sm:text-sm lg:hidden">
             {activeTabDef.description}
           </p>
         )}

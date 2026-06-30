@@ -114,6 +114,11 @@ export function ResidentialRequirementCustomerForm({
     if (next !== fields.discom) onDiscom(next);
   }, [fields.state, fields.discom, discomOptions, onDiscom]);
 
+  const selectFieldClass =
+    "h-11 w-full min-w-0 rounded-xl border-slate-200 bg-white text-sm font-medium dark:border-white/15 dark:bg-white/5";
+  const selectLabelBg = "bg-white dark:bg-white/5";
+  const selectContainerClass = "my-0 min-w-0";
+
   return (
     <div
       className={cn(
@@ -131,7 +136,7 @@ export function ResidentialRequirementCustomerForm({
         onChange={onContactName}
         required
       />
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3">
         <FloatingLabelSelect
           label="State / UT *"
           suppressHydrationWarning
@@ -140,7 +145,9 @@ export function ResidentialRequirementCustomerForm({
             onState(e.target.value);
             onDiscom("");
           }}
-          className="h-11 rounded-xl border-slate-200 bg-white text-sm font-medium dark:border-white/15 dark:bg-white/5"
+          className={selectFieldClass}
+          containerClassName={selectContainerClass}
+          labelBackgroundClassName={selectLabelBg}
         >
           <option value="">Select state</option>
           {INDIAN_STATES_AND_UTS.map((s) => (
@@ -155,7 +162,9 @@ export function ResidentialRequirementCustomerForm({
           value={fields.discom}
           disabled={!fields.state.trim()}
           onChange={(e) => onDiscom(e.target.value)}
-          className="h-11 rounded-xl border-slate-200 bg-white text-sm font-medium disabled:opacity-60 dark:border-white/15 dark:bg-white/5"
+          className={cn(selectFieldClass, "disabled:opacity-60")}
+          containerClassName={selectContainerClass}
+          labelBackgroundClassName={selectLabelBg}
         >
           {!fields.state.trim() ? (
             <option value="">Select state first</option>
@@ -173,13 +182,15 @@ export function ResidentialRequirementCustomerForm({
           )}
         </FloatingLabelSelect>
       </div>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3">
         <FloatingLabelSelect
           label="Connection type (optional)"
           suppressHydrationWarning
           value={fields.connectionType}
           onChange={(e) => onConnectionType(e.target.value)}
-          className="h-11 rounded-xl border-slate-200 bg-white text-sm font-medium dark:border-white/15 dark:bg-white/5"
+          className={selectFieldClass}
+          containerClassName={selectContainerClass}
+          labelBackgroundClassName={selectLabelBg}
         >
           {LEAD_CONNECTION_TYPE_OPTIONS.map((o) => (
             <option key={o.value || "unset"} value={o.value}>
@@ -192,7 +203,9 @@ export function ResidentialRequirementCustomerForm({
           suppressHydrationWarning
           value={fields.area}
           onChange={(e) => onArea(e.target.value)}
-          className="h-11 rounded-xl border-slate-200 bg-white text-sm font-medium dark:border-white/15 dark:bg-white/5"
+          className={selectFieldClass}
+          containerClassName={selectContainerClass}
+          labelBackgroundClassName={selectLabelBg}
         >
           {LEAD_AREA_PROFILE_OPTIONS.map((o) => (
             <option key={o.value || "unset"} value={o.value}>
@@ -209,7 +222,7 @@ export function ResidentialRequirementCustomerForm({
           className="rounded-xl border border-slate-200/90 bg-white/80 px-3 py-2.5 dark:border-white/10 dark:bg-white/[0.03]"
         />
       ) : null}
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3">
         <Field
           icon={MapPin}
           placeholder="Location (colony, sector, landmark)"
@@ -224,14 +237,16 @@ export function ResidentialRequirementCustomerForm({
           <Zap className="h-3.5 w-3.5 text-amber-500" aria-hidden />
           Electricity usage (for savings &amp; payback)
         </p>
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3">
           <FloatingLabelNumericInput
             label="Monthly units (kWh)"
             live
             integer
             value={fields.monthlyKwh.trim() ? parseFloat(fields.monthlyKwh) : undefined}
             onValueChange={(n) => onMonthlyKwh(n != null && n > 0 ? String(Math.round(n)) : "")}
-            className="h-11 rounded-xl text-sm font-semibold"
+            className="h-11 w-full min-w-0 rounded-xl text-sm font-semibold"
+            containerClassName="min-w-0"
+            labelBackgroundClassName="bg-white/80 dark:bg-white/[0.03]"
           />
           <FloatingLabelNumericInput
             label="Monthly bill (₹)"
@@ -239,7 +254,9 @@ export function ResidentialRequirementCustomerForm({
             integer
             value={fields.monthlyBillInr.trim() ? parseFloat(fields.monthlyBillInr) : undefined}
             onValueChange={(n) => onMonthlyBillInr(n != null && n > 0 ? String(Math.round(n)) : "")}
-            className="h-11 rounded-xl text-sm font-semibold"
+            className="h-11 w-full min-w-0 rounded-xl text-sm font-semibold"
+            containerClassName="min-w-0"
+            labelBackgroundClassName="bg-white/80 dark:bg-white/[0.03]"
           />
         </div>
         <p className="mt-2 flex items-start gap-1.5 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
