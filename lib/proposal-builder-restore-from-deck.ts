@@ -1,3 +1,4 @@
+import { isPlaceholderProposalCustomerName } from "@/lib/proposal-customer-placeholder";
 import type { ManualProposalCustomer } from "@/lib/merge-proposal-customer";
 import { EMPTY_MANUAL_PROPOSAL_CUSTOMER } from "@/lib/proposal-builder-session";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
@@ -50,10 +51,12 @@ export function builderStateFromPptInput(
   const resCfg = parseResidentialConfig(ppt.residentialConfig);
   const locationLine = (opts?.location ?? ppt.location ?? "").trim();
   const locationParts = locationLine.split(",").map((p) => p.trim()).filter(Boolean);
+  const displayName = (opts?.customerName ?? ppt.customerName ?? "").trim();
 
   const manual: ManualProposalCustomer = {
     ...EMPTY_MANUAL_PROPOSAL_CUSTOMER,
-    officialBillName: (opts?.customerName ?? "").trim() || EMPTY_MANUAL_PROPOSAL_CUSTOMER.officialBillName,
+    leadContactName: isPlaceholderProposalCustomerName(displayName) ? "" : displayName,
+    officialBillName: displayName || EMPTY_MANUAL_PROPOSAL_CUSTOMER.officialBillName,
     city: locationParts[0] ?? "",
     state: ppt.state?.trim() || locationParts[locationParts.length - 1] || "",
     discom: ppt.discom?.trim() || "",

@@ -19,6 +19,7 @@
 
 import Link from "next/link";
 import { buildProposalEditHref } from "@/lib/proposal-edit-url";
+import { proposalHubCustomerLabel } from "@/lib/proposal-customer-placeholder";
 import { motion } from "framer-motion";
 import {
   ArrowUpRight,
@@ -163,6 +164,7 @@ function PipelineCard({ row, active, lang = "en", onClick, delay = 0 }: DealCard
   const age = dealAgeInDays(row.generated_at);
   const intel = hubIntelForRow(row, lang);
   const manageHref = buildProposalEditHref({ leadId: row.lead_id, proposalId: row.id });
+  const customerLabel = proposalHubCustomerLabel(row.customer_name);
   
   return (
     <motion.article
@@ -211,10 +213,10 @@ function PipelineCard({ row, active, lang = "en", onClick, delay = 0 }: DealCard
 
         {/* Avatar + name */}
         <div className="flex items-start gap-3">
-          <Avatar name={row.customer_name} isCommercial={isCommercial} />
+          <Avatar name={customerLabel} isCommercial={isCommercial} />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-bold leading-snug text-slate-900 dark:text-slate-50">
-              {row.customer_name}
+              {customerLabel}
             </p>
             {row.company_name && (
               <p className="mt-0.5 truncate text-[11px] font-medium text-slate-500 dark:text-slate-400">
@@ -324,6 +326,7 @@ function GridCard({ row, active, lang = "en", onClick, delay = 0 }: DealCardProp
   const health = dealHealthScore(row);
   const age = dealAgeInDays(row.generated_at);
   const manageHref = buildProposalEditHref({ leadId: row.lead_id, proposalId: row.id });
+  const customerLabel = proposalHubCustomerLabel(row.customer_name);
   
   return (
     <motion.article
@@ -341,9 +344,9 @@ function GridCard({ row, active, lang = "en", onClick, delay = 0 }: DealCardProp
       aria-current={active ? "true" : undefined}
     >
       <div className="flex items-start gap-3 p-4 pb-3">
-        <Avatar name={row.customer_name} isCommercial={isCommercial} />
+        <Avatar name={customerLabel} isCommercial={isCommercial} />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[13px] font-bold text-slate-900 dark:text-slate-50">{row.customer_name}</p>
+          <p className="truncate text-[13px] font-bold text-slate-900 dark:text-slate-50">{customerLabel}</p>
           {row.company_name && (
             <p className="truncate text-[11px] text-slate-500 dark:text-slate-400">{row.company_name}</p>
           )}
@@ -395,6 +398,7 @@ function CompactCard({ row, active, lang = "en", onClick, delay = 0 }: DealCardP
   const velVis = velocityVisual(velocity);
   const age = dealAgeInDays(row.generated_at);
   const manageHref = buildProposalEditHref({ leadId: row.lead_id, proposalId: row.id });
+  const customerLabel = proposalHubCustomerLabel(row.customer_name);
   
   return (
     <motion.article
@@ -412,11 +416,11 @@ function CompactCard({ row, active, lang = "en", onClick, delay = 0 }: DealCardP
       )}
       aria-current={active ? "true" : undefined}
     >
-      <Avatar name={row.customer_name} isCommercial={isCommercial} size="sm" />
+      <Avatar name={customerLabel} isCommercial={isCommercial} size="sm" />
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <p className="text-[13px] font-bold text-slate-900 dark:text-slate-50">{row.customer_name}</p>
+          <p className="text-[13px] font-bold text-slate-900 dark:text-slate-50">{customerLabel}</p>
           {row.company_name && (
             <span className="text-[11px] text-slate-500 dark:text-slate-400">· {row.company_name}</span>
           )}
@@ -441,7 +445,7 @@ function CompactCard({ row, active, lang = "en", onClick, delay = 0 }: DealCardP
       <Link
         href={manageHref}
         onClick={(e) => e.stopPropagation()}
-        aria-label={`Open workspace for ${row.customer_name}`}
+        aria-label={`Open workspace for ${customerLabel}`}
         className="ml-1 hidden shrink-0 rounded-xl border border-slate-200 bg-white p-2 opacity-0 transition group-hover:opacity-100 hover:border-teal-300 dark:border-white/10 dark:bg-white/5 sm:flex"
       >
         <ArrowUpRight className="h-4 w-4 text-slate-500 dark:text-slate-400" aria-hidden />

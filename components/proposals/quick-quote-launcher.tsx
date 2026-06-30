@@ -11,6 +11,7 @@ import {
 } from "@/lib/installer-rate-card-client";
 import { createQuickRequirementProposal } from "@/lib/quick-requirement-proposal-client";
 import { detectConnectionPhaseFromText, type ConnectionPhase } from "@/lib/connection-phase-pricing";
+import { proposalHubCustomerLabel } from "@/lib/proposal-customer-placeholder";
 import {
   copyPublicProposalLink,
   openWhatsAppWithProposal,
@@ -166,7 +167,7 @@ export function QuickQuoteLauncher({
         shareUrl,
         systemKw: result.systemKw ?? kw,
         netCostInr: result.netCostInr ?? 0,
-        customerName: result.customerName ?? resolvedCustomerName ?? "New customer",
+        customerName: result.customerName ?? resolvedCustomerName ?? proposalHubCustomerLabel(""),
         phaseSurchargeInr: preview.phaseSurchargeInr,
         phone: customerPhone?.trim() || undefined,
       });

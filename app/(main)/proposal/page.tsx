@@ -131,6 +131,10 @@ import {
 } from "@/lib/residential-brand-catalog-storage";
 import { getPresetDefaultLayout } from "@/lib/proposal-preset-engine";
 import { builderStateFromPptInput } from "@/lib/proposal-builder-restore-from-deck";
+import {
+  isPlaceholderProposalCustomerName,
+  resolveProposalCustomerName,
+} from "@/lib/proposal-customer-placeholder";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
 import useSWR, { useSWRConfig } from "swr";
@@ -1551,16 +1555,19 @@ function ProposalPageContent() {
     syncCrmCachesAfterProposal,
   ]);
 
-  async function ensureLeadIdForProposal(): Promise<{ leadId: string; created: boolean }> {
+  async function ensureLeadIdForProposal(): Promise<{ leadId: string | null; created: boolean }> {
     if (selectedLeadId) {
       await syncSelectedLeadFromBills();
       return { leadId: selectedLeadId, created: false };
     }
     const merged = mergeCustomerForProposal(manual, mergeParsedBills(latestBill, previousBill));
-    const customerName =
-      merged?.name?.trim() || manual.officialBillName.trim() || manual.leadContactName.trim();
+    const customerName = resolveProposalCustomerName(
+      merged?.name,
+      manual.officialBillName,
+      manual.leadContactName
+    );
     if (!customerName) {
-      throw new Error(t("proposal_needCustomerName"));
+      return { leadId: null, created: false };
     }
     const proposalPhone = pickProposalLeadPhone(manual.leadPhone, manual.billPhone);
     const createLeadResp = await fetch("/api/customers", {
@@ -2083,6 +2090,7 @@ function ProposalPageContent() {
         }
 
         if (json.pptInput && typeof json.pptInput === "object") {
+          const restoredName = json.customerName?.trim() ?? "";
           const deck = builderStateFromPptInput(json.pptInput, {
             customerName: json.customerName,
             location: json.location,
@@ -2093,7 +2101,11 @@ function ProposalPageContent() {
           setManual((prev) => ({
             ...prev,
             ...deck.manual,
-            leadContactName: prev.leadContactName || deck.manual.leadContactName,
+            leadContactName:
+              prev.leadContactName ||
+              deck.manual.leadContactName ||
+              (!isPlaceholderProposalCustomerName(restoredName) ? restoredName : ""),
+            officialBillName: prev.officialBillName || deck.manual.officialBillName || restoredName,
             leadPhone: prev.leadPhone || deck.manual.leadPhone,
           }));
           if (deck.overrideSolarKw) setOverrideSolarKw(deck.overrideSolarKw);
@@ -2315,7 +2327,9 @@ function ProposalPageContent() {
     setLastAutoLeadId(null);
     const { leadId, created: leadCreated } = await ensureLeadIdForProposal();
     const merged = mergeCustomerForProposal(manual, mergeParsedBills(latestBill, previousBill));
-    const customerName = merged?.name?.trim() || manual.officialBillName || manual.leadContactName || "Customer";
+    const customerName =
+      resolveProposalCustomerName(merged?.name, manual.officialBillName, manual.leadContactName) ||
+      "Customer";
     const location = formatProposalLocationLine(manual, merged?.district);
     const uploadedBills = [latestBill, ...additionalBills];
     const monthlyBillActuals = buildMonthlyBillActualsFromBills(uploadedBills, auditedMonthTotals);
@@ -2328,10 +2342,7 @@ function ProposalPageContent() {
       auditedMonthTotals,
       monthlyBillActuals,
     });
-    const response = await fetch("/api/proposals", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    const proposalBody = {
         customerName,
         location,
         systemKw: effectiveResult.solarKw,
@@ -2354,7 +2365,7 @@ function ProposalPageContent() {
         monthlyBillActuals,
         monthlyAuditOverrides,
         clientRef: clientRef || undefined,
-        leadId,
+        leadId: leadId ?? undefined,
         ...buildMpSmartBillingApiPayload(manual, latestBill, previousBill),
         grossSystemCostInr: effectiveResult.grossCost,
         pmSuryaGharSubsidyInr: effectiveResult.centralSubsidy,
@@ -2363,7 +2374,37 @@ function ProposalPageContent() {
         dataSource: isResidentialBill ? "bill" : isResidentialRequirement ? "requirement" : billBacked ? "bill" : "requirement",
         presetId: osPresetId ?? "residential_sales_premium",
         ...buildProposalExtrasPayload(),
-      }),
+    };
+
+    const existingProposalId =
+      draftProposalId?.trim() ||
+      deepLinkProposalIdRef.current?.trim() ||
+      readResidentialDraftProposalId()?.trim() ||
+      null;
+
+    if (existingProposalId) {
+      const response = await fetch(`/api/proposals/${existingProposalId}/deck`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(proposalBody),
+      });
+      if (!response.ok) {
+        const json = (await response.json().catch(() => ({}))) as { error?: string };
+        throw new Error(json.error || "proposal_update_failed");
+      }
+      const json = (await response.json()) as { ok: boolean; id?: string; shareUrl?: string };
+      if (!json.ok || !json.id) throw new Error("proposal_update_failed");
+      const shareUrl = json.shareUrl || `${window.location.origin}/proposal/${json.id}`;
+      setLatestWebProposalUrl(shareUrl);
+      setDraftProposalId(json.id);
+      if (leadId) syncCrmCachesAfterProposal(leadId);
+      return { id: json.id, shareUrl, leadCreated, leadId };
+    }
+
+    const response = await fetch("/api/proposals", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(proposalBody),
     });
     if (!response.ok) {
       const json = (await response.json().catch(() => ({}))) as {
@@ -2392,7 +2433,7 @@ function ProposalPageContent() {
     const shareUrl = json.shareUrl || `${window.location.origin}/proposal/${json.id}`;
     setLatestWebProposalUrl(shareUrl);
     setDraftProposalId(json.id);
-    syncCrmCachesAfterProposal(leadId);
+    if (leadId) syncCrmCachesAfterProposal(leadId);
     return { id: json.id, shareUrl, leadCreated, leadId };
   }
 

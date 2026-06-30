@@ -14,6 +14,7 @@ import { summarizeProposalDeck } from "@/lib/proposal-ppt";
 import { getPresetDefaultLayout, type ProposalPresetId } from "@/lib/proposal-preset-engine";
 import { applyConnectionPhaseSelection, type ConnectionPhase } from "@/lib/connection-phase-pricing";
 import { templateCustomerName } from "@/lib/duplicate-proposal";
+import { anonymousQuickQuoteCustomerName } from "@/lib/proposal-customer-placeholder";
 import type { ResidentialProposalConfig } from "@/lib/residential-requirements-schema";
 
 export type QuickRequirementProposalPayload = {
@@ -45,7 +46,7 @@ export async function buildQuickRequirementProposal(
     residentialConfig = applyConnectionPhaseSelection(residentialConfig, input.connectionPhase);
   }
   const breakdown = residentialCostBreakdown(residentialConfig);
-  const customerName = (input.customerName?.trim() || templateCustomerName()).slice(0, 120);
+  const customerName = (input.customerName?.trim() || anonymousQuickQuoteCustomerName()).slice(0, 120);
 
   const baseLayout = getPresetDefaultLayout(presetId);
   const proposalLayout = applyResidentialFlagsToLayout(baseLayout, residentialConfig);

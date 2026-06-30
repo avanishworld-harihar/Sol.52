@@ -40,13 +40,18 @@ import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase } from "@/lib/supabase";
 import { getProposalById } from "@/lib/proposals-store";
 
-async function persistMergedProposalDeck(proposalId: string, mergedPpt: PremiumProposalPptInput): Promise<boolean> {
+export async function persistMergedProposalDeck(
+  proposalId: string,
+  mergedPpt: PremiumProposalPptInput,
+  opts?: { leadId?: string | null }
+): Promise<boolean> {
   const client = createSupabaseAdmin() ?? supabase;
   if (!client) return false;
   const liveSummary = summarizeProposalDeck(mergedPpt);
-  const { error } = await client
-    .from("proposals")
-    .update({
+  const patch: Record<string, unknown> = {
+      customer_name: mergedPpt.customerName ?? "",
+      honored_name: liveSummary.honoredName,
+      location: mergedPpt.location ?? null,
       system_kw: mergedPpt.systemKw,
       gross_system_cost_inr: liveSummary.grossSystemCost,
       pm_subsidy_inr: liveSummary.pmSubsidy,
@@ -55,9 +60,12 @@ async function persistMergedProposalDeck(proposalId: string, mergedPpt: PremiumP
       lifetime25_profit_inr: liveSummary.lifetime25Profit,
       annual_saving_inr: liveSummary.annualSaving,
       ppt_input: mergedPpt as unknown as Record<string, unknown>,
-      summary: liveSummary as unknown as Record<string, unknown>
-    })
-    .eq("id", proposalId);
+      summary: liveSummary as unknown as Record<string, unknown>,
+  };
+  if (opts && "leadId" in opts) {
+    patch.lead_id = opts.leadId ?? null;
+  }
+  const { error } = await client.from("proposals").update(patch).eq("id", proposalId);
   if (error) {
     console.warn("[proposal-pricing-sync] persist failed:", error.message);
     return false;
