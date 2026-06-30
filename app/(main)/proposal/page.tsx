@@ -1998,6 +1998,7 @@ function ProposalPageContent() {
 
   useEffect(() => {
     if (!isAnyResidential) return;
+    if (restoringExistingProposalRef.current && !deckRestoreReady) return;
     const kw = result.solarKw > 0 ? result.solarKw : urlPrefill.kw ?? 5;
     setResidentialConfig(
       (prev) => prev ?? defaultResidentialConfigForBuilder(kw, residentialInputMode)
@@ -2015,10 +2016,11 @@ function ProposalPageContent() {
             : "residential_sales_premium"
         )
     );
-  }, [isAnyResidential, osPresetId, result.solarKw, urlPrefill.kw, residentialInputMode]);
+  }, [isAnyResidential, osPresetId, result.solarKw, urlPrefill.kw, residentialInputMode, deckRestoreReady]);
 
   useEffect(() => {
     if (!isAnyResidential) return;
+    if (restoringExistingProposalRef.current && !deckRestoreReady) return;
     let cancelled = false;
     void loadInstallerRateCard().then(() => {
       if (cancelled) return;
@@ -2031,7 +2033,7 @@ function ProposalPageContent() {
     return () => {
       cancelled = true;
     };
-  }, [isAnyResidential, residentialInputMode, result.solarKw, urlPrefill.kw]);
+  }, [isAnyResidential, residentialInputMode, result.solarKw, urlPrefill.kw, deckRestoreReady]);
 
   useEffect(() => {
     if (!isAnyResidential) return;
@@ -2129,7 +2131,15 @@ function ProposalPageContent() {
 
         const layout = json.pptInput?.proposalLayout;
         if (layout && typeof layout === "object") {
-          setProposalLayout((prev) => prev ?? (layout as ProposalTemplateV1));
+          const parsedLayout = layout as ProposalTemplateV1;
+          setProposalLayout((prev) => {
+            const base = prev ?? parsedLayout;
+            return cfg ? applyResidentialFlagsToLayout(base, cfg) : parsedLayout;
+          });
+        } else if (cfg) {
+          setProposalLayout((prev) =>
+            prev ? applyResidentialFlagsToLayout(prev, cfg) : prev
+          );
         }
 
         if (!cancelled) {
@@ -2150,6 +2160,7 @@ function ProposalPageContent() {
   /** Bill path: seed kW once per bill upload — never fight manual kW (same as commercial bill). */
   useEffect(() => {
     if (!isResidentialBill || !residentialConfig) return;
+    if (restoringExistingProposalRef.current && !deckRestoreReady) return;
     if (residentialPlantKwTouchedRef.current) return;
     if (lastResidentialBillKwSeedKeyRef.current === commercialBillUploadKey) return;
     const fromBill = Math.round(result.solarKw * 10) / 10;
@@ -2159,7 +2170,7 @@ function ProposalPageContent() {
       if (!prev || Math.abs(prev.solar.plantCapacityKw - fromBill) < 0.05) return prev;
       return { ...prev, solar: { ...prev.solar, plantCapacityKw: fromBill, moduleCountOverride: undefined } };
     });
-  }, [isResidentialBill, commercialBillUploadKey, result.solarKw, residentialConfig]);
+  }, [isResidentialBill, commercialBillUploadKey, result.solarKw, residentialConfig, deckRestoreReady]);
 
   /** Requirement path: size plant from monthly kWh / bill until user edits kW. */
   useEffect(() => {

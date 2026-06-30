@@ -113,7 +113,7 @@ function PaletteInner() {
             return;
           }
           toast.success("Proposal ready", `${kw} kW draft created`);
-          router.push(buildProposalEditHref({ proposalId: result.id }));
+          router.push(buildProposalEditHref({ proposalId: result.id, inputMode: "requirement" }));
         } finally {
           setCreatingKw(null);
         }

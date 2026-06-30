@@ -15,7 +15,6 @@ import { ProposalWebRenderer } from "@/components/proposal/web-renderer";
 import { ExecutivePremiumNextgenRenderer } from "@/components/proposals/executive-premium-nextgen/executive-premium-nextgen-renderer";
 import { SalesPremiumInstitutionalRenderer } from "@/components/proposals/sales-premium-institutional/sales-premium-institutional-renderer";
 import {
-  getSalesPremiumLayoutForStyle,
   resolveSalesPremiumStyle,
   usesInstitutionalRenderer,
 } from "@/lib/sales-premium-styles";
@@ -134,13 +133,9 @@ export default async function PublicProposalPage({ params }: PageProps) {
     const leadId = proposal.lead_id?.trim() ? proposal.lead_id.trim() : null;
     const surveyStatus = await getLeadSurveyStatus(leadId);
     const showSurvey = isLeadSurveyCompleteForProposal(surveyStatus);
-    const layout = getSalesPremiumLayoutForStyle(spStyle);
-    const doc = compileProposalDocument(
-      id,
-      { ...mergedInput, proposalLayout: layout },
-      liveSummary,
-      { presetId: "residential_sales_premium" }
-    );
+    const doc = compileProposalDocument(id, mergedInput, liveSummary, {
+      presetId: "residential_sales_premium",
+    });
     return (
       <ProposalWatermarkShell enabled={showWatermark}>
         <ProposalWebRenderer

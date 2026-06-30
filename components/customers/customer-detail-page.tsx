@@ -462,7 +462,7 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
         labels={quickQuoteLabels}
         onCreated={(proposalId) => {
           void Promise.all([mutateTimeline(), mutateLead()]);
-          router.push(buildProposalEditHref({ proposalId, leadId }));
+          router.push(buildProposalEditHref({ proposalId, leadId, inputMode: "requirement" }));
         }}
       />
 

@@ -80,7 +80,9 @@ export function builderStateFromPptInput(
   };
 
   const dataSource =
-    ppt.dataSource ?? resCfg?.inputMode ?? (monthlyUnits.jan > 0 ? "bill" : undefined);
+    resCfg?.inputMode ??
+    ppt.dataSource ??
+    (monthlyUnits.jan > 0 ? "bill" : undefined);
 
   const systemKw =
     resCfg?.solar.plantCapacityKw && resCfg.solar.plantCapacityKw > 0
@@ -100,6 +102,12 @@ export function builderStateFromPptInput(
     overrideSolarKw: systemKw > 0 ? String(systemKw) : "",
     overridePanels: panels > 0 ? String(panels) : "",
     residentialInputMode:
-      dataSource === "requirement" ? "requirement" : dataSource === "bill" ? "bill" : undefined,
+      resCfg?.inputMode === "requirement" || resCfg?.inputMode === "bill"
+        ? resCfg.inputMode
+        : dataSource === "requirement"
+          ? "requirement"
+          : dataSource === "bill"
+            ? "bill"
+            : undefined,
   };
 }

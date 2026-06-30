@@ -1,5 +1,6 @@
 "use client";
 
+import { isProposalBillAuditBacked } from "@/lib/proposal-bill-audit-eligibility";
 import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposal-ppt";
 import {
   institutionalVariantForStyle,
@@ -30,13 +31,16 @@ export function SalesPremiumInstitutionalRenderer({
   const style = resolveSalesPremiumStyle(pptInput);
   const variant = institutionalVariantForStyle(style);
   const model = transformToInstitutionalModel(pptInput, summary);
+  const showBillAudit = isProposalBillAuditBacked(pptInput);
 
   return (
     <div className={`sp-institutional-root sp-theme-${variant} w-full`}>
       <SpProposalShell variant={variant}>
         <div className="sp-doc-canvas">
           <SpCoverPage data={model.cover} variant={variant} />
-          <SpBillIntelligencePage data={model.bill} variant={variant} />
+          {showBillAudit ? (
+            <SpBillIntelligencePage data={model.bill} variant={variant} />
+          ) : null}
           <SpCapitalBreakdownPage data={model.capital} />
           <SpTechnicalBomPage data={model.technical} />
           <SpExecutionPage data={model.execution} />

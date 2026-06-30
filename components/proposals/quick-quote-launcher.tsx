@@ -319,7 +319,13 @@ export function QuickQuoteLauncher({
               asChild
               className="h-11 flex-1 gap-2 bg-emerald-600 font-semibold hover:bg-emerald-700"
             >
-              <Link href={buildProposalEditHref({ proposalId: success.id, leadId })}>
+              <Link
+                href={buildProposalEditHref({
+                  proposalId: success.id,
+                  leadId,
+                  inputMode: "requirement",
+                })}
+              >
                 {labels.editSend}
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
