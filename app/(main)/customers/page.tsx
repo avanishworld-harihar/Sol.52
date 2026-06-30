@@ -102,6 +102,7 @@ function CustomersPageContent() {
   );
   const modalFloatingClass =
     "h-12 rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 focus:border-teal-500 focus:ring-teal-200/70";
+  const modalLabelBg = "bg-white dark:bg-[#161B22]";
 
   const { data, error: loadError, isLoading, mutate } = useSWR<CustomerLead[]>(CUSTOMERS_SWR_KEY, fetchCustomers, {
     dedupingInterval: 25_000,
@@ -742,6 +743,7 @@ function CustomersPageContent() {
               <FloatingLabelInput
                 label="Lead name (person you met)"
                 containerClassName="my-4"
+                labelBackgroundClassName={modalLabelBg}
                 className={modalFloatingClass}
                 value={form.name}
                 onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
@@ -749,13 +751,15 @@ function CustomersPageContent() {
               <FloatingLabelInput
                 label="Consumer name (on bill) — optional"
                 containerClassName="my-4"
+                labelBackgroundClassName={modalLabelBg}
                 className={modalFloatingClass}
                 value={form.consumer_name}
                 onChange={(e) => setForm((p) => ({ ...p, consumer_name: e.target.value }))}
               />
               <FloatingLabelSelect
-                label={`${t("customers_labelState")} / UT`}
+                label={t("customers_labelState")}
                 containerClassName="my-4"
+                labelBackgroundClassName={modalLabelBg}
                 className={modalFloatingClass}
                 suppressHydrationWarning
                 value={form.state}
@@ -771,6 +775,7 @@ function CustomersPageContent() {
               <FloatingLabelSelect
                 label={t("customers_labelDiscom")}
                 containerClassName="my-4"
+                labelBackgroundClassName={modalLabelBg}
                 className={`${modalFloatingClass} disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400`}
                 suppressHydrationWarning
                 value={form.discom}
@@ -796,6 +801,7 @@ function CustomersPageContent() {
               <FloatingLabelSelect
                 label={t("customers_labelConnectionType")}
                 containerClassName="my-4"
+                labelBackgroundClassName={modalLabelBg}
                 className={modalFloatingClass}
                 suppressHydrationWarning
                 value={form.connection_type}
@@ -810,6 +816,7 @@ function CustomersPageContent() {
               <FloatingLabelSelect
                 label={t("customers_labelArea")}
                 containerClassName="my-4"
+                labelBackgroundClassName={modalLabelBg}
                 className={modalFloatingClass}
                 suppressHydrationWarning
                 value={form.area}
@@ -824,14 +831,15 @@ function CustomersPageContent() {
               <FloatingLabelInput
                 label={t("customers_labelLocation")}
                 containerClassName="my-4"
+                labelBackgroundClassName={modalLabelBg}
                 className={modalFloatingClass}
                 value={form.location}
                 onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))}
-                placeholder={t("customers_placeholderLocation")}
               />
               <FloatingLabelInput
                 label={t("customers_placeholderCity")}
                 containerClassName="my-4"
+                labelBackgroundClassName={modalLabelBg}
                 className={modalFloatingClass}
                 value={form.city}
                 onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))}
@@ -839,14 +847,16 @@ function CustomersPageContent() {
               <FloatingLabelInput
                 label={t("customers_placeholderBill")}
                 containerClassName="my-4"
+                labelBackgroundClassName={modalLabelBg}
                 className={modalFloatingClass}
-                type="number"
+                inputMode="numeric"
                 value={form.monthly_bill}
                 onChange={(e) => setForm((p) => ({ ...p, monthly_bill: e.target.value }))}
               />
               <FloatingLabelInput
                 label={t("customers_placeholderPhone")}
                 containerClassName="my-4"
+                labelBackgroundClassName={modalLabelBg}
                 className={modalFloatingClass}
                 value={form.phone}
                 onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
@@ -854,6 +864,7 @@ function CustomersPageContent() {
               <FloatingLabelInput
                 label={t("customers_placeholderConsumerId")}
                 containerClassName="my-4"
+                labelBackgroundClassName={modalLabelBg}
                 className={modalFloatingClass}
                 value={form.consumer_id}
                 onChange={(e) => setForm((p) => ({ ...p, consumer_id: e.target.value }))}
@@ -862,6 +873,7 @@ function CustomersPageContent() {
                 suppressHydrationWarning
                 label={t("customers_labelSurveyStatus")}
                 containerClassName="my-4"
+                labelBackgroundClassName={modalLabelBg}
                 className={modalFloatingClass}
                 value={form.survey_status}
                 onChange={(e) => setForm((p) => ({ ...p, survey_status: e.target.value }))}
@@ -876,6 +888,7 @@ function CustomersPageContent() {
                 suppressHydrationWarning
                 label={t("customers_tablePipeline")}
                 containerClassName="my-4"
+                labelBackgroundClassName={modalLabelBg}
                 className={modalFloatingClass}
                 value={form.status}
                 onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))}

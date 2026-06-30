@@ -2,7 +2,7 @@
 
 import { NumericTextInput } from "@/components/ui/numeric-text-input";
 import { cn } from "@/lib/utils";
-import { useId, useMemo, useState, type InputHTMLAttributes, type SelectHTMLAttributes } from "react";
+import { useId, useState, type InputHTMLAttributes, type SelectHTMLAttributes } from "react";
 
 type FloatingShellProps = {
   label: string;
@@ -19,6 +19,8 @@ type FloatingInputProps = FloatingShellProps &
 type FloatingSelectProps = FloatingShellProps &
   Omit<SelectHTMLAttributes<HTMLSelectElement>, "id" | "className">;
 
+const DEFAULT_LABEL_BG = "bg-white dark:bg-[#161B22]";
+
 function hasNonEmptyValue(value: unknown): boolean {
   if (value == null) return false;
   if (typeof value === "string") return value.trim().length > 0;
@@ -29,7 +31,7 @@ function FloatingLabel({
   htmlFor,
   label,
   active,
-  labelBackgroundClassName
+  labelBackgroundClassName,
 }: {
   htmlFor: string;
   label: string;
@@ -40,17 +42,20 @@ function FloatingLabel({
     <label
       htmlFor={htmlFor}
       className={cn(
-        "pointer-events-none absolute left-3 z-20 max-w-[calc(100%-1.5rem)] truncate leading-none transition-all duration-200",
+        "pointer-events-none absolute z-[1] max-w-[calc(100%-1.25rem)] truncate leading-none transition-all duration-200",
         active
-          ? "top-2.5 translate-y-0 text-[11px] font-semibold text-teal-600 dark:text-teal-300"
-          : "top-1/2 -translate-y-1/2 text-sm text-slate-500 dark:text-[#94A3B8]",
-        labelBackgroundClassName ?? (active ? "bg-white dark:bg-[#161B22]" : undefined)
+          ? "left-2.5 top-0 -translate-y-1/2 text-[11px] font-semibold text-teal-600 dark:text-teal-300"
+          : "left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-500 dark:text-[#94A3B8]",
+        active && cn("px-1", labelBackgroundClassName ?? DEFAULT_LABEL_BG)
       )}
     >
       {label}
     </label>
   );
 }
+
+const floatingFieldClass =
+  "ss-input w-full pt-5 pb-2.5 placeholder:text-transparent focus:border-teal-500 focus:ring-teal-200/70 dark:focus:border-teal-400 dark:focus:ring-teal-400/30";
 
 export function FloatingLabelInput({
   label,
@@ -64,6 +69,8 @@ export function FloatingLabelInput({
   onFocus,
   onBlur,
   onChange,
+  type,
+  autoComplete,
   ...props
 }: FloatingInputProps) {
   const generatedId = useId();
@@ -74,8 +81,12 @@ export function FloatingLabelInput({
   const currentValue = controlled ? value : localValue;
   const floated = focused || hasNonEmptyValue(currentValue);
 
+  const resolvedType = type === "number" ? "text" : type;
+  const resolvedAutoComplete =
+    autoComplete ?? (type === "number" || props.inputMode === "numeric" || props.inputMode === "decimal" ? "off" : undefined);
+
   return (
-    <div className={cn("relative w-full min-w-0", containerClassName)}>
+    <div className={cn("relative w-full min-w-0 overflow-visible", containerClassName)}>
       <FloatingLabel
         htmlFor={fieldId}
         label={`${label}${required ? " *" : ""}`}
@@ -84,6 +95,8 @@ export function FloatingLabelInput({
       />
       <input
         id={fieldId}
+        type={resolvedType}
+        autoComplete={resolvedAutoComplete}
         value={value}
         defaultValue={defaultValue}
         onFocus={(e) => {
@@ -98,14 +111,9 @@ export function FloatingLabelInput({
           if (!controlled) setLocalValue(e.target.value);
           onChange?.(e);
         }}
-        placeholder=" "
-        className={cn(
-          "ss-input pt-4",
-          "placeholder:text-transparent",
-          "focus:border-teal-500 focus:ring-teal-200/70 dark:focus:border-teal-400 dark:focus:ring-teal-400/30",
-          className
-        )}
+        className={cn(floatingFieldClass, className)}
         {...props}
+        placeholder=" "
       />
     </div>
   );
@@ -149,7 +157,7 @@ export function FloatingLabelNumericInput({
   const floated = focused || hasValue;
 
   return (
-    <div className={cn("relative w-full min-w-0", containerClassName)}>
+    <div className={cn("relative w-full min-w-0 overflow-visible", containerClassName)}>
       <FloatingLabel
         htmlFor={fieldId}
         label={`${label}${required ? " *" : ""}`}
@@ -166,11 +174,8 @@ export function FloatingLabelNumericInput({
         onValueChange={onValueChange}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        className={cn(
-          "ss-input w-full pt-4",
-          "focus:border-teal-500 focus:ring-teal-200/70 dark:focus:border-teal-400 dark:focus:ring-teal-400/30",
-          className
-        )}
+        placeholder=" "
+        className={cn(floatingFieldClass, className)}
       />
     </div>
   );
@@ -196,11 +201,10 @@ export function FloatingLabelSelect({
   const [focused, setFocused] = useState(false);
   const [localValue, setLocalValue] = useState<string>(String(defaultValue ?? ""));
   const controlled = value !== undefined;
-  const currentValue = useMemo(() => (controlled ? value : localValue), [controlled, value, localValue]);
-  const floated = focused || hasNonEmptyValue(currentValue);
+  const floated = true;
 
   return (
-    <div className={cn("relative w-full min-w-0", containerClassName)}>
+    <div className={cn("relative w-full min-w-0 overflow-visible", containerClassName)}>
       <FloatingLabel
         htmlFor={fieldId}
         label={`${label}${required ? " *" : ""}`}
@@ -223,11 +227,7 @@ export function FloatingLabelSelect({
           if (!controlled) setLocalValue(e.target.value);
           onChange?.(e);
         }}
-        className={cn(
-          "ss-select pt-4",
-          "focus:border-teal-500 focus:ring-teal-200/70 dark:focus:border-teal-400 dark:focus:ring-teal-400/30",
-          className
-        )}
+        className={cn("ss-select", floatingFieldClass, className)}
         {...props}
       >
         {children}

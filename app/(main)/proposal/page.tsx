@@ -3031,12 +3031,12 @@ function ProposalPageContent() {
               <FloatingLabelInput
                 key={m}
                 label={m.toUpperCase()}
-                type="number"
+                inputMode="numeric"
+                autoComplete="off"
                 min={0}
                 value={monthlyUnits[m] || ""}
                 onChange={(e) => onMonthChange(m, e.target.value)}
-                className="min-h-9 py-1 text-xs sm:text-sm"
-                containerClassName="rounded-lg border border-brand-100 p-1.5 sm:p-2"
+                className="min-h-10 text-xs sm:text-sm"
               />
             ))}
           </div>
