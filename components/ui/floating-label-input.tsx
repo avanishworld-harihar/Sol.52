@@ -55,7 +55,7 @@ function FloatingLabel({
 }
 
 const floatingFieldClass =
-  "ss-input w-full pt-5 pb-2.5 placeholder:text-transparent focus:border-teal-500 focus:ring-teal-200/70 dark:focus:border-teal-400 dark:focus:ring-teal-400/30";
+  "ss-input w-full min-h-12 pt-6 pb-2.5 placeholder:text-transparent focus:border-teal-500 focus:ring-teal-200/70 dark:focus:border-teal-400 dark:focus:ring-teal-400/30";
 
 export function FloatingLabelInput({
   label,

@@ -10,6 +10,10 @@ import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
+const hubMoneyFieldClass =
+  "rounded-xl border-slate-200 bg-white text-sm font-semibold tabular-nums text-slate-800 focus:border-teal-500 focus:ring-teal-200/70 dark:border-white/10 dark:bg-[#0c1017] dark:text-slate-100";
+const hubMoneyLabelBg = "bg-white dark:bg-[#0c1017]";
+
 function parseInrInput(raw: string): number | null {
   const trimmed = raw.trim().replace(/,/g, "");
   if (!trimmed) return null;
@@ -59,21 +63,19 @@ export function ProjectReceivedAmountForm({ project }: { project: ProjectListIte
 
   return (
     <div className="space-y-3 border-t border-slate-100 pt-3 dark:border-white/5">
-      <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">
-        Total received
-      </p>
       <FloatingLabelInput
         id={`project-received-${project.id}`}
         label="Total received (INR)"
         type="text"
         inputMode="decimal"
+        labelBackgroundClassName={hubMoneyLabelBg}
         value={draft}
         onChange={(e) => {
           setDraft(e.target.value);
           if (error) setError("");
         }}
         disabled={busy}
-        className="h-11 rounded-xl border-slate-200 bg-white px-4 text-sm font-semibold tabular-nums text-slate-800 focus:border-teal-500 focus:ring-teal-200/70 dark:border-white/10 dark:bg-[#0c1017] dark:text-slate-100"
+        className={hubMoneyFieldClass}
       />
 
       {error ? (
@@ -154,13 +156,14 @@ export function ProjectContractValueForm({ project }: { project: ProjectListItem
         label="Contract value (INR)"
         type="text"
         inputMode="decimal"
+        labelBackgroundClassName={hubMoneyLabelBg}
         value={draft}
         onChange={(e) => {
           setDraft(e.target.value);
           if (error) setError("");
         }}
         disabled={busy}
-        className="h-11 rounded-xl border-slate-200 bg-white px-4 text-sm font-semibold tabular-nums text-slate-800 focus:border-teal-500 focus:ring-teal-200/70 dark:border-white/10 dark:bg-[#0c1017] dark:text-slate-100"
+        className={hubMoneyFieldClass}
       />
 
       {error ? (
