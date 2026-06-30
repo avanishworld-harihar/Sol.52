@@ -1,5 +1,6 @@
 "use client";
 
+import { opsPanelClass, opsPanelTitleClass } from "@/components/projects/ops/ops-panel-styles";
 import type { ProjectDashboardStats } from "@/lib/project-api-client";
 import {
   buildHealthRingGradient,
@@ -21,24 +22,17 @@ export function ProjectOpsHealthRing({
   const gradient = buildHealthRingGradient(segments);
 
   return (
-    <article
-      className={cn(
-        "rounded-xl border border-slate-200/90 bg-white p-3 dark:border-white/10 dark:bg-[#0c1017] max-sm:p-2.5 sm:p-5",
-        className
-      )}
-    >
-      <h3 className="text-[10px] font-black uppercase tracking-wide text-slate-500 dark:text-slate-400 max-sm:text-[9px] sm:text-xs">
-        Project health
-      </h3>
-      <div className="mt-2 flex flex-col items-center gap-2 max-sm:mt-1.5 sm:mt-4 sm:flex-row sm:items-center sm:gap-6">
-        <div className="relative h-20 w-20 shrink-0 max-sm:h-[4.5rem] max-sm:w-[4.5rem] sm:h-32 sm:w-32">
+    <article className={cn(opsPanelClass("p-4 sm:p-5"), className)}>
+      <h3 className={opsPanelTitleClass()}>Project health</h3>
+      <div className="mt-3 flex flex-col items-center gap-3 sm:mt-4 sm:flex-row sm:items-center sm:gap-6">
+        <div className="relative h-24 w-24 shrink-0 sm:h-32 sm:w-32">
           <div
-            className="h-full w-full rounded-full"
+            className="h-full w-full rounded-full shadow-[inset_0_0_0_1px_rgba(15,23,42,0.06)]"
             style={{ background: gradient }}
             role="img"
             aria-label={`Health breakdown for ${total} projects`}
           />
-          <div className="absolute inset-[18%] flex flex-col items-center justify-center rounded-full bg-white dark:bg-[#0c1017]">
+          <div className="absolute inset-[16%] flex flex-col items-center justify-center rounded-full bg-white shadow-inner dark:bg-[#0c1017]">
             <span className="text-lg font-extrabold tabular-nums text-slate-900 dark:text-white sm:text-2xl">
               {total}
             </span>

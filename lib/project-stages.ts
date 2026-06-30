@@ -54,6 +54,16 @@ export const STAGE_SHORT_LABELS: Record<ProjectStageId, string> = {
   completed: "Done",
 };
 
+/** Progress bar fill per stage (ops dashboard) */
+export const STAGE_BAR_FILL_CLASS: Record<ProjectStageId, string> = {
+  survey: "bg-slate-400",
+  design: "bg-blue-500",
+  approval: "bg-amber-500",
+  installation: "bg-orange-500",
+  net_metering: "bg-violet-500",
+  completed: "bg-emerald-500",
+};
+
 /** Tailwind color tokens for stage badges */
 export const STAGE_COLOR_CLASS: Record<ProjectStageId, string> = {
   survey: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",

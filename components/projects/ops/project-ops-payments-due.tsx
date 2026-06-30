@@ -1,5 +1,6 @@
 "use client";
 
+import { opsPanelClass, opsPanelTitleClass } from "@/components/projects/ops/ops-panel-styles";
 import type { ProjectListItem } from "@/lib/project-api-client";
 import {
   formatDueLabel,
@@ -22,20 +23,13 @@ export function ProjectOpsPaymentsDue({
   const rows = pickPaymentsDue(projects, 5);
 
   return (
-    <article
-      className={cn(
-        "rounded-xl border border-slate-200/90 bg-white p-3 dark:border-white/10 dark:bg-[#0c1017] max-sm:p-2.5 sm:p-5",
-        className
-      )}
-    >
-      <div className="mb-2 flex items-center justify-between gap-2 max-sm:mb-1.5 sm:mb-3">
-        <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
-          <span className="ws-icon-well ws-icon-well--teal h-7 w-7 shrink-0 max-sm:h-6 max-sm:w-6 sm:h-8 sm:w-8" aria-hidden>
+    <article className={cn(opsPanelClass("p-4 sm:p-5"), className)}>
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="ws-icon-well ws-icon-well--teal h-8 w-8 shrink-0" aria-hidden>
             <CalendarClock className="h-4 w-4" strokeWidth={2.25} />
           </span>
-          <h3 className="text-xs font-black uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            Payments & milestones
-          </h3>
+          <h3 className={opsPanelTitleClass()}>Payments & milestones</h3>
         </div>
         <Link
           href={projectFilterHref({ health: "attention_needed" })}
@@ -59,7 +53,7 @@ export function ProjectOpsPaymentsDue({
               <li key={p.id}>
                 <Link
                   href={`/projects/${encodeURIComponent(p.id)}`}
-                  className="group flex items-start justify-between gap-2 py-1.5 transition hover:bg-slate-50/80 dark:hover:bg-white/[0.03] max-sm:py-1 sm:gap-3 sm:py-2.5"
+                  className="group -mx-2 flex items-start justify-between gap-2 rounded-xl px-2 py-2.5 transition hover:bg-slate-50/90 dark:hover:bg-white/[0.03] sm:gap-3"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-xs font-semibold text-slate-800 dark:text-white sm:text-sm">

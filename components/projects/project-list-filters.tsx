@@ -137,7 +137,12 @@ export function ProjectListFiltersBar({
   );
 
   return (
-    <div className={cn("page-lite-item max-sm:space-y-1 sm:space-y-3", className)}>
+    <div
+      className={cn(
+        "page-lite-item rounded-2xl border border-slate-200/90 bg-white p-4 shadow-[0_4px_20px_-8px_rgba(15,23,42,0.1)] dark:border-white/10 dark:bg-[#0c1017] sm:p-5",
+        className
+      )}
+    >
       {/* Mobile: search + collapsible filters */}
       <div className="space-y-1 sm:hidden">
         <div className="relative min-w-0">
@@ -199,7 +204,7 @@ export function ProjectListFiltersBar({
         </div>
         {advancedFilters}
 
-        <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3 text-xs font-semibold text-slate-500 dark:border-white/10 dark:text-slate-400">
           <span className="inline-flex items-center gap-1.5">
             <SlidersHorizontal className="h-3.5 w-3.5" />
             {countLabel}

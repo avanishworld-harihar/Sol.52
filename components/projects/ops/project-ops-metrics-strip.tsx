@@ -34,25 +34,26 @@ function MetricCard({
   const body = (
     <div
       className={cn(
-        "flex min-w-[8.25rem] shrink-0 flex-col gap-1.5 rounded-lg border border-slate-200/90 bg-white px-2.5 py-2 dark:border-white/10 dark:bg-[#0c1017] max-sm:min-w-[7.5rem] max-sm:gap-1 max-sm:px-2 max-sm:py-1.5 sm:min-w-[10.5rem] sm:gap-2 sm:rounded-xl sm:px-3.5 sm:py-3",
+        "group relative flex min-w-[8.5rem] shrink-0 flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-gradient-to-br from-white to-slate-50/80 px-3 py-3 shadow-[0_4px_18px_-8px_rgba(15,23,42,0.12)] dark:border-white/10 dark:from-[#0c1017] dark:to-[#141a22]",
+        "max-sm:min-w-[7.75rem] max-sm:px-2.5 max-sm:py-2.5 sm:min-w-0",
         interactive &&
-          "cursor-pointer transition hover:border-teal-300/80 hover:shadow-sm dark:hover:border-teal-500/30"
+          "cursor-pointer transition hover:-translate-y-0.5 hover:border-teal-300/70 hover:shadow-[0_12px_28px_-10px_rgba(15,23,42,0.18)] dark:hover:border-teal-500/35"
       )}
     >
       <span
         className={cn(
-          "ws-icon-well h-6 w-6 max-sm:h-5 max-sm:w-5 sm:h-8 sm:w-8",
+          "ws-icon-well h-8 w-8 max-sm:h-7 max-sm:w-7",
           `ws-icon-well--${tone}`
         )}
         aria-hidden
       >
-        <Icon className="h-3 w-3 max-sm:h-2.5 max-sm:w-2.5 sm:h-4 sm:w-4" strokeWidth={2.25} />
+        <Icon className="h-4 w-4 max-sm:h-3.5 max-sm:w-3.5" strokeWidth={2.25} />
       </span>
-      <div>
+      <div className="mt-3 max-sm:mt-2">
         <p className="text-[9px] font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500 max-sm:text-[8px] sm:text-[10px]">
           {label}
         </p>
-        <p className="mt-0.5 text-base font-extrabold tabular-nums text-slate-900 dark:text-white max-sm:text-sm sm:text-xl">
+        <p className="mt-0.5 text-lg font-extrabold tabular-nums tracking-tight text-slate-900 dark:text-white max-sm:text-base sm:text-xl">
           {value}
         </p>
       </div>
@@ -137,7 +138,7 @@ export function ProjectOpsMetricsStrip({
   return (
     <div
       className={cn(
-        "page-lite-item -mx-1 flex gap-3 overflow-x-auto pb-1 scrollbar-thin sm:grid sm:grid-cols-2 sm:overflow-visible lg:grid-cols-3 xl:grid-cols-6",
+        "flex gap-3 overflow-x-auto pb-1 scrollbar-thin sm:grid sm:grid-cols-2 sm:gap-3 sm:overflow-visible lg:grid-cols-3 xl:grid-cols-6",
         className
       )}
     >

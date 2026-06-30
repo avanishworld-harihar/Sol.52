@@ -1,7 +1,8 @@
 "use client";
 
+import { opsPanelClass, opsPanelTitleClass } from "@/components/projects/ops/ops-panel-styles";
 import type { ProjectDashboardStats } from "@/lib/project-api-client";
-import { STAGE_COLOR_CLASS } from "@/lib/project-stages";
+import { STAGE_BAR_FILL_CLASS, STAGE_COLOR_CLASS } from "@/lib/project-stages";
 import { buildStageSegments, projectFilterHref } from "@/lib/project-ops-dashboard-utils";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -17,16 +18,9 @@ export function ProjectOpsStageBreakdown({
   const max = Math.max(1, ...segments.map((s) => s.count));
 
   return (
-    <article
-      className={cn(
-        "rounded-xl border border-slate-200/90 bg-white p-3 dark:border-white/10 dark:bg-[#0c1017] max-sm:p-2.5 sm:p-5",
-        className
-      )}
-    >
-      <h3 className="text-[10px] font-black uppercase tracking-wide text-slate-500 dark:text-slate-400 max-sm:text-[9px] sm:text-xs">
-        Stage breakdown
-      </h3>
-      <ul className="mt-2 space-y-1.5 max-sm:mt-1.5 max-sm:space-y-1 sm:mt-4 sm:space-y-2.5">
+    <article className={cn(opsPanelClass("p-4 sm:p-5"), className)}>
+      <h3 className={opsPanelTitleClass()}>Stage breakdown</h3>
+      <ul className="mt-3 space-y-2 sm:mt-4 sm:space-y-2.5">
         {segments.map((seg) => (
           <li key={seg.id}>
             <Link
@@ -46,9 +40,12 @@ export function ProjectOpsStageBreakdown({
                   {seg.count}
                 </span>
               </div>
-              <div className="h-1 overflow-hidden rounded-full bg-slate-100 dark:bg-white/10 max-sm:h-1 sm:h-2">
+              <div className="h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-white/10">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-teal-500 to-emerald-500 transition-[width] duration-500"
+                  className={cn(
+                    "h-full rounded-full transition-[width] duration-500",
+                    STAGE_BAR_FILL_CLASS[seg.id]
+                  )}
                   style={{ width: `${Math.round((seg.count / max) * 100)}%` }}
                 />
               </div>

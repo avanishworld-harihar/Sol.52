@@ -24,7 +24,7 @@ function OpsDashboardBody({
 }) {
   return (
     <section
-      className={cn("page-lite-item space-y-2 max-sm:space-y-1.5 sm:space-y-4", className)}
+      className={cn("space-y-3 sm:space-y-4", className)}
       aria-label="Operations dashboard"
     >
       <ProjectOpsMetricsStrip
