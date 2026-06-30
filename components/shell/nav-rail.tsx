@@ -10,7 +10,7 @@
  *   lg  (1024px–1279px) — 56px icon-only (w-14)
  *   xl+ (1280px+)       — 216px icon + label (w-54)
  *
- * Sticky to the viewport height via `sticky top-0 h-screen`.
+ * Fixed-height rail — main column scrolls; rail stays in place (see OsShell).
  * The main content column takes the remaining flex width (flex-1).
  *
  * Brand logo:
@@ -56,8 +56,8 @@ export function NavRail() {
         "hidden lg:flex",
         // Sizing: icon-only on lg, labeled on xl
         "w-14 xl:w-[13.5rem]",
-        // Layout
-        "sticky top-0 h-screen shrink-0 flex-col",
+        // Layout — full shell height; parent uses h-svh + overflow-hidden
+        "h-full max-h-svh shrink-0 self-stretch flex-col",
         "overflow-hidden",
         // Surface: glass, matches TopBar
         "border-r border-white/35 dark:border-white/8",

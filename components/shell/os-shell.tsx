@@ -78,24 +78,21 @@ function OsShellInner({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <div className="flex min-h-screen min-h-svh w-full max-w-[100vw] overflow-x-hidden">
+    <div className="flex h-svh max-h-svh w-full max-w-[100vw] overflow-hidden">
       {/* Cmd+K wiring */}
       <ShellKeyboardShortcuts />
 
-      {/* ── Desktop left rail (lg+) ─────────────────────────────────── */}
+      {/* ── Desktop left rail (lg+) — fixed column; does not scroll with content ── */}
       <NavRail />
 
-      {/* ── Main content column ─────────────────────────────────────── */}
-      <div className="flex min-w-0 flex-1 flex-col">
-        {/* Sticky topbar */}
+      {/* ── Main content column — only this area scrolls ───────────────── */}
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <TopBar />
 
-        {/* Page content — this is the equivalent of AppShell's <main> */}
-        <main className="app-shell flex min-h-0 min-w-0 flex-1 flex-col">
+        <main className="app-shell flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-y-contain">
           <section
             className={cn(
-              // Container: full width on mobile, capped on large screens
-              "mx-auto w-full flex-1 min-h-screen overflow-x-hidden",
+              "mx-auto w-full flex-1 min-h-full overflow-x-hidden",
               "px-3 pt-3 sm:px-4 sm:space-y-4 sm:pt-4",
               "md:space-y-5 md:px-5 md:pt-5",
               "lg:pt-6 2xl:px-8",

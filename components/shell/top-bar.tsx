@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * TopBar — sticky application header for the OS shell.
+ * TopBar — application header for the OS shell (pinned above scrollable main).
  *
  * Replaces the header inside AppShell (which is used only by admin + 404 pages now).
  *
@@ -87,7 +87,7 @@ export function TopBar() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-[100]",
+        "z-[100] shrink-0",
         "flex h-[3.75rem] w-full shrink-0 items-center gap-3",
         "border-b border-white/30 dark:border-white/8",
         "bg-white/90 backdrop-blur-[10px] backdrop-saturate-150",
