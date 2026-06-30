@@ -3,7 +3,7 @@
 import { CustomersLeadList } from "@/components/customers-lead-list";
 import { CustomerWorkspacePane } from "@/components/customer-workspace-pane";
 import { WorkflowLifecycleStrip } from "@/components/workflow-lifecycle-strip";
-import { FloatingLabelInput, FloatingLabelSelect } from "@/components/ui/floating-label-input";
+import { FloatingLabelInput, StaticLabelSelect } from "@/components/ui/floating-label-input";
 import { HelpHint } from "@/components/ui/help-hint";
 import { useToast } from "@/components/ui/toast-center";
 import {
@@ -101,7 +101,9 @@ function CustomersPageContent() {
     [form.discom, leadDiscomOptions]
   );
   const modalFloatingClass =
-    "h-12 rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 focus:border-teal-500 focus:ring-teal-200/70";
+    "min-h-12 rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 focus:border-teal-500 focus:ring-teal-200/70";
+  const modalSelectClass =
+    "h-12 rounded-xl border-slate-200 bg-white text-sm font-medium text-slate-800 focus:border-teal-500 focus:ring-teal-200/70 dark:border-white/10 dark:bg-[#0c1017] dark:text-slate-100";
   const modalLabelBg = "bg-white dark:bg-[#161B22]";
 
   const { data, error: loadError, isLoading, mutate } = useSWR<CustomerLead[]>(CUSTOMERS_SWR_KEY, fetchCustomers, {
@@ -756,11 +758,10 @@ function CustomersPageContent() {
                 value={form.consumer_name}
                 onChange={(e) => setForm((p) => ({ ...p, consumer_name: e.target.value }))}
               />
-              <FloatingLabelSelect
+              <StaticLabelSelect
                 label={t("customers_labelState")}
                 containerClassName="my-4"
-                labelBackgroundClassName={modalLabelBg}
-                className={modalFloatingClass}
+                className={modalSelectClass}
                 suppressHydrationWarning
                 value={form.state}
                 onChange={(e) => setForm((p) => ({ ...p, state: e.target.value, discom: "" }))}
@@ -771,12 +772,11 @@ function CustomersPageContent() {
                       {s}
                     </option>
                   ))}
-              </FloatingLabelSelect>
-              <FloatingLabelSelect
+              </StaticLabelSelect>
+              <StaticLabelSelect
                 label={t("customers_labelDiscom")}
                 containerClassName="my-4"
-                labelBackgroundClassName={modalLabelBg}
-                className={`${modalFloatingClass} disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400`}
+                className={`${modalSelectClass} disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400`}
                 suppressHydrationWarning
                 value={form.discom}
                 disabled={!form.state.trim()}
@@ -797,12 +797,11 @@ function CustomersPageContent() {
                       ))}
                     </>
                   )}
-              </FloatingLabelSelect>
-              <FloatingLabelSelect
+              </StaticLabelSelect>
+              <StaticLabelSelect
                 label={t("customers_labelConnectionType")}
                 containerClassName="my-4"
-                labelBackgroundClassName={modalLabelBg}
-                className={modalFloatingClass}
+                className={modalSelectClass}
                 suppressHydrationWarning
                 value={form.connection_type}
                 onChange={(e) => setForm((p) => ({ ...p, connection_type: e.target.value }))}
@@ -812,12 +811,11 @@ function CustomersPageContent() {
                     {o.label}
                   </option>
                 ))}
-              </FloatingLabelSelect>
-              <FloatingLabelSelect
+              </StaticLabelSelect>
+              <StaticLabelSelect
                 label={t("customers_labelArea")}
                 containerClassName="my-4"
-                labelBackgroundClassName={modalLabelBg}
-                className={modalFloatingClass}
+                className={modalSelectClass}
                 suppressHydrationWarning
                 value={form.area}
                 onChange={(e) => setForm((p) => ({ ...p, area: e.target.value }))}
@@ -827,7 +825,7 @@ function CustomersPageContent() {
                     {o.label}
                   </option>
                 ))}
-              </FloatingLabelSelect>
+              </StaticLabelSelect>
               <FloatingLabelInput
                 label={t("customers_labelLocation")}
                 containerClassName="my-4"
@@ -869,12 +867,11 @@ function CustomersPageContent() {
                 value={form.consumer_id}
                 onChange={(e) => setForm((p) => ({ ...p, consumer_id: e.target.value }))}
               />
-              <FloatingLabelSelect
+              <StaticLabelSelect
                 suppressHydrationWarning
                 label={t("customers_labelSurveyStatus")}
                 containerClassName="my-4"
-                labelBackgroundClassName={modalLabelBg}
-                className={modalFloatingClass}
+                className={modalSelectClass}
                 value={form.survey_status}
                 onChange={(e) => setForm((p) => ({ ...p, survey_status: e.target.value }))}
               >
@@ -883,13 +880,12 @@ function CustomersPageContent() {
                     {t(opt.labelKey)}
                   </option>
                 ))}
-              </FloatingLabelSelect>
-              <FloatingLabelSelect
+              </StaticLabelSelect>
+              <StaticLabelSelect
                 suppressHydrationWarning
                 label={t("customers_tablePipeline")}
                 containerClassName="my-4"
-                labelBackgroundClassName={modalLabelBg}
-                className={modalFloatingClass}
+                className={modalSelectClass}
                 value={form.status}
                 onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))}
               >
@@ -898,7 +894,7 @@ function CustomersPageContent() {
                       {t(LEAD_STATUS_I18N_KEY[opt.value])}
                     </option>
                   ))}
-              </FloatingLabelSelect>
+              </StaticLabelSelect>
               {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
               </div>
               <div className="sticky bottom-0 z-10 shrink-0 border-t border-slate-100/80 bg-[hsl(var(--card))] px-4 py-3 shadow-[0_-10px_28px_-14px_rgba(15,23,42,0.28)] pb-[max(1rem,env(safe-area-inset-bottom,0px))] dark:border-white/10 sm:pb-3">

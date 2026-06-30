@@ -2,6 +2,7 @@
 
 import { NumericTextInput } from "@/components/ui/numeric-text-input";
 import { cn } from "@/lib/utils";
+import { ChevronDown } from "lucide-react";
 import { useId, useState, type InputHTMLAttributes, type SelectHTMLAttributes } from "react";
 
 type FloatingShellProps = {
@@ -56,6 +57,10 @@ function FloatingLabel({
 
 const floatingFieldClass =
   "ss-input w-full min-h-12 pt-6 pb-2.5 placeholder:text-transparent focus:border-teal-500 focus:ring-teal-200/70 dark:focus:border-teal-400 dark:focus:ring-teal-400/30";
+
+/** Selects with a label on the border — native `<select>` needs lighter top padding than inputs. */
+const floatingSelectClass =
+  "ss-select w-full min-h-12 py-2.5 pl-3 pr-9 text-sm font-medium leading-normal focus:border-teal-500 focus:ring-teal-200/70 dark:focus:border-teal-400 dark:focus:ring-teal-400/30";
 
 export function FloatingLabelInput({
   label,
@@ -204,34 +209,75 @@ export function FloatingLabelSelect({
   const floated = true;
 
   return (
-    <div className={cn("relative w-full min-w-0 overflow-visible", containerClassName)}>
+    <div className={cn("relative isolate w-full min-w-0 overflow-visible focus-within:z-30", containerClassName)}>
       <FloatingLabel
         htmlFor={fieldId}
         label={`${label}${required ? " *" : ""}`}
         active={floated}
         labelBackgroundClassName={labelBackgroundClassName}
       />
-      <select
-        id={fieldId}
-        value={value}
-        defaultValue={defaultValue}
-        onFocus={(e) => {
-          setFocused(true);
-          onFocus?.(e);
-        }}
-        onBlur={(e) => {
-          setFocused(false);
-          onBlur?.(e);
-        }}
-        onChange={(e) => {
-          if (!controlled) setLocalValue(e.target.value);
-          onChange?.(e);
-        }}
-        className={cn("ss-select", floatingFieldClass, className)}
-        {...props}
-      >
-        {children}
-      </select>
+      <div className="relative">
+        <select
+          id={fieldId}
+          value={value}
+          defaultValue={defaultValue}
+          onFocus={(e) => {
+            setFocused(true);
+            onFocus?.(e);
+          }}
+          onBlur={(e) => {
+            setFocused(false);
+            onBlur?.(e);
+          }}
+          onChange={(e) => {
+            if (!controlled) setLocalValue(e.target.value);
+            onChange?.(e);
+          }}
+          className={cn(floatingSelectClass, className)}
+          {...props}
+        >
+          {children}
+        </select>
+        <ChevronDown
+          className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+          aria-hidden
+        />
+      </div>
+    </div>
+  );
+}
+
+/** Static label above select — avoids native-select padding quirks in modals. */
+export function StaticLabelSelect({
+  label,
+  id,
+  className,
+  containerClassName,
+  required,
+  children,
+  ...props
+}: FloatingSelectProps) {
+  const generatedId = useId();
+  const fieldId = id ?? `fld-${generatedId}`;
+
+  return (
+    <div className={cn("min-w-0", containerClassName)}>
+      <label htmlFor={fieldId} className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">
+        {`${label}${required ? " *" : ""}`}
+      </label>
+      <div className="relative">
+        <select
+          id={fieldId}
+          className={cn("ss-select w-full min-w-0 pr-9", className)}
+          {...props}
+        >
+          {children}
+        </select>
+        <ChevronDown
+          className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+          aria-hidden
+        />
+      </div>
     </div>
   );
 }
