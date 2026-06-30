@@ -82,33 +82,82 @@ export function WorkspaceOptionalFold({
   children,
   defaultOpen = false,
   theme = "residential",
+  hint,
+  className,
 }: {
   title: string;
   children: React.ReactNode;
   defaultOpen?: boolean;
   theme?: WorkspaceTheme;
+  /** Shown when collapsed — explains what is inside. */
+  hint?: string;
+  className?: string;
 }) {
   const [open, setOpen] = useState(defaultOpen);
-  const border =
-    theme === "commercial"
-      ? "border-indigo-200/70 dark:border-indigo-500/25"
-      : "border-emerald-200/70 dark:border-emerald-500/25";
+  const isCommercial = theme === "commercial";
 
   return (
-    <div className={cn("rounded-xl border bg-white/60 dark:bg-white/[0.03]", border)}>
+    <div
+      className={cn(
+        "overflow-hidden rounded-xl border-2 transition-colors",
+        open
+          ? isCommercial
+            ? "border-indigo-200/90 bg-white dark:border-indigo-500/30 dark:bg-[#0c1017]"
+            : "border-emerald-200/90 bg-white dark:border-emerald-500/30 dark:bg-[#0c1017]"
+          : isCommercial
+            ? "border-dashed border-indigo-300/80 bg-indigo-50/50 dark:border-indigo-500/35 dark:bg-indigo-950/25"
+            : "border-dashed border-emerald-300/80 bg-emerald-50/50 dark:border-emerald-500/35 dark:bg-emerald-950/25",
+        className
+      )}
+    >
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex min-h-12 w-full items-center justify-between gap-2 px-3 py-2.5 text-left touch-manipulation"
+        className={cn(
+          "flex min-h-[3.25rem] w-full items-center justify-between gap-3 px-4 py-3 text-left touch-manipulation transition-colors sm:min-h-14",
+          "hover:bg-white/70 dark:hover:bg-white/[0.04]",
+          open && "border-b border-slate-200/80 dark:border-white/10"
+        )}
         aria-expanded={open}
       >
-        <span className="text-sm font-bold text-slate-800 dark:text-slate-100">{title}</span>
-        <ChevronDown
-          className={cn("h-5 w-5 shrink-0 text-slate-400 transition-transform", open && "rotate-180")}
-          aria-hidden
-        />
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-bold text-slate-900 dark:text-slate-50 sm:text-base">{title}</span>
+            <span
+              className={cn(
+                "rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide",
+                isCommercial
+                  ? "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-200"
+                  : "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200"
+              )}
+            >
+              Optional
+            </span>
+          </div>
+          {!open ? (
+            <p className="mt-1 text-xs font-medium leading-snug text-slate-600 dark:text-slate-400">
+              {hint ?? "Tap to expand more options"}
+            </p>
+          ) : null}
+        </div>
+        <div
+          className={cn(
+            "flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-bold",
+            isCommercial
+              ? "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-200"
+              : "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200"
+          )}
+        >
+          <span className="hidden sm:inline">{open ? "Hide" : "Show"}</span>
+          <ChevronDown
+            className={cn("h-5 w-5 shrink-0 transition-transform", open && "rotate-180")}
+            aria-hidden
+          />
+        </div>
       </button>
-      {open ? <div className="space-y-3 border-t border-slate-200/80 px-3 py-3 dark:border-white/10">{children}</div> : null}
+      {open ? (
+        <div className="space-y-3 border-t border-slate-200/80 px-4 py-4 dark:border-white/10">{children}</div>
+      ) : null}
     </div>
   );
 }
@@ -190,5 +239,10 @@ export function workspaceSliderClass(theme: WorkspaceTheme) {
 }
 
 export function workspaceStickySaveClass() {
-  return "sticky bottom-0 z-10 -mx-4 border-t border-slate-200/90 bg-white/95 px-4 py-3 backdrop-blur-md dark:border-white/10 dark:bg-[#0c1017]/95 sm:-mx-5 pb-[max(0.75rem,env(safe-area-inset-bottom))]";
+  return cn(
+    "sticky bottom-0 z-10 border-t border-slate-200/90 bg-white/95 backdrop-blur-md",
+    "px-4 py-3 dark:border-white/10 dark:bg-[#0c1017]/95",
+    "sm:px-5 sm:py-4",
+    "pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+  );
 }

@@ -489,7 +489,12 @@ export function ResidentialPricingStudio({
           </ResidentialStepSection>
         )}
 
-        <WorkspaceOptionalFold title="Compare brands" defaultOpen={false} theme={isCommercial ? "commercial" : "residential"}>
+        <WorkspaceOptionalFold
+          title="Compare brands"
+          hint="Panel brands side-by-side & DCR vs non-DCR tiers"
+          defaultOpen={false}
+          theme={isCommercial ? "commercial" : "residential"}
+        >
           <ResidentialBrandComparePanel config={config} onChange={onChange} dcrOnly={isCommercial} />
           {!isCommercial ? (
             <ResidentialTrackComparePanel config={config} onChange={onChange} />
@@ -508,8 +513,8 @@ export function ResidentialPricingStudio({
 
       <div className={workspaceStickySaveClass()}>
         {(netCostInr != null || paybackDisplay) && onSaveAndGenerate ? (
-          <div className="mb-3 space-y-2 border-b border-slate-200/80 pb-3 text-xs font-semibold text-slate-700 dark:border-white/10 dark:text-slate-300 sm:text-sm">
-            <div className="grid gap-1 rounded-lg bg-slate-50/90 p-2.5 dark:bg-white/[0.03]">
+          <div className="mb-4 space-y-2.5 border-b border-slate-200/80 pb-4 text-xs font-semibold text-slate-700 dark:border-white/10 dark:text-slate-300 sm:text-sm">
+            <div className="grid gap-1.5 rounded-xl bg-slate-50/90 p-3.5 sm:p-4 dark:bg-white/[0.03]">
               <div className="flex justify-between gap-2">
                 <span>Plant cost</span>
                 <span className="tabular-nums">{inr(costBreakdown.grossInr)}</span>
@@ -532,7 +537,7 @@ export function ResidentialPricingStudio({
               </div>
             </div>
             {paybackDisplay ? (
-              <p>
+              <p className="px-0.5">
                 Payback: <span className="font-extrabold text-brand-700 dark:text-brand-400">{paybackDisplay}</span>
               </p>
             ) : null}
@@ -540,7 +545,7 @@ export function ResidentialPricingStudio({
         ) : null}
 
         {onOpenReview ? (
-          <div className="mb-3">
+          <div className="mb-4">
             <Button
               type="button"
               variant="outline"

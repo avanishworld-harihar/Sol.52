@@ -393,7 +393,12 @@ export function ResidentialRequirementBuilder({
       </section>
 
       {!isCommercial ? (
-      <WorkspaceOptionalFold title="Home & financing (optional)" theme="residential">
+      <WorkspaceOptionalFold
+        title="Home & financing"
+        hint="Roof type, budget, battery backup & loan EMI — tap to expand"
+        theme="residential"
+        className="mt-1"
+      >
       <div className="grid gap-3 sm:grid-cols-2">
         <section className="space-y-2">
           <WorkspaceFieldLabel>Roof</WorkspaceFieldLabel>

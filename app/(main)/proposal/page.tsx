@@ -2687,7 +2687,7 @@ function ProposalPageContent() {
         {/* OS layout: form (flex-1) + live preview panel (fixed width, desktop) */}
         <div className="flex items-start gap-4 lg:gap-6">
           {/* Main builder column */}
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 pb-6 sm:pb-8">
             <BuilderStageBar
               presetId={osPresetId}
               activeStageIndex={osActiveStageIndex}
