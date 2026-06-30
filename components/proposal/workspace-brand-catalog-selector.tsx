@@ -91,7 +91,7 @@ export function WorkspaceBrandCatalogSelector({
             active={activeId === entry.brandId}
             theme={theme}
             onClick={() => selectBrand(entry.brandId)}
-            className="min-w-[4.5rem] max-w-[12rem] truncate px-3"
+            className="min-w-[4.5rem] max-w-full px-3"
           >
             {entry.brand}
           </WorkspaceTouchChip>
@@ -150,20 +150,29 @@ export function WorkspaceBrandCatalogSelector({
       ) : null}
 
       {activeEntry ? (
-        <div className="flex flex-col gap-2 rounded-xl border border-slate-200/80 bg-white/90 p-2.5 dark:border-white/10 dark:bg-white/[0.03] sm:flex-row sm:items-center">
-          <FloatingLabelInput
-            label="Edit brand name"
-            value={activeEntry.brand}
-            onChange={(e) =>
-              emit(updateCatalogEntry(normalized, activeEntry.brandId, { brand: e.target.value }))
-            }
-            className="h-11 min-w-0 flex-1 rounded-xl text-sm font-semibold"
-          />
+        <div className="flex flex-col gap-2 rounded-xl border border-slate-200/80 bg-white/90 p-2.5 dark:border-white/10 dark:bg-white/[0.03] sm:flex-row sm:flex-wrap sm:items-end">
+          <div className="min-w-0 flex-1 sm:min-w-[10rem]">
+            <label
+              htmlFor={`brand-edit-${activeEntry.brandId}`}
+              className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300"
+            >
+              Edit brand name
+            </label>
+            <input
+              id={`brand-edit-${activeEntry.brandId}`}
+              type="text"
+              value={activeEntry.brand}
+              onChange={(e) =>
+                emit(updateCatalogEntry(normalized, activeEntry.brandId, { brand: e.target.value }))
+              }
+              className="ss-input h-11 w-full min-w-0 rounded-xl text-sm font-semibold"
+            />
+          </div>
           {entries.length > 1 ? (
             <button
               type="button"
               onClick={() => emit(removeCatalogBrand(normalized, activeEntry.brandId))}
-              className="inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-rose-200 px-3 text-sm font-semibold text-rose-700 touch-manipulation dark:border-rose-900/50 dark:text-rose-300"
+              className="inline-flex h-11 w-full shrink-0 items-center justify-center gap-1.5 rounded-xl border border-rose-200 px-3 text-sm font-semibold text-rose-700 touch-manipulation sm:w-auto dark:border-rose-900/50 dark:text-rose-300"
             >
               <Trash2 className="h-4 w-4" aria-hidden />
               Remove

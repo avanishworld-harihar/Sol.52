@@ -47,13 +47,60 @@ type ChipProps = {
   title?: string | null;
   onSchedule: () => void;
   className?: string;
+  /** Desktop rows: inline pill instead of full-width banner */
+  variant?: "prominent" | "compact";
 };
 
 /** Prominent callback state + schedule CTA for customer rows */
-export function CustomerCallbackChip({ dueAt, title, onSchedule, className }: ChipProps) {
+export function CustomerCallbackChip({
+  dueAt,
+  title,
+  onSchedule,
+  className,
+  variant = "prominent",
+}: ChipProps) {
   const info = describeCallback(dueAt);
   const hasCallback = info.state !== "none";
   const tone = callbackUrgencyClasses(info.state);
+
+  if (variant === "compact") {
+    if (!hasCallback) {
+      return (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onSchedule();
+          }}
+          className={cn(
+            "inline-flex touch-manipulation items-center gap-1.5 rounded-lg border border-amber-200/80 bg-amber-50/60 px-2 py-1 text-[11px] font-bold text-amber-900 transition hover:bg-amber-100/80 dark:border-amber-500/35 dark:bg-amber-950/25 dark:text-amber-100",
+            className
+          )}
+        >
+          <CalendarClock className="h-3.5 w-3.5 shrink-0" strokeWidth={2.25} aria-hidden />
+          Schedule callback
+        </button>
+      );
+    }
+
+    return (
+      <div className={cn("inline-flex max-w-full items-center gap-1.5", className)}>
+        <CallbackStatusBadge dueAt={dueAt} title={title} compact />
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onSchedule();
+          }}
+          className="inline-flex h-7 shrink-0 touch-manipulation items-center gap-1 rounded-lg border border-slate-200/90 bg-white px-2 text-[10px] font-bold uppercase tracking-wide text-slate-600 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-300"
+          aria-label="Reschedule callback"
+        >
+          <CalendarClock className="h-3 w-3" strokeWidth={2.25} aria-hidden />
+          Edit
+        </button>
+      </div>
+    );
+  }
 
   if (!hasCallback) {
     return (

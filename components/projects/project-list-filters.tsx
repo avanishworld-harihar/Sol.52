@@ -1,12 +1,12 @@
 "use client";
 
-import { FloatingLabelInput, FloatingLabelSelect } from "@/components/ui/floating-label-input";
+import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { HEALTH_LABELS, type ProjectHealth } from "@/lib/project-health";
 import { PROJECT_STAGE_ORDER, STAGE_LABELS } from "@/lib/project-stages";
 import type { ProjectListFilters, ProjectSortKey } from "@/lib/project-list-utils";
 import { cn } from "@/lib/utils";
 import { ChevronDown, Search, SlidersHorizontal } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 
 const SORT_OPTIONS: { value: ProjectSortKey; label: string }[] = [
   { value: "updated_at", label: "Last updated" },
@@ -16,6 +16,29 @@ const SORT_OPTIONS: { value: ProjectSortKey; label: string }[] = [
   { value: "health", label: "Health" },
   { value: "target_completion", label: "Target date" },
 ];
+
+function FilterSelect({
+  label,
+  value,
+  onChange,
+  children,
+  className,
+}: {
+  label: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className="min-w-0">
+      <label className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">{label}</label>
+      <select value={value} onChange={onChange} className={cn("ss-select w-full min-w-0", className)}>
+        {children}
+      </select>
+    </div>
+  );
+}
 
 export function ProjectListFiltersBar({
   filters,
@@ -53,15 +76,14 @@ export function ProjectListFiltersBar({
       : `${filteredCount} of ${totalCount} projects`;
 
   const advancedFilters = (
-    <div className="grid w-full grid-cols-2 gap-2 sm:grid-cols-4">
-      <FloatingLabelSelect
+    <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+      <FilterSelect
         label="Stage"
         value={filters.stage}
         onChange={(e) =>
           onChange({ stage: e.target.value as ProjectListFilters["stage"], page: 1 })
         }
         className={inputClass}
-        containerClassName="my-0 w-full min-w-0"
       >
         <option value="all">All stages</option>
         {PROJECT_STAGE_ORDER.map((s) => (
@@ -69,16 +91,15 @@ export function ProjectListFiltersBar({
             {STAGE_LABELS[s]}
           </option>
         ))}
-      </FloatingLabelSelect>
+      </FilterSelect>
 
-      <FloatingLabelSelect
+      <FilterSelect
         label="Health"
         value={filters.health}
         onChange={(e) =>
           onChange({ health: e.target.value as ProjectListFilters["health"], page: 1 })
         }
         className={inputClass}
-        containerClassName="my-0 w-full min-w-0"
       >
         <option value="all">All health</option>
         {(Object.keys(HEALTH_LABELS) as ProjectHealth[]).map((h) => (
@@ -86,34 +107,32 @@ export function ProjectListFiltersBar({
             {HEALTH_LABELS[h]}
           </option>
         ))}
-      </FloatingLabelSelect>
+      </FilterSelect>
 
-      <FloatingLabelSelect
+      <FilterSelect
         label="Sort by"
         value={filters.sort}
         onChange={(e) => onChange({ sort: e.target.value as ProjectSortKey, page: 1 })}
         className={inputClass}
-        containerClassName="my-0 w-full min-w-0"
       >
         {SORT_OPTIONS.map((o) => (
           <option key={o.value} value={o.value}>
             {o.label}
           </option>
         ))}
-      </FloatingLabelSelect>
+      </FilterSelect>
 
-      <FloatingLabelSelect
+      <FilterSelect
         label="Order"
         value={filters.sortDir}
         onChange={(e) =>
           onChange({ sortDir: e.target.value as ProjectListFilters["sortDir"], page: 1 })
         }
         className={inputClass}
-        containerClassName="my-0 w-full min-w-0"
       >
         <option value="desc">Newest first</option>
         <option value="asc">Oldest first</option>
-      </FloatingLabelSelect>
+      </FilterSelect>
     </div>
   );
 

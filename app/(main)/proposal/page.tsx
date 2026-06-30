@@ -2713,7 +2713,7 @@ function ProposalPageContent() {
             )}
 
             {/* â”€â”€â”€ EXISTING FORM CONTENT (unchanged) â”€â”€â”€ */}
-            <div id="step-1-anchor" className={`ss-step-card space-y-2 ${osPresetId === "commercial_executive" ? "ring-1 ring-sky-200/60" : ""}`}>
+            <div id="step-1-anchor" className={`ss-step-card space-y-2 overflow-visible ${osPresetId === "commercial_executive" ? "ring-1 ring-sky-200/60" : ""}`}>
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className="ss-step-chip">Step 1</span>

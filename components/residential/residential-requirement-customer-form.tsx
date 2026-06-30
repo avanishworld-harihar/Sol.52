@@ -1,6 +1,5 @@
 "use client";
 
-import { FloatingLabelInput, FloatingLabelSelect } from "@/components/ui/floating-label-input";
 import { FloatingLabelNumericInput } from "@/components/ui/floating-label-input";
 import { INDIAN_STATES_AND_UTS } from "@/lib/indian-states-uts";
 import {
@@ -13,8 +12,8 @@ import { mergeSavedDiscomOption, resolveDiscomCode } from "@/lib/installer-regio
 import { ConnectionPhaseChips } from "@/components/residential/connection-phase-chips";
 import type { ConnectionPhase } from "@/lib/connection-phase-pricing";
 import { cn } from "@/lib/utils";
-import { IndianRupee, MapPin, Phone, User, Zap } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { ChevronDown, MapPin, Phone, User, Zap } from "lucide-react";
+import { useEffect, useId, useMemo, type ReactNode } from "react";
 
 export type ResidentialRequirementCustomerFields = {
   contactName: string;
@@ -83,6 +82,52 @@ function Field({
   );
 }
 
+function CustomerSelect({
+  label,
+  value,
+  onChange,
+  disabled,
+  children,
+  className,
+}: {
+  label: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  disabled?: boolean;
+  children: ReactNode;
+  className?: string;
+}) {
+  const id = useId();
+  return (
+    <div className="relative isolate min-w-0 focus-within:z-30">
+      <label htmlFor={id} className="mb-1.5 block text-xs font-bold text-slate-700 dark:text-slate-300">
+        {label}
+      </label>
+      <div className="relative">
+        <select
+          id={id}
+          value={value}
+          onChange={onChange}
+          disabled={disabled}
+          suppressHydrationWarning
+          className={cn(
+            "ss-select w-full min-w-0 pr-9",
+            "bg-white dark:bg-[#161B22]",
+            "focus:border-emerald-500 focus:ring-emerald-200/70 dark:focus:border-emerald-400 dark:focus:ring-emerald-400/30",
+            className
+          )}
+        >
+          {children}
+        </select>
+        <ChevronDown
+          className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+          aria-hidden
+        />
+      </div>
+    </div>
+  );
+}
+
 export function ResidentialRequirementCustomerForm({
   fields,
   onContactName,
@@ -115,14 +160,12 @@ export function ResidentialRequirementCustomerForm({
   }, [fields.state, fields.discom, discomOptions, onDiscom]);
 
   const selectFieldClass =
-    "h-11 w-full min-w-0 rounded-xl border-slate-200 bg-white text-sm font-medium dark:border-white/15 dark:bg-white/5";
-  const selectLabelBg = "bg-white dark:bg-white/5";
-  const selectContainerClass = "my-0 min-w-0";
+    "h-11 rounded-xl border-slate-200 bg-white text-sm font-medium dark:border-white/15 dark:bg-white/5";
 
   return (
     <div
       className={cn(
-        "space-y-2.5 rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/60 to-white p-4 dark:border-emerald-900/40 dark:from-emerald-950/25 dark:to-transparent",
+        "space-y-2.5 overflow-visible rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/60 to-white p-4 dark:border-emerald-900/40 dark:from-emerald-950/25 dark:to-transparent",
         className
       )}
     >
@@ -136,18 +179,15 @@ export function ResidentialRequirementCustomerForm({
         onChange={onContactName}
         required
       />
-      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3">
-        <FloatingLabelSelect
+      <div className="grid grid-cols-1 gap-2.5 overflow-visible xl:grid-cols-2 xl:gap-3">
+        <CustomerSelect
           label="State / UT *"
-          suppressHydrationWarning
           value={fields.state}
           onChange={(e) => {
             onState(e.target.value);
             onDiscom("");
           }}
           className={selectFieldClass}
-          containerClassName={selectContainerClass}
-          labelBackgroundClassName={selectLabelBg}
         >
           <option value="">Select state</option>
           {INDIAN_STATES_AND_UTS.map((s) => (
@@ -155,16 +195,13 @@ export function ResidentialRequirementCustomerForm({
               {s}
             </option>
           ))}
-        </FloatingLabelSelect>
-        <FloatingLabelSelect
+        </CustomerSelect>
+        <CustomerSelect
           label="DISCOM *"
-          suppressHydrationWarning
           value={fields.discom}
           disabled={!fields.state.trim()}
           onChange={(e) => onDiscom(e.target.value)}
           className={cn(selectFieldClass, "disabled:opacity-60")}
-          containerClassName={selectContainerClass}
-          labelBackgroundClassName={selectLabelBg}
         >
           {!fields.state.trim() ? (
             <option value="">Select state first</option>
@@ -180,39 +217,33 @@ export function ResidentialRequirementCustomerForm({
               ))}
             </>
           )}
-        </FloatingLabelSelect>
+        </CustomerSelect>
       </div>
-      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3">
-        <FloatingLabelSelect
+      <div className="grid grid-cols-1 gap-2.5 overflow-visible">
+        <CustomerSelect
           label="Connection type (optional)"
-          suppressHydrationWarning
           value={fields.connectionType}
           onChange={(e) => onConnectionType(e.target.value)}
           className={selectFieldClass}
-          containerClassName={selectContainerClass}
-          labelBackgroundClassName={selectLabelBg}
         >
           {LEAD_CONNECTION_TYPE_OPTIONS.map((o) => (
             <option key={o.value || "unset"} value={o.value}>
               {o.label}
             </option>
           ))}
-        </FloatingLabelSelect>
-        <FloatingLabelSelect
+        </CustomerSelect>
+        <CustomerSelect
           label="Area (optional)"
-          suppressHydrationWarning
           value={fields.area}
           onChange={(e) => onArea(e.target.value)}
           className={selectFieldClass}
-          containerClassName={selectContainerClass}
-          labelBackgroundClassName={selectLabelBg}
         >
           {LEAD_AREA_PROFILE_OPTIONS.map((o) => (
             <option key={o.value || "unset"} value={o.value}>
               {o.label}
             </option>
           ))}
-        </FloatingLabelSelect>
+        </CustomerSelect>
       </div>
       {onConnectionPhase ? (
         <ConnectionPhaseChips
@@ -222,7 +253,7 @@ export function ResidentialRequirementCustomerForm({
           className="rounded-xl border border-slate-200/90 bg-white/80 px-3 py-2.5 dark:border-white/10 dark:bg-white/[0.03]"
         />
       ) : null}
-      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3">
+      <div className="grid grid-cols-1 gap-2.5 overflow-visible sm:grid-cols-2 sm:gap-3">
         <Field
           icon={MapPin}
           placeholder="Location (colony, sector, landmark)"

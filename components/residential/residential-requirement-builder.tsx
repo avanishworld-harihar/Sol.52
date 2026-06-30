@@ -160,7 +160,6 @@ export function ResidentialRequirementBuilder({
   const emi = fin.enabled
     ? estimateResidentialEmiInr(netCostInr, fin.interestRatePct ?? 10.5, fin.selectedTenureYears ?? 5)
     : 0;
-  const monthlySaving = Math.round(annualSavingInr / 12);
   const isCommercial = variant === "commercial";
 
   // Catalog brands for brand selector
@@ -286,7 +285,7 @@ export function ResidentialRequirementBuilder({
   return (
     <div
       className={cn(
-        "space-y-3 rounded-2xl border p-3 shadow-sm sm:space-y-4 sm:p-5",
+        "min-w-0 space-y-3 overflow-visible rounded-2xl border p-3 shadow-sm sm:space-y-4 sm:p-5",
         isCommercial
           ? "border-indigo-200/70 bg-white dark:border-indigo-500/25 dark:bg-[#0c1017]"
           : "border-emerald-200/80 bg-white dark:border-emerald-900/40 dark:bg-[#0c1017]",
@@ -312,16 +311,6 @@ export function ResidentialRequirementBuilder({
         items={[
           { label: "Plant", value: `${quote.actualKw} kW` },
           { label: "Panels", value: `${modules}×${solar.watt}` },
-          {
-            label: "Save/mo",
-            value:
-              monthlySaving >= 100000
-                ? `₹${(monthlySaving / 100000).toFixed(1)}L`
-                : monthlySaving >= 1000
-                  ? `₹${Math.round(monthlySaving / 1000)}k`
-                  : `₹${monthlySaving}`,
-          },
-          { label: "EMI", value: fin.enabled ? `₹${emi.toLocaleString("en-IN")}` : "—" },
         ]}
       />
 
@@ -364,7 +353,7 @@ export function ResidentialRequirementBuilder({
         </div>
       </section>
 
-      <section className={cn("space-y-2.5 rounded-xl border p-3", wattBoxBorder)}>
+      <section className={cn("space-y-2.5 overflow-visible rounded-xl border p-3", wattBoxBorder)}>
         <WorkspaceModuleWattSelector
           config={config}
           onChange={applyModuleConfigChange}
@@ -375,7 +364,7 @@ export function ResidentialRequirementBuilder({
         />
       </section>
 
-      <section className="space-y-2.5 rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-white/10 dark:bg-white/5">
+      <section className="space-y-2.5 overflow-visible rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-white/10 dark:bg-white/5">
         <WorkspaceBrandCatalogSelector config={config} onChange={commitConfig} theme={theme} />
         <WorkspaceFieldLabel className="mt-2">Quote mode</WorkspaceFieldLabel>
         <div className="flex flex-wrap gap-2">

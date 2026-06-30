@@ -80,7 +80,7 @@ export function WorkspaceModuleWattSelector({
       <p className="text-xs tabular-nums text-slate-600 dark:text-slate-400">
         {plantKw} kW → <strong>{modules} panels</strong>
       </p>
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap gap-2">
         {presets.map((w) => (
           <WorkspaceTouchChip
             key={w}
@@ -92,29 +92,29 @@ export function WorkspaceModuleWattSelector({
             {w}W
           </WorkspaceTouchChip>
         ))}
-        {!adding ? (
-          <>
-            <button type="button" onClick={() => setAdding(true)} className={actionBtnClass}>
-              <Plus className="h-4 w-4 shrink-0" aria-hidden />
-              Add
-            </button>
-            {presets.length > 1 ? (
-              <button
-                type="button"
-                onClick={commitRemove}
-                title={`Remove ${activeWatt}W from list`}
-                className={cn(
-                  actionBtnClass,
-                  "border-rose-200 text-rose-700 dark:border-rose-900/50 dark:text-rose-300"
-                )}
-              >
-                <Trash2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                <span className="text-xs">Remove</span>
-              </button>
-            ) : null}
-          </>
-        ) : null}
       </div>
+      {!adding ? (
+        <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={() => setAdding(true)} className={actionBtnClass}>
+            <Plus className="h-4 w-4 shrink-0" aria-hidden />
+            Add
+          </button>
+          {presets.length > 1 ? (
+            <button
+              type="button"
+              onClick={commitRemove}
+              title={`Remove ${activeWatt}W from list`}
+              className={cn(
+                actionBtnClass,
+                "border-rose-200 text-rose-700 dark:border-rose-900/50 dark:text-rose-300"
+              )}
+            >
+              <Trash2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              <span className="text-xs">Remove</span>
+            </button>
+          ) : null}
+        </div>
+      ) : null}
 
       {adding ? (
         <div className="flex flex-col gap-2 rounded-xl border border-slate-200/90 bg-white p-2.5 dark:border-white/10 dark:bg-white/[0.03] sm:flex-row sm:items-end">

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { Building2, IndianRupee, MapPin, MessageCircle, Pencil, Phone, PhoneCall, Trash2, Users, Wifi } from "lucide-react";
+import { Building2, MapPin, MessageCircle, Pencil, Phone, PhoneCall, Trash2, Users, Wifi } from "lucide-react";
 
 import type { CustomerLead } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -33,6 +33,80 @@ function initials(name: string) {
   if (parts.length === 0) return "?";
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+const AVATAR_GRADIENTS = [
+  "from-teal-500 to-emerald-600",
+  "from-sky-500 to-indigo-600",
+  "from-violet-500 to-purple-600",
+  "from-amber-500 to-orange-600",
+  "from-rose-500 to-pink-600",
+] as const;
+
+function avatarGradient(name: string) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = (hash + name.charCodeAt(i) * (i + 1)) % AVATAR_GRADIENTS.length;
+  return AVATAR_GRADIENTS[hash];
+}
+
+function LeadAvatar({
+  name,
+  stale,
+  size = "md",
+}: {
+  name: string;
+  stale?: boolean;
+  size?: "md" | "sm";
+}) {
+  const shell = size === "sm" ? "h-11 w-11 rounded-xl text-sm" : "h-12 w-12 rounded-xl text-sm sm:text-base";
+  return (
+    <div className="relative shrink-0">
+      <div
+        className={cn(
+          "flex items-center justify-center bg-gradient-to-br font-extrabold text-white shadow-[0_4px_14px_-4px_rgba(15,23,42,0.35)] ring-2 ring-white dark:ring-[#0c1017]",
+          avatarGradient(name),
+          shell,
+          stale && "ring-amber-300/80"
+        )}
+        aria-hidden
+      >
+        {initials(name)}
+      </div>
+      {stale ? (
+        <span
+          className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 animate-pulse rounded-full bg-amber-400 ring-2 ring-white dark:ring-[#0c1017]"
+          title="No activity in 14+ days"
+          aria-label="Stale lead"
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function LeadLocationMeta({ city, discom }: { city: string; discom: string }) {
+  return (
+    <div className="space-y-1.5">
+      <div className="grid grid-cols-[1rem_minmax(0,1fr)] items-center gap-x-2">
+        <MapPin className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" strokeWidth={2.25} aria-hidden />
+        <span className="truncate text-sm font-semibold text-slate-800 dark:text-slate-100">{city}</span>
+      </div>
+      <div className="grid grid-cols-[1rem_minmax(0,1fr)] items-center gap-x-2">
+        <Building2 className="h-3.5 w-3.5 text-slate-400" strokeWidth={2} aria-hidden />
+        <span className="truncate text-xs font-medium text-slate-500 dark:text-slate-400">{discom}</span>
+      </div>
+    </div>
+  );
+}
+
+function LeadBillMetric({ bill, label }: { bill: number; label: string }) {
+  return (
+    <div className="text-right lg:text-left">
+      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{label}</p>
+      <p className="mt-0.5 text-lg font-extrabold tabular-nums tracking-tight text-slate-900 dark:text-slate-50">
+        ₹{bill.toLocaleString("en-IN")}
+      </p>
+    </div>
+  );
 }
 
 export function LeadStatusBadge({ statusKey, label }: { statusKey: LeadStatusKey; label: string }) {
@@ -416,8 +490,8 @@ export function CustomersLeadList({
                 <article
                   key={`m-${customer.id}`}
                   className={cn(
-                    "relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#0c1017]",
-                    "md:max-lg:rounded-xl md:max-lg:p-3 md:max-lg:shadow-sm",
+                    "relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 shadow-[0_4px_20px_-8px_rgba(15,23,42,0.12)] dark:border-white/10 dark:bg-[#0c1017]",
+                    "md:max-lg:rounded-xl md:max-lg:p-3",
                     activeProject && "border-l-[4px] border-l-indigo-500 bg-indigo-50/25 dark:border-l-indigo-400 dark:bg-indigo-950/25",
                     onSelectLead && selectedLeadId === customer.id && "ring-2 ring-brand-500/50 ring-offset-2 ring-offset-slate-50 dark:ring-offset-[#0c1017]"
                   )}
@@ -451,25 +525,7 @@ export function CustomersLeadList({
                   ) : null}
 
                   <div className={cn("flex gap-3", canMutateLead ? "pr-12" : "")}>
-                    <div className="relative shrink-0">
-                      <div
-                        className={cn(
-                          "flex h-14 w-14 items-center justify-center rounded-2xl border border-slate-200 bg-slate-100 text-base font-extrabold text-slate-800 dark:border-white/10 dark:bg-[#1a1f28] dark:text-slate-100",
-                          "md:max-lg:h-11 md:max-lg:w-11 md:max-lg:rounded-xl md:max-lg:text-sm",
-                          stale && "border-amber-300/80 ring-2 ring-amber-400/40"
-                        )}
-                        aria-hidden
-                      >
-                        {initials(customer.consumer_name ?? customer.name)}
-                      </div>
-                      {stale ? (
-                        <span
-                          className="absolute -right-0.5 -top-0.5 h-3 w-3 animate-pulse rounded-full bg-amber-400 ring-2 ring-white"
-                          title="No activity in 14+ days"
-                          aria-label="Stale lead"
-                        />
-                      ) : null}
-                    </div>
+                    <LeadAvatar name={customer.consumer_name ?? customer.name} stale={stale} />
                     <div className="min-w-0 flex-1">
                       <h3 className="pr-2 text-lg font-extrabold leading-tight text-slate-900 dark:text-slate-50 md:max-lg:text-base">
                         {displayName}
@@ -590,17 +646,17 @@ export function CustomersLeadList({
             })}
           </div>
 
-          <div className="hidden overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#0c1017] lg:block">
+          <div className="hidden overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_8px_30px_-12px_rgba(15,23,42,0.12)] dark:border-white/10 dark:bg-[#0c1017] lg:block">
             {showHeader && (
-              <div className="border-b border-slate-200 bg-slate-100 px-4 py-2.5 text-[10px] font-black uppercase tracking-wider text-slate-600 dark:border-white/10 dark:bg-[#141a22] dark:text-slate-400 lg:grid lg:grid-cols-12 lg:gap-4 lg:px-5">
-                <div className="col-span-5 pl-14">{t("customers_tableLead")}</div>
+              <div className="grid grid-cols-12 gap-4 border-b border-slate-200/90 bg-gradient-to-r from-slate-50 to-white px-5 py-3 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:border-white/10 dark:from-[#141a22] dark:to-[#0c1017] dark:text-slate-400">
+                <div className="col-span-5 pl-[3.25rem]">{t("customers_tableLead")}</div>
                 <div className="col-span-3">{t("customers_tableLocation")}</div>
                 <div className="col-span-2">{t("customers_tableBill")}</div>
                 <div className="col-span-2 text-right">{t("customers_tablePipeline")}</div>
               </div>
             )}
 
-            <div>
+            <div className="divide-y divide-slate-100 dark:divide-white/[0.06]">
               {customers.map((customer) => {
                 const statusKey = normalizeLeadStatus(customer.status);
                 const commercialCta = resolveCustomerCommercialCta(customer);
@@ -626,11 +682,11 @@ export function CustomersLeadList({
                   <article
                     key={customer.id}
                     className={cn(
-                      "group/row relative border-b border-slate-200 p-4 transition-colors last:border-b-0 hover:bg-slate-50/90 dark:border-white/[0.07] dark:hover:bg-white/[0.03]",
-                      "lg:grid lg:grid-cols-12 lg:items-center lg:gap-4 lg:px-5",
-                      activeProject && "border-l-[3px] border-l-indigo-500 bg-indigo-50/30 dark:border-l-indigo-400 dark:bg-indigo-950/20",
+                      "group/row relative grid grid-cols-12 items-center gap-4 px-5 py-3.5 transition-all duration-200",
+                      "hover:bg-slate-50/90 dark:hover:bg-white/[0.025]",
+                      activeProject && "bg-indigo-50/40 dark:bg-indigo-950/20",
                       onSelectLead && selectedLeadId === customer.id &&
-                        "border-l-[3px] border-l-teal-500 bg-teal-50/55 ring-1 ring-inset ring-teal-400/35 dark:border-l-teal-400 dark:bg-teal-950/30 dark:ring-teal-400/25"
+                        "bg-teal-50/60 ring-1 ring-inset ring-teal-400/30 dark:bg-teal-950/25 dark:ring-teal-400/20"
                     )}
                     onClick={(e) => {
                       if (!onSelectLead) return;
@@ -650,138 +706,124 @@ export function CustomersLeadList({
                     role={onSelectLead ? "button" : undefined}
                     tabIndex={onSelectLead ? 0 : undefined}
                   >
-                    <div className="relative lg:col-span-5">
-                      <div className="relative flex items-start gap-3 lg:items-center lg:gap-4">
-                        <div className="relative shrink-0">
-                          <div
-                            className={cn(
-                              "flex h-12 w-12 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-sm font-extrabold text-slate-800 shadow-sm dark:border-white/10 dark:bg-[#1a1f28] dark:text-slate-100 sm:h-14 sm:w-14 sm:text-base",
-                              stale && "border-amber-300/80 ring-2 ring-amber-400/50"
-                            )}
-                            aria-hidden
-                          >
-                            {initials(customer.consumer_name ?? customer.name)}
-                          </div>
-                          {stale && (
-                            <span
-                              className="absolute -right-1 -top-1 h-3 w-3 animate-pulse rounded-full bg-amber-400 ring-2 ring-white"
-                              title="No activity in 14+ days"
-                              aria-label="Stale lead"
-                            />
-                          )}
-                        </div>
+                    <div
+                      className={cn(
+                        "pointer-events-none absolute bottom-2 left-0 top-2 w-0.5 rounded-full bg-teal-500 opacity-0 transition-opacity group-hover/row:opacity-100",
+                        activeProject && "bg-indigo-500 opacity-100",
+                        onSelectLead && selectedLeadId === customer.id && "opacity-100"
+                      )}
+                      aria-hidden
+                    />
+
+                    <div className="col-span-5 min-w-0">
+                      <div className="flex items-start gap-3">
+                        <LeadAvatar name={customer.consumer_name ?? customer.name} stale={stale} size="sm" />
                         <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-1.5">
-                            <h3 className="truncate text-base font-extrabold tracking-tight text-slate-900 dark:text-slate-50 sm:text-lg">
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <h3 className="truncate text-[15px] font-bold tracking-tight text-slate-900 dark:text-slate-50">
                               {desktopDisplayName}
                             </h3>
                             <LeadSourceBadge sourceRaw={customer.source} />
                             <span
                               className={cn(
-                                "inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider sm:text-[10px]",
+                                "inline-flex shrink-0 items-center rounded-md border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider",
                                 stageMeta.className
                               )}
                             >
                               {t(stageMeta.labelKey)}
                             </span>
                           </div>
-                          <div className="mt-2">
+
+                          <div className="mt-1.5 flex flex-wrap items-center gap-2">
                             <CustomerCallbackChip
                               dueAt={nextFollowupAt}
                               title={nextFollowupTitle}
+                              variant="compact"
                               onSchedule={() => setScheduleTarget(customer)}
                             />
+                            {stale ? (
+                              <span className="text-[9px] font-bold uppercase tracking-wider text-amber-600">
+                                Stale · 14+ days
+                              </span>
+                            ) : null}
                           </div>
+
                           {customer.phone ? (
-                            <div className="mt-1 space-y-2">
+                            <div className="mt-2 flex flex-wrap items-center gap-2">
                               <a
                                 href={`tel:${customer.phone}`}
                                 onClick={() => handlePhoneCall(customer.id)}
-                                className="flex w-full min-w-0 items-start gap-1.5 text-sm font-semibold text-slate-700 dark:text-slate-200"
+                                className="inline-flex min-w-0 items-center gap-1.5 text-xs font-semibold tabular-nums text-slate-600 hover:text-indigo-700 dark:text-slate-300 dark:hover:text-indigo-300"
                               >
-                                <PhoneCall className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" strokeWidth={1.85} aria-hidden />
-                                <span className="min-w-0 break-all tabular-nums leading-snug">{formatLeadPhoneForDisplay(customer.phone)}</span>
+                                <PhoneCall className="h-3.5 w-3.5 shrink-0 text-slate-400" strokeWidth={2} aria-hidden />
+                                <span className="truncate">{formatLeadPhoneForDisplay(customer.phone)}</span>
                               </a>
-                              <div className="flex flex-wrap items-center gap-2">
-                              <a
-                                href={`tel:${customer.phone}`}
-                                onClick={() => handlePhoneCall(customer.id)}
-                                className="inline-flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-xl border-[0.5px] border-indigo-200/80 bg-indigo-50/90 text-indigo-600 shadow-sm transition-colors hover:bg-indigo-100 hover:text-indigo-700"
-                                aria-label={`Call ${customer.name}`}
-                              >
-                                <Phone className="h-4 w-4" strokeWidth={1.9} />
-                              </a>
-                              {waUrl ? (
-                                <button
-                                  type="button"
-                                  onClick={() => openWhatsApp(customer.id, waUrl)}
-                                  className="inline-flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center rounded-xl border-[0.5px] border-emerald-200/80 bg-emerald-50/90 text-emerald-600 shadow-sm transition-colors hover:bg-emerald-100 hover:text-emerald-700"
-                                  aria-label={t("customers_whatsappAria")}
+                              <div className="flex items-center gap-1">
+                                <a
+                                  href={`tel:${customer.phone}`}
+                                  onClick={() => handlePhoneCall(customer.id)}
+                                  className="inline-flex h-8 w-8 touch-manipulation items-center justify-center rounded-lg border border-slate-200/90 bg-white text-indigo-600 shadow-sm transition hover:border-indigo-200 hover:bg-indigo-50 dark:border-white/10 dark:bg-white/5 dark:hover:bg-indigo-950/40"
+                                  aria-label={`Call ${customer.name}`}
                                 >
-                                  <MessageCircle className="h-4 w-4" strokeWidth={1.9} />
-                                </button>
-                              ) : null}
-                              <Link
-                                href={commercialCta.href}
-                                className="inline-flex h-9 items-center justify-center rounded-lg border border-teal-600/75 bg-gradient-to-r from-teal-50 to-indigo-50 px-3 text-[11px] font-extrabold uppercase tracking-wide text-teal-900 shadow-sm transition hover:brightness-105 dark:border-teal-400/45 dark:from-teal-950/50 dark:to-indigo-950/40 dark:text-teal-50"
-                              >
-                                {t(commercialCta.labelKey)}
-                              </Link>
+                                  <Phone className="h-3.5 w-3.5" strokeWidth={2} />
+                                </a>
+                                {waUrl ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => openWhatsApp(customer.id, waUrl)}
+                                    className="inline-flex h-8 w-8 touch-manipulation items-center justify-center rounded-lg border border-slate-200/90 bg-white text-emerald-600 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50 dark:border-white/10 dark:bg-white/5 dark:hover:bg-emerald-950/40"
+                                    aria-label={t("customers_whatsappAria")}
+                                  >
+                                    <MessageCircle className="h-3.5 w-3.5" strokeWidth={2} />
+                                  </button>
+                                ) : null}
+                                <Link
+                                  href={commercialCta.href}
+                                  className="inline-flex h-8 items-center rounded-lg bg-gradient-to-r from-teal-600 to-emerald-600 px-3 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm transition hover:brightness-105"
+                                >
+                                  {t(commercialCta.labelKey)}
+                                </Link>
                               </div>
                             </div>
                           ) : (
-                            <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs font-medium text-slate-400 sm:text-sm">
-                              <p>{t("customers_noPhoneOnFile")}</p>
+                            <div className="mt-2 flex flex-wrap items-center gap-2">
+                              <span className="text-xs text-slate-400">{t("customers_noPhoneOnFile")}</span>
                               <Link
                                 href={commercialCta.href}
-                                className="inline-flex h-9 max-w-full items-center justify-center rounded-lg border border-teal-600/75 bg-gradient-to-r from-teal-50 to-indigo-50 px-3 text-[11px] font-extrabold uppercase tracking-wide text-teal-900 shadow-sm transition hover:brightness-105 dark:border-teal-400/45 dark:from-teal-950/50 dark:to-indigo-950/40 dark:text-teal-50"
+                                className="inline-flex h-8 items-center rounded-lg bg-gradient-to-r from-teal-600 to-emerald-600 px-3 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm transition hover:brightness-105"
                               >
                                 {t(commercialCta.labelKey)}
                               </Link>
                             </div>
                           )}
-                          {stale && (
-                            <p className="mt-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-600 sm:text-[10px]">
-                              No activity · 14+ days
-                            </p>
-                          )}
-                          <p className="mt-1 text-[10px] font-semibold leading-snug text-slate-500 sm:text-[11px]">
-                            <span className="text-slate-400">Last: </span>
+
+                          <p className="mt-1.5 text-[10px] font-medium text-slate-400">
                             {lastActivityAt
-                              ? <span>{fmtActivityType(lastActivityType)} · {formatCrmDateTime(lastActivityAt)}</span>
-                              : <span>{formatLeadLastActivity(customer.last_touched_at, locale)}</span>
-                            }
+                              ? (
+                                  <>
+                                    <span className="text-slate-500">{fmtActivityType(lastActivityType)}</span>
+                                    {" · "}
+                                    {formatCrmDateTime(lastActivityAt)}
+                                  </>
+                                )
+                              : formatLeadLastActivity(customer.last_touched_at, locale)}
                           </p>
                         </div>
                       </div>
                     </div>
 
-                    <div className="relative mt-4 flex flex-col gap-1 border-t border-slate-100 pt-3 dark:border-white/[0.06] lg:col-span-3 lg:mt-0 lg:border-t-0 lg:pt-0">
-                      <p className="flex items-center gap-2 text-sm font-semibold text-slate-800">
-                        <MapPin className="h-4 w-4 shrink-0 text-indigo-500" aria-hidden />
-                        <span className="truncate">{customer.city}</span>
-                      </p>
-                      <p className="flex items-center gap-2 pl-6 text-xs font-medium text-slate-600 sm:text-sm">
-                        <Building2 className="h-3.5 w-3.5 shrink-0 text-slate-400" aria-hidden />
-                        <span className="truncate">{customer.discom}</span>
-                      </p>
+                    <div className="col-span-3 min-w-0">
+                      <LeadLocationMeta city={customer.city} discom={customer.discom} />
                     </div>
 
-                    <div className="relative mt-3 flex items-center gap-2 lg:col-span-2 lg:mt-0">
-                      <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600 dark:border-white/10 dark:bg-[#141a22] dark:text-slate-300 lg:h-10 lg:w-10">
-                        <IndianRupee className="h-4 w-4" strokeWidth={2.5} aria-hidden />
-                      </span>
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t("customers_monthlyBillShort")}</p>
-                        <p className="text-base font-extrabold tabular-nums text-slate-900 dark:text-slate-100 sm:text-lg">
-                          ₹{bill.toLocaleString("en-IN")}
-                        </p>
-                      </div>
+                    <div className="col-span-2 min-w-0">
+                      <LeadBillMetric bill={bill} label={t("customers_monthlyBillShort")} />
                     </div>
 
-                    <div className="relative mt-4 flex flex-col items-end gap-2 lg:col-span-2 lg:mt-0">
+                    <div className="col-span-2 flex flex-col items-end gap-2">
                       {canMutateLead ? (
                         <LeadRowActions
+                          size="sm"
                           onEdit={onEditLead ? () => onEditLead(customer) : undefined}
                           onDelete={onDeleteLead ? () => onDeleteLead(customer) : undefined}
                           editAria={t("customers_editLeadAria")}
@@ -802,9 +844,10 @@ export function CustomersLeadList({
                       )}
                       <Link
                         href={`/customers/${customer.id}`}
-                        className="inline-flex h-7 items-center gap-1 rounded-lg border border-teal-200 bg-teal-50/70 px-2 text-[10px] font-bold text-teal-800 hover:bg-teal-100 dark:border-teal-500/30 dark:bg-teal-950/30 dark:text-teal-200"
+                        className="inline-flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] font-semibold text-teal-700 transition hover:bg-teal-50 hover:text-teal-900 dark:text-teal-300 dark:hover:bg-teal-950/40"
                       >
-                        View profile →
+                        View profile
+                        <span aria-hidden>→</span>
                       </Link>
                     </div>
                   </article>
