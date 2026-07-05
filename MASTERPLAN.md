@@ -8,6 +8,23 @@
 
 ---
 
+## Architecture Index
+
+Module registry. Each module's architecture lives in its own canonical document — **this index does not duplicate architecture**. Frozen documents change only via explicit approval + version increment.
+
+| Module | Status | Version | Document | Roadmap |
+|--------|--------|---------|----------|---------|
+| **Design Studio** | **Frozen** | **v1.0** | [`docs/architecture/design-studio-architecture.md`](docs/architecture/design-studio-architecture.md) | [`docs/roadmap/design-studio-roadmap.md`](docs/roadmap/design-studio-roadmap.md) |
+| Residential Proposal Presets | Frozen | v1.0 | [MASTERPLAN §15](#15-residential-proposal-presets-approved-architecture--roadmap) | §15.6 |
+| Quotation Engine & Rate Card | Active | v1.0 (Phase 1) | [MASTERPLAN §14](#14-quotation-engine--installer-rate-card-pricing-roadmap) | §14.3–14.4 |
+| Project Hub (Phase 3A) | Active | — | [`docs/architecture/phase-3a-complete-architecture.md`](docs/architecture/phase-3a-complete-architecture.md) | [`docs/PHASE-3A-INDEX.md`](docs/PHASE-3A-INDEX.md) |
+| Customer Documents Hub | Active | — | [`docs/architecture/customer-documents-hub-implementation-plan.md`](docs/architecture/customer-documents-hub-implementation-plan.md) | — |
+| Marketplace / Ecosystem | Draft | — | [MASTERPLAN §5](#5-marketplace-vision-future--not-ui-yet) | §8 (Phases E–G) |
+
+**Recall convention (Design Studio):** "Recall / Continue / Open Design Studio Architecture" → load the **frozen architecture** doc first. "Design Studio Roadmap / Future ideas / Next phase" → load the **roadmap** doc. Future ideas never modify the frozen architecture automatically.
+
+---
+
 ## 1. Platform vision
 
 Sol.52 is evolving from a **best-in-class installer proposal & operations surface** into a **full solar ecosystem platform** — **database, domain logic, installer-facing app, and (over time) reusable HTTP APIs** that acquisition brands consume. **Harihar Solar and similar brands do not ship inside this frontend codebase**; they are separate repos and deployments (see §11).
