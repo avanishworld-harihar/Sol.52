@@ -15,7 +15,8 @@ export type ResidentialThemeKey =
   | "slate"
   | "golden"
   | "horizon"
-  | "ember";
+  | "ember"
+  | "aurora";
 
 export type PlanFeatures = {
   /** Explicit allow-list when `all_residential_themes` is false (trial). Not used for commercial. */
