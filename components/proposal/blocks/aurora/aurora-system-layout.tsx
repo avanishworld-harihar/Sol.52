@@ -1,23 +1,9 @@
 "use client";
 
-/**
- * AuroraSystemLayout — Page 5 of the Aurora preset.
- * The signature differentiator block.
- *
- * Three sections on one page:
- *   1. Electrical flow (SLD): PV array → DC cable → DCDB → Inverter → ACDB → Net Meter → Grid
- *   2. Panel tilt guide: why tilt matters, recommended angle for site latitude
- *   3. DC run length guide: why short cable runs matter, recommended max distance
- *
- * Uses inline SVG illustrations — no external images needed.
- * Data sourced from pptInput.residentialTechnicalSpecs (optional) with safe fallbacks.
- */
-
 import type { ProposalDeckSummary, PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import type { ProposalDict, ProposalLang } from "@/lib/proposal-i18n";
-import { AuroraEyebrow, AuroraLead, AuroraPageShell, AuroraTitle } from "./aurora-primitives";
+import { AuroraLead, AuroraPageShell, AuroraTitle } from "./aurora-primitives";
 import { SldDiagramSvg } from "@/components/proposal/blocks/aurora/svg/sld-diagram";
-import { TiltIllustrationSvg } from "@/components/proposal/blocks/aurora/svg/tilt-illustration";
 import { DistanceIllustrationSvg } from "@/components/proposal/blocks/aurora/svg/distance-illustration";
 
 type Props = {
@@ -27,109 +13,120 @@ type Props = {
   pptInput: PremiumProposalPptInput;
 };
 
-/** Rough latitude → recommended tilt mapping for Indian cities. */
 function recommendedTilt(latDeg: number): number {
-  // Rule of thumb: tilt ≈ latitude − 5° for most of India
   const tilt = Math.round(latDeg - 5);
   return Math.max(10, Math.min(tilt, 30));
 }
 
+const FLOW_NODES_EN = [
+  { title: "Array", desc: "PV panels" },
+  { title: "DC Sys", desc: "Protection" },
+  { title: "Inverter", desc: "Smart convert" },
+  { title: "AC Sys", desc: "Safety" },
+  { title: "Load", desc: "Your home" },
+  { title: "Grid", desc: "Net-meter" },
+] as const;
+
+const FLOW_NODES_HI = [
+  { title: "ऐरे", desc: "सोलर पैनल" },
+  { title: "DC", desc: "सुरक्षा" },
+  { title: "इन्वर्टर", desc: "DC→AC" },
+  { title: "AC", desc: "सुरक्षा" },
+  { title: "लोड", desc: "आपका घर" },
+  { title: "ग्रिड", desc: "नेट-मीटर" },
+] as const;
+
 export function AuroraSystemLayout({ summary, lang, pptInput }: Props) {
   const isHi = lang === "hi";
+  const nodes = isHi ? FLOW_NODES_HI : FLOW_NODES_EN;
 
   const specs = pptInput.residentialTechnicalSpecs;
   const siteLat = specs?.mounting?.siteLat;
-  const tiltDeg = specs?.mounting?.actualTiltDeg ?? specs?.mounting?.recommendedTiltDeg ?? (siteLat ? recommendedTilt(siteLat) : 20);
+  const tiltDeg =
+    specs?.mounting?.actualTiltDeg ??
+    specs?.mounting?.recommendedTiltDeg ??
+    (siteLat ? recommendedTilt(siteLat) : 20);
   const dcRunM = specs?.layout?.dcRunLengthM ?? 15;
   const acRunM = specs?.layout?.acRunLengthM ?? 8;
-  const inverterLocation = specs?.layout?.inverterLocation ?? (isHi ? "इन्वर्टर रूम / शेड" : "inverter room / shade");
+  const inverterLocation =
+    specs?.layout?.inverterLocation ?? (isHi ? "इन्वर्टर रूम / शेड" : "inverter room / shade");
+
+  const panelDesc = isHi
+    ? `${summary.panels} पैनल · ${summary.panelWatt ?? 540}W`
+    : `${summary.panels} panels · ${summary.panelWatt ?? 540}W`;
+  const invDesc = isHi ? `${summary.systemKw} kW ऑन-ग्रिड` : `${summary.systemKw} kW on-grid`;
+
+  const flowNodes = nodes.map((n, i) => {
+    if (i === 0) return { ...n, desc: panelDesc };
+    if (i === 2) return { ...n, desc: invDesc };
+    return n;
+  });
 
   return (
     <AuroraPageShell tone="pearl" className="aurora-system-layout">
-      <AuroraEyebrow>{isHi ? "इंजीनियरिंग डिज़ाइन" : "Engineering design"}</AuroraEyebrow>
-      <AuroraTitle>{isHi ? "आपका सिस्टम कैसे डिज़ाइन किया गया है" : "How your system is designed"}</AuroraTitle>
+      <AuroraTitle className="aurora-flow-page-title">
+        {isHi ? "इंजीनियरिंग फ्लो" : "The engineering flow."}
+      </AuroraTitle>
       <AuroraLead>
         {isHi
-          ? "तीन ज़रूरी सवालों के जवाब — बिजली का प्रवाह, पैनल का झुकाव, और तार की दूरी।"
-          : "Three questions answered — how electricity flows, why panels tilt, and why cable length matters."}
+          ? "25 साल की विश्वसनीयता के लिए डिज़ाइन किया गया जुड़ा हुआ सिस्टम।"
+          : "A seamless, connected system designed for 25-year reliability."}
       </AuroraLead>
 
-      <div className="aurora-engine-block aurora-engine-block--indigo">
-        <p className="aurora-engine-kicker">
-          {isHi ? "1. बिजली का प्रवाह (SLD)" : "1. Electrical flow (SLD)"}
+      {/* Connected linear architecture */}
+      <div className="aurora-flow-ribbon" role="img" aria-label={isHi ? "बिजली प्रवाह" : "Power flow"}>
+        {flowNodes.map((node, i) => (
+          <div key={node.title} className="aurora-flow-ribbon-item">
+            <div className="aurora-flow-step">
+              <div className="aurora-flow-node">
+                <span className="aurora-flow-node-title">{node.title}</span>
+              </div>
+              <p className="aurora-flow-node-desc">{node.desc}</p>
+            </div>
+            {i < flowNodes.length - 1 ? <div className="aurora-flow-connector" aria-hidden /> : null}
+          </div>
+        ))}
+      </div>
+
+      {/* Tilt + DC run detail cards */}
+      <div className="aurora-engine-duo">
+        <div className="aurora-engine-duo-card">
+          <p className="aurora-engine-duo-title">
+            {isHi ? `पैनल झुकाव: ${tiltDeg}°` : `Panel tilt angle: ${tiltDeg}°`}
+          </p>
+          <p className="aurora-engine-duo-desc">
+            {isHi
+              ? "अधिकतम सालाना धूप और स्व-सफाई के लिए अनुकूलित।"
+              : "Optimized for maximum annual sunlight capture and self-cleaning efficiency."}
+          </p>
+        </div>
+        <div className="aurora-engine-duo-card">
+          <p className="aurora-engine-duo-title">
+            {isHi ? `DC केबल रन: ~${dcRunM} m` : `DC cable run: ~${dcRunM} m`}
+          </p>
+          <p className="aurora-engine-duo-desc">
+            {isHi
+              ? "वोल्टेज ड्रॉप 1% से कम रखने और पीक दक्षता सुनिश्चित करने के लिए आदर्श दूरी।"
+              : "Ideal distance to keep voltage drop under 1% and ensure peak efficiency."}
+          </p>
+          <p className="aurora-engine-duo-meta">
+            {isHi ? `इन्वर्टर: ${inverterLocation}` : `Inverter at: ${inverterLocation}`}
+          </p>
+        </div>
+      </div>
+
+      {/* Detailed SLD + distance diagram */}
+      <div className="aurora-engine-detail">
+        <p className="aurora-engine-detail-label">
+          {isHi ? "विस्तृत विद्युत प्रवाह (SLD)" : "Detailed electrical path (SLD)"}
         </p>
-        <p className="mb-4 text-sm text-slate-600">
-          {isHi
-            ? "सूरज की रोशनी → DC बिजली → DCDB (DC सुरक्षा) → इन्वर्टर (DC को AC में बदलता है) → ACDB (AC सुरक्षा) → नेट मीटर → आपका घर + ग्रिड।"
-            : "Sunlight → DC power → DCDB (DC protection) → Inverter (converts DC to AC) → ACDB (AC protection) → Net meter → your home + grid."}
-        </p>
-        <div className="overflow-x-auto">
+        <div className="aurora-engine-detail-sld">
           <SldDiagramSvg lang={lang} systemKw={summary.systemKw} panels={summary.panels} />
         </div>
       </div>
 
-      <div className="aurora-engine-block aurora-engine-block--amber">
-        <p className="aurora-engine-kicker">
-          {isHi ? "2. पैनल का झुकाव" : "2. Panel tilt angle"}
-        </p>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
-          <div className="flex-1">
-            <p className="text-sm text-slate-700">
-        {isHi
-            ? `आपकी लोकेशन के लिए अनुशंसित झुकाव ${tiltDeg}° है। सही झुकाव से अधिकतम धूप मिलती है, पानी साफ होता है, और हवा का दबाव कम रहता है।`
-            : `For your location, the recommended tilt is ${tiltDeg}°. The right tilt maximises sunlight capture, helps rainwater clean the panels, and reduces wind load.`}
-            </p>
-            <div className="mt-3 grid grid-cols-3 gap-2">
-              {[
-                { label: isHi ? "आपका झुकाव" : "Your tilt", value: `${tiltDeg}°`, color: "text-amber-600 font-extrabold" },
-                { label: isHi ? "अनुशंसित" : "Recommended", value: `lat − 5°`, color: "text-slate-700 font-semibold" },
-                { label: isHi ? "फ्लैट छत" : "Flat roof", value: "10–15°", color: "text-slate-500" },
-              ].map((r) => (
-                <div key={r.label} className="rounded-xl border border-amber-200 bg-white px-3 py-2 text-center">
-                  <p className="text-[10px] text-slate-400">{r.label}</p>
-                  <p className={`text-base ${r.color}`}>{r.value}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="flex-shrink-0">
-            <TiltIllustrationSvg tiltDeg={tiltDeg} />
-          </div>
-        </div>
-      </div>
-
-      <div className="aurora-engine-block aurora-engine-block--sky aurora-distance-block">
-        <p className="aurora-engine-kicker">
-          {isHi ? "3. पैनल से इन्वर्टर की दूरी" : "3. Panel-to-inverter distance"}
-        </p>
-        <p className="aurora-distance-lead">
-          {isHi
-            ? `DC केबल छोटी रखें — वोल्टेज ड्रॉप, ऊर्जा हानि और लागत कम होती है। इन्वर्टर: ${inverterLocation}।`
-            : `Keep the DC cable short — less voltage drop, energy loss, and cost. Inverter at: ${inverterLocation}.`}
-        </p>
-
-        <div className="aurora-distance-metrics">
-          <div className="aurora-distance-metric aurora-distance-metric--dc">
-            <p className="aurora-distance-metric-label">{isHi ? "DC रन" : "DC run"}</p>
-            <p className="aurora-distance-metric-val">~{dcRunM} m</p>
-            <p className="aurora-distance-metric-hint">{isHi ? "पैनल → इन्वर्टर" : "Panel → inverter"}</p>
-          </div>
-          <div className="aurora-distance-metric">
-            <p className="aurora-distance-metric-label">{isHi ? "AC रन" : "AC run"}</p>
-            <p className="aurora-distance-metric-val">~{acRunM} m</p>
-            <p className="aurora-distance-metric-hint">{isHi ? "इन्वर्टर → मीटर" : "Inverter → meter"}</p>
-          </div>
-        </div>
-
-        <div className="aurora-distance-diagram-wrap">
-          <DistanceIllustrationSvg dcRunM={dcRunM} acRunM={acRunM} lang={lang} />
-        </div>
-
-        <p className="aurora-distance-foot">
-          {isHi
-            ? "लंबी DC केबल = अधिक वोल्टेज ड्रॉप। इन्वर्टर को पैनल के नज़दीक रखना सबसे अच्छा।"
-            : "Longer DC cable = more voltage drop. Placing the inverter close to the array is best practice."}
-        </p>
+      <div className="aurora-distance-diagram-wrap aurora-distance-diagram-wrap--compact">
+        <DistanceIllustrationSvg dcRunM={dcRunM} acRunM={acRunM} lang={lang} />
       </div>
     </AuroraPageShell>
   );
