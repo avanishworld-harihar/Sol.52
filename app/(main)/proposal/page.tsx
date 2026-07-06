@@ -746,12 +746,8 @@ function ProposalPageContent() {
   const isCommercialRequirement =
     osPresetId === "commercial_executive" && commercialInputMode === "requirement";
   const isResidentialSmart = osPresetId === "residential_smart";
-  // New residential web-renderer presets share the same residential input/sizing flow
-  const isResidentialWebPreset =
-    osPresetId === "residential_sales_premium" ||
-    osPresetId === "residential_bank_loan" ||
-    osPresetId === "residential_executive";
-  const isAnyResidential = isResidentialSmart || isResidentialWebPreset;
+  const isAnyResidential =
+    osPresetId != null && osPresetId !== "commercial_executive";
   const isResidentialRequirement = isAnyResidential && residentialInputMode === "requirement";
   const isResidentialBill = isAnyResidential && residentialInputMode === "bill";
   const canEstimateBillToKwh = Boolean(manual.state.trim() && manual.discom.trim());
@@ -2005,16 +2001,7 @@ function ProposalPageContent() {
     );
     const presetForLayout = osPresetId ?? "residential_sales_premium";
     setProposalLayout(
-      (prev) =>
-        prev ??
-        getPresetDefaultLayout(
-          presetForLayout === "residential_smart" ||
-          presetForLayout === "residential_sales_premium" ||
-          presetForLayout === "residential_bank_loan" ||
-          presetForLayout === "residential_executive"
-            ? presetForLayout
-            : "residential_sales_premium"
-        )
+      (prev) => prev ?? getPresetDefaultLayout(presetForLayout)
     );
   }, [isAnyResidential, osPresetId, result.solarKw, urlPrefill.kw, residentialInputMode, deckRestoreReady]);
 
@@ -2077,6 +2064,7 @@ function ProposalPageContent() {
           "residential_sales_premium",
           "residential_bank_loan",
           "residential_executive",
+          "residential_aurora",
         ] as const;
         if (preset && (KNOWN_PRESETS as ReadonlyArray<string>).includes(preset)) {
           setOsPresetId((prev) => prev ?? (preset as typeof KNOWN_PRESETS[number]));
@@ -2630,9 +2618,7 @@ function ProposalPageContent() {
           presetId={
             osPresetId === "commercial_executive"
               ? "commercial_executive"
-              : osPresetId === "residential_sales_premium" ||
-                osPresetId === "residential_bank_loan" ||
-                osPresetId === "residential_executive"
+              : osPresetId && osPresetId !== "residential_smart"
               ? osPresetId
               : "residential_smart"
           }
@@ -3603,7 +3589,8 @@ function ProposalPageContent() {
               annualSaving={effectiveResult.annualSavings}
               netCost={effectiveResult.netCost}
               paybackLabel={effectiveResult.paybackDisplay}
-              isBillBacked={isBillBackedLive && !hideBillUploadSteps}
+              isBillBacked={isResidentialBill}
+              billUploaded={isBillBackedLive}
               latestProposalUrl={latestWebProposalUrl}
               onGenerate={() => void generateWebProposal()}
               busy={isWebProposalBusy}

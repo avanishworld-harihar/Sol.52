@@ -212,6 +212,8 @@ export function BuilderStageBar({
             >
               {presetId === "commercial_executive"
                 ? "Commercial"
+                : presetId === "residential_aurora"
+                ? "Aurora"
                 : presetId === "residential_sales_premium"
                 ? "Sales Premium"
                 : presetId === "residential_bank_loan"

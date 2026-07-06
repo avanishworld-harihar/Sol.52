@@ -65,6 +65,23 @@ const NO_BILL_CHIPS: BlockChip[] = RESIDENTIAL_CHIPS.map((c) =>
       : c
 ).filter((c): c is BlockChip => c !== null);
 
+const AURORA_CHIPS: BlockChip[] = [
+  { id: "cover", label: "Cover" },
+  { id: "about", label: "About" },
+  { id: "bill-audit", label: "Bill" },
+  { id: "technical-summary", label: "Summary" },
+  { id: "system-layout", label: "Design" },
+  { id: "bom", label: "BOM" },
+  { id: "economics", label: "Savings" },
+  { id: "closing", label: "Cost" },
+  { id: "payment", label: "Pay" },
+  { id: "docs", label: "Docs" },
+];
+
+const AURORA_NO_BILL_CHIPS: BlockChip[] = AURORA_CHIPS.map((c) =>
+  c.id === "bill-audit" ? { ...c, id: "system-req", label: "System" } : c
+);
+
 // ─── Metric tile ──────────────────────────────────────────────────────────────
 
 function MetricTile({
@@ -112,6 +129,8 @@ type Props = {
   netCost: number;
   paybackLabel: string;
   isBillBacked: boolean;
+  /** True when a bill file has been uploaded (bill path only). */
+  billUploaded?: boolean;
   latestProposalUrl: string | null;
   onGenerate: () => void;
   busy: boolean;
@@ -129,19 +148,25 @@ export function ProposalLivePreviewPanel({
   netCost,
   paybackLabel,
   isBillBacked,
+  billUploaded = false,
   latestProposalUrl,
   onGenerate,
   busy,
   onEditBlocks,
 }: Props) {
   const isCommercial = presetId === "commercial_executive";
+  const isAurora = presetId === "residential_aurora";
 
   const chips =
     isCommercial
       ? COMMERCIAL_CHIPS
-      : isBillBacked
-        ? RESIDENTIAL_CHIPS
-        : NO_BILL_CHIPS;
+      : isAurora
+        ? isBillBacked
+          ? AURORA_CHIPS
+          : AURORA_NO_BILL_CHIPS
+        : isBillBacked
+          ? RESIDENTIAL_CHIPS
+          : NO_BILL_CHIPS;
 
   const hasCustomer = Boolean(customerName);
   const hasMetrics = systemKw > 0;
@@ -247,14 +272,21 @@ export function ProposalLivePreviewPanel({
 
           {/* Bill backed badge */}
           <div className={`mb-3 flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[10px] font-semibold ${
-            isBillBacked
+            isBillBacked && billUploaded
               ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-700/40 dark:bg-emerald-900/20 dark:text-emerald-400"
-              : "border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
+              : isBillBacked
+                ? "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-700/40 dark:bg-amber-900/20 dark:text-amber-400"
+                : "border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
           }`}>
-            {isBillBacked ? (
+            {isBillBacked && billUploaded ? (
               <>
                 <CheckCircle2 className="h-3 w-3" />
                 Bill-backed — full audit included
+              </>
+            ) : isBillBacked ? (
+              <>
+                <TrendingUp className="h-3 w-3" />
+                Bill-based — upload bill to continue
               </>
             ) : (
               <>
