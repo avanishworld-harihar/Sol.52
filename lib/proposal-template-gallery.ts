@@ -51,6 +51,16 @@ export const PROPOSAL_TEMPLATE_CATEGORIES: ProposalTemplateCategoryMeta[] = [
 
 export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
   {
+    key: "aurora",
+    presetId: "residential_aurora",
+    category: "residential",
+    name: "Aurora",
+    description:
+      "Techno-commercial powerhouse — SLD diagram, panel tilt, DC run guide, full 12-row BOM, subsidy clarity. Easy English.",
+    recommended: true,
+    thumbnailVariant: "aurora",
+  },
+  {
     key: "golden",
     presetId: "residential_executive",
     category: "residential",
@@ -160,6 +170,7 @@ export function resolveActiveGalleryKey(
   presetId: ResidentialTemplatePresetId,
   salesPremiumStyle?: SalesPremiumStyleId
 ): ProposalTemplateGalleryKey {
+  if (presetId === "residential_aurora") return "aurora";
   if (presetId === "residential_executive") return "golden";
   if (presetId === "residential_bank_loan") return "ledger";
   if (presetId === "residential_smart") return "classic";

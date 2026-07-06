@@ -98,6 +98,10 @@ import { BlockInvestmentSummary } from "@/components/proposal/blocks/residential
 import { BlockTechnicalSummary } from "@/components/proposal/blocks/residential/block-technical-summary";
 import { BlockResidentialTerms } from "@/components/proposal/blocks/residential/block-residential-terms";
 import { BlockCustomerDocuments } from "@/components/proposal/blocks/residential/block-customer-documents";
+// ── Aurora blocks ──────────────────────────────────────────────────────────────
+import { AuroraTechnicalSummary } from "@/components/proposal/blocks/aurora/aurora-technical-summary";
+import { AuroraSystemLayout } from "@/components/proposal/blocks/aurora/aurora-system-layout";
+import { AuroraSubsidyClarity } from "@/components/proposal/blocks/aurora/aurora-subsidy-clarity";
 import { ProposalAppendixShell } from "@/components/proposal/appendix/proposal-appendix-shell";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -392,6 +396,36 @@ export function renderBlockByKey(
           lang={lang}
           darkMode={darkMode}
           commercialConfig={ctx.commercialConfig}
+        />
+      );
+
+    // ── Aurora blocks ─────────────────────────────────────────────────────
+
+    case "aurora_technical_summary":
+      return (
+        <AuroraTechnicalSummary
+          summary={summary}
+          lang={lang}
+          D={D}
+        />
+      );
+
+    case "aurora_system_layout":
+      return (
+        <AuroraSystemLayout
+          summary={summary}
+          lang={lang}
+          D={D}
+          pptInput={ctx.pptInput}
+        />
+      );
+
+    case "aurora_subsidy_clarity":
+      return (
+        <AuroraSubsidyClarity
+          summary={summary}
+          lang={lang}
+          D={D}
         />
       );
 

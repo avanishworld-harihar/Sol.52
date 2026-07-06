@@ -45,6 +45,12 @@ export const PROPOSAL_BLOCK_IDS = [
   "dg_hybrid_analysis_card",
   /** C&I — School / institution segment insight page (auto when orgType = school) */
   "school_institution_insight_card",
+  /** Aurora — system layout: SLD diagram + panel tilt by location + DC/AC run distances */
+  "system_layout",
+  /** Aurora / residential — PM Surya Ghar & state subsidy explainer */
+  "subsidy_clarity",
+  /** Aurora — richer system summary (kW hero + 4 tiles + net-meter mini flow) */
+  "technical_summary",
 ] as const;
 
 export type ProposalBlockId = (typeof PROPOSAL_BLOCK_IDS)[number];
@@ -64,7 +70,16 @@ export type ProposalBlockGroup =
  * `"all"` = every preset enables it by default.
  * An array = only those specific presets include it by default.
  */
-export type PresetAffinity = "all" | ReadonlyArray<"residential_smart" | "commercial_executive">;
+export type PresetAffinity =
+  | "all"
+  | ReadonlyArray<
+      | "residential_smart"
+      | "commercial_executive"
+      | "residential_sales_premium"
+      | "residential_bank_loan"
+      | "residential_executive"
+      | "residential_aurora"
+    >;
 
 export type ProposalBlockMeta = {
   id: ProposalBlockId;
@@ -301,6 +316,46 @@ export const PROPOSAL_BLOCK_REGISTRY: Record<ProposalBlockId, ProposalBlockMeta>
     defaultEnabled: false,
     preset_affinity: ["commercial_executive"],
   },
+
+  /**
+   * Aurora preset signature block — system layout engineering page.
+   * Shows: SLD (PV array → DCDB → inverter → ACDB → net meter → grid),
+   * panel tilt for site latitude, panel-to-inverter DC run length & why.
+   * Three SVG illustrations: electrical flow, tilt, distance.
+   */
+  system_layout: {
+    id: "system_layout",
+    labelKey: "proposal_block_system_layout",
+    group: "technical",
+    defaultEnabled: false,
+    preset_affinity: ["residential_aurora"],
+  },
+
+  /**
+   * Subsidy clarity block — dedicated PM Surya Ghar / state subsidy explainer.
+   * Shows: gross cost, subsidy amount, net payable, eligibility criteria.
+   * Aurora default optional; residential_smart optional.
+   */
+  subsidy_clarity: {
+    id: "subsidy_clarity",
+    labelKey: "proposal_block_subsidy_clarity",
+    group: "commercial",
+    defaultEnabled: false,
+    preset_affinity: ["residential_aurora"],
+  },
+
+  /**
+   * Aurora technical summary — richer than Sales Premium's 3-card summary.
+   * Shows: kW hero, 4 stat tiles (panels, inverter, annual gen, roof area),
+   * on-grid net-metering mini flow diagram.
+   */
+  technical_summary: {
+    id: "technical_summary",
+    labelKey: "proposal_block_technical_summary",
+    group: "technical",
+    defaultEnabled: false,
+    preset_affinity: ["residential_aurora"],
+  },
 };
 
 /** Default narrative order used when no preset is active. Maintains backward compatibility. */
@@ -329,4 +384,7 @@ export const DEFAULT_PROPOSAL_BLOCK_ORDER: ProposalBlockId[] = [
   "commercial_financing_card",
   "dg_hybrid_analysis_card",
   "school_institution_insight_card",
+  "system_layout",
+  "subsidy_clarity",
+  "technical_summary",
 ];

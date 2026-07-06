@@ -218,6 +218,42 @@ export type PremiumProposalPptInput = {
   salesPremiumStyle?: import("@/lib/sales-premium-styles").SalesPremiumStyleId;
   /** Gallery theme key when the proposal was generated (Pearl, Slate, Horizon, …). */
   galleryThemeKey?: string;
+
+  /**
+   * Aurora preset — residential technical engineering specs.
+   * Drives the system_layout block (SLD, tilt, DC run distance).
+   * All fields are optional with graceful fallbacks in the block component.
+   */
+  residentialTechnicalSpecs?: {
+    /** Mounting & tilt */
+    mounting?: {
+      /** Site latitude in decimal degrees (e.g. 23.5 for Bhopal). */
+      siteLat?: number;
+      /** Actual installed tilt angle in degrees. */
+      actualTiltDeg?: number;
+      /** Calculated recommended tilt for site latitude. */
+      recommendedTiltDeg?: number;
+      /** "flush" | "elevated" | "ground_mount" */
+      type?: string;
+      /** Row-to-row spacing in metres (elevated / ground mount). */
+      rowSpacingM?: number;
+      /** Brief rationale text (e.g. "Flat RCC roof, elevated at 20° for 23.5° N site"). */
+      tiltRationale?: string;
+    };
+    /** Electrical layout / cable runs */
+    layout?: {
+      /** DC cable run length from PV array to inverter, in metres. */
+      dcRunLengthM?: number;
+      /** AC cable run length from inverter to distribution board, in metres. */
+      acRunLengthM?: number;
+      /** Inverter placement description (e.g. "Ground floor shade area, north wall"). */
+      inverterLocation?: string;
+      /** Estimated DC voltage drop percentage. */
+      voltageDropDcPct?: number;
+      /** DC cable cross-section area in mm². */
+      cableDcSqMm?: number;
+    };
+  };
 };
 
 export type ProposalDeckSummary = {

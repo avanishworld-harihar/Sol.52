@@ -62,7 +62,13 @@ export type BlockRenderKey =
   | "capacity_scenarios"
   | "commercial_financing"
   | "dg_hybrid"
-  | "school_institution";
+  | "school_institution"
+  /** Aurora — system design engineering page (SLD + tilt + distance) */
+  | "aurora_system_layout"
+  /** Aurora — subsidy clarity (PM Surya Ghar / state subsidy explainer) */
+  | "aurora_subsidy_clarity"
+  /** Aurora — richer technical summary (kW hero + tiles + net-meter flow) */
+  | "aurora_technical_summary";
 
 export type WebBlockMeta = {
   /** Value for `data-page` attribute on the `.proposal-page` wrapper div. */
@@ -100,6 +106,8 @@ const dcrComparisonEligible: BlockEligibilityFn = ({ presetId }) =>
 const surveyOnly: BlockEligibilityFn = ({ showSurveySection }) => Boolean(showSurveySection);
 
 const salesPremiumOnly: BlockEligibilityFn = ({ presetId }) => presetId === "residential_sales_premium";
+
+const auroraOnly: BlockEligibilityFn = ({ presetId }) => presetId === "residential_aurora";
 
 // ─── Registry ─────────────────────────────────────────────────────────────────
 
@@ -314,6 +322,41 @@ export const WEB_RENDERER_REGISTRY: Partial<Record<ProposalBlockId, WebBlockMeta
     bridgeKey: "afterRequirement",
     eligibility: commercialOnly,
     renderKey: "dg_hybrid",
+  },
+
+  /**
+   * Aurora signature block — System Layout Engineering Page.
+   * Renders: SLD diagram, panel tilt by site latitude, DC/AC run distance guide.
+   * Three inline SVG illustrations: electrical flow, tilt angle, cable run.
+   */
+  system_layout: {
+    pageDataAttr: "system-layout",
+    bridgeKey: "afterSystemLayout",
+    eligibility: auroraOnly,
+    renderKey: "aurora_system_layout",
+  },
+
+  /**
+   * Aurora subsidy clarity page.
+   * Shows: gross system cost, PM Surya Ghar subsidy, net cost after subsidy,
+   * eligibility criteria, state subsidy stacking.
+   */
+  subsidy_clarity: {
+    pageDataAttr: "subsidy",
+    bridgeKey: "afterSubsidy",
+    eligibility: auroraOnly,
+    renderKey: "aurora_subsidy_clarity",
+  },
+
+  /**
+   * Aurora technical summary — replaces the 3-card Sales Premium summary.
+   * Shows: kW system size hero, 4 stat tiles, on-grid net-meter mini flow.
+   */
+  technical_summary: {
+    pageDataAttr: "technical-summary",
+    bridgeKey: "afterSummary",
+    eligibility: auroraOnly,
+    renderKey: "aurora_technical_summary",
   },
 };
 

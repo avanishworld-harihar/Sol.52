@@ -33,6 +33,7 @@ export const PROPOSAL_PRESET_IDS = [
   "residential_sales_premium",
   "residential_bank_loan",
   "residential_executive",
+  "residential_aurora",
 ] as const;
 
 export type ProposalPresetId = (typeof PROPOSAL_PRESET_IDS)[number];
@@ -41,6 +42,7 @@ export type ProposalPresetId = (typeof PROPOSAL_PRESET_IDS)[number];
 /** Presets still using ProposalWebRenderer block loop (not isolated document renderers). */
 export const RESIDENTIAL_WEB_RENDERER_PRESETS: ReadonlyArray<ProposalPresetId> = [
   "residential_bank_loan",
+  "residential_aurora",
 ];
 
 export function isValidPresetId(id: unknown): id is ProposalPresetId {
@@ -142,6 +144,39 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     /** Legacy block IDs — not used by Editorial Split-Page renderer. */
     default_blocks: [],
     optional_blocks: [],
+  },
+
+  residential_aurora: {
+    id: "residential_aurora",
+    label: "Aurora",
+    description:
+      "World-class techno-commercial proposal — visually rich, educationally deep, app-synced. " +
+      "10 sections: cover → about → bill/system → summary → system design (SLD + tilt + distance) → " +
+      "full BOM → ROI → commercial → payment → documents. Easy English. " +
+      "Aurora is the clearest way to see your solar.",
+    bill_requirement: "optional",
+    theme_hint: "residential",
+    default_data_source: "bill",
+    default_blocks: [
+      "cover_page",
+      "about_company",
+      "bill_intelligence",       // bill path — shows when billAuditBacked
+      "system_requirements",     // requirement path — shows when !billAuditBacked
+      "technical_summary",       // always — Aurora richer system summary
+      "system_layout",           // always — Aurora signature engineering page
+      "bom_material_list",
+      "roi_savings",
+      "financial_summary",
+      "payment_terms",
+      "customer_documents_required",
+    ],
+    optional_blocks: [
+      "subsidy_clarity",
+      "warranty",
+      "amc_maintenance",
+      "terms_conditions",
+      "project_gallery",
+    ],
   },
 
   // ── Legacy presets ────────────────────────────────────────────────────────

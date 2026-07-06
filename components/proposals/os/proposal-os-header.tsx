@@ -71,6 +71,14 @@ const PRESET_META: Record<ProposalPresetId, PresetMeta> = {
       "border-slate-300 bg-slate-50 text-slate-800 dark:border-slate-500/30 dark:bg-slate-900/20 dark:text-slate-300",
     dotClass: "bg-slate-400",
   },
+  residential_aurora: {
+    icon: <Zap className="h-4 w-4" />,
+    label: "Aurora",
+    description: "SLD · Tilt · Full BOM · Subsidy · Easy English",
+    pillClass:
+      "border-indigo-200 bg-indigo-50 text-indigo-800 dark:border-indigo-500/30 dark:bg-indigo-900/20 dark:text-indigo-300",
+    dotClass: "bg-indigo-400",
+  },
 };
 
 export function ProposalOSHeader({ presetId, onChangePreset, customerName }: Props) {
