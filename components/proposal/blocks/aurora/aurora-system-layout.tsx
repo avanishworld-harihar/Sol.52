@@ -15,7 +15,7 @@
 
 import type { ProposalDeckSummary, PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import type { ProposalDict, ProposalLang } from "@/lib/proposal-i18n";
-import { ProposalJourneySection } from "@/components/proposal/proposal-journey";
+import { AuroraEyebrow, AuroraLead, AuroraPageShell, AuroraTitle } from "./aurora-primitives";
 import { SldDiagramSvg } from "@/components/proposal/blocks/aurora/svg/sld-diagram";
 import { TiltIllustrationSvg } from "@/components/proposal/blocks/aurora/svg/tilt-illustration";
 import { DistanceIllustrationSvg } from "@/components/proposal/blocks/aurora/svg/distance-illustration";
@@ -34,12 +34,6 @@ function recommendedTilt(latDeg: number): number {
   return Math.max(10, Math.min(tilt, 30));
 }
 
-/** Returns a readable latitude label like "23.5° N". */
-function latLabel(lat: number | undefined): string {
-  if (lat !== undefined && lat > 0) return `${lat.toFixed(1)}° N`;
-  return "your location";
-}
-
 export function AuroraSystemLayout({ summary, lang, pptInput }: Props) {
   const isHi = lang === "hi";
 
@@ -51,26 +45,17 @@ export function AuroraSystemLayout({ summary, lang, pptInput }: Props) {
   const inverterLocation = specs?.layout?.inverterLocation ?? (isHi ? "इन्वर्टर रूम / शेड" : "inverter room / shade");
 
   return (
-    <ProposalJourneySection id="system-layout" className="aurora-system-layout">
+    <AuroraPageShell tone="pearl" className="aurora-system-layout">
+      <AuroraEyebrow>{isHi ? "इंजीनियरिंग डिज़ाइन" : "Engineering design"}</AuroraEyebrow>
+      <AuroraTitle>{isHi ? "आपका सिस्टम कैसे डिज़ाइन किया गया है" : "How your system is designed"}</AuroraTitle>
+      <AuroraLead>
+        {isHi
+          ? "तीन ज़रूरी सवालों के जवाब — बिजली का प्रवाह, पैनल का झुकाव, और तार की दूरी।"
+          : "Three questions answered — how electricity flows, why panels tilt, and why cable length matters."}
+      </AuroraLead>
 
-      {/* Section header */}
-      <div className="mb-6">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-500">
-          {isHi ? "इंजीनियरिंग डिज़ाइन" : "Engineering design"}
-        </p>
-        <h2 className="mt-1 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
-          {isHi ? "आपका सिस्टम कैसे डिज़ाइन किया गया है" : "How your system is designed"}
-        </h2>
-        <p className="mt-2 text-sm text-slate-500">
-          {isHi
-            ? "तीन ज़रूरी सवालों के जवाब — बिजली का प्रवाह, पैनल का झुकाव, और तार की दूरी।"
-            : "Three questions answered — how electricity flows, why panels tilt, and why cable length matters."}
-        </p>
-      </div>
-
-      {/* ── 1. SLD Electrical Flow ─────────────────────────────────────────── */}
-      <div className="mb-5 rounded-2xl border border-indigo-100 bg-indigo-50 p-4 sm:p-5">
-        <p className="mb-3 text-xs font-bold uppercase tracking-widest text-indigo-400">
+      <div className="aurora-engine-block aurora-engine-block--indigo">
+        <p className="aurora-engine-kicker">
           {isHi ? "1. बिजली का प्रवाह (SLD)" : "1. Electrical flow (SLD)"}
         </p>
         <p className="mb-4 text-sm text-slate-600">
@@ -83,9 +68,8 @@ export function AuroraSystemLayout({ summary, lang, pptInput }: Props) {
         </div>
       </div>
 
-      {/* ── 2. Panel Tilt ────────────────────────────────────────────────────── */}
-      <div className="mb-5 rounded-2xl border border-amber-100 bg-amber-50 p-4 sm:p-5">
-        <p className="mb-3 text-xs font-bold uppercase tracking-widest text-amber-500">
+      <div className="aurora-engine-block aurora-engine-block--amber">
+        <p className="aurora-engine-kicker">
           {isHi ? "2. पैनल का झुकाव" : "2. Panel tilt angle"}
         </p>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
@@ -114,9 +98,8 @@ export function AuroraSystemLayout({ summary, lang, pptInput }: Props) {
         </div>
       </div>
 
-      {/* ── 3. DC Run Distance ──────────────────────────────────────────────── */}
-      <div className="rounded-2xl border border-sky-100 bg-sky-50 p-4 sm:p-5">
-        <p className="mb-3 text-xs font-bold uppercase tracking-widest text-sky-500">
+      <div className="aurora-engine-block aurora-engine-block--sky">
+        <p className="aurora-engine-kicker">
           {isHi ? "3. पैनल से इन्वर्टर की दूरी" : "3. Panel-to-inverter distance"}
         </p>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
@@ -148,6 +131,6 @@ export function AuroraSystemLayout({ summary, lang, pptInput }: Props) {
           </div>
         </div>
       </div>
-    </ProposalJourneySection>
+    </AuroraPageShell>
   );
 }

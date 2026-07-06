@@ -99,10 +99,20 @@ import { BlockTechnicalSummary } from "@/components/proposal/blocks/residential/
 import { BlockResidentialTerms } from "@/components/proposal/blocks/residential/block-residential-terms";
 import { BlockCustomerDocuments } from "@/components/proposal/blocks/residential/block-customer-documents";
 // ── Aurora blocks ──────────────────────────────────────────────────────────────
+import { AuroraCover } from "@/components/proposal/blocks/aurora/aurora-cover";
+import { AuroraAbout } from "@/components/proposal/blocks/aurora/aurora-about";
+import { AuroraBillIntelligence } from "@/components/proposal/blocks/aurora/aurora-bill-intelligence";
+import { AuroraSystemRequirements } from "@/components/proposal/blocks/aurora/aurora-system-requirements";
 import { AuroraTechnicalSummary } from "@/components/proposal/blocks/aurora/aurora-technical-summary";
 import { AuroraSystemLayout } from "@/components/proposal/blocks/aurora/aurora-system-layout";
 import { AuroraSubsidyClarity } from "@/components/proposal/blocks/aurora/aurora-subsidy-clarity";
+import { AuroraBom } from "@/components/proposal/blocks/aurora/aurora-bom";
+import { AuroraRoi } from "@/components/proposal/blocks/aurora/aurora-roi";
+import { AuroraInvestment } from "@/components/proposal/blocks/aurora/aurora-investment";
+import { AuroraPayment } from "@/components/proposal/blocks/aurora/aurora-payment";
+import { AuroraDocuments } from "@/components/proposal/blocks/aurora/aurora-documents";
 import { ProposalAppendixShell } from "@/components/proposal/appendix/proposal-appendix-shell";
+import "@/components/proposal/blocks/aurora/aurora-proposal.css";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -128,6 +138,42 @@ function resolveSalesPremiumRenderKey(
       return "bom_only";
     case "payment_terms":
       return "payment_milestones_only";
+    default:
+      return defaultKey;
+  }
+}
+
+function resolveAuroraRenderKey(
+  blockId: ProposalBlockId,
+  defaultKey: BlockRenderKey
+): BlockRenderKey {
+  switch (blockId) {
+    case "cover_page":
+      return "aurora_cover";
+    case "about_company":
+      return "aurora_about";
+    case "bill_intelligence":
+    case "technical_proposal":
+      return "aurora_bill_intelligence";
+    case "system_requirements":
+      return "aurora_system_requirements";
+    case "technical_summary":
+      return "aurora_technical_summary";
+    case "system_layout":
+      return "aurora_system_layout";
+    case "bom_material_list":
+    case "technical_specifications":
+      return "aurora_bom";
+    case "roi_savings":
+      return "aurora_roi";
+    case "financial_summary":
+      return "aurora_investment";
+    case "payment_terms":
+      return "aurora_payment";
+    case "customer_documents_required":
+      return "aurora_documents";
+    case "subsidy_clarity":
+      return "aurora_subsidy_clarity";
     default:
       return defaultKey;
   }
@@ -401,6 +447,35 @@ export function renderBlockByKey(
 
     // ── Aurora blocks ─────────────────────────────────────────────────────
 
+    case "aurora_cover":
+      return (
+        <AuroraCover
+          summary={summary}
+          lang={lang}
+          installerLogoUrl={ctx.installerLogoUrl}
+          brandConfig={ctx.brandConfig}
+          location={ctx.pptInput.location}
+        />
+      );
+
+    case "aurora_about":
+      return <AuroraAbout summary={summary} lang={lang} />;
+
+    case "aurora_bill_intelligence":
+      return (
+        <AuroraBillIntelligence
+          summary={summary}
+          monthLbls={monthLbls}
+          lang={lang}
+          D={D}
+        />
+      );
+
+    case "aurora_system_requirements":
+      return (
+        <AuroraSystemRequirements summary={summary} lang={lang} D={D} />
+      );
+
     case "aurora_technical_summary":
       return (
         <AuroraTechnicalSummary
@@ -428,6 +503,28 @@ export function renderBlockByKey(
           D={D}
         />
       );
+
+    case "aurora_bom":
+      return <AuroraBom summary={summary} lang={lang} />;
+
+    case "aurora_roi":
+      return <AuroraRoi summary={summary} lang={lang} />;
+
+    case "aurora_investment":
+      return <AuroraInvestment summary={summary} lang={lang} D={D} />;
+
+    case "aurora_payment":
+      return (
+        <AuroraPayment
+          summary={summary}
+          lang={lang}
+          D={D}
+          proposalId={ctx.proposalId}
+        />
+      );
+
+    case "aurora_documents":
+      return <AuroraDocuments lang={lang} />;
 
     default:
       return null;
@@ -660,6 +757,7 @@ function ProposalWebRendererInner({
 
   const eligibilityCtx = { billAuditBacked, presetId, showSurveySection: showSurveyWorkflowSection };
   const isSalesPremium = presetId === "residential_sales_premium";
+  const isAurora = presetId === "residential_aurora";
 
   type PageEntry = {
     blockId: ProposalBlockId;
@@ -679,10 +777,13 @@ function ProposalWebRendererInner({
 
       const renderKey = isSalesPremium
         ? resolveSalesPremiumRenderKey(blockId, meta.renderKey)
-        : meta.renderKey;
+        : isAurora
+          ? resolveAuroraRenderKey(blockId, meta.renderKey)
+          : meta.renderKey;
 
-      if (!isSalesPremium && renderedKeys.has(renderKey)) continue;
+      if (!isSalesPremium && !isAurora && renderedKeys.has(renderKey)) continue;
       if (isSalesPremium && renderKey !== "bom_only" && renderedKeys.has(renderKey)) continue;
+      if (isAurora && renderedKeys.has(renderKey)) continue;
 
       renderedKeys.add(renderKey);
       pages.push({
@@ -719,6 +820,8 @@ function ProposalWebRendererInner({
     <MotionConfig transition={{ duration: 0.35, ease: "easeOut" }} reducedMotion="user">
       <div
         className={`proposal-document ${PROPOSAL_PREMIUM_DOC_CLASS} proposal-journey-connected proposal-responsive-doc mx-auto w-full max-w-[210mm] px-4 pb-32 pt-6 sm:px-8 sm:pt-10 print:max-w-none print:p-0 print:pb-0 transition-colors duration-300 ${
+          isAurora ? "proposal-document--aurora " : ""
+        }${
           lang === "hi" ? "lang-hi " : ""
         }${darkMode ? "text-white" : ""}`}
         data-theme={darkMode ? "dark" : "light"}
@@ -790,7 +893,7 @@ function ProposalWebRendererInner({
             <div className="proposal-page" data-page={pageDataAttr}>
               {renderBlockByKey(renderKey, ctx)}
             </div>
-            {bridgeKey ? (
+            {bridgeKey && !isAurora ? (
               <JourneyBridge
                 text={getJourneyBridgeText(
                   isSalesPremium && bridgeKey === "afterSavings" ? "afterSavingsPremium" : bridgeKey,

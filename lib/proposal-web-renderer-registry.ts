@@ -68,7 +68,16 @@ export type BlockRenderKey =
   /** Aurora — subsidy clarity (PM Surya Ghar / state subsidy explainer) */
   | "aurora_subsidy_clarity"
   /** Aurora — richer technical summary (kW hero + tiles + net-meter flow) */
-  | "aurora_technical_summary";
+  | "aurora_technical_summary"
+  | "aurora_cover"
+  | "aurora_about"
+  | "aurora_bill_intelligence"
+  | "aurora_system_requirements"
+  | "aurora_bom"
+  | "aurora_roi"
+  | "aurora_investment"
+  | "aurora_payment"
+  | "aurora_documents";
 
 export type WebBlockMeta = {
   /** Value for `data-page` attribute on the `.proposal-page` wrapper div. */
