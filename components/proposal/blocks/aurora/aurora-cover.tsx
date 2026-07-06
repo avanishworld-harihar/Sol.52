@@ -17,44 +17,38 @@ type Props = {
 export function AuroraCover({ summary, lang, location }: Props) {
   const isHi = lang === "hi";
   const name = isHi ? hindiHonoredDisplayName(summary.honoredName) : summary.honoredName;
-  const place = location?.trim() ?? "";
-  const lifetime = fmtInrL(summary.solarVsGrid?.netSaving ?? summary.lifetime25Profit);
   const installerLabel = summary.installer?.trim() || "Harihar Solar";
+  const lifetime = fmtInrL(summary.solarVsGrid?.netSaving ?? summary.lifetime25Profit);
 
   const footerItems = [
+    { label: isHi ? "ग्राहक" : "Client", value: name },
     {
-      label: isHi ? "तैयार किया गया" : "Prepared for",
-      value: name,
+      label: isHi ? "सिस्टम साइज़" : "System size",
+      value: isHi ? `${summary.systemKw} kW प्रीमियम` : `${summary.systemKw} kW Premium`,
     },
-    {
-      label: isHi ? "स्थान" : "Location",
-      value: place || (isHi ? "मध्य प्रदेश" : "Madhya Pradesh"),
-    },
-    {
-      label: isHi ? "सिस्टम" : "System",
-      value: `${summary.systemKw} kW`,
-    },
+    { label: isHi ? "वैधता" : "Validity", value: isHi ? "14 दिन" : "14 Days" },
   ];
 
   return (
-    <AuroraPageShell tone="pearl" className="aurora-cover aurora-cover--premium">
+    <AuroraPageShell tone="pearl" className="aurora-cover aurora-cover--zenith">
       <div className="aurora-cover-inner">
-        <p className="aurora-cover-brand">{installerLabel}</p>
-
-        <div className="aurora-cover-main">
+        <div className="aurora-cover-top">
+          <p className="aurora-cover-brand">{installerLabel}</p>
           <h1 className="aurora-cover-headline">
-            {isHi ? "आपका घर, ऊर्जा स्वतंत्र।" : "Your home, energy independent."}
+            {isHi
+              ? "आपका घर अपनी बिजली खुद बनाएगा।"
+              : "Your home will generate its own electricity."}
           </h1>
           <p className="aurora-cover-sub">
             {isHi
-              ? `25 साल तक अपनी बिजली — आज से ${lifetime} की बचत शुरू।`
-              : `Generating your own power for 25 years. Saving you ${lifetime} starting today.`}
+              ? `अगले 25 साल तक। इस साल से ${lifetime} की बचत शुरू।`
+              : `For the next 25 years. Saving you over ${lifetime}, starting this year.`}
           </p>
         </div>
 
-        <div className="aurora-cover-footer">
+        <div className="aurora-cover-footer aurora-cover-footer--grid">
           {footerItems.map((item) => (
-            <div key={item.label} className="aurora-cover-foot-item">
+            <div key={item.label} className="aurora-cover-foot-col">
               <p className="aurora-cover-foot-label">{item.label}</p>
               <p className="aurora-cover-foot-value">{item.value}</p>
             </div>

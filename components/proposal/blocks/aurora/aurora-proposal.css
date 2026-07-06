@@ -5,6 +5,7 @@
 .proposal-document[data-preset="residential_aurora"],
 .proposal-document--aurora {
   --aurora-indigo: #0b2447;
+  --aurora-gold: #c5a059;
   --aurora-amber: #f5a524;
   --aurora-emerald: #10b981;
   --aurora-sky: #2e90fa;
@@ -96,9 +97,23 @@
   margin: 0 0 0.75rem;
 }
 
+.aurora-eyebrow--gold { color: var(--aurora-gold); }
 .aurora-eyebrow--amber { color: var(--aurora-amber); }
 .aurora-eyebrow--emerald { color: var(--aurora-emerald); }
 .aurora-eyebrow--sky { color: var(--aurora-sky); }
+
+/* Zenith section tag — gold underline label */
+.aurora-section-tag {
+  display: inline-block;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--aurora-gold);
+  border-bottom: 1px solid var(--aurora-gold);
+  padding-bottom: 0.25rem;
+  margin-bottom: 1rem;
+}
 
 .aurora-title {
   font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
@@ -122,11 +137,11 @@
 
 .aurora-lead--light { color: #cbd5e1; }
 
-/* ── Cover (premium white) ─────────────────────────────────────────────────── */
+/* ── Cover (Zenith — minimalist outcome) ───────────────────────────────────── */
 
-.aurora-cover--premium .aurora-page-inner {
-  background: #fff;
-  border-bottom: 1px solid #f1f5f9;
+.aurora-cover--zenith .aurora-page-inner {
+  background: var(--aurora-pearl);
+  border-bottom: 1px solid var(--aurora-border);
 }
 
 .aurora-cover-inner {
@@ -134,82 +149,72 @@
   min-height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding: 2.5rem 1.75rem 2rem;
+  justify-content: space-between;
+  padding: 2.5rem 1.75rem 2.5rem;
   box-sizing: border-box;
 }
 
 @media (min-width: 640px) {
   .aurora-cover-inner {
-    padding: 3.5rem 3rem 2.5rem;
+    padding: 3.5rem 3rem 2.75rem;
   }
 }
 
 .aurora-cover-brand {
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.2em;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: var(--aurora-sky);
-  margin: 0 0 2rem;
-}
-
-.aurora-cover-main {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  max-width: 44rem;
+  color: var(--aurora-gold);
+  margin: 0 0 2.5rem;
 }
 
 .aurora-cover-headline {
   font-family: "Space Grotesk", sans-serif;
-  font-size: clamp(2.25rem, 7vw, 4.25rem);
+  font-size: clamp(2.25rem, 6.5vw, 3.75rem);
   font-weight: 700;
   line-height: 1;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
   color: var(--aurora-ink);
-  margin: 0 0 1.25rem;
+  margin: 0;
+  max-width: 18ch;
 }
 
 .aurora-cover-sub {
-  font-size: clamp(1.125rem, 2.8vw, 1.75rem);
-  font-weight: 400;
-  line-height: 1.35;
+  font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+  font-weight: 300;
+  line-height: 1.4;
   color: var(--aurora-muted);
-  margin: 0;
-  max-width: 36rem;
+  margin: 1.5rem 0 0;
+  max-width: 34rem;
 }
 
-.aurora-cover-footer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2rem 3rem;
-  margin-top: 3rem;
-  padding-top: 0;
-  border-top: none;
+.aurora-cover-footer--grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  border-top: 1px solid var(--aurora-border);
+  padding-top: 2rem;
+  margin-top: 2rem;
 }
 
 @media (min-width: 640px) {
-  .aurora-cover-footer { gap: 3rem; }
-}
-
-.aurora-cover-foot-item {
-  border-left: 2px solid var(--aurora-sky);
-  padding-left: 1rem;
-  min-width: 8rem;
+  .aurora-cover-footer--grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
 }
 
 .aurora-cover-foot-label {
   font-size: 0.5625rem;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--aurora-muted);
+  letter-spacing: 0.16em;
+  color: #94a3b8;
   margin: 0 0 0.35rem;
 }
 
 .aurora-cover-foot-value {
-  font-size: 1.0625rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: var(--aurora-ink);
   margin: 0;
@@ -796,13 +801,17 @@
 
 /* ── BOM table (premium) ─────────────────────────────────────────────────── */
 
-.aurora-bom-title {
-  font-size: clamp(1.75rem, 4vw, 2.5rem) !important;
-  margin-bottom: 0.5rem !important;
+.aurora-bom-page--zenith .aurora-page-inner {
+  padding-top: 2.5rem;
 }
 
-.aurora-bom-lead {
-  margin-bottom: 2rem !important;
+.aurora-bom-title {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  font-weight: 700;
+  color: var(--aurora-ink);
+  margin: 0 0 2.5rem;
+  letter-spacing: -0.02em;
 }
 
 .aurora-bom-table-wrap {
@@ -816,18 +825,18 @@
   font-size: 0.875rem;
 }
 
-.aurora-bom-table thead {
-  border-bottom: 1px solid var(--aurora-border);
+.aurora-bom-table thead tr {
+  border-bottom: 1px solid var(--aurora-gold);
 }
 
 .aurora-bom-table th {
   text-align: left;
-  padding: 0.85rem 0.5rem;
-  font-size: 0.625rem;
-  font-weight: 600;
+  padding: 1rem 0.35rem;
+  font-size: 0.5625rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--aurora-muted);
+  letter-spacing: 0.16em;
+  color: var(--aurora-gold);
 }
 
 .aurora-bom-table th:last-child {
@@ -835,14 +844,24 @@
 }
 
 .aurora-bom-table td {
-  padding: 1.1rem 0.5rem;
-  border-bottom: 1px solid #f8fafc;
-  color: var(--aurora-ink);
+  padding: 1.35rem 0.35rem;
+  border-bottom: 1px solid #f1f5f9;
   vertical-align: top;
 }
 
 .aurora-bom-comp {
   font-weight: 600;
+  color: var(--aurora-indigo);
+}
+
+.aurora-bom-spec {
+  color: var(--aurora-muted);
+  max-width: 14rem;
+  line-height: 1.45;
+}
+
+.aurora-bom-brand {
+  font-weight: 500;
   color: var(--aurora-ink);
 }
 
@@ -851,6 +870,38 @@
   font-weight: 700;
   color: var(--aurora-emerald);
   white-space: nowrap;
+}
+
+.aurora-bom-outcomes {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  margin-top: 3rem;
+}
+
+@media (min-width: 640px) {
+  .aurora-bom-outcomes { grid-template-columns: 1fr 1fr; }
+}
+
+.aurora-outcome-card {
+  background: #f5f5f7;
+  border: 1px solid var(--aurora-border);
+  border-radius: 1rem;
+  padding: 1.75rem 1.5rem;
+}
+
+.aurora-outcome-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--aurora-indigo);
+  margin: 0 0 0.5rem;
+}
+
+.aurora-outcome-desc {
+  font-size: 0.75rem;
+  line-height: 1.55;
+  color: var(--aurora-muted);
+  margin: 0;
 }
 
 /* ── ROI ─────────────────────────────────────────────────────────────────── */
