@@ -29,7 +29,7 @@ function fmt(n: number) {
   return `₹${n.toLocaleString("en-IN")}`;
 }
 
-export function AuroraSubsidyClarity({ summary, lang, D }: Props) {
+export function AuroraSubsidyClarity({ summary, lang }: Props) {
   const isHi = lang === "hi";
 
   const gross = summary.grossSystemCost ?? 0;

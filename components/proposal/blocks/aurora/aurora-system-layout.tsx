@@ -40,7 +40,7 @@ function latLabel(lat: number | undefined): string {
   return "your location";
 }
 
-export function AuroraSystemLayout({ summary, lang, D, pptInput }: Props) {
+export function AuroraSystemLayout({ summary, lang, pptInput }: Props) {
   const isHi = lang === "hi";
 
   const specs = pptInput.residentialTechnicalSpecs;

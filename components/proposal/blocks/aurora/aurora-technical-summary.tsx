@@ -29,7 +29,7 @@ const FLOW_STEPS = [
   { id: "grid", icon: LayoutGrid, label: "Grid / net meter", labelHi: "ग्रिड / नेट मीटर", color: "text-sky-500", bg: "bg-sky-50 border-sky-200" },
 ];
 
-export function AuroraTechnicalSummary({ summary, lang, D }: Props) {
+export function AuroraTechnicalSummary({ summary, lang }: Props) {
   const isHi = lang === "hi";
   const panelBrand = summary.brands?.panel ?? summary.panelBrand ?? "—";
   const inverterBrand = summary.brands?.inverter ?? "—";

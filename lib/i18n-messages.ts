@@ -531,6 +531,9 @@ export const EN = {
   proposal_block_customer_docs: "Customer documents required",
   proposal_block_amc: "AMC / maintenance",
   proposal_block_school_institution: "School / institution insight",
+  proposal_block_system_layout: "System layout (SLD + tilt + distances)",
+  proposal_block_subsidy_clarity: "Subsidy breakdown (PM Surya Ghar)",
+  proposal_block_technical_summary: "Technical summary (Aurora)",
 
   more_title: "More",
   more_languageLine: "Language: English, Hindi, Tamil, and more — Coming soon",

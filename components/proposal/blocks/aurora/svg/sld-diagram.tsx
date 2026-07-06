@@ -136,14 +136,15 @@ export function SldDiagramSvg({ lang, systemKw, panels }: Props) {
                 <line
                   x1={x - GAP}
                   y1={TOTAL_H / 2}
-                  x2={x}
+                  x2={x - 8}
                   y2={TOTAL_H / 2}
                   stroke="#94a3b8"
                   strokeWidth="2"
                   strokeDasharray={node.id === "home" ? "4 3" : undefined}
                 />
+                {/* arrowhead tip at x-1 (just before the box border) */}
                 <polygon
-                  points={`${x},${TOTAL_H / 2 - 5} ${x + 7},${TOTAL_H / 2} ${x},${TOTAL_H / 2 + 5}`}
+                  points={`${x - 8},${TOTAL_H / 2 - 4} ${x - 1},${TOTAL_H / 2} ${x - 8},${TOTAL_H / 2 + 4}`}
                   fill="#94a3b8"
                 />
               </g>

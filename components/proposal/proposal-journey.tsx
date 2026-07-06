@@ -29,6 +29,32 @@ const JOURNEY_STEPS_REQUIREMENT = [
   { id: "closing", label: "Next" }
 ] as const;
 
+const JOURNEY_STEPS_AURORA_BILL = [
+  { id: "cover", label: "Start" },
+  { id: "expertise", label: "About" },
+  { id: "bill-audit", label: "Your bill" },
+  { id: "technical-summary", label: "System" },
+  { id: "system-layout", label: "Design" },
+  { id: "bom", label: "Includes" },
+  { id: "economics", label: "Savings" },
+  { id: "banking", label: "Cost" },
+  { id: "payment", label: "Pay" },
+  { id: "customer-documents", label: "Docs" },
+] as const;
+
+const JOURNEY_STEPS_AURORA_REQ = [
+  { id: "cover", label: "Start" },
+  { id: "expertise", label: "About" },
+  { id: "system-requirement", label: "Design" },
+  { id: "technical-summary", label: "System" },
+  { id: "system-layout", label: "How" },
+  { id: "bom", label: "Includes" },
+  { id: "economics", label: "Savings" },
+  { id: "banking", label: "Cost" },
+  { id: "payment", label: "Pay" },
+  { id: "customer-documents", label: "Docs" },
+] as const;
+
 const JOURNEY_STEPS_SALES_PREMIUM_BILL = [
   { id: "cover", label: "Start" },
   { id: "bill-audit", label: "Your bill" },
@@ -66,9 +92,13 @@ export function ProposalJourneyProgress({
       ? billAuditBacked
         ? JOURNEY_STEPS_SALES_PREMIUM_BILL
         : JOURNEY_STEPS_SALES_PREMIUM_REQ
-      : billAuditBacked
-        ? JOURNEY_STEPS_BILL
-        : JOURNEY_STEPS_REQUIREMENT;
+      : presetId === "residential_aurora"
+        ? billAuditBacked
+          ? JOURNEY_STEPS_AURORA_BILL
+          : JOURNEY_STEPS_AURORA_REQ
+        : billAuditBacked
+          ? JOURNEY_STEPS_BILL
+          : JOURNEY_STEPS_REQUIREMENT;
   const steps = base.filter((s) => s.id !== "survey" || showSurvey);
 
   return (

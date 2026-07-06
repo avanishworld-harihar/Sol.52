@@ -20,6 +20,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
       className={cn("relative flex items-center justify-center overflow-hidden rounded-lg", scale, className)}
       aria-hidden
     >
+      {variant === "aurora" ? <AuroraThumb size={size} /> : null}
       {variant === "golden" ? <GoldenThumb size={size} /> : null}
       {variant === "pearl" ? <PearlThumb size={size} /> : null}
       {variant === "slate" ? <SlateThumb size={size} /> : null}
@@ -29,6 +30,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
       {variant === "classic" ? <ClassicThumb size={size} /> : null}
       {variant === "commercial" ? <CommercialThumb size={size} /> : null}
       {![
+        "aurora",
         "golden",
         "pearl",
         "slate",
@@ -222,6 +224,48 @@ function ClassicThumb({ size }: { size: "card" | "preview" }) {
           <div className="h-[12%] flex-1 rounded-[1px] bg-slate-100" />
         </div>
       </MiniSlide>
+    </div>
+  );
+}
+
+function AuroraThumb({ size }: { size: "card" | "preview" }) {
+  const titleSize = size === "preview" ? "text-[9px]" : "text-[4px]";
+  const labelSize = size === "preview" ? "text-[7px]" : "text-[3px]";
+  const rowH = size === "preview" ? "h-[2px]" : "h-[1px]";
+  const nodeSize = size === "preview" ? "h-[10px] w-[10px]" : "h-[4px] w-[4px]";
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-700 to-amber-400">
+      <div
+        className={cn(
+          "flex flex-col rounded-[3px] border border-indigo-200/30 shadow-sm",
+          size === "preview" ? "h-[62%] w-[68%] p-[8%]" : "h-[58%] w-[72%] p-[7%]"
+        )}
+        style={{ background: "rgba(248,250,252,0.97)" }}
+      >
+        {/* kW hero */}
+        <div
+          className={cn("rounded-[2px] font-extrabold text-indigo-700", titleSize)}
+          style={{ background: "linear-gradient(to right, #3730a3, #f59e0b)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}
+        >
+          5 kW
+        </div>
+        {/* SLD mini nodes: PV → DCDB → Inverter → ACDB */}
+        <div className={cn("mt-[8%] flex items-center gap-[3%]")}>
+          <div className={cn("flex-shrink-0 rounded-[1px] bg-amber-400", nodeSize)} />
+          <div className={cn("flex-shrink-0 rounded-[1px] bg-indigo-500", nodeSize)} />
+          <div className={cn("flex-shrink-0 rounded-[1px] bg-emerald-500", nodeSize)} />
+          <div className={cn("flex-shrink-0 rounded-[1px] bg-sky-500", nodeSize)} />
+        </div>
+        {/* Tilt hint line */}
+        <div className={cn("mt-[8%] uppercase tracking-wider text-indigo-400", labelSize)}>
+          SLD · Tilt · BOM
+        </div>
+        <div className={cn("mt-[6%] space-y-[5%]")}>
+          <div className={cn("w-full rounded-full bg-indigo-100", rowH)} />
+          <div className={cn("w-[80%] rounded-full bg-amber-100", rowH)} />
+          <div className={cn("w-[90%] rounded-full bg-emerald-100", rowH)} />
+        </div>
+      </div>
     </div>
   );
 }

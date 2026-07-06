@@ -125,7 +125,7 @@ export function TiltIllustrationSvg({ tiltDeg }: Props) {
         strokeDasharray="3 2"
       />
 
-      {/* Tilt degree label */}
+      {/* Tilt degree label — uses clamped value matching the drawn arc */}
       <text
         x={panelX1 + arcR + 10}
         y={panelY1 - 8}
@@ -134,7 +134,7 @@ export function TiltIllustrationSvg({ tiltDeg }: Props) {
         fill="#d97706"
         fontFamily="Inter, system-ui, sans-serif"
       >
-        {tiltDeg}°
+        {clampedTilt}°
       </text>
     </svg>
   );

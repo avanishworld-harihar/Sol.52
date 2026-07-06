@@ -146,7 +146,7 @@ export const PROPOSAL_BLOCK_REGISTRY: Record<ProposalBlockId, ProposalBlockMeta>
     labelKey: "proposal_block_bill_intelligence",
     group: "technical",
     defaultEnabled: false,
-    preset_affinity: ["residential_smart"],
+    preset_affinity: ["residential_smart", "residential_aurora"],
   },
 
   /**
@@ -252,7 +252,7 @@ export const PROPOSAL_BLOCK_REGISTRY: Record<ProposalBlockId, ProposalBlockMeta>
     labelKey: "proposal_block_customer_docs",
     group: "service",
     defaultEnabled: true,
-    preset_affinity: ["residential_smart"],
+    preset_affinity: ["residential_smart", "residential_aurora"],
   },
 
   amc_maintenance: {
