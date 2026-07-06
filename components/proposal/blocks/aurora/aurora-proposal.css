@@ -12,17 +12,36 @@
   --aurora-ink: #1e293b;
   --aurora-muted: #64748b;
   --aurora-border: #e2e8f0;
+  /* A4 portrait — one screen page ≈ one printed sheet */
+  --aurora-page-h: min(297mm, calc(100dvh - 6.5rem));
   font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
   background: var(--aurora-pearl);
   color: var(--aurora-ink);
 }
 
+.proposal-document[data-preset="residential_aurora"].proposal-responsive-doc,
+.proposal-document--aurora.proposal-responsive-doc {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
 .proposal-document[data-preset="residential_aurora"] .proposal-page {
   padding: 0;
-  margin: 0 0 1.5rem;
+  margin: 0 0 1.25rem;
   border: none;
   box-shadow: none;
   background: transparent;
+  min-height: var(--aurora-page-h);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .proposal-document[data-preset="residential_aurora"] .proposal-page {
+    border-radius: 0.75rem;
+    box-shadow: 0 8px 32px rgba(11, 36, 71, 0.08);
+  }
 }
 
 .proposal-document[data-preset="residential_aurora"] .proposal-journey-bridge {
@@ -32,19 +51,39 @@
 /* ── Page shells ─────────────────────────────────────────────────────────── */
 
 .aurora-page {
-  padding: 1.75rem 1.25rem 2rem;
-  min-height: min(100vh, 900px);
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: var(--aurora-page-h);
+  box-sizing: border-box;
+  padding: 0;
+}
+
+.aurora-page-inner {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 1.75rem 1.35rem 2rem;
+  box-sizing: border-box;
 }
 
 @media (min-width: 640px) {
-  .aurora-page {
-    padding: 2.5rem 2rem 3rem;
+  .aurora-page-inner {
+    padding: 2.35rem 2rem 2.5rem;
   }
 }
 
-.aurora-page--pearl { background: var(--aurora-pearl); }
-.aurora-page--sky { background: #f0f9ff; }
-.aurora-page--indigo { background: var(--aurora-indigo); color: #fafbfc; }
+.aurora-page--pearl .aurora-page-inner { background: var(--aurora-pearl); }
+.aurora-page--sky .aurora-page-inner { background: #f0f9ff; }
+.aurora-page--indigo .aurora-page-inner { background: var(--aurora-indigo); color: #fafbfc; }
+
+/* Push footer blocks to page bottom on sparse pages */
+.aurora-page-spacer {
+  flex: 1 1 auto;
+  min-height: 1.5rem;
+}
 
 /* ── Typography ──────────────────────────────────────────────────────────── */
 
@@ -85,19 +124,40 @@
 
 /* ── Cover ───────────────────────────────────────────────────────────────── */
 
-.aurora-cover { padding: 0 !important; min-height: min(92vh, 920px); }
+.aurora-cover {
+  padding: 0 !important;
+}
+
+.aurora-cover .aurora-page-inner {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(145deg, #0b2447 0%, #1e3a8a 52%, #0f172a 100%);
+}
 
 .aurora-cover-inner {
-  min-height: inherit;
+  flex: 1 1 auto;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 2rem 1.5rem;
-  background: linear-gradient(135deg, #0b2447 0%, #1e3a8a 100%);
+  padding: 2rem 1.5rem 2.25rem;
+  box-sizing: border-box;
 }
 
 @media (min-width: 640px) {
-  .aurora-cover-inner { padding: 3rem 2.5rem; }
+  .aurora-cover-inner {
+    padding: 2.75rem 2.5rem 2.5rem;
+  }
+}
+
+.aurora-cover-main {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem 0 2.5rem;
+  max-width: 36rem;
 }
 
 .aurora-cover-headline {
@@ -108,7 +168,7 @@
   letter-spacing: -0.02em;
   color: #fafbfc;
   margin: 0 0 1rem;
-  max-width: 16ch;
+  max-width: 14ch;
 }
 
 .aurora-cover-sub {
@@ -507,6 +567,89 @@
   margin: 0 0 0.75rem;
 }
 
+/* Panel-to-inverter distance — full-width diagram */
+.aurora-distance-block {
+  padding: 1.35rem 1.25rem 1.5rem;
+}
+
+.aurora-distance-lead {
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--aurora-ink);
+  margin: 0 0 1rem;
+}
+
+.aurora-distance-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.aurora-distance-metric {
+  background: #fff;
+  border: 1px solid #bae6fd;
+  border-radius: 0.65rem;
+  padding: 0.85rem 1rem;
+  text-align: center;
+}
+
+.aurora-distance-metric--dc {
+  border-color: #fdba74;
+  background: #fffbeb;
+}
+
+.aurora-distance-metric-label {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--aurora-muted);
+  margin: 0 0 0.25rem;
+}
+
+.aurora-distance-metric-val {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--aurora-indigo);
+  margin: 0;
+  line-height: 1.1;
+}
+
+.aurora-distance-metric--dc .aurora-distance-metric-val {
+  color: #c2410c;
+}
+
+.aurora-distance-metric-hint {
+  font-size: 0.625rem;
+  color: var(--aurora-muted);
+  margin: 0.2rem 0 0;
+}
+
+.aurora-distance-diagram-wrap {
+  width: 100%;
+  margin: 0.5rem 0 0.75rem;
+}
+
+.aurora-distance-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 11rem;
+}
+
+.aurora-distance-foot {
+  font-size: 0.6875rem;
+  line-height: 1.45;
+  color: var(--aurora-muted);
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid #e0f2fe;
+}
+
 /* ── BOM ─────────────────────────────────────────────────────────────────── */
 
 .aurora-bom-list { margin-top: 1.25rem; }
@@ -874,14 +1017,26 @@
 @media print {
   .proposal-document[data-preset="residential_aurora"] {
     background: #fff;
+    padding: 0 !important;
+  }
+
+  .proposal-document[data-preset="residential_aurora"] .proposal-page {
+    min-height: 297mm;
+    height: 297mm;
+    break-after: page;
+    page-break-after: always;
+    box-shadow: none;
+    margin: 0;
+  }
+
+  .proposal-document[data-preset="residential_aurora"] .aurora-page,
+  .proposal-document[data-preset="residential_aurora"] .aurora-page-inner,
+  .proposal-document[data-preset="residential_aurora"] .aurora-cover-inner {
+    min-height: 297mm;
+    height: 297mm;
   }
 
   .aurora-page {
     break-inside: avoid;
-    min-height: auto;
-  }
-
-  .aurora-cover {
-    break-after: page;
   }
 }

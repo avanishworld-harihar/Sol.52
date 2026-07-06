@@ -59,6 +59,7 @@ export function AuroraAbout({ summary, lang }: Props) {
           </div>
         ))}
       </div>
+      <div className="aurora-page-spacer" aria-hidden />
     </AuroraPageShell>
   );
 }

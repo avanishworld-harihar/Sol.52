@@ -34,7 +34,7 @@ type ShellProps = {
 export function AuroraPageShell({ tone = "pearl", className = "", children }: ShellProps) {
   return (
     <div className={`aurora-page aurora-page--${tone} ${className}`.trim()}>
-      {children}
+      <div className="aurora-page-inner">{children}</div>
     </div>
   );
 }

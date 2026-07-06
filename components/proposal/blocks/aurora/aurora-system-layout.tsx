@@ -98,38 +98,38 @@ export function AuroraSystemLayout({ summary, lang, pptInput }: Props) {
         </div>
       </div>
 
-      <div className="aurora-engine-block aurora-engine-block--sky">
+      <div className="aurora-engine-block aurora-engine-block--sky aurora-distance-block">
         <p className="aurora-engine-kicker">
           {isHi ? "3. पैनल से इन्वर्टर की दूरी" : "3. Panel-to-inverter distance"}
         </p>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
-          <div className="flex-1">
-            <p className="text-sm text-slate-700">
-              {isHi
-                ? `DC केबल की लंबाई कम रखना ज़रूरी है — इससे वोल्टेज ड्रॉप कम होता है, ऊर्जा हानि घटती है, और केबल खर्च बचता है। आपके सिस्टम में DC रन ~${dcRunM} m और AC रन ~${acRunM} m है।`
-                : `Keeping the DC cable short reduces voltage drop, energy loss, and cable cost. Your system has a DC run of ~${dcRunM} m and AC run of ~${acRunM} m. Inverter placed at: ${inverterLocation}.`}
-            </p>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              {[
-                { label: isHi ? "DC रन" : "DC run", value: `~${dcRunM} m`, color: "text-sky-600 font-bold" },
-                { label: isHi ? "AC रन" : "AC run", value: `~${acRunM} m`, color: "text-slate-600 font-semibold" },
-              ].map((r) => (
-                <div key={r.label} className="rounded-xl border border-sky-200 bg-white px-3 py-2 text-center">
-                  <p className="text-[10px] text-slate-400">{r.label}</p>
-                  <p className={`text-base ${r.color}`}>{r.value}</p>
-                </div>
-              ))}
-            </div>
-            <p className="mt-3 rounded-lg bg-white/70 px-3 py-2 text-[11px] text-slate-400">
-              {isHi
-                ? "अनुशंसित अधिकतम DC रन: 30 m। आदर्श: 5–15 m।"
-                : "Recommended max DC run: 30 m. Ideal: 5–15 m."}
-            </p>
+        <p className="aurora-distance-lead">
+          {isHi
+            ? `DC केबल छोटी रखें — वोल्टेज ड्रॉप, ऊर्जा हानि और लागत कम होती है। इन्वर्टर: ${inverterLocation}।`
+            : `Keep the DC cable short — less voltage drop, energy loss, and cost. Inverter at: ${inverterLocation}.`}
+        </p>
+
+        <div className="aurora-distance-metrics">
+          <div className="aurora-distance-metric aurora-distance-metric--dc">
+            <p className="aurora-distance-metric-label">{isHi ? "DC रन" : "DC run"}</p>
+            <p className="aurora-distance-metric-val">~{dcRunM} m</p>
+            <p className="aurora-distance-metric-hint">{isHi ? "पैनल → इन्वर्टर" : "Panel → inverter"}</p>
           </div>
-          <div className="flex-shrink-0">
-            <DistanceIllustrationSvg dcRunM={dcRunM} acRunM={acRunM} />
+          <div className="aurora-distance-metric">
+            <p className="aurora-distance-metric-label">{isHi ? "AC रन" : "AC run"}</p>
+            <p className="aurora-distance-metric-val">~{acRunM} m</p>
+            <p className="aurora-distance-metric-hint">{isHi ? "इन्वर्टर → मीटर" : "Inverter → meter"}</p>
           </div>
         </div>
+
+        <div className="aurora-distance-diagram-wrap">
+          <DistanceIllustrationSvg dcRunM={dcRunM} acRunM={acRunM} lang={lang} />
+        </div>
+
+        <p className="aurora-distance-foot">
+          {isHi
+            ? "लंबी DC केबल = अधिक वोल्टेज ड्रॉप। इन्वर्टर को पैनल के नज़दीक रखना सबसे अच्छा।"
+            : "Longer DC cable = more voltage drop. Placing the inverter close to the array is best practice."}
+        </p>
       </div>
     </AuroraPageShell>
   );
