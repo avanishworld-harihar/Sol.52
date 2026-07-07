@@ -111,10 +111,7 @@ import { AuroraRoi } from "@/components/proposal/blocks/aurora/aurora-roi";
 import { AuroraInvestment } from "@/components/proposal/blocks/aurora/aurora-investment";
 import { AuroraPayment } from "@/components/proposal/blocks/aurora/aurora-payment";
 import { AuroraDocuments } from "@/components/proposal/blocks/aurora/aurora-documents";
-import { AuroraEngineeringSnapshot } from "@/components/proposal/blocks/aurora/aurora-engineering-snapshot";
-import { AuroraWarranty } from "@/components/proposal/blocks/aurora/aurora-warranty";
 import { ProposalAppendixShell } from "@/components/proposal/appendix/proposal-appendix-shell";
-import { withResolvedResidentialTechnicalSpecs } from "@/lib/resolve-residential-technical-specs";
 import "@/components/proposal/blocks/aurora/aurora-proposal.css";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -164,11 +161,8 @@ function resolveAuroraRenderKey(
       return "aurora_technical_summary";
     case "system_layout":
       return "aurora_system_layout";
-    case "technical_specifications":
-      return "aurora_engineering";
-    case "warranty":
-      return "aurora_warranty";
     case "bom_material_list":
+    case "technical_specifications":
       return "aurora_bom";
     case "roi_savings":
       return "aurora_roi";
@@ -532,18 +526,6 @@ export function renderBlockByKey(
     case "aurora_documents":
       return <AuroraDocuments lang={lang} />;
 
-    case "aurora_engineering":
-      return (
-        <AuroraEngineeringSnapshot
-          summary={summary}
-          lang={lang}
-          pptInput={ctx.pptInput}
-        />
-      );
-
-    case "aurora_warranty":
-      return <AuroraWarranty summary={summary} lang={lang} />;
-
     default:
       return null;
   }
@@ -685,13 +667,9 @@ function ProposalWebRendererInner({
   );
 
   const presetId = doc.preset_id as ProposalPresetId;
-  const rawInputBase =
+  const rawInput =
     (doc.raw_input as import("@/lib/proposal-ppt").PremiumProposalPptInput) ??
     ({} as import("@/lib/proposal-ppt").PremiumProposalPptInput);
-  const rawInput =
-    presetId === "residential_aurora"
-      ? withResolvedResidentialTechnicalSpecs(rawInputBase)
-      : rawInputBase;
   const salesPremiumStyle =
     presetId === "residential_sales_premium" ? resolveSalesPremiumStyle(rawInput) : null;
 

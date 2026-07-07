@@ -8,7 +8,7 @@ type Props = {
 export function EpBomPage({ bomRows }: Props) {
   return (
     <EpLuxuryPage>
-      <div className="ep-gl-section-tag">04 / Hardware Intelligence</div>
+      <div className="ep-gl-section-tag">06 / Hardware Intelligence</div>
       <h1 className="ep-gl-h1">System Parts.</h1>
       <p className="ep-gl-lead" style={{ marginBottom: "20px" }}>
         Tier-1 components with full engineering specification — make, standards, and warranty as

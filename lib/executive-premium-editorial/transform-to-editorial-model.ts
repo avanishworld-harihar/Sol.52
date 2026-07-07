@@ -2,6 +2,10 @@ import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposa
 import { resolveInstallerNameForProposal } from "@/lib/proposal-branding-settings";
 import { enrichBomTechnicalRows } from "@/lib/proposal-bom-technical-detail";
 import { buildEditorialTermsModel } from "@/lib/executive-premium-editorial/build-terms-model";
+import {
+  buildEditorialEngineeringModel,
+  buildEditorialWarrantyModel,
+} from "@/lib/executive-premium-editorial/build-engineering-model";
 import { fmtCompactK } from "@/lib/executive-premium-editorial/format";
 import type { ExecutivePremiumEditorialModel } from "@/lib/executive-premium-editorial/types";
 
@@ -129,6 +133,8 @@ export function transformToEditorialModel(
       trees: summary.environmental.treeEquivalent,
     },
     architecture: { bom_rows },
+    engineering: buildEditorialEngineeringModel(pptInput, summary),
+    warranty: buildEditorialWarrantyModel(summary),
     execution: {
       company: bank.accountName?.trim() || summary.installer,
       account_number: bank.accountNumber?.trim() || "—",

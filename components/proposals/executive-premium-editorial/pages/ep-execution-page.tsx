@@ -9,7 +9,7 @@ type Props = {
 export function EpExecutionPage({ data }: Props) {
   return (
     <EpLuxuryPage>
-      <div className="ep-gl-section-tag">05 / Execution & Settlement</div>
+      <div className="ep-gl-section-tag">08 / Execution & Settlement</div>
       <h1 className="ep-gl-h1">Installation Process.</h1>
       <p className="ep-gl-lead">We handle all the paperwork and hard work so you can simply enjoy free electricity.</p>
 

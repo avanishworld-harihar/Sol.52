@@ -20,7 +20,7 @@ export function EpTermsPages({ data }: Props) {
     <>
       <EpLuxuryPage className="ep-gl-terms-page">
         <div className="ep-gl-terms-accent" aria-hidden />
-        <div className="ep-gl-section-tag">06 / Terms & Compliance</div>
+        <div className="ep-gl-section-tag">09 / Terms & Compliance</div>
 
         <h2 className="ep-gl-terms-heading ep-gl-terms-heading--center">Terms &amp; Conditions</h2>
         <TermsBulletList items={data.terms_conditions} variant="diamond" />
@@ -37,7 +37,7 @@ export function EpTermsPages({ data }: Props) {
 
       <EpLuxuryPage className="ep-gl-terms-page">
         <div className="ep-gl-terms-accent" aria-hidden />
-        <div className="ep-gl-section-tag">07 / O&amp;M Agreement</div>
+        <div className="ep-gl-section-tag">10 / O&amp;M Agreement</div>
 
         <p className="ep-gl-terms-subhead">Client&apos;s Scope</p>
         <p className="ep-gl-terms-lead">The following remain in the client&apos;s scope:</p>

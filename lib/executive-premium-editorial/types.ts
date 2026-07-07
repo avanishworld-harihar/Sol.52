@@ -51,6 +51,40 @@ export type EditorialTermsModel = {
   amc_terms: string[];
 };
 
+export type EditorialMetricRow = {
+  label: string;
+  value: string;
+  highlight?: boolean;
+};
+
+export type EditorialInstallPhase = {
+  num: string;
+  title: string;
+  detail: string;
+};
+
+export type EditorialWarrantyRow = {
+  item: string;
+  duration: string;
+  by: string;
+  coverage: string;
+};
+
+export type EditorialEngineeringModel = {
+  metrics_rows: EditorialMetricRow[];
+  tilt_deg: number;
+  tilt_note: string;
+  city_label: string;
+  cable_note?: string;
+  standards: string[];
+  install_phases: EditorialInstallPhase[];
+};
+
+export type EditorialWarrantyModel = {
+  intro: string;
+  rows: EditorialWarrantyRow[];
+};
+
 export type ExecutivePremiumEditorialModel = {
   brand_display: string;
   brand_logo_url?: string;
@@ -84,6 +118,8 @@ export type ExecutivePremiumEditorialModel = {
   architecture: {
     bom_rows: EditorialBomRow[];
   };
+  engineering: EditorialEngineeringModel;
+  warranty: EditorialWarrantyModel;
   execution: {
     company: string;
     account_number: string;

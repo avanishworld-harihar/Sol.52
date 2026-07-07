@@ -13,8 +13,10 @@ import { EpBillPage } from "@/components/proposals/executive-premium-editorial/p
 import { EpEconomicsPage } from "@/components/proposals/executive-premium-editorial/pages/ep-economics-page";
 import { EpImpactPage } from "@/components/proposals/executive-premium-editorial/pages/ep-impact-page";
 import { EpBomPage } from "@/components/proposals/executive-premium-editorial/pages/ep-bom-page";
+import { EpEngineeringPage } from "@/components/proposals/executive-premium-editorial/pages/ep-engineering-page";
 import { EpExecutionPage } from "@/components/proposals/executive-premium-editorial/pages/ep-execution-page";
 import { EpTermsPages } from "@/components/proposals/executive-premium-editorial/pages/ep-terms-pages";
+import { EpWarrantyPage } from "@/components/proposals/executive-premium-editorial/pages/ep-warranty-page";
 import "@/components/proposals/executive-premium-editorial/ep-golden.css";
 
 export type ExecutivePremiumEditorialRendererProps = {
@@ -23,7 +25,7 @@ export type ExecutivePremiumEditorialRendererProps = {
 };
 
 /**
- * Executive Premium — Golden / Elite Luxury (7-page HNI document + terms).
+ * Executive Premium — Golden / Elite Luxury (engineering + warranty + terms).
  */
 export function ExecutivePremiumEditorialRenderer({
   pptInput,
@@ -65,7 +67,9 @@ export function ExecutivePremiumEditorialRenderer({
           <EpBillPage data={model.bill} />
           <EpEconomicsPage data={model.economics} />
           <EpImpactPage data={model.impact} />
+          <EpEngineeringPage data={model.engineering} />
           <EpBomPage bomRows={model.architecture.bom_rows} />
+          <EpWarrantyPage data={model.warranty} />
           <EpExecutionPage data={model.execution} />
           <EpTermsPages data={model.terms} />
         </div>
