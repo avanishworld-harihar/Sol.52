@@ -1,6 +1,7 @@
 import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposal-ppt";
 import { resolveInstallerNameForProposal } from "@/lib/proposal-branding-settings";
 import { enrichBomTechnicalRows } from "@/lib/proposal-bom-technical-detail";
+import { buildEditorialTermsModel } from "@/lib/executive-premium-editorial/build-terms-model";
 import { fmtCompactK } from "@/lib/executive-premium-editorial/format";
 import type { ExecutivePremiumEditorialModel } from "@/lib/executive-premium-editorial/types";
 
@@ -69,6 +70,8 @@ export function transformToEditorialModel(
       : 0;
 
   const enrichedBom = enrichBomTechnicalRows(summary.bom, summary, { pptInput });
+  const installerLabel =
+    resolveInstallerNameForProposal({ installerName: pptInput.installerName }) || summary.installer.trim();
   const bom_rows = enrichedBom.map((item) => ({
     name: item.title.replace(/^Solar /, ""),
     spec: item.spec.replace(/\s*×\s*/g, " × ").replace(/\s*x\s*/gi, " × "),
@@ -96,8 +99,7 @@ export function transformToEditorialModel(
   });
 
   return {
-    brand_display:
-      resolveInstallerNameForProposal({ installerName: pptInput.installerName }) || summary.installer.trim(),
+    brand_display: installerLabel,
     brand_logo_url: pptInput.installerLogoUrl?.trim() || undefined,
     customer_name: customer,
     location_line: locationLine(pptInput),
@@ -156,5 +158,6 @@ export function transformToEditorialModel(
       ],
       payments,
     },
+    terms: buildEditorialTermsModel(summary, installerLabel),
   };
 }

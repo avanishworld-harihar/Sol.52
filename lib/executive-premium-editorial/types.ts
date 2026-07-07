@@ -40,6 +40,17 @@ export type EditorialPaymentRow = {
   is_total?: boolean;
 };
 
+export type EditorialTermsModel = {
+  installer_name: string;
+  terms_conditions: string[];
+  documents_required: string[];
+  amc_objective: string;
+  amc_scope: string[];
+  client_scope: string[];
+  amc_cost_paragraph: string;
+  amc_terms: string[];
+};
+
 export type ExecutivePremiumEditorialModel = {
   brand_display: string;
   brand_logo_url?: string;
@@ -81,4 +92,5 @@ export type ExecutivePremiumEditorialModel = {
     steps: EditorialProcessStep[];
     payments: EditorialPaymentRow[];
   };
+  terms: EditorialTermsModel;
 };

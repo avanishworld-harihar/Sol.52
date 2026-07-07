@@ -858,6 +858,118 @@
   padding-bottom: 8px;
 }
 
+/* ── Terms & Conditions (closing pages) ───────────────────────────────────── */
+
+.ep-golden-root .ep-gl-terms-page .ep-gl-page-body {
+  padding: 14mm 18mm 16mm;
+  font-size: 8.5pt;
+  line-height: 1.45;
+}
+
+.ep-golden-root .ep-gl-terms-accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, var(--ep-gl-gold) 0%, #8b7355 100%);
+  z-index: 6;
+}
+
+.ep-golden-root .ep-gl-terms-heading {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 11pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ep-gl-ink);
+  margin: 14px 0 8px;
+}
+
+.ep-golden-root .ep-gl-terms-heading--center {
+  text-align: center;
+  margin-top: 6px;
+}
+
+.ep-golden-root .ep-gl-terms-subhead {
+  font-size: 9pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ep-gl-ink);
+  margin: 12px 0 4px;
+}
+
+.ep-golden-root .ep-gl-terms-lead {
+  margin: 0 0 6px;
+  color: var(--ep-gl-text-secondary);
+  font-size: 8.5pt;
+}
+
+.ep-golden-root .ep-gl-terms-para {
+  margin: 0 0 10px;
+  color: var(--ep-gl-text-secondary);
+}
+
+.ep-golden-root .ep-gl-terms-para--emphasis {
+  font-weight: 600;
+  color: var(--ep-gl-text);
+}
+
+.ep-golden-root .ep-gl-terms-list {
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+  color: var(--ep-gl-text-secondary);
+}
+
+.ep-golden-root .ep-gl-terms-list li {
+  position: relative;
+  padding-left: 14px;
+  margin-bottom: 5px;
+}
+
+.ep-golden-root .ep-gl-terms-list--diamond li::before {
+  content: "✦";
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 7pt;
+  color: var(--ep-gl-gold);
+  line-height: 1.5;
+}
+
+.ep-golden-root .ep-gl-terms-list--disc li::before {
+  content: "•";
+  position: absolute;
+  left: 2px;
+  top: 0;
+  color: var(--ep-gl-ink);
+  font-weight: 700;
+}
+
+.ep-golden-root .ep-gl-terms-signoff {
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ep-gl-row-border);
+}
+
+.ep-golden-root .ep-gl-terms-regards {
+  margin: 0 0 4px;
+  font-size: 9pt;
+  color: var(--ep-gl-text-secondary);
+}
+
+.ep-golden-root .ep-gl-terms-company {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 11pt;
+  font-weight: 700;
+  color: var(--ep-gl-ink);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 @media print {
   .ep-golden-root {
     background: #fdfcf9;

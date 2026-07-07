@@ -14,6 +14,7 @@ import { EpEconomicsPage } from "@/components/proposals/executive-premium-editor
 import { EpImpactPage } from "@/components/proposals/executive-premium-editorial/pages/ep-impact-page";
 import { EpBomPage } from "@/components/proposals/executive-premium-editorial/pages/ep-bom-page";
 import { EpExecutionPage } from "@/components/proposals/executive-premium-editorial/pages/ep-execution-page";
+import { EpTermsPages } from "@/components/proposals/executive-premium-editorial/pages/ep-terms-pages";
 import "@/components/proposals/executive-premium-editorial/ep-golden.css";
 
 export type ExecutivePremiumEditorialRendererProps = {
@@ -22,7 +23,7 @@ export type ExecutivePremiumEditorialRendererProps = {
 };
 
 /**
- * Executive Premium — Golden / Elite Luxury (6-page HNI document).
+ * Executive Premium — Golden / Elite Luxury (7-page HNI document + terms).
  */
 export function ExecutivePremiumEditorialRenderer({
   pptInput,
@@ -66,6 +67,7 @@ export function ExecutivePremiumEditorialRenderer({
           <EpImpactPage data={model.impact} />
           <EpBomPage bomRows={model.architecture.bom_rows} />
           <EpExecutionPage data={model.execution} />
+          <EpTermsPages data={model.terms} />
         </div>
       </EpProposalShell>
     </div>
