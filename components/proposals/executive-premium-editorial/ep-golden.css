@@ -198,8 +198,8 @@
 
 /* Cover: icon crop from full logo — original colors, no gold filter */
 .ep-golden-root .ep-gl-cover-logo-icon-wrap {
-  width: 92px;
-  height: 56px;
+  width: 100px;
+  height: 74px;
   overflow: hidden;
   margin: 0 auto 16px;
   position: relative;
@@ -208,9 +208,9 @@
 .ep-golden-root .ep-gl-cover-logo-icon {
   position: absolute;
   left: 50%;
-  top: 0;
+  top: -4px;
   transform: translateX(-50%);
-  width: 280px;
+  width: 260px;
   max-width: none;
   height: auto;
   object-fit: contain;
