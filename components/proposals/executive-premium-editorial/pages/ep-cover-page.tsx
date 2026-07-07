@@ -8,23 +8,9 @@ type Props = {
   >;
 };
 
-/** Split "Harihar Solar" → HARIHAR + SOLAR for stacked gold wordmark. */
-function splitCoverBrandName(name: string): { primary: string; secondary: string } {
-  const trimmed = name.trim();
-  const parts = trimmed.split(/\s+/).filter(Boolean);
-  if (parts.length >= 2) {
-    return {
-      primary: parts.slice(0, -1).join(" ").toUpperCase(),
-      secondary: parts[parts.length - 1]!.toUpperCase(),
-    };
-  }
-  return { primary: trimmed.toUpperCase(), secondary: "" };
-}
-
 export function EpCoverPage({ data }: Props) {
   const logoUrl = data.brand_logo_url?.trim();
   const brandName = data.brand_display?.trim();
-  const wordmark = brandName ? splitCoverBrandName(brandName) : null;
 
   return (
     <EpLuxuryPage cover>
@@ -32,24 +18,7 @@ export function EpCoverPage({ data }: Props) {
         {logoUrl || brandName ? (
           <div className="ep-gl-cover-brand-lockup">
             {logoUrl ? (
-              <>
-                <div className="ep-gl-cover-logo-icon-wrap">
-                  <img
-                    src={logoUrl}
-                    alt=""
-                    aria-hidden
-                    className="ep-gl-cover-logo-icon"
-                  />
-                </div>
-                {wordmark ? (
-                  <div className="ep-gl-cover-wordmark">
-                    <p className="ep-gl-cover-brand-primary">{wordmark.primary}</p>
-                    {wordmark.secondary ? (
-                      <p className="ep-gl-cover-brand-secondary">{wordmark.secondary}</p>
-                    ) : null}
-                  </div>
-                ) : null}
-              </>
+              <img src={logoUrl} alt={brandName || "Company logo"} className="ep-gl-cover-logo" />
             ) : brandName ? (
               <p className="ep-gl-cover-brand">{brandName}</p>
             ) : null}
