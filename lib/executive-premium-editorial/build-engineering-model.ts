@@ -61,15 +61,15 @@ export function buildEditorialWarrantyModel(
     rows: [
       {
         item: "Solar modules — product",
-        duration: "10–12 years",
+        duration: "15 years",
         by: "Manufacturer",
         coverage: "Manufacturing defects",
       },
       {
         item: "Solar modules — power output",
-        duration: "25 years",
+        duration: "30 years",
         by: "Manufacturer",
-        coverage: "≥80% rated @ year 25",
+        coverage: "≥80% rated @ year 30",
       },
       {
         item: "String inverter",
