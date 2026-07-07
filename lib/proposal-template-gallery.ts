@@ -56,7 +56,7 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
     category: "residential",
     name: "Aurora",
     description:
-      "Techno-commercial powerhouse — SLD diagram, panel tilt, DC run guide, full 12-row BOM, subsidy clarity. Easy English.",
+      "Techno-commercial powerhouse — full BOM, subsidy clarity, bill intelligence. Easy English.",
     recommended: true,
     thumbnailVariant: "aurora",
   },

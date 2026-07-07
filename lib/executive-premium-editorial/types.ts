@@ -21,8 +21,10 @@ export type EditorialEmiRow = {
 export type EditorialBomRow = {
   name: string;
   spec: string;
+  brand: string;
   warranty: string;
   description: string;
+  technical_points: string[];
 };
 
 export type EditorialProcessStep = {

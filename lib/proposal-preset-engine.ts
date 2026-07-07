@@ -151,9 +151,8 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     label: "Aurora",
     description:
       "World-class techno-commercial proposal — visually rich, educationally deep, app-synced. " +
-      "10 sections: cover → about → bill/system → summary → system design (SLD + tilt + distance) → " +
-      "full BOM → ROI → commercial → payment → documents. Easy English. " +
-      "Aurora is the clearest way to see your solar.",
+      "Sections: cover → about → bill/system → summary → full BOM → ROI → commercial → payment → documents. " +
+      "Easy English. Aurora is the clearest way to see your solar.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "bill",
@@ -163,7 +162,6 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
       "bill_intelligence",       // bill path — shows when billAuditBacked
       "system_requirements",     // requirement path — shows when !billAuditBacked
       "technical_summary",       // always — Aurora richer system summary
-      "system_layout",           // always — Aurora signature engineering page
       "bom_material_list",
       "roi_savings",
       "financial_summary",
@@ -171,6 +169,7 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
       "customer_documents_required",
     ],
     optional_blocks: [
+      "system_layout",
       "subsidy_clarity",
       "warranty",
       "amc_maintenance",

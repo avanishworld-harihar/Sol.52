@@ -11,7 +11,8 @@ export function EpBomPage({ bomRows }: Props) {
       <div className="ep-gl-section-tag">04 / Hardware Intelligence</div>
       <h1 className="ep-gl-h1">System Parts.</h1>
       <p className="ep-gl-lead" style={{ marginBottom: "20px" }}>
-        Components selected for your project — make and specification as per your proposal.
+        Tier-1 components with full engineering specification — make, standards, and warranty as
+        quoted for your system.
       </p>
 
       <div className="ep-gl-manifest-list">
@@ -21,10 +22,16 @@ export function EpBomPage({ bomRows }: Props) {
             <div key={row.name} className="ep-gl-manifest-row">
               <div className="ep-gl-manifest-left" style={isLast ? { borderBottom: "none" } : undefined}>
                 <p className="ep-gl-manifest-comp">{row.name}</p>
+                <p className="ep-gl-manifest-brand">{row.brand}</p>
                 <p className="ep-gl-manifest-warr">{row.warranty}</p>
               </div>
               <div className="ep-gl-manifest-right" style={isLast ? { borderBottom: "none" } : undefined}>
                 <p className="ep-gl-manifest-spec">{row.spec}</p>
+                <ul className="ep-gl-manifest-tech">
+                  {row.technical_points.map((point) => (
+                    <li key={point}>{point}</li>
+                  ))}
+                </ul>
                 <p className="ep-gl-manifest-desc">{row.description}</p>
               </div>
             </div>

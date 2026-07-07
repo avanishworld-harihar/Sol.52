@@ -1,5 +1,6 @@
 import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposal-ppt";
 import { resolveInstallerNameForProposal } from "@/lib/proposal-branding-settings";
+import { enrichBomTechnicalRows } from "@/lib/proposal-bom-technical-detail";
 import { fmtCompactK } from "@/lib/executive-premium-editorial/format";
 import type { ExecutivePremiumEditorialModel } from "@/lib/executive-premium-editorial/types";
 
@@ -67,11 +68,14 @@ export function transformToEditorialModel(
       ? Math.min(100, Math.round((summary.annualSaving / summary.yearlyBill) * 100))
       : 0;
 
-  const bom_rows = summary.bom.map((item) => ({
+  const enrichedBom = enrichBomTechnicalRows(summary.bom, summary, { pptInput });
+  const bom_rows = enrichedBom.map((item) => ({
     name: item.title.replace(/^Solar /, ""),
     spec: item.spec.replace(/\s*×\s*/g, " × ").replace(/\s*x\s*/gi, " × "),
+    brand: item.brand,
     warranty: normalizeWarranty(item.warranty),
     description: bomLineNote(item.title, item.brand),
+    technical_points: item.technicalPoints,
   }));
 
   const emi_rows = summary.emi.slice(0, 3).map((row) => ({

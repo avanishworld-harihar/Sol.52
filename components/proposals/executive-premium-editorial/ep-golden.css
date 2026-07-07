@@ -759,6 +759,26 @@
   margin: 0 0 4px 0;
 }
 
+.ep-golden-root .ep-gl-manifest-brand {
+  font-size: 9pt;
+  font-weight: 600;
+  color: var(--ep-gl-gold);
+  margin: 0 0 6px 0;
+  letter-spacing: 0.04em;
+}
+
+.ep-golden-root .ep-gl-manifest-tech {
+  margin: 0 0 8px 0;
+  padding: 0 0 0 1.1em;
+  font-size: 9pt;
+  line-height: 1.45;
+  color: var(--ep-gl-text-secondary);
+}
+
+.ep-golden-root .ep-gl-manifest-tech li + li {
+  margin-top: 3px;
+}
+
 .ep-golden-root .ep-gl-manifest-spec {
   font-size: 10pt;
   color: var(--ep-gl-text-secondary);

@@ -505,7 +505,7 @@ export function renderBlockByKey(
       );
 
     case "aurora_bom":
-      return <AuroraBom summary={summary} lang={lang} />;
+      return <AuroraBom summary={summary} lang={lang} pptInput={ctx.pptInput} />;
 
     case "aurora_roi":
       return <AuroraRoi summary={summary} lang={lang} />;
@@ -771,6 +771,7 @@ function ProposalWebRendererInner({
     const pages: PageEntry[] = [];
 
     for (const blockId of blockIds) {
+      if (isAurora && blockId === "system_layout") continue;
       const meta = WEB_RENDERER_REGISTRY[blockId];
       if (!meta) continue;
       if (!isBlockEligible(blockId, eligibilityCtx)) continue;

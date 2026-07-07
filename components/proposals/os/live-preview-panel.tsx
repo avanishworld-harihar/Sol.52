@@ -70,7 +70,6 @@ const AURORA_CHIPS: BlockChip[] = [
   { id: "about", label: "About" },
   { id: "bill-audit", label: "Bill" },
   { id: "technical-summary", label: "Summary" },
-  { id: "system-layout", label: "Design" },
   { id: "bom", label: "BOM" },
   { id: "economics", label: "Savings" },
   { id: "closing", label: "Cost" },
