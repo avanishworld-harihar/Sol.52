@@ -111,7 +111,7 @@ export function buildBom(opts: {
       title: "Solar Panels",
       spec: `${panelCount} × ${panelWatt} Wp Mono PERC / TOPCon (BIS, MNRE)`,
       brand: brands.panel,
-      warranty: "25 yr performance"
+      warranty: "30 yr performance"
     },
     {
       slot: 2,

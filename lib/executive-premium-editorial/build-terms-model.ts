@@ -14,8 +14,10 @@ export function buildEditorialTermsModel(
     installer_name: brand,
     terms_conditions: [
       "DISCOM / state electricity board load change, or cable change from pole to meter and its liaison — only if required — will be in the customer's scope.",
+      "All government statutory fees, regulatory charges, and legal costs relating to net-metering, subsidy (PM Surya Ghar / state schemes), DISCOM approvals, or any official application shall be borne and paid directly by the client.",
+      "If an increase in sanctioned load or connected load is required for the solar connection, the client shall ensure that all prior electricity bills, outstanding dues, and arrears with the DISCOM are fully cleared before processing; any delay or rejection arising from uncleared dues shall remain the client's responsibility.",
       "Inverter warranty is as per manufacturer (typically 8–10 years on string inverters).",
-      "Solar PV module performance warranty: ≥80% rated output at end of 25 years (manufacturer). Warranty on overall system and parts not specified above: 1 year from date of commissioning.",
+      "Solar PV module product warranty: 15 years; performance warranty: ≥80% rated output at end of 30 years (manufacturer). Warranty on overall system and parts not specified above: 1 year from date of commissioning.",
       "Warranty applies to manufacturing defects only. Physical damage, misuse, or vandalism is not covered.",
       "Routine cleaning of modules (recommended weekly) is in the customer's scope — it directly affects generation performance.",
       "Installation shall be completed within 30–40 working days from receipt of advance payment as per the agreed purchase order / payment schedule.",
