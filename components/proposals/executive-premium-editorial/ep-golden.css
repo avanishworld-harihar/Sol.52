@@ -196,16 +196,55 @@
   margin: 0 0 36px 0;
 }
 
-.ep-golden-root .ep-gl-cover-logo {
-  display: block;
-  max-width: 300px;
-  max-height: 130px;
-  width: auto;
+/* Cover: icon crop from full logo — original colors, no gold filter */
+.ep-golden-root .ep-gl-cover-logo-icon-wrap {
+  width: 92px;
+  height: 56px;
+  overflow: hidden;
+  margin: 0 auto 16px;
+  position: relative;
+}
+
+.ep-golden-root .ep-gl-cover-logo-icon {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  width: 280px;
+  max-width: none;
   height: auto;
   object-fit: contain;
-  /* Tint any logo to theme gold (#b59a57) — no box/border */
-  filter: brightness(0) saturate(100%) invert(68%) sepia(38%) saturate(620%) hue-rotate(358deg) brightness(0.9)
-    contrast(0.95);
+  object-position: top center;
+}
+
+.ep-golden-root .ep-gl-cover-wordmark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.ep-golden-root .ep-gl-cover-brand-primary {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 26pt;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  color: var(--ep-gl-gold);
+  text-transform: uppercase;
+}
+
+.ep-golden-root .ep-gl-cover-brand-secondary {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 11pt;
+  font-weight: 500;
+  letter-spacing: 0.42em;
+  line-height: 1;
+  color: var(--ep-gl-gold);
+  text-transform: uppercase;
 }
 
 .ep-golden-root .ep-gl-cover-brand {
