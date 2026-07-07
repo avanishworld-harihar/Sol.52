@@ -1,4 +1,5 @@
 import type { DeckBomItem } from "@/lib/proposal-deck-helpers";
+import { computeResidentialEngineeringMetrics } from "@/lib/proposal-engineering-metrics";
 import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposal-ppt";
 
 export type EnrichedBomRow = DeckBomItem & {
@@ -39,12 +40,19 @@ function technicalPointsForSlot(
         : "BIS IS 14286 · MNRE ALMM · IEC 61215 & IEC 61730",
     ];
     if (track) points.push(track);
-    if (mounting?.actualTiltDeg != null) {
-      points.push(
-        isHi
-          ? `इंस्टॉल टिल्ट ${mounting.actualTiltDeg}°${mounting.type ? ` · ${mounting.type}` : ""}`
-          : `Installed tilt ${mounting.actualTiltDeg}°${mounting.type ? ` · ${mounting.type}` : ""}`
-      );
+    const eng = computeResidentialEngineeringMetrics(summary, {
+      location: pptInput?.location,
+      state: pptInput?.state,
+      siteLat: mounting?.siteLat,
+    });
+    const tiltDeg = mounting?.actualTiltDeg ?? eng.tiltDeg;
+    points.push(
+      isHi
+        ? `इंस्टॉल टिल्ट ${tiltDeg}° (${eng.cityLabel}, ${eng.siteLat.toFixed(1)}°N)`
+        : `Installed tilt ${tiltDeg}° (${eng.cityLabel}, ${eng.siteLat.toFixed(1)}°N)`
+    );
+    if (mounting?.type) {
+      points.push(isHi ? `माउंटिंग: ${mounting.type}` : `Mounting: ${mounting.type}`);
     }
     return points;
   }

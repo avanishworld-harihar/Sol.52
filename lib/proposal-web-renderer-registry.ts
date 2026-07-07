@@ -77,7 +77,9 @@ export type BlockRenderKey =
   | "aurora_roi"
   | "aurora_investment"
   | "aurora_payment"
-  | "aurora_documents";
+  | "aurora_documents"
+  | "aurora_engineering"
+  | "aurora_warranty";
 
 export type WebBlockMeta = {
   /** Value for `data-page` attribute on the `.proposal-page` wrapper div. */

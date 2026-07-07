@@ -13,10 +13,7 @@ type Props = {
   pptInput: PremiumProposalPptInput;
 };
 
-function recommendedTilt(latDeg: number): number {
-  const tilt = Math.round(latDeg - 5);
-  return Math.max(10, Math.min(tilt, 30));
-}
+import { recommendedTiltFromLatitude } from "@/lib/proposal-site-geo";
 
 const FLOW_NODES_EN = [
   { title: "Array", desc: "PV panels" },
@@ -45,7 +42,7 @@ export function AuroraSystemLayout({ summary, lang, pptInput }: Props) {
   const tiltDeg =
     specs?.mounting?.actualTiltDeg ??
     specs?.mounting?.recommendedTiltDeg ??
-    (siteLat ? recommendedTilt(siteLat) : 20);
+    (siteLat ? recommendedTiltFromLatitude(siteLat) : recommendedTiltFromLatitude(24.58));
   const dcRunM = specs?.layout?.dcRunLengthM ?? 15;
   const acRunM = specs?.layout?.acRunLengthM ?? 8;
   const inverterLocation =

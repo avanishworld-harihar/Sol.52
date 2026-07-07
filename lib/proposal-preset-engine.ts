@@ -162,16 +162,17 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
       "bill_intelligence",       // bill path — shows when billAuditBacked
       "system_requirements",     // requirement path — shows when !billAuditBacked
       "technical_summary",       // always — Aurora richer system summary
+      "technical_specifications", // engineering snapshot (tilt, PR, standards)
       "bom_material_list",
+      "subsidy_clarity",
       "roi_savings",
       "financial_summary",
+      "warranty",
       "payment_terms",
       "customer_documents_required",
     ],
     optional_blocks: [
       "system_layout",
-      "subsidy_clarity",
-      "warranty",
       "amc_maintenance",
       "terms_conditions",
       "project_gallery",
