@@ -98,7 +98,9 @@ async function getRecentActiveProjects(): Promise<DashboardRecentProject[]> {
   if (!rows.length) return [];
 
   return rows
-    .filter((row) => normalizeProjectStatus(row.status) === "active")
+    /* In-flight = anything not completed. Matches the Projects "Active" tab so a live
+       project (e.g. at "approval" stage with legacy status still "pending") isn't dropped. */
+    .filter((row) => normalizeProjectStatus(row.status) !== "done")
     /* Sol.52 CRM v2 — operator can hide a project from the dashboard or soft-archive it. */
     .filter((row) => row.dashboard_visible !== false && !row.archived_at)
     .sort((a, b) => Date.parse(b.updated_at ?? "") - Date.parse(a.updated_at ?? ""))
@@ -108,7 +110,7 @@ async function getRecentActiveProjects(): Promise<DashboardRecentProject[]> {
       name: formatPipelineDisplayName(row.official_name, row.lead_name),
       detail: row.detail?.trim() || "Active project",
       capacityKw: formatCapacity(row.capacity_kw),
-      status: "active",
+      status: normalizeProjectStatus(row.status),
       installProgress: Number.isFinite(row.install_progress) ? row.install_progress : 0,
       nextAction: row.next_action,
       updatedAt: row.updated_at

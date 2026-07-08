@@ -12,6 +12,15 @@ const withPWA = withPWAInit({
   disable: process.env.NODE_ENV === "development",
   register: true,
   scope: "/",
+  /* Auto-recover from stale shells after a deploy: a new SW takes control
+     immediately and old precaches (which may point at purged JS chunks and
+     break hydration → blank header) are removed. */
+  reloadOnOnline: true,
+  workboxOptions: {
+    skipWaiting: true,
+    clientsClaim: true,
+    cleanupOutdatedCaches: true
+  },
   fallbacks: {
     document: "/offline"
   }

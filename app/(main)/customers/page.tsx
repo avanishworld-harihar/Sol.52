@@ -41,6 +41,7 @@ import {
 import { useLanguage } from "@/lib/language-context";
 import { LEAD_AREA_PROFILE_OPTIONS, LEAD_CONNECTION_TYPE_OPTIONS } from "@/lib/lead-connection-types";
 import type { CustomerLead } from "@/lib/types";
+import { useOnlineStatus } from "@/hooks/use-online-status";
 import { TABLET_SPLIT_MEDIA_QUERY } from "@/lib/tablet-split-view";
 import type { FormEvent } from "react";
 import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
