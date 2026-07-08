@@ -3,8 +3,8 @@
 /**
  * /proposals — E3 Proposal Mission Control
  *
- * Default view: Pipeline (Kanban) — visual, status-grouped, deal-centric.
- * Alt views: Grid (cards), List (split-pane, existing architecture preserved).
+ * Default view: Grid on mobile/tablet, List split-pane on desktop (lg+).
+ * Pipeline remains optional via view toggle.
  *
  * What changed (E3):
  *   + Pipeline board (default)

@@ -18,7 +18,7 @@
  */
 
 import Link from "next/link";
-import { buildProposalEditHref } from "@/lib/proposal-edit-url";
+import { resolveProposalHubPrimaryCta } from "@/lib/proposal-hub-primary-cta";
 import { proposalHubCustomerLabel } from "@/lib/proposal-customer-placeholder";
 import { motion } from "framer-motion";
 import {
@@ -163,7 +163,7 @@ function PipelineCard({ row, active, lang = "en", onClick, delay = 0 }: DealCard
   const confidence = closingConfidence(row);
   const age = dealAgeInDays(row.generated_at);
   const intel = hubIntelForRow(row, lang);
-  const manageHref = buildProposalEditHref({ leadId: row.lead_id, proposalId: row.id });
+  const primaryCta = resolveProposalHubPrimaryCta(row, lang);
   const customerLabel = proposalHubCustomerLabel(row.customer_name);
   
   return (
@@ -302,7 +302,7 @@ function PipelineCard({ row, active, lang = "en", onClick, delay = 0 }: DealCard
 
         {/* Open workspace CTA */}
         <Link
-          href={manageHref}
+          href={primaryCta.href}
           onClick={(e) => e.stopPropagation()}
           className={cn(
             "inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[11px] font-bold transition-all",
@@ -310,7 +310,7 @@ function PipelineCard({ row, active, lang = "en", onClick, delay = 0 }: DealCard
             "dark:bg-teal-500 dark:hover:bg-teal-400"
           )}
         >
-          Open
+          {primaryCta.label}
           <ArrowUpRight className="h-3 w-3" aria-hidden />
         </Link>
       </div>
@@ -325,7 +325,7 @@ function GridCard({ row, active, lang = "en", onClick, delay = 0 }: DealCardProp
   const isCommercial = isCommercialPreset(row.preset_id);
   const health = dealHealthScore(row);
   const age = dealAgeInDays(row.generated_at);
-  const manageHref = buildProposalEditHref({ leadId: row.lead_id, proposalId: row.id });
+  const primaryCta = resolveProposalHubPrimaryCta(row, lang);
   const customerLabel = proposalHubCustomerLabel(row.customer_name);
   
   return (
@@ -378,11 +378,11 @@ function GridCard({ row, active, lang = "en", onClick, delay = 0 }: DealCardProp
 
       <div className="flex gap-2 border-t border-slate-100 px-4 pb-3.5 pt-2.5 dark:border-white/[0.06]">
         <Link
-          href={manageHref}
+          href={primaryCta.href}
           onClick={(e) => e.stopPropagation()}
           className="flex-1 rounded-xl bg-teal-600 py-2 text-center text-[11px] font-bold text-white transition hover:bg-teal-700 active:scale-95 dark:bg-teal-500"
         >
-          Open Workspace
+          {primaryCta.label}
         </Link>
       </div>
     </motion.article>
@@ -397,7 +397,7 @@ function CompactCard({ row, active, lang = "en", onClick, delay = 0 }: DealCardP
   const velocity = dealVelocity(row);
   const velVis = velocityVisual(velocity);
   const age = dealAgeInDays(row.generated_at);
-  const manageHref = buildProposalEditHref({ leadId: row.lead_id, proposalId: row.id });
+  const primaryCta = resolveProposalHubPrimaryCta(row, lang);
   const customerLabel = proposalHubCustomerLabel(row.customer_name);
   
   return (
@@ -443,12 +443,12 @@ function CompactCard({ row, active, lang = "en", onClick, delay = 0 }: DealCardP
       </div>
 
       <Link
-        href={manageHref}
+        href={primaryCta.href}
         onClick={(e) => e.stopPropagation()}
-        aria-label={`Open workspace for ${customerLabel}`}
-        className="ml-1 hidden shrink-0 rounded-xl border border-slate-200 bg-white p-2 opacity-0 transition group-hover:opacity-100 hover:border-teal-300 dark:border-white/10 dark:bg-white/5 sm:flex"
+        aria-label={`${primaryCta.label} — ${customerLabel}`}
+        className="ml-1 hidden shrink-0 rounded-xl border border-teal-200 bg-teal-50 px-2.5 py-1.5 text-[10px] font-bold text-teal-800 opacity-100 transition hover:bg-teal-100 dark:border-teal-500/30 dark:bg-teal-950/40 dark:text-teal-200 sm:flex"
       >
-        <ArrowUpRight className="h-4 w-4 text-slate-500 dark:text-slate-400" aria-hidden />
+        {primaryCta.label}
       </Link>
     </motion.article>
   );

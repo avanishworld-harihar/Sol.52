@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { customerInitials, dealHealthScore, dealUrgency, dealUrgencyVisual, dealVelocity, formatInrCompact, healthScoreTone, statusVisual, velocityVisual, type ProposalHubRow } from "@/lib/proposal-hub-insights";
+import { resolveProposalHubPrimaryCta } from "@/lib/proposal-hub-primary-cta";
 import { normalizeProposalStatus, PROPOSAL_STATUS_ORDER, type ProposalStatus } from "@/lib/proposal-status";
 import { DealHeatPill } from "@/components/proposals/proposal-hub-engagement-metrics";
 import { cn } from "@/lib/utils";
@@ -93,6 +95,7 @@ export function ProposalHubDealList({
                   const urgency = dealUrgencyVisual(dealUrgency(row));
                   const vel = velocityVisual(dealVelocity(row));
                   const initials = customerInitials(row.customer_name);
+                  const primaryCta = resolveProposalHubPrimaryCta(row, lang);
                   return (
                     <li key={row.id}>
                       <motion.button
@@ -141,10 +144,19 @@ export function ProposalHubDealList({
                           <span className={cn("inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wide", urgency.className)}>
                             {urgency.label}
                           </span>
-                          <span className={cn("inline-flex items-center gap-1 text-[10px] font-bold", vel.color)}>
-                            <span className={cn("h-1.5 w-1.5 rounded-full", vel.dot)} aria-hidden />
-                            {vel.label}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className={cn("inline-flex items-center gap-1 text-[10px] font-bold", vel.color)}>
+                              <span className={cn("h-1.5 w-1.5 rounded-full", vel.dot)} aria-hidden />
+                              {vel.label}
+                            </span>
+                            <Link
+                              href={primaryCta.href}
+                              onClick={(e) => e.stopPropagation()}
+                              className="inline-flex shrink-0 items-center rounded-lg bg-teal-600 px-2.5 py-1 text-[10px] font-extrabold text-white shadow-sm hover:bg-teal-700 dark:bg-teal-500"
+                            >
+                              {primaryCta.label}
+                            </Link>
+                          </div>
                         </div>
                       </motion.button>
                     </li>

@@ -5,6 +5,7 @@ import { ProposalHubIntelPanel } from "@/components/proposals/proposal-hub-intel
 import { ProposalHubEngagementMetrics } from "@/components/proposals/proposal-hub-engagement-metrics";
 import type { ProposalListCardProps } from "@/components/proposals/proposal-list-card";
 import { buildProposalEditHref } from "@/lib/proposal-edit-url";
+import { resolveProposalHubPrimaryCta } from "@/lib/proposal-hub-primary-cta";
 import { Button } from "@/components/ui/button";
 import { dealHealthScore, healthScoreTone, hubNextActionHintForRow, statusVisual } from "@/lib/proposal-hub-insights";
 import { shareMetricsFromHubRow } from "@/lib/proposal-hub-share";
@@ -84,6 +85,7 @@ export function ProposalWorkspacePreview({
   const deal = row;
   const vis = statusVisual(st);
   const manageHref = buildProposalEditHref({ leadId: row.lead_id, proposalId: row.id });
+  const primaryCta = resolveProposalHubPrimaryCta(row, lang);
   const publicHref = `/proposal/${row.id}`;
   const savingMo =
     row.annual_saving_inr != null && Number.isFinite(row.annual_saving_inr)
@@ -263,8 +265,8 @@ export function ProposalWorkspacePreview({
         <footer className="proposal-hub-workspace-actions proposal-hub-glass-bar shrink-0 border-t border-[var(--hub-border)] px-4 py-3 sm:px-5 lg:px-6">
           <div className={cn("flex flex-wrap items-stretch gap-2", isPane ? "sm:flex-row" : "flex-col")}>
             <Button asChild size="lg" className="proposal-hub-cta-primary min-h-12 flex-1 gap-2 px-5 text-base font-extrabold shadow-lg sm:min-w-[12rem] sm:flex-[1.2]">
-              <Link href={manageHref}>
-                {labels.openWorkspace}
+              <Link href={primaryCta.href}>
+                {primaryCta.label}
                 <ArrowRight className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
               </Link>
             </Button>
