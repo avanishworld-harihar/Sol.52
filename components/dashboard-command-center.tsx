@@ -2,7 +2,6 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 import type { DashboardStatsPayload } from "@/lib/dashboard-stats-client";
-import { buildOperationalInsights } from "@/lib/dashboard-operational-insights";
 import { useLanguage } from "@/lib/language-context";
 import { cn } from "@/lib/utils";
 import { motion, useReducedMotion } from "framer-motion";
@@ -16,7 +15,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { buildNewProposalHref, prepareNewProposalNavigation } from "@/lib/proposal-builder-session";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 type DashboardCommandCenterProps = {
   name?: string;
@@ -68,59 +67,12 @@ export function DashboardCommandCenter({ name, stats, loading, className }: Dash
     : uiLang === "hi"
       ? "नमस्ते!"
       : "Welcome back!";
-  const insights = useMemo(() => buildOperationalInsights(stats, null, uiLang), [stats, uiLang]);
-
   const now = new Date();
   const dateStr = now.toLocaleDateString("en-IN", {
     weekday: "short",
     day: "numeric",
     month: "short"
   });
-
-  const operationalHeadline = (() => {
-    if (!stats) {
-      return uiLang === "hi" ? "ऑपरेशनल स्थिति लोड हो रही है" : "Loading operational status";
-    }
-    if (stats.pendingPayments > 0) {
-      return uiLang === "hi"
-        ? `${formatInr(stats.pendingPayments)} बकाया — आज संग्रह प्राथमिक`
-        : `${formatInr(stats.pendingPayments)} outstanding — collections are today's priority`;
-    }
-    if (stats.proposalsSent > 0 && stats.orders < stats.proposalsSent) {
-      return uiLang === "hi"
-        ? `${stats.proposalsSent} प्रस्ताव सक्रिय — कन्वर्ज़न पर ध्यान दें`
-        : `${stats.proposalsSent} proposals active — drive conversion to orders`;
-    }
-    if (stats.totalLeads > 0) {
-      return uiLang === "hi"
-        ? `पाइपलाइन में ${stats.totalLeads} लीड्स — गति बनाए रखें`
-        : `${stats.totalLeads} leads in pipeline — maintain forward momentum`;
-    }
-    return uiLang === "hi" ? "सिस्टम तैयार — पहली लीड जोड़ें" : "System ready — add your first lead to begin";
-  })();
-
-  const directive = (() => {
-    if (!stats) {
-      return uiLang === "hi"
-        ? "डेटा सिंक होते ही आज का निर्देश यहाँ दिखेगा।"
-        : "Today's directive will appear once data syncs.";
-    }
-    if (stats.pendingPayments > 0) {
-      return uiLang === "hi"
-        ? "बकाया खातों पर कॉल करें, भुगतान लिंक भेजें, और प्रोजेक्ट स्टेटस अपडेट करें।"
-        : "Call outstanding accounts, send payment links, and update project status before EOD.";
-    }
-    if (stats.proposalsSent > 0) {
-      return uiLang === "hi"
-        ? "जिन ग्राहकों ने प्रस्ताव लिंक नहीं खोला, उन्हें आज फॉलो-अप करें।"
-        : "Follow up today with customers who have not opened the proposal link.";
-    }
-    return uiLang === "hi"
-      ? "नई लीड कैप्चर करें और प्रस्ताव बनाकर पाइपलाइन आगे बढ़ाएँ।"
-      : "Capture new leads and advance the pipeline with fresh proposals.";
-  })();
-
-  const urgentFollowUps = insights?.followUps.filter((f) => f.stale).slice(0, 2) ?? [];
 
   const pipeline = [
     {
@@ -218,16 +170,6 @@ export function DashboardCommandCenter({ name, stats, loading, className }: Dash
           </div>
         </div>
 
-        {/* Operational headline — primary focus */}
-        <div className="glass-status-focus space-y-2">
-          <p className="ws-type-label">{uiLang === "hi" ? "ऑपरेशनल स्थिति" : "Operational status"}</p>
-          {loading && !stats ? (
-            <Skeleton className="h-9 w-full max-w-lg rounded-lg" />
-          ) : (
-            <p className="ws-type-status-headline border-l-0 pl-0 text-balance">{operationalHeadline}</p>
-          )}
-        </div>
-
         {/* Pipeline console — single control strip, not four KPI cards */}
         <nav className="glass-pipeline-console" aria-label={uiLang === "hi" ? "पाइपलाइन कंसोल" : "Pipeline console"}>
           {pipeline.map((seg, i) => {
@@ -265,56 +207,35 @@ export function DashboardCommandCenter({ name, stats, loading, className }: Dash
           })}
         </nav>
 
-        {/* Intelligence panels */}
-        <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-12">
-          <div className="glass-command-inset min-w-0 space-y-2.5 lg:col-span-7">
-            <p className="ws-type-label">{uiLang === "hi" ? "आज का निर्देश" : "Today's directive"}</p>
-            <p className="ws-type-body">{directive}</p>
-            {urgentFollowUps.length > 0 ? (
-              <ul className="mt-2 space-y-1 border-t border-white/40 pt-2.5 dark:border-white/10">
-                {urgentFollowUps.map((row) => (
-                  <li key={row.id}>
-                    <Link href={row.href} className="glass-urgent-row group flex items-center justify-between gap-2 rounded-lg px-2.5 py-2">
-                      <span className="min-w-0 truncate text-xs font-semibold text-slate-800 dark:text-white lg:text-sm">{row.name}</span>
-                      <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide text-amber-700 dark:text-amber-300 lg:text-[11px]">
-                        {uiLang === "hi" ? "रुका" : "Stale"}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
-
-          <div className="glass-command-inset min-w-0 lg:col-span-5">
-            <p className="ws-type-label mb-2.5">{uiLang === "hi" ? "वित्तीय पल्स" : "Financial pulse"}</p>
-            <div className="grid grid-cols-1 gap-2.5 min-[420px]:grid-cols-2">
-              <div className="glass-pulse-stat glass-pulse-stat--revenue">
-                <span className="ws-icon-well ws-icon-well--emerald mb-2" aria-hidden>
-                  <CircleDollarSign className="h-4 w-4" strokeWidth={2.25} />
-                </span>
-                <p className="glass-pulse-stat-label">{t("metrics_revenue")}</p>
-                {loading && !stats ? (
-                  <Skeleton className="mt-1.5 h-6 w-20 rounded lg:h-7 lg:w-24" />
-                ) : (
-                  <p className="glass-pulse-stat-value text-emerald-900 dark:text-emerald-100">
-                    {stats ? formatInr(stats.revenue) : "—"}
-                  </p>
-                )}
-              </div>
-              <div className={cn("glass-pulse-stat", stats && stats.pendingPayments > 0 && "glass-pulse-stat--alert")}>
-                <span className={cn("ws-icon-well mb-2", stats && stats.pendingPayments > 0 ? "ws-icon-well--rose" : "ws-icon-well--indigo")} aria-hidden>
-                  <CircleDollarSign className="h-4 w-4" strokeWidth={2.25} />
-                </span>
-                <p className="glass-pulse-stat-label">{t("metrics_pending")}</p>
-                {loading && !stats ? (
-                  <Skeleton className="mt-1.5 h-6 w-20 rounded lg:h-7 lg:w-24" />
-                ) : (
-                  <p className="glass-pulse-stat-value text-brand-950 dark:text-white">
-                    {stats ? formatInr(stats.pendingPayments) : "—"}
-                  </p>
-                )}
-              </div>
+        {/* Financial pulse — absolute ₹ (revenue + outstanding), only home for these values */}
+        <div className="glass-command-inset min-w-0">
+          <p className="ws-type-label mb-2.5">{uiLang === "hi" ? "वित्तीय पल्स" : "Financial pulse"}</p>
+          <div className="grid grid-cols-1 gap-2.5 min-[420px]:grid-cols-2">
+            <div className="glass-pulse-stat glass-pulse-stat--revenue">
+              <span className="ws-icon-well ws-icon-well--emerald mb-2" aria-hidden>
+                <CircleDollarSign className="h-4 w-4" strokeWidth={2.25} />
+              </span>
+              <p className="glass-pulse-stat-label">{t("metrics_revenue")}</p>
+              {loading && !stats ? (
+                <Skeleton className="mt-1.5 h-6 w-20 rounded lg:h-7 lg:w-24" />
+              ) : (
+                <p className="glass-pulse-stat-value text-emerald-900 dark:text-emerald-100">
+                  {stats ? formatInr(stats.revenue) : "—"}
+                </p>
+              )}
+            </div>
+            <div className={cn("glass-pulse-stat", stats && stats.pendingPayments > 0 && "glass-pulse-stat--alert")}>
+              <span className={cn("ws-icon-well mb-2", stats && stats.pendingPayments > 0 ? "ws-icon-well--rose" : "ws-icon-well--indigo")} aria-hidden>
+                <CircleDollarSign className="h-4 w-4" strokeWidth={2.25} />
+              </span>
+              <p className="glass-pulse-stat-label">{t("metrics_pending")}</p>
+              {loading && !stats ? (
+                <Skeleton className="mt-1.5 h-6 w-20 rounded lg:h-7 lg:w-24" />
+              ) : (
+                <p className="glass-pulse-stat-value text-brand-950 dark:text-white">
+                  {stats ? formatInr(stats.pendingPayments) : "—"}
+                </p>
+              )}
             </div>
           </div>
         </div>

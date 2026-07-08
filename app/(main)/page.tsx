@@ -252,12 +252,12 @@ function DashboardPageContent() {
   return (
     <div className="workspace-dashboard">
     <DashboardStaggerRoot animate={shouldAnimateDashboard}>
-        <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-command cc-hero-zone">
-          <CrmCommandCenter />
-        </DashboardItem>
-
         <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-greeting">
           <DashboardCommandCenter name={greetingName} stats={stats} loading={showMetricSkeleton} />
+        </DashboardItem>
+
+        <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-command cc-hero-zone">
+          <CrmCommandCenter />
         </DashboardItem>
 
         <DashboardItem animate={shouldAnimateDashboard}>
