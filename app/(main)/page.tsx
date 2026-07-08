@@ -39,7 +39,7 @@ import {
   resolveDiscomCode,
   writeInstallerRegion
 } from "@/lib/installer-region-storage";
-import { MapPin, UserPlus } from "lucide-react";
+import { AlertTriangle, ArrowRight, MapPin, UserPlus, Wallet } from "lucide-react";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import { buildMetricTrendLines, writeTrendBaseline, type MetricTrendLines } from "@/lib/dashboard-trends";
 import { useLanguage } from "@/lib/language-context";
@@ -228,6 +228,24 @@ function DashboardPageContent() {
     (): GlassProjectSummary[] => stats?.recentProjects ?? [],
     [stats?.recentProjects]
   );
+  /** Money + blockers surfaced right under the command hero (max 2 projects). */
+  const attentionProjects = useMemo(() => {
+    const staleMs = 3 * 86_400_000;
+    const isStale = (iso?: string | null) => {
+      if (!iso) return false;
+      const ts = Date.parse(iso);
+      return !Number.isNaN(ts) && Date.now() - ts > staleMs;
+    };
+    return (stats?.recentProjects ?? [])
+      .filter((p) => p.status !== "done")
+      .map((p) => ({ project: p, stale: isStale(p.updatedAt) }))
+      .sort((a, b) => {
+        if (a.stale !== b.stale) return a.stale ? -1 : 1;
+        if (a.project.status !== b.project.status) return a.project.status === "pending" ? -1 : 1;
+        return (a.project.installProgress ?? 0) - (b.project.installProgress ?? 0);
+      })
+      .slice(0, 2);
+  }, [stats?.recentProjects]);
   const shouldAnimateDashboard = !prefersReducedMotion && !isPointerCoarse;
 
   useEffect(() => {
@@ -259,6 +277,56 @@ function DashboardPageContent() {
         <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-command cc-hero-zone">
           <CrmCommandCenter />
         </DashboardItem>
+
+        {stats && (stats.pendingPayments > 0 || attentionProjects.length > 0) && (
+          <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-attention">
+            <DashboardSectionTitle tier="quiet">Needs attention</DashboardSectionTitle>
+            <div className="mt-1.5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {stats.pendingPayments > 0 && (
+                <Link
+                  href="/projects"
+                  className="group flex items-center gap-3 rounded-2xl border border-rose-200/80 bg-rose-50/70 p-3.5 backdrop-blur-sm transition hover:border-rose-300 hover:bg-rose-100/70 dark:border-rose-500/30 dark:bg-rose-950/25 sm:p-4"
+                >
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-500/15 text-rose-600 dark:bg-rose-500/20 dark:text-rose-300" aria-hidden>
+                    <Wallet className="h-5 w-5" strokeWidth={2.25} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[10px] font-extrabold uppercase tracking-[0.14em] text-rose-600/90 dark:text-rose-300/90">
+                      Collections due
+                    </span>
+                    <span className="mt-0.5 block truncate text-lg font-black tabular-nums text-rose-800 dark:text-rose-200">
+                      ₹{Math.round(stats.pendingPayments).toLocaleString("en-IN")}
+                    </span>
+                  </span>
+                  <ArrowRight className="h-4 w-4 shrink-0 text-rose-500 transition-transform group-hover:translate-x-0.5 dark:text-rose-300" aria-hidden />
+                </Link>
+              )}
+              {attentionProjects.map(({ project, stale }) => (
+                <Link
+                  key={project.id}
+                  href={`/projects/${encodeURIComponent(project.id)}`}
+                  className="group flex items-center gap-3 rounded-2xl border border-amber-200/80 bg-amber-50/70 p-3.5 backdrop-blur-sm transition hover:border-amber-300 hover:bg-amber-100/70 dark:border-amber-500/30 dark:bg-amber-950/20 sm:p-4"
+                >
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-700 dark:bg-amber-500/20 dark:text-amber-200" aria-hidden>
+                    <AlertTriangle className="h-5 w-5" strokeWidth={2.25} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-1.5">
+                      <span className="truncate text-sm font-extrabold text-slate-900 dark:text-white">{project.name}</span>
+                      <span className="shrink-0 rounded-md bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-800 dark:bg-amber-950/60 dark:text-amber-200">
+                        {stale ? "Stale" : project.status === "pending" ? "Pending" : "Active"}
+                      </span>
+                    </span>
+                    <span className="mt-0.5 block truncate text-[11px] font-medium text-slate-600 dark:text-[#8B949E]">
+                      {project.nextAction?.trim() || `${Math.round(project.installProgress)}% complete · ${project.capacityKw}`}
+                    </span>
+                  </span>
+                  <ArrowRight className="h-4 w-4 shrink-0 text-amber-500 transition-transform group-hover:translate-x-0.5 dark:text-amber-300" aria-hidden />
+                </Link>
+              ))}
+            </div>
+          </DashboardItem>
+        )}
 
         <DashboardItem animate={shouldAnimateDashboard}>
           <OfflineDataNotice
