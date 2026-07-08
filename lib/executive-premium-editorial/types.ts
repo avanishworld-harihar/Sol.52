@@ -70,6 +70,15 @@ export type EditorialWarrantyRow = {
   coverage: string;
 };
 
+export type EditorialWarrantyHighlightIcon = "shield" | "panel" | "structure" | "support";
+
+export type EditorialWarrantyHighlight = {
+  icon: EditorialWarrantyHighlightIcon;
+  value: string;
+  unit: string;
+  label: string;
+};
+
 export type EditorialEngineeringModel = {
   metrics_rows: EditorialMetricRow[];
   tilt_deg: number;
@@ -82,6 +91,7 @@ export type EditorialEngineeringModel = {
 
 export type EditorialWarrantyModel = {
   intro: string;
+  highlights: EditorialWarrantyHighlight[];
   rows: EditorialWarrantyRow[];
 };
 

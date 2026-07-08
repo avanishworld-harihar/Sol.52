@@ -921,9 +921,22 @@
 /* ── Terms & Conditions (closing pages) ───────────────────────────────────── */
 
 .ep-golden-root .ep-gl-terms-page .ep-gl-page-body {
-  padding: 14mm 18mm 16mm;
-  font-size: 8.5pt;
-  line-height: 1.45;
+  padding: 12mm 14mm 12mm;
+  font-size: 7.3pt;
+  line-height: 1.36;
+}
+
+.ep-golden-root .ep-gl-terms-columns {
+  column-count: 2;
+  column-gap: 16px;
+  margin-top: 8px;
+}
+
+.ep-golden-root .ep-gl-terms-block {
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  page-break-inside: avoid;
+  margin-bottom: 9px;
 }
 
 .ep-golden-root .ep-gl-terms-accent {
@@ -943,21 +956,23 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--ep-gl-ink);
-  margin: 14px 0 8px;
+  margin: 6px 0 8px;
 }
 
 .ep-golden-root .ep-gl-terms-heading--center {
   text-align: center;
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
 .ep-golden-root .ep-gl-terms-subhead {
-  font-size: 9pt;
+  font-size: 8pt;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--ep-gl-ink);
-  margin: 12px 0 4px;
+  letter-spacing: 0.07em;
+  color: var(--ep-gl-gold);
+  margin: 0 0 4px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--ep-gl-border-gold);
 }
 
 .ep-golden-root .ep-gl-terms-lead {
@@ -967,7 +982,7 @@
 }
 
 .ep-golden-root .ep-gl-terms-para {
-  margin: 0 0 10px;
+  margin: 0 0 6px;
   color: var(--ep-gl-text-secondary);
 }
 
@@ -977,7 +992,7 @@
 }
 
 .ep-golden-root .ep-gl-terms-list {
-  margin: 0 0 10px;
+  margin: 0;
   padding: 0;
   list-style: none;
   color: var(--ep-gl-text-secondary);
@@ -985,8 +1000,8 @@
 
 .ep-golden-root .ep-gl-terms-list li {
   position: relative;
-  padding-left: 14px;
-  margin-bottom: 5px;
+  padding-left: 12px;
+  margin-bottom: 3px;
 }
 
 .ep-golden-root .ep-gl-terms-list--diamond li::before {
@@ -1009,8 +1024,8 @@
 }
 
 .ep-golden-root .ep-gl-terms-signoff {
-  margin-top: 18px;
-  padding-top: 12px;
+  margin-top: 10px;
+  padding-top: 8px;
   border-top: 1px solid var(--ep-gl-row-border);
 }
 
@@ -1213,6 +1228,68 @@
   color: var(--ep-gl-text-secondary);
   margin: 0;
   line-height: 1.35;
+}
+
+.ep-golden-root .ep-gl-warranty-hero {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin: 18px 0 22px;
+}
+
+.ep-golden-root .ep-gl-warranty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 18px 10px 16px;
+  border: 1px solid var(--ep-gl-border-gold);
+  border-radius: 12px;
+  background: linear-gradient(160deg, rgba(181, 154, 87, 0.1), rgba(181, 154, 87, 0.02));
+  box-shadow: 0 1px 0 rgba(109, 84, 24, 0.08);
+}
+
+.ep-golden-root .ep-gl-warranty-card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  color: var(--ep-gl-gold);
+  background: rgba(181, 154, 87, 0.12);
+  border: 1px solid var(--ep-gl-border-gold);
+  margin-bottom: 12px;
+}
+
+.ep-golden-root .ep-gl-warranty-card-value {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 27pt;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--ep-gl-ink);
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.ep-golden-root .ep-gl-warranty-card-unit {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 8.5pt;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ep-gl-gold);
+}
+
+.ep-golden-root .ep-gl-warranty-card-label {
+  margin-top: 8px;
+  font-size: 7.5pt;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ep-gl-text-secondary);
+  line-height: 1.3;
 }
 
 .ep-golden-root .ep-gl-warranty-table {

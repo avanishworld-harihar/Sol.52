@@ -58,6 +58,12 @@ export function buildEditorialWarrantyModel(
 
   return {
     intro: `${summary.systemKw} kW system — ${panelBrand} panels, ${inverterBrand} inverter.`,
+    highlights: [
+      { icon: "shield", value: "30", unit: "Years", label: "Power output ≥80%" },
+      { icon: "panel", value: "15", unit: "Years", label: "Module product warranty" },
+      { icon: "structure", value: "10", unit: "Years", label: "Mounting structure" },
+      { icon: "support", value: `${amcYears}`, unit: "Yr AMC", label: "Service & support" },
+    ],
     rows: [
       {
         item: "Solar modules — product",
