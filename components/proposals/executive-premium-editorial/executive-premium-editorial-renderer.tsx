@@ -17,6 +17,7 @@ import { EpEngineeringPage } from "@/components/proposals/executive-premium-edit
 import { EpExecutionPage } from "@/components/proposals/executive-premium-editorial/pages/ep-execution-page";
 import { EpTermsPages } from "@/components/proposals/executive-premium-editorial/pages/ep-terms-pages";
 import { EpWarrantyPage } from "@/components/proposals/executive-premium-editorial/pages/ep-warranty-page";
+import { EpClosingPage } from "@/components/proposals/executive-premium-editorial/pages/ep-closing-page";
 import "@/components/proposals/executive-premium-editorial/ep-golden.css";
 
 export type ExecutivePremiumEditorialRendererProps = {
@@ -72,6 +73,7 @@ export function ExecutivePremiumEditorialRenderer({
           <EpWarrantyPage data={model.warranty} />
           <EpExecutionPage data={model.execution} />
           <EpTermsPages data={model.terms} />
+          <EpClosingPage data={model.closing} />
         </div>
       </EpProposalShell>
     </div>

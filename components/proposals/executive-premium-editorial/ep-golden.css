@@ -1045,6 +1045,192 @@
   letter-spacing: 0.04em;
 }
 
+/* ── Closing / Congratulations (sales close) ─────────────────────────────── */
+
+.ep-golden-root .ep-gl-closing-page .ep-gl-page-body {
+  padding: 20mm 18mm 18mm;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(181, 154, 87, 0.1) 0%, rgba(181, 154, 87, 0) 55%),
+    #fdfcf9;
+}
+
+.ep-golden-root .ep-gl-closing-accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, var(--ep-gl-gold) 0%, #8b7355 100%);
+  z-index: 6;
+}
+
+.ep-golden-root .ep-gl-closing-hero {
+  text-align: center;
+  margin-top: 6mm;
+}
+
+.ep-golden-root .ep-gl-closing-eyebrow {
+  margin: 0 0 10px;
+  font-size: 10pt;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ep-gl-gold);
+}
+
+.ep-golden-root .ep-gl-closing-title {
+  margin: 0 auto 26px;
+  max-width: 80%;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 24pt;
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--ep-gl-ink);
+}
+
+.ep-golden-root .ep-gl-closing-stats {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0;
+  margin: 8px auto 0;
+  max-width: 92%;
+  border: 1px solid var(--ep-gl-border-gold);
+  border-radius: 14px;
+  background: linear-gradient(160deg, rgba(181, 154, 87, 0.08), rgba(181, 154, 87, 0.02));
+  padding: 22px 12px;
+}
+
+.ep-golden-root .ep-gl-closing-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 14px;
+}
+
+.ep-golden-root .ep-gl-closing-stat-divider {
+  width: 1px;
+  background: var(--ep-gl-border-gold);
+  align-self: stretch;
+}
+
+.ep-golden-root .ep-gl-closing-stat-value {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 34pt;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--ep-gl-gold);
+}
+
+.ep-golden-root .ep-gl-closing-stat-unit {
+  margin-top: 8px;
+  font-size: 8.5pt;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ep-gl-ink);
+}
+
+.ep-golden-root .ep-gl-closing-stat-label {
+  margin-top: 4px;
+  font-size: 8pt;
+  color: var(--ep-gl-text-secondary);
+}
+
+.ep-golden-root .ep-gl-closing-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: auto;
+  padding: 18px 20px;
+  border: 1px solid var(--ep-gl-border-muted);
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.ep-golden-root .ep-gl-closing-block-title {
+  margin: 0 0 6px;
+  font-size: 8pt;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ep-gl-gold);
+}
+
+.ep-golden-root .ep-gl-closing-company {
+  margin: 0 0 4px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 15pt;
+  font-weight: 700;
+  color: var(--ep-gl-ink);
+}
+
+.ep-golden-root .ep-gl-closing-contact-line {
+  margin: 0;
+  font-size: 9pt;
+  color: var(--ep-gl-text-secondary);
+}
+
+.ep-golden-root .ep-gl-closing-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.ep-golden-root .ep-gl-closing-qr-img {
+  width: 84px;
+  height: 84px;
+  object-fit: contain;
+  border: 1px solid var(--ep-gl-border-gold);
+  border-radius: 8px;
+  padding: 4px;
+  background: #fff;
+}
+
+.ep-golden-root .ep-gl-closing-qr-caption {
+  margin-top: 6px;
+  font-size: 7pt;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ep-gl-text-muted);
+}
+
+.ep-golden-root .ep-gl-closing-signoff {
+  display: flex;
+  gap: 40px;
+  margin-top: 20px;
+}
+
+.ep-golden-root .ep-gl-closing-sign {
+  flex: 1;
+}
+
+.ep-golden-root .ep-gl-closing-sign-line {
+  height: 34px;
+  border-bottom: 1.5px solid var(--ep-gl-ink);
+  margin-bottom: 8px;
+}
+
+.ep-golden-root .ep-gl-closing-sign-role {
+  margin: 0;
+  font-size: 9pt;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ep-gl-ink);
+}
+
+.ep-golden-root .ep-gl-closing-sign-sub {
+  margin: 2px 0 0;
+  font-size: 8pt;
+  color: var(--ep-gl-text-muted);
+}
+
 /* ── Engineering & warranty (Golden technical) ───────────────────────────── */
 
 .ep-golden-root .ep-gl-engineering-page {
