@@ -3,7 +3,7 @@
 /**
  * /proposals — E3 Proposal Mission Control
  *
- * Default view: Grid on mobile/tablet, List split-pane on desktop (lg+).
+ * Default view: Grid on phone, List split-pane on tablet & desktop (md+).
  * Pipeline remains optional via view toggle.
  *
  * What changed (E3):

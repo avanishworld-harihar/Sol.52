@@ -292,17 +292,17 @@ function LeadRowActions({
 
 function LeadRowSkeleton() {
   return (
-    <div className="border-b border-slate-100 p-4 last:border-b-0 dark:border-white/[0.06] lg:grid lg:grid-cols-12 lg:items-center lg:gap-4 lg:px-5">
-      <div className="flex items-center gap-3 lg:col-span-5">
+    <div className="border-b border-slate-100 p-4 last:border-b-0 dark:border-white/[0.06] xl:grid xl:grid-cols-12 xl:items-center xl:gap-4 xl:px-5">
+      <div className="flex items-center gap-3 xl:col-span-5">
         <Skeleton className="h-12 w-12 shrink-0 rounded-2xl bg-slate-200/80" />
         <div className="min-w-0 flex-1 space-y-2">
           <Skeleton className="h-4 w-36 rounded-md bg-slate-200/80" />
           <Skeleton className="h-3 w-24 rounded-md bg-slate-200/60" />
         </div>
       </div>
-      <Skeleton className="mt-3 hidden h-10 rounded-lg bg-slate-200/60 lg:col-span-3 lg:mt-0 lg:block" />
-      <Skeleton className="mt-2 hidden h-8 w-20 rounded-lg bg-slate-200/60 lg:col-span-2 lg:mt-0 lg:block" />
-      <div className="mt-3 flex justify-start lg:col-span-2 lg:mt-0 lg:justify-end">
+      <Skeleton className="mt-3 hidden h-10 rounded-lg bg-slate-200/60 xl:col-span-3 xl:mt-0 xl:block" />
+      <Skeleton className="mt-2 hidden h-8 w-20 rounded-lg bg-slate-200/60 xl:col-span-2 xl:mt-0 xl:block" />
+      <div className="mt-3 flex justify-start xl:col-span-2 xl:mt-0 xl:justify-end">
         <Skeleton className="h-7 w-28 rounded-full bg-slate-200/70" />
       </div>
     </div>
@@ -444,12 +444,12 @@ export function CustomersLeadList({
 
       {loading ? (
         <>
-          <div className="space-y-3 px-0.5 md:max-lg:space-y-2 lg:hidden">
+          <div className="space-y-3 px-0.5 md:max-xl:space-y-2 xl:hidden">
             {Array.from({ length: 4 }).map((_, i) => (
               <LeadMobileCardSkeleton key={`m-sk-${i}`} />
             ))}
           </div>
-          <div className="hidden overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#0c1017] lg:block">
+          <div className="hidden overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#0c1017] xl:block">
             {Array.from({ length: 5 }).map((_, i) => (
               <LeadRowSkeleton key={i} />
             ))}
@@ -459,7 +459,7 @@ export function CustomersLeadList({
 
       {!loading && customers.length > 0 ? (
         <>
-          <div className="space-y-3 px-0.5 md:max-lg:space-y-2 lg:hidden">
+          <div className="space-y-3 px-0.5 md:max-xl:space-y-2 xl:hidden">
             {customers.map((customer) => {
               const statusKey = normalizeLeadStatus(customer.status);
               const commercialCta = resolveCustomerCommercialCta(customer);
@@ -491,7 +491,7 @@ export function CustomersLeadList({
                   key={`m-${customer.id}`}
                   className={cn(
                     "relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 shadow-[0_4px_20px_-8px_rgba(15,23,42,0.12)] dark:border-white/10 dark:bg-[#0c1017]",
-                    "md:max-lg:rounded-xl md:max-lg:p-3",
+                    "md:max-xl:rounded-xl md:max-xl:p-3",
                     activeProject && "border-l-[4px] border-l-indigo-500 bg-indigo-50/25 dark:border-l-indigo-400 dark:bg-indigo-950/25",
                     onSelectLead && selectedLeadId === customer.id && "ring-2 ring-brand-500/50 ring-offset-2 ring-offset-slate-50 dark:ring-offset-[#0c1017]"
                   )}
@@ -527,29 +527,29 @@ export function CustomersLeadList({
                   <div className={cn("flex gap-3", canMutateLead ? "pr-12" : "")}>
                     <LeadAvatar name={customer.consumer_name ?? customer.name} stale={stale} />
                     <div className="min-w-0 flex-1">
-                      <h3 className="pr-2 text-lg font-extrabold leading-tight text-slate-900 dark:text-slate-50 md:max-lg:text-base">
+                      <h3 className="pr-2 text-lg font-extrabold leading-tight text-slate-900 dark:text-slate-50 md:max-xl:text-base">
                         {displayName}
                       </h3>
-                      <div className="mt-2 flex flex-wrap items-center gap-2 md:max-lg:mt-1 md:max-lg:gap-1.5">
+                      <div className="mt-2 flex flex-wrap items-center gap-2 md:max-xl:mt-1 md:max-xl:gap-1.5">
                         <LeadSourceBadge sourceRaw={customer.source} />
                         <span
                           className={cn(
                             "inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide",
-                            "md:max-lg:px-2 md:max-lg:py-0.5 md:max-lg:text-[9px]",
+                            "md:max-xl:px-2 md:max-xl:py-0.5 md:max-xl:text-[9px]",
                             stageMeta.className
                           )}
                         >
                           {t(stageMeta.labelKey)}
                         </span>
                       </div>
-                      <div className="mt-3 max-w-full md:max-lg:mt-2">
+                      <div className="mt-3 max-w-full md:max-xl:mt-2">
                         <CustomerCallbackChip
                           dueAt={nextFollowupAt}
                           title={nextFollowupTitle}
                           onSchedule={() => setScheduleTarget(customer)}
                         />
                       </div>
-                      <div className="mt-3 max-w-full md:max-lg:mt-2">
+                      <div className="mt-3 max-w-full md:max-xl:mt-2">
                         {onStatusChange ? (
                           <LeadStatusPillSelect
                             leadId={customer.id}
@@ -565,28 +565,28 @@ export function CustomersLeadList({
                     </div>
                   </div>
 
-                  <dl className="mt-4 space-y-3 rounded-2xl bg-slate-50/90 px-4 py-3.5 text-sm dark:bg-white/[0.05] md:max-lg:mt-2 md:max-lg:space-y-2 md:max-lg:rounded-xl md:max-lg:px-3 md:max-lg:py-2.5 md:max-lg:text-[13px]">
+                  <dl className="mt-4 space-y-3 rounded-2xl bg-slate-50/90 px-4 py-3.5 text-sm dark:bg-white/[0.05] md:max-xl:mt-2 md:max-xl:space-y-2 md:max-xl:rounded-xl md:max-xl:px-3 md:max-xl:py-2.5 md:max-xl:text-[13px]">
                     <div className="flex justify-between gap-3">
                       <dt className="shrink-0 font-semibold text-slate-500 dark:text-slate-400">{t("customers_tableLocation")}</dt>
                       <dd className="min-w-0 text-right font-semibold text-slate-900 dark:text-slate-100">
                         <span className="block truncate">{customer.city}</span>
-                        <span className="mt-0.5 block truncate text-xs font-medium text-slate-600 dark:text-slate-400 md:max-lg:text-[11px]">
+                        <span className="mt-0.5 block truncate text-xs font-medium text-slate-600 dark:text-slate-400 md:max-xl:text-[11px]">
                           {customer.discom}
                         </span>
                       </dd>
                     </div>
-                    <div className="flex justify-between gap-3 border-t border-slate-200/80 pt-3 dark:border-white/10 md:max-lg:pt-2">
+                    <div className="flex justify-between gap-3 border-t border-slate-200/80 pt-3 dark:border-white/10 md:max-xl:pt-2">
                       <dt className="shrink-0 font-semibold text-slate-500 dark:text-slate-400">{t("customers_monthlyBillShort")}</dt>
-                      <dd className="text-lg font-black tabular-nums text-slate-900 dark:text-slate-50 md:max-lg:text-base">
+                      <dd className="text-lg font-black tabular-nums text-slate-900 dark:text-slate-50 md:max-xl:text-base">
                         ₹{bill.toLocaleString("en-IN")}
                       </dd>
                     </div>
-                    <div className="flex justify-between gap-3 border-t border-slate-200/80 pt-3 text-xs dark:border-white/10 md:max-lg:pt-2 md:max-lg:text-[11px]">
+                    <div className="flex justify-between gap-3 border-t border-slate-200/80 pt-3 text-xs dark:border-white/10 md:max-xl:pt-2 md:max-xl:text-[11px]">
                       <dt className="shrink-0 font-semibold text-slate-500 dark:text-slate-400">Last activity</dt>
                       <dd className="font-bold text-slate-800 dark:text-slate-200">{lastActivityLabel}</dd>
                     </div>
                     {customer.phone ? (
-                      <div className="flex justify-between gap-3 border-t border-slate-200/80 pt-3 dark:border-white/10 md:max-lg:pt-2">
+                      <div className="flex justify-between gap-3 border-t border-slate-200/80 pt-3 dark:border-white/10 md:max-xl:pt-2">
                         <dt className="shrink-0 font-semibold text-slate-500 dark:text-slate-400">{t("customers_tablePhone")}</dt>
                         <dd className="min-w-0 max-w-[70%] text-right">
                           <a
@@ -601,17 +601,17 @@ export function CustomersLeadList({
                     ) : null}
                   </dl>
 
-                  <div className="mt-4 flex flex-col gap-2 md:max-lg:mt-2.5 md:max-lg:gap-1.5">
+                  <div className="mt-4 flex flex-col gap-2 md:max-xl:mt-2.5 md:max-xl:gap-1.5">
                     {customer.phone || waUrl ? (
                       <div className="flex w-full min-w-0 gap-2">
                         {customer.phone ? (
                           <a
                             href={`tel:${customer.phone}`}
                             onClick={() => handlePhoneCall(customer.id)}
-                            className="flex min-h-12 min-w-0 flex-1 touch-manipulation items-center justify-center gap-2 rounded-xl bg-indigo-600 px-2 text-sm font-bold text-white shadow-md active:bg-indigo-700 sm:min-h-[3rem] sm:px-3 sm:text-base md:max-lg:min-h-10 md:max-lg:rounded-lg md:max-lg:text-sm"
+                            className="flex min-h-12 min-w-0 flex-1 touch-manipulation items-center justify-center gap-2 rounded-xl bg-indigo-600 px-2 text-sm font-bold text-white shadow-md active:bg-indigo-700 sm:min-h-[3rem] sm:px-3 sm:text-base md:max-xl:min-h-10 md:max-xl:rounded-lg md:max-xl:text-sm"
                             aria-label={t("customers_mobileCall")}
                           >
-                            <Phone className="h-5 w-5 shrink-0 md:max-lg:h-4 md:max-lg:w-4" strokeWidth={2} aria-hidden />
+                            <Phone className="h-5 w-5 shrink-0 md:max-xl:h-4 md:max-xl:w-4" strokeWidth={2} aria-hidden />
                             <span className="truncate">{t("customers_mobileCall")}</span>
                           </a>
                         ) : null}
@@ -619,10 +619,10 @@ export function CustomersLeadList({
                           <button
                             type="button"
                             onClick={() => openWhatsApp(customer.id, waUrl)}
-                            className="flex min-h-12 min-w-0 flex-1 touch-manipulation items-center justify-center gap-2 rounded-xl border border-emerald-300/90 bg-emerald-50 px-2 text-sm font-bold text-emerald-900 shadow-sm active:bg-emerald-100 dark:border-emerald-500/45 dark:bg-emerald-950/55 dark:text-emerald-100 dark:active:bg-emerald-900/50 sm:min-h-[3rem] sm:px-3 md:max-lg:min-h-10 md:max-lg:rounded-lg md:max-lg:text-xs"
+                            className="flex min-h-12 min-w-0 flex-1 touch-manipulation items-center justify-center gap-2 rounded-xl border border-emerald-300/90 bg-emerald-50 px-2 text-sm font-bold text-emerald-900 shadow-sm active:bg-emerald-100 dark:border-emerald-500/45 dark:bg-emerald-950/55 dark:text-emerald-100 dark:active:bg-emerald-900/50 sm:min-h-[3rem] sm:px-3 md:max-xl:min-h-10 md:max-xl:rounded-lg md:max-xl:text-xs"
                             aria-label={t("customers_whatsappAria")}
                           >
-                            <MessageCircle className="h-5 w-5 shrink-0 md:max-lg:h-4 md:max-lg:w-4" strokeWidth={2} aria-hidden />
+                            <MessageCircle className="h-5 w-5 shrink-0 md:max-xl:h-4 md:max-xl:w-4" strokeWidth={2} aria-hidden />
                             <span className="truncate">{t("customers_whatsappShort")}</span>
                           </button>
                         ) : null}
@@ -630,23 +630,25 @@ export function CustomersLeadList({
                     ) : null}
                     <Link
                       href={commercialCta.href}
-                      className="ss-cta-primary min-h-12 w-full touch-manipulation md:max-lg:min-h-10"
+                      className="ss-cta-primary min-h-12 w-full touch-manipulation md:max-xl:min-h-10"
                     >
                       {t(commercialCta.labelKey)}
                     </Link>
+                    {onSelectLead ? null : (
                     <Link
                       href={`/customers/${customer.id}`}
                       className="flex min-h-10 w-full items-center justify-center gap-1.5 rounded-xl border border-teal-200 bg-teal-50/70 px-3 text-xs font-bold text-teal-800 touch-manipulation hover:bg-teal-100 dark:border-teal-500/30 dark:bg-teal-950/30 dark:text-teal-200"
                     >
                       View profile →
                     </Link>
+                    )}
                   </div>
                 </article>
               );
             })}
           </div>
 
-          <div className="hidden overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_8px_30px_-12px_rgba(15,23,42,0.12)] dark:border-white/10 dark:bg-[#0c1017] lg:block">
+          <div className="hidden overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_8px_30px_-12px_rgba(15,23,42,0.12)] dark:border-white/10 dark:bg-[#0c1017] xl:block">
             {showHeader && (
               <div className="grid grid-cols-12 gap-4 border-b border-slate-200/90 bg-gradient-to-r from-slate-50 to-white px-5 py-3 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:border-white/10 dark:from-[#141a22] dark:to-[#0c1017] dark:text-slate-400">
                 <div className="col-span-5 pl-[3.25rem]">{t("customers_tableLead")}</div>

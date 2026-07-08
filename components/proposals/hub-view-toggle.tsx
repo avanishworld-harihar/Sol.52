@@ -4,12 +4,15 @@
  * HubViewToggle — pipeline / grid / list view switcher for /proposals.
  *
  * Saves preference to localStorage. First visit defaults by device:
- *   - Mobile / tablet (< lg): Grid (card scan)
- *   - Desktop (lg+): List (split-pane mission control)
+ *   - Mobile / phone (< md): Grid (card scan)
+ *   - Tablet / iPad (md–xl): List (split-pane mission control)
+ *   - Desktop (xl+): List (split-pane mission control)
  */
 
 import { Kanban, LayoutGrid, List } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+import { TABLET_SPLIT_MIN_PX } from "@/lib/tablet-split-view";
 
 export type HubViewMode = "pipeline" | "grid" | "list";
 
@@ -17,7 +20,7 @@ const STORAGE_KEY = "ss_proposals_view_mode";
 
 function deviceDefaultViewMode(): HubViewMode {
   if (typeof window === "undefined") return "list";
-  return window.matchMedia("(min-width: 1024px)").matches ? "list" : "grid";
+  return window.matchMedia(`(min-width: ${TABLET_SPLIT_MIN_PX}px)`).matches ? "list" : "grid";
 }
 
 export function readViewMode(): HubViewMode {

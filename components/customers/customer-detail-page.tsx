@@ -26,7 +26,8 @@ import {
   FolderKanban,
   FolderOpen,
 } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { isTabletSplitViewport } from "@/lib/tablet-split-view";
 import { Button } from "@/components/ui/button";
 import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { useToast } from "@/components/ui/toast-center";
@@ -197,6 +198,13 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
   const router = useRouter();
   const toast = useToast();
   const { t } = useLanguage();
+
+  useEffect(() => {
+    if (isTabletSplitViewport()) {
+      router.replace(`/customers?lead=${encodeURIComponent(leadId)}`);
+    }
+  }, [leadId, router]);
+
   const quickQuoteLabels = useMemo(() => quickQuoteLabelsFromT(t), [t]);
 
   /* ------ fetch lead ------ */

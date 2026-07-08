@@ -41,7 +41,7 @@ import {
 import { useLanguage } from "@/lib/language-context";
 import { LEAD_AREA_PROFILE_OPTIONS, LEAD_CONNECTION_TYPE_OPTIONS } from "@/lib/lead-connection-types";
 import type { CustomerLead } from "@/lib/types";
-import { useOnlineStatus } from "@/hooks/use-online-status";
+import { TABLET_SPLIT_MEDIA_QUERY } from "@/lib/tablet-split-view";
 import type { FormEvent } from "react";
 import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
@@ -151,6 +151,15 @@ function CustomersPageContent() {
       setSelectedLeadId(leadQs);
     }
   }, [leadQs, allCustomers]);
+
+  /** Tablet split: auto-focus first lead when none selected (Mail-style inbox). */
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia(TABLET_SPLIT_MEDIA_QUERY).matches) return;
+    if (selectedLeadId || customers.length === 0) return;
+    const first = customers[0]!.id;
+    setSelectedLeadId(first);
+    router.replace(`/customers?lead=${encodeURIComponent(first)}`, { scroll: false });
+  }, [customers, selectedLeadId, router]);
 
   const onWorkspaceSelectLead = useCallback(
     (id: string) => {
@@ -654,8 +663,17 @@ function CustomersPageContent() {
           />
         </WorkspaceStaggerItem>
 
-        <WorkspaceStaggerItem className="md:max-lg:grid md:max-lg:grid-cols-1 md:max-lg:items-start md:max-lg:gap-5 md:max-lg:landscape:grid-cols-[minmax(0,46%)_minmax(0,1fr)]">
-          <div className="min-w-0 space-y-4">
+        <WorkspaceStaggerItem
+          className={cn(
+            "md:max-xl:grid md:max-xl:min-h-0",
+            "md:max-xl:h-[min(calc(100dvh-11rem),720px)]",
+            "md:max-xl:grid-cols-[minmax(240px,0.38fr)_minmax(0,1fr)]",
+            "md:max-xl:gap-0 md:max-xl:overflow-hidden md:max-xl:rounded-2xl md:max-xl:border md:max-xl:border-slate-200/90 md:max-xl:bg-white/80 md:max-xl:shadow-sm",
+            "dark:md:max-xl:border-white/10 dark:md:max-xl:bg-[#0c1017]/90"
+          )}
+        >
+          <div className="flex min-h-0 min-w-0 flex-col md:max-xl:overflow-hidden md:max-xl:border-r md:max-xl:border-slate-200/80 dark:md:max-xl:border-white/10">
+            <div className="shrink-0 space-y-3 p-0 md:max-xl:px-3 md:max-xl:pt-3">
             <div className="workspace-filter-rail">
           {(
             [
@@ -690,7 +708,12 @@ function CustomersPageContent() {
             );
           })}
             </div>
+            <p className="hidden text-[11px] font-semibold text-slate-500 md:max-xl:block xl:hidden dark:text-slate-400">
+              {t("customers_splitHint")}
+            </p>
+            </div>
 
+            <div className="min-h-0 flex-1 overflow-y-auto md:max-xl:px-3 md:max-xl:pb-3">
             <CustomersLeadList
               customers={customers}
               loading={showListSkeleton}
@@ -700,9 +723,10 @@ function CustomersPageContent() {
               selectedLeadId={selectedLeadId}
               onSelectLead={onWorkspaceSelectLead}
             />
+            </div>
           </div>
 
-          <div className="hidden min-h-[min(70vh,520px)] md:max-lg:block lg:hidden">
+          <div className="hidden min-h-0 p-3 md:max-xl:flex md:max-xl:flex-col md:max-xl:overflow-hidden xl:hidden">
             <CustomerWorkspacePane customer={workspaceCustomer} onStatusChange={handleStatusChange} />
           </div>
         </WorkspaceStaggerItem>

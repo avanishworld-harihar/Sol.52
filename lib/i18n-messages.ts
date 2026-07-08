@@ -128,6 +128,7 @@ export const EN = {
   customers_workspaceEmptySub: "Pick a lead to see context and the next step.",
   customers_workspaceEmptySub_detail:
     "Choose someone from the list to see CRM context, reach them, and the next step for quotes or installs.",
+  customers_splitHint: "Tap a lead — workspace opens on the right.",
   customers_ctaCreateQuote: "Create quote",
   customers_ctaOpenProposal: "Open proposal workspace",
   customers_ctaOpenProject: "Open project pipeline",
@@ -688,6 +689,7 @@ export const HI: Partial<Record<keyof typeof EN, string>> = {
   customers_workspaceTitle: "लीड वर्कस्पेस",
   customers_workspaceEmptyTitle: "एक लीड चुनें",
   customers_workspaceEmptySub: "सूची से चुनें — संपर्क, फ़ॉलो-अप और अगला कदम (कोट या इंस्टॉल)।",
+  customers_splitHint: "लीड चुनें — दाएँ वर्कस्पेस खुलेगा।",
   customers_ctaCreateQuote: "कोट बनाएँ",
   customers_ctaOpenProposal: "प्रस्ताव वर्कस्पेस खोलें",
   customers_ctaOpenProject: "प्रोजेक्ट पाइपलाइन खोलें",
