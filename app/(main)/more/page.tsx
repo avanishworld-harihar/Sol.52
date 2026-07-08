@@ -344,6 +344,8 @@ export default function MorePage() {
           )}
         </AnimatePresence>
 
+        <MoreSectionLabel>Plan &amp; billing</MoreSectionLabel>
+
         <MoreGroup
           id="more-section-subscription"
           icon={CreditCard}
@@ -353,6 +355,33 @@ export default function MorePage() {
         >
           <SubscriptionUsageCard />
         </MoreGroup>
+
+        <MoreGroup
+          id="more-section-plans"
+          icon={CreditCard}
+          title="Plans"
+          subtitle="Subscriptions and a quick reminder — tap to open."
+        >
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
+            <PlanCard title="Trial" price="Free 30 days" detail="Full Pro access to build habit fast" accent="blue" />
+            <PlanCard title="Pro" price="₹299 / month" detail="Unlimited proposals for growing teams" accent="green" />
+            <PlanCard title="Business" price="₹999 / month" detail="3 users + white-label control" accent="violet" />
+          </div>
+          <p className="text-[11px] font-semibold text-slate-600 sm:text-xs">
+            Pro is the usual pick for active proposal teams.
+          </p>
+
+          <div className="ss-card-subtle rounded-2xl p-3">
+          <div className="flex items-start gap-2">
+            <Sparkles className="mt-0.5 h-4 w-4 text-amber-500" />
+            <p className="text-xs font-semibold text-slate-700 sm:text-sm">
+              Save company profile before generating a proposal so the customer link picks up the latest details.
+            </p>
+          </div>
+        </div>
+        </MoreGroup>
+
+        <MoreSectionLabel>Proposals &amp; pricing</MoreSectionLabel>
 
         <MoreGroup
           id="more-section-proposal-templates"
@@ -373,6 +402,68 @@ export default function MorePage() {
           subtitle="Company profile, logo, portfolio, banking, and proposal look."
         >
           <BrandProposalsSettingsPanel markSaved={markSaved} markIssue={markIssue} />
+        </MoreGroup>
+
+        <MoreSectionLabel>Region &amp; tariff</MoreSectionLabel>
+
+        <MoreGroup
+          id="more-section-region"
+          icon={MapPin}
+          title="Operating region"
+          subtitle="State / UT and DISCOM — proposals & tariff use this context."
+        >
+          <div className="rounded-xl border border-brand-200/60 bg-brand-50/40 p-3 dark:border-white/10 dark:bg-white/[0.04]">
+            <div className="flex items-start gap-2">
+              <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100">
+                <MapPin className="h-4 w-4" aria-hidden />
+              </span>
+              <div className="min-w-0 flex-1 space-y-2">
+                <FloatingLabelSelect
+                  label="State / UT"
+                  containerClassName="my-1"
+                  suppressHydrationWarning
+                  value={installerState}
+                  onChange={(e) => setInstallerState(e.target.value)}
+                  className="h-11"
+                >
+                  <option value="">Select state / UT…</option>
+                  {INDIAN_STATES_AND_UTS.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </FloatingLabelSelect>
+                <FloatingLabelSelect
+                  label={t("dashboard_selectDiscom")}
+                  containerClassName="my-1"
+                  suppressHydrationWarning
+                  value={installerDiscom}
+                  disabled={!installerState.trim()}
+                  onChange={(e) => setInstallerDiscom(e.target.value)}
+                  className="h-11 disabled:opacity-60"
+                  aria-label={t("dashboard_selectDiscom")}
+                >
+                  {!installerState.trim() ? (
+                    <option value="">{t("dashboard_selectDiscom")}</option>
+                  ) : discomListLoading && discomSelectOptions.length === 0 ? (
+                    <option value="">{t("dashboard_loadingDiscoms")}</option>
+                  ) : (
+                    <>
+                      <option value="">{t("dashboard_selectDiscom")}</option>
+                      {discomSelectOptions.map((d) => (
+                        <option key={d.id} value={d.code}>
+                          {d.name} ({d.code})
+                        </option>
+                      ))}
+                    </>
+                  )}
+                </FloatingLabelSelect>
+                <button type="button" onClick={saveOperatingRegion} className="ss-cta-primary w-full sm:w-auto">
+                  Save operating region
+                </button>
+              </div>
+            </div>
+          </div>
         </MoreGroup>
 
         <MoreGroup
@@ -462,70 +553,14 @@ export default function MorePage() {
         ) : null}
         </MoreGroup>
 
+        <MoreSectionLabel>App &amp; device</MoreSectionLabel>
+
         <MoreGroup
           id="more-section-app"
           icon={Settings2}
-          title="App"
-          subtitle="Region, language, theme, and performance."
+          title="App & device"
+          subtitle="Language, theme, and performance."
         >
-          <Subsection
-            title="Operating region"
-            description="Same as dashboard setup — DISCOM list comes from your state; proposals use this context."
-          >
-            <div className="rounded-xl border border-brand-200/60 bg-brand-50/40 p-3 dark:border-white/10 dark:bg-white/[0.04]">
-              <div className="flex items-start gap-2">
-                <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100">
-                  <MapPin className="h-4 w-4" aria-hidden />
-                </span>
-                <div className="min-w-0 flex-1 space-y-2">
-                  <FloatingLabelSelect
-                    label="State / UT"
-                    containerClassName="my-1"
-                    suppressHydrationWarning
-                    value={installerState}
-                    onChange={(e) => setInstallerState(e.target.value)}
-                    className="h-11"
-                  >
-                    <option value="">Select state / UT…</option>
-                    {INDIAN_STATES_AND_UTS.map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
-                    ))}
-                  </FloatingLabelSelect>
-                  <FloatingLabelSelect
-                    label={t("dashboard_selectDiscom")}
-                    containerClassName="my-1"
-                    suppressHydrationWarning
-                    value={installerDiscom}
-                    disabled={!installerState.trim()}
-                    onChange={(e) => setInstallerDiscom(e.target.value)}
-                    className="h-11 disabled:opacity-60"
-                    aria-label={t("dashboard_selectDiscom")}
-                  >
-                    {!installerState.trim() ? (
-                      <option value="">{t("dashboard_selectDiscom")}</option>
-                    ) : discomListLoading && discomSelectOptions.length === 0 ? (
-                      <option value="">{t("dashboard_loadingDiscoms")}</option>
-                    ) : (
-                      <>
-                        <option value="">{t("dashboard_selectDiscom")}</option>
-                        {discomSelectOptions.map((d) => (
-                          <option key={d.id} value={d.code}>
-                            {d.name} ({d.code})
-                          </option>
-                        ))}
-                      </>
-                    )}
-                  </FloatingLabelSelect>
-                  <button type="button" onClick={saveOperatingRegion} className="ss-cta-primary w-full sm:w-auto">
-                    Save operating region
-                  </button>
-                </div>
-              </div>
-            </div>
-          </Subsection>
-
           <Subsection title="Language" description={`Current support: ${supportLevel}.`}>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {LANGUAGE_OPTIONS.map((opt) => (
@@ -612,30 +647,6 @@ export default function MorePage() {
           </Subsection>
         </MoreGroup>
 
-        <MoreGroup
-          id="more-section-plans"
-          icon={CreditCard}
-          title="Plans"
-          subtitle="Subscriptions and a quick reminder — tap to open."
-        >
-          <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
-            <PlanCard title="Trial" price="Free 30 days" detail="Full Pro access to build habit fast" accent="blue" />
-            <PlanCard title="Pro" price="₹299 / month" detail="Unlimited proposals for growing teams" accent="green" />
-            <PlanCard title="Business" price="₹999 / month" detail="3 users + white-label control" accent="violet" />
-          </div>
-          <p className="text-[11px] font-semibold text-slate-600 sm:text-xs">
-            Pro is the usual pick for active proposal teams.
-          </p>
-
-          <div className="ss-card-subtle rounded-2xl p-3">
-          <div className="flex items-start gap-2">
-            <Sparkles className="mt-0.5 h-4 w-4 text-amber-500" />
-            <p className="text-xs font-semibold text-slate-700 sm:text-sm">
-              Save company profile before generating a proposal so the customer link picks up the latest details.
-            </p>
-          </div>
-        </div>
-        </MoreGroup>
       </WorkspacePage>
     </>
   );
@@ -680,6 +691,14 @@ function MoreGroup({
       </summary>
       <div className="space-y-4 border-t border-slate-200/80 px-4 pb-4 pt-3 sm:px-5 sm:pb-5 sm:pt-4 dark:border-white/10">{children}</div>
     </details>
+  );
+}
+
+function MoreSectionLabel({ children }: { children: ReactNode }) {
+  return (
+    <p className="px-1 pb-0.5 pt-3 text-[11px] font-extrabold uppercase tracking-[0.14em] text-slate-400 first:pt-0 dark:text-slate-500">
+      {children}
+    </p>
   );
 }
 
