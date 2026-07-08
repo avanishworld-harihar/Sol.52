@@ -25,6 +25,10 @@ import {
   type DashboardStatsPayload
 } from "@/lib/dashboard-stats-client";
 import { useInstallerDiscoms } from "@/hooks/use-installer-discoms";
+import {
+  PROPOSAL_BRANDING_UPDATED_EVENT,
+  readProposalBrandingSettings,
+} from "@/lib/proposal-branding-settings";
 import { INDIAN_STATES_AND_UTS } from "@/lib/indian-states-uts";
 import {
   INSTALLER_DISCOM_KEY,
@@ -119,6 +123,7 @@ function DashboardPageContent() {
   const [installerState, setInstallerState] = useState("");
   const [installerDiscom, setInstallerDiscom] = useState("");
   const [installerSaved, setInstallerSaved] = useState(false);
+  const [greetingName, setGreetingName] = useState("");
   const { options: discomOptions, loading: discomListLoading } = useInstallerDiscoms(installerState);
   const discomSelectOptions = useMemo(
     () => mergeSavedDiscomOption(installerDiscom, discomOptions),
@@ -135,6 +140,20 @@ function DashboardPageContent() {
       setInstallerDiscom(discom);
       setInstallerSaved(true);
     }
+  }, []);
+
+  /** Greeting name from company profile (contact person → company name). Never hardcoded. */
+  useEffect(() => {
+    const syncName = () => {
+      const s = readProposalBrandingSettings();
+      const person = s.companyProfile?.contactPerson?.trim() ?? "";
+      const company = s.installerName?.trim() ?? "";
+      const resolved = person || (company && company !== "Harihar Solar" ? company : "");
+      setGreetingName(resolved);
+    };
+    syncName();
+    window.addEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, syncName);
+    return () => window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, syncName);
   }, []);
 
   /** More / Customers se region save hone par dashboard turant sync ho. */
@@ -238,7 +257,7 @@ function DashboardPageContent() {
         </DashboardItem>
 
         <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-greeting">
-          <DashboardCommandCenter name="Avanish" stats={stats} loading={showMetricSkeleton} />
+          <DashboardCommandCenter name={greetingName} stats={stats} loading={showMetricSkeleton} />
         </DashboardItem>
 
         <DashboardItem animate={shouldAnimateDashboard}>
@@ -340,13 +359,17 @@ function DashboardPageContent() {
 
         {installerSaved && (
           <DashboardItem animate={shouldAnimateDashboard}>
-            <Card className="border-solar-200/80 bg-solar-50/90 backdrop-blur-sm">
-              <CardContent className="p-3 text-xs font-semibold leading-snug text-solar-800 sm:p-4 sm:text-sm lg:text-base">
-                {installerDiscom.trim()
-                  ? t("dashboard_activeRegion", { state: installerState, discom: installerDiscom })
-                  : t("dashboard_activeState", { state: installerState })}
-              </CardContent>
-            </Card>
+            <Link
+              href="/more"
+              className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-solar-200/80 bg-solar-50/80 px-3 py-1.5 text-xs font-semibold text-solar-800 backdrop-blur-sm transition hover:border-solar-300 hover:bg-solar-100/80 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200"
+            >
+              <MapPin className="h-3.5 w-3.5 shrink-0" strokeWidth={2.25} aria-hidden />
+              <span className="truncate">
+                {installerState}
+                {installerDiscom.trim() ? ` · ${installerDiscom}` : ""}
+              </span>
+              <span className="shrink-0 text-solar-500 dark:text-emerald-300/80">· Edit</span>
+            </Link>
           </DashboardItem>
         )}
 

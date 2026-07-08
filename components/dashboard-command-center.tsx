@@ -58,10 +58,16 @@ function useAnimatedInt(target: number, enabled: boolean, durationMs = 680) {
   return value;
 }
 
-export function DashboardCommandCenter({ name = "Avanish", stats, loading, className }: DashboardCommandCenterProps) {
+export function DashboardCommandCenter({ name, stats, loading, className }: DashboardCommandCenterProps) {
   const { t, locale } = useLanguage();
   const reduced = useReducedMotion();
   const uiLang = locale === "en" ? "en" : "hi";
+  const displayName = name?.trim();
+  const greeting = displayName
+    ? t("dashboard_greetingName", { name: displayName })
+    : uiLang === "hi"
+      ? "नमस्ते!"
+      : "Welcome back!";
   const insights = useMemo(() => buildOperationalInsights(stats, null, uiLang), [stats, uiLang]);
 
   const now = new Date();
@@ -190,7 +196,7 @@ export function DashboardCommandCenter({ name = "Avanish", stats, loading, class
               ) : null}
             </div>
             <p className="ws-type-greeting text-balance">
-              {t("dashboard_greetingName", { name })}
+              {greeting}
               <span className="ws-type-greeting-meta"> · {dateStr}</span>
             </p>
           </div>
