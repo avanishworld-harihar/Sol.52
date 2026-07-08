@@ -30,6 +30,8 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
 import { BrandLogo } from "@/components/brand-logo";
 import { APP_NAV_ROUTES } from "@/lib/app-nav-config";
+import { badgeCountForNavHref, useNavTabBadges } from "@/hooks/use-nav-tab-badges";
+import { NavTabBadge } from "@/components/shell/nav-tab-badge";
 import { cn } from "@/lib/utils";
 
 // ─── Active detection ─────────────────────────────────────────────────────────
@@ -48,6 +50,7 @@ function isActive(pathname: string, href: string): boolean {
 export function NavRail() {
   const pathname = usePathname();
   const { t } = useLanguage();
+  const badges = useNavTabBadges();
 
   return (
     <aside
@@ -107,6 +110,7 @@ export function NavRail() {
         {APP_NAV_ROUTES.map((item) => {
           const active = isActive(pathname, item.href);
           const Icon = item.icon;
+          const badge = badgeCountForNavHref(item.href, badges);
 
           return (
             <Link
@@ -130,16 +134,19 @@ export function NavRail() {
               )}
             >
               {/* Icon */}
-              <Icon
-                className={cn(
-                  "h-[1.1rem] w-[1.1rem] shrink-0 transition-transform duration-200",
-                  active
-                    ? "text-white scale-105"
-                    : "text-slate-500 group-hover:text-brand-700 dark:text-slate-400 dark:group-hover:text-slate-200"
-                )}
-                aria-hidden
-                strokeWidth={2.25}
-              />
+              <span className="relative flex h-[1.1rem] w-[1.1rem] shrink-0 items-center justify-center">
+                <NavTabBadge count={badge} className="-right-2 -top-2" />
+                <Icon
+                  className={cn(
+                    "h-[1.1rem] w-[1.1rem] shrink-0 transition-transform duration-200",
+                    active
+                      ? "text-white scale-105"
+                      : "text-slate-500 group-hover:text-brand-700 dark:text-slate-400 dark:group-hover:text-slate-200"
+                  )}
+                  aria-hidden
+                  strokeWidth={2.25}
+                />
+              </span>
 
               {/* Label — hidden on lg (icon-only), visible on xl */}
               <span

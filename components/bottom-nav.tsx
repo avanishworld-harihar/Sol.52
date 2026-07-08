@@ -7,6 +7,8 @@ import { usePathname } from "next/navigation";
 
 import { APP_NAV_ROUTES } from "@/lib/app-nav-config";
 import { useLanguage } from "@/lib/language-context";
+import { badgeCountForNavHref, useNavTabBadges } from "@/hooks/use-nav-tab-badges";
+import { NavTabBadge } from "@/components/shell/nav-tab-badge";
 import { cn } from "@/lib/utils";
 
 const PORTAL_ID = "ss-bottom-nav-portal";
@@ -22,6 +24,7 @@ function isActive(pathname: string, href: string) {
 function BottomNavInner() {
   const pathname = usePathname();
   const { t } = useLanguage();
+  const badges = useNavTabBadges();
   const [portalEl, setPortalEl] = useState<HTMLElement | null>(null);
 
   useLayoutEffect(() => {
@@ -41,6 +44,7 @@ function BottomNavInner() {
           {APP_NAV_ROUTES.map((item) => {
             const active = isActive(pathname, item.href);
             const Icon = item.icon;
+            const badge = badgeCountForNavHref(item.href, badges);
             return (
               <Link
                 key={item.href}
@@ -65,12 +69,13 @@ function BottomNavInner() {
                 />
                 <span
                   className={cn(
-                    "flex h-8 w-8 items-center justify-center rounded-2xl transition-[color,background-color,box-shadow,transform] duration-200 sm:h-9 sm:w-9",
+                    "relative flex h-8 w-8 items-center justify-center rounded-2xl transition-[color,background-color,box-shadow,transform] duration-200 sm:h-9 sm:w-9",
                     active
                       ? "bg-teal-600 text-white shadow-md dark:bg-teal-500 dark:text-white"
                       : "bg-slate-200/70 text-slate-600 dark:bg-[#161B22]/95 dark:text-muted-foreground"
                   )}
                 >
+                  <NavTabBadge count={badge} />
                   <Icon
                     className={cn(
                       "h-5 w-5 shrink-0 transition-transform duration-200",
