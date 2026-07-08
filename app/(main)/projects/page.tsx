@@ -9,6 +9,7 @@ import { ProjectListPagination } from "@/components/projects/project-list-pagina
 import { ProjectListSkeleton } from "@/components/projects/project-list-skeleton";
 import { ProjectListTable } from "@/components/projects/project-list-table";
 import { ProjectOpsDashboard } from "@/components/projects/ops/project-ops-dashboard";
+import { ProjectOpsMobileStrip } from "@/components/projects/ops/project-ops-mobile-strip";
 import { OutstandingCollectionsSheet } from "@/components/money/outstanding-collections-sheet";
 import { WorkflowLifecycleStrip } from "@/components/workflow-lifecycle-strip";
 import { FloatingLabelInput, FloatingLabelSelect } from "@/components/ui/floating-label-input";
@@ -422,6 +423,13 @@ function ProjectsBoard() {
         </WorkspaceStaggerItem>
 
         <WorkspaceStaggerItem>
+          {opsStatsLoading && !opsStats ? null : (
+            <ProjectOpsMobileStrip
+              stats={opsStats}
+              className="mb-1.5"
+              onPendingCollectionClick={() => setCollectionsOpen(true)}
+            />
+          )}
           <ProjectOpsDashboard
             stats={opsStats}
             projects={activeRows}
