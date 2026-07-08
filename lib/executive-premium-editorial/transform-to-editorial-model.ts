@@ -165,5 +165,16 @@ export function transformToEditorialModel(
       payments,
     },
     terms: buildEditorialTermsModel(summary, installerLabel),
+    closing: {
+      customer_name: customer,
+      annual_units: summary.annualGen,
+      annual_savings_inr: summary.annualSaving,
+      installer_name: installerLabel,
+      contact_line: summary.contact,
+      qr_url:
+        summary.bankDetails?.paymentQrCodeUrl?.trim() ||
+        pptInput.bankDetails?.paymentQrCodeUrl?.trim() ||
+        undefined,
+    },
   };
 }

@@ -139,4 +139,14 @@ export type ExecutivePremiumEditorialModel = {
     payments: EditorialPaymentRow[];
   };
   terms: EditorialTermsModel;
+  closing: EditorialClosingModel;
+};
+
+export type EditorialClosingModel = {
+  customer_name: string;
+  annual_units: number;
+  annual_savings_inr: number;
+  installer_name: string;
+  contact_line: string;
+  qr_url?: string;
 };
