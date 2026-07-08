@@ -80,6 +80,9 @@ function CustomersPageContent() {
   const [deleteTarget, setDeleteTarget] = useState<CustomerLead | null>(null);
   const [leadModalPortalReady, setLeadModalPortalReady] = useState(false);
   const [error, setError] = useState("");
+  /** Add-modal starts as quick capture; edit always shows everything. */
+  const [showMoreDetails, setShowMoreDetails] = useState(false);
+  const detailsOpen = leadModal === "edit" || showMoreDetails;
   const [form, setForm] = useState({
     name: "",
     consumer_name: "",
@@ -311,6 +314,7 @@ function CustomersPageContent() {
     setLeadModal("none");
     setEditLeadId(null);
     setError("");
+    setShowMoreDetails(false);
     const r = readInstallerRegion();
     setForm({
       name: "",
@@ -463,6 +467,10 @@ function CustomersPageContent() {
       !payload.discom ||
       Number.isNaN(payload.monthly_bill)
     ) {
+      /** A required field lives in the collapsed section — reveal it so the operator can fix it. */
+      if (leadModal === "add" && (!form.state.trim() || !payload.discom)) {
+        setShowMoreDetails(true);
+      }
       setError(t("customers_fillRequired"));
       return;
     }
@@ -738,10 +746,7 @@ function CustomersPageContent() {
             </div>
             <form id="lead-modal-form" className="flex min-h-0 flex-1 flex-col" onSubmit={onSubmit}>
               <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto overscroll-contain px-4 py-3 pb-2 sm:space-y-3">
-              <HelpHint
-                label={t("customers_regionSyncHint")}
-                detail={t("customers_regionSyncHint_detail")}
-              />
+              {/* ── Essentials — fast capture ─────────────────────────────── */}
               <FloatingLabelInput
                 label="Lead name (person you met)"
                 containerClassName="my-4"
@@ -751,88 +756,13 @@ function CustomersPageContent() {
                 onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
               />
               <FloatingLabelInput
-                label="Consumer name (on bill) — optional"
+                label={t("customers_placeholderPhone")}
                 containerClassName="my-4"
                 labelBackgroundClassName={modalLabelBg}
                 className={modalFloatingClass}
-                value={form.consumer_name}
-                onChange={(e) => setForm((p) => ({ ...p, consumer_name: e.target.value }))}
-              />
-              <StaticLabelSelect
-                label={t("customers_labelState")}
-                containerClassName="my-4"
-                className={modalSelectClass}
-                suppressHydrationWarning
-                value={form.state}
-                onChange={(e) => setForm((p) => ({ ...p, state: e.target.value, discom: "" }))}
-              >
-                  <option value="">{t("dashboard_selectState")}</option>
-                  {INDIAN_STATES_AND_UTS.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-              </StaticLabelSelect>
-              <StaticLabelSelect
-                label={t("customers_labelDiscom")}
-                containerClassName="my-4"
-                className={`${modalSelectClass} disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400`}
-                suppressHydrationWarning
-                value={form.discom}
-                disabled={!form.state.trim()}
-                onChange={(e) => setForm((p) => ({ ...p, discom: e.target.value }))}
-                aria-label={t("customers_labelDiscom")}
-              >
-                  {!form.state.trim() ? (
-                    <option value="">{t("dashboard_selectDiscom")}</option>
-                  ) : leadDiscomListLoading && leadDiscomSelectOptions.length === 0 ? (
-                    <option value="">{t("dashboard_loadingDiscoms")}</option>
-                  ) : (
-                    <>
-                      <option value="">{t("dashboard_selectDiscom")}</option>
-                      {leadDiscomSelectOptions.map((d) => (
-                        <option key={d.id} value={d.code}>
-                          {d.name} ({d.code})
-                        </option>
-                      ))}
-                    </>
-                  )}
-              </StaticLabelSelect>
-              <StaticLabelSelect
-                label={t("customers_labelConnectionType")}
-                containerClassName="my-4"
-                className={modalSelectClass}
-                suppressHydrationWarning
-                value={form.connection_type}
-                onChange={(e) => setForm((p) => ({ ...p, connection_type: e.target.value }))}
-              >
-                {LEAD_CONNECTION_TYPE_OPTIONS.map((o) => (
-                  <option key={o.value || "unset"} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </StaticLabelSelect>
-              <StaticLabelSelect
-                label={t("customers_labelArea")}
-                containerClassName="my-4"
-                className={modalSelectClass}
-                suppressHydrationWarning
-                value={form.area}
-                onChange={(e) => setForm((p) => ({ ...p, area: e.target.value }))}
-              >
-                {LEAD_AREA_PROFILE_OPTIONS.map((o) => (
-                  <option key={o.value || "unset"} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </StaticLabelSelect>
-              <FloatingLabelInput
-                label={t("customers_labelLocation")}
-                containerClassName="my-4"
-                labelBackgroundClassName={modalLabelBg}
-                className={modalFloatingClass}
-                value={form.location}
-                onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))}
+                inputMode="tel"
+                value={form.phone}
+                onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
               />
               <FloatingLabelInput
                 label={t("customers_placeholderCity")}
@@ -851,50 +781,148 @@ function CustomersPageContent() {
                 value={form.monthly_bill}
                 onChange={(e) => setForm((p) => ({ ...p, monthly_bill: e.target.value }))}
               />
-              <FloatingLabelInput
-                label={t("customers_placeholderPhone")}
-                containerClassName="my-4"
-                labelBackgroundClassName={modalLabelBg}
-                className={modalFloatingClass}
-                value={form.phone}
-                onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
-              />
-              <FloatingLabelInput
-                label={t("customers_placeholderConsumerId")}
-                containerClassName="my-4"
-                labelBackgroundClassName={modalLabelBg}
-                className={modalFloatingClass}
-                value={form.consumer_id}
-                onChange={(e) => setForm((p) => ({ ...p, consumer_id: e.target.value }))}
-              />
-              <StaticLabelSelect
-                suppressHydrationWarning
-                label={t("customers_labelSurveyStatus")}
-                containerClassName="my-4"
-                className={modalSelectClass}
-                value={form.survey_status}
-                onChange={(e) => setForm((p) => ({ ...p, survey_status: e.target.value }))}
-              >
-                {LEAD_SURVEY_STATUS_OPTIONS.map((opt) => (
-                  <option key={opt.value || "unset"} value={opt.value}>
-                    {t(opt.labelKey)}
-                  </option>
-                ))}
-              </StaticLabelSelect>
-              <StaticLabelSelect
-                suppressHydrationWarning
-                label={t("customers_tablePipeline")}
-                containerClassName="my-4"
-                className={modalSelectClass}
-                value={form.status}
-                onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))}
-              >
-                  {LEAD_STATUS_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {t(LEAD_STATUS_I18N_KEY[opt.value])}
-                    </option>
-                  ))}
-              </StaticLabelSelect>
+
+              {leadModal === "add" && (
+                <button
+                  type="button"
+                  onClick={() => setShowMoreDetails((v) => !v)}
+                  className="flex w-full items-center justify-between rounded-xl border border-dashed border-slate-300 bg-slate-50/70 px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-teal-400 hover:bg-teal-50/60 dark:border-white/15 dark:bg-white/5 dark:text-slate-200"
+                  aria-expanded={showMoreDetails}
+                >
+                  <span>{showMoreDetails ? "Hide extra details" : "Add more details (optional)"}</span>
+                  <span className="text-xs text-slate-400">{showMoreDetails ? "▲" : "▼"}</span>
+                </button>
+              )}
+
+              {/* ── More details — collapsed by default on add ────────────── */}
+              {detailsOpen && (
+                <>
+                  <HelpHint
+                    label={t("customers_regionSyncHint")}
+                    detail={t("customers_regionSyncHint_detail")}
+                  />
+                  <FloatingLabelInput
+                    label="Consumer name (on bill) — optional"
+                    containerClassName="my-4"
+                    labelBackgroundClassName={modalLabelBg}
+                    className={modalFloatingClass}
+                    value={form.consumer_name}
+                    onChange={(e) => setForm((p) => ({ ...p, consumer_name: e.target.value }))}
+                  />
+                  <StaticLabelSelect
+                    label={t("customers_labelState")}
+                    containerClassName="my-4"
+                    className={modalSelectClass}
+                    suppressHydrationWarning
+                    value={form.state}
+                    onChange={(e) => setForm((p) => ({ ...p, state: e.target.value, discom: "" }))}
+                  >
+                    <option value="">{t("dashboard_selectState")}</option>
+                    {INDIAN_STATES_AND_UTS.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </StaticLabelSelect>
+                  <StaticLabelSelect
+                    label={t("customers_labelDiscom")}
+                    containerClassName="my-4"
+                    className={`${modalSelectClass} disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400`}
+                    suppressHydrationWarning
+                    value={form.discom}
+                    disabled={!form.state.trim()}
+                    onChange={(e) => setForm((p) => ({ ...p, discom: e.target.value }))}
+                    aria-label={t("customers_labelDiscom")}
+                  >
+                    {!form.state.trim() ? (
+                      <option value="">{t("dashboard_selectDiscom")}</option>
+                    ) : leadDiscomListLoading && leadDiscomSelectOptions.length === 0 ? (
+                      <option value="">{t("dashboard_loadingDiscoms")}</option>
+                    ) : (
+                      <>
+                        <option value="">{t("dashboard_selectDiscom")}</option>
+                        {leadDiscomSelectOptions.map((d) => (
+                          <option key={d.id} value={d.code}>
+                            {d.name} ({d.code})
+                          </option>
+                        ))}
+                      </>
+                    )}
+                  </StaticLabelSelect>
+                  <StaticLabelSelect
+                    label={t("customers_labelConnectionType")}
+                    containerClassName="my-4"
+                    className={modalSelectClass}
+                    suppressHydrationWarning
+                    value={form.connection_type}
+                    onChange={(e) => setForm((p) => ({ ...p, connection_type: e.target.value }))}
+                  >
+                    {LEAD_CONNECTION_TYPE_OPTIONS.map((o) => (
+                      <option key={o.value || "unset"} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </StaticLabelSelect>
+                  <StaticLabelSelect
+                    label={t("customers_labelArea")}
+                    containerClassName="my-4"
+                    className={modalSelectClass}
+                    suppressHydrationWarning
+                    value={form.area}
+                    onChange={(e) => setForm((p) => ({ ...p, area: e.target.value }))}
+                  >
+                    {LEAD_AREA_PROFILE_OPTIONS.map((o) => (
+                      <option key={o.value || "unset"} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </StaticLabelSelect>
+                  <FloatingLabelInput
+                    label={t("customers_labelLocation")}
+                    containerClassName="my-4"
+                    labelBackgroundClassName={modalLabelBg}
+                    className={modalFloatingClass}
+                    value={form.location}
+                    onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))}
+                  />
+                  <FloatingLabelInput
+                    label={t("customers_placeholderConsumerId")}
+                    containerClassName="my-4"
+                    labelBackgroundClassName={modalLabelBg}
+                    className={modalFloatingClass}
+                    value={form.consumer_id}
+                    onChange={(e) => setForm((p) => ({ ...p, consumer_id: e.target.value }))}
+                  />
+                  <StaticLabelSelect
+                    suppressHydrationWarning
+                    label={t("customers_labelSurveyStatus")}
+                    containerClassName="my-4"
+                    className={modalSelectClass}
+                    value={form.survey_status}
+                    onChange={(e) => setForm((p) => ({ ...p, survey_status: e.target.value }))}
+                  >
+                    {LEAD_SURVEY_STATUS_OPTIONS.map((opt) => (
+                      <option key={opt.value || "unset"} value={opt.value}>
+                        {t(opt.labelKey)}
+                      </option>
+                    ))}
+                  </StaticLabelSelect>
+                  <StaticLabelSelect
+                    suppressHydrationWarning
+                    label={t("customers_tablePipeline")}
+                    containerClassName="my-4"
+                    className={modalSelectClass}
+                    value={form.status}
+                    onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))}
+                  >
+                    {LEAD_STATUS_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {t(LEAD_STATUS_I18N_KEY[opt.value])}
+                      </option>
+                    ))}
+                  </StaticLabelSelect>
+                </>
+              )}
               {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
               </div>
               <div className="sticky bottom-0 z-10 shrink-0 border-t border-slate-100/80 bg-[hsl(var(--card))] px-4 py-3 shadow-[0_-10px_28px_-14px_rgba(15,23,42,0.28)] pb-[max(1rem,env(safe-area-inset-bottom,0px))] dark:border-white/10 sm:pb-3">
