@@ -10,6 +10,7 @@ import {
 import { EpProposalShell } from "@/components/proposals/executive-premium-editorial/primitives/ep-proposal-shell";
 import { EpCoverPage } from "@/components/proposals/executive-premium-editorial/pages/ep-cover-page";
 import { EpBillPage } from "@/components/proposals/executive-premium-editorial/pages/ep-bill-page";
+import { EpRequirementPage } from "@/components/proposals/executive-premium-editorial/pages/ep-requirement-page";
 import { EpEconomicsPage } from "@/components/proposals/executive-premium-editorial/pages/ep-economics-page";
 import { EpImpactPage } from "@/components/proposals/executive-premium-editorial/pages/ep-impact-page";
 import { EpBomPage } from "@/components/proposals/executive-premium-editorial/pages/ep-bom-page";
@@ -19,6 +20,7 @@ import { EpTermsPages } from "@/components/proposals/executive-premium-editorial
 import { EpWarrantyPage } from "@/components/proposals/executive-premium-editorial/pages/ep-warranty-page";
 import { EpClosingPage } from "@/components/proposals/executive-premium-editorial/pages/ep-closing-page";
 import "@/components/proposals/executive-premium-editorial/ep-golden.css";
+import { isProposalBillAuditBacked } from "@/lib/proposal-bill-audit-eligibility";
 
 export type ExecutivePremiumEditorialRendererProps = {
   pptInput: PremiumProposalPptInput;
@@ -52,6 +54,8 @@ export function ExecutivePremiumEditorialRenderer({
     return () => window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
   }, [model.brand_logo_url, pptInput.installerLogoUrl]);
 
+  const billAuditBacked = isProposalBillAuditBacked(pptInput);
+
   return (
     <div className="ep-golden-root w-full">
       <EpProposalShell>
@@ -65,7 +69,16 @@ export function ExecutivePremiumEditorialRenderer({
               asset_profile_line: model.asset_profile_line,
             }}
           />
-          <EpBillPage data={model.bill} />
+          {billAuditBacked ? (
+            <EpBillPage data={model.bill} />
+          ) : (
+            <EpRequirementPage
+              systemKw={summary.systemKw}
+              coveragePct={summary.coverage}
+              assetProfileLine={model.asset_profile_line}
+              annualGenKwh={summary.annualGen}
+            />
+          )}
           <EpEconomicsPage data={model.economics} />
           <EpImpactPage data={model.impact} />
           <EpEngineeringPage data={model.engineering} />
