@@ -2064,20 +2064,35 @@
     page-break-after: always;
     break-after: page;
     width: 210mm;
-    min-height: 267mm;
     height: auto;
+    min-height: auto;
     box-sizing: border-box;
   }
 
+  /* Luxury border: print pe sirf content tak, poore page tak nahi */
+  .ep-golden-root .ep-gl-luxury-border {
+    display: none;
+  }
+
   .ep-golden-root .ep-gl-page-body {
-    min-height: 267mm;
+    min-height: auto;
     box-sizing: border-box;
   }
 
   .ep-golden-root .ep-gl-requirement-page {
-    min-height: 267mm;
+    min-height: auto;
     display: flex;
     flex-direction: column;
+  }
+
+  /* Impact cards: print pe fixed height nahi, content ke hisaab se */
+  .ep-golden-root .ep-gl-impact-grid {
+    flex: none;
+    align-items: start;
+  }
+
+  .ep-golden-root .ep-gl-impact-card {
+    height: auto;
   }
 
   /* Cover — full A4 sheet so estate location / asset profile pin to bottom in PDF */
