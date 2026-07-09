@@ -17,28 +17,30 @@ export function EpCoverPage({ data }: Props) {
 
   return (
     <EpLuxuryPage cover>
-      <div className="ep-gl-cover-content">
-        {logoUrl || brandName ? (
-          <div className="ep-gl-cover-brand-lockup">
-            {logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={logoUrl} alt={brandName || "Company logo"} className="ep-gl-cover-logo" />
-            ) : brandName ? (
-              <p className="ep-gl-cover-brand">{brandName}</p>
-            ) : null}
+      <div className="ep-gl-cover-inner">
+        <div className="ep-gl-cover-hero">
+          {logoUrl || brandName ? (
+            <div className="ep-gl-cover-brand-lockup">
+              {logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={logoUrl} alt={brandName || "Company logo"} className="ep-gl-cover-logo" />
+              ) : brandName ? (
+                <p className="ep-gl-cover-brand">{brandName}</p>
+              ) : null}
+            </div>
+          ) : null}
+
+          <h1 className="ep-gl-cover-title">
+            Personalized Energy
+            <br />
+            Masterplan.
+          </h1>
+          <div className="ep-gl-cover-divider" aria-hidden />
+
+          <div className="ep-gl-cover-client-block">
+            <p className="ep-gl-prepared-for">Prepared Exclusively For</p>
+            <p className="ep-gl-client-name">{customerName}</p>
           </div>
-        ) : null}
-
-        <h1 className="ep-gl-cover-title">
-          Personalized Energy
-          <br />
-          Masterplan.
-        </h1>
-        <div className="ep-gl-cover-divider" aria-hidden />
-
-        <div className="ep-gl-cover-client-block">
-          <p className="ep-gl-prepared-for">Prepared Exclusively For</p>
-          <p className="ep-gl-client-name">{customerName}</p>
         </div>
 
         <div className="ep-gl-cover-meta-grid">

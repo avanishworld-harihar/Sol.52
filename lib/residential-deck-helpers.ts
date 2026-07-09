@@ -85,15 +85,69 @@ export function residentialNetCostInr(
   return residentialCostBreakdown(config, options).netInr;
 }
 
-/** Subsidy stored on config when eligible — treats 0 as "recompute from plant kW". */
+/** Subsidy stored on config when eligible — recomputes when plant kW tier increases. */
 export function resolveResidentialSubsidyInr(
   config: ResidentialProposalConfig,
   eligible: boolean
 ): number {
   if (!eligible) return 0;
+  const computed = computePmSuryaGharSubsidy(config.solar.plantCapacityKw);
   const stored = config.subsidy?.estimateInr;
-  if (stored != null && stored > 0) return stored;
-  return computePmSuryaGharSubsidy(config.solar.plantCapacityKw);
+  if (stored == null || stored <= 0) return computed;
+  const pref = config.subsidy?.preference ?? "maximize";
+  // maximize = PM Surya tier table; bump up if plant grew but subsidy was left at a smaller-kW default
+  if (pref === "maximize" && stored < computed) return computed;
+  return stored;
+}
+
+/** Recompute subsidy when plant kW changes (unless installer set a custom amount). */
+export function applyPlantCapacitySubsidySync(
+  config: ResidentialProposalConfig,
+  previousKw: number
+): ResidentialProposalConfig {
+  const nextKw = config.solar.plantCapacityKw;
+  if (Math.abs(nextKw - previousKw) < 0.001) return config;
+
+  const eligible =
+    isPmSuryaGharSubsidyEligible(config.connectionType) &&
+    (config.solar.panelTrack ?? "dcr") === "dcr";
+  if (!eligible) {
+    return { ...config, subsidy: { preference: "none", estimateInr: 0 } };
+  }
+
+  const computed = computePmSuryaGharSubsidy(nextKw);
+  const stored = config.subsidy?.estimateInr ?? 0;
+  const prevComputed = computePmSuryaGharSubsidy(previousKw);
+  const shouldSync =
+    stored <= 0 || config.subsidy?.preference === "none" || stored === prevComputed;
+
+  if (!shouldSync) return config;
+
+  return {
+    ...config,
+    subsidy: {
+      preference: config.subsidy?.preference === "none" ? "maximize" : (config.subsidy?.preference ?? "maximize"),
+      estimateInr: computed,
+    },
+  };
+}
+
+/** Fix subsidy left at a smaller-kW tier after plant size was increased (e.g. ₹30k @ 1 kW → 5 kW). */
+export function healStaleResidentialSubsidy(config: ResidentialProposalConfig): ResidentialProposalConfig {
+  const eligible =
+    isPmSuryaGharSubsidyEligible(config.connectionType) &&
+    (config.solar.panelTrack ?? "dcr") === "dcr";
+  if (!eligible) return config;
+
+  const computed = computePmSuryaGharSubsidy(config.solar.plantCapacityKw);
+  const stored = config.subsidy?.estimateInr ?? 0;
+  const pref = config.subsidy?.preference ?? "maximize";
+  if (pref !== "maximize" || stored <= 0 || stored >= computed) return config;
+
+  return {
+    ...config,
+    subsidy: { preference: pref, estimateInr: computed },
+  };
 }
 
 /** Sync connection type + subsidy when domestic ↔ commercial changes. */

@@ -107,19 +107,45 @@
 .ep-golden-root .ep-gl-page--cover {
   height: 260mm;
   min-height: 260mm;
+  display: flex;
+  flex-direction: column;
 }
 
 .ep-golden-root .ep-gl-cover-page {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 260mm;
+  align-items: stretch;
+  justify-content: flex-start;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
   padding: 24mm 26mm 28mm;
   box-sizing: border-box;
   text-align: center;
   position: relative;
   z-index: 5;
+}
+
+.ep-golden-root .ep-gl-cover-inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+  width: 100%;
+  min-height: 100%;
+  box-sizing: border-box;
+}
+
+.ep-golden-root .ep-gl-cover-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  width: 100%;
+  max-width: 150mm;
+  margin: 0 auto;
+  padding-bottom: 12mm;
 }
 
 .ep-golden-root .ep-gl-cover-content {
@@ -296,10 +322,15 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px 36px;
-  margin-top: 36px;
-  padding-top: 28px;
+  margin-top: auto;
+  padding-top: 20px;
   border-top: 1px solid var(--ep-gl-border-gold);
   text-align: left;
+  width: 100%;
+  max-width: 170mm;
+  margin-left: auto;
+  margin-right: auto;
+  flex-shrink: 0;
 }
 
 .ep-golden-root .ep-gl-cover-meta-item {

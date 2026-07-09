@@ -92,6 +92,8 @@ import { ResidentialRequirementCustomerForm } from "@/components/residential/res
 import { isPmSuryaGharSubsidyEligible } from "@/lib/lead-connection-types";
 import {
   applyConnectionTypeSubsidyPolicy,
+  applyPlantCapacitySubsidySync,
+  healStaleResidentialSubsidy,
   residentialAnnualGenerationUnits,
   residentialGrossCostInr,
   residentialNetCostInr,
@@ -1804,10 +1806,11 @@ function ProposalPageContent() {
     proposalPlantLockedRef.current = true;
     setResidentialConfig((prev) => {
       if (!prev) return prev;
-      return {
+      const next = {
         ...prev,
         solar: { ...prev.solar, plantCapacityKw: kw, moduleCountOverride: undefined },
       };
+      return applyPlantCapacitySubsidySync(next, prev.solar.plantCapacityKw);
     });
   }, []);
 
@@ -2122,7 +2125,7 @@ function ProposalPageContent() {
 
         const cfg = parseResidentialConfig(json.pptInput?.residentialConfig);
         if (cfg) {
-          setResidentialConfig(cfg);
+          setResidentialConfig(healStaleResidentialSubsidy(cfg));
           if (cfg.solar.plantCapacityKw > 0) proposalPlantLockedRef.current = true;
           const mode = cfg.inputMode;
           if (mode === "bill" || mode === "requirement") {
@@ -2170,7 +2173,11 @@ function ProposalPageContent() {
     lastResidentialBillKwSeedKeyRef.current = commercialBillUploadKey;
     setResidentialConfig((prev) => {
       if (!prev || Math.abs(prev.solar.plantCapacityKw - fromBill) < 0.05) return prev;
-      return { ...prev, solar: { ...prev.solar, plantCapacityKw: fromBill, moduleCountOverride: undefined } };
+      const next = {
+        ...prev,
+        solar: { ...prev.solar, plantCapacityKw: fromBill, moduleCountOverride: undefined },
+      };
+      return applyPlantCapacitySubsidySync(next, prev.solar.plantCapacityKw);
     });
   }, [isResidentialBill, commercialBillUploadKey, result.solarKw, residentialConfig, deckRestoreReady]);
 
@@ -2183,10 +2190,11 @@ function ProposalPageContent() {
     if (fromRequirement <= 0) return;
     setResidentialConfig((prev) => {
       if (!prev || Math.abs(prev.solar.plantCapacityKw - fromRequirement) < 0.05) return prev;
-      return {
+      const next = {
         ...prev,
         solar: { ...prev.solar, plantCapacityKw: fromRequirement, moduleCountOverride: undefined },
       };
+      return applyPlantCapacitySubsidySync(next, prev.solar.plantCapacityKw);
     });
   }, [
     isResidentialRequirement,
@@ -2203,6 +2211,20 @@ function ProposalPageContent() {
       return applyConnectionTypeSubsidyPolicy(prev, manual.connectionType);
     });
   }, [isAnyResidential, manual.connectionType]);
+
+  useEffect(() => {
+    if (!isAnyResidential || !residentialSubsidyEligible) return;
+    setResidentialConfig((prev) => {
+      if (!prev) return prev;
+      const healed = healStaleResidentialSubsidy(prev);
+      if ((healed.subsidy?.estimateInr ?? 0) === (prev.subsidy?.estimateInr ?? 0)) return prev;
+      return healed;
+    });
+  }, [
+    isAnyResidential,
+    residentialSubsidyEligible,
+    residentialConfig?.solar.plantCapacityKw,
+  ]);
 
   async function downloadPremiumPpt() {
     setIsPptDownloading(true);
@@ -2825,14 +2847,18 @@ function ProposalPageContent() {
             onPlantKwEditStart={markResidentialPlantKwTouched}
             onChange={(next) => {
               setResidentialConfig((prev) => {
+                const synced =
+                  prev && Math.abs(prev.solar.plantCapacityKw - next.solar.plantCapacityKw) > 0.001
+                    ? applyPlantCapacitySubsidySync(next, prev.solar.plantCapacityKw)
+                    : next;
                 if (
                   prev &&
-                  Math.abs(prev.solar.plantCapacityKw - next.solar.plantCapacityKw) > 0.001
+                  Math.abs(prev.solar.plantCapacityKw - synced.solar.plantCapacityKw) > 0.001
                 ) {
                   residentialPlantKwTouchedRef.current = true;
                   proposalPlantLockedRef.current = true;
                 }
-                return next;
+                return synced;
               });
               if (proposalLayout) {
                 setProposalLayout(applyResidentialFlagsToLayout(proposalLayout, next));
