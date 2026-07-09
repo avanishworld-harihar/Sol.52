@@ -12,7 +12,7 @@
  */
 
 import { motion } from "framer-motion";
-import { Building2, ChevronRight, FileText, Home, RefreshCw, Sparkles, Star, Zap } from "lucide-react";
+import { Building2, ChevronRight, FileText, Home, RefreshCw, Sparkles, Star, Sun, Zap } from "lucide-react";
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 import { PresenceStack } from "@/components/workspace/presence-stack";
 
@@ -70,6 +70,14 @@ const PRESET_META: Record<ProposalPresetId, PresetMeta> = {
     pillClass:
       "border-slate-300 bg-slate-50 text-slate-800 dark:border-slate-500/30 dark:bg-slate-900/20 dark:text-slate-300",
     dotClass: "bg-slate-400",
+  },
+  residential_solstice: {
+    icon: <Sun className="h-4 w-4" />,
+    label: "Solstice",
+    description: "Modern scroll masterplan · Investment · Impact · BOM",
+    pillClass:
+      "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-900/20 dark:text-amber-300",
+    dotClass: "bg-amber-400",
   },
   residential_aurora: {
     icon: <Zap className="h-4 w-4" />,

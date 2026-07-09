@@ -41,6 +41,7 @@ export const PROPOSAL_PRESET_IDS = [
   "residential_bank_loan",
   "residential_executive",
   "residential_aurora",
+  "residential_solstice",
 ] as const;
 
 export type ProposalPresetId = (typeof PROPOSAL_PRESET_IDS)[number];
@@ -149,6 +150,19 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     theme_hint: "residential",
     default_data_source: "bill",
     /** Legacy block IDs — not used by Editorial Split-Page renderer. */
+    default_blocks: [],
+    optional_blocks: [],
+  },
+
+  residential_solstice: {
+    id: "residential_solstice",
+    label: "Solstice",
+    description:
+      "Modern scroll masterplan — hero stats, investment waterfall, green impact, engineering specs, " +
+      "component cards, warranty matrix & execution. Synced to live proposal data.",
+    bill_requirement: "optional",
+    theme_hint: "residential",
+    default_data_source: "requirement",
     default_blocks: [],
     optional_blocks: [],
   },

@@ -220,6 +220,8 @@ export function BuilderStageBar({
                 ? "Bank Loan"
                 : presetId === "residential_executive"
                 ? "Executive"
+                : presetId === "residential_solstice"
+                ? "Solstice"
                 : "Residential"}
             </span>
           </div>

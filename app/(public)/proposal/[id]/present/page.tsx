@@ -43,7 +43,7 @@ export default async function ProposalPresentPage({ params }: PageProps) {
   const showSurveyWorkflowSection = isLeadSurveyCompleteForProposal(surveyStatus);
   const billAuditBacked = isProposalBillAuditBacked(mergedInput);
 
-  if (proposal.preset_id === "residential_executive") {
+  if (proposal.preset_id === "residential_executive" || proposal.preset_id === "residential_solstice") {
     redirect(`/proposal/${id}`);
   }
   if (proposal.preset_id === "residential_sales_premium") {

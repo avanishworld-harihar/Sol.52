@@ -69,6 +69,16 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
     thumbnailVariant: "golden",
   },
   {
+    key: "solstice",
+    presetId: "residential_solstice",
+    category: "residential",
+    name: "Solstice",
+    description:
+      "Modern energy masterplan — sticky nav, hero stats, investment, green impact & component cards.",
+    recommended: true,
+    thumbnailVariant: "solstice",
+  },
+  {
     key: "pearl",
     presetId: "residential_sales_premium",
     salesPremiumStyle: "pearl",
@@ -172,6 +182,7 @@ export function resolveActiveGalleryKey(
 ): ProposalTemplateGalleryKey {
   if (presetId === "residential_aurora") return "aurora";
   if (presetId === "residential_executive") return "golden";
+  if (presetId === "residential_solstice") return "solstice";
   if (presetId === "residential_bank_loan") return "ledger";
   if (presetId === "residential_smart") return "classic";
   if (presetId === "residential_sales_premium") {

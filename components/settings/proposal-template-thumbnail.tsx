@@ -26,6 +26,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
       {variant === "slate" ? <SlateThumb size={size} /> : null}
       {variant === "horizon" ? <HorizonThumb size={size} /> : null}
       {variant === "ember" ? <EmberThumb size={size} /> : null}
+      {variant === "solstice" ? <SolsticeThumb size={size} /> : null}
       {variant === "ledger" ? <LedgerThumb size={size} /> : null}
       {variant === "classic" ? <ClassicThumb size={size} /> : null}
       {variant === "commercial" ? <CommercialThumb size={size} /> : null}
@@ -36,6 +37,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
         "slate",
         "horizon",
         "ember",
+        "solstice",
         "ledger",
         "classic",
         "commercial",
@@ -190,6 +192,34 @@ function EmberThumb({ size }: { size: "card" | "preview" }) {
           <div className="w-[22%] rounded-t-[1px] bg-red-300/80" style={{ height: "100%" }} />
         </div>
       </MiniSlide>
+    </div>
+  );
+}
+
+function SolsticeThumb({ size }: { size: "card" | "preview" }) {
+  const heroSize = size === "preview" ? "text-[10px]" : "text-[5px]";
+  const pillH = size === "preview" ? "h-[14px]" : "h-[6px]";
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-slate-100">
+      <div
+        className={cn(
+          "flex flex-col rounded-[3px] border border-slate-200 bg-slate-50 shadow-sm",
+          size === "preview" ? "h-[62%] w-[68%] p-[8%]" : "h-[58%] w-[72%] p-[7%]"
+        )}
+      >
+        <div className="flex items-center gap-[4%]">
+          <div className={cn("rounded-full bg-amber-500", size === "preview" ? "h-[8px] w-[8px]" : "h-[4px] w-[4px]")} />
+          <div className={cn("font-bold text-slate-800", heroSize)}>Solstice</div>
+        </div>
+        <div className={cn("mt-[8%] font-bold leading-tight text-slate-900", heroSize)}>
+          Your roof is ready
+        </div>
+        <div className={cn("mt-[8%] grid grid-cols-2 gap-[4%]")}>
+          <div className={cn("rounded-[2px] bg-white", pillH)} />
+          <div className={cn("rounded-[2px] bg-emerald-100", pillH)} />
+        </div>
+        <div className={cn("mt-[6%] rounded-[2px] bg-emerald-800/90", size === "preview" ? "h-[18%]" : "h-[14%]")} />
+      </div>
     </div>
   );
 }

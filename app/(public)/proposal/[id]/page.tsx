@@ -22,6 +22,7 @@ import { compileProposalDocument } from "@/lib/proposal-document-ir";
 import { RESIDENTIAL_WEB_RENDERER_PRESETS } from "@/lib/proposal-preset-engine";
 import { shouldShowPdfWatermark } from "@/lib/billing/entitlements";
 import { ProposalWatermarkShell } from "@/components/proposals/proposal-watermark-shell";
+import { SolsticeProposalRenderer } from "@/components/proposals/solstice/solstice-proposal-renderer";
 
 export const dynamic = "force-dynamic";
 
@@ -143,6 +144,15 @@ export default async function PublicProposalPage({ params }: PageProps) {
           summary={liveSummary}
           showSurveyWorkflowSection={showSurvey}
         />
+      </ProposalWatermarkShell>
+    );
+  }
+
+  // ── Solstice — modern scroll masterplan renderer ───────────────────────────
+  if (proposal.preset_id === "residential_solstice") {
+    return (
+      <ProposalWatermarkShell enabled={showWatermark}>
+        <SolsticeProposalRenderer pptInput={mergedInput} summary={liveSummary} />
       </ProposalWatermarkShell>
     );
   }

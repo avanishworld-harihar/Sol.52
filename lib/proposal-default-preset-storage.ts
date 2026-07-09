@@ -6,6 +6,7 @@ export const RESIDENTIAL_TEMPLATE_PRESET_IDS = [
   "residential_sales_premium",
   "residential_bank_loan",
   "residential_executive",
+  "residential_solstice",
   "residential_smart",
 ] as const;
 
@@ -34,6 +35,11 @@ export const RESIDENTIAL_TEMPLATE_OPTIONS: ResidentialTemplateOption[] = [
     id: "residential_executive",
     label: "Executive Premium",
     subtitle: "Champagne gold editorial layout for high-trust clients.",
+  },
+  {
+    id: "residential_solstice",
+    label: "Solstice",
+    subtitle: "Modern scroll masterplan — investment, impact & execution.",
   },
   {
     id: "residential_sales_premium",

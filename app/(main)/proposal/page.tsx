@@ -1656,7 +1656,9 @@ function ProposalPageContent() {
             salesPremiumStyle: readActiveSalesPremiumStyle(),
             galleryThemeKey: readDefaultGalleryKey() ?? undefined,
           }
-        : {}),
+        : osPresetId === "residential_solstice"
+          ? { galleryThemeKey: "solstice" }
+          : {}),
       proposalLayout: (() => {
         const presetForLayout = osPresetId ?? "residential_sales_premium";
         let layout = proposalLayout;
@@ -2080,6 +2082,7 @@ function ProposalPageContent() {
           "residential_bank_loan",
           "residential_executive",
           "residential_aurora",
+          "residential_solstice",
         ] as const;
         if (preset && (KNOWN_PRESETS as ReadonlyArray<string>).includes(preset)) {
           setOsPresetId((prev) => prev ?? (preset as typeof KNOWN_PRESETS[number]));
