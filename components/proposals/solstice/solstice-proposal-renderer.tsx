@@ -79,56 +79,6 @@ const INSTALLATION_DAY_TIMELINE = [
   { day: 30, title: "Generation", description: "Grid sync complete — your plant starts producing power." },
 ] as const;
 
-function TiltRoofVisual({ tiltDeg }: { tiltDeg: number }) {
-  const clamped = Math.min(45, Math.max(5, tiltDeg));
-  return (
-    <div className="solstice-tilt-visual" aria-hidden>
-      <svg viewBox="0 0 320 200" className="solstice-tilt-svg">
-        <defs>
-          <linearGradient id="solstice-sky" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#e0e7ff" />
-            <stop offset="100%" stopColor="#f8fafc" />
-          </linearGradient>
-          <linearGradient id="solstice-roof" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#475569" />
-            <stop offset="100%" stopColor="#1e293b" />
-          </linearGradient>
-        </defs>
-        <rect width="320" height="200" fill="url(#solstice-sky)" rx="16" />
-        <rect x="0" y="150" width="320" height="50" fill="#cbd5e1" />
-        <rect x="40" y="118" width="240" height="32" fill="#94a3b8" rx="2" />
-        <g transform={`rotate(${-clamped}, 160, 118)`}>
-          <polygon points="60,118 260,118 220,78 100,78" fill="url(#solstice-roof)" />
-          {[0, 1, 2, 3, 4].map((i) => (
-            <rect
-              key={i}
-              x={88 + i * 34}
-              y={82}
-              width={28}
-              height={34}
-              fill="#6366f1"
-              opacity={0.85}
-              rx="1"
-            />
-          ))}
-        </g>
-        <path
-          d="M 160 118 A 48 48 0 0 1 198 88"
-          fill="none"
-          stroke="#4f46e5"
-          strokeWidth="2"
-          strokeDasharray="4 3"
-        />
-        <text x="210" y="98" fill="#4f46e5" fontSize="14" fontWeight="700">
-          {clamped}°
-        </text>
-        <circle cx="72" cy="52" r="22" fill="#fbbf24" opacity="0.9" />
-        <path d="M 72 30 L 72 74 M 58 52 L 86 52" stroke="#f59e0b" strokeWidth="2" opacity="0.35" />
-      </svg>
-    </div>
-  );
-}
-
 function SolsticeSection({
   id,
   children,
@@ -497,32 +447,27 @@ export function SolsticeProposalRenderer({
       </SolsticeSection>
 
       <SolsticeSection id="design">
-        <div className="mb-8">
+        <div className="solstice-section-header mb-8">
           <div className="text-xs font-semibold tracking-[3px] solstice-kicker">03 / ENGINEERING DESIGN</div>
           <h2 className="section-header">Design &amp; Performance</h2>
         </div>
 
-        <div className="solstice-tilt-hero">
-          <div className="solstice-tilt-hero-visual">
-            <TiltRoofVisual tiltDeg={m.engineering.tilt_deg} />
-          </div>
-          <div className="solstice-tilt-hero-copy">
-            <p className="solstice-tilt-hero-kicker">Optimal panel tilt for your latitude</p>
-            <p className="solstice-tilt-hero-degree">
-              {m.engineering.tilt_deg}
-              <span className="solstice-tilt-hero-unit">°</span>
+        <div className="solstice-tilt-hero solstice-print-keep">
+          <p className="solstice-tilt-hero-kicker">Optimal panel tilt for your latitude</p>
+          <p className="solstice-tilt-hero-degree">
+            {m.engineering.tilt_deg}
+            <span className="solstice-tilt-hero-unit">°</span>
+          </p>
+          <p className="solstice-tilt-hero-title">Recommended Roof Tilt</p>
+          <p className="solstice-tilt-hero-note">{m.engineering.tilt_note}</p>
+          {m.engineering.city_label ? (
+            <p className="solstice-tilt-hero-site">
+              Site reference · {m.engineering.city_label}
             </p>
-            <p className="solstice-tilt-hero-title">Recommended Roof Tilt</p>
-            <p className="solstice-tilt-hero-note">{m.engineering.tilt_note}</p>
-            {m.engineering.city_label ? (
-              <p className="solstice-tilt-hero-site">
-                Site reference · {m.engineering.city_label} · {m.engineering.tilt_deg}°N latitude band
-              </p>
-            ) : null}
-          </div>
+          ) : null}
         </div>
 
-        <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-8">
+        <div className="solstice-print-keep mt-6 rounded-3xl border border-slate-200 bg-white p-8">
           <div className="grid grid-cols-2 gap-x-8 gap-y-6 text-sm md:grid-cols-3 lg:grid-cols-5">
             {m.engineering.metrics_rows.map((row) => (
               <div key={row.label} className={row.highlight ? "solstice-metric-highlight" : undefined}>
@@ -608,7 +553,7 @@ export function SolsticeProposalRenderer({
       </SolsticeSection>
 
       <SolsticeSection id="execution">
-        <div className="mb-8">
+        <div className="solstice-section-header mb-8">
           <div className="text-xs font-semibold tracking-[3px] solstice-kicker">06 / EXECUTION &amp; SETTLEMENT</div>
           <h2 className="section-header">Installation Process</h2>
         </div>
@@ -617,7 +562,7 @@ export function SolsticeProposalRenderer({
           <p className="solstice-day-timeline-heading">Your project timeline</p>
           <div className="solstice-day-timeline-track">
             {INSTALLATION_DAY_TIMELINE.map((item, i) => (
-              <div key={item.day} className="solstice-day-timeline-step">
+              <div key={item.day} className="solstice-day-timeline-step solstice-print-keep">
                 <div className="solstice-day-timeline-node">
                   <span className="solstice-day-timeline-day">Day {item.day}</span>
                   <span className="solstice-day-timeline-dot" />
@@ -636,11 +581,11 @@ export function SolsticeProposalRenderer({
           </div>
         </div>
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-12">
-          <div className="lg:col-span-7">
+        <div className="solstice-execution-layout mt-8 grid gap-6 lg:grid-cols-12">
+          <div className="solstice-execution-steps lg:col-span-7">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {m.execution.steps.map((step, i) => (
-                <div key={step.num} className="rounded-3xl border border-slate-200 bg-white p-6">
+                <div key={step.num} className="solstice-print-keep rounded-3xl border border-slate-200 bg-white p-6">
                   <div className="mb-3 flex items-center gap-x-3">
                     <div
                       className={`flex h-8 w-8 items-center justify-center rounded-2xl text-sm font-bold text-white ${
@@ -657,7 +602,7 @@ export function SolsticeProposalRenderer({
             </div>
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-7 lg:col-span-5">
+          <div className="solstice-execution-payment solstice-print-keep rounded-3xl border border-slate-200 bg-white p-7 lg:col-span-5">
             <div className="mb-4 font-semibold">Payment Schedule</div>
             <div className="space-y-3 text-sm">
               {m.execution.payments.map((p) => (
@@ -714,7 +659,7 @@ export function SolsticeProposalRenderer({
       </SolsticeSection>
 
       <SolsticeSection variant="flush-bottom">
-        <div className="rounded-3xl bg-gradient-to-br from-slate-900 to-slate-950 p-10 text-white md:p-14">
+        <div className="solstice-closing-block solstice-print-keep rounded-3xl bg-gradient-to-br from-slate-900 to-slate-950 p-10 text-white md:p-14">
           <div className="max-w-2xl">
             <div className="mb-3 text-xs font-semibold uppercase tracking-[4px] text-indigo-300">
               CONGRATULATIONS, {m.customer_name.toUpperCase()}
