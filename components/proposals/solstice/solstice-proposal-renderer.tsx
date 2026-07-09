@@ -71,6 +71,64 @@ function paybackBarWidth(years: number): string {
   return `${Math.min(100, Math.max(8, Math.round((years / 10) * 100)))}%`;
 }
 
+const INSTALLATION_DAY_TIMELINE = [
+  { day: 1, title: "Survey", description: "Site visit, roof assessment & final layout sign-off." },
+  { day: 5, title: "Material", description: "Tier-1 panels, inverter & mounting delivered to site." },
+  { day: 8, title: "Installation", description: "Structure, DC/AC wiring, earthing & safety tests." },
+  { day: 20, title: "Net Meter", description: "DISCOM application, inspection & meter commissioning." },
+  { day: 30, title: "Generation", description: "Grid sync complete — your plant starts producing power." },
+] as const;
+
+function TiltRoofVisual({ tiltDeg }: { tiltDeg: number }) {
+  const clamped = Math.min(45, Math.max(5, tiltDeg));
+  return (
+    <div className="solstice-tilt-visual" aria-hidden>
+      <svg viewBox="0 0 320 200" className="solstice-tilt-svg">
+        <defs>
+          <linearGradient id="solstice-sky" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#e0e7ff" />
+            <stop offset="100%" stopColor="#f8fafc" />
+          </linearGradient>
+          <linearGradient id="solstice-roof" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#475569" />
+            <stop offset="100%" stopColor="#1e293b" />
+          </linearGradient>
+        </defs>
+        <rect width="320" height="200" fill="url(#solstice-sky)" rx="16" />
+        <rect x="0" y="150" width="320" height="50" fill="#cbd5e1" />
+        <rect x="40" y="118" width="240" height="32" fill="#94a3b8" rx="2" />
+        <g transform={`rotate(${-clamped}, 160, 118)`}>
+          <polygon points="60,118 260,118 220,78 100,78" fill="url(#solstice-roof)" />
+          {[0, 1, 2, 3, 4].map((i) => (
+            <rect
+              key={i}
+              x={88 + i * 34}
+              y={82}
+              width={28}
+              height={34}
+              fill="#6366f1"
+              opacity={0.85}
+              rx="1"
+            />
+          ))}
+        </g>
+        <path
+          d="M 160 118 A 48 48 0 0 1 198 88"
+          fill="none"
+          stroke="#4f46e5"
+          strokeWidth="2"
+          strokeDasharray="4 3"
+        />
+        <text x="210" y="98" fill="#4f46e5" fontSize="14" fontWeight="700">
+          {clamped}°
+        </text>
+        <circle cx="72" cy="52" r="22" fill="#fbbf24" opacity="0.9" />
+        <path d="M 72 30 L 72 74 M 58 52 L 86 52" stroke="#f59e0b" strokeWidth="2" opacity="0.35" />
+      </svg>
+    </div>
+  );
+}
+
 function SolsticeSection({
   id,
   children,
@@ -173,12 +231,12 @@ export function SolsticeProposalRenderer({
                   <img src={logoUrlResolved} alt={brandName} className="h-10 w-auto max-w-[140px] object-contain" />
                 ) : (
                   <>
-                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-500">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--solstice-accent)]">
                       <Sun className="h-6 w-6 text-white" />
                     </div>
                     <div>
                       <div className="text-xl font-bold tracking-tighter text-slate-900">{brandName.split(" ")[0]}</div>
-                      <div className="-mt-1.5 text-[10px] font-medium tracking-[2px] text-amber-600">
+                      <div className="-mt-1.5 text-[10px] font-medium tracking-[2px] text-[var(--solstice-accent)]">
                         {brandName.split(" ").slice(1).join(" ") || "SOLAR"}
                       </div>
                     </div>
@@ -195,7 +253,7 @@ export function SolsticeProposalRenderer({
                 <a
                   key={s.id}
                   href={`#${s.id}`}
-                  className={`transition-colors hover:text-amber-600 ${activeNav === s.id ? "nav-active" : ""}`}
+                  className={`transition-colors hover:text-[var(--solstice-accent)] ${activeNav === s.id ? "nav-active" : ""}`}
                 >
                   {s.label}
                 </a>
@@ -205,7 +263,7 @@ export function SolsticeProposalRenderer({
             <div className="flex shrink-0 items-center gap-x-3">
               {contact ? (
                 <div className="hidden items-center gap-x-2 text-sm sm:flex">
-                  <Phone className="h-4 w-4 text-amber-500" />
+                  <Phone className="h-4 w-4 text-[var(--solstice-accent)]" />
                   <span className="font-semibold">{contact}</span>
                 </div>
               ) : null}
@@ -246,30 +304,29 @@ export function SolsticeProposalRenderer({
                 />
               ) : (
                 <div className="solstice-cover-logo-fallback" aria-hidden>
-                  <Sun className="h-10 w-10 text-amber-500" />
+                  <Sun className="h-10 w-10 text-[var(--solstice-accent)]" />
                 </div>
               )}
               <p className="solstice-cover-company">{brandName}</p>
             </div>
 
-            <h1 className="solstice-cover-title heading-serif">
-              Personalized Energy
-              <span className="solstice-cover-title-accent"> Masterplan</span>
-            </h1>
-
-            <div className="solstice-cover-divider" aria-hidden />
-
             <p className="solstice-cover-eyebrow">Prepared Exclusively For</p>
             <p className="solstice-cover-client">{m.customer_name}</p>
 
-            {m.location_line ? (
-              <div className="solstice-cover-location">
-                <MapPin className="h-4 w-4 shrink-0 text-amber-500" aria-hidden />
-                <span>{m.location_line}</span>
+            <div className="solstice-cover-meta">
+              <div className="solstice-cover-kw">
+                <span className="solstice-cover-kw-value">{systemKw}</span>
+                <span className="solstice-cover-kw-unit">kW Solar Plant</span>
               </div>
-            ) : null}
+              {m.location_line ? (
+                <div className="solstice-cover-location">
+                  <MapPin className="h-4 w-4 shrink-0 text-[var(--solstice-accent)]" aria-hidden />
+                  <span>{m.location_line}</span>
+                </div>
+              ) : null}
+            </div>
 
-            <a href="#overview" className="solstice-cover-scroll solstice-no-print">
+            <a href="#investment" className="solstice-cover-scroll solstice-no-print">
               <span>Explore your plan</span>
               <ChevronDown className="h-4 w-4" aria-hidden />
             </a>
@@ -277,7 +334,7 @@ export function SolsticeProposalRenderer({
         </div>
       </SolsticeSection>
 
-      <SolsticeSection id="overview" variant="tight-top">
+      <SolsticeSection id="investment">
         <div className="solstice-snapshot-bar">
           <div className="solstice-snapshot-item">
             <span className="solstice-snapshot-label">System Size</span>
@@ -285,13 +342,13 @@ export function SolsticeProposalRenderer({
           </div>
           <div className="solstice-snapshot-item">
             <span className="solstice-snapshot-label">Annual Generation</span>
-            <span className="solstice-snapshot-value text-amber-600">
+            <span className="solstice-snapshot-value solstice-accent-text">
               {Math.round(m.closing.annual_units).toLocaleString("en-IN")} Units
             </span>
           </div>
           <div className="solstice-snapshot-item">
             <span className="solstice-snapshot-label">Estimated Savings</span>
-            <span className="solstice-snapshot-value text-emerald-600">
+            <span className="solstice-snapshot-value solstice-positive-text">
               ₹{fmtInr(m.closing.annual_savings_inr)}/yr
             </span>
           </div>
@@ -306,46 +363,44 @@ export function SolsticeProposalRenderer({
 
         <div className="solstice-stat-grid">
           <div className="stat-pill flex items-center gap-x-4 rounded-3xl border border-slate-200 p-6">
-            <Bolt className="h-10 w-10 text-amber-500" />
+            <Bolt className="h-10 w-10 text-[var(--solstice-accent)]" />
             <div>
               <div className="text-3xl font-bold">{loadCoverage}</div>
               <div className="text-sm text-slate-600">Load Coverage</div>
             </div>
           </div>
           <div className="stat-pill flex items-center gap-x-4 rounded-3xl border border-slate-200 p-6">
-            <Sun className="h-10 w-10 text-amber-500" />
+            <Sun className="h-10 w-10 text-[var(--solstice-accent)]" />
             <div>
               <div className="text-3xl font-bold">{dcKwp}</div>
               <div className="text-sm text-slate-600">DC Capacity</div>
             </div>
           </div>
           <div className="stat-pill flex items-center gap-x-4 rounded-3xl border border-slate-200 p-6">
-            <div className="text-4xl text-emerald-500">⏱</div>
+            <div className="text-4xl text-[var(--solstice-positive)]">⏱</div>
             <div>
               <div className="text-3xl font-bold">{m.economics.payback_years} Yrs</div>
               <div className="text-sm text-slate-600">Payback Period</div>
             </div>
           </div>
           <div className="stat-pill flex items-center gap-x-4 rounded-3xl border border-slate-200 p-6">
-            <Shield className="h-10 w-10 text-emerald-500" />
+            <Shield className="h-10 w-10 text-[var(--solstice-positive)]" />
             <div>
               <div className="text-3xl font-bold">{panelWarranty} Yrs</div>
               <div className="text-sm text-slate-600">Panel Warranty</div>
             </div>
           </div>
         </div>
-      </SolsticeSection>
 
-      <SolsticeSection id="investment">
-        <div className="mb-8 flex items-end justify-between">
+        <div className="mb-8 mt-10 flex items-end justify-between">
           <div>
-            <div className="mb-1 text-xs font-semibold uppercase tracking-[3px] text-amber-600">02 / CAPITAL ALLOCATION</div>
+            <div className="mb-1 text-xs font-semibold uppercase tracking-[3px] solstice-kicker">01 / CAPITAL ALLOCATION</div>
             <h2 className="section-header">Your Investment</h2>
           </div>
           {m.economics.subsidy_inr > 0 ? (
             <div className="hidden text-right md:block">
-              <div className="font-semibold text-emerald-600">Government Subsidy Applied</div>
-              <div className="text-3xl font-bold text-emerald-600">{fmtInrSpaced(m.economics.subsidy_inr)}</div>
+              <div className="font-semibold solstice-positive-text">Government Subsidy Applied</div>
+              <div className="text-3xl font-bold solstice-positive-text">{fmtInrSpaced(m.economics.subsidy_inr)}</div>
             </div>
           ) : null}
         </div>
@@ -359,8 +414,8 @@ export function SolsticeProposalRenderer({
                 <div className="mt-1 text-xs text-slate-500">Premium panels + Inverter + Installation</div>
               </div>
               <div>
-                <div className="text-sm font-medium text-emerald-600">PM SURYA GHAR SUBSIDY</div>
-                <div className="mt-1 text-3xl font-bold text-emerald-600 sm:text-4xl">
+                <div className="text-sm font-medium solstice-positive-text">PM SURYA GHAR SUBSIDY</div>
+                <div className="mt-1 text-3xl font-bold solstice-positive-text sm:text-4xl">
                   {m.economics.subsidy_inr > 0 ? `- ${fmtInrSpaced(m.economics.subsidy_inr)}` : "—"}
                 </div>
               </div>
@@ -375,7 +430,7 @@ export function SolsticeProposalRenderer({
 
           <div className="rounded-3xl border border-slate-200 bg-white p-8 lg:col-span-5">
             <div className="mb-4 flex items-center gap-x-2 font-semibold">
-              <span className="text-amber-500">💳</span>
+              <span className="solstice-accent-text">💳</span>
               <span>Financing Options</span>
             </div>
             {m.economics.emi_rows.length > 0 ? (
@@ -392,7 +447,7 @@ export function SolsticeProposalRenderer({
                     <tr key={row.tenure_label}>
                       <td className="py-3 font-medium">{row.tenure_label}</td>
                       <td className="py-3 text-right font-semibold">{fmtInrSpaced(row.interest_paid_inr)}</td>
-                      <td className="py-3 text-right font-bold text-amber-600">
+                      <td className="py-3 text-right font-bold solstice-accent-text">
                         {fmtInrSpaced(row.monthly_emi_inr)}/mo
                       </td>
                     </tr>
@@ -408,7 +463,7 @@ export function SolsticeProposalRenderer({
 
       <SolsticeSection id="eco">
         <div className="solstice-eco-panel">
-          <div className="mb-2 text-xs font-semibold uppercase tracking-[3px] text-emerald-400">03 / ECOLOGICAL RETENTION</div>
+          <div className="mb-2 text-xs font-semibold uppercase tracking-[3px] text-indigo-300">02 / ECOLOGICAL IMPACT</div>
           <h2 className="mb-8 text-4xl font-bold tracking-tight sm:text-5xl">Your Green Legacy</h2>
           <div className="grid gap-8 md:grid-cols-2">
             <div>
@@ -416,10 +471,10 @@ export function SolsticeProposalRenderer({
                 <div className="solstice-eco-stat">{fmtInr(m.impact.co2_tons)}</div>
                 <div>
                   <div className="text-2xl font-semibold">Tons</div>
-                  <div className="text-emerald-400">CO₂ ELIMINATED</div>
+                  <div className="text-indigo-300">CO₂ ELIMINATED</div>
                 </div>
               </div>
-              <p className="mt-4 max-w-md text-emerald-200">
+              <p className="mt-4 max-w-md text-slate-300">
                 By producing your own solar power, you prevent fossil-fuel generation on your behalf over the system
                 lifetime.
               </p>
@@ -429,10 +484,10 @@ export function SolsticeProposalRenderer({
                 <div className="solstice-eco-stat">{fmtInr(m.impact.trees)}</div>
                 <div>
                   <div className="text-2xl font-semibold">Trees</div>
-                  <div className="text-emerald-400">EQUIVALENT PLANTED</div>
+                  <div className="text-indigo-300">EQUIVALENT PLANTED</div>
                 </div>
               </div>
-              <p className="mt-4 max-w-md text-emerald-200">
+              <p className="mt-4 max-w-md text-slate-300">
                 Your rooftop achieves the same ecological milestone as planting a small forest — without waiting
                 decades.
               </p>
@@ -443,52 +498,45 @@ export function SolsticeProposalRenderer({
 
       <SolsticeSection id="design">
         <div className="mb-8">
-          <div className="text-xs font-semibold tracking-[3px] text-amber-600">05 / ENGINEERING DESIGN</div>
+          <div className="text-xs font-semibold tracking-[3px] solstice-kicker">03 / ENGINEERING DESIGN</div>
           <h2 className="section-header">Design &amp; Performance</h2>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-12">
-          <div className="rounded-3xl border border-slate-200 bg-white p-8 lg:col-span-7">
-            <div className="grid grid-cols-2 gap-x-8 gap-y-6 text-sm md:grid-cols-3">
-              {m.engineering.metrics_rows.map((row) => (
-                <div key={row.label}>
-                  <span className="block text-slate-500">{row.label}</span>
-                  <span className="text-lg font-semibold">{row.value}</span>
-                </div>
-              ))}
-            </div>
-            <div className="mt-8 flex flex-wrap items-center gap-x-4 border-t pt-6">
-              <div className="flex items-center gap-x-2 rounded-2xl bg-amber-100 px-5 py-2 text-sm font-semibold text-amber-700">
-                <Sun className="h-4 w-4" />
-                <span>
-                  Recommended Tilt: <strong>{m.engineering.tilt_deg}°</strong>
-                </span>
-              </div>
-              <div className="text-xs text-slate-500">{m.engineering.tilt_note}</div>
-            </div>
+        <div className="solstice-tilt-hero">
+          <div className="solstice-tilt-hero-visual">
+            <TiltRoofVisual tiltDeg={m.engineering.tilt_deg} />
           </div>
+          <div className="solstice-tilt-hero-copy">
+            <p className="solstice-tilt-hero-kicker">Optimal panel tilt for your latitude</p>
+            <p className="solstice-tilt-hero-degree">
+              {m.engineering.tilt_deg}
+              <span className="solstice-tilt-hero-unit">°</span>
+            </p>
+            <p className="solstice-tilt-hero-title">Recommended Roof Tilt</p>
+            <p className="solstice-tilt-hero-note">{m.engineering.tilt_note}</p>
+            {m.engineering.city_label ? (
+              <p className="solstice-tilt-hero-site">
+                Site reference · {m.engineering.city_label} · {m.engineering.tilt_deg}°N latitude band
+              </p>
+            ) : null}
+          </div>
+        </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-8 lg:col-span-5">
-            <div className="mb-5 font-semibold">Installation Process</div>
-            <div className="space-y-5 text-sm">
-              {m.engineering.install_phases.map((phase) => (
-                <div key={phase.num} className="timeline-item flex gap-x-4">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-500 text-xs font-bold text-white">
-                    {phase.num.padStart(2, "0")}
-                  </div>
-                  <div>
-                    <span className="font-semibold">{phase.title}</span> — {phase.detail}
-                  </div>
-                </div>
-              ))}
-            </div>
+        <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-8">
+          <div className="grid grid-cols-2 gap-x-8 gap-y-6 text-sm md:grid-cols-3 lg:grid-cols-5">
+            {m.engineering.metrics_rows.map((row) => (
+              <div key={row.label} className={row.highlight ? "solstice-metric-highlight" : undefined}>
+                <span className="block text-slate-500">{row.label}</span>
+                <span className="text-lg font-semibold">{row.value}</span>
+              </div>
+            ))}
           </div>
         </div>
       </SolsticeSection>
 
       <SolsticeSection id="components">
         <div className="mb-8">
-          <div className="text-xs font-semibold tracking-[3px] text-amber-600">06 / HARDWARE INTELLIGENCE</div>
+          <div className="text-xs font-semibold tracking-[3px] solstice-kicker">04 / HARDWARE INTELLIGENCE</div>
           <h2 className="section-header">System Components</h2>
           <p className="text-slate-600">Tier-1 components with full engineering specification</p>
         </div>
@@ -502,9 +550,9 @@ export function SolsticeProposalRenderer({
                 <div className="flex justify-between">
                   <div>
                     <div className="text-xl font-bold">{row.brand || row.name}</div>
-                    <div className="text-xs font-semibold tracking-wider text-emerald-600">{warrantyBadge(row)}</div>
+                    <div className="text-xs font-semibold tracking-wider solstice-positive-text">{warrantyBadge(row)}</div>
                   </div>
-                  <Icon className="h-10 w-10 text-amber-400" />
+                  <Icon className="h-10 w-10 text-[var(--solstice-accent-soft)]" />
                 </div>
                 <div className="mt-4 space-y-1 text-sm">
                   <div>
@@ -515,7 +563,7 @@ export function SolsticeProposalRenderer({
                   ) : null}
                 </div>
                 {isDcr ? (
-                  <div className="mt-4 inline-block rounded-full bg-emerald-100 px-3 py-1 text-xs text-emerald-700">DCR Listed</div>
+                  <div className="mt-4 inline-block rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-700">DCR Listed</div>
                 ) : null}
               </div>
             );
@@ -526,7 +574,7 @@ export function SolsticeProposalRenderer({
       <SolsticeSection>
         <div className="rounded-3xl border border-slate-200 bg-white p-8">
           <div className="mb-6">
-            <div className="text-xs font-semibold tracking-[3px] text-amber-600">07 / WARRANTY &amp; ASSURANCE</div>
+            <div className="text-xs font-semibold tracking-[3px] solstice-kicker">05 / WARRANTY &amp; ASSURANCE</div>
             <h3 className="text-3xl font-bold">Warranty Matrix</h3>
           </div>
           <div className="overflow-x-auto">
@@ -541,10 +589,10 @@ export function SolsticeProposalRenderer({
               </thead>
               <tbody className="divide-y text-sm">
                 {m.warranty.rows.map((row, i) => (
-                  <tr key={row.item} className={i === 1 ? "bg-emerald-50/50" : undefined}>
+                  <tr key={row.item} className={i === 1 ? "bg-slate-50" : undefined}>
                     <td className="px-5 py-4 font-medium">{row.item}</td>
                     <td className="px-5 py-4 text-center">
-                      <span className={`font-bold ${i === 1 ? "text-emerald-600" : ""}`}>{row.duration}</span>
+                      <span className={`font-bold ${i === 1 ? "solstice-accent-text" : ""}`}>{row.duration}</span>
                     </td>
                     <td className="px-5 py-4 text-center text-slate-500">{row.by}</td>
                     <td className="px-5 py-4">{row.coverage}</td>
@@ -561,11 +609,34 @@ export function SolsticeProposalRenderer({
 
       <SolsticeSection id="execution">
         <div className="mb-8">
-          <div className="text-xs font-semibold tracking-[3px] text-amber-600">08 / EXECUTION &amp; SETTLEMENT</div>
+          <div className="text-xs font-semibold tracking-[3px] solstice-kicker">06 / EXECUTION &amp; SETTLEMENT</div>
           <h2 className="section-header">Installation Process</h2>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-12">
+        <div className="solstice-day-timeline">
+          <p className="solstice-day-timeline-heading">Your project timeline</p>
+          <div className="solstice-day-timeline-track">
+            {INSTALLATION_DAY_TIMELINE.map((item, i) => (
+              <div key={item.day} className="solstice-day-timeline-step">
+                <div className="solstice-day-timeline-node">
+                  <span className="solstice-day-timeline-day">Day {item.day}</span>
+                  <span className="solstice-day-timeline-dot" />
+                </div>
+                <div className="solstice-day-timeline-card">
+                  <p className="solstice-day-timeline-title">{item.title}</p>
+                  <p className="solstice-day-timeline-desc">{item.description}</p>
+                </div>
+                {i < INSTALLATION_DAY_TIMELINE.length - 1 ? (
+                  <div className="solstice-day-timeline-arrow" aria-hidden>
+                    ↓
+                  </div>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-8 grid gap-6 lg:grid-cols-12">
           <div className="lg:col-span-7">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {m.execution.steps.map((step, i) => (
@@ -573,7 +644,7 @@ export function SolsticeProposalRenderer({
                   <div className="mb-3 flex items-center gap-x-3">
                     <div
                       className={`flex h-8 w-8 items-center justify-center rounded-2xl text-sm font-bold text-white ${
-                        i === m.execution.steps.length - 1 ? "bg-emerald-500" : "bg-amber-500"
+                        i === m.execution.steps.length - 1 ? "bg-[var(--solstice-positive)]" : "bg-[var(--solstice-accent)]"
                       }`}
                     >
                       {step.num}
@@ -620,11 +691,11 @@ export function SolsticeProposalRenderer({
                 {m.execution.upi_id && m.execution.upi_id !== "—" ? (
                   <div className="mt-2 flex items-center gap-x-2 border-t pt-2">
                     <span className="rounded-xl border bg-white px-2.5 py-1 text-xs">UPI:</span>
-                    <span className="font-semibold text-amber-600">{m.execution.upi_id}</span>
+                    <span className="font-semibold solstice-accent-text">{m.execution.upi_id}</span>
                     <button
                       type="button"
                       onClick={copyUpi}
-                      className="ml-auto rounded-xl border bg-white px-3 py-1 text-xs hover:bg-amber-50"
+                      className="ml-auto rounded-xl border bg-white px-3 py-1 text-xs hover:bg-slate-50"
                     >
                       {upiCopied ? (
                         <span className="inline-flex items-center gap-1">
@@ -645,27 +716,27 @@ export function SolsticeProposalRenderer({
       <SolsticeSection variant="flush-bottom">
         <div className="rounded-3xl bg-gradient-to-br from-slate-900 to-slate-950 p-10 text-white md:p-14">
           <div className="max-w-2xl">
-            <div className="mb-3 text-xs font-semibold uppercase tracking-[4px] text-amber-400">
+            <div className="mb-3 text-xs font-semibold uppercase tracking-[4px] text-indigo-300">
               CONGRATULATIONS, {m.customer_name.toUpperCase()}
             </div>
             <h2 className="mb-4 text-4xl font-bold tracking-tighter sm:text-5xl">
-              Your roof is ready to start generating.
+              Your family is ready to generate clean power.
             </h2>
             <div className="mt-8 flex flex-wrap gap-x-8 gap-y-4">
               <div>
-                <div className="text-sm text-emerald-400">ANNUAL GENERATION</div>
-                <div className="text-4xl font-extrabold">{fmtInr(m.closing.annual_units)} Units</div>
+                <div className="text-sm text-indigo-300">LIFETIME WEALTH CREATED</div>
+                <div className="text-4xl font-extrabold">₹{fmtInr(m.closing.lifetime_wealth_inr)}</div>
               </div>
               <div>
-                <div className="text-sm text-emerald-400">ESTIMATED SAVINGS / YEAR</div>
-                <div className="text-4xl font-extrabold">₹{fmtInr(m.closing.annual_savings_inr)}</div>
+                <div className="text-sm text-indigo-300">ANNUAL GENERATION</div>
+                <div className="text-4xl font-extrabold">{Math.round(m.closing.annual_units).toLocaleString("en-IN")} Units</div>
               </div>
             </div>
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="flex items-center justify-center gap-x-2 rounded-2xl bg-white px-8 py-4 font-semibold text-slate-900 transition-colors hover:bg-amber-50"
+                className="flex items-center justify-center gap-x-2 rounded-2xl bg-white px-8 py-4 font-semibold text-slate-900 transition-colors hover:bg-slate-100"
               >
                 <Download className="h-5 w-5" />
                 <span>Download Proposal as PDF</span>
