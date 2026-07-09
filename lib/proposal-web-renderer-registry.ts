@@ -118,10 +118,11 @@ const billBacked: BlockEligibilityFn = ({ billAuditBacked }) => billAuditBacked;
 
 /**
  * roi_savings: show when bill-backed OR when using a new residential web-renderer preset
- * (those presets always include ROI as first content page regardless of bill path).
+ * OR when using Sales Premium (Horizon / Ember) — these always include the economics page
+ * regardless of bill path so investment, payback, and EMI are always visible.
  */
 const roiSavingsEligible: BlockEligibilityFn = ({ billAuditBacked, presetId }) =>
-  billAuditBacked || isResidentialWebPreset(presetId);
+  billAuditBacked || isResidentialWebPreset(presetId) || presetId === "residential_sales_premium";
 
 const noBill: BlockEligibilityFn = ({ billAuditBacked, presetId }) =>
   !billAuditBacked || presetId === "commercial_executive";
