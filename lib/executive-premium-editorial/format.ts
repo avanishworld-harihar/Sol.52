@@ -2,6 +2,13 @@ export function fmtInr(n: number): string {
   return Math.round(n).toLocaleString("en-IN");
 }
 
+/** Title-case display names/locations on Golden editorial pages. */
+export function formatEditorialTitleCase(text: string): string {
+  const t = text.trim();
+  if (!t) return t;
+  return t.replace(/\b([a-zà-öø-ÿ])/g, (_, c: string) => c.toUpperCase());
+}
+
 export function fmtInrSpaced(n: number): string {
   return `₹ ${fmtInr(n)}`;
 }

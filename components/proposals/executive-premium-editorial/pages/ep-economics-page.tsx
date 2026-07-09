@@ -20,7 +20,7 @@ const ROI_STEPS = [
 export function EpEconomicsPage({ data }: Props) {
   const roiValues: Record<(typeof ROI_STEPS)[number]["key"], string> = {
     invest: fmtInrSpaced(data.net_cost_inr),
-    save: `₹${fmtInr(data.monthly_savings_inr)}/month`,
+    save: fmtInr(data.monthly_savings_inr),
     recover: `${data.payback_years.toFixed(1)} Years`,
     profit: fmtLifetimeBenefitInr(data.lifetime_profit_inr),
   };
@@ -39,10 +39,17 @@ export function EpEconomicsPage({ data }: Props) {
           {ROI_STEPS.map((step, index) => (
             <div key={step.key} className="ep-gl-roi-journey-step-wrap">
               <div
-                className={`ep-gl-roi-journey-step ${step.key === "profit" ? "ep-gl-roi-journey-step--highlight" : ""}`}
+                className={`ep-gl-roi-journey-step ${step.key === "profit" ? "ep-gl-roi-journey-step--highlight" : ""} ${step.key === "save" ? "ep-gl-roi-journey-step--save" : ""}`}
               >
                 <p className="ep-gl-roi-journey-label">{step.label}</p>
-                <p className="ep-gl-roi-journey-value">{roiValues[step.key]}</p>
+                {step.key === "save" ? (
+                  <div className="ep-gl-roi-journey-value-stack">
+                    <p className="ep-gl-roi-journey-value">₹{roiValues.save}</p>
+                    <p className="ep-gl-roi-journey-value-unit">/ month</p>
+                  </div>
+                ) : (
+                  <p className="ep-gl-roi-journey-value">{roiValues[step.key]}</p>
+                )}
               </div>
               {index < ROI_STEPS.length - 1 ? (
                 <div className="ep-gl-roi-journey-arrow" aria-hidden>

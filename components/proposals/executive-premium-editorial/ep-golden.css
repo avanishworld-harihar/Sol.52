@@ -97,7 +97,7 @@
 }
 
 .ep-golden-root .ep-gl-page-body {
-  padding: 18mm 20mm 22mm;
+  padding: 22mm 22mm 24mm;
   position: relative;
   z-index: 5;
   min-height: 100%;
@@ -110,46 +110,59 @@
 }
 
 .ep-golden-root .ep-gl-cover-page {
-  display: table;
-  width: 100%;
-  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 260mm;
+  padding: 24mm 26mm 28mm;
+  box-sizing: border-box;
   text-align: center;
   position: relative;
   z-index: 5;
 }
 
 .ep-golden-root .ep-gl-cover-content {
-  display: table-cell;
-  vertical-align: middle;
+  width: 100%;
+  max-width: 150mm;
+  margin: 0 auto;
 }
 
 .ep-golden-root h1.ep-gl-h1 {
   font-family: Georgia, "Times New Roman", serif;
-  font-size: 40pt;
+  font-size: 36pt;
   font-weight: 400;
   color: var(--ep-gl-ink);
-  margin: 0 0 10px 0;
-  line-height: 1.1;
-  letter-spacing: -1px;
+  margin: 0 0 12px;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
 }
 
 .ep-golden-root .ep-gl-section-tag {
-  font-size: 9pt;
+  font-size: 8.5pt;
   font-weight: 600;
   color: var(--ep-gl-gold);
   text-transform: uppercase;
-  letter-spacing: 3px;
-  margin-bottom: 20px;
-  display: inline-block;
+  letter-spacing: 0.22em;
+  margin: 0 0 16px;
+  display: block;
+}
+
+.ep-golden-root .ep-gl-page-intro {
+  margin-bottom: 10mm;
 }
 
 .ep-golden-root .ep-gl-lead {
-  font-size: 14pt;
+  font-size: 13pt;
   color: var(--ep-gl-text-secondary);
   font-weight: 400;
-  line-height: 1.6;
-  margin-bottom: 30px;
-  max-width: 90%;
+  line-height: 1.55;
+  margin: 0 0 0;
+  max-width: 92%;
+}
+
+.ep-golden-root .ep-gl-lead--tight {
+  margin-bottom: 0;
 }
 
 .ep-golden-root .ep-gl-brand-lockup {
@@ -200,7 +213,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin: 0 0 36px 0;
+  margin: 0 0 28px;
 }
 
 .ep-golden-root .ep-gl-cover-logo {
@@ -250,32 +263,47 @@
 }
 
 .ep-golden-root .ep-gl-prepared-for {
-  font-size: 10pt;
+  font-size: 8.5pt;
   color: var(--ep-gl-text-muted);
   text-transform: uppercase;
-  letter-spacing: 3px;
-  margin-bottom: 10px;
+  letter-spacing: 0.2em;
+  margin: 0 0 8px;
 }
 
 .ep-golden-root .ep-gl-cover-title {
-  font-size: 50pt;
+  font-size: 44pt;
   font-family: Georgia, "Times New Roman", serif;
   font-style: italic;
   color: var(--ep-gl-ink);
-  margin-bottom: 30px;
-  line-height: 1;
+  margin: 0 0 24px;
+  line-height: 1.08;
   font-weight: 400;
+  letter-spacing: -0.02em;
 }
 
 .ep-golden-root .ep-gl-cover-divider {
   width: 1px;
-  height: 60px;
+  height: 48px;
   background-color: var(--ep-gl-gold);
-  margin: 0 auto 30px;
+  margin: 0 auto 28px;
 }
 
-.ep-golden-root .ep-gl-cover-meta-block {
-  margin-top: 60px;
+.ep-golden-root .ep-gl-cover-client-block {
+  margin-bottom: 8px;
+}
+
+.ep-golden-root .ep-gl-cover-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 36px;
+  margin-top: 36px;
+  padding-top: 28px;
+  border-top: 1px solid var(--ep-gl-border-gold);
+  text-align: left;
+}
+
+.ep-golden-root .ep-gl-cover-meta-item {
+  min-width: 0;
 }
 
 .ep-golden-root .ep-gl-metric-caption {
@@ -390,56 +418,80 @@
 }
 
 .ep-golden-root .ep-gl-client-name {
-  font-size: 24pt;
+  font-size: 26pt;
   font-family: Georgia, "Times New Roman", serif;
   color: var(--ep-gl-gold);
   margin: 0;
+  line-height: 1.15;
 }
 
 .ep-golden-root .ep-gl-cover-location {
   font-size: 11pt;
   color: var(--ep-gl-ink);
-  margin: 0 0 20px;
+  margin: 6px 0 0;
+  line-height: 1.4;
 }
 
 .ep-golden-root .ep-gl-cover-asset-profile {
-  font-size: 14pt;
+  font-size: 13pt;
   color: var(--ep-gl-ink);
-  margin: 0;
+  margin: 6px 0 0;
   font-weight: 500;
-  line-height: 1.35;
+  line-height: 1.4;
+}
+
+/* System Design — page 2 */
+.ep-golden-root .ep-gl-requirement-page {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(260mm - 46mm);
+}
+
+.ep-golden-root .ep-gl-requirement-hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-top: auto;
+  margin-bottom: auto;
+  padding: 36px 32px 40px;
+  border: 1px solid var(--ep-gl-border-gold);
+  background: linear-gradient(165deg, #fffdf8 0%, #faf8f3 48%, #f5f1e8 100%);
+  box-shadow: 0 10px 36px rgba(17, 30, 56, 0.05);
 }
 
 .ep-golden-root .ep-gl-audit-metrics-row {
   display: table;
   width: 100%;
-  margin-bottom: 25px;
+  margin: 0;
 }
 
 .ep-golden-root .ep-gl-audit-metric-box {
   display: table-cell;
   width: 33.33%;
   border-right: 1px solid var(--ep-gl-border-gold);
-  padding-right: 15px;
-  vertical-align: top;
+  padding: 4px 22px 4px 0;
+  vertical-align: middle;
+  text-align: center;
 }
 
 .ep-golden-root .ep-gl-audit-metric-box:nth-child(2) {
-  padding-left: 15px;
+  padding-left: 22px;
+  padding-right: 22px;
 }
 
 .ep-golden-root .ep-gl-audit-metric-box:last-child {
   border-right: none;
   padding-right: 0;
-  padding-left: 15px;
+  padding-left: 22px;
 }
 
 .ep-golden-root .ep-gl-huge-number {
   font-family: Georgia, "Times New Roman", serif;
-  font-size: 28pt;
+  font-size: 32pt;
   color: var(--ep-gl-ink);
   margin: 0;
-  line-height: 1;
+  line-height: 1.05;
 }
 
 .ep-golden-root .ep-gl-huge-number.gold {
@@ -451,13 +503,16 @@
 }
 
 .ep-golden-root .ep-gl-huge-label {
-  font-size: 8pt;
+  font-size: 7.5pt;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.12em;
   color: var(--ep-gl-text-muted);
-  margin-top: 8px;
+  margin: 10px 0 0;
   font-weight: 600;
-  margin-bottom: 5px;
+  line-height: 1.35;
+  max-width: 11rem;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .ep-golden-root .ep-gl-chart-container {
@@ -667,10 +722,11 @@
   flex: 1 1 auto;
   min-width: 0;
   text-align: center;
-  padding: 14px 10px 12px;
+  padding: 12px 8px 11px;
   border: 1px solid var(--ep-gl-border-muted);
   background: #ffffff;
   border-radius: 2px;
+  overflow: hidden;
 }
 
 .ep-golden-root .ep-gl-roi-journey-step--highlight {
@@ -680,12 +736,17 @@
 }
 
 .ep-golden-root .ep-gl-roi-journey-label {
-  margin: 0 0 8px;
-  font-size: 8.5pt;
+  margin: 0 0 6px;
+  font-size: 7pt;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ep-gl-text-muted);
+  line-height: 1.25;
+}
+
+.ep-golden-root .ep-gl-roi-journey-step--save .ep-gl-roi-journey-label {
+  letter-spacing: 0.08em;
 }
 
 .ep-golden-root .ep-gl-roi-journey-step--highlight .ep-gl-roi-journey-label {
@@ -695,15 +756,35 @@
 .ep-golden-root .ep-gl-roi-journey-value {
   margin: 0;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: 17pt;
-  line-height: 1.1;
+  font-size: 14pt;
+  line-height: 1.15;
   font-weight: 400;
   color: var(--ep-gl-ink);
   letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.ep-golden-root .ep-gl-roi-journey-value-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.ep-golden-root .ep-gl-roi-journey-value-unit {
+  margin: 0;
+  font-size: 8pt;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+  color: var(--ep-gl-text-muted);
+  line-height: 1;
 }
 
 .ep-golden-root .ep-gl-roi-journey-step--highlight .ep-gl-roi-journey-value {
-  font-size: 19pt;
+  font-size: 16pt;
   color: #0d7a55;
 }
 
@@ -712,9 +793,9 @@
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  padding: 0 2px;
-  font-size: 14pt;
+  width: 16px;
+  padding: 0 1px;
+  font-size: 12pt;
   font-weight: 600;
   line-height: 1;
   color: var(--ep-gl-gold);
