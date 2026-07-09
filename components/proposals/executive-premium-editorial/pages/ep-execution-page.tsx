@@ -1,4 +1,7 @@
+"use client";
+
 import { EpLuxuryPage } from "@/components/proposals/executive-premium-editorial/primitives/ep-luxury-page";
+import { useEpGoldenLang } from "@/components/proposals/executive-premium-editorial/ep-golden-lang-context";
 import { fmtInrSpaced } from "@/lib/executive-premium-editorial/format";
 import type { ExecutivePremiumEditorialModel } from "@/lib/executive-premium-editorial/types";
 
@@ -7,11 +10,13 @@ type Props = {
 };
 
 export function EpExecutionPage({ data }: Props) {
+  const { copy } = useEpGoldenLang();
+
   return (
     <EpLuxuryPage>
-      <div className="ep-gl-section-tag">08 / Execution & Settlement</div>
-      <h1 className="ep-gl-h1">Installation Process.</h1>
-      <p className="ep-gl-lead">We handle all the paperwork and hard work so you can simply enjoy free electricity.</p>
+      <div className="ep-gl-section-tag">{copy.execution.tag}</div>
+      <h1 className="ep-gl-h1">{copy.execution.title}</h1>
+      <p className="ep-gl-lead">{copy.execution.lead}</p>
 
       <div className="ep-gl-grid-2">
         <div className="ep-gl-col-half ep-gl-col-left">
@@ -30,7 +35,7 @@ export function EpExecutionPage({ data }: Props) {
 
         <div className="ep-gl-col-half ep-gl-col-right">
           <div className="ep-gl-receipt-card">
-            <p className="ep-gl-receipt-title">Payment Schedule</p>
+            <p className="ep-gl-receipt-title">{copy.execution.paymentSchedule}</p>
             <table className="ep-gl-payment-table">
               <tbody>
                 {data.payments.map((p, i) => {
@@ -52,18 +57,18 @@ export function EpExecutionPage({ data }: Props) {
               </tbody>
             </table>
 
-            <p className="ep-gl-receipt-title">Secure Routing Details</p>
+            <p className="ep-gl-receipt-title">{copy.execution.bankDetails}</p>
             <div className="ep-gl-bank-box">
-              <p className="ep-gl-bank-label">Beneficiary</p>
+              <p className="ep-gl-bank-label">{copy.execution.beneficiary}</p>
               <p className="ep-gl-bank-value serif">{data.company}</p>
-              <p className="ep-gl-bank-label">Account No.</p>
+              <p className="ep-gl-bank-label">{copy.execution.accountNo}</p>
               <p className="ep-gl-bank-value mono">{data.account_number}</p>
-              <p className="ep-gl-bank-label">IFSC Code</p>
+              <p className="ep-gl-bank-label">{copy.execution.ifsc}</p>
               <p className="ep-gl-bank-value mono">{data.ifsc}</p>
             </div>
 
             <div className="ep-gl-upi-box">
-              <p className="ep-gl-upi-label">Express UPI Payment</p>
+              <p className="ep-gl-upi-label">{copy.execution.upi}</p>
               <p className="ep-gl-upi-id">{data.upi_id}</p>
             </div>
           </div>

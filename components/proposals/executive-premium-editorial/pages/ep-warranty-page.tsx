@@ -1,4 +1,7 @@
+"use client";
+
 import { EpLuxuryPage } from "@/components/proposals/executive-premium-editorial/primitives/ep-luxury-page";
+import { useEpGoldenLang } from "@/components/proposals/executive-premium-editorial/ep-golden-lang-context";
 import type {
   EditorialWarrantyHighlightIcon,
   EditorialWarrantyModel,
@@ -54,10 +57,12 @@ function WarrantyIcon({ name }: { name: EditorialWarrantyHighlightIcon }) {
 }
 
 export function EpWarrantyPage({ data }: Props) {
+  const { copy } = useEpGoldenLang();
+
   return (
     <EpLuxuryPage>
-      <div className="ep-gl-section-tag">07 / Warranty &amp; Assurance</div>
-      <h1 className="ep-gl-h1">Warranty Matrix.</h1>
+      <div className="ep-gl-section-tag">{copy.warranty.tag}</div>
+      <h1 className="ep-gl-h1">{copy.warranty.title}</h1>
       <p className="ep-gl-lead">{data.intro}</p>
 
       <div className="ep-gl-warranty-hero">
@@ -78,10 +83,10 @@ export function EpWarrantyPage({ data }: Props) {
       <table className="ep-gl-warranty-table">
         <thead>
           <tr>
-            <th>Item</th>
-            <th>Duration</th>
-            <th>By</th>
-            <th>Coverage</th>
+            <th>{copy.warranty.item}</th>
+            <th>{copy.warranty.duration}</th>
+            <th>{copy.warranty.by}</th>
+            <th>{copy.warranty.coverage}</th>
           </tr>
         </thead>
         <tbody>
@@ -98,12 +103,10 @@ export function EpWarrantyPage({ data }: Props) {
 
       <div className="ep-gl-warranty-notes">
         <p>
-          <strong>Claims:</strong> Contact our service desk for manufacturer defects. Physical
-          damage, vandalism, or misuse is excluded.
+          <strong>{copy.warranty.claims}</strong> {copy.warranty.claimsBody}
         </p>
         <p>
-          <strong>Your care:</strong> Routine panel cleaning, safe roof access, and internet for
-          remote monitoring where applicable.
+          <strong>{copy.warranty.yourCare}</strong> {copy.warranty.yourCareBody}
         </p>
       </div>
     </EpLuxuryPage>

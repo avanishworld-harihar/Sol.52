@@ -1,4 +1,5 @@
 import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposal-ppt";
+import type { ProposalLang } from "@/lib/proposal-i18n";
 import { resolveInstallerNameForProposal } from "@/lib/proposal-branding-settings";
 import { enrichBomTechnicalRows } from "@/lib/proposal-bom-technical-detail";
 import { buildEditorialTermsModel } from "@/lib/executive-premium-editorial/build-terms-model";
@@ -6,16 +7,12 @@ import {
   buildEditorialEngineeringModel,
   buildEditorialWarrantyModel,
 } from "@/lib/executive-premium-editorial/build-engineering-model";
+import { epGoldenCopy } from "@/lib/executive-premium-editorial/ep-golden-i18n";
 import { fmtCompactK } from "@/lib/executive-premium-editorial/format";
 import type { ExecutivePremiumEditorialModel } from "@/lib/executive-premium-editorial/types";
 
 const SUMMER_INDICES = new Set([3, 4, 5, 6]);
-const PAYMENT_SHORT = [
-  { label: "Booking", pct: "25%" },
-  { label: "Material", pct: "50%" },
-  { label: "Install", pct: "20%" },
-  { label: "Go Live", pct: "5%" },
-] as const;
+const PAYMENT_PCTS = ["25%", "50%", "20%", "5%"] as const;
 
 function locationLine(pptInput: PremiumProposalPptInput): string {
   const city = (pptInput.location ?? "").trim().split(",")[0]?.trim();
@@ -43,8 +40,10 @@ function bomLineNote(title: string, brand: string): string {
 
 export function transformToEditorialModel(
   pptInput: PremiumProposalPptInput,
-  summary: ProposalDeckSummary
+  summary: ProposalDeckSummary,
+  lang: ProposalLang = "en"
 ): ExecutivePremiumEditorialModel {
+  const copy = epGoldenCopy(lang);
   const customer =
     (typeof pptInput.customerName === "string" && pptInput.customerName.trim()) ||
     summary.honoredName ||
@@ -86,17 +85,17 @@ export function transformToEditorialModel(
   }));
 
   const emi_rows = summary.emi.slice(0, 3).map((row) => ({
-    tenure_label: `${row.tenureYears} Year Loan`,
+    tenure_label: copy.economics.yearLoan(row.tenureYears),
     interest_paid_inr: row.totalInterest,
     monthly_emi_inr: row.monthlyEmi,
   }));
 
   const bank = summary.bankDetails;
   const payments = summary.paymentMilestones.map((m, i) => {
-    const short = PAYMENT_SHORT[i];
+    const label = copy.execution.paymentLabels[i];
     return {
-      label: short ? `${i + 1}. ${short.label}` : `${m.step}. ${m.label}`,
-      pct_label: short?.pct ?? `${m.pct}%`,
+      label: label ? `${i + 1}. ${label}` : `${m.step}. ${m.label}`,
+      pct_label: PAYMENT_PCTS[i] ?? `${m.pct}%`,
       amount_inr: m.amountInr,
       is_total: i === summary.paymentMilestones.length - 1,
     };
@@ -135,38 +134,21 @@ export function transformToEditorialModel(
       trees: summary.environmental.treeEquivalent,
     },
     architecture: { bom_rows },
-    engineering: buildEditorialEngineeringModel(pptInput, summary),
-    warranty: buildEditorialWarrantyModel(summary),
+    engineering: buildEditorialEngineeringModel(pptInput, summary, lang),
+    warranty: buildEditorialWarrantyModel(summary, lang),
     execution: {
       company: bank.accountName?.trim() || summary.installer,
       account_number: bank.accountNumber?.trim() || "—",
       ifsc: bank.ifsc?.trim() || "—",
       upi_id: bank.upiId?.trim() || "—",
-      steps: [
-        {
-          num: "1",
-          title: "Get Started",
-          description: "We apply for your electricity board permission and state subsidy.",
-        },
-        {
-          num: "2",
-          title: "Material Delivery",
-          description: "All solar panels and heavy components arrive safely at your home.",
-        },
-        {
-          num: "3",
-          title: "Rooftop Fitting",
-          description: "Our expert engineers complete the rooftop fitting, wiring, and testing.",
-        },
-        {
-          num: "4",
-          title: "Go Live",
-          description: "The net-meter is installed, and your home achieves energy independence.",
-        },
-      ],
+      steps: copy.execution.steps.map((step, i) => ({
+        num: String(i + 1),
+        title: step.title,
+        description: step.description,
+      })),
       payments,
     },
-    terms: buildEditorialTermsModel(summary, installerLabel),
+    terms: buildEditorialTermsModel(summary, installerLabel, lang),
     closing: {
       customer_name: customer,
       annual_units: summary.annualGen,

@@ -1,4 +1,7 @@
+"use client";
+
 import { EpLuxuryPage } from "@/components/proposals/executive-premium-editorial/primitives/ep-luxury-page";
+import { useEpGoldenLang } from "@/components/proposals/executive-premium-editorial/ep-golden-lang-context";
 import { fmtInr } from "@/lib/executive-premium-editorial/format";
 import type { ExecutivePremiumEditorialModel } from "@/lib/executive-premium-editorial/types";
 
@@ -7,31 +10,31 @@ type Props = {
 };
 
 export function EpBillPage({ data }: Props) {
+  const { copy } = useEpGoldenLang();
+
   return (
     <EpLuxuryPage>
-      <div className="ep-gl-section-tag">01 / Electrical Audit</div>
-      <h1 className="ep-gl-h1">Your Energy Audit.</h1>
+      <div className="ep-gl-section-tag">{copy.bill.tag}</div>
+      <h1 className="ep-gl-h1">{copy.bill.title}</h1>
       <p className="ep-gl-lead" style={{ marginBottom: "20px" }}>
-        A clear breakdown of what you paid for electricity last year based on your MP Smart Billing usage.
+        {copy.bill.lead}
       </p>
 
       <div className="ep-gl-audit-metrics-row">
         <div className="ep-gl-audit-metric-box">
-          <p className="ep-gl-huge-number gold">
-            {data.summer_trap_pct}%
-          </p>
-          <p className="ep-gl-huge-label">The Summer Bill</p>
-          <p className="ep-gl-metric-caption">Paid in 4 months (Apr-Jul)</p>
+          <p className="ep-gl-huge-number gold">{data.summer_trap_pct}%</p>
+          <p className="ep-gl-huge-label">{copy.bill.summerBill}</p>
+          <p className="ep-gl-metric-caption">{copy.bill.summerCaption}</p>
         </div>
         <div className="ep-gl-audit-metric-box">
           <p className="ep-gl-huge-number">₹{data.fixed_charges_display}</p>
-          <p className="ep-gl-huge-label">Fixed Liability</p>
-          <p className="ep-gl-metric-caption">Mandatory baseline cost</p>
+          <p className="ep-gl-huge-label">{copy.bill.fixedLiability}</p>
+          <p className="ep-gl-metric-caption">{copy.bill.fixedCaption}</p>
         </div>
         <div className="ep-gl-audit-metric-box">
           <p className="ep-gl-huge-number green">{data.solar_savings_pct}%</p>
-          <p className="ep-gl-huge-label">Solar Savings</p>
-          <p className="ep-gl-metric-caption">Estimated bill reduction</p>
+          <p className="ep-gl-huge-label">{copy.bill.solarSavings}</p>
+          <p className="ep-gl-metric-caption">{copy.bill.solarCaption}</p>
         </div>
       </div>
 
@@ -50,12 +53,12 @@ export function EpBillPage({ data }: Props) {
       <table className="ep-gl-invoice-table">
         <thead>
           <tr>
-            <th>Month</th>
-            <th>Units</th>
-            <th>Energy (₹)</th>
-            <th>Fixed (₹)</th>
-            <th>Duty (₹)</th>
-            <th>Net Bill (₹)</th>
+            <th>{copy.bill.month}</th>
+            <th>{copy.bill.units}</th>
+            <th>{copy.bill.energy}</th>
+            <th>{copy.bill.fixed}</th>
+            <th>{copy.bill.duty}</th>
+            <th>{copy.bill.netBill}</th>
           </tr>
         </thead>
         <tbody>
@@ -70,7 +73,7 @@ export function EpBillPage({ data }: Props) {
             </tr>
           ))}
           <tr className="ep-gl-total-row">
-            <td>Total</td>
+            <td>{copy.bill.total}</td>
             <td>{data.totals.units}</td>
             <td>{fmtInr(data.totals.energy_inr)}</td>
             <td>{fmtInr(data.totals.fixed_inr)}</td>
@@ -79,7 +82,7 @@ export function EpBillPage({ data }: Props) {
           </tr>
         </tbody>
       </table>
-      <p className="ep-gl-footnote">*(Subsidy) adjusted before Net Bill</p>
+      <p className="ep-gl-footnote">{copy.bill.footnote}</p>
     </EpLuxuryPage>
   );
 }

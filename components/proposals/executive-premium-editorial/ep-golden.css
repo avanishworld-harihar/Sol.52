@@ -74,6 +74,61 @@
   cursor: pointer;
 }
 
+.ep-golden-root .ep-gl-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.ep-golden-root .ep-gl-toolbar-btn--ghost {
+  background: #fafafa;
+}
+
+/* Hindi — Noto Devanagari; generous line-height to avoid matra clipping */
+.ep-golden-root.lang-hi {
+  font-family: var(--font-noto-deva), "Noto Sans Devanagari", Georgia, "Times New Roman", serif;
+}
+
+.ep-golden-root.lang-hi .ep-gl-h1,
+.ep-golden-root.lang-hi .ep-gl-cover-title,
+.ep-golden-root.lang-hi .ep-gl-closing-title,
+.ep-golden-root.lang-hi .ep-gl-impact-card-headline {
+  line-height: 1.32;
+  overflow: visible;
+  padding-bottom: 3px;
+  font-style: normal;
+}
+
+.ep-golden-root.lang-hi .ep-gl-lead,
+.ep-golden-root.lang-hi .ep-gl-impact-card-body,
+.ep-golden-root.lang-hi .ep-gl-impact-card-proof,
+.ep-golden-root.lang-hi .ep-gl-terms-para,
+.ep-golden-root.lang-hi .ep-gl-terms-list li,
+.ep-golden-root.lang-hi .ep-gl-exec-desc,
+.ep-golden-root.lang-hi .ep-gl-roi-journey-label,
+.ep-golden-root.lang-hi .ep-gl-huge-label,
+.ep-golden-root.lang-hi .ep-gl-eng-phase-detail,
+.ep-golden-root.lang-hi .ep-gl-waterfall-sub,
+.ep-golden-root.lang-hi .ep-gl-metric-caption {
+  line-height: 1.58;
+  overflow: visible;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+.ep-golden-root.lang-hi .ep-gl-client-name,
+.ep-golden-root.lang-hi .ep-gl-cover-asset-profile,
+.ep-golden-root.lang-hi .ep-gl-cover-location,
+.ep-golden-root.lang-hi .ep-gl-eng-metric-value,
+.ep-golden-root.lang-hi .ep-gl-huge-number,
+.ep-golden-root.lang-hi .ep-gl-roi-journey-value,
+.ep-golden-root.lang-hi .ep-gl-bank-value,
+.ep-golden-root.lang-hi .ep-gl-manifest-spec,
+.ep-golden-root.lang-hi .ep-gl-manifest-comp {
+  font-family: Georgia, "Times New Roman", ui-serif, serif;
+}
+
 .ep-golden-root .ep-gl-page {
   width: 210mm;
   min-height: 260mm;
@@ -2021,5 +2076,9 @@
     size: A4;
     margin: 15mm;
     background-color: #fdfcf9;
+  }
+
+  .ep-golden-root.lang-hi {
+    font-family: var(--font-noto-deva), "Noto Sans Devanagari", Georgia, serif;
   }
 }

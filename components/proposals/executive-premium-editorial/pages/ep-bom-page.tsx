@@ -1,4 +1,7 @@
+"use client";
+
 import { EpLuxuryPage } from "@/components/proposals/executive-premium-editorial/primitives/ep-luxury-page";
+import { useEpGoldenLang } from "@/components/proposals/executive-premium-editorial/ep-golden-lang-context";
 import type { EditorialBomRow } from "@/lib/executive-premium-editorial/types";
 
 type Props = {
@@ -6,14 +9,13 @@ type Props = {
 };
 
 export function EpBomPage({ bomRows }: Props) {
+  const { copy } = useEpGoldenLang();
+
   return (
     <EpLuxuryPage className="ep-gl-bom-page">
-      <div className="ep-gl-section-tag">06 / Hardware Intelligence</div>
-      <h1 className="ep-gl-h1">System Parts.</h1>
-      <p className="ep-gl-lead ep-gl-bom-lead">
-        Tier-1 components with full engineering specification — make, standards, and warranty as
-        quoted for your system.
-      </p>
+      <div className="ep-gl-section-tag">{copy.bom.tag}</div>
+      <h1 className="ep-gl-h1">{copy.bom.title}</h1>
+      <p className="ep-gl-lead ep-gl-bom-lead">{copy.bom.lead}</p>
 
       <div className="ep-gl-manifest-list">
         {bomRows.map((row, i) => {

@@ -1,27 +1,46 @@
 "use client";
 
-import { Download } from "lucide-react";
+import { Download, Languages } from "lucide-react";
+import type { ProposalLang } from "@/lib/proposal-i18n";
 
 type Props = {
   children: React.ReactNode;
+  lang: ProposalLang;
+  onLangToggle: () => void;
+  langToggleLabel: string;
+  printLabel: string;
+  presetLabel: string;
 };
 
-export function EpProposalShell({ children }: Props) {
+export function EpProposalShell({
+  children,
+  lang,
+  onLangToggle,
+  langToggleLabel,
+  printLabel,
+  presetLabel,
+}: Props) {
   return (
     <div className="ep-proposal-shell w-full">
       <div className="ep-gl-toolbar print:hidden">
         <div className="ep-gl-toolbar-inner">
-          <p className="ep-gl-toolbar-label">Executive Premium · Golden</p>
-          <button
-            type="button"
-            onClick={() => {
-              if (typeof window !== "undefined") window.print();
-            }}
-            className="ep-gl-toolbar-btn"
-          >
-            <Download className="h-3.5 w-3.5" aria-hidden />
-            Print / PDF
-          </button>
+          <p className="ep-gl-toolbar-label">{presetLabel}</p>
+          <div className="ep-gl-toolbar-actions">
+            <button type="button" onClick={onLangToggle} className="ep-gl-toolbar-btn ep-gl-toolbar-btn--ghost">
+              <Languages className="h-3.5 w-3.5" aria-hidden />
+              {langToggleLabel}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== "undefined") window.print();
+              }}
+              className="ep-gl-toolbar-btn"
+            >
+              <Download className="h-3.5 w-3.5" aria-hidden />
+              {printLabel}
+            </button>
+          </div>
         </div>
       </div>
       {children}

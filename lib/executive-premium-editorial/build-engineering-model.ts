@@ -1,15 +1,19 @@
 import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposal-ppt";
+import type { ProposalLang } from "@/lib/proposal-i18n";
 import {
   computeResidentialEngineeringMetrics,
   RESIDENTIAL_ENGINEERING_STANDARDS,
   RESIDENTIAL_INSTALL_PHASES_EN,
+  RESIDENTIAL_INSTALL_PHASES_HI,
 } from "@/lib/proposal-engineering-metrics";
+import { epGoldenCopy } from "@/lib/executive-premium-editorial/ep-golden-i18n";
 import { withResolvedResidentialTechnicalSpecs } from "@/lib/resolve-residential-technical-specs";
 import type { EditorialEngineeringModel, EditorialWarrantyModel } from "@/lib/executive-premium-editorial/types";
 
 export function buildEditorialEngineeringModel(
   pptInput: PremiumProposalPptInput,
-  summary: ProposalDeckSummary
+  summary: ProposalDeckSummary,
+  lang: ProposalLang = "en"
 ): EditorialEngineeringModel {
   const resolved = withResolvedResidentialTechnicalSpecs(pptInput);
   const specs = resolved.residentialTechnicalSpecs;
@@ -41,7 +45,7 @@ export function buildEditorialEngineeringModel(
         ? `DC run ${specs.layout.dcRunLengthM} m · AC run ${specs.layout.acRunLengthM} m · VD ${specs.layout.voltageDropDcPct}%`
         : undefined,
     standards: [...RESIDENTIAL_ENGINEERING_STANDARDS],
-    install_phases: RESIDENTIAL_INSTALL_PHASES_EN.map((p) => ({
+    install_phases: (lang === "hi" ? RESIDENTIAL_INSTALL_PHASES_HI : RESIDENTIAL_INSTALL_PHASES_EN).map((p) => ({
       num: p.num,
       title: p.title,
       detail: p.detail,
@@ -50,8 +54,10 @@ export function buildEditorialEngineeringModel(
 }
 
 export function buildEditorialWarrantyModel(
-  summary: ProposalDeckSummary
+  summary: ProposalDeckSummary,
+  lang: ProposalLang = "en"
 ): EditorialWarrantyModel {
+  const copy = epGoldenCopy(lang);
   const panelBrand = summary.brands?.panel ?? summary.panelBrand ?? "Tier-1";
   const inverterBrand = summary.brands?.inverter ?? "—";
   const amcYears = summary.amcSelectedYears ?? 1;
@@ -59,10 +65,10 @@ export function buildEditorialWarrantyModel(
   return {
     intro: `${summary.systemKw} kW system — ${panelBrand} panels, ${inverterBrand} inverter.`,
     highlights: [
-      { icon: "shield", value: "30", unit: "Years", label: "Power output ≥80%" },
-      { icon: "panel", value: "15", unit: "Years", label: "Module product warranty" },
-      { icon: "structure", value: "10", unit: "Years", label: "Mounting structure" },
-      { icon: "support", value: `${amcYears}`, unit: "Yr AMC", label: "Service & support" },
+      { icon: "shield", value: "30", unit: copy.warranty.highlights[0].unit, label: copy.warranty.highlights[0].label },
+      { icon: "panel", value: "15", unit: copy.warranty.highlights[1].unit, label: copy.warranty.highlights[1].label },
+      { icon: "structure", value: "10", unit: copy.warranty.highlights[2].unit, label: copy.warranty.highlights[2].label },
+      { icon: "support", value: `${amcYears}`, unit: copy.warranty.highlights[3].unit, label: copy.warranty.highlights[3].label },
     ],
     rows: [
       {

@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposal-ppt";
+import type { ProposalLang } from "@/lib/proposal-i18n";
+import { epGoldenCopy } from "@/lib/executive-premium-editorial/ep-golden-i18n";
 import { transformToEditorialModel } from "@/lib/executive-premium-editorial/transform-to-editorial-model";
 import {
   PROPOSAL_BRANDING_UPDATED_EVENT,
   readProposalBrandingSettings,
 } from "@/lib/proposal-branding-settings";
+import { EpGoldenLangProvider } from "@/components/proposals/executive-premium-editorial/ep-golden-lang-context";
 import { EpProposalShell } from "@/components/proposals/executive-premium-editorial/primitives/ep-proposal-shell";
 import { EpCoverPage } from "@/components/proposals/executive-premium-editorial/pages/ep-cover-page";
 import { EpBillPage } from "@/components/proposals/executive-premium-editorial/pages/ep-bill-page";
@@ -34,13 +37,15 @@ export function ExecutivePremiumEditorialRenderer({
   pptInput,
   summary,
 }: ExecutivePremiumEditorialRendererProps) {
-  const model = transformToEditorialModel(pptInput, summary);
+  const [lang, setLang] = useState<ProposalLang>(summary.lang ?? "en");
+  const copy = epGoldenCopy(lang);
+  const model = useMemo(
+    () => transformToEditorialModel(pptInput, summary, lang),
+    [pptInput, summary, lang]
+  );
+
   const [coverLogoUrl, setCoverLogoUrl] = useState<string | undefined>(() => {
-    return (
-      model.brand_logo_url?.trim() ||
-      pptInput.installerLogoUrl?.trim() ||
-      undefined
-    );
+    return model.brand_logo_url?.trim() || pptInput.installerLogoUrl?.trim() || undefined;
   });
 
   useEffect(() => {
@@ -57,38 +62,46 @@ export function ExecutivePremiumEditorialRenderer({
   const billAuditBacked = isProposalBillAuditBacked(pptInput);
 
   return (
-    <div className="ep-golden-root w-full">
-      <EpProposalShell>
-        <div className="ep-gl-doc-canvas">
-          <EpCoverPage
-            data={{
-              brand_display: model.brand_display,
-              brand_logo_url: coverLogoUrl,
-              customer_name: model.customer_name,
-              location_line: model.location_line,
-              asset_profile_line: model.asset_profile_line,
-            }}
-          />
-          {billAuditBacked ? (
-            <EpBillPage data={model.bill} />
-          ) : (
-            <EpRequirementPage
-              systemKw={summary.systemKw}
-              coveragePct={summary.coverage}
-              assetProfileLine={model.asset_profile_line}
-              annualGenKwh={summary.annualGen}
+    <EpGoldenLangProvider lang={lang}>
+      <div className={`ep-golden-root w-full${lang === "hi" ? " lang-hi" : ""}`}>
+        <EpProposalShell
+          lang={lang}
+          onLangToggle={() => setLang((l) => (l === "en" ? "hi" : "en"))}
+          langToggleLabel={copy.toolbar.langToggle}
+          printLabel={copy.toolbar.printPdf}
+          presetLabel={copy.toolbar.preset}
+        >
+          <div className="ep-gl-doc-canvas">
+            <EpCoverPage
+              data={{
+                brand_display: model.brand_display,
+                brand_logo_url: coverLogoUrl,
+                customer_name: model.customer_name,
+                location_line: model.location_line,
+                asset_profile_line: model.asset_profile_line,
+              }}
             />
-          )}
-          <EpEconomicsPage data={model.economics} />
-          <EpImpactPage data={model.impact} />
-          <EpEngineeringPage data={model.engineering} />
-          <EpBomPage bomRows={model.architecture.bom_rows} />
-          <EpWarrantyPage data={model.warranty} />
-          <EpExecutionPage data={model.execution} />
-          <EpTermsPages data={model.terms} />
-          <EpClosingPage data={model.closing} />
-        </div>
-      </EpProposalShell>
-    </div>
+            {billAuditBacked ? (
+              <EpBillPage data={model.bill} />
+            ) : (
+              <EpRequirementPage
+                systemKw={summary.systemKw}
+                coveragePct={summary.coverage}
+                assetProfileLine={model.asset_profile_line}
+                annualGenKwh={summary.annualGen}
+              />
+            )}
+            <EpEconomicsPage data={model.economics} />
+            <EpImpactPage data={model.impact} />
+            <EpEngineeringPage data={model.engineering} />
+            <EpBomPage bomRows={model.architecture.bom_rows} />
+            <EpWarrantyPage data={model.warranty} />
+            <EpExecutionPage data={model.execution} />
+            <EpTermsPages data={model.terms} />
+            <EpClosingPage data={model.closing} />
+          </div>
+        </EpProposalShell>
+      </div>
+    </EpGoldenLangProvider>
   );
 }
