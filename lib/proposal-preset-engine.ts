@@ -42,6 +42,7 @@ export const PROPOSAL_PRESET_IDS = [
   "residential_executive",
   "residential_solstice",
   "residential_energy_freedom",
+  "residential_horizon",
 ] as const;
 
 export type ProposalPresetId = (typeof PROPOSAL_PRESET_IDS)[number];
@@ -172,6 +173,18 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     label: "Energy Freedom",
     description:
       "Ultra-minimal white & teal A4 document — cover, perspective story & investment matrix.",
+    bill_requirement: "optional",
+    theme_hint: "residential",
+    default_data_source: "requirement",
+    default_blocks: [],
+    optional_blocks: [],
+  },
+
+  residential_horizon: {
+    id: "residential_horizon",
+    label: "Horizon",
+    description:
+      "Clean white 11-page A4 masterplan — cover, vision, analysis, architecture, engineering, financials, subsidy, ecology, hardware, roadmap & commitment.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "requirement",

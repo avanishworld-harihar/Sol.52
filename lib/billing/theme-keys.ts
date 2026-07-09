@@ -27,6 +27,7 @@ export function resolveResidentialThemeKey(input: {
   const preset = input.presetId;
   if (preset === "residential_solstice") return "solstice";
   if (preset === "residential_energy_freedom") return "freedom";
+  if (preset === "residential_horizon") return "horizon";
   if (preset === "residential_aurora") return "solstice";
   if (preset === "residential_smart") return "classic";
   if (preset === "residential_bank_loan") return "ledger";

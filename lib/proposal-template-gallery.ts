@@ -99,11 +99,10 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
   },
   {
     key: "horizon",
-    presetId: "residential_sales_premium",
-    salesPremiumStyle: "journey",
+    presetId: "residential_horizon",
     category: "residential",
     name: "Horizon",
-    description: "Golden editorial content — scroll story with Horizon styling.",
+    description: "Clean white 11-page A4 masterplan — energy freedom cover, vision, wealth map, eco-retention & commitment.",
     thumbnailVariant: "horizon",
   },
   {
@@ -182,10 +181,10 @@ export function resolveActiveGalleryKey(
   if (presetId === "residential_executive") return "golden";
   if (presetId === "residential_solstice") return "solstice";
   if (presetId === "residential_energy_freedom") return "freedom";
+  if (presetId === "residential_horizon") return "horizon";
   if (presetId === "residential_bank_loan") return "ledger";
   if (presetId === "residential_smart") return "classic";
   if (presetId === "residential_sales_premium") {
-    if (salesPremiumStyle === "journey") return "horizon";
     if (salesPremiumStyle === "savings_focus") return "ember";
     if (salesPremiumStyle === "pearl") return "pearl";
     return "slate";

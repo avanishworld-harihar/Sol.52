@@ -164,15 +164,28 @@ function SlateThumb({ size }: { size: "card" | "preview" }) {
 }
 
 function HorizonThumb({ size }: { size: "card" | "preview" }) {
+  const heroSize = size === "preview" ? "text-[10px]" : "text-[5px]";
+  const subSize = size === "preview" ? "text-[7px]" : "text-[3px]";
+  const lineH = size === "preview" ? "h-[2px]" : "h-[1px]";
   return (
-    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-teal-400 to-sky-500">
-      <MiniSlide bg="#fff" size={size}>
-        <div className={cn("rounded-[2px] bg-gradient-to-r from-emerald-400 to-teal-500", size === "preview" ? "mb-[6%] h-[18%]" : "mb-[6%] h-[18%] w-full")} />
-        <div className={cn("mt-[6%] flex gap-[4%]")}>
-          <div className="h-[12%] flex-1 rounded-[1px] bg-amber-100" />
-          <div className="h-[12%] flex-1 rounded-[1px] bg-emerald-100" />
+    <div className="flex h-full w-full items-center justify-center bg-[#e5e7eb]">
+      <div
+        className={cn(
+          "flex flex-col bg-white shadow",
+          size === "preview" ? "h-[65%] w-[70%] p-[8%]" : "h-[60%] w-[74%] p-[7%]"
+        )}
+      >
+        <div className={cn("font-black text-slate-900 leading-none", heroSize)}>
+          ENERGY
         </div>
-      </MiniSlide>
+        <div className={cn("font-black text-slate-900 leading-none", heroSize)}>
+          FREEDOM
+        </div>
+        <div className={cn("mt-[6%] font-semibold text-[#0d7a70]", subSize)}>
+          Masterplan
+        </div>
+        <div className={cn("mt-auto", lineH, "w-full bg-[#0d7a70]")} />
+      </div>
     </div>
   );
 }

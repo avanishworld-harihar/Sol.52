@@ -7,6 +7,7 @@ export const RESIDENTIAL_TEMPLATE_PRESET_IDS = [
   "residential_executive",
   "residential_solstice",
   "residential_energy_freedom",
+  "residential_horizon",
   "residential_smart",
 ] as const;
 
@@ -42,9 +43,14 @@ export const RESIDENTIAL_TEMPLATE_OPTIONS: ResidentialTemplateOption[] = [
     subtitle: "White & teal A4 — ENERGY REIMAGINED · investment matrix.",
   },
   {
+    id: "residential_horizon",
+    label: "Horizon",
+    subtitle: "Clean white 11-page A4 — energy masterplan & commitment.",
+  },
+  {
     id: "residential_sales_premium",
     label: "Sales Premium",
-    subtitle: "Pearl, Slate, Horizon & Ember theme family.",
+    subtitle: "Pearl, Slate & Ember theme family.",
   },
   {
     id: "residential_bank_loan",

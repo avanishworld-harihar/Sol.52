@@ -80,7 +80,9 @@ export async function buildQuickRequirementProposal(
         ? { galleryThemeKey: "solstice" }
         : presetId === "residential_energy_freedom"
           ? { galleryThemeKey: "freedom" }
-          : {}),
+          : presetId === "residential_horizon"
+            ? { galleryThemeKey: "horizon" }
+            : {}),
   };
 
   const summary = summarizeProposalDeck(pptInput);

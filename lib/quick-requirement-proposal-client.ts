@@ -37,6 +37,9 @@ export function resolveQuickQuotePresetOptions(): {
   if (presetId === "residential_energy_freedom") {
     return { presetId, galleryThemeKey: "freedom" };
   }
+  if (presetId === "residential_horizon") {
+    return { presetId, galleryThemeKey: "horizon" };
+  }
   return { presetId };
 }
 

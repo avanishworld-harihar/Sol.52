@@ -11,7 +11,7 @@ import { BILLING_WATERMARK_TEXT } from "./types";
 import type { OrganizationSubscription, PlanCode, SubscriptionPlan } from "./types";
 
 const TRIAL_FEATURES = {
-  residential_theme_keys: ["classic", "ledger", "pearl", "golden", "solstice", "freedom"],
+  residential_theme_keys: ["classic", "ledger", "pearl", "golden", "solstice", "freedom", "horizon"],
   all_residential_themes: false,
   commercial_proposals: true,
   pdf_export: true,
