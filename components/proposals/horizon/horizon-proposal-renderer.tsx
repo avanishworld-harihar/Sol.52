@@ -202,7 +202,8 @@ export function HorizonProposalRenderer({
             <img src={logoUrl} alt={brandName} className="hz-cover-logo" />
           ) : (
             <span className="hz-kicker hz-kicker--cobalt">
-              {brandName} // Masterplan
+              {brandName}
+              {" // Masterplan"}
             </span>
           )}
           <h1 className="hz-hero hz-hero--xl hz-serif">
