@@ -164,31 +164,26 @@ function SlateThumb({ size }: { size: "card" | "preview" }) {
 }
 
 function HorizonThumb({ size }: { size: "card" | "preview" }) {
-  const heroSize = size === "preview" ? "text-[9px]" : "text-[4px]";
-  const subSize = size === "preview" ? "text-[6px]" : "text-[3px]";
-  const lineH = size === "preview" ? "h-[3px]" : "h-[2px]";
+  const heroSize = size === "preview" ? "text-[8px]" : "text-[4px]";
+  const subSize = size === "preview" ? "text-[5px]" : "text-[2px]";
   return (
-    <div className="flex h-full w-full items-center justify-center bg-[#d1d5db]">
+    <div className="flex h-full w-full items-center justify-center bg-[#f8fafc]">
       <div
         className={cn(
-          "flex flex-col bg-[#fafafa] shadow",
+          "flex flex-col bg-[#0f172a] shadow",
           size === "preview" ? "h-[65%] w-[70%] p-[8%]" : "h-[60%] w-[74%] p-[7%]"
         )}
-        style={{ borderTop: "3px solid #008080" }}
       >
-        <div className={cn("font-black text-slate-900 leading-tight", heroSize)}>
-          SOLAR
+        <div className={cn("font-black uppercase tracking-widest text-[#60a5fa]", subSize)}>
+          Masterplan
         </div>
-        <div className={cn("font-black text-slate-900 leading-tight", heroSize)}>
-          MASTER
+        <div className={cn("mt-[8%] font-black leading-none text-white", heroSize)}>
+          ENERGY
         </div>
-        <div className={cn("font-black text-slate-900 leading-tight", heroSize)}>
-          PLAN
+        <div className={cn("font-black leading-none text-white", heroSize)}>
+          ARCHITECT
         </div>
-        <div className={cn("mt-[6%] font-light text-slate-400", subSize)}>
-          Precision
-        </div>
-        <div className={cn("mt-auto", lineH, "w-full bg-[#008080]")} />
+        <div className={cn("mt-auto h-[2px] w-full bg-[#2563eb]", size === "preview" ? "" : "h-[1px]")} />
       </div>
     </div>
   );

@@ -20,7 +20,7 @@ export type HorizonProposalRendererProps = {
   installerLogoUrl?: string;
 };
 
-type WowPageVariant = "white" | "gray" | "dark";
+type MonolithVariant = "white" | "obsidian" | "cobalt";
 
 function cityFromLocation(line: string): string {
   const t = line.trim();
@@ -39,26 +39,18 @@ function metricValue(
   return row?.value ?? "—";
 }
 
-function shortWarranty(warranty: string): string {
-  const t = warranty.trim();
-  if (!t) return "—";
-  const yrMatch = t.match(/(\d+)\s*(?:year|yr)/i);
-  if (yrMatch) return `${yrMatch[1]} Yrs`;
-  return t.length > 12 ? t.slice(0, 12) : t;
-}
-
-function WowPage({
+function MonolithPage({
   children,
   variant = "white",
 }: {
   children: ReactNode;
-  variant?: WowPageVariant;
+  variant?: MonolithVariant;
 }) {
   const cls =
-    variant === "gray"
-      ? "hz-page hz-page--gray"
-      : variant === "dark"
-        ? "hz-page hz-page--dark"
+    variant === "obsidian"
+      ? "hz-page hz-page--obsidian"
+      : variant === "cobalt"
+        ? "hz-page hz-page--cobalt"
         : "hz-page";
   return (
     <div className={cls}>
@@ -67,33 +59,58 @@ function WowPage({
   );
 }
 
-function archRowsFromBom(
-  bom: {
-    name: string;
-    brand: string;
-    warranty: string;
-  }[],
+function blueprintLayers(
+  bom: { name: string; brand: string; spec: string }[],
+  systemKw: number
+) {
+  const panel = bom.find(
+    (r) =>
+      r.name.toLowerCase().includes("panel") ||
+      r.name.toLowerCase().includes("module")
+  );
+  const inverter = bom.find((r) => r.name.toLowerCase().includes("inverter"));
+  const structure = bom.find(
+    (r) =>
+      r.name.toLowerCase().includes("mount") ||
+      r.name.toLowerCase().includes("structure")
+  );
+
+  const layers = [
+    panel
+      ? { name: "Solar Array", spec: panel.brand || panel.spec || "Tier-1 DCR" }
+      : { name: "Solar Array", spec: "DCR Tier-1 Modules" },
+    inverter
+      ? {
+          name: "Power Core",
+          spec: inverter.brand || `${systemKw} kW String Inverter`,
+        }
+      : { name: "Power Core", spec: `${systemKw} kW MPPT Inverter` },
+    structure
+      ? { name: "Mounting Grid", spec: structure.brand || "Galvanized Structure" }
+      : { name: "Mounting Grid", spec: "Hot-Dip Galvanized" },
+    { name: "Protection Layer", spec: "AC/DC Safety & Net Metering" },
+    { name: "Grid Interface", spec: `${systemKw} kW On-Grid Architecture` },
+  ];
+  return layers;
+}
+
+function dnaRows(
+  bom: { name: string; brand: string; warranty: string; spec: string }[],
   systemKw: number
 ) {
   if (bom.length === 0) {
     return [
-      { item: "Panels", detail: "Waaree TOPCon", war: "30 Yrs" },
-      { item: "Inverter", detail: "Havells String", war: "10 Yrs" },
-      { item: "Structure", detail: "JSW Galvanized", war: "10 Yrs" },
+      { label: "Panel Make", value: "Waaree TOPCon" },
+      { label: "Panel Warranty", value: "30 Year Performance" },
+      { label: "Inverter", value: "Havells String · 10 Yr" },
+      { label: "Structure", value: "JSW Galvanized" },
+      { label: "System Size", value: `${systemKw} kW` },
     ];
   }
-  return bom.slice(0, 6).map((row) => {
-    const key = row.name.toLowerCase();
-    let item = row.name;
-    if (key.includes("panel") || key.includes("module")) item = "Panels";
-    else if (key.includes("inverter")) item = "Inverter";
-    else if (key.includes("mount") || key.includes("structure")) item = "Structure";
-    return {
-      item,
-      detail: row.brand || `${systemKw} kW System`,
-      war: shortWarranty(row.warranty),
-    };
-  });
+  return bom.slice(0, 6).map((row) => ({
+    label: row.name,
+    value: [row.brand, row.warranty || row.spec].filter(Boolean).join(" · "),
+  }));
 }
 
 export function HorizonProposalRenderer({
@@ -132,14 +149,12 @@ export function HorizonProposalRenderer({
   }, [installerLogoUrlProp, m.brand_logo_url, pptInput.installerLogoUrl]);
 
   const engMetrics = m.engineering.metrics_rows;
-  const loadCoverage = metricValue(engMetrics, "load");
-  const peakSun = metricValue(engMetrics, "peak sun");
+  const latitude = metricValue(engMetrics, "latitude");
   const tiltLabel = m.engineering.tilt_deg ? `${m.engineering.tilt_deg}°` : "—";
-  const annualGen = summary.annualUse
-    ? `${summary.annualUse.toLocaleString("en-IN")} Units`
-    : "—";
+  const engCity = m.engineering.city_label || cityLabel;
 
-  const archRows = archRowsFromBom(m.architecture.bom_rows, systemKw);
+  const layers = blueprintLayers(m.architecture.bom_rows, systemKw);
+  const hardwareDna = dnaRows(m.architecture.bom_rows, systemKw);
 
   const defaultSteps = [
     "Site Survey",
@@ -150,20 +165,22 @@ export function HorizonProposalRenderer({
     "Go Live",
   ];
 
-  const journeySteps =
+  const processSteps =
     m.execution.steps.length > 0
-      ? m.execution.steps.map((s) => ({ title: s.title, desc: s.description }))
-      : defaultSteps.map((title) => ({ title, desc: "" }));
+      ? m.execution.steps.map((s) => s.title)
+      : defaultSteps;
 
-  const warrantyBoxes =
-    m.warranty.highlights.length > 0
-      ? m.warranty.highlights
-      : m.warranty.rows.slice(0, 6).map((r) => ({
-          value: r.duration.split(" ")[0] ?? r.duration,
-          unit: r.duration.includes("Year") ? "Yrs" : "",
-          label: r.item,
-          icon: "shield" as const,
-        }));
+  const termsLeft = m.terms.terms_conditions;
+  const termsRight = [
+    ...m.terms.documents_required,
+    ...(m.terms.amc_objective ? [m.terms.amc_objective] : []),
+    ...m.terms.amc_scope,
+    ...m.terms.amc_terms,
+  ];
+
+  const midTerms = Math.ceil(termsLeft.length / 2);
+  const col1Terms = termsLeft.slice(0, midTerms);
+  const col2Terms = [...termsLeft.slice(midTerms), ...termsRight];
 
   return (
     <div className="hz-proposal">
@@ -178,302 +195,260 @@ export function HorizonProposalRenderer({
         </button>
       </div>
 
-      {/* P1 — Cover */}
-      <WowPage>
+      {/* 01 — Title Page */}
+      <MonolithPage variant="obsidian">
         <div className="hz-cover">
           {logoUrl ? (
             <img src={logoUrl} alt={brandName} className="hz-cover-logo" />
           ) : (
-            <p className="hz-cover-brand">{brandName}</p>
+            <span className="hz-kicker hz-kicker--cobalt">
+              {brandName} // Masterplan
+            </span>
           )}
-          <div className="hz-cover-hero">
-            <h1 className="hz-h1">
-              SOLAR
-              <br />
-              MASTER
-              <br />
-              PLAN
-            </h1>
-            <p className="hz-subtitle">
-              Precision engineering for {customerName}, {cityLabel}
-            </p>
-          </div>
+          <h1 className="hz-hero hz-hero--xl hz-serif">
+            ENERGY
+            <br />
+            ARCHITECT
+          </h1>
+          <p className="hz-body-light">
+            Precision proposal for {customerName}, {cityLabel}.
+          </p>
         </div>
-      </WowPage>
+      </MonolithPage>
 
-      {/* P2 — Philosophy */}
-      <WowPage>
-        <div className="hz-philosophy-grid">
-          <h2 className="hz-h2--italic">
-            Energy
+      {/* 02 — The Manifesto */}
+      <MonolithPage>
+        <p className="hz-kicker">02 · The Manifesto</p>
+        <div className="hz-manifesto">
+          <h2 className="hz-hero hz-hero--lg hz-serif hz-hero--italic">
+            Why Solar.
             <br />
-            is an
-            <br />
-            Asset.
+            Why You.
           </h2>
-          <p className="hz-lead">
-            We redefine how you perceive power. Moving from an endless bill cycle
-            to a 25-year wealth-generation machine — engineered for {cityLabel}
-            with {systemKw} kW of premium grid-architecture and{" "}
-            {loadCoverage || "100%"} annual load coverage.
+          <p className="hz-manifesto-lead">
+            Energy is not a bill — it is an asset. We architect independence for
+            your roof in {cityLabel}, converting sunlight into a 25-year wealth
+            machine at {systemKw} kW scale.
           </p>
         </div>
-      </WowPage>
+      </MonolithPage>
 
-      {/* P3 — Return Journey */}
-      <WowPage>
-        <p className="hz-section-tag">Financial Intelligence</p>
-        <h2 className="hz-h2">The Return Journey</h2>
-        <div className="hz-wealth-hero">
-          <span className="hz-wealth-hero-label">Lifetime Profit</span>
-          <p className="hz-wealth-hero-value">
-            {fmtLifetimeBenefitInr(m.economics.lifetime_profit_inr)}
+      {/* 03 — Wealth Map */}
+      <MonolithPage>
+        <div className="hz-wealth-grid">
+          <p className="hz-kicker">03 · Financial Intelligence</p>
+          <div className="hz-wealth-mid">
+            <h2 className="hz-hero hz-hero--lg hz-serif hz-hero--italic">
+              The
+              <br />
+              Wealth Map
+            </h2>
+            <div style={{ textAlign: "right" }}>
+              <p className="hz-wealth-profit">
+                {fmtLifetimeBenefitInr(m.economics.lifetime_profit_inr)}
+              </p>
+              <p className="hz-wealth-profit-label">25-Yr Profit</p>
+            </div>
+          </div>
+          <div className="hz-wealth-foot">
+            <div>
+              <p className="hz-wealth-stat-label">Payback</p>
+              <p className="hz-wealth-stat-value">{paybackLabel}</p>
+            </div>
+            <div>
+              <p className="hz-wealth-stat-label">Monthly Savings</p>
+              <p className="hz-wealth-stat-value">
+                {fmtInr(m.economics.monthly_savings_inr)}
+              </p>
+            </div>
+            <div>
+              <p className="hz-wealth-stat-label">Net Investment</p>
+              <p className="hz-wealth-stat-value">
+                {fmtInr(m.economics.net_cost_inr)}
+              </p>
+            </div>
+          </div>
+        </div>
+      </MonolithPage>
+
+      {/* 04 — System Blueprint */}
+      <MonolithPage>
+        <p className="hz-kicker">04 · System Blueprint</p>
+        <h2 className="hz-hero hz-hero--lg hz-serif">
+          {systemKw} kW
+          <br />
+          Architecture
+        </h2>
+        <div className="hz-blueprint">
+          {layers.map((layer, i) => (
+            <div key={i} className="hz-blueprint-layer">
+              <span className="hz-blueprint-num">{String(i + 1).padStart(2, "0")}</span>
+              <p className="hz-blueprint-name">{layer.name}</p>
+              <p className="hz-blueprint-spec">{layer.spec}</p>
+            </div>
+          ))}
+        </div>
+      </MonolithPage>
+
+      {/* 05 — Latitude & Tilt */}
+      <MonolithPage>
+        <p className="hz-kicker">05 · Engineering Art</p>
+        <div className="hz-eng-art">
+          <h2 className="hz-hero hz-hero--lg hz-serif hz-hero--italic">
+            {engCity}
+          </h2>
+          <div className="hz-eng-duo">
+            <div>
+              <p className="hz-eng-stat-label">Latitude</p>
+              <p className="hz-eng-stat-value">{latitude}</p>
+            </div>
+            <div>
+              <p className="hz-eng-stat-label">Optimal Tilt</p>
+              <p className="hz-eng-stat-value">{tiltLabel}</p>
+            </div>
+          </div>
+          {m.engineering.tilt_note ? (
+            <p className="hz-eng-city">{m.engineering.tilt_note}</p>
+          ) : (
+            <p className="hz-eng-city">
+              Precision-tuned for {engCity} solar geometry — maximum yield per
+              square metre of rooftop.
+            </p>
+          )}
+        </div>
+      </MonolithPage>
+
+      {/* 06 — Hardware DNA */}
+      <MonolithPage>
+        <p className="hz-kicker">06 · Hardware DNA</p>
+        <h2 className="hz-hero hz-hero--lg hz-serif">Component Specs</h2>
+        <div className="hz-dna-list">
+          {hardwareDna.map((row, i) => (
+            <div key={i} className="hz-dna-row">
+              <span className="hz-dna-label">{row.label}</span>
+              <span className="hz-dna-value">{row.value}</span>
+            </div>
+          ))}
+        </div>
+      </MonolithPage>
+
+      {/* 07 — Fiscal Impact */}
+      <MonolithPage variant="cobalt">
+        <div className="hz-fiscal">
+          <p className="hz-kicker">07 · Fiscal Impact</p>
+          <h2 className="hz-hero hz-hero--lg hz-serif">
+            Grant of
+            <br />
+            Independence
+          </h2>
+          <p className="hz-fiscal-amount">
+            {m.economics.subsidy_inr > 0
+              ? fmtInr(m.economics.subsidy_inr)
+              : "₹0"}
+          </p>
+          <p className="hz-fiscal-caption">
+            PM Surya Ghar — government subsidy applied to your net investment.
           </p>
         </div>
-        <div className="hz-wealth-duo">
-          <div>
-            <span className="hz-wealth-stat-label">Payback Period</span>
-            <p className="hz-wealth-stat-value">{paybackLabel}</p>
+      </MonolithPage>
+
+      {/* 08 — Carbon Legacy */}
+      <MonolithPage>
+        <div className="hz-carbon">
+          <p className="hz-kicker">08 · Carbon Legacy</p>
+          <p className="hz-carbon-num">
+            {m.impact.trees?.toLocaleString("en-IN") ?? "—"}
+          </p>
+          <p className="hz-carbon-caption">
+            Trees equivalent planted on your roof.
+          </p>
+        </div>
+      </MonolithPage>
+
+      {/* 09 — The Process */}
+      <MonolithPage>
+        <p className="hz-kicker">09 · The Process</p>
+        <h2 className="hz-hero hz-hero--lg hz-serif hz-hero--italic">
+          Steps to
+          <br />
+          Freedom
+        </h2>
+        <div className="hz-process">
+          {processSteps.map((title, i) => (
+            <div key={i} className="hz-process-step">
+              <span className="hz-process-num">{String(i + 1).padStart(2, "0")}</span>
+              <p className="hz-process-title">{title}</p>
+            </div>
+          ))}
+        </div>
+      </MonolithPage>
+
+      {/* 10 — Terms as Art */}
+      <MonolithPage>
+        <p className="hz-kicker">10 · Terms as Art</p>
+        <h2 className="hz-hero hz-hero--lg hz-serif">Legal Minimalism</h2>
+        <div className="hz-terms-wrap">
+          <div className="hz-terms-cols">
+            <div className="hz-terms-block">
+              <h3 className="hz-terms-col-title">General Terms</h3>
+              {col1Terms.map((item, i) => (
+                <p key={i} className="hz-terms-item">
+                  {item}
+                </p>
+              ))}
+            </div>
+            <div className="hz-terms-block">
+              <h3 className="hz-terms-col-title">Documents &amp; Scope</h3>
+              {col2Terms.map((item, i) => (
+                <p key={i} className="hz-terms-item">
+                  {item}
+                </p>
+              ))}
+            </div>
           </div>
+        </div>
+      </MonolithPage>
+
+      {/* 11 — Signature */}
+      <MonolithPage variant="obsidian">
+        <div className="hz-finale">
           <div>
-            <span className="hz-wealth-stat-label">Monthly Savings</span>
-            <p className="hz-wealth-stat-value">
-              {fmtInr(m.economics.monthly_savings_inr)}
+            <p className="hz-kicker hz-kicker--cobalt">11 · Finale</p>
+            <h2 className="hz-finale-title hz-serif">
+              Contract of Independence
+            </h2>
+            <p className="hz-finale-sub" style={{ color: "rgba(255,255,255,0.55)" }}>
+              {systemKw} kW for {customerName} · Valid 30 days · {brandName}
             </p>
           </div>
-        </div>
-        <div className="hz-fin-rows">
-          <div className="hz-fin-row">
-            <span className="hz-fin-row-label">Total Out-of-Pocket</span>
-            <span className="hz-fin-row-value">
-              {fmtInr(m.economics.net_cost_inr)}
+          <div className="hz-sign-block">
+            <div className="hz-sign-row">
+              <div>
+                <span className="hz-sign-label" style={{ color: "rgba(255,255,255,0.45)" }}>
+                  Signature
+                </span>
+                <span className="hz-sign-line" style={{ borderColor: "#fff", color: "#fff" }}>
+                  {customerName}
+                </span>
+              </div>
+              <div>
+                <span className="hz-sign-label" style={{ color: "rgba(255,255,255,0.45)" }}>
+                  Date
+                </span>
+                <span className="hz-sign-line" style={{ borderColor: "#fff" }}>
+                  &nbsp;
+                </span>
+              </div>
+            </div>
+            <span className="hz-sign-label" style={{ color: "rgba(255,255,255,0.45)" }}>
+              Prepared by
+            </span>
+            <span className="hz-sign-line" style={{ borderColor: "#fff", color: "#fff" }}>
+              {brandName}
             </span>
           </div>
         </div>
-      </WowPage>
-
-      {/* P4 — Engineering Precision */}
-      <WowPage variant="gray">
-        <p className="hz-wow-tag">04. Engineering</p>
-        <div className="hz-eng-wow-grid">
-          <h2 className="hz-eng-wow-title">
-            Design
-            <br />
-            Parameters
-          </h2>
-          <div className="hz-eng-wow-metrics">
-            <div>
-              <p className="hz-eng-wow-metric-label">Peak Sun Hours</p>
-              <p className="hz-eng-wow-metric-value">{peakSun}</p>
-            </div>
-            <div>
-              <p className="hz-eng-wow-metric-label">Panel Tilt</p>
-              <p className="hz-eng-wow-metric-value">{tiltLabel}</p>
-            </div>
-            <div>
-              <p className="hz-eng-wow-metric-label">Annual Gen</p>
-              <p className="hz-eng-wow-metric-value">{annualGen}</p>
-            </div>
-          </div>
-        </div>
-      </WowPage>
-
-      {/* P5 — Hardware Intelligence */}
-      <WowPage>
-        <h2 className="hz-h2--wow">The Architecture</h2>
-        <div className="hz-arch-table">
-          {archRows.map((part, i) => (
-            <div key={i} className="hz-arch-row">
-              <span className="hz-arch-item">{part.item}</span>
-              <span className="hz-arch-detail">{part.detail}</span>
-              <span className="hz-arch-war">{part.war}</span>
-            </div>
-          ))}
-        </div>
-      </WowPage>
-
-      {/* P6 — Subsidy Impact */}
-      <WowPage variant="dark">
-        <div className="hz-subsidy-dark">
-          <p className="hz-subsidy-dark-kicker">Government Support</p>
-          <h2 className="hz-subsidy-dark-title">
-            PM SURYA
-            <br />
-            GHAR
-          </h2>
-          <p className="hz-subsidy-dark-amount">
-            Subsidy Applied:{" "}
-            <strong>
-              {m.economics.subsidy_inr > 0
-                ? fmtInr(m.economics.subsidy_inr)
-                : "₹0"}
-            </strong>
-          </p>
-        </div>
-      </WowPage>
-
-      {/* P7 — Journey / Roadmap */}
-      <WowPage>
-        <h2 className="hz-h2--wow">The Journey</h2>
-        <div className="hz-journey">
-          {journeySteps.map((step, i) => (
-            <div key={i} className="hz-journey-step">
-              <span className="hz-journey-num">{String(i + 1).padStart(2, "0")}</span>
-              <div>
-                <p className="hz-journey-title">{step.title}</p>
-                {step.desc ? <p className="hz-journey-desc">{step.desc}</p> : null}
-              </div>
-            </div>
-          ))}
-        </div>
-      </WowPage>
-
-      {/* P8 — Warranty Matrix */}
-      <WowPage variant="gray">
-        <p className="hz-wow-tag">08. Warranty Matrix</p>
-        <h2 className="hz-h2--mega">Assurance Grid</h2>
-        {m.warranty.intro ? (
-          <p className="hz-warranty-intro">{m.warranty.intro}</p>
-        ) : null}
-
-        <div className="hz-warranty-grid">
-          {warrantyBoxes.map((box, i) => (
-            <div key={i} className="hz-warranty-box">
-              <span className="hz-warranty-box-value">
-                {box.value}
-                {box.unit ? (
-                  <span className="hz-warranty-box-unit"> {box.unit}</span>
-                ) : null}
-              </span>
-              <span className="hz-warranty-box-label">{box.label}</span>
-            </div>
-          ))}
-        </div>
-
-        {m.warranty.rows.length > 0 && (
-          <table className="hz-warranty-table">
-            <thead>
-              <tr>
-                <th>Item</th>
-                <th>Duration</th>
-                <th>By</th>
-                <th>Coverage</th>
-              </tr>
-            </thead>
-            <tbody>
-              {m.warranty.rows.map((row) => (
-                <tr key={row.item}>
-                  <td>{row.item}</td>
-                  <td>{row.duration}</td>
-                  <td>{row.by}</td>
-                  <td>{row.coverage}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </WowPage>
-
-      {/* P9 — Terms (Legal Art) */}
-      <WowPage>
-        <p className="hz-wow-tag">09. Terms &amp; Conditions</p>
-        <h2 className="hz-h2--mega">Legal Art</h2>
-        <div className="hz-terms-art">
-          <div className="hz-terms-columns">
-            <div className="hz-terms-block">
-              <h3 className="hz-terms-block-title">General Terms</h3>
-              <ul className="hz-terms-list">
-                {m.terms.terms_conditions.map((item, i) => (
-                  <li key={i} className="hz-terms-item">
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="hz-terms-block">
-              <h3 className="hz-terms-block-title">Documents Required</h3>
-              <ul className="hz-terms-list">
-                {m.terms.documents_required.map((item, i) => (
-                  <li key={i} className="hz-terms-item">
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              {m.terms.amc_objective ? (
-                <>
-                  <h3
-                    className="hz-terms-block-title"
-                    style={{ marginTop: "2rem" }}
-                  >
-                    AMC Scope
-                  </h3>
-                  <p className="hz-terms-para">{m.terms.amc_objective}</p>
-                  <ul className="hz-terms-list">
-                    {m.terms.amc_scope.map((item, i) => (
-                      <li key={i} className="hz-terms-item">
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              ) : null}
-            </div>
-          </div>
-        </div>
-      </WowPage>
-
-      {/* P10 — Eco-Retention */}
-      <WowPage>
-        <p className="hz-wow-tag">10. Environmental Impact</p>
-        <h2 className="hz-h2--mega">Eco-Retention</h2>
-        <div className="hz-eco-wow">
-          <div>
-            <p className="hz-eco-value">
-              {m.impact.trees?.toLocaleString("en-IN") ?? "—"}
-            </p>
-            <span className="hz-eco-label">Trees equivalent</span>
-          </div>
-          <div>
-            <p className="hz-eco-value">
-              {m.impact.co2_tons?.toLocaleString("en-IN") ?? "—"}
-            </p>
-            <span className="hz-eco-label">Tonnes CO₂ offset</span>
-          </div>
-        </div>
-      </WowPage>
-
-      {/* P11 — Closing Statement */}
-      <WowPage>
-        <div className="hz-closing">
-          <div>
-            <p className="hz-closing-quote">
-              Welcome to the
-              <em>future of energy.</em>
-            </p>
-            <p className="hz-closing-meta">
-              This {systemKw} kW proposal for {customerName} is valid for 30
-              days. By signing below, you confirm acceptance of scope, pricing,
-              and terms outlined in this document.
-            </p>
-          </div>
-          <div className="hz-sign-area">
-            <div className="hz-sign-grid">
-              <div>
-                <span className="hz-sign-label">Customer Signature</span>
-                <span className="hz-sign-line">{customerName}</span>
-              </div>
-              <div>
-                <span className="hz-sign-label">Date of Acceptance</span>
-                <span className="hz-sign-line">&nbsp;</span>
-              </div>
-            </div>
-            <div style={{ marginTop: "2.5rem" }}>
-              <span className="hz-sign-label">Prepared by</span>
-              <span className="hz-sign-line">{brandName}</span>
-            </div>
-          </div>
-        </div>
-      </WowPage>
+      </MonolithPage>
     </div>
   );
 }

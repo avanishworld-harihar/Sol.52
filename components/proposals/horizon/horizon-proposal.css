@@ -1,27 +1,25 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700;1,800&display=swap");
 
 #proposal-route-root:has(.hz-proposal) {
-  background: #f1f5f9 !important;
+  background: #f8fafc !important;
 }
 
 .hz-proposal {
-  --hz-teal: #008080;
-  --hz-ink: #0f172a;
-  --hz-slate: #1e293b;
+  --hz-obsidian: #0f172a;
+  --hz-cobalt: #2563eb;
+  --hz-white: #ffffff;
   --hz-muted: #64748b;
-  --hz-light: #94a3b8;
-  --hz-border: #d1d5db;
-  --hz-gray-bg: #f8f9fa;
-  --hz-dark: #0f172a;
+  --hz-faint: #94a3b8;
+  --hz-border: #e2e8f0;
 
   width: 100%;
   margin: 0 auto;
-  padding: 3rem 0;
-  background: #f1f5f9;
-  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  padding: 5rem 0;
+  background: #f8fafc;
+  font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif;
   font-size: 11pt;
   line-height: 1.5;
-  color: var(--hz-ink);
+  color: var(--hz-obsidian);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -46,612 +44,494 @@
   gap: 0.45rem;
   padding: 0.5rem 1rem;
   border: 1px solid var(--hz-border);
-  border-radius: 0.4rem;
-  background: #fff;
-  color: var(--hz-ink);
+  border-radius: 0.25rem;
+  background: var(--hz-white);
+  color: var(--hz-obsidian);
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
 }
 
 .hz-toolbar-btn:hover {
-  border-color: var(--hz-teal);
-  color: var(--hz-teal);
+  border-color: var(--hz-cobalt);
+  color: var(--hz-cobalt);
 }
 
-/* ── Wow Page shell ──────────────────────────────────────────────────────── */
+/* ── Monolith page shell ───────────────────────────────────────────────────── */
 .hz-page {
   width: 210mm;
   min-height: 297mm;
-  margin: 0 auto 4rem;
+  margin: 0 auto 5rem;
   padding: 25mm;
-  background: #fff;
-  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.22);
+  background: var(--hz-white);
+  color: var(--hz-obsidian);
+  border: 1px solid var(--hz-border);
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.15);
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
-.hz-page--gray {
-  background: var(--hz-gray-bg);
+.hz-page--obsidian {
+  background: var(--hz-obsidian);
+  color: var(--hz-white);
+  border-color: var(--hz-obsidian);
 }
 
-.hz-page--dark {
-  background: var(--hz-dark);
-  color: #fff;
+.hz-page--cobalt {
+  background: var(--hz-cobalt);
+  color: var(--hz-white);
+  border-color: var(--hz-cobalt);
 }
 
 .hz-page-inner {
   flex: 1;
   display: flex;
   flex-direction: column;
-}
-
-/* ── Section numbering ───────────────────────────────────────────────────── */
-.hz-wow-tag {
-  margin: 0 0 2.5rem;
-  font-size: 0.875rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.35em;
-  color: var(--hz-teal);
-}
-
-.hz-page--dark .hz-wow-tag {
-  color: var(--hz-teal);
-}
-
-.hz-section-tag {
-  margin: 0 0 1.5rem;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.35em;
-  color: var(--hz-teal);
+  min-height: calc(297mm - 50mm);
 }
 
 /* ── Typography ────────────────────────────────────────────────────────────── */
-.hz-h1 {
+.hz-serif {
+  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+}
+
+.hz-kicker {
   margin: 0;
-  font-size: clamp(5rem, 14vw, 6.25rem);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.35em;
+  color: var(--hz-cobalt);
+}
+
+.hz-page--obsidian .hz-kicker,
+.hz-page--cobalt .hz-kicker {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.hz-page--obsidian .hz-kicker--cobalt {
+  color: #60a5fa;
+}
+
+.hz-hero {
+  margin: 0;
+  font-family: "Playfair Display", Georgia, serif;
   font-weight: 900;
+  line-height: 0.85;
+  letter-spacing: -0.02em;
+}
+
+.hz-hero--xl {
+  font-size: clamp(5.5rem, 16vw, 7.5rem);
+}
+
+.hz-hero--lg {
+  font-size: clamp(3.5rem, 10vw, 5rem);
   line-height: 0.9;
-  color: var(--hz-ink);
-  letter-spacing: -0.03em;
 }
 
-.hz-h2 {
-  margin: 0 0 2rem;
-  font-size: 3rem;
-  font-weight: 700;
-  line-height: 1.1;
-  color: var(--hz-ink);
-}
-
-.hz-h2--wow {
-  font-size: 3rem;
-  font-weight: 900;
-  line-height: 1;
-  margin-bottom: 4rem;
-}
-
-.hz-h2--italic {
+.hz-hero--italic {
   font-style: italic;
-  font-weight: 900;
-  font-size: 3.75rem;
-  line-height: 1;
-  color: var(--hz-slate);
-  margin: 0;
 }
 
-.hz-h2--mega {
-  font-size: clamp(4rem, 12vw, 5rem);
-  font-weight: 900;
-  line-height: 0.95;
+.hz-body-light {
   margin: 0;
-}
-
-.hz-lead {
-  margin: 0;
-  font-size: 1.25rem;
   font-weight: 300;
-  line-height: 1.65;
   color: var(--hz-muted);
 }
 
-.hz-subtitle {
-  margin: 2rem 0 0;
-  font-size: 1.5rem;
-  font-weight: 300;
-  color: var(--hz-light);
+.hz-page--obsidian .hz-body-light {
+  color: var(--hz-faint);
 }
 
-/* ── P1 Cover ────────────────────────────────────────────────────────────── */
+/* ── P01 Cover ───────────────────────────────────────────────────────────── */
 .hz-cover {
   height: 100%;
-  min-height: calc(297mm - 50mm);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 
-.hz-cover-brand {
-  margin: 0;
-  font-size: 0.875rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5em;
-  color: var(--hz-teal);
-}
-
 .hz-cover-logo {
-  max-height: 36px;
-  max-width: 140px;
+  max-height: 32px;
+  max-width: 120px;
   object-fit: contain;
+  opacity: 0.9;
 }
 
-.hz-cover-hero {
-  margin-bottom: 5rem;
+/* ── P02 Manifesto ───────────────────────────────────────────────────────── */
+.hz-manifesto {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 36ch;
 }
 
-/* ── P2 Philosophy ───────────────────────────────────────────────────────── */
-.hz-philosophy-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3rem;
-  align-items: start;
-  margin-top: 2rem;
-}
-
-/* ── P3 Wealth ───────────────────────────────────────────────────────────── */
-.hz-wealth-hero {
-  margin: 0;
-  padding-bottom: 2.5rem;
-  border-bottom: 1px solid var(--hz-border);
-}
-
-.hz-wealth-hero-label {
-  display: block;
-  font-size: 0.875rem;
+.hz-manifesto-lead {
+  margin: 2.5rem 0 0;
+  font-size: 1.375rem;
+  font-weight: 300;
+  line-height: 1.7;
   color: var(--hz-muted);
-  margin-bottom: 0.5rem;
 }
 
-.hz-wealth-hero-value {
+/* ── P03 Wealth Map ──────────────────────────────────────────────────────── */
+.hz-wealth-grid {
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 2rem;
+}
+
+.hz-wealth-mid {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.hz-wealth-profit {
   margin: 0;
-  font-size: clamp(5rem, 14vw, 7.5rem);
+  font-size: clamp(3.5rem, 10vw, 4.5rem);
   font-weight: 900;
+  color: var(--hz-cobalt);
   line-height: 1;
-  color: var(--hz-ink);
 }
 
-.hz-wealth-duo {
+.hz-wealth-profit-label {
+  margin: 0.5rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--hz-muted);
+}
+
+.hz-wealth-foot {
   display: flex;
   gap: 5rem;
-  margin-top: 3rem;
+  padding-top: 2.5rem;
+  border-top: 1px solid var(--hz-border);
 }
 
 .hz-wealth-stat-label {
-  display: block;
+  margin: 0 0 0.35rem;
   font-size: 0.875rem;
   color: var(--hz-muted);
 }
 
 .hz-wealth-stat-value {
-  margin: 0.5rem 0 0;
-  font-size: 3rem;
-  font-weight: 700;
-  color: var(--hz-ink);
-  line-height: 1;
-}
-
-.hz-fin-rows {
-  margin-top: 3rem;
-  display: flex;
-  flex-direction: column;
-}
-
-.hz-fin-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  padding: 1rem 0;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.hz-fin-row-label {
-  font-size: 1.0625rem;
-  font-weight: 300;
-  color: var(--hz-muted);
-}
-
-.hz-fin-row-value {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--hz-ink);
-}
-
-/* ── P4 Engineering Wow ──────────────────────────────────────────────────── */
-.hz-eng-wow-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 5rem;
-  align-items: start;
-}
-
-.hz-eng-wow-title {
-  margin: 0;
-  font-size: clamp(3.5rem, 10vw, 4.5rem);
-  font-weight: 900;
-  line-height: 1.05;
-  color: var(--hz-ink);
-}
-
-.hz-eng-wow-metrics {
-  display: flex;
-  flex-direction: column;
-  gap: 2.5rem;
-  border-left: 1px solid var(--hz-border);
-  padding-left: 2.5rem;
-}
-
-.hz-eng-wow-metric-label {
-  margin: 0 0 0.35rem;
-  font-size: 0.9375rem;
-  color: var(--hz-muted);
-}
-
-.hz-eng-wow-metric-value {
   margin: 0;
   font-size: 2.25rem;
   font-weight: 700;
-  color: var(--hz-ink);
-  line-height: 1;
+  color: var(--hz-obsidian);
 }
 
-/* ── P5 Architecture table ───────────────────────────────────────────────── */
-.hz-arch-table {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.hz-arch-row {
-  display: grid;
-  grid-template-columns: 1.2fr 1.5fr 0.8fr;
-  align-items: center;
-  gap: 1.5rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.hz-arch-row:last-child {
-  border-bottom: none;
-}
-
-.hz-arch-item {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--hz-ink);
-}
-
-.hz-arch-detail {
-  font-size: 1rem;
-  font-style: italic;
-  font-weight: 300;
-  color: var(--hz-muted);
-}
-
-.hz-arch-war {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--hz-teal);
-  text-align: right;
-}
-
-/* ── P6 Subsidy dark ─────────────────────────────────────────────────────── */
-.hz-subsidy-dark {
+/* ── P04 Blueprint ───────────────────────────────────────────────────────── */
+.hz-blueprint {
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: calc(297mm - 50mm);
-}
-
-.hz-subsidy-dark-kicker {
-  margin: 0;
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.35em;
-  color: var(--hz-teal);
-}
-
-.hz-subsidy-dark-title {
-  margin: 1.5rem 0 3rem;
-  font-size: clamp(4.5rem, 13vw, 6rem);
-  font-weight: 900;
-  line-height: 0.95;
-  color: #fff;
-}
-
-.hz-subsidy-dark-amount {
-  margin: 0;
-  font-size: clamp(2rem, 6vw, 3rem);
-  font-weight: 300;
-  color: #fff;
-  line-height: 1.4;
-}
-
-.hz-subsidy-dark-amount strong {
-  font-weight: 700;
-  color: var(--hz-teal);
-}
-
-/* ── P7 Journey timeline ───────────────────────────────────────────────────── */
-.hz-journey {
-  display: flex;
-  flex-direction: column;
-  gap: 3rem;
-}
-
-.hz-journey-step {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-}
-
-.hz-journey-num {
-  flex-shrink: 0;
-  font-size: 3.75rem;
-  font-weight: 900;
-  line-height: 1;
-  color: #e5e7eb;
-}
-
-.hz-journey-title {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--hz-ink);
-}
-
-.hz-journey-desc {
-  margin: 0.25rem 0 0;
-  font-size: 0.9375rem;
-  font-weight: 300;
-  color: var(--hz-muted);
-}
-
-/* ── P8 Warranty Matrix grid ─────────────────────────────────────────────── */
-.hz-warranty-intro {
-  margin: 0 0 2.5rem;
-  font-size: 1.0625rem;
-  font-weight: 300;
-  color: var(--hz-muted);
-  max-width: 48ch;
-  line-height: 1.6;
-}
-
-.hz-warranty-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.25rem;
-  margin-bottom: 2.5rem;
-}
-
-.hz-warranty-box {
-  padding: 1.75rem 1.25rem;
-  background: var(--hz-gray-bg);
-  border: 1px solid #e5e7eb;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 7rem;
-}
-
-.hz-warranty-box-value {
-  font-size: 2rem;
-  font-weight: 900;
-  color: var(--hz-teal);
-  line-height: 1;
-}
-
-.hz-warranty-box-unit {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--hz-muted);
-  margin-top: 0.35rem;
-}
-
-.hz-warranty-box-label {
-  margin-top: 0.75rem;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--hz-ink);
-  line-height: 1.3;
-}
-
-.hz-warranty-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.8125rem;
-}
-
-.hz-warranty-table th,
-.hz-warranty-table td {
-  padding: 0.625rem 0.75rem;
-  text-align: left;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.hz-warranty-table th {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--hz-muted);
-}
-
-/* ── P9 Terms — Legal Art ────────────────────────────────────────────────── */
-.hz-terms-art {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.hz-terms-columns {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3rem;
-  flex: 1;
-}
-
-.hz-terms-block {
-  display: flex;
-  flex-direction: column;
-}
-
-.hz-terms-block-title {
-  margin: 0 0 1.25rem;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.25em;
-  color: var(--hz-teal);
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.hz-terms-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-}
-
-.hz-terms-item {
-  font-size: 0.6875rem;
-  font-weight: 400;
-  line-height: 1.85;
-  color: var(--hz-muted);
-  padding-left: 0.85rem;
-  position: relative;
-}
-
-.hz-terms-item::before {
-  content: "—";
-  position: absolute;
-  left: 0;
-  color: var(--hz-teal);
-  font-weight: 600;
-}
-
-.hz-terms-para {
-  margin: 0 0 1rem;
-  font-size: 0.6875rem;
-  font-weight: 400;
-  line-height: 1.9;
-  color: var(--hz-muted);
-}
-
-/* ── P10 Eco (optional wow) ───────────────────────────────────────────────── */
-.hz-eco-wow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3rem;
+  gap: 0;
   margin-top: 2rem;
 }
 
-.hz-eco-value {
-  margin: 0;
-  font-size: clamp(3.5rem, 10vw, 5rem);
-  font-weight: 900;
-  line-height: 1;
-  color: var(--hz-teal);
+.hz-blueprint-layer {
+  display: grid;
+  grid-template-columns: 3rem 1fr auto;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.75rem 0;
+  border-bottom: 1px solid var(--hz-border);
 }
 
-.hz-eco-label {
-  display: block;
-  margin-top: 0.75rem;
+.hz-blueprint-layer:last-child {
+  border-bottom: none;
+}
+
+.hz-blueprint-num {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--hz-cobalt);
+  letter-spacing: 0.1em;
+}
+
+.hz-blueprint-name {
+  margin: 0;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--hz-obsidian);
+}
+
+.hz-blueprint-spec {
+  margin: 0;
   font-size: 0.875rem;
+  font-weight: 300;
+  color: var(--hz-muted);
+  text-align: right;
+}
+
+/* ── P05 Engineering art ───────────────────────────────────────────────────── */
+.hz-eng-art {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hz-eng-duo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  margin-top: 3rem;
+}
+
+.hz-eng-stat-label {
+  margin: 0 0 0.5rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.25em;
+  color: var(--hz-cobalt);
+}
+
+.hz-eng-stat-value {
+  margin: 0;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(4rem, 12vw, 6rem);
+  font-weight: 900;
+  line-height: 1;
+  color: var(--hz-obsidian);
+}
+
+.hz-eng-city {
+  margin: 3rem 0 0;
+  font-size: 1.125rem;
+  font-weight: 300;
+  color: var(--hz-muted);
+  max-width: 40ch;
+  line-height: 1.65;
+}
+
+/* ── P06 Hardware DNA ──────────────────────────────────────────────────────── */
+.hz-dna-list {
+  margin-top: 2.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.hz-dna-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--hz-border);
+  font-size: 0.9375rem;
+}
+
+.hz-dna-row:last-child {
+  border-bottom: none;
+}
+
+.hz-dna-label {
+  font-weight: 500;
+  color: var(--hz-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.6875rem;
+}
+
+.hz-dna-value {
+  font-weight: 600;
+  color: var(--hz-obsidian);
+  text-align: right;
+}
+
+/* ── P07 Fiscal Impact ─────────────────────────────────────────────────────── */
+.hz-fiscal {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hz-fiscal-amount {
+  margin: 2rem 0 0;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(4rem, 12vw, 5.5rem);
+  font-weight: 900;
+  line-height: 1;
+  color: var(--hz-white);
+}
+
+.hz-fiscal-caption {
+  margin: 1.5rem 0 0;
+  font-size: 1.375rem;
+  font-weight: 300;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.75);
+  max-width: 28ch;
+  line-height: 1.5;
+}
+
+/* ── P08 Carbon Legacy ─────────────────────────────────────────────────────── */
+.hz-carbon {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.hz-carbon-num {
+  margin: 0;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(7rem, 22vw, 9.375rem);
+  font-weight: 900;
+  line-height: 1;
+  color: var(--hz-obsidian);
+  letter-spacing: -0.03em;
+}
+
+.hz-carbon-caption {
+  margin: 2rem 0 0;
+  font-size: 1.125rem;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--hz-muted);
+  max-width: 22ch;
+  line-height: 1.5;
+}
+
+/* ── P09 Process ───────────────────────────────────────────────────────────── */
+.hz-process {
+  margin-top: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.hz-process-step {
+  display: flex;
+  align-items: baseline;
+  gap: 2rem;
+}
+
+.hz-process-num {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--hz-cobalt);
   letter-spacing: 0.15em;
+}
+
+.hz-process-title {
+  margin: 0;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--hz-obsidian);
+}
+
+/* ── P10 Terms as Art ──────────────────────────────────────────────────────── */
+.hz-terms-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.hz-terms-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3.5rem;
+  flex: 1;
+  margin-top: 2rem;
+}
+
+.hz-terms-col-title {
+  margin: 0 0 1.5rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  color: var(--hz-cobalt);
+}
+
+.hz-terms-block {
+  text-align: justify;
+}
+
+.hz-terms-item {
+  margin: 0 0 1rem;
+  font-size: 0.625rem;
+  font-weight: 400;
+  line-height: 2;
   color: var(--hz-muted);
 }
 
-/* ── P11 Closing Statement ───────────────────────────────────────────────── */
-.hz-closing {
+/* ── P11 Signature ───────────────────────────────────────────────────────── */
+.hz-finale {
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: calc(297mm - 50mm);
 }
 
-.hz-closing-quote {
+.hz-finale-title {
   margin: 0;
+  font-family: "Playfair Display", Georgia, serif;
   font-size: clamp(2.5rem, 7vw, 3.5rem);
-  font-weight: 300;
-  font-style: italic;
-  line-height: 1.25;
-  color: var(--hz-slate);
-  max-width: 16ch;
-}
-
-.hz-closing-quote em {
-  font-style: normal;
   font-weight: 900;
-  color: var(--hz-teal);
-  display: block;
+  font-style: italic;
+  line-height: 1.15;
+  color: var(--hz-obsidian);
+  max-width: 14ch;
 }
 
-.hz-closing-meta {
-  margin-top: 3rem;
+.hz-finale-sub {
+  margin: 1.5rem 0 0;
   font-size: 0.875rem;
   font-weight: 300;
   color: var(--hz-muted);
-  line-height: 1.6;
+  max-width: 42ch;
+  line-height: 1.65;
 }
 
-.hz-sign-area {
+.hz-sign-block {
   margin-top: auto;
   padding-top: 3rem;
 }
 
-.hz-sign-grid {
+.hz-sign-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4rem;
+  margin-bottom: 2.5rem;
 }
 
 .hz-sign-label {
   display: block;
-  font-size: 0.625rem;
-  font-weight: 600;
+  margin-bottom: 3rem;
+  font-size: 0.5625rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.3em;
   color: var(--hz-muted);
-  margin-bottom: 3.5rem;
 }
 
 .hz-sign-line {
   display: block;
-  border-bottom: 1.5px solid var(--hz-ink);
-  padding-bottom: 0.5rem;
-  font-size: 0.9375rem;
-  font-weight: 300;
-  color: var(--hz-muted);
-  min-height: 2rem;
+  border-bottom: 1.5px solid var(--hz-obsidian);
+  min-height: 1.75rem;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--hz-obsidian);
 }
 
 /* ── Print ─────────────────────────────────────────────────────────────────── */
@@ -686,11 +566,13 @@
     break-after: auto;
   }
 
-  .hz-page--dark {
-    background: var(--hz-dark) !important;
+  .hz-page--obsidian {
+    background: var(--hz-obsidian) !important;
+    color: #fff !important;
   }
 
-  .hz-page--gray {
-    background: var(--hz-gray-bg) !important;
+  .hz-page--cobalt {
+    background: var(--hz-cobalt) !important;
+    color: #fff !important;
   }
 }

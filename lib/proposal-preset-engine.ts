@@ -183,8 +183,7 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
   residential_horizon: {
     id: "residential_horizon",
     label: "Horizon",
-    description:
-      "Luxury A4 masterplan — SOLAR MASTER PLAN cover, magazine philosophy, return journey, engineering, subsidy, eco-retention & commitment.",
+    description: "Solar Monolith — Obsidian & Cobalt · hero editorial pacing · 11-page wow workflow.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "requirement",

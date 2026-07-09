@@ -102,7 +102,7 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
     presetId: "residential_horizon",
     category: "residential",
     name: "Horizon",
-    description: "Luxury A4 masterplan — SOLAR MASTER PLAN cover, magazine philosophy & return journey.",
+    description: "Solar Monolith — Obsidian & Cobalt editorial · ENERGY ARCHITECT · 11-page wow workflow.",
     thumbnailVariant: "horizon",
   },
   {
