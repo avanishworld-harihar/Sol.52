@@ -126,6 +126,13 @@ import {
   HorizonGoldenTerms,
   HorizonGoldenWarranty,
 } from "@/components/proposal/blocks/horizon-golden/horizon-golden-blocks";
+import {
+  EmberGoldenBill,
+  EmberGoldenCover,
+  EmberGoldenEconomics,
+  EmberGoldenExecution,
+  EmberGoldenRequirement,
+} from "@/components/proposal/blocks/ember-golden/ember-golden-blocks";
 import "@/components/proposal/blocks/aurora/aurora-proposal.css";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -171,6 +178,24 @@ function resolveSalesPremiumRenderKey(
         return "horizon_golden_terms";
       case "financial_summary":
         return "horizon_golden_closing";
+      default:
+        return defaultKey;
+    }
+  }
+
+  if (style === "savings_focus") {
+    switch (blockId) {
+      case "cover_page":
+        return "ember_golden_cover";
+      case "bill_intelligence":
+        return "ember_golden_bill";
+      case "system_requirements":
+        return "ember_golden_requirement";
+      case "roi_savings":
+      case "investment_summary":
+        return "ember_golden_economics";
+      case "payment_terms":
+        return "ember_golden_execution";
       default:
         return defaultKey;
     }
@@ -594,6 +619,17 @@ export function renderBlockByKey(
     case "horizon_golden_closing":
       return <HorizonGoldenClosing ctx={ctx} />;
 
+    case "ember_golden_cover":
+      return <EmberGoldenCover ctx={ctx} />;
+    case "ember_golden_bill":
+      return <EmberGoldenBill ctx={ctx} />;
+    case "ember_golden_requirement":
+      return <EmberGoldenRequirement ctx={ctx} />;
+    case "ember_golden_economics":
+      return <EmberGoldenEconomics ctx={ctx} />;
+    case "ember_golden_execution":
+      return <EmberGoldenExecution ctx={ctx} />;
+
     default:
       return null;
   }
@@ -742,7 +778,7 @@ function ProposalWebRendererInner({
     presetId === "residential_sales_premium" ? resolveSalesPremiumStyle(rawInput) : null;
 
   const horizonGoldenModel = useMemo(() => {
-    if (salesPremiumStyle !== "journey") return null;
+    if (salesPremiumStyle !== "journey" && salesPremiumStyle !== "savings_focus") return null;
     return transformToEditorialModel(rawInput, summary);
   }, [salesPremiumStyle, rawInput, summary]);
 
@@ -832,6 +868,7 @@ function ProposalWebRendererInner({
   const eligibilityCtx = { billAuditBacked, presetId, showSurveySection: showSurveyWorkflowSection };
   const isSalesPremium = presetId === "residential_sales_premium";
   const isAurora = presetId === "residential_aurora";
+  const isEmber = salesPremiumStyle === "savings_focus";
 
   type PageEntry = {
     blockId: ProposalBlockId;
@@ -896,7 +933,7 @@ function ProposalWebRendererInner({
       <div
         className={`proposal-document ${PROPOSAL_PREMIUM_DOC_CLASS} proposal-journey-connected proposal-responsive-doc mx-auto w-full max-w-[210mm] px-4 pb-32 pt-6 sm:px-8 sm:pt-10 print:max-w-none print:p-0 print:pb-0 transition-colors duration-300 ${
           isAurora ? "proposal-document--aurora " : ""
-        }${
+        }${isEmber ? "proposal-document--ember " : ""}${
           lang === "hi" ? "lang-hi " : ""
         }${darkMode ? "text-white" : ""}`}
         data-theme={darkMode ? "dark" : "light"}
@@ -909,6 +946,7 @@ function ProposalWebRendererInner({
             showSurvey={showSurveyWorkflowSection}
             billAuditBacked={billAuditBacked}
             presetId={presetId}
+            salesPremiumStyle={salesPremiumStyle}
             className="flex-1 min-w-0"
           />
         </div>

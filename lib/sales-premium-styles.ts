@@ -38,8 +38,8 @@ const JOURNEY_APPENDIX_BLOCKS: ProposalBlockId[] = [
 const SAVINGS_FOCUS_BLOCKS: ProposalBlockId[] = [
   "cover_page",
   "bill_intelligence",
+  "system_requirements",
   "roi_savings",
-  "investment_summary",
   "payment_terms",
 ];
 
@@ -86,7 +86,7 @@ export const SALES_PREMIUM_STYLE_REGISTRY: Record<SalesPremiumStyleId, SalesPrem
   savings_focus: {
     id: "savings_focus",
     label: "Ember",
-    subtitle: "Short deck — bill, ROI hero, investment, payment.",
+    subtitle: "Golden content — compact dark savings deck.",
     renderer: "web_blocks",
     flowBlocks: SAVINGS_FOCUS_BLOCKS,
     appendixBlocks: [],

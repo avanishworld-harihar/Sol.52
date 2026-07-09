@@ -89,7 +89,13 @@ export type BlockRenderKey =
   | "horizon_golden_warranty"
   | "horizon_golden_execution"
   | "horizon_golden_terms"
-  | "horizon_golden_closing";
+  | "horizon_golden_closing"
+  /** Ember (savings_focus) — Golden editorial content, dark compact styling */
+  | "ember_golden_cover"
+  | "ember_golden_bill"
+  | "ember_golden_requirement"
+  | "ember_golden_economics"
+  | "ember_golden_execution";
 
 export type WebBlockMeta = {
   /** Value for `data-page` attribute on the `.proposal-page` wrapper div. */

@@ -103,7 +103,7 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
     salesPremiumStyle: "savings_focus",
     category: "residential",
     name: "Ember",
-    description: "Short savings-first deck — bill, ROI, and investment.",
+    description: "Golden editorial content — compact dark savings deck.",
     thumbnailVariant: "ember",
   },
   {

@@ -274,16 +274,61 @@
   font-weight: 600 !important;
 }
 
-/* Tone overrides — single ink palette for colored stat tones */
-.proposal-doc-premium .text-sky-700,
-.proposal-doc-premium .text-emerald-700,
-.proposal-doc-premium .text-emerald-800,
-.proposal-doc-premium .text-rose-700,
-.proposal-doc-premium .text-sky-400,
-.proposal-doc-premium .text-emerald-300,
-.proposal-doc-premium .text-emerald-400,
-.proposal-doc-premium .text-amber-500 {
+/* Tone overrides — single ink palette for colored stat tones (not Ember dark deck) */
+.proposal-doc-premium:not(.proposal-document--ember) .text-sky-700,
+.proposal-doc-premium:not(.proposal-document--ember) .text-emerald-700,
+.proposal-doc-premium:not(.proposal-document--ember) .text-emerald-800,
+.proposal-doc-premium:not(.proposal-document--ember) .text-rose-700,
+.proposal-doc-premium:not(.proposal-document--ember) .text-sky-400,
+.proposal-doc-premium:not(.proposal-document--ember) .text-emerald-300,
+.proposal-doc-premium:not(.proposal-document--ember) .text-emerald-400,
+.proposal-doc-premium:not(.proposal-document--ember) .text-amber-500 {
   color: var(--pp-ink) !important;
+}
+
+/* Ember — dark savings deck with Golden content */
+.proposal-doc-premium.proposal-document--ember {
+  --pp-canvas: #0f172a;
+  --pp-surface: #1e293b;
+  --pp-border: #334155;
+  --pp-ink: #f8fafc;
+}
+
+.proposal-doc-premium.proposal-document--ember,
+.proposal-doc-premium.proposal-document--ember[data-theme="dark"] {
+  background: #0f172a !important;
+  color: #f8fafc;
+}
+
+.proposal-doc-premium.proposal-document--ember .proposal-page {
+  background: transparent !important;
+  border-color: #334155 !important;
+}
+
+.proposal-doc-premium.proposal-document--ember .proposal-journey-progress {
+  border-color: #334155 !important;
+  background: #1e293b !important;
+}
+
+.proposal-doc-premium.proposal-document--ember .proposal-journey-progress-link {
+  color: #94a3b8 !important;
+}
+
+.proposal-doc-premium.proposal-document--ember .proposal-journey-progress-link:hover {
+  background: #334155 !important;
+  color: #f8fafc !important;
+}
+
+.proposal-doc-premium.proposal-document--ember .proposal-journey-kicker {
+  color: #34d399 !important;
+}
+
+.proposal-doc-premium.proposal-document--ember .proposal-journey-title {
+  color: #f8fafc !important;
+}
+
+.proposal-doc-premium.proposal-document--ember .proposal-journey-subtitle {
+  color: #94a3b8 !important;
 }
 
 /* Print + B&W — bank submission ready */

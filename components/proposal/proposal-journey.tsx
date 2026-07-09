@@ -3,6 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import type { SalesPremiumStyleId } from "@/lib/sales-premium-styles";
 
 const JOURNEY_STEPS_BILL = [
   { id: "cover", label: "Start" },
@@ -53,6 +54,20 @@ const JOURNEY_STEPS_AURORA_REQ = [
   { id: "customer-documents", label: "Docs" },
 ] as const;
 
+const JOURNEY_STEPS_EMBER_BILL = [
+  { id: "cover", label: "Start" },
+  { id: "bill-audit", label: "Bill" },
+  { id: "economics", label: "ROI" },
+  { id: "commercial", label: "Pay" },
+] as const;
+
+const JOURNEY_STEPS_EMBER_REQ = [
+  { id: "cover", label: "Start" },
+  { id: "system-requirement", label: "Design" },
+  { id: "economics", label: "ROI" },
+  { id: "commercial", label: "Pay" },
+] as const;
+
 const JOURNEY_STEPS_SALES_PREMIUM_BILL = [
   { id: "cover", label: "Start" },
   { id: "bill-audit", label: "Your bill" },
@@ -79,19 +94,25 @@ export function ProposalJourneyProgress({
   showSurvey,
   billAuditBacked = true,
   presetId,
+  salesPremiumStyle,
   className
 }: {
   showSurvey?: boolean;
   /** When false, bill audit + economics nav items are replaced by system design. */
   billAuditBacked?: boolean;
   presetId?: string;
+  salesPremiumStyle?: SalesPremiumStyleId | null;
   className?: string;
 }) {
   const base =
     presetId === "residential_sales_premium"
-      ? billAuditBacked
-        ? JOURNEY_STEPS_SALES_PREMIUM_BILL
-        : JOURNEY_STEPS_SALES_PREMIUM_REQ
+      ? salesPremiumStyle === "savings_focus"
+        ? billAuditBacked
+          ? JOURNEY_STEPS_EMBER_BILL
+          : JOURNEY_STEPS_EMBER_REQ
+        : billAuditBacked
+          ? JOURNEY_STEPS_SALES_PREMIUM_BILL
+          : JOURNEY_STEPS_SALES_PREMIUM_REQ
       : presetId === "residential_aurora"
         ? billAuditBacked
           ? JOURNEY_STEPS_AURORA_BILL
