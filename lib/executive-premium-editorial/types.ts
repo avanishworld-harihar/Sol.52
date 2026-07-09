@@ -119,6 +119,8 @@ export type ExecutivePremiumEditorialModel = {
     subsidy_inr: number;
     net_cost_inr: number;
     payback_years: number;
+    monthly_savings_inr: number;
+    lifetime_profit_inr: number;
     emi_rows: EditorialEmiRow[];
   };
   impact: {

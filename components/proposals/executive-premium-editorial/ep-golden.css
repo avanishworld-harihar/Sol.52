@@ -622,6 +622,120 @@
   margin: 15px 0;
 }
 
+/* ROI journey hero — Invest → Monthly Save → Recover → 25 Year Profit */
+.ep-golden-root .ep-gl-roi-journey {
+  margin: 22px 0 28px;
+  padding: 28px 32px 24px;
+  border: 1px solid var(--ep-gl-border-gold);
+  background: linear-gradient(165deg, #fffdf8 0%, #faf8f3 48%, #f5f1e8 100%);
+  box-shadow: 0 12px 40px rgba(17, 30, 56, 0.06);
+}
+
+.ep-golden-root .ep-gl-roi-journey-kicker {
+  margin: 0 0 20px;
+  font-size: 8pt;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ep-gl-gold);
+  text-align: center;
+}
+
+.ep-golden-root .ep-gl-roi-journey-steps {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+
+.ep-golden-root .ep-gl-roi-journey-step-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ep-golden-root .ep-gl-roi-journey-step {
+  width: 100%;
+  text-align: center;
+  padding: 18px 20px 16px;
+  border: 1px solid var(--ep-gl-border-muted);
+  background: #ffffff;
+  border-radius: 2px;
+}
+
+.ep-golden-root .ep-gl-roi-journey-step--highlight {
+  border-color: var(--ep-gl-gold);
+  background: linear-gradient(180deg, #fffef9 0%, #f8f4ea 100%);
+  box-shadow: inset 0 0 0 1px rgba(181, 154, 87, 0.15);
+}
+
+.ep-golden-root .ep-gl-roi-journey-label {
+  margin: 0 0 8px;
+  font-size: 8.5pt;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ep-gl-text-muted);
+}
+
+.ep-golden-root .ep-gl-roi-journey-step--highlight .ep-gl-roi-journey-label {
+  color: var(--ep-gl-gold);
+}
+
+.ep-golden-root .ep-gl-roi-journey-value {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 26pt;
+  line-height: 1.05;
+  font-weight: 400;
+  color: var(--ep-gl-ink);
+  letter-spacing: -0.02em;
+}
+
+.ep-golden-root .ep-gl-roi-journey-step--highlight .ep-gl-roi-journey-value {
+  font-size: 30pt;
+  color: #0d7a55;
+}
+
+.ep-golden-root .ep-gl-roi-journey-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  font-size: 16pt;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--ep-gl-gold);
+  user-select: none;
+}
+
+.ep-golden-root .ep-gl-roi-journey-foot {
+  margin: 20px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--ep-gl-border-gold);
+  text-align: center;
+  font-size: 9.5pt;
+  line-height: 1.5;
+  color: var(--ep-gl-text-secondary);
+}
+
+.ep-golden-root .ep-gl-economics-detail {
+  margin-top: 8px;
+}
+
+.ep-golden-root .ep-gl-economics-detail-title {
+  margin: 0 0 18px;
+  font-size: 8pt;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ep-gl-text-muted);
+}
+
+.ep-golden-root .ep-gl-col-right .ep-gl-emi-container {
+  margin-top: 0;
+}
+
 .ep-golden-root .ep-gl-emi-container {
   background-color: #ffffff;
   border: 1px solid var(--ep-gl-line);

@@ -126,6 +126,8 @@ export function transformToEditorialModel(
       subsidy_inr: summary.pmSubsidy,
       net_cost_inr: summary.netCost,
       payback_years: Math.round(summary.paybackYears * 10) / 10,
+      monthly_savings_inr: Math.round(summary.annualSaving / 12),
+      lifetime_profit_inr: summary.lifetime25Profit,
       emi_rows,
     },
     impact: {

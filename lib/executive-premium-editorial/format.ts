@@ -16,6 +16,14 @@ export function fmtLakhsShort(n: number): string {
   return (n / 100000).toFixed(1);
 }
 
+/** ₹12.5 Lakh style for lifetime ROI hero. */
+export function fmtLifetimeBenefitInr(n: number): string {
+  const x = Math.round(n);
+  if (x >= 10_000_000) return `₹${(x / 10_000_000).toFixed(2)} Cr`;
+  if (x >= 100_000) return `₹${fmtLakhsShort(x)} Lakh`;
+  return fmtInrSpaced(x);
+}
+
 export type WarrantyTone = "green" | "blue" | "copper" | "muted";
 
 export function warrantyTone(warranty: string): WarrantyTone {
