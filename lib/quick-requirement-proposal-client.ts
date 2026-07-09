@@ -34,6 +34,9 @@ export function resolveQuickQuotePresetOptions(): {
   if (presetId === "residential_solstice") {
     return { presetId, galleryThemeKey: "solstice" };
   }
+  if (presetId === "residential_energy_freedom") {
+    return { presetId, galleryThemeKey: "freedom" };
+  }
   return { presetId };
 }
 

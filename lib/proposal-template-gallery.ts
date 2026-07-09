@@ -69,6 +69,15 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
     thumbnailVariant: "solstice",
   },
   {
+    key: "freedom",
+    presetId: "residential_energy_freedom",
+    category: "residential",
+    name: "Freedom",
+    description:
+      "Dark navy & gold — ENERGY FREEDOM cover, wealth map, investment & full system story.",
+    thumbnailVariant: "freedom",
+  },
+  {
     key: "pearl",
     presetId: "residential_sales_premium",
     salesPremiumStyle: "pearl",
@@ -172,6 +181,7 @@ export function resolveActiveGalleryKey(
 ): ProposalTemplateGalleryKey {
   if (presetId === "residential_executive") return "golden";
   if (presetId === "residential_solstice") return "solstice";
+  if (presetId === "residential_energy_freedom") return "freedom";
   if (presetId === "residential_bank_loan") return "ledger";
   if (presetId === "residential_smart") return "classic";
   if (presetId === "residential_sales_premium") {

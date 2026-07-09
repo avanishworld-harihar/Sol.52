@@ -22,9 +22,11 @@ export function resolveResidentialThemeKey(input: {
   if (input.galleryKey === "horizon") return "horizon";
   if (input.galleryKey === "ember") return "ember";
   if (input.galleryKey === "solstice") return "solstice";
+  if (input.galleryKey === "freedom") return "freedom";
 
   const preset = input.presetId;
   if (preset === "residential_solstice") return "solstice";
+  if (preset === "residential_energy_freedom") return "freedom";
   if (preset === "residential_aurora") return "solstice";
   if (preset === "residential_smart") return "classic";
   if (preset === "residential_bank_loan") return "ledger";

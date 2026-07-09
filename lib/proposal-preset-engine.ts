@@ -41,6 +41,7 @@ export const PROPOSAL_PRESET_IDS = [
   "residential_bank_loan",
   "residential_executive",
   "residential_solstice",
+  "residential_energy_freedom",
 ] as const;
 
 export type ProposalPresetId = (typeof PROPOSAL_PRESET_IDS)[number];
@@ -159,6 +160,19 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     description:
       "Modern scroll masterplan — hero stats, investment waterfall, green impact, engineering specs, " +
       "component cards, warranty matrix & execution. Synced to live proposal data.",
+    bill_requirement: "optional",
+    theme_hint: "residential",
+    default_data_source: "requirement",
+    default_blocks: [],
+    optional_blocks: [],
+  },
+
+  residential_energy_freedom: {
+    id: "residential_energy_freedom",
+    label: "Energy Freedom",
+    description:
+      "Dark navy & gold scroll masterplan — ENERGY FREEDOM cover, wealth map, investment, " +
+      "green impact, engineering, BOM, warranty & execution. Synced to live proposal data.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "requirement",

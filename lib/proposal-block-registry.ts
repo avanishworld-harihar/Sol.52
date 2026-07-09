@@ -79,6 +79,7 @@ export type PresetAffinity =
       | "residential_bank_loan"
       | "residential_executive"
       | "residential_solstice"
+      | "residential_energy_freedom"
     >;
 
 export type ProposalBlockMeta = {

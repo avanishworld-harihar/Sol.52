@@ -26,6 +26,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
       {variant === "horizon" ? <HorizonThumb size={size} /> : null}
       {variant === "ember" ? <EmberThumb size={size} /> : null}
       {variant === "solstice" ? <SolsticeThumb size={size} /> : null}
+      {variant === "freedom" ? <FreedomThumb size={size} /> : null}
       {variant === "ledger" ? <LedgerThumb size={size} /> : null}
       {variant === "classic" ? <ClassicThumb size={size} /> : null}
       {variant === "commercial" ? <CommercialThumb size={size} /> : null}
@@ -36,6 +37,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
         "horizon",
         "ember",
         "solstice",
+        "freedom",
         "ledger",
         "classic",
         "commercial",
@@ -217,6 +219,31 @@ function SolsticeThumb({ size }: { size: "card" | "preview" }) {
           <div className={cn("rounded-[2px] bg-emerald-100", pillH)} />
         </div>
         <div className={cn("mt-[6%] rounded-[2px] bg-emerald-800/90", size === "preview" ? "h-[18%]" : "h-[14%]")} />
+      </div>
+    </div>
+  );
+}
+
+function FreedomThumb({ size }: { size: "card" | "preview" }) {
+  const heroSize = size === "preview" ? "text-[10px]" : "text-[5px]";
+  const cardH = size === "preview" ? "h-[14px]" : "h-[6px]";
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-[#0A192F]">
+      <div
+        className={cn(
+          "flex flex-col rounded-[3px] border border-[#FFD700]/30 bg-[#0d2137] shadow-sm",
+          size === "preview" ? "h-[62%] w-[68%] p-[8%]" : "h-[58%] w-[72%] p-[7%]"
+        )}
+      >
+        <div className={cn("font-extrabold text-[#FFD700]", heroSize)}>FREEDOM</div>
+        <div className={cn("mt-[8%] text-[#94a3b8]", size === "preview" ? "text-[7px]" : "text-[3px]")}>
+          Wealth Map
+        </div>
+        <div className={cn("mt-[10%] grid grid-cols-3 gap-[4%]")}>
+          <div className={cn("rounded-[2px] bg-white/10", cardH)} />
+          <div className={cn("rounded-[2px] bg-white/10", cardH)} />
+          <div className={cn("rounded-[2px] bg-[#FFD700]/30", cardH)} />
+        </div>
       </div>
     </div>
   );
