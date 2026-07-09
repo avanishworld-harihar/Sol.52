@@ -2060,11 +2060,66 @@
   .ep-golden-root .ep-gl-page {
     margin: 0;
     box-shadow: none;
-    height: auto;
-    min-height: 0;
     overflow: visible;
     page-break-after: always;
     break-after: page;
+    width: 210mm;
+    min-height: 267mm;
+    height: auto;
+    box-sizing: border-box;
+  }
+
+  .ep-golden-root .ep-gl-page-body {
+    min-height: 267mm;
+    box-sizing: border-box;
+  }
+
+  .ep-golden-root .ep-gl-requirement-page {
+    min-height: 267mm;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Cover — full A4 sheet so estate location / asset profile pin to bottom in PDF */
+  .ep-golden-root .ep-gl-page--cover {
+    height: 267mm;
+    min-height: 267mm;
+    max-height: 267mm;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  .ep-golden-root .ep-gl-cover-page {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    padding: 18mm 22mm 16mm;
+    box-sizing: border-box;
+  }
+
+  .ep-golden-root .ep-gl-cover-inner {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    min-height: 100%;
+  }
+
+  .ep-golden-root .ep-gl-cover-hero {
+    flex: 1 1 auto;
+    justify-content: center;
+    padding-bottom: 6mm;
+  }
+
+  .ep-golden-root .ep-gl-cover-meta-grid {
+    margin-top: auto;
+    flex-shrink: 0;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .ep-golden-root .ep-gl-page:last-child {

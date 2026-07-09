@@ -1,3 +1,7 @@
+/**
+ * Editorial model for Golden (`residential_executive`) and read-only reuse by Ember/Horizon blocks.
+ * Do not change for other presets — see `lib/golden-proposal-lock.ts`.
+ */
 import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposal-ppt";
 import type { ProposalLang } from "@/lib/proposal-i18n";
 import { resolveInstallerNameForProposal } from "@/lib/proposal-branding-settings";
