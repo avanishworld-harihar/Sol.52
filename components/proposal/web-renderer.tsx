@@ -1006,7 +1006,7 @@ function ProposalWebRendererInner({
             <div className="proposal-page" data-page={pageDataAttr}>
               {renderBlockByKey(renderKey, ctx)}
             </div>
-            {bridgeKey && !isAurora ? (
+            {bridgeKey && !isAurora && !isEmber ? (
               <JourneyBridge
                 text={getJourneyBridgeText(
                   isSalesPremium && bridgeKey === "afterSavings" ? "afterSavingsPremium" : bridgeKey,

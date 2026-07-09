@@ -292,6 +292,38 @@
   --pp-surface: #1e293b;
   --pp-border: #334155;
   --pp-ink: #f8fafc;
+  --ember-page-pad-x: 1.25rem;
+  --ember-page-pad-y: 1.5rem;
+  --ember-stack: 1.25rem;
+  --ember-stack-lg: 1.75rem;
+  --ember-page-gap: 1.75rem;
+  --ember-content-max: 40rem;
+}
+
+@media (min-width: 640px) {
+  .proposal-doc-premium.proposal-document--ember {
+    --ember-page-pad-x: 1.75rem;
+    --ember-page-pad-y: 2rem;
+    --ember-stack: 1.5rem;
+    --ember-stack-lg: 2rem;
+    --ember-page-gap: 2.25rem;
+  }
+}
+
+.proposal-doc-premium.proposal-document--ember.proposal-responsive-doc {
+  max-width: var(--ember-content-max) !important;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+  padding-top: 1rem !important;
+  padding-bottom: 6rem !important;
+}
+
+@media (min-width: 640px) {
+  .proposal-doc-premium.proposal-document--ember.proposal-responsive-doc {
+    padding-left: 1.25rem !important;
+    padding-right: 1.25rem !important;
+    padding-top: 1.25rem !important;
+  }
 }
 
 .proposal-doc-premium.proposal-document--ember,
@@ -301,8 +333,217 @@
 }
 
 .proposal-doc-premium.proposal-document--ember .proposal-page {
-  background: transparent !important;
-  border-color: #334155 !important;
+  background: rgba(30, 41, 59, 0.55) !important;
+  border: 1px solid #334155 !important;
+  border-radius: 1rem !important;
+  padding: var(--ember-page-pad-y) var(--ember-page-pad-x) !important;
+  margin-top: 0 !important;
+  margin-bottom: var(--ember-page-gap) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22) !important;
+}
+
+.proposal-doc-premium.proposal-document--ember .proposal-page:last-child {
+  margin-bottom: 0 !important;
+}
+
+.proposal-doc-premium.proposal-document--ember .proposal-journey-section,
+.proposal-doc-premium.proposal-document--ember .ember-golden-section {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.proposal-doc-premium.proposal-document--ember .proposal-journey-header {
+  margin-bottom: var(--ember-stack-lg) !important;
+}
+
+.proposal-doc-premium.proposal-document--ember .ember-golden-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ember-stack);
+}
+
+.proposal-doc-premium.proposal-document--ember .ember-golden-stack--loose {
+  gap: var(--ember-stack-lg);
+}
+
+.proposal-doc-premium.proposal-document--ember .ember-golden-grid-3 {
+  display: grid;
+  gap: var(--ember-stack);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .proposal-doc-premium.proposal-document--ember .ember-golden-grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.proposal-doc-premium.proposal-document--ember .ember-golden-grid-2 {
+  display: grid;
+  gap: var(--ember-stack);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .proposal-doc-premium.proposal-document--ember .ember-golden-grid-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.proposal-doc-premium.proposal-document--ember .ember-golden-panel {
+  border-radius: 0.75rem;
+  border: 1px solid #334155;
+  background: rgba(15, 23, 42, 0.72);
+  padding: 1.125rem 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .proposal-doc-premium.proposal-document--ember .ember-golden-panel {
+    padding: 1.25rem 1.5rem;
+  }
+}
+
+.proposal-doc-premium.proposal-document--ember .ember-golden-panel--emerald {
+  border-color: rgba(16, 185, 129, 0.35);
+  box-shadow: inset 0 1px 0 rgba(16, 185, 129, 0.08);
+}
+
+.proposal-doc-premium.proposal-document--ember .ember-golden-panel--amber {
+  border-color: rgba(245, 158, 11, 0.35);
+  box-shadow: inset 0 1px 0 rgba(245, 158, 11, 0.08);
+}
+
+.proposal-doc-premium.proposal-document--ember .ember-golden-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.35rem;
+  min-height: 7rem;
+  padding: 0.875rem 1rem 0.625rem;
+  border-radius: 0.75rem;
+  border: 1px solid #334155;
+  background: rgba(2, 6, 23, 0.55);
+}
+
+.proposal-doc-premium.proposal-document--ember .ember-golden-table-wrap {
+  overflow-x: auto;
+  margin: 0 calc(-1 * 0.25rem);
+  padding: 0 0.25rem;
+}
+
+.proposal-doc-premium.proposal-document--ember .ember-golden-table {
+  width: 100%;
+  min-width: 18rem;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.proposal-doc-premium.proposal-document--ember .ember-golden-table th {
+  padding: 0 0.75rem 0.625rem 0;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+  border-bottom: 1px solid #334155;
+}
+
+.proposal-doc-premium.proposal-document--ember .ember-golden-table td {
+  padding: 0.5rem 0.75rem 0.5rem 0;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.65);
+  color: #cbd5e1;
+}
+
+.proposal-doc-premium.proposal-document--ember .ember-golden-table tr:last-child td {
+  border-bottom: none;
+  padding-top: 0.625rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.proposal-doc-premium.proposal-document--ember .ember-golden-label {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.proposal-doc-premium.proposal-document--ember .ember-golden-value {
+  margin-top: 0.375rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  color: #f8fafc;
+}
+
+.proposal-doc-premium.proposal-document--ember .ember-golden-value--hero {
+  font-size: clamp(2rem, 6vw, 2.75rem);
+  color: #34d399;
+}
+
+.proposal-doc-premium.proposal-document--ember .ember-golden-hint {
+  margin-top: 0.375rem;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: #64748b;
+}
+
+.proposal-doc-premium.proposal-document--ember .ember-golden-step-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.proposal-doc-premium.proposal-document--ember .ember-golden-step {
+  display: flex;
+  gap: 0.875rem;
+  align-items: flex-start;
+}
+
+.proposal-doc-premium.proposal-document--ember .ember-golden-step-num {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #fb923c;
+  background: rgba(249, 115, 22, 0.15);
+}
+
+.proposal-doc-premium.proposal-document--ember .ember-golden-divider {
+  height: 1px;
+  margin: 0.25rem 0;
+  background: #334155;
+}
+
+.proposal-doc-premium.proposal-document--ember .ember-golden-cover-title {
+  margin-top: 0.75rem;
+  font-size: clamp(1.5rem, 4.5vw, 1.875rem);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: #f8fafc;
+}
+
+.proposal-doc-premium.proposal-document--ember .ember-golden-cover-meta {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.75rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #334155;
+}
+
+@media (min-width: 640px) {
+  .proposal-doc-premium.proposal-document--ember .ember-golden-cover-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem 1.5rem;
+  }
 }
 
 .proposal-doc-premium.proposal-document--ember .proposal-journey-progress {
