@@ -14,6 +14,7 @@ import type { CommercialProposalConfig } from "@/lib/commercial-proposal-config"
 import type { ResidentialProposalConfig } from "@/lib/residential-proposal-config";
 import type { ProposalPresetId, StoryVariant } from "@/lib/proposal-preset-engine";
 import type { ProposalBrandConfig } from "@/lib/proposal-branding-settings";
+import type { ExecutivePremiumEditorialModel } from "@/lib/executive-premium-editorial/types";
 
 export type BlockRenderContext = {
   // ── Core proposal data ──────────────────────────────────────────────────
@@ -68,6 +69,9 @@ export type BlockRenderContext = {
   commercialConfig?: CommercialProposalConfig | null;
   /** Residential requirement config — track compare, pricing, solar */
   residentialConfig?: ResidentialProposalConfig | null;
+
+  /** Golden editorial content model — Horizon (journey) style only */
+  horizonGoldenModel?: ExecutivePremiumEditorialModel | null;
 };
 
 // ─── Eligibility context (subset used by the registry) ───────────────────────

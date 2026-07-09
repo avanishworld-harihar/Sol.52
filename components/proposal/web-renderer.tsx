@@ -61,7 +61,8 @@ import {
 import { JourneyBridge, ProposalJourneyProgress } from "@/components/proposal/proposal-journey";
 import { isProposalBillAuditBacked } from "@/lib/proposal-bill-audit-eligibility";
 import { PROPOSAL_PREMIUM_DOC_CLASS } from "@/lib/proposal-premium-design";
-import { resolveSalesPremiumStyle } from "@/lib/sales-premium-styles";
+import { resolveSalesPremiumStyle, type SalesPremiumStyleId } from "@/lib/sales-premium-styles";
+import { transformToEditorialModel } from "@/lib/executive-premium-editorial/transform-to-editorial-model";
 
 // ── Residential section components (re-exported from proposal-view.tsx) ───────
 import {
@@ -112,6 +113,19 @@ import { AuroraInvestment } from "@/components/proposal/blocks/aurora/aurora-inv
 import { AuroraPayment } from "@/components/proposal/blocks/aurora/aurora-payment";
 import { AuroraDocuments } from "@/components/proposal/blocks/aurora/aurora-documents";
 import { ProposalAppendixShell } from "@/components/proposal/appendix/proposal-appendix-shell";
+import {
+  HorizonGoldenBill,
+  HorizonGoldenBom,
+  HorizonGoldenClosing,
+  HorizonGoldenCover,
+  HorizonGoldenEconomics,
+  HorizonGoldenEngineering,
+  HorizonGoldenExecution,
+  HorizonGoldenImpact,
+  HorizonGoldenRequirement,
+  HorizonGoldenTerms,
+  HorizonGoldenWarranty,
+} from "@/components/proposal/blocks/horizon-golden/horizon-golden-blocks";
 import "@/components/proposal/blocks/aurora/aurora-proposal.css";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -129,8 +143,39 @@ export type ProposalWebRendererProps = {
 
 function resolveSalesPremiumRenderKey(
   blockId: ProposalBlockId,
-  defaultKey: BlockRenderKey
+  defaultKey: BlockRenderKey,
+  style: SalesPremiumStyleId | null
 ): BlockRenderKey {
+  if (style === "journey") {
+    switch (blockId) {
+      case "cover_page":
+        return "horizon_golden_cover";
+      case "bill_intelligence":
+        return "horizon_golden_bill";
+      case "system_requirements":
+        return "horizon_golden_requirement";
+      case "roi_savings":
+      case "investment_summary":
+        return "horizon_golden_economics";
+      case "warranty":
+        return "horizon_golden_impact";
+      case "technical_specifications":
+        return "horizon_golden_engineering";
+      case "bom_material_list":
+        return "horizon_golden_bom";
+      case "amc_maintenance":
+        return "horizon_golden_warranty";
+      case "payment_terms":
+        return "horizon_golden_execution";
+      case "terms_conditions":
+        return "horizon_golden_terms";
+      case "financial_summary":
+        return "horizon_golden_closing";
+      default:
+        return defaultKey;
+    }
+  }
+
   switch (blockId) {
     case "technical_specifications":
       return "technical_summary";
@@ -526,6 +571,29 @@ export function renderBlockByKey(
     case "aurora_documents":
       return <AuroraDocuments lang={lang} />;
 
+    case "horizon_golden_cover":
+      return <HorizonGoldenCover ctx={ctx} />;
+    case "horizon_golden_bill":
+      return <HorizonGoldenBill ctx={ctx} />;
+    case "horizon_golden_requirement":
+      return <HorizonGoldenRequirement ctx={ctx} />;
+    case "horizon_golden_economics":
+      return <HorizonGoldenEconomics ctx={ctx} />;
+    case "horizon_golden_impact":
+      return <HorizonGoldenImpact ctx={ctx} />;
+    case "horizon_golden_engineering":
+      return <HorizonGoldenEngineering ctx={ctx} />;
+    case "horizon_golden_bom":
+      return <HorizonGoldenBom ctx={ctx} />;
+    case "horizon_golden_warranty":
+      return <HorizonGoldenWarranty ctx={ctx} />;
+    case "horizon_golden_execution":
+      return <HorizonGoldenExecution ctx={ctx} />;
+    case "horizon_golden_terms":
+      return <HorizonGoldenTerms ctx={ctx} />;
+    case "horizon_golden_closing":
+      return <HorizonGoldenClosing ctx={ctx} />;
+
     default:
       return null;
   }
@@ -673,6 +741,11 @@ function ProposalWebRendererInner({
   const salesPremiumStyle =
     presetId === "residential_sales_premium" ? resolveSalesPremiumStyle(rawInput) : null;
 
+  const horizonGoldenModel = useMemo(() => {
+    if (salesPremiumStyle !== "journey") return null;
+    return transformToEditorialModel(rawInput, summary);
+  }, [salesPremiumStyle, rawInput, summary]);
+
   // Installer data from IR — overlay local branding (logo + name) when saved in More tab
   const branding = readProposalBrandingSettings();
   const resolvedInstallerName = resolveInstallerDisplayName(branding);
@@ -753,6 +826,7 @@ function ProposalWebRendererInner({
     storyVariant,
     commercialConfig: rawInput.commercialConfig ?? null,
     residentialConfig: parseResidentialConfig(rawInput.residentialConfig),
+    horizonGoldenModel,
   };
 
   const eligibilityCtx = { billAuditBacked, presetId, showSurveySection: showSurveyWorkflowSection };
@@ -777,7 +851,7 @@ function ProposalWebRendererInner({
       if (!isBlockEligible(blockId, eligibilityCtx)) continue;
 
       const renderKey = isSalesPremium
-        ? resolveSalesPremiumRenderKey(blockId, meta.renderKey)
+        ? resolveSalesPremiumRenderKey(blockId, meta.renderKey, salesPremiumStyle)
         : isAurora
           ? resolveAuroraRenderKey(blockId, meta.renderKey)
           : meta.renderKey;

@@ -77,7 +77,19 @@ export type BlockRenderKey =
   | "aurora_roi"
   | "aurora_investment"
   | "aurora_payment"
-  | "aurora_documents";
+  | "aurora_documents"
+  /** Horizon (journey) — Golden editorial content, Horizon journey styling */
+  | "horizon_golden_cover"
+  | "horizon_golden_bill"
+  | "horizon_golden_requirement"
+  | "horizon_golden_economics"
+  | "horizon_golden_impact"
+  | "horizon_golden_engineering"
+  | "horizon_golden_bom"
+  | "horizon_golden_warranty"
+  | "horizon_golden_execution"
+  | "horizon_golden_terms"
+  | "horizon_golden_closing";
 
 export type WebBlockMeta = {
   /** Value for `data-page` attribute on the `.proposal-page` wrapper div. */

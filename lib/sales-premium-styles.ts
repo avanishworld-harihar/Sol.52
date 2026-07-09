@@ -23,16 +23,15 @@ const JOURNEY_FLOW_BLOCKS: ProposalBlockId[] = [
   "bill_intelligence",
   "system_requirements",
   "roi_savings",
-  "investment_summary",
+  "warranty",
   "technical_specifications",
+  "bom_material_list",
   "amc_maintenance",
   "payment_terms",
 ];
 
 const JOURNEY_APPENDIX_BLOCKS: ProposalBlockId[] = [
   "terms_conditions",
-  "customer_documents_required",
-  "bom_material_list",
   "financial_summary",
 ];
 
@@ -79,7 +78,7 @@ export const SALES_PREMIUM_STYLE_REGISTRY: Record<SalesPremiumStyleId, SalesPrem
   journey: {
     id: "journey",
     label: "Horizon",
-    subtitle: "Scroll story — bill → savings → system → support → pay.",
+    subtitle: "Golden content — scroll story with Horizon styling.",
     renderer: "web_blocks",
     flowBlocks: JOURNEY_FLOW_BLOCKS,
     appendixBlocks: JOURNEY_APPENDIX_BLOCKS,

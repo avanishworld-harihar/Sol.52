@@ -56,21 +56,23 @@ const JOURNEY_STEPS_AURORA_REQ = [
 const JOURNEY_STEPS_SALES_PREMIUM_BILL = [
   { id: "cover", label: "Start" },
   { id: "bill-audit", label: "Your bill" },
-  { id: "economics", label: "Savings" },
-  { id: "investment-summary", label: "Investment" },
-  { id: "technical-bom", label: "System" },
-  { id: "amc", label: "Support" },
-  { id: "commercial", label: "Pay" },
+  { id: "economics", label: "Investment" },
+  { id: "environment", label: "Impact" },
+  { id: "technical-bom", label: "Engineering" },
+  { id: "bom", label: "Parts" },
+  { id: "amc", label: "Warranty" },
+  { id: "commercial", label: "Install" },
 ] as const;
 
 const JOURNEY_STEPS_SALES_PREMIUM_REQ = [
   { id: "cover", label: "Start" },
   { id: "system-requirement", label: "Design" },
-  { id: "economics", label: "Savings" },
-  { id: "investment-summary", label: "Investment" },
-  { id: "technical-bom", label: "System" },
-  { id: "amc", label: "Support" },
-  { id: "commercial", label: "Pay" },
+  { id: "economics", label: "Investment" },
+  { id: "environment", label: "Impact" },
+  { id: "technical-bom", label: "Engineering" },
+  { id: "bom", label: "Parts" },
+  { id: "amc", label: "Warranty" },
+  { id: "commercial", label: "Install" },
 ] as const;
 
 export function ProposalJourneyProgress({

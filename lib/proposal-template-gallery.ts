@@ -94,7 +94,7 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
     salesPremiumStyle: "journey",
     category: "residential",
     name: "Horizon",
-    description: "Scroll story — bill, savings, system, and payment flow.",
+    description: "Golden editorial content — scroll story with Horizon styling.",
     thumbnailVariant: "horizon",
   },
   {
