@@ -1,32 +1,136 @@
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700&display=swap");
+
+/* ── Solstice — isolated scroll masterplan (full-bleed, original HTML spacing) ── */
+
+#proposal-route-root:has(.solstice-proposal) {
+  background: #f8fafc !important;
+  color: #1e293b;
+}
 
 .solstice-proposal {
+  --solstice-max: 96rem;
+  --solstice-gutter: clamp(1.25rem, 3.5vw, 2rem);
+  --solstice-section-y: clamp(2.5rem, 5vw, 3.5rem);
   --solstice-primary: #0f172a;
   --solstice-accent: #f59e0b;
   --solstice-eco: #10b981;
-  font-family: var(--font-inter, Inter), system-ui, sans-serif;
+
+  width: 100%;
+  max-width: 100vw;
+  margin: 0;
+  padding: 0;
+  overflow-x: clip;
+  background: #f8fafc;
+  color: #1e293b;
+  font-family: Inter, var(--font-inter, ui-sans-serif), system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.solstice-proposal *,
+.solstice-proposal *::before,
+.solstice-proposal *::after {
+  box-sizing: border-box;
 }
 
 .solstice-proposal .heading-serif {
   font-family: "Playfair Display", Georgia, serif;
 }
 
+/* Nav */
+.solstice-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid #e2e8f0;
+  background: rgb(255 255 255 / 0.95);
+  backdrop-filter: blur(12px);
+}
+
+.solstice-nav-inner {
+  max-width: var(--solstice-max);
+  margin: 0 auto;
+  padding: 1rem var(--solstice-gutter);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/* Section rhythm — matches original px-8 / py-12 */
+.solstice-section {
+  scroll-margin-top: 5rem;
+  padding-top: var(--solstice-section-y);
+  padding-bottom: var(--solstice-section-y);
+}
+
+.solstice-section--hero {
+  padding-top: clamp(2.5rem, 5vw, 3rem);
+  padding-bottom: clamp(3rem, 6vw, 4rem);
+}
+
+.solstice-section--tight-top {
+  padding-top: 0;
+}
+
+.solstice-section--flush-bottom {
+  padding-bottom: clamp(3rem, 6vw, 5rem);
+}
+
+.solstice-section-inner {
+  max-width: var(--solstice-max);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--solstice-gutter);
+  padding-right: var(--solstice-gutter);
+  width: 100%;
+}
+
+/* Typography */
 .solstice-proposal .section-header {
-  font-size: 2.25rem;
-  line-height: 2.5rem;
+  font-size: clamp(1.75rem, 3.5vw, 2.25rem);
+  line-height: 1.15;
   font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.solstice-hero-title {
+  font-size: clamp(2.25rem, 6.5vw, 4.5rem);
+  line-height: 0.95;
+  font-weight: 700;
+  letter-spacing: -0.04em;
   color: #0f172a;
 }
 
-.solstice-proposal .proposal-card {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.solstice-proposal .metric-value {
+  font-size: clamp(1.85rem, 4.5vw, 2.75rem);
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
-.solstice-proposal .proposal-card:hover {
-  transform: translateY(-4px);
-  box-shadow:
-    0 20px 25px -5px rgb(0 0 0 / 0.1),
-    0 8px 10px -6px rgb(0 0 0 / 0.1);
+.solstice-eco-stat {
+  font-size: clamp(2.75rem, 12vw, 5.5rem);
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+/* Cards & pills */
+.solstice-proposal .proposal-card {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (hover: hover) {
+  .solstice-proposal .proposal-card:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      0 20px 25px -5px rgb(0 0 0 / 0.1),
+      0 8px 10px -6px rgb(0 0 0 / 0.1);
+  }
 }
 
 .solstice-proposal .nav-active {
@@ -34,12 +138,60 @@
   font-weight: 600;
 }
 
-.solstice-proposal .metric-value {
-  font-size: 2.75rem;
-  line-height: 1;
-  font-weight: 800;
+.solstice-proposal .stat-pill {
+  background: white;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05);
+  min-width: 0;
 }
 
+.solstice-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .solstice-stat-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+  }
+}
+
+/* Eco panel — full width inside gutter like original */
+.solstice-eco-panel {
+  border-radius: 1.5rem;
+  background: #064e3b;
+  color: white;
+  padding: clamp(2rem, 5vw, 3rem) clamp(1.5rem, 4vw, 2.5rem);
+}
+
+/* Investment cost columns */
+.solstice-investment-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .solstice-investment-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+
+  .solstice-investment-grid > div:nth-child(2),
+  .solstice-investment-grid > div:nth-child(3) {
+    border-left: 1px solid #e2e8f0;
+    padding-left: 1.5rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .solstice-investment-grid > div:not(:first-child) {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 1.25rem;
+  }
+}
+
+/* Timeline */
 .solstice-proposal .timeline-item {
   position: relative;
 }
@@ -47,19 +199,16 @@
 .solstice-proposal .timeline-item:not(:last-child)::after {
   content: "";
   position: absolute;
-  left: 1.25rem;
-  top: 3rem;
-  bottom: -1.5rem;
+  left: 0.875rem;
+  top: 2.25rem;
+  bottom: -1.25rem;
   width: 2px;
   background: #e2e8f0;
 }
 
-.solstice-proposal .stat-pill {
-  background: white;
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05);
-}
-
+/* Tables */
 .solstice-proposal .modern-table {
+  width: 100%;
   border-collapse: separate;
   border-spacing: 0;
 }
@@ -68,11 +217,45 @@
   background: #f8fafc;
   font-weight: 600;
   color: #334155;
+  white-space: nowrap;
 }
 
+.solstice-proposal .modern-table td {
+  vertical-align: top;
+}
+
+.solstice-proposal table {
+  border-collapse: collapse;
+}
+
+/* Footer */
+.solstice-footer {
+  border-top: 1px solid #e2e8f0;
+  padding: 2rem var(--solstice-gutter) 2.5rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* Print */
 @media print {
   .solstice-no-print {
     display: none !important;
+  }
+
+  #proposal-route-root:has(.solstice-proposal) {
+    background: white !important;
+  }
+
+  .solstice-proposal {
+    background: white;
+    overflow: visible;
+  }
+
+  .solstice-section {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .solstice-proposal .proposal-card {
@@ -81,7 +264,7 @@
     transform: none !important;
   }
 
-  .solstice-proposal {
-    background: white;
+  .solstice-nav {
+    display: none !important;
   }
 }

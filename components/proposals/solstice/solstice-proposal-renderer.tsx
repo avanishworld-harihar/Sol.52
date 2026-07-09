@@ -66,6 +66,32 @@ function paybackBarWidth(years: number): string {
   return `${Math.min(100, Math.max(8, Math.round((years / 10) * 100)))}%`;
 }
 
+function SolsticeSection({
+  id,
+  children,
+  className = "",
+  variant = "default",
+}: {
+  id?: string;
+  children: React.ReactNode;
+  className?: string;
+  variant?: "default" | "hero" | "tight-top" | "flush-bottom";
+}) {
+  const variantClass =
+    variant === "hero"
+      ? "solstice-section--hero"
+      : variant === "tight-top"
+        ? "solstice-section--tight-top"
+        : variant === "flush-bottom"
+          ? "solstice-section--flush-bottom"
+          : "";
+  return (
+    <section id={id} className={`solstice-section ${variantClass} ${className}`.trim()}>
+      <div className="solstice-section-inner">{children}</div>
+    </section>
+  );
+}
+
 export function SolsticeProposalRenderer({ pptInput, summary }: SolsticeProposalRendererProps) {
   const m = useMemo(() => transformToEditorialModel(pptInput, summary), [pptInput, summary]);
   const [activeNav, setActiveNav] = useState<string>(NAV_SECTIONS[0].id);
@@ -106,9 +132,9 @@ export function SolsticeProposalRenderer({ pptInput, summary }: SolsticeProposal
   const paybackPct = paybackBarWidth(m.economics.payback_years);
 
   return (
-    <div className="solstice-proposal min-h-screen bg-slate-50 text-slate-800">
-      <nav className="solstice-no-print sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-lg">
-        <div className="mx-auto max-w-screen-2xl px-4 py-4 sm:px-8">
+    <div className="solstice-proposal min-h-screen">
+      <nav className="solstice-nav solstice-no-print">
+        <div className="solstice-nav-inner">
           <div className="flex items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-x-3">
               <div className="flex shrink-0 items-center gap-x-2">
@@ -166,7 +192,7 @@ export function SolsticeProposalRenderer({ pptInput, summary }: SolsticeProposal
         </div>
       </nav>
 
-      <div className="mx-auto max-w-screen-2xl px-4 pb-16 pt-12 sm:px-8">
+      <SolsticeSection variant="hero">
         <div className="grid items-center gap-8 md:grid-cols-12">
           <div className="md:col-span-7">
             <div className="mb-6 inline-flex items-center gap-x-2 rounded-3xl border border-slate-200 bg-white px-4 py-1.5 shadow-sm">
@@ -174,7 +200,7 @@ export function SolsticeProposalRenderer({ pptInput, summary }: SolsticeProposal
               <span className="text-sm font-semibold text-emerald-600">Personalized Energy Masterplan</span>
             </div>
 
-            <h1 className="mb-4 text-5xl font-bold leading-none tracking-tighter sm:text-6xl md:text-7xl">
+            <h1 className="solstice-hero-title mb-4">
               Your roof is ready
               <br />
               <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">
@@ -235,10 +261,10 @@ export function SolsticeProposalRenderer({ pptInput, summary }: SolsticeProposal
             </div>
           </div>
         </div>
-      </div>
+      </SolsticeSection>
 
-      <div className="mx-auto max-w-screen-2xl px-4 pb-12 sm:px-8">
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+      <SolsticeSection variant="tight-top">
+        <div className="solstice-stat-grid">
           <div className="stat-pill flex items-center gap-x-4 rounded-3xl border border-slate-200 p-6">
             <Bolt className="h-10 w-10 text-amber-500" />
             <div>
@@ -268,9 +294,9 @@ export function SolsticeProposalRenderer({ pptInput, summary }: SolsticeProposal
             </div>
           </div>
         </div>
-      </div>
+      </SolsticeSection>
 
-      <div id="investment" className="mx-auto max-w-screen-2xl scroll-mt-20 px-4 py-12 sm:px-8">
+      <SolsticeSection id="investment">
         <div className="mb-8 flex items-end justify-between">
           <div>
             <div className="mb-1 text-xs font-semibold uppercase tracking-[3px] text-amber-600">02 / CAPITAL ALLOCATION</div>
@@ -285,22 +311,24 @@ export function SolsticeProposalRenderer({ pptInput, summary }: SolsticeProposal
         </div>
 
         <div className="grid gap-6 lg:grid-cols-12">
-          <div className="rounded-3xl border border-slate-200 bg-white p-8 lg:col-span-7">
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 lg:col-span-7">
+            <div className="solstice-investment-grid">
               <div>
                 <div className="text-sm text-slate-500">TOTAL SYSTEM COST</div>
-                <div className="mt-1 text-4xl font-bold">{fmtInrSpaced(m.economics.gross_cost_inr)}</div>
+                <div className="mt-1 text-3xl font-bold sm:text-4xl">{fmtInrSpaced(m.economics.gross_cost_inr)}</div>
                 <div className="mt-1 text-xs text-slate-500">Premium panels + Inverter + Installation</div>
               </div>
-              <div className="md:border-l md:pl-6">
+              <div>
                 <div className="text-sm font-medium text-emerald-600">PM SURYA GHAR SUBSIDY</div>
-                <div className="mt-1 text-4xl font-bold text-emerald-600">
+                <div className="mt-1 text-3xl font-bold text-emerald-600 sm:text-4xl">
                   {m.economics.subsidy_inr > 0 ? `- ${fmtInrSpaced(m.economics.subsidy_inr)}` : "—"}
                 </div>
               </div>
-              <div className="border-t pt-6 md:border-l md:border-t-0 md:pt-0 md:pl-6">
+              <div>
                 <div className="text-sm text-slate-500">FINAL AMOUNT YOU PAY</div>
-                <div className="mt-1 text-5xl font-extrabold text-slate-900">{fmtInrSpaced(m.economics.net_cost_inr)}</div>
+                <div className="mt-1 text-4xl font-extrabold text-slate-900 sm:text-5xl">
+                  {fmtInrSpaced(m.economics.net_cost_inr)}
+                </div>
               </div>
             </div>
           </div>
@@ -336,45 +364,44 @@ export function SolsticeProposalRenderer({ pptInput, summary }: SolsticeProposal
             )}
           </div>
         </div>
-      </div>
+      </SolsticeSection>
 
-      <div id="eco" className="mx-auto max-w-screen-2xl scroll-mt-20 px-4 py-12 sm:px-8">
-        <div className="rounded-3xl bg-emerald-900 px-4 py-12 text-white sm:px-8">
-          <div className="px-0 sm:px-8">
-            <div className="mb-2 text-xs font-semibold uppercase tracking-[3px] text-emerald-400">03 / ECOLOGICAL RETENTION</div>
-            <h2 className="mb-8 text-5xl font-bold tracking-tight">Your Green Legacy</h2>
-            <div className="grid gap-8 md:grid-cols-2">
-              <div>
-                <div className="flex items-baseline gap-x-3">
-                  <div className="text-[5.5rem] font-extrabold leading-none">{fmtInr(m.impact.co2_tons)}</div>
-                  <div>
-                    <div className="text-2xl font-semibold">Tons</div>
-                    <div className="text-emerald-400">CO₂ ELIMINATED</div>
-                  </div>
+      <SolsticeSection id="eco">
+        <div className="solstice-eco-panel">
+          <div className="mb-2 text-xs font-semibold uppercase tracking-[3px] text-emerald-400">03 / ECOLOGICAL RETENTION</div>
+          <h2 className="mb-8 text-4xl font-bold tracking-tight sm:text-5xl">Your Green Legacy</h2>
+          <div className="grid gap-8 md:grid-cols-2">
+            <div>
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <div className="solstice-eco-stat">{fmtInr(m.impact.co2_tons)}</div>
+                <div>
+                  <div className="text-2xl font-semibold">Tons</div>
+                  <div className="text-emerald-400">CO₂ ELIMINATED</div>
                 </div>
-                <p className="mt-4 max-w-md text-emerald-200">
-                  By producing your own solar power, you prevent fossil-fuel generation on your behalf over the system
-                  lifetime.
-                </p>
               </div>
-              <div>
-                <div className="flex items-baseline gap-x-3">
-                  <div className="text-[5.5rem] font-extrabold leading-none">{fmtInr(m.impact.trees)}</div>
-                  <div>
-                    <div className="text-2xl font-semibold">Trees</div>
-                    <div className="text-emerald-400">EQUIVALENT PLANTED</div>
-                  </div>
+              <p className="mt-4 max-w-md text-emerald-200">
+                By producing your own solar power, you prevent fossil-fuel generation on your behalf over the system
+                lifetime.
+              </p>
+            </div>
+            <div>
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <div className="solstice-eco-stat">{fmtInr(m.impact.trees)}</div>
+                <div>
+                  <div className="text-2xl font-semibold">Trees</div>
+                  <div className="text-emerald-400">EQUIVALENT PLANTED</div>
                 </div>
-                <p className="mt-4 max-w-md text-emerald-200">
-                  Your rooftop achieves the same ecological milestone as planting a small forest — without waiting decades.
-                </p>
               </div>
+              <p className="mt-4 max-w-md text-emerald-200">
+                Your rooftop achieves the same ecological milestone as planting a small forest — without waiting
+                decades.
+              </p>
             </div>
           </div>
         </div>
-      </div>
+      </SolsticeSection>
 
-      <div id="design" className="mx-auto max-w-screen-2xl scroll-mt-20 px-4 py-16 sm:px-8">
+      <SolsticeSection id="design">
         <div className="mb-8">
           <div className="text-xs font-semibold tracking-[3px] text-amber-600">05 / ENGINEERING DESIGN</div>
           <h2 className="section-header">Design &amp; Performance</h2>
@@ -417,9 +444,9 @@ export function SolsticeProposalRenderer({ pptInput, summary }: SolsticeProposal
             </div>
           </div>
         </div>
-      </div>
+      </SolsticeSection>
 
-      <div id="components" className="mx-auto max-w-screen-2xl scroll-mt-20 px-4 pb-16 sm:px-8">
+      <SolsticeSection id="components">
         <div className="mb-8">
           <div className="text-xs font-semibold tracking-[3px] text-amber-600">06 / HARDWARE INTELLIGENCE</div>
           <h2 className="section-header">System Components</h2>
@@ -454,9 +481,9 @@ export function SolsticeProposalRenderer({ pptInput, summary }: SolsticeProposal
             );
           })}
         </div>
-      </div>
+      </SolsticeSection>
 
-      <div className="mx-auto max-w-screen-2xl px-4 pb-16 sm:px-8">
+      <SolsticeSection>
         <div className="rounded-3xl border border-slate-200 bg-white p-8">
           <div className="mb-6">
             <div className="text-xs font-semibold tracking-[3px] text-amber-600">07 / WARRANTY &amp; ASSURANCE</div>
@@ -490,9 +517,9 @@ export function SolsticeProposalRenderer({ pptInput, summary }: SolsticeProposal
             * Physical damage, vandalism or misuse is not covered. Routine cleaning is customer&apos;s responsibility.
           </p>
         </div>
-      </div>
+      </SolsticeSection>
 
-      <div id="execution" className="mx-auto max-w-screen-2xl scroll-mt-20 px-4 pb-16 sm:px-8">
+      <SolsticeSection id="execution">
         <div className="mb-8">
           <div className="text-xs font-semibold tracking-[3px] text-amber-600">08 / EXECUTION &amp; SETTLEMENT</div>
           <h2 className="section-header">Installation Process</h2>
@@ -573,15 +600,17 @@ export function SolsticeProposalRenderer({ pptInput, summary }: SolsticeProposal
             </div>
           </div>
         </div>
-      </div>
+      </SolsticeSection>
 
-      <div className="mx-auto max-w-screen-2xl px-4 pb-20 sm:px-8">
+      <SolsticeSection variant="flush-bottom">
         <div className="rounded-3xl bg-gradient-to-br from-slate-900 to-slate-950 p-10 text-white md:p-14">
           <div className="max-w-2xl">
             <div className="mb-3 text-xs font-semibold uppercase tracking-[4px] text-amber-400">
               CONGRATULATIONS, {m.customer_name.toUpperCase()}
             </div>
-            <h2 className="mb-4 text-5xl font-bold tracking-tighter">Your roof is ready to start generating.</h2>
+            <h2 className="mb-4 text-4xl font-bold tracking-tighter sm:text-5xl">
+              Your roof is ready to start generating.
+            </h2>
             <div className="mt-8 flex flex-wrap gap-x-8 gap-y-4">
               <div>
                 <div className="text-sm text-emerald-400">ANNUAL GENERATION</div>
@@ -613,9 +642,9 @@ export function SolsticeProposalRenderer({ pptInput, summary }: SolsticeProposal
             </div>
           </div>
         </div>
-      </div>
+      </SolsticeSection>
 
-      <footer className="border-t py-8 text-center text-xs text-slate-500">
+      <footer className="solstice-footer">
         Prepared exclusively for <span className="font-semibold text-slate-700">{m.customer_name}</span> •{" "}
         {m.location_line} • {brandName} © {new Date().getFullYear()}
       </footer>
