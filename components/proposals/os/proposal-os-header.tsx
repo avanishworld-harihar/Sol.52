@@ -82,7 +82,7 @@ const PRESET_META: Record<ProposalPresetId, PresetMeta> = {
   residential_energy_freedom: {
     icon: <Sun className="h-4 w-4" />,
     label: "Freedom",
-    description: "Dark navy & gold · Energy Freedom · Wealth Map",
+    description: "White & teal A4 · ENERGY REIMAGINED · Investment Matrix",
     pillClass:
       "border-yellow-200 bg-[#0A192F]/5 text-[#0A192F] dark:border-yellow-500/30 dark:bg-yellow-900/20 dark:text-yellow-300",
     dotClass: "bg-yellow-400",

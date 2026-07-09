@@ -171,8 +171,7 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     id: "residential_energy_freedom",
     label: "Energy Freedom",
     description:
-      "Dark navy & gold scroll masterplan — ENERGY FREEDOM cover, wealth map, investment, " +
-      "green impact, engineering, BOM, warranty & execution. Synced to live proposal data.",
+      "Ultra-minimal white & teal A4 document — cover, perspective story & investment matrix.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "requirement",

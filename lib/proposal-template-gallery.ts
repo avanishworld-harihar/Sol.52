@@ -74,7 +74,7 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
     category: "residential",
     name: "Freedom",
     description:
-      "Dark navy & gold — ENERGY FREEDOM cover, wealth map, investment & full system story.",
+      "Ultra-minimal white & teal — ENERGY REIMAGINED cover, perspective story & investment matrix.",
     thumbnailVariant: "freedom",
   },
   {

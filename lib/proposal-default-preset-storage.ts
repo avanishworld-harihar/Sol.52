@@ -39,7 +39,7 @@ export const RESIDENTIAL_TEMPLATE_OPTIONS: ResidentialTemplateOption[] = [
   {
     id: "residential_energy_freedom",
     label: "Energy Freedom",
-    subtitle: "Dark navy & gold — wealth map & premium scroll story.",
+    subtitle: "White & teal A4 — ENERGY REIMAGINED · investment matrix.",
   },
   {
     id: "residential_sales_premium",

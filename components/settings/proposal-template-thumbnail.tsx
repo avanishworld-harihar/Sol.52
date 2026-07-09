@@ -226,24 +226,21 @@ function SolsticeThumb({ size }: { size: "card" | "preview" }) {
 
 function FreedomThumb({ size }: { size: "card" | "preview" }) {
   const heroSize = size === "preview" ? "text-[10px]" : "text-[5px]";
-  const cardH = size === "preview" ? "h-[14px]" : "h-[6px]";
+  const subSize = size === "preview" ? "text-[7px]" : "text-[3px]";
   return (
-    <div className="flex h-full w-full items-center justify-center bg-[#0A192F]">
+    <div className="flex h-full w-full items-center justify-center bg-[#e8edf2]">
       <div
         className={cn(
-          "flex flex-col rounded-[3px] border border-[#FFD700]/30 bg-[#0d2137] shadow-sm",
+          "flex flex-col rounded-[3px] border border-[#008080]/20 bg-white shadow-sm",
           size === "preview" ? "h-[62%] w-[68%] p-[8%]" : "h-[58%] w-[72%] p-[7%]"
         )}
       >
-        <div className={cn("font-extrabold text-[#FFD700]", heroSize)}>FREEDOM</div>
-        <div className={cn("mt-[8%] text-[#94a3b8]", size === "preview" ? "text-[7px]" : "text-[3px]")}>
-          Wealth Map
+        <div className={cn("font-black text-[#2D3748]", heroSize)}>HARIHAR</div>
+        <div className={cn("text-[#008080]/30 font-bold", size === "preview" ? "text-[14px]" : "text-[6px]")}>
+          ENERGY
         </div>
-        <div className={cn("mt-[10%] grid grid-cols-3 gap-[4%]")}>
-          <div className={cn("rounded-[2px] bg-white/10", cardH)} />
-          <div className={cn("rounded-[2px] bg-white/10", cardH)} />
-          <div className={cn("rounded-[2px] bg-[#FFD700]/30", cardH)} />
-        </div>
+        <div className={cn("font-bold text-[#2D3748]", subSize)}>REIMAGINED.</div>
+        <div className={cn("mt-[10%] h-[2px] w-full bg-[#008080]", size === "preview" ? "" : "h-[1px]")} />
       </div>
     </div>
   );
