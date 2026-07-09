@@ -1,16 +1,21 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
 
+/* ── Root background ─────────────────────────────────────────────────────── */
 #proposal-route-root:has(.ef-proposal) {
   background: #e8edf2 !important;
   color: #2d3748;
 }
 
+/* ── Design tokens ───────────────────────────────────────────────────────── */
 .ef-proposal {
   --ef-ink: #2d3748;
   --ef-teal: #008080;
-  --ef-teal-faint: rgba(0, 128, 128, 0.1);
+  --ef-teal-light: rgba(0, 128, 128, 0.1);
+  --ef-teal-mid: rgba(0, 128, 128, 0.2);
   --ef-muted: #718096;
+  --ef-faint: #f7fafc;
   --ef-border: #e2e8f0;
+  --ef-green: #276749;
   --ef-page-w: 210mm;
   --ef-page-h: 267mm;
   --ef-pad: 15mm;
@@ -32,13 +37,7 @@
   box-sizing: border-box;
 }
 
-.ef-doc {
-  max-width: var(--ef-page-w);
-  margin: 0 auto;
-  background: #ffffff;
-  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.12);
-}
-
+/* ── Toolbar ─────────────────────────────────────────────────────────────── */
 .ef-toolbar {
   max-width: var(--ef-page-w);
   margin: 0 auto 1rem;
@@ -59,11 +58,20 @@
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
 }
 
 .ef-toolbar-btn:hover {
   border-color: var(--ef-teal);
   color: var(--ef-teal);
+}
+
+/* ── Doc shell + page ────────────────────────────────────────────────────── */
+.ef-doc {
+  max-width: var(--ef-page-w);
+  margin: 0 auto;
+  background: #fff;
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.12);
 }
 
 .ef-page {
@@ -74,6 +82,7 @@
   color: var(--ef-ink);
   page-break-after: always;
   break-after: page;
+  overflow: hidden;
 }
 
 .ef-page:last-child {
@@ -81,8 +90,34 @@
   break-after: auto;
 }
 
-/* ── P1 Cover ─────────────────────────────────────────────────────────────── */
+/* ── Typography primitives ───────────────────────────────────────────────── */
+.ef-section-tag {
+  display: block;
+  margin: 0 0 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--ef-teal);
+}
 
+.ef-h1 {
+  margin: 0 0 0.75rem;
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--ef-ink);
+}
+
+.ef-lead {
+  margin: 0 0 1.75rem;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: var(--ef-muted);
+  max-width: 52ch;
+}
+
+/* ── P1: Cover ───────────────────────────────────────────────────────────── */
 .ef-cover-page {
   display: flex;
   flex-direction: column;
@@ -142,7 +177,7 @@
   font-size: clamp(4.5rem, 14vw, 7.5rem);
   font-weight: 700;
   line-height: 1;
-  color: var(--ef-teal-faint);
+  color: rgba(0, 128, 128, 0.1);
 }
 
 .ef-cover-reimagined {
@@ -153,18 +188,13 @@
   color: var(--ef-ink);
 }
 
-/* ── P2 Story ─────────────────────────────────────────────────────────────── */
-
-.ef-story-page {
-  padding-top: 2.5rem;
-  padding-bottom: 2.5rem;
-}
-
+/* ── P2: Perspective / Story ─────────────────────────────────────────────── */
 .ef-story-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4rem;
   align-items: start;
+  margin-top: 2.5rem;
 }
 
 .ef-story-left {
@@ -223,15 +253,103 @@
   color: var(--ef-ink);
 }
 
-/* ── P3 Investment Matrix ───────────────────────────────────────────────── */
-
-.ef-invest-page {
-  padding-top: 2.5rem;
-  padding-bottom: 2.5rem;
+/* ── P3: Electrical Audit ────────────────────────────────────────────────── */
+.ef-audit-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 2.5rem;
 }
 
+.ef-audit-metric-box {
+  background: var(--ef-faint);
+  border-top: 3px solid var(--ef-border);
+  padding: 1.5rem;
+}
+
+.ef-audit-metric-box--teal {
+  border-top-color: var(--ef-teal);
+}
+
+.ef-audit-metric-box--green {
+  border-top-color: var(--ef-green);
+}
+
+.ef-audit-big {
+  display: block;
+  font-size: 2.5rem;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--ef-ink);
+  margin-bottom: 0.5rem;
+}
+
+.ef-audit-big--teal { color: var(--ef-teal); }
+.ef-audit-big--green { color: var(--ef-green); }
+
+.ef-audit-metric-label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ef-ink);
+  margin-bottom: 0.25rem;
+}
+
+.ef-audit-metric-caption {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--ef-muted);
+}
+
+.ef-bill-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.ef-bill-table th {
+  padding: 0.625rem 0.75rem;
+  text-align: right;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ef-muted);
+  border-bottom: 2px solid var(--ef-ink);
+}
+
+.ef-bill-table th:first-child { text-align: left; }
+
+.ef-bill-table td {
+  padding: 0.5rem 0.75rem;
+  text-align: right;
+  border-bottom: 1px solid var(--ef-border);
+  color: var(--ef-muted);
+}
+
+.ef-bill-table td:first-child {
+  text-align: left;
+  color: var(--ef-ink);
+  font-weight: 500;
+}
+
+.ef-bill-table tr:last-child td {
+  font-weight: 700;
+  color: var(--ef-ink);
+  border-bottom: 2px solid var(--ef-ink);
+}
+
+.ef-bill-footnote {
+  margin: 0.75rem 0 0;
+  font-size: 0.75rem;
+  color: var(--ef-muted);
+}
+
+/* ── P4: Investment Matrix ───────────────────────────────────────────────── */
 .ef-invest-title {
-  margin: 0 0 5rem;
+  margin: 0 0 3rem;
   font-size: 3.75rem;
   font-weight: 700;
   line-height: 1.05;
@@ -242,72 +360,696 @@
   color: var(--ef-teal);
 }
 
-.ef-invest-rows {
-  display: flex;
-  flex-direction: column;
+.ef-roi-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  margin-bottom: 2.5rem;
+  border: 1px solid var(--ef-border);
+}
+
+.ef-roi-step {
+  padding: 1.25rem;
+  border-right: 1px solid var(--ef-border);
+}
+
+.ef-roi-step:last-child {
+  border-right: none;
+  background: var(--ef-teal);
+  color: #fff;
+}
+
+.ef-roi-step-label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ef-muted);
+  margin-bottom: 0.5rem;
+}
+
+.ef-roi-step:last-child .ef-roi-step-label {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.ef-roi-step-value {
+  display: block;
+  font-size: 1.375rem;
+  font-weight: 800;
+  color: var(--ef-ink);
+  line-height: 1.2;
+}
+
+.ef-roi-step:last-child .ef-roi-step-value {
+  color: #fff;
+}
+
+.ef-roi-step-unit {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--ef-muted);
+  margin-top: 0.2rem;
+}
+
+.ef-roi-step:last-child .ef-roi-step-unit {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.ef-invest-2col {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
   gap: 2rem;
 }
 
-.ef-invest-row {
+.ef-cost-rows {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  border: 1px solid var(--ef-border);
+}
+
+.ef-cost-row {
+  display: flex;
   justify-content: space-between;
-  gap: 1.5rem;
-  padding-bottom: 2rem;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--ef-border);
 }
 
-.ef-invest-row-label {
-  font-size: 1.5rem;
-  font-weight: 300;
-  color: var(--ef-ink);
+.ef-cost-row:last-child { border-bottom: none; }
+
+.ef-cost-row-label {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--ef-muted);
 }
 
-.ef-invest-row-value {
-  font-size: 3rem;
+.ef-cost-row-value {
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--ef-ink);
   white-space: nowrap;
 }
 
-.ef-invest-hero-box {
-  margin-top: 0.5rem;
-  padding: 3rem;
-  background: var(--ef-teal);
-  color: #fff;
+.ef-cost-row--final {
+  background: var(--ef-faint);
 }
 
-.ef-invest-hero-kicker {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 500;
+.ef-cost-row--final .ef-cost-row-label {
+  font-weight: 600;
+  color: var(--ef-ink);
+}
+
+.ef-cost-row--final .ef-cost-row-value {
+  font-size: 1.875rem;
+  color: var(--ef-teal);
+}
+
+.ef-emi-box {
+  border: 1px solid var(--ef-border);
+  padding: 1.25rem;
+}
+
+.ef-emi-box-title {
+  margin: 0 0 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.18em;
+  color: var(--ef-teal);
 }
 
-.ef-invest-hero-value {
-  margin: 0.75rem 0 0;
-  font-size: clamp(3.5rem, 10vw, 6rem);
+.ef-emi-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.ef-emi-table th {
+  text-align: left;
+  padding: 0.5rem 0;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ef-muted);
+  border-bottom: 1px solid var(--ef-border);
+}
+
+.ef-emi-table td {
+  padding: 0.625rem 0;
+  border-bottom: 1px solid var(--ef-border);
+  color: var(--ef-muted);
+  font-size: 0.9375rem;
+}
+
+.ef-emi-table td:first-child {
+  font-weight: 600;
+  color: var(--ef-ink);
+}
+
+.ef-emi-table td:last-child {
+  font-weight: 700;
+  color: var(--ef-teal);
+  text-align: right;
+}
+
+.ef-emi-table td:nth-child(2) {
+  text-align: right;
+}
+
+/* ── P5: Ecological Impact ───────────────────────────────────────────────── */
+.ef-eco-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: start;
+  margin-top: 0.5rem;
+}
+
+.ef-eco-block {
+  border-left: 4px solid var(--ef-teal);
+  padding-left: 1.5rem;
+}
+
+.ef-eco-number {
+  font-size: clamp(3.5rem, 9vw, 5rem);
   font-weight: 900;
+  line-height: 1;
+  color: var(--ef-teal);
+}
+
+.ef-eco-unit {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--ef-ink);
+  margin: 0.5rem 0 1rem;
+}
+
+.ef-eco-desc {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--ef-muted);
+}
+
+/* ── P6: Engineering ─────────────────────────────────────────────────────── */
+.ef-eng-layout {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 1.75rem;
+  margin-bottom: 2rem;
+}
+
+.ef-eng-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ef-eng-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.625rem 0.875rem;
+  border-bottom: 1px solid var(--ef-border);
+  font-size: 0.9375rem;
+}
+
+.ef-eng-row--hi {
+  background: var(--ef-faint);
+  font-weight: 600;
+}
+
+.ef-eng-row-label {
+  color: var(--ef-muted);
+}
+
+.ef-eng-row-value {
+  font-weight: 600;
+  color: var(--ef-ink);
+  text-align: right;
+}
+
+.ef-tilt-box {
+  background: var(--ef-faint);
+  border: 1px solid var(--ef-border);
+  border-top: 3px solid var(--ef-teal);
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.ef-tilt-kicker {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ef-teal);
+  margin: 0 0 0.75rem;
+}
+
+.ef-tilt-deg {
+  font-size: 4rem;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--ef-ink);
+  margin: 0;
+}
+
+.ef-tilt-note {
+  margin: 0.75rem 0 0;
+  font-size: 0.875rem;
+  color: var(--ef-muted);
+  line-height: 1.45;
+}
+
+.ef-eng-subhead {
+  margin: 0 0 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--ef-ink);
+}
+
+.ef-standards-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.ef-standards-chip {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--ef-border);
+  font-size: 0.8125rem;
+  color: var(--ef-muted);
+}
+
+.ef-phases-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.875rem;
+}
+
+.ef-phase-card {
+  background: var(--ef-faint);
+  border-left: 3px solid var(--ef-teal);
+  padding: 0.875rem 1rem;
+}
+
+.ef-phase-num {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--ef-teal);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+.ef-phase-title {
+  margin: 0 0 0.25rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--ef-ink);
+}
+
+.ef-phase-detail {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--ef-muted);
+  line-height: 1.4;
+}
+
+/* ── P7: BOM ─────────────────────────────────────────────────────────────── */
+.ef-bom-manifest {
+  width: 100%;
+}
+
+.ef-bom-row {
+  display: grid;
+  grid-template-columns: 0.4fr 0.6fr;
+  gap: 1.5rem;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--ef-border);
+}
+
+.ef-bom-row:last-child { border-bottom: none; }
+
+.ef-bom-left {}
+
+.ef-bom-comp {
+  margin: 0 0 0.25rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--ef-ink);
+}
+
+.ef-bom-brand {
+  margin: 0 0 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ef-teal);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.ef-bom-warr {
+  display: inline-block;
+  border: 1px solid var(--ef-teal);
+  padding: 0.15rem 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ef-teal);
+}
+
+.ef-bom-right {}
+
+.ef-bom-spec {
+  margin: 0 0 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--ef-ink);
+  line-height: 1.4;
+}
+
+.ef-bom-tech {
+  margin: 0 0 0.5rem;
+  padding: 0 0 0 1.1em;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--ef-muted);
+}
+
+.ef-bom-desc {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--ef-muted);
+  line-height: 1.4;
+}
+
+/* ── P8: Warranty ────────────────────────────────────────────────────────── */
+.ef-warranty-hero {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.ef-warranty-card {
+  border: 1px solid var(--ef-border);
+  border-top: 3px solid var(--ef-teal);
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.ef-warranty-card-value {
+  font-size: 2.25rem;
+  font-weight: 900;
+  color: var(--ef-teal);
   line-height: 1;
 }
 
-@media (max-width: 720px) {
-  .ef-story-grid {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-
-  .ef-invest-row {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .ef-invest-row-value {
-    font-size: 2.25rem;
-  }
+.ef-warranty-card-unit {
+  display: inline-block;
+  margin-left: 0.2rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--ef-muted);
+  text-transform: uppercase;
+  vertical-align: baseline;
 }
 
+.ef-warranty-card-label {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ef-muted);
+  line-height: 1.35;
+}
+
+.ef-warranty-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.ef-warranty-table th {
+  text-align: left;
+  padding: 0.75rem 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ef-teal);
+  border-bottom: 2px solid var(--ef-teal);
+}
+
+.ef-warranty-table td {
+  padding: 0.75rem 0.625rem;
+  border-bottom: 1px solid var(--ef-border);
+  color: var(--ef-muted);
+  vertical-align: top;
+}
+
+.ef-warranty-table td:first-child {
+  font-weight: 600;
+  color: var(--ef-ink);
+}
+
+.ef-warranty-table td.ef-green {
+  color: var(--ef-green);
+  font-weight: 600;
+}
+
+.ef-warranty-notes {
+  margin-top: 1rem;
+  font-size: 0.8125rem;
+  color: var(--ef-muted);
+  line-height: 1.5;
+}
+
+/* ── P9: Execution & Settlement ──────────────────────────────────────────── */
+.ef-exec-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+  margin-top: 0.5rem;
+}
+
+.ef-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.ef-exec-step {
+  position: relative;
+  padding-left: 3rem;
+}
+
+.ef-exec-step-num {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--ef-teal);
+  line-height: 1;
+}
+
+.ef-exec-step-title {
+  margin: 0 0 0.25rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--ef-ink);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding-top: 0.2rem;
+}
+
+.ef-exec-step-desc {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--ef-muted);
+  line-height: 1.45;
+}
+
+.ef-settlement-col {}
+
+.ef-payment-box {
+  margin-bottom: 1.5rem;
+}
+
+.ef-payment-box-title {
+  margin: 0 0 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--ef-teal);
+}
+
+.ef-payment-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.ef-payment-table tr {
+  border-bottom: 1px solid var(--ef-border);
+}
+
+.ef-payment-table td {
+  padding: 0.625rem 0;
+  color: var(--ef-muted);
+}
+
+.ef-payment-table td:last-child {
+  text-align: right;
+  font-weight: 700;
+  color: var(--ef-ink);
+}
+
+.ef-payment-final td {
+  font-weight: 800;
+  color: var(--ef-ink) !important;
+  border-top: 2px solid var(--ef-ink);
+  border-bottom: 2px solid var(--ef-ink) !important;
+}
+
+.ef-bank-box {
+  background: var(--ef-faint);
+  border-left: 3px solid var(--ef-teal);
+  padding: 1rem 1.25rem;
+}
+
+.ef-bank-box-title {
+  margin: 0 0 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--ef-teal);
+}
+
+.ef-bank-row {
+  margin: 0 0 0.35rem;
+  font-size: 0.875rem;
+  color: var(--ef-muted);
+}
+
+.ef-bank-row span {
+  font-weight: 600;
+  color: var(--ef-ink);
+}
+
+/* ── P10: Closing ────────────────────────────────────────────────────────── */
+.ef-closing-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  background: var(--ef-teal);
+  color: #fff;
+  border-top: 0;
+}
+
+.ef-closing-eyebrow {
+  margin: 0 0 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.ef-closing-title {
+  margin: 0 0 3rem;
+  font-size: clamp(1.875rem, 5vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: #fff;
+  max-width: 22ch;
+}
+
+.ef-closing-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-bottom: 3.5rem;
+}
+
+.ef-closing-stat-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 0.35rem;
+}
+
+.ef-closing-stat-value {
+  display: block;
+  font-size: clamp(2.5rem, 7vw, 3.75rem);
+  font-weight: 900;
+  line-height: 1;
+  color: #fff;
+}
+
+.ef-closing-footer {
+  margin-top: auto;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.ef-closing-company {
+  margin: 0 0 0.25rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.ef-closing-contact {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.ef-closing-print-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  background: transparent;
+  color: #fff;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.ef-closing-print-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ── Print ───────────────────────────────────────────────────────────────── */
 @media print {
   .ef-no-print {
     display: none !important;
@@ -337,7 +1079,7 @@
     print-color-adjust: exact;
   }
 
-  .ef-invest-hero-box {
+  .ef-closing-page {
     background: var(--ef-teal) !important;
     color: #fff !important;
   }
