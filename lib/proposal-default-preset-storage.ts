@@ -45,7 +45,7 @@ export const RESIDENTIAL_TEMPLATE_OPTIONS: ResidentialTemplateOption[] = [
   {
     id: "residential_horizon",
     label: "Horizon",
-    subtitle: "Clean white 11-page A4 — energy masterplan & commitment.",
+    subtitle: "Luxury A4 — SOLAR MASTER PLAN · return journey.",
   },
   {
     id: "residential_sales_premium",

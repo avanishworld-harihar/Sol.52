@@ -90,7 +90,7 @@ const PRESET_META: Record<ProposalPresetId, PresetMeta> = {
   residential_horizon: {
     icon: <Sun className="h-4 w-4" />,
     label: "Horizon",
-    description: "White 11-page A4 · Energy masterplan · Wealth map · Commitment",
+    description: "White 11-page A4 · SOLAR MASTER PLAN · Return journey · Commitment",
     pillClass:
       "border-teal-200 bg-teal-50 text-teal-800 dark:border-teal-500/30 dark:bg-teal-900/20 dark:text-teal-300",
     dotClass: "bg-teal-400",

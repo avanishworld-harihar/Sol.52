@@ -184,7 +184,7 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     id: "residential_horizon",
     label: "Horizon",
     description:
-      "Clean white 11-page A4 masterplan — cover, vision, analysis, architecture, engineering, financials, subsidy, ecology, hardware, roadmap & commitment.",
+      "Luxury A4 masterplan — SOLAR MASTER PLAN cover, magazine philosophy, return journey, engineering, subsidy, eco-retention & commitment.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "requirement",

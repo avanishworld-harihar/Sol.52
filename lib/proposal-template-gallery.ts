@@ -102,7 +102,7 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
     presetId: "residential_horizon",
     category: "residential",
     name: "Horizon",
-    description: "Clean white 11-page A4 masterplan — energy freedom cover, vision, wealth map, eco-retention & commitment.",
+    description: "Luxury A4 masterplan — SOLAR MASTER PLAN cover, magazine philosophy & return journey.",
     thumbnailVariant: "horizon",
   },
   {
