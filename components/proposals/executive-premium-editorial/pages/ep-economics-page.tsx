@@ -46,7 +46,7 @@ export function EpEconomicsPage({ data }: Props) {
               </div>
               {index < ROI_STEPS.length - 1 ? (
                 <div className="ep-gl-roi-journey-arrow" aria-hidden>
-                  ↓
+                  →
                 </div>
               ) : null}
             </div>

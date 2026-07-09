@@ -9,7 +9,7 @@ type Props = {
 
 export function EpLuxuryPage({ children, className, cover = false }: Props) {
   return (
-    <section className="ep-gl-page">
+    <section className={cn("ep-gl-page", cover && "ep-gl-page--cover")}>
       <div className="ep-gl-luxury-border" aria-hidden />
       {cover ? (
         <div className={cn("ep-gl-cover-page", className)}>{children}</div>

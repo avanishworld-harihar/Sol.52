@@ -91,12 +91,13 @@ import { ResidentialProposalConfigWorkspace } from "@/components/residential/res
 import { ResidentialRequirementCustomerForm } from "@/components/residential/residential-requirement-customer-form";
 import { isPmSuryaGharSubsidyEligible } from "@/lib/lead-connection-types";
 import {
+  applyConnectionTypeSubsidyPolicy,
   residentialAnnualGenerationUnits,
   residentialGrossCostInr,
   residentialNetCostInr,
+  resolveResidentialSubsidyInr,
 } from "@/lib/residential-deck-helpers";
 import { moduleCountForResidential, quoteResidentialSolar } from "@/lib/residential-solar-engine";
-import { computePmSuryaGharSubsidy } from "@/lib/proposal-deck-helpers";
 import {
   applyCommercialFlagsToLayout,
   defaultCommercialConfig,
@@ -830,7 +831,7 @@ function ProposalPageContent() {
       const annualGeneration = residentialAnnualGenerationUnits(solarKw);
       const grossCost = residentialGrossCostInr(residentialConfig);
       const centralSubsidy = residentialSubsidyEligible
-        ? residentialConfig.subsidy?.estimateInr ?? computePmSuryaGharSubsidy(solarKw)
+        ? resolveResidentialSubsidyInr(residentialConfig, true)
         : 0;
       const netCost = residentialNetCostInr(residentialConfig, {
         connectionType: manual.connectionType,
@@ -2199,17 +2200,7 @@ function ProposalPageContent() {
     if (!isAnyResidential) return;
     setResidentialConfig((prev) => {
       if (!prev) return prev;
-      const conn = manual.connectionType.trim();
-      const eligible = isPmSuryaGharSubsidyEligible(conn) && (prev.solar.panelTrack ?? "dcr") === "dcr";
-      const subsidyBlocked =
-        !eligible &&
-        ((prev.subsidy?.estimateInr ?? 0) > 0 || prev.subsidy?.preference !== "none");
-      if (prev.connectionType === conn && !subsidyBlocked) return prev;
-      return {
-        ...prev,
-        connectionType: conn || undefined,
-        subsidy: eligible ? prev.subsidy : { preference: "none", estimateInr: 0 },
-      };
+      return applyConnectionTypeSubsidyPolicy(prev, manual.connectionType);
     });
   }, [isAnyResidential, manual.connectionType]);
 
@@ -2802,7 +2793,10 @@ function ProposalPageContent() {
             onContactName={(v) => setManual((p) => ({ ...p, leadContactName: v }))}
             onState={(v) => setManual((p) => ({ ...p, state: v, discom: v === p.state ? p.discom : "" }))}
             onDiscom={(v) => setManual((p) => ({ ...p, discom: v }))}
-            onConnectionType={(v) => setManual((p) => ({ ...p, connectionType: v }))}
+            onConnectionType={(v) => {
+              setManual((p) => ({ ...p, connectionType: v }));
+              setResidentialConfig((prev) => (prev ? applyConnectionTypeSubsidyPolicy(prev, v) : prev));
+            }}
             onLocation={(v) => setManual((p) => ({ ...p, location: v }))}
             onCity={(v) => setManual((p) => ({ ...p, city: v }))}
             onPhone={(v) => setManual((p) => ({ ...p, leadPhone: v }))}

@@ -9,9 +9,8 @@ import {
 } from "@/lib/pricing-engine";
 import { resolvePlantPriceFromConfig } from "@/lib/plant-pricing-resolver";
 import { resolvePhaseSurchargeInr } from "@/lib/connection-phase-pricing";
-import { applyResidentialDiscountInr, residentialNetCostInr } from "@/lib/residential-deck-helpers";
+import { applyResidentialDiscountInr, residentialNetCostInr, resolveResidentialSubsidyInr } from "@/lib/residential-deck-helpers";
 import { isPmSuryaGharSubsidyEligible } from "@/lib/lead-connection-types";
-import { computePmSuryaGharSubsidy } from "@/lib/proposal-deck-helpers";
 import { getEffectivePanelCatalog, resolvePanelQuote } from "@/lib/commercial-panel-catalog";
 import {
   applyCommercialPanelTrackPolicy,
@@ -76,9 +75,7 @@ export function buildResidentialQuoteSnapshot(
     opts.subsidyEligible ?? isPmSuryaGharSubsidyEligible(opts.connectionType ?? config.connectionType);
   const subsidyPref = config.subsidy?.preference ?? "maximize";
   const subsidy =
-    !eligible || subsidyPref === "none"
-      ? 0
-      : config.subsidy?.estimateInr ?? computePmSuryaGharSubsidy(config.solar.plantCapacityKw);
+    !eligible || subsidyPref === "none" ? 0 : resolveResidentialSubsidyInr(config, true);
   const net = residentialNetCostInr(config, {
     connectionType: opts.connectionType,
     subsidyEligible: eligible,

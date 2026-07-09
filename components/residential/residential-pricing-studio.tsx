@@ -8,7 +8,7 @@ import { defaultResidentialKwTiers, type ResidentialProposalConfig } from "@/lib
 import { syncEquipmentPresetsFromConfig, persistEquipmentSelectionsFromConfig } from "@/lib/residential-equipment-presets";
 import { isPmSuryaGharSubsidyEligible } from "@/lib/lead-connection-types";
 import { computePmSuryaGharSubsidy } from "@/lib/proposal-deck-helpers";
-import { residentialCostBreakdown } from "@/lib/residential-deck-helpers";
+import { residentialCostBreakdown, resolveResidentialSubsidyInr } from "@/lib/residential-deck-helpers";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
 import { cn } from "@/lib/utils";
 import { Cpu, Download, Globe, Layers, MessageCircle, Save, Sun, Zap } from "lucide-react";
@@ -125,6 +125,7 @@ export function ResidentialPricingStudio({
   const defaultSubsidy = computePmSuryaGharSubsidy(solar.plantCapacityKw);
   const subsidyEligible =
     subsidyEligibleProp ?? isPmSuryaGharSubsidyEligible(config.connectionType);
+  const displayedSubsidy = resolveResidentialSubsidyInr(config, subsidyEligible);
   const costBreakdown = useMemo(
     () =>
       residentialCostBreakdown(config, {
@@ -307,7 +308,7 @@ export function ResidentialPricingStudio({
           <>
             <FloatingLabelNumericInput
               label="Subsidy amount (₹)"
-              value={config.subsidy?.estimateInr ?? defaultSubsidy}
+              value={displayedSubsidy}
               onValueChange={(n) =>
                 patch({
                   subsidy: {

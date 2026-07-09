@@ -85,6 +85,43 @@ export function residentialNetCostInr(
   return residentialCostBreakdown(config, options).netInr;
 }
 
+/** Subsidy stored on config when eligible — treats 0 as "recompute from plant kW". */
+export function resolveResidentialSubsidyInr(
+  config: ResidentialProposalConfig,
+  eligible: boolean
+): number {
+  if (!eligible) return 0;
+  const stored = config.subsidy?.estimateInr;
+  if (stored != null && stored > 0) return stored;
+  return computePmSuryaGharSubsidy(config.solar.plantCapacityKw);
+}
+
+/** Sync connection type + subsidy when domestic ↔ commercial changes. */
+export function applyConnectionTypeSubsidyPolicy(
+  config: ResidentialProposalConfig,
+  connectionType: string
+): ResidentialProposalConfig {
+  const conn = connectionType.trim();
+  const eligible =
+    isPmSuryaGharSubsidyEligible(conn) && (config.solar.panelTrack ?? "dcr") === "dcr";
+  const subsidyBlocked =
+    !eligible &&
+    ((config.subsidy?.estimateInr ?? 0) > 0 || config.subsidy?.preference !== "none");
+  if (config.connectionType === conn && !subsidyBlocked) return config;
+
+  return {
+    ...config,
+    connectionType: conn || undefined,
+    subsidy: eligible
+      ? {
+          preference:
+            config.subsidy?.preference === "none" ? "maximize" : (config.subsidy?.preference ?? "maximize"),
+          estimateInr: resolveResidentialSubsidyInr(config, true),
+        }
+      : { preference: "none", estimateInr: 0 },
+  };
+}
+
 export type ResidentialCostBreakdown = {
   grossInr: number;
   phaseSurchargeInr: number;
@@ -111,9 +148,7 @@ export function residentialCostBreakdown(
     dcrEligible &&
     (options?.subsidyEligible ??
       isPmSuryaGharSubsidyEligible(options?.connectionType ?? config.connectionType));
-  const subsidyInr = eligible
-    ? config.subsidy?.estimateInr ?? computePmSuryaGharSubsidy(config.solar.plantCapacityKw)
-    : 0;
+  const subsidyInr = resolveResidentialSubsidyInr(config, eligible);
   const netInr = Math.max(0, afterDiscountInr - subsidyInr);
   return {
     grossInr,
