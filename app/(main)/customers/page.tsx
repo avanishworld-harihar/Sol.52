@@ -39,7 +39,7 @@ import {
   writeInstallerRegion
 } from "@/lib/installer-region-storage";
 import { useLanguage } from "@/lib/language-context";
-import { LEAD_AREA_PROFILE_OPTIONS, LEAD_CONNECTION_TYPE_OPTIONS } from "@/lib/lead-connection-types";
+import { LEAD_CONNECTION_TYPE_OPTIONS } from "@/lib/lead-connection-types";
 import type { CustomerLead } from "@/lib/types";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import { TABLET_SPLIT_MEDIA_QUERY } from "@/lib/tablet-split-view";
@@ -883,20 +883,6 @@ function CustomersPageContent() {
                     onChange={(e) => setForm((p) => ({ ...p, connection_type: e.target.value }))}
                   >
                     {LEAD_CONNECTION_TYPE_OPTIONS.map((o) => (
-                      <option key={o.value || "unset"} value={o.value}>
-                        {o.label}
-                      </option>
-                    ))}
-                  </StaticLabelSelect>
-                  <StaticLabelSelect
-                    label={t("customers_labelArea")}
-                    containerClassName="my-4"
-                    className={modalSelectClass}
-                    suppressHydrationWarning
-                    value={form.area}
-                    onChange={(e) => setForm((p) => ({ ...p, area: e.target.value }))}
-                  >
-                    {LEAD_AREA_PROFILE_OPTIONS.map((o) => (
                       <option key={o.value || "unset"} value={o.value}>
                         {o.label}
                       </option>

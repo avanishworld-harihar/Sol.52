@@ -4,7 +4,6 @@ import { FloatingLabelNumericInput, FloatingLabelSelect } from "@/components/ui/
 import { INDIAN_STATES_AND_UTS } from "@/lib/indian-states-uts";
 import {
   isPmSuryaGharSubsidyEligible,
-  LEAD_AREA_PROFILE_OPTIONS,
   LEAD_CONNECTION_TYPE_OPTIONS,
 } from "@/lib/lead-connection-types";
 import { useInstallerDiscoms } from "@/hooks/use-installer-discoms";
@@ -20,7 +19,6 @@ export type ResidentialRequirementCustomerFields = {
   state: string;
   discom: string;
   connectionType: string;
-  area: string;
   location: string;
   city: string;
   phone: string;
@@ -34,7 +32,6 @@ type Props = {
   onState: (v: string) => void;
   onDiscom: (v: string) => void;
   onConnectionType: (v: string) => void;
-  onArea: (v: string) => void;
   onLocation: (v: string) => void;
   onCity: (v: string) => void;
   onPhone: (v: string) => void;
@@ -88,7 +85,6 @@ export function ResidentialRequirementCustomerForm({
   onState,
   onDiscom,
   onConnectionType,
-  onArea,
   onLocation,
   onCity,
   onPhone,
@@ -195,29 +191,7 @@ export function ResidentialRequirementCustomerForm({
             </option>
           ))}
         </FloatingLabelSelect>
-        <FloatingLabelSelect
-          label="Area (optional)"
-          suppressHydrationWarning
-          labelBackgroundClassName={selectLabelBg}
-          value={fields.area}
-          onChange={(e) => onArea(e.target.value)}
-          className={selectFieldClass}
-        >
-          {LEAD_AREA_PROFILE_OPTIONS.map((o) => (
-            <option key={o.value || "unset"} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </FloatingLabelSelect>
       </div>
-      {onConnectionPhase ? (
-        <ConnectionPhaseChips
-          value={connectionPhase}
-          onChange={onConnectionPhase}
-          theme="residential"
-          className="rounded-xl border border-slate-200/90 bg-white/80 px-3 py-2.5 dark:border-white/10 dark:bg-white/[0.03]"
-        />
-      ) : null}
       <div className="grid grid-cols-1 gap-2.5 overflow-visible sm:grid-cols-2 sm:gap-3">
         <Field
           icon={MapPin}
@@ -228,6 +202,14 @@ export function ResidentialRequirementCustomerForm({
         <Field icon={MapPin} placeholder="City *" value={fields.city} onChange={onCity} required />
       </div>
       <Field icon={Phone} placeholder="Phone (optional)" value={fields.phone} onChange={onPhone} inputMode="tel" />
+      {onConnectionPhase ? (
+        <ConnectionPhaseChips
+          value={connectionPhase}
+          onChange={onConnectionPhase}
+          theme="residential"
+          className="rounded-xl border border-slate-200/90 bg-white/80 px-3 py-2.5 dark:border-white/10 dark:bg-white/[0.03]"
+        />
+      ) : null}
       <div className="rounded-xl border border-slate-200/90 bg-white/80 p-3 dark:border-white/10 dark:bg-white/[0.03]">
         <p className="mb-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
           <Zap className="h-3.5 w-3.5 text-amber-500" aria-hidden />

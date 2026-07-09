@@ -507,11 +507,7 @@ function ProposalPageContent() {
     latestBill,
     additionalBills
   ]);
-  const areaProfile = useMemo(() => {
-    const a = manual.area.trim().toLowerCase();
-    if (a === "urban" || a === "rural") return a;
-    return inferAreaProfile(manual);
-  }, [manual]);
+  const areaProfile = useMemo(() => inferAreaProfile(manual), [manual]);
   const residentialSubsidyEligible = useMemo(
     () =>
       isPmSuryaGharSubsidyEligible(manual.connectionType) &&
@@ -2790,7 +2786,6 @@ function ProposalPageContent() {
               state: manual.state,
               discom: manual.discom,
               connectionType: manual.connectionType,
-              area: manual.area,
               location: manual.location,
               city: manual.city,
               phone: manual.leadPhone,
@@ -2808,7 +2803,6 @@ function ProposalPageContent() {
             onState={(v) => setManual((p) => ({ ...p, state: v, discom: v === p.state ? p.discom : "" }))}
             onDiscom={(v) => setManual((p) => ({ ...p, discom: v }))}
             onConnectionType={(v) => setManual((p) => ({ ...p, connectionType: v }))}
-            onArea={(v) => setManual((p) => ({ ...p, area: v }))}
             onLocation={(v) => setManual((p) => ({ ...p, location: v }))}
             onCity={(v) => setManual((p) => ({ ...p, city: v }))}
             onPhone={(v) => setManual((p) => ({ ...p, leadPhone: v }))}
