@@ -51,6 +51,7 @@ import { mergeProposalPricingIntoPptInput } from "@/lib/proposal-pricing-merge";
 import type { ProposalPricingRow } from "@/lib/proposal-pricing-schema";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { getProposalLayout } from "@/lib/proposal-layout-merge";
+import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 import { summarizeProposalDeck } from "@/lib/proposal-ppt";
 import { markProposalSent, openWhatsAppWithProposal, type ProposalShareMetrics } from "@/lib/proposal-share-actions";
 import type { ProposalTemplateV1 } from "@/lib/proposal-template-schema";
@@ -254,7 +255,10 @@ export function WorkspaceDealClient({
 
   const mergedInput = useMemo(() => mergeProposalPricingIntoPptInput(pptInput, pricing), [pptInput, pricing]);
   const summary = useMemo(() => summarizeProposalDeck(mergedInput), [mergedInput]);
-  const proposalLayout = useMemo(() => getProposalLayout(pptInput), [pptInput]);
+  const proposalLayout = useMemo(
+    () => getProposalLayout(pptInput, presetId as ProposalPresetId),
+    [pptInput, presetId]
+  );
 
   const shareMetrics: ProposalShareMetrics = useMemo(
     () => ({

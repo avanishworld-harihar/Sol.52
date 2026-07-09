@@ -1,12 +1,25 @@
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { defaultProposalTemplateV1, normalizeProposalTemplateV1, parseProposalTemplateV1, type ProposalTemplateV1 } from "@/lib/proposal-template-schema";
 import type { ProposalBlockId } from "@/lib/proposal-block-registry";
+import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
+import { resolveProposalLayout } from "@/lib/proposal-preset-engine";
 
 /**
  * Ensures `proposalLayout` exists on deck input for downstream renderers / exporters.
  * Non-breaking: if missing or invalid, injects defaults without mutating caller unless requested.
  */
-export function getProposalLayout(ppt: PremiumProposalPptInput): ProposalTemplateV1 {
+export function getProposalLayout(
+  ppt: PremiumProposalPptInput,
+  presetId?: ProposalPresetId
+): ProposalTemplateV1 {
+  const effectivePreset =
+    presetId ??
+    (ppt.salesPremiumStyle || ppt.galleryThemeKey
+      ? ("residential_sales_premium" as const)
+      : undefined);
+  if (effectivePreset) {
+    return resolveProposalLayout(ppt, effectivePreset);
+  }
   const parsed = parseProposalTemplateV1(ppt.proposalLayout);
   if (!parsed) return defaultProposalTemplateV1();
   return normalizeProposalTemplateV1(parsed);

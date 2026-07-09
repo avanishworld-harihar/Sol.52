@@ -65,7 +65,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { parsePrefillFromSearchParams } from "@/lib/quick-actions";
 import { ProposalPresetPicker } from "@/components/proposals/os/preset-picker";
 import { readDefaultResidentialPreset } from "@/lib/proposal-default-preset-storage";
-import { readActiveSalesPremiumStyle } from "@/lib/sales-premium-styles";
+import { readActiveSalesPremiumStyle, getSalesPremiumLayoutForStyle, usesInstitutionalRenderer } from "@/lib/sales-premium-styles";
 import { readDefaultGalleryKey } from "@/lib/proposal-template-gallery-storage";
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 import { ProposalOSHeader } from "@/components/proposals/os/proposal-os-header";
@@ -1658,12 +1658,20 @@ function ProposalPageContent() {
           }
         : {}),
       proposalLayout: (() => {
-        if (!proposalLayout) return undefined;
+        const presetForLayout = osPresetId ?? "residential_sales_premium";
+        let layout = proposalLayout;
+        if (!layout && presetForLayout === "residential_sales_premium") {
+          const style = readActiveSalesPremiumStyle();
+          if (!usesInstitutionalRenderer(style)) {
+            layout = getSalesPremiumLayoutForStyle(style);
+          }
+        }
+        if (!layout) return undefined;
         if (useResidentialCatalog && residentialConfig) {
-          return applyResidentialFlagsToLayout(proposalLayout, residentialConfig);
+          return applyResidentialFlagsToLayout(layout, residentialConfig);
         }
         if (useCommercialCatalog && commercialPricingConfig) {
-          return applyCommercialFlagsToLayout(proposalLayout, {
+          return applyCommercialFlagsToLayout(layout, {
             ...(commercialConfig ?? {}),
             dcrComparison: {
               enabled: false,
@@ -1678,7 +1686,7 @@ function ProposalPageContent() {
             capacityScenarios: commercialConfig?.capacityScenarios,
           });
         }
-        return proposalLayout;
+        return layout;
       })(),
       commercialConfig:
         osPresetId === "commercial_executive" ? commercialConfig ?? undefined : undefined,
@@ -2000,9 +2008,16 @@ function ProposalPageContent() {
       (prev) => prev ?? defaultResidentialConfigForBuilder(kw, residentialInputMode)
     );
     const presetForLayout = osPresetId ?? "residential_sales_premium";
-    setProposalLayout(
-      (prev) => prev ?? getPresetDefaultLayout(presetForLayout)
-    );
+    setProposalLayout((prev) => {
+      if (prev) return prev;
+      if (presetForLayout === "residential_sales_premium") {
+        const style = readActiveSalesPremiumStyle();
+        if (!usesInstitutionalRenderer(style)) {
+          return getSalesPremiumLayoutForStyle(style);
+        }
+      }
+      return getPresetDefaultLayout(presetForLayout);
+    });
   }, [isAnyResidential, osPresetId, result.solarKw, urlPrefill.kw, residentialInputMode, deckRestoreReady]);
 
   useEffect(() => {

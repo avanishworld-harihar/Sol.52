@@ -9,7 +9,6 @@ import { isProposalBillAuditBacked } from "@/lib/proposal-bill-audit-eligibility
 import { isLeadSurveyCompleteForProposal } from "@/lib/proposal-survey-gate";
 import { getLeadSurveyStatus } from "@/lib/supabase";
 import {
-  getSalesPremiumLayoutForStyle,
   resolveSalesPremiumStyle,
   usesInstitutionalRenderer,
 } from "@/lib/sales-premium-styles";
@@ -54,23 +53,9 @@ export default async function ProposalPresentPage({ params }: PageProps) {
     }
   }
 
-  const spStyle =
-    proposal.preset_id === "residential_sales_premium"
-      ? resolveSalesPremiumStyle(mergedInput)
-      : null;
-  const layoutOverride =
-    spStyle && !usesInstitutionalRenderer(spStyle)
-      ? getSalesPremiumLayoutForStyle(spStyle)
-      : undefined;
-
-  const doc = compileProposalDocument(
-    id,
-    layoutOverride ? { ...mergedInput, proposalLayout: layoutOverride } : mergedInput,
-    summary,
-    {
-      presetId: proposal.preset_id ?? "residential_smart",
-    }
-  );
+  const doc = compileProposalDocument(id, mergedInput, summary, {
+    presetId: proposal.preset_id ?? "residential_smart",
+  });
 
   return (
     <ProposalPresentClient

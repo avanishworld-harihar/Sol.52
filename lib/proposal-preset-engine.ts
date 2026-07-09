@@ -19,11 +19,18 @@ import type { ProposalBlockId } from "@/lib/proposal-block-registry";
 import { DEFAULT_PROPOSAL_BLOCK_ORDER, PROPOSAL_BLOCK_REGISTRY } from "@/lib/proposal-block-registry";
 import {
   normalizeProposalTemplateV1,
+  parseProposalTemplateV1,
   type ProposalTemplateBlock,
   type ProposalTemplateV1,
 } from "@/lib/proposal-template-schema";
+import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { getStoryCopy, type StoryMode, type StorySegment, type StoryCopy, type StoryLang } from "@/lib/proposal-story-copy";
-import { SALES_PREMIUM_STYLE_LIST } from "@/lib/sales-premium-styles";
+import {
+  SALES_PREMIUM_STYLE_LIST,
+  getSalesPremiumLayoutForStyle,
+  resolveSalesPremiumStyle,
+  usesInstitutionalRenderer,
+} from "@/lib/sales-premium-styles";
 
 // ─── Preset identifiers ──────────────────────────────────────────────────────
 
@@ -369,6 +376,38 @@ export function normalizeProposalLayoutForPreset(
     return normalizeSalesPremiumProposalLayout(input);
   }
   return normalizeProposalTemplateV1(input);
+}
+
+/**
+ * Resolves the effective block playlist for a proposal.
+ * Horizon / Ember (web_blocks styles) get style-specific defaults when layout is
+ * missing or empty — institutional Pearl/Slate ignore block playlists.
+ */
+export function resolveProposalLayout(
+  input: Pick<PremiumProposalPptInput, "proposalLayout" | "salesPremiumStyle" | "galleryThemeKey">,
+  presetId: ProposalPresetId
+): ProposalTemplateV1 {
+  const storedLayout = parseProposalTemplateV1(input.proposalLayout);
+
+  if (presetId === "residential_sales_premium") {
+    const style = resolveSalesPremiumStyle(input);
+    if (!usesInstitutionalRenderer(style)) {
+      const styleDefault = getSalesPremiumLayoutForStyle(style);
+      if (!storedLayout) {
+        return normalizeSalesPremiumProposalLayout(styleDefault);
+      }
+      const normalized = normalizeSalesPremiumProposalLayout(storedLayout);
+      if (!normalized.blocks.some((b) => b.enabled)) {
+        return normalizeSalesPremiumProposalLayout(styleDefault);
+      }
+      return normalized;
+    }
+  }
+
+  if (storedLayout) {
+    return normalizeProposalLayoutForPreset(storedLayout, presetId);
+  }
+  return getPresetDefaultLayout(presetId);
 }
 
 /**

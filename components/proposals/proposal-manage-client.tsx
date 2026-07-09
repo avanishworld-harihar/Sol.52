@@ -106,7 +106,10 @@ export function ProposalManageClient({
 
   const mergedInput = useMemo(() => mergeProposalPricingIntoPptInput(pptInput, pricing), [pptInput, pricing]);
   const summary = useMemo(() => summarizeProposalDeck(mergedInput), [mergedInput]);
-  const proposalLayout = useMemo(() => getProposalLayout(pptInput), [pptInput]);
+  const proposalLayout = useMemo(
+    () => getProposalLayout(pptInput, presetId as ProposalPresetId),
+    [pptInput, presetId]
+  );
   const isResidentialRequirement =
     presetId === "residential_smart" &&
     (pptInput.residentialConfig?.inputMode === "requirement" || pptInput.dataSource === "requirement");
