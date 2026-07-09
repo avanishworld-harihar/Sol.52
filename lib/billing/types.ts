@@ -16,7 +16,6 @@ export type ResidentialThemeKey =
   | "golden"
   | "horizon"
   | "ember"
-  | "aurora"
   | "solstice";
 
 export type PlanFeatures = {

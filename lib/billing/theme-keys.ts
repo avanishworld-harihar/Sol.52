@@ -13,7 +13,7 @@ export function resolveResidentialThemeKey(input: {
     );
   }
 
-  if (input.galleryKey === "aurora") return "aurora";
+  if (input.galleryKey === "aurora") return "solstice";
   if (input.galleryKey === "slate") return "slate";
   if (input.galleryKey === "pearl") return "pearl";
   if (input.galleryKey === "golden") return "golden";
@@ -24,8 +24,8 @@ export function resolveResidentialThemeKey(input: {
   if (input.galleryKey === "solstice") return "solstice";
 
   const preset = input.presetId;
-  if (preset === "residential_aurora") return "aurora";
   if (preset === "residential_solstice") return "solstice";
+  if (preset === "residential_aurora") return "solstice";
   if (preset === "residential_smart") return "classic";
   if (preset === "residential_bank_loan") return "ledger";
   if (preset === "residential_executive") return "golden";

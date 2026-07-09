@@ -65,22 +65,6 @@ const NO_BILL_CHIPS: BlockChip[] = RESIDENTIAL_CHIPS.map((c) =>
       : c
 ).filter((c): c is BlockChip => c !== null);
 
-const AURORA_CHIPS: BlockChip[] = [
-  { id: "cover", label: "Cover" },
-  { id: "about", label: "About" },
-  { id: "bill-audit", label: "Bill" },
-  { id: "technical-summary", label: "Summary" },
-  { id: "bom", label: "BOM" },
-  { id: "economics", label: "Savings" },
-  { id: "closing", label: "Cost" },
-  { id: "payment", label: "Pay" },
-  { id: "docs", label: "Docs" },
-];
-
-const AURORA_NO_BILL_CHIPS: BlockChip[] = AURORA_CHIPS.map((c) =>
-  c.id === "bill-audit" ? { ...c, id: "system-req", label: "System" } : c
-);
-
 // ─── Metric tile ──────────────────────────────────────────────────────────────
 
 function MetricTile({
@@ -154,18 +138,13 @@ export function ProposalLivePreviewPanel({
   onEditBlocks,
 }: Props) {
   const isCommercial = presetId === "commercial_executive";
-  const isAurora = presetId === "residential_aurora";
 
   const chips =
     isCommercial
       ? COMMERCIAL_CHIPS
-      : isAurora
-        ? isBillBacked
-          ? AURORA_CHIPS
-          : AURORA_NO_BILL_CHIPS
-        : isBillBacked
-          ? RESIDENTIAL_CHIPS
-          : NO_BILL_CHIPS;
+      : isBillBacked
+        ? RESIDENTIAL_CHIPS
+        : NO_BILL_CHIPS;
 
   const hasCustomer = Boolean(customerName);
   const hasMetrics = systemKw > 0;

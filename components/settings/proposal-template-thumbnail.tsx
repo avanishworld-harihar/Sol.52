@@ -20,7 +20,6 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
       className={cn("relative flex items-center justify-center overflow-hidden rounded-lg", scale, className)}
       aria-hidden
     >
-      {variant === "aurora" ? <AuroraThumb size={size} /> : null}
       {variant === "golden" ? <GoldenThumb size={size} /> : null}
       {variant === "pearl" ? <PearlThumb size={size} /> : null}
       {variant === "slate" ? <SlateThumb size={size} /> : null}
@@ -31,7 +30,6 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
       {variant === "classic" ? <ClassicThumb size={size} /> : null}
       {variant === "commercial" ? <CommercialThumb size={size} /> : null}
       {![
-        "aurora",
         "golden",
         "pearl",
         "slate",

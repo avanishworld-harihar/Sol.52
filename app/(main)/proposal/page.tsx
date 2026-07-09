@@ -2081,7 +2081,6 @@ function ProposalPageContent() {
           "residential_sales_premium",
           "residential_bank_loan",
           "residential_executive",
-          "residential_aurora",
           "residential_solstice",
         ] as const;
         if (preset && (KNOWN_PRESETS as ReadonlyArray<string>).includes(preset)) {
@@ -2441,12 +2440,13 @@ function ProposalPageContent() {
       }
       throw new Error(json.error || "Web proposal failed");
     }
-    const json = (await response.json()) as { ok: boolean; id?: string; shareUrl?: string; persisted?: boolean };
-    if (!json.ok || !json.id) throw new Error("Web proposal could not be created");
+    const json = (await response.json()) as { ok: boolean; id?: string; shareUrl?: string; persisted?: boolean; error?: string };
+    if (!json.ok) throw new Error(json.error || "Web proposal could not be created");
     if (json.persisted === false) {
       toast.error("Save failed", t("proposal_persistFailed"));
       return null;
     }
+    if (!json.id) throw new Error("Web proposal could not be created");
     const shareUrl = json.shareUrl || `${window.location.origin}/proposal/${json.id}`;
     setLatestWebProposalUrl(shareUrl);
     setDraftProposalId(json.id);

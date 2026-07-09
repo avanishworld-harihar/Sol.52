@@ -78,7 +78,6 @@ export type PresetAffinity =
       | "residential_sales_premium"
       | "residential_bank_loan"
       | "residential_executive"
-      | "residential_aurora"
       | "residential_solstice"
     >;
 
@@ -147,7 +146,7 @@ export const PROPOSAL_BLOCK_REGISTRY: Record<ProposalBlockId, ProposalBlockMeta>
     labelKey: "proposal_block_bill_intelligence",
     group: "technical",
     defaultEnabled: false,
-    preset_affinity: ["residential_smart", "residential_aurora"],
+    preset_affinity: ["residential_smart"],
   },
 
   /**
@@ -253,7 +252,7 @@ export const PROPOSAL_BLOCK_REGISTRY: Record<ProposalBlockId, ProposalBlockMeta>
     labelKey: "proposal_block_customer_docs",
     group: "service",
     defaultEnabled: true,
-    preset_affinity: ["residential_smart", "residential_aurora"],
+    preset_affinity: ["residential_smart"],
   },
 
   amc_maintenance: {
@@ -329,7 +328,7 @@ export const PROPOSAL_BLOCK_REGISTRY: Record<ProposalBlockId, ProposalBlockMeta>
     labelKey: "proposal_block_system_layout",
     group: "technical",
     defaultEnabled: false,
-    preset_affinity: ["residential_aurora"],
+    preset_affinity: ["residential_smart"],
   },
 
   /**
@@ -342,7 +341,7 @@ export const PROPOSAL_BLOCK_REGISTRY: Record<ProposalBlockId, ProposalBlockMeta>
     labelKey: "proposal_block_subsidy_clarity",
     group: "commercial",
     defaultEnabled: false,
-    preset_affinity: ["residential_aurora"],
+    preset_affinity: ["residential_smart"],
   },
 
   /**
@@ -355,7 +354,7 @@ export const PROPOSAL_BLOCK_REGISTRY: Record<ProposalBlockId, ProposalBlockMeta>
     labelKey: "proposal_block_technical_summary",
     group: "technical",
     defaultEnabled: false,
-    preset_affinity: ["residential_aurora"],
+    preset_affinity: ["residential_smart"],
   },
 };
 

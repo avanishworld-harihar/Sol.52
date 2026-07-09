@@ -79,14 +79,6 @@ const PRESET_META: Record<ProposalPresetId, PresetMeta> = {
       "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-900/20 dark:text-amber-300",
     dotClass: "bg-amber-400",
   },
-  residential_aurora: {
-    icon: <Zap className="h-4 w-4" />,
-    label: "Aurora",
-    description: "Full BOM · Subsidy · Bill intelligence · Easy English",
-    pillClass:
-      "border-indigo-200 bg-indigo-50 text-indigo-800 dark:border-indigo-500/30 dark:bg-indigo-900/20 dark:text-indigo-300",
-    dotClass: "bg-indigo-400",
-  },
 };
 
 export function ProposalOSHeader({ presetId, onChangePreset, customerName }: Props) {

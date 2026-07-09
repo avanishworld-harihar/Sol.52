@@ -41,7 +41,13 @@ async function insertAdaptive<T = Row>(
       delete attempt[miss];
       continue;
     }
-    console.warn("[proposals-store] insert failed:", error.message);
+    if (/proposals_preset_id_check|check constraint/i.test(error.message)) {
+      console.error(`[proposals-store] ${table} check constraint:`, error.message);
+      throw new Error(
+        `Database does not allow this proposal preset yet. Apply migration 057_residential_solstice_preset.sql — ${error.message}`
+      );
+    }
+    console.warn(`[proposals-store] ${table} insert failed:`, error.message);
     return null;
   }
   return null;

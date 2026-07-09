@@ -867,7 +867,6 @@ function ProposalWebRendererInner({
 
   const eligibilityCtx = { billAuditBacked, presetId, showSurveySection: showSurveyWorkflowSection };
   const isSalesPremium = presetId === "residential_sales_premium";
-  const isAurora = presetId === "residential_aurora";
   const isEmber = salesPremiumStyle === "savings_focus";
 
   type PageEntry = {
@@ -882,20 +881,16 @@ function ProposalWebRendererInner({
     const pages: PageEntry[] = [];
 
     for (const blockId of blockIds) {
-      if (isAurora && blockId === "system_layout") continue;
       const meta = WEB_RENDERER_REGISTRY[blockId];
       if (!meta) continue;
       if (!isBlockEligible(blockId, eligibilityCtx)) continue;
 
       const renderKey = isSalesPremium
         ? resolveSalesPremiumRenderKey(blockId, meta.renderKey, salesPremiumStyle)
-        : isAurora
-          ? resolveAuroraRenderKey(blockId, meta.renderKey)
-          : meta.renderKey;
+        : meta.renderKey;
 
-      if (!isSalesPremium && !isAurora && renderedKeys.has(renderKey)) continue;
+      if (!isSalesPremium && renderedKeys.has(renderKey)) continue;
       if (isSalesPremium && renderKey !== "bom_only" && renderedKeys.has(renderKey)) continue;
-      if (isAurora && renderedKeys.has(renderKey)) continue;
 
       renderedKeys.add(renderKey);
       pages.push({
@@ -932,8 +927,8 @@ function ProposalWebRendererInner({
     <MotionConfig transition={{ duration: 0.35, ease: "easeOut" }} reducedMotion="user">
       <div
         className={`proposal-document ${PROPOSAL_PREMIUM_DOC_CLASS} proposal-journey-connected proposal-responsive-doc mx-auto w-full max-w-[210mm] px-4 pb-32 pt-6 sm:px-8 sm:pt-10 print:max-w-none print:p-0 print:pb-0 transition-colors duration-300 ${
-          isAurora ? "proposal-document--aurora " : ""
-        }${isEmber ? "proposal-document--ember " : ""}${
+          isEmber ? "proposal-document--ember " : ""
+        }${
           lang === "hi" ? "lang-hi " : ""
         }${darkMode ? "text-white" : ""}`}
         data-theme={darkMode ? "dark" : "light"}
@@ -1006,7 +1001,7 @@ function ProposalWebRendererInner({
             <div className="proposal-page" data-page={pageDataAttr}>
               {renderBlockByKey(renderKey, ctx)}
             </div>
-            {bridgeKey && !isAurora && !isEmber ? (
+            {bridgeKey && !isEmber ? (
               <JourneyBridge
                 text={getJourneyBridgeText(
                   isSalesPremium && bridgeKey === "afterSavings" ? "afterSavingsPremium" : bridgeKey,

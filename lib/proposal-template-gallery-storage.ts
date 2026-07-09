@@ -15,7 +15,7 @@ export function readDefaultGalleryKey(): ProposalTemplateGalleryKey | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = localStorage.getItem(STORAGE_KEY)?.trim();
-    const normalized = raw === "apple_pro" ? "slate" : raw;
+    const normalized = raw === "apple_pro" ? "slate" : raw === "aurora" ? "solstice" : raw;
     if (normalized && galleryItemByKey(normalized as ProposalTemplateGalleryKey)) {
       return normalized as ProposalTemplateGalleryKey;
     }

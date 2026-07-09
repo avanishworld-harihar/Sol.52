@@ -134,7 +134,7 @@ const surveyOnly: BlockEligibilityFn = ({ showSurveySection }) => Boolean(showSu
 
 const salesPremiumOnly: BlockEligibilityFn = ({ presetId }) => presetId === "residential_sales_premium";
 
-const auroraOnly: BlockEligibilityFn = ({ presetId }) => presetId === "residential_aurora";
+const retiredPreset: BlockEligibilityFn = () => false;
 
 // ─── Registry ─────────────────────────────────────────────────────────────────
 
@@ -359,7 +359,7 @@ export const WEB_RENDERER_REGISTRY: Partial<Record<ProposalBlockId, WebBlockMeta
   system_layout: {
     pageDataAttr: "system-layout",
     bridgeKey: "afterSystemLayout",
-    eligibility: auroraOnly,
+    eligibility: retiredPreset,
     renderKey: "aurora_system_layout",
   },
 
@@ -371,7 +371,7 @@ export const WEB_RENDERER_REGISTRY: Partial<Record<ProposalBlockId, WebBlockMeta
   subsidy_clarity: {
     pageDataAttr: "subsidy",
     bridgeKey: "afterSubsidy",
-    eligibility: auroraOnly,
+    eligibility: retiredPreset,
     renderKey: "aurora_subsidy_clarity",
   },
 
@@ -382,7 +382,7 @@ export const WEB_RENDERER_REGISTRY: Partial<Record<ProposalBlockId, WebBlockMeta
   technical_summary: {
     pageDataAttr: "technical-summary",
     bridgeKey: "afterSummary",
-    eligibility: auroraOnly,
+    eligibility: retiredPreset,
     renderKey: "aurora_technical_summary",
   },
 };

@@ -19,7 +19,7 @@ import {
   usesInstitutionalRenderer,
 } from "@/lib/sales-premium-styles";
 import { compileProposalDocument } from "@/lib/proposal-document-ir";
-import { RESIDENTIAL_WEB_RENDERER_PRESETS } from "@/lib/proposal-preset-engine";
+import { RESIDENTIAL_WEB_RENDERER_PRESETS, normalizePresetId } from "@/lib/proposal-preset-engine";
 import { shouldShowPdfWatermark } from "@/lib/billing/entitlements";
 import { ProposalWatermarkShell } from "@/components/proposals/proposal-watermark-shell";
 import { SolsticeProposalRenderer } from "@/components/proposals/solstice/solstice-proposal-renderer";
@@ -102,9 +102,10 @@ export default async function PublicProposalPage({ params }: PageProps) {
       ? (proposal as { organization_id: string }).organization_id
       : null;
   const showWatermark = await shouldShowPdfWatermark(orgId);
+  const presetId = normalizePresetId(proposal.preset_id);
 
   // ── Commercial executive preset — render the premium commercial view ──────
-  if (proposal.preset_id === "commercial_executive") {
+  if (presetId === "commercial_executive") {
     return (
       <ProposalWatermarkShell enabled={showWatermark}>
         <CommercialProposalView
@@ -122,7 +123,7 @@ export default async function PublicProposalPage({ params }: PageProps) {
   }
 
   // ── Sales Premium — style-specific renderer ───────────────────────────────
-  if (proposal.preset_id === "residential_sales_premium") {
+  if (presetId === "residential_sales_premium") {
     const spStyle = resolveSalesPremiumStyle(mergedInput);
     if (usesInstitutionalRenderer(spStyle)) {
       return (
@@ -149,7 +150,7 @@ export default async function PublicProposalPage({ params }: PageProps) {
   }
 
   // ── Solstice — modern scroll masterplan renderer ───────────────────────────
-  if (proposal.preset_id === "residential_solstice") {
+  if (presetId === "residential_solstice") {
     return (
       <ProposalWatermarkShell enabled={showWatermark}>
         <SolsticeProposalRenderer pptInput={mergedInput} summary={liveSummary} />
@@ -158,7 +159,7 @@ export default async function PublicProposalPage({ params }: PageProps) {
   }
 
   // ── Executive Premium NextGen MVP — isolated 5-page renderer ─────────────
-  if (proposal.preset_id === "residential_executive") {
+  if (presetId === "residential_executive") {
     return (
       <ProposalWatermarkShell enabled={showWatermark}>
         <ExecutivePremiumNextgenRenderer
@@ -173,12 +174,12 @@ export default async function PublicProposalPage({ params }: PageProps) {
   }
 
   // ── New residential presets — render via ProposalWebRenderer ─────────────
-  if ((RESIDENTIAL_WEB_RENDERER_PRESETS as ReadonlyArray<string>).includes(proposal.preset_id ?? "")) {
+  if ((RESIDENTIAL_WEB_RENDERER_PRESETS as ReadonlyArray<string>).includes(presetId)) {
     const leadId = proposal.lead_id?.trim() ? proposal.lead_id.trim() : null;
     const surveyStatus = await getLeadSurveyStatus(leadId);
     const showSurvey = isLeadSurveyCompleteForProposal(surveyStatus);
     const doc = compileProposalDocument(id, mergedInput, liveSummary, {
-      presetId: proposal.preset_id ?? "residential_sales_premium",
+      presetId: presetId ?? "residential_sales_premium",
     });
     return (
       <ProposalWatermarkShell enabled={showWatermark}>

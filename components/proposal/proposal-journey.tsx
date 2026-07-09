@@ -113,13 +113,9 @@ export function ProposalJourneyProgress({
         : billAuditBacked
           ? JOURNEY_STEPS_SALES_PREMIUM_BILL
           : JOURNEY_STEPS_SALES_PREMIUM_REQ
-      : presetId === "residential_aurora"
-        ? billAuditBacked
-          ? JOURNEY_STEPS_AURORA_BILL
-          : JOURNEY_STEPS_AURORA_REQ
-        : billAuditBacked
-          ? JOURNEY_STEPS_BILL
-          : JOURNEY_STEPS_REQUIREMENT;
+      : billAuditBacked
+        ? JOURNEY_STEPS_BILL
+        : JOURNEY_STEPS_REQUIREMENT;
   const steps = base.filter((s) => s.id !== "survey" || showSurvey);
 
   return (

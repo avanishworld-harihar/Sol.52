@@ -40,7 +40,6 @@ export const PROPOSAL_PRESET_IDS = [
   "residential_sales_premium",
   "residential_bank_loan",
   "residential_executive",
-  "residential_aurora",
   "residential_solstice",
 ] as const;
 
@@ -50,7 +49,6 @@ export type ProposalPresetId = (typeof PROPOSAL_PRESET_IDS)[number];
 /** Presets still using ProposalWebRenderer block loop (not isolated document renderers). */
 export const RESIDENTIAL_WEB_RENDERER_PRESETS: ReadonlyArray<ProposalPresetId> = [
   "residential_bank_loan",
-  "residential_aurora",
 ];
 
 export function isValidPresetId(id: unknown): id is ProposalPresetId {
@@ -58,6 +56,7 @@ export function isValidPresetId(id: unknown): id is ProposalPresetId {
 }
 
 export function normalizePresetId(raw: string | null | undefined): ProposalPresetId {
+  if (raw === "residential_aurora") return "residential_sales_premium";
   if (raw && isValidPresetId(raw)) return raw;
   return "residential_sales_premium";
 }
@@ -165,38 +164,6 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     default_data_source: "requirement",
     default_blocks: [],
     optional_blocks: [],
-  },
-
-  residential_aurora: {
-    id: "residential_aurora",
-    label: "Aurora",
-    description:
-      "World-class techno-commercial proposal — visually rich, educationally deep, app-synced. " +
-      "Sections: cover → about → bill/system → summary → full BOM → ROI → commercial → payment → documents. " +
-      "Easy English. Aurora is the clearest way to see your solar.",
-    bill_requirement: "optional",
-    theme_hint: "residential",
-    default_data_source: "bill",
-    default_blocks: [
-      "cover_page",
-      "about_company",
-      "bill_intelligence",       // bill path — shows when billAuditBacked
-      "system_requirements",     // requirement path — shows when !billAuditBacked
-      "technical_summary",       // always — Aurora richer system summary
-      "bom_material_list",
-      "roi_savings",
-      "financial_summary",
-      "payment_terms",
-      "customer_documents_required",
-    ],
-    optional_blocks: [
-      "system_layout",
-      "subsidy_clarity",
-      "warranty",
-      "amc_maintenance",
-      "terms_conditions",
-      "project_gallery",
-    ],
   },
 
   // ── Legacy presets ────────────────────────────────────────────────────────
