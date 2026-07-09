@@ -1,6 +1,28 @@
 import { supabase } from "@/lib/supabase";
 import { formatPipelineDisplayName, listCustomers, listPipelineProjects } from "@/lib/supabase";
 
+/**
+ * When a project has `current_stage` set (Phase 3A model) but `next_action` /
+ * `install_progress` are stale (e.g. project was advanced before the sync fix),
+ * derive them from the stage so the dashboard card is always accurate.
+ */
+const STAGE_NEXT_ACTION: Record<string, string> = {
+  survey: "Site survey pending",
+  design: "Design in progress",
+  approval: "Approval pending",
+  installation: "Installation in progress",
+  net_metering: "Net metering pending",
+  completed: "Installation complete",
+};
+const STAGE_MIN_PROGRESS: Record<string, number> = {
+  survey: 5,
+  design: 20,
+  approval: 38,
+  installation: 60,
+  net_metering: 82,
+  completed: 100,
+};
+
 function isNum(v: unknown): v is number {
   return typeof v === "number" && Number.isFinite(v);
 }
@@ -105,16 +127,38 @@ async function getRecentActiveProjects(): Promise<DashboardRecentProject[]> {
     .filter((row) => row.dashboard_visible !== false && !row.archived_at)
     .sort((a, b) => Date.parse(b.updated_at ?? "") - Date.parse(a.updated_at ?? ""))
     .slice(0, 3)
-    .map((row) => ({
-      id: row.id,
-      name: formatPipelineDisplayName(row.official_name, row.lead_name),
-      detail: row.detail?.trim() || "Active project",
-      capacityKw: formatCapacity(row.capacity_kw),
-      status: normalizeProjectStatus(row.status),
-      installProgress: Number.isFinite(row.install_progress) ? row.install_progress : 0,
-      nextAction: row.next_action,
-      updatedAt: row.updated_at
-    }));
+    .map((row) => {
+      const stage = row.current_stage?.trim() ?? "";
+      // When current_stage is present, ensure install_progress and next_action
+      // reflect the real pipeline position even if the fields weren't updated
+      // (pre-fix projects or manual edits that left them stale).
+      const stageMinProgress = stage ? (STAGE_MIN_PROGRESS[stage] ?? 0) : 0;
+      const rawProgress = Number.isFinite(row.install_progress) ? row.install_progress : 0;
+      const inferredProgress = Math.max(rawProgress, stageMinProgress);
+
+      // Override next_action only when it's still the proposal-creation default
+      // ("Site survey pending") but the project has moved past survey stage.
+      const SURVEY_DEFAULT = "Site survey pending";
+      const rawNextAction = row.next_action?.trim() ?? null;
+      const nextActionIsStale =
+        (!rawNextAction || rawNextAction === SURVEY_DEFAULT) &&
+        stage &&
+        stage !== "survey";
+      const inferredNextAction = nextActionIsStale
+        ? (STAGE_NEXT_ACTION[stage] ?? rawNextAction)
+        : rawNextAction;
+
+      return {
+        id: row.id,
+        name: formatPipelineDisplayName(row.official_name, row.lead_name),
+        detail: row.detail?.trim() || "Active project",
+        capacityKw: formatCapacity(row.capacity_kw),
+        status: normalizeProjectStatus(row.status),
+        installProgress: inferredProgress,
+        nextAction: inferredNextAction,
+        updatedAt: row.updated_at,
+      };
+    });
 }
 
 export interface DashboardStatsResult {

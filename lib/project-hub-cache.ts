@@ -14,6 +14,7 @@ import {
   projectSurveyKey,
   projectTasksKey,
 } from "@/lib/project-api-client";
+import { DASHBOARD_STATS_SWR_KEY } from "@/lib/dashboard-stats-client";
 import { buildProjectListUrl } from "@/lib/project-list-utils";
 
 export async function revalidateProjectHubCaches(projectId: string): Promise<void> {
@@ -45,6 +46,7 @@ export async function revalidateProjectHubCaches(projectId: string): Promise<voi
     mutate(buildProjectListUrl({ view: "hidden" })),
     mutate(buildProjectListUrl({ view: "archived" })),
     mutate(PROJECT_DASHBOARD_STATS_KEY),
+    mutate(DASHBOARD_STATS_SWR_KEY),
     mutate(PROJECT_OUTSTANDING_COLLECTIONS_KEY),
   ]);
 }

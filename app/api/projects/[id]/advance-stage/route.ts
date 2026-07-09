@@ -16,8 +16,28 @@ import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase } from "@/lib/supabase";
 import { getProjectDetail } from "@/lib/project-store";
 import { logStageChanged } from "@/lib/project-activity-logger";
-import { getNextStage, isProjectStageId } from "@/lib/project-stages";
+import { getNextStage, isProjectStageId, type ProjectStageId } from "@/lib/project-stages";
 import { getTaskTemplatesForStage } from "@/lib/project-task-templates";
+
+/** Default next_action label for dashboard card when stage advances. */
+const STAGE_DEFAULT_NEXT_ACTION: Record<ProjectStageId, string> = {
+  survey: "Site survey pending",
+  design: "Design in progress",
+  approval: "Approval pending",
+  installation: "Installation in progress",
+  net_metering: "Net metering pending",
+  completed: "Installation complete",
+};
+
+/** install_progress % auto-set when advancing to a stage. */
+const STAGE_DEFAULT_PROGRESS: Record<ProjectStageId, number> = {
+  survey: 5,
+  design: 20,
+  approval: 38,
+  installation: 60,
+  net_metering: 82,
+  completed: 100,
+};
 
 export const dynamic = "force-dynamic";
 
@@ -69,6 +89,9 @@ export async function POST(req: NextRequest, ctx: RouteCtx) {
       current_stage: nextStage,
       stage_status: "in_progress",
       updated_at: now,
+      // Sync dashboard-visible fields so card reflects the real pipeline stage.
+      next_action: STAGE_DEFAULT_NEXT_ACTION[nextStage],
+      install_progress: STAGE_DEFAULT_PROGRESS[nextStage],
     };
 
     // Auto-stamp actual_completion when completing

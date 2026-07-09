@@ -95,6 +95,8 @@ export type PipelineProjectRow = {
   dashboard_visible: boolean;
   /** CRM v2 — soft-archive timestamp (end-of-life). */
   archived_at: string | null;
+  /** Phase 3A pipeline stage — used to infer dashboard card labels when next_action is stale. */
+  current_stage?: string | null;
 };
 
 export type ListPipelineProjectsOptions = {
@@ -195,7 +197,8 @@ export async function listPipelineProjects(options?: ListPipelineProjectsOptions
       next_action: r.next_action != null ? String(r.next_action) : null,
       updated_at: r.updated_at != null ? String(r.updated_at) : null,
       dashboard_visible: r.dashboard_visible === false ? false : true,
-      archived_at: r.archived_at != null ? String(r.archived_at) : null
+      archived_at: r.archived_at != null ? String(r.archived_at) : null,
+      current_stage: r.current_stage != null ? String(r.current_stage) : null
     };
   });
 
