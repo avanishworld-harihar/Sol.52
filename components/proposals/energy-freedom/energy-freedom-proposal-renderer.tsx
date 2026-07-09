@@ -40,7 +40,7 @@ export function EnergyFreedomProposalRenderer({
   });
 
   const brandName = m.brand_display || summary.installer || "Harihar Solar";
-  const cityLabel = cityFromLocation(m.location_line || summary.location || "");
+  const cityLabel = cityFromLocation(m.location_line || pptInput.location || "");
 
   useEffect(() => {
     const syncLogo = () => {
