@@ -126,6 +126,8 @@ export type ExecutivePremiumEditorialModel = {
   impact: {
     co2_tons: number;
     trees: number;
+    /** Petrol-car pollution avoided — narrative support (≈1.9 t CO₂/car/year). */
+    petrol_car_years_equivalent: number;
   };
   architecture: {
     bom_rows: EditorialBomRow[];
@@ -148,6 +150,7 @@ export type EditorialClosingModel = {
   customer_name: string;
   annual_units: number;
   annual_savings_inr: number;
+  lifetime_wealth_inr: number;
   installer_name: string;
   contact_line: string;
   qr_url?: string;

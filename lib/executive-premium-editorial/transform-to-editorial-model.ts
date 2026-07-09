@@ -133,6 +133,10 @@ export function transformToEditorialModel(
     impact: {
       co2_tons: summary.environmental.lifetimeCo2TonsSaved,
       trees: summary.environmental.treeEquivalent,
+      petrol_car_years_equivalent: Math.max(
+        1,
+        Math.round((summary.environmental.lifetimeCo2TonsSaved / 1.9) * 10) / 10
+      ),
     },
     architecture: { bom_rows },
     engineering: buildEditorialEngineeringModel(pptInput, summary),
@@ -171,6 +175,7 @@ export function transformToEditorialModel(
       customer_name: customer,
       annual_units: summary.annualGen,
       annual_savings_inr: summary.annualSaving,
+      lifetime_wealth_inr: summary.lifetime25Profit,
       installer_name: installerLabel,
       contact_line: summary.contact,
       qr_url:

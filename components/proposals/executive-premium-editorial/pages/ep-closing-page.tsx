@@ -15,26 +15,26 @@ export function EpClosingPage({ data }: Props) {
 
       <div className="ep-gl-closing-hero">
         <p className="ep-gl-closing-eyebrow">Congratulations{data.customer_name ? `, ${data.customer_name}` : ""}</p>
-        <h1 className="ep-gl-closing-title">Your roof is ready to start generating.</h1>
+        <h1 className="ep-gl-closing-title">Your family is now ready to generate</h1>
 
-        <div className="ep-gl-closing-stats">
-          <div className="ep-gl-closing-stat">
-            <span className="ep-gl-closing-stat-value">{units}</span>
-            <span className="ep-gl-closing-stat-unit">Units / Year</span>
-            <span className="ep-gl-closing-stat-label">Clean energy your home produces</span>
+        <div className="ep-gl-closing-highlights">
+          <div className="ep-gl-closing-highlight">
+            <span className="ep-gl-closing-highlight-value">{units}</span>
+            <span className="ep-gl-closing-highlight-label">Units Every Year</span>
           </div>
-          <div className="ep-gl-closing-stat-divider" aria-hidden />
-          <div className="ep-gl-closing-stat">
-            <span className="ep-gl-closing-stat-value">₹{fmtInr(data.annual_savings_inr)}</span>
-            <span className="ep-gl-closing-stat-unit">Estimated Savings / Year</span>
-            <span className="ep-gl-closing-stat-label">Money back in your pocket</span>
+
+          <div className="ep-gl-closing-highlight ep-gl-closing-highlight--wealth">
+            <span className="ep-gl-closing-wealth-kicker">Lifetime Wealth Created</span>
+            <span className="ep-gl-closing-highlight-value ep-gl-closing-wealth-value">
+              ₹{fmtInr(data.lifetime_wealth_inr)}
+            </span>
           </div>
         </div>
       </div>
 
       <div className="ep-gl-closing-cta">
         <div className="ep-gl-closing-contact">
-          <p className="ep-gl-closing-block-title">Reserve Your Installation</p>
+          <p className="ep-gl-closing-block-title">Reserve Installation</p>
           <p className="ep-gl-closing-company">{data.installer_name}</p>
           <p className="ep-gl-closing-contact-line">{data.contact_line}</p>
         </div>
