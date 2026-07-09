@@ -4,11 +4,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Bolt,
   Check,
-  CheckCircle2,
+  ChevronDown,
   Cpu,
   Download,
   Headphones,
-  Leaf,
+  Lock,
   MapPin,
   Phone,
   Plug,
@@ -21,11 +21,16 @@ import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposa
 import { transformToEditorialModel } from "@/lib/executive-premium-editorial/transform-to-editorial-model";
 import { fmtInr, fmtInrSpaced } from "@/lib/executive-premium-editorial/format";
 import type { EditorialBomRow } from "@/lib/executive-premium-editorial/types";
+import {
+  PROPOSAL_BRANDING_UPDATED_EVENT,
+  readProposalBrandingSettings,
+} from "@/lib/proposal-branding-settings";
 import "./solstice-proposal.css";
 
 export type SolsticeProposalRendererProps = {
   pptInput: PremiumProposalPptInput;
   summary: ProposalDeckSummary;
+  installerLogoUrl?: string;
 };
 
 const NAV_SECTIONS = [
@@ -92,10 +97,22 @@ function SolsticeSection({
   );
 }
 
-export function SolsticeProposalRenderer({ pptInput, summary }: SolsticeProposalRendererProps) {
+export function SolsticeProposalRenderer({
+  pptInput,
+  summary,
+  installerLogoUrl: installerLogoUrlProp,
+}: SolsticeProposalRendererProps) {
   const m = useMemo(() => transformToEditorialModel(pptInput, summary), [pptInput, summary]);
   const [activeNav, setActiveNav] = useState<string>(NAV_SECTIONS[0].id);
   const [upiCopied, setUpiCopied] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string | undefined>(() => {
+    return (
+      installerLogoUrlProp?.trim() ||
+      pptInput.installerLogoUrl?.trim() ||
+      m.brand_logo_url?.trim() ||
+      undefined
+    );
+  });
 
   const systemKw = summary.systemKw;
   const dcKwp = metricValue(m.engineering.metrics_rows, "dc capacity");
@@ -113,6 +130,19 @@ export function SolsticeProposalRenderer({ pptInput, summary }: SolsticeProposal
   }, [m.execution.upi_id]);
 
   useEffect(() => {
+    const syncLogo = () => {
+      const fromProp = installerLogoUrlProp?.trim() ?? "";
+      const fromPpt = pptInput.installerLogoUrl?.trim() ?? "";
+      const fromModel = m.brand_logo_url?.trim() ?? "";
+      const fromLocal = readProposalBrandingSettings().installerLogoUrl?.trim() ?? "";
+      setLogoUrl(fromProp || fromModel || fromPpt || fromLocal || undefined);
+    };
+    syncLogo();
+    window.addEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, syncLogo);
+    return () => window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, syncLogo);
+  }, [installerLogoUrlProp, m.brand_logo_url, pptInput.installerLogoUrl]);
+
+  useEffect(() => {
     const onScroll = () => {
       let current: string = NAV_SECTIONS[0].id;
       for (const section of NAV_SECTIONS) {
@@ -126,7 +156,7 @@ export function SolsticeProposalRenderer({ pptInput, summary }: SolsticeProposal
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const logoUrl = pptInput.installerLogoUrl?.trim() || m.brand_logo_url?.trim();
+  const logoUrlResolved = logoUrl?.trim();
   const brandName = m.brand_display || summary.installer || "Harihar Solar";
   const contact = m.closing.contact_line || summary.contact || "";
   const paybackPct = paybackBarWidth(m.economics.payback_years);
@@ -138,9 +168,9 @@ export function SolsticeProposalRenderer({ pptInput, summary }: SolsticeProposal
           <div className="flex items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-x-3">
               <div className="flex shrink-0 items-center gap-x-2">
-                {logoUrl ? (
+                {logoUrlResolved ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={logoUrl} alt={brandName} className="h-10 w-auto max-w-[120px] object-contain" />
+                  <img src={logoUrlResolved} alt={brandName} className="h-10 w-auto max-w-[140px] object-contain" />
                 ) : (
                   <>
                     <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-500">
@@ -192,78 +222,88 @@ export function SolsticeProposalRenderer({ pptInput, summary }: SolsticeProposal
         </div>
       </nav>
 
-      <SolsticeSection variant="hero">
-        <div className="grid items-center gap-8 md:grid-cols-12">
-          <div className="md:col-span-7">
-            <div className="mb-6 inline-flex items-center gap-x-2 rounded-3xl border border-slate-200 bg-white px-4 py-1.5 shadow-sm">
-              <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
-              <span className="text-sm font-semibold text-emerald-600">Personalized Energy Masterplan</span>
+      <SolsticeSection variant="hero" className="solstice-cover-section">
+        <div className="solstice-cover">
+          <div className="solstice-cover-glow solstice-cover-glow--left" aria-hidden />
+          <div className="solstice-cover-glow solstice-cover-glow--right" aria-hidden />
+          <div className="solstice-cover-grid" aria-hidden />
+
+          <div className="solstice-cover-inner">
+            <div className="solstice-cover-top">
+              <span className="solstice-confidential-badge">
+                <Lock className="h-3.5 w-3.5" aria-hidden />
+                Confidential
+              </span>
             </div>
 
-            <h1 className="solstice-hero-title mb-4">
-              Your roof is ready
-              <br />
-              <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">
-                to start generating.
-              </span>
+            <div className="solstice-cover-brand">
+              {logoUrlResolved ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={logoUrlResolved}
+                  alt={brandName}
+                  className="solstice-cover-logo"
+                />
+              ) : (
+                <div className="solstice-cover-logo-fallback" aria-hidden>
+                  <Sun className="h-10 w-10 text-amber-500" />
+                </div>
+              )}
+              <p className="solstice-cover-company">{brandName}</p>
+            </div>
+
+            <h1 className="solstice-cover-title heading-serif">
+              Personalized Energy
+              <span className="solstice-cover-title-accent"> Masterplan</span>
             </h1>
 
-            <div className="mb-8 flex items-center gap-x-4">
-              <div>
-                <div className="text-3xl font-semibold">{m.customer_name}</div>
-                <div className="flex items-center gap-x-2 text-slate-600">
-                  <MapPin className="h-4 w-4 shrink-0" />
-                  <span>{m.location_line}</span>
-                </div>
-              </div>
-            </div>
+            <div className="solstice-cover-divider" aria-hidden />
 
-            <div className="flex flex-wrap gap-3">
-              <div className="flex items-center gap-x-3 rounded-3xl border border-slate-200 bg-white px-6 py-3 shadow-sm">
-                <div>
-                  <div className="text-xs text-slate-500">SYSTEM SIZE</div>
-                  <div className="text-2xl font-bold tracking-tighter">{systemKw} kW</div>
-                </div>
-                <div className="h-9 w-px bg-slate-200" />
-                <CheckCircle2 className="h-6 w-6 text-emerald-600" />
-              </div>
-              <div className="flex items-center gap-x-2 rounded-3xl border border-emerald-200 bg-emerald-50 px-6 py-3 font-semibold text-emerald-700">
-                <Leaf className="h-4 w-4" />
-                <span>100% Clean Energy</span>
-              </div>
-            </div>
-          </div>
+            <p className="solstice-cover-eyebrow">Prepared Exclusively For</p>
+            <p className="solstice-cover-client">{m.customer_name}</p>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm md:col-span-5">
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <div className="mb-1 text-sm text-slate-500">ANNUAL GENERATION</div>
-                <div className="metric-value text-amber-600">{fmtInr(m.closing.annual_units)}</div>
-                <div className="text-sm font-medium">Units / Year</div>
+            {m.location_line ? (
+              <div className="solstice-cover-location">
+                <MapPin className="h-4 w-4 shrink-0 text-amber-500" aria-hidden />
+                <span>{m.location_line}</span>
               </div>
-              <div>
-                <div className="mb-1 text-sm text-slate-500">ESTIMATED SAVINGS</div>
-                <div className="metric-value text-emerald-600">₹{fmtInr(m.closing.annual_savings_inr)}</div>
-                <div className="text-sm font-medium">Per Year</div>
-              </div>
-              <div className="col-span-2 border-t pt-4">
-                <div className="mb-2 flex justify-between text-sm">
-                  <span className="text-slate-600">Payback Period</span>
-                  <span className="font-bold text-slate-900">{m.economics.payback_years} Years</span>
-                </div>
-                <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                  <div
-                    className="h-2 rounded-full bg-gradient-to-r from-amber-400 to-emerald-500"
-                    style={{ width: paybackPct }}
-                  />
-                </div>
-              </div>
-            </div>
+            ) : null}
+
+            <a href="#overview" className="solstice-cover-scroll solstice-no-print">
+              <span>Explore your plan</span>
+              <ChevronDown className="h-4 w-4" aria-hidden />
+            </a>
           </div>
         </div>
       </SolsticeSection>
 
-      <SolsticeSection variant="tight-top">
+      <SolsticeSection id="overview" variant="tight-top">
+        <div className="solstice-snapshot-bar">
+          <div className="solstice-snapshot-item">
+            <span className="solstice-snapshot-label">System Size</span>
+            <span className="solstice-snapshot-value">{systemKw} kW</span>
+          </div>
+          <div className="solstice-snapshot-item">
+            <span className="solstice-snapshot-label">Annual Generation</span>
+            <span className="solstice-snapshot-value text-amber-600">
+              {Math.round(m.closing.annual_units).toLocaleString("en-IN")} Units
+            </span>
+          </div>
+          <div className="solstice-snapshot-item">
+            <span className="solstice-snapshot-label">Estimated Savings</span>
+            <span className="solstice-snapshot-value text-emerald-600">
+              ₹{fmtInr(m.closing.annual_savings_inr)}/yr
+            </span>
+          </div>
+          <div className="solstice-snapshot-item solstice-snapshot-item--payback">
+            <span className="solstice-snapshot-label">Payback</span>
+            <span className="solstice-snapshot-value">{m.economics.payback_years} Years</span>
+            <div className="solstice-snapshot-bar-track">
+              <div className="solstice-snapshot-bar-fill" style={{ width: paybackPct }} />
+            </div>
+          </div>
+        </div>
+
         <div className="solstice-stat-grid">
           <div className="stat-pill flex items-center gap-x-4 rounded-3xl border border-slate-200 p-6">
             <Bolt className="h-10 w-10 text-amber-500" />

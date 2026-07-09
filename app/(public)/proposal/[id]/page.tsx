@@ -153,7 +153,11 @@ export default async function PublicProposalPage({ params }: PageProps) {
   if (presetId === "residential_solstice") {
     return (
       <ProposalWatermarkShell enabled={showWatermark}>
-        <SolsticeProposalRenderer pptInput={mergedInput} summary={liveSummary} />
+        <SolsticeProposalRenderer
+          pptInput={mergedInput}
+          summary={liveSummary}
+          installerLogoUrl={installerLogoUrl}
+        />
       </ProposalWatermarkShell>
     );
   }

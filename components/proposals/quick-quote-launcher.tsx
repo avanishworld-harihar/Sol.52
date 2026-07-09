@@ -9,7 +9,7 @@ import {
   INSTALLER_RATE_CARD_UPDATED_EVENT,
   loadInstallerRateCard,
 } from "@/lib/installer-rate-card-client";
-import { createQuickRequirementProposal } from "@/lib/quick-requirement-proposal-client";
+import { createQuickRequirementProposal, resolveQuickQuotePresetOptions } from "@/lib/quick-requirement-proposal-client";
 import { detectConnectionPhaseFromText, type ConnectionPhase } from "@/lib/connection-phase-pricing";
 import { proposalHubCustomerLabel } from "@/lib/proposal-customer-placeholder";
 import {
@@ -215,7 +215,10 @@ export function QuickQuoteLauncher({
         </div>
         {!compact ? (
           <Link
-            href={buildProposalUrl({ preset: "residential_sales_premium", inputMode: "bill" })}
+            href={buildProposalUrl({
+              preset: resolveQuickQuotePresetOptions().presetId,
+              inputMode: "bill",
+            })}
             className="hidden shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:hover:bg-white/10 dark:hover:text-slate-200 sm:inline-flex"
           >
             <FileText className="h-3.5 w-3.5" aria-hidden />
@@ -284,7 +287,10 @@ export function QuickQuoteLauncher({
         </Link>
         {compact ? (
           <Link
-            href={buildProposalUrl({ preset: "residential_sales_premium", inputMode: "bill" })}
+            href={buildProposalUrl({
+              preset: resolveQuickQuotePresetOptions().presetId,
+              inputMode: "bill",
+            })}
             className="text-slate-500 underline-offset-2 hover:text-emerald-700 hover:underline dark:text-slate-400"
           >
             {labels.billQuote}

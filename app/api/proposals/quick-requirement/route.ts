@@ -17,6 +17,7 @@ import {
 } from "@/lib/proposal-pricing-sync";
 import { summarizeProposalDeck } from "@/lib/proposal-ppt";
 import { PROPOSAL_PRESET_IDS } from "@/lib/proposal-preset-engine";
+import { SALES_PREMIUM_STYLE_IDS } from "@/lib/sales-premium-styles";
 import { appendActivityEvent } from "@/lib/followup-store";
 import { residentialConnectionPhaseSchema } from "@/lib/residential-requirements-schema";
 import { bumpLeadStatus, upsertPipelineProject } from "@/lib/supabase";
@@ -33,6 +34,8 @@ const bodySchema = z.object({
   kw: z.coerce.number().min(0.5).max(10000),
   customerName: z.string().max(120).optional(),
   presetId: z.enum(PROPOSAL_PRESET_IDS).optional(),
+  salesPremiumStyle: z.enum(SALES_PREMIUM_STYLE_IDS).optional(),
+  galleryThemeKey: z.string().max(64).optional(),
   leadId: z.string().max(120).nullish(),
   connectionPhase: residentialConnectionPhaseSchema.optional(),
 });
@@ -44,6 +47,8 @@ export async function POST(req: NextRequest) {
       kw: payload.kw,
       customerName: payload.customerName,
       presetId: payload.presetId,
+      salesPremiumStyle: payload.salesPremiumStyle,
+      galleryThemeKey: payload.galleryThemeKey,
       leadId: payload.leadId ?? null,
       connectionPhase: payload.connectionPhase,
     });

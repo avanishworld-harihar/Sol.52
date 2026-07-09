@@ -1,6 +1,9 @@
 "use client";
 
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
+import { readDefaultResidentialPreset } from "@/lib/proposal-default-preset-storage";
+import { readDefaultGalleryKey } from "@/lib/proposal-template-gallery-storage";
+import { readActiveSalesPremiumStyle, type SalesPremiumStyleId } from "@/lib/sales-premium-styles";
 
 export type QuickRequirementCreateResult = {
   ok: boolean;
@@ -15,17 +18,44 @@ export type QuickRequirementCreateResult = {
   code?: string;
 };
 
+export function resolveQuickQuotePresetOptions(): {
+  presetId: ProposalPresetId;
+  salesPremiumStyle?: SalesPremiumStyleId;
+  galleryThemeKey?: string;
+} {
+  const presetId = readDefaultResidentialPreset();
+  if (presetId === "residential_sales_premium") {
+    return {
+      presetId,
+      salesPremiumStyle: readActiveSalesPremiumStyle(),
+      galleryThemeKey: readDefaultGalleryKey() ?? undefined,
+    };
+  }
+  if (presetId === "residential_solstice") {
+    return { presetId, galleryThemeKey: "solstice" };
+  }
+  return { presetId };
+}
+
 export async function createQuickRequirementProposal(input: {
   kw: number;
   customerName?: string;
   presetId?: ProposalPresetId;
+  salesPremiumStyle?: SalesPremiumStyleId;
+  galleryThemeKey?: string;
   leadId?: string | null;
   connectionPhase?: "single_phase" | "three_phase";
 }): Promise<QuickRequirementCreateResult> {
   try {
-    const body: Record<string, unknown> = { kw: input.kw };
+    const presetOptions = resolveQuickQuotePresetOptions();
+    const presetId = input.presetId ?? presetOptions.presetId;
+    const salesPremiumStyle = input.salesPremiumStyle ?? presetOptions.salesPremiumStyle;
+    const galleryThemeKey = input.galleryThemeKey ?? presetOptions.galleryThemeKey;
+
+    const body: Record<string, unknown> = { kw: input.kw, presetId };
     if (input.customerName?.trim()) body.customerName = input.customerName.trim();
-    if (input.presetId) body.presetId = input.presetId;
+    if (salesPremiumStyle) body.salesPremiumStyle = salesPremiumStyle;
+    if (galleryThemeKey) body.galleryThemeKey = galleryThemeKey;
     if (input.leadId?.trim()) body.leadId = input.leadId.trim();
     if (input.connectionPhase) body.connectionPhase = input.connectionPhase;
 

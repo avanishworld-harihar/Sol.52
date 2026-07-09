@@ -71,6 +71,281 @@
   padding-bottom: clamp(3rem, 6vw, 4rem);
 }
 
+.solstice-cover-section.solstice-section--hero {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* Confidential cover */
+.solstice-cover {
+  position: relative;
+  min-height: min(92vh, 52rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 0 0 2rem 2rem;
+  background:
+    radial-gradient(120% 90% at 50% -10%, rgb(245 158 11 / 0.14) 0%, transparent 55%),
+    radial-gradient(80% 60% at 100% 100%, rgb(16 185 129 / 0.08) 0%, transparent 50%),
+    linear-gradient(180deg, #ffffff 0%, #f8fafc 72%, #f1f5f9 100%);
+  border: 1px solid #e2e8f0;
+  box-shadow:
+    0 24px 48px -24px rgb(15 23 42 / 0.12),
+    inset 0 1px 0 rgb(255 255 255 / 0.9);
+}
+
+.solstice-cover-glow {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(64px);
+  pointer-events: none;
+}
+
+.solstice-cover-glow--left {
+  width: 22rem;
+  height: 22rem;
+  top: -6rem;
+  left: -4rem;
+  background: rgb(245 158 11 / 0.22);
+}
+
+.solstice-cover-glow--right {
+  width: 18rem;
+  height: 18rem;
+  bottom: -4rem;
+  right: -2rem;
+  background: rgb(16 185 129 / 0.16);
+}
+
+.solstice-cover-grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.35;
+  background-image:
+    linear-gradient(rgb(148 163 184 / 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(148 163 184 / 0.12) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, black 20%, transparent 100%);
+}
+
+.solstice-cover-inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: clamp(2.5rem, 6vw, 4rem) var(--solstice-gutter);
+  text-align: center;
+}
+
+.solstice-cover-top {
+  display: flex;
+  justify-content: center;
+  margin-bottom: clamp(1.75rem, 4vw, 2.5rem);
+}
+
+.solstice-confidential-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgb(245 158 11 / 0.35);
+  background: rgb(255 255 255 / 0.85);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #b45309;
+  backdrop-filter: blur(8px);
+}
+
+.solstice-cover-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: clamp(1.5rem, 4vw, 2.25rem);
+}
+
+.solstice-cover-logo {
+  display: block;
+  max-height: clamp(4.5rem, 12vw, 6.5rem);
+  max-width: min(18rem, 78vw);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 20px rgb(15 23 42 / 0.08));
+}
+
+.solstice-cover-logo-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 5rem;
+  height: 5rem;
+  border-radius: 1.5rem;
+  background: linear-gradient(145deg, #fff7ed, #ffedd5);
+  border: 1px solid #fed7aa;
+  box-shadow: 0 12px 28px -12px rgb(245 158 11 / 0.45);
+}
+
+.solstice-cover-company {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.solstice-cover-title {
+  margin: 0;
+  font-size: clamp(2rem, 6vw, 3.25rem);
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #0f172a;
+}
+
+.solstice-cover-title-accent {
+  display: block;
+  margin-top: 0.15em;
+  background: linear-gradient(120deg, #f59e0b 0%, #ea580c 55%, #d97706 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.solstice-cover-divider {
+  width: 3.5rem;
+  height: 3px;
+  margin: 1.75rem auto 1.5rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f59e0b, #10b981);
+}
+
+.solstice-cover-eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.solstice-cover-client {
+  margin: 0 0 1.25rem;
+  font-size: clamp(1.5rem, 4.5vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+.solstice-cover-location {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin: 0 auto;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: rgb(255 255 255 / 0.8);
+  font-size: 0.92rem;
+  color: #475569;
+}
+
+.solstice-cover-scroll {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: clamp(2rem, 5vw, 3rem);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.solstice-cover-scroll:hover {
+  color: #f59e0b;
+}
+
+/* Overview snapshot (metrics moved off confidential cover) */
+.solstice-snapshot-bar {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+  padding: 1.1rem;
+  border-radius: 1.25rem;
+  border: 1px solid #e2e8f0;
+  background: white;
+  box-shadow: 0 12px 28px -20px rgb(15 23 42 / 0.2);
+}
+
+@media (min-width: 768px) {
+  .solstice-snapshot-bar {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+}
+
+.solstice-snapshot-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.65rem 0.85rem;
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .solstice-snapshot-item {
+    padding: 1.25rem 1.35rem;
+  }
+
+  .solstice-snapshot-item:not(:last-child) {
+    border-right: 1px solid #e2e8f0;
+  }
+}
+
+.solstice-snapshot-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.solstice-snapshot-value {
+  font-size: clamp(1.15rem, 2.5vw, 1.5rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+  line-height: 1.1;
+}
+
+.solstice-snapshot-item--payback .solstice-snapshot-bar-track {
+  margin-top: 0.45rem;
+  height: 0.35rem;
+  border-radius: 999px;
+  background: #f1f5f9;
+  overflow: hidden;
+}
+
+.solstice-snapshot-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f59e0b, #10b981);
+}
+
 .solstice-section--tight-top {
   padding-top: 0;
 }

@@ -12,6 +12,7 @@ import { syncResidentialSolarToLineItems } from "@/lib/residential-solar-engine"
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { summarizeProposalDeck } from "@/lib/proposal-ppt";
 import { getPresetDefaultLayout, type ProposalPresetId } from "@/lib/proposal-preset-engine";
+import type { SalesPremiumStyleId } from "@/lib/sales-premium-styles";
 import { applyConnectionPhaseSelection, type ConnectionPhase } from "@/lib/connection-phase-pricing";
 import { templateCustomerName } from "@/lib/duplicate-proposal";
 import { anonymousQuickQuoteCustomerName } from "@/lib/proposal-customer-placeholder";
@@ -21,6 +22,8 @@ export type QuickRequirementProposalPayload = {
   kw: number;
   customerName?: string;
   presetId?: ProposalPresetId;
+  salesPremiumStyle?: SalesPremiumStyleId;
+  galleryThemeKey?: string;
   leadId?: string | null;
   connectionPhase?: ConnectionPhase;
 };
@@ -68,6 +71,14 @@ export async function buildQuickRequirementProposal(
     residentialConfig: normalizeResidentialConfig(residentialConfig),
     proposalLayout,
     pricingSource: "rate_card",
+    ...(presetId === "residential_sales_premium" && input.salesPremiumStyle
+      ? { salesPremiumStyle: input.salesPremiumStyle }
+      : {}),
+    ...(input.galleryThemeKey
+      ? { galleryThemeKey: input.galleryThemeKey }
+      : presetId === "residential_solstice"
+        ? { galleryThemeKey: "solstice" }
+        : {}),
   };
 
   const summary = summarizeProposalDeck(pptInput);
