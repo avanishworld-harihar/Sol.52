@@ -76,7 +76,6 @@ export function parsePrefillFromSearchParams(params: URLSearchParams): BuilderPr
     "residential_executive",
     "residential_solstice",
     "residential_energy_freedom",
-    "residential_horizon",
   ];
   if (preset && KNOWN_PRESETS.includes(preset)) {
     prefill.preset = preset as ProposalPresetId;

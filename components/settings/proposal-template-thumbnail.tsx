@@ -23,7 +23,6 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
       {variant === "golden" ? <GoldenThumb size={size} /> : null}
       {variant === "pearl" ? <PearlThumb size={size} /> : null}
       {variant === "slate" ? <SlateThumb size={size} /> : null}
-      {variant === "horizon" ? <HorizonThumb size={size} /> : null}
       {variant === "ember" ? <EmberThumb size={size} /> : null}
       {variant === "solstice" ? <SolsticeThumb size={size} /> : null}
       {variant === "freedom" ? <FreedomThumb size={size} /> : null}
@@ -34,7 +33,6 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
         "golden",
         "pearl",
         "slate",
-        "horizon",
         "ember",
         "solstice",
         "freedom",
@@ -158,32 +156,6 @@ function SlateThumb({ size }: { size: "card" | "preview" }) {
           <span className="font-semibold uppercase tracking-wider text-[#86868b]">Client</span>
           <span className="font-semibold uppercase tracking-wider text-[#86868b]">System</span>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function HorizonThumb({ size }: { size: "card" | "preview" }) {
-  const heroSize = size === "preview" ? "text-[8px]" : "text-[4px]";
-  const subSize = size === "preview" ? "text-[5px]" : "text-[2px]";
-  return (
-    <div className="flex h-full w-full items-center justify-center bg-[#f8fafc]">
-      <div
-        className={cn(
-          "flex flex-col bg-[#0f172a] shadow",
-          size === "preview" ? "h-[65%] w-[70%] p-[8%]" : "h-[60%] w-[74%] p-[7%]"
-        )}
-      >
-        <div className={cn("font-black uppercase tracking-widest text-[#60a5fa]", subSize)}>
-          Masterplan
-        </div>
-        <div className={cn("mt-[8%] font-black leading-none text-white", heroSize)}>
-          ENERGY
-        </div>
-        <div className={cn("font-black leading-none text-white", heroSize)}>
-          ARCHITECT
-        </div>
-        <div className={cn("mt-auto h-[2px] w-full bg-[#2563eb]", size === "preview" ? "" : "h-[1px]")} />
       </div>
     </div>
   );

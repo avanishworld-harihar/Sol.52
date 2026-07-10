@@ -46,8 +46,7 @@ export default async function ProposalPresentPage({ params }: PageProps) {
   if (
     proposal.preset_id === "residential_executive" ||
     proposal.preset_id === "residential_solstice" ||
-    proposal.preset_id === "residential_energy_freedom" ||
-    proposal.preset_id === "residential_horizon"
+    proposal.preset_id === "residential_energy_freedom"
   ) {
     redirect(`/proposal/${id}`);
   }

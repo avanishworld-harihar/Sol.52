@@ -42,7 +42,6 @@ export const PROPOSAL_PRESET_IDS = [
   "residential_executive",
   "residential_solstice",
   "residential_energy_freedom",
-  "residential_horizon",
 ] as const;
 
 export type ProposalPresetId = (typeof PROPOSAL_PRESET_IDS)[number];
@@ -59,6 +58,7 @@ export function isValidPresetId(id: unknown): id is ProposalPresetId {
 
 export function normalizePresetId(raw: string | null | undefined): ProposalPresetId {
   if (raw === "residential_aurora") return "residential_sales_premium";
+  if (raw === "residential_horizon") return "residential_sales_premium";
   if (raw && isValidPresetId(raw)) return raw;
   return "residential_sales_premium";
 }
@@ -173,17 +173,6 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     label: "Energy Freedom",
     description:
       "Ultra-minimal white & teal A4 document — cover, perspective story & investment matrix.",
-    bill_requirement: "optional",
-    theme_hint: "residential",
-    default_data_source: "requirement",
-    default_blocks: [],
-    optional_blocks: [],
-  },
-
-  residential_horizon: {
-    id: "residential_horizon",
-    label: "Horizon",
-    description: "Solar Monolith — Obsidian & Cobalt · hero editorial pacing · 11-page wow workflow.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "requirement",

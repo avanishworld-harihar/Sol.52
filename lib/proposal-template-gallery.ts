@@ -98,14 +98,6 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
     thumbnailVariant: "slate",
   },
   {
-    key: "horizon",
-    presetId: "residential_horizon",
-    category: "residential",
-    name: "Horizon",
-    description: "Solar Monolith — Obsidian & Cobalt editorial · ENERGY ARCHITECT · 11-page wow workflow.",
-    thumbnailVariant: "horizon",
-  },
-  {
     key: "ember",
     presetId: "residential_sales_premium",
     salesPremiumStyle: "savings_focus",
@@ -181,7 +173,6 @@ export function resolveActiveGalleryKey(
   if (presetId === "residential_executive") return "golden";
   if (presetId === "residential_solstice") return "solstice";
   if (presetId === "residential_energy_freedom") return "freedom";
-  if (presetId === "residential_horizon") return "horizon";
   if (presetId === "residential_bank_loan") return "ledger";
   if (presetId === "residential_smart") return "classic";
   if (presetId === "residential_sales_premium") {

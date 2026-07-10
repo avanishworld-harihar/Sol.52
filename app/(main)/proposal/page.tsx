@@ -1659,9 +1659,7 @@ function ProposalPageContent() {
           ? { galleryThemeKey: "solstice" }
           : osPresetId === "residential_energy_freedom"
             ? { galleryThemeKey: "freedom" }
-            : osPresetId === "residential_horizon"
-              ? { galleryThemeKey: "horizon" }
-              : {}),
+            : {}),
       proposalLayout: (() => {
         const presetForLayout = osPresetId ?? "residential_sales_premium";
         let layout = proposalLayout;
@@ -2087,7 +2085,6 @@ function ProposalPageContent() {
           "residential_executive",
           "residential_solstice",
           "residential_energy_freedom",
-          "residential_horizon",
         ] as const;
         if (preset && (KNOWN_PRESETS as ReadonlyArray<string>).includes(preset)) {
           setOsPresetId((prev) => prev ?? (preset as typeof KNOWN_PRESETS[number]));

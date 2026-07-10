@@ -222,8 +222,6 @@ export function BuilderStageBar({
                 ? "Solstice"
                 : presetId === "residential_energy_freedom"
                 ? "Freedom"
-                : presetId === "residential_horizon"
-                ? "Horizon"
                 : "Residential"}
             </span>
           </div>

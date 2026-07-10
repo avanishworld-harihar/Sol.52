@@ -24,7 +24,6 @@ import { shouldShowPdfWatermark } from "@/lib/billing/entitlements";
 import { ProposalWatermarkShell } from "@/components/proposals/proposal-watermark-shell";
 import { SolsticeProposalRenderer } from "@/components/proposals/solstice/solstice-proposal-renderer";
 import { EnergyFreedomProposalRenderer } from "@/components/proposals/energy-freedom/energy-freedom-proposal-renderer";
-import { HorizonProposalRenderer } from "@/components/proposals/horizon/horizon-proposal-renderer";
 
 export const dynamic = "force-dynamic";
 
@@ -169,19 +168,6 @@ export default async function PublicProposalPage({ params }: PageProps) {
     return (
       <ProposalWatermarkShell enabled={showWatermark}>
         <EnergyFreedomProposalRenderer
-          pptInput={mergedInput}
-          summary={liveSummary}
-          installerLogoUrl={installerLogoUrl}
-        />
-      </ProposalWatermarkShell>
-    );
-  }
-
-  // ── Horizon — clean white 11-page A4 masterplan ───────────────────────────
-  if (presetId === "residential_horizon") {
-    return (
-      <ProposalWatermarkShell enabled={showWatermark}>
-        <HorizonProposalRenderer
           pptInput={mergedInput}
           summary={liveSummary}
           installerLogoUrl={installerLogoUrl}

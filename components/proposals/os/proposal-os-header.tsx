@@ -87,14 +87,6 @@ const PRESET_META: Record<ProposalPresetId, PresetMeta> = {
       "border-yellow-200 bg-[#0A192F]/5 text-[#0A192F] dark:border-yellow-500/30 dark:bg-yellow-900/20 dark:text-yellow-300",
     dotClass: "bg-yellow-400",
   },
-  residential_horizon: {
-    icon: <Sun className="h-4 w-4" />,
-    label: "Horizon",
-    description: "Obsidian & Cobalt · ENERGY ARCHITECT · Contract of Independence",
-    pillClass:
-      "border-teal-200 bg-teal-50 text-teal-800 dark:border-teal-500/30 dark:bg-teal-900/20 dark:text-teal-300",
-    dotClass: "bg-teal-400",
-  },
 };
 
 export function ProposalOSHeader({ presetId, onChangePreset, customerName }: Props) {
