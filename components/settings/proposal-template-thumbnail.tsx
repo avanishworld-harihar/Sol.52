@@ -103,16 +103,23 @@ function GoldenThumb({ size }: { size: "card" | "preview" }) {
 
 function ZenithThumb({ size }: { size: "card" | "preview" }) {
   return (
-    <div className="flex h-full w-full items-center justify-center bg-[#e8eaed]">
+    <div className="flex h-full w-full items-center justify-center bg-[#05070d]">
       <div
         className={cn(
-          "relative flex flex-col justify-center overflow-hidden rounded-[3px] border border-[#e2e8f0] bg-[#fafbfc] shadow-sm",
+          "relative flex flex-col justify-center overflow-hidden rounded-[3px] border border-[#1e293b] bg-[#0a0f1c] shadow-sm",
           size === "preview" ? "h-[62%] w-[68%] p-[8%]" : "h-[58%] w-[72%] p-[7%]"
         )}
       >
         <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 opacity-50"
+          style={{
+            background:
+              "radial-gradient(ellipse 80% 60% at 50% 100%, rgba(197,160,89,0.3), transparent 70%)",
+          }}
+        />
+        <div
           className={cn(
-            "font-semibold uppercase tracking-[0.18em] text-[#0f172a]",
+            "relative font-semibold uppercase tracking-[0.2em] text-white",
             size === "preview" ? "text-[7px]" : "text-[3px]"
           )}
         >
@@ -120,15 +127,15 @@ function ZenithThumb({ size }: { size: "card" | "preview" }) {
         </div>
         <div
           className={cn(
-            "mt-[10%] font-serif text-[#0f172a]",
+            "relative mt-[10%] font-serif text-white",
             size === "preview" ? "text-[11px]" : "text-[5px]"
           )}
         >
-          Energy independent.
+          Energy Independent.
         </div>
         <div
           className={cn(
-            "mt-[8%] bg-[#c5a059]",
+            "relative mt-[8%] bg-[#c5a059]",
             size === "preview" ? "h-[2px] w-8" : "h-[1px] w-4"
           )}
         />

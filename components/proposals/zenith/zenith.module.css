@@ -1,32 +1,36 @@
 /**
- * Zenith — print-ready Pearl proposal.
- * Background #FAFBFC · charcoal text · primary gold #C5A059
- * Playfair Display headers · Inter tables
+ * Zenith Luxury — Midnight Onyx · Pearl · Champagne Gold
+ * Wide negative space · modular cards · Playfair + Inter
  */
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap");
+
+.shell {
+  width: 100%;
+  min-height: 100dvh;
+  background: #0a0f1c;
+}
 
 .presetZenith {
-  --zenith-pearl: #fafbfc;
-  --zenith-charcoal: #0f172a;
-  --zenith-muted: #475569;
-  --zenith-border: #e2e8f0;
-  --zenith-gold: #c5a059;
-  --zenith-emerald: #10b981;
-  --zenith-serif: "Playfair Display", Georgia, "Times New Roman", serif;
-  --zenith-sans: Inter, "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --onyx: #0a0f1c;
+  --slate: #0f172a;
+  --pearl: #fafbfc;
+  --gold: #c5a059;
+  --emerald: #10b981;
+  --border: #1e293b;
+  --serif: "Playfair Display", Georgia, serif;
+  --sans: Inter, "Segoe UI", system-ui, sans-serif;
 
   box-sizing: border-box;
   width: 100%;
   max-width: 210mm;
   margin: 0 auto;
-  background-color: var(--zenith-pearl);
-  color: var(--zenith-charcoal);
-  font-family: var(--zenith-sans);
-  font-size: 15px;
+  padding: 0;
+  background-color: #0a0f1c;
+  color: #fafbfc;
+  font-family: var(--sans);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08);
 }
 
 .presetZenith *,
@@ -36,20 +40,21 @@
 }
 
 .loading {
-  padding: 4rem 2rem;
-  background: var(--zenith-pearl);
-  color: var(--zenith-charcoal);
-  font-family: var(--zenith-sans);
+  padding: 6rem;
+  background: #0a0f1c;
+  color: #fafbfc;
 }
 
-/* Print page */
+/* Pages */
 .page {
-  min-height: 297mm;
-  padding: 18mm 16mm 20mm;
-  background: var(--zenith-pearl);
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 6rem 4rem;
+  border-bottom: 1px solid #1e293b;
   page-break-after: always;
   break-after: page;
-  border-bottom: 1px solid var(--zenith-border);
+  background: #0a0f1c;
 }
 
 .page:last-child {
@@ -57,244 +62,243 @@
   border-bottom: none;
 }
 
-/* Typography */
-.brand {
-  margin: 0;
-  font-family: var(--zenith-sans);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  color: var(--zenith-charcoal);
-}
-
-.brandGold {
-  color: var(--zenith-gold);
-}
-
-.title {
-  margin: 0 0 0.75rem;
-  font-family: var(--zenith-serif);
-  font-size: clamp(1.75rem, 3.5vw, 2.35rem);
-  font-weight: 400;
-  letter-spacing: -0.02em;
-  color: var(--zenith-gold);
-}
-
-.subtitle {
-  margin: 2.25rem 0 0.85rem;
-  font-family: var(--zenith-serif);
-  font-size: 1.25rem;
-  font-weight: 400;
-  color: var(--zenith-gold);
-}
-
-.lead {
-  margin: 0 0 1.75rem;
-  max-width: 48ch;
-  font-size: 0.9375rem;
-  color: var(--zenith-muted);
-  line-height: 1.7;
-}
-
-.goldRule {
-  width: 3rem;
-  height: 1px;
-  margin: 0 0 1.75rem;
-  background: var(--zenith-gold);
-}
-
-/* Hero */
-.hero {
+.pageCover {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 297mm;
-  text-align: left;
+  align-items: flex-start;
+  overflow: hidden;
 }
 
-.heroBrandRow {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  margin-bottom: 3.5rem;
+.coverGlow {
+  position: absolute;
+  inset: auto 0 0;
+  height: 45%;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 80% 70% at 50% 100%,
+    rgba(197, 160, 89, 0.1) 0%,
+    transparent 70%
+  );
+}
+
+/* Brand / titles */
+.brandHarihar {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 3.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.brandGold {
+  color: #c5a059;
 }
 
 .logo {
   display: block;
-  max-height: 3.75rem;
-  max-width: 180px;
-  width: auto;
-  height: auto;
+  max-height: 4rem;
+  max-width: 200px;
+  margin-bottom: 1.5rem;
   object-fit: contain;
 }
 
-.heroText {
+.heroTitle {
+  position: relative;
+  z-index: 1;
   margin: 0;
-  font-family: var(--zenith-serif);
-  font-size: clamp(2.4rem, 6vw, 3.5rem);
+  font-family: var(--serif);
+  font-size: clamp(2.75rem, 7vw, 4.25rem);
   font-weight: 400;
   letter-spacing: -0.03em;
-  line-height: 1.1;
-  color: var(--zenith-charcoal);
-  max-width: 14ch;
+  line-height: 1.05;
+  color: #ffffff;
+  max-width: 12ch;
 }
 
-.heroPrepared {
-  margin: 1.75rem 0 0;
-  font-size: 0.75rem;
+.heroSub {
+  position: relative;
+  z-index: 1;
+  margin: 2rem 0 0;
+  font-size: 1.125rem;
+  font-weight: 300;
+  color: rgba(250, 251, 252, 0.65);
+  max-width: 36ch;
+}
+
+.heroMeta {
+  position: relative;
+  z-index: 1;
+  margin: 4rem 0 0;
+  font-size: 0.6875rem;
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--zenith-gold);
+  color: rgba(197, 160, 89, 0.9);
 }
 
-.heroCustomer {
-  margin: 0.5rem 0 0;
-  font-family: var(--zenith-serif);
-  font-size: 1.5rem;
-  color: var(--zenith-charcoal);
-}
-
-.heroMetrics {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
+.coverClient {
+  position: relative;
+  z-index: 1;
   margin-top: 3.5rem;
   padding-top: 2rem;
-  border-top: 1px solid var(--zenith-border);
+  border-top: 1px solid #1e293b;
+  max-width: 28rem;
 }
 
-.metricCard {
-  padding: 1.15rem 1rem;
-  background: #ffffff;
-  border: 1px solid var(--zenith-border);
+.coverClientName {
+  margin: 0.5rem 0 0;
+  font-family: var(--serif);
+  font-size: 1.75rem;
+  color: #ffffff;
 }
 
-.metricLabel {
+.coverClientLoc {
+  margin: 0.4rem 0 0;
+  font-size: 0.875rem;
+  color: rgba(250, 251, 252, 0.5);
+}
+
+.title {
+  margin: 0 0 0.75rem;
+  font-family: var(--serif);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 400;
+  color: #c5a059;
+  letter-spacing: -0.02em;
+}
+
+.lead {
+  margin: 0 0 3rem;
+  max-width: 42ch;
+  font-size: 1rem;
+  font-weight: 300;
+  color: rgba(250, 251, 252, 0.55);
+  line-height: 1.7;
+}
+
+.goldRule {
+  width: 3.5rem;
+  height: 1px;
+  margin: 0 0 2.5rem;
+  background: #c5a059;
+}
+
+/* Grids & cards */
+.heroMetrics,
+.financialGrid,
+.impactGrid,
+.metricGrid,
+.assuranceGrid,
+.warrantyGrid,
+.paymentGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.card {
+  background: #0f172a;
+  padding: 2rem;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+}
+
+.cardHighlight {
+  border-color: rgba(197, 160, 89, 0.45);
+  box-shadow: 0 0 0 1px rgba(197, 160, 89, 0.12);
+}
+
+.cardLabel {
+  display: block;
   margin: 0;
   font-size: 0.625rem;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--zenith-gold);
+  color: rgba(250, 251, 252, 0.4);
 }
 
-.metricValue {
-  margin: 0.55rem 0 0;
-  font-family: var(--zenith-serif);
-  font-size: 1.35rem;
-  color: var(--zenith-charcoal);
-  line-height: 1.2;
+.cardValue {
+  margin: 0.85rem 0 0;
+  font-family: var(--serif);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 400;
+  color: #ffffff;
+  line-height: 1.15;
 }
 
-.metricHint {
-  margin: 0.35rem 0 0;
-  font-size: 0.75rem;
-  color: var(--zenith-muted);
+.cardValueGold {
+  color: #c5a059;
 }
 
-/* Investment grid */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 1rem;
+.cardValueEmerald {
+  color: #10b981;
 }
 
-.statCard {
-  padding: 1.25rem 1.1rem;
-  background: #ffffff;
-  border: 1px solid var(--zenith-border);
+.cardBody {
+  margin: 0.65rem 0 0;
+  font-size: 0.875rem;
+  color: rgba(250, 251, 252, 0.55);
+  line-height: 1.55;
 }
 
-.statLabel {
-  margin: 0;
-  font-size: 0.625rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--zenith-muted);
+.cardHeader {
+  margin: 0.5rem 0 0;
+  font-family: var(--serif);
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: #ffffff;
 }
 
-.statValue {
-  margin: 0.55rem 0 0;
-  font-family: var(--zenith-serif);
-  font-size: 1.4rem;
-  color: var(--zenith-charcoal);
-  line-height: 1.2;
-}
-
-.statValueGold {
-  color: var(--zenith-gold);
-}
-
-/* System design grid (engineering) */
-.designGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-  margin-bottom: 2.25rem;
-}
-
-/* Tables */
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: var(--zenith-sans);
-}
-
-.table th {
-  text-align: left;
-  padding: 0.85rem 0.75rem 0.85rem 0;
-  border-bottom: 2px solid var(--zenith-charcoal);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--zenith-gold);
-}
-
-.table td {
-  text-align: left;
-  padding: 1rem 0.75rem 1rem 0;
-  border-bottom: 1px solid var(--zenith-border);
-  vertical-align: top;
-  font-size: 0.9375rem;
-  color: var(--zenith-charcoal);
-}
-
-.itemName {
-  display: block;
-  font-weight: 600;
-}
-
-.itemBrand {
-  display: block;
-  margin-top: 0.2rem;
-  font-size: 0.6875rem;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--zenith-muted);
-}
-
-.specCell {
-  color: var(--zenith-muted);
-}
-
-.textEmerald {
-  color: var(--zenith-emerald);
-  font-weight: 700;
-}
-
-.textGold {
-  color: var(--zenith-gold);
-  font-weight: 700;
-}
-
-/* Execution steps */
+/* Steps */
 .stepList {
-  margin: 0 0 2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.stepItem {
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  gap: 1.25rem;
+  align-items: start;
+  padding: 1.5rem 1.75rem;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+}
+
+.stepNum {
+  font-family: var(--serif);
+  font-size: 1.5rem;
+  color: #c5a059;
+  line-height: 1;
+}
+
+.stepTitle {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #ffffff;
+}
+
+.stepDesc {
+  margin: 0.35rem 0 0;
+  font-size: 0.875rem;
+  color: rgba(250, 251, 252, 0.5);
+  line-height: 1.55;
+}
+
+/* Lists */
+.bulletList {
+  margin: 0;
   padding: 0;
   list-style: none;
   display: flex;
@@ -302,116 +306,221 @@
   gap: 0.75rem;
 }
 
-.stepItem {
-  display: grid;
-  grid-template-columns: 2.5rem 1fr;
-  gap: 0.85rem;
-  padding: 1rem 1.1rem;
-  background: #ffffff;
-  border: 1px solid var(--zenith-border);
-}
-
-.stepNum {
-  font-family: var(--zenith-serif);
-  font-size: 1.15rem;
-  color: var(--zenith-gold);
-  line-height: 1.2;
-}
-
-.stepTitle {
-  margin: 0;
-  font-weight: 600;
+.bulletItem {
+  padding: 1.25rem 1.5rem;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
   font-size: 0.9375rem;
-  color: var(--zenith-charcoal);
-}
-
-.stepDesc {
-  margin: 0.2rem 0 0;
-  font-size: 0.8125rem;
-  color: var(--zenith-muted);
-  line-height: 1.5;
-}
-
-/* Lists */
-.bulletList {
-  margin: 0;
-  padding: 0 0 0 1.15rem;
-  color: var(--zenith-charcoal);
-  font-size: 0.9375rem;
-  line-height: 1.7;
-}
-
-.bulletList li + li {
-  margin-top: 0.4rem;
-}
-
-.bankBlock {
-  margin-top: 1.75rem;
-  padding: 1.25rem 1.35rem;
-  background: #ffffff;
-  border: 1px solid var(--zenith-border);
-}
-
-.bankLabel {
-  margin: 0 0 0.5rem;
-  font-size: 0.625rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--zenith-gold);
-}
-
-.bankLine {
-  margin: 0.25rem 0 0;
-  font-size: 0.875rem;
-  color: var(--zenith-charcoal);
-}
-
-/* Placeholder when data missing — never blank */
-.placeholder {
-  margin: 0;
-  padding: 1.35rem 1.25rem;
-  background: #ffffff;
-  border: 1px dashed #cbd5e1;
-  color: var(--zenith-muted);
-  font-size: 0.875rem;
+  color: rgba(250, 251, 252, 0.8);
   line-height: 1.55;
 }
 
-.standards {
-  margin: 1.5rem 0 0;
-  font-size: 0.75rem;
-  letter-spacing: 0.04em;
-  color: var(--zenith-muted);
+.sectionBlock {
+  margin-top: 3rem;
 }
 
-@media (max-width: 640px) {
-  .page,
-  .hero {
+.sectionBlock:first-of-type {
+  margin-top: 0;
+}
+
+.subTitle {
+  margin: 0 0 1.25rem;
+  font-family: var(--serif);
+  font-size: 1.35rem;
+  font-weight: 400;
+  color: #c5a059;
+}
+
+.bankCard {
+  margin-top: 2rem;
+  padding: 2rem;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+}
+
+.bankLine {
+  margin: 0.4rem 0 0;
+  font-size: 0.9375rem;
+  color: #fafbfc;
+}
+
+.standards {
+  margin: 2rem 0 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  color: rgba(250, 251, 252, 0.4);
+}
+
+/* Pending placeholder — never blank */
+.pending {
+  padding: 2.5rem 2rem;
+  background: #0f172a;
+  border: 1px dashed rgba(197, 160, 89, 0.35);
+  border-radius: 12px;
+}
+
+.pendingLabel {
+  margin: 0;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #c5a059;
+}
+
+.pendingText {
+  margin: 0.75rem 0 0;
+  font-family: var(--serif);
+  font-size: 1.25rem;
+  color: rgba(250, 251, 252, 0.7);
+}
+
+.pendingHint {
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+  color: rgba(250, 251, 252, 0.4);
+  line-height: 1.5;
+}
+
+/* Bill chart + month cards */
+.barChart {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.4rem;
+  height: 10rem;
+  margin-top: 2.5rem;
+}
+
+.barCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  min-width: 0;
+}
+
+.bar {
+  width: 100%;
+  max-width: 1.5rem;
+  background: #1e293b;
+  border-radius: 2px 2px 0 0;
+}
+
+.barPeak {
+  background: #c5a059;
+}
+
+.barLabel {
+  margin-top: 0.4rem;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(250, 251, 252, 0.35);
+}
+
+.monthGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.85rem;
+}
+
+.techPoints {
+  margin: 0.85rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.techPoints li {
+  position: relative;
+  padding: 0.3rem 0 0.3rem 0.85rem;
+  font-size: 0.8125rem;
+  color: rgba(250, 251, 252, 0.55);
+}
+
+.techPoints li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.75em;
+  width: 0.35rem;
+  height: 1px;
+  background: #c5a059;
+}
+
+.unitSuffix {
+  margin-left: 0.25em;
+  font-size: 0.55em;
+  color: rgba(250, 251, 252, 0.45);
+}
+
+.closingBlock {
+  margin-top: 3.5rem;
+  padding-top: 2.5rem;
+  border-top: 1px solid #1e293b;
+}
+
+.closingContact {
+  margin: 2rem 0 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(197, 160, 89, 0.85);
+}
+
+.qrWrap {
+  margin-top: 1.75rem;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.qrImg {
+  width: 7rem;
+  height: 7rem;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 8px;
+  padding: 0.35rem;
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding: 4rem 1.5rem;
     min-height: auto;
-    padding: 2.5rem 1.25rem;
   }
 
   .heroMetrics,
-  .designGrid {
+  .financialGrid,
+  .impactGrid,
+  .metricGrid,
+  .assuranceGrid,
+  .warrantyGrid,
+  .paymentGrid {
     grid-template-columns: 1fr;
   }
 }
 
 @media print {
-  .presetZenith {
-    max-width: none;
-    box-shadow: none;
+  .shell {
+    background: #0a0f1c;
   }
 
-  .page,
-  .hero {
+  .presetZenith {
+    max-width: none;
+  }
+
+  .page {
     width: 210mm;
     min-height: 297mm;
-    padding: 16mm 14mm;
+    padding: 18mm 16mm;
     page-break-after: always;
     break-after: page;
-    border-bottom: none;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -420,9 +529,9 @@
     page-break-after: auto;
   }
 
-  .statCard,
-  .metricCard,
-  .stepItem {
+  .card,
+  .stepItem,
+  .bulletItem {
     break-inside: avoid;
   }
 }
