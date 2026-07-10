@@ -13,35 +13,14 @@ export function resolveResidentialThemeKey(input: {
     );
   }
 
-  if (input.galleryKey === "aurora") return "solstice";
-  if (input.galleryKey === "slate") return "slate";
-  if (input.galleryKey === "pearl") return "pearl";
   if (input.galleryKey === "golden") return "golden";
-  if (input.galleryKey === "classic") return "classic";
-  if (input.galleryKey === "ledger") return "ledger";
-  if (input.galleryKey === "horizon") return "horizon";
-  if (input.galleryKey === "ember") return "ember";
-  if (input.galleryKey === "solstice") return "solstice";
-  if (input.galleryKey === "freedom") return "freedom";
+  if (input.galleryKey === "zenith") return "golden";
 
   const preset = input.presetId;
-  if (preset === "residential_solstice") return "solstice";
-  if (preset === "residential_energy_freedom") return "freedom";
-  if (preset === "residential_aurora") return "solstice";
-  if (preset === "residential_smart") return "classic";
-  if (preset === "residential_bank_loan") return "ledger";
   if (preset === "residential_executive") return "golden";
+  if (preset === "residential_zenith") return "golden";
 
-  if (preset === "residential_sales_premium") {
-    const style = input.salesPremiumStyle;
-    if (style === "journey") return "horizon";
-    if (style === "savings_focus") return "ember";
-    if (style === "pearl") return "pearl";
-    if (style === "slate" || style === "institutional") return "slate";
-    return "slate";
-  }
-
-  return "classic";
+  return "golden";
 }
 
 export function isCommercialPreset(presetId: string): boolean {

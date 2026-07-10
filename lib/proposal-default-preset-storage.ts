@@ -2,18 +2,14 @@ import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 
 /** Residential templates users pick in More → saved as default for new proposals. */
 export const RESIDENTIAL_TEMPLATE_PRESET_IDS = [
-  "residential_sales_premium",
-  "residential_bank_loan",
   "residential_executive",
-  "residential_solstice",
-  "residential_energy_freedom",
-  "residential_smart",
+  "residential_zenith",
 ] as const;
 
 export type ResidentialTemplatePresetId = (typeof RESIDENTIAL_TEMPLATE_PRESET_IDS)[number];
 
 export const DEFAULT_RESIDENTIAL_TEMPLATE_PRESET: ResidentialTemplatePresetId =
-  "residential_sales_premium";
+  "residential_zenith";
 
 const STORAGE_KEY = "ss_default_residential_proposal_preset_v1";
 
@@ -28,33 +24,13 @@ export type ResidentialTemplateOption = {
 export const RESIDENTIAL_TEMPLATE_OPTIONS: ResidentialTemplateOption[] = [
   {
     id: "residential_executive",
-    label: "Executive Premium",
+    label: "Golden",
     subtitle: "Champagne gold editorial layout for high-trust clients.",
   },
   {
-    id: "residential_solstice",
-    label: "Solstice",
-    subtitle: "Modern scroll masterplan — investment, impact & execution.",
-  },
-  {
-    id: "residential_energy_freedom",
-    label: "Energy Freedom",
-    subtitle: "White & teal A4 — ENERGY REIMAGINED · investment matrix.",
-  },
-  {
-    id: "residential_sales_premium",
-    label: "Sales Premium",
-    subtitle: "Pearl, Slate & Ember theme family.",
-  },
-  {
-    id: "residential_bank_loan",
-    label: "Bank Loan Pack",
-    subtitle: "Documentation-first pack for bank & subsidy.",
-  },
-  {
-    id: "residential_smart",
-    label: "Residential Legacy",
-    subtitle: "Full Sol.52 audit & section stack.",
+    id: "residential_zenith",
+    label: "Zenith",
+    subtitle: "Midnight Onyx luxury brochure — architecture & Tier-1 BOM.",
   },
 ];
 
@@ -66,7 +42,6 @@ export function readDefaultResidentialPreset(): ResidentialTemplatePresetId {
   if (typeof window === "undefined") return DEFAULT_RESIDENTIAL_TEMPLATE_PRESET;
   try {
     const raw = localStorage.getItem(STORAGE_KEY)?.trim();
-    if (raw === "residential_aurora") return DEFAULT_RESIDENTIAL_TEMPLATE_PRESET;
     if (raw && isResidentialTemplatePreset(raw)) return raw;
   } catch {
     /* ignore */
@@ -81,5 +56,5 @@ export function writeDefaultResidentialPreset(id: ResidentialTemplatePresetId): 
 }
 
 export function labelForResidentialTemplate(id: ProposalPresetId): string {
-  return RESIDENTIAL_TEMPLATE_OPTIONS.find((o) => o.id === id)?.label ?? "Sales Premium";
+  return RESIDENTIAL_TEMPLATE_OPTIONS.find((o) => o.id === id)?.label ?? "Zenith";
 }

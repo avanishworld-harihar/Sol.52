@@ -122,18 +122,18 @@ const billBacked: BlockEligibilityFn = ({ billAuditBacked }) => billAuditBacked;
  * regardless of bill path so investment, payback, and EMI are always visible.
  */
 const roiSavingsEligible: BlockEligibilityFn = ({ billAuditBacked, presetId }) =>
-  billAuditBacked || isResidentialWebPreset(presetId) || presetId === "residential_sales_premium";
+  billAuditBacked || isResidentialWebPreset(presetId) || (presetId as string) === "residential_sales_premium";
 
 const noBill: BlockEligibilityFn = ({ billAuditBacked, presetId }) =>
-  !billAuditBacked || presetId === "commercial_executive";
-const commercialOnly: BlockEligibilityFn = ({ presetId }) => presetId === "commercial_executive";
+  !billAuditBacked || (presetId as string) === "commercial_executive";
+const commercialOnly: BlockEligibilityFn = ({ presetId }) => (presetId as string) === "commercial_executive";
 /** DCR comparison — commercial + legacy residential only (not Sales Premium v1). */
 const dcrComparisonEligible: BlockEligibilityFn = ({ presetId }) =>
-  presetId === "commercial_executive" ||
-  presetId === "residential_smart";
+  (presetId as string) === "commercial_executive" ||
+  (presetId as string) === "residential_smart";
 const surveyOnly: BlockEligibilityFn = ({ showSurveySection }) => Boolean(showSurveySection);
 
-const salesPremiumOnly: BlockEligibilityFn = ({ presetId }) => presetId === "residential_sales_premium";
+const salesPremiumOnly: BlockEligibilityFn = ({ presetId }) => (presetId as string) === "residential_sales_premium";
 
 const retiredPreset: BlockEligibilityFn = () => false;
 

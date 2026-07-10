@@ -12,7 +12,7 @@
  */
 
 import { motion } from "framer-motion";
-import { Building2, ChevronRight, FileText, Home, RefreshCw, Sparkles, Star, Sun, Zap } from "lucide-react";
+import { ChevronRight, RefreshCw, Sparkles, Zap } from "lucide-react";
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 import { PresenceStack } from "@/components/workspace/presence-stack";
 
@@ -31,66 +31,18 @@ type PresetMeta = {
 };
 
 const PRESET_META: Record<ProposalPresetId, PresetMeta> = {
-  residential_smart: {
-    icon: <Home className="h-4 w-4" />,
-    label: "Residential Legacy",
-    description: "Bill audit · Savings · BOM · AMC",
-    pillClass:
-      "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-900/20 dark:text-amber-300",
-    dotClass: "bg-amber-400",
-  },
-  residential_sales_premium: {
-    icon: <Star className="h-4 w-4" />,
-    label: "Sales Premium",
-    description: "Savings first · ROI · BOM · Payment",
-    pillClass:
-      "border-orange-200 bg-orange-50 text-orange-800 dark:border-orange-500/30 dark:bg-orange-900/20 dark:text-orange-300",
-    dotClass: "bg-orange-400",
-  },
-  residential_bank_loan: {
-    icon: <FileText className="h-4 w-4" />,
-    label: "Bank Loan Pack",
-    description: "Cost breakup · Vendor · Declaration",
-    pillClass:
-      "border-sky-200 bg-sky-50 text-sky-800 dark:border-sky-500/30 dark:bg-sky-900/20 dark:text-sky-300",
-    dotClass: "bg-sky-400",
-  },
   residential_executive: {
     icon: <Sparkles className="h-4 w-4" />,
-    label: "Executive Premium",
-    description: "Minimalist · Luxury residential",
+    label: "Golden",
+    description: "Champagne gold editorial · Executive Premium",
     pillClass:
       "border-violet-200 bg-violet-50 text-violet-800 dark:border-violet-500/30 dark:bg-violet-900/20 dark:text-violet-300",
     dotClass: "bg-violet-400",
   },
-  commercial_executive: {
-    icon: <Building2 className="h-4 w-4" />,
-    label: "Commercial Executive",
-    description: "Executive summary · Engineering · Financial intelligence",
-    pillClass:
-      "border-slate-300 bg-slate-50 text-slate-800 dark:border-slate-500/30 dark:bg-slate-900/20 dark:text-slate-300",
-    dotClass: "bg-slate-400",
-  },
-  residential_solstice: {
-    icon: <Sun className="h-4 w-4" />,
-    label: "Solstice",
-    description: "Modern scroll masterplan · Investment · Impact · BOM",
-    pillClass:
-      "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-900/20 dark:text-amber-300",
-    dotClass: "bg-amber-400",
-  },
-  residential_energy_freedom: {
-    icon: <Sun className="h-4 w-4" />,
-    label: "Freedom",
-    description: "White & teal A4 · ENERGY REIMAGINED · Investment Matrix",
-    pillClass:
-      "border-yellow-200 bg-[#0A192F]/5 text-[#0A192F] dark:border-yellow-500/30 dark:bg-yellow-900/20 dark:text-yellow-300",
-    dotClass: "bg-yellow-400",
-  },
   residential_zenith: {
     icon: <Zap className="h-4 w-4" />,
     label: "Zenith",
-    description: "Zenith Luxury · Midnight Onyx · Champagne Gold · ProposalData",
+    description: "Midnight Onyx · Champagne Gold · Tier-1 BOM",
     pillClass:
       "border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-500/30 dark:bg-blue-900/20 dark:text-blue-300",
     dotClass: "bg-blue-500",

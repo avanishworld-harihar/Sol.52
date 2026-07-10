@@ -2,17 +2,11 @@
  * Proposal Preset Engine — drives which blocks appear, in what order,
  * and which inputs are required for each proposal type.
  *
- * Presets are CONFIGURATION, not logic. They declare intent; the compiler
- * in proposal-document-ir.ts assembles the final ProposalDocument.
+ * Active presets (cleanup 2026-07):
+ *   1. residential_executive — Golden / Executive Premium (locked flagship)
+ *   2. residential_zenith    — Zenith Luxury brochure
  *
- * Phase A presets:
- *   1. residential_smart          — legacy residential (bill or requirement path)
- *   2. commercial_executive       — C&I/commercial (no bill required)
- *
- * Phase B presets (Residential Proposal Presets):
- *   3. residential_sales_premium  — conversion-first, Apple/Tesla feel (DEFAULT)
- *   4. residential_bank_loan      — bank-submission documentation pack (Phase 3)
- *   5. residential_executive      — minimalist luxury residential (Phase 4)
+ * Removed presets are remapped via normalizePresetId → residential_executive.
  */
 
 import type { ProposalBlockId } from "@/lib/proposal-block-registry";
@@ -25,51 +19,33 @@ import {
 } from "@/lib/proposal-template-schema";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { getStoryCopy, type StoryMode, type StorySegment, type StoryCopy, type StoryLang } from "@/lib/proposal-story-copy";
-import {
-  SALES_PREMIUM_STYLE_LIST,
-  getSalesPremiumLayoutForStyle,
-  resolveSalesPremiumStyle,
-  usesInstitutionalRenderer,
-} from "@/lib/sales-premium-styles";
+import { SALES_PREMIUM_STYLE_LIST } from "@/lib/sales-premium-styles";
 
 // ─── Preset identifiers ──────────────────────────────────────────────────────
 
 export const PROPOSAL_PRESET_IDS = [
-  "residential_smart",
-  "commercial_executive",
-  "residential_sales_premium",
-  "residential_bank_loan",
   "residential_executive",
-  "residential_solstice",
-  "residential_energy_freedom",
   "residential_zenith",
 ] as const;
 
 export type ProposalPresetId = (typeof PROPOSAL_PRESET_IDS)[number];
 
-/** Residential preset IDs routed to ProposalWebRenderer (not legacy ProposalView). */
-/** Presets still using ProposalWebRenderer block loop (not isolated document renderers). */
-export const RESIDENTIAL_WEB_RENDERER_PRESETS: ReadonlyArray<ProposalPresetId> = [
-  "residential_bank_loan",
-];
+/** No active presets use the ProposalWebRenderer block loop. */
+export const RESIDENTIAL_WEB_RENDERER_PRESETS: ReadonlyArray<ProposalPresetId> = [];
 
 export function isValidPresetId(id: unknown): id is ProposalPresetId {
   return typeof id === "string" && PROPOSAL_PRESET_IDS.includes(id as ProposalPresetId);
 }
 
+/** Legacy / removed ids remap to Golden; unknown → Golden. */
 export function normalizePresetId(raw: string | null | undefined): ProposalPresetId {
-  if (raw === "residential_aurora") return "residential_sales_premium";
-  if (raw === "residential_horizon") return "residential_sales_premium";
   if (raw && isValidPresetId(raw)) return raw;
-  return "residential_sales_premium";
+  return "residential_executive";
 }
 
 /** Returns true for presets rendered by ProposalWebRenderer (not the legacy ProposalView). */
 export function isWebRendererPreset(presetId: ProposalPresetId): boolean {
-  return (
-    presetId === "commercial_executive" ||
-    (RESIDENTIAL_WEB_RENDERER_PRESETS as ReadonlyArray<string>).includes(presetId)
-  );
+  return (RESIDENTIAL_WEB_RENDERER_PRESETS as ReadonlyArray<string>).includes(presetId);
 }
 
 // ─── Preset shape ────────────────────────────────────────────────────────────
@@ -106,42 +82,6 @@ export type ProposalPreset = {
 // ─── Preset registry ─────────────────────────────────────────────────────────
 
 export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> = {
-  // ── Residential Phase B presets ──────────────────────────────────────────
-
-  residential_sales_premium: {
-    id: "residential_sales_premium",
-    label: "Sales Premium",
-    description:
-      "Institutional Apple-style 5-page document: cover → bill audit → capital breakdown → " +
-      "technical BOM → execution & banking. Default residential template.",
-    bill_requirement: "optional",
-    theme_hint: "residential",
-    default_data_source: "bill",
-    /** Institutional renderer — fixed 5-page document; blocks unused at view time. */
-    default_blocks: [],
-    appendix_blocks: [],
-    optional_blocks: [],
-  },
-
-  residential_bank_loan: {
-    id: "residential_bank_loan",
-    label: "Bank Loan Pack",
-    description:
-      "Documentation pack formatted for bank loan submission. " +
-      "Includes cost breakdown, vendor details, declaration, and signature pages.",
-    bill_requirement: "optional",
-    theme_hint: "residential",
-    default_data_source: "bill",
-    default_blocks: [
-      "cover_page",
-      "financial_summary",
-      "technical_specifications",
-      "bom_material_list",
-      "terms_conditions",
-    ],
-    optional_blocks: ["warranty", "amc_maintenance"],
-  },
-
   residential_executive: {
     id: "residential_executive",
     label: "Executive Premium",
@@ -156,109 +96,16 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     optional_blocks: [],
   },
 
-  residential_solstice: {
-    id: "residential_solstice",
-    label: "Solstice",
-    description:
-      "Modern scroll masterplan — hero stats, investment waterfall, green impact, engineering specs, " +
-      "component cards, warranty matrix & execution. Synced to live proposal data.",
-    bill_requirement: "optional",
-    theme_hint: "residential",
-    default_data_source: "requirement",
-    default_blocks: [],
-    optional_blocks: [],
-  },
-
-  residential_energy_freedom: {
-    id: "residential_energy_freedom",
-    label: "Energy Freedom",
-    description:
-      "Ultra-minimal white & teal A4 document — cover, perspective story & investment matrix.",
-    bill_requirement: "optional",
-    theme_hint: "residential",
-    default_data_source: "requirement",
-    default_blocks: [],
-    optional_blocks: [],
-  },
-
   residential_zenith: {
     id: "residential_zenith",
     label: "Zenith",
     description:
-      "Isolated ProposalData-native preset — CSS Modules scoped under .presetZenith (local test; DB migration pending).",
+      "Zenith Luxury brochure — Midnight Onyx cover, architecture cards, Tier-1 BOM editorial.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "requirement",
     default_blocks: [],
     optional_blocks: [],
-  },
-
-  // ── Legacy presets ────────────────────────────────────────────────────────
-
-  residential_smart: {
-    id: "residential_smart",
-    label: "Residential Smart Proposal",
-    description:
-      "Complete proposal for residential rooftop solar. " +
-      "Supports both bill-backed (with electricity bill) and requirement-based " +
-      "(from solar sizing form) paths through the same document engine.",
-    bill_requirement: "optional",
-    theme_hint: "residential",
-    default_data_source: "bill",
-    default_blocks: [
-      "cover_page",
-      "about_company",
-      "technical_proposal",
-      "technical_specifications",
-      "bom_material_list",
-      "financial_summary",
-      "roi_savings",
-      "warranty",
-      "payment_terms",
-      "terms_conditions",
-      "project_gallery",
-      "customer_documents_required",
-      "amc_maintenance",
-    ],
-    optional_blocks: ["dcr_comparison_card"],
-  },
-
-  commercial_executive: {
-    id: "commercial_executive",
-    label: "Commercial Executive Proposal",
-    description:
-      "Executive-grade proposal for C&I / commercial / industrial rooftop solar. " +
-      "Bill upload is not required — system sizing is based on declared load requirement. " +
-      "Tailored for decision-makers: lean, impact-first, commercially sharp.",
-    bill_requirement: "not_applicable",
-    theme_hint: "commercial",
-    default_data_source: "requirement",
-    default_blocks: [
-      "cover_page",
-      "about_company",
-      "executive_summary",
-      "system_requirements",
-      "dcr_comparison_card",
-      "capacity_scenarios_card",
-      "technical_proposal",
-      "technical_specifications",
-      "bom_material_list",
-      "financial_summary",
-      "payback_analysis",
-      "payment_terms",
-      "warranty",
-      "terms_conditions",
-      "project_gallery",
-      "amc_maintenance",
-    ],
-    optional_blocks: [
-      "customer_documents_required",
-      "brand_comparison_card",
-      "commercial_financing_card",
-      "dg_hybrid_analysis_card",
-      "school_institution_insight_card",
-      "roi_savings",
-    ],
   },
 };
 
@@ -275,7 +122,6 @@ export function getPresetDefaultLayout(presetId: ProposalPresetId): ProposalTemp
   const appendixSet = new Set<ProposalBlockId>(preset.appendix_blocks ?? []);
   const optionalSet = new Set<ProposalBlockId>(preset.optional_blocks);
 
-  // Ordered: default blocks first (in preset order), optional blocks, then remaining.
   const seen = new Set<ProposalBlockId>();
   const ordered: Array<{ id: ProposalBlockId; enabled: boolean; section?: "flow" | "appendix" }> = [];
 
@@ -308,23 +154,12 @@ export function getPresetDefaultLayout(presetId: ProposalPresetId): ProposalTemp
     }
   }
 
-  void optionalSet; // referenced above; suppress unused-var
+  void optionalSet;
   return { version: 1, blocks: ordered };
 }
 
-/** Block IDs permitted on Sales Premium v1 — no legacy registry injection. */
+/** Legacy Sales Premium helper — style playlists only (preset removed). */
 export function getSalesPremiumAllowedBlockIds(): ProposalBlockId[] {
-  const preset = PROPOSAL_PRESET_REGISTRY.residential_sales_premium;
-  const fromPreset = [
-    ...preset.default_blocks,
-    ...(preset.appendix_blocks ?? []),
-    ...preset.optional_blocks,
-  ];
-  if (fromPreset.length > 0) return fromPreset;
-
-  // Institutional (Slate/Pearl) uses an isolated 5-page renderer — no web blocks.
-  // Horizon / Ember use ProposalWebRenderer; union their playlist IDs here so
-  // normalizeSalesPremiumProposalLayout does not strip them to an empty layout.
   const seen = new Set<ProposalBlockId>();
   const ordered: ProposalBlockId[] = [];
   for (const meta of SALES_PREMIUM_STYLE_LIST) {
@@ -338,98 +173,52 @@ export function getSalesPremiumAllowedBlockIds(): ProposalBlockId[] {
   return ordered;
 }
 
-/**
- * Sales Premium v1 uses a closed-world layout: only preset-allowed blocks exist.
- * Legacy blocks (about_company, warranty, dcr_comparison_card, …) are never injected.
- */
+/** @deprecated Sales Premium preset removed — kept for orphan style helpers. */
 export function normalizeSalesPremiumProposalLayout(input: ProposalTemplateV1): ProposalTemplateV1 {
-  const preset = PROPOSAL_PRESET_REGISTRY.residential_sales_premium;
   const allowedOrder = getSalesPremiumAllowedBlockIds();
-  const appendixSet = new Set<ProposalBlockId>(preset.appendix_blocks ?? []);
-  const canonical = getPresetDefaultLayout("residential_sales_premium");
-  const canonicalById = new Map(canonical.blocks.map((b) => [b.id, b]));
   const inputById = new Map(input.blocks.map((b) => [b.id, b]));
 
   const blocks: ProposalTemplateBlock[] = allowedOrder.map((id) => {
     const fromInput = inputById.get(id);
-    const fromCanonical = canonicalById.get(id);
-    const base = fromCanonical ?? {
+    const base = {
       id,
       enabled: false,
-      section: appendixSet.has(id) ? ("appendix" as const) : ("flow" as const),
+      section: "flow" as const,
     };
     if (!fromInput) return base;
     return {
       id,
       enabled: fromInput.enabled,
-      section:
-        fromInput.section ??
-        base.section ??
-        (appendixSet.has(id) ? "appendix" : "flow"),
+      section: fromInput.section ?? "flow",
     };
   });
 
   return { version: 1, blocks };
 }
 
-/**
- * Preset-aware layout normalization. Sales Premium v1 uses closed-world rules;
- * all other presets keep generic registry merge behaviour.
- */
 export function normalizeProposalLayoutForPreset(
   input: ProposalTemplateV1,
-  presetId: ProposalPresetId
+  _presetId: ProposalPresetId
 ): ProposalTemplateV1 {
-  if (presetId === "residential_sales_premium") {
-    return normalizeSalesPremiumProposalLayout(input);
-  }
   return normalizeProposalTemplateV1(input);
 }
 
-/**
- * Resolves the effective block playlist for a proposal.
- * Horizon / Ember (web_blocks styles) get style-specific defaults when layout is
- * missing or empty — institutional Pearl/Slate ignore block playlists.
- */
 export function resolveProposalLayout(
   input: Pick<PremiumProposalPptInput, "proposalLayout" | "salesPremiumStyle" | "galleryThemeKey">,
   presetId: ProposalPresetId
 ): ProposalTemplateV1 {
   const storedLayout = parseProposalTemplateV1(input.proposalLayout);
-
-  if (presetId === "residential_sales_premium") {
-    const style = resolveSalesPremiumStyle(input);
-    if (!usesInstitutionalRenderer(style)) {
-      const styleDefault = getSalesPremiumLayoutForStyle(style);
-      if (!storedLayout) {
-        return normalizeSalesPremiumProposalLayout(styleDefault);
-      }
-      const normalized = normalizeSalesPremiumProposalLayout(storedLayout);
-      if (!normalized.blocks.some((b) => b.enabled)) {
-        return normalizeSalesPremiumProposalLayout(styleDefault);
-      }
-      return normalized;
-    }
-  }
-
   if (storedLayout) {
     return normalizeProposalLayoutForPreset(storedLayout, presetId);
   }
   return getPresetDefaultLayout(presetId);
 }
 
-/**
- * Returns a human-readable label for a preset, falling back gracefully.
- */
 export function getPresetLabel(presetId: string): string {
   const p = PROPOSAL_PRESET_REGISTRY[presetId as ProposalPresetId];
   return p?.label ?? presetId;
 }
 
-/**
- * Returns true when the preset does NOT require a bill / monthly units.
- * Used by the builder to show/hide bill-upload UI.
- */
 export function presetRequiresBill(presetId: ProposalPresetId): boolean {
   return PROPOSAL_PRESET_REGISTRY[presetId].bill_requirement === "required";
 }
@@ -439,19 +228,7 @@ export function presetSupportsBill(presetId: ProposalPresetId): boolean {
   return req === "required" || req === "optional";
 }
 
-// ─── Wave 3 P6: Story mode variant resolution ─────────────────────────────
-//
-// Resolves the narrative copy for a commercial proposal given:
-//   - segment: the customer's org type (hotel, hospital, factory, …)
-//   - mode: the story narrative chosen by the installer
-//   - lang: the proposal language (hi or en)
-//
-// Returns null when:
-//   - presetId is not commercial_executive (story modes are commercial-only)
-//   - segment or mode is null/undefined (no story mode selected)
-//   - the combination has no copy defined
-//
-// Callers should fall back to their own built-in copy when this returns null.
+// ─── Story mode (legacy commercial — always null for active presets) ─────────
 
 export type StoryVariant = StoryCopy & {
   segment: StorySegment;
@@ -459,16 +236,13 @@ export type StoryVariant = StoryCopy & {
   lang: StoryLang;
 };
 
-/**
- * Returns the resolved story copy for a commercial proposal,
- * or null if no story mode is configured.
- */
 export function resolveStoryVariant(
   presetId: ProposalPresetId | string,
   segment: StorySegment | string | null | undefined,
   mode: StoryMode | string | null | undefined,
   lang: StoryLang | string
 ): StoryVariant | null {
+  // Commercial preset removed — story modes are inactive.
   if (presetId !== "commercial_executive") return null;
   if (!segment || !mode) return null;
 

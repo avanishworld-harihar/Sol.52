@@ -40,7 +40,7 @@ export async function buildQuickRequirementProposal(
   input: QuickRequirementProposalPayload
 ): Promise<QuickRequirementProposalBuild> {
   const kw = Math.max(0.5, Math.min(10000, Number(input.kw) || 5));
-  const presetId = input.presetId ?? "residential_sales_premium";
+  const presetId = input.presetId ?? "residential_zenith";
   const rateCard = await getInstallerRateCard();
   const catalog = rateCard?.residentialCatalog ?? null;
 
@@ -71,15 +71,12 @@ export async function buildQuickRequirementProposal(
     residentialConfig: normalizeResidentialConfig(residentialConfig),
     proposalLayout,
     pricingSource: "rate_card",
-    ...(presetId === "residential_sales_premium" && input.salesPremiumStyle
-      ? { salesPremiumStyle: input.salesPremiumStyle }
-      : {}),
     ...(input.galleryThemeKey
       ? { galleryThemeKey: input.galleryThemeKey }
-      : presetId === "residential_solstice"
-        ? { galleryThemeKey: "solstice" }
-        : presetId === "residential_energy_freedom"
-          ? { galleryThemeKey: "freedom" }
+      : presetId === "residential_zenith"
+        ? { galleryThemeKey: "zenith" }
+        : presetId === "residential_executive"
+          ? { galleryThemeKey: "golden" }
           : {}),
   };
 

@@ -128,7 +128,7 @@ export function readActiveSalesPremiumStyle(): SalesPremiumStyleId {
   const galleryKey = readDefaultGalleryKey();
   if (galleryKey) {
     const item = galleryItemByKey(galleryKey);
-    if (item?.presetId === "residential_sales_premium" && item.salesPremiumStyle) {
+    if (item && (item.presetId as string) === "residential_sales_premium" && item.salesPremiumStyle) {
       return normalizeSalesPremiumStyle(item.salesPremiumStyle);
     }
   }
@@ -153,7 +153,7 @@ export function resolveSalesPremiumStyle(
   const galleryKey = input?.galleryThemeKey?.trim();
   if (galleryKey) {
     const item = galleryItemByKey(galleryKey);
-    if (item?.presetId === "residential_sales_premium" && item.salesPremiumStyle) {
+    if (item && (item.presetId as string) === "residential_sales_premium" && item.salesPremiumStyle) {
       return normalizeSalesPremiumStyle(item.salesPremiumStyle);
     }
   }

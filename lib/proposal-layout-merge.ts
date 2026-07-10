@@ -15,7 +15,7 @@ export function getProposalLayout(
   const effectivePreset =
     presetId ??
     (ppt.salesPremiumStyle || ppt.galleryThemeKey
-      ? ("residential_sales_premium" as const)
+      ? ("residential_executive" as const)
       : undefined);
   if (effectivePreset) {
     return resolveProposalLayout(ppt, effectivePreset);

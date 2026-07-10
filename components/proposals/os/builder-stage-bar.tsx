@@ -203,26 +203,12 @@ export function BuilderStageBar({
         {/* Preset label — far right; hidden on mobile to prevent min-w-max overflow */}
         {presetId && (
           <div className="ml-auto hidden items-center pl-2 pr-2 sm:flex">
-            <span
-              className={`inline-flex items-center rounded-lg px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${
-                presetId === "commercial_executive"
-                  ? "bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300"
-                  : "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
-              }`}
-            >
-              {presetId === "commercial_executive"
-                ? "Commercial"
-                : presetId === "residential_sales_premium"
-                ? "Sales Premium"
-                : presetId === "residential_bank_loan"
-                ? "Bank Loan"
-                : presetId === "residential_executive"
-                ? "Executive"
-                : presetId === "residential_solstice"
-                ? "Solstice"
-                : presetId === "residential_energy_freedom"
-                ? "Freedom"
-                : "Residential"}
+            <span className="inline-flex items-center rounded-lg bg-amber-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+              {presetId === "residential_executive"
+                ? "Golden"
+                : presetId === "residential_zenith"
+                  ? "Zenith"
+                  : "Residential"}
             </span>
           </div>
         )}

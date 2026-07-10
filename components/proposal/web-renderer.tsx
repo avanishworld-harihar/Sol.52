@@ -1,23 +1,23 @@
-"use client";
+﻿"use client";
 
 /**
- * ProposalWebRenderer — the block-loop rendering engine for the Proposal OS.
+ * ProposalWebRenderer â€” the block-loop rendering engine for the Proposal OS.
  *
  * Architecture:
  *   ProposalDocument.layout.blocks[]   (ordered, enabled/disabled)
- *       ↓ filter: enabled = true
- *       ↓ check:  isBlockEligible(blockId, eligibilityCtx)
- *       ↓ lookup: WEB_RENDERER_REGISTRY[blockId] → renderKey + pageDataAttr + bridgeKey
- *       ↓ render: renderBlockByKey(renderKey, ctx)
+ *       â†“ filter: enabled = true
+ *       â†“ check:  isBlockEligible(blockId, eligibilityCtx)
+ *       â†“ lookup: WEB_RENDERER_REGISTRY[blockId] â†’ renderKey + pageDataAttr + bridgeKey
+ *       â†“ render: renderBlockByKey(renderKey, ctx)
  *
  * Design constraints:
  *   - Residential proposals (preset = "residential_smart") continue to use the
  *     existing ProposalView component unchanged. The WebRenderer is for the
  *     commercial_executive preset and future presets.
  *   - All section components imported here are the SAME components used in
- *     proposal-view.tsx — just now accessible via named exports added in Phase B.
+ *     proposal-view.tsx â€” just now accessible via named exports added in Phase B.
  *   - The WebRenderer manages its own state (lang, darkMode, amcYears) exactly
- *     as ProposalView does — they are independent renderer instances.
+ *     as ProposalView does â€” they are independent renderer instances.
  *
  * Backward compatibility:
  *   - This file does NOT modify proposal-view.tsx behavior.
@@ -64,7 +64,7 @@ import { PROPOSAL_PREMIUM_DOC_CLASS } from "@/lib/proposal-premium-design";
 import { resolveSalesPremiumStyle, type SalesPremiumStyleId } from "@/lib/sales-premium-styles";
 import { transformToEditorialModel } from "@/lib/executive-premium-editorial/transform-to-editorial-model";
 
-// ── Residential section components (re-exported from proposal-view.tsx) ───────
+// â”€â”€ Residential section components (re-exported from proposal-view.tsx) â”€â”€â”€â”€â”€â”€â”€
 import {
   HeroCover,
   CompanyProfileSection,
@@ -82,7 +82,7 @@ import {
   ClosingSection,
 } from "@/app/(public)/proposal/[id]/proposal-view";
 
-// ── Commercial block components ───────────────────────────────────────────────
+// â”€â”€ Commercial block components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 import { BlockExecutiveSummary } from "@/components/proposal/blocks/block-executive-summary";
 import { BlockSystemRequirements } from "@/components/proposal/blocks/block-system-requirements";
 import { BlockFinancialIntelligence } from "@/components/proposal/blocks/block-financial-intelligence";
@@ -99,7 +99,7 @@ import { BlockInvestmentSummary } from "@/components/proposal/blocks/residential
 import { BlockTechnicalSummary } from "@/components/proposal/blocks/residential/block-technical-summary";
 import { BlockResidentialTerms } from "@/components/proposal/blocks/residential/block-residential-terms";
 import { BlockCustomerDocuments } from "@/components/proposal/blocks/residential/block-customer-documents";
-// ── Aurora blocks ──────────────────────────────────────────────────────────────
+// â”€â”€ Aurora blocks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 import { AuroraCover } from "@/components/proposal/blocks/aurora/aurora-cover";
 import { AuroraAbout } from "@/components/proposal/blocks/aurora/aurora-about";
 import { AuroraBillIntelligence } from "@/components/proposal/blocks/aurora/aurora-bill-intelligence";
@@ -135,18 +135,18 @@ import {
 } from "@/components/proposal/blocks/ember-golden/ember-golden-blocks";
 import "@/components/proposal/blocks/aurora/aurora-proposal.css";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type ProposalWebRendererProps = {
   /** The compiled ProposalDocument IR from Phase A compiler. */
   document: ProposalDocument;
-  /** Deck summary — required for section components. Pass from server when raw_input has no embedded summary. */
+  /** Deck summary â€” required for section components. Pass from server when raw_input has no embedded summary. */
   summary?: ProposalDeckSummary;
-  /** Optional override — when true, show site survey page. */
+  /** Optional override â€” when true, show site survey page. */
   showSurveyWorkflowSection?: boolean;
 };
 
-// ─── Sales Premium render overrides (inline — no generic resolver module) ───
+// â”€â”€â”€ Sales Premium render overrides (inline â€” no generic resolver module) â”€â”€â”€
 
 function resolveSalesPremiumRenderKey(
   blockId: ProposalBlockId,
@@ -249,7 +249,7 @@ function resolveAuroraRenderKey(
   }
 }
 
-// ─── Block render dispatch ────────────────────────────────────────────────────
+// â”€â”€â”€ Block render dispatch â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function renderBlockByKey(
   renderKey: BlockRenderKey,
@@ -312,7 +312,7 @@ export function renderBlockByKey(
           summary={summary}
           monthLbls={monthLbls}
           lang={lang}
-          mode={ctx.presetId === "residential_sales_premium" ? "savings_narrative" : "full"}
+          mode={(ctx.presetId as string) === "residential_sales_premium" ? "savings_narrative" : "full"}
         />
       );
 
@@ -442,7 +442,7 @@ export function renderBlockByKey(
           summary={summary}
           lang={lang}
           darkMode={darkMode}
-          dcrOnly={ctx.presetId === "commercial_executive"}
+          dcrOnly={(ctx.presetId as string) === "commercial_executive"}
           catalog={
             ctx.residentialConfig?.brandCatalog ?? ctx.pptInput.sharedPlantCatalog ?? null
           }
@@ -455,7 +455,7 @@ export function renderBlockByKey(
             ctx.commercialConfig?.brandComparison?.brandIdB
           }
           enabled={
-            ctx.presetId === "residential_smart"
+            (ctx.presetId as string) === "residential_smart"
               ? ctx.residentialConfig?.brandCompare?.enabled === true
               : ctx.residentialConfig?.brandCompare?.enabled === true ||
                 ctx.commercialConfig?.brandComparison?.enabled !== false
@@ -464,7 +464,7 @@ export function renderBlockByKey(
       );
 
     case "dcr_comparison":
-      if (ctx.presetId === "commercial_executive") return null;
+      if ((ctx.presetId as string) === "commercial_executive") return null;
       if (ctx.residentialConfig?.trackCompare?.enabled) {
         return (
           <ResidentialTrackCompareSection
@@ -515,7 +515,7 @@ export function renderBlockByKey(
         />
       );
 
-    // ── Aurora blocks ─────────────────────────────────────────────────────
+    // â”€â”€ Aurora blocks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     case "aurora_cover":
       return (
@@ -635,7 +635,7 @@ export function renderBlockByKey(
   }
 }
 
-// ─── Renderer ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Renderer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function ProposalWebRenderer({
   document: doc,
@@ -666,7 +666,7 @@ export function ProposalWebRenderer({
   }, [summaryProp, doc.raw_input]);
 
   if (!rawSummary) {
-    console.warn("[ProposalWebRenderer] No proposal summary available — cannot render.");
+    console.warn("[ProposalWebRenderer] No proposal summary available â€” cannot render.");
     return (
       <div className="mx-auto max-w-lg px-4 py-16 text-center text-sm text-slate-600">
         This proposal could not be loaded. Please regenerate from the builder or contact your installer.
@@ -693,7 +693,7 @@ export function ProposalWebRenderer({
   );
 }
 
-// ─── Inner renderer (state already initialized above) ────────────────────────
+// â”€â”€â”€ Inner renderer (state already initialized above) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function ProposalWebRendererInner({
   doc,
@@ -724,11 +724,11 @@ function ProposalWebRendererInner({
   setDisplayInstallerLogoUrl: (u: string) => void;
   showSurveyWorkflowSection: boolean;
 }) {
-  // Theme sync — Ember defaults dark; Horizon defaults light; others follow saved preference.
+  // Theme sync â€” Ember defaults dark; Horizon defaults light; others follow saved preference.
   useEffect(() => {
     const rawInput = (doc.raw_input as PremiumProposalPptInput) ?? ({} as PremiumProposalPptInput);
     const spStyle =
-      (doc.preset_id as ProposalPresetId) === "residential_sales_premium"
+      (doc.preset_id as string) === "residential_sales_premium"
         ? resolveSalesPremiumStyle(rawInput)
         : null;
     const preferred =
@@ -775,14 +775,14 @@ function ProposalWebRendererInner({
     (doc.raw_input as import("@/lib/proposal-ppt").PremiumProposalPptInput) ??
     ({} as import("@/lib/proposal-ppt").PremiumProposalPptInput);
   const salesPremiumStyle =
-    presetId === "residential_sales_premium" ? resolveSalesPremiumStyle(rawInput) : null;
+    (presetId as string) === "residential_sales_premium" ? resolveSalesPremiumStyle(rawInput) : null;
 
   const horizonGoldenModel = useMemo(() => {
     if (salesPremiumStyle !== "journey" && salesPremiumStyle !== "savings_focus") return null;
     return transformToEditorialModel(rawInput, summary);
   }, [salesPremiumStyle, rawInput, summary]);
 
-  // Installer data from IR — overlay local branding (logo + name) when saved in More tab
+  // Installer data from IR â€” overlay local branding (logo + name) when saved in More tab
   const branding = readProposalBrandingSettings();
   const resolvedInstallerName = resolveInstallerDisplayName(branding);
   const installer = {
@@ -821,7 +821,7 @@ function ProposalWebRendererInner({
     const link = `${window.location.origin}/proposal/${doc.proposal_id}`;
     const text = [
       `${summary.honoredName} ke liye ${summary.systemKw} kW solar proposal taiyaar hai.`,
-      `Net cost: ₹${Math.round(summary.netCost).toLocaleString("en-IN")} | Saving: ₹${Math.round(summary.annualSaving).toLocaleString("en-IN")}/yr`,
+      `Net cost: â‚¹${Math.round(summary.netCost).toLocaleString("en-IN")} | Saving: â‚¹${Math.round(summary.annualSaving).toLocaleString("en-IN")}/yr`,
       link,
     ].join("\n");
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
@@ -866,7 +866,7 @@ function ProposalWebRendererInner({
   };
 
   const eligibilityCtx = { billAuditBacked, presetId, showSurveySection: showSurveyWorkflowSection };
-  const isSalesPremium = presetId === "residential_sales_premium";
+  const isSalesPremium = (presetId as string) === "residential_sales_premium";
   const isEmber = salesPremiumStyle === "savings_focus";
 
   type PageEntry = {
@@ -917,7 +917,7 @@ function ProposalWebRendererInner({
   if (flowPages.length === 0 && appendixPages.length === 0) {
     return (
       <div className="mx-auto max-w-lg px-4 py-16 text-center text-sm text-slate-600">
-        This proposal has no visible sections. Regenerate from the builder or pick a theme in Settings →
+        This proposal has no visible sections. Regenerate from the builder or pick a theme in Settings â†’
         Proposal templates.
       </div>
     );
@@ -956,7 +956,7 @@ function ProposalWebRendererInner({
             }`}
           >
             <Languages className="h-3.5 w-3.5" />
-            {lang === "en" ? "हिन्दी" : "English"}
+            {lang === "en" ? "à¤¹à¤¿à¤¨à¥à¤¦à¥€" : "English"}
           </button>
           <button
             type="button"
@@ -980,7 +980,7 @@ function ProposalWebRendererInner({
             }`}
           >
             <Download className="h-3.5 w-3.5" />
-            {lang === "en" ? "Print / PDF" : "प्रिंट / PDF"}
+            {lang === "en" ? "Print / PDF" : "à¤ªà¥à¤°à¤¿à¤‚à¤Ÿ / PDF"}
           </button>
           <a
             href={`/proposal/${ctx.proposalId}/present`}
@@ -991,7 +991,7 @@ function ProposalWebRendererInner({
             }`}
           >
             <Presentation className="h-3.5 w-3.5" />
-            {lang === "en" ? "Present" : "प्रेज़ेंट"}
+            {lang === "en" ? "Present" : "à¤ªà¥à¤°à¥‡à¤œà¤¼à¥‡à¤‚à¤Ÿ"}
           </a>
         </div>
 
@@ -1013,7 +1013,7 @@ function ProposalWebRendererInner({
           </div>
         ))}
 
-        {/* Appendix — Sales Premium v1 only */}
+        {/* Appendix â€” Sales Premium v1 only */}
         {appendixPages.length > 0 ? (
           <ProposalAppendixShell lang={lang}>
             {appendixPages.map(({ blockId, renderKey, pageDataAttr }) => (
@@ -1044,7 +1044,7 @@ function ProposalWebRendererInner({
               disabled={downloading}
               className="flex flex-1 items-center justify-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm active:scale-95"
             >
-              <Download className="h-4 w-4" /> {downloading ? "…" : D["cta.downloadPpt"]}
+              <Download className="h-4 w-4" /> {downloading ? "â€¦" : D["cta.downloadPpt"]}
             </button>
           </div>
         </div>

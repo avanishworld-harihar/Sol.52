@@ -129,9 +129,9 @@ export function runBillingPhase1Checks(): void {
 
   const trialSub = sub(trialPlan);
   assertCommercialProposalEntitlement(trialSub);
-  assertResidentialThemeEntitlement(trialSub, { presetId: "residential_sales_premium", galleryKey: "classic" });
+  assertResidentialThemeEntitlement(trialSub, { presetId: "residential_executive", galleryKey: "golden" });
   assertThrows(
-    () => assertResidentialThemeEntitlement(trialSub, { presetId: "residential_sales_premium", galleryKey: "horizon" }),
+    () => assertResidentialThemeEntitlement(trialSub, { presetId: "residential_executive", galleryKey: "horizon" }),
     "theme_not_allowed"
   );
 
