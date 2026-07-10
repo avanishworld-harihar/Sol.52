@@ -5,6 +5,17 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap");
 
+/* Full-bleed onyx — kills light #fafafa route glow around the document */
+.shell {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 100dvh;
+  margin: 0;
+  padding: 0;
+  background-color: #0a0f1c;
+  background-image: none;
+}
+
 .presetZenith {
   --zenith-onyx: #0a0f1c;
   --zenith-pearl: #fafbfc;
@@ -25,7 +36,7 @@
   line-height: 1.6;
   padding: 0;
   -webkit-font-smoothing: antialiased;
-  box-shadow: 0 25px 50px -12px rgba(10, 15, 28, 0.45);
+  box-shadow: none;
 }
 
 .presetZenith *,
@@ -41,20 +52,49 @@
   font-family: var(--zenith-sans);
 }
 
-/* ── Cover — centered title, massive negative space ──────────────────────── */
+/* ── Cover ───────────────────────────────────────────────────────────────── */
 .cover {
+  position: relative;
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 12rem 3rem;
+  padding: 10rem 3rem 8rem;
+  background-color: var(--zenith-onyx);
+  background-image: none;
   border-bottom: 1px solid rgba(197, 160, 89, 0.35);
+  isolation: isolate;
+}
+
+.cover::before,
+.cover::after {
+  content: none !important;
+  display: none !important;
+}
+
+.coverBrand {
+  margin: 0 0 3.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+}
+
+.coverLogo {
+  display: block;
+  max-height: 4.5rem;
+  max-width: min(220px, 70vw);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.2));
 }
 
 .brand {
-  margin: 0 0 4rem;
+  margin: 0;
   font-family: var(--zenith-sans);
   font-size: 0.6875rem;
   font-weight: 700;
@@ -85,7 +125,7 @@
 }
 
 .coverMeta {
-  margin: 5rem 0 0;
+  margin: 4.5rem 0 0;
   font-family: var(--zenith-sans);
   font-size: 0.6875rem;
   font-weight: 600;
@@ -94,12 +134,24 @@
   color: rgba(197, 160, 89, 0.8);
 }
 
-/* ── Content pages — generous vertical rhythm ────────────────────────────── */
+.coverAsset {
+  margin: 1rem 0 0;
+  font-family: var(--zenith-sans);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: rgba(250, 251, 252, 0.45);
+  max-width: 40ch;
+}
+
+/* ── Content pages ───────────────────────────────────────────────────────── */
 .contentPage {
   background-color: var(--zenith-pearl);
   color: #0f172a;
-  padding: 6rem 3.5rem 7rem;
+  padding: 5.5rem 3.5rem 6.5rem;
   min-height: 50vh;
+  page-break-after: always;
+  break-after: page;
 }
 
 .contentPage + .contentPage {
@@ -112,6 +164,14 @@
   font-size: clamp(1.85rem, 4vw, 2.5rem);
   font-weight: 400;
   letter-spacing: -0.02em;
+  color: #0a0f1c;
+}
+
+.subTitle {
+  margin: 3rem 0 0;
+  font-family: var(--zenith-serif);
+  font-size: 1.25rem;
+  font-weight: 400;
   color: #0a0f1c;
 }
 
@@ -132,12 +192,287 @@
   background: var(--zenith-gold);
 }
 
-/* ── Architecture cards ──────────────────────────────────────────────────── */
+/* Stats / ledger */
+.statRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin-top: 3rem;
+}
+
+.statCard {
+  padding: 1.35rem 1.15rem;
+  background: #ffffff;
+  border: 1px solid var(--zenith-border);
+}
+
+.statLabel {
+  margin: 0;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--zenith-gold);
+}
+
+.statValue {
+  margin: 0.65rem 0 0;
+  font-family: var(--zenith-serif);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 400;
+  color: #0a0f1c;
+  line-height: 1.15;
+}
+
+.statValueSm {
+  margin: 0.65rem 0 0;
+  font-family: var(--zenith-sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #0a0f1c;
+  line-height: 1.4;
+}
+
+.statUnit {
+  margin-left: 0.2em;
+  font-size: 0.55em;
+  color: #64748b;
+}
+
+.ledgerGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  margin-top: 3rem;
+  border: 1px solid var(--zenith-border);
+  background: #ffffff;
+}
+
+.ledgerItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1.35rem 1.25rem;
+  border-bottom: 1px solid var(--zenith-border);
+  border-right: 1px solid var(--zenith-border);
+}
+
+.ledgerItem:nth-child(2n) {
+  border-right: none;
+}
+
+.ledgerLabel {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.ledgerValue {
+  font-family: var(--zenith-serif);
+  font-size: 1.35rem;
+  color: #0a0f1c;
+}
+
+.ledgerEmph {
+  font-weight: 600;
+  color: #0a0f1c;
+}
+
+/* Bill bars */
+.barChart {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.35rem;
+  height: 10rem;
+  margin-top: 3rem;
+  padding-top: 0.5rem;
+}
+
+.barCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  min-width: 0;
+}
+
+.bar {
+  width: 100%;
+  max-width: 1.75rem;
+  background: #1e293b;
+  border-radius: 1px 1px 0 0;
+}
+
+.barPeak {
+  background: var(--zenith-gold);
+}
+
+.barLabel {
+  margin-top: 0.45rem;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+/* Metrics / architecture */
+.metricGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 3rem;
+}
+
+.metricCard {
+  padding: 1.25rem 1rem;
+  background: #ffffff;
+  border: 1px solid var(--zenith-border);
+}
+
+.metricLabel {
+  margin: 0;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.metricValue {
+  margin: 0.5rem 0 0;
+  font-family: var(--zenith-serif);
+  font-size: 1.15rem;
+  color: #0a0f1c;
+}
+
+.standards {
+  margin: 2rem 0 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  color: #64748b;
+}
+
 .archGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1.5rem;
   margin-top: 3.5rem;
+}
+
+/* TechnicalSpecs — engineering card grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+  margin-top: 3.5rem;
+}
+
+.techCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 1.75rem 1.5rem;
+  background: #ffffff;
+  border: 1px solid var(--zenith-border);
+  box-shadow: 0 0 0 1px rgba(30, 41, 59, 0.04), 0 0 24px rgba(30, 41, 59, 0.06);
+}
+
+.cardHeader {
+  margin: 0;
+  font-family: var(--zenith-serif);
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: #0a0f1c;
+  line-height: 1.3;
+}
+
+.cardBody {
+  margin: 0;
+  font-family: var(--zenith-sans);
+  font-size: 0.8125rem;
+  color: #64748b;
+  line-height: 1.5;
+  flex: 1;
+}
+
+/* Warranty matrix table */
+.warrantyTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 2.5rem;
+}
+
+.warrantyTable th {
+  text-align: left;
+  color: var(--zenith-gold);
+  text-transform: uppercase;
+  font-family: var(--zenith-sans);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  padding: 1rem 1rem 1.15rem 0;
+  border-bottom: 1px solid var(--zenith-border);
+}
+
+.warrantyTable td {
+  text-align: left;
+  padding: 1.25rem 1rem 1.25rem 0;
+  border-bottom: 1px solid var(--zenith-border);
+  vertical-align: top;
+  font-family: var(--zenith-sans);
+  font-size: 0.9375rem;
+  color: #0f172a;
+}
+
+/* Execution payment list */
+.paymentList {
+  margin-top: 1.25rem;
+  border: 1px solid var(--zenith-border);
+  background: #ffffff;
+}
+
+.paymentRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.35rem;
+  border-bottom: 1px solid var(--zenith-border);
+  font-family: var(--zenith-sans);
+  font-size: 0.9375rem;
+  color: #0f172a;
+}
+
+.paymentRow:last-child {
+  border-bottom: none;
+}
+
+.paymentRowTotal {
+  background: rgba(197, 160, 89, 0.06);
+}
+
+.paymentMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.paymentStep {
+  font-weight: 600;
+}
+
+.paymentPct {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #64748b;
 }
 
 .archCard {
@@ -199,11 +534,15 @@
   background: var(--zenith-gold);
 }
 
-/* ── BOM table ───────────────────────────────────────────────────────────── */
+/* Tables */
 .bomTable {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 3.5rem;
+  margin-top: 2.5rem;
+}
+
+.subTitle + .bomTable {
+  margin-top: 1.25rem;
 }
 
 .bomTable th {
@@ -220,16 +559,12 @@
 
 .bomTable td {
   text-align: left;
-  padding: 1.35rem 1rem 1.35rem 0;
+  padding: 1.25rem 1rem 1.25rem 0;
   border-bottom: 1px solid var(--zenith-border);
   vertical-align: top;
   font-family: var(--zenith-sans);
   font-size: 0.9375rem;
   color: #0f172a;
-}
-
-.bomTable tbody tr:last-child td {
-  border-bottom: 1px solid var(--zenith-border);
 }
 
 .bomName {
@@ -262,6 +597,103 @@
   font-weight: 700;
 }
 
+/* Steps / lists / bank / closing */
+.stepList {
+  margin: 3rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.stepItem {
+  display: flex;
+  gap: 1.15rem;
+  align-items: flex-start;
+  padding: 1.15rem 1.25rem;
+  background: #ffffff;
+  border: 1px solid var(--zenith-border);
+}
+
+.stepNum {
+  font-family: var(--zenith-serif);
+  font-size: 1.25rem;
+  color: var(--zenith-gold);
+  line-height: 1;
+  min-width: 2ch;
+}
+
+.stepTitle {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: #0a0f1c;
+}
+
+.stepDesc {
+  margin: 0.25rem 0 0;
+  font-size: 0.8125rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.bulletList {
+  margin: 2rem 0 0;
+  padding: 0 0 0 1.1rem;
+  color: #475569;
+  font-size: 0.9375rem;
+  line-height: 1.7;
+}
+
+.bulletList li + li {
+  margin-top: 0.45rem;
+}
+
+.bankBlock {
+  margin-top: 2.5rem;
+  padding: 1.5rem;
+  background: #ffffff;
+  border: 1px solid var(--zenith-border);
+}
+
+.bankLine {
+  margin: 0.35rem 0 0;
+  font-size: 0.875rem;
+  color: #0f172a;
+}
+
+.closingPage {
+  background: var(--zenith-onyx);
+  color: var(--zenith-pearl);
+  border-top: none;
+}
+
+.closingPage .sectionTitle {
+  color: #ffffff;
+}
+
+.closingPage .sectionLead {
+  color: rgba(250, 251, 252, 0.65);
+}
+
+.closingPage .statCard {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(197, 160, 89, 0.35);
+}
+
+.closingPage .statValue {
+  color: #ffffff;
+}
+
+.closingContact {
+  margin: 3rem 0 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(197, 160, 89, 0.85);
+}
+
 .emptyState {
   margin: 3.5rem 0 0;
   padding: 1.5rem;
@@ -274,19 +706,32 @@
 
 @media (max-width: 640px) {
   .cover {
-    padding: 8rem 1.75rem;
+    padding: 7rem 1.75rem 5rem;
   }
 
   .contentPage {
-    padding: 4.5rem 1.5rem 5.5rem;
+    padding: 4rem 1.5rem 5rem;
   }
 
-  .archGrid {
+  .archGrid,
+  .grid,
+  .ledgerGrid,
+  .statRow,
+  .metricGrid {
     grid-template-columns: 1fr;
+  }
+
+  .ledgerItem {
+    border-right: none;
   }
 }
 
 @media print {
+  .shell {
+    min-height: auto;
+    background: #0a0f1c;
+  }
+
   .presetZenith {
     max-width: none;
     box-shadow: none;
@@ -304,9 +749,14 @@
   .contentPage {
     min-height: auto;
     padding: 18mm 16mm 22mm;
-    page-break-after: auto;
+    page-break-after: always;
+    break-after: page;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+
+  .closingPage {
+    page-break-after: auto;
   }
 
   .archCard {
