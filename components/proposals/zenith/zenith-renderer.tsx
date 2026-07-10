@@ -1,13 +1,14 @@
 "use client";
 
 /**
- * Zenith Luxury — full brochure from ProposalData.
- * Design language: Midnight Onyx · Pearl · Champagne Gold · Playfair + Inter.
- * Content mirrors Golden coverage; structure stays Zenith.
+ * Zenith Luxury — world-class brochure.
+ * Toolbar · EN/HI · EMI · QR/WhatsApp · print A4 · hide empty · cover atmosphere
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Download, Languages, MessageCircle } from "lucide-react";
 import type { ProposalData } from "@/lib/proposal-data";
+import type { ProposalLang } from "@/lib/proposal-i18n";
 import {
   formatInr,
   formatInrCompact,
@@ -17,44 +18,53 @@ import {
   PROPOSAL_BRANDING_UPDATED_EVENT,
   readProposalBrandingSettings,
 } from "@/lib/proposal-branding-settings";
-import { TechnicalSpecs } from "@/components/proposals/zenith/pages/TechnicalSpecs";
-import { WarrantyMatrix } from "@/components/proposals/zenith/pages/WarrantyMatrix";
-import { Execution } from "@/components/proposals/zenith/pages/Execution";
-import { TermsCompliance } from "@/components/proposals/zenith/pages/TermsCompliance";
+import { zenithCopy } from "@/components/proposals/zenith/zenith-i18n";
 import styles from "./zenith.module.css";
 
 export type ZenithProposalRendererProps = {
   data: ProposalData;
-  /** Fallback when ppt logo is not yet on ProposalData.meta */
   installerLogoUrl?: string;
 };
 
 function warrantyClass(warranty: string): string {
   const years = Number((warranty.match(/(\d+)\s*(?:year|yr)/i)?.[1] ?? "").trim());
   if (Number.isFinite(years) && years >= 25) return styles.textEmerald;
+  if (/25|30/.test(warranty)) return styles.textEmerald;
   return styles.textGold;
 }
 
-function PageHeader({ title, lead }: { title: string; lead?: string }) {
-  return (
-    <>
-      <h2 className={styles.sectionTitle}>{title}</h2>
-      <div className={styles.goldRule} aria-hidden />
-      {lead ? <p className={styles.sectionLead}>{lead}</p> : null}
-    </>
-  );
+function BrandLockup({ name }: { name: string }) {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    const last = parts[parts.length - 1]!;
+    const first = parts.slice(0, -1).join(" ");
+    return (
+      <h1 className={styles.brandHarihar}>
+        {first.toUpperCase()} <span className={styles.brandSub}>{last.toUpperCase()}</span>
+      </h1>
+    );
+  }
+  return <h1 className={styles.brandHarihar}>{name.toUpperCase()}</h1>;
+}
+
+/** Digits-only WhatsApp deep link from a contact line, if a phone is present. */
+function whatsappHref(contactLine: string): string | null {
+  const digits = contactLine.replace(/\D/g, "");
+  if (digits.length < 10) return null;
+  const phone = digits.length === 10 ? `91${digits}` : digits;
+  if (phone.length < 11 || phone.length > 15) return null;
+  return `https://wa.me/${phone}`;
 }
 
 export function ZenithProposalRenderer({
   data,
   installerLogoUrl,
 }: ZenithProposalRendererProps) {
+  const [lang, setLang] = useState<ProposalLang>("en");
+  const copy = useMemo(() => zenithCopy(lang), [lang]);
+
   const [logoUrl, setLogoUrl] = useState<string | undefined>(() => {
-    return (
-      data?.meta.brandLogoUrl?.trim() ||
-      installerLogoUrl?.trim() ||
-      undefined
-    );
+    return data?.meta.brandLogoUrl?.trim() || installerLogoUrl?.trim() || undefined;
   });
 
   useEffect(() => {
@@ -74,40 +84,71 @@ export function ZenithProposalRenderer({
   }
 
   const brand = data.meta.brandName?.trim() || "Harihar Solar";
-  const customer = data.meta.customerName?.trim() || "your home";
+  const customer = data.meta.customerName?.trim() || (lang === "hi" ? "आपके घर" : "your home");
   const lifetime =
     data.economics.lifetimeProfitInr > 0
       ? formatLifetimeBenefitInr(data.economics.lifetimeProfitInr)
-      : "long-term wealth";
+      : lang === "hi"
+        ? "दीर्घकालिक संपत्ति"
+        : "long-term wealth";
   const bom = Array.isArray(data.bom) ? data.bom : [];
-
   const eco = data.economics;
   const bill = data.bill;
   const eng = data.engineering;
-  const warranty = data.warranty;
   const execution = data.execution;
   const terms = data.terms;
   const closing = data.closing;
   const impact = data.impact;
+  const wa = whatsappHref(closing.contactLine || "");
+  const qrUrl = closing.qrUrl?.trim() || undefined;
+  const showBill = bill.hasData && bill.months.length > 0;
+  const showImpact = impact.co2Tons > 0 || impact.treesEquivalent > 0;
+  const showEng = eng.metrics.length > 0;
+  const showBom = bom.length > 0;
+  const showExecution = execution.steps.length > 0 || execution.payments.length > 0;
+  const showTerms = terms.conditions.length > 0 || terms.documents.length > 0;
+  const showEmi = eco.emiRows.length > 0;
 
   return (
     <div className={styles.shell}>
-      <div className={styles.presetZenith}>
-        {/* 1 — COVER */}
-        <section className={styles.cover}>
+      <div className={`${styles.presetZenith}${lang === "hi" ? ` ${styles.langHi}` : ""}`}>
+        {/* Toolbar */}
+        <div className={styles.toolbar}>
+          <p className={styles.toolbarLabel}>{copy.toolbar.preset}</p>
+          <div className={styles.toolbarActions}>
+            <button
+              type="button"
+              className={styles.toolbarBtnGhost}
+              onClick={() => setLang((l) => (l === "en" ? "hi" : "en"))}
+            >
+              <Languages className={styles.toolbarIcon} aria-hidden />
+              {copy.toolbar.langToggle}
+            </button>
+            <button
+              type="button"
+              className={styles.toolbarBtn}
+              onClick={() => {
+                if (typeof window !== "undefined") window.print();
+              }}
+            >
+              <Download className={styles.toolbarIcon} aria-hidden />
+              {copy.toolbar.printPdf}
+            </button>
+          </div>
+        </div>
+
+        {/* Page 1 — Hero */}
+        <section className={`${styles.section} ${styles.coverCentered}`}>
+          <div className={styles.coverAtmosphere} aria-hidden />
+          <div className={styles.coverGoldLine} aria-hidden />
           <div className={styles.coverBrand}>
             {logoUrl ? (
               <img src={logoUrl} alt={brand} className={styles.coverLogo} />
-            ) : (
-              <p className={styles.brand}>{brand}</p>
-            )}
+            ) : null}
+            <BrandLockup name={brand} />
           </div>
-          <h1 className={styles.heroTitle}>Your home, energy independent.</h1>
-          <p className={styles.heroSub}>
-            Generating your own power for 25 years. Saving you {lifetime} starting
-            today
-            {customer && customer !== "Valued Customer" ? ` — curated for ${customer}` : ""}.
-          </p>
+          <h2 className={styles.heroTitle}>{copy.hero.title}</h2>
+          <p className={styles.heroSub}>{copy.hero.sub(lifetime, customer)}</p>
           {(data.meta.systemKw > 0 || data.meta.locationLine) && (
             <p className={styles.coverMeta}>
               {data.meta.systemKw > 0 ? `${data.meta.systemKw} kW` : null}
@@ -117,30 +158,25 @@ export function ZenithProposalRenderer({
                 : null}
             </p>
           )}
-          {data.meta.assetProfileLine ? (
-            <p className={styles.coverAsset}>{data.meta.assetProfileLine}</p>
-          ) : null}
         </section>
 
-        {/* 2 — BILL or REQUIREMENT */}
-        {bill.hasData && bill.months.length > 0 ? (
-          <section className={styles.contentPage}>
-            <PageHeader
-              title="Bill intelligence"
-              lead="Your annual electricity pattern — and where summer quietly takes the most."
-            />
-            <div className={styles.statRow}>
-              <div className={styles.statCard}>
-                <p className={styles.statLabel}>Yearly bill</p>
-                <p className={styles.statValue}>{formatInrCompact(bill.yearlyBillInr)}</p>
+        {/* Bill */}
+        {showBill ? (
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>{copy.bill.title}</h2>
+            <p className={styles.sectionLead}>{copy.bill.lead}</p>
+            <div className={styles.grid}>
+              <div className={styles.techCard}>
+                <p className={styles.cardLabel}>{copy.bill.yearly}</p>
+                <p className={styles.cardValue}>{formatInrCompact(bill.yearlyBillInr)}</p>
               </div>
-              <div className={styles.statCard}>
-                <p className={styles.statLabel}>Solar offset</p>
-                <p className={styles.statValue}>{Math.round(bill.solarSavingsPct)}%</p>
+              <div className={styles.techCard}>
+                <p className={styles.cardLabel}>{copy.bill.offset}</p>
+                <p className={styles.cardValue}>{Math.round(bill.solarSavingsPct)}%</p>
               </div>
-              <div className={styles.statCard}>
-                <p className={styles.statLabel}>Summer share</p>
-                <p className={styles.statValue}>{Math.round(bill.summerTrapPct)}%</p>
+              <div className={styles.techCard}>
+                <p className={styles.cardLabel}>{copy.bill.summer}</p>
+                <p className={styles.cardValue}>{Math.round(bill.summerTrapPct)}%</p>
               </div>
             </div>
             <div className={styles.barChart} aria-hidden>
@@ -155,80 +191,51 @@ export function ZenithProposalRenderer({
               ))}
             </div>
           </section>
-        ) : (
-          <section className={styles.contentPage}>
-            <PageHeader
-              title="System requirement"
-              lead="Sized to your declared load — generation, coverage, and asset profile."
-            />
-            <div className={styles.statRow}>
-              <div className={styles.statCard}>
-                <p className={styles.statLabel}>System size</p>
-                <p className={styles.statValue}>{data.meta.systemKw || "—"} kW</p>
-              </div>
-              <div className={styles.statCard}>
-                <p className={styles.statLabel}>Annual units</p>
-                <p className={styles.statValue}>
-                  {closing.annualUnits > 0
-                    ? closing.annualUnits.toLocaleString("en-IN")
-                    : "—"}
-                </p>
-              </div>
-              <div className={styles.statCard}>
-                <p className={styles.statLabel}>Profile</p>
-                <p className={styles.statValueSm}>{data.meta.assetProfileLine || "—"}</p>
-              </div>
-            </div>
-          </section>
-        )}
+        ) : null}
 
-        {/* 3 — ECONOMICS */}
-        <section className={styles.contentPage}>
-          <PageHeader
-            title="Investment ledger"
-            lead="Capital, subsidy, payback, and the wealth your roof can compound."
-          />
-          <div className={styles.ledgerGrid}>
-            <div className={styles.ledgerItem}>
-              <span className={styles.ledgerLabel}>Gross system</span>
-              <span className={styles.ledgerValue}>{formatInr(eco.grossInr)}</span>
+        {/* Investment Ledger + EMI */}
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>{copy.investment.title}</h2>
+          <p className={styles.sectionLead}>{copy.investment.lead}</p>
+          <div className={styles.grid}>
+            <div className={styles.techCard}>
+              <p className={styles.cardLabel}>{copy.investment.gross}</p>
+              <p className={styles.cardValue}>{formatInr(eco.grossInr)}</p>
             </div>
-            <div className={styles.ledgerItem}>
-              <span className={styles.ledgerLabel}>PM Surya Ghar subsidy</span>
-              <span className={styles.ledgerValue}>{formatInr(eco.subsidyInr)}</span>
+            <div className={styles.techCard}>
+              <p className={styles.cardLabel}>{copy.investment.subsidy}</p>
+              <p className={styles.cardValue}>{formatInr(eco.subsidyInr)}</p>
             </div>
-            <div className={styles.ledgerItem}>
-              <span className={styles.ledgerLabel}>Net payable</span>
-              <span className={`${styles.ledgerValue} ${styles.ledgerEmph}`}>
-                {formatInr(eco.netInr)}
-              </span>
+            <div className={styles.techCard}>
+              <p className={styles.cardLabel}>{copy.investment.net}</p>
+              <p className={styles.cardValue}>{formatInr(eco.netInr)}</p>
             </div>
-            <div className={styles.ledgerItem}>
-              <span className={styles.ledgerLabel}>Monthly savings</span>
-              <span className={styles.ledgerValue}>{formatInr(eco.monthlySavingsInr)}</span>
+            <div className={styles.techCard}>
+              <p className={styles.cardLabel}>{copy.investment.monthly}</p>
+              <p className={styles.cardValue}>{formatInr(eco.monthlySavingsInr)}</p>
             </div>
-            <div className={styles.ledgerItem}>
-              <span className={styles.ledgerLabel}>Payback</span>
-              <span className={styles.ledgerValue}>
-                {eco.paybackYears > 0 ? `${eco.paybackYears.toFixed(1)} yrs` : "—"}
-              </span>
+            <div className={styles.techCard}>
+              <p className={styles.cardLabel}>{copy.investment.payback}</p>
+              <p className={styles.cardValue}>
+                {eco.paybackYears > 0 ? `${eco.paybackYears.toFixed(1)} Yrs` : "—"}
+              </p>
             </div>
-            <div className={styles.ledgerItem}>
-              <span className={styles.ledgerLabel}>Lifetime benefit</span>
-              <span className={`${styles.ledgerValue} ${styles.textGold}`}>
+            <div className={styles.techCard}>
+              <p className={styles.cardLabel}>{copy.investment.lifetime}</p>
+              <p className={`${styles.cardValue} ${styles.textGold}`}>
                 {formatLifetimeBenefitInr(eco.lifetimeProfitInr)}
-              </span>
+              </p>
             </div>
           </div>
-          {eco.emiRows.length > 0 ? (
+          {showEmi ? (
             <>
-              <h3 className={styles.subTitle}>Financing options</h3>
+              <h3 className={styles.subTitle}>{copy.investment.emiTitle}</h3>
               <table className={styles.bomTable}>
                 <thead>
                   <tr>
-                    <th scope="col">Tenure</th>
-                    <th scope="col">Monthly EMI</th>
-                    <th scope="col">Interest</th>
+                    <th scope="col">{copy.investment.tenure}</th>
+                    <th scope="col">{copy.investment.emi}</th>
+                    <th scope="col">{copy.investment.interest}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -245,77 +252,66 @@ export function ZenithProposalRenderer({
           ) : null}
         </section>
 
-        {/* 4 — IMPACT */}
-        <section className={styles.contentPage}>
-          <PageHeader
-            title="Environmental impact"
-            lead="Clean generation measured in carbon avoided and trees equivalent."
-          />
-          <div className={styles.statRow}>
-            <div className={styles.statCard}>
-              <p className={styles.statLabel}>CO₂ avoided</p>
-              <p className={styles.statValue}>
-                {impact.co2Tons > 0 ? `${impact.co2Tons.toFixed(0)} t` : "—"}
-              </p>
+        {/* Impact */}
+        {showImpact ? (
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>{copy.impact.title}</h2>
+            <div className={styles.grid}>
+              <div className={styles.techCard}>
+                <p className={styles.cardLabel}>{copy.impact.co2}</p>
+                <p className={styles.cardValue}>
+                  {impact.co2Tons > 0 ? `${impact.co2Tons.toFixed(0)} t` : "—"}
+                </p>
+              </div>
+              <div className={styles.techCard}>
+                <p className={styles.cardLabel}>{copy.impact.trees}</p>
+                <p className={styles.cardValue}>
+                  {impact.treesEquivalent > 0
+                    ? impact.treesEquivalent.toLocaleString("en-IN")
+                    : "—"}
+                </p>
+              </div>
+              <div className={styles.techCard}>
+                <p className={styles.cardLabel}>{copy.impact.annual}</p>
+                <p className={styles.cardValue}>
+                  {closing.annualSavingsInr > 0
+                    ? formatInrCompact(closing.annualSavingsInr)
+                    : "—"}
+                </p>
+              </div>
             </div>
-            <div className={styles.statCard}>
-              <p className={styles.statLabel}>Trees equivalent</p>
-              <p className={styles.statValue}>
-                {impact.treesEquivalent > 0
-                  ? impact.treesEquivalent.toLocaleString("en-IN")
-                  : "—"}
-              </p>
-            </div>
-            <div className={styles.statCard}>
-              <p className={styles.statLabel}>Annual savings</p>
-              <p className={styles.statValue}>
-                {closing.annualSavingsInr > 0
-                  ? formatInrCompact(closing.annualSavingsInr)
-                  : "—"}
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* 5 — ENGINEERING */}
-        {eng.metrics.length > 0 ? (
-          <section className={styles.contentPage}>
-            <PageHeader
-              title="Engineering brief"
-              lead={
-                eng.tiltNote ||
-                "Site-tuned metrics for generation, tilt, and compliance standards."
-              }
-            />
-            <div className={styles.metricGrid}>
-              {eng.metrics.map((m) => (
-                <div key={m.label} className={styles.metricCard}>
-                  <p className={styles.metricLabel}>{m.label}</p>
-                  <p className={styles.metricValue}>{m.value}</p>
-                </div>
-              ))}
-            </div>
-            {eng.standards.length > 0 ? (
-              <p className={styles.standards}>
-                Standards · {eng.standards.join(" · ")}
-              </p>
-            ) : null}
           </section>
         ) : null}
 
-        {/* 6 — TECHNICAL ARCHITECTURE (grid cards) */}
-        <TechnicalSpecs bom={bom} />
+        {/* Engineering brief */}
+        {showEng ? (
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>{copy.engineering.title}</h2>
+            <p className={styles.sectionLead}>
+              {eng.tiltNote || copy.engineering.leadFallback}
+            </p>
+            <div className={styles.grid}>
+              {eng.metrics.map((m) => (
+                <div key={m.label} className={styles.techCard}>
+                  <p className={styles.cardLabel}>{m.label}</p>
+                  <p className={styles.cardValue}>{m.value}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
-        {/* 7 — BOM */}
-        <section className={styles.contentPage}>
-          <PageHeader title="Tier-1 Engineering" />
-          {bom.length > 0 ? (
+        {/* Merged Engineering & Assurance */}
+        {showBom ? (
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>{copy.assurance.title}</h2>
+            <p className={styles.sectionLead}>{copy.assurance.lead}</p>
             <table className={styles.bomTable}>
               <thead>
                 <tr>
-                  <th scope="col">Component</th>
-                  <th scope="col">Specification</th>
-                  <th scope="col">Warranty</th>
+                  <th scope="col">{copy.assurance.item}</th>
+                  <th scope="col">{copy.assurance.spec}</th>
+                  <th scope="col">{copy.assurance.warranty}</th>
                 </tr>
               </thead>
               <tbody>
@@ -335,46 +331,135 @@ export function ZenithProposalRenderer({
                 ))}
               </tbody>
             </table>
-          ) : (
-            <p className={styles.emptyState}>
-              Component list pending — BOM will populate from system configuration.
-            </p>
-          )}
-        </section>
+          </section>
+        ) : null}
 
-        {/* 8 — WARRANTY MATRIX */}
-        <WarrantyMatrix warranty={warranty} />
+        {/* Execution */}
+        {showExecution ? (
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>{copy.execution.title}</h2>
+            <p className={styles.sectionLead}>{copy.execution.lead}</p>
+            {execution.steps.length > 0 ? (
+              <ol className={styles.stepList}>
+                {execution.steps.map((s) => (
+                  <li key={s.num} className={styles.stepItem}>
+                    <span className={styles.stepNum}>{s.num}</span>
+                    <div>
+                      <p className={styles.stepTitle}>{s.title}</p>
+                      <p className={styles.stepDesc}>{s.description}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            ) : null}
+            {execution.payments.length > 0 ? (
+              <>
+                <h3 className={styles.subTitle}>{copy.execution.paymentTitle}</h3>
+                <div className={styles.paymentList}>
+                  {execution.payments.map((p) => (
+                    <div
+                      key={p.label}
+                      className={`${styles.paymentRow} ${p.isTotal ? styles.paymentRowTotal : ""}`}
+                    >
+                      <div className={styles.paymentMeta}>
+                        <span className={styles.paymentStep}>{p.label}</span>
+                        {p.pctLabel ? (
+                          <span className={styles.paymentPct}>{p.pctLabel}</span>
+                        ) : null}
+                      </div>
+                      <span className={styles.textGold}>{formatInr(p.amountInr)}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : null}
+            {(execution.bank.accountNumber || execution.bank.upiId) && (
+              <div className={styles.bankBlock}>
+                <p className={styles.bankLabel}>{copy.execution.bank}</p>
+                <p className={styles.bankLine}>{execution.bank.company}</p>
+                {execution.bank.accountNumber ? (
+                  <p className={styles.bankLine}>A/C {execution.bank.accountNumber}</p>
+                ) : null}
+                {execution.bank.ifsc ? (
+                  <p className={styles.bankLine}>IFSC {execution.bank.ifsc}</p>
+                ) : null}
+                {execution.bank.upiId ? (
+                  <p className={styles.bankLine}>UPI {execution.bank.upiId}</p>
+                ) : null}
+              </div>
+            )}
+          </section>
+        ) : null}
 
-        {/* 9 — EXECUTION & SETTLEMENT */}
-        <Execution execution={execution} />
+        {/* Terms */}
+        {showTerms ? (
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>{copy.terms.title}</h2>
+            {terms.conditions.length > 0 ? (
+              <ul className={styles.bulletList}>
+                {terms.conditions.map((c) => (
+                  <li key={c}>{c}</li>
+                ))}
+              </ul>
+            ) : null}
+            {terms.documents.length > 0 ? (
+              <>
+                <h3 className={styles.subTitle}>{copy.terms.documents}</h3>
+                <ul className={styles.bulletList}>
+                  {terms.documents.map((d) => (
+                    <li key={d}>{d}</li>
+                  ))}
+                </ul>
+              </>
+            ) : null}
+          </section>
+        ) : null}
 
-        {/* 10 — TERMS & COMPLIANCE */}
-        <TermsCompliance terms={terms} />
-
-        {/* 11 — CLOSING */}
-        <section className={`${styles.contentPage} ${styles.closingPage}`}>
-          <h2 className={styles.sectionTitle}>Ready when you are.</h2>
-          <div className={styles.goldRule} aria-hidden />
+        {/* Closing + CTA */}
+        <section className={`${styles.section} ${styles.closingSection}`}>
+          <h2 className={styles.sectionTitle}>{copy.closing.title}</h2>
           <p className={styles.sectionLead}>
-            Prepared for {closing.customerName || customer} by{" "}
-            {closing.installerName || brand}.
+            {copy.closing.prepared(closing.customerName || customer, closing.installerName || brand)}
           </p>
-          <div className={styles.statRow}>
-            <div className={styles.statCard}>
-              <p className={styles.statLabel}>Annual units</p>
-              <p className={styles.statValue}>
+          <div className={styles.grid}>
+            <div className={styles.techCard}>
+              <p className={styles.cardLabel}>{copy.closing.annualUnits}</p>
+              <p className={styles.cardValue}>
                 {closing.annualUnits > 0
                   ? closing.annualUnits.toLocaleString("en-IN")
                   : "—"}
               </p>
             </div>
-            <div className={styles.statCard}>
-              <p className={styles.statLabel}>Lifetime wealth</p>
-              <p className={`${styles.statValue} ${styles.textGold}`}>
-                {formatLifetimeBenefitInr(closing.lifetimeWealthInr || eco.lifetimeProfitInr)}
+            <div className={styles.techCard}>
+              <p className={styles.cardLabel}>{copy.closing.wealth}</p>
+              <p className={`${styles.cardValue} ${styles.textGold}`}>
+                {formatLifetimeBenefitInr(
+                  closing.lifetimeWealthInr || eco.lifetimeProfitInr
+                )}
               </p>
             </div>
           </div>
+
+          <div className={styles.ctaRow}>
+            {wa ? (
+              <a
+                className={styles.ctaWhatsapp}
+                href={wa}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <MessageCircle className={styles.toolbarIcon} aria-hidden />
+                {copy.closing.whatsapp}
+              </a>
+            ) : null}
+            {qrUrl ? (
+              <div className={styles.qrBlock}>
+                <img src={qrUrl} alt={copy.closing.scanPay} className={styles.qrImg} />
+                <p className={styles.qrCaption}>{copy.closing.scanPay}</p>
+              </div>
+            ) : null}
+          </div>
+
           {closing.contactLine ? (
             <p className={styles.closingContact}>{closing.contactLine}</p>
           ) : null}

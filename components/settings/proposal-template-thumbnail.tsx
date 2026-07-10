@@ -29,6 +29,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
       {variant === "ledger" ? <LedgerThumb size={size} /> : null}
       {variant === "classic" ? <ClassicThumb size={size} /> : null}
       {variant === "commercial" ? <CommercialThumb size={size} /> : null}
+      {variant === "zenith" ? <ZenithThumb size={size} /> : null}
       {![
         "golden",
         "pearl",
@@ -39,6 +40,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
         "ledger",
         "classic",
         "commercial",
+        "zenith",
       ].includes(variant) ? (
         <GenericThumb size={size} label={variant} />
       ) : null}
@@ -94,6 +96,49 @@ function GoldenThumb({ size }: { size: "card" | "preview" }) {
         <div className={cn("mt-[8%] text-[#718096] uppercase tracking-widest", size === "preview" ? "text-[6px]" : "text-[3px]")}>
           Body
         </div>
+      </div>
+    </div>
+  );
+}
+
+function ZenithThumb({ size }: { size: "card" | "preview" }) {
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-[#05070d]">
+      <div
+        className={cn(
+          "relative flex flex-col items-center justify-center overflow-hidden rounded-[3px] border border-[#1e293b] bg-[#0a0f1c] shadow-sm",
+          size === "preview" ? "h-[62%] w-[68%] p-[8%]" : "h-[58%] w-[72%] p-[7%]"
+        )}
+      >
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 opacity-40"
+          style={{
+            background:
+              "radial-gradient(ellipse 80% 60% at 50% 100%, rgba(197,160,89,0.35), transparent 70%)",
+          }}
+        />
+        <div
+          className={cn(
+            "relative font-semibold uppercase tracking-[0.2em] text-white",
+            size === "preview" ? "text-[7px]" : "text-[3px]"
+          )}
+        >
+          Harihar <span className="text-[#c5a059]">Solar</span>
+        </div>
+        <div
+          className={cn(
+            "relative mt-[10%] font-serif text-white",
+            size === "preview" ? "text-[11px]" : "text-[5px]"
+          )}
+        >
+          Energy Independent.
+        </div>
+        <div
+          className={cn(
+            "relative mt-[8%] bg-[#c5a059]",
+            size === "preview" ? "h-[2px] w-8" : "h-[1px] w-4"
+          )}
+        />
       </div>
     </div>
   );

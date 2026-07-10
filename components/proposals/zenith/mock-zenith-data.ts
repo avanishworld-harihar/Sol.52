@@ -173,6 +173,7 @@ export const MOCK_ZENITH_DATA: ProposalData = {
     annualUnits: 7200,
     annualSavingsInr: 48960,
     lifetimeWealthInr: 1000000,
+    qrUrl: undefined,
   },
 };
 
