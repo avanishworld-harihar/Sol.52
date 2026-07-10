@@ -87,6 +87,14 @@ const PRESET_META: Record<ProposalPresetId, PresetMeta> = {
       "border-yellow-200 bg-[#0A192F]/5 text-[#0A192F] dark:border-yellow-500/30 dark:bg-yellow-900/20 dark:text-yellow-300",
     dotClass: "bg-yellow-400",
   },
+  residential_zenith: {
+    icon: <Zap className="h-4 w-4" />,
+    label: "Zenith",
+    description: "ProposalData-native · CSS Modules · Isolated scaffold",
+    pillClass:
+      "border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-500/30 dark:bg-blue-900/20 dark:text-blue-300",
+    dotClass: "bg-blue-500",
+  },
 };
 
 export function ProposalOSHeader({ presetId, onChangePreset, customerName }: Props) {

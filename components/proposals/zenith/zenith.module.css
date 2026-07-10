@@ -1,0 +1,317 @@
+/**
+ * Zenith styles — CSS Modules.
+ * Root: .presetZenith (hashed). No unscoped global element rules.
+ */
+
+.presetZenith {
+  --zenith-ink: #0f172a;
+  --zenith-accent: #2563eb;
+  --zenith-muted: #64748b;
+  --zenith-border: #e2e8f0;
+  --zenith-bg: #ffffff;
+  --zenith-faint: #f8fafc;
+
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 210mm;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 3.5rem;
+  background: var(--zenith-bg);
+  color: var(--zenith-ink);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.presetZenith *,
+.presetZenith *::before,
+.presetZenith *::after {
+  box-sizing: border-box;
+}
+
+.header {
+  margin-bottom: 2rem;
+}
+
+.kicker {
+  margin: 0 0 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--zenith-accent);
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--zenith-ink);
+}
+
+.subtitle {
+  margin: 0.75rem 0 0;
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--zenith-muted);
+}
+
+.assetLine {
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--zenith-ink);
+}
+
+.hero {
+  padding: 1.75rem 0 2rem;
+  border-top: 1px solid var(--zenith-border);
+  border-bottom: 1px solid var(--zenith-border);
+  margin-bottom: 2rem;
+}
+
+.heroLabel {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--zenith-muted);
+}
+
+.heroValue {
+  margin: 0.5rem 0 0;
+  font-size: clamp(2.5rem, 8vw, 4rem);
+  font-weight: 900;
+  line-height: 1;
+  color: var(--zenith-accent);
+}
+
+.statRow {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem 1.5rem;
+  margin-top: 1.75rem;
+}
+
+@media (min-width: 640px) {
+  .statRow {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.statLabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--zenith-muted);
+}
+
+.statValue {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--zenith-ink);
+}
+
+.section {
+  margin-bottom: 2.25rem;
+}
+
+.sectionTitle {
+  margin: 0 0 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--zenith-ink);
+}
+
+.sectionLead {
+  margin: 0 0 1rem;
+  font-size: 0.9375rem;
+  color: var(--zenith-muted);
+}
+
+.emptyState {
+  margin: 0;
+  padding: 1rem 1.15rem;
+  background: var(--zenith-faint);
+  border: 1px dashed var(--zenith-border);
+  font-size: 0.875rem;
+  color: var(--zenith-muted);
+  line-height: 1.5;
+}
+
+.billGrid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.5rem;
+  align-items: end;
+  min-height: 7rem;
+}
+
+.billCell,
+.billCellPeak {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+
+.billMonth {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--zenith-muted);
+}
+
+.billAmount {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--zenith-ink);
+}
+
+.billBar {
+  width: 100%;
+  max-width: 1.5rem;
+  min-height: 0.25rem;
+  background: #cbd5e1;
+  border-radius: 2px 2px 0 0;
+}
+
+.billCellPeak .billBar {
+  background: var(--zenith-accent);
+}
+
+.impactRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.impactValue {
+  margin: 0;
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-weight: 900;
+  line-height: 1;
+  color: var(--zenith-accent);
+}
+
+.impactLabel {
+  margin: 0.5rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--zenith-muted);
+}
+
+.bomList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.bomRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  padding: 0.875rem 0;
+  border-bottom: 1px solid var(--zenith-border);
+}
+
+.bomName {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.bomBrand {
+  margin: 0.2rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--zenith-accent);
+}
+
+.bomRight {
+  text-align: right;
+}
+
+.bomSpec {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--zenith-ink);
+}
+
+.bomWar {
+  margin: 0.2rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--zenith-muted);
+}
+
+.metricGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.metric {
+  padding: 1rem;
+  background: var(--zenith-faint);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.metricLabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--zenith-muted);
+}
+
+.metricValue {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--zenith-ink);
+}
+
+.footer {
+  margin-top: 2.5rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--zenith-border);
+}
+
+.footerQuote {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--zenith-ink);
+}
+
+.footerMeta {
+  margin: 0.75rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--zenith-muted);
+}
+
+@media print {
+  .presetZenith {
+    max-width: none;
+    padding: 15mm;
+  }
+}

@@ -7,23 +7,11 @@ import { getProposalPricingByProposalId } from "@/lib/proposal-pricing-store";
 import { getProposalById, trackProposalView } from "@/lib/proposals-store";
 import { isProposalBillAuditBacked } from "@/lib/proposal-bill-audit-eligibility";
 import { summarizeProposalDeck } from "@/lib/proposal-ppt";
-import { resolveProposalBrandConfig } from "@/lib/proposal-branding-settings";
-import { parseResidentialConfig } from "@/lib/residential-proposal-config";
-import ProposalView from "./proposal-view";
-import CommercialProposalView from "@/components/proposal/commercial-proposal-view";
-import { ProposalWebRenderer } from "@/components/proposal/web-renderer";
-import { ExecutivePremiumNextgenRenderer } from "@/components/proposals/executive-premium-nextgen/executive-premium-nextgen-renderer";
-import { SalesPremiumInstitutionalRenderer } from "@/components/proposals/sales-premium-institutional/sales-premium-institutional-renderer";
-import {
-  resolveSalesPremiumStyle,
-  usesInstitutionalRenderer,
-} from "@/lib/sales-premium-styles";
-import { compileProposalDocument } from "@/lib/proposal-document-ir";
-import { RESIDENTIAL_WEB_RENDERER_PRESETS, normalizePresetId } from "@/lib/proposal-preset-engine";
+import { normalizePresetId } from "@/lib/proposal-preset-engine";
 import { shouldShowPdfWatermark } from "@/lib/billing/entitlements";
+import { buildProposalData } from "@/lib/proposal-data";
 import { ProposalWatermarkShell } from "@/components/proposals/proposal-watermark-shell";
-import { SolsticeProposalRenderer } from "@/components/proposals/solstice/solstice-proposal-renderer";
-import { EnergyFreedomProposalRenderer } from "@/components/proposals/energy-freedom/energy-freedom-proposal-renderer";
+import { ProposalRenderer } from "@/components/proposals/ProposalRenderer";
 
 export const dynamic = "force-dynamic";
 
@@ -84,8 +72,6 @@ export default async function PublicProposalPage({ params }: PageProps) {
       ? (rawPptInput?.installerLogoUrl as string)
       : undefined;
 
-  const brandConfigFromSnapshot = resolveProposalBrandConfig({ pptInput: mergedInput });
-
   const installerProps = {
     name:
       (typeof mergedInput.installerName === "string" ? mergedInput.installerName.trim() : "") ||
@@ -105,133 +91,31 @@ export default async function PublicProposalPage({ params }: PageProps) {
   const showWatermark = await shouldShowPdfWatermark(orgId);
   const presetId = normalizePresetId(proposal.preset_id);
 
-  // ── Commercial executive preset — render the premium commercial view ──────
-  if (presetId === "commercial_executive") {
-    return (
-      <ProposalWatermarkShell enabled={showWatermark}>
-        <CommercialProposalView
-          id={id}
-          customerName={proposal.customer_name}
-          generatedAt={proposal.generated_at}
-          summary={liveSummary}
-          pptInput={mergedInput}
-          installer={installerProps}
-          siteImages={siteImages}
-          installerLogoUrl={installerLogoUrl}
-        />
-      </ProposalWatermarkShell>
-    );
-  }
-
-  // ── Sales Premium — style-specific renderer ───────────────────────────────
-  if (presetId === "residential_sales_premium") {
-    const spStyle = resolveSalesPremiumStyle(mergedInput);
-    if (usesInstitutionalRenderer(spStyle)) {
-      return (
-        <ProposalWatermarkShell enabled={showWatermark}>
-          <SalesPremiumInstitutionalRenderer pptInput={mergedInput} summary={liveSummary} />
-        </ProposalWatermarkShell>
-      );
-    }
-    const leadId = proposal.lead_id?.trim() ? proposal.lead_id.trim() : null;
-    const surveyStatus = await getLeadSurveyStatus(leadId);
-    const showSurvey = isLeadSurveyCompleteForProposal(surveyStatus);
-    const doc = compileProposalDocument(id, mergedInput, liveSummary, {
-      presetId: "residential_sales_premium",
-    });
-    return (
-      <ProposalWatermarkShell enabled={showWatermark}>
-        <ProposalWebRenderer
-          document={doc}
-          summary={liveSummary}
-          showSurveyWorkflowSection={showSurvey}
-        />
-      </ProposalWatermarkShell>
-    );
-  }
-
-  // ── Solstice — modern scroll masterplan renderer ───────────────────────────
-  if (presetId === "residential_solstice") {
-    return (
-      <ProposalWatermarkShell enabled={showWatermark}>
-        <SolsticeProposalRenderer
-          pptInput={mergedInput}
-          summary={liveSummary}
-          installerLogoUrl={installerLogoUrl}
-        />
-      </ProposalWatermarkShell>
-    );
-  }
-
-  // ── Energy Freedom — ultra-minimal white & teal A4 ───────────────────────
-  if (presetId === "residential_energy_freedom") {
-    return (
-      <ProposalWatermarkShell enabled={showWatermark}>
-        <EnergyFreedomProposalRenderer
-          pptInput={mergedInput}
-          summary={liveSummary}
-          installerLogoUrl={installerLogoUrl}
-        />
-      </ProposalWatermarkShell>
-    );
-  }
-
-  // ── Executive Premium NextGen MVP — isolated 5-page renderer ─────────────
-  if (presetId === "residential_executive") {
-    return (
-      <ProposalWatermarkShell enabled={showWatermark}>
-        <ExecutivePremiumNextgenRenderer
-          proposalId={id}
-          generatedAt={proposal.generated_at}
-          pptInput={mergedInput}
-          summary={liveSummary}
-          siteImages={siteImages}
-        />
-      </ProposalWatermarkShell>
-    );
-  }
-
-  // ── New residential presets — render via ProposalWebRenderer ─────────────
-  if ((RESIDENTIAL_WEB_RENDERER_PRESETS as ReadonlyArray<string>).includes(presetId)) {
-    const leadId = proposal.lead_id?.trim() ? proposal.lead_id.trim() : null;
-    const surveyStatus = await getLeadSurveyStatus(leadId);
-    const showSurvey = isLeadSurveyCompleteForProposal(surveyStatus);
-    const doc = compileProposalDocument(id, mergedInput, liveSummary, {
-      presetId: presetId ?? "residential_sales_premium",
-    });
-    return (
-      <ProposalWatermarkShell enabled={showWatermark}>
-        <ProposalWebRenderer
-          document={doc}
-          summary={liveSummary}
-          showSurveyWorkflowSection={showSurvey}
-        />
-      </ProposalWatermarkShell>
-    );
-  }
-
-  // ── Residential Legacy (residential_smart) — existing ProposalView ────────
   const leadId = proposal.lead_id?.trim() ? proposal.lead_id.trim() : null;
   const surveyStatus = await getLeadSurveyStatus(leadId);
   const showSurveyWorkflowSection = isLeadSurveyCompleteForProposal(surveyStatus);
   const billAuditBacked = isProposalBillAuditBacked(mergedInput);
-  const residentialConfig = parseResidentialConfig(mergedInput.residentialConfig);
+
+  const data = buildProposalData(mergedInput, liveSummary, {
+    generatedAt: proposal.generated_at,
+  });
 
   return (
     <ProposalWatermarkShell enabled={showWatermark}>
-      <ProposalView
-      id={id}
-      summary={liveSummary}
-      billAuditBacked={billAuditBacked}
-      residentialConfig={residentialConfig}
-      installer={installerProps}
-      customerName={proposal.customer_name}
-      generatedAt={proposal.generated_at}
-      siteImages={siteImages}
-      installerLogoUrl={installerLogoUrl}
-      brandConfigFromSnapshot={brandConfigFromSnapshot}
-      showSurveyWorkflowSection={showSurveyWorkflowSection}
-    />
+      <ProposalRenderer
+        presetId={presetId}
+        data={data}
+        pptInput={mergedInput}
+        summary={liveSummary}
+        proposalId={id}
+        generatedAt={proposal.generated_at}
+        installerLogoUrl={installerLogoUrl}
+        siteImages={siteImages}
+        showSurveyWorkflowSection={showSurveyWorkflowSection}
+        billAuditBacked={billAuditBacked}
+        customerName={proposal.customer_name}
+        installer={installerProps}
+      />
     </ProposalWatermarkShell>
   );
 }

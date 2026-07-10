@@ -1,0 +1,15 @@
+export type {
+  ProposalData,
+  ProposalBillMonth,
+  ProposalBomItem,
+  ProposalEmiRow,
+  ProposalMetric,
+  ProposalWarrantyHighlight,
+  ProposalWarrantyRow,
+  ProposalProcessStep,
+  ProposalPaymentRow,
+  ProposalBankDetails,
+} from "@/lib/proposal-data/types";
+
+export { buildProposalData } from "@/lib/proposal-data/build-proposal-data";
+export type { BuildProposalDataOptions } from "@/lib/proposal-data/build-proposal-data";

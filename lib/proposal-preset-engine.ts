@@ -42,6 +42,7 @@ export const PROPOSAL_PRESET_IDS = [
   "residential_executive",
   "residential_solstice",
   "residential_energy_freedom",
+  "residential_zenith",
 ] as const;
 
 export type ProposalPresetId = (typeof PROPOSAL_PRESET_IDS)[number];
@@ -173,6 +174,18 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     label: "Energy Freedom",
     description:
       "Ultra-minimal white & teal A4 document — cover, perspective story & investment matrix.",
+    bill_requirement: "optional",
+    theme_hint: "residential",
+    default_data_source: "requirement",
+    default_blocks: [],
+    optional_blocks: [],
+  },
+
+  residential_zenith: {
+    id: "residential_zenith",
+    label: "Zenith",
+    description:
+      "Isolated ProposalData-native preset — CSS Modules scoped under .presetZenith (local test; DB migration pending).",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "requirement",
