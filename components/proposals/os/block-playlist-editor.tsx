@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 /**
- * BlockPlaylistEditor — slide-out drawer for managing proposal block playlist.
+ * BlockPlaylistEditor â€” slide-out drawer for managing proposal block playlist.
  *
  * Shows all available proposal sections with toggles and descriptions.
  * Commercial-only blocks are clearly badged.
- * Changes are local to the session (visual only in Phase B — future phases
+ * Changes are local to the session (visual only in Phase B â€” future phases
  * will persist to the ProposalDocument.layout).
  */
 
@@ -124,7 +124,7 @@ type Props = {
 };
 
 export function BlockPlaylistEditor({ presetId, onClose }: Props) {
-  const isCommercial = presetId === "commercial_executive";
+  const isCommercial = (presetId as string) === "commercial_executive";
 
   // Determine which blocks are visible for this preset
   const visibleBlocks = ALL_BLOCKS.filter((b) => {

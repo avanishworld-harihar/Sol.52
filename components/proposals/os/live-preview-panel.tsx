@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
 /**
- * ProposalLivePreviewPanel — sticky right-sidebar live preview for the proposal builder.
+ * ProposalLivePreviewPanel â€” sticky right-sidebar live preview for the proposal builder.
  *
  * Shows the current proposal state in real-time as the user fills in the form:
  *   - Preset badge + customer name
@@ -11,7 +11,7 @@
  *   - "Edit blocks" link to open the BlockPlaylistEditor
  *
  * Sits to the right of the builder form on desktop (xl+ viewport).
- * Fully reactive — reads from parent state via props.
+ * Fully reactive â€” reads from parent state via props.
  */
 
 import { motion, AnimatePresence } from "framer-motion";
@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 
-// ─── Block playlist chip data ─────────────────────────────────────────────────
+// â”€â”€â”€ Block playlist chip data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type BlockChip = { id: string; label: string; isCommercial?: boolean };
 
@@ -65,7 +65,7 @@ const NO_BILL_CHIPS: BlockChip[] = RESIDENTIAL_CHIPS.map((c) =>
       : c
 ).filter((c): c is BlockChip => c !== null);
 
-// ─── Metric tile ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ Metric tile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function MetricTile({
   label,
@@ -101,7 +101,7 @@ function MetricTile({
   );
 }
 
-// ─── Props ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Props â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type Props = {
   presetId: ProposalPresetId | null;
@@ -120,7 +120,7 @@ type Props = {
   onEditBlocks: () => void;
 };
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function ProposalLivePreviewPanel({
   presetId,
@@ -137,7 +137,7 @@ export function ProposalLivePreviewPanel({
   busy,
   onEditBlocks,
 }: Props) {
-  const isCommercial = presetId === "commercial_executive";
+  const isCommercial = (presetId as string) === "commercial_executive";
 
   const chips =
     isCommercial
@@ -156,7 +156,7 @@ export function ProposalLivePreviewPanel({
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       className="sticky top-20 flex flex-col gap-3"
     >
-      {/* Card — this panel is desktop-only (hidden lg:block in parent); backdrop-blur-sm is intentional. */}
+      {/* Card â€” this panel is desktop-only (hidden lg:block in parent); backdrop-blur-sm is intentional. */}
       <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 shadow-[0_4px_32px_rgba(15,23,42,0.08)] backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-900/90">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
@@ -223,28 +223,28 @@ export function ProposalLivePreviewPanel({
           <div className="mb-3 grid grid-cols-2 gap-2">
             <MetricTile
               label="System"
-              value={hasMetrics ? `${systemKw} kW` : "—"}
+              value={hasMetrics ? `${systemKw} kW` : "â€”"}
               accent={hasMetrics}
             />
             <MetricTile
               label="Annual Saving"
               value={
                 annualSaving > 0
-                  ? `₹${Math.round(annualSaving).toLocaleString("en-IN")}`
-                  : "—"
+                  ? `â‚¹${Math.round(annualSaving).toLocaleString("en-IN")}`
+                  : "â€”"
               }
             />
             <MetricTile
               label="Net Cost"
               value={
                 netCost > 0
-                  ? `₹${Math.round(netCost).toLocaleString("en-IN")}`
-                  : "—"
+                  ? `â‚¹${Math.round(netCost).toLocaleString("en-IN")}`
+                  : "â€”"
               }
             />
             <MetricTile
               label="Payback"
-              value={systemKw > 0 ? paybackLabel : "—"}
+              value={systemKw > 0 ? paybackLabel : "â€”"}
             />
           </div>
 
@@ -259,17 +259,17 @@ export function ProposalLivePreviewPanel({
             {isBillBacked && billUploaded ? (
               <>
                 <CheckCircle2 className="h-3 w-3" />
-                Bill-backed — full audit included
+                Bill-backed â€” full audit included
               </>
             ) : isBillBacked ? (
               <>
                 <TrendingUp className="h-3 w-3" />
-                Bill-based — upload bill to continue
+                Bill-based â€” upload bill to continue
               </>
             ) : (
               <>
                 <TrendingUp className="h-3 w-3" />
-                Requirement-based — no bill
+                Requirement-based â€” no bill
               </>
             )}
           </div>
@@ -320,7 +320,7 @@ export function ProposalLivePreviewPanel({
             }`}
           >
             <Globe className="h-4 w-4" />
-            {busy ? "Generating…" : "Generate Proposal"}
+            {busy ? "Generatingâ€¦" : "Generate Proposal"}
           </button>
 
           {/* Open existing link */}
