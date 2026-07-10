@@ -1,5 +1,6 @@
 /**
- * Thin adapter — Zenith (ProposalData-native scaffold).
+ * Thin adapter — Zenith Luxury (ProposalData-native).
+ * Sparse data fallback is handled in ProposalRenderer for first-class Zenith ids.
  */
 
 import { ZenithProposalRenderer } from "@/components/proposals/zenith/zenith-renderer";

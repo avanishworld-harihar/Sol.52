@@ -90,7 +90,7 @@ const PRESET_META: Record<ProposalPresetId, PresetMeta> = {
   residential_zenith: {
     icon: <Zap className="h-4 w-4" />,
     label: "Zenith",
-    description: "ProposalData-native · CSS Modules · Isolated scaffold",
+    description: "Zenith Luxury · Midnight Onyx · Champagne Gold · ProposalData",
     pillClass:
       "border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-500/30 dark:bg-blue-900/20 dark:text-blue-300",
     dotClass: "bg-blue-500",

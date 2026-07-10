@@ -35,7 +35,7 @@ export const PRESET_RENDERER_LOADERS: PresetRendererRegistry = {
 /**
  * Resolve a renderer loader for a preset id.
  * Accepts official ProposalPresetId or local mock aliases (`zenith`, `residential_zenith`).
- * Unknown ids fall back to Zenith for isolated layout testing (not Sales Premium).
+ * Unknown ids fall back to Sales Premium.
  */
 export function getPresetRendererLoader(
   presetId: ProposalPresetId | string

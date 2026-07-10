@@ -13,3 +13,4 @@ export type {
 
 export { buildProposalData } from "@/lib/proposal-data/build-proposal-data";
 export type { BuildProposalDataOptions } from "@/lib/proposal-data/build-proposal-data";
+export { isSparseProposalData } from "@/lib/proposal-data/is-sparse-proposal-data";

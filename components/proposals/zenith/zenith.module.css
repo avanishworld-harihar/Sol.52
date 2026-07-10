@@ -1,25 +1,31 @@
 /**
- * Zenith styles — CSS Modules.
- * Root: .presetZenith (hashed). No unscoped global element rules.
+ * Zenith Luxury — high-end brochure aesthetics.
+ * Inter body · Playfair Display titles · Midnight Onyx · Pearl · Champagne Gold
  */
 
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap");
+
 .presetZenith {
-  --zenith-ink: #0f172a;
-  --zenith-accent: #2563eb;
-  --zenith-muted: #64748b;
-  --zenith-border: #e2e8f0;
-  --zenith-bg: #ffffff;
-  --zenith-faint: #f8fafc;
+  --zenith-onyx: #0a0f1c;
+  --zenith-pearl: #fafbfc;
+  --zenith-gold: #c5a059;
+  --zenith-emerald: #10b981;
+  --zenith-border: #1e293b;
+  --zenith-serif: "Playfair Display", Georgia, "Times New Roman", serif;
+  --zenith-sans: Inter, "Segoe UI", ui-sans-serif, system-ui, sans-serif;
 
   box-sizing: border-box;
   width: 100%;
   max-width: 210mm;
   margin: 0 auto;
-  padding: 2.5rem 1.5rem 3.5rem;
-  background: var(--zenith-bg);
-  color: var(--zenith-ink);
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  background-color: var(--zenith-onyx);
+  color: var(--zenith-pearl);
+  font-family: var(--zenith-sans);
+  font-weight: 400;
+  line-height: 1.6;
+  padding: 0;
   -webkit-font-smoothing: antialiased;
+  box-shadow: 0 25px 50px -12px rgba(10, 15, 28, 0.45);
 }
 
 .presetZenith *,
@@ -28,290 +34,283 @@
   box-sizing: border-box;
 }
 
-.header {
-  margin-bottom: 2rem;
+.loading {
+  padding: 6rem;
+  background: var(--zenith-onyx);
+  color: var(--zenith-pearl);
+  font-family: var(--zenith-sans);
 }
 
-.kicker {
-  margin: 0 0 0.75rem;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  color: var(--zenith-accent);
-}
-
-.title {
-  margin: 0;
-  font-size: clamp(1.75rem, 4vw, 2.5rem);
-  font-weight: 800;
-  line-height: 1.15;
-  color: var(--zenith-ink);
-}
-
-.subtitle {
-  margin: 0.75rem 0 0;
-  font-size: 1rem;
-  font-weight: 400;
-  color: var(--zenith-muted);
-}
-
-.assetLine {
-  margin: 0.5rem 0 0;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--zenith-ink);
-}
-
-.hero {
-  padding: 1.75rem 0 2rem;
-  border-top: 1px solid var(--zenith-border);
-  border-bottom: 1px solid var(--zenith-border);
-  margin-bottom: 2rem;
-}
-
-.heroLabel {
-  margin: 0;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--zenith-muted);
-}
-
-.heroValue {
-  margin: 0.5rem 0 0;
-  font-size: clamp(2.5rem, 8vw, 4rem);
-  font-weight: 900;
-  line-height: 1;
-  color: var(--zenith-accent);
-}
-
-.statRow {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.25rem 1.5rem;
-  margin-top: 1.75rem;
-}
-
-@media (min-width: 640px) {
-  .statRow {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-.stat {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.statLabel {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--zenith-muted);
-}
-
-.statValue {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--zenith-ink);
-}
-
-.section {
-  margin-bottom: 2.25rem;
-}
-
-.sectionTitle {
-  margin: 0 0 0.75rem;
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: var(--zenith-ink);
-}
-
-.sectionLead {
-  margin: 0 0 1rem;
-  font-size: 0.9375rem;
-  color: var(--zenith-muted);
-}
-
-.emptyState {
-  margin: 0;
-  padding: 1rem 1.15rem;
-  background: var(--zenith-faint);
-  border: 1px dashed var(--zenith-border);
-  font-size: 0.875rem;
-  color: var(--zenith-muted);
-  line-height: 1.5;
-}
-
-.billGrid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 0.5rem;
-  align-items: end;
-  min-height: 7rem;
-}
-
-.billCell,
-.billCellPeak {
-  position: relative;
+/* ── Cover — centered title, massive negative space ──────────────────────── */
+.cover {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
-  padding-bottom: 0.25rem;
+  justify-content: center;
+  text-align: center;
+  padding: 12rem 3rem;
+  border-bottom: 1px solid rgba(197, 160, 89, 0.35);
 }
 
-.billMonth {
+.brand {
+  margin: 0 0 4rem;
+  font-family: var(--zenith-sans);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--zenith-gold);
+}
+
+.heroTitle {
+  margin: 0;
+  font-family: var(--zenith-serif);
+  font-size: clamp(2.75rem, 7vw, 4.25rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  color: #ffffff;
+  max-width: 14ch;
+}
+
+.heroSub {
+  margin: 3.5rem 0 0;
+  font-family: var(--zenith-sans);
+  font-size: 1.0625rem;
+  font-weight: 300;
+  line-height: 1.75;
+  color: rgba(250, 251, 252, 0.68);
+  max-width: 36ch;
+}
+
+.coverMeta {
+  margin: 5rem 0 0;
+  font-family: var(--zenith-sans);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(197, 160, 89, 0.8);
+}
+
+/* ── Content pages — generous vertical rhythm ────────────────────────────── */
+.contentPage {
+  background-color: var(--zenith-pearl);
+  color: #0f172a;
+  padding: 6rem 3.5rem 7rem;
+  min-height: 50vh;
+}
+
+.contentPage + .contentPage {
+  border-top: 1px solid rgba(30, 41, 59, 0.08);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-family: var(--zenith-serif);
+  font-size: clamp(1.85rem, 4vw, 2.5rem);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: #0a0f1c;
+}
+
+.sectionLead {
+  margin: 1.25rem 0 0;
+  max-width: 42ch;
+  font-family: var(--zenith-sans);
+  font-size: 0.9375rem;
+  font-weight: 400;
+  line-height: 1.7;
+  color: #64748b;
+}
+
+.goldRule {
+  width: 3.5rem;
+  height: 1px;
+  margin: 1.75rem 0 0;
+  background: var(--zenith-gold);
+}
+
+/* ── Architecture cards ──────────────────────────────────────────────────── */
+.archGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+  margin-top: 3.5rem;
+}
+
+.archCard {
+  padding: 1.75rem 1.5rem;
+  background: #ffffff;
+  border: 1px solid var(--zenith-border);
+  box-shadow: 0 0 0 1px rgba(30, 41, 59, 0.04), 0 0 24px rgba(30, 41, 59, 0.06);
+}
+
+.archLabel {
+  margin: 0;
+  font-family: var(--zenith-sans);
   font-size: 0.625rem;
   font-weight: 700;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--zenith-muted);
+  color: var(--zenith-gold);
 }
 
-.billAmount {
-  font-size: 0.625rem;
-  font-weight: 600;
-  color: var(--zenith-ink);
+.archTitle {
+  margin: 0.75rem 0 0;
+  font-family: var(--zenith-serif);
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: #0a0f1c;
+  line-height: 1.3;
 }
 
-.billBar {
-  width: 100%;
-  max-width: 1.5rem;
-  min-height: 0.25rem;
-  background: #cbd5e1;
-  border-radius: 2px 2px 0 0;
-}
-
-.billCellPeak .billBar {
-  background: var(--zenith-accent);
-}
-
-.impactRow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-}
-
-.impactValue {
-  margin: 0;
-  font-size: clamp(2rem, 6vw, 3rem);
-  font-weight: 900;
-  line-height: 1;
-  color: var(--zenith-accent);
-}
-
-.impactLabel {
+.archSpec {
   margin: 0.5rem 0 0;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--zenith-muted);
+  font-family: var(--zenith-sans);
+  font-size: 0.8125rem;
+  color: #64748b;
+  line-height: 1.5;
 }
 
-.bomList {
-  margin: 0;
+.archPoints {
+  margin: 1.15rem 0 0;
   padding: 0;
   list-style: none;
-  display: flex;
-  flex-direction: column;
 }
 
-.bomRow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  padding: 0.875rem 0;
+.archPoints li {
+  position: relative;
+  padding: 0.35rem 0 0.35rem 0.85rem;
+  font-family: var(--zenith-sans);
+  font-size: 0.8125rem;
+  color: #475569;
+  line-height: 1.45;
+}
+
+.archPoints li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.7em;
+  width: 0.35rem;
+  height: 1px;
+  background: var(--zenith-gold);
+}
+
+/* ── BOM table ───────────────────────────────────────────────────────────── */
+.bomTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 3.5rem;
+}
+
+.bomTable th {
+  text-align: left;
+  color: var(--zenith-gold);
+  text-transform: uppercase;
+  font-family: var(--zenith-sans);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  padding: 1rem 1rem 1.15rem 0;
+  border-bottom: 1px solid var(--zenith-border);
+}
+
+.bomTable td {
+  text-align: left;
+  padding: 1.35rem 1rem 1.35rem 0;
+  border-bottom: 1px solid var(--zenith-border);
+  vertical-align: top;
+  font-family: var(--zenith-sans);
+  font-size: 0.9375rem;
+  color: #0f172a;
+}
+
+.bomTable tbody tr:last-child td {
   border-bottom: 1px solid var(--zenith-border);
 }
 
 .bomName {
-  margin: 0;
-  font-size: 0.9375rem;
-  font-weight: 700;
+  display: block;
+  font-weight: 600;
 }
 
 .bomBrand {
-  margin: 0.2rem 0 0;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
   letter-spacing: 0.08em;
-  color: var(--zenith-accent);
-}
-
-.bomRight {
-  text-align: right;
+  text-transform: uppercase;
+  color: #64748b;
 }
 
 .bomSpec {
-  margin: 0;
-  font-size: 0.8125rem;
-  color: var(--zenith-ink);
+  color: #475569;
+  font-weight: 400;
 }
 
-.bomWar {
-  margin: 0.2rem 0 0;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--zenith-muted);
+.textEmerald {
+  color: #10b981;
+  font-weight: 700;
 }
 
-.metricGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+.textGold {
+  color: #c5a059;
+  font-weight: 700;
 }
 
-.metric {
-  padding: 1rem;
-  background: var(--zenith-faint);
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
+.emptyState {
+  margin: 3.5rem 0 0;
+  padding: 1.5rem;
+  border: 1px solid var(--zenith-border);
+  font-family: var(--zenith-sans);
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.5;
 }
 
-.metricLabel {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--zenith-muted);
-}
+@media (max-width: 640px) {
+  .cover {
+    padding: 8rem 1.75rem;
+  }
 
-.metricValue {
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: var(--zenith-ink);
-}
+  .contentPage {
+    padding: 4.5rem 1.5rem 5.5rem;
+  }
 
-.footer {
-  margin-top: 2.5rem;
-  padding-top: 1.75rem;
-  border-top: 1px solid var(--zenith-border);
-}
-
-.footerQuote {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 300;
-  font-style: italic;
-  color: var(--zenith-ink);
-}
-
-.footerMeta {
-  margin: 0.75rem 0 0;
-  font-size: 0.8125rem;
-  color: var(--zenith-muted);
+  .archGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media print {
   .presetZenith {
     max-width: none;
-    padding: 15mm;
+    box-shadow: none;
+  }
+
+  .cover {
+    min-height: 297mm;
+    padding: 0 20mm;
+    page-break-after: always;
+    break-after: page;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .contentPage {
+    min-height: auto;
+    padding: 18mm 16mm 22mm;
+    page-break-after: auto;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .archCard {
+    box-shadow: none;
+    break-inside: avoid;
   }
 }
