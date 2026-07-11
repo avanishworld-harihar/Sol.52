@@ -481,6 +481,50 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           </h2>
         </header>
 
+        {/* 3-Phase Wealth Journey */}
+        <div className={styles.wealthJourney}>
+          <div className={styles.wjPhase}>
+            <div className={styles.wjDot} style={{ background: "#DC2626" }} />
+            <div className={styles.wjLabel}>Phase 1</div>
+            <div className={styles.wjTitle}>Investment</div>
+            <div className={styles.wjSpan}>
+              Year 0 → {paybackYears > 0 ? Math.ceil(paybackYears) : 5}
+            </div>
+            <div className={styles.wjNote}>
+              Monthly solar cost offsets your electricity bill while you repay
+              the system over 5 years.
+            </div>
+          </div>
+          <div className={styles.wjArrow}>→</div>
+          <div className={`${styles.wjPhase} ${styles.wjPhaseActive}`}>
+            <div className={styles.wjDot} style={{ background: "#F97316" }} />
+            <div className={styles.wjLabel}>Milestone</div>
+            <div className={styles.wjTitle}>Payback</div>
+            <div className={styles.wjSpan}>
+              Year {paybackYears > 0 ? paybackYears.toFixed(1) : "4–5"}
+            </div>
+            <div className={styles.wjNote}>
+              System fully paid back. Every unit generated from here on is
+              100% pure profit.
+            </div>
+          </div>
+          <div className={styles.wjArrow}>→</div>
+          <div className={styles.wjPhase}>
+            <div className={styles.wjDot} style={{ background: "#059669" }} />
+            <div className={styles.wjLabel}>Phase 2</div>
+            <div className={styles.wjTitle}>Passive Income</div>
+            <div className={styles.wjSpan}>
+              Year {paybackYears > 0 ? Math.ceil(paybackYears) + 1 : 6} → 25
+            </div>
+            <div className={styles.wjNote}>
+              {totalWealth > 0 && paybackYears > 0
+                ? `${formatInrCompact(totalWealth - annualSavings * Math.ceil(paybackYears))} in pure passive wealth.`
+                : "Pure wealth creation."}{" "}
+              Zero energy cost. Maximum returns.
+            </div>
+          </div>
+        </div>
+
         <div className={styles.wealthLayout}>
           {/* Left: Chart */}
           <div className={styles.wealthChartBox}>
@@ -621,6 +665,51 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           </div>
         </div>
 
+        {/* Comparative generation bar chart */}
+        {(() => {
+          const est = annualGen > 0 ? annualGen : Math.round(systemKw * 5 * 0.75 * 365);
+          const bars = [
+            { label: "Our System Estimate", val: est, pct: 90, color: "var(--or)" },
+            { label: `${cityLabel} Grid Average`, val: Math.round(est * 0.75), pct: 68, color: "var(--gray2)" },
+            { label: "Theoretical Max (PR 85%)", val: Math.round(est * 1.13), pct: 100, color: "#059669" },
+          ];
+          return (
+            <div className={styles.genBarChart}>
+              <span className={styles.genCardTag}>
+                ESTIMATED GENERATION vs. CITY POTENTIAL — {cityLabel}
+              </span>
+              {bars.map((b) => (
+                <div key={b.label} className={styles.genBarRow}>
+                  <span className={styles.genBarLabel}>{b.label}</span>
+                  <div className={styles.genBarTrack}>
+                    <div
+                      className={styles.genBarFill}
+                      style={{ width: `${b.pct}%`, background: b.color }}
+                    />
+                  </div>
+                  <span className={styles.genBarVal}>
+                    {b.val.toLocaleString("en-IN")} units
+                  </span>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
+
+        {/* Expert Insight */}
+        <div className={styles.expertInsight}>
+          <span className={styles.expertTag}>EXPERT INSIGHT</span>
+          <p>
+            Why {systemSize}? Your current bill of{" "}
+            {monthlyBill > 0 ? formatInr(monthlyBill) : "₹5,200"}/month maps
+            to ~{Math.round((monthlyBill > 0 ? monthlyBill : 5200) * 12 / 8).toLocaleString("en-IN")}{" "}
+            units/year. A {systemSize} system produces{" "}
+            {(annualGen > 0 ? annualGen : Math.round(systemKw * 5 * 0.75 * 365)).toLocaleString("en-IN")}{" "}
+            units/year — achieving near-100% offset even during peak summer
+            months in {cityLabel}.
+          </p>
+        </div>
+
         {/* Spec metrics row */}
         <div className={styles.genSpecGrid}>
           {engMetrics.map(([label, value]) => (
@@ -655,14 +744,21 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           {/* Panels */}
           <div className={styles.hwBigCard}>
             <div className={`${styles.hwBgArt} ${styles.hwBgPanel}`}>
+              {/* Swap src with real product image when available */}
+              <img
+                src="/hardware/waaree-panel.png"
+                alt="Waaree Solar Panel"
+                className={styles.hwProductImg}
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
+              />
               <div className={styles.hwBgMark}>P</div>
             </div>
             <div className={styles.hwBigBody}>
               <div className={styles.hwBigTag}>SOLAR PANELS</div>
               <div className={styles.hwBigTitle}>
-                {panelItem
-                  ? panelItem.brand || "Waaree"
-                  : "Waaree Energies"}
+                {panelItem ? panelItem.brand || "Waaree" : "Waaree Energies"}
               </div>
               <p className={styles.hwBigSpec}>
                 {bomLine(panelItem, "580 Wp DCR TOPCon N-Type")}
@@ -677,6 +773,15 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
                   <div className={styles.hwBigStatLabel}>Total Capacity</div>
                 </div>
               </div>
+              <div className={styles.hwWhyBox}>
+                <span className={styles.hwWhyTag}>WHY THIS PRODUCT?</span>
+                <p className={styles.hwWhyText}>
+                  TOPCon N-type cells deliver 22%+ module efficiency. Superior
+                  performance in heat-prone regions like {cityLabel} — up to 8%
+                  higher yield than standard poly panels during summer peak
+                  hours.
+                </p>
+              </div>
               <span className={styles.hwWarrantyBadge}>
                 {panelItem?.warranty || "30 Years Performance"}
               </span>
@@ -686,6 +791,15 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           {/* Inverter */}
           <div className={styles.hwBigCard}>
             <div className={`${styles.hwBgArt} ${styles.hwBgInverter}`}>
+              {/* Swap src with real product image when available */}
+              <img
+                src="/hardware/havells-inverter.png"
+                alt="Havells Inverter"
+                className={styles.hwProductImg}
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
+              />
               <div className={styles.hwBgMark}>I</div>
             </div>
             <div className={styles.hwBigBody}>
@@ -707,6 +821,14 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
                   <div className={styles.hwBigStatNum}>Dual</div>
                   <div className={styles.hwBigStatLabel}>MPPT Trackers</div>
                 </div>
+              </div>
+              <div className={styles.hwWhyBox}>
+                <span className={styles.hwWhyTag}>WHY THIS PRODUCT?</span>
+                <p className={styles.hwWhyText}>
+                  BEE 5-star rated, IP65 weatherproof. Dual MPPT handles
+                  partial shading without reducing output from unshaded
+                  strings — critical for rooftops with nearby obstructions.
+                </p>
               </div>
               <span className={styles.hwWarrantyBadge}>
                 {inverterItem?.warranty || "10 Years Warranty"}
@@ -972,62 +1094,78 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
         <span className={styles.pageNum}>10 / 11</span>
       </section>
 
-      {/* ══ P11: EMOTIONAL CLOSING ════════════════════════════════ */}
+      {/* ══ P11: EMOTIONAL CLOSING — SPLIT SCREEN ══════════════════ */}
       <section className={`${styles.page} ${styles.closingPage}`}>
         <div className={styles.closingInner}>
-          <span className={styles.closingTag}>11 — YOUR DECISION</span>
-
-          <h2 className={styles.closingTitle}>
-            Congratulations.
-          </h2>
-          <p className={styles.closingStatement}>
-            Today you are not buying solar panels.
-            <br />
-            <strong>You are locking your electricity price for the next 25 years.</strong>
-          </p>
-
-          <p className={styles.closingSub}>
-            Every day the sun rises, your roof earns. Every month your meter
-            spins backward. Every year your wealth compounds. This is not a
-            utility bill — this is a financial asset on your rooftop.
-          </p>
-
-          <div className={styles.closingStats}>
-            <div>
-              <div className={styles.closingStatBig}>
-                {annualGen > 0 ? annualGen.toLocaleString("en-IN") : "—"}
+          <div className={styles.closingSplit}>
+            {/* Left — Energy Independence narrative */}
+            <div className={styles.closingLeft}>
+              <span className={styles.closingTag}>11 — ENERGY INDEPENDENCE</span>
+              <h2 className={styles.closingTitle}>Congratulations.</h2>
+              <p className={styles.closingStatement}>
+                Today you are not buying solar panels.
+                <br />
+                <strong>
+                  You are locking your electricity price for the next 25 years.
+                </strong>
+              </p>
+              <p className={styles.closingSub}>
+                Every day the sun rises, your roof earns. Every month your
+                meter spins backward. Every year your wealth compounds. This
+                is not a utility expense — this is a financial asset on your
+                rooftop.
+              </p>
+              <div className={styles.closingStats}>
+                <div>
+                  <div className={styles.closingStatBig}>
+                    {annualGen > 0 ? annualGen.toLocaleString("en-IN") : "—"}
+                  </div>
+                  <div className={styles.closingStatLabel}>units / year</div>
+                </div>
+                <div className={styles.closingStatDiv} />
+                <div>
+                  <div className={styles.closingStatBig}>
+                    {annualSavings > 0 ? formatInr(annualSavings) : "—"}
+                  </div>
+                  <div className={styles.closingStatLabel}>saved / year</div>
+                </div>
+                <div className={styles.closingStatDiv} />
+                <div>
+                  <div className={styles.closingStatBig}>
+                    {totalWealth > 0 ? formatInrCompact(totalWealth) : "—"}
+                  </div>
+                  <div className={styles.closingStatLabel}>25-yr wealth</div>
+                </div>
               </div>
-              <div className={styles.closingStatLabel}>units / year</div>
             </div>
-            <div className={styles.closingStatDiv} />
-            <div>
-              <div className={styles.closingStatBig}>
-                {annualSavings > 0 ? formatInr(annualSavings) : "—"}
-              </div>
-              <div className={styles.closingStatLabel}>saved / year</div>
-            </div>
-            <div className={styles.closingStatDiv} />
-            <div>
-              <div className={styles.closingStatBig}>
-                {totalWealth > 0 ? formatInrCompact(totalWealth) : "—"}
-              </div>
-              <div className={styles.closingStatLabel}>25-yr wealth</div>
-            </div>
-          </div>
 
-          <button
-            type="button"
-            onClick={handlePrint}
-            className={`${styles.closingBtn} print:hidden`}
-          >
-            Let&apos;s Begin →
-          </button>
-
-          <div className={styles.closingContact}>
-            <div>{brand}</div>
-            <div>{contact}</div>
-            <div className={styles.closingValidity}>
-              This proposal is valid for 15 days. We are ready when you are.
+            {/* Right — CTA box */}
+            <div className={styles.closingRight}>
+              <div className={styles.closingCTABox}>
+                <div className={styles.ctaTitle}>
+                  Ready to Begin Your Solar Journey?
+                </div>
+                <p className={styles.ctaDesc}>
+                  Lock your electricity price today. This proposal is
+                  custom-engineered for your roof, your usage, and your
+                  financial goals.
+                </p>
+                <button
+                  type="button"
+                  onClick={handlePrint}
+                  className={`${styles.closingBtn} print:hidden`}
+                >
+                  Let&apos;s Begin →
+                </button>
+                <div className={styles.ctaDivider} />
+                <div className={styles.ctaContact}>
+                  <div className={styles.ctaBrand}>{brand}</div>
+                  <div className={styles.ctaInfo}>{contact}</div>
+                  <div className={styles.closingValidity}>
+                    Valid for 15 days. We are ready when you are.
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

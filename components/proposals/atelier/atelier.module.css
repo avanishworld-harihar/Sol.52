@@ -1353,6 +1353,233 @@
   font-style: italic;
 }
 
+/* ══ WEALTH JOURNEY — 3-phase narrative (P4) ════════════════════ */
+.wealthJourney {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin-bottom: 1.75rem;
+  background: var(--al);
+  border: 1px solid var(--line);
+  border-radius: var(--card-r);
+  overflow: hidden;
+}
+.wjPhase {
+  flex: 1;
+  padding: 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  border-right: 1px solid var(--line);
+}
+.wjPhase:last-child { border-right: none; }
+.wjPhaseActive { background: var(--white); }
+.wjDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-bottom: 0.25rem;
+}
+.wjLabel {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--gray);
+  text-transform: uppercase;
+}
+.wjTitle {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--h);
+  line-height: 1.1;
+}
+.wjSpan {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--or);
+}
+.wjNote {
+  font-size: 0.7rem;
+  color: var(--gray);
+  line-height: 1.45;
+  margin-top: 0.15rem;
+}
+.wjArrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.25rem;
+  font-size: 1rem;
+  color: var(--gray2);
+  flex-shrink: 0;
+}
+
+/* ══ GENERATION BAR CHART — Estimated vs Potential (P5) ═════════ */
+.genBarChart {
+  background: var(--al);
+  border: 1px solid var(--line);
+  border-radius: var(--card-r);
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.genBarRow {
+  display: grid;
+  grid-template-columns: 180px 1fr 110px;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.genBarRow:last-child { border-bottom: none; }
+.genBarLabel { font-size: 0.72rem; color: var(--c); }
+.genBarTrack {
+  height: 12px;
+  background: var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.genBarFill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.4s ease;
+}
+.genBarVal {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--h);
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ══ EXPERT INSIGHT callout (shared) ════════════════════════════ */
+.expertInsight {
+  background: linear-gradient(135deg, #fff7ed, #fff);
+  border: 1px solid #fed7aa;
+  border-left: 4px solid var(--or);
+  border-radius: var(--card-r);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.expertTag {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--or);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 0.4rem;
+}
+.expertInsight p {
+  font-size: 0.78rem;
+  color: var(--c);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ══ HARDWARE PRODUCT IMAGE + WHY (P6) ══════════════════════════ */
+.hwProductImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  mix-blend-mode: luminosity;
+  opacity: 0.35;
+}
+.hwWhyBox {
+  margin-top: 0.5rem;
+  background: linear-gradient(135deg, #fff7ed, #fff);
+  border: 1px solid #fed7aa;
+  border-left: 3px solid var(--or);
+  border-radius: 6px;
+  padding: 0.65rem 0.85rem;
+}
+.hwWhyTag {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: var(--or);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 0.3rem;
+}
+.hwWhyText {
+  font-size: 0.72rem;
+  color: var(--c);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ══ CLOSING SPLIT SCREEN (P11) ═════════════════════════════════ */
+.closingSplit {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 2.5rem;
+  align-items: stretch;
+  min-height: 400px;
+}
+.closingLeft {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.closingRight {
+  display: flex;
+  align-items: center;
+}
+.closingCTABox {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(249,115,22,0.3);
+  border-radius: var(--card-r);
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: 100%;
+  justify-content: center;
+}
+.ctaTitle {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--white);
+  line-height: 1.2;
+}
+.ctaDesc {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.55;
+  margin: 0;
+}
+.ctaDivider {
+  height: 1px;
+  background: rgba(255,255,255,0.1);
+  margin: 0.25rem 0;
+}
+.ctaContact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.ctaBrand {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--white);
+}
+.ctaInfo {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.5;
+}
+
 /* ══ PRINT ═════════════════════════════════════════════════════ */
 @media print {
   .printBar  { display: none !important; }
@@ -1365,7 +1592,13 @@
     padding: 0 0 6mm;
     box-shadow: none;
     border-radius: 0;
+    min-height: 261mm; /* A4 297mm - 36mm margins */
+    display: flex;
+    flex-direction: column;
   }
+  .coverPage, .closingPage { min-height: 261mm; }
+  .termsGrid { flex-grow: 1; align-content: start; }
+  .wealthLayout { flex-grow: 1; }
   .pageHead { padding-top: 1.25rem; }
   .coverPage, .closingPage { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
