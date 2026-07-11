@@ -6,7 +6,7 @@
  *       → [Generation] → [Hardware] → [Why Us] → [Roof] → [Roadmap]
  *       → [Compliance] → [Closing]
  *
- * ProposalData-native · Print A4 · 11 pages · break-after: page (print only)
+ * ProposalData-native · Print A4 · 12 pages · break-after: page (print only)
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
@@ -253,27 +253,72 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           },
         ];
 
-  // Terms
-  const allTerms =
+  // Terms — attached Harihar Solar T&C (ProposalData-first, full fallbacks)
+  const generalTerms =
     data.terms.conditions.length > 0
       ? data.terms.conditions
       : [
-          "Year 1 AMC included; from Year 2, AMC at 2% of project value with 5% yearly escalation.",
-          "Installation within 30–40 working days from advance receipt per agreed schedule.",
-          "Warranty covers manufacturing defects only; physical damage or vandalism excluded.",
-          "Client to provide: electricity bill, PAN, Aadhaar, ownership proof & passport photo.",
-          "Weekly panel cleaning recommended; customer scope (directly affects generation).",
-          "Pending DISCOM dues or sanctioned load changes must be cleared before processing.",
+          "DISCOM / state electricity board load change, or cable change from pole to meter and its liaison — only if required — will be in the customer's scope.",
+          "All government statutory fees, regulatory charges, and legal costs relating to net-metering, subsidy (PM Surya Ghar / state schemes), DISCOM approvals, or any official application shall be borne and paid directly by the client.",
+          "If an increase in sanctioned load or connected load is required for the solar connection, the client shall ensure that all prior electricity bills, outstanding dues, and arrears with the DISCOM are fully cleared before processing; any delay or rejection arising from uncleared dues shall remain the client's responsibility.",
+          "Inverter warranty is as per manufacturer (typically 8–10 years on string inverters).",
+          "Solar PV module product warranty: 15 years; performance warranty: ≥80% rated output at end of 30 years (manufacturer). Warranty on overall system and parts not specified above: 1 year from date of commissioning.",
+          "Warranty applies to manufacturing defects only. Physical damage, misuse, or vandalism is not covered.",
+          "Routine cleaning of modules (recommended weekly) is in the customer's scope — it directly affects generation performance.",
+          "Installation shall be completed within 30–40 working days from receipt of advance payment as per the agreed purchase order / payment schedule.",
+          "Any terms not expressly mentioned herein shall be governed by mutual written agreement between both parties.",
+          "Refunds, if applicable, shall be processed after a 2.5% deduction on the project finalization amount plus documented expenses already incurred.",
         ];
+
   const docs =
     data.terms.documents.length > 0
       ? data.terms.documents
       : [
-          "Latest 3-month electricity bills",
-          "PAN Card & Aadhaar Card",
-          "Ownership proof of property",
-          "Passport-size photograph",
-          "Bank account details for subsidy disbursement",
+          "Latest electricity bill (clear copy)",
+          "Copy of PAN card",
+          "Copy of Aadhaar card (legible, both sides if applicable)",
+          "Ownership proof — property tax receipt / sale deed / municipal record",
+          "Passport-size photograph of applicant",
+          "Single-line diagram (SLD) — draft provided by us; signed copy required from customer",
+        ];
+
+  const amcObjective =
+    data.terms.amcObjective?.trim() ||
+    "The objective of Annual Maintenance Services is to maintain the performance ratio and general upkeep of the rooftop SPV plant throughout the contract period.";
+
+  const amcScope =
+    data.terms.amcScope.length > 0
+      ? data.terms.amcScope
+      : [
+          "Annual Maintenance Contract (AMC) covering:",
+          "Daily / periodic monitoring of plant performance and energy generation",
+          "Routine preventive maintenance of plant and equipment",
+          "Emergency breakdown attendance (response within 48 working hours)",
+          "Coordination with OEMs for warranty support and defect rectification",
+          "Periodic inspection of DC & AC protection, earthing, and cable terminations",
+        ];
+
+  const clientScope = [
+    "Site security, watch and ward",
+    "Insurance of plant and equipment (if desired)",
+    "Stable internet connection at site for remote monitoring (where applicable)",
+    "Water and auxiliary power for maintenance activities, as needed on site",
+    "Day-to-day visual checks and safe access to the rooftop",
+    "Regular module cleaning as per manufacturer guidelines",
+  ];
+
+  const invoiceRef =
+    grossInr > 0 ? formatInr(grossInr) : netInr > 0 ? formatInr(netInr) : "₹3,00,000";
+  const amcCostParagraph = `First 1 year AMC is included in the quoted price. From Year 2 onwards, annual maintenance may be charged at 2% of invoice value (${invoiceRef}) with 5% year-on-year escalation, subject to a signed O&M agreement.`;
+
+  const amcTerms =
+    data.terms.amcTerms.length > 0
+      ? data.terms.amcTerms
+      : [
+          "Maintenance charges, when applicable, are payable in advance on a half-yearly basis.",
+          "Minimum O&M contract duration: 2 years, extendable in blocks of 2 years by mutual consent (up to 25 years from commissioning).",
+          "We are not liable for module or equipment loss due to theft, stand damage, or vandalism.",
+          "Standard force majeure provisions apply; service deficiencies during such events shall be communicated to the client within one week of occurrence.",
         ];
 
   const handlePrint = () => {
@@ -343,7 +388,7 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
             </div>
           </div>
         </div>
-        <span className={styles.pageNum}>01 / 11</span>
+        <span className={styles.pageNum}>01 / 12</span>
       </section>
 
       {/* ══ P2: IMPACT MOMENT ════════════════════════════════════ */}
@@ -401,7 +446,7 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           Every unit of solar energy your roof generates is a direct act of
           climate action.
         </div>
-        <span className={styles.pageNum}>02 / 11</span>
+        <span className={styles.pageNum}>02 / 12</span>
       </section>
 
       {/* ══ P3: FINANCIAL STORY ═══════════════════════════════════ */}
@@ -537,7 +582,7 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           </div>
         </div>
 
-        <span className={styles.pageNum}>03 / 11</span>
+        <span className={styles.pageNum}>03 / 12</span>
       </section>
 
       {/* ══ P4: WEALTH PROJECTION ════════════════════════════════ */}
@@ -671,7 +716,7 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           </div>
         </div>
 
-        <span className={styles.pageNum}>04 / 11</span>
+        <span className={styles.pageNum}>04 / 12</span>
       </section>
 
       {/* ══ P5: GENERATION PROOF ═════════════════════════════════ */}
@@ -810,7 +855,7 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           estimates under standard test conditions, not a guarantee.
         </p>
 
-        <span className={styles.pageNum}>05 / 11</span>
+        <span className={styles.pageNum}>05 / 12</span>
       </section>
 
       {/* ══ P6: HARDWARE — 4-CARD TRUST GRID ═════════════════════ */}
@@ -924,7 +969,7 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           ))}
         </div>
 
-        <span className={styles.pageNum}>06 / 11</span>
+        <span className={styles.pageNum}>06 / 12</span>
       </section>
 
       {/* ══ P7: WHY HARIHAR SOLAR — CREDIBILITY ══════════════════ */}
@@ -963,7 +1008,7 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           <span className={styles.trustQuoteAttr}>— {brand} Engineering Team</span>
         </div>
 
-        <span className={styles.pageNum}>07 / 11</span>
+        <span className={styles.pageNum}>07 / 12</span>
       </section>
 
       {/* ══ P8: ROOF INTELLIGENCE ════════════════════════════════ */}
@@ -1058,7 +1103,7 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           </div>
         </div>
 
-        <span className={styles.pageNum}>08 / 11</span>
+        <span className={styles.pageNum}>08 / 12</span>
       </section>
 
       {/* ══ P9: EXECUTION ROADMAP ════════════════════════════════ */}
@@ -1130,58 +1175,91 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           </div>
         </div>
 
-        <span className={styles.pageNum}>09 / 11</span>
+        <span className={styles.pageNum}>09 / 12</span>
       </section>
 
-      {/* ══ P10: COMPLIANCE ══════════════════════════════════════ */}
+      {/* ══ P10: TERMS & COMPLIANCE ══════════════════════════════ */}
       <section className={`${styles.page} ${styles.termsPage}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>10 — COMPLIANCE & DOCUMENTATION</span>
-          <h2 className={styles.pageTitle}>Clear & Transparent</h2>
+          <span className={styles.pageTag}>10 — TERMS & COMPLIANCE</span>
+          <h2 className={styles.pageTitle}>Terms & Conditions</h2>
         </header>
+
         <div className={styles.termsGrid}>
           <div>
-            <div className={styles.termsSubhead}>Terms & Conditions</div>
+            <div className={styles.termsSubhead}>General Terms</div>
             <ul className={styles.termsList}>
-              {allTerms
-                .slice(0, Math.ceil(allTerms.length / 2))
-                .map((t) => (
-                  <li key={t.slice(0, 40)}>{t}</li>
-                ))}
+              {generalTerms.map((t) => (
+                <li key={t.slice(0, 48)}>{t}</li>
+              ))}
             </ul>
           </div>
           <div>
-            <div className={styles.termsSubhead}>Additional Terms</div>
-            <ul className={styles.termsList}>
-              {allTerms
-                .slice(Math.ceil(allTerms.length / 2))
-                .map((t) => (
-                  <li key={t.slice(0, 40)}>{t}</li>
-                ))}
-            </ul>
-            <div
-              className={styles.termsSubhead}
-              style={{ marginTop: "1.75rem" }}
-            >
-              Documents Required
-            </div>
+            <div className={styles.termsSubhead}>Documents Required</div>
             <ul className={styles.docsList}>
               {docs.map((d) => (
-                <li key={d.slice(0, 40)}>{d}</li>
+                <li key={d.slice(0, 48)}>{d}</li>
+              ))}
+            </ul>
+            <div className={styles.termsSubhead} style={{ marginTop: "1.5rem" }}>
+              Annual Maintenance — Scope
+            </div>
+            <p className={styles.amcObjective}>{amcObjective}</p>
+            <ul className={styles.termsList}>
+              {amcScope.map((s) => (
+                <li key={s.slice(0, 48)}>{s}</li>
               ))}
             </ul>
           </div>
         </div>
-        <span className={styles.pageNum}>10 / 11</span>
+        <span className={styles.pageNum}>10 / 12</span>
       </section>
 
-      {/* ══ P11: EMOTIONAL CLOSING — SPLIT SCREEN ══════════════════ */}
+      {/* ══ P11: TERMS & COMPLIANCE (CONTD.) ══════════════════════ */}
+      <section className={`${styles.page} ${styles.termsPage}`}>
+        <header className={styles.pageHead}>
+          <span className={styles.pageTag}>11 — TERMS & COMPLIANCE (CONTD.)</span>
+          <h2 className={styles.pageTitle}>Terms & Conditions</h2>
+        </header>
+
+        <div className={styles.termsGrid}>
+          <div>
+            <div className={styles.termsSubhead}>Client&apos;s Scope</div>
+            <ul className={styles.termsList}>
+              {clientScope.map((s) => (
+                <li key={s.slice(0, 48)}>{s}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <div className={styles.termsSubhead}>Cost of Maintenance</div>
+            <p className={styles.amcCostPara}>{amcCostParagraph}</p>
+            <ul className={styles.termsList}>
+              {amcTerms.map((t) => (
+                <li key={t.slice(0, 48)}>{t}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className={styles.termsSignoff}>
+          <span className={styles.termsRegards}>Regards,</span>
+          <span className={styles.termsBrand}>{brand}</span>
+        </div>
+        <span className={styles.pageNum}>11 / 12</span>
+      </section>
+
+      {/* ══ P12: EMOTIONAL CLOSING — COMPANY BRANDING ══════════════ */}
       <section className={`${styles.page} ${styles.closingPage}`}>
         <div className={styles.closingInner}>
+          <div className={styles.closingBrandTop}>
+            <div className={styles.accentRule} />
+            <span className={styles.closingBrandName}>{brand.toUpperCase()}</span>
+          </div>
+
           <div className={styles.closingSplit}>
-            {/* Left — Energy Independence narrative */}
             <div className={styles.closingLeft}>
-              <span className={styles.closingTag}>11 — ENERGY INDEPENDENCE</span>
+              <span className={styles.closingTag}>12 — ENERGY INDEPENDENCE</span>
               <h2 className={styles.closingTitle}>Congratulations.</h2>
               <p className={styles.closingStatement}>
                 Today you are not buying solar panels.
@@ -1220,7 +1298,6 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
               </div>
             </div>
 
-            {/* Right — CTA box */}
             <div className={styles.closingRight}>
               <div className={styles.closingCTABox}>
                 <div className={styles.ctaTitle}>
@@ -1251,7 +1328,7 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           </div>
         </div>
         <span className={`${styles.pageNum} ${styles.pageNumLight}`}>
-          11 / 11
+          12 / 12
         </span>
       </section>
     </div>
