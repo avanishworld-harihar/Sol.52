@@ -30,6 +30,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
       {variant === "classic" ? <ClassicThumb size={size} /> : null}
       {variant === "commercial" ? <CommercialThumb size={size} /> : null}
       {variant === "zenith" ? <ZenithThumb size={size} /> : null}
+      {variant === "luxe" ? <LuxeThumb size={size} /> : null}
       {![
         "golden",
         "pearl",
@@ -41,6 +42,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
         "classic",
         "commercial",
         "zenith",
+        "luxe",
       ].includes(variant) ? (
         <GenericThumb size={size} label={variant} />
       ) : null}
@@ -139,6 +141,50 @@ function ZenithThumb({ size }: { size: "card" | "preview" }) {
             size === "preview" ? "h-[2px] w-8" : "h-[1px] w-4"
           )}
         />
+      </div>
+    </div>
+  );
+}
+
+function LuxeThumb({ size }: { size: "card" | "preview" }) {
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-[#EDE6D9]">
+      <div
+        className={cn(
+          "relative flex flex-col justify-center overflow-hidden rounded-[3px] border border-[#EDE6D9] bg-[#F8F5F0] shadow-sm",
+          size === "preview" ? "h-[62%] w-[68%] p-[8%]" : "h-[58%] w-[72%] p-[7%]"
+        )}
+      >
+        <div
+          className={cn(
+            "font-medium uppercase tracking-[0.2em] text-[#B8975E]",
+            size === "preview" ? "text-[6px]" : "text-[3px]"
+          )}
+        >
+          Harihar Solar
+        </div>
+        <div
+          className={cn(
+            "mt-[10%] font-semibold tracking-tight text-[#1F2A36]",
+            size === "preview" ? "text-[11px]" : "text-[5px]"
+          )}
+        >
+          Energy Masterplan
+        </div>
+        <div
+          className={cn(
+            "mt-[10%] grid grid-cols-3 gap-[6%]",
+            size === "preview" ? "mt-[12%]" : ""
+          )}
+        >
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="rounded-[2px] border border-[#EDE6D9] bg-white"
+              style={{ height: size === "preview" ? 18 : 8 }}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

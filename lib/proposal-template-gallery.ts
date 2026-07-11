@@ -3,7 +3,7 @@ import type { ResidentialTemplatePresetId } from "@/lib/proposal-default-preset-
 import type { SalesPremiumStyleId } from "@/lib/sales-premium-styles";
 
 /**
- * Gallery theme registry — Golden + Zenith only.
+ * Gallery theme registry — Golden + Zenith + Premium Luxe.
  */
 
 /** Thumbnail id — string so new themes need no type union update. */
@@ -17,7 +17,7 @@ export type ProposalTemplateGalleryKey = string;
 export type ProposalTemplateGalleryItem = {
   key: ProposalTemplateGalleryKey;
   presetId: ResidentialTemplatePresetId;
-  /** Legacy field — unused for Golden / Zenith. */
+  /** Legacy field — unused for Golden / Zenith / Luxe. */
   salesPremiumStyle?: SalesPremiumStyleId;
   category: ProposalTemplateCategory;
   name: string;
@@ -36,7 +36,7 @@ export const PROPOSAL_TEMPLATE_CATEGORIES: ProposalTemplateCategoryMeta[] = [
   {
     id: "residential",
     label: "Residential",
-    description: "Homes & rooftops — Golden or Zenith.",
+    description: "Homes & rooftops — Golden, Zenith, or Premium Luxe.",
   },
 ];
 
@@ -57,6 +57,14 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
     description: "Midnight Onyx luxury brochure — architecture cards & Tier-1 BOM.",
     recommended: true,
     thumbnailVariant: "zenith",
+  },
+  {
+    key: "luxe",
+    presetId: "residential_premium_luxe",
+    category: "residential",
+    name: "Premium Luxe",
+    description: "Warm cream masterplan — champagne metrics & smart capital allocation.",
+    thumbnailVariant: "luxe",
   },
 ];
 
@@ -99,6 +107,7 @@ export function resolveActiveGalleryKey(
 ): ProposalTemplateGalleryKey {
   if (presetId === "residential_executive") return "golden";
   if (presetId === "residential_zenith") return "zenith";
+  if (presetId === "residential_premium_luxe") return "luxe";
   return "zenith";
 }
 

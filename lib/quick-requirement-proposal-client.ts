@@ -27,6 +27,9 @@ export function resolveQuickQuotePresetOptions(): {
   if (presetId === "residential_zenith") {
     return { presetId, galleryThemeKey: "zenith" };
   }
+  if (presetId === "residential_premium_luxe") {
+    return { presetId, galleryThemeKey: "luxe" };
+  }
   if (presetId === "residential_executive") {
     return { presetId, galleryThemeKey: "golden" };
   }

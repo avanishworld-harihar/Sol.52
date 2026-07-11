@@ -2,9 +2,10 @@
  * Proposal Preset Engine — drives which blocks appear, in what order,
  * and which inputs are required for each proposal type.
  *
- * Active presets (cleanup 2026-07):
- *   1. residential_executive — Golden / Executive Premium (locked flagship)
- *   2. residential_zenith    — Zenith Luxury brochure
+ * Active presets:
+ *   1. residential_executive     — Golden / Executive Premium (locked flagship)
+ *   2. residential_zenith        — Zenith Luxury brochure
+ *   3. residential_premium_luxe  — Premium Luxe warm cream masterplan
  *
  * Removed presets are remapped via normalizePresetId → residential_executive.
  */
@@ -26,6 +27,7 @@ import { SALES_PREMIUM_STYLE_LIST } from "@/lib/sales-premium-styles";
 export const PROPOSAL_PRESET_IDS = [
   "residential_executive",
   "residential_zenith",
+  "residential_premium_luxe",
 ] as const;
 
 export type ProposalPresetId = (typeof PROPOSAL_PRESET_IDS)[number];
@@ -101,6 +103,18 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     label: "Zenith",
     description:
       "Zenith Luxury brochure — Midnight Onyx cover, architecture cards, Tier-1 BOM editorial.",
+    bill_requirement: "optional",
+    theme_hint: "residential",
+    default_data_source: "requirement",
+    default_blocks: [],
+    optional_blocks: [],
+  },
+
+  residential_premium_luxe: {
+    id: "residential_premium_luxe",
+    label: "Premium Luxe",
+    description:
+      "Warm cream masterplan — champagne metrics, investment ledger, Tier-1 hardware & journey.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "requirement",

@@ -208,7 +208,9 @@ export function BuilderStageBar({
                 ? "Golden"
                 : presetId === "residential_zenith"
                   ? "Zenith"
-                  : "Residential"}
+                  : presetId === "residential_premium_luxe"
+                    ? "Premium Luxe"
+                    : "Residential"}
             </span>
           </div>
         )}

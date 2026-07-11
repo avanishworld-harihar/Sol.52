@@ -4,6 +4,7 @@ import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 export const RESIDENTIAL_TEMPLATE_PRESET_IDS = [
   "residential_executive",
   "residential_zenith",
+  "residential_premium_luxe",
 ] as const;
 
 export type ResidentialTemplatePresetId = (typeof RESIDENTIAL_TEMPLATE_PRESET_IDS)[number];
@@ -31,6 +32,11 @@ export const RESIDENTIAL_TEMPLATE_OPTIONS: ResidentialTemplateOption[] = [
     id: "residential_zenith",
     label: "Zenith",
     subtitle: "Midnight Onyx luxury brochure — architecture & Tier-1 BOM.",
+  },
+  {
+    id: "residential_premium_luxe",
+    label: "Premium Luxe",
+    subtitle: "Warm cream masterplan — investment ledger & Tier-1 hardware.",
   },
 ];
 

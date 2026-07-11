@@ -15,10 +15,12 @@ export function resolveResidentialThemeKey(input: {
 
   if (input.galleryKey === "golden") return "golden";
   if (input.galleryKey === "zenith") return "golden";
+  if (input.galleryKey === "luxe") return "golden";
 
   const preset = input.presetId;
   if (preset === "residential_executive") return "golden";
   if (preset === "residential_zenith") return "golden";
+  if (preset === "residential_premium_luxe") return "golden";
 
   return "golden";
 }

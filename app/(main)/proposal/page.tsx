@@ -1652,14 +1652,16 @@ function ProposalPageContent() {
       },
       ...(osPresetId === "residential_zenith"
         ? { galleryThemeKey: "zenith" }
-        : osPresetId === "residential_executive"
-          ? { galleryThemeKey: "golden" }
-          : {}),
+        : osPresetId === "residential_premium_luxe"
+          ? { galleryThemeKey: "luxe" }
+          : osPresetId === "residential_executive"
+            ? { galleryThemeKey: "golden" }
+            : {}),
       proposalLayout: (() => {
         const presetForLayout = osPresetId ?? "residential_zenith";
         let layout = proposalLayout;
         if (!layout) {
-          /* Golden / Zenith use isolated renderers — empty layout is fine */
+          /* Isolated renderers — empty layout is fine */
         }
         if (!layout) return undefined;
         if (useResidentialCatalog && residentialConfig) {

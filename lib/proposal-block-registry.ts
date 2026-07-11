@@ -72,7 +72,7 @@ export type ProposalBlockGroup =
  */
 export type PresetAffinity =
   | "all"
-  | ReadonlyArray<"residential_executive" | "residential_zenith">;
+  | ReadonlyArray<"residential_executive" | "residential_zenith" | "residential_premium_luxe">;
 
 export type ProposalBlockMeta = {
   id: ProposalBlockId;
