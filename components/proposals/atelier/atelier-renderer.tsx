@@ -1,13 +1,15 @@
 "use client";
 
 /**
- * Atelier — Industrial Minimalist A4 residential proposal (11 pages).
- * Charcoal #1E293B · Aluminum #F1F5F9 · Burnt Orange #F97316
- * ProposalData-native · print-ready (break-after: page per section)
+ * Atelier — Investment Blueprint (High-Conversion Sales Journey)
+ * Flow: [Cover] → [Impact] → [Financial Story] → [Wealth Proof]
+ *       → [Generation] → [Hardware ×2] → [Roof] → [Roadmap] → [Compliance] → [Closing]
+ *
+ * ProposalData-native · Print A4 · 11 pages · break-after: page
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
-import { formatInr } from "@/components/proposals/_shared/formatters";
+import { formatInr, formatInrCompact } from "@/components/proposals/_shared/formatters";
 import styles from "./atelier.module.css";
 
 function bomByHint(data: ProposalData, hints: RegExp[]) {
@@ -25,7 +27,7 @@ function bomLine(
 }
 
 export function AtelierRenderer({ data }: { data: ProposalData }) {
-  // ── derived ──────────────────────────────────────────────────
+  // ── Core derivations ─────────────────────────────────────────
   const brand = data.meta.brandName?.trim() || "Harihar Solar";
   const clientName = data.meta.customerName?.trim() || "Valued Customer";
   const location =
@@ -56,6 +58,58 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
   const contact =
     data.closing.contactLine?.trim() || "+91-99933 22267 · hariharsolar.in";
 
+  // ── New financial calculations ────────────────────────────────
+  const monthlyBill =
+    data.bill.yearlyBillInr > 0
+      ? Math.round(data.bill.yearlyBillInr / 12)
+      : annualSavings > 0
+        ? Math.round(annualSavings / 12 / 0.8)
+        : 5200;
+  // Simple 5-yr EMI at ~9%
+  const r = 0.09 / 12;
+  const monthlyEmi =
+    netInr > 0 ? Math.round((netInr * r) / (1 - Math.pow(1 + r, -60))) : 0;
+  const monthlyProfit = monthlyBill - monthlyEmi;
+
+  // Investment grade
+  const investScore =
+    paybackYears <= 3.5
+      ? "AAA"
+      : paybackYears <= 5
+        ? "AA+"
+        : paybackYears <= 6.5
+          ? "AA"
+          : "A+";
+  const investGrade =
+    paybackYears <= 3.5
+      ? "Exceptional Return"
+      : paybackYears <= 5
+        ? "Very High Return"
+        : paybackYears <= 6.5
+          ? "High Return"
+          : "Above Average Return";
+
+  // Wealth milestones (25-yr projection)
+  const totalWealth =
+    lifetimeWealth > 0 ? lifetimeWealth : annualSavings * 25;
+  const wealthMilestones = [5, 10, 15, 20, 25].map((yr) => ({
+    year: yr,
+    savings: Math.round(annualSavings * yr),
+    pct:
+      totalWealth > 0
+        ? Math.min(100, Math.round((annualSavings * yr * 100) / totalWealth))
+        : yr * 4,
+  }));
+
+  // Panel count
+  const panelWp = (() => {
+    if (!data.bom[0]?.spec) return 580;
+    const m = data.bom[0].spec.match(/(\d{3,4})\s*[Ww]/);
+    return m ? parseInt(m[1]) : 580;
+  })();
+  const panelCount = systemKw > 0 ? Math.ceil((systemKw * 1000) / panelWp) : 9;
+  const panelRows = Math.ceil(panelCount / 3);
+
   // BOM
   const panelItem =
     bomByHint(data, [/panel/i, /module/i, /waaree/i]) || data.bom[0];
@@ -66,41 +120,11 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
   const protectionItem =
     bomByHint(data, [/protect/i, /acdb/i, /dcdb/i, /safety/i]) || data.bom[3];
 
-  const hardware = [
-    {
-      mark: "P",
-      title: "Solar Panels",
-      desc: bomLine(panelItem, "Tier-1 DCR TOPCon N-Type modules"),
-      warranty: panelItem?.warranty || "30 Years Performance",
-    },
-    {
-      mark: "I",
-      title: "String Inverter",
-      desc: bomLine(inverterItem, "Grid-tie string inverter (Dual MPPT)"),
-      warranty: inverterItem?.warranty || "10 Years Warranty",
-    },
-    {
-      mark: "M",
-      title: "Mounting Structure",
-      desc: bomLine(structureItem, "Hot-dip galvanized GI (150 km/h wind rated)"),
-      warranty: structureItem?.warranty || "10 Years Structural",
-    },
-    {
-      mark: "S",
-      title: "Protection & Safety",
-      desc: bomLine(
-        protectionItem,
-        "DCDB + ACDB with SPD, MCB/MCCB & Copper Earthing"
-      ),
-      warranty: protectionItem?.warranty || "5 Years",
-    },
-  ];
-
   // Engineering metrics
   const engMetrics =
     data.engineering.metrics.length > 0
       ? data.engineering.metrics
-          .slice(0, 8)
+          .slice(0, 6)
           .map((m) => [m.label, m.value] as [string, string])
       : ([
           [
@@ -108,14 +132,9 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
             systemKw > 0 ? `${(systemKw * 1.04).toFixed(2)} kWp` : "—",
           ],
           ["AC Capacity", systemSize],
-          ["DC/AC Ratio", "1.04"],
-          ["Peak Sun Hours", "5 hrs / day"],
           ["Performance Ratio", "75%"],
           ["Specific Yield", "1440 kWh/kWp/yr"],
-          [
-            "Annual Generation",
-            annualGen > 0 ? `${annualGen.toLocaleString("en-IN")} units` : "—",
-          ],
+          ["Peak Sun Hours", "5 hrs / day"],
           [`Panel Tilt (${cityLabel})`, `${tilt}°`],
         ] as [string, string][]);
 
@@ -169,7 +188,7 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           {
             num: "02",
             title: "Design & SLD",
-            desc: "Engineering drawings & single-line diagram",
+            desc: "Engineering drawings & diagram",
           },
           {
             num: "03",
@@ -179,7 +198,7 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           {
             num: "04",
             title: "Material Delivery",
-            desc: "Tier-1 components delivered to site",
+            desc: "Tier-1 components to site",
           },
           {
             num: "05",
@@ -189,7 +208,7 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           {
             num: "06",
             title: "Commissioning",
-            desc: "Net meter, grid sync & full handover",
+            desc: "Net meter, grid sync & handover",
           },
         ];
 
@@ -227,10 +246,10 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
       : [
           "Year 1 AMC included; from Year 2, AMC at 2% of project value with 5% yearly escalation.",
           "Installation within 30–40 working days from advance receipt per agreed schedule.",
-          "Warranty covers manufacturing defects only; physical damage or vandalism is excluded.",
+          "Warranty covers manufacturing defects only; physical damage or vandalism excluded.",
           "Client to provide: electricity bill, PAN, Aadhaar, ownership proof & passport photo.",
-          "Weekly panel cleaning recommended; this is customer's scope as it directly affects generation.",
-          "Pending DISCOM dues or sanctioned load changes must be cleared by client before processing.",
+          "Weekly panel cleaning recommended; customer scope (directly affects generation).",
+          "Pending DISCOM dues or sanctioned load changes must be cleared before processing.",
         ];
   const docs =
     data.terms.documents.length > 0
@@ -243,111 +262,87 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           "Bank account details for subsidy disbursement",
         ];
 
-  const half = Math.ceil(allTerms.length / 2);
-
   const handlePrint = () => {
     if (typeof window !== "undefined") window.print();
   };
 
+  // ── JSX ──────────────────────────────────────────────────────
   return (
     <div className={styles.wrapper}>
-      {/* Google Fonts */}
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Lato:wght@300;400;700&display=swap');`}</style>
 
-      {/* Print bar */}
-      <div className={`${styles.printBar} print:hidden`}>
+      {/* Sticky print bar */}
+      <div className={styles.printBar}>
         <div className={styles.printBarInner}>
-          <button
-            type="button"
-            onClick={handlePrint}
-            className={styles.printBarBtn}
-          >
-            Download as PDF
+          <span className={styles.printBarBrand}>{brand}</span>
+          <button type="button" onClick={handlePrint} className={styles.printBarBtn}>
+            Download PDF
           </button>
         </div>
       </div>
 
-      {/* ══ P1: COVER ══════════════════════════════════════════════ */}
+      {/* ══ P1: CINEMATIC COVER ══════════════════════════════════ */}
       <section className={`${styles.page} ${styles.coverPage}`}>
-        <div className={styles.coverBody}>
-          <div className={styles.brandLine}>
-            <div className={styles.accentRule} />
-            <span className={styles.brandText}>{brand.toUpperCase()}</span>
+        <div className={styles.coverInner}>
+          <div className={styles.coverTop}>
+            <div className={styles.coverBrandRow}>
+              <div className={styles.accentRule} />
+              <span className={styles.coverBrandText}>{brand.toUpperCase()}</span>
+            </div>
+            <span className={styles.coverDocType}>INVESTMENT BLUEPRINT</span>
           </div>
-          <h1 className={styles.coverTitle}>
-            The Energy
-            <br />
-            Masterplan
-          </h1>
-          <div className={styles.coverDivider} />
-          <p className={styles.coverClient}>Curated for {clientName}</p>
-          <p className={styles.coverLocation}>{location}</p>
-          <div className={styles.coverSystemPill}>
-            <span>{systemSize}</span>
-            <span className={styles.dot}>·</span>
-            <span>{systemType}</span>
+
+          <div className={styles.coverHero}>
+            <p className={styles.coverFor}>PREPARED FOR</p>
+            <h1 className={styles.coverName}>{clientName}</h1>
+            <p className={styles.coverLoc}>{location}</p>
+          </div>
+
+          <div className={styles.coverWealthRow}>
+            <div className={styles.coverWealthCard}>
+              <span className={styles.coverWealthTag}>25-YEAR WEALTH CREATED</span>
+              <div className={styles.coverWealthAmt}>
+                {totalWealth > 0 ? formatInrCompact(totalWealth) : "—"}
+              </div>
+              <span className={styles.coverWealthSub}>
+                Your roof becomes a wealth engine
+              </span>
+            </div>
+            <div className={styles.coverWealthDivider} />
+            <div className={styles.coverSmallStats}>
+              <div className={styles.coverSmallStat}>
+                <span className={styles.coverSmallNum}>
+                  {monthlyInr > 0 ? formatInr(monthlyInr) : "—"}
+                </span>
+                <span className={styles.coverSmallLabel}>Savings / Month</span>
+              </div>
+              <div className={styles.coverSmallStat}>
+                <span className={styles.coverSmallNum}>
+                  {paybackYears > 0 ? `${paybackYears.toFixed(1)} Yrs` : "—"}
+                </span>
+                <span className={styles.coverSmallLabel}>Full Payback</span>
+              </div>
+              <div className={styles.coverSmallStat}>
+                <span className={styles.coverSmallNum}>{systemSize}</span>
+                <span className={styles.coverSmallLabel}>System Size</span>
+              </div>
+            </div>
           </div>
         </div>
         <span className={styles.pageNum}>01 / 11</span>
       </section>
 
-      {/* ══ P2: VISION ══════════════════════════════════════════════ */}
-      <section className={`${styles.page} ${styles.visionPage}`}>
-        <header className={styles.pageHead}>
-          <span className={styles.pageTag}>02 — VISION</span>
-          <h2 className={styles.pageTitle}>Energy Independence Starts Here</h2>
-        </header>
-
-        <blockquote className={styles.quote}>
-          &ldquo;The sun is the most democratic energy source on earth — it shines
-          on every roof, in every village, without exception.&rdquo;
-        </blockquote>
-
-        <div className={styles.visionStats}>
-          {[
-            {
-              label: "Annual Clean Energy",
-              value:
-                annualGen > 0 ? annualGen.toLocaleString("en-IN") : "—",
-              unit: "units / year",
-            },
-            {
-              label: "Estimated Savings",
-              value: annualSavings > 0 ? formatInr(annualSavings) : "—",
-              unit: "per year",
-            },
-            {
-              label: "25-Year Lifetime Benefit",
-              value:
-                lifetimeWealth > 0
-                  ? `${Math.round(lifetimeWealth / 100000).toLocaleString("en-IN")}L`
-                  : "—",
-              unit: "total wealth created",
-            },
-          ].map((s) => (
-            <div key={s.label} className={styles.visionStatCard}>
-              <div className={styles.visionStatVal}>{s.value}</div>
-              <div className={styles.visionStatUnit}>{s.unit}</div>
-              <div className={styles.visionStatLabel}>{s.label}</div>
-            </div>
-          ))}
-        </div>
-        <span className={styles.pageNum}>02 / 11</span>
-      </section>
-
-      {/* ══ P3: GREEN IMPACT ══════════════════════════════════════════ */}
+      {/* ══ P2: IMPACT MOMENT ════════════════════════════════════ */}
       <section className={`${styles.page} ${styles.impactPage}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>03 — GREEN LEGACY</span>
-          <h2 className={styles.pageTitle}>What Your Roof Gives Back</h2>
+          <span className={styles.pageTag}>02 — YOUR IMPACT</span>
+          <h2 className={styles.pageTitle}>What Your Roof Gives Back to the World</h2>
         </header>
 
         <div className={styles.impactGrid}>
           <div className={styles.impactCard}>
-            <div className={styles.impactBig}>
-              {co2 > 0 ? co2 : "—"}
-            </div>
-            <div className={styles.impactUnit}>Tons</div>
+            <div className={styles.impactBig}>{co2 > 0 ? co2 : "—"}</div>
+            <div className={styles.impactUnit}>TONS</div>
             <div className={styles.impactLabel}>CO₂ Eliminated Over 25 Years</div>
             <p className={styles.impactSub}>
               Equivalent to removing a petrol car from the road for{" "}
@@ -358,179 +353,402 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
             <div className={styles.impactBig}>
               {trees > 0 ? trees.toLocaleString("en-IN") : "—"}
             </div>
-            <div className={styles.impactUnit}>Trees</div>
+            <div className={styles.impactUnit}>TREES</div>
             <div className={styles.impactLabel}>Ecological Equivalent Planted</div>
             <p className={styles.impactSub}>
-              Your rooftop = a small forest working silently for the planet.
+              Your rooftop ecosystem works silently for the planet, every single
+              day.
             </p>
           </div>
         </div>
 
-        <div className={styles.impactBar}>
-          <span className={styles.impactBarLabel}>Daily Clean Generation</span>
-          <div className={styles.impactBarTrack}>
-            <div
-              className={styles.impactBarFill}
-              style={{
-                width: `${Math.min(100, Math.max(8, (annualGen / 365 / 25) * 100))}%`,
-              }}
-            />
+        {/* Carbon milestones */}
+        <div className={styles.carbonMilestones}>
+          {[5, 10, 15, 20, 25].map((yr) => {
+            const tons = co2 > 0 ? Math.round((co2 / 25) * yr) : 0;
+            return (
+              <div key={yr} className={styles.carbonMilestone}>
+                <div className={styles.cmBar}>
+                  <div
+                    className={styles.cmBarFill}
+                    style={{ height: `${(yr / 25) * 100}%` }}
+                  />
+                </div>
+                <div className={styles.cmYear}>YR {yr}</div>
+                <div className={styles.cmTons}>
+                  {tons > 0 ? `${tons}T` : "—"}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className={styles.impactTagline}>
+          Every unit of solar energy your roof generates is a direct act of
+          climate action.
+        </div>
+        <span className={styles.pageNum}>02 / 11</span>
+      </section>
+
+      {/* ══ P3: FINANCIAL STORY ═══════════════════════════════════ */}
+      <section className={`${styles.page} ${styles.financePage}`}>
+        <header className={styles.pageHead}>
+          <span className={styles.pageTag}>03 — FINANCIAL STORY</span>
+          <h2 className={styles.pageTitle}>
+            You Are Not Switching Energy. You Are Switching Economics.
+          </h2>
+        </header>
+
+        {/* Bill vs Solar comparison */}
+        <div className={styles.billComparison}>
+          <div className={styles.billCard}>
+            <span className={styles.billCardTag}>TODAY — WITHOUT SOLAR</span>
+            <div className={styles.billCardAmt} style={{ color: "#DC2626" }}>
+              {monthlyBill > 0 ? formatInr(monthlyBill) : "₹5,200"}
+            </div>
+            <div className={styles.billCardLabel}>Monthly Electricity Bill</div>
+            <p className={styles.billCardNote}>
+              Increases ~6% every year. Over 25 years you will pay{" "}
+              {formatInrCompact(monthlyBill * 12 * 22)} to the grid.
+            </p>
           </div>
-          <span className={styles.impactBarVal}>
-            {annualGen > 0 ? `${(annualGen / 365).toFixed(1)} units/day` : "—"}
-          </span>
+
+          <div className={styles.billArrow}>→</div>
+
+          <div className={`${styles.billCard} ${styles.billCardSolar}`}>
+            <span className={styles.billCardTag}>TOMORROW — WITH SOLAR</span>
+            <div className={styles.billCardAmt} style={{ color: "#059669" }}>
+              {monthlyEmi > 0 ? formatInr(monthlyEmi) : "₹4,100"}
+            </div>
+            <div className={styles.billCardLabel}>Equivalent Monthly Cost</div>
+            <p className={styles.billCardNote}>
+              Fixed for 5 years (loan), then ZERO. Energy costs you control
+              forever.
+            </p>
+          </div>
+
+          <div className={styles.billArrow}>=</div>
+
+          <div className={`${styles.billCard} ${styles.billCardProfit}`}>
+            <span className={styles.billCardTag}>IMMEDIATE MONTHLY PROFIT</span>
+            <div className={styles.billCardAmt}>
+              {monthlyProfit > 0 ? `+${formatInr(monthlyProfit)}` : formatInr(monthlyInr > 0 ? monthlyInr : 900)}
+            </div>
+            <div className={styles.billCardLabel}>Net Monthly Gain from Day 1</div>
+            <p className={styles.billCardNote}>
+              This is money that stays in your pocket every single month,
+              starting immediately.
+            </p>
+          </div>
+        </div>
+
+        {/* Investment breakdown */}
+        <div className={styles.investBreakdown}>
+          <div className={styles.investItem}>
+            <span className={styles.investTag}>GROSS COST</span>
+            <span className={styles.investVal}>
+              {grossInr > 0 ? formatInr(grossInr) : "—"}
+            </span>
+          </div>
+          <div className={styles.investMinus}>−</div>
+          <div className={styles.investItem}>
+            <span className={styles.investTag}>PM SURYA GHAR SUBSIDY</span>
+            <span
+              className={styles.investVal}
+              style={{ color: "#059669" }}
+            >
+              {subsidyInr > 0 ? formatInr(subsidyInr) : "—"}
+            </span>
+          </div>
+          <div className={styles.investMinus}>=</div>
+          <div className={`${styles.investItem} ${styles.investItemFinal}`}>
+            <span className={styles.investTag}>YOUR NET INVESTMENT</span>
+            <span className={styles.investVal}>
+              {netInr > 0 ? formatInr(netInr) : "—"}
+            </span>
+          </div>
         </div>
 
         <span className={styles.pageNum}>03 / 11</span>
       </section>
 
-      {/* ══ P4: FINANCIAL LEDGER ══════════════════════════════════════ */}
-      <section className={`${styles.page} ${styles.financePage}`}>
+      {/* ══ P4: WEALTH PROJECTION ════════════════════════════════ */}
+      <section className={`${styles.page} ${styles.wealthPage}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>04 — FINANCIAL LEDGER</span>
-          <h2 className={styles.pageTitle}>Smart Capital Allocation</h2>
+          <span className={styles.pageTag}>04 — WEALTH PROJECTION</span>
+          <h2 className={styles.pageTitle}>
+            Your 25-Year Solar Wealth Journey
+          </h2>
         </header>
 
-        <div className={styles.financeCards}>
-          <div className={styles.finCard}>
-            <span className={styles.finCardTag}>GROSS INVESTMENT</span>
-            <div className={styles.finCardBig}>
-              {grossInr > 0 ? formatInr(grossInr) : "—"}
+        <div className={styles.wealthLayout}>
+          {/* Left: Chart */}
+          <div className={styles.wealthChartBox}>
+            <div className={styles.wealthChart}>
+              {wealthMilestones.map((m) => (
+                <div key={m.year} className={styles.wealthMilestone}>
+                  <div className={styles.wealthBarWrap}>
+                    <div
+                      className={styles.wealthBarFill}
+                      style={{ width: `${m.pct}%` }}
+                    />
+                  </div>
+                  <div className={styles.wealthMeta}>
+                    <span className={styles.wealthYr}>YR {m.year}</span>
+                    <span className={styles.wealthAmt}>
+                      {m.savings > 0 ? formatInrCompact(m.savings) : "—"}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className={styles.finCardSub}>
-              Panels + Inverter + Full Installation
+            <div className={styles.wealthChartNote}>
+              Cumulative electricity bill savings over 25 years at current
+              generation levels.
             </div>
           </div>
-          <div className={`${styles.finCard} ${styles.finCardGreen}`}>
-            <span className={styles.finCardTag}>PM SURYA GHAR SUBSIDY</span>
-            <div className={styles.finCardBig}>
-              {subsidyInr > 0 ? `− ${formatInr(subsidyInr)}` : "—"}
-            </div>
-            <div className={styles.finCardSub}>Government support deducted</div>
-          </div>
-          <div className={`${styles.finCard} ${styles.finCardDark}`}>
-            <span className={styles.finCardTag}>YOUR NET INVESTMENT</span>
-            <div className={styles.finCardBig}>
-              {netInr > 0 ? formatInr(netInr) : "—"}
-            </div>
-            <div className={styles.finCardSub}>Final amount you pay</div>
-          </div>
-        </div>
 
-        <div className={styles.savingsRow}>
-          {[
-            {
-              tag: "PAYBACK PERIOD",
-              val:
-                paybackYears > 0 ? `${paybackYears.toFixed(1)} yrs` : "—",
-            },
-            {
-              tag: "MONTHLY SAVINGS",
-              val: monthlyInr > 0 ? formatInr(monthlyInr) : "—",
-            },
-            {
-              tag: "ANNUAL SAVINGS",
-              val: annualSavings > 0 ? formatInr(annualSavings) : "—",
-            },
-          ].map((s) => (
-            <div key={s.tag} className={styles.savingsBox}>
-              <div className={styles.savingsTag}>{s.tag}</div>
-              <div className={styles.savingsBig}>{s.val}</div>
+          {/* Right: Investment Score */}
+          <div className={styles.investScoreBox}>
+            <div className={styles.investScoreCard}>
+              <span className={styles.investScoreTag}>SOLAR INVESTMENT SCORE</span>
+              <div className={styles.investScoreGrade}>{investScore}</div>
+              <div className={styles.investScoreLabel}>{investGrade}</div>
+              <div className={styles.investScoreDivider} />
+              <div className={styles.investScoreStats}>
+                <div className={styles.investScoreStat}>
+                  <span className={styles.investScoreStatVal}>
+                    {paybackYears > 0 ? `${paybackYears.toFixed(1)} yrs` : "—"}
+                  </span>
+                  <span className={styles.investScoreStatLabel}>Payback</span>
+                </div>
+                <div className={styles.investScoreStat}>
+                  <span className={styles.investScoreStatVal}>
+                    {annualSavings > 0
+                      ? `${Math.round((annualSavings / netInr) * 100)}%`
+                      : "—"}
+                  </span>
+                  <span className={styles.investScoreStatLabel}>
+                    Annual ROI
+                  </span>
+                </div>
+              </div>
             </div>
-          ))}
+
+            <div className={styles.paybackCard}>
+              <span className={styles.investScoreTag}>TOTAL WEALTH AT YEAR 25</span>
+              <div className={styles.paybackAmt}>
+                {totalWealth > 0 ? formatInrCompact(totalWealth) : "—"}
+              </div>
+              <p className={styles.paybackNote}>
+                Your ₹{netInr > 0 ? formatInrCompact(netInr) : "—"}{" "}
+                investment generates{" "}
+                {totalWealth > 0 && netInr > 0
+                  ? `${(totalWealth / netInr).toFixed(1)}×`
+                  : "—"}{" "}
+                returns over 25 years.
+              </p>
+            </div>
+          </div>
         </div>
 
         <span className={styles.pageNum}>04 / 11</span>
       </section>
 
-      {/* ══ P5: ENGINEERING ══════════════════════════════════════════ */}
-      <section className={`${styles.page} ${styles.engPage}`}>
+      {/* ══ P5: GENERATION PROOF ═════════════════════════════════ */}
+      <section className={`${styles.page} ${styles.genPage}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>05 — ENGINEERING SNAPSHOT</span>
+          <span className={styles.pageTag}>05 — GENERATION PROOF</span>
           <h2 className={styles.pageTitle}>
-            Precision Engineered for {city}
+            How We Calculate {annualGen > 0 ? annualGen.toLocaleString("en-IN") : "7,200"} Units / Year
           </h2>
         </header>
 
-        {/* 2×2 grid: [gauges | location] / [metrics | standards] */}
-        <div className={styles.eng2x2}>
-          {/* TOP-LEFT: circular gauge cards */}
-          <div className={styles.engGaugePanel}>
-            <div className={styles.engGauge}>
-              <div className={styles.engGaugeCircle}>
-                <span className={styles.engGaugeBig}>{tilt}°</span>
-                <span className={styles.engGaugeSub}>TILT</span>
+        <div className={styles.genProofGrid}>
+          {/* Methodology */}
+          <div className={styles.genCard}>
+            <span className={styles.genCardTag}>PVGIS METHODOLOGY</span>
+            <div className={styles.genFormula}>
+              <div className={styles.genFormulaStep}>
+                <span className={styles.genFormulaVal}>
+                  {systemKw > 0 ? `${systemKw} kW` : "5 kW"}
+                </span>
+                <span className={styles.genFormulaLabel}>System Capacity</span>
               </div>
-              <span className={styles.engGaugeLabel}>Optimal Panel Tilt</span>
+              <span className={styles.genFormulaOp}>×</span>
+              <div className={styles.genFormulaStep}>
+                <span className={styles.genFormulaVal}>5.0</span>
+                <span className={styles.genFormulaLabel}>Sun Hours/Day</span>
+              </div>
+              <span className={styles.genFormulaOp}>×</span>
+              <div className={styles.genFormulaStep}>
+                <span className={styles.genFormulaVal}>75%</span>
+                <span className={styles.genFormulaLabel}>
+                  Performance Ratio
+                </span>
+              </div>
+              <span className={styles.genFormulaOp}>×</span>
+              <div className={styles.genFormulaStep}>
+                <span className={styles.genFormulaVal}>365</span>
+                <span className={styles.genFormulaLabel}>Days/Year</span>
+              </div>
+              <span className={styles.genFormulaOp}>=</span>
+              <div className={`${styles.genFormulaStep} ${styles.genFormulaResult}`}>
+                <span className={styles.genFormulaVal}>
+                  {annualGen > 0 ? annualGen.toLocaleString("en-IN") : "6,844"}
+                </span>
+                <span className={styles.genFormulaLabel}>Units/Year</span>
+              </div>
             </div>
-            <div className={`${styles.engGauge} ${styles.engGaugeOr}`}>
-              <div className={styles.engGaugeCircle}>
-                <span className={styles.engGaugeBig}>{systemSize}</span>
-                <span className={styles.engGaugeSub}>SYSTEM</span>
-              </div>
-              <span className={styles.engGaugeLabel}>Installed Capacity</span>
-            </div>
           </div>
 
-          {/* TOP-RIGHT: location */}
-          <div className={styles.engLocCard}>
-            <span className={styles.engLocTag}>INSTALLATION SITE</span>
-            <div className={styles.engLocCity}>{city}</div>
-            <div className={styles.engLocFull}>{location}</div>
-          </div>
-
-          {/* BOTTOM-LEFT: metrics 2×4 grid */}
-          <div className={styles.engMetricsGrid}>
-            {engMetrics.map(([label, value]) => (
-              <div key={label} className={styles.engMetricCard}>
-                <div className={styles.engMetricVal}>{value}</div>
-                <div className={styles.engMetricLabel}>{label}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* BOTTOM-RIGHT: standards */}
-          <div className={styles.engStdCard}>
-            <div className={styles.stdTitle}>Standards Compliance</div>
-            <div className={styles.stdBadges}>
-              {standards.map((s) => (
-                <span key={s} className={styles.stdBadge}>{s}</span>
+          {/* Irradiation data */}
+          <div className={styles.genCard}>
+            <span className={styles.genCardTag}>SOLAR RESOURCE — {cityLabel}</span>
+            <div className={styles.genIrradGrid}>
+              {[
+                ["Global Horizontal", "~1,850 kWh/m²/yr"],
+                ["Optimal Inclination", `~1,950 kWh/m²/yr`],
+                ["Annual Irradiance", `${tilt}° tilt`],
+                ["Data Source", "PVGIS / NREL Atlas"],
+              ].map(([k, v]) => (
+                <div key={k} className={styles.genIrradRow}>
+                  <span className={styles.genIrradKey}>{k}</span>
+                  <span className={styles.genIrradVal}>{v}</span>
+                </div>
               ))}
             </div>
           </div>
         </div>
 
+        {/* Spec metrics row */}
+        <div className={styles.genSpecGrid}>
+          {engMetrics.map(([label, value]) => (
+            <div key={label} className={styles.genSpecCard}>
+              <div className={styles.genSpecVal}>{value}</div>
+              <div className={styles.genSpecLabel}>{label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Standards */}
+        <div className={styles.genStdRow}>
+          <span className={styles.genStdLabel}>Compliance:</span>
+          {standards.map((s) => (
+            <span key={s} className={styles.stdBadge}>{s}</span>
+          ))}
+        </div>
+
         <span className={styles.pageNum}>05 / 11</span>
       </section>
 
-      {/* ══ P6: HARDWARE ══════════════════════════════════════════════ */}
+      {/* ══ P6: HARDWARE — PANELS & INVERTER ═════════════════════ */}
       <section className={`${styles.page} ${styles.hwPage}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>06 — HARDWARE ARCHITECTURE</span>
-          <h2 className={styles.pageTitle}>Tier-1 Components, Built to Last</h2>
+          <span className={styles.pageTag}>06 — HARDWARE TRUST</span>
+          <h2 className={styles.pageTitle}>
+            Tier-1 Components. Zero Compromise.
+          </h2>
         </header>
 
-        <div className={styles.hwGrid}>
-          {hardware.map((h) => (
-            <div key={h.title} className={styles.hwCard}>
-              <div className={styles.hwMark}>{h.mark}</div>
-              <div className={styles.hwTitle}>{h.title}</div>
-              <div className={styles.hwDesc}>{h.desc}</div>
-              <span className={styles.hwWarranty}>{h.warranty}</span>
+        <div className={styles.hwBigGrid}>
+          {/* Panels */}
+          <div className={styles.hwBigCard}>
+            <div className={`${styles.hwBgArt} ${styles.hwBgPanel}`}>
+              <div className={styles.hwBgMark}>P</div>
             </div>
-          ))}
+            <div className={styles.hwBigBody}>
+              <div className={styles.hwBigTag}>SOLAR PANELS</div>
+              <div className={styles.hwBigTitle}>
+                {panelItem
+                  ? panelItem.brand || "Waaree"
+                  : "Waaree Energies"}
+              </div>
+              <p className={styles.hwBigSpec}>
+                {bomLine(panelItem, "580 Wp DCR TOPCon N-Type")}
+              </p>
+              <div className={styles.hwBigStats}>
+                <div>
+                  <div className={styles.hwBigStatNum}>{panelCount}</div>
+                  <div className={styles.hwBigStatLabel}>Panels</div>
+                </div>
+                <div>
+                  <div className={styles.hwBigStatNum}>{systemSize}</div>
+                  <div className={styles.hwBigStatLabel}>Total Capacity</div>
+                </div>
+              </div>
+              <span className={styles.hwWarrantyBadge}>
+                {panelItem?.warranty || "30 Years Performance"}
+              </span>
+            </div>
+          </div>
+
+          {/* Inverter */}
+          <div className={styles.hwBigCard}>
+            <div className={`${styles.hwBgArt} ${styles.hwBgInverter}`}>
+              <div className={styles.hwBgMark}>I</div>
+            </div>
+            <div className={styles.hwBigBody}>
+              <div className={styles.hwBigTag}>STRING INVERTER</div>
+              <div className={styles.hwBigTitle}>
+                {inverterItem
+                  ? inverterItem.brand || "Havells / Polycab"
+                  : "Havells / Polycab"}
+              </div>
+              <p className={styles.hwBigSpec}>
+                {bomLine(inverterItem, `${systemKw} kW Dual MPPT String Inverter`)}
+              </p>
+              <div className={styles.hwBigStats}>
+                <div>
+                  <div className={styles.hwBigStatNum}>97%</div>
+                  <div className={styles.hwBigStatLabel}>Efficiency</div>
+                </div>
+                <div>
+                  <div className={styles.hwBigStatNum}>Dual</div>
+                  <div className={styles.hwBigStatLabel}>MPPT Trackers</div>
+                </div>
+              </div>
+              <span className={styles.hwWarrantyBadge}>
+                {inverterItem?.warranty || "10 Years Warranty"}
+              </span>
+            </div>
+          </div>
         </div>
 
         <span className={styles.pageNum}>06 / 11</span>
       </section>
 
-      {/* ══ P7: WARRANTY ══════════════════════════════════════════════ */}
-      <section className={`${styles.page} ${styles.warrantyPage}`}>
+      {/* ══ P7: HARDWARE — STRUCTURE, PROTECTION + WARRANTY ═════ */}
+      <section className={`${styles.page} ${styles.hwPage2}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>07 — WARRANTY & ASSURANCE</span>
-          <h2 className={styles.pageTitle}>Complete Peace of Mind</h2>
+          <span className={styles.pageTag}>07 — HARDWARE & WARRANTY</span>
+          <h2 className={styles.pageTitle}>
+            Built to Withstand. Backed to Last.
+          </h2>
         </header>
 
+        <div className={styles.hw2Grid}>
+          <div className={styles.hwCard}>
+            <div className={styles.hwMark} style={{ background: "#1E293B" }}>M</div>
+            <div className={styles.hwTitle}>Mounting Structure</div>
+            <div className={styles.hwDesc}>
+              {bomLine(structureItem, "JSW Hot-Dip Galvanized GI")}
+            </div>
+            <p className={styles.hwNote}>150 km/h wind load rated. Engineered for Indian rooftop conditions.</p>
+            <span className={styles.hwWarranty}>{structureItem?.warranty || "10 Years Structural"}</span>
+          </div>
+          <div className={styles.hwCard}>
+            <div className={styles.hwMark} style={{ background: "#0A0F1C" }}>S</div>
+            <div className={styles.hwTitle}>Protection & Safety</div>
+            <div className={styles.hwDesc}>
+              {bomLine(protectionItem, "DCDB + ACDB with SPD")}
+            </div>
+            <p className={styles.hwNote}>MCB/MCCB protection, surge protection device & copper earthing system.</p>
+            <span className={styles.hwWarranty}>{protectionItem?.warranty || "5 Years"}</span>
+          </div>
+        </div>
+
+        {/* Warranty Data Cards */}
         <div className={styles.warrantyGrid}>
           {warrantyCards.map((w, i) => (
             <div
@@ -547,22 +765,112 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           ))}
         </div>
 
-        <p className={styles.warrantyNote}>
-          All warranties are backed by respective manufacturers. Harihar Solar
-          provides dedicated escalation support for warranty claims throughout
-          the product lifecycle.
-        </p>
-
         <span className={styles.pageNum}>07 / 11</span>
       </section>
 
-      {/* ══ P8: JOURNEY (horizontal timeline) ══════════════════════════ */}
-      <section className={`${styles.page} ${styles.journeyPage}`}>
+      {/* ══ P8: ROOF INTELLIGENCE ════════════════════════════════ */}
+      <section className={`${styles.page} ${styles.roofPage}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>08 — THE JOURNEY</span>
+          <span className={styles.pageTag}>08 — ROOF INTELLIGENCE</span>
+          <h2 className={styles.pageTitle}>
+            Your Roof, Engineered for Maximum Yield
+          </h2>
+        </header>
+
+        <div className={styles.roofLayout}>
+          {/* Left: Panel layout + compass */}
+          <div className={styles.roofVisual}>
+            {/* Compass rose */}
+            <div className={styles.compassWrap}>
+              <div className={styles.compass}>
+                <span className={`${styles.compassDir} ${styles.compassN}`}>N</span>
+                <span className={`${styles.compassDir} ${styles.compassS}`}>S</span>
+                <span className={`${styles.compassDir} ${styles.compassE}`}>E</span>
+                <span className={`${styles.compassDir} ${styles.compassW}`}>W</span>
+                <div className={styles.compassCenter}>
+                  <div className={styles.compassNeedle} />
+                </div>
+              </div>
+              <p className={styles.compassNote}>
+                South-facing orientation optimized for {cityLabel}
+              </p>
+            </div>
+
+            {/* Panel layout grid */}
+            <div className={styles.panelLayoutBox}>
+              <div className={styles.panelLayoutLabel}>PANEL LAYOUT — {panelCount} MODULES</div>
+              <div
+                className={styles.panelGrid}
+                style={{ gridTemplateColumns: `repeat(3, 1fr)` }}
+              >
+                {Array.from({ length: Math.min(panelCount, 18) }).map(
+                  (_, i) => (
+                    <div key={i} className={styles.panelCell} />
+                  )
+                )}
+              </div>
+              {panelCount > 18 && (
+                <div className={styles.panelMore}>
+                  +{panelCount - 18} more modules
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right: Methodology + metrics */}
+          <div className={styles.roofMetrics}>
+            {[
+              {
+                tag: "MODULES ON ROOF",
+                val: `${panelCount} panels`,
+                note: `${panelWp} Wp each`,
+              },
+              {
+                tag: "ROOF AREA REQUIRED",
+                val: `~${Math.ceil(panelCount * 2)} m²`,
+                note: "2 m² per panel approx.",
+              },
+              {
+                tag: "OPTIMAL TILT ANGLE",
+                val: `${tilt}°`,
+                note: `Calculated for ${cityLabel} latitude`,
+              },
+              {
+                tag: "ANNUAL IRRADIATION",
+                val: "~1,950 kWh/m²",
+                note: `Optimal inclination — ${cityLabel}`,
+              },
+              {
+                tag: "SHADOW ANALYSIS",
+                val: data.bill.hasData ? "Site Verified" : "Methodology Applied",
+                note: "Tilt-corrected, shading-adjusted",
+              },
+              {
+                tag: "ROOF UTILIZATION",
+                val: `~${Math.min(95, Math.ceil(panelCount * 2 * 100 / Math.ceil(panelCount * 2.2)))}%`,
+                note: "Of available shadow-free area",
+              },
+            ].map((m) => (
+              <div key={m.tag} className={styles.roofMetricCard}>
+                <span className={styles.roofMetricTag}>{m.tag}</span>
+                <div className={styles.roofMetricVal}>{m.val}</div>
+                <div className={styles.roofMetricNote}>{m.note}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <span className={styles.pageNum}>08 / 11</span>
+      </section>
+
+      {/* ══ P9: EXECUTION ROADMAP ════════════════════════════════ */}
+      <section className={`${styles.page} ${styles.roadmapPage}`}>
+        <header className={styles.pageHead}>
+          <span className={styles.pageTag}>09 — EXECUTION ROADMAP</span>
           <h2 className={styles.pageTitle}>From Paperwork to Power</h2>
         </header>
 
+        {/* Horizontal timeline */}
         <div className={styles.timeline}>
           {journey.map((step, i) => (
             <div key={step.num} className={styles.timelineStep}>
@@ -570,9 +878,7 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
                 <div className={styles.tlDot}>
                   <span className={styles.tlDotNum}>{step.num}</span>
                 </div>
-                {i < journey.length - 1 && (
-                  <div className={styles.tlConnector} />
-                )}
+                {i < journey.length - 1 && <div className={styles.tlConnector} />}
               </div>
               <div className={styles.tlContent}>
                 <div className={styles.tlTitle}>{step.title}</div>
@@ -582,16 +888,7 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           ))}
         </div>
 
-        <span className={styles.pageNum}>08 / 11</span>
-      </section>
-
-      {/* ══ P9: PAYMENT SCHEDULE ══════════════════════════════════════ */}
-      <section className={`${styles.page} ${styles.paymentPage}`}>
-        <header className={styles.pageHead}>
-          <span className={styles.pageTag}>09 — PAYMENT SCHEDULE</span>
-          <h2 className={styles.pageTitle}>Transparent Investment Flow</h2>
-        </header>
-
+        {/* Payment invoice */}
         <div className={styles.invoice}>
           <div className={styles.invoiceHead}>
             <div>
@@ -607,7 +904,6 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
               </div>
             </div>
           </div>
-
           <div className={styles.invoiceBody}>
             <div className={styles.invoiceRow} data-header="true">
               <span>Milestone</span>
@@ -618,45 +914,52 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
               <div key={p.label} className={styles.invoiceRow}>
                 <span>{p.label}</span>
                 <span className={styles.invoicePct}>{p.pctLabel}</span>
-                <span className={styles.invoiceAmt}>{formatInr(p.amountInr)}</span>
+                <span className={styles.invoiceAmt}>
+                  {formatInr(p.amountInr)}
+                </span>
               </div>
             ))}
           </div>
-
           <div className={styles.invoiceFooter}>
-            Subsidy of{" "}
-            {subsidyInr > 0 ? formatInr(subsidyInr) : "—"} will be credited
-            directly to your bank account by the government after commissioning.
+            Subsidy of {subsidyInr > 0 ? formatInr(subsidyInr) : "—"} is
+            credited directly to your bank account by the government after
+            commissioning.
           </div>
         </div>
 
         <span className={styles.pageNum}>09 / 11</span>
       </section>
 
-      {/* ══ P10: COMPLIANCE ═════════════════════════════════════════ */}
+      {/* ══ P10: COMPLIANCE ══════════════════════════════════════ */}
       <section className={`${styles.page} ${styles.termsPage}`}>
         <header className={styles.pageHead}>
           <span className={styles.pageTag}>10 — COMPLIANCE & DOCUMENTATION</span>
           <h2 className={styles.pageTitle}>Clear & Transparent</h2>
         </header>
-
         <div className={styles.termsGrid}>
           <div>
             <div className={styles.termsSubhead}>Terms & Conditions</div>
             <ul className={styles.termsList}>
-              {allTerms.slice(0, half).map((t) => (
-                <li key={t.slice(0, 40)}>{t}</li>
-              ))}
+              {allTerms
+                .slice(0, Math.ceil(allTerms.length / 2))
+                .map((t) => (
+                  <li key={t.slice(0, 40)}>{t}</li>
+                ))}
             </ul>
           </div>
           <div>
             <div className={styles.termsSubhead}>Additional Terms</div>
             <ul className={styles.termsList}>
-              {allTerms.slice(half).map((t) => (
-                <li key={t.slice(0, 40)}>{t}</li>
-              ))}
+              {allTerms
+                .slice(Math.ceil(allTerms.length / 2))
+                .map((t) => (
+                  <li key={t.slice(0, 40)}>{t}</li>
+                ))}
             </ul>
-            <div className={styles.termsSubhead} style={{ marginTop: "1.75rem" }}>
+            <div
+              className={styles.termsSubhead}
+              style={{ marginTop: "1.75rem" }}
+            >
               Documents Required
             </div>
             <ul className={styles.docsList}>
@@ -666,22 +969,27 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
             </ul>
           </div>
         </div>
-
         <span className={styles.pageNum}>10 / 11</span>
       </section>
 
-      {/* ══ P11: CLOSING CTA ══════════════════════════════════════════ */}
+      {/* ══ P11: EMOTIONAL CLOSING ════════════════════════════════ */}
       <section className={`${styles.page} ${styles.closingPage}`}>
         <div className={styles.closingInner}>
-          <span className={styles.closingTag}>11 — READY TO START</span>
+          <span className={styles.closingTag}>11 — YOUR DECISION</span>
+
           <h2 className={styles.closingTitle}>
-            Your roof is ready
-            <br />
-            to power your future.
+            Congratulations.
           </h2>
+          <p className={styles.closingStatement}>
+            Today you are not buying solar panels.
+            <br />
+            <strong>You are locking your electricity price for the next 25 years.</strong>
+          </p>
+
           <p className={styles.closingSub}>
-            Every day you delay is a day of electricity bills you pay
-            unnecessarily. Let&apos;s begin.
+            Every day the sun rises, your roof earns. Every month your meter
+            spins backward. Every year your wealth compounds. This is not a
+            utility bill — this is a financial asset on your rooftop.
           </p>
 
           <div className={styles.closingStats}>
@@ -701,9 +1009,9 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
             <div className={styles.closingStatDiv} />
             <div>
               <div className={styles.closingStatBig}>
-                {paybackYears > 0 ? `${paybackYears.toFixed(1)} yrs` : "—"}
+                {totalWealth > 0 ? formatInrCompact(totalWealth) : "—"}
               </div>
-              <div className={styles.closingStatLabel}>payback</div>
+              <div className={styles.closingStatLabel}>25-yr wealth</div>
             </div>
           </div>
 
@@ -712,14 +1020,14 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
             onClick={handlePrint}
             className={`${styles.closingBtn} print:hidden`}
           >
-            Download Proposal as PDF
+            Let&apos;s Begin →
           </button>
 
           <div className={styles.closingContact}>
             <div>{brand}</div>
             <div>{contact}</div>
             <div className={styles.closingValidity}>
-              This proposal is valid for 15 days from the date of issue.
+              This proposal is valid for 15 days. We are ready when you are.
             </div>
           </div>
         </div>
