@@ -421,6 +421,67 @@
   padding: 0 0.25rem;
 }
 
+/* Bill trajectory line chart */
+.trajectoryChart {
+  background: var(--al);
+  border: 1px solid var(--line);
+  border-radius: var(--card-r);
+  padding: 1.25rem 1.25rem 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.trajectorySvg {
+  width: 100%;
+  height: 150px;
+  margin-top: 0.5rem;
+  overflow: visible;
+}
+.trajectoryGap { fill: rgba(249, 115, 22, 0.12); stroke: none; }
+.trajectoryLineRed {
+  fill: none;
+  stroke: #DC2626;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.trajectoryLineGreen {
+  fill: none;
+  stroke: #059669;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.trajectoryXLabel {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 7px;
+  font-weight: 700;
+  fill: var(--gray);
+}
+.trajectoryLegend {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--line);
+  margin-top: 0.25rem;
+}
+.trajLegendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.68rem;
+  color: var(--gray);
+}
+.trajDotRed, .trajDotGreen, .trajDotGap {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  display: inline-block;
+}
+.trajDotRed { background: #DC2626; }
+.trajDotGreen { background: #059669; }
+.trajDotGap { background: rgba(249, 115, 22, 0.35); }
+
 /* Investment breakdown */
 .investBreakdown {
   display: flex;
@@ -575,6 +636,16 @@
   text-transform: uppercase;
   letter-spacing: 1px;
 }
+.investScoreBasis {
+  font-size: 0.66rem;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.55;
+  text-align: left;
+  margin: 1rem 0 0;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+.investScoreBasis strong { color: rgba(255,255,255,0.65); }
 
 /* Payback summary card */
 .paybackCard {
@@ -653,7 +724,7 @@
   color: var(--h);
 }
 .genFormulaLabel {
-  font-size: 0.6rem;
+  font-size: 0.68rem;
   color: var(--gray);
   text-align: center;
   line-height: 1.2;
@@ -675,10 +746,10 @@
   border-bottom: 1px solid var(--line);
 }
 .genIrradRow:last-child { border-bottom: none; }
-.genIrradKey { font-size: 0.75rem; color: var(--gray); }
+.genIrradKey { font-size: 0.8rem; color: var(--gray); }
 .genIrradVal {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   font-weight: 700;
   color: var(--h);
 }
@@ -703,7 +774,7 @@
   font-weight: 800;
   color: var(--h);
 }
-.genSpecLabel { font-size: 0.65rem; color: var(--gray); margin-top: 0.15rem; }
+.genSpecLabel { font-size: 0.72rem; color: var(--gray); margin-top: 0.15rem; }
 
 /* Standards row */
 .genStdRow {
@@ -724,7 +795,7 @@
   flex-shrink: 0;
 }
 .stdBadge {
-  font-size: 0.65rem;
+  font-size: 0.72rem;
   font-weight: 600;
   background: var(--al);
   border: 1px solid var(--line);
@@ -733,148 +804,196 @@
   color: var(--c);
   white-space: nowrap;
 }
+.genDisclaimer {
+  font-size: 0.73rem;
+  color: var(--gray);
+  line-height: 1.6;
+  margin: 0.9rem 0 0;
+  font-style: italic;
+}
+.genDisclaimer strong { color: var(--c); font-style: normal; }
 
-/* ══ P6: HARDWARE — PANELS & INVERTER ══════════════════════════ */
-.hwBigGrid {
+/* ══ P6: HARDWARE — 4-CARD TRUST GRID ═══════════════════════════ */
+.hwCard4Grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
 }
-.hwBigCard {
+.hwCardV2 {
   background: var(--al);
   border: 1px solid var(--line);
   border-radius: var(--card-r);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: var(--card-s-up);
+  box-shadow: var(--card-s);
 }
-
-/* CSS art backgrounds for hardware */
-.hwBgArt {
-  height: 140px;
+.hwCardImgBox {
+  height: 90px;
   position: relative;
+  background: linear-gradient(135deg, #0A0F1C 0%, #1a2744 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
 }
-.hwBgPanel {
-  background:
-    repeating-linear-gradient(0deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 1px, transparent 1px, transparent 18px),
-    repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 1px, transparent 1px, transparent 18px),
-    linear-gradient(135deg, #0A0F1C 0%, #1a2744 100%);
-}
-.hwBgInverter {
-  background:
-    repeating-linear-gradient(0deg, rgba(249,115,22,0.04) 0px, rgba(249,115,22,0.04) 1px, transparent 1px, transparent 12px),
-    linear-gradient(135deg, #1E293B 0%, #0A0F1C 100%);
-}
-.hwBgMark {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 4rem;
-  font-weight: 800;
-  color: rgba(255,255,255,0.08);
+.hwCardLogoBadge {
   position: absolute;
-  right: 1rem;
-  bottom: -0.5rem;
-  line-height: 1;
-  user-select: none;
-}
-
-.hwBigBody { padding: 1.25rem; flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
-.hwBigTag {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 2px;
-  color: var(--or);
-  text-transform: uppercase;
-}
-.hwBigTitle {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 1.2rem;
-  font-weight: 800;
-  color: var(--h);
-  line-height: 1.2;
-}
-.hwBigSpec { font-size: 0.78rem; color: var(--gray); margin: 0; line-height: 1.4; }
-.hwBigStats {
-  display: flex;
-  gap: 1.5rem;
-  margin-top: 0.5rem;
-}
-.hwBigStatNum {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 1.3rem;
-  font-weight: 800;
-  color: var(--h);
-  line-height: 1;
-}
-.hwBigStatLabel { font-size: 0.65rem; color: var(--gray); margin-top: 0.1rem; }
-.hwWarrantyBadge {
-  display: inline-block;
-  margin-top: auto;
-  background: var(--h);
-  color: var(--white);
-  font-family: 'Montserrat', sans-serif;
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 1px;
-  padding: 0.3rem 0.75rem;
-  border-radius: 3px;
-  width: fit-content;
-}
-
-/* ══ P7: HARDWARE 2 + WARRANTY ══════════════════════════════════ */
-.hw2Grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
-  margin-bottom: 1.75rem;
-}
-.hwCard {
-  background: var(--al);
-  border: 1px solid var(--line);
-  border-radius: var(--card-r);
-  padding: 1.25rem;
-  box-shadow: var(--card-s);
-}
-.hwMark {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
+  top: 0.5rem;
+  left: 0.5rem;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'Montserrat', sans-serif;
-  font-size: 1rem;
+  font-size: 0.7rem;
   font-weight: 800;
   color: var(--white);
-  margin-bottom: 0.75rem;
+  backdrop-filter: blur(2px);
 }
-.hwTitle {
+.hwCardBody { padding: 0.9rem 1rem 1rem; flex: 1; display: flex; flex-direction: column; gap: 0.35rem; }
+.hwCardTag {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.85rem;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--or);
+  text-transform: uppercase;
+}
+.hwCardTitle {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.95rem;
   font-weight: 800;
   color: var(--h);
-  margin-bottom: 0.3rem;
+  line-height: 1.2;
 }
-.hwDesc { font-size: 0.78rem; color: var(--gray); margin-bottom: 0.5rem; }
-.hwNote { font-size: 0.72rem; color: var(--gray); margin: 0 0 0.75rem; line-height: 1.5; }
-.hwWarranty {
+.hwCardSpec { font-size: 0.76rem; color: var(--gray); margin: 0; line-height: 1.45; }
+.hwCardWhy {
+  font-size: 0.74rem;
+  color: var(--c);
+  margin: 0.15rem 0 0;
+  line-height: 1.5;
+  padding-left: 0.5rem;
+  border-left: 2px solid var(--or);
+}
+.hwCardFooter {
+  margin-top: auto;
+  padding-top: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.hwCardWarranty {
   display: inline-block;
   background: var(--h);
   color: var(--white);
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   font-weight: 700;
-  letter-spacing: 1px;
-  padding: 0.25rem 0.65rem;
+  letter-spacing: 0.75px;
+  padding: 0.25rem 0.6rem;
   border-radius: 3px;
+  width: fit-content;
+}
+.hwCardQrRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+/* Decorative datasheet QR placeholder */
+.hwCardQr {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  gap: 1px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  padding: 2px;
+}
+.hwCardQr span { background: transparent; }
+.qrDotOn { background: var(--h) !important; }
+.hwCardDatasheet {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--or);
+  text-decoration: none;
+}
+.hwCardDatasheet:hover { text-decoration: underline; }
+
+/* Compact warranty summary strip */
+.warrantyGridCompact {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+}
+.warrantyGridCompact .warrantyBadge { padding: 0.85rem 0.75rem; }
+.warrantyGridCompact .warrantyCircle { width: 46px; height: 46px; }
+.warrantyGridCompact .warrantyYears { font-size: 1rem; }
+
+/* ══ P7: WHY HARIHAR SOLAR — CREDIBILITY ════════════════════════ */
+.trustPage .pageTitle { max-width: 600px; }
+.trustGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.trustCard {
+  background: var(--al);
+  border: 1px solid var(--line);
+  border-radius: var(--card-r);
+  padding: 1.25rem 1rem;
+  text-align: center;
+}
+.trustNum {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--or);
+  line-height: 1;
+  margin-bottom: 0.4rem;
+}
+.trustLabel {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--h);
+  margin-bottom: 0.3rem;
+}
+.trustNote { font-size: 0.73rem; color: var(--gray); line-height: 1.5; }
+.trustQuoteBox {
+  background: var(--h);
+  border-radius: var(--card-r);
+  padding: 1.75rem 2rem;
+  text-align: center;
+}
+.trustQuote {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.85);
+  line-height: 1.7;
+  font-style: italic;
+  margin: 0 0 0.75rem;
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.trustQuoteAttr {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--or);
+  letter-spacing: 0.5px;
 }
 
-/* Warranty data cards */
+/* Warranty data cards (shared) */
 .warrantyGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -1060,7 +1179,7 @@
   color: var(--h);
   line-height: 1;
 }
-.roofMetricNote { font-size: 0.68rem; color: var(--gray); margin-top: 0.2rem; }
+.roofMetricNote { font-size: 0.73rem; color: var(--gray); margin-top: 0.2rem; }
 
 /* ══ P9: EXECUTION ROADMAP ══════════════════════════════════════ */
 /* Horizontal timeline */
@@ -1110,9 +1229,27 @@
   font-size: 0.75rem;
   font-weight: 800;
   color: var(--h);
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.15rem;
 }
-.tlDesc { font-size: 0.68rem; color: var(--gray); line-height: 1.4; }
+.tlDuration {
+  display: inline-block;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--or);
+  background: rgba(249,115,22,0.08);
+  border-radius: 3px;
+  padding: 0.1rem 0.4rem;
+  margin-bottom: 0.3rem;
+}
+.tlDesc { font-size: 0.73rem; color: var(--gray); line-height: 1.45; }
+.roadmapNote {
+  font-size: 0.72rem;
+  color: var(--gray);
+  line-height: 1.5;
+  margin: -1rem 0 1.25rem;
+}
+.roadmapNote strong { color: var(--h); }
 
 /* Payment invoice */
 .invoice {
@@ -1213,9 +1350,9 @@
   gap: 0.6rem;
 }
 .termsList li, .docsList li {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   color: var(--c);
-  line-height: 1.55;
+  line-height: 1.6;
 }
 .docsList { list-style: none; padding-left: 0; }
 .docsList li::before {
@@ -1579,11 +1716,29 @@
   line-height: 1.5;
 }
 
+/* ══ MOBILE (screen only) ═══════════════════════════════════════ */
+@media screen and (max-width: 640px) {
+  .page {
+    width: 100%;
+    padding: 2rem 1.25rem 2.5rem;
+  }
+  .coverInner { padding: 1.5rem 1.25rem 2rem; }
+  .pageTitle { font-size: 1.25rem; }
+  .hwCard4Grid, .impactGrid, .genProofGrid, .hw2Grid, .termsGrid,
+  .trustGrid, .roofLayout, .wealthLayout {
+    grid-template-columns: 1fr;
+  }
+  .closingSplit { grid-template-columns: 1fr; }
+}
+
 /* ══ PRINT ═════════════════════════════════════════════════════ */
 @media print {
   .printBar  { display: none !important; }
   .closingBtn { display: none !important; }
 
+  html, body, .wrapper {
+    background: var(--white) !important;
+  }
   .page {
     width: 100%;
     max-width: 100%;
@@ -1592,7 +1747,10 @@
     padding: 12mm 14mm 14mm;
     box-shadow: none;
     border-radius: 0;
-    min-height: auto;
+    /* Fill the full A4 printable area (297mm - 18mm top - 18mm bottom margin)
+       so the page's own background always covers the sheet — prevents the
+       wrapper's grey background from showing through as blank space. */
+    min-height: 261mm;
     box-sizing: border-box;
     break-after: page;
     page-break-after: always;
@@ -1603,11 +1761,19 @@
     break-after: avoid;
     page-break-after: avoid;
   }
-  .coverPage, .closingPage { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  /* Full-bleed cover/closing — extend background into the @page margin
+     area so there is zero cream border and the dark art covers the sheet. */
+  .coverPage, .closingPage {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    margin: -18mm -20mm;
+    padding: 18mm 20mm 14mm;
+    width: calc(100% + 40mm);
+    min-height: calc(261mm + 36mm);
+  }
   .termsGrid { flex-grow: 1; align-content: start; }
   .wealthLayout { flex-grow: 1; }
   .pageHead { padding-top: 0.75rem; margin-bottom: 1rem; }
-  .coverPage, .closingPage { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
   .pageNum {
     bottom: 3mm;

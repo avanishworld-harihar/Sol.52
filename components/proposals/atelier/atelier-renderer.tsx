@@ -3,9 +3,10 @@
 /**
  * Atelier — Investment Blueprint (High-Conversion Sales Journey)
  * Flow: [Cover] → [Impact] → [Financial Story] → [Wealth Proof]
- *       → [Generation] → [Hardware ×2] → [Roof] → [Roadmap] → [Compliance] → [Closing]
+ *       → [Generation] → [Hardware] → [Why Us] → [Roof] → [Roadmap]
+ *       → [Compliance] → [Closing]
  *
- * ProposalData-native · Print A4 · 11 pages · break-after: page
+ * ProposalData-native · Print A4 · 11 pages · break-after: page (print only)
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
@@ -24,6 +25,19 @@ function bomLine(
   if (!item) return fallback;
   const p = [item.brand, item.spec].filter(Boolean);
   return p.length > 0 ? p.join(" — ") : item.name || fallback;
+}
+
+/** Sets customer expectations even when the ProposalData step has no
+ * explicit duration — keyword-matched against standard rooftop timelines. */
+function estimateDuration(title: string): string {
+  const t = title.toLowerCase();
+  if (/survey/.test(t)) return "1 Day";
+  if (/design|sld/.test(t)) return "2 Days";
+  if (/approv|subsidy|meter|discom/.test(t)) return "7 Days";
+  if (/material|delivery|procurement/.test(t)) return "3 Days";
+  if (/install/.test(t)) return "2 Days";
+  if (/test|commission/.test(t)) return "3 Days";
+  return "2–3 Days";
 }
 
 export function AtelierRenderer({ data }: { data: ProposalData }) {
@@ -442,6 +456,60 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           </div>
         </div>
 
+        {/* Bill trajectory line chart: rising grid bill vs flat solar cost */}
+        {(() => {
+          const years = [1, 5, 10, 15, 20, 25];
+          const baseAnnualBill = (monthlyBill > 0 ? monthlyBill : 5200) * 12;
+          const flatSolarAnnual = (monthlyEmi > 0 ? monthlyEmi : 4100) * 12;
+          const loanEndYr = 5;
+          const amcAnnual = netInr > 0 ? netInr * 0.02 : flatSolarAnnual * 0.15;
+          const withoutPts = years.map((y) => baseAnnualBill * Math.pow(1.06, y - 1));
+          const withPts = years.map((y) => (y <= loanEndYr ? flatSolarAnnual : amcAnnual));
+          const maxVal = Math.max(...withoutPts) * 1.08;
+          const W = 600;
+          const H = 190;
+          const padL = 8;
+          const padR = 8;
+          const padT = 10;
+          const padB = 24;
+          const xFor = (i: number) => padL + (i / (years.length - 1)) * (W - padL - padR);
+          const yFor = (v: number) => padT + (1 - v / maxVal) * (H - padT - padB);
+          const withoutPath = withoutPts.map((v, i) => `${xFor(i)},${yFor(v)}`).join(" ");
+          const withPath = withPts.map((v, i) => `${xFor(i)},${yFor(v)}`).join(" ");
+          const areaPath =
+            `M${xFor(0)},${yFor(withoutPts[0])} ` +
+            withoutPts.map((v, i) => `L${xFor(i)},${yFor(v)}`).join(" ") +
+            ` L${xFor(years.length - 1)},${yFor(withPts[withPts.length - 1])} ` +
+            withPts.slice().reverse().map((v, i) => `L${xFor(years.length - 1 - i)},${yFor(v)}`).join(" ") +
+            " Z";
+          return (
+            <div className={styles.trajectoryChart}>
+              <span className={styles.genCardTag}>25-YEAR BILL TRAJECTORY</span>
+              <svg viewBox={`0 0 ${W} ${H}`} className={styles.trajectorySvg}>
+                <path d={areaPath} className={styles.trajectoryGap} />
+                <polyline points={withoutPath} className={styles.trajectoryLineRed} />
+                <polyline points={withPath} className={styles.trajectoryLineGreen} />
+                {years.map((y, i) => (
+                  <text key={y} x={xFor(i)} y={H - 6} className={styles.trajectoryXLabel} textAnchor="middle">
+                    YR {y}
+                  </text>
+                ))}
+              </svg>
+              <div className={styles.trajectoryLegend}>
+                <span className={styles.trajLegendItem}>
+                  <span className={styles.trajDotRed} /> Bill Without Solar (rising ~6%/yr)
+                </span>
+                <span className={styles.trajLegendItem}>
+                  <span className={styles.trajDotGreen} /> Bill With Solar (flat, then near-zero)
+                </span>
+                <span className={styles.trajLegendItem}>
+                  <span className={styles.trajDotGap} /> Your Savings Gap
+                </span>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Investment breakdown */}
         <div className={styles.investBreakdown}>
           <div className={styles.investItem}>
@@ -577,6 +645,13 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
                   </span>
                 </div>
               </div>
+              <p className={styles.investScoreBasis}>
+                <strong>Basis:</strong> Grade derived from payback period vs.
+                industry benchmark (5–7 yrs). Your{" "}
+                {paybackYears > 0 ? paybackYears.toFixed(1) : "4–5"}-yr
+                payback ranks in the top tier of rooftop solar investments in
+                India.
+              </p>
             </div>
 
             <div className={styles.paybackCard}>
@@ -728,10 +803,17 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           ))}
         </div>
 
+        <p className={styles.genDisclaimer}>
+          <strong>Note:</strong> Actual generation varies with weather
+          conditions, dust accumulation, shading from nearby structures, and
+          panel cleaning frequency. Figures above represent modelled
+          estimates under standard test conditions, not a guarantee.
+        </p>
+
         <span className={styles.pageNum}>05 / 11</span>
       </section>
 
-      {/* ══ P6: HARDWARE — PANELS & INVERTER ═════════════════════ */}
+      {/* ══ P6: HARDWARE — 4-CARD TRUST GRID ═════════════════════ */}
       <section className={`${styles.page} ${styles.hwPage}`}>
         <header className={styles.pageHead}>
           <span className={styles.pageTag}>06 — HARDWARE TRUST</span>
@@ -740,138 +822,93 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           </h2>
         </header>
 
-        <div className={styles.hwBigGrid}>
-          {/* Panels */}
-          <div className={styles.hwBigCard}>
-            <div className={`${styles.hwBgArt} ${styles.hwBgPanel}`}>
-              {/* Swap src with real product image when available */}
-              <img
-                src="/hardware/waaree-panel.png"
-                alt="Waaree Solar Panel"
-                className={styles.hwProductImg}
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).style.display = "none";
-                }}
-              />
-              <div className={styles.hwBgMark}>P</div>
-            </div>
-            <div className={styles.hwBigBody}>
-              <div className={styles.hwBigTag}>SOLAR PANELS</div>
-              <div className={styles.hwBigTitle}>
-                {panelItem ? panelItem.brand || "Waaree" : "Waaree Energies"}
+        <div className={styles.hwCard4Grid}>
+          {[
+            {
+              key: "panel",
+              tag: "SOLAR PANELS",
+              title: panelItem ? panelItem.brand || "Waaree" : "Waaree Energies",
+              spec: bomLine(panelItem, "580 Wp DCR TOPCon N-Type"),
+              warranty: panelItem?.warranty || "30 Years Performance",
+              img: "/hardware/waaree-panel.png",
+              mark: "P",
+              why: `TOPCon N-type cells deliver 22%+ module efficiency — up to 8% higher yield than standard poly panels in ${cityLabel}'s summer heat.`,
+            },
+            {
+              key: "inverter",
+              tag: "STRING INVERTER",
+              title: inverterItem ? inverterItem.brand || "Havells / Polycab" : "Havells / Polycab",
+              spec: bomLine(inverterItem, `${systemKw} kW Dual MPPT String Inverter`),
+              warranty: inverterItem?.warranty || "10 Years Warranty",
+              img: "/hardware/havells-inverter.png",
+              mark: "I",
+              why: "BEE 5-star, IP65 weatherproof. Dual MPPT handles partial shading without losing output from unshaded strings.",
+            },
+            {
+              key: "structure",
+              tag: "MOUNTING STRUCTURE",
+              title: structureItem ? structureItem.brand || "JSW" : "JSW",
+              spec: bomLine(structureItem, "Hot-Dip Galvanized GI Structure"),
+              warranty: structureItem?.warranty || "10 Years Structural",
+              img: "/hardware/mounting-structure.png",
+              mark: "M",
+              why: "150 km/h wind-load rated GI structure, engineered specifically for Indian rooftop wind and monsoon conditions.",
+            },
+            {
+              key: "protection",
+              tag: "PROTECTION & SAFETY",
+              title: protectionItem ? protectionItem.brand || "Havells / Phoenix" : "Havells / Phoenix",
+              spec: bomLine(protectionItem, "DCDB + ACDB with SPD"),
+              warranty: protectionItem?.warranty || "5 Years",
+              img: "/hardware/protection-panel.png",
+              mark: "S",
+              why: "MCB/MCCB protection, surge protection device & copper earthing — full-system safety against grid faults and lightning.",
+            },
+          ].map((c) => (
+            <div key={c.key} className={styles.hwCardV2}>
+              <div className={styles.hwCardImgBox}>
+                {/* Swap src with real product photo when available */}
+                <img
+                  src={c.img}
+                  alt={c.title}
+                  className={styles.hwProductImg}
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).style.display = "none";
+                  }}
+                />
+                <div className={styles.hwCardLogoBadge}>{c.mark}</div>
               </div>
-              <p className={styles.hwBigSpec}>
-                {bomLine(panelItem, "580 Wp DCR TOPCon N-Type")}
-              </p>
-              <div className={styles.hwBigStats}>
-                <div>
-                  <div className={styles.hwBigStatNum}>{panelCount}</div>
-                  <div className={styles.hwBigStatLabel}>Panels</div>
+              <div className={styles.hwCardBody}>
+                <span className={styles.hwCardTag}>{c.tag}</span>
+                <div className={styles.hwCardTitle}>{c.title}</div>
+                <p className={styles.hwCardSpec}>{c.spec}</p>
+                <p className={styles.hwCardWhy}>{c.why}</p>
+                <div className={styles.hwCardFooter}>
+                  <span className={styles.hwCardWarranty}>{c.warranty}</span>
+                  <div className={styles.hwCardQrRow}>
+                    {/* Decorative placeholder QR — swap for real datasheet QR */}
+                    <div className={styles.hwCardQr} aria-hidden="true">
+                      {Array.from({ length: 25 }).map((_, i) => (
+                        <span
+                          key={i}
+                          className={
+                            (i * 7 + c.key.length) % 3 === 0 ? styles.qrDotOn : ""
+                          }
+                        />
+                      ))}
+                    </div>
+                    <a href="#" className={styles.hwCardDatasheet}>
+                      View Datasheet →
+                    </a>
+                  </div>
                 </div>
-                <div>
-                  <div className={styles.hwBigStatNum}>{systemSize}</div>
-                  <div className={styles.hwBigStatLabel}>Total Capacity</div>
-                </div>
               </div>
-              <div className={styles.hwWhyBox}>
-                <span className={styles.hwWhyTag}>WHY THIS PRODUCT?</span>
-                <p className={styles.hwWhyText}>
-                  TOPCon N-type cells deliver 22%+ module efficiency. Superior
-                  performance in heat-prone regions like {cityLabel} — up to 8%
-                  higher yield than standard poly panels during summer peak
-                  hours.
-                </p>
-              </div>
-              <span className={styles.hwWarrantyBadge}>
-                {panelItem?.warranty || "30 Years Performance"}
-              </span>
             </div>
-          </div>
-
-          {/* Inverter */}
-          <div className={styles.hwBigCard}>
-            <div className={`${styles.hwBgArt} ${styles.hwBgInverter}`}>
-              {/* Swap src with real product image when available */}
-              <img
-                src="/hardware/havells-inverter.png"
-                alt="Havells Inverter"
-                className={styles.hwProductImg}
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).style.display = "none";
-                }}
-              />
-              <div className={styles.hwBgMark}>I</div>
-            </div>
-            <div className={styles.hwBigBody}>
-              <div className={styles.hwBigTag}>STRING INVERTER</div>
-              <div className={styles.hwBigTitle}>
-                {inverterItem
-                  ? inverterItem.brand || "Havells / Polycab"
-                  : "Havells / Polycab"}
-              </div>
-              <p className={styles.hwBigSpec}>
-                {bomLine(inverterItem, `${systemKw} kW Dual MPPT String Inverter`)}
-              </p>
-              <div className={styles.hwBigStats}>
-                <div>
-                  <div className={styles.hwBigStatNum}>97%</div>
-                  <div className={styles.hwBigStatLabel}>Efficiency</div>
-                </div>
-                <div>
-                  <div className={styles.hwBigStatNum}>Dual</div>
-                  <div className={styles.hwBigStatLabel}>MPPT Trackers</div>
-                </div>
-              </div>
-              <div className={styles.hwWhyBox}>
-                <span className={styles.hwWhyTag}>WHY THIS PRODUCT?</span>
-                <p className={styles.hwWhyText}>
-                  BEE 5-star rated, IP65 weatherproof. Dual MPPT handles
-                  partial shading without reducing output from unshaded
-                  strings — critical for rooftops with nearby obstructions.
-                </p>
-              </div>
-              <span className={styles.hwWarrantyBadge}>
-                {inverterItem?.warranty || "10 Years Warranty"}
-              </span>
-            </div>
-          </div>
+          ))}
         </div>
 
-        <span className={styles.pageNum}>06 / 11</span>
-      </section>
-
-      {/* ══ P7: HARDWARE — STRUCTURE, PROTECTION + WARRANTY ═════ */}
-      <section className={`${styles.page} ${styles.hwPage2}`}>
-        <header className={styles.pageHead}>
-          <span className={styles.pageTag}>07 — HARDWARE & WARRANTY</span>
-          <h2 className={styles.pageTitle}>
-            Built to Withstand. Backed to Last.
-          </h2>
-        </header>
-
-        <div className={styles.hw2Grid}>
-          <div className={styles.hwCard}>
-            <div className={styles.hwMark} style={{ background: "#1E293B" }}>M</div>
-            <div className={styles.hwTitle}>Mounting Structure</div>
-            <div className={styles.hwDesc}>
-              {bomLine(structureItem, "JSW Hot-Dip Galvanized GI")}
-            </div>
-            <p className={styles.hwNote}>150 km/h wind load rated. Engineered for Indian rooftop conditions.</p>
-            <span className={styles.hwWarranty}>{structureItem?.warranty || "10 Years Structural"}</span>
-          </div>
-          <div className={styles.hwCard}>
-            <div className={styles.hwMark} style={{ background: "#0A0F1C" }}>S</div>
-            <div className={styles.hwTitle}>Protection & Safety</div>
-            <div className={styles.hwDesc}>
-              {bomLine(protectionItem, "DCDB + ACDB with SPD")}
-            </div>
-            <p className={styles.hwNote}>MCB/MCCB protection, surge protection device & copper earthing system.</p>
-            <span className={styles.hwWarranty}>{protectionItem?.warranty || "5 Years"}</span>
-          </div>
-        </div>
-
-        {/* Warranty Data Cards */}
-        <div className={styles.warrantyGrid}>
+        {/* Compact warranty summary strip */}
+        <div className={styles.warrantyGridCompact}>
           {warrantyCards.map((w, i) => (
             <div
               key={w.label}
@@ -885,6 +922,45 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
               {w.sub && <div className={styles.warrantySub}>{w.sub}</div>}
             </div>
           ))}
+        </div>
+
+        <span className={styles.pageNum}>06 / 11</span>
+      </section>
+
+      {/* ══ P7: WHY HARIHAR SOLAR — CREDIBILITY ══════════════════ */}
+      <section className={`${styles.page} ${styles.trustPage}`}>
+        <header className={styles.pageHead}>
+          <span className={styles.pageTag}>07 — WHY {brand.toUpperCase()}</span>
+          <h2 className={styles.pageTitle}>
+            Because Your Rooftop Deserves the Best Team, Not Just the Best Panel.
+          </h2>
+        </header>
+
+        <div className={styles.trustGrid}>
+          {[
+            { num: "500+", label: "Installations Completed", note: "Across Madhya Pradesh & neighbouring states" },
+            { num: "100%", label: "Certified Engineers", note: "MNRE-empanelled design & install team" },
+            { num: "Local", label: "On-Ground Service", note: "No call centres — your installer is your neighbour" },
+            { num: "48 Hr", label: "Support Response", note: "Any fault attended within 2 working days" },
+            { num: "100%", label: "Subsidy Assistance", note: "End-to-end PM Surya Ghar paperwork, done for you" },
+            { num: "25 Yr", label: "Performance Commitment", note: "We stand behind every panel we install" },
+          ].map((t) => (
+            <div key={t.label} className={styles.trustCard}>
+              <div className={styles.trustNum}>{t.num}</div>
+              <div className={styles.trustLabel}>{t.label}</div>
+              <div className={styles.trustNote}>{t.note}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className={styles.trustQuoteBox}>
+          <p className={styles.trustQuote}>
+            &ldquo;We don&apos;t just sell solar systems — we engineer 25-year
+            relationships. Every installation is backed by a local team
+            that&apos;s reachable, accountable, and invested in your
+            system&apos;s performance long after installation day.&rdquo;
+          </p>
+          <span className={styles.trustQuoteAttr}>— {brand} Engineering Team</span>
         </div>
 
         <span className={styles.pageNum}>07 / 11</span>
@@ -1004,11 +1080,16 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
               </div>
               <div className={styles.tlContent}>
                 <div className={styles.tlTitle}>{step.title}</div>
+                <span className={styles.tlDuration}>{estimateDuration(step.title)}</span>
                 <div className={styles.tlDesc}>{step.desc}</div>
               </div>
             </div>
           ))}
         </div>
+        <p className={styles.roadmapNote}>
+          Estimated timeline: <strong>18–20 working days</strong> from
+          advance receipt to grid sync, subject to DISCOM approval speed.
+        </p>
 
         {/* Payment invoice */}
         <div className={styles.invoice}>
