@@ -49,8 +49,8 @@ const PRESET_META: Record<ProposalPresetId, PresetMeta> = {
   },
   residential_premium_luxe: {
     icon: <Gem className="h-4 w-4" />,
-    label: "Premium Luxe",
-    description: "Atelier cream · Engineering · Print-ready PDF",
+    label: "Atelier",
+    description: "Industrial Minimalist · Charcoal & Burnt Orange · Print PDF",
     pillClass:
       "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-500/30 dark:bg-amber-900/20 dark:text-amber-200",
     dotClass: "bg-amber-500",

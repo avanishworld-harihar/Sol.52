@@ -112,9 +112,9 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
 
   residential_premium_luxe: {
     id: "residential_premium_luxe",
-    label: "Premium Luxe",
+    label: "Atelier",
     description:
-      "Atelier warm-cream A4 masterplan — engineering, hardware, terms & print PDF.",
+      "Industrial Minimalist 11-page A4 — Charcoal/Aluminum/Burnt Orange, horizontal timeline, print-ready.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "requirement",

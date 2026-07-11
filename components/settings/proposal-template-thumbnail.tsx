@@ -148,42 +148,44 @@ function ZenithThumb({ size }: { size: "card" | "preview" }) {
 
 function LuxeThumb({ size }: { size: "card" | "preview" }) {
   return (
-    <div className="flex h-full w-full items-center justify-center bg-[#EDE6D9]">
+    <div className="flex h-full w-full items-center justify-center bg-[#E2E8F0]">
       <div
         className={cn(
-          "relative flex flex-col justify-center overflow-hidden rounded-[3px] border border-[#EDE6D9] bg-[#F8F5F0] shadow-sm",
-          size === "preview" ? "h-[62%] w-[68%] p-[8%]" : "h-[58%] w-[72%] p-[7%]"
+          "relative flex flex-col justify-start overflow-hidden rounded-[3px] shadow-sm",
+          size === "preview" ? "h-[62%] w-[68%]" : "h-[58%] w-[72%]"
         )}
+        style={{ background: "#fff" }}
       >
+        {/* Charcoal header strip */}
         <div
-          className={cn(
-            "font-medium uppercase tracking-[0.2em] text-[#B8975E]",
-            size === "preview" ? "text-[6px]" : "text-[3px]"
-          )}
+          className="w-full bg-[#1E293B] flex items-center justify-between"
+          style={{ padding: size === "preview" ? "6% 8% 4%" : "5% 7% 3%" }}
         >
-          Harihar Solar
+          <div
+            className={cn("font-bold tracking-widest text-white", size === "preview" ? "text-[5px]" : "text-[2.5px]")}
+          >
+            HARIHAR <span style={{ color: "#F97316" }}>SOLAR</span>
+          </div>
         </div>
-        <div
-          className={cn(
-            "mt-[10%] font-semibold tracking-tight text-[#1F2A36]",
-            size === "preview" ? "text-[11px]" : "text-[5px]"
-          )}
-        >
-          Energy Masterplan
-        </div>
-        <div
-          className={cn(
-            "mt-[10%] grid grid-cols-3 gap-[6%]",
-            size === "preview" ? "mt-[12%]" : ""
-          )}
-        >
-          {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              className="rounded-[2px] border border-[#EDE6D9] bg-white"
-              style={{ height: size === "preview" ? 18 : 8 }}
-            />
-          ))}
+        {/* Body */}
+        <div style={{ padding: size === "preview" ? "8%" : "7%" }} className="flex flex-col gap-[8%] flex-1">
+          <div
+            className={cn("font-bold text-[#1E293B] leading-tight", size === "preview" ? "text-[10px]" : "text-[4.5px]")}
+          >
+            The Energy<br />Masterplan
+          </div>
+          <div
+            style={{ width: size === "preview" ? 20 : 10, height: size === "preview" ? 2 : 1, background: "#F97316" }}
+          />
+          <div className="grid grid-cols-3 gap-[6%] mt-auto">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="rounded-[2px] bg-[#F1F5F9] border border-[#E2E8F0]"
+                style={{ height: size === "preview" ? 16 : 7 }}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </div>

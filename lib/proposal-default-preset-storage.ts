@@ -35,8 +35,8 @@ export const RESIDENTIAL_TEMPLATE_OPTIONS: ResidentialTemplateOption[] = [
   },
   {
     id: "residential_premium_luxe",
-    label: "Premium Luxe",
-    subtitle: "Atelier A4 masterplan — engineering, terms & print PDF.",
+    label: "Atelier",
+    subtitle: "Industrial Minimalist 11-page — Charcoal, Aluminum & Burnt Orange.",
   },
 ];
 

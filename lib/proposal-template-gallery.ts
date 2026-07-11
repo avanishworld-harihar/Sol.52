@@ -62,8 +62,8 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
     key: "luxe",
     presetId: "residential_premium_luxe",
     category: "residential",
-    name: "Premium Luxe",
-    description: "Atelier A4 masterplan — engineering, hardware, terms & print-ready PDF.",
+    name: "Atelier",
+    description: "Industrial Minimalist — Charcoal, Aluminum & Burnt Orange. 11-page print-ready proposal.",
     thumbnailVariant: "luxe",
   },
 ];
