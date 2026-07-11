@@ -114,7 +114,7 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     id: "residential_premium_luxe",
     label: "Premium Luxe",
     description:
-      "Warm cream masterplan — champagne metrics, investment ledger, Tier-1 hardware & journey.",
+      "Atelier warm-cream A4 masterplan — engineering, hardware, terms & print PDF.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "requirement",

@@ -36,7 +36,7 @@ export const RESIDENTIAL_TEMPLATE_OPTIONS: ResidentialTemplateOption[] = [
   {
     id: "residential_premium_luxe",
     label: "Premium Luxe",
-    subtitle: "Warm cream masterplan — investment ledger & Tier-1 hardware.",
+    subtitle: "Atelier A4 masterplan — engineering, terms & print PDF.",
   },
 ];
 

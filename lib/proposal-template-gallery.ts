@@ -63,7 +63,7 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
     presetId: "residential_premium_luxe",
     category: "residential",
     name: "Premium Luxe",
-    description: "Warm cream masterplan — champagne metrics & smart capital allocation.",
+    description: "Atelier A4 masterplan — engineering, hardware, terms & print-ready PDF.",
     thumbnailVariant: "luxe",
   },
 ];

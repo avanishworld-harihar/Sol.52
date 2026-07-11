@@ -1,0 +1,24 @@
+.root {
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm 10mm;
+  }
+
+  .root :global(.max-w-\[210mm\]) {
+    max-width: 100% !important;
+  }
+
+  .root h1,
+  .root h2 {
+    break-after: avoid;
+  }
+
+  .root :global(.rounded-3xl) {
+    break-inside: avoid;
+  }
+}
