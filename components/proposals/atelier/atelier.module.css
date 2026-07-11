@@ -20,12 +20,18 @@
   --card-r: 0.75rem;
   --card-s: 0 1px 5px rgba(0,0,0,0.07);
   --card-s-up: 0 4px 18px rgba(0,0,0,0.10);
+  --a4-w: 794px;
+  --a4-h: 1123px;
 
   background: var(--al);
   font-family: 'Lato', 'Inter', system-ui, sans-serif;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
   color: var(--c);
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;   /* kill horizontal scrollbars */
+  box-sizing: border-box;
 }
 
 /* ── Print bar ──────────────────────────────────────────────── */
@@ -40,8 +46,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 794px;
+  max-width: var(--a4-w);
+  width: 100%;
   margin: 0 auto;
+  box-sizing: border-box;
 }
 .printBarBrand {
   color: var(--white);
@@ -68,14 +76,15 @@
 /* ── Page shell ─────────────────────────────────────────────── */
 .page {
   background: var(--white);
-  width: 794px;           /* A4 portrait at 96 DPI = 210mm */
-  max-width: 100%;
-  margin: 0 auto 1.5rem;  /* continuous scroll on screen */
-  padding: 2.5rem 2.75rem 3rem;
+  width: 100%;
+  max-width: var(--a4-w); /* A4 portrait at 96 DPI = 210mm */
+  margin: 0 auto 1.5rem;
+  padding: 2.25rem 2.5rem 2.75rem;
   position: relative;
   border: 1px solid var(--line);
-  min-height: 1123px;     /* A4 height at 96 DPI = 297mm */
+  min-height: var(--a4-h); /* A4 height at 96 DPI = 297mm */
   box-sizing: border-box;
+  overflow: hidden;        /* no per-page scrollbars / side lines */
 }
 .pageHead {
   display: flex;
@@ -117,9 +126,15 @@
   background: var(--h);
   color: var(--white);
   padding: 0;
+  /* Lock cover to exactly one A4 sheet — prevent spill onto page 2 */
+  height: var(--a4-h);
+  min-height: var(--a4-h);
+  max-height: var(--a4-h);
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 .coverPage::before {
   content: '';
@@ -148,18 +163,22 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 2rem 2.75rem 2.5rem;
+  padding: 2rem 2.5rem 2.25rem;
+  min-height: 0; /* allow flex child to shrink inside fixed-height page */
+  overflow: hidden;
 }
 .coverTop {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: 1rem;
   justify-content: space-between;
+  flex-shrink: 0;
 }
 .coverBrandRow {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  min-width: 0;
 }
 .accentRule {
   width: 28px;
@@ -174,37 +193,50 @@
   font-weight: 700;
   letter-spacing: 3px;
   color: rgba(255,255,255,0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .coverDocType {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.6rem;
+  font-size: 0.55rem;
   font-weight: 600;
-  letter-spacing: 3px;
+  letter-spacing: 2px;
   color: var(--or);
   border: 1px solid rgba(249,115,22,0.4);
-  padding: 0.2rem 0.65rem;
+  padding: 0.2rem 0.55rem;
   border-radius: 2px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
-.coverHero { padding: 2.5rem 0 0; }
+.coverHero {
+  padding: 1.5rem 0 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+}
 .coverFor {
   font-family: 'Montserrat', sans-serif;
   font-size: 0.6rem;
   font-weight: 600;
   letter-spacing: 3px;
   color: rgba(255,255,255,0.45);
-  margin: 0 0 0.6rem;
+  margin: 0 0 0.5rem;
 }
 .coverName {
   font-family: 'Montserrat', sans-serif;
-  font-size: 2.8rem;
+  font-size: clamp(1.75rem, 4.5vw, 2.5rem);
   font-weight: 800;
   color: var(--white);
   line-height: 1.1;
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.4rem;
+  word-break: break-word;
 }
 .coverLoc {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: rgba(255,255,255,0.5);
   margin: 0;
   letter-spacing: 0.5px;
@@ -213,55 +245,57 @@
 .coverWealthRow {
   display: flex;
   align-items: center;
-  gap: 2rem;
-  margin-top: 3rem;
-  padding-top: 2rem;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
   border-top: 1px solid rgba(255,255,255,0.1);
+  flex-shrink: 0;
 }
-.coverWealthCard { flex: 1; }
+.coverWealthCard { flex: 1; min-width: 0; }
 .coverWealthTag {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.6rem;
+  font-size: 0.55rem;
   font-weight: 700;
   letter-spacing: 2px;
   color: var(--or);
   text-transform: uppercase;
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
 }
 .coverWealthAmt {
   font-family: 'Montserrat', sans-serif;
-  font-size: 3.2rem;
+  font-size: clamp(2rem, 5vw, 2.75rem);
   font-weight: 800;
   color: var(--white);
   line-height: 1;
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.35rem;
 }
 .coverWealthSub {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: rgba(255,255,255,0.45);
 }
 .coverWealthDivider {
   width: 1px;
-  height: 80px;
+  height: 64px;
   background: rgba(255,255,255,0.12);
   flex-shrink: 0;
 }
 .coverSmallStats {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0.9rem;
+  flex-shrink: 0;
 }
-.coverSmallStat { display: flex; flex-direction: column; gap: 0.15rem; }
+.coverSmallStat { display: flex; flex-direction: column; gap: 0.1rem; }
 .coverSmallNum {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.3rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: var(--or);
   line-height: 1;
 }
 .coverSmallLabel {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   color: rgba(255,255,255,0.4);
   letter-spacing: 0.5px;
 }
@@ -433,7 +467,7 @@
   width: 100%;
   height: 150px;
   margin-top: 0.5rem;
-  overflow: visible;
+  overflow: hidden;
 }
 .trajectoryGap { fill: rgba(249, 115, 22, 0.12); stroke: none; }
 .trajectoryLineRed {
@@ -1422,6 +1456,11 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  height: var(--a4-h);
+  min-height: var(--a4-h);
+  max-height: var(--a4-h);
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 .closingPage::before {
   content: '';
@@ -1711,7 +1750,8 @@
   grid-template-columns: 1fr 240px;
   gap: 2rem;
   align-items: stretch;
-  min-height: 360px;
+  min-height: 0;
+  flex: 1;
 }
 .closingLeft {
   display: flex;
@@ -1790,22 +1830,28 @@
 
   .wrapper {
     background: var(--white) !important;
+    overflow: visible !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
   .page {
-    width: 100%;
-    max-width: 100%;
-    margin: 0;
-    border: none;
-    padding: 12mm 14mm 14mm;
-    box-shadow: none;
-    border-radius: 0;
-    /* Fill the full A4 printable area (297mm - 18mm top - 18mm bottom margin)
-       so the page's own background always covers the sheet — prevents the
-       wrapper's grey background from showing through as blank space. */
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    border: none !important;
+    padding: 10mm 12mm 12mm !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    /* Fill one sheet; allow tall content pages to grow if needed */
     min-height: 261mm;
+    height: auto;
+    max-height: none;
     box-sizing: border-box;
+    overflow: hidden !important;
     break-after: page;
     page-break-after: always;
+    break-inside: avoid;
+    page-break-inside: avoid;
     display: flex;
     flex-direction: column;
   }
@@ -1813,19 +1859,31 @@
     break-after: avoid;
     page-break-after: avoid;
   }
-  /* Full-bleed cover/closing — extend background into the @page margin
-     area so there is zero cream border and the dark art covers the sheet. */
+  /* Cover / closing MUST stay on exactly one sheet — no spill */
   .coverPage, .closingPage {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
-    margin: -18mm -20mm;
-    padding: 18mm 20mm 14mm;
-    width: calc(100% + 40mm);
-    min-height: calc(261mm + 36mm);
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 261mm !important;
+    min-height: 261mm !important;
+    max-height: 261mm !important;
+    padding: 10mm 12mm 12mm !important;
+    overflow: hidden !important;
+  }
+  .coverInner {
+    padding: 0 !important;
+    min-height: 0;
+  }
+  .closingInner {
+    padding: 0;
+    min-height: 0;
+    overflow: hidden;
   }
   .termsGrid { flex-grow: 1; align-content: start; }
   .wealthLayout { flex-grow: 1; }
-  .pageHead { padding-top: 0.75rem; margin-bottom: 1rem; }
+  .pageHead { padding-top: 0.5rem; margin-bottom: 0.75rem; }
 
   .pageNum {
     bottom: 3mm;
