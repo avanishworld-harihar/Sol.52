@@ -5,15 +5,19 @@
 
 /* ── Shared variables ── */
 .wrapper {
-  --c: #1E293B;       /* charcoal */
-  --al: #F1F5F9;      /* aluminum */
-  --or: #F97316;      /* burnt orange */
+  --c: #1E293B;       /* charcoal body */
+  --h: #0A0F1C;       /* deep black headers */
+  --al: #F1F5F9;      /* brushed aluminum */
+  --or: #F97316;      /* burnt orange accent */
   --gray: #64748B;
   --line: #E2E8F0;
   --white: #FFFFFF;
   --green-bg: #f0fdf4;
   --green-fg: #166534;
   --green-bd: #86efac;
+  --card-radius: 0.75rem;     /* 12px — universal card radius */
+  --card-shadow: 0 1px 5px rgba(0,0,0,0.07);
+  --card-shadow-up: 0 4px 16px rgba(0,0,0,0.10);
 
   background: var(--al);
   font-family: 'Lato', 'Inter', system-ui, sans-serif;
@@ -83,7 +87,12 @@
 .pageNumLight { color: rgba(255,255,255,0.3); }
 
 /* ── Section header ── */
-.pageHead { display: flex; flex-direction: column; gap: 0.375rem; }
+.pageHead {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding-top: 3rem;
+}
 .pageTag {
   font-family: 'Montserrat', sans-serif;
   font-size: 0.625rem;
@@ -97,7 +106,7 @@
   font-size: 2.375rem;
   font-weight: 800;
   letter-spacing: -1.5px;
-  color: var(--c);
+  color: var(--h);
   margin: 0;
   line-height: 1.1;
 }
@@ -194,7 +203,7 @@
   font-size: 2rem;
   font-weight: 800;
   letter-spacing: -1px;
-  color: var(--c);
+  color: var(--or);
 }
 .visionStatUnit {
   font-size: 0.75rem;
@@ -370,27 +379,98 @@
   font-size: 1.625rem;
   font-weight: 800;
   letter-spacing: -1px;
-  color: var(--c);
+  color: var(--or);
 }
 
 /* ════════════════════════════════════════════════════════
-   PAGE 5 — ENGINEERING
+   PAGE 5 — ENGINEERING (2×2 grid)
    ════════════════════════════════════════════════════════ */
 .engPage { gap: 1.5rem; }
-.engLayout {
+
+/* 2×2 grid: [gauges | location] / [metrics | standards] */
+.eng2x2 {
   display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 1.5rem;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 1.25rem;
   flex: 1;
 }
+
+/* TOP-LEFT: gauge pair */
+.engGaugePanel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+.engGauge {
+  background: var(--al);
+  border: 1px solid var(--line);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  padding: 1.375rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: center;
+}
+.engGaugeOr {
+  background: var(--or);
+  border-color: var(--or);
+  box-shadow: 0 4px 14px rgba(249,115,22,0.22);
+}
+.engGaugeCircle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 2px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.engGaugeOr .engGaugeCircle {
+  background: rgba(255,255,255,0.2);
+  border-color: rgba(255,255,255,0.3);
+}
+.engGaugeBig {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.375rem;
+  font-weight: 800;
+  color: var(--h);
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+.engGaugeOr .engGaugeBig { color: white; }
+.engGaugeSub {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.4375rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--gray);
+}
+.engGaugeOr .engGaugeSub { color: rgba(255,255,255,0.7); }
+.engGaugeLabel {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--h);
+}
+.engGaugeOr .engGaugeLabel { color: white; }
+
+/* TOP-RIGHT: location */
 .engLocCard {
-  background: var(--c);
+  background: var(--h);
   color: white;
-  border-radius: 1.25rem;
-  padding: 2rem;
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow-up);
+  padding: 1.875rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  justify-content: center;
 }
 .engLocTag {
   font-family: 'Montserrat', sans-serif;
@@ -401,63 +481,47 @@
 }
 .engLocCity {
   font-family: 'Montserrat', sans-serif;
-  font-size: 2.375rem;
+  font-size: 2rem;
   font-weight: 800;
   line-height: 1;
   letter-spacing: -1px;
 }
-.engLocFull { font-size: 0.875rem; color: rgba(255,255,255,0.5); }
-.tiltBadge {
-  margin-top: auto;
-  background: var(--or);
-  border-radius: 0.75rem;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-}
-.tiltVal {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: white;
-  line-height: 1;
-}
-.tiltLabel {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  color: rgba(255,255,255,0.85);
-  text-align: center;
-}
+.engLocFull { font-size: 0.875rem; color: rgba(255,255,255,0.5); margin-top: 0.25rem; }
+
+/* BOTTOM-LEFT: metrics 2×4 */
 .engMetricsGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
   align-content: start;
 }
 .engMetricCard {
   background: var(--al);
   border: 1px solid var(--line);
-  border-radius: 0.75rem;
-  padding: 1rem;
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  padding: 0.875rem 1rem;
 }
 .engMetricVal {
   font-family: 'Montserrat', sans-serif;
   font-size: 1.0625rem;
   font-weight: 700;
-  color: var(--c);
+  color: var(--or);
 }
 .engMetricLabel {
   font-size: 0.6875rem;
   color: var(--gray);
-  margin-top: 0.25rem;
+  margin-top: 0.2rem;
   line-height: 1.3;
 }
-.stdRow {
-  border-top: 1px solid var(--line);
-  padding-top: 1rem;
+
+/* BOTTOM-RIGHT: standards card */
+.engStdCard {
+  background: var(--al);
+  border: 1px solid var(--line);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  padding: 1.375rem;
 }
 .stdTitle {
   font-family: 'Montserrat', sans-serif;
@@ -465,13 +529,13 @@
   font-weight: 700;
   letter-spacing: 3px;
   color: var(--gray);
-  margin-bottom: 0.625rem;
+  margin-bottom: 0.75rem;
   text-transform: uppercase;
 }
 .stdBadges { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .stdBadge {
   font-size: 0.6875rem;
-  background: var(--al);
+  background: var(--white);
   border: 1px solid var(--line);
   border-radius: 0.375rem;
   padding: 0.25rem 0.625rem;
@@ -491,13 +555,16 @@
 .hwCard {
   background: var(--al);
   border: 1px solid var(--line);
-  border-radius: 1.25rem;
+  border-radius: var(--card-radius);
   padding: 1.875rem;
+  box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
 }
 .hwMark {
   width: 2.25rem;
   height: 2.25rem;
-  background: var(--c);
+  background: var(--h);
   color: white;
   border-radius: 0.5rem;
   display: flex;
@@ -507,18 +574,20 @@
   font-weight: 700;
   font-size: 0.875rem;
   margin-bottom: 1rem;
+  flex-shrink: 0;
 }
 .hwTitle {
   font-family: 'Montserrat', sans-serif;
   font-size: 1.0625rem;
   font-weight: 700;
-  color: var(--c);
+  color: var(--h);
   margin-bottom: 0.375rem;
 }
 .hwDesc {
   font-size: 0.875rem;
   color: var(--gray);
   line-height: 1.5;
+  flex: 1;
 }
 .hwWarranty {
   display: inline-block;
@@ -530,70 +599,83 @@
   font-size: 0.6875rem;
   font-weight: 700;
   color: var(--or);
+  align-self: flex-start;
 }
 
 /* ════════════════════════════════════════════════════════
-   PAGE 7 — WARRANTY (circular badges)
+   PAGE 7 — WARRANTY (Data Cards — same radius/shadow as HW)
    ════════════════════════════════════════════════════════ */
-.warrantyPage { gap: 2rem; }
+.warrantyPage { gap: 1.5rem; }
 .warrantyGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1.5rem;
-  flex: 1;
-  align-items: start;
+  gap: 1.25rem;
 }
+/* Data Card — identical spec to .hwCard */
 .warrantyBadge {
+  background: var(--al);
+  border: 1px solid var(--line);
+  border-radius: var(--card-radius);
+  padding: 1.875rem;
+  box-shadow: var(--card-shadow);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.875rem;
+  text-align: center;
 }
+.warrantyAccent {
+  background: var(--or);
+  border-color: var(--or);
+  box-shadow: 0 4px 18px rgba(249,115,22,0.28);
+}
+/* Circle sits inside the card */
 .warrantyCircle {
-  width: 130px;
-  height: 130px;
+  width: 96px;
+  height: 96px;
   border-radius: 50%;
-  background: var(--al);
-  border: 3px solid var(--line);
+  background: var(--white);
+  border: 2px solid var(--line);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.125rem;
+  gap: 0;
+  flex-shrink: 0;
 }
 .warrantyAccent .warrantyCircle {
-  background: var(--or);
-  border-color: var(--or);
+  background: rgba(255,255,255,0.18);
+  border-color: rgba(255,255,255,0.3);
 }
 .warrantyYears {
   font-family: 'Montserrat', sans-serif;
-  font-size: 2.75rem;
+  font-size: 2.25rem;
   font-weight: 800;
-  color: var(--c);
+  color: var(--h);
   line-height: 1;
 }
 .warrantyAccent .warrantyYears { color: white; }
 .warrantyYrsText {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.5625rem;
+  font-size: 0.5rem;
   font-weight: 700;
   letter-spacing: 2px;
   color: var(--gray);
 }
-.warrantyAccent .warrantyYrsText { color: rgba(255,255,255,0.75); }
+.warrantyAccent .warrantyYrsText { color: rgba(255,255,255,0.8); }
 .warrantyLabel {
   font-family: 'Montserrat', sans-serif;
   font-size: 0.875rem;
   font-weight: 700;
-  color: var(--c);
-  text-align: center;
+  color: var(--h);
 }
+.warrantyAccent .warrantyLabel { color: white; }
 .warrantySub {
   font-size: 0.75rem;
   color: var(--gray);
-  text-align: center;
   line-height: 1.4;
 }
+.warrantyAccent .warrantySub { color: rgba(255,255,255,0.7); }
 .warrantyNote {
   font-size: 0.8125rem;
   color: var(--gray);
@@ -875,7 +957,7 @@
   font-family: 'Montserrat', sans-serif;
   font-size: 1.875rem;
   font-weight: 800;
-  color: white;
+  color: var(--or);
   letter-spacing: -1px;
 }
 .closingStatLabel {
@@ -925,19 +1007,37 @@
   .page {
     width: 100%;
     min-height: 0;
-    height: 297mm;
+    height: 100%;
     margin: 0;
-    padding: 40px 48px;
+    padding: 0 0 6mm 0;     /* @page provides 20mm margin */
     box-shadow: none;
     break-after: page;
     page-break-after: always;
     overflow: hidden;
+    gap: 1.25rem;
   }
 
-  /* Keep charcoal bg for closing page in print */
-  .closingPage {
-    background: var(--c) !important;
+  .pageHead { padding-top: 1.5rem; }
+
+  .closingPage { background: var(--h) !important; }
+
+  /* Print footer — company + page num visible in page margin area */
+  .pageNum {
+    bottom: 4mm;
+    right: 0;
+    font-size: 7pt;
+  }
+  .pageNum::before {
+    content: "Harihar Solar · Energy Masterplan   ";
+    color: #94A3B8;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 7pt;
+    font-weight: 600;
+    letter-spacing: 1px;
   }
 
-  @page { size: A4; margin: 0; }
+  @page {
+    size: A4;
+    margin: 20mm;
+  }
 }

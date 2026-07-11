@@ -452,17 +452,34 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           </h2>
         </header>
 
-        <div className={styles.engLayout}>
+        {/* 2×2 grid: [gauges | location] / [metrics | standards] */}
+        <div className={styles.eng2x2}>
+          {/* TOP-LEFT: circular gauge cards */}
+          <div className={styles.engGaugePanel}>
+            <div className={styles.engGauge}>
+              <div className={styles.engGaugeCircle}>
+                <span className={styles.engGaugeBig}>{tilt}°</span>
+                <span className={styles.engGaugeSub}>TILT</span>
+              </div>
+              <span className={styles.engGaugeLabel}>Optimal Panel Tilt</span>
+            </div>
+            <div className={`${styles.engGauge} ${styles.engGaugeOr}`}>
+              <div className={styles.engGaugeCircle}>
+                <span className={styles.engGaugeBig}>{systemSize}</span>
+                <span className={styles.engGaugeSub}>SYSTEM</span>
+              </div>
+              <span className={styles.engGaugeLabel}>Installed Capacity</span>
+            </div>
+          </div>
+
+          {/* TOP-RIGHT: location */}
           <div className={styles.engLocCard}>
             <span className={styles.engLocTag}>INSTALLATION SITE</span>
             <div className={styles.engLocCity}>{city}</div>
             <div className={styles.engLocFull}>{location}</div>
-            <div className={styles.tiltBadge}>
-              <span className={styles.tiltVal}>{tilt}°</span>
-              <span className={styles.tiltLabel}>Optimal Panel Tilt</span>
-            </div>
           </div>
 
+          {/* BOTTOM-LEFT: metrics 2×4 grid */}
           <div className={styles.engMetricsGrid}>
             {engMetrics.map(([label, value]) => (
               <div key={label} className={styles.engMetricCard}>
@@ -471,16 +488,15 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
               </div>
             ))}
           </div>
-        </div>
 
-        <div className={styles.stdRow}>
-          <div className={styles.stdTitle}>Standards Compliance</div>
-          <div className={styles.stdBadges}>
-            {standards.map((s) => (
-              <span key={s} className={styles.stdBadge}>
-                {s}
-              </span>
-            ))}
+          {/* BOTTOM-RIGHT: standards */}
+          <div className={styles.engStdCard}>
+            <div className={styles.stdTitle}>Standards Compliance</div>
+            <div className={styles.stdBadges}>
+              {standards.map((s) => (
+                <span key={s} className={styles.stdBadge}>{s}</span>
+              ))}
+            </div>
           </div>
         </div>
 
