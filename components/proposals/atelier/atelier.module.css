@@ -40,7 +40,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 900px;
+  max-width: 794px;
   margin: 0 auto;
 }
 .printBarBrand {
@@ -68,20 +68,21 @@
 /* ── Page shell ─────────────────────────────────────────────── */
 .page {
   background: var(--white);
-  max-width: 900px;
-  margin: 2rem auto;
-  padding: 3rem 3.5rem 4rem;
+  width: 794px;           /* A4 portrait at 96 DPI = 210mm */
+  max-width: 100%;
+  margin: 0 auto 1.5rem;  /* continuous scroll on screen */
+  padding: 2.5rem 2.75rem 3rem;
   position: relative;
   border: 1px solid var(--line);
-  break-after: page;
-  page-break-after: always;
+  min-height: 1123px;     /* A4 height at 96 DPI = 297mm */
+  box-sizing: border-box;
 }
 .pageHead {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  padding-top: 2.5rem;
-  margin-bottom: 2rem;
+  padding-top: 1.75rem;
+  margin-bottom: 1.5rem;
 }
 .pageTag {
   font-family: 'Montserrat', sans-serif;
@@ -117,7 +118,6 @@
   color: var(--white);
   padding: 0;
   overflow: hidden;
-  min-height: 640px;
   display: flex;
   flex-direction: column;
 }
@@ -148,7 +148,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 2.5rem 3.5rem 3rem;
+  padding: 2rem 2.75rem 2.5rem;
 }
 .coverTop {
   display: flex;
@@ -467,8 +467,8 @@
 /* ══ P4: WEALTH PROJECTION ══════════════════════════════════════ */
 .wealthLayout {
   display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 1.75rem;
+  grid-template-columns: 1fr 250px;
+  gap: 1.5rem;
 }
 .wealthChartBox {
   display: flex;
@@ -1230,7 +1230,6 @@
   color: var(--white);
   position: relative;
   overflow: hidden;
-  min-height: 560px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -1427,9 +1426,9 @@
 }
 .genBarRow {
   display: grid;
-  grid-template-columns: 180px 1fr 110px;
+  grid-template-columns: 165px 1fr 100px;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.6rem;
   padding: 0.5rem 0;
   border-bottom: 1px solid var(--line);
 }
@@ -1520,10 +1519,10 @@
 /* ══ CLOSING SPLIT SCREEN (P11) ═════════════════════════════════ */
 .closingSplit {
   display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: 2.5rem;
+  grid-template-columns: 1fr 240px;
+  gap: 2rem;
   align-items: stretch;
-  min-height: 400px;
+  min-height: 360px;
 }
 .closingLeft {
   display: flex;
@@ -1586,20 +1585,28 @@
   .closingBtn { display: none !important; }
 
   .page {
+    width: 100%;
     max-width: 100%;
     margin: 0;
     border: none;
-    padding: 0 0 6mm;
+    padding: 12mm 14mm 14mm;
     box-shadow: none;
     border-radius: 0;
-    min-height: 261mm; /* A4 297mm - 36mm margins */
+    min-height: auto;
+    box-sizing: border-box;
+    break-after: page;
+    page-break-after: always;
     display: flex;
     flex-direction: column;
   }
-  .coverPage, .closingPage { min-height: 261mm; }
+  .page:last-of-type {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+  .coverPage, .closingPage { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .termsGrid { flex-grow: 1; align-content: start; }
   .wealthLayout { flex-grow: 1; }
-  .pageHead { padding-top: 1.25rem; }
+  .pageHead { padding-top: 0.75rem; margin-bottom: 1rem; }
   .coverPage, .closingPage { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
   .pageNum {
