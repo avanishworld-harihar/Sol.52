@@ -328,7 +328,22 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
   // ── JSX ──────────────────────────────────────────────────────
   return (
     <div className={styles.wrapper}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Lato:wght@300;400;700&display=swap');`}</style>
+      <style>{`
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Lato:wght@300;400;700&display=swap');
+@media print {
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  @page { size: A4; margin: 18mm 20mm; }
+  @page :first { size: A4; margin: 0; }
+  @page atelier-cover { size: A4; margin: 0; }
+}
+`}</style>
 
       {/* Sticky print bar */}
       <div className={styles.printBar}>

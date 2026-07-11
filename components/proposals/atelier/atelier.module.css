@@ -30,7 +30,7 @@
   color: var(--c);
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;   /* kill horizontal scrollbars */
+  overflow-x: clip;
   box-sizing: border-box;
 }
 
@@ -40,7 +40,11 @@
   top: 0;
   z-index: 50;
   background: var(--h);
-  padding: 0.6rem 2rem;
+  padding: 0.6rem 1.25rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 .printBarInner {
   display: flex;
@@ -84,7 +88,8 @@
   border: 1px solid var(--line);
   min-height: var(--a4-h); /* A4 height at 96 DPI = 297mm */
   box-sizing: border-box;
-  overflow: hidden;        /* no per-page scrollbars / side lines */
+  overflow-x: clip;   /* no horizontal scrollbar / side line */
+  overflow-y: visible;
 }
 .pageHead {
   display: flex;
@@ -1842,7 +1847,6 @@
     padding: 10mm 12mm 12mm !important;
     box-shadow: none !important;
     border-radius: 0 !important;
-    /* Fill one sheet; allow tall content pages to grow if needed */
     min-height: 261mm;
     height: auto;
     max-height: none;
@@ -1859,8 +1863,27 @@
     break-after: avoid;
     page-break-after: avoid;
   }
-  /* Cover / closing MUST stay on exactly one sheet — no spill */
-  .coverPage, .closingPage {
+
+  /*
+   * Cover is a named page with ZERO @page margin so the dark BG
+   * paints the entire physical A4 sheet (no white border).
+   * Content padding lives on .coverPage itself.
+   */
+  .coverPage {
+    page: atelier-cover;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    margin: 0 !important;
+    width: 210mm !important;
+    max-width: 210mm !important;
+    height: 297mm !important;
+    min-height: 297mm !important;
+    max-height: 297mm !important;
+    padding: 18mm 20mm !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+  .closingPage {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
     margin: 0 !important;
@@ -1886,9 +1909,13 @@
   .pageHead { padding-top: 0.5rem; margin-bottom: 0.75rem; }
 
   .pageNum {
-    bottom: 3mm;
+    bottom: 8mm;
     right: 0;
     font-size: 7pt;
+  }
+  .coverPage .pageNum {
+    bottom: 12mm;
+    right: 20mm;
   }
   .pageNum::before {
     content: "Harihar Solar · Investment Blueprint   ";
@@ -1899,5 +1926,19 @@
     letter-spacing: 1px;
   }
 
-  @page { size: A4; margin: 18mm 20mm; }
+  /* Default content pages keep normal margins */
+  @page {
+    size: A4;
+    margin: 18mm 20mm;
+  }
+  /* Cover sheet — edge-to-edge, no white margin */
+  @page atelier-cover {
+    size: A4;
+    margin: 0;
+  }
+  /* Fallback for browsers that ignore named pages */
+  @page :first {
+    size: A4;
+    margin: 0;
+  }
 }
