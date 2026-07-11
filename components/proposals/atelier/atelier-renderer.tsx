@@ -299,8 +299,8 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
         </header>
 
         <blockquote className={styles.quote}>
-          "The sun is the most democratic energy source on earth — it shines on
-          every roof, in every village, without exception."
+          &ldquo;The sun is the most democratic energy source on earth — it shines
+          on every roof, in every village, without exception.&rdquo;
         </blockquote>
 
         <div className={styles.visionStats}>
