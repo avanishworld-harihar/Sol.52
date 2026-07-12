@@ -15,7 +15,8 @@ export function BlockCommercialFinancing({ summary, lang, darkMode, commercialCo
   const isHi = lang === "hi";
   const dark = darkMode;
   const cfg = commercialConfig?.financing;
-  if (cfg?.enabled === false) return null;
+  // Opt-in only — off in builder / control center / review must hide this block.
+  if (cfg?.enabled !== true) return null;
 
   const netCost = summary.netCost;
   const table = buildCommercialEmiTable(netCost, cfg);

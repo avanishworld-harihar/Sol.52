@@ -119,6 +119,21 @@ export function resolvePlantPrice(input: ResolvePlantPriceInput): PlantPriceResu
   const plantGrossInr = mode === "dcr" ? dcrGrossInr : nonDcrGrossInr;
   if (plantGrossInr <= 0) {
     warnings.push("mode_price_missing");
+    // Retry with catalog active brand when the selected brand has no priced row for this kW.
+    const activeId = input.catalog?.activeBrandId;
+    if (activeId && activeId !== entry.brandId) {
+      const fallback = resolvePlantPrice({
+        ...input,
+        brandId: activeId,
+        brand: undefined,
+      });
+      if (fallback.ok && fallback.plantGrossInr > 0) {
+        return {
+          ...fallback,
+          warnings: [...warnings, ...fallback.warnings, "using_tier_ladder"],
+        };
+      }
+    }
     errors.push(
       mode === "dcr"
         ? `DCR price missing for ${entry.brand} at ${kw} kW — fill the pricing table in More → Rate card.`
@@ -150,10 +165,17 @@ export function resolvePlantPriceFromConfig(
   overrides?: Partial<ResolvePlantPriceInput>
 ): PlantPriceResult {
   const catalog = config.brandCatalog;
+  // Turnkey plant ₹ comes from the Smart catalog active brand (rate-card table),
+  // not from the proposal's display panel brand (BOM "make" can list multiple brands).
+  const pricingBrandId =
+    overrides?.brandId ??
+    catalog?.activeBrandId ??
+    config.solar.brandId ??
+    catalog?.entries?.[0]?.brandId;
   return resolvePlantPrice({
     catalog,
-    brandId: overrides?.brandId ?? config.solar.brandId ?? catalog?.activeBrandId,
-    brand: overrides?.brand ?? config.solar.brand,
+    brandId: pricingBrandId,
+    brand: overrides?.brand ?? undefined,
     kw: overrides?.kw ?? config.solar.plantCapacityKw,
     mode: (overrides?.mode ?? config.solar.panelTrack ?? "dcr") as PlantPricingMode,
     moduleWatt: overrides?.moduleWatt ?? config.solar.watt,

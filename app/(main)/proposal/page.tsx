@@ -103,6 +103,7 @@ import {
 import { moduleCountForResidential, quoteResidentialSolar } from "@/lib/residential-solar-engine";
 import {
   applyCommercialFlagsToLayout,
+  applyLayoutFlagsToCommercialConfig,
   defaultCommercialConfig,
   parseCommercialConfig,
   withOrgStory,
@@ -116,7 +117,11 @@ import {
   type ResidentialProposalConfig,
 } from "@/lib/residential-proposal-config";
 import { mergeConnectionPhaseFromBillText, applyConnectionPhaseSelection, connectionPhaseToManualLabel, detectConnectionPhaseFromText, type ConnectionPhase } from "@/lib/connection-phase-pricing";
-import { loadInstallerRateCard, getCachedResidentialBrandCatalog } from "@/lib/installer-rate-card-client";
+import {
+  getCachedResidentialBrandCatalog,
+  INSTALLER_RATE_CARD_UPDATED_EVENT,
+  loadInstallerRateCard,
+} from "@/lib/installer-rate-card-client";
 import {
   applyCommercialPanelTrackPolicy,
   panelTypeFromTrack,
@@ -327,6 +332,24 @@ function ProposalPageContent() {
   useEffect(() => {
     void loadInstallerRateCard();
   }, []);
+
+  useEffect(() => {
+    const refreshFromRateCard = () => {
+      setCommercialPricingConfig((prev) => {
+        if (!prev) return prev;
+        return applyCommercialPanelTrackPolicy(
+          applyResidentialPricingSource(prev),
+          manual.connectionType
+        );
+      });
+      setResidentialConfig((prev) => {
+        if (!prev) return prev;
+        return applyResidentialPricingSource(prev);
+      });
+    };
+    window.addEventListener(INSTALLER_RATE_CARD_UPDATED_EVENT, refreshFromRateCard);
+    return () => window.removeEventListener(INSTALLER_RATE_CARD_UPDATED_EVENT, refreshFromRateCard);
+  }, [manual.connectionType]);
 
   const urlPrefill = useMemo(
     () => parsePrefillFromSearchParams(searchParams),
@@ -847,15 +870,16 @@ function ProposalPageContent() {
 
   const effectiveResult = useMemo(() => {
     if (useResidentialCatalog && residentialConfig) {
-      const q = quoteResidentialSolar(residentialConfig.solar);
-      const solarKw = residentialConfig.solar.plantCapacityKw;
+      const priced = applyResidentialPricingSource(residentialConfig);
+      const q = quoteResidentialSolar(priced.solar);
+      const solarKw = priced.solar.plantCapacityKw;
       const panels = q.moduleCount;
       const annualGeneration = residentialAnnualGenerationUnits(solarKw);
-      const grossCost = residentialGrossCostInr(residentialConfig);
+      const grossCost = residentialGrossCostInr(priced);
       const centralSubsidy = residentialSubsidyEligible
-        ? resolveResidentialSubsidyInr(residentialConfig, true)
+        ? resolveResidentialSubsidyInr(priced, true)
         : 0;
-      const netCost = residentialNetCostInr(residentialConfig, {
+      const netCost = residentialNetCostInr(priced, {
         connectionType: manual.connectionType,
         subsidyEligible: residentialSubsidyEligible,
       });
@@ -882,7 +906,11 @@ function ProposalPageContent() {
       };
     }
     if (useCommercialCatalog && commercialPricingConfig) {
-      const cfg = applyCommercialPanelTrackPolicy(commercialPricingConfig, manual.connectionType);
+      // Always pull latest Smart catalog from installer rate card (not a stale snapshot).
+      const cfg = applyCommercialPanelTrackPolicy(
+        applyResidentialPricingSource(commercialPricingConfig),
+        manual.connectionType
+      );
       const q = quoteResidentialSolar(cfg.solar);
       const solarKw = cfg.solar.plantCapacityKw;
       const panels = q.moduleCount;
@@ -1688,8 +1716,15 @@ function ProposalPageContent() {
           return applyResidentialFlagsToLayout(layout, residentialConfig);
         }
         if (useCommercialCatalog && commercialPricingConfig) {
+          const builderEmiOn = commercialPricingConfig.financing?.enabled !== false;
+          const financingEnabled =
+            commercialConfig?.financing?.enabled === true && builderEmiOn;
           return applyCommercialFlagsToLayout(layout, {
             ...(commercialConfig ?? {}),
+            financing: {
+              ...commercialConfig?.financing,
+              enabled: financingEnabled,
+            },
             dcrComparison: {
               enabled: false,
               brandId: commercialPricingConfig.trackCompare?.compareBrandId,
@@ -1705,8 +1740,28 @@ function ProposalPageContent() {
         }
         return layout;
       })(),
-      commercialConfig:
-        (osPresetId as string | null) === "commercial_executive" ? commercialConfig ?? undefined : undefined,
+      commercialConfig: (() => {
+        if ((osPresetId as string | null) !== "commercial_executive") return undefined;
+        if (!commercialConfig) return undefined;
+        // Builder "EMI on proposal" lives on residentialConfig.financing — keep deck in sync.
+        const builderEmiOn = commercialPricingConfig?.financing?.enabled !== false;
+        const enabled = commercialConfig.financing?.enabled === true && builderEmiOn;
+        return {
+          ...commercialConfig,
+          financing: {
+            ...commercialConfig.financing,
+            enabled,
+            interestRatePct:
+              commercialConfig.financing?.interestRatePct ??
+              commercialPricingConfig?.financing?.interestRatePct ??
+              9.5,
+            selectedTenureYears:
+              commercialConfig.financing?.selectedTenureYears ??
+              commercialPricingConfig?.financing?.selectedTenureYears ??
+              7,
+          },
+        };
+      })(),
       residentialConfig:
         useResidentialCatalog && residentialConfig
           ? {
@@ -1718,7 +1773,7 @@ function ProposalPageContent() {
             }
           : useCommercialCatalog && commercialPricingConfig
             ? applyCommercialPanelTrackPolicy(
-                {
+                applyResidentialPricingSource({
                   ...commercialPricingConfig,
                   inputMode: "bill",
                   pricingSource: commercialPricingConfig.pricingSource ?? "rate_card",
@@ -1726,7 +1781,23 @@ function ProposalPageContent() {
                     manual.connectionType.trim() ||
                     commercialPricingConfig.connectionType ||
                     undefined,
-                },
+                  financing: {
+                    ...commercialPricingConfig.financing,
+                    enabled:
+                      commercialConfig?.financing?.enabled === true &&
+                      commercialPricingConfig.financing?.enabled !== false,
+                    interestRatePct:
+                      commercialConfig?.financing?.interestRatePct ??
+                      commercialPricingConfig.financing?.interestRatePct ??
+                      10.5,
+                    selectedTenureYears:
+                      commercialConfig?.financing?.selectedTenureYears ??
+                      commercialPricingConfig.financing?.selectedTenureYears ??
+                      5,
+                    tenuresYears:
+                      commercialPricingConfig.financing?.tenuresYears ?? [3, 5, 7, 10],
+                  },
+                }),
                 manual.connectionType
               )
             : undefined,
@@ -1895,6 +1966,7 @@ function ProposalPageContent() {
       setCommercialConfig((prev) => {
         if (!prev) return prev;
         const track = next.solar.panelTrack ?? "dcr";
+        const financingEnabled = next.financing?.enabled === true;
         const merged: CommercialProposalConfig = {
           ...prev,
           panel: {
@@ -1915,6 +1987,15 @@ function ProposalPageContent() {
             brandIdA: next.brandCompare?.brandIdA,
             brandIdB: next.brandCompare?.brandIdB,
           },
+          financing: {
+            ...prev.financing,
+            enabled: financingEnabled,
+            interestRatePct:
+              next.financing?.interestRatePct ?? prev.financing?.interestRatePct ?? 9.5,
+            selectedTenureYears:
+              next.financing?.selectedTenureYears ?? prev.financing?.selectedTenureYears ?? 7,
+            tenuresYears: prev.financing?.tenuresYears ?? [5, 7, 10],
+          },
         };
         if (proposalLayout) {
           setProposalLayout(applyCommercialFlagsToLayout(proposalLayout, merged));
@@ -1924,6 +2005,65 @@ function ProposalPageContent() {
     },
     [manual.connectionType, proposalLayout]
   );
+
+  const commitCommercialConfigChange = useCallback(
+    (next: CommercialProposalConfig) => {
+      setCommercialConfig(next);
+      if (proposalLayout) {
+        setProposalLayout(applyCommercialFlagsToLayout(proposalLayout, next));
+      }
+      // Keep builder "EMI on proposal" checkbox in sync with control-center / narrative EMI.
+      setCommercialPricingConfig((prev) => {
+        if (!prev) return prev;
+        const enabled = next.financing?.enabled === true;
+        if (prev.financing?.enabled === enabled) return prev;
+        return {
+          ...prev,
+          financing: {
+            ...prev.financing,
+            enabled,
+            interestRatePct:
+              next.financing?.interestRatePct ?? prev.financing?.interestRatePct ?? 10.5,
+            selectedTenureYears:
+              next.financing?.selectedTenureYears ?? prev.financing?.selectedTenureYears ?? 5,
+            tenuresYears: prev.financing?.tenuresYears ?? [3, 5, 7, 10],
+          },
+        };
+      });
+    },
+    [proposalLayout]
+  );
+
+  const commitCommercialLayoutChange = useCallback((layout: ProposalTemplateV1) => {
+    setCommercialConfig((prev) => {
+      if (!prev) {
+        setProposalLayout(layout);
+        return prev;
+      }
+      const synced = applyLayoutFlagsToCommercialConfig(prev, layout);
+      setProposalLayout(applyCommercialFlagsToLayout(layout, synced));
+      setCommercialPricingConfig((pricingPrev) => {
+        if (!pricingPrev) return pricingPrev;
+        const enabled = synced.financing?.enabled === true;
+        if (pricingPrev.financing?.enabled === enabled) return pricingPrev;
+        return {
+          ...pricingPrev,
+          financing: {
+            ...pricingPrev.financing,
+            enabled,
+            interestRatePct:
+              synced.financing?.interestRatePct ?? pricingPrev.financing?.interestRatePct ?? 10.5,
+            selectedTenureYears:
+              synced.financing?.selectedTenureYears ??
+              pricingPrev.financing?.selectedTenureYears ??
+              5,
+            tenuresYears: pricingPrev.financing?.tenuresYears ?? [3, 5, 7, 10],
+          },
+        };
+      });
+      return synced;
+    });
+  }, []);
 
   /** Requirement: sync kW from monthly kWh. Bill path: seed once per bill upload â€” never fight manual kW. */
   useEffect(() => {
@@ -2783,7 +2923,11 @@ function ProposalPageContent() {
           onClose={() => setShowReviewSheet(false)}
           presetId={osPresetId ?? "residential_zenith"}
           layout={proposalLayout}
-          onLayoutChange={setProposalLayout}
+          onLayoutChange={
+            (osPresetId as string | null) === "commercial_executive"
+              ? commitCommercialLayoutChange
+              : setProposalLayout
+          }
         />
       ) : null}
 
@@ -3060,12 +3204,7 @@ function ProposalPageContent() {
             onPricingConfigChange={commitCommercialPricingConfig}
             onCommitPlantKw={commitCommercialPlantKw}
             onPlantKwEditStart={markCommercialPlantKwTouched}
-            onCommercialConfigChange={(next) => {
-              setCommercialConfig(next);
-              if (proposalLayout) {
-                setProposalLayout(applyCommercialFlagsToLayout(proposalLayout, next));
-              }
-            }}
+            onCommercialConfigChange={commitCommercialConfigChange}
             summary={{
               systemKw: commercialPricingConfig.solar.plantCapacityKw,
               annualSaving: effectiveResult.annualSavings,
@@ -3075,7 +3214,7 @@ function ProposalPageContent() {
             annualSavingInr={effectiveResult.annualSavings}
             proposalId={draftProposalId ?? ""}
             proposalLayout={proposalLayout}
-            onLayoutChange={setProposalLayout}
+            onLayoutChange={commitCommercialLayoutChange}
             onOpenReview={() => setShowReviewSheet(true)}
             onCreateProposal={async () => {
               const saved = await persistProposalToServer();
@@ -3389,12 +3528,7 @@ function ProposalPageContent() {
           onPricingConfigChange={commitCommercialPricingConfig}
           onCommitPlantKw={commitCommercialPlantKw}
           onPlantKwEditStart={markCommercialPlantKwTouched}
-          onCommercialConfigChange={(next) => {
-            setCommercialConfig(next);
-            if (proposalLayout) {
-              setProposalLayout(applyCommercialFlagsToLayout(proposalLayout, next));
-            }
-          }}
+          onCommercialConfigChange={commitCommercialConfigChange}
           summary={{
             systemKw: commercialPricingConfig.solar.plantCapacityKw,
             annualSaving: effectiveResult.annualSavings,
@@ -3404,7 +3538,7 @@ function ProposalPageContent() {
           annualSavingInr={effectiveResult.annualSavings}
           proposalId={draftProposalId ?? ""}
           proposalLayout={proposalLayout}
-          onLayoutChange={setProposalLayout}
+          onLayoutChange={commitCommercialLayoutChange}
           onOpenReview={() => setShowReviewSheet(true)}
           onCreateProposal={async () => {
             const saved = await persistProposalToServer();

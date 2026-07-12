@@ -67,6 +67,7 @@ import {
   subscribeCommercialPrintSnap,
 } from "./blocks/commercial/commercial-print-mode";
 import { commercialDcCapacityKwp } from "@/lib/commercial-bom-panels";
+import { isCommercialFinancingEnabled } from "@/lib/commercial-proposal-config";
 
 // ─── Shared context ───────────────────────────────────────────────────────────
 
@@ -615,7 +616,12 @@ export default function CommercialProposalView({
             data-page={anchor}
           >
             <Block ctx={ctx} />
-            {anchor === "comm-financials" && pptInput.commercialConfig?.financing?.enabled ? (
+            {anchor === "comm-financials" &&
+            isCommercialFinancingEnabled(
+              pptInput.commercialConfig,
+              pptInput.residentialConfig,
+              pptInput.proposalLayout
+            ) ? (
               <BlockCommercialFinancing
                 summary={summary}
                 lang={lang}

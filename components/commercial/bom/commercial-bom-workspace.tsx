@@ -3,6 +3,7 @@
 import { CommercialProposalConfigWorkspace } from "@/components/commercial/commercial-proposal-config-workspace";
 import {
   applyCommercialFlagsToLayout,
+  applyLayoutFlagsToCommercialConfig,
   defaultCommercialConfig,
   parseCommercialConfig,
   type CommercialProposalConfig,
@@ -125,11 +126,27 @@ export function CommercialBomWorkspace({
           });
         }}
         onLayoutChange={(layout) => {
+          const nextConfig = applyLayoutFlagsToCommercialConfig(mergedCommercial, layout);
           onPptInputChange?.({
             ...pptInput,
-            commercialConfig: mergedCommercial,
-            residentialConfig: pricingConfig,
-            proposalLayout: applyCommercialFlagsToLayout(layout, mergedCommercial),
+            commercialConfig: nextConfig,
+            residentialConfig: {
+              ...pricingConfig,
+              financing: {
+                ...pricingConfig.financing,
+                enabled: nextConfig.financing?.enabled === true,
+                interestRatePct:
+                  nextConfig.financing?.interestRatePct ??
+                  pricingConfig.financing?.interestRatePct ??
+                  10.5,
+                selectedTenureYears:
+                  nextConfig.financing?.selectedTenureYears ??
+                  pricingConfig.financing?.selectedTenureYears ??
+                  5,
+                tenuresYears: pricingConfig.financing?.tenuresYears ?? [3, 5, 7, 10],
+              },
+            },
+            proposalLayout: applyCommercialFlagsToLayout(layout, nextConfig),
           });
         }}
       />

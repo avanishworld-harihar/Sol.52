@@ -168,6 +168,40 @@ export function withOrgStory(
   };
 }
 
+/**
+ * EMI / financing is opt-in. Honors commercialConfig, builder pricing financing,
+ * and (when present) the proposalLayout commercial_financing_card toggle.
+ */
+export function isCommercialFinancingEnabled(
+  commercialConfig?: CommercialProposalConfig | null,
+  residentialConfig?: { financing?: { enabled?: boolean } | null } | null,
+  proposalLayout?: ProposalTemplateV1 | null
+): boolean {
+  if (commercialConfig?.financing?.enabled !== true) return false;
+  // Builder "EMI on proposal" (residentialConfig shape) must not stay off while deck shows EMI.
+  if (residentialConfig?.financing?.enabled === false) return false;
+  const block = proposalLayout?.blocks?.find((b) => b.id === "commercial_financing_card");
+  if (block?.enabled === false) return false;
+  return true;
+}
+
+/** Keep commercialConfig.financing.enabled aligned with a builder / review toggle. */
+export function withCommercialFinancingEnabled(
+  config: CommercialProposalConfig,
+  enabled: boolean
+): CommercialProposalConfig {
+  return {
+    ...config,
+    financing: {
+      ...config.financing,
+      enabled,
+      interestRatePct: config.financing?.interestRatePct ?? 9.5,
+      tenuresYears: config.financing?.tenuresYears ?? [5, 7, 10],
+      selectedTenureYears: config.financing?.selectedTenureYears ?? 7,
+    },
+  };
+}
+
 /** Sync optional commercial block toggles from feature flags into layout. */
 export function applyCommercialFlagsToLayout(
   layout: ProposalTemplateV1,
@@ -187,4 +221,52 @@ export function applyCommercialFlagsToLayout(
       flags[b.id] !== undefined ? { ...b, enabled: flags[b.id]! } : b
     ),
   };
+}
+
+/** Sync commercial feature flags FROM layout block toggles (review sheet → config). */
+export function applyLayoutFlagsToCommercialConfig(
+  config: CommercialProposalConfig,
+  layout: ProposalTemplateV1
+): CommercialProposalConfig {
+  const flag = (id: ProposalBlockId): boolean | undefined =>
+    layout.blocks.find((b) => b.id === id)?.enabled;
+
+  const financing = flag("commercial_financing_card");
+  const dg = flag("dg_hybrid_analysis_card");
+  const capacity = flag("capacity_scenarios_card");
+  const dcr = flag("dcr_comparison_card");
+  const brand = flag("brand_comparison_card");
+
+  let next = config;
+  if (financing !== undefined) next = withCommercialFinancingEnabled(next, financing);
+  if (dg !== undefined) {
+    next = {
+      ...next,
+      dgAssumptions: { ...next.dgAssumptions, enabled: dg },
+    };
+  }
+  if (capacity !== undefined) {
+    next = {
+      ...next,
+      capacityScenarios: {
+        ...next.capacityScenarios,
+        enabled: capacity,
+        scenarios: next.capacityScenarios?.scenarios ?? [],
+        recommendedId: next.capacityScenarios?.recommendedId,
+      },
+    };
+  }
+  if (dcr !== undefined) {
+    next = {
+      ...next,
+      dcrComparison: { ...next.dcrComparison, enabled: dcr },
+    };
+  }
+  if (brand !== undefined) {
+    next = {
+      ...next,
+      brandComparison: { ...next.brandComparison, enabled: brand },
+    };
+  }
+  return next;
 }

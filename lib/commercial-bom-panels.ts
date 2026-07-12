@@ -43,7 +43,8 @@ export function ratePerWpFromPanelLine(line: PricingLineItem): number {
 }
 
 export function brandIdFromLineBrand(brand: string): string {
-  const b = brand.trim();
+  // Multi-brand display labels use "A / B / C" — catalog match on the primary (first) name.
+  const b = brand.trim().split(/\s*\/\s*/)[0]?.trim() || "";
   if (!b) return "waaree";
   const byLabel = PANEL_CATALOG.find((e) => e.brandLabel.toLowerCase() === b.toLowerCase());
   if (byLabel) return byLabel.brandId;

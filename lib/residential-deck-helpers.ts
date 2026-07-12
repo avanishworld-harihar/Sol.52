@@ -40,15 +40,31 @@ export function lookupResidentialKwPriceInr(
   tiers: ResidentialKwTier[] | undefined,
   plantKw: number
 ): number | null {
-  if (!tiers?.length) return null;
-  const sorted = [...tiers].sort((a, b) => a.kw - b.kw);
+  if (!tiers?.length || !(plantKw > 0)) return null;
+  const sorted = [...tiers]
+    .filter((t) => t.priceInr > 0)
+    .sort((a, b) => a.kw - b.kw);
+  if (!sorted.length) return null;
+
   const exact = sorted.find((t) => t.kw === plantKw);
-  if (exact && exact.priceInr > 0) return exact.priceInr;
-  let best: ResidentialKwTier | null = null;
+  if (exact) return exact.priceInr;
+
+  let lo: ResidentialKwTier | null = null;
+  let hi: ResidentialKwTier | null = null;
   for (const t of sorted) {
-    if (t.kw <= plantKw && t.priceInr > 0) best = t;
+    if (t.kw < plantKw) lo = t;
+    if (t.kw > plantKw) {
+      hi = t;
+      break;
+    }
   }
-  return best?.priceInr ?? sorted.find((t) => t.priceInr > 0)?.priceInr ?? null;
+  if (lo && hi && hi.kw > lo.kw) {
+    const t = (plantKw - lo.kw) / (hi.kw - lo.kw);
+    return Math.round(lo.priceInr + (hi.priceInr - lo.priceInr) * t);
+  }
+  if (lo && !hi && lo.kw > 0) return Math.round((lo.priceInr / lo.kw) * plantKw);
+  if (!lo && hi && hi.kw > 0) return Math.round((hi.priceInr / hi.kw) * plantKw);
+  return sorted[0]?.priceInr ?? null;
 }
 
 export function applyResidentialDiscountInr(
@@ -245,23 +261,27 @@ export function wireBrandsLabel(
 export function panelBrandsLabel(opts: ResidentialBrandOption[] | undefined, fallback: string): string {
   const names = (opts ?? []).map((o) => o.brand.trim()).filter(Boolean);
   if (names.length === 0) return fallback;
-  if (names.length === 1) return names[0]!;
-  return `${names.slice(0, -1).join(", ")} or ${names[names.length - 1]}`;
+  return names.join(" / ");
 }
 
-/** Primary panel brand for proposal/BOM — quoted solar selection wins over catalog active brand. */
+/**
+ * Display brand(s) for proposal/BOM.
+ * When the builder has multiple panel brand options selected, show all of them
+ * (same pattern as inverter brands). Otherwise fall back to the quoted primary brand.
+ */
 export function resolveProposalPanelBrand(
   config: ResidentialProposalConfig,
   fallback: string
 ): string {
+  const fromOptions = panelBrandsLabel(config.panelBrandOptions, "");
+  if (fromOptions.trim()) return fromOptions;
+
   const solar = config.solar;
   if (solar?.brandId) {
     const byId = config.brandCatalog?.entries?.find((e) => e.brandId === solar.brandId);
     if (byId?.brand?.trim()) return byId.brand.trim();
   }
   if (solar?.brand?.trim()) return solar.brand.trim();
-  const fromOptions = panelBrandsLabel(config.panelBrandOptions, "");
-  if (fromOptions.trim()) return fromOptions;
   const activeId = config.brandCatalog?.activeBrandId;
   const activeEntry = config.brandCatalog?.entries?.find((e) => e.brandId === activeId);
   if (activeEntry?.brand?.trim()) return activeEntry.brand.trim();
