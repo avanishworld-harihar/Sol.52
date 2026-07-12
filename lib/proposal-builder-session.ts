@@ -4,7 +4,7 @@
 
 import { emptyMonthlyUnits, type ParsedBillShape } from "@/lib/bill-parse";
 import type { ManualProposalCustomer } from "@/lib/merge-proposal-customer";
-import { writeResidentialDraftProposalId } from "@/lib/residential-brand-catalog-storage";
+import { clearAllProposalDraftIds } from "@/lib/proposal-builder-draft";
 import type { MonthKey, MonthlyUnits } from "@/lib/types";
 
 export const PROPOSAL_BUILDER_SESSION_KEY = "ss_proposal_session_v2";
@@ -139,10 +139,23 @@ export function buildNewProposalHref(): string {
   return "/proposal?new=1";
 }
 
+/** Fresh commercial builder — segment can be prefilled via orgType. */
+export function buildNewCommercialProposalHref(extra?: {
+  orgType?: string;
+  story?: string;
+  kw?: number;
+}): string {
+  const params = new URLSearchParams({ new: "1", preset: "commercial_executive" });
+  if (extra?.orgType) params.set("orgType", extra.orgType);
+  if (extra?.story) params.set("story", extra.story);
+  if (extra?.kw != null && Number.isFinite(extra.kw)) params.set("kw", String(extra.kw));
+  return `/proposal?${params.toString()}`;
+}
+
 /** Call before navigating to /proposal for a fresh builder (avoids stale session crashes). */
 export function prepareNewProposalNavigation(): void {
   clearProposalBuilderSession();
-  writeResidentialDraftProposalId(null);
+  clearAllProposalDraftIds();
   if (typeof window === "undefined") return;
   try {
     sessionStorage.setItem(PROPOSAL_FORCE_NEW_KEY, "1");

@@ -614,4 +614,20 @@
   .proposal-doc-premium[data-theme="dark"] .text-white {
     color: #171717 !important;
   }
+
+  /* Commercial dark panels must keep light text (do not invert to near-black) */
+  .commercial-proposal.proposal-doc-premium [class~="bg-slate-950"] .text-white,
+  .commercial-proposal.proposal-doc-premium [class~="bg-slate-900"] .text-white,
+  .commercial-proposal.proposal-doc-premium .commercial-closing-decision .text-white {
+    color: #ffffff !important;
+  }
+
+  .commercial-proposal.proposal-doc-premium [class~="bg-slate-950"] .text-slate-400,
+  .commercial-proposal.proposal-doc-premium [class~="bg-slate-950"] .text-slate-500,
+  .commercial-proposal.proposal-doc-premium [class~="bg-slate-950"] .text-slate-600,
+  .commercial-proposal.proposal-doc-premium .commercial-closing-decision .text-slate-400,
+  .commercial-proposal.proposal-doc-premium .commercial-closing-decision .text-slate-500,
+  .commercial-proposal.proposal-doc-premium .commercial-closing-decision .text-slate-600 {
+    color: #cbd5e1 !important;
+  }
 }

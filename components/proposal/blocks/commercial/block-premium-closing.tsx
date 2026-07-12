@@ -83,7 +83,7 @@ export function BlockPremiumClosing({ ctx }: Props) {
   ];
 
   return (
-    <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8 md:px-12 md:py-24">
+    <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16 md:px-8 md:py-20 print:px-0 print:py-0">
       <CommercialSectionHeader
         num="10"
         label={isHi ? "प्रस्ताव स्वीकृति" : "Closing & Acceptance"}
@@ -101,10 +101,10 @@ export function BlockPremiumClosing({ ctx }: Props) {
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mb-8 overflow-hidden rounded-2xl bg-slate-950 shadow-xl"
+          className="commercial-closing-decision mb-8 overflow-visible rounded-2xl bg-slate-950 shadow-xl print:overflow-visible print:bg-slate-950"
         >
         <div className="border-b border-white/10 px-6 py-4">
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
             {isHi ? "कार्यकारी निर्णय सारांश" : "Executive Decision Summary"}
           </p>
           <p className="mt-1 text-lg font-bold text-white">
@@ -114,10 +114,10 @@ export function BlockPremiumClosing({ ctx }: Props) {
         </div>
         <div className="grid grid-cols-2 divide-x divide-white/10 sm:grid-cols-3 lg:grid-cols-6">
           {decisonSummary.map((d, i) => (
-            <div key={i} className="px-4 py-4">
-              <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-600">{d.label}</p>
+            <div key={i} className="min-w-0 px-3 py-4 sm:px-4">
+              <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400">{d.label}</p>
               <p className="mt-1 text-lg font-bold tabular-nums text-white">{d.value}</p>
-              <p className="text-[9px] text-slate-600">{d.sub}</p>
+              <p className="text-[9px] text-slate-400">{d.sub}</p>
             </div>
           ))}
         </div>

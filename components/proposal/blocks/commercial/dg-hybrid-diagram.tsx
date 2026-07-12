@@ -41,7 +41,7 @@ export function DgHybridDiagram({ systemKw, capacityKva, presentation = false, c
   return (
     <motion.div
       className={cn(
-        "relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-slate-900 via-[#0c1220] to-slate-950 p-4 sm:p-6",
+        "relative overflow-visible rounded-2xl border border-white/10 bg-gradient-to-b from-slate-900 via-[#0c1220] to-slate-950 p-4 sm:p-6 print:overflow-visible",
         presentation && "shadow-2xl ring-1 ring-white/10",
         className
       )}

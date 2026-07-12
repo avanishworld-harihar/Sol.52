@@ -55,6 +55,8 @@ export function buildProposalUrl(prefill: BuilderPrefill): string {
   if (prefill.lang) params.set("lang", prefill.lang);
   if (prefill.story) params.set("story", prefill.story);
   if (prefill.panelCatalogId) params.set("panel", prefill.panelCatalogId);
+  // Commercial / new residential deep-links start a fresh draft (do not PATCH a prior one).
+  if (prefill.preset === "commercial_executive") params.set("new", "1");
   const qs = params.toString();
   return qs ? `/proposal?${qs}` : "/proposal";
 }

@@ -104,6 +104,7 @@ import { moduleCountForResidential, quoteResidentialSolar } from "@/lib/resident
 import {
   applyCommercialFlagsToLayout,
   defaultCommercialConfig,
+  parseCommercialConfig,
   withOrgStory,
   type CommercialProposalConfig,
 } from "@/lib/commercial-proposal-config";
@@ -133,6 +134,15 @@ import {
   readResidentialDraftProposalId,
   writeResidentialDraftProposalId,
 } from "@/lib/residential-brand-catalog-storage";
+import {
+  bindProposalDraftId,
+  clearAllProposalDraftIds,
+  draftFamilyForPreset,
+  isCommercialPresetFamily,
+  readCommercialDraftProposalId,
+  readDraftProposalIdForFamily,
+  writeCommercialDraftProposalId,
+} from "@/lib/proposal-builder-draft";
 import { getPresetDefaultLayout } from "@/lib/proposal-preset-engine";
 import { builderStateFromPptInput } from "@/lib/proposal-builder-restore-from-deck";
 import {
@@ -379,8 +389,12 @@ function ProposalPageContent() {
         restoringExistingProposalRef.current = false;
         proposalPlantLockedRef.current = false;
         deepLinkProposalIdRef.current = null;
-        writeResidentialDraftProposalId(null);
+        clearAllProposalDraftIds();
         setDraftProposalId(null);
+        setCommercialConfig(null);
+        setCommercialPricingConfig(null);
+        setResidentialConfig(null);
+        setProposalLayout(null);
         clearProposalBuilderSession();
         params.delete("new");
         const qs = params.toString();
@@ -686,7 +700,9 @@ function ProposalPageContent() {
     if (proposalId) {
       restoringExistingProposalRef.current = true;
       deepLinkProposalIdRef.current = proposalId;
+      // Bind to both until restore knows the preset family — then one is cleared.
       writeResidentialDraftProposalId(proposalId);
+      writeCommercialDraftProposalId(proposalId);
       setDraftProposalId(proposalId);
       params.delete("proposalId");
       const qs = params.toString();
@@ -1736,6 +1752,8 @@ function ProposalPageContent() {
 
   useEffect(() => {
     if ((osPresetId as string | null) !== "commercial_executive") return;
+    // Don't clobber a restored commercial deck with defaults.
+    if (restoringExistingProposalRef.current && !deckRestoreReady) return;
     const kw = effectiveResult?.solarKw ?? urlPrefill.kw ?? 60;
     setCommercialConfig((prev) =>
       prev ?? withOrgStory(defaultCommercialConfig(kw), urlPrefill.orgType, urlPrefill.story)
@@ -1750,10 +1768,19 @@ function ProposalPageContent() {
       );
     });
     setProposalLayout((prev) => prev ?? getPresetDefaultLayout("commercial_executive"));
-  }, [osPresetId, urlPrefill.kw, urlPrefill.orgType, urlPrefill.story, manual.connectionType]);
+  }, [
+    osPresetId,
+    urlPrefill.kw,
+    urlPrefill.orgType,
+    urlPrefill.story,
+    manual.connectionType,
+    deckRestoreReady,
+    effectiveResult?.solarKw,
+  ]);
 
   useEffect(() => {
     if ((osPresetId as string | null) !== "commercial_executive") return;
+    if (restoringExistingProposalRef.current && !deckRestoreReady) return;
     let cancelled = false;
     void loadInstallerRateCard().then(() => {
       if (cancelled) return;
@@ -1779,7 +1806,7 @@ function ProposalPageContent() {
     return () => {
       cancelled = true;
     };
-  }, [osPresetId, urlPrefill.kw]);
+  }, [osPresetId, urlPrefill.kw, deckRestoreReady, manual.connectionType]);
 
   const commercialBillUploadKey = useMemo(
     () => `${latestBill?.bill_month ?? ""}|${additionalBills[0]?.bill_month ?? ""}`,
@@ -2042,14 +2069,26 @@ function ProposalPageContent() {
   }, [isAnyResidential, residentialInputMode]);
 
   useEffect(() => {
-    if (draftProposalId) writeResidentialDraftProposalId(draftProposalId);
-  }, [draftProposalId]);
+    if (!draftProposalId || !osPresetId) return;
+    bindProposalDraftId(osPresetId, draftProposalId);
+  }, [draftProposalId, osPresetId]);
 
-  /** Restore saved proposal (deep-link or session) into the builder. */
+  /** Restore saved proposal (deep-link or family-scoped session draft) into the builder. */
   useEffect(() => {
     if (skipProposalRestoreRef.current) return;
+    const deepLink = deepLinkProposalIdRef.current?.trim() || null;
+    // Prefer deep-link; otherwise restore only the draft matching URL/preset prefill family.
+    const preferCommercial =
+      urlPrefill.preset === "commercial_executive" ||
+      isCommercialPresetFamily(osPresetId);
+    const familyDraft = preferCommercial
+      ? readCommercialDraftProposalId()
+      : readResidentialDraftProposalId();
+    // If no preset yet, try either family (deep-link already wrote both).
     const draftId =
-      deepLinkProposalIdRef.current?.trim() || readResidentialDraftProposalId();
+      deepLink ||
+      familyDraft ||
+      (!urlPrefill.preset ? readResidentialDraftProposalId() || readCommercialDraftProposalId() : null);
     if (!draftId) return;
     restoringExistingProposalRef.current = true;
     setDraftProposalId((prev) => prev ?? draftId);
@@ -2069,15 +2108,21 @@ function ProposalPageContent() {
         if (!json.ok || cancelled) return;
 
         const preset = json.presetId;
+        const isCommercial = isCommercialPresetFamily(preset);
         if (preset) {
-          const normalized =
-            preset === "residential_zenith" || preset === "zenith"
-              ? ("residential_zenith" as const)
-              : preset === "residential_executive"
-                ? ("residential_executive" as const)
-                : ("residential_executive" as const);
+          const normalized: ProposalPresetId = isCommercial
+            ? "commercial_executive"
+            : preset === "residential_zenith" || preset === "zenith"
+              ? "residential_zenith"
+              : preset === "residential_premium_luxe" || preset === "luxe" || preset === "premium_luxe"
+                ? "residential_premium_luxe"
+                : preset === "residential_executive"
+                  ? "residential_executive"
+                  : "residential_executive";
           setOsPresetId((prev) => prev ?? normalized);
           setShowPresetPicker(false);
+          setShowCommercialOrgPicker(false);
+          bindProposalDraftId(normalized, draftId);
         }
 
         if (json.leadId) {
@@ -2106,37 +2151,76 @@ function ProposalPageContent() {
               (!isPlaceholderProposalCustomerName(restoredName) ? restoredName : ""),
             officialBillName: prev.officialBillName || deck.manual.officialBillName || restoredName,
             leadPhone: prev.leadPhone || deck.manual.leadPhone,
+            connectionType:
+              prev.connectionType ||
+              deck.manual.connectionType ||
+              (isCommercial ? "commercial" : ""),
           }));
           if (deck.overrideSolarKw) setOverrideSolarKw(deck.overrideSolarKw);
           if (deck.overridePanels) setOverridePanels(deck.overridePanels);
-          if (deck.residentialInputMode) {
+          if (!isCommercial && deck.residentialInputMode) {
             setResidentialInputMode(deck.residentialInputMode);
             setShowResidentialModePicker(false);
           }
         }
 
-        const cfg = parseResidentialConfig(json.pptInput?.residentialConfig);
-        if (cfg) {
-          setResidentialConfig(healStaleResidentialSubsidy(cfg));
-          if (cfg.solar.plantCapacityKw > 0) proposalPlantLockedRef.current = true;
-          const mode = cfg.inputMode;
-          if (mode === "bill" || mode === "requirement") {
-            setResidentialInputMode(mode);
-            setShowResidentialModePicker(false);
+        if (isCommercial) {
+          const commCfg = parseCommercialConfig(json.pptInput?.commercialConfig);
+          if (commCfg) {
+            setCommercialConfig(commCfg);
+            setShowCommercialOrgPicker(false);
           }
-        }
+          const pricingCfg = parseResidentialConfig(json.pptInput?.residentialConfig);
+          if (pricingCfg) {
+            setCommercialPricingConfig(
+              applyCommercialPanelTrackPolicy(pricingCfg, json.pptInput?.connectionType)
+            );
+            if (pricingCfg.solar.plantCapacityKw > 0) proposalPlantLockedRef.current = true;
+            const mode = pricingCfg.inputMode;
+            if (mode === "bill" || mode === "requirement") {
+              setCommercialInputMode(mode);
+            }
+          }
+          const layout = json.pptInput?.proposalLayout;
+          if (layout && typeof layout === "object") {
+            const parsedLayout = layout as ProposalTemplateV1;
+            setProposalLayout((prev) => {
+              const base = prev ?? parsedLayout;
+              return commCfg ? applyCommercialFlagsToLayout(base, commCfg) : parsedLayout;
+            });
+          } else if (commCfg) {
+            setProposalLayout((prev) =>
+              prev
+                ? applyCommercialFlagsToLayout(prev, commCfg)
+                : applyCommercialFlagsToLayout(getPresetDefaultLayout("commercial_executive"), commCfg)
+            );
+          } else {
+            setProposalLayout((prev) => prev ?? getPresetDefaultLayout("commercial_executive"));
+          }
+        } else {
+          const cfg = parseResidentialConfig(json.pptInput?.residentialConfig);
+          if (cfg) {
+            setResidentialConfig(healStaleResidentialSubsidy(cfg));
+            if (cfg.solar.plantCapacityKw > 0) proposalPlantLockedRef.current = true;
+            const mode = cfg.inputMode;
+            if (mode === "bill" || mode === "requirement") {
+              setResidentialInputMode(mode);
+              setShowResidentialModePicker(false);
+            }
+          }
 
-        const layout = json.pptInput?.proposalLayout;
-        if (layout && typeof layout === "object") {
-          const parsedLayout = layout as ProposalTemplateV1;
-          setProposalLayout((prev) => {
-            const base = prev ?? parsedLayout;
-            return cfg ? applyResidentialFlagsToLayout(base, cfg) : parsedLayout;
-          });
-        } else if (cfg) {
-          setProposalLayout((prev) =>
-            prev ? applyResidentialFlagsToLayout(prev, cfg) : prev
-          );
+          const layout = json.pptInput?.proposalLayout;
+          if (layout && typeof layout === "object") {
+            const parsedLayout = layout as ProposalTemplateV1;
+            setProposalLayout((prev) => {
+              const base = prev ?? parsedLayout;
+              return cfg ? applyResidentialFlagsToLayout(base, cfg) : parsedLayout;
+            });
+          } else if (cfg) {
+            setProposalLayout((prev) =>
+              prev ? applyResidentialFlagsToLayout(prev, cfg) : prev
+            );
+          }
         }
 
         if (!cancelled) {
@@ -2393,11 +2477,19 @@ function ProposalPageContent() {
         ...buildProposalExtrasPayload(),
     };
 
-    const existingProposalId =
-      draftProposalId?.trim() ||
-      deepLinkProposalIdRef.current?.trim() ||
-      readResidentialDraftProposalId()?.trim() ||
-      null;
+    const existingProposalId = (() => {
+      const deep = deepLinkProposalIdRef.current?.trim() || null;
+      if (deep) return deep;
+      const family = draftFamilyForPreset(osPresetId);
+      const familyDraft = readDraftProposalIdForFamily(family)?.trim() || null;
+      if (familyDraft) return familyDraft;
+      const inMemory = draftProposalId?.trim() || null;
+      if (!inMemory) return null;
+      // Refuse cross-family overwrite: in-memory id must match this family's key.
+      if (family === "commercial" && readCommercialDraftProposalId() === inMemory) return inMemory;
+      if (family === "residential" && readResidentialDraftProposalId() === inMemory) return inMemory;
+      return null;
+    })();
 
     if (existingProposalId) {
       const response = await fetch(`/api/proposals/${existingProposalId}/deck`, {
@@ -2414,6 +2506,7 @@ function ProposalPageContent() {
       const shareUrl = json.shareUrl || `${window.location.origin}/proposal/${json.id}`;
       setLatestWebProposalUrl(shareUrl);
       setDraftProposalId(json.id);
+      bindProposalDraftId(osPresetId, json.id);
       if (leadId) syncCrmCachesAfterProposal(leadId);
       return { id: json.id, shareUrl, leadCreated, leadId };
     }
@@ -2451,6 +2544,7 @@ function ProposalPageContent() {
     const shareUrl = json.shareUrl || `${window.location.origin}/proposal/${json.id}`;
     setLatestWebProposalUrl(shareUrl);
     setDraftProposalId(json.id);
+    bindProposalDraftId(osPresetId, json.id);
     if (leadId) syncCrmCachesAfterProposal(leadId);
     return { id: json.id, shareUrl, leadCreated, leadId };
   }
@@ -2587,6 +2681,11 @@ function ProposalPageContent() {
       {showPresetPicker && (
         <ProposalPresetPicker
           onSelectResidential={() => {
+            // Don't inherit a commercial draft into residential flow.
+            writeCommercialDraftProposalId(null);
+            if (isCommercialPresetFamily(osPresetId)) {
+              setDraftProposalId(null);
+            }
             const id = readDefaultResidentialPreset();
             setOsPresetId(id);
             setShowPresetPicker(false);
@@ -2595,10 +2694,18 @@ function ProposalPageContent() {
             }
           }}
           onSelectCommercial={() => {
+            // Fresh commercial draft — never PATCH a residential / prior commercial row.
+            writeResidentialDraftProposalId(null);
+            writeCommercialDraftProposalId(null);
+            setDraftProposalId(null);
+            setCommercialConfig(null);
+            setCommercialPricingConfig(null);
+            setProposalLayout(null);
             setShowPresetPicker(false);
             setShowCommercialOrgPicker(true);
           }}
           onSkip={() => {
+            writeCommercialDraftProposalId(null);
             setOsPresetId(readDefaultResidentialPreset());
             setResidentialInputMode("bill");
             setShowPresetPicker(false);
@@ -2610,6 +2717,8 @@ function ProposalPageContent() {
         <CommercialOrgTypePicker
           open
           onSelect={(orgType, defaultKw) => {
+            writeCommercialDraftProposalId(null);
+            setDraftProposalId(null);
             setOsPresetId("commercial_executive");
             setCommercialConfig(
               withOrgStory(defaultCommercialConfig(defaultKw), orgType, urlPrefill.story)

@@ -128,11 +128,11 @@ export function BlockDgHybrid({ summary, lang, darkMode, commercialConfig }: Pro
         ].map((item) => (
           <div
             key={item.title}
-            className="rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-white/10 dark:bg-white/[0.03]"
+            className="min-w-0 rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-white/10 dark:bg-white/[0.03]"
           >
             <item.icon className="mb-2 h-4 w-4 text-indigo-600 dark:text-indigo-400" />
             <p className="text-xs font-bold text-slate-900 dark:text-white">{item.title}</p>
-            <p className="mt-1 text-[11px] leading-snug text-slate-600 dark:text-slate-400">{item.text}</p>
+            <p className="mt-1 break-words text-[11px] leading-snug text-slate-600 dark:text-slate-400">{item.text}</p>
           </div>
         ))}
       </motion.div>
@@ -167,14 +167,14 @@ function ComparisonCard({
         <Icon className="h-4 w-4 text-slate-500" />
         <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{title}</p>
       </div>
-      <div className="flex items-end justify-between gap-2 text-sm">
-        <div>
-          <p className="text-[10px] uppercase text-slate-500">Before solar</p>
-          <p className="font-bold tabular-nums text-rose-600 line-through decoration-rose-300">{before}</p>
+      <div className="flex min-w-0 items-end justify-between gap-3 text-sm">
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] uppercase tracking-wide text-slate-500">Before solar</p>
+          <p className="break-words font-bold tabular-nums text-rose-600 line-through decoration-rose-300">{before}</p>
         </div>
-        <div className="text-right">
-          <p className="text-[10px] uppercase text-slate-500">With hybrid</p>
-          <p className="font-bold tabular-nums text-emerald-700 dark:text-emerald-400">{after}</p>
+        <div className="min-w-0 flex-1 text-right">
+          <p className="text-[10px] uppercase tracking-wide text-slate-500">With hybrid</p>
+          <p className="break-words font-bold tabular-nums text-emerald-700 dark:text-emerald-400">{after}</p>
         </div>
       </div>
       <p className="mt-2 text-center text-xs font-bold text-emerald-600">{delta}</p>

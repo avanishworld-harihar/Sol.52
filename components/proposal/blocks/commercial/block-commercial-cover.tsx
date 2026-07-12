@@ -32,21 +32,23 @@ export function BlockCommercialCover({ ctx }: Props) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.35 }}
-      className="commercial-cover commercial-cover--confidential flex min-h-[min(100dvh,297mm)] flex-col bg-white text-slate-900 print:min-h-[277mm]"
+      className="commercial-cover commercial-cover--confidential flex min-h-[min(100dvh,297mm)] flex-col bg-white text-slate-900 print:min-h-0"
     >
-      <header className="commercial-cover-confidential-header flex items-center justify-between border-b border-slate-200 px-6 py-4 md:px-10">
-        <ProposalBrandMark
-          surface="cover"
-          brandConfig={brandConfig}
-          installerName={installer.name}
-          logoUrl={installerLogoUrl}
-          fallbackIcon={
-            <div className="flex h-9 w-9 items-center justify-center border border-neutral-300 bg-neutral-50">
-              <Zap className="h-4 w-4 text-neutral-600" strokeWidth={1.5} />
-            </div>
-          }
-        />
-        <span className="shrink-0 rounded border border-slate-300 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-600">
+      <header className="commercial-cover-confidential-header flex min-w-0 items-center justify-between gap-3 border-b border-slate-200 px-4 py-3 sm:px-6 sm:py-4 md:px-8">
+        <div className="min-w-0 flex-1">
+          <ProposalBrandMark
+            surface="cover"
+            brandConfig={brandConfig}
+            installerName={installer.name}
+            logoUrl={installerLogoUrl}
+            fallbackIcon={
+              <div className="flex h-9 w-9 items-center justify-center border border-neutral-300 bg-neutral-50">
+                <Zap className="h-4 w-4 text-neutral-600" strokeWidth={1.5} />
+              </div>
+            }
+          />
+        </div>
+        <span className="commercial-cover-confidential-badge shrink-0 rounded border border-slate-300 px-2 py-1 text-[8px] font-bold uppercase tracking-[0.12em] text-slate-600 sm:px-2.5 sm:text-[9px] sm:tracking-[0.16em]">
           {isHi ? "गोपनीय" : "Confidential"}
         </span>
       </header>

@@ -1,5 +1,6 @@
 /**
  * Residential catalog access for proposals — backed by central installer rate card.
+ * Draft ID helpers live in proposal-builder-draft (re-exported here for compatibility).
  */
 
 import {
@@ -15,29 +16,12 @@ import {
 } from "@/lib/residential-brand-catalog";
 import type { ResidentialProposalConfig } from "@/lib/residential-requirements-schema";
 
-const DRAFT_SESSION_KEY = "ss_residential_proposal_draft_id";
+export {
+  readResidentialDraftProposalId,
+  writeResidentialDraftProposalId,
+} from "@/lib/proposal-builder-draft";
 
 export const RESIDENTIAL_BRAND_CATALOG_UPDATED_EVENT = "ss-installer-rate-card-updated";
-
-export function readResidentialDraftProposalId(): string | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const id = sessionStorage.getItem(DRAFT_SESSION_KEY)?.trim();
-    return id || null;
-  } catch {
-    return null;
-  }
-}
-
-export function writeResidentialDraftProposalId(id: string | null) {
-  if (typeof window === "undefined") return;
-  try {
-    if (id) sessionStorage.setItem(DRAFT_SESSION_KEY, id);
-    else sessionStorage.removeItem(DRAFT_SESSION_KEY);
-  } catch {
-    /* ignore */
-  }
-}
 
 export function readResidentialBrandCatalog(): ResidentialBrandCatalog | null {
   return getCachedResidentialBrandCatalog();

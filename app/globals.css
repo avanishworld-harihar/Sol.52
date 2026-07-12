@@ -3257,11 +3257,11 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
 @media print {
   @page {
     size: 210mm 297mm; /* Exact A4 portrait */
-    margin: 10mm 9mm;
+    margin: 10mm 10mm;
   }
 
   @page :first {
-    margin-top: 9mm;
+    margin-top: 10mm;
   }
 
   html,
@@ -3306,11 +3306,12 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
 
   .proposal-document {
     max-width: none !important;
-    width: 192mm !important; /* 210mm - 2×9mm margins */
+    width: 190mm !important; /* 210mm - 2×10mm margins */
     padding: 0 !important;
     margin: 0 auto !important;
     background: white !important;
     color: #0f172a !important;
+    overflow: visible !important;
   }
 
   #proposal-route-root {
@@ -3327,6 +3328,15 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   .proposal-document[data-theme="dark"] .text-slate-100,
   .proposal-document[data-theme="dark"] .text-slate-200 {
     color: #0f172a !important;
+  }
+
+  /* Exception: commercial dark cards keep light type */
+  .commercial-proposal.proposal-document [class~="bg-slate-950"] .text-white,
+  .commercial-proposal.proposal-document [class~="bg-slate-900"] .text-white,
+  .commercial-proposal.proposal-document .commercial-closing-decision .text-white,
+  .commercial-proposal.proposal-document[data-theme="dark"] [class~="bg-slate-950"] .text-white,
+  .commercial-proposal.proposal-document[data-theme="dark"] [class~="bg-slate-900"] .text-white {
+    color: #ffffff !important;
   }
 
   .proposal-document[data-theme="dark"] .text-slate-400,
@@ -3394,7 +3404,7 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     color: #0f172a !important;
   }
 
-  /* Commercial — each section = own sheet + full color fidelity */
+  /* Commercial — each major section starts a new sheet; height follows content (no forced blank) */
   .commercial-proposal section.proposal-page.commercial-print-page {
     padding: 0 !important;
     margin-top: 0 !important;
@@ -3404,7 +3414,9 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     break-before: page !important;
     page-break-inside: auto !important;
     break-inside: auto !important;
-    min-height: 277mm !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
     box-sizing: border-box !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
@@ -3421,7 +3433,7 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   }
 
   .commercial-proposal #comm-cover.commercial-print-page {
-    min-height: 277mm !important;
+    min-height: 0 !important;
   }
 
   .commercial-proposal .proposal-page {
@@ -3431,6 +3443,7 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     break-before: page !important;
     page-break-inside: auto !important;
     break-inside: auto !important;
+    min-height: 0 !important;
   }
 
   .commercial-proposal .proposal-page:first-of-type {
@@ -3438,29 +3451,45 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     break-before: auto !important;
   }
 
+  /* Cover may span if tall — never clip; avoid forces Chrome to crop overflowing content */
   .commercial-proposal #comm-cover {
-    page-break-inside: avoid !important;
-    break-inside: avoid-page !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
     page-break-after: always !important;
     break-after: page !important;
+    overflow: visible !important;
   }
 
   .commercial-proposal #comm-cover .commercial-cover--confidential {
-    min-height: 277mm !important;
+    min-height: 0 !important;
+    height: auto !important;
     display: flex !important;
     flex-direction: column !important;
+    padding: 0 2mm !important;
+  }
+
+  .commercial-proposal #comm-cover .commercial-cover-confidential-header {
+    gap: 2mm !important;
+    padding: 3mm 2mm !important;
+  }
+
+  .commercial-proposal #comm-cover .commercial-cover-confidential-badge {
+    letter-spacing: 0.08em !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
   }
 
   .commercial-proposal #comm-cover .commercial-cover-confidential-main {
-    flex: 1 1 auto !important;
+    flex: 0 1 auto !important;
     display: flex !important;
     flex-direction: column !important;
     justify-content: center !important;
+    padding: 12mm 4mm !important;
   }
 
   .commercial-proposal #comm-executive-summary {
-    page-break-inside: avoid !important;
-    break-inside: avoid-page !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
   }
 
   .commercial-proposal #comm-executive-summary .commercial-executive-summary > div:first-child {
@@ -3476,15 +3505,15 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     font-size: 14pt !important;
   }
 
-  /* BOM — keep each category intact; Electrical & Protection starts on a fresh page */
+  /* BOM categories can flow; only avoid splitting mid-row tables when possible */
   .commercial-proposal #comm-bom [data-bom-category="electrical"] {
-    page-break-before: always !important;
-    break-before: page !important;
+    page-break-before: auto !important;
+    break-before: auto !important;
   }
 
   .commercial-proposal #comm-bom [data-bom-category] {
-    page-break-inside: avoid !important;
-    break-inside: avoid-page !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
   }
 
   .commercial-proposal #comm-school-green .rounded-2xl.border {
@@ -3501,8 +3530,8 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
     gap: 3mm !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid-page !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
   }
 
   .commercial-proposal #comm-school-green .commercial-school-charts-row > * {
@@ -3518,19 +3547,27 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   }
 
   .commercial-proposal #comm-school-learning {
-    page-break-after: always !important;
-    break-after: page !important;
+    page-break-after: auto !important;
+    break-after: auto !important;
   }
 
   .commercial-proposal .commercial-executive-kpi-grid span {
     print-color-adjust: exact !important;
   }
 
-  /* Keep cards, panels, and charts intact — cut content moves to next page */
-  .commercial-proposal .commercial-print-keep-together,
-  .commercial-proposal .commercial-hour-chart {
-    page-break-inside: avoid !important;
-    break-inside: avoid-page !important;
+  /* Compact KPIs/charts: prefer keep-together, but never clip if they don't fit */
+  .commercial-proposal .commercial-kpi-card,
+  .commercial-proposal .commercial-hour-chart,
+  .commercial-proposal .commercial-roi-kpi-grid > * {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+    overflow: visible !important;
+  }
+
+  .commercial-proposal .commercial-print-keep-together {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+    overflow: visible !important;
   }
 
   .commercial-proposal .commercial-section-header-block {
@@ -3538,9 +3575,29 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     break-after: avoid-page !important;
   }
 
-  .commercial-proposal .commercial-roi-kpi-grid > * {
-    page-break-inside: avoid !important;
-    break-inside: avoid-page !important;
+  .commercial-proposal .commercial-section-kicker {
+    max-width: none !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: normal !important;
+    letter-spacing: 0.06em !important;
+  }
+
+  /* Never clip commercial content in PDF — tall blocks must split across pages */
+  .commercial-proposal,
+  .commercial-proposal section,
+  .commercial-proposal .proposal-page,
+  .commercial-proposal .rounded-2xl,
+  .commercial-proposal .overflow-hidden {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
+  .commercial-proposal .truncate,
+  .commercial-proposal .text-ellipsis {
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: normal !important;
   }
 
   .commercial-proposal #comm-roi .commercial-roi-kpi-grid {
@@ -3560,8 +3617,44 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   }
 
   .commercial-proposal .mx-auto.max-w-6xl {
-    padding-top: 10mm !important;
-    padding-bottom: 10mm !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    padding-left: 2mm !important;
+    padding-right: 2mm !important;
+    padding-top: 6mm !important;
+    padding-bottom: 6mm !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Dark closing / decision panels — keep light text readable in PDF */
+  .commercial-proposal .commercial-closing-decision,
+  .commercial-proposal .commercial-closing-decision[class*="bg-slate-950"],
+  .commercial-proposal [class~="bg-slate-950"],
+  .commercial-proposal [class~="bg-slate-900"] {
+    background-color: #020617 !important;
+    color: #f8fafc !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .commercial-proposal .commercial-closing-decision .text-white,
+  .commercial-proposal [class~="bg-slate-950"] .text-white,
+  .commercial-proposal [class~="bg-slate-900"] .text-white,
+  .commercial-proposal [class~="bg-slate-950"] .text-lg,
+  .commercial-proposal .commercial-closing-decision p.text-white {
+    color: #ffffff !important;
+  }
+
+  .commercial-proposal .commercial-closing-decision .text-slate-400,
+  .commercial-proposal .commercial-closing-decision .text-slate-500,
+  .commercial-proposal .commercial-closing-decision .text-slate-600,
+  .commercial-proposal [class~="bg-slate-950"] .text-slate-400,
+  .commercial-proposal [class~="bg-slate-950"] .text-slate-500,
+  .commercial-proposal [class~="bg-slate-950"] .text-slate-600,
+  .commercial-proposal [class~="bg-slate-900"] .text-slate-400,
+  .commercial-proposal [class~="bg-slate-900"] .text-slate-500,
+  .commercial-proposal [class~="bg-slate-900"] .text-slate-600 {
+    color: #cbd5e1 !important;
   }
 
   /* ── Commercial PDF: reduce rasterization + fix blank iOS pages ─────────── */
