@@ -1762,7 +1762,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
   gap: 1.5rem;
-  align-items: stretch;
+  align-items: start;
   min-height: 0;
   min-width: 0;
   flex: 1;
@@ -1772,11 +1772,14 @@
   flex-direction: column;
   justify-content: center;
   min-width: 0;
+  height: 100%;
 }
 .closingRight {
   display: flex;
-  align-items: stretch;
+  align-items: center;
+  justify-content: flex-end;
   min-width: 0;
+  align-self: center;
 }
 .closingCTABox {
   background: rgba(255,255,255,0.06);
@@ -1787,10 +1790,11 @@
   flex-direction: column;
   gap: 0.85rem;
   width: 100%;
+  max-width: 280px;
   min-width: 0;
-  height: auto;
-  justify-content: center;
-  overflow: hidden; /* never show a scrollbar inside the CTA */
+  height: fit-content;
+  justify-content: flex-start;
+  overflow: hidden;
 }
 .ctaTitle {
   font-family: 'Montserrat', sans-serif;
@@ -1931,11 +1935,17 @@
   .closingSplit {
     grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) !important;
     gap: 1.25rem !important;
+    align-items: center !important;
+  }
+  .closingRight {
+    align-self: center !important;
   }
   .closingCTABox {
     overflow: hidden !important;
-    height: auto !important;
+    height: fit-content !important;
     max-height: none !important;
+    width: 100% !important;
+    max-width: 260px !important;
   }
   .closingBtn { display: none !important; }
   .termsGrid { flex-grow: 1; align-content: start; }
