@@ -618,8 +618,16 @@
   /* Commercial dark panels must keep light text (do not invert to near-black) */
   .commercial-proposal.proposal-doc-premium [class~="bg-slate-950"] .text-white,
   .commercial-proposal.proposal-doc-premium [class~="bg-slate-900"] .text-white,
-  .commercial-proposal.proposal-doc-premium .commercial-closing-decision .text-white {
+  .commercial-proposal.proposal-doc-premium .commercial-closing-decision .text-white,
+  .commercial-proposal.proposal-doc-premium .commercial-dg-diagram .text-white,
+  .commercial-proposal.proposal-doc-premium .commercial-dg-diagram [class*="text-white"],
+  .commercial-proposal.proposal-doc-premium .commercial-dg-node {
     color: #ffffff !important;
+  }
+
+  .commercial-proposal.proposal-doc-premium .commercial-dg-diagram {
+    background-color: #0b1220 !important;
+    background-image: none !important;
   }
 
   .commercial-proposal.proposal-doc-premium [class~="bg-slate-950"] .text-slate-400,

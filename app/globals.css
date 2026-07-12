@@ -2606,7 +2606,8 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   box-shadow: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  overflow: hidden;
+  /* visible — overflow:hidden clips tall sections when they paginate in PDF */
+  overflow: visible;
 }
 
 .commercial-proposal .proposal-page:first-of-type {
@@ -3257,11 +3258,12 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
 @media print {
   @page {
     size: 210mm 297mm; /* Exact A4 portrait */
-    margin: 10mm 10mm;
+    /* Slightly tighter margins so edge text/badges are not clipped */
+    margin: 8mm 8mm;
   }
 
   @page :first {
-    margin-top: 10mm;
+    margin-top: 8mm;
   }
 
   html,
@@ -3305,12 +3307,18 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   }
 
   .proposal-document {
-    max-width: none !important;
-    width: 190mm !important; /* 210mm - 2×10mm margins */
+    width: 100% !important; /* fill page content box — avoid 210mm overflow clip */
+    max-width: 100% !important;
     padding: 0 !important;
     margin: 0 auto !important;
     background: white !important;
     color: #0f172a !important;
+    overflow: visible !important;
+  }
+
+  .commercial-proposal.proposal-document {
+    width: 100% !important;
+    max-width: 100% !important;
     overflow: visible !important;
   }
 
@@ -3334,8 +3342,14 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   .commercial-proposal.proposal-document [class~="bg-slate-950"] .text-white,
   .commercial-proposal.proposal-document [class~="bg-slate-900"] .text-white,
   .commercial-proposal.proposal-document .commercial-closing-decision .text-white,
+  .commercial-proposal.proposal-document .commercial-dg-diagram .text-white,
+  .commercial-proposal.proposal-document .commercial-dg-diagram .text-slate-200,
+  .commercial-proposal.proposal-document .commercial-dg-diagram .text-sky-100,
+  .commercial-proposal.proposal-document .commercial-dg-node,
   .commercial-proposal.proposal-document[data-theme="dark"] [class~="bg-slate-950"] .text-white,
-  .commercial-proposal.proposal-document[data-theme="dark"] [class~="bg-slate-900"] .text-white {
+  .commercial-proposal.proposal-document[data-theme="dark"] [class~="bg-slate-900"] .text-white,
+  .commercial-proposal.proposal-document[data-theme="dark"] .commercial-dg-diagram .text-white,
+  .commercial-proposal.proposal-document[data-theme="dark"] .commercial-dg-diagram .text-slate-200 {
     color: #ffffff !important;
   }
 
@@ -3637,6 +3651,101 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     print-color-adjust: exact !important;
   }
 
+  /* DG hybrid diagram — solid opaque dark panel (print was washing /15 backgrounds to white) */
+  .commercial-proposal .commercial-dg-diagram,
+  .commercial-proposal .commercial-dg-diagram[class*="bg-gradient"],
+  .commercial-proposal .commercial-dg-diagram[class*="from-slate"] {
+    background-color: #0b1220 !important;
+    background-image: none !important;
+    color: #f8fafc !important;
+    border-color: #334155 !important;
+    opacity: 1 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .commercial-proposal .commercial-dg-diagram *,
+  .commercial-proposal .commercial-dg-diagram .opacity-80,
+  .commercial-proposal .commercial-dg-diagram [class*="opacity-"],
+  .commercial-proposal .commercial-dg-diagram [class*="text-"][class*="/"] {
+    opacity: 1 !important;
+  }
+
+  .commercial-proposal .commercial-dg-diagram,
+  .commercial-proposal .commercial-dg-diagram p,
+  .commercial-proposal .commercial-dg-diagram span,
+  .commercial-proposal .commercial-dg-diagram .text-sky-300,
+  .commercial-proposal .commercial-dg-diagram .text-sky-100,
+  .commercial-proposal .commercial-dg-diagram .text-slate-200,
+  .commercial-proposal .commercial-dg-diagram .text-indigo-100,
+  .commercial-proposal .commercial-dg-diagram .text-amber-100,
+  .commercial-proposal .commercial-dg-diagram .text-rose-100,
+  .commercial-proposal .commercial-dg-diagram .text-emerald-100,
+  .commercial-proposal .commercial-dg-diagram .text-white,
+  .commercial-proposal .commercial-dg-diagram [class*="text-white"] {
+    color: #f8fafc !important;
+  }
+
+  .commercial-proposal .commercial-dg-diagram .text-sky-300 {
+    color: #7dd3fc !important;
+  }
+
+  .commercial-proposal .commercial-dg-node {
+    opacity: 1 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .commercial-proposal .commercial-dg-node--grid {
+    background-color: #475569 !important;
+    border-color: #94a3b8 !important;
+    color: #f8fafc !important;
+  }
+
+  .commercial-proposal .commercial-dg-node--lt {
+    background-color: #0369a1 !important;
+    border-color: #38bdf8 !important;
+    color: #f0f9ff !important;
+  }
+
+  .commercial-proposal .commercial-dg-node--ctrl {
+    background-color: #4338ca !important;
+    border-color: #818cf8 !important;
+    color: #eef2ff !important;
+  }
+
+  .commercial-proposal .commercial-dg-node--solar {
+    background-color: #b45309 !important;
+    border-color: #fbbf24 !important;
+    color: #fffbeb !important;
+  }
+
+  .commercial-proposal .commercial-dg-node--genset {
+    background-color: #be123c !important;
+    border-color: #fb7185 !important;
+    color: #fff1f2 !important;
+  }
+
+  .commercial-proposal .commercial-dg-node--loads {
+    background-color: #047857 !important;
+    border-color: #34d399 !important;
+    color: #ecfdf5 !important;
+  }
+
+  .commercial-proposal .commercial-dg-diagram svg {
+    color: #38bdf8 !important;
+    stroke: currentColor !important;
+  }
+
+  .commercial-proposal #comm-dg-hybrid {
+    overflow: visible !important;
+  }
+
+  .commercial-proposal #comm-dg-hybrid .commercial-dg-diagram {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
   .commercial-proposal .commercial-closing-decision .text-white,
   .commercial-proposal [class~="bg-slate-950"] .text-white,
   .commercial-proposal [class~="bg-slate-900"] .text-white,
@@ -3683,7 +3792,9 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   .commercial-proposal
     [class*="bg-"][class*="/"]:not(.commercial-print-accent):not(
       .commercial-print-table-head
-    ):not(.commercial-kpi-card) {
+    ):not(.commercial-kpi-card):not(.commercial-dg-diagram):not(.commercial-dg-node):not(
+      .commercial-closing-decision
+    ) {
     background-image: none !important;
   }
 
@@ -3718,7 +3829,9 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   .commercial-proposal
     [class*="bg-"][class*="/"]:not(.commercial-print-accent):not(
       .commercial-print-table-head
-    ):not(.commercial-kpi-card):not([class*="bg-slate-50/"]):not([class*="bg-emerald-50/"]):not(
+    ):not(.commercial-kpi-card):not(.commercial-dg-diagram):not(.commercial-dg-node):not(
+      .commercial-closing-decision
+    ):not([class*="bg-slate-50/"]):not([class*="bg-emerald-50/"]):not(
       [class*="bg-sky-50/"]
     ):not([class*="bg-indigo-50/"]):not([class*="bg-violet-50/"]):not([class*="bg-amber-50/"]):not(
       [class*="bg-rose-50/"]
