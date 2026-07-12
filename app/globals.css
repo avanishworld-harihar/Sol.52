@@ -3537,15 +3537,21 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     font-size: 14pt !important;
   }
 
-  /* BOM categories can flow; only avoid splitting mid-row tables when possible */
+  /* BOM categories: keep each category card (header + table) on one page — no orphan headings */
   .commercial-proposal #comm-bom [data-bom-category="electrical"] {
     page-break-before: auto !important;
     break-before: auto !important;
   }
 
   .commercial-proposal #comm-bom [data-bom-category] {
-    page-break-inside: auto !important;
-    break-inside: auto !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
+  }
+
+  .commercial-proposal #comm-bom [data-bom-category] .commercial-bom-category-head,
+  .commercial-proposal #comm-bom [data-bom-category] thead {
+    page-break-after: avoid !important;
+    break-after: avoid-page !important;
   }
 
   .commercial-proposal #comm-school-green .rounded-2xl.border {
@@ -3620,8 +3626,8 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   }
 
   .commercial-proposal #comm-bom [data-bom-category] {
-    page-break-inside: auto !important;
-    break-inside: auto !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
   }
 
   /* Prefer starting a card on a fresh page rather than orphaning a header alone */

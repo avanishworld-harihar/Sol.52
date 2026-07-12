@@ -455,17 +455,19 @@ export function BlockTieredBOM({ ctx }: Props) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: catIdx * 0.05 }}
-              className="commercial-print-allow-break overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_2px_16px_rgba(15,23,42,0.05)] print:overflow-visible print:break-inside-auto"
+              className="commercial-print-keep-together overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_2px_16px_rgba(15,23,42,0.05)] print:overflow-visible print:break-inside-avoid"
             >
-              {/* Category header */}
-              <div className={`commercial-print-accent flex items-center gap-2 px-5 py-3 ${c.header}`}>
+              {/* Category header — stays with table (no orphan heading across pages) */}
+              <div
+                className={`commercial-print-accent commercial-bom-category-head flex items-center gap-2 px-5 py-3 ${c.header}`}
+              >
                 <span className={`h-2 w-2 rounded-full bg-white/60`} />
                 <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white">
                   {label}
                 </p>
               </div>
 
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto print:overflow-visible">
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="commercial-print-table-head border-b border-slate-100 bg-slate-50/80 text-[9px] font-bold uppercase tracking-wider text-slate-400">
