@@ -338,6 +338,7 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
   @page { size: A4; margin: 18mm 20mm; }
   @page :first { size: A4; margin: 0; }
   @page atelier-cover { size: A4; margin: 0; }
+  @page atelier-closing { size: A4; margin: 0; }
 }
 `}</style>
 

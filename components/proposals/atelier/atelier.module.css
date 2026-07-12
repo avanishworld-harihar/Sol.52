@@ -1452,7 +1452,7 @@
   color: rgba(255,255,255,0.7);
 }
 
-/* ══ P11: EMOTIONAL CLOSING ════════════════════════════════════ */
+/* ══ CLOSING ════════════════════════════════════════════════════ */
 .closingPage {
   background: var(--h);
   color: var(--white);
@@ -1489,6 +1489,12 @@
 .closingInner {
   position: relative;
   z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
 }
 .closingTag {
   font-family: 'Montserrat', sans-serif;
@@ -1498,46 +1504,48 @@
   color: var(--or);
   text-transform: uppercase;
   display: block;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 .closingTitle {
   font-family: 'Montserrat', sans-serif;
-  font-size: 3rem;
+  font-size: clamp(2rem, 4vw, 2.75rem);
   font-weight: 800;
   color: var(--white);
   line-height: 1;
-  margin: 0 0 1rem;
+  margin: 0 0 0.85rem;
 }
 .closingStatement {
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   color: rgba(255,255,255,0.75);
-  line-height: 1.6;
-  max-width: 560px;
-  margin: 0 0 1rem;
+  line-height: 1.55;
+  max-width: 100%;
+  margin: 0 0 0.85rem;
 }
 .closingStatement strong { color: var(--white); font-weight: 700; }
 .closingSub {
-  font-size: 0.83rem;
+  font-size: 0.8rem;
   color: rgba(255,255,255,0.45);
-  line-height: 1.7;
-  max-width: 520px;
-  margin: 0 0 2rem;
+  line-height: 1.6;
+  max-width: 100%;
+  margin: 0 0 1.5rem;
 }
 
 .closingStats {
   display: flex;
   align-items: center;
-  gap: 2rem;
-  margin-bottom: 2.5rem;
-  padding: 1.25rem 1.5rem;
+  gap: 1.25rem;
+  margin-bottom: 0;
+  padding: 1rem 1.25rem;
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: var(--card-r);
   width: fit-content;
+  max-width: 100%;
+  flex-wrap: wrap;
 }
 .closingStatBig {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   font-weight: 800;
   color: var(--or);
   line-height: 1;
@@ -1749,57 +1757,68 @@
   margin: 0;
 }
 
-/* ══ CLOSING SPLIT SCREEN (P11) ═════════════════════════════════ */
+/* ══ CLOSING SPLIT SCREEN ═══════════════════════════════════════ */
 .closingSplit {
   display: grid;
-  grid-template-columns: 1fr 240px;
-  gap: 2rem;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 1.5rem;
   align-items: stretch;
   min-height: 0;
+  min-width: 0;
   flex: 1;
 }
 .closingLeft {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  min-width: 0;
 }
 .closingRight {
   display: flex;
-  align-items: center;
+  align-items: stretch;
+  min-width: 0;
 }
 .closingCTABox {
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(249,115,22,0.3);
   border-radius: var(--card-r);
-  padding: 2rem 1.5rem;
+  padding: 1.5rem 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  height: 100%;
+  gap: 0.85rem;
+  width: 100%;
+  min-width: 0;
+  height: auto;
   justify-content: center;
+  overflow: hidden; /* never show a scrollbar inside the CTA */
 }
 .ctaTitle {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 800;
   color: var(--white);
-  line-height: 1.2;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .ctaDesc {
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   color: rgba(255,255,255,0.5);
-  line-height: 1.55;
+  line-height: 1.5;
   margin: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .ctaDivider {
   height: 1px;
   background: rgba(255,255,255,0.1);
-  margin: 0.25rem 0;
+  margin: 0.15rem 0;
 }
 .ctaContact {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
+  min-width: 0;
 }
 .ctaBrand {
   font-family: 'Montserrat', sans-serif;
@@ -1808,9 +1827,11 @@
   color: var(--white);
 }
 .ctaInfo {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: rgba(255,255,255,0.5);
-  line-height: 1.5;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 /* ══ MOBILE (screen only) ═══════════════════════════════════════ */
@@ -1883,27 +1904,40 @@
     overflow: hidden !important;
     box-sizing: border-box !important;
   }
+  /* Closing — same full-bleed treatment as cover (no white margin) */
   .closingPage {
+    page: atelier-closing;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
     margin: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    height: 261mm !important;
-    min-height: 261mm !important;
-    max-height: 261mm !important;
-    padding: 10mm 12mm 12mm !important;
+    width: 210mm !important;
+    max-width: 210mm !important;
+    height: 297mm !important;
+    min-height: 297mm !important;
+    max-height: 297mm !important;
+    padding: 18mm 20mm !important;
     overflow: hidden !important;
+    box-sizing: border-box !important;
   }
   .coverInner {
     padding: 0 !important;
     min-height: 0;
   }
   .closingInner {
-    padding: 0;
+    padding: 0 !important;
     min-height: 0;
-    overflow: hidden;
+    overflow: hidden !important;
   }
+  .closingSplit {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) !important;
+    gap: 1.25rem !important;
+  }
+  .closingCTABox {
+    overflow: hidden !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+  .closingBtn { display: none !important; }
   .termsGrid { flex-grow: 1; align-content: start; }
   .wealthLayout { flex-grow: 1; }
   .pageHead { padding-top: 0.5rem; margin-bottom: 0.75rem; }
@@ -1913,7 +1947,8 @@
     right: 0;
     font-size: 7pt;
   }
-  .coverPage .pageNum {
+  .coverPage .pageNum,
+  .closingPage .pageNum {
     bottom: 12mm;
     right: 20mm;
   }
@@ -1931,12 +1966,14 @@
     size: A4;
     margin: 18mm 20mm;
   }
-  /* Cover sheet — edge-to-edge, no white margin */
   @page atelier-cover {
     size: A4;
     margin: 0;
   }
-  /* Fallback for browsers that ignore named pages */
+  @page atelier-closing {
+    size: A4;
+    margin: 0;
+  }
   @page :first {
     size: A4;
     margin: 0;
