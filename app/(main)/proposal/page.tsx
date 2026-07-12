@@ -333,24 +333,6 @@ function ProposalPageContent() {
     void loadInstallerRateCard();
   }, []);
 
-  useEffect(() => {
-    const refreshFromRateCard = () => {
-      setCommercialPricingConfig((prev) => {
-        if (!prev) return prev;
-        return applyCommercialPanelTrackPolicy(
-          applyResidentialPricingSource(prev),
-          manual.connectionType
-        );
-      });
-      setResidentialConfig((prev) => {
-        if (!prev) return prev;
-        return applyResidentialPricingSource(prev);
-      });
-    };
-    window.addEventListener(INSTALLER_RATE_CARD_UPDATED_EVENT, refreshFromRateCard);
-    return () => window.removeEventListener(INSTALLER_RATE_CARD_UPDATED_EVENT, refreshFromRateCard);
-  }, [manual.connectionType]);
-
   const urlPrefill = useMemo(
     () => parsePrefillFromSearchParams(searchParams),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -401,6 +383,24 @@ function ProposalPageContent() {
   const step1Label = stripStepPrefix(t("proposal_step1SelectLead"));
   const step2Label = stripStepPrefix(t("proposal_step2BillUploads"));
   const monthlyUnitsTitle = stripManualSuffix(t("proposal_monthlyUnitsTitle"));
+
+  useEffect(() => {
+    const refreshFromRateCard = () => {
+      setCommercialPricingConfig((prev) => {
+        if (!prev) return prev;
+        return applyCommercialPanelTrackPolicy(
+          applyResidentialPricingSource(prev),
+          manual.connectionType
+        );
+      });
+      setResidentialConfig((prev) => {
+        if (!prev) return prev;
+        return applyResidentialPricingSource(prev);
+      });
+    };
+    window.addEventListener(INSTALLER_RATE_CARD_UPDATED_EVENT, refreshFromRateCard);
+    return () => window.removeEventListener(INSTALLER_RATE_CARD_UPDATED_EVENT, refreshFromRateCard);
+  }, [manual.connectionType]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
