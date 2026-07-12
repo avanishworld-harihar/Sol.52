@@ -44,7 +44,7 @@ async function insertAdaptive<T = Row>(
     if (/proposals_preset_id_check|check constraint/i.test(error.message)) {
       console.error(`[proposals-store] ${table} check constraint:`, error.message);
       throw new Error(
-        `Database does not allow this proposal preset yet. Apply migration 057_residential_solstice_preset.sql — ${error.message}`
+        `Database does not allow this proposal preset yet. Apply migration 065_restore_commercial_executive_preset.sql — ${error.message}`
       );
     }
     console.warn(`[proposals-store] ${table} insert failed:`, error.message);
