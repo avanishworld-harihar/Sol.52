@@ -199,7 +199,7 @@ function buildBom(
           item: "ACDB (AC Distribution Box)",
           spec: "IP54, MCB + RCCB + SPD + energy meter",
           make: "Havells / Schneider",
-          qty: `${inverterCount}`,
+          qty: "1",
           unit: "nos",
           warranty: "1 yr",
         },
