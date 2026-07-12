@@ -135,13 +135,13 @@ export function BlockExecutionTimeline({ ctx }: Props) {
       endWeek: Math.round(8 * scale),
       activities: [
         "Panel mounting & wiring",
-        "DCDB / ACDB installation",
+        "ACDB installation",
         "Inverter & earthing",
         "AC interconnection",
       ],
       activitiesHi: [
         "पैनल माउंटिंग एवं वायरिंग",
-        "DCDB / ACDB स्थापना",
+        "ACDB स्थापना",
         "इन्वर्टर एवं अर्थिंग",
         "AC इंटरकनेक्शन",
       ],

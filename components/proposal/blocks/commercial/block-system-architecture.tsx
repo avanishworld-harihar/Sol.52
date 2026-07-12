@@ -4,7 +4,7 @@
  * BlockSystemArchitecture — system component architecture for commercial proposals.
  *
  * Visual CSS-based system diagram:
- *   DC Strings → DCDB/SPD → String Inverter → ACDB/SPD → Net Meter → Grid
+ *   DC Strings → String Inverter → ACDB/SPD → Net Meter → Grid
  *
  * Plus:
  *   - Component specification table (panels, inverter, structure, earthing)
@@ -16,7 +16,9 @@ import { motion } from "framer-motion";
 import { ArrowRight, Cpu, Shield, Wifi } from "lucide-react";
 import type { CommercialCtx } from "@/components/proposal/commercial-proposal-view";
 import {
+  commercialEarthingElectrodeCount,
   commercialInverterQuantity,
+  commercialInverterUnitKw,
   resolveCommercialPanelSpec,
 } from "@/lib/commercial-proposal-panel-spec";
 import { CommercialSectionHeader, GlassPanel, SectionReveal } from "./commercial-shared";
@@ -49,6 +51,8 @@ export function BlockSystemArchitecture({ ctx }: Props) {
   );
   const stringsCount = Math.ceil(moduleCount / 14);
   const inverterQty = commercialInverterQuantity(summary.systemKw);
+  const inverterUnitKw = commercialInverterUnitKw(summary.systemKw);
+  const earthingCount = commercialEarthingElectrodeCount(summary.systemKw);
 
   const archNodes: ArchNode[] = [
     {
@@ -60,17 +64,11 @@ export function BlockSystemArchitecture({ ctx }: Props) {
       color: "sky",
     },
     {
-      id: "dcdb",
-      label: "DCDB / SPD",
-      sub: isHi ? "DC डिस्ट्रीब्यूशन बॉक्स + सर्ज प्रोटेक्शन" : `DC dist. box · surge protection`,
-      color: "amber",
-    },
-    {
       id: "inverter",
       label: isHi ? "इन्वर्टर" : "String Inverter",
       sub: isHi
-        ? `${summary.systemKw} kW · Grid-tie`
-        : `${summary.systemKw} kW · DC/AC ${dcAcRatio} · IP65`,
+        ? `${inverterQty} × ${inverterUnitKw} kW · Grid-tie`
+        : `${inverterQty} × ${inverterUnitKw} kW · DC/AC ${dcAcRatio} · IP65`,
       color: "violet",
     },
     {
@@ -103,7 +101,7 @@ export function BlockSystemArchitecture({ ctx }: Props) {
     },
     {
       component: isHi ? "स्ट्रिंग इन्वर्टर" : "String Inverter",
-      spec: `${summary.systemKw} kW Grid-Tie, IP65`,
+      spec: `${inverterUnitKw} kW Grid-Tie, IP65`,
       brand: summary.brands.inverter || "IEC-62109 certified",
       qty: `${inverterQty} nos`,
       warranty: "5 yr standard",
@@ -116,10 +114,10 @@ export function BlockSystemArchitecture({ ctx }: Props) {
       warranty: "10 yr structural",
     },
     {
-      component: "DCDB / ACDB",
+      component: "ACDB",
       spec: "IP54 weatherproof, SPD + MCB + Isolator",
       brand: "Havells / Schneider / Legrand",
-      qty: "1 set each",
+      qty: "1 set",
       warranty: "1 yr product",
     },
     {
@@ -131,9 +129,9 @@ export function BlockSystemArchitecture({ ctx }: Props) {
     },
     {
       component: isHi ? "अर्थिंग सिस्टम" : "Earthing System",
-      spec: "IS 3043 — 4-electrode GI pipe earthing",
+      spec: `IS 3043 — ${earthingCount}-electrode GI pipe earthing`,
       brand: "Copper-bonded / GI",
-      qty: "As per design",
+      qty: `${earthingCount} nos`,
       warranty: "Lifetime",
     },
   ];
@@ -257,7 +255,9 @@ export function BlockSystemArchitecture({ ctx }: Props) {
               isHi ? "टाइप 2 SPD — DC + AC दोनों" : "Type-2 surge protection — DC & AC side",
               isHi ? "RCCB + RCBO — AC इंस्टालेशन" : "RCCB + RCBO for AC installation",
               isHi ? "इन्सुलेशन मॉनिटरिंग रिले" : "Insulation monitoring relay (IMR)",
-              isHi ? "IS 3043 — 4-पॉइंट अर्थिंग" : "IS 3043 compliant 4-electrode earthing",
+              isHi
+                ? `IS 3043 — ${earthingCount}-पॉइंट अर्थिंग`
+                : `IS 3043 compliant ${earthingCount}-electrode earthing`,
               isHi ? "एंटी-आइलैंडिंग — CEA अनुपालन" : "Anti-islanding protection per CEA",
             ].map((item, i) => (
               <li key={i} className="flex items-start gap-2">

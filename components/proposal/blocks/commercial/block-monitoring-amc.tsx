@@ -5,7 +5,7 @@
  *
  * Three-panel section:
  *   1. Smart monitoring features (cloud portal, real-time data, alerts)
- *   2. AMC tier comparison table (1yr / 5yr / 10yr)
+ *   2. Warranty / AMC: Year 1 comprehensive + Year 2 non-comprehensive (free), then ₹2/Wp
  *   3. SLA commitments (response time, resolution time, uptime guarantee)
  */
 
@@ -19,6 +19,9 @@ const fmtL = (v: number) => {
   if (v >= 1_000) return `₹${(v / 1_000).toFixed(0)} k`;
   return `₹${Math.round(v).toLocaleString("en-IN")}`;
 };
+
+/** Post free-warranty AMC — ₹2 per watt-peak per year. */
+const COMMERCIAL_AMC_INR_PER_WP = 2;
 
 type Props = { ctx: CommercialCtx };
 
@@ -48,51 +51,61 @@ export function BlockMonitoringAMC({ ctx }: Props) {
         { title: "Remote Diagnostics", detail: "Remote firmware update & inverter diagnostics" },
       ];
 
-  // AMC pricing (rough industry estimates based on system kW)
-  const amcBase = Math.round(summary.systemKw * 400); // ₹400/kW/yr
+  const plantWp = Math.max(0, Math.round(summary.systemKw * 1000));
+  const amcFromYear3 = Math.round(plantWp * COMMERCIAL_AMC_INR_PER_WP);
+
   const amcOptions = [
     {
-      tier: "1 Year",
-      tierHi: "1 वर्ष",
+      tier: "Year 1 — Comprehensive",
+      tierHi: "वर्ष 1 — व्यापक",
       price: 0,
-      priceNote: isHi ? "प्रथम वर्ष — निःशुल्क" : "First year — complimentary",
+      priceNote: isHi
+        ? "निःशुल्क — परियोजना में शामिल"
+        : "Complimentary — included with project",
+      badge: isHi ? "शामिल" : "Included",
+      features: [
+        { label: isHi ? "वार्षिक निरीक्षण विज़िट" : "Annual inspection visit", included: true },
+        { label: isHi ? "पैनल सफाई (2 बार)" : "Panel cleaning (2 visits)", included: true },
+        { label: isHi ? "इन्वर्टर फर्मवेयर अपडेट" : "Inverter firmware update", included: true },
+        { label: isHi ? "टर्मिनल सत्यापन" : "Terminal tightening check", included: true },
+        { label: isHi ? "प्रदर्शन रिपोर्ट" : "Performance report", included: true },
+        { label: isHi ? "त्रैमासिक पैनल सफाई" : "Quarterly panel cleaning", included: true },
+        { label: isHi ? "स्पेयर पार्ट्स कवर" : "Spare parts coverage", included: true },
+      ],
+    },
+    {
+      tier: "Year 2 — Non-comprehensive",
+      tierHi: "वर्ष 2 — गैर-व्यापक",
+      price: 0,
+      priceNote: isHi
+        ? "निःशुल्क — सीमित सेवा कवर"
+        : "Complimentary — limited service cover",
+      badge: isHi ? "शामिल" : "Included",
       features: [
         { label: isHi ? "वार्षिक निरीक्षण विज़िट" : "Annual inspection visit", included: true },
         { label: isHi ? "पैनल सफाई (1 बार)" : "Panel cleaning (1 visit)", included: true },
         { label: isHi ? "इन्वर्टर फर्मवेयर अपडेट" : "Inverter firmware update", included: true },
         { label: isHi ? "टर्मिनल सत्यापन" : "Terminal tightening check", included: true },
         { label: isHi ? "प्रदर्शन रिपोर्ट" : "Performance report", included: true },
-        { label: isHi ? "पैनल सफाई (त्रैमासिक)" : "Quarterly panel cleaning", included: false },
+        { label: isHi ? "त्रैमासिक पैनल सफाई" : "Quarterly panel cleaning", included: false },
         { label: isHi ? "स्पेयर पार्ट्स कवर" : "Spare parts coverage", included: false },
       ],
     },
     {
-      tier: "5 Year",
-      tierHi: "5 वर्ष",
-      price: amcBase * 5 * 0.85,
-      priceNote: isHi ? "15% छूट — 5 वर्षीय पैकेज" : "15% discount — 5-year package",
+      tier: "AMC from Year 3",
+      tierHi: "वर्ष 3 से AMC",
+      price: amcFromYear3,
+      priceNote: isHi
+        ? `₹${COMMERCIAL_AMC_INR_PER_WP}/Wp/वर्ष · ${summary.systemKw} kW`
+        : `₹${COMMERCIAL_AMC_INR_PER_WP}/Wp/year · ${summary.systemKw} kW plant`,
+      badge: null as string | null,
       features: [
         { label: isHi ? "वार्षिक निरीक्षण विज़िट" : "Annual inspection visit", included: true },
         { label: isHi ? "पैनल सफाई (2 बार/वर्ष)" : "Panel cleaning (2× / yr)", included: true },
         { label: isHi ? "इन्वर्टर फर्मवेयर अपडेट" : "Inverter firmware update", included: true },
         { label: isHi ? "टर्मिनल सत्यापन" : "Terminal tightening check", included: true },
         { label: isHi ? "प्रदर्शन रिपोर्ट" : "Performance report", included: true },
-        { label: isHi ? "पैनल सफाई (त्रैमासिक)" : "Quarterly panel cleaning", included: true },
-        { label: isHi ? "स्पेयर पार्ट्स कवर" : "Spare parts coverage", included: false },
-      ],
-    },
-    {
-      tier: "10 Year",
-      tierHi: "10 वर्ष",
-      price: amcBase * 10 * 0.75,
-      priceNote: isHi ? "25% छूट — 10 वर्षीय पैकेज" : "25% discount — 10-year package",
-      features: [
-        { label: isHi ? "वार्षिक निरीक्षण विज़िट" : "Annual inspection visit", included: true },
-        { label: isHi ? "पैनल सफाई (2 बार/वर्ष)" : "Panel cleaning (2× / yr)", included: true },
-        { label: isHi ? "इन्वर्टर फर्मवेयर अपडेट" : "Inverter firmware update", included: true },
-        { label: isHi ? "टर्मिनल सत्यापन" : "Terminal tightening check", included: true },
-        { label: isHi ? "प्रदर्शन रिपोर्ट" : "Performance report", included: true },
-        { label: isHi ? "पैनल सफाई (त्रैमासिक)" : "Quarterly panel cleaning", included: true },
+        { label: isHi ? "त्रैमासिक पैनल सफाई" : "Quarterly panel cleaning", included: true },
         { label: isHi ? "स्पेयर पार्ट्स कवर" : "Spare parts coverage", included: true },
       ],
     },
@@ -121,11 +134,11 @@ export function BlockMonitoringAMC({ ctx }: Props) {
       <CommercialSectionHeader
         num="08"
         label={isHi ? "मॉनिटरिंग एवं रखरखाव" : "Monitoring & AMC"}
-        title={isHi ? "स्मार्ट मॉनिटरिंग एवं वार्षिक रखरखाव" : "Smart Monitoring & Annual Maintenance"}
+        title={isHi ? "स्मार्ट मॉनिटरिंग एवं वारंटी" : "Smart Monitoring & Warranty"}
         subtitle={
           isHi
-            ? "24×7 रियल-टाइम डेटा, सक्रिय फॉल्ट मैनेजमेंट, और दीर्घकालिक प्रदर्शन गारंटी"
-            : "24×7 real-time data, proactive fault management, and long-term performance assurance"
+            ? "2 वर्ष निःशुल्क वारंटी (वर्ष 1 व्यापक, वर्ष 2 गैर-व्यापक) — फिर ₹2/Wp/वर्ष AMC"
+            : "2-year free warranty (Year 1 comprehensive, Year 2 non-comprehensive) — then ₹2/Wp/year AMC"
         }
       />
 
@@ -193,15 +206,15 @@ export function BlockMonitoringAMC({ ctx }: Props) {
         </SectionReveal>
       </div>
 
-      {/* AMC tiers */}
+      {/* Warranty / AMC plans */}
       <SectionReveal className="mt-8" delay={0.1}>
         <div>
         <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">
-          {isHi ? "वार्षिक रखरखाव अनुबंध — योजना तुलना" : "Annual Maintenance Contract — Plan Comparison"}
+          {isHi ? "वारंटी एवं AMC — योजना तुलना" : "Warranty & AMC — Plan Comparison"}
         </p>
         <div className="grid gap-4 sm:grid-cols-3">
           {amcOptions.map((opt, i) => {
-            const isPopular = i === 1;
+            const isFree = opt.price === 0;
             const tierLabel = isHi && opt.tierHi ? opt.tierHi : opt.tier;
             return (
               <motion.div
@@ -211,14 +224,14 @@ export function BlockMonitoringAMC({ ctx }: Props) {
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.06 }}
                 className={`rounded-xl border-2 bg-white p-5 ${
-                  isPopular ? "border-sky-400 shadow-md" : "border-slate-200 shadow-sm"
+                  isFree ? "border-sky-400 shadow-md" : "border-slate-200 shadow-sm"
                 }`}
               >
-                {isPopular && (
+                {opt.badge ? (
                   <div className="mb-2 inline-block rounded-full bg-sky-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-sky-700">
-                    {isHi ? "अनुशंसित" : "Recommended"}
+                    {opt.badge}
                   </div>
-                )}
+                ) : null}
                 <p className="text-lg font-bold text-slate-900">{tierLabel}</p>
                 <p className="mt-0.5 text-sm font-bold tabular-nums text-sky-700">
                   {opt.price === 0 ? (isHi ? "निःशुल्क" : "Complimentary") : fmtL(opt.price)}

@@ -7,7 +7,6 @@
  *   - 4 giant animated KPI tiles (count-up on viewport entry)
  *   - Animated cumulative cashflow bar chart with spring transitions
  *   - 25-year grid vs solar lifecycle cost comparison bars
- *   - Environmental ROI card with CO₂ and tree metrics
  */
 
 import { motion } from "framer-motion";
@@ -301,42 +300,6 @@ export function BlockROIDashboard({ ctx }: Props) {
                 </p>
               </div>
             </GlassPanel>
-          </SectionReveal>
-
-          {/* Environmental ROI */}
-          <SectionReveal delay={0.2}>
-            <div className="commercial-callout-emerald rounded-2xl border border-emerald-200/70 bg-emerald-50 p-6">
-              <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-600">
-                {isHi ? "पर्यावरण ROI" : "Environmental ROI"}
-              </p>
-              <div className="grid grid-cols-3 gap-2 text-center">
-                {[
-                  {
-                    label: isHi ? "CO₂ बचत/वर्ष" : "CO₂ Avoided/yr",
-                    value: (summary.environmental.annualCo2KgSaved / 1000).toFixed(1),
-                    unit: "T",
-                  },
-                  {
-                    label: isHi ? "पेड़ समतुल्य" : "Tree Equivalent",
-                    value: String(summary.environmental.treeEquivalent),
-                    unit: "",
-                  },
-                  {
-                    label: isHi ? "25yr CO₂" : "25yr CO₂",
-                    value: String(summary.environmental.lifetimeCo2TonsSaved),
-                    unit: "T",
-                  },
-                ].map((e) => (
-                  <div key={e.label} className="flex flex-col items-center gap-1">
-                    <span className="text-2xl font-black tabular-nums text-emerald-800">
-                      {e.value}
-                      <span className="text-sm font-bold text-emerald-600">{e.unit}</span>
-                    </span>
-                    <span className="text-[9px] font-semibold text-emerald-600">{e.label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
           </SectionReveal>
         </div>
       </div>

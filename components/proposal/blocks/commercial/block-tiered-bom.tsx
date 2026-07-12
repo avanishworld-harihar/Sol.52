@@ -25,7 +25,9 @@ import { CommercialSectionHeader, GlassPanel, SectionReveal } from "./commercial
 import type { CommercialProposalConfig } from "@/lib/commercial-proposal-config";
 import { PANEL_CATALOG } from "@/lib/commercial-panel-catalog";
 import {
+  commercialEarthingElectrodeCount,
   commercialInverterQuantity,
+  commercialInverterUnitKw,
   resolveCommercialPanelSpec,
 } from "@/lib/commercial-proposal-panel-spec";
 
@@ -65,6 +67,8 @@ function buildBom(
 ): BomCategory[] {
   const strings = Math.ceil(panels / 14);
   const inverterCount = commercialInverterQuantity(systemKw);
+  const inverterUnitKw = commercialInverterUnitKw(systemKw);
+  const earthingCount = commercialEarthingElectrodeCount(systemKw);
   const phaseLabel = inverterPhase === "single" ? "Single-phase" : "Three-phase";
   const panelSpec = `${panelWatt} Wp ${panelTechnology}, η ≥ ${((panelWatt / 2590) * 100).toFixed(1)}%`;
 
@@ -86,7 +90,7 @@ function buildBom(
         },
         {
           item: `String Inverter (${phaseLabel})`,
-          spec: `${systemKw} kW on-grid, ${phaseLabel}, MPPT, IP65, LCD`,
+          spec: `${inverterUnitKw} kW on-grid, ${phaseLabel}, MPPT, IP65, LCD`,
           make: inverterBrand || "IEC 62109",
           qty: `${inverterCount}`,
           unit: "nos",
@@ -110,8 +114,8 @@ function buildBom(
           warranty: "25 yr UV",
         },
         {
-          item: "AC Power Cable (16 mm² / 25 mm² / 35 mm²)",
-          spec: "XLPE armoured, IS 1554",
+          item: "AC Power Cable",
+          spec: "XLPE armoured, IS 1554 — size as per required",
           make: "Finolex / KEI",
           qty: "As per required",
           unit: "metres",
@@ -132,6 +136,22 @@ function buildBom(
           qty: "As per layout",
           unit: "lot",
           warranty: "10 yr",
+        },
+        {
+          item: "Walkway FRP",
+          spec: "FRP grating walkway — anti-slip, UV-stable",
+          make: "Site-approved make",
+          qty: "As per required",
+          unit: "lot",
+          warranty: "5 yr",
+        },
+        {
+          item: "Fall Arrester",
+          spec: "Roof fall-protection system — lifeline / anchor points",
+          make: "IS / EN compliant",
+          qty: "As per required",
+          unit: "lot",
+          warranty: "5 yr",
         },
       ],
     },
@@ -176,14 +196,6 @@ function buildBom(
       costShare: 10,
       rows: [
         {
-          item: "DCDB (DC Distribution Box)",
-          spec: "IP54, DC MCB + fuse + SPD Type 2",
-          make: "Havells / Schneider",
-          qty: `${inverterCount}`,
-          unit: "nos",
-          warranty: "1 yr",
-        },
-        {
           item: "ACDB (AC Distribution Box)",
           spec: "IP54, MCB + RCCB + SPD + energy meter",
           make: "Havells / Schneider",
@@ -193,9 +205,9 @@ function buildBom(
         },
         {
           item: "Earthing System",
-          spec: "IS 3043 — 4-electrode GI pipe, 3 m deep",
+          spec: `IS 3043 — ${earthingCount}-electrode GI pipe, 3 m deep`,
           make: "Copper-bonded / GI",
-          qty: "4 nos",
+          qty: `${earthingCount}`,
           unit: "electrodes",
           warranty: "Lifetime",
         },

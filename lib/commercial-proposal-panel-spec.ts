@@ -37,7 +37,30 @@ export function resolveCommercialPanelSpec(
   return { panelWatt, panelTechnology, moduleCount, panelSpecLabel };
 }
 
-/** Central string inverter qty for C&I rooftop proposals. */
-export function commercialInverterQuantity(_systemKw: number): number {
-  return 1;
+/** C&I string inverters are typically supplied as 100 kW units. */
+export const COMMERCIAL_INVERTER_UNIT_KW = 100;
+
+/** How many 100 kW-class string inverters for a plant (100 kW → 1, 300 kW → 3). */
+export function commercialInverterQuantity(systemKw: number): number {
+  const kw = Math.max(0, Number(systemKw) || 0);
+  if (kw <= 0) return 1;
+  return Math.max(1, Math.ceil(kw / COMMERCIAL_INVERTER_UNIT_KW));
+}
+
+/** Nameplate kW per inverter unit shown on BOM / architecture. */
+export function commercialInverterUnitKw(systemKw: number): number {
+  const kw = Math.max(0, Number(systemKw) || 0);
+  if (kw <= 0) return COMMERCIAL_INVERTER_UNIT_KW;
+  if (kw <= COMMERCIAL_INVERTER_UNIT_KW) return Math.round(kw * 10) / 10;
+  return COMMERCIAL_INVERTER_UNIT_KW;
+}
+
+/**
+ * GI pipe earthing electrodes for C&I — 2 per 100 kW plant (min 4).
+ * Example: 100 kW → 4, 300 kW → 6, 500 kW → 10.
+ */
+export function commercialEarthingElectrodeCount(systemKw: number): number {
+  const kw = Math.max(0, Number(systemKw) || 0);
+  if (kw <= 0) return 4;
+  return Math.max(4, Math.ceil(kw / COMMERCIAL_INVERTER_UNIT_KW) * 2);
 }

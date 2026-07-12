@@ -89,7 +89,7 @@ export function BlockCommercialTerms({ ctx }: Props) {
         "IS/IEC 62446 कमीशनिंग परीक्षण",
         "क्लाउड मॉनिटरिंग पोर्टल सक्रियण",
         "ऑपरेशन एवं रखरखाव प्रशिक्षण",
-        "प्रथम वर्ष AMC (निःशुल्क)",
+        "2 वर्ष निःशुल्क वारंटी (वर्ष 1 व्यापक + वर्ष 2 गैर-व्यापक)",
       ]
     : [
         "All EPC supply and installation works",
@@ -97,7 +97,7 @@ export function BlockCommercialTerms({ ctx }: Props) {
         "IS/IEC 62446 commissioning test report",
         "Cloud monitoring portal activation",
         "Operations & maintenance training",
-        "First-year AMC (complimentary)",
+        "2-year free warranty (Year 1 comprehensive + Year 2 non-comprehensive)",
       ];
 
   const scopeExcludes = isHi
