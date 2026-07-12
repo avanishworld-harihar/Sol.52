@@ -96,7 +96,7 @@ export const proposalDeckUpdateBodySchema = z.object({
   referenceBillUnits: z.number().min(0).max(2_000_000).optional(),
   areaProfile: z.enum(["urban", "rural"]).optional(),
   billMonth: z.string().max(40).optional(),
-  currentMonthBillAmountInr: z.number().min(0).max(10000000).nullable().optional(),
+  currentMonthBillAmountInr: z.number().min(0).max(100000000).nullable().optional(),
   monthlyBillActuals: monthBillActualsSchema,
   monthlyAuditOverrides: monthlyAuditOverridesSchema,
   agjyClaimed: z.boolean().optional(),

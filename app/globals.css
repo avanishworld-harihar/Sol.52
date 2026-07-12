@@ -3411,7 +3411,10 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   .commercial-proposal .commercial-cover {
     background: #ffffff !important;
     color: #0f172a !important;
-    min-height: 0 !important;
+  }
+
+  .commercial-proposal .commercial-cover.commercial-cover--confidential {
+    min-height: calc(297mm - 16mm) !important;
   }
 
   .commercial-proposal .commercial-cover .text-white {
@@ -3447,7 +3450,12 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   }
 
   .commercial-proposal #comm-cover.commercial-print-page {
-    min-height: 0 !important;
+    /* Fill one A4 sheet (page box minus @page 8mm margins) so cover is not half-empty */
+    min-height: calc(297mm - 16mm) !important;
+    height: calc(297mm - 16mm) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: visible !important;
   }
 
   .commercial-proposal .proposal-page {
@@ -3465,24 +3473,27 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     break-before: auto !important;
   }
 
-  /* Cover may span if tall — never clip; avoid forces Chrome to crop overflowing content */
+  /* Cover is short by design — keep on one full sheet, vertically centered */
   .commercial-proposal #comm-cover {
-    page-break-inside: auto !important;
-    break-inside: auto !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
     page-break-after: always !important;
     break-after: page !important;
     overflow: visible !important;
   }
 
   .commercial-proposal #comm-cover .commercial-cover--confidential {
-    min-height: 0 !important;
-    height: auto !important;
+    min-height: calc(297mm - 16mm) !important;
+    height: 100% !important;
+    flex: 1 1 auto !important;
     display: flex !important;
     flex-direction: column !important;
     padding: 0 2mm !important;
+    box-sizing: border-box !important;
   }
 
   .commercial-proposal #comm-cover .commercial-cover-confidential-header {
+    flex: 0 0 auto !important;
     gap: 2mm !important;
     padding: 3mm 2mm !important;
   }
@@ -3494,11 +3505,18 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
   }
 
   .commercial-proposal #comm-cover .commercial-cover-confidential-main {
-    flex: 0 1 auto !important;
+    flex: 1 1 auto !important;
     display: flex !important;
     flex-direction: column !important;
     justify-content: center !important;
-    padding: 12mm 4mm !important;
+    align-items: center !important;
+    padding: 8mm 4mm !important;
+    min-height: 0 !important;
+  }
+
+  .commercial-proposal #comm-cover .commercial-cover-confidential-footer {
+    flex: 0 0 auto !important;
+    padding: 3mm 4mm !important;
   }
 
   .commercial-proposal #comm-executive-summary {

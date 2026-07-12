@@ -60,16 +60,16 @@ export type ProposalPricingRow = z.infer<typeof proposalPricingRowSchema>;
 const pn = z.coerce.number();
 
 export const proposalPricingPatchSchema = z.object({
-  system_kw: pn.min(0).max(500).optional(),
+  system_kw: pn.min(0).max(10000).optional(),
   /** Primary UX: full line table replaces scalar editing. */
   line_items: z.array(pricingLineItemSchema).min(1).optional(),
   price_per_watt_inr: pn.min(0).max(5000).optional(),
-  hardware_inr: pn.min(0).max(100_000_000).optional(),
-  installation_inr: pn.min(0).max(100_000_000).optional(),
-  structure_inr: pn.min(0).max(100_000_000).optional(),
+  hardware_inr: pn.min(0).max(500_000_000).optional(),
+  installation_inr: pn.min(0).max(500_000_000).optional(),
+  structure_inr: pn.min(0).max(500_000_000).optional(),
   subsidy_inr: pn.min(0).max(5_000_000).optional(),
-  discount_inr: pn.min(0).max(100_000_000).optional(),
-  final_amount_inr: pn.min(0).max(100_000_000).optional(),
+  discount_inr: pn.min(0).max(500_000_000).optional(),
+  final_amount_inr: pn.min(0).max(500_000_000).optional(),
   manual_final_override: z.boolean().optional()
 });
 

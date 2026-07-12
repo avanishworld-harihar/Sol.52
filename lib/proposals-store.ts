@@ -127,7 +127,7 @@ export async function createProposal(input: CreateProposalInput): Promise<Stored
 
     created_by: input.createdBy ?? null,
     expires_at: input.expiresAt?.toISOString() ?? null,
-    preset_id: input.presetId ?? "residential_sales_premium",
+    preset_id: input.presetId ?? "residential_zenith",
     organization_id: input.organizationId ?? null,
   };
 

@@ -32,7 +32,7 @@ export function BlockCommercialCover({ ctx }: Props) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.35 }}
-      className="commercial-cover commercial-cover--confidential flex min-h-[min(100dvh,297mm)] flex-col bg-white text-slate-900 print:min-h-0"
+      className="commercial-cover commercial-cover--confidential flex min-h-[min(100dvh,297mm)] flex-col bg-white text-slate-900 print:min-h-[calc(297mm-16mm)]"
     >
       <header className="commercial-cover-confidential-header flex min-w-0 items-center justify-between gap-3 border-b border-slate-200 px-4 py-3 sm:px-6 sm:py-4 md:px-8">
         <div className="min-w-0 flex-1">

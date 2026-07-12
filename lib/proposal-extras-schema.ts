@@ -19,7 +19,7 @@ export const customerProfileSchema = z
     connectionDate: z.string().max(40).optional(),
     connectionType: z.string().max(120).optional(),
     phase: z.string().max(20).optional(),
-    sanctionedLoadKw: z.number().min(0).max(500).optional()
+    sanctionedLoadKw: z.number().min(0).max(20000).optional()
   })
   .optional();
 

@@ -83,7 +83,7 @@ const bodySchema = z.object({
   referenceBillUnits: z.number().min(0).max(2_000_000).optional(),
   areaProfile: z.enum(["urban", "rural"]).optional(),
   billMonth: z.string().max(40).optional(),
-  currentMonthBillAmountInr: z.number().min(0).max(10000000).nullable().optional(),
+  currentMonthBillAmountInr: z.number().min(0).max(100000000).nullable().optional(),
   monthlyBillActuals: monthBillActualsSchema,
   monthlyAuditOverrides: monthlyAuditOverridesSchema,
   agjyClaimed: z.boolean().optional(),
@@ -166,7 +166,7 @@ export async function POST(req: NextRequest) {
     try {
       billingSub = await assertCanCreateProposal({
         organizationId: orgId ?? "",
-        presetId: payload.presetId ?? "residential_sales_premium",
+        presetId: payload.presetId ?? "residential_zenith",
         salesPremiumStyle: payload.salesPremiumStyle,
         galleryKey: payload.galleryThemeKey,
         identity,
@@ -192,7 +192,7 @@ export async function POST(req: NextRequest) {
       clientRef: payload.clientRef ?? null,
       leadId: payload.leadId ?? null,
       consumerId: payload.consumerId ?? null,
-      presetId: payload.presetId ?? "residential_sales_premium",
+      presetId: payload.presetId ?? "residential_zenith",
       organizationId: orgId,
     });
 
@@ -204,8 +204,18 @@ export async function POST(req: NextRequest) {
       // Supabase unavailable — return ephemeral summary so the dashboard can
       // still preview, just no shareable link.
       return NextResponse.json(
-        { ok: true, persisted: false, summary, id: null, shareUrl: null },
-        { status: 200 }
+        {
+          ok: false,
+          persisted: false,
+          summary,
+          id: null,
+          shareUrl: null,
+          error:
+            payload.presetId === "commercial_executive"
+              ? "Commercial proposal could not be saved. Apply migration 065_restore_commercial_executive_preset.sql in Supabase, then retry."
+              : "Proposal could not be saved to the database.",
+        },
+        { status: 503 }
       );
     }
 
@@ -213,7 +223,7 @@ export async function POST(req: NextRequest) {
     try {
       await ensureProposalPricingRow(
         defaultProposalPricingFromDeck(created.id, pptInput, summary, {
-          presetId: payload.presetId ?? "residential_sales_premium",
+          presetId: payload.presetId ?? "residential_zenith",
         })
       );
       await persistProposalDeckAfterPricingChange(created.id);
@@ -288,7 +298,7 @@ export async function POST(req: NextRequest) {
         shareToken: created.share_token,
         customerName: created.customer_name,
         generatedAt: created.generated_at,
-        presetId: payload.presetId ?? "residential_sales_premium",
+        presetId: payload.presetId ?? "residential_zenith",
         shareUrl,
         summary: responseSummary,
         projectId,
@@ -300,6 +310,12 @@ export async function POST(req: NextRequest) {
     const message = error instanceof z.ZodError
       ? error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(", ")
       : error instanceof Error ? error.message : "Could not create proposal";
-    return NextResponse.json({ ok: false, error: message }, { status: 400 });
+    const isPresetConstraint = /065_restore_commercial|proposals_preset_id_check|does not allow this proposal preset/i.test(
+      message
+    );
+    return NextResponse.json(
+      { ok: false, error: message, code: isPresetConstraint ? "preset_not_allowed" : undefined },
+      { status: isPresetConstraint ? 409 : 400 }
+    );
   }
 }

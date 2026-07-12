@@ -2532,6 +2532,18 @@ function ProposalPageContent() {
         toast.error("Cannot create proposal", json.error || "Billing or plan limit blocked this proposal.");
         return null;
       }
+      if (response.status === 409 || json.code === "preset_not_allowed") {
+        toast.error(
+          "Database preset blocked",
+          json.error ||
+            "Run migration 065_restore_commercial_executive_preset.sql in Supabase SQL Editor, then retry."
+        );
+        return null;
+      }
+      if (response.status === 503) {
+        toast.error("Save failed", json.error || "Proposal could not be saved to the database.");
+        return null;
+      }
       throw new Error(json.error || "Web proposal failed");
     }
     const json = (await response.json()) as { ok: boolean; id?: string; shareUrl?: string; persisted?: boolean; error?: string };
