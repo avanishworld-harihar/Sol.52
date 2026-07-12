@@ -81,6 +81,7 @@ import { ProposalLimitUpgradeModal } from "@/components/billing/proposal-limit-u
 import { CommercialProposalWorkspace } from "@/components/commercial/commercial-proposal-workspace";
 import { ProposalReviewSheet } from "@/components/commercial/proposal-review-sheet";
 import { CommercialCategorySelector } from "@/components/commercial/commercial-category-selector";
+import { CommercialOrgTypePicker } from "@/components/commercial/commercial-org-type-picker";
 import { CommercialInputModeSelector } from "@/components/commercial/commercial-input-mode";
 import { ResidentialInputModeSelector } from "@/components/residential/residential-input-mode";
 import {
@@ -341,6 +342,9 @@ function ProposalPageContent() {
   // Mode picker (bill vs requirement) â€” only relevant for legacy residential_smart
   const [showResidentialModePicker, setShowResidentialModePicker] = useState(
     (urlPrefill.preset as string | undefined) === "residential_smart" && !urlPrefill.inputMode
+  );
+  const [showCommercialOrgPicker, setShowCommercialOrgPicker] = useState(
+    urlPrefill.preset === "commercial_executive" && !urlPrefill.orgType
   );
   const [residentialConfig, setResidentialConfig] = useState<ResidentialProposalConfig | null>(null);
   /** Commercial bill path â€” same Smart catalog + pricing studio as residential. */
@@ -1745,7 +1749,7 @@ function ProposalPageContent() {
         manual.connectionType
       );
     });
-    setProposalLayout((prev) => prev ?? getPresetDefaultLayout("residential_executive"));
+    setProposalLayout((prev) => prev ?? getPresetDefaultLayout("commercial_executive"));
   }, [osPresetId, urlPrefill.kw, urlPrefill.orgType, urlPrefill.story, manual.connectionType]);
 
   useEffect(() => {
@@ -2591,8 +2595,8 @@ function ProposalPageContent() {
             }
           }}
           onSelectCommercial={() => {
-            setOsPresetId("residential_zenith");
             setShowPresetPicker(false);
+            setShowCommercialOrgPicker(true);
           }}
           onSkip={() => {
             setOsPresetId(readDefaultResidentialPreset());
@@ -2601,6 +2605,32 @@ function ProposalPageContent() {
           }}
         />
       )}
+
+      {showCommercialOrgPicker ? (
+        <CommercialOrgTypePicker
+          open
+          onSelect={(orgType, defaultKw) => {
+            setOsPresetId("commercial_executive");
+            setCommercialConfig(
+              withOrgStory(defaultCommercialConfig(defaultKw), orgType, urlPrefill.story)
+            );
+            setCommercialInputMode("requirement");
+            setShowCommercialOrgPicker(false);
+            setManual((prev) => ({
+              ...prev,
+              connectionType: prev.connectionType || "commercial",
+            }));
+            if (!overrideSolarKw.trim()) {
+              setOverrideSolarKw(String(defaultKw));
+            }
+          }}
+          onBack={() => {
+            setShowCommercialOrgPicker(false);
+            setShowPresetPicker(true);
+            setOsPresetId(null);
+          }}
+        />
+      ) : null}
 
       {showResidentialModePicker && isAnyResidential ? (
         <ResidentialProposalModePicker
@@ -2675,7 +2705,10 @@ function ProposalPageContent() {
         {/* Proposal OS â€” branded header */}
         <ProposalOSHeader
           presetId={osPresetId}
-          onChangePreset={() => setShowPresetPicker(true)}
+          onChangePreset={() => {
+            setShowCommercialOrgPicker(false);
+            setShowPresetPicker(true);
+          }}
           customerName={osCustomerName || undefined}
         />
 

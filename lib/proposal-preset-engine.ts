@@ -5,9 +5,10 @@
  * Active presets:
  *   1. residential_executive     — Golden / Executive Premium (locked flagship)
  *   2. residential_zenith        — Zenith Luxury brochure
- *   3. residential_premium_luxe  — Premium Luxe warm cream masterplan
+ *   3. residential_premium_luxe  — Atelier Industrial Minimalist
+ *   4. commercial_executive      — C&I commercial (hotel / hospital / industry…)
  *
- * Removed presets are remapped via normalizePresetId → residential_executive.
+ * Removed residential presets remap via normalizePresetId → residential_executive.
  */
 
 import type { ProposalBlockId } from "@/lib/proposal-block-registry";
@@ -28,26 +29,30 @@ export const PROPOSAL_PRESET_IDS = [
   "residential_executive",
   "residential_zenith",
   "residential_premium_luxe",
+  "commercial_executive",
 ] as const;
 
 export type ProposalPresetId = (typeof PROPOSAL_PRESET_IDS)[number];
 
-/** No active presets use the ProposalWebRenderer block loop. */
+/** No active residential presets use the ProposalWebRenderer block loop. */
 export const RESIDENTIAL_WEB_RENDERER_PRESETS: ReadonlyArray<ProposalPresetId> = [];
 
 export function isValidPresetId(id: unknown): id is ProposalPresetId {
   return typeof id === "string" && PROPOSAL_PRESET_IDS.includes(id as ProposalPresetId);
 }
 
-/** Legacy / removed ids remap to Golden; unknown → Golden. */
+/** Legacy / removed residential ids remap to Golden; unknown → Golden. */
 export function normalizePresetId(raw: string | null | undefined): ProposalPresetId {
   if (raw && isValidPresetId(raw)) return raw;
   return "residential_executive";
 }
 
-/** Returns true for presets rendered by ProposalWebRenderer (not the legacy ProposalView). */
+/** Returns true for presets rendered by ProposalWebRenderer (not isolated document renderers). */
 export function isWebRendererPreset(presetId: ProposalPresetId): boolean {
-  return (RESIDENTIAL_WEB_RENDERER_PRESETS as ReadonlyArray<string>).includes(presetId);
+  return (
+    presetId === "commercial_executive" ||
+    (RESIDENTIAL_WEB_RENDERER_PRESETS as ReadonlyArray<string>).includes(presetId)
+  );
 }
 
 // ─── Preset shape ────────────────────────────────────────────────────────────
@@ -120,6 +125,44 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     default_data_source: "requirement",
     default_blocks: [],
     optional_blocks: [],
+  },
+
+  commercial_executive: {
+    id: "commercial_executive",
+    label: "Commercial Executive Proposal",
+    description:
+      "Executive-grade proposal for C&I / commercial / industrial rooftop solar. " +
+      "Segment-aware (hotel, hospital, factory, mill, school…). " +
+      "Bill upload optional — sizing from declared load requirement.",
+    bill_requirement: "not_applicable",
+    theme_hint: "commercial",
+    default_data_source: "requirement",
+    default_blocks: [
+      "cover_page",
+      "about_company",
+      "executive_summary",
+      "system_requirements",
+      "dcr_comparison_card",
+      "capacity_scenarios_card",
+      "technical_proposal",
+      "technical_specifications",
+      "bom_material_list",
+      "financial_summary",
+      "payback_analysis",
+      "payment_terms",
+      "warranty",
+      "terms_conditions",
+      "project_gallery",
+      "amc_maintenance",
+    ],
+    optional_blocks: [
+      "customer_documents_required",
+      "brand_comparison_card",
+      "commercial_financing_card",
+      "dg_hybrid_analysis_card",
+      "school_institution_insight_card",
+      "roi_savings",
+    ],
   },
 };
 
@@ -242,7 +285,7 @@ export function presetSupportsBill(presetId: ProposalPresetId): boolean {
   return req === "required" || req === "optional";
 }
 
-// ─── Story mode (legacy commercial — always null for active presets) ─────────
+// ─── Story mode (commercial_executive only) ─────────────────────────────────
 
 export type StoryVariant = StoryCopy & {
   segment: StorySegment;
@@ -256,7 +299,6 @@ export function resolveStoryVariant(
   mode: StoryMode | string | null | undefined,
   lang: StoryLang | string
 ): StoryVariant | null {
-  // Commercial preset removed — story modes are inactive.
   if (presetId !== "commercial_executive") return null;
   if (!segment || !mode) return null;
 

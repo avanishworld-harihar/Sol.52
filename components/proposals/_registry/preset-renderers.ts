@@ -1,6 +1,6 @@
 /**
  * Dynamic preset renderer registry.
- * Active presets: Golden + Zenith + Premium Luxe.
+ * Active presets: Golden + Zenith + Atelier + Commercial Executive.
  */
 
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
@@ -24,6 +24,10 @@ export function isLuxePresetId(presetId: string): boolean {
   return (LUXE_PRESET_ALIASES as readonly string[]).includes(presetId);
 }
 
+export function isCommercialPresetId(presetId: string): boolean {
+  return presetId === "commercial_executive";
+}
+
 export const PRESET_RENDERER_LOADERS: PresetRendererRegistry = {
   residential_executive: () =>
     import("@/components/proposals/_registry/adapters/golden-adapter"),
@@ -31,6 +35,8 @@ export const PRESET_RENDERER_LOADERS: PresetRendererRegistry = {
     import("@/components/proposals/_registry/adapters/zenith-adapter"),
   residential_premium_luxe: () =>
     import("@/components/proposals/_registry/adapters/premium-luxe-adapter"),
+  commercial_executive: () =>
+    import("@/components/proposals/_registry/adapters/commercial-adapter"),
 };
 
 /**
@@ -40,6 +46,9 @@ export const PRESET_RENDERER_LOADERS: PresetRendererRegistry = {
 export function getPresetRendererLoader(
   presetId: ProposalPresetId | string
 ): PresetRendererLoader {
+  if (isCommercialPresetId(String(presetId))) {
+    return () => import("@/components/proposals/_registry/adapters/commercial-adapter");
+  }
   if (isZenithPresetId(presetId)) {
     return () => import("@/components/proposals/_registry/adapters/zenith-adapter");
   }

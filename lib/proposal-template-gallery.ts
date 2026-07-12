@@ -3,7 +3,7 @@ import type { ResidentialTemplatePresetId } from "@/lib/proposal-default-preset-
 import type { SalesPremiumStyleId } from "@/lib/sales-premium-styles";
 
 /**
- * Gallery theme registry — Golden + Zenith + Premium Luxe.
+ * Gallery theme registry — Golden + Zenith + Atelier + Commercial Executive.
  */
 
 /** Thumbnail id — string so new themes need no type union update. */
@@ -16,7 +16,7 @@ export type ProposalTemplateGalleryKey = string;
 
 export type ProposalTemplateGalleryItem = {
   key: ProposalTemplateGalleryKey;
-  presetId: ResidentialTemplatePresetId;
+  presetId: ProposalPresetId;
   /** Legacy field — unused for Golden / Zenith / Luxe. */
   salesPremiumStyle?: SalesPremiumStyleId;
   category: ProposalTemplateCategory;
@@ -37,6 +37,11 @@ export const PROPOSAL_TEMPLATE_CATEGORIES: ProposalTemplateCategoryMeta[] = [
     id: "residential",
     label: "Residential",
     description: "Homes & rooftops — Golden, Zenith, or Premium Luxe.",
+  },
+  {
+    id: "commercial",
+    label: "Commercial",
+    description: "C&I sites — Commercial Executive with hotel, hospital, factory & industry segments.",
   },
 ];
 
@@ -68,8 +73,19 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
   },
 ];
 
-/** Commercial gallery emptied — commercial preset removed. */
-export const COMMERCIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [];
+/** Commercial Executive — single C&I deck; segment chosen at proposal start. */
+export const COMMERCIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
+  {
+    key: "commercial",
+    presetId: "commercial_executive",
+    category: "commercial",
+    name: "Commercial Executive",
+    description:
+      "Hotel, hospital, factory, mill / industry, school & more — executive C&I proposal with segment-aware narrative.",
+    recommended: true,
+    thumbnailVariant: "commercial",
+  },
+];
 
 export const ALL_PROPOSAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
   ...RESIDENTIAL_TEMPLATE_GALLERY,
@@ -102,9 +118,10 @@ export function galleryItemByKey(key: ProposalTemplateGalleryKey): ProposalTempl
 
 /** Default gallery key when no saved preference exists. */
 export function resolveActiveGalleryKey(
-  presetId: ResidentialTemplatePresetId,
+  presetId: ResidentialTemplatePresetId | ProposalPresetId,
   _salesPremiumStyle?: SalesPremiumStyleId
 ): ProposalTemplateGalleryKey {
+  if (presetId === "commercial_executive") return "commercial";
   if (presetId === "residential_executive") return "golden";
   if (presetId === "residential_zenith") return "zenith";
   if (presetId === "residential_premium_luxe") return "luxe";

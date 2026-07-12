@@ -72,8 +72,12 @@ export function parsePrefillFromSearchParams(params: URLSearchParams): BuilderPr
     prefill.preset = "residential_zenith";
   } else if (preset === "residential_executive") {
     prefill.preset = "residential_executive";
+  } else if (preset === "residential_premium_luxe" || preset === "luxe" || preset === "premium_luxe") {
+    prefill.preset = "residential_premium_luxe";
+  } else if (preset === "commercial_executive" || preset === "commercial") {
+    prefill.preset = "commercial_executive";
   } else if (preset) {
-    // Removed presets → Golden
+    // Removed residential presets → Golden
     prefill.preset = "residential_executive";
   }
 
@@ -83,7 +87,18 @@ export function parsePrefillFromSearchParams(params: URLSearchParams): BuilderPr
   }
 
   const orgType = params.get("orgType");
-  const ORG_TYPES: OrgType[] = ["hotel", "hospital", "factory", "warehouse", "dairy", "school", "generic"];
+  const ORG_TYPES: OrgType[] = [
+    "hotel",
+    "hospital",
+    "factory",
+    "warehouse",
+    "dairy",
+    "school",
+    "mall",
+    "office",
+    "industry",
+    "generic",
+  ];
   if (orgType && ORG_TYPES.includes(orgType as OrgType)) {
     prefill.orgType = orgType as OrgType;
   }
@@ -161,8 +176,8 @@ export const QUICK_ACTIONS: QuickAction[] = [
   {
     id: "new-commercial",
     label: "New Commercial Proposal",
-    description: "Start with Zenith (commercial preset retired)",
-    href: buildProposalUrl({ preset: "residential_zenith" }),
+    description: "Commercial Executive — choose hotel, hospital, factory & more",
+    href: buildProposalUrl({ preset: "commercial_executive" }),
     iconName: "building2",
     category: "Quick Actions",
   },
@@ -208,7 +223,7 @@ export const QUICK_ACTIONS: QuickAction[] = [
     label: "Hotel / Resort Quote",
     description: "Commercial executive deck — hospitality segment",
     href: buildProposalUrl({
-      preset: "residential_zenith",
+      preset: "commercial_executive",
       orgType: "hotel",
       story: "executive_pitch",
     }),
@@ -220,7 +235,7 @@ export const QUICK_ACTIONS: QuickAction[] = [
     label: "Hospital / Clinic Quote",
     description: "Commercial executive deck — healthcare segment",
     href: buildProposalUrl({
-      preset: "residential_zenith",
+      preset: "commercial_executive",
       orgType: "hospital",
       story: "cfo_brief",
     }),
@@ -232,7 +247,7 @@ export const QUICK_ACTIONS: QuickAction[] = [
     label: "Factory / Manufacturing Quote",
     description: "Commercial executive deck — industrial segment",
     href: buildProposalUrl({
-      preset: "residential_zenith",
+      preset: "commercial_executive",
       orgType: "factory",
       story: "operations_brief",
     }),
@@ -244,7 +259,7 @@ export const QUICK_ACTIONS: QuickAction[] = [
     label: "Warehouse / Logistics Quote",
     description: "Commercial executive deck — logistics segment",
     href: buildProposalUrl({
-      preset: "residential_zenith",
+      preset: "commercial_executive",
       orgType: "warehouse",
       story: "operations_brief",
     }),
@@ -256,7 +271,7 @@ export const QUICK_ACTIONS: QuickAction[] = [
     label: "School / Institution Quote",
     description: "Commercial executive deck — education segment",
     href: buildProposalUrl({
-      preset: "residential_zenith",
+      preset: "commercial_executive",
       orgType: "school",
       story: "sustainability_story",
     }),
@@ -268,7 +283,7 @@ export const QUICK_ACTIONS: QuickAction[] = [
     label: "Dairy / Cold Storage Quote",
     description: "Commercial executive deck — dairy & agri segment",
     href: buildProposalUrl({
-      preset: "residential_zenith",
+      preset: "commercial_executive",
       orgType: "dairy",
       story: "operations_brief",
     }),
