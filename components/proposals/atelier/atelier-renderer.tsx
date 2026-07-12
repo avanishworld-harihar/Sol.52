@@ -403,18 +403,21 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
         <span className={styles.pageNum}>01 / 12</span>
       </section>
 
-      {/* ══ P2: IMPACT MOMENT ════════════════════════════════════ */}
+      {/* ══ P2: IMPACT MOMENT — environmental only (no financials) ══ */}
       <section className={`${styles.page} ${styles.impactPage}`}>
         <header className={styles.pageHead}>
           <span className={styles.pageTag}>02 — YOUR IMPACT</span>
           <h2 className={styles.pageTitle}>What Your Roof Gives Back to the World</h2>
+          <p className={styles.pageLead}>
+            Before the numbers — here is what your system does for the planet.
+          </p>
         </header>
 
         <div className={styles.impactGrid}>
           <div className={styles.impactCard}>
             <div className={styles.impactBig}>{co2 > 0 ? co2 : "—"}</div>
             <div className={styles.impactUnit}>TONS</div>
-            <div className={styles.impactLabel}>CO₂ Eliminated Over 25 Years</div>
+            <div className={styles.impactLabel}>Lifetime CO₂ Offset</div>
             <p className={styles.impactSub}>
               Equivalent to removing a petrol car from the road for{" "}
               {co2 > 0 ? Math.round(co2 / 2) : "—"} years.
@@ -433,9 +436,13 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           </div>
         </div>
 
-        {/* Carbon milestones */}
+        {/* Environmental snapshots — 3 milestones, distinct from wealth chart on P4 */}
         <div className={styles.carbonMilestones}>
-          {[5, 10, 15, 20, 25].map((yr) => {
+          {[
+            { yr: 1, label: "Year 1" },
+            { yr: 10, label: "Year 10" },
+            { yr: 25, label: "Year 25" },
+          ].map(({ yr, label }) => {
             const tons = co2 > 0 ? Math.round((co2 / 25) * yr) : 0;
             return (
               <div key={yr} className={styles.carbonMilestone}>
@@ -445,9 +452,9 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
                     style={{ height: `${(yr / 25) * 100}%` }}
                   />
                 </div>
-                <div className={styles.cmYear}>YR {yr}</div>
+                <div className={styles.cmYear}>{label}</div>
                 <div className={styles.cmTons}>
-                  {tons > 0 ? `${tons}T` : "—"}
+                  {tons > 0 ? `${tons}T CO₂` : "—"}
                 </div>
               </div>
             );
@@ -461,13 +468,16 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
         <span className={styles.pageNum}>02 / 12</span>
       </section>
 
-      {/* ══ P3: FINANCIAL STORY ═══════════════════════════════════ */}
+      {/* ══ P3: FINANCIAL STORY — immediate monthly economics only ══ */}
       <section className={`${styles.page} ${styles.financePage}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>03 — FINANCIAL STORY</span>
+          <span className={styles.pageTag}>03 — MONTHLY ECONOMICS</span>
           <h2 className={styles.pageTitle}>
             You Are Not Switching Energy. You Are Switching Economics.
           </h2>
+          <p className={styles.pageLead}>
+            The real question is simple: what leaves your pocket every month?
+          </p>
         </header>
 
         {/* Bill vs Solar comparison */}
@@ -479,8 +489,8 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
             </div>
             <div className={styles.billCardLabel}>Monthly Electricity Bill</div>
             <p className={styles.billCardNote}>
-              Increases ~6% every year. Over 25 years you will pay{" "}
-              {formatInrCompact(monthlyBill * 12 * 22)} to the grid.
+              Rises ~6% every year. You pay for energy you never own — and the
+              bill only goes up.
             </p>
           </div>
 
@@ -513,9 +523,9 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           </div>
         </div>
 
-        {/* Bill trajectory line chart: rising grid bill vs flat solar cost */}
+        {/* Near-term bill trajectory — payback window, not 25-yr wealth */}
         {(() => {
-          const years = [1, 5, 10, 15, 20, 25];
+          const years = [1, 2, 3, 4, 5, 7, 10];
           const baseAnnualBill = (monthlyBill > 0 ? monthlyBill : 5200) * 12;
           const flatSolarAnnual = (monthlyEmi > 0 ? monthlyEmi : 4100) * 12;
           const loanEndYr = 5;
@@ -541,7 +551,7 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
             " Z";
           return (
             <div className={styles.trajectoryChart}>
-              <span className={styles.genCardTag}>25-YEAR BILL TRAJECTORY</span>
+              <span className={styles.genCardTag}>FIRST 10 YEARS — MONTHLY BILL COMPARISON</span>
               <svg viewBox={`0 0 ${W} ${H}`} className={styles.trajectorySvg}>
                 <path d={areaPath} className={styles.trajectoryGap} />
                 <polyline points={withoutPath} className={styles.trajectoryLineRed} />
@@ -560,7 +570,7 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
                   <span className={styles.trajDotGreen} /> Bill With Solar (flat, then near-zero)
                 </span>
                 <span className={styles.trajLegendItem}>
-                  <span className={styles.trajDotGap} /> Your Savings Gap
+                  <span className={styles.trajDotGap} /> Monthly Savings Gap
                 </span>
               </div>
             </div>
@@ -597,13 +607,17 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
         <span className={styles.pageNum}>03 / 12</span>
       </section>
 
-      {/* ══ P4: WEALTH PROJECTION ════════════════════════════════ */}
+      {/* ══ P4: WEALTH PROJECTION — owns the full 25-year story ═══ */}
       <section className={`${styles.page} ${styles.wealthPage}`}>
         <header className={styles.pageHead}>
           <span className={styles.pageTag}>04 — WEALTH PROJECTION</span>
           <h2 className={styles.pageTitle}>
-            Your 25-Year Solar Wealth Journey
+            Where Your Savings Compound Over 25 Years
           </h2>
+          <p className={styles.pageLead}>
+            Monthly gains add up. Here is the full long-term picture — the only
+            place in this proposal where we project 25-year returns.
+          </p>
         </header>
 
         {/* 3-Phase Wealth Journey */}
@@ -674,6 +688,15 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
             <div className={styles.wealthChartNote}>
               Cumulative electricity bill savings over 25 years at current
               generation levels.
+            </div>
+            <div className={styles.wealthContrast}>
+              <span className={styles.wealthContrastLabel}>Without solar</span>
+              <span className={styles.wealthContrastVal}>
+                {monthlyBill > 0
+                  ? formatInrCompact(monthlyBill * 12 * 22)
+                  : "—"}{" "}
+                paid to grid over 25 yrs
+              </span>
             </div>
           </div>
 
