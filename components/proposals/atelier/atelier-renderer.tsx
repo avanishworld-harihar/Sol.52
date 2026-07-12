@@ -887,7 +887,6 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
               title: panelItem ? panelItem.brand || "Waaree" : "Waaree Energies",
               spec: bomLine(panelItem, "580 Wp DCR TOPCon N-Type"),
               warranty: panelItem?.warranty || "30 Years Performance",
-              img: "/hardware/waaree-panel.png",
               mark: "P",
               why: `TOPCon N-type cells deliver 22%+ module efficiency — up to 8% higher yield than standard poly panels in ${cityLabel}'s summer heat.`,
             },
@@ -897,7 +896,6 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
               title: inverterItem ? inverterItem.brand || "Havells / Polycab" : "Havells / Polycab",
               spec: bomLine(inverterItem, `${systemKw} kW Dual MPPT String Inverter`),
               warranty: inverterItem?.warranty || "10 Years Warranty",
-              img: "/hardware/havells-inverter.png",
               mark: "I",
               why: "BEE 5-star, IP65 weatherproof. Dual MPPT handles partial shading without losing output from unshaded strings.",
             },
@@ -907,7 +905,6 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
               title: structureItem ? structureItem.brand || "JSW" : "JSW",
               spec: bomLine(structureItem, "Hot-Dip Galvanized GI Structure"),
               warranty: structureItem?.warranty || "10 Years Structural",
-              img: "/hardware/mounting-structure.png",
               mark: "M",
               why: "150 km/h wind-load rated GI structure, engineered specifically for Indian rooftop wind and monsoon conditions.",
             },
@@ -917,47 +914,26 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
               title: protectionItem ? protectionItem.brand || "Havells / Phoenix" : "Havells / Phoenix",
               spec: bomLine(protectionItem, "DCDB + ACDB with SPD"),
               warranty: protectionItem?.warranty || "5 Years",
-              img: "/hardware/protection-panel.png",
               mark: "S",
               why: "MCB/MCCB protection, surge protection device & copper earthing — full-system safety against grid faults and lightning.",
             },
           ].map((c) => (
             <div key={c.key} className={styles.hwCardV2}>
-              <div className={styles.hwCardImgBox}>
-                {/* Swap src with real product photo when available */}
-                <img
-                  src={c.img}
-                  alt={c.title}
-                  className={styles.hwProductImg}
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).style.display = "none";
-                  }}
-                />
-                <div className={styles.hwCardLogoBadge}>{c.mark}</div>
+              <div className={styles.hwCardTop}>
+                <div className={styles.hwCardIcon} aria-hidden="true">
+                  {c.mark}
+                </div>
+                <span className={styles.hwCardTag}>{c.tag}</span>
               </div>
               <div className={styles.hwCardBody}>
-                <span className={styles.hwCardTag}>{c.tag}</span>
                 <div className={styles.hwCardTitle}>{c.title}</div>
                 <p className={styles.hwCardSpec}>{c.spec}</p>
                 <p className={styles.hwCardWhy}>{c.why}</p>
                 <div className={styles.hwCardFooter}>
                   <span className={styles.hwCardWarranty}>{c.warranty}</span>
-                  <div className={styles.hwCardQrRow}>
-                    {/* Decorative placeholder QR — swap for real datasheet QR */}
-                    <div className={styles.hwCardQr} aria-hidden="true">
-                      {Array.from({ length: 25 }).map((_, i) => (
-                        <span
-                          key={i}
-                          className={
-                            (i * 7 + c.key.length) % 3 === 0 ? styles.qrDotOn : ""
-                          }
-                        />
-                      ))}
-                    </div>
-                    <a href="#" className={styles.hwCardDatasheet}>
-                      View Datasheet →
-                    </a>
-                  </div>
+                  <a href="#" className={styles.hwCardDatasheet}>
+                    View Datasheet
+                  </a>
                 </div>
               </div>
             </div>

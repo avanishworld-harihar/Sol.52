@@ -58,7 +58,7 @@
 .printBarBrand {
   color: var(--white);
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.75rem;
+  font-size: 0.92rem;
   font-weight: 700;
   letter-spacing: 2px;
 }
@@ -68,7 +68,7 @@
   border: none;
   border-radius: 4px;
   padding: 0.4rem 1.2rem;
-  font-size: 0.75rem;
+  font-size: 0.92rem;
   font-weight: 700;
   font-family: 'Montserrat', sans-serif;
   letter-spacing: 0.5px;
@@ -94,13 +94,13 @@
 .pageHead {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  padding-top: 1.75rem;
-  margin-bottom: 1.5rem;
+  gap: 0.35rem;
+  padding-top: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 .pageTag {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.65rem;
+  font-size: 0.88rem;
   font-weight: 700;
   letter-spacing: 2.5px;
   color: var(--or);
@@ -108,7 +108,7 @@
 }
 .pageTitle {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.55rem;
+  font-size: 1.85rem;
   font-weight: 800;
   color: var(--h);
   line-height: 1.25;
@@ -119,7 +119,7 @@
   bottom: 1rem;
   right: 2rem;
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.65rem;
+  font-size: 0.84rem;
   font-weight: 600;
   letter-spacing: 1px;
   color: var(--gray2);
@@ -194,7 +194,7 @@
 }
 .coverBrandText {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.7rem;
+  font-size: 0.86rem;
   font-weight: 700;
   letter-spacing: 3px;
   color: rgba(255,255,255,0.7);
@@ -204,7 +204,7 @@
 }
 .coverDocType {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.55rem;
+  font-size: 0.82rem;
   font-weight: 600;
   letter-spacing: 2px;
   color: var(--or);
@@ -225,7 +225,7 @@
 }
 .coverFor {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.6rem;
+  font-size: 0.86rem;
   font-weight: 600;
   letter-spacing: 3px;
   color: rgba(255,255,255,0.45);
@@ -241,7 +241,7 @@
   word-break: break-word;
 }
 .coverLoc {
-  font-size: 0.85rem;
+  font-size: 1rem;
   color: rgba(255,255,255,0.5);
   margin: 0;
   letter-spacing: 0.5px;
@@ -259,7 +259,7 @@
 .coverWealthCard { flex: 1; min-width: 0; }
 .coverWealthTag {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.55rem;
+  font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 2px;
   color: var(--or);
@@ -276,7 +276,7 @@
   margin-bottom: 0.35rem;
 }
 .coverWealthSub {
-  font-size: 0.75rem;
+  font-size: 0.92rem;
   color: rgba(255,255,255,0.45);
 }
 .coverWealthDivider {
@@ -300,7 +300,7 @@
   line-height: 1;
 }
 .coverSmallLabel {
-  font-size: 0.65rem;
+  font-size: 0.84rem;
   color: rgba(255,255,255,0.4);
   letter-spacing: 0.5px;
 }
@@ -329,7 +329,7 @@
 }
 .impactUnit {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.65rem;
+  font-size: 0.84rem;
   font-weight: 700;
   letter-spacing: 2px;
   color: var(--or);
@@ -337,12 +337,12 @@
 }
 .impactLabel {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.8rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--h);
   margin-bottom: 0.5rem;
 }
-.impactSub { font-size: 0.78rem; color: var(--gray); margin: 0; line-height: 1.5; }
+.impactSub { font-size: 0.94rem; color: var(--gray); margin: 0; line-height: 1.5; }
 
 /* Carbon milestone bars */
 .carbonMilestones {
@@ -378,20 +378,20 @@
 }
 .cmYear {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.6rem;
+  font-size: 0.86rem;
   font-weight: 700;
   letter-spacing: 1px;
   color: var(--gray);
 }
 .cmTons {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.7rem;
+  font-size: 0.86rem;
   font-weight: 700;
   color: var(--h);
 }
 .impactTagline {
   margin-top: 1.25rem;
-  font-size: 0.82rem;
+  font-size: 0.98rem;
   color: var(--gray);
   font-style: italic;
   border-left: 3px solid var(--or);
@@ -423,7 +423,7 @@
 }
 .billCardTag {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.55rem;
+  font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 2px;
   color: var(--gray);
@@ -438,13 +438,13 @@
   color: var(--or);
 }
 .billCardLabel {
-  font-size: 0.75rem;
+  font-size: 0.92rem;
   font-weight: 700;
   color: var(--c);
 }
 .billCardProfit .billCardLabel { color: rgba(255,255,255,0.7); }
 .billCardNote {
-  font-size: 0.72rem;
+  font-size: 0.88rem;
   color: var(--gray);
   line-height: 1.5;
   margin: 0;
@@ -491,7 +491,7 @@
 }
 .trajectoryXLabel {
   font-family: 'Montserrat', sans-serif;
-  font-size: 7px;
+  font-size: 9px;
   font-weight: 700;
   fill: var(--gray);
 }
@@ -507,7 +507,7 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.68rem;
+  font-size: 0.86rem;
   color: var(--gray);
 }
 .trajDotRed, .trajDotGreen, .trajDotGap {
@@ -545,7 +545,7 @@
 }
 .investTag {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.55rem;
+  font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 1.5px;
   color: var(--gray);
@@ -600,19 +600,19 @@
 }
 .wealthYr {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.6rem;
+  font-size: 0.86rem;
   font-weight: 700;
   letter-spacing: 1px;
   color: var(--gray);
 }
 .wealthAmt {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.8rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--h);
 }
 .wealthChartNote {
-  font-size: 0.72rem;
+  font-size: 0.88rem;
   color: var(--gray);
   font-style: italic;
   padding-top: 0.5rem;
@@ -631,7 +631,7 @@
 }
 .investScoreTag {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.55rem;
+  font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 2px;
   color: rgba(255,255,255,0.45);
@@ -647,7 +647,7 @@
   line-height: 1;
 }
 .investScoreLabel {
-  font-size: 0.8rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: rgba(255,255,255,0.7);
   margin-top: 0.35rem;
@@ -670,13 +670,13 @@
   color: var(--white);
 }
 .investScoreStatLabel {
-  font-size: 0.65rem;
+  font-size: 0.84rem;
   color: rgba(255,255,255,0.4);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 .investScoreBasis {
-  font-size: 0.66rem;
+  font-size: 0.84rem;
   color: rgba(255,255,255,0.4);
   line-height: 1.55;
   text-align: left;
@@ -702,7 +702,7 @@
   margin: 0.6rem 0 0.4rem;
 }
 .paybackNote {
-  font-size: 0.75rem;
+  font-size: 0.92rem;
   color: var(--gray);
   line-height: 1.5;
   margin: 0;
@@ -723,7 +723,7 @@
 }
 .genCardTag {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.6rem;
+  font-size: 0.86rem;
   font-weight: 700;
   letter-spacing: 2px;
   color: var(--or);
@@ -758,12 +758,12 @@
 .genFormulaResult .genFormulaLabel { color: rgba(255,255,255,0.5); }
 .genFormulaVal {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.85rem;
+  font-size: 1rem;
   font-weight: 800;
   color: var(--h);
 }
 .genFormulaLabel {
-  font-size: 0.68rem;
+  font-size: 0.86rem;
   color: var(--gray);
   text-align: center;
   line-height: 1.2;
@@ -785,10 +785,10 @@
   border-bottom: 1px solid var(--line);
 }
 .genIrradRow:last-child { border-bottom: none; }
-.genIrradKey { font-size: 0.8rem; color: var(--gray); }
+.genIrradKey { font-size: 0.95rem; color: var(--gray); }
 .genIrradVal {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.82rem;
+  font-size: 0.98rem;
   font-weight: 700;
   color: var(--h);
 }
@@ -813,7 +813,7 @@
   font-weight: 800;
   color: var(--h);
 }
-.genSpecLabel { font-size: 0.72rem; color: var(--gray); margin-top: 0.15rem; }
+.genSpecLabel { font-size: 0.88rem; color: var(--gray); margin-top: 0.15rem; }
 
 /* Standards row */
 .genStdRow {
@@ -826,7 +826,7 @@
 }
 .genStdLabel {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.6rem;
+  font-size: 0.86rem;
   font-weight: 700;
   letter-spacing: 1px;
   color: var(--gray);
@@ -834,7 +834,7 @@
   flex-shrink: 0;
 }
 .stdBadge {
-  font-size: 0.72rem;
+  font-size: 0.88rem;
   font-weight: 600;
   background: var(--al);
   border: 1px solid var(--line);
@@ -844,7 +844,7 @@
   white-space: nowrap;
 }
 .genDisclaimer {
-  font-size: 0.73rem;
+  font-size: 0.92rem;
   color: var(--gray);
   line-height: 1.6;
   margin: 0.9rem 0 0;
@@ -856,11 +856,11 @@
 .hwCard4Grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
+  gap: 0.9rem;
+  margin-bottom: 1.15rem;
 }
 .hwCardV2 {
-  background: var(--al);
+  background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--card-r);
   overflow: hidden;
@@ -868,37 +868,39 @@
   flex-direction: column;
   box-shadow: var(--card-s);
 }
-.hwCardImgBox {
-  height: 90px;
-  position: relative;
-  background: linear-gradient(135deg, #0A0F1C 0%, #1a2744 100%);
+.hwCardTop {
   display: flex;
   align-items: center;
-  justify-content: center;
-  overflow: hidden;
+  gap: 0.65rem;
+  padding: 0.7rem 0.95rem;
+  background: linear-gradient(90deg, #fff7ed 0%, var(--white) 72%);
+  border-bottom: 1px solid var(--line);
 }
-.hwCardLogoBadge {
-  position: absolute;
-  top: 0.5rem;
-  left: 0.5rem;
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.2);
+.hwCardIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--h);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.7rem;
+  font-size: 0.92rem;
   font-weight: 800;
   color: var(--white);
-  backdrop-filter: blur(2px);
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(10, 15, 28, 0.18);
 }
-.hwCardBody { padding: 0.9rem 1rem 1rem; flex: 1; display: flex; flex-direction: column; gap: 0.35rem; }
+.hwCardBody {
+  padding: 0.85rem 0.95rem 0.95rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
 .hwCardTag {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.55rem;
+  font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 1.5px;
   color: var(--or);
@@ -906,64 +908,52 @@
 }
 .hwCardTitle {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.95rem;
+  font-size: 1.02rem;
   font-weight: 800;
   color: var(--h);
   line-height: 1.2;
 }
-.hwCardSpec { font-size: 0.76rem; color: var(--gray); margin: 0; line-height: 1.45; }
+.hwCardSpec { font-size: 0.92rem; color: var(--gray); margin: 0; line-height: 1.45; }
 .hwCardWhy {
-  font-size: 0.74rem;
+  font-size: 0.92rem;
   color: var(--c);
-  margin: 0.15rem 0 0;
+  margin: 0.1rem 0 0;
   line-height: 1.5;
-  padding-left: 0.5rem;
-  border-left: 2px solid var(--or);
+  padding: 0.45rem 0.55rem;
+  background: #fafbfc;
+  border-left: 3px solid var(--or);
+  border-radius: 0 4px 4px 0;
 }
 .hwCardFooter {
   margin-top: auto;
-  padding-top: 0.6rem;
+  padding-top: 0.65rem;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
   gap: 0.5rem;
+  border-top: 1px dashed var(--line);
 }
 .hwCardWarranty {
   display: inline-block;
   background: var(--h);
   color: var(--white);
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.58rem;
+  font-size: 0.84rem;
   font-weight: 700;
   letter-spacing: 0.75px;
   padding: 0.25rem 0.6rem;
   border-radius: 3px;
   width: fit-content;
 }
-.hwCardQrRow {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-/* Decorative datasheet QR placeholder */
-.hwCardQr {
-  width: 28px;
-  height: 28px;
-  flex-shrink: 0;
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  grid-template-rows: repeat(5, 1fr);
-  gap: 1px;
-  background: var(--white);
-  border: 1px solid var(--line);
-  padding: 2px;
-}
-.hwCardQr span { background: transparent; }
-.qrDotOn { background: var(--h) !important; }
 .hwCardDatasheet {
-  font-size: 0.65rem;
+  font-size: 0.84rem;
   font-weight: 700;
   color: var(--or);
   text-decoration: none;
+  white-space: nowrap;
+}
+.hwCardDatasheet::after {
+  content: " →";
 }
 .hwCardDatasheet:hover { text-decoration: underline; }
 
@@ -1002,12 +992,12 @@
 }
 .trustLabel {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.78rem;
+  font-size: 0.94rem;
   font-weight: 700;
   color: var(--h);
   margin-bottom: 0.3rem;
 }
-.trustNote { font-size: 0.73rem; color: var(--gray); line-height: 1.5; }
+.trustNote { font-size: 0.92rem; color: var(--gray); line-height: 1.5; }
 .trustQuoteBox {
   background: var(--h);
   border-radius: var(--card-r);
@@ -1015,7 +1005,7 @@
   text-align: center;
 }
 .trustQuote {
-  font-size: 0.9rem;
+  font-size: 1.05rem;
   color: rgba(255,255,255,0.85);
   line-height: 1.7;
   font-style: italic;
@@ -1026,7 +1016,7 @@
 }
 .trustQuoteAttr {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.7rem;
+  font-size: 0.86rem;
   font-weight: 700;
   color: var(--or);
   letter-spacing: 0.5px;
@@ -1076,19 +1066,19 @@
 }
 .warrantyYrsText {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.5rem;
+  font-size: 0.84rem;
   font-weight: 700;
   letter-spacing: 1px;
   color: var(--or);
 }
 .warrantyLabel {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.7rem;
+  font-size: 0.86rem;
   font-weight: 700;
   color: var(--h);
   line-height: 1.3;
 }
-.warrantySub { font-size: 0.65rem; color: var(--gray); line-height: 1.4; }
+.warrantySub { font-size: 0.84rem; color: var(--gray); line-height: 1.4; }
 
 /* ══ P8: ROOF INTELLIGENCE ══════════════════════════════════════ */
 .roofLayout {
@@ -1123,7 +1113,7 @@
 .compassDir {
   position: absolute;
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.65rem;
+  font-size: 0.84rem;
   font-weight: 800;
 }
 .compassN { top: 6px; left: 50%; transform: translateX(-50%); color: var(--or); }
@@ -1147,7 +1137,7 @@
   transform: translateX(-50%);
 }
 .compassNote {
-  font-size: 0.68rem;
+  font-size: 0.86rem;
   color: var(--gray);
   text-align: center;
   margin: 0;
@@ -1163,7 +1153,7 @@
 }
 .panelLayoutLabel {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.58rem;
+  font-size: 0.84rem;
   font-weight: 700;
   letter-spacing: 1.5px;
   color: var(--gray);
@@ -1182,7 +1172,7 @@
 }
 .panelCell:nth-child(even) { opacity: 0.6; }
 .panelMore {
-  font-size: 0.68rem;
+  font-size: 0.86rem;
   color: var(--gray);
   margin-top: 0.5rem;
   text-align: center;
@@ -1203,7 +1193,7 @@
 }
 .roofMetricTag {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.55rem;
+  font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 1.5px;
   color: var(--or);
@@ -1218,7 +1208,7 @@
   color: var(--h);
   line-height: 1;
 }
-.roofMetricNote { font-size: 0.73rem; color: var(--gray); margin-top: 0.2rem; }
+.roofMetricNote { font-size: 0.92rem; color: var(--gray); margin-top: 0.2rem; }
 
 /* ══ P9: EXECUTION ROADMAP ══════════════════════════════════════ */
 /* Horizontal timeline */
@@ -1253,7 +1243,7 @@
 }
 .tlDotNum {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.55rem;
+  font-size: 0.82rem;
   font-weight: 800;
   color: var(--white);
 }
@@ -1265,7 +1255,7 @@
 .tlContent { padding-right: 0.5rem; }
 .tlTitle {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.75rem;
+  font-size: 0.92rem;
   font-weight: 800;
   color: var(--h);
   margin-bottom: 0.15rem;
@@ -1273,7 +1263,7 @@
 .tlDuration {
   display: inline-block;
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.6rem;
+  font-size: 0.86rem;
   font-weight: 700;
   color: var(--or);
   background: rgba(249,115,22,0.08);
@@ -1281,9 +1271,9 @@
   padding: 0.1rem 0.4rem;
   margin-bottom: 0.3rem;
 }
-.tlDesc { font-size: 0.73rem; color: var(--gray); line-height: 1.45; }
+.tlDesc { font-size: 0.92rem; color: var(--gray); line-height: 1.45; }
 .roadmapNote {
-  font-size: 0.72rem;
+  font-size: 0.88rem;
   color: var(--gray);
   line-height: 1.5;
   margin: -1rem 0 1.25rem;
@@ -1307,11 +1297,11 @@
 }
 .invoiceFrom {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.75rem;
+  font-size: 0.92rem;
   font-weight: 700;
   color: var(--white);
 }
-.invoiceTo { font-size: 0.7rem; color: rgba(255,255,255,0.45); margin-top: 0.15rem; }
+.invoiceTo { font-size: 0.86rem; color: rgba(255,255,255,0.45); margin-top: 0.15rem; }
 .invoiceTotalBox { text-align: right; }
 .invoiceTotalAmt {
   font-family: 'Montserrat', sans-serif;
@@ -1320,7 +1310,7 @@
   color: var(--or);
   line-height: 1;
 }
-.invoiceTotalLabel { font-size: 0.65rem; color: rgba(255,255,255,0.4); margin-top: 0.2rem; }
+.invoiceTotalLabel { font-size: 0.84rem; color: rgba(255,255,255,0.4); margin-top: 0.2rem; }
 
 .invoiceBody { padding: 0 1.5rem; }
 .invoiceRow {
@@ -1330,12 +1320,12 @@
   padding: 0.7rem 0;
   border-bottom: 1px solid var(--line);
   align-items: center;
-  font-size: 0.78rem;
+  font-size: 0.94rem;
   color: var(--c);
 }
 .invoiceRow[data-header="true"] {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.6rem;
+  font-size: 0.86rem;
   font-weight: 700;
   letter-spacing: 1.5px;
   color: var(--gray);
@@ -1343,7 +1333,7 @@
 }
 .invoicePct {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.7rem;
+  font-size: 0.86rem;
   font-weight: 700;
   color: var(--gray);
   min-width: 50px;
@@ -1351,7 +1341,7 @@
 }
 .invoiceAmt {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.82rem;
+  font-size: 0.98rem;
   font-weight: 700;
   color: var(--h);
   min-width: 90px;
@@ -1359,7 +1349,7 @@
 }
 .invoiceFooter {
   padding: 0.85rem 1.5rem;
-  font-size: 0.7rem;
+  font-size: 0.86rem;
   color: var(--gray);
   background: var(--white);
   border-top: 1px solid var(--line);
@@ -1376,17 +1366,17 @@
 .termsGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2rem;
+  gap: 1.75rem;
 }
 .termsSubhead {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.65rem;
+  font-size: 0.95rem;
   font-weight: 700;
   letter-spacing: 2px;
   color: var(--or);
   text-transform: uppercase;
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.4rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.3rem;
   border-bottom: 1px solid var(--line);
 }
 .termsList, .docsList {
@@ -1394,12 +1384,12 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 0.4rem;
 }
 .termsList li, .docsList li {
-  font-size: 0.72rem;
+  font-size: 1.05rem;
   color: var(--c);
-  line-height: 1.55;
+  line-height: 1.48;
 }
 .docsList { list-style: none; padding-left: 0; }
 .docsList li::before {
@@ -1408,26 +1398,26 @@
   font-weight: 700;
 }
 .amcObjective {
-  font-size: 0.72rem;
+  font-size: 1.05rem;
   color: var(--gray);
-  line-height: 1.55;
-  margin: 0 0 0.75rem;
+  line-height: 1.48;
+  margin: 0 0 0.5rem;
 }
 .amcCostPara {
-  font-size: 0.74rem;
+  font-size: 1.08rem;
   color: var(--c);
-  line-height: 1.55;
-  margin: 0 0 0.85rem;
+  line-height: 1.48;
+  margin: 0 0 0.55rem;
 }
 .termsSignoff {
   margin-top: auto;
-  padding-top: 2rem;
+  padding-top: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
 }
 .termsRegards {
-  font-size: 0.85rem;
+  font-size: 1rem;
   color: var(--gray);
 }
 .termsBrand {
@@ -1446,7 +1436,7 @@
 }
 .closingBrandName {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.75rem;
+  font-size: 0.92rem;
   font-weight: 700;
   letter-spacing: 3px;
   color: rgba(255,255,255,0.7);
@@ -1498,7 +1488,7 @@
 }
 .closingTag {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.6rem;
+  font-size: 0.86rem;
   font-weight: 700;
   letter-spacing: 3px;
   color: var(--or);
@@ -1523,7 +1513,7 @@
 }
 .closingStatement strong { color: var(--white); font-weight: 700; }
 .closingSub {
-  font-size: 0.8rem;
+  font-size: 0.95rem;
   color: rgba(255,255,255,0.45);
   line-height: 1.6;
   max-width: 100%;
@@ -1551,7 +1541,7 @@
   line-height: 1;
 }
 .closingStatLabel {
-  font-size: 0.65rem;
+  font-size: 0.84rem;
   color: rgba(255,255,255,0.4);
   margin-top: 0.25rem;
   letter-spacing: 0.5px;
@@ -1568,7 +1558,7 @@
   border: none;
   padding: 0.875rem 2.5rem;
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.85rem;
+  font-size: 1rem;
   font-weight: 800;
   letter-spacing: 1px;
   border-radius: 4px;
@@ -1580,14 +1570,14 @@
 .closingBtn:hover { background: var(--or2); transform: translateY(-1px); }
 
 .closingContact {
-  font-size: 0.78rem;
+  font-size: 0.94rem;
   color: rgba(255,255,255,0.4);
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
 }
 .closingValidity {
-  font-size: 0.68rem;
+  font-size: 0.86rem;
   color: rgba(255,255,255,0.25);
   margin-top: 0.25rem;
   font-style: italic;
@@ -1622,7 +1612,7 @@
 }
 .wjLabel {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.55rem;
+  font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 1.5px;
   color: var(--gray);
@@ -1630,19 +1620,19 @@
 }
 .wjTitle {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 800;
   color: var(--h);
   line-height: 1.1;
 }
 .wjSpan {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.72rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: var(--or);
 }
 .wjNote {
-  font-size: 0.7rem;
+  font-size: 0.86rem;
   color: var(--gray);
   line-height: 1.45;
   margin-top: 0.15rem;
@@ -1674,7 +1664,7 @@
   border-bottom: 1px solid var(--line);
 }
 .genBarRow:last-child { border-bottom: none; }
-.genBarLabel { font-size: 0.72rem; color: var(--c); }
+.genBarLabel { font-size: 0.88rem; color: var(--c); }
 .genBarTrack {
   height: 12px;
   background: var(--line);
@@ -1688,7 +1678,7 @@
 }
 .genBarVal {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.72rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: var(--h);
   text-align: right;
@@ -1706,7 +1696,7 @@
 }
 .expertTag {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.6rem;
+  font-size: 0.86rem;
   font-weight: 800;
   letter-spacing: 2px;
   color: var(--or);
@@ -1715,23 +1705,13 @@
   margin-bottom: 0.4rem;
 }
 .expertInsight p {
-  font-size: 0.78rem;
+  font-size: 0.94rem;
   color: var(--c);
   line-height: 1.6;
   margin: 0;
 }
 
-/* ══ HARDWARE PRODUCT IMAGE + WHY (P6) ══════════════════════════ */
-.hwProductImg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  mix-blend-mode: luminosity;
-  opacity: 0.35;
-}
+/* ══ HARDWARE WHY BOX (legacy) ════════════════════════════════════ */
 .hwWhyBox {
   margin-top: 0.5rem;
   background: linear-gradient(135deg, #fff7ed, #fff);
@@ -1742,7 +1722,7 @@
 }
 .hwWhyTag {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.55rem;
+  font-size: 0.82rem;
   font-weight: 800;
   letter-spacing: 1.5px;
   color: var(--or);
@@ -1751,7 +1731,7 @@
   margin-bottom: 0.3rem;
 }
 .hwWhyText {
-  font-size: 0.72rem;
+  font-size: 0.88rem;
   color: var(--c);
   line-height: 1.55;
   margin: 0;
@@ -1806,7 +1786,7 @@
   word-break: break-word;
 }
 .ctaDesc {
-  font-size: 0.74rem;
+  font-size: 0.92rem;
   color: rgba(255,255,255,0.5);
   line-height: 1.5;
   margin: 0;
@@ -1826,12 +1806,12 @@
 }
 .ctaBrand {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.75rem;
+  font-size: 0.92rem;
   font-weight: 700;
   color: var(--white);
 }
 .ctaInfo {
-  font-size: 0.7rem;
+  font-size: 0.86rem;
   color: rgba(255,255,255,0.5);
   line-height: 1.45;
   overflow-wrap: anywhere;
@@ -1845,7 +1825,7 @@
     padding: 2rem 1.25rem 2.5rem;
   }
   .coverInner { padding: 1.5rem 1.25rem 2rem; }
-  .pageTitle { font-size: 1.25rem; }
+  .pageTitle { font-size: 1.45rem; }
   .hwCard4Grid, .impactGrid, .genProofGrid, .hw2Grid, .termsGrid,
   .trustGrid, .roofLayout, .wealthLayout {
     grid-template-columns: 1fr;
@@ -1955,7 +1935,7 @@
   .pageNum {
     bottom: 8mm;
     right: 0;
-    font-size: 7pt;
+    font-size: 9pt;
   }
   .coverPage .pageNum,
   .closingPage .pageNum {
@@ -1966,7 +1946,7 @@
     content: "Harihar Solar · Investment Blueprint   ";
     color: #94A3B8;
     font-family: 'Montserrat', sans-serif;
-    font-size: 7pt;
+    font-size: 9pt;
     font-weight: 600;
     letter-spacing: 1px;
   }
