@@ -262,16 +262,21 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
               className="gap-1 text-xs"
               onClick={() => {
                 const maxKw = kwTiers.reduce((m, t) => Math.max(m, t.kw), 0);
+                const step = maxKw >= 200 ? 50 : maxKw >= 50 ? 25 : 1;
                 patchActiveEntry({
                   kwTiers: normalizeKwTierList([
                     ...kwTiers,
-                    { kw: maxKw > 0 ? maxKw + 1 : 11, priceInr: 0, nonDcrPriceInr: 0 },
+                    { kw: maxKw > 0 ? maxKw + step : 11, priceInr: 0, nonDcrPriceInr: 0 },
                   ]),
                 });
               }}
             >
               <Plus className="h-3.5 w-3.5" /> Add kW row
             </Button>
+            <p className="w-full text-[10px] text-slate-500 dark:text-slate-400">
+              Up to 128 kW rows (e.g. through 500 kW). Exact rows are used when present; otherwise plant ₹
+              interpolates between neighbouring tiers.
+            </p>
             <Button
               type="button"
               variant="outline"

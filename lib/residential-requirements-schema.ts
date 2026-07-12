@@ -91,7 +91,7 @@ export const residentialBrandCatalogEntrySchema = z.object({
   brand: z.string().min(1).max(80),
   /** Legacy; pricing uses kW tier gross plant cost only. */
   dcrRatePerWpInr: z.number().min(0).max(500).optional(),
-  kwTiers: z.array(residentialKwTierSchema).max(24).optional(),
+  kwTiers: z.array(residentialKwTierSchema).max(128).optional(),
 });
 
 export const residentialBrandCatalogSchema = z.object({
@@ -136,7 +136,7 @@ export const residentialBrandCompareSchema = z.object({
 });
 
 export const residentialPricingSchema = z.object({
-  kwTiers: z.array(residentialKwTierSchema).max(24).optional(),
+  kwTiers: z.array(residentialKwTierSchema).max(128).optional(),
   panelTechnology: z.string().max(80).optional(),
   /** Editable Wp chips in proposal builder (residential + commercial). */
   moduleWattPresets: z.array(z.number().int().min(100).max(900)).max(16).optional(),

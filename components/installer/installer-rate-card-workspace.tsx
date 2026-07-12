@@ -126,7 +126,7 @@ export function InstallerRateCardWorkspace() {
         <p className="mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
           One Smart catalog — <strong>plant ₹ per kW</strong> for both{" "}
           <strong>Residential</strong> and <strong>Commercial</strong>. Enter DCR and Non-DCR
-          amounts per kW row.
+          amounts per kW row (supports large C&amp;I ladders through 500 kW+).
         </p>
         <p className="mt-2 text-[11px] text-slate-500">
           <Link

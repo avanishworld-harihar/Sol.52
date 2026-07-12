@@ -191,16 +191,43 @@ function lookupTierGrossInr(
   kw: number,
   field: "priceInr" | "nonDcrPriceInr"
 ): number | null {
-  if (!tiers?.length) return null;
-  const sorted = [...tiers].map(syncKwTierCanonical).sort((a, b) => a.kw - b.kw);
+  if (!tiers?.length || !(kw > 0)) return null;
+  const sorted = [...tiers]
+    .map(syncKwTierCanonical)
+    .filter((t) => t[field] > 0)
+    .sort((a, b) => a.kw - b.kw);
+  if (!sorted.length) return null;
+
   const exact = sorted.find((t) => t.kw === kw);
-  if (exact && exact[field] > 0) return exact[field];
-  let best: ResidentialKwTier | null = null;
+  if (exact) return exact[field];
+
+  let lo: ResidentialKwTier | null = null;
+  let hi: ResidentialKwTier | null = null;
   for (const t of sorted) {
-    if (t.kw <= kw && t[field] > 0) best = t;
+    if (t.kw < kw) lo = t;
+    if (t.kw > kw) {
+      hi = t;
+      break;
+    }
   }
-  const hit = best ?? sorted.find((t) => t[field] > 0);
-  return hit?.[field] ?? null;
+
+  // Between two priced rows — interpolate plant gross by kW
+  if (lo && hi && hi.kw > lo.kw) {
+    const t = (kw - lo.kw) / (hi.kw - lo.kw);
+    return Math.round(lo[field] + (hi[field] - lo[field]) * t);
+  }
+
+  // Above top row — scale ₹/kW from highest tier
+  if (lo && !hi && lo.kw > 0) {
+    return Math.round((lo[field] / lo.kw) * kw);
+  }
+
+  // Below first row — scale ₹/kW from lowest tier
+  if (!lo && hi && hi.kw > 0) {
+    return Math.round((hi[field] / hi.kw) * kw);
+  }
+
+  return sorted[0]?.[field] ?? null;
 }
 
 export function lookupDcrKwGrossInr(
