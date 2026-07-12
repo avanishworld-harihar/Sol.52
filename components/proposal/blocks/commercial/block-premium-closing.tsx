@@ -101,7 +101,7 @@ export function BlockPremiumClosing({ ctx }: Props) {
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="commercial-closing-decision mb-8 overflow-visible rounded-2xl bg-slate-950 shadow-xl print:overflow-visible print:bg-slate-950"
+          className="commercial-closing-decision commercial-print-keep-together mb-8 overflow-visible rounded-2xl bg-slate-950 shadow-xl print:overflow-visible print:break-inside-avoid print:bg-slate-950"
         >
         <div className="border-b border-white/10 px-6 py-4">
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">

@@ -114,8 +114,8 @@ export function BlockCommercialFinancials({ ctx }: Props) {
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Cashflow table */}
-        <SectionReveal delay={0.05}>
-          <GlassPanel>
+        <SectionReveal delay={0.05} className="commercial-print-allow-break">
+          <GlassPanel className="commercial-print-allow-break">
             <div className="flex items-center gap-2.5 border-b border-slate-100 px-6 py-4">
               <BarChart2 className="h-4 w-4 text-sky-500" />
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">

@@ -3562,8 +3562,8 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
     gap: 3mm !important;
-    page-break-inside: auto !important;
-    break-inside: auto !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
   }
 
   .commercial-proposal #comm-school-green .commercial-school-charts-row > * {
@@ -3587,24 +3587,49 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     print-color-adjust: exact !important;
   }
 
-  /* Compact KPIs/charts: prefer keep-together, but never clip if they don't fit */
+  /* Compact cards/panels: keep whole block together — if it does not fit, shift to next page */
   .commercial-proposal .commercial-kpi-card,
   .commercial-proposal .commercial-hour-chart,
-  .commercial-proposal .commercial-roi-kpi-grid > * {
-    page-break-inside: auto !important;
-    break-inside: auto !important;
+  .commercial-proposal .commercial-roi-kpi-grid > *,
+  .commercial-proposal .commercial-executive-kpi-grid > *,
+  .commercial-proposal .commercial-dg-diagram,
+  .commercial-proposal .commercial-dg-node,
+  .commercial-proposal .commercial-closing-decision,
+  .commercial-proposal .commercial-cover-plant-badge {
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
     overflow: visible !important;
   }
 
   .commercial-proposal .commercial-print-keep-together {
-    page-break-inside: auto !important;
-    break-inside: auto !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
     overflow: visible !important;
   }
 
+  /* Tall tables/BOM categories may span pages, but never split mid-row */
+  .commercial-proposal .commercial-print-allow-break {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  .commercial-proposal table tr,
+  .commercial-proposal #comm-bom [data-bom-category] tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
+  }
+
+  .commercial-proposal #comm-bom [data-bom-category] {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  /* Prefer starting a card on a fresh page rather than orphaning a header alone */
   .commercial-proposal .commercial-section-header-block {
     page-break-after: avoid !important;
     break-after: avoid-page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
   }
 
   .commercial-proposal .commercial-section-kicker {

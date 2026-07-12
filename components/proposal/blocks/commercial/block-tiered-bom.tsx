@@ -443,7 +443,7 @@ export function BlockTieredBOM({ ctx }: Props) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: catIdx * 0.05 }}
-              className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_2px_16px_rgba(15,23,42,0.05)] print:overflow-visible print:break-inside-auto"
+              className="commercial-print-allow-break overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_2px_16px_rgba(15,23,42,0.05)] print:overflow-visible print:break-inside-auto"
             >
               {/* Category header */}
               <div className={`commercial-print-accent flex items-center gap-2 px-5 py-3 ${c.header}`}>

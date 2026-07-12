@@ -179,7 +179,7 @@ export function SectionReveal({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-72px" }}
       transition={{ duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }}
-      className={`commercial-print-keep-together print:break-inside-auto ${className}`}
+      className={`commercial-print-keep-together print:break-inside-avoid ${className}`}
     >
       {children}
     </motion.div>
@@ -245,7 +245,7 @@ export function GlassPanel({
 }) {
   return (
     <div
-      className={`commercial-print-keep-together overflow-hidden rounded-2xl border bg-white print:overflow-visible print:break-inside-auto ${
+      className={`commercial-print-keep-together overflow-hidden rounded-2xl border bg-white print:overflow-visible print:break-inside-avoid ${
         glow
           ? "border-sky-200/70 shadow-[0_4px_32px_rgba(14,165,233,0.10)]"
           : "border-slate-200/80 shadow-[0_2px_24px_rgba(15,23,42,0.06)]"
@@ -268,7 +268,7 @@ export function DarkGlassPanel({
 }) {
   return (
     <div
-      className={`overflow-visible rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-sm print:overflow-visible ${className}`}
+      className={`overflow-visible rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-sm commercial-print-keep-together print:overflow-visible print:break-inside-avoid ${className}`}
     >
       {children}
     </div>
@@ -351,7 +351,7 @@ export function KpiCard({ label, value, sub, accent, delay = 0, icon, compact = 
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ delay, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className={`commercial-kpi-card commercial-kpi-card--${accent} commercial-print-keep-together min-w-0 overflow-hidden rounded-2xl border print:overflow-visible print:break-inside-auto ${compact ? "p-4 sm:p-5" : "p-6"} ${ac.bg} ${ac.border}`}
+      className={`commercial-kpi-card commercial-kpi-card--${accent} commercial-print-keep-together min-w-0 overflow-hidden rounded-2xl border print:overflow-visible print:break-inside-avoid ${compact ? "p-4 sm:p-5" : "p-6"} ${ac.bg} ${ac.border}`}
     >
       <div className="mb-3 flex items-start gap-2">
         {icon && (
