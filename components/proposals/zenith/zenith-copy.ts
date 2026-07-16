@@ -22,6 +22,29 @@ export function getZenithCopy(lang: ZenithLang) {
       subSaving: (amt: string) =>
         hi ? ` — बचत ${amt}` : ` — saving you ${amt}`,
       preparedFor: hi ? "के लिए तैयार" : "Prepared for",
+      highlightKw: hi ? "सिस्टम" : "System",
+      highlightPay: hi ? "आप चुकाएँगे" : "You pay",
+      highlightSave: hi ? "मासिक बचत" : "Monthly save",
+      proposalLabel: hi ? "सौर प्रस्ताव" : "Solar proposal",
+    },
+    closing: {
+      tag: hi ? "अगला कदम" : "Next step",
+      title: hi ? "जब आप तैयार हों।" : "Ready when you are.",
+      body: hi
+        ? "यह प्रस्ताव आपकी छत के लिए तैयार है। कॉल या मैसेज करें — हम सर्वे से गो-लाइव तक साथ हैं।"
+        : "This proposal is ready for your rooftop. Call or message — we guide you from survey to go-live.",
+      contact: hi ? "संपर्क" : "Contact",
+    },
+    terms: {
+      validityHint: hi
+        ? "नीचे शर्तें साफ़ क्रम में दी गई हैं — हर बिंदु अलग संख्या के साथ।"
+        : "Terms below are numbered so each point is easy to read.",
+      docHint: hi
+        ? "स्थापना शुरू करने से पहले ये दस्तावेज़ तैयार रखें।"
+        : "Keep these documents ready before installation begins.",
+      amcHint: hi
+        ? "AMC में क्या शामिल है — और क्या नहीं।"
+        : "What AMC includes — and what it does not.",
     },
     pages: {
       bill: hi ? "बिल इंटेलिजेंस" : "Bill Intelligence",
@@ -32,10 +55,24 @@ export function getZenithCopy(lang: ZenithLang) {
       requirementLead: hi
         ? "आपके लोड के अनुसार क्षमता, उत्पादन और कवरेज।"
         : "Sized to your declared load — generation, coverage, and asset profile.",
-      investment: hi ? "निवेश लेजर" : "Investment Ledger",
+      investment: hi ? "आपका निवेश" : "Your investment",
       investmentLead: hi
-        ? "पूँजी, सब्सिडी, पेबैक और आजीवन लाभ।"
-        : "Capital, subsidy, payback, and lifetime benefit.",
+        ? "सकल लागत में से सब्सिडी घटाकर नेट निवेश — फिर बचत और पेबैक।"
+        : "Gross cost minus subsidy equals what you pay — then savings and payback.",
+      equationNote: hi
+        ? "सरकारी सब्सिडी सकल लागत से घटाई जाती है।"
+        : "Government subsidy is subtracted from gross cost.",
+      youPay: hi ? "आप चुकाएँगे" : "You pay",
+      outcomes: hi ? "लाभ का सार" : "What you gain",
+      monthlyEmi: hi ? "मासिक EMI" : "Monthly EMI",
+      tenure: hi ? "अवधि" : "Tenure",
+      component: hi ? "घटक" : "Component",
+      brandSpec: hi ? "ब्रांड / स्पेक" : "Brand / Spec",
+      coverage: hi ? "कवरेज" : "Coverage",
+      milestone: hi ? "माइलस्टोन" : "Milestone",
+      amount: hi ? "राशि" : "Amount",
+      minus: "−",
+      equals: "=",
       financing: hi ? "वित्तपोषण" : "Financing",
       financingLead: hi
         ? "बैंक टेन्योर विकल्प — मासिक EMI और ब्याज।"
@@ -92,18 +129,19 @@ export function getZenithCopy(lang: ZenithLang) {
       totalUnits: hi ? "कुल यूनिट" : "Total units",
       totalNet: hi ? "कुल नेट" : "Total net",
       grossCost: hi ? "सकल लागत" : "Gross cost",
-      subsidy: hi ? "पीएम सूर्य घर सब्सिडी" : "PM Surya Ghar subsidy",
-      netPayable: hi ? "नेट देय" : "Net payable",
+      subsidy: hi ? "सब्सिडी (−)" : "Subsidy (−)",
+      netPayable: hi ? "नेट निवेश" : "Net investment",
       monthlySavings: hi ? "मासिक बचत" : "Monthly savings",
       payback: hi ? "पेबैक" : "Payback",
       lifetimeBenefit: hi ? "आजीवन लाभ" : "Lifetime benefit",
-      interestPaid: hi ? "ब्याज भुगतान" : "Interest paid",
+      interestPaid: hi ? "कुल ब्याज" : "Total interest",
       co2: hi ? "CO₂ बचत" : "CO₂ avoided",
       trees: hi ? "पेड़ समकक्ष" : "Trees equivalent",
       annualSavings: hi ? "वार्षिक बचत" : "Annual savings",
       annualUnits: hi ? "वार्षिक यूनिट" : "Annual units",
       lifetimeWealth: hi ? "आजीवन संपत्ति" : "Lifetime wealth",
       scan: hi ? "स्कैन करें" : "Scan to connect",
+      warranty: hi ? "वारंटी" : "Warranty",
     },
   };
 }

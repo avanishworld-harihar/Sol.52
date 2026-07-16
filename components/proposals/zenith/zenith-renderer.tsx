@@ -63,14 +63,6 @@ function metricValue(data: ProposalData, re: RegExp, fallback: string): string {
   return hit?.value || fallback;
 }
 
-function warrantyTone(warranty: string): string {
-  const years = Number((warranty.match(/(\d+)\s*(?:year|yr)/i)?.[1] ?? "").trim());
-  if ((Number.isFinite(years) && years >= 25) || /25|30/.test(warranty)) {
-    return styles.cardValueEmerald;
-  }
-  return styles.cardValueGold;
-}
-
 export function ZenithProposalRenderer({
   data,
   installerLogoUrl,
@@ -175,11 +167,18 @@ export function ZenithProposalRenderer({
       <div className={styles.presetZenith}>
         {/* 1 — Cover */}
         <section className={`${styles.page} ${styles.pageCover}`}>
-          {logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={logoUrl} alt={brand} className={styles.logo} />
-          ) : null}
-          <BrandLockup name={brand} />
+          <div className={styles.coverTop}>
+            {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logoUrl} alt={brand} className={styles.logo} />
+            ) : (
+              <BrandLockup name={brand} />
+            )}
+            <span className={styles.coverBadge}>{c.cover.proposalLabel}</span>
+          </div>
+
+          {logoUrl ? <BrandLockup name={brand} /> : null}
+
           <h1 className={styles.heroTitle}>{c.cover.hero}</h1>
           <p className={styles.heroSub}>
             {c.cover.subPrefix}
@@ -188,6 +187,28 @@ export function ZenithProposalRenderer({
               : ""}
             .
           </p>
+
+          <div className={styles.coverHighlights}>
+            <div className={styles.coverHiCell}>
+              <span className={styles.coverHiLabel}>{c.cover.highlightKw}</span>
+              <span className={styles.coverHiValue}>{capacity !== "—" ? capacity : "—"}</span>
+            </div>
+            <div className={styles.coverHiCell}>
+              <span className={styles.coverHiLabel}>{c.cover.highlightPay}</span>
+              <span className={styles.coverHiValue}>
+                {eco.netInr > 0 ? formatInrCompact(eco.netInr) : "—"}
+              </span>
+            </div>
+            <div className={`${styles.coverHiCell} ${styles.coverHiCellAccent}`}>
+              <span className={styles.coverHiLabel}>{c.cover.highlightSave}</span>
+              <span className={styles.coverHiValue}>
+                {eco.monthlySavingsInr > 0
+                  ? formatInrCompact(eco.monthlySavingsInr)
+                  : "—"}
+              </span>
+            </div>
+          </div>
+
           <div className={styles.coverClient}>
             <p className={styles.cardLabel}>{c.cover.preparedFor}</p>
             <p className={styles.coverClientName}>{customer}</p>
@@ -195,12 +216,10 @@ export function ZenithProposalRenderer({
             {data.meta.assetProfileLine ? (
               <p className={styles.coverClientLoc}>{data.meta.assetProfileLine}</p>
             ) : null}
+            {generation !== "—" ? (
+              <p className={styles.heroMeta}>{generation}</p>
+            ) : null}
           </div>
-          <p className={styles.heroMeta}>
-            {capacity !== "—" ? capacity : null}
-            {capacity !== "—" && generation !== "—" ? " · " : null}
-            {generation !== "—" ? generation : null}
-          </p>
         </section>
 
         {/* 2 — Bill / Requirement */}
@@ -208,28 +227,24 @@ export function ZenithProposalRenderer({
           {showBill ? (
             <>
               <PageHeader title={c.pages.bill} lead={c.pages.billLead} />
-              <div className={styles.heroMetrics}>
-                <div className={styles.card}>
-                  <span className={styles.cardLabel}>{c.labels.yearlyBill}</span>
-                  <h3 className={styles.cardValue}>
+              <div className={styles.strip}>
+                <div className={styles.stripCell}>
+                  <span className={styles.stripLabel}>{c.labels.yearlyBill}</span>
+                  <span className={styles.stripValue}>
                     {formatInrCompact(bill.yearlyBillInr)}
-                  </h3>
+                  </span>
                 </div>
-                <div className={`${styles.card} ${styles.cardHighlight}`}>
-                  <span className={styles.cardLabel}>{c.labels.summerShare}</span>
-                  <h3 className={`${styles.cardValue} ${styles.cardValueGold}`}>
+                <div className={styles.stripCell}>
+                  <span className={styles.stripLabel}>{c.labels.summerShare}</span>
+                  <span className={`${styles.stripValue} ${styles.stripValueGold}`}>
                     {Math.round(bill.summerTrapPct)}%
-                  </h3>
+                  </span>
                 </div>
-                <div className={styles.card}>
-                  <span className={styles.cardLabel}>{c.labels.solarOffset}</span>
-                  <h3 className={`${styles.cardValue} ${styles.cardValueEmerald}`}>
+                <div className={styles.stripCell}>
+                  <span className={styles.stripLabel}>{c.labels.solarOffset}</span>
+                  <span className={styles.stripValue}>
                     {Math.round(bill.solarSavingsPct)}%
-                  </h3>
-                </div>
-                <div className={styles.card}>
-                  <span className={styles.cardLabel}>{c.labels.fixedCharges}</span>
-                  <h3 className={styles.cardValue}>{bill.fixedChargesDisplay || "—"}</h3>
+                  </span>
                 </div>
               </div>
               <div className={styles.barChart} aria-hidden>
@@ -243,105 +258,96 @@ export function ZenithProposalRenderer({
                   </div>
                 ))}
               </div>
-              <div className={`${styles.sectionBlock} ${styles.monthGrid}`}>
-                {bill.months.map((m) => (
-                  <div
-                    key={`m-${m.label}`}
-                    className={`${styles.card} ${m.isSummerPeak ? styles.cardHighlight : ""}`}
-                  >
-                    <span className={styles.cardLabel}>{m.label}</span>
-                    <h3 className={styles.cardValue} style={{ fontSize: "1.15rem" }}>
-                      {formatInr(m.netInr)}
-                    </h3>
-                    <p className={styles.cardBody}>
-                      {m.units} units · Energy {formatInr(m.energyInr)}
-                    </p>
-                  </div>
-                ))}
-              </div>
-              <div className={`${styles.sectionBlock} ${styles.heroMetrics}`}>
-                <div className={styles.card}>
-                  <span className={styles.cardLabel}>{c.labels.totalUnits}</span>
-                  <h3 className={styles.cardValue}>
-                    {bill.totals.units.toLocaleString("en-IN")}
-                  </h3>
-                </div>
-                <div className={styles.card}>
-                  <span className={styles.cardLabel}>{c.labels.totalNet}</span>
-                  <h3 className={`${styles.cardValue} ${styles.cardValueGold}`}>
-                    {formatInr(bill.totals.netInr)}
-                  </h3>
-                </div>
-              </div>
+              <p className={styles.ledgerNote}>
+                {c.labels.totalUnits}:{" "}
+                <strong>{bill.totals.units.toLocaleString("en-IN")}</strong>
+                {" · "}
+                {c.labels.totalNet}:{" "}
+                <strong>{formatInr(bill.totals.netInr)}</strong>
+                {bill.fixedChargesDisplay
+                  ? ` · ${c.labels.fixedCharges}: ${bill.fixedChargesDisplay}`
+                  : ""}
+              </p>
             </>
           ) : (
             <>
               <PageHeader title={c.pages.requirement} lead={c.pages.requirementLead} />
-              <div className={styles.heroMetrics}>
-                <div className={styles.card}>
-                  <span className={styles.cardLabel}>{c.labels.capacity}</span>
-                  <h3 className={styles.cardValue}>{capacity}</h3>
+              <div className={styles.strip}>
+                <div className={styles.stripCell}>
+                  <span className={styles.stripLabel}>{c.labels.capacity}</span>
+                  <span className={styles.stripValue}>{capacity}</span>
                 </div>
-                <div className={styles.card}>
-                  <span className={styles.cardLabel}>{c.labels.annualGen}</span>
-                  <h3 className={styles.cardValue}>{generation}</h3>
+                <div className={styles.stripCell}>
+                  <span className={styles.stripLabel}>{c.labels.annualGen}</span>
+                  <span className={styles.stripValue}>{generation}</span>
                 </div>
-                <div className={styles.card}>
-                  <span className={styles.cardLabel}>{c.labels.loadCoverage}</span>
-                  <h3 className={styles.cardValue}>{coverage}</h3>
-                </div>
-                <div className={`${styles.card} ${styles.cardHighlight}`}>
-                  <span className={styles.cardLabel}>{c.labels.assetProfile}</span>
-                  <p className={styles.cardBody}>
-                    {data.meta.assetProfileLine || "Residential rooftop solar"}
-                  </p>
+                <div className={styles.stripCell}>
+                  <span className={styles.stripLabel}>{c.labels.loadCoverage}</span>
+                  <span className={styles.stripValue}>{coverage}</span>
                 </div>
               </div>
+              {data.meta.assetProfileLine ? (
+                <p className={styles.ledgerNote}>{data.meta.assetProfileLine}</p>
+              ) : null}
             </>
           )}
         </section>
 
-        {/* 3 — Investment (+ financing + impact when present — no empty pages) */}
+        {/* 3 — Investment story: Gross − Subsidy = Net */}
         <section className={styles.page}>
           <PageHeader title={c.pages.investment} lead={c.pages.investmentLead} />
-          <div className={styles.financialGrid}>
-            <div className={styles.card}>
-              <span className={styles.cardLabel}>{c.labels.grossCost}</span>
-              <h3 className={styles.cardValue}>
+
+          <div className={styles.ledger} aria-label={c.pages.investment}>
+            <div className={styles.ledgerItem}>
+              <span className={styles.ledgerTag}>{c.labels.grossCost}</span>
+              <span className={styles.ledgerVal}>
                 {eco.grossInr > 0 ? formatInr(eco.grossInr) : "—"}
-              </h3>
+              </span>
             </div>
-            <div className={styles.card}>
-              <span className={styles.cardLabel}>{c.labels.subsidy}</span>
-              <h3 className={styles.cardValue}>
+            <span className={styles.ledgerOp} aria-hidden>
+              {c.pages.minus}
+            </span>
+            <div className={styles.ledgerItem}>
+              <span className={styles.ledgerTag}>{c.labels.subsidy}</span>
+              <span className={`${styles.ledgerVal} ${styles.ledgerValGreen}`}>
                 {eco.subsidyInr > 0 ? formatInr(eco.subsidyInr) : "—"}
-              </h3>
+              </span>
             </div>
-            <div className={styles.card}>
-              <span className={styles.cardLabel}>{c.labels.netPayable}</span>
-              <h3 className={styles.cardValue}>
+            <span className={styles.ledgerOp} aria-hidden>
+              {c.pages.equals}
+            </span>
+            <div className={`${styles.ledgerItem} ${styles.ledgerItemFinal}`}>
+              <span className={styles.ledgerTag}>{c.pages.youPay}</span>
+              <span className={styles.ledgerVal}>
                 {eco.netInr > 0 ? formatInr(eco.netInr) : "—"}
-              </h3>
+              </span>
             </div>
-            <div className={styles.card}>
-              <span className={styles.cardLabel}>{c.labels.monthlySavings}</span>
-              <h3 className={styles.cardValue}>
+          </div>
+          <p className={styles.ledgerNote}>{c.pages.equationNote}</p>
+
+          <h3 className={styles.subTitle} style={{ marginTop: "1.75rem" }}>
+            {c.pages.outcomes}
+          </h3>
+          <div className={styles.strip}>
+            <div className={styles.stripCell}>
+              <span className={styles.stripLabel}>{c.labels.monthlySavings}</span>
+              <span className={styles.stripValue}>
                 {eco.monthlySavingsInr > 0 ? formatInr(eco.monthlySavingsInr) : "—"}
-              </h3>
+              </span>
             </div>
-            <div className={`${styles.card} ${styles.cardHighlight}`}>
-              <span className={styles.cardLabel}>{c.labels.payback}</span>
-              <h3 className={`${styles.cardValue} ${styles.cardValueGold}`}>
+            <div className={styles.stripCell}>
+              <span className={styles.stripLabel}>{c.labels.payback}</span>
+              <span className={`${styles.stripValue} ${styles.stripValueGold}`}>
                 {eco.paybackYears > 0 ? `${eco.paybackYears.toFixed(1)} Yrs` : "—"}
-              </h3>
+              </span>
             </div>
-            <div className={styles.card}>
-              <span className={styles.cardLabel}>{c.labels.lifetimeBenefit}</span>
-              <h3 className={`${styles.cardValue} ${styles.cardValueGold}`}>
+            <div className={styles.stripCell}>
+              <span className={styles.stripLabel}>{c.labels.lifetimeBenefit}</span>
+              <span className={`${styles.stripValue} ${styles.stripValueGold}`}>
                 {eco.lifetimeProfitInr > 0
                   ? formatLifetimeBenefitInr(eco.lifetimeProfitInr)
                   : "—"}
-              </h3>
+              </span>
             </div>
           </div>
 
@@ -349,49 +355,52 @@ export function ZenithProposalRenderer({
             <div className={styles.sectionBlock}>
               <h3 className={styles.subTitle}>{c.pages.financing}</h3>
               <p className={styles.lead}>{c.pages.financingLead}</p>
-              <div className={styles.financialGrid}>
-                {eco.emiRows.map((row) => (
-                  <div key={row.tenureLabel} className={styles.card}>
-                    <span className={styles.cardLabel}>{row.tenureLabel}</span>
-                    <h3 className={styles.cardValue}>{formatInr(row.monthlyEmiInr)}</h3>
-                    <p className={styles.cardBody}>
-                      {c.labels.interestPaid} {formatInr(row.interestPaidInr)}
-                    </p>
-                  </div>
-                ))}
-              </div>
+              <table className={styles.lineTable}>
+                <thead>
+                  <tr>
+                    <th>{c.pages.tenure}</th>
+                    <th>{c.pages.monthlyEmi}</th>
+                    <th>{c.labels.interestPaid}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {eco.emiRows.map((row) => (
+                    <tr key={row.tenureLabel}>
+                      <td className={styles.lineName}>{row.tenureLabel}</td>
+                      <td className={styles.lineEm}>{formatInr(row.monthlyEmiInr)}</td>
+                      <td className={styles.lineMuted}>{formatInr(row.interestPaidInr)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           ) : null}
 
           {hasImpact ? (
-            <div className={styles.sectionBlock}>
-              <h3 className={styles.subTitle}>{c.pages.impact}</h3>
-              <p className={styles.lead}>{c.pages.impactLead}</p>
-              <div className={styles.impactGrid}>
-                <div className={styles.card}>
-                  <span className={styles.cardLabel}>{c.labels.co2}</span>
-                  <h3 className={styles.cardValue}>
-                    {impact.co2Tons > 0 ? `${impact.co2Tons.toFixed(0)} t` : "—"}
-                  </h3>
-                </div>
-                <div className={styles.card}>
-                  <span className={styles.cardLabel}>{c.labels.trees}</span>
-                  <h3 className={styles.cardValue}>
-                    {impact.treesEquivalent > 0
-                      ? impact.treesEquivalent.toLocaleString("en-IN")
-                      : "—"}
-                  </h3>
-                </div>
-                <div className={`${styles.card} ${styles.cardHighlight}`}>
-                  <span className={styles.cardLabel}>{c.labels.annualSavings}</span>
-                  <h3 className={`${styles.cardValue} ${styles.cardValueGold}`}>
-                    {closing.annualSavingsInr > 0
-                      ? formatInrCompact(closing.annualSavingsInr)
-                      : "—"}
-                  </h3>
-                </div>
-              </div>
-            </div>
+            <p className={styles.impactLine}>
+              {c.pages.impact}:{" "}
+              {impact.co2Tons > 0 ? (
+                <>
+                  <strong>
+                    {impact.co2Tons.toFixed(0)} t {c.labels.co2}
+                  </strong>
+                  {" · "}
+                </>
+              ) : null}
+              {impact.treesEquivalent > 0 ? (
+                <>
+                  <strong>{impact.treesEquivalent.toLocaleString("en-IN")}</strong>{" "}
+                  {c.labels.trees}
+                  {" · "}
+                </>
+              ) : null}
+              {closing.annualSavingsInr > 0 ? (
+                <>
+                  <strong>{formatInrCompact(closing.annualSavingsInr)}</strong>{" "}
+                  {c.labels.annualSavings}
+                </>
+              ) : null}
+            </p>
           ) : null}
         </section>
 
@@ -403,11 +412,11 @@ export function ZenithProposalRenderer({
               lead={eng.tiltNote || c.pages.engineeringLead}
             />
             {eng.metrics.length > 0 ? (
-              <div className={styles.metricGrid}>
-                {eng.metrics.map((m) => (
-                  <div key={m.label} className={styles.card}>
-                    <span className={styles.cardLabel}>{m.label}</span>
-                    <h3 className={styles.cardValue}>{m.value}</h3>
+              <div className={styles.strip} style={{ gridTemplateColumns: `repeat(${Math.min(eng.metrics.length, 3)}, minmax(0, 1fr))` }}>
+                {eng.metrics.slice(0, 6).map((m) => (
+                  <div key={m.label} className={styles.stripCell}>
+                    <span className={styles.stripLabel}>{m.label}</span>
+                    <span className={styles.stripValue}>{m.value}</span>
                   </div>
                 ))}
               </div>
@@ -436,79 +445,80 @@ export function ZenithProposalRenderer({
           </section>
         ) : null}
 
-        {/* 5 — BOM */}
-        {hasBom ? (
+        {/* 5 — BOM + warranty as line tables */}
+        {hasBom || hasWarranty ? (
           <section className={styles.page}>
             <PageHeader title={c.pages.assurance} lead={c.pages.assuranceLead} />
-            <div className={styles.assuranceGrid}>
-              {bom.map((item, i) => (
-                <article key={`${item.name}-${i}`} className={styles.card}>
-                  <span className={styles.cardLabel}>{item.brand || "Component"}</span>
-                  <h3 className={styles.cardHeader}>{item.name}</h3>
-                  <p className={styles.cardBody}>{item.spec || "—"}</p>
-                  {item.description ? (
-                    <p className={styles.cardBody}>{item.description}</p>
-                  ) : null}
-                  {item.technicalPoints && item.technicalPoints.length > 0 ? (
-                    <ul className={styles.techPoints}>
-                      {item.technicalPoints.map((pt) => (
-                        <li key={pt}>{pt}</li>
+            {hasBom ? (
+              <table className={styles.lineTable}>
+                <thead>
+                  <tr>
+                    <th>{c.pages.component}</th>
+                    <th>{c.pages.brandSpec}</th>
+                    <th>{c.labels.warranty}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {bom.map((item, i) => (
+                    <tr key={`${item.name}-${i}`}>
+                      <td>
+                        <div className={styles.lineName}>{item.name}</div>
+                        {item.description ? (
+                          <div className={styles.lineMuted}>{item.description}</div>
+                        ) : null}
+                      </td>
+                      <td className={styles.lineMuted}>
+                        {[item.brand, item.spec].filter(Boolean).join(" · ") || "—"}
+                      </td>
+                      <td className={styles.lineEm}>{item.warranty || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : null}
+
+            {hasWarranty ? (
+              <div className={styles.sectionBlock}>
+                <h3 className={styles.subTitle}>{c.pages.warranty}</h3>
+                {warranty.highlights.length > 0 ? (
+                  <div className={styles.strip} style={{ marginBottom: "1rem" }}>
+                    {warranty.highlights.slice(0, 3).map((h) => (
+                      <div key={h.label} className={styles.stripCell}>
+                        <span className={styles.stripLabel}>{h.label}</span>
+                        <span className={`${styles.stripValue} ${styles.stripValueGold}`}>
+                          {h.value}
+                          {h.unit ? ` ${h.unit}` : ""}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+                {warranty.rows.length > 0 ? (
+                  <table className={styles.lineTable}>
+                    <thead>
+                      <tr>
+                        <th>{c.pages.component}</th>
+                        <th>{c.pages.coverage}</th>
+                        <th>{c.labels.warranty}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {warranty.rows.map((row) => (
+                        <tr key={`${row.item}-${row.duration}`}>
+                          <td className={styles.lineName}>{row.item}</td>
+                          <td className={styles.lineMuted}>{row.coverage}</td>
+                          <td className={styles.lineEm}>{row.duration}</td>
+                        </tr>
                       ))}
-                    </ul>
-                  ) : null}
-                  <p
-                    className={`${styles.cardValue} ${warrantyTone(item.warranty || "")}`}
-                    style={{ fontSize: "1.05rem", marginTop: "1rem" }}
-                  >
-                    {item.warranty || "—"}
-                  </p>
-                </article>
-              ))}
-            </div>
-          </section>
-        ) : null}
-
-        {/* 6 — Warranty */}
-        {hasWarranty ? (
-          <section className={styles.page}>
-            <PageHeader
-              title={c.pages.warranty}
-              lead={warranty.intro || c.pages.warrantyLead}
-            />
-            {warranty.highlights.length > 0 ? (
-              <div className={styles.warrantyGrid}>
-                {warranty.highlights.map((h) => (
-                  <div key={h.label} className={`${styles.card} ${styles.cardHighlight}`}>
-                    <span className={styles.cardLabel}>{h.label}</span>
-                    <h3 className={styles.cardValue}>
-                      {h.value}
-                      <span className={styles.unitSuffix}>{h.unit}</span>
-                    </h3>
-                  </div>
-                ))}
-              </div>
-            ) : null}
-            {warranty.rows.length > 0 ? (
-              <div className={`${styles.sectionBlock} ${styles.assuranceGrid}`}>
-                {warranty.rows.map((row) => (
-                  <div key={`${row.item}-${row.duration}`} className={styles.card}>
-                    <span className={styles.cardLabel}>{row.by || "Coverage"}</span>
-                    <h3 className={styles.cardHeader}>{row.item}</h3>
-                    <p
-                      className={`${styles.cardValue} ${warrantyTone(row.duration)}`}
-                      style={{ fontSize: "1.1rem" }}
-                    >
-                      {row.duration}
-                    </p>
-                    <p className={styles.cardBody}>{row.coverage}</p>
-                  </div>
-                ))}
+                    </tbody>
+                  </table>
+                ) : null}
               </div>
             ) : null}
           </section>
         ) : null}
 
-        {/* 7 — Execution */}
+        {/* 6 — Execution */}
         {hasExecution ? (
           <section className={styles.page}>
             <PageHeader title={c.pages.execution} lead={c.pages.executionLead} />
@@ -526,25 +536,29 @@ export function ZenithProposalRenderer({
           </section>
         ) : null}
 
-        {/* 8 — Payment */}
+        {/* 7 — Payment */}
         {hasPayment ? (
           <section className={styles.page}>
             <PageHeader title={c.pages.payment} lead={c.pages.paymentLead} />
             {execution.payments.length > 0 ? (
-              <div className={styles.paymentGrid}>
-                {execution.payments.map((p) => (
-                  <div
-                    key={p.label}
-                    className={`${styles.card} ${p.isTotal ? styles.cardHighlight : ""}`}
-                  >
-                    <span className={styles.cardLabel}>{p.pctLabel || "Milestone"}</span>
-                    <h3 className={styles.cardHeader}>{p.label}</h3>
-                    <p className={`${styles.cardValue} ${styles.cardValueGold}`}>
-                      {formatInr(p.amountInr)}
-                    </p>
-                  </div>
-                ))}
-              </div>
+              <table className={styles.lineTable}>
+                <thead>
+                  <tr>
+                    <th>{c.pages.milestone}</th>
+                    <th>%</th>
+                    <th>{c.pages.amount}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {execution.payments.map((p) => (
+                    <tr key={p.label}>
+                      <td className={styles.lineName}>{p.label}</td>
+                      <td className={styles.lineMuted}>{p.pctLabel || "—"}</td>
+                      <td className={styles.lineEm}>{formatInr(p.amountInr)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             ) : null}
             {(execution.bank.company ||
               execution.bank.accountNumber ||
@@ -568,20 +582,23 @@ export function ZenithProposalRenderer({
           </section>
         ) : null}
 
-        {/* 9 — Terms + Closing */}
+        {/* Terms — clear numbered conditions */}
         <section className={styles.page}>
-          <PageHeader title={c.pages.terms} lead={c.pages.termsLead} />
+          <PageHeader title={c.pages.terms} lead={c.terms.validityHint} />
 
-          <div className={styles.sectionBlock}>
+          <div className={styles.termsBlock}>
             <h3 className={styles.subTitle}>{c.pages.generalTerms}</h3>
             {terms.conditions.length > 0 ? (
-              <ul className={styles.bulletList}>
-                {terms.conditions.map((item) => (
-                  <li key={item} className={styles.bulletItem}>
-                    {item}
+              <ol className={styles.termsList}>
+                {terms.conditions.map((item, i) => (
+                  <li key={item} className={styles.termsItem}>
+                    <span className={styles.termsNum}>
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <p className={styles.termsText}>{item}</p>
                   </li>
                 ))}
-              </ul>
+              </ol>
             ) : (
               <Pending
                 title="Terms pending"
@@ -590,13 +607,17 @@ export function ZenithProposalRenderer({
             )}
           </div>
 
-          <div className={styles.sectionBlock}>
+          <div className={styles.termsBlock}>
             <h3 className={styles.subTitle}>{c.pages.documents}</h3>
+            <p className={styles.termsHint}>{c.terms.docHint}</p>
             {terms.documents.length > 0 ? (
-              <ul className={styles.bulletList}>
+              <ul className={styles.docList}>
                 {terms.documents.map((d) => (
-                  <li key={d} className={styles.bulletItem}>
-                    {d}
+                  <li key={d} className={styles.docItem}>
+                    <span className={styles.docTick} aria-hidden>
+                      ✓
+                    </span>
+                    <span>{d}</span>
                   </li>
                 ))}
               </ul>
@@ -608,55 +629,83 @@ export function ZenithProposalRenderer({
             )}
           </div>
 
-          <div className={styles.sectionBlock}>
+          <div className={styles.termsBlock}>
             <h3 className={styles.subTitle}>{c.pages.amcScope}</h3>
-            {terms.amcObjective ? <p className={styles.lead}>{terms.amcObjective}</p> : null}
+            <p className={styles.termsHint}>{c.terms.amcHint}</p>
+            {terms.amcObjective ? (
+              <p className={styles.amcObjective}>{terms.amcObjective}</p>
+            ) : null}
             {terms.amcScope.length > 0 ? (
-              <ul className={styles.bulletList}>
+              <ul className={styles.docList}>
                 {terms.amcScope.map((a) => (
-                  <li key={a} className={styles.bulletItem}>
-                    {a}
+                  <li key={a} className={styles.docItem}>
+                    <span className={styles.docTick} aria-hidden>
+                      ·
+                    </span>
+                    <span>{a}</span>
                   </li>
                 ))}
               </ul>
             ) : null}
             {terms.amcTerms.length > 0 ? (
-              <ul className={`${styles.bulletList} ${styles.sectionBlock}`}>
+              <ul className={styles.docList}>
                 {terms.amcTerms.map((t) => (
-                  <li key={t} className={styles.bulletItem}>
-                    {t}
+                  <li key={t} className={`${styles.docItem} ${styles.docItemNote}`}>
+                    <span className={styles.docTick} aria-hidden>
+                      !
+                    </span>
+                    <span>{t}</span>
                   </li>
                 ))}
               </ul>
             ) : null}
           </div>
+        </section>
 
-          <div className={`${styles.sectionBlock} ${styles.closingBlock}`}>
-            <h3 className={styles.subTitle}>{c.pages.ready}</h3>
-            <p className={styles.lead}>
-              {c.pages.preparedBy(closing.customerName || customer, closing.installerName || brand)}
-            </p>
-            <div className={styles.heroMetrics}>
-              <div className={styles.card}>
-                <span className={styles.cardLabel}>{c.labels.annualUnits}</span>
-                <h3 className={styles.cardValue}>
-                  {closing.annualUnits > 0
-                    ? closing.annualUnits.toLocaleString("en-IN")
-                    : "—"}
-                </h3>
-              </div>
-              <div className={`${styles.card} ${styles.cardHighlight}`}>
-                <span className={styles.cardLabel}>{c.labels.lifetimeWealth}</span>
-                <h3 className={`${styles.cardValue} ${styles.cardValueGold}`}>
-                  {formatLifetimeBenefitInr(
-                    closing.lifetimeWealthInr || eco.lifetimeProfitInr
-                  )}
-                </h3>
-              </div>
+        {/* Closing — last page */}
+        <section className={`${styles.page} ${styles.pageClosing}`}>
+          <p className={styles.closingTag}>{c.closing.tag}</p>
+          <h2 className={styles.closingTitle}>{c.closing.title}</h2>
+          <p className={styles.closingBody}>{c.closing.body}</p>
+          <p className={styles.closingFor}>
+            {c.pages.preparedBy(
+              closing.customerName || customer,
+              closing.installerName || brand
+            )}
+          </p>
+
+          <div className={styles.closingStats}>
+            <div className={styles.closingStat}>
+              <span className={styles.closingStatLabel}>{c.labels.annualUnits}</span>
+              <span className={styles.closingStatValue}>
+                {closing.annualUnits > 0
+                  ? closing.annualUnits.toLocaleString("en-IN")
+                  : "—"}
+              </span>
             </div>
-            {closing.contactLine ? (
-              <p className={styles.closingContact}>{closing.contactLine}</p>
-            ) : null}
+            <div className={styles.closingStat}>
+              <span className={styles.closingStatLabel}>{c.labels.netPayable}</span>
+              <span className={styles.closingStatValue}>
+                {eco.netInr > 0 ? formatInr(eco.netInr) : "—"}
+              </span>
+            </div>
+            <div className={`${styles.closingStat} ${styles.closingStatAccent}`}>
+              <span className={styles.closingStatLabel}>{c.labels.lifetimeWealth}</span>
+              <span className={styles.closingStatValue}>
+                {formatLifetimeBenefitInr(
+                  closing.lifetimeWealthInr || eco.lifetimeProfitInr
+                )}
+              </span>
+            </div>
+          </div>
+
+          <div className={styles.closingFooter}>
+            <div>
+              <p className={styles.closingBrand}>{brand}</p>
+              {closing.contactLine ? (
+                <p className={styles.closingContact}>{closing.contactLine}</p>
+              ) : null}
+            </div>
             {closing.qrUrl ? (
               <div className={styles.qrWrap}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
