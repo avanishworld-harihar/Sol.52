@@ -2154,9 +2154,8 @@
   }
 
   /*
-   * Fit each logical section on one A4 sheet.
-   * Do NOT set width: 210mm here — @page margins already define the
-   * printable box; a fixed 210mm page overflows and spills content.
+   * Fit each logical section on one A4 sheet without shrinking type.
+   * Do NOT set width: 210mm — @page margins already define the printable box.
    */
   .ep-golden-root .ep-gl-page {
     margin: 0;
@@ -2167,7 +2166,7 @@
     width: 100%;
     max-width: 100%;
     height: auto;
-    min-height: auto;
+    min-height: calc(297mm - 16mm);
     box-sizing: border-box;
   }
 
@@ -2176,135 +2175,145 @@
   }
 
   .ep-golden-root .ep-gl-page-body {
-    min-height: auto;
     box-sizing: border-box;
-    padding: 8mm 8mm 7mm;
+    padding: 12mm 12mm 11mm;
+    min-height: calc(297mm - 16mm);
+    display: flex;
+    flex-direction: column;
   }
 
   .ep-golden-root .ep-gl-engineering-page,
   .ep-golden-root .ep-gl-bom-page,
-  .ep-golden-root .ep-gl-requirement-page {
-    padding: 8mm 8mm 7mm;
+  .ep-golden-root .ep-gl-requirement-page,
+  .ep-golden-root .ep-gl-terms-page {
+    padding: 12mm 12mm 11mm;
+    min-height: calc(297mm - 16mm);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
   }
 
   .ep-golden-root h1.ep-gl-h1,
   .ep-golden-root .ep-gl-engineering-page h1.ep-gl-h1,
   .ep-golden-root .ep-gl-bom-page h1.ep-gl-h1 {
-    font-size: 22pt;
-    margin-bottom: 4px;
-    line-height: 1.1;
+    font-size: 28pt;
+    margin-bottom: 8px;
+    line-height: 1.12;
   }
 
   .ep-golden-root .ep-gl-section-tag {
-    margin-bottom: 6px;
-    font-size: 7.5pt;
+    margin-bottom: 10px;
+    font-size: 8pt;
   }
 
   .ep-golden-root .ep-gl-lead,
   .ep-golden-root .ep-gl-engineering-page .ep-gl-lead,
   .ep-golden-root .ep-gl-bom-lead {
-    font-size: 9.5pt;
-    line-height: 1.35;
-    margin-bottom: 8px;
+    font-size: 11pt;
+    line-height: 1.45;
+    margin-bottom: 14px;
     max-width: 100%;
   }
 
   .ep-golden-root .ep-gl-requirement-page {
-    min-height: auto;
     display: flex;
     flex-direction: column;
   }
 
   .ep-golden-root .ep-gl-impact-grid {
-    flex: none;
-    align-items: start;
-    gap: 10px;
+    flex: 1 1 auto;
+    align-items: stretch;
+    gap: 14px;
   }
 
   .ep-golden-root .ep-gl-impact-card {
     height: auto;
-    padding: 14px 12px 16px;
+    padding: 22px 16px 24px;
   }
 
-  /* Engineering — denser so all 6 install phases stay on one sheet */
+  /* Engineering — readable type, 2-col phases use vertical space */
   .ep-golden-root .ep-gl-eng-layout {
-    gap: 10px;
-    margin-bottom: 10px;
+    gap: 14px;
+    margin-bottom: 14px;
   }
 
   .ep-golden-root .ep-gl-engineering-page .ep-gl-eng-layout {
-    margin-bottom: 8px;
-    gap: 8px;
+    margin-bottom: 12px;
+    gap: 12px;
   }
 
   .ep-golden-root .ep-gl-eng-metric,
   .ep-golden-root .ep-gl-engineering-page .ep-gl-eng-metric {
-    padding: 5px 8px;
-    font-size: 8pt;
+    padding: 8px 12px;
+    font-size: 9.5pt;
   }
 
   .ep-golden-root .ep-gl-eng-tilt-box {
-    padding: 10px 8px;
+    padding: 16px 12px;
   }
 
   .ep-golden-root .ep-gl-eng-tilt-deg {
-    font-size: 26pt;
+    font-size: 32pt;
   }
 
   .ep-golden-root .ep-gl-eng-tilt-note,
   .ep-golden-root .ep-gl-eng-tilt-sub {
-    font-size: 7.5pt;
-    margin-top: 6px;
-    line-height: 1.35;
+    font-size: 9pt;
+    margin-top: 8px;
+    line-height: 1.45;
   }
 
   .ep-golden-root .ep-gl-eng-block-title,
   .ep-golden-root .ep-gl-engineering-page .ep-gl-eng-block-title {
-    margin: 8px 0 5px;
-    font-size: 7.5pt;
+    margin: 14px 0 8px;
+    font-size: 8.5pt;
   }
 
   .ep-golden-root .ep-gl-eng-chips,
   .ep-golden-root .ep-gl-engineering-page .ep-gl-eng-chips {
-    gap: 4px;
-    margin-bottom: 6px;
+    gap: 6px;
+    margin-bottom: 8px;
   }
 
   .ep-golden-root .ep-gl-eng-chip {
-    font-size: 7pt;
-    padding: 3px 7px;
+    font-size: 8pt;
+    padding: 5px 10px;
   }
 
   .ep-golden-root .ep-gl-eng-phases {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 6px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: auto;
     margin-bottom: 0;
     padding-bottom: 0;
+    flex: 1 1 auto;
+    align-content: stretch;
   }
 
   .ep-golden-root .ep-gl-eng-phase,
   .ep-golden-root .ep-gl-engineering-page .ep-gl-eng-phase {
-    padding: 6px 7px;
+    padding: 12px 14px;
     break-inside: avoid;
     page-break-inside: avoid;
   }
 
   .ep-golden-root .ep-gl-eng-phase-title {
-    font-size: 8.5pt;
-    margin: 2px 0;
+    font-size: 10pt;
+    margin: 4px 0;
   }
 
   .ep-golden-root .ep-gl-eng-phase-detail,
   .ep-golden-root .ep-gl-engineering-page .ep-gl-eng-phase-detail {
-    font-size: 7.5pt;
-    line-height: 1.3;
+    font-size: 9pt;
+    line-height: 1.4;
   }
 
-  /* BOM — denser rows so all parts stay on one sheet */
+  /* BOM — restore readable row type; stretch list into leftover height */
   .ep-golden-root .ep-gl-bom-page .ep-gl-manifest-list {
-    margin-top: 2px;
+    margin-top: 6px;
     margin-bottom: 0;
     padding-bottom: 0;
+    flex: 1 1 auto;
   }
 
   .ep-golden-root .ep-gl-manifest-row {
@@ -2313,58 +2322,80 @@
   }
 
   .ep-golden-root .ep-gl-bom-page .ep-gl-manifest-left {
-    padding: 7px 10px 7px 0;
+    padding: 12px 14px 12px 0;
   }
 
   .ep-golden-root .ep-gl-bom-page .ep-gl-manifest-right {
-    padding: 7px 0;
+    padding: 12px 0;
   }
 
   .ep-golden-root .ep-gl-bom-page .ep-gl-manifest-comp {
-    font-size: 10pt;
+    font-size: 12pt;
   }
 
   .ep-golden-root .ep-gl-bom-page .ep-gl-manifest-spec {
-    font-size: 8.5pt;
-    margin-bottom: 2px;
+    font-size: 10pt;
+    margin-bottom: 4px;
   }
 
   .ep-golden-root .ep-gl-bom-page .ep-gl-manifest-tech {
-    font-size: 7.5pt;
-    line-height: 1.3;
-    margin-bottom: 2px;
+    font-size: 9pt;
+    line-height: 1.4;
+    margin-bottom: 4px;
   }
 
   .ep-golden-root .ep-gl-bom-page .ep-gl-manifest-tech li + li {
-    margin-top: 1px;
+    margin-top: 3px;
   }
 
   .ep-golden-root .ep-gl-bom-page .ep-gl-manifest-desc {
-    font-size: 7.5pt;
-    line-height: 1.3;
+    font-size: 9pt;
+    line-height: 1.4;
   }
 
   .ep-golden-root .ep-gl-manifest-warr {
-    font-size: 6.5pt;
-    padding: 2px 6px;
+    font-size: 7pt;
+    padding: 3px 7px;
+  }
+
+  /* Execution — fill the sheet */
+  .ep-golden-root .ep-gl-page-body:has(.ep-gl-exec-step) {
+    min-height: calc(297mm - 16mm);
+  }
+
+  .ep-golden-root .ep-gl-grid-2:has(.ep-gl-exec-step) {
+    flex: 1 1 auto;
+    align-items: stretch;
+    margin-top: 8px;
   }
 
   .ep-golden-root .ep-gl-exec-step {
-    margin-bottom: 12px;
+    margin-bottom: 20px;
+  }
+
+  .ep-golden-root .ep-gl-exec-num {
+    font-size: 22pt;
+  }
+
+  .ep-golden-root .ep-gl-exec-title {
+    font-size: 11.5pt;
+  }
+
+  .ep-golden-root .ep-gl-exec-desc {
+    font-size: 10pt;
+    line-height: 1.5;
   }
 
   .ep-golden-root .ep-gl-receipt-card {
-    padding: 14px;
+    padding: 20px 18px;
+    height: 100%;
+    box-sizing: border-box;
   }
 
-  /* Terms — columns + avoid caused header-only blank pages in print */
-  .ep-golden-root .ep-gl-terms-page {
-    padding: 8mm 8mm 7mm;
-  }
-
+  /* Terms — readable type; keep grid (no CSS columns) to avoid blank header pages */
   .ep-golden-root .ep-gl-terms-heading {
-    margin: 2px 0 4px;
-    font-size: 10pt;
+    margin: 4px 0 10px;
+    font-size: 12pt;
   }
 
   .ep-golden-root .ep-gl-terms-columns,
@@ -2373,8 +2404,10 @@
     column-gap: normal;
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 8px 14px;
-    margin-top: 6px;
+    gap: 14px 18px;
+    margin-top: 10px;
+    flex: 1 1 auto;
+    align-content: start;
   }
 
   .ep-golden-root .ep-gl-terms-page:not(.ep-gl-terms-page--continued)
@@ -2392,32 +2425,36 @@
   }
 
   .ep-golden-root .ep-gl-terms-subhead {
-    margin-bottom: 4px;
-    padding-bottom: 3px;
-    font-size: 8pt;
+    margin-bottom: 6px;
+    padding-bottom: 4px;
+    font-size: 9pt;
   }
 
   .ep-golden-root .ep-gl-terms-list {
-    font-size: 8pt;
-    line-height: 1.35;
+    font-size: 9.5pt;
+    line-height: 1.5;
   }
 
   .ep-golden-root .ep-gl-terms-list li {
-    margin-bottom: 3px;
+    margin-bottom: 6px;
   }
 
   .ep-golden-root .ep-gl-terms-para {
-    margin-bottom: 4px;
-    font-size: 8pt;
-    line-height: 1.35;
+    margin-bottom: 8px;
+    font-size: 9.5pt;
+    line-height: 1.5;
   }
 
   .ep-golden-root .ep-gl-terms-signoff {
-    margin-top: 8px;
-    padding-top: 6px;
+    margin-top: auto;
+    padding-top: 12px;
     padding-bottom: 0;
     break-inside: avoid;
     page-break-inside: avoid;
+  }
+
+  .ep-golden-root .ep-gl-terms-company {
+    font-size: 12pt;
   }
 
   /* Cover — full A4 sheet so estate location / asset profile pin to bottom in PDF */
