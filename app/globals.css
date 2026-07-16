@@ -135,6 +135,22 @@
   z-index: 1;
 }
 
+/* Public proposal docs sit above the fixed mesh spotlight (otherwise white wash
+   paints over dark presets like Zenith). Also kill the overlays entirely on
+   this route so the proposal canvas is clean. */
+#proposal-route-root {
+  position: relative;
+  z-index: 1;
+}
+
+body:has(#proposal-route-root).mesh-gradient-bg::before,
+body:has(#proposal-route-root).mesh-gradient-bg::after {
+  display: none !important;
+  content: none !important;
+  background: none !important;
+  opacity: 0 !important;
+}
+
 .dark .mesh-gradient-bg {
   /* Solid ink underlay so HSL rounding never reads “muddy” */
   background-color: #0b0e14;

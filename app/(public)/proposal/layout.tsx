@@ -10,7 +10,7 @@ const notoDeva = Noto_Sans_Devanagari({
   display: "swap"
 });
 
-const PROPOSAL_THEME_BOOTSTRAP = `(function(){try{var t=localStorage.getItem("ss_proposal_web_theme_v2");var d=t==="dark";var r=document.documentElement;r.dataset.proposalTheme=d?"dark":"light";var el=document.getElementById("proposal-route-root");if(el){el.style.backgroundColor=d?"#0a0a0a":"#fafafa";el.style.color=d?"#f5f5f5":"#171717";}}catch(e){document.documentElement.dataset.proposalTheme="light";var el=document.getElementById("proposal-route-root");if(el){el.style.backgroundColor="#fafafa";el.style.color="#171717";}}})();`;
+const PROPOSAL_THEME_BOOTSTRAP = `(function(){try{var t=localStorage.getItem("ss_proposal_web_theme_v2");var d=t==="dark";var r=document.documentElement;r.dataset.proposalTheme=d?"dark":"light";var el=document.getElementById("proposal-route-root");if(el){el.style.backgroundColor=d?"#0a0a0a":"#faf9f7";el.style.color=d?"#f5f5f5":"#171717";}}catch(e){document.documentElement.dataset.proposalTheme="light";var el=document.getElementById("proposal-route-root");if(el){el.style.backgroundColor="#faf9f7";el.style.color="#171717";}}})();`;
 
 /**
  * Public proposal routes load Noto Sans Devanagari so Hindi mode reads clearly.
@@ -20,7 +20,7 @@ export default function ProposalRouteLayout({ children }: { children: ReactNode 
   return (
     <div
       id="proposal-route-root"
-      className={`${notoDeva.variable} min-h-[100dvh] bg-[#fafafa] text-neutral-900 transition-colors duration-300 print:bg-white`}
+      className={`${notoDeva.variable} relative z-[1] min-h-[100dvh] bg-[#faf9f7] text-neutral-900 transition-colors duration-300 print:bg-white`}
       suppressHydrationWarning
     >
       <script dangerouslySetInnerHTML={{ __html: PROPOSAL_THEME_BOOTSTRAP }} />
