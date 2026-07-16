@@ -668,7 +668,7 @@ function CustomersPageContent() {
           className={cn(
             "md:max-xl:grid md:max-xl:min-h-0",
             "md:max-xl:h-[min(calc(100dvh-11rem),720px)]",
-            "md:max-xl:grid-cols-[minmax(240px,0.38fr)_minmax(0,1fr)]",
+            "md:max-xl:grid-cols-[minmax(280px,0.42fr)_minmax(0,1fr)]",
             "md:max-xl:gap-0 md:max-xl:overflow-hidden md:max-xl:rounded-2xl md:max-xl:border md:max-xl:border-slate-200/90 md:max-xl:bg-white/80 md:max-xl:shadow-sm",
             "dark:md:max-xl:border-white/10 dark:md:max-xl:bg-[#0c1017]/90"
           )}

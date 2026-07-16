@@ -491,9 +491,10 @@ export function CustomersLeadList({
                   key={`m-${customer.id}`}
                   className={cn(
                     "relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 shadow-[0_4px_20px_-8px_rgba(15,23,42,0.12)] dark:border-white/10 dark:bg-[#0c1017]",
-                    "md:max-xl:rounded-xl md:max-xl:p-3",
+                    /* iPad split pane: dense selectable row — detail lives in workspace */
+                    "md:max-xl:rounded-xl md:max-xl:border-slate-200/70 md:max-xl:p-2.5 md:max-xl:shadow-none dark:md:max-xl:border-white/[0.08]",
                     activeProject && "border-l-[4px] border-l-indigo-500 bg-indigo-50/25 dark:border-l-indigo-400 dark:bg-indigo-950/25",
-                    onSelectLead && selectedLeadId === customer.id && "ring-2 ring-brand-500/50 ring-offset-2 ring-offset-slate-50 dark:ring-offset-[#0c1017]"
+                    onSelectLead && selectedLeadId === customer.id && "ring-2 ring-brand-500/50 ring-offset-2 ring-offset-slate-50 dark:ring-offset-[#0c1017] md:max-xl:ring-offset-0 md:max-xl:bg-brand-50/40 dark:md:max-xl:bg-brand-950/25"
                   )}
                   onClick={(e) => {
                     if (!onSelectLead) return;
@@ -515,7 +516,7 @@ export function CustomersLeadList({
                 >
                   {canMutateLead ? (
                     <LeadRowActions
-                      className="absolute right-2 top-2 z-10"
+                      className="absolute right-2 top-2 z-10 md:max-xl:right-1.5 md:max-xl:top-1.5"
                       size="sm"
                       onEdit={onEditLead ? () => onEditLead(customer) : undefined}
                       onDelete={onDeleteLead ? () => onDeleteLead(customer) : undefined}
@@ -524,32 +525,50 @@ export function CustomersLeadList({
                     />
                   ) : null}
 
-                  <div className={cn("flex gap-3", canMutateLead ? "pr-12" : "")}>
-                    <LeadAvatar name={customer.consumer_name ?? customer.name} stale={stale} />
+                  <div className={cn("flex gap-3 md:max-xl:gap-2.5", canMutateLead ? "pr-12 md:max-xl:pr-10" : "")}>
+                    <LeadAvatar
+                      name={customer.consumer_name ?? customer.name}
+                      stale={stale}
+                      size="sm"
+                    />
                     <div className="min-w-0 flex-1">
-                      <h3 className="pr-2 text-lg font-extrabold leading-tight text-slate-900 dark:text-slate-50 md:max-xl:text-base">
+                      <h3 className="truncate pr-1 text-lg font-extrabold leading-tight text-slate-900 dark:text-slate-50 md:max-xl:text-[15px] md:max-xl:leading-snug">
                         {displayName}
                       </h3>
-                      <div className="mt-2 flex flex-wrap items-center gap-2 md:max-xl:mt-1 md:max-xl:gap-1.5">
+                      <div className="mt-2 flex flex-wrap items-center gap-2 md:max-xl:mt-1 md:max-xl:gap-1">
                         <LeadSourceBadge sourceRaw={customer.source} />
                         <span
                           className={cn(
                             "inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide",
-                            "md:max-xl:px-2 md:max-xl:py-0.5 md:max-xl:text-[9px]",
+                            "md:max-xl:px-1.5 md:max-xl:py-0 md:max-xl:text-[9px]",
                             stageMeta.className
                           )}
                         >
                           {t(stageMeta.labelKey)}
                         </span>
+                        {/* Status sits with badges on tablet to save vertical space */}
+                        <span className="hidden md:max-xl:inline-flex">
+                          {onStatusChange ? (
+                            <LeadStatusPillSelect
+                              leadId={customer.id}
+                              statusKey={statusKey}
+                              label={statusLabel}
+                              t={t}
+                              onChange={onStatusChange}
+                            />
+                          ) : (
+                            <LeadStatusBadge statusKey={statusKey} label={statusLabel} />
+                          )}
+                        </span>
                       </div>
-                      <div className="mt-3 max-w-full md:max-xl:mt-2">
+
+                      {/* Phone: prominent callback + status */}
+                      <div className="mt-3 space-y-3 md:max-xl:hidden">
                         <CustomerCallbackChip
                           dueAt={nextFollowupAt}
                           title={nextFollowupTitle}
                           onSchedule={() => setScheduleTarget(customer)}
                         />
-                      </div>
-                      <div className="mt-3 max-w-full md:max-xl:mt-2">
                         {onStatusChange ? (
                           <LeadStatusPillSelect
                             leadId={customer.id}
@@ -562,31 +581,42 @@ export function CustomersLeadList({
                           <LeadStatusBadge statusKey={statusKey} label={statusLabel} />
                         )}
                       </div>
+
+                      {/* Tablet: compact callback only */}
+                      <div className="mt-1.5 hidden max-w-full md:max-xl:block">
+                        <CustomerCallbackChip
+                          variant="compact"
+                          dueAt={nextFollowupAt}
+                          title={nextFollowupTitle}
+                          onSchedule={() => setScheduleTarget(customer)}
+                        />
+                      </div>
                     </div>
                   </div>
 
-                  <dl className="mt-4 space-y-3 rounded-2xl bg-slate-50/90 px-4 py-3.5 text-sm dark:bg-white/[0.05] md:max-xl:mt-2 md:max-xl:space-y-2 md:max-xl:rounded-xl md:max-xl:px-3 md:max-xl:py-2.5 md:max-xl:text-[13px]">
+                  {/* Phone: full meta panel */}
+                  <dl className="mt-4 space-y-3 rounded-2xl bg-slate-50/90 px-4 py-3.5 text-sm dark:bg-white/[0.05] md:max-xl:hidden">
                     <div className="flex justify-between gap-3">
                       <dt className="shrink-0 font-semibold text-slate-500 dark:text-slate-400">{t("customers_tableLocation")}</dt>
                       <dd className="min-w-0 text-right font-semibold text-slate-900 dark:text-slate-100">
                         <span className="block truncate">{customer.city}</span>
-                        <span className="mt-0.5 block truncate text-xs font-medium text-slate-600 dark:text-slate-400 md:max-xl:text-[11px]">
+                        <span className="mt-0.5 block truncate text-xs font-medium text-slate-600 dark:text-slate-400">
                           {customer.discom}
                         </span>
                       </dd>
                     </div>
-                    <div className="flex justify-between gap-3 border-t border-slate-200/80 pt-3 dark:border-white/10 md:max-xl:pt-2">
+                    <div className="flex justify-between gap-3 border-t border-slate-200/80 pt-3 dark:border-white/10">
                       <dt className="shrink-0 font-semibold text-slate-500 dark:text-slate-400">{t("customers_monthlyBillShort")}</dt>
-                      <dd className="text-lg font-black tabular-nums text-slate-900 dark:text-slate-50 md:max-xl:text-base">
+                      <dd className="text-lg font-black tabular-nums text-slate-900 dark:text-slate-50">
                         ₹{bill.toLocaleString("en-IN")}
                       </dd>
                     </div>
-                    <div className="flex justify-between gap-3 border-t border-slate-200/80 pt-3 text-xs dark:border-white/10 md:max-xl:pt-2 md:max-xl:text-[11px]">
+                    <div className="flex justify-between gap-3 border-t border-slate-200/80 pt-3 text-xs dark:border-white/10">
                       <dt className="shrink-0 font-semibold text-slate-500 dark:text-slate-400">Last activity</dt>
                       <dd className="font-bold text-slate-800 dark:text-slate-200">{lastActivityLabel}</dd>
                     </div>
                     {customer.phone ? (
-                      <div className="flex justify-between gap-3 border-t border-slate-200/80 pt-3 dark:border-white/10 md:max-xl:pt-2">
+                      <div className="flex justify-between gap-3 border-t border-slate-200/80 pt-3 dark:border-white/10">
                         <dt className="shrink-0 font-semibold text-slate-500 dark:text-slate-400">{t("customers_tablePhone")}</dt>
                         <dd className="min-w-0 max-w-[70%] text-right">
                           <a
@@ -601,36 +631,59 @@ export function CustomersLeadList({
                     ) : null}
                   </dl>
 
-                  <div className="mt-4 flex flex-col gap-2 md:max-xl:mt-2.5 md:max-xl:gap-1.5">
+                  {/* Tablet: one-line meta (workspace shows the rest) */}
+                  <div className="mt-2 hidden min-w-0 md:max-xl:block">
+                    <p className="truncate text-[12px] font-semibold text-slate-700 dark:text-slate-200">
+                      {[customer.city, customer.discom].filter(Boolean).join(" · ")}
+                      {bill > 0 ? ` · ₹${bill.toLocaleString("en-IN")}` : ""}
+                    </p>
+                    <p className="mt-0.5 truncate text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                      {lastActivityLabel}
+                    </p>
+                  </div>
+
+                  <div className="mt-4 flex flex-col gap-2 md:max-xl:mt-2 md:max-xl:gap-1.5">
                     {customer.phone || waUrl ? (
                       <div className="flex w-full min-w-0 gap-2">
                         {customer.phone ? (
                           <a
                             href={`tel:${customer.phone}`}
                             onClick={() => handlePhoneCall(customer.id)}
-                            className="flex min-h-12 min-w-0 flex-1 touch-manipulation items-center justify-center gap-2 rounded-xl bg-indigo-600 px-2 text-sm font-bold text-white shadow-md active:bg-indigo-700 sm:min-h-[3rem] sm:px-3 sm:text-base md:max-xl:min-h-10 md:max-xl:rounded-lg md:max-xl:text-sm"
+                            className={cn(
+                              "flex min-h-12 min-w-0 flex-1 touch-manipulation items-center justify-center gap-2 rounded-xl bg-indigo-600 px-2 text-sm font-bold text-white shadow-md active:bg-indigo-700 sm:min-h-[3rem] sm:px-3 sm:text-base",
+                              "md:max-xl:min-h-9 md:max-xl:flex-none md:max-xl:rounded-lg md:max-xl:px-2.5 md:max-xl:shadow-sm"
+                            )}
                             aria-label={t("customers_mobileCall")}
+                            title={t("customers_mobileCall")}
                           >
                             <Phone className="h-5 w-5 shrink-0 md:max-xl:h-4 md:max-xl:w-4" strokeWidth={2} aria-hidden />
-                            <span className="truncate">{t("customers_mobileCall")}</span>
+                            <span className="truncate md:max-xl:hidden">{t("customers_mobileCall")}</span>
                           </a>
                         ) : null}
                         {waUrl ? (
                           <button
                             type="button"
                             onClick={() => openWhatsApp(customer.id, waUrl)}
-                            className="flex min-h-12 min-w-0 flex-1 touch-manipulation items-center justify-center gap-2 rounded-xl border border-emerald-300/90 bg-emerald-50 px-2 text-sm font-bold text-emerald-900 shadow-sm active:bg-emerald-100 dark:border-emerald-500/45 dark:bg-emerald-950/55 dark:text-emerald-100 dark:active:bg-emerald-900/50 sm:min-h-[3rem] sm:px-3 md:max-xl:min-h-10 md:max-xl:rounded-lg md:max-xl:text-xs"
+                            className={cn(
+                              "flex min-h-12 min-w-0 flex-1 touch-manipulation items-center justify-center gap-2 rounded-xl border border-emerald-300/90 bg-emerald-50 px-2 text-sm font-bold text-emerald-900 shadow-sm active:bg-emerald-100 dark:border-emerald-500/45 dark:bg-emerald-950/55 dark:text-emerald-100 dark:active:bg-emerald-900/50 sm:min-h-[3rem] sm:px-3",
+                              "md:max-xl:min-h-9 md:max-xl:flex-none md:max-xl:rounded-lg md:max-xl:px-2.5"
+                            )}
                             aria-label={t("customers_whatsappAria")}
+                            title={t("customers_whatsappShort")}
                           >
                             <MessageCircle className="h-5 w-5 shrink-0 md:max-xl:h-4 md:max-xl:w-4" strokeWidth={2} aria-hidden />
-                            <span className="truncate">{t("customers_whatsappShort")}</span>
+                            <span className="truncate md:max-xl:hidden">{t("customers_whatsappShort")}</span>
                           </button>
                         ) : null}
                       </div>
                     ) : null}
+                    {/* Full commercial CTA on phone; on tablet split the workspace owns this */}
                     <Link
                       href={commercialCta.href}
-                      className="ss-cta-primary min-h-12 w-full touch-manipulation md:max-xl:min-h-10"
+                      className={cn(
+                        "ss-cta-primary min-h-12 w-full touch-manipulation",
+                        onSelectLead && "md:max-xl:hidden"
+                      )}
                     >
                       {t(commercialCta.labelKey)}
                     </Link>

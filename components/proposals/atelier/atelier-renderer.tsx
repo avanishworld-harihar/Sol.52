@@ -24,6 +24,7 @@ import {
   getAtelierCopy,
   type AtelierLang,
 } from "./atelier-copy";
+import { isDarkLogoUrl } from "./atelier-dark-logo";
 import styles from "./atelier.module.css";
 
 function bomByHint(data: ProposalData, hints: RegExp[]) {
@@ -82,6 +83,7 @@ export function AtelierRenderer({
       settings: typeof window !== "undefined" ? readProposalBrandingSettings() : null,
     })
   );
+  const [logoNeedsPlate, setLogoNeedsPlate] = useState(false);
 
   useEffect(() => {
     const sync = () => {
@@ -96,6 +98,19 @@ export function AtelierRenderer({
     window.addEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
     return () => window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
   }, [data?.meta.brandLogoUrl, installerLogoUrl, pptInput]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLogoNeedsPlate(false);
+    const url = logoUrl?.trim();
+    if (!url) return;
+    void isDarkLogoUrl(url).then((dark) => {
+      if (!cancelled) setLogoNeedsPlate(dark);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [logoUrl]);
 
   // ── Core derivations ─────────────────────────────────────────
   // Prefer real company name; treat generic "Solar Partner" as unset
@@ -346,14 +361,19 @@ export function AtelierRenderer({
         <div className={styles.coverInner}>
           <div className={styles.coverTop}>
             <div className={styles.coverBrandRow}>
-              <div className={styles.accentRule} />
               {coverBrand.showLogo ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={coverBrand.logoUrl}
-                  alt={coverBrand.installerName || brand}
-                  className={styles.coverLogo}
-                />
+                <span
+                  className={
+                    logoNeedsPlate ? styles.logoPlate : styles.logoBare
+                  }
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={coverBrand.logoUrl}
+                    alt={coverBrand.installerName || brand}
+                    className={styles.coverLogo}
+                  />
+                </span>
               ) : null}
               {coverBrand.showName || !coverBrand.showLogo ? (
                 <span className={styles.coverBrandText}>
@@ -1246,14 +1266,19 @@ export function AtelierRenderer({
       <section className={`${styles.page} ${styles.closingPage}`}>
         <div className={styles.closingInner}>
           <div className={styles.closingBrandTop}>
-            <div className={styles.accentRule} />
             {closingBrand.showLogo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={closingBrand.logoUrl}
-                alt={closingBrand.installerName || brand}
-                className={styles.closingLogo}
-              />
+              <span
+                className={
+                  logoNeedsPlate ? styles.logoPlate : styles.logoBare
+                }
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={closingBrand.logoUrl}
+                  alt={closingBrand.installerName || brand}
+                  className={styles.closingLogo}
+                />
+              </span>
             ) : null}
             {closingBrand.showName || !closingBrand.showLogo ? (
               <span className={styles.closingBrandName}>
