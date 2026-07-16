@@ -112,35 +112,43 @@ export function ProposalHubDealList({
                       >
                         <div className="flex items-start gap-2.5">
                           <span
-                            className="proposal-hub-avatar flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold shadow-inner"
+                            className="proposal-hub-avatar flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-[13px] font-bold shadow-inner"
                             aria-hidden
                           >
                             {initials}
                           </span>
                           <div className="min-w-0 flex-1">
-                            <div className="flex flex-wrap items-center gap-1.5">
-                              <p className="proposal-hub-text-primary truncate text-[13px] font-bold leading-snug sm:text-sm">
-                                {row.customer_name}
-                              </p>
-                              <DealHeatPill row={row} lang={lang} />
-                            </div>
-                            <p className="proposal-hub-text-muted mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[11px] font-semibold">
-                              <span>{row.system_kw} kW</span>
-                              <span className="opacity-50">·</span>
-                              <span className="proposal-hub-text-primary tabular-nums">{formatInrCompact(row.final_amount_inr)}</span>
-                              <span className="opacity-50">·</span>
-                              <span>{formatShortDate(row.generated_at)}</span>
-                              {showVersionTag ? (
-                                <>
-                                  <span className="opacity-50">·</span>
-                                  <span className="font-mono text-[10px] opacity-70">{row.id.slice(0, 8)}</span>
-                                </>
-                              ) : null}
+                            {/* Name alone on its row so pills don't steal width / force early ellipsis */}
+                            <p
+                              className="proposal-hub-text-primary line-clamp-2 text-[15px] font-extrabold leading-snug tracking-tight sm:text-base"
+                              title={row.customer_name}
+                            >
+                              {row.customer_name}
                             </p>
+                            <div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1">
+                              <DealHeatPill row={row} lang={lang} />
+                              <p className="proposal-hub-text-muted flex min-w-0 flex-wrap items-center gap-x-1.5 text-[11px] font-semibold sm:text-xs">
+                                <span>{row.system_kw} kW</span>
+                                <span className="opacity-50">·</span>
+                                <span className="proposal-hub-text-primary tabular-nums">
+                                  {formatInrCompact(row.final_amount_inr)}
+                                </span>
+                                <span className="opacity-50">·</span>
+                                <span>{formatShortDate(row.generated_at)}</span>
+                                {showVersionTag ? (
+                                  <>
+                                    <span className="opacity-50">·</span>
+                                    <span className="font-mono text-[10px] opacity-70">
+                                      {row.id.slice(0, 8)}
+                                    </span>
+                                  </>
+                                ) : null}
+                              </p>
+                            </div>
                           </div>
                           <HealthMini score={health} />
                         </div>
-                        <div className="flex flex-wrap items-center justify-between gap-1.5 pl-12">
+                        <div className="flex flex-wrap items-center justify-between gap-1.5 pl-[3.25rem]">
                           <span className={cn("inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wide", urgency.className)}>
                             {urgency.label}
                           </span>

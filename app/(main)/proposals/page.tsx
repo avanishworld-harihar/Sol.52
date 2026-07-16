@@ -510,9 +510,9 @@ export default function ProposalsHubPage() {
                 className={cn(
                   "proposal-hub-shell proposal-hub-glass-panel mt-3 hidden min-h-0 md:grid",
                   "md:h-[min(calc(100dvh-9.5rem),760px)]",
-                  "md:grid-cols-[minmax(240px,0.34fr)_minmax(0,1fr)] md:grid-rows-[minmax(0,1fr)]",
+                  "md:grid-cols-[minmax(280px,0.4fr)_minmax(0,1fr)] md:grid-rows-[minmax(0,1fr)]",
                   "md:overflow-hidden md:rounded-2xl md:border",
-                  "lg:h-[min(calc(100dvh-12rem),760px)] lg:grid-cols-[minmax(280px,0.32fr)_minmax(0,1fr)]"
+                  "lg:h-[min(calc(100dvh-12rem),760px)] lg:grid-cols-[minmax(300px,0.36fr)_minmax(0,1fr)]"
                 )}
               >
                 <div className="proposal-hub-shell-list flex h-full min-h-0 flex-col overflow-hidden border-r p-4 lg:pr-5">
