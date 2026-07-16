@@ -3272,6 +3272,8 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
 }
 
 @media print {
+  /* Default fallback only. Presets should use named @page (golden-sheet,
+     zenith-sheet, atelier-sheet, …) so they do not fight each other. */
   @page {
     size: 210mm 297mm; /* Exact A4 portrait */
     /* Slightly tighter margins so edge text/badges are not clipped */

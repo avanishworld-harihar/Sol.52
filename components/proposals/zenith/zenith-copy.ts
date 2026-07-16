@@ -16,23 +16,18 @@ export function getZenithCopy(lang: ZenithLang) {
       hero: hi
         ? "आपका घर, ऊर्जा स्वतंत्र।"
         : "Your home, energy independent.",
-      subPrefix: hi
-        ? "25 वर्षों तक अपनी बिजली खुद बनाएँ"
-        : "Generating your own power for 25 years",
-      subSaving: (amt: string) =>
-        hi ? ` — बचत ${amt}` : ` — saving you ${amt}`,
+      sub: hi
+        ? "आपकी छत के लिए तैयार सौर प्रस्ताव — अगले 25 वर्षों तक स्वच्छ बिजली।"
+        : "A solar proposal shaped for your rooftop — clean power for the next 25 years.",
       preparedFor: hi ? "के लिए तैयार" : "Prepared for",
-      highlightKw: hi ? "सिस्टम" : "System",
-      highlightPay: hi ? "आप चुकाएँगे" : "You pay",
-      highlightSave: hi ? "मासिक बचत" : "Monthly save",
       proposalLabel: hi ? "सौर प्रस्ताव" : "Solar proposal",
     },
     closing: {
-      tag: hi ? "अगला कदम" : "Next step",
-      title: hi ? "जब आप तैयार हों।" : "Ready when you are.",
+      tag: hi ? "अगला कदम" : "Let's begin",
+      title: hi ? "आपकी छत तैयार है।" : "Your rooftop is ready.",
       body: hi
-        ? "यह प्रस्ताव आपकी छत के लिए तैयार है। कॉल या मैसेज करें — हम सर्वे से गो-लाइव तक साथ हैं।"
-        : "This proposal is ready for your rooftop. Call or message — we guide you from survey to go-live.",
+        ? "कॉल या मैसेज करें — सर्वे, डिज़ाइन और गो-लाइव तक हम साथ हैं।"
+        : "Call or message when you are ready. We handle survey, design, and go-live with you.",
       contact: hi ? "संपर्क" : "Contact",
     },
     terms: {
@@ -86,14 +81,14 @@ export function getZenithCopy(lang: ZenithLang) {
         ? "उत्पादन, झुकाव और अनुपालन मेट्रिक्स।"
         : "Site-tuned metrics for generation, tilt, and compliance.",
       phases: hi ? "डिज़ाइन और स्थापना चरण" : "Design & install phases",
-      assurance: hi ? "इंजीनियरिंग और आश्वासन" : "Engineering & Assurance",
+      assurance: hi ? "सिस्टम पार्ट्स" : "System Parts",
       assuranceLead: hi
         ? "टियर-1 सामग्री — ब्रांड, स्पेक, वारंटी।"
         : "Tier-1 bill of materials — brand, spec, warranty, and technical points.",
       warranty: hi ? "वारंटी मैट्रिक्स" : "Warranty Matrix",
       warrantyLead: hi
-        ? "निर्माता और कार्यकुशलता कवरेज।"
-        : "Manufacturer and workmanship coverages for your rooftop system.",
+        ? "निर्माता और कार्यकुशलता कवरेज — अवधि और कवरेज एक नज़र में।"
+        : "Manufacturer and workmanship coverages — duration and coverage at a glance.",
       execution: hi ? "निष्पादन और निपटान" : "Execution & Settlement",
       executionLead: hi
         ? "साइट सर्वे से गो-लाइव तक पूरी यात्रा।"

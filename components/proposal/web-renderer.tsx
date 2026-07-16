@@ -60,7 +60,10 @@ import {
 } from "@/lib/proposal-branding-settings";
 import { JourneyBridge, ProposalJourneyProgress } from "@/components/proposal/proposal-journey";
 import { isProposalBillAuditBacked } from "@/lib/proposal-bill-audit-eligibility";
-import { PROPOSAL_PREMIUM_DOC_CLASS } from "@/lib/proposal-premium-design";
+import {
+  PROPOSAL_PREMIUM_DOC_CLASS,
+} from "@/lib/proposal-premium-design";
+import "@/app/proposal-premium.css";
 import { resolveSalesPremiumStyle, type SalesPremiumStyleId } from "@/lib/sales-premium-styles";
 import { transformToEditorialModel } from "@/lib/executive-premium-editorial/transform-to-editorial-model";
 

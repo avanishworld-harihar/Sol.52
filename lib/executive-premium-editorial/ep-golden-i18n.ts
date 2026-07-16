@@ -80,6 +80,9 @@ export type EpGoldenCopy = {
     tiltKicker: (city: string) => string;
     standards: string;
     installProcess: string;
+    installTag: string;
+    installTitle: string;
+    installLead: string;
   };
   bom: {
     tag: string;
@@ -226,6 +229,9 @@ const EN: EpGoldenCopy = {
     tiltKicker: (city) => `Panel tilt — ${city}`,
     standards: "Standards compliance",
     installProcess: "Installation process",
+    installTag: "05 / Engineering Design",
+    installTitle: "Installation Process.",
+    installLead: "From site survey to go-live — every step handled for your rooftop system.",
   },
   bom: {
     tag: "06 / Hardware Intelligence",
@@ -384,6 +390,9 @@ const HI: EpGoldenCopy = {
     tiltKicker: (city) => `Panel tilt — ${city}`,
     standards: "Standards compliance",
     installProcess: "Installation प्रक्रिया",
+    installTag: "05 / Engineering Design",
+    installTitle: "Installation Process।",
+    installLead: "Site survey से go-live तक — आपके rooftop system का हर step handle किया जाता है।",
   },
   bom: {
     tag: "06 / Hardware Intelligence",

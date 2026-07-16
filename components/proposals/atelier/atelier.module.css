@@ -1999,6 +1999,10 @@
     page-break-after: avoid;
   }
 
+  .page {
+    page: atelier-sheet;
+  }
+
   /*
    * Cover is a named page with ZERO @page margin so the dark BG
    * paints the entire physical A4 sheet (no white border).
@@ -2089,8 +2093,8 @@
     letter-spacing: 1px;
   }
 
-  /* Default content pages keep normal margins */
-  @page {
+  /* Named pages only — bare @page is document-global and fights other presets */
+  @page atelier-sheet {
     size: A4;
     margin: 18mm 20mm;
   }
@@ -2099,10 +2103,6 @@
     margin: 0;
   }
   @page atelier-closing {
-    size: A4;
-    margin: 0;
-  }
-  @page :first {
     size: A4;
     margin: 0;
   }

@@ -4,6 +4,10 @@
  * "Locked" means: do not edit these files while working on other presets/themes,
  * unless the user explicitly asks to change the Golden proposal.
  *
+ * Runtime isolation (shared CSS / @page / commercial styles) is documented in
+ * `lib/proposal-preset-isolation.ts` — follow that so other presets cannot
+ * regress Golden print or layout.
+ *
  * Users can still pick any residential theme in More → Proposal templates.
  */
 

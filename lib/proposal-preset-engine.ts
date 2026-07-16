@@ -47,12 +47,23 @@ export function normalizePresetId(raw: string | null | undefined): ProposalPrese
   return "residential_executive";
 }
 
-/** Returns true for presets rendered by ProposalWebRenderer (not isolated document renderers). */
+/** Returns true only for the legacy block-loop web renderer (not isolated document presets). */
 export function isWebRendererPreset(presetId: ProposalPresetId): boolean {
+  return (RESIDENTIAL_WEB_RENDERER_PRESETS as ReadonlyArray<string>).includes(presetId);
+}
+
+/** True when the preset is a residential document renderer (Golden / Zenith / Atelier). */
+export function isResidentialDocumentPreset(presetId: ProposalPresetId): boolean {
   return (
-    presetId === "commercial_executive" ||
-    (RESIDENTIAL_WEB_RENDERER_PRESETS as ReadonlyArray<string>).includes(presetId)
+    presetId === "residential_executive" ||
+    presetId === "residential_zenith" ||
+    presetId === "residential_premium_luxe"
   );
+}
+
+/** True for C&I commercial executive. */
+export function isCommercialPreset(presetId: ProposalPresetId): boolean {
+  return presetId === "commercial_executive";
 }
 
 // ─── Preset shape ────────────────────────────────────────────────────────────

@@ -121,7 +121,7 @@ export function ZenithProposalRenderer({
   const hasFinancing = eco.emiRows.length > 0;
   const hasImpact =
     impact.co2Tons > 0 || impact.treesEquivalent > 0 || closing.annualSavingsInr > 0;
-  const hasEngineering = eng.metrics.length > 0 || eng.phases.length > 0;
+  const hasEngineering = eng.metrics.length > 0 || eng.standards.length > 0;
   const hasBom = bom.length > 0;
   const hasWarranty = warranty.highlights.length > 0 || warranty.rows.length > 0;
   const hasExecution = execution.steps.length > 0;
@@ -165,47 +165,33 @@ export function ZenithProposalRenderer({
       </div>
 
       <div className={styles.presetZenith}>
-        {/* 1 — Cover */}
+        {/* 1 — Cover (brand-first; no project cost on first page) */}
         <section className={`${styles.page} ${styles.pageCover}`}>
-          <div className={styles.coverTop}>
-            {logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={logoUrl} alt={brand} className={styles.logo} />
-            ) : (
+          <div className={styles.coverStage}>
+            <div className={styles.coverTop}>
+              {logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={logoUrl} alt={brand} className={styles.logo} />
+              ) : (
+                <span className={styles.coverBadge}>{c.cover.proposalLabel}</span>
+              )}
+              {logoUrl ? (
+                <span className={styles.coverBadge}>{c.cover.proposalLabel}</span>
+              ) : null}
+            </div>
+
+            <div className={styles.coverHero}>
               <BrandLockup name={brand} />
-            )}
-            <span className={styles.coverBadge}>{c.cover.proposalLabel}</span>
-          </div>
-
-          {logoUrl ? <BrandLockup name={brand} /> : null}
-
-          <h1 className={styles.heroTitle}>{c.cover.hero}</h1>
-          <p className={styles.heroSub}>
-            {c.cover.subPrefix}
-            {eco.lifetimeProfitInr > 0
-              ? c.cover.subSaving(formatLifetimeBenefitInr(eco.lifetimeProfitInr))
-              : ""}
-            .
-          </p>
-
-          <div className={styles.coverHighlights}>
-            <div className={styles.coverHiCell}>
-              <span className={styles.coverHiLabel}>{c.cover.highlightKw}</span>
-              <span className={styles.coverHiValue}>{capacity !== "—" ? capacity : "—"}</span>
-            </div>
-            <div className={styles.coverHiCell}>
-              <span className={styles.coverHiLabel}>{c.cover.highlightPay}</span>
-              <span className={styles.coverHiValue}>
-                {eco.netInr > 0 ? formatInrCompact(eco.netInr) : "—"}
-              </span>
-            </div>
-            <div className={`${styles.coverHiCell} ${styles.coverHiCellAccent}`}>
-              <span className={styles.coverHiLabel}>{c.cover.highlightSave}</span>
-              <span className={styles.coverHiValue}>
-                {eco.monthlySavingsInr > 0
-                  ? formatInrCompact(eco.monthlySavingsInr)
-                  : "—"}
-              </span>
+              <div className={styles.coverAccent} aria-hidden />
+              <h1 className={styles.heroTitle}>{c.cover.hero}</h1>
+              <p className={styles.heroSub}>{c.cover.sub}</p>
+              {capacity !== "—" || generation !== "—" ? (
+                <p className={styles.heroMeta}>
+                  {[capacity !== "—" ? capacity : null, generation !== "—" ? generation : null]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
+              ) : null}
             </div>
           </div>
 
@@ -215,9 +201,6 @@ export function ZenithProposalRenderer({
             {location ? <p className={styles.coverClientLoc}>{location}</p> : null}
             {data.meta.assetProfileLine ? (
               <p className={styles.coverClientLoc}>{data.meta.assetProfileLine}</p>
-            ) : null}
-            {generation !== "—" ? (
-              <p className={styles.heroMeta}>{generation}</p>
             ) : null}
           </div>
         </section>
@@ -421,22 +404,6 @@ export function ZenithProposalRenderer({
                 ))}
               </div>
             ) : null}
-            {eng.phases.length > 0 ? (
-              <div className={styles.sectionBlock}>
-                <h3 className={styles.subTitle}>{c.pages.phases}</h3>
-                <ol className={styles.stepList}>
-                  {eng.phases.map((p) => (
-                    <li key={p.num} className={styles.stepItem}>
-                      <span className={styles.stepNum}>{p.num}</span>
-                      <div>
-                        <p className={styles.stepTitle}>{p.title}</p>
-                        <p className={styles.stepDesc}>{p.description}</p>
-                      </div>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            ) : null}
             {eng.standards.length > 0 ? (
               <p className={styles.standards}>
                 {c.pages.standards} · {eng.standards.join(" · ")}
@@ -445,75 +412,74 @@ export function ZenithProposalRenderer({
           </section>
         ) : null}
 
-        {/* 5 — BOM + warranty as line tables */}
-        {hasBom || hasWarranty ? (
-          <section className={styles.page}>
+        {/* 5 — BOM */}
+        {hasBom ? (
+          <section className={`${styles.page} ${styles.pageBom}`}>
             <PageHeader title={c.pages.assurance} lead={c.pages.assuranceLead} />
-            {hasBom ? (
-              <table className={styles.lineTable}>
+            <table className={styles.lineTable}>
+              <thead>
+                <tr>
+                  <th>{c.pages.component}</th>
+                  <th>{c.pages.brandSpec}</th>
+                  <th>{c.labels.warranty}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {bom.map((item, i) => (
+                  <tr key={`${item.name}-${i}`}>
+                    <td>
+                      <div className={styles.lineName}>{item.name}</div>
+                      {item.description ? (
+                        <div className={styles.lineMuted}>{item.description}</div>
+                      ) : null}
+                    </td>
+                    <td className={styles.lineMuted}>
+                      {[item.brand, item.spec].filter(Boolean).join(" · ") || "—"}
+                    </td>
+                    <td className={styles.lineEm}>{item.warranty || "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        ) : null}
+
+        {/* 5b — Warranty Matrix (own page — avoids orphan table rows) */}
+        {hasWarranty ? (
+          <section className={`${styles.page} ${styles.pageWarranty}`}>
+            <PageHeader title={c.pages.warranty} lead={c.pages.warrantyLead} />
+            {warranty.highlights.length > 0 ? (
+              <div className={styles.strip}>
+                {warranty.highlights.slice(0, 3).map((h) => (
+                  <div key={h.label} className={styles.stripCell}>
+                    <span className={styles.stripLabel}>{h.label}</span>
+                    <span className={`${styles.stripValue} ${styles.stripValueGold}`}>
+                      {h.value}
+                      {h.unit ? ` ${h.unit}` : ""}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+            {warranty.rows.length > 0 ? (
+              <table className={`${styles.lineTable} ${styles.lineTableSpaced}`}>
                 <thead>
                   <tr>
                     <th>{c.pages.component}</th>
-                    <th>{c.pages.brandSpec}</th>
+                    <th>{c.pages.coverage}</th>
                     <th>{c.labels.warranty}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {bom.map((item, i) => (
-                    <tr key={`${item.name}-${i}`}>
-                      <td>
-                        <div className={styles.lineName}>{item.name}</div>
-                        {item.description ? (
-                          <div className={styles.lineMuted}>{item.description}</div>
-                        ) : null}
-                      </td>
-                      <td className={styles.lineMuted}>
-                        {[item.brand, item.spec].filter(Boolean).join(" · ") || "—"}
-                      </td>
-                      <td className={styles.lineEm}>{item.warranty || "—"}</td>
+                  {warranty.rows.map((row) => (
+                    <tr key={`${row.item}-${row.duration}`}>
+                      <td className={styles.lineName}>{row.item}</td>
+                      <td className={styles.lineMuted}>{row.coverage}</td>
+                      <td className={styles.lineEm}>{row.duration}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            ) : null}
-
-            {hasWarranty ? (
-              <div className={styles.sectionBlock}>
-                <h3 className={styles.subTitle}>{c.pages.warranty}</h3>
-                {warranty.highlights.length > 0 ? (
-                  <div className={styles.strip} style={{ marginBottom: "1rem" }}>
-                    {warranty.highlights.slice(0, 3).map((h) => (
-                      <div key={h.label} className={styles.stripCell}>
-                        <span className={styles.stripLabel}>{h.label}</span>
-                        <span className={`${styles.stripValue} ${styles.stripValueGold}`}>
-                          {h.value}
-                          {h.unit ? ` ${h.unit}` : ""}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
-                {warranty.rows.length > 0 ? (
-                  <table className={styles.lineTable}>
-                    <thead>
-                      <tr>
-                        <th>{c.pages.component}</th>
-                        <th>{c.pages.coverage}</th>
-                        <th>{c.labels.warranty}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {warranty.rows.map((row) => (
-                        <tr key={`${row.item}-${row.duration}`}>
-                          <td className={styles.lineName}>{row.item}</td>
-                          <td className={styles.lineMuted}>{row.coverage}</td>
-                          <td className={styles.lineEm}>{row.duration}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                ) : null}
-              </div>
             ) : null}
           </section>
         ) : null}
@@ -662,17 +628,20 @@ export function ZenithProposalRenderer({
           </div>
         </section>
 
-        {/* Closing — last page */}
+        {/* Closing — light last page */}
         <section className={`${styles.page} ${styles.pageClosing}`}>
-          <p className={styles.closingTag}>{c.closing.tag}</p>
-          <h2 className={styles.closingTitle}>{c.closing.title}</h2>
-          <p className={styles.closingBody}>{c.closing.body}</p>
-          <p className={styles.closingFor}>
-            {c.pages.preparedBy(
-              closing.customerName || customer,
-              closing.installerName || brand
-            )}
-          </p>
+          <div>
+            <p className={styles.closingTag}>{c.closing.tag}</p>
+            <div className={styles.goldRule} aria-hidden />
+            <h2 className={styles.closingTitle}>{c.closing.title}</h2>
+            <p className={styles.closingBody}>{c.closing.body}</p>
+            <p className={styles.closingFor}>
+              {c.pages.preparedBy(
+                closing.customerName || customer,
+                closing.installerName || brand
+              )}
+            </p>
+          </div>
 
           <div className={styles.closingStats}>
             <div className={styles.closingStat}>
@@ -701,6 +670,7 @@ export function ZenithProposalRenderer({
 
           <div className={styles.closingFooter}>
             <div>
+              <p className={styles.cardLabel}>{c.closing.contact}</p>
               <p className={styles.closingBrand}>{brand}</p>
               {closing.contactLine ? (
                 <p className={styles.closingContact}>{closing.contactLine}</p>

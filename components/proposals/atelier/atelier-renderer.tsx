@@ -319,8 +319,8 @@ export function AtelierRenderer({
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
-  @page { size: A4; margin: 18mm 20mm; }
-  @page :first { size: A4; margin: 0; }
+  /* Named pages only — never bare @page (bleeds into other presets) */
+  @page atelier-sheet { size: A4; margin: 18mm 20mm; }
   @page atelier-cover { size: A4; margin: 0; }
   @page atelier-closing { size: A4; margin: 0; }
 }
