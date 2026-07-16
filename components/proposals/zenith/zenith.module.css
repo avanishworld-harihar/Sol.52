@@ -13,6 +13,11 @@
   min-height: 100dvh;
   background: #ffffff;
   overflow-x: clip;
+  /* Toolbar sits outside .presetZenith — vars must live here too */
+  --accent: #0f766e;
+  --accent-soft: #14b8a6;
+  --gold: var(--accent);
+  --gold-soft: var(--accent-soft);
 }
 
 .presetZenith {
@@ -126,19 +131,30 @@
 }
 
 .printBarBtn {
-  background: var(--gold-soft);
-  color: #0f172a;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  background: #14b8a6;
+  color: #0b1220;
   border: none;
-  border-radius: 4px;
-  padding: 0.35rem 0.9rem;
+  border-radius: 6px;
+  padding: 0.4rem 0.95rem;
   font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
 
 .printBarBtn:hover {
-  filter: brightness(1.05);
+  background: #2dd4bf;
+  color: #0b1220;
+}
+
+.printBarBtn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
 }
 
 /* ── Pages — white full-bleed, content column only ───────────── */
