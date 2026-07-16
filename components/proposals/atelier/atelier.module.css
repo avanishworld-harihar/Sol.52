@@ -77,6 +77,58 @@
 }
 .printBarBtn:hover { background: var(--or2); }
 
+.printBarActions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.langToggle {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.langBtn {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 4px;
+  padding: 0.32rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-family: 'Montserrat', sans-serif;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.langBtn:hover {
+  border-color: rgba(255, 255, 255, 0.75);
+  color: var(--white);
+}
+
+.langBtnActive {
+  background: var(--or);
+  border-color: var(--or);
+  color: var(--white);
+}
+
+.langHi .pageTag,
+.langHi .coverDocType,
+.langHi .coverFor,
+.langHi .coverWealthTag,
+.langHi .billCardTag,
+.langHi .genCardTag,
+.langHi .investTag,
+.langHi .investScoreTag,
+.langHi .hwCardTag,
+.langHi .roofMetricTag,
+.langHi .closingTag,
+.langHi .expertTag {
+  letter-spacing: 0.5px;
+}
+
 /* ── Page shell ─────────────────────────────────────────────── */
 .page {
   background: var(--white);
@@ -197,6 +249,13 @@
   height: 3px;
   background: var(--or);
   border-radius: 2px;
+  flex-shrink: 0;
+}
+.coverLogo {
+  display: block;
+  max-height: 2.75rem;
+  max-width: 160px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 .coverBrandText {
@@ -1463,6 +1522,13 @@
   align-items: center;
   gap: 0.75rem;
   margin-bottom: 1.75rem;
+}
+.closingLogo {
+  display: block;
+  max-height: 3.25rem;
+  max-width: 180px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 .closingBrandName {
   font-family: 'Montserrat', sans-serif;

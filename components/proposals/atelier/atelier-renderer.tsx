@@ -9,8 +9,21 @@
  * ProposalData-native · Print A4 · 12 pages · break-after: page (print only)
  */
 
+import { useEffect, useState } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
+import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { formatInr, formatInrCompact } from "@/components/proposals/_shared/formatters";
+import {
+  PROPOSAL_BRANDING_UPDATED_EVENT,
+  readProposalBrandingSettings,
+  resolveProposalBrandConfig,
+  resolveProposalBrandPresentation,
+  resolveInstallerDisplayName,
+} from "@/lib/proposal-branding-settings";
+import {
+  getAtelierCopy,
+  type AtelierLang,
+} from "./atelier-copy";
 import styles from "./atelier.module.css";
 
 function bomByHint(data: ProposalData, hints: RegExp[]) {
@@ -28,30 +41,88 @@ function bomLine(
 }
 
 /** Sets customer expectations even when the ProposalData step has no
- * explicit duration — keyword-matched against standard rooftop timelines. */
-function estimateDuration(title: string): string {
+ * explicit duration — keyword-matched against English titles from data. */
+function estimateDuration(
+  title: string,
+  durations: ReturnType<typeof getAtelierCopy>["durations"]
+): string {
   const t = title.toLowerCase();
-  if (/survey/.test(t)) return "1 Day";
-  if (/design|sld/.test(t)) return "2 Days";
-  if (/approv|subsidy|meter|discom/.test(t)) return "7 Days";
-  if (/material|delivery|procurement/.test(t)) return "3 Days";
-  if (/install/.test(t)) return "2 Days";
-  if (/test|commission/.test(t)) return "3 Days";
-  return "2–3 Days";
+  // Match English titles from ProposalData and Hindi fallback titles
+  if (/survey|सर्वे/.test(t)) return durations.survey;
+  if (/design|sld|डिज़ाइन|एसएलडी/.test(t)) return durations.design;
+  if (/approv|subsidy|meter|discom|अनुमोदन/.test(t)) return durations.approvals;
+  if (/material|delivery|procurement|सामग्री|डिलीवरी/.test(t))
+    return durations.material;
+  if (/install|स्थापना/.test(t)) return durations.install;
+  if (/test|commission|कमीशनिंग/.test(t)) return durations.commission;
+  return durations.default;
 }
 
-export function AtelierRenderer({ data }: { data: ProposalData }) {
+export type AtelierRendererProps = {
+  data: ProposalData;
+  installerLogoUrl?: string;
+  pptInput?: PremiumProposalPptInput | null;
+};
+
+export function AtelierRenderer({
+  data,
+  installerLogoUrl,
+  pptInput,
+}: AtelierRendererProps) {
+  const [lang, setLang] = useState<AtelierLang>("en");
+  const c = getAtelierCopy(lang);
+  const isHi = lang === "hi";
+
+  const [logoUrl, setLogoUrl] = useState<string | undefined>(() => {
+    return data?.meta.brandLogoUrl?.trim() || installerLogoUrl?.trim() || undefined;
+  });
+  const [brandConfig, setBrandConfig] = useState(() =>
+    resolveProposalBrandConfig({
+      pptInput,
+      settings: typeof window !== "undefined" ? readProposalBrandingSettings() : null,
+    })
+  );
+
+  useEffect(() => {
+    const sync = () => {
+      const settings = readProposalBrandingSettings();
+      const fromData = data?.meta.brandLogoUrl?.trim() ?? "";
+      const fromProp = installerLogoUrl?.trim() ?? "";
+      const fromLocal = settings.installerLogoUrl?.trim() ?? "";
+      setLogoUrl(fromData || fromProp || fromLocal || undefined);
+      setBrandConfig(resolveProposalBrandConfig({ pptInput, settings }));
+    };
+    sync();
+    window.addEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
+    return () => window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
+  }, [data?.meta.brandLogoUrl, installerLogoUrl, pptInput]);
+
   // ── Core derivations ─────────────────────────────────────────
   // Prefer real company name; treat generic "Solar Partner" as unset
+  const settingsName =
+    typeof window !== "undefined"
+      ? resolveInstallerDisplayName(readProposalBrandingSettings())
+      : "";
   const rawBrand =
     data.meta.brandName?.trim() ||
     data.closing.installerName?.trim() ||
+    settingsName ||
     "";
   const brand =
     !rawBrand || /^solar\s*partner$/i.test(rawBrand)
       ? "Harihar Solar"
       : rawBrand;
-  const clientName = data.meta.customerName?.trim() || "Valued Customer";
+
+  const coverBrand = resolveProposalBrandPresentation(brandConfig, "cover", {
+    installerName: brand,
+    logoUrl,
+  });
+  const closingBrand = resolveProposalBrandPresentation(brandConfig, "closing", {
+    installerName: brand,
+    logoUrl,
+  });
+  const clientName =
+    data.meta.customerName?.trim() || c.fallbacks.valuedCustomer;
   const location =
     data.meta.locationLine && data.meta.locationLine !== "—"
       ? data.meta.locationLine
@@ -59,8 +130,6 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
   const city = location.split(",")[0]?.trim() || location;
   const systemKw = data.meta.systemKw;
   const systemSize = systemKw > 0 ? `${systemKw} kW` : "—";
-  const systemType =
-    data.meta.assetProfileLine?.trim() || "Premium Grid Architecture";
   const annualGen =
     data.closing.annualUnits > 0 ? data.closing.annualUnits : 0;
   const grossInr = data.economics.grossInr;
@@ -104,12 +173,12 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           : "A+";
   const investGrade =
     paybackYears <= 3.5
-      ? "Exceptional Return"
+      ? c.investGrade.exceptional
       : paybackYears <= 5
-        ? "Very High Return"
+        ? c.investGrade.veryHigh
         : paybackYears <= 6.5
-          ? "High Return"
-          : "Above Average Return";
+          ? c.investGrade.high
+          : c.investGrade.aboveAvg;
 
   // Wealth milestones (25-yr projection)
   const totalWealth =
@@ -130,7 +199,6 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
     return m ? parseInt(m[1]) : 580;
   })();
   const panelCount = systemKw > 0 ? Math.ceil((systemKw * 1000) / panelWp) : 9;
-  const panelRows = Math.ceil(panelCount / 3);
 
   // BOM
   const panelItem =
@@ -150,14 +218,14 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           .map((m) => [m.label, m.value] as [string, string])
       : ([
           [
-            "DC Capacity",
+            c.engMetricLabels.dcCapacity,
             systemKw > 0 ? `${(systemKw * 1.04).toFixed(2)} kWp` : "—",
           ],
-          ["AC Capacity", systemSize],
-          ["Performance Ratio", "75%"],
-          ["Specific Yield", "1440 kWh/kWp/yr"],
-          ["Peak Sun Hours", "5 hrs / day"],
-          [`Panel Tilt (${cityLabel})`, `${tilt}°`],
+          [c.engMetricLabels.acCapacity, systemSize],
+          [c.engMetricLabels.performanceRatio, "75%"],
+          [c.engMetricLabels.specificYield, "1440 kWh/kWp/yr"],
+          [c.engMetricLabels.peakSunHours, c.engMetricLabels.peakSunValue],
+          [c.engMetricLabels.panelTilt(cityLabel), `${tilt}°`],
         ] as [string, string][]);
 
   const standards =
@@ -180,20 +248,7 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           label: h.label,
           sub: h.unit,
         }))
-      : [
-          { years: "30", label: "Panel Performance", sub: "≥80% at year 30" },
-          {
-            years: "15",
-            label: "Product Warranty",
-            sub: "Manufacturing defects",
-          },
-          {
-            years: "10",
-            label: "Mounting Structure",
-            sub: "Corrosion & integrity",
-          },
-          { years: "1", label: "Free AMC", sub: "Full service & support" },
-        ];
+      : c.warrantyFallback;
 
   // Journey
   const journey =
@@ -201,121 +256,35 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
       ? data.execution.steps
           .slice(0, 6)
           .map((s) => ({ num: s.num, title: s.title, desc: s.description }))
-      : [
-          {
-            num: "01",
-            title: "Site Survey",
-            desc: "Roof assessment, shading & load check",
-          },
-          {
-            num: "02",
-            title: "Design & SLD",
-            desc: "Engineering drawings & diagram",
-          },
-          {
-            num: "03",
-            title: "Approvals",
-            desc: "DISCOM + PM Surya Ghar paperwork",
-          },
-          {
-            num: "04",
-            title: "Material Delivery",
-            desc: "Tier-1 components to site",
-          },
-          {
-            num: "05",
-            title: "Installation",
-            desc: "Structure, modules, inverter & electrical",
-          },
-          {
-            num: "06",
-            title: "Commissioning",
-            desc: "Net meter, grid sync & handover",
-          },
-        ];
+      : c.journeyFallback;
 
   // Payments
   const payments =
     data.execution.payments.length > 0
       ? data.execution.payments
-      : [
-          {
-            label: "Booking Advance",
-            pctLabel: "25%",
-            amountInr: Math.round(netInr * 0.25),
-          },
-          {
-            label: "Material Procurement",
-            pctLabel: "50%",
-            amountInr: Math.round(netInr * 0.5),
-          },
-          {
-            label: "Installation",
-            pctLabel: "20%",
-            amountInr: Math.round(netInr * 0.2),
-          },
-          {
-            label: "Commissioning",
-            pctLabel: "5%",
-            amountInr: Math.round(netInr * 0.05),
-          },
-        ];
+      : c.paymentsFallback.map((p) => ({
+          label: p.label,
+          pctLabel: p.pctLabel,
+          amountInr:
+            p.pctLabel === "25%"
+              ? Math.round(netInr * 0.25)
+              : p.pctLabel === "50%"
+                ? Math.round(netInr * 0.5)
+                : p.pctLabel === "20%"
+                  ? Math.round(netInr * 0.2)
+                  : Math.round(netInr * 0.05),
+        }));
 
-  // Terms — always use the complete Harihar Solar T&C set (ProposalData
-  // currently ships short stubs that omit General Terms / Client Scope / AMC).
-  const generalTerms = [
-    "DISCOM / state electricity board load change, or cable change from pole to meter and its liaison — only if required — will be in the customer's scope.",
-    "All government statutory fees, regulatory charges, and legal costs relating to net-metering, subsidy (PM Surya Ghar / state schemes), DISCOM approvals, or any official application shall be borne and paid directly by the client.",
-    "If an increase in sanctioned load or connected load is required for the solar connection, the client shall ensure that all prior electricity bills, outstanding dues, and arrears with the DISCOM are fully cleared before processing; any delay or rejection arising from uncleared dues shall remain the client's responsibility.",
-    "Inverter warranty is as per manufacturer (typically 8–10 years on string inverters).",
-    "Solar PV module product warranty: 15 years; performance warranty: ≥80% rated output at end of 30 years (manufacturer). Warranty on overall system and parts not specified above: 1 year from date of commissioning.",
-    "Warranty applies to manufacturing defects only. Physical damage, misuse, or vandalism is not covered.",
-    "Routine cleaning of modules (recommended weekly) is in the customer's scope — it directly affects generation performance.",
-    "Installation shall be completed within 30–40 working days from receipt of advance payment as per the agreed purchase order / payment schedule.",
-    "Any terms not expressly mentioned herein shall be governed by mutual written agreement between both parties.",
-    "Refunds, if applicable, shall be processed after a 2.5% deduction on the project finalization amount plus documented expenses already incurred.",
-  ];
-
-  const docs = [
-    "Latest electricity bill (clear copy)",
-    "Copy of PAN card",
-    "Copy of Aadhaar card (legible, both sides if applicable)",
-    "Ownership proof — property tax receipt / sale deed / municipal record",
-    "Passport-size photograph of applicant",
-    "Single-line diagram (SLD) — draft provided by us; signed copy required from customer",
-  ];
-
-  const amcObjective =
-    "The objective of Annual Maintenance Services is to maintain the performance ratio and general upkeep of the rooftop SPV plant throughout the contract period.";
-
-  const amcScope = [
-    "Annual Maintenance Contract (AMC) covering:",
-    "Daily / periodic monitoring of plant performance and energy generation",
-    "Routine preventive maintenance of plant and equipment",
-    "Emergency breakdown attendance (response within 48 working hours)",
-    "Coordination with OEMs for warranty support and defect rectification",
-    "Periodic inspection of DC & AC protection, earthing, and cable terminations",
-  ];
-
-  const clientScope = [
-    "Site security, watch and ward",
-    "Insurance of plant and equipment (if desired)",
-    "Stable internet connection at site for remote monitoring (where applicable)",
-    "Water and auxiliary power for maintenance activities, as needed on site",
-    "Day-to-day visual checks and safe access to the rooftop",
-    "Regular module cleaning as per manufacturer guidelines",
-  ];
+  const generalTerms = c.generalTerms;
+  const docs = c.docs;
+  const amcObjective = c.amcObjective;
+  const amcScope = c.amcScope;
+  const clientScope = c.clientScope;
 
   const invoiceRef =
     grossInr > 0 ? formatInr(grossInr) : netInr > 0 ? formatInr(netInr) : "₹3,00,000";
-  const amcCostParagraph = `First 1 year AMC is included in the quoted price. From Year 2 onwards, annual maintenance may be charged at 2% of invoice value (${invoiceRef}) with 5% year-on-year escalation, subject to a signed O&M agreement.`;
-
-  const amcTerms = [
-    "Maintenance charges, when applicable, are payable in advance on a half-yearly basis.",
-    "Minimum O&M contract duration: 2 years, extendable in blocks of 2 years by mutual consent (up to 25 years from commissioning).",
-    "We are not liable for module or equipment loss due to theft, stand damage, or vandalism.",
-    "Standard force majeure provisions apply; service deficiencies during such events shall be communicated to the client within one week of occurrence.",
-  ];
+  const amcCostParagraph = c.amcCostParagraph(invoiceRef);
+  const amcTerms = c.amcTerms;
 
   const handlePrint = () => {
     if (typeof window !== "undefined") window.print();
@@ -323,7 +292,7 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
 
   // ── JSX ──────────────────────────────────────────────────────
   return (
-    <div className={styles.wrapper}>
+    <div className={`${styles.wrapper}${isHi ? ` ${styles.langHi}` : ""}`}>
       <style>{`
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Lato:wght@300;400;700&display=swap');
 @media print {
@@ -346,9 +315,29 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
       <div className={styles.printBar}>
         <div className={styles.printBarInner}>
           <span className={styles.printBarBrand}>{brand}</span>
-          <button type="button" onClick={handlePrint} className={styles.printBarBtn}>
-            Download PDF
-          </button>
+          <div className={styles.printBarActions}>
+            <div className={styles.langToggle} role="group" aria-label="Language">
+              <button
+                type="button"
+                className={`${styles.langBtn}${lang === "en" ? ` ${styles.langBtnActive}` : ""}`}
+                onClick={() => setLang("en")}
+                aria-pressed={lang === "en"}
+              >
+                {c.print.langEn}
+              </button>
+              <button
+                type="button"
+                className={`${styles.langBtn}${lang === "hi" ? ` ${styles.langBtnActive}` : ""}`}
+                onClick={() => setLang("hi")}
+                aria-pressed={lang === "hi"}
+              >
+                {c.print.langHi}
+              </button>
+            </div>
+            <button type="button" onClick={handlePrint} className={styles.printBarBtn}>
+              {c.print.downloadPdf}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -358,26 +347,36 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           <div className={styles.coverTop}>
             <div className={styles.coverBrandRow}>
               <div className={styles.accentRule} />
-              <span className={styles.coverBrandText}>{brand.toUpperCase()}</span>
+              {coverBrand.showLogo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={coverBrand.logoUrl}
+                  alt={coverBrand.installerName || brand}
+                  className={styles.coverLogo}
+                />
+              ) : null}
+              {coverBrand.showName || !coverBrand.showLogo ? (
+                <span className={styles.coverBrandText}>
+                  {(coverBrand.installerName || brand).toUpperCase()}
+                </span>
+              ) : null}
             </div>
-            <span className={styles.coverDocType}>INVESTMENT BLUEPRINT</span>
+            <span className={styles.coverDocType}>{c.cover.docType}</span>
           </div>
 
           <div className={styles.coverHero}>
-            <p className={styles.coverFor}>PREPARED FOR</p>
+            <p className={styles.coverFor}>{c.cover.preparedFor}</p>
             <h1 className={styles.coverName}>{clientName}</h1>
             <p className={styles.coverLoc}>{location}</p>
           </div>
 
           <div className={styles.coverWealthRow}>
             <div className={styles.coverWealthCard}>
-              <span className={styles.coverWealthTag}>25-YEAR WEALTH CREATED</span>
+              <span className={styles.coverWealthTag}>{c.cover.wealthTag}</span>
               <div className={styles.coverWealthAmt}>
                 {totalWealth > 0 ? formatInrCompact(totalWealth) : "—"}
               </div>
-              <span className={styles.coverWealthSub}>
-                Your roof becomes a wealth engine
-              </span>
+              <span className={styles.coverWealthSub}>{c.cover.wealthSub}</span>
             </div>
             <div className={styles.coverWealthDivider} />
             <div className={styles.coverSmallStats}>
@@ -385,17 +384,19 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
                 <span className={styles.coverSmallNum}>
                   {monthlyInr > 0 ? formatInr(monthlyInr) : "—"}
                 </span>
-                <span className={styles.coverSmallLabel}>Savings / Month</span>
+                <span className={styles.coverSmallLabel}>{c.cover.savingsMonth}</span>
               </div>
               <div className={styles.coverSmallStat}>
                 <span className={styles.coverSmallNum}>
-                  {paybackYears > 0 ? `${paybackYears.toFixed(1)} Yrs` : "—"}
+                  {paybackYears > 0
+                    ? `${paybackYears.toFixed(1)} ${c.cover.yrs}`
+                    : "—"}
                 </span>
-                <span className={styles.coverSmallLabel}>Full Payback</span>
+                <span className={styles.coverSmallLabel}>{c.cover.fullPayback}</span>
               </div>
               <div className={styles.coverSmallStat}>
                 <span className={styles.coverSmallNum}>{systemSize}</span>
-                <span className={styles.coverSmallLabel}>System Size</span>
+                <span className={styles.coverSmallLabel}>{c.cover.systemSize}</span>
               </div>
             </div>
           </div>
@@ -406,43 +407,32 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
       {/* ══ P2: IMPACT MOMENT — environmental only (no financials) ══ */}
       <section className={`${styles.page} ${styles.impactPage}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>02 — YOUR IMPACT</span>
-          <h2 className={styles.pageTitle}>What Your Roof Gives Back to the World</h2>
-          <p className={styles.pageLead}>
-            Before the numbers — here is what your system does for the planet.
-          </p>
+          <span className={styles.pageTag}>{c.impact.tag}</span>
+          <h2 className={styles.pageTitle}>{c.impact.title}</h2>
+          <p className={styles.pageLead}>{c.impact.lead}</p>
         </header>
 
         <div className={styles.impactGrid}>
           <div className={styles.impactCard}>
             <div className={styles.impactBig}>{co2 > 0 ? co2 : "—"}</div>
-            <div className={styles.impactUnit}>TONS</div>
-            <div className={styles.impactLabel}>Lifetime CO₂ Offset</div>
+            <div className={styles.impactUnit}>{c.impact.tons}</div>
+            <div className={styles.impactLabel}>{c.impact.co2Label}</div>
             <p className={styles.impactSub}>
-              Equivalent to removing a petrol car from the road for{" "}
-              {co2 > 0 ? Math.round(co2 / 2) : "—"} years.
+              {c.impact.co2Sub(co2 > 0 ? Math.round(co2 / 2) : "—")}
             </p>
           </div>
           <div className={styles.impactCard}>
             <div className={styles.impactBig}>
               {trees > 0 ? trees.toLocaleString("en-IN") : "—"}
             </div>
-            <div className={styles.impactUnit}>TREES</div>
-            <div className={styles.impactLabel}>Ecological Equivalent Planted</div>
-            <p className={styles.impactSub}>
-              Your rooftop ecosystem works silently for the planet, every single
-              day.
-            </p>
+            <div className={styles.impactUnit}>{c.impact.trees}</div>
+            <div className={styles.impactLabel}>{c.impact.ecoLabel}</div>
+            <p className={styles.impactSub}>{c.impact.ecoSub}</p>
           </div>
         </div>
 
-        {/* Environmental snapshots — 3 milestones, distinct from wealth chart on P4 */}
         <div className={styles.carbonMilestones}>
-          {[
-            { yr: 1, label: "Year 1" },
-            { yr: 10, label: "Year 10" },
-            { yr: 25, label: "Year 25" },
-          ].map(({ yr, label }) => {
+          {[1, 10, 25].map((yr) => {
             const tons = co2 > 0 ? Math.round((co2 / 25) * yr) : 0;
             return (
               <div key={yr} className={styles.carbonMilestone}>
@@ -452,78 +442,62 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
                     style={{ height: `${(yr / 25) * 100}%` }}
                   />
                 </div>
-                <div className={styles.cmYear}>{label}</div>
+                <div className={styles.cmYear}>{c.impact.yearN(yr)}</div>
                 <div className={styles.cmTons}>
-                  {tons > 0 ? `${tons}T CO₂` : "—"}
+                  {tons > 0 ? c.impact.tonsCo2(tons) : "—"}
                 </div>
               </div>
             );
           })}
         </div>
 
-        <div className={styles.impactTagline}>
-          Every unit of solar energy your roof generates is a direct act of
-          climate action.
-        </div>
+        <div className={styles.impactTagline}>{c.impact.tagline}</div>
         <span className={styles.pageNum}>02 / 12</span>
       </section>
 
       {/* ══ P3: FINANCIAL STORY — immediate monthly economics only ══ */}
       <section className={`${styles.page} ${styles.financePage}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>03 — MONTHLY ECONOMICS</span>
-          <h2 className={styles.pageTitle}>
-            You Are Not Switching Energy. You Are Switching Economics.
-          </h2>
-          <p className={styles.pageLead}>
-            The real question is simple: what leaves your pocket every month?
-          </p>
+          <span className={styles.pageTag}>{c.finance.tag}</span>
+          <h2 className={styles.pageTitle}>{c.finance.title}</h2>
+          <p className={styles.pageLead}>{c.finance.lead}</p>
         </header>
 
-        {/* Bill vs Solar comparison */}
         <div className={styles.billComparison}>
           <div className={styles.billCard}>
-            <span className={styles.billCardTag}>TODAY — WITHOUT SOLAR</span>
+            <span className={styles.billCardTag}>{c.finance.todayTag}</span>
             <div className={styles.billCardAmt} style={{ color: "#DC2626" }}>
               {monthlyBill > 0 ? formatInr(monthlyBill) : "₹5,200"}
             </div>
-            <div className={styles.billCardLabel}>Monthly Electricity Bill</div>
-            <p className={styles.billCardNote}>
-              Rises ~6% every year. You pay for energy you never own — and the
-              bill only goes up.
-            </p>
+            <div className={styles.billCardLabel}>{c.finance.todayLabel}</div>
+            <p className={styles.billCardNote}>{c.finance.todayNote}</p>
           </div>
 
           <div className={styles.billArrow}>→</div>
 
           <div className={`${styles.billCard} ${styles.billCardSolar}`}>
-            <span className={styles.billCardTag}>TOMORROW — WITH SOLAR</span>
+            <span className={styles.billCardTag}>{c.finance.tomorrowTag}</span>
             <div className={styles.billCardAmt} style={{ color: "#059669" }}>
               {monthlyEmi > 0 ? formatInr(monthlyEmi) : "₹4,100"}
             </div>
-            <div className={styles.billCardLabel}>Equivalent Monthly Cost</div>
-            <p className={styles.billCardNote}>
-              Fixed for 5 years (loan), then ZERO. Energy costs you control
-              forever.
-            </p>
+            <div className={styles.billCardLabel}>{c.finance.tomorrowLabel}</div>
+            <p className={styles.billCardNote}>{c.finance.tomorrowNote}</p>
           </div>
 
           <div className={styles.billArrow}>=</div>
 
           <div className={`${styles.billCard} ${styles.billCardProfit}`}>
-            <span className={styles.billCardTag}>IMMEDIATE MONTHLY PROFIT</span>
+            <span className={styles.billCardTag}>{c.finance.profitTag}</span>
             <div className={styles.billCardAmt}>
-              {monthlyProfit > 0 ? `+${formatInr(monthlyProfit)}` : formatInr(monthlyInr > 0 ? monthlyInr : 900)}
+              {monthlyProfit > 0
+                ? `+${formatInr(monthlyProfit)}`
+                : formatInr(monthlyInr > 0 ? monthlyInr : 900)}
             </div>
-            <div className={styles.billCardLabel}>Net Monthly Gain from Day 1</div>
-            <p className={styles.billCardNote}>
-              This is money that stays in your pocket every single month,
-              starting immediately.
-            </p>
+            <div className={styles.billCardLabel}>{c.finance.profitLabel}</div>
+            <p className={styles.billCardNote}>{c.finance.profitNote}</p>
           </div>
         </div>
 
-        {/* Near-term bill trajectory — payback window, not 25-yr wealth */}
         {(() => {
           const years = [1, 2, 3, 4, 5, 7, 10];
           const baseAnnualBill = (monthlyBill > 0 ? monthlyBill : 5200) * 12;
@@ -551,53 +525,49 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
             " Z";
           return (
             <div className={styles.trajectoryChart}>
-              <span className={styles.genCardTag}>FIRST 10 YEARS — MONTHLY BILL COMPARISON</span>
+              <span className={styles.genCardTag}>{c.finance.trajectoryTag}</span>
               <svg viewBox={`0 0 ${W} ${H}`} className={styles.trajectorySvg}>
                 <path d={areaPath} className={styles.trajectoryGap} />
                 <polyline points={withoutPath} className={styles.trajectoryLineRed} />
                 <polyline points={withPath} className={styles.trajectoryLineGreen} />
                 {years.map((y, i) => (
                   <text key={y} x={xFor(i)} y={H - 6} className={styles.trajectoryXLabel} textAnchor="middle">
-                    YR {y}
+                    {c.finance.yr(y)}
                   </text>
                 ))}
               </svg>
               <div className={styles.trajectoryLegend}>
                 <span className={styles.trajLegendItem}>
-                  <span className={styles.trajDotRed} /> Bill Without Solar (rising ~6%/yr)
+                  <span className={styles.trajDotRed} /> {c.finance.legendWithout}
                 </span>
                 <span className={styles.trajLegendItem}>
-                  <span className={styles.trajDotGreen} /> Bill With Solar (flat, then near-zero)
+                  <span className={styles.trajDotGreen} /> {c.finance.legendWith}
                 </span>
                 <span className={styles.trajLegendItem}>
-                  <span className={styles.trajDotGap} /> Monthly Savings Gap
+                  <span className={styles.trajDotGap} /> {c.finance.legendGap}
                 </span>
               </div>
             </div>
           );
         })()}
 
-        {/* Investment breakdown */}
         <div className={styles.investBreakdown}>
           <div className={styles.investItem}>
-            <span className={styles.investTag}>GROSS COST</span>
+            <span className={styles.investTag}>{c.finance.grossCost}</span>
             <span className={styles.investVal}>
               {grossInr > 0 ? formatInr(grossInr) : "—"}
             </span>
           </div>
           <div className={styles.investMinus}>−</div>
           <div className={styles.investItem}>
-            <span className={styles.investTag}>PM SURYA GHAR SUBSIDY</span>
-            <span
-              className={styles.investVal}
-              style={{ color: "#059669" }}
-            >
+            <span className={styles.investTag}>{c.finance.subsidy}</span>
+            <span className={styles.investVal} style={{ color: "#059669" }}>
               {subsidyInr > 0 ? formatInr(subsidyInr) : "—"}
             </span>
           </div>
           <div className={styles.investMinus}>=</div>
           <div className={`${styles.investItem} ${styles.investItemFinal}`}>
-            <span className={styles.investTag}>YOUR NET INVESTMENT</span>
+            <span className={styles.investTag}>{c.finance.netInvestment}</span>
             <span className={styles.investVal}>
               {netInr > 0 ? formatInr(netInr) : "—"}
             </span>
@@ -610,62 +580,57 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
       {/* ══ P4: WEALTH PROJECTION — owns the full 25-year story ═══ */}
       <section className={`${styles.page} ${styles.wealthPage}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>04 — WEALTH PROJECTION</span>
-          <h2 className={styles.pageTitle}>
-            Where Your Savings Compound Over 25 Years
-          </h2>
-          <p className={styles.pageLead}>
-            Monthly gains add up. Here is the full long-term picture — the only
-            place in this proposal where we project 25-year returns.
-          </p>
+          <span className={styles.pageTag}>{c.wealth.tag}</span>
+          <h2 className={styles.pageTitle}>{c.wealth.title}</h2>
+          <p className={styles.pageLead}>{c.wealth.lead}</p>
         </header>
 
-        {/* 3-Phase Wealth Journey */}
         <div className={styles.wealthJourney}>
           <div className={styles.wjPhase}>
             <div className={styles.wjDot} style={{ background: "#DC2626" }} />
-            <div className={styles.wjLabel}>Phase 1</div>
-            <div className={styles.wjTitle}>Investment</div>
+            <div className={styles.wjLabel}>{c.wealth.phase1}</div>
+            <div className={styles.wjTitle}>{c.wealth.investment}</div>
             <div className={styles.wjSpan}>
-              Year 0 → {paybackYears > 0 ? Math.ceil(paybackYears) : 5}
+              {c.wealth.year0To(paybackYears > 0 ? Math.ceil(paybackYears) : 5)}
             </div>
-            <div className={styles.wjNote}>
-              Monthly solar cost offsets your electricity bill while you repay
-              the system over 5 years.
-            </div>
+            <div className={styles.wjNote}>{c.wealth.phase1Note}</div>
           </div>
           <div className={styles.wjArrow}>→</div>
           <div className={`${styles.wjPhase} ${styles.wjPhaseActive}`}>
             <div className={styles.wjDot} style={{ background: "#F97316" }} />
-            <div className={styles.wjLabel}>Milestone</div>
-            <div className={styles.wjTitle}>Payback</div>
+            <div className={styles.wjLabel}>{c.wealth.milestone}</div>
+            <div className={styles.wjTitle}>{c.wealth.payback}</div>
             <div className={styles.wjSpan}>
-              Year {paybackYears > 0 ? paybackYears.toFixed(1) : "4–5"}
+              {c.wealth.yearAt(
+                paybackYears > 0 ? paybackYears.toFixed(1) : "4–5"
+              )}
             </div>
-            <div className={styles.wjNote}>
-              System fully paid back. Every unit generated from here on is
-              100% pure profit.
-            </div>
+            <div className={styles.wjNote}>{c.wealth.paybackNote}</div>
           </div>
           <div className={styles.wjArrow}>→</div>
           <div className={styles.wjPhase}>
             <div className={styles.wjDot} style={{ background: "#059669" }} />
-            <div className={styles.wjLabel}>Phase 2</div>
-            <div className={styles.wjTitle}>Passive Income</div>
+            <div className={styles.wjLabel}>{c.wealth.phase2}</div>
+            <div className={styles.wjTitle}>{c.wealth.passiveIncome}</div>
             <div className={styles.wjSpan}>
-              Year {paybackYears > 0 ? Math.ceil(paybackYears) + 1 : 6} → 25
+              {c.wealth.yearRange(
+                paybackYears > 0 ? Math.ceil(paybackYears) + 1 : 6
+              )}
             </div>
             <div className={styles.wjNote}>
               {totalWealth > 0 && paybackYears > 0
-                ? `${formatInrCompact(totalWealth - annualSavings * Math.ceil(paybackYears))} in pure passive wealth.`
-                : "Pure wealth creation."}{" "}
-              Zero energy cost. Maximum returns.
+                ? c.wealth.passiveWealth(
+                    formatInrCompact(
+                      totalWealth - annualSavings * Math.ceil(paybackYears)
+                    )
+                  )
+                : c.wealth.pureWealth}{" "}
+              {c.wealth.zeroEnergy}
             </div>
           </div>
         </div>
 
         <div className={styles.wealthLayout}>
-          {/* Left: Chart */}
           <div className={styles.wealthChartBox}>
             <div className={styles.wealthChart}>
               {wealthMilestones.map((m) => (
@@ -677,7 +642,7 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
                     />
                   </div>
                   <div className={styles.wealthMeta}>
-                    <span className={styles.wealthYr}>YR {m.year}</span>
+                    <span className={styles.wealthYr}>{c.wealth.yrShort(m.year)}</span>
                     <span className={styles.wealthAmt}>
                       {m.savings > 0 ? formatInrCompact(m.savings) : "—"}
                     </span>
@@ -685,34 +650,36 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
                 </div>
               ))}
             </div>
-            <div className={styles.wealthChartNote}>
-              Cumulative electricity bill savings over 25 years at current
-              generation levels.
-            </div>
+            <div className={styles.wealthChartNote}>{c.wealth.chartNote}</div>
             <div className={styles.wealthContrast}>
-              <span className={styles.wealthContrastLabel}>Without solar</span>
+              <span className={styles.wealthContrastLabel}>
+                {c.wealth.withoutSolar}
+              </span>
               <span className={styles.wealthContrastVal}>
                 {monthlyBill > 0
                   ? formatInrCompact(monthlyBill * 12 * 22)
                   : "—"}{" "}
-                paid to grid over 25 yrs
+                {c.wealth.paidToGrid}
               </span>
             </div>
           </div>
 
-          {/* Right: Investment Score */}
           <div className={styles.investScoreBox}>
             <div className={styles.investScoreCard}>
-              <span className={styles.investScoreTag}>SOLAR INVESTMENT SCORE</span>
+              <span className={styles.investScoreTag}>{c.wealth.scoreTag}</span>
               <div className={styles.investScoreGrade}>{investScore}</div>
               <div className={styles.investScoreLabel}>{investGrade}</div>
               <div className={styles.investScoreDivider} />
               <div className={styles.investScoreStats}>
                 <div className={styles.investScoreStat}>
                   <span className={styles.investScoreStatVal}>
-                    {paybackYears > 0 ? `${paybackYears.toFixed(1)} yrs` : "—"}
+                    {paybackYears > 0
+                      ? `${paybackYears.toFixed(1)} ${c.wealth.yrsShort}`
+                      : "—"}
                   </span>
-                  <span className={styles.investScoreStatLabel}>Payback</span>
+                  <span className={styles.investScoreStatLabel}>
+                    {c.wealth.paybackLabel}
+                  </span>
                 </div>
                 <div className={styles.investScoreStat}>
                   <span className={styles.investScoreStatVal}>
@@ -721,31 +688,30 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
                       : "—"}
                   </span>
                   <span className={styles.investScoreStatLabel}>
-                    Annual ROI
+                    {c.wealth.annualRoi}
                   </span>
                 </div>
               </div>
               <p className={styles.investScoreBasis}>
-                <strong>Basis:</strong> Grade derived from payback period vs.
-                industry benchmark (5–7 yrs). Your{" "}
-                {paybackYears > 0 ? paybackYears.toFixed(1) : "4–5"}-yr
-                payback ranks in the top tier of rooftop solar investments in
-                India.
+                <strong>{c.wealth.basis}</strong>{" "}
+                {c.wealth.basisText(
+                  paybackYears > 0 ? paybackYears.toFixed(1) : "4–5"
+                )}
               </p>
             </div>
 
             <div className={styles.paybackCard}>
-              <span className={styles.investScoreTag}>TOTAL WEALTH AT YEAR 25</span>
+              <span className={styles.investScoreTag}>{c.wealth.totalWealthTag}</span>
               <div className={styles.paybackAmt}>
                 {totalWealth > 0 ? formatInrCompact(totalWealth) : "—"}
               </div>
               <p className={styles.paybackNote}>
-                Your ₹{netInr > 0 ? formatInrCompact(netInr) : "—"}{" "}
-                investment generates{" "}
-                {totalWealth > 0 && netInr > 0
-                  ? `${(totalWealth / netInr).toFixed(1)}×`
-                  : "—"}{" "}
-                returns over 25 years.
+                {c.wealth.returnsNote(
+                  netInr > 0 ? formatInrCompact(netInr) : "—",
+                  totalWealth > 0 && netInr > 0
+                    ? `${(totalWealth / netInr).toFixed(1)}×`
+                    : "—"
+                )}
               </p>
             </div>
           </div>
@@ -757,59 +723,59 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
       {/* ══ P5: GENERATION PROOF ═════════════════════════════════ */}
       <section className={`${styles.page} ${styles.genPage}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>05 — GENERATION PROOF</span>
+          <span className={styles.pageTag}>{c.gen.tag}</span>
           <h2 className={styles.pageTitle}>
-            How We Calculate {annualGen > 0 ? annualGen.toLocaleString("en-IN") : "7,200"} Units / Year
+            {c.gen.title(
+              annualGen > 0 ? annualGen.toLocaleString("en-IN") : "7,200"
+            )}
           </h2>
         </header>
 
         <div className={styles.genProofGrid}>
-          {/* Methodology */}
           <div className={styles.genCard}>
-            <span className={styles.genCardTag}>PVGIS METHODOLOGY</span>
+            <span className={styles.genCardTag}>{c.gen.pvgis}</span>
             <div className={styles.genFormula}>
               <div className={styles.genFormulaStep}>
                 <span className={styles.genFormulaVal}>
                   {systemKw > 0 ? `${systemKw} kW` : "5 kW"}
                 </span>
-                <span className={styles.genFormulaLabel}>System Capacity</span>
+                <span className={styles.genFormulaLabel}>{c.gen.systemCapacity}</span>
               </div>
               <span className={styles.genFormulaOp}>×</span>
               <div className={styles.genFormulaStep}>
                 <span className={styles.genFormulaVal}>5.0</span>
-                <span className={styles.genFormulaLabel}>Sun Hours/Day</span>
+                <span className={styles.genFormulaLabel}>{c.gen.sunHours}</span>
               </div>
               <span className={styles.genFormulaOp}>×</span>
               <div className={styles.genFormulaStep}>
                 <span className={styles.genFormulaVal}>75%</span>
-                <span className={styles.genFormulaLabel}>
-                  Performance Ratio
-                </span>
+                <span className={styles.genFormulaLabel}>{c.gen.perfRatio}</span>
               </div>
               <span className={styles.genFormulaOp}>×</span>
               <div className={styles.genFormulaStep}>
                 <span className={styles.genFormulaVal}>365</span>
-                <span className={styles.genFormulaLabel}>Days/Year</span>
+                <span className={styles.genFormulaLabel}>{c.gen.daysYear}</span>
               </div>
               <span className={styles.genFormulaOp}>=</span>
               <div className={`${styles.genFormulaStep} ${styles.genFormulaResult}`}>
                 <span className={styles.genFormulaVal}>
                   {annualGen > 0 ? annualGen.toLocaleString("en-IN") : "6,844"}
                 </span>
-                <span className={styles.genFormulaLabel}>Units/Year</span>
+                <span className={styles.genFormulaLabel}>{c.gen.unitsYear}</span>
               </div>
             </div>
           </div>
 
-          {/* Irradiation data */}
           <div className={styles.genCard}>
-            <span className={styles.genCardTag}>SOLAR RESOURCE — {cityLabel}</span>
+            <span className={styles.genCardTag}>
+              {c.gen.solarResource(cityLabel)}
+            </span>
             <div className={styles.genIrradGrid}>
               {[
-                ["Global Horizontal", "~1,850 kWh/m²/yr"],
-                ["Optimal Inclination", `~1,950 kWh/m²/yr`],
-                ["Annual Irradiance", `${tilt}° tilt`],
-                ["Data Source", "PVGIS / NREL Atlas"],
+                [c.gen.globalHoriz, "~1,850 kWh/m²/yr"],
+                [c.gen.optimalIncl, `~1,950 kWh/m²/yr`],
+                [c.gen.annualIrrad, c.gen.tiltLabel(tilt)],
+                [c.gen.dataSource, "PVGIS / NREL Atlas"],
               ].map(([k, v]) => (
                 <div key={k} className={styles.genIrradRow}>
                   <span className={styles.genIrradKey}>{k}</span>
@@ -820,19 +786,34 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           </div>
         </div>
 
-        {/* Comparative generation bar chart */}
         {(() => {
-          const est = annualGen > 0 ? annualGen : Math.round(systemKw * 5 * 0.75 * 365);
+          const est =
+            annualGen > 0
+              ? annualGen
+              : Math.round(systemKw * 5 * 0.75 * 365);
           const bars = [
-            { label: "Our System Estimate", val: est, pct: 90, color: "var(--or)" },
-            { label: `${cityLabel} Grid Average`, val: Math.round(est * 0.75), pct: 68, color: "var(--gray2)" },
-            { label: "Theoretical Max (PR 85%)", val: Math.round(est * 1.13), pct: 100, color: "#059669" },
+            {
+              label: c.gen.ourEstimate,
+              val: est,
+              pct: 90,
+              color: "var(--or)",
+            },
+            {
+              label: c.gen.gridAvg(cityLabel),
+              val: Math.round(est * 0.75),
+              pct: 68,
+              color: "var(--gray2)",
+            },
+            {
+              label: c.gen.theoreticalMax,
+              val: Math.round(est * 1.13),
+              pct: 100,
+              color: "#059669",
+            },
           ];
           return (
             <div className={styles.genBarChart}>
-              <span className={styles.genCardTag}>
-                ESTIMATED GENERATION vs. CITY POTENTIAL — {cityLabel}
-              </span>
+              <span className={styles.genCardTag}>{c.gen.barTag(cityLabel)}</span>
               {bars.map((b) => (
                 <div key={b.label} className={styles.genBarRow}>
                   <span className={styles.genBarLabel}>{b.label}</span>
@@ -843,7 +824,7 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
                     />
                   </div>
                   <span className={styles.genBarVal}>
-                    {b.val.toLocaleString("en-IN")} units
+                    {b.val.toLocaleString("en-IN")} {c.gen.units}
                   </span>
                 </div>
               ))}
@@ -851,21 +832,25 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           );
         })()}
 
-        {/* Expert Insight */}
         <div className={styles.expertInsight}>
-          <span className={styles.expertTag}>EXPERT INSIGHT</span>
+          <span className={styles.expertTag}>{c.gen.expertTag}</span>
           <p>
-            Why {systemSize}? Your current bill of{" "}
-            {monthlyBill > 0 ? formatInr(monthlyBill) : "₹5,200"}/month maps
-            to ~{Math.round((monthlyBill > 0 ? monthlyBill : 5200) * 12 / 8).toLocaleString("en-IN")}{" "}
-            units/year. A {systemSize} system produces{" "}
-            {(annualGen > 0 ? annualGen : Math.round(systemKw * 5 * 0.75 * 365)).toLocaleString("en-IN")}{" "}
-            units/year — achieving near-100% offset even during peak summer
-            months in {cityLabel}.
+            {c.gen.expertBody(
+              systemSize,
+              monthlyBill > 0 ? formatInr(monthlyBill) : "₹5,200",
+              Math.round(
+                ((monthlyBill > 0 ? monthlyBill : 5200) * 12) / 8
+              ).toLocaleString("en-IN"),
+              (
+                annualGen > 0
+                  ? annualGen
+                  : Math.round(systemKw * 5 * 0.75 * 365)
+              ).toLocaleString("en-IN"),
+              cityLabel
+            )}
           </p>
         </div>
 
-        {/* Spec metrics row */}
         <div className={styles.genSpecGrid}>
           {engMetrics.map(([label, value]) => (
             <div key={label} className={styles.genSpecCard}>
@@ -875,19 +860,17 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           ))}
         </div>
 
-        {/* Standards */}
         <div className={styles.genStdRow}>
-          <span className={styles.genStdLabel}>Compliance:</span>
+          <span className={styles.genStdLabel}>{c.gen.compliance}</span>
           {standards.map((s) => (
-            <span key={s} className={styles.stdBadge}>{s}</span>
+            <span key={s} className={styles.stdBadge}>
+              {s}
+            </span>
           ))}
         </div>
 
         <p className={styles.genDisclaimer}>
-          <strong>Note:</strong> Actual generation varies with weather
-          conditions, dust accumulation, shading from nearby structures, and
-          panel cleaning frequency. Figures above represent modelled
-          estimates under standard test conditions, not a guarantee.
+          <strong>{c.gen.noteLabel}</strong> {c.gen.noteBody}
         </p>
 
         <span className={styles.pageNum}>05 / 12</span>
@@ -896,66 +879,73 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
       {/* ══ P6: HARDWARE — 4-CARD TRUST GRID ═════════════════════ */}
       <section className={`${styles.page} ${styles.hwPage}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>06 — HARDWARE TRUST</span>
-          <h2 className={styles.pageTitle}>
-            Tier-1 Components. Zero Compromise.
-          </h2>
+          <span className={styles.pageTag}>{c.hw.tag}</span>
+          <h2 className={styles.pageTitle}>{c.hw.title}</h2>
         </header>
 
         <div className={styles.hwCard4Grid}>
           {[
             {
               key: "panel",
-              tag: "SOLAR PANELS",
-              title: panelItem ? panelItem.brand || "Waaree" : "Waaree Energies",
+              tag: c.hw.panels,
+              title: panelItem
+                ? panelItem.brand || "Waaree"
+                : "Waaree Energies",
               spec: bomLine(panelItem, "580 Wp DCR TOPCon N-Type"),
-              warranty: panelItem?.warranty || "30 Years Performance",
+              warranty: panelItem?.warranty || c.hw.warrantyPanel,
               mark: "P",
-              why: `TOPCon N-type cells deliver 22%+ module efficiency — up to 8% higher yield than standard poly panels in ${cityLabel}'s summer heat.`,
+              why: c.hw.whyPanel(cityLabel),
             },
             {
               key: "inverter",
-              tag: "STRING INVERTER",
-              title: inverterItem ? inverterItem.brand || "Havells / Polycab" : "Havells / Polycab",
-              spec: bomLine(inverterItem, `${systemKw} kW Dual MPPT String Inverter`),
-              warranty: inverterItem?.warranty || "10 Years Warranty",
+              tag: c.hw.inverter,
+              title: inverterItem
+                ? inverterItem.brand || "Havells / Polycab"
+                : "Havells / Polycab",
+              spec: bomLine(
+                inverterItem,
+                `${systemKw} kW Dual MPPT String Inverter`
+              ),
+              warranty: inverterItem?.warranty || c.hw.warrantyInverter,
               mark: "I",
-              why: "BEE 5-star, IP65 weatherproof. Dual MPPT handles partial shading without losing output from unshaded strings.",
+              why: c.hw.whyInverter,
             },
             {
               key: "structure",
-              tag: "MOUNTING STRUCTURE",
+              tag: c.hw.structure,
               title: structureItem ? structureItem.brand || "JSW" : "JSW",
               spec: bomLine(structureItem, "Hot-Dip Galvanized GI Structure"),
-              warranty: structureItem?.warranty || "10 Years Structural",
+              warranty: structureItem?.warranty || c.hw.warrantyStructure,
               mark: "M",
-              why: "150 km/h wind-load rated GI structure, engineered specifically for Indian rooftop wind and monsoon conditions.",
+              why: c.hw.whyStructure,
             },
             {
               key: "protection",
-              tag: "PROTECTION & SAFETY",
-              title: protectionItem ? protectionItem.brand || "Havells / Phoenix" : "Havells / Phoenix",
+              tag: c.hw.protection,
+              title: protectionItem
+                ? protectionItem.brand || "Havells / Phoenix"
+                : "Havells / Phoenix",
               spec: bomLine(protectionItem, "DCDB + ACDB with SPD"),
-              warranty: protectionItem?.warranty || "5 Years",
+              warranty: protectionItem?.warranty || c.hw.warrantyProtection,
               mark: "S",
-              why: "MCB/MCCB protection, surge protection device & copper earthing — full-system safety against grid faults and lightning.",
+              why: c.hw.whyProtection,
             },
-          ].map((c) => (
-            <div key={c.key} className={styles.hwCardV2}>
+          ].map((hw) => (
+            <div key={hw.key} className={styles.hwCardV2}>
               <div className={styles.hwCardTop}>
                 <div className={styles.hwCardIcon} aria-hidden="true">
-                  {c.mark}
+                  {hw.mark}
                 </div>
-                <span className={styles.hwCardTag}>{c.tag}</span>
+                <span className={styles.hwCardTag}>{hw.tag}</span>
               </div>
               <div className={styles.hwCardBody}>
-                <div className={styles.hwCardTitle}>{c.title}</div>
-                <p className={styles.hwCardSpec}>{c.spec}</p>
-                <p className={styles.hwCardWhy}>{c.why}</p>
+                <div className={styles.hwCardTitle}>{hw.title}</div>
+                <p className={styles.hwCardSpec}>{hw.spec}</p>
+                <p className={styles.hwCardWhy}>{hw.why}</p>
                 <div className={styles.hwCardFooter}>
-                  <span className={styles.hwCardWarranty}>{c.warranty}</span>
+                  <span className={styles.hwCardWarranty}>{hw.warranty}</span>
                   <a href="#" className={styles.hwCardDatasheet}>
-                    View Datasheet
+                    {c.hw.viewDatasheet}
                   </a>
                 </div>
               </div>
@@ -963,7 +953,6 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
           ))}
         </div>
 
-        {/* Compact warranty summary strip */}
         <div className={styles.warrantyGridCompact}>
           {warrantyCards.map((w, i) => (
             <div
@@ -972,7 +961,7 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
             >
               <div className={styles.warrantyCircle}>
                 <div className={styles.warrantyYears}>{w.years}</div>
-                <div className={styles.warrantyYrsText}>YRS</div>
+                <div className={styles.warrantyYrsText}>{c.hw.yrs}</div>
               </div>
               <div className={styles.warrantyLabel}>{w.label}</div>
               {w.sub && <div className={styles.warrantySub}>{w.sub}</div>}
@@ -986,21 +975,14 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
       {/* ══ P7: WHY HARIHAR SOLAR — CREDIBILITY ══════════════════ */}
       <section className={`${styles.page} ${styles.trustPage}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>07 — WHY {brand.toUpperCase()}</span>
-          <h2 className={styles.pageTitle}>
-            Because Your Rooftop Deserves the Best Team, Not Just the Best Panel.
-          </h2>
+          <span className={styles.pageTag}>
+            {c.trust.tag(brand.toUpperCase())}
+          </span>
+          <h2 className={styles.pageTitle}>{c.trust.title}</h2>
         </header>
 
         <div className={styles.trustGrid}>
-          {[
-            { num: "500+", label: "Installations Completed", note: "Across Madhya Pradesh & neighbouring states" },
-            { num: "100%", label: "Certified Engineers", note: "MNRE-empanelled design & install team" },
-            { num: "Local", label: "On-Ground Service", note: "No call centres — your installer is your neighbour" },
-            { num: "48 Hr", label: "Support Response", note: "Any fault attended within 2 working days" },
-            { num: "100%", label: "Subsidy Assistance", note: "End-to-end PM Surya Ghar paperwork, done for you" },
-            { num: "25 Yr", label: "Performance Commitment", note: "We stand behind every panel we install" },
-          ].map((t) => (
+          {c.trust.cards.map((t) => (
             <div key={t.label} className={styles.trustCard}>
               <div className={styles.trustNum}>{t.num}</div>
               <div className={styles.trustLabel}>{t.label}</div>
@@ -1010,13 +992,10 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
         </div>
 
         <div className={styles.trustQuoteBox}>
-          <p className={styles.trustQuote}>
-            &ldquo;We don&apos;t just sell solar systems — we engineer 25-year
-            relationships. Every installation is backed by a local team
-            that&apos;s reachable, accountable, and invested in your
-            system&apos;s performance long after installation day.&rdquo;
-          </p>
-          <span className={styles.trustQuoteAttr}>— {brand} Engineering Team</span>
+          <p className={styles.trustQuote}>{c.trust.quote}</p>
+          <span className={styles.trustQuoteAttr}>
+            {c.trust.quoteAttr(brand)}
+          </span>
         </div>
 
         <span className={styles.pageNum}>07 / 12</span>
@@ -1025,16 +1004,12 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
       {/* ══ P8: ROOF INTELLIGENCE ════════════════════════════════ */}
       <section className={`${styles.page} ${styles.roofPage}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>08 — ROOF INTELLIGENCE</span>
-          <h2 className={styles.pageTitle}>
-            Your Roof, Engineered for Maximum Yield
-          </h2>
+          <span className={styles.pageTag}>{c.roof.tag}</span>
+          <h2 className={styles.pageTitle}>{c.roof.title}</h2>
         </header>
 
         <div className={styles.roofLayout}>
-          {/* Left: Panel layout + compass */}
           <div className={styles.roofVisual}>
-            {/* Compass rose */}
             <div className={styles.compassWrap}>
               <div className={styles.compass}>
                 <span className={`${styles.compassDir} ${styles.compassN}`}>N</span>
@@ -1046,13 +1021,14 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
                 </div>
               </div>
               <p className={styles.compassNote}>
-                South-facing orientation optimized for {cityLabel}
+                {c.roof.compassNote(cityLabel)}
               </p>
             </div>
 
-            {/* Panel layout grid */}
             <div className={styles.panelLayoutBox}>
-              <div className={styles.panelLayoutLabel}>PANEL LAYOUT — {panelCount} MODULES</div>
+              <div className={styles.panelLayoutLabel}>
+                {c.roof.panelLayout(panelCount)}
+              </div>
               <div
                 className={styles.panelGrid}
                 style={{ gridTemplateColumns: `repeat(3, 1fr)` }}
@@ -1065,44 +1041,45 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
               </div>
               {panelCount > 18 && (
                 <div className={styles.panelMore}>
-                  +{panelCount - 18} more modules
+                  {c.roof.moreModules(panelCount - 18)}
                 </div>
               )}
             </div>
           </div>
 
-          {/* Right: Methodology + metrics */}
           <div className={styles.roofMetrics}>
             {[
               {
-                tag: "MODULES ON ROOF",
-                val: `${panelCount} panels`,
-                note: `${panelWp} Wp each`,
+                tag: c.roof.modulesTag,
+                val: c.roof.panelsVal(panelCount),
+                note: c.roof.wpEach(panelWp),
               },
               {
-                tag: "ROOF AREA REQUIRED",
+                tag: c.roof.areaTag,
                 val: `~${Math.ceil(panelCount * 2)} m²`,
-                note: "2 m² per panel approx.",
+                note: c.roof.areaNote,
               },
               {
-                tag: "OPTIMAL TILT ANGLE",
+                tag: c.roof.tiltTag,
                 val: `${tilt}°`,
-                note: `Calculated for ${cityLabel} latitude`,
+                note: c.roof.tiltNote(cityLabel),
               },
               {
-                tag: "ANNUAL IRRADIATION",
+                tag: c.roof.irradTag,
                 val: "~1,950 kWh/m²",
-                note: `Optimal inclination — ${cityLabel}`,
+                note: c.roof.irradNote(cityLabel),
               },
               {
-                tag: "SHADOW ANALYSIS",
-                val: data.bill.hasData ? "Site Verified" : "Methodology Applied",
-                note: "Tilt-corrected, shading-adjusted",
+                tag: c.roof.shadowTag,
+                val: data.bill.hasData
+                  ? c.roof.siteVerified
+                  : c.roof.methodApplied,
+                note: c.roof.shadowNote,
               },
               {
-                tag: "ROOF UTILIZATION",
-                val: `~${Math.min(95, Math.ceil(panelCount * 2 * 100 / Math.ceil(panelCount * 2.2)))}%`,
-                note: "Of available shadow-free area",
+                tag: c.roof.utilTag,
+                val: `~${Math.min(95, Math.ceil((panelCount * 2 * 100) / Math.ceil(panelCount * 2.2)))}%`,
+                note: c.roof.utilNote,
               },
             ].map((m) => (
               <div key={m.tag} className={styles.roofMetricCard}>
@@ -1120,11 +1097,10 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
       {/* ══ P9: EXECUTION ROADMAP ════════════════════════════════ */}
       <section className={`${styles.page} ${styles.roadmapPage}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>09 — EXECUTION ROADMAP</span>
-          <h2 className={styles.pageTitle}>From Paperwork to Power</h2>
+          <span className={styles.pageTag}>{c.roadmap.tag}</span>
+          <h2 className={styles.pageTitle}>{c.roadmap.title}</h2>
         </header>
 
-        {/* Horizontal timeline */}
         <div className={styles.timeline}>
           {journey.map((step, i) => (
             <div key={step.num} className={styles.timelineStep}>
@@ -1132,42 +1108,48 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
                 <div className={styles.tlDot}>
                   <span className={styles.tlDotNum}>{step.num}</span>
                 </div>
-                {i < journey.length - 1 && <div className={styles.tlConnector} />}
+                {i < journey.length - 1 && (
+                  <div className={styles.tlConnector} />
+                )}
               </div>
               <div className={styles.tlContent}>
                 <div className={styles.tlTitle}>{step.title}</div>
-                <span className={styles.tlDuration}>{estimateDuration(step.title)}</span>
+                <span className={styles.tlDuration}>
+                  {estimateDuration(step.title, c.durations)}
+                </span>
                 <div className={styles.tlDesc}>{step.desc}</div>
               </div>
             </div>
           ))}
         </div>
         <p className={styles.roadmapNote}>
-          Estimated timeline: <strong>18–20 working days</strong> from
-          advance receipt to grid sync, subject to DISCOM approval speed.
+          {c.roadmap.timelineBefore}
+          <strong>{c.roadmap.timelineStrong}</strong>
+          {c.roadmap.timelineAfter}
         </p>
 
-        {/* Payment invoice */}
         <div className={styles.invoice}>
           <div className={styles.invoiceHead}>
             <div>
               <div className={styles.invoiceFrom}>{brand}</div>
-              <div className={styles.invoiceTo}>Prepared for {clientName}</div>
+              <div className={styles.invoiceTo}>
+                {c.roadmap.preparedFor(clientName)}
+              </div>
             </div>
             <div className={styles.invoiceTotalBox}>
               <div className={styles.invoiceTotalAmt}>
                 {netInr > 0 ? formatInr(netInr) : "—"}
               </div>
               <div className={styles.invoiceTotalLabel}>
-                Net Payable (After Subsidy)
+                {c.roadmap.netPayable}
               </div>
             </div>
           </div>
           <div className={styles.invoiceBody}>
             <div className={styles.invoiceRow} data-header="true">
-              <span>Milestone</span>
-              <span>Share</span>
-              <span>Amount</span>
+              <span>{c.roadmap.milestone}</span>
+              <span>{c.roadmap.share}</span>
+              <span>{c.roadmap.amount}</span>
             </div>
             {payments.map((p) => (
               <div key={p.label} className={styles.invoiceRow}>
@@ -1180,9 +1162,9 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
             ))}
           </div>
           <div className={styles.invoiceFooter}>
-            Subsidy of {subsidyInr > 0 ? formatInr(subsidyInr) : "—"} is
-            credited directly to your bank account by the government after
-            commissioning.
+            {c.roadmap.subsidyFooter(
+              subsidyInr > 0 ? formatInr(subsidyInr) : "—"
+            )}
           </div>
         </div>
 
@@ -1192,13 +1174,13 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
       {/* ══ P10: TERMS & COMPLIANCE ══════════════════════════════ */}
       <section className={`${styles.page} ${styles.termsPage}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>10 — TERMS & COMPLIANCE</span>
-          <h2 className={styles.pageTitle}>Terms & Conditions</h2>
+          <span className={styles.pageTag}>{c.terms.tag10}</span>
+          <h2 className={styles.pageTitle}>{c.terms.title}</h2>
         </header>
 
         <div className={styles.termsGrid}>
           <div>
-            <div className={styles.termsSubhead}>General Terms</div>
+            <div className={styles.termsSubhead}>{c.terms.general}</div>
             <ul className={styles.termsList}>
               {generalTerms.map((t) => (
                 <li key={t.slice(0, 48)}>{t}</li>
@@ -1206,14 +1188,14 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
             </ul>
           </div>
           <div>
-            <div className={styles.termsSubhead}>Documents Required</div>
+            <div className={styles.termsSubhead}>{c.terms.documents}</div>
             <ul className={styles.docsList}>
               {docs.map((d) => (
                 <li key={d.slice(0, 48)}>{d}</li>
               ))}
             </ul>
             <div className={styles.termsSubhead} style={{ marginTop: "1.5rem" }}>
-              Annual Maintenance — Scope
+              {c.terms.amcScope}
             </div>
             <p className={styles.amcObjective}>{amcObjective}</p>
             <ul className={styles.termsList}>
@@ -1229,13 +1211,13 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
       {/* ══ P11: TERMS & COMPLIANCE (CONTD.) ══════════════════════ */}
       <section className={`${styles.page} ${styles.termsPage}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>11 — TERMS & COMPLIANCE (CONTD.)</span>
-          <h2 className={styles.pageTitle}>Terms & Conditions</h2>
+          <span className={styles.pageTag}>{c.terms.tag11}</span>
+          <h2 className={styles.pageTitle}>{c.terms.title}</h2>
         </header>
 
         <div className={styles.termsGrid}>
           <div>
-            <div className={styles.termsSubhead}>Client&apos;s Scope</div>
+            <div className={styles.termsSubhead}>{c.terms.clientScope}</div>
             <ul className={styles.termsList}>
               {clientScope.map((s) => (
                 <li key={s.slice(0, 48)}>{s}</li>
@@ -1243,7 +1225,7 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
             </ul>
           </div>
           <div>
-            <div className={styles.termsSubhead}>Cost of Maintenance</div>
+            <div className={styles.termsSubhead}>{c.terms.costMaint}</div>
             <p className={styles.amcCostPara}>{amcCostParagraph}</p>
             <ul className={styles.termsList}>
               {amcTerms.map((t) => (
@@ -1254,7 +1236,7 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
         </div>
 
         <div className={styles.termsSignoff}>
-          <span className={styles.termsRegards}>Regards,</span>
+          <span className={styles.termsRegards}>{c.terms.regards}</span>
           <span className={styles.termsBrand}>{brand}</span>
         </div>
         <span className={styles.pageNum}>11 / 12</span>
@@ -1265,73 +1247,78 @@ export function AtelierRenderer({ data }: { data: ProposalData }) {
         <div className={styles.closingInner}>
           <div className={styles.closingBrandTop}>
             <div className={styles.accentRule} />
-            <span className={styles.closingBrandName}>{brand.toUpperCase()}</span>
+            {closingBrand.showLogo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={closingBrand.logoUrl}
+                alt={closingBrand.installerName || brand}
+                className={styles.closingLogo}
+              />
+            ) : null}
+            {closingBrand.showName || !closingBrand.showLogo ? (
+              <span className={styles.closingBrandName}>
+                {(closingBrand.installerName || brand).toUpperCase()}
+              </span>
+            ) : null}
           </div>
 
           <div className={styles.closingSplit}>
             <div className={styles.closingLeft}>
-              <span className={styles.closingTag}>12 — ENERGY INDEPENDENCE</span>
-              <h2 className={styles.closingTitle}>Congratulations.</h2>
+              <span className={styles.closingTag}>{c.closing.tag}</span>
+              <h2 className={styles.closingTitle}>{c.closing.congrats}</h2>
               <p className={styles.closingStatement}>
-                Today you are not buying solar panels.
+                {c.closing.statement1}
                 <br />
-                <strong>
-                  You are locking your electricity price for the next 25 years.
-                </strong>
+                <strong>{c.closing.statement2}</strong>
               </p>
-              <p className={styles.closingSub}>
-                Every day the sun rises, your roof earns. Every month your
-                meter spins backward. Every year your wealth compounds. This
-                is not a utility expense — this is a financial asset on your
-                rooftop.
-              </p>
+              <p className={styles.closingSub}>{c.closing.sub}</p>
               <div className={styles.closingStats}>
                 <div>
                   <div className={styles.closingStatBig}>
                     {annualGen > 0 ? annualGen.toLocaleString("en-IN") : "—"}
                   </div>
-                  <div className={styles.closingStatLabel}>units / year</div>
+                  <div className={styles.closingStatLabel}>
+                    {c.closing.unitsYear}
+                  </div>
                 </div>
                 <div className={styles.closingStatDiv} />
                 <div>
                   <div className={styles.closingStatBig}>
                     {annualSavings > 0 ? formatInr(annualSavings) : "—"}
                   </div>
-                  <div className={styles.closingStatLabel}>saved / year</div>
+                  <div className={styles.closingStatLabel}>
+                    {c.closing.savedYear}
+                  </div>
                 </div>
                 <div className={styles.closingStatDiv} />
                 <div>
                   <div className={styles.closingStatBig}>
                     {totalWealth > 0 ? formatInrCompact(totalWealth) : "—"}
                   </div>
-                  <div className={styles.closingStatLabel}>25-yr wealth</div>
+                  <div className={styles.closingStatLabel}>
+                    {c.closing.wealth25}
+                  </div>
                 </div>
               </div>
             </div>
 
             <div className={styles.closingRight}>
               <div className={styles.closingCTABox}>
-                <div className={styles.ctaTitle}>
-                  Ready to Begin Your Solar Journey?
-                </div>
-                <p className={styles.ctaDesc}>
-                  Lock your electricity price today. This proposal is
-                  custom-engineered for your roof, your usage, and your
-                  financial goals.
-                </p>
+                <div className={styles.ctaTitle}>{c.closing.ctaTitle}</div>
+                <p className={styles.ctaDesc}>{c.closing.ctaDesc}</p>
                 <button
                   type="button"
                   onClick={handlePrint}
                   className={`${styles.closingBtn} print:hidden`}
                 >
-                  Let&apos;s Begin →
+                  {c.closing.ctaBtn}
                 </button>
                 <div className={styles.ctaDivider} />
                 <div className={styles.ctaContact}>
                   <div className={styles.ctaBrand}>{brand}</div>
                   <div className={styles.ctaInfo}>{contact}</div>
                   <div className={styles.closingValidity}>
-                    Valid for 15 days. We are ready when you are.
+                    {c.closing.validity}
                   </div>
                 </div>
               </div>
