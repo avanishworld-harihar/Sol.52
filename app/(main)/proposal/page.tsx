@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import dynamic from "next/dynamic";
 import { useLanguage } from "@/lib/language-context";
@@ -1702,9 +1702,11 @@ function ProposalPageContent() {
         ? { galleryThemeKey: "zenith" }
         : osPresetId === "residential_premium_luxe"
           ? { galleryThemeKey: "luxe" }
-          : osPresetId === "residential_executive"
-            ? { galleryThemeKey: "golden" }
-            : {}),
+          : osPresetId === "residential_blueprint"
+            ? { galleryThemeKey: "blueprint" }
+            : osPresetId === "residential_executive"
+              ? { galleryThemeKey: "golden" }
+              : {}),
       proposalLayout: (() => {
         const presetForLayout = osPresetId ?? "residential_zenith";
         let layout = proposalLayout;
@@ -2256,9 +2258,13 @@ function ProposalPageContent() {
               ? "residential_zenith"
               : preset === "residential_premium_luxe" || preset === "luxe" || preset === "premium_luxe"
                 ? "residential_premium_luxe"
-                : preset === "residential_executive"
-                  ? "residential_executive"
-                  : "residential_executive";
+                : preset === "residential_blueprint" ||
+                    preset === "blueprint" ||
+                    preset === "investment_blueprint"
+                  ? "residential_blueprint"
+                  : preset === "residential_executive"
+                    ? "residential_executive"
+                    : "residential_executive";
           setOsPresetId((prev) => prev ?? normalized);
           setShowPresetPicker(false);
           setShowCommercialOrgPicker(false);

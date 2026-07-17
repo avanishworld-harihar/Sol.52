@@ -1,0 +1,7 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="480" height="320" viewBox="0 0 480 320" fill="none">
+  <rect width="480" height="320" fill="#F8FAFC"/>
+  <path d="M80 220 L240 80 L400 220" stroke="#94A3B8" stroke-width="8" fill="none" stroke-linejoin="round"/>
+  <path d="M120 220 L240 120 L360 220" stroke="#CBD5E1" stroke-width="4" fill="none"/>
+  <rect x="70" y="220" width="340" height="16" rx="4" fill="#E2E8F0"/>
+  <text x="240" y="300" text-anchor="middle" fill="#64748B" font-family="Lato,sans-serif" font-size="14">Mounting Structure</text>
+</svg>

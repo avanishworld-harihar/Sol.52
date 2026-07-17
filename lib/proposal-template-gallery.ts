@@ -3,7 +3,7 @@ import type { ResidentialTemplatePresetId } from "@/lib/proposal-default-preset-
 import type { SalesPremiumStyleId } from "@/lib/sales-premium-styles";
 
 /**
- * Gallery theme registry — Golden + Zenith + Atelier + Commercial Executive.
+ * Gallery theme registry — Golden + Zenith + Atelier + Blueprint + Commercial Executive.
  */
 
 /** Thumbnail id — string so new themes need no type union update. */
@@ -36,7 +36,7 @@ export const PROPOSAL_TEMPLATE_CATEGORIES: ProposalTemplateCategoryMeta[] = [
   {
     id: "residential",
     label: "Residential",
-    description: "Homes & rooftops — Golden, Zenith, or Premium Luxe.",
+    description: "Homes & rooftops — Golden, Zenith, Atelier, or Blueprint.",
   },
   {
     id: "commercial",
@@ -70,6 +70,15 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
     name: "Atelier",
     description: "Industrial Minimalist — Charcoal, Aluminum & Burnt Orange. 11-page print-ready proposal.",
     thumbnailVariant: "luxe",
+  },
+  {
+    key: "blueprint",
+    presetId: "residential_blueprint",
+    category: "residential",
+    name: "Canvas",
+    description:
+      "Investment Blueprint — modular Evidence / Hardware cards + wealth curve, ink-blue drafting look.",
+    thumbnailVariant: "blueprint",
   },
 ];
 
@@ -125,6 +134,7 @@ export function resolveActiveGalleryKey(
   if (presetId === "residential_executive") return "golden";
   if (presetId === "residential_zenith") return "zenith";
   if (presetId === "residential_premium_luxe") return "luxe";
+  if (presetId === "residential_blueprint") return "blueprint";
   return "zenith";
 }
 

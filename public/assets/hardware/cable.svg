@@ -1,0 +1,6 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="480" height="320" viewBox="0 0 480 320" fill="none">
+  <rect width="480" height="320" fill="#F8FAFC"/>
+  <path d="M60 160 C140 60, 200 260, 280 160 S420 60, 420 160" stroke="#F97316" stroke-width="10" fill="none" stroke-linecap="round"/>
+  <path d="M60 190 C140 90, 200 290, 280 190 S420 90, 420 190" stroke="#94A3B8" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <text x="240" y="300" text-anchor="middle" fill="#64748B" font-family="Lato,sans-serif" font-size="14">DC / AC Cable</text>
+</svg>

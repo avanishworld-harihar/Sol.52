@@ -20,6 +20,14 @@ export type ProposalEmiRow = {
   monthlyEmiInr: number;
 };
 
+/** One year on the 25-year compounding wealth path. */
+export type ProposalWealthPoint = {
+  year: number;
+  cumulativeInr: number;
+  annualInr?: number;
+  isPayback?: boolean;
+};
+
 export type ProposalBomItem = {
   name: string;
   brand: string;
@@ -85,6 +93,8 @@ export type ProposalData = {
     paybackYears: number;
     lifetimeProfitInr: number;
     emiRows: ProposalEmiRow[];
+    /** 25-year compounding cumulative wealth (Canvas WealthGraph). */
+    wealthJourney: ProposalWealthPoint[];
   };
   bill: {
     months: ProposalBillMonth[];

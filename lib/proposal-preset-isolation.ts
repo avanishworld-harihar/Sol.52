@@ -1,7 +1,7 @@
 /**
  * Proposal preset isolation — runtime + contributor contract.
  *
- * Goal: residential document presets (Golden / Zenith / Atelier) and
+ * Goal: residential document presets (Golden / Zenith / Atelier / Blueprint) and
  * commercial_executive must not break each other via shared CSS or shared models.
  *
  * Rules:
@@ -36,6 +36,6 @@ export const COMMERCIAL_ONLY_STYLE_ENTRY = "app/proposal-premium.css" as const;
 export const PRESET_ISOLATION_NOTES = [
   "Shared route shell: app/(public)/proposal/layout.tsx — fonts + canvas only.",
   "Commercial styles: imported by commercial-proposal-view.tsx only.",
-  "Named @page only inside preset CSS — no bare @page in Atelier/Zenith/Golden when editing print.",
+  "Named @page only inside preset CSS — no bare @page in Atelier/Zenith/Golden/Canvas when editing print.",
   "Golden editorial transform is Golden-owned; other themes must not force Golden CSS changes.",
 ] as const;

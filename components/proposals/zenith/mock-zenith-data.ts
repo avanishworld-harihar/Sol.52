@@ -4,6 +4,7 @@
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
+import { buildWealthJourney } from "@/lib/proposal-data/build-wealth-journey";
 
 export const MOCK_ZENITH_DATA: ProposalData = {
   meta: {
@@ -27,6 +28,11 @@ export const MOCK_ZENITH_DATA: ProposalData = {
       { tenureLabel: "7-Year Loan", interestPaidInr: 62000, monthlyEmiInr: 3400 },
       { tenureLabel: "10-Year Loan", interestPaidInr: 98000, monthlyEmiInr: 2680 },
     ],
+    wealthJourney: buildWealthJourney({
+      annualSavingsInr: 4080 * 12,
+      lifetimeProfitInr: 1000000,
+      paybackYears: 4.5,
+    }),
   },
   bill: {
     hasData: true,

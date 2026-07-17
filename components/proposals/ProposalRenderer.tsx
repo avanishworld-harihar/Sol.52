@@ -1,11 +1,12 @@
 /**
  * ProposalRenderer — registry-first entry for all presets.
- * Zenith / Luxe are ProposalData-native; sparse decks get mock fill for local preview.
+ * Zenith / Luxe / Blueprint are ProposalData-native; sparse decks get mock fill for local preview.
  */
 
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 import {
   getPresetRendererLoader,
+  isBlueprintPresetId,
   isLuxePresetId,
   isZenithPresetId,
 } from "@/components/proposals/_registry/preset-renderers";
@@ -14,7 +15,7 @@ import { isSparseProposalData } from "@/lib/proposal-data/is-sparse-proposal-dat
 import { MOCK_ZENITH_DATA } from "@/components/proposals/zenith/mock-zenith-data";
 
 export type ProposalRendererProps = PresetRendererProps & {
-  /** Official id, or local mock: `residential_zenith` | `zenith` | `luxe`. */
+  /** Official id, or local mock: `residential_zenith` | `zenith` | `luxe` | `blueprint`. */
   presetId: ProposalPresetId | string;
 };
 
@@ -29,7 +30,8 @@ export async function ProposalRenderer({
 
   const id = String(presetId);
   const resolvedData =
-    (isZenithPresetId(id) || isLuxePresetId(id)) && isSparseProposalData(data)
+    (isZenithPresetId(id) || isLuxePresetId(id) || isBlueprintPresetId(id)) &&
+    isSparseProposalData(data)
       ? MOCK_ZENITH_DATA
       : data;
 

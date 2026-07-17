@@ -1,0 +1,6 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="480" height="320" viewBox="0 0 480 320" fill="none">
+  <rect width="480" height="320" fill="#F8FAFC"/>
+  <rect x="48" y="56" width="384" height="208" rx="8" fill="#E2E8F0" stroke="#94A3B8" stroke-width="2"/>
+  <path d="M48 120h384M48 168h384M48 216h384M144 56v208M240 56v208M336 56v208" stroke="#CBD5E1" stroke-width="2"/>
+  <text x="240" y="300" text-anchor="middle" fill="#64748B" font-family="Lato,sans-serif" font-size="14">Solar Module</text>
+</svg>

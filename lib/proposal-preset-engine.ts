@@ -6,7 +6,8 @@
  *   1. residential_executive     — Golden / Executive Premium (locked flagship)
  *   2. residential_zenith        — Zenith Luxury brochure
  *   3. residential_premium_luxe  — Atelier Industrial Minimalist
- *   4. commercial_executive      — C&I commercial (hotel / hospital / industry…)
+ *   4. residential_blueprint     — Blueprint Investment Blueprint (modular light cards)
+ *   5. commercial_executive      — C&I commercial (hotel / hospital / industry…)
  *
  * Removed residential presets remap via normalizePresetId → residential_executive.
  */
@@ -29,6 +30,7 @@ export const PROPOSAL_PRESET_IDS = [
   "residential_executive",
   "residential_zenith",
   "residential_premium_luxe",
+  "residential_blueprint",
   "commercial_executive",
 ] as const;
 
@@ -52,12 +54,13 @@ export function isWebRendererPreset(presetId: ProposalPresetId): boolean {
   return (RESIDENTIAL_WEB_RENDERER_PRESETS as ReadonlyArray<string>).includes(presetId);
 }
 
-/** True when the preset is a residential document renderer (Golden / Zenith / Atelier). */
+/** True when the preset is a residential document renderer (Golden / Zenith / Atelier / Blueprint). */
 export function isResidentialDocumentPreset(presetId: ProposalPresetId): boolean {
   return (
     presetId === "residential_executive" ||
     presetId === "residential_zenith" ||
-    presetId === "residential_premium_luxe"
+    presetId === "residential_premium_luxe" ||
+    presetId === "residential_blueprint"
   );
 }
 
@@ -131,6 +134,18 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     label: "Atelier",
     description:
       "Industrial Minimalist 11-page A4 — Charcoal/Aluminum/Burnt Orange, horizontal timeline, print-ready.",
+    bill_requirement: "optional",
+    theme_hint: "residential",
+    default_data_source: "requirement",
+    default_blocks: [],
+    optional_blocks: [],
+  },
+
+  residential_blueprint: {
+    id: "residential_blueprint",
+    label: "Canvas",
+    description:
+      "Investment Blueprint — modular Evidence/Hardware cards, wealth curve, ink-blue drafting aesthetic.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "requirement",

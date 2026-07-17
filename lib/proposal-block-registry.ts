@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Modular proposal sections â€” dynamic engine building blocks (not static PDF pages).
  * Toggle + order = `proposalLayout` on `PremiumProposalPptInput` (see proposal-template-schema.ts).
  *
@@ -72,7 +72,12 @@ export type ProposalBlockGroup =
  */
 export type PresetAffinity =
   | "all"
-  | ReadonlyArray<"residential_executive" | "residential_zenith" | "residential_premium_luxe">;
+  | ReadonlyArray<
+      | "residential_executive"
+      | "residential_zenith"
+      | "residential_premium_luxe"
+      | "residential_blueprint"
+    >;
 
 export type ProposalBlockMeta = {
   id: ProposalBlockId;

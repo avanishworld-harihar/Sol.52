@@ -7,6 +7,7 @@ import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposa
 import { resolveInstallerNameForProposal } from "@/lib/proposal-branding-settings";
 import { enrichBomTechnicalRows } from "@/lib/proposal-bom-technical-detail";
 import type { ProposalData } from "@/lib/proposal-data/types";
+import { buildWealthJourney } from "@/lib/proposal-data/build-wealth-journey";
 
 const SUMMER_INDICES = new Set([3, 4, 5, 6]);
 const PAYMENT_PCTS = ["25%", "50%", "20%", "5%"] as const;
@@ -156,6 +157,11 @@ export function buildProposalData(
       paybackYears: Math.round(summary.paybackYears * 10) / 10,
       lifetimeProfitInr: summary.lifetime25Profit,
       emiRows,
+      wealthJourney: buildWealthJourney({
+        annualSavingsInr: summary.annualSaving,
+        lifetimeProfitInr: summary.lifetime25Profit,
+        paybackYears: summary.paybackYears,
+      }),
     },
     bill: {
       months,

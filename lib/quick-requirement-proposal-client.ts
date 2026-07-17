@@ -30,6 +30,9 @@ export function resolveQuickQuotePresetOptions(): {
   if (presetId === "residential_premium_luxe") {
     return { presetId, galleryThemeKey: "luxe" };
   }
+  if (presetId === "residential_blueprint") {
+    return { presetId, galleryThemeKey: "blueprint" };
+  }
   if (presetId === "residential_executive") {
     return { presetId, galleryThemeKey: "golden" };
   }

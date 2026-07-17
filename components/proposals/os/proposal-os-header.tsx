@@ -12,7 +12,7 @@
  */
 
 import { motion } from "framer-motion";
-import { Building2, ChevronRight, Gem, RefreshCw, Sparkles, Zap } from "lucide-react";
+import { Building2, ChevronRight, Gem, LayoutTemplate, RefreshCw, Sparkles, Zap } from "lucide-react";
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 import { PresenceStack } from "@/components/workspace/presence-stack";
 
@@ -54,6 +54,14 @@ const PRESET_META: Record<ProposalPresetId, PresetMeta> = {
     pillClass:
       "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-500/30 dark:bg-amber-900/20 dark:text-amber-200",
     dotClass: "bg-amber-500",
+  },
+  residential_blueprint: {
+    icon: <LayoutTemplate className="h-4 w-4" />,
+    label: "Canvas",
+    description: "Investment Blueprint · Evidence cards · Wealth curve",
+    pillClass:
+      "border-sky-200 bg-sky-50 text-sky-900 dark:border-sky-500/30 dark:bg-sky-900/20 dark:text-sky-200",
+    dotClass: "bg-sky-600",
   },
   commercial_executive: {
     icon: <Building2 className="h-4 w-4" />,

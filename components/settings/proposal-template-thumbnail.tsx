@@ -31,6 +31,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
       {variant === "commercial" ? <CommercialThumb size={size} /> : null}
       {variant === "zenith" ? <ZenithThumb size={size} /> : null}
       {variant === "luxe" ? <LuxeThumb size={size} /> : null}
+      {variant === "blueprint" ? <BlueprintThumb size={size} /> : null}
       {![
         "golden",
         "pearl",
@@ -43,6 +44,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
         "commercial",
         "zenith",
         "luxe",
+        "blueprint",
       ].includes(variant) ? (
         <GenericThumb size={size} label={variant} />
       ) : null}
@@ -183,6 +185,54 @@ function LuxeThumb({ size }: { size: "card" | "preview" }) {
                 key={i}
                 className="rounded-[2px] bg-[#F1F5F9] border border-[#E2E8F0]"
                 style={{ height: size === "preview" ? 16 : 7 }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BlueprintThumb({ size }: { size: "card" | "preview" }) {
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-[#eef4fb]">
+      <div
+        className={cn(
+          "relative flex flex-col justify-start overflow-hidden rounded-[3px] border border-[#d5e0ec] shadow-sm",
+          size === "preview" ? "h-[62%] w-[68%]" : "h-[58%] w-[72%]"
+        )}
+        style={{
+          background:
+            "linear-gradient(rgba(29,79,145,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(29,79,145,0.06) 1px, transparent 1px), #fff",
+          backgroundSize: "8px 8px, 8px 8px, auto",
+        }}
+      >
+        <div style={{ padding: size === "preview" ? "8%" : "7%" }} className="flex flex-col gap-[10%] flex-1">
+          <div
+            className={cn(
+              "font-bold uppercase tracking-[0.16em] text-[#1d4f91]",
+              size === "preview" ? "text-[5px]" : "text-[2.5px]"
+            )}
+          >
+            HARIHAR SOLAR
+          </div>
+          <div
+            className={cn("font-bold text-[#0c1b2a] leading-tight", size === "preview" ? "text-[10px]" : "text-[4.5px]")}
+          >
+            Investment<br />Blueprint
+          </div>
+          <div
+            className="mt-auto grid grid-cols-2 gap-[6%]"
+          >
+            {[0, 1].map((i) => (
+              <div
+                key={i}
+                className="border border-[#d5e0ec] bg-white"
+                style={{
+                  height: size === "preview" ? 18 : 8,
+                  borderLeft: "2px solid #1d4f91",
+                }}
               />
             ))}
           </div>
