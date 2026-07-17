@@ -2180,7 +2180,8 @@
 
   /*
    * Fit each logical section on one A4 sheet without shrinking type.
-   * Do NOT set width: 210mm — @page margins already define the printable box.
+   * Page margins are 0 — padding on page-body / cover provides the inset.
+   * overflow:hidden on cover only (below); content pages stay height:auto.
    */
   .ep-golden-root .ep-gl-page {
     margin: 0;
@@ -2188,11 +2189,14 @@
     overflow: visible;
     page-break-after: always;
     break-after: page;
+    page-break-inside: auto;
+    break-inside: auto;
     page: golden-sheet;
     width: 100%;
     max-width: 100%;
     height: auto;
     min-height: auto;
+    max-height: none;
     box-sizing: border-box;
   }
 
@@ -2253,7 +2257,9 @@
 
   .ep-golden-root .ep-gl-impact-card {
     height: auto;
-    padding: 22px 16px 24px;
+    padding: 18px 14px 18px;
+    break-inside: auto;
+    page-break-inside: auto;
   }
 
   /* Engineering — readable type, 2-col phases use vertical space */
@@ -2488,14 +2494,20 @@
     font-size: 12pt;
   }
 
-  /* Cover — full A4 sheet so estate location / asset profile pin to bottom in PDF */
+  /* Cover — exact one A4 sheet. Fixed height + overflow:hidden keeps the
+   * estate/asset footer on page 1 (overflow:visible was painting it onto page 2,
+   * then page-break-after created an extra blank sheet and shifted later pages). */
   .ep-golden-root .ep-gl-page--cover {
-    height: 277mm;
-    min-height: 277mm;
-    max-height: 277mm;
+    width: 210mm;
+    height: 297mm;
+    min-height: 297mm;
+    max-height: 297mm;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
 
   .ep-golden-root .ep-gl-cover-page {
@@ -2504,8 +2516,10 @@
     flex-direction: column;
     height: 100%;
     min-height: 0;
-    padding: 12mm 14mm 10mm;
+    max-height: 100%;
+    padding: 16mm 16mm 14mm;
     box-sizing: border-box;
+    overflow: hidden;
   }
 
   .ep-golden-root .ep-gl-cover-inner {
@@ -2514,20 +2528,39 @@
     flex-direction: column;
     justify-content: space-between;
     height: 100%;
-    min-height: 100%;
+    min-height: 0;
+    max-height: 100%;
+    overflow: hidden;
   }
 
   .ep-golden-root .ep-gl-cover-hero {
     flex: 1 1 auto;
+    min-height: 0;
     justify-content: center;
-    padding-bottom: 4mm;
+    padding-bottom: 2mm;
+    overflow: hidden;
+  }
+
+  .ep-golden-root .ep-gl-cover-logo {
+    max-height: 28mm;
+    width: auto;
+  }
+
+  .ep-golden-root .ep-gl-cover-title {
+    font-size: 28pt;
+    line-height: 1.12;
+  }
+
+  .ep-golden-root .ep-gl-client-name {
+    font-size: 22pt;
   }
 
   .ep-golden-root .ep-gl-cover-meta-grid {
     margin-top: auto;
-    flex-shrink: 0;
-    break-inside: avoid;
-    page-break-inside: avoid;
+    flex: 0 0 auto;
+    /* Do NOT use break-inside:avoid here — it orphans the footer onto a new sheet. */
+    break-inside: auto;
+    page-break-inside: auto;
   }
 
   .ep-golden-root .ep-gl-page:last-child {
@@ -2535,10 +2568,10 @@
     break-after: auto;
   }
 
-  /* Named page — avoids bare @page fighting Atelier/Zenith/commercial */
+  /* Named page — margin 0 so fixed 297mm cover matches the sheet exactly */
   @page golden-sheet {
     size: A4;
-    margin: 8mm;
+    margin: 0;
     background-color: #fdfcf9;
   }
 
