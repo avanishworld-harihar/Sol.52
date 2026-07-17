@@ -20,17 +20,17 @@ import {
 } from "@/lib/proposal-branding-settings";
 import { getCanvasCopy, type CanvasLang } from "./canvas-copy";
 import {
-  BulletList,
   EvidenceCard,
   EvidenceGrid,
   ExpertInsights,
+  EngineeringBlueprint,
+  PaymentRoadmap,
   HardwareTrustGrid,
   resolveHardwareTrustProducts,
   PageBody,
   PageHeader,
   PageShell,
   ProfitBadge,
-  StepCard,
   WealthJourneyBars,
   buildWealthJourneyBars,
 } from "./components";
@@ -169,6 +169,104 @@ export function CanvasProposalRenderer({
       ? `${Math.round(generationUnits / systemKwNum)} kWh/kW`
       : "—";
 
+  const tiltMetric =
+    eng.metrics.find((m) => /tilt/i.test(m.label))?.value?.trim() || "20°";
+  const tiltDisplay = /°/.test(tiltMetric) ? tiltMetric : `${tiltMetric}°`;
+  const coverageDisplay =
+    coverage && coverage !== "—"
+      ? coverage
+      : "100%";
+  const standardsLine =
+    eng.standards.length > 0
+      ? eng.standards.slice(0, 4).join(" · ")
+      : isHi
+        ? "IS/IEC मॉड्यूल मानक • CEA / DISCOM नेट-मीटरिंग नियम"
+        : "IS/IEC module standards · CEA / DISCOM net-metering norms";
+
+  const DEFAULT_PAYMENT_PCTS = [25, 50, 20, 5] as const;
+  const DEFAULT_PAYMENT_TITLES = isHi
+    ? [
+        "Advance (बुकिंग)",
+        "Material Delivery (सामग्री वितरण)",
+        "Installation (स्थापना)",
+        "Commissioning (कमीशनिंग)",
+      ]
+    : [
+        "Advance (Booking)",
+        "Material Delivery",
+        "Installation",
+        "Commissioning",
+      ];
+
+  const paymentBaseInr = eco.netInr > 0 ? eco.netInr : eco.grossInr;
+  const paymentMilestones =
+    execution.payments.length > 0
+      ? execution.payments.slice(0, 4).map((p, i) => {
+          const pctMatch = p.pctLabel.match(/(\d+)\s*%/);
+          const pct =
+            pctMatch?.[1] ??
+            String(DEFAULT_PAYMENT_PCTS[i] ?? Math.round(100 / Math.max(execution.payments.length, 1)));
+          const amountInr =
+            p.amountInr > 0
+              ? p.amountInr
+              : paymentBaseInr > 0
+                ? Math.round((paymentBaseInr * Number(pct)) / 100)
+                : 0;
+          return {
+            step: String(i + 1),
+            title: p.label.replace(/^\d+\.\s*/, "") || DEFAULT_PAYMENT_TITLES[i]!,
+            amountLabel: amountInr > 0 ? formatInrCompact(amountInr) : "—",
+            percent: `${pct}%`,
+          };
+        })
+      : DEFAULT_PAYMENT_PCTS.map((pct, i) => {
+          const amountInr =
+            paymentBaseInr > 0 ? Math.round((paymentBaseInr * pct) / 100) : 0;
+          return {
+            step: String(i + 1),
+            title: DEFAULT_PAYMENT_TITLES[i]!,
+            amountLabel: amountInr > 0 ? formatInrCompact(amountInr) : "—",
+            percent: `${pct}%`,
+          };
+        });
+
+  const bankDetails = {
+    company: execution.bank.company?.trim() || brand,
+    accountNumber:
+      execution.bank.accountNumber?.trim() && execution.bank.accountNumber !== "—"
+        ? execution.bank.accountNumber
+        : isHi
+          ? "[खाता संख्या]"
+          : "[Your A/C Number]",
+    ifsc:
+      execution.bank.ifsc?.trim() && execution.bank.ifsc !== "—"
+        ? execution.bank.ifsc
+        : isHi
+          ? "[IFSC]"
+          : "[Your IFSC]",
+    upiId:
+      execution.bank.upiId?.trim() && execution.bank.upiId !== "—"
+        ? execution.bank.upiId
+        : "hariharsolar@upi",
+  };
+
+  const paymentTerms =
+    terms.conditions.length > 0
+      ? terms.conditions.slice(0, 4)
+      : isHi
+        ? [
+            "यह प्रस्ताव जारी होने की तिथि से 30 दिनों तक मान्य है।",
+            "अंतिम मूल्य साइट सर्वे और DISCOM अनुमोदन के बाद बदल सकता है।",
+            "सब्सिडी राशि PM सूर्य घर पात्रता और पोर्टल मंजूरी पर निर्भर है।",
+            "नेट मीटरिंग समय-सारिणी स्थानीय DISCOM प्रक्रिया पर निर्भर करती है।",
+          ]
+        : [
+            "This proposal is valid for 30 days from the date of issue.",
+            "Final pricing may adjust after site survey and DISCOM approval.",
+            "Subsidy amount is subject to PM Surya Ghar eligibility and portal sanction.",
+            "Net metering timelines depend on local DISCOM processing.",
+          ];
+
   const handlePrint = () => {
     if (typeof window !== "undefined") window.print();
   };
@@ -176,7 +274,7 @@ export function CanvasProposalRenderer({
   const foot = (n: string) => ({ pageNo: n, brand });
 
   return (
-    <div className={`${styles.shell}${isHi ? ` ${styles.langHi}` : ""}`}>
+    <div className={`${styles.shell} ${styles.canvasTheme}${isHi ? ` ${styles.langHi}` : ""}`}>
       <div className={styles.printBar}>
         <div className={styles.printBarInner}>
           <span className={styles.printBarBrand}>{brand}</span>
@@ -682,38 +780,26 @@ export function CanvasProposalRenderer({
           </PageBody>
         </PageShell>
 
-        {/* Page 09: Engineering */}
-        <PageShell {...foot("09 / 12")}>
-          <PageHeader title={c.pages.engineering} lead={c.pages.engineeringLead} />
+        {/* Page 09: Engineering Blueprint */}
+        <PageShell {...foot("09 / 12")} className={styles.canvasTheme}>
           <PageBody>
-            <EvidenceGrid>
-              {(eng.metrics.length > 0
-                ? eng.metrics.slice(0, 6)
-                : [
-                    { label: c.labels.capacity, value: capacityKw },
-                    { label: c.labels.annualGen, value: generation },
-                    { label: c.labels.coverage, value: coverage },
-                    { label: c.labels.specificYield, value: specificYield },
-                  ]
-              ).map((m) => (
-                <EvidenceCard key={m.label} title={m.label} value={m.value} />
-              ))}
-            </EvidenceGrid>
-            {eng.standards.length > 0 ? (
-              <EvidenceCard
-                title={isHi ? "मानक" : "Standards"}
-                value={eng.standards.slice(0, 3).join(" · ")}
-                insight={
-                  eng.standards.length > 3
-                    ? `+${eng.standards.length - 3} more`
-                    : undefined
-                }
-              />
-            ) : null}
-            <ExpertInsights
-              fill
-              title={c.pages.engInsightTitle}
-              body={c.pages.engInsightBody}
+            <EngineeringBlueprint
+              title={
+                isHi
+                  ? "इंजीनियरिंग (Engineering Standards)"
+                  : "Engineering Standards"
+              }
+              systemKw={capacityKw}
+              tilt={tiltDisplay}
+              tiltNote={
+                isHi
+                  ? "अधिकतम उपज के लिए अनुकूलित"
+                  : "Optimized for maximum yield"
+              }
+              annualGeneration={generation}
+              loadCoverage={coverageDisplay}
+              standardsLine={standardsLine}
+              insightBody={c.pages.engInsightBody}
             />
           </PageBody>
         </PageShell>
@@ -778,78 +864,25 @@ export function CanvasProposalRenderer({
           </PageBody>
         </PageShell>
 
-        {/* Page 11: Execution + Payment + Terms */}
-        <PageShell {...foot("11 / 12")}>
-          <PageHeader title={c.pages.execution} lead={c.pages.executionLead} />
+        {/* Page 11: Payment roadmap + terms */}
+        <PageShell {...foot("11 / 12")} className={styles.canvasTheme}>
           <PageBody>
-            {execution.steps.length > 0 ? (
-              <ol className={styles.stepList}>
-                {execution.steps.slice(0, 4).map((step) => (
-                  <StepCard
-                    key={step.num}
-                    num={step.num}
-                    title={step.title}
-                    description={step.description}
-                  />
-                ))}
-              </ol>
-            ) : (
-              <EvidenceGrid>
-                <EvidenceCard title="01" value={isHi ? "सर्वे" : "Survey"} />
-                <EvidenceCard title="02" value={isHi ? "डिज़ाइन" : "Design"} />
-                <EvidenceCard title="03" value={isHi ? "स्थापना" : "Install"} />
-                <EvidenceCard title="04" value={isHi ? "गो-लाइव" : "Go-live"} />
-              </EvidenceGrid>
-            )}
-            <PageHeader title={c.pages.payment} lead={c.pages.paymentLead} />
-            {execution.payments.length > 0 ? (
-              <EvidenceGrid>
-                {execution.payments.map((p) => (
-                  <EvidenceCard
-                    key={p.label}
-                    title={p.label}
-                    value={
-                      p.amountInr > 0 ? formatInrCompact(p.amountInr) : p.pctLabel
-                    }
-                    insight={p.amountInr > 0 ? p.pctLabel : undefined}
-                    accent
-                  />
-                ))}
-              </EvidenceGrid>
-            ) : (
-              <EvidenceGrid>
-                <EvidenceCard
-                  title={c.pages.youPay}
-                  value={eco.netInr > 0 ? formatInrCompact(eco.netInr) : "—"}
-                  accent
-                />
-                <EvidenceCard title={c.pages.lifetimeWealth} value={lifetime} />
-              </EvidenceGrid>
-            )}
-            {(execution.bank.company ||
-              execution.bank.accountNumber ||
-              execution.bank.upiId) && (
-              <div className={styles.bankBlock}>
-                {execution.bank.company ? <p>{execution.bank.company}</p> : null}
-                {execution.bank.accountNumber ? (
-                  <p>A/C {execution.bank.accountNumber}</p>
-                ) : null}
-                {execution.bank.ifsc ? <p>IFSC {execution.bank.ifsc}</p> : null}
-                {execution.bank.upiId ? <p>UPI {execution.bank.upiId}</p> : null}
-              </div>
-            )}
-            {(terms.conditions.length > 0 || terms.documents.length > 0) && (
-              <>
-                <p className={styles.cardLabel}>{c.pages.terms}</p>
-                <BulletList
-                  items={[...terms.conditions, ...terms.documents].slice(0, 4)}
-                />
-              </>
-            )}
-            <ExpertInsights
-              fill
-              title={c.pages.execInsightTitle}
-              body={c.pages.execInsightBody}
+            <PaymentRoadmap
+              title={
+                isHi
+                  ? "भुगतान अनुसूची (Investment Milestones)"
+                  : "Investment Milestones"
+              }
+              milestones={paymentMilestones}
+              bank={bankDetails}
+              bankTitle={isHi ? "सुरक्षित भुगतान विवरण" : "Secure Payment Details"}
+              termsTitle={
+                isHi
+                  ? "नियम एवं शर्तें (Terms & Compliance)"
+                  : "Terms & Compliance"
+              }
+              terms={paymentTerms}
+              insightBody={c.pages.execInsightBody}
             />
           </PageBody>
         </PageShell>

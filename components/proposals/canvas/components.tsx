@@ -84,14 +84,13 @@ export function EvidenceCard({
   title,
   label,
   value,
-  insight,
-  evidence,
+  insight: _insight,
+  evidence: _evidence,
   accent = false,
   tone = "default",
   accentValue,
 }: EvidenceCardProps) {
   const heading = (title ?? label ?? "").trim();
-  const tip = (insight ?? evidence)?.trim();
   const useAccent = accent || tone === "accent";
 
   const className = [
@@ -111,13 +110,6 @@ export function EvidenceCard({
       >
         {value}
       </div>
-      {tip ? (
-        <p className={styles.cardInsight}>
-          <em>
-            <span className={styles.cardInsightLabel}>Expert Insight:</span> {tip}
-          </em>
-        </p>
-      ) : null}
     </article>
   );
 }
@@ -339,8 +331,28 @@ export function HardwareTrustGrid({ products }: { products: HardwareTrustProduct
   );
 }
 
-/* ── Expert Insights ─────────────────────────────────────────── */
+/* ── PremiumInsight — one expert block per page (not per card) ── */
 
+export function PremiumInsight({
+  body,
+  fill,
+  label = "Expert Insight",
+}: {
+  body: string;
+  fill?: boolean;
+  label?: string;
+}) {
+  return (
+    <aside
+      className={`${styles.premiumInsight}${fill ? ` ${styles.premiumInsightFill}` : ""}`.trim()}
+    >
+      <strong className={styles.premiumInsightLabel}>{label}</strong>
+      <p>{body}</p>
+    </aside>
+  );
+}
+
+/** @deprecated Prefer PremiumInsight — same chrome, keeps title support. */
 export function ExpertInsights({
   title,
   body,
@@ -348,15 +360,154 @@ export function ExpertInsights({
 }: {
   title: string;
   body: string;
-  /** Push callout to bottom of page body to fill blank space. */
   fill?: boolean;
 }) {
   return (
-    <aside className={`${styles.expertBox}${fill ? ` ${styles.expertBoxFill}` : ""}`.trim()}>
-      <span className={styles.expertLabel}>Expert Insights</span>
-      <h3 className={styles.expertTitle}>{title}</h3>
-      <p className={styles.expertBody}>{body}</p>
+    <aside className={`${styles.premiumInsight}${fill ? ` ${styles.premiumInsightFill}` : ""}`.trim()}>
+      <strong className={styles.premiumInsightLabel}>Expert Insight</strong>
+      {title ? <h3 className={styles.expertTitle}>{title}</h3> : null}
+      <p>{body}</p>
     </aside>
+  );
+}
+
+/* ── EngineeringBlueprint — Page 09 ──────────────────────────── */
+
+export type EngineeringBlueprintProps = {
+  systemKw: string;
+  tilt: string;
+  tiltNote?: string;
+  annualGeneration: string;
+  loadCoverage: string;
+  standardsLine: string;
+  insightBody: string;
+  title: string;
+};
+
+export function EngineeringBlueprint({
+  systemKw,
+  tilt,
+  tiltNote,
+  annualGeneration,
+  loadCoverage,
+  standardsLine,
+  insightBody,
+  title,
+}: EngineeringBlueprintProps) {
+  return (
+    <>
+      <h2 className={styles.sectionHeader}>{title}</h2>
+      <div className={styles.engineeringGrid}>
+        <div className={styles.metricCard}>
+          <span className={styles.label}>System Size</span>
+          <strong className={styles.value}>{systemKw}</strong>
+        </div>
+        <div className={styles.metricCard}>
+          <span className={styles.label}>Optimal Panel Tilt</span>
+          <strong className={styles.value}>{tilt}</strong>
+          {tiltNote ? <span className={styles.subtext}>{tiltNote}</span> : null}
+        </div>
+        <div className={styles.metricCard}>
+          <span className={styles.label}>Annual Generation</span>
+          <strong className={styles.value}>{annualGeneration}</strong>
+        </div>
+        <div className={styles.metricCard}>
+          <span className={styles.label}>Load Coverage</span>
+          <strong className={styles.value}>{loadCoverage}</strong>
+        </div>
+      </div>
+      <div className={styles.complianceBox}>
+        <h3>Quality Standards</h3>
+        <p>{standardsLine}</p>
+      </div>
+      <PremiumInsight fill body={insightBody} />
+    </>
+  );
+}
+
+/* ── PaymentRoadmap — Page 11 ────────────────────────────────── */
+
+export type PaymentMilestone = {
+  step: string;
+  title: string;
+  amountLabel: string;
+  percent: string;
+};
+
+export type PaymentRoadmapProps = {
+  title: string;
+  milestones: PaymentMilestone[];
+  bank: {
+    company: string;
+    accountNumber: string;
+    ifsc: string;
+    upiId: string;
+  };
+  bankTitle?: string;
+  termsTitle: string;
+  terms: string[];
+  insightBody?: string;
+};
+
+export function PaymentRoadmap({
+  title,
+  milestones,
+  bank,
+  bankTitle = "Secure Payment Details",
+  termsTitle,
+  terms,
+  insightBody,
+}: PaymentRoadmapProps) {
+  return (
+    <>
+      <h2 className={styles.sectionHeader}>{title}</h2>
+
+      <div className={styles.timelineContainer}>
+        {milestones.map((m) => (
+          <div key={m.step} className={styles.timelineStep}>
+            <div className={styles.stepNumber}>{m.step.padStart(2, "0")}</div>
+            <div className={styles.stepContent}>
+              <h4>{m.title}</h4>
+              <span className={styles.percentBadge}>{m.percent} Share</span>
+            </div>
+            <div className={styles.stepAmount}>{m.amountLabel}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className={styles.bankCard}>
+        <h3>{bankTitle}</h3>
+        <div className={styles.bankGrid}>
+          <div className={styles.bankItem}>
+            <span>A/C Name:</span>
+            <strong>{bank.company}</strong>
+          </div>
+          <div className={styles.bankItem}>
+            <span>A/C No:</span>
+            <strong>{bank.accountNumber}</strong>
+          </div>
+          <div className={styles.bankItem}>
+            <span>IFSC:</span>
+            <strong>{bank.ifsc}</strong>
+          </div>
+          <div className={styles.bankItem}>
+            <span>UPI:</span>
+            <strong>{bank.upiId}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.termsBox}>
+        <h3>{termsTitle}</h3>
+        <ul className={styles.termsList}>
+          {terms.map((t) => (
+            <li key={t}>{t}</li>
+          ))}
+        </ul>
+      </div>
+
+      {insightBody ? <PremiumInsight fill body={insightBody} /> : null}
+    </>
   );
 }
 
