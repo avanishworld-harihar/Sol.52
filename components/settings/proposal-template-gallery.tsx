@@ -142,7 +142,9 @@ export function ProposalTemplateGallery({ markSaved }: Props) {
       <div
         className={cn(
           "grid grid-cols-1 gap-4",
-          category === "residential" ? "sm:grid-cols-2 lg:grid-cols-3" : "sm:grid-cols-2 lg:max-w-sm lg:grid-cols-1"
+          category === "residential"
+            ? "sm:grid-cols-2 xl:grid-cols-4"
+            : "sm:grid-cols-2 lg:max-w-sm lg:grid-cols-1"
         )}
       >
         {items.map((item) => {

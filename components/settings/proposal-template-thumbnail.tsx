@@ -150,40 +150,36 @@ function ZenithThumb({ size }: { size: "card" | "preview" }) {
 
 function LuxeThumb({ size }: { size: "card" | "preview" }) {
   return (
-    <div className="flex h-full w-full items-center justify-center bg-[#E2E8F0]">
+    <div className="flex h-full w-full items-center justify-center bg-[#EDE6DC]">
       <div
         className={cn(
-          "relative flex flex-col justify-start overflow-hidden rounded-[3px] shadow-sm",
+          "relative flex flex-col justify-start overflow-hidden rounded-[3px] border border-[#d6cbb8] shadow-sm",
           size === "preview" ? "h-[62%] w-[68%]" : "h-[58%] w-[72%]"
         )}
-        style={{ background: "#fff" }}
+        style={{ background: "#F8F5F0" }}
       >
-        {/* Charcoal header strip */}
-        <div
-          className="w-full bg-[#1E293B] flex items-center justify-between"
-          style={{ padding: size === "preview" ? "6% 8% 4%" : "5% 7% 3%" }}
-        >
-          <div
-            className={cn("font-bold tracking-widest text-white", size === "preview" ? "text-[5px]" : "text-[2.5px]")}
-          >
-            HARIHAR <span style={{ color: "#F97316" }}>SOLAR</span>
-          </div>
-        </div>
-        {/* Body */}
         <div style={{ padding: size === "preview" ? "8%" : "7%" }} className="flex flex-col gap-[8%] flex-1">
           <div
-            className={cn("font-bold text-[#1E293B] leading-tight", size === "preview" ? "text-[10px]" : "text-[4.5px]")}
+            className={cn(
+              "font-bold uppercase tracking-[0.14em] text-[#8B7355]",
+              size === "preview" ? "text-[5px]" : "text-[2.5px]"
+            )}
+          >
+            HARIHAR SOLAR
+          </div>
+          <div
+            className={cn("font-serif font-bold text-[#1F2A36] leading-tight", size === "preview" ? "text-[10px]" : "text-[4.5px]")}
           >
             The Energy<br />Masterplan
           </div>
           <div
-            style={{ width: size === "preview" ? 20 : 10, height: size === "preview" ? 2 : 1, background: "#F97316" }}
+            style={{ width: size === "preview" ? 20 : 10, height: size === "preview" ? 2 : 1, background: "#C4A574" }}
           />
           <div className="grid grid-cols-3 gap-[6%] mt-auto">
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
-                className="rounded-[2px] bg-[#F1F5F9] border border-[#E2E8F0]"
+                className="rounded-[2px] border border-[#e5dccf] bg-white/70"
                 style={{ height: size === "preview" ? 16 : 7 }}
               />
             ))}
@@ -196,43 +192,39 @@ function LuxeThumb({ size }: { size: "card" | "preview" }) {
 
 function BlueprintThumb({ size }: { size: "card" | "preview" }) {
   return (
-    <div className="flex h-full w-full items-center justify-center bg-[#eef4fb]">
+    <div className="flex h-full w-full items-center justify-center bg-[#E2E8F0]">
       <div
         className={cn(
-          "relative flex flex-col justify-start overflow-hidden rounded-[3px] border border-[#d5e0ec] shadow-sm",
+          "relative flex flex-col justify-start overflow-hidden rounded-[3px] shadow-sm",
           size === "preview" ? "h-[62%] w-[68%]" : "h-[58%] w-[72%]"
         )}
-        style={{
-          background:
-            "linear-gradient(rgba(29,79,145,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(29,79,145,0.06) 1px, transparent 1px), #fff",
-          backgroundSize: "8px 8px, 8px 8px, auto",
-        }}
+        style={{ background: "#fff" }}
       >
-        <div style={{ padding: size === "preview" ? "8%" : "7%" }} className="flex flex-col gap-[10%] flex-1">
+        <div
+          className="w-full bg-[#0a0f1c] flex items-center justify-between"
+          style={{ padding: size === "preview" ? "6% 8% 4%" : "5% 7% 3%" }}
+        >
           <div
-            className={cn(
-              "font-bold uppercase tracking-[0.16em] text-[#1d4f91]",
-              size === "preview" ? "text-[5px]" : "text-[2.5px]"
-            )}
+            className={cn("font-bold tracking-widest text-white", size === "preview" ? "text-[5px]" : "text-[2.5px]")}
           >
-            HARIHAR SOLAR
+            HARIHAR <span style={{ color: "#F97316" }}>SOLAR</span>
           </div>
+        </div>
+        <div style={{ padding: size === "preview" ? "8%" : "7%" }} className="flex flex-col gap-[8%] flex-1">
           <div
-            className={cn("font-bold text-[#0c1b2a] leading-tight", size === "preview" ? "text-[10px]" : "text-[4.5px]")}
+            className={cn("font-bold text-[#0a0f1c] leading-tight", size === "preview" ? "text-[10px]" : "text-[4.5px]")}
           >
             Investment<br />Blueprint
           </div>
           <div
-            className="mt-auto grid grid-cols-2 gap-[6%]"
-          >
-            {[0, 1].map((i) => (
+            style={{ width: size === "preview" ? 20 : 10, height: size === "preview" ? 2 : 1, background: "#F97316" }}
+          />
+          <div className="mt-auto flex items-end gap-[6%]" style={{ height: size === "preview" ? 22 : 10 }}>
+            {[35, 48, 62, 78, 90, 100].map((h, i) => (
               <div
                 key={i}
-                className="border border-[#d5e0ec] bg-white"
-                style={{
-                  height: size === "preview" ? 18 : 8,
-                  borderLeft: "2px solid #1d4f91",
-                }}
+                className="flex-1 rounded-t-[1px]"
+                style={{ height: `${h}%`, background: i === 5 ? "#F97316" : "#94a3b8" }}
               />
             ))}
           </div>

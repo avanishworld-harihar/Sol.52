@@ -37,12 +37,12 @@ export const RESIDENTIAL_TEMPLATE_OPTIONS: ResidentialTemplateOption[] = [
   {
     id: "residential_premium_luxe",
     label: "Atelier",
-    subtitle: "Industrial Minimalist 11-page — Charcoal, Aluminum & Burnt Orange.",
+    subtitle: "Warm cream Premium Luxe masterplan for residential sales.",
   },
   {
     id: "residential_blueprint",
     label: "Canvas",
-    subtitle: "Investment Blueprint — Evidence cards, hardware modules & wealth curve.",
+    subtitle: "Investment Blueprint — Charcoal / Aluminum / Burnt Orange + wealth bars.",
   },
 ];
 

@@ -133,7 +133,7 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     id: "residential_premium_luxe",
     label: "Atelier",
     description:
-      "Industrial Minimalist 11-page A4 — Charcoal/Aluminum/Burnt Orange, horizontal timeline, print-ready.",
+      "Warm cream Premium Luxe masterplan — residential sales layout, print-ready.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "requirement",
@@ -145,7 +145,7 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     id: "residential_blueprint",
     label: "Canvas",
     description:
-      "Investment Blueprint — modular Evidence/Hardware cards, wealth curve, ink-blue drafting aesthetic.",
+      "Investment Blueprint — Charcoal / Aluminum / Burnt Orange, Evidence cards, hardware modules & 25-year wealth bars.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "requirement",

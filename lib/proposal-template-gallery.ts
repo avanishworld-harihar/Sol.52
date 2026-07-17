@@ -3,7 +3,7 @@ import type { ResidentialTemplatePresetId } from "@/lib/proposal-default-preset-
 import type { SalesPremiumStyleId } from "@/lib/sales-premium-styles";
 
 /**
- * Gallery theme registry — Golden + Zenith + Atelier + Blueprint + Commercial Executive.
+ * Gallery theme registry — Golden + Zenith + Atelier + Canvas + Commercial Executive.
  */
 
 /** Thumbnail id — string so new themes need no type union update. */
@@ -36,7 +36,7 @@ export const PROPOSAL_TEMPLATE_CATEGORIES: ProposalTemplateCategoryMeta[] = [
   {
     id: "residential",
     label: "Residential",
-    description: "Homes & rooftops — Golden, Zenith, Atelier, or Blueprint.",
+    description: "Homes & rooftops — Golden, Zenith, Atelier, or Canvas.",
   },
   {
     id: "commercial",
@@ -68,7 +68,7 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
     presetId: "residential_premium_luxe",
     category: "residential",
     name: "Atelier",
-    description: "Industrial Minimalist — Charcoal, Aluminum & Burnt Orange. 11-page print-ready proposal.",
+    description: "Warm cream masterplan — Premium Luxe layout for residential sales.",
     thumbnailVariant: "luxe",
   },
   {
@@ -77,7 +77,7 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
     category: "residential",
     name: "Canvas",
     description:
-      "Investment Blueprint — modular Evidence / Hardware cards + wealth curve, ink-blue drafting look.",
+      "Investment Blueprint — Charcoal, Aluminum & Burnt Orange. Evidence cards, hardware modules & 25-year wealth bars.",
     thumbnailVariant: "blueprint",
   },
 ];
