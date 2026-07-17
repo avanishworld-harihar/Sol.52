@@ -25,6 +25,7 @@ import {
   ExpertInsights,
   EngineeringBlueprint,
   PaymentRoadmap,
+  CoverPage,
   HardwareTrustGrid,
   resolveHardwareTrustProducts,
   PageBody,
@@ -172,16 +173,6 @@ export function CanvasProposalRenderer({
   const tiltMetric =
     eng.metrics.find((m) => /tilt/i.test(m.label))?.value?.trim() || "20°";
   const tiltDisplay = /°/.test(tiltMetric) ? tiltMetric : `${tiltMetric}°`;
-  const coverageDisplay =
-    coverage && coverage !== "—"
-      ? coverage
-      : "100%";
-  const standardsLine =
-    eng.standards.length > 0
-      ? eng.standards.slice(0, 4).join(" · ")
-      : isHi
-        ? "IS/IEC मॉड्यूल मानक • CEA / DISCOM नेट-मीटरिंग नियम"
-        : "IS/IEC module standards · CEA / DISCOM net-metering norms";
 
   const DEFAULT_PAYMENT_PCTS = [25, 50, 20, 5] as const;
   const DEFAULT_PAYMENT_TITLES = isHi
@@ -305,32 +296,30 @@ export function CanvasProposalRenderer({
       </div>
 
       <div className={styles.canvasContainer}>
-        {/* Page 01: Cover */}
-        <PageShell variant="cover" {...foot("01 / 12")}>
-          <div className={styles.coverTop}>
-            {logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={logoUrl} alt={brand} className={styles.logo} />
-            ) : (
-              <div className={styles.brand}>{brand.toUpperCase()}</div>
-            )}
-            <span className={styles.coverBadge}>{c.cover.badge}</span>
-          </div>
-          <h1 className={styles.title}>{c.cover.title}</h1>
-          <p className={styles.preparedFor}>
-            {c.cover.preparedFor}
-            <strong>{customer}</strong>
-          </p>
-          {location ? <p className={styles.coverClientLoc}>{location}</p> : null}
-          <div className={styles.heroStats}>
-            <h2>
-              <span className={styles.accent}>{lifetime}</span> {c.pages.lifetimeWealth}
-            </h2>
-            <span className={styles.heroStatsMeta}>
-              {c.cover.system}: {capacityKw}
-            </span>
-          </div>
-        </PageShell>
+        {/* Page 01: Architectural cover — no cost / wealth figures */}
+        <CoverPage
+          brandName={brand}
+          logoUrl={logoUrl}
+          customerName={customer}
+          locationLine={location || undefined}
+          documentTitle={
+            isHi ? "आर्किटेक्चरल एनर्जी ब्लूप्रिंट" : "Architectural Energy Blueprint"
+          }
+          preparedForLabel={
+            isHi ? "विशेष रूप से तैयार" : "Prepared exclusively for"
+          }
+          systemKw={capacityKw}
+          annualYield={
+            generationUnits > 0
+              ? `${generationUnits.toLocaleString("en-IN")} Units`
+              : generation !== "—"
+                ? generation
+                : "—"
+          }
+          impactValue={isHi ? "शून्य कार्बन" : "Zero Carbon"}
+          pageNo="01 / 12"
+          footerBrand={brand}
+        />
 
         {/* Page 02: Bill / Requirement */}
         <PageShell {...foot("02 / 12")}>
@@ -780,25 +769,16 @@ export function CanvasProposalRenderer({
           </PageBody>
         </PageShell>
 
-        {/* Page 09: Engineering Blueprint */}
+        {/* Page 09: Advanced Engineering & Roof Intelligence */}
         <PageShell {...foot("09 / 12")} className={styles.canvasTheme}>
           <PageBody>
             <EngineeringBlueprint
-              title={
-                isHi
-                  ? "इंजीनियरिंग (Engineering Standards)"
-                  : "Engineering Standards"
+              systemKw={systemKwNum > 0 ? systemKwNum : 5}
+              tiltDeg={
+                Number.parseFloat(String(tiltDisplay).replace(/[^\d.]/g, "")) || 20
               }
-              systemKw={capacityKw}
-              tilt={tiltDisplay}
-              tiltNote={
-                isHi
-                  ? "अधिकतम उपज के लिए अनुकूलित"
-                  : "Optimized for maximum yield"
-              }
-              annualGeneration={generation}
-              loadCoverage={coverageDisplay}
-              standardsLine={standardsLine}
+              locationHint={location || undefined}
+              isHi={isHi}
               insightBody={c.pages.engInsightBody}
             />
           </PageBody>

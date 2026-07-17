@@ -5,13 +5,93 @@
  * EvidenceCard is the primary density unit across all pages.
  */
 
-import { useState, type ReactNode } from "react";
+import { useState, type CSSProperties, type ReactNode } from "react";
 import type { ProposalBomItem, ProposalWealthPoint } from "@/lib/proposal-data";
 import { buildWealthJourney } from "@/lib/proposal-data/build-wealth-journey";
 import { resolveHardwareImageSrc } from "./hardware-assets";
 import styles from "./canvas.module.css";
 
 export { resolveHardwareImageSrc } from "./hardware-assets";
+
+/* ── CoverPage — Page 01 Architectural Editorial ─────────────── */
+
+export type CoverPageProps = {
+  brandName: string;
+  logoUrl?: string;
+  customerName: string;
+  locationLine?: string;
+  documentTitle?: string;
+  preparedForLabel?: string;
+  systemKw: string;
+  annualYield: string;
+  impactValue?: string;
+  pageNo?: string;
+  footerBrand?: string;
+};
+
+export function CoverPage({
+  brandName,
+  logoUrl,
+  customerName,
+  locationLine,
+  documentTitle = "Architectural Energy Blueprint",
+  preparedForLabel = "Prepared exclusively for",
+  systemKw,
+  annualYield,
+  impactValue = "Zero Carbon",
+  pageNo = "01 / 12",
+  footerBrand,
+}: CoverPageProps) {
+  const parts = brandName.trim().split(/\s+/).filter(Boolean);
+  const logoMark = (parts[0] || "HARIHAR").toUpperCase();
+  const logoSub = (parts.slice(1).join(" ") || "SOLAR").toUpperCase();
+
+  return (
+    <section
+      className={`${styles.page} ${styles.pageCover} ${styles.coverPage} ${styles.canvasTheme}`.trim()}
+    >
+      <div className={styles.coverHeader}>
+        {logoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={logoUrl} alt={brandName} className={styles.coverLogoImg} />
+        ) : (
+          <>
+            <div className={styles.logoMark}>{logoMark}</div>
+            <div className={styles.logoSub}>{logoSub}</div>
+          </>
+        )}
+      </div>
+
+      <div className={styles.coverCenter}>
+        <span className={styles.preparedFor}>{preparedForLabel}</span>
+        <h1 className={styles.clientName}>{customerName}</h1>
+        <div className={styles.coverDivider} aria-hidden />
+        <h2 className={styles.documentTitle}>{documentTitle}</h2>
+        {locationLine ? <p className={styles.location}>{locationLine}</p> : null}
+      </div>
+
+      <div className={styles.coverFooter}>
+        <div className={styles.specBox}>
+          <span className={styles.specLabel}>System Capacity</span>
+          <span className={styles.specValue}>{systemKw}</span>
+        </div>
+        <div className={styles.specBox}>
+          <span className={styles.specLabel}>Annual Yield</span>
+          <span className={styles.specValue}>{annualYield}</span>
+        </div>
+        <div className={styles.specBox}>
+          <span className={styles.specLabel}>Environmental Impact</span>
+          <span className={styles.specValue}>{impactValue}</span>
+        </div>
+      </div>
+
+      <footer className={styles.coverPageFooter}>
+        <span>{footerBrand || brandName}</span>
+        <span>{pageNo}</span>
+      </footer>
+    </section>
+  );
+}
 
 /* ── Page chrome ─────────────────────────────────────────────── */
 
@@ -371,57 +451,177 @@ export function ExpertInsights({
   );
 }
 
-/* ── EngineeringBlueprint — Page 09 ──────────────────────────── */
+/* ── EngineeringBlueprint — Page 09 Advanced Roof Intelligence ─ */
 
 export type EngineeringBlueprintProps = {
-  systemKw: string;
-  tilt: string;
-  tiltNote?: string;
-  annualGeneration: string;
-  loadCoverage: string;
-  standardsLine: string;
+  systemKw: number;
+  tiltDeg?: number;
+  locationHint?: string;
   insightBody: string;
-  title: string;
+  title?: string;
+  isHi?: boolean;
 };
+
+const PANEL_WATT = 580;
+const M2_PER_PANEL = 2.2;
+/** Keep isometric grid readable on A4; specs still show true count. */
+const MAX_VISUAL_PANELS = 24;
 
 export function EngineeringBlueprint({
   systemKw,
-  tilt,
-  tiltNote,
-  annualGeneration,
-  loadCoverage,
-  standardsLine,
+  tiltDeg = 20,
+  locationHint,
   insightBody,
   title,
+  isHi = false,
 }: EngineeringBlueprintProps) {
+  const size = Number.isFinite(systemKw) && systemKw > 0 ? systemKw : 5;
+  const panelCount = Math.max(1, Math.ceil((size * 1000) / PANEL_WATT));
+  const visualPanels = Math.min(panelCount, MAX_VISUAL_PANELS);
+  const roofArea = panelCount * M2_PER_PANEL;
+  const dcKw = (panelCount * PANEL_WATT) / 1000;
+  const dcAcRatio = size > 0 ? (dcKw / size).toFixed(2) : "1.04";
+  const heading =
+    title ||
+    (isHi
+      ? "इंजीनियरिंग ब्लूप्रिंट (System Architecture)"
+      : "Engineering Blueprint (System Architecture)");
+  const locLine =
+    locationHint?.trim() ||
+    (isHi ? "~24.5° N (मध्य प्रदेश)" : "~24.5° N (Madhya Pradesh)");
+
   return (
-    <>
-      <h2 className={styles.sectionHeader}>{title}</h2>
-      <div className={styles.engineeringGrid}>
-        <div className={styles.metricCard}>
-          <span className={styles.label}>System Size</span>
-          <strong className={styles.value}>{systemKw}</strong>
+    <div className={styles.canvasTheme}>
+      <h2 className={styles.sectionHeader}>{heading}</h2>
+
+      <div className={styles.engineeringLayout}>
+        <div className={styles.roofVisualizer}>
+          <div className={styles.compass} aria-hidden>
+            <span className={styles.north}>N</span>
+            <span className={styles.east}>E</span>
+            <span className={styles.south}>S</span>
+            <span className={styles.west}>W</span>
+            <span className={styles.compassNeedle} />
+          </div>
+          <div className={styles.roofGrid}>
+            <div
+              className={styles.panelLayout}
+              style={
+                {
+                  "--panel-cols": String(Math.min(6, Math.max(3, Math.ceil(Math.sqrt(visualPanels))))),
+                } as CSSProperties
+              }
+            >
+              {Array.from({ length: visualPanels }).map((_, i) => (
+                <div key={i} className={styles.panelBox} />
+              ))}
+            </div>
+          </div>
+          <div className={styles.mapCaption}>
+            <strong>
+              {isHi ? "इष्टतम दक्षिण-मुखी ऐरे" : "Optimal South-Facing Array"}
+            </strong>
+            <span>
+              {isHi
+                ? `टिल्ट: ${tiltDeg}° | अज़ीमुथ: 180° (True South)`
+                : `Tilt: ${tiltDeg}° | Azimuth: 180° (True South)`}
+              {panelCount > MAX_VISUAL_PANELS
+                ? isHi
+                  ? ` · दृश्य ${visualPanels}/${panelCount}`
+                  : ` · showing ${visualPanels}/${panelCount}`
+                : ""}
+            </span>
+          </div>
         </div>
-        <div className={styles.metricCard}>
-          <span className={styles.label}>Optimal Panel Tilt</span>
-          <strong className={styles.value}>{tilt}</strong>
-          {tiltNote ? <span className={styles.subtext}>{tiltNote}</span> : null}
-        </div>
-        <div className={styles.metricCard}>
-          <span className={styles.label}>Annual Generation</span>
-          <strong className={styles.value}>{annualGeneration}</strong>
-        </div>
-        <div className={styles.metricCard}>
-          <span className={styles.label}>Load Coverage</span>
-          <strong className={styles.value}>{loadCoverage}</strong>
+
+        <div className={styles.siteIntelligence}>
+          <h3>{isHi ? "साइट और छत मेट्रिक्स" : "Site & Roof Metrics"}</h3>
+          <div className={styles.techDataList}>
+            <div className={styles.techItem}>
+              <span>{isHi ? "अक्षांश (लोकेशन)" : "Latitude (Location)"}</span>
+              <strong>{locLine}</strong>
+              <small>
+                {isHi
+                  ? "सूर्य प्रकाश कैप्चर कोण को अनुकूल बनाता है।"
+                  : "Optimizes the angle of sunlight capture."}
+              </small>
+            </div>
+            <div className={styles.techItem}>
+              <span>{isHi ? "आवश्यक छत क्षेत्र" : "Required Roof Area"}</span>
+              <strong>~{Math.round(roofArea)} m²</strong>
+              <small>
+                {isHi
+                  ? `${panelCount} मॉड्यूल के लिए छाया-मुक्त स्थान।`
+                  : `Shadow-free space required for ${panelCount} modules.`}
+              </small>
+            </div>
+            <div className={styles.techItem}>
+              <span>{isHi ? "शैडो टॉलरेंस" : "Shadow Tolerance"}</span>
+              <strong>{isHi ? "डुअल MPPT ट्रैकिंग" : "Dual MPPT Tracking"}</strong>
+              <small>
+                {isHi
+                  ? "बादलों में भी इन्वर्टर गतिशील रूप से समायोजित होता है।"
+                  : "Inverter adjusts dynamically to passing clouds."}
+              </small>
+            </div>
+          </div>
         </div>
       </div>
-      <div className={styles.complianceBox}>
-        <h3>Quality Standards</h3>
-        <p>{standardsLine}</p>
+
+      <h3 className={styles.subHeader}>
+        {isHi ? "तकनीकी विशिष्टताएँ" : "Technical Specifications"}
+      </h3>
+      <div className={styles.advancedSpecsGrid}>
+        <div className={styles.engSpecCard}>
+          <div className={styles.engSpecValue}>{size} kW AC</div>
+          <div className={styles.engSpecLabel}>
+            {isHi ? "इन्वर्टर क्षमता" : "Inverter Capacity"}
+          </div>
+          <div className={styles.engSpecDesc}>
+            {isHi
+              ? "घर के ग्रिड तक पहुँचने वाली अधिकतम शक्ति।"
+              : "Max power delivered to your home grid."}
+          </div>
+        </div>
+        <div className={styles.engSpecCard}>
+          <div className={styles.engSpecValue}>
+            {panelCount} {isHi ? "मॉड्यूल" : "Modules"}
+          </div>
+          <div className={styles.engSpecLabel}>
+            {isHi ? "DC ऐरे (पैनल)" : "DC Array (Panels)"}
+          </div>
+          <div className={styles.engSpecDesc}>
+            {isHi
+              ? "उच्च-दक्षता TOPCon N-Type मॉड्यूल।"
+              : "High-efficiency TOPCon N-Type modules."}
+          </div>
+        </div>
+        <div className={styles.engSpecCard}>
+          <div className={styles.engSpecValue}>~75%</div>
+          <div className={styles.engSpecLabel}>
+            {isHi ? "परफॉर्मेंस रेशियो (PR)" : "Performance Ratio (PR)"}
+          </div>
+          <div className={styles.engSpecDesc}>
+            {isHi
+              ? "तापमान और ग्रिड हानि के बाद सिस्टम दक्षता।"
+              : "System efficiency after temp & grid losses."}
+          </div>
+        </div>
+        <div className={styles.engSpecCard}>
+          <div className={styles.engSpecValue}>{dcAcRatio}</div>
+          <div className={styles.engSpecLabel}>
+            {isHi ? "DC/AC अनुपात" : "DC/AC Ratio"}
+          </div>
+          <div className={styles.engSpecDesc}>
+            {isHi
+              ? "सुबह/शाम की उपज के लिए सुरक्षित ओवर-पैनेलिंग।"
+              : "Safely over-paneled for better morning/evening yield."}
+          </div>
+        </div>
       </div>
+
       <PremiumInsight fill body={insightBody} />
-    </>
+    </div>
   );
 }
 

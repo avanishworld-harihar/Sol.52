@@ -6,20 +6,26 @@
 @import url("https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,400&family=Outfit:wght@600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap");
 
 .shell {
-  /* Canvas theme tokens — local only (no global / green / orange bleed) */
-  --canvas-bg: #f1f5f9;
+  /*
+   * Canvas signature palette (scoped — does not leak to other presets):
+   * Charcoal ink · Aluminum neutrals · Burnt Orange accent · Teal positive
+   */
+  --canvas-bg: #eef2f6;
   --canvas-text: #1e293b;
-  --canvas-accent: #0f172a;
-  --canvas-accent-soft: #334155;
+  --canvas-ink-deep: #0a0f1c;
+  --canvas-accent: #c2410c;
+  --canvas-accent-soft: #ea580c;
+  --canvas-accent-wash: #fff7ed;
   --canvas-line: #e2e8f0;
   --canvas-paper: #ffffff;
   --canvas-wash: #f8fafc;
   --canvas-muted: #64748b;
   --canvas-aluminum: #94a3b8;
-  --canvas-warn: #475569;
+  --canvas-positive: #0e7490;
+  --canvas-warn: #b45309;
 
   --ink: var(--canvas-text);
-  --ink-deep: var(--canvas-accent);
+  --ink-deep: var(--canvas-ink-deep);
   --muted: var(--canvas-muted);
   --aluminum: var(--canvas-aluminum);
   --accent: var(--canvas-accent);
@@ -28,7 +34,7 @@
   --canvas: var(--canvas-bg);
   --line: var(--canvas-line);
   --wash: var(--canvas-wash);
-  --profit: var(--canvas-accent);
+  --profit: var(--canvas-positive);
   --warn: var(--canvas-warn);
   --radius: 12px;
   --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
@@ -50,17 +56,21 @@
 
 /* Explicit theme wrapper — isolates Canvas from sibling preset CSS */
 .canvasTheme {
-  --canvas-bg: #f1f5f9;
+  --canvas-bg: #eef2f6;
   --canvas-text: #1e293b;
-  --canvas-accent: #0f172a;
-  --canvas-accent-soft: #334155;
+  --canvas-ink-deep: #0a0f1c;
+  --canvas-accent: #c2410c;
+  --canvas-accent-soft: #ea580c;
+  --canvas-accent-wash: #fff7ed;
   --canvas-line: #e2e8f0;
   --canvas-paper: #ffffff;
   --canvas-wash: #f8fafc;
   --canvas-muted: #64748b;
   --canvas-aluminum: #94a3b8;
+  --canvas-positive: #0e7490;
+  --canvas-warn: #b45309;
   --ink: var(--canvas-text);
-  --ink-deep: var(--canvas-accent);
+  --ink-deep: var(--canvas-ink-deep);
   --muted: var(--canvas-muted);
   --aluminum: var(--canvas-aluminum);
   --accent: var(--canvas-accent);
@@ -69,7 +79,8 @@
   --canvas: var(--canvas-bg);
   --line: var(--canvas-line);
   --wash: var(--canvas-wash);
-  --profit: var(--canvas-accent);
+  --profit: var(--canvas-positive);
+  --warn: var(--canvas-warn);
   color: var(--canvas-text);
   background: var(--canvas-bg);
 }
@@ -257,7 +268,171 @@
   font-weight: 700;
 }
 
-/* Cover */
+/* Cover — Architectural Editorial (no cost / wealth on page 01) */
+.coverPage {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 14mm 16mm 12mm !important;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.coverPage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(15, 23, 42, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
+  background-size: 30px 30px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.coverHeader,
+.coverCenter,
+.coverFooter,
+.coverPageFooter {
+  position: relative;
+  z-index: 2;
+}
+
+.coverHeader {
+  flex-shrink: 0;
+}
+
+.coverLogoImg {
+  max-height: 42px;
+  max-width: 180px;
+  object-fit: contain;
+}
+
+.logoMark {
+  font-family: var(--serif);
+  font-size: 22pt;
+  font-weight: 900;
+  letter-spacing: 0.28em;
+  color: var(--canvas-ink-deep);
+  line-height: 1;
+}
+
+.logoSub {
+  font-size: 9pt;
+  font-weight: 700;
+  letter-spacing: 0.55em;
+  color: var(--canvas-muted);
+  margin-top: 6px;
+}
+
+.coverCenter {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+  padding: 24px 0;
+}
+
+.preparedFor {
+  font-size: 8pt;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  color: var(--canvas-accent-soft);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 18px;
+}
+
+.clientName {
+  font-family: var(--display);
+  font-size: 36pt;
+  line-height: 1.08;
+  color: var(--canvas-ink-deep);
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  max-width: 18ch;
+  overflow-wrap: break-word;
+}
+
+.coverDivider {
+  height: 3px;
+  width: 72px;
+  background-color: var(--canvas-accent);
+  margin: 28px 0;
+  flex-shrink: 0;
+}
+
+.documentTitle {
+  font-family: var(--sans);
+  font-size: 16pt;
+  font-weight: 300;
+  color: #334155;
+  margin: 0 0 8px;
+  letter-spacing: -0.01em;
+}
+
+.location {
+  margin: 0;
+  font-size: 11pt;
+  color: var(--canvas-aluminum);
+  letter-spacing: 0.06em;
+}
+
+.coverFooter {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid rgba(15, 23, 42, 0.1);
+  padding-top: 18px;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.specBox {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.specLabel {
+  font-size: 7pt;
+  letter-spacing: 0.16em;
+  color: var(--canvas-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.specValue {
+  font-family: var(--serif);
+  font-size: 14pt;
+  font-weight: 800;
+  color: var(--canvas-ink-deep);
+  line-height: 1.15;
+  overflow-wrap: break-word;
+}
+
+.coverPageFooter {
+  margin-top: 14px;
+  flex-shrink: 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--canvas-line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 7.5pt;
+  color: var(--canvas-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pageCover.coverPage {
+  justify-content: space-between;
+}
+
+/* Legacy cover helpers (unused by CoverPage) */
 .brand {
   font-family: var(--serif);
   font-size: 11pt;
@@ -305,57 +480,6 @@
   font-size: 12pt;
   max-width: 36ch;
   line-height: 1.5;
-}
-
-.preparedFor {
-  margin: 28px 0 0;
-  font-size: 12pt;
-  color: var(--muted);
-}
-
-.preparedFor strong {
-  display: block;
-  margin-top: 6px;
-  font-family: var(--display);
-  font-size: 18pt;
-  font-weight: 700;
-  color: var(--ink);
-}
-
-.heroStats {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 36px;
-  padding: 28px 26px;
-  background: var(--wash);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  border-left: 4px solid var(--accent);
-}
-
-.heroStats h2 {
-  margin: 0;
-  font-family: var(--display);
-  font-size: 26pt;
-  font-weight: 700;
-  color: var(--ink);
-  line-height: 1.15;
-}
-
-.heroStats h2 .accent {
-  color: var(--accent);
-}
-
-.heroStatsMeta {
-  font-size: 11pt;
-  font-weight: 700;
-  color: var(--muted);
-  letter-spacing: 0.04em;
-}
-
-.coverClient {
-  margin-top: 40px;
 }
 
 .coverClientName {
@@ -411,25 +535,25 @@
 }
 
 .evidenceWarn {
-  border-left: 3px solid var(--canvas-accent-soft);
+  border-left: 3px solid var(--canvas-warn);
 }
 
 .evidenceWarn::before {
-  background: var(--canvas-accent-soft);
+  background: var(--canvas-warn);
 }
 
 .evidencePositive {
-  border-left: 3px solid var(--canvas-accent);
+  border-left: 3px solid var(--canvas-positive);
 }
 
 .evidencePositive::before {
-  background: var(--canvas-accent);
+  background: var(--canvas-positive);
 }
 
 .evidenceAccent,
 .accentBg {
-  border-color: var(--canvas-line);
-  background: linear-gradient(165deg, #fff 0%, var(--canvas-wash) 100%);
+  border-color: rgba(194, 65, 12, 0.28);
+  background: linear-gradient(165deg, #fff 0%, var(--canvas-accent-wash) 100%);
   box-shadow: var(--card-shadow-up);
 }
 
@@ -530,8 +654,8 @@
 }
 
 .monthPeak {
-  border-color: var(--canvas-line);
-  background: var(--canvas-wash);
+  border-color: rgba(194, 65, 12, 0.35);
+  background: var(--canvas-accent-wash);
 }
 
 /* Expert Insights / PremiumInsight — one block per page */
@@ -541,7 +665,7 @@
   border: 1px solid var(--canvas-line);
   border-radius: 0 8px 8px 0;
   padding: 20px;
-  background: var(--canvas-wash);
+  background: linear-gradient(180deg, var(--canvas-accent-wash) 0%, var(--canvas-wash) 100%);
   border-left: 4px solid var(--canvas-accent);
   break-inside: avoid;
   flex-shrink: 0;
@@ -583,7 +707,252 @@
   line-height: 1.5;
 }
 
-/* Engineering Blueprint — Page 09 */
+/* --- Advanced Engineering Page Styles (Tech / Architectural) --- */
+
+.engineeringLayout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 16px;
+  flex: 0 0 auto;
+  align-items: stretch;
+}
+
+.roofVisualizer {
+  background: var(--canvas-ink-deep);
+  border-radius: 12px;
+  padding: 16px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 240px;
+  color: #fff;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: var(--card-shadow);
+}
+
+.roofGrid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 800px;
+}
+
+.panelLayout {
+  display: grid;
+  grid-template-columns: repeat(var(--panel-cols, 4), 28px);
+  gap: 4px;
+  z-index: 2;
+  transform: rotateX(45deg) rotateZ(-15deg);
+  transform-style: preserve-3d;
+}
+
+.panelBox {
+  width: 28px;
+  height: 46px;
+  background: rgba(56, 189, 248, 0.4);
+  border: 1px solid rgba(56, 189, 248, 0.8);
+  border-radius: 2px;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.compass {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 48px;
+  height: 48px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 7pt;
+  font-weight: 700;
+  z-index: 3;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.compass span,
+.north,
+.south,
+.east,
+.west {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 7pt;
+  font-weight: 800;
+}
+
+.north {
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #f97316 !important;
+}
+
+.south {
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.east {
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.west {
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.compassNeedle {
+  display: none;
+}
+
+.mapCaption {
+  position: relative;
+  z-index: 3;
+  margin-top: auto;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 10px 14px;
+  border-radius: 8px;
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mapCaption strong {
+  display: block;
+  font-size: 10pt;
+  font-weight: 700;
+  color: #fff;
+}
+
+.mapCaption span {
+  font-size: 8pt;
+  color: #cbd5e1;
+}
+
+.siteIntelligence {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.siteIntelligence h3 {
+  font-size: 12pt;
+  margin: 0 0 14px;
+  color: var(--canvas-ink-deep);
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 8px;
+  font-family: var(--serif);
+  font-weight: 700;
+}
+
+.techDataList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1 1 auto;
+}
+
+.techItem {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border-left: 3px solid #cbd5e1;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  gap: 2px;
+}
+
+.techItem span {
+  font-size: 7.5pt;
+  color: #64748b;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.techItem strong {
+  font-size: 12pt;
+  color: var(--canvas-ink-deep);
+  margin: 2px 0;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.techItem small {
+  font-size: 8pt;
+  color: #94a3b8;
+  line-height: 1.35;
+}
+
+.subHeader {
+  font-size: 12pt;
+  color: var(--canvas-ink-deep);
+  margin: 6px 0 12px;
+  font-family: var(--serif);
+  font-weight: 700;
+}
+
+.advancedSpecsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+  flex: 0 0 auto;
+}
+
+.engSpecCard {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  padding: 12px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  break-inside: avoid;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.engSpecValue {
+  font-size: 14pt;
+  font-weight: 800;
+  color: #f97316;
+  font-family: var(--display);
+  line-height: 1.15;
+}
+
+.engSpecLabel {
+  font-size: 8pt;
+  font-weight: 700;
+  color: var(--canvas-ink-deep);
+  margin: 2px 0;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.engSpecDesc {
+  font-size: 7.5pt;
+  color: #64748b;
+  line-height: 1.4;
+}
+
 .engineeringGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -612,11 +981,12 @@
   color: var(--canvas-aluminum);
 }
 
+.metricCard .value,
 .value {
   font-family: var(--display);
   font-size: 22pt;
   font-weight: 700;
-  color: var(--canvas-accent);
+  color: var(--canvas-ink-deep);
   line-height: 1.1;
 }
 
@@ -672,12 +1042,21 @@
   break-inside: avoid;
 }
 
+.stepAmount {
+  flex: 0 0 auto;
+  font-family: var(--display);
+  font-size: 14pt;
+  font-weight: 700;
+  color: var(--canvas-accent);
+  line-height: 1;
+}
+
 .stepNumber {
   font-family: var(--display);
   font-size: 18pt;
   font-weight: 800;
   color: var(--canvas-accent);
-  opacity: 0.28;
+  opacity: 0.35;
   flex: 0 0 auto;
   min-width: 2.2em;
   line-height: 1;
@@ -707,23 +1086,15 @@
   color: var(--canvas-muted);
 }
 
-.stepAmount {
-  flex: 0 0 auto;
-  font-family: var(--display);
-  font-size: 14pt;
-  font-weight: 700;
-  color: var(--canvas-accent);
-  line-height: 1;
-}
-
 .bankCard {
-  background: var(--canvas-accent);
+  background: linear-gradient(155deg, var(--canvas-ink-deep) 0%, #1e293b 55%, #334155 100%);
   color: #fff;
   padding: 20px 22px;
   border-radius: var(--radius);
   margin-bottom: 16px;
   box-shadow: var(--card-shadow);
   break-inside: avoid;
+  border-top: 3px solid var(--canvas-accent);
 }
 
 .bankCard h3 {
@@ -817,9 +1188,9 @@
 .productImgWrap {
   height: 140px;
   border-radius: 10px;
-  /* Charcoal stage + aluminum rim */
+  /* Charcoal stage + burnt-orange glow */
   background:
-    radial-gradient(ellipse 65% 55% at 50% 75%, rgba(148, 163, 184, 0.25), transparent 68%),
+    radial-gradient(ellipse 65% 55% at 50% 75%, rgba(194, 65, 12, 0.22), transparent 68%),
     linear-gradient(165deg, #0a0f1c 0%, #1e293b 52%, #334155 100%);
   border: 1px solid #94a3b8;
   display: flex;
@@ -941,7 +1312,7 @@
 .hardwareImgWrap {
   height: 120px;
   background:
-    radial-gradient(ellipse 70% 60% at 50% 60%, rgba(148, 163, 184, 0.2), transparent 70%),
+    radial-gradient(ellipse 70% 60% at 50% 60%, rgba(194, 65, 12, 0.1), transparent 70%),
     var(--wash);
   border-bottom: 1px solid var(--line);
   display: flex;
@@ -983,7 +1354,7 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--canvas-accent);
-  background: var(--canvas-wash);
+  background: var(--canvas-accent-wash);
   padding: 3px 7px;
   border-radius: 999px;
 }
@@ -1051,7 +1422,7 @@
 }
 
 .wealthBarPayback .barFill {
-  background: linear-gradient(180deg, #64748b 0%, var(--canvas-accent) 40%, #020617 100%);
+  background: linear-gradient(180deg, #fdba74 0%, var(--canvas-accent-soft) 40%, var(--canvas-accent) 100%);
 }
 
 .wealthBarPayback .yearLabel {
@@ -1076,7 +1447,7 @@
 .barFill {
   width: 100%;
   min-height: 8px;
-  background: linear-gradient(180deg, #94a3b8 0%, var(--canvas-accent) 55%, var(--canvas-accent-soft) 100%);
+  background: linear-gradient(180deg, #fb923c 0%, var(--canvas-accent-soft) 55%, var(--canvas-accent) 100%);
   border-radius: 8px 8px 0 0;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
   transition: height 0.2s ease;
@@ -1422,13 +1793,30 @@
   }
 
   .pageCover,
-  .pageClosing {
+  .pageClosing,
+  .coverPage {
     height: 297mm !important;
     min-height: 297mm !important;
     max-height: 297mm !important;
   }
 
-  .evidenceCard,
+  .coverPage {
+    padding: 16mm 16mm 12mm !important;
+  }
+
+  .coverPage::before {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .clientName {
+    font-size: 32pt;
+  }
+
+  .coverFooter,
+  .specBox,
+  .coverCenter,
+  .coverHeader,
   .hardwareCard,
   .productCard,
   .stepCard,
@@ -1438,10 +1826,14 @@
   .wealthBarsRow,
   .expertBox,
   .premiumInsight,
+  .engineeringLayout,
+  .roofVisualizer,
+  .siteIntelligence,
+  .advancedSpecsGrid,
+  .engSpecCard,
   .engineeringGrid,
   .complianceBox,
   .metricCard,
-  .heroStats,
   .bankCard,
   .timelineStep,
   .termsBox,

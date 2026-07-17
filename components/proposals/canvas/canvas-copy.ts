@@ -101,8 +101,8 @@ export function getCanvasCopy(lang: CanvasLang) {
         : "CO₂ and tree equivalents are not just marketing — they measure reduced grid demand from your home. Every clean unit displaces coal-heavy power.",
       engInsightTitle: hi ? "साइट मेट्रिक्स क्यों सुरक्षित हैं" : "Why site metrics protect yield",
       engInsightBody: hi
-        ? "टिल्ट, अभिविन्यास और स्ट्रिंग डिज़ाइन उपज का 10–20% तय कर सकते हैं। सही इंजीनियरिंग बिना अतिरिक्त मॉड्यूल के अधिक यूनिट देती है।"
-        : "Tilt, orientation, and string design can swing yield by 10–20%. Correct engineering unlocks more units without buying extra modules.",
+        ? "हमने सिस्टम को ~1.04 DC/AC अनुपात पर डिज़ाइन किया है — कम धूप में भी इन्वर्टर अधिकतम क्षमता के पास चलता है, जिससे साल भर उत्पादन स्थिर रहता है।"
+        : "We designed around a ~1.04 DC/AC ratio so the inverter stays near capacity on low-sun days — keeping annual yield steadier through winter and monsoon.",
       warrantyInsightTitle: hi ? "वारंटी कैसे पढ़ें" : "How to read warranty",
       warrantyInsightBody: hi
         ? "प्रदर्शन वारंटी उपज गारंटी देती है; उत्पाद वारंटी हार्डवेयर दोष कवर करती है। दोनों का मिलान ब्रांड + इंस्टॉलर कार्य निष्पादन से होता है।"
