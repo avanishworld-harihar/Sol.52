@@ -24,14 +24,17 @@ import {
   EvidenceGrid,
   ExpertInsights,
   EngineeringBlueprint,
+  InvestmentPlan,
+  FinancialStory,
+  EcologicalImpact,
   PaymentRoadmap,
   CoverPage,
+  ClosingPage,
   HardwareTrustGrid,
   resolveHardwareTrustProducts,
   PageBody,
   PageHeader,
   PageShell,
-  ProfitBadge,
   WealthJourneyBars,
   buildWealthJourneyBars,
 } from "./components";
@@ -411,86 +414,51 @@ export function CanvasProposalRenderer({
           )}
         </PageShell>
 
-        {/* Page 03: Investment plan */}
+        {/* Page 03: Investment plan — equation + returns + EMI */}
         <PageShell {...foot("03 / 12")}>
           <PageHeader title={c.pages.investment} lead={c.pages.investmentLead} />
           <PageBody>
-            <EvidenceGrid>
-              <EvidenceCard
-                title={c.pages.gross}
-                value={eco.grossInr > 0 ? formatInrCompact(eco.grossInr) : "—"}
-                insight={
-                  isHi
-                    ? "हार्डवेयर + इंस्टॉल की सकल कीमत।"
-                    : "Hardware + install before subsidy."
-                }
-              />
-              <EvidenceCard
-                title={c.pages.subsidy}
-                value={eco.subsidyInr > 0 ? formatInrCompact(eco.subsidyInr) : "—"}
-                insight={
-                  isHi
-                    ? "लागू सब्सिडी / छूट अनुमान।"
-                    : "Applicable subsidy / rebate estimate."
-                }
-                tone="positive"
-              />
-              <EvidenceCard
-                title={c.pages.youPay}
-                value={eco.netInr > 0 ? formatInrCompact(eco.netInr) : "—"}
-                insight={
-                  isHi
-                    ? "यही आंकड़ा पेबैक की आधार-रेखा है।"
-                    : "This figure is the payback baseline."
-                }
-                accent
-              />
-              <EvidenceCard
-                title={c.pages.payback}
-                value={
-                  eco.paybackYears > 0 ? `${eco.paybackYears.toFixed(1)} yr` : "—"
-                }
-                insight={
-                  isHi
-                    ? "नेट लागत ÷ वार्षिक बचत।"
-                    : "Net cost ÷ annual savings."
-                }
-              />
-              <EvidenceCard
-                title={c.pages.lifetimeWealth}
-                value={lifetime}
-                insight={
-                  isHi
-                    ? "दीर्घकालिक धन निर्माण।"
-                    : "Long-horizon wealth creation."
-                }
-              />
-              <EvidenceCard
-                title={c.pages.monthlyProfit}
-                value={monthlySavings}
-                insight={c.pages.netGainHint}
-              />
-            </EvidenceGrid>
-            {eco.emiRows.length > 0 ? (
-              <EvidenceGrid cols={3}>
-                {eco.emiRows.slice(0, 3).map((row) => (
-                  <EvidenceCard
-                    key={row.tenureLabel}
-                    title={row.tenureLabel}
-                    value={formatInr(row.monthlyEmiInr)}
-                    insight={
-                      row.interestPaidInr > 0
-                        ? `Interest ${formatInrCompact(row.interestPaidInr)}`
-                        : undefined
-                    }
-                  />
-                ))}
-              </EvidenceGrid>
-            ) : null}
-            <ExpertInsights
-              fill
-              title={c.pages.investInsightTitle}
-              body={c.pages.investInsightBody}
+            <InvestmentPlan
+              costSectionLabel={c.pages.costSection}
+              grossLabel={c.pages.gross}
+              grossValue={
+                eco.grossInr > 0 ? formatInrCompact(eco.grossInr) : "—"
+              }
+              subsidyLabel={c.pages.subsidy}
+              subsidyValue={
+                eco.subsidyInr > 0 ? formatInrCompact(eco.subsidyInr) : "—"
+              }
+              youPayLabel={c.pages.youPay}
+              youPayValue={
+                eco.netInr > 0 ? formatInrCompact(eco.netInr) : "—"
+              }
+              equationHint={c.pages.equationHint}
+              returnsSectionLabel={c.pages.returnsSection}
+              paybackLabel={c.pages.payback}
+              paybackValue={
+                eco.paybackYears > 0
+                  ? `${eco.paybackYears.toFixed(1)} yr`
+                  : "—"
+              }
+              lifetimeLabel={c.pages.lifetimeWealth}
+              lifetimeValue={lifetime}
+              monthlyLabel={c.pages.monthlyProfit}
+              monthlyValue={monthlySavings}
+              financeSectionLabel={c.pages.financeSection}
+              financeSectionLead={c.pages.financeSectionLead}
+              emiUnitLabel={c.pages.emiUnit}
+              emiOptions={eco.emiRows.slice(0, 3).map((row) => ({
+                tenureLabel: row.tenureLabel,
+                monthlyEmi: formatInr(row.monthlyEmiInr),
+                interestNote:
+                  row.interestPaidInr > 0
+                    ? isHi
+                      ? `ब्याज ${formatInrCompact(row.interestPaidInr)}`
+                      : `Interest ${formatInrCompact(row.interestPaidInr)}`
+                    : undefined,
+              }))}
+              insightTitle={c.pages.investInsightTitle}
+              insightBody={c.pages.investInsightBody}
             />
           </PageBody>
         </PageShell>
@@ -540,90 +508,50 @@ export function CanvasProposalRenderer({
           </PageBody>
         </PageShell>
 
-        {/* Page 05: Financial Story */}
+        {/* Page 05: Financial Story — bill drop → time → outcome */}
         <PageShell {...foot("05 / 12")}>
           <PageHeader title={c.pages.financial} lead={c.pages.financialLead} />
           <PageBody>
-            <EvidenceCard
-              title={c.pages.immediateProfit}
-              value={eco.monthlySavingsInr > 0 ? `+${monthlySavings}` : "—"}
-              insight={c.pages.netGainHint}
-              accent
-            />
-            <div className={styles.financialCompare}>
-              <EvidenceCard
-                title={c.pages.today}
-                value={monthlyBillApprox > 0 ? formatInr(monthlyBillApprox) : "—"}
-                insight={
-                  isHi
-                    ? "सोलर से पहले औसत मासिक बिल।"
-                    : "Average monthly bill before solar."
-                }
-              />
-              <ProfitBadge>
-                {c.pages.monthlyProfit}: +{monthlySavings}
-              </ProfitBadge>
-              <EvidenceCard
-                title={c.pages.afterSolar}
-                value={
-                  monthlyBillApprox > 0 && eco.monthlySavingsInr > 0
-                    ? formatInr(Math.max(0, monthlyBillApprox - eco.monthlySavingsInr))
-                    : "—"
-                }
-                insight={
-                  isHi
-                    ? "बचत घटने के बाद अनुमानित बिल।"
-                    : "Estimated bill after solar offset."
-                }
-                tone="positive"
-              />
-            </div>
-            <EvidenceGrid>
-              <EvidenceCard
-                title={c.labels.annualSavings}
-                value={yearOneSavings > 0 ? formatInrCompact(yearOneSavings) : "—"}
-                insight={
-                  isHi
-                    ? "पहले वर्ष की अनुमानित कुल बचत।"
-                    : "Projected total savings in year one."
-                }
-                accent
-              />
-              <EvidenceCard
-                title={c.pages.payback}
-                value={
-                  eco.paybackYears > 0 ? `${eco.paybackYears.toFixed(1)} yr` : "—"
-                }
-                insight={
-                  isHi
-                    ? "नेट निवेश वसूल होने तक का समय।"
-                    : "Years until net investment is recovered."
-                }
-              />
-              <EvidenceCard
-                title={c.pages.lifetimeWealth}
-                value={lifetime}
-                insight={
-                  isHi
-                    ? "25 वर्षों में संचयी लाभ।"
-                    : "Cumulative gain across 25 years."
-                }
-                tone="positive"
-              />
-              <EvidenceCard
-                title={c.pages.youPay}
-                value={eco.netInr > 0 ? formatInrCompact(eco.netInr) : "—"}
-                insight={
-                  isHi
-                    ? "सब्सिडी के बाद आपकी वास्तविक लागत।"
-                    : "Your true outlay after subsidy."
-                }
-              />
-            </EvidenceGrid>
-            <ExpertInsights
-              fill
-              title={c.pages.financeInsightTitle}
-              body={c.pages.financeInsightBody}
+            <FinancialStory
+              billSectionLabel={c.pages.billSection}
+              todayLabel={c.pages.today}
+              todayValue={
+                monthlyBillApprox > 0 ? formatInr(monthlyBillApprox) : "—"
+              }
+              afterLabel={c.pages.afterSolar}
+              afterValue={
+                monthlyBillApprox > 0 && eco.monthlySavingsInr > 0
+                  ? formatInr(
+                      Math.max(0, monthlyBillApprox - eco.monthlySavingsInr)
+                    )
+                  : "—"
+              }
+              profitLabel={c.pages.monthlyProfit}
+              profitValue={
+                eco.monthlySavingsInr > 0 ? `+${monthlySavings}` : "—"
+              }
+              billHint={c.pages.billHint}
+              timeSectionLabel={c.pages.timeSection}
+              annualLabel={c.labels.annualSavings}
+              annualValue={
+                yearOneSavings > 0 ? formatInrCompact(yearOneSavings) : "—"
+              }
+              paybackLabel={c.pages.payback}
+              paybackValue={
+                eco.paybackYears > 0
+                  ? `${eco.paybackYears.toFixed(1)} yr`
+                  : "—"
+              }
+              outcomeSectionLabel={c.pages.outcomeSection}
+              youPayLabel={c.pages.youPay}
+              youPayValue={
+                eco.netInr > 0 ? formatInrCompact(eco.netInr) : "—"
+              }
+              lifetimeLabel={c.pages.lifetimeWealth}
+              lifetimeValue={lifetime}
+              outcomeHint={c.pages.outcomeHint}
+              insightTitle={c.pages.financeInsightTitle}
+              insightBody={c.pages.financeInsightBody}
             />
           </PageBody>
         </PageShell>
@@ -729,42 +657,43 @@ export function CanvasProposalRenderer({
           </PageBody>
         </PageShell>
 
-        {/* Page 08: Impact */}
-        <PageShell {...foot("08 / 12")}>
-          <PageHeader title={c.pages.impact} lead={c.pages.impactLead} />
+        {/* Page 08: Ecological Impact — cinematic editorial */}
+        <PageShell {...foot("08 / 12")} className={styles.canvasTheme}>
           <PageBody>
-            <EvidenceGrid>
-              <EvidenceCard
-                title={c.pages.co2}
-                value={impact.co2Tons > 0 ? `${impact.co2Tons.toFixed(1)} t` : "—"}
-                tone="positive"
-              />
-              <EvidenceCard
-                title={c.pages.trees}
-                value={
-                  impact.treesEquivalent > 0
-                    ? impact.treesEquivalent.toLocaleString("en-IN")
+            <EcologicalImpact
+              eyebrow={c.pages.impactEyebrow}
+              title={c.pages.impactTitle}
+              subtitle={c.pages.impactSubtitle}
+              co2Value={
+                impact.co2Tons > 0 ? impact.co2Tons.toFixed(1) : "—"
+              }
+              co2Unit={c.pages.tonsUnit}
+              co2Heading={c.pages.co2Heading}
+              co2Body={c.pages.co2Body}
+              treesValue={
+                impact.treesEquivalent > 0
+                  ? impact.treesEquivalent.toLocaleString("en-IN")
+                  : "—"
+              }
+              treesUnit={c.pages.treesUnit}
+              treesHeading={c.pages.treesHeading}
+              treesBody={c.pages.treesBody}
+              unitsLabel={c.pages.cleanEnergyLabel}
+              unitsValue={
+                generationUnits > 0
+                  ? `${generationUnits.toLocaleString("en-IN")} ${isHi ? "यूनिट" : "Units"}`
+                  : generation
+              }
+              savingsLabel={c.pages.firstYearSavingsLabel}
+              savingsValue={
+                closing.annualSavingsInr > 0
+                  ? formatInrCompact(closing.annualSavingsInr)
+                  : yearOneSavings > 0
+                    ? formatInrCompact(yearOneSavings)
                     : "—"
-                }
-                tone="positive"
-              />
-              <EvidenceCard title={c.labels.units} value={generation} />
-              <EvidenceCard
-                title={c.labels.annualSavings}
-                value={
-                  closing.annualSavingsInr > 0
-                    ? formatInrCompact(closing.annualSavingsInr)
-                    : yearOneSavings > 0
-                      ? formatInrCompact(yearOneSavings)
-                      : "—"
-                }
-                accent
-              />
-            </EvidenceGrid>
-            <ExpertInsights
-              fill
-              title={c.pages.impactInsightTitle}
-              body={c.pages.impactInsightBody}
+              }
+              insightTitle={c.pages.impactInsightTitle}
+              insightBody={c.pages.impactInsightBody}
             />
           </PageBody>
         </PageShell>
@@ -867,23 +796,43 @@ export function CanvasProposalRenderer({
           </PageBody>
         </PageShell>
 
-        {/* Page 12: Closing */}
-        <PageShell variant="closing" {...foot("12 / 12")}>
-          <div className={styles.closingHero}>
-            <h2 className={styles.closingTitle}>{c.pages.closingTitle}</h2>
-            <p className={styles.closingBody}>{c.pages.closingBody}</p>
-            <button type="button" className={styles.closingCta} onClick={handlePrint}>
-              {c.pages.closingCta}
-            </button>
-          </div>
-          <div className={styles.closingContact}>
-            <p className={styles.cardLabel}>{c.pages.contact}</p>
-            <p className={styles.coverClientName}>{closing.installerName || brand}</p>
-            {closing.contactLine ? (
-              <p className={styles.coverClientLoc}>{closing.contactLine}</p>
-            ) : null}
-          </div>
-        </PageShell>
+        {/* Page 12: Cinematic Closing */}
+        <ClosingPage
+          eyebrow={c.pages.closingEyebrow}
+          titleLine1={c.pages.closingTitle}
+          titleLine2={c.pages.closingTitleLock}
+          subtitle={c.pages.closingSubtitle(
+            eng.cityLabel?.trim() ||
+              location.split(",")[0]?.trim() ||
+              (isHi ? "आपके शहर" : "your city")
+          )}
+          lifetimeValue={lifetime}
+          lifetimeLabel={c.pages.lifetimeWealth}
+          monthlyValue={
+            eco.monthlySavingsInr > 0 ? `+${monthlySavings}` : "—"
+          }
+          monthlyLabel={c.pages.monthlyProfit}
+          systemValue={capacityKw}
+          systemLabel={c.pages.closingSystemLabel}
+          ctaTitle={c.pages.closingCtaTitle}
+          ctaBody={c.pages.closingCtaBody}
+          companyName={closing.installerName || brand}
+          phone={
+            closing.contactLine
+              ?.split(/[·•|]/)
+              .map((p) => p.trim())
+              .find((p) => p && !p.includes("@")) || undefined
+          }
+          email={
+            closing.contactLine
+              ?.split(/[·•|]/)
+              .map((p) => p.trim())
+              .find((p) => p.includes("@")) || undefined
+          }
+          contactLine={closing.contactLine || undefined}
+          signatureLabel={c.pages.closingSignature}
+          pageNo="12 / 12"
+        />
       </div>
     </div>
   );

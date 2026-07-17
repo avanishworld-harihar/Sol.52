@@ -93,6 +93,111 @@ export function CoverPage({
   );
 }
 
+/* ── ClosingPage — Page 12 Cinematic Closing ─────────────────── */
+
+export type ClosingPageProps = {
+  eyebrow: string;
+  titleLine1: string;
+  titleLine2: string;
+  subtitle: string;
+  lifetimeValue: string;
+  lifetimeLabel: string;
+  monthlyValue: string;
+  monthlyLabel: string;
+  systemValue: string;
+  systemLabel: string;
+  ctaTitle: string;
+  ctaBody: string;
+  companyName: string;
+  phone?: string;
+  email?: string;
+  contactLine?: string;
+  signatureLabel: string;
+  pageNo?: string;
+};
+
+export function ClosingPage({
+  eyebrow,
+  titleLine1,
+  titleLine2,
+  subtitle,
+  lifetimeValue,
+  lifetimeLabel,
+  monthlyValue,
+  monthlyLabel,
+  systemValue,
+  systemLabel,
+  ctaTitle,
+  ctaBody,
+  companyName,
+  phone,
+  email,
+  contactLine,
+  signatureLabel,
+  pageNo = "12 / 12",
+}: ClosingPageProps) {
+  return (
+    <section
+      className={`${styles.page} ${styles.pageClosing} ${styles.closingPage} ${styles.canvasTheme}`.trim()}
+    >
+      <div className={styles.closingCard}>
+        <div className={styles.closingHeader}>
+          <span className={styles.closingEyebrow}>{eyebrow}</span>
+          <h1 className={styles.closingTitle}>
+            {titleLine1}
+            <br />
+            {titleLine2}
+          </h1>
+          <p className={styles.closingSubtitle}>{subtitle}</p>
+        </div>
+
+        <div className={styles.finalStatsGrid}>
+          <div className={styles.finalStatItem}>
+            <span className={styles.finalStatValue}>{lifetimeValue}</span>
+            <span className={styles.finalStatLabel}>{lifetimeLabel}</span>
+          </div>
+          <div className={styles.finalStatDivider} aria-hidden />
+          <div className={styles.finalStatItem}>
+            <span className={styles.finalStatValue}>{monthlyValue}</span>
+            <span className={styles.finalStatLabel}>{monthlyLabel}</span>
+          </div>
+          <div className={styles.finalStatDivider} aria-hidden />
+          <div className={styles.finalStatItem}>
+            <span className={styles.finalStatValue}>{systemValue}</span>
+            <span className={styles.finalStatLabel}>{systemLabel}</span>
+          </div>
+        </div>
+
+        <div className={styles.closingFooter}>
+          <div className={styles.ctaBox}>
+            <h3>{ctaTitle}</h3>
+            <p>{ctaBody}</p>
+          </div>
+
+          <div className={styles.signatureBlock}>
+            <div className={styles.contactDetails}>
+              <strong>{companyName}</strong>
+              {phone ? <span>{phone}</span> : null}
+              {email ? <span>{email}</span> : null}
+              {!phone && !email && contactLine ? (
+                <span>{contactLine}</span>
+              ) : null}
+            </div>
+            <div className={styles.authSignature}>
+              <div className={styles.signLine} aria-hidden />
+              <span>{signatureLabel}</span>
+            </div>
+          </div>
+        </div>
+
+        {pageNo ? (
+          <span className={styles.closingPageNum}>{pageNo}</span>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
 /* ── Page chrome ─────────────────────────────────────────────── */
 
 export function PageShell({
@@ -204,6 +309,353 @@ export function EvidenceGrid({
   return (
     <div className={cols === 3 ? styles.evidenceGrid3 : styles.evidenceGrid}>
       {children}
+    </div>
+  );
+}
+
+/* ── InvestmentPlan — Page 03 cost equation + EMI ─────────────── */
+
+export type InvestmentEmiOption = {
+  tenureLabel: string;
+  monthlyEmi: string;
+  interestNote?: string;
+};
+
+export type InvestmentPlanProps = {
+  costSectionLabel: string;
+  grossLabel: string;
+  grossValue: string;
+  subsidyLabel: string;
+  subsidyValue: string;
+  youPayLabel: string;
+  youPayValue: string;
+  equationHint?: string;
+  returnsSectionLabel: string;
+  paybackLabel: string;
+  paybackValue: string;
+  lifetimeLabel: string;
+  lifetimeValue: string;
+  monthlyLabel: string;
+  monthlyValue: string;
+  financeSectionLabel: string;
+  financeSectionLead?: string;
+  emiUnitLabel?: string;
+  emiOptions: InvestmentEmiOption[];
+  insightTitle: string;
+  insightBody: string;
+};
+
+export function InvestmentPlan({
+  costSectionLabel,
+  grossLabel,
+  grossValue,
+  subsidyLabel,
+  subsidyValue,
+  youPayLabel,
+  youPayValue,
+  equationHint,
+  returnsSectionLabel,
+  paybackLabel,
+  paybackValue,
+  lifetimeLabel,
+  lifetimeValue,
+  monthlyLabel,
+  monthlyValue,
+  financeSectionLabel,
+  financeSectionLead,
+  emiUnitLabel = "/ month",
+  emiOptions,
+  insightTitle,
+  insightBody,
+}: InvestmentPlanProps) {
+  return (
+    <div className={styles.investPlan}>
+      <section className={styles.investCostBlock} aria-label={costSectionLabel}>
+        <div className={styles.investSectionHead}>
+          <span className={styles.investSectionLabel}>{costSectionLabel}</span>
+        </div>
+        <div className={styles.investEquation}>
+          <div className={styles.investEqTerm}>
+            <span className={styles.investEqLabel}>{grossLabel}</span>
+            <strong className={styles.investEqValue}>{grossValue}</strong>
+          </div>
+          <span className={styles.investEqOp} aria-hidden>
+            −
+          </span>
+          <div className={`${styles.investEqTerm} ${styles.investEqSubsidy}`}>
+            <span className={styles.investEqLabel}>{subsidyLabel}</span>
+            <strong className={styles.investEqValue}>{subsidyValue}</strong>
+          </div>
+          <span className={styles.investEqOp} aria-hidden>
+            =
+          </span>
+          <div className={`${styles.investEqTerm} ${styles.investEqResult}`}>
+            <span className={styles.investEqLabel}>{youPayLabel}</span>
+            <strong className={styles.investEqValue}>{youPayValue}</strong>
+          </div>
+        </div>
+        {equationHint ? (
+          <p className={styles.investEqHint}>{equationHint}</p>
+        ) : null}
+      </section>
+
+      <section className={styles.investReturns} aria-label={returnsSectionLabel}>
+        <div className={styles.investSectionHead}>
+          <span className={styles.investSectionLabel}>{returnsSectionLabel}</span>
+        </div>
+        <div className={styles.investReturnsRow}>
+          <div className={styles.investReturnItem}>
+            <span className={styles.investReturnLabel}>{paybackLabel}</span>
+            <strong className={styles.investReturnValue}>{paybackValue}</strong>
+          </div>
+          <div className={styles.investReturnItem}>
+            <span className={styles.investReturnLabel}>{lifetimeLabel}</span>
+            <strong className={styles.investReturnValue}>{lifetimeValue}</strong>
+          </div>
+          <div className={styles.investReturnItem}>
+            <span className={styles.investReturnLabel}>{monthlyLabel}</span>
+            <strong className={styles.investReturnValue}>{monthlyValue}</strong>
+          </div>
+        </div>
+      </section>
+
+      {emiOptions.length > 0 ? (
+        <section className={styles.investFinance} aria-label={financeSectionLabel}>
+          <div className={styles.investFinanceHead}>
+            <h3 className={styles.investFinanceTitle}>{financeSectionLabel}</h3>
+            {financeSectionLead ? (
+              <p className={styles.investFinanceLead}>{financeSectionLead}</p>
+            ) : null}
+          </div>
+          <div className={styles.investEmiGrid}>
+            {emiOptions.map((opt) => (
+              <article key={opt.tenureLabel} className={styles.investEmiCard}>
+                <span className={styles.investEmiTenure}>{opt.tenureLabel}</span>
+                <strong className={styles.investEmiValue}>{opt.monthlyEmi}</strong>
+                <span className={styles.investEmiUnit}>{emiUnitLabel}</span>
+                {opt.interestNote ? (
+                  <span className={styles.investEmiNote}>{opt.interestNote}</span>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      <ExpertInsights fill title={insightTitle} body={insightBody} />
+    </div>
+  );
+}
+
+/* ── FinancialStory — Page 05 bill drop → returns ─────────────── */
+
+export type FinancialStoryProps = {
+  billSectionLabel: string;
+  todayLabel: string;
+  todayValue: string;
+  afterLabel: string;
+  afterValue: string;
+  profitLabel: string;
+  profitValue: string;
+  billHint?: string;
+  timeSectionLabel: string;
+  annualLabel: string;
+  annualValue: string;
+  paybackLabel: string;
+  paybackValue: string;
+  outcomeSectionLabel: string;
+  youPayLabel: string;
+  youPayValue: string;
+  lifetimeLabel: string;
+  lifetimeValue: string;
+  outcomeHint?: string;
+  insightTitle: string;
+  insightBody: string;
+};
+
+export function FinancialStory({
+  billSectionLabel,
+  todayLabel,
+  todayValue,
+  afterLabel,
+  afterValue,
+  profitLabel,
+  profitValue,
+  billHint,
+  timeSectionLabel,
+  annualLabel,
+  annualValue,
+  paybackLabel,
+  paybackValue,
+  outcomeSectionLabel,
+  youPayLabel,
+  youPayValue,
+  lifetimeLabel,
+  lifetimeValue,
+  outcomeHint,
+  insightTitle,
+  insightBody,
+}: FinancialStoryProps) {
+  return (
+    <div className={styles.finStory}>
+      <section className={styles.finBillBlock} aria-label={billSectionLabel}>
+        <div className={styles.investSectionHead}>
+          <span className={styles.investSectionLabel}>{billSectionLabel}</span>
+        </div>
+        <div className={styles.finBillEquation}>
+          <div className={styles.finBillTerm}>
+            <span className={styles.investEqLabel}>{todayLabel}</span>
+            <strong className={styles.investEqValue}>{todayValue}</strong>
+          </div>
+          <span className={styles.investEqOp} aria-hidden>
+            →
+          </span>
+          <div className={`${styles.finBillTerm} ${styles.finBillAfter}`}>
+            <span className={styles.investEqLabel}>{afterLabel}</span>
+            <strong className={styles.investEqValue}>{afterValue}</strong>
+          </div>
+          <span className={styles.investEqOp} aria-hidden>
+            =
+          </span>
+          <div className={`${styles.finBillTerm} ${styles.finBillProfit}`}>
+            <span className={styles.investEqLabel}>{profitLabel}</span>
+            <strong className={styles.investEqValue}>{profitValue}</strong>
+          </div>
+        </div>
+        {billHint ? <p className={styles.investEqHint}>{billHint}</p> : null}
+      </section>
+
+      <section className={styles.finTimeBlock} aria-label={timeSectionLabel}>
+        <div className={styles.investSectionHead}>
+          <span className={styles.investSectionLabel}>{timeSectionLabel}</span>
+        </div>
+        <div className={styles.finTimeRow}>
+          <div className={styles.finTimeItem}>
+            <span className={styles.investReturnLabel}>{annualLabel}</span>
+            <strong className={`${styles.investReturnValue} ${styles.accentValue}`}>
+              {annualValue}
+            </strong>
+          </div>
+          <div className={styles.finTimeItem}>
+            <span className={styles.investReturnLabel}>{paybackLabel}</span>
+            <strong className={styles.investReturnValue}>{paybackValue}</strong>
+          </div>
+        </div>
+      </section>
+
+      <section className={styles.finOutcome} aria-label={outcomeSectionLabel}>
+        <div className={styles.finOutcomeHead}>
+          <h3 className={styles.finOutcomeTitle}>{outcomeSectionLabel}</h3>
+          {outcomeHint ? (
+            <p className={styles.finOutcomeLead}>{outcomeHint}</p>
+          ) : null}
+        </div>
+        <div className={styles.finOutcomeRow}>
+          <div className={styles.finOutcomePay}>
+            <span className={styles.finOutcomeLabel}>{youPayLabel}</span>
+            <strong className={styles.finOutcomeValue}>{youPayValue}</strong>
+          </div>
+          <span className={styles.finOutcomeArrow} aria-hidden>
+            →
+          </span>
+          <div className={styles.finOutcomeWealth}>
+            <span className={styles.finOutcomeLabel}>{lifetimeLabel}</span>
+            <strong className={styles.finOutcomeValue}>{lifetimeValue}</strong>
+          </div>
+        </div>
+      </section>
+
+      <ExpertInsights fill title={insightTitle} body={insightBody} />
+    </div>
+  );
+}
+
+/* ── EcologicalImpact — Page 08 cinematic eco editorial ──────── */
+
+export type EcologicalImpactProps = {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  co2Value: string;
+  co2Unit: string;
+  co2Heading: string;
+  co2Body: string;
+  treesValue: string;
+  treesUnit: string;
+  treesHeading: string;
+  treesBody: string;
+  unitsLabel: string;
+  unitsValue: string;
+  savingsLabel: string;
+  savingsValue: string;
+  insightTitle: string;
+  insightBody: string;
+};
+
+export function EcologicalImpact({
+  eyebrow,
+  title,
+  subtitle,
+  co2Value,
+  co2Unit,
+  co2Heading,
+  co2Body,
+  treesValue,
+  treesUnit,
+  treesHeading,
+  treesBody,
+  unitsLabel,
+  unitsValue,
+  savingsLabel,
+  savingsValue,
+  insightTitle,
+  insightBody,
+}: EcologicalImpactProps) {
+  return (
+    <div className={`${styles.ecoImpact} ${styles.canvasTheme}`.trim()}>
+      <div className={styles.impactHeader}>
+        <span className={styles.impactEyebrow}>{eyebrow}</span>
+        <h2 className={styles.impactTitle}>{title}</h2>
+        <p className={styles.impactSubtitle}>{subtitle}</p>
+      </div>
+
+      <div className={styles.impactShowcase}>
+        <div className={styles.heroImpactCard}>
+          <div className={styles.heroImpactData}>
+            <span className={styles.heroValue}>{co2Value}</span>
+            <span className={styles.heroUnit}>{co2Unit}</span>
+          </div>
+          <div className={styles.heroImpactContext}>
+            <h3>{co2Heading}</h3>
+            <p>{co2Body}</p>
+          </div>
+        </div>
+
+        <div className={`${styles.heroImpactCard} ${styles.treeCard}`}>
+          <div className={styles.heroImpactData}>
+            <span className={styles.heroValue}>{treesValue}</span>
+            <span className={styles.heroUnit}>{treesUnit}</span>
+          </div>
+          <div className={styles.heroImpactContext}>
+            <h3>{treesHeading}</h3>
+            <p>{treesBody}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.impactMetricsBar}>
+        <div className={styles.metricItem}>
+          <span className={styles.metricLabel}>{unitsLabel}</span>
+          <span className={styles.metricData}>{unitsValue}</span>
+        </div>
+        <div className={styles.metricDivider} aria-hidden />
+        <div className={styles.metricItem}>
+          <span className={styles.metricLabel}>{savingsLabel}</span>
+          <span className={styles.metricData}>{savingsValue}</span>
+        </div>
+      </div>
+
+      <PremiumInsight fill body={insightBody} label={insightTitle} />
     </div>
   );
 }

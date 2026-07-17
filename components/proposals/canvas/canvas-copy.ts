@@ -34,17 +34,36 @@ export function getCanvasCopy(lang: CanvasLang) {
         : "Proposed capacity and annual generation.",
       financial: hi ? "Financial Story" : "Financial Story",
       financialLead: hi
-        ? "दिन 1 से शुद्ध मासिक लाभ।"
-        : "Net monthly gain from day one.",
+        ? "बिल घटे → मासिक लाभ → फिर साल और जीवनभर का नतीजा।"
+        : "Bill drops → monthly profit → then year-one and lifetime outcome.",
+      billSection: hi ? "मासिक बिल कैसे बदलेगा" : "How your monthly bill changes",
+      billHint: hi
+        ? "आज का बिल सोलर के बाद गिरता है — अंतर आपका मासिक लाभ है।"
+        : "Today’s bill falls after solar — the gap is your monthly profit.",
+      timeSection: hi ? "समय के साथ" : "Over time",
+      outcomeSection: hi ? "निवेश का नतीजा" : "Investment outcome",
+      outcomeHint: hi
+        ? "आप जितना चुकाते हैं, उसके मुकाबले 25 वर्षों में कितना धन बनता है।"
+        : "What you pay versus the wealth it builds over 25 years.",
       immediateProfit: hi ? "तत्काल मासिक लाभ" : "Immediate Monthly Profit",
       netGainHint: hi ? "दिन 1 से शुद्ध मासिक लाभ" : "Net Monthly Gain from Day 1",
-      today: hi ? "आज" : "Today",
+      today: hi ? "आज का बिल" : "Today’s bill",
       afterSolar: hi ? "सोलर के बाद" : "After solar",
       monthlyProfit: hi ? "मासिक लाभ" : "Monthly profit",
       investment: hi ? "निवेश योजना" : "Investment plan",
       investmentLead: hi
-        ? "सकल लागत, सब्सिडी, और आपका भुगतान।"
-        : "Gross cost, subsidy, and what you pay.",
+        ? "सकल में से सब्सिडी घटे — फिर EMI या रिटर्न साफ़ दिखें।"
+        : "See subsidy come off gross — then returns and EMI options at a glance.",
+      costSection: hi ? "आपकी लागत" : "Your cost",
+      equationHint: hi
+        ? "सकल − सब्सिडी = आपका वास्तविक भुगतान (पेबैक इसी पर आधारित)।"
+        : "Gross − Subsidy = what you actually pay (payback is measured on this).",
+      returnsSection: hi ? "रिटर्न स्नैपशॉट" : "Return snapshot",
+      financeSection: hi ? "फाइनेंसिंग · मासिक EMI" : "Financing · Monthly EMI",
+      financeSectionLead: hi
+        ? "नेट लागत पर ऋण अवधि चुनें — हर विकल्प की मासिक किस्त।"
+        : "Choose a loan tenure on your net cost — monthly instalment for each option.",
+      emiUnit: hi ? "/ महीना" : "/ month",
       gross: hi ? "सकल" : "Gross",
       subsidy: hi ? "सब्सिडी" : "Subsidy",
       youPay: hi ? "आप चुकाएँगे" : "You pay",
@@ -95,10 +114,39 @@ export function getCanvasCopy(lang: CanvasLang) {
       wealthInsightBody: hi
         ? "टैरिफ मुद्रास्फीति बचत को साल-दर-साल बढ़ाती है। शुरुआती वर्ष निवेश वसूली हैं; बाद के वर्ष चक्रवृद्धि धन बनाते हैं — इसलिए 25-वर्ष का आंकड़ा सिर्फ 25× साल-1 नहीं है।"
         : "Tariff inflation lifts savings year over year. Early years recover capital; later years compound wealth — so the 25-year figure is not simply 25× year one.",
-      impactInsightTitle: hi ? "संख्याओं के पीछे अर्थ" : "Meaning behind the numbers",
+      impactInsightTitle: hi ? "एक्सपर्ट इनसाइट" : "Expert Insight",
       impactInsightBody: hi
-        ? "CO₂ और वृक्ष समकक्ष सिर्फ मार्केटिंग नहीं — वे आपके घर की ग्रिड मांग कम करने का माप हैं। हर वर्ष स्वच्छ यूनिट = कम कोयला-आधारित बिजली।"
-        : "CO₂ and tree equivalents are not just marketing — they measure reduced grid demand from your home. Every clean unit displaces coal-heavy power.",
+        ? "यह केवल मार्केटिंग के आंकड़े नहीं हैं। आपके द्वारा बनाई गई हर 1 यूनिट बिजली का मतलब है कि पावर ग्रिड में कोयला कम जलाया जा रहा है। आप सिर्फ ऊर्जा नहीं बचा रहे, आप एक सुरक्षित भविष्य का निर्माण कर रहे हैं।"
+        : "These are not just marketing figures. Every unit your roof generates means less coal burned on the grid. You are not only saving energy — you are building a safer future.",
+      impactEyebrow: hi ? "पारिस्थितिक लाभांश" : "Ecological dividend",
+      impactTitle: hi
+        ? "बिजली से आगे का उपहार।"
+        : "A Gift Beyond Electricity.",
+      impactSubtitle: hi
+        ? "आपकी छत का पारिस्थितिकी तंत्र चुपचाप ग्रह के लिए काम करता है। सोलर की हर यूनिट जलवायु कार्रवाई है — अगली पीढ़ी के लिए साफ़ हवा।"
+        : "Your rooftop ecosystem works silently for the planet. Every unit of solar energy generated is a direct act of climate action, ensuring cleaner air for the next generation.",
+      co2Heading: hi
+        ? "आजीवन CO₂ समाप्त"
+        : "Lifetime CO₂ Eliminated",
+      co2Body: hi
+        ? "लगभग 70 वर्षों तक पेट्रोल कार को सड़क से हटाने के बराबर। आप कोयला-भारी ग्रिड निर्भरता सक्रिय रूप से कम कर रहे हैं।"
+        : "Equivalent to removing a petrol car from the road for over 70 years. You are actively reducing coal-heavy grid dependence.",
+      treesHeading: hi
+        ? "पारिस्थितिक समकक्ष वृक्षारोपण"
+        : "Ecological Equivalent Planted",
+      treesBody: hi
+        ? "प्रकृति को उतना अवशोषण करने के लिए विशाल वन चाहिए — जो आपका सिस्टम छत पर चुपचाप, साल-दर-साल हासिल करता है।"
+        : "Nature would need a massive woodland to absorb what your system achieves quietly, year after year on your roof.",
+      cleanEnergyLabel: hi ? "वार्षिक स्वच्छ ऊर्जा" : "Annual clean energy",
+      firstYearSavingsLabel: hi
+        ? "पहले वर्ष की वित्तीय बचत"
+        : "First year financial savings",
+      tonsUnit: hi ? "टन" : "Tons",
+      treesUnit: hi ? "वृक्ष" : "Trees",
+      impact: hi ? "प्रभाव" : "Impact",
+      impactLead: hi ? "स्वच्छ ऊर्जा का माप।" : "Clean generation, measured.",
+      co2: hi ? "CO₂ बचत" : "CO₂ avoided",
+      trees: hi ? "वृक्ष समकक्ष" : "Tree equivalent",
       engInsightTitle: hi ? "साइट मेट्रिक्स क्यों सुरक्षित हैं" : "Why site metrics protect yield",
       engInsightBody: hi
         ? "हमने सिस्टम को ~1.04 DC/AC अनुपात पर डिज़ाइन किया है — कम धूप में भी इन्वर्टर अधिकतम क्षमता के पास चलता है, जिससे साल भर उत्पादन स्थिर रहता है।"
@@ -111,10 +159,6 @@ export function getCanvasCopy(lang: CanvasLang) {
       execInsightBody: hi
         ? "भुगतान चरणों को साइट प्रगति से जोड़ें — सर्वे, सामग्री पहुँच, इंस्टॉल, कमीशनिंग। इससे दोनों पक्षों के लिए जोखिम कम और समय-सारणी स्पष्ट रहती है।"
         : "Tie payment stages to site progress — survey, material delivery, install, commissioning. That keeps risk low and the timeline honest for both sides.",
-      impact: hi ? "प्रभाव" : "Impact",
-      impactLead: hi ? "स्वच्छ ऊर्जा का माप।" : "Clean generation, measured.",
-      co2: hi ? "CO₂ बचत" : "CO₂ avoided",
-      trees: hi ? "वृक्ष समकक्ष" : "Tree equivalent",
       engineering: hi ? "इंजीनियरिंग" : "Engineering",
       engineeringLead: hi
         ? "साइट मेट्रिक्स और मानक।"
@@ -126,7 +170,21 @@ export function getCanvasCopy(lang: CanvasLang) {
       payment: hi ? "भुगतान और नियम" : "Payment & terms",
       paymentLead: hi ? "माइलस्टोन अनुसूची और शर्तें।" : "Milestone schedule and conditions.",
       closing: hi ? "बधाई" : "Congratulations",
+      closingEyebrow: hi ? "अंतिम कदम" : "The final step",
       closingTitle: hi ? "बधाई।" : "Congratulations.",
+      closingTitleLock: hi
+        ? "आप अगले 25 वर्षों के लिए अपनी बिजली की कीमत लॉक कर रहे हैं।"
+        : "You are locking your electricity price for the next 25 years.",
+      closingSubtitle: (city: string) =>
+        hi
+          ? `हर दिन जब सूरज ${city} पर उगता है, आपकी छत कमाती है। हर महीने आपका धन बढ़ता है। यह खर्च नहीं — छत पर एक उच्च-प्रतिफल वाला वित्तीय संपत्ति है।`
+          : `Every day the sun rises over ${city}, your roof earns. Every month, your wealth compounds. This is not a utility expense—this is a high-yield financial asset on your rooftop.`,
+      closingCtaTitle: hi ? "शुरू करने को तैयार?" : "Ready to begin?",
+      closingCtaBody: hi
+        ? "इस ब्लूप्रिंट पर हस्ताक्षर करें। इंजीनियरिंग, DISCOM कागज़ात, और इंस्टॉलेशन हम संभालेंगे।"
+        : "Sign this blueprint. We will handle the engineering, the DISCOM paperwork, and the installation.",
+      closingSystemLabel: hi ? "सिस्टम इंजन" : "System engine",
+      closingSignature: hi ? "अधिकृत हस्ताक्षर" : "Authorized Signature",
       closingBody: hi
         ? "आप अगले 25 वर्षों के लिए अपनी बिजली की कीमत लॉक कर रहे हैं।"
         : "You are locking your electricity price for the next 25 years.",
