@@ -1146,14 +1146,6 @@
 }
 
 @media print {
-  html,
-  body {
-    width: 210mm;
-    margin: 0 !important;
-    padding: 0 !important;
-    background: #fff !important;
-  }
-
   .printBar {
     display: none !important;
   }
@@ -1225,7 +1217,8 @@
     print-color-adjust: exact !important;
   }
 
-  * {
+  .shell,
+  .shell * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
