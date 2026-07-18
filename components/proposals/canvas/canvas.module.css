@@ -994,6 +994,16 @@
   color: var(--aluminum);
 }
 
+.genSavingsBasis {
+  margin: 0;
+  padding: 7px 8px 0;
+  border-top: 1px solid var(--line);
+  color: #64748b;
+  font-size: 7.5pt;
+  line-height: 1.35;
+  text-align: center;
+}
+
 /* ── FinancialStory — bill drop → time → outcome ─────────────── */
 .finStory {
   display: flex;

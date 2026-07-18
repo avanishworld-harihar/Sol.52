@@ -202,6 +202,27 @@ export function CanvasProposalRenderer({
     systemKwNum > 0 && generationUnits > 0
       ? `${Math.round(generationUnits / systemKwNum)} kWh/kW`
       : "—";
+  const panelItem = bom.find((b) => /module|panel|solar/i.test(`${b.name} ${b.brand}`));
+  const panelDetailText = [
+    panelItem?.spec,
+    ...(panelItem?.technicalPoints ?? []),
+  ].join(" ");
+  const panelConfigMatch = panelDetailText.match(
+    /(\d+)\s*(?:×|x)\s*(\d{3,4})\s*Wp/i
+  );
+  const panelWatt = panelConfigMatch ? Number(panelConfigMatch[2]) : 580;
+  const panelCount = panelConfigMatch
+    ? Number(panelConfigMatch[1])
+    : systemKwNum > 0
+      ? Math.ceil((systemKwNum * 1000) / panelWatt)
+      : 0;
+  const dcArrayKwp =
+    panelCount > 0 ? (panelCount * panelWatt) / 1000 : 0;
+  const requiredRoofAreaM2 = panelCount > 0 ? Math.round(panelCount * 2.2) : 0;
+  const effectiveSavingPerUnit =
+    generationUnits > 0 && yearOneSavings > 0
+      ? yearOneSavings / generationUnits
+      : 0;
 
   const tiltMetric =
     eng.metrics.find((m) => /tilt/i.test(m.label))?.value?.trim() || "20°";
@@ -451,18 +472,27 @@ export function CanvasProposalRenderer({
                     value={capacityKw}
                     accent
                   />
-                  <EvidenceCard title={c.labels.annualGen} value={generation} />
+                  <EvidenceCard
+                    title={isHi ? "DC ऐरे और मॉड्यूल" : "DC Array & Modules"}
+                    value={
+                      dcArrayKwp > 0
+                        ? `${dcArrayKwp.toFixed(2)} kWp · ${panelCount} ${isHi ? "मॉड्यूल" : "modules"}`
+                        : "—"
+                    }
+                  />
                   <EvidenceCard title={c.labels.coverage} value={coverage} />
                   <EvidenceCard
-                    title={c.labels.specificYield}
-                    value={specificYield}
+                    title={isHi ? "अनुमानित छत क्षेत्र" : "Estimated Roof Area"}
+                    value={
+                      requiredRoofAreaM2 > 0 ? `~${requiredRoofAreaM2} m²` : "—"
+                    }
                     tone="positive"
                   />
                 </EvidenceGrid>
                 <ExpertInsights
                   fill
-                  title={c.pages.genInsightTitle}
-                  body={c.pages.genInsightBody}
+                  title={c.pages.requirementInsightTitle}
+                  body={c.pages.requirementInsightBody}
                 />
               </PageBody>
             </>
@@ -746,6 +776,13 @@ export function CanvasProposalRenderer({
               months={genForecastMonths}
               unitsLabel={c.pages.genUnitsLabel}
               savingsLabel={c.pages.genSavingsLabel}
+              savingsBasis={
+                effectiveSavingPerUnit > 0
+                  ? isHi
+                    ? `अनुमानित बचत = मासिक यूनिट × ₹${effectiveSavingPerUnit.toFixed(2)}/यूनिट प्रभावी बचत दर। फिक्स्ड चार्ज शामिल नहीं हैं।`
+                    : `Estimated savings = monthly units × ₹${effectiveSavingPerUnit.toFixed(2)}/unit effective saving rate. Fixed charges excluded.`
+                  : undefined
+              }
             />
             <ExpertInsights
               fill

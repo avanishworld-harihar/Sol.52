@@ -735,11 +735,13 @@ export function buildGenerationForecastMonths(
 ): GenerationForecastMonth[] {
   const shareSum = MP_GEN_SHARE.reduce((s, v) => s + v, 0);
   const maxShare = Math.max(...MP_GEN_SHARE);
+  const effectiveSavingPerUnit =
+    annualUnits > 0 && annualSavingsInr > 0 ? annualSavingsInr / annualUnits : 0;
   return MONTH_SHORT.map((label, i) => {
     const share = MP_GEN_SHARE[i]! / shareSum;
     const units = annualUnits > 0 ? Math.round(annualUnits * share) : 0;
     const savingsInr =
-      annualSavingsInr > 0 ? Math.round(annualSavingsInr * share) : 0;
+      effectiveSavingPerUnit > 0 ? Math.round(units * effectiveSavingPerUnit) : 0;
     return {
       label,
       units,
@@ -754,10 +756,12 @@ export function GenerationForecast({
   months,
   unitsLabel,
   savingsLabel,
+  savingsBasis,
 }: {
   months: GenerationForecastMonth[];
   unitsLabel: string;
   savingsLabel: string;
+  savingsBasis?: string;
 }) {
   if (months.length === 0) return null;
   return (
@@ -790,6 +794,7 @@ export function GenerationForecast({
         <span>{unitsLabel}</span>
         <span>{savingsLabel}</span>
       </div>
+      {savingsBasis ? <p className={styles.genSavingsBasis}>{savingsBasis}</p> : null}
     </div>
   );
 }

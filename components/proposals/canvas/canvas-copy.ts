@@ -100,6 +100,12 @@ export function getCanvasCopy(lang: CanvasLang) {
       genInsightBody: hi
         ? "उत्पादन स्थानीय विकिरण प्रोफ़ाइल पर आधारित अनुमान है। गर्मी में ऊँचा उत्पादन अक्सर ऊँचे बिल महीनों से मेल खाता है — बचत का मुख्य इंजन।"
         : "Generation uses a regional irradiance profile. Higher summer output often aligns with peak bill months — that overlap drives most of the savings.",
+      requirementInsightTitle: hi
+        ? "यह सिस्टम आकार क्यों"
+        : "Why this system size",
+      requirementInsightBody: hi
+        ? "AC क्षमता, DC मॉड्यूल ऐरे, लक्ष्य लोड कवरेज और अनुमानित छत क्षेत्र मिलकर शुरुआती सिस्टम आवश्यकता तय करते हैं। अंतिम लेआउट साइट सर्वे, छाया और उपलब्ध छत के बाद तय होगा।"
+        : "AC capacity, DC module array, target load coverage and estimated roof area define the initial system requirement. Final layout is confirmed after the site survey, shading review and roof measurement.",
       genUnitsLabel: hi ? "अनुमानित यूनिट" : "Est. units",
       genSavingsLabel: hi ? "अनुमानित बचत" : "Est. savings",
       hardware: hi ? "Hardware Trust" : "Hardware Trust",
