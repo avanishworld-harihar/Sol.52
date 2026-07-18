@@ -24,14 +24,14 @@ export function getCanvasCopy(lang: CanvasLang) {
       preparedFor: hi ? "के लिए तैयार" : "Prepared for",
     },
     pages: {
-      bill: hi ? "बिल एविडेंस" : "Bill evidence",
+      bill: hi ? "बिल ऑडिट और ब्रेकडाउन" : "Bill Audit & Breakdown",
       billLead: hi
-        ? "आज का खर्च — डेटा से साबित।"
-        : "What you pay today — proven from your bill data.",
+        ? "माह-दर-माह यूनिट, ऊर्जा शुल्क, फिक्स्ड चार्ज, ड्यूटी और कुल बिल।"
+        : "Month-by-month units, energy charges, fixed liability, duty and net bill.",
       requirement: hi ? "आवश्यकता" : "Requirement",
       requirementLead: hi
-        ? "प्रस्तावित क्षमता और वार्षिक उत्पादन।"
-        : "Proposed capacity and annual generation.",
+        ? "प्रस्तावित AC क्षमता, DC ऐरे, कवरेज और छत की आवश्यकता।"
+        : "Proposed AC capacity, DC array, coverage and roof requirement.",
       financial: hi ? "Financial Story" : "Financial Story",
       financialLead: hi
         ? "बिल घटे → अनुमानित मासिक बचत → फिर साल और 25-वर्ष का नतीजा।"

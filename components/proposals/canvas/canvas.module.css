@@ -1234,6 +1234,174 @@
   background: var(--canvas-accent-wash);
 }
 
+/* Bill audit — detailed monthly invoice view */
+.billAudit {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+
+.billAuditMetrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+  box-shadow: var(--card-shadow);
+}
+
+.billAuditMetric {
+  min-width: 0;
+  padding: 10px 12px;
+  text-align: center;
+  border-right: 1px solid var(--line);
+}
+
+.billAuditMetric:last-child {
+  border-right: 0;
+}
+
+.billAuditMetric strong {
+  display: block;
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 19pt;
+  line-height: 1;
+}
+
+.billAuditMetricWarn strong {
+  color: var(--canvas-accent);
+}
+
+.billAuditMetricPositive strong {
+  color: #0f766e;
+}
+
+.billAuditMetric span,
+.billAuditMetric small {
+  display: block;
+}
+
+.billAuditMetric span {
+  margin-top: 5px;
+  color: var(--ink);
+  font-size: 7.5pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.billAuditMetric small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 6.5pt;
+}
+
+.billAuditChart {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: end;
+  height: 70px;
+  padding: 5px 8px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.billAuditBarColumn {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  height: 100%;
+}
+
+.billAuditBarColumn span {
+  position: absolute;
+  bottom: -13px;
+  color: var(--muted);
+  font-size: 6.5pt;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.billAuditBar {
+  width: 7px;
+  max-height: 100%;
+  border-radius: 3px 3px 0 0;
+  background: #0f766e;
+}
+
+.billAuditBarPeak {
+  background: var(--canvas-accent);
+}
+
+.billAuditTableWrap {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.billAuditTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  background: var(--paper);
+}
+
+.billAuditTable th,
+.billAuditTable td {
+  padding: 4px 7px;
+  border-bottom: 1px solid #edf1f5;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.billAuditTable th {
+  color: var(--canvas-accent);
+  background: var(--wash);
+  font-size: 6.5pt;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.billAuditTable td {
+  color: #384352;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 7.5pt;
+}
+
+.billAuditTable th:first-child,
+.billAuditTable td:first-child {
+  text-align: left;
+}
+
+.billAuditTable td:first-child {
+  color: var(--ink);
+  font-family: var(--sans);
+  font-weight: 700;
+}
+
+.billAuditNetPeak {
+  color: var(--canvas-accent) !important;
+  font-weight: 800;
+}
+
+.billAuditTotal td {
+  padding-top: 6px;
+  border-top: 1px solid var(--ink);
+  border-bottom: 0;
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.billAuditFootnote {
+  margin: 0;
+  color: var(--muted);
+  font-size: 7pt;
+  line-height: 1.35;
+}
+
 /* Expert Insights / PremiumInsight — one block per page */
 .expertBox,
 .premiumInsight {

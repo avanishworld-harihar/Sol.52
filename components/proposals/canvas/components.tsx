@@ -6,7 +6,11 @@
  */
 
 import { useState, type CSSProperties, type ReactNode } from "react";
-import type { ProposalBomItem, ProposalWealthPoint } from "@/lib/proposal-data";
+import type {
+  ProposalBillMonth,
+  ProposalBomItem,
+  ProposalWealthPoint,
+} from "@/lib/proposal-data";
 import { buildWealthJourney } from "@/lib/proposal-data/build-wealth-journey";
 import { resolveHardwareImageSrc } from "./hardware-assets";
 import styles from "./canvas.module.css";
@@ -317,6 +321,113 @@ export function EvidenceGrid({
     <div className={cols === 3 ? styles.evidenceGrid3 : styles.evidenceGrid}>
       {children}
     </div>
+  );
+}
+
+/* ── BillAudit — Page 02 monthly invoice breakdown ───────────── */
+
+export type CanvasBillAuditProps = {
+  months: ProposalBillMonth[];
+  totals: {
+    units: number;
+    energyInr: number;
+    fixedInr: number;
+    dutyInr: number;
+    netInr: number;
+  };
+  summerTrapPct: number;
+  fixedChargesDisplay: string;
+  solarSavingsPct: number;
+  isHi?: boolean;
+};
+
+function auditInr(value: number): string {
+  return `₹${Math.round(value).toLocaleString("en-IN")}`;
+}
+
+export function CanvasBillAudit({
+  months,
+  totals,
+  summerTrapPct,
+  fixedChargesDisplay,
+  solarSavingsPct,
+  isHi = false,
+}: CanvasBillAuditProps) {
+  return (
+    <section className={styles.billAudit}>
+      <div className={styles.billAuditMetrics}>
+        <div className={`${styles.billAuditMetric} ${styles.billAuditMetricWarn}`}>
+          <strong>{summerTrapPct > 0 ? `+${Math.round(summerTrapPct)}%` : "—"}</strong>
+          <span>{isHi ? "गर्मी में बिल वृद्धि" : "Summer bill increase"}</span>
+          <small>{isHi ? "पीक महीनों का असर" : "Impact of peak months"}</small>
+        </div>
+        <div className={styles.billAuditMetric}>
+          <strong>{fixedChargesDisplay || "—"}</strong>
+          <span>{isHi ? "वार्षिक फिक्स्ड देनदारी" : "Annual fixed liability"}</span>
+          <small>{isHi ? "उपयोग से स्वतंत्र" : "Independent of usage"}</small>
+        </div>
+        <div className={`${styles.billAuditMetric} ${styles.billAuditMetricPositive}`}>
+          <strong>{solarSavingsPct > 0 ? `${Math.round(solarSavingsPct)}%` : "—"}</strong>
+          <span>{isHi ? "अनुमानित सोलर बचत" : "Estimated solar savings"}</span>
+          <small>{isHi ? "ऊर्जा बिल में संभावित कमी" : "Potential energy-bill reduction"}</small>
+        </div>
+      </div>
+
+      <div className={styles.billAuditChart} aria-label="Monthly electricity bill profile">
+        {months.slice(0, 12).map((month) => (
+          <div key={month.label} className={styles.billAuditBarColumn}>
+            <div
+              className={`${styles.billAuditBar}${month.isSummerPeak ? ` ${styles.billAuditBarPeak}` : ""}`}
+              style={{ height: `${Math.max(8, month.barHeightPct)}%` }}
+            />
+            <span>{month.label}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className={styles.billAuditTableWrap}>
+        <table className={styles.billAuditTable}>
+          <thead>
+            <tr>
+              <th>{isHi ? "माह" : "Month"}</th>
+              <th>{isHi ? "यूनिट" : "Units"}</th>
+              <th>{isHi ? "ऊर्जा" : "Energy"}</th>
+              <th>{isHi ? "फिक्स्ड" : "Fixed"}</th>
+              <th>{isHi ? "ड्यूटी" : "Duty"}</th>
+              <th>{isHi ? "कुल बिल" : "Net bill"}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {months.slice(0, 12).map((month) => (
+              <tr key={month.label}>
+                <td>{month.label}</td>
+                <td>{month.units.toLocaleString("en-IN")}</td>
+                <td>{auditInr(month.energyInr)}</td>
+                <td>{auditInr(month.fixedInr)}</td>
+                <td>{auditInr(month.dutyInr)}</td>
+                <td className={month.isSummerPeak ? styles.billAuditNetPeak : undefined}>
+                  {auditInr(month.netInr)}
+                </td>
+              </tr>
+            ))}
+            <tr className={styles.billAuditTotal}>
+              <td>{isHi ? "कुल" : "Total"}</td>
+              <td>{totals.units.toLocaleString("en-IN")}</td>
+              <td>{auditInr(totals.energyInr)}</td>
+              <td>{auditInr(totals.fixedInr)}</td>
+              <td>{auditInr(totals.dutyInr)}</td>
+              <td>{auditInr(totals.netInr)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p className={styles.billAuditFootnote}>
+        {isHi
+          ? "ऊर्जा शुल्क खपत के साथ बदलता है; फिक्स्ड शुल्क उपयोग कम होने पर भी जारी रह सकता है। ड्यूटी और कुल राशि उपलब्ध बिल डेटा से ली गई है।"
+          : "Energy charges vary with consumption; fixed charges may continue even when usage falls. Duty and net totals are taken from the available bill data."}
+      </p>
+    </section>
   );
 }
 

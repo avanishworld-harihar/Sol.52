@@ -29,6 +29,7 @@ import {
   EcologicalImpact,
   GenerationForecast,
   buildGenerationForecastMonths,
+  CanvasBillAudit,
   PaymentRoadmap,
   CoverPage,
   ClosingPage,
@@ -406,59 +407,13 @@ export function CanvasProposalRenderer({
             <>
               <PageHeader title={c.pages.bill} lead={c.pages.billLead} />
               <PageBody>
-                <EvidenceGrid>
-                  <EvidenceCard
-                    title={c.labels.yearlyBill}
-                    value={formatInrCompact(bill.yearlyBillInr)}
-                    insight={`${bill.totals.units.toLocaleString("en-IN")} ${c.labels.units}`}
-                    accent
-                  />
-                  <EvidenceCard
-                    title={c.pages.today}
-                    value={monthlyBillApprox > 0 ? formatInr(monthlyBillApprox) : "—"}
-                    insight={
-                      bill.summerTrapPct > 0
-                        ? `${c.labels.summerTrap}: +${Math.round(bill.summerTrapPct)}%`
-                        : undefined
-                    }
-                    tone="warn"
-                  />
-                  <EvidenceCard
-                    title={c.labels.solarShare}
-                    value={
-                      bill.solarSavingsPct > 0
-                        ? `${Math.round(bill.solarSavingsPct)}%`
-                        : "—"
-                    }
-                    tone="positive"
-                  />
-                  <EvidenceCard
-                    title={c.labels.summerTrap}
-                    value={
-                      bill.summerTrapPct > 0
-                        ? `+${Math.round(bill.summerTrapPct)}%`
-                        : "—"
-                    }
-                    tone="warn"
-                  />
-                </EvidenceGrid>
-                {bill.months.length > 0 ? (
-                  <div className={styles.monthStrip}>
-                    {bill.months.slice(0, 12).map((m) => (
-                      <div
-                        key={m.label}
-                        className={`${styles.monthCell}${m.isSummerPeak ? ` ${styles.monthPeak}` : ""}`}
-                      >
-                        <span>{m.label}</span>
-                        <strong>{formatInrCompact(m.netInr)}</strong>
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
-                <ExpertInsights
-                  fill
-                  title={c.pages.billInsightTitle}
-                  body={c.pages.billInsightBody}
+                <CanvasBillAudit
+                  months={bill.months}
+                  totals={bill.totals}
+                  summerTrapPct={bill.summerTrapPct}
+                  fixedChargesDisplay={bill.fixedChargesDisplay}
+                  solarSavingsPct={bill.solarSavingsPct}
+                  isHi={isHi}
                 />
               </PageBody>
             </>
