@@ -14,6 +14,7 @@ import type { ParsedBillShape } from "@/lib/bill-parse";
 import { auditMpBill, type MpBillAuditReport } from "@/lib/mp-bill-audit";
 import { saveMpBillAuditRecord } from "@/lib/mp-bill-audit-persistence";
 import { sanitizeMpMeteredVsSubsidyFields } from "@/lib/mp-bill-field-sanitize";
+import { sanitizeHtBillConsumption } from "@/lib/ht-bill-sanitize";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +25,7 @@ const bodySchema = z.object({
   mimeType: z.string().min(3).max(120).optional(),
   /** Optional: load template hint from discom_formats before calling AI scanner */
   discomCode: z.string().max(120).optional().nullable(),
+  billTypeHint: z.enum(["auto", "lt", "ht"]).optional().default("auto"),
   clientRef: z.string().max(120).optional().nullable(),
   leadId: z.string().max(80).optional().nullable()
 });
@@ -441,7 +443,7 @@ async function queuePostScanTasks(input: {
 export async function POST(req: NextRequest) {
   try {
     const json = await req.json();
-    const { base64Data, mimeType: rawMime, discomCode, clientRef, leadId } = bodySchema.parse(json);
+    const { base64Data, mimeType: rawMime, discomCode, billTypeHint, clientRef, leadId } = bodySchema.parse(json);
     const mimeType = rawMime?.split(";")[0]?.trim().toLowerCase() || "image/jpeg";
 
     if (!ALLOWED_MIME.has(mimeType)) {
@@ -469,7 +471,8 @@ export async function POST(req: NextRequest) {
     const scanStartMs = Date.now();
     try {
       const result = await analyzeBillWithProvider(base64Data, mimeType, {
-        formatHint: formatHint ?? undefined
+        formatHint: formatHint ?? undefined,
+        billTypeHint
       });
       parsed = result.parsed;
       scannerMode = result.provider;
@@ -560,6 +563,9 @@ export async function POST(req: NextRequest) {
 
     // MP DISCOM slips: ₹ subsidy often sits on the numeric column OCR labels as consumption.
     parsed = sanitizeMpMeteredVsSubsidyFields(parsed);
+    // HT tables mix raw AMR readings, MD, MF, kWh and kVAh. The final supplied
+    // kWh line is authoritative for proposal consumption and current-month units.
+    parsed = sanitizeHtBillConsumption(parsed, billTypeHint);
 
     // ── Safety net: force current bill month slot = metered_unit_consumption ──────
     // Problem: MP DISCOM bills show the PREVIOUS billing period month (e.g. MAR-2026)

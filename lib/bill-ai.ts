@@ -11,7 +11,7 @@ export function resolveBillAiProvider(): BillAiProvider {
 export async function analyzeBillWithProvider(
   base64Data: string,
   mimeType: string,
-  options?: { formatHint?: string }
+  options?: { formatHint?: string; billTypeHint?: "auto" | "lt" | "ht" }
 ): Promise<{ parsed: ParsedBillShape; provider: BillAiProvider; tier: BillAiModelTier }> {
   return analyzeBillWithAnthropicHybrid(base64Data, mimeType, options);
 }
@@ -19,7 +19,7 @@ export async function analyzeBillWithProvider(
 async function analyzeBillWithAnthropicHybrid(
   base64Data: string,
   mimeType: string,
-  options?: { formatHint?: string }
+  options?: { formatHint?: string; billTypeHint?: "auto" | "lt" | "ht" }
 ): Promise<{ parsed: ParsedBillShape; provider: BillAiProvider; tier: BillAiModelTier }> {
   const haikuModel = (process.env.ANTHROPIC_HAIKU_MODEL || process.env.ANTHROPIC_MODEL || "claude-3-5-haiku-latest").trim();
   const sonnetModel = (process.env.ANTHROPIC_SONNET_MODEL || "claude-3-5-sonnet-latest").trim();
@@ -32,6 +32,7 @@ async function analyzeBillWithAnthropicHybrid(
   try {
     const haikuParsed = await analyzeBillWithAnthropic(base64Data, mimeType, {
       formatHint: options?.formatHint,
+      billTypeHint: options?.billTypeHint,
       modelOverride: haikuModel
     });
     if (!sonnetEnabled) {
@@ -43,9 +44,16 @@ async function analyzeBillWithAnthropicHybrid(
     try {
       const sonnetParsed = await analyzeBillWithAnthropic(base64Data, mimeType, {
         formatHint: options?.formatHint,
+        billTypeHint: options?.billTypeHint,
         modelOverride: sonnetModel
       });
-      return { parsed: sonnetParsed, provider: "anthropic", tier: "sonnet" };
+      const parsed =
+        options?.billTypeHint === "ht" || looksLikeHt(haikuParsed) || looksLikeHt(sonnetParsed)
+          ? htCompletenessScore(sonnetParsed) >= htCompletenessScore(haikuParsed)
+            ? sonnetParsed
+            : haikuParsed
+          : sonnetParsed;
+      return { parsed, provider: "anthropic", tier: parsed === sonnetParsed ? "sonnet" : "haiku" };
     } catch (error) {
       console.warn("[bill-ai] sonnet escalation failed, using haiku result:", error);
       return { parsed: haikuParsed, provider: "anthropic", tier: "haiku" };
@@ -54,10 +62,43 @@ async function analyzeBillWithAnthropicHybrid(
     if (!sonnetEnabled) throw error;
     const sonnetParsed = await analyzeBillWithAnthropic(base64Data, mimeType, {
       formatHint: options?.formatHint,
+      billTypeHint: options?.billTypeHint,
       modelOverride: sonnetModel
     });
     return { parsed: sonnetParsed, provider: "anthropic", tier: "sonnet" };
   }
+}
+
+function looksLikeHt(parsed: ParsedBillShape): boolean {
+  return Boolean(
+    parsed.contract_demand_kva != null ||
+      parsed.kvah_units != null ||
+      parsed.tod_units ||
+      /\bHV\b|\bHT\b|(?:11|33|66|132)\s*k?v/i.test(
+        `${parsed.tariff_category ?? ""} ${parsed.connection_type ?? ""} ${parsed.supply_voltage ?? ""}`
+      )
+  );
+}
+
+function htCompletenessScore(parsed: ParsedBillShape): number {
+  const fields = [
+    parsed.contract_demand_kva,
+    parsed.billing_demand_kva,
+    parsed.max_demand_kva,
+    parsed.avg_power_factor,
+    parsed.kwh_units,
+    parsed.kvah_units,
+    parsed.demand_charges_inr,
+    parsed.energy_charges_inr,
+    parsed.electricity_duty_inr,
+    parsed.fppas_inr,
+    parsed.pf_welding_surcharge_inr,
+    parsed.supply_voltage,
+  ];
+  const todCount = parsed.tod_units
+    ? Object.values(parsed.tod_units).filter((value) => value != null).length
+    : 0;
+  return fields.filter((value) => value != null && String(value).trim() !== "").length + todCount * 2;
 }
 
 function needsSonnetEscalation(

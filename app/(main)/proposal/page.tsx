@@ -17,6 +17,7 @@ import {
   mergeParsedMonthsIntoUnits,
   type ParsedBillShape
 } from "@/lib/bill-parse";
+import { isHtParsedBill } from "@/lib/ht-bill-sanitize";
 import { INDIAN_STATES_AND_UTS } from "@/lib/indian-states-uts";
 import { INSTALLER_REGION_EVENT, readInstallerRegion } from "@/lib/installer-region-storage";
 import { formatInstallerContactLine, readProposalBrandingSettings, resolveInstallerDisplayName } from "@/lib/proposal-branding-settings";
@@ -1234,6 +1235,12 @@ function ProposalPageContent() {
           base64Data,
           mimeType,
           discomCode: manual.discom.trim() || installerDiscom.trim() || undefined,
+          billTypeHint:
+            osPresetId === "commercial_ht" || /\bHT\b|\bHV\b/i.test(manual.connectionType)
+              ? "ht"
+              : isCommercialPresetFamily(osPresetId)
+                ? "lt"
+                : "auto",
           clientRef: clientRef || undefined,
           leadId: selectedLeadId || undefined
         })
@@ -1278,6 +1285,15 @@ function ProposalPageContent() {
       }
 
       const data = payload.data as ParsedBillShape;
+      const detectedHt = isHtParsedBill(data);
+      if (isCommercialPresetFamily(osPresetId) && detectedHt && osPresetId !== "commercial_ht") {
+        setOsPresetId("commercial_ht");
+        setProposalLayout(getPresetDefaultLayout("commercial_ht"));
+        toast.info(
+          "HT bill detected",
+          "Supply voltage / HV tariff / demand / ToD data found. Proposal switched to HT Industrial."
+        );
+      }
       // Build parsedUnits with smart priority:
       //   1. History fills histBase (from consumption_history â€” most reliable for past months).
       //   2. data.months: only the CURRENT bill month overwrites; other months only fill empties.
@@ -1336,7 +1352,7 @@ function ProposalPageContent() {
         connectionDate: prev.connectionDate || data.connection_date || "",
         phase: prev.phase || normalizeBillPhaseLabel(data.phase) || "",
         billPhone: prev.billPhone || data.registered_mobile || "",
-        connectionType: prev.connectionType || truncateConnectionType(data.connection_type || ""),
+        connectionType: detectedHt ? "HT" : prev.connectionType || truncateConnectionType(data.connection_type || ""),
         sanctionedLoad: (() => {
           const keep = prev.sanctionedLoad.trim();
           if (keep) return prev.sanctionedLoad;
@@ -1407,7 +1423,10 @@ function ProposalPageContent() {
         const hasUsableHistoryWindow = (data.consumption_history?.length ?? 0) >= 4;
         // If bill already has a proper month-history table, never synthesize seasonal
         // fallback units (it causes misleading tiny values on smart/assessment bills).
-        const shouldInjectFallback = !hasUsableHistoryWindow && (isFirstLatestUpload || countFilledMonths(merged) < 4);
+        const shouldInjectFallback =
+          !detectedHt &&
+          !hasUsableHistoryWindow &&
+          (isFirstLatestUpload || countFilledMonths(merged) < 4);
         if (!shouldInjectFallback) return merged;
         const sixMonthAutofill = buildSixMonthAutofill(data);
         const next = { ...merged };
@@ -1873,7 +1892,7 @@ function ProposalPageContent() {
         manual.connectionType
       );
     });
-    setProposalLayout((prev) => prev ?? getPresetDefaultLayout("commercial_executive"));
+    setProposalLayout((prev) => prev ?? getPresetDefaultLayout(osPresetId ?? "commercial_executive"));
   }, [
     osPresetId,
     urlPrefill.kw,
@@ -2284,6 +2303,8 @@ function ProposalPageContent() {
 
         const preset = json.presetId;
         const isCommercial = isCommercialPresetFamily(preset);
+        const restoredCommercialPreset: ProposalPresetId =
+          preset === "commercial_ht" ? "commercial_ht" : "commercial_executive";
         if (preset) {
           const normalized: ProposalPresetId = isCommercial
             ? preset === "commercial_ht"
@@ -2335,7 +2356,7 @@ function ProposalPageContent() {
             connectionType:
               prev.connectionType ||
               deck.manual.connectionType ||
-              (isCommercial ? "commercial" : ""),
+              (preset === "commercial_ht" ? "HT" : isCommercial ? "LT" : ""),
           }));
           if (deck.overrideSolarKw) setOverrideSolarKw(deck.overrideSolarKw);
           if (deck.overridePanels) setOverridePanels(deck.overridePanels);
@@ -2373,10 +2394,10 @@ function ProposalPageContent() {
             setProposalLayout((prev) =>
               prev
                 ? applyCommercialFlagsToLayout(prev, commCfg)
-                : applyCommercialFlagsToLayout(getPresetDefaultLayout("commercial_executive"), commCfg)
+                : applyCommercialFlagsToLayout(getPresetDefaultLayout(restoredCommercialPreset), commCfg)
             );
           } else {
-            setProposalLayout((prev) => prev ?? getPresetDefaultLayout("commercial_executive"));
+            setProposalLayout((prev) => prev ?? getPresetDefaultLayout(restoredCommercialPreset));
           }
         } else {
           const cfg = parseResidentialConfig(json.pptInput?.residentialConfig);
@@ -3204,6 +3225,59 @@ function ProposalPageContent() {
             copySummaryBusy={isCopyingSummary}
             generateBusy={isWebProposalBusy}
           />
+        ) : null}
+
+        {isCommercialPresetFamily(osPresetId) ? (
+          <div className="ss-step-card">
+            <span className="ss-step-chip">Connection</span>
+            <h2 className="text-base font-bold text-brand-900 sm:text-lg">
+              Commercial connection type
+            </h2>
+            <p className="mt-1 text-xs text-slate-600">
+              HT choose karne par AI Contract Demand, Billing Demand, kWh/kVAh, PF aur TOD1–TOD4 ko priority se read karega.
+            </p>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setOsPresetId("commercial_executive");
+                  setManual((prev) => ({ ...prev, connectionType: "LT" }));
+                  setProposalLayout(getPresetDefaultLayout("commercial_executive"));
+                }}
+                className={cn(
+                  "rounded-xl border px-4 py-3 text-left transition",
+                  osPresetId === "commercial_executive"
+                    ? "border-sky-500 bg-sky-50 ring-2 ring-sky-500/20"
+                    : "border-slate-200 bg-white hover:border-slate-300"
+                )}
+              >
+                <strong className="block text-sm text-slate-900">LT Commercial</strong>
+                <span className="mt-1 block text-[11px] text-slate-500">
+                  Standard commercial bill
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setOsPresetId("commercial_ht");
+                  setManual((prev) => ({ ...prev, connectionType: "HT" }));
+                  setCommercialInputMode("bill");
+                  setProposalLayout(getPresetDefaultLayout("commercial_ht"));
+                }}
+                className={cn(
+                  "rounded-xl border px-4 py-3 text-left transition",
+                  osPresetId === "commercial_ht"
+                    ? "border-teal-600 bg-teal-50 ring-2 ring-teal-500/20"
+                    : "border-slate-200 bg-white hover:border-slate-300"
+                )}
+              >
+                <strong className="block text-sm text-slate-900">HT / HV Industrial</strong>
+                <span className="mt-1 block text-[11px] text-slate-500">
+                  11/33/132 kV · CD/MD · PF · ToD
+                </span>
+              </button>
+            </div>
+          </div>
         ) : null}
 
         {isCommercialPresetFamily(osPresetId) ? (

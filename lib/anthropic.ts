@@ -37,6 +37,7 @@ type AnthropicPart =
 export type AnalyzeBillAnthropicOptions = {
   formatHint?: string;
   modelOverride?: string;
+  billTypeHint?: "auto" | "lt" | "ht";
 };
 
 export async function analyzeBillWithAnthropic(
@@ -53,10 +54,16 @@ export async function analyzeBillWithAnthropic(
   const timeoutMs = Number.isFinite(timeoutRaw) ? Math.max(5_000, Math.min(45_000, timeoutRaw)) : DEFAULT_TIMEOUT_MS;
 
   const hintBlock = options?.formatHint?.trim() ? `\nDISCOM hint memory: ${options.formatHint.trim()}\n` : "";
+  const billTypeHintBlock =
+    options?.billTypeHint === "ht"
+      ? "\nUSER-SELECTED MODE: HT/HV COMMERCIAL. Apply the HT rules below as mandatory. Domestic 2–3 digit consumption heuristics DO NOT APPLY.\n"
+      : options?.billTypeHint === "lt"
+        ? "\nUSER-SELECTED MODE: LT COMMERCIAL. Still switch to HT rules if the document clearly prints HV tariff, 11/33/132 kV, Contract Demand, TOD1–TOD4, or kVAh.\n"
+        : "";
   const prompt = `Extract bill fields from this Indian electricity bill image/PDF.
 Return ONLY valid JSON (no markdown), exactly this shape:
 {"name":"","address":"","consumer_id":"","meter_number":"","connection_date":"","sanctioned_load":"","phase":"Single or Three","connection_type":"purpose as printed e.g. Shops/Showrooms or Domestic","purpose_of_supply":"","tariff_category":"exact tariff code e.g. LV2 [LV2.2] or HV-3.1.B","contract_demand_kva":null,"supply_voltage":null,"max_demand_kva":null,"billing_demand_kva":null,"avg_power_factor":null,"kvah_units":null,"kwh_units":null,"tod_units":null,"tod_amounts_inr":null,"demand_charges_inr":null,"multiplying_factor":null,"discom":"","state":"","district":"","country":"India","bill_month":"","registered_mobile":"","fixed_charges_inr":null,"energy_charges_inr":null,"electricity_duty_inr":null,"regulatory_surcharges_inr":null,"total_amount_payable_inr":null,"read_type":"","bill_type_label":"","metered_unit_consumption":null,"total_amount_till_due_inr":null,"total_amount_after_due_inr":null,"current_month_bill_amount_inr":null,"principal_arrear_inr":null,"amount_received_against_bill_inr":null,"mp_govt_subsidy_amount_inr":null,"tod_rebate_inr":null,"fppas_inr":null,"pf_welding_surcharge_inr":null,"rebate_incentive_inr":null,"ccb_adjustment_inr":null,"nfp_flag":false,"strict_audit_mode":"strict_v1","strict_audit_notes":[],"months":{"jan":null,"feb":null,"mar":null,"apr":null,"may":null,"jun":null,"jul":null,"aug":null,"sep":null,"oct":null,"nov":null,"dec":null},"consumption_history":[],"format_memory":"","tariff_slabs_detected":[]}
-${hintBlock}
+${hintBlock}${billTypeHintBlock}
 ======================================================================
 INDIAN ELECTRICITY BILL STRUCTURE (read carefully before extracting):
 ======================================================================
@@ -76,7 +83,8 @@ wrong sub-rule. Be precise — leave blank rather than guess.
 
 ──── (A) metered_unit_consumption (THIS MONTH's kWh) ────
 • Net units = Current Reading − Previous Reading.
-• Always a positive whole number, typically 1–9999.
+• LT: usually 1–9999. HT: use the final MF-adjusted Net Units Supplied kWh
+  and allow 4–7 digits (e.g. 59112).
 • NEVER copy a 4–6 digit meter accumulator here.
 • NEVER copy any ₹ value (decimals, negative signs) here.
 
@@ -167,15 +175,21 @@ LT bills: leave ALL these fields null. For HT bills:
   difference) × MF.
 • kvah_units: "Net KVAH Units Supplied" / Total KVAH Units (e.g. 67719).
 • kwh_units: "Net Units Supplied" / Total kWh Units (e.g. 59112).
-• metered_unit_consumption for HT = kvah_units when the bill is kVAh-billed
-  (energy charges computed on kVAh); note "HT kVAh-billed" in strict_audit_notes.
+• MP HV-3.x OVERRIDE: metered_unit_consumption = kwh_units (e.g. 59112), NOT
+  the raw AMR reading (e.g. 4063.285), MD (e.g. 416), MF (e.g. 600), or kVAh
+  reading (e.g. 67719). Confirm from "Energy Charges 59112 × 7.75".
+• The generic domestic statement that consumption is usually 2–3 digits DOES
+  NOT APPLY to HT. HT monthly consumption commonly has 4–7 digits.
 • tod_units: TOD1..TOD4 kWh rows (e.g. {"tod1":1695,"tod2":10971,"tod3":38331,"tod4":8142}).
 • tod_amounts_inr: TOD rebate/surcharge ₹ rows signed as printed
   (rebate negative, e.g. {"tod1":-1038.03,"tod2":17916.52,"tod3":-62597.59,"tod4":13296.54}).
 • energy_charges_inr: main "Energy Charges" line (kVAh/kWh × rate).
 • fppas_inr: "FPPAS on Energy Charges". regulatory_surcharges_inr: PF Surcharge
   and similar HT surcharge lines when not itemised elsewhere.
-• months/consumption_history: use kWh consumption history if printed.
+• "Previous Reading Details" rows containing AMR date, MF and "KWH Reading"
+  are cumulative meter readings, NOT monthly consumption history. Do not put
+  them in months/consumption_history. Only use a table explicitly labelled
+  monthly consumption / consumption history.
 
 ======================================================================
 CHARGE LINE RULES

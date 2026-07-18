@@ -108,9 +108,11 @@ extract the "PF Surcharge" ₹ into pf_welding_surcharge_inr), kvah_units
 ("Net KVAH Units Supplied"), kwh_units ("Net Units Supplied" kWh), tod_units
 (TOD1..TOD4 kWh rows), tod_amounts_inr (TOD rebate/surcharge ₹, signed as
 printed), multiplying_factor (MF, e.g. 600 — "DIFFERENCE With MF" rows are
-already multiplied; never multiply again). When energy charges are computed on
-kVAh, set metered_unit_consumption = kvah_units and add strict_audit_notes
-"HT kVAh-billed".
+already multiplied; never multiply again). For MP HV-3.x, set
+metered_unit_consumption = kwh_units (e.g. 59112, confirmed by "Energy Charges
+59112 × 7.75"), never the raw AMR reading, MD, MF, or kVAh reading. Domestic
+2–3 digit consumption heuristics do not apply to HT. "Previous Reading Details"
+KWH Reading rows are cumulative readings, not monthly consumption history.
 
 ======================================================================
 FIELD EXTRACTION RULES — CRITICAL for tariff engine downstream

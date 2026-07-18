@@ -51,7 +51,7 @@ export interface ParsedBillShape {
   billing_demand_kva?: number | string | null;
   /** Average Power Factor as printed (0–1, e.g. 0.87). */
   avg_power_factor?: number | string | null;
-  /** Net kVAh units supplied — HT consumers are billed on kVAh, not kWh. */
+  /** Net kVAh units supplied — informational/apparent-energy reading; billing basis varies by tariff. */
   kvah_units?: number | string | null;
   /** Net kWh (active energy) units supplied — keep separate from kVAh. */
   kwh_units?: number | string | null;
