@@ -642,12 +642,14 @@ function ProposalPageContent() {
     return merged.size;
   }, [latestBill, additionalBills]);
   const requiredSecondaryCount = useMemo(() => {
+    // HT bills carry full CD/MD/PF/ToD + kWh in a single bill — no history table.
+    if (isCommercialBillMode && osPresetId === "commercial_ht") return 0;
     if (isCommercialBillMode) return 1; // Commercial bill flow requires exactly latest + 1 previous bill.
     const base = Math.max(0, uploadRequirement.requiredBills - 1);
     if (uploadedCoverageMonths < 12) return base;
     // If we already covered all 12 months with uploaded bills, don't force extra slots.
     return Math.min(base, additionalBills.filter(Boolean).length);
-  }, [isCommercialBillMode, uploadRequirement.requiredBills, uploadedCoverageMonths, additionalBills]);
+  }, [isCommercialBillMode, osPresetId, uploadRequirement.requiredBills, uploadedCoverageMonths, additionalBills]);
   const secondaryAlignment = useMemo(
     () =>
       uploadRequirement.secondaryOffsets.map((offset, idx) => {

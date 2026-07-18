@@ -268,6 +268,126 @@ function applyMpSixMonthTableHeuristic(
   return merged;
 }
 
+/* ── HT / HV bill extraction (MPPKVVCL-style industrial bills) ──────────────
+ * HT bills print raw AMR readings, MF-adjusted totals, kVAh, MD and TOD rows.
+ * The generic LT extractor caps units at 2000 and mistakes reading-table
+ * values for history, so HT bills get a dedicated deterministic pass. */
+
+function looksLikeHtBillText(text: string): boolean {
+  return (
+    /HV[-\s]?\d/i.test(text) ||
+    /Supply\s*Voltage\s*:?\s*(?:11|33|66|132)\s*KV/i.test(text) ||
+    (/Cont\.?\s*Demand/i.test(text) && /KVAH/i.test(text)) ||
+    /TOD1\s*:/i.test(text)
+  );
+}
+
+function htNumber(match: RegExpMatchArray | null | undefined): number | null {
+  const raw = match?.[1];
+  if (!raw) return null;
+  const n = Number.parseFloat(raw.replace(/,/g, ""));
+  return Number.isFinite(n) && n >= 0 ? n : null;
+}
+
+/**
+ * Last decimal ₹ amount after a charge label (MP HT bills print
+ * "Fixed Charges\n450 * 641  288450.00\nEnergy Charges…"). The computation
+ * line ends at the NEXT label line, so cut there before taking the amount.
+ */
+function htAmountAfterLabel(text: string, label: RegExp, window = 140): number | null {
+  const m = label.exec(text);
+  if (!m) return null;
+  let slice = text.slice(m.index + m[0].length, m.index + m[0].length + window);
+  const nextLabel = slice.search(/\n\s*[A-Za-z]{2,}/);
+  if (nextLabel > 0) slice = slice.slice(0, nextLabel);
+  const amounts = [...slice.matchAll(/-?[\d,]{1,12}\.\d{1,2}\b/g)]
+    .map((x) => Number.parseFloat(x[0].replace(/,/g, "")))
+    .filter((n) => Number.isFinite(n));
+  return amounts.length > 0 ? amounts[amounts.length - 1] : null;
+}
+
+function extractHtBillFromText(text: string, latest: MonthStamp | null): ParsedBillShape | null {
+  if (!looksLikeHtBillText(text)) return null;
+
+  const kwhUnits = htNumber(text.match(/Net\s*Units\s*Supplied\s*:?\s*([\d,]+(?:\.\d+)?)/i));
+  const kvahUnits = htNumber(text.match(/Net\s*KVAH\s*Units\s*Supplied\s*:?\s*([\d,]+(?:\.\d+)?)/i));
+  const contractDemand = htNumber(text.match(/Cont\.?\s*Demand\s*:?\s*([\d,]+(?:\.\d+)?)\s*KVA/i));
+  const netMaxDemand =
+    htNumber(text.match(/Net\s*Max\s*Demand\s*:?\s*([\d,]+(?:\.\d+)?)/i)) ??
+    htNumber(text.match(/Total\s*Max\s*Demand\s*:?\s*([\d,]+(?:\.\d+)?)/i));
+  const billingDemand = htNumber(text.match(/Billing\s*Demand\s*:?\s*([\d,]+(?:\.\d+)?)/i));
+  const powerFactor = htNumber(text.match(/Avg\.?\s*Power\s*Factor\s*:?\s*(0?\.\d+|1(?:\.0+)?)/i));
+  const supplyVoltage = text.match(/Supply\s*Voltage\s*:?\s*((?:11|33|66|132)\s*KV)/i)?.[1]?.trim();
+  const tariffCategory = text.match(/Tariff\s*(HV[-\s]?[\d][\d.A-Z]*(?:\.[A-Z])?)/i)?.[1]?.trim();
+  const multiplyingFactor = htNumber(text.match(/\bMF\b[\s:]*([\d,]{2,5})(?:\.0+)?\b/i));
+  const consumerId = text.match(/Cons\.?\s*Code\s*:?\s*([A-Z0-9]{6,20})/i)?.[1]?.trim();
+
+  const todUnits = {
+    tod1: htNumber(text.match(/TOD\s*1\s*:?\s*([\d,]+(?:\.\d+)?)/i)),
+    tod2: htNumber(text.match(/TOD\s*2\s*:?\s*([\d,]+(?:\.\d+)?)/i)),
+    tod3: htNumber(text.match(/TOD\s*3\s*:?\s*([\d,]+(?:\.\d+)?)/i)),
+    tod4: htNumber(text.match(/TOD\s*4\s*:?\s*([\d,]+(?:\.\d+)?)/i))
+  };
+  const hasTod = Object.values(todUnits).some((v) => v != null && v > 0);
+
+  const fixedCharges = htAmountAfterLabel(text, /Fixed\s*Charges/i);
+  const energyCharges = htAmountAfterLabel(text, /Energy\s*Charges(?!\s*\))/i);
+  const fppas = htAmountAfterLabel(text, /FPPAS\s*on\s*Energy\s*Charges/i);
+  const pfSurcharge = htAmountAfterLabel(text, /PF\s*Surcharge/i);
+  const duty = htAmountAfterLabel(text, /Electricity\s*Duty/i, 110);
+  const currentMonthBill = htNumber(text.match(/CURRENT\s*MONTH\s*BILL\s*:?\s*([\d,]+\.\d{1,2})/i));
+  const netPayable = htNumber(text.match(/NET\s*BILL\s*PAYABLE\s*:?\s*(?:Rs\.?)?\s*([\d,]+\.\d{1,2})/i));
+
+  // Require at least the core consumption signal before claiming an HT parse.
+  if (kwhUnits == null && kvahUnits == null && !hasTod) return null;
+
+  const discom = /POORVA?\s*KSHETRA/i.test(text)
+    ? "MPPKVVCL"
+    : /MADHYA\s*KSHETRA/i.test(text)
+      ? "MPMKVVCL"
+      : /PASCHIM\s*KSHETRA/i.test(text)
+        ? "MPPaKVVCL"
+        : "";
+  const state = discom ? "Madhya Pradesh" : "";
+
+  const months: NonNullable<ParsedBillShape["months"]> = {};
+  if (latest && kwhUnits && kwhUnits > 0) {
+    months[latest.key] = Math.round(kwhUnits);
+  }
+
+  return {
+    connection_type: "HT",
+    tariff_category: tariffCategory || "",
+    supply_voltage: supplyVoltage || null,
+    contract_demand_kva: contractDemand,
+    max_demand_kva: netMaxDemand,
+    billing_demand_kva: billingDemand,
+    avg_power_factor: powerFactor,
+    kvah_units: kvahUnits,
+    kwh_units: kwhUnits,
+    tod_units: hasTod ? todUnits : null,
+    multiplying_factor: multiplyingFactor,
+    metered_unit_consumption: kwhUnits,
+    fixed_charges_inr: fixedCharges,
+    demand_charges_inr: fixedCharges,
+    energy_charges_inr: energyCharges,
+    fppas_inr: fppas,
+    pf_welding_surcharge_inr: pfSurcharge,
+    electricity_duty_inr: duty,
+    current_month_bill_amount_inr: currentMonthBill,
+    total_amount_payable_inr: netPayable,
+    consumer_id: consumerId || "",
+    discom,
+    state,
+    bill_month: latest?.raw ?? "",
+    months,
+    // HT reading tables are cumulative AMR accumulators — never month history.
+    consumption_history: [],
+    strict_audit_notes: ["HT bill parsed by deterministic PDF fallback."],
+    format_memory: "Parsed from PDF fallback: HT/HV industrial bill layout"
+  };
+}
+
 export async function parsePdfBillFallback(base64Data: string): Promise<ParsedBillShape | null> {
   const buffer = Buffer.from(base64Data, "base64");
   try {
@@ -277,6 +397,9 @@ export async function parsePdfBillFallback(base64Data: string): Promise<ParsedBi
     const monthStamps = collectMonthStamps(text);
     const latest = detectLatestBillMonth(text, monthStamps);
     if (!latest) return null;
+
+    const htParsed = extractHtBillFromText(text, latest);
+    if (htParsed) return htParsed;
 
     const expectedHistoryMonths = [latest, ...buildPreviousMonths(latest, 5)];
     const scopedMonths = expectedHistoryMonths.filter((m) => {
@@ -311,6 +434,8 @@ export async function parsePdfBillFallback(base64Data: string): Promise<ParsedBi
       const monthStamps = collectMonthStamps(text);
       const latest = detectLatestBillMonth(text, monthStamps);
       if (!latest) return null;
+      const htParsed = extractHtBillFromText(text, latest);
+      if (htParsed) return htParsed;
       const expectedHistoryMonths = [latest, ...buildPreviousMonths(latest, 5)];
       const scopedMonths = expectedHistoryMonths.filter((m) => {
         const delta = monthDiff(latest, m);
