@@ -58,6 +58,9 @@ export const EMPTY_MANUAL_PROPOSAL_CUSTOMER: ManualProposalCustomer = {
   tariffCategory: "",
   purposeOfSupply: "",
   contractDemandKva: "",
+  maxDemandKva: "",
+  avgPowerFactor: "",
+  kvahUnits: "",
 };
 
 function normalizeMonthlyUnits(raw: unknown): MonthlyUnits {

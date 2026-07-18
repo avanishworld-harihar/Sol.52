@@ -20,6 +20,23 @@ function toNullableNumber(value: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+/** Normalize ToD zone map (units or ₹) from model output; null when no zone present. */
+function normalizeTodQuad(
+  value: unknown
+): { tod1?: number | null; tod2?: number | null; tod3?: number | null; tod4?: number | null } | null {
+  if (value == null || typeof value !== "object") return null;
+  const o = value as Record<string, unknown>;
+  const quad = {
+    tod1: toNullableNumber(o.tod1 ?? o.TOD1),
+    tod2: toNullableNumber(o.tod2 ?? o.TOD2),
+    tod3: toNullableNumber(o.tod3 ?? o.TOD3),
+    tod4: toNullableNumber(o.tod4 ?? o.TOD4)
+  };
+  return quad.tod1 != null || quad.tod2 != null || quad.tod3 != null || quad.tod4 != null
+    ? quad
+    : null;
+}
+
 type GeminiCallResult = {
   ok: true;
   body: string;
@@ -66,7 +83,7 @@ export async function analyzeBillWithGemini(
 
   const prompt = `Extract bill fields from this Indian electricity bill image/PDF.
 Return ONLY valid JSON (no markdown), exactly this shape:
-{"name":"","address":"","consumer_id":"","meter_number":"","connection_date":"","sanctioned_load":"","phase":"Single or Three","connection_type":"purpose as printed e.g. Shops/Showrooms or Domestic","purpose_of_supply":"","tariff_category":"","contract_demand_kva":null,"discom":"","state":"","district":"","country":"India","bill_month":"","fixed_charges_inr":null,"energy_charges_inr":null,"electricity_duty_inr":null,"regulatory_surcharges_inr":null,"fppas_inr":null,"total_amount_payable_inr":null,"read_type":"","bill_type_label":"","metered_unit_consumption":null,"total_amount_till_due_inr":null,"total_amount_after_due_inr":null,"current_month_bill_amount_inr":null,"principal_arrear_inr":null,"amount_received_against_bill_inr":null,"mp_govt_subsidy_amount_inr":null,"tod_rebate_inr":null,"pf_welding_surcharge_inr":null,"rebate_incentive_inr":null,"ccb_adjustment_inr":null,"nfp_flag":false,"strict_audit_mode":"strict_v1","strict_audit_notes":[],"months":{"jan":null,"feb":null,"mar":null,"apr":null,"may":null,"jun":null,"jul":null,"aug":null,"sep":null,"oct":null,"nov":null,"dec":null},"consumption_history":[],"format_memory":"","tariff_slabs_detected":[]}
+{"name":"","address":"","consumer_id":"","meter_number":"","connection_date":"","sanctioned_load":"","phase":"Single or Three","connection_type":"purpose as printed e.g. Shops/Showrooms or Domestic","purpose_of_supply":"","tariff_category":"","contract_demand_kva":null,"supply_voltage":null,"max_demand_kva":null,"billing_demand_kva":null,"avg_power_factor":null,"kvah_units":null,"kwh_units":null,"tod_units":null,"tod_amounts_inr":null,"demand_charges_inr":null,"multiplying_factor":null,"discom":"","state":"","district":"","country":"India","bill_month":"","fixed_charges_inr":null,"energy_charges_inr":null,"electricity_duty_inr":null,"regulatory_surcharges_inr":null,"fppas_inr":null,"total_amount_payable_inr":null,"read_type":"","bill_type_label":"","metered_unit_consumption":null,"total_amount_till_due_inr":null,"total_amount_after_due_inr":null,"current_month_bill_amount_inr":null,"principal_arrear_inr":null,"amount_received_against_bill_inr":null,"mp_govt_subsidy_amount_inr":null,"tod_rebate_inr":null,"pf_welding_surcharge_inr":null,"rebate_incentive_inr":null,"ccb_adjustment_inr":null,"nfp_flag":false,"strict_audit_mode":"strict_v1","strict_audit_notes":[],"months":{"jan":null,"feb":null,"mar":null,"apr":null,"may":null,"jun":null,"jul":null,"aug":null,"sep":null,"oct":null,"nov":null,"dec":null},"consumption_history":[],"format_memory":"","tariff_slabs_detected":[]}
 ${hintBlock}
 ======================================================================
 INDIAN ELECTRICITY BILL STRUCTURE (read carefully before extracting):
@@ -76,6 +93,24 @@ INDIAN ELECTRICITY BILL STRUCTURE (read carefully before extracting):
 • BILLING DETAILS / CHARGE BREAKDOWN: separate section with all INR charge line items.
 • CRITICAL — COLUMN GUARD (MP DISCOM layouts): NEVER put values from **M.P. Govt. Subsidy Amount / Government subsidy** rows into metered_unit_consumption — those figures are ₹ (decimals like −544.96 or −76.57) and MUST go ONLY in mp_govt_subsidy_amount_inr. metered_unit_consumption is exclusively the month's **consumption kWh** (whole number).
 • CRITICAL — metered_unit_consumption vs meter reading: metered_unit_consumption is the NET UNITS consumed (Current Reading − Previous Reading = typically 100–600 units for domestic). Current Reading and Previous Reading are large accumulator values (4–6 digits, e.g. 12847). NEVER use a 4–6 digit accumulator value as metered_unit_consumption.
+
+======================================================================
+HT (HIGH TENSION / HV) BILLS — industrial & large commercial
+======================================================================
+Detect HT when the bill prints Supply Voltage 11/33/132 KV, an HV-x.x tariff
+code, "Contract Demand … KVA", TOD1–TOD4 rows, or KVAH readings. LT bills:
+leave these null. For HT bills fill: supply_voltage (verbatim e.g. "33 KV"),
+contract_demand_kva ("Cont. Demand"), max_demand_kva ("Max/Net Max Demand"),
+billing_demand_kva ("Billing Demand" — SEPARATE from Max Demand; min 90% of CD;
+basis of Fixed/Demand Charges; put that ₹ line in BOTH demand_charges_inr and
+fixed_charges_inr), avg_power_factor (0–1 decimal, e.g. 0.87; if < 0.90 also
+extract the "PF Surcharge" ₹ into pf_welding_surcharge_inr), kvah_units
+("Net KVAH Units Supplied"), kwh_units ("Net Units Supplied" kWh), tod_units
+(TOD1..TOD4 kWh rows), tod_amounts_inr (TOD rebate/surcharge ₹, signed as
+printed), multiplying_factor (MF, e.g. 600 — "DIFFERENCE With MF" rows are
+already multiplied; never multiply again). When energy charges are computed on
+kVAh, set metered_unit_consumption = kvah_units and add strict_audit_notes
+"HT kVAh-billed".
 
 ======================================================================
 FIELD EXTRACTION RULES — CRITICAL for tariff engine downstream
@@ -373,6 +408,19 @@ export function normalizeParsedBillShape(raw: Record<string, unknown>): ParsedBi
       return (p || c) || undefined;
     })(),
     contract_demand_kva: toNullableNumber(raw.contract_demand_kva ?? raw.contractDemandKva),
+    supply_voltage: (() => {
+      const v = String(raw.supply_voltage ?? raw.supplyVoltage ?? "").trim();
+      return v || undefined;
+    })(),
+    max_demand_kva: toNullableNumber(raw.max_demand_kva ?? raw.maxDemandKva),
+    billing_demand_kva: toNullableNumber(raw.billing_demand_kva ?? raw.billingDemandKva),
+    avg_power_factor: toNullableNumber(raw.avg_power_factor ?? raw.avgPowerFactor),
+    kvah_units: toNullableNumber(raw.kvah_units ?? raw.kvahUnits),
+    kwh_units: toNullableNumber(raw.kwh_units ?? raw.kwhUnits),
+    tod_units: normalizeTodQuad(raw.tod_units ?? raw.todUnits),
+    tod_amounts_inr: normalizeTodQuad(raw.tod_amounts_inr ?? raw.todAmountsInr),
+    demand_charges_inr: toNullableNumber(raw.demand_charges_inr ?? raw.demandChargesInr),
+    multiplying_factor: toNullableNumber(raw.multiplying_factor ?? raw.multiplyingFactor),
     rebate_incentive_inr: toNullableNumber(raw.rebate_incentive_inr ?? raw.rebateIncentiveInr),
     ccb_adjustment_inr: toNullableNumber(raw.ccb_adjustment_inr ?? raw.ccbAdjustmentInr),
     nfp_flag,

@@ -121,6 +121,32 @@ export const proposalExtrasShape = {
   proposalLayout: proposalTemplateV1Schema.optional(),
   /** C&I panel pricing, DCR compare, capacity scenarios, financing (see migration 028). */
   commercialConfig: commercialProposalConfigSchema.optional(),
+  /** HT (High Tension) bill inputs — kVAh / ToD / PF / demand (HT-Commercial preset). */
+  htBillInputs: z
+    .object({
+      contractDemandKva: z.number().nonnegative().optional(),
+      billingDemandKva: z.number().nonnegative().optional(),
+      maxDemandKva: z.number().nonnegative().optional(),
+      avgPowerFactor: z.number().min(0).max(1).optional(),
+      kvahUnits: z.number().nonnegative().optional(),
+      kwhUnits: z.number().nonnegative().optional(),
+      todUnits: z
+        .object({
+          tod1: z.number().nonnegative().optional(),
+          tod2: z.number().nonnegative().optional(),
+          tod3: z.number().nonnegative().optional(),
+          tod4: z.number().nonnegative().optional(),
+        })
+        .optional(),
+      energyChargesInr: z.number().nonnegative().optional(),
+      demandChargesInr: z.number().nonnegative().optional(),
+      electricityDutyInr: z.number().nonnegative().optional(),
+      fppasInr: z.number().nonnegative().optional(),
+      pfSurchargeInr: z.number().nonnegative().optional(),
+      supplyVoltage: z.string().max(20).optional(),
+      billMonth: z.string().max(40).optional(),
+    })
+    .optional(),
   /** Homeowner requirement-based config (kW pricing, brands, discount). */
   residentialConfig: residentialProposalConfigSchema.optional(),
   /** Shared kW plant catalog snapshot — residential + commercial turnkey quotes. */

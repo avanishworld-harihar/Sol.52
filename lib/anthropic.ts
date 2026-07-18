@@ -55,7 +55,7 @@ export async function analyzeBillWithAnthropic(
   const hintBlock = options?.formatHint?.trim() ? `\nDISCOM hint memory: ${options.formatHint.trim()}\n` : "";
   const prompt = `Extract bill fields from this Indian electricity bill image/PDF.
 Return ONLY valid JSON (no markdown), exactly this shape:
-{"name":"","address":"","consumer_id":"","meter_number":"","connection_date":"","sanctioned_load":"","phase":"Single or Three","connection_type":"purpose as printed e.g. Shops/Showrooms or Domestic","purpose_of_supply":"","tariff_category":"exact tariff code e.g. LV2 [LV2.2]","contract_demand_kva":null,"discom":"","state":"","district":"","country":"India","bill_month":"","registered_mobile":"","fixed_charges_inr":null,"energy_charges_inr":null,"electricity_duty_inr":null,"regulatory_surcharges_inr":null,"total_amount_payable_inr":null,"read_type":"","bill_type_label":"","metered_unit_consumption":null,"total_amount_till_due_inr":null,"total_amount_after_due_inr":null,"current_month_bill_amount_inr":null,"principal_arrear_inr":null,"amount_received_against_bill_inr":null,"mp_govt_subsidy_amount_inr":null,"tod_rebate_inr":null,"fppas_inr":null,"pf_welding_surcharge_inr":null,"rebate_incentive_inr":null,"ccb_adjustment_inr":null,"nfp_flag":false,"strict_audit_mode":"strict_v1","strict_audit_notes":[],"months":{"jan":null,"feb":null,"mar":null,"apr":null,"may":null,"jun":null,"jul":null,"aug":null,"sep":null,"oct":null,"nov":null,"dec":null},"consumption_history":[],"format_memory":"","tariff_slabs_detected":[]}
+{"name":"","address":"","consumer_id":"","meter_number":"","connection_date":"","sanctioned_load":"","phase":"Single or Three","connection_type":"purpose as printed e.g. Shops/Showrooms or Domestic","purpose_of_supply":"","tariff_category":"exact tariff code e.g. LV2 [LV2.2] or HV-3.1.B","contract_demand_kva":null,"supply_voltage":null,"max_demand_kva":null,"billing_demand_kva":null,"avg_power_factor":null,"kvah_units":null,"kwh_units":null,"tod_units":null,"tod_amounts_inr":null,"demand_charges_inr":null,"multiplying_factor":null,"discom":"","state":"","district":"","country":"India","bill_month":"","registered_mobile":"","fixed_charges_inr":null,"energy_charges_inr":null,"electricity_duty_inr":null,"regulatory_surcharges_inr":null,"total_amount_payable_inr":null,"read_type":"","bill_type_label":"","metered_unit_consumption":null,"total_amount_till_due_inr":null,"total_amount_after_due_inr":null,"current_month_bill_amount_inr":null,"principal_arrear_inr":null,"amount_received_against_bill_inr":null,"mp_govt_subsidy_amount_inr":null,"tod_rebate_inr":null,"fppas_inr":null,"pf_welding_surcharge_inr":null,"rebate_incentive_inr":null,"ccb_adjustment_inr":null,"nfp_flag":false,"strict_audit_mode":"strict_v1","strict_audit_notes":[],"months":{"jan":null,"feb":null,"mar":null,"apr":null,"may":null,"jun":null,"jul":null,"aug":null,"sep":null,"oct":null,"nov":null,"dec":null},"consumption_history":[],"format_memory":"","tariff_slabs_detected":[]}
 ${hintBlock}
 ======================================================================
 INDIAN ELECTRICITY BILL STRUCTURE (read carefully before extracting):
@@ -142,6 +142,40 @@ wrong sub-rule. Be precise — leave blank rather than guess.
     - MPMKVVCL (M.P. Madhya Kshetra / MPCZ-Bhopal zone)
     - MPPKVVCL (M.P. Poorv Kshetra / MPEZ-Jabalpur zone)
 • If non-MP DISCOM, leave state blank or set as printed.
+
+======================================================================
+HT (HIGH TENSION / HV) BILL RULES — industrial & large commercial
+======================================================================
+Detect HT when the bill prints: Supply Voltage 11/33/132 KV, tariff code
+HV-x.x, "Contract Demand … KVA", TOD1–TOD4 rows, or KVAH readings.
+LT bills: leave ALL these fields null. For HT bills:
+• supply_voltage: verbatim, e.g. "33 KV".
+• contract_demand_kva: "Cont. Demand 500 KVA" → 500.
+• max_demand_kva: "Max Demand Recorded" / "Net Max Demand" (e.g. 416).
+• billing_demand_kva: "Billing Demand" row (e.g. 450) — EXTRACT SEPARATELY from
+  Max Demand; MP bills billing demand at min 90% of Contract Demand even when
+  MD is lower. It is the basis of Fixed/Demand Charges (e.g. "Fixed Charges
+  450 * 641"). Also put that ₹ amount in demand_charges_inr AND
+  fixed_charges_inr (same line on MP HT bills).
+• avg_power_factor: "Avg Power Factor 0.87" → 0.87 (0–1 decimal, never %).
+  If below 0.90, extract the "PF Surcharge" ₹ line into pf_welding_surcharge_inr
+  and add strict_audit_notes "Low PF — PF surcharge applied".
+• multiplying_factor: "MF" column value (e.g. 600). The printed
+  "DIFFERENCE With MF" / "Net Units Supplied" rows are ALREADY multiplied —
+  use them as final consumption; NEVER multiply them by MF again. Only when a
+  bill prints raw readings WITHOUT an MF-adjusted total: units = (reading
+  difference) × MF.
+• kvah_units: "Net KVAH Units Supplied" / Total KVAH Units (e.g. 67719).
+• kwh_units: "Net Units Supplied" / Total kWh Units (e.g. 59112).
+• metered_unit_consumption for HT = kvah_units when the bill is kVAh-billed
+  (energy charges computed on kVAh); note "HT kVAh-billed" in strict_audit_notes.
+• tod_units: TOD1..TOD4 kWh rows (e.g. {"tod1":1695,"tod2":10971,"tod3":38331,"tod4":8142}).
+• tod_amounts_inr: TOD rebate/surcharge ₹ rows signed as printed
+  (rebate negative, e.g. {"tod1":-1038.03,"tod2":17916.52,"tod3":-62597.59,"tod4":13296.54}).
+• energy_charges_inr: main "Energy Charges" line (kVAh/kWh × rate).
+• fppas_inr: "FPPAS on Energy Charges". regulatory_surcharges_inr: PF Surcharge
+  and similar HT surcharge lines when not itemised elsewhere.
+• months/consumption_history: use kWh consumption history if printed.
 
 ======================================================================
 CHARGE LINE RULES

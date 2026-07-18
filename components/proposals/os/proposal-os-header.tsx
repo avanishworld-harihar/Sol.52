@@ -71,6 +71,14 @@ const PRESET_META: Record<ProposalPresetId, PresetMeta> = {
       "border-sky-200 bg-sky-50 text-sky-900 dark:border-sky-500/30 dark:bg-sky-900/20 dark:text-sky-200",
     dotClass: "bg-sky-500",
   },
+  commercial_ht: {
+    icon: <Zap className="h-4 w-4" />,
+    label: "HT-Commercial",
+    description: "HT industrial · kVAh / ToD / PF · Section 32 AD",
+    pillClass:
+      "border-indigo-200 bg-indigo-50 text-indigo-900 dark:border-indigo-500/30 dark:bg-indigo-900/20 dark:text-indigo-200",
+    dotClass: "bg-indigo-600",
+  },
 };
 
 export function ProposalOSHeader({ presetId, onChangePreset, customerName }: Props) {

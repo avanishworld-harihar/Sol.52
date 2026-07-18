@@ -1362,7 +1362,20 @@ function ProposalPageContent() {
           "",
         contractDemandKva:
           prev.contractDemandKva ||
-          (data.contract_demand_kva != null ? String(data.contract_demand_kva).trim() : "")
+          (data.contract_demand_kva != null ? String(data.contract_demand_kva).trim() : ""),
+        maxDemandKva:
+          prev.maxDemandKva ||
+          (data.max_demand_kva != null
+            ? String(data.max_demand_kva).trim()
+            : data.billing_demand_kva != null
+              ? String(data.billing_demand_kva).trim()
+              : ""),
+        avgPowerFactor:
+          prev.avgPowerFactor ||
+          (data.avg_power_factor != null ? String(data.avg_power_factor).trim() : ""),
+        kvahUnits:
+          prev.kvahUnits ||
+          (data.kvah_units != null ? String(data.kvah_units).trim() : "")
       }));
 
       setMonthlyUnits((prev) => {
@@ -1490,27 +1503,7 @@ function ProposalPageContent() {
     setOverrideSolarKw("");
     setOverridePanels("");
     setShowProposalSettings(false);
-    setManual({
-      leadContactName: "",
-      leadPhone: "",
-      billPhone: "",
-      officialBillName: "",
-      city: "",
-      discom: "",
-      state: "",
-      area: "",
-      location: "",
-      consumerId: "",
-      meterNumber: "",
-      connectionDate: "",
-      phase: "",
-      connectionType: "",
-      sanctionedLoad: "",
-      billingAddress: "",
-      tariffCategory: "",
-      purposeOfSupply: "",
-      contractDemandKva: ""
-    });
+    setManual({ ...EMPTY_MANUAL_PROPOSAL_CUSTOMER });
     clearProposalBuilderSession();
   }
 
@@ -3479,6 +3472,33 @@ function ProposalPageContent() {
             value={manual.contractDemandKva}
             onChange={(e) => setManual((p) => ({ ...p, contractDemandKva: e.target.value }))}
           />
+          {/\bht\b|\bhv[-\s.]?\d|\b(11|33|66|132)\s*kv\b/i.test(
+            [
+              manual.connectionType,
+              manual.tariffCategory,
+              latestBill?.tariff_category ?? "",
+              latestBill?.supply_voltage ?? "",
+              previousBill?.supply_voltage ?? "",
+            ].join(" ")
+          ) && (
+            <>
+              <FloatingLabelInput
+                label="Max Demand recorded â€” kVA (HT)"
+                value={manual.maxDemandKva}
+                onChange={(e) => setManual((p) => ({ ...p, maxDemandKva: e.target.value }))}
+              />
+              <FloatingLabelInput
+                label="Avg Power Factor (HT, e.g. 0.87)"
+                value={manual.avgPowerFactor}
+                onChange={(e) => setManual((p) => ({ ...p, avgPowerFactor: e.target.value }))}
+              />
+              <FloatingLabelInput
+                label="kVAh billed units (HT month)"
+                value={manual.kvahUnits}
+                onChange={(e) => setManual((p) => ({ ...p, kvahUnits: e.target.value }))}
+              />
+            </>
+          )}
           <FloatingLabelInput
             label="Tariff category (e.g. DS-I, BPL, Commercial)"
             value={manual.tariffCategory}

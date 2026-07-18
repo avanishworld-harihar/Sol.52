@@ -42,6 +42,37 @@ export interface ParsedBillShape {
   purpose_of_supply?: string | null;
   /** When printed separately from sanctioned load — kVA numeric or as on bill */
   contract_demand_kva?: number | string | null;
+  /* ── HT (High Tension) bill fields — HV tariffs (e.g. MP HV-3.x on 11/33 kV) ── */
+  /** Supply voltage as printed, e.g. "33 KV", "11 KV". LT bills: null. */
+  supply_voltage?: string | null;
+  /** Maximum Demand recorded this month (kVA) — "Max Demand Recorded" / "Net Max Demand". */
+  max_demand_kva?: number | string | null;
+  /** Billing Demand (kVA) — max(recorded MD, contracted minimum). Drives demand charges. */
+  billing_demand_kva?: number | string | null;
+  /** Average Power Factor as printed (0–1, e.g. 0.87). */
+  avg_power_factor?: number | string | null;
+  /** Net kVAh units supplied — HT consumers are billed on kVAh, not kWh. */
+  kvah_units?: number | string | null;
+  /** Net kWh (active energy) units supplied — keep separate from kVAh. */
+  kwh_units?: number | string | null;
+  /** ToD zone-wise kWh units as printed (TOD1..TOD4 rows). */
+  tod_units?: {
+    tod1?: number | string | null;
+    tod2?: number | string | null;
+    tod3?: number | string | null;
+    tod4?: number | string | null;
+  } | null;
+  /** Signed ToD rebate/surcharge ₹ per zone when itemised (credit negative). */
+  tod_amounts_inr?: {
+    tod1?: number | string | null;
+    tod2?: number | string | null;
+    tod3?: number | string | null;
+    tod4?: number | string | null;
+  } | null;
+  /** Demand charges / fixed charges on billing demand (₹) — "Fixed Charges 450 * 641". */
+  demand_charges_inr?: number | string | null;
+  /** Meter Multiplying Factor (MF) as printed, e.g. 600. HT/CT meters only. */
+  multiplying_factor?: number | string | null;
   discom?: string;
   state?: string;
   district?: string;

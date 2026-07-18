@@ -39,6 +39,10 @@ export function isCommercialPresetId(presetId: string): boolean {
   return presetId === "commercial_executive";
 }
 
+export function isHtCommercialPresetId(presetId: string): boolean {
+  return presetId === "commercial_ht" || presetId === "ht_commercial";
+}
+
 export const PRESET_RENDERER_LOADERS: PresetRendererRegistry = {
   residential_executive: () =>
     import("@/components/proposals/_registry/adapters/golden-adapter"),
@@ -50,6 +54,8 @@ export const PRESET_RENDERER_LOADERS: PresetRendererRegistry = {
     import("@/components/proposals/_registry/adapters/blueprint-adapter"),
   commercial_executive: () =>
     import("@/components/proposals/_registry/adapters/commercial-adapter"),
+  commercial_ht: () =>
+    import("@/components/proposals/_registry/adapters/ht-commercial-adapter"),
 };
 
 /**
@@ -59,6 +65,9 @@ export const PRESET_RENDERER_LOADERS: PresetRendererRegistry = {
 export function getPresetRendererLoader(
   presetId: ProposalPresetId | string
 ): PresetRendererLoader {
+  if (isHtCommercialPresetId(String(presetId))) {
+    return () => import("@/components/proposals/_registry/adapters/ht-commercial-adapter");
+  }
   if (isCommercialPresetId(String(presetId))) {
     return () => import("@/components/proposals/_registry/adapters/commercial-adapter");
   }

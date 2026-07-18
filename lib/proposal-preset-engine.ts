@@ -32,6 +32,7 @@ export const PROPOSAL_PRESET_IDS = [
   "residential_premium_luxe",
   "residential_blueprint",
   "commercial_executive",
+  "commercial_ht",
 ] as const;
 
 export type ProposalPresetId = (typeof PROPOSAL_PRESET_IDS)[number];
@@ -64,9 +65,9 @@ export function isResidentialDocumentPreset(presetId: ProposalPresetId): boolean
   );
 }
 
-/** True for C&I commercial executive. */
+/** True for C&I commercial executive / HT-Commercial. */
 export function isCommercialPreset(presetId: ProposalPresetId): boolean {
-  return presetId === "commercial_executive";
+  return presetId === "commercial_executive" || presetId === "commercial_ht";
 }
 
 // ─── Preset shape ────────────────────────────────────────────────────────────
@@ -189,6 +190,20 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
       "school_institution_insight_card",
       "roi_savings",
     ],
+  },
+
+  commercial_ht: {
+    id: "commercial_ht",
+    label: "HT-Commercial",
+    description:
+      "HT (High Tension) industrial proposal — kVAh billing, ToD solar-window savings, " +
+      "power factor analysis, fixed demand charges and Section 32 accelerated depreciation.",
+    bill_requirement: "required",
+    theme_hint: "commercial",
+    default_data_source: "bill",
+    /** Isolated document renderer — no legacy block loop. */
+    default_blocks: [],
+    optional_blocks: [],
   },
 };
 

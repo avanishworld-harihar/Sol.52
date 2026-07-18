@@ -29,6 +29,13 @@ export type ManualProposalCustomer = {
   purposeOfSupply: string;
   /** Contract demand as printed (kVA); optional for demand-based LV2. */
   contractDemandKva: string;
+  /* ── HT (High Tension) bill fields — shown when connection is HT ── */
+  /** Maximum/billing demand recorded this month (kVA). */
+  maxDemandKva: string;
+  /** Average power factor from bill (0–1, e.g. 0.87). */
+  avgPowerFactor: string;
+  /** kVAh billed units for the reference month (HT bills on apparent energy). */
+  kvahUnits: string;
 };
 
 function coalesce(manual: string, parsed?: string) {
@@ -68,6 +75,15 @@ export function mergeParsedBills(
     purpose_of_supply:
       latest.purpose_of_supply?.trim() || previous.purpose_of_supply?.trim() || undefined,
     contract_demand_kva: latest.contract_demand_kva ?? previous.contract_demand_kva,
+    supply_voltage: latest.supply_voltage ?? previous.supply_voltage,
+    max_demand_kva: latest.max_demand_kva ?? previous.max_demand_kva,
+    billing_demand_kva: latest.billing_demand_kva ?? previous.billing_demand_kva,
+    avg_power_factor: latest.avg_power_factor ?? previous.avg_power_factor,
+    kvah_units: latest.kvah_units ?? previous.kvah_units,
+    kwh_units: latest.kwh_units ?? previous.kwh_units,
+    tod_units: latest.tod_units ?? previous.tod_units,
+    tod_amounts_inr: latest.tod_amounts_inr ?? previous.tod_amounts_inr,
+    demand_charges_inr: latest.demand_charges_inr ?? previous.demand_charges_inr,
     bill_month: latest.bill_month ?? previous.bill_month,
     months: latest.months ?? previous.months,
     consumption_history: latest.consumption_history?.length
@@ -104,6 +120,18 @@ export function mergeCustomerForProposal(
       manual.contractDemandKva.trim().length > 0
         ? manual.contractDemandKva.trim()
         : parsed?.contract_demand_kva ?? undefined,
+    max_demand_kva:
+      manual.maxDemandKva.trim().length > 0
+        ? manual.maxDemandKva.trim()
+        : parsed?.max_demand_kva ?? undefined,
+    avg_power_factor:
+      manual.avgPowerFactor.trim().length > 0
+        ? manual.avgPowerFactor.trim()
+        : parsed?.avg_power_factor ?? undefined,
+    kvah_units:
+      manual.kvahUnits.trim().length > 0
+        ? manual.kvahUnits.trim()
+        : parsed?.kvah_units ?? undefined,
     bill_month: parsed?.bill_month,
     months: parsed?.months
   };

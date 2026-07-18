@@ -205,6 +205,24 @@ export type PremiumProposalPptInput = {
   /** C&I commercial intelligence — panel catalog, scenarios, financing, DCR compare */
   commercialConfig?: import("@/lib/commercial-proposal-config").CommercialProposalConfig | null;
 
+  /** HT (High Tension) bill inputs — kVAh / ToD / PF / demand (HT-Commercial preset). */
+  htBillInputs?: {
+    contractDemandKva?: number;
+    billingDemandKva?: number;
+    maxDemandKva?: number;
+    avgPowerFactor?: number;
+    kvahUnits?: number;
+    kwhUnits?: number;
+    todUnits?: { tod1?: number; tod2?: number; tod3?: number; tod4?: number };
+    energyChargesInr?: number;
+    demandChargesInr?: number;
+    electricityDutyInr?: number;
+    fppasInr?: number;
+    pfSurchargeInr?: number;
+    supplyVoltage?: string;
+    billMonth?: string;
+  } | null;
+
   /** Homeowner requirement-based residential — guided kW, EMI, subsidy, panel track */
   residentialConfig?: import("@/lib/residential-proposal-config").ResidentialProposalConfig | null;
 
