@@ -6,9 +6,12 @@
  * Pages:
  *   01 Cover — client, system, headline savings
  *   02 HT Bill Profile — CD / MD / PF / kVAh / voltage / demand utilization
- *   03 Power Factor & APFC — kWh billing note + APFC recommendation
- *   04 ToD Savings Window — TOD3 solar offset, night/peak remain
- *   05 Investment Summary — energy savings, fixed demand note, Section 32 AD
+ *   03 Space & Engineering — RCC vs shed area, structure, module count
+ *   04 Power Factor & APFC — kWh billing note + APFC recommendation
+ *   05 ToD Savings Window — TOD3 solar offset, night/peak remain
+ *   06 Investment Summary — energy savings, fixed demand note, Section 32 AD
+ *   07 Decision Analysis I — need decoded + MPERC rules in plain language
+ *   08 Decision Analysis II — action plan for customer & vendor
  *
  * All finance math comes from lib/ht-solar-engine (computeHtSolarSavings).
  */
@@ -92,6 +95,33 @@ export function HtCommercialProposalRenderer({
     0
   );
 
+  // Space & engineering (pre-survey estimates, ~580 Wp modules)
+  const panelCount = systemKw > 0 ? Math.ceil((systemKw * 1000) / 580) : 0;
+  const rccAreaM2 = systemKw > 0 ? Math.round(systemKw * 10) : 0;
+  const shedAreaM2 = systemKw > 0 ? Math.round(systemKw * 6) : 0;
+  const toSqft = (m2: number) => Math.round(m2 * 10.764).toLocaleString("en-IN");
+
+  // Sizing verdict from daytime (TOD3) load: ideal kW at ~1450 kWh/kWp-year
+  const tod3MonthlyUnits = Math.max(0, Number(ht.todUnits?.tod3) || 0);
+  const idealKwFromDayLoad =
+    tod3MonthlyUnits > 0 ? Math.round((tod3MonthlyUnits * 12) / 1450) : 0;
+  const sizingVerdict: "right" | "over" | "under" =
+    idealKwFromDayLoad <= 0 || systemKw <= 0
+      ? "right"
+      : systemKw > idealKwFromDayLoad * 1.2
+        ? "over"
+        : systemKw < idealKwFromDayLoad * 0.8
+          ? "under"
+          : "right";
+
+  const billingDemandLabel =
+    result.billingDemandKva != null ? `${result.billingDemandKva} kVA` : isHi ? "90% CD" : "90% of CD";
+  const nightPctLabel = "7.5%–10%";
+  const mpercRules = c.analysis.mpercRules({
+    billingDemand: billingDemandLabel,
+    nightPct: nightPctLabel,
+  });
+
   const foot = (pageNo: string) => (
     <footer className={styles.pageFooter}>
       <span>{brand}</span>
@@ -149,7 +179,7 @@ export function HtCommercialProposalRenderer({
             </strong>
           </div>
         </div>
-        {foot("01 / 05")}
+        {foot("01 / 08")}
       </section>
 
       {/* Page 02 — HT Bill Profile */}
@@ -209,10 +239,90 @@ export function HtCommercialProposalRenderer({
               : `base/slab rate ≈ ₹${result.baseRatePerUnit}/kWh; ≈ ₹${result.effectiveRatePerUnit}/kWh with duty + FPPAS riders.`}
           </p>
         </aside>
-        {foot("02 / 05")}
+        {foot("02 / 08")}
       </section>
 
-      {/* Page 03 — Power Factor Analysis */}
+      {/* Page 03 — Space Requirement & Engineering */}
+      <section className={styles.page}>
+        <p className={styles.sectionTag}>{c.space.title}</p>
+        <h2 className={styles.h1}>{c.space.title}</h2>
+        <p className={styles.lead}>{c.space.lead}</p>
+        <div className={styles.roofGrid}>
+          <div className={styles.roofCard}>
+            <h3 className={styles.roofTitle}>{c.space.rccTitle}</h3>
+            <div className={styles.roofIllustration}>
+              {[0, 1, 2].map((row) => (
+                <div key={row} className={styles.roofRowRcc}>
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <i key={i} className={styles.panelTilted} />
+                  ))}
+                </div>
+              ))}
+            </div>
+            <div className={styles.roofStats}>
+              <div>
+                <span>{c.space.areaLabel}</span>
+                <strong>
+                  {rccAreaM2 > 0 ? `${rccAreaM2.toLocaleString("en-IN")} m² (~${toSqft(rccAreaM2)} sq.ft)` : "—"}
+                </strong>
+                <small>{c.space.perKwRcc}</small>
+              </div>
+              <div>
+                <span>{c.space.structureLabel}</span>
+                <small>{c.space.rccStructure}</small>
+              </div>
+            </div>
+          </div>
+          <div className={styles.roofCard}>
+            <h3 className={styles.roofTitle}>{c.space.shedTitle}</h3>
+            <div className={styles.roofIllustration}>
+              {[0, 1, 2, 3].map((row) => (
+                <div key={row} className={styles.roofRowShed}>
+                  {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+                    <i key={i} className={styles.panelFlush} />
+                  ))}
+                </div>
+              ))}
+            </div>
+            <div className={styles.roofStats}>
+              <div>
+                <span>{c.space.areaLabel}</span>
+                <strong>
+                  {shedAreaM2 > 0 ? `${shedAreaM2.toLocaleString("en-IN")} m² (~${toSqft(shedAreaM2)} sq.ft)` : "—"}
+                </strong>
+                <small>{c.space.perKwShed}</small>
+              </div>
+              <div>
+                <span>{c.space.structureLabel}</span>
+                <small>{c.space.shedStructure}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className={styles.metricGrid}>
+          <div className={styles.metricBox}>
+            <strong>{systemKw > 0 ? `${systemKw} kWp` : "—"}</strong>
+            <span>{c.summary.systemSize}</span>
+          </div>
+          <div className={`${styles.metricBox} ${styles.metricAccent}`}>
+            <strong>{panelCount > 0 ? panelCount.toLocaleString("en-IN") : "—"}</strong>
+            <span>{c.space.panelsLabel}</span>
+            <small>~580 Wp</small>
+          </div>
+          <div className={styles.metricBox}>
+            <strong>{isHi ? "GI हॉट-डिप" : "GI hot-dip"}</strong>
+            <span>{c.space.structureLabel}</span>
+          </div>
+        </div>
+        <aside className={styles.insight}>
+          <span className={styles.insightLabel}>Expert Insight</span>
+          <h3 className={styles.insightTitle}>{c.space.whichBetter}</h3>
+          <p>{c.space.whichBetterBody}</p>
+        </aside>
+        {foot("03 / 08")}
+      </section>
+
+      {/* Page 04 — Power Factor Analysis */}
       <section className={styles.page}>
         <p className={styles.sectionTag}>{c.pf.title}</p>
         <h2 className={styles.h1}>{c.pf.title}</h2>
@@ -268,10 +378,10 @@ export function HtCommercialProposalRenderer({
           <h3 className={styles.insightTitle}>{c.pf.insightTitle}</h3>
           <p>{c.pf.insightBody}</p>
         </aside>
-        {foot("03 / 05")}
+        {foot("04 / 08")}
       </section>
 
-      {/* Page 04 — ToD Savings Window */}
+      {/* Page 05 — ToD Savings Window */}
       <section className={styles.page}>
         <p className={styles.sectionTag}>{c.tod.title}</p>
         <h2 className={styles.h1}>{c.tod.title}</h2>
@@ -348,10 +458,10 @@ export function HtCommercialProposalRenderer({
               : "Solar does not generate in the evening peak slots (surcharge zones) — that surcharge remains. Adding a BESS (battery energy storage system) later can eliminate this peak penalty."}
           </p>
         </aside>
-        {foot("04 / 05")}
+        {foot("05 / 08")}
       </section>
 
-      {/* Page 05 — Investment Summary + Demand + Section 32 AD */}
+      {/* Page 06 — Investment Summary + Demand + Section 32 AD */}
       <section className={styles.page}>
         <p className={styles.sectionTag}>{c.summary.title}</p>
         <h2 className={styles.h1}>{c.ad.title}</h2>
@@ -417,7 +527,91 @@ export function HtCommercialProposalRenderer({
             {c.summary.paybackNote} {c.footer.disclaimer}
           </p>
         </aside>
-        {foot("05 / 05")}
+        {foot("06 / 08")}
+      </section>
+
+      {/* Page 07 — Decision Analysis I: need decoded + MPERC rules */}
+      <section className={styles.page}>
+        <p className={styles.sectionTag}>{c.analysis.pageTitle1}</p>
+        <h2 className={styles.h1}>{c.analysis.pageTitle1}</h2>
+        <p className={styles.lead}>{c.analysis.lead1}</p>
+        <div className={styles.metricGrid}>
+          <div className={styles.metricBox}>
+            <strong>
+              {tod3MonthlyUnits > 0 ? `${tod3MonthlyUnits.toLocaleString("en-IN")} kWh` : "—"}
+            </strong>
+            <span>{c.analysis.needDayLoad}</span>
+          </div>
+          <div className={`${styles.metricBox} ${styles.metricAccent}`}>
+            <strong>{idealKwFromDayLoad > 0 ? `~${idealKwFromDayLoad} kW` : "—"}</strong>
+            <span>{c.analysis.needIdealSize}</span>
+          </div>
+          <div
+            className={`${styles.metricBox}${
+              sizingVerdict === "right" ? ` ${styles.metricPositive}` : ` ${styles.metricWarn}`
+            }`}
+          >
+            <strong>{systemKw > 0 ? `${systemKw} kW` : "—"}</strong>
+            <span>{c.analysis.needProposed}</span>
+          </div>
+        </div>
+        <div className={styles.verdictBox}>
+          <span className={styles.insightLabel}>{c.analysis.needTitle}</span>
+          <p>
+            {sizingVerdict === "over"
+              ? c.analysis.verdictOver
+              : sizingVerdict === "under"
+                ? c.analysis.verdictUnder
+                : c.analysis.verdictRight}
+          </p>
+        </div>
+        <h3 className={styles.insightTitle}>{c.analysis.mpercTitle}</h3>
+        <ol className={styles.ruleList}>
+          {mpercRules.map((rule, i) => (
+            <li key={i}>{rule}</li>
+          ))}
+        </ol>
+        {foot("07 / 08")}
+      </section>
+
+      {/* Page 08 — Decision Analysis II: action plan */}
+      <section className={styles.page}>
+        <p className={styles.sectionTag}>{c.analysis.pageTitle2}</p>
+        <h2 className={styles.h1}>{c.analysis.pageTitle2}</h2>
+        <p className={styles.lead}>{c.analysis.lead2}</p>
+        <div className={styles.actionGrid}>
+          <div className={styles.actionCard}>
+            <h3 className={styles.roofTitle}>{c.analysis.customerTitle}</h3>
+            <ol className={styles.stepList}>
+              {c.analysis.customerSteps.map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+          </div>
+          <div className={styles.actionCard}>
+            <h3 className={styles.roofTitle}>{c.analysis.vendorTitle}</h3>
+            <ol className={styles.stepList}>
+              {c.analysis.vendorSteps.map((step, i) => (
+                <li key={i}>{step}</li>
+              ))}
+            </ol>
+          </div>
+        </div>
+        <div className={styles.verdictBox}>
+          <span className={styles.insightLabel}>{c.analysis.wayTitle}</span>
+          <p>
+            {c.analysis.wayBody({
+              sizeKw: systemKw > 0 ? `${systemKw} kW` : "— kW",
+              savings:
+                result.annualEnergySavingsInr > 0
+                  ? inrCompact(result.annualEnergySavingsInr)
+                  : "—",
+              tax: result.adTaxBenefitY1Inr > 0 ? inrCompact(result.adTaxBenefitY1Inr) : "—",
+            })}
+          </p>
+        </div>
+        <p className={styles.note}>{c.footer.disclaimer}</p>
+        {foot("08 / 08")}
       </section>
     </div>
   );
