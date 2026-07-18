@@ -4,8 +4,11 @@ import { ProposalTemplateThumbnail } from "@/components/settings/proposal-templa
 import { cn } from "@/lib/utils";
 import {
   PROPOSAL_DEFAULT_PRESET_UPDATED_EVENT,
+  readDefaultCommercialPreset,
   readDefaultResidentialPreset,
+  writeDefaultCommercialPreset,
   writeDefaultResidentialPreset,
+  type CommercialTemplatePresetId,
   type ResidentialTemplatePresetId,
 } from "@/lib/proposal-default-preset-storage";
 import {
@@ -51,6 +54,9 @@ export function ProposalTemplateGallery({ markSaved }: Props) {
   const [activeKey, setActiveKey] = useState<ProposalTemplateGalleryKey>(() =>
     resolveActiveTemplateGalleryKey(readDefaultResidentialPreset(), readDefaultSalesPremiumStyle())
   );
+  const [activeCommercialPreset, setActiveCommercialPreset] = useState<CommercialTemplatePresetId>(
+    () => readDefaultCommercialPreset()
+  );
 
   const items = galleryForCategory(category);
   const residentialCount = galleryForCategory("residential").length;
@@ -60,6 +66,7 @@ export function ProposalTemplateGallery({ markSaved }: Props) {
     setActiveKey(
       resolveActiveTemplateGalleryKey(readDefaultResidentialPreset(), readDefaultSalesPremiumStyle())
     );
+    setActiveCommercialPreset(readDefaultCommercialPreset());
   }, []);
 
   useEffect(() => {
@@ -86,7 +93,10 @@ export function ProposalTemplateGallery({ markSaved }: Props) {
 
   function choose(item: ProposalTemplateGalleryItem) {
     if (item.category === "commercial") {
-      markSaved("Commercial proposals use the Commercial Executive deck — no change needed.");
+      const presetId = item.presetId as CommercialTemplatePresetId;
+      writeDefaultCommercialPreset(presetId);
+      setActiveCommercialPreset(presetId);
+      markSaved(`Default commercial theme set to ${item.name}. New commercial proposals will use this format.`);
       return;
     }
     const presetId = item.presetId as ResidentialTemplatePresetId;
@@ -144,11 +154,14 @@ export function ProposalTemplateGallery({ markSaved }: Props) {
           "grid grid-cols-1 gap-4",
           category === "residential"
             ? "sm:grid-cols-2 xl:grid-cols-4"
-            : "sm:grid-cols-2 lg:max-w-sm lg:grid-cols-1"
+            : "sm:grid-cols-2 lg:max-w-2xl"
         )}
       >
         {items.map((item) => {
-          const active = item.category === "commercial" ? true : activeKey === item.key;
+          const active =
+            item.category === "commercial"
+              ? item.presetId === activeCommercialPreset
+              : activeKey === item.key;
           return (
             <button
               key={item.key}

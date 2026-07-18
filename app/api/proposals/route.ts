@@ -211,9 +211,11 @@ export async function POST(req: NextRequest) {
           id: null,
           shareUrl: null,
           error:
-            payload.presetId === "commercial_executive"
-              ? "Commercial proposal could not be saved. Apply migration 065_restore_commercial_executive_preset.sql in Supabase, then retry."
-              : "Proposal could not be saved to the database.",
+            payload.presetId === "commercial_ht"
+              ? "HT proposal could not be saved. Apply migration 067_add_commercial_ht_preset.sql in Supabase, then retry."
+              : payload.presetId === "commercial_executive"
+                ? "Commercial proposal could not be saved. Apply migration 065_restore_commercial_executive_preset.sql in Supabase, then retry."
+                : "Proposal could not be saved to the database.",
         },
         { status: 503 }
       );

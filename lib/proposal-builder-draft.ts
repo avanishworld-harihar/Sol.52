@@ -31,7 +31,7 @@ function writeKey(key: string, id: string | null) {
 }
 
 export function isCommercialPresetFamily(presetId: string | null | undefined): boolean {
-  return presetId === "commercial_executive";
+  return presetId === "commercial_executive" || presetId === "commercial_ht";
 }
 
 export function draftFamilyForPreset(presetId: string | null | undefined): ProposalDraftFamily {

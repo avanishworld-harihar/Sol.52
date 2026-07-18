@@ -64,7 +64,7 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "rea
 import { useRouter, useSearchParams } from "next/navigation";
 import { parsePrefillFromSearchParams } from "@/lib/quick-actions";
 import { ProposalPresetPicker } from "@/components/proposals/os/preset-picker";
-import { readDefaultResidentialPreset } from "@/lib/proposal-default-preset-storage";
+import { readDefaultCommercialPreset, readDefaultResidentialPreset } from "@/lib/proposal-default-preset-storage";
 import { readActiveSalesPremiumStyle, getSalesPremiumLayoutForStyle, usesInstitutionalRenderer } from "@/lib/sales-premium-styles";
 import { readDefaultGalleryKey } from "@/lib/proposal-template-gallery-storage";
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
@@ -359,7 +359,7 @@ function ProposalPageContent() {
     (urlPrefill.preset as string | undefined) === "residential_smart" && !urlPrefill.inputMode
   );
   const [showCommercialOrgPicker, setShowCommercialOrgPicker] = useState(
-    urlPrefill.preset === "commercial_executive" && !urlPrefill.orgType
+    isCommercialPresetFamily(urlPrefill.preset) && !urlPrefill.orgType
   );
   const [residentialConfig, setResidentialConfig] = useState<ResidentialProposalConfig | null>(null);
   /** Commercial bill path â€” same Smart catalog + pricing studio as residential. */
@@ -631,7 +631,7 @@ function ProposalPageContent() {
   const previousBill = additionalBills[0] ?? null;
   const isAnySecondaryBusy = isAnalyzingAdditional.some(Boolean);
   const isCommercialBillMode =
-    (osPresetId as string | null) === "commercial_executive" && commercialInputMode === "bill";
+    isCommercialPresetFamily(osPresetId) && commercialInputMode === "bill";
   const uploadedCoverageMonths = useMemo(() => {
     const merged = new Set<keyof MonthlyUnits>();
     const allBills = [latestBill, ...additionalBills].filter(Boolean) as ParsedBillShape[];
@@ -786,10 +786,10 @@ function ProposalPageContent() {
   );
 
   const isCommercialRequirement =
-    (osPresetId as string | null) === "commercial_executive" && commercialInputMode === "requirement";
+    isCommercialPresetFamily(osPresetId) && commercialInputMode === "requirement";
   const isResidentialSmart = (osPresetId as string | null) === "residential_smart";
   const isAnyResidential =
-    osPresetId != null && (osPresetId as string | null) !== "commercial_executive";
+    osPresetId != null && !isCommercialPresetFamily(osPresetId);
   const isResidentialRequirement = isAnyResidential && residentialInputMode === "requirement";
   const isResidentialBill = isAnyResidential && residentialInputMode === "bill";
   const canEstimateBillToKwh = Boolean(manual.state.trim() && manual.discom.trim());
@@ -866,7 +866,7 @@ function ProposalPageContent() {
 
   const useResidentialCatalog = isAnyResidential && Boolean(residentialConfig);
   const useCommercialCatalog =
-    (osPresetId as string | null) === "commercial_executive" && Boolean(commercialPricingConfig);
+    isCommercialPresetFamily(osPresetId) && Boolean(commercialPricingConfig);
 
   const effectiveResult = useMemo(() => {
     if (useResidentialCatalog && residentialConfig) {
@@ -950,7 +950,7 @@ function ProposalPageContent() {
       (result.currentMonthlyBill * (selfUse / Math.max(result.annualUnits, 1))) * 0.9
     );
     const genBasedAnnualSavings = Math.round(annualGeneration * 8 * 0.85);
-    const isCommercial = (osPresetId as string | null) === "commercial_executive";
+    const isCommercial = isCommercialPresetFamily(osPresetId);
     const annualSavings =
       isCommercial && result.currentMonthlyBill <= 0
         ? genBasedAnnualSavings
@@ -1037,7 +1037,7 @@ function ProposalPageContent() {
     Boolean(
       commercialPricingConfig &&
         commercialConfig &&
-        (osPresetId as string | null) === "commercial_executive" &&
+        isCommercialPresetFamily(osPresetId) &&
         (isCommercialRequirement || (isCommercialBillMode && commercialBillsReady))
     );
 
@@ -1736,7 +1736,7 @@ function ProposalPageContent() {
         return layout;
       })(),
       commercialConfig: (() => {
-        if ((osPresetId as string | null) !== "commercial_executive") return undefined;
+        if (!isCommercialPresetFamily(osPresetId)) return undefined;
         if (!commercialConfig) return undefined;
         // Builder "EMI on proposal" lives on residentialConfig.financing — keep deck in sync.
         const builderEmiOn = commercialPricingConfig?.financing?.enabled !== false;
@@ -1756,6 +1756,46 @@ function ProposalPageContent() {
               7,
           },
         };
+      })(),
+      htBillInputs: (() => {
+        if (!isCommercialPresetFamily(osPresetId)) return undefined;
+        const ref = latestBill ?? previousBill;
+        const num = (v: number | string | null | undefined): number | undefined => {
+          if (v == null || v === "") return undefined;
+          const n = typeof v === "number" ? v : Number(String(v).replace(/[^0-9.]/g, ""));
+          return Number.isFinite(n) && n >= 0 ? n : undefined;
+        };
+        const pf = num(manual.avgPowerFactor) ?? num(ref?.avg_power_factor);
+        const todUnits = ref?.tod_units
+          ? {
+              tod1: num(ref.tod_units.tod1),
+              tod2: num(ref.tod_units.tod2),
+              tod3: num(ref.tod_units.tod3),
+              tod4: num(ref.tod_units.tod4),
+            }
+          : undefined;
+        const inputs = {
+          contractDemandKva: num(manual.contractDemandKva) ?? num(ref?.contract_demand_kva),
+          billingDemandKva: num(ref?.billing_demand_kva),
+          maxDemandKva: num(manual.maxDemandKva) ?? num(ref?.max_demand_kva),
+          avgPowerFactor: pf != null && pf > 0 && pf <= 1 ? pf : undefined,
+          kvahUnits: num(manual.kvahUnits) ?? num(ref?.kvah_units),
+          kwhUnits: num(ref?.kwh_units),
+          todUnits,
+          energyChargesInr: num(ref?.energy_charges_inr),
+          demandChargesInr: num(ref?.demand_charges_inr) ?? num(ref?.fixed_charges_inr),
+          electricityDutyInr: num(ref?.electricity_duty_inr),
+          fppasInr: num(ref?.fppas_inr),
+          pfSurchargeInr: num(ref?.pf_welding_surcharge_inr),
+          supplyVoltage: ref?.supply_voltage?.trim().slice(0, 20) || undefined,
+          billMonth: ref?.bill_month?.trim() || undefined,
+        };
+        const hasAny = Object.entries(inputs).some(([key, value]) =>
+          key === "todUnits"
+            ? Object.values(value ?? {}).some((v) => v !== undefined)
+            : value !== undefined
+        );
+        return hasAny ? inputs : undefined;
       })(),
       residentialConfig:
         useResidentialCatalog && residentialConfig
@@ -1801,7 +1841,7 @@ function ProposalPageContent() {
           ? residentialConfig.pricingSource ?? "rate_card"
           : useCommercialCatalog && commercialPricingConfig
             ? commercialPricingConfig.pricingSource ?? "rate_card"
-            : (osPresetId as string | null) === "commercial_executive"
+            : isCommercialPresetFamily(osPresetId)
               ? "rate_card"
               : undefined,
       sharedPlantCatalog: (() => {
@@ -1817,7 +1857,7 @@ function ProposalPageContent() {
   }
 
   useEffect(() => {
-    if ((osPresetId as string | null) !== "commercial_executive") return;
+    if (!isCommercialPresetFamily(osPresetId)) return;
     // Don't clobber a restored commercial deck with defaults.
     if (restoringExistingProposalRef.current && !deckRestoreReady) return;
     const kw = effectiveResult?.solarKw ?? urlPrefill.kw ?? 60;
@@ -1845,7 +1885,7 @@ function ProposalPageContent() {
   ]);
 
   useEffect(() => {
-    if ((osPresetId as string | null) !== "commercial_executive") return;
+    if (!isCommercialPresetFamily(osPresetId)) return;
     if (restoringExistingProposalRef.current && !deckRestoreReady) return;
     let cancelled = false;
     void loadInstallerRateCard().then(() => {
@@ -2116,7 +2156,7 @@ function ProposalPageContent() {
   ]);
 
   useEffect(() => {
-    if ((osPresetId as string | null) !== "commercial_executive" || !commercialPricingConfig) return;
+    if (!isCommercialPresetFamily(osPresetId) || !commercialPricingConfig) return;
     setCommercialPricingConfig((prev) => {
       if (!prev) return prev;
       const next = applyCommercialPanelTrackPolicy(prev, manual.connectionType);
@@ -2140,7 +2180,7 @@ function ProposalPageContent() {
   }, [osPresetId, manual.connectionType]);
 
   useEffect(() => {
-    if ((osPresetId as string | null) !== "commercial_executive" || !commercialPricingConfig) return;
+    if (!isCommercialPresetFamily(osPresetId) || !commercialPricingConfig) return;
     const track = commercialPricingConfig.solar.panelTrack ?? "dcr";
     const panelType = panelTypeFromTrack(track);
     setCommercialConfig((prev) => {
@@ -2214,7 +2254,7 @@ function ProposalPageContent() {
     const deepLink = deepLinkProposalIdRef.current?.trim() || null;
     // Prefer deep-link; otherwise restore only the draft matching URL/preset prefill family.
     const preferCommercial =
-      urlPrefill.preset === "commercial_executive" ||
+      isCommercialPresetFamily(urlPrefill.preset) ||
       isCommercialPresetFamily(osPresetId);
     const familyDraft = preferCommercial
       ? readCommercialDraftProposalId()
@@ -2246,7 +2286,9 @@ function ProposalPageContent() {
         const isCommercial = isCommercialPresetFamily(preset);
         if (preset) {
           const normalized: ProposalPresetId = isCommercial
-            ? "commercial_executive"
+            ? preset === "commercial_ht"
+              ? "commercial_ht"
+              : "commercial_executive"
             : preset === "residential_zenith" || preset === "zenith"
               ? "residential_zenith"
               : preset === "residential_premium_luxe" || preset === "luxe" || preset === "premium_luxe"
@@ -2550,7 +2592,7 @@ function ProposalPageContent() {
         const cfg = applyCommercialPanelTrackPolicy(commercialPricingConfig, manual.connectionType);
         return proposalPricingBlocksGeneration(cfg);
       }
-      if ((osPresetId as string | null) === "commercial_executive" && !commercialPricingConfig) {
+      if (isCommercialPresetFamily(osPresetId) && !commercialPricingConfig) {
         const catalog =
           residentialConfig?.brandCatalog ?? getCachedResidentialBrandCatalog();
         const kw = effectiveResult.solarKw;
@@ -2675,7 +2717,9 @@ function ProposalPageContent() {
         toast.error(
           "Database preset blocked",
           json.error ||
-            "Run migration 065_restore_commercial_executive_preset.sql in Supabase SQL Editor, then retry."
+            (osPresetId === "commercial_ht"
+              ? "Run migration 067_add_commercial_ht_preset.sql in Supabase SQL Editor, then retry."
+              : "Run migration 065_restore_commercial_executive_preset.sql in Supabase SQL Editor, then retry.")
         );
         return null;
       }
@@ -2870,7 +2914,7 @@ function ProposalPageContent() {
           onSelect={(orgType, defaultKw) => {
             writeCommercialDraftProposalId(null);
             setDraftProposalId(null);
-            setOsPresetId("commercial_executive");
+            setOsPresetId(readDefaultCommercialPreset());
             setCommercialConfig(
               withOrgStory(defaultCommercialConfig(defaultKw), orgType, urlPrefill.story)
             );
@@ -2916,14 +2960,14 @@ function ProposalPageContent() {
         />
       )}
 
-      {((osPresetId as string | null) === "commercial_executive" || useResidentialCatalog) && proposalLayout ? (
+      {(isCommercialPresetFamily(osPresetId) || useResidentialCatalog) && proposalLayout ? (
         <ProposalReviewSheet
           open={showReviewSheet}
           onClose={() => setShowReviewSheet(false)}
           presetId={osPresetId ?? "residential_zenith"}
           layout={proposalLayout}
           onLayoutChange={
-            (osPresetId as string | null) === "commercial_executive"
+            isCommercialPresetFamily(osPresetId)
               ? commitCommercialLayoutChange
               : setProposalLayout
           }
@@ -2944,10 +2988,10 @@ function ProposalPageContent() {
             onClick={() =>
               void (catalogBuilderActive ? saveAndGenerateWebProposal() : generateWebProposal())
             }
-            aria-label={(osPresetId as string | null) === "commercial_executive" ? "Generate Commercial Proposal" : "Generate Web Proposal"}
+            aria-label={isCommercialPresetFamily(osPresetId) ? "Generate Commercial Proposal" : "Generate Web Proposal"}
             className={cn(
               "flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold text-white shadow-[0_8px_24px_rgba(0,0,0,0.22)] transition-all active:scale-95",
-              (osPresetId as string | null) === "commercial_executive"
+              isCommercialPresetFamily(osPresetId)
                 ? "bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 shadow-sky-900/20"
                 : "bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 shadow-teal-900/20",
               isWebProposalBusy && "opacity-70 cursor-not-allowed"
@@ -2955,7 +2999,7 @@ function ProposalPageContent() {
           >
             {isWebProposalBusy ? (
               <Skeleton className="h-4 w-4 rounded-full bg-white/30" />
-            ) : (osPresetId as string | null) === "commercial_executive" ? (
+            ) : isCommercialPresetFamily(osPresetId) ? (
               <Building2 className="h-4 w-4 shrink-0" aria-hidden />
             ) : (
               <Globe className="h-4 w-4 shrink-0" aria-hidden />
@@ -2987,7 +3031,7 @@ function ProposalPageContent() {
             />
 
             {/* Commercial Executive â€” Category selector (PHASE A) */}
-            {(osPresetId as string | null) === "commercial_executive" && commercialConfig && (
+            {isCommercialPresetFamily(osPresetId) && commercialConfig && (
               <CommercialCategorySelector
                 value={commercialConfig.orgType}
                 onChange={(orgType, defaultKw) => {
@@ -3005,11 +3049,11 @@ function ProposalPageContent() {
             )}
 
             {/* Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ EXISTING FORM CONTENT (unchanged) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
-            <div id="step-1-anchor" className={`ss-step-card space-y-2 overflow-visible ${(osPresetId as string | null) === "commercial_executive" ? "ring-1 ring-sky-200/60" : ""}`}>
+            <div id="step-1-anchor" className={`ss-step-card space-y-2 overflow-visible ${isCommercialPresetFamily(osPresetId) ? "ring-1 ring-sky-200/60" : ""}`}>
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className="ss-step-chip">Step 1</span>
-            {(osPresetId as string | null) === "commercial_executive" && (
+            {isCommercialPresetFamily(osPresetId) && (
               <span className="inline-flex items-center gap-1 rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold text-sky-700">
                 <Building2 className="h-2.5 w-2.5" />
                 Commercial
@@ -3162,7 +3206,7 @@ function ProposalPageContent() {
           />
         ) : null}
 
-        {(osPresetId as string | null) === "commercial_executive" ? (
+        {isCommercialPresetFamily(osPresetId) ? (
           <CommercialInputModeSelector
             mode={commercialInputMode}
             onModeChange={(m) => {
@@ -3193,7 +3237,7 @@ function ProposalPageContent() {
           />
         ) : null}
 
-        {(osPresetId as string | null) === "commercial_executive" &&
+        {isCommercialPresetFamily(osPresetId) &&
         isCommercialRequirement &&
         commercialPricingConfig &&
         commercialConfig ? (
@@ -3252,7 +3296,7 @@ function ProposalPageContent() {
       ) : null}
 
       {!hideBillUploadSteps ? (
-      <div id="step-2-anchor" className={`ss-step-card ${(osPresetId as string | null) === "commercial_executive" ? "ring-1 ring-sky-200/60" : ""}`}>
+      <div id="step-2-anchor" className={`ss-step-card ${isCommercialPresetFamily(osPresetId) ? "ring-1 ring-sky-200/60" : ""}`}>
         <span className="ss-step-chip">Step 2</span>
         <h2 className="flex flex-col gap-1 text-base font-bold text-brand-900 sm:flex-row sm:items-center sm:gap-2 sm:text-lg">
           <span className="flex items-center gap-2">
@@ -3543,7 +3587,7 @@ function ProposalPageContent() {
         </div>
       )}
 
-      {(osPresetId as string | null) === "commercial_executive" &&
+      {isCommercialPresetFamily(osPresetId) &&
       isCommercialBillMode &&
       commercialBillsReady &&
       commercialPricingConfig &&
@@ -3586,7 +3630,7 @@ function ProposalPageContent() {
       ) : null}
 
       {/* Recommended solar â€” legacy bill-only; residential uses smart catalog instead */}
-      {!hideBillUploadSteps && !isResidentialSmart && (osPresetId as string | null) !== "commercial_executive" && (
+      {!hideBillUploadSteps && !isResidentialSmart && !isCommercialPresetFamily(osPresetId) && (
         <div className="ss-card p-4 sm:p-5">
           <h2 className="text-base font-extrabold text-brand-900 sm:text-lg">{t("proposal_recommended")}</h2>
           <p className="mt-2 break-words text-2xl font-extrabold tabular-nums text-solar-600 sm:text-3xl lg:text-4xl">
@@ -3646,7 +3690,7 @@ function ProposalPageContent() {
       ) : null}
       {(!isCommercialBillMode || (commercialBillsReady && !commercialPricingConfig)) &&
         !catalogBuilderActive && (
-      <div id="step-3-anchor" className={`ss-card space-y-4 p-4 sm:p-5 ${(osPresetId as string | null) === "commercial_executive" ? "ring-1 ring-sky-200/60" : ""}`}>
+      <div id="step-3-anchor" className={`ss-card space-y-4 p-4 sm:p-5 ${isCommercialPresetFamily(osPresetId) ? "ring-1 ring-sky-200/60" : ""}`}>
         {useResidentialCatalog ? (
           <div className="rounded-xl border border-emerald-200/80 bg-emerald-50/60 px-3 py-2.5 text-xs text-emerald-950 dark:border-emerald-800/50 dark:bg-emerald-950/30 dark:text-emerald-100">
             <p className="font-semibold">Ready to generate your homeowner proposal</p>
@@ -3789,7 +3833,7 @@ function ProposalPageContent() {
         </div>
 
         <div id="step-4-anchor" className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-          {(osPresetId as string | null) === "commercial_executive" && proposalLayout ? (
+          {isCommercialPresetFamily(osPresetId) && proposalLayout ? (
             <button
               type="button"
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-sky-300 bg-sky-50 px-4 py-3 text-sm font-semibold text-sky-700 shadow-sm transition hover:bg-sky-100 dark:border-sky-700 dark:bg-sky-950/40 dark:text-sky-300"
@@ -3804,18 +3848,18 @@ function ProposalPageContent() {
           ) : null}
           <button
             type="button"
-            className={`ss-cta-primary sm:text-base ${(osPresetId as string | null) === "commercial_executive" ? "from-sky-600 via-sky-500 to-indigo-600 hover:from-sky-700 hover:to-indigo-700" : ""}`}
+            className={`ss-cta-primary sm:text-base ${isCommercialPresetFamily(osPresetId) ? "from-sky-600 via-sky-500 to-indigo-600 hover:from-sky-700 hover:to-indigo-700" : ""}`}
             onClick={() => void generateWebProposal()}
             disabled={isWebProposalBusy}
           >
             {isWebProposalBusy ? (
               <Skeleton className="mr-2 h-4 w-4 rounded-full" />
-            ) : (osPresetId as string | null) === "commercial_executive" ? (
+            ) : isCommercialPresetFamily(osPresetId) ? (
               <Building2 className="mr-2 h-4 w-4" />
             ) : (
               <Globe className="mr-2 h-4 w-4" />
             )}
-            {(osPresetId as string | null) === "commercial_executive" ? "Generate Commercial Proposal" : "Generate Web Proposal"}
+            {isCommercialPresetFamily(osPresetId) ? "Generate Commercial Proposal" : "Generate Web Proposal"}
           </button>
           <button
             type="button"

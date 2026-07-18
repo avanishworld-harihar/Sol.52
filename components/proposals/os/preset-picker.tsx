@@ -9,7 +9,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Building2, Home, Sparkles } from "lucide-react";
 import Link from "next/link";
 import {
+  labelForCommercialTemplate,
   labelForResidentialTemplate,
+  readDefaultCommercialPreset,
   readDefaultResidentialPreset,
 } from "@/lib/proposal-default-preset-storage";
 
@@ -67,6 +69,7 @@ function CategoryCardButton({ card, delay }: { card: CategoryCard; delay: number
 
 export function ProposalPresetPicker({ onSelectResidential, onSelectCommercial, onSkip }: Props) {
   const defaultResidentialLabel = labelForResidentialTemplate(readDefaultResidentialPreset());
+  const defaultCommercialLabel = labelForCommercialTemplate(readDefaultCommercialPreset());
 
   const cards: CategoryCard[] = [
     {
@@ -86,7 +89,7 @@ export function ProposalPresetPicker({ onSelectResidential, onSelectCommercial, 
       icon: <Building2 className="h-7 w-7" />,
       label: "Commercial",
       subtitle: "Businesses and industrial sites.",
-      detail: "Commercial Executive template",
+      detail: `Template: ${defaultCommercialLabel} · More → Proposal templates`,
       accentFrom: "from-slate-600",
       accentTo: "to-slate-800",
       ctaClass:

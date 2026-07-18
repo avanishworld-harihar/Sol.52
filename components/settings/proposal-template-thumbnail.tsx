@@ -29,6 +29,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
       {variant === "ledger" ? <LedgerThumb size={size} /> : null}
       {variant === "classic" ? <ClassicThumb size={size} /> : null}
       {variant === "commercial" ? <CommercialThumb size={size} /> : null}
+      {variant === "ht" ? <HtIndustrialThumb size={size} /> : null}
       {variant === "zenith" ? <ZenithThumb size={size} /> : null}
       {variant === "luxe" ? <LuxeThumb size={size} /> : null}
       {variant === "blueprint" ? <BlueprintThumb size={size} /> : null}
@@ -42,6 +43,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
         "ledger",
         "classic",
         "commercial",
+        "ht",
         "zenith",
         "luxe",
         "blueprint",
@@ -435,6 +437,51 @@ function AuroraThumb({ size }: { size: "card" | "preview" }) {
           <div className={cn("w-full rounded-full bg-indigo-100", rowH)} />
           <div className={cn("w-[80%] rounded-full bg-amber-100", rowH)} />
           <div className={cn("w-[90%] rounded-full bg-emerald-100", rowH)} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HtIndustrialThumb({ size }: { size: "card" | "preview" }) {
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-[#e9edf2]">
+      <div
+        className={cn(
+          "flex flex-col rounded-[3px] border border-[#dbe3ec] bg-white shadow-sm",
+          size === "preview" ? "h-[62%] w-[68%] p-[8%]" : "h-[58%] w-[72%] p-[7%]"
+        )}
+      >
+        <div
+          className={cn(
+            "font-bold uppercase tracking-[0.18em] text-[#0b5fa5]",
+            size === "preview" ? "text-[6px]" : "text-[2.5px]"
+          )}
+        >
+          HT · 33 kV
+        </div>
+        <div
+          className={cn(
+            "mt-[6%] font-serif font-bold leading-tight text-[#0f1c2e]",
+            size === "preview" ? "text-[10px]" : "text-[4.5px]"
+          )}
+        >
+          ToD Savings
+        </div>
+        {/* Mini ToD bars — TOD3 (solar) highlighted */}
+        <div className="mt-auto flex items-end gap-[6%]" style={{ height: size === "preview" ? 22 : 10 }}>
+          {[
+            { h: 30, solar: false },
+            { h: 55, solar: false },
+            { h: 100, solar: true },
+            { h: 45, solar: false },
+          ].map((bar, i) => (
+            <div
+              key={i}
+              className="flex-1 rounded-t-[1px]"
+              style={{ height: `${bar.h}%`, background: bar.solar ? "#0f766e" : "#94a3b8" }}
+            />
+          ))}
         </div>
       </div>
     </div>

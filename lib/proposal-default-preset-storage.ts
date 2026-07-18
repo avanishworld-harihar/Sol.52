@@ -70,3 +70,42 @@ export function writeDefaultResidentialPreset(id: ResidentialTemplatePresetId): 
 export function labelForResidentialTemplate(id: ProposalPresetId): string {
   return RESIDENTIAL_TEMPLATE_OPTIONS.find((o) => o.id === id)?.label ?? "Zenith";
 }
+
+/* ── Commercial templates — Executive (LT/C&I) vs HT Industrial ── */
+
+export const COMMERCIAL_TEMPLATE_PRESET_IDS = [
+  "commercial_executive",
+  "commercial_ht",
+] as const;
+
+export type CommercialTemplatePresetId = (typeof COMMERCIAL_TEMPLATE_PRESET_IDS)[number];
+
+export const DEFAULT_COMMERCIAL_TEMPLATE_PRESET: CommercialTemplatePresetId =
+  "commercial_executive";
+
+const COMMERCIAL_STORAGE_KEY = "ss_default_commercial_proposal_preset_v1";
+
+function isCommercialTemplatePreset(id: string): id is CommercialTemplatePresetId {
+  return (COMMERCIAL_TEMPLATE_PRESET_IDS as readonly string[]).includes(id);
+}
+
+export function readDefaultCommercialPreset(): CommercialTemplatePresetId {
+  if (typeof window === "undefined") return DEFAULT_COMMERCIAL_TEMPLATE_PRESET;
+  try {
+    const raw = localStorage.getItem(COMMERCIAL_STORAGE_KEY)?.trim();
+    if (raw && isCommercialTemplatePreset(raw)) return raw;
+  } catch {
+    /* ignore */
+  }
+  return DEFAULT_COMMERCIAL_TEMPLATE_PRESET;
+}
+
+export function writeDefaultCommercialPreset(id: CommercialTemplatePresetId): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(COMMERCIAL_STORAGE_KEY, id);
+  window.dispatchEvent(new CustomEvent(PROPOSAL_DEFAULT_PRESET_UPDATED_EVENT, { detail: { id } }));
+}
+
+export function labelForCommercialTemplate(id: ProposalPresetId): string {
+  return id === "commercial_ht" ? "HT Industrial" : "Commercial Executive";
+}

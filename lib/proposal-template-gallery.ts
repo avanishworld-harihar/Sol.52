@@ -41,7 +41,7 @@ export const PROPOSAL_TEMPLATE_CATEGORIES: ProposalTemplateCategoryMeta[] = [
   {
     id: "commercial",
     label: "Commercial",
-    description: "C&I sites — Commercial Executive with hotel, hospital, factory & industry segments.",
+    description: "C&I sites — Commercial Executive (LT) or HT Industrial (11/33 kV ToD & PF analysis).",
   },
 ];
 
@@ -82,7 +82,7 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
   },
 ];
 
-/** Commercial Executive — single C&I deck; segment chosen at proposal start. */
+/** Commercial themes — Executive (LT / C&I) and HT Industrial (HV ToD/PF). */
 export const COMMERCIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
   {
     key: "commercial",
@@ -93,6 +93,15 @@ export const COMMERCIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
       "Hotel, hospital, factory, mill / industry, school & more — executive C&I proposal with segment-aware narrative.",
     recommended: true,
     thumbnailVariant: "commercial",
+  },
+  {
+    key: "commercial_ht",
+    presetId: "commercial_ht",
+    category: "commercial",
+    name: "HT Industrial",
+    description:
+      "HT (11/33 kV) industrial connections — ToD solar-window savings, power factor & APFC, demand charges, Section 32 AD, and a plain-language MPERC decision analysis.",
+    thumbnailVariant: "ht",
   },
 ];
 
@@ -131,6 +140,7 @@ export function resolveActiveGalleryKey(
   _salesPremiumStyle?: SalesPremiumStyleId
 ): ProposalTemplateGalleryKey {
   if (presetId === "commercial_executive") return "commercial";
+  if (presetId === "commercial_ht") return "commercial_ht";
   if (presetId === "residential_executive") return "golden";
   if (presetId === "residential_zenith") return "zenith";
   if (presetId === "residential_premium_luxe") return "luxe";
