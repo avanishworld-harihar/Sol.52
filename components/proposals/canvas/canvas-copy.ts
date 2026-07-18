@@ -34,60 +34,74 @@ export function getCanvasCopy(lang: CanvasLang) {
         : "Proposed capacity and annual generation.",
       financial: hi ? "Financial Story" : "Financial Story",
       financialLead: hi
-        ? "बिल घटे → मासिक लाभ → फिर साल और जीवनभर का नतीजा।"
-        : "Bill drops → monthly profit → then year-one and lifetime outcome.",
+        ? "बिल घटे → अनुमानित मासिक बचत → फिर साल और 25-वर्ष का नतीजा।"
+        : "Bill drops → estimated monthly savings → then year-one and 25-year outcome.",
       billSection: hi ? "मासिक बिल कैसे बदलेगा" : "How your monthly bill changes",
       billHint: hi
-        ? "आज का बिल सोलर के बाद गिरता है — अंतर आपका मासिक लाभ है।"
-        : "Today’s bill falls after solar — the gap is your monthly profit.",
+        ? "आज का बिल सोलर के बाद गिरता है — अंतर आपकी अनुमानित मासिक बचत है।"
+        : "Today’s bill falls after solar — the gap is your estimated monthly savings.",
       timeSection: hi ? "समय के साथ" : "Over time",
       outcomeSection: hi ? "निवेश का नतीजा" : "Investment outcome",
       outcomeHint: hi
-        ? "आप जितना चुकाते हैं, उसके मुकाबले 25 वर्षों में कितना धन बनता है।"
-        : "What you pay versus the wealth it builds over 25 years.",
-      immediateProfit: hi ? "तत्काल मासिक लाभ" : "Immediate Monthly Profit",
-      netGainHint: hi ? "दिन 1 से शुद्ध मासिक लाभ" : "Net Monthly Gain from Day 1",
+        ? "नेट भुगतान बनाम 25 वर्षों का अनुमानित शुद्ध लाभ (बचत − निवेश)।"
+        : "Net payable versus estimated 25-year net benefit (savings − investment).",
+      immediateProfit: hi ? "अनुमानित मासिक बचत" : "Estimated Monthly Savings",
+      netGainHint: hi ? "दिन 1 से अनुमानित मासिक बचत" : "Estimated monthly savings from day 1",
       today: hi ? "आज का बिल" : "Today’s bill",
       afterSolar: hi ? "सोलर के बाद" : "After solar",
-      monthlyProfit: hi ? "मासिक लाभ" : "Monthly profit",
+      monthlyProfit: hi ? "अनुमानित मासिक बचत" : "Estimated monthly savings",
       investment: hi ? "निवेश योजना" : "Investment plan",
       investmentLead: hi
         ? "सकल में से सब्सिडी घटे — फिर EMI या रिटर्न साफ़ दिखें।"
         : "See subsidy come off gross — then returns and EMI options at a glance.",
       costSection: hi ? "आपकी लागत" : "Your cost",
       equationHint: hi
-        ? "सकल − सब्सिडी = आपका वास्तविक भुगतान (पेबैक इसी पर आधारित)।"
-        : "Gross − Subsidy = what you actually pay (payback is measured on this).",
+        ? "सकल − सब्सिडी = आपका वास्तविक भुगतान (पेबैक इसी पर)। राशियाँ निकटतम ₹0.1L तक पूर्णांकित हो सकती हैं।"
+        : "Gross − Subsidy = what you actually pay (payback baseline). Figures may round to the nearest ₹0.1L.",
       returnsSection: hi ? "रिटर्न स्नैपशॉट" : "Return snapshot",
       financeSection: hi ? "फाइनेंसिंग · मासिक EMI" : "Financing · Monthly EMI",
       financeSectionLead: hi
-        ? "नेट लागत पर ऋण अवधि चुनें — हर विकल्प की मासिक किस्त।"
-        : "Choose a loan tenure on your net cost — monthly instalment for each option.",
+        ? "नेट लागत पर ऋण अवधि — अनुमानित EMI (~7% p.a. ब्याज मानकर)। वास्तविक दर बैंक/NBFC पर निर्भर।"
+        : "Loan tenures on your net cost — estimated EMI (assumes ~7% p.a.). Final rate depends on the lender.",
+      assumptionsSection: hi ? "मुख्य अनुमान" : "Key assumptions",
       emiUnit: hi ? "/ महीना" : "/ month",
       gross: hi ? "सकल" : "Gross",
       subsidy: hi ? "सब्सिडी" : "Subsidy",
       youPay: hi ? "आप चुकाएँगे" : "You pay",
       payback: hi ? "पेबैक" : "Payback",
-      wealth: hi ? "Wealth Projection" : "Wealth Projection",
+      wealth: hi ? "25-Year Returns" : "25-Year Returns",
       wealthLead: hi
-        ? "25 वर्षों में आपकी बचत कैसे बढ़ती है।"
-        : "How your savings compound across 25 years.",
-      investScore: hi ? "सोलर निवेश स्कोर" : "Solar Investment Score",
-      investScoreValue: "AA+ (Very High Return)",
+        ? "संचयी बचत और निवेश के बाद शुद्ध लाभ — अलग-अलग दिखाया गया।"
+        : "Cumulative savings versus net benefit after investment — shown separately.",
+      investScore: hi ? "अनुमानित रिटर्न गुणक" : "Estimated return multiple",
+      investScoreValue: (multiple: string) =>
+        multiple !== "—" ? `~${multiple}× net outlay` : "—",
       investScoreInsight: (netLakh: string, multiple: string) =>
         hi
-          ? `आपका ₹${netLakh}L निवेश ग्रिड मूल्य मुद्रास्फीति के कारण 25 वर्षों में ~${multiple}x रिटर्न देता है।`
-          : `Your ₹${netLakh}L investment generates ~${multiple}x returns over 25 years due to grid price inflation.`,
-      generation: hi ? "उत्पादन" : "Generation",
+          ? `₹${netLakh}L नेट निवेश पर ~${multiple}× अनुमानित 25-वर्ष शुद्ध लाभ (टैरिफ वृद्धि ~6%/वर्ष मानकर)। यह स्कोर नहीं — गणना-आधारित अनुपात है।`
+          : `About ${multiple}× your ₹${netLakh}L net outlay as estimated 25-year net benefit (≈6%/yr tariff escalation). Not a credit score — a calculated ratio.`,
+      cumulativeSavingsLabel: hi
+        ? "25-वर्ष संचयी बचत"
+        : "25-Year Cumulative Savings",
+      netBenefitLabel: hi ? "25-वर्ष शुद्ध लाभ" : "25-Year Net Benefit",
+      cumulativeSavingsHint: hi
+        ? "अनुमानित बिल बचत का योग (निवेश घटाने से पहले)।"
+        : "Sum of estimated bill savings before subtracting your investment.",
+      netBenefitHint: hi
+        ? "संचयी बचत − नेट भुगतान (आपका वास्तविक आर्थिक लाभ)।"
+        : "Cumulative savings − net payable (your economic gain).",
+      generation: hi ? "मासिक उत्पादन पूर्वानुमान" : "Monthly generation forecast",
       generationLead: hi
-        ? "वार्षिक यूनिट, कवरेज, और साइट क्षमता।"
-        : "Annual units, coverage, and site capacity.",
+        ? "जनवरी–दिसंबर अनुमानित यूनिट और बचत — गर्मी/मानसून का अंतर साफ़ दिखे।"
+        : "Jan–Dec estimated units and savings — summer vs monsoon at a glance.",
       genInsightTitle: hi
-        ? "क्यों यह क्षमता सही है"
-        : "Why this capacity fits",
+        ? "मौसमी भिन्नता क्यों मायने रखती है"
+        : "Why seasonal variation matters",
       genInsightBody: hi
-        ? "उत्पादन अनुमान स्थानीय विकिरण और छत अभिविन्यास पर आधारित है। गर्मियों में उच्च उत्पादन बिल के पीक महीनों से मेल खाता है — यही बचत का मुख्य इंजन है।"
-        : "Generation estimates use local irradiance and roof orientation. Summer output aligns with peak bill months — that overlap is the core savings engine.",
+        ? "उत्पादन स्थानीय विकिरण प्रोफ़ाइल पर आधारित अनुमान है। गर्मी में ऊँचा उत्पादन अक्सर ऊँचे बिल महीनों से मेल खाता है — बचत का मुख्य इंजन।"
+        : "Generation uses a regional irradiance profile. Higher summer output often aligns with peak bill months — that overlap drives most of the savings.",
+      genUnitsLabel: hi ? "अनुमानित यूनिट" : "Est. units",
+      genSavingsLabel: hi ? "अनुमानित बचत" : "Est. savings",
       hardware: hi ? "Hardware Trust" : "Hardware Trust",
       hardwareLead: hi
         ? "टियर-1 पार्ट्स — प्रमाण, वारंटी, और उपज।"
@@ -96,8 +110,8 @@ export function getCanvasCopy(lang: CanvasLang) {
         ? "टियर-1 क्यों मायने रखता है"
         : "Why Tier-1 matters",
       hwInsightBody: hi
-        ? "मॉड्यूल और इन्वर्टर का ब्रांड दीर्घकालिक उपज और सर्विस नेटवर्क तय करता है। हम केवल उन पार्ट्स का उपयोग करते हैं जिनकी वारंटी और स्पेयर पार्ट्स भारत में आसानी से उपलब्ध हैं।"
-        : "Module and inverter brand set long-term yield and service reach. We specify parts with warranties and spare availability across India.",
+        ? "मॉड्यूल और इन्वर्टर का ब्रांड दीर्घकालिक उपज और सर्विस नेटवर्क तय करता है। साथ ही ACDB/DCDB सुरक्षा बॉक्स सर्ज, ओवर-करंट और लाइटनिंग से पूरे सिस्टम को बचाते हैं — हम केवल वे पार्ट्स लगाते हैं जिनकी वारंटी और स्पेयर भारत में आसानी से उपलब्ध हैं।"
+        : "Module and inverter brand set long-term yield and service reach, while the ACDB/DCDB protection boxes guard the whole system against surges, over-current and lightning. We specify parts with warranties and spare availability across India.",
       billInsightTitle: hi ? "बिल में क्या छिपा है" : "What the bill is telling you",
       billInsightBody: hi
         ? "गर्मी के पीक महीने औसत बिल को ऊपर खींचते हैं। सोलर का उत्पादन भी इन्हीं महीनों में ऊँचा होता है — इसलिए बचत सिर्फ औसत पर नहीं, सबसे महंगे महीनों पर लगती है।"
@@ -106,14 +120,14 @@ export function getCanvasCopy(lang: CanvasLang) {
       investInsightBody: hi
         ? "सकल कीमत में हार्डवेयर + इंस्टॉल शामिल है। सब्सिडी घटने के बाद जो राशि बचती है, वही आपकी वास्तविक निवेश आधार-रेखा है — पेबैक इसी आंकड़े पर चलता है।"
         : "Gross includes hardware and install. After subsidy, the remainder is your true investment baseline — payback is measured against that number alone.",
-      financeInsightTitle: hi ? "दिन-1 लाभ क्यों मायने रखता है" : "Why day-1 profit matters",
+      financeInsightTitle: hi ? "दिन-1 बचत क्यों मायने रखती है" : "Why day-1 savings matter",
       financeInsightBody: hi
-        ? "मासिक बचत EMI या कैश-फ्लो से पहले दिखती है। अगर बचत स्थिर रहे, तो सिस्टम खुद को चुकाता है — और उसके बाद हर यूनिट शुद्ध लाभ बन जाती है।"
-        : "Monthly savings show up before EMI stress fades. When savings hold steady, the system pays itself down — and every unit after payback is pure gain.",
-      wealthInsightTitle: hi ? "वक्र क्यों ऊपर मुड़ता है" : "Why the curve bends upward",
+        ? "अनुमानित मासिक बचत EMI अवधि में भी कैश-फ्लो को सहारा देती है। बचत स्थिर रहे तो पेबैक के बाद हर यूनिट अतिरिक्त लाभ बनती है।"
+        : "Estimated monthly savings support cash flow even during an EMI period. After payback, each unit is incremental gain — not a guaranteed profit rate.",
+      wealthInsightTitle: hi ? "दो आंकड़े क्यों अलग हैं" : "Why two figures are shown",
       wealthInsightBody: hi
-        ? "टैरिफ मुद्रास्फीति बचत को साल-दर-साल बढ़ाती है। शुरुआती वर्ष निवेश वसूली हैं; बाद के वर्ष चक्रवृद्धि धन बनाते हैं — इसलिए 25-वर्ष का आंकड़ा सिर्फ 25× साल-1 नहीं है।"
-        : "Tariff inflation lifts savings year over year. Early years recover capital; later years compound wealth — so the 25-year figure is not simply 25× year one.",
+        ? "संचयी बचत कुल बिल राहत है; शुद्ध लाभ = बचत − नेट निवेश। चार्ट ~6%/वर्ष टैरिफ वृद्धि मानकर बनता है — वास्तविक बिल/टैरिफ से परिणाम बदल सकते हैं।"
+        : "Cumulative savings is total bill relief; net benefit = savings − net investment. The chart assumes ~6%/yr tariff escalation — actual bills and tariffs can change results.",
       impactInsightTitle: hi ? "एक्सपर्ट इनसाइट" : "Expert Insight",
       impactInsightBody: hi
         ? "यह केवल मार्केटिंग के आंकड़े नहीं हैं। आपके द्वारा बनाई गई हर 1 यूनिट बिजली का मतलब है कि पावर ग्रिड में कोयला कम जलाया जा रहा है। आप सिर्फ ऊर्जा नहीं बचा रहे, आप एक सुरक्षित भविष्य का निर्माण कर रहे हैं।"
@@ -129,14 +143,14 @@ export function getCanvasCopy(lang: CanvasLang) {
         ? "आजीवन CO₂ समाप्त"
         : "Lifetime CO₂ Eliminated",
       co2Body: hi
-        ? "लगभग 70 वर्षों तक पेट्रोल कार को सड़क से हटाने के बराबर। आप कोयला-भारी ग्रिड निर्भरता सक्रिय रूप से कम कर रहे हैं।"
-        : "Equivalent to removing a petrol car from the road for over 70 years. You are actively reducing coal-heavy grid dependence.",
+        ? "अनुमानित ग्रिड उत्सर्जन कारक (~0.82 kg/kWh) × 25 वर्ष उत्पादन। संकेतक समतुल्य — साइट और ग्रिड मिश्रण से भिन्न हो सकता है।"
+        : "Estimated from grid emission factor (~0.82 kg/kWh) × 25-year generation. An indicative equivalent — site and grid mix can vary.",
       treesHeading: hi
-        ? "पारिस्थितिक समकक्ष वृक्षारोपण"
-        : "Ecological Equivalent Planted",
+        ? "समतुल्य कार्बन अवशोषण"
+        : "Equivalent Carbon Absorption",
       treesBody: hi
-        ? "प्रकृति को उतना अवशोषण करने के लिए विशाल वन चाहिए — जो आपका सिस्टम छत पर चुपचाप, साल-दर-साल हासिल करता है।"
-        : "Nature would need a massive woodland to absorb what your system achieves quietly, year after year on your roof.",
+        ? "अनुमान: ~0.82 kg CO₂/kWh और ~22 kg CO₂/वृक्ष-वर्ष। यह वृक्षारोपण का वादा नहीं — कार्बन अवशोषण का समकक्ष माप है।"
+        : "Estimate uses ~0.82 kg CO₂/kWh and ~22 kg CO₂ per tree-year. Not a planting pledge — an equivalent carbon-absorption measure.",
       cleanEnergyLabel: hi ? "वार्षिक स्वच्छ ऊर्जा" : "Annual clean energy",
       firstYearSavingsLabel: hi
         ? "पहले वर्ष की वित्तीय बचत"
@@ -173,12 +187,12 @@ export function getCanvasCopy(lang: CanvasLang) {
       closingEyebrow: hi ? "अंतिम कदम" : "The final step",
       closingTitle: hi ? "बधाई।" : "Congratulations.",
       closingTitleLock: hi
-        ? "आप अगले 25 वर्षों के लिए अपनी बिजली की कीमत लॉक कर रहे हैं।"
-        : "You are locking your electricity price for the next 25 years.",
+        ? "बढ़ते बिजली टैरिफ के जोखिम को दशकों तक कम कर सकते हैं।"
+        : "You can reduce exposure to rising electricity tariffs for decades.",
       closingSubtitle: (city: string) =>
         hi
-          ? `हर दिन जब सूरज ${city} पर उगता है, आपकी छत कमाती है। हर महीने आपका धन बढ़ता है। यह खर्च नहीं — छत पर एक उच्च-प्रतिफल वाला वित्तीय संपत्ति है।`
-          : `Every day the sun rises over ${city}, your roof earns. Every month, your wealth compounds. This is not a utility expense—this is a high-yield financial asset on your rooftop.`,
+          ? `जब सूरज ${city} पर चमकता है, आपकी छत अनुमानित यूनिट बनाती है। बचत बिल और टैरिफ पर निर्भर करती है — यह खर्च घटाने और ग्रिड निर्भरता कम करने की योजना है।`
+          : `When the sun shines over ${city}, your roof produces estimated units. Savings depend on bills and tariffs — this plan is about lowering costs and grid dependence.`,
       closingCtaTitle: hi ? "शुरू करने को तैयार?" : "Ready to begin?",
       closingCtaBody: hi
         ? "इस ब्लूप्रिंट पर हस्ताक्षर करें। इंजीनियरिंग, DISCOM कागज़ात, और इंस्टॉलेशन हम संभालेंगे।"
@@ -193,7 +207,7 @@ export function getCanvasCopy(lang: CanvasLang) {
       years: hi ? "वर्ष" : "Years",
       cumulative: hi ? "संचयी बचत" : "Cumulative savings",
       terms: hi ? "नियम" : "Terms",
-      lifetimeWealth: hi ? "आजीवन धन" : "Lifetime Wealth",
+      lifetimeWealth: hi ? "25-वर्ष शुद्ध लाभ" : "25-Year Net Benefit",
     },
     labels: {
       yearlyBill: hi ? "वार्षिक बिल" : "Yearly bill",

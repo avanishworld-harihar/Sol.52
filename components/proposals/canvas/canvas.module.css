@@ -381,6 +381,15 @@
   letter-spacing: 0.06em;
 }
 
+.coverDate {
+  margin: 8px 0 0;
+  font-size: 8.5pt;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--canvas-aluminum);
+}
+
 .coverFooter {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -840,6 +849,149 @@
   font-size: 7.5pt;
   color: rgba(255, 255, 255, 0.5);
   line-height: 1.3;
+}
+
+.investAssumptions {
+  break-inside: avoid;
+}
+
+.investAssumeGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--paper);
+}
+
+.investAssumeItem {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  min-width: 0;
+}
+
+.investAssumeItem:nth-child(3n) {
+  border-right: none;
+}
+
+.investAssumeItem:nth-last-child(-n + 3) {
+  border-bottom: none;
+}
+
+.investAssumeLabel {
+  font-size: 6.5pt;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--aluminum);
+}
+
+.investAssumeValue {
+  font-size: 9.5pt;
+  font-weight: 700;
+  color: var(--ink-deep);
+  line-height: 1.25;
+}
+
+/* Generation forecast (Page 07) */
+.genForecast {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 12px 10px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+  box-shadow: var(--card-shadow);
+  break-inside: avoid;
+}
+
+.genForecastBars {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-height: 160px;
+  padding: 0 4px;
+}
+
+.genMonthCol {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  height: 100%;
+}
+
+.genMonthUnits {
+  font-size: 6.5pt;
+  font-weight: 700;
+  color: var(--muted);
+  line-height: 1;
+}
+
+.genBarTrack {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 28px;
+  display: flex;
+  align-items: flex-end;
+  min-height: 90px;
+}
+
+.genBarFill {
+  width: 100%;
+  border-radius: 4px 4px 2px 2px;
+  background: linear-gradient(
+    180deg,
+    #fdba74 0%,
+    var(--canvas-accent-soft) 45%,
+    var(--canvas-accent) 100%
+  );
+  min-height: 8px;
+}
+
+.genMonthPeak .genBarFill {
+  background: linear-gradient(
+    180deg,
+    #34d399 0%,
+    #10b981 55%,
+    #059669 100%
+  );
+}
+
+.genMonthLabel {
+  font-size: 7pt;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--aluminum);
+}
+
+.genMonthSave {
+  font-size: 6.5pt;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.genForecastLegend {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 6px;
+  font-size: 7pt;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--aluminum);
 }
 
 /* ── FinancialStory — bill drop → time → outcome ─────────────── */
@@ -2613,8 +2765,20 @@
     font-size: 2.6rem;
   }
 
-  .investEquation {
-    gap: 6px;
+  .investAssumeGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .investAssumeItem:nth-child(3n) {
+    border-right: 1px solid var(--line);
+  }
+
+  .investAssumeItem:nth-child(2n) {
+    border-right: none;
+  }
+
+  .genForecastBars {
+    overflow-x: auto;
   }
 
   .investEqOp,
@@ -2767,6 +2931,8 @@
   .ecoImpact,
   .heroImpactCard,
   .impactMetricsBar,
+  .genForecast,
+  .investAssumptions,
   .engineeringLayout,
   .roofVisualizer,
   .siteIntelligence,

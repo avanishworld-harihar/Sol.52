@@ -24,7 +24,9 @@ export type CoverPageProps = {
   preparedForLabel?: string;
   systemKw: string;
   annualYield: string;
+  impactLabel?: string;
   impactValue?: string;
+  proposalDate?: string;
   pageNo?: string;
   footerBrand?: string;
 };
@@ -38,7 +40,9 @@ export function CoverPage({
   preparedForLabel = "Prepared exclusively for",
   systemKw,
   annualYield,
-  impactValue = "Zero Carbon",
+  impactLabel = "Clean Energy Impact",
+  impactValue = "CO₂ avoided",
+  proposalDate,
   pageNo = "01 / 12",
   footerBrand,
 }: CoverPageProps) {
@@ -62,12 +66,15 @@ export function CoverPage({
         )}
       </div>
 
-      <div className={styles.coverCenter}>
+        <div className={styles.coverCenter}>
         <span className={styles.preparedFor}>{preparedForLabel}</span>
         <h1 className={styles.clientName}>{customerName}</h1>
         <div className={styles.coverDivider} aria-hidden />
         <h2 className={styles.documentTitle}>{documentTitle}</h2>
         {locationLine ? <p className={styles.location}>{locationLine}</p> : null}
+        {proposalDate ? (
+          <p className={styles.coverDate}>{proposalDate}</p>
+        ) : null}
       </div>
 
       <div className={styles.coverFooter}>
@@ -80,7 +87,7 @@ export function CoverPage({
           <span className={styles.specValue}>{annualYield}</span>
         </div>
         <div className={styles.specBox}>
-          <span className={styles.specLabel}>Environmental Impact</span>
+          <span className={styles.specLabel}>{impactLabel}</span>
           <span className={styles.specValue}>{impactValue}</span>
         </div>
       </div>
@@ -321,6 +328,11 @@ export type InvestmentEmiOption = {
   interestNote?: string;
 };
 
+export type InvestmentAssumption = {
+  label: string;
+  value: string;
+};
+
 export type InvestmentPlanProps = {
   costSectionLabel: string;
   grossLabel: string;
@@ -341,6 +353,8 @@ export type InvestmentPlanProps = {
   financeSectionLead?: string;
   emiUnitLabel?: string;
   emiOptions: InvestmentEmiOption[];
+  assumptionsSectionLabel?: string;
+  assumptions?: InvestmentAssumption[];
   insightTitle: string;
   insightBody: string;
 };
@@ -365,6 +379,8 @@ export function InvestmentPlan({
   financeSectionLead,
   emiUnitLabel = "/ month",
   emiOptions,
+  assumptionsSectionLabel,
+  assumptions,
   insightTitle,
   insightBody,
 }: InvestmentPlanProps) {
@@ -437,6 +453,29 @@ export function InvestmentPlan({
                   <span className={styles.investEmiNote}>{opt.interestNote}</span>
                 ) : null}
               </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {assumptions && assumptions.length > 0 ? (
+        <section
+          className={styles.investAssumptions}
+          aria-label={assumptionsSectionLabel || "Assumptions"}
+        >
+          {assumptionsSectionLabel ? (
+            <div className={styles.investSectionHead}>
+              <span className={styles.investSectionLabel}>
+                {assumptionsSectionLabel}
+              </span>
+            </div>
+          ) : null}
+          <div className={styles.investAssumeGrid}>
+            {assumptions.map((a) => (
+              <div key={a.label} className={styles.investAssumeItem}>
+                <span className={styles.investAssumeLabel}>{a.label}</span>
+                <strong className={styles.investAssumeValue}>{a.value}</strong>
+              </div>
             ))}
           </div>
         </section>
@@ -656,6 +695,101 @@ export function EcologicalImpact({
       </div>
 
       <PremiumInsight fill body={insightBody} label={insightTitle} />
+    </div>
+  );
+}
+
+/* ── GenerationForecast — Page 07 monthly units + savings ────── */
+
+/** Central India seasonal share of annual generation (sums ≈ 1). */
+const MP_GEN_SHARE = [
+  0.072, 0.078, 0.092, 0.098, 0.105, 0.095, 0.068, 0.065, 0.082, 0.095, 0.088, 0.062,
+] as const;
+
+const MONTH_SHORT = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+] as const;
+
+export type GenerationForecastMonth = {
+  label: string;
+  units: number;
+  savingsInr: number;
+  barPct: number;
+  isPeak?: boolean;
+};
+
+export function buildGenerationForecastMonths(
+  annualUnits: number,
+  annualSavingsInr: number
+): GenerationForecastMonth[] {
+  const shareSum = MP_GEN_SHARE.reduce((s, v) => s + v, 0);
+  const maxShare = Math.max(...MP_GEN_SHARE);
+  return MONTH_SHORT.map((label, i) => {
+    const share = MP_GEN_SHARE[i]! / shareSum;
+    const units = annualUnits > 0 ? Math.round(annualUnits * share) : 0;
+    const savingsInr =
+      annualSavingsInr > 0 ? Math.round(annualSavingsInr * share) : 0;
+    return {
+      label,
+      units,
+      savingsInr,
+      barPct: Math.max(12, Math.round((MP_GEN_SHARE[i]! / maxShare) * 100)),
+      isPeak: i >= 3 && i <= 5,
+    };
+  });
+}
+
+export function GenerationForecast({
+  months,
+  unitsLabel,
+  savingsLabel,
+}: {
+  months: GenerationForecastMonth[];
+  unitsLabel: string;
+  savingsLabel: string;
+}) {
+  if (months.length === 0) return null;
+  return (
+    <div className={styles.genForecast}>
+      <div className={styles.genForecastBars} role="img" aria-label="Monthly generation">
+        {months.map((m) => (
+          <div
+            key={m.label}
+            className={`${styles.genMonthCol}${m.isPeak ? ` ${styles.genMonthPeak}` : ""}`}
+          >
+            <span className={styles.genMonthUnits}>
+              {m.units > 0 ? m.units.toLocaleString("en-IN") : "—"}
+            </span>
+            <div className={styles.genBarTrack}>
+              <div
+                className={styles.genBarFill}
+                style={{ height: `${m.barPct}%` }}
+              />
+            </div>
+            <span className={styles.genMonthLabel}>{m.label}</span>
+            <span className={styles.genMonthSave}>
+              {m.savingsInr > 0
+                ? `₹${Math.round(m.savingsInr / 1000)}k`
+                : "—"}
+            </span>
+          </div>
+        ))}
+      </div>
+      <div className={styles.genForecastLegend}>
+        <span>{unitsLabel}</span>
+        <span>{savingsLabel}</span>
+      </div>
     </div>
   );
 }
@@ -1003,8 +1137,8 @@ export function EngineeringBlueprint({
               <strong>~{Math.round(roofArea)} m²</strong>
               <small>
                 {isHi
-                  ? `${panelCount} मॉड्यूल के लिए छाया-मुक्त स्थान।`
-                  : `Shadow-free space required for ${panelCount} modules.`}
+                  ? `${panelCount} × ~${M2_PER_PANEL} m²/मॉड्यूल (पैनल + रखरखाव गलियारा अनुमान)। साइट सर्वे पर अंतिम।`
+                  : `${panelCount} × ~${M2_PER_PANEL} m²/module (panel + walkway estimate). Final after site survey.`}
               </small>
             </div>
             <div className={styles.techItem}>
@@ -1037,15 +1171,15 @@ export function EngineeringBlueprint({
         </div>
         <div className={styles.engSpecCard}>
           <div className={styles.engSpecValue}>
-            {panelCount} {isHi ? "मॉड्यूल" : "Modules"}
+            {dcKw.toFixed(2)} kWp
           </div>
           <div className={styles.engSpecLabel}>
             {isHi ? "DC ऐरे (पैनल)" : "DC Array (Panels)"}
           </div>
           <div className={styles.engSpecDesc}>
             {isHi
-              ? "उच्च-दक्षता TOPCon N-Type मॉड्यूल।"
-              : "High-efficiency TOPCon N-Type modules."}
+              ? `${panelCount} × ${PANEL_WATT} Wp TOPCon N-Type मॉड्यूल।`
+              : `${panelCount} × ${PANEL_WATT} Wp TOPCon N-Type modules.`}
           </div>
         </div>
         <div className={styles.engSpecCard}>

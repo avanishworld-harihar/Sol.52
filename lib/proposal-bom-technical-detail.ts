@@ -26,12 +26,15 @@ function technicalPointsForSlot(
   const solar = pptInput?.residentialConfig?.solar;
   const panelWatt = summary.panelWatt ?? 540;
   const track = panelTrackLabel(solar?.panelTrack, isHi);
+  const dcKwp = Math.round(((summary.panels * panelWatt) / 1000) * 100) / 100;
+  const dcKwpLabel =
+    Number.isInteger(dcKwp) ? String(dcKwp) : dcKwp.toFixed(2);
 
   if (item.slot === 1) {
     const points = [
       isHi
-        ? `${summary.panels} मॉड्यूल × ${panelWatt} Wp — कुल ${summary.systemKw} kW DC`
-        : `${summary.panels} modules × ${panelWatt} Wp — ${summary.systemKw} kW DC array`,
+        ? `${summary.panels} मॉड्यूल × ${panelWatt} Wp — ${dcKwpLabel} kWp DC ऐरे`
+        : `${summary.panels} modules × ${panelWatt} Wp — ${dcKwpLabel} kWp DC array`,
       isHi
         ? "≥21% मॉड्यूल दक्षता · Y1 के बाद ≤0.55%/yr लीनियर डिग्रेडेशन"
         : "≥21% module efficiency · ≤0.55%/yr linear degradation after Y1",

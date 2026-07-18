@@ -27,6 +27,8 @@ import {
   InvestmentPlan,
   FinancialStory,
   EcologicalImpact,
+  GenerationForecast,
+  buildGenerationForecastMonths,
   PaymentRoadmap,
   CoverPage,
   ClosingPage,
@@ -76,6 +78,13 @@ const FALLBACK_BOM: ProposalBomItem[] = [
     brand: "Polycab UV-rated",
     spec: "Copper · IS / IEC",
     warranty: "As installed",
+  },
+  {
+    name: "ACDB / DCDB Protection",
+    brand: "Havells / Phoenix",
+    spec: "DCDB: fuse + Type II SPD · ACDB: MCB/MCCB + Type II SPD",
+    warranty: "5 Year",
+    technicalPoints: ["Copper earthing ≤1Ω (IS 3043)", "Lightning protection"],
   },
 ];
 
@@ -149,6 +158,27 @@ export function CanvasProposalRenderer({
     bill.yearlyBillInr > 0 ? Math.round(bill.yearlyBillInr / 12) : 0;
   const yearOneSavings =
     eco.monthlySavingsInr > 0 ? eco.monthlySavingsInr * 12 : closing.annualSavingsInr;
+  const cumulative25Savings =
+    yearOneSavings > 0 ? yearOneSavings * 25 : lifetimeWealth + (eco.netInr || 0);
+  const cumulative25Label =
+    cumulative25Savings > 0
+      ? formatLifetimeBenefitInr(cumulative25Savings)
+      : "—";
+  const genForecastMonths = buildGenerationForecastMonths(
+    generationUnits,
+    yearOneSavings
+  );
+  const proposalDateLabel = data.meta.generatedAt
+    ? new Date(data.meta.generatedAt).toLocaleDateString(isHi ? "hi-IN" : "en-IN", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
+    : new Date().toLocaleDateString(isHi ? "hi-IN" : "en-IN", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
   const wealthJourney =
     Array.isArray(eco.wealthJourney) && eco.wealthJourney.length > 0
       ? eco.wealthJourney
@@ -177,6 +207,14 @@ export function CanvasProposalRenderer({
     eng.metrics.find((m) => /tilt/i.test(m.label))?.value?.trim() || "20°";
   const tiltDisplay = /°/.test(tiltMetric) ? tiltMetric : `${tiltMetric}°`;
 
+  const protectionItem = bom.find((b) =>
+    /acdb|dcdb|protection|safety/i.test(`${b.name} ${b.spec}`)
+  );
+  const protectionBrand =
+    protectionItem?.brand?.trim() || "Havells / Phoenix";
+  const protectionWarranty =
+    protectionItem?.warranty?.trim() || (isHi ? "5 वर्ष" : "5 yr");
+
   const DEFAULT_PAYMENT_PCTS = [25, 50, 20, 5] as const;
   const DEFAULT_PAYMENT_TITLES = isHi
     ? [
@@ -192,24 +230,27 @@ export function CanvasProposalRenderer({
         "Commissioning",
       ];
 
-  const paymentBaseInr = eco.netInr > 0 ? eco.netInr : eco.grossInr;
+  const paymentBaseInr = eco.grossInr > 0 ? eco.grossInr : eco.netInr;
   const paymentMilestones =
     execution.payments.length > 0
       ? execution.payments.slice(0, 4).map((p, i) => {
           const pctMatch = p.pctLabel.match(/(\d+)\s*%/);
-          const pct =
+          const pct = Number(
             pctMatch?.[1] ??
-            String(DEFAULT_PAYMENT_PCTS[i] ?? Math.round(100 / Math.max(execution.payments.length, 1)));
+              DEFAULT_PAYMENT_PCTS[i] ??
+              Math.round(100 / Math.max(execution.payments.length, 1))
+          );
+          // Always derive from gross cost × % — never trust stale upstream totals.
           const amountInr =
-            p.amountInr > 0
-              ? p.amountInr
-              : paymentBaseInr > 0
-                ? Math.round((paymentBaseInr * Number(pct)) / 100)
+            paymentBaseInr > 0
+              ? Math.round((paymentBaseInr * pct) / 100)
+              : p.amountInr > 0
+                ? p.amountInr
                 : 0;
           return {
             step: String(i + 1),
             title: p.label.replace(/^\d+\.\s*/, "") || DEFAULT_PAYMENT_TITLES[i]!,
-            amountLabel: amountInr > 0 ? formatInrCompact(amountInr) : "—",
+            amountLabel: amountInr > 0 ? formatInr(amountInr) : "—",
             percent: `${pct}%`,
           };
         })
@@ -219,7 +260,7 @@ export function CanvasProposalRenderer({
           return {
             step: String(i + 1),
             title: DEFAULT_PAYMENT_TITLES[i]!,
-            amountLabel: amountInr > 0 ? formatInrCompact(amountInr) : "—",
+            amountLabel: amountInr > 0 ? formatInr(amountInr) : "—",
             percent: `${pct}%`,
           };
         });
@@ -230,18 +271,20 @@ export function CanvasProposalRenderer({
       execution.bank.accountNumber?.trim() && execution.bank.accountNumber !== "—"
         ? execution.bank.accountNumber
         : isHi
-          ? "[खाता संख्या]"
-          : "[Your A/C Number]",
+          ? "समझौते पर पुष्टि"
+          : "Confirmed on agreement",
     ifsc:
       execution.bank.ifsc?.trim() && execution.bank.ifsc !== "—"
         ? execution.bank.ifsc
         : isHi
-          ? "[IFSC]"
-          : "[Your IFSC]",
+          ? "समझौते पर पुष्टि"
+          : "Confirmed on agreement",
     upiId:
       execution.bank.upiId?.trim() && execution.bank.upiId !== "—"
         ? execution.bank.upiId
-        : "hariharsolar@upi",
+        : isHi
+          ? "समझौते पर पुष्टि"
+          : "Confirmed on agreement",
   };
 
   const paymentTerms =
@@ -319,7 +362,19 @@ export function CanvasProposalRenderer({
                 ? generation
                 : "—"
           }
-          impactValue={isHi ? "शून्य कार्बन" : "Zero Carbon"}
+          impactLabel={isHi ? "स्वच्छ ऊर्जा प्रभाव" : "Clean Energy Impact"}
+          impactValue={
+            impact.co2Tons > 0
+              ? isHi
+                ? `~${impact.co2Tons.toFixed(0)} टन CO₂`
+                : `~${impact.co2Tons.toFixed(0)} t CO₂`
+              : isHi
+                ? "CO₂ कटौती"
+                : "CO₂ avoided"
+          }
+          proposalDate={
+            isHi ? `प्रस्ताव तिथि · ${proposalDateLabel}` : `Proposal date · ${proposalDateLabel}`
+          }
           pageNo="01 / 12"
           footerBrand={brand}
         />
@@ -453,10 +508,48 @@ export function CanvasProposalRenderer({
                 interestNote:
                   row.interestPaidInr > 0
                     ? isHi
-                      ? `ब्याज ${formatInrCompact(row.interestPaidInr)}`
-                      : `Interest ${formatInrCompact(row.interestPaidInr)}`
-                    : undefined,
+                      ? `कुल ब्याज ~${formatInrCompact(row.interestPaidInr)} (~7% p.a.)`
+                      : `Total interest ~${formatInrCompact(row.interestPaidInr)} (~7% p.a.)`
+                    : isHi
+                      ? "मानक ~7% p.a."
+                      : "Assumed ~7% p.a.",
               }))}
+              assumptionsSectionLabel={c.pages.assumptionsSection}
+              assumptions={[
+                {
+                  label: isHi ? "टैरिफ वृद्धि" : "Tariff escalation",
+                  value: "~6% / yr",
+                },
+                {
+                  label: isHi ? "मॉड्यूल डिग्रेडेशन" : "Module degradation",
+                  value: "≤0.55% / yr",
+                },
+                {
+                  label: isHi ? "उत्पादन आधार" : "Generation basis",
+                  value:
+                    systemKwNum > 0
+                      ? `~${Math.round(generationUnits / systemKwNum)} kWh/kW·yr`
+                      : specificYield,
+                },
+                {
+                  label: isHi ? "सब्सिडी" : "Subsidy",
+                  value:
+                    eco.subsidyInr > 0
+                      ? formatInrCompact(eco.subsidyInr)
+                      : isHi
+                        ? "पात्रता पर"
+                        : "As eligible",
+                },
+                {
+                  label: isHi ? "EMI ब्याज" : "EMI interest",
+                  value: "~7% p.a.",
+                },
+                {
+                  label: isHi ? "नेट भुगतान आधार" : "Net payable basis",
+                  value:
+                    eco.netInr > 0 ? formatInr(eco.netInr) : "—",
+                },
+              ]}
               insightTitle={c.pages.investInsightTitle}
               insightBody={c.pages.investInsightBody}
             />
@@ -473,19 +566,20 @@ export function CanvasProposalRenderer({
             />
             <EvidenceCard
               title={c.pages.investScore}
-              value={c.pages.investScoreValue}
+              value={c.pages.investScoreValue(returnMultiple)}
               insight={c.pages.investScoreInsight(netLakh, returnMultiple)}
               accent
             />
             <EvidenceGrid>
               <EvidenceCard
-                title={c.pages.lifetimeWealth}
+                title={c.pages.cumulativeSavingsLabel}
+                value={cumulative25Label}
+                insight={c.pages.cumulativeSavingsHint}
+              />
+              <EvidenceCard
+                title={c.pages.netBenefitLabel}
                 value={lifetime}
-                insight={
-                  isHi
-                    ? "25 वर्षों में संचयी चक्रवृद्धि लाभ।"
-                    : "Compounded cumulative gain across 25 years."
-                }
+                insight={c.pages.netBenefitHint}
                 tone="positive"
               />
               <EvidenceCard
@@ -497,6 +591,15 @@ export function CanvasProposalRenderer({
                   isHi
                     ? "नेट निवेश वसूल होने का वर्ष।"
                     : "Year when net investment is recovered."
+                }
+              />
+              <EvidenceCard
+                title={c.pages.youPay}
+                value={eco.netInr > 0 ? formatInrCompact(eco.netInr) : "—"}
+                insight={
+                  isHi
+                    ? "सब्सिडी के बाद नेट भुगतान।"
+                    : "Net payable after subsidy."
                 }
               />
             </EvidenceGrid>
@@ -561,6 +664,26 @@ export function CanvasProposalRenderer({
           <PageHeader title={c.pages.hardware} lead={c.pages.hardwareLead} />
           <PageBody>
             <HardwareTrustGrid products={resolveHardwareTrustProducts(bom)} />
+            <div className={styles.evidenceGrid}>
+              <div className={styles.techItem}>
+                <span>{isHi ? "DCDB · DC डिस्ट्रीब्यूशन बॉक्स" : "DCDB · DC Distribution Box"}</span>
+                <strong>{isHi ? "फ्यूज़ + Type II SPD" : "Fuse + Type II SPD"}</strong>
+                <small>
+                  {isHi
+                    ? `पैनल से इन्वर्टर तक DC साइड को सर्ज व ओवर-करंट से बचाता है। ${protectionBrand} · ${protectionWarranty}`
+                    : `Protects the DC side (panels → inverter) from surges & over-current. ${protectionBrand} · ${protectionWarranty}`}
+                </small>
+              </div>
+              <div className={styles.techItem}>
+                <span>{isHi ? "ACDB · AC डिस्ट्रीब्यूशन बॉक्स" : "ACDB · AC Distribution Box"}</span>
+                <strong>{isHi ? "MCB/MCCB + Type II SPD" : "MCB/MCCB + Type II SPD"}</strong>
+                <small>
+                  {isHi
+                    ? "इन्वर्टर से ग्रिड तक AC साइड की सुरक्षा — आइसोलेशन, अर्थिंग (≤1Ω, IS 3043) और लाइटनिंग प्रोटेक्शन सहित।"
+                    : "Protects the AC side (inverter → grid) with isolation, copper earthing (≤1Ω, IS 3043) & lightning protection."}
+                </small>
+              </div>
+            </div>
             <EvidenceGrid>
               <EvidenceCard
                 title={isHi ? "मॉड्यूल वारंटी" : "Module warranty"}
@@ -591,64 +714,39 @@ export function CanvasProposalRenderer({
           </PageBody>
         </PageShell>
 
-        {/* Page 07: Generation */}
+        {/* Page 07: Monthly generation & savings forecast */}
         <PageShell {...foot("07 / 12")}>
           <PageHeader title={c.pages.generation} lead={c.pages.generationLead} />
           <PageBody>
             <EvidenceGrid>
               <EvidenceCard
-                title={c.labels.capacity}
-                value={capacityKw}
-                insight={
-                  isHi
-                    ? "प्रस्तावित सिस्टम क्षमता।"
-                    : "Proposed system capacity for this roof."
-                }
-                accent
-              />
-              <EvidenceCard
                 title={c.labels.annualGen}
                 value={generation}
                 insight={
                   isHi
-                    ? "वार्षिक अनुमानित यूनिट उत्पादन।"
-                    : "Estimated annual generation in units."
+                    ? "वर्ष भर का अनुमानित योग।"
+                    : "Estimated total across the year."
                 }
                 tone="positive"
               />
               <EvidenceCard
-                title={c.labels.dailyGen}
-                value={dailyGen}
-                insight={
-                  isHi
-                    ? "औसत दैनिक उत्पादन।"
-                    : "Average daily generation estimate."
-                }
-              />
-              <EvidenceCard
-                title={c.labels.specificYield}
-                value={specificYield}
-                insight={
-                  isHi
-                    ? "प्रति kW वार्षिक उपज।"
-                    : "Annual yield per kW installed."
-                }
-              />
-              <EvidenceCard
-                title={c.labels.coverage}
-                value={coverage}
-                insight={
-                  isHi
-                    ? "लोड कवरेज अनुमान।"
-                    : "Estimated household load coverage."
-                }
-              />
-              <EvidenceCard
                 title={c.labels.annualSavings}
-                value={yearOneSavings > 0 ? formatInrCompact(yearOneSavings) : "—"}
-                insight={c.pages.cumulative}
+                value={
+                  yearOneSavings > 0 ? formatInrCompact(yearOneSavings) : "—"
+                }
+                insight={
+                  isHi
+                    ? "वर्ष-1 अनुमानित बिल बचत।"
+                    : "Year-1 estimated bill savings."
+                }
+                accent
               />
             </EvidenceGrid>
+            <GenerationForecast
+              months={genForecastMonths}
+              unitsLabel={c.pages.genUnitsLabel}
+              savingsLabel={c.pages.genSavingsLabel}
+            />
             <ExpertInsights
               fill
               title={c.pages.genInsightTitle}
@@ -779,8 +877,8 @@ export function CanvasProposalRenderer({
             <PaymentRoadmap
               title={
                 isHi
-                  ? "भुगतान अनुसूची (Investment Milestones)"
-                  : "Investment Milestones"
+                  ? `भुगतान अनुसूची · सकल ${eco.grossInr > 0 ? formatInrCompact(eco.grossInr) : "—"} पर`
+                  : `Investment Milestones · on gross ${eco.grossInr > 0 ? formatInrCompact(eco.grossInr) : "—"}`
               }
               milestones={paymentMilestones}
               bank={bankDetails}
@@ -791,7 +889,11 @@ export function CanvasProposalRenderer({
                   : "Terms & Compliance"
               }
               terms={paymentTerms}
-              insightBody={c.pages.execInsightBody}
+              insightBody={
+                isHi
+                  ? `सभी किस्तें सकल सिस्टम मूल्य (${eco.grossInr > 0 ? formatInr(eco.grossInr) : "—"}) पर प्रतिशत के आधार पर हैं। सब्सिडी पात्रता अनुसार अलग से समायोजित होती है। ${c.pages.execInsightBody}`
+                  : `All instalments are a percentage of the gross system price (${eco.grossInr > 0 ? formatInr(eco.grossInr) : "—"}). Subsidy is adjusted separately as eligible. ${c.pages.execInsightBody}`
+              }
             />
           </PageBody>
         </PageShell>
