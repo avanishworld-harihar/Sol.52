@@ -6,10 +6,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { revalidateProjectHubCaches } from "@/lib/project-hub-cache";
 import {
   fetchProjectDesigns,
+  fetchProjectSiteLayout,
   projectDesignsKey,
+  projectSiteLayoutKey,
   type ProjectDesign,
   type ProjectListItem,
 } from "@/lib/project-api-client";
+import type { ProjectSiteLayout } from "@/lib/site-layout";
 import { buildProposalEditHref } from "@/lib/proposal-edit-url";
 import { cn } from "@/lib/utils";
 import {
@@ -19,6 +22,7 @@ import {
   Cpu,
   ExternalLink,
   Layers,
+  MapPinned,
   PenTool,
   RefreshCw,
   Sun,
@@ -148,14 +152,17 @@ function projectDisplayFallback(project: ProjectListItem): string {
 
 function DesignStatusStrip({
   designs,
+  siteLayout,
   project,
   selected,
 }: {
   designs: ProjectDesign[];
+  siteLayout: ProjectSiteLayout | null;
   project: ProjectListItem;
   selected: ProjectDesign | null;
 }) {
   const hasDesign = designs.length > 0;
+  const hasSiteLayout = Boolean(siteLayout);
 
   return (
     <Card className="page-lite-item border-slate-200/90 dark:border-white/10">
@@ -193,6 +200,11 @@ function DesignStatusStrip({
               {selected?.version_label ? ` · ${selected.version_label}` : ""}
             </span>
           ) : null}
+          {hasSiteLayout ? (
+            <span className="rounded-md bg-teal-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-teal-800 dark:bg-teal-900/40 dark:text-teal-200">
+              2D layout V{siteLayout?.version_number}
+            </span>
+          ) : null}
           {project.current_stage === "design" ? (
             <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-600 dark:bg-white/10 dark:text-slate-300">
               Active design stage
@@ -200,8 +212,37 @@ function DesignStatusStrip({
           ) : null}
         </div>
         <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 max-sm:leading-snug sm:text-[11px]">
-          Read-only view · POST design API available for future editor
+          2D roof editor available · Layout versions are saved separately
         </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function SiteLayoutSummary({ layout }: { layout: ProjectSiteLayout }) {
+  const obstructionCount = Array.isArray(layout.obstructions_geojson)
+    ? layout.obstructions_geojson.length
+    : 0;
+  return (
+    <Card className="page-lite-item border-teal-200/90 bg-teal-50/40 dark:border-teal-900/50 dark:bg-teal-950/20">
+      <CardHeader className="pb-2">
+        <CardTitle className="flex items-center gap-2 text-sm font-extrabold">
+          <MapPinned className="h-4 w-4 text-teal-700 dark:text-teal-300" />
+          2D roof layout
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="grid gap-2 pt-0 sm:grid-cols-4">
+        {[
+          ["Version", `V${layout.version_number}`],
+          ["Roof area", `${Math.round(layout.roof_area_sqft).toLocaleString("en-IN")} sq.ft`],
+          ["Obstructions", obstructionCount.toLocaleString("en-IN")],
+          ["Saved", formatHubDate(layout.created_at)],
+        ].map(([label, value]) => (
+          <div key={label} className="rounded-lg border border-teal-100 bg-white/80 px-3 py-2 dark:border-teal-900/50 dark:bg-white/[0.04]">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">{label}</p>
+            <p className="mt-0.5 text-sm font-extrabold text-slate-900 dark:text-white">{value}</p>
+          </div>
+        ))}
       </CardContent>
     </Card>
   );
@@ -220,8 +261,8 @@ function DesignEmptyState({ project }: { project: ProjectListItem }) {
           No design version saved
         </p>
         <p className="mx-auto mt-1 max-w-md text-[11px] leading-snug text-slate-500 dark:text-slate-400 sm:text-xs sm:leading-relaxed">
-          Layout, panel, and inverter selections from the proposal BOM can be captured as a design
-          version here. Continue sizing in the proposal workspace linked above.
+          Start with the 2D roof layout, capture roof area and obstructions, then save the first
+          site-layout version. Panel placement follows in the next approved phase.
         </p>
         {capacityHint || project.panel_brand || project.inverter_brand ? (
           <div className="mx-auto mt-4 max-w-sm rounded-lg border border-slate-100 bg-slate-50/80 px-3 py-2 text-left text-xs dark:border-white/5 dark:bg-white/[0.04]">
@@ -404,6 +445,7 @@ export function ProjectHubDesignTab({
   enabled: boolean;
 }) {
   const designsKey = enabled ? projectDesignsKey(project.id) : null;
+  const siteLayoutKey = enabled ? projectSiteLayoutKey(project.id) : null;
 
   const {
     data: designs,
@@ -415,6 +457,11 @@ export function ProjectHubDesignTab({
     revalidateOnFocus: false,
     dedupingInterval: 3_000,
   });
+  const { data: siteLayout, mutate: mutateSiteLayout } = useSWR(
+    siteLayoutKey,
+    fetchProjectSiteLayout,
+    { revalidateOnFocus: false, dedupingInterval: 3_000 }
+  );
 
   const sortedDesigns = useMemo(() => {
     return [...(designs ?? [])].sort((a, b) => b.version_number - a.version_number);
@@ -437,7 +484,7 @@ export function ProjectHubDesignTab({
 
   const refresh = async () => {
     await revalidateProjectHubCaches(project.id);
-    await mutateDesigns();
+    await Promise.all([mutateDesigns(), mutateSiteLayout()]);
   };
 
   if (!enabled) return null;
@@ -489,28 +536,39 @@ export function ProjectHubDesignTab({
         ) : (
           <span />
         )}
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="gap-1.5 self-start sm:self-auto"
-          disabled={isValidating}
-          onClick={() => void refresh()}
-        >
-          <RefreshCw
-            className={cn("h-3.5 w-3.5", isValidating && "animate-spin")}
-            aria-hidden
-          />
-          Refresh
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" size="sm" className="gap-1.5" asChild>
+            <Link href={`/projects/${encodeURIComponent(project.id)}/design-studio`}>
+              <MapPinned className="h-3.5 w-3.5" aria-hidden />
+              Open 2D Design Studio
+            </Link>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            disabled={isValidating}
+            onClick={() => void refresh()}
+          >
+            <RefreshCw
+              className={cn("h-3.5 w-3.5", isValidating && "animate-spin")}
+              aria-hidden
+            />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       <LinkedRecordsCard project={project} />
       <DesignStatusStrip
         designs={sortedDesigns}
+        siteLayout={siteLayout ?? null}
         project={project}
         selected={selectedDesign}
       />
+
+      {siteLayout ? <SiteLayoutSummary layout={siteLayout} /> : null}
 
       {hasDesigns && selectedDesign ? (
         <DesignDataView design={selectedDesign} />

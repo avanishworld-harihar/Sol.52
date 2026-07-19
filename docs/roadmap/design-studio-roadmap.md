@@ -2,8 +2,8 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | Active roadmap (future ideas) |
-| **Last Updated** | 2026-07-06 |
+| **Status** | Approved phased roadmap — Phase 1 active |
+| **Last Updated** | 2026-07-19 |
 | **Canonical architecture (FROZEN)** | [`docs/architecture/design-studio-architecture.md`](../architecture/design-studio-architecture.md) |
 
 > **This is the only place where future ideas, future phases, and future enhancements are added.**
@@ -12,21 +12,59 @@
 > changes the frozen architecture, that requires a version increment (v1.0 → v1.1) in the
 > architecture document.
 
+> **Product-owner approval (2026-07-19):** Build the complete 2D Design Studio roadmap in phases.
+> **3D roof modelling is explicitly excluded from the current product scope.** The frozen v1.0
+> four-engine sequence remains unchanged. Phase 1 starts now; later phases stay queued in the
+> approved order below and must pass their acceptance gate before the next phase begins.
+
 ---
 
 ## 1. Phase map
 
 | Phase | Focus | Status |
 |-------|-------|--------|
-| **Phase 1** | Shared editor foundation — map, roof polygon, save (Engine 1: Geometry) | **Current scope** (see architecture doc) |
-| **Phase 2** | **Auto Panel Placement Engine** (foundation) + presets + manual fine-tune | Future — reserved |
-| **Phase 3** | **Engineering Rules Engine** — validation before shadow | Future — reserved |
-| **Phase 4** | **Shadow Engine** — per-panel shade %, shade-free area | Future — reserved |
-| **Phase 5** | Output & polish — snapshot, proposal PDF block, version history, phone light-edit finalize | Future |
+| **Phase 1** | 2D Geometry foundation — satellite map, roof polygon, obstructions, save/version | **ACTIVE** |
+| **Phase 2** | **Auto Panel Placement Engine** + RCC/shed presets + manual fine-tune | Approved — queued |
+| **Phase 3** | **Engineering Rules + Solar Design** — setbacks, strings, equipment points, basic SLD | Approved — queued |
+| **Phase 4** | **Shadow Engine** — per-panel shade %, shade-free area, loss estimate | Approved — queued |
+| **Phase 5** | Project/Survey/BOM/Proposal integration + snapshots + customer sign-off | Approved — queued |
+| **Phase 6** | Cross-device QA, performance, security and pilot rollout | Approved — queued |
+
+### Phase gates
+
+- **Phase 1 gate:** draw/edit a roof on satellite imagery; save and reopen identical geometry
+  across Desktop and iPad; phone can view and perform light edits.
+- **Phase 2 gate:** every generated panel is fully inside buildable area and outside obstructions;
+  panel count and DC capacity match the selected module.
+- **Phase 3 gate:** engineering warnings are deterministic; string/MPPT values respect equipment
+  limits; a basic SLD and installer-ready summary can be exported.
+- **Phase 4 gate:** shadow results attach to panel IDs from the validated layout and provide
+  time/season-specific shade fractions.
+- **Phase 5 gate:** one saved design consistently drives Project Hub, Survey, BOM and Proposal
+  output without duplicate data entry.
+- **Phase 6 gate:** parity, RLS, recovery, snapshot and large-roof performance checks pass before
+  general release.
 
 ---
 
-## 2. Phase 2 — Auto Panel Placement Engine (FOUNDATION)
+## 2. Phase 1 — 2D Geometry Foundation (ACTIVE)
+
+**Goal:** `Open project → locate roof → draw/edit roof → add obstructions → save/version → reopen`
+
+- Project Hub → Design → Open Design Studio.
+- Satellite map, GPS/geocode center and optional roof-photo reference.
+- Tap-to-place polygon plus mouse/Pencil vertex editing; freehand trace follows after the precise
+  path is stable.
+- Live roof area, perimeter and azimuth; roof type: flat RCC, sloped RCC, metal sheet, tile or
+  ground mount.
+- Manual obstruction markers for tank, tree, chimney and parapet with footprint/height.
+- Undo/redo, IndexedDB draft recovery, org-scoped Supabase save and version history.
+- Desktop and iPad share the same Core actions; phone receives the frozen light-edit subset.
+- Data/API: `project_site_layouts`, `/api/projects/[id]/site-layout` and `/versions`.
+
+---
+
+## 3. Phase 2 — Auto Panel Placement Engine (FOUNDATION)
 
 The foundation engine of the Design Studio. After the roof polygon is drawn, the system
 automatically generates the best possible panel layout. The installer only fine-tunes the result
@@ -54,7 +92,7 @@ output PanelLayout: panels[], panelCount, dcCapacityKw, remainingAreaSqft, cover
 
 **Data:** `project_panel_layouts` table (persists the `PanelLayout` contract from architecture §4).
 
-### 2.1 Layout presets (part of Phase 2)
+### 3.1 Layout presets (part of Phase 2)
 
 One-click presets that re-run auto-packing with different parameters. Applying a preset re-packs
 **only unlocked** panels; locked panels are preserved (with a warning).
@@ -70,7 +108,7 @@ One-click presets that re-run auto-packing with different parameters. Applying a
 
 ---
 
-## 3. Phase 3 — Engineering Rules Engine (validation)
+## 4. Phase 3 — Engineering Rules + Solar Design
 
 A validation stage that runs **after** Auto Panel Placement and **before** Shadow Analysis. It
 validates the `PanelLayout` and surfaces engineering warnings.
@@ -78,14 +116,19 @@ validates the `PanelLayout` and surfaces engineering warnings.
 **Future workflow:**
 `Roof → Auto Panel Placement → Engineering Validation → Manual Adjustments → Shadow Analysis`
 
-**Future checks:** setbacks, blocked walkways, maintenance access, row spacing, fire clearance,
-clearance issues, general engineering warnings.
+**Checks:** setbacks, blocked walkways, maintenance access, row spacing, fire clearance,
+clearance issues and severity-ranked engineering warnings.
 
 **Consumes:** Walkway & Safety Profiles (§6.2) instead of hardcoded values.
 
+**Solar design outputs:** inverter/DC-AC ratio validation, modules per string, string count, MPPT
+allocation, voltage/current limit checks, equipment points (DCDB, inverter, ACDB, meter/grid),
+cable-route indication, earthing/lightning-arrester points, installer material summary and a basic
+exportable SLD: `PV strings → DCDB → inverter → ACDB → net meter → grid`.
+
 ---
 
-## 4. Phase 4 — Shadow Engine
+## 5. Phase 4 — Shadow Engine
 
 Consumes the **validated `PanelLayout` only** (never the raw roof polygon). Produces per-panel shade
 percentages and roof-level shade-free area.
@@ -94,26 +137,39 @@ percentages and roof-level shade-free area.
 - Sun time slider + solstice presets (Jun 21 / Dec 21 × 9 AM / 12 PM / 3 PM), IST.
 - Per-panel `shadeFraction` per time sample; auto-fill survey `shadow_free_sqft` +
   `shadow_analysis_note`.
+- Compare layout before/after optimization and estimate annual generation loss.
 - Output is a planning estimate with disclaimer (not a certified shading report).
 
 ---
 
-## 5. Phase 5 — Output & polish
+## 6. Phase 5 — Workflow Integration & Output
 
 - Map snapshot (`map.getCanvas().toDataURL()`) with panel layout overlay → Supabase storage.
 - Project Hub Design tab summary card (thumbnail + metrics).
 - Proposal PDF block: "Site layout & shadow" (panel diagram + per-panel shade info + disclaimer).
+- Survey roof area/type import; BOM panel/inverter sync; proposal system-size/panel-count sync.
+- Design task completion, customer design sign-off and installation handover package.
 - Version history UI.
 - Phone light-edit adapter finalized.
 
 ---
 
-## 6. Future architecture placeholders (reserved slots)
+## 7. Phase 6 — QA & Production Rollout
+
+- Desktop/iPad parity and Apple Pencil palm-rejection QA.
+- Cross-device save/reopen, IndexedDB recovery and snapshot-not-black tests.
+- Polygon accuracy, panel collision/boundary, engineering-rule and shadow-engine tests.
+- Multi-tenant RLS/security verification.
+- Large industrial roof performance profiling and selected-installer pilot before general release.
+
+---
+
+## 8. Future architecture placeholders (reserved slots)
 
 These are reserved extension points. The frozen architecture accommodates them without rework; none
 are implemented now.
 
-### 6.1 Roof Type Engine
+### 8.1 Roof Type Engine
 The Auto Panel Placement Engine will support different roof types. Roof type influences available
 presets, mounting method, panel packing strategy, and setback rules.
 
@@ -124,7 +180,7 @@ presets, mounting method, panel packing strategy, and setback rules.
 Engine 2 reserves a `roofType` input (derivable from survey `roof_type`). Current default: one
 generic behaviour.
 
-### 6.2 Walkway & Safety Profiles
+### 8.2 Walkway & Safety Profiles
 Installer-configurable safety profiles replace hardcoded setback/walkway values. The Auto Panel
 Placement Engine and Engineering Rules Engine both **consume** these profiles.
 
@@ -134,14 +190,14 @@ Placement Engine and Engineering Rules Engine both **consume** these profiles.
 
 Current default: a single residential profile assumed.
 
-### 6.3 AI Obstruction Detection
+### 8.3 AI Obstruction Detection
 A future AI module that detects water tanks, trees, chimneys, and parapet walls from drone images or
 roof photos, producing obstruction markers (currently placed manually). The system remains **fully
 manual** until this ships.
 
 ---
 
-## 7. Adding to this roadmap
+## 9. Adding to this roadmap
 
 - New future ideas are appended here — **never** to the frozen architecture document.
 - Promoting a roadmap item to implementation requires explicit approval.

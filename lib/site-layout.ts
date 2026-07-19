@@ -1,0 +1,64 @@
+import { z } from "zod";
+
+export const positionSchema = z
+  .array(z.number())
+  .min(2)
+  .max(3)
+  .refine(
+    (position) =>
+      position[0] >= -180 &&
+      position[0] <= 180 &&
+      position[1] >= -90 &&
+      position[1] <= 90,
+    "Invalid longitude/latitude"
+  );
+
+export const roofPolygonSchema = z.object({
+  type: z.literal("Polygon"),
+  coordinates: z
+    .array(z.array(positionSchema).min(4))
+    .min(1)
+    .refine(
+      (rings) =>
+        rings.every((ring) => {
+          const first = ring[0];
+          const last = ring[ring.length - 1];
+          return first?.[0] === last?.[0] && first?.[1] === last?.[1];
+        }),
+      "Polygon rings must be closed"
+    ),
+});
+
+export const siteObstructionSchema = z.object({
+  id: z.string().min(1).max(80),
+  type: z.enum(["water_tank", "tree", "chimney", "parapet", "other"]),
+  lng: z.number().min(-180).max(180),
+  lat: z.number().min(-90).max(90),
+  height_ft: z.number().nonnegative().max(500).default(0),
+  label: z.string().max(120).optional().nullable(),
+});
+
+export const saveSiteLayoutSchema = z.object({
+  design_id: z.string().uuid().optional().nullable(),
+  center_lat: z.number().min(-90).max(90).optional().nullable(),
+  center_lng: z.number().min(-180).max(180).optional().nullable(),
+  roof_geojson: roofPolygonSchema,
+  roof_azimuth_deg: z.number().min(0).max(360).optional().nullable(),
+  obstructions_geojson: z.array(siteObstructionSchema).max(250).default([]),
+  roof_area_sqft: z.number().nonnegative().max(100_000_000),
+  map_snapshot_path: z.string().max(1000).optional().nullable(),
+  created_by_id: z.string().uuid().optional().nullable(),
+});
+
+export type RoofPolygon = z.infer<typeof roofPolygonSchema>;
+export type SiteObstruction = z.infer<typeof siteObstructionSchema>;
+export type SaveSiteLayoutInput = z.infer<typeof saveSiteLayoutSchema>;
+
+export type ProjectSiteLayout = SaveSiteLayoutInput & {
+  id: string;
+  organization_id: string;
+  project_id: string;
+  version_number: number;
+  is_current: boolean;
+  created_at: string;
+};
