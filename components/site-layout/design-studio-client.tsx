@@ -93,13 +93,14 @@ function newObstruction(
 
 export function DesignStudioClient({ projectId }: { projectId: string }) {
   const toast = useToast();
-  const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapboxMap | null>(null);
   const drawRef = useRef<MapboxDraw | null>(null);
   const markersRef = useRef<Marker[]>([]);
   const addObstructionRef = useRef<ObstructionType | null>(null);
   const initialRoofRef = useRef<RoofPolygon | null>(null);
   const initialCenterRef = useRef<[number, number]>(DEFAULT_CENTER);
+  /** Set when the map panel mounts — avoids init racing the loading spinner unmount. */
+  const [mapContainerEl, setMapContainerEl] = useState<HTMLDivElement | null>(null);
 
   const [state, dispatch] = useReducer(siteLayoutReducer, EMPTY_SITE_LAYOUT_STATE);
   const [project, setProject] = useState<ProjectSummary | null>(null);
@@ -189,15 +190,18 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   }, [projectId]);
 
   useEffect(() => {
-    if (loading || !mapToken || !mapContainerRef.current || mapRef.current) return;
+    if (!mapContainerEl || !mapToken || mapRef.current) return;
+
     mapboxgl.accessToken = mapToken;
+    let cancelled = false;
     const map = new mapboxgl.Map({
-      container: mapContainerRef.current,
+      container: mapContainerEl,
       style: "mapbox://styles/mapbox/satellite-streets-v12",
       center: initialCenterRef.current,
-      zoom: initialCenterRef.current[0] === DEFAULT_CENTER[0] ? 4 : 19,
+      zoom: initialCenterRef.current[0] === DEFAULT_CENTER[0] ? 5 : 19,
       pitch: 0,
       preserveDrawingBuffer: false,
+      attributionControl: true,
     });
     const draw = new MapboxDraw({
       displayControlsDefault: false,
@@ -236,7 +240,33 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       setPendingObstruction(null);
     };
 
+    const handleMapError = (event: { error?: Error | { message?: string; status?: number } }) => {
+      if (cancelled) return;
+      const err = event?.error;
+      const message =
+        err && typeof err === "object" && "message" in err && typeof err.message === "string"
+          ? err.message
+          : "Mapbox failed to load the map.";
+      const status = err && typeof err === "object" && "status" in err ? Number(err.status) : NaN;
+      if (status === 401 || status === 403 || /unauthorized|forbidden|access token/i.test(message)) {
+        setLoadError(
+          "Mapbox token rejected (401/403). Use public pk. token, allow your Vercel URL in Mapbox token restrictions (or remove restrictions), then redeploy."
+        );
+      } else {
+        setLoadError(message);
+      }
+    };
+
+    const bumpResize = () => {
+      if (!cancelled && mapRef.current) mapRef.current.resize();
+    };
+
+    map.on("error", handleMapError);
     map.on("load", () => {
+      if (cancelled) return;
+      bumpResize();
+      window.setTimeout(bumpResize, 100);
+      window.setTimeout(bumpResize, 400);
       if (initialRoofRef.current) {
         draw.add({
           type: "Feature",
@@ -254,6 +284,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         map.fitBounds(bounds, { padding: 70, maxZoom: 20 });
       }
       setMapReady(true);
+      setLoadError((prev) => (prev.toLowerCase().includes("mapbox") ? "" : prev));
     });
     map.on("draw.create", syncRoof);
     map.on("draw.update", syncRoof);
@@ -264,15 +295,28 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       setCenter([next.lng, next.lat]);
     });
 
+    const resizeObserver =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(() => {
+            bumpResize();
+          })
+        : null;
+    resizeObserver?.observe(mapContainerEl);
+    // First paint after grid layout
+    requestAnimationFrame(bumpResize);
+
     return () => {
+      cancelled = true;
+      resizeObserver?.disconnect();
       markersRef.current.forEach((marker) => marker.remove());
       markersRef.current = [];
+      map.off("error", handleMapError);
       map.remove();
       mapRef.current = null;
       drawRef.current = null;
       setMapReady(false);
     };
-  }, [loading, mapToken]);
+  }, [mapContainerEl, mapToken]);
 
   useEffect(() => {
     if (!mapReady || !mapRef.current) return;
@@ -525,18 +569,26 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
 
         <section className="relative min-h-[62vh] overflow-hidden rounded-xl border border-slate-200 bg-slate-200 dark:border-white/10 dark:bg-slate-900 lg:min-h-[calc(100dvh-100px)]">
           {mapToken ? (
-            <div ref={mapContainerRef} className="absolute inset-0" />
+            <div
+              ref={setMapContainerEl}
+              className="absolute inset-0 h-full w-full [&_.mapboxgl-map]:h-full [&_.mapboxgl-map]:w-full [&_.mapboxgl-canvas]:outline-none"
+            />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center p-6">
               <div className="max-w-md rounded-xl border border-amber-200 bg-amber-50 p-5 text-center">
                 <Cloud className="mx-auto h-8 w-8 text-amber-700" />
                 <p className="mt-2 text-sm font-extrabold text-amber-950">Mapbox token required</p>
                 <p className="mt-1 text-xs leading-relaxed text-amber-800">
-                  Add NEXT_PUBLIC_MAPBOX_TOKEN to deployment environment and restart the app.
+                  Add NEXT_PUBLIC_MAPBOX_TOKEN to .env.local (local) and Vercel (production), then restart / redeploy.
                 </p>
               </div>
             </div>
           )}
+          {!mapReady && mapToken && !loadError ? (
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-slate-200/80 text-sm font-semibold text-slate-600 dark:bg-slate-900/80 dark:text-slate-300">
+              Loading map…
+            </div>
+          ) : null}
           {loadError ? (
             <div className="absolute bottom-3 left-3 right-3 rounded-lg border border-amber-200 bg-amber-50/95 px-3 py-2 text-xs font-semibold text-amber-900">
               {loadError}
