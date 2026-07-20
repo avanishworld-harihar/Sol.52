@@ -330,6 +330,9 @@ function ProposalPageContent() {
   // useSearchParams() is safe here â€” the page is already a client component.
   const router = useRouter();
   const searchParams = useSearchParams();
+  /** Live query — must stay reactive so Edit proposal for another customer replaces the builder. */
+  const urlProposalId = (searchParams.get("proposalId") ?? "").trim();
+  const urlLeadId = (searchParams.get("leadId") ?? "").trim();
   useEffect(() => {
     void loadInstallerRateCard();
   }, []);
@@ -448,8 +451,12 @@ function ProposalPageContent() {
       skipServerRestoreRef.current = true;
       setHydratedFromServer(true);
     } else {
+      const hasProposalDeepLink = Boolean(
+        new URLSearchParams(window.location.search).get("proposalId")?.trim()
+      );
       const snap = loadProposalBuilderSession();
-      if (snap) {
+      // Never paint a previous customer over an Edit-proposal deep link.
+      if (snap && !hasProposalDeepLink) {
         hadSessionOnMountRef.current = true;
         setManual(snap.manual);
         setMonthlyUnits(snap.monthlyUnits);
@@ -708,7 +715,7 @@ function ProposalPageContent() {
   /**
    * Deep-link auto-select: `/proposal?leadId=<id>` lands here from the CRM
    * "Send proposal" CTA. Declared here so `customers` is in scope (it is a
-   * `const` derived from SWR data above â€” referencing it earlier causes a
+   * `const` derived from SWR data above — referencing it earlier causes a
    * TypeScript "used before declaration" error).
    */
   /** Until CRM pick applies, keeps `leadId` from URL so `/api/calculations` can load saved bill/calc. */
@@ -716,49 +723,35 @@ function ProposalPageContent() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (skipProposalRestoreRef.current) return;
-    const params = new URLSearchParams(window.location.search);
-    const leadId = params.get("leadId")?.trim();
-    if (leadId) {
-      deepLinkLeadIdRef.current = leadId;
-      setUrlLeadIdForRestore(leadId);
+    if (urlLeadId) {
+      deepLinkLeadIdRef.current = urlLeadId;
+      setUrlLeadIdForRestore(urlLeadId);
     }
-    const proposalId = params.get("proposalId")?.trim();
-    if (proposalId) {
+    if (urlProposalId) {
       restoringExistingProposalRef.current = true;
-      deepLinkProposalIdRef.current = proposalId;
-      // Bind to both until restore knows the preset family — then one is cleared.
-      writeResidentialDraftProposalId(proposalId);
-      writeCommercialDraftProposalId(proposalId);
-      setDraftProposalId(proposalId);
-      params.delete("proposalId");
-      const qs = params.toString();
-      window.history.replaceState(
-        {},
-        "",
-        qs ? `${window.location.pathname}?${qs}` : window.location.pathname
-      );
+      deepLinkProposalIdRef.current = urlProposalId;
+      writeResidentialDraftProposalId(urlProposalId);
+      writeCommercialDraftProposalId(urlProposalId);
+      setDraftProposalId(urlProposalId);
+      // Keep proposalId in the URL so soft-nav between deals reloads the correct deck.
     }
-  }, []);
+  }, [urlLeadId, urlProposalId]);
   useEffect(() => {
-    const id = deepLinkLeadIdRef.current;
-    if (!id || selectedLeadId || !customers.length) return;
+    const id = (urlLeadId || deepLinkLeadIdRef.current || "").trim();
+    if (!id || !customers.length) return;
+    if (selectedLeadId === id) return;
     const lead = customers.find((c) => c.id === id);
     if (!lead) return;
     setSelectedLeadId(id);
-    if (restoringExistingProposalRef.current) {
+    if (restoringExistingProposalRef.current || urlProposalId) {
       applyLeadFromCrmLight(lead);
     } else {
       applyLeadFromCrm(lead);
       setUrlLeadIdForRestore("");
     }
     deepLinkLeadIdRef.current = null;
-    if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      url.searchParams.delete("leadId");
-      window.history.replaceState({}, "", url.toString());
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [customers, selectedLeadId]);
+  }, [customers, selectedLeadId, urlLeadId, urlProposalId]);
   const restoreLeadKey = (selectedLeadId || urlLeadIdForRestore).trim();
   const restoreUrl =
     clientRef.length > 0 || restoreLeadKey.length > 0
@@ -2272,7 +2265,7 @@ function ProposalPageContent() {
   /** Restore saved proposal (deep-link or family-scoped session draft) into the builder. */
   useEffect(() => {
     if (skipProposalRestoreRef.current) return;
-    const deepLink = deepLinkProposalIdRef.current?.trim() || null;
+    const deepLink = urlProposalId || deepLinkProposalIdRef.current?.trim() || null;
     // Prefer deep-link; otherwise restore only the draft matching URL/preset prefill family.
     const preferCommercial =
       isCommercialPresetFamily(urlPrefill.preset) ||
@@ -2287,7 +2280,9 @@ function ProposalPageContent() {
       (!urlPrefill.preset ? readResidentialDraftProposalId() || readCommercialDraftProposalId() : null);
     if (!draftId) return;
     restoringExistingProposalRef.current = true;
-    setDraftProposalId((prev) => prev ?? draftId);
+    setDeckRestoreReady(false);
+    // Always bind the target id — `prev ?? draftId` kept the previous customer on soft-nav.
+    setDraftProposalId(draftId);
     let cancelled = false;
     void (async () => {
       try {
@@ -2333,7 +2328,8 @@ function ProposalPageContent() {
           const lid = String(json.leadId).trim();
           if (lid) {
             deepLinkLeadIdRef.current = lid;
-            setUrlLeadIdForRestore((prev) => prev || lid);
+            setSelectedLeadId(lid);
+            setUrlLeadIdForRestore(lid);
           }
         }
 
@@ -2346,20 +2342,39 @@ function ProposalPageContent() {
           if (countFilledMonths(deck.monthlyUnits) > 0) {
             setMonthlyUnits(deck.monthlyUnits);
           }
-          setManual((prev) => ({
-            ...prev,
-            ...deck.manual,
-            leadContactName:
-              prev.leadContactName ||
+          setManual((prev) => {
+            const restoredContact =
               deck.manual.leadContactName ||
-              (!isPlaceholderProposalCustomerName(restoredName) ? restoredName : ""),
-            officialBillName: prev.officialBillName || deck.manual.officialBillName || restoredName,
-            leadPhone: prev.leadPhone || deck.manual.leadPhone,
-            connectionType:
-              prev.connectionType ||
-              deck.manual.connectionType ||
-              (preset === "commercial_ht" ? "HT" : isCommercial ? "LT" : ""),
-          }));
+              (!isPlaceholderProposalCustomerName(restoredName) ? restoredName : "") ||
+              "";
+            const restoredBill =
+              deck.manual.officialBillName || restoredName || "";
+            // Deep-link / Edit proposal: prefer this deck over leftover session customer.
+            if (deepLink) {
+              return {
+                ...prev,
+                ...deck.manual,
+                leadContactName: restoredContact || prev.leadContactName,
+                officialBillName: restoredBill || prev.officialBillName,
+                leadPhone: deck.manual.leadPhone || prev.leadPhone,
+                connectionType:
+                  deck.manual.connectionType ||
+                  (preset === "commercial_ht" ? "HT" : isCommercial ? "LT" : "") ||
+                  prev.connectionType,
+              };
+            }
+            return {
+              ...prev,
+              ...deck.manual,
+              leadContactName: prev.leadContactName || restoredContact,
+              officialBillName: prev.officialBillName || restoredBill,
+              leadPhone: prev.leadPhone || deck.manual.leadPhone,
+              connectionType:
+                prev.connectionType ||
+                deck.manual.connectionType ||
+                (preset === "commercial_ht" ? "HT" : isCommercial ? "LT" : ""),
+            };
+          });
           if (deck.overrideSolarKw) setOverrideSolarKw(deck.overrideSolarKw);
           if (deck.overridePanels) setOverridePanels(deck.overridePanels);
           if (!isCommercial && deck.residentialInputMode) {
@@ -2439,8 +2454,9 @@ function ProposalPageContent() {
     return () => {
       cancelled = true;
     };
+    // Re-run when Edit proposal opens a different deal (same /proposal route, new query).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [urlProposalId]);
 
   /** Bill path: seed kW once per bill upload â€” never fight manual kW (same as commercial bill). */
   useEffect(() => {
