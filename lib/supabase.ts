@@ -331,7 +331,9 @@ export async function listCustomers() {
   const pageSize = 500;
   let offset = 0;
   const rows: Record<string, unknown>[] = [];
-  while (true) {
+  /** Safety cap — paginate until exhausted or 20k rows. */
+  const maxRows = 20_000;
+  while (rows.length < maxRows) {
     const { data, error } = await client
       .from(leadsTable)
       .select("*")
@@ -342,7 +344,6 @@ export async function listCustomers() {
     rows.push(...chunk);
     if (chunk.length < pageSize) break;
     offset += pageSize;
-    if (offset >= 5000) break;
   }
   return filterOutDemoSeedLeads(rows);
 }

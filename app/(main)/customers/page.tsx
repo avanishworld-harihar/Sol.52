@@ -48,6 +48,7 @@ import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useState } 
 import { createPortal } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
 import useSWR, { useSWRConfig } from "swr";
+import { Search, X } from "lucide-react";
 
 /** Above `#ss-bottom-nav-portal` (9999) so lead sheet footer stays tappable on mobile. */
 const LEAD_MODAL_Z = "z-[10060]";
@@ -122,6 +123,7 @@ function CustomersPageContent() {
   const allCustomers = data ?? [];
 
   const [stageFilter, setStageFilter] = useState<StageFilter>("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
 
   const customers = useMemo(() => {
@@ -133,8 +135,18 @@ function CustomersPageContent() {
     } else if (stageFilter === "active-projects") {
       list = list.filter((c) => (c.customer_stage ?? "lead") === "active-project");
     }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      list = list.filter((c) => {
+        const name = c.name.toLowerCase();
+        const city = c.city.toLowerCase();
+        const location = (c.location ?? "").toLowerCase();
+        const consumer = (c.consumer_name ?? "").toLowerCase();
+        return name.includes(q) || city.includes(q) || location.includes(q) || consumer.includes(q);
+      });
+    }
     return list;
-  }, [allCustomers, stageFilter]);
+  }, [allCustomers, stageFilter, searchQuery]);
 
   const stageCounts = useMemo(
     () => ({
@@ -675,6 +687,37 @@ function CustomersPageContent() {
         >
           <div className="flex min-h-0 min-w-0 flex-col md:max-xl:overflow-hidden md:max-xl:border-r md:max-xl:border-slate-200/80 dark:md:max-xl:border-white/10">
             <div className="shrink-0 space-y-3 p-0 md:max-xl:px-3 md:max-xl:pt-3">
+            <div className="relative flex items-center">
+              <Search
+                className="pointer-events-none absolute left-3 h-4 w-4 text-slate-400"
+                aria-hidden
+                strokeWidth={2.25}
+              />
+              <input
+                type="search"
+                placeholder={t("customers_searchPlaceholder")}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={cn(
+                  "w-full rounded-xl border bg-white py-2.5 pl-9 pr-9 text-sm font-medium",
+                  "border-slate-200/80 text-slate-800 placeholder:text-slate-400",
+                  "focus:border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-400/20",
+                  "dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:placeholder:text-slate-500",
+                  "dark:focus:border-teal-500 dark:focus:ring-teal-500/20"
+                )}
+                aria-label={t("customers_searchAria")}
+              />
+              {searchQuery ? (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  aria-label={t("actions_close")}
+                  className="absolute right-3 rounded-md p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              ) : null}
+            </div>
             <div className="workspace-filter-rail">
           {(
             [
