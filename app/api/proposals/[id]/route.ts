@@ -127,9 +127,12 @@ async function onProposalApproved(
       actor
     );
 
-    // Ensure a Project pipeline card exists.
+    // Ensure a Project pipeline card exists + CRM lead Won (single Won gesture).
     if (proposal.lead_id) {
       try {
+        const { syncLeadWonFromProposalApproval } = await import("@/lib/proposal-won-sync");
+        await syncLeadWonFromProposalApproval(proposal.lead_id);
+
         const project = await upsertPipelineProject({
           lead_id: proposal.lead_id,
           official_name: proposal.customer_name,

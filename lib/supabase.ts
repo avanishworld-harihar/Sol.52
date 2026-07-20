@@ -453,26 +453,34 @@ export async function bumpLeadStatus(
     if (retry.error) return null;
     const row = retry.data as Record<string, unknown>;
     if (normalizeLeadStatus(status) === "won") {
-      const { ensureProjectForWonLead } = await import("@/lib/project-store");
-      await ensureProjectForWonLead(leadId, {
-        name: String(row.name ?? ""),
-        consumer_name:
-          row.consumer_name != null ? String(row.consumer_name) : null,
-        city: String(row.city ?? ""),
-      });
+      await onLeadMarkedWon(leadId, row);
     }
     return row;
   }
   const row = data as Record<string, unknown>;
   if (normalizeLeadStatus(status) === "won") {
-    const { ensureProjectForWonLead } = await import("@/lib/project-store");
-    await ensureProjectForWonLead(leadId, {
-      name: String(row.name ?? ""),
-      consumer_name: row.consumer_name != null ? String(row.consumer_name) : null,
-      city: String(row.city ?? ""),
-    });
+    await onLeadMarkedWon(leadId, row);
   }
   return row;
+}
+
+/** Project card + sync latest proposal → Approved (Proposals → Won). */
+async function onLeadMarkedWon(leadId: string, row: Record<string, unknown>): Promise<void> {
+  const { ensureProjectForWonLead } = await import("@/lib/project-store");
+  await ensureProjectForWonLead(leadId, {
+    name: String(row.name ?? ""),
+    consumer_name: row.consumer_name != null ? String(row.consumer_name) : null,
+    city: String(row.city ?? ""),
+  });
+  try {
+    const { approveLatestProposalForLead } = await import("@/lib/proposal-won-sync");
+    await approveLatestProposalForLead(leadId);
+  } catch (err) {
+    console.warn(
+      "[bumpLeadStatus] approveLatestProposalForLead:",
+      err instanceof Error ? err.message : err
+    );
+  }
 }
 
 /** Bump only `last_touched_at` (call / WhatsApp / status-change without state move). */

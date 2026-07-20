@@ -27,7 +27,10 @@ import {
   CalendarDays,
   Clock,
   Flame,
+  Handshake,
   Home,
+  Send,
+  Trophy,
   Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -43,9 +46,11 @@ import {
   statusVisualLight,
   velocityVisual,
 } from "@/lib/proposal-hub-insights";
+import { patchProposalStatus } from "@/lib/proposal-share-actions";
 import { normalizeProposalStatus } from "@/lib/proposal-status";
 import type { ProposalHubRow } from "@/lib/proposal-hub-insights";
 import type { ProposalStatus } from "@/lib/proposal-status";
+import { useState } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -57,6 +62,8 @@ export interface DealCardProps {
   active?: boolean;
   lang?: "en" | "hi";
   onClick?: (id: string) => void;
+  /** Move deal across pipeline columns (Sent / Negotiation / Won). */
+  onStatusChange?: (proposalId: string, status: string) => void;
   delay?: number;
 }
 
@@ -154,7 +161,7 @@ function HealthBar({ score }: { score: number }) {
 
 // ─── Pipeline card (kanban column) ───────────────────────────────────────────
 
-function PipelineCard({ row, active, lang = "en", onClick, delay = 0 }: DealCardProps) {
+function PipelineCard({ row, active, lang = "en", onClick, onStatusChange, delay = 0 }: DealCardProps) {
   const st = normalizeProposalStatus(row.proposal_status);
   const isCommercial = isCommercialPreset(row.preset_id);
   const health = dealHealthScore(row);
@@ -165,7 +172,18 @@ function PipelineCard({ row, active, lang = "en", onClick, delay = 0 }: DealCard
   const intel = hubIntelForRow(row, lang);
   const primaryCta = resolveProposalHubPrimaryCta(row, lang);
   const customerLabel = proposalHubCustomerLabel(row.customer_name);
-  
+  const [busy, setBusy] = useState<string | null>(null);
+
+  async function moveTo(next: ProposalStatus) {
+    if (busy || next === st) return;
+    setBusy(next);
+    const result = await patchProposalStatus(row.id, next);
+    setBusy(null);
+    if (result.ok) {
+      onStatusChange?.(row.id, result.proposalStatus ?? next);
+    }
+  }
+
   return (
     <motion.article
       initial={{ opacity: 0, y: 8 }}
@@ -281,9 +299,49 @@ function PipelineCard({ row, active, lang = "en", onClick, delay = 0 }: DealCard
         </p>
       </div>
 
+      {/* Move between columns — this is what fills Sent / Negotiation / Won */}
+      <div
+        className="mx-4 mb-3 flex flex-wrap gap-1.5"
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+      >
+        {st === "draft" && (
+          <button
+            type="button"
+            disabled={!!busy}
+            onClick={() => void moveTo("sent")}
+            className="inline-flex min-h-8 flex-1 items-center justify-center gap-1 rounded-lg border border-sky-200 bg-sky-50 px-2 text-[10px] font-bold text-sky-900 hover:bg-sky-100 disabled:opacity-60 dark:border-sky-500/30 dark:bg-sky-950/40 dark:text-sky-100"
+          >
+            <Send className="h-3 w-3 shrink-0" aria-hidden />
+            {busy === "sent" ? "…" : lang === "hi" ? "Sent करें" : "Mark sent"}
+          </button>
+        )}
+        {(st === "sent" || st === "viewed") && (
+          <button
+            type="button"
+            disabled={!!busy}
+            onClick={() => void moveTo("negotiation")}
+            className="inline-flex min-h-8 flex-1 items-center justify-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-2 text-[10px] font-bold text-amber-950 hover:bg-amber-100 disabled:opacity-60 dark:border-amber-500/30 dark:bg-amber-950/40 dark:text-amber-100"
+          >
+            <Handshake className="h-3 w-3 shrink-0" aria-hidden />
+            {busy === "negotiation" ? "…" : lang === "hi" ? "Negotiate" : "Negotiate"}
+          </button>
+        )}
+        {(st === "sent" || st === "viewed" || st === "negotiation") && (
+          <button
+            type="button"
+            disabled={!!busy}
+            onClick={() => void moveTo("approved")}
+            className="inline-flex min-h-8 flex-1 items-center justify-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2 text-[10px] font-bold text-emerald-950 hover:bg-emerald-100 disabled:opacity-60 dark:border-emerald-500/30 dark:bg-emerald-950/40 dark:text-emerald-100"
+          >
+            <Trophy className="h-3 w-3 shrink-0" aria-hidden />
+            {busy === "approved" ? "…" : "Won"}
+          </button>
+        )}
+      </div>
+
       {/* Footer: confidence + CTA */}
       <div className="flex items-center gap-2 border-t border-slate-100 px-4 pb-4 pt-3 dark:border-white/[0.06]">
-        {/* Confidence badge */}
         <div className="flex items-center gap-1">
           <span className="text-[10px] font-semibold text-slate-400">Close</span>
           <span
@@ -300,7 +358,6 @@ function PipelineCard({ row, active, lang = "en", onClick, delay = 0 }: DealCard
 
         <div className="flex-1" />
 
-        {/* Open workspace CTA */}
         <Link
           href={primaryCta.href}
           onClick={(e) => e.stopPropagation()}

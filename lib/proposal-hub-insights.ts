@@ -144,7 +144,7 @@ export function hubIntelForStatus(st: ProposalStatus, lang: "en" | "hi"): IntelI
     },
     negotiation: {
       title: "Close the numbers",
-      body: "Adjust pricing in the workspace or send an updated quote if terms changed.",
+      body: "Tap Revise quote to change kW or pricing, share the update, then Mark as Won when the customer agrees.",
       tone: "warn"
     },
     approved: {
@@ -171,7 +171,7 @@ export function hubIntelForStatus(st: ProposalStatus, lang: "en" | "hi"): IntelI
     },
     negotiation: {
       title: "कीमत पर बात",
-      body: "वर्कस्पेस में प्राइसिंग बदलें या नया कोट भेजें।",
+      body: "कोट बदलें से kW या प्राइसिंग अपडेट करें, फिर ग्राहक मान जाए तो Won मार्क करें।",
       tone: "warn"
     },
     approved: {

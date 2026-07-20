@@ -3,6 +3,7 @@
 import { ProposalHubActionsSheet } from "@/components/proposals/proposal-hub-actions-sheet";
 import { ProposalHubIntelPanel } from "@/components/proposals/proposal-hub-intel-panel";
 import { ProposalHubEngagementMetrics } from "@/components/proposals/proposal-hub-engagement-metrics";
+import { ProposalHubStatusBar } from "@/components/proposals/proposal-hub-status-bar";
 import type { ProposalListCardProps } from "@/components/proposals/proposal-list-card";
 import { buildProposalEditHref } from "@/lib/proposal-edit-url";
 import { resolveProposalHubPrimaryCta } from "@/lib/proposal-hub-primary-cta";
@@ -233,25 +234,34 @@ export function ProposalWorkspacePreview({
         </section>
 
         <motion.div className={cn("mt-4 grid gap-3", isPane && "lg:grid-cols-[1fr_minmax(220px,0.38fr)]")}>
-          {isDraft ? (
-            <div className="rounded-xl border border-amber-200 bg-amber-50/90 px-3 py-2.5 text-xs font-medium text-amber-950 dark:border-amber-500/30 dark:bg-amber-950/20 dark:text-amber-100 lg:col-span-2">
-              {lang === "hi"
-                ? "PDF या लिंक भेज चुके हैं? "
-                : "Already shared PDF or link? "}
-              <button
-                type="button"
-                className="font-extrabold underline underline-offset-2"
-                disabled={markingSent}
-                onClick={() => void handleMarkAsSent()}
-              >
-                {markingSent
-                  ? lang === "hi"
-                    ? "सेव हो रहा है…"
-                    : "Saving…"
-                  : labels.markAsSent ?? (lang === "hi" ? "भेजा मार्क करें" : "Mark as sent")}
-              </button>
-            </div>
-          ) : null}
+          <div className={cn("space-y-3", isPane && "lg:col-span-2")}>
+            <ProposalHubStatusBar
+              proposalId={row.id}
+              leadId={row.lead_id}
+              status={row.proposal_status}
+              lang={lang}
+              onStatusChange={(id, status) => onSent?.(id, status)}
+            />
+            {isDraft ? (
+              <div className="rounded-xl border border-amber-200 bg-amber-50/90 px-3 py-2.5 text-xs font-medium text-amber-950 dark:border-amber-500/30 dark:bg-amber-950/20 dark:text-amber-100">
+                {lang === "hi"
+                  ? "PDF या लिंक भेज चुके हैं? "
+                  : "Already shared PDF or link? "}
+                <button
+                  type="button"
+                  className="font-extrabold underline underline-offset-2"
+                  disabled={markingSent}
+                  onClick={() => void handleMarkAsSent()}
+                >
+                  {markingSent
+                    ? lang === "hi"
+                      ? "सेव हो रहा है…"
+                      : "Saving…"
+                    : labels.markAsSent ?? (lang === "hi" ? "भेजा मार्क करें" : "Mark as sent")}
+                </button>
+              </div>
+            ) : null}
+          </div>
           <section className="proposal-hub-glass-card proposal-hub-workspace-next rounded-xl border p-4">
             {nextStepLabel ? (
               <p className="proposal-hub-text-muted text-[10px] font-bold uppercase tracking-[0.18em]">{nextStepLabel}</p>

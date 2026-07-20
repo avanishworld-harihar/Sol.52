@@ -25,21 +25,23 @@ export function HubSearchFilter({
   onQueryChange,
   activeStatus,
   onStatusChange,
-  resultCount,
+  /** Total proposals in current search (ignores status chip). */
+  totalCount,
+  statusCounts,
   className,
 }: {
   query: string;
   onQueryChange: (q: string) => void;
   activeStatus: ProposalStatus | null;
   onStatusChange: (s: ProposalStatus | null) => void;
-  resultCount?: number;
+  totalCount?: number;
+  statusCounts?: Partial<Record<ProposalStatus, number>>;
   className?: string;
 }) {
   const hasFilter = !!query || activeStatus !== null;
 
   return (
     <div className={cn("flex flex-col gap-2", className)}>
-      {/* Search input */}
       <div className="relative flex items-center">
         <Search
           className="pointer-events-none absolute left-3 h-4 w-4 text-slate-400"
@@ -72,9 +74,7 @@ export function HubSearchFilter({
         )}
       </div>
 
-      {/* Status filter chips */}
       <div className="flex flex-wrap items-center gap-2">
-        {/* "All" chip */}
         <button
           type="button"
           onClick={() => onStatusChange(null)}
@@ -86,9 +86,9 @@ export function HubSearchFilter({
           )}
         >
           All
-          {resultCount !== undefined && (
+          {totalCount !== undefined && (
             <span className="ml-1.5 rounded-full bg-slate-200/80 px-1.5 text-[10px] font-black tabular-nums dark:bg-white/10">
-              {resultCount}
+              {totalCount}
             </span>
           )}
         </button>
@@ -96,6 +96,7 @@ export function HubSearchFilter({
         {PROPOSAL_STATUS_ORDER.map((st) => {
           const vis = statusVisualLight(st);
           const active = activeStatus === st;
+          const count = statusCounts?.[st] ?? 0;
           return (
             <button
               key={st}
@@ -111,15 +112,20 @@ export function HubSearchFilter({
             >
               <span className={cn("h-1.5 w-1.5 rounded-full", active ? vis.dot : "bg-slate-300 dark:bg-slate-600")} aria-hidden />
               {STATUS_LABELS[st]}
+              <span className="rounded-full bg-black/5 px-1.5 text-[10px] font-black tabular-nums dark:bg-white/10">
+                {count}
+              </span>
             </button>
           );
         })}
 
-        {/* Clear filters */}
         {hasFilter && (
           <button
             type="button"
-            onClick={() => { onQueryChange(""); onStatusChange(null); }}
+            onClick={() => {
+              onQueryChange("");
+              onStatusChange(null);
+            }}
             className="ml-auto inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
           >
             <X className="h-3 w-3" />

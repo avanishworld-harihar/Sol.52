@@ -104,9 +104,6 @@ export default function ProposalsHubPage() {
 
   const filteredRows = useMemo(() => {
     let result = rows;
-    if (activeStatus) {
-      result = result.filter((r) => normalizeProposalStatus(r.proposal_status) === activeStatus);
-    }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       const qKw = q.replace(/\s*k\.?\s*w\.?\s*$/i, "").trim();
@@ -126,8 +123,41 @@ export default function ProposalsHubPage() {
         );
       });
     }
+    if (activeStatus) {
+      result = result.filter((r) => normalizeProposalStatus(r.proposal_status) === activeStatus);
+    }
     return result;
   }, [rows, searchQuery, activeStatus]);
+
+  const searchMatchedRows = useMemo(() => {
+    if (!searchQuery.trim()) return rows;
+    const q = searchQuery.toLowerCase().trim();
+    const qKw = q.replace(/\s*k\.?\s*w\.?\s*$/i, "").trim();
+    return rows.filter((r) => {
+      const name = r.customer_name.toLowerCase();
+      const loc = (r.location ?? "").toLowerCase();
+      const brand = (r.panel_brand ?? "").toLowerCase();
+      const company = (r.company_name ?? "").toLowerCase();
+      const kw = String(r.system_kw);
+      return (
+        name.includes(q) ||
+        loc.includes(q) ||
+        brand.includes(q) ||
+        company.includes(q) ||
+        kw.includes(q) ||
+        (qKw.length > 0 && kw.includes(qKw))
+      );
+    });
+  }, [rows, searchQuery]);
+
+  const statusCounts = useMemo(() => {
+    const counts: Partial<Record<ProposalStatus, number>> = {};
+    for (const r of searchMatchedRows) {
+      const st = normalizeProposalStatus(r.proposal_status);
+      counts[st] = (counts[st] ?? 0) + 1;
+    }
+    return counts;
+  }, [searchMatchedRows]);
 
   // Focus / workspace pane (for list view and mobile)
   const [focusId, setFocusId] = useState<string | null>(null);
@@ -345,7 +375,8 @@ export default function ProposalsHubPage() {
                 onQueryChange={setSearchQuery}
                 activeStatus={activeStatus}
                 onStatusChange={setActiveStatus}
-                resultCount={filteredRows.length}
+                totalCount={searchMatchedRows.length}
+                statusCounts={statusCounts}
               />
             </>
           ) : null}
@@ -401,11 +432,13 @@ export default function ProposalsHubPage() {
                   rows={filteredRows}
                   focusId={focusId}
                   onSelect={setFocusId}
+                  onStatusChange={handleProposalSent}
                   lang={uiLang}
                 />
               ) : (
                 <HubEmptyState
                   variant="no-results"
+                  activeStatus={activeStatus}
                   onClearFilter={() => { setSearchQuery(""); setActiveStatus(null); }}
                 />
               )}
@@ -436,6 +469,7 @@ export default function ProposalsHubPage() {
               ) : (
                 <HubEmptyState
                   variant="no-results"
+                  activeStatus={activeStatus}
                   onClearFilter={() => { setSearchQuery(""); setActiveStatus(null); }}
                 />
               )}
@@ -510,6 +544,7 @@ export default function ProposalsHubPage() {
                 <div className="mt-5 md:hidden">
                   <HubEmptyState
                     variant="no-results"
+                    activeStatus={activeStatus}
                     onClearFilter={() => { setSearchQuery(""); setActiveStatus(null); }}
                   />
                 </div>

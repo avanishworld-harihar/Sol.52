@@ -67,11 +67,18 @@ export async function markProposalSent(proposalId: string): Promise<boolean> {
 
 /** Marks draft → sent; no-op when already sent / viewed / approved. */
 export async function markProposalSentIfDraft(proposalId: string): Promise<MarkProposalSentResult> {
+  return patchProposalStatus(proposalId, "sent");
+}
+
+export async function patchProposalStatus(
+  proposalId: string,
+  status: "draft" | "sent" | "viewed" | "negotiation" | "approved"
+): Promise<MarkProposalSentResult> {
   try {
     const res = await fetch(`/api/proposals/${proposalId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ proposal_status: "sent" }),
+      body: JSON.stringify({ proposal_status: status }),
     });
     const json = (await res.json().catch(() => ({}))) as {
       ok?: boolean;

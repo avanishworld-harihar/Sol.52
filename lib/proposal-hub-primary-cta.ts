@@ -10,21 +10,21 @@ export type ProposalHubPrimaryCta = {
 const EN: Record<ProposalStatus, Omit<ProposalHubPrimaryCta, "href">> = {
   draft: { label: "Edit proposal" },
   sent: { label: "Follow up" },
-  viewed: { label: "Follow up" },
-  negotiation: { label: "Follow up" },
-  approved: { label: "Create project" },
+  viewed: { label: "Call / follow up" },
+  negotiation: { label: "Revise quote" },
+  approved: { label: "Open project" },
 };
 
 const HI: Record<ProposalStatus, Omit<ProposalHubPrimaryCta, "href">> = {
   draft: { label: "प्रस्ताव संपादित करें" },
   sent: { label: "फॉलो-अप" },
-  viewed: { label: "फॉलो-अप" },
-  negotiation: { label: "फॉलो-अप" },
-  approved: { label: "प्रोजेक्ट बनाएँ" },
+  viewed: { label: "कॉल / फॉलो-अप" },
+  negotiation: { label: "कोट बदलें" },
+  approved: { label: "प्रोजेक्ट खोलें" },
 };
 
 function hrefForStatus(row: ProposalHubRow, st: ProposalStatus): string {
-  if (st === "draft") {
+  if (st === "draft" || st === "negotiation") {
     return buildProposalEditHref({ leadId: row.lead_id, proposalId: row.id });
   }
   if (st === "approved") {

@@ -15,22 +15,48 @@ import { motion } from "framer-motion";
 import { FileText, Plus, Search, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
+import type { ProposalStatus } from "@/lib/proposal-status";
 
 export type EmptyStateVariant = "no-proposals" | "no-results";
+
+const STAGE_EMPTY: Record<ProposalStatus, { title: string; body: string }> = {
+  draft: {
+    title: "No draft proposals",
+    body: "Drafts are quotes you are still building. Open All, or create a new proposal.",
+  },
+  sent: {
+    title: "Nothing in Sent yet",
+    body: "Sent shows proposals you shared. Open a Draft, tap Mark as sent or Send on WhatsApp — it will appear here for follow-up.",
+  },
+  viewed: {
+    title: "Nothing in Viewed yet",
+    body: "Viewed fills automatically when a customer opens your public proposal link. Share the link from Sent, then check back here.",
+  },
+  negotiation: {
+    title: "No deals in Negotiation",
+    body: "When price or terms are under discussion, open a Sent/Viewed deal and tap Start negotiation. Then use Revise quote to edit kW or pricing.",
+  },
+  approved: {
+    title: "No Won proposals yet",
+    body: "Won shows closed deals. Mark Won here, or mark the customer Won in Customers — their latest proposal moves here automatically.",
+  },
+};
 
 export function HubEmptyState({
   variant = "no-proposals",
   onClearFilter,
   className,
   quickQuote,
+  activeStatus,
 }: {
   variant?: EmptyStateVariant;
   onClearFilter?: () => void;
   className?: string;
-  /** Requirement quick-quote launcher (1-tap kW chips). */
   quickQuote?: ReactNode;
+  activeStatus?: ProposalStatus | null;
 }) {
   if (variant === "no-results") {
+    const stage = activeStatus ? STAGE_EMPTY[activeStatus] : null;
     return (
       <motion.div
         initial={{ opacity: 0, scale: 0.97 }}
@@ -43,9 +69,11 @@ export function HubEmptyState({
         )}
       >
         <Search className="mb-4 h-10 w-10 text-slate-300 dark:text-slate-600" strokeWidth={1.5} aria-hidden />
-        <p className="text-base font-bold text-slate-700 dark:text-slate-200">No proposals found</p>
-        <p className="mt-2 max-w-sm text-sm text-slate-400 dark:text-slate-500">
-          Try a different search term or clear the filter to see all proposals.
+        <p className="text-base font-bold text-slate-700 dark:text-slate-200">
+          {stage?.title ?? "No proposals found"}
+        </p>
+        <p className="mt-2 max-w-md text-sm text-slate-400 dark:text-slate-500">
+          {stage?.body ?? "Try a different search term or clear the filter to see all proposals."}
         </p>
         {onClearFilter && (
           <button
@@ -53,14 +81,13 @@ export function HubEmptyState({
             onClick={onClearFilter}
             className="mt-6 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-teal-300 hover:text-teal-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
           >
-            Clear filter
+            Show all proposals
           </button>
         )}
       </motion.div>
     );
   }
 
-  // no-proposals: first-time empty
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -72,17 +99,15 @@ export function HubEmptyState({
         className
       )}
     >
-      {/* Decorative glow */}
       <div
         className="pointer-events-none absolute inset-0 opacity-60"
         aria-hidden
         style={{
-          background: "radial-gradient(ellipse 60% 50% at 50% 0%, rgba(20,184,166,0.12), transparent 70%)"
+          background: "radial-gradient(ellipse 60% 50% at 50% 0%, rgba(20,184,166,0.12), transparent 70%)",
         }}
       />
 
       <div className="relative flex flex-col items-center">
-        {/* Icon cluster */}
         <div className="mb-6 flex items-center gap-3">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-teal-200/80 bg-white shadow-md dark:border-teal-500/20 dark:bg-teal-500/10">
             <FileText className="h-7 w-7 text-teal-600 dark:text-teal-400" strokeWidth={1.75} aria-hidden />
