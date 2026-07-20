@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   Cloud,
   Crosshair,
+  ImagePlus,
   LocateFixed,
   MapPin,
   Redo2,
@@ -19,6 +20,11 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast-center";
+import {
+  extractGpsFromImageFile,
+  parseLatLngText,
+  parseSeparateLatLng,
+} from "@/lib/site-layout-gps";
 import { calculateRoofMetrics, normalizeRoofPolygon } from "./core/geometry";
 import {
   EMPTY_SITE_LAYOUT_STATE,
@@ -115,6 +121,11 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const [searchText, setSearchText] = useState("");
   const [searching, setSearching] = useState(false);
   const [pendingObstruction, setPendingObstruction] = useState<ObstructionType | null>(null);
+  const [latInput, setLatInput] = useState("");
+  const [lngInput, setLngInput] = useState("");
+  const [gpsPaste, setGpsPaste] = useState("");
+  const [gpsBusy, setGpsBusy] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement | null>(null);
 
   const mapToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN?.trim() ?? "";
 
@@ -380,6 +391,60 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     );
   }, [toast]);
 
+  const flyToGps = useCallback(
+    (lat: number, lng: number, label: string) => {
+      const next: [number, number] = [lng, lat];
+      setCenter(next);
+      setLatInput(String(lat));
+      setLngInput(String(lng));
+      mapRef.current?.flyTo({ center: next, zoom: 19 });
+      toast.success("Location set", label);
+    },
+    [toast]
+  );
+
+  const goToLatLng = useCallback(() => {
+    const fromFields = parseSeparateLatLng(latInput, lngInput);
+    const fromPaste = parseLatLngText(gpsPaste);
+    const point = fromFields ?? fromPaste;
+    if (!point) {
+      toast.error(
+        "Invalid coordinates",
+        "Enter Lat + Long, or paste e.g. Lat 24.576354, Long 80.836641"
+      );
+      return;
+    }
+    flyToGps(
+      point.lat,
+      point.lng,
+      point.source === "stamp" ? "GPS stamp applied." : "Coordinates applied."
+    );
+  }, [flyToGps, gpsPaste, latInput, lngInput, toast]);
+
+  const onGpsPhotoSelected = useCallback(
+    async (file: File | null) => {
+      if (!file) return;
+      setGpsBusy(true);
+      try {
+        const fromExif = await extractGpsFromImageFile(file);
+        if (fromExif) {
+          flyToGps(fromExif.lat, fromExif.lng, "GPS read from photo EXIF.");
+          return;
+        }
+        toast.error(
+          "No GPS in photo",
+          "WhatsApp often removes EXIF. Open the photo, copy Lat/Long from the stamp, and paste below."
+        );
+      } catch (error) {
+        toast.error("Photo GPS failed", error instanceof Error ? error.message : "Could not read photo.");
+      } finally {
+        setGpsBusy(false);
+        if (photoInputRef.current) photoInputRef.current.value = "";
+      }
+    },
+    [flyToGps, toast]
+  );
+
   const searchLocation = useCallback(async () => {
     const query = searchText.trim();
     if (!query || !mapToken) return;
@@ -505,6 +570,63 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           <Button variant="outline" size="sm" className="w-full justify-start" onClick={locateMe}>
             <LocateFixed className="mr-2 h-4 w-4" /> Use current GPS
           </Button>
+
+          <div className="rounded-lg border border-slate-200 bg-slate-50/80 p-2.5 dark:border-white/10 dark:bg-white/[0.03]">
+            <p className="text-[11px] font-extrabold uppercase tracking-wide text-slate-500">
+              Client GPS (office)
+            </p>
+            <p className="mt-1 text-[10px] leading-relaxed text-slate-500">
+              Paste Lat/Long from GPS Map Camera, or upload the original photo (WhatsApp may strip GPS).
+            </p>
+            <div className="mt-2 grid grid-cols-2 gap-1.5">
+              <input
+                value={latInput}
+                onChange={(e) => setLatInput(e.target.value)}
+                placeholder="Lat 24.576"
+                inputMode="decimal"
+                className="rounded-lg border border-slate-200 px-2 py-1.5 text-xs dark:border-white/10 dark:bg-slate-950"
+                aria-label="Latitude"
+              />
+              <input
+                value={lngInput}
+                onChange={(e) => setLngInput(e.target.value)}
+                placeholder="Long 80.836"
+                inputMode="decimal"
+                className="rounded-lg border border-slate-200 px-2 py-1.5 text-xs dark:border-white/10 dark:bg-slate-950"
+                aria-label="Longitude"
+              />
+            </div>
+            <textarea
+              value={gpsPaste}
+              onChange={(e) => setGpsPaste(e.target.value)}
+              placeholder="Or paste: Lat 24.576354, Long 80.836641"
+              rows={2}
+              className="mt-1.5 w-full resize-none rounded-lg border border-slate-200 px-2 py-1.5 text-[11px] dark:border-white/10 dark:bg-slate-950"
+            />
+            <div className="mt-1.5 flex gap-1.5">
+              <Button type="button" size="sm" className="flex-1" onClick={goToLatLng}>
+                <MapPin className="mr-1 h-3.5 w-3.5" /> Go to location
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={gpsBusy}
+                onClick={() => photoInputRef.current?.click()}
+                title="Upload GPS Map Camera photo"
+              >
+                <ImagePlus className="h-4 w-4" />
+              </Button>
+              <input
+                ref={photoInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp,image/heic"
+                className="hidden"
+                onChange={(e) => void onGpsPhotoSelected(e.target.files?.[0] ?? null)}
+              />
+            </div>
+          </div>
+
           <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300">
             Roof type
             <select
