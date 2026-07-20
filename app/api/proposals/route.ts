@@ -113,7 +113,7 @@ function looksLikeMp(state?: string, discom?: string): boolean {
 
 export async function GET() {
   try {
-    const data = await listRecentProposals(60);
+    const data = await listRecentProposals(500);
     return NextResponse.json({ ok: true, data }, { status: 200, headers: { "Cache-Control": "no-store" } });
   } catch (e) {
     const message = e instanceof Error ? e.message : "list_failed";

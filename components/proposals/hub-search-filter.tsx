@@ -48,7 +48,7 @@ export function HubSearchFilter({
         />
         <input
           type="search"
-          placeholder="Search proposals, customers, kW…"
+          placeholder="Search by name, kW, or location…"
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
           className={cn(
@@ -58,7 +58,7 @@ export function HubSearchFilter({
             "dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:placeholder:text-slate-500",
             "dark:focus:border-teal-500 dark:focus:ring-teal-500/20"
           )}
-          aria-label="Search proposals"
+          aria-label="Search proposals by name, kW, or location"
         />
         {query && (
           <button

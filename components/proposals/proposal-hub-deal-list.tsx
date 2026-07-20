@@ -129,6 +129,14 @@ export function ProposalHubDealList({
                               <DealHeatPill row={row} lang={lang} />
                               <p className="proposal-hub-text-muted flex min-w-0 flex-wrap items-center gap-x-1.5 text-[11px] font-semibold sm:text-xs">
                                 <span>{row.system_kw} kW</span>
+                                {row.location?.trim() ? (
+                                  <>
+                                    <span className="opacity-50">·</span>
+                                    <span className="max-w-[10rem] truncate" title={row.location}>
+                                      {row.location.trim()}
+                                    </span>
+                                  </>
+                                ) : null}
                                 <span className="opacity-50">·</span>
                                 <span className="proposal-hub-text-primary tabular-nums">
                                   {formatInrCompact(row.final_amount_inr)}

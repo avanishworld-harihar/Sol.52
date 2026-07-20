@@ -108,13 +108,23 @@ export default function ProposalsHubPage() {
       result = result.filter((r) => normalizeProposalStatus(r.proposal_status) === activeStatus);
     }
     if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter(
-        (r) =>
-          r.customer_name.toLowerCase().includes(q) ||
-          (r.panel_brand ?? "").toLowerCase().includes(q) ||
-          String(r.system_kw).includes(q)
-      );
+      const q = searchQuery.toLowerCase().trim();
+      const qKw = q.replace(/\s*k\.?\s*w\.?\s*$/i, "").trim();
+      result = result.filter((r) => {
+        const name = r.customer_name.toLowerCase();
+        const loc = (r.location ?? "").toLowerCase();
+        const brand = (r.panel_brand ?? "").toLowerCase();
+        const company = (r.company_name ?? "").toLowerCase();
+        const kw = String(r.system_kw);
+        return (
+          name.includes(q) ||
+          loc.includes(q) ||
+          brand.includes(q) ||
+          company.includes(q) ||
+          kw.includes(q) ||
+          (qKw.length > 0 && kw.includes(qKw))
+        );
+      });
     }
     return result;
   }, [rows, searchQuery, activeStatus]);

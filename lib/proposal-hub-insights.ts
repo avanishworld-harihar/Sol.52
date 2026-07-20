@@ -14,6 +14,8 @@ export type ProposalHubRow = {
   preset_id?: string | null;
   /** Optional: company / organisation name for commercial proposals */
   company_name?: string | null;
+  /** Site / city text from proposal create */
+  location?: string | null;
   /** Engagement — from proposals table when available */
   view_count?: number | null;
   last_viewed_at?: string | null;
