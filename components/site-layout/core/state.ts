@@ -1,8 +1,8 @@
-import type { RoofPolygon, SiteObstruction } from "@/lib/site-layout";
+import type { RoofGeometry, SiteObstruction } from "@/lib/site-layout";
 import type { RoofMetrics } from "./geometry";
 
 export type SiteLayoutEditorState = {
-  roof: RoofPolygon | null;
+  roof: RoofGeometry | null;
   metrics: RoofMetrics | null;
   obstructions: SiteObstruction[];
   selectedObstructionId: string | null;
@@ -10,8 +10,8 @@ export type SiteLayoutEditorState = {
 };
 
 export type SiteLayoutAction =
-  | { type: "LOAD_LAYOUT"; roof: RoofPolygon | null; metrics: RoofMetrics | null; obstructions: SiteObstruction[] }
-  | { type: "COMMIT_POLYGON"; roof: RoofPolygon; metrics: RoofMetrics }
+  | { type: "LOAD_LAYOUT"; roof: RoofGeometry | null; metrics: RoofMetrics | null; obstructions: SiteObstruction[] }
+  | { type: "COMMIT_POLYGON"; roof: RoofGeometry; metrics: RoofMetrics }
   | { type: "DELETE_POLYGON" }
   | { type: "PLACE_OBSTRUCTION"; obstruction: SiteObstruction }
   | { type: "UPDATE_OBSTRUCTION"; obstruction: SiteObstruction }

@@ -29,6 +29,19 @@ export const roofPolygonSchema = z.object({
     ),
 });
 
+export const roofMultiPolygonSchema = z.object({
+  type: z.literal("MultiPolygon"),
+  coordinates: z
+    .array(roofPolygonSchema.shape.coordinates)
+    .min(1)
+    .max(50),
+});
+
+export const roofGeometrySchema = z.union([
+  roofPolygonSchema,
+  roofMultiPolygonSchema,
+]);
+
 export const siteObstructionSchema = z.object({
   id: z.string().min(1).max(80),
   type: z.enum(["water_tank", "tree", "chimney", "parapet", "other"]),
@@ -43,7 +56,7 @@ export const saveSiteLayoutSchema = z.object({
   design_id: z.string().uuid().optional().nullable(),
   center_lat: z.number().min(-90).max(90).optional().nullable(),
   center_lng: z.number().min(-180).max(180).optional().nullable(),
-  roof_geojson: roofPolygonSchema,
+  roof_geojson: roofGeometrySchema,
   roof_azimuth_deg: z.number().min(0).max(360).optional().nullable(),
   obstructions_geojson: z.array(siteObstructionSchema).max(250).default([]),
   roof_area_sqft: z.number().nonnegative().max(100_000_000),
@@ -52,6 +65,8 @@ export const saveSiteLayoutSchema = z.object({
 });
 
 export type RoofPolygon = z.infer<typeof roofPolygonSchema>;
+export type RoofMultiPolygon = z.infer<typeof roofMultiPolygonSchema>;
+export type RoofGeometry = z.infer<typeof roofGeometrySchema>;
 export type SiteObstruction = z.infer<typeof siteObstructionSchema>;
 export type SaveSiteLayoutInput = z.infer<typeof saveSiteLayoutSchema>;
 

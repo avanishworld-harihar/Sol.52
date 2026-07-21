@@ -1,8 +1,8 @@
 import { openDB } from "idb";
-import type { RoofPolygon, SiteObstruction } from "@/lib/site-layout";
+import type { RoofGeometry, SiteObstruction } from "@/lib/site-layout";
 
 export type SiteLayoutDraft = {
-  roof: RoofPolygon | null;
+  roof: RoofGeometry | null;
   obstructions: SiteObstruction[];
   center_lat: number | null;
   center_lng: number | null;
