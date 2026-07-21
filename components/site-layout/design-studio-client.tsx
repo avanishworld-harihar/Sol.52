@@ -6,6 +6,7 @@ import {
   Crosshair,
   ImagePlus,
   LocateFixed,
+  Lock,
   MapPin,
   Redo2,
   Save,
@@ -13,6 +14,7 @@ import {
   Trash2,
   TriangleRight,
   Undo2,
+  Unlock,
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
@@ -103,10 +105,17 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const draftPolygonRef = useRef<google.maps.Polygon | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
   const mapListenersRef = useRef<google.maps.MapsEventListener[]>([]);
+  const roofListenersRef = useRef<google.maps.MapsEventListener[]>([]);
   const drawingPointsRef = useRef<google.maps.LatLngLiteral[]>([]);
+  const drawingRedoRef = useRef<google.maps.LatLngLiteral[]>([]);
   const addObstructionRef = useRef<ObstructionType | null>(null);
   const initialRoofRef = useRef<RoofPolygon | null>(null);
   const initialCenterRef = useRef<[number, number]>(DEFAULT_CENTER);
+  const currentRoofRef = useRef<RoofPolygon | null>(null);
+  const undoStackRef = useRef<Array<RoofPolygon | null>>([]);
+  const redoStackRef = useRef<Array<RoofPolygon | null>>([]);
+  const applyingHistoryRef = useRef(false);
+  const roofLockedRef = useRef(true);
   /** Set when the map panel mounts — avoids init racing the loading spinner unmount. */
   const [mapContainerEl, setMapContainerEl] = useState<HTMLDivElement | null>(null);
 
@@ -129,6 +138,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const [gpsBusy, setGpsBusy] = useState(false);
   const [drawingRoof, setDrawingRoof] = useState(false);
   const [drawingPointCount, setDrawingPointCount] = useState(0);
+  const [drawingMetrics, setDrawingMetrics] = useState<ReturnType<typeof calculateRoofMetrics> | null>(null);
+  const [roofLocked, setRoofLocked] = useState(true);
+  const [historyVersion, setHistoryVersion] = useState(0);
   const photoInputRef = useRef<HTMLInputElement | null>(null);
 
   const googleMapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim() ?? "";
@@ -184,6 +196,10 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         setCenter(nextCenter);
         initialCenterRef.current = nextCenter;
         initialRoofRef.current = roof;
+        currentRoofRef.current = roof;
+        undoStackRef.current = [];
+        redoStackRef.current = [];
+        setHistoryVersion((value) => value + 1);
         dispatch({
           type: "LOAD_LAYOUT",
           roof,
@@ -203,6 +219,84 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       cancelled = true;
     };
   }, [projectId]);
+
+  const removeRoofListeners = useCallback(() => {
+    roofListenersRef.current.forEach((listener) => listener.remove());
+    roofListenersRef.current = [];
+  }, []);
+
+  const commitRoof = useCallback((roof: RoofPolygon | null, recordHistory = true) => {
+    const previous = currentRoofRef.current;
+    if (JSON.stringify(previous) === JSON.stringify(roof)) return;
+
+    if (recordHistory && !applyingHistoryRef.current) {
+      undoStackRef.current.push(previous ? structuredClone(previous) : null);
+      if (undoStackRef.current.length > 50) undoStackRef.current.shift();
+      redoStackRef.current = [];
+    }
+
+    currentRoofRef.current = roof ? structuredClone(roof) : null;
+    if (roof) {
+      dispatch({ type: "COMMIT_POLYGON", roof, metrics: calculateRoofMetrics(roof) });
+    } else {
+      dispatch({ type: "DELETE_POLYGON" });
+    }
+    setHistoryVersion((value) => value + 1);
+  }, []);
+
+  const syncRoofPolygon = useCallback(
+    (polygon: google.maps.Polygon) => {
+      const points = polygon
+        .getPath()
+        .getArray()
+        .map((point) => [point.lng(), point.lat()]);
+      if (points.length < 3) return;
+      points.push([...points[0]]);
+      const roof = normalizeRoofPolygon({ type: "Polygon", coordinates: [points] });
+      if (roof) commitRoof(roof);
+    },
+    [commitRoof]
+  );
+
+  const attachRoofListeners = useCallback(
+    (polygon: google.maps.Polygon) => {
+      removeRoofListeners();
+      const path = polygon.getPath();
+      roofListenersRef.current = [
+        google.maps.event.addListener(path, "set_at", () => syncRoofPolygon(polygon)),
+        google.maps.event.addListener(path, "insert_at", () => syncRoofPolygon(polygon)),
+        google.maps.event.addListener(path, "remove_at", () => syncRoofPolygon(polygon)),
+      ];
+    },
+    [removeRoofListeners, syncRoofPolygon]
+  );
+
+  const renderRoofPolygon = useCallback(
+    (roof: RoofPolygon | null) => {
+      const map = mapRef.current;
+      if (!map || !window.google?.maps) return;
+      removeRoofListeners();
+      roofPolygonRef.current?.setMap(null);
+      roofPolygonRef.current = null;
+      if (!roof) return;
+
+      const path = roof.coordinates[0].slice(0, -1).map(([lng, lat]) => ({ lat, lng }));
+      const polygon = new google.maps.Polygon({
+        map,
+        paths: path,
+        editable: !roofLockedRef.current,
+        draggable: false,
+        strokeColor: "#0f766e",
+        strokeOpacity: 1,
+        strokeWeight: 3,
+        fillColor: "#14b8a6",
+        fillOpacity: 0.24,
+      });
+      roofPolygonRef.current = polygon;
+      attachRoofListeners(polygon);
+    },
+    [attachRoofListeners, removeRoofListeners]
+  );
 
   useEffect(() => {
     if (!mapContainerEl || !googleMapsKey || mapRef.current) return;
@@ -231,43 +325,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         });
         mapRef.current = map;
 
-        const syncPolygon = (polygon: google.maps.Polygon) => {
-          const points = polygon
-            .getPath()
-            .getArray()
-            .map((point) => [point.lng(), point.lat()]);
-          if (points.length < 3) return;
-          points.push([...points[0]]);
-          const roof = normalizeRoofPolygon({ type: "Polygon", coordinates: [points] });
-          if (roof) {
-            dispatch({ type: "COMMIT_POLYGON", roof, metrics: calculateRoofMetrics(roof) });
-          }
-        };
-
-        const attachRoofListeners = (polygon: google.maps.Polygon) => {
-          const path = polygon.getPath();
-          mapListenersRef.current.push(
-            maps.event.addListener(path, "set_at", () => syncPolygon(polygon)),
-            maps.event.addListener(path, "insert_at", () => syncPolygon(polygon)),
-            maps.event.addListener(path, "remove_at", () => syncPolygon(polygon))
-          );
-        };
-
         if (initialRoofRef.current) {
           const path = initialRoofRef.current.coordinates[0].slice(0, -1).map(([lng, lat]) => ({ lat, lng }));
-          const roofPolygon = new maps.Polygon({
-            map,
-            paths: path,
-            editable: true,
-            draggable: false,
-            strokeColor: "#0f766e",
-            strokeOpacity: 1,
-            strokeWeight: 3,
-            fillColor: "#14b8a6",
-            fillOpacity: 0.24,
-          });
-          roofPolygonRef.current = roofPolygon;
-          attachRoofListeners(roofPolygon);
+          renderRoofPolygon(initialRoofRef.current);
           const bounds = new maps.LatLngBounds();
           path.forEach((point) => bounds.extend(point));
           map.fitBounds(bounds, 70);
@@ -294,7 +354,19 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               ...drawingPointsRef.current,
               { lat: latLng.lat(), lng: latLng.lng() },
             ];
+            drawingRedoRef.current = [];
             setDrawingPointCount(drawingPointsRef.current.length);
+            const closedPoints = drawingPointsRef.current.map((point) => [point.lng, point.lat]);
+            if (closedPoints.length >= 3) {
+              closedPoints.push([...closedPoints[0]]);
+              const draftRoof = normalizeRoofPolygon({
+                type: "Polygon",
+                coordinates: [closedPoints],
+              });
+              setDrawingMetrics(draftRoof ? calculateRoofMetrics(draftRoof) : null);
+            } else {
+              setDrawingMetrics(null);
+            }
             if (!draftPolygonRef.current) {
               draftPolygonRef.current = new maps.Polygon({
                 map,
@@ -332,6 +404,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       cancelled = true;
       mapListenersRef.current.forEach((listener) => listener.remove());
       mapListenersRef.current = [];
+      removeRoofListeners();
       markersRef.current.forEach((marker) => marker.setMap(null));
       markersRef.current = [];
       roofPolygonRef.current?.setMap(null);
@@ -341,7 +414,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       mapRef.current = null;
       setMapReady(false);
     };
-  }, [googleMapsKey, mapContainerEl]);
+  }, [googleMapsKey, mapContainerEl, removeRoofListeners, renderRoofPolygon]);
 
   useEffect(() => {
     if (!mapReady || !mapRef.current || !window.google?.maps) return;
@@ -392,6 +465,13 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     () => state.obstructions.find((item) => item.id === state.selectedObstructionId) ?? null,
     [state.obstructions, state.selectedObstructionId]
   );
+  const displayedMetrics = drawingRoof ? drawingMetrics : state.metrics;
+  const canUndo = drawingRoof
+    ? drawingPointCount > 0
+    : historyVersion >= 0 && undoStackRef.current.length > 0;
+  const canRedo = drawingRoof
+    ? drawingRedoRef.current.length > 0
+    : historyVersion >= 0 && redoStackRef.current.length > 0;
 
   const beginObstruction = useCallback((type: ObstructionType) => {
     mapRef.current?.set("sol52DrawingRoof", false);
@@ -409,10 +489,25 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     draftPolygonRef.current?.setMap(null);
     draftPolygonRef.current = null;
     drawingPointsRef.current = [];
+    drawingRedoRef.current = [];
     setDrawingPointCount(0);
+    setDrawingMetrics(null);
     setDrawingRoof(true);
     mapRef.current.set("sol52DrawingRoof", true);
     mapRef.current.setOptions({ draggableCursor: "crosshair" });
+  }, []);
+
+  const cancelRoofDrawing = useCallback(() => {
+    draftPolygonRef.current?.setMap(null);
+    draftPolygonRef.current = null;
+    drawingPointsRef.current = [];
+    drawingRedoRef.current = [];
+    setDrawingPointCount(0);
+    setDrawingMetrics(null);
+    setDrawingRoof(false);
+    roofPolygonRef.current?.setEditable(!roofLockedRef.current);
+    mapRef.current?.set("sol52DrawingRoof", false);
+    mapRef.current?.setOptions({ draggableCursor: null });
   }, []);
 
   const finishRoofDrawing = useCallback(() => {
@@ -424,55 +519,110 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       return;
     }
 
-    roofPolygonRef.current?.setMap(null);
     draftPolygonRef.current?.setMap(null);
     draftPolygonRef.current = null;
-    const polygon = new google.maps.Polygon({
-      map,
-      paths: points,
-      editable: true,
-      draggable: false,
-      strokeColor: "#0f766e",
-      strokeOpacity: 1,
-      strokeWeight: 3,
-      fillColor: "#14b8a6",
-      fillOpacity: 0.24,
-    });
-    roofPolygonRef.current = polygon;
+    const coordinates = points.map((point) => [point.lng, point.lat]);
+    coordinates.push([...coordinates[0]]);
+    const roof = normalizeRoofPolygon({ type: "Polygon", coordinates: [coordinates] });
+    if (!roof) return;
 
-    const sync = () => {
-      const coordinates = polygon.getPath().getArray().map((point) => [point.lng(), point.lat()]);
-      if (coordinates.length < 3) return;
-      coordinates.push([...coordinates[0]]);
-      const roof = normalizeRoofPolygon({ type: "Polygon", coordinates: [coordinates] });
-      if (roof) dispatch({ type: "COMMIT_POLYGON", roof, metrics: calculateRoofMetrics(roof) });
-    };
-    const path = polygon.getPath();
-    mapListenersRef.current.push(
-      google.maps.event.addListener(path, "set_at", sync),
-      google.maps.event.addListener(path, "insert_at", sync),
-      google.maps.event.addListener(path, "remove_at", sync)
-    );
-    sync();
+    roofLockedRef.current = false;
+    setRoofLocked(false);
+    commitRoof(roof);
+    renderRoofPolygon(roof);
     drawingPointsRef.current = [];
+    drawingRedoRef.current = [];
     setDrawingPointCount(0);
+    setDrawingMetrics(null);
     setDrawingRoof(false);
     map.set("sol52DrawingRoof", false);
     map.setOptions({ draggableCursor: null });
-  }, [toast]);
+    toast.success("Roof completed", "Adjust corners if needed, then lock the roof.");
+  }, [commitRoof, renderRoofPolygon, toast]);
 
   const clearRoof = useCallback(() => {
+    removeRoofListeners();
     roofPolygonRef.current?.setMap(null);
     roofPolygonRef.current = null;
     draftPolygonRef.current?.setMap(null);
     draftPolygonRef.current = null;
     drawingPointsRef.current = [];
+    drawingRedoRef.current = [];
     setDrawingPointCount(0);
+    setDrawingMetrics(null);
     setDrawingRoof(false);
     mapRef.current?.set("sol52DrawingRoof", false);
     mapRef.current?.setOptions({ draggableCursor: null });
-    dispatch({ type: "DELETE_POLYGON" });
+    commitRoof(null);
+  }, [commitRoof, removeRoofListeners]);
+
+  const updateDraftAfterHistory = useCallback(() => {
+    const points = drawingPointsRef.current;
+    setDrawingPointCount(points.length);
+    draftPolygonRef.current?.setPath(points);
+    const coordinates = points.map((point) => [point.lng, point.lat]);
+    if (coordinates.length < 3) {
+      setDrawingMetrics(null);
+      return;
+    }
+    coordinates.push([...coordinates[0]]);
+    const roof = normalizeRoofPolygon({ type: "Polygon", coordinates: [coordinates] });
+    setDrawingMetrics(roof ? calculateRoofMetrics(roof) : null);
   }, []);
+
+  const undoRoof = useCallback(() => {
+    if (drawingRoof) {
+      const point = drawingPointsRef.current.pop();
+      if (!point) return;
+      drawingRedoRef.current.push(point);
+      updateDraftAfterHistory();
+      return;
+    }
+    const previous = undoStackRef.current.pop();
+    if (previous === undefined) return;
+    redoStackRef.current.push(
+      currentRoofRef.current ? structuredClone(currentRoofRef.current) : null
+    );
+    applyingHistoryRef.current = true;
+    commitRoof(previous ? structuredClone(previous) : null, false);
+    renderRoofPolygon(previous);
+    applyingHistoryRef.current = false;
+    setHistoryVersion((value) => value + 1);
+  }, [commitRoof, drawingRoof, renderRoofPolygon, updateDraftAfterHistory]);
+
+  const redoRoof = useCallback(() => {
+    if (drawingRoof) {
+      const point = drawingRedoRef.current.pop();
+      if (!point) return;
+      drawingPointsRef.current.push(point);
+      updateDraftAfterHistory();
+      return;
+    }
+    const next = redoStackRef.current.pop();
+    if (next === undefined) return;
+    undoStackRef.current.push(
+      currentRoofRef.current ? structuredClone(currentRoofRef.current) : null
+    );
+    applyingHistoryRef.current = true;
+    commitRoof(next ? structuredClone(next) : null, false);
+    renderRoofPolygon(next);
+    applyingHistoryRef.current = false;
+    setHistoryVersion((value) => value + 1);
+  }, [commitRoof, drawingRoof, renderRoofPolygon, updateDraftAfterHistory]);
+
+  const toggleRoofLock = useCallback(() => {
+    if (!roofPolygonRef.current) return;
+    const nextLocked = !roofLockedRef.current;
+    roofLockedRef.current = nextLocked;
+    setRoofLocked(nextLocked);
+    roofPolygonRef.current.setEditable(!nextLocked);
+    toast.success(
+      nextLocked ? "Roof locked" : "Roof unlocked",
+      nextLocked
+        ? "Corners are protected from accidental changes."
+        : "Drag the corner handles to refine the roof."
+    );
+  }, [toast]);
 
   const locateMe = useCallback(() => {
     if (!navigator.geolocation) {
@@ -749,31 +899,56 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           <div className="border-t border-slate-100 pt-3 dark:border-white/10">
             <p className="text-[11px] font-extrabold uppercase tracking-wide text-slate-500">Drawing</p>
             <div className="mt-2 grid grid-cols-2 gap-2">
-              <Button
-                variant={drawingRoof ? "default" : "outline"}
-                size="sm"
-                onClick={drawingRoof ? finishRoofDrawing : beginRoofDrawing}
-              >
-                <TriangleRight className="mr-1 h-4 w-4" />
-                {drawingRoof ? `Finish (${drawingPointCount})` : state.roof ? "Redraw roof" : "Draw roof"}
-              </Button>
+              {drawingRoof ? (
+                <>
+                  <Button size="sm" onClick={finishRoofDrawing} disabled={drawingPointCount < 3}>
+                    <TriangleRight className="mr-1 h-4 w-4" />
+                    Finish ({drawingPointCount})
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={cancelRoofDrawing}>
+                    Cancel
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="outline" size="sm" onClick={beginRoofDrawing}>
+                    <TriangleRight className="mr-1 h-4 w-4" />
+                    {state.roof ? "Redraw roof" : "Draw roof"}
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={clearRoof} disabled={!state.roof}>
+                    <Trash2 className="mr-1 h-4 w-4" /> Clear
+                  </Button>
+                </>
+              )}
               <Button
                 variant="outline"
                 size="sm"
-                onClick={clearRoof}
+                className="col-span-2"
+                onClick={toggleRoofLock}
+                disabled={!state.roof || drawingRoof}
               >
-                <Trash2 className="mr-1 h-4 w-4" /> Clear
+                {roofLocked ? (
+                  <><Unlock className="mr-1 h-4 w-4" /> Unlock to edit corners</>
+                ) : (
+                  <><Lock className="mr-1 h-4 w-4" /> Lock roof</>
+                )}
               </Button>
-              <Button variant="outline" size="sm" disabled title="Undo adapter arrives in next Phase 1 increment">
+              <Button variant="outline" size="sm" disabled={!canUndo} onClick={undoRoof}>
                 <Undo2 className="mr-1 h-4 w-4" /> Undo
               </Button>
-              <Button variant="outline" size="sm" disabled title="Redo adapter arrives in next Phase 1 increment">
+              <Button variant="outline" size="sm" disabled={!canRedo} onClick={redoRoof}>
                 <Redo2 className="mr-1 h-4 w-4" /> Redo
               </Button>
             </div>
             {drawingRoof ? (
               <p className="mt-2 rounded-lg bg-sky-50 px-2 py-1.5 text-[10px] font-semibold text-sky-800">
-                Click each roof corner on Google satellite view, then press Finish.
+                Click each roof corner, use Undo for mistakes, then press Finish.
+              </p>
+            ) : state.roof ? (
+              <p className="mt-2 text-[10px] font-semibold text-slate-500">
+                {roofLocked
+                  ? "Roof is locked. Unlock it before dragging corners."
+                  : "Drag the white corner handles, then lock the roof."}
               </p>
             ) : null}
           </div>
@@ -837,10 +1012,10 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             <p className="text-xs font-extrabold text-slate-900 dark:text-white">Live geometry</p>
             <div className="mt-3 grid grid-cols-2 gap-2">
               {[
-                ["Roof area", state.metrics ? `${Math.round(state.metrics.areaSqft).toLocaleString("en-IN")} sq.ft` : "—"],
-                ["Area", state.metrics ? `${Math.round(state.metrics.areaSqm).toLocaleString("en-IN")} m²` : "—"],
-                ["Perimeter", state.metrics ? `${state.metrics.perimeterM.toFixed(1)} m` : "—"],
-                ["Azimuth", state.metrics?.azimuthDeg != null ? `${state.metrics.azimuthDeg.toFixed(0)}°` : "—"],
+                ["Roof area", displayedMetrics ? `${Math.round(displayedMetrics.areaSqft).toLocaleString("en-IN")} sq.ft` : "—"],
+                ["Area", displayedMetrics ? `${Math.round(displayedMetrics.areaSqm).toLocaleString("en-IN")} m²` : "—"],
+                ["Perimeter", displayedMetrics ? `${displayedMetrics.perimeterM.toFixed(1)} m` : "—"],
+                ["Azimuth", displayedMetrics?.azimuthDeg != null ? `${displayedMetrics.azimuthDeg.toFixed(0)}°` : "—"],
               ].map(([label, value]) => (
                 <div key={label} className="rounded-lg bg-slate-50 p-2 dark:bg-white/[0.04]">
                   <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">{label}</p>
