@@ -116,6 +116,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const redoStackRef = useRef<Array<RoofPolygon | null>>([]);
   const applyingHistoryRef = useRef(false);
   const roofLockedRef = useRef(true);
+  /** Shared click handler so clicks on the roof polygon also place obstructions / add points. */
+  const studioClickRef = useRef<((latLng: google.maps.LatLng) => void) | null>(null);
   /** Set when the map panel mounts — avoids init racing the loading spinner unmount. */
   const [mapContainerEl, setMapContainerEl] = useState<HTMLDivElement | null>(null);
 
@@ -266,6 +268,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         google.maps.event.addListener(path, "set_at", () => syncRoofPolygon(polygon)),
         google.maps.event.addListener(path, "insert_at", () => syncRoofPolygon(polygon)),
         google.maps.event.addListener(path, "remove_at", () => syncRoofPolygon(polygon)),
+        google.maps.event.addListener(polygon, "click", (event: google.maps.PolyMouseEvent) => {
+          if (event.latLng) studioClickRef.current?.(event.latLng);
+        }),
       ];
     },
     [removeRoofListeners, syncRoofPolygon]
@@ -325,6 +330,52 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         });
         mapRef.current = map;
 
+        studioClickRef.current = (latLng: google.maps.LatLng) => {
+          const type = addObstructionRef.current;
+          if (type) {
+            dispatch({
+              type: "PLACE_OBSTRUCTION",
+              obstruction: newObstruction(type, latLng.lng(), latLng.lat()),
+            });
+            addObstructionRef.current = null;
+            setPendingObstruction(null);
+            return;
+          }
+          const isDrawing = map.get("sol52DrawingRoof") === true;
+          if (!isDrawing) return;
+          drawingPointsRef.current = [
+            ...drawingPointsRef.current,
+            { lat: latLng.lat(), lng: latLng.lng() },
+          ];
+          drawingRedoRef.current = [];
+          setDrawingPointCount(drawingPointsRef.current.length);
+          const closedPoints = drawingPointsRef.current.map((point) => [point.lng, point.lat]);
+          if (closedPoints.length >= 3) {
+            closedPoints.push([...closedPoints[0]]);
+            const draftRoof = normalizeRoofPolygon({
+              type: "Polygon",
+              coordinates: [closedPoints],
+            });
+            setDrawingMetrics(draftRoof ? calculateRoofMetrics(draftRoof) : null);
+          } else {
+            setDrawingMetrics(null);
+          }
+          if (!draftPolygonRef.current) {
+            draftPolygonRef.current = new maps.Polygon({
+              map,
+              paths: drawingPointsRef.current,
+              clickable: false,
+              strokeColor: "#0284c7",
+              strokeOpacity: 1,
+              strokeWeight: 3,
+              fillColor: "#38bdf8",
+              fillOpacity: 0.2,
+            });
+          } else {
+            draftPolygonRef.current.setPath(drawingPointsRef.current);
+          }
+        };
+
         if (initialRoofRef.current) {
           const path = initialRoofRef.current.coordinates[0].slice(0, -1).map(([lng, lat]) => ({ lat, lng }));
           renderRoofPolygon(initialRoofRef.current);
@@ -335,51 +386,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
 
         mapListenersRef.current.push(
           map.addListener("click", (event: google.maps.MapMouseEvent) => {
-            const latLng = event.latLng;
-            if (!latLng) return;
-            const type = addObstructionRef.current;
-            if (type) {
-              dispatch({
-                type: "PLACE_OBSTRUCTION",
-                obstruction: newObstruction(type, latLng.lng(), latLng.lat()),
-              });
-              addObstructionRef.current = null;
-              setPendingObstruction(null);
-              return;
-            }
-            if (!drawingPointsRef.current) return;
-            const isDrawing = map.get("sol52DrawingRoof") === true;
-            if (!isDrawing) return;
-            drawingPointsRef.current = [
-              ...drawingPointsRef.current,
-              { lat: latLng.lat(), lng: latLng.lng() },
-            ];
-            drawingRedoRef.current = [];
-            setDrawingPointCount(drawingPointsRef.current.length);
-            const closedPoints = drawingPointsRef.current.map((point) => [point.lng, point.lat]);
-            if (closedPoints.length >= 3) {
-              closedPoints.push([...closedPoints[0]]);
-              const draftRoof = normalizeRoofPolygon({
-                type: "Polygon",
-                coordinates: [closedPoints],
-              });
-              setDrawingMetrics(draftRoof ? calculateRoofMetrics(draftRoof) : null);
-            } else {
-              setDrawingMetrics(null);
-            }
-            if (!draftPolygonRef.current) {
-              draftPolygonRef.current = new maps.Polygon({
-                map,
-                paths: drawingPointsRef.current,
-                strokeColor: "#0284c7",
-                strokeOpacity: 1,
-                strokeWeight: 3,
-                fillColor: "#38bdf8",
-                fillOpacity: 0.2,
-              });
-            } else {
-              draftPolygonRef.current.setPath(drawingPointsRef.current);
-            }
+            if (event.latLng) studioClickRef.current?.(event.latLng);
           }),
           map.addListener("idle", () => {
             const next = map.getCenter();
@@ -411,6 +418,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       roofPolygonRef.current = null;
       draftPolygonRef.current?.setMap(null);
       draftPolygonRef.current = null;
+      studioClickRef.current = null;
       mapRef.current = null;
       setMapReady(false);
     };
