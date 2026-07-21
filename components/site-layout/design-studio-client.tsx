@@ -72,6 +72,19 @@ const OBSTRUCTION_LABELS: Record<ObstructionType, string> = {
   other: "Other",
 };
 
+/** Sensible default footprint radius so shading circles appear immediately. */
+const DEFAULT_OBSTRUCTION_RADIUS_FT: Record<ObstructionType, number> = {
+  water_tank: 4,
+  tree: 10,
+  chimney: 2,
+  parapet: 0,
+  other: 0,
+};
+
+const FT_TO_M = 0.3048;
+/** Click within this many screen pixels of the first corner closes the polygon. */
+const SNAP_CLOSE_PX = 14;
+
 const ROOF_TYPES = [
   { value: "", label: "Select roof type" },
   { value: "rcc", label: "Flat RCC" },
@@ -94,6 +107,7 @@ function newObstruction(
     lng,
     lat,
     height_ft: 0,
+    radius_ft: DEFAULT_OBSTRUCTION_RADIUS_FT[type],
     label: null,
   };
 }
@@ -106,6 +120,11 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const draftLineRef = useRef<google.maps.Polyline | null>(null);
   const draftMarkersRef = useRef<google.maps.Marker[]>([]);
   const markersRef = useRef<google.maps.Marker[]>([]);
+  const circlesRef = useRef<google.maps.Circle[]>([]);
+  /** Latest finish handler for map gestures (snap/double-click/right-click). */
+  const finishDrawingRef = useRef<(() => void) | null>(null);
+  /** Latest corner-delete handler for draft corner markers. */
+  const draftCornerDeleteRef = useRef<((index: number) => void) | null>(null);
   const mapListenersRef = useRef<google.maps.MapsEventListener[]>([]);
   const roofListenersRef = useRef<google.maps.MapsEventListener[]>([]);
   const drawingPointsRef = useRef<google.maps.LatLngLiteral[]>([]);
@@ -282,23 +301,35 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     }
 
     draftMarkersRef.current.forEach((marker) => marker.setMap(null));
-    draftMarkersRef.current = points.map(
-      (point, index) =>
-        new google.maps.Marker({
-          map,
-          position: point,
-          clickable: false,
-          zIndex: 4,
-          icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: index === 0 ? 6 : 4,
-            fillColor: index === 0 ? "#f43f5e" : "#ffffff",
-            fillOpacity: 1,
-            strokeColor: "#f43f5e",
-            strokeWeight: 2,
-          },
-        })
-    );
+    draftMarkersRef.current = points.map((point, index) => {
+      const marker = new google.maps.Marker({
+        map,
+        position: point,
+        zIndex: 4,
+        title:
+          index === 0 && points.length >= 3
+            ? "Click here to close the roof · right-click to remove"
+            : "Right-click to remove this corner",
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: index === 0 ? 6 : 4,
+          fillColor: index === 0 ? "#f43f5e" : "#ffffff",
+          fillOpacity: 1,
+          strokeColor: "#f43f5e",
+          strokeWeight: 2,
+        },
+      });
+      marker.addListener("click", () => {
+        // Clicking the first corner closes the polygon; other corners just forward the click.
+        if (index === 0 && drawingPointsRef.current.length >= 3) {
+          finishDrawingRef.current?.();
+        }
+      });
+      marker.addListener("contextmenu", () => {
+        draftCornerDeleteRef.current?.(index);
+      });
+      return marker;
+    });
   }, [clearDraftOverlay]);
 
   const commitRoof = useCallback((roof: RoofPolygon | null, recordHistory = true) => {
@@ -344,6 +375,12 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         google.maps.event.addListener(path, "remove_at", () => syncRoofPolygon(polygon)),
         google.maps.event.addListener(polygon, "click", (event: google.maps.PolyMouseEvent) => {
           if (event.latLng) studioClickRef.current?.(event.latLng);
+        }),
+        google.maps.event.addListener(polygon, "contextmenu", (event: google.maps.PolyMouseEvent) => {
+          if (event.vertex == null) return;
+          const path = polygon.getPath();
+          if (path.getLength() <= 3) return;
+          path.removeAt(event.vertex);
         }),
       ];
     },
@@ -417,6 +454,20 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           }
           const isDrawing = map.get("sol52DrawingRoof") === true;
           if (!isDrawing) return;
+          const points = drawingPointsRef.current;
+          if (points.length >= 3) {
+            const first = points[0];
+            const zoom = map.getZoom() ?? 20;
+            const metersPerPixel =
+              (156543.03392 * Math.cos((first.lat * Math.PI) / 180)) / 2 ** zoom;
+            const dx =
+              (latLng.lng() - first.lng) * 111_320 * Math.cos((first.lat * Math.PI) / 180);
+            const dy = (latLng.lat() - first.lat) * 110_540;
+            if (Math.hypot(dx, dy) <= metersPerPixel * SNAP_CLOSE_PX) {
+              finishDrawingRef.current?.();
+              return;
+            }
+          }
           drawingPointsRef.current = [
             ...drawingPointsRef.current,
             { lat: latLng.lat(), lng: latLng.lng() },
@@ -449,6 +500,16 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           map.addListener("click", (event: google.maps.MapMouseEvent) => {
             if (event.latLng) studioClickRef.current?.(event.latLng);
           }),
+          map.addListener("dblclick", () => {
+            if (map.get("sol52DrawingRoof") === true && drawingPointsRef.current.length >= 3) {
+              finishDrawingRef.current?.();
+            }
+          }),
+          map.addListener("contextmenu", () => {
+            if (map.get("sol52DrawingRoof") === true && drawingPointsRef.current.length >= 3) {
+              finishDrawingRef.current?.();
+            }
+          }),
           map.addListener("idle", () => {
             const next = map.getCenter();
             if (next) setCenter([next.lng(), next.lat()]);
@@ -475,6 +536,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       removeRoofListeners();
       markersRef.current.forEach((marker) => marker.setMap(null));
       markersRef.current = [];
+      circlesRef.current.forEach((circle) => circle.setMap(null));
+      circlesRef.current = [];
       roofPolygonRef.current?.setMap(null);
       roofPolygonRef.current = null;
       clearDraftOverlay();
@@ -487,7 +550,26 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   useEffect(() => {
     if (!mapReady || !mapRef.current || !window.google?.maps) return;
     markersRef.current.forEach((marker) => marker.setMap(null));
+    circlesRef.current.forEach((circle) => circle.setMap(null));
+    circlesRef.current = [];
     markersRef.current = state.obstructions.map((obstruction) => {
+      const radiusFt = obstruction.radius_ft ?? 0;
+      if (radiusFt > 0) {
+        circlesRef.current.push(
+          new google.maps.Circle({
+            map: mapRef.current!,
+            center: { lat: obstruction.lat, lng: obstruction.lng },
+            radius: radiusFt * FT_TO_M,
+            clickable: false,
+            strokeColor: "#d97706",
+            strokeOpacity: 0.9,
+            strokeWeight: 1.5,
+            fillColor: "#f59e0b",
+            fillOpacity: 0.16,
+            zIndex: 5,
+          })
+        );
+      }
       const isSelected = obstruction.id === state.selectedObstructionId;
       const marker = new google.maps.Marker({
         map: mapRef.current!,
@@ -548,6 +630,13 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     [state.obstructions, state.selectedObstructionId]
   );
   const displayedMetrics = drawingRoof ? drawingMetrics : state.metrics;
+  const areaWarning = displayedMetrics
+    ? displayedMetrics.areaSqft < 100
+      ? "Roof area is very small — zoom in and check the corners."
+      : displayedMetrics.areaSqft > 50_000
+        ? "Roof area looks too large — verify the polygon corners."
+        : null
+    : null;
   const canUndo = drawingRoof
     ? drawingPointCount > 0
     : historyVersion >= 0 && undoStackRef.current.length > 0;
@@ -575,7 +664,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     setDrawingMetrics(null);
     setDrawingRoof(true);
     mapRef.current.set("sol52DrawingRoof", true);
-    mapRef.current.setOptions({ draggableCursor: "crosshair" });
+    mapRef.current.setOptions({ draggableCursor: "crosshair", disableDoubleClickZoom: true });
   }, [clearDraftOverlay]);
 
   const cancelRoofDrawing = useCallback(() => {
@@ -587,7 +676,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     setDrawingRoof(false);
     roofPolygonRef.current?.setEditable(!roofLockedRef.current);
     mapRef.current?.set("sol52DrawingRoof", false);
-    mapRef.current?.setOptions({ draggableCursor: null });
+    mapRef.current?.setOptions({ draggableCursor: null, disableDoubleClickZoom: false });
   }, [clearDraftOverlay]);
 
   const finishRoofDrawing = useCallback(() => {
@@ -615,7 +704,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     setDrawingMetrics(null);
     setDrawingRoof(false);
     map.set("sol52DrawingRoof", false);
-    map.setOptions({ draggableCursor: null });
+    map.setOptions({ draggableCursor: null, disableDoubleClickZoom: false });
     toast.success("Roof completed", "Adjust corners if needed, then lock the roof.");
   }, [clearDraftOverlay, commitRoof, renderRoofPolygon, toast]);
 
@@ -630,7 +719,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     setDrawingMetrics(null);
     setDrawingRoof(false);
     mapRef.current?.set("sol52DrawingRoof", false);
-    mapRef.current?.setOptions({ draggableCursor: null });
+    mapRef.current?.setOptions({ draggableCursor: null, disableDoubleClickZoom: false });
     commitRoof(null);
   }, [clearDraftOverlay, commitRoof, removeRoofListeners]);
 
@@ -687,6 +776,67 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     applyingHistoryRef.current = false;
     setHistoryVersion((value) => value + 1);
   }, [commitRoof, drawingRoof, renderRoofPolygon, updateDraftAfterHistory]);
+
+  useEffect(() => {
+    finishDrawingRef.current = finishRoofDrawing;
+  }, [finishRoofDrawing]);
+
+  useEffect(() => {
+    draftCornerDeleteRef.current = (index: number) => {
+      if (mapRef.current?.get("sol52DrawingRoof") !== true) return;
+      if (index < 0 || index >= drawingPointsRef.current.length) return;
+      drawingPointsRef.current.splice(index, 1);
+      drawingRedoRef.current = [];
+      updateDraftAfterHistory();
+    };
+  }, [updateDraftAfterHistory]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      if (event.key === "Enter" && drawingRoof) {
+        event.preventDefault();
+        finishRoofDrawing();
+        return;
+      }
+      if (event.key === "Escape") {
+        if (drawingRoof) {
+          event.preventDefault();
+          cancelRoofDrawing();
+        } else if (pendingObstruction) {
+          event.preventDefault();
+          addObstructionRef.current = null;
+          setPendingObstruction(null);
+        }
+        return;
+      }
+      const isModifier = event.ctrlKey || event.metaKey;
+      if (isModifier && !event.shiftKey && event.key.toLowerCase() === "z") {
+        event.preventDefault();
+        undoRoof();
+        return;
+      }
+      if (
+        isModifier &&
+        (event.key.toLowerCase() === "y" ||
+          (event.shiftKey && event.key.toLowerCase() === "z"))
+      ) {
+        event.preventDefault();
+        redoRoof();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [cancelRoofDrawing, drawingRoof, finishRoofDrawing, pendingObstruction, redoRoof, undoRoof]);
 
   const toggleRoofLock = useCallback(() => {
     if (!roofPolygonRef.current) return;
@@ -1020,13 +1170,14 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             </div>
             {drawingRoof ? (
               <p className="mt-2 rounded-lg bg-rose-50 px-2 py-1.5 text-[10px] font-semibold text-rose-800">
-                Dashed line follows your clicks. Tap each roof corner, Undo to remove the last, then Finish.
+                Click each corner — dashed line follows. Finish: click the first dot, double-click,
+                right-click, or Enter. Right-click a dot removes it. Esc cancels, Ctrl+Z undo.
               </p>
             ) : state.roof ? (
               <p className="mt-2 text-[10px] font-semibold text-slate-500">
                 {roofLocked
                   ? "Roof is locked. Unlock it before dragging corners."
-                  : "Drag the white corner handles, then lock the roof."}
+                  : "Drag the white handles to adjust. Right-click a corner handle to delete it, then lock the roof."}
               </p>
             ) : null}
           </div>
@@ -1103,6 +1254,11 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                 </div>
               ))}
             </div>
+            {areaWarning ? (
+              <p className="mt-2 rounded-lg bg-amber-50 px-2 py-1.5 text-[10px] font-semibold text-amber-800">
+                {areaWarning}
+              </p>
+            ) : null}
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-slate-900">
@@ -1133,25 +1289,49 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             </div>
             {selectedObstruction ? (
               <div className="mt-3 border-t border-slate-100 pt-3 dark:border-white/10">
-                <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
-                  Height (ft)
-                  <input
-                    type="number"
-                    min={0}
-                    max={500}
-                    value={selectedObstruction.height_ft}
-                    onChange={(event) =>
-                      dispatch({
-                        type: "UPDATE_OBSTRUCTION",
-                        obstruction: {
-                          ...selectedObstruction,
-                          height_ft: Math.max(0, Number(event.target.value) || 0),
-                        },
-                      })
-                    }
-                    className="mt-1 w-full rounded-lg border border-slate-200 px-2.5 py-2 text-xs dark:border-white/10 dark:bg-slate-950"
-                  />
-                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                    Height (ft)
+                    <input
+                      type="number"
+                      min={0}
+                      max={500}
+                      value={selectedObstruction.height_ft}
+                      onChange={(event) =>
+                        dispatch({
+                          type: "UPDATE_OBSTRUCTION",
+                          obstruction: {
+                            ...selectedObstruction,
+                            height_ft: Math.max(0, Number(event.target.value) || 0),
+                          },
+                        })
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 px-2.5 py-2 text-xs dark:border-white/10 dark:bg-slate-950"
+                    />
+                  </label>
+                  <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                    Radius (ft)
+                    <input
+                      type="number"
+                      min={0}
+                      max={500}
+                      value={selectedObstruction.radius_ft ?? 0}
+                      onChange={(event) =>
+                        dispatch({
+                          type: "UPDATE_OBSTRUCTION",
+                          obstruction: {
+                            ...selectedObstruction,
+                            radius_ft: Math.max(0, Number(event.target.value) || 0),
+                          },
+                        })
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 px-2.5 py-2 text-xs dark:border-white/10 dark:bg-slate-950"
+                    />
+                  </label>
+                </div>
+                <p className="mt-1 text-[10px] text-slate-500">
+                  Radius shows the footprint circle on the map. Drag the marker to move it.
+                </p>
                 <Button
                   variant="outline"
                   size="sm"

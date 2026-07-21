@@ -35,6 +35,7 @@ export const siteObstructionSchema = z.object({
   lng: z.number().min(-180).max(180),
   lat: z.number().min(-90).max(90),
   height_ft: z.number().nonnegative().max(500).default(0),
+  radius_ft: z.number().nonnegative().max(500).nullish(),
   label: z.string().max(120).optional().nullable(),
 });
 
