@@ -1,0 +1,24 @@
+---
+description: Design Studio and SLD stay separate from the customer proposal product surface (subscription-aware).
+alwaysApply: true
+---
+
+# Design / SLD ≠ Proposal surface
+
+## Locked product decision (2026-07-21)
+
+- **Do NOT** embed Design Studio layout, roof map, panel placement, or SLD into the customer **proposal** experience (tabs, share link, or proposal PDF blocks) as the long-term default.
+- Proposals stay a **simple commercial offer** (price, savings, terms, branding). Keep them easy for installers who only sell quotes.
+- **Design** and **SLD** are separate product capabilities. They may sit under Project / Design Hub, with their **own** share links and **separate** print/PDF outputs.
+- Future **subscription plans / feature categories** will turn Design and/or SLD on or off. Coupling them into proposal would force complexity onto every tier and every “proposal-only” user.
+
+## When building later
+
+- Prefer: Proposal link (quote) + optional Design pack link + optional SLD pack link.
+- Optional cross-links from Project Hub are fine; do not require Design/SLD UI inside proposal presets/renderers.
+- Pricing snapshots stay on the proposal; design versions stay on the project (`project_site_layouts` / panel layouts / SLD assets).
+- If a roadmap item says “add site layout block to proposal PDF”, treat it as superseded by this rule unless the user explicitly re-opens the decision.
+
+## Remind the user
+
+When starting Design↔customer delivery, Phase 5 integration, or subscription feature gating work, remind: Design and SLD remain separate from proposal; proposal stays simple and subscription-safe.

@@ -144,13 +144,21 @@ percentages and roof-level shade-free area.
 
 ## 6. Phase 5 — Workflow Integration & Output
 
+> **Product lock (2026-07-21):** Design and SLD stay **outside** the customer proposal surface.
+> Proposals remain a simple commercial offer for proposal-only / lower subscription tiers.
+> Design + SLD are separate, subscription-gated capabilities with their own share links and print/PDF.
+> See `.cursor/rules/design-sld-separate-from-proposal.mdc`.
+
 - Map snapshot (`map.getCanvas().toDataURL()`) with panel layout overlay → Supabase storage.
 - Project Hub Design tab summary card (thumbnail + metrics).
-- Proposal PDF block: "Site layout & shadow" (panel diagram + per-panel shade info + disclaimer).
-- Survey roof area/type import; BOM panel/inverter sync; proposal system-size/panel-count sync.
+- **Separate Design pack** share link + print/PDF (not a proposal tab / proposal PDF block).
+- **Separate SLD pack** share link + print/PDF when SLD ships (subscription-gated).
+- Optional Project Hub cross-links between proposal and design; do not require Design/SLD inside proposal renderers.
+- Survey roof area/type import; BOM panel/inverter sync; optional **installer-triggered** proposal size revise (new pricing snapshot) — not silent rewrite of frozen offers.
 - Design task completion, customer design sign-off and installation handover package.
 - Version history UI.
 - Phone light-edit adapter finalized.
+- Feature flags / plan categories: Proposal-only vs Design-enabled vs SLD-enabled.
 
 ---
 
