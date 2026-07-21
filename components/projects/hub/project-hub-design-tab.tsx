@@ -262,7 +262,7 @@ function DesignEmptyState({ project }: { project: ProjectListItem }) {
         </p>
         <p className="mx-auto mt-1 max-w-md text-[11px] leading-snug text-slate-500 dark:text-slate-400 sm:text-xs sm:leading-relaxed">
           Start with the 2D roof layout, capture roof area and obstructions, then save the first
-          site-layout version. Panel placement follows in the next approved phase.
+          site-layout version. Use Auto layout in Design Studio to place panels on the roof.
         </p>
         {capacityHint || project.panel_brand || project.inverter_brand ? (
           <div className="mx-auto mt-4 max-w-sm rounded-lg border border-slate-100 bg-slate-50/80 px-3 py-2 text-left text-xs dark:border-white/5 dark:bg-white/[0.04]">

@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   Cloud,
   Crosshair,
+  Grid2X2,
   ImagePlus,
   LocateFixed,
   Lock,
@@ -27,12 +28,24 @@ import {
 } from "@/lib/site-layout-gps";
 import { loadGoogleMaps } from "@/lib/google-maps-loader";
 import {
+  DEFAULT_PANEL_MODULE,
+  PANEL_MODULE_CATALOG,
+  panelModuleLabel,
+} from "@/lib/panel-module-catalog";
+import type {
+  PanelOrientation,
+  PanelSpec,
+  PlacedPanel,
+  ProjectPanelLayout,
+} from "@/lib/panel-layout";
+import {
   calculateRoofMetrics,
   normalizeRoofGeometry,
   normalizeRoofPolygon,
   polygonsToRoofGeometry,
   roofGeometryToPolygons,
 } from "./core/geometry";
+import { autoPackPanels, computePanelCoverageMetrics } from "./core/panel-placement";
 import {
   EMPTY_SITE_LAYOUT_STATE,
   siteLayoutReducer,
@@ -129,6 +142,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const draftMarkersRef = useRef<google.maps.Marker[]>([]);
   const markersRef = useRef<google.maps.Marker[]>([]);
   const circlesRef = useRef<google.maps.Circle[]>([]);
+  const panelPolygonsRef = useRef<google.maps.Polygon[]>([]);
+  const panelListenersRef = useRef<google.maps.MapsEventListener[]>([]);
   /** Latest finish handler for map gestures (snap/double-click/right-click). */
   const finishDrawingRef = useRef<(() => void) | null>(null);
   /** Latest corner-delete handler for draft corner markers. */
@@ -175,6 +190,18 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const [roofLocked, setRoofLocked] = useState(true);
   const [activeRoofIndex, setActiveRoofIndex] = useState(0);
   const [historyVersion, setHistoryVersion] = useState(0);
+  const [panelSpec, setPanelSpec] = useState<PanelSpec>(DEFAULT_PANEL_MODULE);
+  const [panelOrientation, setPanelOrientation] = useState<Exclude<PanelOrientation, "east_west">>("portrait");
+  const [panelSetbackFt, setPanelSetbackFt] = useState(1.5);
+  const [placedPanels, setPlacedPanels] = useState<PlacedPanel[]>([]);
+  const [selectedPanelId, setSelectedPanelId] = useState<string | null>(null);
+  const [panelMetrics, setPanelMetrics] = useState({
+    remainingAreaSqft: 0,
+    coveragePct: 0,
+  });
+  const [panelDirty, setPanelDirty] = useState(false);
+  const [packing, setPacking] = useState(false);
+  const [currentPanelLayout, setCurrentPanelLayout] = useState<ProjectPanelLayout | null>(null);
   const photoInputRef = useRef<HTMLInputElement | null>(null);
 
   const googleMapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim() ?? "";
@@ -183,14 +210,16 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     let cancelled = false;
     void (async () => {
       try {
-        const [projectRes, surveyRes, layoutRes] = await Promise.all([
+        const [projectRes, surveyRes, layoutRes, panelRes] = await Promise.all([
           fetch(`/api/projects/${projectId}`, { cache: "no-store" }),
           fetch(`/api/projects/${projectId}/survey`, { cache: "no-store" }),
           fetch(`/api/projects/${projectId}/site-layout`, { cache: "no-store" }),
+          fetch(`/api/projects/${projectId}/panel-layout`, { cache: "no-store" }),
         ]);
         const projectJson = (await projectRes.json()) as ApiEnvelope<ProjectSummary>;
         const surveyJson = (await surveyRes.json()) as ApiEnvelope<SurveySummary | null>;
         const layoutJson = (await layoutRes.json()) as ApiEnvelope<ProjectSiteLayout | null>;
+        const panelJson = (await panelRes.json()) as ApiEnvelope<ProjectPanelLayout | null>;
         if (cancelled) return;
         if (!projectJson.ok || !projectJson.data) {
           throw new Error(projectJson.error || "Project could not be loaded.");
@@ -213,6 +242,34 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           roof = draft.roof;
           obstructions = draft.obstructions;
           setRoofType(draft.roof_type || surveyData?.roof_type || projectJson.data.roof_type || "");
+        }
+
+        const savedPanel = panelJson.ok ? panelJson.data ?? null : null;
+        setCurrentPanelLayout(savedPanel);
+        if (savedPanel) {
+          setPanelSpec(savedPanel.panel_spec);
+          setPanelOrientation(
+            savedPanel.orientation === "landscape" ? "landscape" : "portrait"
+          );
+          setPanelSetbackFt(savedPanel.setback_ft);
+          setPlacedPanels(savedPanel.panels_geojson);
+          setPanelMetrics({
+            remainingAreaSqft: savedPanel.remaining_area_sqft,
+            coveragePct: savedPanel.coverage_pct,
+          });
+          setPanelDirty(false);
+        } else if (draft?.panels?.length) {
+          if (draft.panel_spec) setPanelSpec(draft.panel_spec);
+          if (draft.panel_orientation === "landscape" || draft.panel_orientation === "portrait") {
+            setPanelOrientation(draft.panel_orientation);
+          }
+          if (typeof draft.panel_setback_ft === "number") setPanelSetbackFt(draft.panel_setback_ft);
+          setPlacedPanels(draft.panels);
+          setPanelMetrics({
+            remainingAreaSqft: draft.panel_remaining_area_sqft ?? 0,
+            coveragePct: draft.panel_coverage_pct ?? 0,
+          });
+          setPanelDirty(true);
         }
 
         const nextCenter: [number, number] = [
@@ -591,6 +648,10 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       markersRef.current = [];
       circlesRef.current.forEach((circle) => circle.setMap(null));
       circlesRef.current = [];
+      panelListenersRef.current.forEach((listener) => listener.remove());
+      panelListenersRef.current = [];
+      panelPolygonsRef.current.forEach((polygon) => polygon.setMap(null));
+      panelPolygonsRef.current = [];
       roofPolygonsRef.current.forEach((polygon) => polygon.setMap(null));
       roofPolygonsRef.current = [];
       roofPolygonRef.current = null;
@@ -665,7 +726,39 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   }, [mapReady, state.obstructions, state.selectedObstructionId]);
 
   useEffect(() => {
-    if (!state.dirty) return;
+    if (!mapReady || !mapRef.current || !window.google?.maps) return;
+    panelListenersRef.current.forEach((listener) => listener.remove());
+    panelListenersRef.current = [];
+    panelPolygonsRef.current.forEach((polygon) => polygon.setMap(null));
+    panelPolygonsRef.current = placedPanels.map((panel) => {
+      const selected = panel.id === selectedPanelId;
+      const path = panel.footprint_geojson.coordinates[0]
+        .slice(0, -1)
+        .map(([lng, lat]) => ({ lat, lng }));
+      const polygon = new google.maps.Polygon({
+        map: mapRef.current!,
+        paths: path,
+        clickable: true,
+        editable: false,
+        draggable: false,
+        strokeColor: selected ? "#1d4ed8" : panel.is_locked ? "#a16207" : "#1e3a8a",
+        strokeOpacity: 1,
+        strokeWeight: selected ? 2.5 : 1.5,
+        fillColor: selected ? "#3b82f6" : panel.is_locked ? "#f59e0b" : "#2563eb",
+        fillOpacity: selected ? 0.55 : 0.4,
+        zIndex: selected ? 8 : 6,
+      });
+      panelListenersRef.current.push(
+        google.maps.event.addListener(polygon, "click", () => {
+          setSelectedPanelId(panel.id);
+        })
+      );
+      return polygon;
+    });
+  }, [mapReady, placedPanels, selectedPanelId]);
+
+  useEffect(() => {
+    if (!state.dirty && !panelDirty) return;
     const timer = window.setTimeout(() => {
       void writeSiteLayoutDraft(projectId, {
         roof: state.roof,
@@ -674,10 +767,30 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         center_lng: center[0],
         roof_type: roofType || null,
         updated_at: new Date().toISOString(),
+        panel_spec: panelSpec,
+        panel_orientation: panelOrientation,
+        panel_setback_ft: panelSetbackFt,
+        panels: placedPanels,
+        panel_remaining_area_sqft: panelMetrics.remainingAreaSqft,
+        panel_coverage_pct: panelMetrics.coveragePct,
       });
     }, 600);
     return () => window.clearTimeout(timer);
-  }, [center, projectId, roofType, state.dirty, state.obstructions, state.roof]);
+  }, [
+    center,
+    panelDirty,
+    panelMetrics.coveragePct,
+    panelMetrics.remainingAreaSqft,
+    panelOrientation,
+    panelSetbackFt,
+    panelSpec,
+    placedPanels,
+    projectId,
+    roofType,
+    state.dirty,
+    state.obstructions,
+    state.roof,
+  ]);
 
   const selectedObstruction = useMemo(
     () => state.obstructions.find((item) => item.id === state.selectedObstructionId) ?? null,
@@ -1029,6 +1142,84 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     }
   }, [googleMapsKey, searchText, toast]);
 
+  const runAutoLayout = useCallback(() => {
+    if (!state.roof) {
+      toast.error("Draw roof first", "Complete at least one roof section before auto layout.");
+      return;
+    }
+    setPacking(true);
+    try {
+      const result = autoPackPanels({
+        roof: state.roof,
+        obstructions: state.obstructions,
+        panelSpec,
+        orientation: panelOrientation,
+        setbackFt: panelSetbackFt,
+        mountingType: "flush",
+        tiltDeg: 0,
+        preservePanels: placedPanels,
+      });
+      setPlacedPanels(result.panels);
+      setPanelMetrics({
+        remainingAreaSqft: result.remainingAreaSqft,
+        coveragePct: result.coveragePct,
+      });
+      setSelectedPanelId(null);
+      setPanelDirty(true);
+      toast.success(
+        "Auto layout ready",
+        `${result.panelCount} panels · ${result.dcCapacityKw.toFixed(2)} kW DC`
+      );
+    } catch (error) {
+      toast.error(
+        "Auto layout failed",
+        error instanceof Error ? error.message : "Could not pack panels on this roof."
+      );
+    } finally {
+      setPacking(false);
+    }
+  }, [
+    panelOrientation,
+    panelSetbackFt,
+    panelSpec,
+    placedPanels,
+    state.obstructions,
+    state.roof,
+    toast,
+  ]);
+
+  const clearPanels = useCallback(() => {
+    setPlacedPanels([]);
+    setSelectedPanelId(null);
+    setPanelMetrics({ remainingAreaSqft: 0, coveragePct: 0 });
+    setPanelDirty(true);
+  }, []);
+
+  const deleteSelectedPanel = useCallback(() => {
+    if (!selectedPanelId) return;
+    setPlacedPanels((current) => {
+      const next = current.filter((panel) => panel.id !== selectedPanelId);
+      if (state.roof) {
+        setPanelMetrics(computePanelCoverageMetrics(state.roof, next));
+      } else {
+        setPanelMetrics({ remainingAreaSqft: 0, coveragePct: 0 });
+      }
+      return next;
+    });
+    setSelectedPanelId(null);
+    setPanelDirty(true);
+  }, [selectedPanelId, state.roof]);
+
+  const toggleSelectedPanelLock = useCallback(() => {
+    if (!selectedPanelId) return;
+    setPlacedPanels((current) =>
+      current.map((panel) =>
+        panel.id === selectedPanelId ? { ...panel, is_locked: !panel.is_locked } : panel
+      )
+    );
+    setPanelDirty(true);
+  }, [selectedPanelId]);
+
   const saveLayout = useCallback(async () => {
     if (!state.roof || !state.metrics) {
       toast.error("Draw roof first", "Complete the roof polygon before saving.");
@@ -1069,14 +1260,65 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
 
       setCurrentLayout(json.data);
       dispatch({ type: "MARK_SAVED" });
+
+      if (placedPanels.length > 0) {
+        const panelCount = placedPanels.length;
+        const dcCapacityKw = (panelCount * panelSpec.wattage) / 1_000;
+        const panelResponse = await fetch(`/api/projects/${projectId}/panel-layout`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            site_layout_id: json.data.id,
+            panel_spec: panelSpec,
+            orientation: panelOrientation,
+            tilt_deg: 0,
+            mounting_type: "flush",
+            setback_ft: panelSetbackFt,
+            walkway_ft: 0,
+            panel_gap_mm: 20,
+            panels_geojson: placedPanels,
+            panel_count: panelCount,
+            dc_capacity_kw: dcCapacityKw,
+            remaining_area_sqft: panelMetrics.remainingAreaSqft,
+            coverage_pct: panelMetrics.coveragePct,
+          }),
+        });
+        const panelJson = (await panelResponse.json()) as ApiEnvelope<ProjectPanelLayout>;
+        if (!panelJson.ok || !panelJson.data) {
+          throw new Error(panelJson.error || "Panel layout could not be saved.");
+        }
+        setCurrentPanelLayout(panelJson.data);
+        setPanelDirty(false);
+        toast.success(
+          "Design saved",
+          `Roof V${json.data.version_number} · Panels V${panelJson.data.version_number} · ${panelCount} modules`
+        );
+      } else {
+        toast.success("Site layout saved", `Version ${json.data.version_number} is now current.`);
+      }
+
       await clearSiteLayoutDraft(projectId);
-      toast.success("Site layout saved", `Version ${json.data.version_number} is now current.`);
     } catch (error) {
       toast.error("Save failed", error instanceof Error ? error.message : "Could not save layout.");
     } finally {
       setSaving(false);
     }
-  }, [center, projectId, roofType, state.metrics, state.obstructions, state.roof, survey, toast]);
+  }, [
+    center,
+    panelMetrics.coveragePct,
+    panelMetrics.remainingAreaSqft,
+    panelOrientation,
+    panelSetbackFt,
+    panelSpec,
+    placedPanels,
+    projectId,
+    roofType,
+    state.metrics,
+    state.obstructions,
+    state.roof,
+    survey,
+    toast,
+  ]);
 
   if (loading) {
     return <div className="flex min-h-[70vh] items-center justify-center text-sm text-slate-500">Loading Design Studio…</div>;
@@ -1097,8 +1339,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                 2D Design Studio · {project?.official_name || project?.lead_name || "Project"}
               </p>
               <p className="text-[11px] text-slate-500">
-                Phase 1 Geometry · {currentLayout ? `Saved V${currentLayout.version_number}` : "New layout"}
-                {state.dirty ? " · Unsaved changes" : ""}
+                Phase 2 Panels · {currentLayout ? `Roof V${currentLayout.version_number}` : "New roof"}
+                {currentPanelLayout ? ` · Panels V${currentPanelLayout.version_number}` : ""}
+                {state.dirty || panelDirty ? " · Unsaved changes" : ""}
               </p>
             </div>
           </div>
@@ -1347,6 +1590,113 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               <p className="mt-2 text-[10px] text-slate-500">Tip: drag any placed marker to fine-tune its position.</p>
             )}
           </div>
+
+          <div className="border-t border-slate-100 pt-3 dark:border-white/10">
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-extrabold uppercase tracking-wide text-slate-500">
+                Panel layout
+              </p>
+              <Grid2X2 className="h-3.5 w-3.5 text-slate-400" />
+            </div>
+            <label className="mt-2 block text-[11px] font-bold text-slate-600 dark:text-slate-300">
+              Module
+              <select
+                value={panelSpec.catalog_id ?? panelSpec.model}
+                onChange={(event) => {
+                  const next =
+                    PANEL_MODULE_CATALOG.find((item) => item.catalog_id === event.target.value) ??
+                    PANEL_MODULE_CATALOG.find((item) => item.model === event.target.value) ??
+                    DEFAULT_PANEL_MODULE;
+                  setPanelSpec(next);
+                  setPanelDirty(true);
+                }}
+                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs dark:border-white/10 dark:bg-slate-950"
+              >
+                {PANEL_MODULE_CATALOG.map((item) => (
+                  <option key={item.catalog_id ?? item.model} value={item.catalog_id ?? item.model}>
+                    {panelModuleLabel(item)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="mt-2 grid grid-cols-2 gap-1.5">
+              {(["portrait", "landscape"] as const).map((orientation) => (
+                <button
+                  key={orientation}
+                  type="button"
+                  onClick={() => {
+                    setPanelOrientation(orientation);
+                    setPanelDirty(true);
+                  }}
+                  className={`rounded-lg border px-2 py-2 text-[11px] font-semibold capitalize ${
+                    panelOrientation === orientation
+                      ? "border-blue-600 bg-blue-50 text-blue-900"
+                      : "border-slate-200 text-slate-600 dark:border-white/10"
+                  }`}
+                >
+                  {orientation}
+                </button>
+              ))}
+            </div>
+            <label className="mt-2 block text-[11px] font-bold text-slate-600 dark:text-slate-300">
+              Setback (ft)
+              <input
+                type="number"
+                min={0}
+                max={20}
+                step={0.5}
+                value={panelSetbackFt}
+                onChange={(event) => {
+                  setPanelSetbackFt(Math.max(0, Number(event.target.value) || 0));
+                  setPanelDirty(true);
+                }}
+                className="mt-1 w-full rounded-lg border border-slate-200 px-2.5 py-2 text-xs dark:border-white/10 dark:bg-slate-950"
+              />
+            </label>
+            <Button
+              className="mt-2 w-full"
+              size="sm"
+              disabled={!state.roof || drawingRoof || packing}
+              onClick={runAutoLayout}
+            >
+              {packing ? "Packing…" : "Auto layout"}
+            </Button>
+            <div className="mt-1.5 grid grid-cols-2 gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!selectedPanelId}
+                onClick={toggleSelectedPanelLock}
+              >
+                {placedPanels.find((panel) => panel.id === selectedPanelId)?.is_locked ? (
+                  <><Unlock className="mr-1 h-3.5 w-3.5" /> Unlock</>
+                ) : (
+                  <><Lock className="mr-1 h-3.5 w-3.5" /> Lock</>
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-red-600"
+                disabled={!selectedPanelId}
+                onClick={deleteSelectedPanel}
+              >
+                <Trash2 className="mr-1 h-3.5 w-3.5" /> Delete
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="col-span-2"
+                disabled={placedPanels.length === 0}
+                onClick={clearPanels}
+              >
+                Clear all panels
+              </Button>
+            </div>
+            <p className="mt-2 text-[10px] leading-relaxed text-slate-500">
+              Locked panels stay when you re-run Auto layout. Design stays on the project — not inside the customer proposal.
+            </p>
+          </div>
         </aside>
 
         <section className="relative min-h-[62vh] overflow-hidden rounded-xl border border-slate-200 bg-slate-200 dark:border-white/10 dark:bg-slate-900 lg:min-h-[calc(100dvh-100px)]">
@@ -1400,6 +1750,26 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                 {areaWarning}
               </p>
             ) : null}
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-slate-900">
+            <p className="text-xs font-extrabold text-slate-900 dark:text-white">Panel metrics</p>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              {[
+                ["Panels", String(placedPanels.length)],
+                ["DC kW", placedPanels.length ? ((placedPanels.length * panelSpec.wattage) / 1000).toFixed(2) : "—"],
+                ["Remaining", placedPanels.length ? `${Math.round(panelMetrics.remainingAreaSqft).toLocaleString("en-IN")} sq.ft` : "—"],
+                ["Coverage", placedPanels.length ? `${panelMetrics.coveragePct.toFixed(0)}%` : "—"],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-lg bg-slate-50 p-2 dark:bg-white/[0.04]">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">{label}</p>
+                  <p className="mt-0.5 text-sm font-extrabold text-slate-900 dark:text-white">{value}</p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-2 text-[10px] text-slate-500">
+              {panelModuleLabel(panelSpec)} · {panelOrientation}
+            </p>
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-slate-900">
@@ -1487,10 +1857,10 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
 
           <div className="rounded-xl border border-blue-200 bg-blue-50 p-3 text-[11px] leading-relaxed text-blue-900 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-100">
             <div className="flex items-center gap-1.5 font-extrabold">
-              <Crosshair className="h-4 w-4" /> Phase 1
+              <Crosshair className="h-4 w-4" /> Phase 2
             </div>
             <p className="mt-1">
-              Draw and save the roof geometry now. Auto panel placement, engineering validation and shadow analysis follow in approved phases.
+              Draw roof sections, then run Auto layout. Panels stay on the project design — not inside the customer proposal.
             </p>
           </div>
         </aside>

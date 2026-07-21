@@ -1,4 +1,5 @@
 import { openDB } from "idb";
+import type { PanelOrientation, PanelSpec, PlacedPanel } from "@/lib/panel-layout";
 import type { RoofGeometry, SiteObstruction } from "@/lib/site-layout";
 
 export type SiteLayoutDraft = {
@@ -8,6 +9,12 @@ export type SiteLayoutDraft = {
   center_lng: number | null;
   roof_type: string | null;
   updated_at: string;
+  panel_spec?: PanelSpec | null;
+  panel_orientation?: PanelOrientation | null;
+  panel_setback_ft?: number | null;
+  panels?: PlacedPanel[] | null;
+  panel_remaining_area_sqft?: number | null;
+  panel_coverage_pct?: number | null;
 };
 
 const DB_NAME = "sol52-design-studio";

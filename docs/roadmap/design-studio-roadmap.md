@@ -2,8 +2,8 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | Approved phased roadmap — Phase 1 active |
-| **Last Updated** | 2026-07-19 |
+| **Status** | Approved phased roadmap — Phase 2 active |
+| **Last Updated** | 2026-07-21 |
 | **Canonical architecture (FROZEN)** | [`docs/architecture/design-studio-architecture.md`](../architecture/design-studio-architecture.md) |
 
 > **This is the only place where future ideas, future phases, and future enhancements are added.**
@@ -23,8 +23,8 @@
 
 | Phase | Focus | Status |
 |-------|-------|--------|
-| **Phase 1** | 2D Geometry foundation — satellite map, roof polygon, obstructions, save/version | **ACTIVE** |
-| **Phase 2** | **Auto Panel Placement Engine** + RCC/shed presets + manual fine-tune | Approved — queued |
+| **Phase 1** | 2D Geometry foundation — satellite map, roof polygon, obstructions, save/version | **COMPLETE** |
+| **Phase 2** | **Auto Panel Placement Engine** + RCC/shed presets + manual fine-tune | **ACTIVE** |
 | **Phase 3** | **Engineering Rules + Solar Design** — setbacks, strings, equipment points, basic SLD | Approved — queued |
 | **Phase 4** | **Shadow Engine** — per-panel shade %, shade-free area, loss estimate | Approved — queued |
 | **Phase 5** | Project/Survey/BOM/Proposal integration + snapshots + customer sign-off | Approved — queued |
