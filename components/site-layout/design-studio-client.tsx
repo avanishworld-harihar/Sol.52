@@ -312,11 +312,11 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             : "Right-click to remove this corner",
         icon: {
           path: google.maps.SymbolPath.CIRCLE,
-          scale: index === 0 ? 6 : 4,
+          scale: index === 0 ? 4.5 : 3,
           fillColor: index === 0 ? "#f43f5e" : "#ffffff",
           fillOpacity: 1,
           strokeColor: "#f43f5e",
-          strokeWeight: 2,
+          strokeWeight: 1.5,
         },
       });
       marker.addListener("click", () => {
@@ -563,7 +563,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             clickable: false,
             strokeColor: "#d97706",
             strokeOpacity: 0.9,
-            strokeWeight: 1.5,
+            strokeWeight: 1,
             fillColor: "#f59e0b",
             fillOpacity: 0.16,
             zIndex: 5,
@@ -589,8 +589,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           fillColor: isSelected ? "#b45309" : "#d97706",
           fillOpacity: 1,
           strokeColor: isSelected ? "#fbbf24" : "#ffffff",
-          strokeWeight: isSelected ? 3 : 2,
-          scale: 16,
+          strokeWeight: isSelected ? 2 : 1,
+          scale: 13,
         },
       });
       marker.addListener("click", () => {
