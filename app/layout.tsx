@@ -1,6 +1,4 @@
 import "@/app/globals.css";
-import "mapbox-gl/dist/mapbox-gl.css";
-import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 
 import type { Metadata, Viewport } from "next";
 import { Montserrat } from "next/font/google";

@@ -1,7 +1,5 @@
 "use client";
 
-import MapboxDraw from "@mapbox/mapbox-gl-draw";
-import mapboxgl, { type Map as MapboxMap, type Marker } from "mapbox-gl";
 import {
   ArrowLeft,
   Cloud,
@@ -25,6 +23,7 @@ import {
   parseLatLngText,
   parseSeparateLatLng,
 } from "@/lib/site-layout-gps";
+import { loadGoogleMaps } from "@/lib/google-maps-loader";
 import { calculateRoofMetrics, normalizeRoofPolygon } from "./core/geometry";
 import {
   EMPTY_SITE_LAYOUT_STATE,
@@ -99,9 +98,12 @@ function newObstruction(
 
 export function DesignStudioClient({ projectId }: { projectId: string }) {
   const toast = useToast();
-  const mapRef = useRef<MapboxMap | null>(null);
-  const drawRef = useRef<MapboxDraw | null>(null);
-  const markersRef = useRef<Marker[]>([]);
+  const mapRef = useRef<google.maps.Map | null>(null);
+  const roofPolygonRef = useRef<google.maps.Polygon | null>(null);
+  const draftPolygonRef = useRef<google.maps.Polygon | null>(null);
+  const markersRef = useRef<google.maps.Marker[]>([]);
+  const mapListenersRef = useRef<google.maps.MapsEventListener[]>([]);
+  const drawingPointsRef = useRef<google.maps.LatLngLiteral[]>([]);
   const addObstructionRef = useRef<ObstructionType | null>(null);
   const initialRoofRef = useRef<RoofPolygon | null>(null);
   const initialCenterRef = useRef<[number, number]>(DEFAULT_CENTER);
@@ -125,9 +127,11 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const [lngInput, setLngInput] = useState("");
   const [gpsPaste, setGpsPaste] = useState("");
   const [gpsBusy, setGpsBusy] = useState(false);
+  const [drawingRoof, setDrawingRoof] = useState(false);
+  const [drawingPointCount, setDrawingPointCount] = useState(0);
   const photoInputRef = useRef<HTMLInputElement | null>(null);
 
-  const mapToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN?.trim() ?? "";
+  const googleMapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim() ?? "";
 
   useEffect(() => {
     let cancelled = false;
@@ -201,151 +205,171 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   }, [projectId]);
 
   useEffect(() => {
-    if (!mapContainerEl || !mapToken || mapRef.current) return;
+    if (!mapContainerEl || !googleMapsKey || mapRef.current) return;
 
-    mapboxgl.accessToken = mapToken;
     let cancelled = false;
-    const map = new mapboxgl.Map({
-      container: mapContainerEl,
-      style: "mapbox://styles/mapbox/satellite-streets-v12",
-      center: initialCenterRef.current,
-      zoom: initialCenterRef.current[0] === DEFAULT_CENTER[0] ? 5 : 19,
-      pitch: 0,
-      preserveDrawingBuffer: false,
-      attributionControl: true,
-    });
-    const draw = new MapboxDraw({
-      displayControlsDefault: false,
-      controls: { polygon: true, trash: true },
-      defaultMode: initialRoofRef.current ? "simple_select" : "draw_polygon",
-    });
-    map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), "top-right");
-    map.addControl(draw, "top-left");
-    mapRef.current = map;
-    drawRef.current = draw;
-
-    const syncRoof = () => {
-      const polygons = draw
-        .getAll()
-        .features.filter((feature) => feature.geometry.type === "Polygon");
-      const latestFeature = polygons[polygons.length - 1];
-      if (!latestFeature) {
-        dispatch({ type: "DELETE_POLYGON" });
-        return;
-      }
-      if (polygons.length > 1) {
-        for (const feature of polygons.slice(0, -1)) {
-          if (feature.id != null) draw.delete(String(feature.id));
-        }
-      }
-      const roof = normalizeRoofPolygon(latestFeature.geometry);
-      if (roof) dispatch({ type: "COMMIT_POLYGON", roof, metrics: calculateRoofMetrics(roof) });
-    };
-
-    const handleMapClick = (event: mapboxgl.MapMouseEvent) => {
-      const type = addObstructionRef.current;
-      if (!type) return;
-      const obstruction = newObstruction(type, event.lngLat.lng, event.lngLat.lat);
-      dispatch({ type: "PLACE_OBSTRUCTION", obstruction });
-      addObstructionRef.current = null;
-      setPendingObstruction(null);
-    };
-
-    const handleMapError = (event: { error?: Error | { message?: string; status?: number } }) => {
-      if (cancelled) return;
-      const err = event?.error;
-      const message =
-        err && typeof err === "object" && "message" in err && typeof err.message === "string"
-          ? err.message
-          : "Mapbox failed to load the map.";
-      const status = err && typeof err === "object" && "status" in err ? Number(err.status) : NaN;
-      if (status === 401 || status === 403 || /unauthorized|forbidden|access token/i.test(message)) {
-        setLoadError(
-          "Mapbox token rejected (401/403). Use public pk. token, allow your Vercel URL in Mapbox token restrictions (or remove restrictions), then redeploy."
-        );
-      } else {
-        setLoadError(message);
-      }
-    };
-
-    const bumpResize = () => {
-      if (!cancelled && mapRef.current) mapRef.current.resize();
-    };
-
-    map.on("error", handleMapError);
-    map.on("load", () => {
-      if (cancelled) return;
-      bumpResize();
-      window.setTimeout(bumpResize, 100);
-      window.setTimeout(bumpResize, 400);
-      if (initialRoofRef.current) {
-        draw.add({
-          type: "Feature",
-          properties: {},
-          geometry: initialRoofRef.current,
+    void loadGoogleMaps(googleMapsKey)
+      .then((maps) => {
+        if (cancelled) return;
+        const initialCenter = {
+          lat: initialCenterRef.current[1],
+          lng: initialCenterRef.current[0],
+        };
+        const map = new maps.Map(mapContainerEl, {
+          center: initialCenter,
+          zoom: initialCenterRef.current[0] === DEFAULT_CENTER[0] ? 5 : 20,
+          mapTypeId: maps.MapTypeId.HYBRID,
+          tilt: 0,
+          streetViewControl: false,
+          fullscreenControl: true,
+          mapTypeControl: true,
+          mapTypeControlOptions: {
+            mapTypeIds: [maps.MapTypeId.SATELLITE, maps.MapTypeId.HYBRID],
+          },
+          gestureHandling: "greedy",
+          clickableIcons: false,
         });
-        const coordinates = initialRoofRef.current.coordinates[0];
-        const bounds = coordinates.reduce(
-          (box, coordinate) => box.extend(coordinate as [number, number]),
-          new mapboxgl.LngLatBounds(
-            coordinates[0] as [number, number],
-            coordinates[0] as [number, number]
-          )
-        );
-        map.fitBounds(bounds, { padding: 70, maxZoom: 20 });
-      }
-      setMapReady(true);
-      setLoadError((prev) => (prev.toLowerCase().includes("mapbox") ? "" : prev));
-    });
-    map.on("draw.create", syncRoof);
-    map.on("draw.update", syncRoof);
-    map.on("draw.delete", syncRoof);
-    map.on("click", handleMapClick);
-    map.on("moveend", () => {
-      const next = map.getCenter();
-      setCenter([next.lng, next.lat]);
-    });
+        mapRef.current = map;
 
-    const resizeObserver =
-      typeof ResizeObserver !== "undefined"
-        ? new ResizeObserver(() => {
-            bumpResize();
+        const syncPolygon = (polygon: google.maps.Polygon) => {
+          const points = polygon
+            .getPath()
+            .getArray()
+            .map((point) => [point.lng(), point.lat()]);
+          if (points.length < 3) return;
+          points.push([...points[0]]);
+          const roof = normalizeRoofPolygon({ type: "Polygon", coordinates: [points] });
+          if (roof) {
+            dispatch({ type: "COMMIT_POLYGON", roof, metrics: calculateRoofMetrics(roof) });
+          }
+        };
+
+        const attachRoofListeners = (polygon: google.maps.Polygon) => {
+          const path = polygon.getPath();
+          mapListenersRef.current.push(
+            maps.event.addListener(path, "set_at", () => syncPolygon(polygon)),
+            maps.event.addListener(path, "insert_at", () => syncPolygon(polygon)),
+            maps.event.addListener(path, "remove_at", () => syncPolygon(polygon))
+          );
+        };
+
+        if (initialRoofRef.current) {
+          const path = initialRoofRef.current.coordinates[0].slice(0, -1).map(([lng, lat]) => ({ lat, lng }));
+          const roofPolygon = new maps.Polygon({
+            map,
+            paths: path,
+            editable: true,
+            draggable: false,
+            strokeColor: "#0f766e",
+            strokeOpacity: 1,
+            strokeWeight: 3,
+            fillColor: "#14b8a6",
+            fillOpacity: 0.24,
+          });
+          roofPolygonRef.current = roofPolygon;
+          attachRoofListeners(roofPolygon);
+          const bounds = new maps.LatLngBounds();
+          path.forEach((point) => bounds.extend(point));
+          map.fitBounds(bounds, 70);
+        }
+
+        mapListenersRef.current.push(
+          map.addListener("click", (event: google.maps.MapMouseEvent) => {
+            const latLng = event.latLng;
+            if (!latLng) return;
+            const type = addObstructionRef.current;
+            if (type) {
+              dispatch({
+                type: "PLACE_OBSTRUCTION",
+                obstruction: newObstruction(type, latLng.lng(), latLng.lat()),
+              });
+              addObstructionRef.current = null;
+              setPendingObstruction(null);
+              return;
+            }
+            if (!drawingPointsRef.current) return;
+            const isDrawing = map.get("sol52DrawingRoof") === true;
+            if (!isDrawing) return;
+            drawingPointsRef.current = [
+              ...drawingPointsRef.current,
+              { lat: latLng.lat(), lng: latLng.lng() },
+            ];
+            setDrawingPointCount(drawingPointsRef.current.length);
+            if (!draftPolygonRef.current) {
+              draftPolygonRef.current = new maps.Polygon({
+                map,
+                paths: drawingPointsRef.current,
+                strokeColor: "#0284c7",
+                strokeOpacity: 1,
+                strokeWeight: 3,
+                fillColor: "#38bdf8",
+                fillOpacity: 0.2,
+              });
+            } else {
+              draftPolygonRef.current.setPath(drawingPointsRef.current);
+            }
+          }),
+          map.addListener("idle", () => {
+            const next = map.getCenter();
+            if (next) setCenter([next.lng(), next.lat()]);
           })
-        : null;
-    resizeObserver?.observe(mapContainerEl);
-    // First paint after grid layout
-    requestAnimationFrame(bumpResize);
+        );
+
+        setMapReady(true);
+        setLoadError("");
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          setLoadError(
+            error instanceof Error
+              ? error.message
+              : "Google Maps failed to load. Check API key, billing, and enabled APIs."
+          );
+        }
+      });
 
     return () => {
       cancelled = true;
-      resizeObserver?.disconnect();
-      markersRef.current.forEach((marker) => marker.remove());
+      mapListenersRef.current.forEach((listener) => listener.remove());
+      mapListenersRef.current = [];
+      markersRef.current.forEach((marker) => marker.setMap(null));
       markersRef.current = [];
-      map.off("error", handleMapError);
-      map.remove();
+      roofPolygonRef.current?.setMap(null);
+      roofPolygonRef.current = null;
+      draftPolygonRef.current?.setMap(null);
+      draftPolygonRef.current = null;
       mapRef.current = null;
-      drawRef.current = null;
       setMapReady(false);
     };
-  }, [mapContainerEl, mapToken]);
+  }, [googleMapsKey, mapContainerEl]);
 
   useEffect(() => {
-    if (!mapReady || !mapRef.current) return;
-    markersRef.current.forEach((marker) => marker.remove());
+    if (!mapReady || !mapRef.current || !window.google?.maps) return;
+    markersRef.current.forEach((marker) => marker.setMap(null));
     markersRef.current = state.obstructions.map((obstruction) => {
-      const element = document.createElement("button");
-      element.type = "button";
-      element.className =
-        "flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-amber-600 text-[10px] font-black text-white";
-      element.title = `${OBSTRUCTION_LABELS[obstruction.type]} · ${obstruction.height_ft} ft`;
-      element.textContent = obstruction.type === "tree" ? "TR" : obstruction.type === "water_tank" ? "WT" : "OB";
-      element.addEventListener("click", (event) => {
-        event.stopPropagation();
+      const marker = new google.maps.Marker({
+        map: mapRef.current!,
+        position: { lat: obstruction.lat, lng: obstruction.lng },
+        title: `${OBSTRUCTION_LABELS[obstruction.type]} · ${obstruction.height_ft} ft`,
+        label: {
+          text: obstruction.type === "tree" ? "TR" : obstruction.type === "water_tank" ? "WT" : "OB",
+          color: "#ffffff",
+          fontSize: "10px",
+          fontWeight: "700",
+        },
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          fillColor: "#d97706",
+          fillOpacity: 1,
+          strokeColor: "#ffffff",
+          strokeWeight: 2,
+          scale: 16,
+        },
+      });
+      marker.addListener("click", () => {
         dispatch({ type: "SELECT_OBSTRUCTION", id: obstruction.id });
       });
-      return new mapboxgl.Marker({ element })
-        .setLngLat([obstruction.lng, obstruction.lat])
-        .addTo(mapRef.current!);
+      return marker;
     });
   }, [mapReady, state.obstructions]);
 
@@ -370,9 +394,84 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   );
 
   const beginObstruction = useCallback((type: ObstructionType) => {
+    mapRef.current?.set("sol52DrawingRoof", false);
+    setDrawingRoof(false);
     addObstructionRef.current = type;
     setPendingObstruction(type);
-    mapRef.current?.getCanvas().focus();
+    mapRef.current?.getDiv().focus();
+  }, []);
+
+  const beginRoofDrawing = useCallback(() => {
+    if (!mapRef.current) return;
+    addObstructionRef.current = null;
+    setPendingObstruction(null);
+    roofPolygonRef.current?.setEditable(false);
+    draftPolygonRef.current?.setMap(null);
+    draftPolygonRef.current = null;
+    drawingPointsRef.current = [];
+    setDrawingPointCount(0);
+    setDrawingRoof(true);
+    mapRef.current.set("sol52DrawingRoof", true);
+    mapRef.current.setOptions({ draggableCursor: "crosshair" });
+  }, []);
+
+  const finishRoofDrawing = useCallback(() => {
+    const map = mapRef.current;
+    if (!map || !window.google?.maps) return;
+    const points = drawingPointsRef.current;
+    if (points.length < 3) {
+      toast.error("Add more corners", "Click at least 3 roof corners before finishing.");
+      return;
+    }
+
+    roofPolygonRef.current?.setMap(null);
+    draftPolygonRef.current?.setMap(null);
+    draftPolygonRef.current = null;
+    const polygon = new google.maps.Polygon({
+      map,
+      paths: points,
+      editable: true,
+      draggable: false,
+      strokeColor: "#0f766e",
+      strokeOpacity: 1,
+      strokeWeight: 3,
+      fillColor: "#14b8a6",
+      fillOpacity: 0.24,
+    });
+    roofPolygonRef.current = polygon;
+
+    const sync = () => {
+      const coordinates = polygon.getPath().getArray().map((point) => [point.lng(), point.lat()]);
+      if (coordinates.length < 3) return;
+      coordinates.push([...coordinates[0]]);
+      const roof = normalizeRoofPolygon({ type: "Polygon", coordinates: [coordinates] });
+      if (roof) dispatch({ type: "COMMIT_POLYGON", roof, metrics: calculateRoofMetrics(roof) });
+    };
+    const path = polygon.getPath();
+    mapListenersRef.current.push(
+      google.maps.event.addListener(path, "set_at", sync),
+      google.maps.event.addListener(path, "insert_at", sync),
+      google.maps.event.addListener(path, "remove_at", sync)
+    );
+    sync();
+    drawingPointsRef.current = [];
+    setDrawingPointCount(0);
+    setDrawingRoof(false);
+    map.set("sol52DrawingRoof", false);
+    map.setOptions({ draggableCursor: null });
+  }, [toast]);
+
+  const clearRoof = useCallback(() => {
+    roofPolygonRef.current?.setMap(null);
+    roofPolygonRef.current = null;
+    draftPolygonRef.current?.setMap(null);
+    draftPolygonRef.current = null;
+    drawingPointsRef.current = [];
+    setDrawingPointCount(0);
+    setDrawingRoof(false);
+    mapRef.current?.set("sol52DrawingRoof", false);
+    mapRef.current?.setOptions({ draggableCursor: null });
+    dispatch({ type: "DELETE_POLYGON" });
   }, []);
 
   const locateMe = useCallback(() => {
@@ -384,7 +483,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       ({ coords }) => {
         const next: [number, number] = [coords.longitude, coords.latitude];
         setCenter(next);
-        mapRef.current?.flyTo({ center: next, zoom: 19 });
+        mapRef.current?.panTo({ lat: coords.latitude, lng: coords.longitude });
+        mapRef.current?.setZoom(20);
       },
       (error) => toast.error("GPS failed", error.message),
       { enableHighAccuracy: true, timeout: 15_000 }
@@ -397,7 +497,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       setCenter(next);
       setLatInput(String(lat));
       setLngInput(String(lng));
-      mapRef.current?.flyTo({ center: next, zoom: 19 });
+      mapRef.current?.panTo({ lat, lng });
+      mapRef.current?.setZoom(20);
       toast.success("Location set", label);
     },
     [toast]
@@ -447,23 +548,23 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
 
   const searchLocation = useCallback(async () => {
     const query = searchText.trim();
-    if (!query || !mapToken) return;
+    if (!query || !googleMapsKey || !window.google?.maps) return;
     setSearching(true);
     try {
-      const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${encodeURIComponent(mapToken)}&country=IN&limit=1`
-      );
-      const json = (await response.json()) as { features?: Array<{ center?: [number, number] }> };
-      const found = json.features?.[0]?.center;
-      if (!found) throw new Error("Location not found.");
+      const geocoder = new google.maps.Geocoder();
+      const response = await geocoder.geocode({ address: query, region: "IN" });
+      const location = response.results[0]?.geometry.location;
+      if (!location) throw new Error("Location not found.");
+      const found: [number, number] = [location.lng(), location.lat()];
       setCenter(found);
-      mapRef.current?.flyTo({ center: found, zoom: 19 });
+      mapRef.current?.panTo(location);
+      mapRef.current?.setZoom(20);
     } catch (error) {
       toast.error("Search failed", error instanceof Error ? error.message : "Location not found.");
     } finally {
       setSearching(false);
     }
-  }, [mapToken, searchText, toast]);
+  }, [googleMapsKey, searchText, toast]);
 
   const saveLayout = useCallback(async () => {
     if (!state.roof || !state.metrics) {
@@ -563,7 +664,12 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               placeholder="Address, city or PIN"
               className="min-w-0 flex-1 rounded-lg border border-slate-200 px-2.5 py-2 text-xs dark:border-white/10 dark:bg-slate-950"
             />
-            <Button variant="outline" size="sm" disabled={searching || !mapToken} onClick={() => void searchLocation()}>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={searching || !googleMapsKey || !mapReady}
+              onClick={() => void searchLocation()}
+            >
               <Search className="h-4 w-4" />
             </Button>
           </div>
@@ -643,16 +749,18 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           <div className="border-t border-slate-100 pt-3 dark:border-white/10">
             <p className="text-[11px] font-extrabold uppercase tracking-wide text-slate-500">Drawing</p>
             <div className="mt-2 grid grid-cols-2 gap-2">
-              <Button variant="outline" size="sm" onClick={() => drawRef.current?.changeMode("draw_polygon")}>
-                <TriangleRight className="mr-1 h-4 w-4" /> Roof
+              <Button
+                variant={drawingRoof ? "default" : "outline"}
+                size="sm"
+                onClick={drawingRoof ? finishRoofDrawing : beginRoofDrawing}
+              >
+                <TriangleRight className="mr-1 h-4 w-4" />
+                {drawingRoof ? `Finish (${drawingPointCount})` : state.roof ? "Redraw roof" : "Draw roof"}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  drawRef.current?.deleteAll();
-                  dispatch({ type: "DELETE_POLYGON" });
-                }}
+                onClick={clearRoof}
               >
                 <Trash2 className="mr-1 h-4 w-4" /> Clear
               </Button>
@@ -663,6 +771,11 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                 <Redo2 className="mr-1 h-4 w-4" /> Redo
               </Button>
             </div>
+            {drawingRoof ? (
+              <p className="mt-2 rounded-lg bg-sky-50 px-2 py-1.5 text-[10px] font-semibold text-sky-800">
+                Click each roof corner on Google satellite view, then press Finish.
+              </p>
+            ) : null}
           </div>
 
           <div className="border-t border-slate-100 pt-3 dark:border-white/10">
@@ -690,25 +803,26 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         </aside>
 
         <section className="relative min-h-[62vh] overflow-hidden rounded-xl border border-slate-200 bg-slate-200 dark:border-white/10 dark:bg-slate-900 lg:min-h-[calc(100dvh-100px)]">
-          {mapToken ? (
+          {googleMapsKey ? (
             <div
               ref={setMapContainerEl}
-              className="absolute inset-0 h-full w-full [&_.mapboxgl-map]:h-full [&_.mapboxgl-map]:w-full [&_.mapboxgl-canvas]:outline-none"
+              className="absolute inset-0 h-full w-full"
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center p-6">
               <div className="max-w-md rounded-xl border border-amber-200 bg-amber-50 p-5 text-center">
                 <Cloud className="mx-auto h-8 w-8 text-amber-700" />
-                <p className="mt-2 text-sm font-extrabold text-amber-950">Mapbox token required</p>
+                <p className="mt-2 text-sm font-extrabold text-amber-950">Google Maps API key required</p>
                 <p className="mt-1 text-xs leading-relaxed text-amber-800">
-                  Add NEXT_PUBLIC_MAPBOX_TOKEN to .env.local (local) and Vercel (production), then restart / redeploy.
+                  Add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to .env.local and Vercel, enable Maps JavaScript
+                  API + Geocoding API with billing, then restart / redeploy.
                 </p>
               </div>
             </div>
           )}
-          {!mapReady && mapToken && !loadError ? (
+          {!mapReady && googleMapsKey && !loadError ? (
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-slate-200/80 text-sm font-semibold text-slate-600 dark:bg-slate-900/80 dark:text-slate-300">
-              Loading map…
+              Loading Google satellite map…
             </div>
           ) : null}
           {loadError ? (

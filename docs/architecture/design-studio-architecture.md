@@ -3,8 +3,8 @@
 | Field | Value |
 |-------|-------|
 | **Status** | **FROZEN** |
-| **Version** | **v1.0** |
-| **Last Updated** | 2026-07-06 |
+| **Version** | **v1.1** |
+| **Last Updated** | 2026-07-21 |
 | **Document type** | Canonical source of truth |
 | **Roadmap (future ideas)** | [`docs/roadmap/design-studio-roadmap.md`](../roadmap/design-studio-roadmap.md) |
 
@@ -240,7 +240,7 @@ roadmap.
 - Editor Core v0: Geometry Engine actions (`ADD_VERTEX`, `MOVE_VERTEX`, `COMMIT_POLYGON`) + turf area.
 - Input adapters: mouse + pencil/touch (parity from day one) + phone light-edit.
 - Responsive shell: Desktop, iPad landscape/portrait, Phone.
-- Map shell (Mapbox), GPS/geocode entry, roof polygon draw + save.
+- Map shell (Google Maps hybrid satellite), GPS/geocode entry, roof polygon draw + save.
 - Entry point: Project Hub → Design tab → "Open site layout" (replaces the current
   "future editor" placeholder in `components/projects/hub/project-hub-design-tab.tsx`).
 
@@ -250,13 +250,13 @@ roadmap.
 
 | Concern | Decision |
 |---------|----------|
-| Map | Mapbox GL JS (satellite) |
-| Draw | `@mapbox/mapbox-gl-draw` + **custom pointer-event layer** for Pencil/touch |
+| Map | Google Maps JavaScript API (hybrid satellite) |
+| Draw | Custom Google Maps polygon layer + **custom pointer-event layer** for Pencil/touch |
 | Geometry | `@turf/turf` (geodesic area, buffer/erosion, simplify, centroid) |
 | Sun position | `suncalc` (client-side, free) — IST |
-| Map snapshot | `map.getCanvas().toDataURL('image/png')` (NOT `html2canvas` — fails on WebGL) |
+| Map snapshot | Google Static Maps API with saved roof/panel overlays (future export step) |
 | Snapshot storage | Supabase Storage bucket `site-layouts/` |
-| Token | `NEXT_PUBLIC_MAPBOX_TOKEN` (URL-restricted public token) |
+| Token | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` (HTTP-referrer-restricted browser key) |
 | Autosave | Local draft (IndexedDB) on both Desktop and iPad |
 
 ### 7.1 iPad / Apple Pencil interaction (frozen)
@@ -308,9 +308,8 @@ not a certified shading report (disclaimer required in UI + PDF).
 
 ## 10. Open decisions (to confirm at implementation start — do not expand scope)
 
-1. **Map provider:** Mapbox (recommended) vs Google Maps.
-2. **Freehand trace mode:** launch with both tap + freehand, or tap-only for Phase 1.
-3. **Panel spec source (Engine 2, future):** auto-pull default panel model/wattage from
+1. **Freehand trace mode:** launch with both tap + freehand, or tap-only for Phase 1.
+2. **Panel spec source (Engine 2, future):** auto-pull default panel model/wattage from
    `project_designs`/BOM (recommended, with manual override) vs pick in editor each time.
 
 ---
@@ -319,4 +318,5 @@ not a certified shading report (disclaimer required in UI + PDF).
 
 | Version | Date | Change | Approved by |
 |---------|------|--------|-------------|
+| v1.1 | 2026-07-21 | Replaced Mapbox with Google Maps hybrid satellite at product-owner request; preserved saved GeoJSON contracts and custom roof editing. | Product owner |
 | v1.0 | 2026-07-06 | Initial frozen architecture: single shared editor, parity by construction, 4-engine pipeline (Geometry → Auto Panel Placement → Engineering Rules → Shadow), phone light-edit, `project_site_layouts` data model, Phase 1 current scope. | Product owner |
