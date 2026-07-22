@@ -39,6 +39,8 @@ import {
   panelModuleBrands,
   panelModuleLabel,
   panelModulesForBrand,
+  parseCapacityKwText,
+  resolvePanelSpecFromProject,
 } from "@/lib/panel-module-catalog";
 import type {
   PanelOrientation,
@@ -58,7 +60,9 @@ import {
   computePanelCoverageMetrics,
   createManualPanelAt,
   effectiveObstructionRadiusFt,
+  estimateMaxDcCapacity,
   MIN_OBSTRUCTION_RADIUS_FT,
+  type PanelPackMode,
 } from "./core/panel-placement";
 import {
   EMPTY_SITE_LAYOUT_STATE,
@@ -85,6 +89,8 @@ type ProjectSummary = {
   site_lat: number | null;
   site_lng: number | null;
   roof_type: string | null;
+  capacity_kw: string | null;
+  panel_brand: string | null;
 };
 
 type SurveySummary = {
@@ -92,6 +98,13 @@ type SurveySummary = {
   gps_lat: number | null;
   gps_lng: number | null;
   roof_type: string | null;
+  proposed_capacity_kw: number | null;
+};
+
+type DesignSummary = {
+  panel_watt: number | null;
+  system_kw: number | null;
+  panel_brand?: string | null;
 };
 
 type ObstructionType = SiteObstruction["type"];
@@ -231,6 +244,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const [panelDirty, setPanelDirty] = useState(false);
   const [packing, setPacking] = useState(false);
   const [currentPanelLayout, setCurrentPanelLayout] = useState<ProjectPanelLayout | null>(null);
+  const [packMode, setPackMode] = useState<PanelPackMode>("target_kw");
+  const [targetKw, setTargetKw] = useState<number>(5);
+  const [maxCapacity, setMaxCapacity] = useState({ maxPanelCount: 0, maxDcCapacityKw: 0 });
   const photoInputRef = useRef<HTMLInputElement | null>(null);
 
   const googleMapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim() ?? "";
@@ -239,16 +255,18 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     let cancelled = false;
     void (async () => {
       try {
-        const [projectRes, surveyRes, layoutRes, panelRes] = await Promise.all([
+        const [projectRes, surveyRes, layoutRes, panelRes, designsRes] = await Promise.all([
           fetch(`/api/projects/${projectId}`, { cache: "no-store" }),
           fetch(`/api/projects/${projectId}/survey`, { cache: "no-store" }),
           fetch(`/api/projects/${projectId}/site-layout`, { cache: "no-store" }),
           fetch(`/api/projects/${projectId}/panel-layout`, { cache: "no-store" }),
+          fetch(`/api/projects/${projectId}/designs`, { cache: "no-store" }),
         ]);
         const projectJson = (await projectRes.json()) as ApiEnvelope<ProjectSummary>;
         const surveyJson = (await surveyRes.json()) as ApiEnvelope<SurveySummary | null>;
         const layoutJson = (await layoutRes.json()) as ApiEnvelope<ProjectSiteLayout | null>;
         const panelJson = (await panelRes.json()) as ApiEnvelope<ProjectPanelLayout | null>;
+        const designsJson = (await designsRes.json()) as ApiEnvelope<DesignSummary[]>;
         if (cancelled) return;
         if (!projectJson.ok || !projectJson.data) {
           throw new Error(projectJson.error || "Project could not be loaded.");
@@ -258,6 +276,21 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         const surveyData = surveyJson.ok ? surveyJson.data ?? null : null;
         setSurvey(surveyData);
         setRoofType(surveyData?.roof_type || projectJson.data.roof_type || "");
+
+        const latestDesign =
+          designsJson.ok && Array.isArray(designsJson.data) ? designsJson.data[0] ?? null : null;
+
+        const seededTarget =
+          parseCapacityKwText(projectJson.data.capacity_kw) ??
+          (surveyData?.proposed_capacity_kw != null && surveyData.proposed_capacity_kw > 0
+            ? surveyData.proposed_capacity_kw
+            : null) ??
+          (latestDesign?.system_kw != null && latestDesign.system_kw > 0
+            ? latestDesign.system_kw
+            : null) ??
+          5;
+        setTargetKw(seededTarget);
+        setPackMode("target_kw");
 
         const layout = layoutJson.ok ? layoutJson.data ?? null : null;
         setCurrentLayout(layout);
@@ -292,6 +325,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             coveragePct: savedPanel.coverage_pct,
           });
           setPanelDirty(false);
+          const placedKw =
+            (savedPanel.panels_geojson.length * savedPanel.panel_spec.wattage) / 1000;
+          if (placedKw > 0) setTargetKw(Number(placedKw.toFixed(2)));
         } else if (draft?.panels?.length) {
           if (draft.panel_spec) setPanelSpec(draft.panel_spec);
           if (draft.panel_orientation === "landscape" || draft.panel_orientation === "portrait") {
@@ -304,6 +340,13 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             coveragePct: draft.panel_coverage_pct ?? 0,
           });
           setPanelDirty(true);
+        } else {
+          setPanelSpec(
+            resolvePanelSpecFromProject({
+              panelWatt: latestDesign?.panel_watt,
+              panelBrand: projectJson.data.panel_brand ?? latestDesign?.panel_brand,
+            })
+          );
         }
 
         const nextCenter: [number, number] = [
@@ -1319,12 +1362,18 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         tiltDeg: 0,
         obstructionClearanceFt: 1.5,
         preservePanels: lockedPanels,
+        packMode,
+        targetKw: packMode === "target_kw" ? targetKw : undefined,
       });
       pushPanelHistory(placedPanels);
       setPlacedPanels(result.panels);
       setPanelMetrics({
         remainingAreaSqft: result.remainingAreaSqft,
         coveragePct: result.coveragePct,
+      });
+      setMaxCapacity({
+        maxPanelCount: result.maxPanelCount,
+        maxDcCapacityKw: result.maxDcCapacityKw,
       });
       setSelectedPanelId(null);
       setPanelDirty(true);
@@ -1333,10 +1382,25 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           "No panels fit",
           "Roof too small for this module, or setback is high. Try setback 0–1 ft, or Landscape."
         );
+      } else if (
+        packMode === "target_kw" &&
+        result.dcCapacityKw + 0.01 < targetKw &&
+        result.maxDcCapacityKw + 0.01 < targetKw
+      ) {
+        toast.error(
+          "Target exceeds roof",
+          `Max ~${result.maxDcCapacityKw.toFixed(2)} kW on this roof. Placed ${result.panelCount} panels (${result.dcCapacityKw.toFixed(2)} kW).`
+        );
+      } else if (packMode === "target_kw" && result.dcCapacityKw + 0.05 < targetKw) {
+        toast.success(
+          "Partial target",
+          `${result.panelCount} panels · ${result.dcCapacityKw.toFixed(2)} kW (max ${result.maxDcCapacityKw.toFixed(2)} kW)`
+        );
       } else {
         toast.success(
           "Panels placed",
-          `${result.panelCount} panels · ${result.dcCapacityKw.toFixed(2)} kW DC`
+          `${result.panelCount} panels · ${result.dcCapacityKw.toFixed(2)} kW DC` +
+            (packMode === "target_kw" ? ` · target ${targetKw} kW` : " · fill max")
         );
       }
     } catch (error) {
@@ -1348,6 +1412,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       setPacking(false);
     }
   }, [
+    packMode,
     panelOrientation,
     panelSetbackFt,
     panelSpec,
@@ -1355,8 +1420,33 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     pushPanelHistory,
     state.obstructions,
     state.roof,
+    targetKw,
     toast,
   ]);
+
+  useEffect(() => {
+    if (!state.roof) {
+      setMaxCapacity({ maxPanelCount: 0, maxDcCapacityKw: 0 });
+      return;
+    }
+    try {
+      const estimate = estimateMaxDcCapacity({
+        roof: state.roof,
+        obstructions: state.obstructions,
+        panelSpec,
+        orientation: panelOrientation,
+        setbackFt: panelSetbackFt,
+        obstructionClearanceFt: 1.5,
+        preservePanels: [],
+      });
+      setMaxCapacity({
+        maxPanelCount: estimate.maxPanelCount,
+        maxDcCapacityKw: estimate.maxDcCapacityKw,
+      });
+    } catch {
+      // ignore estimate errors while drawing
+    }
+  }, [panelOrientation, panelSetbackFt, panelSpec, state.obstructions, state.roof]);
 
   const clearPanels = useCallback(() => {
     if (placedPanels.length === 0) return;
@@ -1617,15 +1707,215 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               </p>
             </div>
           </div>
-          <Button onClick={() => void saveLayout()} disabled={saving || !state.roof || drawingRoof}>
-            <Save className="mr-1.5 h-4 w-4" />
-            {saving ? "Saving…" : "Save version"}
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="hidden items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-bold sm:flex dark:border-white/10 dark:bg-white/[0.04]">
+              <span className="text-slate-500">
+                {packMode === "target_kw" ? `Target ${targetKw} kW` : "Fill max"}
+              </span>
+              <span className="text-slate-300">·</span>
+              <span className="text-slate-700 dark:text-slate-200">
+                Max {maxCapacity.maxDcCapacityKw > 0 ? `${maxCapacity.maxDcCapacityKw.toFixed(1)} kW` : "—"}
+              </span>
+              <span className="text-slate-300">·</span>
+              <span className="text-blue-700 dark:text-blue-300">
+                Placed{" "}
+                {placedPanels.length
+                  ? `${((placedPanels.length * panelSpec.wattage) / 1000).toFixed(2)} kW`
+                  : "—"}
+              </span>
+            </div>
+            <Button onClick={() => void saveLayout()} disabled={saving || !state.roof || drawingRoof}>
+              <Save className="mr-1.5 h-4 w-4" />
+              {saving ? "Saving…" : "Save version"}
+            </Button>
+          </div>
         </div>
       </header>
 
-      <div className="mx-auto grid min-h-0 w-full max-w-[1600px] flex-1 gap-3 overflow-hidden p-3 lg:grid-cols-[300px_minmax(0,1fr)_280px] lg:p-4">
-        <aside className="min-h-0 space-y-3 overflow-y-auto overscroll-contain rounded-xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-slate-900">
+      <div className="mx-auto grid min-h-0 w-full max-w-[1800px] flex-1 gap-2 overflow-hidden bg-slate-200/40 p-2 dark:bg-slate-950 grid-cols-[52px_minmax(0,1fr)] lg:grid-cols-[52px_minmax(0,1fr)_360px] lg:gap-0 lg:p-0">
+
+        <aside className="flex min-h-0 flex-col overflow-hidden border-r border-slate-800 bg-slate-900 text-slate-100">
+          <div className="flex flex-1 flex-col items-center gap-0.5 overflow-y-auto overscroll-contain py-2">
+            <button
+              type="button"
+              title="Select / move"
+              onClick={() => setActiveStudioTool("select")}
+              className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                studioTool === "select" && !pendingObstruction && !drawingRoof
+                  ? "bg-blue-600 text-white"
+                  : "text-slate-300 hover:bg-white/10"
+              }`}
+            >
+              <MousePointer2 className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              title="Place panel"
+              disabled={!state.roof || drawingRoof}
+              onClick={() => setActiveStudioTool("place_panel")}
+              className={`flex h-10 w-10 items-center justify-center rounded-lg disabled:opacity-40 ${
+                studioTool === "place_panel" ? "bg-blue-600 text-white" : "text-slate-300 hover:bg-white/10"
+              }`}
+            >
+              <Square className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              title="Draw / add roof section"
+              disabled={drawingRoof}
+              onClick={() => beginRoofDrawing("add")}
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-300 hover:bg-white/10 disabled:opacity-40"
+            >
+              <TriangleRight className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              title="Water tank"
+              onClick={() => beginObstruction("water_tank")}
+              className={`flex h-10 w-10 items-center justify-center rounded-lg text-[10px] font-extrabold ${
+                pendingObstruction === "water_tank"
+                  ? "bg-amber-500 text-white"
+                  : "text-amber-300 hover:bg-white/10"
+              }`}
+            >
+              WT
+            </button>
+            <div className="my-1 h-px w-6 bg-white/15" />
+            <button type="button" title="Zoom in" onClick={() => zoomBy(1)} className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-300 hover:bg-white/10">
+              <Plus className="h-4 w-4" />
+            </button>
+            <button type="button" title="Zoom out" onClick={() => zoomBy(-1)} className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-300 hover:bg-white/10">
+              <Minus className="h-4 w-4" />
+            </button>
+            <button type="button" title={`Map: ${mapTypeId}`} onClick={cycleMapType} className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-300 hover:bg-white/10">
+              <MapIcon className="h-4 w-4" />
+            </button>
+            <button type="button" title="Reset north" onClick={resetMapNorth} className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-300 hover:bg-white/10">
+              <Compass className="h-4 w-4" style={{ transform: `rotate(${-mapHeading}deg)` }} />
+            </button>
+            <div className="my-1 h-px w-6 bg-white/15" />
+            <button type="button" title="Undo" disabled={!canUndo} onClick={undoStudio} className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-300 hover:bg-white/10 disabled:opacity-30">
+              <Undo2 className="h-4 w-4" />
+            </button>
+            <button type="button" title="Redo" disabled={!canRedo} onClick={redoStudio} className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-300 hover:bg-white/10 disabled:opacity-30">
+              <Redo2 className="h-4 w-4" />
+            </button>
+          </div>
+        </aside>
+
+        <section className="relative min-h-[50vh] overflow-hidden overscroll-none rounded-xl border border-slate-200 bg-slate-200 dark:border-white/10 dark:bg-slate-900 lg:min-h-0 lg:h-full">
+          {googleMapsKey ? (
+            <div
+              ref={setMapContainerEl}
+              className="absolute inset-0 h-full w-full"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center p-6">
+              <div className="max-w-md rounded-xl border border-amber-200 bg-amber-50 p-5 text-center">
+                <Cloud className="mx-auto h-8 w-8 text-amber-700" />
+                <p className="mt-2 text-sm font-extrabold text-amber-950">Google Maps API key required</p>
+                <p className="mt-1 text-xs leading-relaxed text-amber-800">
+                  Add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to .env.local and Vercel, enable Maps JavaScript
+                  API + Geocoding API with billing, then restart / redeploy.
+                </p>
+              </div>
+            </div>
+          )}
+          {!mapReady && googleMapsKey && !loadError ? (
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-slate-200/80 text-sm font-semibold text-slate-600 dark:bg-slate-900/80 dark:text-slate-300">
+              Loading map…
+            </div>
+          ) : null}
+          {loadError ? (
+            <div className="absolute bottom-3 left-3 right-3 rounded-lg border border-amber-200 bg-amber-50/95 px-3 py-2 text-xs font-semibold text-amber-900">
+              {loadError}
+            </div>
+          ) : null}
+        </section>
+
+
+        <aside className="col-span-2 min-h-0 max-h-[42vh] space-y-3 overflow-y-auto overscroll-contain border-t border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-slate-900 lg:col-span-1 lg:max-h-none lg:border-l lg:border-t-0">
+
+          <div className="rounded-xl border border-blue-200 bg-blue-50/80 p-3 dark:border-blue-900/40 dark:bg-blue-950/30">
+            <p className="text-[11px] font-extrabold uppercase tracking-wide text-blue-700 dark:text-blue-300">Plant capacity</p>
+            <p className="mt-1 text-[10px] leading-relaxed text-blue-900/80 dark:text-blue-100/80">
+              Project se target aata hai — yahan badha/ghata sakte ho. Max = roof minus obstructions.
+            </p>
+            <div className="mt-2 grid grid-cols-2 gap-1.5">
+              <button
+                type="button"
+                onClick={() => setPackMode("target_kw")}
+                className={`rounded-lg border px-2 py-2 text-[11px] font-semibold ${
+                  packMode === "target_kw"
+                    ? "border-blue-600 bg-blue-600 text-white"
+                    : "border-slate-200 bg-white text-slate-600 dark:border-white/10 dark:bg-slate-950"
+                }`}
+              >
+                Target kW
+              </button>
+              <button
+                type="button"
+                onClick={() => setPackMode("fill_max")}
+                className={`rounded-lg border px-2 py-2 text-[11px] font-semibold ${
+                  packMode === "fill_max"
+                    ? "border-blue-600 bg-blue-600 text-white"
+                    : "border-slate-200 bg-white text-slate-600 dark:border-white/10 dark:bg-slate-950"
+                }`}
+              >
+                Fill max
+              </button>
+            </div>
+            <label className="mt-2 block text-[11px] font-bold text-slate-700 dark:text-slate-200">
+              Target plant size (kW)
+              <input
+                type="number"
+                min={0.5}
+                max={500}
+                step={0.1}
+                value={targetKw}
+                disabled={packMode !== "target_kw"}
+                onChange={(event) => {
+                  setTargetKw(Math.max(0.5, Number(event.target.value) || 0.5));
+                  setPanelDirty(true);
+                }}
+                className="mt-1 w-full rounded-lg border border-slate-200 px-2.5 py-2 text-xs disabled:opacity-50 dark:border-white/10 dark:bg-slate-950"
+              />
+            </label>
+            <div className="mt-2 grid grid-cols-3 gap-1.5">
+              <div className="rounded-lg bg-white/90 p-1.5 dark:bg-slate-950/80">
+                <p className="text-[9px] font-bold uppercase text-slate-400">Placed</p>
+                <p className="text-xs font-extrabold text-slate-900 dark:text-white">
+                  {placedPanels.length
+                    ? ((placedPanels.length * panelSpec.wattage) / 1000).toFixed(2)
+                    : "—"}
+                </p>
+              </div>
+              <div className="rounded-lg bg-white/90 p-1.5 dark:bg-slate-950/80">
+                <p className="text-[9px] font-bold uppercase text-slate-400">Target</p>
+                <p className="text-xs font-extrabold text-slate-900 dark:text-white">
+                  {packMode === "target_kw" ? targetKw.toFixed(2) : "—"}
+                </p>
+              </div>
+              <div className="rounded-lg bg-white/90 p-1.5 dark:bg-slate-950/80">
+                <p className="text-[9px] font-bold uppercase text-slate-400">Max</p>
+                <p className="text-xs font-extrabold text-slate-900 dark:text-white">
+                  {maxCapacity.maxDcCapacityKw > 0 ? maxCapacity.maxDcCapacityKw.toFixed(2) : "—"}
+                </p>
+              </div>
+            </div>
+            {packMode === "target_kw" &&
+            maxCapacity.maxDcCapacityKw > 0 &&
+            targetKw > maxCapacity.maxDcCapacityKw + 0.01 ? (
+              <p className="mt-2 rounded-md bg-amber-100 px-2 py-1 text-[10px] font-semibold text-amber-900">
+                Target ({targetKw} kW) roof max (~{maxCapacity.maxDcCapacityKw.toFixed(2)} kW) se zyada hai.
+              </p>
+            ) : null}
+            <p className="mt-1 text-[10px] text-slate-500">
+              Max ~{maxCapacity.maxPanelCount || 0} panels with current module / setback / keep-outs.
+            </p>
+          </div>
+
+
           <div>
             <p className="text-xs font-extrabold text-slate-900 dark:text-white">Site controls</p>
             <p className="mt-1 text-[11px] leading-relaxed text-slate-500">
@@ -1963,7 +2253,11 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               disabled={!state.roof || drawingRoof || packing}
               onClick={runAutoLayout}
             >
-              {packing ? "Placing panels…" : "Auto layout — place panels"}
+              {packing
+                ? "Placing panels…"
+                : packMode === "target_kw"
+                  ? `Auto layout — ${targetKw} kW target`
+                  : "Auto layout — fill max"}
             </Button>
             <Button
               variant={studioTool === "place_panel" ? "default" : "outline"}
@@ -2013,127 +2307,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               Select a panel, then drag to move. Delete / Backspace removes it — Ctrl+Z undoes. Locked panels stay on auto re-run.
             </p>
           </div>
-        </aside>
 
-        <section className="relative min-h-[50vh] overflow-hidden overscroll-none rounded-xl border border-slate-200 bg-slate-200 dark:border-white/10 dark:bg-slate-900 lg:min-h-0 lg:h-full">
-          {googleMapsKey ? (
-            <div
-              ref={setMapContainerEl}
-              className="absolute inset-0 h-full w-full"
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center p-6">
-              <div className="max-w-md rounded-xl border border-amber-200 bg-amber-50 p-5 text-center">
-                <Cloud className="mx-auto h-8 w-8 text-amber-700" />
-                <p className="mt-2 text-sm font-extrabold text-amber-950">Google Maps API key required</p>
-                <p className="mt-1 text-xs leading-relaxed text-amber-800">
-                  Add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to .env.local and Vercel, enable Maps JavaScript
-                  API + Geocoding API with billing, then restart / redeploy.
-                </p>
-              </div>
-            </div>
-          )}
 
-          {/* Photoshop-style tool rail — map overlays only; no extra Google API cost */}
-          <div className="pointer-events-none absolute left-2 top-2 z-10 flex max-h-[calc(100%-1rem)] flex-col gap-1.5">
-            <div className="pointer-events-auto flex flex-col overflow-hidden rounded-xl border border-slate-200/90 bg-white/95 shadow-md backdrop-blur-sm dark:border-white/10 dark:bg-slate-950/95">
-              {(
-                [
-                  {
-                    id: "select" as const,
-                    label: "Select / move",
-                    icon: MousePointer2,
-                    active: studioTool === "select" && !pendingObstruction && !drawingRoof,
-                    onClick: () => setActiveStudioTool("select"),
-                  },
-                  {
-                    id: "place_panel" as const,
-                    label: "Place panel",
-                    icon: Square,
-                    active: studioTool === "place_panel",
-                    onClick: () => setActiveStudioTool("place_panel"),
-                    disabled: !state.roof || drawingRoof,
-                  },
-                ] as const
-              ).map((tool) => (
-                <button
-                  key={tool.id}
-                  type="button"
-                  title={tool.label}
-                  disabled={"disabled" in tool ? tool.disabled : false}
-                  onClick={tool.onClick}
-                  className={`flex h-9 w-9 items-center justify-center border-b border-slate-100 last:border-b-0 disabled:opacity-40 dark:border-white/10 ${
-                    tool.active
-                      ? "bg-blue-600 text-white"
-                      : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/10"
-                  }`}
-                >
-                  <tool.icon className="h-4 w-4" />
-                </button>
-              ))}
-              <button
-                type="button"
-                title="Water tank"
-                onClick={() => beginObstruction("water_tank")}
-                className={`flex h-9 w-9 items-center justify-center border-b border-slate-100 text-[10px] font-extrabold dark:border-white/10 ${
-                  pendingObstruction === "water_tank"
-                    ? "bg-amber-500 text-white"
-                    : "text-amber-800 hover:bg-amber-50 dark:text-amber-200"
-                }`}
-              >
-                WT
-              </button>
-              <button
-                type="button"
-                title="Zoom in"
-                onClick={() => zoomBy(1)}
-                className="flex h-9 w-9 items-center justify-center border-b border-slate-100 text-slate-700 hover:bg-slate-100 dark:border-white/10 dark:text-slate-200"
-              >
-                <Plus className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                title="Zoom out"
-                onClick={() => zoomBy(-1)}
-                className="flex h-9 w-9 items-center justify-center border-b border-slate-100 text-slate-700 hover:bg-slate-100 dark:border-white/10 dark:text-slate-200"
-              >
-                <Minus className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                title={`Map view: ${mapTypeId} (click to cycle Map / Hybrid / Satellite)`}
-                onClick={cycleMapType}
-                className="flex h-9 w-9 items-center justify-center border-b border-slate-100 text-slate-700 hover:bg-slate-100 dark:border-white/10 dark:text-slate-200"
-              >
-                <MapIcon className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                title="Reset compass north"
-                onClick={resetMapNorth}
-                className="relative flex h-9 w-9 items-center justify-center text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/10"
-              >
-                <Compass
-                  className="h-4 w-4 transition-transform"
-                  style={{ transform: `rotate(${-mapHeading}deg)` }}
-                />
-              </button>
-            </div>
-          </div>
-
-          {!mapReady && googleMapsKey && !loadError ? (
-            <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-slate-200/80 text-sm font-semibold text-slate-600 dark:bg-slate-900/80 dark:text-slate-300">
-              Loading map…
-            </div>
-          ) : null}
-          {loadError ? (
-            <div className="absolute bottom-3 left-3 right-3 rounded-lg border border-amber-200 bg-amber-50/95 px-3 py-2 text-xs font-semibold text-amber-900">
-              {loadError}
-            </div>
-          ) : null}
-        </section>
-
-        <aside className="min-h-0 space-y-3 overflow-y-auto overscroll-contain">
           <div className="rounded-xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-slate-900">
             <p className="text-xs font-extrabold text-slate-900 dark:text-white">Live geometry</p>
             <div className="mt-3 grid grid-cols-2 gap-2">
@@ -2269,6 +2444,13 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             </div>
             <p className="mt-1">
               Draw roof sections, then run Auto layout. Panels stay on the project design — not inside the customer proposal.
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-dashed border-slate-200 p-3 dark:border-white/10">
+            <p className="text-[11px] font-extrabold uppercase tracking-wide text-slate-400">Shadow (Phase 4)</p>
+            <p className="mt-1 text-[10px] leading-relaxed text-slate-500">
+              Shade analysis slot — coming after panel layout is stable. Design stays separate from proposal.
             </p>
           </div>
         </aside>

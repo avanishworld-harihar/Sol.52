@@ -25,6 +25,8 @@ const FT_TO_M = 0.3048;
 const SQM_TO_SQFT = 10.7639104167;
 const MM_TO_M = 0.001;
 
+export type PanelPackMode = "target_kw" | "fill_max";
+
 export type AutoPackInput = {
   roof: RoofGeometry;
   obstructions: SiteObstruction[];
@@ -38,12 +40,19 @@ export type AutoPackInput = {
   obstructionClearanceFt?: number;
   /** Locked / manually kept panels are preserved and blocked during re-pack. */
   preservePanels?: PlacedPanel[];
+  /** Default target_kw when targetKw is set; otherwise fill_max. */
+  packMode?: PanelPackMode;
+  /** Desired DC plant size (kW). Used when packMode is target_kw. */
+  targetKw?: number;
 };
 
 export type AutoPackResult = {
   panels: PlacedPanel[];
   panelCount: number;
   dcCapacityKw: number;
+  /** Uncapped pack size after setback + obstruction keep-out. */
+  maxPanelCount: number;
+  maxDcCapacityKw: number;
   remainingAreaSqft: number;
   coveragePct: number;
   buildableAreaSqft: number;
@@ -343,6 +352,7 @@ export function autoPackPanels(input: AutoPackInput): AutoPackResult {
   const clearanceFt = input.obstructionClearanceFt ?? 1;
   const panelGapMm = input.panelGapMm ?? 20;
   const preservePanels = (input.preservePanels ?? []).filter((panel) => panel.is_locked);
+  const wattage = Math.max(1, input.panelSpec.wattage);
 
   let { panels: packed, buildables } = packAllSections({
     roof: input.roof,
@@ -371,6 +381,21 @@ export function autoPackPanels(input: AutoPackInput): AutoPackResult {
     buildables = retry.buildables;
   }
 
+  const maxPanelCount = packed.length;
+  const maxDcCapacityKw = (maxPanelCount * wattage) / 1_000;
+
+  const packMode =
+    input.packMode ??
+    (input.targetKw != null && input.targetKw > 0 ? "target_kw" : "fill_max");
+
+  if (packMode === "target_kw" && input.targetKw != null && input.targetKw > 0) {
+    const targetCount = Math.ceil((input.targetKw * 1000) / wattage);
+    const locked = packed.filter((panel) => panel.is_locked);
+    const unlocked = packed.filter((panel) => !panel.is_locked);
+    const unlockedQuota = Math.max(0, targetCount - locked.length);
+    packed = [...locked, ...unlocked.slice(0, unlockedQuota)];
+  }
+
   const roofMetrics = calculateRoofMetrics(input.roof);
   const buildableAreaSqm = buildables.reduce(
     (sum, feature) => sum + (feature ? Math.max(0, area(feature)) : 0),
@@ -391,15 +416,31 @@ export function autoPackPanels(input: AutoPackInput): AutoPackResult {
       ? Math.min(100, (panelAreaSqft / roofMetrics.areaSqft) * 100)
       : 0;
   const panelCount = packed.length;
-  const dcCapacityKw = (panelCount * input.panelSpec.wattage) / 1_000;
+  const dcCapacityKw = (panelCount * wattage) / 1_000;
 
   return {
     panels: packed,
     panelCount,
     dcCapacityKw,
+    maxPanelCount,
+    maxDcCapacityKw,
     remainingAreaSqft,
     coveragePct,
     buildableAreaSqft,
+  };
+}
+
+/** Estimate max DC kW on this roof (fill pack, no target truncate). */
+export function estimateMaxDcCapacity(input: Omit<AutoPackInput, "packMode" | "targetKw">): {
+  maxPanelCount: number;
+  maxDcCapacityKw: number;
+  buildableAreaSqft: number;
+} {
+  const result = autoPackPanels({ ...input, packMode: "fill_max" });
+  return {
+    maxPanelCount: result.maxPanelCount,
+    maxDcCapacityKw: result.maxDcCapacityKw,
+    buildableAreaSqft: result.buildableAreaSqft,
   };
 }
 

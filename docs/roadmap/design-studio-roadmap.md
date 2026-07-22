@@ -70,10 +70,16 @@ The foundation engine of the Design Studio. After the roof polygon is drawn, the
 automatically generates the best possible panel layout. The installer only fine-tunes the result
 instead of placing every panel manually.
 
-**Goal:** `Draw roof → Auto layout generated → Minor adjustments → Save`
+**Goal:** `Draw roof → Auto layout (Target kW or Fill max) → Minor adjustments → Save`
+
+**Shipped (2026-07-22):** Target kW packing (default, seeded from project `capacity_kw` / survey /
+design), Fill max toggle, live Max possible kW after obstruction keep-outs, brand→watt module
+picker, manual place/move/undo, and Aurora-style 3-pane shell (tool rail | map | inspector).
+Standalone Tools entry remains a future mount of the same `DesignStudioClient` — not a second
+engine. Design/SLD stay outside customer proposal.
 
 **Inputs:** panel dimensions, orientation (portrait/landscape), required setbacks, walkway
-clearance, roof shape, installer spacing rules.
+clearance, roof shape, installer spacing rules, optional `targetKw`.
 
 **Algorithm outline (planning only):**
 ```
