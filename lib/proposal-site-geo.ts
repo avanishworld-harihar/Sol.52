@@ -53,5 +53,5 @@ export function recommendedTiltFromLatitude(latDeg: number): number {
 }
 
 export function tiltRationaleForSite(cityLabel: string, lat: number, tiltDeg: number): string {
-  return `Recommended ${tiltDeg}° panel tilt for ${cityLabel} (${lat.toFixed(1)}°N latitude) — optimised for year-round generation in Madhya Pradesh.`;
+  return `Recommended ${tiltDeg}° panel tilt for ${cityLabel} (${lat.toFixed(1)}°N) — India rooftop rule of thumb (latitude − 5°, clamped 10–30°).`;
 }

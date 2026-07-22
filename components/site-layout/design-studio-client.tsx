@@ -48,6 +48,7 @@ import {
   readCustomPanelModules,
   resolvePanelSpecFromProject,
 } from "@/lib/panel-module-catalog";
+import { recommendedTiltFromLatitude } from "@/lib/proposal-site-geo";
 import type {
   PanelOrientation,
   PanelSpec,
@@ -260,6 +261,11 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const [panelSpec, setPanelSpec] = useState<PanelSpec>(DEFAULT_PANEL_MODULE);
   const [panelOrientation, setPanelOrientation] = useState<Exclude<PanelOrientation, "east_west">>("portrait");
   const [panelSetbackFt, setPanelSetbackFt] = useState(1.5);
+  const [panelTiltDeg, setPanelTiltDeg] = useState(() =>
+    recommendedTiltFromLatitude(DEFAULT_CENTER[1])
+  );
+  /** When false, tilt follows site latitude as the map center moves. */
+  const [tiltManual, setTiltManual] = useState(false);
   const [placedPanels, setPlacedPanels] = useState<PlacedPanel[]>([]);
   const [selectedPanelIds, setSelectedPanelIds] = useState<string[]>([]);
   const [snapEnabled, setSnapEnabled] = useState(true);
@@ -407,6 +413,23 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         ];
         setCenter(nextCenter);
         initialCenterRef.current = nextCenter;
+
+        const suggestedTilt = recommendedTiltFromLatitude(nextCenter[1]);
+        if (savedPanel && savedPanel.tilt_deg > 0) {
+          setPanelTiltDeg(savedPanel.tilt_deg);
+          setTiltManual(true);
+        } else if (
+          !savedPanel &&
+          typeof draft?.panel_tilt_deg === "number" &&
+          draft.panel_tilt_deg > 0
+        ) {
+          setPanelTiltDeg(draft.panel_tilt_deg);
+          setTiltManual(true);
+        } else {
+          setPanelTiltDeg(suggestedTilt);
+          setTiltManual(false);
+        }
+
         initialRoofRef.current = roof;
         currentRoofRef.current = roof;
         activeRoofIndexRef.current = 0;
@@ -433,6 +456,11 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       cancelled = true;
     };
   }, [projectId]);
+
+  useEffect(() => {
+    if (tiltManual) return;
+    setPanelTiltDeg(recommendedTiltFromLatitude(center[1]));
+  }, [center, tiltManual]);
 
   const removeRoofListeners = useCallback(() => {
     roofListenersRef.current.forEach((listener) => listener.remove());
@@ -1120,6 +1148,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         panel_spec: panelSpec,
         panel_orientation: panelOrientation,
         panel_setback_ft: panelSetbackFt,
+        panel_tilt_deg: panelTiltDeg,
         panels: placedPanels,
         panel_remaining_area_sqft: panelMetrics.remainingAreaSqft,
         panel_coverage_pct: panelMetrics.coveragePct,
@@ -1133,6 +1162,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     panelMetrics.remainingAreaSqft,
     panelOrientation,
     panelSetbackFt,
+    panelTiltDeg,
     panelSpec,
     placedPanels,
     projectId,
@@ -1569,7 +1599,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         orientation: panelOrientation,
         setbackFt: panelSetbackFt,
         mountingType: "flush",
-        tiltDeg: 0,
+        tiltDeg: panelTiltDeg,
         obstructionClearanceFt: 1.5,
         preservePanels: lockedPanels,
         packMode,
@@ -1626,6 +1656,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     panelOrientation,
     panelSetbackFt,
     panelSpec,
+    panelTiltDeg,
     placedPanels,
     pushPanelHistory,
     state.obstructions,
@@ -1968,7 +1999,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             site_layout_id: json.data.id,
             panel_spec: panelSpec,
             orientation: panelOrientation,
-            tilt_deg: 0,
+            tilt_deg: panelTiltDeg,
             mounting_type: "flush",
             setback_ft: panelSetbackFt,
             walkway_ft: 0,
@@ -2007,6 +2038,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     panelOrientation,
     panelSetbackFt,
     panelSpec,
+    panelTiltDeg,
     placedPanels,
     projectId,
     roofType,
@@ -2624,6 +2656,48 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               ))}
             </div>
             <label className="mt-2 block text-[11px] font-bold text-slate-600 dark:text-slate-300">
+              Panel tilt (°)
+              <input
+                type="number"
+                min={0}
+                max={60}
+                step={1}
+                value={panelTiltDeg}
+                onChange={(event) => {
+                  const next = Math.max(0, Math.min(60, Math.round(Number(event.target.value) || 0)));
+                  setPanelTiltDeg(next);
+                  setTiltManual(true);
+                  setPanelDirty(true);
+                }}
+                className="mt-1 w-full rounded-lg border border-slate-200 px-2.5 py-2 text-xs dark:border-white/10 dark:bg-slate-950"
+              />
+            </label>
+            {(() => {
+              const suggested = recommendedTiltFromLatitude(center[1]);
+              const latLabel = center[1].toFixed(1);
+              return (
+                <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <p className="text-[10px] text-slate-500">
+                    Suggested {suggested}° from site ({latLabel}°N) — lat − 5°, clamped 10–30°.
+                    {tiltManual ? " Manual override on." : ""}
+                  </p>
+                  {tiltManual && panelTiltDeg !== suggested ? (
+                    <button
+                      type="button"
+                      className="text-[11px] font-bold text-blue-700 hover:underline"
+                      onClick={() => {
+                        setPanelTiltDeg(suggested);
+                        setTiltManual(false);
+                        setPanelDirty(true);
+                      }}
+                    >
+                      Use suggested
+                    </button>
+                  ) : null}
+                </div>
+              );
+            })()}
+            <label className="mt-2 block text-[11px] font-bold text-slate-600 dark:text-slate-300">
               Edge setback (ft)
               <input
                 type="number"
@@ -2742,7 +2816,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               ))}
             </div>
             <p className="mt-2 text-[10px] text-slate-500">
-              {panelModuleLabel(panelSpec)} · {panelOrientation}
+              {panelModuleLabel(panelSpec)} · {panelOrientation} · tilt {panelTiltDeg}°
             </p>
           </div>
 
