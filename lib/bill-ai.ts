@@ -70,13 +70,19 @@ async function analyzeBillWithAnthropicHybrid(
 }
 
 function looksLikeHt(parsed: ParsedBillShape): boolean {
+  const signature = [
+    parsed.connection_type,
+    parsed.tariff_category,
+    parsed.supply_voltage,
+    parsed.purpose_of_supply,
+  ].join(" ");
+  const hasHvMarker =
+    /\bHT\b|\bHV[-\s]?\d|(?:11|33|66|132)\s*k?v\b/i.test(signature) ||
+    /\bHV\b/i.test(String(parsed.tariff_category ?? ""));
   return Boolean(
-    parsed.contract_demand_kva != null ||
-      parsed.kvah_units != null ||
-      parsed.tod_units ||
-      /\bHV\b|\bHT\b|(?:11|33|66|132)\s*k?v/i.test(
-        `${parsed.tariff_category ?? ""} ${parsed.connection_type ?? ""} ${parsed.supply_voltage ?? ""}`
-      )
+    hasHvMarker ||
+      (parsed.contract_demand_kva != null &&
+        (parsed.kvah_units != null || parsed.kwh_units != null || hasHvMarker))
   );
 }
 

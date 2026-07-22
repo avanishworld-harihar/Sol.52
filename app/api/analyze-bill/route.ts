@@ -14,7 +14,7 @@ import type { ParsedBillShape } from "@/lib/bill-parse";
 import { auditMpBill, type MpBillAuditReport } from "@/lib/mp-bill-audit";
 import { saveMpBillAuditRecord } from "@/lib/mp-bill-audit-persistence";
 import { sanitizeMpMeteredVsSubsidyFields } from "@/lib/mp-bill-field-sanitize";
-import { sanitizeHtBillConsumption } from "@/lib/ht-bill-sanitize";
+import { sanitizeHtBillConsumption, sanitizeLtBillFields } from "@/lib/ht-bill-sanitize";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
@@ -563,6 +563,8 @@ export async function POST(req: NextRequest) {
 
     // MP DISCOM slips: ₹ subsidy often sits on the numeric column OCR labels as consumption.
     parsed = sanitizeMpMeteredVsSubsidyFields(parsed);
+    // Residential / LT path: strip HT fields the model may invent; reject accumulator-scale units.
+    parsed = sanitizeLtBillFields(parsed, billTypeHint);
     // HT tables mix raw AMR readings, MD, MF, kWh and kVAh. The final supplied
     // kWh line is authoritative for proposal consumption and current-month units.
     parsed = sanitizeHtBillConsumption(parsed, billTypeHint);

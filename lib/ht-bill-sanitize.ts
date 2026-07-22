@@ -32,18 +32,73 @@ export function isHtParsedBill(
   hint: "auto" | "lt" | "ht" = "auto"
 ): boolean {
   if (hint === "ht") return true;
+  if (hint === "lt") return false;
+
   const signature = [
     parsed.connection_type,
     parsed.tariff_category,
     parsed.supply_voltage,
     parsed.purpose_of_supply,
   ].join(" ");
-  return (
+
+  const hasHvMarker =
     /\bHT\b|\bHV[-\s]?\d|(?:11|33|66|132)\s*k?v\b/i.test(signature) ||
-    numberOrNull(parsed.contract_demand_kva) != null ||
-    numberOrNull(parsed.kvah_units) != null ||
-    Boolean(parsed.tod_units)
+    /\bHV\b/i.test(String(parsed.tariff_category ?? ""));
+
+  const contractDemand = numberOrNull(parsed.contract_demand_kva);
+  const kvah = numberOrNull(parsed.kvah_units);
+  const kwh = numberOrNull(parsed.kwh_units);
+
+  // Require a hard HT marker. Do NOT treat ToD rebate / tod_units alone as HT —
+  // MP domestic LV bills often print ToD rebate lines and that was false-positiveing.
+  return (
+    hasHvMarker ||
+    (contractDemand != null && contractDemand > 0 && (kvah != null || kwh != null || hasHvMarker)) ||
+    (kvah != null && kvah > 0 && (contractDemand != null || hasHvMarker))
   );
+}
+
+/**
+ * When the client forced LT/domestic mode, strip HT industrial fields the model
+ * may still invent after reading HT rules from older prompts / habit.
+ */
+export function sanitizeLtBillFields(
+  input: ParsedBillShape,
+  hint: "auto" | "lt" | "ht" = "auto"
+): ParsedBillShape {
+  if (hint !== "lt") return input;
+
+  const parsed: ParsedBillShape = { ...input };
+  const notes = [...(parsed.strict_audit_notes ?? [])];
+
+  parsed.contract_demand_kva = null;
+  parsed.supply_voltage = null;
+  parsed.max_demand_kva = null;
+  parsed.billing_demand_kva = null;
+  parsed.avg_power_factor = null;
+  parsed.kvah_units = null;
+  parsed.tod_units = null;
+  parsed.tod_amounts_inr = null;
+  parsed.multiplying_factor = null;
+  parsed.demand_charges_inr = null;
+
+  const metered = numberOrNull(parsed.metered_unit_consumption);
+  // Domestic / LT: a 5–6 digit "consumption" is almost always the meter accumulator.
+  if (metered != null && metered >= 10_000) {
+    parsed.metered_unit_consumption = null;
+    notes.push(
+      `LT mode: rejected metered_unit_consumption=${Math.round(metered)} as likely meter accumulator (not monthly kWh).`
+    );
+  }
+
+  // Keep kwh_units only when it looks like a plausible LT monthly total.
+  const kwh = numberOrNull(parsed.kwh_units);
+  if (kwh != null && kwh >= 10_000) {
+    parsed.kwh_units = null;
+  }
+
+  parsed.strict_audit_notes = Array.from(new Set(notes)).slice(0, 30);
+  return parsed;
 }
 
 /**

@@ -54,12 +54,65 @@ export async function analyzeBillWithAnthropic(
   const timeoutMs = Number.isFinite(timeoutRaw) ? Math.max(5_000, Math.min(45_000, timeoutRaw)) : DEFAULT_TIMEOUT_MS;
 
   const hintBlock = options?.formatHint?.trim() ? `\nDISCOM hint memory: ${options.formatHint.trim()}\n` : "";
+  const mode = options?.billTypeHint ?? "auto";
   const billTypeHintBlock =
-    options?.billTypeHint === "ht"
+    mode === "ht"
       ? "\nUSER-SELECTED MODE: HT/HV COMMERCIAL. Apply the HT rules below as mandatory. Domestic 2–3 digit consumption heuristics DO NOT APPLY.\n"
-      : options?.billTypeHint === "lt"
-        ? "\nUSER-SELECTED MODE: LT COMMERCIAL. Still switch to HT rules if the document clearly prints HV tariff, 11/33/132 kV, Contract Demand, TOD1–TOD4, or kVAh.\n"
-        : "";
+      : mode === "lt"
+        ? `\nUSER-SELECTED MODE: LT / DOMESTIC (or LT commercial shop).
+Apply ONLY LT domestic / LT commercial rules.
+Leave ALL HT/HV fields null: contract_demand_kva, supply_voltage, max_demand_kva, billing_demand_kva, avg_power_factor, kvah_units, tod_units, multiplying_factor, demand_charges_inr (unless a simple LT fixed-charge line).
+metered_unit_consumption = Current Reading − Previous Reading (typical domestic 50–1500 units; LT commercial often under 5000).
+NEVER treat a 4–6 digit meter accumulator as monthly consumption.
+NEVER invent HT-scale 5–7 digit monthly units for a domestic LV bill.
+Ignore the HT (HIGH TENSION) section entirely for this document.\n`
+        : "\nMODE: AUTO. Prefer LT/domestic heuristics first. Only apply HT rules if the bill CLEARLY prints HV tariff / 11–132 kV / Contract Demand kVA / Net KVAH.\n";
+
+  const htRulesBlock =
+    mode === "lt"
+      ? ""
+      : `
+======================================================================
+HT (HIGH TENSION / HV) BILL RULES — industrial & large commercial
+======================================================================
+Detect HT when the bill prints: Supply Voltage 11/33/132 KV, tariff code
+HV-x.x, "Contract Demand … KVA", TOD1–TOD4 rows, or KVAH readings.
+LT bills: leave ALL these fields null. For HT bills:
+• supply_voltage: verbatim, e.g. "33 KV".
+• contract_demand_kva: "Cont. Demand 500 KVA" → 500.
+• max_demand_kva: "Max Demand Recorded" / "Net Max Demand" (e.g. 416).
+• billing_demand_kva: "Billing Demand" row (e.g. 450) — EXTRACT SEPARATELY from
+  Max Demand; MP bills billing demand at min 90% of Contract Demand even when
+  MD is lower. It is the basis of Fixed/Demand Charges (e.g. "Fixed Charges
+  450 * 641"). Also put that ₹ amount in demand_charges_inr AND
+  fixed_charges_inr (same line on MP HT bills).
+• avg_power_factor: "Avg Power Factor 0.87" → 0.87 (0–1 decimal, never %).
+  If below 0.90, extract the "PF Surcharge" ₹ line into pf_welding_surcharge_inr
+  and add strict_audit_notes "Low PF — PF surcharge applied".
+• multiplying_factor: "MF" column value (e.g. 600). The printed
+  "DIFFERENCE With MF" / "Net Units Supplied" rows are ALREADY multiplied —
+  use them as final consumption; NEVER multiply them by MF again. Only when a
+  bill prints raw readings WITHOUT an MF-adjusted total: units = (reading
+  difference) × MF.
+• kvah_units: "Net KVAH Units Supplied" / Total KVAH Units (e.g. 67719).
+• kwh_units: "Net Units Supplied" / Total kWh Units (e.g. 59112).
+• MP HV-3.x OVERRIDE: metered_unit_consumption = kwh_units (e.g. 59112), NOT
+  the raw AMR reading (e.g. 4063.285), MD (e.g. 416), MF (e.g. 600), or kVAh
+  reading (e.g. 67719). Confirm from "Energy Charges 59112 × 7.75".
+• The generic domestic statement that consumption is usually 2–3 digits DOES
+  NOT APPLY to HT. HT monthly consumption commonly has 4–7 digits.
+• tod_units: TOD1..TOD4 kWh rows (e.g. {"tod1":1695,"tod2":10971,"tod3":38331,"tod4":8142}).
+• tod_amounts_inr: TOD rebate/surcharge ₹ rows signed as printed
+  (rebate negative, e.g. {"tod1":-1038.03,"tod2":17916.52,"tod3":-62597.59,"tod4":13296.54}).
+• energy_charges_inr: main "Energy Charges" line (kVAh/kWh × rate).
+• fppas_inr: "FPPAS on Energy Charges". regulatory_surcharges_inr: PF Surcharge
+  and similar HT surcharge lines when not itemised elsewhere.
+• "Previous Reading Details" rows containing AMR date, MF and "KWH Reading"
+  are cumulative meter readings, NOT monthly consumption history. Do not put
+  them in months/consumption_history. Only use a table explicitly labelled
+  monthly consumption / consumption history.
+`;
+
   const prompt = `Extract bill fields from this Indian electricity bill image/PDF.
 Return ONLY valid JSON (no markdown), exactly this shape:
 {"name":"","address":"","consumer_id":"","meter_number":"","connection_date":"","sanctioned_load":"","phase":"Single or Three","connection_type":"purpose as printed e.g. Shops/Showrooms or Domestic","purpose_of_supply":"","tariff_category":"exact tariff code e.g. LV2 [LV2.2] or HV-3.1.B","contract_demand_kva":null,"supply_voltage":null,"max_demand_kva":null,"billing_demand_kva":null,"avg_power_factor":null,"kvah_units":null,"kwh_units":null,"tod_units":null,"tod_amounts_inr":null,"demand_charges_inr":null,"multiplying_factor":null,"discom":"","state":"","district":"","country":"India","bill_month":"","registered_mobile":"","fixed_charges_inr":null,"energy_charges_inr":null,"electricity_duty_inr":null,"regulatory_surcharges_inr":null,"total_amount_payable_inr":null,"read_type":"","bill_type_label":"","metered_unit_consumption":null,"total_amount_till_due_inr":null,"total_amount_after_due_inr":null,"current_month_bill_amount_inr":null,"principal_arrear_inr":null,"amount_received_against_bill_inr":null,"mp_govt_subsidy_amount_inr":null,"tod_rebate_inr":null,"fppas_inr":null,"pf_welding_surcharge_inr":null,"rebate_incentive_inr":null,"ccb_adjustment_inr":null,"nfp_flag":false,"strict_audit_mode":"strict_v1","strict_audit_notes":[],"months":{"jan":null,"feb":null,"mar":null,"apr":null,"may":null,"jun":null,"jul":null,"aug":null,"sep":null,"oct":null,"nov":null,"dec":null},"consumption_history":[],"format_memory":"","tariff_slabs_detected":[]}
@@ -72,7 +125,7 @@ INDIAN ELECTRICITY BILL STRUCTURE (read carefully before extracting):
 • BILLING DETAILS / CHARGE BREAKDOWN: separate section with all INR line items.
 • COLUMN GUARD — MP Poorv/Central/West layouts: NEVER copy **M.P. Govt. Subsidy Amount / subsidy rebate** ₹ amounts (decimals, e.g. −544.96) into metered_unit_consumption. Put them ONLY in mp_govt_subsidy_amount_inr as negative ₹. metered_unit_consumption = integer kWh for the bill month ONLY.
 • CRITICAL — metered_unit_consumption vs meter reading: metered_unit_consumption is the NET UNITS consumed (Current Reading − Previous Reading = typically 100–600 units for domestic). Current Reading and Previous Reading are large accumulator values (4–6 digits, e.g. 12847). NEVER use a 4–6 digit accumulator value as metered_unit_consumption.
-
+${htRulesBlock}
 ======================================================================
 FIELD EXTRACTION RULES — CRITICAL for tariff engine downstream
 ======================================================================
@@ -83,8 +136,7 @@ wrong sub-rule. Be precise — leave blank rather than guess.
 
 ──── (A) metered_unit_consumption (THIS MONTH's kWh) ────
 • Net units = Current Reading − Previous Reading.
-• LT: usually 1–9999. HT: use the final MF-adjusted Net Units Supplied kWh
-  and allow 4–7 digits (e.g. 59112).
+• LT / domestic: usually 1–9999 (most homes 50–1500). ${mode === "ht" ? "HT: use the final MF-adjusted Net Units Supplied kWh and allow 4–7 digits (e.g. 59112)." : "Do NOT apply HT-scale 5–7 digit monthly units unless MODE is HT."}
 • NEVER copy a 4–6 digit meter accumulator here.
 • NEVER copy any ₹ value (decimals, negative signs) here.
 
@@ -105,7 +157,7 @@ wrong sub-rule. Be precise — leave blank rather than guess.
   is printed as a SEPARATE field with kVA unit.
 • null if absent or zero — that means the consumer is on sanctioned-load tariff.
 • NEVER copy sanctioned_load (KW) here.
-
+${mode === "lt" ? "• In LT/DOMESTIC mode this must stay null.\n" : ""}
 ──── (D) phase ────
 • "Single" if bill prints "SINGLE", "1-Phase", "1 Ph", "1Φ", "1 PH".
 • "Three" if bill prints "THREE", "3-Phase", "3 Ph", "3Φ", "3 PH".
@@ -152,46 +204,6 @@ wrong sub-rule. Be precise — leave blank rather than guess.
 • If non-MP DISCOM, leave state blank or set as printed.
 
 ======================================================================
-HT (HIGH TENSION / HV) BILL RULES — industrial & large commercial
-======================================================================
-Detect HT when the bill prints: Supply Voltage 11/33/132 KV, tariff code
-HV-x.x, "Contract Demand … KVA", TOD1–TOD4 rows, or KVAH readings.
-LT bills: leave ALL these fields null. For HT bills:
-• supply_voltage: verbatim, e.g. "33 KV".
-• contract_demand_kva: "Cont. Demand 500 KVA" → 500.
-• max_demand_kva: "Max Demand Recorded" / "Net Max Demand" (e.g. 416).
-• billing_demand_kva: "Billing Demand" row (e.g. 450) — EXTRACT SEPARATELY from
-  Max Demand; MP bills billing demand at min 90% of Contract Demand even when
-  MD is lower. It is the basis of Fixed/Demand Charges (e.g. "Fixed Charges
-  450 * 641"). Also put that ₹ amount in demand_charges_inr AND
-  fixed_charges_inr (same line on MP HT bills).
-• avg_power_factor: "Avg Power Factor 0.87" → 0.87 (0–1 decimal, never %).
-  If below 0.90, extract the "PF Surcharge" ₹ line into pf_welding_surcharge_inr
-  and add strict_audit_notes "Low PF — PF surcharge applied".
-• multiplying_factor: "MF" column value (e.g. 600). The printed
-  "DIFFERENCE With MF" / "Net Units Supplied" rows are ALREADY multiplied —
-  use them as final consumption; NEVER multiply them by MF again. Only when a
-  bill prints raw readings WITHOUT an MF-adjusted total: units = (reading
-  difference) × MF.
-• kvah_units: "Net KVAH Units Supplied" / Total KVAH Units (e.g. 67719).
-• kwh_units: "Net Units Supplied" / Total kWh Units (e.g. 59112).
-• MP HV-3.x OVERRIDE: metered_unit_consumption = kwh_units (e.g. 59112), NOT
-  the raw AMR reading (e.g. 4063.285), MD (e.g. 416), MF (e.g. 600), or kVAh
-  reading (e.g. 67719). Confirm from "Energy Charges 59112 × 7.75".
-• The generic domestic statement that consumption is usually 2–3 digits DOES
-  NOT APPLY to HT. HT monthly consumption commonly has 4–7 digits.
-• tod_units: TOD1..TOD4 kWh rows (e.g. {"tod1":1695,"tod2":10971,"tod3":38331,"tod4":8142}).
-• tod_amounts_inr: TOD rebate/surcharge ₹ rows signed as printed
-  (rebate negative, e.g. {"tod1":-1038.03,"tod2":17916.52,"tod3":-62597.59,"tod4":13296.54}).
-• energy_charges_inr: main "Energy Charges" line (kVAh/kWh × rate).
-• fppas_inr: "FPPAS on Energy Charges". regulatory_surcharges_inr: PF Surcharge
-  and similar HT surcharge lines when not itemised elsewhere.
-• "Previous Reading Details" rows containing AMR date, MF and "KWH Reading"
-  are cumulative meter readings, NOT monthly consumption history. Do not put
-  them in months/consumption_history. Only use a table explicitly labelled
-  monthly consumption / consumption history.
-
-======================================================================
 CHARGE LINE RULES
 ======================================================================
 1) STRICT AUDIT: only use values explicitly printed; no assumptions.
@@ -210,7 +222,7 @@ CHARGE LINE RULES
 8) tariff_slabs_detected: [] if slab table not visible.
 9) Set nfp_flag=true only when "NFP" or "Not For Payment" text is explicitly present.
 10) CRITICAL — mp_govt_subsidy_amount_inr: extract ONLY from the line whose label EXACTLY reads "M.P. Govt. Subsidy Amount" / "MP Govt Subsidy" / "Subsidy Amount" / "AGJY" / "Atal Griha Jyoti" / "Indira Griha Jyoti" / "Mukhyamantri … Subsidy". RULE BOOK: MP Govt. Domestic Subsidy is paid ONLY when monthly consumption ≤ 150 units. If metered_unit_consumption > 150 then this line is ALWAYS ₹0.00 → return 0 (never a negative value). Only ≤150-u bills print a NEGATIVE ₹ here (e.g. "-544.96", "-100.00", "( 100.00 )") — preserve the sign. NEVER source this value from any other negative row, especially NOT from "Other / TOD Rebate & Surcharge", "Rebate & Incentive", "Online / Advance Payment Incentive", "Lock Credit / Employee Rebate" or "Interest On Security Deposit". Return null only if the M.P. Govt. Subsidy row is entirely absent from the bill.
-11) CRITICAL — tod_rebate_inr: extract ONLY from lines labelled "TOD" / "Time of Day" / "ToD Rebate & Surcharge" / "Other / TOD…". Signed ₹ as printed (rebate often negative; e.g. MAR-2026 −₹76.57, APR-2026 −₹100.00 on >150-u bills). NEVER put this amount into mp_govt_subsidy_amount_inr — TOD and Subsidy are independent fields.
+11) CRITICAL — tod_rebate_inr: extract ONLY from lines labelled "TOD" / "Time of Day" / "ToD Rebate & Surcharge" / "Other / TOD…". Signed ₹ as printed (rebate often negative; e.g. MAR-2026 −₹76.57, APR-2026 −₹100.00 on >150-u bills). NEVER put this amount into mp_govt_subsidy_amount_inr — TOD and Subsidy are independent fields. On LT/domestic bills, put ToD ₹ here only — do NOT invent tod_units kWh arrays.
 
 ======================================================================
 SELF-AUDIT BEFORE RETURNING

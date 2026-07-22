@@ -1223,6 +1223,12 @@ function ProposalPageContent() {
         file.type ||
         (file.name.toLowerCase().endsWith(".pdf") ? "application/pdf" : "image/jpeg");
 
+      const billTypeHint: "auto" | "lt" | "ht" =
+        osPresetId === "commercial_ht" || /\bHT\b|\bHV\b/i.test(manual.connectionType)
+          ? "ht"
+          : // Residential + LT commercial: force LT/domestic OCR (never "auto").
+            // "auto" was mixing HT industrial rules into domestic bill reads.
+            "lt";
       const response = await fetch("/api/analyze-bill", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1230,12 +1236,7 @@ function ProposalPageContent() {
           base64Data,
           mimeType,
           discomCode: manual.discom.trim() || installerDiscom.trim() || undefined,
-          billTypeHint:
-            osPresetId === "commercial_ht" || /\bHT\b|\bHV\b/i.test(manual.connectionType)
-              ? "ht"
-              : isCommercialPresetFamily(osPresetId)
-                ? "lt"
-                : "auto",
+          billTypeHint,
           clientRef: clientRef || undefined,
           leadId: selectedLeadId || undefined
         })
@@ -1280,7 +1281,7 @@ function ProposalPageContent() {
       }
 
       const data = payload.data as ParsedBillShape;
-      const detectedHt = isHtParsedBill(data);
+      const detectedHt = isHtParsedBill(data, billTypeHint);
       if (isCommercialPresetFamily(osPresetId) && detectedHt && osPresetId !== "commercial_ht") {
         setOsPresetId("commercial_ht");
         setProposalLayout(getPresetDefaultLayout("commercial_ht"));

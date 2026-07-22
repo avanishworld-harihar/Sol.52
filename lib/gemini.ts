@@ -97,9 +97,12 @@ INDIAN ELECTRICITY BILL STRUCTURE (read carefully before extracting):
 ======================================================================
 HT (HIGH TENSION / HV) BILLS — industrial & large commercial
 ======================================================================
-Detect HT when the bill prints Supply Voltage 11/33/132 KV, an HV-x.x tariff
-code, "Contract Demand … KVA", TOD1–TOD4 rows, or KVAH readings. LT bills:
-leave these null. For HT bills fill: supply_voltage (verbatim e.g. "33 KV"),
+ONLY when the bill CLEARLY prints Supply Voltage 11/33/132 KV, an HV-x.x tariff
+code, "Contract Demand … KVA", TOD1–TOD4 kWh rows, or KVAH readings.
+For normal domestic / LV bills: leave ALL HT fields null and keep
+metered_unit_consumption as Current−Previous (typically 50–1500 units).
+Do NOT apply HT 5–7 digit consumption rules to domestic LV bills.
+For true HT bills fill: supply_voltage (verbatim e.g. "33 KV"),
 contract_demand_kva ("Cont. Demand"), max_demand_kva ("Max/Net Max Demand"),
 billing_demand_kva ("Billing Demand" — SEPARATE from Max Demand; min 90% of CD;
 basis of Fixed/Demand Charges; put that ₹ line in BOTH demand_charges_inr and
@@ -108,11 +111,11 @@ extract the "PF Surcharge" ₹ into pf_welding_surcharge_inr), kvah_units
 ("Net KVAH Units Supplied"), kwh_units ("Net Units Supplied" kWh), tod_units
 (TOD1..TOD4 kWh rows), tod_amounts_inr (TOD rebate/surcharge ₹, signed as
 printed), multiplying_factor (MF, e.g. 600 — "DIFFERENCE With MF" rows are
-already multiplied; never multiply again). For MP HV-3.x, set
+already multiplied; never multiply again). For MP HV-3.x only, set
 metered_unit_consumption = kwh_units (e.g. 59112, confirmed by "Energy Charges
-59112 × 7.75"), never the raw AMR reading, MD, MF, or kVAh reading. Domestic
-2–3 digit consumption heuristics do not apply to HT. "Previous Reading Details"
-KWH Reading rows are cumulative readings, not monthly consumption history.
+59112 × 7.75"), never the raw AMR reading, MD, MF, or kVAh reading.
+"Previous Reading Details" KWH Reading rows are cumulative readings, not
+monthly consumption history.
 
 ======================================================================
 FIELD EXTRACTION RULES — CRITICAL for tariff engine downstream
