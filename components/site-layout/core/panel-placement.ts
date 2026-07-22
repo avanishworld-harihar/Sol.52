@@ -403,6 +403,32 @@ export function autoPackPanels(input: AutoPackInput): AutoPackResult {
   };
 }
 
+/** Build a single panel footprint centered on a map click (manual place). */
+export function createManualPanelAt(args: {
+  lng: number;
+  lat: number;
+  panelSpec: PanelSpec;
+  orientation: Exclude<PanelOrientation, "east_west">;
+  sectionIndex?: number;
+}): PlacedPanel | null {
+  const shortM = args.panelSpec.width_mm * MM_TO_M;
+  const longM = args.panelSpec.height_mm * MM_TO_M;
+  const widthM = args.orientation === "landscape" ? longM : shortM;
+  const heightM = args.orientation === "landscape" ? shortM : longM;
+  const footprint = panelFootprint(args.lng, args.lat, widthM, heightM);
+  if (!footprint) return null;
+  return {
+    id: `p-manual-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    footprint_geojson: footprint,
+    section_index: args.sectionIndex ?? 0,
+    row_index: 0,
+    col_index: 0,
+    rotation_deg: 0,
+    is_locked: false,
+    is_manually_placed: true,
+  };
+}
+
 /** Recompute coverage after delete/clear without re-packing. */
 export function computePanelCoverageMetrics(
   roof: RoofGeometry,

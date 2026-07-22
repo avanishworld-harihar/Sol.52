@@ -3,15 +3,21 @@
 import {
   ArrowLeft,
   Cloud,
+  Compass,
   Crosshair,
   Grid2X2,
   ImagePlus,
   LocateFixed,
   Lock,
+  Map as MapIcon,
   MapPin,
+  Minus,
+  MousePointer2,
+  Plus,
   Redo2,
   Save,
   Search,
+  Square,
   Trash2,
   TriangleRight,
   Undo2,
@@ -50,6 +56,7 @@ import {
 import {
   autoPackPanels,
   computePanelCoverageMetrics,
+  createManualPanelAt,
   effectiveObstructionRadiusFt,
   MIN_OBSTRUCTION_RADIUS_FT,
 } from "./core/panel-placement";
@@ -88,8 +95,11 @@ type SurveySummary = {
 };
 
 type ObstructionType = SiteObstruction["type"];
+type StudioTool = "select" | "place_panel";
 
 const DEFAULT_CENTER: [number, number] = [78.9629, 20.5937];
+const MAP_MAX_ZOOM = 22;
+const PANEL_HISTORY_LIMIT = 40;
 
 const OBSTRUCTION_LABELS: Record<ObstructionType, string> = {
   water_tank: "Water tank",
@@ -165,6 +175,15 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const currentRoofRef = useRef<RoofGeometry | null>(null);
   const undoStackRef = useRef<Array<RoofGeometry | null>>([]);
   const redoStackRef = useRef<Array<RoofGeometry | null>>([]);
+  const panelUndoStackRef = useRef<PlacedPanel[][]>([]);
+  const panelRedoStackRef = useRef<PlacedPanel[][]>([]);
+  const placedPanelsRef = useRef<PlacedPanel[]>([]);
+  const draggingPanelIdRef = useRef<string | null>(null);
+  const studioToolRef = useRef<StudioTool>("select");
+  const placePanelRef = useRef<((latLng: google.maps.LatLng) => void) | null>(null);
+  const undoStudioRef = useRef<(() => void) | null>(null);
+  const redoStudioRef = useRef<(() => void) | null>(null);
+  const deleteSelectedPanelRef = useRef<(() => void) | null>(null);
   const activeRoofIndexRef = useRef(0);
   const drawingModeRef = useRef<"add" | "replace">("add");
   const applyingHistoryRef = useRef(false);
@@ -197,6 +216,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const [roofLocked, setRoofLocked] = useState(true);
   const [activeRoofIndex, setActiveRoofIndex] = useState(0);
   const [historyVersion, setHistoryVersion] = useState(0);
+  const [studioTool, setStudioTool] = useState<StudioTool>("select");
+  const [mapTypeId, setMapTypeId] = useState<"hybrid" | "satellite" | "roadmap">("hybrid");
+  const [mapHeading, setMapHeading] = useState(0);
   const [panelSpec, setPanelSpec] = useState<PanelSpec>(DEFAULT_PANEL_MODULE);
   const [panelOrientation, setPanelOrientation] = useState<Exclude<PanelOrientation, "east_west">>("portrait");
   const [panelSetbackFt, setPanelSetbackFt] = useState(1.5);
@@ -548,11 +570,27 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           zoom: initialCenterRef.current[0] === DEFAULT_CENTER[0] ? 5 : 20,
           mapTypeId: maps.MapTypeId.HYBRID,
           tilt: 0,
+          heading: 0,
+          minZoom: 3,
+          maxZoom: MAP_MAX_ZOOM,
           streetViewControl: false,
           fullscreenControl: true,
+          zoomControl: true,
+          scaleControl: true,
+          rotateControl: true,
+          rotateControlOptions: {
+            position: maps.ControlPosition.RIGHT_TOP,
+          },
           mapTypeControl: true,
           mapTypeControlOptions: {
-            mapTypeIds: [maps.MapTypeId.SATELLITE, maps.MapTypeId.HYBRID],
+            style: maps.MapTypeControlStyle.DROPDOWN_MENU,
+            position: maps.ControlPosition.TOP_CENTER,
+            mapTypeIds: [
+              maps.MapTypeId.ROADMAP,
+              maps.MapTypeId.HYBRID,
+              maps.MapTypeId.SATELLITE,
+              maps.MapTypeId.TERRAIN,
+            ],
           },
           gestureHandling: "greedy",
           clickableIcons: false,
@@ -568,6 +606,10 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             });
             addObstructionRef.current = null;
             setPendingObstruction(null);
+            return;
+          }
+          if (studioToolRef.current === "place_panel") {
+            placePanelRef.current?.(latLng);
             return;
           }
           const isDrawing = map.get("sol52DrawingRoof") === true;
@@ -635,6 +677,12 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           map.addListener("idle", () => {
             const next = map.getCenter();
             if (next) setCenter([next.lng(), next.lat()]);
+            const heading = map.getHeading();
+            if (typeof heading === "number") setMapHeading(heading);
+            const typeId = map.getMapTypeId();
+            if (typeId === "roadmap" || typeId === "hybrid" || typeId === "satellite") {
+              setMapTypeId(typeId);
+            }
           })
         );
 
@@ -738,7 +786,55 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   }, [mapReady, state.obstructions, state.selectedObstructionId]);
 
   useEffect(() => {
+    placedPanelsRef.current = placedPanels;
+  }, [placedPanels]);
+
+  useEffect(() => {
+    studioToolRef.current = studioTool;
+  }, [studioTool]);
+
+  const pushPanelHistory = useCallback((snapshot: PlacedPanel[]) => {
+    panelUndoStackRef.current.push(structuredClone(snapshot));
+    if (panelUndoStackRef.current.length > PANEL_HISTORY_LIMIT) {
+      panelUndoStackRef.current.shift();
+    }
+    panelRedoStackRef.current = [];
+    setHistoryVersion((value) => value + 1);
+  }, []);
+
+  const applyPanelSnapshot = useCallback(
+    (panels: PlacedPanel[]) => {
+      setPlacedPanels(panels);
+      setSelectedPanelId(null);
+      setPanelDirty(true);
+      if (state.roof) {
+        setPanelMetrics(computePanelCoverageMetrics(state.roof, panels));
+      } else {
+        setPanelMetrics({ remainingAreaSqft: 0, coveragePct: 0 });
+      }
+    },
+    [state.roof]
+  );
+
+  const undoPanels = useCallback(() => {
+    const previous = panelUndoStackRef.current.pop();
+    if (previous === undefined) return;
+    panelRedoStackRef.current.push(structuredClone(placedPanelsRef.current));
+    applyPanelSnapshot(previous);
+    setHistoryVersion((value) => value + 1);
+  }, [applyPanelSnapshot]);
+
+  const redoPanels = useCallback(() => {
+    const next = panelRedoStackRef.current.pop();
+    if (next === undefined) return;
+    panelUndoStackRef.current.push(structuredClone(placedPanelsRef.current));
+    applyPanelSnapshot(next);
+    setHistoryVersion((value) => value + 1);
+  }, [applyPanelSnapshot]);
+
+  useEffect(() => {
     if (!mapReady || !mapRef.current || !window.google?.maps) return;
+    if (draggingPanelIdRef.current) return;
     panelListenersRef.current.forEach((listener) => listener.remove());
     panelListenersRef.current = [];
     panelPolygonsRef.current.forEach((polygon) => polygon.setMap(null));
@@ -752,7 +848,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         paths: path,
         clickable: true,
         editable: false,
-        draggable: false,
+        draggable: selected && !panel.is_locked,
         strokeColor: selected ? "#1d4ed8" : panel.is_locked ? "#a16207" : "#1e3a8a",
         strokeOpacity: 1,
         strokeWeight: selected ? 2.5 : 1.5,
@@ -761,8 +857,40 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         zIndex: selected ? 8 : 6,
       });
       panelListenersRef.current.push(
-        google.maps.event.addListener(polygon, "click", () => {
+        google.maps.event.addListener(polygon, "click", (event: google.maps.MapMouseEvent) => {
           setSelectedPanelId(panel.id);
+          setStudioTool("select");
+          studioToolRef.current = "select";
+          event.domEvent?.stopPropagation?.();
+        }),
+        google.maps.event.addListener(polygon, "dragstart", () => {
+          draggingPanelIdRef.current = panel.id;
+          setSelectedPanelId(panel.id);
+        }),
+        google.maps.event.addListener(polygon, "dragend", () => {
+          const ringPath = polygon.getPath();
+          const ring: number[][] = [];
+          for (let i = 0; i < ringPath.getLength(); i += 1) {
+            const point = ringPath.getAt(i);
+            ring.push([point.lng(), point.lat()]);
+          }
+          if (ring.length >= 3) {
+            ring.push([...ring[0]!]);
+            pushPanelHistory(placedPanelsRef.current);
+            setPlacedPanels((current) =>
+              current.map((item) =>
+                item.id === panel.id
+                  ? {
+                      ...item,
+                      footprint_geojson: { type: "Polygon", coordinates: [ring] },
+                      is_manually_placed: true,
+                    }
+                  : item
+              )
+            );
+            setPanelDirty(true);
+          }
+          draggingPanelIdRef.current = null;
         })
       );
       return polygon;
@@ -826,14 +954,16 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     : null;
   const canUndo = drawingRoof
     ? drawingPointCount > 0
-    : historyVersion >= 0 && undoStackRef.current.length > 0;
+    : panelUndoStackRef.current.length > 0 || undoStackRef.current.length > 0;
   const canRedo = drawingRoof
     ? drawingRedoRef.current.length > 0
-    : historyVersion >= 0 && redoStackRef.current.length > 0;
+    : panelRedoStackRef.current.length > 0 || redoStackRef.current.length > 0;
 
   const beginObstruction = useCallback((type: ObstructionType) => {
     mapRef.current?.set("sol52DrawingRoof", false);
     setDrawingRoof(false);
+    setStudioTool("select");
+    studioToolRef.current = "select";
     addObstructionRef.current = type;
     setPendingObstruction(type);
     mapRef.current?.getDiv().focus();
@@ -844,6 +974,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     drawingModeRef.current = mode;
     addObstructionRef.current = null;
     setPendingObstruction(null);
+    setStudioTool("select");
+    studioToolRef.current = "select";
     roofPolygonsRef.current.forEach((polygon) => polygon.setEditable(false));
     clearDraftOverlay();
     drawingPointsRef.current = [];
@@ -1025,13 +1157,27 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           event.preventDefault();
           addObstructionRef.current = null;
           setPendingObstruction(null);
+        } else if (studioToolRef.current === "place_panel") {
+          event.preventDefault();
+          setStudioTool("select");
+          studioToolRef.current = "select";
+          mapRef.current?.setOptions({ draggableCursor: null });
         }
+        return;
+      }
+      if (
+        (event.key === "Delete" || event.key === "Backspace") &&
+        selectedPanelId &&
+        !drawingRoof
+      ) {
+        event.preventDefault();
+        deleteSelectedPanelRef.current?.();
         return;
       }
       const isModifier = event.ctrlKey || event.metaKey;
       if (isModifier && !event.shiftKey && event.key.toLowerCase() === "z") {
         event.preventDefault();
-        undoRoof();
+        undoStudioRef.current?.();
         return;
       }
       if (
@@ -1040,12 +1186,12 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           (event.shiftKey && event.key.toLowerCase() === "z"))
       ) {
         event.preventDefault();
-        redoRoof();
+        redoStudioRef.current?.();
       }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [cancelRoofDrawing, drawingRoof, finishRoofDrawing, pendingObstruction, redoRoof, undoRoof]);
+  }, [cancelRoofDrawing, drawingRoof, finishRoofDrawing, pendingObstruction, selectedPanelId]);
 
   const toggleRoofLock = useCallback(() => {
     if (!roofPolygonRef.current) return;
@@ -1174,6 +1320,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         obstructionClearanceFt: 1.5,
         preservePanels: lockedPanels,
       });
+      pushPanelHistory(placedPanels);
       setPlacedPanels(result.panels);
       setPanelMetrics({
         remainingAreaSqft: result.remainingAreaSqft,
@@ -1205,20 +1352,24 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     panelSetbackFt,
     panelSpec,
     placedPanels,
+    pushPanelHistory,
     state.obstructions,
     state.roof,
     toast,
   ]);
 
   const clearPanels = useCallback(() => {
+    if (placedPanels.length === 0) return;
+    pushPanelHistory(placedPanels);
     setPlacedPanels([]);
     setSelectedPanelId(null);
     setPanelMetrics({ remainingAreaSqft: 0, coveragePct: 0 });
     setPanelDirty(true);
-  }, []);
+  }, [placedPanels, pushPanelHistory]);
 
   const deleteSelectedPanel = useCallback(() => {
     if (!selectedPanelId) return;
+    pushPanelHistory(placedPanelsRef.current);
     setPlacedPanels((current) => {
       const next = current.filter((panel) => panel.id !== selectedPanelId);
       if (state.roof) {
@@ -1230,7 +1381,106 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     });
     setSelectedPanelId(null);
     setPanelDirty(true);
-  }, [selectedPanelId, state.roof]);
+  }, [pushPanelHistory, selectedPanelId, state.roof]);
+
+  const placeManualPanelAt = useCallback(
+    (latLng: google.maps.LatLng) => {
+      const panel = createManualPanelAt({
+        lng: latLng.lng(),
+        lat: latLng.lat(),
+        panelSpec,
+        orientation: panelOrientation,
+        sectionIndex: activeRoofIndexRef.current,
+      });
+      if (!panel) {
+        toast.error("Could not place panel", "Try zooming in and clicking again.");
+        return;
+      }
+      pushPanelHistory(placedPanelsRef.current);
+      const next = [...placedPanelsRef.current, panel];
+      setPlacedPanels(next);
+      setSelectedPanelId(panel.id);
+      setPanelDirty(true);
+      if (state.roof) {
+        setPanelMetrics(computePanelCoverageMetrics(state.roof, next));
+      }
+    },
+    [panelOrientation, panelSpec, pushPanelHistory, state.roof, toast]
+  );
+
+  useEffect(() => {
+    placePanelRef.current = placeManualPanelAt;
+  }, [placeManualPanelAt]);
+
+  const undoStudio = useCallback(() => {
+    if (drawingRoof) {
+      undoRoof();
+      return;
+    }
+    if (panelUndoStackRef.current.length > 0) {
+      undoPanels();
+      return;
+    }
+    undoRoof();
+  }, [drawingRoof, undoPanels, undoRoof]);
+
+  const redoStudio = useCallback(() => {
+    if (drawingRoof) {
+      redoRoof();
+      return;
+    }
+    if (panelRedoStackRef.current.length > 0) {
+      redoPanels();
+      return;
+    }
+    redoRoof();
+  }, [drawingRoof, redoPanels, redoRoof]);
+
+  useEffect(() => {
+    undoStudioRef.current = undoStudio;
+    redoStudioRef.current = redoStudio;
+    deleteSelectedPanelRef.current = deleteSelectedPanel;
+  }, [deleteSelectedPanel, redoStudio, undoStudio]);
+
+  const setActiveStudioTool = useCallback((tool: StudioTool) => {
+    addObstructionRef.current = null;
+    setPendingObstruction(null);
+    if (drawingRoof) {
+      // keep roof drawing exclusive
+      return;
+    }
+    setStudioTool(tool);
+    studioToolRef.current = tool;
+    mapRef.current?.setOptions({
+      draggableCursor: tool === "place_panel" ? "crosshair" : null,
+    });
+  }, [drawingRoof]);
+
+  const cycleMapType = useCallback(() => {
+    const order: Array<"roadmap" | "hybrid" | "satellite"> = ["hybrid", "satellite", "roadmap"];
+    const current = mapRef.current?.getMapTypeId() as string | undefined;
+    const idx = order.indexOf(
+      current === "roadmap" || current === "hybrid" || current === "satellite"
+        ? current
+        : mapTypeId
+    );
+    const next = order[(idx + 1) % order.length]!;
+    mapRef.current?.setMapTypeId(next);
+    setMapTypeId(next);
+  }, [mapTypeId]);
+
+  const zoomBy = useCallback((delta: number) => {
+    const map = mapRef.current;
+    if (!map) return;
+    const zoom = map.getZoom() ?? 18;
+    map.setZoom(Math.min(MAP_MAX_ZOOM, Math.max(3, zoom + delta)));
+  }, []);
+
+  const resetMapNorth = useCallback(() => {
+    mapRef.current?.setHeading(0);
+    mapRef.current?.setTilt(0);
+    setMapHeading(0);
+  }, []);
 
   const toggleSelectedPanelLock = useCallback(() => {
     if (!selectedPanelId) return;
@@ -1566,17 +1816,17 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                   <><Lock className="mr-1 h-4 w-4" /> Lock roof</>
                 )}
               </Button>
-              <Button variant="outline" size="sm" disabled={!canUndo} onClick={undoRoof}>
+              <Button variant="outline" size="sm" disabled={!canUndo} onClick={undoStudio}>
                 <Undo2 className="mr-1 h-4 w-4" /> Undo
               </Button>
-              <Button variant="outline" size="sm" disabled={!canRedo} onClick={redoRoof}>
+              <Button variant="outline" size="sm" disabled={!canRedo} onClick={redoStudio}>
                 <Redo2 className="mr-1 h-4 w-4" /> Redo
               </Button>
             </div>
             {drawingRoof ? (
               <p className="mt-2 rounded-lg bg-rose-50 px-2 py-1.5 text-[10px] font-semibold text-rose-800">
                 Click each corner — dashed line follows. Finish: click the first dot, double-click,
-                right-click, or Enter. Right-click a dot removes it. Esc cancels, Ctrl+Z undo.
+                right-click, or Enter. Right-click a dot removes it. Esc cancels. Ctrl+Z undoes roof or panel edits.
               </p>
             ) : state.roof ? (
               <p className="mt-2 text-[10px] font-semibold text-slate-500">
@@ -1715,6 +1965,18 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             >
               {packing ? "Placing panels…" : "Auto layout — place panels"}
             </Button>
+            <Button
+              variant={studioTool === "place_panel" ? "default" : "outline"}
+              size="sm"
+              className="mt-1.5 w-full"
+              disabled={!state.roof || drawingRoof}
+              onClick={() =>
+                setActiveStudioTool(studioTool === "place_panel" ? "select" : "place_panel")
+              }
+            >
+              <Square className="mr-1 h-3.5 w-3.5" />
+              {studioTool === "place_panel" ? "Placing… click map (Esc cancel)" : "Manual place — click map"}
+            </Button>
             <div className="mt-1.5 grid grid-cols-2 gap-1.5">
               <Button
                 variant="outline"
@@ -1748,7 +2010,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               </Button>
             </div>
             <p className="mt-2 text-[10px] leading-relaxed text-slate-500">
-              Click a blue panel to select. Locked panels stay on re-run. Design is project-only — not in the proposal.
+              Select a panel, then drag to move. Delete / Backspace removes it — Ctrl+Z undoes. Locked panels stay on auto re-run.
             </p>
           </div>
         </aside>
@@ -1771,9 +2033,97 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               </div>
             </div>
           )}
+
+          {/* Photoshop-style tool rail — map overlays only; no extra Google API cost */}
+          <div className="pointer-events-none absolute left-2 top-2 z-10 flex max-h-[calc(100%-1rem)] flex-col gap-1.5">
+            <div className="pointer-events-auto flex flex-col overflow-hidden rounded-xl border border-slate-200/90 bg-white/95 shadow-md backdrop-blur-sm dark:border-white/10 dark:bg-slate-950/95">
+              {(
+                [
+                  {
+                    id: "select" as const,
+                    label: "Select / move",
+                    icon: MousePointer2,
+                    active: studioTool === "select" && !pendingObstruction && !drawingRoof,
+                    onClick: () => setActiveStudioTool("select"),
+                  },
+                  {
+                    id: "place_panel" as const,
+                    label: "Place panel",
+                    icon: Square,
+                    active: studioTool === "place_panel",
+                    onClick: () => setActiveStudioTool("place_panel"),
+                    disabled: !state.roof || drawingRoof,
+                  },
+                ] as const
+              ).map((tool) => (
+                <button
+                  key={tool.id}
+                  type="button"
+                  title={tool.label}
+                  disabled={"disabled" in tool ? tool.disabled : false}
+                  onClick={tool.onClick}
+                  className={`flex h-9 w-9 items-center justify-center border-b border-slate-100 last:border-b-0 disabled:opacity-40 dark:border-white/10 ${
+                    tool.active
+                      ? "bg-blue-600 text-white"
+                      : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/10"
+                  }`}
+                >
+                  <tool.icon className="h-4 w-4" />
+                </button>
+              ))}
+              <button
+                type="button"
+                title="Water tank"
+                onClick={() => beginObstruction("water_tank")}
+                className={`flex h-9 w-9 items-center justify-center border-b border-slate-100 text-[10px] font-extrabold dark:border-white/10 ${
+                  pendingObstruction === "water_tank"
+                    ? "bg-amber-500 text-white"
+                    : "text-amber-800 hover:bg-amber-50 dark:text-amber-200"
+                }`}
+              >
+                WT
+              </button>
+              <button
+                type="button"
+                title="Zoom in"
+                onClick={() => zoomBy(1)}
+                className="flex h-9 w-9 items-center justify-center border-b border-slate-100 text-slate-700 hover:bg-slate-100 dark:border-white/10 dark:text-slate-200"
+              >
+                <Plus className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                title="Zoom out"
+                onClick={() => zoomBy(-1)}
+                className="flex h-9 w-9 items-center justify-center border-b border-slate-100 text-slate-700 hover:bg-slate-100 dark:border-white/10 dark:text-slate-200"
+              >
+                <Minus className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                title={`Map view: ${mapTypeId} (click to cycle Map / Hybrid / Satellite)`}
+                onClick={cycleMapType}
+                className="flex h-9 w-9 items-center justify-center border-b border-slate-100 text-slate-700 hover:bg-slate-100 dark:border-white/10 dark:text-slate-200"
+              >
+                <MapIcon className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                title="Reset compass north"
+                onClick={resetMapNorth}
+                className="relative flex h-9 w-9 items-center justify-center text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/10"
+              >
+                <Compass
+                  className="h-4 w-4 transition-transform"
+                  style={{ transform: `rotate(${-mapHeading}deg)` }}
+                />
+              </button>
+            </div>
+          </div>
+
           {!mapReady && googleMapsKey && !loadError ? (
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-slate-200/80 text-sm font-semibold text-slate-600 dark:bg-slate-900/80 dark:text-slate-300">
-              Loading Google satellite map…
+              Loading map…
             </div>
           ) : null}
           {loadError ? (
