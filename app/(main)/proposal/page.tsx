@@ -1446,7 +1446,11 @@ function ProposalPageContent() {
         setBillAnalysis((prev) => `${prev}${extraHint}`.trim());
         setBillAnalysisTone("success");
       }
-      toast.success("Bill analyzed", `${modelLabel} updated bill details.`);
+      if (scannerMode === "fallback_manual") {
+        toast.info("Manual verify mode", "AI scan did not complete — please fill or check monthly units.");
+      } else {
+        toast.success("Bill analyzed", `${modelLabel} updated bill details.`);
+      }
       if (selectedLeadId) {
         void syncSelectedLeadFromBills();
       }

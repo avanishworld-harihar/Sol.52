@@ -21,8 +21,8 @@ async function analyzeBillWithAnthropicHybrid(
   mimeType: string,
   options?: { formatHint?: string; billTypeHint?: "auto" | "lt" | "ht"; expectedBillMonthHint?: string }
 ): Promise<{ parsed: ParsedBillShape; provider: BillAiProvider; tier: BillAiModelTier }> {
-  const haikuModel = (process.env.ANTHROPIC_HAIKU_MODEL || process.env.ANTHROPIC_MODEL || "claude-3-5-haiku-latest").trim();
-  const sonnetModel = (process.env.ANTHROPIC_SONNET_MODEL || "claude-3-5-sonnet-latest").trim();
+  const haikuModel = (process.env.ANTHROPIC_HAIKU_MODEL || process.env.ANTHROPIC_MODEL || "claude-haiku-4-5").trim();
+  const sonnetModel = (process.env.ANTHROPIC_SONNET_MODEL || "claude-sonnet-4-5").trim();
   const sonnetEnabled = String(process.env.ANTHROPIC_ENABLE_SONNET_FALLBACK ?? "true").toLowerCase() !== "false";
   const minConfidenceRaw = Number(process.env.AI_MIN_PARSE_CONFIDENCE ?? 45);
   const minConfidence = Number.isFinite(minConfidenceRaw) ? Math.max(0, Math.min(100, minConfidenceRaw)) : 55;

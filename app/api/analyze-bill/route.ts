@@ -76,7 +76,9 @@ function estimateParseConfidence(parsed: {
 
 function isAiAccessFailure(error: unknown): boolean {
   const msg = error instanceof Error ? error.message : String(error ?? "");
-  return /model is unavailable|does not have permission|api key is invalid|request failed|rate limit|claude|anthropic/i.test(msg);
+  return /model is unavailable|does not have permission|api key is invalid|api key is missing|rate limit|no compatible model|not_found_error|authentication|credit balance|billing/i.test(
+    msg
+  );
 }
 
 function buildFallbackParsedBill(input: { discomCode?: string | null }): ParsedBillShape {
@@ -487,7 +489,7 @@ export async function POST(req: NextRequest) {
       parsed = buildFallbackParsedBill({ discomCode: codeForHint });
       const scannerMsg = e instanceof Error ? e.message : "Bill scanner failed";
       const reason = isAiAccessFailure(e)
-        ? "AI scan could not run on current provider configuration."
+        ? scannerMsg || "AI scan could not run on current provider configuration."
         : "AI scanner could not parse this bill right now.";
       if (mimeType === "application/pdf") {
         const local = await safeParsePdfFallback(base64Data);

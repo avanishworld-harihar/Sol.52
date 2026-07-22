@@ -2,14 +2,24 @@ import { extractJsonFromModelText } from "@/lib/bill-parse";
 import type { ParsedBillShape } from "@/lib/bill-parse";
 import { normalizeParsedBillShape } from "@/lib/gemini";
 
-const DEFAULT_MODEL = "claude-3-5-haiku-latest";
+const DEFAULT_MODEL = "claude-haiku-4-5";
+/** Deprecated Claude 3.x IDs → current aliases (env may still point at old names). */
+const MODEL_ALIASES: Record<string, string> = {
+  "claude-3-5-haiku-latest": "claude-haiku-4-5",
+  "claude-3-5-haiku": "claude-haiku-4-5",
+  "claude-3-haiku-20240307": "claude-haiku-4-5",
+  "claude-3-5-sonnet-latest": "claude-sonnet-4-5",
+  "claude-3-5-sonnet": "claude-sonnet-4-5",
+  "claude-3-sonnet-20240229": "claude-sonnet-4-5"
+};
 const MODEL_FALLBACKS = [
-  "claude-3-5-haiku-latest",
-  "claude-3-haiku-20240307",
-  "claude-3-5-sonnet-latest",
-  "claude-3-sonnet-20240229"
+  "claude-haiku-4-5",
+  "claude-haiku-4-5-20251001",
+  "claude-sonnet-4-5",
+  "claude-sonnet-4-5-20250929",
+  "claude-sonnet-5"
 ];
-const DEFAULT_TIMEOUT_MS = 20_000;
+const DEFAULT_TIMEOUT_MS = 45_000;
 const API_VERSION = "2023-06-01";
 
 type AnthropicPart =
@@ -52,7 +62,7 @@ export async function analyzeBillWithAnthropic(
   const preferredModel = (options?.modelOverride || process.env.ANTHROPIC_MODEL || DEFAULT_MODEL).trim() || DEFAULT_MODEL;
   const modelCandidates = buildModelCandidates(preferredModel);
   const timeoutRaw = Number(process.env.ANTHROPIC_TIMEOUT_MS ?? DEFAULT_TIMEOUT_MS);
-  const timeoutMs = Number.isFinite(timeoutRaw) ? Math.max(5_000, Math.min(45_000, timeoutRaw)) : DEFAULT_TIMEOUT_MS;
+  const timeoutMs = Number.isFinite(timeoutRaw) ? Math.max(5_000, Math.min(90_000, timeoutRaw)) : DEFAULT_TIMEOUT_MS;
 
   const hintBlock = options?.formatHint?.trim() ? `\nDISCOM hint memory: ${options.formatHint.trim()}\n` : "";
   const expectedMonth = options?.expectedBillMonthHint?.trim() || "";
@@ -332,12 +342,18 @@ function toUserFacingAnthropicError(status: number, rawBody: string): string {
   return `Claude request failed (${status}).`;
 }
 
+function resolveModelId(requested: string): string {
+  const trimmed = requested.trim();
+  if (!trimmed) return DEFAULT_MODEL;
+  return MODEL_ALIASES[trimmed] ?? trimmed;
+}
+
 function buildModelCandidates(preferredModel: string): string[] {
   const envFallbacks = String(process.env.ANTHROPIC_MODEL_FALLBACKS ?? "")
     .split(",")
     .map((v) => v.trim())
     .filter(Boolean);
-  const merged = [preferredModel, ...envFallbacks, ...MODEL_FALLBACKS];
+  const merged = [preferredModel, ...envFallbacks, ...MODEL_FALLBACKS].map(resolveModelId);
   return merged.filter((model, idx) => merged.indexOf(model) === idx);
 }
 
