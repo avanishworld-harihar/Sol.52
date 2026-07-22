@@ -49,7 +49,14 @@ import {
   resolvePanelSpecFromProject,
 } from "@/lib/panel-module-catalog";
 import { recommendedTiltFromLatitude } from "@/lib/proposal-site-geo";
+import {
+  adviseRoofAzimuth,
+  estimateDesignAnnualYield,
+  moduleLengthForOrientationM,
+  recommendedRowPitchM,
+} from "@/lib/design-studio-engineering";
 import type {
+  PanelMountingType,
   PanelOrientation,
   PanelSpec,
   PlacedPanel,
@@ -266,6 +273,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   );
   /** When false, tilt follows site latitude as the map center moves. */
   const [tiltManual, setTiltManual] = useState(false);
+  const [mountingType, setMountingType] = useState<PanelMountingType>("flush");
   const [placedPanels, setPlacedPanels] = useState<PlacedPanel[]>([]);
   const [selectedPanelIds, setSelectedPanelIds] = useState<string[]>([]);
   const [snapEnabled, setSnapEnabled] = useState(true);
@@ -368,6 +376,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             savedPanel.orientation === "landscape" ? "landscape" : "portrait"
           );
           setPanelSetbackFt(savedPanel.setback_ft);
+          setMountingType(savedPanel.mounting_type ?? "flush");
           setPlacedPanels(savedPanel.panels_geojson);
           setPanelMetrics({
             remainingAreaSqft: savedPanel.remaining_area_sqft,
@@ -383,6 +392,13 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             setPanelOrientation(draft.panel_orientation);
           }
           if (typeof draft.panel_setback_ft === "number") setPanelSetbackFt(draft.panel_setback_ft);
+          if (
+            draft.mounting_type === "flush" ||
+            draft.mounting_type === "elevated" ||
+            draft.mounting_type === "ground_mount"
+          ) {
+            setMountingType(draft.mounting_type);
+          }
           setPlacedPanels(draft.panels);
           setPanelMetrics({
             remainingAreaSqft: draft.panel_remaining_area_sqft ?? 0,
@@ -1149,6 +1165,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         panel_orientation: panelOrientation,
         panel_setback_ft: panelSetbackFt,
         panel_tilt_deg: panelTiltDeg,
+        mounting_type: mountingType,
         panels: placedPanels,
         panel_remaining_area_sqft: panelMetrics.remainingAreaSqft,
         panel_coverage_pct: panelMetrics.coveragePct,
@@ -1163,6 +1180,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     panelOrientation,
     panelSetbackFt,
     panelTiltDeg,
+    mountingType,
     panelSpec,
     placedPanels,
     projectId,
@@ -1185,6 +1203,47 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     return section ? calculateRoofMetrics(section) : null;
   }, [activeRoofIndex, roofSections]);
   const displayedMetrics = drawingRoof ? drawingMetrics : state.metrics;
+
+  const azimuthAdvice = useMemo(() => {
+    const az = selectedRoofMetrics?.azimuthDeg ?? displayedMetrics?.azimuthDeg ?? null;
+    if (az == null) return null;
+    return adviseRoofAzimuth(az);
+  }, [displayedMetrics?.azimuthDeg, selectedRoofMetrics?.azimuthDeg]);
+
+  const rowPitchM = useMemo(() => {
+    const lengthM = moduleLengthForOrientationM(
+      panelSpec.width_mm,
+      panelSpec.height_mm,
+      panelOrientation
+    );
+    return recommendedRowPitchM({
+      tiltDeg: panelTiltDeg,
+      moduleLengthM: lengthM,
+      latitudeDeg: center[1],
+      mounting: mountingType,
+    });
+  }, [center, mountingType, panelOrientation, panelSpec.height_mm, panelSpec.width_mm, panelTiltDeg]);
+
+  const dcKwLive = placedPanels.length
+    ? (placedPanels.length * panelSpec.wattage) / 1000
+    : 0;
+
+  const yieldEstimate = useMemo(() => {
+    if (dcKwLive <= 0) return null;
+    return estimateDesignAnnualYield({
+      dcKw: dcKwLive,
+      tiltDeg: panelTiltDeg,
+      latitudeDeg: center[1],
+      roofAzimuthDeg: selectedRoofMetrics?.azimuthDeg ?? displayedMetrics?.azimuthDeg ?? null,
+    });
+  }, [
+    center,
+    dcKwLive,
+    displayedMetrics?.azimuthDeg,
+    panelTiltDeg,
+    selectedRoofMetrics?.azimuthDeg,
+  ]);
+
   const areaWarning = displayedMetrics
     ? displayedMetrics.areaSqft < 100
       ? "Roof area is very small — zoom in and check the corners."
@@ -1598,8 +1657,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         panelSpec,
         orientation: panelOrientation,
         setbackFt: panelSetbackFt,
-        mountingType: "flush",
+        mountingType,
         tiltDeg: panelTiltDeg,
+        rowPitchM: mountingType === "flush" ? undefined : rowPitchM,
         obstructionClearanceFt: 1.5,
         preservePanels: lockedPanels,
         packMode,
@@ -1657,6 +1717,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     panelSetbackFt,
     panelSpec,
     panelTiltDeg,
+    mountingType,
+    rowPitchM,
     placedPanels,
     pushPanelHistory,
     state.obstructions,
@@ -1677,6 +1739,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         panelSpec,
         orientation: panelOrientation,
         setbackFt: panelSetbackFt,
+        mountingType,
+        tiltDeg: panelTiltDeg,
+        rowPitchM: mountingType === "flush" ? undefined : rowPitchM,
         obstructionClearanceFt: 1.5,
         preservePanels: [],
       });
@@ -1687,7 +1752,16 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     } catch {
       // ignore estimate errors while drawing
     }
-  }, [panelOrientation, panelSetbackFt, panelSpec, state.obstructions, state.roof]);
+  }, [
+    mountingType,
+    panelOrientation,
+    panelSetbackFt,
+    panelSpec,
+    panelTiltDeg,
+    rowPitchM,
+    state.obstructions,
+    state.roof,
+  ]);
 
   const clearPanels = useCallback(() => {
     if (placedPanels.length === 0) return;
@@ -2000,7 +2074,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             panel_spec: panelSpec,
             orientation: panelOrientation,
             tilt_deg: panelTiltDeg,
-            mounting_type: "flush",
+            mounting_type: mountingType,
             setback_ft: panelSetbackFt,
             walkway_ft: 0,
             panel_gap_mm: 20,
@@ -2039,6 +2113,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     panelSetbackFt,
     panelSpec,
     panelTiltDeg,
+    mountingType,
     placedPanels,
     projectId,
     roofType,
@@ -2655,6 +2730,40 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                 </button>
               ))}
             </div>
+            {azimuthAdvice && panelOrientation !== azimuthAdvice.suggestedOrientation ? (
+              <button
+                type="button"
+                className="mt-1.5 text-[11px] font-bold text-blue-700 hover:underline"
+                onClick={() => {
+                  setPanelOrientation(azimuthAdvice.suggestedOrientation);
+                  setPanelDirty(true);
+                }}
+              >
+                Use suggested {azimuthAdvice.suggestedOrientation}
+              </button>
+            ) : null}
+            <label className="mt-2 block text-[11px] font-bold text-slate-600 dark:text-slate-300">
+              Mounting
+              <select
+                value={mountingType}
+                onChange={(event) => {
+                  setMountingType(event.target.value as PanelMountingType);
+                  setPanelDirty(true);
+                }}
+                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs dark:border-white/10 dark:bg-slate-950"
+              >
+                <option value="flush">Flush (roof-parallel)</option>
+                <option value="elevated">Elevated / MMS</option>
+                <option value="ground_mount">Ground mount</option>
+              </select>
+            </label>
+            <p className="mt-1 text-[10px] text-slate-500">
+              Row pitch {rowPitchM.toFixed(2)} m
+              {mountingType === "flush"
+                ? " (module + gap)"
+                : " (winter shade clearance from tilt + lat)"}
+              . Elevated packing uses this spacing.
+            </p>
             <label className="mt-2 block text-[11px] font-bold text-slate-600 dark:text-slate-300">
               Panel tilt (°)
               <input
@@ -2798,6 +2907,24 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                 {areaWarning}
               </p>
             ) : null}
+            {azimuthAdvice ? (
+              <div
+                className={`mt-2 rounded-lg px-2 py-1.5 text-[10px] font-semibold ${
+                  azimuthAdvice.grade === "excellent" || azimuthAdvice.grade === "good"
+                    ? "bg-emerald-50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100"
+                    : azimuthAdvice.grade === "fair"
+                      ? "bg-amber-50 text-amber-900 dark:bg-amber-950/40 dark:text-amber-100"
+                      : "bg-rose-50 text-rose-900 dark:bg-rose-950/40 dark:text-rose-100"
+                }`}
+              >
+                <p>{azimuthAdvice.summary}</p>
+                <p className="mt-0.5 font-medium opacity-90">{azimuthAdvice.orientationHint}</p>
+              </div>
+            ) : (
+              <p className="mt-2 text-[10px] text-slate-500">
+                Draw a roof to get azimuth / south-facing advice.
+              </p>
+            )}
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-slate-900">
@@ -2805,9 +2932,17 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             <div className="mt-3 grid grid-cols-2 gap-2">
               {[
                 ["Panels", String(placedPanels.length)],
-                ["DC kW", placedPanels.length ? ((placedPanels.length * panelSpec.wattage) / 1000).toFixed(2) : "—"],
+                ["DC kW", placedPanels.length ? dcKwLive.toFixed(2) : "—"],
                 ["Remaining", placedPanels.length ? `${Math.round(panelMetrics.remainingAreaSqft).toLocaleString("en-IN")} sq.ft` : "—"],
                 ["Coverage", placedPanels.length ? `${panelMetrics.coveragePct.toFixed(0)}%` : "—"],
+                [
+                  "Yield / yr",
+                  yieldEstimate ? `${yieldEstimate.annualKwh.toLocaleString("en-IN")} kWh` : "—",
+                ],
+                [
+                  "kWh/kWp",
+                  yieldEstimate ? String(yieldEstimate.specificYieldKwhPerKwp) : "—",
+                ],
               ].map(([label, value]) => (
                 <div key={label} className="rounded-lg bg-slate-50 p-2 dark:bg-white/[0.04]">
                   <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">{label}</p>
@@ -2816,8 +2951,13 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               ))}
             </div>
             <p className="mt-2 text-[10px] text-slate-500">
-              {panelModuleLabel(panelSpec)} · {panelOrientation} · tilt {panelTiltDeg}°
+              {panelModuleLabel(panelSpec)} · {panelOrientation} · tilt {panelTiltDeg}° · {mountingType}
             </p>
+            {yieldEstimate ? (
+              <p className="mt-1 text-[10px] leading-relaxed text-slate-500">
+                ~{yieldEstimate.dailyKwh} kWh/day · {yieldEstimate.note}
+              </p>
+            ) : null}
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-slate-900">

@@ -14,6 +14,7 @@ export type SiteLayoutDraft = {
   panel_setback_ft?: number | null;
   /** Panel array tilt (degrees from horizontal). */
   panel_tilt_deg?: number | null;
+  mounting_type?: "flush" | "elevated" | "ground_mount" | null;
   panels?: PlacedPanel[] | null;
   panel_remaining_area_sqft?: number | null;
   panel_coverage_pct?: number | null;

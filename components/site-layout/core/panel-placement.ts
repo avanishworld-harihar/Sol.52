@@ -44,6 +44,11 @@ export type AutoPackInput = {
   packMode?: PanelPackMode;
   /** Desired DC plant size (kW). Used when packMode is target_kw. */
   targetKw?: number;
+  /**
+   * Front-to-front row pitch (m). When set (elevated / ground), overrides
+   * height+gap for the Y packing step to leave inter-row shade clearance.
+   */
+  rowPitchM?: number;
 };
 
 export type AutoPackResult = {
@@ -406,6 +411,7 @@ function packSection(args: {
   panelSpec: PanelSpec;
   orientation: Exclude<PanelOrientation, "east_west">;
   panelGapMm: number;
+  rowPitchM?: number;
   preservePanels: PlacedPanel[];
   obstructions: SiteObstruction[];
   clearanceFt: number;
@@ -416,6 +422,7 @@ function packSection(args: {
     panelSpec,
     orientation,
     panelGapMm,
+    rowPitchM,
     preservePanels,
     obstructions,
     clearanceFt,
@@ -427,7 +434,7 @@ function packSection(args: {
   const heightM = orientation === "landscape" ? shortM : longM;
   const gapM = Math.max(0, panelGapMm) * MM_TO_M;
   const pitchX = widthM + gapM;
-  const pitchY = heightM + gapM;
+  const pitchY = Math.max(heightM + gapM, rowPitchM ?? 0);
 
   const [minX, minY, maxX, maxY] = bbox(buildable);
   const midLat = (minY + maxY) / 2;
@@ -483,6 +490,7 @@ function packAllSections(args: {
   setbackFt: number;
   clearanceFt: number;
   panelGapMm: number;
+  rowPitchM?: number;
   preservePanels: PlacedPanel[];
 }): { panels: PlacedPanel[]; buildables: Array<Buildable | null> } {
   const sections = roofGeometryToPolygons(args.roof);
@@ -504,6 +512,7 @@ function packAllSections(args: {
         panelSpec: args.panelSpec,
         orientation: args.orientation,
         panelGapMm: args.panelGapMm,
+        rowPitchM: args.rowPitchM,
         preservePanels: args.preservePanels,
         obstructions: args.obstructions,
         clearanceFt: args.clearanceFt,
@@ -518,6 +527,7 @@ export function autoPackPanels(input: AutoPackInput): AutoPackResult {
   const setbackFt = input.setbackFt ?? 1.5;
   const clearanceFt = input.obstructionClearanceFt ?? 1;
   const panelGapMm = input.panelGapMm ?? 20;
+  const rowPitchM = input.rowPitchM;
   const preservePanels = (input.preservePanels ?? []).filter((panel) => panel.is_locked);
   const wattage = Math.max(1, input.panelSpec.wattage);
 
@@ -529,6 +539,7 @@ export function autoPackPanels(input: AutoPackInput): AutoPackResult {
     setbackFt,
     clearanceFt,
     panelGapMm,
+    rowPitchM,
     preservePanels,
   });
 
@@ -542,6 +553,7 @@ export function autoPackPanels(input: AutoPackInput): AutoPackResult {
       setbackFt: 0,
       clearanceFt,
       panelGapMm,
+      rowPitchM,
       preservePanels,
     });
     packed = retry.panels;
