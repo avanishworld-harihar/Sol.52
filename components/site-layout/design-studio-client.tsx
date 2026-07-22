@@ -9,6 +9,7 @@ import {
   ImagePlus,
   LocateFixed,
   Lock,
+  Magnet,
   Map as MapIcon,
   MapPin,
   Minus,
@@ -18,6 +19,7 @@ import {
   Save,
   Search,
   Square,
+  SquareStack,
   Trash2,
   TriangleRight,
   Undo2,
@@ -61,7 +63,11 @@ import {
   createManualPanelAt,
   effectiveObstructionRadiusFt,
   estimateMaxDcCapacity,
+  footprintCentroid,
   MIN_OBSTRUCTION_RADIUS_FT,
+  snapPanelMove,
+  snapNewPanelFootprint,
+  translateFootprint,
   type PanelPackMode,
 } from "./core/panel-placement";
 import {
@@ -108,7 +114,7 @@ type DesignSummary = {
 };
 
 type ObstructionType = SiteObstruction["type"];
-type StudioTool = "select" | "place_panel";
+type StudioTool = "select" | "place_panel" | "move_group";
 
 const DEFAULT_CENTER: [number, number] = [78.9629, 20.5937];
 const MAP_MAX_ZOOM = 22;
@@ -192,6 +198,15 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const panelRedoStackRef = useRef<PlacedPanel[][]>([]);
   const placedPanelsRef = useRef<PlacedPanel[]>([]);
   const draggingPanelIdRef = useRef<string | null>(null);
+  const groupDragStartRef = useRef<{
+    primaryId: string;
+    startCentroid: { lng: number; lat: number };
+    footprints: Record<string, PlacedPanel["footprint_geojson"]>;
+  } | null>(null);
+  const selectedPanelIdsRef = useRef<string[]>([]);
+  const snapEnabledRef = useRef(true);
+  const panelSpecRef = useRef(DEFAULT_PANEL_MODULE);
+  const panelOrientationRef = useRef<Exclude<PanelOrientation, "east_west">>("portrait");
   const studioToolRef = useRef<StudioTool>("select");
   const placePanelRef = useRef<((latLng: google.maps.LatLng) => void) | null>(null);
   const undoStudioRef = useRef<(() => void) | null>(null);
@@ -236,7 +251,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const [panelOrientation, setPanelOrientation] = useState<Exclude<PanelOrientation, "east_west">>("portrait");
   const [panelSetbackFt, setPanelSetbackFt] = useState(1.5);
   const [placedPanels, setPlacedPanels] = useState<PlacedPanel[]>([]);
-  const [selectedPanelId, setSelectedPanelId] = useState<string | null>(null);
+  const [selectedPanelIds, setSelectedPanelIds] = useState<string[]>([]);
+  const [snapEnabled, setSnapEnabled] = useState(true);
   const [panelMetrics, setPanelMetrics] = useState({
     remainingAreaSqft: 0,
     coveragePct: 0,
@@ -833,6 +849,22 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   }, [placedPanels]);
 
   useEffect(() => {
+    selectedPanelIdsRef.current = selectedPanelIds;
+  }, [selectedPanelIds]);
+
+  useEffect(() => {
+    snapEnabledRef.current = snapEnabled;
+  }, [snapEnabled]);
+
+  useEffect(() => {
+    panelSpecRef.current = panelSpec;
+  }, [panelSpec]);
+
+  useEffect(() => {
+    panelOrientationRef.current = panelOrientation;
+  }, [panelOrientation]);
+
+  useEffect(() => {
     studioToolRef.current = studioTool;
   }, [studioTool]);
 
@@ -848,7 +880,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const applyPanelSnapshot = useCallback(
     (panels: PlacedPanel[]) => {
       setPlacedPanels(panels);
-      setSelectedPanelId(null);
+      setSelectedPanelIds([]);
       setPanelDirty(true);
       if (state.roof) {
         setPanelMetrics(computePanelCoverageMetrics(state.roof, panels));
@@ -881,17 +913,22 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     panelListenersRef.current.forEach((listener) => listener.remove());
     panelListenersRef.current = [];
     panelPolygonsRef.current.forEach((polygon) => polygon.setMap(null));
-    panelPolygonsRef.current = placedPanels.map((panel) => {
-      const selected = panel.id === selectedPanelId;
+    const selectedSet = new Set(selectedPanelIds);
+    panelPolygonsRef.current = placedPanels.map((panel, panelIndex) => {
+      const selected = selectedSet.has(panel.id);
       const path = panel.footprint_geojson.coordinates[0]
         .slice(0, -1)
         .map(([lng, lat]) => ({ lat, lng }));
+      const canDrag =
+        selected &&
+        !panel.is_locked &&
+        (studioToolRef.current === "select" || studioToolRef.current === "move_group");
       const polygon = new google.maps.Polygon({
         map: mapRef.current!,
         paths: path,
         clickable: true,
         editable: false,
-        draggable: selected && !panel.is_locked,
+        draggable: canDrag,
         strokeColor: selected ? "#1d4ed8" : panel.is_locked ? "#a16207" : "#1e3a8a",
         strokeOpacity: 1,
         strokeWeight: selected ? 2.5 : 1.5,
@@ -899,46 +936,141 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         fillOpacity: selected ? 0.55 : 0.4,
         zIndex: selected ? 8 : 6,
       });
+
+      const pathFromFootprint = (footprint: PlacedPanel["footprint_geojson"]) =>
+        footprint.coordinates[0].slice(0, -1).map(([lng, lat]) => ({ lat, lng }));
+
       panelListenersRef.current.push(
         google.maps.event.addListener(polygon, "click", (event: google.maps.MapMouseEvent) => {
-          setSelectedPanelId(panel.id);
-          setStudioTool("select");
-          studioToolRef.current = "select";
+          const shift = !!(event.domEvent as MouseEvent | undefined)?.shiftKey;
+          const tool = studioToolRef.current;
+          if (tool === "move_group") {
+            const allUnlocked = placedPanelsRef.current
+              .filter((item) => !item.is_locked)
+              .map((item) => item.id);
+            setSelectedPanelIds(allUnlocked.length ? allUnlocked : [panel.id]);
+          } else if (shift) {
+            setSelectedPanelIds((current) =>
+              current.includes(panel.id)
+                ? current.filter((id) => id !== panel.id)
+                : [...current, panel.id]
+            );
+          } else {
+            setSelectedPanelIds([panel.id]);
+          }
+          if (tool === "place_panel") {
+            setStudioTool("select");
+            studioToolRef.current = "select";
+          }
           event.domEvent?.stopPropagation?.();
         }),
         google.maps.event.addListener(polygon, "dragstart", () => {
           draggingPanelIdRef.current = panel.id;
-          setSelectedPanelId(panel.id);
+          const ids =
+            selectedPanelIdsRef.current.includes(panel.id) && selectedPanelIdsRef.current.length > 0
+              ? selectedPanelIdsRef.current
+              : [panel.id];
+          if (!selectedPanelIdsRef.current.includes(panel.id)) {
+            setSelectedPanelIds(ids);
+          }
+          const footprints: Record<string, PlacedPanel["footprint_geojson"]> = {};
+          for (const item of placedPanelsRef.current) {
+            if (ids.includes(item.id)) {
+              footprints[item.id] = structuredClone(item.footprint_geojson);
+            }
+          }
+          const startCentroid = footprintCentroid(panel.footprint_geojson);
+          if (!startCentroid) {
+            draggingPanelIdRef.current = null;
+            return;
+          }
+          groupDragStartRef.current = {
+            primaryId: panel.id,
+            startCentroid,
+            footprints,
+          };
+        }),
+        google.maps.event.addListener(polygon, "drag", () => {
+          const drag = groupDragStartRef.current;
+          if (!drag || drag.primaryId !== panel.id) return;
+          const ringPath = polygon.getPath();
+          if (ringPath.getLength() < 3) return;
+          let sumLng = 0;
+          let sumLat = 0;
+          for (let i = 0; i < ringPath.getLength(); i += 1) {
+            const pt = ringPath.getAt(i);
+            sumLng += pt.lng();
+            sumLat += pt.lat();
+          }
+          const n = ringPath.getLength();
+          const dLng = sumLng / n - drag.startCentroid.lng;
+          const dLat = sumLat / n - drag.startCentroid.lat;
+          placedPanelsRef.current.forEach((item, index) => {
+            if (item.id === panel.id) return;
+            if (!drag.footprints[item.id]) return;
+            const poly = panelPolygonsRef.current[index];
+            if (!poly) return;
+            const translated = translateFootprint(drag.footprints[item.id]!, dLng, dLat);
+            poly.setPaths(pathFromFootprint(translated));
+          });
         }),
         google.maps.event.addListener(polygon, "dragend", () => {
+          const drag = groupDragStartRef.current;
           const ringPath = polygon.getPath();
           const ring: number[][] = [];
           for (let i = 0; i < ringPath.getLength(); i += 1) {
             const point = ringPath.getAt(i);
             ring.push([point.lng(), point.lat()]);
           }
-          if (ring.length >= 3) {
+          if (ring.length >= 3 && drag) {
             ring.push([...ring[0]!]);
-            pushPanelHistory(placedPanelsRef.current);
-            setPlacedPanels((current) =>
-              current.map((item) =>
-                item.id === panel.id
-                  ? {
-                      ...item,
-                      footprint_geojson: { type: "Polygon", coordinates: [ring] },
-                      is_manually_placed: true,
-                    }
-                  : item
-              )
-            );
-            setPanelDirty(true);
+            const movedFootprint = { type: "Polygon" as const, coordinates: [ring] };
+            const movingIds = Object.keys(drag.footprints);
+            const primaryOriginal = placedPanelsRef.current.find((item) => item.id === panel.id);
+            if (primaryOriginal) {
+              let dLng: number;
+              let dLat: number;
+              if (snapEnabledRef.current) {
+                const anchors = placedPanelsRef.current.filter(
+                  (item) => !movingIds.includes(item.id)
+                );
+                const snapped = snapPanelMove({
+                  moved: primaryOriginal,
+                  movedFootprint,
+                  anchors,
+                  panelSpec: panelSpecRef.current,
+                  orientation: panelOrientationRef.current,
+                  panelGapMm: 20,
+                });
+                dLng = snapped.dLng;
+                dLat = snapped.dLat;
+              } else {
+                const end = footprintCentroid(movedFootprint);
+                dLng = end ? end.lng - drag.startCentroid.lng : 0;
+                dLat = end ? end.lat - drag.startCentroid.lat : 0;
+              }
+              pushPanelHistory(placedPanelsRef.current);
+              setPlacedPanels((current) =>
+                current.map((item) => {
+                  if (!movingIds.includes(item.id) || item.is_locked) return item;
+                  const base = drag.footprints[item.id] ?? item.footprint_geojson;
+                  return {
+                    ...item,
+                    footprint_geojson: translateFootprint(base, dLng, dLat),
+                    is_manually_placed: true,
+                  };
+                })
+              );
+              setPanelDirty(true);
+            }
           }
+          groupDragStartRef.current = null;
           draggingPanelIdRef.current = null;
         })
       );
       return polygon;
     });
-  }, [mapReady, placedPanels, selectedPanelId]);
+  }, [mapReady, placedPanels, pushPanelHistory, selectedPanelIds, studioTool]);
 
   useEffect(() => {
     if (!state.dirty && !panelDirty) return;
@@ -1210,7 +1342,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       }
       if (
         (event.key === "Delete" || event.key === "Backspace") &&
-        selectedPanelId &&
+        selectedPanelIdsRef.current.length > 0 &&
         !drawingRoof
       ) {
         event.preventDefault();
@@ -1218,6 +1350,16 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         return;
       }
       const isModifier = event.ctrlKey || event.metaKey;
+      if (isModifier && event.key.toLowerCase() === "a" && !drawingRoof) {
+        event.preventDefault();
+        const unlocked = placedPanelsRef.current
+          .filter((panel) => !panel.is_locked)
+          .map((panel) => panel.id);
+        setSelectedPanelIds(unlocked);
+        setStudioTool("move_group");
+        studioToolRef.current = "move_group";
+        return;
+      }
       if (isModifier && !event.shiftKey && event.key.toLowerCase() === "z") {
         event.preventDefault();
         undoStudioRef.current?.();
@@ -1234,7 +1376,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [cancelRoofDrawing, drawingRoof, finishRoofDrawing, pendingObstruction, selectedPanelId]);
+  }, [cancelRoofDrawing, drawingRoof, finishRoofDrawing, pendingObstruction]);
 
   const toggleRoofLock = useCallback(() => {
     if (!roofPolygonRef.current) return;
@@ -1375,7 +1517,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         maxPanelCount: result.maxPanelCount,
         maxDcCapacityKw: result.maxDcCapacityKw,
       });
-      setSelectedPanelId(null);
+      setSelectedPanelIds([]);
       setPanelDirty(true);
       if (result.panelCount === 0) {
         toast.error(
@@ -1452,16 +1594,17 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     if (placedPanels.length === 0) return;
     pushPanelHistory(placedPanels);
     setPlacedPanels([]);
-    setSelectedPanelId(null);
+    setSelectedPanelIds([]);
     setPanelMetrics({ remainingAreaSqft: 0, coveragePct: 0 });
     setPanelDirty(true);
   }, [placedPanels, pushPanelHistory]);
 
   const deleteSelectedPanel = useCallback(() => {
-    if (!selectedPanelId) return;
+    const ids = selectedPanelIdsRef.current;
+    if (ids.length === 0) return;
     pushPanelHistory(placedPanelsRef.current);
     setPlacedPanels((current) => {
-      const next = current.filter((panel) => panel.id !== selectedPanelId);
+      const next = current.filter((panel) => !ids.includes(panel.id));
       if (state.roof) {
         setPanelMetrics(computePanelCoverageMetrics(state.roof, next));
       } else {
@@ -1469,9 +1612,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       }
       return next;
     });
-    setSelectedPanelId(null);
+    setSelectedPanelIds([]);
     setPanelDirty(true);
-  }, [pushPanelHistory, selectedPanelId, state.roof]);
+  }, [pushPanelHistory, state.roof]);
 
   const placeManualPanelAt = useCallback(
     (latLng: google.maps.LatLng) => {
@@ -1486,10 +1629,21 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         toast.error("Could not place panel", "Try zooming in and clicking again.");
         return;
       }
+      const footprint =
+        snapEnabledRef.current && placedPanelsRef.current.length > 0
+          ? snapNewPanelFootprint({
+              footprint: panel.footprint_geojson,
+              anchors: placedPanelsRef.current,
+              panelSpec,
+              orientation: panelOrientation,
+              panelGapMm: 20,
+            })
+          : panel.footprint_geojson;
+      const nextPanel = { ...panel, footprint_geojson: footprint };
       pushPanelHistory(placedPanelsRef.current);
-      const next = [...placedPanelsRef.current, panel];
+      const next = [...placedPanelsRef.current, nextPanel];
       setPlacedPanels(next);
-      setSelectedPanelId(panel.id);
+      setSelectedPanelIds([nextPanel.id]);
       setPanelDirty(true);
       if (state.roof) {
         setPanelMetrics(computePanelCoverageMetrics(state.roof, next));
@@ -1536,13 +1690,19 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     addObstructionRef.current = null;
     setPendingObstruction(null);
     if (drawingRoof) {
-      // keep roof drawing exclusive
       return;
     }
     setStudioTool(tool);
     studioToolRef.current = tool;
+    if (tool === "move_group") {
+      const unlocked = placedPanelsRef.current
+        .filter((panel) => !panel.is_locked)
+        .map((panel) => panel.id);
+      setSelectedPanelIds(unlocked);
+    }
     mapRef.current?.setOptions({
-      draggableCursor: tool === "place_panel" ? "crosshair" : null,
+      draggableCursor:
+        tool === "place_panel" ? "crosshair" : tool === "move_group" ? "move" : null,
     });
   }, [drawingRoof]);
 
@@ -1573,14 +1733,15 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   }, []);
 
   const toggleSelectedPanelLock = useCallback(() => {
-    if (!selectedPanelId) return;
+    const ids = selectedPanelIdsRef.current;
+    if (ids.length === 0) return;
     setPlacedPanels((current) =>
       current.map((panel) =>
-        panel.id === selectedPanelId ? { ...panel, is_locked: !panel.is_locked } : panel
+        ids.includes(panel.id) ? { ...panel, is_locked: !panel.is_locked } : panel
       )
     );
     setPanelDirty(true);
-  }, [selectedPanelId]);
+  }, []);
 
   const saveLayout = useCallback(async () => {
     if (!state.roof || !state.metrics) {
@@ -1738,7 +1899,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           <div className="flex flex-1 flex-col items-center gap-0.5 overflow-y-auto overscroll-contain py-2">
             <button
               type="button"
-              title="Select / move"
+              title="Select / move (Shift+click multi)"
               onClick={() => setActiveStudioTool("select")}
               className={`flex h-10 w-10 items-center justify-center rounded-lg ${
                 studioTool === "select" && !pendingObstruction && !drawingRoof
@@ -1750,6 +1911,17 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             </button>
             <button
               type="button"
+              title="Move all panels (group)"
+              disabled={!state.roof || drawingRoof || placedPanels.length === 0}
+              onClick={() => setActiveStudioTool("move_group")}
+              className={`flex h-10 w-10 items-center justify-center rounded-lg disabled:opacity-40 ${
+                studioTool === "move_group" ? "bg-blue-600 text-white" : "text-slate-300 hover:bg-white/10"
+              }`}
+            >
+              <SquareStack className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
               title="Place panel"
               disabled={!state.roof || drawingRoof}
               onClick={() => setActiveStudioTool("place_panel")}
@@ -1758,6 +1930,16 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               }`}
             >
               <Square className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              title={snapEnabled ? "Snap ON — click to turn off" : "Snap OFF — click to turn on"}
+              onClick={() => setSnapEnabled((value) => !value)}
+              className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                snapEnabled ? "bg-emerald-600 text-white" : "text-slate-300 hover:bg-white/10"
+              }`}
+            >
+              <Magnet className="h-4 w-4" />
             </button>
             <button
               type="button"
@@ -2275,10 +2457,13 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               <Button
                 variant="outline"
                 size="sm"
-                disabled={!selectedPanelId}
+                disabled={selectedPanelIds.length === 0}
                 onClick={toggleSelectedPanelLock}
               >
-                {placedPanels.find((panel) => panel.id === selectedPanelId)?.is_locked ? (
+                {selectedPanelIds.length > 0 &&
+                selectedPanelIds.every(
+                  (id) => placedPanels.find((panel) => panel.id === id)?.is_locked
+                ) ? (
                   <><Unlock className="mr-1 h-3.5 w-3.5" /> Unlock</>
                 ) : (
                   <><Lock className="mr-1 h-3.5 w-3.5" /> Lock</>
@@ -2288,7 +2473,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                 variant="outline"
                 size="sm"
                 className="text-red-600"
-                disabled={!selectedPanelId}
+                disabled={selectedPanelIds.length === 0}
                 onClick={deleteSelectedPanel}
               >
                 <Trash2 className="mr-1 h-3.5 w-3.5" /> Delete
@@ -2304,7 +2489,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               </Button>
             </div>
             <p className="mt-2 text-[10px] leading-relaxed text-slate-500">
-              Select a panel, then drag to move. Delete / Backspace removes it — Ctrl+Z undoes. Locked panels stay on auto re-run.
+              Group tool / Ctrl+A = sab panels move. Shift+click = multi-select. Magnet = snap grid ON/OFF. Drag ke baad snap align karta hai.
             </p>
           </div>
 

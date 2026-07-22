@@ -203,6 +203,173 @@ function panelFootprint(
   }
 }
 
+export function footprintCentroid(footprint: RoofPolygon): { lng: number; lat: number } | null {
+  const ring = footprint.coordinates[0]?.slice(0, -1) ?? [];
+  if (ring.length < 3) return null;
+  const lng = ring.reduce((sum, p) => sum + p[0]!, 0) / ring.length;
+  const lat = ring.reduce((sum, p) => sum + p[1]!, 0) / ring.length;
+  return { lng, lat };
+}
+
+export function translateFootprint(
+  footprint: RoofPolygon,
+  dLng: number,
+  dLat: number
+): RoofPolygon {
+  return {
+    type: "Polygon",
+    coordinates: [
+      footprint.coordinates[0].map(([lng, lat]) => [lng + dLng, lat + dLat]),
+    ],
+  };
+}
+
+export function panelPitchMeters(
+  panelSpec: PanelSpec,
+  orientation: Exclude<PanelOrientation, "east_west">,
+  panelGapMm = 20
+): { widthM: number; heightM: number; pitchX: number; pitchY: number } {
+  const shortM = panelSpec.width_mm * MM_TO_M;
+  const longM = panelSpec.height_mm * MM_TO_M;
+  const widthM = orientation === "landscape" ? longM : shortM;
+  const heightM = orientation === "landscape" ? shortM : longM;
+  const gapM = Math.max(0, panelGapMm) * MM_TO_M;
+  return {
+    widthM,
+    heightM,
+    pitchX: widthM + gapM,
+    pitchY: heightM + gapM,
+  };
+}
+
+function metersToDeltaDegrees(lat: number, eastM: number, northM: number): { dLng: number; dLat: number } {
+  const metersPerDegLat = 111_320;
+  const metersPerDegLng = Math.max(1, 111_320 * Math.cos((lat * Math.PI) / 180));
+  return {
+    dLng: eastM / metersPerDegLng,
+    dLat: northM / metersPerDegLat,
+  };
+}
+
+function deltaDegreesToMeters(
+  lat: number,
+  dLng: number,
+  dLat: number
+): { eastM: number; northM: number } {
+  const metersPerDegLat = 111_320;
+  const metersPerDegLng = Math.max(1, 111_320 * Math.cos((lat * Math.PI) / 180));
+  return {
+    eastM: dLng * metersPerDegLng,
+    northM: dLat * metersPerDegLat,
+  };
+}
+
+function quantize(value: number, step: number): number {
+  if (step <= 1e-9) return value;
+  return Math.round(value / step) * step;
+}
+
+/**
+ * Snap a dragged panel onto the pitch grid of nearby panels,
+ * or quantize free translation to pitch when alone.
+ * Returns translation from the panel's pre-drag footprint to the snapped position.
+ */
+export function snapPanelMove(args: {
+  moved: PlacedPanel;
+  /** Footprint after drag (before snap). */
+  movedFootprint: RoofPolygon;
+  /** Other panels that stay put (not in the moving set). */
+  anchors: PlacedPanel[];
+  panelSpec: PanelSpec;
+  orientation: Exclude<PanelOrientation, "east_west">;
+  panelGapMm?: number;
+  /** Max distance (m) to consider an anchor for alignment. */
+  snapRadiusM?: number;
+}): { dLng: number; dLat: number } {
+  const start = footprintCentroid(args.moved.footprint_geojson);
+  const end = footprintCentroid(args.movedFootprint);
+  if (!start || !end) return { dLng: 0, dLat: 0 };
+
+  const { pitchX, pitchY } = panelPitchMeters(
+    args.panelSpec,
+    args.orientation,
+    args.panelGapMm ?? 20
+  );
+  const snapRadiusM = args.snapRadiusM ?? Math.max(pitchX, pitchY) * 2.5;
+
+  let bestAnchor: { lng: number; lat: number } | null = null;
+  let bestDist = Number.POSITIVE_INFINITY;
+  for (const panel of args.anchors) {
+    const c = footprintCentroid(panel.footprint_geojson);
+    if (!c) continue;
+    const d = deltaDegreesToMeters(end.lat, end.lng - c.lng, end.lat - c.lat);
+    const dist = Math.hypot(d.eastM, d.northM);
+    if (dist < bestDist) {
+      bestDist = dist;
+      bestAnchor = c;
+    }
+  }
+
+  let desiredLng = end.lng;
+  let desiredLat = end.lat;
+
+  if (bestAnchor && bestDist <= snapRadiusM) {
+    const rel = deltaDegreesToMeters(end.lat, end.lng - bestAnchor.lng, end.lat - bestAnchor.lat);
+    const snapped = metersToDeltaDegrees(
+      bestAnchor.lat,
+      quantize(rel.eastM, pitchX),
+      quantize(rel.northM, pitchY)
+    );
+    desiredLng = bestAnchor.lng + snapped.dLng;
+    desiredLat = bestAnchor.lat + snapped.dLat;
+  } else {
+    const raw = deltaDegreesToMeters(start.lat, end.lng - start.lng, end.lat - start.lat);
+    const snapped = metersToDeltaDegrees(
+      start.lat,
+      quantize(raw.eastM, pitchX),
+      quantize(raw.northM, pitchY)
+    );
+    desiredLng = start.lng + snapped.dLng;
+    desiredLat = start.lat + snapped.dLat;
+  }
+
+  return {
+    dLng: desiredLng - start.lng,
+    dLat: desiredLat - start.lat,
+  };
+}
+
+/** Snap a newly placed panel center onto nearby panel pitch grid (or no-op). */
+export function snapNewPanelFootprint(args: {
+  footprint: RoofPolygon;
+  anchors: PlacedPanel[];
+  panelSpec: PanelSpec;
+  orientation: Exclude<PanelOrientation, "east_west">;
+  panelGapMm?: number;
+}): RoofPolygon {
+  const center = footprintCentroid(args.footprint);
+  if (!center || args.anchors.length === 0) return args.footprint;
+  const ghost: PlacedPanel = {
+    id: "ghost",
+    footprint_geojson: translateFootprint(args.footprint, -1e-7, -1e-7),
+    section_index: 0,
+    row_index: 0,
+    col_index: 0,
+    rotation_deg: 0,
+    is_locked: false,
+    is_manually_placed: true,
+  };
+  const snapped = snapPanelMove({
+    moved: ghost,
+    movedFootprint: args.footprint,
+    anchors: args.anchors,
+    panelSpec: args.panelSpec,
+    orientation: args.orientation,
+    panelGapMm: args.panelGapMm,
+  });
+  return translateFootprint(ghost.footprint_geojson, snapped.dLng, snapped.dLat);
+}
+
 function footprintInsideBuildable(
   footprint: RoofPolygon,
   buildable: Buildable
