@@ -40,11 +40,13 @@ import { multiPolygon, point, polygon } from "@turf/helpers";
 import {
   DEFAULT_PANEL_MODULE,
   PANEL_MODULE_CATALOG,
+  getPanelModuleCatalog,
   panelModuleBrands,
   panelModuleLabel,
   panelModulesForBrand,
   parseCapacityKwText,
   resolvePanelSpecFromProject,
+  upsertCustomPanelModule,
 } from "@/lib/panel-module-catalog";
 import type {
   PanelOrientation,
@@ -264,6 +266,13 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   /** Optical zoom beyond Google tile max (1 = off). */
   const [mapExtraScale, setMapExtraScale] = useState(1);
   const mapExtraScaleRef = useRef(1);
+  const [moduleCatalog, setModuleCatalog] = useState<PanelSpec[]>(() =>
+    typeof window === "undefined" ? PANEL_MODULE_CATALOG : getPanelModuleCatalog()
+  );
+  const [showCustomModule, setShowCustomModule] = useState(false);
+  const [customWatt, setCustomWatt] = useState(600);
+  const [customWidthMm, setCustomWidthMm] = useState(1134);
+  const [customHeightMm, setCustomHeightMm] = useState(2384);
   const [panelMetrics, setPanelMetrics] = useState({
     remainingAreaSqft: 0,
     coveragePct: 0,
@@ -2522,7 +2531,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               <Grid2X2 className="h-3.5 w-3.5 text-slate-400" />
             </div>
             <p className="mt-1 text-[10px] leading-relaxed text-slate-500">
-              Brand pehle, uske baad watt. Size packing ke liye watt/dimensions se aata hai. Auto layout water tank / trees avoid karta hai.
+              Curated India modules (540–750W). List me na ho to neeche custom watt + size add karo — browser me save hota hai (live market scrape nahi).
             </p>
             <label className="mt-2 block text-[11px] font-bold text-slate-600 dark:text-slate-300">
               Brand
@@ -2530,7 +2539,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                 value={panelSpec.manufacturer?.trim() || "Generic"}
                 onChange={(event) => {
                   const brand = event.target.value;
-                  const options = panelModulesForBrand(brand);
+                  const options = panelModulesForBrand(brand, moduleCatalog);
                   const next =
                     options.find((item) => item.wattage === panelSpec.wattage) ??
                     options[0] ??
@@ -2540,7 +2549,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                 }}
                 className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs dark:border-white/10 dark:bg-slate-950"
               >
-                {panelModuleBrands().map((brand) => (
+                {panelModuleBrands(moduleCatalog).map((brand) => (
                   <option key={brand} value={brand}>
                     {brand}
                   </option>
@@ -2554,23 +2563,109 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                 onChange={(event) => {
                   const brand = panelSpec.manufacturer?.trim() || "Generic";
                   const next =
-                    panelModulesForBrand(brand).find(
+                    panelModulesForBrand(brand, moduleCatalog).find(
                       (item) => (item.catalog_id ?? item.model) === event.target.value
                     ) ??
-                    PANEL_MODULE_CATALOG.find((item) => item.catalog_id === event.target.value) ??
+                    moduleCatalog.find((item) => item.catalog_id === event.target.value) ??
                     DEFAULT_PANEL_MODULE;
                   setPanelSpec(next);
                   setPanelDirty(true);
                 }}
                 className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs dark:border-white/10 dark:bg-slate-950"
               >
-                {panelModulesForBrand(panelSpec.manufacturer?.trim() || "Generic").map((item) => (
-                  <option key={item.catalog_id ?? item.model} value={item.catalog_id ?? item.model}>
-                    {item.wattage}W
-                  </option>
-                ))}
+                {panelModulesForBrand(panelSpec.manufacturer?.trim() || "Generic", moduleCatalog).map(
+                  (item) => (
+                    <option key={item.catalog_id ?? item.model} value={item.catalog_id ?? item.model}>
+                      {item.wattage}W
+                      {item.catalog_id?.startsWith("custom-") ? " · custom" : ""}
+                    </option>
+                  )
+                )}
               </select>
             </label>
+            <p className="mt-1 text-[10px] text-slate-500">
+              Frame {panelSpec.width_mm} × {panelSpec.height_mm} mm
+            </p>
+            <button
+              type="button"
+              className="mt-1.5 text-[11px] font-bold text-blue-700 hover:underline"
+              onClick={() => {
+                setCustomWatt(panelSpec.wattage >= 600 ? panelSpec.wattage : 600);
+                setCustomWidthMm(panelSpec.width_mm);
+                setCustomHeightMm(panelSpec.height_mm);
+                setShowCustomModule((open) => !open);
+              }}
+            >
+              {showCustomModule ? "Hide custom module" : "+ Add custom watt / size"}
+            </button>
+            {showCustomModule ? (
+              <div className="mt-2 space-y-1.5 rounded-lg border border-slate-200 bg-slate-50 p-2 dark:border-white/10 dark:bg-white/[0.03]">
+                <p className="text-[10px] font-semibold text-slate-500">
+                  Brand = current ({panelSpec.manufacturer?.trim() || "Generic"}). Datasheet se L×W mm dalo.
+                </p>
+                <div className="grid grid-cols-3 gap-1.5">
+                  <label className="text-[10px] font-bold text-slate-600">
+                    Watt
+                    <input
+                      type="number"
+                      min={100}
+                      max={2000}
+                      step={5}
+                      value={customWatt}
+                      onChange={(event) => setCustomWatt(Math.max(100, Number(event.target.value) || 100))}
+                      className="mt-0.5 w-full rounded border border-slate-200 px-1.5 py-1 text-xs dark:border-white/10 dark:bg-slate-950"
+                    />
+                  </label>
+                  <label className="text-[10px] font-bold text-slate-600">
+                    Width mm
+                    <input
+                      type="number"
+                      min={100}
+                      max={5000}
+                      value={customWidthMm}
+                      onChange={(event) =>
+                        setCustomWidthMm(Math.max(100, Number(event.target.value) || 100))
+                      }
+                      className="mt-0.5 w-full rounded border border-slate-200 px-1.5 py-1 text-xs dark:border-white/10 dark:bg-slate-950"
+                    />
+                  </label>
+                  <label className="text-[10px] font-bold text-slate-600">
+                    Height mm
+                    <input
+                      type="number"
+                      min={100}
+                      max={5000}
+                      value={customHeightMm}
+                      onChange={(event) =>
+                        setCustomHeightMm(Math.max(100, Number(event.target.value) || 100))
+                      }
+                      className="mt-0.5 w-full rounded border border-slate-200 px-1.5 py-1 text-xs dark:border-white/10 dark:bg-slate-950"
+                    />
+                  </label>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => {
+                    const next = upsertCustomPanelModule({
+                      manufacturer: panelSpec.manufacturer?.trim() || "Custom",
+                      wattage: customWatt,
+                      width_mm: customWidthMm,
+                      height_mm: customHeightMm,
+                    });
+                    const catalog = getPanelModuleCatalog();
+                    setModuleCatalog(catalog);
+                    setPanelSpec(next);
+                    setPanelDirty(true);
+                    setShowCustomModule(false);
+                    toast.success("Custom module saved", `${panelModuleLabel(next)} · this browser`);
+                  }}
+                >
+                  Save & use module
+                </Button>
+              </div>
+            ) : null}
             <div className="mt-2 grid grid-cols-2 gap-1.5">
               {(["portrait", "landscape"] as const).map((orientation) => (
                 <button
