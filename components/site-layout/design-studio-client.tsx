@@ -1642,90 +1642,129 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     }
   }, [googleMapsKey, searchText, toast]);
 
-  const runAutoLayout = useCallback(() => {
-    if (!state.roof) {
-      toast.error("Draw roof first", "Complete at least one roof section before auto layout.");
-      return;
-    }
-    setPacking(true);
-    try {
-      // Only keep locked panels; unlocked are cleared and re-packed (avoids old overlap on tanks).
-      const lockedPanels = placedPanels.filter((panel) => panel.is_locked);
-      const result = autoPackPanels({
-        roof: state.roof,
-        obstructions: state.obstructions,
-        panelSpec,
-        orientation: panelOrientation,
-        setbackFt: panelSetbackFt,
-        mountingType,
-        tiltDeg: panelTiltDeg,
-        rowPitchM: mountingType === "flush" ? undefined : rowPitchM,
-        obstructionClearanceFt: 1.5,
-        preservePanels: lockedPanels,
-        packMode,
-        targetKw: packMode === "target_kw" ? targetKw : undefined,
-      });
-      pushPanelHistory(placedPanels);
-      setPlacedPanels(result.panels);
-      setPanelMetrics({
-        remainingAreaSqft: result.remainingAreaSqft,
-        coveragePct: result.coveragePct,
-      });
-      setMaxCapacity({
-        maxPanelCount: result.maxPanelCount,
-        maxDcCapacityKw: result.maxDcCapacityKw,
-      });
-      setSelectedPanelIds([]);
-      setPanelDirty(true);
-      if (result.panelCount === 0) {
-        toast.error(
-          "No panels fit",
-          "Roof too small for this module, or setback is high. Try setback 0–1 ft, or Landscape."
-        );
-      } else if (
-        packMode === "target_kw" &&
-        result.dcCapacityKw + 0.01 < targetKw &&
-        result.maxDcCapacityKw + 0.01 < targetKw
-      ) {
-        toast.error(
-          "Target exceeds roof",
-          `Max ~${result.maxDcCapacityKw.toFixed(2)} kW on this roof. Placed ${result.panelCount} panels (${result.dcCapacityKw.toFixed(2)} kW).`
-        );
-      } else if (packMode === "target_kw" && result.dcCapacityKw + 0.05 < targetKw) {
-        toast.success(
-          "Partial target",
-          `${result.panelCount} panels · ${result.dcCapacityKw.toFixed(2)} kW (max ${result.maxDcCapacityKw.toFixed(2)} kW)`
-        );
-      } else {
-        toast.success(
-          "Panels placed",
-          `${result.panelCount} panels · ${result.dcCapacityKw.toFixed(2)} kW DC` +
-            (packMode === "target_kw" ? ` · target ${targetKw} kW` : " · fill max")
-        );
+  const runAutoLayout = useCallback(
+    (overrides?: {
+      orientation?: Exclude<PanelOrientation, "east_west">;
+      mountingType?: PanelMountingType;
+      /** Soften toasts when re-packing after orientation/mounting toggle. */
+      quiet?: boolean;
+    }) => {
+      if (!state.roof) {
+        toast.error("Draw roof first", "Complete at least one roof section before auto layout.");
+        return;
       }
-    } catch (error) {
-      toast.error(
-        "Auto layout failed",
-        error instanceof Error ? error.message : "Could not pack panels on this roof."
+      const orientation = overrides?.orientation ?? panelOrientation;
+      const mounting = overrides?.mountingType ?? mountingType;
+      const lengthM = moduleLengthForOrientationM(
+        panelSpec.width_mm,
+        panelSpec.height_mm,
+        orientation
       );
-    } finally {
-      setPacking(false);
-    }
-  }, [
-    packMode,
-    panelOrientation,
-    panelSetbackFt,
-    panelSpec,
-    panelTiltDeg,
-    mountingType,
-    rowPitchM,
-    placedPanels,
-    pushPanelHistory,
-    state.obstructions,
-    state.roof,
-    targetKw,
-    toast,
-  ]);
+      const pitchM = recommendedRowPitchM({
+        tiltDeg: panelTiltDeg,
+        moduleLengthM: lengthM,
+        latitudeDeg: center[1],
+        mounting,
+      });
+
+      setPacking(true);
+      try {
+        // Only keep locked panels; unlocked are cleared and re-packed (avoids old overlap on tanks).
+        const lockedPanels = placedPanels.filter((panel) => panel.is_locked);
+        const result = autoPackPanels({
+          roof: state.roof,
+          obstructions: state.obstructions,
+          panelSpec,
+          orientation,
+          setbackFt: panelSetbackFt,
+          mountingType: mounting,
+          tiltDeg: panelTiltDeg,
+          rowPitchM: mounting === "flush" ? undefined : pitchM,
+          obstructionClearanceFt: 1.5,
+          preservePanels: lockedPanels,
+          packMode,
+          targetKw: packMode === "target_kw" ? targetKw : undefined,
+        });
+        pushPanelHistory(placedPanels);
+        setPlacedPanels(result.panels);
+        setPanelMetrics({
+          remainingAreaSqft: result.remainingAreaSqft,
+          coveragePct: result.coveragePct,
+        });
+        setMaxCapacity({
+          maxPanelCount: result.maxPanelCount,
+          maxDcCapacityKw: result.maxDcCapacityKw,
+        });
+        setSelectedPanelIds([]);
+        setPanelDirty(true);
+        if (result.panelCount === 0) {
+          toast.error(
+            "No panels fit",
+            "Roof too small for this module, or setback is high. Try setback 0–1 ft, or Landscape."
+          );
+        } else if (overrides?.quiet) {
+          toast.success(
+            orientation === "landscape" ? "Landscape layout" : "Portrait layout",
+            `${result.panelCount} panels · ${result.dcCapacityKw.toFixed(2)} kW DC`
+          );
+        } else if (
+          packMode === "target_kw" &&
+          result.dcCapacityKw + 0.01 < targetKw &&
+          result.maxDcCapacityKw + 0.01 < targetKw
+        ) {
+          toast.error(
+            "Target exceeds roof",
+            `Max ~${result.maxDcCapacityKw.toFixed(2)} kW on this roof. Placed ${result.panelCount} panels (${result.dcCapacityKw.toFixed(2)} kW).`
+          );
+        } else if (packMode === "target_kw" && result.dcCapacityKw + 0.05 < targetKw) {
+          toast.success(
+            "Partial target",
+            `${result.panelCount} panels · ${result.dcCapacityKw.toFixed(2)} kW (max ${result.maxDcCapacityKw.toFixed(2)} kW)`
+          );
+        } else {
+          toast.success(
+            "Panels placed",
+            `${result.panelCount} panels · ${result.dcCapacityKw.toFixed(2)} kW DC` +
+              (packMode === "target_kw" ? ` · target ${targetKw} kW` : " · fill max")
+          );
+        }
+      } catch (error) {
+        toast.error(
+          "Auto layout failed",
+          error instanceof Error ? error.message : "Could not pack panels on this roof."
+        );
+      } finally {
+        setPacking(false);
+      }
+    },
+    [
+      center,
+      packMode,
+      panelOrientation,
+      panelSetbackFt,
+      panelSpec,
+      panelTiltDeg,
+      mountingType,
+      placedPanels,
+      pushPanelHistory,
+      state.obstructions,
+      state.roof,
+      targetKw,
+      toast,
+    ]
+  );
+
+  const applyPanelOrientation = useCallback(
+    (orientation: Exclude<PanelOrientation, "east_west">) => {
+      if (orientation === panelOrientation) return;
+      setPanelOrientation(orientation);
+      setPanelDirty(true);
+      if (placedPanels.length > 0 && state.roof) {
+        runAutoLayout({ orientation, quiet: true });
+      }
+    },
+    [panelOrientation, placedPanels.length, runAutoLayout, state.roof]
+  );
 
   useEffect(() => {
     if (!state.roof) {
@@ -2716,11 +2755,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                 <button
                   key={orientation}
                   type="button"
-                  onClick={() => {
-                    setPanelOrientation(orientation);
-                    setPanelDirty(true);
-                  }}
-                  className={`rounded-lg border px-2 py-2 text-[11px] font-semibold capitalize ${
+                  disabled={packing}
+                  onClick={() => applyPanelOrientation(orientation)}
+                  className={`rounded-lg border px-2 py-2 text-[11px] font-semibold capitalize disabled:opacity-50 ${
                     panelOrientation === orientation
                       ? "border-blue-600 bg-blue-50 text-blue-900"
                       : "border-slate-200 text-slate-600 dark:border-white/10"
@@ -2733,11 +2770,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             {azimuthAdvice && panelOrientation !== azimuthAdvice.suggestedOrientation ? (
               <button
                 type="button"
-                className="mt-1.5 text-[11px] font-bold text-blue-700 hover:underline"
-                onClick={() => {
-                  setPanelOrientation(azimuthAdvice.suggestedOrientation);
-                  setPanelDirty(true);
-                }}
+                className="mt-1.5 text-[11px] font-bold text-blue-700 hover:underline disabled:opacity-50"
+                disabled={packing}
+                onClick={() => applyPanelOrientation(azimuthAdvice.suggestedOrientation)}
               >
                 Use suggested {azimuthAdvice.suggestedOrientation}
               </button>
@@ -2747,8 +2782,12 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               <select
                 value={mountingType}
                 onChange={(event) => {
-                  setMountingType(event.target.value as PanelMountingType);
+                  const next = event.target.value as PanelMountingType;
+                  setMountingType(next);
                   setPanelDirty(true);
+                  if (placedPanels.length > 0 && state.roof) {
+                    runAutoLayout({ mountingType: next, quiet: true });
+                  }
                 }}
                 className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs dark:border-white/10 dark:bg-slate-950"
               >
@@ -2828,7 +2867,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               className="mt-2 w-full"
               size="sm"
               disabled={!state.roof || drawingRoof || packing}
-              onClick={runAutoLayout}
+              onClick={() => runAutoLayout()}
             >
               {packing
                 ? "Placing panels…"
