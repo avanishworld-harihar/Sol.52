@@ -1225,8 +1225,9 @@ function ProposalPageContent() {
       const billTypeHint: "auto" | "lt" | "ht" =
         osPresetId === "commercial_ht" || /\bHT\b|\bHV\b/i.test(manual.connectionType)
           ? "ht"
-          : // Residential + LT commercial: force LT/domestic OCR (never "auto").
-            // "auto" was mixing HT industrial rules into domestic bill reads.
+          : // LOCKED residential / LT commercial path: always "lt" (never "auto").
+            // Keeps HT industrial rules out of MP domestic Proposal OS uploads.
+            // See lib/residential-bill-path-lock.ts + lib/bill-scan-lanes.ts.
             "lt";
       const expectedBillMonthHint =
         typeof slot === "number"

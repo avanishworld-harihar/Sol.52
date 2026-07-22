@@ -13,8 +13,7 @@ import { parsePdfBillFallback } from "@/lib/pdf-bill-fallback";
 import type { ParsedBillShape } from "@/lib/bill-parse";
 import { auditMpBill, type MpBillAuditReport } from "@/lib/mp-bill-audit";
 import { saveMpBillAuditRecord } from "@/lib/mp-bill-audit-persistence";
-import { sanitizeMpMeteredVsSubsidyFields } from "@/lib/mp-bill-field-sanitize";
-import { sanitizeHtBillConsumption, sanitizeLtBillFields } from "@/lib/ht-bill-sanitize";
+import { applyBillLanePostParse } from "@/lib/bill-scan-lanes";
 import {
   formatBillMonthLabel,
   inferBillMonthFromHistory,
@@ -587,13 +586,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // MP DISCOM slips: ₹ subsidy often sits on the numeric column OCR labels as consumption.
-    parsed = sanitizeMpMeteredVsSubsidyFields(parsed);
-    // Residential / LT path: strip HT fields the model may invent; reject accumulator-scale units.
-    parsed = sanitizeLtBillFields(parsed, billTypeHint);
-    // HT tables mix raw AMR readings, MD, MF, kWh and kVAh. The final supplied
-    // kWh line is authoritative for proposal consumption and current-month units.
-    parsed = sanitizeHtBillConsumption(parsed, billTypeHint);
+    // Lane-isolated post-parse (residential LT vs commercial HT). See lib/bill-scan-lanes.ts
+    // and lib/residential-bill-path-lock.ts — do not merge HT heuristics into the LT lane.
+    parsed = applyBillLanePostParse(parsed, billTypeHint);
 
     // ── Safety net: force current bill month slot = metered_unit_consumption ──────
     // Problem: MP DISCOM bills show the PREVIOUS billing period month (e.g. MAR-2026)

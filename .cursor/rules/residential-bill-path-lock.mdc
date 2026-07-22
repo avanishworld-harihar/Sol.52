@@ -1,0 +1,41 @@
+---
+description: Residential MP bill upload path is locked — keep LT and HT / multi-state DISCOM work isolated
+alwaysApply: true
+---
+
+# Residential bill path lock (Proposal OS)
+
+Madhya Pradesh **residential LT** bill upload in Proposal OS is **working and locked**.
+
+## What "locked" means
+
+- **Do NOT** change residential / MP LT bill modules when building **commercial HT**, other commercial flows, or **other-state DISCOMs**.
+- **Only** edit locked residential bill paths when the user **explicitly** asks to change residential (MP) bill upload.
+- Keep **LT and HT lanes separate** via `lib/bill-scan-lanes.ts` (`billTypeHint`: `"lt"` vs `"ht"`).
+
+## Frozen paths (unless user requests residential bill changes)
+
+- `lib/resolve-bill-month.ts`
+- `lib/mp-bill-field-sanitize.ts`, `lib/mp-bill-month.ts`, `lib/mp-bill-engine.ts`, `lib/mp-bill-audit*.ts`
+- `lib/pdf-bill-fallback.ts` (MP LT / Last-Six-Months PDF path)
+- `lib/discom-billing-rules.ts` (MP seasonal 2-bill rule)
+- Prefer not to retune `lib/anthropic.ts` / `lib/bill-ai.ts` LT prompts for HT — add HT-specific prompt blocks or modules instead
+
+See `lib/residential-bill-path-lock.ts`.
+
+## Commercial HT / other work
+
+- Scope HT fixes to `lib/ht-bill-sanitize.ts`, `commercial_ht` preset UI, and the `commercial_ht` branch in `applyBillLanePostParse`.
+- Do not weaken `sanitizeLtBillFields` or force `billTypeHint: "auto"` on residential uploads.
+- Residential Proposal OS must keep sending `billTypeHint: "lt"`.
+
+## Multi-state DISCOMs (future)
+
+- Add state/DISCOM behavior as **adapters/registry entries** (e.g. `getBillingRule`, future `lib/discom/<state>/`).
+- **Do not** hard-code another state’s quirks into MP sanitizers or MP PDF fallback.
+- MP-only helpers must **no-op** unless state/DISCOM is MP (never key off generic “domestic” alone).
+- One state’s pipeline must not rewrite another state’s `bill_month`, units, or tariff fields.
+
+## Shared API
+
+`/api/analyze-bill` is shared, but post-parse must stay lane-dispatched. New states extend the registry; they do not fork the residential MP locked core.

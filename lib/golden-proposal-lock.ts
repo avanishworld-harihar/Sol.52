@@ -8,6 +8,8 @@
  * `lib/proposal-preset-isolation.ts` — follow that so other presets cannot
  * regress Golden print or layout.
  *
+ * Residential MP bill upload lock (separate concern): `lib/residential-bill-path-lock.ts`.
+ *
  * Users can still pick any residential theme in More → Proposal templates.
  */
 

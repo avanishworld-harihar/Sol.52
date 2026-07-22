@@ -105,10 +105,12 @@ export function recoverMeteredUnitsFromHistory(parsed: ParsedBillShape): number 
 }
 
 function isMpBillShape(parsed: ParsedBillShape): boolean {
+  // Strict MP identity only — never treat generic "domestic" / LV-1.2 as MP, or
+  // other-state DISCOMs will inherit MP subsidy/kWh repair and interrupt each other.
   const s = `${parsed.state ?? ""} ${parsed.discom ?? ""} ${parsed.address ?? ""}`.toLowerCase();
-  if (/madhya|mpez|mpc|mpwz|mppkvvcl|mpmkvvcl|mppakvvcl|jabalpur|bhopal|indore/.test(s)) return true;
-  const t = `${parsed.connection_type ?? ""} ${parsed.tariff_category ?? ""}`.toLowerCase();
-  return /\blv\s*[-]?\s*1\s*\.?\s*2\b|domestic|light and fan/.test(t);
+  return /madhya\s*pradesh|\bmpez\b|\bmpcz\b|\bmpwz\b|mppkvvcl|mpmkvvcl|mppakvvcl|mp\s*poorv|mp\s*paschim|mp\s*madhya\s*kshetra|jabalpur|bhopal|indore/.test(
+    s
+  );
 }
 
 function roundInrCredit(n: number): number {
