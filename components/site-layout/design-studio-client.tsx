@@ -998,10 +998,12 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       const path = panel.footprint_geojson.coordinates[0]
         .slice(0, -1)
         .map(([lng, lat]) => ({ lat, lng }));
+      const toolNow = studioToolRef.current;
       const canDrag =
         selected &&
         !panel.is_locked &&
-        (studioToolRef.current === "select" || studioToolRef.current === "move_group");
+        toolNow !== "place_panel" &&
+        (toolNow === "select" || toolNow === "move_group" || toolNow == null);
       const polygon = new google.maps.Polygon({
         map: mapRef.current!,
         paths: path,
@@ -1385,7 +1387,15 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     setActiveRoofIndex(activeRoofIndexRef.current);
     commitRoof(nextRoof);
     renderRoofGeometry(nextRoof);
-  }, [clearDraftOverlay, commitRoof, renderRoofGeometry]);
+    if (!nextRoof && placedPanelsRef.current.length > 0) {
+      setStudioTool("select");
+      studioToolRef.current = "select";
+      toast.info(
+        "Roof removed",
+        "Panels still on map — use Select or Group move. Redraw roof when ready."
+      );
+    }
+  }, [clearDraftOverlay, commitRoof, renderRoofGeometry, toast]);
 
   const updateDraftAfterHistory = useCallback(() => {
     const points = drawingPointsRef.current;
@@ -2232,7 +2242,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             <button
               type="button"
               title="Move all panels · click again to unselect"
-              disabled={!state.roof || drawingRoof || placedPanels.length === 0}
+              disabled={drawingRoof || placedPanels.length === 0}
               onClick={() => setActiveStudioTool("move_group")}
               className={`flex h-10 w-10 items-center justify-center rounded-lg disabled:opacity-40 ${
                 studioTool === "move_group" ? "bg-blue-600 text-white" : "text-slate-300 hover:bg-white/10"
@@ -2242,7 +2252,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             </button>
             <button
               type="button"
-              title="Place panel"
+              title={state.roof ? "Place panel" : "Draw a roof first to place panels"}
               disabled={!state.roof || drawingRoof}
               onClick={() => setActiveStudioTool("place_panel")}
               className={`flex h-10 w-10 items-center justify-center rounded-lg disabled:opacity-40 ${
@@ -2647,6 +2657,10 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                 {roofLocked
                   ? `Section ${activeRoofIndex + 1} selected. Unlock before editing corners.`
                   : `Editing section ${activeRoofIndex + 1}. Drag handles or right-click a corner to delete it.`}
+              </p>
+            ) : placedPanels.length > 0 ? (
+              <p className="mt-2 rounded-lg bg-amber-50 px-2 py-1.5 text-[10px] font-semibold text-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
+                No roof — {placedPanels.length} panel(s) still on map. Use Select / Group move, or draw a new roof.
               </p>
             ) : null}
           </div>
