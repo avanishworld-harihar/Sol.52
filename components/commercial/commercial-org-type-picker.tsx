@@ -41,6 +41,8 @@ type Props = {
   open: boolean;
   onSelect: (orgType: OrgType, defaultKw: number) => void;
   onBack: () => void;
+  /** Click outside / Esc — leave builder and return to Proposal OS. */
+  onDismiss?: () => void;
 };
 
 function OrgTile({
@@ -78,7 +80,7 @@ function OrgTile({
   );
 }
 
-export function CommercialOrgTypePicker({ open, onSelect, onBack }: Props) {
+export function CommercialOrgTypePicker({ open, onSelect, onBack, onDismiss }: Props) {
   if (!open) return null;
   const specs = listOrgTypes();
 
@@ -94,6 +96,10 @@ export function CommercialOrgTypePicker({ open, onSelect, onBack }: Props) {
         aria-modal="true"
         aria-labelledby="commercial-org-picker-title"
         className={`proposal-os-glass-backdrop fixed inset-0 ${MODAL_Z} flex items-end justify-center p-0 sm:items-center sm:p-4`}
+        onClick={onDismiss}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") onDismiss?.();
+        }}
       >
         <motion.div
           initial={{ opacity: 0, y: 24, scale: 0.97 }}
@@ -101,6 +107,7 @@ export function CommercialOrgTypePicker({ open, onSelect, onBack }: Props) {
           exit={{ opacity: 0, y: 16, scale: 0.97 }}
           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
           className="proposal-os-glass-sheet flex max-h-[min(96dvh,100%)] w-full max-w-2xl flex-col rounded-t-3xl sm:max-h-[min(92vh,720px)] sm:rounded-3xl"
+          onClick={(e) => e.stopPropagation()}
         >
           <div className="proposal-os-glass-sheet-inner flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain p-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:p-6 sm:pb-6">
             <div className="mb-5 flex items-start gap-3">

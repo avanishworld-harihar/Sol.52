@@ -103,9 +103,17 @@ type Props = {
   currentMode: ResidentialInputMode | null;
   onSelect: (mode: ResidentialInputMode) => void;
   onBack?: () => void;
+  /** Click outside / Esc — leave builder and return to Proposal OS. */
+  onDismiss?: () => void;
 };
 
-export function ResidentialProposalModePicker({ open, currentMode, onSelect, onBack }: Props) {
+export function ResidentialProposalModePicker({
+  open,
+  currentMode,
+  onSelect,
+  onBack,
+  onDismiss,
+}: Props) {
   if (!open) return null;
 
   return (
@@ -122,6 +130,10 @@ export function ResidentialProposalModePicker({ open, currentMode, onSelect, onB
           "proposal-os-glass-backdrop fixed inset-0 flex items-end justify-center p-0 sm:items-center sm:p-4",
           MODAL_Z
         )}
+        onClick={onDismiss}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") onDismiss?.();
+        }}
       >
         <motion.div
           initial={{ opacity: 0, y: 28, scale: 0.98 }}
@@ -129,6 +141,7 @@ export function ResidentialProposalModePicker({ open, currentMode, onSelect, onB
           exit={{ opacity: 0, y: 16 }}
           transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
           className="proposal-os-glass-sheet flex max-h-[min(96dvh,100%)] w-full max-w-2xl flex-col rounded-t-3xl sm:max-h-[min(88vh,800px)] sm:rounded-3xl"
+          onClick={(e) => e.stopPropagation()}
         >
           <div className="proposal-os-glass-sheet-inner flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain p-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:p-6">
             {onBack ? (

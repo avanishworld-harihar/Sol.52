@@ -2931,6 +2931,7 @@ function ProposalPageContent() {
             setResidentialInputMode("bill");
             setShowPresetPicker(false);
           }}
+          onDismiss={() => router.push("/proposals")}
         />
       )}
 
@@ -2959,6 +2960,7 @@ function ProposalPageContent() {
             setShowPresetPicker(true);
             setOsPresetId(null);
           }}
+          onDismiss={() => router.push("/proposals")}
         />
       ) : null}
 
@@ -2975,6 +2977,7 @@ function ProposalPageContent() {
             setShowPresetPicker(true);
             setOsPresetId(null);
           }}
+          onDismiss={() => router.push("/proposals")}
         />
       ) : null}
 
