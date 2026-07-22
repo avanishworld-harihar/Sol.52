@@ -11,7 +11,7 @@ export function resolveBillAiProvider(): BillAiProvider {
 export async function analyzeBillWithProvider(
   base64Data: string,
   mimeType: string,
-  options?: { formatHint?: string; billTypeHint?: "auto" | "lt" | "ht" }
+  options?: { formatHint?: string; billTypeHint?: "auto" | "lt" | "ht"; expectedBillMonthHint?: string }
 ): Promise<{ parsed: ParsedBillShape; provider: BillAiProvider; tier: BillAiModelTier }> {
   return analyzeBillWithAnthropicHybrid(base64Data, mimeType, options);
 }
@@ -19,7 +19,7 @@ export async function analyzeBillWithProvider(
 async function analyzeBillWithAnthropicHybrid(
   base64Data: string,
   mimeType: string,
-  options?: { formatHint?: string; billTypeHint?: "auto" | "lt" | "ht" }
+  options?: { formatHint?: string; billTypeHint?: "auto" | "lt" | "ht"; expectedBillMonthHint?: string }
 ): Promise<{ parsed: ParsedBillShape; provider: BillAiProvider; tier: BillAiModelTier }> {
   const haikuModel = (process.env.ANTHROPIC_HAIKU_MODEL || process.env.ANTHROPIC_MODEL || "claude-3-5-haiku-latest").trim();
   const sonnetModel = (process.env.ANTHROPIC_SONNET_MODEL || "claude-3-5-sonnet-latest").trim();
@@ -33,6 +33,7 @@ async function analyzeBillWithAnthropicHybrid(
     const haikuParsed = await analyzeBillWithAnthropic(base64Data, mimeType, {
       formatHint: options?.formatHint,
       billTypeHint: options?.billTypeHint,
+      expectedBillMonthHint: options?.expectedBillMonthHint,
       modelOverride: haikuModel
     });
     if (!sonnetEnabled) {
@@ -45,6 +46,7 @@ async function analyzeBillWithAnthropicHybrid(
       const sonnetParsed = await analyzeBillWithAnthropic(base64Data, mimeType, {
         formatHint: options?.formatHint,
         billTypeHint: options?.billTypeHint,
+        expectedBillMonthHint: options?.expectedBillMonthHint,
         modelOverride: sonnetModel
       });
       const parsed =
@@ -63,6 +65,7 @@ async function analyzeBillWithAnthropicHybrid(
     const sonnetParsed = await analyzeBillWithAnthropic(base64Data, mimeType, {
       formatHint: options?.formatHint,
       billTypeHint: options?.billTypeHint,
+      expectedBillMonthHint: options?.expectedBillMonthHint,
       modelOverride: sonnetModel
     });
     return { parsed: sonnetParsed, provider: "anthropic", tier: "sonnet" };

@@ -1228,6 +1228,13 @@ function ProposalPageContent() {
           : // Residential + LT commercial: force LT/domestic OCR (never "auto").
             // "auto" was mixing HT industrial rules into domestic bill reads.
             "lt";
+      const expectedBillMonthHint =
+        typeof slot === "number"
+          ? uploadRequirement.secondaryLabels[slot] ??
+            (latestBill?.bill_month
+              ? `Bill around 6 months before ${latestBill.bill_month}`
+              : undefined)
+          : undefined;
       const response = await fetch("/api/analyze-bill", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1237,7 +1244,8 @@ function ProposalPageContent() {
           discomCode: manual.discom.trim() || installerDiscom.trim() || undefined,
           billTypeHint,
           clientRef: clientRef || undefined,
-          leadId: selectedLeadId || undefined
+          leadId: selectedLeadId || undefined,
+          expectedBillMonthHint
         })
       });
       const payload = await response.json();
@@ -4317,6 +4325,21 @@ function buildMonthlyAuditOverridesFromBills(
 function extractDetectedMonths(parsed: ParsedBillShape | null): Set<keyof MonthlyUnits> {
   const detected = new Set<keyof MonthlyUnits>();
   if (!parsed) return detected;
+
+  // Prefer concrete filled month slots from this bill (not a synthetic window from a wrong label).
+  if (parsed.months) {
+    for (const key of MONTH_KEYS) {
+      const raw = parsed.months[key];
+      if (raw == null) continue;
+      const n = typeof raw === "number" ? raw : Number.parseInt(String(raw).replace(/[^\d]/g, ""), 10);
+      if (Number.isFinite(n) && n > 0) detected.add(key);
+    }
+  }
+  if (detected.size > 0) {
+    const billKey = monthKeyFromBillLabel(parsed.bill_month);
+    if (billKey) detected.add(billKey);
+    return detected;
+  }
 
   const billMonthIndex = parseBillMonthIndex(parsed.bill_month);
   if (billMonthIndex != null) {

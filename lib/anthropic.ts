@@ -38,6 +38,7 @@ export type AnalyzeBillAnthropicOptions = {
   formatHint?: string;
   modelOverride?: string;
   billTypeHint?: "auto" | "lt" | "ht";
+  expectedBillMonthHint?: string;
 };
 
 export async function analyzeBillWithAnthropic(
@@ -54,6 +55,13 @@ export async function analyzeBillWithAnthropic(
   const timeoutMs = Number.isFinite(timeoutRaw) ? Math.max(5_000, Math.min(45_000, timeoutRaw)) : DEFAULT_TIMEOUT_MS;
 
   const hintBlock = options?.formatHint?.trim() ? `\nDISCOM hint memory: ${options.formatHint.trim()}\n` : "";
+  const expectedMonth = options?.expectedBillMonthHint?.trim() || "";
+  const expectedMonthBlock = expectedMonth
+    ? `\nSECONDARY / HISTORY BILL UPLOAD: This file is expected around "${expectedMonth}".
+Extract the Bill Month PRINTED ON THIS document only.
+NEVER copy today's calendar month. NEVER reuse a more recent bill's month.
+If the printed Bill Month is near that target (±1–2 months), prefer that printed value with its year.\n`
+    : `\nBILL MONTH GUARD: bill_month must be the month printed on THIS bill (with year). NEVER invent today's date.\n`;
   const mode = options?.billTypeHint ?? "auto";
   const billTypeHintBlock =
     mode === "ht"
@@ -116,7 +124,7 @@ LT bills: leave ALL these fields null. For HT bills:
   const prompt = `Extract bill fields from this Indian electricity bill image/PDF.
 Return ONLY valid JSON (no markdown), exactly this shape:
 {"name":"","address":"","consumer_id":"","meter_number":"","connection_date":"","sanctioned_load":"","phase":"Single or Three","connection_type":"purpose as printed e.g. Shops/Showrooms or Domestic","purpose_of_supply":"","tariff_category":"exact tariff code e.g. LV2 [LV2.2] or HV-3.1.B","contract_demand_kva":null,"supply_voltage":null,"max_demand_kva":null,"billing_demand_kva":null,"avg_power_factor":null,"kvah_units":null,"kwh_units":null,"tod_units":null,"tod_amounts_inr":null,"demand_charges_inr":null,"multiplying_factor":null,"discom":"","state":"","district":"","country":"India","bill_month":"","registered_mobile":"","fixed_charges_inr":null,"energy_charges_inr":null,"electricity_duty_inr":null,"regulatory_surcharges_inr":null,"total_amount_payable_inr":null,"read_type":"","bill_type_label":"","metered_unit_consumption":null,"total_amount_till_due_inr":null,"total_amount_after_due_inr":null,"current_month_bill_amount_inr":null,"principal_arrear_inr":null,"amount_received_against_bill_inr":null,"mp_govt_subsidy_amount_inr":null,"tod_rebate_inr":null,"fppas_inr":null,"pf_welding_surcharge_inr":null,"rebate_incentive_inr":null,"ccb_adjustment_inr":null,"nfp_flag":false,"strict_audit_mode":"strict_v1","strict_audit_notes":[],"months":{"jan":null,"feb":null,"mar":null,"apr":null,"may":null,"jun":null,"jul":null,"aug":null,"sep":null,"oct":null,"nov":null,"dec":null},"consumption_history":[],"format_memory":"","tariff_slabs_detected":[]}
-${hintBlock}${billTypeHintBlock}
+${hintBlock}${expectedMonthBlock}${billTypeHintBlock}
 ======================================================================
 INDIAN ELECTRICITY BILL STRUCTURE (read carefully before extracting):
 ======================================================================
@@ -192,6 +200,8 @@ ${mode === "lt" ? "• In LT/DOMESTIC mode this must stay null.\n" : ""}
 
 ──── (G) bill_month (drives FY tariff + monthly FPPAS) ────
 • Format as printed: "APR-2026", "Apr 2026", "April 2026" — but ALWAYS include the year.
+• Read from the CURRENT MONTH header (near Metered Unit Consumption / Billing Date) — NOT from the "Bill Month" column title inside Last Six Months table, and NOT from previous-period reading rows.
+• NEVER use today's calendar date. If the bill is from six months ago, bill_month must be that older month.
 • If only "April" is printed without a year, look elsewhere (billing date,
   reading date, due date) to disambiguate. Add a strict_audit_notes entry if
   the year is uncertain.

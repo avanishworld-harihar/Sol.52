@@ -199,6 +199,7 @@ export function isBillMonthAlignedForOffset(
   const latest = parseBillMonthLabel(latestBillMonthLabel);
   const candidate = parseBillMonthLabel(candidateBillMonthLabel);
   if (!latest || !candidate) return true;
-  return monthDiff(latest, candidate) === offsetMonths;
+  // "Around" target month — allow ±1 month OCR variance.
+  return Math.abs(monthDiff(latest, candidate) - offsetMonths) <= 1;
 }
 

@@ -15,6 +15,11 @@ import { auditMpBill, type MpBillAuditReport } from "@/lib/mp-bill-audit";
 import { saveMpBillAuditRecord } from "@/lib/mp-bill-audit-persistence";
 import { sanitizeMpMeteredVsSubsidyFields } from "@/lib/mp-bill-field-sanitize";
 import { sanitizeHtBillConsumption, sanitizeLtBillFields } from "@/lib/ht-bill-sanitize";
+import {
+  formatBillMonthLabel,
+  inferBillMonthFromHistory,
+  resolveAuthoritativeBillMonth
+} from "@/lib/resolve-bill-month";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +32,9 @@ const bodySchema = z.object({
   discomCode: z.string().max(120).optional().nullable(),
   billTypeHint: z.enum(["auto", "lt", "ht"]).optional().default("auto"),
   clientRef: z.string().max(120).optional().nullable(),
-  leadId: z.string().max(80).optional().nullable()
+  leadId: z.string().max(80).optional().nullable(),
+  /** Soft target for secondary uploads, e.g. "Bill around Jan 2026". */
+  expectedBillMonthHint: z.string().max(80).optional().nullable()
 });
 
 const ALLOWED_MIME = new Set([
@@ -72,12 +79,6 @@ function isAiAccessFailure(error: unknown): boolean {
   return /model is unavailable|does not have permission|api key is invalid|request failed|rate limit|claude|anthropic/i.test(msg);
 }
 
-function currentMonthLabel(): string {
-  const d = new Date();
-  const month = d.toLocaleString("en-US", { month: "short" });
-  return `${month} ${d.getFullYear()}`;
-}
-
 function buildFallbackParsedBill(input: { discomCode?: string | null }): ParsedBillShape {
   return {
     name: "",
@@ -93,7 +94,8 @@ function buildFallbackParsedBill(input: { discomCode?: string | null }): ParsedB
     state: "",
     district: "",
     country: "India",
-    bill_month: currentMonthLabel(),
+    // Never invent "today" as bill_month — that made secondary uploads look like Jul 2026.
+    bill_month: "",
     fixed_charges_inr: null,
     energy_charges_inr: null,
     total_amount_payable_inr: null,
@@ -443,7 +445,8 @@ async function queuePostScanTasks(input: {
 export async function POST(req: NextRequest) {
   try {
     const json = await req.json();
-    const { base64Data, mimeType: rawMime, discomCode, billTypeHint, clientRef, leadId } = bodySchema.parse(json);
+    const { base64Data, mimeType: rawMime, discomCode, billTypeHint, clientRef, leadId, expectedBillMonthHint } =
+      bodySchema.parse(json);
     const mimeType = rawMime?.split(";")[0]?.trim().toLowerCase() || "image/jpeg";
 
     if (!ALLOWED_MIME.has(mimeType)) {
@@ -472,7 +475,8 @@ export async function POST(req: NextRequest) {
     try {
       const result = await analyzeBillWithProvider(base64Data, mimeType, {
         formatHint: formatHint ?? undefined,
-        billTypeHint
+        billTypeHint,
+        expectedBillMonthHint: expectedBillMonthHint ?? undefined
       });
       parsed = result.parsed;
       scannerMode = result.provider;
@@ -527,11 +531,8 @@ export async function POST(req: NextRequest) {
           connection_date: parsed.connection_date || local.connection_date || "",
           state: parsed.state || local.state || "",
           discom: parsed.discom || local.discom || codeForHint || "",
-          // Always keep the AI's bill_month and metered reading — the local PDF fallback
-          // can misread the "Bill Month" label that appears near the PREVIOUS billing
-          // period in the reading section (e.g. MAR-2026 near "Bill Month" column header
-          // in the reading table), causing it to overwrite the correct APR-2026 value.
-          bill_month: parsed.bill_month?.trim() ? parsed.bill_month : (local.bill_month ?? ""),
+          // Prefer resolved month later; do not let a bad AI "today" overwrite a good PDF month here.
+          bill_month: parsed.bill_month?.trim() || local.bill_month || "",
           metered_unit_consumption: parsed.metered_unit_consumption ?? local.metered_unit_consumption ?? null
         };
       }
@@ -561,6 +562,29 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // ── Authoritative bill_month (fixes secondary upload cloning "Jul 2026") ──
+    // Prefer Last-Six-Months history inference; never keep a calendar-"today"
+    // hallucination when PDF/history/expected hint disagree.
+    {
+      const aiMonthBefore = parsed.bill_month;
+      parsed.bill_month = resolveAuthoritativeBillMonth({
+        aiBillMonth: aiMonthBefore,
+        localBillMonth: localPdfParsed?.bill_month,
+        consumptionHistory: parsed.consumption_history,
+        expectedMonthHint: expectedBillMonthHint
+      });
+      if (parsed.bill_month && parsed.bill_month !== (aiMonthBefore ?? "").trim()) {
+        console.log(
+          "[analyze-bill] bill_month resolved:",
+          aiMonthBefore,
+          "→",
+          parsed.bill_month,
+          "hint=",
+          expectedBillMonthHint ?? ""
+        );
+      }
+    }
+
     // MP DISCOM slips: ₹ subsidy often sits on the numeric column OCR labels as consumption.
     parsed = sanitizeMpMeteredVsSubsidyFields(parsed);
     // Residential / LT path: strip HT fields the model may invent; reject accumulator-scale units.
@@ -587,17 +611,11 @@ export async function POST(req: NextRequest) {
       let currentMonthKey: typeof MONTH_KEYS_ARR[number] | null = null;
 
       // Strategy 1 — infer from consumption_history (most reliable)
-      const histTotals = (parsed.consumption_history ?? [])
-        .map((r) => {
-          const p = parseBillMonthYear(r.month);
-          return p ? p.year * 12 + p.monthIndex : -1;
-        })
-        .filter((v) => v > 0);
-      if (histTotals.length > 0) {
-        const maxHistTotal = Math.max(...histTotals);
-        const nextTotal = maxHistTotal + 1;
-        const nextMonthIdx = nextTotal % 12;
-        currentMonthKey = MONTH_KEYS_ARR[nextMonthIdx];
+      const inferred = inferBillMonthFromHistory(parsed.consumption_history);
+      if (inferred) {
+        currentMonthKey = MONTH_KEYS_ARR[inferred.monthIndex];
+        // Keep bill_month in sync with the month we write metered units into.
+        parsed.bill_month = formatBillMonthLabel(inferred);
       }
 
       // Strategy 2 — fall back to bill_month if history gave nothing
@@ -612,7 +630,7 @@ export async function POST(req: NextRequest) {
         if (!parsed.months) parsed.months = {};
         parsed.months[currentMonthKey] = Math.round(meteredUnitsForFix);
       }
-      console.log("[fix-apr] months_after=", JSON.stringify(parsed.months));
+      console.log("[fix-apr] months_after=", JSON.stringify(parsed.months), "bill_month=", parsed.bill_month);
     }
 
     const discomForMemory = (parsed.discom ?? codeForHint).trim();

@@ -67,13 +67,51 @@ function collectMonthStamps(text: string): MonthStamp[] {
 }
 
 function detectLatestBillMonth(text: string, months: MonthStamp[]): MonthStamp | null {
-  const byLabel = text.match(/Bill\s*Month[:\s-]*([A-Z]{3,9}\s*[-/ ]\s*'?\d{2,4})/i)?.[1];
+  // Prefer history-table inference: MP "Last Six Months" omits the current month,
+  // so current ≈ max(recent history rows) + 1. This avoids grabbing the wrong
+  // "Bill Month" from reading-table column headers / previous periods.
+  try {
+    const historyRows = extractMpHistoryUnitRows(text);
+    if (historyRows.length >= 2) {
+      const totals = historyRows.map((r) => r.stamp.year * 12 + r.stamp.monthIndex);
+      const absMax = Math.max(...totals);
+      const recent = historyRows
+        .map((r) => r.stamp)
+        .filter((s) => absMax - (s.year * 12 + s.monthIndex) <= 7);
+      if (recent.length > 0) {
+        const recentMax = Math.max(...recent.map((s) => s.year * 12 + s.monthIndex));
+        const nextTotal = recentMax + 1;
+        const year = Math.floor(nextTotal / 12);
+        const monthIndex = ((nextTotal % 12) + 12) % 12;
+        const key = (["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"] as const)[
+          monthIndex
+        ];
+        return {
+          raw: `${key.toUpperCase()}-${year}`,
+          key,
+          monthIndex,
+          year,
+          pos: -1
+        };
+      }
+    }
+  } catch {
+    // fall through
+  }
+
+  // Header-only explicit label (require : or - after Bill Month so we skip table headers).
+  const headerArea = text.slice(0, Math.min(text.length, 2800));
+  const byLabel = headerArea.match(/Bill\s*Month\s*[:\-]\s*([A-Z]{3,9}\s*[-/ ]\s*'?\d{2,4})/i)?.[1];
   if (byLabel) {
     const parsed = normalizeMonthToken(byLabel);
     if (parsed) return parsed;
   }
+
+  // Chronological max only from the top of the bill (avoid footer / other noise).
+  const headerMonths = months.filter((m) => m.pos >= 0 && m.pos < 2800);
+  const pool = headerMonths.length > 0 ? headerMonths : months;
   return (
-    [...months].sort((a, b) => {
+    [...pool].sort((a, b) => {
       const am = a.year * 12 + a.monthIndex;
       const bm = b.year * 12 + b.monthIndex;
       return bm - am;
