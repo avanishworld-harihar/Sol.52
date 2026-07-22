@@ -84,10 +84,11 @@ function detectLatestBillMonth(text: string, months: MonthStamp[]): MonthStamp |
 type NumberStamp = { value: number; pos: number };
 
 function parseUnitToken(raw: string): number | null {
-  const n = Number.parseFloat(raw);
+  const n = Number.parseFloat(raw.replace(/,/g, ""));
   if (!Number.isFinite(n) || n <= 0) return null;
-  if (n > 2000) return null;
-  if (n >= 1900 && n <= 2100 && Number.isInteger(n)) return null; // likely year
+  // LT domestic/commercial monthly units; reject meter accumulators and years.
+  if (n > 5_000) return null;
+  if (n >= 1900 && n <= 2100 && Number.isInteger(n)) return null;
   return Math.round(n);
 }
 
@@ -119,21 +120,89 @@ function extractLastSixMonthsSection(text: string): string {
 }
 
 function extractMeteredUnitForLatest(text: string): number | null {
-  const direct = text.match(/Metered\s*Unit\s*Consumption[\s:]*([0-9]{1,4}(?:\.[0-9]{1,2})?)/i)?.[1];
+  const direct = text.match(/Metered\s*Unit\s*Consumption[\s:]*([0-9]{1,5}(?:\.[0-9]{1,2})?)/i)?.[1];
   const parsedDirect = direct ? parseUnitToken(direct) : null;
   if (parsedDirect) return parsedDirect;
-  const reverse = text.match(/([0-9]{1,4}(?:\.[0-9]{1,2})?)\s*(?:Metered\s*Unit\s*Consumption|Final\s*Consumption)/i)?.[1];
+  const reverse = text.match(/([0-9]{1,5}(?:\.[0-9]{1,2})?)\s*(?:Metered\s*Unit\s*Consumption|Final\s*Consumption)/i)?.[1];
   return reverse ? parseUnitToken(reverse) : null;
+}
+
+/**
+ * MP Poorv/Madhya/Paschim domestic layout:
+ *   Last Six Months Consumption
+ *   Bill Month | Date | Reading | Unit
+ *   MAY-2026   01-06-2026  20957  990
+ * Prefer the Unit column (last number), never the accumulator Reading.
+ */
+function extractMpHistoryUnitRows(
+  text: string
+): Array<{ stamp: MonthStamp; units: number }> {
+  const section = extractLastSixMonthsSection(text);
+  const rows: Array<{ stamp: MonthStamp; units: number }> = [];
+  const rowRx =
+    /\b(JAN(?:UARY)?|FEB(?:RUARY)?|MAR(?:CH)?|APR(?:IL)?|MAY|JUN(?:E)?|JUL(?:Y)?|AUG(?:UST)?|SEP(?:T|TEMBER)?|OCT(?:OBER)?|NOV(?:EMBER)?|DEC(?:EMBER)?)\s*[-/ ]\s*'?(\d{2,4})\b([\s\S]{0,120}?)/gi;
+  let match: RegExpExecArray | null = rowRx.exec(section);
+  while (match) {
+    const stamp = normalizeMonthToken(`${match[1]}-${match[2]}`);
+    if (!stamp) {
+      match = rowRx.exec(section);
+      continue;
+    }
+    const tail = match[3] ?? "";
+    // Stop at next month label so we don't bleed into the following row.
+    const nextMonth = tail.search(
+      /\b(?:JAN(?:UARY)?|FEB(?:RUARY)?|MAR(?:CH)?|APR(?:IL)?|MAY|JUN(?:E)?|JUL(?:Y)?|AUG(?:UST)?|SEP(?:T|TEMBER)?|OCT(?:OBER)?|NOV(?:EMBER)?|DEC(?:EMBER)?)\s*[-/ ]\s*'?\d{2,4}\b/i
+    );
+    const window = nextMonth >= 0 ? tail.slice(0, nextMonth) : tail;
+    const nums = [...window.matchAll(/\b(\d{1,7}(?:\.\d{1,2})?)\b/g)]
+      .map((m) => Number.parseFloat(m[1].replace(/,/g, "")))
+      .filter((n) => Number.isFinite(n) && n > 0);
+
+    // Typical row: [day fragments?], date parts, reading (>=1000), unit (<5000).
+    // Prefer last number that looks like monthly units and is not a year/date chunk.
+    let units: number | null = null;
+    for (let i = nums.length - 1; i >= 0; i -= 1) {
+      const n = nums[i]!;
+      if (n >= 1900 && n <= 2100 && Number.isInteger(n)) continue;
+      if (n > 5_000) continue; // accumulator / reading
+      if (n < 1) continue;
+      // Skip tiny day-of-month leftovers when a larger unit sits earlier in the row.
+      if (n <= 31 && nums.some((x, idx) => idx < i && x > 31 && x <= 5_000)) continue;
+      units = Math.round(n);
+      break;
+    }
+    if (units != null && units > 0) {
+      rows.push({ stamp: { ...stamp, pos: match.index }, units });
+    }
+    match = rowRx.exec(section);
+  }
+
+  // Dedupe by month+year keeping first occurrence (table order).
+  const seen = new Set<string>();
+  return rows.filter((row) => {
+    const key = `${row.stamp.key}-${row.stamp.year}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function extractUnitsByMonth(text: string, targetMonths: MonthStamp[]): Partial<Record<keyof NonNullable<ParsedBillShape["months"]>, number>> {
   const monthsMap: Partial<Record<keyof NonNullable<ParsedBillShape["months"]>, number>> = {};
+  const structured = extractMpHistoryUnitRows(text);
+  for (const row of structured) {
+    const hit = targetMonths.find((t) => t.key === row.stamp.key && t.year === row.stamp.year);
+    if (hit) monthsMap[hit.key] = row.units;
+  }
+  if (Object.keys(monthsMap).length >= 3) return monthsMap;
+
   const monthHits = collectMonthStamps(text);
   const numberHits = collectNumberStamps(text);
   const usedNumberIndexes = new Set<number>();
   const sortedTargets = [...targetMonths].sort((a, b) => a.pos - b.pos);
 
   for (const target of sortedTargets) {
+    if (monthsMap[target.key]) continue;
     let bestIdx = -1;
     let bestDistance = Number.POSITIVE_INFINITY;
     for (let i = 0; i < monthHits.length; i += 1) {
@@ -211,10 +280,23 @@ function mergeTextUnits(
   latest: MonthStamp,
   scopedMonths: MonthStamp[]
 ): Partial<Record<keyof NonNullable<ParsedBillShape["months"]>, number>> {
+  const fromStructured = extractMpHistoryUnitRows(fullText);
+  const structuredMap: Partial<Record<keyof NonNullable<ParsedBillShape["months"]>, number>> = {};
+  for (const row of fromStructured) {
+    const delta = monthDiff(latest, row.stamp);
+    // Keep current window only (0..11 months back). Drop same-month-last-year rows.
+    if (delta < 0 || delta > 11) continue;
+    structuredMap[row.stamp.key] = row.units;
+  }
+
   const fromSection = extractUnitsByMonth(extractLastSixMonthsSection(fullText), scopedMonths);
   const fromWholeBill = extractUnitsByMonth(fullText, scopedMonths);
   const latestMetered = extractMeteredUnitForLatest(fullText);
-  const merged = applyMpSixMonthTableHeuristic(fullText, { ...fromWholeBill, ...fromSection });
+  const merged = applyMpSixMonthTableHeuristic(fullText, {
+    ...fromWholeBill,
+    ...fromSection,
+    ...structuredMap,
+  });
   if (latestMetered && latestMetered > 0) merged[latest.key] = latestMetered;
   return merged;
 }
@@ -223,42 +305,46 @@ function applyMpSixMonthTableHeuristic(
   text: string,
   seed: Partial<Record<keyof NonNullable<ParsedBillShape["months"]>, number>>
 ): Partial<Record<keyof NonNullable<ParsedBillShape["months"]>, number>> {
+  const structured = extractMpHistoryUnitRows(text);
+  if (structured.length >= 3) {
+    const merged = { ...seed };
+    for (const row of structured) {
+      if (!merged[row.stamp.key]) merged[row.stamp.key] = row.units;
+    }
+    return merged;
+  }
+
   const section = extractLastSixMonthsSection(text);
   const headingIdx = section.search(/Last\s+(?:Six|6)\s+Months?\s+Consumption/i);
-  const headerIdx = section.search(/Unit\s+Reading\s+Date/i);
-  if (headingIdx < 0 || headerIdx < 0 || headerIdx <= headingIdx) return seed;
+  // Support both old "Unit Reading Date" and current "Bill Month | Date | Reading | Unit".
+  const headerIdx = Math.max(
+    section.search(/Unit\s+Reading\s+Date/i),
+    section.search(/Bill\s*Month[\s\S]{0,40}Reading[\s\S]{0,20}Unit/i),
+    section.search(/\bDate\b[\s\S]{0,20}\bReading\b[\s\S]{0,20}\bUnit\b/i)
+  );
+  if (headingIdx < 0 || headerIdx < 0) return seed;
 
-  const monthArea = section.slice(headerIdx, Math.min(section.length, headerIdx + 650));
+  const monthArea = section.slice(headerIdx, Math.min(section.length, headerIdx + 900));
   const orderedMonths = collectMonthStamps(monthArea).filter((m, idx, arr) =>
     arr.findIndex((x) => x.key === m.key && x.year === m.year) === idx
   );
   if (orderedMonths.length === 0) return seed;
 
-  const numbersArea = section.slice(Math.max(0, headingIdx - 80), headerIdx);
+  const numbersArea = section.slice(Math.max(0, headingIdx - 80), Math.min(section.length, headerIdx + 900));
   const pairUnits: number[] = [];
-  const pairRegex = /(\d{2,4}(?:\.\d+)?)\s+\d{4,6}\b/g;
+  // Reading (4–6 digits) then Unit (2–4 digits) — take the unit.
+  const pairRegex = /\b\d{4,6}(?:\.\d+)?\s+(\d{2,4}(?:\.\d+)?)\b/g;
   let pairMatch: RegExpExecArray | null = pairRegex.exec(numbersArea);
   while (pairMatch) {
     const parsed = parseUnitToken(pairMatch[1]);
     if (parsed) pairUnits.push(parsed);
     pairMatch = pairRegex.exec(numbersArea);
   }
-  const leadingUnits: number[] = [];
-  const leadingRegex = /\b\d{2,4}(?:\.\d+)?\b/g;
-  const headingBand = section.slice(Math.max(0, headingIdx - 120), headingIdx);
-  let leadMatch: RegExpExecArray | null = leadingRegex.exec(headingBand);
-  while (leadMatch) {
-    const parsed = parseUnitToken(leadMatch[0]);
-    if (parsed) leadingUnits.push(parsed);
-    leadMatch = leadingRegex.exec(headingBand);
-  }
+  if (pairUnits.length === 0) return seed;
 
-  const allUnits = [...leadingUnits.slice(-2), ...pairUnits];
-  if (allUnits.length === 0) return seed;
-
-  const take = Math.min(orderedMonths.length, allUnits.length);
-  const targetMonths = orderedMonths.slice(-take);
-  const targetUnits = allUnits.slice(-take);
+  const take = Math.min(orderedMonths.length, pairUnits.length);
+  const targetMonths = orderedMonths.slice(0, take);
+  const targetUnits = pairUnits.slice(0, take);
   const merged = { ...seed };
   for (let i = 0; i < take; i += 1) {
     const month = targetMonths[i];

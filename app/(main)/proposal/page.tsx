@@ -1215,7 +1215,6 @@ function ProposalPageContent() {
     const { file, slot } = task;
     setScanTimingBadge("Scanning...");
     toast.info("Processing bill", "SOL.52 is reading and calibrating this bill in background.");
-    const isFirstLatestUpload = slot === "latest" && !latestBill;
     setSlotBusy(slot, true);
     try {
       const base64Data = await fileToBase64(file);
@@ -1416,23 +1415,10 @@ function ProposalPageContent() {
           }
         }
         if (slot !== "latest") return merged;
-        const hasUsableHistoryWindow = (data.consumption_history?.length ?? 0) >= 4;
-        // If bill already has a proper month-history table, never synthesize seasonal
-        // fallback units (it causes misleading tiny values on smart/assessment bills).
-        const shouldInjectFallback =
-          !detectedHt &&
-          !hasUsableHistoryWindow &&
-          (isFirstLatestUpload || countFilledMonths(merged) < 4);
-        if (!shouldInjectFallback) return merged;
-        const sixMonthAutofill = buildSixMonthAutofill(data);
-        const next = { ...merged };
-        // Fill only empty months; never overwrite already parsed/uploaded values.
-        for (const key of MONTH_KEYS) {
-          const current = Number(next[key] || 0);
-          const fallback = Number(sixMonthAutofill[key] || 0);
-          if (current <= 0 && fallback > 0) next[key] = fallback;
-        }
-        return next;
+        // Never invent seasonal "fake" units. That produced ~180×multipliers
+        // (e.g. 184/194/187…) when AI failed — looks like a read but is wrong.
+        // Leave empty months blank so the user re-uploads or fills manually.
+        return merged;
       });
       if (analysisMessages.length === 0) {
         if (scannerMode === "local_pdf") {
@@ -4405,6 +4391,7 @@ function buildUnitsFromConsumptionHistory(parsed: ParsedBillShape | null): Parti
   const out: Partial<MonthlyUnits> = {};
   if (!parsed) return out;
   const history = parsed.consumption_history ?? [];
+  const billIdx = parseBillMonthIndex(parsed.bill_month);
 
   // Track the highest year seen for each month key so that if the same calendar
   // month appears multiple times (e.g. APR-2025 and APR-2026), only the most
@@ -4417,9 +4404,15 @@ function buildUnitsFromConsumptionHistory(parsed: ParsedBillShape | null): Parti
     const units = Number(row.units ?? 0);
     if (!Number.isFinite(units) || units <= 0) continue;
     const rawMonth = String(row.month ?? "");
+    const rowIdx = parseHistoryMonthIndex(rawMonth);
+    // Drop same-month-last-year (and older) rows — they are YoY reference only.
+    if (billIdx != null && rowIdx != null) {
+      const delta = billIdx - rowIdx;
+      if (delta < 0 || delta > 11) continue;
+    }
     const parts = rawMonth.split(/[\s/-]+/).map((part) => part.trim()).filter(Boolean);
 
-    // Extract year from the month string (e.g. "APR-2025" â†’ year 2025)
+    // Extract year from the month string (e.g. "APR-2025" → year 2025)
     let rowYear = 0;
     for (const part of parts) {
       const n = Number(part);
