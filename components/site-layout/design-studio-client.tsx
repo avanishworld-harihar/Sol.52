@@ -117,6 +117,8 @@ type DesignSummary = {
 
 type ObstructionType = SiteObstruction["type"];
 type StudioTool = "select" | "place_panel" | "move_group";
+/** null = no mode tool selected (idle). */
+type StudioToolOrIdle = StudioTool | null;
 
 const DEFAULT_CENTER: [number, number] = [78.9629, 20.5937];
 const MAP_MAX_ZOOM = 22;
@@ -209,11 +211,12 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const snapEnabledRef = useRef(true);
   const panelSpecRef = useRef(DEFAULT_PANEL_MODULE);
   const panelOrientationRef = useRef<Exclude<PanelOrientation, "east_west">>("portrait");
-  const studioToolRef = useRef<StudioTool>("select");
+  const studioToolRef = useRef<StudioToolOrIdle>("select");
   const placePanelRef = useRef<((latLng: google.maps.LatLng) => void) | null>(null);
   const undoStudioRef = useRef<(() => void) | null>(null);
   const redoStudioRef = useRef<(() => void) | null>(null);
   const deleteSelectedPanelRef = useRef<(() => void) | null>(null);
+  const clearStudioToolRef = useRef<(() => void) | null>(null);
   const setActiveStudioToolRef = useRef<((tool: StudioTool) => void) | null>(null);
   const activeRoofIndexRef = useRef(0);
   const drawingModeRef = useRef<"add" | "replace">("add");
@@ -247,7 +250,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const [roofLocked, setRoofLocked] = useState(true);
   const [activeRoofIndex, setActiveRoofIndex] = useState(0);
   const [historyVersion, setHistoryVersion] = useState(0);
-  const [studioTool, setStudioTool] = useState<StudioTool>("select");
+  const [studioTool, setStudioTool] = useState<StudioToolOrIdle>("select");
   const [mapTypeId, setMapTypeId] = useState<"hybrid" | "satellite" | "roadmap">("hybrid");
   const [mapHeading, setMapHeading] = useState(0);
   const [panelSpec, setPanelSpec] = useState<PanelSpec>(DEFAULT_PANEL_MODULE);
@@ -962,8 +965,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             setSelectedPanelIds([panel.id]);
           }
           if (tool === "place_panel") {
-            setStudioTool("select");
-            studioToolRef.current = "select";
+            setStudioTool(null);
+            studioToolRef.current = null;
           }
           event.domEvent?.stopPropagation?.();
         }),
@@ -1177,13 +1180,13 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       if (pendingObstruction === type || addObstructionRef.current === type) {
         addObstructionRef.current = null;
         setPendingObstruction(null);
-        setStudioTool("select");
-        studioToolRef.current = "select";
+        setStudioTool(null);
+        studioToolRef.current = null;
         mapRef.current?.setOptions({ draggableCursor: null });
         return;
       }
-      setStudioTool("select");
-      studioToolRef.current = "select";
+      setStudioTool(null);
+      studioToolRef.current = null;
       setSelectedPanelIds([]);
       addObstructionRef.current = type;
       setPendingObstruction(type);
@@ -1362,10 +1365,11 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           mapRef.current?.setOptions({ draggableCursor: null });
         } else if (
           studioToolRef.current === "place_panel" ||
-          studioToolRef.current === "move_group"
+          studioToolRef.current === "move_group" ||
+          studioToolRef.current === "select"
         ) {
           event.preventDefault();
-          setActiveStudioToolRef.current?.("select");
+          clearStudioToolRef.current?.();
         }
         return;
       }
@@ -1742,6 +1746,15 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     deleteSelectedPanelRef.current = deleteSelectedPanel;
   }, [deleteSelectedPanel, redoStudio, undoStudio]);
 
+  const clearStudioTool = useCallback(() => {
+    setStudioTool(null);
+    studioToolRef.current = null;
+    setSelectedPanelIds([]);
+    addObstructionRef.current = null;
+    setPendingObstruction(null);
+    mapRef.current?.setOptions({ draggableCursor: null });
+  }, []);
+
   const setActiveStudioTool = useCallback(
     (tool: StudioTool) => {
       if (drawingRoof) {
@@ -1750,27 +1763,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       addObstructionRef.current = null;
       setPendingObstruction(null);
 
-      // Select (V): always activate. Second click clears panel selection.
-      if (tool === "select") {
-        const wasAlreadySelect = studioToolRef.current === "select";
-        setStudioTool("select");
-        studioToolRef.current = "select";
-        mapRef.current?.setOptions({ draggableCursor: null });
-        if (wasAlreadySelect) {
-          setSelectedPanelIds([]);
-        } else {
-          // Leaving group/place → ready for single-panel click select
-          setSelectedPanelIds((ids) => (ids.length > 1 ? [] : ids));
-        }
-        return;
-      }
-
-      // Second click on the same mode tool → unselect back to Select.
+      // Same tool again → fully unselect (idle). Do NOT force Select on.
       if (studioToolRef.current === tool) {
-        setStudioTool("select");
-        studioToolRef.current = "select";
-        setSelectedPanelIds([]);
-        mapRef.current?.setOptions({ draggableCursor: null });
+        clearStudioTool();
         return;
       }
 
@@ -1781,18 +1776,34 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           .filter((panel) => !panel.is_locked)
           .map((panel) => panel.id);
         setSelectedPanelIds(unlocked);
+      } else if (tool === "select") {
+        setSelectedPanelIds((ids) => (ids.length > 1 ? [] : ids));
       }
       mapRef.current?.setOptions({
         draggableCursor:
           tool === "place_panel" ? "crosshair" : tool === "move_group" ? "move" : null,
       });
     },
-    [cancelRoofDrawing, drawingRoof]
+    [cancelRoofDrawing, clearStudioTool, drawingRoof]
   );
 
   useEffect(() => {
     setActiveStudioToolRef.current = setActiveStudioTool;
-  }, [setActiveStudioTool]);
+    clearStudioToolRef.current = clearStudioTool;
+  }, [clearStudioTool, setActiveStudioTool]);
+
+  /** Snap is a toggle, not a draw tool — never leave roof-draw / place modes on. */
+  const toggleSnap = useCallback(() => {
+    if (drawingRoof) {
+      cancelRoofDrawing();
+    }
+    addObstructionRef.current = null;
+    setPendingObstruction(null);
+    setStudioTool(null);
+    studioToolRef.current = null;
+    mapRef.current?.setOptions({ draggableCursor: null });
+    setSnapEnabled((value) => !value);
+  }, [cancelRoofDrawing, drawingRoof]);
 
   const cycleMapType = useCallback(() => {
     const order: Array<"roadmap" | "hybrid" | "satellite"> = ["hybrid", "satellite", "roadmap"];
@@ -1819,19 +1830,6 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     mapRef.current?.setTilt(0);
     setMapHeading(0);
   }, []);
-
-  /** Snap is a toggle, not a draw tool — never leave roof-draw / place modes on. */
-  const toggleSnap = useCallback(() => {
-    if (drawingRoof) {
-      cancelRoofDrawing();
-    }
-    addObstructionRef.current = null;
-    setPendingObstruction(null);
-    setStudioTool("select");
-    studioToolRef.current = "select";
-    mapRef.current?.setOptions({ draggableCursor: null });
-    setSnapEnabled((value) => !value);
-  }, [cancelRoofDrawing, drawingRoof]);
 
   const toggleSelectedPanelLock = useCallback(() => {
     const ids = selectedPanelIdsRef.current;
@@ -2000,7 +1998,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           <div className="flex flex-1 flex-col items-center gap-0.5 overflow-y-auto overscroll-contain py-2">
             <button
               type="button"
-              title="Select / move (V) · Shift+click multi"
+              title="Select / move (V) · click again to unselect · Shift+click multi"
               onClick={() => setActiveStudioTool("select")}
               className={`flex h-10 w-10 items-center justify-center rounded-lg ${
                 studioTool === "select" && !pendingObstruction && !drawingRoof
@@ -2012,7 +2010,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             </button>
             <button
               type="button"
-              title="Move all panels (group)"
+              title="Move all panels · click again to unselect"
               disabled={!state.roof || drawingRoof || placedPanels.length === 0}
               onClick={() => setActiveStudioTool("move_group")}
               className={`flex h-10 w-10 items-center justify-center rounded-lg disabled:opacity-40 ${
@@ -2558,12 +2556,10 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               size="sm"
               className="mt-1.5 w-full"
               disabled={!state.roof || drawingRoof}
-              onClick={() =>
-                setActiveStudioTool(studioTool === "place_panel" ? "select" : "place_panel")
-              }
+              onClick={() => setActiveStudioTool("place_panel")}
             >
               <Square className="mr-1 h-3.5 w-3.5" />
-              {studioTool === "place_panel" ? "Placing… click map (Esc cancel)" : "Manual place — click map"}
+              {studioTool === "place_panel" ? "Placing… click map (Esc / click again cancel)" : "Manual place — click map"}
             </Button>
             <div className="mt-1.5 grid grid-cols-2 gap-1.5">
               <Button
