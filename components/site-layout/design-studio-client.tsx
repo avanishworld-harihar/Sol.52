@@ -132,6 +132,10 @@ type StudioToolOrIdle = StudioTool | null;
 
 const DEFAULT_CENTER: [number, number] = [78.9629, 20.5937];
 const MAP_MAX_ZOOM = 22;
+/** Roof always under panels (paint + hit-test). */
+const ROOF_Z_INDEX = 0;
+const PANEL_Z_INDEX = 6;
+const PANEL_Z_INDEX_SELECTED = 8;
 const MAP_EXTRA_SCALE_MAX = 2.5;
 const MAP_EXTRA_SCALE_STEP = 0.25;
 const PANEL_HISTORY_LIMIT = 40;
@@ -594,13 +598,15 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     roofPolygonRef.current = polygons[index];
     polygons.forEach((polygon, polygonIndex) => {
       const selected = polygonIndex === index;
+      const locked = roofLockedRef.current;
       polygon.setOptions({
-        editable: selected && !roofLockedRef.current,
+        clickable: !locked,
+        editable: selected && !locked,
         strokeColor: selected ? "#0f766e" : "#0369a1",
         strokeWeight: selected ? 3 : 2,
         fillColor: selected ? "#14b8a6" : "#38bdf8",
-        fillOpacity: selected ? 0.24 : 0.12,
-        zIndex: selected ? 2 : 1,
+        fillOpacity: selected ? 0.18 : 0.1,
+        zIndex: ROOF_Z_INDEX,
       });
     });
   }, []);
@@ -665,17 +671,19 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         const path = section.coordinates[0]
           .slice(0, -1)
           .map(([lng, lat]) => ({ lat, lng }));
+        const locked = roofLockedRef.current;
         const polygon = new google.maps.Polygon({
           map,
           paths: path,
-          editable: selected && !roofLockedRef.current,
+          clickable: !locked,
+          editable: selected && !locked,
           draggable: false,
           strokeColor: selected ? "#0f766e" : "#0369a1",
           strokeOpacity: 1,
           strokeWeight: selected ? 3 : 2,
           fillColor: selected ? "#14b8a6" : "#38bdf8",
-          fillOpacity: selected ? 0.24 : 0.12,
-          zIndex: selected ? 2 : 1,
+          fillOpacity: selected ? 0.18 : 0.1,
+          zIndex: ROOF_Z_INDEX,
         });
         attachRoofListeners(polygon, index);
         return polygon;
@@ -1015,7 +1023,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         strokeWeight: selected ? 2.5 : 1.5,
         fillColor: selected ? "#3b82f6" : panel.is_locked ? "#f59e0b" : "#2563eb",
         fillOpacity: selected ? 0.55 : 0.4,
-        zIndex: selected ? 8 : 6,
+        zIndex: selected ? PANEL_Z_INDEX_SELECTED : PANEL_Z_INDEX,
       });
 
       const pathFromFootprint = (footprint: PlacedPanel["footprint_geojson"]) =>
@@ -1352,8 +1360,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     const roof = polygonsToRoofGeometry(sections);
     if (!roof) return;
 
-    roofLockedRef.current = false;
-    setRoofLocked(false);
+    roofLockedRef.current = true;
+    setRoofLocked(true);
     commitRoof(roof);
     renderRoofGeometry(roof);
     drawingPointsRef.current = [];
@@ -1363,7 +1371,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     setDrawingRoof(false);
     map.set("sol52DrawingRoof", false);
     map.setOptions({ draggableCursor: null, disableDoubleClickZoom: false });
-    toast.success("Roof completed", "Adjust corners if needed, then lock the roof.");
+    toast.success("Roof completed", "Roof stays under panels — Select / Group move ready.");
   }, [clearDraftOverlay, commitRoof, renderRoofGeometry, toast]);
 
   const clearRoof = useCallback(() => {
@@ -1519,6 +1527,17 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       const isModifier = event.ctrlKey || event.metaKey;
       if (isModifier && event.key.toLowerCase() === "a" && !drawingRoof) {
         event.preventDefault();
+        if (!roofLockedRef.current && roofPolygonsRef.current.length > 0) {
+          roofLockedRef.current = true;
+          setRoofLocked(true);
+          roofPolygonsRef.current.forEach((polygon) =>
+            polygon.setOptions({
+              clickable: false,
+              editable: false,
+              zIndex: ROOF_Z_INDEX,
+            })
+          );
+        }
         const unlocked = placedPanelsRef.current
           .filter((panel) => !panel.is_locked)
           .map((panel) => panel.id);
@@ -1550,13 +1569,25 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     const nextLocked = !roofLockedRef.current;
     roofLockedRef.current = nextLocked;
     setRoofLocked(nextLocked);
-    roofPolygonsRef.current.forEach((polygon) => polygon.setEditable(false));
-    if (!nextLocked) selectRoofSection(activeRoofIndexRef.current);
+    if (nextLocked) {
+      roofPolygonsRef.current.forEach((polygon) =>
+        polygon.setOptions({
+          clickable: false,
+          editable: false,
+          zIndex: ROOF_Z_INDEX,
+        })
+      );
+    } else {
+      setStudioTool(null);
+      studioToolRef.current = null;
+      setSelectedPanelIds([]);
+      selectRoofSection(activeRoofIndexRef.current);
+    }
     toast.success(
-      nextLocked ? "Roof locked" : "Roof unlocked",
+      nextLocked ? "Roof locked (under panels)" : "Roof unlocked",
       nextLocked
-        ? "Corners are protected from accidental changes."
-        : "Drag the corner handles to refine the roof."
+        ? "Panels are on top — Select / Group move work normally."
+        : "Drag corner handles to refine the roof. Lock again before moving panels."
     );
   }, [selectRoofSection, toast]);
 
@@ -1951,6 +1982,19 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       if (studioToolRef.current === tool) {
         clearStudioTool();
         return;
+      }
+
+      // Panel tools need roof locked underneath so it never steals clicks.
+      if (!roofLockedRef.current && roofPolygonsRef.current.length > 0) {
+        roofLockedRef.current = true;
+        setRoofLocked(true);
+        roofPolygonsRef.current.forEach((polygon) =>
+          polygon.setOptions({
+            clickable: false,
+            editable: false,
+            zIndex: ROOF_Z_INDEX,
+          })
+        );
       }
 
       setStudioTool(tool);
@@ -2635,9 +2679,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                 disabled={!state.roof || drawingRoof}
               >
                 {roofLocked ? (
-                  <><Unlock className="mr-1 h-4 w-4" /> Unlock to edit corners</>
+                  <><Lock className="mr-1 h-4 w-4" /> Unlock to edit corners</>
                 ) : (
-                  <><Lock className="mr-1 h-4 w-4" /> Lock roof</>
+                  <><Unlock className="mr-1 h-4 w-4" /> Lock roof (under panels)</>
                 )}
               </Button>
               <Button variant="outline" size="sm" disabled={!canUndo} onClick={undoStudio}>
@@ -2655,8 +2699,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             ) : state.roof ? (
               <p className="mt-2 text-[10px] font-semibold text-slate-500">
                 {roofLocked
-                  ? `Section ${activeRoofIndex + 1} selected. Unlock before editing corners.`
-                  : `Editing section ${activeRoofIndex + 1}. Drag handles or right-click a corner to delete it.`}
+                  ? `Section ${activeRoofIndex + 1} locked under panels — Select / Group move panels freely.`
+                  : `Editing section ${activeRoofIndex + 1} corners. Lock roof before moving panels.`}
               </p>
             ) : placedPanels.length > 0 ? (
               <p className="mt-2 rounded-lg bg-amber-50 px-2 py-1.5 text-[10px] font-semibold text-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
