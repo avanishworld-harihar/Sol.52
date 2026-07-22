@@ -122,6 +122,8 @@ type StudioToolOrIdle = StudioTool | null;
 
 const DEFAULT_CENTER: [number, number] = [78.9629, 20.5937];
 const MAP_MAX_ZOOM = 22;
+const MAP_EXTRA_SCALE_MAX = 2.5;
+const MAP_EXTRA_SCALE_STEP = 0.25;
 const PANEL_HISTORY_LIMIT = 40;
 
 const OBSTRUCTION_LABELS: Record<ObstructionType, string> = {
@@ -259,6 +261,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const [placedPanels, setPlacedPanels] = useState<PlacedPanel[]>([]);
   const [selectedPanelIds, setSelectedPanelIds] = useState<string[]>([]);
   const [snapEnabled, setSnapEnabled] = useState(true);
+  /** Optical zoom beyond Google tile max (1 = off). */
+  const [mapExtraScale, setMapExtraScale] = useState(1);
+  const mapExtraScaleRef = useRef(1);
   const [panelMetrics, setPanelMetrics] = useState({
     remainingAreaSqft: 0,
     coveragePct: 0,
@@ -632,12 +637,13 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         };
         const map = new maps.Map(mapContainerEl, {
           center: initialCenter,
-          zoom: initialCenterRef.current[0] === DEFAULT_CENTER[0] ? 5 : 20,
+          zoom: initialCenterRef.current[0] === DEFAULT_CENTER[0] ? 5 : 21,
           mapTypeId: maps.MapTypeId.HYBRID,
           tilt: 0,
           heading: 0,
           minZoom: 3,
           maxZoom: MAP_MAX_ZOOM,
+          isFractionalZoomEnabled: true,
           streetViewControl: false,
           fullscreenControl: true,
           zoomControl: true,
@@ -658,9 +664,15 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             ],
           },
           gestureHandling: "greedy",
+          scrollwheel: true,
           clickableIcons: false,
         });
         mapRef.current = map;
+        // Keep API max high even when satellite imagery tiles stop earlier (pixelated but usable).
+        map.setOptions({ maxZoom: MAP_MAX_ZOOM, minZoom: 3, isFractionalZoomEnabled: true });
+        map.addListener("maptypeid_changed", () => {
+          map.setOptions({ maxZoom: MAP_MAX_ZOOM, minZoom: 3, isFractionalZoomEnabled: true });
+        });
 
         studioClickRef.current = (latLng: google.maps.LatLng) => {
           const type = addObstructionRef.current;
@@ -1752,6 +1764,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     setSelectedPanelIds([]);
     addObstructionRef.current = null;
     setPendingObstruction(null);
+    setMapExtraScale(1);
     mapRef.current?.setOptions({ draggableCursor: null });
   }, []);
 
@@ -1771,6 +1784,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
 
       setStudioTool(tool);
       studioToolRef.current = tool;
+      setMapExtraScale(1);
       if (tool === "move_group") {
         const unlocked = placedPanelsRef.current
           .filter((panel) => !panel.is_locked)
@@ -1818,12 +1832,56 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     setMapTypeId(next);
   }, [mapTypeId]);
 
-  const zoomBy = useCallback((delta: number) => {
+  useEffect(() => {
+    mapExtraScaleRef.current = mapExtraScale;
     const map = mapRef.current;
     if (!map) return;
-    const zoom = map.getZoom() ?? 18;
-    map.setZoom(Math.min(MAP_MAX_ZOOM, Math.max(3, zoom + delta)));
-  }, []);
+    // Optical magnify breaks map pointer math — lock pan/zoom gestures while active.
+    map.setOptions({
+      gestureHandling: mapExtraScale > 1 ? "none" : "greedy",
+      draggable: mapExtraScale <= 1,
+      scrollwheel: mapExtraScale <= 1,
+      maxZoom: MAP_MAX_ZOOM,
+      isFractionalZoomEnabled: true,
+    });
+  }, [mapExtraScale]);
+
+  const zoomBy = useCallback(
+    (delta: number) => {
+      const map = mapRef.current;
+      if (!map) return;
+      map.setOptions({ maxZoom: MAP_MAX_ZOOM, minZoom: 3, isFractionalZoomEnabled: true });
+      const zoom = map.getZoom() ?? 18;
+      const step = zoom >= MAP_MAX_ZOOM - 1 || mapExtraScaleRef.current > 1 ? 0.5 : 1;
+
+      if (delta > 0) {
+        if (zoom < MAP_MAX_ZOOM - 0.05) {
+          map.setZoom(Math.min(MAP_MAX_ZOOM, zoom + step));
+          return;
+        }
+        // Past Google tile comfort zone — optical magnify for panel work.
+        setMapExtraScale((scale) => {
+          const next = Math.min(MAP_EXTRA_SCALE_MAX, +(scale + MAP_EXTRA_SCALE_STEP).toFixed(2));
+          if (next === scale) {
+            toast.error(
+              "Max zoom",
+              "Google imagery yahan aur sharp nahi. Design magnify pehle se max hai."
+            );
+          }
+          return next;
+        });
+        return;
+      }
+
+      // Zoom out: unwind optical scale first, then native zoom.
+      if (mapExtraScaleRef.current > 1) {
+        setMapExtraScale((scale) => Math.max(1, +(scale - MAP_EXTRA_SCALE_STEP).toFixed(2)));
+        return;
+      }
+      map.setZoom(Math.max(3, zoom - step));
+    },
+    [toast]
+  );
 
   const resetMapNorth = useCallback(() => {
     mapRef.current?.setHeading(0);
@@ -2073,7 +2131,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               WT
             </button>
             <div className="my-1 h-px w-6 bg-white/15" />
-            <button type="button" title="Zoom in" onClick={() => zoomBy(1)} className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-300 hover:bg-white/10">
+            <button type="button" title="Zoom in (past satellite limit = design magnify)" onClick={() => zoomBy(1)} className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-300 hover:bg-white/10">
               <Plus className="h-4 w-4" />
             </button>
             <button type="button" title="Zoom out" onClick={() => zoomBy(-1)} className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-300 hover:bg-white/10">
@@ -2098,9 +2156,15 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         <section className="relative min-h-[50vh] overflow-hidden overscroll-none rounded-xl border border-slate-200 bg-slate-200 dark:border-white/10 dark:bg-slate-900 lg:min-h-0 lg:h-full">
           {googleMapsKey ? (
             <div
-              ref={setMapContainerEl}
-              className="absolute inset-0 h-full w-full"
-            />
+              className="absolute inset-0 h-full w-full will-change-transform"
+              style={
+                mapExtraScale > 1
+                  ? { transform: `scale(${mapExtraScale})`, transformOrigin: "center center" }
+                  : undefined
+              }
+            >
+              <div ref={setMapContainerEl} className="h-full w-full" />
+            </div>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center p-6">
               <div className="max-w-md rounded-xl border border-amber-200 bg-amber-50 p-5 text-center">
@@ -2113,6 +2177,11 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               </div>
             </div>
           )}
+          {mapExtraScale > 1 ? (
+            <div className="pointer-events-none absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-900 shadow">
+              Design magnify {mapExtraScale.toFixed(2)}× · toolbar − se zoom out · edit se pehle 1×
+            </div>
+          ) : null}
           {!mapReady && googleMapsKey && !loadError ? (
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-slate-200/80 text-sm font-semibold text-slate-600 dark:bg-slate-900/80 dark:text-slate-300">
               Loading map…
