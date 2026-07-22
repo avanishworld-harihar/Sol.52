@@ -30,7 +30,9 @@ import { loadGoogleMaps } from "@/lib/google-maps-loader";
 import {
   DEFAULT_PANEL_MODULE,
   PANEL_MODULE_CATALOG,
+  panelModuleBrands,
   panelModuleLabel,
+  panelModulesForBrand,
 } from "@/lib/panel-module-catalog";
 import type {
   PanelOrientation,
@@ -45,7 +47,12 @@ import {
   polygonsToRoofGeometry,
   roofGeometryToPolygons,
 } from "./core/geometry";
-import { autoPackPanels, computePanelCoverageMetrics } from "./core/panel-placement";
+import {
+  autoPackPanels,
+  computePanelCoverageMetrics,
+  effectiveObstructionRadiusFt,
+  MIN_OBSTRUCTION_RADIUS_FT,
+} from "./core/panel-placement";
 import {
   EMPTY_SITE_LAYOUT_STATE,
   siteLayoutReducer,
@@ -97,8 +104,8 @@ const DEFAULT_OBSTRUCTION_RADIUS_FT: Record<ObstructionType, number> = {
   water_tank: 4,
   tree: 10,
   chimney: 2,
-  parapet: 0,
-  other: 0,
+  parapet: 1.5,
+  other: 2,
 };
 
 const FT_TO_M = 0.3048;
@@ -243,6 +250,11 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           obstructions = draft.obstructions;
           setRoofType(draft.roof_type || surveyData?.roof_type || projectJson.data.roof_type || "");
         }
+
+        obstructions = obstructions.map((item) => ({
+          ...item,
+          radius_ft: effectiveObstructionRadiusFt(item),
+        }));
 
         const savedPanel = panelJson.ok ? panelJson.data ?? null : null;
         setCurrentPanelLayout(savedPanel);
@@ -668,7 +680,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     circlesRef.current.forEach((circle) => circle.setMap(null));
     circlesRef.current = [];
     markersRef.current = state.obstructions.map((obstruction) => {
-      const radiusFt = obstruction.radius_ft ?? 0;
+      const radiusFt = effectiveObstructionRadiusFt(obstruction);
       if (radiusFt > 0) {
         circlesRef.current.push(
           new google.maps.Circle({
@@ -1149,6 +1161,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     }
     setPacking(true);
     try {
+      // Only keep locked panels; unlocked are cleared and re-packed (avoids old overlap on tanks).
+      const lockedPanels = placedPanels.filter((panel) => panel.is_locked);
       const result = autoPackPanels({
         roof: state.roof,
         obstructions: state.obstructions,
@@ -1157,7 +1171,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         setbackFt: panelSetbackFt,
         mountingType: "flush",
         tiltDeg: 0,
-        preservePanels: placedPanels,
+        obstructionClearanceFt: 1.5,
+        preservePanels: lockedPanels,
       });
       setPlacedPanels(result.panels);
       setPanelMetrics({
@@ -1606,25 +1621,51 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               <Grid2X2 className="h-3.5 w-3.5 text-slate-400" />
             </div>
             <p className="mt-1 text-[10px] leading-relaxed text-slate-500">
-              Module = panel size/watt. Setback = edge se kitna foot chhodna. Auto layout = roof pe panels automatic bichhana.
+              Brand pehle, uske baad watt. Size packing ke liye watt/dimensions se aata hai. Auto layout water tank / trees avoid karta hai.
             </p>
             <label className="mt-2 block text-[11px] font-bold text-slate-600 dark:text-slate-300">
-              Module (brand + watt)
+              Brand
               <select
-                value={panelSpec.catalog_id ?? panelSpec.model}
+                value={panelSpec.manufacturer?.trim() || "Generic"}
                 onChange={(event) => {
+                  const brand = event.target.value;
+                  const options = panelModulesForBrand(brand);
                   const next =
-                    PANEL_MODULE_CATALOG.find((item) => item.catalog_id === event.target.value) ??
-                    PANEL_MODULE_CATALOG.find((item) => item.model === event.target.value) ??
+                    options.find((item) => item.wattage === panelSpec.wattage) ??
+                    options[0] ??
                     DEFAULT_PANEL_MODULE;
                   setPanelSpec(next);
                   setPanelDirty(true);
                 }}
                 className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs dark:border-white/10 dark:bg-slate-950"
               >
-                {PANEL_MODULE_CATALOG.map((item) => (
+                {panelModuleBrands().map((brand) => (
+                  <option key={brand} value={brand}>
+                    {brand}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="mt-2 block text-[11px] font-bold text-slate-600 dark:text-slate-300">
+              Watt
+              <select
+                value={panelSpec.catalog_id ?? panelSpec.model}
+                onChange={(event) => {
+                  const brand = panelSpec.manufacturer?.trim() || "Generic";
+                  const next =
+                    panelModulesForBrand(brand).find(
+                      (item) => (item.catalog_id ?? item.model) === event.target.value
+                    ) ??
+                    PANEL_MODULE_CATALOG.find((item) => item.catalog_id === event.target.value) ??
+                    DEFAULT_PANEL_MODULE;
+                  setPanelSpec(next);
+                  setPanelDirty(true);
+                }}
+                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs dark:border-white/10 dark:bg-slate-950"
+              >
+                {panelModulesForBrand(panelSpec.manufacturer?.trim() || "Generic").map((item) => (
                   <option key={item.catalog_id ?? item.model} value={item.catalog_id ?? item.model}>
-                    {panelModuleLabel(item)}
+                    {item.wattage}W
                   </option>
                 ))}
               </select>
@@ -1837,15 +1878,19 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                     Radius (ft)
                     <input
                       type="number"
-                      min={0}
+                      min={MIN_OBSTRUCTION_RADIUS_FT[selectedObstruction.type]}
                       max={500}
-                      value={selectedObstruction.radius_ft ?? 0}
+                      step={0.5}
+                      value={effectiveObstructionRadiusFt(selectedObstruction)}
                       onChange={(event) =>
                         dispatch({
                           type: "UPDATE_OBSTRUCTION",
                           obstruction: {
                             ...selectedObstruction,
-                            radius_ft: Math.max(0, Number(event.target.value) || 0),
+                            radius_ft: Math.max(
+                              MIN_OBSTRUCTION_RADIUS_FT[selectedObstruction.type],
+                              Number(event.target.value) || 0
+                            ),
                           },
                         })
                       }
@@ -1854,7 +1899,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                   </label>
                 </div>
                 <p className="mt-1 text-[10px] text-slate-500">
-                  Radius shows the footprint circle on the map. Drag the marker to move it.
+                  Keep-out circle on the map. Water tank min ~3.5 ft so Auto layout can avoid it.
                 </p>
                 <Button
                   variant="outline"

@@ -63,20 +63,52 @@ function toFeaturePolygon(section: RoofPolygon): Feature<GeoPolygon> | null {
   }
 }
 
+/** Minimum keep-out radius by type (ft). Tiny saved values still pack/avoid with this floor. */
+export const MIN_OBSTRUCTION_RADIUS_FT: Record<SiteObstruction["type"], number> = {
+  water_tank: 3.5,
+  tree: 8,
+  chimney: 2,
+  parapet: 1,
+  other: 2,
+};
+
+export function effectiveObstructionRadiusFt(obstruction: SiteObstruction): number {
+  const stored = obstruction.radius_ft ?? 0;
+  // Tiny UI values (e.g. 0.25 ft) still need a real footprint so panels avoid the object.
+  return Math.max(stored, MIN_OBSTRUCTION_RADIUS_FT[obstruction.type] ?? 2);
+}
+
 function obstructionCircle(
   obstruction: SiteObstruction,
   clearanceFt: number
 ): Feature<GeoPolygon> | null {
-  const radiusFt = (obstruction.radius_ft ?? 0) + clearanceFt;
+  const radiusFt = effectiveObstructionRadiusFt(obstruction) + Math.max(0, clearanceFt);
   if (radiusFt <= 0) return null;
   try {
     return circle([obstruction.lng, obstruction.lat], radiusFt * FT_TO_M, {
       units: "meters",
-      steps: 32,
+      steps: 48,
     });
   } catch {
     return null;
   }
+}
+
+function intersectsAnyObstruction(
+  candidate: Feature<GeoPolygon>,
+  obstructions: SiteObstruction[],
+  clearanceFt: number
+): boolean {
+  for (const obstruction of obstructions) {
+    const hole = obstructionCircle(obstruction, clearanceFt);
+    if (!hole) continue;
+    try {
+      if (!booleanDisjoint(candidate, hole)) return true;
+    } catch {
+      // ignore
+    }
+  }
+  return false;
 }
 
 function subtractObstructions(
@@ -199,8 +231,19 @@ function packSection(args: {
   orientation: Exclude<PanelOrientation, "east_west">;
   panelGapMm: number;
   preservePanels: PlacedPanel[];
+  obstructions: SiteObstruction[];
+  clearanceFt: number;
 }): PlacedPanel[] {
-  const { sectionIndex, buildable, panelSpec, orientation, panelGapMm, preservePanels } = args;
+  const {
+    sectionIndex,
+    buildable,
+    panelSpec,
+    orientation,
+    panelGapMm,
+    preservePanels,
+    obstructions,
+    clearanceFt,
+  } = args;
   const shortM = panelSpec.width_mm * MM_TO_M;
   const longM = panelSpec.height_mm * MM_TO_M;
   // Portrait = long side north-south (common rooftop mounting).
@@ -238,6 +281,7 @@ function packSection(args: {
         continue;
       }
       if (footprintOverlapsPreserve(candidate, preservePanels)) continue;
+      if (intersectsAnyObstruction(candidate, obstructions, clearanceFt)) continue;
 
       panels.push({
         id: newPanelId(sectionIndex, row, col),
@@ -285,6 +329,8 @@ function packAllSections(args: {
         orientation: args.orientation,
         panelGapMm: args.panelGapMm,
         preservePanels: args.preservePanels,
+        obstructions: args.obstructions,
+        clearanceFt: args.clearanceFt,
       })
     );
   });

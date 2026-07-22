@@ -140,6 +140,20 @@ export const DEFAULT_PANEL_MODULE =
   PANEL_MODULE_CATALOG.find((item) => item.catalog_id === "waaree-550") ??
   PANEL_MODULE_CATALOG[0]!;
 
+export function panelModuleBrands(): string[] {
+  return Array.from(
+    new Set(
+      PANEL_MODULE_CATALOG.map((item) => item.manufacturer?.trim() || "Generic").filter(Boolean)
+    )
+  );
+}
+
+export function panelModulesForBrand(brand: string): PanelSpec[] {
+  return PANEL_MODULE_CATALOG.filter(
+    (item) => (item.manufacturer?.trim() || "Generic") === brand
+  );
+}
+
 export function panelModuleLabel(spec: PanelSpec): string {
   const brand = spec.manufacturer?.trim() || "Module";
   return `${brand} · ${spec.wattage}W`;
