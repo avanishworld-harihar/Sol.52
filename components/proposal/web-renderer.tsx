@@ -1,13 +1,13 @@
 ﻿"use client";
 
 /**
- * ProposalWebRenderer â€” the block-loop rendering engine for the Proposal OS.
+ * ProposalWebRenderer — the block-loop rendering engine for the Proposal OS.
  *
  * Architecture:
  *   ProposalDocument.layout.blocks[]   (ordered, enabled/disabled)
  *       â†“ filter: enabled = true
  *       â†“ check:  isBlockEligible(blockId, eligibilityCtx)
- *       â†“ lookup: WEB_RENDERER_REGISTRY[blockId] â†’ renderKey + pageDataAttr + bridgeKey
+ *       â†“ lookup: WEB_RENDERER_REGISTRY[blockId] → renderKey + pageDataAttr + bridgeKey
  *       â†“ render: renderBlockByKey(renderKey, ctx)
  *
  * Design constraints:
@@ -15,9 +15,9 @@
  *     existing ProposalView component unchanged. The WebRenderer is for the
  *     commercial_executive preset and future presets.
  *   - All section components imported here are the SAME components used in
- *     proposal-view.tsx â€” just now accessible via named exports added in Phase B.
+ *     proposal-view.tsx — just now accessible via named exports added in Phase B.
  *   - The WebRenderer manages its own state (lang, darkMode, amcYears) exactly
- *     as ProposalView does â€” they are independent renderer instances.
+ *     as ProposalView does — they are independent renderer instances.
  *
  * Backward compatibility:
  *   - This file does NOT modify proposal-view.tsx behavior.
@@ -143,13 +143,13 @@ import "@/components/proposal/blocks/aurora/aurora-proposal.css";
 export type ProposalWebRendererProps = {
   /** The compiled ProposalDocument IR from Phase A compiler. */
   document: ProposalDocument;
-  /** Deck summary â€” required for section components. Pass from server when raw_input has no embedded summary. */
+  /** Deck summary — required for section components. Pass from server when raw_input has no embedded summary. */
   summary?: ProposalDeckSummary;
-  /** Optional override â€” when true, show site survey page. */
+  /** Optional override — when true, show site survey page. */
   showSurveyWorkflowSection?: boolean;
 };
 
-// â”€â”€â”€ Sales Premium render overrides (inline â€” no generic resolver module) â”€â”€â”€
+// â”€â”€â”€ Sales Premium render overrides (inline — no generic resolver module) â”€â”€â”€
 
 function resolveSalesPremiumRenderKey(
   blockId: ProposalBlockId,
@@ -669,7 +669,7 @@ export function ProposalWebRenderer({
   }, [summaryProp, doc.raw_input]);
 
   if (!rawSummary) {
-    console.warn("[ProposalWebRenderer] No proposal summary available â€” cannot render.");
+    console.warn("[ProposalWebRenderer] No proposal summary available — cannot render.");
     return (
       <div className="mx-auto max-w-lg px-4 py-16 text-center text-sm text-slate-600">
         This proposal could not be loaded. Please regenerate from the builder or contact your installer.
@@ -727,7 +727,7 @@ function ProposalWebRendererInner({
   setDisplayInstallerLogoUrl: (u: string) => void;
   showSurveyWorkflowSection: boolean;
 }) {
-  // Theme sync â€” Ember defaults dark; Horizon defaults light; others follow saved preference.
+  // Theme sync — Ember defaults dark; Horizon defaults light; others follow saved preference.
   useEffect(() => {
     const rawInput = (doc.raw_input as PremiumProposalPptInput) ?? ({} as PremiumProposalPptInput);
     const spStyle =
@@ -785,7 +785,7 @@ function ProposalWebRendererInner({
     return transformToEditorialModel(rawInput, summary);
   }, [salesPremiumStyle, rawInput, summary]);
 
-  // Installer data from IR â€” overlay local branding (logo + name) when saved in More tab
+  // Installer data from IR — overlay local branding (logo + name) when saved in More tab
   const branding = readProposalBrandingSettings();
   const resolvedInstallerName = resolveInstallerDisplayName(branding);
   const installer = {
@@ -824,7 +824,7 @@ function ProposalWebRendererInner({
     const link = `${window.location.origin}/proposal/${doc.proposal_id}`;
     const text = [
       `${summary.honoredName} ke liye ${summary.systemKw} kW solar proposal taiyaar hai.`,
-      `Net cost: â‚¹${Math.round(summary.netCost).toLocaleString("en-IN")} | Saving: â‚¹${Math.round(summary.annualSaving).toLocaleString("en-IN")}/yr`,
+      `Net cost: ₹${Math.round(summary.netCost).toLocaleString("en-IN")} | Saving: ₹${Math.round(summary.annualSaving).toLocaleString("en-IN")}/yr`,
       link,
     ].join("\n");
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
@@ -920,7 +920,7 @@ function ProposalWebRendererInner({
   if (flowPages.length === 0 && appendixPages.length === 0) {
     return (
       <div className="mx-auto max-w-lg px-4 py-16 text-center text-sm text-slate-600">
-        This proposal has no visible sections. Regenerate from the builder or pick a theme in Settings â†’
+        This proposal has no visible sections. Regenerate from the builder or pick a theme in Settings →
         Proposal templates.
       </div>
     );
@@ -959,7 +959,7 @@ function ProposalWebRendererInner({
             }`}
           >
             <Languages className="h-3.5 w-3.5" />
-            {lang === "en" ? "à¤¹à¤¿à¤¨à¥à¤¦à¥€" : "English"}
+            {lang === "en" ? "हिन्दी" : "English"}
           </button>
           <button
             type="button"
@@ -983,7 +983,7 @@ function ProposalWebRendererInner({
             }`}
           >
             <Download className="h-3.5 w-3.5" />
-            {lang === "en" ? "Print / PDF" : "à¤ªà¥à¤°à¤¿à¤‚à¤Ÿ / PDF"}
+            {lang === "en" ? "Print / PDF" : "प्रिंट / PDF"}
           </button>
           <a
             href={`/proposal/${ctx.proposalId}/present`}
@@ -994,7 +994,7 @@ function ProposalWebRendererInner({
             }`}
           >
             <Presentation className="h-3.5 w-3.5" />
-            {lang === "en" ? "Present" : "à¤ªà¥à¤°à¥‡à¤œà¤¼à¥‡à¤‚à¤Ÿ"}
+            {lang === "en" ? "Present" : "प्रेजेंट"}
           </a>
         </div>
 
@@ -1016,7 +1016,7 @@ function ProposalWebRendererInner({
           </div>
         ))}
 
-        {/* Appendix â€” Sales Premium v1 only */}
+        {/* Appendix — Sales Premium v1 only */}
         {appendixPages.length > 0 ? (
           <ProposalAppendixShell lang={lang}>
             {appendixPages.map(({ blockId, renderKey, pageDataAttr }) => (
@@ -1047,7 +1047,7 @@ function ProposalWebRendererInner({
               disabled={downloading}
               className="flex flex-1 items-center justify-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm active:scale-95"
             >
-              <Download className="h-4 w-4" /> {downloading ? "â€¦" : D["cta.downloadPpt"]}
+              <Download className="h-4 w-4" /> {downloading ? "…" : D["cta.downloadPpt"]}
             </button>
           </div>
         </div>

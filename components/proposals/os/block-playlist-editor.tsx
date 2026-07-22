@@ -1,11 +1,11 @@
 ﻿"use client";
 
 /**
- * BlockPlaylistEditor â€” slide-out drawer for managing proposal block playlist.
+ * BlockPlaylistEditor — slide-out drawer for managing proposal block playlist.
  *
  * Shows all available proposal sections with toggles and descriptions.
  * Commercial-only blocks are clearly badged.
- * Changes are local to the session (visual only in Phase B â€” future phases
+ * Changes are local to the session (visual only in Phase B — future phases
  * will persist to the ProposalDocument.layout).
  */
 

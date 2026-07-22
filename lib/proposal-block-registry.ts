@@ -1,15 +1,15 @@
 /**
- * Modular proposal sections â€” dynamic engine building blocks (not static PDF pages).
+ * Modular proposal sections — dynamic engine building blocks (not static PDF pages).
  * Toggle + order = `proposalLayout` on `PremiumProposalPptInput` (see proposal-template-schema.ts).
  *
- * Workflow patterns distilled from typical EPC quotations: letter/cover â†’ about â†’ technical narrative â†’
- * BOM/spec table â†’ commercial â†’ ROI/generation â†’ warranty â†’ payment â†’ terms â†’ gallery â†’ client checklist â†’ AMC.
+ * Workflow patterns distilled from typical EPC quotations: letter/cover → about → technical narrative →
+ * BOM/spec table → commercial → ROI/generation → warranty → payment → terms → gallery → client checklist → AMC.
  *
  * Phase A additions:
- *   - `preset_affinity` â€” which presets include this block by default.
- *   - `executive_summary` â€” high-level impact block for C&I proposals.
- *   - `system_requirements` â€” requirement-based path (no bill); shows sizing, generation, specs.
- *   - `payback_analysis` â€” NPV / IRR detail block for commercial decision-makers.
+ *   - `preset_affinity` — which presets include this block by default.
+ *   - `executive_summary` — high-level impact block for C&I proposals.
+ *   - `system_requirements` — requirement-based path (no bill); shows sizing, generation, specs.
+ *   - `payback_analysis` — NPV / IRR detail block for commercial decision-makers.
  */
 
 import { z } from "zod";
@@ -33,23 +33,23 @@ export const PROPOSAL_BLOCK_IDS = [
   "project_gallery",
   "customer_documents_required",
   "amc_maintenance",
-  /** Wave 3 P7 â€” side-by-side panel/inverter brand comparison. Commercial preset optional block. */
+  /** Wave 3 P7 — side-by-side panel/inverter brand comparison. Commercial preset optional block. */
   "brand_comparison_card",
-  /** C&I â€” DCR vs NON-DCR cost comparison */
+  /** C&I — DCR vs NON-DCR cost comparison */
   "dcr_comparison_card",
-  /** C&I â€” multi-kW capacity scenario comparison */
+  /** C&I — multi-kW capacity scenario comparison */
   "capacity_scenarios_card",
-  /** C&I â€” EMI / financing scenarios */
+  /** C&I — EMI / financing scenarios */
   "commercial_financing_card",
-  /** C&I â€” Solar + DG hybrid architecture, savings, operation scenarios */
+  /** C&I — Solar + DG hybrid architecture, savings, operation scenarios */
   "dg_hybrid_analysis_card",
-  /** C&I â€” School / institution segment insight page (auto when orgType = school) */
+  /** C&I — School / institution segment insight page (auto when orgType = school) */
   "school_institution_insight_card",
-  /** Aurora â€” system layout: SLD diagram + panel tilt by location + DC/AC run distances */
+  /** Aurora — system layout: SLD diagram + panel tilt by location + DC/AC run distances */
   "system_layout",
-  /** Aurora / residential â€” PM Surya Ghar & state subsidy explainer */
+  /** Aurora / residential — PM Surya Ghar & state subsidy explainer */
   "subsidy_clarity",
-  /** Aurora â€” richer system summary (kW hero + 4 tiles + net-meter mini flow) */
+  /** Aurora — richer system summary (kW hero + 4 tiles + net-meter mini flow) */
   "technical_summary",
 ] as const;
 
@@ -90,13 +90,13 @@ export type ProposalBlockMeta = {
   /**
    * Which presets enable this block by default.
    * Used by the preset engine to build `getPresetDefaultLayout()`.
-   * `"all"` â€” enabled in all presets by default.
-   * Array â€” only enabled for the listed presets.
+   * `"all"` — enabled in all presets by default.
+   * Array — only enabled for the listed presets.
    */
   preset_affinity: PresetAffinity;
   /**
    * When true, this block only renders when `dataSource = "requirement"`.
-   * (i.e. no bill uploaded â€” system-spec path.)
+   * (i.e. no bill uploaded — system-spec path.)
    */
   requirement_path_only?: boolean;
 };
@@ -120,7 +120,7 @@ export const PROPOSAL_BLOCK_REGISTRY: Record<ProposalBlockId, ProposalBlockMeta>
 
   /**
    * High-level executive impact block for C&I proposals.
-   * Leads with the commercial headline: savings, payback, ROI â€” in one screen.
+   * Leads with the commercial headline: savings, payback, ROI — in one screen.
    * Designed for decision-makers who skip technical detail.
    */
   executive_summary: {
@@ -148,7 +148,7 @@ export const PROPOSAL_BLOCK_REGISTRY: Record<ProposalBlockId, ProposalBlockMeta>
   },
 
   /**
-   * System requirement block â€” shown instead of bill audit pages
+   * System requirement block — shown instead of bill audit pages
    * when no bill was uploaded (dataSource = "requirement").
    * Shows: sizing rationale, annual generation, peak demand coverage, specs.
    */
@@ -262,9 +262,9 @@ export const PROPOSAL_BLOCK_REGISTRY: Record<ProposalBlockId, ProposalBlockMeta>
   },
 
   /**
-   * Wave 3 P7 â€” Brand comparison card.
+   * Wave 3 P7 — Brand comparison card.
    * Side-by-side comparison of panel + inverter brands with key specs.
-   * Local-only data from lib/brand-metadata.ts â€” no marketplace coupling.
+   * Local-only data from lib/brand-metadata.ts — no marketplace coupling.
    * Commercial preset optional block; disabled by default.
    */
   brand_comparison_card: {
@@ -316,8 +316,8 @@ export const PROPOSAL_BLOCK_REGISTRY: Record<ProposalBlockId, ProposalBlockMeta>
   },
 
   /**
-   * Aurora preset signature block â€” system layout engineering page.
-   * Shows: SLD (PV array â†’ DCDB â†’ inverter â†’ ACDB â†’ net meter â†’ grid),
+   * Aurora preset signature block — system layout engineering page.
+   * Shows: SLD (PV array → DCDB → inverter → ACDB → net meter → grid),
    * panel tilt for site latitude, panel-to-inverter DC run length & why.
    * Three SVG illustrations: electrical flow, tilt, distance.
    */
@@ -330,7 +330,7 @@ export const PROPOSAL_BLOCK_REGISTRY: Record<ProposalBlockId, ProposalBlockMeta>
   },
 
   /**
-   * Subsidy clarity block â€” dedicated PM Surya Ghar / state subsidy explainer.
+   * Subsidy clarity block — dedicated PM Surya Ghar / state subsidy explainer.
    * Shows: gross cost, subsidy amount, net payable, eligibility criteria.
    * Aurora default optional; residential_smart optional.
    */
@@ -343,7 +343,7 @@ export const PROPOSAL_BLOCK_REGISTRY: Record<ProposalBlockId, ProposalBlockMeta>
   },
 
   /**
-   * Aurora technical summary â€” richer than Sales Premium's 3-card summary.
+   * Aurora technical summary — richer than Sales Premium's 3-card summary.
    * Shows: kW hero, 4 stat tiles (panels, inverter, annual gen, roof area),
    * on-grid net-metering mini flow diagram.
    */

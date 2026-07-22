@@ -1,7 +1,7 @@
 ﻿"use client";
 
 /**
- * ProposalLivePreviewPanel â€” sticky right-sidebar live preview for the proposal builder.
+ * ProposalLivePreviewPanel — sticky right-sidebar live preview for the proposal builder.
  *
  * Shows the current proposal state in real-time as the user fills in the form:
  *   - Preset badge + customer name
@@ -11,7 +11,7 @@
  *   - "Edit blocks" link to open the BlockPlaylistEditor
  *
  * Sits to the right of the builder form on desktop (xl+ viewport).
- * Fully reactive â€” reads from parent state via props.
+ * Fully reactive — reads from parent state via props.
  */
 
 import { motion, AnimatePresence } from "framer-motion";
@@ -156,7 +156,7 @@ export function ProposalLivePreviewPanel({
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       className="sticky top-20 flex flex-col gap-3"
     >
-      {/* Card â€” this panel is desktop-only (hidden lg:block in parent); backdrop-blur-sm is intentional. */}
+      {/* Card — this panel is desktop-only (hidden lg:block in parent); backdrop-blur-sm is intentional. */}
       <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 shadow-[0_4px_32px_rgba(15,23,42,0.08)] backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-900/90">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
@@ -223,28 +223,28 @@ export function ProposalLivePreviewPanel({
           <div className="mb-3 grid grid-cols-2 gap-2">
             <MetricTile
               label="System"
-              value={hasMetrics ? `${systemKw} kW` : "â€”"}
+              value={hasMetrics ? `${systemKw} kW` : "—"}
               accent={hasMetrics}
             />
             <MetricTile
               label="Annual Saving"
               value={
                 annualSaving > 0
-                  ? `â‚¹${Math.round(annualSaving).toLocaleString("en-IN")}`
-                  : "â€”"
+                  ? `₹${Math.round(annualSaving).toLocaleString("en-IN")}`
+                  : "—"
               }
             />
             <MetricTile
               label="Net Cost"
               value={
                 netCost > 0
-                  ? `â‚¹${Math.round(netCost).toLocaleString("en-IN")}`
-                  : "â€”"
+                  ? `₹${Math.round(netCost).toLocaleString("en-IN")}`
+                  : "—"
               }
             />
             <MetricTile
               label="Payback"
-              value={systemKw > 0 ? paybackLabel : "â€”"}
+              value={systemKw > 0 ? paybackLabel : "—"}
             />
           </div>
 
@@ -259,17 +259,17 @@ export function ProposalLivePreviewPanel({
             {isBillBacked && billUploaded ? (
               <>
                 <CheckCircle2 className="h-3 w-3" />
-                Bill-backed â€” full audit included
+                Bill-backed — full audit included
               </>
             ) : isBillBacked ? (
               <>
                 <TrendingUp className="h-3 w-3" />
-                Bill-based â€” upload bill to continue
+                Bill-based — upload bill to continue
               </>
             ) : (
               <>
                 <TrendingUp className="h-3 w-3" />
-                Requirement-based â€” no bill
+                Requirement-based — no bill
               </>
             )}
           </div>
@@ -320,7 +320,7 @@ export function ProposalLivePreviewPanel({
             }`}
           >
             <Globe className="h-4 w-4" />
-            {busy ? "Generatingâ€¦" : "Generate Proposal"}
+            {busy ? "Generating…" : "Generate Proposal"}
           </button>
 
           {/* Open existing link */}
