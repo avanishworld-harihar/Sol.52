@@ -1,8 +1,7 @@
 import area from "@turf/area";
 import bbox from "@turf/bbox";
-import bearing from "@turf/bearing";
-import booleanContains from "@turf/boolean-contains";
 import booleanDisjoint from "@turf/boolean-disjoint";
+import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import buffer from "@turf/buffer";
 import circle from "@turf/circle";
 import destination from "@turf/destination";
@@ -80,61 +79,62 @@ function obstructionCircle(
   }
 }
 
+function subtractObstructions(
+  buildable: Buildable,
+  obstructions: SiteObstruction[],
+  clearanceFt: number
+): Buildable {
+  let next = buildable;
+  for (const obstruction of obstructions) {
+    const hole = obstructionCircle(obstruction, clearanceFt);
+    if (!hole) continue;
+    try {
+      const cut = difference(featureCollection([next, hole]));
+      if (cut?.geometry) next = cut as Buildable;
+    } catch {
+      // Keep previous buildable if difference fails.
+    }
+  }
+  return next;
+}
+
 /**
- * Erode each roof section by setback, then subtract obstruction footprints (+ clearance).
+ * One buildable polygon per roof section (same index order).
+ * Falls back to the raw roof section if setback erosion fails.
  */
 export function buildBuildablePolygons(
   roof: RoofGeometry,
   obstructions: SiteObstruction[],
   setbackFt = 1.5,
   clearanceFt = 1
-): Buildable[] {
+): Array<Buildable | null> {
   const setbackM = Math.max(0, setbackFt) * FT_TO_M;
   const sections = roofGeometryToPolygons(roof);
-  const result: Buildable[] = [];
 
-  for (const section of sections) {
+  return sections.map((section) => {
     const feature = toFeaturePolygon(section);
-    if (!feature) continue;
+    if (!feature) return null;
 
-    let buildable: Buildable | null =
-      setbackM > 0
-        ? (buffer(feature, -setbackM, { units: "meters" }) as Buildable | null)
-        : feature;
-
-    if (!buildable?.geometry) continue;
-
-    for (const obstruction of obstructions) {
-      const hole = obstructionCircle(obstruction, clearanceFt);
-      if (!hole) continue;
+    let buildable: Buildable | null = feature;
+    if (setbackM > 0) {
       try {
-        const cut = difference(featureCollection([buildable, hole]));
-        if (cut?.geometry) buildable = cut as Buildable;
+        const eroded = buffer(feature, -setbackM, { units: "meters" }) as Buildable | null;
+        if (eroded?.geometry) buildable = eroded;
       } catch {
-        // Keep previous buildable if difference fails for a degenerate circle.
+        buildable = feature;
       }
     }
 
-    if (buildable?.geometry) result.push(buildable);
-  }
-
-  return result;
-}
-
-function sectionAzimuthDeg(section: RoofPolygon): number {
-  const ring = section.coordinates[0];
-  const first = ring?.[0];
-  const second = ring?.[1];
-  if (!first || !second) return 0;
-  return (bearing(first as [number, number], second as [number, number]) + 360) % 360;
+    if (!buildable?.geometry) return null;
+    return subtractObstructions(buildable, obstructions, clearanceFt);
+  });
 }
 
 function panelFootprint(
   centerLng: number,
   centerLat: number,
   widthM: number,
-  heightM: number,
-  rotationDeg: number
+  heightM: number
 ): RoofPolygon | null {
   const halfW = widthM / 2;
   const halfH = heightM / 2;
@@ -150,9 +150,7 @@ function panelFootprint(
     const dist = Math.hypot(x, y);
     if (dist < 1e-9) return [centerLng, centerLat];
     const localBearing = (Math.atan2(x, y) * 180) / Math.PI;
-    const dest = destination(origin, dist, localBearing + rotationDeg, {
-      units: "meters",
-    });
+    const dest = destination(origin, dist, localBearing, { units: "meters" });
     return dest.geometry.coordinates;
   });
   ring.push([...ring[0]!]);
@@ -162,6 +160,21 @@ function panelFootprint(
   } catch {
     return null;
   }
+}
+
+function footprintInsideBuildable(
+  footprint: RoofPolygon,
+  buildable: Buildable
+): boolean {
+  const ring = footprint.coordinates[0]?.slice(0, -1) ?? [];
+  if (ring.length < 3) return false;
+  // Require every corner + center inside. More reliable than booleanContains on curved buffers.
+  const centerLng = ring.reduce((sum, p) => sum + p[0]!, 0) / ring.length;
+  const centerLat = ring.reduce((sum, p) => sum + p[1]!, 0) / ring.length;
+  const samples: number[][] = [...ring, [centerLng, centerLat]];
+  return samples.every((coord) =>
+    booleanPointInPolygon(point(coord as [number, number]), buildable)
+  );
 }
 
 function footprintOverlapsPreserve(
@@ -180,7 +193,6 @@ function footprintOverlapsPreserve(
 }
 
 function packSection(args: {
-  section: RoofPolygon;
   sectionIndex: number;
   buildable: Buildable;
   panelSpec: PanelSpec;
@@ -188,45 +200,36 @@ function packSection(args: {
   panelGapMm: number;
   preservePanels: PlacedPanel[];
 }): PlacedPanel[] {
-  const { section, sectionIndex, buildable, panelSpec, orientation, panelGapMm, preservePanels } =
-    args;
+  const { sectionIndex, buildable, panelSpec, orientation, panelGapMm, preservePanels } = args;
   const shortM = panelSpec.width_mm * MM_TO_M;
   const longM = panelSpec.height_mm * MM_TO_M;
+  // Portrait = long side north-south (common rooftop mounting).
   const widthM = orientation === "landscape" ? longM : shortM;
   const heightM = orientation === "landscape" ? shortM : longM;
   const gapM = Math.max(0, panelGapMm) * MM_TO_M;
   const pitchX = widthM + gapM;
   const pitchY = heightM + gapM;
-  const rotationDeg = sectionAzimuthDeg(section);
 
   const [minX, minY, maxX, maxY] = bbox(buildable);
   const midLat = (minY + maxY) / 2;
   const metersPerDegLat = 111_320;
-  const metersPerDegLng = 111_320 * Math.cos((midLat * Math.PI) / 180);
-  if (metersPerDegLng < 1) return [];
+  const metersPerDegLng = Math.max(1, 111_320 * Math.cos((midLat * Math.PI) / 180));
 
-  const widthDeg = Math.max(0, maxX - minX);
-  const heightDeg = Math.max(0, maxY - minY);
-  const cols = Math.max(1, Math.ceil((widthDeg * metersPerDegLng) / pitchX) + 2);
-  const rows = Math.max(1, Math.ceil((heightDeg * metersPerDegLat) / pitchY) + 2);
+  const widthMTotal = Math.max(0, (maxX - minX) * metersPerDegLng);
+  const heightMTotal = Math.max(0, (maxY - minY) * metersPerDegLat);
+  if (widthMTotal < widthM || heightMTotal < heightM) return [];
 
-  const originLng = minX + (widthM / 2) / metersPerDegLng;
-  const originLat = minY + (heightM / 2) / metersPerDegLat;
+  const cols = Math.max(1, Math.floor((widthMTotal + gapM) / pitchX));
+  const rows = Math.max(1, Math.floor((heightMTotal + gapM) / pitchY));
   const panels: PlacedPanel[] = [];
 
   for (let row = 0; row < rows; row += 1) {
     for (let col = 0; col < cols; col += 1) {
-      const eastM = col * pitchX;
-      const northM = row * pitchY;
-      // Rotate grid with roof edge so rows follow the longest roof side.
-      const rad = (rotationDeg * Math.PI) / 180;
-      const dx = eastM * Math.cos(rad) - northM * Math.sin(rad);
-      const dy = eastM * Math.sin(rad) + northM * Math.cos(rad);
-      const centerLng = originLng + dx / metersPerDegLng;
-      const centerLat = originLat + dy / metersPerDegLat;
-
-      const footprint = panelFootprint(centerLng, centerLat, widthM, heightM, rotationDeg);
+      const centerLng = minX + ((col + 0.5) * pitchX) / metersPerDegLng;
+      const centerLat = minY + ((row + 0.5) * pitchY) / metersPerDegLat;
+      const footprint = panelFootprint(centerLng, centerLat, widthM, heightM);
       if (!footprint) continue;
+      if (!footprintInsideBuildable(footprint, buildable)) continue;
 
       let candidate: Feature<GeoPolygon>;
       try {
@@ -234,8 +237,6 @@ function packSection(args: {
       } catch {
         continue;
       }
-
-      if (!booleanContains(buildable, candidate)) continue;
       if (footprintOverlapsPreserve(candidate, preservePanels)) continue;
 
       panels.push({
@@ -244,7 +245,7 @@ function packSection(args: {
         section_index: sectionIndex,
         row_index: row,
         col_index: col,
-        rotation_deg: rotationDeg,
+        rotation_deg: 0,
         is_locked: false,
         is_manually_placed: false,
       });
@@ -254,39 +255,81 @@ function packSection(args: {
   return panels;
 }
 
+function packAllSections(args: {
+  roof: RoofGeometry;
+  obstructions: SiteObstruction[];
+  panelSpec: PanelSpec;
+  orientation: Exclude<PanelOrientation, "east_west">;
+  setbackFt: number;
+  clearanceFt: number;
+  panelGapMm: number;
+  preservePanels: PlacedPanel[];
+}): { panels: PlacedPanel[]; buildables: Array<Buildable | null> } {
+  const sections = roofGeometryToPolygons(args.roof);
+  const buildables = buildBuildablePolygons(
+    args.roof,
+    args.obstructions,
+    args.setbackFt,
+    args.clearanceFt
+  );
+  const packed: PlacedPanel[] = [...args.preservePanels];
+
+  sections.forEach((_, sectionIndex) => {
+    const buildable = buildables[sectionIndex];
+    if (!buildable) return;
+    packed.push(
+      ...packSection({
+        sectionIndex,
+        buildable,
+        panelSpec: args.panelSpec,
+        orientation: args.orientation,
+        panelGapMm: args.panelGapMm,
+        preservePanels: args.preservePanels,
+      })
+    );
+  });
+
+  return { panels: packed, buildables };
+}
+
 export function autoPackPanels(input: AutoPackInput): AutoPackResult {
   const setbackFt = input.setbackFt ?? 1.5;
   const clearanceFt = input.obstructionClearanceFt ?? 1;
   const panelGapMm = input.panelGapMm ?? 20;
   const preservePanels = (input.preservePanels ?? []).filter((panel) => panel.is_locked);
 
-  const sections = roofGeometryToPolygons(input.roof);
-  const buildables = buildBuildablePolygons(
-    input.roof,
-    input.obstructions,
+  let { panels: packed, buildables } = packAllSections({
+    roof: input.roof,
+    obstructions: input.obstructions,
+    panelSpec: input.panelSpec,
+    orientation: input.orientation,
     setbackFt,
-    clearanceFt
-  );
-
-  const packed: PlacedPanel[] = [...preservePanels];
-  sections.forEach((section, sectionIndex) => {
-    const buildable = buildables[sectionIndex];
-    if (!buildable) return;
-    packed.push(
-      ...packSection({
-        section,
-        sectionIndex,
-        buildable,
-        panelSpec: input.panelSpec,
-        orientation: input.orientation,
-        panelGapMm,
-        preservePanels,
-      })
-    );
+    clearanceFt,
+    panelGapMm,
+    preservePanels,
   });
 
+  // If setback was too aggressive for this roof size, retry once with 0 setback.
+  if (packed.length === preservePanels.length && setbackFt > 0) {
+    const retry = packAllSections({
+      roof: input.roof,
+      obstructions: input.obstructions,
+      panelSpec: input.panelSpec,
+      orientation: input.orientation,
+      setbackFt: 0,
+      clearanceFt,
+      panelGapMm,
+      preservePanels,
+    });
+    packed = retry.panels;
+    buildables = retry.buildables;
+  }
+
   const roofMetrics = calculateRoofMetrics(input.roof);
-  const buildableAreaSqm = buildables.reduce((sum, feature) => sum + Math.max(0, area(feature)), 0);
+  const buildableAreaSqm = buildables.reduce(
+    (sum, feature) => sum + (feature ? Math.max(0, area(feature)) : 0),
+    0
+  );
   const buildableAreaSqft = buildableAreaSqm * SQM_TO_SQFT;
   const panelAreaSqm = packed.reduce((sum, panel) => {
     try {
