@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast-center";
 import {
   buildOrgPanelModule,
   PANEL_MODULE_CATALOG,
@@ -9,13 +10,12 @@ import {
 import type { PanelSpec } from "@/lib/panel-layout";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
 
 type CatalogPayload = {
   modules: PanelSpec[];
   orgModules: PanelSpec[];
   builtInCount: number;
-  updatedAt: string;
+  updatedAt: string | null;
 };
 
 type ApiEnvelope = { ok: boolean; data?: CatalogPayload; error?: string };
@@ -24,6 +24,7 @@ type ApiEnvelope = { ok: boolean; data?: CatalogPayload; error?: string };
  * More → Panel catalog — admin-editable org modules for Design Studio.
  */
 export function DesignPanelCatalogPanel() {
+  const toast = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [orgModules, setOrgModules] = useState<PanelSpec[]>([]);
@@ -48,7 +49,7 @@ export function DesignPanelCatalogPanel() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     void load();
