@@ -40,13 +40,13 @@ import { multiPolygon, point, polygon } from "@turf/helpers";
 import {
   DEFAULT_PANEL_MODULE,
   PANEL_MODULE_CATALOG,
-  getPanelModuleCatalog,
+  mergePanelModuleCatalog,
   panelModuleBrands,
   panelModuleLabel,
   panelModulesForBrand,
   parseCapacityKwText,
+  readCustomPanelModules,
   resolvePanelSpecFromProject,
-  upsertCustomPanelModule,
 } from "@/lib/panel-module-catalog";
 import type {
   PanelOrientation,
@@ -266,13 +266,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   /** Optical zoom beyond Google tile max (1 = off). */
   const [mapExtraScale, setMapExtraScale] = useState(1);
   const mapExtraScaleRef = useRef(1);
-  const [moduleCatalog, setModuleCatalog] = useState<PanelSpec[]>(() =>
-    typeof window === "undefined" ? PANEL_MODULE_CATALOG : getPanelModuleCatalog()
-  );
-  const [showCustomModule, setShowCustomModule] = useState(false);
-  const [customWatt, setCustomWatt] = useState(600);
-  const [customWidthMm, setCustomWidthMm] = useState(1134);
-  const [customHeightMm, setCustomHeightMm] = useState(2384);
+  const [moduleCatalog, setModuleCatalog] = useState<PanelSpec[]>(PANEL_MODULE_CATALOG);
   const [panelMetrics, setPanelMetrics] = useState({
     remainingAreaSqft: 0,
     coveragePct: 0,
@@ -291,22 +285,35 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     let cancelled = false;
     void (async () => {
       try {
-        const [projectRes, surveyRes, layoutRes, panelRes, designsRes] = await Promise.all([
-          fetch(`/api/projects/${projectId}`, { cache: "no-store" }),
-          fetch(`/api/projects/${projectId}/survey`, { cache: "no-store" }),
-          fetch(`/api/projects/${projectId}/site-layout`, { cache: "no-store" }),
-          fetch(`/api/projects/${projectId}/panel-layout`, { cache: "no-store" }),
-          fetch(`/api/projects/${projectId}/designs`, { cache: "no-store" }),
-        ]);
+        const [projectRes, surveyRes, layoutRes, panelRes, designsRes, catalogRes] =
+          await Promise.all([
+            fetch(`/api/projects/${projectId}`, { cache: "no-store" }),
+            fetch(`/api/projects/${projectId}/survey`, { cache: "no-store" }),
+            fetch(`/api/projects/${projectId}/site-layout`, { cache: "no-store" }),
+            fetch(`/api/projects/${projectId}/panel-layout`, { cache: "no-store" }),
+            fetch(`/api/projects/${projectId}/designs`, { cache: "no-store" }),
+            fetch("/api/design-panel-catalog", { cache: "no-store" }),
+          ]);
         const projectJson = (await projectRes.json()) as ApiEnvelope<ProjectSummary>;
         const surveyJson = (await surveyRes.json()) as ApiEnvelope<SurveySummary | null>;
         const layoutJson = (await layoutRes.json()) as ApiEnvelope<ProjectSiteLayout | null>;
         const panelJson = (await panelRes.json()) as ApiEnvelope<ProjectPanelLayout | null>;
         const designsJson = (await designsRes.json()) as ApiEnvelope<DesignSummary[]>;
+        const catalogJson = (await catalogRes.json()) as ApiEnvelope<{
+          orgModules?: PanelSpec[];
+        }>;
         if (cancelled) return;
         if (!projectJson.ok || !projectJson.data) {
           throw new Error(projectJson.error || "Project could not be loaded.");
         }
+
+        const loadedCatalog = mergePanelModuleCatalog(
+          catalogJson.ok && Array.isArray(catalogJson.data?.orgModules)
+            ? catalogJson.data.orgModules
+            : [],
+          readCustomPanelModules()
+        );
+        setModuleCatalog(loadedCatalog);
 
         setProject(projectJson.data);
         const surveyData = surveyJson.ok ? surveyJson.data ?? null : null;
@@ -381,6 +388,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             resolvePanelSpecFromProject({
               panelWatt: latestDesign?.panel_watt,
               panelBrand: projectJson.data.panel_brand ?? latestDesign?.panel_brand,
+              catalog: loadedCatalog,
             })
           );
         }
@@ -2531,7 +2539,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               <Grid2X2 className="h-3.5 w-3.5 text-slate-400" />
             </div>
             <p className="mt-1 text-[10px] leading-relaxed text-slate-500">
-              Curated India modules (540–750W). List me na ho to neeche custom watt + size add karo — browser me save hota hai (live market scrape nahi).
+              Built-in + org catalog (More → Panel catalog). Shared for all users — not browser-only.
             </p>
             <label className="mt-2 block text-[11px] font-bold text-slate-600 dark:text-slate-300">
               Brand
@@ -2577,7 +2585,11 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                   (item) => (
                     <option key={item.catalog_id ?? item.model} value={item.catalog_id ?? item.model}>
                       {item.wattage}W
-                      {item.catalog_id?.startsWith("custom-") ? " · custom" : ""}
+                      {item.catalog_id?.startsWith("org-")
+                        ? " · org"
+                        : item.catalog_id?.startsWith("custom-")
+                          ? " · local"
+                          : ""}
                     </option>
                   )
                 )}
@@ -2586,86 +2598,12 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             <p className="mt-1 text-[10px] text-slate-500">
               Frame {panelSpec.width_mm} × {panelSpec.height_mm} mm
             </p>
-            <button
-              type="button"
-              className="mt-1.5 text-[11px] font-bold text-blue-700 hover:underline"
-              onClick={() => {
-                setCustomWatt(panelSpec.wattage >= 600 ? panelSpec.wattage : 600);
-                setCustomWidthMm(panelSpec.width_mm);
-                setCustomHeightMm(panelSpec.height_mm);
-                setShowCustomModule((open) => !open);
-              }}
+            <a
+              href="/more#more-section-panel-catalog"
+              className="mt-1.5 inline-block text-[11px] font-bold text-blue-700 hover:underline"
             >
-              {showCustomModule ? "Hide custom module" : "+ Add custom watt / size"}
-            </button>
-            {showCustomModule ? (
-              <div className="mt-2 space-y-1.5 rounded-lg border border-slate-200 bg-slate-50 p-2 dark:border-white/10 dark:bg-white/[0.03]">
-                <p className="text-[10px] font-semibold text-slate-500">
-                  Brand = current ({panelSpec.manufacturer?.trim() || "Generic"}). Datasheet se L×W mm dalo.
-                </p>
-                <div className="grid grid-cols-3 gap-1.5">
-                  <label className="text-[10px] font-bold text-slate-600">
-                    Watt
-                    <input
-                      type="number"
-                      min={100}
-                      max={2000}
-                      step={5}
-                      value={customWatt}
-                      onChange={(event) => setCustomWatt(Math.max(100, Number(event.target.value) || 100))}
-                      className="mt-0.5 w-full rounded border border-slate-200 px-1.5 py-1 text-xs dark:border-white/10 dark:bg-slate-950"
-                    />
-                  </label>
-                  <label className="text-[10px] font-bold text-slate-600">
-                    Width mm
-                    <input
-                      type="number"
-                      min={100}
-                      max={5000}
-                      value={customWidthMm}
-                      onChange={(event) =>
-                        setCustomWidthMm(Math.max(100, Number(event.target.value) || 100))
-                      }
-                      className="mt-0.5 w-full rounded border border-slate-200 px-1.5 py-1 text-xs dark:border-white/10 dark:bg-slate-950"
-                    />
-                  </label>
-                  <label className="text-[10px] font-bold text-slate-600">
-                    Height mm
-                    <input
-                      type="number"
-                      min={100}
-                      max={5000}
-                      value={customHeightMm}
-                      onChange={(event) =>
-                        setCustomHeightMm(Math.max(100, Number(event.target.value) || 100))
-                      }
-                      className="mt-0.5 w-full rounded border border-slate-200 px-1.5 py-1 text-xs dark:border-white/10 dark:bg-slate-950"
-                    />
-                  </label>
-                </div>
-                <Button
-                  type="button"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => {
-                    const next = upsertCustomPanelModule({
-                      manufacturer: panelSpec.manufacturer?.trim() || "Custom",
-                      wattage: customWatt,
-                      width_mm: customWidthMm,
-                      height_mm: customHeightMm,
-                    });
-                    const catalog = getPanelModuleCatalog();
-                    setModuleCatalog(catalog);
-                    setPanelSpec(next);
-                    setPanelDirty(true);
-                    setShowCustomModule(false);
-                    toast.success("Custom module saved", `${panelModuleLabel(next)} · this browser`);
-                  }}
-                >
-                  Save & use module
-                </Button>
-              </div>
-            ) : null}
+              Manage catalog in More → Panel catalog
+            </a>
             <div className="mt-2 grid grid-cols-2 gap-1.5">
               {(["portrait", "landscape"] as const).map((orientation) => (
                 <button

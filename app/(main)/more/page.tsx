@@ -11,6 +11,7 @@ import {
 } from "@/lib/performance-mode";
 import { readProposalBrandingSettings } from "@/lib/proposal-branding-settings";
 import { BrandProposalsSettingsPanel } from "@/components/settings/brand-proposals-settings-panel";
+import { MoreDesignPanelCatalogGroup } from "@/components/settings/more-design-panel-catalog-group";
 import { MoreRateCardGroup } from "@/components/settings/more-rate-card-group";
 import { ProposalTemplateSettingsPanel } from "@/components/settings/proposal-template-settings-panel";
 import { SubscriptionUsageCard } from "@/components/settings/subscription-usage-card";
@@ -394,6 +395,8 @@ export default function MorePage() {
         </MoreGroup>
 
         <MoreRateCardGroup />
+
+        <MoreDesignPanelCatalogGroup />
 
         <MoreGroup
           id="more-section-brand"

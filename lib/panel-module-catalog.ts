@@ -3,7 +3,7 @@ import type { PanelSpec } from "@/lib/panel-layout";
 /**
  * Curated India-market modules for Design Studio packing.
  * Sizes are typical mono frame footprints (mm) — not live-scraped.
- * Custom org modules live in browser storage (see custom helpers below).
+ * Org extras: More → Panel catalog (DB). Legacy browser customs are read-only fallback.
  */
 function mod(
   catalog_id: string,
@@ -132,26 +132,32 @@ export function readCustomPanelModules(): PanelSpec[] {
   }
 }
 
-function writeCustomPanelModules(items: PanelSpec[]): void {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(CUSTOM_STORAGE_KEY, JSON.stringify(items.slice(0, 200)));
-}
-
-/** Built-in + browser custom modules (Design Studio client). */
-export function getPanelModuleCatalog(): PanelSpec[] {
-  const custom = readCustomPanelModules();
-  if (custom.length === 0) return PANEL_MODULE_CATALOG;
+/** Merge built-in + org (+ optional extras) without duplicate catalog_id/model. */
+export function mergePanelModuleCatalog(
+  orgModules: PanelSpec[] = [],
+  extras: PanelSpec[] = []
+): PanelSpec[] {
   const seen = new Set(PANEL_MODULE_CATALOG.map((item) => item.catalog_id ?? item.model));
-  const extras = custom.filter((item) => {
+  const out = [...PANEL_MODULE_CATALOG];
+  for (const item of [...orgModules, ...extras]) {
     const key = item.catalog_id ?? item.model;
-    if (seen.has(key)) return false;
+    if (!key || seen.has(key)) continue;
     seen.add(key);
-    return true;
-  });
-  return [...PANEL_MODULE_CATALOG, ...extras];
+    out.push(item);
+  }
+  return out;
 }
 
-export function upsertCustomPanelModule(input: {
+/**
+ * Built-in + legacy browser customs only (no org DB).
+ * Prefer API `/api/design-panel-catalog` or `mergePanelModuleCatalog(orgModules)`.
+ */
+export function getPanelModuleCatalog(): PanelSpec[] {
+  return mergePanelModuleCatalog([], readCustomPanelModules());
+}
+
+/** Build a PanelSpec for org catalog (caller persists via API). */
+export function buildOrgPanelModule(input: {
   manufacturer: string;
   wattage: number;
   width_mm: number;
@@ -161,24 +167,15 @@ export function upsertCustomPanelModule(input: {
   const wattage = Math.round(input.wattage);
   const width_mm = Math.round(input.width_mm);
   const height_mm = Math.round(input.height_mm);
-  const catalog_id = `custom-${slugPart(manufacturer)}-${wattage}-${width_mm}x${height_mm}`;
-  const next: PanelSpec = {
+  const catalog_id = `org-${slugPart(manufacturer)}-${wattage}-${width_mm}x${height_mm}`;
+  return {
     catalog_id,
     manufacturer,
-    model: `${wattage}W Mono (custom)`,
+    model: `${wattage}W Mono`,
     wattage,
     width_mm,
     height_mm,
   };
-  const existing = readCustomPanelModules().filter((item) => item.catalog_id !== catalog_id);
-  writeCustomPanelModules([next, ...existing]);
-  return next;
-}
-
-export function removeCustomPanelModule(catalogId: string): void {
-  writeCustomPanelModules(
-    readCustomPanelModules().filter((item) => item.catalog_id !== catalogId)
-  );
 }
 
 export const DEFAULT_PANEL_MODULE =
@@ -218,8 +215,9 @@ export function parseCapacityKwText(value: string | null | undefined): number | 
 export function resolvePanelSpecFromProject(opts: {
   panelWatt?: number | null;
   panelBrand?: string | null;
+  catalog?: PanelSpec[];
 }): PanelSpec {
-  const catalog = getPanelModuleCatalog();
+  const catalog = opts.catalog?.length ? opts.catalog : getPanelModuleCatalog();
   const watt = opts.panelWatt != null && opts.panelWatt > 0 ? opts.panelWatt : null;
   const brandHint = opts.panelBrand?.trim().toLowerCase() ?? "";
 
