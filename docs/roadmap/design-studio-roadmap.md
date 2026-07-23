@@ -2,8 +2,8 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | Approved phased roadmap — Phase 2 active |
-| **Last Updated** | 2026-07-21 |
+| **Status** | Approved phased roadmap — Phase 3 active |
+| **Last Updated** | 2026-07-23 |
 | **Canonical architecture (FROZEN)** | [`docs/architecture/design-studio-architecture.md`](../architecture/design-studio-architecture.md) |
 
 > **This is the only place where future ideas, future phases, and future enhancements are added.**
@@ -24,8 +24,8 @@
 | Phase | Focus | Status |
 |-------|-------|--------|
 | **Phase 1** | 2D Geometry foundation — satellite map, roof polygon, obstructions, save/version | **COMPLETE** |
-| **Phase 2** | **Auto Panel Placement Engine** + RCC/shed presets + manual fine-tune | **ACTIVE** |
-| **Phase 3** | **Engineering Rules + Solar Design** — setbacks, strings, equipment points, basic SLD | Approved — queued |
+| **Phase 2** | Auto Panel Placement Engine + RCC/shed presets + manual fine-tune | **COMPLETE (core)** — East-West / one-click tilt chips still queued |
+| **Phase 3** | **Engineering Rules + Solar Design** — setbacks, strings, studio SLD | **ACTIVE** — kickoff: advisory warnings + planning stringing + studio-only SLD schematic (2026-07-23) |
 | **Phase 4** | **Shadow Engine** — per-panel shade %, shade-free area, loss estimate | Approved — queued |
 | **Phase 5** | Project/Survey/BOM/Proposal integration + snapshots + customer sign-off | Approved — queued |
 | **Phase 6** | Cross-device QA, performance, security and pilot rollout | Approved — queued |
@@ -64,7 +64,7 @@
 
 ---
 
-## 3. Phase 2 — Auto Panel Placement Engine (FOUNDATION)
+## 3. Phase 2 — Auto Panel Placement Engine (COMPLETE — core)
 
 The foundation engine of the Design Studio. After the roof polygon is drawn, the system
 automatically generates the best possible panel layout. The installer only fine-tunes the result
@@ -77,6 +77,9 @@ design), Fill max toggle, live Max possible kW after obstruction keep-outs, bran
 picker, manual place/move/undo, and Aurora-style 3-pane shell (tool rail | map | inspector).
 Standalone Tools entry remains a future mount of the same `DesignStudioClient` — not a second
 engine. Design/SLD stay outside customer proposal.
+
+**Core complete (2026-07-23):** Phase 2 gate met for day-to-day packing + fine-tune. Remaining
+presets below stay as follow-ups (do not block Phase 3).
 
 **Inputs:** panel dimensions, orientation (portrait/landscape), required setbacks, walkway
 clearance, roof shape, installer spacing rules, optional `targetKw`.
@@ -121,6 +124,16 @@ validates the `PanelLayout` and surfaces engineering warnings.
 
 **Future workflow:**
 `Roof → Auto Panel Placement → Engineering Validation → Manual Adjustments → Shadow Analysis`
+
+**Shipped foundation (2026-07-23):**
+- Advisory engineering rules engine (`lib/design-studio-engineering-rules.ts`) — panels outside
+  buildable/setback/keep-outs, low setback, elevated row-pitch, target vs max, lock mix.
+- Design Studio inspector **Engineering** card (does not block Save).
+- Planning stringing estimate + **studio-only** one-line SLD schematic (PV → DCDB → Inverter →
+  ACDB → Meter → Grid). Not embedded in customer proposal.
+
+**Still queued in Phase 3:** equipment map points, cable routes, walkway safety profiles UI,
+exportable signed SLD pack, inverter/MPPT hard limits from project BOM.
 
 **Checks:** setbacks, blocked walkways, maintenance access, row spacing, fire clearance,
 clearance issues and severity-ranked engineering warnings.

@@ -65,6 +65,9 @@ export type AutoPackResult = {
 
 type Buildable = Feature<GeoPolygon | MultiPolygon>;
 
+/** Public alias for containment checks (Engineering Rules). */
+export type PanelBuildablePolygon = Buildable;
+
 function newPanelId(sectionIndex: number, row: number, col: number): string {
   return `p-${sectionIndex}-${row}-${col}-${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -472,9 +475,9 @@ export function snapNewPanelFootprint(args: {
   return translateFootprint(ghost.footprint_geojson, snapped.dLng, snapped.dLat);
 }
 
-function footprintInsideBuildable(
+export function footprintInsideBuildable(
   footprint: RoofPolygon,
-  buildable: Buildable
+  buildable: PanelBuildablePolygon
 ): boolean {
   const ring = footprint.coordinates[0]?.slice(0, -1) ?? [];
   if (ring.length < 3) return false;

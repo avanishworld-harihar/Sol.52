@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  AlertTriangle,
   ArrowLeft,
   Cloud,
   Compass,
@@ -59,6 +60,9 @@ import {
   moduleLengthForOrientationM,
   recommendedRowPitchM,
 } from "@/lib/design-studio-engineering";
+import { evaluateEngineeringRules } from "@/lib/design-studio-engineering-rules";
+import { estimateStringing } from "@/lib/design-studio-stringing";
+import { DesignStudioSldSchematic } from "@/components/site-layout/design-studio-sld-schematic";
 import type {
   PanelMountingType,
   PanelOrientation,
@@ -1483,6 +1487,47 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     panelTiltDeg,
     selectedRoofMetrics?.azimuthDeg,
   ]);
+
+  const engineeringWarnings = useMemo(
+    () =>
+      evaluateEngineeringRules({
+        roof: state.roof,
+        obstructions: state.obstructions,
+        panels: placedPanels,
+        panelSpec,
+        orientation: panelOrientation,
+        setbackFt: panelSetbackFt,
+        tiltDeg: panelTiltDeg,
+        mountingType,
+        latitudeDeg: center[1],
+        maxDcCapacityKw: maxCapacity.maxDcCapacityKw,
+        targetKw,
+        packMode,
+      }),
+    [
+      center,
+      maxCapacity.maxDcCapacityKw,
+      mountingType,
+      packMode,
+      panelOrientation,
+      panelSetbackFt,
+      panelSpec,
+      panelTiltDeg,
+      placedPanels,
+      state.obstructions,
+      state.roof,
+      targetKw,
+    ]
+  );
+
+  const stringingEstimate = useMemo(
+    () =>
+      estimateStringing({
+        panelCount: placedPanels.length,
+        panelSpec,
+      }),
+    [panelSpec, placedPanels.length]
+  );
 
   const areaWarning = displayedMetrics
     ? displayedMetrics.areaSqft < 100
@@ -4023,6 +4068,104 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                 ~{yieldEstimate.dailyKwh} kWh/day · {yieldEstimate.note}
               </p>
             ) : null}
+          </div>
+
+          <div className="rounded-xl border border-violet-200 bg-violet-50/60 p-3 dark:border-violet-900/40 dark:bg-violet-950/25">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs font-extrabold text-violet-900 dark:text-violet-100">
+                Engineering
+              </p>
+              <span className="text-[10px] font-bold uppercase tracking-wide text-violet-600/80 dark:text-violet-300/80">
+                Phase 3 · advisory
+              </span>
+            </div>
+            <p className="mt-1 text-[10px] leading-relaxed text-violet-900/75 dark:text-violet-100/70">
+              Layout checks + planning stringing. Does not block Save. SLD here is studio-only — not
+              on the customer proposal.
+            </p>
+
+            <div className="mt-2 space-y-1.5">
+              {engineeringWarnings.length === 0 ? (
+                <p className="rounded-lg bg-white/70 px-2.5 py-2 text-[11px] font-semibold text-emerald-800 dark:bg-white/[0.06] dark:text-emerald-200">
+                  No engineering issues
+                </p>
+              ) : (
+                engineeringWarnings.map((item) => (
+                  <div
+                    key={item.id}
+                    className={`rounded-lg px-2.5 py-2 text-[11px] ${
+                      item.severity === "error"
+                        ? "bg-rose-100/90 text-rose-950 dark:bg-rose-950/50 dark:text-rose-100"
+                        : item.severity === "warn"
+                          ? "bg-amber-100/90 text-amber-950 dark:bg-amber-950/45 dark:text-amber-100"
+                          : "bg-white/80 text-slate-700 dark:bg-white/[0.06] dark:text-slate-200"
+                    }`}
+                  >
+                    <p className="flex items-start gap-1.5 font-bold">
+                      <AlertTriangle
+                        className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${
+                          item.severity === "info" ? "opacity-50" : ""
+                        }`}
+                      />
+                      <span>
+                        {item.severity === "error"
+                          ? "Error"
+                          : item.severity === "warn"
+                            ? "Warn"
+                            : "Info"}
+                        {" · "}
+                        {item.title}
+                      </span>
+                    </p>
+                    <p className="mt-0.5 pl-5 text-[10px] font-medium leading-snug opacity-90">
+                      {item.detail}
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {stringingEstimate ? (
+              <div className="mt-3 border-t border-violet-200/80 pt-3 dark:border-violet-800/50">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-violet-700/80 dark:text-violet-300/80">
+                  Stringing (planning)
+                </p>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  {[
+                    ["Mod / string", String(stringingEstimate.modulesPerString)],
+                    ["Strings", String(stringingEstimate.stringCount)],
+                    ["Inv ~kW", stringingEstimate.suggestedInverterKw.toFixed(1)],
+                    ["DC/AC", stringingEstimate.dcAcRatio.toFixed(2)],
+                  ].map(([label, value]) => (
+                    <div
+                      key={label}
+                      className="rounded-lg bg-white/80 p-2 dark:bg-white/[0.06]"
+                    >
+                      <p className="text-[10px] font-bold uppercase tracking-wide text-violet-500/90">
+                        {label}
+                      </p>
+                      <p className="mt-0.5 text-sm font-extrabold tabular-nums text-violet-950 dark:text-violet-50">
+                        {value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-1.5 text-[10px] leading-snug text-violet-800/75 dark:text-violet-200/70">
+                  {stringingEstimate.note}
+                </p>
+                <DesignStudioSldSchematic
+                  className="mt-3 text-violet-900 dark:text-violet-100"
+                  stringCount={stringingEstimate.stringCount}
+                  modulesPerString={stringingEstimate.modulesPerString}
+                  panelCount={stringingEstimate.panelCount}
+                  inverterKw={stringingEstimate.suggestedInverterKw}
+                />
+              </div>
+            ) : (
+              <p className="mt-3 text-[10px] text-violet-800/70 dark:text-violet-200/60">
+                Place panels to see stringing and studio SLD schematic.
+              </p>
+            )}
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-slate-900">
