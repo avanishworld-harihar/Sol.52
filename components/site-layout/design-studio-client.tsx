@@ -17,6 +17,7 @@ import {
   MousePointer2,
   Plus,
   Redo2,
+  Copy,
   RotateCcw,
   RotateCw,
   Save,
@@ -29,7 +30,7 @@ import {
   Unlock,
 } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast-center";
 import {
@@ -285,6 +286,21 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const roofLockedRef = useRef(true);
   /** Shared click handler so clicks on the roof polygon also place obstructions / add points. */
   const studioClickRef = useRef<((latLng: google.maps.LatLng) => void) | null>(null);
+  /** Projection helper for optical-magnify click remapping (CSS scale breaks Maps hit-test). */
+  const projectionOverlayRef = useRef<google.maps.OverlayView | null>(null);
+  const mapViewportElRef = useRef<HTMLElement | null>(null);
+  const opticalPointerRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    moved: boolean;
+    panelDrag: {
+      primaryId: string;
+      startLatLng: { lat: number; lng: number };
+      footprints: Record<string, PlacedPanel["footprint_geojson"]>;
+      ids: string[];
+    } | null;
+  } | null>(null);
   /** Set when the map panel mounts — avoids init racing the loading spinner unmount. */
   const [mapContainerEl, setMapContainerEl] = useState<HTMLDivElement | null>(null);
 
@@ -954,6 +970,14 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           })
         );
 
+        // OverlayView gives container-pixel ↔ LatLng under optical CSS magnify.
+        const projectionOverlay = new maps.OverlayView();
+        projectionOverlay.onAdd = () => {};
+        projectionOverlay.draw = () => {};
+        projectionOverlay.onRemove = () => {};
+        projectionOverlay.setMap(map);
+        projectionOverlayRef.current = projectionOverlay;
+
         setMapReady(true);
         setLoadError("");
       })
@@ -969,6 +993,10 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
 
     return () => {
       cancelled = true;
+      if (projectionOverlayRef.current) {
+        projectionOverlayRef.current.setMap(null);
+        projectionOverlayRef.current = null;
+      }
       mapListenersRef.current.forEach((listener) => listener.remove());
       mapListenersRef.current = [];
       removeRoofListeners();
@@ -2100,6 +2128,50 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     setPanelDirty(true);
   }, [pushPanelHistory, state.roof]);
 
+  /** Duplicate selected panels with a small NE offset so copies are visible. */
+  const duplicateSelectedPanels = useCallback(() => {
+    const ids = selectedPanelIdsRef.current;
+    if (ids.length === 0) {
+      toast.error("Select panels first", "Click a panel, then Duplicate.");
+      return;
+    }
+    const current = placedPanelsRef.current;
+    const selected = current.filter((panel) => ids.includes(panel.id));
+    if (selected.length === 0) return;
+
+    const stamp = Date.now();
+    const copies: PlacedPanel[] = selected.map((panel, index) => {
+      const c = footprintCentroid(panel.footprint_geojson);
+      const lat = c?.lat ?? 20;
+      const eastM = 0.55 + index * 0.05;
+      const northM = 0.2;
+      const dLat = northM / 110_540;
+      const dLng = eastM / (111_320 * Math.max(0.2, Math.cos((lat * Math.PI) / 180)));
+      return {
+        ...panel,
+        id: `p-dup-${stamp}-${index}-${Math.random().toString(36).slice(2, 7)}`,
+        footprint_geojson: translateFootprint(panel.footprint_geojson, dLng, dLat),
+        is_locked: false,
+        is_manually_placed: true,
+        row_index: panel.row_index,
+        col_index: panel.col_index + 1,
+      };
+    });
+
+    pushPanelHistory(current);
+    const next = [...current, ...copies];
+    setPlacedPanels(next);
+    if (state.roof) {
+      setPanelMetrics(computePanelCoverageMetrics(state.roof, next));
+    }
+    setSelectedPanelIds(copies.map((panel) => panel.id));
+    setPanelDirty(true);
+    toast.success(
+      `Duplicated ${copies.length} panel${copies.length === 1 ? "" : "s"}`,
+      "Copies are selected — drag to place. Snap (magnet) helps align."
+    );
+  }, [pushPanelHistory, state.roof, toast]);
+
   const placeManualPanelAt = useCallback(
     (latLng: google.maps.LatLng) => {
       if (!state.roof) {
@@ -2197,7 +2269,6 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     setSelectedPanelIds([]);
     addObstructionRef.current = null;
     setPendingObstruction(null);
-    setMapExtraScale(1);
     mapRef.current?.setOptions({ draggableCursor: null });
   }, []);
 
@@ -2231,7 +2302,6 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
 
       setStudioTool(tool);
       studioToolRef.current = tool;
-      setMapExtraScale(1);
       if (tool === "move_group") {
         const unlocked = placedPanelsRef.current
           .filter((panel) => !panel.is_locked)
@@ -2362,6 +2432,225 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
   }, [mapViewportEl]);
+
+  useEffect(() => {
+    mapViewportElRef.current = mapViewportEl;
+  }, [mapViewportEl]);
+
+  /** CSS optical scale breaks Maps hit-testing — remap viewport clicks to LatLng. */
+  const clientToLatLngOptical = useCallback((clientX: number, clientY: number) => {
+    const map = mapRef.current;
+    const viewport = mapViewportElRef.current;
+    const overlay = projectionOverlayRef.current;
+    if (!map || !viewport || !overlay || !window.google?.maps) return null;
+    const proj = overlay.getProjection();
+    if (!proj) return null;
+    const scale = Math.max(1, mapExtraScaleRef.current);
+    const vr = viewport.getBoundingClientRect();
+    const mapDiv = map.getDiv();
+    const layoutW = mapDiv.offsetWidth || vr.width;
+    const layoutH = mapDiv.offsetHeight || vr.height;
+    const cx = vr.left + vr.width / 2;
+    const cy = vr.top + vr.height / 2;
+    const mapX = layoutW / 2 + (clientX - cx) / scale;
+    const mapY = layoutH / 2 + (clientY - cy) / scale;
+    return proj.fromContainerPixelToLatLng(new google.maps.Point(mapX, mapY));
+  }, []);
+
+  const findPanelAtLatLng = useCallback((latLng: google.maps.LatLng) => {
+    const pt = point([latLng.lng(), latLng.lat()]);
+    const panels = placedPanelsRef.current;
+    for (let i = panels.length - 1; i >= 0; i -= 1) {
+      const panel = panels[i]!;
+      try {
+        if (booleanPointInPolygon(pt, polygon(panel.footprint_geojson.coordinates))) {
+          return panel;
+        }
+      } catch {
+        /* ignore invalid ring */
+      }
+    }
+    return null;
+  }, []);
+
+  const handleOpticalPointerDown = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    if (mapExtraScaleRef.current <= 1) return;
+    const latLng = clientToLatLngOptical(event.clientX, event.clientY);
+    const tool = studioToolRef.current;
+    let panelDrag: {
+      primaryId: string;
+      startLatLng: { lat: number; lng: number };
+      footprints: Record<string, PlacedPanel["footprint_geojson"]>;
+      ids: string[];
+    } | null = null;
+
+    if (
+      latLng &&
+      !addObstructionRef.current &&
+      tool !== "place_panel" &&
+      (tool === "select" || tool === "move_group" || tool == null)
+    ) {
+      const hit = findPanelAtLatLng(latLng);
+      if (hit && !hit.is_locked) {
+        const selected = selectedPanelIdsRef.current;
+        const ids =
+          selected.includes(hit.id) && selected.length > 0
+            ? selected.filter((id) => {
+                const panel = placedPanelsRef.current.find((p) => p.id === id);
+                return panel && !panel.is_locked;
+              })
+            : [hit.id];
+        if (!selected.includes(hit.id)) {
+          setSelectedPanelIds(ids);
+        }
+        const footprints: Record<string, PlacedPanel["footprint_geojson"]> = {};
+        for (const item of placedPanelsRef.current) {
+          if (ids.includes(item.id)) {
+            footprints[item.id] = structuredClone(item.footprint_geojson);
+          }
+        }
+        panelDrag = {
+          primaryId: hit.id,
+          startLatLng: { lat: latLng.lat(), lng: latLng.lng() },
+          footprints,
+          ids,
+        };
+        // Cell lines stay put while dragging — clear until commit redraw.
+        panelCellLinesRef.current.forEach((line) => line.setMap(null));
+        panelCellLinesRef.current = [];
+        draggingPanelIdRef.current = hit.id;
+      }
+    }
+
+    opticalPointerRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      moved: false,
+      panelDrag,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }, [clientToLatLngOptical, findPanelAtLatLng]);
+
+  const handleOpticalPointerMove = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    const drag = opticalPointerRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    if (Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) > 6) {
+      drag.moved = true;
+    }
+    const panelDrag = drag.panelDrag;
+    if (!panelDrag || !drag.moved) return;
+
+    const latLng = clientToLatLngOptical(event.clientX, event.clientY);
+    if (!latLng) return;
+    const dLng = latLng.lng() - panelDrag.startLatLng.lng;
+    const dLat = latLng.lat() - panelDrag.startLatLng.lat;
+    const pathFromFootprint = (footprint: PlacedPanel["footprint_geojson"]) =>
+      footprint.coordinates[0].slice(0, -1).map(([lng, lat]) => ({ lat, lng }));
+
+    placedPanelsRef.current.forEach((item, index) => {
+      const base = panelDrag.footprints[item.id];
+      if (!base) return;
+      const poly = panelPolygonsRef.current[index];
+      if (!poly) return;
+      poly.setPaths(pathFromFootprint(translateFootprint(base, dLng, dLat)));
+    });
+  }, [clientToLatLngOptical]);
+
+  const handleOpticalPointerUp = useCallback(
+    (event: ReactPointerEvent<HTMLDivElement>) => {
+      const drag = opticalPointerRef.current;
+      if (!drag || drag.pointerId !== event.pointerId) return;
+      opticalPointerRef.current = null;
+      try {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      } catch {
+        /* already released */
+      }
+
+      const panelDrag = drag.panelDrag;
+      draggingPanelIdRef.current = null;
+
+      // Optical drag commit (CSS scale breaks native Maps polygon drag).
+      if (panelDrag && drag.moved) {
+        const latLng = clientToLatLngOptical(event.clientX, event.clientY);
+        const primaryOriginal = placedPanelsRef.current.find((item) => item.id === panelDrag.primaryId);
+        const basePrimary = panelDrag.footprints[panelDrag.primaryId];
+        if (latLng && primaryOriginal && basePrimary) {
+          let dLng = latLng.lng() - panelDrag.startLatLng.lng;
+          let dLat = latLng.lat() - panelDrag.startLatLng.lat;
+          const movedFootprint = translateFootprint(basePrimary, dLng, dLat);
+          if (snapEnabledRef.current) {
+            const anchors = placedPanelsRef.current.filter(
+              (item) => !panelDrag.ids.includes(item.id)
+            );
+            const snapped = snapPanelMove({
+              moved: primaryOriginal,
+              movedFootprint,
+              anchors,
+              panelSpec: panelSpecRef.current,
+              orientation: panelOrientationRef.current,
+              panelGapMm: 20,
+            });
+            dLng = snapped.dLng;
+            dLat = snapped.dLat;
+          }
+          pushPanelHistory(placedPanelsRef.current);
+          setPlacedPanels((current) =>
+            current.map((item) => {
+              if (!panelDrag.ids.includes(item.id) || item.is_locked) return item;
+              const base = panelDrag.footprints[item.id] ?? item.footprint_geojson;
+              return {
+                ...item,
+                footprint_geojson: translateFootprint(base, dLng, dLat),
+                is_manually_placed: true,
+              };
+            })
+          );
+          setPanelDirty(true);
+        } else {
+          // Abort mid-drag projection failure — redraw from committed state.
+          setPlacedPanels((current) => current.map((panel) => ({ ...panel })));
+        }
+        return;
+      }
+
+      const latLng = clientToLatLngOptical(event.clientX, event.clientY);
+      if (!latLng) return;
+
+      const type = addObstructionRef.current;
+      if (type) {
+        studioClickRef.current?.(latLng);
+        return;
+      }
+      if (studioToolRef.current === "place_panel") {
+        placePanelRef.current?.(latLng);
+        return;
+      }
+
+      const hit = findPanelAtLatLng(latLng);
+      const tool = studioToolRef.current;
+      if (hit && (tool === "select" || tool === "move_group" || tool == null)) {
+        if (event.shiftKey) {
+          setSelectedPanelIds((current) =>
+            current.includes(hit.id)
+              ? current.filter((id) => id !== hit.id)
+              : [...current, hit.id]
+          );
+        } else {
+          setSelectedPanelIds([hit.id]);
+        }
+        return;
+      }
+      if (
+        (tool === "select" || tool === "move_group" || tool == null) &&
+        selectedPanelIdsRef.current.length > 0
+      ) {
+        setSelectedPanelIds([]);
+      }
+    },
+    [clientToLatLngOptical, findPanelAtLatLng, pushPanelHistory]
+  );
 
   const resetMapNorth = useCallback(() => {
     mapRef.current?.setHeading(0);
@@ -2703,9 +2992,19 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             </div>
           )}
           {mapExtraScale > 1 ? (
-            <div className="pointer-events-none absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-900 shadow">
-              Design magnify {mapExtraScale.toFixed(2)}× · max {MAP_EXTRA_SCALE_MAX}× · toolbar / wheel − se zoom out
-            </div>
+            <>
+              {/* Remap clicks — CSS scale breaks Google Maps panel hit-testing */}
+              <div
+                className="absolute inset-0 z-[15] touch-none"
+                onPointerDown={handleOpticalPointerDown}
+                onPointerMove={handleOpticalPointerMove}
+                onPointerUp={handleOpticalPointerUp}
+                onPointerCancel={handleOpticalPointerUp}
+              />
+              <div className="pointer-events-none absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-900 shadow">
+                Design magnify {mapExtraScale.toFixed(2)}× · max {MAP_EXTRA_SCALE_MAX}× · click/drag panels · wheel − zoom out
+              </div>
+            </>
           ) : null}
           {/* Compass — left side, vertically centered */}
           {googleMapsKey && mapReady ? (
@@ -3298,6 +3597,14 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               <Button
                 variant="outline"
                 size="sm"
+                disabled={selectedPanelIds.length === 0}
+                onClick={duplicateSelectedPanels}
+              >
+                <Copy className="mr-1 h-3.5 w-3.5" /> Duplicate
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 className="text-red-600"
                 disabled={selectedPanelIds.length === 0}
                 onClick={deleteSelectedPanel}
@@ -3307,15 +3614,14 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               <Button
                 variant="outline"
                 size="sm"
-                className="col-span-2"
                 disabled={placedPanels.length === 0}
                 onClick={clearPanels}
               >
-                Clear all panels
+                Clear all
               </Button>
             </div>
             <p className="mt-2 text-[10px] leading-relaxed text-slate-500">
-              Panel pe click = select. Map / panel ke bahar click = deselect. Shift+click = multi. Group / Ctrl+A = sab unlocked. Magnet = snap ON/OFF.
+              Panel pe click = select. Bahar click = deselect. Duplicate = copy selected (thoda offset). Shift+click = multi. Magnet = snap.
             </p>
           </div>
 
