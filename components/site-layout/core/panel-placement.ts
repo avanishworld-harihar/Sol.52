@@ -229,6 +229,93 @@ export function translateFootprint(
   };
 }
 
+/**
+ * Rotate a panel footprint around a geographic pivot.
+ * deltaDeg: positive = east (clockwise from north in map view terms for
+ * east/west plant yaw); negative = west.
+ */
+export function rotateFootprint(
+  footprint: RoofPolygon,
+  pivotLng: number,
+  pivotLat: number,
+  deltaDeg: number
+): RoofPolygon {
+  if (!Number.isFinite(deltaDeg) || Math.abs(deltaDeg) < 1e-9) return footprint;
+  const ring = footprint.coordinates[0];
+  if (!ring || ring.length < 3) return footprint;
+
+  const rad = (deltaDeg * Math.PI) / 180;
+  const cos = Math.cos(rad);
+  const sin = Math.sin(rad);
+
+  const nextRing = ring.map(([lng, lat]) => {
+    const { eastM, northM } = deltaDegreesToMeters(pivotLat, lng - pivotLng, lat - pivotLat);
+    // Rotate in local EN frame: +deltaDeg turns toward east (clockwise when N is up).
+    const east2 = eastM * cos + northM * sin;
+    const north2 = -eastM * sin + northM * cos;
+    const { dLng, dLat } = metersToDeltaDegrees(pivotLat, east2, north2);
+    return [pivotLng + dLng, pivotLat + dLat] as [number, number];
+  });
+
+  // Ensure closed ring
+  if (nextRing.length > 0) {
+    const first = nextRing[0]!;
+    const last = nextRing[nextRing.length - 1]!;
+    if (first[0] !== last[0] || first[1] !== last[1]) {
+      nextRing.push([first[0], first[1]]);
+    }
+  }
+
+  return { type: "Polygon", coordinates: [nextRing] };
+}
+
+/** Plant centroid of unlocked panels (fallback: all panels). */
+export function plantCentroid(panels: PlacedPanel[]): { lng: number; lat: number } | null {
+  const pool = panels.filter((p) => !p.is_locked);
+  const use = pool.length > 0 ? pool : panels;
+  if (use.length === 0) return null;
+  let sumLng = 0;
+  let sumLat = 0;
+  let n = 0;
+  for (const panel of use) {
+    const c = footprintCentroid(panel.footprint_geojson);
+    if (!c) continue;
+    sumLng += c.lng;
+    sumLat += c.lat;
+    n += 1;
+  }
+  if (n === 0) return null;
+  return { lng: sumLng / n, lat: sumLat / n };
+}
+
+/**
+ * Rigid-rotate unlocked panels around the plant centroid.
+ * Locked panels stay put. Updates rotation_deg and marks manually placed.
+ */
+export function rotatePlacedPanels(panels: PlacedPanel[], deltaDeg: number): PlacedPanel[] {
+  if (!Number.isFinite(deltaDeg) || Math.abs(deltaDeg) < 1e-9) return panels;
+  const unlocked = panels.filter((p) => !p.is_locked);
+  if (unlocked.length === 0) return panels;
+  const pivot = plantCentroid(panels);
+  if (!pivot) return panels;
+
+  return panels.map((panel) => {
+    if (panel.is_locked) return panel;
+    const nextRot = ((panel.rotation_deg + deltaDeg) % 360 + 540) % 360 - 180;
+    return {
+      ...panel,
+      footprint_geojson: rotateFootprint(
+        panel.footprint_geojson,
+        pivot.lng,
+        pivot.lat,
+        deltaDeg
+      ),
+      rotation_deg: Math.round(nextRot * 10) / 10,
+      is_manually_placed: true,
+    };
+  });
+}
+
 export function panelPitchMeters(
   panelSpec: PanelSpec,
   orientation: Exclude<PanelOrientation, "east_west">,

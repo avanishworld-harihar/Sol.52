@@ -17,6 +17,8 @@ import {
   MousePointer2,
   Plus,
   Redo2,
+  RotateCcw,
+  RotateCw,
   Save,
   Search,
   Square,
@@ -78,6 +80,7 @@ import {
   estimateMaxDcCapacity,
   footprintCentroid,
   MIN_OBSTRUCTION_RADIUS_FT,
+  rotatePlacedPanels,
   snapPanelMove,
   snapNewPanelFootprint,
   translateFootprint,
@@ -2037,6 +2040,35 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     setPanelDirty(true);
   }, [placedPanels, pushPanelHistory]);
 
+  /** Rotate whole plant ±5° (west / east). Locked panels stay put. */
+  const rotatePlant = useCallback(
+    (deltaDeg: number) => {
+      const current = placedPanelsRef.current;
+      if (current.length === 0) {
+        toast.error("No panels", "Place or auto-pack panels first.");
+        return;
+      }
+      if (!current.some((p) => !p.is_locked)) {
+        toast.error("All panels locked", "Unlock at least one panel to rotate the plant.");
+        return;
+      }
+      const next = rotatePlacedPanels(current, deltaDeg);
+      if (next === current) return;
+      pushPanelHistory(current);
+      setPlacedPanels(next);
+      if (state.roof) {
+        setPanelMetrics(computePanelCoverageMetrics(state.roof, next));
+      }
+      setPanelDirty(true);
+      const dir = deltaDeg < 0 ? "west" : "east";
+      toast.success(
+        `Plant rotated ${Math.abs(deltaDeg)}° ${dir}`,
+        "Nudge or move panels to fit more capacity. Small east/west yaw (~1–3% generation) is fine."
+      );
+    },
+    [pushPanelHistory, state.roof, toast]
+  );
+
   const deleteSelectedPanel = useCallback(() => {
     const ids = selectedPanelIdsRef.current;
     if (ids.length === 0) return;
@@ -2584,6 +2616,24 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               className="flex h-10 w-10 items-center justify-center rounded-lg text-emerald-300 hover:bg-white/10"
             >
               <Focus className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              title="Rotate plant 5° west"
+              disabled={!placedPanels.some((p) => !p.is_locked)}
+              onClick={() => rotatePlant(-5)}
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-sky-300 hover:bg-white/10 disabled:opacity-30"
+            >
+              <RotateCcw className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              title="Rotate plant 5° east"
+              disabled={!placedPanels.some((p) => !p.is_locked)}
+              onClick={() => rotatePlant(5)}
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-sky-300 hover:bg-white/10 disabled:opacity-30"
+            >
+              <RotateCw className="h-4 w-4" />
             </button>
             <button type="button" title={`Map: ${mapTypeId}`} onClick={cycleMapType} className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-300 hover:bg-white/10">
               <MapIcon className="h-4 w-4" />
