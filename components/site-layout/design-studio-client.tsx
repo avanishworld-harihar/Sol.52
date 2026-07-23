@@ -1402,6 +1402,43 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     return adviseRoofAzimuth(az);
   }, [displayedMetrics?.azimuthDeg, selectedRoofMetrics?.azimuthDeg]);
 
+  /** Yaw from auto layout (0°) after west/east rotate nudges. */
+  const panelRotationSummary = useMemo(() => {
+    const source =
+      selectedPanelIds.length > 0
+        ? placedPanels.filter((panel) => selectedPanelIds.includes(panel.id))
+        : placedPanels;
+    if (source.length === 0) return null;
+    const vals = source.map((panel) => Math.round(panel.rotation_deg * 10) / 10);
+    const first = vals[0]!;
+    const uniform = vals.every((value) => Math.abs(value - first) < 0.05);
+    const scope = selectedPanelIds.length > 0 ? ("selection" as const) : ("plant" as const);
+    if (!uniform) {
+      return {
+        scope,
+        deg: null as number | null,
+        label: "Mixed",
+        detail: "Selected panels have different yaw — select a matching group to rotate together.",
+      };
+    }
+    const deg = first;
+    const abs = Math.abs(deg);
+    const dir = deg === 0 ? "" : deg < 0 ? " west" : " east";
+    const label =
+      deg === 0
+        ? "0°"
+        : `${deg > 0 ? "+" : ""}${Number.isInteger(deg) ? String(deg) : deg.toFixed(1)}°`;
+    return {
+      scope,
+      deg,
+      label,
+      detail:
+        abs === 0
+          ? "No yaw from auto layout"
+          : `${abs}°${dir} from auto layout (toolbar rotate ±5°)`,
+    };
+  }, [placedPanels, selectedPanelIds]);
+
   const rowPitchM = useMemo(() => {
     const lengthM = moduleLengthForOrientationM(
       panelSpec.width_mm,
@@ -3069,7 +3106,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             </button>
             <button
               type="button"
-              title="Rotate selected panels 5° west"
+              title={`Rotate selected panels 5° west${panelRotationSummary?.deg != null ? ` · now ${panelRotationSummary.label}` : ""}`}
               disabled={
                 !selectedPanelIds.some((id) => {
                   const panel = placedPanels.find((p) => p.id === id);
@@ -3081,9 +3118,18 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             >
               <RotateCcw className="h-4 w-4" />
             </button>
+            <div
+              className="flex min-h-8 min-w-[2.75rem] items-center justify-center rounded-md bg-sky-500/15 px-1 text-[10px] font-extrabold tabular-nums text-sky-200"
+              title={
+                panelRotationSummary?.detail ??
+                "Panel yaw after west/east rotate. Select panels, then rotate."
+              }
+            >
+              {panelRotationSummary?.label ?? "—"}
+            </div>
             <button
               type="button"
-              title="Rotate selected panels 5° east"
+              title={`Rotate selected panels 5° east${panelRotationSummary?.deg != null ? ` · now ${panelRotationSummary.label}` : ""}`}
               disabled={
                 !selectedPanelIds.some((id) => {
                   const panel = placedPanels.find((p) => p.id === id);
@@ -3617,6 +3663,19 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                 Use suggested {azimuthAdvice.suggestedOrientation}
               </button>
             ) : null}
+            <div className="mt-2 flex items-center justify-between gap-2 rounded-lg border border-sky-200/80 bg-sky-50 px-2.5 py-2 dark:border-sky-500/30 dark:bg-sky-950/40">
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-sky-700/80 dark:text-sky-300/80">
+                  {panelRotationSummary?.scope === "selection" ? "Selected rotation" : "Plant rotation"}
+                </p>
+                <p className="text-sm font-extrabold tabular-nums text-sky-950 dark:text-sky-50">
+                  {panelRotationSummary?.label ?? "—"}
+                </p>
+              </div>
+              <p className="max-w-[10rem] text-right text-[10px] leading-snug text-sky-800/80 dark:text-sky-200/70">
+                {panelRotationSummary?.detail ?? "Select panels, then use west / east rotate (±5°)."}
+              </p>
+            </div>
             <label className="mt-2 block text-[11px] font-bold text-slate-600 dark:text-slate-300">
               Mounting
               <select
