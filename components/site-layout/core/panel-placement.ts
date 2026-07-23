@@ -289,18 +289,28 @@ export function plantCentroid(panels: PlacedPanel[]): { lng: number; lat: number
 }
 
 /**
- * Rigid-rotate unlocked panels around the plant centroid.
+ * Rigid-rotate panels around their group centroid.
+ * - If `panelIds` is provided, only those panels rotate (unlocked ones).
+ * - Otherwise unlocked panels rotate (legacy whole-plant behavior).
  * Locked panels stay put. Updates rotation_deg and marks manually placed.
  */
-export function rotatePlacedPanels(panels: PlacedPanel[], deltaDeg: number): PlacedPanel[] {
+export function rotatePlacedPanels(
+  panels: PlacedPanel[],
+  deltaDeg: number,
+  panelIds?: string[]
+): PlacedPanel[] {
   if (!Number.isFinite(deltaDeg) || Math.abs(deltaDeg) < 1e-9) return panels;
-  const unlocked = panels.filter((p) => !p.is_locked);
-  if (unlocked.length === 0) return panels;
-  const pivot = plantCentroid(panels);
+  const idSet = panelIds && panelIds.length > 0 ? new Set(panelIds) : null;
+  const targets = panels.filter(
+    (p) => !p.is_locked && (idSet === null || idSet.has(p.id))
+  );
+  if (targets.length === 0) return panels;
+  const pivot = plantCentroid(targets);
   if (!pivot) return panels;
+  const targetIds = new Set(targets.map((p) => p.id));
 
   return panels.map((panel) => {
-    if (panel.is_locked) return panel;
+    if (!targetIds.has(panel.id)) return panel;
     const nextRot = ((panel.rotation_deg + deltaDeg) % 360 + 540) % 360 - 180;
     return {
       ...panel,

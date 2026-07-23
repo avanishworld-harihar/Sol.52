@@ -871,7 +871,17 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             return;
           }
           const isDrawing = map.get("sol52DrawingRoof") === true;
-          if (!isDrawing) return;
+          if (!isDrawing) {
+            // Select / Move: click empty map (outside panels) clears selection.
+            const tool = studioToolRef.current;
+            if (
+              (tool === "select" || tool === "move_group" || tool == null) &&
+              selectedPanelIdsRef.current.length > 0
+            ) {
+              setSelectedPanelIds([]);
+            }
+            return;
+          }
           const points = drawingPointsRef.current;
           if (points.length >= 3) {
             const first = points[0];
@@ -1167,12 +1177,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         google.maps.event.addListener(polygon, "click", (event: google.maps.MapMouseEvent) => {
           const shift = !!(event.domEvent as MouseEvent | undefined)?.shiftKey;
           const tool = studioToolRef.current;
-          if (tool === "move_group") {
-            const allUnlocked = placedPanelsRef.current
-              .filter((item) => !item.is_locked)
-              .map((item) => item.id);
-            setSelectedPanelIds(allUnlocked.length ? allUnlocked : [panel.id]);
-          } else if (shift) {
+          // Select / Move: click panel → select it. Shift+click toggles multi-select.
+          if (shift) {
             setSelectedPanelIds((current) =>
               current.includes(panel.id)
                 ? current.filter((id) => id !== panel.id)
@@ -1185,7 +1191,10 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             setStudioTool(null);
             studioToolRef.current = null;
           }
+          // Keep map click from clearing this selection.
+          event.stop?.();
           event.domEvent?.stopPropagation?.();
+          event.domEvent?.preventDefault?.();
         }),
         google.maps.event.addListener(polygon, "dragstart", () => {
           // Cell lines stay put while the polygon drags — clear until dragend rebuild.
@@ -2040,19 +2049,24 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     setPanelDirty(true);
   }, [placedPanels, pushPanelHistory]);
 
-  /** Rotate whole plant ±5° (west / east). Locked panels stay put. */
+  /** Rotate selected panels ±5° (west / east). Locked selection is skipped. */
   const rotatePlant = useCallback(
     (deltaDeg: number) => {
       const current = placedPanelsRef.current;
-      if (current.length === 0) {
-        toast.error("No panels", "Place or auto-pack panels first.");
+      const selectedIds = selectedPanelIdsRef.current;
+      if (selectedIds.length === 0) {
+        toast.error("Select panels first", "Click panels to select, then rotate west/east.");
         return;
       }
-      if (!current.some((p) => !p.is_locked)) {
-        toast.error("All panels locked", "Unlock at least one panel to rotate the plant.");
+      const rotatable = selectedIds.filter((id) => {
+        const panel = current.find((p) => p.id === id);
+        return panel && !panel.is_locked;
+      });
+      if (rotatable.length === 0) {
+        toast.error("Selected panels locked", "Unlock selected panels to rotate them.");
         return;
       }
-      const next = rotatePlacedPanels(current, deltaDeg);
+      const next = rotatePlacedPanels(current, deltaDeg, rotatable);
       if (next === current) return;
       pushPanelHistory(current);
       setPlacedPanels(next);
@@ -2062,8 +2076,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       setPanelDirty(true);
       const dir = deltaDeg < 0 ? "west" : "east";
       toast.success(
-        `Plant rotated ${Math.abs(deltaDeg)}° ${dir}`,
-        "Nudge or move panels to fit more capacity. Small east/west yaw (~1–3% generation) is fine."
+        `${rotatable.length} panel${rotatable.length === 1 ? "" : "s"} rotated ${Math.abs(deltaDeg)}° ${dir}`,
+        "Nudge panels if needed. Small east/west yaw (~1–3% generation) is fine."
       );
     },
     [pushPanelHistory, state.roof, toast]
@@ -2528,7 +2542,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           <div className="flex flex-1 flex-col items-center gap-0.5 overflow-y-auto overscroll-contain py-2">
             <button
               type="button"
-              title="Select / move (V) · click again to unselect · Shift+click multi"
+              title="Select / move (V) · click panel to select · empty map to deselect · Shift+click multi"
               onClick={() => setActiveStudioTool("select")}
               className={`flex h-10 w-10 items-center justify-center rounded-lg ${
                 studioTool === "select" && !pendingObstruction && !drawingRoof
@@ -2540,7 +2554,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             </button>
             <button
               type="button"
-              title="Move all panels · click again to unselect"
+              title="Move group · starts with all unlocked; click a panel to select one · empty map deselects"
               disabled={drawingRoof || placedPanels.length === 0}
               onClick={() => setActiveStudioTool("move_group")}
               className={`flex h-10 w-10 items-center justify-center rounded-lg disabled:opacity-40 ${
@@ -2619,8 +2633,13 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             </button>
             <button
               type="button"
-              title="Rotate plant 5° west"
-              disabled={!placedPanels.some((p) => !p.is_locked)}
+              title="Rotate selected panels 5° west"
+              disabled={
+                !selectedPanelIds.some((id) => {
+                  const panel = placedPanels.find((p) => p.id === id);
+                  return panel && !panel.is_locked;
+                })
+              }
               onClick={() => rotatePlant(-5)}
               className="flex h-10 w-10 items-center justify-center rounded-lg text-sky-300 hover:bg-white/10 disabled:opacity-30"
             >
@@ -2628,8 +2647,13 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             </button>
             <button
               type="button"
-              title="Rotate plant 5° east"
-              disabled={!placedPanels.some((p) => !p.is_locked)}
+              title="Rotate selected panels 5° east"
+              disabled={
+                !selectedPanelIds.some((id) => {
+                  const panel = placedPanels.find((p) => p.id === id);
+                  return panel && !panel.is_locked;
+                })
+              }
               onClick={() => rotatePlant(5)}
               className="flex h-10 w-10 items-center justify-center rounded-lg text-sky-300 hover:bg-white/10 disabled:opacity-30"
             >
@@ -3291,7 +3315,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               </Button>
             </div>
             <p className="mt-2 text-[10px] leading-relaxed text-slate-500">
-              Group tool / Ctrl+A = sab panels move. Shift+click = multi-select. Magnet = snap grid ON/OFF. Drag ke baad snap align karta hai.
+              Panel pe click = select. Map / panel ke bahar click = deselect. Shift+click = multi. Group / Ctrl+A = sab unlocked. Magnet = snap ON/OFF.
             </p>
           </div>
 
