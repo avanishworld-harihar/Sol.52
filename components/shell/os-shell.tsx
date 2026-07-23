@@ -83,36 +83,35 @@ function OsShellInner({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <div className="flex h-svh max-h-svh w-full max-w-[100vw] overflow-hidden">
+    <div className="flex h-svh max-h-svh w-full overflow-hidden">
       {/* Cmd+K wiring */}
       <ShellKeyboardShortcuts />
 
       {/* ── Desktop left rail (lg+) — fixed column; does not scroll with content ── */}
       <NavRail />
 
-      {/* ── Main content column — only this area scrolls ───────────────── */}
+      {/* ── Main content column — only this area scrolls (scrollbar at window edge) ── */}
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <TopBar />
 
         <main
           className={cn(
-            // min-h-0 is required so TopBar stays visible inside h-svh shell
+            // Full-bleed scrollport — no max-width here so the scrollbar sits on the right edge
             "app-shell relative z-[1] flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden overscroll-y-contain",
             immersive ? "overflow-hidden" : "overflow-y-auto"
           )}
         >
           <section
             className={cn(
-              "mx-auto w-full flex-1 overflow-x-hidden",
+              "w-full flex-1 overflow-x-hidden",
               immersive
                 ? "flex h-full min-h-0 max-w-none flex-col overflow-hidden p-0"
                 : cn(
                     "min-h-0",
-                    "px-3 pt-4 sm:px-4 sm:space-y-4 sm:pt-5",
-                    "md:space-y-5 md:px-5 md:pt-6",
-                    "lg:pt-6 2xl:px-8",
-                    "max-w-full xl:max-w-[90rem]",
-                    "pb-[max(6.75rem,calc(5.5rem+env(safe-area-inset-bottom,0px)))] lg:pb-6"
+                    "px-4 pt-4 sm:px-5 sm:space-y-4 sm:pt-5",
+                    "md:space-y-5 md:px-6 md:pt-6",
+                    "lg:px-8 lg:pt-6",
+                    "pb-[max(6.75rem,calc(5.5rem+env(safe-area-inset-bottom,0px)))] lg:pb-8"
                   )
             )}
           >

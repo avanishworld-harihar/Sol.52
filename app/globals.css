@@ -171,7 +171,7 @@ body:has(#proposal-route-root).mesh-gradient-bg::after {
      Workspace pages — Dashboard DNA for Customers, Projects, Proposals, More
      -------------------------------------------------------------------------- */
   .workspace-page {
-    @apply relative mx-auto w-full min-w-0 max-w-[88rem] space-y-6 sm:space-y-7 md:space-y-8;
+    @apply relative w-full min-w-0 max-w-none space-y-6 sm:space-y-7 md:space-y-8;
   }
 
   .workspace-page > * + * {
@@ -950,7 +950,7 @@ body:has(#proposal-route-root).mesh-gradient-bg::after {
   }
 
   .workspace-dashboard {
-    @apply relative mx-auto w-full min-w-0 max-w-[88rem] space-y-0 overflow-x-hidden;
+    @apply relative w-full min-w-0 max-w-none space-y-0 overflow-x-hidden;
   }
 
   .workspace-dashboard > * + * {

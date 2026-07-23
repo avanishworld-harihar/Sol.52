@@ -390,7 +390,7 @@ export type ContainerSize = "full" | "workspace" | "page" | "proposal" | "narrow
 export function containerClass(size: ContainerSize, extra?: string): string {
   const bases: Record<ContainerSize, string> = {
     full:      "mx-auto w-full max-w-full px-3 sm:px-4 md:px-5 lg:max-w-6xl lg:px-6 xl:max-w-7xl 2xl:px-8",
-    workspace: "relative mx-auto w-full min-w-0 max-w-[88rem]",
+    workspace: "relative w-full min-w-0 max-w-none",
     page:      "mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8",
     proposal:  "mx-auto w-full max-w-[210mm] px-4 sm:px-8",
     narrow:    "mx-auto w-full max-w-2xl px-4 sm:px-6",
