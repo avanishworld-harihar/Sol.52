@@ -36,8 +36,13 @@ export function BrandLogo({ className, href = "/", compact }: BrandLogoProps) {
     return () => window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
   }, []);
 
+  // Compact (nav rail): fixed small box — never use LOGO_BOX or the “2” clips on the rail edge.
+  const boxClass = compact
+    ? cn("relative h-11 w-[10.75rem] shrink-0 overflow-hidden bg-transparent", className)
+    : cn(LOGO_BOX, "bg-transparent", className);
+
   const inner = (
-    <div className={cn(LOGO_BOX, "bg-transparent", className)}>
+    <div className={boxClass}>
       {installerLogoUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img

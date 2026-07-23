@@ -44,7 +44,8 @@ export function Sol52Wordmark({ className, decorative, compact }: Sol52WordmarkP
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox={compact ? "90 55 1280 290" : "0 0 1500 500"}
+      viewBox={compact ? "95 50 1310 300" : "0 0 1500 500"}
+      preserveAspectRatio="xMinYMid meet"
       className={cn("block h-auto w-full max-w-none bg-transparent", className)}
       fill="none"
       focusable={false}

@@ -78,13 +78,9 @@ export function NavRail() {
           "px-2 xl:px-3"
         )}
       >
-        {/* xl+: full Sol.52 wordmark — fixed width so absolute SVG cannot collapse */}
-        <div className="hidden xl:block xl:h-12 xl:w-[11.5rem]">
-          <BrandLogo
-            href="/"
-            compact
-            className="h-12 w-[11.5rem] sm:h-12 sm:w-[11.5rem] md:h-12 md:w-[11.5rem] lg:h-12 lg:w-[11.5rem]"
-          />
+        {/* xl+: compact Sol.52 — sized inside BrandLogo (avoid LOGO_BOX overflow clip) */}
+        <div className="hidden xl:block">
+          <BrandLogo href="/" compact />
         </div>
 
         {/* lg: mini app icon */}
