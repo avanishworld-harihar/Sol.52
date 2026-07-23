@@ -3,24 +3,15 @@
 /**
  * NavRail — desktop left navigation rail.
  *
- * Visible only on lg+ screens. The existing BottomNav handles mobile/tablet.
+ * Visible only on lg+ screens. The existing BottomNav handles mobile/tablet portrait.
  * The existing DesktopTopNav (inline pill nav) is replaced by this rail on lg+.
  *
- * Sizes:
- *   lg  (1024px–1279px) — 56px icon-only (w-14)
- *   xl+ (1280px+)       — 216px icon + label (w-54)
+ * Size (lg+ including iPad landscape ~1024px):
+ *   216px labeled rail with full Sol.52 wordmark + tagline
  *
  * Fixed-height rail — main column scrolls; rail stays in place (see OsShell).
- * The main content column takes the remaining flex width (flex-1).
- *
- * Brand logo:
- *   - xl+: Full BrandLogo scaled to rail width (Sol.52 must stay fully visible)
- *   - lg:  Mini icon (/icon-192.png, 32px)
  *
  * Active state: matches BottomNav teal palette for visual consistency.
- *
- * The original components/desktop-top-nav.tsx and components/bottom-nav.tsx
- * are NOT modified. DesktopTopNav remains functional for admin pages.
  */
 
 import Link from "next/link";
@@ -55,10 +46,10 @@ export function NavRail() {
   return (
     <aside
       className={cn(
-        // Only visible on desktop
+        // Only visible on desktop / tablet landscape (lg+)
         "hidden lg:flex",
-        // Sizing: icon-only on lg, labeled on xl
-        "w-14 xl:w-[13.5rem]",
+        // Labeled rail from lg — iPad landscape is ~1024–1180px (below xl)
+        "w-[13.5rem]",
         // Layout — full shell height; parent uses h-svh + overflow-hidden
         "h-full max-h-svh shrink-0 self-stretch flex-col",
         "overflow-hidden",
@@ -73,38 +64,17 @@ export function NavRail() {
       {/* ── Logo header ─────────────────────────────────────────────────── */}
       <div
         className={cn(
-          "flex h-16 shrink-0 items-center",
+          "flex h-[4.25rem] shrink-0 items-center",
           "border-b border-white/35 dark:border-white/8",
-          "px-2 xl:px-3"
+          "px-3"
         )}
       >
-        {/* xl+: compact Sol.52 — sized inside BrandLogo (avoid LOGO_BOX overflow clip) */}
-        <div className="hidden xl:block">
-          <BrandLogo href="/" compact />
-        </div>
-
-        {/* lg: mini app icon */}
-        <Link
-          href="/"
-          className={cn(
-            "flex h-10 w-10 items-center justify-center rounded-xl xl:hidden",
-            "transition-opacity hover:opacity-80"
-          )}
-          aria-label="Sol.52 home"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/icon-192.png"
-            alt=""
-            className="h-8 w-8 rounded-lg object-cover"
-            aria-hidden
-          />
-        </Link>
+        <BrandLogo href="/" rail />
       </div>
 
       {/* ── Navigation items ─────────────────────────────────────────────── */}
       <nav
-        className="flex flex-1 flex-col gap-0.5 overflow-y-auto overflow-x-hidden py-3 px-1.5 xl:px-2"
+        className="flex flex-1 flex-col gap-0.5 overflow-y-auto overflow-x-hidden px-2 py-3"
         aria-label="Main navigation"
       >
         {APP_NAV_ROUTES.map((item) => {
@@ -118,7 +88,6 @@ export function NavRail() {
               href={item.href}
               prefetch
               aria-current={active ? "page" : undefined}
-              // Tooltip for icon-only mode (lg)
               title={t(item.labelKey)}
               className={cn(
                 "group relative flex h-10 w-full items-center gap-3 rounded-xl",
@@ -133,7 +102,6 @@ export function NavRail() {
                     ]
               )}
             >
-              {/* Icon */}
               <span className="relative flex h-[1.1rem] w-[1.1rem] shrink-0 items-center justify-center">
                 <NavTabBadge count={badge} className="-right-2 -top-2" />
                 <Icon
@@ -148,10 +116,9 @@ export function NavRail() {
                 />
               </span>
 
-              {/* Label — hidden on lg (icon-only), visible on xl */}
               <span
                 className={cn(
-                  "hidden min-w-0 truncate text-[13px] font-semibold xl:block",
+                  "min-w-0 truncate text-[13px] font-semibold",
                   active ? "text-white" : ""
                 )}
               >
@@ -167,14 +134,13 @@ export function NavRail() {
         className={cn(
           "flex shrink-0 flex-col gap-2",
           "border-t border-white/35 dark:border-white/8",
-          "p-2 xl:p-3",
+          "p-3",
           "pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]"
         )}
       >
         <div className="flex items-center gap-2">
           <ThemeToggle className="h-9 w-9 shrink-0" />
-          {/* LanguageToggle only fits on xl (labeled) width */}
-          <LanguageToggle className="hidden xl:inline-flex" />
+          <LanguageToggle className="inline-flex" />
         </div>
       </div>
     </aside>
