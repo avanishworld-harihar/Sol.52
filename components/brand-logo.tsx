@@ -16,6 +16,8 @@ type BrandLogoProps = {
    * Avoids the large LOGO_BOX overflowing / clipping the rail.
    */
   rail?: boolean;
+  /** Mobile top bar — smaller mark so actions (lang toggle) stay on-screen. */
+  dense?: boolean;
 };
 
 /** Box keeps header layout stable. */
@@ -27,7 +29,10 @@ const LOGO_BOX = cn(
 /** Full wordmark + tagline, fits xl nav rail (~13.5–14rem). */
 const RAIL_LOGO_BOX = "relative h-[3.7rem] w-[11.15rem] shrink-0 overflow-hidden bg-transparent";
 
-export function BrandLogo({ className, href = "/", rail }: BrandLogoProps) {
+/** Phone top bar — leaves room for search / bell / theme / EN|हि. */
+const DENSE_LOGO_BOX = "relative h-9 w-[6.75rem] shrink-0 overflow-hidden bg-transparent sm:h-10 sm:w-[8rem]";
+
+export function BrandLogo({ className, href = "/", rail, dense }: BrandLogoProps) {
   const [installerLogoUrl, setInstallerLogoUrl] = useState("");
   const [installerName, setInstallerName] = useState("");
 
@@ -42,7 +47,11 @@ export function BrandLogo({ className, href = "/", rail }: BrandLogoProps) {
     return () => window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
   }, []);
 
-  const boxClass = rail ? cn(RAIL_LOGO_BOX, className) : cn(LOGO_BOX, "bg-transparent", className);
+  const boxClass = rail
+    ? cn(RAIL_LOGO_BOX, className)
+    : dense
+      ? cn(DENSE_LOGO_BOX, className)
+      : cn(LOGO_BOX, "bg-transparent", className);
   const hasLogo = installerLogoUrl.length > 0;
   const hasName = installerName.length > 0;
 
@@ -61,7 +70,7 @@ export function BrandLogo({ className, href = "/", rail }: BrandLogoProps) {
           className={cn(
             "absolute inset-0 flex items-center text-left font-semibold leading-tight tracking-tight",
             "text-[#072141] dark:text-white",
-            rail ? "text-[15px]" : "text-base sm:text-lg"
+            dense ? "text-xs sm:text-sm" : rail ? "text-[15px]" : "text-base sm:text-lg"
           )}
           {...(href ? { "aria-hidden": true } : {})}
         >

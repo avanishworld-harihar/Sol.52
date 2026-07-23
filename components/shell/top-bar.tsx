@@ -66,7 +66,7 @@ function SearchIconBtn({ onClick }: { onClick: () => void }) {
       onClick={onClick}
       aria-label="Open search"
       className={cn(
-        "flex h-9 w-9 shrink-0 items-center justify-center rounded-full",
+        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full sm:h-9 sm:w-9",
         "border border-white/70 bg-white/25 text-slate-600",
         "shadow-[0_4px_14px_rgba(11,34,64,0.07),inset_0_1px_0_rgba(255,255,255,0.6)]",
         "backdrop-blur-xl transition-colors hover:bg-white/40",
@@ -87,18 +87,18 @@ export function TopBar() {
   return (
     <header
       className={cn(
-        "z-[100] shrink-0",
-        "flex h-[3.75rem] w-full shrink-0 items-center gap-3",
+        "z-[100] shrink-0 overflow-x-clip",
+        "flex h-[3.75rem] w-full min-w-0 shrink-0 items-center gap-1.5 sm:gap-3",
         "border-b border-white/30 dark:border-white/8",
         "bg-white/90 backdrop-blur-[10px] backdrop-saturate-150",
         "dark:bg-[#0d1117]/88 dark:backdrop-saturate-100",
         "shadow-[0_2px_16px_rgba(15,35,62,0.06)] dark:shadow-[0_2px_16px_rgba(0,0,0,0.32)]",
-        "px-3 sm:px-4 lg:px-5"
+        "px-2.5 sm:px-4 lg:px-5"
       )}
     >
       {/* ── Mobile: Brand logo (hidden on desktop — NavRail has it) ───── */}
-      <div className="shrink-0 lg:hidden">
-        <BrandLogo />
+      <div className="min-w-0 shrink lg:hidden">
+        <BrandLogo dense />
       </div>
 
       {/* ── Desktop: Breadcrumb + workspace pill ─────────────────────── */}
@@ -118,8 +118,8 @@ export function TopBar() {
       <InboxBell />
 
       {/* ── Theme + Language toggles (mobile only — on desktop in rail) ─ */}
-      <div className="flex shrink-0 items-center gap-2 lg:hidden">
-        <ThemeToggle />
+      <div className="flex shrink-0 items-center gap-1 sm:gap-2 lg:hidden">
+        <ThemeToggle className="h-8 w-8 sm:h-9 sm:w-9" />
         <LanguageToggle />
       </div>
     </header>

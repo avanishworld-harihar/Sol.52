@@ -41,7 +41,7 @@ export function InboxBell() {
           : "Inbox"
       }
       className={cn(
-        "relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors",
+        "relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors sm:h-9 sm:w-9",
         "border border-white/70 bg-white/25 text-slate-600",
         "shadow-[0_4px_14px_rgba(11,34,64,0.07),inset_0_1px_0_rgba(255,255,255,0.6)]",
         "backdrop-blur-xl hover:bg-white/40",
