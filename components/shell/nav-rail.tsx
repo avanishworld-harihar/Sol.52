@@ -14,7 +14,7 @@
  * The main content column takes the remaining flex width (flex-1).
  *
  * Brand logo:
- *   - xl+: Full BrandLogo (clipped to 140px width)
+ *   - xl+: Full BrandLogo scaled to rail width (Sol.52 must stay fully visible)
  *   - lg:  Mini icon (/icon-192.png, 32px)
  *
  * Active state: matches BottomNav teal palette for visual consistency.
@@ -73,14 +73,18 @@ export function NavRail() {
       {/* ── Logo header ─────────────────────────────────────────────────── */}
       <div
         className={cn(
-          "flex h-[3.75rem] shrink-0 items-center",
+          "flex h-16 shrink-0 items-center",
           "border-b border-white/35 dark:border-white/8",
           "px-2 xl:px-3"
         )}
       >
-        {/* xl+: full brand logo, clipped */}
-        <div className="hidden xl:flex xl:h-10 xl:w-[8.5rem] xl:overflow-hidden">
-          <BrandLogo href="/" />
+        {/* xl+: full Sol.52 wordmark — sized to rail, no right-edge clip */}
+        <div className="hidden xl:flex xl:h-12 xl:w-full xl:max-w-[11.75rem] xl:items-center">
+          <BrandLogo
+            href="/"
+            compact
+            className="h-12 w-full max-w-[11.75rem] sm:h-12 sm:w-full sm:max-w-[11.75rem] md:h-12 md:w-full md:max-w-[11.75rem] lg:h-12 lg:w-full lg:max-w-[11.75rem]"
+          />
         </div>
 
         {/* lg: mini app icon */}

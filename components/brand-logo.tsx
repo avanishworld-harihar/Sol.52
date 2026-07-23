@@ -11,6 +11,8 @@ import { cn } from "@/lib/utils";
 type BrandLogoProps = {
   className?: string;
   href?: string;
+  /** Compact Sol.52 mark for narrow chrome (nav rail). */
+  compact?: boolean;
 };
 
 /** Box keeps header layout stable. */
@@ -19,7 +21,7 @@ const LOGO_BOX = cn(
   "h-[3.8rem] w-[11rem] sm:h-[4.3rem] sm:w-[13rem] md:h-[4.5rem] md:w-[13.5rem] lg:h-[4.75rem] lg:w-[14.5rem]"
 );
 
-export function BrandLogo({ className, href = "/" }: BrandLogoProps) {
+export function BrandLogo({ className, href = "/", compact }: BrandLogoProps) {
   const [installerLogoUrl, setInstallerLogoUrl] = useState("");
   const [installerName, setInstallerName] = useState("");
 
@@ -45,7 +47,7 @@ export function BrandLogo({ className, href = "/" }: BrandLogoProps) {
           {...(href ? { "aria-hidden": true } : {})}
         />
       ) : (
-        <Logo className="absolute inset-0 h-full w-full" decorative={!!href} />
+        <Logo className="absolute inset-0 h-full w-full" decorative={!!href} compact={compact} />
       )}
     </div>
   );

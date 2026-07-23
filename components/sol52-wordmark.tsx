@@ -8,6 +8,11 @@ export type Sol52WordmarkProps = {
   className?: string;
   /** Set true when parent link/button already names the destination (avoids redundant SR output). */
   decorative?: boolean;
+  /**
+   * Crop to the Sol.52 mark only (no “Solar Design Platform” tagline).
+   * Use in tight chrome like the nav rail.
+   */
+  compact?: boolean;
 };
 
 const D_S_MAIN =
@@ -33,13 +38,13 @@ const solCls = "fill-current text-[#072141] dark:text-[#FFFFFF]";
 /**
  * Inline Sol.52 wordmark: light = flat (navy / emerald / solid amber); dark = premium glow + flare + edge spill.
  */
-export function Sol52Wordmark({ className, decorative }: Sol52WordmarkProps) {
+export function Sol52Wordmark({ className, decorative, compact }: Sol52WordmarkProps) {
   const id = `sol52-${useId().replace(/:/g, "")}`;
 
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 1500 500"
+      viewBox={compact ? "90 55 1280 290" : "0 0 1500 500"}
       className={cn("block h-auto w-full max-w-none bg-transparent", className)}
       fill="none"
       focusable={false}
