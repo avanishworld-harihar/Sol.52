@@ -32,6 +32,11 @@ const RAIL_LOGO_BOX = "relative h-[3.7rem] w-[11.15rem] shrink-0 overflow-hidden
 /** Phone top bar — leaves room for search / bell / theme / EN|हि. */
 const DENSE_LOGO_BOX = "relative h-9 w-[6.75rem] shrink-0 overflow-hidden bg-transparent sm:h-10 sm:w-[8rem]";
 
+/** Legacy sample vendor — not the Sol.52 app identity; ignore for chrome branding. */
+function isSampleVendorName(name: string): boolean {
+  return name.trim().toLowerCase() === "harihar solar";
+}
+
 export function BrandLogo({ className, href = "/", rail, dense }: BrandLogoProps) {
   const [installerLogoUrl, setInstallerLogoUrl] = useState("");
   const [installerName, setInstallerName] = useState("");
@@ -52,8 +57,12 @@ export function BrandLogo({ className, href = "/", rail, dense }: BrandLogoProps
     : dense
       ? cn(DENSE_LOGO_BOX, className)
       : cn(LOGO_BOX, "bg-transparent", className);
+
   const hasLogo = installerLogoUrl.length > 0;
-  const hasName = installerName.length > 0;
+  // App chrome: Sol.52 by default. Custom only when More → Brand has a real vendor name/logo.
+  const customName =
+    installerName.length > 0 && !isSampleVendorName(installerName) ? installerName : "";
+  const hasCustomName = customName.length > 0;
 
   const inner = (
     <div className={boxClass}>
@@ -65,7 +74,7 @@ export function BrandLogo({ className, href = "/", rail, dense }: BrandLogoProps
           className="absolute inset-0 h-full w-full object-contain object-left"
           {...(href ? { "aria-hidden": true } : {})}
         />
-      ) : hasName ? (
+      ) : hasCustomName ? (
         <span
           className={cn(
             "absolute inset-0 flex items-center text-left font-semibold leading-tight tracking-tight",
@@ -74,16 +83,16 @@ export function BrandLogo({ className, href = "/", rail, dense }: BrandLogoProps
           )}
           {...(href ? { "aria-hidden": true } : {})}
         >
-          <span className="line-clamp-2 break-words">{installerName}</span>
+          <span className="line-clamp-2 break-words">{customName}</span>
         </span>
       ) : (
-        // More → Brand: no company name and no logo PNG → platform Sol.52
         <Logo className="absolute inset-0 h-full w-full" decorative={!!href} />
       )}
     </div>
   );
 
-  const homeLabel = hasName ? `${installerName} home` : `${APP_DISPLAY_NAME} home`;
+  const homeLabel =
+    hasCustomName || hasLogo ? `${customName || APP_DISPLAY_NAME} home` : `${APP_DISPLAY_NAME} home`;
 
   if (href) {
     return (

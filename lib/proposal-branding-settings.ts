@@ -138,7 +138,8 @@ export function formatInstallerContactLine(phoneRaw: string, emailRaw: string): 
 }
 
 export const DEFAULT_PROPOSAL_BRANDING_SETTINGS: ProposalBrandingSettings = {
-  installerName: "Harihar Solar",
+  // Empty = app chrome shows Sol.52. Vendor/company identity is set in More → Brand.
+  installerName: "",
   installerContact: DEFAULT_INSTALLER_PHONE,
   installerEmail: DEFAULT_INSTALLER_EMAIL,
   installerLogoUrl: "",
@@ -146,7 +147,7 @@ export const DEFAULT_PROPOSAL_BRANDING_SETTINGS: ProposalBrandingSettings = {
   themePreset: "greenBlueClassic",
   paymentQrCodeUrl: "",
   amcSelectedYears: 1,
-  bankAccountName: "Harihar Solar",
+  bankAccountName: "",
   bankAccountNumber: "",
   bankIfsc: "",
   bankBranch: "",
