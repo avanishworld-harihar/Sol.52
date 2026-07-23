@@ -131,12 +131,14 @@ type StudioTool = "select" | "place_panel" | "move_group";
 type StudioToolOrIdle = StudioTool | null;
 
 const DEFAULT_CENTER: [number, number] = [78.9629, 20.5937];
+/** Google Maps satellite usually caps ~21–22; stay at API max. */
 const MAP_MAX_ZOOM = 22;
 /** Roof always under panels (paint + hit-test). */
 const ROOF_Z_INDEX = 0;
 const PANEL_Z_INDEX = 6;
 const PANEL_Z_INDEX_SELECTED = 8;
-const MAP_EXTRA_SCALE_MAX = 2.5;
+/** Optical magnify past tile max — higher for dense MP / India rooftops. */
+const MAP_EXTRA_SCALE_MAX = 4.5;
 const MAP_EXTRA_SCALE_STEP = 0.25;
 const PANEL_HISTORY_LIMIT = 40;
 
@@ -521,9 +523,10 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
 
     const dashSymbol: google.maps.Symbol = {
       path: "M 0,-1 0,1",
-      strokeOpacity: 1,
+      strokeOpacity: 0.45,
       strokeColor: "#f43f5e",
-      scale: 3,
+      strokeWeight: 1,
+      scale: 1.6,
     };
     const linePath = points.length >= 3 ? [...points, points[0]] : points;
     if (draftLineRef.current) {
@@ -534,7 +537,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         path: linePath,
         clickable: false,
         strokeOpacity: 0,
-        icons: [{ icon: dashSymbol, offset: "0", repeat: "14px" }],
+        icons: [{ icon: dashSymbol, offset: "0", repeat: "12px" }],
         zIndex: 3,
       });
     }
@@ -551,11 +554,12 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             : "Right-click to remove this corner",
         icon: {
           path: google.maps.SymbolPath.CIRCLE,
-          scale: index === 0 ? 4.5 : 3,
+          scale: index === 0 ? 2.6 : 2,
           fillColor: index === 0 ? "#f43f5e" : "#ffffff",
-          fillOpacity: 1,
+          fillOpacity: index === 0 ? 0.55 : 0.45,
           strokeColor: "#f43f5e",
-          strokeWeight: 1.5,
+          strokeOpacity: 0.65,
+          strokeWeight: 1,
         },
       });
       marker.addListener("click", () => {
@@ -2080,7 +2084,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           if (next === scale) {
             toast.error(
               "Max zoom",
-              "Google imagery yahan aur sharp nahi. Design magnify pehle se max hai."
+              "Design magnify max (4.5×) pe pahunch gaye. Zoom out (−) se pehle kam karo."
             );
           }
           return next;
@@ -2398,6 +2402,34 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             <div className="pointer-events-none absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-900 shadow">
               Design magnify {mapExtraScale.toFixed(2)}× · toolbar − se zoom out · edit se pehle 1×
             </div>
+          ) : null}
+          {/* Map corner compass — N tracks true north as the map rotates */}
+          {googleMapsKey && mapReady ? (
+            <button
+              type="button"
+              title="Compass — click to reset north"
+              aria-label="Reset map to north"
+              onClick={resetMapNorth}
+              className="absolute bottom-3 left-3 z-20 flex h-14 w-14 flex-col items-center justify-center rounded-full border border-white/80 bg-slate-950/75 text-white shadow-lg backdrop-blur-sm transition hover:bg-slate-950/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
+            >
+              <span
+                className="relative flex h-10 w-10 items-center justify-center"
+                style={{ transform: `rotate(${-mapHeading}deg)` }}
+              >
+                <span
+                  className="absolute left-1/2 top-0 h-4 w-0 -translate-x-1/2 border-x-[5px] border-b-[10px] border-x-transparent border-b-rose-500"
+                  aria-hidden
+                />
+                <span
+                  className="absolute bottom-0 left-1/2 h-4 w-0 -translate-x-1/2 border-x-[5px] border-t-[10px] border-x-transparent border-t-slate-300"
+                  aria-hidden
+                />
+                <span className="absolute inset-0 rounded-full border border-white/25" aria-hidden />
+                <span className="relative z-[1] text-[10px] font-extrabold tracking-wide text-rose-400">
+                  N
+                </span>
+              </span>
+            </button>
           ) : null}
           {!mapReady && googleMapsKey && !loadError ? (
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-slate-200/80 text-sm font-semibold text-slate-600 dark:bg-slate-900/80 dark:text-slate-300">
