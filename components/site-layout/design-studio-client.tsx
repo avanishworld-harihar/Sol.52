@@ -25,6 +25,7 @@ import {
   Search,
   Square,
   SquareStack,
+  Sun,
   Trash2,
   TriangleRight,
   Undo2,
@@ -62,6 +63,14 @@ import {
 } from "@/lib/design-studio-engineering";
 import { evaluateEngineeringRules } from "@/lib/design-studio-engineering-rules";
 import { estimateStringing } from "@/lib/design-studio-stringing";
+import {
+  analyzePanelShadows,
+  obstructionShadowPolygon,
+  presetToDate,
+  shadeFillColor,
+  SHADOW_SOLSTICE_PRESETS,
+  type ShadowSampleId,
+} from "@/lib/design-studio-shadow";
 import { DesignStudioSldSchematic } from "@/components/site-layout/design-studio-sld-schematic";
 import type {
   PanelMountingType,
@@ -250,6 +259,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const panelPolygonsRef = useRef<google.maps.Polygon[]>([]);
   const panelCellLinesRef = useRef<google.maps.Polyline[]>([]);
   const panelListenersRef = useRef<google.maps.MapsEventListener[]>([]);
+  const shadowPolygonsRef = useRef<google.maps.Polygon[]>([]);
+  const shadeByPanelIdRef = useRef<Map<string, number>>(new Map());
   /** Latest finish handler for map gestures (snap/double-click/right-click). */
   const finishDrawingRef = useRef<(() => void) | null>(null);
   /** Latest corner-delete handler for draft corner markers. */
@@ -370,6 +381,10 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const [packMode, setPackMode] = useState<PanelPackMode>("target_kw");
   const [targetKw, setTargetKw] = useState<number>(5);
   const [maxCapacity, setMaxCapacity] = useState({ maxPanelCount: 0, maxDcCapacityKw: 0 });
+  /** Phase 4 — shadow sample overlay (solstice presets, IST). */
+  const [shadowEnabled, setShadowEnabled] = useState(true);
+  const [shadowPresetId, setShadowPresetId] =
+    useState<Exclude<ShadowSampleId, "custom">>("dec21-12");
   const photoInputRef = useRef<HTMLInputElement | null>(null);
 
   const googleMapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim() ?? "";
@@ -1030,6 +1045,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       panelPolygonsRef.current = [];
       panelCellLinesRef.current.forEach((line) => line.setMap(null));
       panelCellLinesRef.current = [];
+      shadowPolygonsRef.current.forEach((polygon) => polygon.setMap(null));
+      shadowPolygonsRef.current = [];
       roofPolygonsRef.current.forEach((polygon) => polygon.setMap(null));
       roofPolygonsRef.current = [];
       roofPolygonRef.current = null;
@@ -1166,6 +1183,34 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     setHistoryVersion((value) => value + 1);
   }, [applyPanelSnapshot]);
 
+  const shadowAnalysis = useMemo(() => {
+    if (!shadowEnabled || placedPanels.length === 0) return null;
+    const preset = SHADOW_SOLSTICE_PRESETS.find((item) => item.id === shadowPresetId);
+    if (!preset) return null;
+    return analyzePanelShadows({
+      panels: placedPanels,
+      obstructions: state.obstructions,
+      date: presetToDate(preset),
+      latitudeDeg: center[1],
+      longitudeDeg: center[0],
+    });
+  }, [
+    center,
+    placedPanels,
+    shadowEnabled,
+    shadowPresetId,
+    state.obstructions,
+  ]);
+
+  // Keep shade map current for the panel redraw effect in this same render.
+  {
+    const next = new Map<string, number>();
+    for (const row of shadowAnalysis?.panelShades ?? []) {
+      next.set(row.panelId, row.shadeFraction);
+    }
+    shadeByPanelIdRef.current = next;
+  }
+
   useEffect(() => {
     if (!mapReady || !mapRef.current || !window.google?.maps) return;
     if (draggingPanelIdRef.current) return;
@@ -1189,8 +1234,16 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         toolNow !== "place_panel" &&
         (toolNow === "select" || toolNow === "move_group" || toolNow == null);
 
-      // Realistic PV look: dark glass face + thin aluminium frame.
-      const fillColor = selected ? "#1e3a8a" : panel.is_locked ? "#1c1917" : "#0b1220";
+      // Realistic PV look; Phase 4 shade tint when shadow overlay is on.
+      const shadeFrac = shadeByPanelIdRef.current.get(panel.id) ?? 0;
+      const fillColor =
+        shadowEnabled && shadeFrac > 0.02
+          ? shadeFillColor(shadeFrac, selected, panel.is_locked)
+          : selected
+            ? "#1e3a8a"
+            : panel.is_locked
+              ? "#1c1917"
+              : "#0b1220";
       const strokeColor = selected ? "#93c5fd" : panel.is_locked ? "#fbbf24" : "#cbd5e1";
       const polygon = new google.maps.Polygon({
         map: mapRef.current!,
@@ -1356,7 +1409,56 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       );
       return polygon;
     });
-  }, [mapReady, mapExtraScale, placedPanels, pushPanelHistory, selectedPanelIds, studioTool]);
+  }, [mapReady, mapExtraScale, placedPanels, pushPanelHistory, selectedPanelIds, shadowAnalysis, shadowEnabled, studioTool]);
+
+  // Phase 4 — draw ground shadow footprints for the active sun sample.
+  useEffect(() => {
+    if (!mapReady || !mapRef.current || !window.google?.maps) return;
+    shadowPolygonsRef.current.forEach((poly) => poly.setMap(null));
+    shadowPolygonsRef.current = [];
+    if (!shadowEnabled || !shadowAnalysis || shadowAnalysis.sun.altitudeDeg <= 1) return;
+
+    const polys: google.maps.Polygon[] = [];
+    for (const obstruction of state.obstructions) {
+      const shadow = obstructionShadowPolygon(
+        obstruction,
+        shadowAnalysis.sun.altitudeDeg,
+        shadowAnalysis.sun.shadowBearingDeg
+      );
+      if (!shadow?.geometry) continue;
+      const rings: google.maps.LatLngLiteral[][] = [];
+      const geom = shadow.geometry;
+      if (geom.type === "Polygon") {
+        rings.push(
+          geom.coordinates[0].slice(0, -1).map(([lng, lat]) => ({ lat, lng }))
+        );
+      } else if (geom.type === "MultiPolygon") {
+        for (const poly of geom.coordinates) {
+          rings.push(poly[0].slice(0, -1).map(([lng, lat]) => ({ lat, lng })));
+        }
+      }
+      for (const path of rings) {
+        if (path.length < 3) continue;
+        polys.push(
+          new google.maps.Polygon({
+            map: mapRef.current!,
+            paths: path,
+            clickable: false,
+            strokeColor: "#64748b",
+            strokeOpacity: 0.45,
+            strokeWeight: 1,
+            fillColor: "#0f172a",
+            fillOpacity: 0.22,
+            zIndex: 4,
+          })
+        );
+      }
+    }
+    shadowPolygonsRef.current = polys;
+    return () => {
+      polys.forEach((poly) => poly.setMap(null));
+    };
+  }, [mapReady, shadowAnalysis, shadowEnabled, state.obstructions]);
 
   useEffect(() => {
     if (!state.dirty && !panelDirty) return;
@@ -4164,6 +4266,86 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             ) : (
               <p className="mt-3 text-[10px] text-violet-800/70 dark:text-violet-200/60">
                 Place panels to see stringing and studio SLD schematic.
+              </p>
+            )}
+          </div>
+
+          <div className="rounded-xl border border-orange-200 bg-orange-50/70 p-3 dark:border-orange-900/40 dark:bg-orange-950/25">
+            <div className="flex items-center justify-between gap-2">
+              <p className="flex items-center gap-1.5 text-xs font-extrabold text-orange-950 dark:text-orange-100">
+                <Sun className="h-3.5 w-3.5" />
+                Shadow
+              </p>
+              <button
+                type="button"
+                onClick={() => setShadowEnabled((value) => !value)}
+                className={`rounded-md px-2 py-1 text-[10px] font-bold ${
+                  shadowEnabled
+                    ? "bg-orange-600 text-white"
+                    : "bg-white/80 text-orange-800 dark:bg-white/10 dark:text-orange-100"
+                }`}
+              >
+                {shadowEnabled ? "On" : "Off"}
+              </button>
+            </div>
+            <p className="mt-1 text-[10px] leading-relaxed text-orange-900/80 dark:text-orange-100/70">
+              Phase 4 planning estimate from obstruction height (IST). Not a certified shading
+              report. Design stays outside the customer proposal.
+            </p>
+            <div className="mt-2 grid grid-cols-2 gap-1.5">
+              {SHADOW_SOLSTICE_PRESETS.map((preset) => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  disabled={!shadowEnabled}
+                  onClick={() => setShadowPresetId(preset.id)}
+                  className={`rounded-lg border px-2 py-1.5 text-left text-[10px] font-semibold disabled:opacity-40 ${
+                    shadowPresetId === preset.id && shadowEnabled
+                      ? "border-orange-600 bg-orange-600 text-white"
+                      : "border-orange-200/80 bg-white/80 text-orange-950 dark:border-orange-800/50 dark:bg-white/[0.06] dark:text-orange-50"
+                  }`}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+            {shadowEnabled && shadowAnalysis ? (
+              <div className="mt-3 space-y-2">
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    ["Sun alt", `${shadowAnalysis.sun.altitudeDeg.toFixed(0)}°`],
+                    ["Mean shade", `${(shadowAnalysis.meanShadeFraction * 100).toFixed(0)}%`],
+                    ["Shade-free", `${shadowAnalysis.shadeFreePanelSqft.toLocaleString("en-IN")} sq.ft`],
+                    ["Panels hit", String(shadowAnalysis.shadedPanelCount)],
+                  ].map(([label, value]) => (
+                    <div
+                      key={label}
+                      className="rounded-lg bg-white/80 p-2 dark:bg-white/[0.06]"
+                    >
+                      <p className="text-[10px] font-bold uppercase tracking-wide text-orange-500/90">
+                        {label}
+                      </p>
+                      <p className="mt-0.5 text-sm font-extrabold tabular-nums text-orange-950 dark:text-orange-50">
+                        {value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[10px] leading-snug text-orange-800/75 dark:text-orange-200/70">
+                  {shadowAnalysis.disclaimer}
+                  {state.obstructions.length === 0
+                    ? " Add tanks/trees with height to see cast shadows."
+                    : ""}
+                </p>
+                <p className="text-[10px] text-orange-800/70 dark:text-orange-200/60">
+                  Map: grey patches = ground shadow · warm panel tint = shaded fraction.
+                </p>
+              </div>
+            ) : (
+              <p className="mt-3 text-[10px] text-orange-800/70 dark:text-orange-200/60">
+                {placedPanels.length === 0
+                  ? "Place panels to run shade analysis."
+                  : "Turn Shadow On to preview solstice samples."}
               </p>
             )}
           </div>

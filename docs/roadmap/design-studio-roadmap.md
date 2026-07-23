@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | Approved phased roadmap — Phase 3 active |
+| **Status** | Approved phased roadmap — Phase 4 active |
 | **Last Updated** | 2026-07-23 |
 | **Canonical architecture (FROZEN)** | [`docs/architecture/design-studio-architecture.md`](../architecture/design-studio-architecture.md) |
 
@@ -25,8 +25,8 @@
 |-------|-------|--------|
 | **Phase 1** | 2D Geometry foundation — satellite map, roof polygon, obstructions, save/version | **COMPLETE** |
 | **Phase 2** | Auto Panel Placement Engine + RCC/shed presets + manual fine-tune | **COMPLETE (core)** — East-West / one-click tilt chips still queued |
-| **Phase 3** | **Engineering Rules + Solar Design** — setbacks, strings, studio SLD | **ACTIVE** — kickoff: advisory warnings + planning stringing + studio-only SLD schematic (2026-07-23) |
-| **Phase 4** | **Shadow Engine** — per-panel shade %, shade-free area, loss estimate | Approved — queued |
+| **Phase 3** | Engineering Rules + Solar Design — setbacks, strings, studio SLD | **COMPLETE (kickoff)** — equipment pins / exportable SLD pack still queued |
+| **Phase 4** | **Shadow Engine** — per-panel shade %, shade-free area, loss estimate | **ACTIVE** — kickoff: solstice IST presets, map shadow + panel tint (2026-07-23) |
 | **Phase 5** | Project/Survey/BOM/Proposal integration + snapshots + customer sign-off | Approved — queued |
 | **Phase 6** | Cross-device QA, performance, security and pilot rollout | Approved — queued |
 
@@ -151,6 +151,16 @@ exportable SLD: `PV strings → DCDB → inverter → ACDB → net meter → gri
 
 Consumes the **validated `PanelLayout` only** (never the raw roof polygon). Produces per-panel shade
 percentages and roof-level shade-free area.
+
+**Shipped foundation (2026-07-23):**
+- `lib/design-studio-shadow.ts` — SunCalc IST solstice samples; obstruction height → ground shadow;
+  per-panel `shadeFraction` via footprint ∩ shadow.
+- Design Studio **Shadow** card (On/Off + Jun/Dec × 9/12/3 presets).
+- Map ground-shadow polygons + panel fill tint by shade fraction.
+- Planning disclaimer in UI (not a certified shading report).
+
+**Still queued in Phase 4:** survey auto-fill `shadow_free_sqft` / notes, before/after compare,
+annual generation-loss estimate, finer time slider.
 
 - Obstruction placement (tree / chimney / water tank) + height.
 - Sun time slider + solstice presets (Jun 21 / Dec 21 × 9 AM / 12 PM / 3 PM), IST.
