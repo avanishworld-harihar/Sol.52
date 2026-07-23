@@ -5,6 +5,7 @@ import {
   Cloud,
   Compass,
   Crosshair,
+  Focus,
   Grid2X2,
   ImagePlus,
   LocateFixed,
@@ -131,15 +132,19 @@ type StudioTool = "select" | "place_panel" | "move_group";
 type StudioToolOrIdle = StudioTool | null;
 
 const DEFAULT_CENTER: [number, number] = [78.9629, 20.5937];
-/** Google Maps satellite usually caps ~21–22; stay at API max. */
+/**
+ * Google satellite for India often stops sharpening ~20–21 even if maxZoom is higher.
+ * Optical CSS magnify starts at MAP_OPTICAL_FROM so rooftops can go much closer.
+ */
 const MAP_MAX_ZOOM = 22;
+const MAP_OPTICAL_FROM = 19.5;
 /** Roof always under panels (paint + hit-test). */
 const ROOF_Z_INDEX = 0;
 const PANEL_Z_INDEX = 6;
 const PANEL_Z_INDEX_SELECTED = 8;
-/** Optical magnify past tile max — higher for dense MP / India rooftops. */
-const MAP_EXTRA_SCALE_MAX = 4.5;
-const MAP_EXTRA_SCALE_STEP = 0.25;
+/** Optical magnify past useful satellite zoom — dense MP / India rooftops. */
+const MAP_EXTRA_SCALE_MAX = 8;
+const MAP_EXTRA_SCALE_STEP = 0.5;
 const PANEL_HISTORY_LIMIT = 40;
 
 const OBSTRUCTION_LABELS: Record<ObstructionType, string> = {
@@ -162,6 +167,37 @@ const DEFAULT_OBSTRUCTION_RADIUS_FT: Record<ObstructionType, number> = {
 const FT_TO_M = 0.3048;
 /** Click within this many screen pixels of the first corner closes the polygon. */
 const SNAP_CLOSE_PX = 14;
+
+/** Interior cell lines for a rectangular panel ring (4 corners). */
+function panelCellLinePaths(
+  ring: Array<{ lat: number; lng: number }>,
+  cellCols = 4,
+  cellRows = 6
+): Array<Array<{ lat: number; lng: number }>> {
+  if (ring.length < 4) return [];
+  const a = ring[0]!;
+  const b = ring[1]!;
+  const c = ring[2]!;
+  const d = ring[3]!;
+  const lerp = (
+    p: { lat: number; lng: number },
+    q: { lat: number; lng: number },
+    t: number
+  ) => ({
+    lat: p.lat + (q.lat - p.lat) * t,
+    lng: p.lng + (q.lng - p.lng) * t,
+  });
+  const lines: Array<Array<{ lat: number; lng: number }>> = [];
+  for (let i = 1; i < cellCols; i += 1) {
+    const t = i / cellCols;
+    lines.push([lerp(a, b, t), lerp(d, c, t)]);
+  }
+  for (let i = 1; i < cellRows; i += 1) {
+    const t = i / cellRows;
+    lines.push([lerp(a, d, t), lerp(b, c, t)]);
+  }
+  return lines;
+}
 
 const ROOF_TYPES = [
   { value: "", label: "Select roof type" },
@@ -204,6 +240,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const markersRef = useRef<google.maps.Marker[]>([]);
   const circlesRef = useRef<google.maps.Circle[]>([]);
   const panelPolygonsRef = useRef<google.maps.Polygon[]>([]);
+  const panelCellLinesRef = useRef<google.maps.Polyline[]>([]);
   const panelListenersRef = useRef<google.maps.MapsEventListener[]>([]);
   /** Latest finish handler for map gestures (snap/double-click/right-click). */
   const finishDrawingRef = useRef<(() => void) | null>(null);
@@ -289,6 +326,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   /** Optical zoom beyond Google tile max (1 = off). */
   const [mapExtraScale, setMapExtraScale] = useState(1);
   const mapExtraScaleRef = useRef(1);
+  const zoomByRef = useRef<(delta: number) => void>(() => {});
+  const [mapViewportEl, setMapViewportEl] = useState<HTMLElement | null>(null);
   const [moduleCatalog, setModuleCatalog] = useState<PanelSpec[]>(PANEL_MODULE_CATALOG);
   const [panelMetrics, setPanelMetrics] = useState({
     remainingAreaSqft: 0,
@@ -928,6 +967,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       panelListenersRef.current = [];
       panelPolygonsRef.current.forEach((polygon) => polygon.setMap(null));
       panelPolygonsRef.current = [];
+      panelCellLinesRef.current.forEach((line) => line.setMap(null));
+      panelCellLinesRef.current = [];
       roofPolygonsRef.current.forEach((polygon) => polygon.setMap(null));
       roofPolygonsRef.current = [];
       roofPolygonRef.current = null;
@@ -1070,6 +1111,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     panelListenersRef.current.forEach((listener) => listener.remove());
     panelListenersRef.current = [];
     panelPolygonsRef.current.forEach((polygon) => polygon.setMap(null));
+    panelCellLinesRef.current.forEach((line) => line.setMap(null));
+    panelCellLinesRef.current = [];
     const selectedSet = new Set(selectedPanelIds);
     panelPolygonsRef.current = placedPanels.map((panel, panelIndex) => {
       const selected = selectedSet.has(panel.id);
@@ -1082,19 +1125,37 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         !panel.is_locked &&
         toolNow !== "place_panel" &&
         (toolNow === "select" || toolNow === "move_group" || toolNow == null);
+
+      // Realistic PV look: dark glass face + thin aluminium frame.
+      const fillColor = selected ? "#1e3a8a" : panel.is_locked ? "#1c1917" : "#0b1220";
+      const strokeColor = selected ? "#93c5fd" : panel.is_locked ? "#fbbf24" : "#cbd5e1";
       const polygon = new google.maps.Polygon({
         map: mapRef.current!,
         paths: path,
         clickable: true,
         editable: false,
         draggable: canDrag,
-        strokeColor: selected ? "#1d4ed8" : panel.is_locked ? "#a16207" : "#1e3a8a",
-        strokeOpacity: 1,
-        strokeWeight: selected ? 2.5 : 1.5,
-        fillColor: selected ? "#3b82f6" : panel.is_locked ? "#f59e0b" : "#2563eb",
-        fillOpacity: selected ? 0.55 : 0.4,
+        strokeColor,
+        strokeOpacity: 0.95,
+        strokeWeight: selected ? 2 : 1.25,
+        fillColor,
+        fillOpacity: selected ? 0.82 : 0.78,
         zIndex: selected ? PANEL_Z_INDEX_SELECTED : PANEL_Z_INDEX,
       });
+
+      for (const linePath of panelCellLinePaths(path)) {
+        panelCellLinesRef.current.push(
+          new google.maps.Polyline({
+            map: mapRef.current!,
+            path: linePath,
+            clickable: false,
+            strokeColor: selected ? "#60a5fa" : "#334155",
+            strokeOpacity: selected ? 0.55 : 0.4,
+            strokeWeight: 0.7,
+            zIndex: selected ? PANEL_Z_INDEX_SELECTED + 1 : PANEL_Z_INDEX + 1,
+          })
+        );
+      }
 
       const pathFromFootprint = (footprint: PlacedPanel["footprint_geojson"]) =>
         footprint.coordinates[0].slice(0, -1).map(([lng, lat]) => ({ lat, lng }));
@@ -1124,6 +1185,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           event.domEvent?.stopPropagation?.();
         }),
         google.maps.event.addListener(polygon, "dragstart", () => {
+          // Cell lines stay put while the polygon drags — clear until dragend rebuild.
+          panelCellLinesRef.current.forEach((line) => line.setMap(null));
+          panelCellLinesRef.current = [];
           draggingPanelIdRef.current = panel.id;
           const ids =
             selectedPanelIdsRef.current.includes(panel.id) && selectedPanelIdsRef.current.length > 0
@@ -1671,6 +1735,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       ({ coords }) => {
         const next: [number, number] = [coords.longitude, coords.latitude];
         setCenter(next);
+        setMapExtraScale(1);
         mapRef.current?.panTo({ lat: coords.latitude, lng: coords.longitude });
         mapRef.current?.setZoom(20);
       },
@@ -1678,6 +1743,55 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       { enableHighAccuracy: true, timeout: 15_000 }
     );
   }, [toast]);
+
+  /** Zoom out ke baad roof / panels pe wapas — toolbar “Find design”. */
+  const focusOnDesign = useCallback(() => {
+    const map = mapRef.current;
+    if (!map || !window.google?.maps) {
+      toast.error("Map not ready", "Wait for the map to load, then try again.");
+      return;
+    }
+    setMapExtraScale(1);
+
+    const bounds = new google.maps.LatLngBounds();
+    let hasPoint = false;
+    const roof = currentRoofRef.current;
+
+    if (roof) {
+      for (const section of roofGeometryToPolygons(roof)) {
+        for (const [lng, lat] of section.coordinates[0].slice(0, -1)) {
+          bounds.extend({ lat, lng });
+          hasPoint = true;
+        }
+      }
+    }
+    for (const panel of placedPanelsRef.current) {
+      for (const [lng, lat] of panel.footprint_geojson.coordinates[0]?.slice(0, -1) ?? []) {
+        bounds.extend({ lat, lng });
+        hasPoint = true;
+      }
+    }
+
+    if (hasPoint) {
+      map.fitBounds(bounds, 72);
+      google.maps.event.addListenerOnce(map, "idle", () => {
+        const z = map.getZoom();
+        if (typeof z === "number" && z > 21) map.setZoom(21);
+      });
+      toast.success("Design found", "Map centered on your roof / panels.");
+      return;
+    }
+
+    const [lng, lat] = center;
+    if (lng !== DEFAULT_CENTER[0] || lat !== DEFAULT_CENTER[1]) {
+      map.panTo({ lat, lng });
+      map.setZoom(20);
+      toast.success("Site location", "Map moved to project center.");
+      return;
+    }
+
+    toast.info("No design yet", "Draw a roof first, or use GPS / Go to location.");
+  }, [center, toast]);
 
   const flyToGps = useCallback(
     (lat: number, lng: number, label: string) => {
@@ -2139,20 +2253,32 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       if (!map) return;
       map.setOptions({ maxZoom: MAP_MAX_ZOOM, minZoom: 3, isFractionalZoomEnabled: true });
       const zoom = map.getZoom() ?? 18;
-      const step = zoom >= MAP_MAX_ZOOM - 1 || mapExtraScaleRef.current > 1 ? 0.5 : 1;
+      const inOptical =
+        mapExtraScaleRef.current > 1 || zoom >= MAP_OPTICAL_FROM - 0.05;
 
       if (delta > 0) {
-        if (zoom < MAP_MAX_ZOOM - 0.05) {
-          map.setZoom(Math.min(MAP_MAX_ZOOM, zoom + step));
+        if (!inOptical) {
+          const before = zoom;
+          const step = zoom >= MAP_OPTICAL_FROM - 1 ? 0.5 : 1;
+          const target = Math.min(MAP_MAX_ZOOM, zoom + step);
+          map.setZoom(target);
+          // If Google clamped (common on India satellite ~20), jump to optical.
+          window.setTimeout(() => {
+            const after = map.getZoom() ?? before;
+            if (after <= before + 0.05) {
+              setMapExtraScale((scale) =>
+                Math.min(MAP_EXTRA_SCALE_MAX, +(Math.max(scale, 1) + MAP_EXTRA_SCALE_STEP).toFixed(2))
+              );
+            }
+          }, 40);
           return;
         }
-        // Past Google tile comfort zone — optical magnify for panel work.
         setMapExtraScale((scale) => {
           const next = Math.min(MAP_EXTRA_SCALE_MAX, +(scale + MAP_EXTRA_SCALE_STEP).toFixed(2));
           if (next === scale) {
             toast.error(
               "Max zoom",
-              "Design magnify max (4.5×) pe pahunch gaye. Zoom out (−) se pehle kam karo."
+              `Design magnify max (${MAP_EXTRA_SCALE_MAX}×) pe pahunch gaye. Zoom out (−) se pehle kam karo.`
             );
           }
           return next;
@@ -2165,10 +2291,31 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         setMapExtraScale((scale) => Math.max(1, +(scale - MAP_EXTRA_SCALE_STEP).toFixed(2)));
         return;
       }
-      map.setZoom(Math.max(3, zoom - step));
+      map.setZoom(Math.max(3, zoom - (zoom >= MAP_OPTICAL_FROM - 1 ? 0.5 : 1)));
     },
     [toast]
   );
+
+  zoomByRef.current = zoomBy;
+
+  /** Mouse wheel continues into Design magnify after Google satellite stops. */
+  useEffect(() => {
+    const el = mapViewportEl;
+    if (!el) return;
+    const onWheel = (event: WheelEvent) => {
+      const map = mapRef.current;
+      if (!map) return;
+      const zoom = map.getZoom() ?? 18;
+      const atOptical =
+        mapExtraScaleRef.current > 1 || zoom >= MAP_OPTICAL_FROM - 0.05;
+      if (!atOptical) return;
+      event.preventDefault();
+      event.stopPropagation();
+      zoomByRef.current(event.deltaY < 0 ? 1 : -1);
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [mapViewportEl]);
 
   const resetMapNorth = useCallback(() => {
     mapRef.current?.setHeading(0);
@@ -2290,14 +2437,18 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   ]);
 
   if (loading) {
-    return <div className="flex min-h-[70vh] items-center justify-center text-sm text-slate-500">Loading Design Studio…</div>;
+    return (
+      <div className="flex h-full min-h-0 items-center justify-center text-sm text-slate-500">
+        Loading Design Studio…
+      </div>
+    );
   }
 
   return (
-    <main className="flex h-[100dvh] flex-col overflow-hidden bg-slate-100 dark:bg-slate-950">
-      <header className="sticky top-0 z-40 shrink-0 border-b border-slate-200 bg-white/95 px-3 py-2 backdrop-blur dark:border-white/10 dark:bg-slate-950/95 sm:px-5">
-        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-3">
+    <main className="flex h-full min-h-0 flex-col overflow-hidden bg-slate-100 dark:bg-slate-950">
+      <header className="z-40 shrink-0 border-b border-slate-200 bg-white/95 px-3 py-1.5 backdrop-blur dark:border-white/10 dark:bg-slate-950/95 sm:px-4">
+        <div className="flex w-full flex-wrap items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <Button variant="outline" size="sm" asChild>
               <Link href={`/projects/${encodeURIComponent(projectId)}?tab=design`}>
                 <ArrowLeft className="mr-1 h-4 w-4" /> Project
@@ -2307,7 +2458,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               <p className="truncate text-sm font-extrabold text-slate-900 dark:text-white">
                 2D Design Studio · {project?.official_name || project?.lead_name || "Project"}
               </p>
-              <p className="text-[11px] text-slate-500">
+              <p className="truncate text-[11px] text-slate-500">
                 Phase 2 Panels · {currentLayout ? `Roof V${currentLayout.version_number}` : "New roof"}
                 {currentPanelLayout ? ` · Panels V${currentPanelLayout.version_number}` : ""}
                 {state.dirty || panelDirty ? " · Unsaved changes" : ""}
@@ -2339,9 +2490,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         </div>
       </header>
 
-      <div className="mx-auto grid min-h-0 w-full max-w-[1800px] flex-1 gap-2 overflow-hidden bg-slate-200/40 p-2 dark:bg-slate-950 grid-cols-[52px_minmax(0,1fr)] lg:grid-cols-[52px_minmax(0,1fr)_360px] lg:gap-0 lg:p-0">
+      <div className="grid min-h-0 w-full flex-1 grid-cols-[52px_minmax(0,1fr)] grid-rows-[minmax(0,1fr)_minmax(11rem,34dvh)] overflow-hidden bg-slate-200/40 dark:bg-slate-950 lg:grid-cols-[52px_minmax(0,1fr)_360px] lg:grid-rows-[minmax(0,1fr)]">
 
-        <aside className="flex min-h-0 flex-col overflow-hidden border-r border-slate-800 bg-slate-900 text-slate-100">
+        <aside className="row-span-2 flex min-h-0 flex-col overflow-hidden border-r border-slate-800 bg-slate-900 text-slate-100 lg:row-span-1">
           <div className="flex flex-1 flex-col items-center gap-0.5 overflow-y-auto overscroll-contain py-2">
             <button
               type="button"
@@ -2426,6 +2577,14 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             <button type="button" title="Zoom out" onClick={() => zoomBy(-1)} className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-300 hover:bg-white/10">
               <Minus className="h-4 w-4" />
             </button>
+            <button
+              type="button"
+              title="Find design — zoom back to roof / panels"
+              onClick={focusOnDesign}
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-emerald-300 hover:bg-white/10"
+            >
+              <Focus className="h-4 w-4" />
+            </button>
             <button type="button" title={`Map: ${mapTypeId}`} onClick={cycleMapType} className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-300 hover:bg-white/10">
               <MapIcon className="h-4 w-4" />
             </button>
@@ -2442,7 +2601,10 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           </div>
         </aside>
 
-        <section className="relative min-h-[50vh] overflow-hidden overscroll-none rounded-xl border border-slate-200 bg-slate-200 dark:border-white/10 dark:bg-slate-900 lg:min-h-0 lg:h-full">
+        <section
+          ref={setMapViewportEl}
+          className="relative min-h-0 overflow-hidden overscroll-none border-slate-200 bg-slate-200 dark:border-white/10 dark:bg-slate-900 lg:h-full lg:border-0"
+        >
           {googleMapsKey ? (
             <div
               className="absolute inset-0 h-full w-full will-change-transform"
@@ -2468,32 +2630,32 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           )}
           {mapExtraScale > 1 ? (
             <div className="pointer-events-none absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-900 shadow">
-              Design magnify {mapExtraScale.toFixed(2)}× · toolbar − se zoom out · edit se pehle 1×
+              Design magnify {mapExtraScale.toFixed(2)}× · max {MAP_EXTRA_SCALE_MAX}× · toolbar / wheel − se zoom out
             </div>
           ) : null}
-          {/* Map corner compass — N tracks true north as the map rotates */}
+          {/* Compass — left side, vertically centered */}
           {googleMapsKey && mapReady ? (
             <button
               type="button"
               title="Compass — click to reset north"
               aria-label="Reset map to north"
               onClick={resetMapNorth}
-              className="absolute bottom-3 left-3 z-20 flex h-14 w-14 flex-col items-center justify-center rounded-full border border-white/80 bg-slate-950/75 text-white shadow-lg backdrop-blur-sm transition hover:bg-slate-950/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
+              className="absolute left-3 top-1/2 z-20 flex h-[4.5rem] w-[4.5rem] -translate-y-1/2 flex-col items-center justify-center rounded-full border border-white/80 bg-slate-950/80 text-white shadow-lg backdrop-blur-sm transition hover:bg-slate-950/95 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
             >
               <span
-                className="relative flex h-10 w-10 items-center justify-center"
+                className="relative flex h-14 w-14 items-center justify-center"
                 style={{ transform: `rotate(${-mapHeading}deg)` }}
               >
                 <span
-                  className="absolute left-1/2 top-0 h-4 w-0 -translate-x-1/2 border-x-[5px] border-b-[10px] border-x-transparent border-b-rose-500"
+                  className="absolute left-1/2 top-0.5 h-5 w-0 -translate-x-1/2 border-x-[6px] border-b-[12px] border-x-transparent border-b-rose-500"
                   aria-hidden
                 />
                 <span
-                  className="absolute bottom-0 left-1/2 h-4 w-0 -translate-x-1/2 border-x-[5px] border-t-[10px] border-x-transparent border-t-slate-300"
+                  className="absolute bottom-0.5 left-1/2 h-5 w-0 -translate-x-1/2 border-x-[6px] border-t-[12px] border-x-transparent border-t-slate-300"
                   aria-hidden
                 />
-                <span className="absolute inset-0 rounded-full border border-white/25" aria-hidden />
-                <span className="relative z-[1] text-[10px] font-extrabold tracking-wide text-rose-400">
+                <span className="absolute inset-0 rounded-full border border-white/30" aria-hidden />
+                <span className="relative z-[1] text-xs font-extrabold tracking-wide text-rose-400">
                   N
                 </span>
               </span>
@@ -2512,7 +2674,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         </section>
 
 
-        <aside className="col-span-2 min-h-0 max-h-[42vh] space-y-3 overflow-y-auto overscroll-contain border-t border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-slate-900 lg:col-span-1 lg:max-h-none lg:border-l lg:border-t-0">
+        <aside className="col-span-2 min-h-0 space-y-3 overflow-y-auto overscroll-contain border-t border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-slate-900 lg:col-span-1 lg:border-l lg:border-t-0">
 
           <div className="rounded-xl border border-blue-200 bg-blue-50/80 p-3 dark:border-blue-900/40 dark:bg-blue-950/30">
             <p className="text-[11px] font-extrabold uppercase tracking-wide text-blue-700 dark:text-blue-300">Plant capacity</p>

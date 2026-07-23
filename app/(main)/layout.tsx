@@ -38,6 +38,11 @@ export default function MainAppLayout({ children }: { children: React.ReactNode 
           animate={{ opacity: 1, y: 0 }}
           exit={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0 }}
           transition={{ duration: reducedMotion ? 0 : 0.16, ease: "easeOut" }}
+          className={
+            pathname.includes("/design-studio")
+              ? "flex h-full min-h-0 flex-col overflow-hidden"
+              : undefined
+          }
         >
           {children}
         </motion.div>

@@ -38,6 +38,7 @@
  */
 
 import { useEffect, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { applyPerformanceMode, readPerformanceMode } from "@/lib/performance-mode";
 import { ShellProvider, useShell } from "@/lib/shell-context";
 import { NavRail } from "@/components/shell/nav-rail";
@@ -72,6 +73,10 @@ function ShellKeyboardShortcuts() {
 // ─── Inner shell (needs ShellProvider in scope) ───────────────────────────────
 
 function OsShellInner({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  // Design Studio needs the full content viewport — no page scroll / bottom-nav chrome.
+  const immersive = pathname.includes("/design-studio");
+
   // Replaces AppShell's useEffect for performance mode
   useEffect(() => {
     applyPerformanceMode(readPerformanceMode());
@@ -89,17 +94,25 @@ function OsShellInner({ children }: { children: ReactNode }) {
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <TopBar />
 
-        <main className="app-shell flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-y-contain">
+        <main
+          className={cn(
+            "app-shell flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden overscroll-y-contain",
+            immersive ? "overflow-hidden" : "overflow-y-auto"
+          )}
+        >
           <section
             className={cn(
-              "mx-auto w-full flex-1 min-h-full overflow-x-hidden",
-              "px-3 pt-3 sm:px-4 sm:space-y-4 sm:pt-4",
-              "md:space-y-5 md:px-5 md:pt-5",
-              "lg:pt-6 2xl:px-8",
-              // Max-width: give content room since rail takes left space
-              "max-w-full xl:max-w-[90rem]",
-              // Bottom padding: clears mobile bottom-nav + safe area; lg: just 24px
-              "pb-[max(6.75rem,calc(5.5rem+env(safe-area-inset-bottom,0px)))] lg:pb-6"
+              "mx-auto w-full flex-1 overflow-x-hidden",
+              immersive
+                ? "flex h-full min-h-0 max-w-none flex-col overflow-hidden p-0"
+                : cn(
+                    "min-h-full",
+                    "px-3 pt-3 sm:px-4 sm:space-y-4 sm:pt-4",
+                    "md:space-y-5 md:px-5 md:pt-5",
+                    "lg:pt-6 2xl:px-8",
+                    "max-w-full xl:max-w-[90rem]",
+                    "pb-[max(6.75rem,calc(5.5rem+env(safe-area-inset-bottom,0px)))] lg:pb-6"
+                  )
             )}
           >
             {children}
@@ -107,8 +120,8 @@ function OsShellInner({ children }: { children: ReactNode }) {
         </main>
       </div>
 
-      {/* ── Mobile bottom nav (portal, lg:hidden via CSS in globals) ── */}
-      <BottomNav />
+      {/* ── Mobile bottom nav — hidden in Design Studio immersive mode ── */}
+      {!immersive ? <BottomNav /> : null}
 
       {/* ── Cmd+K command palette (portal into body) ─────────────────── */}
       <CommandPalette />
