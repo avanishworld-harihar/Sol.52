@@ -302,7 +302,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       ids: string[];
     } | null;
   } | null>(null);
-  /** Screen-space SVG hit targets while CSS optical magnify is active. */
+  /** Layout-space SVG hit targets inside the CSS-scaled map wrapper. */
   const [opticalHitShapes, setOpticalHitShapes] = useState<Array<{ id: string; points: string }>>(
     []
   );
@@ -2360,9 +2360,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           .filter((panel) => !panel.is_locked)
           .map((panel) => panel.id);
         setSelectedPanelIds(unlocked);
-      } else if (tool === "select") {
-        setSelectedPanelIds((ids) => (ids.length > 1 ? [] : ids));
       }
+      // Keep current selection when switching to Select (V) — including multi/group.
       mapRef.current?.setOptions({
         draggableCursor:
           tool === "place_panel" ? "crosshair" : tool === "move_group" ? "move" : null,
@@ -2527,43 +2526,27 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     return null;
   }, []);
 
-  const latLngToViewportPoint = useCallback((lat: number, lng: number) => {
+  const latLngToLayoutPoint = useCallback((lat: number, lng: number) => {
     const map = mapRef.current;
-    const viewport = mapViewportElRef.current;
-    if (!map || !viewport || !window.google?.maps) return null;
-    const mapDiv = map.getDiv();
-    const rect = mapDiv.getBoundingClientRect();
-    const vr = viewport.getBoundingClientRect();
-    if (rect.width < 1 || rect.height < 1) return null;
-    const layoutW = mapDiv.offsetWidth || rect.width;
-    const layoutH = mapDiv.offsetHeight || rect.height;
+    if (!map || !window.google?.maps) return null;
 
-    let mapX: number | null = null;
-    let mapY: number | null = null;
     const overlayProj = projectionOverlayRef.current?.getProjection();
     if (overlayProj) {
       const p = overlayProj.fromLatLngToContainerPixel(new google.maps.LatLng(lat, lng));
-      if (p) {
-        mapX = p.x;
-        mapY = p.y;
-      }
-    }
-    if (mapX == null || mapY == null) {
-      const mapProj = map.getProjection();
-      const bounds = map.getBounds();
-      if (!mapProj || !bounds) return null;
-      const tileScale = Math.pow(2, map.getZoom() ?? 0);
-      const topRight = mapProj.fromLatLngToPoint(bounds.getNorthEast());
-      const bottomLeft = mapProj.fromLatLngToPoint(bounds.getSouthWest());
-      const world = mapProj.fromLatLngToPoint(new google.maps.LatLng(lat, lng));
-      if (!topRight || !bottomLeft || !world) return null;
-      mapX = (world.x - bottomLeft.x) * tileScale;
-      mapY = (world.y - topRight.y) * tileScale;
+      if (p) return { x: p.x, y: p.y };
     }
 
+    const mapProj = map.getProjection();
+    const bounds = map.getBounds();
+    if (!mapProj || !bounds) return null;
+    const tileScale = Math.pow(2, map.getZoom() ?? 0);
+    const topRight = mapProj.fromLatLngToPoint(bounds.getNorthEast());
+    const bottomLeft = mapProj.fromLatLngToPoint(bounds.getSouthWest());
+    const world = mapProj.fromLatLngToPoint(new google.maps.LatLng(lat, lng));
+    if (!topRight || !bottomLeft || !world) return null;
     return {
-      x: rect.left + (mapX / layoutW) * rect.width - vr.left,
-      y: rect.top + (mapY / layoutH) * rect.height - vr.top,
+      x: (world.x - bottomLeft.x) * tileScale,
+      y: (world.y - topRight.y) * tileScale,
     };
   }, []);
 
@@ -2585,14 +2568,18 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
 
   const findPanelAtClient = useCallback(
     (clientX: number, clientY: number) => {
-      const viewport = mapViewportElRef.current;
-      if (!viewport) {
+      const map = mapRef.current;
+      if (!map) {
         const latLng = clientToLatLngOptical(clientX, clientY);
         return latLng ? findPanelAtLatLng(latLng) : null;
       }
-      const vr = viewport.getBoundingClientRect();
-      const localX = clientX - vr.left;
-      const localY = clientY - vr.top;
+      const mapDiv = map.getDiv();
+      const rect = mapDiv.getBoundingClientRect();
+      if (rect.width < 1 || rect.height < 1) return null;
+      const layoutW = mapDiv.offsetWidth || rect.width;
+      const layoutH = mapDiv.offsetHeight || rect.height;
+      const layoutX = ((clientX - rect.left) / rect.width) * layoutW;
+      const layoutY = ((clientY - rect.top) / rect.height) * layoutH;
 
       const pointInRing = (x: number, y: number, ring: Array<{ x: number; y: number }>) => {
         let inside = false;
@@ -2614,18 +2601,18 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         const panel = panels[i]!;
         const ring = panel.footprint_geojson.coordinates[0];
         if (!ring || ring.length < 3) continue;
-        const screenRing: Array<{ x: number; y: number }> = [];
+        const layoutRing: Array<{ x: number; y: number }> = [];
         let ok = true;
         for (let k = 0; k < ring.length - 1; k += 1) {
           const coord = ring[k]!;
-          const screen = latLngToViewportPoint(coord[1], coord[0]);
-          if (!screen) {
+          const layout = latLngToLayoutPoint(coord[1], coord[0]);
+          if (!layout) {
             ok = false;
             break;
           }
-          screenRing.push(screen);
+          layoutRing.push(layout);
         }
-        if (ok && screenRing.length >= 3 && pointInRing(localX, localY, screenRing)) {
+        if (ok && layoutRing.length >= 3 && pointInRing(layoutX, layoutY, layoutRing)) {
           return panel;
         }
       }
@@ -2633,10 +2620,13 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       const latLng = clientToLatLngOptical(clientX, clientY);
       return latLng ? findPanelAtLatLng(latLng) : null;
     },
-    [clientToLatLngOptical, findPanelAtLatLng, latLngToViewportPoint]
+    [clientToLatLngOptical, findPanelAtLatLng, latLngToLayoutPoint]
   );
 
-  /** Keep SVG hit polygons aligned with CSS-scaled map panels. */
+  /**
+   * Hit polygons live INSIDE the CSS-scaled wrapper (layout pixels).
+   * Browser hit-tests the transformed shapes — remapping outside the scale was unreliable.
+   */
   useEffect(() => {
     if (mapExtraScale <= 1 || !mapReady) {
       setOpticalHitShapes([]);
@@ -2646,6 +2636,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     const refresh = () => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
+        if (draggingPanelIdRef.current) return;
         const shapes: Array<{ id: string; points: string }> = [];
         for (const panel of placedPanelsRef.current) {
           const ring = panel.footprint_geojson.coordinates[0];
@@ -2654,12 +2645,12 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           let ok = true;
           for (let k = 0; k < ring.length - 1; k += 1) {
             const coord = ring[k]!;
-            const screen = latLngToViewportPoint(coord[1], coord[0]);
-            if (!screen) {
+            const layout = latLngToLayoutPoint(coord[1], coord[0]);
+            if (!layout) {
               ok = false;
               break;
             }
-            pts.push(`${screen.x},${screen.y}`);
+            pts.push(`${layout.x},${layout.y}`);
           }
           if (ok && pts.length >= 3) {
             shapes.push({ id: panel.id, points: pts.join(" ") });
@@ -2669,8 +2660,14 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       });
     };
     refresh();
+    const retries = [50, 150, 400].map((ms) => window.setTimeout(refresh, ms));
     const map = mapRef.current;
-    if (!map) return;
+    if (!map) {
+      return () => {
+        cancelAnimationFrame(raf);
+        retries.forEach((id) => window.clearTimeout(id));
+      };
+    }
     const listeners = [
       map.addListener("idle", refresh),
       map.addListener("bounds_changed", refresh),
@@ -2679,9 +2676,10 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     ];
     return () => {
       cancelAnimationFrame(raf);
+      retries.forEach((id) => window.clearTimeout(id));
       listeners.forEach((listener) => listener.remove());
     };
-  }, [latLngToViewportPoint, mapExtraScale, mapHeading, mapReady, placedPanels]);
+  }, [latLngToLayoutPoint, mapExtraScale, mapHeading, mapReady, placedPanels]);
 
   const panelIdFromOpticalEvent = (event: ReactPointerEvent<Element>) => {
     const target = event.target as Element | null;
@@ -2690,8 +2688,12 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
 
   const handleOpticalPointerDown = useCallback((event: ReactPointerEvent<Element>) => {
     if (mapExtraScaleRef.current <= 1) return;
+    const svgPanelId = panelIdFromOpticalEvent(event);
+    if (!svgPanelId) return; // empty map — let Google Maps / map click handle deselect
     event.preventDefault();
-    const latLng = clientToLatLngOptical(event.clientX, event.clientY);
+    event.stopPropagation();
+
+    let latLng = clientToLatLngOptical(event.clientX, event.clientY);
     const tool = studioToolRef.current;
     let panelDrag: {
       primaryId: string;
@@ -2705,10 +2707,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       tool !== "place_panel" &&
       (tool === "select" || tool === "move_group" || tool == null)
     ) {
-      const svgPanelId = panelIdFromOpticalEvent(event);
-      const hit = svgPanelId
-        ? placedPanelsRef.current.find((panel) => panel.id === svgPanelId) ?? null
-        : findPanelAtClient(event.clientX, event.clientY);
+      const hit =
+        placedPanelsRef.current.find((panel) => panel.id === svgPanelId) ??
+        findPanelAtClient(event.clientX, event.clientY);
       if (hit) {
         const selected = selectedPanelIdsRef.current;
         const ids =
@@ -2720,6 +2721,10 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             : [hit.id];
         if (!selected.includes(hit.id)) {
           setSelectedPanelIds(hit.is_locked ? [hit.id] : ids);
+        }
+        if (!latLng) {
+          const c = footprintCentroid(hit.footprint_geojson);
+          if (c) latLng = new google.maps.LatLng(c.lat, c.lng);
         }
         if (!hit.is_locked && latLng) {
           const footprints: Record<string, PlacedPanel["footprint_geojson"]> = {};
@@ -2836,43 +2841,21 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         return;
       }
 
-      const latLng = clientToLatLngOptical(event.clientX, event.clientY);
-
-      const type = addObstructionRef.current;
-      if (type) {
-        if (latLng) studioClickRef.current?.(latLng);
-        return;
-      }
-      if (studioToolRef.current === "place_panel") {
-        if (latLng) placePanelRef.current?.(latLng);
-        return;
-      }
-
-      const svgPanelId = panelIdFromOpticalEvent(event);
-      const hit = svgPanelId
-        ? placedPanelsRef.current.find((panel) => panel.id === svgPanelId) ?? null
-        : findPanelAtClient(event.clientX, event.clientY);
-      const tool = studioToolRef.current;
-      if (hit && (tool === "select" || tool === "move_group" || tool == null)) {
+      // Click (no drag): ensure selection sticks; Shift toggles on up if needed.
+      if (!drag.moved && panelDrag) {
+        const hitId = panelDrag.primaryId;
         if (event.shiftKey) {
           setSelectedPanelIds((current) =>
-            current.includes(hit.id)
-              ? current.filter((id) => id !== hit.id)
-              : [...current, hit.id]
+            current.includes(hitId)
+              ? current.filter((id) => id !== hitId)
+              : [...current, hitId]
           );
         } else {
-          setSelectedPanelIds([hit.id]);
+          setSelectedPanelIds([hitId]);
         }
-        return;
-      }
-      if (
-        (tool === "select" || tool === "move_group" || tool == null) &&
-        selectedPanelIdsRef.current.length > 0
-      ) {
-        setSelectedPanelIds([]);
       }
     },
-    [clientToLatLngOptical, findPanelAtClient, pushPanelHistory]
+    [clientToLatLngOptical, pushPanelHistory]
   );
 
   const resetMapNorth = useCallback(() => {
@@ -3211,6 +3194,32 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               }
             >
               <div ref={setMapContainerEl} className="h-full w-full" />
+              {/*
+                Hit targets MUST sit inside the CSS scale wrapper (layout pixels).
+                Outside remapping was unreliable; browser hit-tests transformed SVG correctly.
+              */}
+              {mapExtraScale > 1 ? (
+                <svg
+                  className="absolute inset-0 z-[25] h-full w-full touch-none"
+                  style={{ pointerEvents: "none", overflow: "visible" }}
+                  onPointerDown={handleOpticalPointerDown}
+                  onPointerMove={handleOpticalPointerMove}
+                  onPointerUp={handleOpticalPointerUp}
+                  onPointerCancel={handleOpticalPointerUp}
+                >
+                  {opticalHitShapes.map((shape) => (
+                    <polygon
+                      key={shape.id}
+                      data-panel-id={shape.id}
+                      points={shape.points}
+                      fill="#fff"
+                      fillOpacity={0.001}
+                      stroke="transparent"
+                      style={{ pointerEvents: "all", cursor: "pointer" }}
+                    />
+                  ))}
+                </svg>
+              ) : null}
             </div>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center p-6">
@@ -3225,38 +3234,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             </div>
           )}
           {mapExtraScale > 1 ? (
-            <>
-              {/* SVG hit targets — CSS scale breaks Google Maps polygon click/drag */}
-              <svg
-                className="absolute inset-0 z-[15] h-full w-full touch-none"
-                onPointerDown={handleOpticalPointerDown}
-                onPointerMove={handleOpticalPointerMove}
-                onPointerUp={handleOpticalPointerUp}
-                onPointerCancel={handleOpticalPointerUp}
-              >
-                <rect
-                  width="100%"
-                  height="100%"
-                  fill="white"
-                  fillOpacity={0}
-                  style={{ pointerEvents: "all" }}
-                />
-                {opticalHitShapes.map((shape) => (
-                  <polygon
-                    key={shape.id}
-                    data-panel-id={shape.id}
-                    points={shape.points}
-                    fill="white"
-                    fillOpacity={0}
-                    stroke="transparent"
-                    style={{ pointerEvents: "all", cursor: "pointer" }}
-                  />
-                ))}
-              </svg>
-              <div className="pointer-events-none absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-900 shadow">
-                Design magnify {mapExtraScale.toFixed(2)}× · max {MAP_EXTRA_SCALE_MAX}× · click/drag panels · wheel − zoom out
-              </div>
-            </>
+            <div className="pointer-events-none absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-900 shadow">
+              Design magnify {mapExtraScale.toFixed(2)}× · max {MAP_EXTRA_SCALE_MAX}× · click/drag panels · wheel − zoom out
+            </div>
           ) : null}
           {/* Compass — left side, vertically centered */}
           {googleMapsKey && mapReady ? (
