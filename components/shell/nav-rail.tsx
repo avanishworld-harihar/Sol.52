@@ -78,12 +78,12 @@ export function NavRail() {
           "px-2 xl:px-3"
         )}
       >
-        {/* xl+: full Sol.52 wordmark — sized to rail, no right-edge clip */}
-        <div className="hidden xl:flex xl:h-12 xl:w-full xl:max-w-[11.75rem] xl:items-center">
+        {/* xl+: full Sol.52 wordmark — fixed width so absolute SVG cannot collapse */}
+        <div className="hidden xl:block xl:h-12 xl:w-[11.5rem]">
           <BrandLogo
             href="/"
             compact
-            className="h-12 w-full max-w-[11.75rem] sm:h-12 sm:w-full sm:max-w-[11.75rem] md:h-12 md:w-full md:max-w-[11.75rem] lg:h-12 lg:w-full lg:max-w-[11.75rem]"
+            className="h-12 w-[11.5rem] sm:h-12 sm:w-[11.5rem] md:h-12 md:w-[11.5rem] lg:h-12 lg:w-[11.5rem]"
           />
         </div>
 
