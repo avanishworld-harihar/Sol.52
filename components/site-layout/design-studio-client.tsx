@@ -198,6 +198,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const draftPolygonRef = useRef<google.maps.Polygon | null>(null);
   const draftLineRef = useRef<google.maps.Polyline | null>(null);
   const draftMarkersRef = useRef<google.maps.Marker[]>([]);
+  /** Small custom corner handles — replaces huge Google editable vertices. */
+  const roofEditMarkersRef = useRef<google.maps.Marker[]>([]);
+  const refreshRoofEditMarkersRef = useRef<() => void>(() => {});
   const markersRef = useRef<google.maps.Marker[]>([]);
   const circlesRef = useRef<google.maps.Circle[]>([]);
   const panelPolygonsRef = useRef<google.maps.Polygon[]>([]);
@@ -498,6 +501,62 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     draftMarkersRef.current = [];
   }, []);
 
+  const clearRoofEditMarkers = useCallback(() => {
+    roofEditMarkersRef.current.forEach((marker) => marker.setMap(null));
+    roofEditMarkersRef.current = [];
+  }, []);
+
+  /** Compact draggable corners (native Polygon editable handles are oversized). */
+  const refreshRoofEditMarkers = useCallback(() => {
+    clearRoofEditMarkers();
+    const map = mapRef.current;
+    if (!map || !window.google?.maps) return;
+    if (roofLockedRef.current) return;
+
+    const sectionIndex = activeRoofIndexRef.current;
+    const polygon = roofPolygonsRef.current[sectionIndex];
+    if (!polygon) return;
+
+    const path = polygon.getPath();
+    for (let i = 0; i < path.getLength(); i++) {
+      const vertexIndex = i;
+      const marker = new google.maps.Marker({
+        map,
+        position: path.getAt(i),
+        draggable: true,
+        zIndex: PANEL_Z_INDEX + 2,
+        cursor: "grab",
+        title: "Drag corner · right-click to remove",
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 2.5,
+          fillColor: "#ffffff",
+          fillOpacity: 0.9,
+          strokeColor: "#0f766e",
+          strokeOpacity: 0.95,
+          strokeWeight: 1.5,
+        },
+      });
+      marker.addListener("drag", () => {
+        const pos = marker.getPosition();
+        if (pos) path.setAt(vertexIndex, pos);
+      });
+      marker.addListener("dragend", () => {
+        window.setTimeout(() => refreshRoofEditMarkersRef.current(), 0);
+      });
+      const removeCorner = () => {
+        if (path.getLength() <= 3) return;
+        path.removeAt(vertexIndex);
+        window.setTimeout(() => refreshRoofEditMarkersRef.current(), 0);
+      };
+      marker.addListener("rightclick", removeCorner);
+      marker.addListener("contextmenu", removeCorner);
+      roofEditMarkersRef.current.push(marker);
+    }
+  }, [clearRoofEditMarkers]);
+
+  refreshRoofEditMarkersRef.current = refreshRoofEditMarkers;
+
   const renderDraftOverlay = useCallback(() => {
     const map = mapRef.current;
     if (!map || !window.google?.maps) return;
@@ -523,21 +582,24 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
 
     const dashSymbol: google.maps.Symbol = {
       path: "M 0,-1 0,1",
-      strokeOpacity: 0.45,
+      strokeOpacity: 0.75,
       strokeColor: "#f43f5e",
-      strokeWeight: 1,
-      scale: 1.6,
+      strokeWeight: 1.25,
+      scale: 2.2,
     };
     const linePath = points.length >= 3 ? [...points, points[0]] : points;
     if (draftLineRef.current) {
       draftLineRef.current.setPath(linePath);
+      draftLineRef.current.setOptions({
+        icons: [{ icon: dashSymbol, offset: "0", repeat: "8px" }],
+      });
     } else {
       draftLineRef.current = new google.maps.Polyline({
         map,
         path: linePath,
         clickable: false,
         strokeOpacity: 0,
-        icons: [{ icon: dashSymbol, offset: "0", repeat: "12px" }],
+        icons: [{ icon: dashSymbol, offset: "0", repeat: "8px" }],
         zIndex: 3,
       });
     }
@@ -556,10 +618,10 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           path: google.maps.SymbolPath.CIRCLE,
           scale: index === 0 ? 2.6 : 2,
           fillColor: index === 0 ? "#f43f5e" : "#ffffff",
-          fillOpacity: index === 0 ? 0.55 : 0.45,
+          fillOpacity: index === 0 ? 0.85 : 0.75,
           strokeColor: "#f43f5e",
-          strokeOpacity: 0.65,
-          strokeWeight: 1,
+          strokeOpacity: 0.9,
+          strokeWeight: 1.25,
         },
       });
       marker.addListener("click", () => {
@@ -605,15 +667,17 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       const locked = roofLockedRef.current;
       polygon.setOptions({
         clickable: !locked,
-        editable: selected && !locked,
+        // Native editable handles are oversized — use custom corner markers.
+        editable: false,
         strokeColor: selected ? "#0f766e" : "#0369a1",
-        strokeWeight: selected ? 3 : 2,
+        strokeWeight: selected ? 2.5 : 2,
         fillColor: selected ? "#14b8a6" : "#38bdf8",
         fillOpacity: selected ? 0.18 : 0.1,
         zIndex: ROOF_Z_INDEX,
       });
     });
-  }, []);
+    refreshRoofEditMarkers();
+  }, [refreshRoofEditMarkers]);
 
   const syncRoofPolygon = useCallback(
     (polygon: google.maps.Polygon, sectionIndex: number) => {
@@ -661,6 +725,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       const map = mapRef.current;
       if (!map || !window.google?.maps) return;
       removeRoofListeners();
+      clearRoofEditMarkers();
       roofPolygonsRef.current.forEach((polygon) => polygon.setMap(null));
       roofPolygonsRef.current = [];
       roofPolygonRef.current = null;
@@ -680,11 +745,11 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           map,
           paths: path,
           clickable: !locked,
-          editable: selected && !locked,
+          editable: false,
           draggable: false,
           strokeColor: selected ? "#0f766e" : "#0369a1",
           strokeOpacity: 1,
-          strokeWeight: selected ? 3 : 2,
+          strokeWeight: selected ? 2.5 : 2,
           fillColor: selected ? "#14b8a6" : "#38bdf8",
           fillOpacity: selected ? 0.18 : 0.1,
           zIndex: ROOF_Z_INDEX,
@@ -693,8 +758,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         return polygon;
       });
       roofPolygonRef.current = roofPolygonsRef.current[selectedIndex] ?? null;
+      refreshRoofEditMarkers();
     },
-    [attachRoofListeners, removeRoofListeners]
+    [attachRoofListeners, clearRoofEditMarkers, refreshRoofEditMarkers, removeRoofListeners]
   );
 
   useEffect(() => {
@@ -1574,6 +1640,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     roofLockedRef.current = nextLocked;
     setRoofLocked(nextLocked);
     if (nextLocked) {
+      clearRoofEditMarkers();
       roofPolygonsRef.current.forEach((polygon) =>
         polygon.setOptions({
           clickable: false,
@@ -1591,9 +1658,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       nextLocked ? "Roof locked (under panels)" : "Roof unlocked",
       nextLocked
         ? "Panels are on top — Select / Group move work normally."
-        : "Drag corner handles to refine the roof. Lock again before moving panels."
+        : "Drag the small corner dots to refine the roof. Lock again before moving panels."
     );
-  }, [selectRoofSection, toast]);
+  }, [clearRoofEditMarkers, selectRoofSection, toast]);
 
   const locateMe = useCallback(() => {
     if (!navigator.geolocation) {
@@ -1992,6 +2059,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       if (!roofLockedRef.current && roofPolygonsRef.current.length > 0) {
         roofLockedRef.current = true;
         setRoofLocked(true);
+        clearRoofEditMarkers();
         roofPolygonsRef.current.forEach((polygon) =>
           polygon.setOptions({
             clickable: false,
@@ -2017,7 +2085,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           tool === "place_panel" ? "crosshair" : tool === "move_group" ? "move" : null,
       });
     },
-    [cancelRoofDrawing, clearStudioTool, drawingRoof]
+    [cancelRoofDrawing, clearRoofEditMarkers, clearStudioTool, drawingRoof]
   );
 
   useEffect(() => {
