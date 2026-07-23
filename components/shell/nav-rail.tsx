@@ -61,10 +61,10 @@ export function NavRail() {
       )}
       aria-label="Primary navigation"
     >
-      {/* ── Logo header ─────────────────────────────────────────────────── */}
+      {/* ── Logo header — height matches TopBar so columns align ──────── */}
       <div
         className={cn(
-          "flex h-[4.25rem] shrink-0 items-center",
+          "flex h-[3.75rem] shrink-0 items-center",
           "border-b border-white/35 dark:border-white/8",
           "px-3"
         )}

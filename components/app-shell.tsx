@@ -55,7 +55,7 @@ export function AppShell({ title, children }: { title: string; children: React.R
         </div>
       </header>
 
-      <main className="app-shell flex min-h-0 min-w-0 flex-1 flex-col">
+      <main className="app-shell app-shell--fill flex min-h-0 min-w-0 flex-1 flex-col">
         <section
           className={cn(
             pageContainerClass(),

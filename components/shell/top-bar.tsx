@@ -87,11 +87,11 @@ export function TopBar() {
   return (
     <header
       className={cn(
-        "z-[100] shrink-0 overflow-x-clip",
+        "relative z-[100] shrink-0 overflow-x-clip",
         "flex h-[3.75rem] w-full min-w-0 shrink-0 items-center gap-1.5 sm:gap-3",
         "border-b border-white/30 dark:border-white/8",
-        "bg-white/90 backdrop-blur-[10px] backdrop-saturate-150",
-        "dark:bg-[#0d1117]/88 dark:backdrop-saturate-100",
+        "bg-white/95 backdrop-blur-[10px] backdrop-saturate-150",
+        "dark:bg-[#0d1117]/95 dark:backdrop-saturate-100",
         "shadow-[0_2px_16px_rgba(15,35,62,0.06)] dark:shadow-[0_2px_16px_rgba(0,0,0,0.32)]",
         "px-2.5 sm:px-4 lg:px-5"
       )}

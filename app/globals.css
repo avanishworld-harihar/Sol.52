@@ -2293,7 +2293,15 @@ html.dark[data-ss-perf-mode="max-battery"] .card-status-done-glow::after {
 
 
 .app-shell {
-  @apply min-h-screen min-h-svh w-full max-w-full bg-transparent pb-[calc(5rem+env(safe-area-inset-bottom,0px))] lg:pb-6;
+  /* Width/bg only — do NOT force min-h-svh here.
+     OsShell nests main under TopBar inside h-svh; min-h-svh on main
+     overflows the shell and clips the top bar on desktop. */
+  @apply w-full max-w-full bg-transparent pb-[calc(5rem+env(safe-area-inset-bottom,0px))] lg:pb-6;
+}
+
+/** Full-page AppShell (admin / 404) still needs viewport fill. */
+.app-shell--fill {
+  @apply min-h-screen min-h-svh;
 }
 
 html,

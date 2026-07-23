@@ -96,7 +96,8 @@ function OsShellInner({ children }: { children: ReactNode }) {
 
         <main
           className={cn(
-            "app-shell flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden overscroll-y-contain",
+            // min-h-0 is required so TopBar stays visible inside h-svh shell
+            "app-shell relative z-[1] flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden overscroll-y-contain",
             immersive ? "overflow-hidden" : "overflow-y-auto"
           )}
         >
@@ -106,9 +107,9 @@ function OsShellInner({ children }: { children: ReactNode }) {
               immersive
                 ? "flex h-full min-h-0 max-w-none flex-col overflow-hidden p-0"
                 : cn(
-                    "min-h-full",
-                    "px-3 pt-3 sm:px-4 sm:space-y-4 sm:pt-4",
-                    "md:space-y-5 md:px-5 md:pt-5",
+                    "min-h-0",
+                    "px-3 pt-4 sm:px-4 sm:space-y-4 sm:pt-5",
+                    "md:space-y-5 md:px-5 md:pt-6",
                     "lg:pt-6 2xl:px-8",
                     "max-w-full xl:max-w-[90rem]",
                     "pb-[max(6.75rem,calc(5.5rem+env(safe-area-inset-bottom,0px)))] lg:pb-6"
