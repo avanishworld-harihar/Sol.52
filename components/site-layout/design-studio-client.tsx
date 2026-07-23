@@ -970,11 +970,19 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           })
         );
 
-        // OverlayView gives container-pixel ↔ LatLng under optical CSS magnify.
+        // OverlayView needs a real pane node or getProjection() stays null.
         const projectionOverlay = new maps.OverlayView();
-        projectionOverlay.onAdd = () => {};
+        let projectionHost: HTMLDivElement | null = null;
+        projectionOverlay.onAdd = function onAdd() {
+          projectionHost = document.createElement("div");
+          projectionHost.style.cssText = "position:absolute;width:0;height:0;left:0;top:0;";
+          this.getPanes()?.overlayMouseTarget.appendChild(projectionHost);
+        };
         projectionOverlay.draw = () => {};
-        projectionOverlay.onRemove = () => {};
+        projectionOverlay.onRemove = () => {
+          projectionHost?.remove();
+          projectionHost = null;
+        };
         projectionOverlay.setMap(map);
         projectionOverlayRef.current = projectionOverlay;
 
@@ -2437,25 +2445,73 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     mapViewportElRef.current = mapViewportEl;
   }, [mapViewportEl]);
 
-  /** CSS optical scale breaks Maps hit-testing — remap viewport clicks to LatLng. */
-  const clientToLatLngOptical = useCallback((clientX: number, clientY: number) => {
+  /** Visual client → unscaled map container pixel (CSS optical magnify). */
+  const clientToContainerPixel = useCallback((clientX: number, clientY: number) => {
     const map = mapRef.current;
     const viewport = mapViewportElRef.current;
-    const overlay = projectionOverlayRef.current;
-    if (!map || !viewport || !overlay || !window.google?.maps) return null;
-    const proj = overlay.getProjection();
-    if (!proj) return null;
+    if (!map || !viewport) return null;
     const scale = Math.max(1, mapExtraScaleRef.current);
     const vr = viewport.getBoundingClientRect();
     const mapDiv = map.getDiv();
-    const layoutW = mapDiv.offsetWidth || vr.width;
-    const layoutH = mapDiv.offsetHeight || vr.height;
+    const layoutW = mapDiv.clientWidth || viewport.clientWidth || vr.width;
+    const layoutH = mapDiv.clientHeight || viewport.clientHeight || vr.height;
+    if (layoutW <= 0 || layoutH <= 0) return null;
     const cx = vr.left + vr.width / 2;
     const cy = vr.top + vr.height / 2;
-    const mapX = layoutW / 2 + (clientX - cx) / scale;
-    const mapY = layoutH / 2 + (clientY - cy) / scale;
-    return proj.fromContainerPixelToLatLng(new google.maps.Point(mapX, mapY));
+    return {
+      x: layoutW / 2 + (clientX - cx) / scale,
+      y: layoutH / 2 + (clientY - cy) / scale,
+      layoutW,
+      layoutH,
+      scale,
+      vr,
+    };
   }, []);
+
+  /** Layout container pixel → LatLng (OverlayView, else bounds + heading). */
+  const containerPixelToLatLng = useCallback((mapX: number, mapY: number) => {
+    const map = mapRef.current;
+    if (!map || !window.google?.maps) return null;
+    const overlay = projectionOverlayRef.current;
+    const proj = overlay?.getProjection();
+    if (proj) {
+      const ll = proj.fromContainerPixelToLatLng(new google.maps.Point(mapX, mapY));
+      if (ll) return ll;
+    }
+    const bounds = map.getBounds();
+    if (!bounds) return null;
+    const mapDiv = map.getDiv();
+    const w = mapDiv.clientWidth || 1;
+    const h = mapDiv.clientHeight || 1;
+    let fx = mapX / w - 0.5;
+    let fy = mapY / h - 0.5;
+    const headingRad = ((map.getHeading() || 0) * Math.PI) / 180;
+    if (headingRad !== 0) {
+      const cos = Math.cos(-headingRad);
+      const sin = Math.sin(-headingRad);
+      const rx = fx * cos - fy * sin;
+      const ry = fx * sin + fy * cos;
+      fx = rx;
+      fy = ry;
+    }
+    fx += 0.5;
+    fy += 0.5;
+    const ne = bounds.getNorthEast();
+    const sw = bounds.getSouthWest();
+    const lat = ne.lat() - fy * (ne.lat() - sw.lat());
+    const lng = sw.lng() + fx * (ne.lng() - sw.lng());
+    return new google.maps.LatLng(lat, lng);
+  }, []);
+
+  /** CSS optical scale breaks Maps hit-testing — remap viewport clicks to LatLng. */
+  const clientToLatLngOptical = useCallback(
+    (clientX: number, clientY: number) => {
+      const pixel = clientToContainerPixel(clientX, clientY);
+      if (!pixel) return null;
+      return containerPixelToLatLng(pixel.x, pixel.y);
+    },
+    [clientToContainerPixel, containerPixelToLatLng]
+  );
 
   const findPanelAtLatLng = useCallback((latLng: google.maps.LatLng) => {
     const pt = point([latLng.lng(), latLng.lat()]);
@@ -2473,6 +2529,97 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     return null;
   }, []);
 
+  /** Hit-test panels in screen space (more reliable under CSS scale than reverse LatLng). */
+  const findPanelAtClient = useCallback(
+    (clientX: number, clientY: number) => {
+      const map = mapRef.current;
+      const pixel = clientToContainerPixel(clientX, clientY);
+      if (!map || !pixel || !window.google?.maps) {
+        const latLng = clientToLatLngOptical(clientX, clientY);
+        return latLng ? findPanelAtLatLng(latLng) : null;
+      }
+
+      const { layoutW, layoutH, scale, vr } = pixel;
+      const cx = vr.left + vr.width / 2;
+      const cy = vr.top + vr.height / 2;
+      const overlay = projectionOverlayRef.current;
+      const proj = overlay?.getProjection();
+      const bounds = map.getBounds();
+      const headingRad = ((map.getHeading() || 0) * Math.PI) / 180;
+
+      const latLngToScreen = (lat: number, lng: number) => {
+        if (proj) {
+          const p = proj.fromLatLngToContainerPixel(new google.maps.LatLng(lat, lng));
+          if (!p) return null;
+          return {
+            x: cx + (p.x - layoutW / 2) * scale,
+            y: cy + (p.y - layoutH / 2) * scale,
+          };
+        }
+        if (!bounds) return null;
+        const ne = bounds.getNorthEast();
+        const sw = bounds.getSouthWest();
+        const spanLat = ne.lat() - sw.lat() || 1e-9;
+        const spanLng = ne.lng() - sw.lng() || 1e-9;
+        let fx = (lng - sw.lng()) / spanLng - 0.5;
+        let fy = (ne.lat() - lat) / spanLat - 0.5;
+        if (headingRad !== 0) {
+          const cos = Math.cos(headingRad);
+          const sin = Math.sin(headingRad);
+          const rx = fx * cos - fy * sin;
+          const ry = fx * sin + fy * cos;
+          fx = rx;
+          fy = ry;
+        }
+        return {
+          x: cx + fx * layoutW * scale,
+          y: cy + fy * layoutH * scale,
+        };
+      };
+
+      const pointInRing = (x: number, y: number, ring: Array<{ x: number; y: number }>) => {
+        let inside = false;
+        for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+          const xi = ring[i]!.x;
+          const yi = ring[i]!.y;
+          const xj = ring[j]!.x;
+          const yj = ring[j]!.y;
+          const dy = yj - yi;
+          if (dy !== 0 && (yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / dy + xi) {
+            inside = !inside;
+          }
+        }
+        return inside;
+      };
+
+      const panels = placedPanelsRef.current;
+      for (let i = panels.length - 1; i >= 0; i -= 1) {
+        const panel = panels[i]!;
+        const ring = panel.footprint_geojson.coordinates[0];
+        if (!ring || ring.length < 3) continue;
+        const screenRing: Array<{ x: number; y: number }> = [];
+        let ok = true;
+        for (let k = 0; k < ring.length - 1; k += 1) {
+          const coord = ring[k]!;
+          const screen = latLngToScreen(coord[1], coord[0]);
+          if (!screen) {
+            ok = false;
+            break;
+          }
+          screenRing.push(screen);
+        }
+        if (ok && screenRing.length >= 3 && pointInRing(clientX, clientY, screenRing)) {
+          return panel;
+        }
+      }
+
+      // Fallback if projection/bounds screen mapping failed for all panels.
+      const latLng = clientToLatLngOptical(clientX, clientY);
+      return latLng ? findPanelAtLatLng(latLng) : null;
+    },
+    [clientToContainerPixel, clientToLatLngOptical, findPanelAtLatLng]
+  );
+
   const handleOpticalPointerDown = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     if (mapExtraScaleRef.current <= 1) return;
     const latLng = clientToLatLngOptical(event.clientX, event.clientY);
@@ -2485,13 +2632,12 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     } | null = null;
 
     if (
-      latLng &&
       !addObstructionRef.current &&
       tool !== "place_panel" &&
       (tool === "select" || tool === "move_group" || tool == null)
     ) {
-      const hit = findPanelAtLatLng(latLng);
-      if (hit && !hit.is_locked) {
+      const hit = findPanelAtClient(event.clientX, event.clientY);
+      if (hit) {
         const selected = selectedPanelIdsRef.current;
         const ids =
           selected.includes(hit.id) && selected.length > 0
@@ -2501,24 +2647,26 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               })
             : [hit.id];
         if (!selected.includes(hit.id)) {
-          setSelectedPanelIds(ids);
+          setSelectedPanelIds(hit.is_locked ? [hit.id] : ids);
         }
-        const footprints: Record<string, PlacedPanel["footprint_geojson"]> = {};
-        for (const item of placedPanelsRef.current) {
-          if (ids.includes(item.id)) {
-            footprints[item.id] = structuredClone(item.footprint_geojson);
+        if (!hit.is_locked && latLng) {
+          const footprints: Record<string, PlacedPanel["footprint_geojson"]> = {};
+          for (const item of placedPanelsRef.current) {
+            if (ids.includes(item.id)) {
+              footprints[item.id] = structuredClone(item.footprint_geojson);
+            }
           }
+          panelDrag = {
+            primaryId: hit.id,
+            startLatLng: { lat: latLng.lat(), lng: latLng.lng() },
+            footprints,
+            ids,
+          };
+          // Cell lines stay put while dragging — clear until commit redraw.
+          panelCellLinesRef.current.forEach((line) => line.setMap(null));
+          panelCellLinesRef.current = [];
+          draggingPanelIdRef.current = hit.id;
         }
-        panelDrag = {
-          primaryId: hit.id,
-          startLatLng: { lat: latLng.lat(), lng: latLng.lng() },
-          footprints,
-          ids,
-        };
-        // Cell lines stay put while dragging — clear until commit redraw.
-        panelCellLinesRef.current.forEach((line) => line.setMap(null));
-        panelCellLinesRef.current = [];
-        draggingPanelIdRef.current = hit.id;
       }
     }
 
@@ -2530,7 +2678,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       panelDrag,
     };
     event.currentTarget.setPointerCapture(event.pointerId);
-  }, [clientToLatLngOptical, findPanelAtLatLng]);
+  }, [clientToLatLngOptical, findPanelAtClient]);
 
   const handleOpticalPointerMove = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     const drag = opticalPointerRef.current;
@@ -2616,19 +2764,18 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       }
 
       const latLng = clientToLatLngOptical(event.clientX, event.clientY);
-      if (!latLng) return;
 
       const type = addObstructionRef.current;
       if (type) {
-        studioClickRef.current?.(latLng);
+        if (latLng) studioClickRef.current?.(latLng);
         return;
       }
       if (studioToolRef.current === "place_panel") {
-        placePanelRef.current?.(latLng);
+        if (latLng) placePanelRef.current?.(latLng);
         return;
       }
 
-      const hit = findPanelAtLatLng(latLng);
+      const hit = findPanelAtClient(event.clientX, event.clientY);
       const tool = studioToolRef.current;
       if (hit && (tool === "select" || tool === "move_group" || tool == null)) {
         if (event.shiftKey) {
@@ -2649,7 +2796,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         setSelectedPanelIds([]);
       }
     },
-    [clientToLatLngOptical, findPanelAtLatLng, pushPanelHistory]
+    [clientToLatLngOptical, findPanelAtClient, pushPanelHistory]
   );
 
   const resetMapNorth = useCallback(() => {
