@@ -431,6 +431,102 @@ export function analyzePanelShadows(opts: {
   };
 }
 
+/** Survey / Design Hub note from a single planning sample. */
+export function formatShadowAnalysisNote(
+  analysis: ShadowAnalysisResult,
+  sampleLabel: string
+): string {
+  const meanPct = Math.round(analysis.meanShadeFraction * 100);
+  const free = Math.round(analysis.shadeFreePanelSqft);
+  return (
+    `Design Studio · ${sampleLabel} · mean shade ${meanPct}% · ` +
+    `shade-free ≈${free.toLocaleString("en-IN")} sq.ft · ` +
+    `${analysis.shadedPanelCount}/${analysis.panelShades.length || 0} panels hit. ` +
+    analysis.disclaimer
+  ).slice(0, 1000);
+}
+
+/**
+ * Rough annual generation loss from mean shade across the six IST solstice samples.
+ * Planning only — not bankable.
+ */
+export function estimateAnnualShadeLoss(opts: {
+  panels: PlacedPanel[];
+  obstructions: SiteObstruction[];
+  latitudeDeg: number;
+  longitudeDeg: number;
+  plantRoofHeightAglFt?: number;
+  unshadedAnnualKwh: number;
+}): {
+  meanShadeFraction: number;
+  annualLossKwh: number;
+  shadedAnnualKwh: number;
+  sampleCount: number;
+  note: string;
+} {
+  const unshaded = Math.max(0, opts.unshadedAnnualKwh);
+  if (opts.panels.length === 0 || unshaded <= 0) {
+    return {
+      meanShadeFraction: 0,
+      annualLossKwh: 0,
+      shadedAnnualKwh: unshaded,
+      sampleCount: 0,
+      note: "Place panels and enable yield estimate to see annual shade loss.",
+    };
+  }
+
+  let sum = 0;
+  for (const preset of SHADOW_SOLSTICE_PRESETS) {
+    const sample = analyzePanelShadows({
+      panels: opts.panels,
+      obstructions: opts.obstructions,
+      date: presetToDate(preset),
+      latitudeDeg: opts.latitudeDeg,
+      longitudeDeg: opts.longitudeDeg,
+      plantRoofHeightAglFt: opts.plantRoofHeightAglFt,
+    });
+    sum += sample.meanShadeFraction;
+  }
+  const meanShadeFraction =
+    Math.round((sum / SHADOW_SOLSTICE_PRESETS.length) * 1000) / 1000;
+  const annualLossKwh = Math.round(unshaded * meanShadeFraction);
+  const shadedAnnualKwh = Math.max(0, unshaded - annualLossKwh);
+  return {
+    meanShadeFraction,
+    annualLossKwh,
+    shadedAnnualKwh,
+    sampleCount: SHADOW_SOLSTICE_PRESETS.length,
+    note:
+      `≈${Math.round(meanShadeFraction * 100)}% mean shade across ${SHADOW_SOLSTICE_PRESETS.length} ` +
+      `solstice samples → ~${annualLossKwh.toLocaleString("en-IN")} kWh/yr loss (planning).`,
+  };
+}
+
+/** Canonical Dec 21 · 12 PM sample used when saving survey shadow fields. */
+export function buildSurveyShadowFields(opts: {
+  panels: PlacedPanel[];
+  obstructions: SiteObstruction[];
+  latitudeDeg: number;
+  longitudeDeg: number;
+  plantRoofHeightAglFt?: number;
+}): { shadow_free_sqft: number; shadow_analysis_note: string } | null {
+  if (opts.panels.length === 0) return null;
+  const preset = SHADOW_SOLSTICE_PRESETS.find((item) => item.id === "dec21-12");
+  if (!preset) return null;
+  const analysis = analyzePanelShadows({
+    panels: opts.panels,
+    obstructions: opts.obstructions,
+    date: presetToDate(preset),
+    latitudeDeg: opts.latitudeDeg,
+    longitudeDeg: opts.longitudeDeg,
+    plantRoofHeightAglFt: opts.plantRoofHeightAglFt,
+  });
+  return {
+    shadow_free_sqft: analysis.shadeFreePanelSqft,
+    shadow_analysis_note: formatShadowAnalysisNote(analysis, preset.label),
+  };
+}
+
 export function shadeFillColor(shadeFraction: number, selected: boolean, locked: boolean): string {
   if (selected) return "#1e3a8a";
   if (locked && shadeFraction < 0.05) return "#1c1917";

@@ -10,6 +10,7 @@
 
 import type { ProjectHealth } from "@/lib/project-health";
 import type { ProjectSiteLayout } from "@/lib/site-layout";
+import type { ProjectPanelLayout } from "@/lib/panel-layout";
 
 // ---------------------------------------------------------------------------
 // SWR cache keys
@@ -42,6 +43,10 @@ export function projectDesignsKey(id: string) {
 
 export function projectSiteLayoutKey(id: string) {
   return `/api/projects/${id}/site-layout`;
+}
+
+export function projectPanelLayoutKey(id: string) {
+  return `/api/projects/${id}/panel-layout`;
 }
 
 export function projectTasksKey(id: string, stage?: string) {
@@ -363,6 +368,13 @@ export async function fetchProjectDesigns(url: string): Promise<ProjectDesign[]>
 
 export async function fetchProjectSiteLayout(url: string): Promise<ProjectSiteLayout | null> {
   const res = await apiRequest<ProjectSiteLayout | null>(url);
+  return res.ok ? (res.data ?? null) : null;
+}
+
+export async function fetchProjectPanelLayout(
+  url: string
+): Promise<ProjectPanelLayout | null> {
+  const res = await apiRequest<ProjectPanelLayout | null>(url);
   return res.ok ? (res.data ?? null) : null;
 }
 

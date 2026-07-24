@@ -67,18 +67,22 @@ import { evaluateEngineeringRules } from "@/lib/design-studio-engineering-rules"
 import { estimateStringing } from "@/lib/design-studio-stringing";
 import {
   analyzePanelShadows,
+  buildSurveyShadowFields,
   defaultHeightDatum,
   DEFAULT_OBSTRUCTION_HEIGHT_FT,
   effectiveShadowHeightAboveRoofFt,
+  estimateAnnualShadeLoss,
   obstructionHeightDatum,
   obstructionShadowPolygon,
-  presetToDate,
+  dateAtIst,
   shadeFillColor,
   SHADOW_SOLSTICE_PRESETS,
   type ShadowSampleId,
 } from "@/lib/design-studio-shadow";
 import { DesignStudioSldSchematic } from "@/components/site-layout/design-studio-sld-schematic";
 import { DesignStudioSldSheetViewer } from "@/components/site-layout/design-studio-sld-sheet";
+import { DesignStudioPackSheetViewer } from "@/components/site-layout/design-studio-pack-sheet";
+import { buildDesignStudioPackModel } from "@/lib/design-studio-pack-model";
 import { buildDesignStudioSldModel } from "@/lib/design-studio-sld-model";
 import type {
   PanelMountingType,
@@ -455,6 +459,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const [shadowEnabled, setShadowEnabled] = useState(true);
   const [shadowPresetId, setShadowPresetId] =
     useState<Exclude<ShadowSampleId, "custom">>("dec21-12");
+  /** Fine hour on the selected solstice day (overrides preset hour). */
+  const [shadowHourFine, setShadowHourFine] = useState<number | null>(null);
   /** Plant / terrace height above ground — shadow datum for AGL objects (trees). */
   const [plantRoofHeightFt, setPlantRoofHeightFt] = useState(0);
   /** String draft so iPad can clear "0" and type a new value (number inputs snap back otherwise). */
@@ -471,6 +477,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   mobileViewOnlyRef.current = mobileViewOnly;
   /** Engineering SLD sheet v1 preview / print. */
   const [sldSheetOpen, setSldSheetOpen] = useState(false);
+  /** Phase 5 Design pack print preview. */
+  const [designPackOpen, setDesignPackOpen] = useState(false);
   const photoInputRef = useRef<HTMLInputElement | null>(null);
 
   const googleMapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim() ?? "";
@@ -1379,10 +1387,11 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     if (!shadowEnabled) return null;
     const preset = SHADOW_SOLSTICE_PRESETS.find((item) => item.id === shadowPresetId);
     if (!preset) return null;
+    const hour = shadowHourFine ?? preset.hourIst;
     return analyzePanelShadows({
       panels: placedPanels,
       obstructions: state.obstructions,
-      date: presetToDate(preset),
+      date: dateAtIst(new Date().getFullYear(), preset.month, preset.day, hour),
       latitudeDeg: center[1],
       longitudeDeg: center[0],
       plantRoofHeightAglFt: plantRoofHeightFt,
@@ -1392,8 +1401,32 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     placedPanels,
     plantRoofHeightFt,
     shadowEnabled,
+    shadowHourFine,
     shadowPresetId,
     state.obstructions,
+  ]);
+
+  /** Clear-sky baseline (no obstruction cast) for before/after compare. */
+  const shadowClearSky = useMemo(() => {
+    if (!shadowEnabled || placedPanels.length === 0) return null;
+    const preset = SHADOW_SOLSTICE_PRESETS.find((item) => item.id === shadowPresetId);
+    if (!preset) return null;
+    const hour = shadowHourFine ?? preset.hourIst;
+    return analyzePanelShadows({
+      panels: placedPanels,
+      obstructions: [],
+      date: dateAtIst(new Date().getFullYear(), preset.month, preset.day, hour),
+      latitudeDeg: center[1],
+      longitudeDeg: center[0],
+      plantRoofHeightAglFt: plantRoofHeightFt,
+    });
+  }, [
+    center,
+    placedPanels,
+    plantRoofHeightFt,
+    shadowEnabled,
+    shadowHourFine,
+    shadowPresetId,
   ]);
 
   // Keep shade map current for the panel redraw effect in this same render.
@@ -1881,6 +1914,80 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     displayedMetrics?.azimuthDeg,
     panelTiltDeg,
     selectedRoofMetrics?.azimuthDeg,
+  ]);
+
+  const annualShadeLoss = useMemo(() => {
+    if (!yieldEstimate || placedPanels.length === 0) return null;
+    return estimateAnnualShadeLoss({
+      panels: placedPanels,
+      obstructions: state.obstructions,
+      latitudeDeg: center[1],
+      longitudeDeg: center[0],
+      plantRoofHeightAglFt: plantRoofHeightFt,
+      unshadedAnnualKwh: yieldEstimate.annualKwh,
+    });
+  }, [center, placedPanels, plantRoofHeightFt, state.obstructions, yieldEstimate]);
+
+  const activeShadowPreset = useMemo(
+    () => SHADOW_SOLSTICE_PRESETS.find((item) => item.id === shadowPresetId) ?? null,
+    [shadowPresetId]
+  );
+
+  const designPackModel = useMemo(() => {
+    if (!designPackOpen) return null;
+    const hour = shadowHourFine ?? activeShadowPreset?.hourIst ?? 12;
+    const sampleLabel = activeShadowPreset
+      ? `${activeShadowPreset.month === 6 ? "21 Jun" : "21 Dec"} · ${hour > 12 ? `${hour - 12} PM` : hour === 12 ? "12 PM" : `${hour} AM`}`
+      : null;
+    return buildDesignStudioPackModel({
+      projectName: project?.official_name || project?.lead_name || "Project",
+      projectId,
+      center,
+      roof: state.roof,
+      roofAreaSqft: state.metrics?.areaSqft ?? null,
+      roofAzimuthDeg: state.metrics?.azimuthDeg ?? null,
+      roofType: roofType || null,
+      obstructions: state.obstructions,
+      panels: placedPanels,
+      panelSpec,
+      orientation: panelOrientation,
+      tiltDeg: panelTiltDeg,
+      mountingType,
+      setbackFt: panelSetbackFt,
+      coveragePct: panelMetrics.coveragePct,
+      remainingAreaSqft: panelMetrics.remainingAreaSqft,
+      plantRoofHeightFt,
+      shadowAnalysis: shadowEnabled ? shadowAnalysis : null,
+      shadowSampleLabel: shadowEnabled ? sampleLabel : null,
+      annualYieldKwh: yieldEstimate?.annualKwh ?? null,
+      annualShadeLossKwh: annualShadeLoss?.annualLossKwh ?? null,
+    });
+  }, [
+    activeShadowPreset,
+    annualShadeLoss?.annualLossKwh,
+    center,
+    designPackOpen,
+    mountingType,
+    panelMetrics.coveragePct,
+    panelMetrics.remainingAreaSqft,
+    panelOrientation,
+    panelSetbackFt,
+    panelSpec,
+    panelTiltDeg,
+    placedPanels,
+    plantRoofHeightFt,
+    project?.lead_name,
+    project?.official_name,
+    projectId,
+    roofType,
+    shadowAnalysis,
+    shadowEnabled,
+    shadowHourFine,
+    state.metrics?.areaSqft,
+    state.metrics?.azimuthDeg,
+    state.obstructions,
+    state.roof,
+    yieldEstimate?.annualKwh,
   ]);
 
   const engineeringWarnings = useMemo(
@@ -3669,6 +3776,16 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       if (!json.ok || !json.data) throw new Error(json.error || "Layout could not be saved.");
 
       const surveyMethod = survey ? "PATCH" : "POST";
+      const shadowFields =
+        placedPanels.length > 0
+          ? buildSurveyShadowFields({
+              panels: placedPanels,
+              obstructions: state.obstructions,
+              latitudeDeg: center[1],
+              longitudeDeg: center[0],
+              plantRoofHeightAglFt: plantRoofHeightFt,
+            })
+          : null;
       const surveyResponse = await fetch(`/api/projects/${projectId}/survey`, {
         method: surveyMethod,
         headers: { "Content-Type": "application/json" },
@@ -3677,6 +3794,12 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           gps_lng: center[0],
           roof_area_sqft: state.metrics.areaSqft,
           roof_type: roofType || null,
+          ...(shadowFields
+            ? {
+                shadow_free_sqft: shadowFields.shadow_free_sqft,
+                shadow_analysis_note: shadowFields.shadow_analysis_note,
+              }
+            : {}),
         }),
       });
       if (surveyResponse.ok && !survey) {
@@ -3731,14 +3854,15 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     }
   }, [
     center,
+    mountingType,
     panelMetrics.coveragePct,
     panelMetrics.remainingAreaSqft,
     panelOrientation,
     panelSetbackFt,
     panelSpec,
     panelTiltDeg,
-    mountingType,
     placedPanels,
+    plantRoofHeightFt,
     projectId,
     roofType,
     state.metrics,
@@ -3799,13 +3923,25 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                 Phone · view only · shadow check OK
               </span>
             ) : (
-              <Button
-                onClick={() => void saveLayout()}
-                disabled={saving || !state.roof || drawingRoof}
-              >
-                <Save className="mr-1.5 h-4 w-4" />
-                {saving ? "Saving…" : "Save version"}
-              </Button>
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={!state.roof}
+                  onClick={() => setDesignPackOpen(true)}
+                >
+                  <Printer className="mr-1.5 h-4 w-4" />
+                  Design pack
+                </Button>
+                <Button
+                  onClick={() => void saveLayout()}
+                  disabled={saving || !state.roof || drawingRoof}
+                >
+                  <Save className="mr-1.5 h-4 w-4" />
+                  {saving ? "Saving…" : "Save version"}
+                </Button>
+              </>
             )}
           </div>
         </div>
@@ -4930,7 +5066,10 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                   key={preset.id}
                   type="button"
                   disabled={!shadowEnabled}
-                  onClick={() => setShadowPresetId(preset.id)}
+                  onClick={() => {
+                    setShadowPresetId(preset.id);
+                    setShadowHourFine(null);
+                  }}
                   className={`rounded-lg border px-2 py-1.5 text-left text-[10px] font-semibold disabled:opacity-40 ${
                     shadowPresetId === preset.id && shadowEnabled
                       ? "border-orange-600 bg-orange-600 text-white"
@@ -4941,6 +5080,23 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                 </button>
               ))}
             </div>
+            {shadowEnabled && activeShadowPreset ? (
+              <label className="mt-2 block text-[10px] font-bold uppercase tracking-wide text-orange-700/90 dark:text-orange-200/80">
+                Fine hour (IST) ·{" "}
+                {shadowHourFine ?? activeShadowPreset.hourIst}
+                :00
+                <input
+                  type="range"
+                  min={7}
+                  max={17}
+                  step={1}
+                  disabled={!shadowEnabled}
+                  value={shadowHourFine ?? activeShadowPreset.hourIst}
+                  onChange={(event) => setShadowHourFine(Number(event.target.value))}
+                  className="mt-1 w-full accent-orange-600 disabled:opacity-40"
+                />
+              </label>
+            ) : null}
             {shadowEnabled && shadowAnalysis ? (
               <div className="mt-3 space-y-2">
                 <div className="grid grid-cols-2 gap-2">
@@ -4965,6 +5121,43 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                     </div>
                   ))}
                 </div>
+                {shadowClearSky && state.obstructions.length > 0 ? (
+                  <div className="rounded-lg border border-orange-200/70 bg-white/70 px-2.5 py-2 dark:border-orange-800/40 dark:bg-white/[0.04]">
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-orange-600">
+                      Before / after (this sample)
+                    </p>
+                    <p className="mt-1 text-[11px] font-semibold text-orange-950 dark:text-orange-50">
+                      Clear sky {Math.round(shadowClearSky.meanShadeFraction * 100)}% shade · with
+                      obstructions {Math.round(shadowAnalysis.meanShadeFraction * 100)}% · Δ{" "}
+                      {Math.max(
+                        0,
+                        Math.round(
+                          (shadowAnalysis.meanShadeFraction - shadowClearSky.meanShadeFraction) *
+                            100
+                        )
+                      )}
+                      pts
+                    </p>
+                    <p className="mt-0.5 text-[10px] text-orange-800/75 dark:text-orange-200/70">
+                      Shade-free {shadowClearSky.shadeFreePanelSqft.toLocaleString("en-IN")} →{" "}
+                      {shadowAnalysis.shadeFreePanelSqft.toLocaleString("en-IN")} sq.ft
+                    </p>
+                  </div>
+                ) : null}
+                {annualShadeLoss ? (
+                  <div className="rounded-lg border border-orange-200/70 bg-white/70 px-2.5 py-2 dark:border-orange-800/40 dark:bg-white/[0.04]">
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-orange-600">
+                      Annual loss (planning)
+                    </p>
+                    <p className="mt-1 text-[11px] font-semibold text-orange-950 dark:text-orange-50">
+                      ~{annualShadeLoss.annualLossKwh.toLocaleString("en-IN")} kWh/yr · shaded yield ~{" "}
+                      {annualShadeLoss.shadedAnnualKwh.toLocaleString("en-IN")} kWh
+                    </p>
+                    <p className="mt-0.5 text-[10px] text-orange-800/75 dark:text-orange-200/70">
+                      {annualShadeLoss.note}
+                    </p>
+                  </div>
+                ) : null}
                 <p className="text-[10px] leading-snug text-orange-800/75 dark:text-orange-200/70">
                   {shadowAnalysis.disclaimer}
                   {state.obstructions.length === 0
@@ -4974,7 +5167,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                       : ""}
                 </p>
                 <p className="text-[10px] text-orange-800/70 dark:text-orange-200/60">
-                  Map: dark amber lobe = cast shadow · warm panel tint = shaded fraction.
+                  Map: dark lobe = cast shadow · warm panel tint = shaded fraction. Save writes
+                  Dec 12 PM shade-free area into Survey.
                 </p>
               </div>
             ) : (
@@ -5227,6 +5421,12 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         <DesignStudioSldSheetViewer
           model={sldSheetModel}
           onClose={() => setSldSheetOpen(false)}
+        />
+      ) : null}
+      {designPackOpen && designPackModel ? (
+        <DesignStudioPackSheetViewer
+          model={designPackModel}
+          onClose={() => setDesignPackOpen(false)}
         />
       ) : null}
     </main>

@@ -6,13 +6,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { revalidateProjectHubCaches } from "@/lib/project-hub-cache";
 import {
   fetchProjectDesigns,
+  fetchProjectPanelLayout,
   fetchProjectSiteLayout,
   projectDesignsKey,
+  projectPanelLayoutKey,
   projectSiteLayoutKey,
   type ProjectDesign,
   type ProjectListItem,
 } from "@/lib/project-api-client";
 import type { ProjectSiteLayout } from "@/lib/site-layout";
+import type { ProjectPanelLayout } from "@/lib/panel-layout";
 import { buildProposalEditHref } from "@/lib/proposal-edit-url";
 import { cn } from "@/lib/utils";
 import {
@@ -219,7 +222,15 @@ function DesignStatusStrip({
   );
 }
 
-function SiteLayoutSummary({ layout }: { layout: ProjectSiteLayout }) {
+function SiteLayoutSummary({
+  layout,
+  panelLayout,
+  projectId,
+}: {
+  layout: ProjectSiteLayout;
+  panelLayout: ProjectPanelLayout | null;
+  projectId: string;
+}) {
   const obstructionCount = Array.isArray(layout.obstructions_geojson)
     ? layout.obstructions_geojson.length
     : 0;
@@ -228,21 +239,62 @@ function SiteLayoutSummary({ layout }: { layout: ProjectSiteLayout }) {
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-sm font-extrabold">
           <MapPinned className="h-4 w-4 text-teal-700 dark:text-teal-300" />
-          2D roof layout
+          2D Design Studio summary
         </CardTitle>
       </CardHeader>
-      <CardContent className="grid gap-2 pt-0 sm:grid-cols-4">
-        {[
-          ["Version", `V${layout.version_number}`],
-          ["Roof area", `${Math.round(layout.roof_area_sqft).toLocaleString("en-IN")} sq.ft`],
-          ["Obstructions", obstructionCount.toLocaleString("en-IN")],
-          ["Saved", formatHubDate(layout.created_at)],
-        ].map(([label, value]) => (
-          <div key={label} className="rounded-lg border border-teal-100 bg-white/80 px-3 py-2 dark:border-teal-900/50 dark:bg-white/[0.04]">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">{label}</p>
-            <p className="mt-0.5 text-sm font-extrabold text-slate-900 dark:text-white">{value}</p>
+      <CardContent className="space-y-3 pt-0">
+        <div className="grid gap-2 sm:grid-cols-4">
+          {[
+            ["Roof V", `V${layout.version_number}`],
+            ["Roof area", `${Math.round(layout.roof_area_sqft).toLocaleString("en-IN")} sq.ft`],
+            ["Obstructions", obstructionCount.toLocaleString("en-IN")],
+            ["Saved", formatHubDate(layout.created_at)],
+          ].map(([label, value]) => (
+            <div
+              key={label}
+              className="rounded-lg border border-teal-100 bg-white/80 px-3 py-2 dark:border-teal-900/50 dark:bg-white/[0.04]"
+            >
+              <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">{label}</p>
+              <p className="mt-0.5 text-sm font-extrabold text-slate-900 dark:text-white">{value}</p>
+            </div>
+          ))}
+        </div>
+        {panelLayout ? (
+          <div className="grid gap-2 sm:grid-cols-4">
+            {[
+              ["Panels V", `V${panelLayout.version_number}`],
+              ["Modules", String(panelLayout.panel_count)],
+              ["DC kW", panelLayout.dc_capacity_kw.toFixed(2)],
+              ["Coverage", `${Math.round(panelLayout.coverage_pct)}%`],
+            ].map(([label, value]) => (
+              <div
+                key={label}
+                className="rounded-lg border border-teal-100 bg-white/80 px-3 py-2 dark:border-teal-900/50 dark:bg-white/[0.04]"
+              >
+                <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                  {label}
+                </p>
+                <p className="mt-0.5 text-sm font-extrabold text-slate-900 dark:text-white">
+                  {value}
+                </p>
+              </div>
+            ))}
           </div>
-        ))}
+        ) : (
+          <p className="text-[11px] text-teal-900/70 dark:text-teal-100/70">
+            No panel layout saved yet — open Design Studio and run Auto layout / Save.
+          </p>
+        )}
+        <p className="text-[10px] leading-relaxed text-teal-900/70 dark:text-teal-100/70">
+          Design pack (print) opens from Design Studio. Design / SLD stay outside the customer
+          proposal.
+        </p>
+        <Button type="button" size="sm" className="gap-1.5" asChild>
+          <Link href={`/projects/${encodeURIComponent(projectId)}/design-studio`}>
+            <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+            Open Design Studio · Design pack
+          </Link>
+        </Button>
       </CardContent>
     </Card>
   );
@@ -462,6 +514,12 @@ export function ProjectHubDesignTab({
     fetchProjectSiteLayout,
     { revalidateOnFocus: false, dedupingInterval: 3_000 }
   );
+  const panelLayoutKey = enabled ? projectPanelLayoutKey(project.id) : null;
+  const { data: panelLayout, mutate: mutatePanelLayout } = useSWR(
+    panelLayoutKey,
+    fetchProjectPanelLayout,
+    { revalidateOnFocus: false, dedupingInterval: 3_000 }
+  );
 
   const sortedDesigns = useMemo(() => {
     return [...(designs ?? [])].sort((a, b) => b.version_number - a.version_number);
@@ -484,7 +542,7 @@ export function ProjectHubDesignTab({
 
   const refresh = async () => {
     await revalidateProjectHubCaches(project.id);
-    await Promise.all([mutateDesigns(), mutateSiteLayout()]);
+    await Promise.all([mutateDesigns(), mutateSiteLayout(), mutatePanelLayout()]);
   };
 
   if (!enabled) return null;
@@ -568,7 +626,13 @@ export function ProjectHubDesignTab({
         selected={selectedDesign}
       />
 
-      {siteLayout ? <SiteLayoutSummary layout={siteLayout} /> : null}
+      {siteLayout ? (
+        <SiteLayoutSummary
+          layout={siteLayout}
+          panelLayout={panelLayout ?? null}
+          projectId={project.id}
+        />
+      ) : null}
 
       {hasDesigns && selectedDesign ? (
         <DesignDataView design={selectedDesign} />

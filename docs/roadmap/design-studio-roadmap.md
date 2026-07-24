@@ -2,8 +2,8 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | Approved phased roadmap — Phase 4 active |
-| **Last Updated** | 2026-07-23 |
+| **Status** | Approved phased roadmap — Phase 5 active |
+| **Last Updated** | 2026-07-24 |
 | **Canonical architecture (FROZEN)** | [`docs/architecture/design-studio-architecture.md`](../architecture/design-studio-architecture.md) |
 
 > **This is the only place where future ideas, future phases, and future enhancements are added.**
@@ -26,8 +26,8 @@
 | **Phase 1** | 2D Geometry foundation — satellite map, roof polygon, obstructions, save/version | **COMPLETE** |
 | **Phase 2** | Auto Panel Placement Engine + RCC/shed presets + manual fine-tune | **COMPLETE (core)** — East-West / one-click tilt chips still queued |
 | **Phase 3** | Engineering Rules + Solar Design — setbacks, strings, studio SLD | **COMPLETE (kickoff)** — equipment pins / exportable SLD pack still queued |
-| **Phase 4** | **Shadow Engine** — per-panel shade %, shade-free area, loss estimate | **ACTIVE** — kickoff: solstice IST presets, map shadow + panel tint (2026-07-23) |
-| **Phase 5** | Project/Survey/BOM/Proposal integration + snapshots + customer sign-off | Approved — queued |
+| **Phase 4** | **Shadow Engine** — per-panel shade %, shade-free area, loss estimate | **COMPLETE (core)** — survey fill, hour slider, before/after, annual loss (2026-07-24) |
+| **Phase 5** | Project/Survey/BOM/Proposal integration + snapshots + customer sign-off | **ACTIVE** — Design Hub summary + Design pack print kickoff (2026-07-24) |
 | **Phase 6** | Cross-device QA, performance, security and pilot rollout | Approved — queued |
 
 ### Phase gates
@@ -170,15 +170,15 @@ percentages and roof-level shade-free area.
 - Objects: **above roof** (tank/chimney) use height as cast height; **AGL** (tree) cast =
   `max(0, object_agl − plant_roof_agl)`.
 
-**Still queued in Phase 4:** survey auto-fill `shadow_free_sqft` / notes, before/after compare,
-annual generation-loss estimate, finer time slider.
+**Still queued in Phase 4:** ~~survey auto-fill `shadow_free_sqft` / notes~~ · ~~before/after compare~~ ·
+~~annual generation-loss estimate~~ · ~~finer time slider~~ — **core complete (2026-07-24).**
 
-- Obstruction placement (tree / chimney / water tank) + height.
-- Sun time slider + solstice presets (Jun 21 / Dec 21 × 9 AM / 12 PM / 3 PM), IST.
-- Per-panel `shadeFraction` per time sample; auto-fill survey `shadow_free_sqft` +
-  `shadow_analysis_note`.
-- Compare layout before/after optimization and estimate annual generation loss.
-- Output is a planning estimate with disclaimer (not a certified shading report).
+**Shipped wrap (2026-07-24):**
+- Save → Survey `shadow_free_sqft` + `shadow_analysis_note` (canonical Dec 21 · 12 PM).
+- Fine hour slider (7–17 IST) on selected solstice day.
+- Before/after: clear-sky vs with-obstructions for the active sample.
+- Annual shade-loss estimate from mean of six solstice samples × unshaded yield.
+- Output remains a planning estimate with disclaimer (not a certified shading report).
 
 ---
 
@@ -189,15 +189,19 @@ annual generation-loss estimate, finer time slider.
 > Design + SLD are separate, subscription-gated capabilities with their own share links and print/PDF.
 > See `.cursor/rules/design-sld-separate-from-proposal.mdc`.
 
-- Map snapshot (`map.getCanvas().toDataURL()`) with panel layout overlay → Supabase storage.
-- Project Hub Design tab summary card (thumbnail + metrics).
-- **Separate Design pack** share link + print/PDF (not a proposal tab / proposal PDF block).
-- **Separate SLD pack** share link + print/PDF when SLD ships (subscription-gated).
-- Optional Project Hub cross-links between proposal and design; do not require Design/SLD inside proposal renderers.
-- Survey roof area/type import; BOM panel/inverter sync; optional **installer-triggered** proposal size revise (new pricing snapshot) — not silent rewrite of frozen offers.
+**Kickoff shipped (2026-07-24):**
+- Project Hub Design tab — 2D summary card with roof + panel layout metrics.
+- **Design pack** print/PDF overlay from Design Studio (installer summary; not a proposal block).
+- Phone view-only adapter (inspect + shadow checks); edit on tablet/computer.
+
+**Still queued in Phase 5:**
+- Map snapshot (`map.getCanvas().toDataURL()` / Static Maps) → Supabase storage + Hub thumbnail.
+- Design pack share link (token URL).
+- Separate SLD pack share link when gated.
+- Optional Project Hub cross-links between proposal and design (no Design/SLD inside proposal renderers).
+- Survey roof area/type import polish; BOM panel/inverter sync; optional **installer-triggered** proposal size revise (new pricing snapshot) — not silent rewrite of frozen offers.
 - Design task completion, customer design sign-off and installation handover package.
-- Version history UI.
-- Phone light-edit adapter finalized.
+- Version history UI polish.
 - Feature flags / plan categories: Proposal-only vs Design-enabled vs SLD-enabled.
 
 ---
