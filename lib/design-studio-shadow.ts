@@ -9,10 +9,9 @@
  */
 
 import area from "@turf/area";
-import buffer from "@turf/buffer";
 import destination from "@turf/destination";
 import intersect from "@turf/intersect";
-import { featureCollection, lineString, polygon } from "@turf/helpers";
+import { featureCollection, polygon } from "@turf/helpers";
 import type { Feature, Polygon as GeoPolygon, MultiPolygon } from "geojson";
 import * as SunCalc from "suncalc";
 import type { PlacedPanel } from "@/lib/panel-layout";
@@ -115,14 +114,27 @@ export type SunPose = {
 };
 
 /**
- * SunCalc v2 returns altitude & azimuth in **degrees**.
- * Azimuth is already north-based clockwise (0=N, 90=E, 180=S, 270=W).
- * (v1 used radians and south-based azimuth — do not re-apply that conversion.)
+ * SunCalc v2: altitude & azimuth in degrees; azimuth north-based CW (0=N, 90=E).
  */
 export function sunPoseAt(date: Date, latitudeDeg: number, longitudeDeg: number): SunPose {
   const pos = SunCalc.getPosition(date, latitudeDeg, longitudeDeg);
-  const altitudeDeg = pos.altitude;
-  const sunBearingDeg = ((pos.azimuth % 360) + 360) % 360;
+  // Guard: if a bundler ever resolved classic v1 (radians), altitude is typically |x|≤π/2
+  // while real solar altitude in degrees for India daytime is usually > 2°. Prefer degrees
+  // whenever |altitude| > π/2 (impossible for radians) OR |azimuth| > π (v2 bearings).
+  const altitudeLooksDegrees = Math.abs(pos.altitude) > Math.PI / 2 + 0.01;
+  const azimuthLooksDegrees = Math.abs(pos.azimuth) > Math.PI + 0.01;
+  const useDegrees = altitudeLooksDegrees || azimuthLooksDegrees;
+
+  let altitudeDeg: number;
+  let sunBearingDeg: number;
+  if (useDegrees) {
+    altitudeDeg = pos.altitude;
+    sunBearingDeg = ((pos.azimuth % 360) + 360) % 360;
+  } else {
+    // Classic SunCalc v1 fallback
+    altitudeDeg = (pos.altitude * 180) / Math.PI;
+    sunBearingDeg = (((pos.azimuth * 180) / Math.PI + 180) % 360 + 360) % 360;
+  }
   const shadowBearingDeg = (sunBearingDeg + 180) % 360;
   return { altitudeDeg, sunBearingDeg, shadowBearingDeg };
 }
@@ -134,7 +146,68 @@ export function shadowLengthM(heightFt: number, altitudeDeg: number): number {
   return heightM / Math.tan(rad);
 }
 
-type ShadowPoly = Feature<GeoPolygon | MultiPolygon>;
+export type LatLngLiteral = { lat: number; lng: number };
+
+type ShadowPoly = Feature<GeoPolygon | MultiPolygon> & { mapPath?: LatLngLiteral[] };
+
+/**
+ * Capsule (stadium) shadow footprint using only @turf/destination
+ * (avoids @turf/buffer failures in some bundlers).
+ */
+export function shadowStadiumLatLngs(opts: {
+  lat: number;
+  lng: number;
+  lengthM: number;
+  shadowBearingDeg: number;
+  radiusM: number;
+  stepsPerCap?: number;
+}): LatLngLiteral[] | null {
+  const { lat, lng, shadowBearingDeg } = opts;
+  const lengthM = Math.max(0.5, opts.lengthM);
+  const radiusM = Math.max(0.4, opts.radiusM);
+  const steps = opts.stepsPerCap ?? 12;
+  const origin: [number, number] = [lng, lat];
+
+  try {
+    const tip = destination(origin, lengthM, shadowBearingDeg, { units: "meters" }).geometry
+      .coordinates as [number, number];
+    const leftBearing = (shadowBearingDeg + 270) % 360;
+    const rightBearing = (shadowBearingDeg + 90) % 360;
+    const ring: LatLngLiteral[] = [];
+
+    for (let i = 0; i <= steps; i += 1) {
+      const t = i / steps;
+      const bearing = (leftBearing + ((rightBearing - leftBearing + 360) % 360) * t) % 360;
+      const pt = destination(tip, radiusM, bearing, { units: "meters" }).geometry.coordinates;
+      ring.push({ lat: pt[1], lng: pt[0] });
+    }
+    for (let i = 0; i <= steps; i += 1) {
+      const t = i / steps;
+      const bearing = (rightBearing + ((leftBearing - rightBearing + 360) % 360) * t) % 360;
+      const pt = destination(origin, radiusM, bearing, { units: "meters" }).geometry.coordinates;
+      ring.push({ lat: pt[1], lng: pt[0] });
+    }
+    if (ring.length < 4) return null;
+    return ring;
+  } catch {
+    return null;
+  }
+}
+
+function latLngsToPolygonFeature(ring: LatLngLiteral[]): ShadowPoly | null {
+  if (ring.length < 3) return null;
+  const coords = ring.map((p) => [p.lng, p.lat] as [number, number]);
+  const first = coords[0]!;
+  const last = coords[coords.length - 1]!;
+  if (first[0] !== last[0] || first[1] !== last[1]) {
+    coords.push([first[0], first[1]]);
+  }
+  try {
+    return polygon([coords]) as ShadowPoly;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Approximate roof-plane shadow of a circular obstruction (stadium from object to tip).
@@ -145,29 +218,31 @@ export function obstructionShadowPolygon(
   shadowBearingDeg: number,
   plantRoofHeightAglFt = 0
 ): ShadowPoly | null {
-  if (altitudeDeg <= 1) return null;
+  if (!(altitudeDeg > 1) || !Number.isFinite(altitudeDeg)) return null;
+  if (!Number.isFinite(obstruction.lat) || !Number.isFinite(obstruction.lng)) return null;
+
   const heightFt = effectiveShadowHeightAboveRoofFt(obstruction, plantRoofHeightAglFt);
   if (heightFt <= 0) return null;
 
   const lengthM = shadowLengthM(heightFt, altitudeDeg);
   if (!Number.isFinite(lengthM) || lengthM <= 0) return null;
-  // Cap extreme low-sun shadows (km-scale) for UI stability.
-  const cappedM = Math.min(lengthM, 80);
 
   const radiusM = effectiveObstructionRadiusFt(obstruction) * FT_TO_M;
-  const origin: [number, number] = [obstruction.lng, obstruction.lat];
-  try {
-    const tip = destination(origin, cappedM, shadowBearingDeg, { units: "meters" });
-    const tipCoord = tip.geometry.coordinates as [number, number];
-    const spine = lineString([origin, tipCoord]);
-    const buffered = buffer(spine, Math.max(0.3, radiusM), {
-      units: "meters",
-      steps: 24,
-    });
-    return buffered as ShadowPoly | null;
-  } catch {
-    return null;
-  }
+  // Visible floor so high-sun noon still shows a lobe; cap low-sun extremes.
+  const cappedM = Math.min(Math.max(lengthM, radiusM * 1.25), 80);
+
+  const mapPath = shadowStadiumLatLngs({
+    lat: obstruction.lat,
+    lng: obstruction.lng,
+    lengthM: cappedM,
+    shadowBearingDeg,
+    radiusM,
+  });
+  if (!mapPath) return null;
+  const feature = latLngsToPolygonFeature(mapPath);
+  if (!feature) return null;
+  feature.mapPath = mapPath;
+  return feature;
 }
 
 export type PanelShadeResult = {
@@ -179,15 +254,13 @@ export type ShadowAnalysisResult = {
   sampleAt: Date;
   sun: SunPose;
   panelShades: PanelShadeResult[];
-  /** Mean shade fraction across panels (0–1). */
   meanShadeFraction: number;
-  /** Fraction of panel area that is shade-free (1 − mean). */
   shadeFreeFraction: number;
-  /** Approximate shade-free panel area (sq.ft). */
   shadeFreePanelSqft: number;
-  /** Total panel footprint area (sq.ft). */
   totalPanelSqft: number;
   shadedPanelCount: number;
+  castingObstructionCount: number;
+  skippedObstructionCount: number;
   disclaimer: string;
 };
 
@@ -199,17 +272,12 @@ function panelFeature(panel: PlacedPanel): Feature<GeoPolygon> | null {
   }
 }
 
-/**
- * Per-panel shade fraction for one sun sample.
- * Uses plant roof height AGL + per-obstruction height datum.
- */
 export function analyzePanelShadows(opts: {
   panels: PlacedPanel[];
   obstructions: SiteObstruction[];
   date: Date;
   latitudeDeg: number;
   longitudeDeg: number;
-  /** Plant / terrace height above ground (ft). */
   plantRoofHeightAglFt?: number;
 }): ShadowAnalysisResult {
   const {
@@ -224,6 +292,30 @@ export function analyzePanelShadows(opts: {
   const disclaimer =
     "Planning estimate — roof-plane shadow from plant height + object height (tank above roof / tree AGL). Not a certified shading report.";
 
+  const countCasts = () => {
+    let casting = 0;
+    let skipped = 0;
+    if (sun.altitudeDeg > 1) {
+      for (const obstruction of obstructions) {
+        if (
+          obstructionShadowPolygon(
+            obstruction,
+            sun.altitudeDeg,
+            sun.shadowBearingDeg,
+            plantRoofHeightAglFt
+          )
+        ) {
+          casting += 1;
+        } else {
+          skipped += 1;
+        }
+      }
+    } else {
+      skipped = obstructions.length;
+    }
+    return { castingObstructionCount: casting, skippedObstructionCount: skipped };
+  };
+
   if (panels.length === 0) {
     return {
       sampleAt: date,
@@ -234,11 +326,11 @@ export function analyzePanelShadows(opts: {
       shadeFreePanelSqft: 0,
       totalPanelSqft: 0,
       shadedPanelCount: 0,
+      ...countCasts(),
       disclaimer,
     };
   }
 
-  // Night / sun below horizon → treat as fully shaded for planning.
   if (sun.altitudeDeg <= 1) {
     const panelShades = panels.map((p) => ({ panelId: p.id, shadeFraction: 1 }));
     let totalSqm = 0;
@@ -246,7 +338,6 @@ export function analyzePanelShadows(opts: {
       const f = panelFeature(p);
       if (f) totalSqm += area(f);
     }
-    const totalPanelSqft = totalSqm * 10.7639104167;
     return {
       sampleAt: date,
       sun,
@@ -254,13 +345,17 @@ export function analyzePanelShadows(opts: {
       meanShadeFraction: 1,
       shadeFreeFraction: 0,
       shadeFreePanelSqft: 0,
-      totalPanelSqft,
+      totalPanelSqft: totalSqm * 10.7639104167,
       shadedPanelCount: panels.length,
+      castingObstructionCount: 0,
+      skippedObstructionCount: obstructions.length,
       disclaimer,
     };
   }
 
   const shadows: ShadowPoly[] = [];
+  let castingObstructionCount = 0;
+  let skippedObstructionCount = 0;
   for (const obstruction of obstructions) {
     const shadow = obstructionShadowPolygon(
       obstruction,
@@ -268,7 +363,12 @@ export function analyzePanelShadows(opts: {
       sun.shadowBearingDeg,
       plantRoofHeightAglFt
     );
-    if (shadow?.geometry) shadows.push(shadow);
+    if (shadow?.geometry) {
+      shadows.push(shadow);
+      castingObstructionCount += 1;
+    } else {
+      skippedObstructionCount += 1;
+    }
   }
 
   const panelShades: PanelShadeResult[] = [];
@@ -299,7 +399,6 @@ export function analyzePanelShadows(opts: {
           // ignore topology failures
         }
       }
-      // Overlapping shadows can double-count; clamp.
       shadedSqm = Math.min(panelArea, shadedSqm);
     }
 
@@ -316,8 +415,6 @@ export function analyzePanelShadows(opts: {
     panelShades.length === 0
       ? 0
       : panelShades.reduce((s, p) => s + p.shadeFraction, 0) / panelShades.length;
-  const totalPanelSqft = totalSqm * 10.7639104167;
-  const shadeFreePanelSqft = freeSqm * 10.7639104167;
 
   return {
     sampleAt: date,
@@ -325,14 +422,15 @@ export function analyzePanelShadows(opts: {
     panelShades,
     meanShadeFraction: Math.round(meanShadeFraction * 1000) / 1000,
     shadeFreeFraction: Math.round((1 - meanShadeFraction) * 1000) / 1000,
-    shadeFreePanelSqft: Math.round(shadeFreePanelSqft),
-    totalPanelSqft: Math.round(totalPanelSqft),
+    shadeFreePanelSqft: Math.round(freeSqm * 10.7639104167),
+    totalPanelSqft: Math.round(totalSqm * 10.7639104167),
     shadedPanelCount,
+    castingObstructionCount,
+    skippedObstructionCount,
     disclaimer,
   };
 }
 
-/** Map fill color for shade fraction (selected panels keep selection styling in UI). */
 export function shadeFillColor(shadeFraction: number, selected: boolean, locked: boolean): string {
   if (selected) return "#1e3a8a";
   if (locked && shadeFraction < 0.05) return "#1c1917";

@@ -1016,7 +1016,15 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           }),
           map.addListener("idle", () => {
             const next = map.getCenter();
-            if (next) setCenter([next.lng(), next.lat()]);
+            if (next) {
+              const lng = next.lng();
+              const lat = next.lat();
+              setCenter((prev) =>
+                Math.abs(prev[0] - lng) < 1e-7 && Math.abs(prev[1] - lat) < 1e-7
+                  ? prev
+                  : [lng, lat]
+              );
+            }
             const heading = map.getHeading();
             if (typeof heading === "number") setMapHeading(heading);
             const typeId = map.getMapTypeId();
@@ -1461,7 +1469,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     studioTool,
   ]);
 
-  // Phase 4 — draw ground shadow footprints for the active sun sample.
+  // Phase 4 — draw roof-plane shadow footprints for the active sun sample.
   useEffect(() => {
     if (!mapReady || !mapRef.current || !window.google?.maps) return;
     shadowPolygonsRef.current.forEach((poly) => poly.setMap(null));
@@ -1476,35 +1484,29 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         shadowAnalysis.sun.shadowBearingDeg,
         plantRoofHeightFt
       );
-      if (!shadow?.geometry) continue;
-      const rings: google.maps.LatLngLiteral[][] = [];
-      const geom = shadow.geometry;
-      if (geom.type === "Polygon") {
-        rings.push(
-          geom.coordinates[0].slice(0, -1).map(([lng, lat]) => ({ lat, lng }))
-        );
-      } else if (geom.type === "MultiPolygon") {
-        for (const poly of geom.coordinates) {
-          rings.push(poly[0].slice(0, -1).map(([lng, lat]) => ({ lat, lng })));
-        }
-      }
-      for (const path of rings) {
-        if (path.length < 3) continue;
-        polys.push(
-          new google.maps.Polygon({
-            map: mapRef.current!,
-            paths: path,
-            clickable: false,
-            strokeColor: "#f59e0b",
-            strokeOpacity: 0.85,
-            strokeWeight: 1.5,
-            fillColor: "#0f172a",
-            fillOpacity: 0.42,
-            // Draw above panels so cast is obvious on satellite; panels stay selectable.
-            zIndex: 7,
-          })
-        );
-      }
+      if (!shadow) continue;
+      const path =
+        shadow.mapPath ??
+        (shadow.geometry.type === "Polygon"
+          ? shadow.geometry.coordinates[0]
+              .slice(0, -1)
+              .map(([lng, lat]) => ({ lat, lng }))
+          : null);
+      if (!path || path.length < 3) continue;
+      polys.push(
+        new google.maps.Polygon({
+          map: mapRef.current!,
+          paths: path,
+          clickable: false,
+          strokeColor: "#fbbf24",
+          strokeOpacity: 0.95,
+          strokeWeight: 2,
+          fillColor: "#020617",
+          fillOpacity: 0.5,
+          // Above panels (6–8) so cast is obvious on satellite.
+          zIndex: 50,
+        })
+      );
     }
     shadowPolygonsRef.current = polys;
     return () => {
@@ -4485,6 +4487,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                     ["Mean shade", `${(shadowAnalysis.meanShadeFraction * 100).toFixed(0)}%`],
                     ["Shade-free", `${shadowAnalysis.shadeFreePanelSqft.toLocaleString("en-IN")} sq.ft`],
                     ["Panels hit", String(shadowAnalysis.shadedPanelCount)],
+                    ["Cast on map", String(shadowAnalysis.castingObstructionCount)],
+                    ["Skipped", String(shadowAnalysis.skippedObstructionCount)],
                   ].map(([label, value]) => (
                     <div
                       key={label}
@@ -4503,10 +4507,12 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                   {shadowAnalysis.disclaimer}
                   {state.obstructions.length === 0
                     ? " Add tanks/trees with height to see cast shadows."
-                    : ""}
+                    : shadowAnalysis.castingObstructionCount === 0
+                      ? " No cast yet — check object height / datum. Trees shorter than plant roof height cast 0. Prefer tank (above roof) or Dec 9 AM."
+                      : ""}
                 </p>
                 <p className="text-[10px] text-orange-800/70 dark:text-orange-200/60">
-                  Map: grey patches = ground shadow · warm panel tint = shaded fraction.
+                  Map: dark amber lobe = cast shadow · warm panel tint = shaded fraction.
                 </p>
               </div>
             ) : (
