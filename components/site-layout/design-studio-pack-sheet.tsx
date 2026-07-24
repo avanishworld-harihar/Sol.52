@@ -5,7 +5,8 @@
  * Separate from customer proposal (Design / SLD product lock).
  */
 
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import type { DesignStudioPackModel } from "@/lib/design-studio-pack-model";
 import { Button } from "@/components/ui/button";
 import { Printer, X } from "lucide-react";
@@ -14,6 +15,9 @@ type Props = {
   model: DesignStudioPackModel;
   onClose?: () => void;
 };
+
+/** Above TopBar (z-100) and Design Studio chrome; below command palette (z-500). */
+const OVERLAY_Z = 400;
 
 function fmt(n: number | null | undefined, digits = 0, suffix = ""): string {
   if (n == null || !Number.isFinite(n)) return "—";
@@ -24,8 +28,13 @@ function fmt(n: number | null | undefined, digits = 0, suffix = ""): string {
 }
 
 export function DesignStudioPackSheetViewer({ model, onClose }: Props) {
+  const [mounted, setMounted] = useState(false);
   const print = useCallback(() => {
     window.print();
+  }, []);
+
+  useEffect(() => {
+    setMounted(true);
   }, []);
 
   useEffect(() => {
@@ -33,7 +42,12 @@ export function DesignStudioPackSheetViewer({ model, onClose }: Props) {
       if (event.key === "Escape") onClose?.();
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
   }, [onClose]);
 
   const rows: [string, string][] = [
@@ -64,58 +78,77 @@ export function DesignStudioPackSheetViewer({ model, onClose }: Props) {
     ["Annual shade loss", fmt(model.annualShadeLossKwh, 0, " kWh")],
   ];
 
-  return (
-    <div className="fixed inset-0 z-[80] flex flex-col bg-slate-900/70 p-3 backdrop-blur-sm print:static print:bg-white print:p-0">
-      <div className="mx-auto flex w-full max-w-3xl shrink-0 items-center justify-between gap-2 rounded-t-xl border border-b-0 border-slate-200 bg-white px-3 py-2 print:hidden dark:border-white/10 dark:bg-slate-950">
-        <div>
-          <p className="text-sm font-extrabold text-slate-900 dark:text-white">Design pack</p>
-          <p className="text-[10px] text-slate-500">
-            Installer summary · Print / PDF · not on customer proposal
+  if (!mounted) return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 flex items-stretch justify-center p-3 sm:p-4 print:static print:bg-white print:p-0"
+      style={{ zIndex: OVERLAY_Z }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Design pack"
+    >
+      {/* Full-screen dim — click returns to Design Studio */}
+      <button
+        type="button"
+        aria-label="Close design pack"
+        className="absolute inset-0 bg-slate-950/75 backdrop-blur-[2px] print:hidden"
+        onClick={() => onClose?.()}
+      />
+
+      <div className="relative z-[1] flex max-h-full w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl print:max-w-none print:overflow-visible print:rounded-none print:border-0 print:shadow-none dark:border-white/10 dark:bg-slate-950">
+        <div className="flex shrink-0 items-center justify-between gap-2 border-b border-slate-200 bg-white px-3 py-2.5 print:hidden dark:border-white/10 dark:bg-slate-950">
+          <div className="min-w-0">
+            <p className="text-sm font-extrabold text-slate-900 dark:text-white">Design pack</p>
+            <p className="truncate text-[10px] text-slate-500">
+              Outside click / Esc closes · Print / PDF · not on proposal
+            </p>
+          </div>
+          <div className="flex shrink-0 gap-2">
+            <Button type="button" size="sm" onClick={print}>
+              <Printer className="mr-1.5 h-3.5 w-3.5" />
+              Print / PDF
+            </Button>
+            <Button type="button" size="sm" variant="outline" onClick={() => onClose?.()}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5 sm:p-6 print:overflow-visible print:p-8">
+          <header className="border-b border-slate-200 pb-4 dark:border-white/10">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-teal-700">
+              Sol.52 Design pack
+            </p>
+            <h1 className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-white">
+              {model.projectName}
+            </h1>
+            <p className="mt-1 text-xs text-slate-500">{model.disclaimer}</p>
+          </header>
+
+          <dl className="mt-4 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
+            {rows.map(([label, value]) => (
+              <div
+                key={label}
+                className="flex items-baseline justify-between gap-3 border-b border-slate-100 py-1.5 dark:border-white/5"
+              >
+                <dt className="text-[11px] font-bold uppercase tracking-wide text-slate-400">
+                  {label}
+                </dt>
+                <dd className="text-right text-sm font-semibold text-slate-900 dark:text-slate-100">
+                  {value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+
+          <p className="mt-6 text-[10px] leading-relaxed text-slate-500">
+            Map snapshot is captured on Save and shown in Project Hub Design. Share-link shipping
+            continues in Phase 5. This pack is for installer review and print only.
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button type="button" size="sm" onClick={print}>
-            <Printer className="mr-1.5 h-3.5 w-3.5" />
-            Print / PDF
-          </Button>
-          <Button type="button" size="sm" variant="outline" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
       </div>
-
-      <div className="mx-auto w-full max-w-3xl flex-1 overflow-auto rounded-b-xl border border-slate-200 bg-white p-6 shadow-xl print:max-w-none print:overflow-visible print:rounded-none print:border-0 print:p-8 print:shadow-none dark:border-white/10 dark:bg-slate-950">
-        <header className="border-b border-slate-200 pb-4 dark:border-white/10">
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-teal-700">
-            Sol.52 Design pack
-          </p>
-          <h1 className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-white">
-            {model.projectName}
-          </h1>
-          <p className="mt-1 text-xs text-slate-500">{model.disclaimer}</p>
-        </header>
-
-        <dl className="mt-4 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
-          {rows.map(([label, value]) => (
-            <div
-              key={label}
-              className="flex items-baseline justify-between gap-3 border-b border-slate-100 py-1.5 dark:border-white/5"
-            >
-              <dt className="text-[11px] font-bold uppercase tracking-wide text-slate-400">
-                {label}
-              </dt>
-              <dd className="text-right text-sm font-semibold text-slate-900 dark:text-slate-100">
-                {value}
-              </dd>
-            </div>
-          ))}
-        </dl>
-
-        <p className="mt-6 text-[10px] leading-relaxed text-slate-500">
-          Map snapshot is captured on Save and shown in Project Hub Design. Share-link shipping
-          continues in Phase 5. This pack is for installer review and print only.
-        </p>
-      </div>
-    </div>
+    </div>,
+    document.body
   );
 }

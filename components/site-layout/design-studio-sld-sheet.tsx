@@ -5,10 +5,11 @@
  * Separate from customer proposal (Design / SLD product lock).
  */
 
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { DesignStudioSldModel } from "@/lib/design-studio-sld-model";
 import { Button } from "@/components/ui/button";
-import { Printer, X } from "lucide-react";
+import { Download, Printer, X } from "lucide-react";
 
 const W = 1180;
 const H = 834;
@@ -458,45 +459,176 @@ export function DesignStudioSldSheetSvg({ model }: { model: DesignStudioSldModel
 }
 
 export function DesignStudioSldSheetViewer({ model, onClose, className }: DesignStudioSldSheetProps) {
+  const sheetRef = useRef<HTMLDivElement | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const handlePrint = useCallback(() => {
     if (typeof window === "undefined") return;
     window.print();
   }, []);
+
+  const handleDownloadPng = useCallback(async () => {
+    const svgEl = sheetRef.current?.querySelector("svg");
+    if (!svgEl || typeof window === "undefined") return;
+    setDownloading(true);
+    try {
+      const clone = svgEl.cloneNode(true) as SVGSVGElement;
+      clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+      clone.setAttribute("width", String(W));
+      clone.setAttribute("height", String(H));
+      const xml = new XMLSerializer().serializeToString(clone);
+      const svgBlob = new Blob([xml], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(svgBlob);
+      await new Promise<void>((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          try {
+            const scale = 2;
+            const canvas = document.createElement("canvas");
+            canvas.width = W * scale;
+            canvas.height = H * scale;
+            const ctx = canvas.getContext("2d");
+            if (!ctx) {
+              reject(new Error("canvas"));
+              return;
+            }
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob((blob) => {
+              URL.revokeObjectURL(url);
+              if (!blob) {
+                reject(new Error("blob"));
+                return;
+              }
+              const safeName = (model.projectName || "design")
+                .replace(/[^\w\-]+/g, "_")
+                .slice(0, 60);
+              const a = document.createElement("a");
+              a.href = URL.createObjectURL(blob);
+              a.download = `SLD_${safeName}.png`;
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              URL.revokeObjectURL(a.href);
+              resolve();
+            }, "image/png");
+          } catch (error) {
+            URL.revokeObjectURL(url);
+            reject(error);
+          }
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(url);
+          reject(new Error("image_load"));
+        };
+        img.src = url;
+      });
+    } catch {
+      // Fall back to SVG download if PNG raster fails.
+      const svgEl2 = sheetRef.current?.querySelector("svg");
+      if (svgEl2) {
+        const clone = svgEl2.cloneNode(true) as SVGSVGElement;
+        clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+        const xml = new XMLSerializer().serializeToString(clone);
+        const blob = new Blob([xml], { type: "image/svg+xml;charset=utf-8" });
+        const safeName = (model.projectName || "design")
+          .replace(/[^\w\-]+/g, "_")
+          .slice(0, 60);
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `SLD_${safeName}.svg`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(a.href);
+      }
+    } finally {
+      setDownloading(false);
+    }
+  }, [model.projectName]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose?.();
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
   }, [onClose]);
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div
-      className={`sld-print-portal fixed inset-0 z-[80] flex flex-col bg-slate-900/70 print:bg-white ${className ?? ""}`}
+      className={`sld-print-portal fixed inset-0 flex flex-col print:bg-white ${className ?? ""}`}
+      style={{ zIndex: 400 }}
       role="dialog"
       aria-modal="true"
       aria-label="Engineering SLD sheet"
     >
-      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/10 bg-slate-950 px-3 py-2 print:hidden">
-        <div>
-          <p className="text-sm font-extrabold text-white">Engineering SLD sheet</p>
-          <p className="text-[10px] text-slate-400">
-            Protection · cables · earthing · string electricals · Print → PDF (not on proposal)
-          </p>
+      <button
+        type="button"
+        aria-label="Close engineering SLD"
+        className="absolute inset-0 bg-slate-950/75 backdrop-blur-[2px] print:hidden"
+        onClick={() => onClose?.()}
+      />
+      <div className="relative z-[1] flex min-h-0 flex-1 flex-col">
+        <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/10 bg-slate-950 px-3 py-2 print:hidden">
+          <div className="min-w-0">
+            <p className="text-sm font-extrabold text-white">Engineering SLD sheet</p>
+            <p className="truncate text-[10px] text-slate-400">
+              Outside click / Esc closes · Download PNG · Print → PDF (not on proposal)
+            </p>
+          </div>
+          <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => void handleDownloadPng()}
+              disabled={downloading}
+              className="border-white/20 text-white hover:bg-white/10"
+            >
+              <Download className="mr-1.5 h-4 w-4" />
+              {downloading ? "Saving…" : "Download PNG"}
+            </Button>
+            <Button type="button" size="sm" onClick={handlePrint} className="bg-violet-600 hover:bg-violet-500">
+              <Printer className="mr-1.5 h-4 w-4" /> Print / PDF
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={onClose}
+              className="border-white/20 text-white hover:bg-white/10"
+            >
+              <X className="mr-1 h-4 w-4" /> Close
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button type="button" size="sm" onClick={handlePrint} className="bg-violet-600 hover:bg-violet-500">
-            <Printer className="mr-1.5 h-4 w-4" /> Print / PDF
-          </Button>
-          <Button type="button" size="sm" variant="outline" onClick={onClose} className="border-white/20 text-white">
-            <X className="mr-1 h-4 w-4" /> Close
-          </Button>
-        </div>
-      </div>
-      <div className="min-h-0 flex-1 overflow-auto p-3 print:p-0">
-        <div className="sld-sheet-page mx-auto max-w-[1180px] rounded-lg bg-white shadow-xl print:max-w-none print:rounded-none print:shadow-none">
-          <DesignStudioSldSheetSvg model={model} />
+        <div
+          className="relative min-h-0 flex-1 overflow-auto p-3 print:p-0"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) onClose?.();
+          }}
+        >
+          <div
+            ref={sheetRef}
+            className="sld-sheet-page relative z-[1] mx-auto max-w-[1180px] rounded-lg bg-white shadow-xl print:max-w-none print:rounded-none print:shadow-none"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <DesignStudioSldSheetSvg model={model} />
+          </div>
         </div>
       </div>
       <style>{`
@@ -524,6 +656,8 @@ export function DesignStudioSldSheetViewer({ model, onClose, className }: Design
           }
         }
       `}</style>
-    </div>
+    </div>,
+    document.body
   );
 }
+
