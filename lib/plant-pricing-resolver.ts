@@ -11,6 +11,7 @@ import {
   lookupDcrKwGrossInr,
   lookupNonDcrKwGrossInr,
   normalizeCatalogEntry,
+  normalizeCatalogKw,
   type ResidentialBrandCatalog,
   type ResidentialBrandCatalogEntry,
 } from "@/lib/residential-brand-catalog";
@@ -72,11 +73,14 @@ function findBrandEntry(
 
 function tierLadderMatchedKw(entry: ResidentialBrandCatalogEntry | null, kw: number): number | null {
   if (!entry?.kwTiers?.length) return null;
-  const sorted = [...entry.kwTiers].sort((a, b) => a.kw - b.kw);
-  if (sorted.some((t) => t.kw === kw)) return kw;
+  const target = normalizeCatalogKw(kw);
+  const sorted = [...entry.kwTiers]
+    .map((t) => ({ ...t, kw: normalizeCatalogKw(t.kw) }))
+    .sort((a, b) => a.kw - b.kw);
+  if (sorted.some((t) => t.kw === target)) return target;
   let best: number | null = null;
   for (const t of sorted) {
-    if (t.kw <= kw) best = t.kw;
+    if (t.kw <= target) best = t.kw;
   }
   return best ?? sorted[0]?.kw ?? null;
 }

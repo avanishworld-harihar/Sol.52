@@ -96,7 +96,7 @@ export function buildBom(opts: {
   includedFreeAmcYears?: BomFreeAmcYears;
   installerName?: string;
 }): DeckBomItem[] {
-  const kw = Math.max(1, Math.round(opts.systemKw || 1));
+  const kw = Math.max(0.5, Math.round((opts.systemKw || 1) * 10) / 10);
   const panelWatt = 540;
   const panelCount = Math.max(1, Math.ceil((kw * 1000) / panelWatt));
   const brands = pickBrandSet({ preferredPanelBrand: opts.preferredPanelBrand, systemKw: kw });

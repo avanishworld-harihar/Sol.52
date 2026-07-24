@@ -45,7 +45,7 @@ export const residentialSubsidySchema = z.object({
 });
 
 export const residentialKwTierSchema = z.object({
-  kw: z.number().min(1).max(10000),
+  kw: z.number().min(0.5).max(10000),
   /** DCR complete plant gross (₹) — primary field. */
   priceInr: z.number().min(0),
   /** Non-DCR complete plant gross (₹) — enter manually per kW row. */
@@ -79,7 +79,7 @@ export const residentialWireBrandSchema = z.string().min(1).max(80);
 
 /** One row: same kW compared across Non-DCR vs DCR gross system cost. */
 export const residentialTrackCompareTierSchema = z.object({
-  kw: z.number().min(1).max(100),
+  kw: z.number().min(0.5).max(100),
   nonDcrGrossInr: z.number().min(0),
   dcrGrossInr: z.number().min(0),
   /** When false, row stays in BOM workspace but is omitted from the web proposal table. */

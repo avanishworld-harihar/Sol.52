@@ -117,7 +117,6 @@ export function ResidentialKwPricingSettings({ config, onChange, className }: Pr
             >
               <FloatingLabelNumericInput
                 label="kW"
-                integer
                 value={tier.kw}
                 onValueChange={(n) => updateTier(idx, { kw: n ?? tier.kw })}
                 className="h-10 rounded-lg text-sm font-bold"

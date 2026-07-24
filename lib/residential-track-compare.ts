@@ -59,7 +59,7 @@ export function normalizeResidentialTrackCompare(
     raw?.tiers?.length && raw.tiers.length > 0
       ? raw.tiers.map((t) => {
           const base = {
-            kw: Math.max(1, Math.min(10000, t.kw)),
+            kw: Math.round(Math.max(0.5, Math.min(10000, t.kw)) * 10) / 10,
             nonDcrGrossInr: Math.max(0, Math.round(t.nonDcrGrossInr)),
             dcrGrossInr: Math.max(0, Math.round(t.dcrGrossInr)),
             visible: t.visible !== false,

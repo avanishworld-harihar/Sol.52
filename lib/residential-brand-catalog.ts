@@ -108,11 +108,19 @@ export function getCompareCatalogEntry(config: ResidentialProposalConfig): Resid
 }
 
 /**
+ * Catalog / rate-card kW — one decimal (e.g. 5.5), not whole numbers only.
+ */
+export function normalizeCatalogKw(kw: number): number {
+  if (!Number.isFinite(kw) || kw <= 0) return 1;
+  return Math.round(Math.max(0.5, Math.min(10000, kw)) * 10) / 10;
+}
+
+/**
  * Normalize kW tier fields. Plant gross (₹) is canonical — never overwrite entered amounts
  * from derived ₹/Wp (round-trip would drift, e.g. 190000 → 189990 at 3 kW).
  */
 export function syncKwTierCanonical(tier: ResidentialKwTier): ResidentialKwTier {
-  const next = { ...tier, nonDcrPriceInr: tier.nonDcrPriceInr ?? 0 };
+  const next = { ...tier, kw: normalizeCatalogKw(tier.kw), nonDcrPriceInr: tier.nonDcrPriceInr ?? 0 };
   if (next.priceInr > 0) {
     next.ratePerWpInr = ratePerWpFromPlantGross(next.priceInr, next.kw);
   } else if (next.ratePerWpInr != null && next.ratePerWpInr > 0) {
@@ -130,7 +138,7 @@ export function syncKwTierCanonical(tier: ResidentialKwTier): ResidentialKwTier 
 export function normalizeKwTierList(tiers: ResidentialKwTier[]): ResidentialKwTier[] {
   const byKw = new Map<number, ResidentialKwTier>();
   for (const t of tiers) {
-    const kw = Math.max(1, Math.min(10000, Math.round(t.kw)));
+    const kw = normalizeCatalogKw(t.kw);
     const prev = byKw.get(kw);
     byKw.set(kw, syncKwTierCanonical({ ...prev, ...t, kw }));
   }
@@ -141,7 +149,7 @@ export function collectCatalogKwLadder(entries: ResidentialBrandCatalogEntry[]):
   const set = new Set<number>();
   for (const e of entries) {
     for (const t of e.kwTiers ?? []) {
-      const kw = Math.round(t.kw);
+      const kw = normalizeCatalogKw(t.kw);
       if (kw > 0) set.add(kw);
     }
   }
@@ -153,7 +161,7 @@ export function alignCatalogEntriesToKwLadder(
   entries: ResidentialBrandCatalogEntry[],
   ladder: number[]
 ): ResidentialBrandCatalogEntry[] {
-  const sortedLadder = [...new Set(ladder.map((k) => Math.max(1, Math.min(10000, Math.round(k)))))]
+  const sortedLadder = [...new Set(ladder.map((k) => normalizeCatalogKw(k)))]
     .filter((k) => k > 0)
     .sort((a, b) => a - b);
   if (sortedLadder.length === 0) return entries;
@@ -161,7 +169,7 @@ export function alignCatalogEntriesToKwLadder(
   return entries.map((entry) => {
     const byKw = new Map<number, ResidentialKwTier>();
     for (const t of entry.kwTiers ?? []) {
-      const kw = Math.round(t.kw);
+      const kw = normalizeCatalogKw(t.kw);
       if (kw > 0) byKw.set(kw, syncKwTierCanonical(t));
     }
     return {
@@ -198,14 +206,15 @@ function lookupTierGrossInr(
     .sort((a, b) => a.kw - b.kw);
   if (!sorted.length) return null;
 
-  const exact = sorted.find((t) => t.kw === kw);
+  const targetKw = normalizeCatalogKw(kw);
+  const exact = sorted.find((t) => normalizeCatalogKw(t.kw) === targetKw);
   if (exact) return exact[field];
 
   let lo: ResidentialKwTier | null = null;
   let hi: ResidentialKwTier | null = null;
   for (const t of sorted) {
-    if (t.kw < kw) lo = t;
-    if (t.kw > kw) {
+    if (t.kw < targetKw) lo = t;
+    if (t.kw > targetKw) {
       hi = t;
       break;
     }
@@ -213,18 +222,18 @@ function lookupTierGrossInr(
 
   // Between two priced rows — interpolate plant gross by kW
   if (lo && hi && hi.kw > lo.kw) {
-    const t = (kw - lo.kw) / (hi.kw - lo.kw);
+    const t = (targetKw - lo.kw) / (hi.kw - lo.kw);
     return Math.round(lo[field] + (hi[field] - lo[field]) * t);
   }
 
   // Above top row — scale ₹/kW from highest tier
   if (lo && !hi && lo.kw > 0) {
-    return Math.round((lo[field] / lo.kw) * kw);
+    return Math.round((lo[field] / lo.kw) * targetKw);
   }
 
   // Below first row — scale ₹/kW from lowest tier
   if (!lo && hi && hi.kw > 0) {
-    return Math.round((hi[field] / hi.kw) * kw);
+    return Math.round((hi[field] / hi.kw) * targetKw);
   }
 
   return sorted[0]?.[field] ?? null;
@@ -268,7 +277,7 @@ export function resolveCompareTierFromCatalog(
   const dcrGrossInr = Math.max(0, Math.round(lookupDcrKwGrossInr(entry, kw) ?? 0));
   const nonDcrGrossInr = Math.max(0, Math.round(lookupNonDcrKwGrossInr(entry, kw) ?? 0));
   return {
-    kw: Math.max(1, Math.min(10000, kw)),
+    kw: normalizeCatalogKw(kw),
     dcrGrossInr,
     nonDcrGrossInr,
     visible,

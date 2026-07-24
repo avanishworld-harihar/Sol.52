@@ -7,6 +7,7 @@ import {
   addCatalogBrand,
   ensureBrandCatalog,
   removeCatalogBrand,
+  normalizeCatalogKw,
   normalizeKwTierList,
   syncKwTierCanonical,
   syncSolarAndPricingFromEntry,
@@ -192,7 +193,7 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
               </thead>
               <tbody>
                 {kwTiers.map((tier, idx) => {
-                  const isPlantKw = tier.kw === plantKw;
+                  const isPlantKw = normalizeCatalogKw(tier.kw) === normalizeCatalogKw(plantKw);
                   return (
                     <tr
                       key={`${tier.kw}-${idx}`}
@@ -204,7 +205,6 @@ export function ResidentialBrandCatalogPanel({ config, onChange }: Props) {
                       <td className="px-2 py-1.5">
                         <FloatingLabelNumericInput
                           label="kW"
-                          integer
                           value={tier.kw}
                           onValueChange={(n) => patchActiveTier(idx, { kw: n ?? tier.kw })}
                           className="h-9 rounded-lg text-xs font-bold"

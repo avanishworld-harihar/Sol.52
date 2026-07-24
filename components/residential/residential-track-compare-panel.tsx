@@ -193,7 +193,6 @@ export function ResidentialTrackComparePanel({ config, onChange, className }: Pr
                   <td className="px-2 py-1.5">
                     <FloatingLabelNumericInput
                       label="kW"
-                      integer
                       live
                       value={tier.kw}
                       onValueChange={(n) => updateTierKw(idx, n ?? tier.kw)}

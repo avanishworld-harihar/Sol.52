@@ -107,7 +107,8 @@ export function ResidentialTrackCompareSection({
               {sortedTiers.map((t, rowIdx) => {
                 const delta = deltaAtTier(t);
                 const highlight =
-                  highlightPlantKw != null && Math.round(highlightPlantKw) === Math.round(t.kw);
+                  highlightPlantKw != null &&
+                  Math.round(highlightPlantKw * 10) / 10 === Math.round(t.kw * 10) / 10;
                 return (
                   <tr
                     key={`${t.kw}-${rowIdx}`}
