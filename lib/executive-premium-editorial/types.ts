@@ -84,6 +84,7 @@ export type EditorialWarrantyHighlight = {
 };
 
 export type EditorialEngineeringModel = {
+  /** Yield-only rows — capacity/PR/ratio live in blueprint UI (no annual-gen duplicate). */
   metrics_rows: EditorialMetricRow[];
   tilt_deg: number;
   tilt_note: string;
@@ -91,6 +92,22 @@ export type EditorialEngineeringModel = {
   cable_note?: string;
   standards: string[];
   install_phases: EditorialInstallPhase[];
+  /** Canvas-style blueprint fields (Golden Design & Performance). */
+  panel_count: number;
+  panel_watt: number;
+  visual_panel_count: number;
+  panel_image_url: string;
+  azimuth_deg: number;
+  site_lat_label: string;
+  roof_area_m2: number;
+  m2_per_panel: number;
+  ac_kw: number;
+  dc_kwp: number;
+  dc_ac_ratio: number;
+  performance_ratio_pct: number;
+  peak_sun_hours: number;
+  specific_yield: number;
+  load_coverage_pct: number;
 };
 
 export type EditorialWarrantyModel = {

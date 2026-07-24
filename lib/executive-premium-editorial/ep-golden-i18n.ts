@@ -96,6 +96,32 @@ export type EpGoldenCopy = {
     installTag: string;
     installTitle: string;
     installLead: string;
+    siteTitle: string;
+    siteLatitude: string;
+    siteLatitudeCaption: string;
+    roofArea: string;
+    roofAreaCaption: (panels: number, m2: number) => string;
+    shadowTolerance: string;
+    shadowValue: string;
+    shadowCaption: string;
+    arrayCaption: string;
+    arrayMeta: (tilt: number, azimuth: number) => string;
+    arrayShowing: (shown: number, total: number) => string;
+    specsTitle: string;
+    specInverter: string;
+    specInverterDesc: string;
+    specDcArray: string;
+    specDcArrayDesc: (count: number, watt: number) => string;
+    specPr: string;
+    specPrDesc: string;
+    specDcAc: string;
+    specDcAcDesc: string;
+    yieldTitle: string;
+    yieldSun: string;
+    yieldSpecific: string;
+    yieldCoverage: string;
+    insightTag: string;
+    insightBody: (ratio: string) => string;
   };
   bom: {
     tag: string;
@@ -260,6 +286,34 @@ const EN: EpGoldenCopy = {
     installTag: "05 / Engineering Design",
     installTitle: "Installation Process.",
     installLead: "From site survey to go-live — every step handled for your rooftop system.",
+    siteTitle: "Site & Roof Metrics",
+    siteLatitude: "Latitude (Location)",
+    siteLatitudeCaption: "Optimizes the angle of sunlight capture.",
+    roofArea: "Required Roof Area",
+    roofAreaCaption: (panels, m2) =>
+      `${panels} × ~${m2} m²/module (panel + walkway estimate). Final after site survey.`,
+    shadowTolerance: "Shadow Tolerance",
+    shadowValue: "Dual MPPT Tracking",
+    shadowCaption: "Inverter adjusts dynamically to passing clouds.",
+    arrayCaption: "Optimal South-Facing Array",
+    arrayMeta: (tilt, azimuth) => `Tilt: ${tilt}° | Azimuth: ${azimuth}° (True South)`,
+    arrayShowing: (shown, total) => ` · showing ${shown}/${total}`,
+    specsTitle: "Technical Specifications",
+    specInverter: "Inverter Capacity",
+    specInverterDesc: "Max power delivered to your home grid.",
+    specDcArray: "DC Array (Panels)",
+    specDcArrayDesc: (count, watt) => `${count} × ${watt} Wp TOPCon N-Type modules.`,
+    specPr: "Performance Ratio (PR)",
+    specPrDesc: "System efficiency after temp & grid losses.",
+    specDcAc: "DC/AC Ratio",
+    specDcAcDesc: "Safely over-paneled for better morning/evening yield.",
+    yieldTitle: "Yield profile",
+    yieldSun: "Peak sun hours",
+    yieldSpecific: "Specific yield",
+    yieldCoverage: "Load coverage",
+    insightTag: "Expert insight",
+    insightBody: (ratio) =>
+      `We designed around a ~${ratio} DC/AC ratio so the inverter stays near capacity on low-sun days — keeping annual yield steadier through winter and monsoon.`,
   },
   bom: {
     tag: "06 / Hardware Intelligence",
@@ -436,6 +490,34 @@ const HI: EpGoldenCopy = {
     installTag: "05 / Engineering Design",
     installTitle: "Installation Process।",
     installLead: "Site survey से go-live तक — आपके rooftop system का हर step handle किया जाता है।",
+    siteTitle: "साइट और छत मेट्रिक्स",
+    siteLatitude: "अक्षांश (लोकेशन)",
+    siteLatitudeCaption: "सूर्य प्रकाश कैप्चर कोण को अनुकूल बनाता है।",
+    roofArea: "आवश्यक छत क्षेत्र",
+    roofAreaCaption: (panels, m2) =>
+      `${panels} × ~${m2} m²/मॉड्यूल (पैनल + रखरखाव गलियारा अनुमान)। साइट सर्वे पर अंतिम।`,
+    shadowTolerance: "शैडो टॉलरेंस",
+    shadowValue: "डुअल MPPT ट्रैकिंग",
+    shadowCaption: "बादलों में भी इन्वर्टर गतिशील रूप से समायोजित होता है।",
+    arrayCaption: "इष्टतम दक्षिण-मुखी ऐरे",
+    arrayMeta: (tilt, azimuth) => `टिल्ट: ${tilt}° | अज़ीमुथ: ${azimuth}° (True South)`,
+    arrayShowing: (shown, total) => ` · दृश्य ${shown}/${total}`,
+    specsTitle: "तकनीकी विशिष्टताएँ",
+    specInverter: "इन्वर्टर क्षमता",
+    specInverterDesc: "घर के ग्रिड तक पहुँचने वाली अधिकतम शक्ति।",
+    specDcArray: "DC ऐरे (पैनल)",
+    specDcArrayDesc: (count, watt) => `${count} × ${watt} Wp TOPCon N-Type मॉड्यूल।`,
+    specPr: "परफॉर्मेंस रेशियो (PR)",
+    specPrDesc: "तापमान और ग्रिड हानि के बाद सिस्टम दक्षता।",
+    specDcAc: "DC/AC अनुपात",
+    specDcAcDesc: "सुबह/शाम की उपज के लिए सुरक्षित ओवर-पैनेलिंग।",
+    yieldTitle: "उपज प्रोफ़ाइल",
+    yieldSun: "पीक सन आवर्स",
+    yieldSpecific: "स्पेसिफिक यील्ड",
+    yieldCoverage: "लोड कवरेज",
+    insightTag: "एक्सपर्ट इनसाइट",
+    insightBody: (ratio) =>
+      `हमने सिस्टम को ~${ratio} DC/AC अनुपात पर डिज़ाइन किया है — कम धूप में भी इन्वर्टर अधिकतम क्षमता के पास चलता है, जिससे साल भर उत्पादन स्थिर रहता है।`,
   },
   bom: {
     tag: "06 / Hardware Intelligence",

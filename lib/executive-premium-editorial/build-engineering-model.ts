@@ -10,6 +10,22 @@ import { epGoldenCopy } from "@/lib/executive-premium-editorial/ep-golden-i18n";
 import { withResolvedResidentialTechnicalSpecs } from "@/lib/resolve-residential-technical-specs";
 import type { EditorialEngineeringModel, EditorialWarrantyModel } from "@/lib/executive-premium-editorial/types";
 
+const M2_PER_PANEL = 2.2;
+const MAX_VISUAL_PANELS = 24;
+
+const PANEL_BRAND_ASSETS: Array<{ match: RegExp; src: string }> = [
+  { match: /waaree|waree/i, src: "/assets/hardware/waaree-panel.png" },
+];
+
+function resolvePanelImageUrl(summary: ProposalDeckSummary): string {
+  const panelRow = summary.bom.find((b) => /panel|module|solar/i.test(b.title));
+  const hay = `${panelRow?.title ?? ""} ${panelRow?.brand ?? summary.brands?.panel ?? summary.panelBrand ?? ""}`;
+  for (const row of PANEL_BRAND_ASSETS) {
+    if (row.match.test(hay)) return row.src;
+  }
+  return "/assets/hardware/panel.png";
+}
+
 export function buildEditorialEngineeringModel(
   pptInput: PremiumProposalPptInput,
   summary: ProposalDeckSummary,
@@ -23,19 +39,19 @@ export function buildEditorialEngineeringModel(
     siteLat: specs?.mounting?.siteLat,
   });
   const tiltDeg = specs?.mounting?.actualTiltDeg ?? metrics.tiltDeg;
+  const panelCount = Math.max(1, metrics.panelCount || Math.ceil((metrics.acCapacityKw * 1000) / metrics.panelWatt));
+  const roofAreaM2 = Math.round(panelCount * M2_PER_PANEL);
 
   return {
+    // Compact yield-only rows — capacity/PR/ratio/latitude live in blueprint UI (no duplicate annual gen).
     metrics_rows: [
-      { label: "DC capacity (STC)", value: `${metrics.dcCapacityKwp.toFixed(2)} kWp`, highlight: true },
-      { label: "AC capacity (inverter)", value: `${metrics.acCapacityKw} kW` },
-      { label: "DC/AC ratio", value: `${metrics.dcAcRatio}` },
       { label: "Peak sun hours", value: `${metrics.peakSunHours} hrs/day` },
-      { label: "Performance ratio (PR)", value: `${metrics.performanceRatioPct}%` },
-      { label: "Specific yield", value: `${metrics.specificYieldKwhPerKwp} kWh/kWp/yr`, highlight: true },
-      { label: "Annual generation", value: `${metrics.annualGenUnits.toLocaleString("en-IN")} units` },
-      { label: "Load coverage", value: `${metrics.loadCoveragePct}%` },
-      { label: "Modules", value: `${metrics.panelCount} × ${metrics.panelWatt} Wp` },
-      { label: "Site latitude", value: `${metrics.siteLat.toFixed(1)}°N · ${metrics.cityLabel}` },
+      {
+        label: "Specific yield",
+        value: `${metrics.specificYieldKwhPerKwp} kWh/kWp/yr`,
+        highlight: true,
+      },
+      { label: "Load coverage", value: `${metrics.loadCoveragePct}%`, highlight: true },
     ],
     tilt_deg: tiltDeg,
     tilt_note: specs?.mounting?.tiltRationale ?? metrics.tiltRationale,
@@ -50,6 +66,21 @@ export function buildEditorialEngineeringModel(
       title: p.title,
       detail: p.detail,
     })),
+    panel_count: panelCount,
+    panel_watt: metrics.panelWatt,
+    visual_panel_count: Math.min(panelCount, MAX_VISUAL_PANELS),
+    panel_image_url: resolvePanelImageUrl(summary),
+    azimuth_deg: 180,
+    site_lat_label: `~${metrics.siteLat.toFixed(1)}° N (${metrics.cityLabel})`,
+    roof_area_m2: roofAreaM2,
+    m2_per_panel: M2_PER_PANEL,
+    ac_kw: metrics.acCapacityKw,
+    dc_kwp: metrics.dcCapacityKwp,
+    dc_ac_ratio: metrics.dcAcRatio,
+    performance_ratio_pct: metrics.performanceRatioPct,
+    peak_sun_hours: metrics.peakSunHours,
+    specific_yield: metrics.specificYieldKwhPerKwp,
+    load_coverage_pct: metrics.loadCoveragePct,
   };
 }
 
