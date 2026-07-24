@@ -3288,9 +3288,13 @@ html[data-ss-touch-optimize] .backdrop-blur-3xl {
     margin: 8mm 8mm;
   }
 
-  @page :first {
-    margin-top: 8mm;
-  }
+  /*
+   * Do NOT set @page :first { margin-top: … } here.
+   * Named-page presets (Golden `golden-sheet`, Canvas, Atelier, …) use margin: 0.
+   * An extra :first top margin made their cover taller than one sheet → content
+   * spilled onto page 2 and page-break-after left a blank sheet.
+   * Commercial cover already sizes to calc(297mm − 16mm) under the default 8mm margins.
+   */
 
   html,
   body,

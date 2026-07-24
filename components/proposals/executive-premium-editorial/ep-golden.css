@@ -1173,9 +1173,199 @@
   overflow-wrap: anywhere;
 }
 
+/* ── Seasonal generation forecast (monthly bars) ─────────────── */
+.ep-golden-root .ep-gl-gen-page {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.ep-golden-root .ep-gl-gen-peak-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin: 0 0 14px;
+  font-size: 8pt;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ep-gl-text-muted);
+}
+
+.ep-golden-root .ep-gl-gen-peak-swatch {
+  width: 14px;
+  height: 8px;
+  border-radius: 2px;
+  flex: 0 0 auto;
+}
+
+.ep-golden-root .ep-gl-gen-peak-swatch--peak {
+  background: linear-gradient(180deg, #34d399 0%, #0d7a55 100%);
+}
+
+.ep-golden-root .ep-gl-gen-peak-swatch--base {
+  background: linear-gradient(180deg, #d4c08a 0%, var(--ep-gl-gold) 100%);
+}
+
+.ep-golden-root .ep-gl-gen-forecast {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 16px 14px 12px;
+  border: 1px solid var(--ep-gl-border-gold);
+  background: linear-gradient(180deg, #fffefb 0%, #faf8f3 100%);
+  break-inside: avoid;
+}
+
+.ep-golden-root .ep-gl-gen-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-height: 200px;
+  padding: 0 2px;
+}
+
+.ep-golden-root .ep-gl-gen-col {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  height: 100%;
+}
+
+.ep-golden-root .ep-gl-gen-units {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 7.5pt;
+  font-weight: 700;
+  color: var(--ep-gl-text-muted);
+  line-height: 1;
+}
+
+.ep-golden-root .ep-gl-gen-track {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 26px;
+  display: flex;
+  align-items: flex-end;
+  min-height: 110px;
+}
+
+.ep-golden-root .ep-gl-gen-fill {
+  width: 100%;
+  border-radius: 3px 3px 1px 1px;
+  background: linear-gradient(
+    180deg,
+    #e8d9a8 0%,
+    var(--ep-gl-gold) 55%,
+    #8f7638 100%
+  );
+  min-height: 8px;
+}
+
+.ep-golden-root .ep-gl-gen-col--peak .ep-gl-gen-fill {
+  background: linear-gradient(180deg, #6ee7b7 0%, #10b981 50%, #0d7a55 100%);
+}
+
+.ep-golden-root .ep-gl-gen-month {
+  font-size: 7.5pt;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ep-gl-ink);
+}
+
+.ep-golden-root .ep-gl-gen-save {
+  font-size: 7pt;
+  font-weight: 700;
+  color: var(--ep-gl-gold-dark);
+}
+
+.ep-golden-root .ep-gl-gen-axis {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 4px;
+  font-size: 7.5pt;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ep-gl-text-faint);
+}
+
+.ep-golden-root .ep-gl-gen-basis {
+  margin: 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--ep-gl-border-gold);
+  color: var(--ep-gl-text-muted);
+  font-size: 8pt;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.ep-golden-root .ep-gl-gen-insight {
+  margin-top: 18px;
+  padding: 14px 18px 14px 16px;
+  border-left: 3px solid var(--ep-gl-gold);
+  background: rgba(181, 154, 87, 0.07);
+  break-inside: avoid;
+}
+
+.ep-golden-root .ep-gl-gen-insight-tag {
+  margin: 0 0 4px;
+  font-size: 8pt;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ep-gl-gold);
+}
+
+.ep-golden-root .ep-gl-gen-insight-title {
+  margin: 0 0 6px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14pt;
+  font-weight: 700;
+  color: var(--ep-gl-ink);
+  line-height: 1.25;
+}
+
+.ep-golden-root .ep-gl-gen-insight-body {
+  margin: 0;
+  font-size: 10pt;
+  line-height: 1.55;
+  color: var(--ep-gl-text-secondary);
+}
+
+.ep-golden-root.lang-hi .ep-gl-gen-insight-title {
+  font-size: 13pt;
+}
+
+.ep-golden-root.lang-hi .ep-gl-gen-insight-body {
+  font-size: 9.5pt;
+  line-height: 1.6;
+}
+
 @media (max-width: 720px) {
   .ep-golden-root .ep-gl-impact-grid {
     grid-template-columns: 1fr;
+  }
+
+  .ep-golden-root .ep-gl-gen-bars {
+    min-height: 160px;
+    gap: 3px;
+  }
+
+  .ep-golden-root .ep-gl-gen-units {
+    font-size: 6pt;
+  }
+
+  .ep-golden-root .ep-gl-gen-month,
+  .ep-golden-root .ep-gl-gen-save {
+    font-size: 6pt;
   }
 }
 
@@ -2215,7 +2405,8 @@
   .ep-golden-root .ep-gl-bom-page,
   .ep-golden-root .ep-gl-requirement-page,
   .ep-golden-root .ep-gl-terms-page,
-  .ep-golden-root .ep-gl-impact-page {
+  .ep-golden-root .ep-gl-impact-page,
+  .ep-golden-root .ep-gl-gen-page {
     padding: 12mm 12mm 11mm;
     min-height: auto;
     display: block;
@@ -2502,12 +2693,16 @@
     height: 297mm;
     min-height: 297mm;
     max-height: 297mm;
-    overflow: hidden;
+    overflow: hidden !important;
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
+    margin: 0 !important;
+    padding: 0 !important;
     page-break-inside: avoid;
     break-inside: avoid;
+    page-break-after: always;
+    break-after: page;
   }
 
   .ep-golden-root .ep-gl-cover-page {
@@ -2517,7 +2712,8 @@
     height: 100%;
     min-height: 0;
     max-height: 100%;
-    padding: 16mm 16mm 14mm;
+    /* Slightly tighter than screen so large logos / Hindi titles stay on page 1 */
+    padding: 14mm 14mm 12mm;
     box-sizing: border-box;
     overflow: hidden;
   }
@@ -2542,17 +2738,27 @@
   }
 
   .ep-golden-root .ep-gl-cover-logo {
-    max-height: 28mm;
+    max-height: 22mm;
     width: auto;
+    object-fit: contain;
   }
 
   .ep-golden-root .ep-gl-cover-title {
-    font-size: 28pt;
+    font-size: 26pt;
     line-height: 1.12;
   }
 
-  .ep-golden-root .ep-gl-client-name {
+  .ep-golden-root.lang-hi .ep-gl-cover-title {
     font-size: 22pt;
+    line-height: 1.18;
+  }
+
+  .ep-golden-root .ep-gl-client-name {
+    font-size: 20pt;
+  }
+
+  .ep-golden-root.lang-hi .ep-gl-client-name {
+    font-size: 18pt;
   }
 
   .ep-golden-root .ep-gl-cover-meta-grid {
@@ -2568,8 +2774,15 @@
     break-after: auto;
   }
 
-  /* Named page — margin 0 so fixed 297mm cover matches the sheet exactly */
+  /* Named page — margin 0 so fixed 297mm cover matches the sheet exactly.
+   * Also pin :first so globals / browser first-page rules cannot re-add top margin. */
   @page golden-sheet {
+    size: A4;
+    margin: 0;
+    background-color: #fdfcf9;
+  }
+
+  @page golden-sheet:first {
     size: A4;
     margin: 0;
     background-color: #fdfcf9;

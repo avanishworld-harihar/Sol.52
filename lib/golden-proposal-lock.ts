@@ -8,6 +8,11 @@
  * `lib/proposal-preset-isolation.ts` — follow that so other presets cannot
  * regress Golden print or layout.
  *
+ * Note: this lock stops *code edits* to Golden while working on other themes.
+ * It does not stop browser print from applying document-global `@page` rules
+ * (e.g. in `app/globals.css`). Named `@page golden-sheet` (+ `:first`) keeps
+ * cover margins at 0 so page-1 content does not spill onto a blank sheet.
+ *
  * Residential MP bill upload lock (separate concern): `lib/residential-bill-path-lock.ts`.
  *
  * Users can still pick any residential theme in More → Proposal templates.

@@ -1,5 +1,9 @@
 /** Executive Premium — Golden / Elite Luxury document model. */
 
+import type { EditorialGenerationMonth } from "@/lib/executive-premium-editorial/build-generation-forecast";
+
+export type { EditorialGenerationMonth };
+
 export type EditorialBillMonth = {
   label: string;
   units: number;
@@ -122,6 +126,11 @@ export type ExecutivePremiumEditorialModel = {
     monthly_savings_inr: number;
     lifetime_profit_inr: number;
     emi_rows: EditorialEmiRow[];
+  };
+  /** Monthly units/savings only — annual totals live on requirement / economics / closing. */
+  generation: {
+    months: EditorialGenerationMonth[];
+    effective_rate_inr: number;
   };
   impact: {
     co2_tons: number;

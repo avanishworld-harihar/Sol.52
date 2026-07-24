@@ -12,6 +12,10 @@ import {
   buildEditorialWarrantyModel,
 } from "@/lib/executive-premium-editorial/build-engineering-model";
 import { epGoldenCopy } from "@/lib/executive-premium-editorial/ep-golden-i18n";
+import {
+  buildEditorialGenerationMonths,
+  editorialEffectiveSavingPerUnit,
+} from "@/lib/executive-premium-editorial/build-generation-forecast";
 import { fmtCompactK } from "@/lib/executive-premium-editorial/format";
 import type { ExecutivePremiumEditorialModel } from "@/lib/executive-premium-editorial/types";
 
@@ -132,6 +136,13 @@ export function transformToEditorialModel(
       monthly_savings_inr: Math.round(summary.annualSaving / 12),
       lifetime_profit_inr: summary.lifetime25Profit,
       emi_rows,
+    },
+    generation: {
+      months: buildEditorialGenerationMonths(summary.annualGen, summary.annualSaving),
+      effective_rate_inr: editorialEffectiveSavingPerUnit(
+        summary.annualGen,
+        summary.annualSaving
+      ),
     },
     impact: {
       co2_tons: summary.environmental.lifetimeCo2TonsSaved,

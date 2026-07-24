@@ -15,6 +15,7 @@ import { EpCoverPage } from "@/components/proposals/executive-premium-editorial/
 import { EpBillPage } from "@/components/proposals/executive-premium-editorial/pages/ep-bill-page";
 import { EpRequirementPage } from "@/components/proposals/executive-premium-editorial/pages/ep-requirement-page";
 import { EpEconomicsPage } from "@/components/proposals/executive-premium-editorial/pages/ep-economics-page";
+import { EpGenerationForecastPage } from "@/components/proposals/executive-premium-editorial/pages/ep-generation-forecast-page";
 import { EpImpactPage } from "@/components/proposals/executive-premium-editorial/pages/ep-impact-page";
 import { EpBomPage } from "@/components/proposals/executive-premium-editorial/pages/ep-bom-page";
 import { EpEngineeringPage } from "@/components/proposals/executive-premium-editorial/pages/ep-engineering-page";
@@ -92,6 +93,7 @@ export function ExecutivePremiumEditorialRenderer({
               />
             )}
             <EpEconomicsPage data={model.economics} />
+            <EpGenerationForecastPage data={model.generation} />
             <EpImpactPage data={model.impact} />
             <EpEngineeringPage data={model.engineering} />
             <EpBomPage bomRows={model.architecture.bom_rows} />

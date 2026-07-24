@@ -62,6 +62,19 @@ export type EpGoldenCopy = {
     yearLoan: (years: number) => string;
     years: string;
   };
+  generation: {
+    tag: string;
+    title: string;
+    lead: string;
+    unitsLabel: string;
+    savingsLabel: string;
+    peakLegend: string;
+    otherLegend: string;
+    savingsBasis: (rate: string) => string;
+    insightTag: string;
+    insightTitle: string;
+    insightBody: string;
+  };
   impact: {
     tag: string;
     title: string;
@@ -203,8 +216,23 @@ const EN: EpGoldenCopy = {
     yearLoan: (y) => `${y} Year Loan`,
     years: "Years",
   },
+  generation: {
+    tag: "03 / Seasonal Generation",
+    title: "Monthly generation forecast.",
+    lead: "Jan–Dec estimated units and savings — summer vs monsoon at a glance.",
+    unitsLabel: "Est. units",
+    savingsLabel: "Est. savings",
+    peakLegend: "Peak summer (Apr–Jun)",
+    otherLegend: "Other months",
+    savingsBasis: (rate) =>
+      `Estimated savings = monthly units × ₹${rate}/unit effective saving rate. Fixed charges excluded.`,
+    insightTag: "Expert insight",
+    insightTitle: "Why seasonal variation matters",
+    insightBody:
+      "Generation uses a regional irradiance profile. Higher summer output often aligns with peak bill months — that overlap drives most of the savings.",
+  },
   impact: {
-    tag: "03 / Ecological Retention",
+    tag: "04 / Ecological Retention",
     title: "A Gift Beyond Electricity.",
     lead: "Solar is not only a bill saver — it is cleaner air, greener land, and a safer planet for the next generation.",
     cards: [
@@ -364,8 +392,23 @@ const HI: EpGoldenCopy = {
     yearLoan: (y) => `${y} Year Loan`,
     years: "वर्ष",
   },
+  generation: {
+    tag: "03 / मौसमी उत्पादन",
+    title: "मासिक उत्पादन पूर्वानुमान।",
+    lead: "जनवरी–दिसंबर अनुमानित यूनिट और बचत — गर्मी/मानसून का अंतर साफ़ दिखे।",
+    unitsLabel: "अनुमानित यूनिट",
+    savingsLabel: "अनुमानित बचत",
+    peakLegend: "पीक गर्मी (अप्रैल–जून)",
+    otherLegend: "अन्य महीने",
+    savingsBasis: (rate) =>
+      `अनुमानित बचत = मासिक यूनिट × ₹${rate}/यूनिट प्रभावी बचत दर। फिक्स्ड चार्ज शामिल नहीं हैं।`,
+    insightTag: "एक्सपर्ट इनसाइट",
+    insightTitle: "मौसमी भिन्नता क्यों मायने रखती है",
+    insightBody:
+      "उत्पादन स्थानीय विकिरण प्रोफ़ाइल पर आधारित अनुमान है। गर्मी में ऊँचा उत्पादन अक्सर ऊँचे बिल महीनों से मेल खाता है — बचत का मुख्य इंजन।",
+  },
   impact: {
-    tag: "03 / पर्यावरण संरक्षण",
+    tag: "04 / पर्यावरण संरक्षण",
     title: "बिजली से परे एक उपहार।",
     lead: "Solar केवल बिल बचाने वाला नहीं — यह स्वच्छ हवा, हरित भूमि और अगली पीढ़ी के लिए सुरक्षित ग्रह है।",
     cards: [
