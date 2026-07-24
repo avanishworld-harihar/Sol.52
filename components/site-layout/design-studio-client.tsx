@@ -4215,6 +4215,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           ) : null}
 
           {!mobileViewOnly ? (
+          <>
           <div className="rounded-xl border border-blue-200 bg-blue-50/80 p-3 dark:border-blue-900/40 dark:bg-blue-950/30">
             <p className="text-[11px] font-extrabold uppercase tracking-wide text-blue-700 dark:text-blue-300">Plant capacity</p>
             <p className="mt-1 text-[10px] leading-relaxed text-blue-900/80 dark:text-blue-100/80">
@@ -4803,6 +4804,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               Panel pe click = select. Bahar click = deselect. Duplicate = copy selected (thoda offset). Shift+click = multi. Magnet = snap.
             </p>
           </div>
+          </>
           ) : null}
 
 
