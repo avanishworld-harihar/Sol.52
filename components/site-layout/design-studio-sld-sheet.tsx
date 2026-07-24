@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Design Studio Engineering SLD sheet v1 — printable A3 landscape SVG.
+ * Design Studio Engineering SLD sheet — printable A3 landscape SVG.
  * Separate from customer proposal (Design / SLD product lock).
  */
 
@@ -10,8 +10,8 @@ import type { DesignStudioSldModel } from "@/lib/design-studio-sld-model";
 import { Button } from "@/components/ui/button";
 import { Printer, X } from "lucide-react";
 
-const W = 1120;
-const H = 794; // ~A3 landscape at 96dpi-ish viewBox
+const W = 1180;
+const H = 834;
 
 type DesignStudioSldSheetProps = {
   model: DesignStudioSldModel;
@@ -32,42 +32,153 @@ function plantRows(model: DesignStudioSldModel): [string, string][] {
     ["Azimuth", model.azimuthDeg != null ? `${model.azimuthDeg.toFixed(0)}°` : "—"],
     ["Module tilt", `${model.moduleTiltDeg}°`],
     ["Module", model.moduleLabel],
+    ["Module Voc / Vmp", `${model.moduleVocV} / ${model.moduleVmpV} V`],
+    ["Module Imp / Isc", `${model.moduleImpA} / ${model.moduleIscA} A`],
     ["No. of modules", `${model.moduleCount} Nos`],
     ["DC capacity", `${model.dcCapacityKwp.toFixed(3)} kWp`],
-    ["AC capacity", `${model.acCapacityKw.toFixed(1)} kW`],
-    ["Injection V", `${model.injectionVoltageV} V`],
+    ["AC capacity", `${model.acCapacityKw.toFixed(1)} kW · ${model.phaseLabel}`],
+    ["Injection", `${model.injectionVoltageV} V · ${model.systemFrequencyHz} Hz`],
+    ["DC / AC ratio", String(model.dcAcRatio)],
+    ["Design Voc (cold)", `${model.designVocColdV} V / mod`],
+    ["Inv MPPT max Voc", `${model.inverterMaxVocV} V · ${model.mpptCount} MPPT`],
   ];
 }
 
 const LEGEND: [string, string][] = [
   ["PV", "PV module / string"],
-  ["DCDB", "DC distribution + SPD"],
+  ["F", "DC fuse / gPV"],
+  ["SPD", "Surge protection"],
+  ["DCDB", "DC distribution"],
   ["INV", "Grid-tied inverter"],
-  ["ACDB", "AC distribution + MCB"],
-  ["METER", "Solar / net energy meter"],
+  ["MCB", "Miniature CB"],
+  ["ACDB", "AC distribution"],
+  ["METER", "Solar / net meter"],
   ["SFU", "Switch fuse unit"],
   ["EP", "Earth pit"],
   ["LA", "Lightning arrester"],
+  ["PE", "Protective earth"],
 ];
 
-/** Main schematic + side tables as one SVG sheet. */
+function TableBox({
+  x,
+  y,
+  w,
+  title,
+  rows,
+  rowH = 14,
+  titleFill = "#0f172a",
+}: {
+  x: number;
+  y: number;
+  w: number;
+  title: string;
+  rows: [string, string][];
+  rowH?: number;
+  titleFill?: string;
+}) {
+  const h = 22 + rows.length * rowH + 8;
+  return (
+    <g>
+      <rect x={x} y={y} width={w} height={h} fill="#f8fafc" stroke="#94a3b8" />
+      <rect x={x} y={y} width={w} height={18} fill="#e2e8f0" stroke="#94a3b8" />
+      <text x={x + 8} y={y + 13} fontSize={9} fontWeight={800} fill={titleFill}>
+        {title}
+      </text>
+      {rows.map(([k, v], i) => (
+        <g key={`${title}-${k}-${i}`}>
+          <text x={x + 8} y={y + 32 + i * rowH} fontSize={8} fill="#64748b">
+            {k}
+          </text>
+          <text
+            x={x + w - 8}
+            y={y + 32 + i * rowH}
+            textAnchor="end"
+            fontSize={8}
+            fontWeight={700}
+            fill="#0f172a"
+          >
+            {v.length > 42 ? `${v.slice(0, 40)}…` : v}
+          </text>
+        </g>
+      ))}
+    </g>
+  );
+}
+
+/** Main schematic + engineering tables as one SVG sheet. */
 export function DesignStudioSldSheetSvg({ model }: { model: DesignStudioSldModel }) {
   const stringSizes = model.strings.map((s) => `${s.modules}`).join(" + ");
-  const pvCaption = `PV ARRAY ${model.dcCapacityKwp.toFixed(3)} kWp · ${model.moduleCount} × ${model.moduleWatt} Wp`;
-  const invLabel = `INV-1 · ~${model.acCapacityKw.toFixed(1)} kW`;
+  const pvCaption = `PV ARRAY RATED ${model.dcCapacityKwp.toFixed(3)} kWp · ${model.moduleCount} Nos × ${model.moduleWatt} Wp · ${model.stringing.stringCount} STRING(S)`;
+  const invLabel = `INV-1 · ${model.acCapacityKw.toFixed(1)} kW`;
+  const maxFuse = Math.max(...model.strings.map((s) => s.dcFuseA), 10);
+  const acMcb =
+    model.protectionSchedule.find((p) => p.location.includes("Inverter"))?.rating ?? "—";
+  const sfu =
+    model.protectionSchedule.find((p) => p.location.includes("Grid"))?.rating ?? "—";
 
-  // Schematic layout coordinates
-  const flowY = 210;
-  const boxes: { id: string; x: number; label: string; sub: string; fill: string; stroke: string }[] = [
-    { id: "pv", x: 40, label: "PV ARRAY", sub: `${model.stringing.stringCount} str`, fill: "#fff7ed", stroke: "#ea580c" },
-    { id: "dcdb", x: 200, label: "DCDB", sub: "SPD + Fuse", fill: "#f5f3ff", stroke: "#7c3aed" },
-    { id: "inv", x: 360, label: invLabel, sub: "MPPT 1–2", fill: "#eef2ff", stroke: "#4338ca" },
-    { id: "acdb", x: 560, label: "ACDB", sub: "MCB 2P", fill: "#ecfdf5", stroke: "#059669" },
-    { id: "meter", x: 700, label: "METER", sub: `${model.injectionVoltageV} V`, fill: "#fef9c3", stroke: "#ca8a04" },
-    { id: "sfu", x: 840, label: "SFU", sub: "2P isolator", fill: "#fce7f3", stroke: "#db2777" },
+  const flowY = 188;
+  const boxes: {
+    id: string;
+    x: number;
+    label: string;
+    sub: string;
+    fill: string;
+    stroke: string;
+  }[] = [
+    {
+      id: "pv",
+      x: 28,
+      label: "PV ARRAY",
+      sub: `${model.stringing.stringCount} str · DC+/−`,
+      fill: "#fff7ed",
+      stroke: "#ea580c",
+    },
+    {
+      id: "dcdb",
+      x: 168,
+      label: "DCDB",
+      sub: `F ${maxFuse}A + SPD`,
+      fill: "#f5f3ff",
+      stroke: "#7c3aed",
+    },
+    {
+      id: "inv",
+      x: 308,
+      label: invLabel,
+      sub: `MPPT×${model.mpptCount} · ${model.phaseLabel}`,
+      fill: "#eef2ff",
+      stroke: "#4338ca",
+    },
+    {
+      id: "acdb",
+      x: 468,
+      label: "ACDB",
+      sub: acMcb.split(" · ")[0] ?? "MCB",
+      fill: "#ecfdf5",
+      stroke: "#059669",
+    },
+    {
+      id: "meter",
+      x: 608,
+      label: "SOLAR METER",
+      sub: `${model.phaseLabel} ${model.injectionVoltageV}V`,
+      fill: "#fef9c3",
+      stroke: "#ca8a04",
+    },
+    {
+      id: "sfu",
+      x: 758,
+      label: "SFU",
+      sub: sfu.split(" · ")[0] ?? "Isolator",
+      fill: "#fce7f3",
+      stroke: "#db2777",
+    },
   ];
-  const boxW = 120;
-  const boxH = 56;
+  const boxW = 118;
+  const boxH = 52;
+
+  const stringTableH = 22 + Math.min(model.strings.length, 8) * 16 + 8;
+  const showStrings = model.strings.slice(0, 8);
 
   return (
     <svg
@@ -76,60 +187,72 @@ export function DesignStudioSldSheetSvg({ model }: { model: DesignStudioSldModel
       role="img"
       aria-label={model.title}
     >
-      {/* Border frame */}
-      <rect x={12} y={12} width={W - 24} height={H - 24} fill="none" stroke="#0f172a" strokeWidth={2} />
-      <rect x={18} y={18} width={W - 36} height={H - 36} fill="none" stroke="#64748b" strokeWidth={0.75} />
+      <rect x={10} y={10} width={W - 20} height={H - 20} fill="none" stroke="#0f172a" strokeWidth={2} />
+      <rect x={16} y={16} width={W - 32} height={H - 32} fill="none" stroke="#64748b" strokeWidth={0.75} />
 
-      {/* Title */}
-      <text x={W / 2} y={48} textAnchor="middle" fontSize={16} fontWeight={800} fill="#0f172a">
+      <text x={W / 2} y={42} textAnchor="middle" fontSize={15} fontWeight={800} fill="#0f172a">
         {model.title}
       </text>
-      <text x={W / 2} y={68} textAnchor="middle" fontSize={10} fill="#64748b">
-        Design Studio · Engineering SLD sheet v1 · {model.status}
+      <text x={W / 2} y={58} textAnchor="middle" fontSize={9} fill="#64748b">
+        DC &amp; AC SINGLE LINE DIAGRAM · Design Studio engineering sheet · {model.status} · NTS
       </text>
 
-      {/* PV array glyph row */}
-      <text x={40} y={100} fontSize={10} fontWeight={700} fill="#9a3412">
+      {/* PV string glyphs */}
+      <text x={28} y={78} fontSize={9} fontWeight={700} fill="#9a3412">
         {pvCaption}
       </text>
-      {Array.from({ length: Math.min(model.stringing.stringCount, 6) }).map((_, i) => {
-        const x = 40 + i * 70;
+      {Array.from({ length: Math.min(model.stringing.stringCount, 8) }).map((_, i) => {
+        const x = 28 + i * 72;
+        const row = model.strings[i];
         return (
           <g key={`str-glyph-${i}`}>
-            <rect x={x} y={110} width={56} height={36} rx={3} fill="#fff7ed" stroke="#ea580c" strokeWidth={1.25} />
-            <text x={x + 28} y={125} textAnchor="middle" fontSize={8} fontWeight={700} fill="#9a3412">
-              S{i + 1}
+            <rect
+              x={x}
+              y={86}
+              width={62}
+              height={44}
+              rx={3}
+              fill="#fff7ed"
+              stroke="#ea580c"
+              strokeWidth={1.25}
+            />
+            <text x={x + 31} y={100} textAnchor="middle" fontSize={8} fontWeight={800} fill="#9a3412">
+              S{String(i + 1).padStart(2, "0")}
             </text>
-            <text x={x + 28} y={138} textAnchor="middle" fontSize={8} fill="#c2410c">
-              {model.strings[i]?.modules ?? "—"}×1
+            <text x={x + 31} y={112} textAnchor="middle" fontSize={7} fill="#c2410c">
+              {row?.modules ?? "—"}×1 · F{row?.dcFuseA ?? "—"}A
+            </text>
+            <text x={x + 31} y={123} textAnchor="middle" fontSize={7} fill="#9a3412">
+              Voc≤{row?.stringVocMaxV ?? "—"}V
             </text>
           </g>
         );
       })}
-      {model.stringing.stringCount > 6 ? (
-        <text x={40 + 6 * 70} y={132} fontSize={9} fill="#64748b">
-          +{model.stringing.stringCount - 6} more
+      {model.stringing.stringCount > 8 ? (
+        <text x={28 + 8 * 72} y={112} fontSize={8} fill="#64748b">
+          +{model.stringing.stringCount - 8}
         </text>
       ) : null}
 
-      {/* Flow boxes */}
+      {/* Flow */}
       {boxes.map((box, index) => {
         if (index === 0) return null;
         const prev = boxes[index - 1]!;
         const x1 = prev.x + boxW;
         const x2 = box.x;
+        const y = flowY + boxH / 2;
         return (
           <g key={`wire-${box.id}`}>
             <line
               x1={x1}
-              y1={flowY + boxH / 2}
+              y1={y}
               x2={x2}
-              y2={flowY + boxH / 2}
+              y2={y}
               stroke={index <= 2 ? "#dc2626" : "#a21caf"}
               strokeWidth={2.5}
             />
             <polygon
-              points={`${x2},${flowY + boxH / 2} ${x2 - 8},${flowY + boxH / 2 - 4} ${x2 - 8},${flowY + boxH / 2 + 4}`}
+              points={`${x2},${y} ${x2 - 7},${y - 4} ${x2 - 7},${y + 4}`}
               fill={index <= 2 ? "#dc2626" : "#a21caf"}
             />
           </g>
@@ -149,173 +272,187 @@ export function DesignStudioSldSheetSvg({ model }: { model: DesignStudioSldModel
           />
           <text
             x={box.x + boxW / 2}
-            y={flowY + 22}
+            y={flowY + 20}
             textAnchor="middle"
-            fontSize={10}
+            fontSize={9}
             fontWeight={800}
             fill="#0f172a"
           >
             {box.label}
           </text>
-          <text x={box.x + boxW / 2} y={flowY + 38} textAnchor="middle" fontSize={8} fill="#475569">
+          <text x={box.x + boxW / 2} y={flowY + 36} textAnchor="middle" fontSize={7} fill="#475569">
             {box.sub}
           </text>
         </g>
       ))}
 
       <line
-        x1={960}
+        x1={876}
         y1={flowY + boxH / 2}
-        x2={1040}
+        x2={960}
         y2={flowY + boxH / 2}
         stroke="#a21caf"
         strokeWidth={2.5}
       />
       <polygon
-        points={`${1040},${flowY + boxH / 2} ${1032},${flowY + boxH / 2 - 4} ${1032},${flowY + boxH / 2 + 4}`}
+        points={`${960},${flowY + boxH / 2} ${952},${flowY + boxH / 2 - 4} ${952},${flowY + boxH / 2 + 4}`}
         fill="#a21caf"
       />
-      <text x={1045} y={flowY + 20} fontSize={9} fontWeight={700} fill="#831843">
-        CLIENT
+      <text x={968} y={flowY + 18} fontSize={8} fontWeight={800} fill="#831843">
+        CLIENT MAIN
       </text>
-      <text x={1045} y={flowY + 34} fontSize={9} fontWeight={700} fill="#831843">
-        MAIN LT
+      <text x={968} y={flowY + 32} fontSize={8} fontWeight={800} fill="#831843">
+        LT PANEL
+      </text>
+      <text x={968} y={flowY + 46} fontSize={7} fill="#9d174d">
+        {model.phaseLabel} {model.injectionVoltageV}V
       </text>
 
-      {/* Cable notes */}
-      <text x={200} y={flowY + boxH + 18} fontSize={8} fill="#b91c1c">
+      <text x={168} y={flowY + boxH + 14} fontSize={7} fill="#b91c1c">
         DC: {model.dcCableNote}
       </text>
-      <text x={560} y={flowY + boxH + 18} fontSize={8} fill="#9d174d">
+      <text x={468} y={flowY + boxH + 14} fontSize={7} fill="#9d174d">
         AC: {model.acCableNote}
       </text>
 
-      {/* Earthing row */}
-      <text x={40} y={320} fontSize={10} fontWeight={700} fill="#15803d">
-        EARTHING / LA (planning)
+      {/* Earthing schematic */}
+      <text x={28} y={278} fontSize={9} fontWeight={800} fill="#15803d">
+        EARTHING / LIGHTNING (planning)
       </text>
-      {[1, 2, 3, 4].map((n, i) => (
-        <g key={`ep-${n}`}>
-          <circle cx={60 + i * 90} cy={350} r={14} fill="#ecfdf5" stroke="#16a34a" strokeWidth={1.5} />
-          <text x={60 + i * 90} y={354} textAnchor="middle" fontSize={9} fontWeight={700} fill="#166534">
-            EP-{n}
+      {model.earthingPoints.map((ep, i) => (
+        <g key={ep.id}>
+          <circle cx={48 + i * 145} cy={308} r={12} fill="#ecfdf5" stroke="#16a34a" strokeWidth={1.5} />
+          <text x={48 + i * 145} y={311} textAnchor="middle" fontSize={7} fontWeight={800} fill="#166534">
+            {ep.id}
+          </text>
+          <text x={64 + i * 145} y={304} fontSize={7} fontWeight={700} fill="#166534">
+            {ep.duty}
+          </text>
+          <text x={64 + i * 145} y={316} fontSize={6.5} fill="#64748b">
+            {ep.conductor}
           </text>
         </g>
       ))}
-      <rect x={420} y={336} width={100} height={28} rx={3} fill="#f0fdf4" stroke="#16a34a" strokeWidth={1.25} />
-      <text x={470} y={354} textAnchor="middle" fontSize={9} fontWeight={700} fill="#166534">
+      <rect x={620} y={292} width={70} height={28} rx={3} fill="#f0fdf4" stroke="#16a34a" />
+      <text x={655} y={310} textAnchor="middle" fontSize={9} fontWeight={800} fill="#166534">
         LA
       </text>
-      <text x={540} y={354} fontSize={8} fill="#15803d">
-        {model.earthingNote}
+      <text x={700} y={304} fontSize={7} fill="#15803d">
+        {model.laNote}
+      </text>
+      <text x={700} y={316} fontSize={7} fill="#64748b">
+        PE: {model.earthCableNote} · {model.earthingNote}
       </text>
 
-      {/* Inverter / string table */}
-      <text x={40} y={400} fontSize={10} fontWeight={700} fill="#0f172a">
-        INVERTER / STRING DETAILS
+      {/* String electrical table */}
+      <text x={28} y={348} fontSize={9} fontWeight={800} fill="#0f172a">
+        STRING / MPPT ELECTRICAL (planning)
       </text>
-      <rect x={40} y={410} width={620} height={28 + model.strings.length * 22} fill="#f8fafc" stroke="#94a3b8" />
-      {["String", "Size", "Inv", "MPPT", "DC kWp"].map((h, i) => (
-        <text key={h} x={55 + i * 120} y={428} fontSize={9} fontWeight={700} fill="#475569">
+      <rect x={28} y={354} width={700} height={stringTableH} fill="#f8fafc" stroke="#94a3b8" />
+      {["Str", "Mod", "MPPT", "Voc max", "Vmp", "Imp", "Fuse", "kWp"].map((h, i) => (
+        <text key={h} x={40 + i * 86} y={368} fontSize={7.5} fontWeight={800} fill="#475569">
           {h}
         </text>
       ))}
-      <line x1={40} y1={438} x2={660} y2={438} stroke="#94a3b8" />
-      {model.strings.map((row, i) => (
+      <line x1={28} y1={374} x2={728} y2={374} stroke="#94a3b8" />
+      {showStrings.map((row, i) => (
         <g key={`row-${row.stringNo}`}>
-          <text x={55} y={456 + i * 22} fontSize={9} fill="#0f172a">
+          <text x={40} y={388 + i * 16} fontSize={7.5} fill="#0f172a">
             {String(row.stringNo).padStart(2, "0")}
           </text>
-          <text x={175} y={456 + i * 22} fontSize={9} fill="#0f172a">
+          <text x={126} y={388 + i * 16} fontSize={7.5} fill="#0f172a">
             {row.modules}×1
           </text>
-          <text x={295} y={456 + i * 22} fontSize={9} fill="#0f172a">
-            {String(row.inverterNo).padStart(2, "0")}
+          <text x={212} y={388 + i * 16} fontSize={7.5} fill="#0f172a">
+            {row.mpptNo}
           </text>
-          <text x={415} y={456 + i * 22} fontSize={9} fill="#0f172a">
-            {String(row.mpptNo).padStart(2, "0")}
+          <text x={298} y={388 + i * 16} fontSize={7.5} fill="#0f172a">
+            {row.stringVocMaxV} V
           </text>
-          <text x={535} y={456 + i * 22} fontSize={9} fill="#0f172a">
-            {((row.modules * model.moduleWatt) / 1000).toFixed(3)}
+          <text x={384} y={388 + i * 16} fontSize={7.5} fill="#0f172a">
+            {row.stringVmpV} V
           </text>
-        </g>
-      ))}
-      <text x={40} y={410 + 28 + model.strings.length * 22 + 16} fontSize={8} fill="#64748b">
-        String sizes: {stringSizes || "—"} · Voc planning {model.stringing.assumedVocV} V · MPPT max{" "}
-        {model.stringing.inverterMaxVocV} V · DC/AC {model.stringing.dcAcRatio}
-      </text>
-
-      {/* Plant details (right) */}
-      <text x={700} y={320} fontSize={10} fontWeight={700} fill="#0f172a">
-        PLANT DETAILS
-      </text>
-      <rect x={700} y={330} width={380} height={220} fill="#f8fafc" stroke="#94a3b8" />
-      {plantRows(model).map(([k, v], i) => (
-        <g key={k}>
-          <text x={712} y={352 + i * 20} fontSize={9} fontWeight={600} fill="#64748b">
-            {k}
+          <text x={470} y={388 + i * 16} fontSize={7.5} fill="#0f172a">
+            {row.stringImpA} A
           </text>
-          <text x={1068} y={352 + i * 20} textAnchor="end" fontSize={9} fontWeight={700} fill="#0f172a">
-            {v.length > 36 ? `${v.slice(0, 34)}…` : v}
+          <text x={556} y={388 + i * 16} fontSize={7.5} fill="#0f172a">
+            {row.dcFuseA} A
+          </text>
+          <text x={642} y={388 + i * 16} fontSize={7.5} fill="#0f172a">
+            {row.dcKwp.toFixed(3)}
           </text>
         </g>
       ))}
-
-      {/* Legend */}
-      <text x={40} y={560} fontSize={10} fontWeight={700} fill="#0f172a">
-        LEGEND
+      <text x={28} y={354 + stringTableH + 12} fontSize={7} fill="#64748b">
+        Sizes {stringSizes || "—"} · Voc cold {model.designVocColdV} V/mod · MPPT≤
+        {model.inverterMaxVocV} V · DC/AC {model.dcAcRatio}
+        {model.strings.length > 8 ? ` · showing 8/${model.strings.length}` : ""}
       </text>
-      {LEGEND.map(([sym, desc], i) => {
-        const col = i < 4 ? 0 : 1;
-        const row = i % 4;
-        const x = 40 + col * 200;
-        const y = 580 + row * 18;
-        return (
-          <g key={sym}>
-            <text x={x} y={y} fontSize={9} fontWeight={700} fill="#334155">
-              {sym}
-            </text>
-            <text x={x + 48} y={y} fontSize={9} fill="#64748b">
-              {desc}
-            </text>
-          </g>
-        );
-      })}
+
+      {/* Right column: plant + protection */}
+      <TableBox x={750} y={78} w={400} title="PLANT / ELECTRICAL DETAILS" rows={plantRows(model)} rowH={13} />
+
+      <TableBox
+        x={750}
+        y={310}
+        w={400}
+        title="PROTECTION SCHEDULE"
+        rows={model.protectionSchedule.map((p) => [p.location, `${p.device} · ${p.rating}`])}
+        rowH={14}
+        titleFill="#7c3aed"
+      />
+
+      <TableBox
+        x={28}
+        y={520}
+        w={460}
+        title="EQUIPMENT SUMMARY (planning BOM)"
+        rows={model.equipmentBom}
+        rowH={13}
+      />
+
+      <TableBox
+        x={500}
+        y={520}
+        w={240}
+        title="LEGEND"
+        rows={LEGEND}
+        rowH={12}
+      />
 
       {/* Title block */}
-      <rect x={700} y={570} width={380} height={140} fill="#fff" stroke="#0f172a" strokeWidth={1.25} />
-      <text x={712} y={592} fontSize={9} fontWeight={700} fill="#64748b">
+      <rect x={750} y={520} width={400} height={120} fill="#fff" stroke="#0f172a" strokeWidth={1.25} />
+      <text x={762} y={540} fontSize={8} fontWeight={700} fill="#64748b">
         DRAWING TITLE
       </text>
-      <text x={712} y={610} fontSize={11} fontWeight={800} fill="#0f172a">
+      <text x={762} y={558} fontSize={11} fontWeight={800} fill="#0f172a">
         DC &amp; AC SINGLE LINE DIAGRAM
       </text>
-      <text x={712} y={632} fontSize={9} fill="#475569">
+      <text x={762} y={578} fontSize={8} fill="#475569">
         Drg No: {model.drawingNo}
       </text>
-      <text x={712} y={650} fontSize={9} fill="#475569">
-        Date: {model.drawnDate} · Scale: NTS
+      <text x={762} y={594} fontSize={8} fill="#475569">
+        Date: {model.drawnDate} · Scale: NTS · Rev: 0
       </text>
-      <text x={712} y={668} fontSize={9} fill="#475569">
-        Status: {model.status}
+      <text x={762} y={610} fontSize={8} fill="#475569">
+        Status: {model.status} · Generated from Design Studio
       </text>
-      <text x={712} y={690} fontSize={8} fontWeight={700} fill="#b45309">
-        Sol.52 Design Studio — SLD pack (not proposal)
+      <text x={762} y={628} fontSize={8} fontWeight={700} fill="#b45309">
+        Sol.52 SLD pack — outside customer proposal
       </text>
 
-      {/* Disclaimer */}
-      <foreignObject x={40} y={660} width={640} height={90}>
-        <div
-          style={{
-            fontSize: 8,
-            lineHeight: 1.35,
-            color: "#64748b",
-            fontFamily: "system-ui, sans-serif",
-          }}
-        >
-          {model.disclaimer}
-        </div>
-      </foreignObject>
+      {/* Design notes */}
+      <text x={28} y={660} fontSize={8} fontWeight={800} fill="#0f172a">
+        DESIGN NOTES
+      </text>
+      {model.designNotes.map((note, i) => (
+        <text key={`note-${i}`} x={28} y={676 + i * 12} fontSize={7} fill="#475569">
+          {i + 1}. {note}
+        </text>
+      ))}
+      <text x={28} y={740} fontSize={7} fill="#94a3b8">
+        {model.disclaimer}
+      </text>
     </svg>
   );
 }
@@ -345,7 +482,7 @@ export function DesignStudioSldSheetViewer({ model, onClose, className }: Design
         <div>
           <p className="text-sm font-extrabold text-white">Engineering SLD sheet</p>
           <p className="text-[10px] text-slate-400">
-            Print → Save as PDF · Separate from customer proposal
+            Protection · cables · earthing · string electricals · Print → PDF (not on proposal)
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -358,7 +495,7 @@ export function DesignStudioSldSheetViewer({ model, onClose, className }: Design
         </div>
       </div>
       <div className="min-h-0 flex-1 overflow-auto p-3 print:p-0">
-        <div className="sld-sheet-page mx-auto max-w-[1120px] rounded-lg bg-white shadow-xl print:max-w-none print:rounded-none print:shadow-none">
+        <div className="sld-sheet-page mx-auto max-w-[1180px] rounded-lg bg-white shadow-xl print:max-w-none print:rounded-none print:shadow-none">
           <DesignStudioSldSheetSvg model={model} />
         </div>
       </div>
@@ -366,7 +503,7 @@ export function DesignStudioSldSheetViewer({ model, onClose, className }: Design
         @media print {
           @page {
             size: A3 landscape;
-            margin: 8mm;
+            margin: 6mm;
           }
           body * {
             visibility: hidden !important;

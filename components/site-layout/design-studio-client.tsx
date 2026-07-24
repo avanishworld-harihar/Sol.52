@@ -163,6 +163,8 @@ const DEFAULT_CENTER: [number, number] = [78.9629, 20.5937];
  */
 const MAP_MAX_ZOOM = 22;
 const MAP_OPTICAL_FROM = 19.5;
+/** iPad/touch: take over pinch slightly earlier so Design magnify engages when tiles stall. */
+const MAP_PINCH_OPTICAL_FROM = 19;
 /** Roof always under panels (paint + hit-test). */
 const ROOF_Z_INDEX = 0;
 const PANEL_Z_INDEX = 6;
@@ -378,6 +380,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const [mapExtraScale, setMapExtraScale] = useState(1);
   const mapExtraScaleRef = useRef(1);
   const zoomByRef = useRef<(delta: number) => void>(() => {});
+  /** True while a 2-finger pinch is driving Design magnify (skip panel drag). */
+  const pinchZoomActiveRef = useRef(false);
   const [mapViewportEl, setMapViewportEl] = useState<HTMLElement | null>(null);
   const [moduleCatalog, setModuleCatalog] = useState<PanelSpec[]>(PANEL_MODULE_CATALOG);
   const [panelMetrics, setPanelMetrics] = useState({
@@ -396,6 +400,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     useState<Exclude<ShadowSampleId, "custom">>("dec21-12");
   /** Plant / terrace height above ground — shadow datum for AGL objects (trees). */
   const [plantRoofHeightFt, setPlantRoofHeightFt] = useState(0);
+  /** String draft so iPad can clear "0" and type a new value (number inputs snap back otherwise). */
+  const [plantRoofHeightText, setPlantRoofHeightText] = useState("0");
+  const plantRoofHeightFocusedRef = useRef(false);
   /** Engineering SLD sheet v1 preview / print. */
   const [sldSheetOpen, setSldSheetOpen] = useState(false);
   const photoInputRef = useRef<HTMLInputElement | null>(null);
@@ -489,7 +496,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           surveyData?.roof_height_ft != null && surveyData.roof_height_ft >= 0
             ? surveyData.roof_height_ft
             : null;
-        setPlantRoofHeightFt(draftPlantH ?? surveyPlantH ?? 0);
+        const nextPlantH = draftPlantH ?? surveyPlantH ?? 0;
+        setPlantRoofHeightFt(nextPlantH);
+        setPlantRoofHeightText(String(nextPlantH));
 
         const savedPanel = panelJson.ok ? panelJson.data ?? null : null;
         setCurrentPanelLayout(savedPanel);
@@ -2771,6 +2780,180 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     return () => el.removeEventListener("wheel", onWheel);
   }, [mapViewportEl]);
 
+  /**
+   * iPad / touch: pinch past Google tile max → same Design magnify as desktop wheel.
+   * Capture phase so it works under the optical hit overlay.
+   */
+  useEffect(() => {
+    const el = mapViewportEl;
+    if (!el) return;
+
+    type PinchState = {
+      startDist: number;
+      startScale: number;
+      startZoom: number;
+      lastScale: number;
+      hijack: boolean;
+    };
+    let pinch: PinchState | null = null;
+
+    const touchDistance = (touches: TouchList) => {
+      if (touches.length < 2) return 0;
+      const a = touches[0]!;
+      const b = touches[1]!;
+      return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+    };
+
+    const shouldHijackPinch = (zoom: number) =>
+      mapExtraScaleRef.current > 1 || zoom >= MAP_PINCH_OPTICAL_FROM - 0.05;
+
+    const applyOpticalScale = (next: number) => {
+      const clamped = Math.min(MAP_EXTRA_SCALE_MAX, Math.max(1, +next.toFixed(2)));
+      if (Math.abs(clamped - mapExtraScaleRef.current) < 0.05) return;
+      setMapExtraScale(clamped);
+    };
+
+    const onTouchStart = (event: TouchEvent) => {
+      if (event.touches.length !== 2) {
+        if (event.touches.length < 2) {
+          pinch = null;
+          pinchZoomActiveRef.current = false;
+        }
+        return;
+      }
+      const map = mapRef.current;
+      const zoom = map?.getZoom() ?? 18;
+      const startDist = touchDistance(event.touches);
+      if (startDist < 10) return;
+      pinch = {
+        startDist,
+        startScale: Math.max(1, mapExtraScaleRef.current),
+        startZoom: zoom,
+        lastScale: Math.max(1, mapExtraScaleRef.current),
+        hijack: shouldHijackPinch(zoom),
+      };
+      if (pinch.hijack) {
+        pinchZoomActiveRef.current = true;
+        event.preventDefault();
+      }
+    };
+
+    const onTouchMove = (event: TouchEvent) => {
+      if (!pinch || event.touches.length !== 2) return;
+      const map = mapRef.current;
+      if (!map) return;
+      const dist = touchDistance(event.touches);
+      if (dist < 10 || pinch.startDist < 10) return;
+      const ratio = dist / pinch.startDist;
+      const zoom = map.getZoom() ?? pinch.startZoom;
+
+      if (!pinch.hijack) {
+        // Enter Design magnify when Google stops increasing zoom while pinching in.
+        if (ratio > 1.12 && zoom >= MAP_PINCH_OPTICAL_FROM - 0.5) {
+          const before = zoom;
+          map.setOptions({ maxZoom: MAP_MAX_ZOOM, isFractionalZoomEnabled: true });
+          map.setZoom(Math.min(MAP_MAX_ZOOM, zoom + 0.5));
+          window.setTimeout(() => {
+            const after = map.getZoom() ?? before;
+            if (after <= before + 0.08) {
+              pinchZoomActiveRef.current = true;
+              if (pinch) pinch.hijack = true;
+              applyOpticalScale(1 + (ratio - 1) * 1.5);
+            }
+          }, 50);
+        }
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      pinchZoomActiveRef.current = true;
+
+      if (ratio >= 1) {
+        map.setZoom(Math.min(MAP_MAX_ZOOM, Math.max(zoom, MAP_OPTICAL_FROM)));
+        const next = Math.min(MAP_EXTRA_SCALE_MAX, pinch.startScale * ratio);
+        if (Math.abs(next - pinch.lastScale) >= 0.08) {
+          pinch.lastScale = next;
+          applyOpticalScale(next);
+        }
+        return;
+      }
+
+      // Pinch out — unwind optical first, then ease native zoom.
+      const next = pinch.startScale * ratio;
+      if (next > 1.05) {
+        if (Math.abs(next - pinch.lastScale) >= 0.08) {
+          pinch.lastScale = next;
+          applyOpticalScale(next);
+        }
+        return;
+      }
+      if (mapExtraScaleRef.current > 1) {
+        applyOpticalScale(1);
+        pinch.lastScale = 1;
+        pinch.startScale = 1;
+        pinch.startDist = dist;
+        return;
+      }
+      const nativeTarget = Math.max(3, pinch.startZoom - (1 - ratio) * 4);
+      if (Math.abs((map.getZoom() ?? nativeTarget) - nativeTarget) > 0.15) {
+        map.setZoom(nativeTarget);
+      }
+    };
+
+    const onTouchEnd = (event: TouchEvent) => {
+      if (event.touches.length < 2) {
+        pinch = null;
+        pinchZoomActiveRef.current = false;
+      }
+    };
+
+    // WebKit / iPad Safari also fires gesture* for pinch (page-zoom prevention).
+    let gestureBase = 1;
+    const onGestureStart = (event: Event) => {
+      const zoom = mapRef.current?.getZoom() ?? 18;
+      gestureBase = Math.max(1, mapExtraScaleRef.current);
+      if (shouldHijackPinch(zoom)) {
+        event.preventDefault();
+        pinchZoomActiveRef.current = true;
+      }
+    };
+    const onGestureChange = (event: Event) => {
+      const ge = event as Event & { scale?: number };
+      const zoom = mapRef.current?.getZoom() ?? 18;
+      const scale = typeof ge.scale === "number" ? ge.scale : 1;
+      if (!shouldHijackPinch(zoom) && !(scale > 1.1 && zoom >= MAP_PINCH_OPTICAL_FROM - 0.5)) {
+        return;
+      }
+      event.preventDefault();
+      pinchZoomActiveRef.current = true;
+      mapRef.current?.setZoom(Math.min(MAP_MAX_ZOOM, Math.max(zoom, MAP_OPTICAL_FROM)));
+      applyOpticalScale(gestureBase * scale);
+    };
+    const onGestureEnd = () => {
+      pinchZoomActiveRef.current = false;
+    };
+
+    el.addEventListener("touchstart", onTouchStart, { passive: false, capture: true });
+    el.addEventListener("touchmove", onTouchMove, { passive: false, capture: true });
+    el.addEventListener("touchend", onTouchEnd, { capture: true });
+    el.addEventListener("touchcancel", onTouchEnd, { capture: true });
+    el.addEventListener("gesturestart", onGestureStart, { passive: false } as AddEventListenerOptions);
+    el.addEventListener("gesturechange", onGestureChange, { passive: false } as AddEventListenerOptions);
+    el.addEventListener("gestureend", onGestureEnd);
+
+    return () => {
+      el.removeEventListener("touchstart", onTouchStart, true);
+      el.removeEventListener("touchmove", onTouchMove, true);
+      el.removeEventListener("touchend", onTouchEnd, true);
+      el.removeEventListener("touchcancel", onTouchEnd, true);
+      el.removeEventListener("gesturestart", onGestureStart);
+      el.removeEventListener("gesturechange", onGestureChange);
+      el.removeEventListener("gestureend", onGestureEnd);
+      pinchZoomActiveRef.current = false;
+    };
+  }, [mapViewportEl]);
+
   useEffect(() => {
     mapViewportElRef.current = mapViewportEl;
   }, [mapViewportEl]);
@@ -3048,6 +3231,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const handleOpticalPointerDown = useCallback(
     (event: ReactPointerEvent<HTMLDivElement>) => {
       if (mapExtraScaleRef.current <= 1) return;
+      // Two-finger pinch owns zoom — do not start panel drag / place.
+      if (pinchZoomActiveRef.current || !event.isPrimary) return;
       event.preventDefault();
       event.stopPropagation();
 
@@ -3491,7 +3676,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               WT
             </button>
             <div className="my-1 h-px w-6 bg-white/15" />
-            <button type="button" title="Zoom in (past satellite limit = design magnify)" onClick={() => zoomBy(1)} className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-300 hover:bg-white/10">
+            <button type="button" title="Zoom in — past satellite limit = Design magnify (iPad: pinch)" onClick={() => zoomBy(1)} className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-300 hover:bg-white/10">
               <Plus className="h-4 w-4" />
             </button>
             <button type="button" title="Zoom out" onClick={() => zoomBy(-1)} className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-300 hover:bg-white/10">
@@ -3561,6 +3746,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         <section
           ref={setMapViewportEl}
           className="relative min-h-0 overflow-hidden overscroll-none border-slate-200 bg-slate-200 dark:border-white/10 dark:bg-slate-900 lg:h-full lg:border-0"
+          style={{ touchAction: mapExtraScale > 1 ? "none" : "manipulation" }}
         >
           {googleMapsKey ? (
             <div
@@ -3599,7 +3785,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                 onPointerDown={handleOpticalPointerDown}
               />
               <div className="pointer-events-none absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-900 shadow">
-                Design magnify {mapExtraScale.toFixed(2)}× · max {MAP_EXTRA_SCALE_MAX}× · click/drag panels · wheel − zoom out
+                Design magnify {mapExtraScale.toFixed(2)}× · max {MAP_EXTRA_SCALE_MAX}× · pinch
+                or ± · drag panels
               </div>
             </>
           ) : null}
@@ -4446,15 +4633,42 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             <label className="mt-2 block text-[10px] font-bold uppercase tracking-wide text-orange-700/90 dark:text-orange-200/80">
               Plant roof height (ft AGL)
               <input
-                type="number"
-                min={0}
-                max={500}
-                step={1}
+                type="text"
+                inputMode="decimal"
+                enterKeyHint="done"
+                autoComplete="off"
                 disabled={!shadowEnabled}
-                value={plantRoofHeightFt}
-                onChange={(event) =>
-                  setPlantRoofHeightFt(Math.max(0, Number(event.target.value) || 0))
-                }
+                value={plantRoofHeightText}
+                onFocus={() => {
+                  plantRoofHeightFocusedRef.current = true;
+                  // Select all so replacing 0 is one tap on iPad.
+                  if (plantRoofHeightText === "0") {
+                    setPlantRoofHeightText("");
+                  }
+                }}
+                onBlur={() => {
+                  plantRoofHeightFocusedRef.current = false;
+                  const parsed = Number(plantRoofHeightText.replace(/,/g, "").trim());
+                  const next = Number.isFinite(parsed)
+                    ? Math.min(500, Math.max(0, parsed))
+                    : 0;
+                  setPlantRoofHeightFt(next);
+                  setPlantRoofHeightText(String(next));
+                }}
+                onChange={(event) => {
+                  const raw = event.target.value;
+                  // Allow empty / partial decimals while typing (critical on iPad).
+                  if (raw === "" || raw === "." || raw === "-" || /^\d*\.?\d*$/.test(raw)) {
+                    setPlantRoofHeightText(raw);
+                    if (raw !== "" && raw !== "." && raw !== "-") {
+                      const n = Number(raw);
+                      if (Number.isFinite(n) && n >= 0) {
+                        setPlantRoofHeightFt(Math.min(500, n));
+                      }
+                    }
+                  }
+                }}
+                placeholder="e.g. 40"
                 className="mt-1 w-full rounded-lg border border-orange-200/80 bg-white px-2.5 py-2 text-xs font-semibold tabular-nums text-orange-950 disabled:opacity-40 dark:border-orange-800/50 dark:bg-white/[0.06] dark:text-orange-50"
               />
             </label>
