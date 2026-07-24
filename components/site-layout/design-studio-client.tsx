@@ -36,6 +36,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast-center";
+import { useDesignStudioMobileViewOnly } from "@/hooks/use-design-studio-mobile-view-only";
 import {
   extractGpsFromImageFile,
   parseLatLngText,
@@ -459,6 +460,15 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   /** String draft so iPad can clear "0" and type a new value (number inputs snap back otherwise). */
   const [plantRoofHeightText, setPlantRoofHeightText] = useState("0");
   const plantRoofHeightFocusedRef = useRef(false);
+  /** Selected obstruction height / radius text drafts (same iPad edit fix). */
+  const [obsHeightText, setObsHeightText] = useState("");
+  const [obsRadiusText, setObsRadiusText] = useState("");
+  const obsHeightFocusedRef = useRef(false);
+  const obsRadiusFocusedRef = useRef(false);
+  /** Phone: inspect + shadow checks only — no layout edits. */
+  const mobileViewOnly = useDesignStudioMobileViewOnly();
+  const mobileViewOnlyRef = useRef(mobileViewOnly);
+  mobileViewOnlyRef.current = mobileViewOnly;
   /** Engineering SLD sheet v1 preview / print. */
   const [sldSheetOpen, setSldSheetOpen] = useState(false);
   const photoInputRef = useRef<HTMLInputElement | null>(null);
@@ -993,6 +1003,13 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         });
 
         studioClickRef.current = (latLng: google.maps.LatLng) => {
+          if (mobileViewOnlyRef.current) {
+            // View-only: empty map clears selection; no place / draw.
+            if (selectedPanelIdsRef.current.length > 0) {
+              setSelectedPanelIds([]);
+            }
+            return;
+          }
           const type = addObstructionRef.current;
           if (type) {
             dispatch({
@@ -1236,8 +1253,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         const marker = new google.maps.Marker({
           map,
           position: { lat: obstruction.lat, lng: obstruction.lng },
-          title: `${OBSTRUCTION_LABELS[obstruction.type]} · ⌀≈${(bodyRadiusFt * 2).toFixed(1)} ft · ${obstruction.height_ft} ft high · drag`,
-          draggable: true,
+          title: `${OBSTRUCTION_LABELS[obstruction.type]} · ⌀≈${(bodyRadiusFt * 2).toFixed(1)} ft · ${obstruction.height_ft} ft high${mobileViewOnlyRef.current ? "" : " · drag"}`,
+          draggable: !mobileViewOnlyRef.current,
           cursor: "move",
           zIndex: isSelected ? 30 : 12,
           label: showLabel
@@ -1273,6 +1290,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           dispatch({ type: "SELECT_OBSTRUCTION", id: obstruction.id });
         });
         marker.addListener("dragend", (event: google.maps.MapMouseEvent) => {
+          if (mobileViewOnlyRef.current) return;
           if (!event.latLng) return;
           dispatch({
             type: "UPDATE_OBSTRUCTION",
@@ -1405,6 +1423,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       const opticalActive = mapExtraScaleRef.current > 1;
       const placingObstruction = Boolean(pendingObstruction);
       const canDrag =
+        !mobileViewOnlyRef.current &&
         !opticalActive &&
         !placingObstruction &&
         selected &&
@@ -1486,6 +1505,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           event.domEvent?.preventDefault?.();
         }),
         google.maps.event.addListener(polygon, "dragstart", () => {
+          if (mobileViewOnlyRef.current) return;
           // Cell lines stay put while the polygon drags — clear until dragend rebuild.
           panelCellLinesRef.current.forEach((line) => line.setMap(null));
           panelCellLinesRef.current = [];
@@ -1635,11 +1655,11 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           map: mapRef.current!,
           paths: path,
           clickable: false,
-          strokeColor: "#fbbf24",
-          strokeOpacity: 0.95,
-          strokeWeight: 2,
+          strokeColor: "#334155",
+          strokeOpacity: 0.55,
+          strokeWeight: 1.25,
           fillColor: "#020617",
-          fillOpacity: 0.5,
+          fillOpacity: 0.48,
           // Above panels (6–8) so cast is obvious on satellite.
           zIndex: 50,
         })
@@ -1653,6 +1673,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
 
   // Persist plant roof height even when layout isn't marked dirty yet.
   useEffect(() => {
+    if (mobileViewOnlyRef.current) return;
     const timer = window.setTimeout(() => {
       void (async () => {
         const existing = await readSiteLayoutDraft(projectId);
@@ -1704,6 +1725,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   ]);
 
   useEffect(() => {
+    if (mobileViewOnlyRef.current) return;
     if (!state.dirty && !panelDirty) return;
     const timer = window.setTimeout(() => {
       void writeSiteLayoutDraft(projectId, {
@@ -1748,6 +1770,32 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     () => state.obstructions.find((item) => item.id === state.selectedObstructionId) ?? null,
     [state.obstructions, state.selectedObstructionId]
   );
+
+  // Keep obstruction field drafts in sync when selection / saved values change (not while typing).
+  useEffect(() => {
+    if (obsHeightFocusedRef.current || obsRadiusFocusedRef.current) return;
+    if (!selectedObstruction) {
+      setObsHeightText("");
+      setObsRadiusText("");
+      return;
+    }
+    setObsHeightText(String(selectedObstruction.height_ft ?? 0));
+    const storedRadius = selectedObstruction.radius_ft;
+    setObsRadiusText(
+      String(
+        storedRadius != null && storedRadius > 0
+          ? storedRadius
+          : effectiveObstructionRadiusFt(selectedObstruction)
+      )
+    );
+  }, [
+    selectedObstruction,
+    selectedObstruction?.id,
+    selectedObstruction?.height_ft,
+    selectedObstruction?.radius_ft,
+    selectedObstruction?.type,
+  ]);
+
   const roofSections = useMemo(
     () => (state.roof ? roofGeometryToPolygons(state.roof) : []),
     [state.roof]
@@ -1945,6 +1993,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
 
   const beginObstruction = useCallback(
     (type: ObstructionType) => {
+      if (mobileViewOnlyRef.current) return;
       if (drawingRoof) {
         cancelRoofDrawing();
       }
@@ -1969,6 +2018,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   );
 
   const toggleRoofDrawing = useCallback(() => {
+    if (mobileViewOnlyRef.current) return;
     if (drawingRoof) {
       cancelRoofDrawing();
       return;
@@ -2385,6 +2435,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       /** Soften toasts when re-packing after orientation/mounting toggle. */
       quiet?: boolean;
     }) => {
+      if (mobileViewOnlyRef.current) return;
       if (!state.roof) {
         toast.error("Draw roof first", "Complete at least one roof section before auto layout.");
         return;
@@ -2539,6 +2590,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   ]);
 
   const clearPanels = useCallback(() => {
+    if (mobileViewOnlyRef.current) return;
     if (placedPanels.length === 0) return;
     pushPanelHistory(placedPanels);
     setPlacedPanels([]);
@@ -2550,6 +2602,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   /** Rotate selected panels ±5° (west / east). Locked selection is skipped. */
   const rotatePlant = useCallback(
     (deltaDeg: number) => {
+      if (mobileViewOnlyRef.current) return;
       const current = placedPanelsRef.current;
       const selectedIds = selectedPanelIdsRef.current;
       if (selectedIds.length === 0) {
@@ -2582,6 +2635,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   );
 
   const deleteSelectedPanel = useCallback(() => {
+    if (mobileViewOnlyRef.current) return;
     const ids = selectedPanelIdsRef.current;
     if (ids.length === 0) return;
     pushPanelHistory(placedPanelsRef.current);
@@ -2600,6 +2654,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
 
   /** Duplicate selected panels with a small NE offset so copies are visible. */
   const duplicateSelectedPanels = useCallback(() => {
+    if (mobileViewOnlyRef.current) return;
     const ids = selectedPanelIdsRef.current;
     if (ids.length === 0) {
       toast.error("Select panels first", "Click a panel, then Duplicate.");
@@ -2744,6 +2799,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
 
   const setActiveStudioTool = useCallback(
     (tool: StudioTool) => {
+      if (mobileViewOnlyRef.current && tool !== "select") return;
       if (drawingRoof) {
         cancelRoofDrawing();
       }
@@ -2792,8 +2848,16 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     clearStudioToolRef.current = clearStudioTool;
   }, [clearStudioTool, setActiveStudioTool]);
 
+  // Phone view-only: drop any armed edit tools.
+  useEffect(() => {
+    if (!mobileViewOnly) return;
+    clearStudioTool();
+    if (drawingRoof) cancelRoofDrawing();
+  }, [cancelRoofDrawing, clearStudioTool, drawingRoof, mobileViewOnly]);
+
   /** Snap is a toggle, not a draw tool — never leave roof-draw / place modes on. */
   const toggleSnap = useCallback(() => {
+    if (mobileViewOnlyRef.current) return;
     if (drawingRoof) {
       cancelRoofDrawing();
     }
@@ -3364,6 +3428,17 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       event.preventDefault();
       event.stopPropagation();
 
+      if (mobileViewOnlyRef.current) {
+        // View-only: allow select / deselect for inspect, never drag or place.
+        const hit = findPanelAtClient(event.clientX, event.clientY);
+        if (hit) {
+          setSelectedPanelIds([hit.id]);
+        } else if (selectedPanelIdsRef.current.length > 0) {
+          setSelectedPanelIds([]);
+        }
+        return;
+      }
+
       const layout = clientToLayoutPixel(event.clientX, event.clientY);
       if (!layout) return;
 
@@ -3568,6 +3643,10 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   }, []);
 
   const saveLayout = useCallback(async () => {
+    if (mobileViewOnlyRef.current) {
+      toast.error("View only on phone", "Edit and save this design on a tablet or computer.");
+      return;
+    }
     if (!state.roof || !state.metrics) {
       toast.error("Draw roof first", "Complete the roof polygon before saving.");
       return;
@@ -3715,10 +3794,19 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                   : "—"}
               </span>
             </div>
-            <Button onClick={() => void saveLayout()} disabled={saving || !state.roof || drawingRoof}>
-              <Save className="mr-1.5 h-4 w-4" />
-              {saving ? "Saving…" : "Save version"}
-            </Button>
+            {mobileViewOnly ? (
+              <span className="rounded-lg border border-sky-200 bg-sky-50 px-2.5 py-1.5 text-[10px] font-bold text-sky-900 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-100">
+                Phone · view only · shadow check OK
+              </span>
+            ) : (
+              <Button
+                onClick={() => void saveLayout()}
+                disabled={saving || !state.roof || drawingRoof}
+              >
+                <Save className="mr-1.5 h-4 w-4" />
+                {saving ? "Saving…" : "Save version"}
+              </Button>
+            )}
           </div>
         </div>
       </header>
@@ -3727,6 +3815,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
 
         <aside className="row-span-2 flex min-h-0 flex-col overflow-hidden border-r border-slate-800 bg-slate-900 text-slate-100 lg:row-span-1">
           <div className="flex flex-1 flex-col items-center gap-0.5 overflow-y-auto overscroll-contain py-2">
+            {!mobileViewOnly ? (
+              <>
             <button
               type="button"
               title="Select / move (V) · click panel to select · empty map to deselect · Shift+click multi"
@@ -3804,6 +3894,15 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               WT
             </button>
             <div className="my-1 h-px w-6 bg-white/15" />
+              </>
+            ) : (
+              <p
+                className="mb-1 max-w-[2.75rem] px-0.5 text-center text-[8px] font-bold leading-tight text-sky-300/90"
+                title="Phone is view-only. Edit on tablet or computer."
+              >
+                View
+              </p>
+            )}
             <button type="button" title="Zoom in — past satellite limit = Design magnify (iPad: pinch)" onClick={() => zoomBy(1)} className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-300 hover:bg-white/10">
               <Plus className="h-4 w-4" />
             </button>
@@ -3818,6 +3917,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             >
               <Focus className="h-4 w-4" />
             </button>
+            {!mobileViewOnly ? (
+              <>
             <button
               type="button"
               title={`Rotate selected panels 5° west${panelRotationSummary?.deg != null ? ` · now ${panelRotationSummary.label}` : ""}`}
@@ -3855,12 +3956,16 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             >
               <RotateCw className="h-4 w-4" />
             </button>
+              </>
+            ) : null}
             <button type="button" title={`Map: ${mapTypeId}`} onClick={cycleMapType} className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-300 hover:bg-white/10">
               <MapIcon className="h-4 w-4" />
             </button>
             <button type="button" title="Reset north" onClick={resetMapNorth} className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-300 hover:bg-white/10">
               <Compass className="h-4 w-4" style={{ transform: `rotate(${-mapHeading}deg)` }} />
             </button>
+            {!mobileViewOnly ? (
+              <>
             <div className="my-1 h-px w-6 bg-white/15" />
             <button type="button" title="Undo" disabled={!canUndo} onClick={undoStudio} className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-300 hover:bg-white/10 disabled:opacity-30">
               <Undo2 className="h-4 w-4" />
@@ -3868,6 +3973,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             <button type="button" title="Redo" disabled={!canRedo} onClick={redoStudio} className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-300 hover:bg-white/10 disabled:opacity-30">
               <Redo2 className="h-4 w-4" />
             </button>
+              </>
+            ) : null}
           </div>
         </aside>
 
@@ -3961,6 +4068,17 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
 
         <aside className="col-span-2 min-h-0 space-y-3 overflow-y-auto overscroll-contain border-t border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-slate-900 lg:col-span-1 lg:border-l lg:border-t-0">
 
+          {mobileViewOnly ? (
+            <div className="rounded-xl border border-sky-200 bg-sky-50 p-3 text-[11px] leading-relaxed text-sky-950 dark:border-sky-900/50 dark:bg-sky-950/30 dark:text-sky-100">
+              <p className="font-extrabold">Phone · view only</p>
+              <p className="mt-1 text-[10px] opacity-90">
+                Pan / zoom the map. Turn Shadow on and try time presets. Layout edit, place, and
+                Save stay on tablet or computer.
+              </p>
+            </div>
+          ) : null}
+
+          {!mobileViewOnly ? (
           <div className="rounded-xl border border-blue-200 bg-blue-50/80 p-3 dark:border-blue-900/40 dark:bg-blue-950/30">
             <p className="text-[11px] font-extrabold uppercase tracking-wide text-blue-700 dark:text-blue-300">Plant capacity</p>
             <p className="mt-1 text-[10px] leading-relaxed text-blue-900/80 dark:text-blue-100/80">
@@ -4549,6 +4667,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               Panel pe click = select. Bahar click = deselect. Duplicate = copy selected (thoda offset). Shift+click = multi. Magnet = snap.
             </p>
           </div>
+          ) : null}
 
 
           <div className="rounded-xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-slate-900">
@@ -4755,8 +4874,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               </button>
             </div>
             <p className="mt-1 text-[10px] leading-relaxed text-orange-900/80 dark:text-orange-100/70">
-              Roof-plane shadow: set plant height (AGL), then object height (tank above roof / tree
-              AGL). IST solstice samples. Not a certified report. Design stays outside proposal.
+              {mobileViewOnly
+                ? "Turn Shadow on, pick a time sample, optionally adjust plant roof height to check cast. Layout edits stay on tablet or computer."
+                : "Roof-plane shadow: set plant height (AGL), then object height (tank above roof / tree AGL). IST solstice samples. Not a certified report. Design stays outside proposal."}
             </p>
             <label className="mt-2 block text-[10px] font-bold uppercase tracking-wide text-orange-700/90 dark:text-orange-200/80">
               Plant roof height (ft AGL)
@@ -4873,130 +4993,222 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             </div>
             <div className="mt-2 space-y-2">
               {state.obstructions.length === 0 ? (
-                <p className="text-[11px] leading-relaxed text-slate-500">Add tanks, trees or chimneys from the left toolbar.</p>
+                <p className="text-[11px] leading-relaxed text-slate-500">
+                  Add tanks, trees or chimneys from the left toolbar.
+                </p>
               ) : (
-                state.obstructions.map((obstruction) => (
-                  <button
-                    key={obstruction.id}
-                    type="button"
-                    onClick={() => dispatch({ type: "SELECT_OBSTRUCTION", id: obstruction.id })}
-                    className={`w-full rounded-lg border p-2 text-left ${
-                      state.selectedObstructionId === obstruction.id
-                        ? "border-blue-500 bg-blue-50 dark:bg-blue-950/30"
-                        : "border-slate-200 dark:border-white/10"
-                    }`}
-                  >
-                    <span className="text-xs font-bold text-slate-800 dark:text-slate-100">{OBSTRUCTION_LABELS[obstruction.type]}</span>
-                    <span className="ml-2 text-[10px] text-slate-500">
-                      {obstruction.height_ft} ft{" "}
-                      {obstructionHeightDatum(obstruction) === "agl" ? "AGL" : "roof"}
-                      {obstructionHeightDatum(obstruction) === "agl" ? (
-                        <>
-                          {" "}
-                          · eff{" "}
-                          {effectiveShadowHeightAboveRoofFt(
-                            obstruction,
-                            plantRoofHeightFt
-                          ).toFixed(0)}{" "}
-                          ft
-                        </>
+                state.obstructions.map((obstruction) => {
+                  const isSelected = state.selectedObstructionId === obstruction.id;
+                  const minRadius = MIN_OBSTRUCTION_RADIUS_FT[obstruction.type];
+                  return (
+                    <div
+                      key={obstruction.id}
+                      className={`rounded-lg border ${
+                        isSelected
+                          ? "border-blue-500 bg-blue-50 dark:bg-blue-950/30"
+                          : "border-slate-200 dark:border-white/10"
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          dispatch({ type: "SELECT_OBSTRUCTION", id: obstruction.id })
+                        }
+                        className="w-full p-2 text-left"
+                      >
+                        <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
+                          {OBSTRUCTION_LABELS[obstruction.type]}
+                        </span>
+                        <span className="ml-2 text-[10px] text-slate-500">
+                          {obstruction.height_ft} ft{" "}
+                          {obstructionHeightDatum(obstruction) === "agl" ? "AGL" : "roof"}
+                          {obstructionHeightDatum(obstruction) === "agl" ? (
+                            <>
+                              {" "}
+                              · eff{" "}
+                              {effectiveShadowHeightAboveRoofFt(
+                                obstruction,
+                                plantRoofHeightFt
+                              ).toFixed(0)}{" "}
+                              ft
+                            </>
+                          ) : null}
+                        </span>
+                      </button>
+                      {isSelected && selectedObstruction?.id === obstruction.id && !mobileViewOnly ? (
+                        <div className="space-y-2 border-t border-blue-200/70 px-2 pb-2 pt-2 dark:border-blue-800/50">
+                          <div className="grid grid-cols-2 gap-2">
+                            <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                              {obstructionHeightDatum(selectedObstruction) === "agl"
+                                ? "Height AGL (ft)"
+                                : "Height above roof (ft)"}
+                              <input
+                                type="text"
+                                inputMode="decimal"
+                                enterKeyHint="done"
+                                autoComplete="off"
+                                value={obsHeightText}
+                                onFocus={() => {
+                                  obsHeightFocusedRef.current = true;
+                                  if (obsHeightText === "0") setObsHeightText("");
+                                }}
+                                onBlur={() => {
+                                  obsHeightFocusedRef.current = false;
+                                  const parsed = Number(
+                                    obsHeightText.replace(/,/g, "").trim()
+                                  );
+                                  const next = Number.isFinite(parsed)
+                                    ? Math.min(500, Math.max(0, parsed))
+                                    : 0;
+                                  setObsHeightText(String(next));
+                                  dispatch({
+                                    type: "UPDATE_OBSTRUCTION",
+                                    obstruction: {
+                                      ...selectedObstruction,
+                                      height_ft: next,
+                                    },
+                                  });
+                                }}
+                                onChange={(event) => {
+                                  const raw = event.target.value;
+                                  if (
+                                    raw === "" ||
+                                    raw === "." ||
+                                    raw === "-" ||
+                                    /^\d*\.?\d*$/.test(raw)
+                                  ) {
+                                    setObsHeightText(raw);
+                                    if (raw !== "" && raw !== "." && raw !== "-") {
+                                      const n = Number(raw);
+                                      if (Number.isFinite(n) && n >= 0) {
+                                        dispatch({
+                                          type: "UPDATE_OBSTRUCTION",
+                                          obstruction: {
+                                            ...selectedObstruction,
+                                            height_ft: Math.min(500, n),
+                                          },
+                                        });
+                                      }
+                                    }
+                                  }
+                                }}
+                                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs tabular-nums dark:border-white/10 dark:bg-slate-950"
+                              />
+                            </label>
+                            <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                              Radius (ft)
+                              <input
+                                type="text"
+                                inputMode="decimal"
+                                enterKeyHint="done"
+                                autoComplete="off"
+                                value={obsRadiusText}
+                                onFocus={() => {
+                                  obsRadiusFocusedRef.current = true;
+                                }}
+                                onBlur={() => {
+                                  obsRadiusFocusedRef.current = false;
+                                  const parsed = Number(
+                                    obsRadiusText.replace(/,/g, "").trim()
+                                  );
+                                  const next = Number.isFinite(parsed)
+                                    ? Math.min(500, Math.max(minRadius, parsed))
+                                    : minRadius;
+                                  setObsRadiusText(String(next));
+                                  dispatch({
+                                    type: "UPDATE_OBSTRUCTION",
+                                    obstruction: {
+                                      ...selectedObstruction,
+                                      radius_ft: next,
+                                    },
+                                  });
+                                }}
+                                onChange={(event) => {
+                                  const raw = event.target.value;
+                                  if (
+                                    raw === "" ||
+                                    raw === "." ||
+                                    /^\d*\.?\d*$/.test(raw)
+                                  ) {
+                                    setObsRadiusText(raw);
+                                    if (raw !== "" && raw !== ".") {
+                                      const n = Number(raw);
+                                      // Live update without clamping to min so typing "3.5" works.
+                                      if (Number.isFinite(n) && n >= 0) {
+                                        dispatch({
+                                          type: "UPDATE_OBSTRUCTION",
+                                          obstruction: {
+                                            ...selectedObstruction,
+                                            radius_ft: Math.min(500, n),
+                                          },
+                                        });
+                                      }
+                                    }
+                                  }
+                                }}
+                                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs tabular-nums dark:border-white/10 dark:bg-slate-950"
+                              />
+                            </label>
+                          </div>
+                          <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                            Height measured from
+                            <select
+                              value={obstructionHeightDatum(selectedObstruction)}
+                              onChange={(event) =>
+                                dispatch({
+                                  type: "UPDATE_OBSTRUCTION",
+                                  obstruction: {
+                                    ...selectedObstruction,
+                                    height_datum: event.target.value as
+                                      | "above_roof"
+                                      | "agl",
+                                  },
+                                })
+                              }
+                              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs dark:border-white/10 dark:bg-slate-950"
+                            >
+                              <option value="above_roof">
+                                Roof (tank / chimney / parapet)
+                              </option>
+                              <option value="agl">Ground AGL (tree / neighbour)</option>
+                            </select>
+                          </label>
+                          {obstructionHeightDatum(selectedObstruction) === "agl" ? (
+                            <p className="text-[10px] text-slate-500">
+                              Cast on array = max(0, {selectedObstruction.height_ft} −{" "}
+                              {plantRoofHeightFt}) ={" "}
+                              {effectiveShadowHeightAboveRoofFt(
+                                selectedObstruction,
+                                plantRoofHeightFt
+                              ).toFixed(0)}{" "}
+                              ft above roof.
+                            </p>
+                          ) : (
+                            <p className="text-[10px] text-slate-500">
+                              Keep-out on the map. Water tank min ~{minRadius} ft so Auto layout
+                              can avoid it.
+                            </p>
+                          )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full text-red-600"
+                            onClick={() =>
+                              dispatch({
+                                type: "DELETE_OBSTRUCTION",
+                                id: selectedObstruction.id,
+                              })
+                            }
+                          >
+                            <Trash2 className="mr-1 h-4 w-4" /> Remove obstruction
+                          </Button>
+                        </div>
                       ) : null}
-                    </span>
-                  </button>
-                ))
+                    </div>
+                  );
+                })
               )}
             </div>
-            {selectedObstruction ? (
-              <div className="mt-3 border-t border-slate-100 pt-3 dark:border-white/10">
-                <div className="grid grid-cols-2 gap-2">
-                  <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
-                    {obstructionHeightDatum(selectedObstruction) === "agl"
-                      ? "Height AGL (ft)"
-                      : "Height above roof (ft)"}
-                    <input
-                      type="number"
-                      min={0}
-                      max={500}
-                      value={selectedObstruction.height_ft}
-                      onChange={(event) =>
-                        dispatch({
-                          type: "UPDATE_OBSTRUCTION",
-                          obstruction: {
-                            ...selectedObstruction,
-                            height_ft: Math.max(0, Number(event.target.value) || 0),
-                          },
-                        })
-                      }
-                      className="mt-1 w-full rounded-lg border border-slate-200 px-2.5 py-2 text-xs dark:border-white/10 dark:bg-slate-950"
-                    />
-                  </label>
-                  <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
-                    Radius (ft)
-                    <input
-                      type="number"
-                      min={MIN_OBSTRUCTION_RADIUS_FT[selectedObstruction.type]}
-                      max={500}
-                      step={0.5}
-                      value={effectiveObstructionRadiusFt(selectedObstruction)}
-                      onChange={(event) =>
-                        dispatch({
-                          type: "UPDATE_OBSTRUCTION",
-                          obstruction: {
-                            ...selectedObstruction,
-                            radius_ft: Math.max(
-                              MIN_OBSTRUCTION_RADIUS_FT[selectedObstruction.type],
-                              Number(event.target.value) || 0
-                            ),
-                          },
-                        })
-                      }
-                      className="mt-1 w-full rounded-lg border border-slate-200 px-2.5 py-2 text-xs dark:border-white/10 dark:bg-slate-950"
-                    />
-                  </label>
-                </div>
-                <label className="mt-2 block text-[11px] font-bold text-slate-600 dark:text-slate-300">
-                  Height measured from
-                  <select
-                    value={obstructionHeightDatum(selectedObstruction)}
-                    onChange={(event) =>
-                      dispatch({
-                        type: "UPDATE_OBSTRUCTION",
-                        obstruction: {
-                          ...selectedObstruction,
-                          height_datum: event.target.value as "above_roof" | "agl",
-                        },
-                      })
-                    }
-                    className="mt-1 w-full rounded-lg border border-slate-200 px-2.5 py-2 text-xs dark:border-white/10 dark:bg-slate-950"
-                  >
-                    <option value="above_roof">Roof (tank / chimney / parapet)</option>
-                    <option value="agl">Ground AGL (tree / neighbour)</option>
-                  </select>
-                </label>
-                {obstructionHeightDatum(selectedObstruction) === "agl" ? (
-                  <p className="mt-1 text-[10px] text-slate-500">
-                    Cast on array = max(0, {selectedObstruction.height_ft} − {plantRoofHeightFt}) ={" "}
-                    {effectiveShadowHeightAboveRoofFt(
-                      selectedObstruction,
-                      plantRoofHeightFt
-                    ).toFixed(0)}{" "}
-                    ft above roof.
-                  </p>
-                ) : (
-                  <p className="mt-1 text-[10px] text-slate-500">
-                    Keep-out circle on the map. Water tank min ~3.5 ft so Auto layout can avoid it.
-                  </p>
-                )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-2 w-full text-red-600"
-                  onClick={() => dispatch({ type: "DELETE_OBSTRUCTION", id: selectedObstruction.id })}
-                >
-                  <Trash2 className="mr-1 h-4 w-4" /> Remove obstruction
-                </Button>
-              </div>
-            ) : null}
           </div>
 
           <div className="rounded-xl border border-blue-200 bg-blue-50 p-3 text-[11px] leading-relaxed text-blue-900 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-100">
