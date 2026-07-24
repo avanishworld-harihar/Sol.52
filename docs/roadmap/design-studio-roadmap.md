@@ -27,7 +27,7 @@
 | **Phase 2** | Auto Panel Placement Engine + RCC/shed presets + manual fine-tune | **COMPLETE (core)** — East-West / one-click tilt chips still queued |
 | **Phase 3** | Engineering Rules + Solar Design — setbacks, strings, studio SLD | **COMPLETE (kickoff)** — equipment pins / exportable SLD pack still queued |
 | **Phase 4** | **Shadow Engine** — per-panel shade %, shade-free area, loss estimate | **COMPLETE (core)** — survey fill, hour slider, before/after, annual loss (2026-07-24) |
-| **Phase 5** | Project/Survey/BOM/Proposal integration + snapshots + customer sign-off | **ACTIVE** — Design Hub summary + Design pack print kickoff (2026-07-24) |
+| **Phase 5** | Project/Survey/BOM/Proposal integration + snapshots + customer sign-off | **ACTIVE** — Design pack + Hub summary + map snapshot thumbnail (2026-07-24) |
 | **Phase 6** | Cross-device QA, performance, security and pilot rollout | Approved — queued |
 
 ### Phase gates
@@ -194,8 +194,12 @@ percentages and roof-level shade-free area.
 - **Design pack** print/PDF overlay from Design Studio (installer summary; not a proposal block).
 - Phone view-only adapter (inspect + shadow checks); edit on tablet/computer.
 
+**Snapshot slice (2026-07-24):**
+- Save in Design Studio → Google Static Maps hybrid PNG → `project-files` storage.
+- Path stored on `project_site_layouts.map_snapshot_path`; Hub Design tab shows signed thumbnail.
+- API: `POST /api/projects/[id]/site-layout/snapshot`.
+
 **Still queued in Phase 5:**
-- Map snapshot (`map.getCanvas().toDataURL()` / Static Maps) → Supabase storage + Hub thumbnail.
 - Design pack share link (token URL).
 - Separate SLD pack share link when gated.
 - Optional Project Hub cross-links between proposal and design (no Design/SLD inside proposal renderers).

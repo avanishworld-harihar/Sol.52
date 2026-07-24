@@ -3760,6 +3760,39 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     }
     setSaving(true);
     try {
+      let mapSnapshotPath: string | null = currentLayout?.map_snapshot_path ?? null;
+      try {
+        const panelPoints = placedPanels
+          .map((panel) => {
+            const c = footprintCentroid(panel.footprint_geojson);
+            return c ? { lat: c.lat, lng: c.lng } : null;
+          })
+          .filter((point): point is { lat: number; lng: number } => point != null);
+        const snapResponse = await fetch(
+          `/api/projects/${projectId}/site-layout/snapshot`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              center_lat: center[1],
+              center_lng: center[0],
+              zoom: mapRef.current?.getZoom() ?? 19,
+              roof_geojson: state.roof,
+              panels: panelPoints,
+            }),
+          }
+        );
+        const snapJson = (await snapResponse.json()) as ApiEnvelope<{
+          path: string;
+          url: string | null;
+        }>;
+        if (snapJson.ok && snapJson.data?.path) {
+          mapSnapshotPath = snapJson.data.path;
+        }
+      } catch {
+        // Snapshot is best-effort — layout save must still succeed.
+      }
+
       const response = await fetch(`/api/projects/${projectId}/site-layout`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -3770,6 +3803,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           roof_azimuth_deg: state.metrics.azimuthDeg,
           obstructions_geojson: state.obstructions,
           roof_area_sqft: state.metrics.areaSqft,
+          map_snapshot_path: mapSnapshotPath,
         }),
       });
       const json = (await response.json()) as ApiEnvelope<ProjectSiteLayout>;
@@ -3854,6 +3888,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     }
   }, [
     center,
+    currentLayout?.map_snapshot_path,
     mountingType,
     panelMetrics.coveragePct,
     panelMetrics.remainingAreaSqft,

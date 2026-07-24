@@ -243,6 +243,27 @@ function SiteLayoutSummary({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 pt-0">
+        {layout.map_snapshot_url ? (
+          <div className="overflow-hidden rounded-xl border border-teal-100 bg-slate-950/5 dark:border-teal-900/50">
+            {/* eslint-disable-next-line @next/next/no-img-element -- signed Supabase URL */}
+            <img
+              src={layout.map_snapshot_url}
+              alt={`Design Studio map snapshot · roof V${layout.version_number}`}
+              className="aspect-[16/10] w-full object-cover"
+            />
+            <p className="px-2.5 py-1.5 text-[10px] font-medium text-teal-800/80 dark:text-teal-100/70">
+              Map snapshot from last Save · Hub only (not on customer proposal)
+            </p>
+          </div>
+        ) : layout.map_snapshot_path ? (
+          <p className="rounded-lg border border-dashed border-teal-200/80 px-2.5 py-2 text-[11px] text-teal-900/70 dark:border-teal-800/50 dark:text-teal-100/70">
+            Snapshot saved — refresh if thumbnail does not appear.
+          </p>
+        ) : (
+          <p className="rounded-lg border border-dashed border-teal-200/80 px-2.5 py-2 text-[11px] text-teal-900/70 dark:border-teal-800/50 dark:text-teal-100/70">
+            Save once in Design Studio to capture a map thumbnail here.
+          </p>
+        )}
         <div className="grid gap-2 sm:grid-cols-4">
           {[
             ["Roof V", `V${layout.version_number}`],

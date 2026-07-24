@@ -112,8 +112,8 @@ export function DesignStudioPackSheetViewer({ model, onClose }: Props) {
         </dl>
 
         <p className="mt-6 text-[10px] leading-relaxed text-slate-500">
-          Map snapshot / share link ship in later Phase 5 steps. This pack is for installer review
-          and print only.
+          Map snapshot is captured on Save and shown in Project Hub Design. Share-link shipping
+          continues in Phase 5. This pack is for installer review and print only.
         </p>
       </div>
     </div>

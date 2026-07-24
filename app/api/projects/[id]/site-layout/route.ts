@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase } from "@/lib/supabase";
 import { saveSiteLayoutSchema, type ProjectSiteLayout } from "@/lib/site-layout";
+import { resolveDesignStudioSnapshotUrl } from "@/lib/design-studio-snapshot-upload";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,14 @@ function db() {
 
 function tableMissing(message: string): boolean {
   return /project_site_layouts|save_project_site_layout|schema cache|does not exist/i.test(message);
+}
+
+async function withSnapshotUrl(
+  row: ProjectSiteLayout | null
+): Promise<ProjectSiteLayout | null> {
+  if (!row) return null;
+  const url = await resolveDesignStudioSnapshotUrl(row.map_snapshot_path);
+  return { ...row, map_snapshot_url: url };
 }
 
 export async function GET(_req: NextRequest, ctx: RouteCtx) {
@@ -37,8 +46,10 @@ export async function GET(_req: NextRequest, ctx: RouteCtx) {
       return NextResponse.json({ ok: false, error: message }, { status: 400 });
     }
 
+    const enriched = await withSnapshotUrl((data as ProjectSiteLayout | null) ?? null);
+
     return NextResponse.json(
-      { ok: true, data: (data as ProjectSiteLayout | null) ?? null },
+      { ok: true, data: enriched },
       { headers: { "Cache-Control": "no-store" } }
     );
   } catch (error) {
@@ -76,7 +87,7 @@ export async function PUT(req: NextRequest, ctx: RouteCtx) {
     }
 
     return NextResponse.json(
-      { ok: true, data: data as ProjectSiteLayout },
+      { ok: true, data: await withSnapshotUrl(data as ProjectSiteLayout) },
       { status: 201, headers: { "Cache-Control": "no-store" } }
     );
   } catch (error) {
