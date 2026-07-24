@@ -24,6 +24,10 @@
   line-height: 1.6;
   background-color: #f3f4f6;
   color: var(--ep-gl-text);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .ep-golden-root .ep-gl-doc-canvas {
@@ -1390,12 +1394,225 @@
   line-height: 1.6;
 }
 
-@media (max-width: 720px) {
+/* ── Mobile / narrow web (not print) — readable data, no clipped columns ── */
+@media screen and (max-width: 720px) {
+  .ep-golden-root .ep-gl-doc-canvas {
+    padding: 12px 10px 32px;
+    max-width: 100%;
+    overflow-x: visible;
+  }
+
+  .ep-golden-root .ep-gl-toolbar-inner {
+    max-width: 100%;
+    padding: 10px 12px;
+  }
+
+  .ep-golden-root .ep-gl-page {
+    width: 100%;
+    max-width: 100%;
+    min-height: 0;
+    height: auto;
+    margin: 0 0 16px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    overflow: visible;
+  }
+
+  .ep-golden-root .ep-gl-page--cover {
+    height: auto;
+    min-height: 0;
+  }
+
+  .ep-golden-root .ep-gl-page-body,
+  .ep-golden-root .ep-gl-bom-page,
+  .ep-golden-root .ep-gl-engineering-page,
+  .ep-golden-root .ep-gl-terms-page .ep-gl-page-body,
+  .ep-golden-root .ep-gl-closing-page .ep-gl-page-body {
+    padding: 20px 16px 28px;
+  }
+
+  .ep-golden-root .ep-gl-cover-page {
+    height: auto;
+    min-height: 0;
+    padding: 28px 20px 32px;
+  }
+
+  .ep-golden-root .ep-gl-cover-inner,
+  .ep-golden-root .ep-gl-cover-hero {
+    min-height: 0;
+    flex: none;
+    padding-bottom: 0;
+  }
+
+  .ep-golden-root .ep-gl-cover-hero {
+    max-width: 100%;
+  }
+
+  .ep-golden-root .ep-gl-cover-content {
+    max-width: 100%;
+  }
+
+  .ep-golden-root .ep-gl-requirement-page,
+  .ep-golden-root .ep-gl-impact-page {
+    min-height: 0;
+  }
+
+  .ep-golden-root .ep-gl-requirement-hero {
+    padding: 18px 14px 20px;
+  }
+
+  .ep-golden-root .ep-gl-lead {
+    max-width: 100%;
+    font-size: 12pt;
+  }
+
+  .ep-golden-root h1.ep-gl-h1,
+  .ep-golden-root .ep-gl-bom-page h1.ep-gl-h1,
+  .ep-golden-root .ep-gl-engineering-page h1.ep-gl-h1 {
+    font-size: 26pt;
+    line-height: 1.15;
+  }
+
+  .ep-golden-root .ep-gl-cover-title {
+    font-size: 28pt;
+    margin-bottom: 16px;
+  }
+
+  .ep-golden-root .ep-gl-cover-brand {
+    font-size: 16pt;
+    letter-spacing: 0.1em;
+  }
+
+  .ep-golden-root .ep-gl-cover-logo {
+    max-width: min(240px, 78vw);
+    max-height: 96px;
+  }
+
+  .ep-golden-root .ep-gl-cover-meta-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    max-width: 100%;
+    margin-top: 20px;
+    padding-top: 16px;
+  }
+
+  /* Metric / economics / impact numbers */
+  .ep-golden-root .ep-gl-audit-metrics-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .ep-golden-root .ep-gl-audit-metric-box,
+  .ep-golden-root .ep-gl-audit-metric-box:nth-child(2),
+  .ep-golden-root .ep-gl-audit-metric-box:last-child {
+    border-right: none;
+    border-bottom: 1px solid var(--ep-gl-border-gold);
+    padding: 10px 4px 14px;
+    text-align: left;
+  }
+
+  .ep-golden-root .ep-gl-audit-metric-box:last-child {
+    border-bottom: none;
+    padding-bottom: 4px;
+  }
+
+  .ep-golden-root .ep-gl-huge-number {
+    font-size: clamp(20pt, 8vw, 28pt);
+  }
+
+  .ep-golden-root .ep-gl-huge-label {
+    margin-left: 0;
+    margin-right: 0;
+    text-align: left;
+  }
+
+  .ep-golden-root .ep-gl-grid-2 {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .ep-golden-root .ep-gl-waterfall-value {
+    font-size: 20pt;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .ep-golden-root .ep-gl-waterfall-value.large {
+    font-size: 26pt;
+  }
+
+  /* ROI journey — stack so ₹ amounts stay readable */
+  .ep-golden-root .ep-gl-roi-journey {
+    padding: 14px 12px 12px;
+  }
+
+  .ep-golden-root .ep-gl-roi-journey-steps {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .ep-golden-root .ep-gl-roi-journey-step-wrap {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .ep-golden-root .ep-gl-roi-journey-step {
+    width: 100%;
+    padding: 14px 12px;
+    text-align: left;
+  }
+
+  .ep-golden-root .ep-gl-roi-journey-value-stack {
+    align-items: flex-start;
+  }
+
+  .ep-golden-root .ep-gl-roi-journey-value,
+  .ep-golden-root .ep-gl-roi-journey-step--highlight .ep-gl-roi-journey-value {
+    font-size: 18pt;
+  }
+
+  .ep-golden-root .ep-gl-roi-journey-arrow {
+    width: 100%;
+    height: 20px;
+    padding: 2px 0;
+    transform: rotate(90deg);
+  }
+
+  .ep-golden-root .ep-gl-emi-title {
+    font-size: 16pt;
+  }
+
+  .ep-golden-root .ep-gl-emi-table th,
+  .ep-golden-root .ep-gl-emi-table td {
+    font-size: 8pt;
+    padding: 8px 2px;
+  }
+
+  .ep-golden-root .ep-gl-emi-table td:last-child {
+    font-size: 10pt;
+  }
+
   .ep-golden-root .ep-gl-impact-grid {
     grid-template-columns: 1fr;
   }
 
+  .ep-golden-root .ep-gl-impact-card {
+    padding: 22px 16px;
+  }
+
+  .ep-golden-root .ep-gl-impact-card-value {
+    font-size: 28pt;
+    overflow-wrap: anywhere;
+  }
+
+  /* Generation forecast — allow horizontal scroll for 12 months */
+  .ep-golden-root .ep-gl-gen-forecast {
+    padding: 12px 10px 10px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
   .ep-golden-root .ep-gl-gen-bars {
+    min-width: 520px;
     min-height: 180px;
     height: 180px;
     gap: 3px;
@@ -1413,6 +1630,151 @@
   .ep-golden-root .ep-gl-gen-month,
   .ep-golden-root .ep-gl-gen-save {
     font-size: 6pt;
+  }
+
+  /* BOM — stack left/right instead of cramped table cells */
+  .ep-golden-root .ep-gl-manifest-list {
+    display: block;
+    width: 100%;
+  }
+
+  .ep-golden-root .ep-gl-manifest-row {
+    display: block;
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--ep-gl-row-border);
+  }
+
+  .ep-golden-root .ep-gl-manifest-left,
+  .ep-golden-root .ep-gl-manifest-right {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border-bottom: none !important;
+  }
+
+  .ep-golden-root .ep-gl-manifest-left {
+    margin-bottom: 8px;
+  }
+
+  .ep-golden-root .ep-gl-manifest-comp {
+    font-size: 13pt;
+  }
+
+  .ep-golden-root .ep-gl-manifest-spec,
+  .ep-golden-root .ep-gl-manifest-desc {
+    font-size: 10pt;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  /* Engineering */
+  .ep-golden-root .ep-gl-eng-yield-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .ep-golden-root .ep-gl-eng-phases {
+    grid-template-columns: 1fr;
+  }
+
+  .ep-golden-root .ep-gl-eng-specs {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ep-golden-root .ep-gl-eng-panel-layout {
+    grid-template-columns: repeat(var(--panel-cols, 4), 22px);
+    gap: 3px;
+  }
+
+  .ep-golden-root .ep-gl-eng-panel-box {
+    width: 22px;
+    height: 36px;
+  }
+
+  .ep-golden-root .ep-gl-eng-roof {
+    min-height: 200px;
+  }
+
+  /* Warranty — 2×2 instead of 4 crushed columns */
+  .ep-golden-root .ep-gl-warranty-hero {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .ep-golden-root .ep-gl-warranty-card {
+    padding: 16px 10px 14px;
+  }
+
+  .ep-golden-root .ep-gl-warranty-card-value {
+    font-size: 24pt;
+  }
+
+  /* Terms — single column on phone */
+  .ep-golden-root .ep-gl-terms-columns,
+  .ep-golden-root .ep-gl-terms-columns--single-focus {
+    column-count: 1;
+    column-gap: 0;
+  }
+
+  /* Closing */
+  .ep-golden-root .ep-gl-closing-highlights {
+    max-width: 100%;
+  }
+
+  .ep-golden-root .ep-gl-closing-title {
+    font-size: 26pt;
+  }
+
+  .ep-golden-root .ep-gl-closing-highlight-value,
+  .ep-golden-root .ep-gl-closing-wealth-value {
+    font-size: 28pt;
+    overflow-wrap: anywhere;
+  }
+
+  .ep-golden-root .ep-gl-closing-stats {
+    flex-direction: column;
+    max-width: 100%;
+    gap: 0;
+    padding: 16px 14px;
+  }
+
+  .ep-golden-root .ep-gl-closing-stat {
+    padding: 12px 0;
+  }
+
+  .ep-golden-root .ep-gl-closing-stat-divider {
+    width: 100%;
+    height: 1px;
+  }
+
+  .ep-golden-root .ep-gl-closing-stat-value {
+    font-size: 26pt;
+  }
+
+  .ep-golden-root .ep-gl-closing-signoff {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .ep-golden-root .ep-gl-bank-value {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .ep-golden-root .ep-gl-invoice-table,
+  .ep-golden-root .ep-gl-payment-table {
+    width: 100%;
+    max-width: 100%;
+    table-layout: fixed;
+  }
+
+  .ep-golden-root .ep-gl-invoice-table th,
+  .ep-golden-root .ep-gl-invoice-table td,
+  .ep-golden-root .ep-gl-payment-label,
+  .ep-golden-root .ep-gl-payment-pct,
+  .ep-golden-root .ep-gl-payment-amt {
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 }
 
