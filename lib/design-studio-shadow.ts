@@ -17,6 +17,21 @@ import { effectiveObstructionRadiusFt } from "@/components/site-layout/core/pane
 
 const FT_TO_M = 0.3048;
 
+/** Fallback heights when an obstruction was saved with height 0 (legacy). */
+export const DEFAULT_OBSTRUCTION_HEIGHT_FT: Record<SiteObstruction["type"], number> = {
+  water_tank: 8,
+  tree: 25,
+  chimney: 6,
+  parapet: 3,
+  other: 5,
+};
+
+export function effectiveObstructionHeightFt(obstruction: SiteObstruction): number {
+  const stored = obstruction.height_ft ?? 0;
+  if (stored > 0) return stored;
+  return DEFAULT_OBSTRUCTION_HEIGHT_FT[obstruction.type] ?? 5;
+}
+
 export type ShadowSampleId =
   | "jun21-09"
   | "jun21-12"
@@ -67,14 +82,14 @@ export type SunPose = {
 };
 
 /**
- * SunCalc azimuth is radians from south toward west.
- * Convert to geographic bearing from north for turf destination.
+ * SunCalc v2 returns altitude & azimuth in **degrees**.
+ * Azimuth is already north-based clockwise (0=N, 90=E, 180=S, 270=W).
+ * (v1 used radians and south-based azimuth — do not re-apply that conversion.)
  */
 export function sunPoseAt(date: Date, latitudeDeg: number, longitudeDeg: number): SunPose {
   const pos = SunCalc.getPosition(date, latitudeDeg, longitudeDeg);
-  const altitudeDeg = (pos.altitude * 180) / Math.PI;
-  // az=0 south → bearing 180; az=π/2 west → bearing 270
-  const sunBearingDeg = (((pos.azimuth * 180) / Math.PI + 180) % 360 + 360) % 360;
+  const altitudeDeg = pos.altitude;
+  const sunBearingDeg = ((pos.azimuth % 360) + 360) % 360;
   const shadowBearingDeg = (sunBearingDeg + 180) % 360;
   return { altitudeDeg, sunBearingDeg, shadowBearingDeg };
 }
@@ -97,7 +112,7 @@ export function obstructionShadowPolygon(
   shadowBearingDeg: number
 ): ShadowPoly | null {
   if (altitudeDeg <= 1) return null;
-  const heightFt = Math.max(0, obstruction.height_ft ?? 0);
+  const heightFt = effectiveObstructionHeightFt(obstruction);
   if (heightFt <= 0) return null;
 
   const lengthM = shadowLengthM(heightFt, altitudeDeg);

@@ -69,6 +69,7 @@ import {
   presetToDate,
   shadeFillColor,
   SHADOW_SOLSTICE_PRESETS,
+  DEFAULT_OBSTRUCTION_HEIGHT_FT,
   type ShadowSampleId,
 } from "@/lib/design-studio-shadow";
 import { DesignStudioSldSchematic } from "@/components/site-layout/design-studio-sld-schematic";
@@ -237,7 +238,7 @@ function newObstruction(
     type,
     lng,
     lat,
-    height_ft: 0,
+    height_ft: DEFAULT_OBSTRUCTION_HEIGHT_FT[type],
     radius_ft: DEFAULT_OBSTRUCTION_RADIUS_FT[type],
     label: null,
   };
@@ -460,6 +461,11 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         obstructions = obstructions.map((item) => ({
           ...item,
           radius_ft: effectiveObstructionRadiusFt(item),
+          // Legacy saves used height 0 — apply type defaults so shadows cast.
+          height_ft:
+            (item.height_ft ?? 0) > 0
+              ? item.height_ft
+              : DEFAULT_OBSTRUCTION_HEIGHT_FT[item.type] ?? 5,
         }));
 
         const savedPanel = panelJson.ok ? panelJson.data ?? null : null;
@@ -1184,7 +1190,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   }, [applyPanelSnapshot]);
 
   const shadowAnalysis = useMemo(() => {
-    if (!shadowEnabled || placedPanels.length === 0) return null;
+    if (!shadowEnabled) return null;
     const preset = SHADOW_SOLSTICE_PRESETS.find((item) => item.id === shadowPresetId);
     if (!preset) return null;
     return analyzePanelShadows({
@@ -1227,8 +1233,10 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         .map(([lng, lat]) => ({ lat, lng }));
       const toolNow = studioToolRef.current;
       const opticalActive = mapExtraScaleRef.current > 1;
+      const placingObstruction = Boolean(pendingObstruction);
       const canDrag =
         !opticalActive &&
+        !placingObstruction &&
         selected &&
         !panel.is_locked &&
         toolNow !== "place_panel" &&
@@ -1248,8 +1256,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       const polygon = new google.maps.Polygon({
         map: mapRef.current!,
         paths: path,
-        // CSS optical magnify breaks Maps hit-testing — SVG overlay owns clicks then.
-        clickable: !opticalActive,
+        // Magnify overlay owns hits; while placing tanks/trees let clicks reach the map.
+        clickable: !opticalActive && !placingObstruction,
         editable: false,
         draggable: canDrag,
         strokeColor,
@@ -1279,6 +1287,13 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
 
       panelListenersRef.current.push(
         google.maps.event.addListener(polygon, "click", (event: google.maps.MapMouseEvent) => {
+          // Obstruction tool armed → place at click (do not steal for panel select).
+          if (addObstructionRef.current) {
+            if (event.latLng) studioClickRef.current?.(event.latLng);
+            event.stop?.();
+            event.domEvent?.stopPropagation?.();
+            return;
+          }
           const shift = !!(event.domEvent as MouseEvent | undefined)?.shiftKey;
           const tool = studioToolRef.current;
           // Select / Move: click panel → select it. Shift+click toggles multi-select.
@@ -1409,7 +1424,17 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       );
       return polygon;
     });
-  }, [mapReady, mapExtraScale, placedPanels, pushPanelHistory, selectedPanelIds, shadowAnalysis, shadowEnabled, studioTool]);
+  }, [
+    mapReady,
+    mapExtraScale,
+    pendingObstruction,
+    placedPanels,
+    pushPanelHistory,
+    selectedPanelIds,
+    shadowAnalysis,
+    shadowEnabled,
+    studioTool,
+  ]);
 
   // Phase 4 — draw ground shadow footprints for the active sun sample.
   useEffect(() => {
@@ -1444,12 +1469,13 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             map: mapRef.current!,
             paths: path,
             clickable: false,
-            strokeColor: "#64748b",
-            strokeOpacity: 0.45,
-            strokeWeight: 1,
+            strokeColor: "#f59e0b",
+            strokeOpacity: 0.85,
+            strokeWeight: 1.5,
             fillColor: "#0f172a",
-            fillOpacity: 0.22,
-            zIndex: 4,
+            fillOpacity: 0.42,
+            // Draw above panels so cast is obvious on satellite; panels stay selectable.
+            zIndex: 7,
           })
         );
       }
@@ -3067,17 +3093,20 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           return;
         }
 
+        // Place tools: use final pointer position even if the hand moved a few px
+        // (moved>5 used to skip tank/tree placement under optical magnify).
+        const latLng = clientToLatLngOptical(upEvent.clientX, upEvent.clientY);
+        const type = addObstructionRef.current;
+        if (type) {
+          if (latLng) studioClickRef.current?.(latLng);
+          return;
+        }
+        if (studioToolRef.current === "place_panel") {
+          if (latLng) placePanelRef.current?.(latLng);
+          return;
+        }
+
         if (!drag.moved) {
-          const latLng = clientToLatLngOptical(upEvent.clientX, upEvent.clientY);
-          const type = addObstructionRef.current;
-          if (type) {
-            if (latLng) studioClickRef.current?.(latLng);
-            return;
-          }
-          if (studioToolRef.current === "place_panel") {
-            if (latLng) placePanelRef.current?.(latLng);
-            return;
-          }
           // Selection already applied on pointer down.
           if (panelDrag) return;
           if (drag.clearOnUp) {
@@ -3458,7 +3487,11 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               {/* Outside CSS scale: remap + window pointer listeners for reliable drag */}
               <div
                 className="absolute inset-0 z-[15] touch-none"
-                style={{ touchAction: "none", cursor: "grab" }}
+                style={{
+                  touchAction: "none",
+                  cursor:
+                    pendingObstruction || studioTool === "place_panel" ? "crosshair" : "grab",
+                }}
                 onPointerDown={handleOpticalPointerDown}
               />
               <div className="pointer-events-none absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-900 shadow">
