@@ -728,8 +728,8 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
     honoredName:
       lang === "hi" ? hindiHonoredDisplayName(withHonorific(input.customerName)) : withHonorific(input.customerName),
     installer: resolveInstallerNameForProposal({ installerName: input.installerName }),
-    tagline: (input.installerTagline ?? "100% Local · Satna · Madhya Pradesh").trim(),
-    contact: (input.installerContact ?? "+91-9993322267 · harihar@solar.com").trim(),
+    tagline: (input.installerTagline ?? "").trim(),
+    contact: (input.installerContact ?? "").trim(),
     systemKw: deckSystemKw,
     panelBrand: bom.find((r) => r.slot === 1)?.brand ?? brands.panel,
     panels,

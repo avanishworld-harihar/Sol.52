@@ -128,13 +128,66 @@ export const PROPOSAL_BRANDING_UPDATED_EVENT = "ss-proposal-branding-updated";
 export const DEFAULT_INSTALLER_PHONE = "+91-9993322267";
 export const DEFAULT_INSTALLER_EMAIL = "harihar@solar.com";
 
-/** Single line for `PremiumProposalPptInput.installerContact` / DB `installer_contact`. */
+/**
+ * Single line for `PremiumProposalPptInput.installerContact` / DB `installer_contact`.
+ * Empty when both phone and email are blank — do not inject sample vendor defaults.
+ */
 export function formatInstallerContactLine(phoneRaw: string, emailRaw: string): string {
   const phone = phoneRaw.trim();
   const email = emailRaw.trim();
-  if (!phone && !email) return `${DEFAULT_INSTALLER_PHONE} · ${DEFAULT_INSTALLER_EMAIL}`;
+  if (!phone && !email) return "";
   if (phone && email) return `${phone} · ${email}`;
   return phone || email;
+}
+
+/** Fields frozen onto a proposal `ppt_input` from More → Brand & proposals. */
+export type InstallerIdentitySnapshot = {
+  installerName?: string;
+  installerContact: string;
+  installerTagline?: string;
+  installerLogoUrl?: string;
+  brandDisplayMode: ProposalBrandDisplayMode;
+  brandSectionConfig: ProposalBrandSectionConfig;
+  companyProfile: {
+    gstNumber?: string;
+    address?: string;
+    website?: string;
+    legalName?: string;
+    contactPerson?: string;
+    contactPersonDesignation?: string;
+  };
+};
+
+/** Build identity fields for proposal create/update from More branding settings. */
+export function buildInstallerIdentitySnapshot(
+  settings: ProposalBrandingSettings
+): InstallerIdentitySnapshot {
+  const name = resolveInstallerDisplayName(settings);
+  const tagline = settings.companyProfile.tagline.trim();
+  const gst = resolveCompanyGstNumber(settings);
+  const address = settings.companyProfile.address.trim();
+  const website = settings.companyProfile.website.trim();
+  const legalName = settings.companyProfile.legalName.trim();
+  const contactPerson = settings.companyProfile.contactPerson.trim();
+  const contactPersonDesignation = settings.companyProfile.contactPersonDesignation.trim();
+  const logo = settings.installerLogoUrl.trim();
+
+  return {
+    installerName: name || undefined,
+    installerContact: formatInstallerContactLine(settings.installerContact, settings.installerEmail),
+    installerTagline: tagline || undefined,
+    installerLogoUrl: logo || undefined,
+    brandDisplayMode: settings.brandDisplayMode,
+    brandSectionConfig: settings.brandSectionConfig,
+    companyProfile: {
+      gstNumber: gst || undefined,
+      address: address || undefined,
+      website: website || undefined,
+      legalName: legalName || undefined,
+      contactPerson: contactPerson || undefined,
+      contactPersonDesignation: contactPersonDesignation || undefined,
+    },
+  };
 }
 
 export const DEFAULT_PROPOSAL_BRANDING_SETTINGS: ProposalBrandingSettings = {
@@ -251,7 +304,10 @@ export function finalizeBrandingSettings(parsed: Partial<ProposalBrandingSetting
       typeof parsed.installerName === "string"
         ? parsed.installerName.trim()
         : DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerName,
-    installerContact: parsed.installerContact?.trim() || DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerContact,
+    installerContact:
+      typeof parsed.installerContact === "string"
+        ? parsed.installerContact.trim()
+        : DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerContact,
     installerEmail: typeof parsed.installerEmail === "string" ? parsed.installerEmail.trim() : "",
     installerLogoUrl: parsed.installerLogoUrl?.trim() || "",
     personalizedBranding: personalizedBrandingFromBrandConfig(proposalActiveBrand),

@@ -17,6 +17,8 @@ import {
 import {
   PROPOSAL_BRANDING_UPDATED_EVENT,
   readProposalBrandingSettings,
+  resolveProposalBrandConfig,
+  resolveProposalBrandPresentation,
 } from "@/lib/proposal-branding-settings";
 import { getCanvasCopy, type CanvasLang } from "./canvas-copy";
 import {
@@ -118,6 +120,20 @@ export function CanvasProposalRenderer({
   }
 
   const brand = data.meta.brandName?.trim() || c.cover.brandFallback;
+  const brandConfig = resolveProposalBrandConfig({
+    pptInput: {
+      brandDisplayMode: data.meta.brandDisplayMode,
+      brandSectionConfig: data.meta.brandSectionConfig,
+    },
+  });
+  const brandIdentity = {
+    installerName: brand,
+    logoUrl,
+    tagline: data.meta.brandTagline,
+  };
+  const coverBrand = resolveProposalBrandPresentation(brandConfig, "cover", brandIdentity);
+  const footerBrandPres = resolveProposalBrandPresentation(brandConfig, "footer", brandIdentity);
+  const closingBrand = resolveProposalBrandPresentation(brandConfig, "closing", brandIdentity);
   const customer = data.meta.customerName?.trim() || "Valued Customer";
   const location =
     data.meta.locationLine && data.meta.locationLine !== "—"
@@ -330,7 +346,10 @@ export function CanvasProposalRenderer({
     if (typeof window !== "undefined") window.print();
   };
 
-  const foot = (n: string) => ({ pageNo: n, brand });
+  const foot = (n: string) => ({
+    pageNo: n,
+    brand: footerBrandPres.showName ? footerBrandPres.installerName : undefined,
+  });
 
   return (
     <div className={`${styles.shell} ${styles.canvasTheme}${isHi ? ` ${styles.langHi}` : ""}`}>
@@ -367,7 +386,9 @@ export function CanvasProposalRenderer({
         {/* Page 01: Architectural cover — no cost / wealth figures */}
         <CoverPage
           brandName={brand}
-          logoUrl={logoUrl}
+          logoUrl={coverBrand.showLogo ? logoUrl : undefined}
+          showName={coverBrand.showName}
+          tagline={coverBrand.showTagline ? data.meta.brandTagline : undefined}
           customerName={customer}
           locationLine={location || undefined}
           documentTitle={
@@ -398,7 +419,7 @@ export function CanvasProposalRenderer({
             isHi ? `प्रस्ताव तिथि · ${proposalDateLabel}` : `Proposal date · ${proposalDateLabel}`
           }
           pageNo="01 / 12"
-          footerBrand={brand}
+          footerBrand={footerBrandPres.showName ? footerBrandPres.installerName : undefined}
         />
 
         {/* Page 02: Bill / Requirement */}
@@ -910,7 +931,16 @@ export function CanvasProposalRenderer({
           systemLabel={c.pages.closingSystemLabel}
           ctaTitle={c.pages.closingCtaTitle}
           ctaBody={c.pages.closingCtaBody}
-          companyName={closing.installerName || brand}
+          companyName={closingBrand.showName ? closing.installerName || brand : ""}
+          logoUrl={closingBrand.showLogo ? logoUrl : undefined}
+          tagline={
+            closingBrand.showTagline
+              ? closing.brandTagline || data.meta.brandTagline
+              : undefined
+          }
+          address={closing.address || data.meta.brandAddress}
+          gstNumber={closing.gstNumber || data.meta.brandGst}
+          contactPerson={closing.contactPerson}
           phone={
             closing.contactLine
               ?.split(/[·•|]/)

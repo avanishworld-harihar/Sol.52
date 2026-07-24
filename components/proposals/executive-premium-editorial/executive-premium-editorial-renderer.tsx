@@ -8,6 +8,8 @@ import { transformToEditorialModel } from "@/lib/executive-premium-editorial/tra
 import {
   PROPOSAL_BRANDING_UPDATED_EVENT,
   readProposalBrandingSettings,
+  resolveProposalBrandConfig,
+  resolveProposalBrandPresentation,
 } from "@/lib/proposal-branding-settings";
 import { EpGoldenLangProvider } from "@/components/proposals/executive-premium-editorial/ep-golden-lang-context";
 import { EpProposalShell } from "@/components/proposals/executive-premium-editorial/primitives/ep-proposal-shell";
@@ -45,6 +47,11 @@ export function ExecutivePremiumEditorialRenderer({
     [pptInput, summary, lang]
   );
 
+  const brandConfig = useMemo(
+    () => resolveProposalBrandConfig({ pptInput }),
+    [pptInput]
+  );
+
   const [coverLogoUrl, setCoverLogoUrl] = useState<string | undefined>(() => {
     return model.brand_logo_url?.trim() || pptInput.installerLogoUrl?.trim() || undefined;
   });
@@ -60,10 +67,22 @@ export function ExecutivePremiumEditorialRenderer({
     return () => window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
   }, [model.brand_logo_url, pptInput.installerLogoUrl]);
 
+  const identity = {
+    installerName: model.brand_display,
+    logoUrl: coverLogoUrl,
+    tagline: model.brand_tagline,
+  };
+  const coverBrand = resolveProposalBrandPresentation(brandConfig, "cover", identity);
+  const footerBrand = resolveProposalBrandPresentation(brandConfig, "footer", identity);
+  const closingBrand = resolveProposalBrandPresentation(brandConfig, "closing", identity);
+
   const billAuditBacked = isProposalBillAuditBacked(pptInput);
 
   return (
-    <EpGoldenLangProvider lang={lang}>
+    <EpGoldenLangProvider
+      lang={lang}
+      footerBrand={footerBrand.showName ? footerBrand.installerName : undefined}
+    >
       <div className={`ep-golden-root w-full${lang === "hi" ? " lang-hi" : ""}`}>
         <EpProposalShell
           lang={lang}
@@ -77,10 +96,14 @@ export function ExecutivePremiumEditorialRenderer({
               data={{
                 brand_display: model.brand_display,
                 brand_logo_url: coverLogoUrl,
+                brand_tagline: model.brand_tagline,
                 customer_name: model.customer_name,
                 location_line: model.location_line,
                 asset_profile_line: model.asset_profile_line,
               }}
+              showLogo={coverBrand.showLogo}
+              showName={coverBrand.showName}
+              showTagline={coverBrand.showTagline}
             />
             {billAuditBacked ? (
               <EpBillPage data={model.bill} />
@@ -100,7 +123,12 @@ export function ExecutivePremiumEditorialRenderer({
             <EpWarrantyPage data={model.warranty} />
             <EpExecutionPage data={model.execution} />
             <EpTermsPages data={model.terms} />
-            <EpClosingPage data={model.closing} />
+            <EpClosingPage
+              data={model.closing}
+              showLogo={closingBrand.showLogo}
+              showName={closingBrand.showName}
+              logoUrl={coverLogoUrl}
+            />
           </div>
         </EpProposalShell>
       </div>

@@ -1,6 +1,7 @@
 /**
- * Company Profile — structured settings schema (Phase 1: storage + More UI only).
- * Proposal rendering reads legacy flat fields until Phase 2 integration.
+ * Company Profile — structured settings schema.
+ * More UI + proposal identity surfaces (cover / footer / closing) consume these fields.
+ * Credentials / portfolio remain settings-only until a dedicated About page.
  */
 
 import type { ProposalBrandSurface, ProposalThemePreset } from "@/lib/proposal-branding-settings";

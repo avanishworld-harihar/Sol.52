@@ -81,6 +81,11 @@ export type ProposalData = {
     locationLine: string;
     brandName: string;
     brandLogoUrl?: string;
+    brandTagline?: string;
+    brandAddress?: string;
+    brandGst?: string;
+    brandDisplayMode?: import("@/lib/proposal-branding-settings").ProposalBrandDisplayMode;
+    brandSectionConfig?: import("@/lib/proposal-branding-settings").ProposalBrandSectionConfig;
     systemKw: number;
     assetProfileLine: string;
     generatedAt?: string;
@@ -145,6 +150,11 @@ export type ProposalData = {
     customerName: string;
     installerName: string;
     contactLine: string;
+    contactPerson?: string;
+    contactPersonDesignation?: string;
+    address?: string;
+    gstNumber?: string;
+    brandTagline?: string;
     annualUnits: number;
     annualSavingsInr: number;
     lifetimeWealthInr: number;

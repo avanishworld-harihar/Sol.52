@@ -119,6 +119,7 @@ export type EditorialWarrantyModel = {
 export type ExecutivePremiumEditorialModel = {
   brand_display: string;
   brand_logo_url?: string;
+  brand_tagline?: string;
   customer_name: string;
   location_line: string;
   asset_profile_line: string;
@@ -177,5 +178,10 @@ export type EditorialClosingModel = {
   lifetime_wealth_inr: number;
   installer_name: string;
   contact_line: string;
+  contact_person?: string;
+  contact_person_designation?: string;
+  address?: string;
+  gst_number?: string;
+  brand_tagline?: string;
   qr_url?: string;
 };

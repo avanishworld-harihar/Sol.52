@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * More → Brand & Proposals — structured company profile settings (Phase 1 UI only).
- * Does not alter proposal page layouts; legacy flat fields drive live proposals.
+ * More → Brand & Proposals — company profile, contact, branding, banking.
+ * Saved settings freeze onto proposal ppt_input and drive cover / footer / closing identity.
  */
 
 import { FloatingLabelInput } from "@/components/ui/floating-label-input";

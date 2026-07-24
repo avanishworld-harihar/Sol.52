@@ -22,6 +22,9 @@ export { resolveHardwareImageSrc } from "./hardware-assets";
 export type CoverPageProps = {
   brandName: string;
   logoUrl?: string;
+  /** When false, hide text name/mark (logo-only branding). */
+  showName?: boolean;
+  tagline?: string;
   customerName: string;
   locationLine?: string;
   documentTitle?: string;
@@ -38,6 +41,8 @@ export type CoverPageProps = {
 export function CoverPage({
   brandName,
   logoUrl,
+  showName = true,
+  tagline,
   customerName,
   locationLine,
   documentTitle = "Architectural Energy Blueprint",
@@ -51,8 +56,8 @@ export function CoverPage({
   footerBrand,
 }: CoverPageProps) {
   const parts = brandName.trim().split(/\s+/).filter(Boolean);
-  const logoMark = (parts[0] || "HARIHAR").toUpperCase();
-  const logoSub = (parts.slice(1).join(" ") || "SOLAR").toUpperCase();
+  const logoMark = (parts[0] || "SOLAR").toUpperCase();
+  const logoSub = (parts.slice(1).join(" ") || "PARTNER").toUpperCase();
 
   return (
     <section
@@ -62,12 +67,18 @@ export function CoverPage({
         {logoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={logoUrl} alt={brandName} className={styles.coverLogoImg} />
-        ) : (
+        ) : showName ? (
           <>
             <div className={styles.logoMark}>{logoMark}</div>
             <div className={styles.logoSub}>{logoSub}</div>
           </>
-        )}
+        ) : null}
+        {showName && logoUrl ? (
+          <div className={styles.logoSub} style={{ marginTop: 8 }}>
+            {brandName}
+          </div>
+        ) : null}
+        {tagline ? <p className={styles.coverDate}>{tagline}</p> : null}
       </div>
 
         <div className={styles.coverCenter}>
@@ -97,7 +108,7 @@ export function CoverPage({
       </div>
 
       <footer className={styles.coverPageFooter}>
-        <span>{footerBrand || brandName}</span>
+        <span>{footerBrand || (showName ? brandName : "")}</span>
         <span>{pageNo}</span>
       </footer>
     </section>
@@ -120,6 +131,11 @@ export type ClosingPageProps = {
   ctaTitle: string;
   ctaBody: string;
   companyName: string;
+  logoUrl?: string;
+  tagline?: string;
+  address?: string;
+  gstNumber?: string;
+  contactPerson?: string;
   phone?: string;
   email?: string;
   contactLine?: string;
@@ -141,6 +157,11 @@ export function ClosingPage({
   ctaTitle,
   ctaBody,
   companyName,
+  logoUrl,
+  tagline,
+  address,
+  gstNumber,
+  contactPerson,
   phone,
   email,
   contactLine,
@@ -187,16 +208,23 @@ export function ClosingPage({
 
           <div className={styles.signatureBlock}>
             <div className={styles.contactDetails}>
-              <strong>{companyName}</strong>
+              {logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={logoUrl} alt={companyName || "Company"} style={{ maxHeight: 40, marginBottom: 6 }} />
+              ) : null}
+              {companyName ? <strong>{companyName}</strong> : null}
+              {tagline ? <span>{tagline}</span> : null}
               {phone ? <span>{phone}</span> : null}
               {email ? <span>{email}</span> : null}
               {!phone && !email && contactLine ? (
                 <span>{contactLine}</span>
               ) : null}
+              {address ? <span>{address}</span> : null}
+              {gstNumber ? <span>GSTIN {gstNumber}</span> : null}
             </div>
             <div className={styles.authSignature}>
               <div className={styles.signLine} aria-hidden />
-              <span>{signatureLabel}</span>
+              <span>{contactPerson ? `${signatureLabel} · ${contactPerson}` : signatureLabel}</span>
             </div>
           </div>
         </div>

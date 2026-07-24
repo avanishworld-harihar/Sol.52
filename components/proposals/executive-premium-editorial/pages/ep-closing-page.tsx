@@ -7,14 +7,22 @@ import { fmtInr } from "@/lib/executive-premium-editorial/format";
 
 type Props = {
   data: EditorialClosingModel;
+  showLogo?: boolean;
+  showName?: boolean;
+  logoUrl?: string;
 };
 
-export function EpClosingPage({ data }: Props) {
+export function EpClosingPage({ data, showLogo = false, showName = true, logoUrl }: Props) {
   const { copy } = useEpGoldenLang();
   const units = Math.round(data.annual_units).toLocaleString("en-IN");
+  const companyName = showName ? data.installer_name?.trim() : undefined;
+  const logo = showLogo ? logoUrl?.trim() || undefined : undefined;
+  const salesName = data.contact_person?.trim() || undefined;
+  const salesRole =
+    data.contact_person_designation?.trim() || copy.closing.salesRep;
 
   return (
-    <EpLuxuryPage className="ep-gl-closing-page">
+    <EpLuxuryPage className="ep-gl-closing-page" hideFooterBrand>
       <div className="ep-gl-closing-accent" aria-hidden />
 
       <div className="ep-gl-closing-hero">
@@ -39,8 +47,23 @@ export function EpClosingPage({ data }: Props) {
       <div className="ep-gl-closing-cta">
         <div className="ep-gl-closing-contact">
           <p className="ep-gl-closing-block-title">{copy.closing.reserveInstall}</p>
-          <p className="ep-gl-closing-company">{data.installer_name}</p>
-          <p className="ep-gl-closing-contact-line">{data.contact_line}</p>
+          {logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logo} alt={companyName || "Company logo"} className="ep-gl-closing-logo" />
+          ) : null}
+          {companyName ? <p className="ep-gl-closing-company">{companyName}</p> : null}
+          {data.brand_tagline?.trim() && showName ? (
+            <p className="ep-gl-closing-tagline">{data.brand_tagline.trim()}</p>
+          ) : null}
+          {data.contact_line?.trim() ? (
+            <p className="ep-gl-closing-contact-line">{data.contact_line.trim()}</p>
+          ) : null}
+          {data.address?.trim() ? (
+            <p className="ep-gl-closing-address">{data.address.trim()}</p>
+          ) : null}
+          {data.gst_number?.trim() ? (
+            <p className="ep-gl-closing-gst">GSTIN {data.gst_number.trim()}</p>
+          ) : null}
         </div>
         {data.qr_url ? (
           <div className="ep-gl-closing-qr">
@@ -54,8 +77,10 @@ export function EpClosingPage({ data }: Props) {
       <div className="ep-gl-closing-signoff">
         <div className="ep-gl-closing-sign">
           <div className="ep-gl-closing-sign-line" aria-hidden />
-          <p className="ep-gl-closing-sign-role">{copy.closing.salesRep}</p>
-          <p className="ep-gl-closing-sign-sub">{copy.closing.nameSign}</p>
+          <p className="ep-gl-closing-sign-role">{salesRole}</p>
+          <p className="ep-gl-closing-sign-sub">
+            {salesName || copy.closing.nameSign}
+          </p>
         </div>
         <div className="ep-gl-closing-sign">
           <div className="ep-gl-closing-sign-line" aria-hidden />

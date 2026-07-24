@@ -15,6 +15,8 @@ import {
 import {
   PROPOSAL_BRANDING_UPDATED_EVENT,
   readProposalBrandingSettings,
+  resolveProposalBrandConfig,
+  resolveProposalBrandPresentation,
 } from "@/lib/proposal-branding-settings";
 import { getZenithCopy, type ZenithLang } from "./zenith-copy";
 import styles from "./zenith.module.css";
@@ -91,7 +93,20 @@ export function ZenithProposalRenderer({
     return <div className={styles.loading}>Loading Proposal...</div>;
   }
 
-  const brand = data.meta.brandName?.trim() || "Harihar Solar";
+  const brand = data.meta.brandName?.trim() || "Solar Partner";
+  const brandConfig = resolveProposalBrandConfig({
+    pptInput: {
+      brandDisplayMode: data.meta.brandDisplayMode,
+      brandSectionConfig: data.meta.brandSectionConfig,
+    },
+  });
+  const brandIdentity = {
+    installerName: brand,
+    logoUrl,
+    tagline: data.meta.brandTagline,
+  };
+  const coverBrand = resolveProposalBrandPresentation(brandConfig, "cover", brandIdentity);
+  const closingBrand = resolveProposalBrandPresentation(brandConfig, "closing", brandIdentity);
   const customer = data.meta.customerName?.trim() || "Valued Customer";
   const location =
     data.meta.locationLine && data.meta.locationLine !== "—"
@@ -169,19 +184,22 @@ export function ZenithProposalRenderer({
         <section className={`${styles.page} ${styles.pageCover}`}>
           <div className={styles.coverStage}>
             <div className={styles.coverTop}>
-              {logoUrl ? (
+              {coverBrand.showLogo && logoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={logoUrl} alt={brand} className={styles.logo} />
               ) : (
                 <span className={styles.coverBadge}>{c.cover.proposalLabel}</span>
               )}
-              {logoUrl ? (
+              {coverBrand.showLogo && logoUrl ? (
                 <span className={styles.coverBadge}>{c.cover.proposalLabel}</span>
               ) : null}
             </div>
 
             <div className={styles.coverHero}>
-              <BrandLockup name={brand} />
+              {coverBrand.showName ? <BrandLockup name={brand} /> : null}
+              {coverBrand.showTagline && data.meta.brandTagline ? (
+                <p className={styles.heroSub}>{data.meta.brandTagline}</p>
+              ) : null}
               <div className={styles.coverAccent} aria-hidden />
               <h1 className={styles.heroTitle}>{c.cover.hero}</h1>
               <p className={styles.heroSub}>{c.cover.sub}</p>
@@ -671,9 +689,31 @@ export function ZenithProposalRenderer({
           <div className={styles.closingFooter}>
             <div>
               <p className={styles.cardLabel}>{c.closing.contact}</p>
-              <p className={styles.closingBrand}>{brand}</p>
+              {closingBrand.showLogo && logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={logoUrl} alt={brand} className={styles.logo} style={{ maxHeight: 36, marginBottom: 8 }} />
+              ) : null}
+              {closingBrand.showName ? (
+                <p className={styles.closingBrand}>{closing.installerName || brand}</p>
+              ) : null}
+              {closingBrand.showTagline && (closing.brandTagline || data.meta.brandTagline) ? (
+                <p className={styles.closingContact}>
+                  {closing.brandTagline || data.meta.brandTagline}
+                </p>
+              ) : null}
               {closing.contactLine ? (
                 <p className={styles.closingContact}>{closing.contactLine}</p>
+              ) : null}
+              {(closing.address || data.meta.brandAddress) ? (
+                <p className={styles.closingContact}>{closing.address || data.meta.brandAddress}</p>
+              ) : null}
+              {(closing.gstNumber || data.meta.brandGst) ? (
+                <p className={styles.closingContact}>
+                  GSTIN {closing.gstNumber || data.meta.brandGst}
+                </p>
+              ) : null}
+              {closing.contactPerson ? (
+                <p className={styles.closingContact}>{closing.contactPerson}</p>
               ) : null}
             </div>
             {closing.qrUrl ? (

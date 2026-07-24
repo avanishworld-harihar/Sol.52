@@ -167,6 +167,8 @@
   max-width: 100%;
   box-sizing: border-box;
   overflow: visible;
+  display: flex;
+  flex-direction: column;
 }
 
 .ep-golden-root .ep-gl-page--cover {
@@ -328,6 +330,26 @@
   text-transform: uppercase;
   margin: 0;
   line-height: 1.2;
+}
+
+.ep-golden-root .ep-gl-cover-tagline {
+  margin: 8px 0 0;
+  font-size: 9pt;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--ep-gl-text-muted);
+  text-align: center;
+  max-width: 28em;
+}
+
+.ep-golden-root .ep-gl-page-footer-brand {
+  margin-top: auto;
+  padding-top: 12px;
+  font-size: 8pt;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ep-gl-text-faint);
 }
 
 .ep-golden-root .ep-gl-label-upper {
@@ -1937,10 +1959,34 @@
   color: var(--ep-gl-ink);
 }
 
+.ep-golden-root .ep-gl-closing-logo {
+  display: block;
+  max-width: 120px;
+  max-height: 48px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  margin-bottom: 8px;
+}
+
+.ep-golden-root .ep-gl-closing-tagline {
+  margin: 0 0 6px;
+  font-size: 9pt;
+  color: var(--ep-gl-text-muted);
+}
+
 .ep-golden-root .ep-gl-closing-contact-line {
-  margin: 0;
+  margin: 0 0 4px;
   font-size: 9pt;
   color: var(--ep-gl-text-secondary);
+}
+
+.ep-golden-root .ep-gl-closing-address,
+.ep-golden-root .ep-gl-closing-gst {
+  margin: 0 0 2px;
+  font-size: 8.5pt;
+  line-height: 1.4;
+  color: var(--ep-gl-text-muted);
 }
 
 .ep-golden-root .ep-gl-closing-qr {

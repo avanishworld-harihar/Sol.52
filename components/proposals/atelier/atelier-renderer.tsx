@@ -125,14 +125,20 @@ export function AtelierRenderer({
     "";
   const brand =
     !rawBrand || /^solar\s*partner$/i.test(rawBrand)
-      ? "Harihar Solar"
+      ? rawBrand || "Solar Partner"
       : rawBrand;
 
   const coverBrand = resolveProposalBrandPresentation(brandConfig, "cover", {
     installerName: brand,
     logoUrl,
+    tagline: data.meta.brandTagline,
   });
   const closingBrand = resolveProposalBrandPresentation(brandConfig, "closing", {
+    installerName: brand,
+    logoUrl,
+    tagline: data.meta.brandTagline || data.closing.brandTagline,
+  });
+  const footerBrand = resolveProposalBrandPresentation(brandConfig, "footer", {
     installerName: brand,
     logoUrl,
   });
@@ -161,8 +167,10 @@ export function AtelierRenderer({
   const lifetimeWealth = data.closing.lifetimeWealthInr;
   const tilt = data.engineering.tiltDeg ?? 20;
   const cityLabel = data.engineering.cityLabel || city;
-  const contact =
-    data.closing.contactLine?.trim() || "+91-99933 22267 · hariharsolar.in";
+  const contact = data.closing.contactLine?.trim() || "";
+  const brandAddress = data.closing.address || data.meta.brandAddress;
+  const brandGst = data.closing.gstNumber || data.meta.brandGst;
+  const contactPerson = data.closing.contactPerson;
 
   // ── New financial calculations ────────────────────────────────
   const monthlyBill =
@@ -381,6 +389,9 @@ export function AtelierRenderer({
                 </span>
               ) : null}
             </div>
+            {coverBrand.showTagline && data.meta.brandTagline ? (
+              <p className={styles.coverLoc}>{data.meta.brandTagline}</p>
+            ) : null}
             <span className={styles.coverDocType}>{c.cover.docType}</span>
           </div>
 
@@ -1257,7 +1268,9 @@ export function AtelierRenderer({
 
         <div className={styles.termsSignoff}>
           <span className={styles.termsRegards}>{c.terms.regards}</span>
-          <span className={styles.termsBrand}>{brand}</span>
+          <span className={styles.termsBrand}>
+            {footerBrand.showName ? footerBrand.installerName || brand : ""}
+          </span>
         </div>
         <span className={styles.pageNum}>11 / 12</span>
       </section>
@@ -1340,8 +1353,27 @@ export function AtelierRenderer({
                 </button>
                 <div className={styles.ctaDivider} />
                 <div className={styles.ctaContact}>
-                  <div className={styles.ctaBrand}>{brand}</div>
-                  <div className={styles.ctaInfo}>{contact}</div>
+                  {closingBrand.showName ? (
+                    <div className={styles.ctaBrand}>
+                      {closingBrand.installerName || brand}
+                    </div>
+                  ) : null}
+                  {closingBrand.showTagline &&
+                  (data.closing.brandTagline || data.meta.brandTagline) ? (
+                    <div className={styles.ctaInfo}>
+                      {data.closing.brandTagline || data.meta.brandTagline}
+                    </div>
+                  ) : null}
+                  {contact ? <div className={styles.ctaInfo}>{contact}</div> : null}
+                  {brandAddress ? (
+                    <div className={styles.ctaInfo}>{brandAddress}</div>
+                  ) : null}
+                  {brandGst ? (
+                    <div className={styles.ctaInfo}>GSTIN {brandGst}</div>
+                  ) : null}
+                  {contactPerson ? (
+                    <div className={styles.ctaInfo}>{contactPerson}</div>
+                  ) : null}
                   <div className={styles.closingValidity}>
                     {c.closing.validity}
                   </div>

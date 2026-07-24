@@ -376,6 +376,12 @@ export type CompanyProfile = {
   installationsDone: string;
   installationsLabel: string;
   bullets: string[];
+  /** Optional identity fields frozen from More → Brand & proposals. */
+  address?: string;
+  website?: string;
+  legalName?: string;
+  contactPerson?: string;
+  contactPersonDesignation?: string;
 };
 
 export function defaultCompanyProfile(lang: "en" | "hi" = "en"): CompanyProfile {

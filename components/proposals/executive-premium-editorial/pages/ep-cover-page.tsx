@@ -8,14 +8,23 @@ import type { ExecutivePremiumEditorialModel } from "@/lib/executive-premium-edi
 type Props = {
   data: Pick<
     ExecutivePremiumEditorialModel,
-    "brand_display" | "brand_logo_url" | "customer_name" | "location_line" | "asset_profile_line"
+    "brand_display" | "brand_logo_url" | "brand_tagline" | "customer_name" | "location_line" | "asset_profile_line"
   >;
+  showLogo?: boolean;
+  showName?: boolean;
+  showTagline?: boolean;
 };
 
-export function EpCoverPage({ data }: Props) {
+export function EpCoverPage({
+  data,
+  showLogo = true,
+  showName = false,
+  showTagline = false,
+}: Props) {
   const { copy } = useEpGoldenLang();
-  const logoUrl = data.brand_logo_url?.trim();
-  const brandName = data.brand_display?.trim();
+  const logoUrl = showLogo ? data.brand_logo_url?.trim() : undefined;
+  const brandName = showName ? data.brand_display?.trim() : undefined;
+  const tagline = showTagline ? data.brand_tagline?.trim() : undefined;
   const customerName = formatEditorialTitleCase(data.customer_name);
   const locationLine = formatEditorialTitleCase(data.location_line);
 
@@ -28,9 +37,9 @@ export function EpCoverPage({ data }: Props) {
               {logoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={logoUrl} alt={brandName || "Company logo"} className="ep-gl-cover-logo" />
-              ) : brandName ? (
-                <p className="ep-gl-cover-brand">{brandName}</p>
               ) : null}
+              {brandName ? <p className="ep-gl-cover-brand">{brandName}</p> : null}
+              {tagline ? <p className="ep-gl-cover-tagline">{tagline}</p> : null}
             </div>
           ) : null}
 

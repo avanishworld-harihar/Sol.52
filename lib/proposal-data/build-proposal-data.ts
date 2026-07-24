@@ -80,6 +80,12 @@ export function buildProposalData(
 
   const loc = locationLine(pptInput);
   const cityLabel = cityFromLocation(loc);
+  const cp = pptInput.companyProfile ?? {};
+  const brandTagline = pptInput.installerTagline?.trim() || undefined;
+  const brandAddress = cp.address?.trim() || undefined;
+  const brandGst = cp.gstNumber?.trim() || summary.companyProfile?.gstNumber?.trim() || undefined;
+  const contactPerson = cp.contactPerson?.trim() || undefined;
+  const contactPersonDesignation = cp.contactPersonDesignation?.trim() || undefined;
 
   const maxBill = Math.max(...summary.auditRows.map((r) => r.total), 1);
   const months = summary.auditRows.map((row, i) => {
@@ -145,6 +151,11 @@ export function buildProposalData(
       locationLine: loc,
       brandName,
       brandLogoUrl: pptInput.installerLogoUrl?.trim() || undefined,
+      brandTagline,
+      brandAddress,
+      brandGst,
+      brandDisplayMode: pptInput.brandDisplayMode,
+      brandSectionConfig: pptInput.brandSectionConfig,
       systemKw: summary.systemKw,
       assetProfileLine: `${summary.systemKw} kW Premium Grid-Architecture`,
       generatedAt: options.generatedAt,
@@ -257,6 +268,11 @@ export function buildProposalData(
       customerName: customer,
       installerName: brandName,
       contactLine: summary.contact,
+      contactPerson,
+      contactPersonDesignation,
+      address: brandAddress,
+      gstNumber: brandGst,
+      brandTagline,
       annualUnits: summary.annualGen,
       annualSavingsInr: summary.annualSaving,
       lifetimeWealthInr: summary.lifetime25Profit,

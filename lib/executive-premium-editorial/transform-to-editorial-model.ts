@@ -112,6 +112,7 @@ export function transformToEditorialModel(
   return {
     brand_display: installerLabel,
     brand_logo_url: pptInput.installerLogoUrl?.trim() || undefined,
+    brand_tagline: pptInput.installerTagline?.trim() || undefined,
     customer_name: customer,
     location_line: locationLine(pptInput),
     asset_profile_line: `${summary.systemKw} kW Premium Grid-Architecture`,
@@ -171,6 +172,15 @@ export function transformToEditorialModel(
       lifetime_wealth_inr: summary.lifetime25Profit,
       installer_name: installerLabel,
       contact_line: summary.contact,
+      contact_person: pptInput.companyProfile?.contactPerson?.trim() || undefined,
+      contact_person_designation:
+        pptInput.companyProfile?.contactPersonDesignation?.trim() || undefined,
+      address: pptInput.companyProfile?.address?.trim() || undefined,
+      gst_number:
+        pptInput.companyProfile?.gstNumber?.trim() ||
+        summary.companyProfile?.gstNumber?.trim() ||
+        undefined,
+      brand_tagline: pptInput.installerTagline?.trim() || undefined,
       qr_url:
         summary.bankDetails?.paymentQrCodeUrl?.trim() ||
         pptInput.bankDetails?.paymentQrCodeUrl?.trim() ||

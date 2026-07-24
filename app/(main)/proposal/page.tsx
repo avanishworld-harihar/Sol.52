@@ -20,7 +20,7 @@ import {
 import { isHtParsedBill } from "@/lib/ht-bill-sanitize";
 import { INDIAN_STATES_AND_UTS } from "@/lib/indian-states-uts";
 import { INSTALLER_REGION_EVENT, readInstallerRegion } from "@/lib/installer-region-storage";
-import { formatInstallerContactLine, readProposalBrandingSettings, resolveInstallerDisplayName } from "@/lib/proposal-branding-settings";
+import { readProposalBrandingSettings, buildInstallerIdentitySnapshot } from "@/lib/proposal-branding-settings";
 import { HelpHint } from "@/components/ui/help-hint";
 import { FloatingLabelInput, FloatingLabelSelect } from "@/components/ui/floating-label-input";
 import { NumericTextInput } from "@/components/ui/numeric-text-input";
@@ -1649,7 +1649,7 @@ function ProposalPageContent() {
 
   function buildProposalExtrasPayload() {
     const branding = readProposalBrandingSettings();
-    const installerContactLine = formatInstallerContactLine(branding.installerContact, branding.installerEmail);
+    const identity = buildInstallerIdentitySnapshot(branding);
     const sanctionedLoadKw = (() => {
       const s = manual.sanctionedLoad?.trim();
       if (s) {
@@ -1677,11 +1677,9 @@ function ProposalPageContent() {
       lang: proposalLang,
       amcSelectedYears: branding.amcSelectedYears,
       financeOption: { interestRatePct: financeRatePct, tenuresYears: [3, 5, 7] as number[] },
-      installerName: (() => {
-        const n = resolveInstallerDisplayName(branding);
-        return n || undefined;
-      })(),
-      installerContact: installerContactLine,
+      installerName: identity.installerName,
+      installerContact: identity.installerContact || undefined,
+      installerTagline: identity.installerTagline,
       customerProfile: {
         consumerId: manual.consumerId || undefined,
         meterNumber: manual.meterNumber || undefined,
@@ -1699,12 +1697,10 @@ function ProposalPageContent() {
         paymentQrCodeUrl: branding.paymentQrCodeUrl.trim() || undefined
       },
       siteImages: siteImages.length > 0 ? siteImages : undefined,
-      installerLogoUrl: branding.installerLogoUrl.trim() || undefined,
-      brandDisplayMode: branding.brandDisplayMode,
-      brandSectionConfig: branding.brandSectionConfig,
-      companyProfile: {
-        gstNumber: branding.companyGstNumber.trim() || undefined
-      },
+      installerLogoUrl: identity.installerLogoUrl,
+      brandDisplayMode: identity.brandDisplayMode,
+      brandSectionConfig: identity.brandSectionConfig,
+      companyProfile: identity.companyProfile,
       ...(osPresetId === "residential_zenith"
         ? { galleryThemeKey: "zenith" }
         : osPresetId === "residential_premium_luxe"
