@@ -184,7 +184,7 @@ const OBSTRUCTION_LABELS: Record<ObstructionType, string> = {
 
 /** Sensible default footprint radius so shading circles appear immediately. */
 const DEFAULT_OBSTRUCTION_RADIUS_FT: Record<ObstructionType, number> = {
-  water_tank: 4,
+  water_tank: 3.5,
   tree: 10,
   chimney: 2,
   parapet: 1.5,
@@ -192,6 +192,62 @@ const DEFAULT_OBSTRUCTION_RADIUS_FT: Record<ObstructionType, number> = {
 };
 
 const FT_TO_M = 0.3048;
+
+/** Map colors — water tank yellow (realistic rooftop tank). */
+const OBSTRUCTION_MAP_STYLE: Record<
+  ObstructionType,
+  { fill: string; stroke: string; keepOutFill: string; keepOutStroke: string; label: string }
+> = {
+  water_tank: {
+    fill: "#facc15",
+    stroke: "#a16207",
+    keepOutFill: "#fde047",
+    keepOutStroke: "#ca8a04",
+    label: "#713f12",
+  },
+  tree: {
+    fill: "#22c55e",
+    stroke: "#14532d",
+    keepOutFill: "#86efac",
+    keepOutStroke: "#16a34a",
+    label: "#ffffff",
+  },
+  chimney: {
+    fill: "#78716c",
+    stroke: "#292524",
+    keepOutFill: "#a8a29e",
+    keepOutStroke: "#57534e",
+    label: "#ffffff",
+  },
+  parapet: {
+    fill: "#94a3b8",
+    stroke: "#334155",
+    keepOutFill: "#cbd5e1",
+    keepOutStroke: "#64748b",
+    label: "#0f172a",
+  },
+  other: {
+    fill: "#fb923c",
+    stroke: "#9a3412",
+    keepOutFill: "#fdba74",
+    keepOutStroke: "#ea580c",
+    label: "#ffffff",
+  },
+};
+
+function metersPerPixelAt(latDeg: number, zoom: number): number {
+  return (156543.03392 * Math.cos((latDeg * Math.PI) / 180)) / 2 ** zoom;
+}
+
+/** SymbolPath.CIRCLE scale ≈ screen-pixel radius; match real footprint at current zoom. */
+function obstructionMarkerScalePx(radiusFt: number, latDeg: number, zoom: number): number {
+  const radiusM = Math.max(0.25, radiusFt * FT_TO_M);
+  const mpp = metersPerPixelAt(latDeg, Math.max(3, zoom));
+  if (!Number.isFinite(mpp) || mpp <= 0) return 6;
+  const px = radiusM / mpp;
+  // Small enough to read as real size; floor keeps a drag target.
+  return Math.max(4, Math.min(22, px * 0.92));
+}
 /** Click within this many screen pixels of the first corner closes the polygon. */
 const SNAP_CLOSE_PX = 14;
 
@@ -1105,65 +1161,137 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
 
   useEffect(() => {
     if (!mapReady || !mapRef.current || !window.google?.maps) return;
-    markersRef.current.forEach((marker) => marker.setMap(null));
-    circlesRef.current.forEach((circle) => circle.setMap(null));
-    circlesRef.current = [];
-    markersRef.current = state.obstructions.map((obstruction) => {
-      const radiusFt = effectiveObstructionRadiusFt(obstruction);
-      if (radiusFt > 0) {
+    const map = mapRef.current;
+
+    const redrawObstructions = () => {
+      markersRef.current.forEach((marker) => marker.setMap(null));
+      circlesRef.current.forEach((circle) => circle.setMap(null));
+      circlesRef.current = [];
+      const zoom = map.getZoom() ?? 20;
+
+      markersRef.current = state.obstructions.map((obstruction) => {
+        const radiusFt = effectiveObstructionRadiusFt(obstruction);
+        const style = OBSTRUCTION_MAP_STYLE[obstruction.type];
+        const isSelected = obstruction.id === state.selectedObstructionId;
+        // Visual body: stored radius (tank size). Keep-out ring uses effective radius.
+        const bodyRadiusFt = Math.max(
+          0.5,
+          Math.min(radiusFt, obstruction.radius_ft && obstruction.radius_ft > 0 ? obstruction.radius_ft : radiusFt)
+        );
+
+        if (radiusFt > 0) {
+          // Faint keep-out (packing clearance) — dashed feel via low opacity.
+          circlesRef.current.push(
+            new google.maps.Circle({
+              map,
+              center: { lat: obstruction.lat, lng: obstruction.lng },
+              radius: radiusFt * FT_TO_M,
+              clickable: false,
+              strokeColor: style.keepOutStroke,
+              strokeOpacity: isSelected ? 0.75 : 0.45,
+              strokeWeight: 1,
+              fillColor: style.keepOutFill,
+              fillOpacity: obstruction.type === "water_tank" ? 0.08 : 0.12,
+              zIndex: 5,
+            })
+          );
+        }
+
+        // Solid body disk at true size (yellow tank, etc.).
         circlesRef.current.push(
           new google.maps.Circle({
-            map: mapRef.current!,
+            map,
             center: { lat: obstruction.lat, lng: obstruction.lng },
-            radius: radiusFt * FT_TO_M,
+            radius: bodyRadiusFt * FT_TO_M,
             clickable: false,
-            strokeColor: "#d97706",
-            strokeOpacity: 0.9,
-            strokeWeight: 1,
-            fillColor: "#f59e0b",
-            fillOpacity: 0.16,
-            zIndex: 5,
+            strokeColor: isSelected ? style.stroke : style.stroke,
+            strokeOpacity: 0.95,
+            strokeWeight: isSelected ? 2 : 1.25,
+            fillColor: style.fill,
+            fillOpacity: obstruction.type === "water_tank" ? 0.88 : 0.72,
+            zIndex: 6,
           })
         );
-      }
-      const isSelected = obstruction.id === state.selectedObstructionId;
-      const marker = new google.maps.Marker({
-        map: mapRef.current!,
-        position: { lat: obstruction.lat, lng: obstruction.lng },
-        title: `${OBSTRUCTION_LABELS[obstruction.type]} · ${obstruction.height_ft} ft · drag to move`,
-        draggable: true,
-        cursor: "move",
-        zIndex: isSelected ? 20 : 10,
-        label: {
-          text: obstruction.type === "tree" ? "TR" : obstruction.type === "water_tank" ? "WT" : "OB",
-          color: "#ffffff",
-          fontSize: "10px",
-          fontWeight: "700",
-        },
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          fillColor: isSelected ? "#b45309" : "#d97706",
-          fillOpacity: 1,
-          strokeColor: isSelected ? "#fbbf24" : "#ffffff",
-          strokeWeight: isSelected ? 2 : 1,
-          scale: 13,
-        },
-      });
-      marker.addListener("click", () => {
-        dispatch({ type: "SELECT_OBSTRUCTION", id: obstruction.id });
-      });
-      marker.addListener("dragstart", () => {
-        dispatch({ type: "SELECT_OBSTRUCTION", id: obstruction.id });
-      });
-      marker.addListener("dragend", (event: google.maps.MapMouseEvent) => {
-        if (!event.latLng) return;
-        dispatch({
-          type: "UPDATE_OBSTRUCTION",
-          obstruction: { ...obstruction, lat: event.latLng.lat(), lng: event.latLng.lng() },
+
+        // Inner lid ring for water tank (top-down cylinder look).
+        if (obstruction.type === "water_tank" && bodyRadiusFt > 0.75) {
+          circlesRef.current.push(
+            new google.maps.Circle({
+              map,
+              center: { lat: obstruction.lat, lng: obstruction.lng },
+              radius: bodyRadiusFt * FT_TO_M * 0.55,
+              clickable: false,
+              strokeColor: "#a16207",
+              strokeOpacity: 0.7,
+              strokeWeight: 1,
+              fillColor: "#fef08a",
+              fillOpacity: 0.35,
+              zIndex: 7,
+            })
+          );
+        }
+
+        const markerScale = obstructionMarkerScalePx(bodyRadiusFt, obstruction.lat, zoom);
+        const showLabel = markerScale >= 8;
+        const marker = new google.maps.Marker({
+          map,
+          position: { lat: obstruction.lat, lng: obstruction.lng },
+          title: `${OBSTRUCTION_LABELS[obstruction.type]} · ⌀≈${(bodyRadiusFt * 2).toFixed(1)} ft · ${obstruction.height_ft} ft high · drag`,
+          draggable: true,
+          cursor: "move",
+          zIndex: isSelected ? 30 : 12,
+          label: showLabel
+            ? {
+                text:
+                  obstruction.type === "tree"
+                    ? "TR"
+                    : obstruction.type === "water_tank"
+                      ? "WT"
+                      : "OB",
+                color: style.label,
+                fontSize: markerScale >= 12 ? "9px" : "7px",
+                fontWeight: "700",
+              }
+            : undefined,
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            fillColor: isSelected ? style.stroke : style.fill,
+            fillOpacity: obstruction.type === "water_tank" ? 0.15 : 0.95,
+            strokeColor: isSelected ? "#fef08a" : "#ffffff",
+            strokeWeight: isSelected ? 2 : 1,
+            // Tiny handle when body circle already shows size; still zoom-aware.
+            scale:
+              obstruction.type === "water_tank"
+                ? Math.max(3, Math.min(7, markerScale * 0.35))
+                : markerScale,
+          },
         });
+        marker.addListener("click", () => {
+          dispatch({ type: "SELECT_OBSTRUCTION", id: obstruction.id });
+        });
+        marker.addListener("dragstart", () => {
+          dispatch({ type: "SELECT_OBSTRUCTION", id: obstruction.id });
+        });
+        marker.addListener("dragend", (event: google.maps.MapMouseEvent) => {
+          if (!event.latLng) return;
+          dispatch({
+            type: "UPDATE_OBSTRUCTION",
+            obstruction: { ...obstruction, lat: event.latLng.lat(), lng: event.latLng.lng() },
+          });
+        });
+        return marker;
       });
-      return marker;
-    });
+    };
+
+    redrawObstructions();
+    const zoomListener = map.addListener("zoom_changed", redrawObstructions);
+    return () => {
+      google.maps.event.removeListener(zoomListener);
+      markersRef.current.forEach((marker) => marker.setMap(null));
+      markersRef.current = [];
+      circlesRef.current.forEach((circle) => circle.setMap(null));
+      circlesRef.current = [];
+    };
   }, [mapReady, state.obstructions, state.selectedObstructionId]);
 
   useEffect(() => {
@@ -3669,8 +3797,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               onClick={() => beginObstruction("water_tank")}
               className={`flex h-10 w-10 items-center justify-center rounded-lg text-[10px] font-extrabold ${
                 pendingObstruction === "water_tank"
-                  ? "bg-amber-500 text-white"
-                  : "text-amber-300 hover:bg-white/10"
+                  ? "bg-yellow-400 text-yellow-950"
+                  : "text-yellow-300 hover:bg-white/10"
               }`}
             >
               WT
