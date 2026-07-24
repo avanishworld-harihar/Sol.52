@@ -48,6 +48,13 @@ export const siteObstructionSchema = z.object({
   lng: z.number().min(-180).max(180),
   lat: z.number().min(-90).max(90),
   height_ft: z.number().nonnegative().max(500).default(0),
+  /**
+   * How `height_ft` is measured for shadow on the plant roof:
+   * - above_roof: object sits on/near the array roof (tank, chimney, parapet)
+   * - agl: object height above ground (tree, neighbour). Effective cast =
+   *   max(0, height_agl − plant_roof_height_agl).
+   */
+  height_datum: z.enum(["above_roof", "agl"]).optional().nullable(),
   radius_ft: z.number().nonnegative().max(500).nullish(),
   label: z.string().max(120).optional().nullable(),
 });

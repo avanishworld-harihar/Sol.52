@@ -9,6 +9,8 @@ export type SiteLayoutDraft = {
   center_lng: number | null;
   roof_type: string | null;
   updated_at: string;
+  /** Plant / terrace height above ground (ft) for shadow datum. */
+  plant_roof_height_ft?: number | null;
   panel_spec?: PanelSpec | null;
   panel_orientation?: PanelOrientation | null;
   panel_setback_ft?: number | null;

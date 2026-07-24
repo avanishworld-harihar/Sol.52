@@ -132,8 +132,14 @@ validates the `PanelLayout` and surfaces engineering warnings.
 - Planning stringing estimate + **studio-only** one-line SLD schematic (PV → DCDB → Inverter →
   ACDB → Meter → Grid). Not embedded in customer proposal.
 
+**Engineering SLD sheet v1 (2026-07-24):**
+- `lib/design-studio-sld-model.ts` — auto model from panels + stringing (balanced string sizes).
+- `components/site-layout/design-studio-sld-sheet.tsx` — A3 landscape SVG sheet (flow, plant
+  table, legend, title block, earthing stubs) + **Print / PDF** overlay.
+- Engineering card → **Open engineering SLD · Print / PDF**. Still outside customer proposal.
+
 **Still queued in Phase 3:** equipment map points, cable routes, walkway safety profiles UI,
-exportable signed SLD pack, inverter/MPPT hard limits from project BOM.
+signed GFC SLD pack / share link, inverter/MPPT hard limits from project BOM.
 
 **Checks:** setbacks, blocked walkways, maintenance access, row spacing, fire clearance,
 clearance issues and severity-ranked engineering warnings.
@@ -158,6 +164,11 @@ percentages and roof-level shade-free area.
 - Design Studio **Shadow** card (On/Off + Jun/Dec × 9/12/3 presets).
 - Map ground-shadow polygons + panel fill tint by shade fraction.
 - Planning disclaimer in UI (not a certified shading report).
+
+**Height datum (2026-07-24):**
+- **Plant roof height (ft AGL)** — terrace height above ground (survey `roof_height_ft` prefill).
+- Objects: **above roof** (tank/chimney) use height as cast height; **AGL** (tree) cast =
+  `max(0, object_agl − plant_roof_agl)`.
 
 **Still queued in Phase 4:** survey auto-fill `shadow_free_sqft` / notes, before/after compare,
 annual generation-loss estimate, finer time slider.

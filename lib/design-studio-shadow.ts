@@ -1,7 +1,11 @@
 /**
  * Design Studio Phase 4 — Shadow Engine (planning estimate).
- * Flat/low-pitch v1: obstruction height → ground shadow length via sun altitude.
- * Not a certified shading report.
+ *
+ * Height model (roof-plane datum):
+ * - Plant roof height AGL = how high the solar terrace is above ground.
+ * - Roof-mounted objects (tank/chimney): height_ft = above roof → cast with that height.
+ * - Ground objects (tree): height_ft = AGL → cast with max(0, tree_agl − plant_roof_agl).
+ * Flat/low-pitch v1. Not a certified shading report.
  */
 
 import area from "@turf/area";
@@ -26,10 +30,39 @@ export const DEFAULT_OBSTRUCTION_HEIGHT_FT: Record<SiteObstruction["type"], numb
   other: 5,
 };
 
+export type ObstructionHeightDatum = "above_roof" | "agl";
+
+/** Default datum by type — trees are ground-level; tanks/chimneys sit on the roof. */
+export function defaultHeightDatum(type: SiteObstruction["type"]): ObstructionHeightDatum {
+  return type === "tree" ? "agl" : "above_roof";
+}
+
+export function obstructionHeightDatum(obstruction: SiteObstruction): ObstructionHeightDatum {
+  return obstruction.height_datum === "agl" || obstruction.height_datum === "above_roof"
+    ? obstruction.height_datum
+    : defaultHeightDatum(obstruction.type);
+}
+
 export function effectiveObstructionHeightFt(obstruction: SiteObstruction): number {
   const stored = obstruction.height_ft ?? 0;
   if (stored > 0) return stored;
   return DEFAULT_OBSTRUCTION_HEIGHT_FT[obstruction.type] ?? 5;
+}
+
+/**
+ * Height that actually casts onto the plant roof plane.
+ * Example: plant roof 40 ft AGL, tree 55 ft AGL → 15 ft effective.
+ * Tree 30 ft AGL on a 40 ft roof → 0 (cannot shade the array).
+ */
+export function effectiveShadowHeightAboveRoofFt(
+  obstruction: SiteObstruction,
+  plantRoofHeightAglFt: number
+): number {
+  const raw = effectiveObstructionHeightFt(obstruction);
+  const datum = obstructionHeightDatum(obstruction);
+  if (datum === "above_roof") return raw;
+  const roofAgl = Math.max(0, plantRoofHeightAglFt);
+  return Math.max(0, raw - roofAgl);
 }
 
 export type ShadowSampleId =
@@ -104,15 +137,16 @@ export function shadowLengthM(heightFt: number, altitudeDeg: number): number {
 type ShadowPoly = Feature<GeoPolygon | MultiPolygon>;
 
 /**
- * Approximate ground shadow of a circular obstruction (stadium from object to tip).
+ * Approximate roof-plane shadow of a circular obstruction (stadium from object to tip).
  */
 export function obstructionShadowPolygon(
   obstruction: SiteObstruction,
   altitudeDeg: number,
-  shadowBearingDeg: number
+  shadowBearingDeg: number,
+  plantRoofHeightAglFt = 0
 ): ShadowPoly | null {
   if (altitudeDeg <= 1) return null;
-  const heightFt = effectiveObstructionHeightFt(obstruction);
+  const heightFt = effectiveShadowHeightAboveRoofFt(obstruction, plantRoofHeightAglFt);
   if (heightFt <= 0) return null;
 
   const lengthM = shadowLengthM(heightFt, altitudeDeg);
@@ -166,7 +200,8 @@ function panelFeature(panel: PlacedPanel): Feature<GeoPolygon> | null {
 }
 
 /**
- * Per-panel shade fraction for one sun sample. Uses obstruction height + radius only.
+ * Per-panel shade fraction for one sun sample.
+ * Uses plant roof height AGL + per-obstruction height datum.
  */
 export function analyzePanelShadows(opts: {
   panels: PlacedPanel[];
@@ -174,11 +209,20 @@ export function analyzePanelShadows(opts: {
   date: Date;
   latitudeDeg: number;
   longitudeDeg: number;
+  /** Plant / terrace height above ground (ft). */
+  plantRoofHeightAglFt?: number;
 }): ShadowAnalysisResult {
-  const { panels, obstructions, date, latitudeDeg, longitudeDeg } = opts;
+  const {
+    panels,
+    obstructions,
+    date,
+    latitudeDeg,
+    longitudeDeg,
+    plantRoofHeightAglFt = 0,
+  } = opts;
   const sun = sunPoseAt(date, latitudeDeg, longitudeDeg);
   const disclaimer =
-    "Planning estimate only — flat-roof shadow model from obstruction height. Not a certified shading report.";
+    "Planning estimate — roof-plane shadow from plant height + object height (tank above roof / tree AGL). Not a certified shading report.";
 
   if (panels.length === 0) {
     return {
@@ -221,7 +265,8 @@ export function analyzePanelShadows(opts: {
     const shadow = obstructionShadowPolygon(
       obstruction,
       sun.altitudeDeg,
-      sun.shadowBearingDeg
+      sun.shadowBearingDeg,
+      plantRoofHeightAglFt
     );
     if (shadow?.geometry) shadows.push(shadow);
   }

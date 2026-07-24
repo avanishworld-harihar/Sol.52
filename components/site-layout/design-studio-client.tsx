@@ -16,6 +16,7 @@ import {
   MapPin,
   Minus,
   MousePointer2,
+  Printer,
   Plus,
   Redo2,
   Copy,
@@ -65,14 +66,19 @@ import { evaluateEngineeringRules } from "@/lib/design-studio-engineering-rules"
 import { estimateStringing } from "@/lib/design-studio-stringing";
 import {
   analyzePanelShadows,
+  defaultHeightDatum,
+  DEFAULT_OBSTRUCTION_HEIGHT_FT,
+  effectiveShadowHeightAboveRoofFt,
+  obstructionHeightDatum,
   obstructionShadowPolygon,
   presetToDate,
   shadeFillColor,
   SHADOW_SOLSTICE_PRESETS,
-  DEFAULT_OBSTRUCTION_HEIGHT_FT,
   type ShadowSampleId,
 } from "@/lib/design-studio-shadow";
 import { DesignStudioSldSchematic } from "@/components/site-layout/design-studio-sld-schematic";
+import { DesignStudioSldSheetViewer } from "@/components/site-layout/design-studio-sld-sheet";
+import { buildDesignStudioSldModel } from "@/lib/design-studio-sld-model";
 import type {
   PanelMountingType,
   PanelOrientation,
@@ -136,6 +142,7 @@ type SurveySummary = {
   gps_lng: number | null;
   roof_type: string | null;
   proposed_capacity_kw: number | null;
+  roof_height_ft: number | null;
 };
 
 type DesignSummary = {
@@ -239,6 +246,7 @@ function newObstruction(
     lng,
     lat,
     height_ft: DEFAULT_OBSTRUCTION_HEIGHT_FT[type],
+    height_datum: defaultHeightDatum(type),
     radius_ft: DEFAULT_OBSTRUCTION_RADIUS_FT[type],
     label: null,
   };
@@ -386,6 +394,10 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const [shadowEnabled, setShadowEnabled] = useState(true);
   const [shadowPresetId, setShadowPresetId] =
     useState<Exclude<ShadowSampleId, "custom">>("dec21-12");
+  /** Plant / terrace height above ground — shadow datum for AGL objects (trees). */
+  const [plantRoofHeightFt, setPlantRoofHeightFt] = useState(0);
+  /** Engineering SLD sheet v1 preview / print. */
+  const [sldSheetOpen, setSldSheetOpen] = useState(false);
   const photoInputRef = useRef<HTMLInputElement | null>(null);
 
   const googleMapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim() ?? "";
@@ -466,7 +478,18 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             (item.height_ft ?? 0) > 0
               ? item.height_ft
               : DEFAULT_OBSTRUCTION_HEIGHT_FT[item.type] ?? 5,
+          height_datum: item.height_datum ?? defaultHeightDatum(item.type),
         }));
+
+        const draftPlantH =
+          typeof draft?.plant_roof_height_ft === "number" && draft.plant_roof_height_ft >= 0
+            ? draft.plant_roof_height_ft
+            : null;
+        const surveyPlantH =
+          surveyData?.roof_height_ft != null && surveyData.roof_height_ft >= 0
+            ? surveyData.roof_height_ft
+            : null;
+        setPlantRoofHeightFt(draftPlantH ?? surveyPlantH ?? 0);
 
         const savedPanel = panelJson.ok ? panelJson.data ?? null : null;
         setCurrentPanelLayout(savedPanel);
@@ -1199,10 +1222,12 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       date: presetToDate(preset),
       latitudeDeg: center[1],
       longitudeDeg: center[0],
+      plantRoofHeightAglFt: plantRoofHeightFt,
     });
   }, [
     center,
     placedPanels,
+    plantRoofHeightFt,
     shadowEnabled,
     shadowPresetId,
     state.obstructions,
@@ -1448,7 +1473,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       const shadow = obstructionShadowPolygon(
         obstruction,
         shadowAnalysis.sun.altitudeDeg,
-        shadowAnalysis.sun.shadowBearingDeg
+        shadowAnalysis.sun.shadowBearingDeg,
+        plantRoofHeightFt
       );
       if (!shadow?.geometry) continue;
       const rings: google.maps.LatLngLiteral[][] = [];
@@ -1484,7 +1510,59 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     return () => {
       polys.forEach((poly) => poly.setMap(null));
     };
-  }, [mapReady, shadowAnalysis, shadowEnabled, state.obstructions]);
+  }, [mapReady, plantRoofHeightFt, shadowAnalysis, shadowEnabled, state.obstructions]);
+
+  // Persist plant roof height even when layout isn't marked dirty yet.
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        const existing = await readSiteLayoutDraft(projectId);
+        if (!existing) {
+          if (!state.roof && state.obstructions.length === 0 && placedPanels.length === 0) return;
+          await writeSiteLayoutDraft(projectId, {
+            roof: state.roof,
+            obstructions: state.obstructions,
+            center_lat: center[1],
+            center_lng: center[0],
+            roof_type: roofType || null,
+            plant_roof_height_ft: plantRoofHeightFt,
+            updated_at: new Date().toISOString(),
+            panel_spec: panelSpec,
+            panel_orientation: panelOrientation,
+            panel_setback_ft: panelSetbackFt,
+            panel_tilt_deg: panelTiltDeg,
+            mounting_type: mountingType,
+            panels: placedPanels,
+            panel_remaining_area_sqft: panelMetrics.remainingAreaSqft,
+            panel_coverage_pct: panelMetrics.coveragePct,
+          });
+          return;
+        }
+        if (existing.plant_roof_height_ft === plantRoofHeightFt) return;
+        await writeSiteLayoutDraft(projectId, {
+          ...existing,
+          plant_roof_height_ft: plantRoofHeightFt,
+          updated_at: new Date().toISOString(),
+        });
+      })();
+    }, 600);
+    return () => window.clearTimeout(timer);
+  }, [
+    center,
+    mountingType,
+    panelMetrics.coveragePct,
+    panelMetrics.remainingAreaSqft,
+    panelOrientation,
+    panelSetbackFt,
+    panelSpec,
+    panelTiltDeg,
+    placedPanels,
+    plantRoofHeightFt,
+    projectId,
+    roofType,
+    state.obstructions,
+    state.roof,
+  ]);
 
   useEffect(() => {
     if (!state.dirty && !panelDirty) return;
@@ -1495,6 +1573,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         center_lat: center[1],
         center_lng: center[0],
         roof_type: roofType || null,
+        plant_roof_height_ft: plantRoofHeightFt,
         updated_at: new Date().toISOString(),
         panel_spec: panelSpec,
         panel_orientation: panelOrientation,
@@ -1518,6 +1597,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     mountingType,
     panelSpec,
     placedPanels,
+    plantRoofHeightFt,
     projectId,
     roofType,
     state.dirty,
@@ -1656,6 +1736,28 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       }),
     [panelSpec, placedPanels.length]
   );
+
+  const sldSheetModel = useMemo(() => {
+    if (!stringingEstimate) return null;
+    return buildDesignStudioSldModel({
+      projectName: project?.official_name || project?.lead_name || "Solar project",
+      panelSpec,
+      stringing: stringingEstimate,
+      panelTiltDeg,
+      latitudeDeg: center[1],
+      longitudeDeg: center[0],
+      azimuthDeg: selectedRoofMetrics?.azimuthDeg ?? displayedMetrics?.azimuthDeg ?? null,
+    });
+  }, [
+    center,
+    displayedMetrics?.azimuthDeg,
+    panelSpec,
+    panelTiltDeg,
+    project?.lead_name,
+    project?.official_name,
+    selectedRoofMetrics?.azimuthDeg,
+    stringingEstimate,
+  ]);
 
   const areaWarning = displayedMetrics
     ? displayedMetrics.areaSqft < 100
@@ -4295,6 +4397,20 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                   panelCount={stringingEstimate.panelCount}
                   inverterKw={stringingEstimate.suggestedInverterKw}
                 />
+                <Button
+                  type="button"
+                  size="sm"
+                  className="mt-2 w-full bg-violet-700 text-white hover:bg-violet-600"
+                  disabled={!sldSheetModel}
+                  onClick={() => setSldSheetOpen(true)}
+                >
+                  <Printer className="mr-1.5 h-3.5 w-3.5" />
+                  Open engineering SLD · Print / PDF
+                </Button>
+                <p className="mt-1 text-[10px] leading-snug text-violet-800/70 dark:text-violet-200/60">
+                  Full sheet from live panels + stringing. SLD pack stays outside the customer
+                  proposal.
+                </p>
               </div>
             ) : (
               <p className="mt-3 text-[10px] text-violet-800/70 dark:text-violet-200/60">
@@ -4322,8 +4438,27 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               </button>
             </div>
             <p className="mt-1 text-[10px] leading-relaxed text-orange-900/80 dark:text-orange-100/70">
-              Phase 4 planning estimate from obstruction height (IST). Not a certified shading
-              report. Design stays outside the customer proposal.
+              Roof-plane shadow: set plant height (AGL), then object height (tank above roof / tree
+              AGL). IST solstice samples. Not a certified report. Design stays outside proposal.
+            </p>
+            <label className="mt-2 block text-[10px] font-bold uppercase tracking-wide text-orange-700/90 dark:text-orange-200/80">
+              Plant roof height (ft AGL)
+              <input
+                type="number"
+                min={0}
+                max={500}
+                step={1}
+                disabled={!shadowEnabled}
+                value={plantRoofHeightFt}
+                onChange={(event) =>
+                  setPlantRoofHeightFt(Math.max(0, Number(event.target.value) || 0))
+                }
+                className="mt-1 w-full rounded-lg border border-orange-200/80 bg-white px-2.5 py-2 text-xs font-semibold tabular-nums text-orange-950 disabled:opacity-40 dark:border-orange-800/50 dark:bg-white/[0.06] dark:text-orange-50"
+              />
+            </label>
+            <p className="mt-1 text-[10px] text-orange-800/70 dark:text-orange-200/60">
+              Prefills from survey roof height when available. Trees shorter than this cast no shade
+              on the array.
             </p>
             <div className="mt-2 grid grid-cols-2 gap-1.5">
               {SHADOW_SOLSTICE_PRESETS.map((preset) => (
@@ -4404,7 +4539,21 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                     }`}
                   >
                     <span className="text-xs font-bold text-slate-800 dark:text-slate-100">{OBSTRUCTION_LABELS[obstruction.type]}</span>
-                    <span className="ml-2 text-[10px] text-slate-500">{obstruction.height_ft} ft</span>
+                    <span className="ml-2 text-[10px] text-slate-500">
+                      {obstruction.height_ft} ft{" "}
+                      {obstructionHeightDatum(obstruction) === "agl" ? "AGL" : "roof"}
+                      {obstructionHeightDatum(obstruction) === "agl" ? (
+                        <>
+                          {" "}
+                          · eff{" "}
+                          {effectiveShadowHeightAboveRoofFt(
+                            obstruction,
+                            plantRoofHeightFt
+                          ).toFixed(0)}{" "}
+                          ft
+                        </>
+                      ) : null}
+                    </span>
                   </button>
                 ))
               )}
@@ -4413,7 +4562,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               <div className="mt-3 border-t border-slate-100 pt-3 dark:border-white/10">
                 <div className="grid grid-cols-2 gap-2">
                   <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
-                    Height (ft)
+                    {obstructionHeightDatum(selectedObstruction) === "agl"
+                      ? "Height AGL (ft)"
+                      : "Height above roof (ft)"}
                     <input
                       type="number"
                       min={0}
@@ -4455,9 +4606,39 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                     />
                   </label>
                 </div>
-                <p className="mt-1 text-[10px] text-slate-500">
-                  Keep-out circle on the map. Water tank min ~3.5 ft so Auto layout can avoid it.
-                </p>
+                <label className="mt-2 block text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                  Height measured from
+                  <select
+                    value={obstructionHeightDatum(selectedObstruction)}
+                    onChange={(event) =>
+                      dispatch({
+                        type: "UPDATE_OBSTRUCTION",
+                        obstruction: {
+                          ...selectedObstruction,
+                          height_datum: event.target.value as "above_roof" | "agl",
+                        },
+                      })
+                    }
+                    className="mt-1 w-full rounded-lg border border-slate-200 px-2.5 py-2 text-xs dark:border-white/10 dark:bg-slate-950"
+                  >
+                    <option value="above_roof">Roof (tank / chimney / parapet)</option>
+                    <option value="agl">Ground AGL (tree / neighbour)</option>
+                  </select>
+                </label>
+                {obstructionHeightDatum(selectedObstruction) === "agl" ? (
+                  <p className="mt-1 text-[10px] text-slate-500">
+                    Cast on array = max(0, {selectedObstruction.height_ft} − {plantRoofHeightFt}) ={" "}
+                    {effectiveShadowHeightAboveRoofFt(
+                      selectedObstruction,
+                      plantRoofHeightFt
+                    ).toFixed(0)}{" "}
+                    ft above roof.
+                  </p>
+                ) : (
+                  <p className="mt-1 text-[10px] text-slate-500">
+                    Keep-out circle on the map. Water tank min ~3.5 ft so Auto layout can avoid it.
+                  </p>
+                )}
                 <Button
                   variant="outline"
                   size="sm"
@@ -4472,21 +4653,22 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
 
           <div className="rounded-xl border border-blue-200 bg-blue-50 p-3 text-[11px] leading-relaxed text-blue-900 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-100">
             <div className="flex items-center gap-1.5 font-extrabold">
-              <Crosshair className="h-4 w-4" /> Phase 2
+              <Crosshair className="h-4 w-4" /> Design Studio
             </div>
             <p className="mt-1">
-              Draw roof sections, then run Auto layout. Panels stay on the project design — not inside the customer proposal.
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-dashed border-slate-200 p-3 dark:border-white/10">
-            <p className="text-[11px] font-extrabold uppercase tracking-wide text-slate-400">Shadow (Phase 4)</p>
-            <p className="mt-1 text-[10px] leading-relaxed text-slate-500">
-              Shade analysis slot — coming after panel layout is stable. Design stays separate from proposal.
+              Draw roof, place panels, set plant roof height for shadows. Design stays on the project
+              — not inside the customer proposal.
             </p>
           </div>
         </aside>
       </div>
+
+      {sldSheetOpen && sldSheetModel ? (
+        <DesignStudioSldSheetViewer
+          model={sldSheetModel}
+          onClose={() => setSldSheetOpen(false)}
+        />
+      ) : null}
     </main>
   );
 }
