@@ -447,6 +447,45 @@ export function resolveProposalBrandConfig(sources: {
   };
 }
 
+export type ResolvedProposalBankDetails = {
+  accountName: string;
+  accountNumber: string;
+  ifsc: string;
+  branch: string;
+  upiId: string;
+  paymentQrCodeUrl: string;
+};
+
+/**
+ * Prefer frozen ppt_input bank fields; fill gaps from More → Brand settings
+ * so live preview shows saved banking without forcing a regenerate.
+ */
+export function resolveProposalBankDetails(sources: {
+  pptBank?: {
+    accountName?: string | null;
+    accountNumber?: string | null;
+    ifsc?: string | null;
+    branch?: string | null;
+    upiId?: string | null;
+    paymentQrCodeUrl?: string | null;
+  } | null;
+  settings?: ProposalBrandingSettings | null;
+}): ResolvedProposalBankDetails {
+  const ppt = sources.pptBank ?? {};
+  const s = sources.settings;
+  const pick = (fromPpt?: string | null, fromSettings?: string) =>
+    (fromPpt?.trim() || fromSettings?.trim() || "");
+
+  return {
+    accountName: pick(ppt.accountName, s?.bankAccountName),
+    accountNumber: pick(ppt.accountNumber, s?.bankAccountNumber),
+    ifsc: pick(ppt.ifsc, s?.bankIfsc),
+    branch: pick(ppt.branch, s?.bankBranch),
+    upiId: pick(ppt.upiId, s?.bankUpiId),
+    paymentQrCodeUrl: pick(ppt.paymentQrCodeUrl, s?.paymentQrCodeUrl),
+  };
+}
+
 /** Sync legacy personalizedBranding flag from brand display mode. */
 export function personalizedBrandingFromBrandConfig(config: ProposalBrandConfig): boolean {
   return config.brandDisplayMode !== "logoOnly";

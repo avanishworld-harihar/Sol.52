@@ -81,15 +81,6 @@ export function EpEngineeringPage({ data }: Props) {
                 ))}
               </div>
             </div>
-            {data.panel_image_url ? (
-              <img
-                className="ep-gl-eng-panel-photo"
-                src={data.panel_image_url}
-                alt=""
-                width={88}
-                height={110}
-              />
-            ) : null}
             <div className="ep-gl-eng-roof-caption">
               <strong>{e.arrayCaption}</strong>
               <span>

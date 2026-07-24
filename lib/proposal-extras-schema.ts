@@ -39,7 +39,12 @@ export const companyProfileSchema = z
     locations: z.string().max(160).optional(),
     installationsDone: z.string().max(40).optional(),
     installationsLabel: z.string().max(80).optional(),
-    bullets: z.array(z.string().max(160)).max(8).optional()
+    bullets: z.array(z.string().max(160)).max(8).optional(),
+    address: z.string().max(500).optional(),
+    website: z.string().max(200).optional(),
+    legalName: z.string().max(160).optional(),
+    contactPerson: z.string().max(120).optional(),
+    contactPersonDesignation: z.string().max(80).optional(),
   })
   .optional();
 

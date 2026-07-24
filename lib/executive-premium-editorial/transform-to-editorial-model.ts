@@ -98,7 +98,17 @@ export function transformToEditorialModel(
     monthly_emi_inr: row.monthlyEmi,
   }));
 
-  const bank = summary.bankDetails;
+  const bankFromPpt = pptInput.bankDetails ?? {};
+  const bankFromSummary = summary.bankDetails ?? {};
+  const pickBank = (a?: string | null, b?: string | null) => a?.trim() || b?.trim() || "";
+  const bank = {
+    accountName: pickBank(bankFromPpt.accountName, bankFromSummary.accountName),
+    accountNumber: pickBank(bankFromPpt.accountNumber, bankFromSummary.accountNumber),
+    ifsc: pickBank(bankFromPpt.ifsc, bankFromSummary.ifsc),
+    branch: pickBank(bankFromPpt.branch, bankFromSummary.branch),
+    upiId: pickBank(bankFromPpt.upiId, bankFromSummary.upiId),
+    paymentQrCodeUrl: pickBank(bankFromPpt.paymentQrCodeUrl, bankFromSummary.paymentQrCodeUrl),
+  };
   const payments = summary.paymentMilestones.map((m, i) => {
     const label = copy.execution.paymentLabels[i];
     return {
@@ -153,10 +163,10 @@ export function transformToEditorialModel(
     engineering: buildEditorialEngineeringModel(pptInput, summary, lang),
     warranty: buildEditorialWarrantyModel(summary, lang),
     execution: {
-      company: bank.accountName?.trim() || summary.installer,
-      account_number: bank.accountNumber?.trim() || "—",
-      ifsc: bank.ifsc?.trim() || "—",
-      upi_id: bank.upiId?.trim() || "—",
+      company: bank.accountName || installerLabel || "—",
+      account_number: bank.accountNumber || "—",
+      ifsc: bank.ifsc || "—",
+      upi_id: bank.upiId || "—",
       steps: copy.execution.steps.map((step, i) => ({
         num: String(i + 1),
         title: step.title,
@@ -181,10 +191,7 @@ export function transformToEditorialModel(
         summary.companyProfile?.gstNumber?.trim() ||
         undefined,
       brand_tagline: pptInput.installerTagline?.trim() || undefined,
-      qr_url:
-        summary.bankDetails?.paymentQrCodeUrl?.trim() ||
-        pptInput.bankDetails?.paymentQrCodeUrl?.trim() ||
-        undefined,
+      qr_url: bank.paymentQrCodeUrl || undefined,
     },
   };
 }

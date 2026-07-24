@@ -41,7 +41,9 @@ export function EpGenerationForecastPage({ data }: Props) {
                 {m.units > 0 ? m.units.toLocaleString("en-IN") : "—"}
               </span>
               <div className="ep-gl-gen-track">
-                <div className="ep-gl-gen-fill" style={{ height: `${m.bar_pct}%` }} />
+                <div className="ep-gl-gen-plot">
+                  <div className="ep-gl-gen-fill" style={{ height: `${m.bar_pct}%` }} />
+                </div>
               </div>
               <span className="ep-gl-gen-month">{m.label}</span>
               <span className="ep-gl-gen-save">

@@ -1244,10 +1244,11 @@
 
 .ep-golden-root .ep-gl-gen-bars {
   display: flex;
-  align-items: flex-end;
+  align-items: stretch;
   gap: 6px;
-  flex: 1 1 auto;
-  min-height: 200px;
+  flex: 0 0 auto;
+  min-height: 220px;
+  height: 220px;
   padding: 0 2px;
 }
 
@@ -1256,12 +1257,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   min-width: 0;
   height: 100%;
 }
 
 .ep-golden-root .ep-gl-gen-units {
+  flex: 0 0 auto;
   font-family: Georgia, "Times New Roman", serif;
   font-size: 7.5pt;
   font-weight: 700;
@@ -1269,25 +1271,40 @@
   line-height: 1;
 }
 
+/* Fixed plot height so bar % heights resolve (flex % collapse was flattening bars). */
 .ep-golden-root .ep-gl-gen-track {
   flex: 1 1 auto;
   width: 100%;
-  max-width: 26px;
+  max-width: 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 0;
+  border-bottom: 1px solid rgba(100, 116, 139, 0.35);
+  padding-bottom: 8px; /* uplift gap above axis — matches Canvas ref */
+  box-sizing: border-box;
+}
+
+.ep-golden-root .ep-gl-gen-plot {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 148px;
+  height: 148px;
   display: flex;
   align-items: flex-end;
-  min-height: 110px;
+  justify-content: center;
 }
 
 .ep-golden-root .ep-gl-gen-fill {
   width: 100%;
-  border-radius: 3px 3px 1px 1px;
+  border-radius: 4px 4px 2px 2px;
   background: linear-gradient(
     180deg,
     #e8d9a8 0%,
     var(--ep-gl-gold) 55%,
     #8f7638 100%
   );
-  min-height: 8px;
+  min-height: 12px;
 }
 
 .ep-golden-root .ep-gl-gen-col--peak .ep-gl-gen-fill {
@@ -1295,6 +1312,7 @@
 }
 
 .ep-golden-root .ep-gl-gen-month {
+  flex: 0 0 auto;
   font-size: 7.5pt;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -1303,6 +1321,7 @@
 }
 
 .ep-golden-root .ep-gl-gen-save {
+  flex: 0 0 auto;
   font-size: 7pt;
   font-weight: 700;
   color: var(--ep-gl-gold-dark);
@@ -1377,8 +1396,14 @@
   }
 
   .ep-golden-root .ep-gl-gen-bars {
-    min-height: 160px;
+    min-height: 180px;
+    height: 180px;
     gap: 3px;
+  }
+
+  .ep-golden-root .ep-gl-gen-plot {
+    min-height: 120px;
+    height: 120px;
   }
 
   .ep-golden-root .ep-gl-gen-units {
@@ -2129,8 +2154,8 @@
   width: 28px;
   height: 46px;
   border-radius: 2px;
-  background: rgba(181, 154, 87, 0.45);
-  border: 1px solid rgba(212, 192, 138, 0.85);
+  background: rgba(56, 189, 248, 0.4);
+  border: 1px solid rgba(56, 189, 248, 0.85);
   box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.45);
 }
 
@@ -2161,7 +2186,7 @@
   top: 2px;
   left: 50%;
   transform: translateX(-50%);
-  color: var(--ep-gl-gold);
+  color: #ef4444;
 }
 
 .ep-golden-root .ep-gl-eng-compass-s {
@@ -2180,19 +2205,6 @@
   left: 4px;
   top: 50%;
   transform: translateY(-50%);
-}
-
-.ep-golden-root .ep-gl-eng-panel-photo {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  width: 72px;
-  height: auto;
-  max-height: 96px;
-  object-fit: contain;
-  z-index: 3;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35));
-  pointer-events: none;
 }
 
 .ep-golden-root .ep-gl-eng-roof-caption {
@@ -2831,11 +2843,6 @@
   .ep-golden-root .ep-gl-eng-roof {
     min-height: 190px;
     padding: 12px;
-  }
-
-  .ep-golden-root .ep-gl-eng-panel-photo {
-    width: 54px;
-    max-height: 72px;
   }
 
   .ep-golden-root .ep-gl-eng-specs {
