@@ -112,11 +112,18 @@ function LinkedRecordsCard({ project }: { project: ProjectListItem }) {
             {project.lead_name?.trim() || projectDisplayFallback(project)}
           </p>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            Plant, panel, and pricing are edited in the proposal builder until a design version is
-            saved here.
+            2D Design Studio is the source for roof + panels. Save syncs Hub design versions. Pricing
+            stays in the proposal builder (Design/SLD are not inside the proposal).
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button type="button" variant="outline" size="sm" className="gap-1.5" asChild>
+            <Link href={`/projects/${encodeURIComponent(project.id)}/design-studio`}>
+              <MapPinned className="h-3.5 w-3.5" aria-hidden />
+              Open Design Studio
+              <ArrowUpRight className="h-3 w-3 opacity-60" aria-hidden />
+            </Link>
+          </Button>
           {project.lead_id ? (
             <>
               <Button type="button" variant="outline" size="sm" className="gap-1.5" asChild>
@@ -231,6 +238,34 @@ function SiteLayoutSummary({
   panelLayout: ProjectPanelLayout | null;
   projectId: string;
 }) {
+  const [shareBusy, setShareBusy] = useState(false);
+
+  async function copyDesignPackLink() {
+    setShareBusy(true);
+    try {
+      const res = await fetch(
+        `/api/projects/${encodeURIComponent(projectId)}/site-layout/share`,
+        { method: "POST" }
+      );
+      const json = (await res.json()) as {
+        ok?: boolean;
+        data?: { path?: string; url?: string | null; token?: string };
+        error?: string;
+      };
+      if (!json.ok || !json.data?.token) {
+        throw new Error(json.error || "Save Design Studio first.");
+      }
+      const href =
+        json.data.url ||
+        `${typeof window !== "undefined" ? window.location.origin : ""}${json.data.path}`;
+      await navigator.clipboard.writeText(href);
+    } catch {
+      // Hub toast optional — silent fail with button label reset
+    } finally {
+      setShareBusy(false);
+    }
+  }
+
   const obstructionCount = Array.isArray(layout.obstructions_geojson)
     ? layout.obstructions_geojson.length
     : 0;
@@ -307,15 +342,27 @@ function SiteLayoutSummary({
           </p>
         )}
         <p className="text-[10px] leading-relaxed text-teal-900/70 dark:text-teal-100/70">
-          Design pack (print) opens from Design Studio. Design / SLD stay outside the customer
-          proposal.
+          Design pack print + share link stay outside the customer proposal. Save syncs panel count /
+          DC kW into Hub design versions.
         </p>
-        <Button type="button" size="sm" className="gap-1.5" asChild>
-          <Link href={`/projects/${encodeURIComponent(projectId)}/design-studio`}>
-            <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-            Open Design Studio · Design pack
-          </Link>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" size="sm" className="gap-1.5" asChild>
+            <Link href={`/projects/${encodeURIComponent(projectId)}/design-studio`}>
+              <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+              Open Design Studio
+            </Link>
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="gap-1.5"
+            disabled={shareBusy}
+            onClick={() => void copyDesignPackLink()}
+          >
+            {shareBusy ? "Copying…" : "Copy Design pack link"}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

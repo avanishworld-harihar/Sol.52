@@ -8,6 +8,7 @@ import {
   uploadProjectDocumentFile,
 } from "@/lib/project-document-upload";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
+import { isLikelyValidPngSnapshot } from "@/lib/design-studio-phase6-gates";
 
 export function buildDesignStudioSnapshotStoragePath(opts: {
   organizationId: string;
@@ -60,8 +61,8 @@ export async function fetchStaticMapPng(
     }
     const ab = await res.arrayBuffer();
     const buffer = Buffer.from(ab);
-    if (buffer.length < 200) {
-      return { ok: false, error: "static_map_empty" };
+    if (!isLikelyValidPngSnapshot(buffer)) {
+      return { ok: false, error: "static_map_invalid_png" };
     }
     return { ok: true, buffer };
   } catch (error) {

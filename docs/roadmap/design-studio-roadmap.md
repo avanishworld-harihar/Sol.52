@@ -2,8 +2,8 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | Approved phased roadmap — Phase 5 active |
-| **Last Updated** | 2026-07-24 |
+| **Status** | Approved phased roadmap — Phase 6 active |
+| **Last Updated** | 2026-07-25 |
 | **Canonical architecture (FROZEN)** | [`docs/architecture/design-studio-architecture.md`](../architecture/design-studio-architecture.md) |
 
 > **This is the only place where future ideas, future phases, and future enhancements are added.**
@@ -27,8 +27,8 @@
 | **Phase 2** | Auto Panel Placement Engine + RCC/shed presets + manual fine-tune | **COMPLETE (core)** — East-West / one-click tilt chips still queued |
 | **Phase 3** | Engineering Rules + Solar Design — setbacks, strings, studio SLD | **COMPLETE (kickoff)** — equipment pins / exportable SLD pack still queued |
 | **Phase 4** | **Shadow Engine** — per-panel shade %, shade-free area, loss estimate | **COMPLETE (core)** — survey fill, hour slider, before/after, annual loss (2026-07-24) |
-| **Phase 5** | Project/Survey/BOM/Proposal integration + snapshots + customer sign-off | **ACTIVE** — Design pack + Hub summary + map snapshot thumbnail (2026-07-24) |
-| **Phase 6** | Cross-device QA, performance, security and pilot rollout | Approved — queued |
+| **Phase 5** | Project/Survey/BOM/Proposal integration + snapshots + customer sign-off | **COMPLETE (gate)** — Design pack share + Hub BOM sync + cross-links (2026-07-25) |
+| **Phase 6** | Cross-device QA, performance, security and pilot rollout | **ACTIVE** — snapshot PNG gate + QA checklist kickoff (2026-07-25) |
 
 ### Phase gates
 
@@ -189,33 +189,36 @@ percentages and roof-level shade-free area.
 > Design + SLD are separate, subscription-gated capabilities with their own share links and print/PDF.
 > See `.cursor/rules/design-sld-separate-from-proposal.mdc`.
 
-**Kickoff shipped (2026-07-24):**
+**Gate complete (2026-07-25):**
 - Project Hub Design tab — 2D summary card with roof + panel layout metrics.
 - **Design pack** print/PDF overlay from Design Studio (installer summary; not a proposal block).
+- **Design pack share link** — `/design/[token]` + Copy share link (Studio + Hub). Migration `072`.
+- Save → sync `project_designs` (panel count, DC kW, stringing, inverter estimate) for Hub BOM.
 - Phone view-only adapter (inspect + shadow checks); edit on tablet/computer.
+- Map snapshot on Save → Hub thumbnail.
+- Hub Overview / Design cross-links → Design Studio (links only; no Design/SLD in proposal renderers).
 
-**Snapshot slice (2026-07-24):**
-- Save in Design Studio → Google Static Maps hybrid PNG → `project-files` storage.
-- Path stored on `project_site_layouts.map_snapshot_path`; Hub Design tab shows signed thumbnail.
-- API: `POST /api/projects/[id]/site-layout/snapshot`.
-
-**Still queued in Phase 5:**
-- Design pack share link (token URL).
+**Still queued (Phase 5.1 / later):**
 - Separate SLD pack share link when gated.
-- Optional Project Hub cross-links between proposal and design (no Design/SLD inside proposal renderers).
-- Survey roof area/type import polish; BOM panel/inverter sync; optional **installer-triggered** proposal size revise (new pricing snapshot) — not silent rewrite of frozen offers.
+- Survey roof import conflict UX polish.
 - Design task completion, customer design sign-off and installation handover package.
-- Version history UI polish.
+- Site-layout version restore UI polish.
 - Feature flags / plan categories: Proposal-only vs Design-enabled vs SLD-enabled.
+- Optional installer-triggered proposal size revise (new pricing snapshot) — not silent rewrite.
 
 ---
 
 ## 7. Phase 6 — QA & Production Rollout
 
+**Kickoff (2026-07-25):**
+- `lib/design-studio-phase6-gates.ts` — PNG snapshot validity + draft integrity helpers.
+- Snapshot fetch rejects non-PNG / tiny buffers before upload.
+
+**Queued:**
 - Desktop/iPad parity and Apple Pencil palm-rejection QA.
-- Cross-device save/reopen, IndexedDB recovery and snapshot-not-black tests.
+- Cross-device save/reopen, IndexedDB recovery and snapshot-not-black tests (expand).
 - Polygon accuracy, panel collision/boundary, engineering-rule and shadow-engine tests.
-- Multi-tenant RLS/security verification.
+- Multi-tenant RLS/security verification (including Design pack share tokens).
 - Large industrial roof performance profiling and selected-installer pilot before general release.
 
 ---

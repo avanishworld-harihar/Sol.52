@@ -9,10 +9,12 @@ import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import type { DesignStudioPackModel } from "@/lib/design-studio-pack-model";
 import { Button } from "@/components/ui/button";
-import { Printer, X } from "lucide-react";
+import { useToast } from "@/components/ui/toast-center";
+import { Check, Link2, Printer, X } from "lucide-react";
 
 type Props = {
   model: DesignStudioPackModel;
+  projectId: string;
   onClose?: () => void;
 };
 
@@ -27,11 +29,46 @@ function fmt(n: number | null | undefined, digits = 0, suffix = ""): string {
   })}${suffix}`;
 }
 
-export function DesignStudioPackSheetViewer({ model, onClose }: Props) {
+export function DesignStudioPackSheetViewer({ model, projectId, onClose }: Props) {
+  const toast = useToast();
   const [mounted, setMounted] = useState(false);
+  const [shareBusy, setShareBusy] = useState(false);
+  const [copied, setCopied] = useState(false);
+
   const print = useCallback(() => {
     window.print();
   }, []);
+
+  const copyShareLink = useCallback(async () => {
+    setShareBusy(true);
+    try {
+      const res = await fetch(`/api/projects/${encodeURIComponent(projectId)}/site-layout/share`, {
+        method: "POST",
+      });
+      const json = (await res.json()) as {
+        ok?: boolean;
+        data?: { path?: string; url?: string | null; token?: string };
+        error?: string;
+      };
+      if (!json.ok || !json.data?.token) {
+        throw new Error(json.error || "Could not create share link. Save the roof first.");
+      }
+      const href =
+        json.data.url ||
+        `${typeof window !== "undefined" ? window.location.origin : ""}${json.data.path}`;
+      await navigator.clipboard.writeText(href);
+      setCopied(true);
+      toast.success("Design pack link copied", "Share link is separate from the proposal.");
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      toast.error(
+        "Share failed",
+        error instanceof Error ? error.message : "Could not copy design pack link."
+      );
+    } finally {
+      setShareBusy(false);
+    }
+  }, [projectId, toast]);
 
   useEffect(() => {
     setMounted(true);
@@ -88,7 +125,6 @@ export function DesignStudioPackSheetViewer({ model, onClose }: Props) {
       aria-modal="true"
       aria-label="Design pack"
     >
-      {/* Full-screen dim — click returns to Design Studio */}
       <button
         type="button"
         aria-label="Close design pack"
@@ -101,10 +137,24 @@ export function DesignStudioPackSheetViewer({ model, onClose }: Props) {
           <div className="min-w-0">
             <p className="text-sm font-extrabold text-slate-900 dark:text-white">Design pack</p>
             <p className="truncate text-[10px] text-slate-500">
-              Outside click / Esc closes · Print / PDF · not on proposal
+              Outside click / Esc closes · Print / share · not on proposal
             </p>
           </div>
-          <div className="flex shrink-0 gap-2">
+          <div className="flex shrink-0 flex-wrap justify-end gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={shareBusy}
+              onClick={() => void copyShareLink()}
+            >
+              {copied ? (
+                <Check className="mr-1.5 h-3.5 w-3.5" />
+              ) : (
+                <Link2 className="mr-1.5 h-3.5 w-3.5" />
+              )}
+              {copied ? "Copied" : shareBusy ? "Link…" : "Copy share link"}
+            </Button>
             <Button type="button" size="sm" onClick={print}>
               <Printer className="mr-1.5 h-3.5 w-3.5" />
               Print / PDF
@@ -143,8 +193,8 @@ export function DesignStudioPackSheetViewer({ model, onClose }: Props) {
           </dl>
 
           <p className="mt-6 text-[10px] leading-relaxed text-slate-500">
-            Map snapshot is captured on Save and shown in Project Hub Design. Share-link shipping
-            continues in Phase 5. This pack is for installer review and print only.
+            Share link opens a read-only Design pack (not a proposal). Map snapshot appears in
+            Project Hub Design after Save.
           </p>
         </div>
       </div>

@@ -84,6 +84,8 @@ export type ProjectSiteLayout = SaveSiteLayoutInput & {
   version_number: number;
   is_current: boolean;
   created_at: string;
+  /** Public Design pack token — /design/[token]. */
+  share_token?: string | null;
   /** Signed URL for Hub thumbnail — API-only, not stored. */
   map_snapshot_url?: string | null;
 };

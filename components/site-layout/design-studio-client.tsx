@@ -3872,6 +3872,39 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         }
         setCurrentPanelLayout(panelJson.data);
         setPanelDirty(false);
+
+        // Phase 5 — push panel layout into Hub project_designs (BOM source of truth).
+        try {
+          const stringing = estimateStringing({
+            panelCount,
+            panelSpec,
+          });
+          const structureType =
+            mountingType === "flush" || mountingType === "elevated" || mountingType === "ground_mount"
+              ? mountingType
+              : "other";
+          const moduleLabel = `${panelSpec.manufacturer} ${panelSpec.model}`.trim();
+          await fetch(`/api/projects/${projectId}/designs`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              version_label: `Design Studio · Panels V${panelJson.data.version_number}`,
+              revision_notes: `Synced from 2D Design Studio roof V${json.data.version_number}.`,
+              system_kw: Math.round(dcCapacityKw * 100) / 100,
+              panel_count: panelCount,
+              panel_watt: panelSpec.wattage,
+              panel_model: moduleLabel.slice(0, 200) || null,
+              inverter_kw: stringing?.suggestedInverterKw ?? null,
+              structure_type: structureType,
+              string_count: stringing?.stringCount ?? null,
+              modules_per_string: stringing?.modulesPerString ?? null,
+              annual_yield_kwh: yieldEstimate?.annualKwh ?? null,
+            }),
+          });
+        } catch {
+          // Design sync is best-effort — layout/panel save already succeeded.
+        }
+
         toast.success(
           "Design saved",
           `Roof V${json.data.version_number} · Panels V${panelJson.data.version_number} · ${panelCount} modules`
@@ -3905,6 +3938,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     state.roof,
     survey,
     toast,
+    yieldEstimate?.annualKwh,
   ]);
 
   if (loading) {
@@ -5463,6 +5497,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       {designPackOpen && designPackModel ? (
         <DesignStudioPackSheetViewer
           model={designPackModel}
+          projectId={projectId}
           onClose={() => setDesignPackOpen(false)}
         />
       ) : null}

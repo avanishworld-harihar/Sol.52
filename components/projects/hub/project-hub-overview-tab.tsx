@@ -148,6 +148,13 @@ export function ProjectHubOverviewTab({ project }: { project: ProjectListItem })
                   </Button>
                 </>
               ) : null}
+              <Button type="button" variant="outline" size="sm" className="gap-1.5" asChild>
+                <Link href={`/projects/${encodeURIComponent(project.id)}/design-studio`}>
+                  <MapPin className="h-3.5 w-3.5" aria-hidden />
+                  Open Design Studio
+                  <ArrowUpRight className="h-3 w-3 opacity-60" aria-hidden />
+                </Link>
+              </Button>
             </div>
           </CardContent>
         </Card>
