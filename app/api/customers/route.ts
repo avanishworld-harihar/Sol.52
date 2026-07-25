@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { mapCustomerRow } from "@/lib/customers-map";
 import { syncMissingHouseholdLeadsFromProposals } from "@/lib/crm-sync-proposal-leads";
 import { syncLeadsFromActiveProjects } from "@/lib/crm-sync-leads-from-projects";
+import { unmergeBillHolderFromProjectLeads } from "@/lib/crm-unmerge-bill-holder";
 import {
   listCustomers,
   listPipelineProjects,
@@ -39,6 +40,12 @@ export async function GET() {
   try {
     /** Link won leads → projects before stage decoration (e.g. Bharti Gupta). */
     await syncWonLeadProjects();
+    /** Split bill/husband (Rajesh) off project leads (Bharti) when wrongly merged. */
+    try {
+      await unmergeBillHolderFromProjectLeads();
+    } catch (err) {
+      console.warn("[customers GET] unmerge bill holder:", err);
+    }
     /** Active projects without a CRM lead get one so they stay on Customers. */
     try {
       await syncLeadsFromActiveProjects();
