@@ -566,6 +566,68 @@ export async function getProjectDetail(projectId: string): Promise<ProjectDetail
   delete base.tech;
 
   const project = base as unknown as ProjectRow;
+
+  /** Repair stored "Name (Other Person)" titles and bill-honorific mixups. */
+  try {
+    const { projectDisplayName, stripParentheticalPersonSuffix } = await import(
+      "@/lib/project-list-utils"
+    );
+    const leadNameRaw = leads ? String(leads.name ?? "") : "";
+    const preview = {
+      official_name: project.official_name,
+      lead_name: leadNameRaw,
+    } as import("@/lib/project-api-client").ProjectListItem;
+    const cleanTitle = projectDisplayName(preview);
+    if (cleanTitle && project.official_name !== cleanTitle) {
+      await client
+        .from("projects")
+        .update({
+          official_name: cleanTitle,
+          customer_name: cleanTitle,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", project.id);
+      project.official_name = cleanTitle;
+      project.customer_name = cleanTitle;
+    } else if (
+      project.official_name &&
+      stripParentheticalPersonSuffix(project.official_name) !== project.official_name
+    ) {
+      const stripped = stripParentheticalPersonSuffix(project.official_name);
+      await client
+        .from("projects")
+        .update({
+          official_name: stripped,
+          customer_name: stripped,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", project.id);
+      project.official_name = stripped;
+      project.customer_name = stripped;
+    }
+
+    /** If CRM lead name was overwritten with bill/husband honorific, restore contact name. */
+    if (project.lead_id && cleanTitle && leadNameRaw) {
+      const honorific = /^(shri|shree|smt\.?|mr\.?|mrs\.?|ms\.?)\b/i.test(leadNameRaw.trim());
+      if (honorific && leadNameRaw.toLowerCase() !== cleanTitle.toLowerCase()) {
+        const { resolveLeadsTable } = await import("@/lib/supabase");
+        const leadsTable = await resolveLeadsTable();
+        if (leadsTable) {
+          await client
+            .from(leadsTable)
+            .update({
+              name: cleanTitle,
+              consumer_name: leadNameRaw,
+            })
+            .eq("id", project.lead_id);
+          if (leads) leads.name = cleanTitle;
+        }
+      }
+    }
+  } catch {
+    /* best-effort */
+  }
+
   const proposalFallback = await readProposalFallbackForLead(project.lead_id);
   const proposalByLead =
     project.lead_id ? await mapLeadIdsToLatestProposalIds([project.lead_id]) : {};

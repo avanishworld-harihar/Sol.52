@@ -37,7 +37,7 @@ import {
 import type { ProjectHealth } from "@/lib/project-health";
 import type { ProjectStageId } from "@/lib/project-stages";
 import { isProjectStageId } from "@/lib/project-stages";
-import { formatPipelineDisplayName } from "@/lib/supabase";
+import { projectDisplayName } from "@/lib/project-list-utils";
 import { WorkspacePage, WorkspacePageHero, WorkspaceStaggerItem } from "@/components/workspace";
 import { buildCustomerLeadEditHref } from "@/lib/customer-lead-edit-url";
 import { buildProposalEditHref } from "@/lib/proposal-edit-url";
@@ -586,7 +586,7 @@ function ProjectsBoard() {
             <form className="space-y-2.5 sm:space-y-3" onSubmit={onSubmitProjectEdit}>
               <p className="text-[11px] font-semibold text-slate-600">
                 <span className="text-slate-500">{t("projects_leadContactReadonly")}: </span>
-                {formatPipelineDisplayName(editProject.official_name, editProject.lead_name)}
+                {projectDisplayName(editProject)}
               </p>
               {editProject.lead_id ? (
                 <Link
@@ -678,10 +678,7 @@ function ProjectsBoard() {
             </h3>
             <p className="mt-2 text-sm font-medium leading-relaxed text-slate-600">
               {t("projects_deleteConfirmBody", {
-                name: formatPipelineDisplayName(
-                  deleteProjectTarget.official_name,
-                  deleteProjectTarget.lead_name
-                ),
+                name: projectDisplayName(deleteProjectTarget),
               })}
             </p>
             <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

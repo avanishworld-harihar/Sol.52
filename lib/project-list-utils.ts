@@ -45,28 +45,32 @@ const HEALTH_ORDER: Record<ProjectHealth, number> = {
   on_track: 3,
 };
 
-export function projectDisplayName(p: ProjectListItem): string {
-  /**
-   * Project identity = CRM person (lead), not bill/account-holder name.
-   * Same household may share a phone; each member keeps their own project title.
-   */
-  const lead = (p.lead_name ?? "").trim();
-  const official = (p.official_name ?? "").trim();
-  if (lead) return lead;
-  return official || "Project";
+/** Drop trailing " (Other Person)" that older sync wrote into titles. */
+export function stripParentheticalPersonSuffix(raw: string | null | undefined): string {
+  const s = String(raw ?? "").trim();
+  if (!s) return "";
+  const stripped = s.replace(/\s*\([^)]*\)\s*$/u, "").trim();
+  return stripped || s;
 }
 
-/** Bill / meter name when it differs from the project person (optional subtitle). */
-export function projectBillHolderLabel(p: ProjectListItem): string | null {
-  const lead = (p.lead_name ?? "").trim();
-  const official = (p.official_name ?? "").trim();
-  if (!official) return null;
-  if (!lead) return null;
-  const firstL = lead.split(/\s+/)[0]?.toLowerCase() ?? "";
-  const firstO = official.split(/\s+/)[0]?.toLowerCase() ?? "";
-  if (firstL && firstO && firstL === firstO) return null;
-  if (lead.toLowerCase() === official.toLowerCase()) return null;
-  return official;
+function isBillHonorificName(name: string): boolean {
+  return /^(shri|shree|smt\.?|mr\.?|mrs\.?|ms\.?)\b/i.test(name.trim());
+}
+
+/**
+ * Project title = one person only (the CRM lead / contact).
+ * Never "Bharti (Rajesh)" — household members keep separate projects.
+ */
+export function projectDisplayName(p: ProjectListItem): string {
+  const lead = stripParentheticalPersonSuffix(p.lead_name);
+  const official = stripParentheticalPersonSuffix(p.official_name);
+  if (lead && official && lead.toLowerCase() !== official.toLowerCase()) {
+    /** Prefer contact-style name when lead row was overwritten with bill/husband honorific. */
+    if (isBillHonorificName(lead) && !isBillHonorificName(official)) return official;
+    if (!isBillHonorificName(lead)) return lead;
+  }
+  if (lead) return lead;
+  return official || "Project";
 }
 
 export function projectSearchHaystack(p: ProjectListItem): string {

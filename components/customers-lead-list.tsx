@@ -5,7 +5,6 @@ import { useCallback, useEffect, useState } from "react";
 import { Building2, MapPin, MessageCircle, Pencil, Phone, PhoneCall, Trash2, Users, Wifi } from "lucide-react";
 
 import type { CustomerLead } from "@/lib/types";
-import { formatPipelineDisplayName } from "@/lib/supabase";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import {
@@ -438,11 +437,8 @@ export function CustomersLeadList({
               const activeProject = stage === "active-project";
               const canMutateLead =
                 Boolean(onEditLead || onDeleteLead) && !customer.id.startsWith("optimistic-");
-              // Bill person first; lead in brackets when different (e.g. Ramprakash (Raju)).
-              const displayName = formatPipelineDisplayName(
-                customer.consumer_name ?? null,
-                customer.name
-              );
+              // Lead / contact name only — do not mash bill/husband name into the title.
+              const displayName = customer.name;
 
               return (
                 <article
@@ -485,7 +481,7 @@ export function CustomersLeadList({
 
                   <div className={cn("flex gap-3 md:max-xl:gap-2.5", canMutateLead ? "pr-12 md:max-xl:pr-10" : "")}>
                     <LeadAvatar
-                      name={customer.consumer_name ?? customer.name}
+                      name={customer.name}
                       stale={stale}
                       size="sm"
                     />
@@ -688,10 +684,7 @@ export function CustomersLeadList({
                 const nextFollowupTitle = customer.next_followup_title ?? null;
                 const lastActivityAt = customer.last_activity_at ?? customer.last_touched_at ?? null;
                 const lastActivityType = customer.last_activity_type ?? null;
-                const desktopDisplayName = formatPipelineDisplayName(
-                  customer.consumer_name ?? null,
-                  customer.name
-                );
+                const desktopDisplayName = customer.name;
                 const waUrl = customer.phone ? buildLeadWhatsAppUrl(customer.phone, customer.name, installerName, locale) : null;
                 const statusLabel = t(LEAD_STATUS_I18N_KEY[statusKey]);
                 const stale = isLeadStale(customer.last_touched_at);
@@ -741,7 +734,7 @@ export function CustomersLeadList({
 
                     <div className="col-span-5 min-w-0">
                       <div className="flex items-start gap-3">
-                        <LeadAvatar name={customer.consumer_name ?? customer.name} stale={stale} size="sm" />
+                        <LeadAvatar name={customer.name} stale={stale} size="sm" />
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                             <h3 className="truncate text-[15px] font-bold tracking-tight text-slate-900 dark:text-slate-50">
@@ -893,7 +886,7 @@ export function CustomersLeadList({
           open={Boolean(scheduleTarget)}
           onClose={() => setScheduleTarget(null)}
           leadId={scheduleTarget.id}
-          customerName={scheduleTarget.consumer_name ?? scheduleTarget.name}
+          customerName={scheduleTarget.name}
           onScheduled={() => setScheduleTarget(null)}
         />
       ) : null}
