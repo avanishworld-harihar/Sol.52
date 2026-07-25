@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { mapCustomerRow } from "@/lib/customers-map";
 import { syncMissingHouseholdLeadsFromProposals } from "@/lib/crm-sync-proposal-leads";
+import { syncLeadsFromActiveProjects } from "@/lib/crm-sync-leads-from-projects";
 import {
   listCustomers,
   listPipelineProjects,
@@ -38,6 +39,12 @@ export async function GET() {
   try {
     /** Link won leads → projects before stage decoration (e.g. Bharti Gupta). */
     await syncWonLeadProjects();
+    /** Active projects without a CRM lead get one so they stay on Customers. */
+    try {
+      await syncLeadsFromActiveProjects();
+    } catch (err) {
+      console.warn("[customers GET] project→lead sync:", err);
+    }
     /** Proposal names (e.g. Rajesh) become distinct household leads when linked to another person. */
     try {
       await syncMissingHouseholdLeadsFromProposals();

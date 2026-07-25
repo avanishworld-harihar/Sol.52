@@ -162,6 +162,17 @@ export async function PATCH(req: NextRequest, ctx: RouteCtx) {
     if (!leadsTable) {
       return NextResponse.json({ ok: false, error: "leads_table_missing" }, { status: 500 });
     }
+
+    let previousName: string | null = null;
+    if (patch.name) {
+      const { data: before } = await db
+        .from(leadsTable)
+        .select("name")
+        .eq("id", id)
+        .maybeSingle();
+      previousName = before?.name != null ? String(before.name) : null;
+    }
+
     const updatePayload: Record<string, unknown> = {
       ...patch,
       last_touched_at: new Date().toISOString()
@@ -170,6 +181,16 @@ export async function PATCH(req: NextRequest, ctx: RouteCtx) {
     if (updateErr || !updatedRow) {
       return NextResponse.json({ ok: false, error: updateErr ?? "Lead update failed" }, { status: 400 });
     }
+
+    if (patch.name?.trim()) {
+      try {
+        const { propagateLeadNameChange } = await import("@/lib/crm-propagate-lead-name");
+        await propagateLeadNameChange(db, id, patch.name.trim(), previousName);
+      } catch (err) {
+        console.warn("[PATCH customers] propagateLeadNameChange:", err);
+      }
+    }
+
     const changedFields = Object.keys(patch).filter((k) => k !== "last_touched_at");
     void appendActivityEvent({
       leadId: id,
