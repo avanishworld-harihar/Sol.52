@@ -329,6 +329,8 @@ export interface ProjectRow {
   lead_id: string | null;
   organization_id: string | null;
   official_name: string | null;
+  /** Legacy / alternate display column on some deploys. */
+  customer_name?: string | null;
   // Phase 3 stage fields
   current_stage: ProjectStageId;
   stage_status: ProjectStageStatus;
