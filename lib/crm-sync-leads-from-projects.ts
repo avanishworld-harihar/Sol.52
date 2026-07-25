@@ -1,4 +1,5 @@
 import { personNamesLikelySame } from "@/lib/crm-household";
+import { isSyntheticCrmCustomerName } from "@/lib/crm-synthetic-names";
 import { processInboundLead } from "@/lib/inbound-leads";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { resolveLeadsTable, supabase } from "@/lib/supabase";
@@ -43,6 +44,7 @@ export async function syncLeadsFromActiveProjects(): Promise<{ linked: number; c
       project.official_name || project.customer_name || ""
     );
     if (projectName.length < 2) continue;
+    if (isSyntheticCrmCustomerName(projectName)) continue;
 
     if (project.lead_id) {
       const { data: lead } = await client

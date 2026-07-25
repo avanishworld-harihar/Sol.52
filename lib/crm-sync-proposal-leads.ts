@@ -1,4 +1,5 @@
 import { personNamesLikelyDifferent, personNamesLikelySame } from "@/lib/crm-household";
+import { isSyntheticCrmCustomerName } from "@/lib/crm-synthetic-names";
 import { normalizeLeadPhoneForStorage } from "@/lib/lead-phone";
 import { processInboundLead } from "@/lib/inbound-leads";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
@@ -66,9 +67,31 @@ export async function syncMissingHouseholdLeadsFromProposals(): Promise<{
     const customerName = String(proposal.customer_name ?? "").trim();
     if (customerName.length < 2) continue;
 
-    const ppt = proposal.ppt_input ?? {};
+    const ppt = { ...(proposal.ppt_input ?? {}) } as Record<string, unknown>;
+
+    /**
+     * Audit/script proposals (PDF Audit …) must never spawn Customers leads.
+     * Mark dismissed so delete stays sticky even if an old lead row lingered.
+     */
+    if (isSyntheticCrmCustomerName(customerName)) {
+      if (ppt.crmProfileDismissed !== true) {
+        ppt.crmProfileDismissed = true;
+        ppt.crmDismissedName = customerName;
+        await client
+          .from("proposals")
+          .update({ lead_id: null, ppt_input: ppt })
+          .eq("id", proposal.id);
+      } else if (proposal.lead_id) {
+        await client.from("proposals").update({ lead_id: null }).eq("id", proposal.id);
+      }
+      continue;
+    }
+
     /** Operator deleted this CRM profile — do not recreate on every Customers refresh. */
     if (ppt.crmProfileDismissed === true) continue;
+    const dismissedName =
+      typeof ppt.crmDismissedName === "string" ? ppt.crmDismissedName.trim() : "";
+    if (dismissedName && personNamesLikelySame(dismissedName, customerName)) continue;
 
     const phoneRaw =
       (typeof ppt.leadPhone === "string" && ppt.leadPhone) ||

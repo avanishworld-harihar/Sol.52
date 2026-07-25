@@ -3,6 +3,7 @@ import { mapCustomerRow } from "@/lib/customers-map";
 import { syncMissingHouseholdLeadsFromProposals } from "@/lib/crm-sync-proposal-leads";
 import { syncLeadsFromActiveProjects } from "@/lib/crm-sync-leads-from-projects";
 import { unmergeBillHolderFromProjectLeads } from "@/lib/crm-unmerge-bill-holder";
+import { purgeSyntheticCrmLeads } from "@/lib/crm-purge-synthetic-leads";
 import {
   listCustomers,
   listPipelineProjects,
@@ -43,6 +44,11 @@ export async function GET() {
      * (proposal person) appears and Bharti's stolen bill/CA are cleared.
      * Heavier project backfills stay in the background.
      */
+    try {
+      await purgeSyntheticCrmLeads();
+    } catch (err) {
+      console.warn("[customers GET] purge synthetic:", err);
+    }
     try {
       await unmergeBillHolderFromProjectLeads();
     } catch (err) {
