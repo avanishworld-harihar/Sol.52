@@ -2961,6 +2961,58 @@ function ProposalPageContent() {
     }
   }
 
+  /** Persist edits without opening share / regenerating the customer tab. */
+  async function saveProposalEdits() {
+    setIsWebProposalBusy(true);
+    try {
+      await syncSelectedLeadFromBills();
+
+      if (useResidentialCatalog && residentialConfig?.brandCatalog) {
+        const synced = syncEquipmentPresetsFromConfig(ensureBrandCatalog(residentialConfig));
+        await saveInstallerResidentialCatalog(synced.brandCatalog!);
+      } else if (useCommercialCatalog && commercialPricingConfig?.brandCatalog) {
+        const synced = syncEquipmentPresetsFromConfig(ensureBrandCatalog(commercialPricingConfig));
+        await saveInstallerResidentialCatalog(synced.brandCatalog!);
+      }
+
+      const saved = await persistProposalToServer();
+      if (!saved?.id) return;
+
+      if (useResidentialCatalog && residentialConfig) {
+        const cfg = ensureBrandCatalog(residentialConfig);
+        const savedCfg = await saveResidentialRequirement({
+          proposalId: saved.id,
+          config: cfg,
+          proposalLayout: proposalLayout ?? undefined,
+        });
+        if (!savedCfg.ok) {
+          throw new Error(savedCfg.error ?? "Could not save residential pricing config.");
+        }
+      } else if (useCommercialCatalog && commercialPricingConfig && commercialConfig) {
+        const savedComm = await saveCommercialRequirement({
+          proposalId: saved.id,
+          pricingConfig: ensureBrandCatalog(
+            applyCommercialPanelTrackPolicy(commercialPricingConfig, manual.connectionType)
+          ),
+          commercialConfig,
+          proposalLayout: proposalLayout ?? undefined,
+        });
+        if (!savedComm.ok) {
+          throw new Error(savedComm.error ?? "Could not save commercial pricing config.");
+        }
+      }
+
+      toast.success("Proposal saved", "Edited details are saved. Use Generate when you want to open/share.");
+    } catch (error) {
+      toast.error(
+        "Save failed",
+        error instanceof Error ? error.message : "Could not save proposal edits."
+      );
+    } finally {
+      setIsWebProposalBusy(false);
+    }
+  }
+
   function shareLatestOnWhatsApp() {
     if (!latestWebProposalUrl) return;
     const customer = manual.officialBillName || manual.leadContactName || "Customer";
@@ -3097,7 +3149,19 @@ function ProposalPageContent() {
        * z-[90] — below shell topbar (z-100) and modals (z-10050+) but above page content.
        */}
       {osCustomerName && !showPresetPicker && !showBlockPlaylist && (
-        <div className="fixed bottom-[5.5rem] right-4 z-[90] lg:hidden">
+        <div className="fixed bottom-[5.5rem] right-4 z-[90] flex flex-col items-end gap-2 lg:hidden">
+          <button
+            type="button"
+            disabled={isWebProposalBusy}
+            onClick={() => void saveProposalEdits()}
+            aria-label="Save proposal"
+            className={cn(
+              "flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-800 shadow-[0_8px_24px_rgba(0,0,0,0.14)] transition-all active:scale-95 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100",
+              isWebProposalBusy && "opacity-70 cursor-not-allowed"
+            )}
+          >
+            <span>{isWebProposalBusy ? "Saving…" : "Save"}</span>
+          </button>
           <button
             type="button"
             disabled={isWebProposalBusy}
@@ -4133,6 +4197,7 @@ function ProposalPageContent() {
               isBillBacked={isResidentialBill}
               billUploaded={isBillBackedLive}
               latestProposalUrl={latestWebProposalUrl}
+              onSave={() => void saveProposalEdits()}
               onGenerate={() => void generateWebProposal()}
               busy={isWebProposalBusy}
               onEditBlocks={() => setShowBlockPlaylist(true)}

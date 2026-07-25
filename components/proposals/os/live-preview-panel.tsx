@@ -22,6 +22,7 @@ import {
   Globe,
   Home,
   LayoutList,
+  Save,
   Sparkles,
   TrendingUp,
 } from "lucide-react";
@@ -115,6 +116,8 @@ type Props = {
   /** True when a bill file has been uploaded (bill path only). */
   billUploaded?: boolean;
   latestProposalUrl: string | null;
+  /** Persist edits without opening the share link. */
+  onSave?: () => void;
   onGenerate: () => void;
   busy: boolean;
   onEditBlocks: () => void;
@@ -133,6 +136,7 @@ export function ProposalLivePreviewPanel({
   isBillBacked,
   billUploaded = false,
   latestProposalUrl,
+  onSave,
   onGenerate,
   busy,
   onEditBlocks,
@@ -308,20 +312,37 @@ export function ProposalLivePreviewPanel({
             </div>
           </div>
 
-          {/* CTA */}
-          <button
-            type="button"
-            onClick={onGenerate}
-            disabled={busy || !hasCustomer}
-            className={`flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all ${
-              hasCustomer && !busy
-                ? "bg-slate-900 text-white shadow-md hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
-                : "cursor-not-allowed bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600"
-            }`}
-          >
-            <Globe className="h-4 w-4" />
-            {busy ? "Generating…" : "Generate Proposal"}
-          </button>
+          {/* CTA — Save edits, then Generate to open/share */}
+          <div className="flex flex-col gap-2">
+            {onSave ? (
+              <button
+                type="button"
+                onClick={onSave}
+                disabled={busy || !hasCustomer}
+                className={`flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-bold transition-all ${
+                  hasCustomer && !busy
+                    ? "border-slate-200 bg-white text-slate-800 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                    : "cursor-not-allowed border-slate-100 bg-slate-50 text-slate-400 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-600"
+                }`}
+              >
+                <Save className="h-4 w-4" />
+                {busy ? "Saving…" : "Save"}
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={onGenerate}
+              disabled={busy || !hasCustomer}
+              className={`flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all ${
+                hasCustomer && !busy
+                  ? "bg-slate-900 text-white shadow-md hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+                  : "cursor-not-allowed bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600"
+              }`}
+            >
+              <Globe className="h-4 w-4" />
+              {busy ? "Generating…" : "Generate Proposal"}
+            </button>
+          </div>
 
           {/* Open existing link */}
           {latestProposalUrl && (

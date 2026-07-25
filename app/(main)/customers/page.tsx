@@ -470,8 +470,11 @@ function CustomersPageContent() {
     );
     try {
       const r = await fetch(`/api/customers/${id}`, { method: "DELETE" });
-      const j = (await r.json()) as { ok?: boolean; error?: string };
-      if (!j.ok) throw new Error(j.error || "Delete failed");
+      const j = (await r.json()) as { ok?: boolean; error?: string; hint?: string };
+      if (!j.ok) {
+        const detail = [j.error, j.hint].filter(Boolean).join(" — ");
+        throw new Error(detail || "Delete failed");
+      }
       removeLeadFollowUp(id);
       await mutate();
       bumpDashboardLeads(-1);

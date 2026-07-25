@@ -186,7 +186,7 @@ function LeadMobileCardSkeleton() {
   );
 }
 
-/** Compact blue/red dots; hover, focus, or tap reveals edit/delete icons in place. */
+/** Always-visible edit/delete for CRM rows (no hover-only dots). */
 function LeadRowActions({
   onEdit,
   onDelete,
@@ -202,13 +202,8 @@ function LeadRowActions({
   className?: string;
   size?: "md" | "sm";
 }) {
-  const [revealed, setRevealed] = useState(false);
-  const shell = size === "sm" ? "h-8 min-w-[2.75rem]" : "h-9 min-w-[3rem]";
   const btn = size === "sm" ? "h-7 w-7" : "h-8 w-8";
   const icon = size === "sm" ? "h-3.5 w-3.5" : "h-3.5 w-3.5";
-  const dot = size === "sm" ? "h-2 w-2" : "h-2.5 w-2.5";
-
-  const showIcons = revealed;
 
   return (
     <div
@@ -219,72 +214,33 @@ function LeadRowActions({
       <div
         role="group"
         aria-label="Lead actions"
-        className={cn("group/actions relative flex items-center justify-end", shell)}
-        onMouseEnter={() => setRevealed(true)}
-        onMouseLeave={() => setRevealed(false)}
-        onFocusCapture={() => setRevealed(true)}
-        onBlurCapture={(e) => {
-          if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setRevealed(false);
-        }}
+        className="flex items-center justify-end gap-1"
       >
-        <div
-          className={cn(
-            "pointer-events-none absolute inset-0 flex items-center justify-center gap-2 transition-all duration-150",
-            showIcons ? "scale-75 opacity-0" : "scale-100 opacity-100"
-          )}
-          aria-hidden
-        >
-          {onEdit ? (
-            <span className={cn(dot, "rounded-full bg-sky-500 shadow-sm ring-2 ring-sky-400/25")} />
-          ) : null}
-          {onDelete ? (
-            <span className={cn(dot, "rounded-full bg-red-500 shadow-sm ring-2 ring-red-400/25")} />
-          ) : null}
-        </div>
-
-        <div
-          className={cn(
-            "absolute inset-0 flex items-center justify-center gap-1 transition-all duration-150",
-            showIcons
-              ? "pointer-events-auto scale-100 opacity-100"
-              : "pointer-events-none scale-90 opacity-0"
-          )}
-        >
-          {onEdit ? (
-            <button
-              type="button"
-              onClick={onEdit}
-              className={cn(
-                btn,
-                "inline-flex touch-manipulation items-center justify-center rounded-lg border border-sky-200/90 bg-white text-sky-600 shadow-sm transition-colors hover:bg-sky-50 active:bg-sky-100 dark:border-sky-500/35 dark:bg-sky-950/40 dark:text-sky-300"
-              )}
-              aria-label={editAria}
-            >
-              <Pencil className={icon} strokeWidth={2} />
-            </button>
-          ) : null}
-          {onDelete ? (
-            <button
-              type="button"
-              onClick={onDelete}
-              className={cn(
-                btn,
-                "inline-flex touch-manipulation items-center justify-center rounded-lg border border-red-200/90 bg-white text-red-600 shadow-sm transition-colors hover:bg-red-50 active:bg-red-100 dark:border-red-500/35 dark:bg-red-950/40 dark:text-red-300"
-              )}
-              aria-label={deleteAria}
-            >
-              <Trash2 className={icon} strokeWidth={2} />
-            </button>
-          ) : null}
-        </div>
-
-        {!showIcons ? (
+        {onEdit ? (
           <button
             type="button"
-            className="absolute inset-0 z-[1] touch-manipulation rounded-lg"
-            aria-label="Show edit and delete options"
-            onClick={() => setRevealed(true)}
-          />
+            onClick={onEdit}
+            className={cn(
+              btn,
+              "inline-flex touch-manipulation items-center justify-center rounded-lg border border-sky-200/90 bg-white text-sky-600 shadow-sm transition-colors hover:bg-sky-50 active:bg-sky-100 dark:border-sky-500/35 dark:bg-sky-950/40 dark:text-sky-300"
+            )}
+            aria-label={editAria}
+          >
+            <Pencil className={icon} strokeWidth={2} />
+          </button>
+        ) : null}
+        {onDelete ? (
+          <button
+            type="button"
+            onClick={onDelete}
+            className={cn(
+              btn,
+              "inline-flex touch-manipulation items-center justify-center rounded-lg border border-red-200/90 bg-white text-red-600 shadow-sm transition-colors hover:bg-red-50 active:bg-red-100 dark:border-red-500/35 dark:bg-red-950/40 dark:text-red-300"
+            )}
+            aria-label={deleteAria}
+          >
+            <Trash2 className={icon} strokeWidth={2} />
+          </button>
         ) : null}
       </div>
     </div>

@@ -603,7 +603,7 @@ export function ResidentialPricingStudio({
               onClick={() => void handleSave()}
               className="h-12 w-full font-semibold sm:w-auto"
             >
-              Save settings only
+              {saving ? "Saving…" : "Save"}
             </Button>
           ) : null}
           {onDownloadPpt ? (

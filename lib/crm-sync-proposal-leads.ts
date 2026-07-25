@@ -1,6 +1,4 @@
 import { personNamesLikelyDifferent, personNamesLikelySame } from "@/lib/crm-household";
-import { normalizeLeadPhoneForStorage } from "@/lib/lead-phone";
-import { processInboundLead } from "@/lib/inbound-leads";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { resolveLeadsTable, supabase } from "@/lib/supabase";
 
@@ -19,6 +17,13 @@ function leadCoversProposalName(
   return false;
 }
 
+/**
+ * Soft CRM repair on Customers list load:
+ * - backfill `consumer_name` from proposal bill name
+ * - relink proposal → existing lead when names already match
+ *
+ * Does NOT create new lead rows (that recreated deleted people like "RK gupta").
+ */
 export async function syncMissingHouseholdLeadsFromProposals(): Promise<{
   created: number;
   relinked: number;
@@ -36,7 +41,6 @@ export async function syncMissingHouseholdLeadsFromProposals(): Promise<{
 
   if (error || !Array.isArray(proposals)) return { created: 0, relinked: 0 };
 
-  let created = 0;
   let relinked = 0;
 
   for (const row of proposals) {
@@ -50,12 +54,6 @@ export async function syncMissingHouseholdLeadsFromProposals(): Promise<{
     if (customerName.length < 2) continue;
 
     const ppt = proposal.ppt_input ?? {};
-    const phoneRaw =
-      (typeof ppt.leadPhone === "string" && ppt.leadPhone) ||
-      (typeof ppt.customerPhone === "string" && ppt.customerPhone) ||
-      (typeof ppt.phone === "string" && ppt.phone) ||
-      "";
-    const phone = normalizeLeadPhoneForStorage(phoneRaw);
     const pptLeadName =
       (typeof ppt.leadContactName === "string" && ppt.leadContactName.trim()) ||
       (typeof ppt.contactName === "string" && ppt.contactName.trim()) ||
@@ -75,84 +73,42 @@ export async function syncMissingHouseholdLeadsFromProposals(): Promise<{
       linkedLead = (data as Record<string, unknown> | null) ?? null;
     }
 
-    if (linkedLead && leadCoversProposalName(linkedLead, customerName)) {
+    if (linkedLead) {
       const leadName = String(linkedLead.name ?? "");
-      if (
-        pptBillName &&
-        personNamesLikelyDifferent(leadName, pptBillName) &&
-        !String(linkedLead.consumer_name ?? "").trim()
-      ) {
-        await client
-          .from(leadsTable)
-          .update({ consumer_name: pptBillName })
-          .eq("id", String(linkedLead.id));
+      const covers =
+        leadCoversProposalName(linkedLead, customerName) ||
+        (pptLeadName ? leadCoversProposalName(linkedLead, pptLeadName) : false);
+      if (covers) {
+        if (
+          pptBillName &&
+          personNamesLikelyDifferent(leadName, pptBillName) &&
+          !String(linkedLead.consumer_name ?? "").trim()
+        ) {
+          await client
+            .from(leadsTable)
+            .update({ consumer_name: pptBillName })
+            .eq("id", String(linkedLead.id));
+        }
+        continue;
       }
-      continue;
     }
 
-    if (linkedLead && pptLeadName && leadCoversProposalName(linkedLead, pptLeadName)) {
-      if (
-        pptBillName &&
-        personNamesLikelyDifferent(String(linkedLead.name ?? ""), pptBillName)
-      ) {
-        await client
-          .from(leadsTable)
-          .update({ consumer_name: pptBillName })
-          .eq("id", String(linkedLead.id));
-      }
-      continue;
-    }
-
+    const tokens = customerName.split(/\s+/).filter(Boolean).slice(-2);
+    if (tokens.length === 0) continue;
     const { data: byName } = await client
       .from(leadsTable)
       .select("id, name, consumer_name, phone, household_id")
-      .ilike("name", `%${customerName.split(/\s+/).slice(-2).join("%")}%`)
+      .ilike("name", `%${tokens.join("%")}%`)
       .limit(20);
     const nameHit = Array.isArray(byName)
       ? (byName as Record<string, unknown>[]).find((l) => leadCoversProposalName(l, customerName))
       : undefined;
 
-    if (nameHit?.id) {
-      if (proposal.lead_id !== nameHit.id) {
-        await client.from("proposals").update({ lead_id: nameHit.id }).eq("id", proposal.id);
-        relinked += 1;
-      }
-      continue;
-    }
-
-    try {
-      const friendlyName = pptLeadName || customerName;
-      const consumerName =
-        pptBillName && personNamesLikelyDifferent(friendlyName, pptBillName) ? pptBillName : null;
-      const result = await processInboundLead({
-        name: friendlyName,
-        phone: phone || (linkedLead?.phone != null ? String(linkedLead.phone) : ""),
-        city:
-          (typeof ppt.city === "string" && ppt.city) ||
-          (linkedLead?.city != null ? String(linkedLead.city) : "") ||
-          "Unknown",
-        state:
-          (typeof ppt.state === "string" && ppt.state) ||
-          (linkedLead?.state != null ? String(linkedLead.state) : null),
-        discom:
-          (typeof ppt.discom === "string" && ppt.discom) ||
-          (linkedLead?.discom != null ? String(linkedLead.discom) : "") ||
-          "Unknown",
-        monthly_bill: 0,
-        source: "manual",
-        forceNew: true,
-        isWhatsappContact: false,
-        consumerName,
-      });
-      const newId = String(result.data.id ?? "");
-      if (!newId) continue;
-      created += 1;
-      await client.from("proposals").update({ lead_id: newId }).eq("id", proposal.id);
+    if (nameHit?.id && proposal.lead_id !== nameHit.id) {
+      await client.from("proposals").update({ lead_id: nameHit.id }).eq("id", proposal.id);
       relinked += 1;
-    } catch (err) {
-      console.warn("[syncMissingHouseholdLeadsFromProposals]", proposal.id, err);
     }
   }
 
-  return { created, relinked };
+  return { created: 0, relinked };
 }
