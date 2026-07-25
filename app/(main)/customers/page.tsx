@@ -469,7 +469,7 @@ function CustomersPageContent() {
       { revalidate: false }
     );
     try {
-      const r = await fetch(`/api/customers/${id}`, { method: "DELETE" });
+      const r = await fetch(`/api/customers/${encodeURIComponent(id)}`, { method: "DELETE" });
       const j = (await r.json()) as { ok?: boolean; error?: string; hint?: string };
       if (!j.ok) {
         const detail = [j.error, j.hint].filter(Boolean).join(" — ");

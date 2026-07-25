@@ -189,17 +189,38 @@ export async function PATCH(req: NextRequest, ctx: RouteCtx) {
 }
 
 /** Best-effort detach so FK / RLS on child tables cannot block lead delete. */
-async function detachLeadReferences(db: SupabaseClient, leadId: string) {
-  const tablesNullLead: Array<{ table: string; column: string }> = [
-    { table: "proposals", column: "lead_id" },
-    { table: "projects", column: "lead_id" },
-  ];
-  for (const { table, column } of tablesNullLead) {
-    try {
-      await db.from(table).update({ [column]: null }).eq(column, leadId);
-    } catch {
-      /* table/column may not exist on older deploys */
+async function detachLeadReferences(
+  db: SupabaseClient,
+  leadId: string,
+  leadName?: string | null
+) {
+  try {
+    const { data: props } = await db
+      .from("proposals")
+      .select("id, ppt_input")
+      .eq("lead_id", leadId);
+    for (const p of props ?? []) {
+      const row = p as { id: string; ppt_input?: Record<string, unknown> | null };
+      const ppt = { ...(row.ppt_input ?? {}) };
+      ppt.crmProfileDismissed = true;
+      if (leadName?.trim()) ppt.crmDismissedName = leadName.trim();
+      await db
+        .from("proposals")
+        .update({ lead_id: null, ppt_input: ppt })
+        .eq("id", row.id);
     }
+  } catch {
+    try {
+      await db.from("proposals").update({ lead_id: null }).eq("lead_id", leadId);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  try {
+    await db.from("projects").update({ lead_id: null }).eq("lead_id", leadId);
+  } catch {
+    /* ignore */
   }
 
   const cascadeDeleteTables = [
@@ -220,18 +241,14 @@ async function detachLeadReferences(db: SupabaseClient, leadId: string) {
 
 export async function DELETE(_req: NextRequest, ctx: RouteCtx) {
   try {
-    const { id } = await ctx.params;
+    const { id: rawId } = await ctx.params;
+    const id = decodeURIComponent(String(rawId ?? "")).trim();
     if (!id) return NextResponse.json({ ok: false, error: "missing id" }, { status: 400 });
 
     const admin = createSupabaseAdmin();
     const db = admin ?? supabase;
     if (!db) {
       return NextResponse.json({ ok: false, error: "db_unavailable" }, { status: 503 });
-    }
-    if (!admin) {
-      console.warn(
-        "[DELETE /api/customers] SUPABASE_SERVICE_ROLE_KEY missing — anon RLS may block delete"
-      );
     }
 
     const leadsTable = await resolveLeadsTable();
@@ -247,13 +264,21 @@ export async function DELETE(_req: NextRequest, ctx: RouteCtx) {
     if (lookupErr) {
       return NextResponse.json({ ok: false, error: lookupErr.message }, { status: 400 });
     }
+
+    /** Idempotent: already gone → success (stale UI / double-click). */
     if (!existing) {
-      return NextResponse.json({ ok: false, error: "lead_not_found" }, { status: 404 });
+      return NextResponse.json({ ok: true, alreadyGone: true });
     }
 
-    await detachLeadReferences(db, id);
+    const leadName = existing.name != null ? String(existing.name) : null;
+    await detachLeadReferences(db, id, leadName);
 
-    const { data, error } = await db.from(leadsTable).delete().eq("id", id).select("id").maybeSingle();
+    const { data: deletedRows, error } = await db
+      .from(leadsTable)
+      .delete()
+      .eq("id", id)
+      .select("id");
+
     if (error) {
       return NextResponse.json(
         {
@@ -261,23 +286,34 @@ export async function DELETE(_req: NextRequest, ctx: RouteCtx) {
           error: error.message || "delete_blocked",
           hint: admin
             ? "A related row may still reference this lead."
-            : "Set SUPABASE_SERVICE_ROLE_KEY on the server, or run migration 013_leads_anon_delete.sql.",
+            : "Set SUPABASE_SERVICE_ROLE_KEY on Vercel, or run migration 013_leads_anon_delete.sql in Supabase.",
         },
         { status: 400 }
       );
     }
-    if (!data) {
+
+    const deleted = Array.isArray(deletedRows) ? deletedRows.length > 0 : Boolean(deletedRows);
+    if (!deleted) {
+      const { data: stillThere } = await db
+        .from(leadsTable)
+        .select("id")
+        .eq("id", id)
+        .maybeSingle();
+      if (!stillThere) {
+        return NextResponse.json({ ok: true, alreadyGone: true });
+      }
       return NextResponse.json(
         {
           ok: false,
-          error: "lead_not_found",
+          error: "delete_blocked_by_rls",
           hint: admin
-            ? "Lead vanished during delete."
-            : "Delete blocked by RLS — add SUPABASE_SERVICE_ROLE_KEY or anon delete policy.",
+            ? "Delete returned 0 rows but lead still exists."
+            : "Set SUPABASE_SERVICE_ROLE_KEY on Vercel (Settings → Environment Variables), then redeploy.",
         },
-        { status: 404 }
+        { status: 403 }
       );
     }
+
     return NextResponse.json({ ok: true });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Delete failed";

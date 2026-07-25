@@ -55,6 +55,9 @@ export async function syncMissingHouseholdLeadsFromProposals(): Promise<{
     if (customerName.length < 2) continue;
 
     const ppt = proposal.ppt_input ?? {};
+    /** Operator deleted this CRM profile — do not recreate on every Customers refresh. */
+    if (ppt.crmProfileDismissed === true) continue;
+
     const phoneRaw =
       (typeof ppt.leadPhone === "string" && ppt.leadPhone) ||
       (typeof ppt.customerPhone === "string" && ppt.customerPhone) ||
