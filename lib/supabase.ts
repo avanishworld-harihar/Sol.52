@@ -283,9 +283,28 @@ export async function upsertPipelineProject(payload: {
   next_action?: string | null;
   contract_amount_inr?: number | null;
 }): Promise<Record<string, unknown> | null> {
-  if (!supabase) return null;
+  const client = createSupabaseAdmin() ?? supabase;
+  if (!client) return null;
   const now = new Date().toISOString();
-  const { data: existing, error: existingErr } = await supabase
+
+  /** Project person = CRM lead name. Proposal customerName is often the bill holder. */
+  let personName = payload.official_name?.trim() || null;
+  try {
+    const leadsTable = await resolveLeadsTable();
+    if (leadsTable) {
+      const { data: lead } = await client
+        .from(leadsTable)
+        .select("name")
+        .eq("id", payload.lead_id)
+        .maybeSingle();
+      const leadName = lead?.name != null ? String(lead.name).trim() : "";
+      if (leadName) personName = leadName;
+    }
+  } catch {
+    /* keep payload name */
+  }
+
+  const { data: existing, error: existingErr } = await client
     .from("projects")
     .select("*")
     .eq("lead_id", payload.lead_id)
@@ -294,7 +313,12 @@ export async function upsertPipelineProject(payload: {
 
   if (existing) {
     const patch: Record<string, unknown> = { updated_at: now };
-    if (payload.official_name !== undefined) patch.official_name = payload.official_name.trim() || null;
+    if (personName) {
+      patch.official_name = personName;
+      patch.customer_name = personName;
+    } else if (payload.official_name !== undefined) {
+      patch.official_name = payload.official_name.trim() || null;
+    }
     if (payload.capacity_kw !== undefined) patch.capacity_kw = payload.capacity_kw.trim() || null;
     if (payload.detail !== undefined) patch.detail = payload.detail.trim() || null;
     if (payload.status !== undefined) patch.status = payload.status;
@@ -304,7 +328,7 @@ export async function upsertPipelineProject(payload: {
     if (payload.next_action !== undefined) patch.next_action = payload.next_action?.trim() || null;
     if (payload.contract_amount_inr !== undefined) patch.contract_amount_inr = payload.contract_amount_inr;
 
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from("projects")
       .update(patch)
       .eq("id", String((existing as { id: unknown }).id))
@@ -316,7 +340,8 @@ export async function upsertPipelineProject(payload: {
 
   const baseRow: Record<string, unknown> = {
     lead_id: payload.lead_id,
-    official_name: payload.official_name?.trim() || null,
+    official_name: personName,
+    customer_name: personName,
     capacity_kw: payload.capacity_kw?.trim() || null,
     detail: payload.detail?.trim() || null,
     status: payload.status ?? "pending",
@@ -325,7 +350,7 @@ export async function upsertPipelineProject(payload: {
     ...(payload.next_action !== undefined ? { next_action: payload.next_action?.trim() || null } : {}),
     ...(payload.contract_amount_inr !== undefined ? { contract_amount_inr: payload.contract_amount_inr } : {}),
   };
-  const { data, error } = await supabase.from("projects").insert(baseRow).select("*").single();
+  const { data, error } = await client.from("projects").insert(baseRow).select("*").single();
   if (error) throw error;
   return data as Record<string, unknown>;
 }

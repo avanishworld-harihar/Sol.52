@@ -104,8 +104,8 @@ export async function ensureProjectForWonLead(
 
   const orgId = await resolveDefaultOrgId();
   const displayName =
-    lead?.consumer_name?.trim() ||
     lead?.name?.trim() ||
+    lead?.consumer_name?.trim() ||
     "Unnamed Project";
   const now = new Date().toISOString();
 
@@ -118,6 +118,7 @@ export async function ensureProjectForWonLead(
   if (existing) {
     const patch: Record<string, unknown> = { updated_at: now };
     if (orgId && !existing.organization_id) patch.organization_id = orgId;
+    /** Seed empty titles from CRM person — never overwrite with bill/husband name. */
     if (!existing.official_name) patch.official_name = displayName;
     if (!existing.customer_name) patch.customer_name = displayName;
     if (existing.dashboard_visible === false) patch.dashboard_visible = true;
@@ -225,10 +226,10 @@ function normalizeLinkName(value: string | null | undefined): string {
 
 function leadLinkNames(lead: { name?: unknown; consumer_name?: unknown }): Set<string> {
   const names = new Set<string>();
+  /** Only match orphan projects on the CRM person name — never bill/consumer name
+   * (that incorrectly linked husband meter names onto wife projects). */
   const n = normalizeLinkName(String(lead.name ?? ""));
-  const c = normalizeLinkName(String(lead.consumer_name ?? ""));
   if (n) names.add(n);
-  if (c) names.add(c);
   return names;
 }
 

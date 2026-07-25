@@ -17,6 +17,7 @@ import {
 import type { ProjectSiteLayout } from "@/lib/site-layout";
 import type { ProjectPanelLayout } from "@/lib/panel-layout";
 import { buildProposalEditHref } from "@/lib/proposal-edit-url";
+import { projectDisplayName } from "@/lib/project-list-utils";
 import { cn } from "@/lib/utils";
 import {
   ArrowUpRight,
@@ -109,7 +110,7 @@ function LinkedRecordsCard({ project }: { project: ProjectListItem }) {
             Design sources
           </p>
           <p className="mt-0.5 text-sm font-semibold text-slate-800 dark:text-slate-100">
-            {project.lead_name?.trim() || projectDisplayFallback(project)}
+            {projectDisplayName(project)}
           </p>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             2D Design Studio is the source for roof + panels. Save syncs Hub design versions. Pricing
@@ -154,10 +155,6 @@ function LinkedRecordsCard({ project }: { project: ProjectListItem }) {
       </CardContent>
     </Card>
   );
-}
-
-function projectDisplayFallback(project: ProjectListItem): string {
-  return project.official_name?.trim() || "Project";
 }
 
 function DesignStatusStrip({

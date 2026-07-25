@@ -6,7 +6,7 @@ import { ProjectStageProgressBar } from "@/components/projects/hub/project-stage
 import { ProjectHubStageActions } from "@/components/projects/hub/project-hub-stage-actions";
 import { Button } from "@/components/ui/button";
 import type { ProjectListItem } from "@/lib/project-api-client";
-import { projectDisplayName } from "@/lib/project-list-utils";
+import { projectBillHolderLabel, projectDisplayName } from "@/lib/project-list-utils";
 import {
   getNextStage,
   isNmSubstatus,
@@ -37,6 +37,7 @@ export function ProjectHubHeader({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const name = projectDisplayName(project);
+  const billHolder = projectBillHolderLabel(project);
 
   const canAdvance =
     isProjectStageId(project.current_stage) && getNextStage(project.current_stage) != null;
@@ -73,6 +74,11 @@ export function ProjectHubHeader({
               <ProjectStageBadge stage={project.current_stage} compact />
               <ProjectHealthBadge health={project.health} />
             </div>
+            {billHolder ? (
+              <p className="mt-px truncate text-[10px] font-medium text-slate-500 dark:text-slate-400 sm:text-xs">
+                Bill / meter: {billHolder}
+              </p>
+            ) : null}
             {project.project_code ? (
               <p className="mt-px truncate font-mono text-[9px] font-semibold text-slate-500 dark:text-slate-400 sm:mt-0.5 sm:text-xs">
                 {project.project_code}

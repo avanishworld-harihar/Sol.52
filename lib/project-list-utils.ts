@@ -5,7 +5,6 @@
 
 import type { ProjectHealth } from "@/lib/project-health";
 import type { ProjectListItem } from "@/lib/project-api-client";
-import { formatPipelineDisplayName } from "@/lib/supabase";
 import type { ProjectStageId } from "@/lib/project-stages";
 import { STAGE_LABELS } from "@/lib/project-stages";
 
@@ -47,7 +46,27 @@ const HEALTH_ORDER: Record<ProjectHealth, number> = {
 };
 
 export function projectDisplayName(p: ProjectListItem): string {
-  return formatPipelineDisplayName(p.official_name, p.lead_name);
+  /**
+   * Project identity = CRM person (lead), not bill/account-holder name.
+   * Same household may share a phone; each member keeps their own project title.
+   */
+  const lead = (p.lead_name ?? "").trim();
+  const official = (p.official_name ?? "").trim();
+  if (lead) return lead;
+  return official || "Project";
+}
+
+/** Bill / meter name when it differs from the project person (optional subtitle). */
+export function projectBillHolderLabel(p: ProjectListItem): string | null {
+  const lead = (p.lead_name ?? "").trim();
+  const official = (p.official_name ?? "").trim();
+  if (!official) return null;
+  if (!lead) return null;
+  const firstL = lead.split(/\s+/)[0]?.toLowerCase() ?? "";
+  const firstO = official.split(/\s+/)[0]?.toLowerCase() ?? "";
+  if (firstL && firstO && firstL === firstO) return null;
+  if (lead.toLowerCase() === official.toLowerCase()) return null;
+  return official;
 }
 
 export function projectSearchHaystack(p: ProjectListItem): string {
