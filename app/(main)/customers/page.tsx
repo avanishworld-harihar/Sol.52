@@ -1,7 +1,6 @@
 "use client";
 
 import { CustomersLeadList } from "@/components/customers-lead-list";
-import { CustomerWorkspacePane } from "@/components/customer-workspace-pane";
 import { WorkflowLifecycleStrip } from "@/components/workflow-lifecycle-strip";
 import { FloatingLabelInput, StaticLabelSelect } from "@/components/ui/floating-label-input";
 import { HelpHint } from "@/components/ui/help-hint";
@@ -42,7 +41,6 @@ import { useLanguage } from "@/lib/language-context";
 import { LEAD_CONNECTION_TYPE_OPTIONS } from "@/lib/lead-connection-types";
 import type { CustomerLead } from "@/lib/types";
 import { useOnlineStatus } from "@/hooks/use-online-status";
-import { TABLET_SPLIT_MEDIA_QUERY } from "@/lib/tablet-split-view";
 import type { FormEvent } from "react";
 import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
@@ -124,7 +122,6 @@ function CustomersPageContent() {
 
   const [stageFilter, setStageFilter] = useState<StageFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
 
   const customers = useMemo(() => {
     let list = allCustomers;
@@ -169,50 +166,6 @@ function CustomersPageContent() {
     }),
     [allCustomers]
   );
-
-  const leadQs = searchParams.get("lead");
-  useEffect(() => {
-    if (leadQs && allCustomers.some((c) => c.id === leadQs)) {
-      setSelectedLeadId(leadQs);
-    }
-  }, [leadQs, allCustomers]);
-
-  /** Tablet split: auto-focus first lead when none selected (Mail-style inbox). */
-  useEffect(() => {
-    if (typeof window === "undefined" || !window.matchMedia(TABLET_SPLIT_MEDIA_QUERY).matches) return;
-    if (selectedLeadId || customers.length === 0) return;
-    const first = customers[0]!.id;
-    setSelectedLeadId(first);
-    router.replace(`/customers?lead=${encodeURIComponent(first)}`, { scroll: false });
-  }, [customers, selectedLeadId, router]);
-
-  const onWorkspaceSelectLead = useCallback(
-    (id: string) => {
-      setSelectedLeadId(id);
-      router.replace(`/customers?lead=${encodeURIComponent(id)}`, { scroll: false });
-    },
-    [router]
-  );
-
-  const workspaceCustomer = useMemo(() => {
-    if (!selectedLeadId) return null;
-    if (!customers.some((c) => c.id === selectedLeadId)) return null;
-    return allCustomers.find((c) => c.id === selectedLeadId) ?? null;
-  }, [allCustomers, customers, selectedLeadId]);
-
-  useEffect(() => {
-    if (selectedLeadId == null) return;
-    if (customers.length === 0) {
-      setSelectedLeadId(null);
-      router.replace("/customers", { scroll: false });
-      return;
-    }
-    if (!customers.some((c) => c.id === selectedLeadId)) {
-      const next = customers[0]!.id;
-      setSelectedLeadId(next);
-      router.replace(`/customers?lead=${encodeURIComponent(next)}`, { scroll: false });
-    }
-  }, [customers, selectedLeadId, router]);
 
   const showListSkeleton = isLoading && data === undefined && !loadError;
 
@@ -447,11 +400,11 @@ function CustomersPageContent() {
     void (async () => {
       await openEditLeadFresh(editLeadQs);
       if (cancelled) return;
-      setSelectedLeadId(editLeadQs);
       const params = new URLSearchParams(searchParams.toString());
       params.delete("editLead");
-      params.set("lead", editLeadQs);
-      router.replace(`/customers?${params.toString()}`, { scroll: false });
+      router.replace(params.toString() ? `/customers?${params.toString()}` : "/customers", {
+        scroll: false,
+      });
     })();
     return () => {
       cancelled = true;
@@ -733,17 +686,8 @@ function CustomersPageContent() {
           />
         </WorkspaceStaggerItem>
 
-        <WorkspaceStaggerItem
-          className={cn(
-            "md:max-xl:grid md:max-xl:min-h-0",
-            "md:max-xl:h-[min(calc(100dvh-11rem),720px)]",
-            "md:max-xl:grid-cols-[minmax(280px,0.42fr)_minmax(0,1fr)]",
-            "md:max-xl:gap-0 md:max-xl:overflow-hidden md:max-xl:rounded-2xl md:max-xl:border md:max-xl:border-slate-200/90 md:max-xl:bg-white/80 md:max-xl:shadow-sm",
-            "dark:md:max-xl:border-white/10 dark:md:max-xl:bg-[#0c1017]/90"
-          )}
-        >
-          <div className="flex min-h-0 min-w-0 flex-col md:max-xl:overflow-hidden md:max-xl:border-r md:max-xl:border-slate-200/80 dark:md:max-xl:border-white/10">
-            <div className="shrink-0 space-y-3 p-0 md:max-xl:px-3 md:max-xl:pt-3">
+        <WorkspaceStaggerItem>
+          <div className="space-y-3">
             <div className="relative flex items-center">
               <Search
                 className="pointer-events-none absolute left-3 h-4 w-4 text-slate-400"
@@ -809,26 +753,14 @@ function CustomersPageContent() {
             );
           })}
             </div>
-            <p className="hidden text-[11px] font-semibold text-slate-500 md:max-xl:block xl:hidden dark:text-slate-400">
-              {t("customers_splitHint")}
-            </p>
-            </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto md:max-xl:px-3 md:max-xl:pb-3">
             <CustomersLeadList
               customers={customers}
               loading={showListSkeleton}
               onStatusChange={handleStatusChange}
               onEditLead={(c) => void openEditLeadFresh(c)}
               onDeleteLead={(c) => setDeleteTarget(c)}
-              selectedLeadId={selectedLeadId}
-              onSelectLead={onWorkspaceSelectLead}
             />
-            </div>
-          </div>
-
-          <div className="hidden min-h-0 p-3 md:max-xl:flex md:max-xl:flex-col md:max-xl:overflow-hidden xl:hidden">
-            <CustomerWorkspacePane customer={workspaceCustomer} onStatusChange={handleStatusChange} />
           </div>
         </WorkspaceStaggerItem>
       </WorkspacePage>

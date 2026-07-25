@@ -249,17 +249,17 @@ function LeadRowActions({
 
 function LeadRowSkeleton() {
   return (
-    <div className="border-b border-slate-100 p-4 last:border-b-0 dark:border-white/[0.06] xl:grid xl:grid-cols-12 xl:items-center xl:gap-4 xl:px-5">
-      <div className="flex items-center gap-3 xl:col-span-5">
+    <div className="border-b border-slate-100 p-4 last:border-b-0 dark:border-white/[0.06] md:grid md:grid-cols-12 md:items-center md:gap-4 md:px-5">
+      <div className="flex items-center gap-3 md:col-span-5">
         <Skeleton className="h-12 w-12 shrink-0 rounded-2xl bg-slate-200/80" />
         <div className="min-w-0 flex-1 space-y-2">
           <Skeleton className="h-4 w-36 rounded-md bg-slate-200/80" />
           <Skeleton className="h-3 w-24 rounded-md bg-slate-200/60" />
         </div>
       </div>
-      <Skeleton className="mt-3 hidden h-10 rounded-lg bg-slate-200/60 xl:col-span-3 xl:mt-0 xl:block" />
-      <Skeleton className="mt-2 hidden h-8 w-20 rounded-lg bg-slate-200/60 xl:col-span-2 xl:mt-0 xl:block" />
-      <div className="mt-3 flex justify-start xl:col-span-2 xl:mt-0 xl:justify-end">
+      <Skeleton className="mt-3 hidden h-10 rounded-lg bg-slate-200/60 md:col-span-3 md:mt-0 md:block" />
+      <Skeleton className="mt-2 hidden h-8 w-20 rounded-lg bg-slate-200/60 md:col-span-2 md:mt-0 md:block" />
+      <div className="mt-3 flex justify-start md:col-span-2 md:mt-0 md:justify-end">
         <Skeleton className="h-7 w-28 rounded-full bg-slate-200/70" />
       </div>
     </div>
@@ -401,12 +401,12 @@ export function CustomersLeadList({
 
       {loading ? (
         <>
-          <div className="space-y-3 px-0.5 md:max-xl:space-y-2 xl:hidden">
+          <div className="space-y-3 px-0.5 md:hidden">
             {Array.from({ length: 4 }).map((_, i) => (
               <LeadMobileCardSkeleton key={`m-sk-${i}`} />
             ))}
           </div>
-          <div className="hidden overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#0c1017] xl:block">
+          <div className="hidden overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#0c1017] md:block">
             {Array.from({ length: 5 }).map((_, i) => (
               <LeadRowSkeleton key={i} />
             ))}
@@ -416,7 +416,7 @@ export function CustomersLeadList({
 
       {!loading && customers.length > 0 ? (
         <>
-          <div className="space-y-3 px-0.5 md:max-xl:space-y-2 xl:hidden">
+          <div className="space-y-3 px-0.5 md:hidden">
             {customers.map((customer) => {
               const statusKey = normalizeLeadStatus(customer.status);
               const commercialCta = resolveCustomerCommercialCta(customer);
@@ -449,32 +449,12 @@ export function CustomersLeadList({
                   key={`m-${customer.id}`}
                   className={cn(
                     "relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 shadow-[0_4px_20px_-8px_rgba(15,23,42,0.12)] dark:border-white/10 dark:bg-[#0c1017]",
-                    /* iPad split pane: dense selectable row — detail lives in workspace */
-                    "md:max-xl:rounded-xl md:max-xl:border-slate-200/70 md:max-xl:p-2.5 md:max-xl:shadow-none dark:md:max-xl:border-white/[0.08]",
-                    activeProject && "border-l-[4px] border-l-indigo-500 bg-indigo-50/25 dark:border-l-indigo-400 dark:bg-indigo-950/25",
-                    onSelectLead && selectedLeadId === customer.id && "ring-2 ring-brand-500/50 ring-offset-2 ring-offset-slate-50 dark:ring-offset-[#0c1017] md:max-xl:ring-offset-0 md:max-xl:bg-brand-50/40 dark:md:max-xl:bg-brand-950/25"
+                    activeProject && "border-l-[4px] border-l-indigo-500 bg-indigo-50/25 dark:border-l-indigo-400 dark:bg-indigo-950/25"
                   )}
-                  onClick={(e) => {
-                    if (!onSelectLead) return;
-                    if ((e.target as HTMLElement).closest("a, button, select, label")) return;
-                    onSelectLead(customer.id);
-                  }}
-                  onKeyDown={
-                    onSelectLead
-                      ? (e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            onSelectLead(customer.id);
-                          }
-                        }
-                      : undefined
-                  }
-                  role={onSelectLead ? "button" : undefined}
-                  tabIndex={onSelectLead ? 0 : undefined}
                 >
                   {canMutateLead ? (
                     <LeadRowActions
-                      className="absolute right-2 top-2 z-10 md:max-xl:right-1.5 md:max-xl:top-1.5"
+                      className="absolute right-2 top-2 z-10"
                       size="sm"
                       onEdit={onEditLead ? () => onEditLead(customer) : undefined}
                       onDelete={onDeleteLead ? () => onDeleteLead(customer) : undefined}
@@ -483,14 +463,14 @@ export function CustomersLeadList({
                     />
                   ) : null}
 
-                  <div className={cn("flex gap-3 md:max-xl:gap-2.5", canMutateLead ? "pr-12 md:max-xl:pr-10" : "")}>
+                  <div className={cn("flex gap-3", canMutateLead ? "pr-12" : "")}>
                     <LeadAvatar
                       name={customer.name}
                       stale={stale}
                       size="sm"
                     />
                     <div className="min-w-0 flex-1">
-                      <h3 className="truncate pr-1 text-lg font-extrabold leading-tight text-slate-900 dark:text-slate-50 md:max-xl:text-[15px] md:max-xl:leading-snug">
+                      <h3 className="truncate pr-1 text-lg font-extrabold leading-tight text-slate-900 dark:text-slate-50">
                         {displayName}
                       </h3>
                       {customer.household_member_names && customer.household_member_names.length > 0 ? (
@@ -503,35 +483,19 @@ export function CustomersLeadList({
                           WhatsApp contact
                         </p>
                       ) : null}
-                      <div className="mt-2 flex flex-wrap items-center gap-2 md:max-xl:mt-1 md:max-xl:gap-1">
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
                         <LeadSourceBadge sourceRaw={customer.source} />
                         <span
                           className={cn(
                             "inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide",
-                            "md:max-xl:px-1.5 md:max-xl:py-0 md:max-xl:text-[9px]",
                             stageMeta.className
                           )}
                         >
                           {t(stageMeta.labelKey)}
                         </span>
-                        {/* Status sits with badges on tablet to save vertical space */}
-                        <span className="hidden md:max-xl:inline-flex">
-                          {onStatusChange ? (
-                            <LeadStatusPillSelect
-                              leadId={customer.id}
-                              statusKey={statusKey}
-                              label={statusLabel}
-                              t={t}
-                              onChange={onStatusChange}
-                            />
-                          ) : (
-                            <LeadStatusBadge statusKey={statusKey} label={statusLabel} />
-                          )}
-                        </span>
                       </div>
 
-                      {/* Phone: prominent callback + status */}
-                      <div className="mt-3 space-y-3 md:max-xl:hidden">
+                      <div className="mt-3 space-y-3">
                         <CustomerCallbackChip
                           dueAt={nextFollowupAt}
                           title={nextFollowupTitle}
@@ -549,21 +513,10 @@ export function CustomersLeadList({
                           <LeadStatusBadge statusKey={statusKey} label={statusLabel} />
                         )}
                       </div>
-
-                      {/* Tablet: compact callback only */}
-                      <div className="mt-1.5 hidden max-w-full md:max-xl:block">
-                        <CustomerCallbackChip
-                          variant="compact"
-                          dueAt={nextFollowupAt}
-                          title={nextFollowupTitle}
-                          onSchedule={() => setScheduleTarget(customer)}
-                        />
-                      </div>
                     </div>
                   </div>
 
-                  {/* Phone: full meta panel */}
-                  <dl className="mt-4 space-y-3 rounded-2xl bg-slate-50/90 px-4 py-3.5 text-sm dark:bg-white/[0.05] md:max-xl:hidden">
+                  <dl className="mt-4 space-y-3 rounded-2xl bg-slate-50/90 px-4 py-3.5 text-sm dark:bg-white/[0.05]">
                     <div className="flex justify-between gap-3">
                       <dt className="shrink-0 font-semibold text-slate-500 dark:text-slate-400">{t("customers_tableLocation")}</dt>
                       <dd className="min-w-0 text-right font-semibold text-slate-900 dark:text-slate-100">
@@ -599,77 +552,51 @@ export function CustomersLeadList({
                     ) : null}
                   </dl>
 
-                  {/* Tablet: one-line meta (workspace shows the rest) */}
-                  <div className="mt-2 hidden min-w-0 md:max-xl:block">
-                    <p className="truncate text-[12px] font-semibold text-slate-700 dark:text-slate-200">
-                      {[customer.city, customer.discom].filter(Boolean).join(" · ")}
-                      {bill > 0 ? ` · ₹${bill.toLocaleString("en-IN")}` : ""}
-                    </p>
-                    <p className="mt-0.5 truncate text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                      {lastActivityLabel}
-                    </p>
-                  </div>
-
-                  <div className="mt-4 flex flex-col gap-2 md:max-xl:mt-2 md:max-xl:gap-1.5">
+                  <div className="mt-4 flex flex-col gap-2">
                     {customer.phone || waUrl ? (
                       <div className="flex w-full min-w-0 gap-2">
                         {customer.phone ? (
                           <a
                             href={`tel:${customer.phone}`}
                             onClick={() => handlePhoneCall(customer.id)}
-                            className={cn(
-                              "flex min-h-12 min-w-0 flex-1 touch-manipulation items-center justify-center gap-2 rounded-xl bg-indigo-600 px-2 text-sm font-bold text-white shadow-md active:bg-indigo-700 sm:min-h-[3rem] sm:px-3 sm:text-base",
-                              "md:max-xl:min-h-9 md:max-xl:flex-none md:max-xl:rounded-lg md:max-xl:px-2.5 md:max-xl:shadow-sm"
-                            )}
+                            className="flex min-h-12 min-w-0 flex-1 touch-manipulation items-center justify-center gap-2 rounded-xl bg-indigo-600 px-2 text-sm font-bold text-white shadow-md active:bg-indigo-700 sm:min-h-[3rem] sm:px-3 sm:text-base"
                             aria-label={t("customers_mobileCall")}
                             title={t("customers_mobileCall")}
                           >
-                            <Phone className="h-5 w-5 shrink-0 md:max-xl:h-4 md:max-xl:w-4" strokeWidth={2} aria-hidden />
-                            <span className="truncate md:max-xl:hidden">{t("customers_mobileCall")}</span>
+                            <Phone className="h-5 w-5 shrink-0" strokeWidth={2} aria-hidden />
+                            <span className="truncate">{t("customers_mobileCall")}</span>
                           </a>
                         ) : null}
                         {waUrl ? (
                           <button
                             type="button"
                             onClick={() => openWhatsApp(customer.id, waUrl)}
-                            className={cn(
-                              "flex min-h-12 min-w-0 flex-1 touch-manipulation items-center justify-center gap-2 rounded-xl border border-emerald-300/90 bg-emerald-50 px-2 text-sm font-bold text-emerald-900 shadow-sm active:bg-emerald-100 dark:border-emerald-500/45 dark:bg-emerald-950/55 dark:text-emerald-100 dark:active:bg-emerald-900/50 sm:min-h-[3rem] sm:px-3",
-                              "md:max-xl:min-h-9 md:max-xl:flex-none md:max-xl:rounded-lg md:max-xl:px-2.5"
-                            )}
+                            className="flex min-h-12 min-w-0 flex-1 touch-manipulation items-center justify-center gap-2 rounded-xl border border-emerald-300/90 bg-emerald-50 px-2 text-sm font-bold text-emerald-900 shadow-sm active:bg-emerald-100 dark:border-emerald-500/45 dark:bg-emerald-950/55 dark:text-emerald-100 dark:active:bg-emerald-900/50 sm:min-h-[3rem] sm:px-3"
                             aria-label={t("customers_whatsappAria")}
                             title={t("customers_whatsappShort")}
                           >
-                            <MessageCircle className="h-5 w-5 shrink-0 md:max-xl:h-4 md:max-xl:w-4" strokeWidth={2} aria-hidden />
-                            <span className="truncate md:max-xl:hidden">{t("customers_whatsappShort")}</span>
+                            <MessageCircle className="h-5 w-5 shrink-0" strokeWidth={2} aria-hidden />
+                            <span className="truncate">{t("customers_whatsappShort")}</span>
                           </button>
                         ) : null}
                       </div>
                     ) : null}
-                    {/* Full commercial CTA on phone; on tablet split the workspace owns this */}
-                    <Link
-                      href={commercialCta.href}
-                      className={cn(
-                        "ss-cta-primary min-h-12 w-full touch-manipulation",
-                        onSelectLead && "md:max-xl:hidden"
-                      )}
-                    >
+                    <Link href={commercialCta.href} className="ss-cta-primary min-h-12 w-full touch-manipulation">
                       {t(commercialCta.labelKey)}
                     </Link>
-                    {onSelectLead ? null : (
                     <Link
                       href={`/customers/${customer.id}`}
                       className="flex min-h-10 w-full items-center justify-center gap-1.5 rounded-xl border border-teal-200 bg-teal-50/70 px-3 text-xs font-bold text-teal-800 touch-manipulation hover:bg-teal-100 dark:border-teal-500/30 dark:bg-teal-950/30 dark:text-teal-200"
                     >
                       View profile →
                     </Link>
-                    )}
                   </div>
                 </article>
               );
             })}
           </div>
 
-          <div className="hidden overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_8px_30px_-12px_rgba(15,23,42,0.12)] dark:border-white/10 dark:bg-[#0c1017] xl:block">
+          <div className="hidden overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_8px_30px_-12px_rgba(15,23,42,0.12)] dark:border-white/10 dark:bg-[#0c1017] md:block">
             {showHeader && (
               <div className="grid grid-cols-12 gap-4 border-b border-slate-200/90 bg-gradient-to-r from-slate-50 to-white px-5 py-3 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:border-white/10 dark:from-[#141a22] dark:to-[#0c1017] dark:text-slate-400">
                 <div className="col-span-5 pl-[3.25rem]">{t("customers_tableLead")}</div>
