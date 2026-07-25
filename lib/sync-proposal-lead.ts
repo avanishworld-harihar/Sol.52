@@ -6,7 +6,10 @@ import {
 } from "@/lib/merge-proposal-customer";
 
 export type LeadPatchFromProposal = {
+  /** Friendly lead name (person you met) — never replace with bill consumer name. */
   name?: string;
+  /** Name printed on electricity bill (father / account holder). */
+  consumer_name?: string | null;
   city?: string;
   state?: string;
   discom?: string;
@@ -25,13 +28,19 @@ export function buildLeadPatchFromProposal(
   options?: { monthlyBillInr?: number; leadPhone?: string; billPhone?: string }
 ): LeadPatchFromProposal | null {
   const merged = mergeCustomerForProposal(manual, mergeParsedBills(latestBill, previousBill));
-  const name =
-    merged?.name?.trim() ||
+  const leadName = manual.leadContactName.trim();
+  const billName =
     manual.officialBillName.trim() ||
-    manual.leadContactName.trim();
-  if (!name) return null;
+    merged?.name?.trim() ||
+    "";
+  if (!leadName && !billName) return null;
 
-  const patch: LeadPatchFromProposal = { name };
+  const patch: LeadPatchFromProposal = {};
+  /** CRM `name` = friendly lead; `consumer_name` = bill person (only when different). */
+  if (leadName) patch.name = leadName;
+  if (billName && billName.toLowerCase() !== leadName.toLowerCase()) {
+    patch.consumer_name = billName;
+  }
 
   const city = manual.city.trim() || merged?.district?.trim();
   if (city) patch.city = city;

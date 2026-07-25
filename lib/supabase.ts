@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { phonesMatch } from "@/lib/crm-household";
 import {
   buildDemoSeedLeadIdSet,
   filterOutDemoSeedLeads,
@@ -61,6 +62,12 @@ export interface CustomerInput {
   location?: string | null;
   /** Connection category (domestic, commercial, …). */
   connection_type?: string | null;
+  /** Name on electricity bill (may differ from friendly `name`). */
+  consumer_name?: string | null;
+  /** Family / site household group. */
+  household_id?: string | null;
+  /** Primary WhatsApp / call contact for shared-number households. */
+  is_whatsapp_contact?: boolean;
 }
 
 async function countFirstAvailable(candidates: string[]) {
@@ -515,25 +522,45 @@ export async function getLeadSurveyStatus(leadId: string | null | undefined): Pr
 }
 
 /**
- * Look up an existing lead by phone (case-insensitive). Backed by the unique
- * partial index on `lower(phone)` from `012_crm_v2.sql`, so this is O(log n).
- * Used by both `/api/customers` POST and `/api/leads/inbound` to dedupe.
+ * Look up leads sharing a phone (case-insensitive / digit-normalized).
+ * Phone is no longer unique — households may share one WhatsApp number.
  */
-export async function findLeadByPhone(phone: string): Promise<Record<string, unknown> | null> {
-  if (!supabase) return null;
+export async function findLeadsByPhone(phone: string): Promise<Record<string, unknown>[]> {
+  if (!supabase) return [];
   const trimmed = phone.trim();
-  if (!trimmed) return null;
+  if (!trimmed) return [];
   const leadsTable = await resolveLeadsTable();
-  if (!leadsTable) return null;
+  if (!leadsTable) return [];
+  const digits = trimmed.replace(/\D/g, "");
+  const last10 = digits.length >= 10 ? digits.slice(-10) : digits;
+  const orParts = [`phone.ilike.${trimmed}`];
+  if (last10.length >= 8) orParts.push(`phone.ilike.%${last10}%`);
   const { data } = await supabase
     .from(leadsTable)
     .select("*")
-    .ilike("phone", trimmed)
-    .limit(1);
-  if (Array.isArray(data) && data.length > 0) {
-    return data[0] as Record<string, unknown>;
-  }
-  return null;
+    .or(orParts.join(","))
+    .limit(40);
+  if (!Array.isArray(data)) return [];
+  return (data as Record<string, unknown>[]).filter((row) =>
+    phonesMatch(row.phone != null ? String(row.phone) : "", trimmed)
+  );
+}
+
+/**
+ * Look up an existing lead by phone (case-insensitive). Prefer WhatsApp contact
+ * in a household, else most recently touched. Used for channel inbound merge.
+ */
+export async function findLeadByPhone(phone: string): Promise<Record<string, unknown> | null> {
+  const matches = await findLeadsByPhone(phone);
+  if (matches.length === 0) return null;
+  const wa = matches.find((m) => m.is_whatsapp_contact === true);
+  if (wa) return wa;
+  matches.sort((a, b) => {
+    const ta = String(a.last_touched_at ?? a.created_at ?? "");
+    const tb = String(b.last_touched_at ?? b.created_at ?? "");
+    return tb.localeCompare(ta);
+  });
+  return matches[0] ?? null;
 }
 
 /**
@@ -633,6 +660,16 @@ export async function createCustomer(payload: CustomerInput) {
     const c = String(payload.connection_type).trim().toLowerCase();
     if (c.length > 0) basePayload.connection_type = c;
   }
+  if (payload.consumer_name !== undefined && payload.consumer_name != null) {
+    const cn = String(payload.consumer_name).trim();
+    if (cn.length > 0) basePayload.consumer_name = cn;
+  }
+  if (payload.household_id !== undefined && payload.household_id != null) {
+    const h = String(payload.household_id).trim();
+    if (h.length > 0) basePayload.household_id = h;
+  }
+  if (payload.is_whatsapp_contact === true) basePayload.is_whatsapp_contact = true;
+  if (payload.is_whatsapp_contact === false) basePayload.is_whatsapp_contact = false;
   basePayload.last_touched_at = new Date().toISOString();
 
   /** Strip CRM v2 columns for retry against pre-012 schemas. */

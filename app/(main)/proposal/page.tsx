@@ -1347,7 +1347,11 @@ function ProposalPageContent() {
 
       setManual((prev) => ({
         ...prev,
-        officialBillName: prev.officialBillName || data.name || "",
+        /** Bill account holder → official name; never overwrite friendly lead name. */
+        officialBillName:
+          slot === "latest" && data.name?.trim()
+            ? data.name.trim()
+            : prev.officialBillName || data.name || "",
         city: prev.city || data.district || "",
         discom: prev.discom || data.discom || "",
         state: prev.state || data.state || "",
@@ -1525,6 +1529,7 @@ function ProposalPageContent() {
     setManual((prev) => ({
       ...prev,
       leadContactName: lead.name,
+      officialBillName: (lead.consumer_name ?? "").trim() || prev.officialBillName,
       leadPhone: lead.phone ?? prev.leadPhone,
       city: lead.city || prev.city,
       state: (lead.state ?? "").trim() || prev.state,
@@ -1541,7 +1546,7 @@ function ProposalPageContent() {
       ...prev,
       leadContactName: lead.name,
       leadPhone: lead.phone ?? "",
-      officialBillName: "",
+      officialBillName: (lead.consumer_name ?? "").trim(),
       city: lead.city,
       state: (lead.state ?? "").trim() || prev.state,
       discom: lead.discom,
@@ -1583,13 +1588,31 @@ function ProposalPageContent() {
       billPhone: manual.billPhone,
     });
     if (!patch) return;
+    /** Never rename CRM lead into a different household member. */
+    try {
+      const leadRes = await fetch(`/api/customers/${encodeURIComponent(selectedLeadId)}`);
+      const leadJson = (await leadRes.json()) as { ok?: boolean; data?: { name?: string } };
+      const linkedName = leadJson.data?.name ?? "";
+      if (linkedName && patch.name) {
+        const { personNamesLikelyDifferent } = await import("@/lib/crm-household");
+        if (personNamesLikelyDifferent(linkedName, patch.name)) {
+          const { name: _drop, ...rest } = patch;
+          const ok = await patchLeadFromProposal(selectedLeadId, rest);
+          if (ok) syncCrmCachesAfterProposal(selectedLeadId);
+          return;
+        }
+      }
+    } catch {
+      /* continue with full patch */
+    }
     const ok = await patchLeadFromProposal(selectedLeadId, patch);
     if (ok) {
       syncCrmCachesAfterProposal(selectedLeadId);
       setManual((prev) => ({
         ...prev,
         leadContactName: prev.leadContactName || patch.name || prev.leadContactName,
-        officialBillName: prev.officialBillName || patch.name || prev.officialBillName,
+        officialBillName:
+          prev.officialBillName || patch.consumer_name || prev.officialBillName,
         city: prev.city || patch.city || prev.city,
         state: prev.state || patch.state || prev.state,
         discom: prev.discom || patch.discom || prev.discom,
@@ -1606,25 +1629,79 @@ function ProposalPageContent() {
   ]);
 
   async function ensureLeadIdForProposal(): Promise<{ leadId: string | null; created: boolean }> {
+    const merged = mergeCustomerForProposal(manual, mergeParsedBills(latestBill, previousBill));
+    const leadName = resolveProposalCustomerName(manual.leadContactName);
+    const billName = resolveProposalCustomerName(
+      manual.officialBillName,
+      merged?.name
+    );
+    const proposalPhone = pickProposalLeadPhone(manual.leadPhone, manual.billPhone);
+
     if (selectedLeadId) {
+      /** Split only when friendly lead name differs — bill (father) name is consumer_name, not a new lead. */
+      if (leadName) {
+        try {
+          const leadRes = await fetch(`/api/customers/${encodeURIComponent(selectedLeadId)}`);
+          const leadJson = (await leadRes.json()) as {
+            ok?: boolean;
+            data?: { name?: string; consumer_name?: string | null };
+          };
+          const linkedName = leadJson.data?.name ?? "";
+          const linkedConsumer = leadJson.data?.consumer_name ?? "";
+          const { personNamesLikelyDifferent, personNamesLikelySame } = await import(
+            "@/lib/crm-household"
+          );
+          const sameLead = linkedName && !personNamesLikelyDifferent(linkedName, leadName);
+          const billIsLinkedConsumer =
+            billName &&
+            linkedConsumer &&
+            personNamesLikelySame(linkedConsumer, billName);
+          if (linkedName && !sameLead && !billIsLinkedConsumer) {
+            const createLeadResp = await fetch("/api/customers", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                name: leadName,
+                consumer_name: billName || undefined,
+                city: manual.city.trim() || "Unknown",
+                state: manual.state.trim() || undefined,
+                discom: manual.discom.trim() || installerDiscom || "Unknown",
+                monthly_bill: Math.max(0, Math.round(effectiveResult.currentMonthlyBill || 0)),
+                phone: proposalPhone || undefined,
+                status: "new",
+                area: manual.area.trim() || undefined,
+                connection_type: manual.connectionType.trim() || undefined,
+                force_new: true,
+                is_whatsapp_contact: false,
+              }),
+            });
+            if (createLeadResp.ok) {
+              const j = (await createLeadResp.json()) as { data?: { id?: string } };
+              const leadId = j.data?.id ?? "";
+              if (leadId) {
+                setSelectedLeadId(leadId);
+                setLastAutoLeadId(leadId);
+                return { leadId, created: true };
+              }
+            }
+          }
+        } catch {
+          /* fall through to sync existing */
+        }
+      }
       await syncSelectedLeadFromBills();
       return { leadId: selectedLeadId, created: false };
     }
-    const merged = mergeCustomerForProposal(manual, mergeParsedBills(latestBill, previousBill));
-    const customerName = resolveProposalCustomerName(
-      merged?.name,
-      manual.officialBillName,
-      manual.leadContactName
-    );
-    if (!customerName) {
+
+    if (!leadName && !billName) {
       return { leadId: null, created: false };
     }
-    const proposalPhone = pickProposalLeadPhone(manual.leadPhone, manual.billPhone);
     const createLeadResp = await fetch("/api/customers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        name: customerName,
+        name: leadName || billName,
+        consumer_name: leadName && billName && leadName !== billName ? billName : undefined,
         city: manual.city.trim() || "Unknown",
         state: manual.state.trim() || undefined,
         discom: manual.discom.trim() || installerDiscom || "Unknown",
@@ -1632,7 +1709,8 @@ function ProposalPageContent() {
         phone: proposalPhone || undefined,
         status: "new",
         area: manual.area.trim() || undefined,
-        connection_type: manual.connectionType.trim() || undefined
+        connection_type: manual.connectionType.trim() || undefined,
+        force_new: true,
       })
     });
     if (!createLeadResp.ok) {

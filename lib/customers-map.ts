@@ -37,6 +37,11 @@ export function mapCustomerRow(row: Record<string, unknown>): CustomerLead {
       row.connection_type != null && String(row.connection_type).trim()
         ? String(row.connection_type).trim().toLowerCase()
         : null,
+    household_id:
+      row.household_id != null && String(row.household_id).trim()
+        ? String(row.household_id).trim()
+        : null,
+    is_whatsapp_contact: row.is_whatsapp_contact === true,
     /* Phase 2 CRM summary fields — populated only by /api/customers list */
     next_followup_at:
       row.next_followup_at != null ? String(row.next_followup_at) : null,

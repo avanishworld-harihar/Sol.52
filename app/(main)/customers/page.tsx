@@ -137,12 +137,24 @@ function CustomersPageContent() {
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
+      const qDigits = q.replace(/\D/g, "");
       list = list.filter((c) => {
         const name = c.name.toLowerCase();
         const city = c.city.toLowerCase();
         const location = (c.location ?? "").toLowerCase();
         const consumer = (c.consumer_name ?? "").toLowerCase();
-        return name.includes(q) || city.includes(q) || location.includes(q) || consumer.includes(q);
+        const phone = (c.phone ?? "").toLowerCase();
+        const phoneDigits = (c.phone ?? "").replace(/\D/g, "");
+        const household = (c.household_member_names ?? []).join(" ").toLowerCase();
+        return (
+          name.includes(q) ||
+          city.includes(q) ||
+          location.includes(q) ||
+          consumer.includes(q) ||
+          phone.includes(q) ||
+          household.includes(q) ||
+          (qDigits.length >= 4 && phoneDigits.includes(qDigits))
+        );
       });
     }
     return list;
@@ -594,14 +606,18 @@ function CustomersPageContent() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(postBody)
         });
-        const result = await response.json() as { ok?: boolean; deduped?: boolean; error?: string; data?: CustomerLead };
+        const result = await response.json() as {
+          ok?: boolean;
+          deduped?: boolean;
+          householdLinked?: boolean;
+          error?: string;
+          data?: CustomerLead;
+        };
         if (!result.ok) throw new Error(result.error || "Could not save customer");
 
         const serverRow = result.data as CustomerLead;
         if (result.deduped) {
-          /* Phone matched an existing lead — roll back the optimistic row,
-           * surface an info toast, and revalidate so the existing lead
-           * surfaces at the top (its last_touched_at was just bumped). */
+          /* Same person (channel merge) — refresh existing. */
           await mutate(
             (prev) => (prev ?? []).filter((c) => c.id !== optimisticId),
             { revalidate: false }
@@ -623,7 +639,14 @@ function CustomersPageContent() {
             { revalidate: false }
           );
           await mutateGlobal(DASHBOARD_STATS_SWR_KEY, undefined, { revalidate: true });
-          toast.success("Customer saved", `${payload.name} has been added to your lead list.`);
+          if (result.householdLinked) {
+            toast.success(
+              "Family member added",
+              `${payload.name} saved — shares household / WhatsApp with an existing contact.`
+            );
+          } else {
+            toast.success("Customer saved", `${payload.name} has been added to your lead list.`);
+          }
         }
       } catch (e) {
         await mutate(
@@ -816,13 +839,16 @@ function CustomersPageContent() {
               <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto overscroll-contain px-4 py-3 pb-2 sm:space-y-3">
               {/* ── Essentials — fast capture ─────────────────────────────── */}
               <FloatingLabelInput
-                label="Lead name (person you met)"
+                label="Name"
                 containerClassName="my-4"
                 labelBackgroundClassName={modalLabelBg}
                 className={modalFloatingClass}
                 value={form.name}
                 onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
               />
+              <p className="-mt-2 mb-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                Person you met / WhatsApp with (e.g. Raju). Bill name fills later as consumer.
+              </p>
               <FloatingLabelInput
                 label={t("customers_placeholderPhone")}
                 containerClassName="my-4"
@@ -869,14 +895,16 @@ function CustomersPageContent() {
                     label={t("customers_regionSyncHint")}
                     detail={t("customers_regionSyncHint_detail")}
                   />
-                  <FloatingLabelInput
-                    label="Consumer name (on bill) — optional"
-                    containerClassName="my-4"
-                    labelBackgroundClassName={modalLabelBg}
-                    className={modalFloatingClass}
-                    value={form.consumer_name}
-                    onChange={(e) => setForm((p) => ({ ...p, consumer_name: e.target.value }))}
-                  />
+                  {leadModal === "edit" ? (
+                    <FloatingLabelInput
+                      label="Consumer name (on bill)"
+                      containerClassName="my-4"
+                      labelBackgroundClassName={modalLabelBg}
+                      className={modalFloatingClass}
+                      value={form.consumer_name}
+                      onChange={(e) => setForm((p) => ({ ...p, consumer_name: e.target.value }))}
+                    />
+                  ) : null}
                   <StaticLabelSelect
                     label={t("customers_labelState")}
                     containerClassName="my-4"

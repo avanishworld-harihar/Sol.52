@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Building2, MapPin, MessageCircle, Pencil, Phone, PhoneCall, Trash2, Users, Wifi } from "lucide-react";
 
 import type { CustomerLead } from "@/lib/types";
+import { formatPipelineDisplayName } from "@/lib/supabase";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import {
@@ -481,10 +482,11 @@ export function CustomersLeadList({
               const activeProject = stage === "active-project";
               const canMutateLead =
                 Boolean(onEditLead || onDeleteLead) && !customer.id.startsWith("optimistic-");
-              // Phase 2: display name — "ConsumerName (LeadName)" or just LeadName
-              const displayName = customer.consumer_name
-                ? `${customer.consumer_name} (${customer.name})`
-                : customer.name;
+              // Bill person first; lead in brackets when different (e.g. Ramprakash (Raju)).
+              const displayName = formatPipelineDisplayName(
+                customer.consumer_name ?? null,
+                customer.name
+              );
 
               return (
                 <article
@@ -535,6 +537,16 @@ export function CustomersLeadList({
                       <h3 className="truncate pr-1 text-lg font-extrabold leading-tight text-slate-900 dark:text-slate-50 md:max-xl:text-[15px] md:max-xl:leading-snug">
                         {displayName}
                       </h3>
+                      {customer.household_member_names && customer.household_member_names.length > 0 ? (
+                        <p className="mt-0.5 truncate text-[11px] font-medium text-teal-700 dark:text-teal-300">
+                          Family · {customer.household_member_names.join(", ")}
+                          {customer.is_whatsapp_contact ? " · WhatsApp contact" : ""}
+                        </p>
+                      ) : customer.is_whatsapp_contact ? (
+                        <p className="mt-0.5 text-[11px] font-medium text-teal-700/80 dark:text-teal-300/80">
+                          WhatsApp contact
+                        </p>
+                      ) : null}
                       <div className="mt-2 flex flex-wrap items-center gap-2 md:max-xl:mt-1 md:max-xl:gap-1">
                         <LeadSourceBadge sourceRaw={customer.source} />
                         <span
@@ -720,9 +732,10 @@ export function CustomersLeadList({
                 const nextFollowupTitle = customer.next_followup_title ?? null;
                 const lastActivityAt = customer.last_activity_at ?? customer.last_touched_at ?? null;
                 const lastActivityType = customer.last_activity_type ?? null;
-                const desktopDisplayName = customer.consumer_name
-                  ? `${customer.consumer_name} (${customer.name})`
-                  : customer.name;
+                const desktopDisplayName = formatPipelineDisplayName(
+                  customer.consumer_name ?? null,
+                  customer.name
+                );
                 const waUrl = customer.phone ? buildLeadWhatsAppUrl(customer.phone, customer.name, installerName, locale) : null;
                 const statusLabel = t(LEAD_STATUS_I18N_KEY[statusKey]);
                 const stale = isLeadStale(customer.last_touched_at);
@@ -788,6 +801,12 @@ export function CustomersLeadList({
                               {t(stageMeta.labelKey)}
                             </span>
                           </div>
+                          {customer.household_member_names && customer.household_member_names.length > 0 ? (
+                            <p className="mt-0.5 truncate text-[11px] font-medium text-teal-700 dark:text-teal-300">
+                              Family · {customer.household_member_names.join(", ")}
+                              {customer.is_whatsapp_contact ? " · WhatsApp contact" : ""}
+                            </p>
+                          ) : null}
 
                           <div className="mt-1.5 flex flex-wrap items-center gap-2">
                             <CustomerCallbackChip

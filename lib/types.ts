@@ -39,6 +39,12 @@ export type CustomerLead = {
    * survey + install workflow page (`not_started` | `scheduled` | `complete`).
    */
   survey_status?: string | null;
+  /** Family / site household group id. */
+  household_id?: string | null;
+  /** Primary WhatsApp / call contact when household shares a number. */
+  is_whatsapp_contact?: boolean | null;
+  /** Other member names in the same household (list decoration). */
+  household_member_names?: string[] | null;
   /** Derived from projects linkage for Customers UI. */
   customer_stage?: "lead" | "in-pipeline" | "active-project";
   /** Latest commercial proposal for this lead (CRM hand-off to /proposals/[id]). */
