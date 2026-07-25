@@ -606,22 +606,18 @@ export async function getProjectDetail(projectId: string): Promise<ProjectDetail
       project.official_name = stripped;
     }
 
-    /** If CRM lead name was overwritten with bill/husband honorific, restore contact name. */
-    if (project.lead_id && cleanTitle && leadNameRaw) {
-      const honorific = /^(shri|shree|smt\.?|mr\.?|mrs\.?|ms\.?)\b/i.test(leadNameRaw.trim());
-      if (honorific && leadNameRaw.toLowerCase() !== cleanTitle.toLowerCase()) {
-        const { resolveLeadsTable } = await import("@/lib/supabase");
-        const leadsTable = await resolveLeadsTable();
-        if (leadsTable) {
-          await client
-            .from(leadsTable)
-            .update({
-              name: cleanTitle,
-              consumer_name: leadNameRaw,
-            })
-            .eq("id", project.lead_id);
-          if (leads) leads.name = cleanTitle;
-        }
+    /** If CRM lead name was overwritten with bill/husband honorific, restore from project title. */
+    if (project.lead_id && leadNameRaw) {
+      try {
+        const { repairLeadNameFromLinkedProject } = await import("@/lib/crm-repair-lead-name");
+        const restored = await repairLeadNameFromLinkedProject(
+          client,
+          String(project.lead_id),
+          leadNameRaw
+        );
+        if (restored && leads) leads.name = restored;
+      } catch {
+        /* best-effort */
       }
     }
   } catch {

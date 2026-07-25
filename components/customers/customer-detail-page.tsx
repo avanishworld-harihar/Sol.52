@@ -368,16 +368,17 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
         <div className="space-y-3">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              {lead.consumer_name ? (
-                <>
-                  <h1 className="text-xl font-bold text-slate-900 dark:text-white">{lead.consumer_name}</h1>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
-                    Lead: <span className="font-semibold text-slate-700 dark:text-slate-300">{lead.name}</span>
-                  </p>
-                </>
-              ) : (
-                <h1 className="text-xl font-bold text-slate-900 dark:text-white">{lead.name}</h1>
-              )}
+              {/* CRM person only — never promote bill/husband consumer_name to the title. */}
+              <h1 className="text-xl font-bold text-slate-900 dark:text-white">{lead.name}</h1>
+              {lead.consumer_name &&
+              lead.consumer_name.trim().toLowerCase() !== lead.name.trim().toLowerCase() ? (
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  Bill / meter:{" "}
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">
+                    {lead.consumer_name}
+                  </span>
+                </p>
+              ) : null}
             </div>
             {lead.consumer_id ? (
               <span className="text-xs font-mono text-slate-500">CA# {lead.consumer_id}</span>
@@ -464,7 +465,7 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
 
       <QuickQuoteLauncher
         leadId={leadId}
-        customerName={lead.consumer_name?.trim() || lead.name?.trim() || undefined}
+        customerName={lead.name?.trim() || undefined}
         customerPhone={lead.phone}
         connectionPhaseHint={lead.connection_type}
         labels={quickQuoteLabels}

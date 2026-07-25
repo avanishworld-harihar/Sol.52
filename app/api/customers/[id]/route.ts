@@ -26,7 +26,24 @@ export async function GET(_req: NextRequest, ctx: RouteCtx) {
     const { data, error } = await db.from(leadsTable).select("*").eq("id", id).maybeSingle();
     if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 400 });
     if (!data) return NextResponse.json({ ok: false, error: "lead_not_found" }, { status: 404 });
-    const mapped = mapCustomerRow(data as Record<string, unknown>);
+
+    let row = data as Record<string, unknown>;
+    try {
+      const { repairLeadNameFromLinkedProject } = await import("@/lib/crm-repair-lead-name");
+      const restored = await repairLeadNameFromLinkedProject(
+        db,
+        id,
+        String(row.name ?? "")
+      );
+      if (restored) {
+        const { data: refreshed } = await db.from(leadsTable).select("*").eq("id", id).maybeSingle();
+        if (refreshed) row = refreshed as Record<string, unknown>;
+      }
+    } catch {
+      /* best-effort */
+    }
+
+    const mapped = mapCustomerRow(row);
     if (isWonLeadStatus(mapped.status)) {
       await ensureProjectForWonLead(id, {
         name: mapped.name,
