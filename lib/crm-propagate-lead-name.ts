@@ -1,8 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { personNamesLikelySame } from "@/lib/crm-household";
+import { personNamesLikelyDifferent, personNamesLikelySame } from "@/lib/crm-household";
+import { resolveLeadsTable } from "@/lib/supabase";
 
 /**
- * When CRM lead name changes, keep Projects + Proposals titles in sync.
+ * Sync project + proposal labels after CRM edit.
+ * Project main title = bill (consumer_name) when present; else contact (name).
+ * Lead contact stays in brackets via UI formatPipelineDisplayName(official, lead).
  */
 export async function propagateLeadNameChange(
   db: SupabaseClient,
@@ -15,18 +18,39 @@ export async function propagateLeadNameChange(
   const prev = (previousName ?? "").trim();
   const now = new Date().toISOString();
 
+  let billName = "";
+  try {
+    const leadsTable = await resolveLeadsTable();
+    if (leadsTable) {
+      const { data: lead } = await db
+        .from(leadsTable)
+        .select("name, consumer_name")
+        .eq("id", leadId)
+        .maybeSingle();
+      billName = lead?.consumer_name != null ? String(lead.consumer_name).trim() : "";
+    }
+  } catch {
+    /* ignore */
+  }
+
+  const projectTitle =
+    billName && personNamesLikelyDifferent(billName, name) ? billName : name;
+
   try {
     await db
       .from("projects")
       .update({
-        official_name: name,
-        customer_name: name,
+        official_name: projectTitle,
+        customer_name: projectTitle,
         updated_at: now,
       })
       .eq("lead_id", leadId);
   } catch {
     try {
-      await db.from("projects").update({ official_name: name, updated_at: now }).eq("lead_id", leadId);
+      await db
+        .from("projects")
+        .update({ official_name: projectTitle, updated_at: now })
+        .eq("lead_id", leadId);
     } catch {
       /* ignore */
     }
@@ -46,15 +70,18 @@ export async function propagateLeadNameChange(
       };
       const ppt = { ...(p.ppt_input ?? {}) };
       ppt.leadContactName = name;
-      /** Update deck customerName only when it matched the old CRM name (or empty). */
+      if (billName) {
+        ppt.officialBillName = billName;
+      }
       const deckCustomer =
         typeof ppt.customerName === "string" ? ppt.customerName.trim() : "";
       if (!deckCustomer || (prev && personNamesLikelySame(deckCustomer, prev))) {
-        ppt.customerName = name;
+        ppt.customerName = billName || name;
       }
       const propCustomer = String(p.customer_name ?? "").trim();
       const nextCustomerName =
-        !propCustomer || (prev && personNamesLikelySame(propCustomer, prev)) ? name : propCustomer;
+        billName ||
+        (!propCustomer || (prev && personNamesLikelySame(propCustomer, prev)) ? name : propCustomer);
 
       await db
         .from("proposals")
@@ -66,5 +93,39 @@ export async function propagateLeadNameChange(
     }
   } catch (err) {
     console.warn("[propagateLeadNameChange] proposals:", err);
+  }
+}
+
+/** After consumer_name (bill) changes, refresh project main title. */
+export async function propagateLeadBillNameChange(
+  db: SupabaseClient,
+  leadId: string,
+  contactName: string,
+  billName: string | null
+): Promise<void> {
+  const contact = contactName.trim();
+  const bill = (billName ?? "").trim();
+  const projectTitle =
+    bill && (!contact || personNamesLikelyDifferent(bill, contact)) ? bill : contact || bill;
+  if (!leadId || !projectTitle) return;
+  const now = new Date().toISOString();
+  try {
+    await db
+      .from("projects")
+      .update({
+        official_name: projectTitle,
+        customer_name: projectTitle,
+        updated_at: now,
+      })
+      .eq("lead_id", leadId);
+  } catch {
+    try {
+      await db
+        .from("projects")
+        .update({ official_name: projectTitle, updated_at: now })
+        .eq("lead_id", leadId);
+    } catch {
+      /* ignore */
+    }
   }
 }

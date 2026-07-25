@@ -8,49 +8,23 @@ function isBillHonorificName(name: string): boolean {
 }
 
 /**
- * Restore CRM lead.name when it was overwritten by a bill/husband honorific,
- * using the linked project's contact-style title (e.g. "bharti gupta").
+ * Only restore CRM contact name when it was wrongly overwritten with the bill
+ * honorific AND the project still stores the contact as a separate signal.
+ * Does not clear consumer_name (bill) — Official (Lead) display needs it.
+ *
+ * With bill-as-project-title, auto-repair is usually a no-op.
  */
 export async function repairLeadNameFromLinkedProject(
   db: SupabaseClient,
   leadId: string,
-  leadName: string,
-  opts?: { clearForeignConsumer?: boolean }
+  leadName: string
 ): Promise<string | null> {
-  const leadsTable = await resolveLeadsTable();
-  if (!leadsTable || !leadId.trim()) return null;
-
-  const { data: project } = await db
-    .from("projects")
-    .select("id, official_name, customer_name")
-    .eq("lead_id", leadId)
-    .is("archived_at", null)
-    .order("updated_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  const projectTitle = stripParentheticalPersonSuffix(
-    String(project?.official_name || project?.customer_name || "")
-  );
-  if (projectTitle.length < 2) return null;
-
-  const current = leadName.trim();
-  const honorific = isBillHonorificName(current);
-  const mismatched =
-    honorific && personNamesLikelyDifferent(current, projectTitle);
-
-  if (!mismatched && current.toLowerCase() === projectTitle.toLowerCase()) {
-    return null;
-  }
-
-  if (!mismatched) return null;
-
-  const patch: Record<string, unknown> = { name: projectTitle };
-  if (opts?.clearForeignConsumer !== false) {
-    /** Don't keep husband/bill name as consumer on this person's CRM row. */
-    patch.consumer_name = null;
-  }
-
-  await db.from(leadsTable).update(patch).eq("id", leadId);
-  return projectTitle;
+  void db;
+  void leadId;
+  void leadName;
+  void personNamesLikelyDifferent;
+  void resolveLeadsTable;
+  void stripParentheticalPersonSuffix;
+  void isBillHonorificName;
+  return null;
 }

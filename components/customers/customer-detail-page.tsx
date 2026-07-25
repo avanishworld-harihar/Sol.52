@@ -32,6 +32,7 @@ import { Button } from "@/components/ui/button";
 import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { useToast } from "@/components/ui/toast-center";
 import type { CustomerLead } from "@/lib/types";
+import { formatPipelineDisplayName } from "@/lib/supabase";
 import {
   LEAD_STATUS_BADGE,
   LEAD_STATUS_OPTIONS,
@@ -368,15 +369,15 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
         <div className="space-y-3">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              {/* CRM person only — never promote bill/husband consumer_name to the title. */}
-              <h1 className="text-xl font-bold text-slate-900 dark:text-white">{lead.name}</h1>
+              {/* Bill / official main; lead in brackets when different (same name → no brackets). */}
+              <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+                {formatPipelineDisplayName(lead.consumer_name ?? null, lead.name)}
+              </h1>
               {lead.consumer_name &&
               lead.consumer_name.trim().toLowerCase() !== lead.name.trim().toLowerCase() ? (
                 <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Bill / meter:{" "}
-                  <span className="font-semibold text-slate-700 dark:text-slate-300">
-                    {lead.consumer_name}
-                  </span>
+                  Lead contact:{" "}
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">{lead.name}</span>
                 </p>
               ) : null}
             </div>

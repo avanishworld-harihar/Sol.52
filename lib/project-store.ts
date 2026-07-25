@@ -103,10 +103,10 @@ export async function ensureProjectForWonLead(
   if (!client || !leadId.trim()) return null;
 
   const orgId = await resolveDefaultOrgId();
-  const displayName =
-    lead?.name?.trim() ||
-    lead?.consumer_name?.trim() ||
-    "Unnamed Project";
+  /** Project main title = bill name when present; lead contact used for brackets in UI. */
+  const billName = lead?.consumer_name?.trim() || "";
+  const contactName = lead?.name?.trim() || "";
+  const displayName = billName || contactName || "Unnamed Project";
   const now = new Date().toISOString();
 
   const { data: existing } = await client
@@ -118,9 +118,14 @@ export async function ensureProjectForWonLead(
   if (existing) {
     const patch: Record<string, unknown> = { updated_at: now };
     if (orgId && !existing.organization_id) patch.organization_id = orgId;
-    /** Seed empty titles from CRM person — never overwrite with bill/husband name. */
-    if (!existing.official_name) patch.official_name = displayName;
-    if (!existing.customer_name) patch.customer_name = displayName;
+    /** Keep official_name as bill (main); refresh when consumer_name known. */
+    if (billName) {
+      patch.official_name = billName;
+      patch.customer_name = billName;
+    } else if (!existing.official_name && contactName) {
+      patch.official_name = contactName;
+      patch.customer_name = contactName;
+    }
     if (existing.dashboard_visible === false) patch.dashboard_visible = true;
     if (existing.archived_at != null) patch.archived_at = null;
     if (!existing.current_stage) patch.current_stage = "survey";

@@ -5,6 +5,7 @@
 
 import type { ProjectHealth } from "@/lib/project-health";
 import type { ProjectListItem } from "@/lib/project-api-client";
+import { formatPipelineDisplayName } from "@/lib/supabase";
 import type { ProjectStageId } from "@/lib/project-stages";
 import { STAGE_LABELS } from "@/lib/project-stages";
 
@@ -53,24 +54,14 @@ export function stripParentheticalPersonSuffix(raw: string | null | undefined): 
   return stripped || s;
 }
 
-function isBillHonorificName(name: string): boolean {
-  return /^(shri|shree|smt\.?|mr\.?|mrs\.?|ms\.?)\b/i.test(name.trim());
-}
-
 /**
- * Project title = one person only (the CRM lead / contact).
- * Never "Bharti (Rajesh)" — household members keep separate projects.
+ * Project title = bill/official main; lead in brackets when different.
+ * e.g. Ramprakash (Raju) — or just Raju when bill name matches lead.
  */
 export function projectDisplayName(p: ProjectListItem): string {
-  const lead = stripParentheticalPersonSuffix(p.lead_name);
   const official = stripParentheticalPersonSuffix(p.official_name);
-  if (lead && official && lead.toLowerCase() !== official.toLowerCase()) {
-    /** Prefer contact-style name when lead row was overwritten with bill/husband honorific. */
-    if (isBillHonorificName(lead) && !isBillHonorificName(official)) return official;
-    if (!isBillHonorificName(lead)) return lead;
-  }
-  if (lead) return lead;
-  return official || "Project";
+  const lead = stripParentheticalPersonSuffix(p.lead_name);
+  return formatPipelineDisplayName(official || null, lead || null);
 }
 
 export function projectSearchHaystack(p: ProjectListItem): string {

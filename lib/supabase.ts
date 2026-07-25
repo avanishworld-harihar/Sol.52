@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { phonesMatch } from "@/lib/crm-household";
+import { phonesMatch, personNamesLikelySame } from "@/lib/crm-household";
 import {
   buildDemoSeedLeadIdSet,
   filterOutDemoSeedLeads,
@@ -115,16 +115,9 @@ export type ListPipelineProjectsOptions = {
 };
 
 /**
- * Display name shown on project cards / dashboard.
- *
- * Spec rule (Sol.52):
- *   - If only one of {official bill name, lead contact name} is present, show it.
- *   - If both are present and the FIRST tokens match (case-insensitive), drop
- *     the bracket — same person, no need to repeat.
- *     e.g. official="Ravi Sharma", lead="Ravi" → "Ravi Sharma"
- *   - Otherwise show "Official (Lead)" so installer instantly sees who to call
- *     vs. whose name is on the meter.
- *     e.g. official="Sunita Devi", lead="Rahul" → "Sunita Devi (Rahul)"
+ * Display name: bill / official first; lead contact in brackets when different.
+ * Same person (e.g. bill "Raju" + lead "Raju") → no brackets.
+ * Different (e.g. bill "Ramprakash" + lead "Raju") → "Ramprakash (Raju)".
  */
 export function formatPipelineDisplayName(official: string | null, leadName: string | null): string {
   const o = (official ?? "").trim();
@@ -132,6 +125,7 @@ export function formatPipelineDisplayName(official: string | null, leadName: str
   if (!o && !l) return "—";
   if (!o) return l;
   if (!l) return o;
+  if (personNamesLikelySame(o, l)) return o;
   const firstO = o.split(/\s+/)[0]?.toLowerCase() ?? "";
   const firstL = l.split(/\s+/)[0]?.toLowerCase() ?? "";
   if (firstO && firstL && firstO === firstL) return o;
@@ -287,18 +281,20 @@ export async function upsertPipelineProject(payload: {
   if (!client) return null;
   const now = new Date().toISOString();
 
-  /** Project person = CRM lead name. Proposal customerName is often the bill holder. */
+  /** Project main title = bill (consumer) when set; else contact name. */
   let personName = payload.official_name?.trim() || null;
   try {
     const leadsTable = await resolveLeadsTable();
     if (leadsTable) {
       const { data: lead } = await client
         .from(leadsTable)
-        .select("name")
+        .select("name, consumer_name")
         .eq("id", payload.lead_id)
         .maybeSingle();
-      const leadName = lead?.name != null ? String(lead.name).trim() : "";
-      if (leadName) personName = leadName;
+      const contact = lead?.name != null ? String(lead.name).trim() : "";
+      const bill = lead?.consumer_name != null ? String(lead.consumer_name).trim() : "";
+      if (bill) personName = bill;
+      else if (contact) personName = contact;
     }
   } catch {
     /* keep payload name */

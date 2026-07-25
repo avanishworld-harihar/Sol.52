@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Building2, MapPin, MessageCircle, Pencil, Phone, PhoneCall, Trash2, Users, Wifi } from "lucide-react";
 
 import type { CustomerLead } from "@/lib/types";
+import { formatPipelineDisplayName } from "@/lib/supabase";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import {
@@ -437,8 +438,11 @@ export function CustomersLeadList({
               const activeProject = stage === "active-project";
               const canMutateLead =
                 Boolean(onEditLead || onDeleteLead) && !customer.id.startsWith("optimistic-");
-              // Lead / contact name only — do not mash bill/husband name into the title.
-              const displayName = customer.name;
+              // Bill name main; lead in brackets when different (Ramprakash (Raju)).
+              const displayName = formatPipelineDisplayName(
+                customer.consumer_name ?? null,
+                customer.name
+              );
 
               return (
                 <article
@@ -684,7 +688,10 @@ export function CustomersLeadList({
                 const nextFollowupTitle = customer.next_followup_title ?? null;
                 const lastActivityAt = customer.last_activity_at ?? customer.last_touched_at ?? null;
                 const lastActivityType = customer.last_activity_type ?? null;
-                const desktopDisplayName = customer.name;
+                const desktopDisplayName = formatPipelineDisplayName(
+                  customer.consumer_name ?? null,
+                  customer.name
+                );
                 const waUrl = customer.phone ? buildLeadWhatsAppUrl(customer.phone, customer.name, installerName, locale) : null;
                 const statusLabel = t(LEAD_STATUS_I18N_KEY[statusKey]);
                 const stale = isLeadStale(customer.last_touched_at);

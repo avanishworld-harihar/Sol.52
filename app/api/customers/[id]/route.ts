@@ -206,6 +206,18 @@ export async function PATCH(req: NextRequest, ctx: RouteCtx) {
       } catch (err) {
         console.warn("[PATCH customers] propagateLeadNameChange:", err);
       }
+    } else if (patch.consumer_name !== undefined) {
+      try {
+        const { propagateLeadBillNameChange } = await import("@/lib/crm-propagate-lead-name");
+        await propagateLeadBillNameChange(
+          db,
+          id,
+          String(updatedRow.name ?? ""),
+          updatedRow.consumer_name != null ? String(updatedRow.consumer_name) : null
+        );
+      } catch (err) {
+        console.warn("[PATCH customers] propagateLeadBillNameChange:", err);
+      }
     }
 
     const changedFields = Object.keys(patch).filter((k) => k !== "last_touched_at");
