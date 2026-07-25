@@ -590,7 +590,6 @@ export async function getProjectDetail(projectId: string): Promise<ProjectDetail
         })
         .eq("id", project.id);
       project.official_name = cleanTitle;
-      project.customer_name = cleanTitle;
     } else if (
       project.official_name &&
       stripParentheticalPersonSuffix(project.official_name) !== project.official_name
@@ -605,7 +604,6 @@ export async function getProjectDetail(projectId: string): Promise<ProjectDetail
         })
         .eq("id", project.id);
       project.official_name = stripped;
-      project.customer_name = stripped;
     }
 
     /** If CRM lead name was overwritten with bill/husband honorific, restore contact name. */
