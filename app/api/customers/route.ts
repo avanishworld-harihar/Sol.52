@@ -38,26 +38,34 @@ const customerSchema = z.object({
 
 export async function GET() {
   try {
-    /** Link won leads → projects before stage decoration (e.g. Bharti Gupta). */
-    await syncWonLeadProjects();
-    /** Split bill/husband (Rajesh) off project leads (Bharti) when wrongly merged. */
+    /**
+     * Critical household split must finish before the list returns so Rajesh
+     * (proposal person) appears and Bharti's stolen bill/CA are cleared.
+     * Heavier project backfills stay in the background.
+     */
     try {
       await unmergeBillHolderFromProjectLeads();
     } catch (err) {
       console.warn("[customers GET] unmerge bill holder:", err);
     }
-    /** Active projects without a CRM lead get one so they stay on Customers. */
-    try {
-      await syncLeadsFromActiveProjects();
-    } catch (err) {
-      console.warn("[customers GET] project→lead sync:", err);
-    }
-    /** Proposal names (e.g. Rajesh) become distinct household leads when linked to another person. */
     try {
       await syncMissingHouseholdLeadsFromProposals();
     } catch (err) {
       console.warn("[customers GET] household sync:", err);
     }
+
+    void (async () => {
+      try {
+        await syncWonLeadProjects();
+      } catch (err) {
+        console.warn("[customers GET] syncWonLeadProjects:", err);
+      }
+      try {
+        await syncLeadsFromActiveProjects();
+      } catch (err) {
+        console.warn("[customers GET] project→lead sync:", err);
+      }
+    })();
 
     const raw = await listCustomers();
     const customers = (raw as Record<string, unknown>[]).map(mapCustomerRow);

@@ -103,7 +103,7 @@ const patchSchema = z
     city: z.string().min(1).max(160).optional(),
     state: z.string().max(120).optional(),
     discom: z.string().max(160).optional(),
-    email: z.string().email().max(160).optional().nullable(),
+    email: z.union([z.string().email().max(160), z.literal("")]).optional().nullable(),
     phone: z.string().max(40).optional().nullable(),
     monthly_bill: z.number().nonnegative().optional(),
     consumer_id: z.string().max(160).optional().nullable(),
@@ -116,10 +116,31 @@ const patchSchema = z
 
 export async function PATCH(req: NextRequest, ctx: RouteCtx) {
   try {
-    const { id } = await ctx.params;
+    const { id: rawId } = await ctx.params;
+    const id = decodeURIComponent(String(rawId ?? "")).trim();
     if (!id) return NextResponse.json({ ok: false, error: "missing id" }, { status: 400 });
 
-    const body = await req.json();
+    const body = (await req.json()) as Record<string, unknown>;
+    /** Soften client payloads so Zod does not reject common empty/invalid optionals. */
+    if (body.area != null && body.area !== "urban" && body.area !== "rural") {
+      body.area = null;
+    }
+    if (typeof body.status === "string") {
+      const { normalizeLeadStatus } = await import("@/lib/lead-status");
+      body.status = normalizeLeadStatus(body.status);
+    }
+    if (body.survey_status === "") body.survey_status = null;
+    if (body.state === "") delete body.state;
+    if (body.location === "") body.location = null;
+    if (body.connection_type === "") body.connection_type = null;
+    if (body.consumer_id === "") body.consumer_id = null;
+    if (body.phone === "") body.phone = null;
+    if (body.email === "") body.email = null;
+    if (typeof body.monthly_bill === "string") {
+      const n = Number(body.monthly_bill);
+      body.monthly_bill = Number.isFinite(n) ? n : undefined;
+    }
+
     const patch = patchSchema.parse(body);
 
     /**
@@ -196,7 +217,11 @@ export async function PATCH(req: NextRequest, ctx: RouteCtx) {
     };
     const { data: updatedRow, error: updateErr } = await updateLeadAdaptive(db, leadsTable, id, updatePayload);
     if (updateErr || !updatedRow) {
-      return NextResponse.json({ ok: false, error: updateErr ?? "Lead update failed" }, { status: 400 });
+      const friendly =
+        updateErr && /leads_phone_unique|duplicate key.*phone/i.test(updateErr)
+          ? "This phone is already on another lead. Run migration 073 (household shared phone), or clear/change the phone."
+          : updateErr ?? "Lead update failed";
+      return NextResponse.json({ ok: false, error: friendly }, { status: 400 });
     }
 
     if (patch.name?.trim()) {

@@ -36,10 +36,18 @@ export function buildLeadPatchFromProposal(
   if (!leadName && !billName) return null;
 
   const patch: LeadPatchFromProposal = {};
-  /** CRM `name` = friendly lead; `consumer_name` = bill person (only when different). */
-  if (leadName) patch.name = leadName;
-  if (billName && billName.toLowerCase() !== leadName.toLowerCase()) {
-    patch.consumer_name = billName;
+  /**
+   * CRM `name` = contact person. Prefer explicit lead contact; else bill name
+   * (proposal is for that person). Never write bill-only onto another lead as
+   * `consumer_name` without a separate lead contact — that merged Rajesh onto Bharti.
+   */
+  if (leadName) {
+    patch.name = leadName;
+    if (billName && billName.toLowerCase() !== leadName.toLowerCase()) {
+      patch.consumer_name = billName;
+    }
+  } else if (billName) {
+    patch.name = billName;
   }
 
   const city = manual.city.trim() || merged?.district?.trim();

@@ -89,16 +89,6 @@ export async function unmergeBillHolderFromProjectLeads(): Promise<{
       continue;
     }
 
-    /** Ensure project lead is the project person. */
-    const leadPatch: Record<string, unknown> = {
-      name: projectPerson,
-      consumer_name: null,
-      consumer_id: null,
-    };
-    const caNumber =
-      lead.consumer_id != null && String(lead.consumer_id).trim()
-        ? String(lead.consumer_id).trim()
-        : null;
     const monthlyBill = Number(lead.monthly_bill ?? 0) || 0;
     const phone = lead.phone != null ? String(lead.phone) : "";
     const city = String(lead.city ?? "Unknown") || "Unknown";
@@ -106,6 +96,40 @@ export async function unmergeBillHolderFromProjectLeads(): Promise<{
     const discom = String(lead.discom ?? "Unknown") || "Unknown";
     const area = lead.area != null ? String(lead.area) : null;
     const location = lead.location != null ? String(lead.location) : null;
+
+    /** Prefer CA already on lead; else from a bill-person proposal ppt. */
+    let caNumber =
+      lead.consumer_id != null && String(lead.consumer_id).trim()
+        ? String(lead.consumer_id).trim()
+        : null;
+    if (!caNumber) {
+      const { data: propRows } = await client
+        .from("proposals")
+        .select("customer_name, ppt_input")
+        .eq("lead_id", leadId)
+        .limit(20);
+      for (const p of propRows ?? []) {
+        const prop = p as { customer_name?: string | null; ppt_input?: Record<string, unknown> | null };
+        const propName = String(prop.customer_name ?? "").trim();
+        if (!propName || !personNamesLikelySame(propName, billPerson)) continue;
+        const ppt = prop.ppt_input ?? {};
+        for (const key of ["consumerId", "consumer_id", "caNumber"] as const) {
+          const v = ppt[key];
+          if (typeof v === "string" && v.trim()) {
+            caNumber = v.trim();
+            break;
+          }
+        }
+        if (caNumber) break;
+      }
+    }
+
+    /** Ensure project lead is the project person (no husband's bill/CA). */
+    const leadPatch: Record<string, unknown> = {
+      name: projectPerson,
+      consumer_name: null,
+      consumer_id: null,
+    };
 
     await client.from(leadsTable).update(leadPatch).eq("id", leadId);
 
@@ -159,14 +183,14 @@ export async function unmergeBillHolderFromProjectLeads(): Promise<{
         console.warn("[unmergeBillHolderFromProjectLeads] create", project.id, err);
         continue;
       }
-    } else if (caNumber) {
-      await client
-        .from(leadsTable)
-        .update({
-          consumer_id: caNumber,
-          ...(monthlyBill > 0 ? { monthly_bill: monthlyBill } : {}),
-        })
-        .eq("id", billLeadId);
+    } else {
+      const billPatch: Record<string, unknown> = {
+        /** Bill person is their own contact — name is the bill name; no nested consumer. */
+        consumer_name: null,
+      };
+      if (caNumber) billPatch.consumer_id = caNumber;
+      if (monthlyBill > 0) billPatch.monthly_bill = monthlyBill;
+      await client.from(leadsTable).update(billPatch).eq("id", billLeadId);
     }
 
     if (!billLeadId) continue;
@@ -201,8 +225,9 @@ export async function unmergeBillHolderFromProjectLeads(): Promise<{
         !personNamesLikelySame(propName, projectPerson);
 
       if (belongsToBill || (clearlyNotProject && personNamesLikelySame(propName, billPerson))) {
-        const nextPpt = { ...ppt, crmProfileDismissed: false };
+        const nextPpt: Record<string, unknown> = { ...(ppt as Record<string, unknown>) };
         delete nextPpt.crmDismissedName;
+        nextPpt.crmProfileDismissed = false;
         await client
           .from("proposals")
           .update({ lead_id: billLeadId, ppt_input: nextPpt })

@@ -2,47 +2,59 @@ import { personNamesLikelyDifferent, personNamesLikelySame } from "@/lib/crm-hou
 import { normalizeLeadPhoneForStorage } from "@/lib/lead-phone";
 import { processInboundLead } from "@/lib/inbound-leads";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
-import { resolveLeadsTable, supabase } from "@/lib/supabase";
+import { findLeadsByPhone, resolveLeadsTable, supabase } from "@/lib/supabase";
 
 function db() {
   return createSupabaseAdmin() ?? supabase;
 }
 
-function leadCoversProposalName(
-  lead: { name?: unknown; consumer_name?: unknown },
+/**
+ * A CRM lead "is" the proposal person only when the contact `name` matches.
+ * Never treat `consumer_name` (bill holder) as identity — that is how Bharti's
+ * lead wrongly "covered" Rajesh's proposal and hid him from Customers.
+ */
+function leadIsProposalPerson(
+  lead: { name?: unknown },
   proposalName: string
 ): boolean {
-  const leadName = String(lead.name ?? "");
-  const consumer = String(lead.consumer_name ?? "");
-  if (personNamesLikelySame(leadName, proposalName)) return true;
-  if (consumer && personNamesLikelySame(consumer, proposalName)) return true;
-  return false;
+  return personNamesLikelySame(String(lead.name ?? ""), proposalName);
+}
+
+function readCaFromPpt(ppt: Record<string, unknown>): string | null {
+  for (const key of ["consumerId", "consumer_id", "caNumber", "ca_number"] as const) {
+    const v = ppt[key];
+    if (typeof v === "string" && v.trim()) return v.trim();
+  }
+  return null;
 }
 
 /**
  * Ensure every proposal's visible customer name has a CRM lead/profile.
  * If the proposal is linked to someone else (e.g. Bharti) but shows
  * "SHRI RAJESH…", create/find Rajesh as a household sibling and relink.
+ * Move CA / bill fields off the wrong lead onto Rajesh.
  */
 export async function syncMissingHouseholdLeadsFromProposals(): Promise<{
   created: number;
   relinked: number;
+  cleaned: number;
 }> {
   const client = db();
-  if (!client) return { created: 0, relinked: 0 };
+  if (!client) return { created: 0, relinked: 0, cleaned: 0 };
   const leadsTable = await resolveLeadsTable();
-  if (!leadsTable) return { created: 0, relinked: 0 };
+  if (!leadsTable) return { created: 0, relinked: 0, cleaned: 0 };
 
   const { data: proposals, error } = await client
     .from("proposals")
     .select("id, customer_name, lead_id, ppt_input")
     .order("generated_at", { ascending: false })
-    .limit(150);
+    .limit(200);
 
-  if (error || !Array.isArray(proposals)) return { created: 0, relinked: 0 };
+  if (error || !Array.isArray(proposals)) return { created: 0, relinked: 0, cleaned: 0 };
 
   let created = 0;
   let relinked = 0;
+  let cleaned = 0;
 
   for (const row of proposals) {
     const proposal = row as {
@@ -63,9 +75,8 @@ export async function syncMissingHouseholdLeadsFromProposals(): Promise<{
       (typeof ppt.customerPhone === "string" && ppt.customerPhone) ||
       (typeof ppt.phone === "string" && ppt.phone) ||
       "";
-    const phone = normalizeLeadPhoneForStorage(phoneRaw);
-
-    /** Name shown on the proposal = the person who needs a Customers profile. */
+    let phone = normalizeLeadPhoneForStorage(phoneRaw);
+    const caFromPpt = readCaFromPpt(ppt);
     const proposalPersonName = customerName;
 
     let linkedLead: Record<string, unknown> | null = null;
@@ -78,21 +89,53 @@ export async function syncMissingHouseholdLeadsFromProposals(): Promise<{
       linkedLead = (data as Record<string, unknown> | null) ?? null;
     }
 
-    if (linkedLead && leadCoversProposalName(linkedLead, proposalPersonName)) {
+    if (!phone && linkedLead?.phone != null) {
+      phone = normalizeLeadPhoneForStorage(String(linkedLead.phone));
+    }
+
+    /** CA / bill fields to move off a wrongly merged contact lead. */
+    let movedCa: string | null = caFromPpt;
+    let movedMonthly = 0;
+
+    /** Already on the correct person's lead. */
+    if (linkedLead && leadIsProposalPerson(linkedLead, proposalPersonName)) {
+      if (caFromPpt && !String(linkedLead.consumer_id ?? "").trim()) {
+        await client
+          .from(leadsTable)
+          .update({ consumer_id: caFromPpt })
+          .eq("id", String(linkedLead.id));
+      }
       continue;
     }
 
-    /** Clear wrong bill/husband name stuck on another person's lead. */
-    if (
-      linkedLead &&
-      String(linkedLead.consumer_name ?? "").trim() &&
-      personNamesLikelySame(String(linkedLead.consumer_name), proposalPersonName) &&
-      personNamesLikelyDifferent(String(linkedLead.name ?? ""), proposalPersonName)
-    ) {
-      await client
-        .from(leadsTable)
-        .update({ consumer_name: null })
-        .eq("id", String(linkedLead.id));
+    /**
+     * Wrong lead (e.g. Bharti) has Rajesh stuck as bill/CA because phones match.
+     * Strip those fields from the contact lead — they belong on Rajesh's row.
+     */
+    if (linkedLead) {
+      const wrongConsumer = String(linkedLead.consumer_name ?? "").trim();
+      const wrongCa = String(linkedLead.consumer_id ?? "").trim();
+      const strip: Record<string, unknown> = {};
+      if (
+        wrongConsumer &&
+        personNamesLikelySame(wrongConsumer, proposalPersonName) &&
+        personNamesLikelyDifferent(String(linkedLead.name ?? ""), proposalPersonName)
+      ) {
+        strip.consumer_name = null;
+        if (!movedCa && wrongCa) movedCa = wrongCa;
+        const mb = Number(linkedLead.monthly_bill ?? 0) || 0;
+        if (mb > 0) movedMonthly = mb;
+      }
+      if (wrongCa && movedCa && wrongCa.replace(/\s/g, "").toLowerCase() === movedCa.replace(/\s/g, "").toLowerCase()) {
+        strip.consumer_id = null;
+      } else if (wrongCa && strip.consumer_name === null) {
+        strip.consumer_id = null;
+        if (!movedCa) movedCa = wrongCa;
+      }
+      if (Object.keys(strip).length > 0) {
+        await client.from(leadsTable).update(strip).eq("id", String(linkedLead.id));
+        cleaned += 1;
+      }
     }
 
     const tokens = proposalPersonName
@@ -104,42 +147,99 @@ export async function syncMissingHouseholdLeadsFromProposals(): Promise<{
 
     const { data: byName } = await client
       .from(leadsTable)
-      .select("id, name, consumer_name, phone, household_id")
+      .select("id, name, consumer_name, phone, household_id, consumer_id")
       .ilike("name", `%${tokens.join("%")}%`)
       .limit(30);
 
-    let nameHit = Array.isArray(byName)
+    const nameHit = Array.isArray(byName)
       ? (byName as Record<string, unknown>[]).find((l) =>
-          leadCoversProposalName(l, proposalPersonName)
+          leadIsProposalPerson(l, proposalPersonName)
         )
       : undefined;
 
-    if (!nameHit) {
-      const { data: byConsumer } = await client
-        .from(leadsTable)
-        .select("id, name, consumer_name, phone, household_id")
-        .ilike("consumer_name", `%${tokens.join("%")}%`)
-        .limit(30);
-      nameHit = Array.isArray(byConsumer)
-        ? (byConsumer as Record<string, unknown>[]).find((l) =>
-            leadCoversProposalName(l, proposalPersonName)
-          )
-        : undefined;
-    }
+    const assignBillFields = async (billLeadId: string) => {
+      const patch: Record<string, unknown> = { consumer_name: null };
+      if (movedCa) patch.consumer_id = movedCa;
+      if (movedMonthly > 0) patch.monthly_bill = movedMonthly;
+      if (Object.keys(patch).length > 1 || movedCa) {
+        await client.from(leadsTable).update(patch).eq("id", billLeadId);
+      }
+      /** Any other lead holding this CA (e.g. N1906017048 on Bharti) must release it. */
+      if (movedCa) {
+        const caNorm = movedCa.replace(/\s/g, "").toLowerCase();
+        const { data: caHolders } = await client
+          .from(leadsTable)
+          .select("id, name, consumer_id")
+          .limit(80);
+        for (const row of caHolders ?? []) {
+          const holder = row as Record<string, unknown>;
+          const hid = String(holder.id ?? "");
+          if (!hid || hid === billLeadId) continue;
+          const hCa = String(holder.consumer_id ?? "")
+            .replace(/\s/g, "")
+            .toLowerCase();
+          if (!hCa || (hCa !== caNorm && !hCa.endsWith(caNorm) && !caNorm.endsWith(hCa))) {
+            continue;
+          }
+          if (!personNamesLikelyDifferent(String(holder.name ?? ""), proposalPersonName)) continue;
+          await client
+            .from(leadsTable)
+            .update({ consumer_id: null, consumer_name: null })
+            .eq("id", hid);
+          cleaned += 1;
+        }
+      }
+    };
+
+    /** Also strip Rajesh bill/CA from any other same-phone contact leads. */
+    const scrubPeers = async (exceptId: string) => {
+      if (!phone) return;
+      const peers = await findLeadsByPhone(phone);
+      for (const peer of peers) {
+        const pid = String(peer.id ?? "");
+        if (!pid || pid === exceptId) continue;
+        if (!personNamesLikelyDifferent(String(peer.name ?? ""), proposalPersonName)) continue;
+        const peerConsumer = String(peer.consumer_name ?? "").trim();
+        const peerCa = String(peer.consumer_id ?? "").trim();
+        const scrub: Record<string, unknown> = {};
+        if (peerConsumer && personNamesLikelySame(peerConsumer, proposalPersonName)) {
+          scrub.consumer_name = null;
+          if (!movedCa && peerCa) movedCa = peerCa;
+        }
+        if (
+          peerCa &&
+          movedCa &&
+          peerCa.replace(/\s/g, "").toLowerCase() === movedCa.replace(/\s/g, "").toLowerCase()
+        ) {
+          scrub.consumer_id = null;
+        } else if (peerCa && scrub.consumer_name === null) {
+          scrub.consumer_id = null;
+          if (!movedCa) movedCa = peerCa;
+        }
+        if (Object.keys(scrub).length > 0) {
+          await client.from(leadsTable).update(scrub).eq("id", pid);
+          cleaned += 1;
+        }
+      }
+    };
 
     if (nameHit?.id) {
-      if (proposal.lead_id !== nameHit.id) {
-        await client.from("proposals").update({ lead_id: nameHit.id }).eq("id", proposal.id);
+      const billLeadId = String(nameHit.id);
+      if (proposal.lead_id !== billLeadId) {
+        await client.from("proposals").update({ lead_id: billLeadId }).eq("id", proposal.id);
         relinked += 1;
       }
+      await scrubPeers(billLeadId);
+      await assignBillFields(billLeadId);
       continue;
     }
 
     /** No CRM profile for this proposal person yet → create one (household if same phone). */
     try {
+      const monthlyFromLinked = movedMonthly || Number(linkedLead?.monthly_bill ?? 0) || 0;
       const result = await processInboundLead({
         name: proposalPersonName,
-        phone: phone || (linkedLead?.phone != null ? String(linkedLead.phone) : ""),
+        phone: phone || "",
         city:
           (typeof ppt.city === "string" && ppt.city) ||
           (linkedLead?.city != null ? String(linkedLead.city) : "") ||
@@ -151,7 +251,8 @@ export async function syncMissingHouseholdLeadsFromProposals(): Promise<{
           (typeof ppt.discom === "string" && ppt.discom) ||
           (linkedLead?.discom != null ? String(linkedLead.discom) : "") ||
           "Unknown",
-        monthly_bill: 0,
+        monthly_bill: monthlyFromLinked > 0 ? monthlyFromLinked : 0,
+        consumer_id: movedCa,
         source: "manual",
         forceNew: true,
         isWhatsappContact: false,
@@ -167,10 +268,12 @@ export async function syncMissingHouseholdLeadsFromProposals(): Promise<{
         await client.from("proposals").update({ lead_id: newId }).eq("id", proposal.id);
         relinked += 1;
       }
+      await scrubPeers(newId);
+      await assignBillFields(newId);
     } catch (err) {
       console.warn("[syncMissingHouseholdLeadsFromProposals]", proposal.id, err);
     }
   }
 
-  return { created, relinked };
+  return { created, relinked, cleaned };
 }

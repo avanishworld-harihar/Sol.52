@@ -497,15 +497,28 @@ function CustomersPageContent() {
       status: form.status,
       phone: form.phone.trim() || undefined
     };
-    if (
+    if (leadModal === "edit") {
+      if (!payload.name.trim() || Number.isNaN(payload.monthly_bill)) {
+        setError(t("customers_fillRequired"));
+        return;
+      }
+      /** Keep prior city/discom when selects blank (state/discom mismatch on older rows). */
+      if (!payload.city) {
+        const prior = data?.find((c) => c.id === editLeadId);
+        payload.city = (prior?.city ?? "").trim() || "—";
+      }
+      if (!payload.discom) {
+        const prior = data?.find((c) => c.id === editLeadId);
+        payload.discom = (prior?.discom ?? "").trim() || "—";
+      }
+    } else if (
       !payload.name ||
       !form.state.trim() ||
       !payload.city ||
       !payload.discom ||
       Number.isNaN(payload.monthly_bill)
     ) {
-      /** A required field lives in the collapsed section — reveal it so the operator can fix it. */
-      if (leadModal === "add" && (!form.state.trim() || !payload.discom)) {
+      if (!form.state.trim() || !payload.discom) {
         setShowMoreDetails(true);
       }
       setError(t("customers_fillRequired"));
@@ -515,7 +528,10 @@ function CustomersPageContent() {
     if (leadModal === "edit" && editLeadId) {
       void (async () => {
         try {
-          const r = await fetch(`/api/customers/${editLeadId}`, {
+          const areaRaw = form.area.trim().toLowerCase();
+          const area =
+            areaRaw === "urban" || areaRaw === "rural" ? areaRaw : null;
+          const r = await fetch(`/api/customers/${encodeURIComponent(editLeadId)}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -531,21 +547,36 @@ function CustomersPageContent() {
               survey_status: form.survey_status.trim()
                 ? form.survey_status.trim().toLowerCase()
                 : null,
-              area: form.area.trim() ? form.area.trim() : null,
+              area,
               location: form.location.trim() ? form.location.trim() : null,
-              connection_type: form.connection_type.trim() ? form.connection_type.trim() : null
-            })
+              connection_type: form.connection_type.trim()
+                ? form.connection_type.trim()
+                : null,
+            }),
           });
           const j = (await r.json()) as { ok?: boolean; data?: CustomerLead; error?: string };
           if (!j.ok) throw new Error(j.error || "Could not update lead");
           if (j.data) {
             mergeLeadIntoListCache(j.data);
+          } else {
+            mergeLeadIntoListCache({
+              ...(data?.find((c) => c.id === editLeadId) as CustomerLead),
+              name: payload.name,
+              consumer_name: form.consumer_name.trim() || null,
+              city: payload.city,
+              state: form.state.trim() || null,
+              discom: payload.discom,
+              monthly_bill: payload.monthly_bill,
+              status: payload.status,
+              phone: form.phone.trim() || null,
+            });
           }
-          await mutate(undefined, { revalidate: true });
-          await mutateGlobal(CUSTOMERS_SWR_KEY, undefined, { revalidate: true });
-          await mutateGlobal(DASHBOARD_STATS_SWR_KEY, undefined, { revalidate: true });
           closeLeadModal();
           toast.success(t("customers_leadUpdated"), t("customers_leadUpdatedSub"));
+          /** Revalidate in background — heavy Customers GET must not block save success. */
+          void mutate(undefined, { revalidate: true });
+          void mutateGlobal(CUSTOMERS_SWR_KEY, undefined, { revalidate: true });
+          void mutateGlobal(DASHBOARD_STATS_SWR_KEY, undefined, { revalidate: true });
         } catch (e) {
           toast.error(t("customers_leadUpdateFailed"), e instanceof Error ? e.message : "Please try again.");
         }
