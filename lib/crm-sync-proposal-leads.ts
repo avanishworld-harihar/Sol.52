@@ -1,4 +1,6 @@
 import { personNamesLikelyDifferent, personNamesLikelySame } from "@/lib/crm-household";
+import { normalizeLeadPhoneForStorage } from "@/lib/lead-phone";
+import { processInboundLead } from "@/lib/inbound-leads";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { resolveLeadsTable, supabase } from "@/lib/supabase";
 
@@ -18,11 +20,9 @@ function leadCoversProposalName(
 }
 
 /**
- * Soft CRM repair on Customers list load:
- * - backfill `consumer_name` from proposal bill name
- * - relink proposal → existing lead when names already match
- *
- * Does NOT create new lead rows (that recreated deleted people like "RK gupta").
+ * Ensure every proposal's visible customer name has a CRM lead/profile.
+ * If the proposal is linked to someone else (e.g. Bharti) but shows
+ * "SHRI RAJESH…", create/find Rajesh as a household sibling and relink.
  */
 export async function syncMissingHouseholdLeadsFromProposals(): Promise<{
   created: number;
@@ -41,6 +41,7 @@ export async function syncMissingHouseholdLeadsFromProposals(): Promise<{
 
   if (error || !Array.isArray(proposals)) return { created: 0, relinked: 0 };
 
+  let created = 0;
   let relinked = 0;
 
   for (const row of proposals) {
@@ -54,14 +55,15 @@ export async function syncMissingHouseholdLeadsFromProposals(): Promise<{
     if (customerName.length < 2) continue;
 
     const ppt = proposal.ppt_input ?? {};
-    const pptLeadName =
-      (typeof ppt.leadContactName === "string" && ppt.leadContactName.trim()) ||
-      (typeof ppt.contactName === "string" && ppt.contactName.trim()) ||
+    const phoneRaw =
+      (typeof ppt.leadPhone === "string" && ppt.leadPhone) ||
+      (typeof ppt.customerPhone === "string" && ppt.customerPhone) ||
+      (typeof ppt.phone === "string" && ppt.phone) ||
       "";
-    const pptBillName =
-      (typeof ppt.officialBillName === "string" && ppt.officialBillName.trim()) ||
-      (typeof ppt.customerName === "string" && ppt.customerName.trim()) ||
-      customerName;
+    const phone = normalizeLeadPhoneForStorage(phoneRaw);
+
+    /** Name shown on the proposal = the person who needs a Customers profile. */
+    const proposalPersonName = customerName;
 
     let linkedLead: Record<string, unknown> | null = null;
     if (proposal.lead_id) {
@@ -73,42 +75,99 @@ export async function syncMissingHouseholdLeadsFromProposals(): Promise<{
       linkedLead = (data as Record<string, unknown> | null) ?? null;
     }
 
-    if (linkedLead) {
-      const leadName = String(linkedLead.name ?? "");
-      const covers =
-        leadCoversProposalName(linkedLead, customerName) ||
-        (pptLeadName ? leadCoversProposalName(linkedLead, pptLeadName) : false);
-      if (covers) {
-        if (
-          pptBillName &&
-          personNamesLikelyDifferent(leadName, pptBillName) &&
-          !String(linkedLead.consumer_name ?? "").trim()
-        ) {
-          await client
-            .from(leadsTable)
-            .update({ consumer_name: pptBillName })
-            .eq("id", String(linkedLead.id));
-        }
-        continue;
-      }
+    if (linkedLead && leadCoversProposalName(linkedLead, proposalPersonName)) {
+      continue;
     }
 
-    const tokens = customerName.split(/\s+/).filter(Boolean).slice(-2);
+    /** Clear wrong bill/husband name stuck on another person's lead. */
+    if (
+      linkedLead &&
+      String(linkedLead.consumer_name ?? "").trim() &&
+      personNamesLikelySame(String(linkedLead.consumer_name), proposalPersonName) &&
+      personNamesLikelyDifferent(String(linkedLead.name ?? ""), proposalPersonName)
+    ) {
+      await client
+        .from(leadsTable)
+        .update({ consumer_name: null })
+        .eq("id", String(linkedLead.id));
+    }
+
+    const tokens = proposalPersonName
+      .split(/\s+/)
+      .map((t) => t.replace(/[^a-zA-Z0-9]/g, ""))
+      .filter((t) => t.length >= 2)
+      .slice(-2);
     if (tokens.length === 0) continue;
+
     const { data: byName } = await client
       .from(leadsTable)
       .select("id, name, consumer_name, phone, household_id")
       .ilike("name", `%${tokens.join("%")}%`)
-      .limit(20);
-    const nameHit = Array.isArray(byName)
-      ? (byName as Record<string, unknown>[]).find((l) => leadCoversProposalName(l, customerName))
+      .limit(30);
+
+    let nameHit = Array.isArray(byName)
+      ? (byName as Record<string, unknown>[]).find((l) =>
+          leadCoversProposalName(l, proposalPersonName)
+        )
       : undefined;
 
-    if (nameHit?.id && proposal.lead_id !== nameHit.id) {
-      await client.from("proposals").update({ lead_id: nameHit.id }).eq("id", proposal.id);
-      relinked += 1;
+    if (!nameHit) {
+      const { data: byConsumer } = await client
+        .from(leadsTable)
+        .select("id, name, consumer_name, phone, household_id")
+        .ilike("consumer_name", `%${tokens.join("%")}%`)
+        .limit(30);
+      nameHit = Array.isArray(byConsumer)
+        ? (byConsumer as Record<string, unknown>[]).find((l) =>
+            leadCoversProposalName(l, proposalPersonName)
+          )
+        : undefined;
+    }
+
+    if (nameHit?.id) {
+      if (proposal.lead_id !== nameHit.id) {
+        await client.from("proposals").update({ lead_id: nameHit.id }).eq("id", proposal.id);
+        relinked += 1;
+      }
+      continue;
+    }
+
+    /** No CRM profile for this proposal person yet → create one (household if same phone). */
+    try {
+      const result = await processInboundLead({
+        name: proposalPersonName,
+        phone: phone || (linkedLead?.phone != null ? String(linkedLead.phone) : ""),
+        city:
+          (typeof ppt.city === "string" && ppt.city) ||
+          (linkedLead?.city != null ? String(linkedLead.city) : "") ||
+          "Unknown",
+        state:
+          (typeof ppt.state === "string" && ppt.state) ||
+          (linkedLead?.state != null ? String(linkedLead.state) : null),
+        discom:
+          (typeof ppt.discom === "string" && ppt.discom) ||
+          (linkedLead?.discom != null ? String(linkedLead.discom) : "") ||
+          "Unknown",
+        monthly_bill: 0,
+        source: "manual",
+        forceNew: true,
+        isWhatsappContact: false,
+        source_meta: {
+          synced_from_proposal: proposal.id,
+          reason: "proposal_customer_needs_crm_profile",
+        },
+      });
+      const newId = String(result.data.id ?? "");
+      if (!newId) continue;
+      created += 1;
+      if (proposal.lead_id !== newId) {
+        await client.from("proposals").update({ lead_id: newId }).eq("id", proposal.id);
+        relinked += 1;
+      }
+    } catch (err) {
+      console.warn("[syncMissingHouseholdLeadsFromProposals]", proposal.id, err);
     }
   }
 
-  return { created: 0, relinked };
+  return { created, relinked };
 }
