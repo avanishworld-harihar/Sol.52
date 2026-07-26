@@ -4073,6 +4073,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     panelSetbackFt,
     panelSpec,
     panelTiltDeg,
+    panelWalkwayFt,
     placedPanels,
     plantRoofHeightFt,
     projectId,
@@ -4099,6 +4100,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         {!surveyConflictDismissed &&
         survey?.roof_area_sqft != null &&
         survey.roof_area_sqft > 50 &&
+        state.metrics != null &&
         state.metrics.areaSqft > 50 &&
         Math.abs(survey.roof_area_sqft - state.metrics.areaSqft) /
           Math.max(survey.roof_area_sqft, state.metrics.areaSqft) >
