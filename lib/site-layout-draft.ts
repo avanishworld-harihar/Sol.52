@@ -25,6 +25,7 @@ export type SiteLayoutDraft = {
   safety_profile_id?: "residential" | "commercial" | "industrial" | "custom" | null;
   panel_walkway_ft?: number | null;
   obstruction_clearance_ft?: number | null;
+  map_labels?: Array<{ id: string; lng: number; lat: number; text: string }> | null;
 };
 
 const DB_NAME = "sol52-design-studio";

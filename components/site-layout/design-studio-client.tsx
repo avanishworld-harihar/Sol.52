@@ -14,6 +14,7 @@ import {
   Magnet,
   Map as MapIcon,
   MapPin,
+  Layers,
   Minus,
   MousePointer2,
   Printer,
@@ -27,6 +28,7 @@ import {
   Square,
   SquareStack,
   Sun,
+  Type,
   Trash2,
   TriangleRight,
   Undo2,
@@ -88,6 +90,17 @@ import {
 import { DesignStudioSldSchematic } from "@/components/site-layout/design-studio-sld-schematic";
 import { DesignStudioSldSheetViewer } from "@/components/site-layout/design-studio-sld-sheet";
 import { DesignStudioPackSheetViewer } from "@/components/site-layout/design-studio-pack-sheet";
+import { DesignStudioModeBar } from "./design-studio-mode-bar";
+import { DesignStudioMetricsStrip } from "./design-studio-metrics-strip";
+import {
+  inspectorModeForStudioTool,
+  type DesignStudioInspectorMode,
+} from "./design-studio-inspector-mode";
+import { DesignStudioLayersInspector } from "./inspectors/layers-inspector";
+import {
+  DesignStudioLabelsInspector,
+  type DesignStudioMapLabel,
+} from "./inspectors/labels-inspector";
 import { buildDesignStudioPackModel } from "@/lib/design-studio-pack-model";
 import { buildDesignStudioSldModel } from "@/lib/design-studio-sld-model";
 import type {
@@ -501,6 +514,21 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   mobileViewOnlyRef.current = mobileViewOnly;
   /** Engineering SLD sheet v1 preview / print. */
   const [sldSheetOpen, setSldSheetOpen] = useState(false);
+  /** Pixelmator-style right inspector context. */
+  const [inspectorMode, setInspectorMode] = useState<DesignStudioInspectorMode>("locate");
+  const [showPanelOverlays, setShowPanelOverlays] = useState(true);
+  const [showObstructionOverlays, setShowObstructionOverlays] = useState(true);
+  const [showShadowOverlays, setShowShadowOverlays] = useState(true);
+  const [mapLabels, setMapLabels] = useState<DesignStudioMapLabel[]>([]);
+  const [placingLabel, setPlacingLabel] = useState(false);
+  const [labelDraftText, setLabelDraftText] = useState("");
+  const placingLabelRef = useRef(false);
+  const labelDraftTextRef = useRef("");
+  const showPanelOverlaysRef = useRef(true);
+  const showObstructionOverlaysRef = useRef(true);
+  const showShadowOverlaysRef = useRef(true);
+  const mapLabelsRef = useRef<DesignStudioMapLabel[]>([]);
+  const labelMarkersRef = useRef<google.maps.Marker[]>([]);
   /** Phase 5 Design pack print preview. */
   const [designPackOpen, setDesignPackOpen] = useState(false);
   const photoInputRef = useRef<HTMLInputElement | null>(null);
@@ -665,6 +693,18 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             draft.safety_profile_id === "custom"
           ) {
             setSafetyProfileId(draft.safety_profile_id);
+          }
+          if (Array.isArray(draft.map_labels)) {
+            setMapLabels(
+              draft.map_labels.filter(
+                (l) =>
+                  l &&
+                  typeof l.id === "string" &&
+                  typeof l.text === "string" &&
+                  typeof l.lng === "number" &&
+                  typeof l.lat === "number"
+              )
+            );
           }
           if (
             draft.mounting_type === "flush" ||
@@ -1096,6 +1136,19 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             setPendingObstruction(null);
             return;
           }
+          if (placingLabelRef.current) {
+            const text = (labelDraftTextRef.current || "Label").trim().slice(0, 40);
+            const id = `lbl-${Date.now().toString(36)}`;
+            setMapLabels((prev) => [
+              ...prev,
+              { id, lng: latLng.lng(), lat: latLng.lat(), text: text || "Label" },
+            ]);
+            setPanelDirty(true);
+            setPlacingLabel(false);
+            placingLabelRef.current = false;
+            mapRef.current?.setOptions({ draggableCursor: null });
+            return;
+          }
           if (studioToolRef.current === "place_panel") {
             placePanelRef.current?.(latLng);
             return;
@@ -1260,6 +1313,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       markersRef.current.forEach((marker) => marker.setMap(null));
       circlesRef.current.forEach((circle) => circle.setMap(null));
       circlesRef.current = [];
+      markersRef.current = [];
+      if (!showObstructionOverlaysRef.current) return;
       const zoom = map.getZoom() ?? 20;
 
       markersRef.current = state.obstructions.map((obstruction) => {
@@ -1386,7 +1441,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       circlesRef.current.forEach((circle) => circle.setMap(null));
       circlesRef.current = [];
     };
-  }, [mapReady, state.obstructions, state.selectedObstructionId]);
+  }, [mapReady, showObstructionOverlays, state.obstructions, state.selectedObstructionId]);
 
   useEffect(() => {
     placedPanelsRef.current = placedPanels;
@@ -1407,6 +1462,25 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   useEffect(() => {
     panelOrientationRef.current = panelOrientation;
   }, [panelOrientation]);
+
+  useEffect(() => {
+    placingLabelRef.current = placingLabel;
+  }, [placingLabel]);
+  useEffect(() => {
+    labelDraftTextRef.current = labelDraftText;
+  }, [labelDraftText]);
+  useEffect(() => {
+    showPanelOverlaysRef.current = showPanelOverlays;
+  }, [showPanelOverlays]);
+  useEffect(() => {
+    showObstructionOverlaysRef.current = showObstructionOverlays;
+  }, [showObstructionOverlays]);
+  useEffect(() => {
+    showShadowOverlaysRef.current = showShadowOverlays;
+  }, [showShadowOverlays]);
+  useEffect(() => {
+    mapLabelsRef.current = mapLabels;
+  }, [mapLabels]);
 
   useEffect(() => {
     studioToolRef.current = studioTool;
@@ -1514,6 +1588,10 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     panelPolygonsRef.current.forEach((polygon) => polygon.setMap(null));
     panelCellLinesRef.current.forEach((line) => line.setMap(null));
     panelCellLinesRef.current = [];
+    if (!showPanelOverlays) {
+      panelPolygonsRef.current = [];
+      return;
+    }
     const selectedSet = new Set(selectedPanelIds);
     panelPolygonsRef.current = placedPanels.map((panel, panelIndex) => {
       const selected = selectedSet.has(panel.id);
@@ -1724,6 +1802,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     selectedPanelIds,
     shadowAnalysis,
     shadowEnabled,
+    showPanelOverlays,
     studioTool,
   ]);
 
@@ -1732,6 +1811,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     if (!mapReady || !mapRef.current || !window.google?.maps) return;
     shadowPolygonsRef.current.forEach((poly) => poly.setMap(null));
     shadowPolygonsRef.current = [];
+    if (!showShadowOverlays) return;
     if (!shadowEnabled || !shadowAnalysis || shadowAnalysis.sun.altitudeDeg <= 1) return;
 
     const polys: google.maps.Polygon[] = [];
@@ -1770,7 +1850,32 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     return () => {
       polys.forEach((poly) => poly.setMap(null));
     };
-  }, [mapReady, plantRoofHeightFt, shadowAnalysis, shadowEnabled, state.obstructions]);
+  }, [mapReady, plantRoofHeightFt, shadowAnalysis, shadowEnabled, showShadowOverlays, state.obstructions]);
+
+  // Map annotation labels (Wave B)
+  useEffect(() => {
+    if (!mapReady || !mapRef.current || !window.google?.maps) return;
+    labelMarkersRef.current.forEach((m) => m.setMap(null));
+    labelMarkersRef.current = mapLabels.map((label) => {
+      const marker = new google.maps.Marker({
+        map: mapRef.current!,
+        position: { lat: label.lat, lng: label.lng },
+        label: {
+          text: label.text.slice(0, 16),
+          color: "#0f172a",
+          fontSize: "11px",
+          fontWeight: "700",
+        },
+        title: label.text,
+        zIndex: 60,
+      });
+      return marker;
+    });
+    return () => {
+      labelMarkersRef.current.forEach((m) => m.setMap(null));
+      labelMarkersRef.current = [];
+    };
+  }, [mapLabels, mapReady]);
 
   // Persist plant roof height even when layout isn't marked dirty yet.
   useEffect(() => {
@@ -1799,6 +1904,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             safety_profile_id: safetyProfileId,
             panel_walkway_ft: panelWalkwayFt,
             obstruction_clearance_ft: obstructionClearanceFt,
+            map_labels: mapLabels,
           });
           return;
         }
@@ -1854,6 +1960,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         safety_profile_id: safetyProfileId,
         panel_walkway_ft: panelWalkwayFt,
         obstruction_clearance_ft: obstructionClearanceFt,
+        map_labels: mapLabels,
       });
     }, 600);
     return () => window.clearTimeout(timer);
@@ -1874,6 +1981,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     plantRoofHeightFt,
     projectId,
     roofType,
+    mapLabels,
     state.dirty,
     state.obstructions,
     state.roof,
@@ -2198,6 +2306,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       setSelectedPanelIds([]);
       addObstructionRef.current = type;
       setPendingObstruction(type);
+      setInspectorMode("roof");
       mapRef.current?.setOptions({ draggableCursor: "crosshair" });
       mapRef.current?.getDiv().focus();
     },
@@ -2210,6 +2319,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       cancelRoofDrawing();
       return;
     }
+    setInspectorMode("roof");
     beginRoofDrawing("add");
   }, [beginRoofDrawing, cancelRoofDrawing, drawingRoof]);
 
@@ -3079,6 +3189,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
 
       setStudioTool(tool);
       studioToolRef.current = tool;
+      const modeHint = inspectorModeForStudioTool(tool);
+      if (modeHint) setInspectorMode(modeHint);
       if (tool === "move_group") {
         const unlocked = placedPanelsRef.current
           .filter((panel) => !panel.is_locked)
@@ -4241,9 +4353,24 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         </div>
       </header>
 
-      <div className="grid min-h-0 w-full flex-1 grid-cols-[52px_minmax(0,1fr)] grid-rows-[minmax(0,1fr)_minmax(11rem,34dvh)] overflow-hidden bg-slate-200/40 dark:bg-slate-950 lg:grid-cols-[52px_minmax(0,1fr)_360px] lg:grid-rows-[minmax(0,1fr)]">
+      <DesignStudioModeBar
+        mode={inspectorMode}
+        onChange={(mode) => {
+          setInspectorMode(mode);
+          if (mode === "labels") {
+            setPlacingLabel(false);
+            placingLabelRef.current = false;
+          } else if (placingLabel) {
+            setPlacingLabel(false);
+            placingLabelRef.current = false;
+          }
+        }}
+        mobileViewOnly={mobileViewOnly}
+      />
 
-        <aside className="row-span-2 flex min-h-0 flex-col overflow-hidden border-r border-slate-800 bg-slate-900 text-slate-100 lg:row-span-1">
+      <div className="grid min-h-0 w-full flex-1 grid-cols-[52px_minmax(0,1fr)] grid-rows-[minmax(0,1fr)_auto] overflow-hidden bg-slate-200/40 dark:bg-slate-950 lg:grid-cols-[52px_minmax(0,1fr)_340px] lg:grid-rows-[minmax(0,1fr)_auto]">
+
+        <aside className="row-span-2 flex min-h-0 flex-col overflow-hidden border-r border-slate-800 bg-slate-900 text-slate-100 lg:row-span-2">
           <div className="flex flex-1 flex-col items-center gap-0.5 overflow-y-auto overscroll-contain py-2">
             {!mobileViewOnly ? (
               <>
@@ -4322,6 +4449,34 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               }`}
             >
               WT
+            </button>
+            <button
+              type="button"
+              title="Layers"
+              onClick={() => setInspectorMode("layers")}
+              className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                inspectorMode === "layers"
+                  ? "bg-teal-600 text-white"
+                  : "text-slate-300 hover:bg-white/10"
+              }`}
+            >
+              <Layers className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              title="Map labels"
+              onClick={() => {
+                setInspectorMode("labels");
+                setPlacingLabel(false);
+                placingLabelRef.current = false;
+              }}
+              className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                inspectorMode === "labels" || placingLabel
+                  ? "bg-violet-600 text-white"
+                  : "text-slate-300 hover:bg-white/10"
+              }`}
+            >
+              <Type className="h-4 w-4" />
             </button>
             <div className="my-1 h-px w-6 bg-white/15" />
               </>
@@ -4496,7 +4651,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         </section>
 
 
-        <aside className="col-span-2 min-h-0 space-y-3 overflow-y-auto overscroll-contain border-t border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-slate-900 lg:col-span-1 lg:border-l lg:border-t-0">
+        <aside className="col-span-2 flex min-h-0 flex-col overflow-hidden border-t border-slate-200 bg-white dark:border-white/10 dark:bg-slate-900 lg:col-span-1 lg:border-l lg:border-t-0">
+          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain p-3">
 
           {mobileViewOnly ? (
             <div className="rounded-xl border border-sky-200 bg-sky-50 p-3 text-[11px] leading-relaxed text-sky-950 dark:border-sky-900/50 dark:bg-sky-950/30 dark:text-sky-100">
@@ -4508,7 +4664,63 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             </div>
           ) : null}
 
-          {!mobileViewOnly ? (
+          {inspectorMode === "layers" ? (
+            <DesignStudioLayersInspector
+              roofSectionCount={roofSections.length}
+              activeRoofIndex={activeRoofIndex}
+              onSelectRoofSection={(index) => {
+                selectRoofSection(index);
+                setInspectorMode("roof");
+              }}
+              panels={placedPanels}
+              selectedPanelIds={selectedPanelIds}
+              onSelectAllPanels={() =>
+                setSelectedPanelIds(placedPanels.filter((p) => !p.is_locked).map((p) => p.id))
+              }
+              onClearPanelSelection={() => setSelectedPanelIds([])}
+              obstructions={state.obstructions}
+              selectedObstructionId={state.selectedObstructionId}
+              onSelectObstruction={(id) => {
+                dispatch({ type: "SELECT_OBSTRUCTION", id });
+                setInspectorMode("roof");
+              }}
+              showPanels={showPanelOverlays}
+              showObstructions={showObstructionOverlays}
+              showShadows={showShadowOverlays}
+              onToggleShowPanels={() => setShowPanelOverlays((v) => !v)}
+              onToggleShowObstructions={() => setShowObstructionOverlays((v) => !v)}
+              onToggleShowShadows={() => setShowShadowOverlays((v) => !v)}
+              mobileViewOnly={mobileViewOnly}
+            />
+          ) : null}
+
+          {inspectorMode === "labels" ? (
+            <DesignStudioLabelsInspector
+              labels={mapLabels}
+              placing={placingLabel}
+              draftText={labelDraftText}
+              onDraftTextChange={setLabelDraftText}
+              onTogglePlacing={() => {
+                const next = !placingLabel;
+                setPlacingLabel(next);
+                placingLabelRef.current = next;
+                if (next) {
+                  clearStudioTool();
+                  setPendingObstruction(null);
+                  mapRef.current?.setOptions({ draggableCursor: "crosshair" });
+                } else {
+                  mapRef.current?.setOptions({ draggableCursor: null });
+                }
+              }}
+              onRemove={(id) => {
+                setMapLabels((prev) => prev.filter((l) => l.id !== id));
+                setPanelDirty(true);
+              }}
+              mobileViewOnly={mobileViewOnly}
+            />
+          ) : null}
+
+          {!mobileViewOnly && inspectorMode === "panels" ? (
           <>
           <div className="rounded-xl border border-blue-200 bg-blue-50/80 p-3 dark:border-blue-900/40 dark:bg-blue-950/30">
             <p className="text-[11px] font-extrabold uppercase tracking-wide text-blue-700 dark:text-blue-300">Plant capacity</p>
@@ -4588,8 +4800,11 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               Max ~{maxCapacity.maxPanelCount || 0} panels with current module / setback / keep-outs.
             </p>
           </div>
+          </>
+          ) : null}
 
-
+          {!mobileViewOnly && inspectorMode === "locate" ? (
+          <>
           <div>
             <p className="text-xs font-extrabold text-slate-900 dark:text-white">Site controls</p>
             <p className="mt-1 text-[11px] leading-relaxed text-slate-500">
@@ -4674,7 +4889,11 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               />
             </div>
           </div>
+          </>
+          ) : null}
 
+          {!mobileViewOnly && inspectorMode === "roof" ? (
+          <>
           <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-300">
             Roof type
             <select
@@ -4835,7 +5054,11 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               <p className="mt-2 text-[10px] text-slate-500">Tip: drag any placed marker to fine-tune its position.</p>
             )}
           </div>
+          </>
+          ) : null}
 
+          {!mobileViewOnly && inspectorMode === "panels" ? (
+          <>
           <div className="border-t border-slate-100 pt-3 dark:border-white/10">
             <div className="flex items-center justify-between">
               <p className="text-[11px] font-extrabold uppercase tracking-wide text-slate-500">
@@ -5181,79 +5404,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           ) : null}
 
 
-          <div className="rounded-xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-slate-900">
-            <p className="text-xs font-extrabold text-slate-900 dark:text-white">Live geometry</p>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              {[
-                ["Total roof area", displayedMetrics ? `${Math.round(displayedMetrics.areaSqft).toLocaleString("en-IN")} sq.ft` : "—"],
-                ["Selected section", selectedRoofMetrics ? `${Math.round(selectedRoofMetrics.areaSqft).toLocaleString("en-IN")} sq.ft` : "—"],
-                ["Perimeter", displayedMetrics ? `${displayedMetrics.perimeterM.toFixed(1)} m` : "—"],
-                ["Selected azimuth", selectedRoofMetrics?.azimuthDeg != null ? `${selectedRoofMetrics.azimuthDeg.toFixed(0)}°` : "—"],
-              ].map(([label, value]) => (
-                <div key={label} className="rounded-lg bg-slate-50 p-2 dark:bg-white/[0.04]">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">{label}</p>
-                  <p className="mt-0.5 text-sm font-extrabold text-slate-900 dark:text-white">{value}</p>
-                </div>
-              ))}
-            </div>
-            {areaWarning ? (
-              <p className="mt-2 rounded-lg bg-amber-50 px-2 py-1.5 text-[10px] font-semibold text-amber-800">
-                {areaWarning}
-              </p>
-            ) : null}
-            {azimuthAdvice ? (
-              <div
-                className={`mt-2 rounded-lg px-2 py-1.5 text-[10px] font-semibold ${
-                  azimuthAdvice.grade === "excellent" || azimuthAdvice.grade === "good"
-                    ? "bg-emerald-50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100"
-                    : azimuthAdvice.grade === "fair"
-                      ? "bg-amber-50 text-amber-900 dark:bg-amber-950/40 dark:text-amber-100"
-                      : "bg-rose-50 text-rose-900 dark:bg-rose-950/40 dark:text-rose-100"
-                }`}
-              >
-                <p>{azimuthAdvice.summary}</p>
-                <p className="mt-0.5 font-medium opacity-90">{azimuthAdvice.orientationHint}</p>
-              </div>
-            ) : (
-              <p className="mt-2 text-[10px] text-slate-500">
-                Draw a roof to get azimuth / south-facing advice.
-              </p>
-            )}
-          </div>
-
-          <div className="rounded-xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-slate-900">
-            <p className="text-xs font-extrabold text-slate-900 dark:text-white">Panel metrics</p>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              {[
-                ["Panels", String(placedPanels.length)],
-                ["DC kW", placedPanels.length ? dcKwLive.toFixed(2) : "—"],
-                ["Remaining", placedPanels.length ? `${Math.round(panelMetrics.remainingAreaSqft).toLocaleString("en-IN")} sq.ft` : "—"],
-                ["Coverage", placedPanels.length ? `${panelMetrics.coveragePct.toFixed(0)}%` : "—"],
-                [
-                  "Yield / yr",
-                  yieldEstimate ? `${yieldEstimate.annualKwh.toLocaleString("en-IN")} kWh` : "—",
-                ],
-                [
-                  "kWh/kWp",
-                  yieldEstimate ? String(yieldEstimate.specificYieldKwhPerKwp) : "—",
-                ],
-              ].map(([label, value]) => (
-                <div key={label} className="rounded-lg bg-slate-50 p-2 dark:bg-white/[0.04]">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">{label}</p>
-                  <p className="mt-0.5 text-sm font-extrabold text-slate-900 dark:text-white">{value}</p>
-                </div>
-              ))}
-            </div>
-            <p className="mt-2 text-[10px] text-slate-500">
-              {panelModuleLabel(panelSpec)} · {panelOrientation} · tilt {panelTiltDeg}° · {mountingType}
-            </p>
-            {yieldEstimate ? (
-              <p className="mt-1 text-[10px] leading-relaxed text-slate-500">
-                ~{yieldEstimate.dailyKwh} kWh/day · {yieldEstimate.note}
-              </p>
-            ) : null}
-          </div>
-
+          {inspectorMode === "eng" ? (
           <div className="rounded-xl border border-violet-200 bg-violet-50/60 p-3 dark:border-violet-900/40 dark:bg-violet-950/25">
             <div className="flex items-center justify-between gap-2">
               <p className="text-xs font-extrabold text-violet-900 dark:text-violet-100">
@@ -5365,7 +5516,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               </p>
             )}
           </div>
+          ) : null}
 
+          {inspectorMode === "shadow" ? (
           <div className="rounded-xl border border-orange-200 bg-orange-50/70 p-3 dark:border-orange-900/40 dark:bg-orange-950/25">
             <div className="flex items-center justify-between gap-2">
               <p className="flex items-center gap-1.5 text-xs font-extrabold text-orange-950 dark:text-orange-100">
@@ -5554,7 +5707,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               </p>
             )}
           </div>
+          ) : null}
 
+          {inspectorMode === "roof" ? (
           <div className="rounded-xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-slate-900">
             <div className="flex items-center justify-between">
               <p className="text-xs font-extrabold text-slate-900 dark:text-white">Obstructions</p>
@@ -5779,17 +5934,26 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               )}
             </div>
           </div>
+          ) : null}
 
-          <div className="rounded-xl border border-blue-200 bg-blue-50 p-3 text-[11px] leading-relaxed text-blue-900 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-100">
-            <div className="flex items-center gap-1.5 font-extrabold">
-              <Crosshair className="h-4 w-4" /> Design Studio
-            </div>
-            <p className="mt-1">
-              Draw roof, place panels, set plant roof height for shadows. Design stays on the project
-              — not inside the customer proposal.
-            </p>
           </div>
         </aside>
+
+        <div className="col-span-2 lg:col-span-3">
+          <DesignStudioMetricsStrip
+            panels={placedPanels.length}
+            dcKw={placedPanels.length ? dcKwLive : null}
+            coveragePct={placedPanels.length ? panelMetrics.coveragePct : null}
+            remainingSqft={placedPanels.length ? panelMetrics.remainingAreaSqft : null}
+            yieldAnnualKwh={yieldEstimate?.annualKwh ?? null}
+            roofAreaSqft={displayedMetrics?.areaSqft ?? null}
+            azimuthDeg={selectedRoofMetrics?.azimuthDeg ?? displayedMetrics?.azimuthDeg ?? null}
+            warning={
+              engineeringWarnings.find((w) => w.severity === "error" || w.severity === "warn")
+                ?.title ?? areaWarning
+            }
+          />
+        </div>
       </div>
 
       {sldSheetOpen && sldSheetModel ? (
