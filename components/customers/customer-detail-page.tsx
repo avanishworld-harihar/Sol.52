@@ -25,6 +25,7 @@ import {
   Zap,
   FolderKanban,
   FolderOpen,
+  MapPinned,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -243,6 +244,33 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
 
   /* ------ Follow-up / callback state ------ */
   const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [designStudioOpening, setDesignStudioOpening] = useState(false);
+
+  async function openDesignStudio() {
+    if (designStudioOpening) return;
+    setDesignStudioOpening(true);
+    try {
+      const r = await fetch(`/api/customers/${encodeURIComponent(leadId)}/design-studio`, {
+        method: "POST",
+      });
+      const j = (await r.json()) as {
+        ok?: boolean;
+        data?: { path?: string; projectId?: string };
+        error?: string;
+        code?: string;
+      };
+      if (!j.ok || !j.data?.path) {
+        if (r.status === 402 || j.code === "design_studio_not_allowed") {
+          throw new Error(j.error || "Design Studio is not on your plan.");
+        }
+        throw new Error(j.error || "Could not open Design Studio.");
+      }
+      router.push(j.data.path);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not open Design Studio");
+      setDesignStudioOpening(false);
+    }
+  }
 
   /* ------ stage change ------ */
   const [statusChanging, setStatusChanging] = useState(false);
@@ -468,6 +496,35 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
           router.push(buildProposalEditHref({ proposalId, leadId, inputMode: "requirement" }));
         }}
       />
+
+      {/* Design Studio — same engine as Project Hub; soft project until Won */}
+      <SectionCard
+        title="Design Studio"
+        icon={MapPinned}
+        action={
+          <Button
+            type="button"
+            size="sm"
+            className="gap-1.5"
+            disabled={designStudioOpening}
+            onClick={() => void openDesignStudio()}
+          >
+            <MapPinned className="h-3.5 w-3.5" aria-hidden />
+            {designStudioOpening ? "Opening…" : "Open Design Studio"}
+          </Button>
+        }
+      >
+        <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+          Draw the roof and place panels here — before Won. After Won, the same design shows in
+          the Project tab. Not inside the customer proposal.
+        </p>
+        {statusKey === "design" || statusKey === "site-survey" ? (
+          <p className="mt-2 text-[11px] font-semibold text-teal-700 dark:text-teal-300">
+            Pipeline is on {statusKey === "design" ? "Design" : "Site Survey"} — open Studio to
+            continue.
+          </p>
+        ) : null}
+      </SectionCard>
 
       {/* ── 2. Activity Timeline ── */}
       <SectionCard

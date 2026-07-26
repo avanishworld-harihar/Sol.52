@@ -94,6 +94,7 @@ export interface WonLeadProjectInput {
 /**
  * When a CRM lead is marked `won`, ensure a Phase 3 project row exists and is
  * visible on /projects (organization_id + dashboard_visible + not archived).
+ * Reuses a pre-Won design project when Design Studio already created one.
  */
 export async function ensureProjectForWonLead(
   leadId: string,
@@ -131,34 +132,28 @@ export async function ensureProjectForWonLead(
     if (!existing.current_stage) patch.current_stage = "survey";
     if (!existing.stage_status) patch.stage_status = "in_progress";
 
-    if (Object.keys(patch).length <= 1) {
-      if (orgId && existing.id) {
-        const { linkCustomerAssetsOnProjectCreate } = await import("@/lib/asset-link-store");
-        void linkCustomerAssetsOnProjectCreate({
-          organizationId: orgId,
-          customerId: leadId,
-          projectId: String(existing.id),
-        });
-      }
-      return existing as Record<string, unknown>;
+    let row = existing as Record<string, unknown>;
+    if (Object.keys(patch).length > 1) {
+      const { data, error } = await client
+        .from("projects")
+        .update(patch)
+        .eq("id", existing.id)
+        .select("*")
+        .single();
+      if (!error && data) row = data as Record<string, unknown>;
     }
 
-    const { data, error } = await client
-      .from("projects")
-      .update(patch)
-      .eq("id", existing.id)
-      .select("*")
-      .single();
-    if (error || !data) return existing as Record<string, unknown>;
+    const projectId = String(row.id);
     if (orgId) {
+      await seedSurveyTasksIfEmpty(client, orgId, projectId);
       const { linkCustomerAssetsOnProjectCreate } = await import("@/lib/asset-link-store");
       void linkCustomerAssetsOnProjectCreate({
         organizationId: orgId,
         customerId: leadId,
-        projectId: String(data.id),
+        projectId,
       });
     }
-    return data as Record<string, unknown>;
+    return row;
   }
 
   const insertPayload: Record<string, unknown> = {
@@ -188,21 +183,7 @@ export async function ensureProjectForWonLead(
   const projectId = String(data.id);
 
   if (orgId) {
-    const templates = getTaskTemplatesForStage("survey");
-    if (templates.length > 0) {
-      const taskRows = templates.map((t) => ({
-        organization_id: orgId,
-        project_id: projectId,
-        stage: "survey",
-        title: t.title,
-        description: t.description,
-        is_blocking: t.is_blocking,
-        sort_order: t.sort_order,
-        status: "pending",
-        is_template: true,
-      }));
-      await client.from("project_tasks").insert(taskRows);
-    }
+    await seedSurveyTasksIfEmpty(client, orgId, projectId);
 
     await logProjectCreated({
       organizationId: orgId,
@@ -219,6 +200,123 @@ export async function ensureProjectForWonLead(
   }
 
   return data;
+}
+
+/**
+ * Soft project for Design Studio before CRM Won.
+ * Same row / layouts as Won will use — hidden from Projects active list
+ * (`dashboard_visible: false`) until `ensureProjectForWonLead`.
+ */
+export async function ensureDesignProjectForLead(
+  leadId: string,
+  lead?: WonLeadProjectInput & { status?: string | null }
+): Promise<Record<string, unknown> | null> {
+  if (isWonLeadStatus(lead?.status)) {
+    return ensureProjectForWonLead(leadId, lead);
+  }
+
+  const client = db();
+  if (!client || !leadId.trim()) return null;
+
+  const orgId = await resolveDefaultOrgId();
+  const billName = lead?.consumer_name?.trim() || "";
+  const contactName = lead?.name?.trim() || "";
+  const displayName = billName || contactName || "Unnamed Project";
+  const now = new Date().toISOString();
+
+  const { data: existing } = await client
+    .from("projects")
+    .select("*")
+    .eq("lead_id", leadId)
+    .maybeSingle();
+
+  if (existing) {
+    const patch: Record<string, unknown> = { updated_at: now };
+    if (orgId && !existing.organization_id) patch.organization_id = orgId;
+    if (billName) {
+      patch.official_name = billName;
+      patch.customer_name = billName;
+    } else if (!existing.official_name && contactName) {
+      patch.official_name = contactName;
+      patch.customer_name = contactName;
+    }
+    /** Do not force visible — stay hidden until Won. */
+    if (!existing.current_stage) patch.current_stage = "survey";
+    if (!existing.stage_status) patch.stage_status = "in_progress";
+
+    if (Object.keys(patch).length <= 1) return existing as Record<string, unknown>;
+
+    const { data, error } = await client
+      .from("projects")
+      .update(patch)
+      .eq("id", existing.id)
+      .select("*")
+      .single();
+    return (!error && data ? data : existing) as Record<string, unknown>;
+  }
+
+  const insertPayload: Record<string, unknown> = {
+    lead_id: leadId,
+    official_name: displayName,
+    customer_name: displayName,
+    current_stage: "survey",
+    stage_status: "in_progress",
+    nm_substatus: "not_started",
+    has_subsidy: false,
+    amount_received_inr: 0,
+    /** Hidden from Projects tab until Won. */
+    dashboard_visible: false,
+    status: "pending",
+    install_progress: 0,
+    next_action: SITE_SURVEY_NEXT_ACTION,
+    detail: lead?.city?.trim() ? `Site: ${lead.city.trim()}` : null,
+    updated_at: now,
+  };
+  if (orgId) insertPayload.organization_id = orgId;
+
+  const { data, error } = await insertProjectAdaptive(client, insertPayload);
+  if (error || !data) {
+    console.warn("[ensureDesignProjectForLead] insert failed:", error);
+    return null;
+  }
+
+  if (orgId) {
+    const { linkCustomerAssetsOnProjectCreate } = await import("@/lib/asset-link-store");
+    void linkCustomerAssetsOnProjectCreate({
+      organizationId: orgId,
+      customerId: leadId,
+      projectId: String(data.id),
+    });
+  }
+
+  return data;
+}
+
+async function seedSurveyTasksIfEmpty(
+  client: NonNullable<ReturnType<typeof db>>,
+  orgId: string,
+  projectId: string
+): Promise<void> {
+  const { count, error } = await client
+    .from("project_tasks")
+    .select("id", { count: "exact", head: true })
+    .eq("project_id", projectId);
+  if (error || (count ?? 0) > 0) return;
+
+  const templates = getTaskTemplatesForStage("survey");
+  if (templates.length === 0) return;
+  const taskRows = templates.map((t) => ({
+    organization_id: orgId,
+    project_id: projectId,
+    stage: "survey",
+    title: t.title,
+    description: t.description,
+    is_blocking: t.is_blocking,
+    sort_order: t.sort_order,
+    status: "pending",
+    is_template: true,
+  }));
+  await client.from("project_tasks").insert(taskRows);
 }
 
 /** Normalize a person/project name for orphan project ↔ won lead matching. */

@@ -140,6 +140,8 @@ type ProjectSummary = {
   id: string;
   official_name: string | null;
   lead_name: string | null;
+  lead_id?: string | null;
+  dashboard_visible?: boolean;
   site_lat: number | null;
   site_lng: number | null;
   roof_type: string | null;
@@ -4119,8 +4121,17 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         <div className="flex w-full flex-wrap items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <Button variant="outline" size="sm" asChild>
-              <Link href={`/projects/${encodeURIComponent(projectId)}?tab=design`}>
-                <ArrowLeft className="mr-1 h-4 w-4" /> Project
+              <Link
+                href={
+                  project?.lead_id && project.dashboard_visible === false
+                    ? `/customers/${encodeURIComponent(project.lead_id)}`
+                    : `/projects/${encodeURIComponent(projectId)}?tab=design`
+                }
+              >
+                <ArrowLeft className="mr-1 h-4 w-4" />
+                {project?.lead_id && project.dashboard_visible === false
+                  ? "Customer"
+                  : "Project"}
               </Link>
             </Button>
             <div className="min-w-0">
