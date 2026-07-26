@@ -14,6 +14,9 @@ export function parsePlanFeatures(raw: unknown): PlanFeatures {
     residential_theme_keys: themeKeys as PlanFeatures["residential_theme_keys"],
     all_residential_themes: f.all_residential_themes === true,
     commercial_proposals: f.commercial_proposals !== false,
+    /** Default on so existing orgs keep Design until plans are seeded otherwise. */
+    design_studio: f.design_studio !== false,
+    sld: f.sld !== false,
     pdf_export: f.pdf_export !== false,
     watermark: f.watermark === true,
     max_proposals_total:

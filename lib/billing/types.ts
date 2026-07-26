@@ -25,6 +25,10 @@ export type PlanFeatures = {
   all_residential_themes?: boolean;
   /** Entitlement gate for `commercial_executive` — independent of residential themes. */
   commercial_proposals: boolean;
+  /** Design Studio + Design pack share (outside customer proposal). */
+  design_studio: boolean;
+  /** Engineering SLD sheet + SLD pack share (outside customer proposal). */
+  sld: boolean;
   pdf_export: boolean;
   watermark: boolean;
   /** Trial lifetime cap; null = no lifetime cap. */
@@ -89,6 +93,8 @@ export type BillingEntitlementCode =
   | "trial_expired"
   | "theme_not_allowed"
   | "commercial_not_allowed"
+  | "design_studio_not_allowed"
+  | "sld_not_allowed"
   | "no_subscription"
   | "trial_abuse_denied"
   | "team_limit_reached"

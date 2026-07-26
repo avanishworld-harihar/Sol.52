@@ -36,7 +36,7 @@ export type EngineeringRulesInput = {
   obstructions: SiteObstruction[];
   panels: PlacedPanel[];
   panelSpec: PanelSpec;
-  orientation: Exclude<PanelOrientation, "east_west">;
+  orientation: PanelOrientation;
   setbackFt: number;
   tiltDeg: number;
   mountingType: PanelMountingType;

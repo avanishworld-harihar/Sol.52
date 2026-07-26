@@ -37,6 +37,27 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import useSWR from "swr";
+import type { OrgUsageSummary } from "@/lib/billing/usage-summary";
+
+async function fetchBillingUsage(): Promise<OrgUsageSummary | null> {
+  try {
+    const res = await fetch("/api/billing/usage", { cache: "no-store" });
+    const json = (await res.json()) as { ok?: boolean; data?: OrgUsageSummary | null };
+    return json.ok ? json.data ?? null : null;
+  } catch {
+    return null;
+  }
+}
+
+function useDesignStudioPlanGates() {
+  const { data } = useSWR("billing-usage-design-gates", fetchBillingUsage, {
+    revalidateOnFocus: false,
+  });
+  /** Soft-open when billing unavailable / not loaded. */
+  const designStudioEnabled = data == null || data.available === false || data.designStudioEnabled !== false;
+  const sldEnabled = data == null || data.available === false || data.sldEnabled !== false;
+  return { designStudioEnabled, sldEnabled, showUpgrade: data?.showUpgrade === true };
+}
 
 const STRUCTURE_LABELS: Record<string, string> = {
   elevated: "Elevated",
@@ -102,6 +123,7 @@ function LinkedRecordsCard({ project }: { project: ProjectListItem }) {
     leadId: project.lead_id,
     proposalId: project.primary_proposal_id,
   });
+  const { designStudioEnabled, showUpgrade } = useDesignStudioPlanGates();
   return (
     <Card className="page-lite-item border-slate-200/90 dark:border-white/10">
       <CardContent className="flex flex-col gap-2 p-3 max-sm:p-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:p-4">
@@ -116,15 +138,28 @@ function LinkedRecordsCard({ project }: { project: ProjectListItem }) {
             2D Design Studio is the source for roof + panels. Save syncs Hub design versions. Pricing
             stays in the proposal builder (Design/SLD are not inside the proposal).
           </p>
+          {!designStudioEnabled ? (
+            <p className="mt-1.5 text-xs font-semibold text-amber-700 dark:text-amber-300">
+              Design Studio is not on your plan
+              {showUpgrade ? " — upgrade to Pro (or higher) to enable." : "."}
+            </p>
+          ) : null}
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" size="sm" className="gap-1.5" asChild>
-            <Link href={`/projects/${encodeURIComponent(project.id)}/design-studio`}>
+          {designStudioEnabled ? (
+            <Button type="button" variant="outline" size="sm" className="gap-1.5" asChild>
+              <Link href={`/projects/${encodeURIComponent(project.id)}/design-studio`}>
+                <MapPinned className="h-3.5 w-3.5" aria-hidden />
+                Open Design Studio
+                <ArrowUpRight className="h-3 w-3 opacity-60" aria-hidden />
+              </Link>
+            </Button>
+          ) : (
+            <Button type="button" variant="outline" size="sm" className="gap-1.5" disabled>
               <MapPinned className="h-3.5 w-3.5" aria-hidden />
               Open Design Studio
-              <ArrowUpRight className="h-3 w-3 opacity-60" aria-hidden />
-            </Link>
-          </Button>
+            </Button>
+          )}
           {project.lead_id ? (
             <>
               <Button type="button" variant="outline" size="sm" className="gap-1.5" asChild>
@@ -226,6 +261,42 @@ function DesignStatusStrip({
   );
 }
 
+function DesignSignOffButton({ projectId }: { projectId: string }) {
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(false);
+
+  return (
+    <Button
+      type="button"
+      size="sm"
+      variant="outline"
+      className="gap-1.5"
+      disabled={busy || done}
+      onClick={() => {
+        void (async () => {
+          setBusy(true);
+          try {
+            const res = await fetch(
+              `/api/projects/${encodeURIComponent(projectId)}/design-signoff`,
+              { method: "POST" }
+            );
+            const json = (await res.json()) as { ok?: boolean; error?: string };
+            if (!json.ok) throw new Error(json.error || "Sign-off failed");
+            setDone(true);
+          } catch {
+            /* keep button enabled */
+          } finally {
+            setBusy(false);
+          }
+        })();
+      }}
+    >
+      <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
+      {done ? "Design signed off" : busy ? "Signing…" : "Customer design sign-off"}
+    </Button>
+  );
+}
+
 function SiteLayoutSummary({
   layout,
   panelLayout,
@@ -236,8 +307,11 @@ function SiteLayoutSummary({
   projectId: string;
 }) {
   const [shareBusy, setShareBusy] = useState(false);
+  const [sldShareBusy, setSldShareBusy] = useState(false);
+  const { designStudioEnabled, sldEnabled } = useDesignStudioPlanGates();
 
   async function copyDesignPackLink() {
+    if (!designStudioEnabled) return;
     setShareBusy(true);
     try {
       const res = await fetch(
@@ -260,6 +334,33 @@ function SiteLayoutSummary({
       // Hub toast optional — silent fail with button label reset
     } finally {
       setShareBusy(false);
+    }
+  }
+
+  async function copySldPackLink() {
+    if (!sldEnabled) return;
+    setSldShareBusy(true);
+    try {
+      const res = await fetch(
+        `/api/projects/${encodeURIComponent(projectId)}/panel-layout/share`,
+        { method: "POST" }
+      );
+      const json = (await res.json()) as {
+        ok?: boolean;
+        data?: { path?: string; url?: string | null; token?: string };
+        error?: string;
+      };
+      if (!json.ok || !json.data?.token) {
+        throw new Error(json.error || "Save panel layout in Design Studio first.");
+      }
+      const href =
+        json.data.url ||
+        `${typeof window !== "undefined" ? window.location.origin : ""}${json.data.path}`;
+      await navigator.clipboard.writeText(href);
+    } catch {
+      /* silent */
+    } finally {
+      setSldShareBusy(false);
     }
   }
 
@@ -343,22 +444,41 @@ function SiteLayoutSummary({
           DC kW into Hub design versions.
         </p>
         <div className="flex flex-wrap gap-2">
-          <Button type="button" size="sm" className="gap-1.5" asChild>
-            <Link href={`/projects/${encodeURIComponent(projectId)}/design-studio`}>
-              <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+          {designStudioEnabled ? (
+            <Button type="button" size="sm" className="gap-1.5" asChild>
+              <Link href={`/projects/${encodeURIComponent(projectId)}/design-studio`}>
+                <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+                Open Design Studio
+              </Link>
+            </Button>
+          ) : (
+            <Button type="button" size="sm" className="gap-1.5" disabled>
               Open Design Studio
-            </Link>
-          </Button>
+            </Button>
+          )}
           <Button
             type="button"
             size="sm"
             variant="outline"
             className="gap-1.5"
-            disabled={shareBusy}
+            disabled={shareBusy || !designStudioEnabled}
             onClick={() => void copyDesignPackLink()}
           >
             {shareBusy ? "Copying…" : "Copy Design pack link"}
           </Button>
+          {panelLayout ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="gap-1.5"
+              disabled={sldShareBusy || !sldEnabled}
+              onClick={() => void copySldPackLink()}
+            >
+              {sldShareBusy ? "Copying…" : "Copy SLD pack link"}
+            </Button>
+          ) : null}
+          <DesignSignOffButton projectId={projectId} />
         </div>
       </CardContent>
     </Card>
@@ -585,6 +705,7 @@ export function ProjectHubDesignTab({
     fetchProjectPanelLayout,
     { revalidateOnFocus: false, dedupingInterval: 3_000 }
   );
+  const { designStudioEnabled, showUpgrade } = useDesignStudioPlanGates();
 
   const sortedDesigns = useMemo(() => {
     return [...(designs ?? [])].sort((a, b) => b.version_number - a.version_number);
@@ -660,12 +781,20 @@ export function ProjectHubDesignTab({
           <span />
         )}
         <div className="flex flex-wrap gap-2">
-          <Button type="button" size="sm" className="gap-1.5" asChild>
-            <Link href={`/projects/${encodeURIComponent(project.id)}/design-studio`}>
+          {designStudioEnabled ? (
+            <Button type="button" size="sm" className="gap-1.5" asChild>
+              <Link href={`/projects/${encodeURIComponent(project.id)}/design-studio`}>
+                <MapPinned className="h-3.5 w-3.5" aria-hidden />
+                Open 2D Design Studio
+              </Link>
+            </Button>
+          ) : (
+            <Button type="button" size="sm" className="gap-1.5" disabled title="Upgrade plan to enable Design Studio">
               <MapPinned className="h-3.5 w-3.5" aria-hidden />
               Open 2D Design Studio
-            </Link>
-          </Button>
+              {showUpgrade ? " (upgrade)" : ""}
+            </Button>
+          )}
           <Button
             type="button"
             variant="outline"

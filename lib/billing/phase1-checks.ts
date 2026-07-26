@@ -2,7 +2,7 @@
  * Phase 1 billing checks — static entitlement and plan seed validation.
  * Run: npm run test:billing-phase1
  */
-import { assertCommercialProposalEntitlement, assertResidentialThemeEntitlement } from "./entitlements";
+import { assertCommercialProposalEntitlement, assertDesignStudioEntitlement, assertResidentialThemeEntitlement, assertSldEntitlement } from "./entitlements";
 import { BillingEntitlementError } from "./errors";
 import { parsePlanFeatures } from "./plan-utils";
 import { isComplimentaryExpired } from "./subscription-lifecycle";
@@ -14,6 +14,8 @@ const TRIAL_FEATURES = {
   residential_theme_keys: ["classic", "ledger", "pearl", "golden", "solstice", "freedom"],
   all_residential_themes: false,
   commercial_proposals: true,
+  design_studio: true,
+  sld: true,
   pdf_export: true,
   watermark: true,
   max_proposals_total: 10,
@@ -28,6 +30,8 @@ const TRIAL_FEATURES = {
 const STARTER_FEATURES = {
   all_residential_themes: true,
   commercial_proposals: true,
+  design_studio: false,
+  sld: false,
   pdf_export: true,
   watermark: false,
   max_proposals_total: null,
@@ -41,6 +45,8 @@ const STARTER_FEATURES = {
 
 const PRO_FEATURES = {
   ...STARTER_FEATURES,
+  design_studio: true,
+  sld: true,
   max_users: 5,
   team_members_enabled: true,
 };
@@ -129,11 +135,19 @@ export function runBillingPhase1Checks(): void {
 
   const trialSub = sub(trialPlan);
   assertCommercialProposalEntitlement(trialSub);
+  assertDesignStudioEntitlement(trialSub);
+  assertSldEntitlement(trialSub);
   assertResidentialThemeEntitlement(trialSub, { presetId: "residential_executive", galleryKey: "golden" });
   assertThrows(
     () => assertResidentialThemeEntitlement(trialSub, { presetId: "residential_executive", galleryKey: "horizon" }),
     "theme_not_allowed"
   );
+
+  const starterSub = sub(starterPlan);
+  assertThrows(() => assertDesignStudioEntitlement(starterSub), "design_studio_not_allowed");
+  assertThrows(() => assertSldEntitlement(starterSub), "sld_not_allowed");
+  assertDesignStudioEntitlement(sub(proPlan));
+  assertSldEntitlement(sub(proPlan));
 
   const atLimit = sub(trialPlan, { trial_proposals_used: 10 });
   assert(atLimit.trial_proposals_used >= (atLimit.plan.features.max_proposals_total ?? 10), "11th proposal would exceed trial cap");

@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { assertProjectDesignStudioAccess } from "@/lib/billing/design-studio-entitlements";
+import { assertProjectSldAccess } from "@/lib/billing/design-studio-entitlements";
 import { isBillingEntitlementError } from "@/lib/billing/errors";
-import { ensureDesignPackShareToken } from "@/lib/design-studio-pack-share";
+import { ensureSldPackShareToken } from "@/lib/design-studio-sld-share";
 
 export const dynamic = "force-dynamic";
 
 type RouteCtx = { params: Promise<{ id: string }> };
 
 /**
- * POST /api/projects/[id]/site-layout/share
- * Mint (or return) Design pack share token — not a proposal link.
+ * POST /api/projects/[id]/panel-layout/share
+ * Mint (or return) SLD pack share token — not a proposal link.
  */
 export async function POST(_req: NextRequest, ctx: RouteCtx) {
   try {
@@ -18,12 +18,12 @@ export async function POST(_req: NextRequest, ctx: RouteCtx) {
       return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
     }
 
-    await assertProjectDesignStudioAccess(id);
+    await assertProjectSldAccess(id);
 
-    const result = await ensureDesignPackShareToken(id);
+    const result = await ensureSldPackShareToken(id);
     if (!result.ok) {
       const status =
-        result.error === "site_layout_missing"
+        result.error === "panel_layout_missing"
           ? 404
           : result.error === "db_unavailable"
             ? 503
@@ -45,8 +45,8 @@ export async function POST(_req: NextRequest, ctx: RouteCtx) {
       data: {
         token: result.token,
         layoutId: result.layoutId,
-        path: `/design/${result.token}`,
-        url: base ? `${base}/design/${result.token}` : null,
+        path: `/sld/${result.token}`,
+        url: base ? `${base}/sld/${result.token}` : null,
       },
     });
   } catch (error) {

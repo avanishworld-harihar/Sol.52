@@ -31,7 +31,7 @@ export type AutoPackInput = {
   roof: RoofGeometry;
   obstructions: SiteObstruction[];
   panelSpec: PanelSpec;
-  orientation: Exclude<PanelOrientation, "east_west">;
+  orientation: PanelOrientation;
   tiltDeg?: number;
   mountingType?: PanelMountingType;
   setbackFt?: number;
@@ -331,13 +331,14 @@ export function rotatePlacedPanels(
 
 export function panelPitchMeters(
   panelSpec: PanelSpec,
-  orientation: Exclude<PanelOrientation, "east_west">,
+  orientation: PanelOrientation,
   panelGapMm = 20
 ): { widthM: number; heightM: number; pitchX: number; pitchY: number } {
   const shortM = panelSpec.width_mm * MM_TO_M;
   const longM = panelSpec.height_mm * MM_TO_M;
-  const widthM = orientation === "landscape" ? longM : shortM;
-  const heightM = orientation === "landscape" ? shortM : longM;
+  /** East-West uses landscape footprint; facing alternates per row via rotation_deg. */
+  const widthM = orientation === "portrait" ? shortM : longM;
+  const heightM = orientation === "portrait" ? longM : shortM;
   const gapM = Math.max(0, panelGapMm) * MM_TO_M;
   return {
     widthM,
@@ -386,7 +387,7 @@ export function snapPanelMove(args: {
   /** Other panels that stay put (not in the moving set). */
   anchors: PlacedPanel[];
   panelSpec: PanelSpec;
-  orientation: Exclude<PanelOrientation, "east_west">;
+  orientation: PanelOrientation;
   panelGapMm?: number;
   /** Max distance (m) to consider an anchor for alignment. */
   snapRadiusM?: number;
@@ -449,7 +450,7 @@ export function snapNewPanelFootprint(args: {
   footprint: RoofPolygon;
   anchors: PlacedPanel[];
   panelSpec: PanelSpec;
-  orientation: Exclude<PanelOrientation, "east_west">;
+  orientation: PanelOrientation;
   panelGapMm?: number;
 }): RoofPolygon {
   const center = footprintCentroid(args.footprint);
@@ -509,7 +510,7 @@ function packSection(args: {
   sectionIndex: number;
   buildable: Buildable;
   panelSpec: PanelSpec;
-  orientation: Exclude<PanelOrientation, "east_west">;
+  orientation: PanelOrientation;
   panelGapMm: number;
   rowPitchM?: number;
   preservePanels: PlacedPanel[];
@@ -529,9 +530,9 @@ function packSection(args: {
   } = args;
   const shortM = panelSpec.width_mm * MM_TO_M;
   const longM = panelSpec.height_mm * MM_TO_M;
-  // Portrait = long side north-south (common rooftop mounting).
-  const widthM = orientation === "landscape" ? longM : shortM;
-  const heightM = orientation === "landscape" ? shortM : longM;
+  // Portrait = long side N–S. Landscape + East-West = long side E–W footprint.
+  const widthM = orientation === "portrait" ? shortM : longM;
+  const heightM = orientation === "portrait" ? longM : shortM;
   const gapM = Math.max(0, panelGapMm) * MM_TO_M;
   const pitchX = widthM + gapM;
   const pitchY = Math.max(heightM + gapM, rowPitchM ?? 0);
@@ -566,13 +567,17 @@ function packSection(args: {
       if (footprintOverlapsPreserve(candidate, preservePanels)) continue;
       if (intersectsAnyObstruction(candidate, obstructions, clearanceFt)) continue;
 
+      /** East-West: alternate rows face east (90°) vs west (270°). */
+      const rotationDeg =
+        orientation === "east_west" ? (row % 2 === 0 ? 90 : 270) : 0;
+
       panels.push({
         id: newPanelId(sectionIndex, row, col),
         footprint_geojson: footprint,
         section_index: sectionIndex,
         row_index: row,
         col_index: col,
-        rotation_deg: 0,
+        rotation_deg: rotationDeg,
         is_locked: false,
         is_manually_placed: false,
       });
@@ -586,7 +591,7 @@ function packAllSections(args: {
   roof: RoofGeometry;
   obstructions: SiteObstruction[];
   panelSpec: PanelSpec;
-  orientation: Exclude<PanelOrientation, "east_west">;
+  orientation: PanelOrientation;
   setbackFt: number;
   clearanceFt: number;
   panelGapMm: number;
@@ -624,10 +629,15 @@ function packAllSections(args: {
 }
 
 export function autoPackPanels(input: AutoPackInput): AutoPackResult {
-  const setbackFt = input.setbackFt ?? 1.5;
+  const walkwayFt = Math.max(0, input.walkwayFt ?? 0);
+  const setbackFt = (input.setbackFt ?? 1.5) + walkwayFt * 0.25;
   const clearanceFt = input.obstructionClearanceFt ?? 1;
   const panelGapMm = input.panelGapMm ?? 20;
-  const rowPitchM = input.rowPitchM;
+  const walkwayM = walkwayFt * FT_TO_M;
+  const rowPitchM =
+    input.rowPitchM != null && walkwayM > 0
+      ? input.rowPitchM + walkwayM * 0.35
+      : input.rowPitchM;
   const preservePanels = (input.preservePanels ?? []).filter((panel) => panel.is_locked);
   const wattage = Math.max(1, input.panelSpec.wattage);
 
@@ -728,13 +738,13 @@ export function createManualPanelAt(args: {
   lng: number;
   lat: number;
   panelSpec: PanelSpec;
-  orientation: Exclude<PanelOrientation, "east_west">;
+  orientation: PanelOrientation;
   sectionIndex?: number;
 }): PlacedPanel | null {
   const shortM = args.panelSpec.width_mm * MM_TO_M;
   const longM = args.panelSpec.height_mm * MM_TO_M;
-  const widthM = args.orientation === "landscape" ? longM : shortM;
-  const heightM = args.orientation === "landscape" ? shortM : longM;
+  const widthM = args.orientation === "portrait" ? shortM : longM;
+  const heightM = args.orientation === "portrait" ? longM : shortM;
   const footprint = panelFootprint(args.lng, args.lat, widthM, heightM);
   if (!footprint) return null;
   return {
@@ -743,7 +753,7 @@ export function createManualPanelAt(args: {
     section_index: args.sectionIndex ?? 0,
     row_index: 0,
     col_index: 0,
-    rotation_deg: 0,
+    rotation_deg: args.orientation === "east_west" ? 90 : 0,
     is_locked: false,
     is_manually_placed: true,
   };

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { assertProjectDesignStudioAccess } from "@/lib/billing/design-studio-entitlements";
+import { isBillingEntitlementError } from "@/lib/billing/errors";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase } from "@/lib/supabase";
 import { saveSiteLayoutSchema, type ProjectSiteLayout } from "@/lib/site-layout";
@@ -62,6 +64,7 @@ export async function PUT(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id } = await ctx.params;
     if (!id) return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
+    await assertProjectDesignStudioAccess(id);
     const parsed = saveSiteLayoutSchema.parse(await req.json());
     const client = db();
     if (!client) return NextResponse.json({ ok: false, error: "db_unavailable" }, { status: 503 });
@@ -91,6 +94,12 @@ export async function PUT(req: NextRequest, ctx: RouteCtx) {
       { status: 201, headers: { "Cache-Control": "no-store" } }
     );
   } catch (error) {
+    if (isBillingEntitlementError(error)) {
+      return NextResponse.json(
+        { ok: false, error: error.message, code: error.code, details: error.details },
+        { status: 402 }
+      );
+    }
     const message =
       error instanceof z.ZodError
         ? error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join(", ")

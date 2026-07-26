@@ -63,6 +63,12 @@ import {
   moduleLengthForOrientationM,
   recommendedRowPitchM,
 } from "@/lib/design-studio-engineering";
+import {
+  advisePackingForRoofType,
+  resolveSafetyProfile,
+  WALKWAY_SAFETY_PROFILES,
+  type SafetyProfileId,
+} from "@/lib/design-studio-safety-profiles";
 import { evaluateEngineeringRules } from "@/lib/design-studio-engineering-rules";
 import { estimateStringing } from "@/lib/design-studio-stringing";
 import {
@@ -148,6 +154,7 @@ type SurveySummary = {
   roof_type: string | null;
   proposed_capacity_kw: number | null;
   roof_height_ft: number | null;
+  roof_area_sqft?: number | null;
 };
 
 type DesignSummary = {
@@ -289,14 +296,23 @@ function panelCellLinePaths(
 
 const ROOF_TYPES = [
   { value: "", label: "Select roof type" },
-  { value: "rcc", label: "Flat RCC" },
-  { value: "terrace", label: "Sloped RCC / terrace" },
-  { value: "metal", label: "Metal shed" },
-  { value: "tin", label: "Tin shed" },
-  { value: "asbestos", label: "Asbestos" },
-  { value: "ground", label: "Ground mount" },
+  { value: "flat_rcc", label: "Flat RCC" },
+  { value: "sloped_rcc", label: "Sloped RCC / terrace" },
+  { value: "metal_sheet", label: "Metal shed" },
+  { value: "tile", label: "Tile" },
+  { value: "ground_mount", label: "Ground mount" },
   { value: "other", label: "Other" },
 ];
+
+function normalizeRoofTypeKey(raw: string | null | undefined): string {
+  const key = String(raw ?? "").trim().toLowerCase();
+  if (!key) return "";
+  if (key === "rcc" || key === "flat") return "flat_rcc";
+  if (key === "terrace" || key === "sloped") return "sloped_rcc";
+  if (key === "metal" || key === "tin" || key === "asbestos") return "metal_sheet";
+  if (key === "ground") return "ground_mount";
+  return key;
+}
 
 function newObstruction(
   type: ObstructionType,
@@ -359,7 +375,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const selectedPanelIdsRef = useRef<string[]>([]);
   const snapEnabledRef = useRef(true);
   const panelSpecRef = useRef(DEFAULT_PANEL_MODULE);
-  const panelOrientationRef = useRef<Exclude<PanelOrientation, "east_west">>("portrait");
+  const panelOrientationRef = useRef<PanelOrientation>("portrait");
   const studioToolRef = useRef<StudioToolOrIdle>("select");
   const placePanelRef = useRef<((latLng: google.maps.LatLng) => void) | null>(null);
   const undoStudioRef = useRef<(() => void) | null>(null);
@@ -426,8 +442,11 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const [mapTypeId, setMapTypeId] = useState<"hybrid" | "satellite" | "roadmap">("hybrid");
   const [mapHeading, setMapHeading] = useState(0);
   const [panelSpec, setPanelSpec] = useState<PanelSpec>(DEFAULT_PANEL_MODULE);
-  const [panelOrientation, setPanelOrientation] = useState<Exclude<PanelOrientation, "east_west">>("portrait");
+  const [panelOrientation, setPanelOrientation] = useState<PanelOrientation>("portrait");
   const [panelSetbackFt, setPanelSetbackFt] = useState(1.5);
+  const [panelWalkwayFt, setPanelWalkwayFt] = useState(2);
+  const [obstructionClearanceFt, setObstructionClearanceFt] = useState(1.5);
+  const [safetyProfileId, setSafetyProfileId] = useState<SafetyProfileId>("residential");
   const [panelTiltDeg, setPanelTiltDeg] = useState(() =>
     recommendedTiltFromLatitude(DEFAULT_CENTER[1])
   );
@@ -452,6 +471,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const [panelDirty, setPanelDirty] = useState(false);
   const [packing, setPacking] = useState(false);
   const [currentPanelLayout, setCurrentPanelLayout] = useState<ProjectPanelLayout | null>(null);
+  const [layoutVersions, setLayoutVersions] = useState<ProjectSiteLayout[]>([]);
+  const [restoringVersion, setRestoringVersion] = useState(false);
+  const [surveyConflictDismissed, setSurveyConflictDismissed] = useState(false);
   const [packMode, setPackMode] = useState<PanelPackMode>("target_kw");
   const [targetKw, setTargetKw] = useState<number>(5);
   const [maxCapacity, setMaxCapacity] = useState({ maxPanelCount: 0, maxDcCapacityKw: 0 });
@@ -520,7 +542,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         setProject(projectJson.data);
         const surveyData = surveyJson.ok ? surveyJson.data ?? null : null;
         setSurvey(surveyData);
-        setRoofType(surveyData?.roof_type || projectJson.data.roof_type || "");
+        setRoofType(
+          normalizeRoofTypeKey(surveyData?.roof_type || projectJson.data.roof_type || "")
+        );
 
         const latestDesign =
           designsJson.ok && Array.isArray(designsJson.data) ? designsJson.data[0] ?? null : null;
@@ -539,6 +563,19 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
 
         const layout = layoutJson.ok ? layoutJson.data ?? null : null;
         setCurrentLayout(layout);
+        setSurveyConflictDismissed(false);
+        try {
+          const versionsRes = await fetch(
+            `/api/projects/${encodeURIComponent(projectId)}/site-layout/versions`,
+            { cache: "no-store" }
+          );
+          const versionsJson = (await versionsRes.json()) as ApiEnvelope<ProjectSiteLayout[]>;
+          if (versionsJson.ok && Array.isArray(versionsJson.data)) {
+            setLayoutVersions(versionsJson.data);
+          }
+        } catch {
+          setLayoutVersions(layout ? [layout] : []);
+        }
         let roof = layout ? normalizeRoofGeometry(layout.roof_geojson) : null;
         let obstructions = Array.isArray(layout?.obstructions_geojson)
           ? layout.obstructions_geojson
@@ -548,7 +585,11 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         if (!layout && draft?.roof) {
           roof = draft.roof;
           obstructions = draft.obstructions;
-          setRoofType(draft.roof_type || surveyData?.roof_type || projectJson.data.roof_type || "");
+          setRoofType(
+            normalizeRoofTypeKey(
+              draft.roof_type || surveyData?.roof_type || projectJson.data.roof_type || ""
+            )
+          );
         }
 
         obstructions = obstructions.map((item) => ({
@@ -579,9 +620,18 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         if (savedPanel) {
           setPanelSpec(savedPanel.panel_spec);
           setPanelOrientation(
-            savedPanel.orientation === "landscape" ? "landscape" : "portrait"
+            savedPanel.orientation === "east_west"
+              ? "east_west"
+              : savedPanel.orientation === "landscape"
+                ? "landscape"
+                : "portrait"
           );
+          if (typeof savedPanel.tilt_deg === "number" && Number.isFinite(savedPanel.tilt_deg)) {
+            setPanelTiltDeg(Math.max(0, Math.min(60, Math.round(savedPanel.tilt_deg))));
+            setTiltManual(true);
+          }
           setPanelSetbackFt(savedPanel.setback_ft);
+          if (typeof savedPanel.walkway_ft === "number") setPanelWalkwayFt(savedPanel.walkway_ft);
           setMountingType(savedPanel.mounting_type ?? "flush");
           setPlacedPanels(savedPanel.panels_geojson);
           setPanelMetrics({
@@ -594,10 +644,26 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           if (placedKw > 0) setTargetKw(Number(placedKw.toFixed(2)));
         } else if (draft?.panels?.length) {
           if (draft.panel_spec) setPanelSpec(draft.panel_spec);
-          if (draft.panel_orientation === "landscape" || draft.panel_orientation === "portrait") {
+          if (
+            draft.panel_orientation === "landscape" ||
+            draft.panel_orientation === "portrait" ||
+            draft.panel_orientation === "east_west"
+          ) {
             setPanelOrientation(draft.panel_orientation);
           }
           if (typeof draft.panel_setback_ft === "number") setPanelSetbackFt(draft.panel_setback_ft);
+          if (typeof draft.panel_walkway_ft === "number") setPanelWalkwayFt(draft.panel_walkway_ft);
+          if (typeof draft.obstruction_clearance_ft === "number") {
+            setObstructionClearanceFt(draft.obstruction_clearance_ft);
+          }
+          if (
+            draft.safety_profile_id === "residential" ||
+            draft.safety_profile_id === "commercial" ||
+            draft.safety_profile_id === "industrial" ||
+            draft.safety_profile_id === "custom"
+          ) {
+            setSafetyProfileId(draft.safety_profile_id);
+          }
           if (
             draft.mounting_type === "flush" ||
             draft.mounting_type === "elevated" ||
@@ -1728,6 +1794,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             panels: placedPanels,
             panel_remaining_area_sqft: panelMetrics.remainingAreaSqft,
             panel_coverage_pct: panelMetrics.coveragePct,
+            safety_profile_id: safetyProfileId,
+            panel_walkway_ft: panelWalkwayFt,
+            obstruction_clearance_ft: obstructionClearanceFt,
           });
           return;
         }
@@ -1743,16 +1812,19 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   }, [
     center,
     mountingType,
+    obstructionClearanceFt,
     panelMetrics.coveragePct,
     panelMetrics.remainingAreaSqft,
     panelOrientation,
     panelSetbackFt,
     panelSpec,
     panelTiltDeg,
+    panelWalkwayFt,
     placedPanels,
     plantRoofHeightFt,
     projectId,
     roofType,
+    safetyProfileId,
     state.obstructions,
     state.roof,
   ]);
@@ -1777,6 +1849,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         panels: placedPanels,
         panel_remaining_area_sqft: panelMetrics.remainingAreaSqft,
         panel_coverage_pct: panelMetrics.coveragePct,
+        safety_profile_id: safetyProfileId,
+        panel_walkway_ft: panelWalkwayFt,
+        obstruction_clearance_ft: obstructionClearanceFt,
       });
     }, 600);
     return () => window.clearTimeout(timer);
@@ -1788,6 +1863,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     panelOrientation,
     panelSetbackFt,
     panelTiltDeg,
+    panelWalkwayFt,
+    obstructionClearanceFt,
+    safetyProfileId,
     mountingType,
     panelSpec,
     placedPanels,
@@ -2537,8 +2615,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
 
   const runAutoLayout = useCallback(
     (overrides?: {
-      orientation?: Exclude<PanelOrientation, "east_west">;
+      orientation?: PanelOrientation;
       mountingType?: PanelMountingType;
+      tiltDeg?: number;
       /** Soften toasts when re-packing after orientation/mounting toggle. */
       quiet?: boolean;
     }) => {
@@ -2549,13 +2628,14 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       }
       const orientation = overrides?.orientation ?? panelOrientation;
       const mounting = overrides?.mountingType ?? mountingType;
+      const tilt = overrides?.tiltDeg ?? panelTiltDeg;
       const lengthM = moduleLengthForOrientationM(
         panelSpec.width_mm,
         panelSpec.height_mm,
         orientation
       );
       const pitchM = recommendedRowPitchM({
-        tiltDeg: panelTiltDeg,
+        tiltDeg: tilt,
         moduleLengthM: lengthM,
         latitudeDeg: center[1],
         mounting,
@@ -2572,9 +2652,10 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           orientation,
           setbackFt: panelSetbackFt,
           mountingType: mounting,
-          tiltDeg: panelTiltDeg,
+          tiltDeg: tilt,
           rowPitchM: mounting === "flush" ? undefined : pitchM,
-          obstructionClearanceFt: 1.5,
+          walkwayFt: panelWalkwayFt,
+          obstructionClearanceFt,
           preservePanels: lockedPanels,
           packMode,
           targetKw: packMode === "target_kw" ? targetKw : undefined,
@@ -2597,8 +2678,14 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             "Roof too small for this module, or setback is high. Try setback 0–1 ft, or Landscape."
           );
         } else if (overrides?.quiet) {
+          const label =
+            orientation === "east_west"
+              ? "East-West layout"
+              : orientation === "landscape"
+                ? "Landscape layout"
+                : "Portrait layout";
           toast.success(
-            orientation === "landscape" ? "Landscape layout" : "Portrait layout",
+            label,
             `${result.panelCount} panels · ${result.dcCapacityKw.toFixed(2)} kW DC`
           );
         } else if (
@@ -2633,11 +2720,13 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     },
     [
       center,
+      obstructionClearanceFt,
       packMode,
       panelOrientation,
       panelSetbackFt,
       panelSpec,
       panelTiltDeg,
+      panelWalkwayFt,
       mountingType,
       placedPanels,
       pushPanelHistory,
@@ -2649,12 +2738,62 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   );
 
   const applyPanelOrientation = useCallback(
-    (orientation: Exclude<PanelOrientation, "east_west">) => {
+    (orientation: PanelOrientation) => {
       if (orientation === panelOrientation) return;
       setPanelOrientation(orientation);
       setPanelDirty(true);
       if (placedPanels.length > 0 && state.roof) {
         runAutoLayout({ orientation, quiet: true });
+      }
+    },
+    [panelOrientation, placedPanels.length, runAutoLayout, state.roof]
+  );
+
+  const applyPanelTilt = useCallback(
+    (tilt: number) => {
+      const next = Math.max(0, Math.min(60, Math.round(tilt)));
+      setPanelTiltDeg(next);
+      setTiltManual(true);
+      setPanelDirty(true);
+      if (placedPanels.length > 0 && state.roof) {
+        runAutoLayout({ tiltDeg: next, quiet: true });
+      }
+    },
+    [placedPanels.length, runAutoLayout, state.roof]
+  );
+
+  const applySafetyProfile = useCallback(
+    (id: SafetyProfileId, opts?: { quiet?: boolean }) => {
+      const profile = resolveSafetyProfile(id);
+      setSafetyProfileId(id);
+      setPanelSetbackFt(profile.edgeSetbackFt);
+      setPanelWalkwayFt(profile.walkwayFt);
+      setObstructionClearanceFt(profile.obstructionClearanceFt);
+      setPanelDirty(true);
+      if (!opts?.quiet && placedPanels.length > 0 && state.roof) {
+        runAutoLayout({ quiet: true });
+      }
+    },
+    [placedPanels.length, runAutoLayout, state.roof]
+  );
+
+  const applyRoofTypeAdvice = useCallback(
+    (nextRoofType: string) => {
+      const normalized = normalizeRoofTypeKey(nextRoofType);
+      setRoofType(normalized);
+      const advice = advisePackingForRoofType(normalized);
+      setMountingType(advice.preferredMounting);
+      setPanelSetbackFt(advice.defaultSetbackFt);
+      if (!advice.allowEastWest && panelOrientation === "east_west") {
+        setPanelOrientation("portrait");
+      }
+      setPanelDirty(true);
+      if (placedPanels.length > 0 && state.roof) {
+        runAutoLayout({
+          mountingType: advice.preferredMounting,
+          orientation: !advice.allowEastWest && panelOrientation === "east_west" ? "portrait" : undefined,
+          quiet: true,
+        });
       }
     },
     [panelOrientation, placedPanels.length, runAutoLayout, state.roof]
@@ -2675,7 +2814,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         mountingType,
         tiltDeg: panelTiltDeg,
         rowPitchM: mountingType === "flush" ? undefined : rowPitchM,
-        obstructionClearanceFt: 1.5,
+        walkwayFt: panelWalkwayFt,
+        obstructionClearanceFt,
         preservePanels: [],
       });
       setMaxCapacity({
@@ -2687,10 +2827,12 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     }
   }, [
     mountingType,
+    obstructionClearanceFt,
     panelOrientation,
     panelSetbackFt,
     panelSpec,
     panelTiltDeg,
+    panelWalkwayFt,
     rowPitchM,
     state.obstructions,
     state.roof,
@@ -3857,7 +3999,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             tilt_deg: panelTiltDeg,
             mounting_type: mountingType,
             setback_ft: panelSetbackFt,
-            walkway_ft: 0,
+            walkway_ft: panelWalkwayFt,
             panel_gap_mm: 20,
             panels_geojson: placedPanels,
             panel_count: panelCount,
@@ -3952,6 +4094,28 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   return (
     <main className="flex h-full min-h-0 flex-col overflow-hidden bg-slate-100 dark:bg-slate-950">
       <header className="z-40 shrink-0 border-b border-slate-200 bg-white/95 px-3 py-1.5 backdrop-blur dark:border-white/10 dark:bg-slate-950/95 sm:px-4">
+        {!surveyConflictDismissed &&
+        survey?.roof_area_sqft != null &&
+        survey.roof_area_sqft > 50 &&
+        state.metrics.areaSqft > 50 &&
+        Math.abs(survey.roof_area_sqft - state.metrics.areaSqft) /
+          Math.max(survey.roof_area_sqft, state.metrics.areaSqft) >
+          0.2 ? (
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-[11px] text-amber-950 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-50">
+            <p className="min-w-0 font-semibold">
+              Survey roof ~{Math.round(survey.roof_area_sqft)} sqft vs studio ~
+              {Math.round(state.metrics.areaSqft)} sqft — keep studio polygon, or re-trace from
+              survey notes.
+            </p>
+            <button
+              type="button"
+              className="shrink-0 font-bold text-amber-800 underline dark:text-amber-200"
+              onClick={() => setSurveyConflictDismissed(true)}
+            >
+              Dismiss
+            </button>
+          </div>
+        ) : null}
         <div className="flex w-full flex-wrap items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <Button variant="outline" size="sm" asChild>
@@ -3968,6 +4132,54 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                 {currentPanelLayout ? ` · Panels V${currentPanelLayout.version_number}` : ""}
                 {state.dirty || panelDirty ? " · Unsaved changes" : ""}
               </p>
+              {layoutVersions.length > 1 && !mobileViewOnly ? (
+                <label className="mt-1 flex items-center gap-1.5 text-[10px] font-semibold text-slate-600 dark:text-slate-300">
+                  Restore roof
+                  <select
+                    className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] dark:border-white/10 dark:bg-slate-950"
+                    disabled={restoringVersion}
+                    value={currentLayout?.id ?? ""}
+                    onChange={(event) => {
+                      const layoutId = event.target.value;
+                      if (!layoutId || layoutId === currentLayout?.id) return;
+                      void (async () => {
+                        setRestoringVersion(true);
+                        try {
+                          const res = await fetch(
+                            `/api/projects/${encodeURIComponent(projectId)}/site-layout/versions/restore`,
+                            {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ layoutId }),
+                            }
+                          );
+                          const json = (await res.json()) as { ok?: boolean; error?: string };
+                          if (!json.ok) throw new Error(json.error || "Restore failed");
+                          toast.success("Roof version restored", "Reloading Design Studio…");
+                          window.location.reload();
+                        } catch (error) {
+                          toast.error(
+                            "Restore failed",
+                            error instanceof Error ? error.message : "Could not restore version."
+                          );
+                        } finally {
+                          setRestoringVersion(false);
+                        }
+                      })();
+                    }}
+                  >
+                    {layoutVersions.map((v) => (
+                      <option key={v.id} value={v.id}>
+                        V{v.version_number}
+                        {v.is_current ? " · current" : ""}
+                        {typeof v.roof_area_sqft === "number"
+                          ? ` · ${Math.round(v.roof_area_sqft)} sqft`
+                          : ""}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -4454,7 +4666,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             Roof type
             <select
               value={roofType}
-              onChange={(event) => setRoofType(event.target.value)}
+              onChange={(event) => applyRoofTypeAdvice(event.target.value)}
               className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs dark:border-white/10 dark:bg-slate-950"
             >
               {ROOF_TYPES.map((option) => (
@@ -4462,6 +4674,11 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
               ))}
             </select>
           </label>
+          {roofType ? (
+            <p className="mt-1 text-[10px] text-slate-500">
+              {advisePackingForRoofType(roofType).note}
+            </p>
+          ) : null}
 
           <div className="border-t border-slate-100 pt-3 dark:border-white/10">
             <div className="flex items-center justify-between">
@@ -4679,24 +4896,37 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             >
               Manage catalog in More → Panel catalog
             </a>
-            <div className="mt-2 grid grid-cols-2 gap-1.5">
-              {(["portrait", "landscape"] as const).map((orientation) => (
+            <div className="mt-2 grid grid-cols-3 gap-1.5">
+              {(
+                [
+                  { id: "portrait" as const, label: "Portrait" },
+                  { id: "landscape" as const, label: "Landscape" },
+                  { id: "east_west" as const, label: "East-West" },
+                ] as const
+              ).map((opt) => {
+                const eastWestBlocked =
+                  opt.id === "east_west" && !advisePackingForRoofType(roofType).allowEastWest;
+                return (
                 <button
-                  key={orientation}
+                  key={opt.id}
                   type="button"
-                  disabled={packing}
-                  onClick={() => applyPanelOrientation(orientation)}
-                  className={`rounded-lg border px-2 py-2 text-[11px] font-semibold capitalize disabled:opacity-50 ${
-                    panelOrientation === orientation
+                  disabled={packing || eastWestBlocked}
+                  title={eastWestBlocked ? "East-West not typical for this roof type" : undefined}
+                  onClick={() => applyPanelOrientation(opt.id)}
+                  className={`rounded-lg border px-2 py-2 text-[11px] font-semibold disabled:opacity-50 ${
+                    panelOrientation === opt.id
                       ? "border-blue-600 bg-blue-50 text-blue-900"
                       : "border-slate-200 text-slate-600 dark:border-white/10"
                   }`}
                 >
-                  {orientation}
+                  {opt.label}
                 </button>
-              ))}
+              );
+              })}
             </div>
-            {azimuthAdvice && panelOrientation !== azimuthAdvice.suggestedOrientation ? (
+            {azimuthAdvice &&
+            panelOrientation !== "east_west" &&
+            panelOrientation !== azimuthAdvice.suggestedOrientation ? (
               <button
                 type="button"
                 className="mt-1.5 text-[11px] font-bold text-blue-700 hover:underline disabled:opacity-50"
@@ -4759,9 +4989,31 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                   setTiltManual(true);
                   setPanelDirty(true);
                 }}
+                onBlur={() => {
+                  if (placedPanels.length > 0 && state.roof) {
+                    runAutoLayout({ tiltDeg: panelTiltDeg, quiet: true });
+                  }
+                }}
                 className="mt-1 w-full rounded-lg border border-slate-200 px-2.5 py-2 text-xs dark:border-white/10 dark:bg-slate-950"
               />
             </label>
+            <div className="mt-1.5 grid grid-cols-3 gap-1.5">
+              {([10, 15, 20] as const).map((deg) => (
+                <button
+                  key={deg}
+                  type="button"
+                  disabled={packing}
+                  onClick={() => applyPanelTilt(deg)}
+                  className={`rounded-lg border px-2 py-1.5 text-[11px] font-bold tabular-nums disabled:opacity-50 ${
+                    panelTiltDeg === deg
+                      ? "border-teal-600 bg-teal-50 text-teal-900"
+                      : "border-slate-200 text-slate-600 dark:border-white/10"
+                  }`}
+                >
+                  {deg}°
+                </button>
+              ))}
+            </div>
             {(() => {
               const suggested = recommendedTiltFromLatitude(center[1]);
               const latLabel = center[1].toFixed(1);
@@ -4775,11 +5027,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                     <button
                       type="button"
                       className="text-[11px] font-bold text-blue-700 hover:underline"
-                      onClick={() => {
-                        setPanelTiltDeg(suggested);
-                        setTiltManual(false);
-                        setPanelDirty(true);
-                      }}
+                      onClick={() => applyPanelTilt(suggested)}
                     >
                       Use suggested
                     </button>
@@ -4787,6 +5035,32 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                 </div>
               );
             })()}
+            <label className="mt-2 block text-[11px] font-bold text-slate-600 dark:text-slate-300">
+              Safety profile
+              <select
+                value={safetyProfileId}
+                onChange={(event) =>
+                  applySafetyProfile(event.target.value as SafetyProfileId)
+                }
+                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs dark:border-white/10 dark:bg-slate-950"
+              >
+                {(Object.keys(WALKWAY_SAFETY_PROFILES) as Array<
+                  keyof typeof WALKWAY_SAFETY_PROFILES
+                >).map((id) => (
+                  <option key={id} value={id}>
+                    {WALKWAY_SAFETY_PROFILES[id].label}
+                  </option>
+                ))}
+                <option value="custom">Custom</option>
+              </select>
+            </label>
+            <p className="mt-1 text-[10px] text-slate-500">
+              Edge {panelSetbackFt} ft · walkway {panelWalkwayFt} ft · obstruction clearance{" "}
+              {obstructionClearanceFt} ft
+              {safetyProfileId !== "custom"
+                ? ` · fire ${resolveSafetyProfile(safetyProfileId).fireSetbackFt} ft`
+                : ""}
+            </p>
             <label className="mt-2 block text-[11px] font-bold text-slate-600 dark:text-slate-300">
               Edge setback (ft)
               <input
@@ -4796,7 +5070,24 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                 step={0.5}
                 value={panelSetbackFt}
                 onChange={(event) => {
+                  setSafetyProfileId("custom");
                   setPanelSetbackFt(Math.max(0, Number(event.target.value) || 0));
+                  setPanelDirty(true);
+                }}
+                className="mt-1 w-full rounded-lg border border-slate-200 px-2.5 py-2 text-xs dark:border-white/10 dark:bg-slate-950"
+              />
+            </label>
+            <label className="mt-2 block text-[11px] font-bold text-slate-600 dark:text-slate-300">
+              Walkway (ft)
+              <input
+                type="number"
+                min={0}
+                max={20}
+                step={0.5}
+                value={panelWalkwayFt}
+                onChange={(event) => {
+                  setSafetyProfileId("custom");
+                  setPanelWalkwayFt(Math.max(0, Number(event.target.value) || 0));
                   setPanelDirty(true);
                 }}
                 className="mt-1 w-full rounded-lg border border-slate-200 px-2.5 py-2 text-xs dark:border-white/10 dark:bg-slate-950"
@@ -5491,6 +5782,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       {sldSheetOpen && sldSheetModel ? (
         <DesignStudioSldSheetViewer
           model={sldSheetModel}
+          projectId={projectId}
           onClose={() => setSldSheetOpen(false)}
         />
       ) : null}

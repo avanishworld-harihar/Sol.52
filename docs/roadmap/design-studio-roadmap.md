@@ -2,8 +2,8 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | Approved phased roadmap — Phase 6 active |
-| **Last Updated** | 2026-07-25 |
+| **Status** | Phases 1–6 core complete — reserved engines (roof type + safety) shipped light |
+| **Last Updated** | 2026-07-26 |
 | **Canonical architecture (FROZEN)** | [`docs/architecture/design-studio-architecture.md`](../architecture/design-studio-architecture.md) |
 
 > **This is the only place where future ideas, future phases, and future enhancements are added.**
@@ -17,6 +17,9 @@
 > four-engine sequence remains unchanged. Phase 1 starts now; later phases stay queued in the
 > approved order below and must pass their acceptance gate before the next phase begins.
 
+> **Product lock (2026-07-21):** Design + SLD stay **outside** the customer proposal. Separate pack
+> share links only — see `.cursor/rules/design-sld-separate-from-proposal.mdc`.
+
 ---
 
 ## 1. Phase map
@@ -24,11 +27,11 @@
 | Phase | Focus | Status |
 |-------|-------|--------|
 | **Phase 1** | 2D Geometry foundation — satellite map, roof polygon, obstructions, save/version | **COMPLETE** |
-| **Phase 2** | Auto Panel Placement Engine + RCC/shed presets + manual fine-tune | **COMPLETE (core)** — East-West / one-click tilt chips still queued |
-| **Phase 3** | Engineering Rules + Solar Design — setbacks, strings, studio SLD | **COMPLETE (kickoff)** — equipment pins / exportable SLD pack still queued |
-| **Phase 4** | **Shadow Engine** — per-panel shade %, shade-free area, loss estimate | **COMPLETE (core)** — survey fill, hour slider, before/after, annual loss (2026-07-24) |
-| **Phase 5** | Project/Survey/BOM/Proposal integration + snapshots + customer sign-off | **COMPLETE (gate)** — Design pack share + Hub BOM sync + cross-links (2026-07-25) |
-| **Phase 6** | Cross-device QA, performance, security and pilot rollout | **ACTIVE** — snapshot PNG gate + QA checklist kickoff (2026-07-25) |
+| **Phase 2** | Auto Panel Placement Engine + RCC/shed presets + manual fine-tune | **COMPLETE** — East-West + tilt chips (2026-07-26) |
+| **Phase 3** | Engineering Rules + Solar Design — setbacks, strings, studio SLD | **COMPLETE** — SLD pack share `/sld/[token]` (2026-07-26) |
+| **Phase 4** | **Shadow Engine** — per-panel shade %, shade-free area, loss estimate | **COMPLETE (core)** |
+| **Phase 5** | Project/Survey/BOM + snapshots + customer design sign-off | **COMPLETE** — version restore, survey conflict UX, Hub sign-off (2026-07-26) |
+| **Phase 6** | Cross-device QA, performance, security and pilot rollout | **COMPLETE (core)** — automated gates + process checklist (2026-07-26) |
 
 ### Phase gates
 
@@ -47,212 +50,73 @@
 
 ---
 
-## 2. Phase 1 — 2D Geometry Foundation (ACTIVE)
+## 2. Phase 1 — 2D Geometry Foundation (COMPLETE)
 
 **Goal:** `Open project → locate roof → draw/edit roof → add obstructions → save/version → reopen`
 
-- Project Hub → Design → Open Design Studio.
-- Satellite map, GPS/geocode center and optional roof-photo reference.
-- Tap-to-place polygon plus mouse/Pencil vertex editing; freehand trace follows after the precise
-  path is stable.
-- Live roof area, perimeter and azimuth; roof type: flat RCC, sloped RCC, metal sheet, tile or
-  ground mount.
-- Manual obstruction markers for tank, tree, chimney and parapet with footprint/height.
-- Undo/redo, IndexedDB draft recovery, org-scoped Supabase save and version history.
-- Desktop and iPad share the same Core actions; phone receives the frozen light-edit subset.
-- Data/API: `project_site_layouts`, `/api/projects/[id]/site-layout` and `/versions`.
+Shipped as frozen v1.0 geometry path: Project Hub → Design → Open Design Studio, satellite map,
+GPS/geocode, polygons + obstructions, undo/redo, IndexedDB draft recovery, org-scoped save.
 
 ---
 
-## 3. Phase 2 — Auto Panel Placement Engine (COMPLETE — core)
+## 3. Phase 2 — Auto Panel Placement Engine (COMPLETE)
 
-The foundation engine of the Design Studio. After the roof polygon is drawn, the system
-automatically generates the best possible panel layout. The installer only fine-tunes the result
-instead of placing every panel manually.
-
-**Goal:** `Draw roof → Auto layout (Target kW or Fill max) → Minor adjustments → Save`
-
-**Shipped (2026-07-22):** Target kW packing (default, seeded from project `capacity_kw` / survey /
-design), Fill max toggle, live Max possible kW after obstruction keep-outs, brand→watt module
-picker, manual place/move/undo, and Aurora-style 3-pane shell (tool rail | map | inspector).
-Standalone Tools entry remains a future mount of the same `DesignStudioClient` — not a second
-engine. Design/SLD stay outside customer proposal.
-
-**Core complete (2026-07-23):** Phase 2 gate met for day-to-day packing + fine-tune. Remaining
-presets below stay as follow-ups (do not block Phase 3).
-
-**Inputs:** panel dimensions, orientation (portrait/landscape), required setbacks, walkway
-clearance, roof shape, installer spacing rules, optional `targetKw`.
-
-**Algorithm outline (planning only):**
-```
-buildableArea = erode(roofPolygon, setback) − obstruction footprints (+ clearance)
-rowSpacing    = f(tilt, mountingType)          -- inter-row self-shading gap
-tile panel rectangles across buildableArea (respect walkway gaps)
-accept panel if fully within buildableArea (no partial panels)
-assign id, row/col index (used later for per-panel shadow grouping)
-output PanelLayout: panels[], panelCount, dcCapacityKw, remainingAreaSqft, coveragePct
-```
-
-**Manual fine-tune actions (Shared Editor Actions):** `MOVE_PANEL`, `ROTATE_PANEL`, `DELETE_PANEL`,
-`ADD_PANEL`, lock/unlock.
-
-**Live metrics bar:** `Panels · DC kW · Remaining area · Coverage %` — identical on Desktop and iPad.
-
-**Data:** `project_panel_layouts` table (persists the `PanelLayout` contract from architecture §4).
-
-### 3.1 Layout presets (part of Phase 2)
-
-One-click presets that re-run auto-packing with different parameters. Applying a preset re-packs
-**only unlocked** panels; locked panels are preserved (with a warning).
-
-| Preset | Parameter |
-|--------|-----------|
-| Portrait | orientation = vertical |
-| Landscape | orientation = horizontal |
-| East-West | opposite-tilted row pairs (flat/ground) |
-| Flush Mount | mounting = flush, tilt = roof pitch, min setback |
-| Elevated Structure | mounting = elevated, tilt override, larger row spacing |
-| 10° / 15° / 20° | tilt override → recompute row spacing |
+**Shipped:** Target kW / Fill max, module picker, manual fine-tune, Portrait / Landscape /
+**East-West**, Flush / Elevated / Ground, **10° / 15° / 20° tilt chips** (re-pack on change).
 
 ---
 
-## 4. Phase 3 — Engineering Rules + Solar Design
+## 4. Phase 3 — Engineering Rules + Solar Design (COMPLETE)
 
-A validation stage that runs **after** Auto Panel Placement and **before** Shadow Analysis. It
-validates the `PanelLayout` and surfaces engineering warnings.
-
-**Future workflow:**
-`Roof → Auto Panel Placement → Engineering Validation → Manual Adjustments → Shadow Analysis`
-
-**Shipped foundation (2026-07-23):**
-- Advisory engineering rules engine (`lib/design-studio-engineering-rules.ts`) — panels outside
-  buildable/setback/keep-outs, low setback, elevated row-pitch, target vs max, lock mix.
-- Design Studio inspector **Engineering** card (does not block Save).
-- Planning stringing estimate + **studio-only** one-line SLD schematic (PV → DCDB → Inverter →
-  ACDB → Meter → Grid). Not embedded in customer proposal.
-
-**Engineering SLD sheet v1 (2026-07-24):**
-- `lib/design-studio-sld-model.ts` — auto model from panels + stringing (balanced string sizes).
-- `components/site-layout/design-studio-sld-sheet.tsx` — A3 landscape SVG sheet (flow, plant
-  table, legend, title block, earthing stubs) + **Print / PDF** overlay.
-- Engineering card → **Open engineering SLD · Print / PDF**. Still outside customer proposal.
-
-**Still queued in Phase 3:** equipment map points, cable routes, walkway safety profiles UI,
-signed GFC SLD pack / share link, inverter/MPPT hard limits from project BOM.
-
-**Checks:** setbacks, blocked walkways, maintenance access, row spacing, fire clearance,
-clearance issues and severity-ranked engineering warnings.
-
-**Consumes:** Walkway & Safety Profiles (§6.2) instead of hardcoded values.
-
-**Solar design outputs:** inverter/DC-AC ratio validation, modules per string, string count, MPPT
-allocation, voltage/current limit checks, equipment points (DCDB, inverter, ACDB, meter/grid),
-cable-route indication, earthing/lightning-arrester points, installer material summary and a basic
-exportable SLD: `PV strings → DCDB → inverter → ACDB → net meter → grid`.
+Studio SLD sheet + **SLD pack share** (`/sld/[token]`, Copy link on Hub / SLD sheet). Not embedded
+in proposal renderers.
 
 ---
 
-## 5. Phase 4 — Shadow Engine
+## 5. Phase 4 — Shadow Engine (COMPLETE — core)
 
-Consumes the **validated `PanelLayout` only** (never the raw roof polygon). Produces per-panel shade
-percentages and roof-level shade-free area.
-
-**Shipped foundation (2026-07-23):**
-- `lib/design-studio-shadow.ts` — SunCalc IST solstice samples; obstruction height → ground shadow;
-  per-panel `shadeFraction` via footprint ∩ shadow.
-- Design Studio **Shadow** card (On/Off + Jun/Dec × 9/12/3 presets).
-- Map ground-shadow polygons + panel fill tint by shade fraction.
-- Planning disclaimer in UI (not a certified shading report).
-
-**Height datum (2026-07-24):**
-- **Plant roof height (ft AGL)** — terrace height above ground (survey `roof_height_ft` prefill).
-- Objects: **above roof** (tank/chimney) use height as cast height; **AGL** (tree) cast =
-  `max(0, object_agl − plant_roof_agl)`.
-
-**Still queued in Phase 4:** ~~survey auto-fill `shadow_free_sqft` / notes~~ · ~~before/after compare~~ ·
-~~annual generation-loss estimate~~ · ~~finer time slider~~ — **core complete (2026-07-24).**
-
-**Shipped wrap (2026-07-24):**
-- Save → Survey `shadow_free_sqft` + `shadow_analysis_note` (canonical Dec 21 · 12 PM).
-- Fine hour slider (7–17 IST) on selected solstice day.
-- Before/after: clear-sky vs with-obstructions for the active sample.
-- Annual shade-loss estimate from mean of six solstice samples × unshaded yield.
-- Output remains a planning estimate with disclaimer (not a certified shading report).
+Per-panel shade samples, survey fill, hour slider, annual loss estimate.
 
 ---
 
-## 6. Phase 5 — Workflow Integration & Output
+## 6. Phase 5 — Integration + sign-off (COMPLETE)
 
-> **Product lock (2026-07-21):** Design and SLD stay **outside** the customer proposal surface.
-> Proposals remain a simple commercial offer for proposal-only / lower subscription tiers.
-> Design + SLD are separate, subscription-gated capabilities with their own share links and print/PDF.
-> See `.cursor/rules/design-sld-separate-from-proposal.mdc`.
+Design pack share, Hub BOM sync, site-layout **version restore**, survey roof **conflict UX**,
+**Customer design sign-off** Hub action (CRM task template — not legal e-sign).
 
-**Gate complete (2026-07-25):**
-- Project Hub Design tab — 2D summary card with roof + panel layout metrics.
-- **Design pack** print/PDF overlay from Design Studio (installer summary; not a proposal block).
-- **Design pack share link** — `/design/[token]` + Copy share link (Studio + Hub). Migration `072`.
-- Save → sync `project_designs` (panel count, DC kW, stringing, inverter estimate) for Hub BOM.
-- Phone view-only adapter (inspect + shadow checks); edit on tablet/computer.
-- Map snapshot on Save → Hub thumbnail.
-- Hub Overview / Design cross-links → Design Studio (links only; no Design/SLD in proposal renderers).
-
-**Still queued (Phase 5.1 / later):**
-- Separate SLD pack share link when gated.
-- Survey roof import conflict UX polish.
-- Design task completion, customer design sign-off and installation handover package.
-- Site-layout version restore UI polish.
-- Feature flags / plan categories: Proposal-only vs Design-enabled vs SLD-enabled.
-- Optional installer-triggered proposal size revise (new pricing snapshot) — not silent rewrite.
+**Plan flags (Wave 2):** `design_studio` + `sld` on `PlanFeatures`; starter = proposal-only
+(both false); trial/pro/business = both true. Asserts on Design/SLD APIs; Hub upgrade hint when
+gated (`BILLING_ENFORCE`). Migration `075_design_studio_plan_features.sql`.
 
 ---
 
-## 7. Phase 6 — QA & Production Rollout
+## 7. Phase 6 — QA & Production Rollout (**COMPLETE — core**)
 
-**Kickoff (2026-07-25):**
-- `lib/design-studio-phase6-gates.ts` — PNG snapshot validity + draft integrity helpers.
-- Snapshot fetch rejects non-PNG / tiny buffers before upload.
+**Automated (2026-07-26):**
+- `lib/design-studio-phase6-gates.ts` — PNG validity + draft integrity (wired on IndexedDB reopen).
+- `npm run test:design-studio-phase6` — PNG/draft helpers + packing/collision/shadow/share/perf smoke.
+- Share-token org isolation logical smoke (Design + SLD tokens must match org).
 
-**Queued:**
-- Desktop/iPad parity and Apple Pencil palm-rejection QA.
-- Cross-device save/reopen, IndexedDB recovery and snapshot-not-black tests (expand).
-- Polygon accuracy, panel collision/boundary, engineering-rule and shadow-engine tests.
-- Multi-tenant RLS/security verification (including Design pack share tokens).
-- Large industrial roof performance profiling and selected-installer pilot before general release.
+**Still human / process (not fake-complete in code):**
+- Desktop/iPad parity + Apple Pencil palm-rejection QA.
+- Selected-installer pilot before general release.
+
+Pilot remains an operator checklist; core automated gates are green.
 
 ---
 
-## 8. Future architecture placeholders (reserved slots)
+## 8. Architecture placeholders
 
-These are reserved extension points. The frozen architecture accommodates them without rework; none
-are implemented now.
+### 8.1 Roof Type Engine — **SHIPPED (light)** 2026-07-26
+Survey/`roof_type` drives mounting default, East-West availability, and setback advice in Studio
+inspector + packer (`lib/design-studio-safety-profiles.ts`).
 
-### 8.1 Roof Type Engine
-The Auto Panel Placement Engine will support different roof types. Roof type influences available
-presets, mounting method, panel packing strategy, and setback rules.
+### 8.2 Walkway & Safety Profiles — **SHIPPED (light)** 2026-07-26
+Residential / Commercial / Industrial / Custom profiles set edge setback, walkway, obstruction
+clearance; consumed by packer. Persist via `setback_ft` / `walkway_ft` + draft `safety_profile_id`.
 
-| Roof type | Influences |
-|-----------|-----------|
-| Flat RCC · Sloped RCC · Metal Sheet · Tile · Ground Mount | presets · mounting method · packing strategy · setback rules |
-
-Engine 2 reserves a `roofType` input (derivable from survey `roof_type`). Current default: one
-generic behaviour.
-
-### 8.2 Walkway & Safety Profiles
-Installer-configurable safety profiles replace hardcoded setback/walkway values. The Auto Panel
-Placement Engine and Engineering Rules Engine both **consume** these profiles.
-
-| Profile | Defines |
-|---------|---------|
-| Residential · Commercial · Industrial · Custom | walkway width · maintenance clearance · fire setback · edge setback |
-
-Current default: a single residential profile assumed.
-
-### 8.3 AI Obstruction Detection
-A future AI module that detects water tanks, trees, chimneys, and parapet walls from drone images or
-roof photos, producing obstruction markers (currently placed manually). The system remains **fully
-manual** until this ships.
+### 8.3 AI Obstruction Detection — **explicit future**
+Manual markers only until approved.
 
 ---
 

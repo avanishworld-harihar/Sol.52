@@ -9,7 +9,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { DesignStudioSldModel } from "@/lib/design-studio-sld-model";
 import { Button } from "@/components/ui/button";
-import { Download, Printer, X } from "lucide-react";
+import { Download, Link2, Printer, X } from "lucide-react";
 
 const W = 1180;
 const H = 834;
@@ -18,6 +18,8 @@ type DesignStudioSldSheetProps = {
   model: DesignStudioSldModel;
   onClose?: () => void;
   className?: string;
+  /** When set, shows Copy SLD pack share link (public /sld/[token]). */
+  projectId?: string | null;
 };
 
 function fmtCoord(value: number | null, digits = 5): string {
@@ -458,14 +460,50 @@ export function DesignStudioSldSheetSvg({ model }: { model: DesignStudioSldModel
   );
 }
 
-export function DesignStudioSldSheetViewer({ model, onClose, className }: DesignStudioSldSheetProps) {
+export function DesignStudioSldSheetViewer({
+  model,
+  onClose,
+  className,
+  projectId,
+}: DesignStudioSldSheetProps) {
   const sheetRef = useRef<HTMLDivElement | null>(null);
   const [mounted, setMounted] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [shareBusy, setShareBusy] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const handleCopyShareLink = useCallback(async () => {
+    if (!projectId) return;
+    setShareBusy(true);
+    try {
+      const res = await fetch(
+        `/api/projects/${encodeURIComponent(projectId)}/panel-layout/share`,
+        { method: "POST" }
+      );
+      const json = (await res.json()) as {
+        ok?: boolean;
+        data?: { path?: string; url?: string | null; token?: string };
+        error?: string;
+      };
+      if (!json.ok || !json.data?.token) {
+        throw new Error(json.error || "Save panel layout first.");
+      }
+      const href =
+        json.data.url ||
+        `${typeof window !== "undefined" ? window.location.origin : ""}${json.data.path}`;
+      await navigator.clipboard.writeText(href);
+      setShareCopied(true);
+      window.setTimeout(() => setShareCopied(false), 2000);
+    } catch {
+      /* silent — button resets */
+    } finally {
+      setShareBusy(false);
+    }
+  }, [projectId]);
 
   const handlePrint = useCallback(() => {
     if (typeof window === "undefined") return;
@@ -591,6 +629,19 @@ export function DesignStudioSldSheetViewer({ model, onClose, className }: Design
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+            {projectId ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => void handleCopyShareLink()}
+                disabled={shareBusy}
+                className="border-white/20 text-white hover:bg-white/10"
+              >
+                <Link2 className="mr-1.5 h-4 w-4" />
+                {shareCopied ? "Copied" : shareBusy ? "Link…" : "Copy SLD link"}
+              </Button>
+            ) : null}
             <Button
               type="button"
               size="sm"

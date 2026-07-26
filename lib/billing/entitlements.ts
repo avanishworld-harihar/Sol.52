@@ -52,6 +52,26 @@ export function assertCommercialProposalEntitlement(sub: OrganizationSubscriptio
   }
 }
 
+/** Design Studio + Design pack — separate from customer proposal. */
+export function assertDesignStudioEntitlement(sub: OrganizationSubscription): void {
+  if (!sub.plan.features.design_studio) {
+    throw new BillingEntitlementError(
+      "design_studio_not_allowed",
+      "Design Studio is not included in your current plan. Upgrade to enable Design."
+    );
+  }
+}
+
+/** Engineering SLD pack — separate from customer proposal. */
+export function assertSldEntitlement(sub: OrganizationSubscription): void {
+  if (!sub.plan.features.sld) {
+    throw new BillingEntitlementError(
+      "sld_not_allowed",
+      "SLD pack is not included in your current plan. Upgrade to enable SLD."
+    );
+  }
+}
+
 /** Residential decks: theme allow-list (trial) or all themes (paid). */
 export function assertResidentialThemeEntitlement(
   sub: OrganizationSubscription,

@@ -1,4 +1,5 @@
 import { openDB } from "idb";
+import { assessDesignStudioDraftIntegrity } from "@/lib/design-studio-phase6-gates";
 import type { PanelOrientation, PanelSpec, PlacedPanel } from "@/lib/panel-layout";
 import type { RoofGeometry, SiteObstruction } from "@/lib/site-layout";
 
@@ -20,6 +21,10 @@ export type SiteLayoutDraft = {
   panels?: PlacedPanel[] | null;
   panel_remaining_area_sqft?: number | null;
   panel_coverage_pct?: number | null;
+  /** Walkway & safety profile id (residential / commercial / industrial / custom). */
+  safety_profile_id?: "residential" | "commercial" | "industrial" | "custom" | null;
+  panel_walkway_ft?: number | null;
+  obstruction_clearance_ft?: number | null;
 };
 
 const DB_NAME = "sol52-design-studio";
@@ -37,7 +42,22 @@ export async function readSiteLayoutDraft(projectId: string): Promise<SiteLayout
   if (typeof window === "undefined") return null;
   try {
     const db = await database();
-    return (await db.get(STORE_NAME, projectId)) ?? null;
+    const draft = ((await db.get(STORE_NAME, projectId)) ?? null) as SiteLayoutDraft | null;
+    if (!draft) return null;
+    const integrity = assessDesignStudioDraftIntegrity({
+      projectId,
+      roof: draft.roof,
+      updated_at: draft.updated_at,
+    });
+    if (!integrity.ok && integrity.reasons.includes("missing_roof")) {
+      console.warn("[site-layout-draft] integrity failed; clearing draft", integrity.reasons);
+      await db.delete(STORE_NAME, projectId);
+      return null;
+    }
+    if (!integrity.ok) {
+      console.warn("[site-layout-draft] integrity warnings", integrity.reasons);
+    }
+    return draft;
   } catch {
     return null;
   }

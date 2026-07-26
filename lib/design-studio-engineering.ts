@@ -84,12 +84,13 @@ export function recommendedRowPitchM(opts: {
 export function moduleLengthForOrientationM(
   widthMm: number,
   heightMm: number,
-  orientation: Exclude<PanelOrientation, "east_west">
+  orientation: PanelOrientation
 ): number {
   const shortM = widthMm / 1000;
   const longM = heightMm / 1000;
   // Pitch along “row” direction uses the footprint height in packer coords.
-  return orientation === "landscape" ? shortM : longM;
+  // Portrait = long N–S; landscape + east_west = short N–S (long E–W).
+  return orientation === "portrait" ? longM : shortM;
 }
 
 export type YieldEstimate = {

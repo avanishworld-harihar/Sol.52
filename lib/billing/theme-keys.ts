@@ -1,6 +1,23 @@
 import type { ResidentialThemeKey } from "@/lib/billing/types";
 import type { SalesPremiumStyleId } from "@/lib/sales-premium-styles";
 
+const THEME_KEYS = new Set<string>([
+  "classic",
+  "ledger",
+  "pearl",
+  "slate",
+  "golden",
+  "horizon",
+  "ember",
+  "solstice",
+  "freedom",
+]);
+
+function asThemeKey(value: string | null | undefined): ResidentialThemeKey | null {
+  if (!value) return null;
+  return THEME_KEYS.has(value) ? (value as ResidentialThemeKey) : null;
+}
+
 /** Map gallery / preset selection to a stable theme key for residential entitlement checks only. */
 export function resolveResidentialThemeKey(input: {
   presetId: string;
@@ -13,7 +30,9 @@ export function resolveResidentialThemeKey(input: {
     );
   }
 
-  if (input.galleryKey === "golden") return "golden";
+  const fromGallery = asThemeKey(input.galleryKey ?? null);
+  if (fromGallery) return fromGallery;
+
   if (input.galleryKey === "zenith") return "golden";
   if (input.galleryKey === "luxe") return "golden";
   if (input.galleryKey === "blueprint") return "golden";
@@ -23,6 +42,14 @@ export function resolveResidentialThemeKey(input: {
   if (preset === "residential_zenith") return "golden";
   if (preset === "residential_premium_luxe") return "golden";
   if (preset === "residential_blueprint") return "golden";
+  if (preset === "residential_horizon" || preset.includes("horizon")) return "horizon";
+  if (preset === "residential_ember" || preset.includes("ember")) return "ember";
+  if (preset.includes("solstice")) return "solstice";
+  if (preset.includes("freedom")) return "freedom";
+  if (preset.includes("classic")) return "classic";
+  if (preset.includes("ledger")) return "ledger";
+  if (preset.includes("pearl")) return "pearl";
+  if (preset.includes("slate")) return "slate";
 
   return "golden";
 }

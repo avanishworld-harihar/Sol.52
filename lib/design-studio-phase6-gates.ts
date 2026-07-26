@@ -28,6 +28,7 @@ export function assessDesignStudioDraftIntegrity(draft: {
   projectId?: string | null;
   roof?: unknown;
   savedAt?: string | null;
+  updated_at?: string | null;
 } | null): DesignStudioDraftIntegrity {
   const reasons: string[] = [];
   if (!draft) {
@@ -35,7 +36,8 @@ export function assessDesignStudioDraftIntegrity(draft: {
   }
   if (!draft.projectId?.trim()) reasons.push("missing_project_id");
   if (!draft.roof) reasons.push("missing_roof");
-  if (!draft.savedAt) reasons.push("missing_saved_at");
+  const saved = draft.savedAt || draft.updated_at;
+  if (!saved) reasons.push("missing_saved_at");
   return { ok: reasons.length === 0, reasons };
 }
 

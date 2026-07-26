@@ -23,6 +23,9 @@ export type OrgUsageSummary = {
   complimentaryExpiresAt: string | null;
   complimentaryGrantedBy: string | null;
   complimentaryReason: string | null;
+  /** Plan gates for Design Studio / SLD packs (outside proposal). Soft-default true when billing off. */
+  designStudioEnabled: boolean;
+  sldEnabled: boolean;
   upgradePlans: Array<{
     code: PlanCode;
     name: string;
@@ -164,6 +167,8 @@ export async function buildOrgUsageSummary(organizationId: string): Promise<OrgU
       complimentaryExpiresAt: null,
       complimentaryGrantedBy: null,
       complimentaryReason: null,
+      designStudioEnabled: true,
+      sldEnabled: true,
       upgradePlans: [],
     };
   }
@@ -204,6 +209,8 @@ export async function buildOrgUsageSummary(organizationId: string): Promise<OrgU
       complimentaryExpiresAt: null,
       complimentaryGrantedBy: null,
       complimentaryReason: null,
+      designStudioEnabled: false,
+      sldEnabled: false,
       upgradePlans,
     };
   }
@@ -240,6 +247,8 @@ export async function buildOrgUsageSummary(organizationId: string): Promise<OrgU
     complimentaryExpiresAt: sub.expires_at,
     complimentaryGrantedBy: sub.granted_by,
     complimentaryReason: sub.granted_reason,
+    designStudioEnabled: sub.plan.features.design_studio === true,
+    sldEnabled: sub.plan.features.sld === true,
     upgradePlans,
   };
 }
