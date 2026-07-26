@@ -23,6 +23,8 @@ export type CustomerLead = {
   source?: string | null;
   /** CRM v2 — ISO timestamp last touched (call/WA/status-change/inbound). */
   last_touched_at?: string | null;
+  /** Lead row created_at (list sort fallback). */
+  created_at?: string | null;
   /** Indian state / UT. */
   state?: string | null;
   email?: string | null;

@@ -285,7 +285,11 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
       });
       const j = (await r.json()) as { ok?: boolean; data?: CustomerLead; error?: string };
       if (!j.ok) throw new Error(j.error ?? "Failed");
-      await mutateLead(j.data, { revalidate: false });
+      const saved = j.data?.status ? normalizeLeadStatus(j.data.status) : next;
+      if (saved !== next) {
+        throw new Error(`Server kept status as ${saved}`);
+      }
+      await mutateLead({ ...(j.data as CustomerLead), status: saved }, { revalidate: false });
       await globalMutate(`/api/customers/${leadId}/timeline`);
       toast.success("Stage updated");
     } catch (e) {
@@ -516,14 +520,9 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
       >
         <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
           Draw the roof and place panels here — before Won. After Won, the same design shows in
-          the Project tab. Not inside the customer proposal.
+          the Project tab. Not inside the customer proposal. Opening Studio does not change the
+          CRM pipeline pill (Proposal sent stays Proposal sent).
         </p>
-        {statusKey === "design" || statusKey === "site-survey" ? (
-          <p className="mt-2 text-[11px] font-semibold text-teal-700 dark:text-teal-300">
-            Pipeline is on {statusKey === "design" ? "Design" : "Site Survey"} — open Studio to
-            continue.
-          </p>
-        ) : null}
       </SectionCard>
 
       {/* ── 2. Activity Timeline ── */}

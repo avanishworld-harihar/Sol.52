@@ -20,6 +20,7 @@ export function mapCustomerRow(row: Record<string, unknown>): CustomerLead {
     phone,
     source: row.source != null ? String(row.source) : null,
     last_touched_at: row.last_touched_at != null ? String(row.last_touched_at) : null,
+    created_at: row.created_at != null ? String(row.created_at) : null,
     state: row.state != null ? String(row.state) : null,
     email: row.email != null ? String(row.email) : null,
     consumer_id:
@@ -52,4 +53,34 @@ export function mapCustomerRow(row: Record<string, unknown>): CustomerLead {
     last_activity_type:
       row.last_activity_type != null ? String(row.last_activity_type) : null,
   };
+}
+
+/** Most recent engagement time — calls, proposal status, edits, or create. */
+export function customerRecencyMs(c: Pick<
+  CustomerLead,
+  "last_activity_at" | "last_touched_at" | "created_at"
+>): number {
+  let max = 0;
+  for (const raw of [c.last_activity_at, c.last_touched_at, c.created_at]) {
+    if (!raw) continue;
+    const t = Date.parse(raw);
+    if (Number.isFinite(t) && t > max) max = t;
+  }
+  return max;
+}
+
+/** Newest / most recently worked customers first (calls, proposals, Won). */
+export function sortCustomersByRecency<T extends Pick<
+  CustomerLead,
+  "id" | "status" | "last_activity_at" | "last_touched_at" | "created_at"
+>>(list: T[]): T[] {
+  return [...list].sort((a, b) => {
+    const d = customerRecencyMs(b) - customerRecencyMs(a);
+    if (d !== 0) return d;
+    /** Same timestamp → Won (active install) above untouched new leads. */
+    const aw = normalizeLeadStatus(String(a.status ?? "")) === "won" ? 1 : 0;
+    const bw = normalizeLeadStatus(String(b.status ?? "")) === "won" ? 1 : 0;
+    if (bw !== aw) return bw - aw;
+    return String(a.id).localeCompare(String(b.id));
+  });
 }

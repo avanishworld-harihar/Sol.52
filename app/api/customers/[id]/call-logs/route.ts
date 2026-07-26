@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
-import { supabase } from "@/lib/supabase";
+import { supabase, touchLead } from "@/lib/supabase";
 import { appendActivityEvent } from "@/lib/followup-store";
 import { maybeAutoBumpLeadToContacted } from "@/lib/crm-pipeline";
 
@@ -101,6 +101,10 @@ export async function POST(req: NextRequest, ctx: RouteCtx) {
     });
 
     const stageUpdated = await maybeAutoBumpLeadToContacted(id, outcome, calledAt);
+    /** Surface this lead at the top of Customers (recency sort). */
+    if (!stageUpdated) {
+      void touchLead(id);
+    }
 
     return NextResponse.json({ ok: true, data, stage_updated: stageUpdated }, { status: 201 });
   } catch (err) {

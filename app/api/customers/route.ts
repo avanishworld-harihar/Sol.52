@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { mapCustomerRow } from "@/lib/customers-map";
+import { mapCustomerRow, sortCustomersByRecency } from "@/lib/customers-map";
 import { syncMissingHouseholdLeadsFromProposals } from "@/lib/crm-sync-proposal-leads";
 import { syncLeadsFromActiveProjects } from "@/lib/crm-sync-leads-from-projects";
 import { unmergeBillHolderFromProjectLeads } from "@/lib/crm-unmerge-bill-holder";
 import { purgeSyntheticCrmLeads } from "@/lib/crm-purge-synthetic-leads";
 import {
   listCustomers,
-  listPipelineProjects,
   mapLeadIdsToLatestProposalIds,
   batchNextFollowups,
   batchLastActivities,
 } from "@/lib/supabase";
-import { syncWonLeadProjects } from "@/lib/project-store";
+import { syncWonLeadProjects, isWonLeadStatus } from "@/lib/project-store";
 import { processInboundLead } from "@/lib/inbound-leads";
 import { appendActivityEvent } from "@/lib/followup-store";
 import type { CustomerLead } from "@/lib/types";
@@ -85,32 +84,32 @@ export async function GET() {
       householdNames.set(c.household_id, list);
     }
 
-    const [pipeline, proposalByLead, nextFollowups, lastActivities] = await Promise.all([
-      listPipelineProjects(),
+    const [proposalByLead, nextFollowups, lastActivities] = await Promise.all([
       mapLeadIdsToLatestProposalIds(leadIds),
       batchNextFollowups(leadIds),
       batchLastActivities(leadIds),
     ]);
 
-    const stageByLeadId = new Map<string, "in-pipeline" | "active-project">();
-    for (const p of pipeline) {
-      if (!p.lead_id || p.archived_at) continue;
-      stageByLeadId.set(p.lead_id, "active-project");
-    }
-
-    const decorated: CustomerLead[] = customers.map((c) => {
-      const members = c.household_id ? householdNames.get(c.household_id) ?? [] : [];
-      return {
-        ...c,
-        household_member_names: members.filter((n) => n !== c.name),
-        customer_stage: stageByLeadId.get(c.id) ?? "lead",
-        primary_proposal_id: proposalByLead[c.id] ?? null,
-        next_followup_at: nextFollowups[c.id]?.due_at ?? null,
-        next_followup_title: nextFollowups[c.id]?.title ?? null,
-        last_activity_at: lastActivities[c.id]?.occurred_at ?? null,
-        last_activity_type: lastActivities[c.id]?.event_type ?? null,
-      };
-    });
+    /**
+     * Customers "Active projects" = Won install handoff only.
+     * Having a projects row (proposal upsert / soft Design Studio) must NOT
+     * mark Proposal-sent leads as Active Project.
+     */
+    const decorated: CustomerLead[] = sortCustomersByRecency(
+      customers.map((c) => {
+        const members = c.household_id ? householdNames.get(c.household_id) ?? [] : [];
+        return {
+          ...c,
+          household_member_names: members.filter((n) => n !== c.name),
+          customer_stage: isWonLeadStatus(c.status) ? "active-project" : "lead",
+          primary_proposal_id: proposalByLead[c.id] ?? null,
+          next_followup_at: nextFollowups[c.id]?.due_at ?? null,
+          next_followup_title: nextFollowups[c.id]?.title ?? null,
+          last_activity_at: lastActivities[c.id]?.occurred_at ?? null,
+          last_activity_type: lastActivities[c.id]?.event_type ?? null,
+        };
+      })
+    );
 
     return NextResponse.json({ ok: true, data: decorated });
   } catch (error) {

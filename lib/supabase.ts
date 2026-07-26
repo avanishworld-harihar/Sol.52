@@ -361,6 +361,10 @@ export async function listCustomers() {
   const rows: Record<string, unknown>[] = [];
   /** Safety cap — paginate until exhausted or 20k rows. */
   const maxRows = 20_000;
+  /**
+   * DB order is a coarse prefetch only — `/api/customers` re-sorts by activity.
+   * Do not order by `last_touched_at` here: many deploys never ran 012_crm_v2.
+   */
   while (rows.length < maxRows) {
     const { data, error } = await client
       .from(leadsTable)
@@ -513,10 +517,11 @@ async function onLeadMarkedWon(leadId: string, row: Record<string, unknown>): Pr
 
 /** Bump only `last_touched_at` (call / WhatsApp / status-change without state move). */
 export async function touchLead(leadId: string): Promise<void> {
-  if (!supabase) return;
+  const client = createSupabaseAdmin() ?? supabase;
+  if (!client) return;
   const leadsTable = await resolveLeadsTable();
   if (!leadsTable) return;
-  await supabase
+  await client
     .from(leadsTable)
     .update({ last_touched_at: new Date().toISOString() })
     .eq("id", leadId);

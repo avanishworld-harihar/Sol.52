@@ -13,6 +13,7 @@ import {
   touchCustomersSavedAt,
   writeCustomersCache
 } from "@/lib/customers-client";
+import { sortCustomersByRecency } from "@/lib/customers-map";
 import {
   DASHBOARD_STATS_SWR_KEY,
   type DashboardStatsPayload
@@ -154,7 +155,8 @@ function CustomersPageContent() {
         );
       });
     }
-    return list;
+    /** Recent proposal / call / edit first — not random created_at order. */
+    return sortCustomersByRecency(list);
   }, [allCustomers, stageFilter, searchQuery]);
 
   const stageCounts = useMemo(
@@ -256,16 +258,27 @@ function CustomersPageContent() {
         });
         const j = (await r.json()) as { ok?: boolean; data?: CustomerLead; error?: string };
         if (!j.ok) throw new Error(j.error || "Could not update status");
-        if (j.data?.id === leadId) {
-          await mutate(
-            (current) => {
-              const list = current ?? [];
-              return list.map((c) => (c.id === leadId ? { ...c, ...j.data! } : c));
-            },
-            { revalidate: false }
-          );
+        const savedStatus = j.data?.status ? normalizeLeadStatus(j.data.status) : next;
+        if (savedStatus !== next) {
+          throw new Error(`Server kept status as ${savedStatus} (wanted ${next})`);
         }
-        await mutate();
+        /**
+         * Trust the PATCH row — do not immediately revalidate the full customers
+         * list (that GET runs heavy syncs and can briefly paint a stale status).
+         */
+        await mutate(
+          (current) => {
+            const list = current ?? [];
+            const nextList = list.map((c) =>
+              c.id === leadId
+                ? { ...c, ...(j.data ?? {}), status: savedStatus }
+                : c
+            );
+            writeCustomersCache(nextList);
+            return nextList;
+          },
+          { revalidate: false }
+        );
         await mutateGlobal(DASHBOARD_STATS_SWR_KEY, undefined, { revalidate: true });
         toast.success("Pipeline updated", `Moved to ${LEAD_STATUS_OPTIONS.find((o) => o.value === next)?.label ?? next}.`);
       } catch (e) {
