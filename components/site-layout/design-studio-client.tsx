@@ -412,9 +412,13 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     pointerId: number;
     startX: number;
     startY: number;
+    lastX: number;
+    lastY: number;
     startLayoutX: number;
     startLayoutY: number;
     moved: boolean;
+    /** Empty-space drag pans the map under CSS optical magnify. */
+    mapPan: boolean;
     panelDrag: {
       primaryId: string;
       footprints: Record<string, PlacedPanel["footprint_geojson"]>;
@@ -423,6 +427,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
     /** Empty-press may clear selection on pointer up if never moved. */
     clearOnUp: boolean;
   } | null>(null);
+  const opticalHitElRef = useRef<HTMLDivElement | null>(null);
   const opticalWindowListenersRef = useRef<{
     move: (event: PointerEvent) => void;
     up: (event: PointerEvent) => void;
@@ -3376,6 +3381,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         }
         return;
       }
+      /** Cancel one-finger optical pan/drag so pinch can take over. */
+      opticalPointerRef.current = null;
+      draggingPanelIdRef.current = null;
       const map = mapRef.current;
       const zoom = map?.getZoom() ?? 18;
       const startDist = touchDistance(event.touches);
@@ -3716,8 +3724,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           return panel;
         }
 
-        // 2) Inflated screen bbox (~20px) for fat-finger / edge clicks
-        const pad = 20;
+        // 2) Inflated screen bbox (~28px) for fat-finger / iPad edge taps
+        const pad = 28;
         if (
           clientX >= minX - pad &&
           clientX <= maxX + pad &&
@@ -3737,8 +3745,8 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         }
       }
 
-      // 3) Nearest panel centroid within 48 screen px
-      if (nearest && nearest.dist <= 48) {
+      // 3) Nearest panel centroid within 64 screen px (iPad touch)
+      if (nearest && nearest.dist <= 64) {
         return nearest.panel;
       }
 
@@ -3757,6 +3765,11 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const clearOpticalWindowListeners = useCallback(() => {
     const listeners = opticalWindowListenersRef.current;
     if (!listeners) return;
+    const hit = opticalHitElRef.current;
+    /** Prefer overlay (iPad setPointerCapture); also clear window fallback. */
+    hit?.removeEventListener("pointermove", listeners.move);
+    hit?.removeEventListener("pointerup", listeners.up);
+    hit?.removeEventListener("pointercancel", listeners.up);
     window.removeEventListener("pointermove", listeners.move);
     window.removeEventListener("pointerup", listeners.up);
     window.removeEventListener("pointercancel", listeners.up);
@@ -3786,10 +3799,24 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   const handleOpticalPointerDown = useCallback(
     (event: ReactPointerEvent<HTMLDivElement>) => {
       if (mapExtraScaleRef.current <= 1) return;
-      // Two-finger pinch owns zoom — do not start panel drag / place.
-      if (pinchZoomActiveRef.current || !event.isPrimary) return;
+      /**
+       * One-finger owns select/pan/drag. Clear stale pinch-hijack lock (iPad often
+       * leaves this true after gestureend, which blocked all taps/pans).
+       */
+      if (event.isPrimary) {
+        pinchZoomActiveRef.current = false;
+      } else {
+        return;
+      }
+
       event.preventDefault();
       event.stopPropagation();
+
+      try {
+        event.currentTarget.setPointerCapture(event.pointerId);
+      } catch {
+        /* older WebKit */
+      }
 
       if (mobileViewOnlyRef.current) {
         // View-only: allow select / deselect for inspect, never drag or place.
@@ -3799,11 +3826,23 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         } else if (selectedPanelIdsRef.current.length > 0) {
           setSelectedPanelIds([]);
         }
+        try {
+          event.currentTarget.releasePointerCapture(event.pointerId);
+        } catch {
+          /* ignore */
+        }
         return;
       }
 
       const layout = clientToLayoutPixel(event.clientX, event.clientY);
-      if (!layout) return;
+      if (!layout) {
+        try {
+          event.currentTarget.releasePointerCapture(event.pointerId);
+        } catch {
+          /* ignore */
+        }
+        return;
+      }
 
       const tool = studioToolRef.current;
       let panelDrag: {
@@ -3812,6 +3851,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         ids: string[];
       } | null = null;
       let clearOnUp = false;
+      let mapPan = false;
 
       if (addObstructionRef.current) {
         // Place on pointer up via remapped latLng.
@@ -3853,8 +3893,12 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             panelCellLinesRef.current = [];
             draggingPanelIdRef.current = hit.id;
           }
-        } else if (selectedPanelIdsRef.current.length > 0) {
-          clearOnUp = true;
+        } else {
+          /** Empty map under optical magnify — one-finger pan (Maps gestures are locked). */
+          mapPan = true;
+          if (selectedPanelIdsRef.current.length > 0) {
+            clearOnUp = true;
+          }
         }
       }
 
@@ -3862,9 +3906,12 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         pointerId: event.pointerId,
         startX: event.clientX,
         startY: event.clientY,
+        lastX: event.clientX,
+        lastY: event.clientY,
         startLayoutX: layout.x,
         startLayoutY: layout.y,
         moved: false,
+        mapPan,
         panelDrag,
         clearOnUp,
       };
@@ -3877,6 +3924,20 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           drag.moved = true;
           drag.clearOnUp = false;
         }
+
+        if (drag.mapPan && drag.moved && !drag.panelDrag) {
+          const map = mapRef.current;
+          if (!map) return;
+          const scale = Math.max(1, mapExtraScaleRef.current);
+          const dx = moveEvent.clientX - drag.lastX;
+          const dy = moveEvent.clientY - drag.lastY;
+          drag.lastX = moveEvent.clientX;
+          drag.lastY = moveEvent.clientY;
+          // Screen drag → pan map content with finger (layout px = screen / CSS scale).
+          map.panBy(-dx / scale, -dy / scale);
+          return;
+        }
+
         if (!drag.panelDrag || !drag.moved) return;
         const cur = clientToLayoutPixel(moveEvent.clientX, moveEvent.clientY);
         if (!cur) return;
@@ -3896,6 +3957,11 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         opticalPointerRef.current = null;
         clearOpticalWindowListeners();
         draggingPanelIdRef.current = null;
+        try {
+          opticalHitElRef.current?.releasePointerCapture(upEvent.pointerId);
+        } catch {
+          /* ignore */
+        }
 
         const panelDrag = drag.panelDrag;
         if (panelDrag && drag.moved) {
@@ -3948,6 +4014,10 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
           return;
         }
 
+        if (drag.mapPan && drag.moved) {
+          return;
+        }
+
         // Place tools: use final pointer position even if the hand moved a few px
         // (moved>5 used to skip tank/tree placement under optical magnify).
         const latLng = clientToLatLngOptical(upEvent.clientX, upEvent.clientY);
@@ -3971,6 +4041,12 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       };
 
       opticalWindowListenersRef.current = { move: onMove, up: onUp };
+      const hitEl = event.currentTarget;
+      opticalHitElRef.current = hitEl;
+      /** Overlay listeners + capture — required for iPad touch move/up. */
+      hitEl.addEventListener("pointermove", onMove);
+      hitEl.addEventListener("pointerup", onUp);
+      hitEl.addEventListener("pointercancel", onUp);
       window.addEventListener("pointermove", onMove);
       window.addEventListener("pointerup", onUp);
       window.addEventListener("pointercancel", onUp);
@@ -4596,6 +4672,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
             <>
               {/* Outside CSS scale: remap + window pointer listeners for reliable drag */}
               <div
+                ref={opticalHitElRef}
                 className="absolute inset-0 z-[15] touch-none"
                 style={{
                   touchAction: "none",
@@ -4605,8 +4682,7 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
                 onPointerDown={handleOpticalPointerDown}
               />
               <div className="pointer-events-none absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-900 shadow">
-                Design magnify {mapExtraScale.toFixed(2)}× · max {MAP_EXTRA_SCALE_MAX}× · pinch
-                or ± · drag panels
+                Design magnify {mapExtraScale.toFixed(2)}× · drag to pan · tap/drag panels
               </div>
             </>
           ) : null}

@@ -1,8 +1,11 @@
 /**
  * Design / SLD plan gates for project-scoped APIs.
  * Soft-off when BILLING_ENFORCE=false (same as proposal entitlements).
+ * Platform admin / super-admin session bypasses the org plan gate (founder tooling).
  */
 
+import type { NextRequest } from "next/server";
+import { isAdminRequestAllowed } from "@/lib/admin-access";
 import {
   assertDesignStudioEntitlement,
   assertSldEntitlement,
@@ -34,8 +37,22 @@ async function orgIdForProject(projectId: string): Promise<string | null> {
   return data?.organization_id != null ? String(data.organization_id) : null;
 }
 
-export async function assertProjectDesignStudioAccess(projectId: string): Promise<void> {
+/** Platform operator (admin cookie) can use Design/SLD regardless of tenant plan. */
+async function isPlatformAdminBypass(req?: NextRequest | null): Promise<boolean> {
+  if (!req) return false;
+  try {
+    return await isAdminRequestAllowed(req);
+  } catch {
+    return false;
+  }
+}
+
+export async function assertProjectDesignStudioAccess(
+  projectId: string,
+  req?: NextRequest | null
+): Promise<void> {
   if (!isBillingEnforced()) return;
+  if (await isPlatformAdminBypass(req)) return;
   if (!(await isBillingAvailable())) return;
   const orgId = await orgIdForProject(projectId);
   if (!orgId) return;
@@ -44,8 +61,12 @@ export async function assertProjectDesignStudioAccess(projectId: string): Promis
   assertDesignStudioEntitlement(sub);
 }
 
-export async function assertProjectSldAccess(projectId: string): Promise<void> {
+export async function assertProjectSldAccess(
+  projectId: string,
+  req?: NextRequest | null
+): Promise<void> {
   if (!isBillingEnforced()) return;
+  if (await isPlatformAdminBypass(req)) return;
   if (!(await isBillingAvailable())) return;
   const orgId = await orgIdForProject(projectId);
   if (!orgId) return;

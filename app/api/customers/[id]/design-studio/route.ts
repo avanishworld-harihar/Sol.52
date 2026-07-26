@@ -14,7 +14,7 @@ type RouteCtx = { params: Promise<{ id: string }> };
  * Ensure a soft (pre-Won) project for this lead and return Design Studio path.
  * Same DesignStudioClient route as Project Hub — no duplicate UI.
  */
-export async function POST(_req: NextRequest, ctx: RouteCtx) {
+export async function POST(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id: leadId } = await ctx.params;
     if (!leadId?.trim()) {
@@ -60,7 +60,7 @@ export async function POST(_req: NextRequest, ctx: RouteCtx) {
     }
 
     const projectId = String(project.id);
-    await assertProjectDesignStudioAccess(projectId);
+    await assertProjectDesignStudioAccess(projectId, req);
 
     const path = `/projects/${encodeURIComponent(projectId)}/design-studio`;
     return NextResponse.json(

@@ -64,7 +64,7 @@ export async function PUT(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id } = await ctx.params;
     if (!id) return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
-    await assertProjectDesignStudioAccess(id);
+    await assertProjectDesignStudioAccess(id, req);
     const parsed = saveSiteLayoutSchema.parse(await req.json());
     const client = db();
     if (!client) return NextResponse.json({ ok: false, error: "db_unavailable" }, { status: 503 });

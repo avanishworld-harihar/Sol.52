@@ -70,7 +70,7 @@ export async function PUT(req: NextRequest, ctx: RouteCtx) {
       return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
     }
 
-    await assertProjectDesignStudioAccess(id);
+    await assertProjectDesignStudioAccess(id, req);
     const parsed = savePanelLayoutSchema.parse(await req.json());
     const client = db();
     if (!client) {

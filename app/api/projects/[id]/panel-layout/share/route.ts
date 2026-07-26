@@ -11,14 +11,14 @@ type RouteCtx = { params: Promise<{ id: string }> };
  * POST /api/projects/[id]/panel-layout/share
  * Mint (or return) SLD pack share token — not a proposal link.
  */
-export async function POST(_req: NextRequest, ctx: RouteCtx) {
+export async function POST(req: NextRequest, ctx: RouteCtx) {
   try {
     const { id } = await ctx.params;
     if (!id) {
       return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
     }
 
-    await assertProjectSldAccess(id);
+    await assertProjectSldAccess(id, req);
 
     const result = await ensureSldPackShareToken(id);
     if (!result.ok) {
