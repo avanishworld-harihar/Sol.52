@@ -68,6 +68,8 @@ export interface CustomerInput {
   household_id?: string | null;
   /** Primary WhatsApp / call contact for shared-number households. */
   is_whatsapp_contact?: boolean;
+  /** Tenant scope — set on create when auth session / inbound org known. */
+  organization_id?: string | null;
 }
 
 async function countFirstAvailable(candidates: string[]) {
@@ -351,7 +353,10 @@ export async function upsertPipelineProject(payload: {
   return data as Record<string, unknown>;
 }
 
-export async function listCustomers() {
+export async function listCustomers(opts?: {
+  organizationId?: string | null;
+  includeNullOrg?: boolean;
+}) {
   const client = createSupabaseAdmin() ?? supabase;
   if (!client) return [];
   const leadsTable = await resolveLeadsTable();
@@ -366,11 +371,19 @@ export async function listCustomers() {
    * Do not order by `last_touched_at` here: many deploys never ran 012_crm_v2.
    */
   while (rows.length < maxRows) {
-    const { data, error } = await client
+    let query = client
       .from(leadsTable)
       .select("*")
       .order("created_at", { ascending: false })
       .range(offset, offset + pageSize - 1);
+    if (opts?.organizationId) {
+      if (opts.includeNullOrg) {
+        query = query.or(`organization_id.eq.${opts.organizationId},organization_id.is.null`);
+      } else {
+        query = query.eq("organization_id", opts.organizationId);
+      }
+    }
+    const { data, error } = await query;
     if (error) throw error;
     const chunk = (data ?? []) as Record<string, unknown>[];
     rows.push(...chunk);
@@ -551,7 +564,10 @@ export async function getLeadSurveyStatus(leadId: string | null | undefined): Pr
  * Look up leads sharing a phone (case-insensitive / digit-normalized).
  * Phone is no longer unique — households may share one WhatsApp number.
  */
-export async function findLeadsByPhone(phone: string): Promise<Record<string, unknown>[]> {
+export async function findLeadsByPhone(
+  phone: string,
+  opts?: { organizationId?: string | null }
+): Promise<Record<string, unknown>[]> {
   if (!supabase) return [];
   const trimmed = phone.trim();
   if (!trimmed) return [];
@@ -561,11 +577,11 @@ export async function findLeadsByPhone(phone: string): Promise<Record<string, un
   const last10 = digits.length >= 10 ? digits.slice(-10) : digits;
   const orParts = [`phone.ilike.${trimmed}`];
   if (last10.length >= 8) orParts.push(`phone.ilike.%${last10}%`);
-  const { data } = await supabase
-    .from(leadsTable)
-    .select("*")
-    .or(orParts.join(","))
-    .limit(40);
+  let query = supabase.from(leadsTable).select("*").or(orParts.join(",")).limit(40);
+  if (opts?.organizationId) {
+    query = query.eq("organization_id", opts.organizationId);
+  }
+  const { data } = await query;
   if (!Array.isArray(data)) return [];
   return (data as Record<string, unknown>[]).filter((row) =>
     phonesMatch(row.phone != null ? String(row.phone) : "", trimmed)
@@ -576,8 +592,11 @@ export async function findLeadsByPhone(phone: string): Promise<Record<string, un
  * Look up an existing lead by phone (case-insensitive). Prefer WhatsApp contact
  * in a household, else most recently touched. Used for channel inbound merge.
  */
-export async function findLeadByPhone(phone: string): Promise<Record<string, unknown> | null> {
-  const matches = await findLeadsByPhone(phone);
+export async function findLeadByPhone(
+  phone: string,
+  opts?: { organizationId?: string | null }
+): Promise<Record<string, unknown> | null> {
+  const matches = await findLeadsByPhone(phone, opts);
   if (matches.length === 0) return null;
   const wa = matches.find((m) => m.is_whatsapp_contact === true);
   if (wa) return wa;
@@ -696,6 +715,7 @@ export async function createCustomer(payload: CustomerInput) {
   }
   if (payload.is_whatsapp_contact === true) basePayload.is_whatsapp_contact = true;
   if (payload.is_whatsapp_contact === false) basePayload.is_whatsapp_contact = false;
+  if (payload.organization_id) basePayload.organization_id = payload.organization_id;
   basePayload.last_touched_at = new Date().toISOString();
 
   /** Strip CRM v2 columns for retry against pre-012 schemas. */

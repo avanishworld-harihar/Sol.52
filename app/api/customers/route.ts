@@ -15,6 +15,7 @@ import { processInboundLead } from "@/lib/inbound-leads";
 import { appendActivityEvent } from "@/lib/followup-store";
 import type { CustomerLead } from "@/lib/types";
 import { z } from "zod";
+import { denyIfStrictUnauthenticated, resolveOrgScope } from "@/lib/auth/org-scope";
 
 const customerSchema = z.object({
   name: z.string().min(2),
@@ -36,8 +37,12 @@ const customerSchema = z.object({
   is_whatsapp_contact: z.boolean().optional(),
 });
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const scope = await resolveOrgScope(req);
+    const denied = denyIfStrictUnauthenticated(scope);
+    if (denied) return denied;
+
     /**
      * Critical household split must finish before the list returns so Rajesh
      * (proposal person) appears and Bharti's stolen bill/CA are cleared.
@@ -72,7 +77,10 @@ export async function GET() {
       }
     })();
 
-    const raw = await listCustomers();
+    const raw = await listCustomers({
+      organizationId: scope.organizationId,
+      includeNullOrg: scope.includeUnscopedRows,
+    });
     const customers = (raw as Record<string, unknown>[]).map(mapCustomerRow);
     const leadIds = customers.map((c) => c.id);
 
@@ -120,6 +128,10 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const scope = await resolveOrgScope(req);
+    const denied = denyIfStrictUnauthenticated(scope);
+    if (denied) return denied;
+
     const body = await req.json();
     const payload = customerSchema.parse(body);
     /**
@@ -143,6 +155,7 @@ export async function POST(req: NextRequest) {
       forceNew: payload.force_new !== false,
       isWhatsappContact: payload.is_whatsapp_contact,
       consumerName: payload.consumer_name?.trim() || null,
+      organizationId: scope.organizationId,
     });
     const mappedData = mapCustomerRow(result.data as Record<string, unknown>);
     if (!result.deduped) {

@@ -9,9 +9,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase } from "@/lib/supabase";
-import { insertProjectAdaptive, resolveDefaultOrgId } from "@/lib/project-store";
+import { insertProjectAdaptive } from "@/lib/project-store";
 import { logProjectCreated } from "@/lib/project-activity-logger";
 import { getTaskTemplatesForStage } from "@/lib/project-task-templates";
+import { denyIfStrictUnauthenticated, resolveOrgScope } from "@/lib/auth/org-scope";
 
 export const dynamic = "force-dynamic";
 
@@ -45,7 +46,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "db_unavailable" }, { status: 503 });
     }
 
-    const orgId = await resolveDefaultOrgId();
+    const scope = await resolveOrgScope(req);
+    const denied = denyIfStrictUnauthenticated(scope);
+    if (denied) return denied;
+
+    const orgId = scope.organizationId;
 
     const now = new Date().toISOString();
     const displayName = parsed.official_name?.trim() ?? null;

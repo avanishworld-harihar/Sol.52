@@ -252,24 +252,40 @@ function mapProposalListRow(r: Record<string, unknown>): ProposalListItem {
   };
 }
 
-export async function listRecentProposals(limit = 500): Promise<ProposalListItem[]> {
+export async function listRecentProposals(
+  limit = 500,
+  opts?: { organizationId?: string | null; includeNullOrg?: boolean }
+): Promise<ProposalListItem[]> {
   const client = rwClient();
   if (!client) return [];
-  const { data, error } = await client
+
+  let query = client
     .from("proposals")
     .select(
       "id, customer_name, generated_at, system_kw, lead_id, panel_brand, annual_saving_inr, proposal_status, preset_id, location, view_count, last_viewed_at, proposal_pricing(final_amount_inr)"
     )
     .order("generated_at", { ascending: false })
     .limit(limit);
+  if (opts?.organizationId) {
+    query = opts.includeNullOrg
+      ? query.or(`organization_id.eq.${opts.organizationId},organization_id.is.null`)
+      : query.eq("organization_id", opts.organizationId);
+  }
+  const { data, error } = await query;
   if (error) {
-    const { data: fallback, error: err2 } = await client
+    let fallbackQ = client
       .from("proposals")
       .select(
         "id, customer_name, generated_at, system_kw, lead_id, panel_brand, annual_saving_inr, location, proposal_pricing(final_amount_inr)"
       )
       .order("generated_at", { ascending: false })
       .limit(limit);
+    if (opts?.organizationId) {
+      fallbackQ = opts.includeNullOrg
+        ? fallbackQ.or(`organization_id.eq.${opts.organizationId},organization_id.is.null`)
+        : fallbackQ.eq("organization_id", opts.organizationId);
+    }
+    const { data: fallback, error: err2 } = await fallbackQ;
     if (err2 || !fallback) {
       console.warn("[proposals-store] listRecentProposals:", error.message);
       return [];

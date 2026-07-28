@@ -46,6 +46,8 @@ export type InboundLeadInput = {
   isWhatsappContact?: boolean;
   /** Bill / account-holder name (CRM consumer_name). */
   consumerName?: string | null;
+  /** Tenant — when set, phone dedupe stays inside this org (Sol.52 ≠ Harihar). */
+  organizationId?: string | null;
 };
 
 export type InboundLeadResult = {
@@ -110,7 +112,9 @@ export async function processInboundLead(input: InboundLeadInput): Promise<Inbou
   const forceNew =
     input.forceNew === true || (input.forceNew !== false && input.source === "manual");
 
-  const samePhoneLeads = phone ? await findLeadsByPhone(phone) : [];
+  const samePhoneLeads = phone
+    ? await findLeadsByPhone(phone, { organizationId: input.organizationId ?? null })
+    : [];
   const samePerson = samePhoneLeads.find((row) =>
     personNamesLikelySame(String(row.name ?? ""), input.name)
   );
@@ -141,6 +145,7 @@ export async function processInboundLead(input: InboundLeadInput): Promise<Inbou
       ...(input.connection_type?.trim()
         ? { connection_type: input.connection_type.trim().toLowerCase() }
         : {}),
+      ...(input.organizationId ? { organization_id: input.organizationId } : {}),
     };
     const refreshed = await refreshLeadFromInbound(String(existing.id), customerInput);
     return { deduped: true, data: refreshed ?? existing };
@@ -197,6 +202,7 @@ export async function processInboundLead(input: InboundLeadInput): Promise<Inbou
     ...(input.connection_type?.trim()
       ? { connection_type: input.connection_type.trim().toLowerCase() }
       : {}),
+    ...(input.organizationId ? { organization_id: input.organizationId } : {}),
   };
 
   try {
@@ -213,7 +219,7 @@ export async function processInboundLead(input: InboundLeadInput): Promise<Inbou
     const message = error instanceof Error ? error.message : "";
     /** Legacy unique index still present — fall back to merge for same phone. */
     if (/duplicate key|23505|leads_phone_unique/i.test(message) && phone) {
-      const existing = await findLeadByPhone(phone);
+      const existing = await findLeadByPhone(phone, { organizationId: input.organizationId ?? null });
       if (existing) {
         if (personNamesLikelyDifferent(String(existing.name ?? ""), input.name)) {
           throw new Error(

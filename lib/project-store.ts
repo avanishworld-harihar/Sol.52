@@ -747,6 +747,7 @@ export async function getProjectDetail(projectId: string): Promise<ProjectDetail
 /** List projects with optional filters. Returns rows with computed health. */
 export async function listProjects(opts: {
   organizationId?: string | null;
+  includeNullOrg?: boolean;
   stage?: string | null;
   view?: "active" | "hidden" | "archived";
   limit?: number;
@@ -773,7 +774,11 @@ export async function listProjects(opts: {
   `);
 
   if (opts.organizationId) {
-    query = query.eq("organization_id", opts.organizationId);
+    if (opts.includeNullOrg) {
+      query = query.or(`organization_id.eq.${opts.organizationId},organization_id.is.null`);
+    } else {
+      query = query.eq("organization_id", opts.organizationId);
+    }
   }
 
   if (opts.stage) {

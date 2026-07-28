@@ -10,15 +10,26 @@ import {
   ensureProjectForWonLead,
   isWonLeadStatus,
 } from "@/lib/project-store";
+import { denyIfCrossOrg, denyIfStrictUnauthenticated, resolveOrgScope } from "@/lib/auth/org-scope";
+import { fetchLeadOrgId } from "@/lib/auth/resource-org";
 
 export const dynamic = "force-dynamic";
 
 type RouteCtx = { params: Promise<{ id: string }> };
 
-export async function GET(_req: NextRequest, ctx: RouteCtx) {
+export async function GET(req: NextRequest, ctx: RouteCtx) {
   try {
+    const scope = await resolveOrgScope(req);
+    const deniedAuth = denyIfStrictUnauthenticated(scope);
+    if (deniedAuth) return deniedAuth;
+
     const { id } = await ctx.params;
     if (!id) return NextResponse.json({ ok: false, error: "missing id" }, { status: 400 });
+
+    const leadOrg = await fetchLeadOrgId(id);
+    const deniedOrg = denyIfCrossOrg(leadOrg, scope);
+    if (deniedOrg) return deniedOrg;
+
     const db = createSupabaseAdmin() ?? supabase;
     if (!db) return NextResponse.json({ ok: false, error: "db_unavailable" }, { status: 503 });
     const leadsTable = await resolveLeadsTable();
@@ -116,9 +127,17 @@ const patchSchema = z
 
 export async function PATCH(req: NextRequest, ctx: RouteCtx) {
   try {
+    const scope = await resolveOrgScope(req);
+    const deniedAuth = denyIfStrictUnauthenticated(scope);
+    if (deniedAuth) return deniedAuth;
+
     const { id: rawId } = await ctx.params;
     const id = decodeURIComponent(String(rawId ?? "")).trim();
     if (!id) return NextResponse.json({ ok: false, error: "missing id" }, { status: 400 });
+
+    const leadOrg = await fetchLeadOrgId(id);
+    const deniedOrg = denyIfCrossOrg(leadOrg, scope);
+    if (deniedOrg) return deniedOrg;
 
     const body = (await req.json()) as Record<string, unknown>;
     /** Soften client payloads so Zod does not reject common empty/invalid optionals. */
@@ -314,11 +333,19 @@ async function detachLeadReferences(
   }
 }
 
-export async function DELETE(_req: NextRequest, ctx: RouteCtx) {
+export async function DELETE(req: NextRequest, ctx: RouteCtx) {
   try {
+    const scope = await resolveOrgScope(req);
+    const deniedAuth = denyIfStrictUnauthenticated(scope);
+    if (deniedAuth) return deniedAuth;
+
     const { id: rawId } = await ctx.params;
     const id = decodeURIComponent(String(rawId ?? "")).trim();
     if (!id) return NextResponse.json({ ok: false, error: "missing id" }, { status: 400 });
+
+    const leadOrg = await fetchLeadOrgId(id);
+    const deniedOrg = denyIfCrossOrg(leadOrg, scope);
+    if (deniedOrg) return deniedOrg;
 
     const admin = createSupabaseAdmin();
     const db = admin ?? supabase;

@@ -27,3 +27,10 @@ export {
   isEmployee,
   roleGatesFromSession,
 } from "@/lib/auth/roles";
+export {
+  resolveOrgScope,
+  denyIfCrossOrg,
+  denyIfStrictUnauthenticated,
+  isOrgIsolationStrict,
+  type OrgScope,
+} from "@/lib/auth/org-scope";

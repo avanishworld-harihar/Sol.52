@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { listProjects, resolveDefaultOrgId, syncWonLeadProjects } from "@/lib/project-store";
+import { listProjects, syncWonLeadProjects } from "@/lib/project-store";
 import { isProjectStageId } from "@/lib/project-stages";
+import { denyIfStrictUnauthenticated, resolveOrgScope } from "@/lib/auth/org-scope";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   try {
+    const scope = await resolveOrgScope(req);
+    const denied = denyIfStrictUnauthenticated(scope);
+    if (denied) return denied;
+
     const url = req.nextUrl;
     const stageParam = url.searchParams.get("stage");
     const viewParam = url.searchParams.get("view");
@@ -20,9 +25,16 @@ export async function GET(req: NextRequest) {
     const limit = Math.min(200, Math.max(1, Number(limitParam ?? 100)));
     const offset = Math.max(0, Number(offsetParam ?? 0));
 
-    const orgId = await resolveDefaultOrgId();
+    const orgId = scope.organizationId;
     await syncWonLeadProjects();
-    const rows = await listProjects({ organizationId: orgId, stage, view, limit, offset });
+    const rows = await listProjects({
+      organizationId: orgId,
+      includeNullOrg: scope.includeUnscopedRows,
+      stage,
+      view,
+      limit,
+      offset,
+    });
 
     return NextResponse.json(
       { ok: true, data: rows },

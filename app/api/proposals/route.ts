@@ -8,6 +8,7 @@ import { summarizeProposalDeck, type PremiumProposalPptInput } from "@/lib/propo
 import { freezeProposalQuote } from "@/lib/freeze-proposal-quote";
 import { PROPOSAL_PRESET_IDS } from "@/lib/proposal-preset-engine";
 import { resolveDefaultOrgId } from "@/lib/project-store";
+import { denyIfStrictUnauthenticated, resolveOrgScope } from "@/lib/auth/org-scope";
 import {
   assertCanCreateProposal,
   extractTrialIdentityFromRequest,
@@ -111,9 +112,15 @@ function looksLikeMp(state?: string, discom?: string): boolean {
   return /madhya pradesh|mppkv|mppgvv|mpmkvv|mppakvv|mpcz|mpez|mpwz/i.test(`${state ?? ""} ${discom ?? ""}`);
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const data = await listRecentProposals(500);
+    const scope = await resolveOrgScope(req);
+    const denied = denyIfStrictUnauthenticated(scope);
+    if (denied) return denied;
+    const data = await listRecentProposals(500, {
+      organizationId: scope.organizationId,
+      includeNullOrg: scope.includeUnscopedRows,
+    });
     return NextResponse.json({ ok: true, data }, { status: 200, headers: { "Cache-Control": "no-store" } });
   } catch (e) {
     const message = e instanceof Error ? e.message : "list_failed";
@@ -155,7 +162,11 @@ export async function POST(req: NextRequest) {
     };
     const summary = summarizeProposalDeck(pptInput);
 
-    const orgId = await resolveDefaultOrgId();
+    const scope = await resolveOrgScope(req);
+    const denied = denyIfStrictUnauthenticated(scope);
+    if (denied) return denied;
+
+    const orgId = scope.organizationId ?? (await resolveDefaultOrgId());
     const identity = extractTrialIdentityFromRequest(req, {
       verifiedPhone: payload.verifiedPhone,
       verifiedEmail: payload.verifiedEmail,

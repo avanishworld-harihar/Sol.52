@@ -14,6 +14,7 @@
     "test:proposal-stability": "node scripts/run-proposal-stability.mjs",
     "test:phase1-validation": "node scripts/run-phase1-validation.mjs",
     "test:billing-phase1": "node scripts/run-billing-phase1-tests.mjs",
+    "test:org-isolation": "node scripts/run-org-isolation-checks.mjs",
     "test:design-studio-phase6": "node scripts/run-design-studio-phase6-tests.mjs && node scripts/run-design-studio-qa-tests.mjs",
     "test:project-pending": "node scripts/run-project-pending-checks.mjs",
     "guard:marketplace": "node scripts/check-marketplace-guard.cjs",

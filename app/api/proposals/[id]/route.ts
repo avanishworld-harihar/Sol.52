@@ -12,6 +12,8 @@ import {
   getLatestSnapshot,
 } from "@/lib/proposal-snapshot-store";
 import { upsertPipelineProject } from "@/lib/supabase";
+import { denyIfCrossOrg, denyIfStrictUnauthenticated, resolveOrgScope } from "@/lib/auth/org-scope";
+import { fetchProposalOrgId } from "@/lib/auth/resource-org";
 
 export const dynamic = "force-dynamic";
 
@@ -172,12 +174,20 @@ async function onProposalApproved(
 
 // ─── Route handlers ───────────────────────────────────────────────────────────
 
-export async function DELETE(_req: NextRequest, ctx: RouteCtx) {
+export async function DELETE(req: NextRequest, ctx: RouteCtx) {
   try {
+    const scope = await resolveOrgScope(req);
+    const deniedAuth = denyIfStrictUnauthenticated(scope);
+    if (deniedAuth) return deniedAuth;
+
     const { id } = await ctx.params;
     if (!id || !UUID_RX.test(id.trim())) {
       return NextResponse.json({ ok: false, error: "invalid_id" }, { status: 400 });
     }
+    const proposalOrg = await fetchProposalOrgId(id.trim());
+    const deniedOrg = denyIfCrossOrg(proposalOrg, scope);
+    if (deniedOrg) return deniedOrg;
+
     const proposal = await getProposalById(id.trim());
     if (!proposal) return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
     const ok = await deleteProposal(proposal.id);
@@ -193,10 +203,18 @@ export async function DELETE(_req: NextRequest, ctx: RouteCtx) {
 
 export async function PATCH(req: NextRequest, ctx: RouteCtx) {
   try {
+    const scope = await resolveOrgScope(req);
+    const deniedAuth = denyIfStrictUnauthenticated(scope);
+    if (deniedAuth) return deniedAuth;
+
     const { id } = await ctx.params;
     if (!id || !UUID_RX.test(id.trim())) {
       return NextResponse.json({ ok: false, error: "invalid_id" }, { status: 400 });
     }
+    const proposalOrg = await fetchProposalOrgId(id.trim());
+    const deniedOrg = denyIfCrossOrg(proposalOrg, scope);
+    if (deniedOrg) return deniedOrg;
+
     const raw = await req.json();
     const body = patchBodySchema.parse(raw);
     const proposal = await getProposalById(id.trim());

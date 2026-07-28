@@ -2,14 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   getProjectDashboardStats,
   listOutstandingCollections,
-  resolveDefaultOrgId,
 } from "@/lib/project-store";
+import { denyIfStrictUnauthenticated, resolveOrgScope } from "@/lib/auth/org-scope";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   try {
-    const orgId = await resolveDefaultOrgId();
+    const scope = await resolveOrgScope(req);
+    const denied = denyIfStrictUnauthenticated(scope);
+    if (denied) return denied;
+
+    const orgId = scope.organizationId;
     const stats = await getProjectDashboardStats(orgId);
     if (!stats) {
       return NextResponse.json(

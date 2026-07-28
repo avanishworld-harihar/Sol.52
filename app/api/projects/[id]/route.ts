@@ -12,6 +12,8 @@ import { supabase } from "@/lib/supabase";
 import { getProjectDetail } from "@/lib/project-store";
 import { logProjectActivity } from "@/lib/project-activity-logger";
 import { isProjectStageId, isProjectStageStatus, isNmSubstatus } from "@/lib/project-stages";
+import { denyIfCrossOrg, denyIfStrictUnauthenticated, resolveOrgScope } from "@/lib/auth/org-scope";
+import { fetchProjectOrgId } from "@/lib/auth/resource-org";
 
 export const dynamic = "force-dynamic";
 
@@ -25,10 +27,18 @@ function db() {
 // GET
 // ---------------------------------------------------------------------------
 
-export async function GET(_req: NextRequest, ctx: RouteCtx) {
+export async function GET(req: NextRequest, ctx: RouteCtx) {
   try {
+    const scope = await resolveOrgScope(req);
+    const deniedAuth = denyIfStrictUnauthenticated(scope);
+    if (deniedAuth) return deniedAuth;
+
     const { id } = await ctx.params;
     if (!id) return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
+
+    const projectOrg = await fetchProjectOrgId(id);
+    const deniedOrg = denyIfCrossOrg(projectOrg, scope);
+    if (deniedOrg) return deniedOrg;
 
     const data = await getProjectDetail(id);
     if (!data) {
@@ -110,8 +120,16 @@ const patchSchema = z
 
 export async function PATCH(req: NextRequest, ctx: RouteCtx) {
   try {
+    const scope = await resolveOrgScope(req);
+    const deniedAuth = denyIfStrictUnauthenticated(scope);
+    if (deniedAuth) return deniedAuth;
+
     const { id } = await ctx.params;
     if (!id) return NextResponse.json({ ok: false, error: "missing_id" }, { status: 400 });
+
+    const projectOrg = await fetchProjectOrgId(id);
+    const deniedOrg = denyIfCrossOrg(projectOrg, scope);
+    if (deniedOrg) return deniedOrg;
 
     const body = await req.json();
     const parsed = patchSchema.parse(body);
