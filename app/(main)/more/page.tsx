@@ -14,8 +14,11 @@ import { BrandProposalsSettingsPanel } from "@/components/settings/brand-proposa
 import { MoreDesignPanelCatalogGroup } from "@/components/settings/more-design-panel-catalog-group";
 import { MoreRateCardGroup } from "@/components/settings/more-rate-card-group";
 import { ProposalTemplateSettingsPanel } from "@/components/settings/proposal-template-settings-panel";
+import { AccountSessionCard } from "@/components/settings/account-session-card";
+import { TeamManagementCard } from "@/components/settings/team-management-card";
 import { SubscriptionUsageCard } from "@/components/settings/subscription-usage-card";
 import { useInstallerDiscoms } from "@/hooks/use-installer-discoms";
+import { useAppSession } from "@/hooks/use-app-session";
 import { supabase } from "@/lib/supabase";
 import { INDIAN_STATES_AND_UTS } from "@/lib/indian-states-uts";
 import {
@@ -45,6 +48,7 @@ import {
   Settings2,
   ShieldCheck,
   Sparkles,
+  Users,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useMemo, useState, type ComponentType, type ReactNode } from "react";
@@ -55,6 +59,9 @@ export default function MorePage() {
   const { mode, localScript, setMode, setLocalPreference, t } = useLanguage();
   const { resolvedTheme, setTheme } = useTheme();
   const prefersReducedMotion = useReducedMotion();
+  const { session: appSession } = useAppSession();
+  const isCompanyAdmin = appSession?.signedIn === true && appSession.gates.orgRole === "company_admin";
+  const isEmployee = appSession?.signedIn === true && appSession.gates.orgRole === "employee";
   const [installerState, setInstallerState] = useState("");
   const [installerDiscom, setInstallerDiscom] = useState("");
   const { options: discomOptions, loading: discomListLoading } = useInstallerDiscoms(installerState);
@@ -345,42 +352,71 @@ export default function MorePage() {
           )}
         </AnimatePresence>
 
-        <MoreSectionLabel>Plan &amp; billing</MoreSectionLabel>
+        <MoreSectionLabel>Account</MoreSectionLabel>
+        <AccountSessionCard />
 
-        <MoreGroup
-          id="more-section-subscription"
-          icon={CreditCard}
-          title="Subscription"
-          subtitle="Plan, trial days, and proposal usage."
-          defaultOpen
-        >
-          <SubscriptionUsageCard />
-        </MoreGroup>
+        {isCompanyAdmin ? (
+          <>
+            <MoreSectionLabel>Team</MoreSectionLabel>
+            <MoreGroup
+              id="more-section-team"
+              icon={Users}
+              title="Team members"
+              subtitle="Invite employees by phone. Limited screens for employees."
+              defaultOpen
+            >
+              <TeamManagementCard />
+            </MoreGroup>
+          </>
+        ) : null}
 
-        <MoreGroup
-          id="more-section-plans"
-          icon={CreditCard}
-          title="Plans"
-          subtitle="Subscriptions and a quick reminder — tap to open."
-        >
-          <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
-            <PlanCard title="Trial" price="Free 30 days" detail="Full Pro access to build habit fast" accent="blue" />
-            <PlanCard title="Pro" price="₹299 / month" detail="Unlimited proposals for growing teams" accent="green" />
-            <PlanCard title="Business" price="₹999 / month" detail="3 users + white-label control" accent="violet" />
+        {isEmployee ? (
+          <div className="rounded-2xl border border-border/60 bg-card/60 p-4 text-xs font-medium text-muted-foreground">
+            You are signed in as an <span className="font-extrabold text-foreground">employee</span>. Billing,
+            rate card, and team invites are only for the company admin.
           </div>
-          <p className="text-[11px] font-semibold text-slate-600 sm:text-xs">
-            Pro is the usual pick for active proposal teams.
-          </p>
+        ) : null}
 
-          <div className="ss-card-subtle rounded-2xl p-3">
-          <div className="flex items-start gap-2">
-            <Sparkles className="mt-0.5 h-4 w-4 text-amber-500" />
-            <p className="text-xs font-semibold text-slate-700 sm:text-sm">
-              Save company profile before generating a proposal so the customer link picks up the latest details.
-            </p>
-          </div>
-        </div>
-        </MoreGroup>
+        {isCompanyAdmin || !appSession?.signedIn ? (
+          <>
+            <MoreSectionLabel>Plan &amp; billing</MoreSectionLabel>
+
+            <MoreGroup
+              id="more-section-subscription"
+              icon={CreditCard}
+              title="Subscription"
+              subtitle="Plan, trial days, and proposal usage."
+              defaultOpen
+            >
+              <SubscriptionUsageCard />
+            </MoreGroup>
+
+            <MoreGroup
+              id="more-section-plans"
+              icon={CreditCard}
+              title="Plans"
+              subtitle="Subscriptions and a quick reminder — tap to open."
+            >
+              <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
+                <PlanCard title="Trial" price="Free 30 days" detail="Full Pro access to build habit fast" accent="blue" />
+                <PlanCard title="Pro" price="₹299 / month" detail="Unlimited proposals for growing teams" accent="green" />
+                <PlanCard title="Business" price="₹999 / month" detail="3 users + white-label control" accent="violet" />
+              </div>
+              <p className="text-[11px] font-semibold text-slate-600 sm:text-xs">
+                Pro is the usual pick for active proposal teams.
+              </p>
+
+              <div className="ss-card-subtle rounded-2xl p-3">
+                <div className="flex items-start gap-2">
+                  <Sparkles className="mt-0.5 h-4 w-4 text-amber-500" />
+                  <p className="text-xs font-semibold text-slate-700 sm:text-sm">
+                    Save company profile before generating a proposal so the customer link picks up the latest details.
+                  </p>
+                </div>
+              </div>
+            </MoreGroup>
+          </>
+        ) : null}
 
         <MoreSectionLabel>Proposals &amp; pricing</MoreSectionLabel>
 
@@ -394,7 +430,7 @@ export default function MorePage() {
           <ProposalTemplateSettingsPanel markSaved={markSaved} />
         </MoreGroup>
 
-        <MoreRateCardGroup />
+        {isCompanyAdmin || !appSession?.signedIn ? <MoreRateCardGroup /> : null}
 
         <MoreDesignPanelCatalogGroup />
 

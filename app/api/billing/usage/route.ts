@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminRequestAllowed } from "@/lib/admin-access";
 import { buildOrgUsageSummary } from "@/lib/billing/usage-summary";
-import { resolveDefaultOrgId } from "@/lib/project-store";
+import { resolveOrgIdForRequest } from "@/lib/auth/org-context";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   try {
-    const orgId = await resolveDefaultOrgId();
+    const orgId = await resolveOrgIdForRequest(req);
     if (!orgId) {
       return NextResponse.json(
         { ok: true, data: null },

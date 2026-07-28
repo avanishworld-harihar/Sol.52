@@ -1,31 +1,60 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { requireCompanyAdmin } from "@/lib/auth/roles";
+import { resolveOrgIdForRequest } from "@/lib/auth/org-context";
 import {
-  assertCanAddTeamMember,
-  countOrgMembers,
-  getOrgSubscription,
-  isBillingEntitlementError,
-  resolveOrgBilling,
-} from "@/lib/billing";
-import { createSupabaseAdmin } from "@/lib/supabase-admin";
-import { supabase } from "@/lib/supabase";
-import { resolveDefaultOrgId } from "@/lib/project-store";
+  cancelInvite,
+  countPendingInvites,
+  createPhoneInvite,
+  listOrgMembers,
+  listPendingInvites,
+  removeOrgMember,
+} from "@/lib/team/invites";
+import { countOrgMembers, getOrgSubscription } from "@/lib/billing";
 
 export const dynamic = "force-dynamic";
 
-function db() {
-  return createSupabaseAdmin() ?? supabase;
-}
-
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const orgId = await resolveDefaultOrgId();
-    if (!orgId) {
-      return NextResponse.json({ ok: true, data: null }, { headers: { "Cache-Control": "no-store" } });
+    const adminSession = requireCompanyAdmin(req);
+    if (!adminSession) {
+      // Soft: if not signed in as admin, return summary-only for billing card OR 401
+      const orgId = await resolveOrgIdForRequest(req);
+      if (!orgId) {
+        return NextResponse.json({ ok: true, data: null }, { headers: { "Cache-Control": "no-store" } });
+      }
+      const [memberCount, pendingCount, sub] = await Promise.all([
+        countOrgMembers(orgId),
+        countPendingInvites(orgId),
+        getOrgSubscription(orgId),
+      ]);
+      const maxUsers = sub?.plan.max_users ?? sub?.plan.features.max_users ?? 1;
+      const teamEnabled = sub?.plan.features.team_members_enabled === true;
+      return NextResponse.json(
+        {
+          ok: true,
+          data: {
+            canManage: false,
+            memberCount,
+            pendingCount,
+            maxUsers,
+            teamEnabled,
+            canAddMore: false,
+            planCode: sub?.plan.code ?? null,
+            members: [],
+            invites: [],
+          },
+        },
+        { headers: { "Cache-Control": "no-store" } }
+      );
     }
 
-    const [memberCount, sub] = await Promise.all([
+    const orgId = adminSession.organizationId;
+    const [members, invites, memberCount, pendingCount, sub] = await Promise.all([
+      listOrgMembers(orgId),
+      listPendingInvites(orgId),
       countOrgMembers(orgId),
+      countPendingInvites(orgId),
       getOrgSubscription(orgId),
     ]);
 
@@ -36,11 +65,15 @@ export async function GET() {
       {
         ok: true,
         data: {
+          canManage: true,
           memberCount,
+          pendingCount,
           maxUsers,
           teamEnabled,
-          canAddMore: teamEnabled && memberCount < maxUsers,
+          canAddMore: teamEnabled && memberCount + pendingCount < maxUsers,
           planCode: sub?.plan.code ?? null,
+          members,
+          invites,
         },
       },
       { headers: { "Cache-Control": "no-store" } }
@@ -52,65 +85,99 @@ export async function GET() {
 }
 
 const postSchema = z.object({
-  userId: z.string().uuid(),
+  phone: z.string().min(8).max(20),
   role: z.enum(["company_admin", "employee"]).default("employee"),
+  note: z.string().max(200).optional().nullable(),
 });
 
 export async function POST(req: NextRequest) {
   try {
-    const orgId = await resolveDefaultOrgId();
-    if (!orgId) {
-      return NextResponse.json({ ok: false, error: "No organization." }, { status: 400 });
+    const adminSession = requireCompanyAdmin(req);
+    if (!adminSession) {
+      return NextResponse.json(
+        { ok: false, error: "Only company admin can invite team members. Sign in first." },
+        { status: 403 }
+      );
     }
 
     const body = postSchema.parse(await req.json());
-    const client = db();
-    if (!client) {
-      return NextResponse.json({ ok: false, error: "Database unavailable." }, { status: 503 });
+    const result = await createPhoneInvite({
+      organizationId: adminSession.organizationId,
+      phone: body.phone,
+      role: body.role,
+      invitedByUserId: adminSession.userId,
+      note: body.note ?? null,
+    });
+
+    if ("error" in result) {
+      return NextResponse.json(
+        { ok: false, error: result.error, code: result.code ?? null },
+        { status: result.status }
+      );
     }
 
-    const sub = await resolveOrgBilling(orgId);
-    try {
-      await assertCanAddTeamMember({ organizationId: orgId, sub });
-    } catch (billingErr) {
-      if (isBillingEntitlementError(billingErr)) {
-        return NextResponse.json(
-          {
-            ok: false,
-            error: billingErr.message,
-            code: billingErr.code,
-            details: billingErr.details ?? null,
-          },
-          { status: 402 }
-        );
-      }
-      throw billingErr;
-    }
+    const [memberCount, pendingCount] = await Promise.all([
+      countOrgMembers(adminSession.organizationId),
+      countPendingInvites(adminSession.organizationId),
+    ]);
 
-    const { data, error } = await client
-      .from("organization_members")
-      .insert({
-        organization_id: orgId,
-        user_id: body.userId,
-        role: body.role,
-      })
-      .select("id, organization_id, user_id, role, created_at")
-      .single();
-
-    if (error) {
-      if (/duplicate key|organization_members_org_user_unique/i.test(error.message)) {
-        return NextResponse.json({ ok: false, error: "User is already a team member." }, { status: 409 });
-      }
-      return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
-    }
-
-    const memberCount = await countOrgMembers(orgId);
-    return NextResponse.json({ ok: true, member: data, memberCount });
+    return NextResponse.json({
+      ok: true,
+      invite: result.invite,
+      memberCount,
+      pendingCount,
+    });
   } catch (e) {
     if (e instanceof z.ZodError) {
       return NextResponse.json({ ok: false, error: e.message }, { status: 400 });
     }
-    const message = e instanceof Error ? e.message : "team_add_failed";
+    const message = e instanceof Error ? e.message : "team_invite_failed";
+    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+  }
+}
+
+const deleteSchema = z.object({
+  memberId: z.string().uuid().optional(),
+  inviteId: z.string().uuid().optional(),
+});
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const adminSession = requireCompanyAdmin(req);
+    if (!adminSession) {
+      return NextResponse.json({ ok: false, error: "Only company admin can manage team." }, { status: 403 });
+    }
+
+    const body = deleteSchema.parse(await req.json());
+    if (body.inviteId) {
+      const result = await cancelInvite({
+        organizationId: adminSession.organizationId,
+        inviteId: body.inviteId,
+      });
+      if ("error" in result) {
+        return NextResponse.json({ ok: false, error: result.error }, { status: result.status });
+      }
+      return NextResponse.json({ ok: true, cancelled: true });
+    }
+
+    if (body.memberId) {
+      const result = await removeOrgMember({
+        organizationId: adminSession.organizationId,
+        memberId: body.memberId,
+        actorUserId: adminSession.userId,
+      });
+      if ("error" in result) {
+        return NextResponse.json({ ok: false, error: result.error }, { status: result.status });
+      }
+      return NextResponse.json({ ok: true, removed: true });
+    }
+
+    return NextResponse.json({ ok: false, error: "Provide memberId or inviteId." }, { status: 400 });
+  } catch (e) {
+    if (e instanceof z.ZodError) {
+      return NextResponse.json({ ok: false, error: e.message }, { status: 400 });
+    }
+    const message = e instanceof Error ? e.message : "team_delete_failed";
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }
