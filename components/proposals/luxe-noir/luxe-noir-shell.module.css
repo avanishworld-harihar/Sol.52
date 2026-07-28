@@ -72,20 +72,21 @@
 /* ── CRITICAL: A4 page wrapper (Canvas-style pagination) ─────── */
 .a4Page {
   width: 210mm;
+  height: 297mm; /* Strict height for A4 */
   min-height: 297mm;
   max-height: 297mm;
-  max-width: 210mm;
-  height: 297mm;
-  overflow: hidden;
+  background-color: #050505 !important;
+  color: #ffffff !important;
   page-break-after: always;
   break-after: page;
   position: relative;
+  box-sizing: border-box;
+  padding: 40px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  background-color: #050505 !important;
-  color: #e5e7eb !important;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   margin: 12px auto;
-  padding: 12mm 14mm 10mm;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
@@ -491,11 +492,15 @@
     margin: 0;
   }
 
+  .root,
+  .root * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   .root {
     background: #050505 !important;
     padding: 0 !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
   }
 
   .printBar {
@@ -504,18 +509,17 @@
 
   .a4Page {
     width: 210mm !important;
+    height: 297mm !important;
     min-height: 297mm !important;
     max-height: 297mm !important;
-    height: 297mm !important;
-    max-width: 210mm !important;
     margin: 0 !important;
     box-shadow: none !important;
     page-break-after: always !important;
     break-after: page !important;
+    background-color: #050505 !important;
+    color: #ffffff !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    background-color: #050505 !important;
-    color: #e5e7eb !important;
   }
 
   .a4Page:last-child {

@@ -1,6 +1,9 @@
 "use client";
 
 /**
- * @deprecated Prefer EngineeringHUD — kept as thin re-export for any stale imports.
+ * @deprecated Prefer EngineeringBlueprint — kept as thin re-export for any stale imports.
  */
-export { EngineeringHUD as EngineeringTelemetry, EngineeringHUD as default } from "./EngineeringHUD";
+export {
+  EngineeringBlueprint as EngineeringTelemetry,
+  EngineeringBlueprint as default,
+} from "./EngineeringBlueprint";

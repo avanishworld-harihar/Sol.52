@@ -9,9 +9,9 @@
 import type { ReactNode } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
 import { formatInr } from "@/components/proposals/_shared/formatters";
-import { CoverPage } from "./CoverPage";
-import { EngineeringHUD } from "./EngineeringHUD";
-import { HardwareTrust } from "./HardwareTrust";
+import { ObsidianCover } from "./ObsidianCover";
+import { EngineeringBlueprint } from "./EngineeringBlueprint";
+import { TitaniumLedger } from "./TitaniumLedger";
 import { WealthTerminal } from "./WealthTerminal";
 import {
   TermsCompliancePage1,
@@ -159,7 +159,7 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
       </div>
 
       {/* ── Page 01: Cinematic Cover ───────────────────────────── */}
-      <CoverPage data={data} />
+      <ObsidianCover data={data} />
 
       {/* ── Page 02: System Requirement & Load Analysis ───────── */}
       <A4Page pageLabel="02 / 11" brand={brand}>
@@ -311,10 +311,10 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
       </A4Page>
 
       {/* ── Page 05: Engineering HUD ──────────────────────────── */}
-      <EngineeringHUD data={data} />
+      <EngineeringBlueprint data={data} />
 
-      {/* ── Page 06: Hardware Trust ────────────────────────────── */}
-      <HardwareTrust />
+      {/* ── Page 06: Titanium Ledger ──────────────────────────── */}
+      <TitaniumLedger />
 
       {/* ── Page 07: Ecological Dividend ───────────────────────── */}
       <A4Page pageLabel="07 / 11" brand={brand}>
