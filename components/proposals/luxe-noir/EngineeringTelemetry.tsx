@@ -2,8 +2,7 @@
 
 /**
  * Premium Luxe (residential_luxe_noir) — Engineering Telemetry block.
- * Dark #0a0a0a + gold #D4AF37 · cinematic wireframe array (rotateX 55deg).
- * Atelier (residential_premium_luxe) is a separate cream preset — do not mix.
+ * Renders as page content inside an A4 wrapper (no outer page chrome).
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
@@ -19,7 +18,6 @@ const MAX_WIREFRAME_PANELS = 24;
 const OVERSIZE_FACTOR = 1.16;
 
 export function EngineeringTelemetry({ data }: EngineeringTelemetryProps) {
-  // Using 3kW baseline from Canvas for mapping
   const systemSize = Number(data.meta.systemKw) || 3;
   const modulesRaw = Math.ceil((systemSize * 1000) / PANEL_WATT);
   const modules = Math.min(Math.max(modulesRaw, 1), MAX_WIREFRAME_PANELS);
@@ -46,18 +44,16 @@ export function EngineeringTelemetry({ data }: EngineeringTelemetryProps) {
   const prValue = prMetric?.value?.trim() || "~75% Derating";
 
   return (
-    <section className={`${styles.page} ${luxeDisplayFont.variable}`}>
+    <div className={`${styles.telemetryRoot} ${luxeDisplayFont.variable}`}>
       <div className={styles.luxeHeader}>
         <span className={styles.goldEyebrow}>SYSTEM ARCHITECTURE & TELEMETRY</span>
         <h2 className={styles.luxeTitle}>Precision Engineered for Peak Yield.</h2>
-        <div className={styles.goldDivider}></div>
+        <div className={styles.goldDivider} />
       </div>
 
-      {/* Cinematic Blueprint Area */}
       <div className={styles.blueprintStage}>
         <div className={styles.blueprintVisual}>
           <div className={styles.wireframeArray} aria-hidden>
-            {/* Dynamic rendering of panels with a glowing grid effect */}
             {Array.from({ length: modules }).map((_, i) => (
               <div key={i} className={styles.luxePanel} />
             ))}
@@ -67,7 +63,6 @@ export function EngineeringTelemetry({ data }: EngineeringTelemetryProps) {
           </div>
         </div>
 
-        {/* High-End Telemetry Data */}
         <div className={styles.telemetryPanel}>
           <div className={styles.dataBlock}>
             <span className={styles.dataLabel}>LATITUDE OPTIMIZATION</span>
@@ -91,7 +86,6 @@ export function EngineeringTelemetry({ data }: EngineeringTelemetryProps) {
         </div>
       </div>
 
-      {/* The Architectural Verdict (Replaces basic Expert Insight) */}
       <div className={styles.architecturalVerdict}>
         <div className={styles.verdictIcon}>⬡</div>
         <div className={styles.verdictText}>
@@ -103,7 +97,7 @@ export function EngineeringTelemetry({ data }: EngineeringTelemetryProps) {
           </p>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
 

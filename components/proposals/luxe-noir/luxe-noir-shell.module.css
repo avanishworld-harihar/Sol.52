@@ -1,14 +1,26 @@
+/* Premium Luxe (noir) — A4 paginated proposal document */
+
 .root {
   --luxe-bg: #0a0a0a;
+  --luxe-surface: #171717;
   --luxe-gold: #d4af37;
   --luxe-text: #f3f4f6;
   --luxe-muted: #9ca3af;
-  --luxe-surface: #171717;
+  --luxe-display: "Cormorant Garamond", Georgia, serif;
 
-  background: var(--luxe-bg);
+  background: #111;
   color: var(--luxe-text);
-  min-height: 100%;
   font-family: system-ui, -apple-system, sans-serif;
+  padding: 12px 0 48px;
+  box-sizing: border-box;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.root *,
+.root *::before,
+.root *::after {
+  box-sizing: border-box;
 }
 
 .loading {
@@ -18,150 +30,495 @@
   font-family: Georgia, serif;
 }
 
-.cover,
-.economics,
-.closing {
+/* ── Print bar (screen only) ─────────────────────────────────── */
+.printBar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: #0a0a0a;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+  padding: 0.55rem 1rem;
+}
+
+.printBarInner {
   max-width: 210mm;
   margin: 0 auto;
-  padding: 56px 50px;
-  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-.cover {
-  border-bottom: 1px solid rgba(212, 175, 55, 0.15);
-}
-
-.eyebrow {
+.printBarBrand {
   color: var(--luxe-gold);
   font-size: 0.75rem;
-  letter-spacing: 4px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  font-weight: 600;
-  margin: 0 0 12px;
 }
 
-.coverTitle,
-.sectionTitle {
+.printBarBtn {
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  background: var(--luxe-gold);
+  color: #0a0a0a;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+}
+
+/* ── CRITICAL: A4 page wrapper (Canvas-style pagination) ─────── */
+.a4Page {
+  width: 210mm;
+  min-height: 297mm;
+  max-height: 297mm;
+  max-width: 210mm;
+  height: 297mm;
+  overflow: hidden;
+  page-break-after: always;
+  break-after: page;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--luxe-bg);
+  color: var(--luxe-text);
+  margin: 12px auto;
+  padding: 12mm 14mm 10mm;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.a4Page:last-child {
+  page-break-after: auto;
+  break-after: auto;
+}
+
+.a4Page::before {
+  content: "";
+  position: absolute;
+  top: -15%;
+  left: -8%;
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.07) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.pageInner {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.pageFooter {
+  position: relative;
+  z-index: 1;
+  margin-top: auto;
+  flex-shrink: 0;
+  padding-top: 8px;
+  border-top: 1px solid rgba(212, 175, 55, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 7.5pt;
+  color: var(--luxe-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pageFooterGold {
+  color: var(--luxe-gold);
+}
+
+/* ── Shared typography ───────────────────────────────────────── */
+.eyebrow {
+  color: var(--luxe-gold);
+  font-size: 0.68rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.title {
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
   font-weight: 300;
   color: #fff;
   margin: 0;
-  line-height: 1.1;
+  line-height: 1.12;
+}
+
+.lead {
+  margin: 10px 0 0;
+  color: var(--luxe-muted);
+  font-size: 10.5pt;
+  line-height: 1.5;
+  max-width: 46ch;
+}
+
+.goldRule {
+  width: 48px;
+  height: 2px;
+  background: var(--luxe-gold);
+  margin: 14px 0 18px;
+}
+
+/* ── Page 01 Cover ───────────────────────────────────────────── */
+.coverPage {
+  justify-content: space-between;
+  height: 100%;
+}
+
+.coverBrand {
+  color: var(--luxe-gold);
+  letter-spacing: 0.35em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .coverTitle {
-  font-size: 3.75rem;
-}
-
-.sectionTitle {
-  font-size: 2.5rem;
-  margin-bottom: 28px;
+  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+  font-weight: 300;
+  font-size: 46pt;
+  color: #fff;
+  margin: 18px 0 0;
+  line-height: 1.05;
+  max-width: 12ch;
 }
 
 .coverSub {
-  margin: 18px 0 0;
-  max-width: 36rem;
+  margin: 16px 0 0;
   color: var(--luxe-muted);
-  font-size: 1.1rem;
-  line-height: 1.6;
+  font-size: 12pt;
+  max-width: 34ch;
+  line-height: 1.55;
 }
 
-.coverMeta {
-  margin-top: 28px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  color: #d1d5db;
-  font-size: 0.9rem;
-}
-
-.dot {
-  color: var(--luxe-gold);
-  opacity: 0.7;
-}
-
-.economics {
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.econGrid {
+.coverMetaBlock {
+  margin-top: auto;
+  padding-top: 28px;
+  border-top: 1px solid rgba(212, 175, 55, 0.25);
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
 }
 
-.econCard {
-  background: var(--luxe-surface);
-  border: 1px solid rgba(212, 175, 55, 0.18);
-  border-radius: 14px;
-  padding: 22px 20px;
-}
-
-.econLabel {
+.metaLabel {
   display: block;
-  font-size: 0.7rem;
-  letter-spacing: 2px;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--luxe-muted);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
-.econValue {
-  display: block;
+.metaValue {
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
-  font-size: 1.75rem;
-  font-weight: 400;
+  font-size: 16pt;
   color: #fff;
+  font-weight: 400;
 }
 
-.econHint {
+/* ── Cards / grids ───────────────────────────────────────────── */
+.cardGrid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.cardGrid3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.card {
+  background: var(--luxe-surface);
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.cardAccent {
+  border-left: 2px solid var(--luxe-gold);
+  border-radius: 0 12px 12px 0;
+}
+
+.cardLabel {
   display: block;
-  margin-top: 8px;
-  font-size: 0.8rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--luxe-muted);
+  margin-bottom: 6px;
+}
+
+.cardValue {
+  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+  font-size: 18pt;
+  color: #fff;
+  font-weight: 400;
+  display: block;
+}
+
+.cardHint {
+  display: block;
+  margin-top: 6px;
+  font-size: 8.5pt;
+  color: var(--luxe-muted);
+  line-height: 1.4;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
+}
+
+.listRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 10pt;
+}
+
+.listRow strong {
+  color: #fff;
+  font-weight: 500;
+}
+
+.listRow span {
   color: var(--luxe-muted);
 }
 
-.closing {
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  padding-bottom: 72px;
+.emiTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9.5pt;
 }
 
-.closingBody {
-  color: #d1d5db;
-  line-height: 1.7;
-  max-width: 40rem;
-  margin: 0 0 24px;
-  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
-  font-size: 1.15rem;
-}
-
-.contact {
+.emiTable th {
+  text-align: left;
   color: var(--luxe-gold);
-  font-size: 0.95rem;
-  letter-spacing: 0.5px;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 8px 6px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.35);
+}
+
+.emiTable td {
+  padding: 10px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: #e5e7eb;
+}
+
+.emiTable td:last-child,
+.emiTable th:last-child {
+  text-align: right;
+}
+
+.hwCard {
+  display: flex;
+  gap: 12px;
+  background: var(--luxe-surface);
+  border: 1px solid rgba(212, 175, 55, 0.16);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.hwMark {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  color: var(--luxe-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.hwTitle {
+  margin: 0;
+  color: #fff;
+  font-size: 11pt;
+  font-weight: 600;
+}
+
+.hwSpec {
+  margin: 4px 0 0;
+  color: var(--luxe-muted);
+  font-size: 8.5pt;
+  line-height: 1.4;
+}
+
+.hwWarranty {
+  display: inline-block;
+  margin-top: 8px;
+  color: var(--luxe-gold);
+  font-size: 7.5pt;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.impactHero {
+  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+  font-size: 42pt;
+  font-weight: 300;
+  color: var(--luxe-gold);
+  line-height: 1;
   margin: 0;
 }
 
-@media (max-width: 900px) {
-  .cover,
-  .economics,
-  .closing {
-    padding: 36px 20px;
-  }
+.milestone {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  gap: 12px;
+  align-items: start;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
 
-  .coverTitle {
-    font-size: 2.5rem;
-  }
+.milestoneNum {
+  color: var(--luxe-gold);
+  font-family: ui-monospace, monospace;
+  font-size: 12pt;
+}
 
-  .econGrid {
-    grid-template-columns: 1fr;
-  }
+.milestoneTitle {
+  margin: 0;
+  color: #fff;
+  font-size: 10.5pt;
+  font-weight: 600;
+}
+
+.milestoneAmt {
+  color: #fff;
+  font-family: var(--luxe-display), Georgia, serif;
+  font-size: 12pt;
+}
+
+.termsBox {
+  margin-top: 14px;
+  padding: 14px;
+  background: var(--luxe-surface);
+  border: 1px solid rgba(212, 175, 55, 0.16);
+  border-radius: 12px;
+  font-size: 8.5pt;
+  color: var(--luxe-muted);
+  line-height: 1.55;
+}
+
+/* ── Closing ─────────────────────────────────────────────────── */
+.closingPage {
+  justify-content: space-between;
+  height: 100%;
+}
+
+.closingTitle {
+  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+  font-size: 36pt;
+  font-weight: 300;
+  color: #fff;
+  margin: 12px 0 0;
+  line-height: 1.1;
+  max-width: 14ch;
+}
+
+.closingBody {
+  margin: 16px 0 0;
+  color: #d1d5db;
+  font-size: 11pt;
+  line-height: 1.65;
+  max-width: 42ch;
+  font-family: var(--luxe-display), Georgia, serif;
+}
+
+.signatureBlock {
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.sigLine {
+  margin-top: 48px;
+  border-top: 1px solid rgba(255, 255, 255, 0.35);
+  padding-top: 8px;
+}
+
+.sigLabel {
+  font-size: 0.65rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--luxe-muted);
+}
+
+.sigName {
+  margin-top: 4px;
+  color: #fff;
+  font-size: 10pt;
+}
+
+.contactLine {
+  margin-top: 18px;
+  color: var(--luxe-gold);
+  font-size: 9.5pt;
+  letter-spacing: 0.04em;
 }
 
 @media print {
+  @page {
+    size: 210mm 297mm;
+    margin: 0;
+  }
+
   .root {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+    background: #0a0a0a !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .printBar {
+    display: none !important;
+  }
+
+  .a4Page {
+    width: 210mm !important;
+    min-height: 297mm !important;
+    max-height: 297mm !important;
+    height: 297mm !important;
+    max-width: 210mm !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background: #0a0a0a !important;
+  }
+
+  .a4Page:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
   }
 }
