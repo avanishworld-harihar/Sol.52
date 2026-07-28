@@ -8,9 +8,15 @@
 
 import type { ReactNode } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
-import { formatInr, formatLifetimeBenefitInr } from "@/components/proposals/_shared/formatters";
+import { formatInr } from "@/components/proposals/_shared/formatters";
 import { CoverPage } from "./CoverPage";
 import { EngineeringHUD } from "./EngineeringHUD";
+import { HardwareTrust } from "./HardwareTrust";
+import { WealthTerminal } from "./WealthTerminal";
+import {
+  TermsCompliancePage1,
+  TermsCompliancePage2,
+} from "./TermsCompliance";
 import { luxeDisplayFont } from "./luxe-fonts";
 import styles from "./luxe-noir-shell.module.css";
 
@@ -57,14 +63,9 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
 
   const brand = data.meta.brandName?.trim() || "Harihar Solar";
   const client = data.meta.customerName?.trim() || "Valued Customer";
-  const location =
-    data.meta.locationLine && data.meta.locationLine !== "—"
-      ? data.meta.locationLine
-      : "Madhya Pradesh";
   const systemKw = Number(data.meta.systemKw) || 0;
   const eco = data.economics;
   const bill = data.bill;
-  const bom = Array.isArray(data.bom) ? data.bom : [];
   const impact = data.impact;
   const execution = data.execution;
   const terms = data.terms;
@@ -72,12 +73,6 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
 
   const net = eco.netInr;
   const gross = eco.grossInr;
-  const subsidy = eco.subsidyInr;
-  const savingsAnnual =
-    closing.annualSavingsInr > 0
-      ? closing.annualSavingsInr
-      : eco.monthlySavingsInr * 12;
-  const lifetimeWealth = closing.lifetimeWealthInr || eco.lifetimeProfitInr;
   const contact =
     closing.contactLine?.trim() || "Harihar Solar · +91-99933 22267";
   const contactPerson = closing.contactPerson?.trim() || brand;
@@ -102,12 +97,6 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
       : systemKw > 0
         ? Math.round(systemKw * 1450)
         : 0;
-
-  const panelItem = bom.find((b) => /module|panel|solar/i.test(`${b.name} ${b.brand}`));
-  const inverterItem = bom.find((b) => /inverter|mppt/i.test(`${b.name} ${b.brand}`));
-  const otherHw = bom
-    .filter((b) => b !== panelItem && b !== inverterItem)
-    .slice(0, 2);
 
   const paymentBaseInr = gross > 0 ? gross : net;
   const paymentMilestones =
@@ -173,7 +162,7 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
       <CoverPage data={data} />
 
       {/* ── Page 02: System Requirement & Load Analysis ───────── */}
-      <A4Page pageLabel="02 / 09" brand={brand}>
+      <A4Page pageLabel="02 / 11" brand={brand}>
         <p className={styles.eyebrow}>Load & demand</p>
         <h2 className={styles.title} style={{ fontSize: "28pt" }}>
           System Requirement & Load Analysis
@@ -249,76 +238,11 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
         </div>
       </A4Page>
 
-      {/* ── Page 03: Investment Snapshot ───────────────────────── */}
-      <A4Page pageLabel="03 / 09" brand={brand}>
-        <p className={styles.eyebrow}>Capital clarity</p>
-        <h2 className={styles.title} style={{ fontSize: "28pt" }}>
-          Investment Snapshot
-        </h2>
-        <div className={styles.goldRule} />
-        <p className={styles.lead}>
-          Transparent economics — gross, subsidy, and what you actually write the cheque
-          for.
-        </p>
-
-        <div className={styles.cardGrid2} style={{ marginTop: 22 }}>
-          <div className={`${styles.card} ${styles.cardAccent}`}>
-            <span className={styles.cardLabel}>Gross project cost</span>
-            <span className={styles.cardValue}>
-              {gross > 0 ? formatInr(gross) : "—"}
-            </span>
-          </div>
-          <div className={`${styles.card} ${styles.cardAccent}`}>
-            <span className={styles.cardLabel}>Estimated subsidy</span>
-            <span className={styles.cardValue}>
-              {subsidy > 0 ? formatInr(subsidy) : "—"}
-            </span>
-            <span className={styles.cardHint}>Subject to scheme eligibility</span>
-          </div>
-        </div>
-
-        <div className={styles.card} style={{ marginTop: 12 }}>
-          <span className={styles.cardLabel}>You pay (net)</span>
-          <span className={styles.cardValue} style={{ fontSize: "32pt", color: "#d4af37" }}>
-            {net > 0 ? formatInr(net) : "—"}
-          </span>
-          <span className={styles.cardHint}>After applicable subsidy</span>
-        </div>
-
-        <div className={styles.cardGrid3} style={{ marginTop: 14 }}>
-          <div className={styles.card}>
-            <span className={styles.cardLabel}>Monthly savings</span>
-            <span className={styles.cardValue} style={{ fontSize: "16pt" }}>
-              {eco.monthlySavingsInr > 0 ? formatInr(eco.monthlySavingsInr) : "—"}
-            </span>
-          </div>
-          <div className={styles.card}>
-            <span className={styles.cardLabel}>Annual savings</span>
-            <span className={styles.cardValue} style={{ fontSize: "16pt" }}>
-              {savingsAnnual > 0 ? formatInr(savingsAnnual) : "—"}
-            </span>
-          </div>
-          <div className={styles.card}>
-            <span className={styles.cardLabel}>Payback</span>
-            <span className={styles.cardValue} style={{ fontSize: "16pt" }}>
-              {eco.paybackYears > 0 ? `${eco.paybackYears.toFixed(1)} yrs` : "—"}
-            </span>
-          </div>
-        </div>
-
-        <div className={styles.card} style={{ marginTop: 14 }}>
-          <span className={styles.cardLabel}>Lifetime wealth trajectory</span>
-          <span className={styles.cardValue} style={{ fontSize: "20pt" }}>
-            {lifetimeWealth > 0 ? formatLifetimeBenefitInr(lifetimeWealth) : "—"}
-          </span>
-          <span className={styles.cardHint}>
-            Cumulative bill offset over the system&apos;s productive life
-          </span>
-        </div>
-      </A4Page>
+      {/* ── Page 03: Wealth Terminal ──────────────────────────── */}
+      <WealthTerminal data={data} />
 
       {/* ── Page 04: EMI Layout ────────────────────────────────── */}
-      <A4Page pageLabel="04 / 09" brand={brand}>
+      <A4Page pageLabel="04 / 11" brand={brand}>
         <p className={styles.eyebrow}>Financing</p>
         <h2 className={styles.title} style={{ fontSize: "28pt" }}>
           EMI Layout
@@ -390,96 +314,10 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
       <EngineeringHUD data={data} />
 
       {/* ── Page 06: Hardware Trust ────────────────────────────── */}
-      <A4Page pageLabel="06 / 09" brand={brand}>
-        <p className={styles.eyebrow}>Bill of materials</p>
-        <h2 className={styles.title} style={{ fontSize: "28pt" }}>
-          Hardware Trust
-        </h2>
-        <div className={styles.goldRule} />
-        <p className={styles.lead}>
-          Tier-1 modules and string electronics — specified for yield, warranty depth, and
-          DISCOM compliance.
-        </p>
-
-        <div className={styles.stack} style={{ marginTop: 18, gap: 12 }}>
-          <div className={styles.hwCard}>
-            <div className={styles.hwMark}>PV</div>
-            <div>
-              <h3 className={styles.hwTitle}>
-                {panelItem
-                  ? `${panelItem.brand} ${panelItem.name}`.trim()
-                  : "High-efficiency mono modules"}
-              </h3>
-              <p className={styles.hwSpec}>
-                {panelItem?.spec ||
-                  (systemKw > 0
-                    ? `~${Math.ceil((systemKw * 1000) / 580)} × 580 Wp · bifacial-capable`
-                    : "Module wattage confirmed at procurement")}
-              </p>
-              {(panelItem?.technicalPoints ?? []).slice(0, 2).map((pt) => (
-                <p key={pt} className={styles.hwSpec}>
-                  {pt}
-                </p>
-              ))}
-              <span className={styles.hwWarranty}>
-                {panelItem?.warranty?.trim() || "25-yr performance warranty"}
-              </span>
-            </div>
-          </div>
-
-          <div className={styles.hwCard}>
-            <div className={styles.hwMark}>INV</div>
-            <div>
-              <h3 className={styles.hwTitle}>
-                {inverterItem
-                  ? `${inverterItem.brand} ${inverterItem.name}`.trim()
-                  : "Grid-tied string inverter"}
-              </h3>
-              <p className={styles.hwSpec}>
-                {inverterItem?.spec ||
-                  (systemKw > 0
-                    ? `${systemKw} kW AC · MPPT · export-capable`
-                    : "Inverter rating matched to array")}
-              </p>
-              {(inverterItem?.technicalPoints ?? []).slice(0, 2).map((pt) => (
-                <p key={pt} className={styles.hwSpec}>
-                  {pt}
-                </p>
-              ))}
-              <span className={styles.hwWarranty}>
-                {inverterItem?.warranty?.trim() || "5–10 yr manufacturer warranty"}
-              </span>
-            </div>
-          </div>
-
-          {otherHw.map((item, idx) => (
-            <div key={`${item.name}-${idx}`} className={styles.hwCard}>
-              <div className={styles.hwMark}>{String(idx + 3).padStart(2, "0")}</div>
-              <div>
-                <h3 className={styles.hwTitle}>
-                  {`${item.brand} ${item.name}`.trim()}
-                </h3>
-                <p className={styles.hwSpec}>{item.spec || item.description || "—"}</p>
-                <span className={styles.hwWarranty}>
-                  {item.warranty?.trim() || "As per OEM"}
-                </span>
-              </div>
-            </div>
-          ))}
-
-          {bom.length === 0 ? (
-            <div className={styles.card}>
-              <p className={styles.cardHint} style={{ fontSize: "10pt" }}>
-                Detailed BOM and datasheets are attached at agreement — panels, inverter,
-                ACDB/DCDB, cabling, and mounting structure sized to this proposal.
-              </p>
-            </div>
-          ) : null}
-        </div>
-      </A4Page>
+      <HardwareTrust />
 
       {/* ── Page 07: Ecological Dividend ───────────────────────── */}
-      <A4Page pageLabel="07 / 09" brand={brand}>
+      <A4Page pageLabel="07 / 11" brand={brand}>
         <p className={styles.eyebrow}>Impact</p>
         <h2 className={styles.title} style={{ fontSize: "28pt" }}>
           Ecological Dividend
@@ -530,7 +368,7 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
       </A4Page>
 
       {/* ── Page 08: Investment Milestones & Payment Terms ─────── */}
-      <A4Page pageLabel="08 / 09" brand={brand}>
+      <A4Page pageLabel="08 / 11" brand={brand}>
         <p className={styles.eyebrow}>Execution</p>
         <h2 className={styles.title} style={{ fontSize: "26pt" }}>
           Investment Milestones & Payment Terms
@@ -565,8 +403,12 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
         </div>
       </A4Page>
 
-      {/* ── Page 09: Cinematic Closing + Signature ─────────────── */}
-      <A4Page pageLabel="09 / 09" brand={brand} contentClassName={styles.closingPage}>
+      {/* ── Page 09–10: Terms & Compliance ─────────────────────── */}
+      <TermsCompliancePage1 data={data} />
+      <TermsCompliancePage2 data={data} />
+
+      {/* ── Page 11: Cinematic Closing + Signature ─────────────── */}
+      <A4Page pageLabel="11 / 11" brand={brand} contentClassName={styles.closingPage}>
         <div>
           <p className={styles.eyebrow}>Next chapter</p>
           <h2 className={styles.closingTitle}>Ready when you are.</h2>

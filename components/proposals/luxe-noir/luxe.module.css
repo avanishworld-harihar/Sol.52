@@ -342,6 +342,353 @@
   margin: 0;
 }
 
+/* --- HARDWARE GRID STYLES --- */
+.luxeHardware {
+  display: flex;
+  flex-direction: column;
+  background-color: #0a0a0a !important;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.hardwareGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-top: 40px;
+  flex: 1;
+  min-height: 0;
+}
+
+.hardwareNode {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  border-radius: 12px;
+  padding: 30px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s ease;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+/* Internal glow effect for each hardware box */
+.hardwareNode::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.05) 0%, transparent 60%);
+  z-index: 0;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.nodeHeader,
+.nodeSpecs {
+  position: relative;
+  z-index: 1;
+}
+
+.nodeHeader {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+  padding-bottom: 15px;
+}
+
+.nodeNumber {
+  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+  font-size: 2.5rem;
+  color: rgba(212, 175, 55, 0.4);
+  line-height: 1;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.nodeTitle {
+  font-size: 1.2rem;
+  color: #fff;
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+.highlightSpec {
+  display: inline-block;
+  background: rgba(212, 175, 55, 0.1);
+  color: #d4af37;
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.nodeSpecs p {
+  color: #9ca3af;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* --- WEALTH TERMINAL STYLES --- */
+.luxeTerminal {
+  display: flex;
+  flex-direction: column;
+  background-color: #0a0a0a !important;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.waterfallContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #0a0a0a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 40px;
+  margin: 50px 0;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.waterfallStep,
+.waterfallFinal {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.waterfallStep span {
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  color: #6b7280;
+}
+
+.waterfallStep strong {
+  font-size: 2rem;
+  color: #fff;
+  font-weight: 300;
+  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+}
+
+.subsidyText {
+  color: #10b981 !important;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.waterfallMinus,
+.waterfallEquals {
+  font-size: 2.5rem;
+  color: rgba(212, 175, 55, 0.5);
+  font-weight: 300;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.waterfallFinal span {
+  font-size: 0.85rem;
+  letter-spacing: 2px;
+  color: #d4af37;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.waterfallFinal strong {
+  font-size: 3rem;
+  color: #d4af37;
+  font-weight: 400;
+  line-height: 1;
+  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.terminalMetrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+
+.metricBlock {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
+  border-top: 2px solid #d4af37;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.metricLabel {
+  font-size: 0.75rem;
+  letter-spacing: 3px;
+  color: #9ca3af;
+  margin-bottom: 10px;
+}
+
+.metricBig {
+  font-size: 2.5rem;
+  color: #fff;
+  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+}
+
+.metricSub {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-top: 5px;
+}
+
+/* --- TERMS & COMPLIANCE --- */
+.termsPage {
+  display: flex;
+  flex-direction: column;
+  background-color: #0a0a0a !important;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.termsHead {
+  text-align: center;
+  margin-bottom: 18px;
+  position: relative;
+}
+
+.termsTag {
+  display: block;
+  text-align: left;
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #d4af37;
+  font-weight: 600;
+  margin-bottom: 10px;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.termsTitle {
+  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+  font-size: 28pt;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.termsGrid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 22px;
+  flex: 1;
+  min-height: 0;
+}
+
+.termsSubhead {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: #d4af37;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.45);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.termsDiamondList,
+.termsDotList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.termsDiamondList li,
+.termsDotList li {
+  position: relative;
+  padding-left: 16px;
+  font-size: 7.8pt;
+  line-height: 1.45;
+  color: #d1d5db;
+}
+
+.termsDiamondList li::before {
+  content: "✦";
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: #d4af37;
+  font-size: 7pt;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.termsDotList li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #d4af37;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.termsDiamondList li strong {
+  color: #f3f4f6;
+  font-weight: 700;
+}
+
+.termsPara {
+  font-size: 7.8pt;
+  line-height: 1.45;
+  color: #9ca3af;
+  margin: 0 0 8px;
+}
+
+.termsAmcIncludes {
+  font-size: 7.8pt;
+  color: #e5e7eb;
+  font-weight: 600;
+  margin: 0 0 6px;
+}
+
+.termsSignoff {
+  margin-top: auto;
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.termsRegards {
+  font-size: 10pt;
+  color: #9ca3af;
+}
+
+.termsBrand {
+  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+  font-size: 18pt;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: 0.06em;
+}
+
 @media print {
   @page {
     size: 210mm 297mm;
@@ -360,6 +707,10 @@
     print-color-adjust: exact !important;
   }
 
+  .termsPage {
+    background-color: #0a0a0a !important;
+  }
+
   .ambientGlow,
   .blueprintGrid,
   .glowingPanel,
@@ -374,7 +725,22 @@
   .specValueActive,
   .goldEyebrow,
   .azimuthCompass,
-  .compassLine {
+  .compassLine,
+  .hardwareNode,
+  .hardwareNode::before,
+  .highlightSpec,
+  .nodeNumber,
+  .waterfallContainer,
+  .waterfallFinal span,
+  .waterfallFinal strong,
+  .waterfallMinus,
+  .waterfallEquals,
+  .subsidyText,
+  .metricBlock,
+  .termsTag,
+  .termsSubhead,
+  .termsDiamondList li::before,
+  .termsDotList li::before {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
