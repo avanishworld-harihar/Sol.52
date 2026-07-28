@@ -1,8 +1,10 @@
 /* Premium Luxe — Critical A4 + PDF print enforcement */
 
-/* FORCE PDF TO PRINT BACKGROUND COLORS (Crucial) */
+/* FORCE PDF TO PRINT BACKGROUND COLORS (Crucial)
+   CSS Modules: bare `*` is impure — scope under .a4Page + :global(*) */
 @media print {
-  * {
+  .a4Page,
+  .a4Page :global(*) {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
@@ -1035,7 +1037,8 @@
 }
 
 @media print {
-  * {
+  .a4Page,
+  .a4Page :global(*) {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
@@ -1054,7 +1057,5 @@
     box-shadow: none !important;
     background-color: #050505 !important;
     color: #ffffff !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
   }
 }
