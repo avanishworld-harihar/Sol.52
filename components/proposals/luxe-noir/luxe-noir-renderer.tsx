@@ -9,7 +9,8 @@
 import type { ReactNode } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
 import { formatInr, formatLifetimeBenefitInr } from "@/components/proposals/_shared/formatters";
-import { EngineeringTelemetry } from "./EngineeringTelemetry";
+import { CoverPage } from "./CoverPage";
+import { EngineeringHUD } from "./EngineeringHUD";
 import { luxeDisplayFont } from "./luxe-fonts";
 import styles from "./luxe-noir-shell.module.css";
 
@@ -169,41 +170,7 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
       </div>
 
       {/* ── Page 01: Cinematic Cover ───────────────────────────── */}
-      <A4Page pageLabel="01 / 09" brand={brand} contentClassName={styles.coverPage}>
-        <p className={styles.coverBrand}>{brand}</p>
-        <div>
-          <p className={styles.eyebrow}>Residential Solar Proposal</p>
-          <h1 className={styles.coverTitle}>Premium Luxe</h1>
-          <p className={styles.coverSub}>
-            A cinematic engineering brief — precision architecture for lasting energy
-            independence.
-          </p>
-        </div>
-        <div className={styles.coverMetaBlock}>
-          <div>
-            <span className={styles.metaLabel}>Prepared for</span>
-            <div className={styles.metaValue}>{client}</div>
-          </div>
-          <div>
-            <span className={styles.metaLabel}>System capacity</span>
-            <div className={styles.metaValue}>
-              {systemKw > 0 ? `${systemKw} kW` : "—"}
-            </div>
-          </div>
-          <div>
-            <span className={styles.metaLabel}>Location</span>
-            <div className={styles.metaValue} style={{ fontSize: "13pt" }}>
-              {location}
-            </div>
-          </div>
-          <div>
-            <span className={styles.metaLabel}>Asset profile</span>
-            <div className={styles.metaValue} style={{ fontSize: "13pt" }}>
-              {data.meta.assetProfileLine?.trim() || "Grid-tied rooftop"}
-            </div>
-          </div>
-        </div>
-      </A4Page>
+      <CoverPage data={data} />
 
       {/* ── Page 02: System Requirement & Load Analysis ───────── */}
       <A4Page pageLabel="02 / 09" brand={brand}>
@@ -419,10 +386,8 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
         </div>
       </A4Page>
 
-      {/* ── Page 05: Engineering Telemetry ─────────────────────── */}
-      <A4Page pageLabel="05 / 09" brand={brand}>
-        <EngineeringTelemetry data={data} />
-      </A4Page>
+      {/* ── Page 05: Engineering HUD ──────────────────────────── */}
+      <EngineeringHUD data={data} />
 
       {/* ── Page 06: Hardware Trust ────────────────────────────── */}
       <A4Page pageLabel="06 / 09" brand={brand}>

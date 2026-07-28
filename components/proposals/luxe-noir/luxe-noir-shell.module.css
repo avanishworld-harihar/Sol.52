@@ -1,7 +1,7 @@
 /* Premium Luxe (noir) — A4 paginated proposal document */
 
 .root {
-  --luxe-bg: #0a0a0a;
+  --luxe-bg: #050505;
   --luxe-surface: #171717;
   --luxe-gold: #d4af37;
   --luxe-text: #f3f4f6;
@@ -13,8 +13,8 @@
   font-family: system-ui, -apple-system, sans-serif;
   padding: 12px 0 48px;
   box-sizing: border-box;
-  -webkit-print-color-adjust: exact;
-  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
 .root *,
@@ -82,13 +82,13 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  background: var(--luxe-bg);
-  color: var(--luxe-text);
+  background-color: #050505 !important;
+  color: #e5e7eb !important;
   margin: 12px auto;
   padding: 12mm 14mm 10mm;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
-  -webkit-print-color-adjust: exact;
-  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
 .a4Page:last-child {
@@ -492,7 +492,7 @@
   }
 
   .root {
-    background: #0a0a0a !important;
+    background: #050505 !important;
     padding: 0 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
@@ -514,7 +514,8 @@
     break-after: page !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    background: #0a0a0a !important;
+    background-color: #050505 !important;
+    color: #e5e7eb !important;
   }
 
   .a4Page:last-child {
