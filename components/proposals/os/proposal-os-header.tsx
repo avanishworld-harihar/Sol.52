@@ -55,6 +55,14 @@ const PRESET_META: Record<ProposalPresetId, PresetMeta> = {
       "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-500/30 dark:bg-amber-900/20 dark:text-amber-200",
     dotClass: "bg-amber-500",
   },
+  residential_luxe_noir: {
+    icon: <Gem className="h-4 w-4" />,
+    label: "Premium Luxe",
+    description: "Dark cinematic gold · Engineering telemetry · Peak yield",
+    pillClass:
+      "border-yellow-200 bg-neutral-900 text-yellow-200 dark:border-yellow-500/40 dark:bg-neutral-950 dark:text-yellow-200",
+    dotClass: "bg-[#D4AF37]",
+  },
   residential_blueprint: {
     icon: <LayoutTemplate className="h-4 w-4" />,
     label: "Canvas",

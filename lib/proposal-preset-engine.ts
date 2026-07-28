@@ -5,9 +5,10 @@
  * Active presets:
  *   1. residential_executive     — Golden / Executive Premium (locked flagship)
  *   2. residential_zenith        — Zenith Luxury brochure
- *   3. residential_premium_luxe  — Atelier Industrial Minimalist
- *   4. residential_blueprint     — Blueprint Investment Blueprint (modular light cards)
- *   5. commercial_executive      — C&I commercial (hotel / hospital / industry…)
+ *   3. residential_premium_luxe  — Atelier Industrial Minimalist (cream)
+ *   4. residential_luxe_noir     — Premium Luxe dark cinematic
+ *   5. residential_blueprint     — Blueprint Investment Blueprint (modular light cards)
+ *   6. commercial_executive      — C&I commercial (hotel / hospital / industry…)
  *
  * Removed residential presets remap via normalizePresetId → residential_executive.
  */
@@ -30,6 +31,7 @@ export const PROPOSAL_PRESET_IDS = [
   "residential_executive",
   "residential_zenith",
   "residential_premium_luxe",
+  "residential_luxe_noir",
   "residential_blueprint",
   "commercial_executive",
   "commercial_ht",
@@ -61,6 +63,7 @@ export function isResidentialDocumentPreset(presetId: ProposalPresetId): boolean
     presetId === "residential_executive" ||
     presetId === "residential_zenith" ||
     presetId === "residential_premium_luxe" ||
+    presetId === "residential_luxe_noir" ||
     presetId === "residential_blueprint"
   );
 }
@@ -135,6 +138,18 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     label: "Atelier",
     description:
       "Warm cream Premium Luxe masterplan — residential sales layout, print-ready.",
+    bill_requirement: "optional",
+    theme_hint: "residential",
+    default_data_source: "requirement",
+    default_blocks: [],
+    optional_blocks: [],
+  },
+
+  residential_luxe_noir: {
+    id: "residential_luxe_noir",
+    label: "Premium Luxe",
+    description:
+      "Dark cinematic gold proposal — engineering telemetry, oversize DC architecture, print-ready noir.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "requirement",

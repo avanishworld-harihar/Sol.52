@@ -77,6 +77,13 @@ export function parsePrefillFromSearchParams(params: URLSearchParams): BuilderPr
   } else if (preset === "residential_premium_luxe" || preset === "luxe" || preset === "premium_luxe") {
     prefill.preset = "residential_premium_luxe";
   } else if (
+    preset === "residential_luxe_noir" ||
+    preset === "luxe_noir" ||
+    preset === "premium_luxe_noir" ||
+    preset === "noir"
+  ) {
+    prefill.preset = "residential_luxe_noir";
+  } else if (
     preset === "residential_blueprint" ||
     preset === "blueprint" ||
     preset === "investment_blueprint"

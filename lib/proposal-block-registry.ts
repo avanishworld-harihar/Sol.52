@@ -76,6 +76,7 @@ export type PresetAffinity =
       | "residential_executive"
       | "residential_zenith"
       | "residential_premium_luxe"
+      | "residential_luxe_noir"
       | "residential_blueprint"
     >;
 

@@ -1,0 +1,167 @@
+.root {
+  --luxe-bg: #0a0a0a;
+  --luxe-gold: #d4af37;
+  --luxe-text: #f3f4f6;
+  --luxe-muted: #9ca3af;
+  --luxe-surface: #171717;
+
+  background: var(--luxe-bg);
+  color: var(--luxe-text);
+  min-height: 100%;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.loading {
+  background: #0a0a0a;
+  color: #d4af37;
+  padding: 4rem;
+  font-family: Georgia, serif;
+}
+
+.cover,
+.economics,
+.closing {
+  max-width: 210mm;
+  margin: 0 auto;
+  padding: 56px 50px;
+  position: relative;
+}
+
+.cover {
+  border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.eyebrow {
+  color: var(--luxe-gold);
+  font-size: 0.75rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin: 0 0 12px;
+}
+
+.coverTitle,
+.sectionTitle {
+  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+  font-weight: 300;
+  color: #fff;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.coverTitle {
+  font-size: 3.75rem;
+}
+
+.sectionTitle {
+  font-size: 2.5rem;
+  margin-bottom: 28px;
+}
+
+.coverSub {
+  margin: 18px 0 0;
+  max-width: 36rem;
+  color: var(--luxe-muted);
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.coverMeta {
+  margin-top: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  color: #d1d5db;
+  font-size: 0.9rem;
+}
+
+.dot {
+  color: var(--luxe-gold);
+  opacity: 0.7;
+}
+
+.economics {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.econGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.econCard {
+  background: var(--luxe-surface);
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  border-radius: 14px;
+  padding: 22px 20px;
+}
+
+.econLabel {
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--luxe-muted);
+  margin-bottom: 8px;
+}
+
+.econValue {
+  display: block;
+  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+  font-size: 1.75rem;
+  font-weight: 400;
+  color: #fff;
+}
+
+.econHint {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: var(--luxe-muted);
+}
+
+.closing {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 72px;
+}
+
+.closingBody {
+  color: #d1d5db;
+  line-height: 1.7;
+  max-width: 40rem;
+  margin: 0 0 24px;
+  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+  font-size: 1.15rem;
+}
+
+.contact {
+  color: var(--luxe-gold);
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .cover,
+  .economics,
+  .closing {
+    padding: 36px 20px;
+  }
+
+  .coverTitle {
+    font-size: 2.5rem;
+  }
+
+  .econGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  .root {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

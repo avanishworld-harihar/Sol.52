@@ -77,11 +77,13 @@ export async function buildQuickRequirementProposal(
         ? { galleryThemeKey: "zenith" }
         : presetId === "residential_premium_luxe"
           ? { galleryThemeKey: "luxe" }
-          : presetId === "residential_blueprint"
-            ? { galleryThemeKey: "blueprint" }
-            : presetId === "residential_executive"
-              ? { galleryThemeKey: "golden" }
-              : {}),
+          : presetId === "residential_luxe_noir"
+            ? { galleryThemeKey: "luxe_noir" }
+            : presetId === "residential_blueprint"
+              ? { galleryThemeKey: "blueprint" }
+              : presetId === "residential_executive"
+                ? { galleryThemeKey: "golden" }
+                : {}),
   };
 
   const summary = summarizeProposalDeck(pptInput);

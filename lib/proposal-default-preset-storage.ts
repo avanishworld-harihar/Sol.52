@@ -5,6 +5,7 @@ export const RESIDENTIAL_TEMPLATE_PRESET_IDS = [
   "residential_executive",
   "residential_zenith",
   "residential_premium_luxe",
+  "residential_luxe_noir",
   "residential_blueprint",
 ] as const;
 
@@ -37,7 +38,12 @@ export const RESIDENTIAL_TEMPLATE_OPTIONS: ResidentialTemplateOption[] = [
   {
     id: "residential_premium_luxe",
     label: "Atelier",
-    subtitle: "Warm cream Premium Luxe masterplan for residential sales.",
+    subtitle: "Warm cream masterplan for residential sales.",
+  },
+  {
+    id: "residential_luxe_noir",
+    label: "Premium Luxe",
+    subtitle: "Dark cinematic gold — engineering telemetry & peak-yield design.",
   },
   {
     id: "residential_blueprint",

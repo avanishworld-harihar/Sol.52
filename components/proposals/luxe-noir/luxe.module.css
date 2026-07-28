@@ -1,0 +1,238 @@
+/* --- Premium Luxe Engineering Styles --- */
+.page {
+  --luxe-bg: #0a0a0a;
+  --luxe-surface: #171717;
+  --luxe-gold: #d4af37;
+  --luxe-text: #f3f4f6;
+  --luxe-muted: #9ca3af;
+
+  background-color: var(--luxe-bg);
+  color: var(--luxe-text);
+  padding: 50px;
+  position: relative;
+  overflow: hidden;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+/* Subtle cinematic light leak in the background */
+.page::before {
+  content: "";
+  position: absolute;
+  top: -20%;
+  left: -10%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.luxeHeader,
+.blueprintStage,
+.architecturalVerdict {
+  position: relative;
+  z-index: 2;
+}
+
+.goldEyebrow {
+  color: var(--luxe-gold);
+  font-size: 0.75rem;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.luxeTitle {
+  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+  font-size: 3.5rem;
+  font-weight: 300;
+  margin: 10px 0 20px 0;
+  color: #ffffff;
+  line-height: 1.1;
+}
+
+.goldDivider {
+  width: 60px;
+  height: 2px;
+  background-color: var(--luxe-gold);
+  margin-bottom: 40px;
+}
+
+/* Blueprint & Telemetry Layout */
+.blueprintStage {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 40px;
+  margin-bottom: 50px;
+}
+
+.blueprintVisual {
+  perspective: 900px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  min-height: 320px;
+}
+
+/* High-tech glowing panel wireframes — cinematic 3D blueprint */
+.wireframeArray {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  transform: rotateX(55deg) rotateZ(-30deg);
+  transform-style: preserve-3d;
+  padding: 40px;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.luxePanel {
+  height: 80px;
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  box-shadow: inset 0 0 15px rgba(212, 175, 55, 0.1);
+}
+
+.azimuthRing {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 40px rgba(212, 175, 55, 0.08);
+}
+
+.azimuthRing::after {
+  content: "";
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  width: 2px;
+  height: 28px;
+  background: var(--luxe-gold);
+  transform: translateX(-50%);
+}
+
+.southMarker {
+  color: var(--luxe-gold);
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-weight: 600;
+  text-align: center;
+  max-width: 90px;
+  line-height: 1.4;
+}
+
+.telemetryPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  justify-content: center;
+}
+
+.dataBlock {
+  background: var(--luxe-surface);
+  border-left: 2px solid var(--luxe-gold);
+  padding: 20px 25px;
+  border-radius: 0 12px 12px 0;
+}
+
+.dataLabel {
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  color: var(--luxe-muted);
+  margin-bottom: 5px;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.dataValue {
+  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: #ffffff;
+  letter-spacing: 1px;
+}
+
+.dataSub {
+  font-size: 0.85rem;
+  color: var(--luxe-muted);
+  margin: 5px 0 0 0;
+  line-height: 1.5;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* The Verdict Box */
+.architecturalVerdict {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  background: linear-gradient(145deg, #171717 0%, #0a0a0a 100%);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  padding: 30px;
+  border-radius: 16px;
+}
+
+.verdictIcon {
+  color: var(--luxe-gold);
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.verdictText strong {
+  display: block;
+  color: var(--luxe-gold);
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.verdictText p {
+  color: #d1d5db;
+  margin: 0;
+  line-height: 1.7;
+  font-size: 1rem;
+  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+  font-weight: 400;
+}
+
+@media (max-width: 900px) {
+  .page {
+    padding: 28px 20px;
+  }
+
+  .luxeTitle {
+    font-size: 2.25rem;
+  }
+
+  .blueprintStage {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .wireframeArray {
+    max-width: 280px;
+    padding: 24px;
+  }
+
+  .luxePanel {
+    height: 56px;
+  }
+}
+
+@media print {
+  .page {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

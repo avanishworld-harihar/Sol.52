@@ -36,7 +36,7 @@ export const PROPOSAL_TEMPLATE_CATEGORIES: ProposalTemplateCategoryMeta[] = [
   {
     id: "residential",
     label: "Residential",
-    description: "Homes & rooftops — Golden, Zenith, Atelier, or Canvas.",
+    description: "Homes & rooftops — Golden, Zenith, Atelier, Premium Luxe, or Canvas.",
   },
   {
     id: "commercial",
@@ -68,8 +68,16 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
     presetId: "residential_premium_luxe",
     category: "residential",
     name: "Atelier",
-    description: "Warm cream masterplan — Premium Luxe layout for residential sales.",
+    description: "Warm cream masterplan — residential sales layout.",
     thumbnailVariant: "luxe",
+  },
+  {
+    key: "luxe_noir",
+    presetId: "residential_luxe_noir",
+    category: "residential",
+    name: "Premium Luxe",
+    description: "Dark cinematic gold — engineering telemetry & peak-yield architecture.",
+    thumbnailVariant: "luxe_noir",
   },
   {
     key: "blueprint",
@@ -144,6 +152,7 @@ export function resolveActiveGalleryKey(
   if (presetId === "residential_executive") return "golden";
   if (presetId === "residential_zenith") return "zenith";
   if (presetId === "residential_premium_luxe") return "luxe";
+  if (presetId === "residential_luxe_noir") return "luxe_noir";
   if (presetId === "residential_blueprint") return "blueprint";
   return "zenith";
 }

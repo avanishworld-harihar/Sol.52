@@ -9,11 +9,20 @@ import type { PresetRendererLoader, PresetRendererRegistry } from "@/components/
 /** Local / mock aliases that resolve to Zenith. */
 export const ZENITH_PRESET_ALIASES = ["residential_zenith", "zenith"] as const;
 
-/** Local / mock aliases that resolve to Premium Luxe. */
+/** Local / mock aliases that resolve to Premium Luxe (Atelier cream). */
 export const LUXE_PRESET_ALIASES = [
   "residential_premium_luxe",
   "premium_luxe",
   "luxe",
+  "atelier",
+] as const;
+
+/** Local / mock aliases that resolve to Premium Luxe noir (dark cinematic). */
+export const LUXE_NOIR_PRESET_ALIASES = [
+  "residential_luxe_noir",
+  "luxe_noir",
+  "premium_luxe_noir",
+  "noir",
 ] as const;
 
 /** Local / mock aliases that resolve to Blueprint. */
@@ -29,6 +38,10 @@ export function isZenithPresetId(presetId: string): boolean {
 
 export function isLuxePresetId(presetId: string): boolean {
   return (LUXE_PRESET_ALIASES as readonly string[]).includes(presetId);
+}
+
+export function isLuxeNoirPresetId(presetId: string): boolean {
+  return (LUXE_NOIR_PRESET_ALIASES as readonly string[]).includes(presetId);
 }
 
 export function isBlueprintPresetId(presetId: string): boolean {
@@ -50,6 +63,8 @@ export const PRESET_RENDERER_LOADERS: PresetRendererRegistry = {
     import("@/components/proposals/_registry/adapters/zenith-adapter"),
   residential_premium_luxe: () =>
     import("@/components/proposals/_registry/adapters/premium-luxe-adapter"),
+  residential_luxe_noir: () =>
+    import("@/components/proposals/_registry/adapters/luxe-noir-adapter"),
   residential_blueprint: () =>
     import("@/components/proposals/_registry/adapters/blueprint-adapter"),
   commercial_executive: () =>
@@ -73,6 +88,9 @@ export function getPresetRendererLoader(
   }
   if (isZenithPresetId(presetId)) {
     return () => import("@/components/proposals/_registry/adapters/zenith-adapter");
+  }
+  if (isLuxeNoirPresetId(presetId)) {
+    return () => import("@/components/proposals/_registry/adapters/luxe-noir-adapter");
   }
   if (isLuxePresetId(presetId)) {
     return () => import("@/components/proposals/_registry/adapters/premium-luxe-adapter");

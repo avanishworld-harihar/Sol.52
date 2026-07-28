@@ -210,9 +210,11 @@ export function BuilderStageBar({
                   ? "Zenith"
                   : presetId === "residential_premium_luxe"
                     ? "Atelier"
-                    : presetId === "residential_blueprint"
-                      ? "Canvas"
-                      : "Residential"}
+                    : presetId === "residential_luxe_noir"
+                      ? "Premium Luxe"
+                      : presetId === "residential_blueprint"
+                        ? "Canvas"
+                        : "Residential"}
             </span>
           </div>
         )}
