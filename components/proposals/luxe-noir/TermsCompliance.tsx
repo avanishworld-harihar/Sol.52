@@ -2,7 +2,7 @@
 
 /**
  * Premium Luxe — Terms & Compliance (2 A4 pages).
- * Dense two-column layout to avoid large negative space.
+ * Numbered articles, dark readable body, clear section blocks.
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
@@ -111,34 +111,53 @@ export function TermsCompliancePage1({ data }: TermsComplianceProps) {
       <header className={styles.termsHead}>
         <span className={styles.termsTag}>09 / TERMS & COMPLIANCE</span>
         <h2 className={styles.termsTitle}>Terms & Conditions</h2>
+        <p className={styles.termsIntro}>
+          Binding commercial and warranty conditions for this rooftop solar proposal.
+          Please read each article carefully before signing.
+        </p>
       </header>
 
       <div className={styles.termsGridFill}>
         <div className={styles.termsCol}>
-          <div className={styles.termsSubhead}>General Terms</div>
-          <ul className={styles.termsDiamondList}>
-            {GENERAL_TERMS.map((t) => (
-              <li key={t.label}>
-                <strong>{t.label}:</strong> {t.text}
-              </li>
-            ))}
-          </ul>
+          <div className={styles.termsSection}>
+            <div className={styles.termsSubhead}>01 · General Terms</div>
+            <ol className={styles.termsArticleList}>
+              {GENERAL_TERMS.map((t, i) => (
+                <li key={t.label} className={styles.termsArticle}>
+                  <span className={styles.termsArticleNum}>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <div>
+                    <strong className={styles.termsArticleLabel}>{t.label}</strong>
+                    <p className={styles.termsArticleBody}>{t.text}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
         </div>
 
         <div className={styles.termsCol}>
-          <div className={styles.termsSubhead}>Documents Required</div>
-          <ul className={styles.termsDotList}>
-            {docs.map((d) => (
-              <li key={d.slice(0, 48)}>{d}</li>
-            ))}
-          </ul>
+          <div className={styles.termsSection}>
+            <div className={styles.termsSubhead}>02 · Documents Required</div>
+            <ol className={styles.termsNumberedList}>
+              {docs.map((d, i) => (
+                <li key={d.slice(0, 48)}>
+                  <span className={styles.termsListNum}>{i + 1}</span>
+                  <span>{d}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
 
-          <div className={styles.termsSubhead}>Safety & Protection Notes</div>
-          <ul className={styles.termsDiamondList}>
-            {SAFETY_NOTES.map((s) => (
-              <li key={s.slice(0, 40)}>{s}</li>
-            ))}
-          </ul>
+          <div className={styles.termsSection}>
+            <div className={styles.termsSubhead}>03 · Safety & Protection</div>
+            <ul className={styles.termsSafetyList}>
+              {SAFETY_NOTES.map((s) => (
+                <li key={s.slice(0, 40)}>{s}</li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </section>
@@ -169,40 +188,68 @@ export function TermsCompliancePage2({ data }: TermsComplianceProps) {
       <header className={styles.termsHead}>
         <span className={styles.termsTag}>10 / TERMS & COMPLIANCE (CONTD.)</span>
         <h2 className={styles.termsTitle}>Terms & Conditions</h2>
+        <p className={styles.termsIntro}>
+          Client responsibilities, AMC scope, and maintenance cost structure.
+        </p>
       </header>
 
       <div className={styles.termsGridFill}>
         <div className={styles.termsCol}>
-          <div className={styles.termsSubhead}>Client&apos;s Scope</div>
-          <ul className={styles.termsDotList}>
-            {CLIENT_SCOPE.map((s) => (
-              <li key={s.slice(0, 48)}>{s}</li>
-            ))}
-          </ul>
+          <div className={styles.termsSection}>
+            <div className={styles.termsSubhead}>04 · Client&apos;s Scope</div>
+            <ol className={styles.termsNumberedList}>
+              {CLIENT_SCOPE.map((s, i) => (
+                <li key={s.slice(0, 48)}>
+                  <span className={styles.termsListNum}>{i + 1}</span>
+                  <span>{s}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
 
-          <div className={styles.termsSubhead}>Annual Maintenance — Scope</div>
-          <p className={styles.termsPara}>{amcObjective}</p>
-          <p className={styles.termsAmcIncludes}>AMC includes:</p>
-          <ul className={styles.termsDiamondList}>
-            {amcScope.map((s) => (
-              <li key={s.slice(0, 48)}>{s}</li>
-            ))}
-          </ul>
+          <div className={styles.termsSection}>
+            <div className={styles.termsSubhead}>05 · Annual Maintenance — Scope</div>
+            <p className={styles.termsPara}>{amcObjective}</p>
+            <p className={styles.termsAmcIncludes}>AMC includes:</p>
+            <ol className={styles.termsNumberedList}>
+              {amcScope.map((s, i) => (
+                <li key={s.slice(0, 48)}>
+                  <span className={styles.termsListNum}>{i + 1}</span>
+                  <span>{s}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
         </div>
 
         <div className={styles.termsCol}>
-          <div className={styles.termsSubhead}>Cost of Maintenance</div>
-          <p className={styles.termsPara}>
-            First 1 year AMC is included in the quoted price. From Year 2 onwards, annual
-            maintenance may be charged at 2% of invoice value{" "}
-            <span className={styles.luxeNum}>{invoiceRef}</span> with 5% year-on-year
-            escalation, subject to a signed O&amp;M agreement.
-          </p>
-          <ul className={styles.termsDiamondList}>
-            {amcTerms.map((t) => (
-              <li key={t.slice(0, 48)}>{t}</li>
-            ))}
-          </ul>
+          <div className={styles.termsSection}>
+            <div className={styles.termsSubhead}>06 · Cost of Maintenance</div>
+            <div className={styles.termsCostBox}>
+              <p>
+                First <strong>1 year AMC</strong> is included in the quoted price.
+              </p>
+              <p>
+                From Year 2 onwards, annual maintenance may be charged at{" "}
+                <strong>2% of invoice value</strong>{" "}
+                <span className={styles.luxeNum}>{invoiceRef}</span> with{" "}
+                <strong>5% year-on-year escalation</strong>, subject to a signed O&amp;M
+                agreement.
+              </p>
+            </div>
+            <ol className={styles.termsArticleList}>
+              {amcTerms.map((t, i) => (
+                <li key={t.slice(0, 48)} className={styles.termsArticle}>
+                  <span className={styles.termsArticleNum}>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <div>
+                    <p className={styles.termsArticleBody}>{t}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
 
           <div className={styles.termsSignoff}>
             <span className={styles.termsRegards}>Regards,</span>

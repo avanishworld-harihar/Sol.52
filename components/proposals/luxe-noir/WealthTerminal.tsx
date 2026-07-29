@@ -186,10 +186,10 @@ export function WealthTerminal({ data }: WealthTerminalProps) {
           >
             PAYBACK
           </text>
-          <text x="8" y="154" fill="#5C6570" fontSize="9">
+          <text x="8" y="154" fill="#2a3140" fontSize="9">
             Yr 0
           </text>
-          <text x="500" y="154" fill="#5C6570" fontSize="9" textAnchor="end">
+          <text x="500" y="154" fill="#2a3140" fontSize="9" textAnchor="end">
             Yr 25
           </text>
         </svg>
