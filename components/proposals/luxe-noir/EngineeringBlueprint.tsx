@@ -173,15 +173,12 @@ function IsoPanel({
   );
 }
 
-/** Tall GI posts under C-rails. Front legs drawn after modules so they read as standing. */
+/** Tall GI posts + C-rails under modules (always drawn before IsoPanel). */
 function ArrayRailBank({
   positions,
-  layer,
 }: {
   positions: { cx: number; cy: number }[];
   cols: number;
-  /** structure = rear posts + rails; front = south posts after panels */
-  layer: "structure" | "front";
 }) {
   if (positions.length === 0) return null;
   const rows: { cx: number; cy: number }[][] = [];
@@ -194,7 +191,7 @@ function ArrayRailBank({
     }
   }
 
-  /** Clear elevated mount — rear taller for south tilt; same deck plane */
+  /** Elevated mount — rear taller for south tilt */
   const LEG_FRONT = 38;
   const LEG_REAR = 50;
   const RAIL_FRONT = 12;
@@ -219,7 +216,6 @@ function ArrayRailBank({
           ry="1.6"
           fill="rgba(0,0,0,0.5)"
         />
-        {/* Thick standing post (GI square tube look) */}
         <line
           x1={xTop}
           y1={yTop}
@@ -238,7 +234,6 @@ function ArrayRailBank({
           strokeWidth="1"
           strokeLinecap="round"
         />
-        {/* Base plate on roof deck */}
         <rect
           x={xBot - 4}
           y={yBot - 0.5}
@@ -249,7 +244,6 @@ function ArrayRailBank({
           stroke="#4a5564"
           strokeWidth="0.45"
         />
-        {/* Top cleat into rail */}
         <rect
           x={xTop - 3}
           y={yTop - 1.4}
@@ -276,40 +270,32 @@ function ArrayRailBank({
         const yFront = first.cy + RAIL_FRONT;
         const yBack = first.cy + RAIL_REAR;
 
-        if (layer === "front") {
-          return (
-            <g key={`front-legs-${ri}`}>
-              {sorted.map((p, pi) => {
-                const t = sorted.length > 1 ? pi / (sorted.length - 1) : 0;
-                const sk = skew * t;
-                return drawPost(
-                  `fleg-${ri}-${pi}`,
-                  p.cx + 8,
-                  yFront + sk,
-                  LEG_FRONT,
-                  "front"
-                );
-              })}
-            </g>
-          );
-        }
-
         return (
           <g key={`rails-${ri}`}>
-            {/* Rear (taller) posts under array */}
+            {/* Front + rear posts (under panels) */}
             {sorted.map((p, pi) => {
               const t = sorted.length > 1 ? pi / (sorted.length - 1) : 0;
               const sk = skew * t;
-              return drawPost(
-                `rleg-${ri}-${pi}`,
-                p.cx + 30,
-                yBack + sk,
-                LEG_REAR,
-                "rear"
+              return (
+                <g key={`legs-${ri}-${pi}`}>
+                  {drawPost(
+                    `fleg-${ri}-${pi}`,
+                    p.cx + 8,
+                    yFront + sk,
+                    LEG_FRONT,
+                    "front"
+                  )}
+                  {drawPost(
+                    `rleg-${ri}-${pi}`,
+                    p.cx + 30,
+                    yBack + sk,
+                    LEG_REAR,
+                    "rear"
+                  )}
+                </g>
               );
             })}
 
-            {/* Diagonal brace front→rear per bay */}
             {sorted.map((p, pi) => {
               const t = sorted.length > 1 ? pi / (sorted.length - 1) : 0;
               const sk = skew * t;
@@ -328,7 +314,6 @@ function ArrayRailBank({
               );
             })}
 
-            {/* Mid purlin */}
             <line
               x1={x0 + 4}
               y1={yFront + LEG_FRONT * 0.48}
@@ -340,7 +325,6 @@ function ArrayRailBank({
               opacity="0.8"
             />
 
-            {/* Front C-rail */}
             <line
               x1={x0}
               y1={yFront}
@@ -360,7 +344,6 @@ function ArrayRailBank({
               strokeLinecap="round"
             />
 
-            {/* Rear C-rail */}
             <line
               x1={x0 + 3}
               y1={yBack}
@@ -651,22 +634,11 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
               />
             )}
 
-            <ArrayRailBank
-              positions={panelPositions}
-              cols={cols}
-              layer="structure"
-            />
+            <ArrayRailBank positions={panelPositions} cols={cols} />
 
             {panelPositions.map((p, i) => (
               <IsoPanel key={i} cx={p.cx} cy={p.cy} />
             ))}
-
-            {/* Front posts after modules — tall legs stay readable */}
-            <ArrayRailBank
-              positions={panelPositions}
-              cols={cols}
-              layer="front"
-            />
 
             {/* Compass rose */}
             <g transform="translate(42,42)">
