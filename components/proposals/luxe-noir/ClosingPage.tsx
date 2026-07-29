@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * Premium Luxe — Closing page (last A4).
- * Editorial folio close: next steps, vendor, dual signatures, contact.
+ * Premium Luxe — Closing folio (last A4).
+ * Brand-first close · visual path · signature pads · clear begin CTA.
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
@@ -17,47 +17,91 @@ export type ClosingPageProps = {
   data: ProposalData;
 };
 
-function ClosingSealArt() {
+function ClosingSealArt({ label }: { label: string }) {
   return (
-    <svg className={styles.closeSeal} viewBox="0 0 120 120" aria-hidden>
-      <circle cx="60" cy="60" r="54" fill="rgba(184,150,46,0.08)" />
+    <svg className={styles.closeSeal} viewBox="0 0 140 140" aria-hidden>
+      <defs>
+        <linearGradient id="closeSealRing" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#C9A84A" />
+          <stop offset="55%" stopColor="#B8962E" />
+          <stop offset="100%" stopColor="#8A6E22" />
+        </linearGradient>
+      </defs>
+      <circle cx="70" cy="70" r="64" fill="rgba(184,150,46,0.1)" />
       <circle
-        cx="60"
-        cy="60"
-        r="42"
+        cx="70"
+        cy="70"
+        r="52"
+        fill="none"
+        stroke="url(#closeSealRing)"
+        strokeWidth="2.2"
+      />
+      <circle
+        cx="70"
+        cy="70"
+        r="44"
+        fill="none"
+        stroke="rgba(20,24,32,0.18)"
+        strokeWidth="1"
+        strokeDasharray="2.5 3.5"
+      />
+      <circle cx="70" cy="66" r="28" fill="#1e2a3a" />
+      <path
+        d="M54 66 L64 76 L88 50"
         fill="none"
         stroke="#B8962E"
-        strokeWidth="1.2"
-      />
-      <circle
-        cx="60"
-        cy="60"
-        r="30"
-        fill="none"
-        stroke="rgba(20,24,32,0.2)"
-        strokeWidth="1"
-        strokeDasharray="3 4"
-      />
-      <path
-        d="M40 62 L54 74 L82 44"
-        fill="none"
-        stroke="#141820"
-        strokeWidth="3"
+        strokeWidth="3.4"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
       <text
-        x="60"
-        y="102"
+        x="70"
+        y="118"
         textAnchor="middle"
-        fill="#B8962E"
-        fontSize="8"
-        letterSpacing="1.5"
+        fill="#8A6E22"
+        fontSize="9"
+        letterSpacing="2.4"
         fontFamily="system-ui,sans-serif"
         fontWeight="700"
       >
-        READY
+        {label}
       </text>
+    </svg>
+  );
+}
+
+function StepGlyph({ index }: { index: number }) {
+  // Simple stage icons — confirm / docs / design / power
+  if (index === 0) {
+    return (
+      <svg viewBox="0 0 32 32" className={styles.closeStepGlyph} aria-hidden>
+        <rect x="6" y="8" width="20" height="16" rx="2" fill="none" stroke="#B8962E" strokeWidth="1.6" />
+        <path d="M11 16 L15 20 L22 12" fill="none" stroke="#141820" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  if (index === 1) {
+    return (
+      <svg viewBox="0 0 32 32" className={styles.closeStepGlyph} aria-hidden>
+        <path d="M10 7h9l5 5v13H10z" fill="none" stroke="#B8962E" strokeWidth="1.6" />
+        <path d="M19 7v5h5" fill="none" stroke="#B8962E" strokeWidth="1.6" />
+        <path d="M13 17h10M13 21h7" stroke="#141820" strokeWidth="1.4" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  if (index === 2) {
+    return (
+      <svg viewBox="0 0 32 32" className={styles.closeStepGlyph} aria-hidden>
+        <path d="M6 22 L16 10 L26 22 Z" fill="none" stroke="#B8962E" strokeWidth="1.6" />
+        <rect x="12" y="16" width="8" height="6" fill="none" stroke="#141820" strokeWidth="1.4" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 32 32" className={styles.closeStepGlyph} aria-hidden>
+      <circle cx="16" cy="12" r="5" fill="rgba(184,150,46,0.35)" stroke="#B8962E" strokeWidth="1.4" />
+      <path d="M8 24 L16 16 L24 24" fill="none" stroke="#141820" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M11 24h10" stroke="#B8962E" strokeWidth="1.6" strokeLinecap="round" />
     </svg>
   );
 }
@@ -83,7 +127,9 @@ export function ClosingPage({ data }: ClosingPageProps) {
     data.meta.locationLine && data.meta.locationLine !== "—"
       ? data.meta.locationLine.replace(/,\s*India$/i, "").trim()
       : "";
-  const nextSteps = [...copy.close.steps];
+
+  const stepTitles = [...copy.close.stepTitles];
+  const stepBodies = [...copy.close.steps];
 
   return (
     <section
@@ -99,53 +145,72 @@ export function ClosingPage({ data }: ClosingPageProps) {
         <span className={styles.closeConfidential}>{copy.close.privateOffer}</span>
       </header>
 
-      <div className={styles.closeHero}>
-        <div className={styles.closeHeroCopy}>
-          <h1 className={styles.closeTitle}>{copy.close.title}</h1>
+      {/* Brand-first: vendor is the hero signal */}
+      <div className={styles.closeBrandHero}>
+        <div className={styles.closeBrandCopy}>
+          <span className={styles.closeBrandEyebrow}>{copy.close.vendor}</span>
+          <h1 className={styles.closeVendorName}>{vendor}</h1>
+          <p className={styles.closeTitle}>{copy.close.title}</p>
           <p className={styles.closeLead}>{copy.close.lead}</p>
-          <p className={styles.closePrepared}>
-            {copy.close.preparedFor} <strong>{client}</strong>
-            {systemKw > 0 ? (
-              <>
-                {" "}
-                · <span className={styles.luxeNum}>{formatLuxeKw(systemKw)} kW</span>
-              </>
-            ) : null}
-            {location ? <> · {location}</> : null}
-          </p>
         </div>
-        <ClosingSealArt />
+        <ClosingSealArt label={copy.close.sealReady} />
       </div>
 
-      <div className={styles.closeVendorBlock}>
-        <span>{copy.close.vendor}</span>
-        <strong>{vendor}</strong>
+      <div className={styles.closeMetaStrip}>
+        <div className={styles.closeMetaCell}>
+          <span>{copy.close.preparedFor}</span>
+          <strong>{client}</strong>
+        </div>
+        {systemKw > 0 ? (
+          <div className={styles.closeMetaCell}>
+            <span>{isHi ? "सिस्टम" : "System"}</span>
+            <strong className={styles.luxeNum}>{formatLuxeKw(systemKw)} kW</strong>
+          </div>
+        ) : null}
+        {location ? (
+          <div className={styles.closeMetaCell}>
+            <span>{isHi ? "स्थान" : "Site"}</span>
+            <strong>{location}</strong>
+          </div>
+        ) : null}
       </div>
 
-      <div className={styles.closeSteps}>
-        <div className={styles.closeStepsHead}>{copy.close.nextHead}</div>
-        <ol className={styles.closeStepsList}>
-          {nextSteps.map((step, i) => (
-            <li key={step.slice(0, 40)}>
-              <span className={styles.closeStepNum}>
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <span>{step}</span>
+      {/* Visual path — 4 stages */}
+      <div className={styles.closeJourney}>
+        <div className={styles.closeJourneyHead}>
+          <span>{copy.close.nextHead}</span>
+          <em>{copy.close.nextHint}</em>
+        </div>
+        <ol className={styles.closeJourneyTrack}>
+          {stepTitles.map((title, i) => (
+            <li key={title} className={styles.closeJourneyStep}>
+              {i < stepTitles.length - 1 ? (
+                <span className={styles.closeJourneyRail} aria-hidden />
+              ) : null}
+              <div className={styles.closeJourneyBadge}>
+                <span className={styles.closeStepNum}>
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <StepGlyph index={i} />
+              </div>
+              <strong>{title}</strong>
+              <p>{stepBodies[i]}</p>
             </li>
           ))}
         </ol>
       </div>
 
+      {/* Signature folio */}
       <div className={styles.closeSigGrid}>
         <div className={styles.closeSigCard}>
-          <div className={styles.closeSigLine} />
           <span className={styles.closeSigLabel}>{copy.close.clientAccept}</span>
+          <div className={styles.closeSigPad} />
           <strong className={styles.closeSigName}>{client}</strong>
           <em>{copy.close.sigDate}</em>
         </div>
-        <div className={styles.closeSigCard}>
-          <div className={styles.closeSigLine} />
+        <div className={`${styles.closeSigCard} ${styles.closeSigCardVendor}`}>
           <span className={styles.closeSigLabel}>{copy.close.authSign}</span>
+          <div className={styles.closeSigPad} />
           <strong className={styles.closeSigName}>{contactPerson}</strong>
           <em>
             {contactRole} · {vendor}
@@ -153,14 +218,30 @@ export function ClosingPage({ data }: ClosingPageProps) {
         </div>
       </div>
 
+      {/* Begin CTA */}
       <div className={styles.closeContact}>
-        <span>{copy.close.contact}</span>
-        <strong>{contact}</strong>
+        <div className={styles.closeContactArt} aria-hidden>
+          <svg viewBox="0 0 48 48" width="40" height="40">
+            <circle cx="24" cy="24" r="22" fill="rgba(184,150,46,0.15)" />
+            <path
+              d="M16 20c0-2 1.5-4 4-4h2l2 5-2 1c.8 1.6 2.2 3 4 4l1-2 5 2v2c0 2.5-2 4-4 4-7 0-12-5-12-12z"
+              fill="none"
+              stroke="#B8962E"
+              strokeWidth="1.8"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+        <div className={styles.closeContactCopy}>
+          <span className={styles.closeContactEyebrow}>{copy.close.contact}</span>
+          <strong>{contact}</strong>
+          <em>{copy.close.contactHint}</em>
+        </div>
       </div>
 
       <ExpertVerdict label={copy.close.finalLabel}>{copy.close.final}</ExpertVerdict>
 
-      <footer className={styles.impactPageFooter}>
+      <footer className={`${styles.impactPageFooter} ${styles.closeFooter}`}>
         <span>{vendor.toUpperCase()}</span>
         <span>11 / 11</span>
       </footer>

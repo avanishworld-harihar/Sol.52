@@ -18,7 +18,8 @@ export type EngineeringBlueprintProps = {
 };
 
 const PANEL_WATT = 580;
-const M2_PER_PANEL = 2.2;
+/** Incl. walkway allowance; ~2.2 m² × 10.764 → sq ft */
+const SQFT_PER_PANEL = 24;
 const MAX_DRAW = 18;
 
 function metricValue(
@@ -30,7 +31,10 @@ function metricValue(
   return hit?.value?.trim() || fallback;
 }
 
-/** Landscape rooftop module — glass face, aluminium frame, GI legs + rails. */
+/**
+ * Landscape module on rooftop rails — short L-feet into the deck.
+ * No tall table legs (that silhouette reads as furniture).
+ */
 function IsoPanel({
   cx,
   cy,
@@ -38,13 +42,13 @@ function IsoPanel({
   cx: number;
   cy: number;
 }) {
-  // Landscape: long E–W edge, short N–S edge on roof plane
-  const rightX = 40;
-  const rightY = 12.5;
-  const downX = -15;
-  const downY = 11;
-  const thick = 3.8;
-  const legH = 13;
+  // Landscape on roof plane; slight south tilt via down vector
+  const rightX = 38;
+  const rightY = 11;
+  const downX = -13;
+  const downY = 9.5;
+  const thick = 2.8;
+  const standoff = 3.2; // short L-foot height into roof — not table legs
 
   const p0x = cx;
   const p0y = cy;
@@ -55,7 +59,6 @@ function IsoPanel({
   const p3x = cx + downX;
   const p3y = cy + downY;
 
-  // Thickness extrusion (down toward viewer / “ground”)
   const t1x = p1x;
   const t1y = p1y + thick;
   const t2x = p2x;
@@ -63,41 +66,43 @@ function IsoPanel({
   const t3x = p3x;
   const t3y = p3y + thick;
 
-  // Mount rail under long edges (slightly inset)
-  const railInset = 0.12;
-  const r0x = p0x + rightX * railInset + downX * 0.15;
-  const r0y = p0y + rightY * railInset + downY * 0.15 + thick + 1;
-  const r1x = p0x + rightX * (1 - railInset) + downX * 0.15;
-  const r1y = p0y + rightY * (1 - railInset) + downY * 0.15 + thick + 1;
-  const r2x = p0x + rightX * (1 - railInset) + downX * 0.85;
-  const r2y = p0y + rightY * (1 - railInset) + downY * 0.85 + thick + 1;
-  const r3x = p0x + rightX * railInset + downX * 0.85;
-  const r3y = p0y + rightY * railInset + downY * 0.85 + thick + 1;
+  // Mid-rail contact points under panel (2 rails)
+  const railA = {
+    x0: p0x + rightX * 0.18 + downX * 0.35,
+    y0: p0y + rightY * 0.18 + downY * 0.35 + thick,
+    x1: p0x + rightX * 0.82 + downX * 0.35,
+    y1: p0y + rightY * 0.82 + downY * 0.35 + thick,
+  };
+  const railB = {
+    x0: p0x + rightX * 0.18 + downX * 0.72,
+    y0: p0y + rightY * 0.18 + downY * 0.72 + thick,
+    x1: p0x + rightX * 0.82 + downX * 0.72,
+    y1: p0y + rightY * 0.82 + downY * 0.72 + thick,
+  };
 
-  // Four legs: near corners of underside, drop to roof
-  const legs = [
-    { x: r0x + 2, y: r0y + 1 },
-    { x: r1x - 2, y: r1y + 1 },
-    { x: r2x - 2, y: r2y + 1 },
-    { x: r3x + 2, y: r3y + 1 },
+  // Four short L-feet into roof deck
+  const feet = [
+    { x: railA.x0, y: railA.y0 },
+    { x: railA.x1, y: railA.y1 },
+    { x: railB.x0, y: railB.y0 },
+    { x: railB.x1, y: railB.y1 },
   ];
 
   const cells: string[] = [];
-  for (let i = 1; i < 7; i++) {
-    const t = i / 7;
+  for (let i = 1; i < 6; i++) {
+    const t = i / 6;
     const ax = p0x + rightX * t;
     const ay = p0y + rightY * t;
     cells.push(`M ${ax},${ay} L ${ax + downX},${ay + downY}`);
   }
-  for (let j = 1; j < 4; j++) {
-    const t = j / 4;
+  for (let j = 1; j < 3; j++) {
+    const t = j / 3;
     const ax = p0x + downX * t;
     const ay = p0y + downY * t;
     cells.push(`M ${ax},${ay} L ${ax + rightX},${ay + rightY}`);
   }
 
-  // Inner glass inset (aluminium frame lip)
-  const inset = 0.08;
+  const inset = 0.07;
   const g0x = p0x + rightX * inset + downX * inset;
   const g0y = p0y + rightY * inset + downY * inset;
   const g1x = p0x + rightX * (1 - inset) + downX * inset;
@@ -109,91 +114,59 @@ function IsoPanel({
 
   return (
     <g>
-      {/* Leg feet shadows */}
-      {legs.map((leg, i) => (
-        <ellipse
-          key={`sh-${i}`}
-          cx={leg.x + 1}
-          cy={leg.y + legH + 1.5}
-          rx="3.2"
-          ry="1.4"
-          fill="rgba(0,0,0,0.35)"
-        />
-      ))}
-
-      {/* GI legs */}
-      {legs.map((leg, i) => (
-        <g key={`leg-${i}`}>
-          <line
-            x1={leg.x}
-            y1={leg.y}
-            x2={leg.x + 0.8}
-            y2={leg.y + legH}
-            stroke="#7a8494"
-            strokeWidth="2.2"
-            strokeLinecap="round"
+      {/* Short L-feet into roof (anchor pads) */}
+      {feet.map((f, i) => (
+        <g key={`ft-${i}`}>
+          <ellipse
+            cx={f.x + 0.5}
+            cy={f.y + standoff + 1}
+            rx="2.4"
+            ry="1.1"
+            fill="rgba(0,0,0,0.4)"
           />
           <line
-            x1={leg.x + 1.4}
-            y1={leg.y}
-            x2={leg.x + 2.1}
-            y2={leg.y + legH}
-            stroke="#c5ccd6"
-            strokeWidth="1"
+            x1={f.x}
+            y1={f.y}
+            x2={f.x + 0.4}
+            y2={f.y + standoff}
+            stroke="#9aa3b0"
+            strokeWidth="1.6"
             strokeLinecap="round"
-            opacity="0.85"
           />
           <rect
-            x={leg.x - 1.5}
-            y={leg.y + legH - 0.5}
-            width="5"
-            height="2"
-            rx="0.4"
-            fill="#9aa3b0"
-            stroke="#5c6573"
-            strokeWidth="0.4"
+            x={f.x - 2}
+            y={f.y + standoff - 0.3}
+            width="4.5"
+            height="1.4"
+            rx="0.3"
+            fill="#b0b7c2"
+            stroke="#6a7380"
+            strokeWidth="0.35"
           />
         </g>
       ))}
 
-      {/* Cross brace between front legs */}
+      {/* Local rail segments under module */}
       <line
-        x1={legs[2]!.x}
-        y1={legs[2]!.y + legH * 0.45}
-        x2={legs[3]!.x}
-        y2={legs[3]!.y + legH * 0.45}
+        x1={railA.x0}
+        y1={railA.y0}
+        x2={railA.x1}
+        y2={railA.y1}
+        stroke="#a8b0bc"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+      />
+      <line
+        x1={railB.x0}
+        y1={railB.y0}
+        x2={railB.x1}
+        y2={railB.y1}
         stroke="#8a93a0"
-        strokeWidth="1.4"
+        strokeWidth="2.4"
         strokeLinecap="round"
       />
 
-      {/* Mounting rails (C-channel look) */}
-      <polygon
-        points={`${r0x},${r0y} ${r1x},${r1y} ${r1x},${r1y + 2.2} ${r0x},${r0y + 2.2}`}
-        fill="#9aa3b0"
-        stroke="#5c6573"
-        strokeWidth="0.45"
-      />
-      <polygon
-        points={`${r3x},${r3y} ${r2x},${r2y} ${r2x},${r2y + 2.2} ${r3x},${r3y + 2.2}`}
-        fill="#7a8494"
-        stroke="#5c6573"
-        strokeWidth="0.45"
-      />
-      <polygon
-        points={`${r0x},${r0y} ${r3x},${r3y} ${r3x},${r3y + 2} ${r0x},${r0y + 2}`}
-        fill="#b0b7c2"
-        stroke="#6a7380"
-        strokeWidth="0.35"
-      />
-      <polygon
-        points={`${r1x},${r1y} ${r2x},${r2y} ${r2x},${r2y + 2} ${r1x},${r1y + 2}`}
-        fill="#8a93a0"
-        stroke="#5c6573"
-        strokeWidth="0.35"
-      />
-
-      {/* Panel thickness (south + east faces) */}
+      {/* Panel thickness */}
       <polygon
         points={`${p3x},${p3y} ${p2x},${p2y} ${t2x},${t2y} ${t3x},${t3y}`}
         fill="#1a2433"
@@ -203,46 +176,93 @@ function IsoPanel({
         fill="#243044"
       />
 
-      {/* Aluminium outer frame */}
+      {/* Aluminium frame + glass */}
       <polygon
         points={`${p0x},${p0y} ${p1x},${p1y} ${p2x},${p2y} ${p3x},${p3y}`}
         fill="url(#panelFrame)"
         stroke="#c8d0da"
-        strokeWidth="0.7"
+        strokeWidth="0.65"
       />
-
-      {/* Glass / cell face */}
       <polygon
         points={`${g0x},${g0y} ${g1x},${g1y} ${g2x},${g2y} ${g3x},${g3y}`}
         fill="url(#panelGlass)"
         stroke="#B8962E"
-        strokeWidth="0.55"
+        strokeWidth="0.5"
       />
       <path
         d={cells.join(" ")}
         fill="none"
         stroke="rgba(200,220,255,0.22)"
-        strokeWidth="0.55"
+        strokeWidth="0.5"
       />
-      {/* Specular highlight */}
       <line
         x1={g0x + rightX * 0.08}
         y1={g0y + rightY * 0.08 + 1}
-        x2={g0x + rightX * 0.42}
-        y2={g0y + rightY * 0.42 + 1}
-        stroke="rgba(255,255,255,0.35)"
-        strokeWidth="1.6"
+        x2={g0x + rightX * 0.4}
+        y2={g0y + rightY * 0.4 + 1}
+        stroke="rgba(255,255,255,0.32)"
+        strokeWidth="1.4"
         strokeLinecap="round"
       />
-      <line
-        x1={g0x + rightX * 0.12}
-        y1={g0y + rightY * 0.12 + 3}
-        x2={g0x + rightX * 0.28}
-        y2={g0y + rightY * 0.28 + 3}
-        stroke="rgba(255,255,255,0.18)"
-        strokeWidth="1"
-        strokeLinecap="round"
-      />
+    </g>
+  );
+}
+
+/** Continuous GI rails under a row of modules — reads as racking, not furniture. */
+function ArrayRailBank({
+  positions,
+  cols,
+}: {
+  positions: { cx: number; cy: number }[];
+  cols: number;
+}) {
+  if (positions.length === 0) return null;
+  // Group by row (same-ish cy band) using original grid order already sorted
+  const rows: { cx: number; cy: number }[][] = [];
+  for (const p of positions) {
+    const last = rows[rows.length - 1];
+    if (!last || Math.abs(last[0]!.cy - p.cy) > 8) {
+      rows.push([p]);
+    } else {
+      last.push(p);
+    }
+  }
+
+  return (
+    <g>
+      {rows.map((row, ri) => {
+        const sorted = [...row].sort((a, b) => a.cx - b.cx);
+        const first = sorted[0]!;
+        const last = sorted[sorted.length - 1]!;
+        const yA = first.cy + 14;
+        const yB = first.cy + 22;
+        const x0 = first.cx - 6;
+        const x1 = last.cx + 44;
+        return (
+          <g key={`rails-${ri}`}>
+            <line
+              x1={x0}
+              y1={yA}
+              x2={x1}
+              y2={yA + (last.cy - first.cy) * 0.15 + cols * 0.2}
+              stroke="#9aa3b0"
+              strokeWidth="2.8"
+              strokeLinecap="round"
+              opacity="0.9"
+            />
+            <line
+              x1={x0 + 4}
+              y1={yB}
+              x2={x1 + 2}
+              y2={yB + (last.cy - first.cy) * 0.15 + cols * 0.2}
+              stroke="#7a8494"
+              strokeWidth="2.6"
+              strokeLinecap="round"
+              opacity="0.85"
+            />
+          </g>
+        );
+      })}
     </g>
   );
 }
@@ -250,15 +270,17 @@ function IsoPanel({
 function IconPv() {
   return (
     <svg viewBox="0 0 72 56" className={styles.archIcon} aria-hidden>
-      <rect x="6" y="6" width="28" height="22" rx="1.5" fill="#1e3550" stroke="#B8962E" strokeWidth="1.3" />
-      <path d="M13 6v22M20 6v22M27 6v22M6 13h28M6 20h28" stroke="rgba(200,220,255,0.28)" strokeWidth="0.8" />
-      <rect x="38" y="6" width="28" height="22" rx="1.5" fill="#1e3550" stroke="#B8962E" strokeWidth="1.3" />
-      <path d="M45 6v22M52 6v22M59 6v22M38 13h28M38 20h28" stroke="rgba(200,220,255,0.28)" strokeWidth="0.8" />
-      <rect x="10" y="32" width="52" height="5" rx="1" fill="#9aa3b0" stroke="#5c6573" strokeWidth="0.6" />
-      <line x1="18" y1="37" x2="16" y2="48" stroke="#8a93a0" strokeWidth="2.2" strokeLinecap="round" />
-      <line x1="36" y1="37" x2="36" y2="48" stroke="#8a93a0" strokeWidth="2.2" strokeLinecap="round" />
-      <line x1="54" y1="37" x2="56" y2="48" stroke="#8a93a0" strokeWidth="2.2" strokeLinecap="round" />
-      <rect x="12" y="48" width="48" height="3" rx="1" fill="#6a7380" />
+      <rect x="6" y="4" width="28" height="22" rx="1.5" fill="#1e3550" stroke="#B8962E" strokeWidth="1.3" />
+      <path d="M13 4v22M20 4v22M27 4v22M6 11h28M6 18h28" stroke="rgba(200,220,255,0.28)" strokeWidth="0.8" />
+      <rect x="38" y="4" width="28" height="22" rx="1.5" fill="#1e3550" stroke="#B8962E" strokeWidth="1.3" />
+      <path d="M45 4v22M52 4v22M59 4v22M38 11h28M38 18h28" stroke="rgba(200,220,255,0.28)" strokeWidth="0.8" />
+      {/* Rail bank + short L-feet (not table legs) */}
+      <rect x="8" y="30" width="56" height="4" rx="1" fill="#9aa3b0" stroke="#5c6573" strokeWidth="0.6" />
+      <rect x="10" y="36" width="52" height="3.2" rx="0.8" fill="#7a8494" />
+      <line x1="16" y1="39" x2="16" y2="44" stroke="#8a93a0" strokeWidth="1.8" strokeLinecap="round" />
+      <line x1="36" y1="39" x2="36" y2="44" stroke="#8a93a0" strokeWidth="1.8" strokeLinecap="round" />
+      <line x1="56" y1="39" x2="56" y2="44" stroke="#8a93a0" strokeWidth="1.8" strokeLinecap="round" />
+      <rect x="12" y="44" width="48" height="2.5" rx="0.6" fill="#6a7380" />
     </svg>
   );
 }
@@ -358,7 +380,7 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
   const modulesDraw = Math.min(modulesRaw, MAX_DRAW);
   const dcKwp = (modulesRaw * PANEL_WATT) / 1000;
   const dcAc = systemKw > 0 ? dcKwp / systemKw : 1.16;
-  const roofM2 = Math.round(modulesRaw * M2_PER_PANEL);
+  const roofSqft = Math.round(modulesRaw * SQFT_PER_PANEL);
   const tilt = data.engineering.tiltDeg ?? 20;
   const city =
     data.engineering.cityLabel?.trim() ||
@@ -384,13 +406,13 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
   const strings = Math.max(1, Math.ceil(modulesRaw / 6));
   const perString = Math.ceil(modulesRaw / strings);
 
-  // Isometric step — room for metal legs under each module
-  const stepColX = 46;
-  const stepColY = 14;
-  const stepRowX = -18;
-  const stepRowY = 18;
-  const isoOriginX = 88;
-  const isoOriginY = 58;
+  // Isometric step — modules sit on roof deck (short standoffs, not table height)
+  const stepColX = 42;
+  const stepColY = 12;
+  const stepRowX = -16;
+  const stepRowY = 16;
+  const isoOriginX = 92;
+  const isoOriginY = 78;
 
   const panelPositions = Array.from({ length: modulesDraw }).map((_, i) => {
     const col = i % cols;
@@ -465,37 +487,51 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
             <rect width="320" height="240" fill="url(#roofFloor)" rx="6" />
             <rect x="8" y="8" width="304" height="200" fill="url(#isoGrid)" rx="4" />
 
-            {/* Concrete / terrace slab under structure */}
+            {/* Isometric terrace / roof deck — clear surface the array sits on */}
             <polygon
-              points="48,188 168,148 292,188 172,228"
+              points="36,176 156,118 300,168 180,226"
               fill="url(#roofSlab)"
-              opacity="0.55"
+              opacity="0.92"
             />
             <polygon
-              points="48,188 168,148 292,188 172,200 48,200"
-              fill="rgba(184,150,46,0.06)"
+              points="36,176 156,118 300,168 180,184 36,184"
+              fill="rgba(184,150,46,0.07)"
             />
-
-            {/* Soft ground shadow for whole array */}
+            {/* Deck edge highlight */}
+            <path
+              d="M36 176 L156 118 L300 168"
+              fill="none"
+              stroke="rgba(184,150,46,0.45)"
+              strokeWidth="1.2"
+            />
+            <path
+              d="M36 176 L180 226 L300 168"
+              fill="none"
+              stroke="rgba(255,255,255,0.08)"
+              strokeWidth="1"
+            />
+            {/* Soft contact shadow on deck (flat — not floating table) */}
             {panelPositions.length > 0 && (
               <ellipse
                 cx={
                   isoOriginX +
                   ((cols - 1) * stepColX) / 2 +
                   ((rows - 1) * stepRowX) / 2 +
-                  14
+                  12
                 }
                 cy={
                   isoOriginY +
                   ((cols - 1) * stepColY) / 2 +
                   ((rows - 1) * stepRowY) / 2 +
-                  36
+                  22
                 }
-                rx={cols * 26 + 18}
-                ry={12 + rows * 3}
-                fill="rgba(0,0,0,0.5)"
+                rx={cols * 22 + 16}
+                ry={8 + rows * 2}
+                fill="rgba(0,0,0,0.45)"
               />
             )}
+
+            <ArrayRailBank positions={panelPositions} cols={cols} />
 
             {panelPositions.map((p, i) => (
               <IsoPanel key={i} cx={p.cx} cy={p.cy} />
@@ -553,7 +589,7 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
               letterSpacing="0.4"
             >
               {modulesRaw} modules · {formatLuxeKw(dcKwp)} kWp DC · {strings}×
-              {perString} string · GI mount · South
+              {perString} string · rail mount · South
             </text>
           </svg>
         </div>
@@ -569,9 +605,9 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
             </div>
             <div className={styles.engMetricRow}>
               <span>{copy.eng.roofArea}</span>
-              <strong className={styles.luxeNum}>~{roofM2} m²</strong>
+              <strong className={styles.luxeNum}>~{roofSqft} sq ft</strong>
               <small>
-                {modulesRaw} × ~{M2_PER_PANEL} m²/module
+                {modulesRaw} × ~{SQFT_PER_PANEL} sq ft/module
                 {isHi ? " incl. walkway. सर्वे के बाद अंतिम।" : " incl. walkway. Final after survey."}
               </small>
             </div>

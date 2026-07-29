@@ -2,6 +2,7 @@
 
 /**
  * Premium Luxe — Payment milestones + vendor bank account.
+ * Compact schedule · bank details never clipped on A4.
  * Bank fields prefer proposal data, then More → Brand settings (local).
  */
 
@@ -40,48 +41,61 @@ function cleanBank(value: string | undefined | null): string {
   return v;
 }
 
+/** Clear “pay into bank account” metaphor — building + rupee. */
 function IllustBank() {
   return (
-    <svg viewBox="0 0 120 96" className={styles.payBankIcon} aria-hidden>
+    <svg viewBox="0 0 88 72" className={styles.payBankIcon} aria-hidden>
       <defs>
-        <linearGradient id="payBankFace" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="rgba(184,150,46,0.22)" />
-          <stop offset="100%" stopColor="rgba(184,150,46,0.06)" />
+        <linearGradient id="payBankRoof" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="rgba(184,150,46,0.4)" />
+          <stop offset="100%" stopColor="rgba(184,150,46,0.12)" />
         </linearGradient>
       </defs>
-      <ellipse cx="60" cy="88" rx="42" ry="6" fill="rgba(20,24,32,0.08)" />
+      <ellipse cx="44" cy="66" rx="30" ry="4" fill="rgba(20,24,32,0.08)" />
       <path
-        d="M18 40 L60 14 L102 40 Z"
-        fill="url(#payBankFace)"
+        d="M12 30 L44 10 L76 30 Z"
+        fill="url(#payBankRoof)"
         stroke="#141820"
-        strokeWidth="1.8"
+        strokeWidth="1.5"
         strokeLinejoin="round"
       />
-      <path d="M18 40 L60 14 L102 40" fill="none" stroke="#B8962E" strokeWidth="2" />
+      <path d="M12 30 L44 10 L76 30" fill="none" stroke="#B8962E" strokeWidth="1.8" />
       <rect
-        x="22"
-        y="40"
-        width="76"
-        height="40"
+        x="16"
+        y="30"
+        width="56"
+        height="28"
         fill="#F8F9FB"
         stroke="#141820"
-        strokeWidth="1.6"
+        strokeWidth="1.4"
       />
-      {[34, 48, 60, 72, 86].map((x) => (
+      {[26, 36, 44, 52, 62].map((x) => (
         <rect
           key={x}
-          x={x - 3}
-          y="46"
-          width="6"
-          height="26"
-          rx="1"
-          fill="rgba(184,150,46,0.35)"
+          x={x - 2.5}
+          y="34"
+          width="5"
+          height="18"
+          rx="0.8"
+          fill="rgba(184,150,46,0.38)"
           stroke="#B8962E"
-          strokeWidth="0.9"
+          strokeWidth="0.75"
         />
       ))}
-      <rect x="16" y="80" width="88" height="6" rx="1.5" fill="#141820" />
-      <circle cx="60" cy="32" r="5" fill="rgba(184,150,46,0.45)" stroke="#B8962E" strokeWidth="1.2" />
+      <rect x="12" y="58" width="64" height="5" rx="1" fill="#141820" />
+      {/* Rupee badge — pay here */}
+      <circle cx="68" cy="22" r="11" fill="#1e2a3a" stroke="#B8962E" strokeWidth="1.4" />
+      <text
+        x="68"
+        y="26.5"
+        textAnchor="middle"
+        fill="#B8962E"
+        fontSize="12"
+        fontWeight="700"
+        fontFamily="Georgia,serif"
+      >
+        ₹
+      </text>
     </svg>
   );
 }
@@ -102,8 +116,6 @@ function useResolvedLuxeBank(data: ProposalData) {
   const pptNum = cleanBank(fromData.accountNumber);
   const pptIfsc = cleanBank(fromData.ifsc);
   const pptUpi = cleanBank(fromData.upiId);
-  // company often falls back to installer name — only treat as account holder when
-  // real bank coordinates exist on the proposal snapshot
   const dataHasCoords = Boolean(pptNum || pptIfsc || pptUpi);
 
   const resolved = resolveProposalBankDetails({
@@ -118,7 +130,7 @@ function useResolvedLuxeBank(data: ProposalData) {
     settings,
   });
 
-  void tick; // re-read settings when branding updates
+  void tick;
 
   return {
     accountName: cleanBank(resolved.accountName),
@@ -188,24 +200,19 @@ export function PaymentMilestonesPage({
         ) : null}
       </p>
 
-      <div className={styles.payGateTrack} aria-hidden>
-        {milestones.map((m, i) => (
-          <div key={m.step} className={styles.payGate}>
-            <div className={styles.payGateDot}>{m.step}</div>
-            {i < milestones.length - 1 ? <div className={styles.payGateLine} /> : null}
-            <span className={styles.payGateLabel}>{m.title}</span>
-          </div>
-        ))}
-      </div>
-
-      <div className={styles.payMilestoneList}>
+      {/* One compact schedule — no duplicate progress track */}
+      <div className={styles.paySchedule}>
+        <div className={styles.payScheduleHead}>
+          <span>{copy.pay.scheduleHead}</span>
+          <span className={styles.payScheduleHeadHint}>{copy.pay.scheduleHint}</span>
+        </div>
         {milestones.map((m) => (
           <div key={m.step} className={styles.payMilestoneRow}>
             <span className={styles.payMilestoneNum}>{m.step}</span>
             <div className={styles.payMilestoneBody}>
               <strong>{m.title}</strong>
               <span>
-                {m.percent} {copy.pay.ofValue}
+                {m.percent} · {copy.pay.stageDue}
               </span>
             </div>
             <em className={`${styles.payMilestoneAmt} ${styles.luxeNum}`}>
@@ -215,6 +222,7 @@ export function PaymentMilestonesPage({
         ))}
       </div>
 
+      {/* Bank — primary block, never flex-shrunk away */}
       <div className={styles.payBankBlock}>
         <div className={styles.payBankHead}>
           <IllustBank />
@@ -255,16 +263,17 @@ export function PaymentMilestonesPage({
         )}
       </div>
 
-      <div className={styles.payTermsBox}>
-        <span className={styles.payTermsLabel}>{copy.pay.rules}</span>
-        <ul>
-          {rules.map((t) => (
-            <li key={t.slice(0, 48)}>{t}</li>
-          ))}
-        </ul>
+      <div className={styles.payBottomRow}>
+        <div className={styles.payTermsBox}>
+          <span className={styles.payTermsLabel}>{copy.pay.rules}</span>
+          <ul>
+            {rules.map((t) => (
+              <li key={t.slice(0, 48)}>{t}</li>
+            ))}
+          </ul>
+        </div>
+        <ExpertVerdict label={copy.pay.verdictLabel}>{copy.pay.verdict}</ExpertVerdict>
       </div>
-
-      <ExpertVerdict label={copy.pay.verdictLabel}>{copy.pay.verdict}</ExpertVerdict>
 
       <footer className={styles.impactPageFooter}>
         <span>{vendorName.toUpperCase()}</span>

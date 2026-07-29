@@ -20,8 +20,8 @@ export function getLuxeCopy(lang: LuxeLang) {
       discipline: hi ? "रूफटॉप सोलर · निजी प्रस्ताव" : "Rooftop solar · Private offer",
       preparedFor: hi ? "के लिए तैयार" : "Prepared for",
       offer: hi
-        ? "एक साफ़ रूफटॉप सोलर योजना — कीमत, बचत, वारंटी और इंस्टॉल कदम एक निजी ब्रीफ में।"
-        : "A clear rooftop solar plan — price, savings, warranty, and install steps in one private brief.",
+        ? "निजी रूफटॉप सोलर ब्रीफ — निवेश, बचत और कारीगरी, आपके घर के लिए।"
+        : "A private rooftop solar brief — investment, savings, and craft — prepared for your home.",
       system: hi ? "सिस्टम" : "System",
       location: hi ? "स्थान" : "Location",
       year: hi ? "वर्ष" : "Year",
@@ -151,6 +151,7 @@ export function getLuxeCopy(lang: LuxeLang) {
       co2Note: hi
         ? "लगभग पेट्रोल कार को वर्षों तक सड़क से हटाने जितना — आपके सिस्टम आकार और वार्षिक उत्पादन से अनुमान।"
         : "About the same as taking a petrol car off the road for years — estimated from your system size and yearly generation.",
+      heroArtLabel: hi ? "≈ पेट्रोल कार सड़क से बाहर" : "≈ PETROL CAR OFF THE ROAD",
       likePlanting: hi ? "पेड़ लगाने जैसा" : "LIKE PLANTING",
       treesHint: hi ? "प्लांट जीवन में पेड़" : "trees over the plant life",
       cleanPower: hi ? "स्वच्छ बिजली / वर्ष" : "CLEAN POWER / YEAR",
@@ -160,6 +161,7 @@ export function getLuxeCopy(lang: LuxeLang) {
       homeHint: hi ? "साफ़ स्थानीय हवा, कम बिल" : "cleaner local air, lower bills",
       chartHead: hi ? "स्वच्छ यूनिट — पहले 5 वर्ष" : "CLEAN UNITS — FIRST 5 YEARS",
       chartSteady: hi ? "हर साल स्थिर स्वच्छ बिजली" : "Steady clean power each year",
+      chartSameLine: hi ? "समान हर वर्ष" : "SAME EACH YEAR",
       chartFoot: hi
         ? "हर साल वही स्वच्छ यूनिट — जबकि ग्रिड बिजली अभी भी कोयला जलाती।"
         : "Same clean units, year after year — while grid power would still burn coal.",
@@ -174,6 +176,9 @@ export function getLuxeCopy(lang: LuxeLang) {
       projectValue: hi ? "दिखाई गई परियोजना मूल्य" : "Project value shown",
       netAfter: hi ? "सब्सिडी के बाद नेट लगभग" : "net after subsidy about",
       ofValue: hi ? "परियोजना मूल्य का · इस चरण पर देय" : "of project value · due at this stage",
+      scheduleHead: hi ? "भुगतान चरण" : "PAYMENT STAGES",
+      scheduleHint: hi ? "चार चरण · चरण दर चरण" : "Four stages · pay as work progresses",
+      stageDue: hi ? "इस चरण पर देय" : "due at this stage",
       bankEyebrow: hi ? "विक्रेता बैंक खाता" : "VENDOR BANK ACCOUNT",
       bankTitle: hi ? "केवल इसी खाते में भुगतान करें" : "Pay only to this account",
       bankNote: hi
@@ -237,32 +242,38 @@ export function getLuxeCopy(lang: LuxeLang) {
       privateOffer: hi ? "निजी प्रस्ताव" : "PRIVATE OFFER",
       title: hi ? "जब आप तैयार हों।" : "Ready when you are.",
       lead: hi
-        ? "हाँ कहें, और हम शुरू करते हैं — कागज़ात, इंस्टॉल योजना और स्विच-ऑन — इसी प्रस्ताव जैसी सावधानी के साथ।"
-        : "Say yes, and we start — paperwork, install plan, and switch-on — with the same care shown in this proposal.",
+        ? "हाँ कहें — कागज़ात, इंस्टॉल योजना और स्विच-ऑन शुरू। इसी प्रस्ताव जैसी सावधानी के साथ।"
+        : "Say yes — and we begin paperwork, the install plan, and switch-on with the same care shown in this proposal.",
       preparedFor: hi ? "के लिए तैयार" : "Prepared for",
-      vendor: hi ? "विक्रेता" : "Vendor",
-      nextHead: hi ? "आगे क्या होगा" : "WHAT HAPPENS NEXT",
+      vendor: hi ? "विक्रेता" : "Your solar partner",
+      nextHead: hi ? "आगे का रास्ता" : "YOUR PATH FORWARD",
+      nextHint: hi ? "चार साफ़ चरण · बुकिंग से स्विच-ऑन" : "Four clear stages · booking to switch-on",
+      stepTitles: hi
+        ? (["पुष्टि व एडवांस", "दस्तावेज़", "डिज़ाइन लॉक", "इंस्टॉल व ऑन"] as const)
+        : (["Confirm & pay", "Documents", "Design lock", "Install & on"] as const),
       steps: hi
         ? [
-            "इस प्रस्ताव की पुष्टि करें और विक्रेता बैंक खाते में बुकिंग एडवांस दें।",
-            "शर्तों में सूचीबद्ध दस्तावेज़ साझा करें — बिल, पहचान, स्वामित्व प्रमाण।",
-            "छोटी साइट जाँच के बाद हम अंतिम डिज़ाइन लॉक करते हैं।",
-            "इंस्टॉल, नेट-मीटरिंग कागज़ात, फिर स्विच-ऑन।",
+            "प्रस्ताव स्वीकार करें। विक्रेता बैंक खाते में बुकिंग एडवांस दें।",
+            "बिल, पहचान और स्वामित्व प्रमाण साझा करें।",
+            "संक्षिप्त साइट जाँच के बाद अंतिम डिज़ाइन लॉक।",
+            "इंस्टॉल, नेट-मीटरिंग, फिर स्विच-ऑन।",
           ]
         : [
-            "Confirm this proposal and pay the booking advance to the vendor bank account.",
-            "Share documents listed in Terms — bill, ID, ownership proof.",
-            "We lock the final design after a short site check.",
+            "Accept this proposal. Pay booking advance to the vendor bank account.",
+            "Share bill, ID, and ownership proof from Terms.",
+            "After a short site check, we lock the final design.",
             "Install, net-metering paperwork, then switch-on.",
           ],
       clientAccept: hi ? "ग्राहक स्वीकृति" : "Client acceptance",
       authSign: hi ? "अधिकृत हस्ताक्षर" : "Authorized signature",
       sigDate: hi ? "हस्ताक्षर और तारीख" : "Signature & date",
-      contact: hi ? "संपर्क" : "Contact",
+      contact: hi ? "शुरू करें" : "Begin here",
+      contactHint: hi ? "कॉल या WhatsApp" : "Call or WhatsApp",
       finalLabel: hi ? "अंतिम शब्द" : "FINAL WORD",
       final: hi
         ? "यह प्रस्ताव साइन के लिए तैयार है। भुगतान पृष्ठ पर दिए विक्रेता बैंक खाते में ही भुगतान करें — फिर हम आपका रूफटॉप इंस्टॉल शुरू करेंगे।"
-        : "This proposal is ready to sign. Pay only to the vendor bank account listed in the payment page — then we begin your rooftop install.",
+        : "This proposal is ready to sign. Pay only to the vendor bank account on the payment page — then we begin your rooftop install.",
+      sealReady: hi ? "तैयार" : "READY",
     },
     common: {
       unit: hi ? "यू" : "u",

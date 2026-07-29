@@ -45,13 +45,15 @@
   break-after: auto;
 }
 
-/* COVER PAGE — Premium Luxe editorial folio */
+/* COVER PAGE — Premium Luxe luxury editorial folio */
 .obsidianCover {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 32px 36px 30px 48px !important;
-  background: linear-gradient(165deg, #fbf8f2 0%, #f8f9fb 42%, #eef2f7 100%) !important;
+  padding: 28px 34px 26px 46px !important;
+  background:
+    linear-gradient(180deg, rgba(20, 24, 32, 0.02) 0%, transparent 28%),
+    linear-gradient(155deg, #f7f4ee 0%, #f8f9fb 38%, #e8eef5 100%) !important;
   overflow: hidden;
 }
 
@@ -60,8 +62,8 @@
   left: 0;
   top: 0;
   bottom: 0;
-  width: 10px;
-  background: linear-gradient(180deg, #c9a84a 0%, #b8962e 55%, #8a6e22 100%);
+  width: 12px;
+  background: linear-gradient(180deg, #d4b45a 0%, #b8962e 45%, #8a6e22 100%);
   z-index: 3;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
@@ -76,42 +78,55 @@
 
 .coverWash {
   position: absolute;
-  right: -8%;
-  top: -6%;
-  width: 62%;
-  height: 48%;
+  right: -12%;
+  top: -10%;
+  width: 70%;
+  height: 52%;
   background: radial-gradient(
-    ellipse at center,
-    rgba(184, 150, 46, 0.14) 0%,
-    rgba(184, 150, 46, 0) 70%
+    ellipse at 60% 40%,
+    rgba(184, 150, 46, 0.16) 0%,
+    rgba(184, 150, 46, 0.04) 42%,
+    rgba(184, 150, 46, 0) 72%
   );
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
 
-.coverCornerTL,
-.coverCornerBR {
+.coverLinen {
   position: absolute;
-  width: 28px;
-  height: 28px;
-  border-color: rgba(184, 150, 46, 0.55);
-  border-style: solid;
+  inset: 0;
+  opacity: 0.35;
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent 0,
+    transparent 3px,
+    rgba(20, 24, 32, 0.015) 3px,
+    rgba(20, 24, 32, 0.015) 4px
+  );
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
-.coverCornerTL {
-  top: 22px;
+.coverFrame {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  bottom: 18px;
   left: 28px;
-  border-width: 1.5px 0 0 1.5px;
+  border: 1px solid rgba(184, 150, 46, 0.28);
+  pointer-events: none;
 }
 
-.coverCornerBR {
-  right: 22px;
-  bottom: 22px;
-  border-width: 0 1.5px 1.5px 0;
+.coverFrame::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(20, 24, 32, 0.06);
 }
 
 .coverTopRail,
-.coverMain,
+.coverHero,
+.coverPlate,
 .coverDedication,
 .coverMeta {
   position: relative;
@@ -122,69 +137,79 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 6px;
-  padding-left: 4px;
+  padding-top: 4px;
+  padding-left: 2px;
 }
 
 .coverSeries {
-  font-size: 0.6rem;
-  letter-spacing: 0.2em;
+  font-size: 0.68rem;
+  letter-spacing: 0.28em;
   font-weight: 700;
-  color: #1e2430;
+  color: #141820;
+  text-transform: uppercase;
 }
 
 .coverConfidential {
-  font-size: 0.6rem;
-  letter-spacing: 0.18em;
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
   font-weight: 700;
   color: #b8962e;
+  text-transform: uppercase;
 }
 
-.coverMain {
-  display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: 12px;
-  align-items: end;
-  margin-top: 36px;
-  flex: 1;
-  min-height: 0;
+.coverTopRule {
+  position: relative;
+  z-index: 2;
+  height: 1px;
+  margin: 12px 0 0;
+  background: linear-gradient(
+    90deg,
+    #b8962e 0%,
+    rgba(184, 150, 46, 0.35) 35%,
+    rgba(20, 24, 32, 0.08) 100%
+  );
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
-.coverBrandBlock {
+.coverHero {
+  margin-top: 28px;
   max-width: 100%;
-  padding-bottom: 8px;
+  flex: 0 0 auto;
 }
 
 .coverVendorLabel {
   display: block;
-  font-size: 0.58rem;
-  letter-spacing: 0.22em;
+  font-size: 0.62rem;
+  letter-spacing: 0.32em;
   color: #b8962e;
   font-weight: 700;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  text-transform: uppercase;
 }
 
 .coverVendorName {
   margin: 0;
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
-  font-weight: 400;
-  font-size: clamp(2.6rem, 7.5vw, 4.4rem);
-  line-height: 1.02;
-  letter-spacing: 0.01em;
+  font-weight: 300;
+  font-size: clamp(3.2rem, 9vw, 5.2rem);
+  line-height: 0.98;
+  letter-spacing: -0.01em;
   color: #141820;
   overflow-wrap: anywhere;
 }
 
 .coverVendorNameLong {
-  font-size: clamp(2rem, 5.8vw, 3.2rem);
-  line-height: 1.08;
+  font-size: clamp(2.4rem, 6.5vw, 3.6rem);
+  line-height: 1.05;
+  font-weight: 400;
 }
 
 .coverBrandRule {
-  width: 64px;
+  width: 72px;
   height: 2px;
-  background: #b8962e;
-  margin: 16px 0 12px;
+  background: linear-gradient(90deg, #b8962e, #d4b45a);
+  margin: 18px 0 14px;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -192,39 +217,46 @@
 .coverBrandDiscipline {
   margin: 0;
   font-size: 0.78rem;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: #1e2430;
   font-weight: 500;
 }
 
-.coverArtWrap {
+.coverPlate {
+  margin: 22px 0 0;
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
-  justify-content: flex-end;
-  align-items: flex-end;
-  padding-bottom: 4px;
+  align-items: center;
 }
 
-.coverArt {
+.coverPlateSvg {
+  display: block;
   width: 100%;
-  max-width: 240px;
   height: auto;
+  max-height: 210px;
+  border-radius: 2px;
+  box-shadow: 0 12px 40px rgba(20, 24, 32, 0.14);
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
 
 .coverDedication {
-  margin-top: 8px;
-  margin-bottom: 22px;
-  max-width: 92%;
-  padding: 18px 0 0;
+  margin-top: 18px;
+  margin-bottom: 16px;
+  padding: 16px 0 0;
   border-top: 1px solid rgba(20, 24, 32, 0.1);
+}
+
+.coverDedicationCopy {
+  max-width: 38em;
 }
 
 .coverPrepared {
   display: block;
-  font-size: 0.68rem;
-  letter-spacing: 0.2em;
+  font-size: 0.62rem;
+  letter-spacing: 0.26em;
   text-transform: uppercase;
   color: #b8962e;
   font-weight: 700;
@@ -232,11 +264,11 @@
 }
 
 .coverClientName {
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
-  font-size: clamp(1.85rem, 4.8vw, 2.6rem);
-  font-weight: 500;
-  line-height: 1.1;
+  font-size: clamp(1.7rem, 4.2vw, 2.35rem);
+  font-weight: 400;
+  line-height: 1.12;
   color: #141820;
   letter-spacing: 0.01em;
   overflow-wrap: anywhere;
@@ -244,10 +276,10 @@
 
 .coverOfferLine {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   line-height: 1.5;
   color: #1e2430;
-  max-width: 36em;
+  max-width: 34em;
   font-weight: 400;
 }
 
@@ -255,7 +287,7 @@
   display: flex;
   align-items: stretch;
   gap: 0;
-  border-top: 1px solid rgba(20, 24, 32, 0.14);
+  border-top: 1px solid rgba(184, 150, 46, 0.35);
   padding-top: 14px;
 }
 
@@ -263,20 +295,20 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
   min-width: 0;
 }
 
 .coverMetaCell span {
-  font-size: 0.55rem;
-  letter-spacing: 0.16em;
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: #1e2430;
   font-weight: 700;
 }
 
 .coverMetaCell strong {
-  font-size: 0.98rem;
+  font-size: 1.05rem;
   font-weight: 600;
   color: #141820;
   line-height: 1.25;
@@ -285,7 +317,7 @@
 .coverMetaDivider {
   width: 1px;
   background: rgba(20, 24, 32, 0.12);
-  margin: 0 16px;
+  margin: 0 18px;
   flex-shrink: 0;
 }
 
@@ -297,8 +329,13 @@
 .closePage {
   display: flex;
   flex-direction: column;
-  padding: 32px 36px 28px 48px !important;
-  background: linear-gradient(165deg, #fbf8f2 0%, #f8f9fb 45%, #eef2f7 100%) !important;
+  padding: 28px 34px 22px 46px !important;
+  background: linear-gradient(
+    165deg,
+    #fbf8f2 0%,
+    #f8f9fb 42%,
+    #eef2f7 100%
+  ) !important;
   overflow: hidden;
 }
 
@@ -316,14 +353,14 @@
 
 .closeWash {
   position: absolute;
-  right: -10%;
-  top: -8%;
-  width: 55%;
-  height: 40%;
+  right: -8%;
+  top: -6%;
+  width: 58%;
+  height: 38%;
   background: radial-gradient(
     ellipse at center,
-    rgba(184, 150, 46, 0.12) 0%,
-    rgba(184, 150, 46, 0) 70%
+    rgba(184, 150, 46, 0.14) 0%,
+    rgba(184, 150, 46, 0) 72%
   );
   pointer-events: none;
   z-index: 0;
@@ -334,30 +371,30 @@
 .closeCornerTL,
 .closeCornerBR {
   position: absolute;
-  width: 26px;
-  height: 26px;
-  border-color: rgba(184, 150, 46, 0.5);
+  width: 28px;
+  height: 28px;
+  border-color: rgba(184, 150, 46, 0.55);
   border-style: solid;
   z-index: 1;
   pointer-events: none;
 }
 
 .closeCornerTL {
-  top: 20px;
-  left: 26px;
+  top: 18px;
+  left: 24px;
   border-width: 1.5px 0 0 1.5px;
 }
 
 .closeCornerBR {
-  right: 20px;
-  bottom: 20px;
+  right: 18px;
+  bottom: 18px;
   border-width: 0 1.5px 1.5px 0;
 }
 
 .closeTop,
-.closeHero,
-.closeVendorBlock,
-.closeSteps,
+.closeBrandHero,
+.closeMetaStrip,
+.closeJourney,
 .closeSigGrid,
 .closeContact {
   position: relative;
@@ -368,198 +405,109 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 4px;
+  padding-top: 2px;
+  flex-shrink: 0;
 }
 
 .closeSeries {
-  font-size: 0.58rem;
+  font-size: 0.62rem;
   letter-spacing: 0.18em;
   font-weight: 700;
   color: #1e2430;
 }
 
 .closeConfidential {
-  font-size: 0.58rem;
+  font-size: 0.62rem;
   letter-spacing: 0.16em;
   font-weight: 700;
   color: #b8962e;
 }
 
-.closeHero {
+.closeBrandHero {
   display: grid;
-  grid-template-columns: 1.25fr 0.75fr;
-  gap: 12px;
+  grid-template-columns: 1.35fr 0.65fr;
+  gap: 14px;
   align-items: center;
-  margin-top: 22px;
-  margin-bottom: 14px;
+  margin-top: 16px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
-.closeHeroCopy {
+.closeBrandCopy {
   min-width: 0;
 }
 
-.closeTitle {
-  margin: 0 0 10px;
+.closeBrandEyebrow {
+  display: block;
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #b8962e;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.closeVendorName {
+  margin: 0 0 8px;
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
-  font-size: clamp(2.4rem, 6vw, 3.4rem);
+  font-size: clamp(2.6rem, 7vw, 3.6rem);
   font-weight: 400;
-  line-height: 1.05;
+  line-height: 0.98;
   color: #141820;
+  letter-spacing: -0.01em;
+}
+
+.closeTitle {
+  margin: 0 0 8px;
+  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(1.45rem, 3.5vw, 1.85rem);
+  font-weight: 500;
+  line-height: 1.15;
+  color: #1e2430;
 }
 
 .closeLead {
-  margin: 0 0 12px;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  color: #1e2430;
-  max-width: 34em;
-}
-
-.closePrepared {
   margin: 0;
-  font-size: 0.88rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
   color: #1e2430;
-  line-height: 1.4;
-}
-
-.closePrepared strong {
-  color: #141820;
+  max-width: 36em;
 }
 
 .closeSeal {
   width: 100%;
-  max-width: 120px;
+  max-width: 132px;
   height: auto;
   justify-self: end;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
 
-.closeVendorBlock {
-  background: #ffffff;
-  border: 1px solid #e2e6ec;
-  border-left: 3px solid #b8962e;
-  border-radius: 8px;
-  padding: 12px 14px;
-  margin-bottom: 12px;
-}
-
-.closeVendorBlock span {
-  display: block;
-  font-size: 0.55rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: #b8962e;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
-
-.closeVendorBlock strong {
-  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
-  font-size: 1.55rem;
-  font-weight: 500;
-  color: #141820;
-  line-height: 1.15;
-}
-
-.closeSteps {
+.closeMetaStrip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0;
   background: #ffffff;
   border: 1px solid #e2e6ec;
   border-radius: 10px;
-  padding: 12px 14px;
   margin-bottom: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
-.closeStepsHead {
-  font-size: 0.55rem;
-  letter-spacing: 0.16em;
-  color: #b8962e;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.closeStepsList {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.closeStepsList li {
-  display: grid;
-  grid-template-columns: 28px 1fr;
-  gap: 8px;
-  align-items: start;
-  font-size: 0.82rem;
-  line-height: 1.4;
-  color: #1e2430;
-}
-
-.closeStepNum {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #b8962e;
-  font-variant-numeric: tabular-nums;
-  padding-top: 1px;
-}
-
-.closeSigGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-
-.closeSigCard {
-  background: #ffffff;
-  border: 1px solid #e2e6ec;
-  border-radius: 10px;
-  padding: 14px 14px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-height: 118px;
-}
-
-.closeSigLine {
-  height: 36px;
-  border-bottom: 1px solid rgba(20, 24, 32, 0.25);
-  margin-bottom: 6px;
-}
-
-.closeSigLabel {
-  font-size: 0.52rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #b8962e;
-  font-weight: 700;
-}
-
-.closeSigName {
-  font-size: 0.95rem;
-  color: #141820;
-  font-weight: 600;
-}
-
-.closeSigCard em {
-  font-style: normal;
-  font-size: 0.72rem;
-  color: #1e2430;
-}
-
-.closeContact {
-  background: #ffffff;
-  border: 1px solid #e2e6ec;
-  border-radius: 8px;
+.closeMetaCell {
   padding: 10px 14px;
-  margin-bottom: 8px;
+  border-right: 1px solid #eef1f5;
+  min-width: 0;
 }
 
-.closeContact span {
+.closeMetaCell:last-child {
+  border-right: none;
+}
+
+.closeMetaCell span {
   display: block;
-  font-size: 0.52rem;
+  font-size: 0.58rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: #b8962e;
@@ -567,10 +515,240 @@
   margin-bottom: 3px;
 }
 
-.closeContact strong {
-  font-size: 0.9rem;
+.closeMetaCell strong {
+  display: block;
+  font-size: 0.95rem;
   color: #141820;
   font-weight: 600;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.closeJourney {
+  background: #ffffff;
+  border: 1px solid #e2e6ec;
+  border-radius: 10px;
+  padding: 12px 12px 14px;
+  margin-bottom: 12px;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.closeJourneyHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+
+.closeJourneyHead span {
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  color: #b8962e;
+  font-weight: 700;
+}
+
+.closeJourneyHead em {
+  font-style: normal;
+  font-size: 0.72rem;
+  color: #5c6573;
+  font-weight: 600;
+}
+
+.closeJourneyTrack {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  flex: 1;
+  align-content: stretch;
+}
+
+.closeJourneyStep {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 10px 12px;
+  background: #f8f9fb;
+  border-radius: 8px;
+  border: 1px solid #eef1f5;
+  min-width: 0;
+}
+
+.closeJourneyRail {
+  position: absolute;
+  top: 28px;
+  left: calc(100% - 2px);
+  width: calc(8px + 4px);
+  height: 2px;
+  background: linear-gradient(90deg, #b8962e, rgba(184, 150, 46, 0.25));
+  z-index: 1;
+  pointer-events: none;
+}
+
+.closeJourneyBadge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.closeStepNum {
+  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: #b8962e;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.closeStepGlyph {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.closeJourneyStep strong {
+  font-size: 0.88rem;
+  color: #141820;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.closeJourneyStep p {
+  margin: 0;
+  font-size: 0.74rem;
+  line-height: 1.35;
+  color: #1e2430;
+}
+
+.closeSigGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.closeSigCard {
+  background: #ffffff;
+  border: 1px solid #e2e6ec;
+  border-radius: 10px;
+  padding: 12px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 128px;
+}
+
+.closeSigCardVendor {
+  border-color: rgba(184, 150, 46, 0.45);
+  background: linear-gradient(180deg, #ffffff 0%, #fbf7ef 100%);
+}
+
+.closeSigPad {
+  height: 44px;
+  border-bottom: 1.5px solid rgba(20, 24, 32, 0.28);
+  margin: 4px 0 8px;
+}
+
+.closeSigLabel {
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #b8962e;
+  font-weight: 700;
+}
+
+.closeSigName {
+  font-size: 1rem;
+  color: #141820;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.closeSigCard em {
+  font-style: normal;
+  font-size: 0.74rem;
+  color: #5c6573;
+}
+
+.closeContact {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 12px;
+  align-items: center;
+  background: #1e2a3a;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.closeContactArt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeContactCopy {
+  min-width: 0;
+}
+
+.closeContactEyebrow {
+  display: block;
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #b8962e;
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.closeContact strong {
+  display: block;
+  font-size: 0.95rem;
+  color: #f8f9fb;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.closeContact em {
+  display: block;
+  margin-top: 2px;
+  font-style: normal;
+  font-size: 0.72rem;
+  color: rgba(248, 249, 251, 0.65);
+  font-weight: 600;
+}
+
+.closePage .expertVerdict {
+  margin-top: 0;
+  margin-bottom: 0;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.closePage .expertVerdict p {
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.closeFooter {
+  position: relative;
+  z-index: 2;
+  margin-top: 8px;
+  flex-shrink: 0;
 }
 
 /* Readable numbers everywhere */
@@ -1569,7 +1747,7 @@
 
 .impactHeroArt {
   width: 100%;
-  max-width: 160px;
+  max-width: 176px;
   height: auto;
   justify-self: end;
   -webkit-print-color-adjust: exact !important;
@@ -1597,8 +1775,8 @@
 }
 
 .impactIcon {
-  width: 80px;
-  height: 80px;
+  width: 84px;
+  height: 84px;
   margin-bottom: 4px;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
@@ -1712,98 +1890,72 @@
   display: flex;
   flex-direction: column;
   background-color: #f8f9fb !important;
+  gap: 0;
 }
 
 .payPage .luxeHeadline {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
 }
 
 .payPage .goldTag {
-  font-size: 0.8rem;
+  font-size: 0.76rem;
+}
+
+.payPage .luxeHeaderBlock {
+  margin-bottom: 6px;
 }
 
 .payLead {
-  margin: -4px 0 14px;
-  font-size: 1rem;
-  line-height: 1.5;
+  margin: 0 0 10px;
+  font-size: 0.92rem;
+  line-height: 1.45;
   color: #1e2430;
-  max-width: 46em;
+  max-width: 48em;
 }
 
 .payLead strong {
   color: #141820;
 }
 
-.payGateTrack {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-  gap: 0;
-  margin-bottom: 12px;
-  padding: 14px 10px 16px;
+.paySchedule {
+  display: flex;
+  flex-direction: column;
   background: #ffffff;
   border: 1px solid #e2e6ec;
   border-radius: 10px;
+  padding: 8px 14px 4px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
 }
 
-.payGate {
-  position: relative;
+.payScheduleHead {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  text-align: center;
-}
-
-.payGateDot {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  border: 1.5px solid #b8962e;
-  color: #141820;
-  font-size: 0.75rem;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  padding: 2px 0 8px;
+  border-bottom: 1px solid #eef1f5;
+  margin-bottom: 2px;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  color: #b8962e;
   font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #fbf7ef;
-  z-index: 1;
-  -webkit-print-color-adjust: exact !important;
-  print-color-adjust: exact !important;
 }
 
-.payGateLine {
-  position: absolute;
-  top: 17px;
-  left: calc(50% + 18px);
-  width: calc(100% - 36px);
-  height: 1.5px;
-  background: rgba(184, 150, 46, 0.5);
-}
-
-.payGateLabel {
-  font-size: 0.78rem;
-  line-height: 1.3;
-  color: #1e2430;
-  max-width: 10em;
+.payScheduleHeadHint {
+  letter-spacing: 0.04em;
+  color: #5c6573;
   font-weight: 600;
-}
-
-.payMilestoneList {
-  display: flex;
-  flex-direction: column;
-  background: #ffffff;
-  border: 1px solid #e2e6ec;
-  border-radius: 10px;
-  padding: 6px 16px;
-  margin-bottom: 12px;
+  text-transform: none;
+  font-size: 0.72rem;
 }
 
 .payMilestoneRow {
   display: grid;
-  grid-template-columns: 44px 1fr auto;
-  gap: 12px;
+  grid-template-columns: 32px 1fr auto;
+  gap: 10px;
   align-items: center;
-  padding: 12px 0;
+  padding: 7px 0;
   border-bottom: 1px solid #eef1f5;
 }
 
@@ -1813,97 +1965,104 @@
 
 .payMilestoneNum {
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
-  font-size: 1.45rem;
+  font-size: 1.15rem;
   color: #b8962e;
   font-weight: 500;
+  line-height: 1;
 }
 
 .payMilestoneBody {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 1px;
   min-width: 0;
 }
 
 .payMilestoneBody strong {
-  font-size: 1.05rem;
+  font-size: 0.92rem;
   color: #141820;
   font-weight: 600;
+  line-height: 1.25;
 }
 
 .payMilestoneBody span {
-  font-size: 0.85rem;
-  color: #1e2430;
+  font-size: 0.75rem;
+  color: #5c6573;
+  line-height: 1.3;
 }
 
 .payMilestoneAmt {
   font-style: normal;
-  font-size: 1.15rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #141820;
+  white-space: nowrap;
 }
 
 .payBankBlock {
   background: #ffffff;
   border: 1px solid #e2e6ec;
   border-radius: 10px;
-  padding: 16px 18px;
-  margin-bottom: 12px;
-  flex: 1;
-  min-height: 0;
+  padding: 12px 14px 14px;
+  margin-bottom: 10px;
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  overflow: visible;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
 
 .payBankHead {
   display: grid;
-  grid-template-columns: 110px 1fr;
-  gap: 14px;
+  grid-template-columns: 72px 1fr;
+  gap: 12px;
   align-items: center;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .payBankIcon {
-  width: 110px;
-  height: 88px;
+  width: 72px;
+  height: 58px;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
 
 .payBankEyebrow {
   display: block;
-  font-size: 0.7rem;
+  font-size: 0.66rem;
   letter-spacing: 0.14em;
   color: #b8962e;
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .payBankTitle {
-  margin: 0 0 6px;
-  font-size: 1.2rem;
+  margin: 0 0 4px;
+  font-size: 1.05rem;
   color: #141820;
   font-weight: 600;
+  line-height: 1.25;
 }
 
 .payBankNote {
   margin: 0;
-  font-size: 0.9rem;
-  line-height: 1.45;
+  font-size: 0.8rem;
+  line-height: 1.4;
   color: #1e2430;
 }
 
 .payBankGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 8px;
 }
 
 .payBankCell {
   background: #f8f9fb;
-  border: 1px solid #e2e6ec;
+  border: 1.5px solid #e2e6ec;
   border-radius: 8px;
-  padding: 12px 12px;
+  padding: 10px 12px;
+  min-height: 52px;
 }
 
 .payBankCellWide {
@@ -1912,45 +2071,55 @@
 
 .payBankCell span {
   display: block;
-  font-size: 0.68rem;
+  font-size: 0.64rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #b8962e;
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 
 .payBankCell strong {
-  font-size: 1.05rem;
+  font-size: 0.98rem;
   color: #141820;
   font-weight: 600;
   word-break: break-word;
+  line-height: 1.3;
 }
 
 .payBankEmpty {
-  padding: 14px 14px;
+  padding: 12px 12px;
   background: #f8f9fb;
   border-left: 3px solid #b8962e;
-  font-size: 0.95rem;
-  line-height: 1.5;
+  font-size: 0.88rem;
+  line-height: 1.45;
   color: #1e2430;
+}
+
+.payBottomRow {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 10px;
+  align-items: stretch;
+  margin-bottom: 4px;
+  flex-shrink: 0;
 }
 
 .payTermsBox {
   background: #ffffff;
   border: 1px solid #e2e6ec;
   border-radius: 10px;
-  padding: 12px 16px;
-  margin-bottom: 8px;
+  padding: 10px 12px;
+  margin-bottom: 0;
 }
 
 .payTermsLabel {
   display: block;
-  font-size: 0.7rem;
+  font-size: 0.66rem;
   letter-spacing: 0.12em;
   color: #b8962e;
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .payTermsBox ul {
@@ -1959,14 +2128,14 @@
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .payTermsBox li {
   position: relative;
-  padding-left: 14px;
-  font-size: 0.9rem;
-  line-height: 1.45;
+  padding-left: 12px;
+  font-size: 0.78rem;
+  line-height: 1.35;
   color: #1e2430;
 }
 
@@ -1974,25 +2143,33 @@
   content: "";
   position: absolute;
   left: 0;
-  top: 8px;
-  width: 6px;
-  height: 6px;
+  top: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: #b8962e;
 }
 
 .payPage .expertVerdict {
-  margin-top: 8px;
-  padding: 12px 14px;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding: 10px 12px;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .payPage .expertVerdict p {
-  font-size: 1.05rem;
-  line-height: 1.45;
+  font-size: 0.88rem;
+  line-height: 1.4;
 }
 
 .payPage .verdictLabel {
-  font-size: 0.68rem;
+  font-size: 0.64rem;
+}
+
+.payGateTrack,
+.payMilestoneList {
+  display: none;
 }
 
 /* --- LEGACY / OTHER PAGE STYLES (wealth, terms, older blocks) --- */
@@ -2978,6 +3155,110 @@
 
 .termsPageDense .termsSignoff {
   padding: 6px 9px;
+}
+
+/* Page 1 — fill A4: larger type + air (page 2 stays dense) */
+.termsPageRoomy .termsHead {
+  margin-bottom: 12px;
+}
+
+.termsPageRoomy .termsTag {
+  font-size: 0.72rem;
+  margin-bottom: 6px;
+}
+
+.termsPageRoomy .termsTitle {
+  font-size: 26pt;
+  line-height: 1.08;
+}
+
+.termsPageRoomy .termsIntro {
+  margin-top: 8px;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.termsPageRoomy .termsStack {
+  gap: 12px;
+}
+
+.termsPageRoomy .termsSection {
+  padding: 14px 16px 16px;
+}
+
+.termsPageRoomy .termsSection:first-child {
+  flex: 1 1 auto !important;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.termsPageRoomy .termsSubhead {
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+}
+
+.termsPageRoomy .termsArticleList {
+  gap: 8px;
+  flex: 1;
+  justify-content: space-evenly;
+}
+
+.termsPageRoomy .termsArticle {
+  grid-template-columns: 34px 1fr;
+  gap: 10px;
+  padding-bottom: 8px;
+}
+
+.termsPageRoomy .termsArticleNum {
+  font-size: 0.82rem;
+  padding-top: 2px;
+}
+
+.termsPageRoomy .termsArticleLabel {
+  font-size: 0.92rem;
+  margin-bottom: 3px;
+  line-height: 1.25;
+}
+
+.termsPageRoomy .termsArticleBody {
+  font-size: 0.88rem;
+  line-height: 1.42;
+}
+
+.termsPageRoomy .termsNumberedList {
+  gap: 10px;
+}
+
+.termsPageRoomy .termsNumberedList li {
+  grid-template-columns: 28px 1fr;
+  gap: 10px;
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.termsPageRoomy .termsListNum {
+  width: 22px;
+  height: 22px;
+  font-size: 0.72rem;
+  margin-top: 0;
+}
+
+.termsPageRoomy .expertVerdict {
+  margin-top: 12px;
+  padding: 12px 14px;
+}
+
+.termsPageRoomy .expertVerdict p {
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.termsPageRoomy .verdictLabel {
+  font-size: 0.64rem;
+  margin-bottom: 4px;
 }
 
 @media print {

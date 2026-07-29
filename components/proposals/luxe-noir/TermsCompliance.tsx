@@ -134,7 +134,7 @@ export function TermsCompliancePage1({ data }: TermsComplianceProps) {
 
   return (
     <section
-      className={`${styles.a4Page} ${styles.termsPage} ${luxeDisplayFont.variable}`}
+      className={`${styles.a4Page} ${styles.termsPage} ${styles.termsPageRoomy} ${luxeDisplayFont.variable}`}
     >
       <header className={styles.termsHead}>
         <span className={styles.termsTag}>{copy.terms.tag1}</span>
