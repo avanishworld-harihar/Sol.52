@@ -173,198 +173,146 @@ function IsoPanel({
   );
 }
 
-/** Tall GI posts + C-rails under modules (always drawn before IsoPanel). */
-function ArrayRailBank({
-  positions,
-}: {
-  positions: { cx: number; cy: number }[];
-  cols: number;
-}) {
-  if (positions.length === 0) return null;
-  const rows: { cx: number; cy: number }[][] = [];
-  for (const p of positions) {
-    const last = rows[rows.length - 1];
-    if (!last || Math.abs(last[0]!.cy - p.cy) > 8) {
-      rows.push([p]);
-    } else {
-      last.push(p);
-    }
-  }
+/** Per-module GI rails + standing legs — sits under that IsoPanel only. */
+function PanelMount({ cx, cy }: { cx: number; cy: number }) {
+  // Must match IsoPanel vectors so rails hug the underside
+  const rightX = 40;
+  const rightY = 11.5;
+  const downX = -14;
+  const downY = 10.5;
+  const thick = 3.4;
 
-  /** Elevated mount — rear taller for south tilt */
-  const LEG_FRONT = 38;
-  const LEG_REAR = 50;
-  const RAIL_FRONT = 12;
-  const RAIL_REAR = 20;
+  const along = (u: number, v: number) => ({
+    x: cx + rightX * u + downX * v,
+    y: cy + rightY * u + downY * v + thick,
+  });
 
-  function drawPost(
+  // Rails under long edges (v≈0 rear / north, v≈1 front / south)
+  const rearA = along(0.06, 0.18);
+  const rearB = along(0.94, 0.18);
+  const frontA = along(0.06, 0.92);
+  const frontB = along(0.94, 0.92);
+
+  const LEG_FRONT = 26;
+  const LEG_REAR = 36;
+
+  function post(
     key: string,
-    xTop: number,
-    yTop: number,
+    top: { x: number; y: number },
     h: number,
-    tone: "front" | "rear"
+    front: boolean
   ) {
-    const xBot = xTop + 0.8;
-    const yBot = yTop + h;
-    const isRear = tone === "rear";
+    const xBot = top.x + 0.6;
+    const yBot = top.y + h;
     return (
       <g key={key}>
         <ellipse
-          cx={xBot + 0.4}
-          cy={yBot + 1.4}
-          rx="4"
-          ry="1.6"
-          fill="rgba(0,0,0,0.5)"
+          cx={xBot + 0.3}
+          cy={yBot + 1.2}
+          rx="3.4"
+          ry="1.35"
+          fill="rgba(0,0,0,0.48)"
         />
         <line
-          x1={xTop}
-          y1={yTop}
+          x1={top.x}
+          y1={top.y}
           x2={xBot}
           y2={yBot}
-          stroke={isRear ? "#7a8494" : "#c5ccd6"}
-          strokeWidth={isRear ? 3.2 : 3.6}
+          stroke={front ? "#c8d0da" : "#8a93a0"}
+          strokeWidth={front ? 3.2 : 2.8}
           strokeLinecap="round"
         />
         <line
-          x1={xTop - 1.1}
-          y1={yTop + 2}
-          x2={xBot - 1.1}
-          y2={yBot - 2}
-          stroke="rgba(255,255,255,0.4)"
-          strokeWidth="1"
+          x1={top.x - 0.9}
+          y1={top.y + 1.5}
+          x2={xBot - 0.9}
+          y2={yBot - 1.5}
+          stroke="rgba(255,255,255,0.35)"
+          strokeWidth="0.85"
           strokeLinecap="round"
         />
         <rect
-          x={xBot - 4}
-          y={yBot - 0.5}
-          width="8.2"
-          height="2.4"
-          rx="0.4"
+          x={xBot - 3.4}
+          y={yBot - 0.4}
+          width="7.2"
+          height="2.1"
+          rx="0.35"
           fill="#d4dae2"
           stroke="#4a5564"
-          strokeWidth="0.45"
-        />
-        <rect
-          x={xTop - 3}
-          y={yTop - 1.4}
-          width="6.2"
-          height="2.6"
-          rx="0.35"
-          fill="#e0e5ec"
-          stroke="#5c6573"
           strokeWidth="0.4"
         />
       </g>
     );
   }
 
+  const rearPosts = [along(0.28, 0.18), along(0.72, 0.18)];
+  const frontPosts = [along(0.28, 0.92), along(0.72, 0.92)];
+
   return (
     <g>
-      {rows.map((row, ri) => {
-        const sorted = [...row].sort((a, b) => a.cx - b.cx);
-        const first = sorted[0]!;
-        const last = sorted[sorted.length - 1]!;
-        const skew = (last.cy - first.cy) * 0.12;
-        const x0 = first.cx - 4;
-        const x1 = last.cx + 46;
-        const yFront = first.cy + RAIL_FRONT;
-        const yBack = first.cy + RAIL_REAR;
+      {/* Rear posts first (deeper) */}
+      {rearPosts.map((p, i) => post(`rp-${i}`, p, LEG_REAR, false))}
+      {frontPosts.map((p, i) => post(`fp-${i}`, p, LEG_FRONT, true))}
 
-        return (
-          <g key={`rails-${ri}`}>
-            {/* Front + rear posts (under panels) */}
-            {sorted.map((p, pi) => {
-              const t = sorted.length > 1 ? pi / (sorted.length - 1) : 0;
-              const sk = skew * t;
-              return (
-                <g key={`legs-${ri}-${pi}`}>
-                  {drawPost(
-                    `fleg-${ri}-${pi}`,
-                    p.cx + 8,
-                    yFront + sk,
-                    LEG_FRONT,
-                    "front"
-                  )}
-                  {drawPost(
-                    `rleg-${ri}-${pi}`,
-                    p.cx + 30,
-                    yBack + sk,
-                    LEG_REAR,
-                    "rear"
-                  )}
-                </g>
-              );
-            })}
+      {/* Light brace under module */}
+      <line
+        x1={frontPosts[0]!.x}
+        y1={frontPosts[0]!.y + 5}
+        x2={rearPosts[0]!.x}
+        y2={rearPosts[0]!.y + LEG_REAR - 4}
+        stroke="#7a8494"
+        strokeWidth="1.1"
+        opacity="0.7"
+        strokeLinecap="round"
+      />
+      <line
+        x1={frontPosts[1]!.x}
+        y1={frontPosts[1]!.y + 5}
+        x2={rearPosts[1]!.x}
+        y2={rearPosts[1]!.y + LEG_REAR - 4}
+        stroke="#7a8494"
+        strokeWidth="1.1"
+        opacity="0.7"
+        strokeLinecap="round"
+      />
 
-            {sorted.map((p, pi) => {
-              const t = sorted.length > 1 ? pi / (sorted.length - 1) : 0;
-              const sk = skew * t;
-              return (
-                <line
-                  key={`brace-${ri}-${pi}`}
-                  x1={p.cx + 9}
-                  y1={yFront + sk + 6}
-                  x2={p.cx + 29}
-                  y2={yBack + sk + LEG_REAR - 5}
-                  stroke="#8a93a0"
-                  strokeWidth="1.35"
-                  strokeLinecap="round"
-                  opacity="0.85"
-                />
-              );
-            })}
-
-            <line
-              x1={x0 + 4}
-              y1={yFront + LEG_FRONT * 0.48}
-              x2={x1 - 4}
-              y2={yFront + LEG_FRONT * 0.48 + skew}
-              stroke="#6a7380"
-              strokeWidth="2"
-              strokeLinecap="round"
-              opacity="0.8"
-            />
-
-            <line
-              x1={x0}
-              y1={yFront}
-              x2={x1}
-              y2={yFront + skew}
-              stroke="#c8d0da"
-              strokeWidth="3.4"
-              strokeLinecap="round"
-            />
-            <line
-              x1={x0}
-              y1={yFront + 1.6}
-              x2={x1}
-              y2={yFront + 1.6 + skew}
-              stroke="#7a8494"
-              strokeWidth="1.4"
-              strokeLinecap="round"
-            />
-
-            <line
-              x1={x0 + 3}
-              y1={yBack}
-              x2={x1 + 1}
-              y2={yBack + skew}
-              stroke="#a8b0bc"
-              strokeWidth="3.2"
-              strokeLinecap="round"
-            />
-            <line
-              x1={x0 + 3}
-              y1={yBack + 1.5}
-              x2={x1 + 1}
-              y2={yBack + 1.5 + skew}
-              stroke="#5c6573"
-              strokeWidth="1.3"
-              strokeLinecap="round"
-            />
-          </g>
-        );
-      })}
+      {/* C-rails under frame edges */}
+      <line
+        x1={rearA.x}
+        y1={rearA.y}
+        x2={rearB.x}
+        y2={rearB.y}
+        stroke="#9aa3b0"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+      <line
+        x1={rearA.x}
+        y1={rearA.y + 1.4}
+        x2={rearB.x}
+        y2={rearB.y + 1.4}
+        stroke="#5c6573"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+      />
+      <line
+        x1={frontA.x}
+        y1={frontA.y}
+        x2={frontB.x}
+        y2={frontB.y}
+        stroke="#c8d0da"
+        strokeWidth="3.2"
+        strokeLinecap="round"
+      />
+      <line
+        x1={frontA.x}
+        y1={frontA.y + 1.5}
+        x2={frontB.x}
+        y2={frontB.y + 1.5}
+        stroke="#6a7380"
+        strokeWidth="1.25"
+        strokeLinecap="round"
+      />
     </g>
   );
 }
@@ -626,18 +574,19 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
                   isoOriginY +
                   ((cols - 1) * stepColY) / 2 +
                   ((rows - 1) * stepRowY) / 2 +
-                  52
+                  42
                 }
                 rx={cols * 22 + 16}
-                ry={12 + rows * 2}
+                ry={11 + rows * 2}
                 fill="rgba(0,0,0,0.42)"
               />
             )}
 
-            <ArrayRailBank positions={panelPositions} cols={cols} />
-
             {panelPositions.map((p, i) => (
-              <IsoPanel key={i} cx={p.cx} cy={p.cy} />
+              <g key={i}>
+                <PanelMount cx={p.cx} cy={p.cy} />
+                <IsoPanel cx={p.cx} cy={p.cy} />
+              </g>
             ))}
 
             {/* Compass rose */}
