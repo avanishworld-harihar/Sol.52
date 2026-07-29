@@ -60,10 +60,14 @@ function brandTitle(
   const raw = `${item.brand} ${item.name}`.trim();
   if (!raw) return fallback;
   // Avoid "Havells Havells" style doubles; prefer brand + role when name is generic
-  if (roleHint && new RegExp(roleHint, "i").test(item.name) === false) {
-    return item.brand?.trim() ? `${item.brand.trim()} · ${fallback}` : raw;
-  }
-  return raw;
+  let title =
+    roleHint && new RegExp(roleHint, "i").test(item.name) === false
+      ? item.brand?.trim()
+        ? `${item.brand.trim()} · ${fallback}`
+        : raw
+      : raw;
+  if (title.length > 56) title = `${title.slice(0, 53).trim()}…`;
+  return title;
 }
 
 /** Bold quantity / material lead so BOM lines scan faster. */
@@ -105,8 +109,9 @@ function buildRow(
     }
   } else if (!isGenericProtection(item) && detail) {
     body =
-      detail.length > 240 ? `${detail.slice(0, 230).trim()}…` : detail;
+      detail.length > 150 ? `${detail.slice(0, 140).trim()}…` : detail;
   }
+  if (body.length > 180) body = `${body.slice(0, 170).trim()}…`;
 
   return {
     num: base.num,
@@ -210,8 +215,8 @@ export function TitaniumLedger({ data }: TitaniumLedgerProps) {
           : "Lightning Arrestor + DC/AC Cabling",
         badge: isHi ? "LA 1 SET · 4 SQMM" : "LA 1 SET · 4 SQMM",
         body: isHi
-          ? "LA: 1 Set · 2 mtr. DC केबल: 4 sqmm tinned Cu ZHLS UV (Polycab) — आवश्यकता अनुसार मीटर. AC केबल: 4 sqmm (Anchor / Polycab) — आवश्यकता अनुसार मीटर."
-          : "LA: 1 Set · 2 mtr. DC cable: 4 sqmm flexible tinned Cu ZHLS UV (Polycab) — meters as required. AC cable: 4 sqmm (Anchor / Polycab) — meters as required.",
+          ? "LA: 1 Set · 2 mtr. DC/AC केबल: 4 sqmm (Polycab / Anchor) — आवश्यकता अनुसार मीटर."
+          : "LA: 1 Set · 2 mtr. DC/AC cable: 4 sqmm (Polycab / Anchor) — meters as required.",
       },
       { preferBaseBody: true }
     ),
@@ -225,8 +230,8 @@ export function TitaniumLedger({ data }: TitaniumLedgerProps) {
           : "Copper Earthing Kit + Earth Cable",
         badge: "3 SET · 17 MM",
         body: isHi
-          ? "अर्थिंग किट: 3 Set · 17 mm maintenance-free कॉपर (Best). अर्थ केबल: कॉपर 4 sqmm — आवश्यकता अनुसार मीटर. इन्वर्टर / DCDB / ACDB / LA बॉन्डिंग."
-          : "Earthing kit: 3 Set · 17 mm maintenance-free copper (Best). Earth cable: copper 4 sqmm — meters as required. Bonds inverter, DCDB/ACDB, and LA.",
+          ? "अर्थिंग: 3 Set · 17 mm कॉपर (Best). अर्थ केबल: 4 sqmm — आवश्यकता अनुसार. INV / DCDB / ACDB / LA बॉन्डिंग."
+          : "Earthing: 3 Set · 17 mm copper (Best). Earth cable: 4 sqmm as required. Bonds INV, DCDB/ACDB, and LA.",
       },
       { preferBaseBody: true }
     ),
@@ -236,12 +241,13 @@ export function TitaniumLedger({ data }: TitaniumLedgerProps) {
   if (la && cable) {
     const row6 = rows[5]!;
     const cableMake = cable.brand?.trim() || cable.name?.trim();
-    rows[5] = {
-      ...row6,
-      body: cableMake
-        ? `${row6.body}${row6.body.includes(cableMake) ? "" : ` · Cable make: ${cableMake}`}`
-        : row6.body,
-    };
+    if (cableMake && !row6.body.includes(cableMake)) {
+      const enriched = `${row6.body} · ${cableMake}`;
+      rows[5] = {
+        ...row6,
+        body: enriched.length > 180 ? `${enriched.slice(0, 170).trim()}…` : enriched,
+      };
+    }
   }
 
   return (
