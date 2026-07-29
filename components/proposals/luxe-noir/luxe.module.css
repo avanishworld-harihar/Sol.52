@@ -3371,6 +3371,139 @@
   margin-bottom: 4px;
 }
 
+/* ── Screen mobile / tablet — fluid pages, stacked grids ─────── */
+@media screen and (max-width: 860px) {
+  .a4Page {
+    width: calc(100% - 16px) !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 8px auto 14px !important;
+    padding: 22px 16px 24px !important;
+    overflow: visible !important;
+  }
+
+  .obsidianCover,
+  .closePage {
+    padding: 22px 16px 24px 20px !important;
+  }
+
+  .coverVendorName {
+    font-size: clamp(2rem, 9vw, 2.8rem) !important;
+  }
+
+  .coverPhotoImg {
+    height: clamp(140px, 28vw, 200px) !important;
+  }
+
+  .coverMeta {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .coverMetaDivider {
+    display: none;
+  }
+
+  .engDesignLayout,
+  .wealthTop,
+  .wealthMid,
+  .impactHeroRow,
+  .impactCardGrid,
+  .payBottomRow,
+  .payBankGrid,
+  .payBankHead,
+  .closeBrandHero,
+  .closeSigGrid,
+  .billBars {
+    grid-template-columns: 1fr !important;
+  }
+
+  .closeJourneyTrack {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .closeJourneyRail {
+    display: none !important;
+  }
+
+  .engChipRow {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .archTrack {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .archNode {
+    flex: 1 1 calc(50% - 8px);
+    min-width: 120px;
+  }
+
+  .archProtect {
+    grid-template-columns: 1fr !important;
+  }
+
+  .luxeHeadline,
+  .hudPage .luxeHeadline,
+  .impactPage .luxeHeadline,
+  .payPage .luxeHeadline {
+    font-size: clamp(1.5rem, 7vw, 2rem) !important;
+  }
+
+  .netFigure,
+  .impactHeroNum {
+    font-size: clamp(2rem, 10vw, 2.8rem) !important;
+  }
+
+  .closeVendorName {
+    font-size: clamp(1.8rem, 8vw, 2.6rem) !important;
+  }
+
+  .impactHeroArt {
+    max-width: 140px;
+    justify-self: start;
+  }
+
+  .paybackSvg,
+  .impactChartSvg,
+  .engSvgDark {
+    min-height: 140px;
+    max-height: none;
+  }
+
+  .wealthKpis {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .a4Page {
+    width: calc(100% - 12px) !important;
+    padding: 18px 12px 20px !important;
+  }
+
+  .obsidianCover,
+  .closePage {
+    padding: 18px 12px 20px 16px !important;
+  }
+
+  .closeJourneyTrack {
+    grid-template-columns: 1fr !important;
+  }
+
+  .archNode {
+    flex: 1 1 100%;
+  }
+
+  .engChipRow {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
 @media print {
   .a4Page,
   .a4Page :global(*) {
@@ -3390,7 +3523,79 @@
     max-height: 297mm !important;
     margin: 0 !important;
     box-shadow: none !important;
-    background-color: #F8F9FB !important;
+    background-color: #f8f9fb !important;
     color: #141820 !important;
+    overflow: hidden !important;
+    padding: 40px !important;
+  }
+
+  .obsidianCover {
+    padding: 28px 34px 26px 46px !important;
+  }
+
+  .closePage {
+    padding: 28px 34px 22px 46px !important;
+  }
+
+  .engDesignLayout {
+    grid-template-columns: 1.08fr 0.92fr !important;
+  }
+
+  .wealthTop {
+    grid-template-columns: 1.05fr 0.95fr !important;
+  }
+
+  .wealthMid {
+    grid-template-columns: 1.35fr 0.65fr !important;
+  }
+
+  .impactCardGrid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  .closeJourneyTrack {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+
+  .closeSigGrid,
+  .payBottomRow {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .closeJourneyRail {
+    display: block !important;
+  }
+
+  .impactHeroRow {
+    grid-template-columns: 1.15fr 0.85fr !important;
+  }
+
+  .billBars {
+    grid-template-columns: 1fr 1fr 1.15fr !important;
+  }
+
+  .payBankGrid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .payBankHead {
+    grid-template-columns: 72px 1fr !important;
+  }
+
+  .closeBrandHero {
+    grid-template-columns: 1.35fr 0.65fr !important;
+  }
+
+  .engChipRow {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+
+  .archTrack {
+    flex-wrap: nowrap !important;
+  }
+
+  .archNode {
+    flex: 1 !important;
+    min-width: 0 !important;
   }
 }

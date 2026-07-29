@@ -173,7 +173,7 @@ function IsoPanel({
   );
 }
 
-/** Continuous C-channel GI rails + mid posts — clear racking under modules. */
+/** Continuous C-channel GI rails on standing legs — elevated rooftop mount. */
 function ArrayRailBank({
   positions,
 }: {
@@ -191,6 +191,13 @@ function ArrayRailBank({
     }
   }
 
+  /** Front shorter / rear taller → south tilt reads clearly */
+  const LEG_FRONT = 14;
+  const LEG_REAR = 20;
+  /** Rails sit just under module silhouette so legs stay visible */
+  const RAIL_FRONT = 21;
+  const RAIL_REAR = 29;
+
   return (
     <g>
       {rows.map((row, ri) => {
@@ -200,28 +207,127 @@ function ArrayRailBank({
         const skew = (last.cy - first.cy) * 0.12;
         const x0 = first.cx - 4;
         const x1 = last.cx + 46;
-        const yFront = first.cy + 16;
-        const yBack = first.cy + 25;
-        const posts = sorted.flatMap((p) => [
-          { x: p.cx + 8, y: yFront + 1 },
-          { x: p.cx + 28, y: yBack - 1 },
-        ]);
+        const yFront = first.cy + RAIL_FRONT;
+        const yBack = first.cy + RAIL_REAR;
+
+        const legs = sorted.flatMap((p, pi) => {
+          const t = sorted.length > 1 ? pi / (sorted.length - 1) : 0;
+          const sk = skew * t;
+          return [
+            {
+              kind: "front" as const,
+              xTop: p.cx + 10,
+              yTop: yFront + sk,
+              h: LEG_FRONT,
+            },
+            {
+              kind: "rear" as const,
+              xTop: p.cx + 30,
+              yTop: yBack + sk,
+              h: LEG_REAR,
+            },
+          ];
+        });
 
         return (
           <g key={`rails-${ri}`}>
-            {/* Cross purlin under row */}
+            {/* Standing GI legs (draw first — under rails) */}
+            {legs.map((leg, li) => {
+              const xBot = leg.xTop + 1.2;
+              const yBot = leg.yTop + leg.h;
+              const isRear = leg.kind === "rear";
+              return (
+                <g key={`leg-${ri}-${li}`}>
+                  {/* Contact shadow on deck */}
+                  <ellipse
+                    cx={xBot + 0.5}
+                    cy={yBot + 1.2}
+                    rx="3.2"
+                    ry="1.3"
+                    fill="rgba(0,0,0,0.4)"
+                  />
+                  {/* Vertical post */}
+                  <line
+                    x1={leg.xTop}
+                    y1={leg.yTop}
+                    x2={xBot}
+                    y2={yBot}
+                    stroke={isRear ? "#8a93a0" : "#b0b7c2"}
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                  />
+                  {/* Post highlight edge */}
+                  <line
+                    x1={leg.xTop - 0.7}
+                    y1={leg.yTop + 1}
+                    x2={xBot - 0.7}
+                    y2={yBot - 1}
+                    stroke="rgba(232,236,242,0.35)"
+                    strokeWidth="0.7"
+                    strokeLinecap="round"
+                  />
+                  {/* Base plate on roof */}
+                  <rect
+                    x={xBot - 3.2}
+                    y={yBot - 0.4}
+                    width="6.8"
+                    height="2"
+                    rx="0.35"
+                    fill="#c5ccd6"
+                    stroke="#5c6573"
+                    strokeWidth="0.4"
+                  />
+                  {/* Top cleat into rail */}
+                  <rect
+                    x={leg.xTop - 2.6}
+                    y={leg.yTop - 1.2}
+                    width="5.4"
+                    height="2.2"
+                    rx="0.3"
+                    fill="#d0d6de"
+                    stroke="#6a7380"
+                    strokeWidth="0.35"
+                  />
+                </g>
+              );
+            })}
+
+            {/* Light diagonal brace per module bay */}
+            {sorted.map((p, pi) => {
+              const t = sorted.length > 1 ? pi / (sorted.length - 1) : 0;
+              const sk = skew * t;
+              const fx = p.cx + 10;
+              const fy = yFront + sk + 3;
+              const rx = p.cx + 30;
+              const ry = yBack + sk + LEG_REAR - 3;
+              return (
+                <line
+                  key={`brace-${ri}-${pi}`}
+                  x1={fx + 1}
+                  y1={fy}
+                  x2={rx - 1}
+                  y2={ry}
+                  stroke="#7a8494"
+                  strokeWidth="1.1"
+                  strokeLinecap="round"
+                  opacity="0.75"
+                />
+              );
+            })}
+
+            {/* Cross purlin linking legs mid-height */}
             <line
-              x1={x0 + 2}
-              y1={yFront + 6}
-              x2={x1 - 2}
-              y2={yFront + 6 + skew}
+              x1={x0 + 4}
+              y1={yFront + LEG_FRONT * 0.55}
+              x2={x1 - 4}
+              y2={yFront + LEG_FRONT * 0.55 + skew}
               stroke="#6a7380"
-              strokeWidth="2"
+              strokeWidth="1.8"
               strokeLinecap="round"
-              opacity="0.7"
+              opacity="0.75"
             />
 
-            {/* Front C-rail (lighter edge) */}
+            {/* Front C-rail */}
             <line
               x1={x0}
               y1={yFront}
@@ -241,7 +347,7 @@ function ArrayRailBank({
               strokeLinecap="round"
             />
 
-            {/* Rear C-rail */}
+            {/* Rear C-rail (higher for tilt) */}
             <line
               x1={x0 + 3}
               y1={yBack}
@@ -260,31 +366,6 @@ function ArrayRailBank({
               strokeWidth="1.3"
               strokeLinecap="round"
             />
-
-            {/* Short L-feet / roof anchors */}
-            {posts.map((pt, pi) => (
-              <g key={`post-${ri}-${pi}`}>
-                <line
-                  x1={pt.x}
-                  y1={pt.y}
-                  x2={pt.x + 0.6}
-                  y2={pt.y + 5}
-                  stroke="#9aa3b0"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                />
-                <rect
-                  x={pt.x - 2.4}
-                  y={pt.y + 4.4}
-                  width="5.2"
-                  height="1.6"
-                  rx="0.3"
-                  fill="#b8c0cc"
-                  stroke="#5c6573"
-                  strokeWidth="0.35"
-                />
-              </g>
-            ))}
           </g>
         );
       })}
@@ -431,13 +512,13 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
   const strings = Math.max(1, Math.ceil(modulesRaw / 6));
   const perString = Math.ceil(modulesRaw / strings);
 
-  // Isometric step — modules sit on roof deck (short standoffs, not table height)
+  // Isometric step — modules elevated on GI legs above roof deck
   const stepColX = 42;
   const stepColY = 12;
   const stepRowX = -16;
   const stepRowY = 16;
   const isoOriginX = 92;
-  const isoOriginY = 78;
+  const isoOriginY = 72;
 
   const panelPositions = Array.from({ length: modulesDraw }).map((_, i) => {
     const col = i % cols;
@@ -536,7 +617,7 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
               stroke="rgba(255,255,255,0.08)"
               strokeWidth="1"
             />
-            {/* Soft contact shadow on deck (flat — not floating table) */}
+            {/* Soft contact shadow under standing legs */}
             {panelPositions.length > 0 && (
               <ellipse
                 cx={
@@ -549,11 +630,11 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
                   isoOriginY +
                   ((cols - 1) * stepColY) / 2 +
                   ((rows - 1) * stepRowY) / 2 +
-                  22
+                  38
                 }
                 rx={cols * 22 + 16}
-                ry={8 + rows * 2}
-                fill="rgba(0,0,0,0.45)"
+                ry={10 + rows * 2}
+                fill="rgba(0,0,0,0.42)"
               />
             )}
 

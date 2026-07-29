@@ -575,6 +575,76 @@
   letter-spacing: 0.04em;
 }
 
+/* ── Screen: phones / narrow tablets — readable, no clipped A4 ─ */
+@media screen and (max-width: 860px) {
+  .root {
+    padding: 0 0 28px;
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  .printBar {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .printBarInner {
+    max-width: 100%;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .printBarBrand {
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .printBarActions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .a4Page {
+    width: calc(100% - 16px) !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 8px auto 14px !important;
+    padding: 22px 16px 24px !important;
+    overflow: visible !important;
+    box-shadow: 0 4px 16px rgba(20, 24, 32, 0.08);
+  }
+
+  .pageInner {
+    overflow: visible;
+  }
+
+  .cardGrid2,
+  .cardGrid3 {
+    grid-template-columns: 1fr;
+  }
+
+  .title {
+    font-size: clamp(1.45rem, 7vw, 1.85rem) !important;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .a4Page {
+    width: calc(100% - 12px) !important;
+    padding: 18px 12px 20px !important;
+    margin: 6px auto 12px !important;
+  }
+
+  .printBarBtn {
+    font-size: 0.68rem;
+    padding: 0.36rem 0.75rem;
+  }
+}
+
 @media print {
   @page {
     size: 210mm 297mm;
@@ -607,6 +677,8 @@
     break-after: page !important;
     background-color: #F8F9FB !important;
     color: #141820 !important;
+    overflow: hidden !important;
+    padding: 40px !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
@@ -614,5 +686,13 @@
   .a4Page:last-child {
     page-break-after: auto !important;
     break-after: auto !important;
+  }
+
+  .cardGrid2 {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .cardGrid3 {
+    grid-template-columns: repeat(3, 1fr) !important;
   }
 }
