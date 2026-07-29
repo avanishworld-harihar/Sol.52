@@ -2,11 +2,11 @@
 
 /**
  * Premium Luxe — Terms & Compliance (2 A4 pages).
- * Layout mirrors the reference T&C sheets; daylight porcelain + champagne gold.
+ * Dense two-column layout to avoid large negative space.
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
-import { formatInr } from "@/components/proposals/_shared/formatters";
+import { formatLuxeInr, formatLuxeInrReadable } from "./luxe-format";
 import { luxeDisplayFont } from "./luxe-fonts";
 import styles from "./luxe.module.css";
 
@@ -25,7 +25,7 @@ const GENERAL_TERMS: { label: string; text: string }[] = [
   },
   {
     label: "Arrears",
-    text: "If an increase in sanctioned load or connected load is required for the solar connection, the client shall ensure that all prior electricity bills, outstanding dues, and arrears with the DISCOM are fully cleared before processing; any delay or rejection arising from uncleared dues shall remain the client's responsibility.",
+    text: "If sanctioned / connected load increase is required, all prior DISCOM bills and arrears must be cleared before processing; delay from uncleared dues remains the client's responsibility.",
   },
   {
     label: "Inverter Warranty",
@@ -33,27 +33,27 @@ const GENERAL_TERMS: { label: string; text: string }[] = [
   },
   {
     label: "Module Warranty",
-    text: "Solar PV module product warranty: 15 years; performance warranty: ≥80% rated output at end of 30 years (manufacturer). Warranty on overall system and parts not specified above: 1 year from date of commissioning.",
+    text: "Product warranty: 15 years; performance warranty: ≥80% at end of 30 years. Overall system parts not listed above: 1 year from commissioning.",
   },
   {
     label: "Warranty Scope",
-    text: "Warranty applies to manufacturing defects only. Physical damage, misuse, or vandalism is not covered.",
+    text: "Manufacturing defects only. Physical damage, misuse, or vandalism is not covered.",
   },
   {
     label: "Maintenance",
-    text: "Routine cleaning of modules (recommended weekly) is in the customer's scope — it directly affects generation performance.",
+    text: "Routine module cleaning (recommended weekly) is in the customer's scope — it directly affects generation.",
   },
   {
     label: "Timeline",
-    text: "Installation shall be completed within 30–40 working days from receipt of advance payment as per the agreed purchase order / payment schedule.",
+    text: "Installation completed within 30–40 working days from advance payment as per agreed PO / schedule.",
   },
   {
     label: "Governing Terms",
-    text: "Any terms not expressly mentioned herein shall be governed by mutual written agreement between both parties.",
+    text: "Any terms not expressly mentioned herein shall be governed by mutual written agreement.",
   },
   {
     label: "Refunds",
-    text: "Refunds, if applicable, shall be processed after a 2.5% deduction on the project finalization amount plus documented expenses already incurred.",
+    text: "If applicable, processed after 2.5% deduction on project finalization amount plus documented expenses already incurred.",
   },
 ];
 
@@ -67,7 +67,7 @@ const DEFAULT_DOCS = [
 ];
 
 const DEFAULT_AMC_OBJECTIVE =
-  "The objective of Annual Maintenance Services is to maintain the performance ratio and general upkeep of the rooftop SPV plant throughout the contract period.";
+  "Annual Maintenance Services maintain the performance ratio and general upkeep of the rooftop SPV plant throughout the contract period.";
 
 const DEFAULT_AMC_SCOPE = [
   "Daily / periodic monitoring of plant performance and energy generation",
@@ -84,6 +84,8 @@ const CLIENT_SCOPE = [
   "Water and auxiliary power for maintenance activities, as needed on site",
   "Day-to-day visual checks and safe access to the rooftop",
   "Regular module cleaning as per manufacturer guidelines",
+  "Keeping roof drains clear and reporting abnormal inverter alerts promptly",
+  "Providing DISCOM / municipal coordination letters when requested",
 ];
 
 const DEFAULT_AMC_TERMS = [
@@ -91,17 +93,18 @@ const DEFAULT_AMC_TERMS = [
   "Minimum O&M contract duration: 2 years, extendable in blocks of 2 years by mutual consent (up to 25 years from commissioning).",
   "We are not liable for module or equipment loss due to theft, stand damage, or vandalism.",
   "Standard force majeure provisions apply; service deficiencies during such events shall be communicated to the client within one week of occurrence.",
+  "AMC excludes module glass replacement due to external impact and DISCOM metering fees.",
+];
+
+const SAFETY_NOTES = [
+  "Do not open ACDB / DCDB or inverter covers — trained technicians only.",
+  "Lightning arrestor and earthing must remain bonded; do not disconnect earth leads.",
+  "Report isolation trips or burning smell immediately; do not reset repeatedly.",
 ];
 
 export function TermsCompliancePage1({ data }: TermsComplianceProps) {
   const docs =
     data.terms.documents.length > 0 ? data.terms.documents : DEFAULT_DOCS;
-  const amcObjective = data.terms.amcObjective?.trim() || DEFAULT_AMC_OBJECTIVE;
-  const amcScopeRaw =
-    data.terms.amcScope.length > 0 ? data.terms.amcScope : DEFAULT_AMC_SCOPE;
-  const amcScope = amcScopeRaw.filter(
-    (s) => !/^annual maintenance contract/i.test(s) && !/^amc includes/i.test(s)
-  );
 
   return (
     <section className={`${styles.a4Page} ${styles.termsPage} ${luxeDisplayFont.variable}`}>
@@ -110,8 +113,8 @@ export function TermsCompliancePage1({ data }: TermsComplianceProps) {
         <h2 className={styles.termsTitle}>Terms & Conditions</h2>
       </header>
 
-      <div className={styles.termsGrid}>
-        <div>
+      <div className={styles.termsGridFill}>
+        <div className={styles.termsCol}>
           <div className={styles.termsSubhead}>General Terms</div>
           <ul className={styles.termsDiamondList}>
             {GENERAL_TERMS.map((t) => (
@@ -122,7 +125,7 @@ export function TermsCompliancePage1({ data }: TermsComplianceProps) {
           </ul>
         </div>
 
-        <div>
+        <div className={styles.termsCol}>
           <div className={styles.termsSubhead}>Documents Required</div>
           <ul className={styles.termsDotList}>
             {docs.map((d) => (
@@ -130,14 +133,10 @@ export function TermsCompliancePage1({ data }: TermsComplianceProps) {
             ))}
           </ul>
 
-          <div className={styles.termsSubhead} style={{ marginTop: "1.25rem" }}>
-            Annual Maintenance — Scope
-          </div>
-          <p className={styles.termsPara}>{amcObjective}</p>
-          <p className={styles.termsAmcIncludes}>AMC Includes:</p>
+          <div className={styles.termsSubhead}>Safety & Protection Notes</div>
           <ul className={styles.termsDiamondList}>
-            {amcScope.map((s) => (
-              <li key={s.slice(0, 48)}>{s}</li>
+            {SAFETY_NOTES.map((s) => (
+              <li key={s.slice(0, 40)}>{s}</li>
             ))}
           </ul>
         </div>
@@ -152,7 +151,16 @@ export function TermsCompliancePage2({ data }: TermsComplianceProps) {
     data.economics.grossInr > 0
       ? data.economics.grossInr
       : data.economics.netInr;
-  const invoiceRef = invoiceBase > 0 ? formatInr(invoiceBase) : "invoice value";
+  const invoiceRef =
+    invoiceBase > 0
+      ? `${formatLuxeInr(invoiceBase)} (${formatLuxeInrReadable(invoiceBase)})`
+      : "invoice value";
+  const amcObjective = data.terms.amcObjective?.trim() || DEFAULT_AMC_OBJECTIVE;
+  const amcScopeRaw =
+    data.terms.amcScope.length > 0 ? data.terms.amcScope : DEFAULT_AMC_SCOPE;
+  const amcScope = amcScopeRaw.filter(
+    (s) => !/^annual maintenance contract/i.test(s) && !/^amc includes/i.test(s)
+  );
   const amcTerms =
     data.terms.amcTerms.length > 0 ? data.terms.amcTerms : DEFAULT_AMC_TERMS;
 
@@ -163,34 +171,44 @@ export function TermsCompliancePage2({ data }: TermsComplianceProps) {
         <h2 className={styles.termsTitle}>Terms & Conditions</h2>
       </header>
 
-      <div className={styles.termsGrid}>
-        <div>
+      <div className={styles.termsGridFill}>
+        <div className={styles.termsCol}>
           <div className={styles.termsSubhead}>Client&apos;s Scope</div>
           <ul className={styles.termsDotList}>
             {CLIENT_SCOPE.map((s) => (
               <li key={s.slice(0, 48)}>{s}</li>
             ))}
           </ul>
+
+          <div className={styles.termsSubhead}>Annual Maintenance — Scope</div>
+          <p className={styles.termsPara}>{amcObjective}</p>
+          <p className={styles.termsAmcIncludes}>AMC includes:</p>
+          <ul className={styles.termsDiamondList}>
+            {amcScope.map((s) => (
+              <li key={s.slice(0, 48)}>{s}</li>
+            ))}
+          </ul>
         </div>
 
-        <div>
+        <div className={styles.termsCol}>
           <div className={styles.termsSubhead}>Cost of Maintenance</div>
           <p className={styles.termsPara}>
             First 1 year AMC is included in the quoted price. From Year 2 onwards, annual
-            maintenance may be charged at 2% of invoice value ({invoiceRef}) with 5%
-            year-on-year escalation, subject to a signed O&amp;M agreement.
+            maintenance may be charged at 2% of invoice value{" "}
+            <span className={styles.luxeNum}>{invoiceRef}</span> with 5% year-on-year
+            escalation, subject to a signed O&amp;M agreement.
           </p>
           <ul className={styles.termsDiamondList}>
             {amcTerms.map((t) => (
               <li key={t.slice(0, 48)}>{t}</li>
             ))}
           </ul>
-        </div>
-      </div>
 
-      <div className={styles.termsSignoff}>
-        <span className={styles.termsRegards}>Regards,</span>
-        <span className={styles.termsBrand}>{brand.toUpperCase()}</span>
+          <div className={styles.termsSignoff}>
+            <span className={styles.termsRegards}>Regards,</span>
+            <span className={styles.termsBrand}>{brand.toUpperCase()}</span>
+          </div>
+        </div>
       </div>
     </section>
   );

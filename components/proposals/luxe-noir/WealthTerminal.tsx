@@ -6,7 +6,11 @@
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
-import { formatInr } from "@/components/proposals/_shared/formatters";
+import {
+  formatLuxeInr,
+  formatLuxeInrReadable,
+  formatLuxeYears,
+} from "./luxe-format";
 import { luxeDisplayFont } from "./luxe-fonts";
 import styles from "./luxe.module.css";
 
@@ -83,49 +87,60 @@ export function WealthTerminal({ data }: WealthTerminalProps) {
 
       <div className={styles.netHero}>
         <span className={styles.netLabel}>YOUR NET INVESTMENT</span>
-        <strong className={styles.netFigure}>
-          {net > 0 ? formatInr(net) : "—"}
+        <strong className={`${styles.netFigure} ${styles.luxeNum}`}>
+          {formatLuxeInrReadable(net)}
         </strong>
-        <p className={styles.netQuiet}>
-          {gross > 0 ? formatInr(gross) : "—"} gross
-          {subsidy > 0 ? ` − ${formatInr(subsidy)} subsidy` : ""}
+        <p className={`${styles.netQuiet} ${styles.luxeNum}`}>
+          Exact: {formatLuxeInr(net)}
+          {gross > 0
+            ? ` · Gross ${formatLuxeInr(gross)}${
+                subsidy > 0 ? ` − Subsidy ${formatLuxeInr(subsidy)}` : ""
+              }`
+            : ""}
         </p>
       </div>
 
       <div className={styles.beforeAfter}>
         <div className={styles.baCol}>
-          <span className={styles.baLabel}>TODAY · ANNUAL GRID</span>
-          <strong className={styles.baValue}>
-            {yearlyBill > 0 ? formatInr(yearlyBill) : "—"}
+          <span className={styles.baLabel}>TODAY · ANNUAL GRID BILL</span>
+          <strong className={`${styles.baValue} ${styles.luxeNum}`}>
+            {yearlyBill > 0 ? formatLuxeInr(yearlyBill) : "—"}
           </strong>
+          {yearlyBill > 0 ? (
+            <span className={styles.baSub}>{formatLuxeInrReadable(yearlyBill)}</span>
+          ) : null}
         </div>
         <div className={styles.baArrow} aria-hidden>
           →
         </div>
         <div className={styles.baCol}>
           <span className={styles.baLabel}>YEAR 1 · WITH SOLAR</span>
-          <strong className={styles.baValue}>
+          <strong className={`${styles.baValue} ${styles.luxeNum}`}>
             {billAfter > 0
-              ? formatInr(billAfter)
+              ? formatLuxeInr(billAfter)
               : savingsAnnual > 0
-                ? formatInr(Math.max(0, (yearlyBill || savingsAnnual * 1.4) - savingsAnnual))
+                ? formatLuxeInr(
+                    Math.max(0, (yearlyBill || Math.round(savingsAnnual * 1.4)) - savingsAnnual)
+                  )
                 : "—"}
           </strong>
         </div>
         <div className={`${styles.baCol} ${styles.baDelta}`}>
-          <span className={styles.baLabel}>RELIEF</span>
-          <strong className={styles.baValueGold}>
-            {savingsAnnual > 0 ? formatInr(savingsAnnual) : "—"}
+          <span className={styles.baLabel}>YEAR-1 RELIEF</span>
+          <strong className={`${styles.baValueGold} ${styles.luxeNum}`}>
+            {savingsAnnual > 0 ? formatLuxeInr(savingsAnnual) : "—"}
           </strong>
-          <span className={styles.baSub}>Year-1 bill reduction</span>
+          <span className={styles.baSub}>
+            {savingsAnnual > 0 ? formatLuxeInrReadable(savingsAnnual) : "Bill reduction"}
+          </span>
         </div>
       </div>
 
       <div className={styles.paybackChart}>
         <div className={styles.chartHead}>
           <span>25-YEAR WEALTH PATH</span>
-          <span>
-            Break-even · {payback > 0 ? `${payback.toFixed(1)} yrs` : "—"}
+          <span className={styles.luxeNum}>
+            Break-even · {formatLuxeYears(payback)}
           </span>
         </div>
         <svg
@@ -180,7 +195,10 @@ export function WealthTerminal({ data }: WealthTerminalProps) {
         </svg>
         <p className={styles.chartFoot}>
           After payback, every month is bill relief
-          {lifetime > 0 ? ` · lifetime trajectory ${formatInr(lifetime)}` : ""}.
+          {lifetime > 0
+            ? ` · lifetime path about ${formatLuxeInrReadable(lifetime)} (${formatLuxeInr(lifetime)})`
+            : ""}
+          .
         </p>
       </div>
 

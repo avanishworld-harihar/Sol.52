@@ -45,35 +45,12 @@
   break-after: auto;
 }
 
-/* COVER PAGE — typography monument */
+/* COVER PAGE — original Obsidian layout */
 .obsidianCover {
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: #f8f9fb !important;
-}
-
-.confidentialSeal {
-  position: absolute;
-  top: 36px;
-  right: 40px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.62rem;
-  letter-spacing: 0.22em;
-  color: #b8962e;
-  border: 1px solid rgba(184, 150, 46, 0.4);
-  padding: 6px 12px;
-  border-radius: 999px;
-  z-index: 5;
-}
-
-.sealDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #b8962e;
 }
 
 .verticalBrand {
@@ -101,74 +78,47 @@
 
 .heroCenter {
   text-align: center;
-  max-width: 88%;
-  padding: 0 24px 48px;
+  max-width: 80%;
 }
 
 .heroSvg {
-  margin-bottom: 22px;
+  margin-bottom: 30px;
 }
 
 .heroEyebrow {
-  font-size: 0.78rem;
-  letter-spacing: 0.35em;
+  font-size: 0.85rem;
+  letter-spacing: 0.28em;
   color: #b8962e;
-  margin: 0 0 14px;
+  margin: 0 0 12px;
   font-weight: 500;
 }
 
 .heroClient {
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
-  font-size: 5.2rem;
-  line-height: 0.95;
-  margin: 0;
+  font-size: 4.2rem;
+  line-height: 1.02;
+  margin: 0 0 14px;
   color: #141820;
   font-weight: 300;
-  max-width: 12ch;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 .heroSubtitle {
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   color: #5c6570;
   font-weight: 300;
-  margin: 16px 0 0;
-}
-
-.coverCapacity {
-  margin-top: 36px;
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 10px;
-}
-
-.capacityFigure {
-  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
-  font-size: 4.5rem;
-  font-weight: 300;
-  color: #b8962e;
-  line-height: 1;
-}
-
-.capacityUnit {
-  font-size: 0.85rem;
-  letter-spacing: 0.2em;
-  color: #5c6570;
-  text-transform: uppercase;
+  margin: 0;
 }
 
 .coverFooter {
   position: absolute;
-  bottom: 36px;
+  bottom: 40px;
   left: 100px;
   right: 40px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
   border-top: 1px solid #d8dee6;
-  padding-top: 18px;
+  padding-top: 20px;
 }
 
 .footerNode {
@@ -178,13 +128,13 @@
 }
 
 .footerNode span {
-  font-size: 0.58rem;
+  font-size: 0.65rem;
   letter-spacing: 0.18em;
   color: #5c6570;
 }
 
 .footerNode strong {
-  font-size: 0.92rem;
+  font-size: 1.05rem;
   font-weight: 500;
   color: #141820;
 }
@@ -193,33 +143,224 @@
   color: #b8962e !important;
 }
 
+/* Readable numbers everywhere */
+.luxeNum {
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  letter-spacing: 0.01em;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
 /* SHARED HEADER */
 .luxeHeaderBlock {
-  margin-bottom: 40px;
+  margin-bottom: 16px;
 }
 
 .goldTag {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   letter-spacing: 3px;
-  color: #d4af37;
+  color: #b8962e;
 }
 
 .luxeHeadline {
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
-  font-size: 3rem;
+  font-size: 2.4rem;
   margin: 5px 0 0 0;
-  border-bottom: 1px solid #D8DEE6;
-  padding-bottom: 15px;
+  border-bottom: 1px solid #d8dee6;
+  padding-bottom: 12px;
   color: #141820;
   font-weight: 300;
 }
 
-/* HUD & LEDGER */
+/* HUD & ENGINEERING DESIGN */
 .hudPage,
 .ledgerPage {
   display: flex;
   flex-direction: column;
   background-color: #f8f9fb !important;
+}
+
+.engDesignLayout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.engPanel {
+  background: #ffffff;
+  border: 1px solid #e2e6ec;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.engPanelTitle {
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  color: #b8962e;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.engSvg {
+  display: block;
+  width: 100%;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.engMetricList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.engMetricRow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eef1f5;
+}
+
+.engMetricRow:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.engMetricRow span {
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #5c6570;
+}
+
+.engMetricRow strong {
+  font-size: 0.95rem;
+  color: #141820;
+}
+
+.engMetricRow small {
+  font-size: 0.72rem;
+  color: #5c6570;
+  line-height: 1.35;
+}
+
+.powerFlow {
+  background: #ffffff;
+  border: 1px solid #e2e6ec;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+
+.flowTrack {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 4px;
+  margin: 8px 0 10px;
+}
+
+.flowNode {
+  flex: 1;
+  background: #f8f9fb;
+  border: 1px solid #e2e6ec;
+  border-radius: 8px;
+  padding: 8px 6px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.flowCode {
+  font-size: 0.55rem;
+  letter-spacing: 0.14em;
+  color: #b8962e;
+  font-weight: 700;
+}
+
+.flowNode strong {
+  font-size: 0.78rem;
+  color: #141820;
+}
+
+.flowNode em {
+  font-style: normal;
+  font-size: 0.68rem;
+  color: #5c6570;
+}
+
+.flowArrow {
+  align-self: center;
+  color: #b8962e;
+  font-size: 1rem;
+  font-weight: 300;
+}
+
+.flowSafety {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  font-size: 0.72rem;
+  color: #3a4250;
+  line-height: 1.35;
+}
+
+.flowSafety strong {
+  color: #141820;
+}
+
+.bomLead {
+  margin: -4px 0 10px;
+  font-size: 0.82rem;
+  color: #5c6570;
+  line-height: 1.4;
+}
+
+.ledgerListDense {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  flex: 1;
+}
+
+.ledgerItemDense {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 9px 0;
+  border-bottom: 1px solid #e2e6ec;
+}
+
+.ledgerItemDense:last-child {
+  border-bottom: none;
+}
+
+.hugeNumberDense {
+  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+  font-size: 1.6rem;
+  color: rgba(168, 135, 42, 0.5);
+  line-height: 1;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+.ledgerTitleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+
+.ledgerTitleRow h3 {
+  margin: 0;
+  font-size: 0.92rem;
+  color: #141820;
+  font-weight: 600;
 }
 
 .technicalStage {
@@ -406,11 +547,10 @@
 
 .netFigure {
   display: block;
-  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
-  font-size: 3.6rem;
-  font-weight: 300;
+  font-size: 3rem;
+  font-weight: 600;
   color: #141820;
-  line-height: 1;
+  line-height: 1.05;
 }
 
 .netQuiet {
@@ -1149,8 +1289,8 @@
 }
 
 .termsHead {
-  text-align: center;
-  margin-bottom: 18px;
+  text-align: left;
+  margin-bottom: 12px;
   position: relative;
 }
 
@@ -1160,41 +1300,50 @@
   font-size: 0.62rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #d4af37;
+  color: #b8962e;
   font-weight: 600;
-  margin-bottom: 10px;
-  -webkit-print-color-adjust: exact !important;
-  print-color-adjust: exact !important;
+  margin-bottom: 6px;
 }
 
 .termsTitle {
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
-  font-size: 28pt;
-  font-weight: 600;
+  font-size: 22pt;
+  font-weight: 500;
   color: #141820;
   margin: 0;
   letter-spacing: 0.02em;
 }
 
-.termsGrid {
+.termsGrid,
+.termsGridFill {
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: 22px;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 18px;
   flex: 1;
+  min-height: 0;
+  align-content: stretch;
+}
+
+.termsCol {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
   min-height: 0;
 }
 
 .termsSubhead {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 0.16em;
-  color: #d4af37;
+  letter-spacing: 0.14em;
+  color: #b8962e;
   text-transform: uppercase;
-  margin-bottom: 10px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid rgba(212, 175, 55, 0.45);
-  -webkit-print-color-adjust: exact !important;
-  print-color-adjust: exact !important;
+  margin: 10px 0 8px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(184, 150, 46, 0.4);
+}
+
+.termsCol > .termsSubhead:first-child {
+  margin-top: 0;
 }
 
 .termsDiamondList,
@@ -1204,16 +1353,17 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 6px;
+  flex: 1;
 }
 
 .termsDiamondList li,
 .termsDotList li {
   position: relative;
-  padding-left: 16px;
-  font-size: 7.8pt;
-  line-height: 1.45;
-  color: #3A4250;
+  padding-left: 14px;
+  font-size: 8pt;
+  line-height: 1.4;
+  color: #3a4250;
 }
 
 .termsDiamondList li::before {
@@ -1221,10 +1371,8 @@
   position: absolute;
   left: 0;
   top: 0;
-  color: #d4af37;
-  font-size: 7pt;
-  -webkit-print-color-adjust: exact !important;
-  print-color-adjust: exact !important;
+  color: #b8962e;
+  font-size: 6.5pt;
 }
 
 .termsDotList li::before {
@@ -1232,12 +1380,10 @@
   position: absolute;
   left: 2px;
   top: 5px;
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
-  background: #d4af37;
-  -webkit-print-color-adjust: exact !important;
-  print-color-adjust: exact !important;
+  background: #b8962e;
 }
 
 .termsDiamondList li strong {
@@ -1246,35 +1392,35 @@
 }
 
 .termsPara {
-  font-size: 7.8pt;
-  line-height: 1.45;
-  color: #5C6570;
-  margin: 0 0 8px;
+  font-size: 8pt;
+  line-height: 1.4;
+  color: #5c6570;
+  margin: 0 0 6px;
 }
 
 .termsAmcIncludes {
-  font-size: 7.8pt;
+  font-size: 8pt;
   color: #141820;
   font-weight: 600;
-  margin: 0 0 6px;
+  margin: 0 0 4px;
 }
 
 .termsSignoff {
   margin-top: auto;
-  padding-top: 20px;
+  padding-top: 16px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .termsRegards {
   font-size: 10pt;
-  color: #5C6570;
+  color: #5c6570;
 }
 
 .termsBrand {
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
-  font-size: 18pt;
+  font-size: 16pt;
   font-weight: 600;
   color: #141820;
   letter-spacing: 0.06em;
