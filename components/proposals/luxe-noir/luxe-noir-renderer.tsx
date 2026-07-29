@@ -6,7 +6,7 @@
  * Atelier (residential_premium_luxe) stays separate.
  */
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
 import { formatInr } from "@/components/proposals/_shared/formatters";
 import { ObsidianCover } from "./ObsidianCover";
@@ -15,11 +15,14 @@ import { TitaniumLedger } from "./TitaniumLedger";
 import { WealthTerminal } from "./WealthTerminal";
 import { ImpactPage } from "./ImpactPage";
 import { PaymentMilestonesPage } from "./PaymentMilestonesPage";
+import { ClosingPage } from "./ClosingPage";
 import { ExpertVerdict } from "./ExpertVerdict";
 import {
   TermsCompliancePage1,
   TermsCompliancePage2,
 } from "./TermsCompliance";
+import { LuxeLangProvider, useLuxeLang } from "./luxe-lang-context";
+import type { LuxeLang } from "./luxe-copy";
 import { luxeDisplayFont } from "./luxe-fonts";
 import { resolveLuxeVendorName } from "./luxe-vendor";
 import styles from "./luxe-noir-shell.module.css";
@@ -29,12 +32,6 @@ export type LuxeNoirRendererProps = {
 };
 
 const DEFAULT_PAYMENT_PCTS = [25, 50, 20, 5] as const;
-const DEFAULT_PAYMENT_TITLES = [
-  "Advance (Booking)",
-  "Material Delivery",
-  "Installation",
-  "Commissioning",
-] as const;
 
 function A4Page({
   pageLabel,
@@ -60,13 +57,10 @@ function A4Page({
   );
 }
 
-export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
-  if (!data) {
-    return <div className={styles.loading}>Loading Premium Luxe…</div>;
-  }
-
-  const brand = resolveLuxeVendorName(data) || "Solar Partner";
-  const client = data.meta.customerName?.trim() || "Valued Customer";
+function LuxeNoirDocument({ data }: { data: ProposalData }) {
+  const { lang, setLang, copy, isHi } = useLuxeLang();
+  const brand =
+    resolveLuxeVendorName(data) || (isHi ? "सोलर पार्टनर" : "Solar Partner");
   const systemKw = Number(data.meta.systemKw) || 0;
   const eco = data.economics;
   const bill = data.bill;
@@ -76,11 +70,6 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
 
   const net = eco.netInr;
   const gross = eco.grossInr;
-  const contact =
-    closing.contactLine?.trim() || "Harihar Solar · +91-99933 22267";
-  const contactPerson = closing.contactPerson?.trim() || brand;
-  const contactRole =
-    closing.contactPersonDesignation?.trim() || "Authorized Signatory";
 
   const yearlyUnits =
     bill.totals.units > 0
@@ -101,6 +90,7 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
         ? Math.round(systemKw * 1450)
         : 0;
 
+  const paymentTitles = copy.pay.defaultTitles;
   const paymentBaseInr = gross > 0 ? gross : net;
   const paymentMilestones =
     execution.payments.length > 0
@@ -119,7 +109,7 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
                 : 0;
           return {
             step: String(i + 1).padStart(2, "0"),
-            title: p.label.replace(/^\d+\.\s*/, "") || DEFAULT_PAYMENT_TITLES[i]!,
+            title: p.label.replace(/^\d+\.\s*/, "") || paymentTitles[i]!,
             amountLabel: amountInr > 0 ? formatInr(amountInr) : "—",
             percent: `${pct}%`,
             amountInr,
@@ -130,7 +120,7 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
             paymentBaseInr > 0 ? Math.round((paymentBaseInr * pct) / 100) : 0;
           return {
             step: String(i + 1).padStart(2, "0"),
-            title: DEFAULT_PAYMENT_TITLES[i]!,
+            title: paymentTitles[i]!,
             amountLabel: amountInr > 0 ? formatInr(amountInr) : "—",
             percent: `${pct}%`,
             amountInr,
@@ -138,94 +128,131 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
         });
 
   const emiRows = (eco.emiRows ?? []).slice(0, 4);
+  const interestRatePct =
+    typeof eco.interestRatePct === "number" && Number.isFinite(eco.interestRatePct)
+      ? eco.interestRatePct
+      : 7;
+  const ratePctLabel = Number.isInteger(interestRatePct)
+    ? String(interestRatePct)
+    : interestRatePct.toFixed(1).replace(/\.0$/, "");
   const paymentTerms =
     terms.conditions.length > 0
       ? terms.conditions.slice(0, 4)
-      : [
-          "Prices valid for 15 days from proposal date.",
-          "Subsidy subject to MNRE / DISCOM approval timelines.",
-          "Site readiness and structural clearance are client responsibilities.",
-          "Commissioning follows net-metering approval by the DISCOM.",
-        ];
+      : isHi
+        ? [
+            "प्रस्ताव जारी तिथि से 15 दिनों तक मान्य।",
+            "सब्सिडी MNRE / DISCOM मंज़ूरी समय पर निर्भर।",
+            "साइट तैयारियाँ और स्ट्रक्चरल क्लियरेंस ग्राहक की ज़िम्मेदारी।",
+            "कमीशनिंग DISCOM नेट-मीटरिंग मंज़ूरी के बाद।",
+          ]
+        : [
+            "Prices valid for 15 days from proposal date.",
+            "Subsidy subject to MNRE / DISCOM approval timelines.",
+            "Site readiness and structural clearance are client responsibilities.",
+            "Commissioning follows net-metering approval by the DISCOM.",
+          ];
 
   const handlePrint = () => {
     if (typeof window !== "undefined") window.print();
   };
 
+  const genLabel =
+    generationUnits > 0
+      ? `${generationUnits.toLocaleString("en-IN")} ${isHi ? "यूनिट" : "unit"}`
+      : isHi
+        ? "वार्षिक"
+        : "annual";
+
   return (
     <div className={`${styles.root} ${luxeDisplayFont.variable}`}>
       <div className={styles.printBar}>
         <div className={styles.printBarInner}>
-          <span className={styles.printBarBrand}>Premium Luxe · A4 Proposal</span>
-          <button type="button" className={styles.printBarBtn} onClick={handlePrint}>
-            Print / Save PDF
-          </button>
+          <span className={styles.printBarBrand}>{copy.print.brand}</span>
+          <div className={styles.printBarActions}>
+            <div className={styles.langToggle} role="group" aria-label="Language">
+              <button
+                type="button"
+                className={`${styles.langBtn}${lang === "en" ? ` ${styles.langBtnActive}` : ""}`}
+                onClick={() => setLang("en")}
+                aria-pressed={lang === "en"}
+              >
+                {copy.print.langEn}
+              </button>
+              <button
+                type="button"
+                className={`${styles.langBtn}${lang === "hi" ? ` ${styles.langBtnActive}` : ""}`}
+                onClick={() => setLang("hi")}
+                aria-pressed={lang === "hi"}
+              >
+                {copy.print.langHi}
+              </button>
+            </div>
+            <button type="button" className={styles.printBarBtn} onClick={handlePrint}>
+              {copy.print.downloadPdf}
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* ── Page 01: Cinematic Cover ───────────────────────────── */}
       <ObsidianCover data={data} />
 
-      {/* ── Page 02: System Requirement & Load Analysis ───────── */}
       <A4Page pageLabel="02 / 11" brand={brand}>
-        <p className={styles.eyebrow}>Load & demand</p>
+        <p className={styles.eyebrow}>{copy.load.eyebrow}</p>
         <h2 className={styles.title} style={{ fontSize: "28pt" }}>
-          System Requirement & Load Analysis
+          {copy.load.title}
         </h2>
         <div className={styles.goldRule} />
-        <p className={styles.lead}>
-          We size the array from your actual consumption pattern — not a generic rule of
-          thumb — so generation tracks the bill you already pay.
-        </p>
+        <p className={styles.lead}>{copy.load.lead}</p>
 
         <div className={styles.cardGrid3} style={{ marginTop: 20 }}>
           <div className={`${styles.card} ${styles.cardAccent}`}>
-            <span className={styles.cardLabel}>Avg monthly units</span>
+            <span className={styles.cardLabel}>{copy.load.avgUnits}</span>
             <span className={styles.cardValue}>
               {monthlyUnitsAvg > 0 ? monthlyUnitsAvg.toLocaleString("en-IN") : "—"}
             </span>
-            <span className={styles.cardHint}>From bill history</span>
+            <span className={styles.cardHint}>{copy.load.fromBill}</span>
           </div>
           <div className={`${styles.card} ${styles.cardAccent}`}>
-            <span className={styles.cardLabel}>Est. monthly bill</span>
+            <span className={styles.cardLabel}>{copy.load.estBill}</span>
             <span className={styles.cardValue}>
               {monthlyBillApprox > 0 ? formatInr(monthlyBillApprox) : "—"}
             </span>
-            <span className={styles.cardHint}>Energy + fixed + duty</span>
+            <span className={styles.cardHint}>{copy.load.billHint}</span>
           </div>
           <div className={`${styles.card} ${styles.cardAccent}`}>
-            <span className={styles.cardLabel}>Proposed capacity</span>
+            <span className={styles.cardLabel}>{copy.load.capacity}</span>
             <span className={styles.cardValue}>
               {systemKw > 0 ? `${systemKw} kW` : "—"}
             </span>
-            <span className={styles.cardHint}>AC inverter rating</span>
+            <span className={styles.cardHint}>{copy.load.acRating}</span>
           </div>
         </div>
 
         <div className={styles.stack} style={{ marginTop: 18 }}>
           <div className={styles.card}>
-            <span className={styles.cardLabel}>Annual generation target</span>
+            <span className={styles.cardLabel}>{copy.load.annualGen}</span>
             <span className={styles.cardValue} style={{ fontSize: "22pt" }}>
               {generationUnits > 0
-                ? `${generationUnits.toLocaleString("en-IN")} units`
+                ? `${generationUnits.toLocaleString("en-IN")} ${
+                    isHi ? "यूनिट" : "units"
+                  }`
                 : "—"}
             </span>
-            <span className={styles.cardHint}>
-              ~1,450 kWh/kW · site-calibrated yield
-            </span>
+            <span className={styles.cardHint}>{copy.load.yieldHint}</span>
           </div>
           {bill.hasData && bill.months.length > 0 ? (
             <div className={styles.card}>
-              <span className={styles.cardLabel}>Recent bill months</span>
+              <span className={styles.cardLabel}>{copy.load.recentMonths}</span>
               <div className={styles.stack} style={{ marginTop: 8, gap: 0 }}>
                 {bill.months.slice(0, 6).map((m) => (
                   <div key={m.label} className={styles.listRow}>
                     <span>
                       {m.label}
-                      {m.isSummerPeak ? " · peak" : ""}
+                      {m.isSummerPeak ? ` · ${copy.load.peak}` : ""}
                     </span>
                     <strong>
-                      {m.units.toLocaleString("en-IN")} u · {formatInr(m.netInr)}
+                      {m.units.toLocaleString("en-IN")} {copy.common.unit} ·{" "}
+                      {formatInr(m.netInr)}
                     </strong>
                   </div>
                 ))}
@@ -233,45 +260,47 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
             </div>
           ) : (
             <div className={styles.card}>
-              <span className={styles.cardLabel}>Coverage intent</span>
+              <span className={styles.cardLabel}>{copy.load.coverage}</span>
               <p className={styles.cardHint} style={{ marginTop: 8, fontSize: "10pt" }}>
-                Array sized to offset daytime load and reduce grid draw during peak tariff
-                windows. Final net-metering settlement follows DISCOM approval.
+                {copy.load.coverageBody}
               </p>
             </div>
           )}
         </div>
 
-        <ExpertVerdict label="LOAD ANALYST'S VERDICT">
+        <ExpertVerdict label={copy.load.verdictLabel}>
           {monthlyUnitsAvg > 0 && systemKw > 0
-            ? `Your ~${monthlyUnitsAvg.toLocaleString("en-IN")} unit monthly average maps to a ${systemKw} kW AC system — the ${generationUnits > 0 ? `${generationUnits.toLocaleString("en-IN")} unit` : "annual"} generation target is calibrated to this bill history, not a catalogue default.`
-            : `We size from your actual consumption pattern so daytime generation tracks the bill you already pay — capacity is a match to load, not a guess.`}
+            ? copy.load.verdictWithData(
+                monthlyUnitsAvg.toLocaleString("en-IN"),
+                String(systemKw),
+                genLabel
+              )
+            : copy.load.verdictFallback}
         </ExpertVerdict>
       </A4Page>
 
-      {/* ── Page 03: Wealth Terminal ──────────────────────────── */}
       <WealthTerminal data={data} />
 
-      {/* ── Page 04: EMI Layout ────────────────────────────────── */}
       <A4Page pageLabel="04 / 11" brand={brand}>
-        <p className={styles.eyebrow}>Financing</p>
+        <p className={styles.eyebrow}>{copy.emi.eyebrow}</p>
         <h2 className={styles.title} style={{ fontSize: "28pt" }}>
-          EMI Layout
+          {copy.emi.title}
         </h2>
         <div className={styles.goldRule} />
-        <p className={styles.lead}>
-          Spread the net investment across tenures — often comparable to the bill you
-          already settle every month.
+        <p className={styles.lead}>{copy.emi.lead}</p>
+        <p className={styles.cardHint} style={{ marginTop: 8, fontSize: "9.5pt" }}>
+          {copy.emi.rateLabel}:{" "}
+          <strong style={{ color: "#141820" }}>{copy.emi.rateValue(ratePctLabel)}</strong>
         </p>
 
-        <div className={styles.card} style={{ marginTop: 20 }}>
+        <div className={styles.card} style={{ marginTop: 16 }}>
           {emiRows.length > 0 ? (
             <table className={styles.emiTable}>
               <thead>
                 <tr>
-                  <th>Tenure</th>
-                  <th>Interest (est.)</th>
-                  <th>Monthly EMI</th>
+                  <th>{copy.emi.tenure}</th>
+                  <th>{copy.emi.interestAt(ratePctLabel)}</th>
+                  <th>{copy.emi.monthlyEmi}</th>
                 </tr>
               </thead>
               <tbody>
@@ -292,104 +321,71 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
             </table>
           ) : (
             <p className={styles.cardHint} style={{ fontSize: "10pt" }}>
-              EMI options will be confirmed with your preferred lending partner. Typical
-              tenures: 3–7 years against the net project cost.
+              {copy.emi.emiEmpty}
             </p>
           )}
         </div>
 
         <div className={styles.cardGrid2} style={{ marginTop: 14 }}>
           <div className={`${styles.card} ${styles.cardAccent}`}>
-            <span className={styles.cardLabel}>Reference net cost</span>
+            <span className={styles.cardLabel}>{copy.emi.refNet}</span>
             <span className={styles.cardValue} style={{ fontSize: "18pt" }}>
               {net > 0 ? formatInr(net) : "—"}
             </span>
           </div>
           <div className={`${styles.card} ${styles.cardAccent}`}>
-            <span className={styles.cardLabel}>Vs. monthly bill</span>
+            <span className={styles.cardLabel}>{copy.emi.vsBill}</span>
             <span className={styles.cardValue} style={{ fontSize: "18pt" }}>
               {monthlyBillApprox > 0 ? formatInr(monthlyBillApprox) : "—"}
             </span>
-            <span className={styles.cardHint}>Current approx. grid spend</span>
+            <span className={styles.cardHint}>{copy.emi.gridSpend}</span>
           </div>
         </div>
 
-        <div className={styles.termsBox}>
-          Indicative EMIs assume standard retail rates; final sanction, processing fees,
-          and tenure are at the lender&apos;s discretion. We assist with documentation —
-          approval rests with the bank / NBFC.
-        </div>
+        <div className={styles.termsBox}>{copy.emi.disclaimer(ratePctLabel)}</div>
 
-        <ExpertVerdict label="FINANCE ADVISOR'S VERDICT">
+        <ExpertVerdict label={copy.emi.verdictLabel}>
           {emiRows.length > 0 && monthlyBillApprox > 0
-            ? `Pick the tenure where EMI sits near your current ~${formatInr(monthlyBillApprox)}/mo grid spend — solar equity builds on the roof while cash-flow feels familiar.`
+            ? isHi
+              ? `वह अवधि चुनें जहाँ EMI आपके वर्तमान ~${formatInr(monthlyBillApprox)}/माह ग्रिड खर्च के करीब हो — छत पर संपत्ति बनती रहे, नकद प्रवाह परिचित लगे।`
+              : `Pick the tenure where EMI sits near your current ~${formatInr(monthlyBillApprox)}/mo grid spend — solar equity builds on the roof while cash-flow feels familiar.`
             : net > 0
-              ? `Spread the ${formatInr(net)} net across a tenure that fits monthly cash-flow; shorter loans cut interest, longer ones ease the instalment.`
-              : `Match EMI tenure to cash-flow comfort — often the instalment is comparable to the bill you already settle every month.`}
+              ? isHi
+                ? `${formatInr(net)} नेट को ऐसी अवधि में बाँटें जो मासिक नकद प्रवाह से बैठे।`
+                : `Spread the ${formatInr(net)} net across a tenure that fits monthly cash-flow; shorter loans cut interest, longer ones ease the instalment.`
+              : isHi
+                ? "EMI अवधि को नकद प्रवाह आराम से मिलाएँ — अक्सर किस्त आपके मासिक बिल के करीब होती है।"
+                : `Match EMI tenure to cash-flow comfort — often the instalment is comparable to the bill you already settle every month.`}
         </ExpertVerdict>
       </A4Page>
 
-      {/* ── Page 05: Engineering HUD ──────────────────────────── */}
       <EngineeringBlueprint data={data} />
-
-      {/* ── Page 06: Titanium Ledger ──────────────────────────── */}
       <TitaniumLedger data={data} />
-
-      {/* ── Page 07: Clean Impact ─────────────────────────────── */}
       <ImpactPage data={data} generationUnits={generationUnits} brand={brand} />
-
-      {/* ── Page 08: Payment system + vendor bank ─────────────── */}
       <PaymentMilestonesPage
         data={data}
         milestones={paymentMilestones}
         paymentTerms={paymentTerms}
         brand={brand}
       />
-
-      {/* ── Page 09–10: Terms & Compliance ─────────────────────── */}
       <TermsCompliancePage1 data={data} />
       <TermsCompliancePage2 data={data} />
-
-      {/* ── Page 11: Cinematic Closing + Signature ─────────────── */}
-      <A4Page pageLabel="11 / 11" brand={brand} contentClassName={styles.closingPage}>
-        <div>
-          <p className={styles.eyebrow}>Next chapter</p>
-          <h2 className={styles.closingTitle}>Ready when you are.</h2>
-          <p className={styles.closingBody}>
-            We will lock design, DISCOM paperwork, and installation schedule around your
-            roof — with the same care shown on every page of this proposal.
-          </p>
-          <p className={styles.closingBody} style={{ marginTop: 12, fontSize: "12pt" }}>
-            Prepared for {client}
-            {systemKw > 0 ? ` · ${systemKw} kW` : ""}.
-          </p>
-          <p className={styles.closingVendor}>
-            <span>Vendor</span>
-            <strong>{brand}</strong>
-          </p>
-        </div>
-
-        <div className={styles.signatureBlock}>
-          <div>
-            <div className={styles.sigLine}>
-              <div className={styles.sigLabel}>Client acceptance</div>
-              <div className={styles.sigName}>{client}</div>
-            </div>
-          </div>
-          <div>
-            <div className={styles.sigLine}>
-              <div className={styles.sigLabel}>Authorized signature</div>
-              <div className={styles.sigName}>{contactPerson}</div>
-              <div className={styles.sigLabel} style={{ marginTop: 4 }}>
-                {contactRole} · {brand}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <p className={styles.contactLine}>{contact}</p>
-      </A4Page>
+      <ClosingPage data={data} />
     </div>
+  );
+}
+
+export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
+  const [lang, setLang] = useState<LuxeLang>("en");
+
+  if (!data) {
+    return <div className={styles.loading}>Loading Premium Luxe…</div>;
+  }
+
+  return (
+    <LuxeLangProvider lang={lang} setLang={setLang}>
+      <LuxeNoirDocument data={data} />
+    </LuxeLangProvider>
   );
 }
 

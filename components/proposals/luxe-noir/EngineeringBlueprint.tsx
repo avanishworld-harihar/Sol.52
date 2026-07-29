@@ -9,6 +9,7 @@
 import type { ProposalData } from "@/lib/proposal-data";
 import { formatLuxeKw, formatLuxeUnits } from "./luxe-format";
 import { ExpertVerdict } from "./ExpertVerdict";
+import { useLuxeLang } from "./luxe-lang-context";
 import { luxeDisplayFont } from "./luxe-fonts";
 import styles from "./luxe.module.css";
 
@@ -29,7 +30,7 @@ function metricValue(
   return hit?.value?.trim() || fallback;
 }
 
-/** Landscape rooftop module — flat on roof, not upright. */
+/** Landscape rooftop module — glass face, aluminium frame, GI legs + rails. */
 function IsoPanel({
   cx,
   cy,
@@ -37,13 +38,13 @@ function IsoPanel({
   cx: number;
   cy: number;
 }) {
-  // Landscape: long E–W edge, short N–S edge (lying on roof plane)
-  const rightX = 38;
-  const rightY = 12;
-  const downX = -14;
-  const downY = 10;
-  const depthX = 0;
-  const depthY = 3.5;
+  // Landscape: long E–W edge, short N–S edge on roof plane
+  const rightX = 40;
+  const rightY = 12.5;
+  const downX = -15;
+  const downY = 11;
+  const thick = 3.8;
+  const legH = 13;
 
   const p0x = cx;
   const p0y = cy;
@@ -54,55 +55,193 @@ function IsoPanel({
   const p3x = cx + downX;
   const p3y = cy + downY;
 
-  // Front/south edge (thickness)
-  const f0 = `${p3x},${p3y}`;
-  const f1 = `${p2x},${p2y}`;
-  const f2 = `${p2x + depthX},${p2y + depthY}`;
-  const f3 = `${p3x + depthX},${p3y + depthY}`;
-  // East edge thickness
-  const e0 = `${p1x},${p1y}`;
-  const e1 = `${p2x},${p2y}`;
-  const e2 = `${p2x + depthX},${p2y + depthY}`;
-  const e3 = `${p1x + depthX},${p1y + depthY}`;
+  // Thickness extrusion (down toward viewer / “ground”)
+  const t1x = p1x;
+  const t1y = p1y + thick;
+  const t2x = p2x;
+  const t2y = p2y + thick;
+  const t3x = p3x;
+  const t3y = p3y + thick;
+
+  // Mount rail under long edges (slightly inset)
+  const railInset = 0.12;
+  const r0x = p0x + rightX * railInset + downX * 0.15;
+  const r0y = p0y + rightY * railInset + downY * 0.15 + thick + 1;
+  const r1x = p0x + rightX * (1 - railInset) + downX * 0.15;
+  const r1y = p0y + rightY * (1 - railInset) + downY * 0.15 + thick + 1;
+  const r2x = p0x + rightX * (1 - railInset) + downX * 0.85;
+  const r2y = p0y + rightY * (1 - railInset) + downY * 0.85 + thick + 1;
+  const r3x = p0x + rightX * railInset + downX * 0.85;
+  const r3y = p0y + rightY * railInset + downY * 0.85 + thick + 1;
+
+  // Four legs: near corners of underside, drop to roof
+  const legs = [
+    { x: r0x + 2, y: r0y + 1 },
+    { x: r1x - 2, y: r1y + 1 },
+    { x: r2x - 2, y: r2y + 1 },
+    { x: r3x + 2, y: r3y + 1 },
+  ];
 
   const cells: string[] = [];
-  // Cell grid along landscape width (more cells across)
-  for (let i = 1; i < 6; i++) {
-    const t = i / 6;
+  for (let i = 1; i < 7; i++) {
+    const t = i / 7;
     const ax = p0x + rightX * t;
     const ay = p0y + rightY * t;
     cells.push(`M ${ax},${ay} L ${ax + downX},${ay + downY}`);
   }
-  for (let j = 1; j < 3; j++) {
-    const t = j / 3;
+  for (let j = 1; j < 4; j++) {
+    const t = j / 4;
     const ax = p0x + downX * t;
     const ay = p0y + downY * t;
     cells.push(`M ${ax},${ay} L ${ax + rightX},${ay + rightY}`);
   }
 
+  // Inner glass inset (aluminium frame lip)
+  const inset = 0.08;
+  const g0x = p0x + rightX * inset + downX * inset;
+  const g0y = p0y + rightY * inset + downY * inset;
+  const g1x = p0x + rightX * (1 - inset) + downX * inset;
+  const g1y = p0y + rightY * (1 - inset) + downY * inset;
+  const g2x = p0x + rightX * (1 - inset) + downX * (1 - inset);
+  const g2y = p0y + rightY * (1 - inset) + downY * (1 - inset);
+  const g3x = p0x + rightX * inset + downX * (1 - inset);
+  const g3y = p0y + rightY * inset + downY * (1 - inset);
+
   return (
     <g>
-      <polygon points={`${f0} ${f1} ${f2} ${f3}`} fill="#0b1018" />
-      <polygon points={`${e0} ${e1} ${e2} ${e3}`} fill="#152030" />
+      {/* Leg feet shadows */}
+      {legs.map((leg, i) => (
+        <ellipse
+          key={`sh-${i}`}
+          cx={leg.x + 1}
+          cy={leg.y + legH + 1.5}
+          rx="3.2"
+          ry="1.4"
+          fill="rgba(0,0,0,0.35)"
+        />
+      ))}
+
+      {/* GI legs */}
+      {legs.map((leg, i) => (
+        <g key={`leg-${i}`}>
+          <line
+            x1={leg.x}
+            y1={leg.y}
+            x2={leg.x + 0.8}
+            y2={leg.y + legH}
+            stroke="#7a8494"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+          />
+          <line
+            x1={leg.x + 1.4}
+            y1={leg.y}
+            x2={leg.x + 2.1}
+            y2={leg.y + legH}
+            stroke="#c5ccd6"
+            strokeWidth="1"
+            strokeLinecap="round"
+            opacity="0.85"
+          />
+          <rect
+            x={leg.x - 1.5}
+            y={leg.y + legH - 0.5}
+            width="5"
+            height="2"
+            rx="0.4"
+            fill="#9aa3b0"
+            stroke="#5c6573"
+            strokeWidth="0.4"
+          />
+        </g>
+      ))}
+
+      {/* Cross brace between front legs */}
+      <line
+        x1={legs[2]!.x}
+        y1={legs[2]!.y + legH * 0.45}
+        x2={legs[3]!.x}
+        y2={legs[3]!.y + legH * 0.45}
+        stroke="#8a93a0"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+      />
+
+      {/* Mounting rails (C-channel look) */}
+      <polygon
+        points={`${r0x},${r0y} ${r1x},${r1y} ${r1x},${r1y + 2.2} ${r0x},${r0y + 2.2}`}
+        fill="#9aa3b0"
+        stroke="#5c6573"
+        strokeWidth="0.45"
+      />
+      <polygon
+        points={`${r3x},${r3y} ${r2x},${r2y} ${r2x},${r2y + 2.2} ${r3x},${r3y + 2.2}`}
+        fill="#7a8494"
+        stroke="#5c6573"
+        strokeWidth="0.45"
+      />
+      <polygon
+        points={`${r0x},${r0y} ${r3x},${r3y} ${r3x},${r3y + 2} ${r0x},${r0y + 2}`}
+        fill="#b0b7c2"
+        stroke="#6a7380"
+        strokeWidth="0.35"
+      />
+      <polygon
+        points={`${r1x},${r1y} ${r2x},${r2y} ${r2x},${r2y + 2} ${r1x},${r1y + 2}`}
+        fill="#8a93a0"
+        stroke="#5c6573"
+        strokeWidth="0.35"
+      />
+
+      {/* Panel thickness (south + east faces) */}
+      <polygon
+        points={`${p3x},${p3y} ${p2x},${p2y} ${t2x},${t2y} ${t3x},${t3y}`}
+        fill="#1a2433"
+      />
+      <polygon
+        points={`${p1x},${p1y} ${p2x},${p2y} ${t2x},${t2y} ${t1x},${t1y}`}
+        fill="#243044"
+      />
+
+      {/* Aluminium outer frame */}
       <polygon
         points={`${p0x},${p0y} ${p1x},${p1y} ${p2x},${p2y} ${p3x},${p3y}`}
-        fill="url(#panelFace)"
+        fill="url(#panelFrame)"
+        stroke="#c8d0da"
+        strokeWidth="0.7"
+      />
+
+      {/* Glass / cell face */}
+      <polygon
+        points={`${g0x},${g0y} ${g1x},${g1y} ${g2x},${g2y} ${g3x},${g3y}`}
+        fill="url(#panelGlass)"
         stroke="#B8962E"
-        strokeWidth="0.85"
+        strokeWidth="0.55"
       />
       <path
         d={cells.join(" ")}
         fill="none"
-        stroke="rgba(184,150,46,0.3)"
-        strokeWidth="0.5"
+        stroke="rgba(200,220,255,0.22)"
+        strokeWidth="0.55"
+      />
+      {/* Specular highlight */}
+      <line
+        x1={g0x + rightX * 0.08}
+        y1={g0y + rightY * 0.08 + 1}
+        x2={g0x + rightX * 0.42}
+        y2={g0y + rightY * 0.42 + 1}
+        stroke="rgba(255,255,255,0.35)"
+        strokeWidth="1.6"
+        strokeLinecap="round"
       />
       <line
-        x1={p0x + 4}
-        y1={p0y + 2}
-        x2={p0x + rightX * 0.35}
-        y2={p0y + rightY * 0.35 + 2}
-        stroke="rgba(255,255,255,0.2)"
-        strokeWidth="1.1"
+        x1={g0x + rightX * 0.12}
+        y1={g0y + rightY * 0.12 + 3}
+        x2={g0x + rightX * 0.28}
+        y2={g0y + rightY * 0.28 + 3}
+        stroke="rgba(255,255,255,0.18)"
+        strokeWidth="1"
+        strokeLinecap="round"
       />
     </g>
   );
@@ -110,13 +249,16 @@ function IsoPanel({
 
 function IconPv() {
   return (
-    <svg viewBox="0 0 64 48" className={styles.archIcon} aria-hidden>
-      <rect x="4" y="8" width="26" height="18" rx="1.5" fill="#1e2a3a" stroke="#B8962E" strokeWidth="1.2" />
-      <path d="M10 8v18M17 8v18M24 8v18M4 14h26M4 20h26" stroke="rgba(184,150,46,0.35)" strokeWidth="0.7" />
-      <rect x="34" y="8" width="26" height="18" rx="1.5" fill="#1e2a3a" stroke="#B8962E" strokeWidth="1.2" />
-      <path d="M40 8v18M47 8v18M54 8v18M34 14h26M34 20h26" stroke="rgba(184,150,46,0.35)" strokeWidth="0.7" />
-      <rect x="10" y="30" width="44" height="4" rx="1" fill="#3a4250" />
-      <rect x="18" y="36" width="28" height="3" rx="1" fill="#2a3140" />
+    <svg viewBox="0 0 72 56" className={styles.archIcon} aria-hidden>
+      <rect x="6" y="6" width="28" height="22" rx="1.5" fill="#1e3550" stroke="#B8962E" strokeWidth="1.3" />
+      <path d="M13 6v22M20 6v22M27 6v22M6 13h28M6 20h28" stroke="rgba(200,220,255,0.28)" strokeWidth="0.8" />
+      <rect x="38" y="6" width="28" height="22" rx="1.5" fill="#1e3550" stroke="#B8962E" strokeWidth="1.3" />
+      <path d="M45 6v22M52 6v22M59 6v22M38 13h28M38 20h28" stroke="rgba(200,220,255,0.28)" strokeWidth="0.8" />
+      <rect x="10" y="32" width="52" height="5" rx="1" fill="#9aa3b0" stroke="#5c6573" strokeWidth="0.6" />
+      <line x1="18" y1="37" x2="16" y2="48" stroke="#8a93a0" strokeWidth="2.2" strokeLinecap="round" />
+      <line x1="36" y1="37" x2="36" y2="48" stroke="#8a93a0" strokeWidth="2.2" strokeLinecap="round" />
+      <line x1="54" y1="37" x2="56" y2="48" stroke="#8a93a0" strokeWidth="2.2" strokeLinecap="round" />
+      <rect x="12" y="48" width="48" height="3" rx="1" fill="#6a7380" />
     </svg>
   );
 }
@@ -203,8 +345,8 @@ function IconMeter() {
 function FlowArrow() {
   return (
     <span className={styles.flowArrow} aria-hidden>
-      <svg width="18" height="12" viewBox="0 0 18 12">
-        <path d="M0 6h14M10 1l6 5-6 5" fill="none" stroke="#B8962E" strokeWidth="1.4" />
+      <svg width="22" height="14" viewBox="0 0 22 14">
+        <path d="M0 7h16M12 2l8 5-8 5" fill="none" stroke="#B8962E" strokeWidth="1.6" />
       </svg>
     </span>
   );
@@ -242,13 +384,13 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
   const strings = Math.max(1, Math.ceil(modulesRaw / 6));
   const perString = Math.ceil(modulesRaw / strings);
 
-  // Isometric step matches landscape panel footprint + gap
-  const stepColX = 42;
-  const stepColY = 13;
-  const stepRowX = -16;
-  const stepRowY = 14;
-  const isoOriginX = 96;
-  const isoOriginY = 72;
+  // Isometric step — room for metal legs under each module
+  const stepColX = 46;
+  const stepColY = 14;
+  const stepRowX = -18;
+  const stepRowY = 18;
+  const isoOriginX = 88;
+  const isoOriginY = 58;
 
   const panelPositions = Array.from({ length: modulesDraw }).map((_, i) => {
     const col = i % cols;
@@ -256,38 +398,53 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
     return {
       cx: isoOriginX + col * stepColX + row * stepRowX,
       cy: isoOriginY + col * stepColY + row * stepRowY,
+      z: row * 100 + col,
     };
   });
+  // Draw back-to-front so nearer panels occlude structure behind
+  panelPositions.sort((a, b) => a.cy - b.cy || a.cx - b.cx);
+
+  const { copy, isHi } = useLuxeLang();
 
   return (
     <section
       className={`${styles.a4Page} ${styles.hudPage} ${luxeDisplayFont.variable}`}
     >
       <header className={styles.luxeHeaderBlock}>
-        <span className={styles.goldTag}>05 // ENGINEERING DESIGN</span>
-        <h2 className={styles.luxeHeadline}>Array & Power Architecture.</h2>
+        <span className={styles.goldTag}>{copy.eng.tag}</span>
+        <h2 className={styles.luxeHeadline}>{copy.eng.title}</h2>
       </header>
 
       <div className={styles.engDesignLayout}>
         {/* Dark 3D roof array */}
         <div className={`${styles.engPanel} ${styles.engPanelFlush}`}>
-          <div className={styles.engPanelTitle}>ROOF ARRAY PLAN</div>
+          <div className={styles.engPanelTitle}>{copy.eng.roofPlan}</div>
           <svg
-            viewBox="0 0 320 228"
+            viewBox="0 0 320 240"
             width="100%"
-            height="210"
+            height="228"
             className={styles.engSvgDark}
             aria-hidden
           >
             <defs>
-              <linearGradient id="panelFace" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#2a3d55" />
-                <stop offset="45%" stopColor="#1a2838" />
-                <stop offset="100%" stopColor="#121c28" />
+              <linearGradient id="panelGlass" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#3a5a7a" />
+                <stop offset="35%" stopColor="#1e3550" />
+                <stop offset="70%" stopColor="#142838" />
+                <stop offset="100%" stopColor="#0c1824" />
+              </linearGradient>
+              <linearGradient id="panelFrame" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#e8ecf2" />
+                <stop offset="45%" stopColor="#b8c0cc" />
+                <stop offset="100%" stopColor="#7a8494" />
               </linearGradient>
               <linearGradient id="roofFloor" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#151c28" />
-                <stop offset="100%" stopColor="#0a0e14" />
+                <stop offset="0%" stopColor="#1a2230" />
+                <stop offset="100%" stopColor="#080c12" />
+              </linearGradient>
+              <linearGradient id="roofSlab" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#2a3344" />
+                <stop offset="100%" stopColor="#151c28" />
               </linearGradient>
               <pattern
                 id="isoGrid"
@@ -299,46 +456,44 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
                 <path
                   d="M0 16V0H28"
                   fill="none"
-                  stroke="rgba(184,150,46,0.12)"
+                  stroke="rgba(184,150,46,0.14)"
                   strokeWidth="0.6"
                 />
               </pattern>
             </defs>
 
-            <rect width="320" height="228" fill="url(#roofFloor)" rx="6" />
-            <rect x="8" y="8" width="304" height="188" fill="url(#isoGrid)" rx="4" />
+            <rect width="320" height="240" fill="url(#roofFloor)" rx="6" />
+            <rect x="8" y="8" width="304" height="200" fill="url(#isoGrid)" rx="4" />
 
-            {/* Horizon / depth lines */}
-            {Array.from({ length: 8 }).map((_, i) => (
-              <line
-                key={`hz-${i}`}
-                x1={20 + i * 18}
-                y1={196}
-                x2={100 + i * 28}
-                y2={40}
-                stroke="rgba(184,150,46,0.06)"
-                strokeWidth="0.6"
-              />
-            ))}
+            {/* Concrete / terrace slab under structure */}
+            <polygon
+              points="48,188 168,148 292,188 172,228"
+              fill="url(#roofSlab)"
+              opacity="0.55"
+            />
+            <polygon
+              points="48,188 168,148 292,188 172,200 48,200"
+              fill="rgba(184,150,46,0.06)"
+            />
 
-            {/* Mounting rail under array */}
+            {/* Soft ground shadow for whole array */}
             {panelPositions.length > 0 && (
               <ellipse
                 cx={
                   isoOriginX +
                   ((cols - 1) * stepColX) / 2 +
                   ((rows - 1) * stepRowX) / 2 +
-                  12
+                  14
                 }
                 cy={
                   isoOriginY +
                   ((cols - 1) * stepColY) / 2 +
                   ((rows - 1) * stepRowY) / 2 +
-                  28
+                  36
                 }
-                rx={cols * 24 + 10}
-                ry={10 + rows * 2}
-                fill="rgba(0,0,0,0.45)"
+                rx={cols * 26 + 18}
+                ry={12 + rows * 3}
+                fill="rgba(0,0,0,0.5)"
               />
             )}
 
@@ -348,91 +503,93 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
 
             {/* Compass rose */}
             <g transform="translate(42,42)">
-              <circle r="22" fill="rgba(10,14,20,0.85)" stroke="#B8962E" strokeWidth="1" />
-              <circle r="16" fill="none" stroke="rgba(184,150,46,0.35)" strokeWidth="0.6" />
-              <line x1="0" y1="-14" x2="0" y2="14" stroke="rgba(255,255,255,0.25)" strokeWidth="0.6" />
-              <line x1="-14" y1="0" x2="14" y2="0" stroke="rgba(255,255,255,0.25)" strokeWidth="0.6" />
-              <polygon points="0,-13 3.5,-2 0,-4 -3.5,-2" fill="#B8962E" />
-              <polygon points="0,13 3,3 0,5 -3,3" fill="#2a3140" />
+              <circle r="24" fill="rgba(10,14,20,0.88)" stroke="#B8962E" strokeWidth="1.1" />
+              <circle r="17" fill="none" stroke="rgba(184,150,46,0.4)" strokeWidth="0.7" />
+              <line x1="0" y1="-15" x2="0" y2="15" stroke="rgba(255,255,255,0.28)" strokeWidth="0.7" />
+              <line x1="-15" y1="0" x2="15" y2="0" stroke="rgba(255,255,255,0.28)" strokeWidth="0.7" />
+              <polygon points="0,-14 3.8,-2 0,-4.2 -3.8,-2" fill="#B8962E" />
+              <polygon points="0,14 3.2,3 0,5.2 -3.2,3" fill="#2a3140" />
               <text
-                y="-16"
+                y="-17"
                 textAnchor="middle"
                 fill="#B8962E"
-                fontSize="6"
+                fontSize="7"
                 fontWeight="700"
                 letterSpacing="1"
               >
                 N
               </text>
-              <text y="22" textAnchor="middle" fill="#8a93a0" fontSize="5.5">
+              <text y="24" textAnchor="middle" fill="#a8b0bc" fontSize="6.5">
                 S
               </text>
-              <text x="18" y="3" textAnchor="middle" fill="#8a93a0" fontSize="5">
+              <text x="19" y="3.5" textAnchor="middle" fill="#a8b0bc" fontSize="6">
                 E
               </text>
-              <text x="-18" y="3" textAnchor="middle" fill="#8a93a0" fontSize="5">
+              <text x="-19" y="3.5" textAnchor="middle" fill="#a8b0bc" fontSize="6">
                 W
               </text>
             </g>
             <text
               x="42"
-              y="78"
+              y="82"
               textAnchor="middle"
               fill="#B8962E"
-              fontSize="7"
+              fontSize="8"
               letterSpacing="1.2"
+              fontWeight="600"
             >
               180° S · TILT {tilt.toFixed(0)}°
             </text>
 
             {/* Caption bar */}
-            <rect x="0" y="200" width="320" height="28" fill="rgba(0,0,0,0.55)" />
+            <rect x="0" y="212" width="320" height="28" fill="rgba(0,0,0,0.6)" />
             <text
               x="160"
-              y="218"
+              y="230"
               textAnchor="middle"
-              fill="#d8dee6"
-              fontSize="9"
+              fill="#e8ecf2"
+              fontSize="10"
               fontFamily="system-ui,sans-serif"
               letterSpacing="0.4"
             >
               {modulesRaw} modules · {formatLuxeKw(dcKwp)} kWp DC · {strings}×
-              {perString} string · azimuth South
+              {perString} string · GI mount · South
             </text>
           </svg>
         </div>
 
         {/* Site metrics — denser */}
         <div className={styles.engPanel}>
-          <div className={styles.engPanelTitle}>SITE & ARRAY METRICS</div>
+          <div className={styles.engPanelTitle}>{copy.eng.siteMetrics}</div>
           <div className={styles.engMetricList}>
             <div className={styles.engMetricRow}>
-              <span>Location / latitude basis</span>
+              <span>{copy.eng.location}</span>
               <strong>{city}</strong>
-              <small>South-facing array optimizes annual photon capture.</small>
+              <small>{copy.eng.locationHint}</small>
             </div>
             <div className={styles.engMetricRow}>
-              <span>Required roof area</span>
+              <span>{copy.eng.roofArea}</span>
               <strong className={styles.luxeNum}>~{roofM2} m²</strong>
               <small>
-                {modulesRaw} × ~{M2_PER_PANEL} m²/module incl. walkway. Final after survey.
+                {modulesRaw} × ~{M2_PER_PANEL} m²/module
+                {isHi ? " incl. walkway. सर्वे के बाद अंतिम।" : " incl. walkway. Final after survey."}
               </small>
             </div>
             <div className={styles.engMetricRow}>
-              <span>String topology</span>
+              <span>{copy.eng.stringTopo}</span>
               <strong className={styles.luxeNum}>
                 {strings} × {perString} @ {PANEL_WATT} Wp
               </strong>
-              <small>Dual MPPT inputs · shade-tolerant tracking.</small>
+              <small>{copy.eng.stringHint}</small>
             </div>
             <div className={styles.engMetricRow}>
-              <span>Specific yield</span>
+              <span>{copy.eng.specificYield}</span>
               <strong className={styles.luxeNum}>
                 {formatLuxeUnits(specificYield)} kWh/kW
               </strong>
               <small>
-                Est. {formatLuxeUnits(annualUnits)} units/yr · PR {prValue} · wind
-                150 km/h mounts.
+                Est. {formatLuxeUnits(annualUnits)} {isHi ? "यूनिट/वर्ष" : "units/yr"} · PR{" "}
+                {prValue} · wind 150 km/h mounts.
               </small>
             </div>
           </div>
@@ -460,10 +617,8 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
 
       {/* Illustrated system architecture */}
       <div className={styles.powerFlow}>
-        <div className={styles.engPanelTitle}>SYSTEM ARCHITECTURE</div>
-        <p className={styles.archLead}>
-          DC generation → protection → conversion → AC protection → DISCOM net meter
-        </p>
+        <div className={styles.engPanelTitle}>{copy.eng.arch}</div>
+        <p className={styles.archLead}>{copy.eng.archLead}</p>
         <div className={styles.archTrack}>
           <div className={styles.archNode}>
             <IconPv />
@@ -515,7 +670,7 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
               />
             </svg>
             <div>
-              <strong>Lightning arrestor</strong>
+              <strong>{copy.eng.la}</strong>
               <small>Type-I/II surge path bonded to earth electrode</small>
             </div>
           </div>
@@ -530,7 +685,7 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
               />
             </svg>
             <div>
-              <strong>Copper earthing</strong>
+              <strong>{copy.eng.earth}</strong>
               <small>≤1 Ω resistance · IS 3043 compliant pits</small>
             </div>
           </div>
@@ -548,18 +703,17 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
               <circle cx="10" cy="16" r="1.5" fill="#B8962E" />
             </svg>
             <div>
-              <strong>Cable class</strong>
+              <strong>{copy.eng.cable}</strong>
               <small>TUV DC / FRLS AC sized to string current</small>
             </div>
           </div>
         </div>
       </div>
 
-      <ExpertVerdict label="CHIEF ENGINEER'S VERDICT">
-        Array sized at {formatLuxeKw(dcKwp)} kWp DC against {formatLuxeKw(systemKw)}{" "}
-        kW AC ({dcAc.toFixed(2)} oversize) for earlier morning yield and monsoon
-        resilience at {tilt.toFixed(0)}° tilt · {city}. Protection stack (DCDB → INV →
-        ACDB → LA/earth) keeps the customer side within DISCOM and CEA practice.
+      <ExpertVerdict label={copy.eng.verdictLabel}>
+        {isHi
+          ? `ऐरे ${formatLuxeKw(dcKwp)} kWp DC बनाम ${formatLuxeKw(systemKw)} kW AC (${dcAc.toFixed(2)} ओवरसाइज़) — सुबह की यील्ड और मानसून मज़बूती के लिए ${tilt.toFixed(0)}° टिल्ट · ${city}। सुरक्षा स्टैक (DCDB → INV → ACDB → LA/अर्थ) ग्राहक पक्ष को DISCOM और CEA अभ्यास में रखता है।`
+          : `Array sized at ${formatLuxeKw(dcKwp)} kWp DC against ${formatLuxeKw(systemKw)} kW AC (${dcAc.toFixed(2)} oversize) for earlier morning yield and monsoon resilience at ${tilt.toFixed(0)}° tilt · ${city}. Protection stack (DCDB → INV → ACDB → LA/earth) keeps the customer side within DISCOM and CEA practice.`}
       </ExpertVerdict>
 
       <p className={styles.standardsStrip}>{standards}</p>

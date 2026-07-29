@@ -97,6 +97,8 @@ export type ProposalData = {
     monthlySavingsInr: number;
     paybackYears: number;
     lifetimeProfitInr: number;
+    /** Annual interest rate used to build emiRows (from financeOption). */
+    interestRatePct?: number;
     emiRows: ProposalEmiRow[];
     /** 25-year compounding cumulative wealth (Canvas WealthGraph). */
     wealthJourney: ProposalWealthPoint[];

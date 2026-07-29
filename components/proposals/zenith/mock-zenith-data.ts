@@ -23,6 +23,7 @@ export const MOCK_ZENITH_DATA: ProposalData = {
     monthlySavingsInr: 4080,
     paybackYears: 4.5,
     lifetimeProfitInr: 1000000,
+    interestRatePct: 7,
     emiRows: [
       { tenureLabel: "5-Year Loan", interestPaidInr: 45000, monthlyEmiInr: 4450 },
       { tenureLabel: "7-Year Loan", interestPaidInr: 62000, monthlyEmiInr: 3400 },

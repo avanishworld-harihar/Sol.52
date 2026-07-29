@@ -8,6 +8,7 @@
 import type { ProposalData } from "@/lib/proposal-data";
 import { formatLuxeKw } from "./luxe-format";
 import { resolveLuxeVendorName } from "./luxe-vendor";
+import { useLuxeLang } from "./luxe-lang-context";
 import { luxeDisplayFont } from "./luxe-fonts";
 import styles from "./luxe.module.css";
 
@@ -107,8 +108,12 @@ function CoverRoofArt() {
 }
 
 export function ObsidianCover({ data }: ObsidianCoverProps) {
-  const vendor = resolveLuxeVendorName(data) || "Solar Partner";
-  const client = data.meta.customerName?.trim() || "Valued Customer";
+  const { copy, isHi } = useLuxeLang();
+  const vendor =
+    resolveLuxeVendorName(data) || (isHi ? "सोलर पार्टनर" : "Solar Partner");
+  const client =
+    data.meta.customerName?.trim() ||
+    (isHi ? "सम्मानित ग्राहक" : "Valued Customer");
   const systemKw = Number(data.meta.systemKw) || 3;
   const location =
     data.meta.locationLine && data.meta.locationLine !== "—"
@@ -130,13 +135,13 @@ export function ObsidianCover({ data }: ObsidianCoverProps) {
       </div>
 
       <header className={styles.coverTopRail}>
-        <span className={styles.coverSeries}>PREMIUM LUXE PROPOSAL</span>
-        <span className={styles.coverConfidential}>CONFIDENTIAL</span>
+        <span className={styles.coverSeries}>{copy.cover.series}</span>
+        <span className={styles.coverConfidential}>{copy.cover.confidential}</span>
       </header>
 
       <div className={styles.coverMain}>
         <div className={styles.coverBrandBlock}>
-          <span className={styles.coverVendorLabel}>VENDOR</span>
+          <span className={styles.coverVendorLabel}>{copy.cover.vendor}</span>
           <h1
             className={`${styles.coverVendorName} ${
               longName ? styles.coverVendorNameLong : ""
@@ -145,7 +150,7 @@ export function ObsidianCover({ data }: ObsidianCoverProps) {
             {vendor}
           </h1>
           <div className={styles.coverBrandRule} />
-          <p className={styles.coverBrandDiscipline}>Rooftop solar · Private offer</p>
+          <p className={styles.coverBrandDiscipline}>{copy.cover.discipline}</p>
         </div>
 
         <div className={styles.coverArtWrap}>
@@ -154,27 +159,24 @@ export function ObsidianCover({ data }: ObsidianCoverProps) {
       </div>
 
       <div className={styles.coverDedication}>
-        <span className={styles.coverPrepared}>Prepared for</span>
+        <span className={styles.coverPrepared}>{copy.cover.preparedFor}</span>
         <h2 className={styles.coverClientName}>{client}</h2>
-        <p className={styles.coverOfferLine}>
-          A clear rooftop solar plan — price, savings, warranty, and install steps in
-          one private brief.
-        </p>
+        <p className={styles.coverOfferLine}>{copy.cover.offer}</p>
       </div>
 
       <footer className={styles.coverMeta}>
         <div className={styles.coverMetaCell}>
-          <span>System</span>
+          <span>{copy.cover.system}</span>
           <strong className={styles.luxeNum}>{formatLuxeKw(systemKw)} kW</strong>
         </div>
         <div className={styles.coverMetaDivider} aria-hidden />
         <div className={styles.coverMetaCell}>
-          <span>Location</span>
+          <span>{copy.cover.location}</span>
           <strong>{location}</strong>
         </div>
         <div className={styles.coverMetaDivider} aria-hidden />
         <div className={styles.coverMetaCell}>
-          <span>Year</span>
+          <span>{copy.cover.year}</span>
           <strong className={styles.luxeNum}>{year}</strong>
         </div>
       </footer>

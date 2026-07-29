@@ -69,6 +69,38 @@
   cursor: pointer;
 }
 
+.printBarActions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-shrink: 0;
+}
+
+.langToggle {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.langBtn {
+  appearance: none;
+  background: transparent;
+  color: #1e2430;
+  border: 1px solid rgba(20, 24, 32, 0.2);
+  border-radius: 999px;
+  padding: 0.32rem 0.7rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+}
+
+.langBtnActive {
+  background: rgba(184, 150, 46, 0.16);
+  border-color: #b8962e;
+  color: #141820;
+}
+
 /* ── CRITICAL: A4 page wrapper (Canvas-style pagination) ─────── */
 .a4Page {
   width: 210mm;

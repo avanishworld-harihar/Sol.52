@@ -2,13 +2,14 @@
 
 /**
  * Premium Luxe — Terms & Compliance (2 A4 pages).
- * Single-column only — no side-by-side columns / negative space.
+ * Single-column · density capped so content stays inside A4 (no overlap / clip).
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
 import { formatLuxeInr, formatLuxeInrReadable } from "./luxe-format";
 import { resolveLuxeVendorName } from "./luxe-vendor";
 import { ExpertVerdict } from "./ExpertVerdict";
+import { useLuxeLang } from "./luxe-lang-context";
 import { luxeDisplayFont } from "./luxe-fonts";
 import styles from "./luxe.module.css";
 
@@ -19,23 +20,23 @@ export type TermsComplianceProps = {
 const GENERAL_TERMS: { label: string; text: string }[] = [
   {
     label: "Load Change",
-    text: "DISCOM / state electricity board load change, or cable change from pole to meter and its liaison — only if required — will be in the customer's scope.",
+    text: "DISCOM load change, or cable change from pole to meter and liaison — only if required — is in the customer's scope.",
   },
   {
     label: "Statutory Fees",
-    text: "All government statutory fees, regulatory charges, and legal costs relating to net-metering, subsidy (PM Surya Ghar / state schemes), DISCOM approvals, or any official application shall be borne and paid directly by the client.",
+    text: "Government fees for net-metering, subsidy, and DISCOM approvals are paid directly by the client.",
   },
   {
     label: "Arrears",
-    text: "If sanctioned / connected load increase is required, all prior DISCOM bills and arrears must be cleared before processing; delay from uncleared dues remains the client's responsibility.",
+    text: "If load increase is required, clear prior DISCOM bills/arrears before processing.",
   },
   {
     label: "Inverter Warranty",
-    text: "Inverter warranty is as per manufacturer (typically 8–10 years on string inverters).",
+    text: "Inverter warranty as per manufacturer (typically 8–10 years on string inverters).",
   },
   {
     label: "Module Warranty",
-    text: "Product warranty: 15 years; performance warranty: ≥80% at end of 30 years. Overall system parts not listed above: 1 year from commissioning.",
+    text: "Product 15 years; performance ≥80% at year 30. Other parts: 1 year from commissioning.",
   },
   {
     label: "Warranty Scope",
@@ -43,68 +44,64 @@ const GENERAL_TERMS: { label: string; text: string }[] = [
   },
   {
     label: "Maintenance",
-    text: "Routine module cleaning (recommended weekly) is in the customer's scope — it directly affects generation.",
+    text: "Routine module cleaning (recommended weekly) is in the customer's scope.",
   },
   {
     label: "Timeline",
-    text: "Installation completed within 30–40 working days from advance payment as per agreed PO / schedule.",
+    text: "Installation within 30–40 working days from advance, as per agreed PO / schedule.",
   },
   {
     label: "Governing Terms",
-    text: "Any terms not expressly mentioned herein shall be governed by mutual written agreement.",
+    text: "Terms not listed here are governed by mutual written agreement.",
   },
   {
     label: "Refunds",
-    text: "If applicable, processed after 2.5% deduction on project finalization amount plus documented expenses already incurred.",
+    text: "If applicable: after 2.5% deduction on finalization amount plus documented expenses.",
   },
 ];
 
 const DEFAULT_DOCS = [
   "Latest electricity bill (clear copy)",
-  "Copy of PAN card",
-  "Copy of Aadhaar card (legible, both sides if applicable)",
-  "Ownership proof — property tax receipt / sale deed / municipal record",
-  "Passport-size photograph of applicant",
-  "Single-line diagram (SLD) — draft provided by us; signed copy required from customer",
+  "PAN card copy",
+  "Aadhaar card copy",
+  "Ownership proof — tax receipt / sale deed",
+  "Passport-size photograph",
+  "Signed SLD (draft provided by us)",
 ];
 
 const DEFAULT_AMC_OBJECTIVE =
-  "AMC keeps generation checks and safety visits on schedule for the contract period.";
+  "AMC keeps generation checks and safety visits on schedule.";
 
 const DEFAULT_AMC_INCLUDES = [
-  "Periodic monitoring of plant performance and energy generation",
-  "Routine preventive maintenance of plant and equipment",
-  "Emergency breakdown attendance (within 48 working hours)",
+  "Periodic plant performance monitoring",
+  "Routine preventive maintenance",
+  "Emergency breakdown (within 48 working hours)",
   "OEM coordination for warranty support",
-  "Inspection of DC/AC protection, earthing, and cable terminations",
 ];
 
 const DEFAULT_AMC_EXCLUDES = [
-  "Physical damage, third-party misuse, theft, or vandalism",
-  "Module glass replacement due to external impact",
+  "Physical damage, theft, or vandalism",
+  "Module glass replacement from external impact",
   "DISCOM metering fees and government charges",
 ];
 
 const CLIENT_SCOPE = [
-  "Site security, watch and ward",
-  "Insurance of plant and equipment (if desired)",
-  "Stable internet for remote monitoring (where applicable)",
-  "Water and auxiliary power for maintenance on site",
-  "Day-to-day visual checks and safe rooftop access",
-  "Regular module cleaning as per manufacturer guidelines",
-  "Keep roof drains clear; report inverter alerts promptly",
-  "Provide DISCOM / municipal letters when requested",
+  "Site security / watch and ward",
+  "Insurance of plant (if desired)",
+  "Stable internet for monitoring (if applicable)",
+  "Water and auxiliary power for maintenance",
+  "Regular module cleaning per OEM guidelines",
+  "DISCOM / municipal letters when requested",
 ];
 
 const DEFAULT_AMC_COMMERCIAL = [
-  "When charged, maintenance fees are payable in advance on a half-yearly basis.",
-  "Minimum O&M duration: 2 years, extendable by mutual consent.",
-  "Force majeure events will be informed to the client within one week.",
+  "When charged, fees are payable in advance (half-yearly).",
+  "Minimum O&M: 2 years, extendable by mutual consent.",
 ];
 
 const SAFETY_NOTES = [
   "Do not open ACDB / DCDB or inverter covers — trained technicians only.",
-  "Lightning arrestor and earthing must stay bonded; do not disconnect earth leads.",
+  "Keep lightning arrestor and earthing bonded; do not disconnect earth leads.",
   "Report isolation trips or burning smell immediately; do not reset repeatedly.",
 ];
 
@@ -124,23 +121,30 @@ function isCommercialNote(s: string): boolean {
   );
 }
 
+function take<T>(arr: T[], n: number): T[] {
+  return arr.slice(0, n);
+}
+
 export function TermsCompliancePage1({ data }: TermsComplianceProps) {
-  const docs =
-    data.terms.documents.length > 0 ? data.terms.documents : DEFAULT_DOCS;
+  const { copy } = useLuxeLang();
+  const docs = take(
+    data.terms.documents.length > 0 ? data.terms.documents : DEFAULT_DOCS,
+    6
+  );
 
   return (
-    <section className={`${styles.a4Page} ${styles.termsPage} ${luxeDisplayFont.variable}`}>
+    <section
+      className={`${styles.a4Page} ${styles.termsPage} ${luxeDisplayFont.variable}`}
+    >
       <header className={styles.termsHead}>
-        <span className={styles.termsTag}>09 / TERMS & COMPLIANCE</span>
-        <h2 className={styles.termsTitle}>Terms & Conditions</h2>
-        <p className={styles.termsIntro}>
-          Please read each point carefully before signing.
-        </p>
+        <span className={styles.termsTag}>{copy.terms.tag1}</span>
+        <h2 className={styles.termsTitle}>{copy.terms.title}</h2>
+        <p className={styles.termsIntro}>{copy.terms.intro1}</p>
       </header>
 
       <div className={styles.termsStack}>
         <section className={styles.termsSection}>
-          <div className={styles.termsSubhead}>01 · General Terms</div>
+          <div className={styles.termsSubhead}>{copy.terms.general}</div>
           <ol className={styles.termsArticleList}>
             {GENERAL_TERMS.map((t, i) => (
               <li key={t.label} className={styles.termsArticle}>
@@ -157,7 +161,7 @@ export function TermsCompliancePage1({ data }: TermsComplianceProps) {
         </section>
 
         <section className={styles.termsSection}>
-          <div className={styles.termsSubhead}>02 · Documents Required</div>
+          <div className={styles.termsSubhead}>{copy.terms.documents}</div>
           <ol className={styles.termsNumberedList}>
             {docs.map((d, i) => (
               <li key={d.slice(0, 48)}>
@@ -169,15 +173,13 @@ export function TermsCompliancePage1({ data }: TermsComplianceProps) {
         </section>
       </div>
 
-      <ExpertVerdict label="COMPLIANCE COUNSEL'S NOTE">
-        Read each article before signing — warranties, fees, and your duties protect both
-        sides if DISCOM timing or site conditions change.
-      </ExpertVerdict>
+      <ExpertVerdict label={copy.terms.counselLabel}>{copy.terms.counsel}</ExpertVerdict>
     </section>
   );
 }
 
 export function TermsCompliancePage2({ data }: TermsComplianceProps) {
+  const { copy } = useLuxeLang();
   const vendor = resolveLuxeVendorName(data) || "Solar Partner";
   const invoiceBase =
     data.economics.grossInr > 0
@@ -192,43 +194,48 @@ export function TermsCompliancePage2({ data }: TermsComplianceProps) {
 
   const scopeRaw =
     data.terms.amcScope.length > 0 ? data.terms.amcScope : DEFAULT_AMC_INCLUDES;
-  const planOptions = scopeRaw.filter(isAmcPlanLabel);
+  const planOptions = take(scopeRaw.filter(isAmcPlanLabel), 3);
   const includeItems = scopeRaw.filter(
     (s) =>
       !isAmcPlanLabel(s) &&
       !/^annual maintenance contract/i.test(s) &&
       !/^amc includes/i.test(s)
   );
-  const amcIncludes =
-    includeItems.length > 0 ? includeItems : DEFAULT_AMC_INCLUDES;
+  const amcIncludes = take(
+    includeItems.length > 0 ? includeItems : DEFAULT_AMC_INCLUDES,
+    4
+  );
 
   const notesRaw =
-    data.terms.amcTerms.length > 0 ? data.terms.amcTerms : [
-      ...DEFAULT_AMC_EXCLUDES,
-      ...DEFAULT_AMC_COMMERCIAL,
-    ];
+    data.terms.amcTerms.length > 0
+      ? data.terms.amcTerms
+      : [...DEFAULT_AMC_EXCLUDES, ...DEFAULT_AMC_COMMERCIAL];
   const excludesFromNotes = notesRaw.filter(isExclusionNote);
   const commercialNotes = notesRaw.filter(
     (s) => !isExclusionNote(s) && isCommercialNote(s)
   );
-  const amcExcludes =
-    excludesFromNotes.length > 0 ? excludesFromNotes : DEFAULT_AMC_EXCLUDES;
-  const amcCommercial =
-    commercialNotes.length > 0 ? commercialNotes : DEFAULT_AMC_COMMERCIAL;
+  const amcExcludes = take(
+    excludesFromNotes.length > 0 ? excludesFromNotes : DEFAULT_AMC_EXCLUDES,
+    3
+  );
+  const amcCommercial = take(
+    commercialNotes.length > 0 ? commercialNotes : DEFAULT_AMC_COMMERCIAL,
+    2
+  );
 
   return (
-    <section className={`${styles.a4Page} ${styles.termsPage} ${luxeDisplayFont.variable}`}>
+    <section
+      className={`${styles.a4Page} ${styles.termsPage} ${styles.termsPageDense} ${luxeDisplayFont.variable}`}
+    >
       <header className={styles.termsHead}>
-        <span className={styles.termsTag}>10 / TERMS & COMPLIANCE (CONTD.)</span>
-        <h2 className={styles.termsTitle}>Terms & Conditions</h2>
-        <p className={styles.termsIntro}>
-          Safety, your duties, AMC scope, and maintenance cost — one section after another.
-        </p>
+        <span className={styles.termsTag}>{copy.terms.tag2}</span>
+        <h2 className={styles.termsTitle}>{copy.terms.title}</h2>
+        <p className={styles.termsIntro}>{copy.terms.intro2}</p>
       </header>
 
       <div className={styles.termsStack}>
         <section className={styles.termsSection}>
-          <div className={styles.termsSubhead}>03 · Safety & Protection</div>
+          <div className={styles.termsSubhead}>{copy.terms.safety}</div>
           <ul className={styles.termsSafetyList}>
             {SAFETY_NOTES.map((s) => (
               <li key={s.slice(0, 40)}>{s}</li>
@@ -237,9 +244,9 @@ export function TermsCompliancePage2({ data }: TermsComplianceProps) {
         </section>
 
         <section className={styles.termsSection}>
-          <div className={styles.termsSubhead}>04 · Client&apos;s Scope</div>
+          <div className={styles.termsSubhead}>{copy.terms.clientScope}</div>
           <ol className={styles.termsNumberedList}>
-            {CLIENT_SCOPE.map((s, i) => (
+            {take(CLIENT_SCOPE, 6).map((s, i) => (
               <li key={s.slice(0, 48)}>
                 <span className={styles.termsListNum}>{i + 1}</span>
                 <span>{s}</span>
@@ -249,12 +256,12 @@ export function TermsCompliancePage2({ data }: TermsComplianceProps) {
         </section>
 
         <section className={styles.termsSection}>
-          <div className={styles.termsSubhead}>05 · Annual Maintenance — Scope</div>
+          <div className={styles.termsSubhead}>{copy.terms.amcScope}</div>
           <p className={styles.termsPara}>{amcObjective}</p>
 
           {planOptions.length > 0 ? (
             <>
-              <p className={styles.termsAmcIncludes}>Available plans:</p>
+              <p className={styles.termsAmcIncludes}>{copy.terms.availablePlans}</p>
               <ol className={styles.termsNumberedList}>
                 {planOptions.map((s, i) => (
                   <li key={`plan-${s.slice(0, 32)}`}>
@@ -266,7 +273,7 @@ export function TermsCompliancePage2({ data }: TermsComplianceProps) {
             </>
           ) : null}
 
-          <p className={styles.termsAmcIncludes}>AMC includes:</p>
+          <p className={styles.termsAmcIncludes}>{copy.terms.amcIncludes}</p>
           <ol className={styles.termsNumberedList}>
             {amcIncludes.map((s, i) => (
               <li key={`inc-${s.slice(0, 32)}`}>
@@ -276,7 +283,7 @@ export function TermsCompliancePage2({ data }: TermsComplianceProps) {
             ))}
           </ol>
 
-          <p className={styles.termsAmcIncludes}>AMC does not include:</p>
+          <p className={styles.termsAmcIncludes}>{copy.terms.amcExcludes}</p>
           <ol className={styles.termsNumberedList}>
             {amcExcludes.map((s, i) => (
               <li key={`exc-${s.slice(0, 32)}`}>
@@ -288,22 +295,22 @@ export function TermsCompliancePage2({ data }: TermsComplianceProps) {
         </section>
 
         <section className={styles.termsSection}>
-          <div className={styles.termsSubhead}>06 · Cost of Maintenance</div>
+          <div className={styles.termsSubhead}>{copy.terms.amcCost}</div>
           <div className={styles.termsCostBox}>
+            <p>{copy.terms.year1Included}</p>
             <p>
-              First <strong>1 year AMC</strong> is included in the quoted price.
-            </p>
-            <p>
-              From Year 2 onwards, annual maintenance may be charged at{" "}
-              <strong>2% of invoice value</strong>{" "}
-              <span className={styles.luxeNum}>{invoiceRef}</span> with{" "}
-              <strong>5% year-on-year escalation</strong>, subject to a signed O&amp;M
-              agreement.
+              {copy.terms.year2Onwards}
+              {invoiceBase > 0 ? (
+                <>
+                  {" "}
+                  (<span className={styles.luxeNum}>{invoiceRef}</span>)
+                </>
+              ) : null}
             </p>
           </div>
           {amcCommercial.length > 0 ? (
             <>
-              <p className={styles.termsAmcIncludes}>Payment & contract notes:</p>
+              <p className={styles.termsAmcIncludes}>{copy.terms.paymentNotes}</p>
               <ol className={styles.termsNumberedList}>
                 {amcCommercial.map((t, i) => (
                   <li key={`com-${t.slice(0, 32)}`}>
@@ -317,16 +324,13 @@ export function TermsCompliancePage2({ data }: TermsComplianceProps) {
         </section>
 
         <div className={styles.termsSignoff}>
-          <span className={styles.termsRegards}>Regards,</span>
+          <span className={styles.termsRegards}>{copy.terms.regards}</span>
           <span className={styles.termsBrand}>{vendor.toUpperCase()}</span>
-          <span className={styles.termsVendorTag}>Vendor</span>
+          <span className={styles.termsVendorTag}>{copy.terms.vendorTag}</span>
         </div>
       </div>
 
-      <ExpertVerdict label="O&M ADVISOR'S VERDICT">
-        Year-1 AMC is included; from Year 2, budget about 2% of invoice with yearly
-        increase — regular care protects both generation and warranty.
-      </ExpertVerdict>
+      <ExpertVerdict label={copy.terms.omLabel}>{copy.terms.om}</ExpertVerdict>
     </section>
   );
 }

@@ -12,6 +12,7 @@ import {
   formatLuxeYears,
 } from "./luxe-format";
 import { ExpertVerdict } from "./ExpertVerdict";
+import { useLuxeLang } from "./luxe-lang-context";
 import { luxeDisplayFont } from "./luxe-fonts";
 import styles from "./luxe.module.css";
 
@@ -130,63 +131,67 @@ export function WealthTerminal({ data }: WealthTerminalProps) {
   const capitalTotal = Math.max(gross, net + subsidy, 1);
   const subsidyPct = subsidy > 0 ? (subsidy / capitalTotal) * 100 : 0;
   const netPct = net > 0 ? (net / capitalTotal) * 100 : 100;
+  const { copy, isHi } = useLuxeLang();
 
   return (
     <section
       className={`${styles.a4Page} ${styles.luxeTerminal} ${luxeDisplayFont.variable}`}
     >
       <header className={styles.luxeHeaderBlock}>
-        <span className={styles.goldTag}>03 // CAPITAL CLARITY</span>
-        <h2 className={styles.luxeHeadline}>Your Net Position.</h2>
+        <span className={styles.goldTag}>{copy.wealth.tag}</span>
+        <h2 className={styles.luxeHeadline}>{copy.wealth.title}</h2>
       </header>
 
       {/* Net + capital composition */}
       <div className={styles.wealthTop}>
         <div className={styles.netHero}>
-          <span className={styles.netLabel}>YOUR NET INVESTMENT</span>
+          <span className={styles.netLabel}>{copy.wealth.netInvest}</span>
           <strong className={`${styles.netFigure} ${styles.luxeNum}`}>
             {formatLuxeInrReadable(net)}
           </strong>
           <p className={`${styles.netQuiet} ${styles.luxeNum}`}>
-            Exact {formatLuxeInr(net)}
+            {copy.wealth.exact} {formatLuxeInr(net)}
             {gross > 0
-              ? ` · Gross ${formatLuxeInr(gross)}${
-                  subsidy > 0 ? ` − Subsidy ${formatLuxeInr(subsidy)}` : ""
+              ? ` · ${copy.wealth.gross} ${formatLuxeInr(gross)}${
+                  subsidy > 0
+                    ? ` − ${copy.wealth.subsidy} ${formatLuxeInr(subsidy)}`
+                    : ""
                 }`
               : ""}
           </p>
         </div>
 
         <div className={styles.capitalStack}>
-          <span className={styles.capitalStackTitle}>CAPITAL COMPOSITION</span>
+          <span className={styles.capitalStackTitle}>{copy.wealth.capitalComp}</span>
           <div className={styles.capitalBar} aria-hidden>
             {subsidy > 0 ? (
               <div
                 className={styles.capitalBarSubsidy}
                 style={{ width: `${subsidyPct}%` }}
-                title="Subsidy"
+                title={copy.wealth.subsidy}
               />
             ) : null}
             <div
               className={styles.capitalBarNet}
               style={{ width: `${netPct}%` }}
-              title="Your net"
+              title={copy.wealth.yourNet}
             />
           </div>
           <div className={styles.capitalLegend}>
             {subsidy > 0 ? (
               <span>
-                <i className={styles.dotSubsidy} /> Subsidy{" "}
+                <i className={styles.dotSubsidy} /> {copy.wealth.subsidy}{" "}
                 <strong className={styles.luxeNum}>{formatLuxeInrReadable(subsidy)}</strong>
               </span>
             ) : null}
             <span>
-              <i className={styles.dotNet} /> Your net{" "}
+              <i className={styles.dotNet} /> {copy.wealth.yourNet}{" "}
               <strong className={styles.luxeNum}>{formatLuxeInrReadable(net)}</strong>
             </span>
             {gross > 0 ? (
               <span>
-                Gross <strong className={styles.luxeNum}>{formatLuxeInrReadable(gross)}</strong>
+                {copy.wealth.gross}{" "}
+                <strong className={styles.luxeNum}>{formatLuxeInrReadable(gross)}</strong>
               </span>
             ) : null}
           </div>
@@ -197,9 +202,9 @@ export function WealthTerminal({ data }: WealthTerminalProps) {
       <div className={styles.wealthMid}>
         <div className={styles.billCompare}>
           <div className={styles.billCompareHead}>
-            <span>ANNUAL BILL — BEFORE VS AFTER</span>
+            <span>{copy.wealth.billCompare}</span>
             <span className={styles.luxeNum}>
-              Relief {formatLuxeInrReadable(savingsAnnual)}
+              {copy.wealth.relief} {formatLuxeInrReadable(savingsAnnual)}
             </span>
           </div>
           <div className={styles.billBars}>
@@ -213,7 +218,7 @@ export function WealthTerminal({ data }: WealthTerminalProps) {
               <strong className={`${styles.luxeNum} ${styles.billBarValue}`}>
                 {billToday > 0 ? formatLuxeInr(billToday) : "—"}
               </strong>
-              <span className={styles.billBarLabel}>Today · grid</span>
+              <span className={styles.billBarLabel}>{copy.wealth.todayGrid}</span>
             </div>
             <div className={styles.billBarCol}>
               <div className={styles.billBarTrack}>
@@ -225,10 +230,10 @@ export function WealthTerminal({ data }: WealthTerminalProps) {
               <strong className={`${styles.luxeNum} ${styles.billBarValue}`}>
                 {billAfter > 0 || billToday > 0 ? formatLuxeInr(billAfter) : "—"}
               </strong>
-              <span className={styles.billBarLabel}>Year 1 · solar</span>
+              <span className={styles.billBarLabel}>{copy.wealth.year1Solar}</span>
             </div>
             <div className={styles.billReliefCard}>
-              <span>YEAR-1 RELIEF</span>
+              <span>{copy.wealth.year1Relief}</span>
               <strong className={`${styles.luxeNum} ${styles.billReliefValue}`}>
                 {savingsAnnual > 0 ? formatLuxeInrReadable(savingsAnnual) : "—"}
               </strong>
@@ -244,17 +249,17 @@ export function WealthTerminal({ data }: WealthTerminalProps) {
 
         <div className={styles.wealthKpis}>
           <div className={styles.wealthKpi}>
-            <span>PAYBACK</span>
+            <span>{copy.wealth.payback}</span>
             <strong className={styles.luxeNum}>{formatLuxeYears(payback)}</strong>
           </div>
           <div className={styles.wealthKpi}>
-            <span>25-YR WEALTH</span>
+            <span>{copy.wealth.wealth25}</span>
             <strong className={styles.luxeNum}>
               {lifetime > 0 ? formatLuxeInrReadable(lifetime) : "—"}
             </strong>
           </div>
           <div className={styles.wealthKpi}>
-            <span>MONTHLY RELIEF</span>
+            <span>{copy.wealth.monthlyRelief}</span>
             <strong className={styles.luxeNum}>
               {monthlyRelief > 0 ? formatLuxeInr(monthlyRelief) : "—"}
             </strong>
@@ -265,9 +270,9 @@ export function WealthTerminal({ data }: WealthTerminalProps) {
       {/* 25-year wealth path */}
       <div className={styles.paybackChart}>
         <div className={styles.chartHead}>
-          <span>25-YEAR WEALTH PATH</span>
+          <span>{copy.wealth.wealthPath}</span>
           <span className={styles.luxeNum}>
-            Break-even · {formatLuxeYears(payback)}
+            {copy.wealth.breakEven} · {formatLuxeYears(payback)}
           </span>
         </div>
         <svg
@@ -416,7 +421,7 @@ export function WealthTerminal({ data }: WealthTerminalProps) {
             fontFamily="system-ui,sans-serif"
             letterSpacing="0.6"
           >
-            CUMULATIVE POSITION
+            {copy.wealth.cumulative}
           </text>
           <text
             x="44"
@@ -425,37 +430,43 @@ export function WealthTerminal({ data }: WealthTerminalProps) {
             fontSize="8"
             fontFamily="system-ui,sans-serif"
           >
-            Recovery
+            {copy.wealth.recovery}
           </text>
         </svg>
         <p className={styles.chartFoot}>
-          Curve starts at your net outlay, crosses break-even at{" "}
-          <strong className={styles.luxeNum}>{formatLuxeYears(payback)}</strong>, then
-          compounds bill relief
-          {lifetime > 0
-            ? ` toward about ${formatLuxeInrReadable(lifetime)} (${formatLuxeInr(lifetime)}) over 25 years`
-            : ""}
-          .
+          {copy.wealth.chartFoot(
+            formatLuxeYears(payback),
+            lifetime > 0 ? formatLuxeInrReadable(lifetime) : isHi ? "दीर्घकालिक संपत्ति" : "long-term wealth"
+          )}
         </p>
       </div>
 
-      <p className={styles.wealthFootnote}>
-        Subsidy subject to MNRE / DISCOM approval · figures derived from your bill upload
-        and site yield assumptions.
-      </p>
+      <p className={styles.wealthFootnote}>{copy.wealth.footnote}</p>
 
-      <ExpertVerdict label="CFO'S VERDICT">
+      <ExpertVerdict label={copy.wealth.verdictLabel}>
         {net > 0
-          ? `Net outlay of ${formatLuxeInrReadable(net)} recovers in ${formatLuxeYears(payback)}${
-              savingsAnnual > 0
-                ? `; year-1 relief of ${formatLuxeInrReadable(savingsAnnual)} then compounds`
-                : ""
-            }${
-              lifetime > 0
-                ? ` toward about ${formatLuxeInrReadable(lifetime)} over 25 years`
-                : ""
-            }.`
-          : `Watch the wealth path: once payback clears, every month of bill relief compounds into long-horizon household equity.`}
+          ? isHi
+            ? `${formatLuxeInrReadable(net)} का नेट खर्च ${formatLuxeYears(payback)} में वापस${
+                savingsAnnual > 0
+                  ? `; वर्ष-1 राहत ${formatLuxeInrReadable(savingsAnnual)} फिर जुड़ती जाती है`
+                  : ""
+              }${
+                lifetime > 0
+                  ? ` — 25 वर्षों में लगभग ${formatLuxeInrReadable(lifetime)}`
+                  : ""
+              }.`
+            : `Net outlay of ${formatLuxeInrReadable(net)} recovers in ${formatLuxeYears(payback)}${
+                savingsAnnual > 0
+                  ? `; year-1 relief of ${formatLuxeInrReadable(savingsAnnual)} then compounds`
+                  : ""
+              }${
+                lifetime > 0
+                  ? ` toward about ${formatLuxeInrReadable(lifetime)} over 25 years`
+                  : ""
+              }.`
+          : isHi
+            ? "संपत्ति पथ देखें: पेबैक के बाद हर महीने की बिल राहत लंबी अवधि की घरेलू संपत्ति बनती है।"
+            : `Watch the wealth path: once payback clears, every month of bill relief compounds into long-horizon household equity.`}
       </ExpertVerdict>
     </section>
   );

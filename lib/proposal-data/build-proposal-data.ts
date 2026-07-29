@@ -125,6 +125,10 @@ export function buildProposalData(
     interestPaidInr: row.totalInterest,
     monthlyEmiInr: row.monthlyEmi,
   }));
+  const financeRateRaw = pptInput.financeOption?.interestRatePct;
+  const interestRatePct = Number.isFinite(financeRateRaw)
+    ? Number(financeRateRaw)
+    : 7;
 
   const bank = summary.bankDetails;
   const payments = summary.paymentMilestones.map((m, i) => ({
@@ -167,6 +171,7 @@ export function buildProposalData(
       monthlySavingsInr: Math.round(summary.annualSaving / 12),
       paybackYears: Math.round(summary.paybackYears * 10) / 10,
       lifetimeProfitInr: summary.lifetime25Profit,
+      interestRatePct,
       emiRows,
       wealthJourney: buildWealthJourney({
         annualSavingsInr: summary.annualSaving,
@@ -242,9 +247,9 @@ export function buildProposalData(
       payments,
       bank: {
         company: bank.accountName?.trim() || summary.installer,
-        accountNumber: bank.accountNumber?.trim() || "—",
-        ifsc: bank.ifsc?.trim() || "—",
-        upiId: bank.upiId?.trim() || "—",
+        accountNumber: bank.accountNumber?.trim() || "",
+        ifsc: bank.ifsc?.trim() || "",
+        upiId: bank.upiId?.trim() || "",
       },
     },
     terms: {

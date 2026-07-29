@@ -3,12 +3,14 @@
 /**
  * Premium Luxe — Titanium Ledger (detailed BOM).
  * Distinct roles: modules, inverter, structure, DCDB, ACDB, LA+cable, earthing.
+ * Electrical qty/spec aligned to installer BOM sheet (boxes, 4 sqmm wire, 17mm earth, 2m LA).
  * One BOM line is never reused across multiple roles.
  */
 
 import type { ProposalBomItem, ProposalData } from "@/lib/proposal-data";
 import { formatLuxeKw } from "./luxe-format";
 import { ExpertVerdict } from "./ExpertVerdict";
+import { useLuxeLang } from "./luxe-lang-context";
 import { luxeDisplayFont } from "./luxe-fonts";
 import styles from "./luxe.module.css";
 
@@ -44,32 +46,33 @@ function isGenericProtection(item: ProposalBomItem): boolean {
   return /protection|safety/i.test(n) && !/dcdb|acdb|earth|lightning|cable|arrest/i.test(n);
 }
 
+function brandTitle(
+  item: ProposalBomItem | undefined,
+  fallback: string,
+  roleHint?: string
+): string {
+  if (!item) return fallback;
+  if (isGenericProtection(item)) {
+    const brandBit = item.brand?.trim();
+    return brandBit ? `${brandBit} · ${fallback}` : fallback;
+  }
+  const raw = `${item.brand} ${item.name}`.trim();
+  if (!raw) return fallback;
+  // Avoid "Havells Havells" style doubles; prefer brand + role when name is generic
+  if (roleHint && new RegExp(roleHint, "i").test(item.name) === false) {
+    return item.brand?.trim() ? `${item.brand.trim()} · ${fallback}` : raw;
+  }
+  return raw;
+}
+
 function buildRow(
   item: ProposalBomItem | undefined,
-  base: Omit<LedgerRow, "title" | "body" | "badge"> & {
-    title: string;
-    badge: string;
-    body: string;
-  }
+  base: LedgerRow,
+  opts?: { preferBaseBody?: boolean }
 ): LedgerRow {
-  if (!item) {
-    return {
-      num: base.num,
-      role: base.role,
-      title: base.title,
-      badge: base.badge,
-      body: base.body,
-    };
-  }
+  if (!item) return base;
 
-  const generic = isGenericProtection(item);
-  const brandBit = [item.brand].filter(Boolean).join(" · ");
-  const title = generic
-    ? brandBit
-      ? `${brandBit} · ${base.title}`
-      : base.title
-    : `${item.brand} ${item.name}`.trim() || base.title;
-
+  const title = brandTitle(item, base.title);
   const detail = [
     item.spec,
     item.description,
@@ -78,13 +81,16 @@ function buildRow(
     .filter(Boolean)
     .join(" · ");
 
-  // Keep role-specific body when BOM text is a shared protection blob
-  const body =
-    generic || !detail
-      ? base.body
-      : detail.length > 220
-        ? `${detail.slice(0, 210).trim()}…`
-        : detail;
+  let body = base.body;
+  if (opts?.preferBaseBody) {
+    // Keep sheet qty/spec; append short brand/spec hint when useful
+    if (item.brand?.trim() && !base.body.toLowerCase().includes(item.brand.trim().toLowerCase())) {
+      body = `${base.body} · Make: ${item.brand.trim()}`;
+    }
+  } else if (!isGenericProtection(item) && detail) {
+    body =
+      detail.length > 240 ? `${detail.slice(0, 230).trim()}…` : detail;
+  }
 
   return {
     num: base.num,
@@ -104,7 +110,6 @@ export function TitaniumLedger({ data }: TitaniumLedgerProps) {
   const panel = claimBom(bom, used, /module|panel|topcon|mono|waaree|adani|dcr/i);
   const inverter = claimBom(bom, used, /inverter|mppt|on-?grid|string\s*inv/i);
   const structure = claimBom(bom, used, /mount|structure|rail|galvan|jsw/i);
-  // Prefer explicit DCDB / ACDB names before a shared "Protection & Safety" line
   const dcdb = claimBom(
     bom,
     used,
@@ -115,80 +120,110 @@ export function TitaniumLedger({ data }: TitaniumLedgerProps) {
     used,
     /\bacdb\b|ac\s*distribution|ac\s*db|ac\s*box/i
   );
-  const cable = claimBom(bom, used, /cable|wiring|tuv|4\s*mm/i);
+  const cable = claimBom(bom, used, /cable|wiring|tuv|4\s*mm|4\s*sq/i);
   const la = claimBom(bom, used, /lightning|arrestor|arrester|\bla\b|surge\s*path/i);
   const earth = claimBom(bom, used, /earth|earthing|ground\s*pit|is\s*3043/i);
-  // Shared protection line — only if nothing claimed it yet; assign to DCDB gap only
-  const sharedProtect = claimBom(
-    bom,
-    used,
-    /protection|safety|spd|mcb/i
-  );
+  const sharedProtect = claimBom(bom, used, /protection|safety|spd|mcb/i);
+
+  const { copy, isHi } = useLuxeLang();
 
   const rows: LedgerRow[] = [
     buildRow(panel, {
       num: "01",
-      role: "MODULES",
-      title: "N-Type TOPCon Modules",
-      badge: "30-YEAR PERFORMANCE",
-      body: `${modules} × 580 Wp · DCR compliant · ≥21% efficiency · ≤0.55%/yr degradation.`,
+      role: isHi ? "मॉड्यूल्स" : "MODULES",
+      title: isHi ? "N-Type TOPCon मॉड्यूल" : "N-Type TOPCon Modules",
+      badge: isHi ? "30-वर्ष प्रदर्शन" : "30-YEAR PERFORMANCE",
+      body: isHi
+        ? `मात्रा ${modules} Nos · ${modules} × 580 Wp DCR TOPCon · ≥21% दक्षता · ≤0.55%/वर्ष degradation.`
+        : `Qty ${modules} Nos · ${modules} × 580 Wp DCR TOPCon (N-Type) · ≥21% efficiency · ≤0.55%/yr degradation.`,
     }),
     buildRow(inverter, {
       num: "02",
-      role: "INVERTER",
-      title: "Grid-Tied String Inverter",
-      badge: "8–10 YEAR OEM",
-      body: `${formatLuxeKw(systemKw)} kW AC · Dual MPPT · IP65 · ≥97.5% export efficiency.`,
+      role: isHi ? "इन्वर्टर" : "INVERTER",
+      title: isHi ? "ग्रिड-टाइड स्ट्रिंग इन्वर्टर" : "Grid-Tied String Inverter",
+      badge: isHi ? "8–10 वर्ष OEM" : "8–10 YEAR OEM",
+      body: isHi
+        ? `मात्रा 1 Nos · ${formatLuxeKw(systemKw)} kW On-Grid · Dual MPPT · IP65 · ≥97.5% दक्षता.`
+        : `Qty 1 Nos · ${formatLuxeKw(systemKw)} kW On-Grid String · Dual MPPT · IP65 · ≥97.5% efficiency.`,
     }),
     buildRow(structure, {
       num: "03",
-      role: "STRUCTURE",
-      title: "Hot-Dip GI Mounting Structure",
-      badge: "150 KM/H WIND",
-      body: "JSW / equivalent GI rails & legs — monsoon-rated anchorage for rooftop loads.",
+      role: isHi ? "स्ट्रक्चर" : "STRUCTURE",
+      title: isHi
+        ? "हॉट-डिप GI माउंटिंग स्ट्रक्चर"
+        : "Hot-Dip GI Mounting Structure",
+      badge: isHi ? "150 किमी/घं हवा" : "150 KM/H WIND",
+      body: isHi
+        ? "साइट के अनुसार मात्रा · Hot-Dip GI (IS 875) · 150 km/h विंड · RCC / क्लैंप फिक्सिंग."
+        : "Qty as per site · Hot-Dip GI (IS 875) · 150 km/h wind-load · RCC penetration / clamp fixing.",
     }),
-    buildRow(dcdb ?? sharedProtect, {
-      num: "04",
-      role: "DCDB",
-      title: "DC Distribution Box",
-      badge: "FUSE + TYPE-II SPD",
-      body: "DC side protection (array → inverter): fuse / isolator + Type-II SPD for surge and over-current.",
-    }),
-    buildRow(acdb, {
-      num: "05",
-      role: "ACDB",
-      title: "AC Distribution Box",
-      badge: "MCB / MCCB + SPD",
-      body: "AC side protection (inverter → grid/meter): MCB/MCCB isolation with Type-II surge protection.",
-    }),
-    buildRow(la ?? cable, {
-      num: "06",
-      role: "SURGE & CABLE",
-      title: la ? "Lightning Arrestor" : "DC + AC Cabling",
-      badge: la ? "TYPE-I/II TO EARTH" : "TUV · FIRE-RESISTANT",
-      body: la
-        ? "Type-I/II lightning arrestor bonded to earth — primary surge path for monsoon and grid events."
-        : "TUV fire-resistant DC/AC cabling sized to string current · UV-stable outdoor runs.",
-    }),
-    buildRow(earth, {
-      num: "07",
-      role: "EARTHING",
-      title: "Copper Earthing System",
-      badge: "≤1 Ω · IS 3043",
-      body: "Dedicated copper earth electrode & bonding for inverter, DCDB/ACDB, and LA — grid-fault and lightning safety.",
-    }),
+    buildRow(
+      dcdb ?? sharedProtect,
+      {
+        num: "04",
+        role: "DCDB",
+        title: isHi ? "DC वितरण बॉक्स" : "DC Distribution Box",
+        badge: "1 NOS · HAVELLS",
+        body: isHi
+          ? "मात्रा 1 Nos · Havells / reputed make · Fuse / isolator + Type-II SPD (array → inverter)."
+          : "Qty 1 Nos · Havells / reputed make · Fuse / isolator + Type-II SPD (array → inverter).",
+      },
+      { preferBaseBody: true }
+    ),
+    buildRow(
+      acdb,
+      {
+        num: "05",
+        role: "ACDB",
+        title: isHi ? "AC वितरण बॉक्स" : "AC Distribution Box",
+        badge: "1 NOS · HAVELLS",
+        body: isHi
+          ? "मात्रा 1 Nos · Havells / reputed make · MCB/MCCB + Type-II SPD (inverter → meter/grid)."
+          : "Qty 1 Nos · Havells / reputed make · MCB/MCCB + Type-II SPD (inverter → meter/grid).",
+      },
+      { preferBaseBody: true }
+    ),
+    buildRow(
+      la ?? cable,
+      {
+        num: "06",
+        role: isHi ? "सर्ज और केबल" : "SURGE & CABLE",
+        title: isHi
+          ? "लाइटनिंग अरेस्टर + DC/AC केबल"
+          : "Lightning Arrestor + DC/AC Cabling",
+        badge: isHi ? "LA 1 SET · 4 SQMM" : "LA 1 SET · 4 SQMM",
+        body: isHi
+          ? "LA: 1 Set · 2 mtr. DC केबल: 4 sqmm tinned Cu ZHLS UV (Polycab) — आवश्यकता अनुसार मीटर. AC केबल: 4 sqmm (Anchor / Polycab) — आवश्यकता अनुसार मीटर."
+          : "LA: 1 Set · 2 mtr. DC cable: 4 sqmm flexible tinned Cu ZHLS UV (Polycab) — meters as required. AC cable: 4 sqmm (Anchor / Polycab) — meters as required.",
+      },
+      { preferBaseBody: true }
+    ),
+    buildRow(
+      earth,
+      {
+        num: "07",
+        role: isHi ? "अर्थिंग" : "EARTHING",
+        title: isHi
+          ? "कॉपर अर्थिंग किट + अर्थ केबल"
+          : "Copper Earthing Kit + Earth Cable",
+        badge: "3 SET · 17 MM",
+        body: isHi
+          ? "अर्थिंग किट: 3 Set · 17 mm maintenance-free कॉपर (Best). अर्थ केबल: कॉपर 4 sqmm — आवश्यकता अनुसार मीटर. इन्वर्टर / DCDB / ACDB / LA बॉन्डिंग."
+          : "Earthing kit: 3 Set · 17 mm maintenance-free copper (Best). Earth cable: copper 4 sqmm — meters as required. Bonds inverter, DCDB/ACDB, and LA.",
+      },
+      { preferBaseBody: true }
+    ),
   ];
 
-  // If LA was empty but cable used for 06, and a separate unused cable exists — already handled.
-  // If both LA and cable exist and LA filled 06, surface cable detail in body when la was used:
+  // If both LA and cable exist, keep sheet qty language (already in base); enrich make only
   if (la && cable) {
     const row6 = rows[5]!;
+    const cableMake = cable.brand?.trim() || cable.name?.trim();
     rows[5] = {
       ...row6,
-      title: "Lightning Arrestor & Cabling",
-      role: "SURGE & CABLE",
-      body: `${row6.body} · ${cable.spec || cable.name || "TUV DC/AC cabling"}.`,
-      badge: row6.badge,
+      body: cableMake
+        ? `${row6.body}${row6.body.includes(cableMake) ? "" : ` · Cable make: ${cableMake}`}`
+        : row6.body,
     };
   }
 
@@ -197,13 +232,14 @@ export function TitaniumLedger({ data }: TitaniumLedgerProps) {
       className={`${styles.a4Page} ${styles.ledgerPage} ${luxeDisplayFont.variable}`}
     >
       <header className={styles.luxeHeaderBlock}>
-        <span className={styles.goldTag}>06 // BILL OF MATERIALS</span>
-        <h2 className={styles.luxeHeadline}>The Silicon & Steel Ledger.</h2>
+        <span className={styles.goldTag}>{copy.bom.tag}</span>
+        <h2 className={styles.luxeHeadline}>{copy.bom.title}</h2>
       </header>
 
       <p className={styles.bomLead}>
-        Seven distinct layers — generation, conversion, structure, DC protection, AC
-        protection, surge/cabling, and earthing. No duplicated safety line.
+        {isHi
+          ? "सात परतें — मॉड्यूल, इन्वर्टर, स्ट्रक्चर, DCDB (1), ACDB (1), LA + 4 sqmm केबल, और 17 mm अर्थिंग (3 सेट)। मात्रा इंस्टॉलर BOM शीट के अनुसार।"
+          : "Seven layers — modules, inverter, structure, DCDB (1), ACDB (1), LA + 4 sqmm cabling, and 17 mm earthing (3 sets). Quantities follow the installer BOM sheet."}
       </p>
 
       <div className={styles.ledgerListDense}>
@@ -222,9 +258,10 @@ export function TitaniumLedger({ data }: TitaniumLedgerProps) {
         ))}
       </div>
 
-      <ExpertVerdict label="HARDWARE CURATOR'S VERDICT">
-        DCDB, ACDB, lightning path and earthing are separate line items for a reason —
-        each protects a different fault domain on this {formatLuxeKw(systemKw)} kW plant.
+      <ExpertVerdict label={copy.bom.verdictLabel}>
+        {isHi
+          ? `DCDB/ACDB (1–1 Nos), 2 mtr LA, 4 sqmm DC/AC वायर, और 3×17 mm अर्थिंग किट अलग लाइन हैं — इस ${formatLuxeKw(systemKw)} kW प्लांट पर हर एक अलग सुरक्षा डोमेन कवर करता है।`
+          : `DCDB/ACDB (1 Nos each), 2 mtr LA, 4 sqmm DC/AC wire, and 3×17 mm earthing kits are separate lines — each covers a different fault domain on this ${formatLuxeKw(systemKw)} kW plant.`}
       </ExpertVerdict>
     </section>
   );

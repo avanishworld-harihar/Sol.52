@@ -2,13 +2,20 @@
 
 /**
  * Premium Luxe — Payment milestones + vendor bank account.
- * Simple English · gate-based payment system · bank remittance block.
+ * Bank fields prefer proposal data, then More → Brand settings (local).
  */
 
+import { useEffect, useState } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
+import {
+  PROPOSAL_BRANDING_UPDATED_EVENT,
+  readProposalBrandingSettings,
+  resolveProposalBankDetails,
+} from "@/lib/proposal-branding-settings";
 import { formatLuxeInr, formatLuxeInrReadable } from "./luxe-format";
 import { resolveLuxeVendorName } from "./luxe-vendor";
 import { ExpertVerdict } from "./ExpertVerdict";
+import { useLuxeLang } from "./luxe-lang-context";
 import { luxeDisplayFont } from "./luxe-fonts";
 import styles from "./luxe.module.css";
 
@@ -27,25 +34,99 @@ export type PaymentMilestonesPageProps = {
   brand?: string;
 };
 
-function cleanBank(value: string | undefined): string {
+function cleanBank(value: string | undefined | null): string {
   const v = (value ?? "").trim();
-  if (!v || v === "—" || v === "-") return "";
+  if (!v || v === "—" || v === "-" || v.toLowerCase() === "n/a") return "";
   return v;
 }
 
 function IllustBank() {
   return (
-    <svg viewBox="0 0 72 56" className={styles.payBankIcon} aria-hidden>
-      <rect x="8" y="20" width="56" height="28" rx="2" fill="none" stroke="#B8962E" strokeWidth="1.5" />
-      <path d="M12 20 L36 8 L60 20" fill="none" stroke="#141820" strokeWidth="1.5" />
-      <line x1="18" y1="28" x2="18" y2="42" stroke="#B8962E" strokeWidth="1.2" />
-      <line x1="28" y1="28" x2="28" y2="42" stroke="#B8962E" strokeWidth="1.2" />
-      <line x1="36" y1="28" x2="36" y2="42" stroke="#B8962E" strokeWidth="1.2" />
-      <line x1="44" y1="28" x2="44" y2="42" stroke="#B8962E" strokeWidth="1.2" />
-      <line x1="54" y1="28" x2="54" y2="42" stroke="#B8962E" strokeWidth="1.2" />
-      <rect x="14" y="44" width="44" height="4" fill="#141820" opacity="0.85" />
+    <svg viewBox="0 0 120 96" className={styles.payBankIcon} aria-hidden>
+      <defs>
+        <linearGradient id="payBankFace" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="rgba(184,150,46,0.22)" />
+          <stop offset="100%" stopColor="rgba(184,150,46,0.06)" />
+        </linearGradient>
+      </defs>
+      <ellipse cx="60" cy="88" rx="42" ry="6" fill="rgba(20,24,32,0.08)" />
+      <path
+        d="M18 40 L60 14 L102 40 Z"
+        fill="url(#payBankFace)"
+        stroke="#141820"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <path d="M18 40 L60 14 L102 40" fill="none" stroke="#B8962E" strokeWidth="2" />
+      <rect
+        x="22"
+        y="40"
+        width="76"
+        height="40"
+        fill="#F8F9FB"
+        stroke="#141820"
+        strokeWidth="1.6"
+      />
+      {[34, 48, 60, 72, 86].map((x) => (
+        <rect
+          key={x}
+          x={x - 3}
+          y="46"
+          width="6"
+          height="26"
+          rx="1"
+          fill="rgba(184,150,46,0.35)"
+          stroke="#B8962E"
+          strokeWidth="0.9"
+        />
+      ))}
+      <rect x="16" y="80" width="88" height="6" rx="1.5" fill="#141820" />
+      <circle cx="60" cy="32" r="5" fill="rgba(184,150,46,0.45)" stroke="#B8962E" strokeWidth="1.2" />
     </svg>
   );
+}
+
+function useResolvedLuxeBank(data: ProposalData) {
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    const bump = () => setTick((t) => t + 1);
+    window.addEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, bump);
+    return () => window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, bump);
+  }, []);
+
+  const fromData = data.execution.bank;
+  const settings =
+    typeof window !== "undefined" ? readProposalBrandingSettings() : null;
+
+  const pptNum = cleanBank(fromData.accountNumber);
+  const pptIfsc = cleanBank(fromData.ifsc);
+  const pptUpi = cleanBank(fromData.upiId);
+  // company often falls back to installer name — only treat as account holder when
+  // real bank coordinates exist on the proposal snapshot
+  const dataHasCoords = Boolean(pptNum || pptIfsc || pptUpi);
+
+  const resolved = resolveProposalBankDetails({
+    pptBank: {
+      accountName: dataHasCoords
+        ? cleanBank(fromData.company) || undefined
+        : undefined,
+      accountNumber: pptNum || undefined,
+      ifsc: pptIfsc || undefined,
+      upiId: pptUpi || undefined,
+    },
+    settings,
+  });
+
+  void tick; // re-read settings when branding updates
+
+  return {
+    accountName: cleanBank(resolved.accountName),
+    accountNumber: cleanBank(resolved.accountNumber),
+    ifsc: cleanBank(resolved.ifsc),
+    branch: cleanBank(resolved.branch),
+    upiId: cleanBank(resolved.upiId),
+  };
 }
 
 export function PaymentMilestonesPage({
@@ -54,45 +135,59 @@ export function PaymentMilestonesPage({
   paymentTerms,
   brand,
 }: PaymentMilestonesPageProps) {
-  const bank = data.execution.bank;
+  const { copy, isHi } = useLuxeLang();
+  const bank = useResolvedLuxeBank(data);
   const vendorName =
-    (brand?.trim() || resolveLuxeVendorName(data) || "").trim() || "Solar Partner";
-  const company = cleanBank(bank.company) || vendorName;
-  const accountNumber = cleanBank(bank.accountNumber);
-  const ifsc = cleanBank(bank.ifsc);
-  const upiId = cleanBank(bank.upiId);
-  const hasBank = Boolean(accountNumber || ifsc || upiId);
+    (brand?.trim() || resolveLuxeVendorName(data) || "").trim() ||
+    (isHi ? "सोलर पार्टनर" : "Solar Partner");
+  const company = bank.accountName || vendorName;
+  const hasBank = Boolean(bank.accountNumber || bank.ifsc || bank.upiId);
 
   const gross = data.economics.grossInr;
   const net = data.economics.netInr;
   const projectValue = gross > 0 ? gross : net;
+
+  const rules =
+    paymentTerms.length > 0
+      ? paymentTerms
+      : isHi
+        ? [
+            "प्रस्ताव जारी तिथि से 30 दिनों तक मान्य।",
+            "साइट सर्वे के बाद अंतिम कीमत बदल सकती है।",
+            "सब्सिडी MNRE / DISCOM मंज़ूरी पर निर्भर।",
+            "नेट मीटरिंग समय आपके स्थानीय DISCOM पर निर्भर।",
+          ]
+        : [
+            "Proposal valid for 30 days from issue date.",
+            "Final price may change after site survey.",
+            "Subsidy depends on MNRE / DISCOM approval.",
+            "Net metering timing depends on your local DISCOM.",
+          ];
 
   return (
     <section
       className={`${styles.a4Page} ${styles.payPage} ${luxeDisplayFont.variable}`}
     >
       <header className={styles.luxeHeaderBlock}>
-        <span className={styles.goldTag}>08 // PAYMENT SYSTEM</span>
-        <h2 className={styles.luxeHeadline}>How You Pay.</h2>
+        <span className={styles.goldTag}>{copy.pay.tag}</span>
+        <h2 className={styles.luxeHeadline}>{copy.pay.title}</h2>
       </header>
 
       <p className={styles.payLead}>
-        You pay in four clear steps. Each payment unlocks the next stage of work — from
-        booking to switch-on.
+        {copy.pay.lead}
         {projectValue > 0 ? (
           <>
             {" "}
-            Project value shown:{" "}
+            {copy.pay.projectValue}:{" "}
             <strong className={styles.luxeNum}>{formatLuxeInr(projectValue)}</strong>
             {gross > 0 && net > 0 && net !== gross
-              ? ` (net after subsidy about ${formatLuxeInrReadable(net)})`
+              ? ` (${copy.pay.netAfter} ${formatLuxeInrReadable(net)})`
               : ""}
             .
           </>
         ) : null}
       </p>
 
-      {/* Visual payment gates */}
       <div className={styles.payGateTrack} aria-hidden>
         {milestones.map((m, i) => (
           <div key={m.step} className={styles.payGate}>
@@ -109,7 +204,9 @@ export function PaymentMilestonesPage({
             <span className={styles.payMilestoneNum}>{m.step}</span>
             <div className={styles.payMilestoneBody}>
               <strong>{m.title}</strong>
-              <span>{m.percent} of project value · due at this stage</span>
+              <span>
+                {m.percent} {copy.pay.ofValue}
+              </span>
             </div>
             <em className={`${styles.payMilestoneAmt} ${styles.luxeNum}`}>
               {m.amountLabel}
@@ -118,69 +215,56 @@ export function PaymentMilestonesPage({
         ))}
       </div>
 
-      {/* Vendor bank */}
       <div className={styles.payBankBlock}>
         <div className={styles.payBankHead}>
           <IllustBank />
           <div>
-            <span className={styles.payBankEyebrow}>VENDOR BANK ACCOUNT</span>
-            <h3 className={styles.payBankTitle}>Pay only to this account</h3>
-            <p className={styles.payBankNote}>
-              Use these details for advance and all milestone transfers. Keep the payment
-              screenshot for your records.
-            </p>
+            <span className={styles.payBankEyebrow}>{copy.pay.bankEyebrow}</span>
+            <h3 className={styles.payBankTitle}>{copy.pay.bankTitle}</h3>
+            <p className={styles.payBankNote}>{copy.pay.bankNote}</p>
           </div>
         </div>
 
         {hasBank ? (
           <div className={styles.payBankGrid}>
             <div className={styles.payBankCell}>
-              <span>Account name</span>
+              <span>{copy.pay.accountName}</span>
               <strong>{company || "—"}</strong>
             </div>
             <div className={styles.payBankCell}>
-              <span>Account number</span>
-              <strong className={styles.luxeNum}>{accountNumber || "—"}</strong>
+              <span>{copy.pay.accountNo}</span>
+              <strong className={styles.luxeNum}>{bank.accountNumber || "—"}</strong>
             </div>
             <div className={styles.payBankCell}>
-              <span>IFSC</span>
-              <strong className={styles.luxeNum}>{ifsc || "—"}</strong>
+              <span>{copy.pay.ifsc}</span>
+              <strong className={styles.luxeNum}>{bank.ifsc || "—"}</strong>
             </div>
             <div className={styles.payBankCell}>
-              <span>UPI</span>
-              <strong>{upiId || "—"}</strong>
+              <span>{copy.pay.upi}</span>
+              <strong>{bank.upiId || "—"}</strong>
             </div>
+            {bank.branch ? (
+              <div className={`${styles.payBankCell} ${styles.payBankCellWide}`}>
+                <span>{isHi ? "शाखा" : "Branch"}</span>
+                <strong>{bank.branch}</strong>
+              </div>
+            ) : null}
           </div>
         ) : (
-          <div className={styles.payBankEmpty}>
-            Bank details will be shared on the official invoice / booking confirmation.
-            Please do not transfer to any personal account.
-          </div>
+          <div className={styles.payBankEmpty}>{copy.pay.bankEmpty}</div>
         )}
       </div>
 
       <div className={styles.payTermsBox}>
-        <span className={styles.payTermsLabel}>PAYMENT RULES</span>
+        <span className={styles.payTermsLabel}>{copy.pay.rules}</span>
         <ul>
-          {(paymentTerms.length > 0
-            ? paymentTerms
-            : [
-                "Proposal valid for 30 days from issue date.",
-                "Final price may change after site survey.",
-                "Subsidy depends on MNRE / DISCOM approval.",
-                "Net metering timing depends on your local DISCOM.",
-              ]
-          ).map((t) => (
+          {rules.map((t) => (
             <li key={t.slice(0, 48)}>{t}</li>
           ))}
         </ul>
       </div>
 
-      <ExpertVerdict label="PROJECT DIRECTOR'S VERDICT">
-        Pay stage by stage — booking, material, installation, then commissioning. Always
-        use the vendor bank account above so every rupee is tracked against work on your
-        roof.
-      </ExpertVerdict>
+      <ExpertVerdict label={copy.pay.verdictLabel}>{copy.pay.verdict}</ExpertVerdict>
 
       <footer className={styles.impactPageFooter}>
         <span>{vendorName.toUpperCase()}</span>
