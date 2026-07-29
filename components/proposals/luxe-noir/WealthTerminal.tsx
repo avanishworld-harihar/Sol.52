@@ -14,6 +14,7 @@ import {
 import { ExpertVerdict } from "./ExpertVerdict";
 import { useLuxeLang } from "./luxe-lang-context";
 import { luxeDisplayFont } from "./luxe-fonts";
+import { useLuxeVendorName, luxeVendorOrFallback } from "./luxe-vendor";
 import styles from "./luxe.module.css";
 
 export type WealthTerminalProps = {
@@ -132,6 +133,7 @@ export function WealthTerminal({ data }: WealthTerminalProps) {
   const subsidyPct = subsidy > 0 ? (subsidy / capitalTotal) * 100 : 0;
   const netPct = net > 0 ? (net / capitalTotal) * 100 : 100;
   const { copy, isHi } = useLuxeLang();
+  const vendor = luxeVendorOrFallback(useLuxeVendorName(data), isHi);
 
   return (
     <section
@@ -444,30 +446,13 @@ export function WealthTerminal({ data }: WealthTerminalProps) {
       <p className={styles.wealthFootnote}>{copy.wealth.footnote}</p>
 
       <ExpertVerdict label={copy.wealth.verdictLabel}>
-        {net > 0
-          ? isHi
-            ? `${formatLuxeInrReadable(net)} का नेट खर्च ${formatLuxeYears(payback)} में वापस${
-                savingsAnnual > 0
-                  ? `; वर्ष-1 राहत ${formatLuxeInrReadable(savingsAnnual)} फिर जुड़ती जाती है`
-                  : ""
-              }${
-                lifetime > 0
-                  ? ` — 25 वर्षों में लगभग ${formatLuxeInrReadable(lifetime)}`
-                  : ""
-              }.`
-            : `Net outlay of ${formatLuxeInrReadable(net)} recovers in ${formatLuxeYears(payback)}${
-                savingsAnnual > 0
-                  ? `; year-1 relief of ${formatLuxeInrReadable(savingsAnnual)} then compounds`
-                  : ""
-              }${
-                lifetime > 0
-                  ? ` toward about ${formatLuxeInrReadable(lifetime)} over 25 years`
-                  : ""
-              }.`
-          : isHi
-            ? "संपत्ति पथ देखें: पेबैक के बाद हर महीने की बिल राहत लंबी अवधि की घरेलू संपत्ति बनती है।"
-            : `Watch the wealth path: once payback clears, every month of bill relief compounds into long-horizon household equity.`}
+        {copy.wealth.verdict}
       </ExpertVerdict>
+
+      <footer className={styles.impactPageFooter}>
+        <span>{vendor.toUpperCase()}</span>
+        <span>03 / 11</span>
+      </footer>
     </section>
   );
 }

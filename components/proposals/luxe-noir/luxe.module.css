@@ -242,6 +242,82 @@
   print-color-adjust: exact !important;
 }
 
+.coverPhotoPlate {
+  margin: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-height: 100%;
+}
+
+.coverPhotoFrame {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 2px;
+  background: #0a0e14;
+  box-shadow: 0 14px 42px rgba(20, 24, 32, 0.18);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.coverPhotoImg {
+  display: block;
+  width: 100%;
+  height: clamp(168px, 22vh, 228px);
+  object-fit: cover;
+  object-position: center 42%;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.coverPhotoVignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(10, 14, 20, 0.12) 0%,
+    transparent 28%,
+    transparent 62%,
+    rgba(10, 14, 20, 0.55) 100%
+  );
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.coverPhotoGoldEdge {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 1px solid rgba(184, 150, 46, 0.55);
+  box-shadow: inset 0 0 0 5px rgba(10, 14, 20, 0.18);
+}
+
+.coverPhotoCaption {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 0;
+  padding: 9px 12px;
+  background: #121820;
+  color: rgba(232, 236, 242, 0.88);
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  font-weight: 700;
+  text-transform: uppercase;
+  border: 1px solid rgba(184, 150, 46, 0.35);
+  border-top: none;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.coverPhotoCaption span:last-child {
+  color: #b8962e;
+}
+
 .coverDedication {
   margin-top: 18px;
   margin-bottom: 16px;
@@ -428,8 +504,8 @@
   grid-template-columns: 1.35fr 0.65fr;
   gap: 14px;
   align-items: center;
-  margin-top: 16px;
-  margin-bottom: 12px;
+  margin-top: 12px;
+  margin-bottom: 10px;
   flex-shrink: 0;
 }
 
@@ -448,9 +524,9 @@
 }
 
 .closeVendorName {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
-  font-size: clamp(2.6rem, 7vw, 3.6rem);
+  font-size: clamp(2.4rem, 6.5vw, 3.3rem);
   font-weight: 400;
   line-height: 0.98;
   color: #141820;
@@ -458,9 +534,9 @@
 }
 
 .closeTitle {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
-  font-size: clamp(1.45rem, 3.5vw, 1.85rem);
+  font-size: clamp(1.35rem, 3.2vw, 1.7rem);
   font-weight: 500;
   line-height: 1.15;
   color: #1e2430;
@@ -468,15 +544,15 @@
 
 .closeLead {
   margin: 0;
-  font-size: 0.9rem;
-  line-height: 1.45;
+  font-size: 0.86rem;
+  line-height: 1.4;
   color: #1e2430;
   max-width: 36em;
 }
 
 .closeSeal {
   width: 100%;
-  max-width: 132px;
+  max-width: 118px;
   height: auto;
   justify-self: end;
   -webkit-print-color-adjust: exact !important;
@@ -490,13 +566,13 @@
   background: #ffffff;
   border: 1px solid #e2e6ec;
   border-radius: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   overflow: hidden;
   flex-shrink: 0;
 }
 
 .closeMetaCell {
-  padding: 10px 14px;
+  padding: 8px 12px;
   border-right: 1px solid #eef1f5;
   min-width: 0;
 }
@@ -507,31 +583,31 @@
 
 .closeMetaCell span {
   display: block;
-  font-size: 0.58rem;
+  font-size: 0.56rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: #b8962e;
   font-weight: 700;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
 }
 
 .closeMetaCell strong {
   display: block;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   color: #141820;
   font-weight: 600;
   line-height: 1.25;
   overflow-wrap: anywhere;
 }
 
+/* Compact path — height fits content (no empty stretch) */
 .closeJourney {
   background: #ffffff;
   border: 1px solid #e2e6ec;
   border-radius: 10px;
-  padding: 12px 12px 14px;
-  margin-bottom: 12px;
-  flex: 1 1 auto;
-  min-height: 0;
+  padding: 10px 10px 10px;
+  margin-bottom: 10px;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
 }
@@ -541,12 +617,12 @@
   justify-content: space-between;
   align-items: baseline;
   gap: 10px;
-  margin-bottom: 12px;
-  padding: 0 4px;
+  margin-bottom: 8px;
+  padding: 0 2px;
 }
 
 .closeJourneyHead span {
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   letter-spacing: 0.16em;
   color: #b8962e;
   font-weight: 700;
@@ -554,7 +630,7 @@
 
 .closeJourneyHead em {
   font-style: normal;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: #5c6573;
   font-weight: 600;
 }
@@ -566,25 +642,26 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 8px;
-  flex: 1;
-  align-content: stretch;
+  flex: 0 0 auto;
+  align-content: start;
 }
 
 .closeJourneyStep {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 10px 10px 12px;
+  gap: 4px;
+  padding: 8px 9px 9px;
   background: #f8f9fb;
   border-radius: 8px;
   border: 1px solid #eef1f5;
   min-width: 0;
+  min-height: 0;
 }
 
 .closeJourneyRail {
   position: absolute;
-  top: 28px;
+  top: 18px;
   left: calc(100% - 2px);
   width: calc(8px + 4px);
   height: 2px;
@@ -597,12 +674,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
+  gap: 4px;
+  margin-bottom: 1px;
 }
 
 .closeStepNum {
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 500;
   color: #b8962e;
   font-variant-numeric: tabular-nums;
@@ -610,31 +688,33 @@
 }
 
 .closeStepGlyph {
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
   flex-shrink: 0;
 }
 
 .closeJourneyStep strong {
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   color: #141820;
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.2;
 }
 
 .closeJourneyStep p {
   margin: 0;
-  font-size: 0.74rem;
-  line-height: 1.35;
+  font-size: 0.68rem;
+  line-height: 1.3;
   color: #1e2430;
 }
 
 .closeSigGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 10px;
   margin-bottom: 10px;
-  flex-shrink: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  align-items: stretch;
 }
 
 .closeSigCard {
@@ -645,7 +725,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  min-height: 128px;
+  min-height: 0;
 }
 
 .closeSigCardVendor {
@@ -654,9 +734,10 @@
 }
 
 .closeSigPad {
-  height: 44px;
+  flex: 1 1 auto;
+  min-height: 52px;
   border-bottom: 1.5px solid rgba(20, 24, 32, 0.28);
-  margin: 4px 0 8px;
+  margin: 6px 0 8px;
 }
 
 .closeSigLabel {
@@ -687,8 +768,8 @@
   align-items: center;
   background: #1e2a3a;
   border-radius: 10px;
-  padding: 12px 16px;
-  margin-bottom: 10px;
+  padding: 11px 14px;
+  margin-bottom: 8px;
   flex-shrink: 0;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
@@ -740,7 +821,7 @@
 }
 
 .closePage .expertVerdict p {
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   line-height: 1.4;
 }
 
@@ -1161,9 +1242,25 @@
   letter-spacing: 1.2px;
 }
 
-.ledgerPage .itemContent h3 {
+.ledgerPage .itemContent h3,
+.ledgerPage .bomMaterialName {
   font-size: 1.12rem;
-  margin-bottom: 5px;
+  margin: 0 0 5px;
+  font-weight: 700;
+  color: #141820;
+  line-height: 1.25;
+}
+
+.ledgerPage .bomMaterialBody {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #1e2430;
+  margin: 0;
+}
+
+.ledgerPage .bomMaterialBody strong {
+  font-weight: 700;
+  color: #141820;
 }
 
 .ledgerPage .itemContent p {
@@ -1620,10 +1717,12 @@
   border: 1px solid #e2e6ec;
   border-radius: 10px;
   padding: 12px 14px 8px;
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
+  margin-bottom: 0;
+  overflow: hidden;
 }
 
 .chartHead {
@@ -1640,7 +1739,8 @@
   display: block;
   width: 100%;
   flex: 1;
-  min-height: 180px;
+  min-height: 160px;
+  max-height: 200px;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -1650,6 +1750,7 @@
   font-size: 0.78rem;
   color: #1e2430;
   line-height: 1.4;
+  flex-shrink: 0;
 }
 
 .chartFoot strong {
@@ -1662,6 +1763,15 @@
   font-size: 0.68rem;
   color: #1e2430;
   line-height: 1.4;
+  flex-shrink: 0;
+}
+
+.luxeTerminal .expertVerdict {
+  margin-top: 10px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+  clear: both;
 }
 
 /* IMPACT PAGE */

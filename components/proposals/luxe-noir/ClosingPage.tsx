@@ -7,7 +7,7 @@
 
 import type { ProposalData } from "@/lib/proposal-data";
 import { formatLuxeKw } from "./luxe-format";
-import { resolveLuxeVendorName } from "./luxe-vendor";
+import { useLuxeVendorName, luxeVendorOrFallback } from "./luxe-vendor";
 import { ExpertVerdict } from "./ExpertVerdict";
 import { useLuxeLang } from "./luxe-lang-context";
 import { luxeDisplayFont } from "./luxe-fonts";
@@ -108,8 +108,7 @@ function StepGlyph({ index }: { index: number }) {
 
 export function ClosingPage({ data }: ClosingPageProps) {
   const { copy, isHi } = useLuxeLang();
-  const vendor =
-    resolveLuxeVendorName(data) || (isHi ? "सोलर पार्टनर" : "Solar Partner");
+  const vendor = luxeVendorOrFallback(useLuxeVendorName(data), isHi);
   const client =
     data.meta.customerName?.trim() ||
     (isHi ? "सम्मानित ग्राहक" : "Valued Customer");
@@ -117,8 +116,8 @@ export function ClosingPage({ data }: ClosingPageProps) {
   const contact =
     data.closing.contactLine?.trim() ||
     (isHi
-      ? "शुरू करने के लिए अपने सोलर पार्टनर को कॉल या WhatsApp करें।"
-      : "Call or WhatsApp your solar partner to begin.");
+      ? `शुरू करने के लिए ${vendor} को कॉल या WhatsApp करें।`
+      : `Call or WhatsApp ${vendor} to begin.`);
   const contactPerson = data.closing.contactPerson?.trim() || vendor;
   const contactRole =
     data.closing.contactPersonDesignation?.trim() ||

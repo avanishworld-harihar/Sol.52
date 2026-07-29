@@ -7,7 +7,7 @@
 
 import type { ProposalData } from "@/lib/proposal-data";
 import { formatLuxeUnits } from "./luxe-format";
-import { resolveLuxeVendorName } from "./luxe-vendor";
+import { useLuxeVendorName, luxeVendorOrFallback } from "./luxe-vendor";
 import { ExpertVerdict } from "./ExpertVerdict";
 import { useLuxeLang } from "./luxe-lang-context";
 import { luxeDisplayFont } from "./luxe-fonts";
@@ -19,74 +19,83 @@ export type ImpactPageProps = {
   brand?: string;
 };
 
-/** Hero: petrol car + blocked exhaust — matches “car off the road” note. */
+/** Hero: refined sedan — petrol car off the road metaphor. */
 function IllustCo2({ label }: { label: string }) {
   return (
     <svg viewBox="0 0 180 168" className={styles.impactHeroArt} aria-hidden>
       <defs>
         <linearGradient id="impactCarBody" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#2a3140" />
-          <stop offset="100%" stopColor="#141820" />
+          <stop offset="0%" stopColor="#3a4250" />
+          <stop offset="55%" stopColor="#1e2430" />
+          <stop offset="100%" stopColor="#12161e" />
+        </linearGradient>
+        <linearGradient id="impactCarGlass" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="rgba(184,150,46,0.35)" />
+          <stop offset="100%" stopColor="rgba(184,150,46,0.08)" />
         </linearGradient>
         <linearGradient id="impactSky" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="rgba(184,150,46,0.22)" />
-          <stop offset="100%" stopColor="rgba(184,150,46,0.06)" />
+          <stop offset="0%" stopColor="rgba(184,150,46,0.2)" />
+          <stop offset="100%" stopColor="rgba(184,150,46,0.05)" />
         </linearGradient>
       </defs>
-      <circle cx="90" cy="78" r="70" fill="url(#impactSky)" />
+      <circle cx="90" cy="76" r="68" fill="url(#impactSky)" />
       <circle
         cx="90"
-        cy="78"
-        r="62"
+        cy="76"
+        r="60"
         fill="none"
-        stroke="rgba(184,150,46,0.4)"
-        strokeWidth="1.4"
+        stroke="rgba(184,150,46,0.42)"
+        strokeWidth="1.3"
       />
-
-      {/* Soft road */}
-      <ellipse cx="90" cy="118" rx="52" ry="7" fill="rgba(20,24,32,0.1)" />
-
-      {/* Car body */}
+      <ellipse cx="90" cy="118" rx="54" ry="6" fill="rgba(20,24,32,0.1)" />
       <path
-        d="M42 98 L52 78 L78 72 L108 72 L128 82 L138 98 Z"
+        d="M34 100 C36 92 40 86 48 84 L62 72 C68 68 78 66 88 66 L112 66 C122 66 130 70 136 78 L148 92 C150 94 150 98 148 100 L34 100 Z"
         fill="url(#impactCarBody)"
         stroke="#B8962E"
-        strokeWidth="1.5"
+        strokeWidth="1.35"
+        strokeLinejoin="round"
       />
       <path
-        d="M58 78 L72 74 L88 74 L100 78 L92 88 L62 88 Z"
-        fill="rgba(184,150,46,0.25)"
-        stroke="#B8962E"
-        strokeWidth="1"
+        d="M64 84 L74 70 C78 68 86 67 94 67 L110 67 C116 67 122 70 126 76 L118 90 L70 90 Z"
+        fill="url(#impactCarGlass)"
+        stroke="rgba(184,150,46,0.55)"
+        strokeWidth="0.9"
       />
-      {/* Wheels */}
-      <circle cx="64" cy="100" r="9" fill="#1e2430" stroke="#B8962E" strokeWidth="1.3" />
-      <circle cx="64" cy="100" r="3.5" fill="#B8962E" />
-      <circle cx="118" cy="100" r="9" fill="#1e2430" stroke="#B8962E" strokeWidth="1.3" />
-      <circle cx="118" cy="100" r="3.5" fill="#B8962E" />
-
-      {/* Exhaust smoke (grey) + block mark */}
-      <ellipse cx="148" cy="86" rx="10" ry="7" fill="rgba(90,98,110,0.35)" />
-      <ellipse cx="158" cy="78" rx="8" ry="6" fill="rgba(90,98,110,0.28)" />
-      <circle cx="152" cy="72" r="16" fill="none" stroke="#B8962E" strokeWidth="2.4" />
-      <line
-        x1="141"
-        y1="83"
-        x2="163"
-        y2="61"
-        stroke="#B8962E"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-      />
-
+      <path d="M48 92 L140 92" fill="none" stroke="rgba(184,150,46,0.35)" strokeWidth="0.8" />
+      <path d="M96 70 L96 100" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="0.7" />
+      <circle cx="58" cy="102" r="10" fill="#0e1218" stroke="#B8962E" strokeWidth="1.4" />
+      <circle cx="58" cy="102" r="4.2" fill="none" stroke="#8A6E22" strokeWidth="1.1" />
+      <circle cx="132" cy="102" r="10" fill="#0e1218" stroke="#B8962E" strokeWidth="1.4" />
+      <circle cx="132" cy="102" r="4.2" fill="none" stroke="#8A6E22" strokeWidth="1.1" />
+      <ellipse cx="40" cy="90" rx="3.2" ry="2.2" fill="rgba(184,150,46,0.55)" />
+      <g transform="translate(148,58)">
+        <circle r="11" fill="#1e2a3a" stroke="#B8962E" strokeWidth="1.4" />
+        <path
+          d="M-5.5 5.5 L5.5 -5.5"
+          fill="none"
+          stroke="#C9A84A"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        />
+        <text
+          y="3.5"
+          textAnchor="middle"
+          fill="#B8962E"
+          fontSize="7"
+          fontWeight="700"
+          fontFamily="system-ui,sans-serif"
+        >
+          CO₂
+        </text>
+      </g>
       <text
         x="90"
-        y="152"
+        y="148"
         textAnchor="middle"
         fill="#141820"
-        fontSize="11"
+        fontSize="9.5"
         fontWeight="700"
-        letterSpacing="1.4"
+        letterSpacing="1.2"
         fontFamily="system-ui,sans-serif"
       >
         {label}
@@ -253,11 +262,8 @@ function IllustYears() {
 
 export function ImpactPage({ data, generationUnits, brand }: ImpactPageProps) {
   const { copy, isHi } = useLuxeLang();
-  const vendor = (
-    brand?.trim() ||
-    resolveLuxeVendorName(data) ||
-    (isHi ? "सोलर पार्टनर" : "Solar Partner")
-  ).trim();
+  const fromSettings = useLuxeVendorName(data);
+  const vendor = luxeVendorOrFallback(brand?.trim() || fromSettings, isHi);
   const co2 = impactTons(data);
   const trees =
     data.impact.treesEquivalent > 0
@@ -273,7 +279,7 @@ export function ImpactPage({ data, generationUnits, brand }: ImpactPageProps) {
   }));
 
   /** Equal height — same clean units every year (not growing). */
-  const barH = yearly > 0 ? 110 : 64;
+  const barH = yearly > 0 ? 96 : 56;
   const barW = 56;
 
   return (
@@ -335,7 +341,10 @@ export function ImpactPage({ data, generationUnits, brand }: ImpactPageProps) {
               : "—"}
           </span>
         </div>
-        <p className={styles.impactChartSteady}>{copy.impact.chartSteady}</p>
+        <p className={styles.impactChartSteady}>
+          {copy.impact.chartSteady}
+          {yearly > 0 ? ` · ${copy.impact.chartSameLine}` : ""}
+        </p>
         <svg
           viewBox="0 0 520 200"
           width="100%"
@@ -355,7 +364,7 @@ export function ImpactPage({ data, generationUnits, brand }: ImpactPageProps) {
             </linearGradient>
           </defs>
 
-          {/* Steady-level guide — same height every year */}
+          {/* Steady-level guide (label lives in chartSteady — avoids bar-value overlap) */}
           <line
             x1="36"
             y1={168 - barH}
@@ -365,18 +374,6 @@ export function ImpactPage({ data, generationUnits, brand }: ImpactPageProps) {
             strokeWidth="1.2"
             strokeDasharray="4 4"
           />
-          <text
-            x="500"
-            y={168 - barH - 6}
-            textAnchor="end"
-            fill="#8A6E22"
-            fontSize="9"
-            fontFamily="system-ui,sans-serif"
-            fontWeight="600"
-            letterSpacing="0.6"
-          >
-            {copy.impact.chartSameLine}
-          </text>
 
           <line
             x1="36"
@@ -440,21 +437,7 @@ export function ImpactPage({ data, generationUnits, brand }: ImpactPageProps) {
       </div>
 
       <ExpertVerdict label={copy.impact.verdictLabel}>
-        {co2 > 0
-          ? isHi
-            ? `यह प्लांट जीवनकाल में लगभग ${Math.round(co2)} टन CO₂ बचा सकता है${
-                trees > 0
-                  ? ` — लगभग ${trees.toLocaleString("en-IN")} पेड़ों के काम जितना`
-                  : ""
-              }. आप बिल बचाते हैं। आपके इलाके में साफ़ हवा।`
-            : `This plant can avoid about ${Math.round(co2)} tonnes of CO₂ over its life${
-                trees > 0
-                  ? ` — like the work of about ${trees.toLocaleString("en-IN")} trees`
-                  : ""
-              }. You save on bills. Your street gets cleaner air.`
-          : isHi
-            ? "आपकी छत से स्वच्छ बिजली मतलब ग्रिड से कम कोयला बिजली। आप पैसे बचाते हैं। पड़ोस साँस लेता है।"
-            : `Clean power from your roof means less coal power from the grid. You save money. Your neighbourhood breathes easier.`}
+        {copy.impact.verdict}
       </ExpertVerdict>
 
       <footer className={styles.impactPageFooter}>

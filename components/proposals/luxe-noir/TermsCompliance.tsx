@@ -7,7 +7,7 @@
 
 import type { ProposalData } from "@/lib/proposal-data";
 import { formatLuxeInr, formatLuxeInrReadable } from "./luxe-format";
-import { resolveLuxeVendorName } from "./luxe-vendor";
+import { useLuxeVendorName, luxeVendorOrFallback } from "./luxe-vendor";
 import { ExpertVerdict } from "./ExpertVerdict";
 import { useLuxeLang } from "./luxe-lang-context";
 import { luxeDisplayFont } from "./luxe-fonts";
@@ -126,7 +126,8 @@ function take<T>(arr: T[], n: number): T[] {
 }
 
 export function TermsCompliancePage1({ data }: TermsComplianceProps) {
-  const { copy } = useLuxeLang();
+  const { copy, isHi } = useLuxeLang();
+  const vendor = luxeVendorOrFallback(useLuxeVendorName(data), isHi);
   const docs = take(
     data.terms.documents.length > 0 ? data.terms.documents : DEFAULT_DOCS,
     6
@@ -174,13 +175,18 @@ export function TermsCompliancePage1({ data }: TermsComplianceProps) {
       </div>
 
       <ExpertVerdict label={copy.terms.counselLabel}>{copy.terms.counsel}</ExpertVerdict>
+
+      <footer className={styles.impactPageFooter}>
+        <span>{vendor.toUpperCase()}</span>
+        <span>09 / 11</span>
+      </footer>
     </section>
   );
 }
 
 export function TermsCompliancePage2({ data }: TermsComplianceProps) {
-  const { copy } = useLuxeLang();
-  const vendor = resolveLuxeVendorName(data) || "Solar Partner";
+  const { copy, isHi } = useLuxeLang();
+  const vendor = luxeVendorOrFallback(useLuxeVendorName(data), isHi);
   const invoiceBase =
     data.economics.grossInr > 0
       ? data.economics.grossInr
@@ -331,6 +337,11 @@ export function TermsCompliancePage2({ data }: TermsComplianceProps) {
       </div>
 
       <ExpertVerdict label={copy.terms.omLabel}>{copy.terms.om}</ExpertVerdict>
+
+      <footer className={styles.impactPageFooter}>
+        <span>{vendor.toUpperCase()}</span>
+        <span>10 / 11</span>
+      </footer>
     </section>
   );
 }

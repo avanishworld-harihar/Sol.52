@@ -14,7 +14,7 @@ import {
   resolveProposalBankDetails,
 } from "@/lib/proposal-branding-settings";
 import { formatLuxeInr, formatLuxeInrReadable } from "./luxe-format";
-import { resolveLuxeVendorName } from "./luxe-vendor";
+import { useLuxeVendorName, luxeVendorOrFallback } from "./luxe-vendor";
 import { ExpertVerdict } from "./ExpertVerdict";
 import { useLuxeLang } from "./luxe-lang-context";
 import { luxeDisplayFont } from "./luxe-fonts";
@@ -149,9 +149,8 @@ export function PaymentMilestonesPage({
 }: PaymentMilestonesPageProps) {
   const { copy, isHi } = useLuxeLang();
   const bank = useResolvedLuxeBank(data);
-  const vendorName =
-    (brand?.trim() || resolveLuxeVendorName(data) || "").trim() ||
-    (isHi ? "सोलर पार्टनर" : "Solar Partner");
+  const fromSettings = useLuxeVendorName(data);
+  const vendorName = luxeVendorOrFallback(brand?.trim() || fromSettings, isHi);
   const company = bank.accountName || vendorName;
   const hasBank = Boolean(bank.accountNumber || bank.ifsc || bank.upiId);
 

@@ -12,6 +12,7 @@ import { formatLuxeKw } from "./luxe-format";
 import { ExpertVerdict } from "./ExpertVerdict";
 import { useLuxeLang } from "./luxe-lang-context";
 import { luxeDisplayFont } from "./luxe-fonts";
+import { useLuxeVendorName, luxeVendorOrFallback } from "./luxe-vendor";
 import styles from "./luxe.module.css";
 
 export type TitaniumLedgerProps = {
@@ -63,6 +64,21 @@ function brandTitle(
     return item.brand?.trim() ? `${item.brand.trim()} · ${fallback}` : raw;
   }
   return raw;
+}
+
+/** Bold quantity / material lead so BOM lines scan faster. */
+function formatBomBody(body: string) {
+  const parts = body.split(" · ").map((p) => p.trim()).filter(Boolean);
+  if (parts.length === 0) return body;
+  const leadCount = Math.min(2, parts.length);
+  const lead = parts.slice(0, leadCount).join(" · ");
+  const rest = parts.slice(leadCount).join(" · ");
+  return (
+    <>
+      <strong>{lead}</strong>
+      {rest ? <> · {rest}</> : null}
+    </>
+  );
 }
 
 function buildRow(
@@ -126,6 +142,7 @@ export function TitaniumLedger({ data }: TitaniumLedgerProps) {
   const sharedProtect = claimBom(bom, used, /protection|safety|spd|mcb/i);
 
   const { copy, isHi } = useLuxeLang();
+  const vendor = luxeVendorOrFallback(useLuxeVendorName(data), isHi);
 
   const rows: LedgerRow[] = [
     buildRow(panel, {
@@ -251,18 +268,23 @@ export function TitaniumLedger({ data }: TitaniumLedgerProps) {
                 <span className={styles.ledgerRole}>{row.role}</span>
                 <span className={styles.specBadge}>{row.badge}</span>
               </div>
-              <h3>{row.title}</h3>
-              <p>{row.body}</p>
+              <h3 className={styles.bomMaterialName}>{row.title}</h3>
+              <p className={styles.bomMaterialBody}>
+                {formatBomBody(row.body)}
+              </p>
             </div>
           </div>
         ))}
       </div>
 
       <ExpertVerdict label={copy.bom.verdictLabel}>
-        {isHi
-          ? `DCDB/ACDB (1–1 Nos), 2 mtr LA, 4 sqmm DC/AC वायर, और 3×17 mm अर्थिंग किट अलग लाइन हैं — इस ${formatLuxeKw(systemKw)} kW प्लांट पर हर एक अलग सुरक्षा डोमेन कवर करता है।`
-          : `DCDB/ACDB (1 Nos each), 2 mtr LA, 4 sqmm DC/AC wire, and 3×17 mm earthing kits are separate lines — each covers a different fault domain on this ${formatLuxeKw(systemKw)} kW plant.`}
+        {copy.bom.verdict}
       </ExpertVerdict>
+
+      <footer className={styles.impactPageFooter}>
+        <span>{vendor.toUpperCase()}</span>
+        <span>06 / 11</span>
+      </footer>
     </section>
   );
 }

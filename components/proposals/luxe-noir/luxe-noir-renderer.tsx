@@ -24,7 +24,7 @@ import {
 import { LuxeLangProvider, useLuxeLang } from "./luxe-lang-context";
 import type { LuxeLang } from "./luxe-copy";
 import { luxeDisplayFont } from "./luxe-fonts";
-import { resolveLuxeVendorName } from "./luxe-vendor";
+import { useLuxeVendorName, luxeVendorOrFallback } from "./luxe-vendor";
 import styles from "./luxe-noir-shell.module.css";
 
 export type LuxeNoirRendererProps = {
@@ -50,7 +50,7 @@ function A4Page({
         {children}
       </div>
       <footer className={styles.pageFooter}>
-        <span className={styles.pageFooterGold}>{brand}</span>
+        <span className={styles.pageFooterGold}>{brand.toUpperCase()}</span>
         <span>{pageLabel}</span>
       </footer>
     </section>
@@ -59,8 +59,7 @@ function A4Page({
 
 function LuxeNoirDocument({ data }: { data: ProposalData }) {
   const { lang, setLang, copy, isHi } = useLuxeLang();
-  const brand =
-    resolveLuxeVendorName(data) || (isHi ? "सोलर पार्टनर" : "Solar Partner");
+  const brand = luxeVendorOrFallback(useLuxeVendorName(data), isHi);
   const systemKw = Number(data.meta.systemKw) || 0;
   const eco = data.economics;
   const bill = data.bill;
@@ -345,17 +344,7 @@ function LuxeNoirDocument({ data }: { data: ProposalData }) {
         <div className={styles.termsBox}>{copy.emi.disclaimer(ratePctLabel)}</div>
 
         <ExpertVerdict label={copy.emi.verdictLabel}>
-          {emiRows.length > 0 && monthlyBillApprox > 0
-            ? isHi
-              ? `वह अवधि चुनें जहाँ EMI आपके वर्तमान ~${formatInr(monthlyBillApprox)}/माह ग्रिड खर्च के करीब हो — छत पर संपत्ति बनती रहे, नकद प्रवाह परिचित लगे।`
-              : `Pick the tenure where EMI sits near your current ~${formatInr(monthlyBillApprox)}/mo grid spend — solar equity builds on the roof while cash-flow feels familiar.`
-            : net > 0
-              ? isHi
-                ? `${formatInr(net)} नेट को ऐसी अवधि में बाँटें जो मासिक नकद प्रवाह से बैठे।`
-                : `Spread the ${formatInr(net)} net across a tenure that fits monthly cash-flow; shorter loans cut interest, longer ones ease the instalment.`
-              : isHi
-                ? "EMI अवधि को नकद प्रवाह आराम से मिलाएँ — अक्सर किस्त आपके मासिक बिल के करीब होती है।"
-                : `Match EMI tenure to cash-flow comfort — often the instalment is comparable to the bill you already settle every month.`}
+          {copy.emi.verdict}
         </ExpertVerdict>
       </A4Page>
 

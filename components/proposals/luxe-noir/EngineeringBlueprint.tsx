@@ -11,6 +11,7 @@ import { formatLuxeKw, formatLuxeUnits } from "./luxe-format";
 import { ExpertVerdict } from "./ExpertVerdict";
 import { useLuxeLang } from "./luxe-lang-context";
 import { luxeDisplayFont } from "./luxe-fonts";
+import { useLuxeVendorName, luxeVendorOrFallback } from "./luxe-vendor";
 import styles from "./luxe.module.css";
 
 export type EngineeringBlueprintProps = {
@@ -32,8 +33,7 @@ function metricValue(
 }
 
 /**
- * Landscape module on rooftop rails — short L-feet into the deck.
- * No tall table legs (that silhouette reads as furniture).
+ * Landscape module on GI rails — aluminium frame, cell grid, busbars, mid-clamps.
  */
 function IsoPanel({
   cx,
@@ -42,13 +42,12 @@ function IsoPanel({
   cx: number;
   cy: number;
 }) {
-  // Landscape on roof plane; slight south tilt via down vector
-  const rightX = 38;
-  const rightY = 11;
-  const downX = -13;
-  const downY = 9.5;
-  const thick = 2.8;
-  const standoff = 3.2; // short L-foot height into roof — not table legs
+  // Landscape on roof; south tilt via down vector
+  const rightX = 40;
+  const rightY = 11.5;
+  const downX = -14;
+  const downY = 10.5;
+  const thick = 3.2;
 
   const p0x = cx;
   const p0y = cy;
@@ -66,43 +65,30 @@ function IsoPanel({
   const t3x = p3x;
   const t3y = p3y + thick;
 
-  // Mid-rail contact points under panel (2 rails)
-  const railA = {
-    x0: p0x + rightX * 0.18 + downX * 0.35,
-    y0: p0y + rightY * 0.18 + downY * 0.35 + thick,
-    x1: p0x + rightX * 0.82 + downX * 0.35,
-    y1: p0y + rightY * 0.82 + downY * 0.35 + thick,
-  };
-  const railB = {
-    x0: p0x + rightX * 0.18 + downX * 0.72,
-    y0: p0y + rightY * 0.18 + downY * 0.72 + thick,
-    x1: p0x + rightX * 0.82 + downX * 0.72,
-    y1: p0y + rightY * 0.82 + downY * 0.72 + thick,
-  };
-
-  // Four short L-feet into roof deck
-  const feet = [
-    { x: railA.x0, y: railA.y0 },
-    { x: railA.x1, y: railA.y1 },
-    { x: railB.x0, y: railB.y0 },
-    { x: railB.x1, y: railB.y1 },
-  ];
-
+  // Cell grid (6 × 3 landscape)
   const cells: string[] = [];
   for (let i = 1; i < 6; i++) {
     const t = i / 6;
-    const ax = p0x + rightX * t;
-    const ay = p0y + rightY * t;
-    cells.push(`M ${ax},${ay} L ${ax + downX},${ay + downY}`);
+    cells.push(
+      `M ${p0x + rightX * t},${p0y + rightY * t} L ${p0x + rightX * t + downX},${p0y + rightY * t + downY}`
+    );
   }
   for (let j = 1; j < 3; j++) {
     const t = j / 3;
-    const ax = p0x + downX * t;
-    const ay = p0y + downY * t;
-    cells.push(`M ${ax},${ay} L ${ax + rightX},${ay + rightY}`);
+    cells.push(
+      `M ${p0x + downX * t},${p0y + downY * t} L ${p0x + downX * t + rightX},${p0y + downY * t + rightY}`
+    );
   }
 
-  const inset = 0.07;
+  // Thin busbars
+  const bus: string[] = [];
+  for (const t of [0.22, 0.5, 0.78]) {
+    bus.push(
+      `M ${p0x + rightX * t + downX * 0.08},${p0y + rightY * t + downY * 0.08} L ${p0x + rightX * t + downX * 0.92},${p0y + rightY * t + downY * 0.92}`
+    );
+  }
+
+  const inset = 0.06;
   const g0x = p0x + rightX * inset + downX * inset;
   const g0y = p0y + rightY * inset + downY * inset;
   const g1x = p0x + rightX * (1 - inset) + downX * inset;
@@ -112,112 +98,89 @@ function IsoPanel({
   const g3x = p0x + rightX * inset + downX * (1 - inset);
   const g3y = p0y + rightY * inset + downY * (1 - inset);
 
+  // Mid-clamp positions on long edges (into rails)
+  const clampPts = [
+    { x: p0x + rightX * 0.5 + downX * 0.02, y: p0y + rightY * 0.5 + downY * 0.02 },
+    { x: p0x + rightX * 0.5 + downX * 0.98, y: p0y + rightY * 0.5 + downY * 0.98 },
+  ];
+
   return (
     <g>
-      {/* Short L-feet into roof (anchor pads) */}
-      {feet.map((f, i) => (
-        <g key={`ft-${i}`}>
-          <ellipse
-            cx={f.x + 0.5}
-            cy={f.y + standoff + 1}
-            rx="2.4"
-            ry="1.1"
-            fill="rgba(0,0,0,0.4)"
-          />
-          <line
-            x1={f.x}
-            y1={f.y}
-            x2={f.x + 0.4}
-            y2={f.y + standoff}
-            stroke="#9aa3b0"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
-          <rect
-            x={f.x - 2}
-            y={f.y + standoff - 0.3}
-            width="4.5"
-            height="1.4"
-            rx="0.3"
-            fill="#b0b7c2"
-            stroke="#6a7380"
-            strokeWidth="0.35"
-          />
-        </g>
-      ))}
-
-      {/* Local rail segments under module */}
-      <line
-        x1={railA.x0}
-        y1={railA.y0}
-        x2={railA.x1}
-        y2={railA.y1}
-        stroke="#a8b0bc"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-      />
-      <line
-        x1={railB.x0}
-        y1={railB.y0}
-        x2={railB.x1}
-        y2={railB.y1}
-        stroke="#8a93a0"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-      />
-
-      {/* Panel thickness */}
+      {/* Panel thickness (depth) */}
       <polygon
         points={`${p3x},${p3y} ${p2x},${p2y} ${t2x},${t2y} ${t3x},${t3y}`}
-        fill="#1a2433"
+        fill="#121a26"
       />
       <polygon
         points={`${p1x},${p1y} ${p2x},${p2y} ${t2x},${t2y} ${t1x},${t1y}`}
-        fill="#243044"
+        fill="#1e2a3a"
       />
 
-      {/* Aluminium frame + glass */}
+      {/* Aluminium frame */}
       <polygon
         points={`${p0x},${p0y} ${p1x},${p1y} ${p2x},${p2y} ${p3x},${p3y}`}
         fill="url(#panelFrame)"
-        stroke="#c8d0da"
-        strokeWidth="0.65"
+        stroke="#dce2ea"
+        strokeWidth="0.9"
       />
+
+      {/* Photovoltaic glass + cells */}
       <polygon
         points={`${g0x},${g0y} ${g1x},${g1y} ${g2x},${g2y} ${g3x},${g3y}`}
         fill="url(#panelGlass)"
         stroke="#B8962E"
-        strokeWidth="0.5"
+        strokeWidth="0.45"
       />
       <path
         d={cells.join(" ")}
         fill="none"
-        stroke="rgba(200,220,255,0.22)"
-        strokeWidth="0.5"
+        stroke="rgba(180,205,235,0.28)"
+        strokeWidth="0.55"
       />
-      <line
-        x1={g0x + rightX * 0.08}
-        y1={g0y + rightY * 0.08 + 1}
-        x2={g0x + rightX * 0.4}
-        y2={g0y + rightY * 0.4 + 1}
-        stroke="rgba(255,255,255,0.32)"
-        strokeWidth="1.4"
+      <path
+        d={bus.join(" ")}
+        fill="none"
+        stroke="rgba(220,230,245,0.45)"
+        strokeWidth="0.7"
         strokeLinecap="round"
       />
+      {/* Specular glint */}
+      <line
+        x1={g0x + rightX * 0.06}
+        y1={g0y + rightY * 0.06 + 1.2}
+        x2={g0x + rightX * 0.38}
+        y2={g0y + rightY * 0.38 + 1.2}
+        stroke="rgba(255,255,255,0.38)"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+
+      {/* Mid clamps gripping frame to rail */}
+      {clampPts.map((c, i) => (
+        <rect
+          key={`cl-${i}`}
+          x={c.x - 2.2}
+          y={c.y - 1.1}
+          width="4.4"
+          height="2.2"
+          rx="0.4"
+          fill="#c5ccd6"
+          stroke="#6a7380"
+          strokeWidth="0.4"
+        />
+      ))}
     </g>
   );
 }
 
-/** Continuous GI rails under a row of modules — reads as racking, not furniture. */
+/** Continuous C-channel GI rails + mid posts — clear racking under modules. */
 function ArrayRailBank({
   positions,
-  cols,
 }: {
   positions: { cx: number; cy: number }[];
   cols: number;
 }) {
   if (positions.length === 0) return null;
-  // Group by row (same-ish cy band) using original grid order already sorted
   const rows: { cx: number; cy: number }[][] = [];
   for (const p of positions) {
     const last = rows[rows.length - 1];
@@ -234,32 +197,94 @@ function ArrayRailBank({
         const sorted = [...row].sort((a, b) => a.cx - b.cx);
         const first = sorted[0]!;
         const last = sorted[sorted.length - 1]!;
-        const yA = first.cy + 14;
-        const yB = first.cy + 22;
-        const x0 = first.cx - 6;
-        const x1 = last.cx + 44;
+        const skew = (last.cy - first.cy) * 0.12;
+        const x0 = first.cx - 4;
+        const x1 = last.cx + 46;
+        const yFront = first.cy + 16;
+        const yBack = first.cy + 25;
+        const posts = sorted.flatMap((p) => [
+          { x: p.cx + 8, y: yFront + 1 },
+          { x: p.cx + 28, y: yBack - 1 },
+        ]);
+
         return (
           <g key={`rails-${ri}`}>
+            {/* Cross purlin under row */}
+            <line
+              x1={x0 + 2}
+              y1={yFront + 6}
+              x2={x1 - 2}
+              y2={yFront + 6 + skew}
+              stroke="#6a7380"
+              strokeWidth="2"
+              strokeLinecap="round"
+              opacity="0.7"
+            />
+
+            {/* Front C-rail (lighter edge) */}
             <line
               x1={x0}
-              y1={yA}
+              y1={yFront}
               x2={x1}
-              y2={yA + (last.cy - first.cy) * 0.15 + cols * 0.2}
-              stroke="#9aa3b0"
-              strokeWidth="2.8"
+              y2={yFront + skew}
+              stroke="#c8d0da"
+              strokeWidth="3.4"
               strokeLinecap="round"
-              opacity="0.9"
             />
             <line
-              x1={x0 + 4}
-              y1={yB}
-              x2={x1 + 2}
-              y2={yB + (last.cy - first.cy) * 0.15 + cols * 0.2}
+              x1={x0}
+              y1={yFront + 1.6}
+              x2={x1}
+              y2={yFront + 1.6 + skew}
               stroke="#7a8494"
-              strokeWidth="2.6"
+              strokeWidth="1.4"
               strokeLinecap="round"
-              opacity="0.85"
             />
+
+            {/* Rear C-rail */}
+            <line
+              x1={x0 + 3}
+              y1={yBack}
+              x2={x1 + 1}
+              y2={yBack + skew}
+              stroke="#a8b0bc"
+              strokeWidth="3.2"
+              strokeLinecap="round"
+            />
+            <line
+              x1={x0 + 3}
+              y1={yBack + 1.5}
+              x2={x1 + 1}
+              y2={yBack + 1.5 + skew}
+              stroke="#5c6573"
+              strokeWidth="1.3"
+              strokeLinecap="round"
+            />
+
+            {/* Short L-feet / roof anchors */}
+            {posts.map((pt, pi) => (
+              <g key={`post-${ri}-${pi}`}>
+                <line
+                  x1={pt.x}
+                  y1={pt.y}
+                  x2={pt.x + 0.6}
+                  y2={pt.y + 5}
+                  stroke="#9aa3b0"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                />
+                <rect
+                  x={pt.x - 2.4}
+                  y={pt.y + 4.4}
+                  width="5.2"
+                  height="1.6"
+                  rx="0.3"
+                  fill="#b8c0cc"
+                  stroke="#5c6573"
+                  strokeWidth="0.35"
+                />
+              </g>
+            ))}
           </g>
         );
       })}
@@ -427,6 +452,7 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
   panelPositions.sort((a, b) => a.cy - b.cy || a.cx - b.cx);
 
   const { copy, isHi } = useLuxeLang();
+  const vendor = luxeVendorOrFallback(useLuxeVendorName(data), isHi);
 
   return (
     <section
@@ -450,10 +476,10 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
           >
             <defs>
               <linearGradient id="panelGlass" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#3a5a7a" />
-                <stop offset="35%" stopColor="#1e3550" />
-                <stop offset="70%" stopColor="#142838" />
-                <stop offset="100%" stopColor="#0c1824" />
+                <stop offset="0%" stopColor="#4a6f92" />
+                <stop offset="28%" stopColor="#244866" />
+                <stop offset="62%" stopColor="#152a3c" />
+                <stop offset="100%" stopColor="#0a1520" />
               </linearGradient>
               <linearGradient id="panelFrame" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#e8ecf2" />
@@ -747,12 +773,15 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
       </div>
 
       <ExpertVerdict label={copy.eng.verdictLabel}>
-        {isHi
-          ? `ऐरे ${formatLuxeKw(dcKwp)} kWp DC बनाम ${formatLuxeKw(systemKw)} kW AC (${dcAc.toFixed(2)} ओवरसाइज़) — सुबह की यील्ड और मानसून मज़बूती के लिए ${tilt.toFixed(0)}° टिल्ट · ${city}। सुरक्षा स्टैक (DCDB → INV → ACDB → LA/अर्थ) ग्राहक पक्ष को DISCOM और CEA अभ्यास में रखता है।`
-          : `Array sized at ${formatLuxeKw(dcKwp)} kWp DC against ${formatLuxeKw(systemKw)} kW AC (${dcAc.toFixed(2)} oversize) for earlier morning yield and monsoon resilience at ${tilt.toFixed(0)}° tilt · ${city}. Protection stack (DCDB → INV → ACDB → LA/earth) keeps the customer side within DISCOM and CEA practice.`}
+        {copy.eng.verdict}
       </ExpertVerdict>
 
       <p className={styles.standardsStrip}>{standards}</p>
+
+      <footer className={styles.impactPageFooter}>
+        <span>{vendor.toUpperCase()}</span>
+        <span>05 / 11</span>
+      </footer>
     </section>
   );
 }

@@ -83,7 +83,10 @@ export function getLuxeCopy(lang: LuxeLang) {
       footnote: hi
         ? "सब्सिडी MNRE / DISCOM मंज़ूरी पर निर्भर · आँकड़े आपके बिल अपलोड और साइट यील्ड अनुमान से।"
         : "Subsidy subject to MNRE / DISCOM approval · figures derived from your bill upload and site yield assumptions.",
-      verdictLabel: hi ? "सीएफओ का निष्कर्ष" : "CFO'S VERDICT",
+      verdictLabel: hi ? "प्लांट इंजीनियर की सलाह" : "PLANT ENGINEER'S ADVICE",
+      verdict: hi
+        ? "नेट निवेश के आँकड़े ऊपर हैं — प्लांट की बात अलग है: ऐरे को अपने असली बिल पैटर्न से साइज़ करें, फिर इन्वर्टर चुनें ताकि DC/AC लगभग 1.1–1.25 रहे। सही स्ट्रिंग वोल्टेज और साउथ-फेसिंग टिल्ट इन्वर्टर की उम्र बचाते हैं और सालाना यूनिट बढ़ाते हैं — बिना बेकार AC क्षमता के।"
+        : "The capital numbers are above — the plant rule is different: size the array to your real bill pattern first, then pick the inverter so DC/AC sits near 1.1–1.25. Correct string voltage and a south-facing tilt protect inverter life and lift annual units — without wasting roof on unused AC headroom.",
     },
     emi: {
       eyebrow: hi ? "वित्तपोषण" : "Financing",
@@ -108,7 +111,10 @@ export function getLuxeCopy(lang: LuxeLang) {
         hi
           ? `संकेतक EMI ~${pct}% प्रति वर्ष रिटेल दर मानती है; अंतिम मंज़ूरी, शुल्क और अवधि लेंडर के अधीन। हम दस्तावेज़ में मदद करते हैं — मंज़ूरी बैंक / NBFC की।`
           : `Indicative EMIs assume ~${pct}% p.a. retail rate; final sanction, processing fees, and tenure are at the lender's discretion. We assist with documentation — approval rests with the bank / NBFC.`,
-      verdictLabel: hi ? "वित्त सलाहकार का निष्कर्ष" : "FINANCE ADVISOR'S VERDICT",
+      verdictLabel: hi ? "सोलर साइंस नोट" : "SOLAR SCIENCE NOTE",
+      verdict: hi
+        ? "क्रिस्टलाइन मॉड्यूल आमतौर पर प्रति वर्ष ~0.4–0.7% डिग्रेड होते हैं। 5–7 वर्ष के लोन के अंत तक प्लांट अभी भी नामप्लेट यील्ड का लगभग 96–98% देता है — इसलिए लोन खत्म होने के बाद के वर्ष ज़्यादातर ‘मुफ़्त’ सोलर यूनिट हैं, जबकि ग्रिड टैरिफ अक्सर बढ़ता रहता है।"
+        : "Crystalline modules typically degrade ~0.4–0.7% per year. By the end of a 5–7 year loan the plant still delivers about 96–98% of nameplate yield — so post-tenure years are mostly free solar kilowatt-hours, while grid tariffs usually keep rising.",
     },
     eng: {
       tag: hi ? "05 // इंजीनियरिंग डिज़ाइन" : "05 // ENGINEERING DESIGN",
@@ -130,7 +136,10 @@ export function getLuxeCopy(lang: LuxeLang) {
       la: hi ? "लाइटनिंग अरेस्टर" : "Lightning arrestor",
       earth: hi ? "कॉपर अर्थिंग" : "Copper earthing",
       cable: hi ? "केबल क्लास" : "Cable class",
-      verdictLabel: hi ? "मुख्य अभियंता का निष्कर्ष" : "CHIEF ENGINEER'S VERDICT",
+      verdictLabel: hi ? "ज़्यादा यूनिट कैसे पाएँ" : "HOW TO GET MORE UNITS",
+      verdict: hi
+        ? "पैनल दक्षिण मुखी रखें, टिल्ट अपने शहर के अक्षांश के करीब रखें, सूखे महीनों में हर कुछ हफ़्ते धूल साफ़ करें, और किसी पेड़ या पानी की टंकी की छाया एक कोने पर भी न आने दें — एक मॉड्यूल पर छाया पूरे स्ट्रिंग की बिजली घटा सकती है।"
+        : "Keep panels facing south, set tilt near your city’s latitude, wash dust every few weeks in dry months, and never let a tree or tank shade even one corner — shade on a single module can cut power from the whole string.",
     },
     bom: {
       tag: hi ? "06 // सामग्री सूची" : "06 // BILL OF MATERIALS",
@@ -138,7 +147,10 @@ export function getLuxeCopy(lang: LuxeLang) {
       lead: hi
         ? "सात अलग परतें — उत्पादन, कन्वर्ज़न, स्ट्रक्चर, DC सुरक्षा, AC सुरक्षा, सर्ज/केबलिंग और अर्थिंग।"
         : "Seven distinct layers — generation, conversion, structure, DC protection, AC protection, surge/cabling, and earthing. No duplicated safety line.",
-      verdictLabel: hi ? "हार्डवेयर क्यूरेटर का निष्कर्ष" : "HARDWARE CURATOR'S VERDICT",
+      verdictLabel: hi ? "एक्सपर्ट सलाह" : "EXPERT ADVICE",
+      verdict: hi
+        ? "अच्छे मॉड्यूल और इन्वर्टर तभी ज़्यादा यूनिट देते हैं जब केबल सही मोटाई की हों, जोड़ कसकर लगे हों, और पैनल साफ़ रहें। ढीला कनेक्शन या धूल भरा शीशा वही हार्डवेयर बेकार कर देता है जिसके पैसे आपने दिए।"
+        : "Good modules and an inverter only deliver more units when cables are the right size, joints stay tight, and the glass stays clean. A loose connection or a dusty panel wastes the hardware you paid for.",
     },
     impact: {
       tag: hi ? "07 // स्वच्छ प्रभाव" : "07 // CLEAN IMPACT",
@@ -151,7 +163,7 @@ export function getLuxeCopy(lang: LuxeLang) {
       co2Note: hi
         ? "लगभग पेट्रोल कार को वर्षों तक सड़क से हटाने जितना — आपके सिस्टम आकार और वार्षिक उत्पादन से अनुमान।"
         : "About the same as taking a petrol car off the road for years — estimated from your system size and yearly generation.",
-      heroArtLabel: hi ? "≈ पेट्रोल कार सड़क से बाहर" : "≈ PETROL CAR OFF THE ROAD",
+      heroArtLabel: hi ? "≈ पेट्रोल कार कम" : "≈ FEWER PETROL KM",
       likePlanting: hi ? "पेड़ लगाने जैसा" : "LIKE PLANTING",
       treesHint: hi ? "प्लांट जीवन में पेड़" : "trees over the plant life",
       cleanPower: hi ? "स्वच्छ बिजली / वर्ष" : "CLEAN POWER / YEAR",
@@ -165,7 +177,10 @@ export function getLuxeCopy(lang: LuxeLang) {
       chartFoot: hi
         ? "हर साल वही स्वच्छ यूनिट — जबकि ग्रिड बिजली अभी भी कोयला जलाती।"
         : "Same clean units, year after year — while grid power would still burn coal.",
-      verdictLabel: hi ? "सरल निष्कर्ष" : "SIMPLE TAKEAWAY",
+      verdictLabel: hi ? "एक्सपर्ट सलाह" : "EXPERT ADVICE",
+      verdict: hi
+        ? "कोयला प्लांट हर यूनिट के साथ CO₂ के अलावा PM2.5 और NOx भी छोड़ते हैं। छत का सोलर ग्रिड की गंदी बैकअप बिजली घटाता है — इसलिए फायदा सिर्फ़ स्प्रेडशीट का टन नहीं: आपके इलाके की हवा असल में साफ़ होती है जब मीटर रिवर्स चलता है।"
+        : "Coal plants that back the grid release PM2.5 and NOx with every kilowatt-hour — not only CO₂. Rooftop solar trims that dirty backup power, so the benefit is not just tonnes on a spreadsheet: the air on your street improves in real time as your meter runs backward.",
     },
     pay: {
       tag: hi ? "08 // भुगतान प्रणाली" : "08 // PAYMENT SYSTEM",
@@ -245,34 +260,34 @@ export function getLuxeCopy(lang: LuxeLang) {
         ? "हाँ कहें — कागज़ात, इंस्टॉल योजना और स्विच-ऑन शुरू। इसी प्रस्ताव जैसी सावधानी के साथ।"
         : "Say yes — and we begin paperwork, the install plan, and switch-on with the same care shown in this proposal.",
       preparedFor: hi ? "के लिए तैयार" : "Prepared for",
-      vendor: hi ? "विक्रेता" : "Your solar partner",
+      vendor: hi ? "विक्रेता" : "Vendor",
       nextHead: hi ? "आगे का रास्ता" : "YOUR PATH FORWARD",
-      nextHint: hi ? "चार साफ़ चरण · बुकिंग से स्विच-ऑन" : "Four clear stages · booking to switch-on",
+      nextHint: hi ? "चार चरण · बुकिंग → स्विच-ऑन" : "Four stages · booking → switch-on",
       stepTitles: hi
         ? (["पुष्टि व एडवांस", "दस्तावेज़", "डिज़ाइन लॉक", "इंस्टॉल व ऑन"] as const)
         : (["Confirm & pay", "Documents", "Design lock", "Install & on"] as const),
       steps: hi
         ? [
-            "प्रस्ताव स्वीकार करें। विक्रेता बैंक खाते में बुकिंग एडवांस दें।",
-            "बिल, पहचान और स्वामित्व प्रमाण साझा करें।",
-            "संक्षिप्त साइट जाँच के बाद अंतिम डिज़ाइन लॉक।",
-            "इंस्टॉल, नेट-मीटरिंग, फिर स्विच-ऑन।",
+            "स्वीकार करें · बैंक में एडवांस।",
+            "बिल, ID, स्वामित्व प्रमाण।",
+            "साइट जाँच · डिज़ाइन लॉक।",
+            "इंस्टॉल · नेट-मीटर · ऑन।",
           ]
         : [
-            "Accept this proposal. Pay booking advance to the vendor bank account.",
-            "Share bill, ID, and ownership proof from Terms.",
-            "After a short site check, we lock the final design.",
-            "Install, net-metering paperwork, then switch-on.",
+            "Accept · pay booking advance.",
+            "Bill, ID, ownership proof.",
+            "Site check · lock design.",
+            "Install · net-meter · on.",
           ],
       clientAccept: hi ? "ग्राहक स्वीकृति" : "Client acceptance",
       authSign: hi ? "अधिकृत हस्ताक्षर" : "Authorized signature",
       sigDate: hi ? "हस्ताक्षर और तारीख" : "Signature & date",
       contact: hi ? "शुरू करें" : "Begin here",
       contactHint: hi ? "कॉल या WhatsApp" : "Call or WhatsApp",
-      finalLabel: hi ? "अंतिम शब्द" : "FINAL WORD",
+      finalLabel: hi ? "एक्सपर्ट सलाह" : "EXPERT ADVICE",
       final: hi
-        ? "यह प्रस्ताव साइन के लिए तैयार है। भुगतान पृष्ठ पर दिए विक्रेता बैंक खाते में ही भुगतान करें — फिर हम आपका रूफटॉप इंस्टॉल शुरू करेंगे।"
-        : "This proposal is ready to sign. Pay only to the vendor bank account on the payment page — then we begin your rooftop install.",
+        ? "स्विच-ऑन के बाद पहले 90 दिन मॉनिटर रखें: ऐप में रोज़ का उत्पादन देखें। अगर कोई दिन साफ़ धूप में भी बहुत कम दिखे, तुरंत बताएँ — जल्दी पकड़ी गई वायरिंग / शैडिंग समस्या सालों की यूनिट बचाती है।"
+        : "Watch the first 90 days after switch-on: check daily generation in the app. If a clear sunny day looks unusually low, tell us early — catching a wiring or shading issue fast protects years of units.",
       sealReady: hi ? "तैयार" : "READY",
     },
     common: {
