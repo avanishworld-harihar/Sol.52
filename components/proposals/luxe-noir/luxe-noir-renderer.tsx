@@ -13,11 +13,15 @@ import { ObsidianCover } from "./ObsidianCover";
 import { EngineeringBlueprint } from "./EngineeringBlueprint";
 import { TitaniumLedger } from "./TitaniumLedger";
 import { WealthTerminal } from "./WealthTerminal";
+import { ImpactPage } from "./ImpactPage";
+import { PaymentMilestonesPage } from "./PaymentMilestonesPage";
+import { ExpertVerdict } from "./ExpertVerdict";
 import {
   TermsCompliancePage1,
   TermsCompliancePage2,
 } from "./TermsCompliance";
 import { luxeDisplayFont } from "./luxe-fonts";
+import { resolveLuxeVendorName } from "./luxe-vendor";
 import styles from "./luxe-noir-shell.module.css";
 
 export type LuxeNoirRendererProps = {
@@ -61,12 +65,11 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
     return <div className={styles.loading}>Loading Premium Luxe…</div>;
   }
 
-  const brand = data.meta.brandName?.trim() || "Harihar Solar";
+  const brand = resolveLuxeVendorName(data) || "Solar Partner";
   const client = data.meta.customerName?.trim() || "Valued Customer";
   const systemKw = Number(data.meta.systemKw) || 0;
   const eco = data.economics;
   const bill = data.bill;
-  const impact = data.impact;
   const execution = data.execution;
   const terms = data.terms;
   const closing = data.closing;
@@ -119,6 +122,7 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
             title: p.label.replace(/^\d+\.\s*/, "") || DEFAULT_PAYMENT_TITLES[i]!,
             amountLabel: amountInr > 0 ? formatInr(amountInr) : "—",
             percent: `${pct}%`,
+            amountInr,
           };
         })
       : DEFAULT_PAYMENT_PCTS.map((pct, i) => {
@@ -129,6 +133,7 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
             title: DEFAULT_PAYMENT_TITLES[i]!,
             amountLabel: amountInr > 0 ? formatInr(amountInr) : "—",
             percent: `${pct}%`,
+            amountInr,
           };
         });
 
@@ -236,6 +241,12 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
             </div>
           )}
         </div>
+
+        <ExpertVerdict label="LOAD ANALYST'S VERDICT">
+          {monthlyUnitsAvg > 0 && systemKw > 0
+            ? `Your ~${monthlyUnitsAvg.toLocaleString("en-IN")} unit monthly average maps to a ${systemKw} kW AC system — the ${generationUnits > 0 ? `${generationUnits.toLocaleString("en-IN")} unit` : "annual"} generation target is calibrated to this bill history, not a catalogue default.`
+            : `We size from your actual consumption pattern so daytime generation tracks the bill you already pay — capacity is a match to load, not a guess.`}
+        </ExpertVerdict>
       </A4Page>
 
       {/* ── Page 03: Wealth Terminal ──────────────────────────── */}
@@ -308,6 +319,14 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
           and tenure are at the lender&apos;s discretion. We assist with documentation —
           approval rests with the bank / NBFC.
         </div>
+
+        <ExpertVerdict label="FINANCE ADVISOR'S VERDICT">
+          {emiRows.length > 0 && monthlyBillApprox > 0
+            ? `Pick the tenure where EMI sits near your current ~${formatInr(monthlyBillApprox)}/mo grid spend — solar equity builds on the roof while cash-flow feels familiar.`
+            : net > 0
+              ? `Spread the ${formatInr(net)} net across a tenure that fits monthly cash-flow; shorter loans cut interest, longer ones ease the instalment.`
+              : `Match EMI tenure to cash-flow comfort — often the instalment is comparable to the bill you already settle every month.`}
+        </ExpertVerdict>
       </A4Page>
 
       {/* ── Page 05: Engineering HUD ──────────────────────────── */}
@@ -316,92 +335,16 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
       {/* ── Page 06: Titanium Ledger ──────────────────────────── */}
       <TitaniumLedger data={data} />
 
-      {/* ── Page 07: Ecological Dividend ───────────────────────── */}
-      <A4Page pageLabel="07 / 11" brand={brand}>
-        <p className={styles.eyebrow}>Impact</p>
-        <h2 className={styles.title} style={{ fontSize: "28pt" }}>
-          Ecological Dividend
-        </h2>
-        <div className={styles.goldRule} />
-        <p className={styles.lead}>
-          Every kilowatt-hour displaced from the grid is a tonne of carbon that never
-          reaches the atmosphere — and a quieter bill for decades.
-        </p>
+      {/* ── Page 07: Clean Impact ─────────────────────────────── */}
+      <ImpactPage data={data} generationUnits={generationUnits} brand={brand} />
 
-        <div style={{ marginTop: 28 }}>
-          <p className={styles.impactHero}>
-            {impact.co2Tons > 0 ? `~${impact.co2Tons.toFixed(0)}` : "—"}
-          </p>
-          <span className={styles.cardLabel} style={{ marginTop: 8, display: "block" }}>
-            Tonnes CO₂ avoided (lifetime estimate)
-          </span>
-        </div>
-
-        <div className={styles.cardGrid2} style={{ marginTop: 28 }}>
-          <div className={`${styles.card} ${styles.cardAccent}`}>
-            <span className={styles.cardLabel}>Trees equivalent</span>
-            <span className={styles.cardValue}>
-              {impact.treesEquivalent > 0
-                ? Math.round(impact.treesEquivalent).toLocaleString("en-IN")
-                : "—"}
-            </span>
-            <span className={styles.cardHint}>Mature tree CO₂ absorption parity</span>
-          </div>
-          <div className={`${styles.card} ${styles.cardAccent}`}>
-            <span className={styles.cardLabel}>Clean units / year</span>
-            <span className={styles.cardValue} style={{ fontSize: "16pt" }}>
-              {generationUnits > 0
-                ? generationUnits.toLocaleString("en-IN")
-                : "—"}
-            </span>
-            <span className={styles.cardHint}>Estimated annual generation</span>
-          </div>
-        </div>
-
-        <div className={styles.card} style={{ marginTop: 14 }}>
-          <span className={styles.cardLabel}>Household legacy</span>
-          <p className={styles.cardHint} style={{ marginTop: 8, fontSize: "10.5pt" }}>
-            This installation is a 25-year commitment to cleaner air for your street —
-            measured in avoided coal burn, not just rupees saved.
-          </p>
-        </div>
-      </A4Page>
-
-      {/* ── Page 08: Investment Milestones & Payment Terms ─────── */}
-      <A4Page pageLabel="08 / 11" brand={brand}>
-        <p className={styles.eyebrow}>Execution</p>
-        <h2 className={styles.title} style={{ fontSize: "26pt" }}>
-          Investment Milestones & Payment Terms
-        </h2>
-        <div className={styles.goldRule} />
-        <p className={styles.lead}>
-          Capital released against clear project gates — booking through commissioning.
-        </p>
-
-        <div className={styles.stack} style={{ marginTop: 16, gap: 0 }}>
-          {paymentMilestones.map((m) => (
-            <div key={m.step} className={styles.milestone}>
-              <span className={styles.milestoneNum}>{m.step}</span>
-              <div>
-                <h3 className={styles.milestoneTitle}>{m.title}</h3>
-                <span className={styles.cardHint}>{m.percent} of project value</span>
-              </div>
-              <span className={styles.milestoneAmt}>{m.amountLabel}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className={styles.termsBox}>
-          <strong style={{ color: "#d4af37", display: "block", marginBottom: 6 }}>
-            Payment terms
-          </strong>
-          {paymentTerms.map((t) => (
-            <div key={t} style={{ marginBottom: 4 }}>
-              · {t}
-            </div>
-          ))}
-        </div>
-      </A4Page>
+      {/* ── Page 08: Payment system + vendor bank ─────────────── */}
+      <PaymentMilestonesPage
+        data={data}
+        milestones={paymentMilestones}
+        paymentTerms={paymentTerms}
+        brand={brand}
+      />
 
       {/* ── Page 09–10: Terms & Compliance ─────────────────────── */}
       <TermsCompliancePage1 data={data} />
@@ -414,11 +357,15 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
           <h2 className={styles.closingTitle}>Ready when you are.</h2>
           <p className={styles.closingBody}>
             We will lock design, DISCOM paperwork, and installation schedule around your
-            roof — with the same engineering discipline on every page of this brief.
+            roof — with the same care shown on every page of this proposal.
           </p>
           <p className={styles.closingBody} style={{ marginTop: 12, fontSize: "12pt" }}>
             Prepared for {client}
             {systemKw > 0 ? ` · ${systemKw} kW` : ""}.
+          </p>
+          <p className={styles.closingVendor}>
+            <span>Vendor</span>
+            <strong>{brand}</strong>
           </p>
         </div>
 
@@ -434,7 +381,7 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
               <div className={styles.sigLabel}>Authorized signature</div>
               <div className={styles.sigName}>{contactPerson}</div>
               <div className={styles.sigLabel} style={{ marginTop: 4 }}>
-                {contactRole}
+                {contactRole} · {brand}
               </div>
             </div>
           </div>

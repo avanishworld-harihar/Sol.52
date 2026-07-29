@@ -305,6 +305,34 @@
   color: var(--luxe-muted);
 }
 
+.expertVerdict {
+  margin-top: auto;
+  flex-shrink: 0;
+  padding: 10px 14px;
+  border-left: 2px solid #b8962e;
+  background: linear-gradient(90deg, rgba(184, 150, 46, 0.08) 0%, transparent 100%);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.expertVerdict .verdictLabel,
+.verdictLabel {
+  display: block;
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  color: #b8962e;
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+
+.expertVerdict p {
+  margin: 0;
+  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: #1e2430;
+}
+
 .emiTable {
   width: 100%;
   border-collapse: collapse;
@@ -324,7 +352,13 @@
 .emiTable td {
   padding: 10px 6px;
   border-bottom: 1px solid rgba(20, 24, 32, 0.08);
-  color: #e5e7eb;
+  color: #141820;
+  font-weight: 500;
+}
+
+.emiTable td:last-child {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .emiTable td:last-child,
@@ -449,6 +483,29 @@
   line-height: 1.65;
   max-width: 42ch;
   font-family: var(--luxe-display), Georgia, serif;
+}
+
+.closingVendor {
+  margin: 20px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.closingVendor span {
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--luxe-gold);
+  font-weight: 700;
+}
+
+.closingVendor strong {
+  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+  font-size: 22pt;
+  font-weight: 500;
+  color: #141820;
+  letter-spacing: 0.02em;
 }
 
 .signatureBlock {

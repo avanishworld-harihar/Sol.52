@@ -2,11 +2,13 @@
 
 /**
  * Premium Luxe — Terms & Compliance (2 A4 pages).
- * Numbered articles, dark readable body, clear section blocks.
+ * Single-column only — no side-by-side columns / negative space.
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
 import { formatLuxeInr, formatLuxeInrReadable } from "./luxe-format";
+import { resolveLuxeVendorName } from "./luxe-vendor";
+import { ExpertVerdict } from "./ExpertVerdict";
 import { luxeDisplayFont } from "./luxe-fonts";
 import styles from "./luxe.module.css";
 
@@ -67,40 +69,60 @@ const DEFAULT_DOCS = [
 ];
 
 const DEFAULT_AMC_OBJECTIVE =
-  "Annual Maintenance Services maintain the performance ratio and general upkeep of the rooftop SPV plant throughout the contract period.";
+  "AMC keeps generation checks and safety visits on schedule for the contract period.";
 
-const DEFAULT_AMC_SCOPE = [
-  "Daily / periodic monitoring of plant performance and energy generation",
+const DEFAULT_AMC_INCLUDES = [
+  "Periodic monitoring of plant performance and energy generation",
   "Routine preventive maintenance of plant and equipment",
-  "Emergency breakdown attendance (response within 48 working hours)",
-  "Coordination with OEMs for warranty support and defect rectification",
-  "Periodic inspection of DC & AC protection, earthing, and cable terminations",
+  "Emergency breakdown attendance (within 48 working hours)",
+  "OEM coordination for warranty support",
+  "Inspection of DC/AC protection, earthing, and cable terminations",
+];
+
+const DEFAULT_AMC_EXCLUDES = [
+  "Physical damage, third-party misuse, theft, or vandalism",
+  "Module glass replacement due to external impact",
+  "DISCOM metering fees and government charges",
 ];
 
 const CLIENT_SCOPE = [
   "Site security, watch and ward",
   "Insurance of plant and equipment (if desired)",
-  "Stable internet connection at site for remote monitoring (where applicable)",
-  "Water and auxiliary power for maintenance activities, as needed on site",
-  "Day-to-day visual checks and safe access to the rooftop",
+  "Stable internet for remote monitoring (where applicable)",
+  "Water and auxiliary power for maintenance on site",
+  "Day-to-day visual checks and safe rooftop access",
   "Regular module cleaning as per manufacturer guidelines",
-  "Keeping roof drains clear and reporting abnormal inverter alerts promptly",
-  "Providing DISCOM / municipal coordination letters when requested",
+  "Keep roof drains clear; report inverter alerts promptly",
+  "Provide DISCOM / municipal letters when requested",
 ];
 
-const DEFAULT_AMC_TERMS = [
-  "Maintenance charges, when applicable, are payable in advance on a half-yearly basis.",
-  "Minimum O&M contract duration: 2 years, extendable in blocks of 2 years by mutual consent (up to 25 years from commissioning).",
-  "We are not liable for module or equipment loss due to theft, stand damage, or vandalism.",
-  "Standard force majeure provisions apply; service deficiencies during such events shall be communicated to the client within one week of occurrence.",
-  "AMC excludes module glass replacement due to external impact and DISCOM metering fees.",
+const DEFAULT_AMC_COMMERCIAL = [
+  "When charged, maintenance fees are payable in advance on a half-yearly basis.",
+  "Minimum O&M duration: 2 years, extendable by mutual consent.",
+  "Force majeure events will be informed to the client within one week.",
 ];
 
 const SAFETY_NOTES = [
   "Do not open ACDB / DCDB or inverter covers — trained technicians only.",
-  "Lightning arrestor and earthing must remain bonded; do not disconnect earth leads.",
+  "Lightning arrestor and earthing must stay bonded; do not disconnect earth leads.",
   "Report isolation trips or burning smell immediately; do not reset repeatedly.",
 ];
+
+function isAmcPlanLabel(s: string): boolean {
+  return /\d+\s*-?\s*year\s*amc|amc\s*option/i.test(s);
+}
+
+function isExclusionNote(s: string): boolean {
+  return /exclud|does not include|not covered|physical damage|third-party|misuse|theft|vandal|glass replacement/i.test(
+    s
+  );
+}
+
+function isCommercialNote(s: string): boolean {
+  return /payable|charges|duration|force majeure|half-yearly|escalat|contract|extend/i.test(
+    s
+  );
+}
 
 export function TermsCompliancePage1({ data }: TermsComplianceProps) {
   const docs =
@@ -112,60 +134,51 @@ export function TermsCompliancePage1({ data }: TermsComplianceProps) {
         <span className={styles.termsTag}>09 / TERMS & COMPLIANCE</span>
         <h2 className={styles.termsTitle}>Terms & Conditions</h2>
         <p className={styles.termsIntro}>
-          Binding commercial and warranty conditions for this rooftop solar proposal.
-          Please read each article carefully before signing.
+          Please read each point carefully before signing.
         </p>
       </header>
 
-      <div className={styles.termsGridFill}>
-        <div className={styles.termsCol}>
-          <div className={styles.termsSection}>
-            <div className={styles.termsSubhead}>01 · General Terms</div>
-            <ol className={styles.termsArticleList}>
-              {GENERAL_TERMS.map((t, i) => (
-                <li key={t.label} className={styles.termsArticle}>
-                  <span className={styles.termsArticleNum}>
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <div>
-                    <strong className={styles.termsArticleLabel}>{t.label}</strong>
-                    <p className={styles.termsArticleBody}>{t.text}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </div>
+      <div className={styles.termsStack}>
+        <section className={styles.termsSection}>
+          <div className={styles.termsSubhead}>01 · General Terms</div>
+          <ol className={styles.termsArticleList}>
+            {GENERAL_TERMS.map((t, i) => (
+              <li key={t.label} className={styles.termsArticle}>
+                <span className={styles.termsArticleNum}>
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div>
+                  <strong className={styles.termsArticleLabel}>{t.label}</strong>
+                  <p className={styles.termsArticleBody}>{t.text}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </section>
 
-        <div className={styles.termsCol}>
-          <div className={styles.termsSection}>
-            <div className={styles.termsSubhead}>02 · Documents Required</div>
-            <ol className={styles.termsNumberedList}>
-              {docs.map((d, i) => (
-                <li key={d.slice(0, 48)}>
-                  <span className={styles.termsListNum}>{i + 1}</span>
-                  <span>{d}</span>
-                </li>
-              ))}
-            </ol>
-          </div>
-
-          <div className={styles.termsSection}>
-            <div className={styles.termsSubhead}>03 · Safety & Protection</div>
-            <ul className={styles.termsSafetyList}>
-              {SAFETY_NOTES.map((s) => (
-                <li key={s.slice(0, 40)}>{s}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
+        <section className={styles.termsSection}>
+          <div className={styles.termsSubhead}>02 · Documents Required</div>
+          <ol className={styles.termsNumberedList}>
+            {docs.map((d, i) => (
+              <li key={d.slice(0, 48)}>
+                <span className={styles.termsListNum}>{i + 1}</span>
+                <span>{d}</span>
+              </li>
+            ))}
+          </ol>
+        </section>
       </div>
+
+      <ExpertVerdict label="COMPLIANCE COUNSEL'S NOTE">
+        Read each article before signing — warranties, fees, and your duties protect both
+        sides if DISCOM timing or site conditions change.
+      </ExpertVerdict>
     </section>
   );
 }
 
 export function TermsCompliancePage2({ data }: TermsComplianceProps) {
-  const brand = data.meta.brandName?.trim() || "Harihar Solar";
+  const vendor = resolveLuxeVendorName(data) || "Solar Partner";
   const invoiceBase =
     data.economics.grossInr > 0
       ? data.economics.grossInr
@@ -174,14 +187,34 @@ export function TermsCompliancePage2({ data }: TermsComplianceProps) {
     invoiceBase > 0
       ? `${formatLuxeInr(invoiceBase)} (${formatLuxeInrReadable(invoiceBase)})`
       : "invoice value";
+
   const amcObjective = data.terms.amcObjective?.trim() || DEFAULT_AMC_OBJECTIVE;
-  const amcScopeRaw =
-    data.terms.amcScope.length > 0 ? data.terms.amcScope : DEFAULT_AMC_SCOPE;
-  const amcScope = amcScopeRaw.filter(
-    (s) => !/^annual maintenance contract/i.test(s) && !/^amc includes/i.test(s)
+
+  const scopeRaw =
+    data.terms.amcScope.length > 0 ? data.terms.amcScope : DEFAULT_AMC_INCLUDES;
+  const planOptions = scopeRaw.filter(isAmcPlanLabel);
+  const includeItems = scopeRaw.filter(
+    (s) =>
+      !isAmcPlanLabel(s) &&
+      !/^annual maintenance contract/i.test(s) &&
+      !/^amc includes/i.test(s)
   );
-  const amcTerms =
-    data.terms.amcTerms.length > 0 ? data.terms.amcTerms : DEFAULT_AMC_TERMS;
+  const amcIncludes =
+    includeItems.length > 0 ? includeItems : DEFAULT_AMC_INCLUDES;
+
+  const notesRaw =
+    data.terms.amcTerms.length > 0 ? data.terms.amcTerms : [
+      ...DEFAULT_AMC_EXCLUDES,
+      ...DEFAULT_AMC_COMMERCIAL,
+    ];
+  const excludesFromNotes = notesRaw.filter(isExclusionNote);
+  const commercialNotes = notesRaw.filter(
+    (s) => !isExclusionNote(s) && isCommercialNote(s)
+  );
+  const amcExcludes =
+    excludesFromNotes.length > 0 ? excludesFromNotes : DEFAULT_AMC_EXCLUDES;
+  const amcCommercial =
+    commercialNotes.length > 0 ? commercialNotes : DEFAULT_AMC_COMMERCIAL;
 
   return (
     <section className={`${styles.a4Page} ${styles.termsPage} ${luxeDisplayFont.variable}`}>
@@ -189,74 +222,111 @@ export function TermsCompliancePage2({ data }: TermsComplianceProps) {
         <span className={styles.termsTag}>10 / TERMS & COMPLIANCE (CONTD.)</span>
         <h2 className={styles.termsTitle}>Terms & Conditions</h2>
         <p className={styles.termsIntro}>
-          Client responsibilities, AMC scope, and maintenance cost structure.
+          Safety, your duties, AMC scope, and maintenance cost — one section after another.
         </p>
       </header>
 
-      <div className={styles.termsGridFill}>
-        <div className={styles.termsCol}>
-          <div className={styles.termsSection}>
-            <div className={styles.termsSubhead}>04 · Client&apos;s Scope</div>
-            <ol className={styles.termsNumberedList}>
-              {CLIENT_SCOPE.map((s, i) => (
-                <li key={s.slice(0, 48)}>
-                  <span className={styles.termsListNum}>{i + 1}</span>
-                  <span>{s}</span>
-                </li>
-              ))}
-            </ol>
-          </div>
+      <div className={styles.termsStack}>
+        <section className={styles.termsSection}>
+          <div className={styles.termsSubhead}>03 · Safety & Protection</div>
+          <ul className={styles.termsSafetyList}>
+            {SAFETY_NOTES.map((s) => (
+              <li key={s.slice(0, 40)}>{s}</li>
+            ))}
+          </ul>
+        </section>
 
-          <div className={styles.termsSection}>
-            <div className={styles.termsSubhead}>05 · Annual Maintenance — Scope</div>
-            <p className={styles.termsPara}>{amcObjective}</p>
-            <p className={styles.termsAmcIncludes}>AMC includes:</p>
-            <ol className={styles.termsNumberedList}>
-              {amcScope.map((s, i) => (
-                <li key={s.slice(0, 48)}>
-                  <span className={styles.termsListNum}>{i + 1}</span>
-                  <span>{s}</span>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </div>
+        <section className={styles.termsSection}>
+          <div className={styles.termsSubhead}>04 · Client&apos;s Scope</div>
+          <ol className={styles.termsNumberedList}>
+            {CLIENT_SCOPE.map((s, i) => (
+              <li key={s.slice(0, 48)}>
+                <span className={styles.termsListNum}>{i + 1}</span>
+                <span>{s}</span>
+              </li>
+            ))}
+          </ol>
+        </section>
 
-        <div className={styles.termsCol}>
-          <div className={styles.termsSection}>
-            <div className={styles.termsSubhead}>06 · Cost of Maintenance</div>
-            <div className={styles.termsCostBox}>
-              <p>
-                First <strong>1 year AMC</strong> is included in the quoted price.
-              </p>
-              <p>
-                From Year 2 onwards, annual maintenance may be charged at{" "}
-                <strong>2% of invoice value</strong>{" "}
-                <span className={styles.luxeNum}>{invoiceRef}</span> with{" "}
-                <strong>5% year-on-year escalation</strong>, subject to a signed O&amp;M
-                agreement.
-              </p>
-            </div>
-            <ol className={styles.termsArticleList}>
-              {amcTerms.map((t, i) => (
-                <li key={t.slice(0, 48)} className={styles.termsArticle}>
-                  <span className={styles.termsArticleNum}>
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <div>
-                    <p className={styles.termsArticleBody}>{t}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </div>
+        <section className={styles.termsSection}>
+          <div className={styles.termsSubhead}>05 · Annual Maintenance — Scope</div>
+          <p className={styles.termsPara}>{amcObjective}</p>
 
-          <div className={styles.termsSignoff}>
-            <span className={styles.termsRegards}>Regards,</span>
-            <span className={styles.termsBrand}>{brand.toUpperCase()}</span>
+          {planOptions.length > 0 ? (
+            <>
+              <p className={styles.termsAmcIncludes}>Available plans:</p>
+              <ol className={styles.termsNumberedList}>
+                {planOptions.map((s, i) => (
+                  <li key={`plan-${s.slice(0, 32)}`}>
+                    <span className={styles.termsListNum}>{i + 1}</span>
+                    <span>{s}</span>
+                  </li>
+                ))}
+              </ol>
+            </>
+          ) : null}
+
+          <p className={styles.termsAmcIncludes}>AMC includes:</p>
+          <ol className={styles.termsNumberedList}>
+            {amcIncludes.map((s, i) => (
+              <li key={`inc-${s.slice(0, 32)}`}>
+                <span className={styles.termsListNum}>{i + 1}</span>
+                <span>{s}</span>
+              </li>
+            ))}
+          </ol>
+
+          <p className={styles.termsAmcIncludes}>AMC does not include:</p>
+          <ol className={styles.termsNumberedList}>
+            {amcExcludes.map((s, i) => (
+              <li key={`exc-${s.slice(0, 32)}`}>
+                <span className={styles.termsListNum}>{i + 1}</span>
+                <span>{s}</span>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section className={styles.termsSection}>
+          <div className={styles.termsSubhead}>06 · Cost of Maintenance</div>
+          <div className={styles.termsCostBox}>
+            <p>
+              First <strong>1 year AMC</strong> is included in the quoted price.
+            </p>
+            <p>
+              From Year 2 onwards, annual maintenance may be charged at{" "}
+              <strong>2% of invoice value</strong>{" "}
+              <span className={styles.luxeNum}>{invoiceRef}</span> with{" "}
+              <strong>5% year-on-year escalation</strong>, subject to a signed O&amp;M
+              agreement.
+            </p>
           </div>
+          {amcCommercial.length > 0 ? (
+            <>
+              <p className={styles.termsAmcIncludes}>Payment & contract notes:</p>
+              <ol className={styles.termsNumberedList}>
+                {amcCommercial.map((t, i) => (
+                  <li key={`com-${t.slice(0, 32)}`}>
+                    <span className={styles.termsListNum}>{i + 1}</span>
+                    <span>{t}</span>
+                  </li>
+                ))}
+              </ol>
+            </>
+          ) : null}
+        </section>
+
+        <div className={styles.termsSignoff}>
+          <span className={styles.termsRegards}>Regards,</span>
+          <span className={styles.termsBrand}>{vendor.toUpperCase()}</span>
+          <span className={styles.termsVendorTag}>Vendor</span>
         </div>
       </div>
+
+      <ExpertVerdict label="O&M ADVISOR'S VERDICT">
+        Year-1 AMC is included; from Year 2, budget about 2% of invoice with yearly
+        increase — regular care protects both generation and warranty.
+      </ExpertVerdict>
     </section>
   );
 }

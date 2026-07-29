@@ -2,12 +2,12 @@
 
 /**
  * Premium Luxe — Cover (Page 01).
- * Monument brand cover: atmospheric porcelain field, gold architecture motif,
- * brand-first typography, exclusive client dedication.
+ * Editorial folio: vendor-first, porcelain field, gold spine, rooftop illustration.
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
 import { formatLuxeKw } from "./luxe-format";
+import { resolveLuxeVendorName } from "./luxe-vendor";
 import { luxeDisplayFont } from "./luxe-fonts";
 import styles from "./luxe.module.css";
 
@@ -15,182 +15,157 @@ export type ObsidianCoverProps = {
   data: ProposalData;
 };
 
+function CoverRoofArt() {
+  return (
+    <svg
+      className={styles.coverArt}
+      viewBox="0 0 280 200"
+      fill="none"
+      aria-hidden
+    >
+      <defs>
+        <linearGradient id="coverRoofFace" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#2a3d55" />
+          <stop offset="100%" stopColor="#141820" />
+        </linearGradient>
+      </defs>
+
+      {/* Soft ground */}
+      <ellipse cx="140" cy="178" rx="110" ry="12" fill="rgba(20,24,32,0.06)" />
+
+      {/* House mass */}
+      <path
+        d="M40 150 L40 108 L140 58 L240 108 L240 150 Z"
+        fill="#F8F9FB"
+        stroke="#141820"
+        strokeWidth="1.4"
+      />
+      <path
+        d="M40 108 L140 58 L240 108"
+        fill="none"
+        stroke="#B8962E"
+        strokeWidth="1.6"
+      />
+
+      {/* Landscape panels on roof */}
+      {[0, 1, 2, 3].map((i) => {
+        const x = 88 + i * 28;
+        return (
+          <g key={i}>
+            <rect
+              x={x}
+              y={78 + i * 2.2}
+              width="24"
+              height="14"
+              rx="1"
+              fill="url(#coverRoofFace)"
+              stroke="#B8962E"
+              strokeWidth="0.9"
+              transform={`rotate(-18 ${x + 12} ${85 + i * 2.2})`}
+            />
+          </g>
+        );
+      })}
+
+      {/* Sun arc */}
+      <circle
+        cx="214"
+        cy="48"
+        r="18"
+        fill="none"
+        stroke="#B8962E"
+        strokeWidth="1.2"
+      />
+      <circle cx="214" cy="48" r="6" fill="rgba(184,150,46,0.35)" />
+      {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => {
+        const a = (deg * Math.PI) / 180;
+        return (
+          <line
+            key={deg}
+            x1={214 + Math.cos(a) * 22}
+            y1={48 + Math.sin(a) * 22}
+            x2={214 + Math.cos(a) * 28}
+            y2={48 + Math.sin(a) * 28}
+            stroke="#B8962E"
+            strokeWidth="1"
+          />
+        );
+      })}
+
+      {/* Door hint */}
+      <rect
+        x="126"
+        y="122"
+        width="28"
+        height="28"
+        fill="none"
+        stroke="#141820"
+        strokeWidth="1.2"
+      />
+    </svg>
+  );
+}
+
 export function ObsidianCover({ data }: ObsidianCoverProps) {
-  const brand = (data.meta.brandName?.trim() || "Harihar Solar").toUpperCase();
-  const brandParts = brand.split(/\s+/);
-  const brandPrimary = brandParts[0] || "HARIHAR";
-  const brandSecondary = brandParts.slice(1).join(" ") || "SOLAR";
+  const vendor = resolveLuxeVendorName(data) || "Solar Partner";
   const client = data.meta.customerName?.trim() || "Valued Customer";
   const systemKw = Number(data.meta.systemKw) || 3;
   const location =
     data.meta.locationLine && data.meta.locationLine !== "—"
       ? data.meta.locationLine.replace(/,\s*India$/i, "").trim()
-      : "Satna, MP";
+      : "Madhya Pradesh";
   const year = new Date().getFullYear();
+  const longName = vendor.length > 18;
 
   return (
     <section
       className={`${styles.a4Page} ${styles.obsidianCover} ${luxeDisplayFont.variable}`}
     >
-      {/* Atmospheric field + architectural motif */}
+      <div className={styles.coverSpine} aria-hidden />
+
       <div className={styles.coverAtmosphere} aria-hidden>
-        <svg
-          className={styles.coverMotif}
-          viewBox="0 0 420 594"
-          preserveAspectRatio="xMidYMid slice"
-        >
-          <defs>
-            <linearGradient id="coverField" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#FBF7F0" />
-              <stop offset="42%" stopColor="#F8F9FB" />
-              <stop offset="100%" stopColor="#EEF1F6" />
-            </linearGradient>
-            <linearGradient id="coverGoldWash" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="rgba(184,150,46,0.14)" />
-              <stop offset="55%" stopColor="rgba(184,150,46,0)" />
-              <stop offset="100%" stopColor="rgba(184,150,46,0.08)" />
-            </linearGradient>
-            <radialGradient id="coverBloom" cx="78%" cy="18%" r="42%">
-              <stop offset="0%" stopColor="rgba(184,150,46,0.18)" />
-              <stop offset="100%" stopColor="rgba(184,150,46,0)" />
-            </radialGradient>
-          </defs>
-          <rect width="420" height="594" fill="url(#coverField)" />
-          <rect width="420" height="594" fill="url(#coverGoldWash)" />
-          <rect width="420" height="594" fill="url(#coverBloom)" />
-
-          {/* Fine perspective grid */}
-          {Array.from({ length: 14 }).map((_, i) => (
-            <line
-              key={`v-${i}`}
-              x1={30 + i * 28}
-              y1={0}
-              x2={30 + i * 28}
-              y2={594}
-              stroke="rgba(20,24,32,0.035)"
-              strokeWidth="1"
-            />
-          ))}
-          {Array.from({ length: 18 }).map((_, i) => (
-            <line
-              key={`h-${i}`}
-              x1={0}
-              y1={20 + i * 32}
-              x2={420}
-              y2={20 + i * 32}
-              stroke="rgba(20,24,32,0.03)"
-              strokeWidth="1"
-            />
-          ))}
-
-          {/* Large architectural circle — right field */}
-          <circle
-            cx="340"
-            cy="160"
-            r="118"
-            fill="none"
-            stroke="rgba(184,150,46,0.28)"
-            strokeWidth="1"
-          />
-          <circle
-            cx="340"
-            cy="160"
-            r="88"
-            fill="none"
-            stroke="rgba(184,150,46,0.16)"
-            strokeWidth="1"
-            strokeDasharray="3 5"
-          />
-          <circle
-            cx="340"
-            cy="160"
-            r="42"
-            fill="none"
-            stroke="rgba(184,150,46,0.35)"
-            strokeWidth="1.2"
-          />
-
-          {/* Sun / array rays */}
-          {Array.from({ length: 12 }).map((_, i) => {
-            const a = (i * Math.PI * 2) / 12 - Math.PI / 2;
-            const x1 = 340 + Math.cos(a) * 52;
-            const y1 = 160 + Math.sin(a) * 52;
-            const x2 = 340 + Math.cos(a) * 108;
-            const y2 = 160 + Math.sin(a) * 108;
-            return (
-              <line
-                key={`ray-${i}`}
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
-                stroke="rgba(184,150,46,0.22)"
-                strokeWidth="0.8"
-              />
-            );
-          })}
-
-          {/* Abstract panel row */}
-          {[0, 1, 2, 3, 4].map((i) => (
-            <rect
-              key={`panel-${i}`}
-              x={248 + i * 22}
-              y={268}
-              width={18}
-              height={28}
-              rx="1"
-              fill="none"
-              stroke="rgba(184,150,46,0.32)"
-              strokeWidth="0.9"
-              transform={`rotate(-8 ${257 + i * 22} 282)`}
-            />
-          ))}
-
-          {/* Bottom horizon rule */}
-          <line
-            x1="40"
-            y1="520"
-            x2="380"
-            y2="520"
-            stroke="rgba(184,150,46,0.25)"
-            strokeWidth="1"
-          />
-        </svg>
+        <div className={styles.coverWash} />
+        <div className={styles.coverCornerTL} />
+        <div className={styles.coverCornerBR} />
       </div>
 
-      <div className={styles.coverFrame} aria-hidden />
-
-      {/* Top meta rail */}
       <header className={styles.coverTopRail}>
-        <span className={styles.coverSeries}>PREMIUM LUXE · PRIVATE OFFER</span>
+        <span className={styles.coverSeries}>PREMIUM LUXE PROPOSAL</span>
         <span className={styles.coverConfidential}>CONFIDENTIAL</span>
       </header>
 
-      {/* Brand monument — hero signal */}
-      <div className={styles.coverBrandMonument}>
-        <p className={styles.coverBrandPrimary}>{brandPrimary}</p>
-        <p className={styles.coverBrandSecondary}>{brandSecondary}</p>
-        <div className={styles.coverBrandRule} />
-        <p className={styles.coverBrandDiscipline}>Energy Architecture</p>
+      <div className={styles.coverMain}>
+        <div className={styles.coverBrandBlock}>
+          <span className={styles.coverVendorLabel}>VENDOR</span>
+          <h1
+            className={`${styles.coverVendorName} ${
+              longName ? styles.coverVendorNameLong : ""
+            }`}
+          >
+            {vendor}
+          </h1>
+          <div className={styles.coverBrandRule} />
+          <p className={styles.coverBrandDiscipline}>Rooftop solar · Private offer</p>
+        </div>
+
+        <div className={styles.coverArtWrap}>
+          <CoverRoofArt />
+        </div>
       </div>
 
-      {/* Client dedication */}
       <div className={styles.coverDedication}>
-        <span className={styles.coverPrepared}>Prepared exclusively for</span>
-        <h1 className={styles.coverClientName}>{client}</h1>
+        <span className={styles.coverPrepared}>Prepared for</span>
+        <h2 className={styles.coverClientName}>{client}</h2>
         <p className={styles.coverOfferLine}>
-          A private rooftop solar proposal — engineered for yield, warranty, and
-          lasting value.
+          A clear rooftop solar plan — price, savings, warranty, and install steps in
+          one private brief.
         </p>
       </div>
 
-      {/* Bottom meta */}
       <footer className={styles.coverMeta}>
         <div className={styles.coverMetaCell}>
           <span>System</span>
-          <strong className={styles.luxeNum}>
-            {formatLuxeKw(systemKw)} kW AC
-          </strong>
+          <strong className={styles.luxeNum}>{formatLuxeKw(systemKw)} kW</strong>
         </div>
         <div className={styles.coverMetaDivider} aria-hidden />
         <div className={styles.coverMetaCell}>

@@ -8,6 +8,7 @@
 
 import type { ProposalData } from "@/lib/proposal-data";
 import { formatLuxeKw, formatLuxeUnits } from "./luxe-format";
+import { ExpertVerdict } from "./ExpertVerdict";
 import { luxeDisplayFont } from "./luxe-fonts";
 import styles from "./luxe.module.css";
 
@@ -28,71 +29,80 @@ function metricValue(
   return hit?.value?.trim() || fallback;
 }
 
-/** Isometric panel face + depth edges + cell grid. */
+/** Landscape rooftop module — flat on roof, not upright. */
 function IsoPanel({
   cx,
   cy,
-  w = 34,
-  h = 22,
 }: {
   cx: number;
   cy: number;
-  w?: number;
-  h?: number;
 }) {
-  const dx = w * 0.55;
-  const dy = w * 0.28;
-  const depth = 5;
-  const p0 = `${cx},${cy}`;
-  const p1 = `${cx + dx},${cy + dy}`;
-  const p2 = `${cx + dx},${cy + dy + h}`;
-  const p3 = `${cx},${cy + h}`;
-  const r0 = `${cx + dx},${cy + dy}`;
-  const r1 = `${cx + dx + depth * 0.55},${cy + dy + depth * 0.28}`;
-  const r2 = `${cx + dx + depth * 0.55},${cy + dy + h + depth * 0.28}`;
-  const r3 = `${cx + dx},${cy + dy + h}`;
-  const f0 = `${cx},${cy + h}`;
-  const f1 = `${cx + dx},${cy + dy + h}`;
-  const f2 = `${cx + dx + depth * 0.55},${cy + dy + h + depth * 0.28}`;
-  const f3 = `${cx + depth * 0.55},${cy + h + depth * 0.28}`;
+  // Landscape: long E–W edge, short N–S edge (lying on roof plane)
+  const rightX = 38;
+  const rightY = 12;
+  const downX = -14;
+  const downY = 10;
+  const depthX = 0;
+  const depthY = 3.5;
+
+  const p0x = cx;
+  const p0y = cy;
+  const p1x = cx + rightX;
+  const p1y = cy + rightY;
+  const p2x = cx + rightX + downX;
+  const p2y = cy + rightY + downY;
+  const p3x = cx + downX;
+  const p3y = cy + downY;
+
+  // Front/south edge (thickness)
+  const f0 = `${p3x},${p3y}`;
+  const f1 = `${p2x},${p2y}`;
+  const f2 = `${p2x + depthX},${p2y + depthY}`;
+  const f3 = `${p3x + depthX},${p3y + depthY}`;
+  // East edge thickness
+  const e0 = `${p1x},${p1y}`;
+  const e1 = `${p2x},${p2y}`;
+  const e2 = `${p2x + depthX},${p2y + depthY}`;
+  const e3 = `${p1x + depthX},${p1y + depthY}`;
 
   const cells: string[] = [];
-  for (let i = 1; i < 3; i++) {
-    const t = i / 3;
-    cells.push(
-      `M ${cx + dx * t},${cy + dy * t} L ${cx + dx * t},${cy + dy * t + h}`
-    );
+  // Cell grid along landscape width (more cells across)
+  for (let i = 1; i < 6; i++) {
+    const t = i / 6;
+    const ax = p0x + rightX * t;
+    const ay = p0y + rightY * t;
+    cells.push(`M ${ax},${ay} L ${ax + downX},${ay + downY}`);
   }
-  for (let j = 1; j < 4; j++) {
-    const t = j / 4;
-    cells.push(
-      `M ${cx},${cy + h * t} L ${cx + dx},${cy + dy + h * t}`
-    );
+  for (let j = 1; j < 3; j++) {
+    const t = j / 3;
+    const ax = p0x + downX * t;
+    const ay = p0y + downY * t;
+    cells.push(`M ${ax},${ay} L ${ax + rightX},${ay + rightY}`);
   }
 
   return (
     <g>
-      <polygon points={`${r0} ${r1} ${r2} ${r3}`} fill="#1a2433" />
-      <polygon points={`${f0} ${f1} ${f2} ${f3}`} fill="#0d1219" />
+      <polygon points={`${f0} ${f1} ${f2} ${f3}`} fill="#0b1018" />
+      <polygon points={`${e0} ${e1} ${e2} ${e3}`} fill="#152030" />
       <polygon
-        points={`${p0} ${p1} ${p2} ${p3}`}
+        points={`${p0x},${p0y} ${p1x},${p1y} ${p2x},${p2y} ${p3x},${p3y}`}
         fill="url(#panelFace)"
         stroke="#B8962E"
-        strokeWidth="0.9"
+        strokeWidth="0.85"
       />
       <path
         d={cells.join(" ")}
         fill="none"
-        stroke="rgba(184,150,46,0.28)"
-        strokeWidth="0.55"
+        stroke="rgba(184,150,46,0.3)"
+        strokeWidth="0.5"
       />
       <line
-        x1={cx + 3}
-        y1={cy + 3}
-        x2={cx + dx * 0.45}
-        y2={cy + dy * 0.45 + 3}
-        stroke="rgba(255,255,255,0.18)"
-        strokeWidth="1.2"
+        x1={p0x + 4}
+        y1={p0y + 2}
+        x2={p0x + rightX * 0.35}
+        y2={p0y + rightY * 0.35 + 2}
+        stroke="rgba(255,255,255,0.2)"
+        strokeWidth="1.1"
       />
     </g>
   );
@@ -224,22 +234,28 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
       ? data.engineering.standards.slice(0, 4).join(" · ")
       : "IS/IEC · CEA · DISCOM net-metering · IS 3043 earthing";
 
-  const cols = Math.min(6, Math.max(3, Math.ceil(Math.sqrt(modulesDraw))));
+  // Landscape bank: prefer wide rows (panels lying flat E–W), 1–3 rows
+  const preferredRows =
+    modulesDraw <= 4 ? 1 : modulesDraw <= 12 ? 2 : 3;
+  const cols = Math.max(1, Math.ceil(modulesDraw / preferredRows));
   const rows = Math.ceil(modulesDraw / cols);
   const strings = Math.max(1, Math.ceil(modulesRaw / 6));
   const perString = Math.ceil(modulesRaw / strings);
 
-  const isoOriginX = 118;
-  const isoOriginY = 58;
-  const stepX = 30;
-  const stepY = 18;
+  // Isometric step matches landscape panel footprint + gap
+  const stepColX = 42;
+  const stepColY = 13;
+  const stepRowX = -16;
+  const stepRowY = 14;
+  const isoOriginX = 96;
+  const isoOriginY = 72;
 
   const panelPositions = Array.from({ length: modulesDraw }).map((_, i) => {
     const col = i % cols;
     const row = Math.floor(i / cols);
     return {
-      cx: isoOriginX + (col - row) * stepX,
-      cy: isoOriginY + (col + row) * stepY,
+      cx: isoOriginX + col * stepColX + row * stepRowX,
+      cy: isoOriginY + col * stepColY + row * stepRowY,
     };
   });
 
@@ -308,14 +324,20 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
             {/* Mounting rail under array */}
             {panelPositions.length > 0 && (
               <ellipse
-                cx={isoOriginX + ((cols - 1) * stepX) / 2}
+                cx={
+                  isoOriginX +
+                  ((cols - 1) * stepColX) / 2 +
+                  ((rows - 1) * stepRowX) / 2 +
+                  12
+                }
                 cy={
                   isoOriginY +
-                  ((rows - 1 + cols - 1) * stepY) / 2 +
-                  36
+                  ((cols - 1) * stepColY) / 2 +
+                  ((rows - 1) * stepRowY) / 2 +
+                  28
                 }
-                rx={cols * 22}
-                ry={10}
+                rx={cols * 24 + 10}
+                ry={10 + rows * 2}
                 fill="rgba(0,0,0,0.45)"
               />
             )}
@@ -533,16 +555,12 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
         </div>
       </div>
 
-      <div className={styles.engineerVerdict}>
-        <span className={styles.verdictLabel}>CHIEF ENGINEER&apos;S VERDICT</span>
-        <p>
-          Array sized at {formatLuxeKw(dcKwp)} kWp DC against {formatLuxeKw(systemKw)}{" "}
-          kW AC ({dcAc.toFixed(2)} oversize) for earlier morning yield and monsoon
-          resilience at {tilt.toFixed(0)}° tilt · {city}. Protection stack (DCDB →
-          INV → ACDB → LA/earth) keeps the customer side within DISCOM and CEA
-          practice.
-        </p>
-      </div>
+      <ExpertVerdict label="CHIEF ENGINEER'S VERDICT">
+        Array sized at {formatLuxeKw(dcKwp)} kWp DC against {formatLuxeKw(systemKw)}{" "}
+        kW AC ({dcAc.toFixed(2)} oversize) for earlier morning yield and monsoon
+        resilience at {tilt.toFixed(0)}° tilt · {city}. Protection stack (DCDB → INV →
+        ACDB → LA/earth) keeps the customer side within DISCOM and CEA practice.
+      </ExpertVerdict>
 
       <p className={styles.standardsStrip}>{standards}</p>
     </section>
