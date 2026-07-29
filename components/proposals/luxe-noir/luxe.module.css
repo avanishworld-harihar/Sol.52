@@ -25,8 +25,8 @@
   height: 297mm; /* Strict height for A4 */
   min-height: 297mm;
   max-height: 297mm;
-  background-color: #050505 !important;
-  color: #ffffff !important;
+  background-color: #F8F9FB !important;
+  color: #141820 !important;
   page-break-after: always;
   break-after: page;
   position: relative;
@@ -35,7 +35,7 @@
   overflow: hidden;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   margin: 12px auto;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 8px 28px rgba(20, 24, 32, 0.08);
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -45,12 +45,35 @@
   break-after: auto;
 }
 
-/* COVER PAGE */
+/* COVER PAGE — typography monument */
 .obsidianCover {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #050505 !important;
+  background-color: #f8f9fb !important;
+}
+
+.confidentialSeal {
+  position: absolute;
+  top: 36px;
+  right: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  color: #b8962e;
+  border: 1px solid rgba(184, 150, 46, 0.4);
+  padding: 6px 12px;
+  border-radius: 999px;
+  z-index: 5;
+}
+
+.sealDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #b8962e;
 }
 
 .verticalBrand {
@@ -64,7 +87,7 @@
   align-items: center;
   font-size: 0.75rem;
   letter-spacing: 6px;
-  color: #666;
+  color: #5c6570;
   writing-mode: vertical-rl;
   transform: rotate(180deg);
 }
@@ -72,51 +95,80 @@
 .verticalLine {
   width: 1px;
   flex-grow: 1;
-  background-color: #333;
+  background-color: #d8dee6;
   margin: 20px 0;
 }
 
 .heroCenter {
   text-align: center;
-  max-width: 80%;
+  max-width: 88%;
+  padding: 0 24px 48px;
 }
 
 .heroSvg {
-  margin-bottom: 30px;
+  margin-bottom: 22px;
 }
 
 .heroEyebrow {
-  font-size: 1rem;
-  letter-spacing: 5px;
-  color: #d4af37;
-  margin-bottom: 10px;
-  font-weight: 400;
+  font-size: 0.78rem;
+  letter-spacing: 0.35em;
+  color: #b8962e;
+  margin: 0 0 14px;
+  font-weight: 500;
 }
 
 .heroClient {
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
-  font-size: 4.5rem;
-  line-height: 1;
-  margin: 0 0 15px 0;
-  color: #ffffff;
+  font-size: 5.2rem;
+  line-height: 0.95;
+  margin: 0;
+  color: #141820;
+  font-weight: 300;
+  max-width: 12ch;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .heroSubtitle {
-  font-size: 1.2rem;
-  color: #888;
+  font-size: 1.15rem;
+  color: #5c6570;
   font-weight: 300;
-  margin: 0;
+  margin: 16px 0 0;
+}
+
+.coverCapacity {
+  margin-top: 36px;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 10px;
+}
+
+.capacityFigure {
+  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+  font-size: 4.5rem;
+  font-weight: 300;
+  color: #b8962e;
+  line-height: 1;
+}
+
+.capacityUnit {
+  font-size: 0.85rem;
+  letter-spacing: 0.2em;
+  color: #5c6570;
+  text-transform: uppercase;
 }
 
 .coverFooter {
   position: absolute;
-  bottom: 40px;
+  bottom: 36px;
   left: 100px;
   right: 40px;
-  display: flex;
-  justify-content: space-between;
-  border-top: 1px solid #333;
-  padding-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  border-top: 1px solid #d8dee6;
+  padding-top: 18px;
 }
 
 .footerNode {
@@ -126,19 +178,19 @@
 }
 
 .footerNode span {
-  font-size: 0.65rem;
-  letter-spacing: 3px;
-  color: #666;
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  color: #5c6570;
 }
 
 .footerNode strong {
-  font-size: 1rem;
-  font-weight: 400;
-  color: #ffffff;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: #141820;
 }
 
 .goldText {
-  color: #d4af37 !important;
+  color: #b8962e !important;
 }
 
 /* SHARED HEADER */
@@ -156,9 +208,9 @@
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
   font-size: 3rem;
   margin: 5px 0 0 0;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid #D8DEE6;
   padding-bottom: 15px;
-  color: #ffffff;
+  color: #141820;
   font-weight: 300;
 }
 
@@ -167,21 +219,23 @@
 .ledgerPage {
   display: flex;
   flex-direction: column;
-  background-color: #050505 !important;
+  background-color: #f8f9fb !important;
 }
 
 .technicalStage {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
 }
 
 .svgDrawingBox {
-  background: #0a0a0a;
-  border: 1px solid #333;
-  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #d8dee6;
+  padding: 8px;
   border-radius: 8px;
-  height: 280px;
+  height: 240px;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -190,6 +244,66 @@
   display: block;
   width: 100%;
   height: 100%;
+}
+
+.specGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.specCell {
+  background: #ffffff;
+  border: 1px solid #e2e6ec;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.specK {
+  display: block;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  color: #5c6570;
+  margin-bottom: 4px;
+}
+
+.specV {
+  font-size: 0.95rem;
+  color: #141820;
+  font-weight: 600;
+}
+
+.engineerVerdict {
+  margin-top: 12px;
+  padding: 14px 16px;
+  border-left: 2px solid #b8962e;
+  background: linear-gradient(90deg, rgba(184, 150, 46, 0.06) 0%, transparent 100%);
+}
+
+.verdictLabel {
+  display: block;
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  color: #b8962e;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.engineerVerdict p {
+  margin: 0;
+  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+  font-size: 1rem;
+  line-height: 1.45;
+  color: #3a4250;
+}
+
+.standardsStrip {
+  margin-top: auto;
+  padding-top: 10px;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  color: #5c6570;
+  border-top: 1px solid #e2e6ec;
 }
 
 .telemetryMetrics {
@@ -205,13 +319,13 @@
 
 .metricRow h4 {
   margin: 0 0 5px 0;
-  color: #fff;
+  color: #141820;
   font-size: 1rem;
 }
 
 .metricRow p {
   margin: 0;
-  color: #888;
+  color: #5c6570;
   font-size: 0.85rem;
   line-height: 1.5;
 }
@@ -219,55 +333,185 @@
 .ledgerList {
   display: flex;
   flex-direction: column;
-  gap: 40px;
-  margin-top: 20px;
+  gap: 28px;
+  margin-top: 12px;
+  flex: 1;
+  justify-content: center;
 }
 
 .ledgerItem {
   display: flex;
   align-items: flex-start;
-  gap: 30px;
-  border-bottom: 1px solid #222;
-  padding-bottom: 30px;
+  gap: 24px;
+  border-bottom: 1px solid #e2e6ec;
+  padding-bottom: 22px;
+}
+
+.ledgerItem:last-child {
+  border-bottom: none;
 }
 
 .hugeNumber {
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
-  font-size: 5rem;
-  color: #222;
+  font-size: 4.2rem;
+  color: rgba(168, 135, 42, 0.28);
   line-height: 0.8;
   font-weight: 300;
+  min-width: 72px;
 }
 
 .itemContent h3 {
-  margin: 0 0 10px 0;
-  font-size: 1.5rem;
-  color: #fff;
+  margin: 0 0 8px 0;
+  font-size: 1.25rem;
+  color: #141820;
 }
 
 .specBadge {
   display: inline-block;
   padding: 4px 10px;
-  border: 1px solid #d4af37;
-  color: #d4af37;
-  font-size: 0.65rem;
+  border: 1px solid #b8962e;
+  color: #b8962e;
+  font-size: 0.62rem;
   letter-spacing: 2px;
   border-radius: 20px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .itemContent p {
-  color: #888;
-  font-size: 0.95rem;
-  line-height: 1.6;
+  color: #5c6570;
+  font-size: 0.88rem;
+  line-height: 1.55;
   margin: 0;
+}
+
+/* WEALTH TERMINAL */
+.luxeTerminal {
+  display: flex;
+  flex-direction: column;
+  background-color: #f8f9fb !important;
+}
+
+.netHero {
+  text-align: center;
+  padding: 8px 0 20px;
+}
+
+.netLabel {
+  display: block;
+  font-size: 0.68rem;
+  letter-spacing: 0.28em;
+  color: #b8962e;
+  margin-bottom: 8px;
+}
+
+.netFigure {
+  display: block;
+  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+  font-size: 3.6rem;
+  font-weight: 300;
+  color: #141820;
+  line-height: 1;
+}
+
+.netQuiet {
+  margin: 10px 0 0;
+  font-size: 0.85rem;
+  color: #5c6570;
+}
+
+.beforeAfter {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr 1fr;
+  gap: 12px;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #e2e6ec;
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 18px;
+}
+
+.baCol {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.baLabel {
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  color: #5c6570;
+}
+
+.baValue {
+  font-size: 1.25rem;
+  color: #141820;
+  font-weight: 500;
+}
+
+.baValueGold {
+  font-size: 1.35rem;
+  color: #b8962e;
+  font-weight: 600;
+}
+
+.baSub {
+  font-size: 0.72rem;
+  color: #5c6570;
+}
+
+.baArrow {
+  font-size: 1.5rem;
+  color: #b8962e;
+  font-weight: 300;
+}
+
+.baDelta {
+  border-left: 1px solid #e2e6ec;
+  padding-left: 14px;
+}
+
+.paybackChart {
+  background: #ffffff;
+  border: 1px solid #e2e6ec;
+  border-radius: 12px;
+  padding: 14px 16px 10px;
+  flex: 1;
+  min-height: 0;
+}
+
+.chartHead {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  color: #5c6570;
+  margin-bottom: 6px;
+}
+
+.paybackSvg {
+  display: block;
+  width: 100%;
+}
+
+.chartFoot {
+  margin: 4px 0 0;
+  font-size: 0.78rem;
+  color: #5c6570;
+}
+
+.wealthFootnote {
+  margin-top: 12px;
+  font-size: 0.68rem;
+  color: #5c6570;
+  line-height: 1.4;
 }
 
 /* --- LEGACY / OTHER PAGE STYLES (wealth, terms, older blocks) --- */
 .engineeringBlueprint {
   display: flex;
   flex-direction: column;
-  background-color: #050505 !important;
+  background-color: #F8F9FB !important;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -282,7 +526,7 @@
 }
 
 .svgStage {
-  background: #0a0a0a;
+  background: #FFFFFF;
   border: 1px solid rgba(212, 175, 55, 0.22);
   border-radius: 12px;
   overflow: hidden;
@@ -310,7 +554,7 @@
 .titaniumLedger {
   display: flex;
   flex-direction: column;
-  background-color: #050505 !important;
+  background-color: #F8F9FB !important;
 }
 
 .ledgerStack {
@@ -352,7 +596,7 @@
 .ledgerTitle {
   margin: 0;
   font-size: 1.15rem;
-  color: #ffffff;
+  color: #141820;
   font-weight: 500;
   letter-spacing: 0.04em;
 }
@@ -368,7 +612,7 @@
   margin: 0;
   font-size: 0.88rem;
   line-height: 1.5;
-  color: #9ca3af;
+  color: #5C6570;
 }
 
 /* --- COVER PAGE STYLES (legacy cinematic) --- */
@@ -438,7 +682,7 @@
 .brandVertical {
   font-size: 0.8rem;
   letter-spacing: 12px;
-  color: #6b7280;
+  color: #5C6570;
 }
 
 .confidentialTag {
@@ -467,14 +711,14 @@
 .preparedFor {
   font-size: 0.85rem;
   letter-spacing: 5px;
-  color: #9ca3af;
+  color: #5C6570;
   margin-bottom: 10px;
 }
 
 .clientName {
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
   font-size: 4rem;
-  color: #ffffff;
+  color: #141820;
   margin: 0 0 20px 0;
   line-height: 1.1;
 }
@@ -500,7 +744,7 @@
 .locationCoordinates {
   font-size: 0.85rem;
   letter-spacing: 3px;
-  color: #6b7280;
+  color: #5C6570;
 }
 
 .coverBottom {
@@ -522,13 +766,13 @@
 .specLabel {
   font-size: 0.7rem;
   letter-spacing: 2px;
-  color: #6b7280;
+  color: #5C6570;
   margin-bottom: 8px;
 }
 
 .specValue {
   font-size: 1.2rem;
-  color: #ffffff;
+  color: #141820;
 }
 
 .specValueActive {
@@ -562,7 +806,7 @@
 .pageTitle {
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
   font-size: 2.5rem;
-  color: #fff;
+  color: #141820;
   margin: 10px 0 0 0;
 }
 
@@ -573,7 +817,7 @@
 }
 
 .hudVisualizer {
-  background: #0a0a0a;
+  background: #FFFFFF;
   border: 1px solid rgba(212, 175, 55, 0.2);
   border-radius: 12px;
   height: 400px;
@@ -648,7 +892,7 @@
   bottom: 20px;
   font-size: 0.65rem;
   letter-spacing: 3px;
-  color: #6b7280;
+  color: #5C6570;
 }
 
 .hudData {
@@ -669,13 +913,13 @@
   display: block;
   font-size: 0.7rem;
   letter-spacing: 2px;
-  color: #9ca3af;
+  color: #5C6570;
   margin-bottom: 5px;
 }
 
 .dataValue {
   font-size: 1.5rem;
-  color: #fff;
+  color: #141820;
   font-weight: 300;
   display: block;
   margin-bottom: 10px;
@@ -684,7 +928,7 @@
 
 .dataDesc {
   font-size: 0.85rem;
-  color: #6b7280;
+  color: #5C6570;
   line-height: 1.6;
   margin: 0;
 }
@@ -693,7 +937,7 @@
 .luxeHardware {
   display: flex;
   flex-direction: column;
-  background-color: #0a0a0a !important;
+  background-color: #f8f9fb !important;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -708,8 +952,8 @@
 }
 
 .hardwareNode {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(212, 175, 55, 0.15);
+  background: rgba(184, 150, 46, 0.04);
+  border: 1px solid rgba(184, 150, 46, 0.22);
   border-radius: 12px;
   padding: 30px;
   position: relative;
@@ -759,7 +1003,7 @@
 
 .nodeTitle {
   font-size: 1.2rem;
-  color: #fff;
+  color: #141820;
   margin: 0;
   letter-spacing: 1px;
 }
@@ -778,17 +1022,17 @@
 }
 
 .nodeSpecs p {
-  color: #9ca3af;
+  color: #5C6570;
   font-size: 0.9rem;
   line-height: 1.6;
   margin: 0;
 }
 
-/* --- WEALTH TERMINAL STYLES --- */
+/* --- WEALTH TERMINAL STYLES (legacy waterfall kept for compatibility) --- */
 .luxeTerminal {
   display: flex;
   flex-direction: column;
-  background-color: #0a0a0a !important;
+  background-color: #f8f9fb !important;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -797,12 +1041,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #0a0a0a;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #FFFFFF;
+  border: 1px solid rgba(20, 24, 32, 0.1);
   border-radius: 16px;
   padding: 40px;
   margin: 50px 0;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 12px 28px rgba(20, 24, 32, 0.06);
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -817,12 +1061,12 @@
 .waterfallStep span {
   font-size: 0.75rem;
   letter-spacing: 2px;
-  color: #6b7280;
+  color: #5C6570;
 }
 
 .waterfallStep strong {
   font-size: 2rem;
-  color: #fff;
+  color: #141820;
   font-weight: 300;
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
 }
@@ -867,7 +1111,7 @@
 }
 
 .metricBlock {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
+  background: linear-gradient(180deg, rgba(184, 150, 46, 0.06) 0%, transparent 100%);
   border-top: 2px solid #d4af37;
   padding: 30px;
   display: flex;
@@ -879,19 +1123,19 @@
 .metricLabel {
   font-size: 0.75rem;
   letter-spacing: 3px;
-  color: #9ca3af;
+  color: #5C6570;
   margin-bottom: 10px;
 }
 
 .metricBig {
   font-size: 2.5rem;
-  color: #fff;
+  color: #141820;
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
 }
 
 .metricSub {
   font-size: 0.85rem;
-  color: #6b7280;
+  color: #5C6570;
   margin-top: 5px;
 }
 
@@ -899,7 +1143,7 @@
 .termsPage {
   display: flex;
   flex-direction: column;
-  background-color: #0a0a0a !important;
+  background-color: #f8f9fb !important;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -927,7 +1171,7 @@
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
   font-size: 28pt;
   font-weight: 600;
-  color: #ffffff;
+  color: #141820;
   margin: 0;
   letter-spacing: 0.02em;
 }
@@ -969,7 +1213,7 @@
   padding-left: 16px;
   font-size: 7.8pt;
   line-height: 1.45;
-  color: #d1d5db;
+  color: #3A4250;
 }
 
 .termsDiamondList li::before {
@@ -997,20 +1241,20 @@
 }
 
 .termsDiamondList li strong {
-  color: #f3f4f6;
+  color: #141820;
   font-weight: 700;
 }
 
 .termsPara {
   font-size: 7.8pt;
   line-height: 1.45;
-  color: #9ca3af;
+  color: #5C6570;
   margin: 0 0 8px;
 }
 
 .termsAmcIncludes {
   font-size: 7.8pt;
-  color: #e5e7eb;
+  color: #141820;
   font-weight: 600;
   margin: 0 0 6px;
 }
@@ -1025,14 +1269,14 @@
 
 .termsRegards {
   font-size: 10pt;
-  color: #9ca3af;
+  color: #5C6570;
 }
 
 .termsBrand {
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
   font-size: 18pt;
   font-weight: 600;
-  color: #ffffff;
+  color: #141820;
   letter-spacing: 0.06em;
 }
 
@@ -1055,7 +1299,7 @@
     max-height: 297mm !important;
     margin: 0 !important;
     box-shadow: none !important;
-    background-color: #050505 !important;
-    color: #ffffff !important;
+    background-color: #F8F9FB !important;
+    color: #141820 !important;
   }
 }

@@ -2,7 +2,7 @@
 
 /**
  * Premium Luxe — Terms & Compliance (2 A4 pages).
- * Layout mirrors the reference T&C sheets; dark #0a0a0a + gold #D4AF37.
+ * Layout mirrors the reference T&C sheets; daylight porcelain + champagne gold.
  */
 
 import type { ProposalData } from "@/lib/proposal-data";

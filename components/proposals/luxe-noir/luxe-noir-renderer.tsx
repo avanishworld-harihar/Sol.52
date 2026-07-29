@@ -2,7 +2,7 @@
 
 /**
  * Premium Luxe (noir) — A4 multi-page residential proposal.
- * Preset id: residential_luxe_noir · Canvas-style pagination · dark #0a0a0a + gold #D4AF37.
+ * Preset id: residential_luxe_noir · Canvas-style pagination · daylight porcelain + ink + champagne gold.
  * Atelier (residential_premium_luxe) stays separate.
  */
 
@@ -314,7 +314,7 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
       <EngineeringBlueprint data={data} />
 
       {/* ── Page 06: Titanium Ledger ──────────────────────────── */}
-      <TitaniumLedger />
+      <TitaniumLedger data={data} />
 
       {/* ── Page 07: Ecological Dividend ───────────────────────── */}
       <A4Page pageLabel="07 / 11" brand={brand}>
