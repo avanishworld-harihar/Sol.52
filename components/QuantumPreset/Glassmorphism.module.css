@@ -5,12 +5,6 @@
 
 /* Force print rendering for these heavy effects */
 @media print {
-  /* CSS Modules: bare * is impure — scope via :global */
-  :global(*) {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
   .glassPanel3D,
   .glassPill,
   .glassPriceDisplay {
