@@ -46,7 +46,7 @@
     box-shadow: none !important;
     width: 210mm !important;
     height: 297mm !important;
-    background-color: #050914 !important;
+    background-color: #030712 !important;
     color: #f8fafc !important;
   }
 
@@ -54,14 +54,31 @@
     display: none !important;
   }
 
+  /* Keep 3D glass stack in PDF — force exact colors */
+  .glass3D,
   .glassPanel,
   .neoGlassCard,
   .dataCellGlass,
   .dataCellAccent,
   .bentoBox {
-    background: #0b1221 !important;
-    border-color: rgba(6, 182, 212, 0.4) !important;
-    box-shadow: none !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .glass3D {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(6, 182, 212, 0.02) 100%
+    ) !important;
+    border: 1px solid rgba(6, 182, 212, 0.4) !important;
+    border-top: 2px solid rgba(255, 255, 255, 0.4) !important;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.8) !important;
+    box-shadow:
+      inset 0 2px 10px rgba(255, 255, 255, 0.15),
+      inset 0 -5px 20px rgba(0, 0, 0, 0.6),
+      0 15px 30px rgba(0, 0, 0, 0.8),
+      0 0 25px rgba(6, 182, 212, 0.15) !important;
   }
 }
 
@@ -129,7 +146,7 @@
 .a4Page {
   width: 210mm;
   height: 297mm; /* Strict A4 limit */
-  background-color: #050914 !important; /* Deepest blue/black — print-safe */
+  background-color: #030712 !important; /* Pitch black / deep space */
   color: #f8fafc !important;
   page-break-after: always;
   break-after: page;
@@ -152,7 +169,30 @@
   color: #06b6d4 !important;
 }
 
-/* --- NEO-GLASS EFFECT --- */
+/* --- HYPER-REALISTIC 3D GLASS --- */
+.glass3D {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(6, 182, 212, 0.02) 100%
+  ) !important;
+  border-radius: 16px;
+  border: 1px solid rgba(6, 182, 212, 0.4) !important;
+  border-top: 2px solid rgba(255, 255, 255, 0.4) !important;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.8) !important;
+  box-shadow:
+    inset 0 2px 10px rgba(255, 255, 255, 0.15),
+    inset 0 -5px 20px rgba(0, 0, 0, 0.6),
+    0 15px 30px rgba(0, 0, 0, 0.8),
+    0 0 25px rgba(6, 182, 212, 0.15) !important;
+  padding: 24px;
+  position: relative;
+  z-index: 10;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+/* --- NEO-GLASS EFFECT (legacy panels) --- */
 .glassPanel {
   background: rgba(6, 182, 212, 0.05) !important;
   backdrop-filter: blur(16px);
@@ -177,10 +217,10 @@
 
 .heroSvgBox {
   position: absolute;
-  top: 50%;
+  top: 45%;
   left: 50%;
   transform: translate(-50%, -50%);
-  opacity: 0.6;
+  opacity: 0.8;
   z-index: 0;
   pointer-events: none;
 }
@@ -188,12 +228,14 @@
 .brandHeader {
   display: flex;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  align-items: center;
+  border-bottom: 1px solid rgba(6, 182, 212, 0.3);
   padding-bottom: 20px;
   text-transform: uppercase;
   letter-spacing: 4px;
-  font-size: 0.8rem;
-  color: #94a3b8;
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 600;
 }
 
 .clientName {
@@ -204,12 +246,17 @@
   color: #fff !important;
 }
 
+.coverTagline {
+  color: #06b6d4;
+  letter-spacing: 2px;
+  font-size: 1.2rem;
+  margin: 0;
+}
+
 .coverFooter {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
-  border-top: 1px solid rgba(6, 182, 212, 0.3);
-  padding-top: 20px;
 }
 
 /* --- TELEMETRY & ECONOMICS shared --- */
@@ -220,7 +267,7 @@
 }
 
 .pageHeader h2 {
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 300;
   margin: 5px 0 0;
   color: #fff;
@@ -252,23 +299,16 @@
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   grid-auto-rows: minmax(100px, auto);
-  gap: 15px;
+  gap: 20px;
 }
 
 .bentoBox {
-  background: #0b1221 !important;
-  border: 1px solid rgba(6, 182, 212, 0.4) !important;
-  border-radius: 8px;
-  padding: 20px;
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
-  min-width: 0;
 }
 
 .bentoBoxHero {
-  border: 2px solid #06b6d4 !important;
-  background: #071529 !important;
+  padding: 40px;
 }
 
 .span12 {
@@ -288,43 +328,56 @@
 }
 
 .label {
-  font-size: 0.65rem;
-  letter-spacing: 2px;
+  font-size: 0.7rem;
+  letter-spacing: 3px;
   color: #06b6d4;
   text-transform: uppercase;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  display: block;
+  font-weight: 600;
 }
 
 .valueLarge {
-  font-size: 2.2rem;
+  font-size: 3rem;
   font-weight: 300;
   color: #fff;
-  line-height: 1.1;
+  line-height: 1;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
 .valueMedium {
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   font-weight: 400;
   color: #fff;
 }
 
 .subtext {
-  font-size: 0.8rem;
-  color: #64748b;
+  font-size: 0.85rem;
+  color: #94a3b8;
   margin-top: 5px;
+  display: block;
 }
 
 .heroOutlay {
-  font-size: 4.5rem;
+  font-size: 5.5rem;
   font-weight: 300;
   color: #06b6d4;
   line-height: 0.9;
+  text-shadow: 0 5px 20px rgba(6, 182, 212, 0.4);
 }
 
 .heroMeta {
-  font-size: 1.2rem;
-  color: #94a3b8;
-  margin-bottom: 10px;
+  font-size: 1rem;
+  color: #fff;
+  letter-spacing: 2px;
+}
+
+.heroMetaPill {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px 20px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
 }
 
 .heroRow {
@@ -342,17 +395,17 @@
 }
 
 .dataTable td {
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  font-size: 0.85rem;
-  color: #94a3b8;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(6, 182, 212, 0.15);
+  font-size: 0.9rem;
+  color: #e2e8f0;
   vertical-align: baseline;
 }
 
 .dataTable td:last-child {
   text-align: right;
   color: #fff;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .dataTable tr:last-child td {
@@ -365,6 +418,53 @@
 
 .accentText {
   color: #06b6d4 !important;
+}
+
+.topoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  padding: 0 12px;
+  gap: 12px;
+}
+
+.topoNode {
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.topoBox {
+  width: 80px;
+  height: 80px;
+  border: 2px solid #06b6d4;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(6, 182, 212, 0.1);
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0 auto;
+}
+
+.topoSub {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-top: 10px;
+  display: block;
+  letter-spacing: 2px;
+}
+
+.topoLink {
+  height: 2px;
+  flex-grow: 1;
+  background: linear-gradient(90deg, transparent, #06b6d4, transparent);
+  position: relative;
+  top: -15px;
+  min-width: 24px;
 }
 
 .eyebrow {

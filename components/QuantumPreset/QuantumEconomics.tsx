@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Quantum Economics — print-safe Financial Yield Terminal (bento tech grid).
+ * Quantum Economics — 3D glass Financial Yield Terminal (bento).
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
@@ -57,24 +57,31 @@ export function QuantumEconomics({ data }: QuantumEconomicsProps) {
   return (
     <section className={styles.a4Page}>
       <div className={styles.pageHeader}>
-        <span className={styles.cyanText} style={{ fontSize: "0.75rem", letterSpacing: "3px" }}>
+        <span
+          className={styles.cyanText}
+          style={{ fontSize: "0.75rem", letterSpacing: "3px" }}
+        >
           02 // CAPITAL CLARITY
         </span>
         <h2>Financial Yield Terminal.</h2>
       </div>
 
       <div className={styles.bentoGrid}>
-        <div className={`${styles.bentoBox} ${styles.bentoBoxHero} ${styles.span12}`}>
+        <div
+          className={`${styles.glass3D} ${styles.bentoBoxHero} ${styles.span12}`}
+        >
           <span className={styles.label}>Net Investment Outlay</span>
           <div className={styles.heroRow}>
             <span className={styles.heroOutlay}>
               {net > 0 ? formatInrCompact(net) : "—"}
             </span>
-            <span className={styles.heroMeta}>Code: {code}</span>
+            <div className={styles.heroMetaPill}>
+              <span className={styles.heroMeta}>Code: {code}</span>
+            </div>
           </div>
         </div>
 
-        <div className={`${styles.bentoBox} ${styles.span6}`}>
+        <div className={`${styles.glass3D} ${styles.span6}`}>
           <span className={styles.label}>Capital Structure</span>
           <table className={styles.dataTable}>
             <tbody>
@@ -100,7 +107,7 @@ export function QuantumEconomics({ data }: QuantumEconomicsProps) {
           </table>
         </div>
 
-        <div className={`${styles.bentoBox} ${styles.span6}`}>
+        <div className={`${styles.glass3D} ${styles.span6}`}>
           <span className={styles.label}>Yield Metrics</span>
           <table className={styles.dataTable}>
             <tbody>
@@ -126,22 +133,22 @@ export function QuantumEconomics({ data }: QuantumEconomicsProps) {
           </table>
         </div>
 
-        <div className={`${styles.bentoBox} ${styles.span3}`}>
+        <div className={`${styles.glass3D} ${styles.span3}`}>
           <span className={styles.label}>Maintenance</span>
           <span className={styles.valueMedium}>Zero</span>
           <span className={styles.subtext}>Operational Cost</span>
         </div>
-        <div className={`${styles.bentoBox} ${styles.span3}`}>
+        <div className={`${styles.glass3D} ${styles.span3}`}>
           <span className={styles.label}>Performance</span>
           <span className={styles.valueMedium}>25 Yrs</span>
           <span className={styles.subtext}>Linear Warranty</span>
         </div>
-        <div className={`${styles.bentoBox} ${styles.span3}`}>
+        <div className={`${styles.glass3D} ${styles.span3}`}>
           <span className={styles.label}>Grid Sync</span>
           <span className={styles.valueMedium}>Active</span>
           <span className={styles.subtext}>Net-Meter Ready</span>
         </div>
-        <div className={`${styles.bentoBox} ${styles.span3}`}>
+        <div className={`${styles.glass3D} ${styles.span3}`}>
           <span className={styles.label}>Oversampling</span>
           <span className={styles.valueMedium}>{dcAcLabel}</span>
           <span className={styles.subtext}>DC/AC Ratio</span>
