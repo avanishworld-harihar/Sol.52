@@ -32,6 +32,12 @@ export const BLUEPRINT_PRESET_ALIASES = [
   "investment_blueprint",
 ] as const;
 
+/** Local / mock aliases that resolve to Quantum. */
+export const QUANTUM_PRESET_ALIASES = [
+  "residential_quantum",
+  "quantum",
+] as const;
+
 export function isZenithPresetId(presetId: string): boolean {
   return (ZENITH_PRESET_ALIASES as readonly string[]).includes(presetId);
 }
@@ -46,6 +52,10 @@ export function isLuxeNoirPresetId(presetId: string): boolean {
 
 export function isBlueprintPresetId(presetId: string): boolean {
   return (BLUEPRINT_PRESET_ALIASES as readonly string[]).includes(presetId);
+}
+
+export function isQuantumPresetId(presetId: string): boolean {
+  return (QUANTUM_PRESET_ALIASES as readonly string[]).includes(presetId);
 }
 
 export function isCommercialPresetId(presetId: string): boolean {
@@ -67,6 +77,8 @@ export const PRESET_RENDERER_LOADERS: PresetRendererRegistry = {
     import("@/components/proposals/_registry/adapters/luxe-noir-adapter"),
   residential_blueprint: () =>
     import("@/components/proposals/_registry/adapters/blueprint-adapter"),
+  residential_quantum: () =>
+    import("@/components/proposals/_registry/adapters/quantum-adapter"),
   commercial_executive: () =>
     import("@/components/proposals/_registry/adapters/commercial-adapter"),
   commercial_ht: () =>
@@ -88,6 +100,9 @@ export function getPresetRendererLoader(
   }
   if (isZenithPresetId(presetId)) {
     return () => import("@/components/proposals/_registry/adapters/zenith-adapter");
+  }
+  if (isQuantumPresetId(presetId)) {
+    return () => import("@/components/proposals/_registry/adapters/quantum-adapter");
   }
   if (isLuxeNoirPresetId(presetId)) {
     return () => import("@/components/proposals/_registry/adapters/luxe-noir-adapter");

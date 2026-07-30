@@ -71,6 +71,14 @@ const PRESET_META: Record<ProposalPresetId, PresetMeta> = {
       "border-sky-200 bg-sky-50 text-sky-900 dark:border-sky-500/30 dark:bg-sky-900/20 dark:text-sky-200",
     dotClass: "bg-sky-600",
   },
+  residential_quantum: {
+    icon: <Zap className="h-4 w-4" />,
+    label: "Quantum",
+    description: "Cinematic Neo-Glass · HUD telemetry · Capital terminal",
+    pillClass:
+      "border-cyan-200 bg-slate-900 text-cyan-200 dark:border-cyan-500/40 dark:bg-slate-950 dark:text-cyan-200",
+    dotClass: "bg-cyan-400",
+  },
   commercial_executive: {
     icon: <Building2 className="h-4 w-4" />,
     label: "Commercial",

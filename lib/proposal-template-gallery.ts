@@ -36,7 +36,7 @@ export const PROPOSAL_TEMPLATE_CATEGORIES: ProposalTemplateCategoryMeta[] = [
   {
     id: "residential",
     label: "Residential",
-    description: "Homes & rooftops — Golden, Zenith, Atelier, Premium Luxe, or Canvas.",
+    description: "Homes & rooftops — Golden, Zenith, Atelier, Premium Luxe, Canvas, or Quantum.",
   },
   {
     id: "commercial",
@@ -87,6 +87,15 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
     description:
       "Investment Blueprint — Charcoal, Aluminum & Burnt Orange. Evidence cards, hardware modules & 25-year wealth bars.",
     thumbnailVariant: "blueprint",
+  },
+  {
+    key: "quantum",
+    presetId: "residential_quantum",
+    category: "residential",
+    name: "Quantum",
+    description:
+      "Cinematic Neo-Glass — deep-space HUD, structural PV wireframes, and capital recovery terminal.",
+    thumbnailVariant: "quantum",
   },
 ];
 
@@ -154,6 +163,7 @@ export function resolveActiveGalleryKey(
   if (presetId === "residential_premium_luxe") return "luxe";
   if (presetId === "residential_luxe_noir") return "luxe_noir";
   if (presetId === "residential_blueprint") return "blueprint";
+  if (presetId === "residential_quantum") return "quantum";
   return "zenith";
 }
 

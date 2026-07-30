@@ -1787,9 +1787,11 @@ function ProposalPageContent() {
             ? { galleryThemeKey: "luxe_noir" }
             : osPresetId === "residential_blueprint"
               ? { galleryThemeKey: "blueprint" }
-              : osPresetId === "residential_executive"
-                ? { galleryThemeKey: "golden" }
-                : {}),
+              : osPresetId === "residential_quantum"
+                ? { galleryThemeKey: "quantum" }
+                : osPresetId === "residential_executive"
+                  ? { galleryThemeKey: "golden" }
+                  : {}),
       proposalLayout: (() => {
         const presetForLayout = osPresetId ?? "residential_zenith";
         let layout = proposalLayout;
@@ -2399,9 +2401,11 @@ function ProposalPageContent() {
                       preset === "blueprint" ||
                       preset === "investment_blueprint"
                     ? "residential_blueprint"
-                    : preset === "residential_executive"
-                      ? "residential_executive"
-                      : "residential_executive";
+                    : preset === "residential_quantum" || preset === "quantum"
+                      ? "residential_quantum"
+                      : preset === "residential_executive"
+                        ? "residential_executive"
+                        : "residential_executive";
           setOsPresetId((prev) => prev ?? normalized);
           setShowPresetPicker(false);
           setShowCommercialOrgPicker(false);

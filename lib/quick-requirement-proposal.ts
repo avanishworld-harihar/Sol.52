@@ -81,9 +81,11 @@ export async function buildQuickRequirementProposal(
             ? { galleryThemeKey: "luxe_noir" }
             : presetId === "residential_blueprint"
               ? { galleryThemeKey: "blueprint" }
-              : presetId === "residential_executive"
-                ? { galleryThemeKey: "golden" }
-                : {}),
+              : presetId === "residential_quantum"
+                ? { galleryThemeKey: "quantum" }
+                : presetId === "residential_executive"
+                  ? { galleryThemeKey: "golden" }
+                  : {}),
   };
 
   const summary = summarizeProposalDeck(pptInput);

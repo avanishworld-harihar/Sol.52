@@ -7,6 +7,7 @@ export const RESIDENTIAL_TEMPLATE_PRESET_IDS = [
   "residential_premium_luxe",
   "residential_luxe_noir",
   "residential_blueprint",
+  "residential_quantum",
 ] as const;
 
 export type ResidentialTemplatePresetId = (typeof RESIDENTIAL_TEMPLATE_PRESET_IDS)[number];
@@ -49,6 +50,11 @@ export const RESIDENTIAL_TEMPLATE_OPTIONS: ResidentialTemplateOption[] = [
     id: "residential_blueprint",
     label: "Canvas",
     subtitle: "Investment Blueprint — Charcoal / Aluminum / Burnt Orange + wealth bars.",
+  },
+  {
+    id: "residential_quantum",
+    label: "Quantum",
+    subtitle: "Cinematic Neo-Glass — HUD telemetry & capital recovery terminal.",
   },
 ];
 

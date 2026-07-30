@@ -36,6 +36,9 @@ export function resolveQuickQuotePresetOptions(): {
   if (presetId === "residential_blueprint") {
     return { presetId, galleryThemeKey: "blueprint" };
   }
+  if (presetId === "residential_quantum") {
+    return { presetId, galleryThemeKey: "quantum" };
+  }
   if (presetId === "residential_executive") {
     return { presetId, galleryThemeKey: "golden" };
   }

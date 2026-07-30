@@ -8,7 +8,8 @@
  *   3. residential_premium_luxe  — Atelier Industrial Minimalist (cream)
  *   4. residential_luxe_noir     — Premium Luxe dark cinematic
  *   5. residential_blueprint     — Blueprint Investment Blueprint (modular light cards)
- *   6. commercial_executive      — C&I commercial (hotel / hospital / industry…)
+ *   6. residential_quantum       — Quantum Cinematic Neo-Glass
+ *   7. commercial_executive      — C&I commercial (hotel / hospital / industry…)
  *
  * Removed residential presets remap via normalizePresetId → residential_executive.
  */
@@ -33,6 +34,7 @@ export const PROPOSAL_PRESET_IDS = [
   "residential_premium_luxe",
   "residential_luxe_noir",
   "residential_blueprint",
+  "residential_quantum",
   "commercial_executive",
   "commercial_ht",
 ] as const;
@@ -64,7 +66,8 @@ export function isResidentialDocumentPreset(presetId: ProposalPresetId): boolean
     presetId === "residential_zenith" ||
     presetId === "residential_premium_luxe" ||
     presetId === "residential_luxe_noir" ||
-    presetId === "residential_blueprint"
+    presetId === "residential_blueprint" ||
+    presetId === "residential_quantum"
   );
 }
 
@@ -162,6 +165,18 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     label: "Canvas",
     description:
       "Investment Blueprint — Charcoal / Aluminum / Burnt Orange, Evidence cards, hardware modules & 25-year wealth bars.",
+    bill_requirement: "optional",
+    theme_hint: "residential",
+    default_data_source: "requirement",
+    default_blocks: [],
+    optional_blocks: [],
+  },
+
+  residential_quantum: {
+    id: "residential_quantum",
+    label: "Quantum",
+    description:
+      "Cinematic Neo-Glass — deep-space HUD telemetry, structural PV wireframes, and capital recovery terminal.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "requirement",

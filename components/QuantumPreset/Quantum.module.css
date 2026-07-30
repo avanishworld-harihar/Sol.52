@@ -1,0 +1,677 @@
+/**
+ * Quantum — Cinematic Neo-Glass proposal theme
+ * Deep space gray · translucent glass · electric cyan/teal
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+/* ─── Theme tokens ─────────────────────────────────────────────────────────── */
+
+.root {
+  --q-bg: #111827;
+  --q-bg-elevated: #0f172a;
+  --q-glass: rgba(255, 255, 255, 0.03);
+  --q-glass-border: rgba(6, 182, 212, 0.18);
+  --q-glass-strong: rgba(255, 255, 255, 0.06);
+  --q-cyan: #06b6d4;
+  --q-cyan-bright: #22d3ee;
+  --q-cyan-dim: rgba(6, 182, 212, 0.35);
+  --q-teal: #14b8a6;
+  --q-ink: #f8fafc;
+  --q-muted: #94a3b8;
+  --q-dim: #64748b;
+  --q-danger: #f43f5e;
+  --q-ok: #34d399;
+  --q-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --q-sans: "Outfit", "Segoe UI", system-ui, sans-serif;
+  --q-mono: "JetBrains Mono", ui-monospace, monospace;
+  --q-blur: blur(10px);
+
+  position: relative;
+  width: 100%;
+  min-height: 100dvh;
+  background: #0b1220;
+  color: var(--q-ink);
+  font-family: var(--q-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Strict A4 print architecture ─────────────────────────────────────────── */
+
+.a4Page {
+  position: relative;
+  width: 210mm;
+  height: 297mm;
+  overflow: hidden;
+  page-break-after: always;
+  break-after: page;
+  margin: 0 auto 24px;
+  background: var(--q-bg);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+  isolation: isolate;
+}
+
+.a4Page:last-child {
+  page-break-after: auto;
+  break-after: auto;
+}
+
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .root {
+    background: transparent;
+    min-height: auto;
+  }
+
+  .a4Page {
+    margin: 0;
+    box-shadow: none;
+    width: 210mm;
+    height: 297mm;
+  }
+
+  .printBar {
+    display: none !important;
+  }
+}
+
+@page {
+  size: A4;
+  margin: 0;
+}
+
+/* ─── Screen chrome ────────────────────────────────────────────────────────── */
+
+.printBar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  padding: 12px 16px;
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(6, 182, 212, 0.2);
+}
+
+.printBarInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: min(210mm, 100%);
+}
+
+.printBarBrand {
+  font-family: var(--q-display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--q-cyan);
+}
+
+.printBarBtn {
+  appearance: none;
+  border: 1px solid var(--q-glass-border);
+  background: var(--q-glass);
+  color: var(--q-ink);
+  font-family: var(--q-sans);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.printBarBtn:hover {
+  border-color: var(--q-cyan);
+  background: rgba(6, 182, 212, 0.12);
+}
+
+.loading {
+  display: grid;
+  place-items: center;
+  min-height: 40vh;
+  color: var(--q-muted);
+  font-family: var(--q-mono);
+  letter-spacing: 0.08em;
+}
+
+/* ─── Shared glass / HUD primitives ────────────────────────────────────────── */
+
+.atmosphere {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.glassPanel {
+  position: relative;
+  background: var(--q-glass);
+  border: 1px solid var(--q-glass-border);
+  backdrop-filter: var(--q-blur);
+  -webkit-backdrop-filter: var(--q-blur);
+  border-radius: 2px;
+}
+
+.eyebrow {
+  margin: 0;
+  font-family: var(--q-mono);
+  font-size: 8.5pt;
+  font-weight: 500;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--q-cyan);
+}
+
+.displayTitle {
+  margin: 0;
+  font-family: var(--q-display);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+  color: var(--q-ink);
+}
+
+.pageFooter {
+  position: absolute;
+  left: 14mm;
+  right: 14mm;
+  bottom: 8mm;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 5;
+  font-family: var(--q-mono);
+  font-size: 7.5pt;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--q-dim);
+  border-top: 1px solid rgba(148, 163, 184, 0.15);
+  padding-top: 6px;
+}
+
+.pageFooterAccent {
+  color: var(--q-cyan);
+}
+
+/* ─── Cover ────────────────────────────────────────────────────────────────── */
+
+.coverInner {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  padding: 14mm 14mm 18mm;
+  display: flex;
+  flex-direction: column;
+}
+
+.coverTopRail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--q-mono);
+  font-size: 8pt;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--q-dim);
+}
+
+.coverWireframe {
+  position: absolute;
+  right: -8mm;
+  top: 42mm;
+  width: 148mm;
+  height: 148mm;
+  opacity: 0.95;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.coverBrandBlock {
+  margin-top: 18mm;
+  max-width: 118mm;
+  position: relative;
+  z-index: 2;
+}
+
+.coverBrandName {
+  margin: 6px 0 0;
+  font-family: var(--q-display);
+  font-size: 28pt;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--q-ink);
+}
+
+.coverDiscipline {
+  margin: 10px 0 0;
+  font-size: 10pt;
+  font-weight: 400;
+  color: var(--q-muted);
+  max-width: 95mm;
+  line-height: 1.45;
+}
+
+.coverClientStack {
+  margin-top: auto;
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 10px;
+  max-width: 150mm;
+}
+
+.coverClientGlass {
+  padding: 14px 16px;
+}
+
+.coverPrepared {
+  display: block;
+  font-family: var(--q-mono);
+  font-size: 7.5pt;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--q-cyan);
+  margin-bottom: 6px;
+}
+
+.coverClientName {
+  margin: 0;
+  font-family: var(--q-display);
+  font-size: 22pt;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.coverCapacityRow {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 8px;
+}
+
+.coverMetric {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 52px;
+}
+
+.coverMetricLabel {
+  font-family: var(--q-mono);
+  font-size: 7pt;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--q-dim);
+}
+
+.coverMetricValue {
+  font-family: var(--q-display);
+  font-size: 16pt;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--q-cyan-bright);
+}
+
+.coverMetricValueMuted {
+  font-family: var(--q-display);
+  font-size: 12pt;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--q-ink);
+}
+
+/* ─── Telemetry HUD ────────────────────────────────────────────────────────── */
+
+.telemetryInner {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  padding: 12mm 12mm 16mm;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.telemetryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.telemetryTitle {
+  margin: 4px 0 0;
+  font-family: var(--q-display);
+  font-size: 22pt;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+  color: var(--q-ink);
+}
+
+.telemetryStatus {
+  font-family: var(--q-mono);
+  font-size: 8pt;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--q-ok);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.telemetryStatusDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--q-ok);
+  box-shadow: 0 0 10px rgba(52, 211, 153, 0.7);
+}
+
+.hudGrid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  grid-template-rows: 1fr 0.85fr;
+  gap: 10px;
+  min-height: 0;
+}
+
+.hudCell {
+  padding: 12px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.hudCellWide {
+  grid-column: 1 / -1;
+}
+
+.hudCellLabel {
+  font-family: var(--q-mono);
+  font-size: 7.5pt;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--q-dim);
+  margin-bottom: 8px;
+}
+
+.ringStage {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  position: relative;
+  min-height: 0;
+}
+
+.ringCenterReadout {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  text-align: center;
+}
+
+.ringValue {
+  font-family: var(--q-display);
+  font-size: 28pt;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--q-ink);
+  line-height: 1;
+}
+
+.ringUnit {
+  font-family: var(--q-mono);
+  font-size: 8pt;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--q-cyan);
+  margin-top: 4px;
+}
+
+.schematicWrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.metricStrip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.metricChip {
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  background: rgba(6, 182, 212, 0.06);
+  padding: 10px 8px;
+  text-align: center;
+}
+
+.metricChipLabel {
+  display: block;
+  font-family: var(--q-mono);
+  font-size: 6.5pt;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--q-dim);
+  margin-bottom: 4px;
+}
+
+.metricChipValue {
+  display: block;
+  font-family: var(--q-display);
+  font-size: 12pt;
+  font-weight: 600;
+  color: var(--q-ink);
+}
+
+/* ─── Economics terminal ───────────────────────────────────────────────────── */
+
+.econInner {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  padding: 12mm 12mm 16mm;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.econTitle {
+  margin: 4px 0 0;
+  font-family: var(--q-display);
+  font-size: 22pt;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+  color: var(--q-ink);
+}
+
+.terminalFrame {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.terminalChrome {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(6, 182, 212, 0.2);
+  background: rgba(6, 182, 212, 0.05);
+  font-family: var(--q-mono);
+  font-size: 7.5pt;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--q-muted);
+}
+
+.terminalLive {
+  color: var(--q-cyan-bright);
+}
+
+.terminalBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  gap: 10px;
+  min-height: 0;
+}
+
+.dataGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.dataCell {
+  position: relative;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(15, 23, 42, 0.55);
+  padding: 14px 14px 12px;
+  overflow: hidden;
+}
+
+.dataCellAccent {
+  border-color: rgba(6, 182, 212, 0.45);
+  background: linear-gradient(
+    145deg,
+    rgba(6, 182, 212, 0.12),
+    rgba(15, 23, 42, 0.7)
+  );
+}
+
+.dataCellCornerTL {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  border-top: 1.5px solid var(--q-cyan);
+  border-left: 1.5px solid var(--q-cyan);
+  opacity: 0.7;
+}
+
+.dataCellCornerBR {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 10px;
+  height: 10px;
+  border-right: 1.5px solid var(--q-cyan);
+  border-bottom: 1.5px solid var(--q-cyan);
+  opacity: 0.7;
+}
+
+.dataCellLabel {
+  font-family: var(--q-mono);
+  font-size: 7.5pt;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--q-dim);
+}
+
+.dataCellValue {
+  margin-top: 8px;
+  font-family: var(--q-display);
+  font-size: 20pt;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--q-ink);
+  line-height: 1;
+}
+
+.dataCellValueCyan {
+  margin-top: 8px;
+  font-family: var(--q-display);
+  font-size: 20pt;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--q-cyan-bright);
+  line-height: 1;
+}
+
+.dataCellHint {
+  margin-top: 6px;
+  font-family: var(--q-mono);
+  font-size: 7pt;
+  letter-spacing: 0.08em;
+  color: var(--q-muted);
+}
+
+.cashflowPanel {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cashflowHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--q-mono);
+  font-size: 7.5pt;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--q-dim);
+}
+
+.cashflowChart {
+  width: 100%;
+  height: 78px;
+}
+
+.algoFooter {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.algoStat {
+  border: 1px dashed rgba(6, 182, 212, 0.25);
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.algoStatLabel {
+  font-family: var(--q-mono);
+  font-size: 6.5pt;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--q-dim);
+}
+
+.algoStatValue {
+  margin-top: 4px;
+  font-family: var(--q-display);
+  font-size: 13pt;
+  font-weight: 600;
+  color: var(--q-ink);
+}

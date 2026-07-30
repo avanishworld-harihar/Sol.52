@@ -214,7 +214,9 @@ export function BuilderStageBar({
                       ? "Premium Luxe"
                       : presetId === "residential_blueprint"
                         ? "Canvas"
-                        : "Residential"}
+                        : presetId === "residential_quantum"
+                          ? "Quantum"
+                          : "Residential"}
             </span>
           </div>
         )}

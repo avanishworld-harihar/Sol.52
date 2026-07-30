@@ -89,6 +89,8 @@ export function parsePrefillFromSearchParams(params: URLSearchParams): BuilderPr
     preset === "investment_blueprint"
   ) {
     prefill.preset = "residential_blueprint";
+  } else if (preset === "residential_quantum" || preset === "quantum") {
+    prefill.preset = "residential_quantum";
   } else if (preset === "commercial_executive" || preset === "commercial") {
     prefill.preset = "commercial_executive";
   } else if (preset) {
