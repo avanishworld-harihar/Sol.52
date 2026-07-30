@@ -16,7 +16,7 @@ import { QuantumAtmosphere } from "./QuantumAtmosphere";
 import styles from "./Quantum.module.css";
 
 /** Local premium rooftop photograph — /public */
-const COVER_ROOFTOP_SRC = "/assets/proposals/quantum-cover-rooftop.jpg";
+const COVER_ROOFTOP_SRC = "/assets/proposals/quantum-cover-estate.jpg";
 
 export type QuantumCoverProps = {
   data: ProposalData;
@@ -55,8 +55,8 @@ export function QuantumCover({ data }: QuantumCoverProps) {
             <div className={styles.coverPhotoGlassSheen} aria-hidden />
           </div>
           <figcaption className={styles.coverPhotoCaption}>
-            <span>Private Rooftop Study</span>
-            <span>Luxury Estate · Golden Hour</span>
+            <span>Private Estate Array</span>
+            <span>Blue Hour · Infinity Edge</span>
           </figcaption>
         </figure>
 
