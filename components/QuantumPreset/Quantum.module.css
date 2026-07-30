@@ -57,7 +57,8 @@
 }
 
 @media print {
-  * {
+  /* CSS Modules: bare `*` is impure — scope under .root + :global(*) */
+  .root :global(*) {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
