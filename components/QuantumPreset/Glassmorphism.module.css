@@ -1,0 +1,149 @@
+/**
+ * Ultra 3D Glassmorphism — floating panels & pills for Quantum Neo-Glass.
+ * Use alongside Quantum.module.css (import both where needed).
+ */
+
+/* Force print rendering for these heavy effects */
+@media print {
+  /* CSS Modules: bare * is impure — scope via :global */
+  :global(*) {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .glassPanel3D,
+  .glassPill,
+  .glassPriceDisplay {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(30, 41, 59, 0.95) 100%
+    ) !important;
+    box-shadow:
+      0 20px 40px rgba(0, 0, 0, 0.55),
+      0 0 20px rgba(100, 200, 255, 0.18),
+      inset 0 2px 5px rgba(255, 255, 255, 0.15) !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .priceNumber {
+    color: #89c4f4 !important;
+    -webkit-text-fill-color: #89c4f4 !important;
+    background: none !important;
+  }
+}
+
+.ultraGlassContainer {
+  /* Background matching the dark blue/black depth of the image */
+  background: radial-gradient(circle at 50% 0%, #1e293b, #090e17 80%);
+  padding: 40px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  align-items: center;
+}
+
+/* A4 / proposal embed — no full-viewport stage */
+.ultraGlassEmbed {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: stretch;
+  width: 100%;
+  background: transparent;
+  padding: 0;
+  min-height: 0;
+}
+
+/* --- THE MAIN 3D PANEL (Like the big square in the image) --- */
+.glassPanel3D {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    rgba(255, 255, 255, 0.01) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+
+  /* The metallic glassy border */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.4); /* Light hitting the top edge */
+  border-bottom: 1px solid rgba(0, 0, 0, 0.8); /* Shadow on the bottom edge */
+  border-radius: 24px;
+
+  /* The 3D Shadow Stack */
+  box-shadow:
+    0 30px 60px rgba(0, 0, 0, 0.6), /* Massive drop shadow for floating effect */
+    0 0 25px rgba(100, 200, 255, 0.15), /* Subtle blue outer glow */
+    inset 0 2px 5px rgba(255, 255, 255, 0.2), /* Inner top highlight */
+    inset 0 -5px 10px rgba(0, 0, 0, 0.4); /* Inner bottom shadow */
+
+  padding: 40px;
+  position: relative;
+}
+
+/* --- THE GLASS PILLS (Like the 'No Profit Target' buttons) --- */
+.glassPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 28px;
+  border-radius: 50px; /* Fully rounded edges */
+
+  /* Slightly darker background to contrast with the panel */
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+
+  /* Sharp glass edges */
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-top: 1.5px solid rgba(255, 255, 255, 0.5); /* Strong top highlight */
+  border-bottom: 1px solid rgba(0, 0, 0, 0.7);
+
+  /* The Pill Shadow Stack */
+  box-shadow:
+    0 10px 20px rgba(0, 0, 0, 0.5), /* Drop shadow */
+    inset 0 2px 3px rgba(255, 255, 255, 0.3), /* Glass reflection top */
+    inset 0 -2px 5px rgba(0, 0, 0, 0.6); /* Glass depth bottom */
+
+  color: #ffffff;
+  font-family: "Inter", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* Makes text readable on glass */
+}
+
+/* --- THE BIG PRICE DISPLAY (Like the $103 button) --- */
+.glassPriceDisplay {
+  background: linear-gradient(
+    180deg,
+    rgba(20, 30, 50, 0.8) 0%,
+    rgba(5, 10, 20, 0.9) 100%
+  );
+  border-radius: 40px;
+  padding: 15px 40px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top: 2px solid rgba(255, 255, 255, 0.4);
+  box-shadow:
+    0 15px 30px rgba(0, 0, 0, 0.7),
+    0 0 30px rgba(100, 200, 255, 0.2),
+    inset 0 4px 10px rgba(255, 255, 255, 0.15);
+  text-align: center;
+}
+
+.priceNumber {
+  font-size: 3.5rem;
+  font-weight: 700;
+  background: linear-gradient(180deg, #ffffff 0%, #89c4f4 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
