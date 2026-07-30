@@ -14,6 +14,7 @@ import {
   quantumDcKwp,
   quantumModuleCount,
 } from "./quantum-brand";
+import { QuantumAtmosphere } from "./QuantumAtmosphere";
 import styles from "./Quantum.module.css";
 
 export type QuantumEconomicsProps = {
@@ -56,6 +57,9 @@ export function QuantumEconomics({ data }: QuantumEconomicsProps) {
 
   return (
     <section className={styles.a4Page}>
+      <QuantumAtmosphere variant="finance" />
+
+      <div className={styles.pageStack}>
       <div className={styles.pageHeader}>
         <span
           className={styles.cyanText}
@@ -153,6 +157,7 @@ export function QuantumEconomics({ data }: QuantumEconomicsProps) {
           <span className={styles.valueMedium}>{dcAcLabel}</span>
           <span className={styles.subtext}>DC/AC Ratio</span>
         </div>
+      </div>
       </div>
     </section>
   );

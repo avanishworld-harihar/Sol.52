@@ -11,6 +11,7 @@ import {
   quantumDcKwp,
   quantumModuleCount,
 } from "./quantum-brand";
+import { QuantumAtmosphere } from "./QuantumAtmosphere";
 import styles from "./Quantum.module.css";
 import { Fragment } from "react";
 
@@ -49,6 +50,9 @@ export function QuantumTelemetry({ data }: QuantumTelemetryProps) {
 
   return (
     <section className={styles.a4Page}>
+      <QuantumAtmosphere variant="engineering" />
+
+      <div className={styles.pageStack}>
       <div className={styles.pageHeader}>
         <span
           className={styles.cyanText}
@@ -100,6 +104,7 @@ export function QuantumTelemetry({ data }: QuantumTelemetryProps) {
             Performance Ratio (PR) derating for thermal and transmission losses.
           </span>
         </div>
+      </div>
       </div>
     </section>
   );
