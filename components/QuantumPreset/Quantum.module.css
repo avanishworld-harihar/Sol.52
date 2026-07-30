@@ -1,6 +1,6 @@
 /**
- * Quantum — Cinematic Neo-Glass proposal theme
- * Deep space gray · translucent glass · electric cyan/teal
+ * Quantum — Ultra-Premium Neo-Glass financial blueprint
+ * Deep space gray · aerospace glass · electric cyan/teal
  */
 
 @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
@@ -18,8 +18,8 @@
   --q-cyan-dim: rgba(6, 182, 212, 0.35);
   --q-teal: #14b8a6;
   --q-ink: #f8fafc;
-  --q-muted: #94a3b8;
-  --q-dim: #64748b;
+  --q-muted: #cbd5e1;
+  --q-dim: #94a3b8;
   --q-danger: #f43f5e;
   --q-ok: #34d399;
   --q-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
@@ -210,7 +210,7 @@
   position: relative;
   z-index: 1;
   height: 100%;
-  padding: 14mm 14mm 18mm;
+  padding: 12mm 14mm 16mm;
   display: flex;
   flex-direction: column;
 }
@@ -226,20 +226,9 @@
   color: var(--q-dim);
 }
 
-.coverWireframe {
-  position: absolute;
-  right: -8mm;
-  top: 42mm;
-  width: 148mm;
-  height: 148mm;
-  opacity: 0.95;
-  z-index: 0;
-  pointer-events: none;
-}
-
 .coverBrandBlock {
-  margin-top: 18mm;
-  max-width: 118mm;
+  margin-top: 8mm;
+  max-width: 150mm;
   position: relative;
   z-index: 2;
 }
@@ -247,7 +236,7 @@
 .coverBrandName {
   margin: 6px 0 0;
   font-family: var(--q-display);
-  font-size: 28pt;
+  font-size: 30pt;
   font-weight: 700;
   letter-spacing: -0.04em;
   line-height: 1;
@@ -255,12 +244,30 @@
 }
 
 .coverDiscipline {
-  margin: 10px 0 0;
-  font-size: 10pt;
+  margin: 8px 0 0;
+  font-size: 9.5pt;
   font-weight: 400;
   color: var(--q-muted);
-  max-width: 95mm;
+  max-width: 130mm;
   line-height: 1.45;
+}
+
+.coverFocal {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  margin: 4mm 0;
+}
+
+.coverFocalSvg {
+  width: 100%;
+  max-width: 178mm;
+  height: auto;
+  max-height: 118mm;
 }
 
 .coverClientStack {
@@ -268,12 +275,12 @@
   position: relative;
   z-index: 2;
   display: grid;
-  gap: 10px;
-  max-width: 150mm;
+  gap: 8px;
+  max-width: 100%;
 }
 
 .coverClientGlass {
-  padding: 14px 16px;
+  padding: 12px 16px;
 }
 
 .coverPrepared {
@@ -289,7 +296,7 @@
 .coverClientName {
   margin: 0;
   font-family: var(--q-display);
-  font-size: 22pt;
+  font-size: 20pt;
   font-weight: 600;
   letter-spacing: -0.03em;
   line-height: 1.05;
@@ -297,29 +304,29 @@
 
 .coverCapacityRow {
   display: grid;
-  grid-template-columns: 1.2fr 1fr 1fr;
+  grid-template-columns: 1.15fr 1.25fr 1fr;
   gap: 8px;
 }
 
 .coverMetric {
-  padding: 12px 14px;
+  padding: 10px 12px;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  min-height: 52px;
+  min-height: 48px;
 }
 
 .coverMetricLabel {
   font-family: var(--q-mono);
-  font-size: 7pt;
-  letter-spacing: 0.18em;
+  font-size: 6.5pt;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--q-dim);
 }
 
 .coverMetricValue {
   font-family: var(--q-display);
-  font-size: 16pt;
+  font-size: 15pt;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--q-cyan-bright);
@@ -327,7 +334,7 @@
 
 .coverMetricValueMuted {
   font-family: var(--q-display);
-  font-size: 12pt;
+  font-size: 11pt;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--q-ink);
@@ -463,11 +470,23 @@
   gap: 8px;
 }
 
+.metricDashboard {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+}
+
 .metricChip {
-  border: 1px solid rgba(6, 182, 212, 0.2);
-  background: rgba(6, 182, 212, 0.06);
-  padding: 10px 8px;
+  border: 1px solid rgba(6, 182, 212, 0.22);
+  background: rgba(6, 182, 212, 0.07);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 9px 8px;
   text-align: center;
+}
+
+.metricChipWide {
+  grid-column: span 2;
 }
 
 .metricChipLabel {
@@ -483,7 +502,7 @@
 .metricChipValue {
   display: block;
   font-family: var(--q-display);
-  font-size: 12pt;
+  font-size: 11.5pt;
   font-weight: 600;
   color: var(--q-ink);
 }
@@ -559,13 +578,25 @@
   overflow: hidden;
 }
 
+.dataCellGlass {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 0 24px rgba(6, 182, 212, 0.12),
+    0 10px 28px rgba(0, 0, 0, 0.28);
+}
+
 .dataCellAccent {
   border-color: rgba(6, 182, 212, 0.45);
-  background: linear-gradient(
-    145deg,
-    rgba(6, 182, 212, 0.12),
-    rgba(15, 23, 42, 0.7)
-  );
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 28px rgba(6, 182, 212, 0.22);
 }
 
 .dataCellCornerTL {
@@ -624,6 +655,76 @@
   font-size: 7pt;
   letter-spacing: 0.08em;
   color: var(--q-muted);
+}
+
+.contrastStrip {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.contrastCard {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.neoGlassCard {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 0 26px rgba(6, 182, 212, 0.18);
+}
+
+.contrastCardLife {
+  border-color: rgba(34, 211, 238, 0.45);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 32px rgba(6, 182, 212, 0.28);
+}
+
+.contrastLabel {
+  font-family: var(--q-mono);
+  font-size: 6.5pt;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--q-dim);
+}
+
+.contrastValueNet {
+  font-family: var(--q-display);
+  font-size: 16pt;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--q-ink);
+}
+
+.contrastValueLife {
+  font-family: var(--q-display);
+  font-size: 22pt;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--q-cyan-bright);
+  line-height: 1;
+}
+
+.contrastHint {
+  font-family: var(--q-mono);
+  font-size: 6.5pt;
+  letter-spacing: 0.06em;
+  color: var(--q-muted);
+}
+
+.contrastArrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.85;
 }
 
 .cashflowPanel {

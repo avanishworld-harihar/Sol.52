@@ -29,7 +29,7 @@ export function QuantumRenderer({ data }: QuantumRendererProps) {
     <div className={styles.root}>
       <div className={styles.printBar}>
         <div className={styles.printBarInner}>
-          <span className={styles.printBarBrand}>Quantum · Neo-Glass</span>
+          <span className={styles.printBarBrand}>Sol.52 · Quantum</span>
           <button type="button" className={styles.printBarBtn} onClick={handlePrint}>
             Download PDF
           </button>

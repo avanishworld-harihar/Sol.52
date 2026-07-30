@@ -1,19 +1,24 @@
 "use client";
 
 /**
- * Quantum Telemetry — aerospace-style engineering HUD.
- * Data rings + structural PV→inverter→grid schematic (inline SVG only).
+ * Quantum Telemetry — blueprint-aligned engineering HUD.
+ * DC array uses ceil sizing (6 × 580W on 3 kW AC → ~1.16 DC/AC).
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
+import {
+  QUANTUM_PANEL_WATT,
+  QUANTUM_SPECIFIC_YIELD,
+  quantumDcAcRatio,
+  quantumDcKwp,
+  quantumModuleCount,
+  useQuantumBrand,
+} from "./quantum-brand";
 import styles from "./Quantum.module.css";
 
 export type QuantumTelemetryProps = {
   data: ProposalData;
 };
-
-const PANEL_WATT = 580;
-const SPECIFIC_YIELD = 1450; // kWh/kWp·yr — Central India reference
 
 function clamp01(n: number) {
   return Math.min(1, Math.max(0, n));
@@ -59,7 +64,6 @@ function DataRing({
         strokeDasharray={`${dash} ${gap}`}
         transform={`rotate(-90 ${size / 2} ${size / 2})`}
       />
-      {/* Tick marks */}
       {Array.from({ length: 24 }).map((_, i) => {
         const a = (i / 24) * Math.PI * 2 - Math.PI / 2;
         const inner = r - stroke / 2 - 6;
@@ -80,7 +84,6 @@ function DataRing({
   );
 }
 
-/** Structural single-line diagram: Array → DCDB → Inverter → ACDB → Net Meter. */
 function InterconnectionSchematic() {
   return (
     <svg
@@ -104,7 +107,6 @@ function InterconnectionSchematic() {
         </marker>
       </defs>
 
-      {/* Bus backbone */}
       <line
         x1="48"
         y1="90"
@@ -177,7 +179,6 @@ function InterconnectionSchematic() {
         </g>
       ))}
 
-      {/* Earthing symbol */}
       <g transform="translate(200, 150)">
         <line x1="0" y1="-12" x2="0" y2="0" stroke="#94a3b8" strokeWidth="1" />
         <line x1="-12" y1="0" x2="12" y2="0" stroke="#94a3b8" strokeWidth="1.2" />
@@ -200,7 +201,6 @@ function InterconnectionSchematic() {
 
 function IrradianceProfile({ peakMonthIndex }: { peakMonthIndex: number }) {
   const months = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
-  // Central India relative irradiance shape (normalized)
   const profile = [0.72, 0.8, 0.92, 0.98, 1, 0.88, 0.78, 0.8, 0.86, 0.9, 0.78, 0.7];
   const w = 280;
   const h = 88;
@@ -241,19 +241,44 @@ function IrradianceProfile({ peakMonthIndex }: { peakMonthIndex: number }) {
   );
 }
 
+function BlueprintGridBg() {
+  return (
+    <div className={styles.atmosphere} aria-hidden>
+      <svg width="100%" height="100%" viewBox="0 0 210 297" preserveAspectRatio="none">
+        <defs>
+          <radialGradient id="qHudBloom" cx="50%" cy="18%" r="55%">
+            <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.12" />
+            <stop offset="100%" stopColor="#06b6d4" stopOpacity="0" />
+          </radialGradient>
+          <pattern id="qBlueGrid" width="10" height="10" patternUnits="userSpaceOnUse">
+            <path
+              d="M 10 0 L 0 0 0 10"
+              fill="none"
+              stroke="rgba(6,182,212,0.07)"
+              strokeWidth="0.4"
+            />
+          </pattern>
+        </defs>
+        <rect width="210" height="297" fill="#111827" />
+        <rect width="210" height="297" fill="url(#qBlueGrid)" />
+        <rect width="210" height="297" fill="url(#qHudBloom)" />
+      </svg>
+    </div>
+  );
+}
+
 export function QuantumTelemetry({ data }: QuantumTelemetryProps) {
-  const brand = data.meta.brandName?.trim() || "Harihar Solar";
+  const brand = useQuantumBrand(data);
   const systemKw = Number(data.meta.systemKw) || 0;
-  const moduleCount =
-    systemKw > 0 ? Math.max(1, Math.round((systemKw * 1000) / PANEL_WATT)) : 0;
-  const dcKw = moduleCount > 0 ? (moduleCount * PANEL_WATT) / 1000 : systemKw;
-  const dcAcRatio = systemKw > 0 ? dcKw / systemKw : 1.1;
+  const moduleCount = quantumModuleCount(systemKw);
+  const dcKw = quantumDcKwp(moduleCount);
+  const dcAcRatio = quantumDcAcRatio(dcKw, systemKw);
 
   const annualGen =
     data.closing.annualUnits > 0
       ? data.closing.annualUnits
       : systemKw > 0
-        ? Math.round(systemKw * SPECIFIC_YIELD)
+        ? Math.round(systemKw * QUANTUM_SPECIFIC_YIELD)
         : 0;
 
   const coveragePct =
@@ -276,38 +301,27 @@ export function QuantumTelemetry({ data }: QuantumTelemetryProps) {
 
   return (
     <section className={styles.a4Page}>
-      <div className={styles.atmosphere} aria-hidden>
-        <svg width="100%" height="100%" viewBox="0 0 210 297" preserveAspectRatio="none">
-          <defs>
-            <radialGradient id="qHudBloom" cx="20%" cy="20%" r="50%">
-              <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.1" />
-              <stop offset="100%" stopColor="#06b6d4" stopOpacity="0" />
-            </radialGradient>
-          </defs>
-          <rect width="210" height="297" fill="#111827" />
-          <rect width="210" height="297" fill="url(#qHudBloom)" />
-        </svg>
-      </div>
+      <BlueprintGridBg />
 
       <div className={styles.telemetryInner}>
         <header className={styles.telemetryHeader}>
           <div>
-            <p className={styles.eyebrow}>Engineering Telemetry</p>
+            <p className={styles.eyebrow}>System Design Blueprint</p>
             <h2 className={styles.telemetryTitle}>
-              Array Performance
+              Engineering
               <br />
-              Envelope
+              Performance
             </h2>
           </div>
           <div className={styles.telemetryStatus}>
             <span className={styles.telemetryStatusDot} />
-            LINK ACTIVE · NET-METER PATH
+            NET-METER PATH READY
           </div>
         </header>
 
         <div className={styles.hudGrid}>
           <div className={`${styles.glassPanel} ${styles.hudCell}`}>
-            <div className={styles.hudCellLabel}>Load Offset Coefficient</div>
+            <div className={styles.hudCellLabel}>Estimated Bill Offset</div>
             <div className={styles.ringStage}>
               <DataRing progress={coveragePct} size={168} />
               <div className={styles.ringCenterReadout}>
@@ -336,7 +350,7 @@ export function QuantumTelemetry({ data }: QuantumTelemetryProps) {
           </div>
         </div>
 
-        <div className={styles.metricStrip}>
+        <div className={styles.metricDashboard}>
           <div className={styles.metricChip}>
             <span className={styles.metricChipLabel}>DC Nameplate</span>
             <span className={styles.metricChipValue}>
@@ -346,7 +360,7 @@ export function QuantumTelemetry({ data }: QuantumTelemetryProps) {
           <div className={styles.metricChip}>
             <span className={styles.metricChipLabel}>DC/AC Ratio</span>
             <span className={styles.metricChipValue}>
-              {systemKw > 0 ? dcAcRatio.toFixed(2) : "—"}
+              {dcAcRatio > 0 ? dcAcRatio.toFixed(2) : "—"}
             </span>
           </div>
           <div className={styles.metricChip}>
@@ -361,20 +375,19 @@ export function QuantumTelemetry({ data }: QuantumTelemetryProps) {
                 : "—"}
             </span>
           </div>
-        </div>
-
-        <div className={styles.metricStrip} style={{ gridTemplateColumns: "1.4fr 1fr 1fr" }}>
-          <div className={styles.metricChip}>
+          <div className={`${styles.metricChip} ${styles.metricChipWide}`}>
             <span className={styles.metricChipLabel}>Module Field</span>
             <span className={styles.metricChipValue}>
               {moduleCount > 0
-                ? `${moduleCount} × ${PANEL_WATT}W mono PERC`
-                : "Tier-1 mono PERC"}
+                ? `${moduleCount} × ${QUANTUM_PANEL_WATT}W N-Type TOPCon`
+                : "N-Type TOPCon"}
             </span>
           </div>
           <div className={styles.metricChip}>
             <span className={styles.metricChipLabel}>Specific Yield</span>
-            <span className={styles.metricChipValue}>{SPECIFIC_YIELD} kWh/kWp</span>
+            <span className={styles.metricChipValue}>
+              {QUANTUM_SPECIFIC_YIELD} kWh/kWp
+            </span>
           </div>
           <div className={styles.metricChip}>
             <span className={styles.metricChipLabel}>Climate Zone</span>

@@ -1,12 +1,12 @@
 "use client";
 
 /**
- * Quantum Economics — neo-glass algorithmic trading terminal for capital metrics.
- * Gross · Subsidy · Net · Payback in a structural data grid (inline SVG charts).
+ * Quantum Economics — Financial Yield Terminal (professional capital summary).
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
 import { formatInr, formatInrCompact } from "@/components/proposals/_shared/formatters";
+import { useQuantumBrand } from "./quantum-brand";
 import styles from "./Quantum.module.css";
 
 export type QuantumEconomicsProps = {
@@ -66,7 +66,6 @@ function CashflowSparkline({
         </linearGradient>
       </defs>
 
-      {/* Zero / grid */}
       <line
         x1={padL}
         y1={zeroY}
@@ -91,7 +90,6 @@ function CashflowSparkline({
       <path d={area} fill="url(#qCashFill)" />
       <path d={line} fill="none" stroke="#22d3ee" strokeWidth="2" />
 
-      {/* Payback marker */}
       <line
         x1={breakX}
         y1={padT}
@@ -142,7 +140,6 @@ function TerminalAtmosphere() {
           </radialGradient>
         </defs>
         <rect width="210" height="297" fill="url(#qEconBloom)" />
-        {/* Scanline suggestion */}
         {Array.from({ length: 40 }).map((_, i) => (
           <line
             key={i}
@@ -160,7 +157,7 @@ function TerminalAtmosphere() {
 }
 
 export function QuantumEconomics({ data }: QuantumEconomicsProps) {
-  const brand = data.meta.brandName?.trim() || "Harihar Solar";
+  const brand = useQuantumBrand(data);
   const eco = data.economics;
   const gross = eco.grossInr;
   const subsidy = eco.subsidyInr;
@@ -178,6 +175,9 @@ export function QuantumEconomics({ data }: QuantumEconomicsProps) {
     payback > 0
       ? `${payback.toFixed(payback % 1 ? 1 : 0)} yr`
       : "—";
+
+  const wealthMultiple =
+    net > 0 && lifetime > 0 ? (lifetime / net).toFixed(1) : null;
 
   const cells: {
     label: string;
@@ -215,19 +215,19 @@ export function QuantumEconomics({ data }: QuantumEconomicsProps) {
 
       <div className={styles.econInner}>
         <header>
-          <p className={styles.eyebrow}>Capital Recovery Terminal</p>
+          <p className={styles.eyebrow}>Financial Yield Terminal</p>
           <h2 className={styles.econTitle}>
             Investment
             <br />
-            Algorithm
+            Clarity
           </h2>
         </header>
 
         <div className={`${styles.glassPanel} ${styles.terminalFrame}`}>
           <div className={styles.terminalChrome}>
-            <span>Q-FIN · SESSION v1.0</span>
-            <span className={styles.terminalLive}>● LIVE MODEL</span>
-            <span>INR · RESIDENTIAL LT</span>
+            <span>{brand.toUpperCase()}</span>
+            <span className={styles.terminalLive}>RESIDENTIAL LT · INR</span>
+            <span>25-YEAR MODEL</span>
           </div>
 
           <div className={styles.terminalBody}>
@@ -235,7 +235,9 @@ export function QuantumEconomics({ data }: QuantumEconomicsProps) {
               {cells.map((cell) => (
                 <div
                   key={cell.label}
-                  className={`${styles.dataCell}${cell.accent ? ` ${styles.dataCellAccent}` : ""}`}
+                  className={`${styles.dataCell} ${styles.dataCellGlass}${
+                    cell.accent ? ` ${styles.dataCellAccent}` : ""
+                  }`}
                 >
                   <span className={styles.dataCellCornerTL} aria-hidden />
                   <span className={styles.dataCellCornerBR} aria-hidden />
@@ -252,11 +254,44 @@ export function QuantumEconomics({ data }: QuantumEconomicsProps) {
               ))}
             </div>
 
+            {/* Sharp contrast: net outlay vs lifetime wealth */}
+            <div className={styles.contrastStrip}>
+              <div className={`${styles.contrastCard} ${styles.neoGlassCard}`}>
+                <span className={styles.contrastLabel}>Net Customer Outlay</span>
+                <span className={styles.contrastValueNet}>
+                  {net > 0 ? formatInr(net) : "—"}
+                </span>
+                <span className={styles.contrastHint}>After MNRE / state subsidy</span>
+              </div>
+              <div className={styles.contrastArrow} aria-hidden>
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                  <path
+                    d="M4 14 H20 M14 8 L22 14 L14 20"
+                    stroke="#22d3ee"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+              <div className={`${styles.contrastCard} ${styles.neoGlassCard} ${styles.contrastCardLife}`}>
+                <span className={styles.contrastLabel}>Lifetime Benefit</span>
+                <span className={styles.contrastValueLife}>
+                  {lifetime > 0 ? formatInrCompact(lifetime) : "—"}
+                </span>
+                <span className={styles.contrastHint}>
+                  {wealthMultiple
+                    ? `≈ ${wealthMultiple}× net outlay over 25 years`
+                    : "25-year modelled savings"}
+                </span>
+              </div>
+            </div>
+
             <div className={`${styles.glassPanel} ${styles.cashflowPanel}`}>
               <div className={styles.cashflowHeader}>
                 <span>25-Year Cumulative Cash Position</span>
                 <span>
-                  Lifetime Δ{" "}
+                  Lifetime{" "}
                   {lifetime > 0 ? formatInrCompact(lifetime) : "—"}
                 </span>
               </div>
@@ -269,13 +304,13 @@ export function QuantumEconomics({ data }: QuantumEconomicsProps) {
 
             <div className={styles.algoFooter}>
               <div className={styles.algoStat}>
-                <div className={styles.algoStatLabel}>Monthly Grid Relief</div>
+                <div className={styles.algoStatLabel}>Monthly Savings</div>
                 <div className={styles.algoStatValue}>
                   {monthly > 0 ? formatInr(monthly) : "—"}
                 </div>
               </div>
               <div className={styles.algoStat}>
-                <div className={styles.algoStatLabel}>Annual Savings Vector</div>
+                <div className={styles.algoStatLabel}>Annual Savings</div>
                 <div className={styles.algoStatValue}>
                   {annual > 0 ? formatInr(annual) : "—"}
                 </div>
