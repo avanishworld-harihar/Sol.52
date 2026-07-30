@@ -46,7 +46,7 @@
     box-shadow: none !important;
     width: 210mm !important;
     height: 297mm !important;
-    background-color: #0b1121 !important;
+    background-color: #050914 !important;
     color: #f8fafc !important;
   }
 
@@ -57,12 +57,11 @@
   .glassPanel,
   .neoGlassCard,
   .dataCellGlass,
-  .dataCellAccent {
-    background: rgba(6, 182, 212, 0.08) !important;
-    border-color: rgba(6, 182, 212, 0.35) !important;
-    box-shadow:
-      inset 0 0 20px rgba(6, 182, 212, 0.08),
-      0 0 15px rgba(6, 182, 212, 0.12) !important;
+  .dataCellAccent,
+  .bentoBox {
+    background: #0b1221 !important;
+    border-color: rgba(6, 182, 212, 0.4) !important;
+    box-shadow: none !important;
   }
 }
 
@@ -130,7 +129,7 @@
 .a4Page {
   width: 210mm;
   height: 297mm; /* Strict A4 limit */
-  background-color: #0b1121 !important; /* Deep Space Gray */
+  background-color: #050914 !important; /* Deepest blue/black — print-safe */
   color: #f8fafc !important;
   page-break-after: always;
   break-after: page;
@@ -215,13 +214,15 @@
 
 /* --- TELEMETRY & ECONOMICS shared --- */
 .pageHeader {
-  margin-bottom: 40px;
+  margin-bottom: 30px;
+  border-bottom: 1px solid rgba(6, 182, 212, 0.3);
+  padding-bottom: 15px;
 }
 
 .pageHeader h2 {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 300;
-  margin: 0;
+  margin: 5px 0 0;
   color: #fff;
 }
 
@@ -244,6 +245,126 @@
   font-size: 2rem;
   font-weight: 400;
   color: #fff;
+}
+
+/* --- Print-safe Tech Grid (Bento) --- */
+.bentoGrid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-auto-rows: minmax(100px, auto);
+  gap: 15px;
+}
+
+.bentoBox {
+  background: #0b1221 !important;
+  border: 1px solid rgba(6, 182, 212, 0.4) !important;
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.bentoBoxHero {
+  border: 2px solid #06b6d4 !important;
+  background: #071529 !important;
+}
+
+.span12 {
+  grid-column: span 12;
+}
+.span8 {
+  grid-column: span 8;
+}
+.span6 {
+  grid-column: span 6;
+}
+.span4 {
+  grid-column: span 4;
+}
+.span3 {
+  grid-column: span 3;
+}
+
+.label {
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  color: #06b6d4;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.valueLarge {
+  font-size: 2.2rem;
+  font-weight: 300;
+  color: #fff;
+  line-height: 1.1;
+}
+
+.valueMedium {
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: #fff;
+}
+
+.subtext {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-top: 5px;
+}
+
+.heroOutlay {
+  font-size: 4.5rem;
+  font-weight: 300;
+  color: #06b6d4;
+  line-height: 0.9;
+}
+
+.heroMeta {
+  font-size: 1.2rem;
+  color: #94a3b8;
+  margin-bottom: 10px;
+}
+
+.heroRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  min-width: 0;
+}
+
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.dataTable td {
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.85rem;
+  color: #94a3b8;
+  vertical-align: baseline;
+}
+
+.dataTable td:last-child {
+  text-align: right;
+  color: #fff;
+  font-weight: 500;
+}
+
+.dataTable tr:last-child td {
+  border-bottom: none;
+}
+
+.okText {
+  color: #10b981 !important;
+}
+
+.accentText {
+  color: #06b6d4 !important;
 }
 
 .eyebrow {

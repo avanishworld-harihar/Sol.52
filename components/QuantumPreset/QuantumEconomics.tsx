@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Quantum Economics — Financial Yield Terminal (glassmorphic trading look).
+ * Quantum Economics — print-safe Financial Yield Terminal (bento tech grid).
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
@@ -9,7 +9,11 @@ import {
   formatInr,
   formatInrCompact,
 } from "@/components/proposals/_shared/formatters";
-import { UltraGlassUI } from "./UltraGlassUI";
+import {
+  quantumDcAcRatio,
+  quantumDcKwp,
+  quantumModuleCount,
+} from "./quantum-brand";
 import styles from "./Quantum.module.css";
 
 export type QuantumEconomicsProps = {
@@ -20,89 +24,127 @@ export function QuantumEconomics({ data }: QuantumEconomicsProps) {
   const eco = data.economics;
   const gross = eco.grossInr;
   const subsidy = eco.subsidyInr;
+  const net = eco.netInr;
   const payback = eco.paybackYears;
+  const monthly = eco.monthlySavingsInr;
+  const annual =
+    data.closing.annualSavingsInr > 0
+      ? data.closing.annualSavingsInr
+      : monthly > 0
+        ? monthly * 12
+        : 0;
   const lifetime =
     data.closing.lifetimeWealthInr || eco.lifetimeProfitInr;
 
+  const systemKw = Number(data.meta.systemKw) || 3;
+  const modules = quantumModuleCount(systemKw);
+  const dcKwp = quantumDcKwp(modules);
+  const dcAc = quantumDcAcRatio(dcKwp, systemKw);
+  const dcAcLabel = dcAc > 0 ? `${dcAc.toFixed(2)}x` : "—";
+
   const paybackLabel =
     payback > 0
-      ? `${payback.toFixed(payback % 1 ? 1 : 0)} Yrs`
+      ? `${payback.toFixed(payback % 1 ? 1 : 0)} Years`
       : "—";
+
+  const code =
+    (data.closing.installerName || data.meta.brandName || "SOLAR")
+      .trim()
+      .split(/\s+/)[0]
+      ?.slice(0, 12)
+      .toUpperCase() || "SOLAR";
 
   return (
     <section className={styles.a4Page}>
       <div className={styles.pageHeader}>
-        <span
-          className={styles.cyanText}
-          style={{ letterSpacing: "3px", fontSize: "0.8rem" }}
-        >
+        <span className={styles.cyanText} style={{ fontSize: "0.75rem", letterSpacing: "3px" }}>
           02 // CAPITAL CLARITY
         </span>
         <h2>Financial Yield Terminal.</h2>
       </div>
 
-      <div style={{ marginBottom: "28px" }}>
-        <UltraGlassUI data={data} embed />
-      </div>
+      <div className={styles.bentoGrid}>
+        <div className={`${styles.bentoBox} ${styles.bentoBoxHero} ${styles.span12}`}>
+          <span className={styles.label}>Net Investment Outlay</span>
+          <div className={styles.heroRow}>
+            <span className={styles.heroOutlay}>
+              {net > 0 ? formatInrCompact(net) : "—"}
+            </span>
+            <span className={styles.heroMeta}>Code: {code}</span>
+          </div>
+        </div>
 
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "16px",
-          marginBottom: "28px",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            padding: "12px 0",
-            borderBottom: "1px solid rgba(255,255,255,0.1)",
-          }}
-        >
-          <span className={styles.dataLabel}>GROSS CAPEX (PLANT + BOS)</span>
-          <span style={{ fontSize: "1.35rem", color: "#F8FAFC" }}>
-            {gross > 0 ? formatInr(gross) : "—"}
-          </span>
+        <div className={`${styles.bentoBox} ${styles.span6}`}>
+          <span className={styles.label}>Capital Structure</span>
+          <table className={styles.dataTable}>
+            <tbody>
+              <tr>
+                <td>Gross System Capex</td>
+                <td>{gross > 0 ? formatInr(gross) : "—"}</td>
+              </tr>
+              <tr>
+                <td>MNRE Subsidy (Estimated)</td>
+                <td className={styles.okText}>
+                  {subsidy > 0 ? `- ${formatInr(subsidy)}` : "—"}
+                </td>
+              </tr>
+              <tr>
+                <td>Net Metering &amp; DISCOM Fees</td>
+                <td>Included</td>
+              </tr>
+              <tr>
+                <td>5-Year AMC</td>
+                <td>Included</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            padding: "12px 0",
-            borderBottom: "1px solid rgba(255,255,255,0.1)",
-          }}
-        >
-          <span className={styles.dataLabel}>ESTIMATED SUBSIDY (MNRE)</span>
-          <span style={{ fontSize: "1.35rem", color: "#10B981" }}>
-            {subsidy > 0 ? `- ${formatInr(subsidy)}` : "—"}
-          </span>
-        </div>
-      </div>
 
-      <div className={styles.grid2Col}>
-        <div>
-          <span className={styles.dataLabel}>CAPITAL RECOVERY</span>
-          <span
-            style={{
-              fontSize: "2.2rem",
-              fontWeight: 300,
-              display: "block",
-              color: "#F8FAFC",
-            }}
-          >
-            {paybackLabel}
-          </span>
+        <div className={`${styles.bentoBox} ${styles.span6}`}>
+          <span className={styles.label}>Yield Metrics</span>
+          <table className={styles.dataTable}>
+            <tbody>
+              <tr>
+                <td>First Year Savings</td>
+                <td>{annual > 0 ? formatInr(annual) : "—"}</td>
+              </tr>
+              <tr>
+                <td>Monthly Bill Reduction</td>
+                <td>{monthly > 0 ? formatInr(monthly) : "—"}</td>
+              </tr>
+              <tr>
+                <td>Capital Recovery Time</td>
+                <td className={styles.accentText}>{paybackLabel}</td>
+              </tr>
+              <tr>
+                <td>25-Year Lifetime Benefit</td>
+                <td className={styles.accentText}>
+                  {lifetime > 0 ? formatInrCompact(lifetime) : "—"}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <div>
-          <span className={styles.dataLabel}>LIFETIME BENEFIT (25 YRS)</span>
-          <span
-            className={styles.cyanText}
-            style={{ fontSize: "2.2rem", fontWeight: 300, display: "block" }}
-          >
-            {lifetime > 0 ? formatInrCompact(lifetime) : "—"}
-          </span>
+
+        <div className={`${styles.bentoBox} ${styles.span3}`}>
+          <span className={styles.label}>Maintenance</span>
+          <span className={styles.valueMedium}>Zero</span>
+          <span className={styles.subtext}>Operational Cost</span>
+        </div>
+        <div className={`${styles.bentoBox} ${styles.span3}`}>
+          <span className={styles.label}>Performance</span>
+          <span className={styles.valueMedium}>25 Yrs</span>
+          <span className={styles.subtext}>Linear Warranty</span>
+        </div>
+        <div className={`${styles.bentoBox} ${styles.span3}`}>
+          <span className={styles.label}>Grid Sync</span>
+          <span className={styles.valueMedium}>Active</span>
+          <span className={styles.subtext}>Net-Meter Ready</span>
+        </div>
+        <div className={`${styles.bentoBox} ${styles.span3}`}>
+          <span className={styles.label}>Oversampling</span>
+          <span className={styles.valueMedium}>{dcAcLabel}</span>
+          <span className={styles.subtext}>DC/AC Ratio</span>
         </div>
       </div>
     </section>
