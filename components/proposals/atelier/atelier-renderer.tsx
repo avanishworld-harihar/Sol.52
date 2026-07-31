@@ -719,69 +719,60 @@ export function AtelierRenderer({
           <p className={styles.pageLead}>{c.wealth.lead}</p>
         </header>
 
-        <div className={styles.wealthJourney}>
-          <div className={styles.wjPhase}>
-            <div className={styles.wjPhaseHead}>
-              <span className={styles.wjStepNum}>{c.wealth.step1Num}</span>
-              <span className={styles.wjIconTile} aria-hidden>
-                <WealthIconPay className={styles.wjIconSvg} />
-              </span>
-            </div>
-            <div className={styles.wjLabel}>{c.wealth.phase1}</div>
-            <div className={styles.wjTitle}>{c.wealth.investment}</div>
-            <div className={styles.wjSpan}>
+        {/* Instant story: invest → payback → keep */}
+        <div className={styles.wealthPath} aria-label={c.wealth.lead}>
+          <div className={styles.wealthPathCard}>
+            <span className={styles.wealthPathIcon} aria-hidden>
+              <WealthIconPay className={styles.wjIconSvg} />
+            </span>
+            <span className={styles.wealthPathLabel}>
+              {c.wealth.step1Num} · {c.wealth.pathInvest}
+            </span>
+            <strong className={styles.wealthPathAmt}>
+              {netInr > 0 ? formatInrCompact(netInr) : "—"}
+            </strong>
+            <span className={styles.wealthPathSub}>
               {c.wealth.year0To(paybackYears > 0 ? Math.ceil(paybackYears) : 5)}
-            </div>
-            <div className={styles.wjNote}>{c.wealth.phase1Note}</div>
+            </span>
+            <span className={styles.wealthPathNote}>{c.wealth.phase1Note}</span>
           </div>
-          <div className={styles.wjArrow} aria-hidden>
-            <span className={styles.wjArrowLine} />
-            <span className={styles.wjArrowTip}>›</span>
+          <div className={styles.wealthPathArrow} aria-hidden>
+            <span>→</span>
           </div>
-          <div className={`${styles.wjPhase} ${styles.wjPhaseActive}`}>
-            <div className={styles.wjPhaseHead}>
-              <span className={styles.wjStepNum}>{c.wealth.step2Num}</span>
-              <span className={`${styles.wjIconTile} ${styles.wjIconTileActive}`} aria-hidden>
-                <WealthIconPaid className={styles.wjIconSvg} />
-              </span>
-            </div>
-            <div className={styles.wjLabel}>{c.wealth.milestone}</div>
-            <div className={styles.wjTitle}>{c.wealth.payback}</div>
-            <div className={styles.wjSpan}>
-              {c.wealth.yearAt(
-                paybackYears > 0 ? paybackYears.toFixed(1) : "4–5"
-              )}
-            </div>
-            <div className={styles.wjNote}>{c.wealth.paybackNote}</div>
+          <div className={`${styles.wealthPathCard} ${styles.wealthPathMid}`}>
+            <span className={`${styles.wealthPathIcon} ${styles.wealthPathIconOn}`} aria-hidden>
+              <WealthIconPaid className={styles.wjIconSvg} />
+            </span>
+            <span className={styles.wealthPathLabel}>
+              {c.wealth.step2Num} · {c.wealth.pathPayback}
+            </span>
+            <strong className={styles.wealthPathAmt}>
+              {paybackYears > 0
+                ? `${paybackYears.toFixed(1)} ${c.wealth.yrsShort}`
+                : "—"}
+            </strong>
+            <span className={styles.wealthPathSub}>{c.wealth.pathPayoff}</span>
+            <span className={styles.wealthPathNote}>{c.wealth.paybackNote}</span>
           </div>
-          <div className={styles.wjArrow} aria-hidden>
-            <span className={styles.wjArrowLine} />
-            <span className={styles.wjArrowTip}>›</span>
+          <div className={styles.wealthPathArrow} aria-hidden>
+            <span>→</span>
           </div>
-          <div className={styles.wjPhase}>
-            <div className={styles.wjPhaseHead}>
-              <span className={styles.wjStepNum}>{c.wealth.step3Num}</span>
-              <span className={styles.wjIconTile} aria-hidden>
-                <WealthIconGrow className={styles.wjIconSvg} />
-              </span>
-            </div>
-            <div className={styles.wjLabel}>{c.wealth.phase2}</div>
-            <div className={styles.wjTitle}>{c.wealth.passiveIncome}</div>
-            <div className={styles.wjSpan}>
+          <div className={`${styles.wealthPathCard} ${styles.wealthPathEnd}`}>
+            <span className={styles.wealthPathIcon} aria-hidden>
+              <WealthIconGrow className={styles.wjIconSvg} />
+            </span>
+            <span className={styles.wealthPathLabel}>
+              {c.wealth.step3Num} · {c.wealth.pathKeep}
+            </span>
+            <strong className={styles.wealthPathAmt}>
+              {totalWealth > 0 ? formatInrCompact(totalWealth) : "—"}
+            </strong>
+            <span className={styles.wealthPathSub}>
               {c.wealth.yearRange(
                 paybackYears > 0 ? Math.ceil(paybackYears) + 1 : 6
               )}
-            </div>
-            <div className={styles.wjNote}>
-              {totalWealth > 0 && paybackYears > 0
-                ? c.wealth.passiveWealth(
-                    formatInrCompact(
-                      totalWealth - annualSavings * Math.ceil(paybackYears)
-                    )
-                  )
-                : c.wealth.pureWealth}{" "}
-              {c.wealth.zeroEnergy}
-            </div>
+            </span>
+            <span className={styles.wealthPathNote}>{c.wealth.zeroEnergy}</span>
           </div>
         </div>
 
@@ -794,33 +785,37 @@ export function AtelierRenderer({
             <div className={styles.wealthChart}>
               {wealthMilestones.map((m) => (
                 <div key={m.year} className={styles.wealthMilestone}>
+                  <span className={styles.wealthYr}>{c.wealth.yrShort(m.year)}</span>
                   <div className={styles.wealthBarWrap}>
                     <div
                       className={styles.wealthBarFill}
-                      style={{ width: `${m.pct}%` }}
+                      style={{ width: `${Math.max(m.pct, 8)}%` }}
                     />
                   </div>
-                  <div className={styles.wealthMeta}>
-                    <span className={styles.wealthYr}>{c.wealth.yrShort(m.year)}</span>
-                    <span className={styles.wealthAmt}>
-                      {m.savings > 0 ? formatInrCompact(m.savings) : "—"}
-                    </span>
-                  </div>
+                  <span className={styles.wealthAmt}>
+                    {m.savings > 0 ? formatInrCompact(m.savings) : "—"}
+                  </span>
                 </div>
               ))}
             </div>
-            <div className={styles.wealthChartNote}>{c.wealth.chartNote}</div>
-            <div className={styles.wealthContrast}>
-              <span className={styles.wealthContrastLabel}>
-                {c.wealth.withoutSolar}
-              </span>
-              <span className={styles.wealthContrastVal}>
-                {monthlyBill > 0
-                  ? formatInrCompact(monthlyBill * 12 * 22)
-                  : "—"}{" "}
-                {c.wealth.paidToGrid}
-              </span>
+            <div className={styles.wealthVs}>
+              <div className={styles.wealthVsKeep}>
+                <span className={styles.wealthVsLabel}>{c.wealth.withSolar}</span>
+                <strong className={styles.wealthVsAmt}>
+                  {totalWealth > 0 ? formatInrCompact(totalWealth) : "—"}
+                </strong>
+              </div>
+              <div className={styles.wealthVsGrid}>
+                <span className={styles.wealthVsLabel}>{c.wealth.withoutSolar}</span>
+                <strong className={styles.wealthVsAmt}>
+                  {monthlyBill > 0
+                    ? formatInrCompact(monthlyBill * 12 * 22)
+                    : "—"}
+                </strong>
+                <span className={styles.wealthVsHint}>{c.wealth.paidToGrid}</span>
+              </div>
             </div>
+            <p className={styles.wealthChartNote}>{c.wealth.chartNote}</p>
           </div>
 
           <div className={styles.investScoreBox}>
@@ -860,7 +855,7 @@ export function AtelierRenderer({
             </div>
 
             <div className={styles.paybackCard}>
-              <span className={styles.investScoreTag}>{c.wealth.totalWealthTag}</span>
+              <span className={styles.paybackTag}>{c.wealth.totalWealthTag}</span>
               <div className={styles.paybackAmt}>
                 {totalWealth > 0 ? formatInrCompact(totalWealth) : "—"}
               </div>
@@ -902,34 +897,35 @@ export function AtelierRenderer({
         <div className={styles.genProofGrid}>
           <div className={styles.genCard}>
             <span className={styles.genCardTag}>{c.gen.pvgis}</span>
-            <div className={styles.genFormula}>
+            <div className={styles.genFormulaGrid}>
               <div className={styles.genFormulaStep}>
                 <span className={styles.genFormulaVal}>
                   {systemKw > 0 ? `${systemKw} kW` : "5 kW"}
                 </span>
                 <span className={styles.genFormulaLabel}>{c.gen.systemCapacity}</span>
               </div>
-              <span className={styles.genFormulaOp}>×</span>
               <div className={styles.genFormulaStep}>
                 <span className={styles.genFormulaVal}>5.0</span>
                 <span className={styles.genFormulaLabel}>{c.gen.sunHours}</span>
               </div>
-              <span className={styles.genFormulaOp}>×</span>
               <div className={styles.genFormulaStep}>
                 <span className={styles.genFormulaVal}>75%</span>
                 <span className={styles.genFormulaLabel}>{c.gen.perfRatio}</span>
               </div>
-              <span className={styles.genFormulaOp}>×</span>
               <div className={styles.genFormulaStep}>
                 <span className={styles.genFormulaVal}>365</span>
                 <span className={styles.genFormulaLabel}>{c.gen.daysYear}</span>
               </div>
-              <span className={styles.genFormulaOp}>=</span>
-              <div className={`${styles.genFormulaStep} ${styles.genFormulaResult}`}>
-                <span className={styles.genFormulaVal}>
+            </div>
+            <div className={styles.genFormulaEquals}>
+              <span className={styles.genFormulaEqMark}>=</span>
+              <div className={styles.genFormulaResult}>
+                <span className={styles.genFormulaResultVal}>
                   {annualGen > 0 ? annualGen.toLocaleString("en-IN") : "6,844"}
                 </span>
-                <span className={styles.genFormulaLabel}>{c.gen.unitsYear}</span>
+                <span className={styles.genFormulaResultLabel}>
+                  {c.gen.unitsYear}
+                </span>
               </div>
             </div>
           </div>
@@ -938,16 +934,17 @@ export function AtelierRenderer({
             <span className={styles.genCardTag}>
               {c.gen.solarResource(cityLabel)}
             </span>
-            <div className={styles.genIrradGrid}>
+            <div className={styles.genIrradTiles}>
               {[
-                [c.gen.globalHoriz, "~1,850 kWh/m²/yr"],
-                [c.gen.optimalIncl, `~1,950 kWh/m²/yr`],
-                [c.gen.annualIrrad, c.gen.tiltLabel(tilt)],
-                [c.gen.dataSource, "PVGIS / NREL Atlas"],
-              ].map(([k, v]) => (
-                <div key={k} className={styles.genIrradRow}>
+                [c.gen.globalHoriz, "~1,850", "kWh/m²/yr"],
+                [c.gen.optimalIncl, "~1,950", "kWh/m²/yr"],
+                [c.gen.annualIrrad, `${tilt}°`, c.gen.tiltUnit],
+                [c.gen.dataSource, "PVGIS", "NREL Atlas"],
+              ].map(([k, v, u]) => (
+                <div key={k} className={styles.genIrradTile}>
                   <span className={styles.genIrradKey}>{k}</span>
-                  <span className={styles.genIrradVal}>{v}</span>
+                  <strong className={styles.genIrradVal}>{v}</strong>
+                  <span className={styles.genIrradUnit}>{u}</span>
                 </div>
               ))}
             </div>
@@ -959,48 +956,62 @@ export function AtelierRenderer({
             annualGen > 0
               ? annualGen
               : Math.round(systemKw * 5 * 0.75 * 365);
+          const max = Math.round(est * 1.13);
           const bars = [
             {
               label: c.gen.ourEstimate,
               val: est,
-              pct: 90,
-              color: "var(--or)",
+              pct: Math.round((est / max) * 100),
+              tone: "hero" as const,
             },
             {
               label: c.gen.gridAvg(cityLabel),
               val: Math.round(est * 0.75),
-              pct: 68,
-              color: "var(--gray2)",
+              pct: Math.round((est * 0.75) / max * 100),
+              tone: "muted" as const,
             },
             {
               label: c.gen.theoreticalMax,
-              val: Math.round(est * 1.13),
+              val: max,
               pct: 100,
-              color: "#059669",
+              tone: "soft" as const,
             },
           ];
           return (
-            <div className={styles.genBarChart}>
+            <div className={styles.genCompare}>
               <span className={styles.genCardTag}>{c.gen.barTag(cityLabel)}</span>
-              {bars.map((b) => (
-                <div key={b.label} className={styles.genBarRow}>
-                  <span className={styles.genBarLabel}>{b.label}</span>
-                  <div className={styles.genBarTrack}>
-                    <div
-                      className={styles.genBarFill}
-                      style={{ width: `${b.pct}%`, background: b.color }}
-                    />
+              <div className={styles.genCompareList}>
+                {bars.map((b) => (
+                  <div
+                    key={b.label}
+                    className={`${styles.genCompareRow} ${
+                      b.tone === "hero"
+                        ? styles.genCompareHero
+                        : b.tone === "muted"
+                          ? styles.genCompareMuted
+                          : styles.genCompareSoft
+                    }`}
+                  >
+                    <div className={styles.genCompareMeta}>
+                      <span className={styles.genBarLabel}>{b.label}</span>
+                      <span className={styles.genBarVal}>
+                        {b.val.toLocaleString("en-IN")} {c.gen.units}
+                      </span>
+                    </div>
+                    <div className={styles.genBarTrack}>
+                      <div
+                        className={styles.genBarFill}
+                        style={{ width: `${Math.max(b.pct, 12)}%` }}
+                      />
+                    </div>
                   </div>
-                  <span className={styles.genBarVal}>
-                    {b.val.toLocaleString("en-IN")} {c.gen.units}
-                  </span>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           );
         })()}
 
-        <div className={styles.expertInsight}>
+        <div className={`${styles.expertInsight} ${styles.genExpert}`}>
           <span className={styles.expertTag}>{c.gen.expertTag}</span>
           <p>
             {c.gen.expertBody(
@@ -1028,18 +1039,19 @@ export function AtelierRenderer({
           ))}
         </div>
 
-        <div className={styles.genStdRow}>
-          <span className={styles.genStdLabel}>{c.gen.compliance}</span>
-          {standards.map((s) => (
-            <span key={s} className={styles.stdBadge}>
-              {s}
-            </span>
-          ))}
+        <div className={styles.genFoot}>
+          <div className={styles.genStdRow}>
+            <span className={styles.genStdLabel}>{c.gen.compliance}</span>
+            {standards.map((s) => (
+              <span key={s} className={styles.stdBadge}>
+                {s}
+              </span>
+            ))}
+          </div>
+          <p className={styles.genDisclaimer}>
+            <strong>{c.gen.noteLabel}</strong> {c.gen.noteBody}
+          </p>
         </div>
-
-        <p className={styles.genDisclaimer}>
-          <strong>{c.gen.noteLabel}</strong> {c.gen.noteBody}
-        </p>
 
         <span className={styles.pageNum}>05 / 12</span>
       </section>
@@ -1173,7 +1185,7 @@ export function AtelierRenderer({
         <span className={styles.pageNum}>06 / 12</span>
       </section>
 
-      {/* ══ P7: WHY PARTNER — icon-led trust cards ═══════════════ */}
+      {/* ══ P7: WHY PARTNER — trust cards + 1 proof photo ═══════ */}
       <section className={`${styles.page} ${styles.trustPage}`}>
         <header className={styles.pageHead}>
           <span className={styles.pageTag}>
@@ -1200,14 +1212,28 @@ export function AtelierRenderer({
           ))}
         </div>
 
-        <div className={styles.trustQuoteBox}>
-          <span className={styles.trustQuoteMark} aria-hidden>
-            “
-          </span>
-          <p className={styles.trustQuote}>{c.trust.quote}</p>
-          <span className={styles.trustQuoteAttr}>
-            {c.trust.quoteAttr(brand)}
-          </span>
+        <div className={styles.trustProof}>
+          <figure className={styles.trustPhotoFrame}>
+            {/* eslint-disable-next-line @next/next/no-img-element -- print A4 static asset */}
+            <img
+              className={styles.trustPhoto}
+              src="/assets/proposals/atelier-trust-rooftop.jpg"
+              alt={c.trust.photoTitle}
+            />
+            <figcaption className={styles.trustPhotoCap}>
+              <strong>{c.trust.photoTitle}</strong>
+              <span>{c.trust.photoSub}</span>
+            </figcaption>
+          </figure>
+          <div className={styles.trustQuoteBox}>
+            <span className={styles.trustQuoteMark} aria-hidden>
+              “
+            </span>
+            <p className={styles.trustQuote}>{c.trust.quote}</p>
+            <span className={styles.trustQuoteAttr}>
+              {c.trust.quoteAttr(brand)}
+            </span>
+          </div>
         </div>
 
         <span className={styles.pageNum}>07 / 12</span>

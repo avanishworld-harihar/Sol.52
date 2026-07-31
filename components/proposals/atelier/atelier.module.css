@@ -752,18 +752,133 @@
 }
 
 /* ══ P4: WEALTH PROJECTION ══════════════════════════════════════ */
-.wealthPage .pageLead {
-  max-width: 520px;
+.wealthPage {
+  display: flex;
+  flex-direction: column;
 }
+.wealthPage .pageHead {
+  margin-bottom: 0.85rem;
+  padding-top: 1.15rem;
+  flex-shrink: 0;
+}
+.wealthPage .pageLead {
+  max-width: 560px;
+  font-size: 1rem;
+}
+.wealthPage .pageTitle {
+  font-size: 1.75rem;
+}
+
+/* Instant money path — invest → payback → keep */
+.wealthPath {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  align-items: stretch;
+  gap: 0.45rem;
+  margin-bottom: 0.85rem;
+  flex-shrink: 0;
+}
+.wealthPathCard {
+  background: var(--al);
+  border: 1px solid var(--line);
+  border-radius: var(--card-r);
+  padding: 1rem 1.05rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.22rem;
+  min-width: 0;
+  box-shadow: var(--card-s);
+}
+.wealthPathMid {
+  background: var(--white);
+  box-shadow: inset 0 0 0 2px rgba(249, 115, 22, 0.35);
+}
+.wealthPathEnd {
+  background: linear-gradient(160deg, #FFF7ED 0%, #FFFFFF 55%);
+  border-color: rgba(249, 115, 22, 0.28);
+}
+.wealthPathIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: linear-gradient(145deg, #FFF7ED 0%, #FFEDD5 100%);
+  border: 1px solid rgba(249, 115, 22, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--or);
+  margin-bottom: 0.25rem;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+.wealthPathIconOn {
+  background: var(--or);
+  border-color: var(--or);
+  color: var(--white);
+}
+.wealthPathLabel {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--gray);
+}
+.wealthPathAmt {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--h);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.wealthPathMid .wealthPathAmt,
+.wealthPathEnd .wealthPathAmt {
+  color: var(--or);
+}
+.wealthPathSub {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--or);
+  line-height: 1.3;
+}
+.wealthPathNote {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--gray);
+  line-height: 1.35;
+  margin-top: 0.15rem;
+}
+.wealthPathArrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--or);
+  font-size: 1.45rem;
+  font-weight: 800;
+  opacity: 0.75;
+  padding: 0 0.1rem;
+}
+
 .wealthLayout {
   display: grid;
-  grid-template-columns: 1fr 240px;
-  gap: 1.1rem;
+  grid-template-columns: 1.35fr 270px;
+  gap: 1rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  align-items: stretch;
 }
 .wealthChartBox {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.7rem;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--card-r);
+  padding: 1rem 1.1rem 1.05rem;
+  min-height: 0;
+  box-shadow: var(--card-s);
 }
 .wealthChartHead {
   display: flex;
@@ -771,158 +886,197 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 0.35rem 0.75rem;
+  flex-shrink: 0;
 }
 .wealthChartTitle {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   font-weight: 800;
-  letter-spacing: 1.2px;
+  letter-spacing: 1.1px;
   text-transform: uppercase;
   color: var(--or);
 }
 .wealthChartHint {
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   color: var(--gray2);
   font-weight: 600;
 }
 .wealthChart {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  justify-content: space-evenly;
+  gap: 0.55rem;
+  flex: 1 1 auto;
+  min-height: 0;
 }
-.wealthMilestone { display: flex; flex-direction: column; gap: 0.22rem; }
+.wealthMilestone {
+  display: grid;
+  grid-template-columns: 64px 1fr 72px;
+  align-items: center;
+  gap: 0.55rem;
+}
 .wealthBarWrap {
-  height: 20px;
+  height: 28px;
   background: var(--line);
-  border-radius: 4px;
+  border-radius: 6px;
   overflow: hidden;
 }
 .wealthBarFill {
   height: 100%;
-  background: linear-gradient(90deg, var(--or), #c05209);
-  border-radius: 4px;
+  background: linear-gradient(90deg, #fb923c, var(--or) 45%, #c05209);
+  border-radius: 6px;
   transition: width 0.4s ease;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
-.wealthMeta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
 .wealthYr {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.78rem;
+  font-size: 0.88rem;
   font-weight: 800;
-  letter-spacing: 1px;
+  letter-spacing: 0.4px;
   color: var(--gray);
 }
 .wealthAmt {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 800;
   color: var(--h);
+  text-align: right;
+  white-space: nowrap;
 }
 .wealthChartNote {
-  font-size: 0.74rem;
+  font-size: 0.82rem;
   color: var(--gray);
-  padding-top: 0.35rem;
-  border-top: 1px solid var(--line);
+  margin: 0;
   line-height: 1.4;
+  flex-shrink: 0;
 }
-.wealthContrast {
+.wealthVs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+  flex-shrink: 0;
+}
+.wealthVsKeep,
+.wealthVsGrid {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
-  padding: 0.55rem 0.7rem;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 6px;
+  gap: 0.2rem;
+  padding: 0.7rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--line);
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
-.wealthContrastLabel {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.8px;
-  color: #DC2626;
-  text-transform: uppercase;
+.wealthVsKeep {
+  background: #FFF7ED;
+  border-color: rgba(249, 115, 22, 0.3);
 }
-.wealthContrastVal {
-  font-size: 0.84rem;
-  font-weight: 700;
-  color: var(--c);
-  line-height: 1.35;
+.wealthVsGrid {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+.wealthVsLabel {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--gray);
+  line-height: 1.3;
+}
+.wealthVsKeep .wealthVsLabel { color: #c2410c; }
+.wealthVsGrid .wealthVsLabel { color: #DC2626; }
+.wealthVsAmt {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--h);
+  line-height: 1.15;
+}
+.wealthVsKeep .wealthVsAmt { color: var(--or); }
+.wealthVsHint {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--gray);
 }
 
 /* Investment score card — keep AA+ dominant */
-.investScoreBox { display: flex; flex-direction: column; gap: 0.65rem; }
+.investScoreBox {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  min-height: 0;
+}
 .investScoreCard {
   background: var(--h);
   color: var(--white);
   border-radius: var(--card-r);
-  padding: 1.15rem 1.1rem 1.2rem;
+  padding: 1.25rem 1.15rem 1.3rem;
   text-align: center;
   box-shadow: 0 8px 24px rgba(10, 15, 28, 0.18);
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
 .investScoreTag {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.68rem;
+  font-size: 0.74rem;
   font-weight: 700;
-  letter-spacing: 1.6px;
-  color: rgba(255,255,255,0.45);
+  letter-spacing: 1.5px;
+  color: rgba(255,255,255,0.5);
   text-transform: uppercase;
   display: block;
-  margin-bottom: 0.55rem;
+  margin-bottom: 0.45rem;
 }
 .investScoreGrade {
   font-family: 'Montserrat', sans-serif;
-  font-size: 3.25rem;
+  font-size: 3.6rem;
   font-weight: 800;
   color: var(--or);
   line-height: 1;
 }
 .investScoreLabel {
-  font-size: 0.88rem;
+  font-size: 0.98rem;
   font-weight: 600;
-  color: rgba(255,255,255,0.75);
-  margin-top: 0.3rem;
+  color: rgba(255,255,255,0.8);
+  margin-top: 0.35rem;
 }
 .investScoreDivider {
   height: 1px;
-  background: rgba(255,255,255,0.1);
-  margin: 0.85rem 0;
+  background: rgba(255,255,255,0.12);
+  margin: 0.9rem 0;
 }
 .investScoreStats {
   display: flex;
   justify-content: space-around;
   gap: 0.65rem;
 }
-.investScoreStat { display: flex; flex-direction: column; gap: 0.15rem; }
+.investScoreStat { display: flex; flex-direction: column; gap: 0.18rem; }
 .investScoreStatVal {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.05rem;
+  font-size: 1.15rem;
   font-weight: 800;
   color: var(--white);
 }
 .investScoreStatLabel {
-  font-size: 0.68rem;
-  color: rgba(255,255,255,0.45);
+  font-size: 0.74rem;
+  color: rgba(255,255,255,0.5);
   text-transform: uppercase;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.7px;
   font-weight: 700;
 }
 .investScoreBasis {
-  font-size: 0.74rem;
-  color: rgba(255,255,255,0.5);
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.55);
   line-height: 1.4;
   text-align: left;
-  margin: 0.75rem 0 0;
-  padding-top: 0.65rem;
-  border-top: 1px solid rgba(255,255,255,0.1);
+  margin: 0.85rem 0 0;
+  padding-top: 0.7rem;
+  border-top: 1px solid rgba(255,255,255,0.12);
 }
 .investScoreBasis strong { color: var(--or); }
 
@@ -931,82 +1085,155 @@
   background: var(--al);
   border: 1px solid var(--line);
   border-radius: var(--card-r);
-  padding: 0.9rem 1rem;
+  padding: 1rem 1.05rem;
+  flex-shrink: 0;
+  box-shadow: var(--card-s);
+}
+.paybackTag {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  color: var(--or);
+  display: block;
 }
 .paybackAmt {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.65rem;
+  font-size: 1.85rem;
   font-weight: 800;
   color: var(--or);
   line-height: 1;
-  margin: 0.45rem 0 0.35rem;
+  margin: 0.45rem 0 0.4rem;
 }
 .paybackNote {
-  font-size: 0.78rem;
+  font-size: 0.88rem;
   color: var(--gray);
   line-height: 1.4;
   margin: 0;
+  font-weight: 600;
 }
 
 /* ══ P5: GENERATION PROOF ══════════════════════════════════════ */
+.genPage {
+  display: flex;
+  flex-direction: column;
+}
+.genPage .pageHead {
+  margin-bottom: 0.85rem;
+  padding-top: 1.15rem;
+  flex-shrink: 0;
+}
+.genPage .pageTitle {
+  font-size: 1.7rem;
+  max-width: 640px;
+}
+
 .genProofGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
-  margin-bottom: 1.5rem;
+  grid-template-columns: 1.15fr 0.95fr;
+  gap: 0.9rem;
+  margin-bottom: 0.85rem;
+  flex-shrink: 0;
 }
 .genCard {
   background: var(--al);
   border: 1px solid var(--line);
   border-radius: var(--card-r);
-  padding: 1.25rem 1.25rem;
+  padding: 1.15rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  box-shadow: var(--card-s);
 }
 .genCardTag {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.86rem;
-  font-weight: 700;
-  letter-spacing: 2px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 1.4px;
   color: var(--or);
   text-transform: uppercase;
   display: block;
-  margin-bottom: 1rem;
+  margin-bottom: 0.85rem;
 }
 
-/* Formula display */
+/* Formula — 2×2 factors + hero result */
+.genFormulaGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  flex: 1;
+}
+.genFormulaStep {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.7rem 0.75rem;
+  min-width: 0;
+}
+.genFormulaVal {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--h);
+  line-height: 1.1;
+}
+.genFormulaLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--gray);
+  line-height: 1.25;
+}
+.genFormulaEquals {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.7rem;
+}
+.genFormulaEqMark {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--gray2);
+}
+.genFormulaResult {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  background: var(--h);
+  border-radius: 8px;
+  padding: 0.75rem 0.95rem;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+.genFormulaResultVal {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--or);
+  line-height: 1;
+}
+.genFormulaResultLabel {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* Legacy formula flex (unused but keep ops safe) */
 .genFormula {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 0.4rem;
-}
-.genFormulaStep {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.15rem;
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 0.5rem 0.6rem;
-  min-width: 56px;
-}
-.genFormulaResult {
-  background: var(--h);
-  border-color: var(--h);
-}
-.genFormulaResult .genFormulaVal { color: var(--or); }
-.genFormulaResult .genFormulaLabel { color: rgba(255,255,255,0.5); }
-.genFormulaVal {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 1rem;
-  font-weight: 800;
-  color: var(--h);
-}
-.genFormulaLabel {
-  font-size: 0.86rem;
-  color: var(--gray);
-  text-align: center;
-  line-height: 1.2;
 }
 .genFormulaOp {
   font-size: 1.1rem;
@@ -1015,79 +1242,109 @@
   flex-shrink: 0;
 }
 
-/* Irradiation rows */
-.genIrradGrid { display: flex; flex-direction: column; gap: 0.6rem; }
-.genIrradRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.4rem 0;
-  border-bottom: 1px solid var(--line);
+/* Resource tiles */
+.genIrradTiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  flex: 1;
 }
-.genIrradRow:last-child { border-bottom: none; }
-.genIrradKey { font-size: 0.95rem; color: var(--gray); }
+.genIrradTile {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.7rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+.genIrradKey {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--gray);
+  line-height: 1.25;
+}
 .genIrradVal {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.98rem;
-  font-weight: 700;
+  font-size: 1.2rem;
+  font-weight: 800;
   color: var(--h);
+  line-height: 1.15;
+}
+.genIrradUnit {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--gray2);
 }
 
 /* Spec grid */
 .genSpecGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
-  margin-bottom: 1.25rem;
+  gap: 0.65rem;
+  margin-bottom: 0.75rem;
+  flex-shrink: 0;
 }
 .genSpecCard {
   background: var(--al);
   border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 0.75rem;
+  border-radius: 8px;
+  padding: 0.9rem 0.85rem;
   text-align: center;
+  box-shadow: var(--card-s);
 }
 .genSpecVal {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1rem;
+  font-size: 1.2rem;
   font-weight: 800;
   color: var(--h);
+  line-height: 1.15;
 }
-.genSpecLabel { font-size: 0.88rem; color: var(--gray); margin-top: 0.15rem; }
+.genSpecLabel {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--gray);
+  margin-top: 0.25rem;
+}
 
-/* Standards row */
+.genFoot {
+  flex-shrink: 0;
+  margin-top: auto;
+  padding-top: 0.35rem;
+}
 .genStdRow {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 0.5rem;
-  padding-top: 0.75rem;
+  padding-top: 0.65rem;
   border-top: 1px solid var(--line);
 }
 .genStdLabel {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.86rem;
-  font-weight: 700;
+  font-size: 0.78rem;
+  font-weight: 800;
   letter-spacing: 1px;
   color: var(--gray);
   text-transform: uppercase;
   flex-shrink: 0;
 }
 .stdBadge {
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   font-weight: 600;
   background: var(--al);
   border: 1px solid var(--line);
-  border-radius: 3px;
-  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  padding: 0.25rem 0.55rem;
   color: var(--c);
   white-space: nowrap;
 }
 .genDisclaimer {
-  font-size: 0.92rem;
+  font-size: 0.82rem;
   color: var(--gray);
-  line-height: 1.6;
-  margin: 0.9rem 0 0;
+  line-height: 1.5;
+  margin: 0.65rem 0 0;
   font-style: italic;
 }
 .genDisclaimer strong { color: var(--c); font-style: normal; }
@@ -1320,37 +1577,55 @@
 .warrantyGridCompact .warrantyLabel { font-size: 0.72rem; }
 .warrantyGridCompact .warrantySub { font-size: 0.68rem; }
 
-/* ══ P7: WHY PARTNER — icon-led trust cards ═════════════════════ */
-.trustPage .pageTitle { max-width: 600px; }
+/* ══ P7: WHY PARTNER — trust cards + 1 proof photo ═════════════ */
+.trustPage {
+  display: flex;
+  flex-direction: column;
+}
+.trustPage .pageHead {
+  margin-bottom: 0.85rem;
+  padding-top: 1.15rem;
+  flex-shrink: 0;
+}
+.trustPage .pageTitle {
+  max-width: 640px;
+  font-size: 1.65rem;
+}
 .trustGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
-  margin-bottom: 1.1rem;
+  grid-auto-rows: 1fr;
+  gap: 0.8rem;
+  margin-bottom: 0.9rem;
+  flex: 1.15 1 0;
+  min-height: 0;
+  align-content: stretch;
 }
 .trustCard {
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--card-r);
-  padding: 0.9rem 0.95rem 1rem;
+  padding: 1.05rem 1.05rem 1.1rem;
   text-align: left;
   box-shadow: var(--card-s);
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
 .trustCardTop {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
-  margin-bottom: 0.55rem;
+  gap: 0.7rem;
+  margin-bottom: 0.65rem;
 }
 .trustIconTile {
-  width: 36px;
-  height: 36px;
-  border-radius: 9px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
   background: linear-gradient(145deg, #FFF7ED 0%, #FFEDD5 100%);
   border: 1px solid rgba(249, 115, 22, 0.35);
   display: flex;
@@ -1363,63 +1638,131 @@
   print-color-adjust: exact !important;
 }
 .trustIconSvg {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   display: block;
 }
 .trustNum {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.45rem;
+  font-size: 1.7rem;
   font-weight: 800;
   color: var(--or);
   line-height: 1;
+  letter-spacing: -0.02em;
 }
 .trustLabel {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.88rem;
+  font-size: 1rem;
   font-weight: 800;
   color: var(--h);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.35rem;
   line-height: 1.25;
 }
 .trustNote {
-  font-size: 0.78rem;
+  font-size: 0.9rem;
+  font-weight: 600;
   color: var(--gray);
   line-height: 1.4;
+  margin-top: auto;
+}
+
+/* Photo + quote proof band — one image only */
+.trustProof {
+  display: grid;
+  grid-template-columns: 0.95fr 1.15fr;
+  gap: 0.85rem;
+  align-items: stretch;
+  flex: 0.95 1 0;
+  min-height: 0;
+  flex-shrink: 0;
+}
+.trustPhotoFrame {
+  margin: 0;
+  position: relative;
+  border-radius: var(--card-r);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  min-height: 200px;
+  height: 100%;
+  box-shadow: var(--card-s);
+  background: var(--h);
+}
+.trustPhoto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 40%;
+  display: block;
+}
+.trustPhotoCap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0.85rem 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(10, 15, 28, 0.75) 45%,
+    rgba(10, 15, 28, 0.92) 100%
+  );
+  color: var(--white);
+}
+.trustPhotoCap strong {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--or);
+  letter-spacing: 0.3px;
+}
+.trustPhotoCap span {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.35;
 }
 .trustQuoteBox {
   position: relative;
   background: var(--h);
   border-radius: var(--card-r);
-  padding: 1.35rem 1.5rem 1.35rem 1.65rem;
+  padding: 1.4rem 1.45rem 1.4rem 1.55rem;
   text-align: left;
   border-left: 4px solid var(--or);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+  height: 100%;
+  box-shadow: var(--card-s);
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
 .trustQuoteMark {
   position: absolute;
-  top: 0.35rem;
+  top: 0.45rem;
   right: 1rem;
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: 3.5rem;
+  font-size: 4rem;
   line-height: 1;
   color: rgba(249, 115, 22, 0.28);
   pointer-events: none;
 }
 .trustQuote {
-  font-size: 0.92rem;
-  color: rgba(255,255,255,0.88);
+  font-size: 1.02rem;
+  color: rgba(255,255,255,0.9);
   line-height: 1.55;
   font-style: italic;
-  margin: 0 0 0.65rem;
-  max-width: 640px;
+  margin: 0 0 0.85rem;
+  max-width: none;
   position: relative;
   z-index: 1;
 }
 .trustQuoteAttr {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.78rem;
+  font-size: 0.86rem;
   font-weight: 700;
   color: var(--or);
   letter-spacing: 0.5px;
@@ -1754,30 +2097,42 @@
 .roadmapPage {
   display: flex;
   flex-direction: column;
+  /* Keep .page A4 min-height so flex children can fill the sheet */
+}
+
+.roadmapPage .pageHead {
+  margin-bottom: 0.75rem;
+  padding-top: 1.1rem;
+  flex-shrink: 0;
 }
 
 .journeyBlock {
-  margin-bottom: 1rem;
+  flex: 1.2 1 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  margin-bottom: 0.75rem;
 }
 
 .journeyHead {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  margin-bottom: 0.75rem;
+  gap: 0.3rem;
+  margin-bottom: 0.7rem;
+  flex-shrink: 0;
 }
 
 .journeyLabel {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.72rem;
-  font-weight: 700;
+  font-size: 0.78rem;
+  font-weight: 800;
   letter-spacing: 1.4px;
   text-transform: uppercase;
   color: var(--or);
 }
 
 .roadmapNote {
-  font-size: 0.82rem;
+  font-size: 0.9rem;
   color: var(--gray);
   line-height: 1.45;
   margin: 0;
@@ -1790,29 +2145,36 @@
 .journeyGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.65rem;
+  grid-auto-rows: 1fr;
+  gap: 0.75rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  align-content: stretch;
 }
 
 .journeyCard {
   display: flex;
-  gap: 0.55rem;
+  gap: 0.7rem;
   align-items: flex-start;
   background: var(--al);
   border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 0.7rem 0.75rem;
+  border-radius: 10px;
+  padding: 1rem 0.95rem;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
+  box-shadow: var(--card-s);
 }
 
 .journeyNum {
   flex-shrink: 0;
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: var(--h);
   color: var(--white);
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   font-weight: 800;
   display: flex;
   align-items: center;
@@ -1821,45 +2183,52 @@
 
 .journeyBody {
   min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
 }
 
 .journeyTitle {
   display: block;
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.82rem;
+  font-size: 0.95rem;
   font-weight: 800;
   color: var(--h);
   line-height: 1.2;
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.15rem;
 }
 
 .journeyDuration {
   display: inline-block;
   font-style: normal;
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.68rem;
+  font-size: 0.74rem;
   font-weight: 700;
   color: var(--or);
-  background: rgba(249, 115, 22, 0.1);
-  border-radius: 3px;
-  padding: 0.08rem 0.35rem;
-  margin-bottom: 0.25rem;
+  background: rgba(249, 115, 22, 0.12);
+  border-radius: 4px;
+  padding: 0.15rem 0.45rem;
+  margin-bottom: 0.2rem;
+  width: fit-content;
 }
 
 .journeyDesc {
-  margin: 0;
-  font-size: 0.72rem;
+  margin: 0.15rem 0 0;
+  font-size: 0.82rem;
   color: var(--gray);
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
-/* Payment + bank side-by-side */
+/* Payment + bank — grows with journey so middle sheet isn’t empty */
 .payBankSplit {
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
-  gap: 0.85rem;
+  gap: 0.9rem;
   align-items: stretch;
-  margin-top: auto;
+  margin-top: 0;
+  flex: 1 1 0;
+  min-height: 0;
 }
 
 .invoice {
@@ -1870,6 +2239,9 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
+  box-shadow: var(--card-s);
 }
 
 .invoiceHead {
@@ -1877,7 +2249,7 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: 0.75rem;
-  padding: 0.9rem 1.1rem;
+  padding: 1.05rem 1.15rem;
   background: var(--h);
   color: var(--white);
 }
@@ -1913,7 +2285,7 @@
 
 .invoiceTotalAmt {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.25rem;
+  font-size: 1.45rem;
   font-weight: 800;
   color: var(--or);
   line-height: 1;
@@ -1926,8 +2298,12 @@
 }
 
 .invoiceBody {
-  padding: 0 1.1rem;
-  flex: 1;
+  padding: 0.2rem 1.15rem;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  min-height: 0;
   background: var(--white);
 }
 
@@ -1935,10 +2311,10 @@
   display: grid;
   grid-template-columns: 1fr auto auto;
   gap: 0.75rem;
-  padding: 0.55rem 0;
+  padding: 0.78rem 0;
   border-bottom: 1px solid var(--line);
   align-items: center;
-  font-size: 0.84rem;
+  font-size: 0.92rem;
   color: var(--c);
 }
 
@@ -1984,16 +2360,18 @@
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--card-r);
-  padding: 0.85rem 0.95rem;
+  padding: 1.05rem 1.1rem;
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
   box-shadow: var(--card-s);
 }
 
 .vendorBankHead {
-  margin-bottom: 0.65rem;
-  padding-bottom: 0.55rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.6rem;
   border-bottom: 1px solid var(--line);
 }
 
@@ -2018,17 +2396,20 @@
 .vendorBankFields {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.55rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  justify-content: space-evenly;
 }
 
 .vendorBankField {
   display: flex;
   flex-direction: column;
-  gap: 0.12rem;
+  gap: 0.18rem;
   background: var(--al);
   border: 1px solid var(--line);
   border-radius: 6px;
-  padding: 0.45rem 0.6rem;
+  padding: 0.65rem 0.75rem;
   min-width: 0;
 }
 
@@ -2413,17 +2794,17 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 0.65rem;
   min-height: 0;
   min-width: 0;
   overflow: hidden;
-  padding: 1.5rem 2.25rem 1.75rem;
+  padding: 1.35rem 2.25rem 1.6rem;
 }
 
-/* Closing RCC rooftop hero */
+/* Closing RCC rooftop hero — capped so CTA block can grow */
 .closingPhotoPlate {
   margin: 0;
-  flex: 1.1;
+  flex: 0 0 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -2432,9 +2813,10 @@
 
 .closingPhotoFrame {
   position: relative;
-  flex: 1;
-  min-height: 200px;
-  max-height: 290px;
+  flex: 0 0 auto;
+  height: 200px;
+  min-height: 180px;
+  max-height: 220px;
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -2510,58 +2892,60 @@
 }
 .closingTitle {
   font-family: 'Montserrat', sans-serif;
-  font-size: clamp(1.55rem, 3.5vw, 2.1rem);
+  font-size: clamp(2rem, 4.2vw, 2.65rem);
   font-weight: 800;
   color: var(--white);
   line-height: 1;
-  margin: 0 0 0.45rem;
+  margin: 0 0 0.65rem;
 }
 .closingStatement {
-  font-size: 0.9rem;
-  color: rgba(255,255,255,0.75);
-  line-height: 1.45;
+  font-size: 1.05rem;
+  color: rgba(255,255,255,0.78);
+  line-height: 1.5;
   max-width: 100%;
-  margin: 0 0 0.45rem;
+  margin: 0 0 0.55rem;
 }
 .closingStatement strong { color: var(--white); font-weight: 700; }
 .closingSub {
-  font-size: 0.8rem;
-  color: rgba(255,255,255,0.45);
-  line-height: 1.45;
+  font-size: 0.92rem;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.5;
   max-width: 100%;
-  margin: 0 0 0.7rem;
+  margin: 0 0 1rem;
 }
 
 .closingStats {
   display: flex;
   align-items: center;
-  gap: 0.9rem;
+  gap: 1.15rem;
+  margin-top: auto;
   margin-bottom: 0;
-  padding: 0.7rem 0.9rem;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.08);
+  padding: 1rem 1.15rem;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(249, 115, 22, 0.28);
   border-radius: var(--card-r);
-  width: fit-content;
+  width: 100%;
   max-width: 100%;
   flex-wrap: wrap;
+  box-sizing: border-box;
 }
 .closingStatBig {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.1rem;
+  font-size: 1.35rem;
   font-weight: 800;
   color: var(--or);
   line-height: 1;
 }
 .closingStatLabel {
-  font-size: 0.72rem;
-  color: rgba(255,255,255,0.4);
-  margin-top: 0.2rem;
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.45);
+  margin-top: 0.28rem;
   letter-spacing: 0.5px;
 }
 .closingStatDiv {
   width: 1px;
-  height: 32px;
-  background: rgba(255,255,255,0.12);
+  height: 40px;
+  background: rgba(255,255,255,0.14);
 }
 
 .closingBtn {
@@ -2601,18 +2985,19 @@
   display: flex;
   align-items: stretch;
   gap: 0;
-  margin-bottom: 1rem;
+  margin-bottom: 0.85rem;
   background: var(--al);
   border: 1px solid var(--line);
   border-radius: var(--card-r);
   overflow: hidden;
+  flex-shrink: 0;
 }
 .wjPhase {
   flex: 1;
-  padding: 0.85rem 0.85rem 0.95rem;
+  padding: 0.9rem 0.95rem 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.22rem;
   min-width: 0;
 }
 .wjPhaseActive {
@@ -2624,19 +3009,19 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.3rem;
 }
 .wjStepNum {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   font-weight: 800;
   letter-spacing: 1.2px;
   color: var(--or);
 }
 .wjIconTile {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
   background: linear-gradient(145deg, #FFF7ED 0%, #FFEDD5 100%);
   border: 1px solid rgba(249, 115, 22, 0.35);
   display: flex;
@@ -2653,34 +3038,34 @@
   color: var(--white);
 }
 .wjIconSvg {
-  width: 17px;
-  height: 17px;
+  width: 18px;
+  height: 18px;
   display: block;
 }
 .wjLabel {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.68rem;
+  font-size: 0.74rem;
   font-weight: 700;
-  letter-spacing: 1.2px;
+  letter-spacing: 1.1px;
   color: var(--gray);
   text-transform: uppercase;
 }
 .wjTitle {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 800;
   color: var(--h);
   line-height: 1.2;
 }
 .wjSpan {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.92rem;
+  font-size: 1.02rem;
   font-weight: 800;
   color: var(--or);
   margin: 0.1rem 0;
 }
 .wjNote {
-  font-size: 0.74rem;
+  font-size: 0.84rem;
   color: var(--gray);
   line-height: 1.35;
   margin-top: 0.1rem;
@@ -2710,57 +3095,121 @@
 }
 
 .wealthTakeaway {
-  margin: 0.75rem 0 0;
-  padding: 0.55rem 0.75rem;
+  margin: 0.8rem 0 0;
+  padding: 0.7rem 0.9rem;
   background: linear-gradient(90deg, #FFF7ED, #FFFFFF);
   border: 1px solid rgba(249, 115, 22, 0.28);
-  border-left: 3px solid var(--or);
+  border-left: 4px solid var(--or);
   border-radius: 8px;
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.82rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--h);
   line-height: 1.35;
+  flex-shrink: 0;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
 
-/* ══ GENERATION BAR CHART — Estimated vs Potential (P5) ═════════ */
-.genBarChart {
-  background: var(--al);
+/* ══ GENERATION COMPARE — orange/slate only (no tricolor) ═══════ */
+.genCompare {
+  background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--card-r);
-  padding: 1.25rem;
-  margin-bottom: 1.25rem;
+  padding: 1.1rem 1.15rem 1.15rem;
+  margin-bottom: 0.85rem;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  box-shadow: var(--card-s);
 }
-.genBarRow {
-  display: grid;
-  grid-template-columns: 165px 1fr 100px;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--line);
+.genCompareList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  flex: 1;
+  justify-content: space-evenly;
 }
-.genBarRow:last-child { border-bottom: none; }
-.genBarLabel { font-size: 0.88rem; color: var(--c); }
+.genCompareRow {
+  border-radius: 10px;
+  padding: 0.75rem 0.85rem 0.8rem;
+  border: 1px solid var(--line);
+  background: var(--al);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+.genCompareHero {
+  background: linear-gradient(135deg, #FFF7ED 0%, #FFFFFF 70%);
+  border-color: rgba(249, 115, 22, 0.4);
+  box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.08);
+}
+.genCompareMuted {
+  background: #F8FAFC;
+  border-color: #E2E8F0;
+}
+.genCompareSoft {
+  background: #FFFBF5;
+  border-color: #F1E7D8;
+}
+.genCompareMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+.genBarLabel {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--c);
+  line-height: 1.3;
+}
+.genBarVal {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--h);
+  text-align: right;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.genCompareHero .genBarVal { color: var(--or); }
 .genBarTrack {
-  height: 12px;
-  background: var(--line);
-  border-radius: 6px;
+  height: 14px;
+  background: rgba(15, 23, 42, 0.08);
+  border-radius: 999px;
   overflow: hidden;
 }
 .genBarFill {
   height: 100%;
-  border-radius: 6px;
+  border-radius: 999px;
   transition: width 0.4s ease;
+  background: #94A3B8;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
-.genBarVal {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 0.88rem;
-  font-weight: 700;
-  color: var(--h);
-  text-align: right;
-  white-space: nowrap;
+.genCompareHero .genBarFill {
+  background: linear-gradient(90deg, #FB923C, var(--or));
+}
+.genCompareMuted .genBarFill {
+  background: #475569;
+}
+.genCompareSoft .genBarFill {
+  background: linear-gradient(90deg, #FDBA74, #F59E0B);
+}
+
+/* legacy class aliases (unused markup) */
+.genBarChart { display: contents; }
+.genBarRow { display: contents; }
+
+.genExpert {
+  flex-shrink: 0;
+  margin-bottom: 0.75rem;
+}
+.genPage .genExpert p {
+  font-size: 0.98rem;
+  line-height: 1.55;
 }
 
 /* ══ EXPERT INSIGHT callout (shared) ════════════════════════════ */
@@ -2815,65 +3264,66 @@
   margin: 0;
 }
 
-/* ══ CLOSING SPLIT SCREEN ═══════════════════════════════════════ */
+/* ══ CLOSING SPLIT SCREEN — fills leftover A4 height ════════════ */
 .closingSplit {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
-  gap: 0.9rem;
+  gap: 1.1rem;
   align-items: stretch;
   min-height: 0;
   min-width: 0;
-  flex: 0 0 auto;
+  flex: 1 1 auto;
 }
 .closingLeft {
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: center;
   min-width: 0;
   height: auto;
   align-self: stretch;
+  gap: 0.15rem;
 }
 .closingRight {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  justify-content: flex-start;
+  justify-content: stretch;
   min-width: 0;
   height: auto;
   align-self: stretch;
 }
 .closingCTABox {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(249,115,22,0.3);
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(249,115,22,0.4);
   border-radius: var(--card-r);
-  padding: 0.85rem 0.95rem;
+  padding: 1.25rem 1.2rem;
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 0.7rem;
   width: 100%;
   max-width: none;
   min-width: 0;
-  height: auto;
+  height: 100%;
   max-height: none;
   flex: 1 1 auto;
   align-self: stretch;
-  justify-content: flex-start;
+  justify-content: center;
   overflow: hidden;
   box-sizing: border-box;
 }
 .ctaTitle {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.92rem;
+  font-size: 1.15rem;
   font-weight: 800;
   color: var(--white);
-  line-height: 1.3;
+  line-height: 1.25;
   overflow-wrap: anywhere;
   word-break: break-word;
 }
 .ctaDesc {
-  font-size: 0.78rem;
-  color: rgba(255,255,255,0.5);
-  line-height: 1.4;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.45;
   margin: 0;
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -3079,6 +3529,19 @@
     grid-template-columns: 1fr !important;
   }
 
+  .genProofGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .trustProof {
+    grid-template-columns: 1fr;
+  }
+
+  .trustPhotoFrame {
+    min-height: 180px;
+    height: 200px;
+  }
+
   .billComparison {
     flex-direction: column;
     gap: 0.65rem;
@@ -3087,6 +3550,19 @@
   .billArrow {
     transform: rotate(90deg);
     align-self: center;
+  }
+
+  .wealthPath {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .wealthPathArrow {
+    display: none;
+  }
+
+  .wealthPathAmt {
+    font-size: 1.35rem;
   }
 
   .wealthJourney {
@@ -3106,8 +3582,16 @@
     display: none;
   }
 
+  .wealthVs {
+    grid-template-columns: 1fr;
+  }
+
+  .wealthMilestone {
+    grid-template-columns: 56px 1fr 64px;
+  }
+
   .wealthTakeaway {
-    font-size: 0.78rem;
+    font-size: 0.88rem;
   }
 
   .wealthChartHead {
@@ -3115,9 +3599,12 @@
     align-items: flex-start;
   }
 
-  .genBarRow {
-    grid-template-columns: 1fr;
-    gap: 0.35rem;
+  .genCompareMeta {
+    flex-wrap: wrap;
+  }
+
+  .genIrradTiles {
+    grid-template-columns: 1fr 1fr;
   }
 
   .invoiceRow {
@@ -3367,11 +3854,16 @@
     padding: 0 !important;
     min-height: 0;
     overflow: hidden !important;
-    gap: 0.45rem !important;
+    gap: 0.55rem !important;
+  }
+  .closingPhotoPlate {
+    flex: 0 0 auto !important;
   }
   .closingPhotoFrame {
-    min-height: 72mm !important;
-    max-height: 95mm !important;
+    height: 68mm !important;
+    min-height: 60mm !important;
+    max-height: 72mm !important;
+    flex: 0 0 auto !important;
   }
   .closingPhotoImg {
     -webkit-print-color-adjust: exact !important;
@@ -3379,33 +3871,60 @@
   }
   .closingSplit {
     grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) !important;
-    gap: 0.75rem !important;
+    gap: 1rem !important;
     align-items: stretch !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
   }
   .closingLeft,
   .closingRight {
     height: auto !important;
     align-self: stretch !important;
   }
+  .closingLeft {
+    justify-content: center !important;
+  }
   .closingRight {
     align-items: stretch !important;
-    justify-content: flex-start !important;
+    justify-content: stretch !important;
   }
   .closingCTABox {
     overflow: hidden !important;
-    height: auto !important;
+    height: 100% !important;
     max-height: none !important;
     flex: 1 1 auto !important;
     align-self: stretch !important;
     width: 100% !important;
     max-width: none !important;
+    justify-content: center !important;
+    padding: 1.15rem 1.1rem !important;
   }
   .closingTitle {
-    font-size: 20pt !important;
+    font-size: 26pt !important;
+  }
+  .closingStatement {
+    font-size: 11pt !important;
+  }
+  .closingSub {
+    font-size: 10pt !important;
+  }
+  .closingStatBig {
+    font-size: 14pt !important;
+  }
+  .ctaTitle {
+    font-size: 13pt !important;
+  }
+  .ctaDesc {
+    font-size: 10pt !important;
   }
   .closingBtn { display: none !important; }
   .termsStack { flex-grow: 1; }
   .wealthLayout { flex-grow: 1; }
+  .trustPage .trustGrid { flex: 1.1 1 0; }
+  .trustPage .trustProof { flex: 0.95 1 0; }
+  .roadmapPage .journeyBlock { flex: 1.15 1 0; }
+  .roadmapPage .payBankSplit { flex: 1 1 0; margin-top: 0; }
+  .roadmapPage .journeyGrid { flex: 1 1 auto; }
   .pageHead { padding-top: 0.5rem; margin-bottom: 0.75rem; }
 
   .pageNum {

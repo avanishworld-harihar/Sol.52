@@ -413,57 +413,60 @@ export function getAtelierCopy(lang: AtelierLang) {
     wealth: {
       tag: hi ? "04 — धन प्रक्षेपण" : "04 — WEALTH PROJECTION",
       title: hi
-        ? "25 वर्षों में आपका पैसा कैसे बढ़ता है"
-        : "How your money grows over 25 years",
+        ? "आपका पैसा कैसे बढ़ता है"
+        : "How your money grows",
       lead: hi
-        ? "देखें — सोलर पहले अपना खर्च निकालता है, फिर बचत जारी रहती है।"
-        : "See how solar pays for itself — then keeps saving.",
+        ? "तीन आसान कदम — निवेश → पैसा वापस → फिर बचत आपके पास।"
+        : "Three simple steps — invest → money back → then savings stay with you.",
+      pathInvest: hi ? "आप लगाते हैं" : "You invest",
+      pathPayback: hi ? "पैसा वापस" : "Money back",
+      pathKeep: hi ? "आप रखते हैं" : "You keep",
+      pathToday: hi ? "आज" : "Today",
+      pathBy25: hi ? "वर्ष 25 तक" : "By year 25",
+      pathPayoff: hi ? "सिस्टम चुकता" : "System paid off",
       step1Num: "01",
       step2Num: "02",
       step3Num: "03",
       phase1: hi ? "चरण 1" : "Step 1",
-      investment: hi ? "आप सोलर के लिए भुगतान करते हैं" : "You pay for solar",
+      investment: hi ? "सोलर के लिए भुगतान" : "You pay for solar",
       year0To: (n: number) =>
         hi ? `वर्ष 0 → ${n}` : `Year 0 → ${n}`,
       phase1Note: hi
-        ? "आप सिस्टम चुकाते हैं; सोलर आपका बिजली बिल कम करता रहता है।"
-        : "You pay for the system. Solar keeps cutting your electricity bill.",
+        ? "बिल कम होता रहता है।"
+        : "Bills keep getting smaller.",
       milestone: hi ? "चरण 2" : "Step 2",
-      payback: hi ? "सोलर चुकता हो जाता है" : "Solar is paid off",
+      payback: hi ? "सोलर चुकता" : "Solar is paid off",
       yearAt: (v: string) => (hi ? `वर्ष ${v}` : `Year ${v}`),
       paybackNote: hi
-        ? "पूरा पैसा वापस आ चुका। अब हर यूनिट आपकी बचत है।"
-        : "Your money is back. From here, every unit is savings for you.",
+        ? "अब हर यूनिट आपकी बचत।"
+        : "Every unit after this is yours.",
       phase2: hi ? "चरण 3" : "Step 3",
-      passiveIncome: hi
-        ? "बचत आपका पैसा बन जाती है"
-        : "Savings become your money",
+      passiveIncome: hi ? "बचत आपका पैसा" : "Savings become yours",
       yearRange: (from: number) =>
         hi ? `वर्ष ${from} → 25` : `Year ${from} → 25`,
       passiveWealth: (amt: string) =>
-        hi
-          ? `लगभग ${amt} और बचत।`
-          : `About ${amt} more in savings.`,
+        hi ? `लगभग ${amt} और।` : `About ${amt} more.`,
       pureWealth: hi ? "बचत बढ़ती रहती है।" : "Savings keep growing.",
-      zeroEnergy: hi
-        ? "बिल कम। पैसा घर में।"
-        : "Lower bills. Money stays with you.",
+      zeroEnergy: hi ? "पैसा घर में।" : "Money stays home.",
       chartTitle: hi
-        ? "इस वर्ष तक बचाया गया पैसा"
-        : "Money saved by this year",
+        ? "साल दर साल आपकी बचत"
+        : "Your savings year by year",
       chartHint: hi
-        ? "बड़ी पट्टी = ज़्यादा पैसा बचा"
-        : "Bigger bar = more money kept",
+        ? "बड़ी पट्टी = ज़्यादा बचत"
+        : "Taller bar = more saved",
       chartNote: hi
-        ? "आज के बिल स्तर पर, 25 वर्षों की कुल बिजली बचत।"
-        : "Total bill savings over 25 years at today’s bill level.",
+        ? "आज के बिल स्तर पर अनुमान।"
+        : "Estimate at today’s bill level.",
       withoutSolar: hi
-        ? "अगर सिर्फ ग्रिड पर रहें"
-        : "If you stay on the grid only",
+        ? "बिना सोलर — ग्रिड को"
+        : "Without solar — to the grid",
+      withSolar: hi
+        ? "सोलर के साथ — आपके पास"
+        : "With solar — you keep",
       paidToGrid: hi
-        ? "बिलों में चला जाएगा"
+        ? "बिलों में चला जाता"
         : "paid in bills",
-      yrShort: (y: number) => (hi ? `वर्ष ${y}` : `YR ${y}`),
+      yrShort: (y: number) => (hi ? `वर्ष ${y}` : `Year ${y}`),
       scoreTag: hi
         ? "सौर निवेश स्कोर"
         : "SOLAR INVESTMENT SCORE",
@@ -473,19 +476,19 @@ export function getAtelierCopy(lang: AtelierLang) {
       basis: hi ? "AA+ क्यों:" : "Why AA+:",
       basisText: (pb: string) =>
         hi
-          ? `आपका पैसा लगभग ${pb} वर्षों में वापस आता है। कई घरों में 5–7 वर्ष लगते हैं।`
-          : `Your money comes back in about ${pb} years. Many homes take 5–7 years.`,
+          ? `आपका पैसा लगभग ${pb} वर्षों में वापस। कई घरों में 5–7 वर्ष लगते हैं।`
+          : `Your money returns in about ${pb} years. Many homes take 5–7 years.`,
       totalWealthTag: hi
         ? "25वें वर्ष तक कुल बचत"
         : "TOTAL SAVINGS BY YEAR 25",
       returnsNote: (inv: string, mult: string) =>
         hi
-          ? `आपका ₹${inv} लगभग ${mult} बन सकता है — 25 वर्षों में।`
-          : `Your ₹${inv} can become about ${mult} over 25 years.`,
+          ? `आपका ₹${inv} → लगभग ${mult} (25 वर्ष)।`
+          : `Your ₹${inv} → about ${mult} in 25 years.`,
       takeaway: (pb: string, freeYrs: string) =>
         hi
-          ? `लगभग ${pb} वर्षों में पेबैक → फिर लगभग ${freeYrs} वर्षों की बिल बचत।`
-          : `Payback in ~${pb} years → then ~${freeYrs} years of bill savings.`,
+          ? `~${pb} वर्ष में पेबैक → फिर ~${freeYrs} वर्ष बिल बचत।`
+          : `Payback in ~${pb} years — then ~${freeYrs} years of bill savings.`,
     },
 
     gen: {
@@ -508,6 +511,7 @@ export function getAtelierCopy(lang: AtelierLang) {
       dataSource: hi ? "डेटा स्रोत" : "Data Source",
       tiltLabel: (tilt: number) =>
         hi ? `${tilt}° झुकाव` : `${tilt}° tilt`,
+      tiltUnit: hi ? "झुकाव" : "tilt",
       barTag: (city: string) =>
         hi
           ? `अनुमानित उत्पादन बनाम शहर क्षमता — ${city}`
@@ -651,6 +655,12 @@ export function getAtelierCopy(lang: AtelierLang) {
             : "We stand behind every panel we install",
         },
       ],
+      photoTitle: hi
+        ? "असली छतें · स्थानीय टीम"
+        : "Real rooftops · local team",
+      photoSub: hi
+        ? "हर इंस्टॉल के पीछे पहुँच योग्य इंजीनियर — कॉल सेंटर नहीं।"
+        : "Reachable engineers behind every install — not a call centre.",
       quote: hi
         ? "“हम केवल सौर सिस्टम नहीं बेचते — हम 25-वर्ष के संबंध इंजीनियर करते हैं। हर स्थापना एक स्थानीय टीम द्वारा समर्थित है जो पहुँच योग्य, जवाबदेह है और स्थापना दिन के बहुत बाद भी आपके सिस्टम के प्रदर्शन में निवेशित है।”"
         : "“We don't just sell solar systems — we engineer 25-year relationships. Every installation is backed by a local team that's reachable, accountable, and invested in your system's performance long after installation day.”",
