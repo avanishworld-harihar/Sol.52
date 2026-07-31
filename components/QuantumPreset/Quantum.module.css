@@ -545,8 +545,14 @@
 .span8 {
   grid-column: span 8;
 }
+.span7 {
+  grid-column: span 7;
+}
 .span6 {
   grid-column: span 6;
+}
+.span5 {
+  grid-column: span 5;
 }
 .span4 {
   grid-column: span 4;
@@ -566,11 +572,17 @@
 }
 
 .valueLarge {
-  font-size: 3rem;
+  font-size: 2.6rem;
   font-weight: 300;
   color: #fff;
   line-height: 1;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.valueUnit {
+  font-size: 1.1rem;
+  color: #94a3b8;
+  font-weight: 400;
 }
 
 .valueMedium {
@@ -1533,6 +1545,232 @@
   }
 
   .protocolFill {
+    box-shadow: 0 0 8px #06b6d4 !important;
+  }
+}
+
+/* ─── Advanced telemetry engineering page ──────────────────────────────────── */
+
+.telemetryPage {
+  gap: 0;
+}
+
+.telemetryHeadline {
+  font-size: 2.6rem !important;
+}
+
+.telemetryGrid {
+  flex-grow: 1;
+  align-content: start;
+}
+
+.compassCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 260px;
+}
+
+.compassWrap {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin-top: 8px;
+}
+
+.compassWrap svg {
+  width: 100%;
+  height: 100%;
+}
+
+.specMatrix {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.specMatrix .glass3D {
+  padding: 18px 20px;
+}
+
+.specMatrix .valueLarge {
+  font-size: 2.2rem;
+  margin: 4px 0 6px;
+}
+
+.pathwayCard {
+  padding: 24px 28px !important;
+}
+
+.pathwayRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 18px;
+  padding: 0 12px;
+  gap: 8px;
+}
+
+.pathwayNode {
+  text-align: center;
+  width: 120px;
+  flex-shrink: 0;
+}
+
+.pathwayBox {
+  width: 60px;
+  height: 60px;
+  border: 1px solid #06b6d4;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(6, 182, 212, 0.1);
+  box-shadow: inset 0 0 10px rgba(6, 182, 212, 0.3);
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 auto;
+  color: #fff;
+}
+
+.pathwayName {
+  font-size: 0.8rem;
+  color: #06b6d4;
+  margin-top: 12px;
+  display: block;
+  letter-spacing: 1px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.pathwaySub {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.pathwayLink {
+  flex-grow: 1;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(6, 182, 212, 0.8),
+    transparent
+  );
+  margin: 0 10px;
+  position: relative;
+  top: -20px;
+  min-width: 24px;
+}
+
+.pathwayDot {
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #06b6d4;
+  transform: translateX(-50%);
+  box-shadow: 0 0 10px #06b6d4;
+}
+
+.prLead {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin: 0 0 18px;
+  line-height: 1.5;
+}
+
+.prList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.prRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.prLabel {
+  width: 150px;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.prTrack {
+  flex-grow: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.prFillIdeal {
+  height: 100%;
+  background: #fff;
+}
+
+.prFillLoss {
+  height: 100%;
+  background: #94a3b8;
+}
+
+.prFillFinal {
+  height: 100%;
+  background: #06b6d4;
+  box-shadow: 0 0 10px #06b6d4;
+}
+
+.prValIdeal {
+  width: 50px;
+  text-align: right;
+  font-size: 0.8rem;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.prValLoss {
+  width: 50px;
+  text-align: right;
+  font-size: 0.8rem;
+  color: #ef4444;
+  flex-shrink: 0;
+}
+
+.prResult {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+  border-top: 1px solid rgba(6, 182, 212, 0.2);
+  padding-top: 12px;
+}
+
+.prResultLabel {
+  width: 150px;
+  font-size: 0.85rem;
+  color: #06b6d4;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.prResultValue {
+  margin-left: auto;
+  font-size: 1.2rem;
+  color: #06b6d4;
+  font-weight: 700;
+}
+
+@media print {
+  .pathwayDot,
+  .prFillFinal {
     box-shadow: 0 0 8px #06b6d4 !important;
   }
 }
