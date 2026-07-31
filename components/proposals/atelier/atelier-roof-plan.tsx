@@ -1,16 +1,25 @@
 "use client";
 
 /**
- * Atelier — top-down terrace PV bank (schematic).
- * Warm editorial look — not Quantum isometric / not orange blocks.
+ * Atelier — soft-tilt terrace PV bank (schematic “yield story”).
+ * Light cream editorial — not Quantum dark isometric / not orange blocks.
  */
 
 type AtelierRoofPlanProps = {
   modules: number;
+  southLabel?: string;
   className?: string;
 };
 
 const MAX_DRAW = 18;
+
+/** Soft iso: u → right-down, v → left-down (south toward bottom). */
+const UX = 38;
+const UY = 9;
+const VX = -8;
+const VY = 22;
+
+type Pt = { x: number; y: number };
 
 function moduleGrid(count: number): { cols: number; rows: number } {
   const n = Math.min(Math.max(1, count), MAX_DRAW);
@@ -20,173 +29,232 @@ function moduleGrid(count: number): { cols: number; rows: number } {
 }
 
 function AtelierPvModule({
-  x,
-  y,
-  w,
-  h,
+  ox,
+  oy,
+  southAccent,
 }: {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
+  ox: number;
+  oy: number;
+  southAccent: boolean;
 }) {
-  const inset = 1.8;
-  const gx = x + inset;
-  const gy = y + inset;
-  const gw = w - inset * 2;
-  const gh = h - inset * 2;
-  const cols = 6;
-  const rows = 4;
-  const gap = 0.55;
-  const cw = (gw - gap * (cols - 1)) / cols;
-  const ch = (gh - gap * (rows - 1)) / rows;
+  const at = (u: number, v: number, z = 0): Pt => ({
+    x: ox + UX * u + VX * v,
+    y: oy + UY * u + VY * v - z,
+  });
+  const poly = (...pts: Pt[]) => pts.map((p) => `${p.x},${p.y}`).join(" ");
 
-  const cells: { cx: number; cy: number; fill: string }[] = [];
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const shade = 0.88 + ((c + r) % 3) * 0.04;
+  const p0 = at(0, 0);
+  const p1 = at(1, 0);
+  const p2 = at(1, 1);
+  const p3 = at(0, 1);
+  const thick = 2.2;
+  const inset = 0.07;
+  const g0 = at(inset, inset);
+  const g1 = at(1 - inset, inset);
+  const g2 = at(1 - inset, 1 - inset);
+  const g3 = at(inset, 1 - inset);
+
+  const cellCols = 6;
+  const cellRows = 3;
+  const cells: { pts: string; fill: string }[] = [];
+  for (let r = 0; r < cellRows; r++) {
+    for (let c = 0; c < cellCols; c++) {
+      const u0 = inset + ((1 - 2 * inset) * c) / cellCols + 0.006;
+      const u1 = inset + ((1 - 2 * inset) * (c + 1)) / cellCols - 0.006;
+      const v0 = inset + ((1 - 2 * inset) * r) / cellRows + 0.006;
+      const v1 = inset + ((1 - 2 * inset) * (r + 1)) / cellRows - 0.006;
+      const tone = 0.92 + ((c + r) % 3) * 0.03;
       cells.push({
-        cx: gx + c * (cw + gap),
-        cy: gy + r * (ch + gap),
-        fill: `rgb(${18 + r * 2},${55 + c * 3},${95 * shade})`,
+        pts: poly(at(u0, v0), at(u1, v0), at(u1, v1), at(u0, v1)),
+        fill: `rgb(${14 + r * 3},${48 + c * 4},${88 * tone})`,
       });
     }
   }
 
-  const busXs = [0.2, 0.4, 0.6, 0.8].map((t) => gx + gw * t);
+  const bus: string[] = [];
+  for (const t of [0.22, 0.4, 0.58, 0.76]) {
+    const a = at(t, inset + 0.04);
+    const b = at(t, 1 - inset - 0.04);
+    bus.push(`M ${a.x},${a.y} L ${b.x},${b.y}`);
+  }
+
+  const glintA = at(inset + 0.08, inset + 0.1);
+  const glintB = at(inset + 0.42, inset + 0.22);
 
   return (
     <g>
-      <rect
-        x={x}
-        y={y}
-        width={w}
-        height={h}
-        rx={1.2}
-        fill="#9AA4B2"
-        stroke="#5B6574"
-        strokeWidth={0.6}
+      <polygon
+        points={poly(p3, p2, at(1, 1, thick), at(0, 1, thick))}
+        fill="#64748B"
       />
-      <rect x={gx} y={gy} width={gw} height={gh} rx={0.6} fill="#0B2740" />
+      <polygon
+        points={poly(p1, p2, at(1, 1, thick), at(1, 0, thick))}
+        fill="#94A3B8"
+      />
+      <polygon
+        points={poly(p0, p1, p2, p3)}
+        fill="#CBD5E1"
+        stroke="#64748B"
+        strokeWidth="0.55"
+      />
+      <polygon points={poly(g0, g1, g2, g3)} fill="#0A2540" />
       {cells.map((cell, i) => (
-        <rect
+        <polygon
           key={i}
-          x={cell.cx}
-          y={cell.cy}
-          width={cw}
-          height={ch}
-          rx={0.25}
+          points={cell.pts}
           fill={cell.fill}
-          stroke="rgba(4,16,28,0.45)"
-          strokeWidth={0.2}
+          stroke="rgba(4,16,28,0.4)"
+          strokeWidth="0.25"
         />
       ))}
-      {busXs.map((bx, i) => (
-        <line
-          key={i}
-          x1={bx}
-          y1={gy + 1}
-          x2={bx}
-          y2={gy + gh - 1}
-          stroke="rgba(200,215,230,0.35)"
-          strokeWidth={0.45}
+      <path
+        d={bus.join(" ")}
+        fill="none"
+        stroke="rgba(186,210,230,0.4)"
+        strokeWidth="0.5"
+        strokeLinecap="round"
+      />
+      <line
+        x1={glintA.x}
+        y1={glintA.y}
+        x2={glintB.x}
+        y2={glintB.y}
+        stroke="rgba(255,255,255,0.45)"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+      />
+      {southAccent ? (
+        <path
+          d={`M ${g3.x},${g3.y} L ${g2.x},${g2.y}`}
+          fill="none"
+          stroke="#F97316"
+          strokeWidth="1.4"
           strokeLinecap="round"
         />
-      ))}
-      {/* Thin south-edge accent (atelier orange) — orientation cue only */}
-      <rect x={x + 2} y={y + h - 1.4} width={w - 4} height={0.9} fill="#F97316" opacity={0.85} />
+      ) : null}
     </g>
   );
 }
 
-export function AtelierRoofPlan({ modules, className }: AtelierRoofPlanProps) {
+export function AtelierRoofPlan({
+  modules,
+  southLabel = "SOUTH",
+  className,
+}: AtelierRoofPlanProps) {
   const draw = Math.min(Math.max(1, modules), MAX_DRAW);
   const { cols, rows } = moduleGrid(draw);
 
-  const vbW = 520;
-  const vbH = 220;
-  const padX = 36;
-  const padY = 28;
-  const gapX = 7;
-  const gapY = 9;
-  const bankW = vbW - padX * 2;
-  const bankH = vbH - padY * 2 - 18;
-  const modW = (bankW - gapX * (cols - 1)) / cols;
-  const modH = (bankH - gapY * (rows - 1)) / rows;
-  const originX = padX;
-  const originY = padY;
+  const gapU = 0.14;
+  const gapV = 0.22;
+  const stepU = 1 + gapU;
+  const stepV = 1 + gapV;
 
-  const slabPad = 14;
+  const bankWU = cols * stepU - gapU;
+  const bankWV = rows * stepV - gapV;
+
+  const originX = 48;
+  const originY = 36;
+  const toScreen = (u: number, v: number) => ({
+    x: originX + UX * u + VX * v,
+    y: originY + UY * u + VY * v,
+  });
+
+  const slabPadU = 0.35;
+  const slabPadV = 0.4;
+  const slab = [
+    toScreen(-slabPadU, -slabPadV),
+    toScreen(bankWU + slabPadU, -slabPadV),
+    toScreen(bankWU + slabPadU, bankWV + slabPadV),
+    toScreen(-slabPadU, bankWV + slabPadV),
+  ];
+  const slabPoly = slab.map((p) => `${p.x},${p.y}`).join(" ");
+
+  const southEdgeMid = toScreen(bankWU / 2, bankWV + 0.15);
+  const positions = Array.from({ length: draw }).map((_, i) => {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    return {
+      ox: originX + UX * (col * stepU) + VX * (row * stepV),
+      oy: originY + UY * (col * stepU) + VY * (row * stepV),
+      row,
+    };
+  });
+  positions.sort((a, b) => a.oy - b.oy || a.ox - b.ox);
 
   return (
     <svg
       className={className}
-      viewBox={`0 0 ${vbW} ${vbH}`}
+      viewBox="0 0 420 260"
       width="100%"
       height="100%"
       aria-hidden
     >
       <defs>
-        <linearGradient id="alTerrace" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id="alTerraceV2" x1="0" y1="0" x2="0.2" y2="1">
           <stop offset="0%" stopColor="#F8FAFC" />
-          <stop offset="100%" stopColor="#E8EEF5" />
+          <stop offset="55%" stopColor="#EEF2F7" />
+          <stop offset="100%" stopColor="#E2E8F0" />
         </linearGradient>
-        <pattern
-          id="alJoints"
-          width="28"
-          height="28"
-          patternUnits="userSpaceOnUse"
-        >
-          <path
-            d="M28 0 H0 M0 0 V28"
-            stroke="rgba(100,116,139,0.12)"
-            strokeWidth="0.6"
-            fill="none"
-          />
-        </pattern>
       </defs>
 
-      {/* Terrace slab */}
-      <rect
-        x={originX - slabPad}
-        y={originY - slabPad}
-        width={bankW + slabPad * 2}
-        height={bankH + slabPad * 2}
-        rx={10}
-        fill="url(#alTerrace)"
-        stroke="#CBD5E1"
-        strokeWidth={1.2}
-      />
-      <rect
-        x={originX - slabPad}
-        y={originY - slabPad}
-        width={bankW + slabPad * 2}
-        height={bankH + slabPad * 2}
-        rx={10}
-        fill="url(#alJoints)"
-      />
-      {/* Soft edge depth */}
-      <rect
-        x={originX - slabPad}
-        y={originY - slabPad + bankH + slabPad * 2 - 8}
-        width={bankW + slabPad * 2}
-        height={8}
-        fill="rgba(15,23,42,0.06)"
+      {/* Soft shadow under slab */}
+      <polygon
+        points={slab
+          .map((p) => `${p.x + 4},${p.y + 6}`)
+          .join(" ")}
+        fill="rgba(15,23,42,0.08)"
       />
 
-      {Array.from({ length: draw }).map((_, i) => {
-        const col = i % cols;
-        const row = Math.floor(i / cols);
+      {/* Terrace slab */}
+      <polygon
+        points={slabPoly}
+        fill="url(#alTerraceV2)"
+        stroke="#CBD5E1"
+        strokeWidth="1.3"
+      />
+      {/* Joint lines */}
+      {Array.from({ length: 5 }).map((_, i) => {
+        const t = (i + 1) / 6;
+        const a = toScreen(-slabPadU + t * (bankWU + 2 * slabPadU), -slabPadV);
+        const b = toScreen(
+          -slabPadU + t * (bankWU + 2 * slabPadU),
+          bankWV + slabPadV
+        );
         return (
-          <AtelierPvModule
-            key={i}
-            x={originX + col * (modW + gapX)}
-            y={originY + row * (modH + gapY)}
-            w={modW}
-            h={modH}
+          <line
+            key={`j-${i}`}
+            x1={a.x}
+            y1={a.y}
+            x2={b.x}
+            y2={b.y}
+            stroke="rgba(100,116,139,0.14)"
+            strokeWidth="0.7"
           />
         );
       })}
+
+      {positions.map((p, i) => (
+        <AtelierPvModule
+          key={i}
+          ox={p.ox}
+          oy={p.oy}
+          southAccent={p.row === rows - 1}
+        />
+      ))}
+
+      {/* SOUTH edge label */}
+      <text
+        x={southEdgeMid.x}
+        y={southEdgeMid.y + 18}
+        textAnchor="middle"
+        fill="#F97316"
+        fontSize="9"
+        fontWeight="800"
+        letterSpacing="1.6"
+        fontFamily="Montserrat, system-ui, sans-serif"
+      >
+        {southLabel}
+      </text>
     </svg>
   );
 }

@@ -1056,75 +1056,186 @@ export function AtelierRenderer({
         <span className={styles.pageNum}>07 / 12</span>
       </section>
 
-      {/* ══ P8: ROOF INTELLIGENCE — Atelier Sun Plan ══════════════ */}
+      {/* ══ P8: ROOF INTELLIGENCE — Yield Story ═══════════════════ */}
       <section className={`${styles.page} ${styles.roofPage}`}>
         <header className={styles.pageHead}>
           <span className={styles.pageTag}>{c.roof.tag}</span>
           <h2 className={styles.pageTitle}>{c.roof.title}</h2>
         </header>
 
-        <div className={styles.roofSunStage}>
-          <div className={styles.roofStageHead}>
-            <span className={styles.roofTerraceLabel}>{c.roof.terraceLabel}</span>
-            <span className={styles.roofStageTitle}>
-              {c.roof.panelLayout(panelCount)}
-            </span>
+        <div className={styles.roofMainRow}>
+          <div className={styles.roofArrayStage}>
+            <div className={styles.roofStageHead}>
+              <span className={styles.roofTerraceLabel}>{c.roof.terraceLabel}</span>
+              <span className={styles.roofStageTitle}>
+                {c.roof.panelLayout(panelCount)}
+              </span>
+            </div>
+            <div className={styles.roofPlanFrame}>
+              <AtelierRoofPlan
+                modules={panelCount}
+                southLabel={c.roof.southEdge}
+                className={styles.roofPlanSvg}
+              />
+            </div>
+            <p className={styles.roofPlanCaption}>
+              {c.roof.planCaption(panelCount, panelWp, tilt)}
+              {panelCount > 18
+                ? ` · ${c.roof.moreModules(panelCount - 18)}`
+                : null}
+            </p>
           </div>
 
-          <div className={styles.roofPlanFrame}>
-            <AtelierRoofPlan
-              modules={panelCount}
-              className={styles.roofPlanSvg}
-            />
-          </div>
-
-          <p className={styles.roofPlanCaption}>
-            {c.roof.planCaption(panelCount, panelWp, tilt)}
-            {panelCount > 18 ? ` · ${c.roof.moreModules(panelCount - 18)}` : null}
-          </p>
-
-          {/* Sun-path / azimuth ribbon — not a round compass */}
-          <div className={styles.roofSunPath} aria-hidden>
+          <aside className={styles.roofSunTeach}>
             <span className={styles.roofSunPathLabel}>{c.roof.sunPathLabel}</span>
-            <div className={styles.roofSunArc}>
-              <span className={styles.roofSunTickN}>{c.roof.northShort}</span>
+            <h3 className={styles.roofSunTeachTitle}>{c.roof.sunTeachTitle}</h3>
+            <div className={styles.roofSunDiagram} aria-hidden>
               <svg
                 className={styles.roofSunArcSvg}
-                viewBox="0 0 280 48"
+                viewBox="0 0 240 110"
                 preserveAspectRatio="xMidYMid meet"
               >
+                <text x="12" y="18" fill="#94A3B8" fontSize="9" fontWeight="700">
+                  {c.roof.northShort}
+                </text>
+                <text
+                  x="228"
+                  y="102"
+                  textAnchor="end"
+                  fill="#F97316"
+                  fontSize="9"
+                  fontWeight="800"
+                >
+                  {c.roof.southShort}
+                </text>
                 <path
-                  d="M20 38 Q140 2 260 38"
+                  d="M18 78 Q120 8 222 78"
                   fill="none"
-                  stroke="#CBD5E1"
-                  strokeWidth="2"
+                  stroke="#E2E8F0"
+                  strokeWidth="2.2"
                 />
                 <path
-                  d="M70 28 Q140 8 210 28"
+                  d="M40 70 Q120 18 200 70"
                   fill="none"
                   stroke="#F97316"
-                  strokeWidth="2.2"
+                  strokeWidth="2.6"
                   strokeLinecap="round"
-                  opacity="0.85"
+                  opacity="0.9"
                 />
-                <circle cx="140" cy="36" r="5" fill="#F97316" />
-                <path
-                  d="M140 18 L144 28 L140 26 L136 28 Z"
+                <circle cx="40" cy="70" r="4" fill="#FDBA74" />
+                <circle cx="120" cy="22" r="6" fill="#F97316" />
+                <circle cx="200" cy="70" r="4" fill="#FDBA74" />
+                <text
+                  x="40"
+                  y="96"
+                  textAnchor="middle"
+                  fill="#64748B"
+                  fontSize="7.5"
+                  fontWeight="600"
+                >
+                  {c.roof.sunrise}
+                </text>
+                <text
+                  x="120"
+                  y="12"
+                  textAnchor="middle"
                   fill="#F97316"
+                  fontSize="7.5"
+                  fontWeight="700"
+                >
+                  {c.roof.noon}
+                </text>
+                <text
+                  x="200"
+                  y="96"
+                  textAnchor="middle"
+                  fill="#64748B"
+                  fontSize="7.5"
+                  fontWeight="600"
+                >
+                  {c.roof.sunset}
+                </text>
+                {/* South-facing array icon under noon */}
+                <rect
+                  x="102"
+                  y="78"
+                  width="36"
+                  height="14"
+                  rx="1.5"
+                  fill="#0B2740"
+                  stroke="#F97316"
+                  strokeWidth="1.2"
+                />
+                <line
+                  x1="108"
+                  y1="82"
+                  x2="108"
+                  y2="88"
+                  stroke="rgba(186,210,230,0.5)"
+                  strokeWidth="0.8"
+                />
+                <line
+                  x1="120"
+                  y1="82"
+                  x2="120"
+                  y2="88"
+                  stroke="rgba(186,210,230,0.5)"
+                  strokeWidth="0.8"
+                />
+                <line
+                  x1="132"
+                  y1="82"
+                  x2="132"
+                  y2="88"
+                  stroke="rgba(186,210,230,0.5)"
+                  strokeWidth="0.8"
                 />
               </svg>
-              <span className={styles.roofSunTickS}>{c.roof.southShort}</span>
             </div>
-            <div className={styles.roofSunMeta}>
-              <em className={styles.roofSouthCue}>{c.roof.southCue}</em>
-              <p className={styles.roofSunNote}>
-                {c.roof.compassNote(cityLabel)}
-              </p>
-            </div>
-          </div>
+            <p className={styles.roofSunTeachLead}>
+              {c.roof.sunTeachLead(cityLabel)}
+            </p>
+            <ul className={styles.roofSunBenefits}>
+              {c.roof.sunBenefits.map((b) => (
+                <li key={b}>{b}</li>
+              ))}
+            </ul>
+            <em className={styles.roofSouthCue}>{c.roof.southCue}</em>
+            <p className={styles.roofSunNote}>
+              {c.roof.compassNote(cityLabel)}
+            </p>
+          </aside>
         </div>
 
-        <div className={styles.roofYieldRail}>
+        <div className={styles.roofEngStrip}>
+          {[
+            {
+              tag: c.roof.engString,
+              val: c.roof.engStringVal(panelCount),
+            },
+            {
+              tag: c.roof.engDc,
+              val: c.roof.engDcVal(
+                ((panelCount * panelWp) / 1000).toFixed(2)
+              ),
+            },
+            {
+              tag: c.roof.engYield,
+              val: c.roof.engYieldVal,
+            },
+            {
+              tag: c.roof.engWind,
+              val: c.roof.engWindVal,
+            },
+          ].map((chip) => (
+            <div key={chip.tag} className={styles.roofEngChip}>
+              <span className={styles.roofEngTag}>{chip.tag}</span>
+              <strong className={styles.roofEngVal}>{chip.val}</strong>
+            </div>
+          ))}
+        </div>
+
+        <div className={styles.roofMetricGrid}>
           {[
             {
               tag: c.roof.modulesTag,
@@ -1159,7 +1270,7 @@ export function AtelierRenderer({
               note: c.roof.utilNote,
             },
           ].map((m) => (
-            <div key={m.tag} className={styles.roofYieldCol}>
+            <div key={m.tag} className={styles.roofMetricCard}>
               <span className={styles.roofYieldTag}>{m.tag}</span>
               <strong className={styles.roofYieldVal}>{m.val}</strong>
               <span className={styles.roofYieldNote}>{m.note}</span>

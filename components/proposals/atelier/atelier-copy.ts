@@ -555,12 +555,42 @@ export function getAtelierCopy(lang: AtelierLang) {
           ? `${n} मॉड्यूल · ${wp} Wp · दक्षिण मुख · ${tilt}° झुकाव`
           : `${n} modules · ${wp} Wp · South face · ${tilt}° tilt`,
       sunPathLabel: hi ? "सूर्य पथ · अज़ीमुथ" : "Sun path · azimuth",
+      sunTeachTitle: hi
+        ? "सूर्य पथ क्यों मायने रखता है"
+        : "Why sun path matters",
+      sunTeachLead: (city: string) =>
+        hi
+          ? `${city} में दक्षिण मुख सर्दियों में भी अधिक धूप पकड़ता है — वार्षिक इकाइयाँ बढ़ती हैं।`
+          : `In ${city}, a south face catches more winter sun — lifting annual units.`,
+      sunBenefits: hi
+        ? [
+            "सर्दी का निम्न सूर्य भी सरणी पर अधिक पड़ता है",
+            "मध्य प्रदेश अक्षांश से झुकाव मेल — साल भर संतुलित यील्ड",
+            "पूर्व/पश्चिम की तुलना में अधिक वार्षिक इकाइयाँ",
+          ]
+        : [
+            "Winter low sun still lands harder on the array",
+            "Tilt matched to MP latitude — balanced year-round yield",
+            "Higher annual units vs east / west facing",
+          ],
+      sunrise: hi ? "सूर्योदय" : "Sunrise",
+      noon: hi ? "दोपहर" : "Noon",
+      sunset: hi ? "सूर्यास्त" : "Sunset",
       northShort: "N",
       southShort: hi ? "द" : "S",
+      southEdge: hi ? "दक्षिण" : "SOUTH",
       southCue: hi ? "दक्षिण यील्ड" : "South yield",
       terraceLabel: hi ? "टेरेस प्लान" : "Terrace plan",
       moreModules: (n: number) =>
         hi ? `+${n} और मॉड्यूल` : `+${n} more modules`,
+      engString: hi ? "स्ट्रिंग लेआउट" : "STRING LAYOUT",
+      engDc: hi ? "डीसी आकार" : "DC SIZE",
+      engYield: hi ? "विशिष्ट यील्ड" : "SPECIFIC YIELD",
+      engWind: hi ? "पवन / संरचना" : "WIND / STRUCTURE",
+      engStringVal: (n: number) => (hi ? `1 × ${n}` : `1 × ${n}`),
+      engDcVal: (kwp: string) => `${kwp} kWp`,
+      engYieldVal: "1440 kWh/kWp",
+      engWindVal: hi ? "IS 875 · 150 किमी/घंटा" : "IS 875 · 150 km/h",
       modulesTag: hi ? "छत पर मॉड्यूल" : "MODULES ON ROOF",
       panelsVal: (n: number) =>
         hi ? `${n} पैनल` : `${n} panels`,
