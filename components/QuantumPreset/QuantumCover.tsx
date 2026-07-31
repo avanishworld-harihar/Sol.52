@@ -15,8 +15,8 @@ import {
 import { QuantumAtmosphere } from "./QuantumAtmosphere";
 import styles from "./Quantum.module.css";
 
-/** Flat-roof day/evening array + garden lounge — /public */
-const COVER_ROOFTOP_SRC = "/assets/proposals/quantum-cover-flat-roof.jpg";
+/** India elevated GI (~6–7 ft) + ~20° tilt, evening luxury — /public */
+const COVER_ROOFTOP_SRC = "/assets/proposals/quantum-cover-elevated-india.jpg";
 
 export type QuantumCoverProps = {
   data: ProposalData;
@@ -55,8 +55,8 @@ export function QuantumCover({ data }: QuantumCoverProps) {
             <div className={styles.coverPhotoGlassSheen} aria-hidden />
           </div>
           <figcaption className={styles.coverPhotoCaption}>
-            <span>Flat roof solar array</span>
-            <span>Garden lounge below · Evening light</span>
+            <span>Elevated rooftop solar</span>
+            <span>~20° tilt · Walkable terrace below</span>
           </figcaption>
         </figure>
 
