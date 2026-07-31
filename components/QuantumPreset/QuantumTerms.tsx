@@ -2,7 +2,7 @@
 
 /**
  * Quantum Terms & Conditions — full Premium Luxe parity (2 A4 pages).
- * All points kept; Quantum Glass3D style + simple English.
+ * EN / Hindi via quantum-copy. Quantum Glass3D style.
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
@@ -11,112 +11,25 @@ import {
   QUANTUM_DEFAULT_BRAND,
   useQuantumBrand,
 } from "./quantum-brand";
+import { useQuantumLang } from "./quantum-lang-context";
 import styles from "./Quantum.module.css";
 
 export type QuantumTermsProps = {
   data: ProposalData;
 };
 
-const GENERAL_TERMS: { label: string; text: string }[] = [
-  {
-    label: "Load Change",
-    text: "DISCOM load change, or cable change from pole to meter and liaison — only if required — is in the customer's scope.",
-  },
-  {
-    label: "Statutory Fees",
-    text: "Government fees for net-metering, subsidy, and DISCOM approvals are paid directly by the client.",
-  },
-  {
-    label: "Arrears",
-    text: "If load increase is required, clear prior DISCOM bills/arrears before processing.",
-  },
-  {
-    label: "Inverter Warranty",
-    text: "Inverter warranty as per manufacturer (typically 8–10 years on string inverters).",
-  },
-  {
-    label: "Module Warranty",
-    text: "Product 15 years; performance ≥80% at year 30. Other parts: 1 year from commissioning.",
-  },
-  {
-    label: "Warranty Scope",
-    text: "Manufacturing defects only. Physical damage, misuse, or vandalism is not covered.",
-  },
-  {
-    label: "Maintenance",
-    text: "Routine module cleaning (recommended weekly) is in the customer's scope.",
-  },
-  {
-    label: "Timeline",
-    text: "Installation within 30–40 working days from advance, as per agreed PO / schedule.",
-  },
-  {
-    label: "Governing Terms",
-    text: "Terms not listed here are governed by mutual written agreement.",
-  },
-  {
-    label: "Refunds",
-    text: "If applicable: after 2.5% deduction on finalization amount plus documented expenses.",
-  },
-];
-
-const DEFAULT_DOCS = [
-  "Latest electricity bill (clear copy)",
-  "PAN card copy",
-  "Aadhaar card copy",
-  "Ownership proof — tax receipt / sale deed",
-  "Passport-size photograph",
-  "Signed SLD (draft provided by us)",
-];
-
-const DEFAULT_AMC_OBJECTIVE =
-  "AMC keeps generation checks and safety visits on schedule.";
-
-const DEFAULT_AMC_INCLUDES = [
-  "Periodic plant performance monitoring",
-  "Routine preventive maintenance",
-  "Emergency breakdown (within 48 working hours)",
-  "OEM coordination for warranty support",
-];
-
-const DEFAULT_AMC_EXCLUDES = [
-  "Physical damage, theft, or vandalism",
-  "Module glass replacement from external impact",
-  "DISCOM metering fees and government charges",
-];
-
-const CLIENT_SCOPE = [
-  "Site security / watch and ward",
-  "Insurance of plant (if desired)",
-  "Stable internet for monitoring (if applicable)",
-  "Water and auxiliary power for maintenance",
-  "Regular module cleaning per OEM guidelines",
-  "DISCOM / municipal letters when requested",
-];
-
-const DEFAULT_AMC_COMMERCIAL = [
-  "When charged, fees are payable in advance (half-yearly).",
-  "Minimum O&M: 2 years, extendable by mutual consent.",
-];
-
-const SAFETY_NOTES = [
-  "Do not open ACDB / DCDB or inverter covers — trained technicians only.",
-  "Keep lightning arrestor and earthing bonded; do not disconnect earth leads.",
-  "Report isolation trips or burning smell immediately; do not reset repeatedly.",
-];
-
 function isAmcPlanLabel(s: string): boolean {
   return /\d+\s*-?\s*year\s*amc|amc\s*option/i.test(s);
 }
 
 function isExclusionNote(s: string): boolean {
-  return /exclud|does not include|not covered|physical damage|third-party|misuse|theft|vandal|glass replacement/i.test(
+  return /exclud|does not include|not covered|physical damage|third-party|misuse|theft|vandal|glass replacement|शारीरिक|चोरी|तोड़फोड़|शामिल नहीं/i.test(
     s
   );
 }
 
 function isCommercialNote(s: string): boolean {
-  return /payable|charges|duration|force majeure|half-yearly|escalat|contract|extend/i.test(
+  return /payable|charges|duration|force majeure|half-yearly|escalat|contract|extend|अग्रिम|अर्धवार्षिक|बढ़ाया/i.test(
     s
   );
 }
@@ -127,8 +40,11 @@ function take<T>(arr: T[], n: number): T[] {
 
 /** Page 1 — General terms + documents required. */
 export function QuantumTermsPage1({ data }: QuantumTermsProps) {
+  const { copy } = useQuantumLang();
   const docs = take(
-    data.terms.documents.length > 0 ? data.terms.documents : DEFAULT_DOCS,
+    data.terms.documents.length > 0
+      ? data.terms.documents
+      : copy.terms.defaultDocs,
     6
   );
 
@@ -139,19 +55,16 @@ export function QuantumTermsPage1({ data }: QuantumTermsProps) {
           className={styles.cyanText}
           style={{ fontSize: "0.75rem", letterSpacing: "3px" }}
         >
-          06 // TERMS &amp; CONDITIONS
+          {copy.terms.eyebrow}
         </span>
-        <h2>Terms &amp; Conditions.</h2>
+        <h2>{copy.terms.title}</h2>
       </div>
-      <p className={styles.termsIntro}>
-        Please read these terms carefully. They cover warranties, documents,
-        timelines, and what is in the customer&apos;s scope.
-      </p>
+      <p className={styles.termsIntro}>{copy.terms.intro1}</p>
 
       <div className={`${styles.glass3D} ${styles.termsBlock}`}>
-        <span className={styles.termsSubhead}>01 · General terms</span>
+        <span className={styles.termsSubhead}>{copy.terms.general}</span>
         <ol className={styles.termsArticleList}>
-          {GENERAL_TERMS.map((t, i) => (
+          {copy.terms.generalTerms.map((t, i) => (
             <li key={t.label} className={styles.termsArticle}>
               <span className={styles.termsArticleNum}>
                 {String(i + 1).padStart(2, "0")}
@@ -166,7 +79,7 @@ export function QuantumTermsPage1({ data }: QuantumTermsProps) {
       </div>
 
       <div className={`${styles.glass3D} ${styles.termsBlock}`}>
-        <span className={styles.termsSubhead}>02 · Documents required</span>
+        <span className={styles.termsSubhead}>{copy.terms.docs}</span>
         <ol className={styles.termsNumberedList}>
           {docs.map((d, i) => (
             <li key={d.slice(0, 48)}>
@@ -177,16 +90,14 @@ export function QuantumTermsPage1({ data }: QuantumTermsProps) {
         </ol>
       </div>
 
-      <p className={styles.termsCounsel}>
-        Keep copies ready before work starts — this avoids delays in subsidy and
-        net-metering.
-      </p>
+      <p className={styles.termsCounsel}>{copy.terms.counsel}</p>
     </section>
   );
 }
 
 /** Page 2 — Safety, client scope, AMC includes/excludes/cost. */
 export function QuantumTermsPage2({ data }: QuantumTermsProps) {
+  const { copy } = useQuantumLang();
   const brand = useQuantumBrand(data) || QUANTUM_DEFAULT_BRAND;
   const invoiceBase =
     data.economics.grossInr > 0
@@ -195,12 +106,15 @@ export function QuantumTermsPage2({ data }: QuantumTermsProps) {
   const invoiceRef =
     invoiceBase > 0
       ? `${formatInr(invoiceBase)} (${formatInrCompact(invoiceBase)})`
-      : "invoice value";
+      : copy.terms.invoiceValue;
 
-  const amcObjective = data.terms.amcObjective?.trim() || DEFAULT_AMC_OBJECTIVE;
+  const amcObjective =
+    data.terms.amcObjective?.trim() || copy.terms.amcObjective;
 
   const scopeRaw =
-    data.terms.amcScope.length > 0 ? data.terms.amcScope : DEFAULT_AMC_INCLUDES;
+    data.terms.amcScope.length > 0
+      ? data.terms.amcScope
+      : copy.terms.amcIncludesList;
   const planOptions = take(scopeRaw.filter(isAmcPlanLabel), 3);
   const includeItems = scopeRaw.filter(
     (s) =>
@@ -209,24 +123,28 @@ export function QuantumTermsPage2({ data }: QuantumTermsProps) {
       !/^amc includes/i.test(s)
   );
   const amcIncludes = take(
-    includeItems.length > 0 ? includeItems : DEFAULT_AMC_INCLUDES,
+    includeItems.length > 0 ? includeItems : copy.terms.amcIncludesList,
     4
   );
 
   const notesRaw =
     data.terms.amcTerms.length > 0
       ? data.terms.amcTerms
-      : [...DEFAULT_AMC_EXCLUDES, ...DEFAULT_AMC_COMMERCIAL];
+      : [...copy.terms.amcExcludesList, ...copy.terms.amcCommercial];
   const excludesFromNotes = notesRaw.filter(isExclusionNote);
   const commercialNotes = notesRaw.filter(
     (s) => !isExclusionNote(s) && isCommercialNote(s)
   );
   const amcExcludes = take(
-    excludesFromNotes.length > 0 ? excludesFromNotes : DEFAULT_AMC_EXCLUDES,
+    excludesFromNotes.length > 0
+      ? excludesFromNotes
+      : copy.terms.amcExcludesList,
     3
   );
   const amcCommercial = take(
-    commercialNotes.length > 0 ? commercialNotes : DEFAULT_AMC_COMMERCIAL,
+    commercialNotes.length > 0
+      ? commercialNotes
+      : copy.terms.amcCommercial,
     2
   );
 
@@ -237,29 +155,26 @@ export function QuantumTermsPage2({ data }: QuantumTermsProps) {
           className={styles.cyanText}
           style={{ fontSize: "0.75rem", letterSpacing: "3px" }}
         >
-          06 // TERMS &amp; CONDITIONS · CONT.
+          {copy.terms.eyebrowCont}
         </span>
-        <h2>Safety, Scope &amp; AMC.</h2>
+        <h2>{copy.terms.title2}</h2>
       </div>
-      <p className={styles.termsIntro}>
-        Safety rules, customer responsibilities, and annual maintenance details
-        for this proposal.
-      </p>
+      <p className={styles.termsIntro}>{copy.terms.intro2}</p>
 
       <div className={styles.termsTwoCol}>
         <div className={`${styles.glass3D} ${styles.termsBlock}`}>
-          <span className={styles.termsSubhead}>03 · Safety &amp; protection</span>
+          <span className={styles.termsSubhead}>{copy.terms.safety}</span>
           <ul className={styles.termsBulletList}>
-            {SAFETY_NOTES.map((s) => (
+            {copy.terms.safetyNotes.map((s) => (
               <li key={s.slice(0, 40)}>{s}</li>
             ))}
           </ul>
         </div>
 
         <div className={`${styles.glass3D} ${styles.termsBlock}`}>
-          <span className={styles.termsSubhead}>04 · Customer scope</span>
+          <span className={styles.termsSubhead}>{copy.terms.clientScope}</span>
           <ol className={styles.termsNumberedList}>
-            {take(CLIENT_SCOPE, 6).map((s, i) => (
+            {take(copy.terms.clientScopeList, 6).map((s, i) => (
               <li key={s.slice(0, 48)}>
                 <span className={styles.termsListNum}>{i + 1}</span>
                 <span>{s}</span>
@@ -270,12 +185,12 @@ export function QuantumTermsPage2({ data }: QuantumTermsProps) {
       </div>
 
       <div className={`${styles.glass3D} ${styles.termsBlock}`}>
-        <span className={styles.termsSubhead}>05 · Annual maintenance — scope</span>
+        <span className={styles.termsSubhead}>{copy.terms.amcScope}</span>
         <p className={styles.termsPara}>{amcObjective}</p>
 
         {planOptions.length > 0 ? (
           <>
-            <p className={styles.termsAmcLabel}>Available plans:</p>
+            <p className={styles.termsAmcLabel}>{copy.terms.availablePlans}</p>
             <ol className={styles.termsNumberedList}>
               {planOptions.map((s) => (
                 <li key={`plan-${s.slice(0, 32)}`}>
@@ -287,7 +202,7 @@ export function QuantumTermsPage2({ data }: QuantumTermsProps) {
           </>
         ) : null}
 
-        <p className={styles.termsAmcLabel}>AMC includes:</p>
+        <p className={styles.termsAmcLabel}>{copy.terms.amcIncludes}</p>
         <ol className={styles.termsNumberedList}>
           {amcIncludes.map((s, i) => (
             <li key={`inc-${s.slice(0, 32)}`}>
@@ -297,7 +212,7 @@ export function QuantumTermsPage2({ data }: QuantumTermsProps) {
           ))}
         </ol>
 
-        <p className={styles.termsAmcLabel}>AMC does not include:</p>
+        <p className={styles.termsAmcLabel}>{copy.terms.amcExcludes}</p>
         <ol className={styles.termsNumberedList}>
           {amcExcludes.map((s, i) => (
             <li key={`exc-${s.slice(0, 32)}`}>
@@ -309,15 +224,15 @@ export function QuantumTermsPage2({ data }: QuantumTermsProps) {
       </div>
 
       <div className={`${styles.glass3D} ${styles.termsBlock}`}>
-        <span className={styles.termsSubhead}>06 · Cost of maintenance</span>
+        <span className={styles.termsSubhead}>{copy.terms.amcCost}</span>
         <div className={styles.termsCostBox}>
-          <p>Year 1: AMC / basic O&amp;M is included with the system as quoted.</p>
+          <p>{copy.terms.year1}</p>
           <p>
-            Year 2 onwards: charged as per mutual agreement
+            {copy.terms.year2}
             {invoiceBase > 0 ? (
               <>
                 {" "}
-                (reference invoice: <strong>{invoiceRef}</strong>)
+                ({copy.terms.refInvoice} <strong>{invoiceRef}</strong>)
               </>
             ) : null}
             .
@@ -325,7 +240,7 @@ export function QuantumTermsPage2({ data }: QuantumTermsProps) {
         </div>
         {amcCommercial.length > 0 ? (
           <>
-            <p className={styles.termsAmcLabel}>Payment notes:</p>
+            <p className={styles.termsAmcLabel}>{copy.terms.paymentNotes}</p>
             <ol className={styles.termsNumberedList}>
               {amcCommercial.map((t, i) => (
                 <li key={`com-${t.slice(0, 32)}`}>
@@ -339,9 +254,9 @@ export function QuantumTermsPage2({ data }: QuantumTermsProps) {
       </div>
 
       <div className={styles.termsSignoff}>
-        <span>With regards,</span>
+        <span>{copy.terms.regards}</span>
         <strong>{brand}</strong>
-        <em>Your solar partner</em>
+        <em>{copy.terms.partner}</em>
       </div>
     </section>
   );

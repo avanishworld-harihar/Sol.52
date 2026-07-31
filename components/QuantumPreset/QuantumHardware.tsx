@@ -11,6 +11,7 @@ import {
   QUANTUM_PANEL_WATT,
   quantumModuleCount,
 } from "./quantum-brand";
+import { useQuantumLang } from "./quantum-lang-context";
 import styles from "./Quantum.module.css";
 
 export type QuantumHardwareProps = {
@@ -65,7 +66,7 @@ function brandTitle(
 function buildRow(
   item: ProposalBomItem | undefined,
   base: BomRow,
-  opts?: { preferBaseBody?: boolean }
+  opts?: { preferBaseBody?: boolean; makeLabel?: string }
 ): BomRow {
   if (!item) return base;
 
@@ -84,7 +85,7 @@ function buildRow(
       item.brand?.trim() &&
       !base.body.toLowerCase().includes(item.brand.trim().toLowerCase())
     ) {
-      body = `${base.body} · Make: ${item.brand.trim()}`;
+      body = `${base.body} · ${opts.makeLabel ?? "Make"}: ${item.brand.trim()}`;
     }
   } else if (!isGenericProtection(item) && detail) {
     body = detail.length > 150 ? `${detail.slice(0, 140).trim()}…` : detail;
@@ -115,11 +116,14 @@ function formatBomBody(body: string) {
 }
 
 export function QuantumHardware({ data }: QuantumHardwareProps) {
+  const { copy } = useQuantumLang();
   const bom = Array.isArray(data.bom) ? data.bom : [];
   const systemKw = Number(data.meta.systemKw) || 3;
   const modules = quantumModuleCount(systemKw) || 6;
   const acLabel = systemKw % 1 ? systemKw.toFixed(1) : String(systemKw);
   const used = new Set<number>();
+  const defaults = copy.bom.rows(modules, QUANTUM_PANEL_WATT, acLabel);
+  const makeOpts = { preferBaseBody: true as const, makeLabel: copy.bom.make };
 
   const panel = claimBom(bom, used, /module|panel|topcon|mono|waaree|adani|dcr/i);
   const inverter = claimBom(bom, used, /inverter|mppt|on-?grid|string\s*inv/i);
@@ -144,71 +148,13 @@ export function QuantumHardware({ data }: QuantumHardwareProps) {
   const sharedProtect = claimBom(bom, used, /protection|safety|spd|mcb/i);
 
   const rows: BomRow[] = [
-    buildRow(panel, {
-      num: "01",
-      role: "MODULES",
-      title: "N-Type TOPCon Modules",
-      badge: "30-YEAR PERFORMANCE",
-      body: `Qty ${modules} Nos · ${modules} × ${QUANTUM_PANEL_WATT} Wp DCR TOPCon · ≥21% efficiency · low yearly loss.`,
-    }),
-    buildRow(inverter, {
-      num: "02",
-      role: "INVERTER",
-      title: "Grid-Tied String Inverter",
-      badge: "8–10 YEAR OEM",
-      body: `Qty 1 Nos · ${acLabel} kW on-grid · Dual MPPT · IP65 · ≥97.5% efficiency.`,
-    }),
-    buildRow(structure, {
-      num: "03",
-      role: "STRUCTURE",
-      title: "Hot-Dip GI Mounting Structure",
-      badge: "150 KM/H WIND",
-      body: "Qty as per site · Hot-Dip GI (IS 875) · 150 km/h wind load · roof fixing as surveyed.",
-    }),
-    buildRow(
-      dcdb ?? sharedProtect,
-      {
-        num: "04",
-        role: "DCDB",
-        title: "DC Distribution Box",
-        badge: "1 NOS · HAVELLS",
-        body: "Qty 1 Nos · Havells / reputed make · Fuse / isolator + Type-II SPD (array to inverter).",
-      },
-      { preferBaseBody: true }
-    ),
-    buildRow(
-      acdb,
-      {
-        num: "05",
-        role: "ACDB",
-        title: "AC Distribution Box",
-        badge: "1 NOS · HAVELLS",
-        body: "Qty 1 Nos · Havells / reputed make · MCB/MCCB + Type-II SPD (inverter to meter).",
-      },
-      { preferBaseBody: true }
-    ),
-    buildRow(
-      la ?? cable,
-      {
-        num: "06",
-        role: "SURGE & CABLE",
-        title: "Lightning Arrestor + DC/AC Cabling",
-        badge: "LA 1 SET · 4 SQMM",
-        body: "LA: 1 Set · 2 mtr. DC/AC cable: 4 sqmm (Polycab / Anchor) — meters as needed.",
-      },
-      { preferBaseBody: true }
-    ),
-    buildRow(
-      earth,
-      {
-        num: "07",
-        role: "EARTHING",
-        title: "Copper Earthing Kit + Earth Cable",
-        badge: "3 SET · 17 MM",
-        body: "Earthing: 3 Set · 17 mm copper. Earth cable: 4 sqmm as needed. Bonds inverter, DCDB/ACDB, and LA.",
-      },
-      { preferBaseBody: true }
-    ),
+    buildRow(panel, defaults[0]!),
+    buildRow(inverter, defaults[1]!),
+    buildRow(structure, defaults[2]!),
+    buildRow(dcdb ?? sharedProtect, defaults[3]!, makeOpts),
+    buildRow(acdb, defaults[4]!, makeOpts),
+    buildRow(la ?? cable, defaults[5]!, makeOpts),
+    buildRow(earth, defaults[6]!, makeOpts),
   ];
 
   if (la && cable) {
@@ -233,16 +179,12 @@ export function QuantumHardware({ data }: QuantumHardwareProps) {
           className={styles.cyanText}
           style={{ fontSize: "0.75rem", letterSpacing: "3px" }}
         >
-          03 // BILL OF MATERIALS
+          {copy.bom.eyebrow}
         </span>
-        <h2>What We Install.</h2>
+        <h2>{copy.bom.title}</h2>
       </div>
 
-      <p className={styles.bomLead}>
-        Seven parts — modules, inverter, structure, DCDB, ACDB, lightning
-        protection with cable, and earthing. Quantities follow the installer BOM
-        sheet.
-      </p>
+      <p className={styles.bomLead}>{copy.bom.lead}</p>
 
       <div className={`${styles.glass3D} ${styles.bomLedger}`}>
         {rows.map((row) => (

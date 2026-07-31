@@ -7,6 +7,12 @@
 
 import type { ProposalData } from "@/lib/proposal-data";
 import { QUANTUM_SPECIFIC_YIELD } from "./quantum-brand";
+import { useQuantumLang } from "./quantum-lang-context";
+import {
+  QuantumCountUp,
+  QuantumFadeUp,
+  QuantumGrowBar,
+} from "./quantum-motion";
 import styles from "./Quantum.module.css";
 
 export type QuantumImpactProps = {
@@ -94,6 +100,7 @@ function IconUnits() {
 }
 
 export function QuantumImpact({ data }: QuantumImpactProps) {
+  const { copy } = useQuantumLang();
   const co2 = data.impact.co2Tons > 0 ? data.impact.co2Tons : 0;
   const trees = data.impact.treesEquivalent > 0 ? data.impact.treesEquivalent : 0;
   const systemKw = Number(data.meta.systemKw) || 3;
@@ -102,13 +109,8 @@ export function QuantumImpact({ data }: QuantumImpactProps) {
       ? data.closing.annualUnits
       : Math.round(systemKw * QUANTUM_SPECIFIC_YIELD);
 
-  const co2Label =
-    co2 > 0
-      ? co2 >= 10
-        ? String(Math.round(co2))
-        : co2.toFixed(1)
-      : "—";
-
+  const co2Value = co2 > 0 ? co2 : 0;
+  const co2Decimals = co2 > 0 && co2 < 10 ? 1 : 0;
   const carsOff =
     co2 > 0 ? Math.max(1, Math.round(co2 / 4.6)) : 0; /* ~4.6 t CO₂/car/yr rough */
 
@@ -118,103 +120,162 @@ export function QuantumImpact({ data }: QuantumImpactProps) {
   }));
   const maxCum = yearBars[4]?.units || 1;
 
+  const fmtCo2 = (n: number) =>
+    co2Decimals > 0 ? n.toFixed(1) : String(Math.round(n));
+  const fmtUnits = (n: number) => n.toLocaleString("en-IN");
+  const fmtTreesCount = (n: number) => formatTrees(n);
+
   return (
     <section className={`${styles.a4Page} ${styles.impactPage}`}>
       <div className={styles.impactGlow} aria-hidden />
 
       <div className={styles.pageHeader}>
-        <span className={styles.impactEyebrow}>04 // ENVIRONMENT</span>
-        <h2 className={styles.impactTitle}>Clean Energy Impact.</h2>
+        <span className={styles.impactEyebrow}>{copy.impact.eyebrow}</span>
+        <h2 className={styles.impactTitle}>{copy.impact.title}</h2>
       </div>
 
-      <p className={styles.impactLead}>
-        Your solar plant makes clean power at home — less grid power, less carbon,
-        and a greener footprint for 25 years.
-      </p>
+      <p className={styles.impactLead}>{copy.impact.lead}</p>
 
       <div className={styles.impactMetricGrid}>
-        <div className={`${styles.glass3D} ${styles.impactCard}`}>
-          <IconCo2 />
-          <span className={styles.impactNum}>{co2Label}</span>
-          <span className={styles.impactMetricLabel}>Tonnes CO₂ avoided</span>
-          <span className={styles.impactMetricSub}>Over system life</span>
-        </div>
-        <div className={`${styles.glass3D} ${styles.impactCard}`}>
-          <IconTrees />
-          <span className={styles.impactNum}>{formatTrees(trees)}</span>
-          <span className={styles.impactMetricLabel}>Trees equivalent</span>
-          <span className={styles.impactMetricSub}>Same carbon benefit</span>
-        </div>
-        <div className={`${styles.glass3D} ${styles.impactCard}`}>
-          <IconUnits />
-          <span className={styles.impactNum}>
-            {annualUnits > 0 ? annualUnits.toLocaleString("en-IN") : "—"}
-          </span>
-          <span className={styles.impactMetricLabel}>Clean units / year</span>
-          <span className={styles.impactMetricSub}>Estimated generation</span>
-        </div>
+        <QuantumFadeUp delay={0}>
+          <div className={`${styles.glass3D} ${styles.impactCard}`}>
+            <IconCo2 />
+            <span className={styles.impactNum}>
+              <QuantumCountUp
+                value={co2Value}
+                format={fmtCo2}
+                decimals={co2Decimals}
+              />
+            </span>
+            <span className={styles.impactMetricLabel}>
+              {copy.impact.co2Label}
+            </span>
+            <span className={styles.impactMetricSub}>{copy.impact.co2Sub}</span>
+          </div>
+        </QuantumFadeUp>
+        <QuantumFadeUp delay={0.07}>
+          <div className={`${styles.glass3D} ${styles.impactCard}`}>
+            <IconTrees />
+            <span className={styles.impactNum}>
+              <QuantumCountUp value={trees} format={fmtTreesCount} />
+            </span>
+            <span className={styles.impactMetricLabel}>
+              {copy.impact.treesLabel}
+            </span>
+            <span className={styles.impactMetricSub}>
+              {copy.impact.treesSub}
+            </span>
+          </div>
+        </QuantumFadeUp>
+        <QuantumFadeUp delay={0.14}>
+          <div className={`${styles.glass3D} ${styles.impactCard}`}>
+            <IconUnits />
+            <span className={styles.impactNum}>
+              <QuantumCountUp value={annualUnits} format={fmtUnits} />
+            </span>
+            <span className={styles.impactMetricLabel}>
+              {copy.impact.unitsLabel}
+            </span>
+            <span className={styles.impactMetricSub}>
+              {copy.impact.unitsSub}
+            </span>
+          </div>
+        </QuantumFadeUp>
       </div>
 
       <div className={styles.impactBottomGrid}>
-        <div className={`${styles.glass3D} ${styles.impactEquivCard}`}>
-          <span className={styles.impactPanelTitle}>In simple words</span>
-          <div className={styles.impactEquivList}>
-            <div className={styles.impactEquivRow}>
-              <span>Carbon cut</span>
-              <strong>
-                {co2 > 0 ? `${co2Label} tonnes CO₂` : "—"}
-              </strong>
-            </div>
-            <div className={styles.impactEquivRow}>
-              <span>Like planting</span>
-              <strong>{trees > 0 ? `${formatTrees(trees)} trees` : "—"}</strong>
-            </div>
-            <div className={styles.impactEquivRow}>
-              <span>Like taking cars off road</span>
-              <strong>
-                {carsOff > 0 ? `~${carsOff.toLocaleString("en-IN")} cars / year` : "—"}
-              </strong>
-            </div>
-            <div className={styles.impactEquivRow}>
-              <span>Plant size</span>
-              <strong>{systemKw} kW rooftop solar</strong>
-            </div>
-          </div>
-        </div>
-
-        <div className={`${styles.glass3D} ${styles.impactChartCard}`}>
-          <span className={styles.impactPanelTitle}>Clean units over 5 years</span>
-          <p className={styles.impactChartSub}>
-            Cumulative generation if the plant runs as estimated each year.
-          </p>
-          <div className={styles.impactBars}>
-            {yearBars.map((b) => (
-              <div key={b.year} className={styles.impactBarCol}>
-                <span className={styles.impactBarVal}>
-                  {b.units > 0
-                    ? b.units >= 1000
-                      ? `${(b.units / 1000).toFixed(b.units >= 10000 ? 0 : 1)}k`
-                      : String(b.units)
-                    : "—"}
-                </span>
-                <div className={styles.impactBarTrack}>
-                  <div
-                    className={styles.impactBarFill}
-                    style={{
-                      height: `${b.units > 0 ? Math.max(12, (b.units / maxCum) * 100) : 8}%`,
-                    }}
-                  />
-                </div>
-                <span className={styles.impactBarLabel}>{b.year}</span>
+        <QuantumFadeUp delay={0.08}>
+          <div className={`${styles.glass3D} ${styles.impactEquivCard}`}>
+            <span className={styles.impactPanelTitle}>{copy.impact.simple}</span>
+            <div className={styles.impactEquivList}>
+              <div className={styles.impactEquivRow}>
+                <span>{copy.impact.carbonCut}</span>
+                <strong>
+                  {co2 > 0 ? (
+                    <>
+                      <QuantumCountUp
+                        value={co2Value}
+                        format={fmtCo2}
+                        decimals={co2Decimals}
+                      />{" "}
+                      {copy.impact.tonnesCo2}
+                    </>
+                  ) : (
+                    "—"
+                  )}
+                </strong>
               </div>
-            ))}
+              <div className={styles.impactEquivRow}>
+                <span>{copy.impact.likePlanting}</span>
+                <strong>
+                  {trees > 0 ? (
+                    <>
+                      <QuantumCountUp value={trees} format={fmtTreesCount} />{" "}
+                      {copy.impact.trees}
+                    </>
+                  ) : (
+                    "—"
+                  )}
+                </strong>
+              </div>
+              <div className={styles.impactEquivRow}>
+                <span>{copy.impact.likeCars}</span>
+                <strong>
+                  {carsOff > 0 ? (
+                    <>
+                      ~
+                      <QuantumCountUp value={carsOff} format={fmtUnits} />{" "}
+                      {copy.impact.carsYear}
+                    </>
+                  ) : (
+                    "—"
+                  )}
+                </strong>
+              </div>
+              <div className={styles.impactEquivRow}>
+                <span>{copy.impact.plantSize}</span>
+                <strong>
+                  {systemKw} {copy.impact.rooftopKw}
+                </strong>
+              </div>
+            </div>
           </div>
-        </div>
+        </QuantumFadeUp>
+
+        <QuantumFadeUp delay={0.14}>
+          <div className={`${styles.glass3D} ${styles.impactChartCard}`}>
+            <span className={styles.impactPanelTitle}>{copy.impact.units5}</span>
+            <p className={styles.impactChartSub}>{copy.impact.units5Sub}</p>
+            <div className={styles.impactBars}>
+              {yearBars.map((b, i) => {
+                const pct =
+                  b.units > 0 ? Math.max(12, (b.units / maxCum) * 100) : 8;
+                return (
+                  <div key={b.year} className={styles.impactBarCol}>
+                    <span className={styles.impactBarVal}>
+                      {b.units > 0
+                        ? b.units >= 1000
+                          ? `${(b.units / 1000).toFixed(b.units >= 10000 ? 0 : 1)}k`
+                          : String(b.units)
+                        : "—"}
+                    </span>
+                    <div className={styles.impactBarTrack}>
+                      <QuantumGrowBar
+                        className={styles.impactBarFill}
+                        heightPct={pct}
+                        delay={0.08 + i * 0.08}
+                      />
+                    </div>
+                    <span className={styles.impactBarLabel}>{b.year}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </QuantumFadeUp>
       </div>
 
-      <div className={styles.impactFooterNote}>
-        Clean home power · lower carbon · greener choice for your family
-      </div>
+      <div className={styles.impactFooterNote}>{copy.impact.footer}</div>
     </section>
   );
 }

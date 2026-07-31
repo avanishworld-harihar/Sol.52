@@ -6,6 +6,7 @@
  * Pages: Cover → Telemetry → Economics → Hardware → Impact → Payment → Terms ×2
  */
 
+import { useState } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
 import { QuantumCover } from "./QuantumCover";
 import { QuantumTelemetry } from "./QuantumTelemetry";
@@ -14,16 +15,16 @@ import { QuantumHardware } from "./QuantumHardware";
 import { QuantumImpact } from "./QuantumImpact";
 import { QuantumAuthorization } from "./QuantumAuthorization";
 import { QuantumTermsPage1, QuantumTermsPage2 } from "./QuantumTerms";
+import { QuantumLangProvider, useQuantumLang } from "./quantum-lang-context";
+import { getQuantumCopy, type QuantumLang } from "./quantum-copy";
 import styles from "./Quantum.module.css";
 
 export type QuantumRendererProps = {
   data: ProposalData;
 };
 
-export function QuantumRenderer({ data }: QuantumRendererProps) {
-  if (!data) {
-    return <div className={styles.loading}>INITIALIZING QUANTUM…</div>;
-  }
+function QuantumDocument({ data }: { data: ProposalData }) {
+  const { lang, setLang, copy } = useQuantumLang();
 
   const handlePrint = () => {
     if (typeof window !== "undefined") window.print();
@@ -33,10 +34,34 @@ export function QuantumRenderer({ data }: QuantumRendererProps) {
     <div className={styles.root}>
       <div className={styles.printBar}>
         <div className={styles.printBarInner}>
-          <span className={styles.printBarBrand}>Sol.52 · Quantum</span>
-          <button type="button" className={styles.printBarBtn} onClick={handlePrint}>
-            Download PDF
-          </button>
+          <span className={styles.printBarBrand}>{copy.print.brand}</span>
+          <div className={styles.printBarActions}>
+            <div className={styles.langToggle} role="group" aria-label="Language">
+              <button
+                type="button"
+                className={`${styles.langBtn}${lang === "en" ? ` ${styles.langBtnActive}` : ""}`}
+                onClick={() => setLang("en")}
+                aria-pressed={lang === "en"}
+              >
+                {copy.print.langEn}
+              </button>
+              <button
+                type="button"
+                className={`${styles.langBtn}${lang === "hi" ? ` ${styles.langBtnActive}` : ""}`}
+                onClick={() => setLang("hi")}
+                aria-pressed={lang === "hi"}
+              >
+                {copy.print.langHi}
+              </button>
+            </div>
+            <button
+              type="button"
+              className={styles.printBarBtn}
+              onClick={handlePrint}
+            >
+              {copy.print.downloadPdf}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -49,6 +74,22 @@ export function QuantumRenderer({ data }: QuantumRendererProps) {
       <QuantumTermsPage1 data={data} />
       <QuantumTermsPage2 data={data} />
     </div>
+  );
+}
+
+export function QuantumRenderer({ data }: QuantumRendererProps) {
+  const [lang, setLang] = useState<QuantumLang>("en");
+
+  if (!data) {
+    return (
+      <div className={styles.loading}>{getQuantumCopy("en").print.loading}</div>
+    );
+  }
+
+  return (
+    <QuantumLangProvider lang={lang} setLang={setLang}>
+      <QuantumDocument data={data} />
+    </QuantumLangProvider>
   );
 }
 

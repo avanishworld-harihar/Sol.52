@@ -22,6 +22,7 @@ import {
   IconPv,
 } from "./QuantumArchIcons";
 import { QuantumRoofArray } from "./QuantumRoofArray";
+import { useQuantumLang } from "./quantum-lang-context";
 import styles from "./Quantum.module.css";
 
 export type QuantumTelemetryProps = {
@@ -33,13 +34,8 @@ const LOCK_DC_KWP = 3.48;
 const LOCK_DC_AC = 1.16;
 const SQFT_PER_PANEL = 24;
 
-const ARCH = [
-  { code: "PV", name: "Modules", Icon: IconPv },
-  { code: "DCDB", name: "DC Box", Icon: IconDcdb },
-  { code: "INV", name: "String INV", Icon: IconInv },
-  { code: "ACDB", name: "AC Box", Icon: IconAcdb },
-  { code: "GRID", name: "Net meter", Icon: IconMeter },
-] as const;
+const ARCH_ICONS = [IconPv, IconDcdb, IconInv, IconAcdb, IconMeter] as const;
+const ARCH_CODES = ["PV", "DCDB", "INV", "ACDB", "GRID"] as const;
 
 function FlowArrow() {
   return (
@@ -57,6 +53,7 @@ function FlowArrow() {
 }
 
 export function QuantumTelemetry({ data }: QuantumTelemetryProps) {
+  const { copy } = useQuantumLang();
   const systemKw = Number(data.meta.systemKw) || LOCK_AC_KW;
   const moduleCount = quantumModuleCount(systemKw) || 6;
   const dcKwp =
@@ -86,14 +83,14 @@ export function QuantumTelemetry({ data }: QuantumTelemetryProps) {
   const standards =
     data.engineering.standards.length > 0
       ? data.engineering.standards.slice(0, 4).join(" · ")
-      : "IS/IEC · CEA · DISCOM net-metering · IS 3043 earthing";
+      : copy.eng.standardsFallback;
 
   const archSubs = [
     `${moduleCount}×${QUANTUM_PANEL_WATT} Wp`,
-    "Fuse + SPD",
+    copy.eng.archSubsStatic[0],
     `${acLabel} kW`,
-    "MCB + SPD",
-    "Bi-directional",
+    copy.eng.archSubsStatic[1],
+    copy.eng.archSubsStatic[2],
   ];
 
   return (
@@ -106,14 +103,14 @@ export function QuantumTelemetry({ data }: QuantumTelemetryProps) {
             className={styles.cyanText}
             style={{ fontSize: "0.75rem", letterSpacing: "3px" }}
           >
-            01 // ENGINEERING
+            {copy.eng.eyebrow}
           </span>
-          <h2 className={styles.telemetryHeadline}>System Design.</h2>
+          <h2 className={styles.telemetryHeadline}>{copy.eng.title}</h2>
         </div>
 
         <div className={styles.engLayout}>
           <div className={`${styles.glass3D} ${styles.engPanelFlush}`}>
-            <span className={styles.engPanelTitle}>Roof Array Plan</span>
+            <span className={styles.engPanelTitle}>{copy.eng.roofPlan}</span>
             <QuantumRoofArray
               modules={moduleCount}
               dcKwp={dcKwp}
@@ -125,53 +122,51 @@ export function QuantumTelemetry({ data }: QuantumTelemetryProps) {
           </div>
 
           <div className={styles.glass3D}>
-            <span className={styles.engPanelTitle}>Site & Array Metrics</span>
+            <span className={styles.engPanelTitle}>{copy.eng.metrics}</span>
             <div className={styles.engMetricList}>
               <div className={styles.engMetricRow}>
-                <span>Location</span>
+                <span>{copy.eng.location}</span>
                 <strong>{city}</strong>
-                <small>Final direction confirmed after site survey</small>
+                <small>{copy.eng.locationNote}</small>
               </div>
               <div className={styles.engMetricRow}>
-                <span>Roof area</span>
+                <span>{copy.eng.roofArea}</span>
                 <strong>~{roofSqft} sq ft</strong>
                 <small>
-                  {moduleCount} × ~{SQFT_PER_PANEL} sq ft per module, including
-                  walkway. Final after survey.
+                  {copy.eng.roofAreaNote(moduleCount, SQFT_PER_PANEL)}
                 </small>
               </div>
               <div className={styles.engMetricRow}>
-                <span>String layout</span>
+                <span>{copy.eng.stringLayout}</span>
                 <strong>
                   {strings} × {perString} @ {QUANTUM_PANEL_WATT} Wp
                 </strong>
-                <small>Panels wired in series to the inverter</small>
+                <small>{copy.eng.stringNote}</small>
               </div>
               <div className={styles.engMetricRow}>
-                <span>Yearly output</span>
+                <span>{copy.eng.yearlyOutput}</span>
                 <strong>{specificYield.toLocaleString("en-IN")} kWh/kW</strong>
                 <small>
-                  About {annualUnits.toLocaleString("en-IN")} units/year · real
-                  output ~75% of ideal · structure rated 150 km/h wind.
+                  {copy.eng.yearlyNote(annualUnits.toLocaleString("en-IN"))}
                 </small>
               </div>
             </div>
 
             <div className={styles.engChipRow}>
               <div className={styles.engChip}>
-                <em>DC</em>
+                <em>{copy.eng.chipDc}</em>
                 <strong>{dcKwp.toFixed(2)} kWp</strong>
               </div>
               <div className={styles.engChip}>
-                <em>AC</em>
+                <em>{copy.eng.chipAc}</em>
                 <strong>{acLabel} kW</strong>
               </div>
               <div className={styles.engChip}>
-                <em>DC/AC</em>
+                <em>{copy.eng.chipDcAc}</em>
                 <strong>{dcAc.toFixed(2)}</strong>
               </div>
               <div className={styles.engChip}>
-                <em>TILT</em>
+                <em>{copy.eng.chipTilt}</em>
                 <strong>{tilt.toFixed(0)}°</strong>
               </div>
             </div>
@@ -179,20 +174,18 @@ export function QuantumTelemetry({ data }: QuantumTelemetryProps) {
         </div>
 
         <div className={`${styles.glass3D} ${styles.engArchPanel}`}>
-          <span className={styles.engPanelTitle}>System Architecture</span>
-          <p className={styles.engArchLead}>
-            Power flows from the panels to the inverter, then to the grid meter.
-          </p>
+          <span className={styles.engPanelTitle}>{copy.eng.architecture}</span>
+          <p className={styles.engArchLead}>{copy.eng.archLead}</p>
           <div className={styles.engArchTrack}>
-            {ARCH.map((node, i) => {
-              const Icon = node.Icon;
+            {ARCH_CODES.map((code, i) => {
+              const Icon = ARCH_ICONS[i]!;
               return (
-                <div key={node.code} className={styles.engArchNodeSlot}>
+                <div key={code} className={styles.engArchNodeSlot}>
                   {i > 0 ? <FlowArrow /> : null}
                   <div className={styles.engArchNode}>
                     <Icon />
-                    <span className={styles.engArchCode}>{node.code}</span>
-                    <strong>{node.name}</strong>
+                    <span className={styles.engArchCode}>{code}</span>
+                    <strong>{copy.eng.archNames[i]}</strong>
                     <em>{archSubs[i]}</em>
                   </div>
                 </div>
@@ -200,9 +193,7 @@ export function QuantumTelemetry({ data }: QuantumTelemetryProps) {
             })}
           </div>
           <div className={styles.engPrStrip}>
-            <span>
-              Real-world output ~75% after heat, inverter, and cable losses
-            </span>
+            <span>{copy.eng.prStrip}</span>
             <span className={styles.engStandards}>{standards}</span>
           </div>
         </div>

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Quantum payment page — plan, vendor bank (More settings), payment rules, signatures.
+ * Quantum payment page — plan + side bank box, payment rules, signatures.
  * Full terms live on QuantumTerms pages (Premium Luxe parity).
  */
 
@@ -17,6 +17,8 @@ import {
   QUANTUM_DEFAULT_BRAND,
   useQuantumBrand,
 } from "./quantum-brand";
+import { useQuantumLang } from "./quantum-lang-context";
+import type { QuantumCopy } from "./quantum-copy";
 import styles from "./Quantum.module.css";
 
 export type QuantumAuthorizationProps = {
@@ -30,20 +32,6 @@ type Milestone = {
   percent: number;
   amountInr: number;
 };
-
-const DEFAULT_STEPS: { title: string; desc: string; percent: number }[] = [
-  { title: "Advance", desc: "Booking and material order", percent: 25 },
-  { title: "Material", desc: "Delivery of equipment at site", percent: 50 },
-  { title: "Installation", desc: "Structure and panel mounting", percent: 20 },
-  { title: "Commissioning", desc: "Testing and net-meter activation", percent: 5 },
-];
-
-const DEFAULT_PAYMENT_RULES = [
-  "Proposal valid for 30 days from issue date.",
-  "Final price may change after site survey.",
-  "Subsidy depends on MNRE / DISCOM approval.",
-  "Net metering timing depends on your local DISCOM.",
-];
 
 function cleanBank(value: string | undefined | null): string {
   const v = (value ?? "").trim();
@@ -138,7 +126,11 @@ function IllustBank() {
   );
 }
 
-function buildMilestones(data: ProposalData): Milestone[] {
+function buildMilestones(
+  data: ProposalData,
+  defaultSteps: QuantumCopy["pay"]["defaultSteps"],
+  stageFallback: string
+): Milestone[] {
   const base =
     data.economics.grossInr > 0
       ? data.economics.grossInr
@@ -152,18 +144,21 @@ function buildMilestones(data: ProposalData): Milestone[] {
         ? Number(pctMatch[1])
         : base > 0 && p.amountInr > 0
           ? Math.round((p.amountInr / base) * 100)
-          : DEFAULT_STEPS[i]?.percent ?? 0;
+          : defaultSteps[i]?.percent ?? 0;
       return {
         phase: String(i + 1).padStart(2, "0"),
-        title: p.label.replace(/^\d+\.\s*/, "") || DEFAULT_STEPS[i]?.title || "Stage",
-        desc: p.pctLabel || DEFAULT_STEPS[i]?.desc || "",
+        title:
+          p.label.replace(/^\d+\.\s*/, "") ||
+          defaultSteps[i]?.title ||
+          stageFallback,
+        desc: p.pctLabel || defaultSteps[i]?.desc || "",
         percent,
         amountInr: p.amountInr,
       };
     });
   }
 
-  return DEFAULT_STEPS.map((s, i) => ({
+  return defaultSteps.map((s, i) => ({
     phase: String(i + 1).padStart(2, "0"),
     title: s.title,
     desc: s.desc,
@@ -173,9 +168,11 @@ function buildMilestones(data: ProposalData): Milestone[] {
 }
 
 export function QuantumAuthorization({ data }: QuantumAuthorizationProps) {
+  const { copy } = useQuantumLang();
   const brand = useQuantumBrand(data) || QUANTUM_DEFAULT_BRAND;
-  const client = data.meta.customerName?.trim() || "Customer Name";
-  const steps = buildMilestones(data);
+  const client =
+    data.meta.customerName?.trim() || copy.pay.customerFallback;
+  const steps = buildMilestones(data, copy.pay.defaultSteps, copy.pay.stage);
   const bank = useResolvedQuantumBank(data);
   const company = bank.accountName || brand;
   const hasBank = Boolean(bank.accountNumber || bank.ifsc || bank.upiId);
@@ -187,7 +184,7 @@ export function QuantumAuthorization({ data }: QuantumAuthorizationProps) {
   const paymentRules =
     data.terms.conditions.length > 0
       ? data.terms.conditions.slice(0, 4)
-      : DEFAULT_PAYMENT_RULES;
+      : copy.pay.defaultRules;
 
   return (
     <section className={`${styles.a4Page} ${styles.authPage}`}>
@@ -196,135 +193,118 @@ export function QuantumAuthorization({ data }: QuantumAuthorizationProps) {
           className={styles.cyanText}
           style={{ fontSize: "0.75rem", letterSpacing: "3px" }}
         >
-          05 // PAYMENT &amp; SIGN-OFF
+          {copy.pay.eyebrow}
         </span>
-        <h2>Payment Plan.</h2>
+        <h2>{copy.pay.title}</h2>
       </div>
 
       {projectValue > 0 ? (
         <p className={styles.payLead}>
-          Project value: <strong>{formatInr(projectValue)}</strong>
-          {gross > 0 && net > 0 && net !== gross
-            ? ` · Net after subsidy: ${formatInr(net)}`
-            : null}
-          . Pay stage-wise into the vendor account below.
+          {copy.pay.leadWithValue(
+            formatInr(projectValue),
+            gross > 0 && net > 0 && net !== gross
+              ? `${copy.pay.netAfter}${formatInr(net)}`
+              : ""
+          )}
         </p>
       ) : (
-        <p className={styles.payLead}>
-          Pay stage-wise into the vendor bank account from More settings.
-        </p>
+        <p className={styles.payLead}>{copy.pay.leadFallback}</p>
       )}
 
-      {/* Payment schedule */}
-      <div className={`${styles.glass3D} ${styles.payScheduleCard}`}>
-        <span className={styles.paySectionTitle}>Payment plan</span>
-        <div className={styles.payScheduleList}>
-          {steps.map((step) => (
-            <div key={step.phase} className={styles.payMilestoneRow}>
-              <span className={styles.payMilestoneNum}>{step.phase}</span>
-              <div className={styles.payMilestoneBody}>
-                <strong>{step.title}</strong>
-                <span>
-                  {step.percent}% · {step.desc}
-                </span>
+      <div className={styles.payPlanBankRow}>
+        <div className={`${styles.glass3D} ${styles.payScheduleCard}`}>
+          <span className={styles.paySectionTitle}>{copy.pay.planTitle}</span>
+          <div className={styles.payScheduleList}>
+            {steps.map((step) => (
+              <div key={step.phase} className={styles.payMilestoneRow}>
+                <span className={styles.payMilestoneNum}>{step.phase}</span>
+                <div className={styles.payMilestoneBody}>
+                  <strong>{step.title}</strong>
+                  <span>
+                    {step.percent}% · {step.desc}
+                  </span>
+                </div>
+                <em className={styles.payMilestoneAmt}>
+                  {step.amountInr > 0 ? formatInr(step.amountInr) : "—"}
+                </em>
               </div>
-              <em className={styles.payMilestoneAmt}>
-                {step.amountInr > 0 ? formatInr(step.amountInr) : "—"}
-              </em>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Vendor bank — full width, high clarity (More → Brand settings) */}
-      <div className={`${styles.glass3D} ${styles.payBankCard}`}>
-        <div className={styles.payBankHead}>
-          <IllustBank />
-          <div className={styles.payBankHeadText}>
-            <span className={styles.paySectionTitle}>Vendor bank account</span>
-            <p className={styles.payBankNote}>
-              Pay only into this account. Details from More → Brand settings.
-            </p>
+            ))}
           </div>
-          {hasBank ? (
-            <span className={styles.payBankBadge}>Verified for transfer</span>
-          ) : null}
         </div>
 
-        {hasBank ? (
-          <div className={styles.payBankClear}>
-            <div className={styles.payBankRow}>
-              <span>Account name</span>
-              <strong>{company || "—"}</strong>
+        <aside className={`${styles.glass3D} ${styles.payBankCard}`}>
+          <div className={styles.payBankHead}>
+            <IllustBank />
+            <div className={styles.payBankHeadText}>
+              <span className={styles.paySectionTitle}>{copy.pay.bankTitle}</span>
+              <p className={styles.payBankNote}>{copy.pay.bankNote}</p>
             </div>
-            <div className={`${styles.payBankRow} ${styles.payBankRowHero}`}>
-              <span>Account number</span>
-              <strong className={styles.payBankMono}>
-                {bank.accountNumber
-                  ? formatAccountDisplay(bank.accountNumber)
-                  : "—"}
-              </strong>
-            </div>
-            <div className={styles.payBankRowPair}>
+          </div>
+
+          {hasBank ? (
+            <div className={styles.payBankClear}>
               <div className={styles.payBankRow}>
-                <span>IFSC code</span>
+                <span>{copy.pay.name}</span>
+                <strong>{company || "—"}</strong>
+              </div>
+              <div className={`${styles.payBankRow} ${styles.payBankRowHero}`}>
+                <span>{copy.pay.acNumber}</span>
+                <strong className={styles.payBankMono}>
+                  {bank.accountNumber
+                    ? formatAccountDisplay(bank.accountNumber)
+                    : "—"}
+                </strong>
+              </div>
+              <div className={styles.payBankRow}>
+                <span>{copy.pay.ifsc}</span>
                 <strong className={styles.payBankMono}>
                   {bank.ifsc || "—"}
                 </strong>
               </div>
-              <div className={styles.payBankRow}>
-                <span>UPI ID</span>
-                <strong className={styles.payBankMono}>
-                  {bank.upiId || "—"}
-                </strong>
-              </div>
+              {bank.upiId ? (
+                <div className={styles.payBankRow}>
+                  <span>{copy.pay.upi}</span>
+                  <strong className={styles.payBankMono}>{bank.upiId}</strong>
+                </div>
+              ) : null}
+              {bank.branch ? (
+                <div className={styles.payBankRow}>
+                  <span>{copy.pay.branch}</span>
+                  <strong>{bank.branch}</strong>
+                </div>
+              ) : null}
             </div>
-            {bank.branch ? (
-              <div className={styles.payBankRow}>
-                <span>Branch</span>
-                <strong>{bank.branch}</strong>
-              </div>
-            ) : null}
-          </div>
-        ) : (
-          <div className={styles.payBankEmpty}>
-            No bank details yet. Open More → Brand settings and save account
-            name, account number, IFSC, and UPI — they will show here clearly.
-          </div>
-        )}
+          ) : (
+            <div className={styles.payBankEmpty}>{copy.pay.bankEmpty}</div>
+          )}
+        </aside>
       </div>
 
       <div className={`${styles.glass3D} ${styles.payRulesCard}`}>
-        <span className={styles.paySectionTitle}>Payment rules</span>
+        <span className={styles.paySectionTitle}>{copy.pay.rulesTitle}</span>
         <ul className={styles.payRulesList}>
           {paymentRules.map((rule) => (
             <li key={rule.slice(0, 40)}>{rule}</li>
           ))}
         </ul>
-        <p className={styles.payRulesFoot}>
-          Full terms &amp; conditions continue on the next pages.
-        </p>
+        <p className={styles.payRulesFoot}>{copy.pay.rulesFoot}</p>
       </div>
 
-      {/* Signatures */}
       <div className={`${styles.glass3D} ${styles.authGateway}`}>
-        <span className={styles.authGatewayTitle}>Signatures</span>
+        <span className={styles.authGatewayTitle}>{copy.pay.signatures}</span>
         <div className={styles.authSigRow}>
           <div className={styles.authSigCol}>
             <div className={styles.authSigLine} />
             <span className={styles.authSigName}>{client}</span>
-            <span className={styles.authSigRole}>Customer</span>
+            <span className={styles.authSigRole}>{copy.pay.customer}</span>
           </div>
           <div className={styles.authSigCol}>
             <div className={styles.authSigLine} />
             <span className={styles.authSigName}>{brand}</span>
-            <span className={styles.authSigRoleCyan}>Installer</span>
+            <span className={styles.authSigRoleCyan}>{copy.pay.installer}</span>
           </div>
         </div>
-        <p className={styles.authDisclaimer}>
-          By signing, both parties agree to this payment plan and the full terms
-          &amp; conditions in this proposal.
-        </p>
+        <p className={styles.authDisclaimer}>{copy.pay.disclaimer}</p>
       </div>
     </section>
   );

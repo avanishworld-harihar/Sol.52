@@ -11,7 +11,17 @@ import {
   formatInrCompact,
 } from "@/components/proposals/_shared/formatters";
 import { QuantumAtmosphere } from "./QuantumAtmosphere";
+import { useQuantumLang } from "./quantum-lang-context";
+import {
+  QuantumChartDraw,
+  QuantumCountUp,
+  QuantumFadeUp,
+  QuantumGrowBar,
+} from "./quantum-motion";
 import styles from "./Quantum.module.css";
+
+const fmtCompact = (n: number) => formatInrCompact(n);
+const fmtInr = (n: number) => formatInr(n);
 
 export type QuantumEconomicsProps = {
   data: ProposalData;
@@ -88,6 +98,7 @@ function buildWealthSeries(
 }
 
 export function QuantumEconomics({ data }: QuantumEconomicsProps) {
+  const { copy } = useQuantumLang();
   const eco = data.economics;
   const gross = eco.grossInr;
   const subsidy = eco.subsidyInr;
@@ -114,7 +125,7 @@ export function QuantumEconomics({ data }: QuantumEconomicsProps) {
 
   const paybackLabel =
     payback > 0
-      ? `${payback.toFixed(payback % 1 ? 1 : 0)} yrs`
+      ? `${payback.toFixed(payback % 1 ? 1 : 0)} ${copy.econ.yrs}`
       : "—";
 
   const chart = buildWealthSeries(payback, lifetime, net);
@@ -133,275 +144,326 @@ export function QuantumEconomics({ data }: QuantumEconomicsProps) {
             className={styles.cyanText}
             style={{ fontSize: "0.75rem", letterSpacing: "3px" }}
           >
-            02 // COST &amp; SAVINGS
+            {copy.econ.eyebrow}
           </span>
-          <h2>Your Investment.</h2>
+          <h2>{copy.econ.title}</h2>
         </div>
 
-        <p className={styles.econLead}>
-          See what you pay, how soon it returns, and how savings grow over 25
-          years.
-        </p>
+        <p className={styles.econLead}>{copy.econ.lead}</p>
 
         {/* Glance KPIs */}
         <div className={styles.econKpiRow}>
-          <div className={`${styles.glass3D} ${styles.econKpi}`}>
-            <span className={styles.econKpiLabel}>You pay (net)</span>
-            <strong className={styles.econKpiValue}>
-              {net > 0 ? formatInrCompact(net) : "—"}
-            </strong>
-            <em>After subsidy</em>
-          </div>
-          <div className={`${styles.glass3D} ${styles.econKpi}`}>
-            <span className={styles.econKpiLabel}>Save every month</span>
-            <strong className={`${styles.econKpiValue} ${styles.accentText}`}>
-              {monthly > 0 ? formatInr(monthly) : "—"}
-            </strong>
-            <em>Lower electricity bill</em>
-          </div>
-          <div className={`${styles.glass3D} ${styles.econKpi}`}>
-            <span className={styles.econKpiLabel}>Money back in</span>
-            <strong className={`${styles.econKpiValue} ${styles.accentText}`}>
-              {paybackLabel}
-            </strong>
-            <em>Payback time</em>
-          </div>
-          <div className={`${styles.glass3D} ${styles.econKpi}`}>
-            <span className={styles.econKpiLabel}>25-year savings</span>
-            <strong className={`${styles.econKpiValue} ${styles.okText}`}>
-              {lifetime > 0 ? formatInrCompact(lifetime) : "—"}
-            </strong>
-            <em>Total bill relief</em>
-          </div>
+          <QuantumFadeUp delay={0}>
+            <div className={`${styles.glass3D} ${styles.econKpi}`}>
+              <span className={styles.econKpiLabel}>{copy.econ.youPay}</span>
+              <strong className={styles.econKpiValue}>
+                <QuantumCountUp value={net} format={fmtCompact} />
+              </strong>
+              <em>{copy.econ.afterSubsidy}</em>
+            </div>
+          </QuantumFadeUp>
+          <QuantumFadeUp delay={0.06}>
+            <div className={`${styles.glass3D} ${styles.econKpi}`}>
+              <span className={styles.econKpiLabel}>{copy.econ.saveMonth}</span>
+              <strong className={`${styles.econKpiValue} ${styles.accentText}`}>
+                <QuantumCountUp value={monthly} format={fmtInr} />
+              </strong>
+              <em>{copy.econ.lowerBill}</em>
+            </div>
+          </QuantumFadeUp>
+          <QuantumFadeUp delay={0.12}>
+            <div className={`${styles.glass3D} ${styles.econKpi}`}>
+              <span className={styles.econKpiLabel}>{copy.econ.moneyBack}</span>
+              <strong className={`${styles.econKpiValue} ${styles.accentText}`}>
+                {payback > 0 ? (
+                  <>
+                    <QuantumCountUp
+                      value={payback}
+                      format={(n) =>
+                        `${n.toFixed(payback % 1 ? 1 : 0)} ${copy.econ.yrs}`
+                      }
+                      decimals={payback % 1 ? 1 : 0}
+                    />
+                  </>
+                ) : (
+                  "—"
+                )}
+              </strong>
+              <em>{copy.econ.paybackTime}</em>
+            </div>
+          </QuantumFadeUp>
+          <QuantumFadeUp delay={0.18}>
+            <div className={`${styles.glass3D} ${styles.econKpi}`}>
+              <span className={styles.econKpiLabel}>{copy.econ.savings25}</span>
+              <strong className={`${styles.econKpiValue} ${styles.okText}`}>
+                <QuantumCountUp value={lifetime} format={fmtCompact} />
+              </strong>
+              <em>{copy.econ.totalRelief}</em>
+            </div>
+          </QuantumFadeUp>
         </div>
 
         <div className={styles.econMidGrid}>
           {/* Price breakup */}
-          <div className={`${styles.glass3D} ${styles.econPanel}`}>
-            <span className={styles.econPanelTitle}>Price breakup</span>
-            <div className={styles.econBreakRows}>
-              <div className={styles.econBreakRow}>
-                <span>System price (gross)</span>
-                <strong>{gross > 0 ? formatInr(gross) : "—"}</strong>
-              </div>
-              <div className={styles.econBreakRow}>
-                <span>MNRE subsidy (est.)</span>
-                <strong className={styles.okText}>
-                  {subsidy > 0 ? `− ${formatInr(subsidy)}` : "—"}
-                </strong>
-              </div>
-              <div className={`${styles.econBreakRow} ${styles.econBreakNet}`}>
-                <span>Net you pay</span>
-                <strong>{net > 0 ? formatInr(net) : "—"}</strong>
-              </div>
-              <div className={styles.econBreakRow}>
-                <span>Net metering &amp; DISCOM fees</span>
-                <strong>Included</strong>
-              </div>
-              <div className={styles.econBreakRow}>
-                <span>5-year AMC</span>
-                <strong>Included</strong>
+          <QuantumFadeUp delay={0.08}>
+            <div className={`${styles.glass3D} ${styles.econPanel}`}>
+              <span className={styles.econPanelTitle}>
+                {copy.econ.priceBreakup}
+              </span>
+              <div className={styles.econBreakRows}>
+                <div className={styles.econBreakRow}>
+                  <span>{copy.econ.systemGross}</span>
+                  <strong>
+                    <QuantumCountUp value={gross} format={fmtInr} />
+                  </strong>
+                </div>
+                <div className={styles.econBreakRow}>
+                  <span>{copy.econ.subsidyEst}</span>
+                  <strong className={styles.okText}>
+                    {subsidy > 0 ? (
+                      <>
+                        − <QuantumCountUp value={subsidy} format={fmtInr} />
+                      </>
+                    ) : (
+                      "—"
+                    )}
+                  </strong>
+                </div>
+                <div className={`${styles.econBreakRow} ${styles.econBreakNet}`}>
+                  <span>{copy.econ.netYouPay}</span>
+                  <strong>
+                    <QuantumCountUp value={net} format={fmtInr} />
+                  </strong>
+                </div>
+                <div className={styles.econBreakRow}>
+                  <span>{copy.econ.netMeterFees}</span>
+                  <strong>{copy.econ.included}</strong>
+                </div>
+                <div className={styles.econBreakRow}>
+                  <span>{copy.econ.amc5}</span>
+                  <strong>{copy.econ.included}</strong>
+                </div>
               </div>
             </div>
-          </div>
+          </QuantumFadeUp>
 
           {/* Bill before / after */}
-          <div className={`${styles.glass3D} ${styles.econPanel}`}>
-            <span className={styles.econPanelTitle}>Yearly electricity bill</span>
-            <div className={styles.econBillCompare}>
-              <div className={styles.econBillCol}>
-                <div
-                  className={styles.econBillBarToday}
-                  style={{ height: `${todayH}px` }}
-                />
-                <strong>{billToday > 0 ? formatInrCompact(billToday) : "—"}</strong>
-                <span>Before solar</span>
+          <QuantumFadeUp delay={0.14}>
+            <div className={`${styles.glass3D} ${styles.econPanel}`}>
+              <span className={styles.econPanelTitle}>
+                {copy.econ.yearlyBill}
+              </span>
+              <div className={styles.econBillCompare}>
+                <div className={styles.econBillCol}>
+                  <QuantumGrowBar
+                    className={styles.econBillBarToday}
+                    heightPx={todayH}
+                    delay={0.1}
+                  />
+                  <strong>
+                    <QuantumCountUp value={billToday} format={fmtCompact} />
+                  </strong>
+                  <span>{copy.econ.beforeSolar}</span>
+                </div>
+                <div className={styles.econBillArrow} aria-hidden>
+                  →
+                </div>
+                <div className={styles.econBillCol}>
+                  <QuantumGrowBar
+                    className={styles.econBillBarAfter}
+                    heightPx={afterH}
+                    delay={0.22}
+                  />
+                  <strong className={styles.accentText}>
+                    <QuantumCountUp value={billAfter} format={fmtCompact} />
+                  </strong>
+                  <span>{copy.econ.afterSolar}</span>
+                </div>
               </div>
-              <div className={styles.econBillArrow} aria-hidden>
-                →
-              </div>
-              <div className={styles.econBillCol}>
-                <div
-                  className={styles.econBillBarAfter}
-                  style={{ height: `${afterH}px` }}
-                />
-                <strong className={styles.accentText}>
-                  {billToday > 0 ? formatInrCompact(billAfter) : "—"}
+              <p className={styles.econBillNote}>
+                {copy.econ.firstYear}{" "}
+                <strong>
+                  <QuantumCountUp value={annual} format={fmtInr} />
                 </strong>
-                <span>After solar</span>
-              </div>
+                {monthly > 0
+                  ? ` (~${formatInr(monthly)}${copy.econ.perMonth})`
+                  : null}
+              </p>
             </div>
-            <p className={styles.econBillNote}>
-              First-year savings:{" "}
-              <strong>
-                {annual > 0 ? formatInr(annual) : "—"}
-              </strong>
-              {monthly > 0 ? ` (~${formatInr(monthly)}/month)` : null}
-            </p>
-          </div>
+          </QuantumFadeUp>
         </div>
 
         {/* 25-year graph */}
-        <div className={`${styles.glass3D} ${styles.econChartCard}`}>
-          <div className={styles.econChartHead}>
-            <div>
-              <span className={styles.econPanelTitle}>25-year savings path</span>
-              <p className={styles.econChartSub}>
-                Starts as money you invest, crosses zero at payback, then grows
-                as savings.
-              </p>
+        <QuantumFadeUp delay={0.1}>
+          <div className={`${styles.glass3D} ${styles.econChartCard}`}>
+            <div className={styles.econChartHead}>
+              <div>
+                <span className={styles.econPanelTitle}>{copy.econ.path25}</span>
+                <p className={styles.econChartSub}>{copy.econ.pathSub}</p>
+              </div>
+              <span className={styles.econChartBadge}>
+                {copy.econ.breakEven} · {paybackLabel}
+              </span>
             </div>
-            <span className={styles.econChartBadge}>
-              Break-even · {paybackLabel}
-            </span>
-          </div>
 
-          <svg
-            viewBox="0 0 560 168"
-            width="100%"
-            height="168"
-            className={styles.econChartSvg}
-            aria-hidden
-          >
-            <defs>
-              <linearGradient id="qWealthFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="rgba(6,182,212,0.4)" />
-                <stop offset="100%" stopColor="rgba(6,182,212,0.02)" />
-              </linearGradient>
-              <linearGradient id="qWealthLine" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="#0891b2" />
-                <stop offset="100%" stopColor="#22d3ee" />
-              </linearGradient>
-            </defs>
+            <svg
+              viewBox="0 0 560 168"
+              width="100%"
+              height="168"
+              className={styles.econChartSvg}
+              aria-hidden
+            >
+              <defs>
+                <linearGradient id="qWealthFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="rgba(6,182,212,0.4)" />
+                  <stop offset="100%" stopColor="rgba(6,182,212,0.02)" />
+                </linearGradient>
+                <linearGradient id="qWealthLine" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#0891b2" />
+                  <stop offset="100%" stopColor="#22d3ee" />
+                </linearGradient>
+              </defs>
 
-            <rect
-              x="40"
-              y={chart.zeroY}
-              width="506"
-              height={Math.max(0, 142 - chart.zeroY)}
-              fill="rgba(239,68,68,0.04)"
-            />
+              <rect
+                x="40"
+                y={chart.zeroY}
+                width="506"
+                height={Math.max(0, 142 - chart.zeroY)}
+                fill="rgba(239,68,68,0.04)"
+              />
 
-            {[0.25, 0.5, 0.75].map((t) => {
-              const y = 20 + t * (168 - 20 - 26);
-              return (
+              {[0.25, 0.5, 0.75].map((t) => {
+                const y = 20 + t * (168 - 20 - 26);
+                return (
+                  <line
+                    key={t}
+                    x1="40"
+                    y1={y}
+                    x2="546"
+                    y2={y}
+                    stroke="rgba(148,163,184,0.15)"
+                    strokeWidth="1"
+                  />
+                );
+              })}
+
+              <line
+                x1="40"
+                y1={chart.zeroY}
+                x2="546"
+                y2={chart.zeroY}
+                stroke="rgba(148,163,184,0.45)"
+                strokeWidth="1"
+                strokeDasharray="4 4"
+              />
+              <text
+                x="36"
+                y={chart.zeroY + 3}
+                textAnchor="end"
+                fill="#94a3b8"
+                fontSize="8"
+              >
+                ₹0
+              </text>
+
+              <QuantumChartDraw
+                linePath={chart.linePath}
+                areaPath={chart.areaPath}
+              >
                 <line
-                  key={t}
-                  x1="40"
-                  y1={y}
-                  x2="546"
-                  y2={y}
-                  stroke="rgba(148,163,184,0.15)"
+                  x1={chart.breakX}
+                  y1={18}
+                  x2={chart.breakX}
+                  y2={142}
+                  stroke="rgba(6,182,212,0.35)"
                   strokeWidth="1"
+                  strokeDasharray="3 3"
                 />
-              );
-            })}
-
-            <line
-              x1="40"
-              y1={chart.zeroY}
-              x2="546"
-              y2={chart.zeroY}
-              stroke="rgba(148,163,184,0.45)"
-              strokeWidth="1"
-              strokeDasharray="4 4"
-            />
-            <text
-              x="36"
-              y={chart.zeroY + 3}
-              textAnchor="end"
-              fill="#94a3b8"
-              fontSize="8"
-            >
-              ₹0
-            </text>
-
-            <path d={chart.areaPath} fill="url(#qWealthFill)" />
-            <path
-              d={chart.linePath}
-              stroke="url(#qWealthLine)"
-              strokeWidth="2.6"
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-
-            <line
-              x1={chart.breakX}
-              y1={18}
-              x2={chart.breakX}
-              y2={142}
-              stroke="rgba(6,182,212,0.35)"
-              strokeWidth="1"
-              strokeDasharray="3 3"
-            />
-            <circle cx={chart.breakX} cy={chart.breakY} r="5" fill="#22d3ee" />
-            <circle
-              cx={chart.breakX}
-              cy={chart.breakY}
-              r="8.5"
-              fill="none"
-              stroke="#22d3ee"
-              strokeWidth="1"
-            />
-            <text
-              x={chart.breakX}
-              y={Math.max(14, chart.breakY - 12)}
-              textAnchor="middle"
-              fill="#67e8f9"
-              fontSize="8.5"
-              fontWeight="700"
-              letterSpacing="0.6"
-            >
-              PAYBACK
-            </text>
-
-            <circle cx={chart.endX} cy={chart.endY} r="3.5" fill="#e2e8f0" />
-            <text
-              x={Math.min(530, chart.endX - 2)}
-              y={Math.max(14, chart.endY - 9)}
-              textAnchor="end"
-              fill="#e2e8f0"
-              fontSize="9"
-              fontWeight="600"
-            >
-              {lifetime > 0 ? formatInrCompact(lifetime) : ""}
-            </text>
-
-            {chart.yearTicks.map((t) => (
-              <g key={t.label}>
-                <line
-                  x1={t.x}
-                  y1={142}
-                  x2={t.x}
-                  y2={146}
-                  stroke="#64748b"
+                <circle
+                  cx={chart.breakX}
+                  cy={chart.breakY}
+                  r="5"
+                  fill="#22d3ee"
+                />
+                <circle
+                  cx={chart.breakX}
+                  cy={chart.breakY}
+                  r="8.5"
+                  fill="none"
+                  stroke="#22d3ee"
                   strokeWidth="1"
                 />
                 <text
-                  x={t.x}
-                  y="158"
+                  x={chart.breakX}
+                  y={Math.max(14, chart.breakY - 12)}
                   textAnchor="middle"
-                  fill="#94a3b8"
-                  fontSize="9"
+                  fill="#67e8f9"
+                  fontSize="8.5"
+                  fontWeight="700"
+                  letterSpacing="0.6"
                 >
-                  {t.label}
+                  {copy.econ.payback}
                 </text>
-              </g>
-            ))}
 
-            <text x="40" y="12" fill="#64748b" fontSize="8" letterSpacing="0.5">
-              CUMULATIVE POSITION
-            </text>
-          </svg>
+                <circle
+                  cx={chart.endX}
+                  cy={chart.endY}
+                  r="3.5"
+                  fill="#e2e8f0"
+                />
+                <text
+                  x={Math.min(530, chart.endX - 2)}
+                  y={Math.max(14, chart.endY - 9)}
+                  textAnchor="end"
+                  fill="#e2e8f0"
+                  fontSize="9"
+                  fontWeight="600"
+                >
+                  {lifetime > 0 ? formatInrCompact(lifetime) : ""}
+                </text>
+              </QuantumChartDraw>
 
-          <p className={styles.econChartFoot}>
-            Curve starts at your net cost, reaches break-even at {paybackLabel},
-            then grows toward about{" "}
-            {lifetime > 0 ? formatInrCompact(lifetime) : "long-term savings"}{" "}
-            over 25 years.
-          </p>
-        </div>
+              {chart.yearTicks.map((t) => (
+                <g key={t.label}>
+                  <line
+                    x1={t.x}
+                    y1={142}
+                    x2={t.x}
+                    y2={146}
+                    stroke="#64748b"
+                    strokeWidth="1"
+                  />
+                  <text
+                    x={t.x}
+                    y="158"
+                    textAnchor="middle"
+                    fill="#94a3b8"
+                    fontSize="9"
+                  >
+                    {t.label}
+                  </text>
+                </g>
+              ))}
+
+              <text
+                x="40"
+                y="12"
+                fill="#64748b"
+                fontSize="8"
+                letterSpacing="0.5"
+              >
+                {copy.econ.cumulative}
+              </text>
+            </svg>
+
+            <p className={styles.econChartFoot}>
+              {copy.econ.chartFoot(
+                paybackLabel,
+                lifetime > 0 ? formatInrCompact(lifetime) : copy.econ.longTerm
+              )}
+            </p>
+          </div>
+        </QuantumFadeUp>
       </div>
     </section>
   );

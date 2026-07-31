@@ -7,6 +7,7 @@
  * Schematic only — not Design Studio / live SLD.
  */
 
+import { useQuantumLang } from "./quantum-lang-context";
 import styles from "./Quantum.module.css";
 
 const MAX_DRAW = 18;
@@ -189,6 +190,7 @@ export function QuantumRoofArray({
   strings,
   perString,
 }: QuantumRoofArrayProps) {
+  const { copy } = useQuantumLang();
   const modulesDraw = Math.min(Math.max(1, modules), MAX_DRAW);
   const preferredRows = modulesDraw <= 4 ? 1 : modulesDraw <= 12 ? 2 : 3;
   const cols = Math.max(1, Math.ceil(modulesDraw / preferredRows));
@@ -334,8 +336,7 @@ export function QuantumRoofArray({
         fontFamily="ui-sans-serif,system-ui,sans-serif"
         letterSpacing="0.35"
       >
-        {modules} modules · {kwLabel} kWp DC · {strings}×{perString} string · South ·{" "}
-        {panelWatt}W
+        {copy.eng.arrayCaption(modules, kwLabel, strings, perString, panelWatt)}
       </text>
     </svg>
   );
