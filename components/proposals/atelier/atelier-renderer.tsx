@@ -411,8 +411,12 @@ export function AtelierRenderer({
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
-  /* Named pages only — never bare @page (bleeds into other presets) */
-  @page atelier-sheet { size: A4; margin: 18mm 20mm; }
+  /*
+   * Named pages only — never bare @page (bleeds into other presets).
+   * margin:0 is required: .page is already 210×297mm with its own padding.
+   * Non-zero @page margins shrink the printable box → right clip + blank spill pages.
+   */
+  @page atelier-sheet { size: A4; margin: 0; }
   @page atelier-cover { size: A4; margin: 0; }
   @page atelier-closing { size: A4; margin: 0; }
 }
