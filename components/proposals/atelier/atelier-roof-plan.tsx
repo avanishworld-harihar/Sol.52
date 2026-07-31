@@ -2,7 +2,7 @@
 
 /**
  * Atelier — soft-tilt terrace PV bank (schematic “yield story”).
- * Light cream editorial — not Quantum dark isometric / not orange blocks.
+ * Auto-fits / centers in the stage — not Quantum dark isometric.
  */
 
 type AtelierRoofPlanProps = {
@@ -12,12 +12,9 @@ type AtelierRoofPlanProps = {
 };
 
 const MAX_DRAW = 18;
-
-/** Soft iso: u → right-down, v → left-down (south toward bottom). */
-const UX = 38;
-const UY = 9;
-const VX = -8;
-const VY = 22;
+const VB_W = 480;
+const VB_H = 280;
+const PAD = 28;
 
 type Pt = { x: number; y: number };
 
@@ -28,14 +25,38 @@ function moduleGrid(count: number): { cols: number; rows: number } {
   return { cols: Math.ceil(n / 3), rows: 3 };
 }
 
+/** Soft iso basis sized so small banks still read large. */
+function isoBasis(cols: number, rows: number) {
+  const targetW = 340;
+  const targetH = 180;
+  const gapU = 0.12;
+  const gapV = 0.2;
+  const bankWU = cols * (1 + gapU) - gapU;
+  const bankWV = rows * (1 + gapV) - gapV;
+  // Prefer width fill for wide banks; height for tall ones
+  const ux = Math.min(52, targetW / Math.max(bankWU, 0.5));
+  const uy = ux * 0.22;
+  const vy = Math.min(30, targetH / Math.max(bankWV, 0.5));
+  const vx = -uy * 0.85;
+  return { UX: ux, UY: uy, VX: vx, VY: vy, gapU, gapV, bankWU, bankWV };
+}
+
 function AtelierPvModule({
   ox,
   oy,
   southAccent,
+  UX,
+  UY,
+  VX,
+  VY,
 }: {
   ox: number;
   oy: number;
   southAccent: boolean;
+  UX: number;
+  UY: number;
+  VX: number;
+  VY: number;
 }) {
   const at = (u: number, v: number, z = 0): Pt => ({
     x: ox + UX * u + VX * v,
@@ -47,7 +68,7 @@ function AtelierPvModule({
   const p1 = at(1, 0);
   const p2 = at(1, 1);
   const p3 = at(0, 1);
-  const thick = 2.2;
+  const thick = Math.max(2.4, UX * 0.06);
   const inset = 0.07;
   const g0 = at(inset, inset);
   const g1 = at(1 - inset, inset);
@@ -111,7 +132,7 @@ function AtelierPvModule({
         d={bus.join(" ")}
         fill="none"
         stroke="rgba(186,210,230,0.4)"
-        strokeWidth="0.5"
+        strokeWidth="0.55"
         strokeLinecap="round"
       />
       <line
@@ -119,8 +140,8 @@ function AtelierPvModule({
         y1={glintA.y}
         x2={glintB.x}
         y2={glintB.y}
-        stroke="rgba(255,255,255,0.45)"
-        strokeWidth="1.2"
+        stroke="rgba(255,255,255,0.5)"
+        strokeWidth="1.4"
         strokeLinecap="round"
       />
       {southAccent ? (
@@ -128,7 +149,7 @@ function AtelierPvModule({
           d={`M ${g3.x},${g3.y} L ${g2.x},${g2.y}`}
           fill="none"
           stroke="#F97316"
-          strokeWidth="1.4"
+          strokeWidth="1.6"
           strokeLinecap="round"
         />
       ) : null}
@@ -143,118 +164,163 @@ export function AtelierRoofPlan({
 }: AtelierRoofPlanProps) {
   const draw = Math.min(Math.max(1, modules), MAX_DRAW);
   const { cols, rows } = moduleGrid(draw);
+  const { UX, UY, VX, VY, gapU, gapV, bankWU, bankWV } = isoBasis(cols, rows);
 
-  const gapU = 0.14;
-  const gapV = 0.22;
   const stepU = 1 + gapU;
   const stepV = 1 + gapV;
-
-  const bankWU = cols * stepU - gapU;
-  const bankWV = rows * stepV - gapV;
-
-  const originX = 48;
-  const originY = 36;
-  const toScreen = (u: number, v: number) => ({
-    x: originX + UX * u + VX * v,
-    y: originY + UY * u + VY * v,
+  const toLocal = (u: number, v: number) => ({
+    x: UX * u + VX * v,
+    y: UY * u + VY * v,
   });
 
-  const slabPadU = 0.35;
-  const slabPadV = 0.4;
+  const slabPadU = 0.45;
+  const slabPadV = 0.5;
   const slab = [
-    toScreen(-slabPadU, -slabPadV),
-    toScreen(bankWU + slabPadU, -slabPadV),
-    toScreen(bankWU + slabPadU, bankWV + slabPadV),
-    toScreen(-slabPadU, bankWV + slabPadV),
+    toLocal(-slabPadU, -slabPadV),
+    toLocal(bankWU + slabPadU, -slabPadV),
+    toLocal(bankWU + slabPadU, bankWV + slabPadV),
+    toLocal(-slabPadU, bankWV + slabPadV),
   ];
   const slabPoly = slab.map((p) => `${p.x},${p.y}`).join(" ");
 
-  const southEdgeMid = toScreen(bankWU / 2, bankWV + 0.15);
+  const southEdgeMid = toLocal(bankWU / 2, bankWV + 0.2);
+  const labelY = southEdgeMid.y + 22;
+
   const positions = Array.from({ length: draw }).map((_, i) => {
     const col = i % cols;
     const row = Math.floor(i / cols);
-    return {
-      ox: originX + UX * (col * stepU) + VX * (row * stepV),
-      oy: originY + UY * (col * stepU) + VY * (row * stepV),
-      row,
-    };
+    const p = toLocal(col * stepU, row * stepV);
+    return { ox: p.x, oy: p.y, row };
   });
   positions.sort((a, b) => a.oy - b.oy || a.ox - b.ox);
+
+  // Bounds: slab + module thickness + south label
+  const allPts: Pt[] = [
+    ...slab,
+    ...slab.map((p) => ({ x: p.x + 5, y: p.y + 8 })),
+    { x: southEdgeMid.x - 40, y: labelY },
+    { x: southEdgeMid.x + 40, y: labelY + 4 },
+  ];
+  // Include module south faces roughly
+  for (const p of positions) {
+    allPts.push(
+      { x: p.ox, y: p.oy },
+      { x: p.ox + UX + VX, y: p.oy + UY + VY + 4 }
+    );
+  }
+
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (const p of allPts) {
+    minX = Math.min(minX, p.x);
+    minY = Math.min(minY, p.y);
+    maxX = Math.max(maxX, p.x);
+    maxY = Math.max(maxY, p.y);
+  }
+
+  const contentW = Math.max(1, maxX - minX);
+  const contentH = Math.max(1, maxY - minY);
+  const scale = Math.min(
+    (VB_W - PAD * 2) / contentW,
+    (VB_H - PAD * 2) / contentH
+  );
+  const tx = (VB_W - contentW * scale) / 2 - minX * scale;
+  const ty = (VB_H - contentH * scale) / 2 - minY * scale;
 
   return (
     <svg
       className={className}
-      viewBox="0 0 420 260"
+      viewBox={`0 0 ${VB_W} ${VB_H}`}
       width="100%"
       height="100%"
       aria-hidden
+      preserveAspectRatio="xMidYMid meet"
     >
       <defs>
+        <linearGradient id="alStageWash" x1="0" y1="0" x2="0.3" y2="1">
+          <stop offset="0%" stopColor="#F1F5F9" />
+          <stop offset="55%" stopColor="#F8FAFC" />
+          <stop offset="100%" stopColor="#E8EEF5" />
+        </linearGradient>
         <linearGradient id="alTerraceV2" x1="0" y1="0" x2="0.2" y2="1">
           <stop offset="0%" stopColor="#F8FAFC" />
           <stop offset="55%" stopColor="#EEF2F7" />
           <stop offset="100%" stopColor="#E2E8F0" />
         </linearGradient>
+        <radialGradient id="alStageGlow" cx="50%" cy="42%" r="55%">
+          <stop offset="0%" stopColor="rgba(249,115,22,0.07)" />
+          <stop offset="100%" stopColor="rgba(249,115,22,0)" />
+        </radialGradient>
       </defs>
 
-      {/* Soft shadow under slab */}
-      <polygon
-        points={slab
-          .map((p) => `${p.x + 4},${p.y + 6}`)
-          .join(" ")}
-        fill="rgba(15,23,42,0.08)"
-      />
+      {/* Full-bleed stage atmosphere so empty space never reads as a void */}
+      <rect width={VB_W} height={VB_H} fill="url(#alStageWash)" />
+      <rect width={VB_W} height={VB_H} fill="url(#alStageGlow)" />
 
-      {/* Terrace slab */}
-      <polygon
-        points={slabPoly}
-        fill="url(#alTerraceV2)"
-        stroke="#CBD5E1"
-        strokeWidth="1.3"
-      />
-      {/* Joint lines */}
-      {Array.from({ length: 5 }).map((_, i) => {
-        const t = (i + 1) / 6;
-        const a = toScreen(-slabPadU + t * (bankWU + 2 * slabPadU), -slabPadV);
-        const b = toScreen(
-          -slabPadU + t * (bankWU + 2 * slabPadU),
-          bankWV + slabPadV
-        );
-        return (
-          <line
-            key={`j-${i}`}
-            x1={a.x}
-            y1={a.y}
-            x2={b.x}
-            y2={b.y}
-            stroke="rgba(100,116,139,0.14)"
-            strokeWidth="0.7"
-          />
-        );
-      })}
-
-      {positions.map((p, i) => (
-        <AtelierPvModule
-          key={i}
-          ox={p.ox}
-          oy={p.oy}
-          southAccent={p.row === rows - 1}
+      <g transform={`translate(${tx} ${ty}) scale(${scale})`}>
+        <polygon
+          points={slab
+            .map((p) => `${p.x + 5},${p.y + 8}`)
+            .join(" ")}
+          fill="rgba(15,23,42,0.1)"
         />
-      ))}
+        <polygon
+          points={slabPoly}
+          fill="url(#alTerraceV2)"
+          stroke="#CBD5E1"
+          strokeWidth={1.4 / scale}
+        />
+        {Array.from({ length: 5 }).map((_, i) => {
+          const t = (i + 1) / 6;
+          const a = toLocal(
+            -slabPadU + t * (bankWU + 2 * slabPadU),
+            -slabPadV
+          );
+          const b = toLocal(
+            -slabPadU + t * (bankWU + 2 * slabPadU),
+            bankWV + slabPadV
+          );
+          return (
+            <line
+              key={`j-${i}`}
+              x1={a.x}
+              y1={a.y}
+              x2={b.x}
+              y2={b.y}
+              stroke="rgba(100,116,139,0.16)"
+              strokeWidth={0.8 / scale}
+            />
+          );
+        })}
 
-      {/* SOUTH edge label */}
-      <text
-        x={southEdgeMid.x}
-        y={southEdgeMid.y + 18}
-        textAnchor="middle"
-        fill="#F97316"
-        fontSize="9"
-        fontWeight="800"
-        letterSpacing="1.6"
-        fontFamily="Montserrat, system-ui, sans-serif"
-      >
-        {southLabel}
-      </text>
+        {positions.map((p, i) => (
+          <AtelierPvModule
+            key={i}
+            ox={p.ox}
+            oy={p.oy}
+            southAccent={p.row === rows - 1}
+            UX={UX}
+            UY={UY}
+            VX={VX}
+            VY={VY}
+          />
+        ))}
+
+        <text
+          x={southEdgeMid.x}
+          y={labelY}
+          textAnchor="middle"
+          fill="#F97316"
+          fontSize={12 / scale}
+          fontWeight="800"
+          letterSpacing={1.8 / scale}
+          fontFamily="Montserrat, system-ui, sans-serif"
+        >
+          {southLabel}
+        </text>
+      </g>
     </svg>
   );
 }

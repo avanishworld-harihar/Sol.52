@@ -47,10 +47,10 @@ export function getAtelierCopy(lang: AtelierLang) {
     },
 
     investGrade: {
-      exceptional: hi ? "असाधारण रिटर्न" : "Exceptional Return",
-      veryHigh: hi ? "बहुत उच्च रिटर्न" : "Very High Return",
-      high: hi ? "उच्च रिटर्न" : "High Return",
-      aboveAvg: hi ? "औसत से अधिक रिटर्न" : "Above Average Return",
+      exceptional: hi ? "बेहतरीन सौदा" : "Excellent deal",
+      veryHigh: hi ? "बहुत अच्छा सौदा" : "Excellent deal",
+      high: hi ? "अच्छा सौदा" : "Good deal",
+      aboveAvg: hi ? "ठीक-ठाक सौदा" : "Fair deal",
     },
 
     engMetricLabels: {
@@ -142,112 +142,190 @@ export function getAtelierCopy(lang: AtelierLang) {
       { label: hi ? "कमीशनिंग" : "Commissioning", pctLabel: "5%" },
     ] as AtelierPayment[],
 
+    /** Premium Luxe terms content — Atelier EN/HI */
     generalTerms: hi
       ? [
-          "डिस्कॉम / राज्य विद्युत बोर्ड लोड परिवर्तन, या पोल से मीटर तक केबल परिवर्तन व उसकी लायसनिंग — केवल यदि आवश्यक हो — ग्राहक के दायरे में होगा।",
-          "नेट-मीटरिंग, सब्सिडी (पीएम सूर्य घर / राज्य योजनाएँ), डिस्कॉम अनुमोदन या किसी भी आधिकारिक आवेदन से संबंधित सभी सरकारी वैधानिक शुल्क, नियामक प्रभार व कानूनी लागत ग्राहक द्वारा सीधे वहन व भुगतान की जाएगी।",
-          "यदि सौर कनेक्शन के लिए स्वीकृत लोड या कनेक्टेड लोड बढ़ाने की आवश्यकता हो, तो ग्राहक सुनिश्चित करेगा कि डिस्कॉम के सभी पूर्व बिजली बिल, बकाया व बकाया राशि पूरी तरह चुका दी गई हो; बकाया के कारण होने वाली देरी या अस्वीकृति ग्राहक की जिम्मेदारी रहेगी।",
-          "इन्वर्टर वारंटी निर्माता के अनुसार है (स्ट्रिंग इन्वर्टर पर सामान्यतः 8–10 वर्ष)।",
-          "सौर पीवी मॉड्यूल उत्पाद वारंटी: 15 वर्ष; परफॉर्मेंस वारंटी: 30 वर्ष के अंत में ≥80% रेटेड आउटपुट (निर्माता)। ऊपर निर्दिष्ट न किए गए समग्र सिस्टम व भागों पर वारंटी: कमीशनिंग तिथि से 1 वर्ष।",
-          "वारंटी केवल निर्माण दोषों पर लागू होती है। भौतिक क्षति, दुरुपयोग या तोड़फोड़ कवर नहीं है।",
-          "मॉड्यूल की नियमित सफाई (साप्ताहिक अनुशंसित) ग्राहक के दायरे में है — यह सीधे उत्पादन प्रदर्शन को प्रभावित करती है।",
-          "स्थापना, सहमत खरीद आदेश / भुगतान अनुसूची के अनुसार एडवांस भुगतान प्राप्त होने के 30–40 कार्य दिवसों में पूर्ण की जाएगी।",
-          "यहाँ स्पष्ट रूप से उल्लेखित न की गई कोई भी शर्त दोनों पक्षों के आपसी लिखित समझौते से शासित होगी।",
-          "यदि लागू हो, तो रिफंड परियोजना फाइनल राशि पर 2.5% कटौती तथा पहले से हुए दस्तावेज़ी खर्चों के बाद प्रोसेस किया जाएगा।",
+          {
+            label: "लोड परिवर्तन",
+            text: "डिस्कॉम लोड परिवर्तन, या पोल से मीटर तक केबल परिवर्तन व लायसनिंग — केवल यदि आवश्यक हो — ग्राहक के दायरे में है।",
+          },
+          {
+            label: "वैधानिक शुल्क",
+            text: "नेट-मीटरिंग, सब्सिडी और डिस्कॉम अनुमोदन के सरकारी शुल्क ग्राहक द्वारा सीधे भुगतान किए जाते हैं।",
+          },
+          {
+            label: "बकाया",
+            text: "यदि लोड बढ़ाना आवश्यक हो, तो प्रक्रिया से पहले पूर्व डिस्कॉम बिल / बकाया चुकाएँ।",
+          },
+          {
+            label: "इन्वर्टर वारंटी",
+            text: "इन्वर्टर वारंटी निर्माता के अनुसार (स्ट्रिंग इन्वर्टर पर सामान्यतः 8–10 वर्ष)।",
+          },
+          {
+            label: "मॉड्यूल वारंटी",
+            text: "उत्पाद 15 वर्ष; प्रदर्शन वर्ष 30 पर ≥80%। अन्य भाग: कमीशनिंग से 1 वर्ष।",
+          },
+          {
+            label: "वारंटी दायरा",
+            text: "केवल निर्माण दोष। भौतिक क्षति, दुरुपयोग या तोड़फोड़ कवर नहीं।",
+          },
+          {
+            label: "रखरखाव",
+            text: "नियमित मॉड्यूल सफाई (साप्ताहिक अनुशंसित) ग्राहक के दायरे में है।",
+          },
+          {
+            label: "समयसीमा",
+            text: "एडवांस से 30–40 कार्य दिवसों में स्थापना, सहमत पीओ / अनुसूची के अनुसार।",
+          },
+          {
+            label: "शासकीय शर्तें",
+            text: "यहाँ सूचीबद्ध न की गई शर्तें आपसी लिखित समझौते से शासित होंगी।",
+          },
+          {
+            label: "रिफंड",
+            text: "यदि लागू: फाइनल राशि पर 2.5% कटौती तथा दस्तावेज़ी खर्चों के बाद।",
+          },
         ]
       : [
-          "DISCOM / state electricity board load change, or cable change from pole to meter and its liaison — only if required — will be in the customer's scope.",
-          "All government statutory fees, regulatory charges, and legal costs relating to net-metering, subsidy (PM Surya Ghar / state schemes), DISCOM approvals, or any official application shall be borne and paid directly by the client.",
-          "If an increase in sanctioned load or connected load is required for the solar connection, the client shall ensure that all prior electricity bills, outstanding dues, and arrears with the DISCOM are fully cleared before processing; any delay or rejection arising from uncleared dues shall remain the client's responsibility.",
-          "Inverter warranty is as per manufacturer (typically 8–10 years on string inverters).",
-          "Solar PV module product warranty: 15 years; performance warranty: ≥80% rated output at end of 30 years (manufacturer). Warranty on overall system and parts not specified above: 1 year from date of commissioning.",
-          "Warranty applies to manufacturing defects only. Physical damage, misuse, or vandalism is not covered.",
-          "Routine cleaning of modules (recommended weekly) is in the customer's scope — it directly affects generation performance.",
-          "Installation shall be completed within 30–40 working days from receipt of advance payment as per the agreed purchase order / payment schedule.",
-          "Any terms not expressly mentioned herein shall be governed by mutual written agreement between both parties.",
-          "Refunds, if applicable, shall be processed after a 2.5% deduction on the project finalization amount plus documented expenses already incurred.",
+          {
+            label: "Load Change",
+            text: "DISCOM load change, or cable change from pole to meter and liaison — only if required — is in the customer's scope.",
+          },
+          {
+            label: "Statutory Fees",
+            text: "Government fees for net-metering, subsidy, and DISCOM approvals are paid directly by the client.",
+          },
+          {
+            label: "Arrears",
+            text: "If load increase is required, clear prior DISCOM bills/arrears before processing.",
+          },
+          {
+            label: "Inverter Warranty",
+            text: "Inverter warranty as per manufacturer (typically 8–10 years on string inverters).",
+          },
+          {
+            label: "Module Warranty",
+            text: "Product 15 years; performance ≥80% at year 30. Other parts: 1 year from commissioning.",
+          },
+          {
+            label: "Warranty Scope",
+            text: "Manufacturing defects only. Physical damage, misuse, or vandalism is not covered.",
+          },
+          {
+            label: "Maintenance",
+            text: "Routine module cleaning (recommended weekly) is in the customer's scope.",
+          },
+          {
+            label: "Timeline",
+            text: "Installation within 30–40 working days from advance, as per agreed PO / schedule.",
+          },
+          {
+            label: "Governing Terms",
+            text: "Terms not listed here are governed by mutual written agreement.",
+          },
+          {
+            label: "Refunds",
+            text: "If applicable: after 2.5% deduction on finalization amount plus documented expenses.",
+          },
         ],
 
     docs: hi
       ? [
           "नवीनतम बिजली बिल (स्पष्ट प्रति)",
           "पैन कार्ड की प्रति",
-          "आधार कार्ड की प्रति (पठनीय, यदि लागू हो तो दोनों ओर)",
-          "स्वामित्व प्रमाण — संपत्ति कर रसीद / विक्रय विलेख / नगरपालिका रिकॉर्ड",
-          "आवेदक का पासपोर्ट आकार का फोटो",
-          "सिंगल-लाइन डायग्राम (एसएलडी) — हमारे द्वारा ड्राफ्ट; ग्राहक से हस्ताक्षरित प्रति आवश्यक",
+          "आधार कार्ड की प्रति",
+          "स्वामित्व प्रमाण — कर रसीद / विक्रय विलेख",
+          "पासपोर्ट आकार का फोटो",
+          "हस्ताक्षरित एसएलडी (हमारा ड्राफ्ट)",
         ]
       : [
           "Latest electricity bill (clear copy)",
-          "Copy of PAN card",
-          "Copy of Aadhaar card (legible, both sides if applicable)",
-          "Ownership proof — property tax receipt / sale deed / municipal record",
-          "Passport-size photograph of applicant",
-          "Single-line diagram (SLD) — draft provided by us; signed copy required from customer",
+          "PAN card copy",
+          "Aadhaar card copy",
+          "Ownership proof — tax receipt / sale deed",
+          "Passport-size photograph",
+          "Signed SLD (draft provided by us)",
+        ],
+
+    safetyNotes: hi
+      ? [
+          "ACDB / DCDB या इन्वर्टर कवर न खोलें — केवल प्रशिक्षित तकनीशियन।",
+          "लाइटनिंग अरेस्टर और अर्थिंग बंधे रखें; अर्थ लीड न काटें।",
+          "आइसोलेशन ट्रिप या जलने की गंध तुरंत रिपोर्ट करें; बार-बार रीसेट न करें।",
+        ]
+      : [
+          "Do not open ACDB / DCDB or inverter covers — trained technicians only.",
+          "Keep lightning arrestor and earthing bonded; do not disconnect earth leads.",
+          "Report isolation trips or burning smell immediately; do not reset repeatedly.",
         ],
 
     amcObjective: hi
-      ? "वार्षिक रखरखाव सेवाओं का उद्देश्य अनुबंध अवधि भर छत के एसपीवी प्लांट का परफॉर्मेंस रेशियो बनाए रखना और सामान्य रखरखाव सुनिश्चित करना है।"
-      : "The objective of Annual Maintenance Services is to maintain the performance ratio and general upkeep of the rooftop SPV plant throughout the contract period.",
+      ? "एएमसी उत्पादन जाँच और सुरक्षा विज़िट को समय पर रखती है।"
+      : "AMC keeps generation checks and safety visits on schedule.",
 
-    amcScope: hi
+    amcIncludes: hi
       ? [
-          "वार्षिक रखरखाव अनुबंध (एएमसी) में शामिल:",
-          "प्लांट प्रदर्शन व ऊर्जा उत्पादन की दैनिक / आवधिक निगरानी",
-          "प्लांट व उपकरण का नियमित निवारक रखरखाव",
-          "आपातकालीन ब्रेकडाउन उपस्थिति (48 कार्य घंटों में प्रतिक्रिया)",
-          "वारंटी सहायता व दोष सुधार के लिए ओईएम समन्वय",
-          "डीसी व एसी सुरक्षा, अर्थिंग व केबल टर्मिनेशन का आवधिक निरीक्षण",
+          "आवधिक प्लांट प्रदर्शन निगरानी",
+          "नियमित निवारक रखरखाव",
+          "आपातकालीन ब्रेकडाउन (48 कार्य घंटों में)",
+          "वारंटी सहायता के लिए ओईएम समन्वय",
         ]
       : [
-          "Annual Maintenance Contract (AMC) covering:",
-          "Daily / periodic monitoring of plant performance and energy generation",
-          "Routine preventive maintenance of plant and equipment",
-          "Emergency breakdown attendance (response within 48 working hours)",
-          "Coordination with OEMs for warranty support and defect rectification",
-          "Periodic inspection of DC & AC protection, earthing, and cable terminations",
+          "Periodic plant performance monitoring",
+          "Routine preventive maintenance",
+          "Emergency breakdown (within 48 working hours)",
+          "OEM coordination for warranty support",
+        ],
+
+    amcExcludes: hi
+      ? [
+          "भौतिक क्षति, चोरी या तोड़फोड़",
+          "बाहरी प्रभाव से मॉड्यूल ग्लास प्रतिस्थापन",
+          "डिस्कॉम मीटरिंग शुल्क और सरकारी प्रभार",
+        ]
+      : [
+          "Physical damage, theft, or vandalism",
+          "Module glass replacement from external impact",
+          "DISCOM metering fees and government charges",
         ],
 
     clientScope: hi
       ? [
-          "साइट सुरक्षा, चौकीदारी व निगरानी",
-          "प्लांट व उपकरण का बीमा (यदि वांछित हो)",
-          "रिमोट मॉनिटरिंग के लिए साइट पर स्थिर इंटरनेट (जहाँ लागू हो)",
-          "रखरखाव गतिविधियों के लिए पानी व सहायक बिजली, आवश्यकतानुसार साइट पर",
-          "दैनिक दृश्य जाँच व छत तक सुरक्षित पहुँच",
-          "निर्माता दिशानिर्देशों के अनुसार नियमित मॉड्यूल सफाई",
+          "साइट सुरक्षा / चौकीदारी",
+          "प्लांट का बीमा (यदि वांछित)",
+          "मॉनिटरिंग के लिए स्थिर इंटरनेट (जहाँ लागू)",
+          "रखरखाव के लिए पानी व सहायक बिजली",
+          "ओईएम दिशानिर्देशों के अनुसार नियमित मॉड्यूल सफाई",
+          "अनुरोध पर डिस्कॉम / नगरपालिका पत्र",
         ]
       : [
-          "Site security, watch and ward",
-          "Insurance of plant and equipment (if desired)",
-          "Stable internet connection at site for remote monitoring (where applicable)",
-          "Water and auxiliary power for maintenance activities, as needed on site",
-          "Day-to-day visual checks and safe access to the rooftop",
-          "Regular module cleaning as per manufacturer guidelines",
+          "Site security / watch and ward",
+          "Insurance of plant (if desired)",
+          "Stable internet for monitoring (if applicable)",
+          "Water and auxiliary power for maintenance",
+          "Regular module cleaning per OEM guidelines",
+          "DISCOM / municipal letters when requested",
         ],
 
-    amcCostParagraph: (invoiceRef: string) =>
-      hi
-        ? `पहले 1 वर्ष की एएमसी उद्धृत मूल्य में शामिल है। वर्ष 2 से वार्षिक रखरखाव इनवॉइस मूल्य (${invoiceRef}) का 2% तथा 5% वार्षिक वृद्धि पर लिया जा सकता है, हस्ताक्षरित ओएंडएम समझौते के अधीन।`
-        : `First 1 year AMC is included in the quoted price. From Year 2 onwards, annual maintenance may be charged at 2% of invoice value (${invoiceRef}) with 5% year-on-year escalation, subject to a signed O&M agreement.`,
-
-    amcTerms: hi
+    amcCommercial: hi
       ? [
-          "लागू होने पर रखरखाव शुल्क अग्रिम रूप से अर्धवार्षिक आधार पर देय हैं।",
-          "न्यूनतम ओएंडएम अनुबंध अवधि: 2 वर्ष, आपसी सहमति से 2 वर्ष के ब्लॉकों में विस्तार योग्य (कमीशनिंग से 25 वर्ष तक)।",
-          "चोरी, स्टैंड क्षति या तोड़फोड़ से मॉड्यूल या उपकरण हानि के लिए हम उत्तरदायी नहीं हैं।",
-          "मानक फोर्स मेज्योर प्रावधान लागू होते हैं; ऐसी घटनाओं के दौरान सेवा कमी की सूचना ग्राहक को घटना के एक सप्ताह के भीतर दी जाएगी।",
+          "लागू होने पर शुल्क अग्रिम (अर्धवार्षिक) देय हैं।",
+          "न्यूनतम O&M: 2 वर्ष, आपसी सहमति से विस्तार योग्य।",
         ]
       : [
-          "Maintenance charges, when applicable, are payable in advance on a half-yearly basis.",
-          "Minimum O&M contract duration: 2 years, extendable in blocks of 2 years by mutual consent (up to 25 years from commissioning).",
-          "We are not liable for module or equipment loss due to theft, stand damage, or vandalism.",
-          "Standard force majeure provisions apply; service deficiencies during such events shall be communicated to the client within one week of occurrence.",
+          "When charged, fees are payable in advance (half-yearly).",
+          "Minimum O&M: 2 years, extendable by mutual consent.",
         ],
 
     cover: {
       docType: hi ? "निवेश ब्लूप्रिंट" : "INVESTMENT BLUEPRINT",
       preparedFor: hi ? "के लिए तैयार" : "PREPARED FOR",
+      photoTitle: hi
+        ? "ऊपर सोलर · नीचे आपका बगीचा"
+        : "Solar above · your garden below",
+      photoSub: hi
+        ? "ऊंची संरचना, दिन की धूप, और छत पर परिवार का आराम — घर की खूबसूरती के साथ"
+        : "Elevated structure, daylight on the array, family comfort on the terrace — solar that feels beautiful at home",
       wealthTag: hi ? "25-वर्ष का सृजित धन" : "25-YEAR WEALTH CREATED",
       wealthSub: hi
         ? "आपकी छत एक धन इंजन बन जाती है"
@@ -335,62 +413,79 @@ export function getAtelierCopy(lang: AtelierLang) {
     wealth: {
       tag: hi ? "04 — धन प्रक्षेपण" : "04 — WEALTH PROJECTION",
       title: hi
-        ? "25 वर्षों में आपकी बचत कैसे बढ़ती है"
-        : "Where Your Savings Compound Over 25 Years",
+        ? "25 वर्षों में आपका पैसा कैसे बढ़ता है"
+        : "How your money grows over 25 years",
       lead: hi
-        ? "मासिक लाभ जुड़ते हैं। यहाँ पूरा दीर्घकालिक चित्र है — इस प्रस्ताव में एकमात्र स्थान जहाँ हम 25-वर्ष रिटर्न प्रोजेक्ट करते हैं।"
-        : "Monthly gains add up. Here is the full long-term picture — the only place in this proposal where we project 25-year returns.",
-      phase1: hi ? "चरण 1" : "Phase 1",
-      investment: hi ? "निवेश" : "Investment",
+        ? "देखें — सोलर पहले अपना खर्च निकालता है, फिर बचत जारी रहती है।"
+        : "See how solar pays for itself — then keeps saving.",
+      step1Num: "01",
+      step2Num: "02",
+      step3Num: "03",
+      phase1: hi ? "चरण 1" : "Step 1",
+      investment: hi ? "आप सोलर के लिए भुगतान करते हैं" : "You pay for solar",
       year0To: (n: number) =>
         hi ? `वर्ष 0 → ${n}` : `Year 0 → ${n}`,
       phase1Note: hi
-        ? "मासिक सौर लागत आपके बिजली बिल की भरपाई करती है जबकि आप 5 वर्षों में सिस्टम चुकाते हैं।"
-        : "Monthly solar cost offsets your electricity bill while you repay the system over 5 years.",
-      milestone: hi ? "मील का पत्थर" : "Milestone",
-      payback: hi ? "पेबैक" : "Payback",
+        ? "आप सिस्टम चुकाते हैं; सोलर आपका बिजली बिल कम करता रहता है।"
+        : "You pay for the system. Solar keeps cutting your electricity bill.",
+      milestone: hi ? "चरण 2" : "Step 2",
+      payback: hi ? "सोलर चुकता हो जाता है" : "Solar is paid off",
       yearAt: (v: string) => (hi ? `वर्ष ${v}` : `Year ${v}`),
       paybackNote: hi
-        ? "सिस्टम पूरी तरह चुका। यहाँ से उत्पन्न हर इकाई 100% शुद्ध लाभ है।"
-        : "System fully paid back. Every unit generated from here on is 100% pure profit.",
-      phase2: hi ? "चरण 2" : "Phase 2",
-      passiveIncome: hi ? "निष्क्रिय आय" : "Passive Income",
+        ? "पूरा पैसा वापस आ चुका। अब हर यूनिट आपकी बचत है।"
+        : "Your money is back. From here, every unit is savings for you.",
+      phase2: hi ? "चरण 3" : "Step 3",
+      passiveIncome: hi
+        ? "बचत आपका पैसा बन जाती है"
+        : "Savings become your money",
       yearRange: (from: number) =>
         hi ? `वर्ष ${from} → 25` : `Year ${from} → 25`,
       passiveWealth: (amt: string) =>
         hi
-          ? `${amt} शुद्ध निष्क्रिय धन में।`
-          : `${amt} in pure passive wealth.`,
-      pureWealth: hi ? "शुद्ध धन सृजन।" : "Pure wealth creation.",
+          ? `लगभग ${amt} और बचत।`
+          : `About ${amt} more in savings.`,
+      pureWealth: hi ? "बचत बढ़ती रहती है।" : "Savings keep growing.",
       zeroEnergy: hi
-        ? "शून्य ऊर्जा लागत। अधिकतम रिटर्न।"
-        : "Zero energy cost. Maximum returns.",
+        ? "बिल कम। पैसा घर में।"
+        : "Lower bills. Money stays with you.",
+      chartTitle: hi
+        ? "इस वर्ष तक बचाया गया पैसा"
+        : "Money saved by this year",
+      chartHint: hi
+        ? "बड़ी पट्टी = ज़्यादा पैसा बचा"
+        : "Bigger bar = more money kept",
       chartNote: hi
-        ? "वर्तमान उत्पादन स्तर पर 25 वर्षों में संचयी बिजली बिल बचत।"
-        : "Cumulative electricity bill savings over 25 years at current generation levels.",
-      withoutSolar: hi ? "बिना सौर" : "Without solar",
+        ? "आज के बिल स्तर पर, 25 वर्षों की कुल बिजली बचत।"
+        : "Total bill savings over 25 years at today’s bill level.",
+      withoutSolar: hi
+        ? "अगर सिर्फ ग्रिड पर रहें"
+        : "If you stay on the grid only",
       paidToGrid: hi
-        ? "25 वर्षों में ग्रिड को भुगतान"
-        : "paid to grid over 25 yrs",
+        ? "बिलों में चला जाएगा"
+        : "paid in bills",
       yrShort: (y: number) => (hi ? `वर्ष ${y}` : `YR ${y}`),
       scoreTag: hi
         ? "सौर निवेश स्कोर"
         : "SOLAR INVESTMENT SCORE",
-      paybackLabel: hi ? "पेबैक" : "Payback",
-      annualRoi: hi ? "वार्षिक आरओआई" : "Annual ROI",
+      paybackLabel: hi ? "पैसा वापस" : "Money back",
+      annualRoi: hi ? "सालाना रिटर्न" : "Yearly return",
       yrsShort: hi ? "वर्ष" : "yrs",
-      basis: hi ? "आधार:" : "Basis:",
+      basis: hi ? "AA+ क्यों:" : "Why AA+:",
       basisText: (pb: string) =>
         hi
-          ? `ग्रेड उद्योग बेंचमार्क (5–7 वर्ष) के मुकाबले पेबैक अवधि से निकाला गया। आपका ${pb}-वर्ष पेबैक भारत में छत सौर निवेशों की शीर्ष श्रेणी में आता है।`
-          : `Grade derived from payback period vs. industry benchmark (5–7 yrs). Your ${pb}-yr payback ranks in the top tier of rooftop solar investments in India.`,
+          ? `आपका पैसा लगभग ${pb} वर्षों में वापस आता है। कई घरों में 5–7 वर्ष लगते हैं।`
+          : `Your money comes back in about ${pb} years. Many homes take 5–7 years.`,
       totalWealthTag: hi
-        ? "वर्ष 25 पर कुल धन"
-        : "TOTAL WEALTH AT YEAR 25",
+        ? "25वें वर्ष तक कुल बचत"
+        : "TOTAL SAVINGS BY YEAR 25",
       returnsNote: (inv: string, mult: string) =>
         hi
-          ? `आपका ₹${inv} निवेश 25 वर्षों में ${mult} रिटर्न उत्पन्न करता है।`
-          : `Your ₹${inv} investment generates ${mult} returns over 25 years.`,
+          ? `आपका ₹${inv} लगभग ${mult} बन सकता है — 25 वर्षों में।`
+          : `Your ₹${inv} can become about ${mult} over 25 years.`,
+      takeaway: (pb: string, freeYrs: string) =>
+        hi
+          ? `लगभग ${pb} वर्षों में पेबैक → फिर लगभग ${freeYrs} वर्षों की बिल बचत।`
+          : `Payback in ~${pb} years → then ~${freeYrs} years of bill savings.`,
     },
 
     gen: {
@@ -447,6 +542,9 @@ export function getAtelierCopy(lang: AtelierLang) {
       title: hi
         ? "टियर-1 घटक। शून्य समझौता।"
         : "Tier-1 Components. Zero Compromise.",
+      lead: hi
+        ? "पैनल से सुरक्षा तक — हर हिस्सा टियर-1। नीचे अर्थिंग व लाइटनिंग की संख्या भी साफ़ दिखती है।"
+        : "From panels to protection — every part is tier-1. Earthing and lightning counts are called out below.",
       panels: hi ? "सौर पैनल" : "SOLAR PANELS",
       inverter: hi ? "स्ट्रिंग इन्वर्टर" : "STRING INVERTER",
       structure: hi ? "माउंटिंग संरचना" : "MOUNTING STRUCTURE",
@@ -470,10 +568,29 @@ export function getAtelierCopy(lang: AtelierLang) {
         ? "150 किमी/घंटा पवन-लोड रेटेड जीआई संरचना, भारतीय छत हवा व मानसून के लिए विशेष रूप से इंजीनियर।"
         : "150 km/h wind-load rated GI structure, engineered specifically for Indian rooftop wind and monsoon conditions.",
       whyProtection: hi
-        ? "एमसीबी/एमसीसीबी सुरक्षा, सर्ज प्रोटेक्शन डिवाइस व कॉपर अर्थिंग — ग्रिड फॉल्ट व बिजली से पूर्ण सिस्टम सुरक्षा।"
-        : "MCB/MCCB protection, surge protection device & copper earthing — full-system safety against grid faults and lightning.",
+        ? "एमसीबी/एमसीसीबी व सर्ज प्रोटेक्शन (एसपीडी) — ग्रिड फॉल्ट व सर्ज से सिस्टम की सुरक्षा। अर्थिंग नीचे अलग दिखी है।"
+        : "MCB/MCCB and surge protection (SPD) — guards the system against grid faults and surges. Earthing is shown separately below.",
       viewDatasheet: hi ? "डेटाशीट देखें" : "View Datasheet",
       yrs: hi ? "वर्ष" : "YRS",
+      earthTag: hi
+        ? "अर्थिंग व लाइटनिंग सुरक्षा"
+        : "EARTH & LIGHTNING PROTECTION",
+      earthLead: hi
+        ? "घर और प्लांट के लिए बंधी अर्थिंग — मात्रा साफ़।"
+        : "Bonded earth for home and plant — quantities are clear.",
+      earthKitsVal: hi ? "3 सेट" : "3 sets",
+      earthKitsLabel: hi
+        ? "17 मिमी मेंटेनेंस-फ्री अर्थिंग किट"
+        : "17 mm maintenance-free earthing kits",
+      earthCableVal: "4 sqmm",
+      earthCableLabel: hi
+        ? "कॉपर अर्थिंग केबल"
+        : "Copper earthing cable",
+      earthLaVal: hi ? "1 × 2 मी" : "1 × 2 m",
+      earthLaLabel: hi ? "लाइटनिंग अरेस्टर" : "Lightning arrester",
+      earthWhy: hi
+        ? "आईएस 3043 शैली बंधी अर्थ + अरेस्टर — मानसून व लाइटनिंग के लिए सुरक्षा का आधार।"
+        : "IS 3043-style bonded earth + arrester — the safety base for monsoon and lightning.",
     },
 
     trust: {
@@ -484,6 +601,7 @@ export function getAtelierCopy(lang: AtelierLang) {
         : "Because Your Rooftop Deserves the Best Team, Not Just the Best Panel.",
       cards: [
         {
+          icon: "installs" as const,
           num: "500+",
           label: hi ? "पूर्ण स्थापनाएँ" : "Installations Completed",
           note: hi
@@ -491,6 +609,7 @@ export function getAtelierCopy(lang: AtelierLang) {
             : "Across Madhya Pradesh & neighbouring states",
         },
         {
+          icon: "engineers" as const,
           num: "100%",
           label: hi ? "प्रमाणित इंजीनियर" : "Certified Engineers",
           note: hi
@@ -498,6 +617,7 @@ export function getAtelierCopy(lang: AtelierLang) {
             : "MNRE-empanelled design & install team",
         },
         {
+          icon: "local" as const,
           num: hi ? "स्थानीय" : "Local",
           label: hi ? "ऑन-ग्राउंड सेवा" : "On-Ground Service",
           note: hi
@@ -505,6 +625,7 @@ export function getAtelierCopy(lang: AtelierLang) {
             : "No call centres — your installer is your neighbour",
         },
         {
+          icon: "support" as const,
           num: hi ? "48 घं" : "48 Hr",
           label: hi ? "सहायता प्रतिक्रिया" : "Support Response",
           note: hi
@@ -512,6 +633,7 @@ export function getAtelierCopy(lang: AtelierLang) {
             : "Any fault attended within 2 working days",
         },
         {
+          icon: "subsidy" as const,
           num: "100%",
           label: hi ? "सब्सिडी सहायता" : "Subsidy Assistance",
           note: hi
@@ -519,6 +641,7 @@ export function getAtelierCopy(lang: AtelierLang) {
             : "End-to-end PM Surya Ghar paperwork, done for you",
         },
         {
+          icon: "years" as const,
           num: hi ? "25 वर्ष" : "25 Yr",
           label: hi
             ? "परफॉर्मेंस प्रतिबद्धता"
@@ -597,9 +720,12 @@ export function getAtelierCopy(lang: AtelierLang) {
       wpEach: (wp: number) =>
         hi ? `प्रत्येक ${wp} Wp` : `${wp} Wp each`,
       areaTag: hi ? "आवश्यक छत क्षेत्र" : "ROOF AREA REQUIRED",
-      areaNote: hi
-        ? "प्रति पैनल लगभग 2 मी²"
-        : "2 m² per panel approx.",
+      areaVal: (sqft: number) =>
+        hi ? `~${sqft.toLocaleString("en-IN")} वर्ग फुट` : `~${sqft.toLocaleString("en-IN")} sq ft`,
+      areaNote: (wp: number, perPanel: number) =>
+        hi
+          ? `${wp} Wp · लगभग ${perPanel} वर्ग फुट / पैनल`
+          : `${wp} Wp · ~${perPanel} sq ft / panel`,
       tiltTag: hi ? "इष्टतम झुकाव कोण" : "OPTIMAL TILT ANGLE",
       tiltNote: (city: string) =>
         hi
@@ -674,16 +800,38 @@ export function getAtelierCopy(lang: AtelierLang) {
         ? "11 — शर्तें व अनुपालन (जारी)"
         : "11 — TERMS & COMPLIANCE (CONTD.)",
       title: hi ? "नियम व शर्तें" : "Terms & Conditions",
-      general: hi ? "सामान्य शर्तें" : "General Terms",
-      documents: hi ? "आवश्यक दस्तावेज़" : "Documents Required",
-      amcScope: hi
-        ? "वार्षिक रखरखाव — दायरा"
-        : "Annual Maintenance — Scope",
-      clientScope: hi ? "ग्राहक का दायरा" : "Client's Scope",
-      costMaint: hi
-        ? "रखरखाव की लागत"
-        : "Cost of Maintenance",
+      intro1: hi
+        ? "साइन करने से पहले प्रत्येक बिंदु ध्यान से पढ़ें।"
+        : "Please read each point carefully before signing.",
+      intro2: hi
+        ? "सुरक्षा, आपकी ज़िम्मेदारियाँ, AMC स्कोप और रखरखाव लागत — एक के बाद एक।"
+        : "Safety, your duties, AMC scope, and maintenance cost — one section after another.",
+      general: hi ? "01 · सामान्य शर्तें" : "01 · General Terms",
+      documents: hi ? "02 · आवश्यक दस्तावेज़" : "02 · Documents Required",
+      safety: hi ? "03 · सुरक्षा और सुरक्षात्मक उपाय" : "03 · Safety & Protection",
+      clientScope: hi ? "04 · ग्राहक का दायरा" : "04 · Client's Scope",
+      amcScope: hi ? "05 · वार्षिक रखरखाव — स्कोप" : "05 · Annual Maintenance — Scope",
+      costMaint: hi ? "06 · रखरखाव की लागत" : "06 · Cost of Maintenance",
+      availablePlans: hi ? "उपलब्ध योजनाएँ:" : "Available plans:",
+      amcIncludes: hi ? "AMC में शामिल:" : "AMC includes:",
+      amcExcludes: hi ? "AMC में शामिल नहीं:" : "AMC does not include:",
+      paymentNotes: hi ? "भुगतान और अनुबंध नोट:" : "Payment & contract notes:",
+      year1Included: hi
+        ? "पहला 1 वर्ष AMC उद्धृत कीमत में शामिल है।"
+        : "First 1 year AMC is included in the quoted price.",
+      year2Onwards: hi
+        ? "वर्ष 2 से वार्षिक रखरखाव इनवॉइस मूल्य का 2% हो सकता है, 5% वार्षिक वृद्धि के साथ, हस्ताक्षरित O&M समझौते पर।"
+        : "From Year 2 onwards, annual maintenance may be charged at 2% of invoice value with 5% year-on-year escalation, subject to a signed O&M agreement.",
       regards: hi ? "सादर," : "Regards,",
+      vendorTag: hi ? "विक्रेता" : "Vendor",
+      counselLabel: hi ? "अनुपालन सलाहकार का नोट" : "COMPLIANCE COUNSEL'S NOTE",
+      counsel: hi
+        ? "साइन से पहले प्रत्येक लेख पढ़ें — वारंटी, शुल्क और आपके कर्तव्य दोनों पक्षों की रक्षा करते हैं।"
+        : "Read each article before signing — warranties, fees, and your duties protect both sides if DISCOM timing or site conditions change.",
+      omLabel: hi ? "O&M सलाहकार का निष्कर्ष" : "O&M ADVISOR'S VERDICT",
+      om: hi
+        ? "वर्ष-1 AMC शामिल है; वर्ष 2 से इनवॉइस का लगभग 2% बजट वार्षिक वृद्धि के साथ — नियमित देखभाल उत्पादन और वारंटी दोनों बचाती है।"
+        : "Year-1 AMC is included; from Year 2, budget about 2% of invoice with yearly increase — regular care protects both generation and warranty.",
     },
 
     closing: {
@@ -698,8 +846,14 @@ export function getAtelierCopy(lang: AtelierLang) {
         ? "आप अगले 25 वर्षों के लिए अपनी बिजली कीमत लॉक कर रहे हैं।"
         : "You are locking your electricity price for the next 25 years.",
       sub: hi
-        ? "हर दिन सूरज उगता है, आपकी छत कमाती है। हर महीने आपका मीटर पीछे घूमता है। हर साल आपका धन बढ़ता है। यह उपयोगिता खर्च नहीं — यह आपकी छत पर एक वित्तीय संपत्ति है।"
-        : "Every day the sun rises, your roof earns. Every month your meter spins backward. Every year your wealth compounds. This is not a utility expense — this is a financial asset on your rooftop.",
+        ? "हर दिन सूरज उगता है, आपकी छत कमाती है। हर महीने आपका मीटर पीछे घूमता है। हर साल आपका धन बढ़ता है।"
+        : "Every day the sun rises, your roof earns. Every month your meter spins backward. Every year your wealth compounds.",
+      photoTitle: hi
+        ? "आरसीसी छत · प्रीमियम सोलर"
+        : "RCC rooftop · premium solar",
+      photoSub: hi
+        ? "भारतीय लग्ज़री घर की छत — साफ़ आरसीसी स्लैब पर लगे मॉड्यूल, घर की सुंदरता के साथ ऊर्जा स्वतंत्रता।"
+        : "An Indian luxury home — clean RCC slab, precise modules, energy independence that looks beautiful from above.",
       unitsYear: hi ? "यूनिट / वर्ष" : "units / year",
       savedYear: hi ? "बचत / वर्ष" : "saved / year",
       wealth25: hi ? "25-वर्ष धन" : "25-yr wealth",
@@ -707,8 +861,8 @@ export function getAtelierCopy(lang: AtelierLang) {
         ? "अपनी सौर यात्रा शुरू करने के लिए तैयार?"
         : "Ready to Begin Your Solar Journey?",
       ctaDesc: hi
-        ? "आज अपनी बिजली कीमत लॉक करें। यह प्रस्ताव आपकी छत, आपके उपयोग व आपके वित्तीय लक्ष्यों के लिए कस्टम-इंजीनियर है।"
-        : "Lock your electricity price today. This proposal is custom-engineered for your roof, your usage, and your financial goals.",
+        ? "आज अपनी बिजली कीमत लॉक करें। यह प्रस्ताव आपकी छत के लिए कस्टम-इंजीनियर है।"
+        : "Lock your electricity price today. This proposal is custom-engineered for your roof.",
       ctaBtn: hi ? "आइए शुरू करें →" : "Let's Begin →",
       validity: hi
         ? "15 दिनों के लिए मान्य। जब आप तैयार हों, हम तैयार हैं।"

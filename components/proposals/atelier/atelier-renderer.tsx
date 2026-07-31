@@ -27,6 +27,13 @@ import {
 } from "./atelier-copy";
 import { isDarkLogoUrl } from "./atelier-dark-logo";
 import { AtelierRoofPlan } from "./atelier-roof-plan";
+import { HwCardIcon, HwIconEarth, type HwIconKey } from "./atelier-hw-icons";
+import { TrustCardIcon } from "./atelier-trust-icons";
+import {
+  WealthIconGrow,
+  WealthIconPaid,
+  WealthIconPay,
+} from "./atelier-wealth-icons";
 import styles from "./atelier.module.css";
 
 function bomByHint(data: ProposalData, hints: RegExp[]) {
@@ -224,6 +231,17 @@ export function AtelierRenderer({
     return m ? parseInt(m[1]) : 580;
   })();
   const panelCount = systemKw > 0 ? Math.ceil((systemKw * 1000) / panelWp) : 9;
+  /** India rooftop rule-of-thumb incl. walkways: ~100 sq ft per kWp, scaled to panel Wp. */
+  const roofSqftPerKwp = 100;
+  const dcKwp = (panelCount * panelWp) / 1000;
+  const roofAreaSqft = Math.max(
+    1,
+    Math.ceil(dcKwp * roofSqftPerKwp)
+  );
+  const sqftPerPanel = Math.max(
+    1,
+    Math.round(roofAreaSqft / Math.max(1, panelCount))
+  );
 
   // BOM
   const panelItem =
@@ -301,15 +319,57 @@ export function AtelierRenderer({
         }));
 
   const generalTerms = c.generalTerms;
-  const docs = c.docs;
-  const amcObjective = c.amcObjective;
-  const amcScope = c.amcScope;
+  const docs =
+    data.terms.documents.length > 0
+      ? data.terms.documents.slice(0, 6)
+      : c.docs;
+  const safetyNotes = c.safetyNotes;
   const clientScope = c.clientScope;
+  const amcObjective = data.terms.amcObjective?.trim() || c.amcObjective;
 
-  const invoiceRef =
-    grossInr > 0 ? formatInr(grossInr) : netInr > 0 ? formatInr(netInr) : "₹3,00,000";
-  const amcCostParagraph = c.amcCostParagraph(invoiceRef);
-  const amcTerms = c.amcTerms;
+  const isAmcPlanLabel = (s: string) =>
+    /\d+\s*-?\s*year\s*amc|amc\s*option/i.test(s);
+  const isExclusionNote = (s: string) =>
+    /exclud|does not include|not covered|physical damage|third-party|misuse|theft|vandal|glass replacement/i.test(
+      s
+    );
+  const isCommercialNote = (s: string) =>
+    /payable|charges|duration|force majeure|half-yearly|escalat|contract|extend/i.test(
+      s
+    );
+
+  const scopeRaw =
+    data.terms.amcScope.length > 0 ? data.terms.amcScope : c.amcIncludes;
+  const planOptions = scopeRaw.filter(isAmcPlanLabel).slice(0, 3);
+  const includeItems = scopeRaw.filter(
+    (s) =>
+      !isAmcPlanLabel(s) &&
+      !/^annual maintenance contract/i.test(s) &&
+      !/^amc includes/i.test(s)
+  );
+  const amcIncludes = (
+    includeItems.length > 0 ? includeItems : c.amcIncludes
+  ).slice(0, 4);
+
+  const notesRaw =
+    data.terms.amcTerms.length > 0
+      ? data.terms.amcTerms
+      : [...c.amcExcludes, ...c.amcCommercial];
+  const amcExcludes = (
+    notesRaw.filter(isExclusionNote).length > 0
+      ? notesRaw.filter(isExclusionNote)
+      : c.amcExcludes
+  ).slice(0, 3);
+  const amcCommercial = (
+    notesRaw.filter((s) => !isExclusionNote(s) && isCommercialNote(s)).length >
+    0
+      ? notesRaw.filter((s) => !isExclusionNote(s) && isCommercialNote(s))
+      : c.amcCommercial
+  ).slice(0, 2);
+
+  const invoiceBase =
+    grossInr > 0 ? grossInr : netInr > 0 ? netInr : 0;
+  const invoiceRef = invoiceBase > 0 ? formatInr(invoiceBase) : "";
 
   // Vendor bank — More → Brand settings (+ proposal bank fields)
   void brandConfig;
@@ -419,6 +479,25 @@ export function AtelierRenderer({
             <span className={styles.coverDocType}>{c.cover.docType}</span>
           </div>
 
+          <figure className={styles.coverPhotoPlate}>
+            <div className={styles.coverPhotoFrame}>
+              {/* eslint-disable-next-line @next/next/no-img-element -- print A4 static asset */}
+              <img
+                className={styles.coverPhotoImg}
+                src="/assets/proposals/atelier-cover-terrace-garden.jpg"
+                alt=""
+                width={1600}
+                height={900}
+              />
+              <div className={styles.coverPhotoVignette} aria-hidden />
+              <div className={styles.coverPhotoEdge} aria-hidden />
+            </div>
+            <figcaption className={styles.coverPhotoCaption}>
+              <span className={styles.coverPhotoTitle}>{c.cover.photoTitle}</span>
+              <span className={styles.coverPhotoSub}>{c.cover.photoSub}</span>
+            </figcaption>
+          </figure>
+
           <div className={styles.coverHero}>
             <p className={styles.coverFor}>{c.cover.preparedFor}</p>
             <h1 className={styles.coverName}>{clientName}</h1>
@@ -456,7 +535,7 @@ export function AtelierRenderer({
             </div>
           </div>
         </div>
-        <span className={styles.pageNum}>01 / 12</span>
+        <span className={`${styles.pageNum} ${styles.pageNumLight}`}>01 / 12</span>
       </section>
 
       {/* ══ P2: IMPACT MOMENT — environmental only (no financials) ══ */}
@@ -632,7 +711,7 @@ export function AtelierRenderer({
         <span className={styles.pageNum}>03 / 12</span>
       </section>
 
-      {/* ══ P4: WEALTH PROJECTION — owns the full 25-year story ═══ */}
+      {/* ══ P4: WEALTH PROJECTION — money story + AA+ ════════════ */}
       <section className={`${styles.page} ${styles.wealthPage}`}>
         <header className={styles.pageHead}>
           <span className={styles.pageTag}>{c.wealth.tag}</span>
@@ -642,7 +721,12 @@ export function AtelierRenderer({
 
         <div className={styles.wealthJourney}>
           <div className={styles.wjPhase}>
-            <div className={styles.wjDot} style={{ background: "#DC2626" }} />
+            <div className={styles.wjPhaseHead}>
+              <span className={styles.wjStepNum}>{c.wealth.step1Num}</span>
+              <span className={styles.wjIconTile} aria-hidden>
+                <WealthIconPay className={styles.wjIconSvg} />
+              </span>
+            </div>
             <div className={styles.wjLabel}>{c.wealth.phase1}</div>
             <div className={styles.wjTitle}>{c.wealth.investment}</div>
             <div className={styles.wjSpan}>
@@ -650,9 +734,17 @@ export function AtelierRenderer({
             </div>
             <div className={styles.wjNote}>{c.wealth.phase1Note}</div>
           </div>
-          <div className={styles.wjArrow}>→</div>
+          <div className={styles.wjArrow} aria-hidden>
+            <span className={styles.wjArrowLine} />
+            <span className={styles.wjArrowTip}>›</span>
+          </div>
           <div className={`${styles.wjPhase} ${styles.wjPhaseActive}`}>
-            <div className={styles.wjDot} style={{ background: "#F97316" }} />
+            <div className={styles.wjPhaseHead}>
+              <span className={styles.wjStepNum}>{c.wealth.step2Num}</span>
+              <span className={`${styles.wjIconTile} ${styles.wjIconTileActive}`} aria-hidden>
+                <WealthIconPaid className={styles.wjIconSvg} />
+              </span>
+            </div>
             <div className={styles.wjLabel}>{c.wealth.milestone}</div>
             <div className={styles.wjTitle}>{c.wealth.payback}</div>
             <div className={styles.wjSpan}>
@@ -662,9 +754,17 @@ export function AtelierRenderer({
             </div>
             <div className={styles.wjNote}>{c.wealth.paybackNote}</div>
           </div>
-          <div className={styles.wjArrow}>→</div>
+          <div className={styles.wjArrow} aria-hidden>
+            <span className={styles.wjArrowLine} />
+            <span className={styles.wjArrowTip}>›</span>
+          </div>
           <div className={styles.wjPhase}>
-            <div className={styles.wjDot} style={{ background: "#059669" }} />
+            <div className={styles.wjPhaseHead}>
+              <span className={styles.wjStepNum}>{c.wealth.step3Num}</span>
+              <span className={styles.wjIconTile} aria-hidden>
+                <WealthIconGrow className={styles.wjIconSvg} />
+              </span>
+            </div>
             <div className={styles.wjLabel}>{c.wealth.phase2}</div>
             <div className={styles.wjTitle}>{c.wealth.passiveIncome}</div>
             <div className={styles.wjSpan}>
@@ -687,6 +787,10 @@ export function AtelierRenderer({
 
         <div className={styles.wealthLayout}>
           <div className={styles.wealthChartBox}>
+            <div className={styles.wealthChartHead}>
+              <span className={styles.wealthChartTitle}>{c.wealth.chartTitle}</span>
+              <span className={styles.wealthChartHint}>{c.wealth.chartHint}</span>
+            </div>
             <div className={styles.wealthChart}>
               {wealthMilestones.map((m) => (
                 <div key={m.year} className={styles.wealthMilestone}>
@@ -738,7 +842,7 @@ export function AtelierRenderer({
                 </div>
                 <div className={styles.investScoreStat}>
                   <span className={styles.investScoreStatVal}>
-                    {annualSavings > 0
+                    {annualSavings > 0 && netInr > 0
                       ? `${Math.round((annualSavings / netInr) * 100)}%`
                       : "—"}
                   </span>
@@ -762,15 +866,24 @@ export function AtelierRenderer({
               </div>
               <p className={styles.paybackNote}>
                 {c.wealth.returnsNote(
-                  netInr > 0 ? formatInrCompact(netInr) : "—",
+                  netInr > 0 ? formatInrCompact(netInr).replace(/^₹/, "") : "—",
                   totalWealth > 0 && netInr > 0
-                    ? `${(totalWealth / netInr).toFixed(1)}×`
+                    ? formatInrCompact(totalWealth)
                     : "—"
                 )}
               </p>
             </div>
           </div>
         </div>
+
+        <p className={styles.wealthTakeaway}>
+          {c.wealth.takeaway(
+            paybackYears > 0 ? paybackYears.toFixed(1) : "4–5",
+            paybackYears > 0
+              ? String(Math.max(1, 25 - Math.ceil(paybackYears)))
+              : "20"
+          )}
+        </p>
 
         <span className={styles.pageNum}>04 / 12</span>
       </section>
@@ -931,65 +1044,64 @@ export function AtelierRenderer({
         <span className={styles.pageNum}>05 / 12</span>
       </section>
 
-      {/* ══ P6: HARDWARE — 4-CARD TRUST GRID ═════════════════════ */}
+      {/* ══ P6: HARDWARE TRUST — icons + earthing strip ══════════ */}
       <section className={`${styles.page} ${styles.hwPage}`}>
         <header className={styles.pageHead}>
           <span className={styles.pageTag}>{c.hw.tag}</span>
           <h2 className={styles.pageTitle}>{c.hw.title}</h2>
+          <p className={styles.pageLead}>{c.hw.lead}</p>
         </header>
 
         <div className={styles.hwCard4Grid}>
-          {[
-            {
-              key: "panel",
-              tag: c.hw.panels,
-              title: panelItem
-                ? panelItem.brand || "Waaree"
-                : "Waaree Energies",
-              spec: bomLine(panelItem, "580 Wp DCR TOPCon N-Type"),
-              warranty: panelItem?.warranty || c.hw.warrantyPanel,
-              mark: "P",
-              why: c.hw.whyPanel(cityLabel),
-            },
-            {
-              key: "inverter",
-              tag: c.hw.inverter,
-              title: inverterItem
-                ? inverterItem.brand || "Havells / Polycab"
-                : "Havells / Polycab",
-              spec: bomLine(
-                inverterItem,
-                `${systemKw} kW Dual MPPT String Inverter`
-              ),
-              warranty: inverterItem?.warranty || c.hw.warrantyInverter,
-              mark: "I",
-              why: c.hw.whyInverter,
-            },
-            {
-              key: "structure",
-              tag: c.hw.structure,
-              title: structureItem ? structureItem.brand || "JSW" : "JSW",
-              spec: bomLine(structureItem, "Hot-Dip Galvanized GI Structure"),
-              warranty: structureItem?.warranty || c.hw.warrantyStructure,
-              mark: "M",
-              why: c.hw.whyStructure,
-            },
-            {
-              key: "protection",
-              tag: c.hw.protection,
-              title: protectionItem
-                ? protectionItem.brand || "Havells / Phoenix"
-                : "Havells / Phoenix",
-              spec: bomLine(protectionItem, "DCDB + ACDB with SPD"),
-              warranty: protectionItem?.warranty || c.hw.warrantyProtection,
-              mark: "S",
-              why: c.hw.whyProtection,
-            },
-          ].map((hw) => (
+          {(
+            [
+              {
+                key: "panel" as HwIconKey,
+                tag: c.hw.panels,
+                title: panelItem
+                  ? panelItem.brand || "Waaree"
+                  : "Waaree Energies",
+                spec: bomLine(panelItem, "580 Wp DCR TOPCon N-Type"),
+                warranty: panelItem?.warranty || c.hw.warrantyPanel,
+                why: c.hw.whyPanel(cityLabel),
+              },
+              {
+                key: "inverter" as HwIconKey,
+                tag: c.hw.inverter,
+                title: inverterItem
+                  ? inverterItem.brand || "Havells / Polycab"
+                  : "Havells / Polycab",
+                spec: bomLine(
+                  inverterItem,
+                  `${systemKw} kW Dual MPPT String Inverter`
+                ),
+                warranty: inverterItem?.warranty || c.hw.warrantyInverter,
+                why: c.hw.whyInverter,
+              },
+              {
+                key: "structure" as HwIconKey,
+                tag: c.hw.structure,
+                title: structureItem ? structureItem.brand || "JSW" : "JSW",
+                spec: bomLine(structureItem, "Hot-Dip Galvanized GI Structure"),
+                warranty: structureItem?.warranty || c.hw.warrantyStructure,
+                why: c.hw.whyStructure,
+              },
+              {
+                key: "protection" as HwIconKey,
+                tag: c.hw.protection,
+                title: protectionItem
+                  ? protectionItem.brand || "Havells / Phoenix"
+                  : "Havells / Phoenix",
+                spec: bomLine(protectionItem, "DCDB + ACDB with SPD"),
+                warranty: protectionItem?.warranty || c.hw.warrantyProtection,
+                why: c.hw.whyProtection,
+              },
+            ] as const
+          ).map((hw) => (
             <div key={hw.key} className={styles.hwCardV2}>
               <div className={styles.hwCardTop}>
                 <div className={styles.hwCardIcon} aria-hidden="true">
-                  {hw.mark}
+                  <HwCardIcon name={hw.key} className={styles.hwCardIconSvg} />
                 </div>
                 <span className={styles.hwCardTag}>{hw.tag}</span>
               </div>
@@ -1007,6 +1119,40 @@ export function AtelierRenderer({
             </div>
           ))}
         </div>
+
+        <aside className={styles.hwEarthStrip}>
+          <div className={styles.hwEarthHead}>
+            <span className={styles.hwEarthIconWrap} aria-hidden>
+              <HwIconEarth className={styles.hwEarthIconSvg} />
+            </span>
+            <div>
+              <span className={styles.hwEarthTag}>{c.hw.earthTag}</span>
+              <p className={styles.hwEarthLead}>{c.hw.earthLead}</p>
+            </div>
+          </div>
+          <div className={styles.hwEarthChips}>
+            {[
+              {
+                val: c.hw.earthKitsVal,
+                label: c.hw.earthKitsLabel,
+              },
+              {
+                val: c.hw.earthCableVal,
+                label: c.hw.earthCableLabel,
+              },
+              {
+                val: c.hw.earthLaVal,
+                label: c.hw.earthLaLabel,
+              },
+            ].map((chip) => (
+              <div key={chip.label} className={styles.hwEarthChip}>
+                <strong className={styles.hwEarthChipVal}>{chip.val}</strong>
+                <span className={styles.hwEarthChipLabel}>{chip.label}</span>
+              </div>
+            ))}
+          </div>
+          <p className={styles.hwEarthWhy}>{c.hw.earthWhy}</p>
+        </aside>
 
         <div className={styles.warrantyGridCompact}>
           {warrantyCards.map((w, i) => (
@@ -1027,7 +1173,7 @@ export function AtelierRenderer({
         <span className={styles.pageNum}>06 / 12</span>
       </section>
 
-      {/* ══ P7: WHY HARIHAR SOLAR — CREDIBILITY ══════════════════ */}
+      {/* ══ P7: WHY PARTNER — icon-led trust cards ═══════════════ */}
       <section className={`${styles.page} ${styles.trustPage}`}>
         <header className={styles.pageHead}>
           <span className={styles.pageTag}>
@@ -1039,7 +1185,15 @@ export function AtelierRenderer({
         <div className={styles.trustGrid}>
           {c.trust.cards.map((t) => (
             <div key={t.label} className={styles.trustCard}>
-              <div className={styles.trustNum}>{t.num}</div>
+              <div className={styles.trustCardTop}>
+                <span className={styles.trustIconTile} aria-hidden>
+                  <TrustCardIcon
+                    name={t.icon}
+                    className={styles.trustIconSvg}
+                  />
+                </span>
+                <div className={styles.trustNum}>{t.num}</div>
+              </div>
               <div className={styles.trustLabel}>{t.label}</div>
               <div className={styles.trustNote}>{t.note}</div>
             </div>
@@ -1047,6 +1201,9 @@ export function AtelierRenderer({
         </div>
 
         <div className={styles.trustQuoteBox}>
+          <span className={styles.trustQuoteMark} aria-hidden>
+            “
+          </span>
           <p className={styles.trustQuote}>{c.trust.quote}</p>
           <span className={styles.trustQuoteAttr}>
             {c.trust.quoteAttr(brand)}
@@ -1244,8 +1401,8 @@ export function AtelierRenderer({
             },
             {
               tag: c.roof.areaTag,
-              val: `~${Math.ceil(panelCount * 2)} m²`,
-              note: c.roof.areaNote,
+              val: c.roof.areaVal(roofAreaSqft),
+              note: c.roof.areaNote(panelWp, sqftPerPanel),
             },
             {
               tag: c.roof.tiltTag,
@@ -1266,7 +1423,13 @@ export function AtelierRenderer({
             },
             {
               tag: c.roof.utilTag,
-              val: `~${Math.min(95, Math.ceil((panelCount * 2 * 100) / Math.ceil(panelCount * 2.2)))}%`,
+              val: `~${Math.min(
+                95,
+                Math.ceil(
+                  (roofAreaSqft * 100) /
+                    Math.ceil(roofAreaSqft * 1.1)
+                )
+              )}%`,
               note: c.roof.utilNote,
             },
           ].map((m) => (
@@ -1410,80 +1573,169 @@ export function AtelierRenderer({
         <span className={styles.pageNum}>09 / 12</span>
       </section>
 
-      {/* ══ P10: TERMS & COMPLIANCE ══════════════════════════════ */}
+      {/* ══ P10: TERMS & COMPLIANCE (Luxe content · Atelier style) ══ */}
       <section className={`${styles.page} ${styles.termsPage}`}>
         <header className={styles.pageHead}>
           <span className={styles.pageTag}>{c.terms.tag10}</span>
           <h2 className={styles.pageTitle}>{c.terms.title}</h2>
+          <p className={styles.pageLead}>{c.terms.intro1}</p>
         </header>
 
-        <div className={styles.termsGrid}>
-          <div>
+        <div className={styles.termsStack}>
+          <section className={styles.termsSection}>
             <div className={styles.termsSubhead}>{c.terms.general}</div>
-            <ul className={styles.termsList}>
-              {generalTerms.map((t) => (
-                <li key={t.slice(0, 48)}>{t}</li>
+            <ol className={styles.termsArticleList}>
+              {generalTerms.map((t, i) => (
+                <li key={t.label} className={styles.termsArticle}>
+                  <span className={styles.termsArticleNum}>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <div>
+                    <strong className={styles.termsArticleLabel}>{t.label}</strong>
+                    <p className={styles.termsArticleBody}>{t.text}</p>
+                  </div>
+                </li>
               ))}
-            </ul>
-          </div>
-          <div>
+            </ol>
+          </section>
+
+          <section className={styles.termsSection}>
             <div className={styles.termsSubhead}>{c.terms.documents}</div>
-            <ul className={styles.docsList}>
-              {docs.map((d) => (
-                <li key={d.slice(0, 48)}>{d}</li>
+            <ol className={styles.termsNumberedList}>
+              {docs.map((d, i) => (
+                <li key={d.slice(0, 48)}>
+                  <span className={styles.termsListNum}>{i + 1}</span>
+                  <span>{d}</span>
+                </li>
               ))}
-            </ul>
-            <div className={styles.termsSubhead} style={{ marginTop: "1.5rem" }}>
-              {c.terms.amcScope}
-            </div>
-            <p className={styles.amcObjective}>{amcObjective}</p>
-            <ul className={styles.termsList}>
-              {amcScope.map((s) => (
-                <li key={s.slice(0, 48)}>{s}</li>
-              ))}
-            </ul>
-          </div>
+            </ol>
+          </section>
+
+          <aside className={styles.termsNote}>
+            <span className={styles.termsNoteTag}>{c.terms.counselLabel}</span>
+            <p>{c.terms.counsel}</p>
+          </aside>
         </div>
+
         <span className={styles.pageNum}>10 / 12</span>
       </section>
 
       {/* ══ P11: TERMS & COMPLIANCE (CONTD.) ══════════════════════ */}
-      <section className={`${styles.page} ${styles.termsPage}`}>
+      <section className={`${styles.page} ${styles.termsPage} ${styles.termsPageDense}`}>
         <header className={styles.pageHead}>
           <span className={styles.pageTag}>{c.terms.tag11}</span>
           <h2 className={styles.pageTitle}>{c.terms.title}</h2>
+          <p className={styles.pageLead}>{c.terms.intro2}</p>
         </header>
 
-        <div className={styles.termsGrid}>
-          <div>
+        <div className={styles.termsStack}>
+          <section className={styles.termsSection}>
+            <div className={styles.termsSubhead}>{c.terms.safety}</div>
+            <ul className={styles.termsSafetyList}>
+              {safetyNotes.map((s) => (
+                <li key={s.slice(0, 40)}>{s}</li>
+              ))}
+            </ul>
+          </section>
+
+          <section className={styles.termsSection}>
             <div className={styles.termsSubhead}>{c.terms.clientScope}</div>
-            <ul className={styles.termsList}>
-              {clientScope.map((s) => (
-                <li key={s.slice(0, 48)}>{s}</li>
+            <ol className={styles.termsNumberedList}>
+              {clientScope.map((s, i) => (
+                <li key={s.slice(0, 48)}>
+                  <span className={styles.termsListNum}>{i + 1}</span>
+                  <span>{s}</span>
+                </li>
               ))}
-            </ul>
-          </div>
-          <div>
+            </ol>
+          </section>
+
+          <section className={styles.termsSection}>
+            <div className={styles.termsSubhead}>{c.terms.amcScope}</div>
+            <p className={styles.termsPara}>{amcObjective}</p>
+
+            {planOptions.length > 0 ? (
+              <>
+                <p className={styles.termsAmcLabel}>{c.terms.availablePlans}</p>
+                <ol className={styles.termsNumberedList}>
+                  {planOptions.map((s, i) => (
+                    <li key={`plan-${s.slice(0, 32)}`}>
+                      <span className={styles.termsListNum}>{i + 1}</span>
+                      <span>{s}</span>
+                    </li>
+                  ))}
+                </ol>
+              </>
+            ) : null}
+
+            <p className={styles.termsAmcLabel}>{c.terms.amcIncludes}</p>
+            <ol className={styles.termsNumberedList}>
+              {amcIncludes.map((s, i) => (
+                <li key={`inc-${s.slice(0, 32)}`}>
+                  <span className={styles.termsListNum}>{i + 1}</span>
+                  <span>{s}</span>
+                </li>
+              ))}
+            </ol>
+
+            <p className={styles.termsAmcLabel}>{c.terms.amcExcludes}</p>
+            <ol className={styles.termsNumberedList}>
+              {amcExcludes.map((s, i) => (
+                <li key={`exc-${s.slice(0, 32)}`}>
+                  <span className={styles.termsListNum}>{i + 1}</span>
+                  <span>{s}</span>
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          <section className={styles.termsSection}>
             <div className={styles.termsSubhead}>{c.terms.costMaint}</div>
-            <p className={styles.amcCostPara}>{amcCostParagraph}</p>
-            <ul className={styles.termsList}>
-              {amcTerms.map((t) => (
-                <li key={t.slice(0, 48)}>{t}</li>
-              ))}
-            </ul>
+            <div className={styles.termsCostBox}>
+              <p>{c.terms.year1Included}</p>
+              <p>
+                {c.terms.year2Onwards}
+                {invoiceRef ? (
+                  <>
+                    {" "}
+                    (<strong>({invoiceRef})</strong>
+                  </>
+                ) : null}
+              </p>
+            </div>
+            {amcCommercial.length > 0 ? (
+              <>
+                <p className={styles.termsAmcLabel}>{c.terms.paymentNotes}</p>
+                <ol className={styles.termsNumberedList}>
+                  {amcCommercial.map((t, i) => (
+                    <li key={`com-${t.slice(0, 32)}`}>
+                      <span className={styles.termsListNum}>{i + 1}</span>
+                      <span>{t}</span>
+                    </li>
+                  ))}
+                </ol>
+              </>
+            ) : null}
+          </section>
+
+          <div className={styles.termsSignoff}>
+            <span className={styles.termsRegards}>{c.terms.regards}</span>
+            <span className={styles.termsBrand}>
+              {footerBrand.showName ? footerBrand.installerName || brand : brand}
+            </span>
+            <span className={styles.termsVendorTag}>{c.terms.vendorTag}</span>
           </div>
+
+          <aside className={styles.termsNote}>
+            <span className={styles.termsNoteTag}>{c.terms.omLabel}</span>
+            <p>{c.terms.om}</p>
+          </aside>
         </div>
 
-        <div className={styles.termsSignoff}>
-          <span className={styles.termsRegards}>{c.terms.regards}</span>
-          <span className={styles.termsBrand}>
-            {footerBrand.showName ? footerBrand.installerName || brand : ""}
-          </span>
-        </div>
         <span className={styles.pageNum}>11 / 12</span>
       </section>
 
-      {/* ══ P12: EMOTIONAL CLOSING — COMPANY BRANDING ══════════════ */}
+      {/* ══ P12: EMOTIONAL CLOSING — RCC rooftop + CTA ═══════════ */}
       <section className={`${styles.page} ${styles.closingPage}`}>
         <div className={styles.closingInner}>
           <div className={styles.closingBrandTop}>
@@ -1506,11 +1758,34 @@ export function AtelierRenderer({
                 {(closingBrand.installerName || brand).toUpperCase()}
               </span>
             ) : null}
+            <span className={styles.closingTagInline}>{c.closing.tag}</span>
           </div>
+
+          <figure className={styles.closingPhotoPlate}>
+            <div className={styles.closingPhotoFrame}>
+              {/* eslint-disable-next-line @next/next/no-img-element -- print A4 static asset */}
+              <img
+                className={styles.closingPhotoImg}
+                src="/assets/proposals/atelier-closing-rcc-rooftop.jpg"
+                alt=""
+                width={1600}
+                height={900}
+              />
+              <div className={styles.closingPhotoVignette} aria-hidden />
+              <div className={styles.closingPhotoEdge} aria-hidden />
+            </div>
+            <figcaption className={styles.closingPhotoCaption}>
+              <span className={styles.closingPhotoTitle}>
+                {c.closing.photoTitle}
+              </span>
+              <span className={styles.closingPhotoSub}>
+                {c.closing.photoSub}
+              </span>
+            </figcaption>
+          </figure>
 
           <div className={styles.closingSplit}>
             <div className={styles.closingLeft}>
-              <span className={styles.closingTag}>{c.closing.tag}</span>
               <h2 className={styles.closingTitle}>{c.closing.congrats}</h2>
               <p className={styles.closingStatement}>
                 {c.closing.statement1}

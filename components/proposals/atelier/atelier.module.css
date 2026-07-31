@@ -34,7 +34,7 @@
   box-sizing: border-box;
 }
 
-/* ── Print bar ──────────────────────────────────────────────── */
+/* ── Print / preview bar ────────────────────────────────────── */
 .printBar {
   position: sticky;
   top: 0;
@@ -45,11 +45,13 @@
   max-width: 100%;
   box-sizing: border-box;
   overflow: hidden;
+  box-shadow: 0 8px 24px rgba(10, 15, 28, 0.22);
 }
 .printBarInner {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 0.75rem;
   max-width: var(--a4-w);
   width: 100%;
   margin: 0 auto;
@@ -61,12 +63,16 @@
   font-size: 0.92rem;
   font-weight: 700;
   letter-spacing: 2px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .printBarBtn {
   background: var(--or);
   color: var(--white);
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   padding: 0.4rem 1.2rem;
   font-size: 0.92rem;
   font-weight: 700;
@@ -74,6 +80,8 @@
   letter-spacing: 0.5px;
   cursor: pointer;
   transition: background 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .printBarBtn:hover { background: var(--or2); }
 
@@ -81,6 +89,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  flex-shrink: 0;
 }
 
 .langToggle {
@@ -117,12 +126,17 @@
 .langHi .pageTag,
 .langHi .coverDocType,
 .langHi .coverFor,
+.langHi .coverPhotoTitle,
+.langHi .termsSubhead,
+.langHi .termsNoteTag,
+.langHi .termsAmcLabel,
 .langHi .coverWealthTag,
 .langHi .billCardTag,
 .langHi .genCardTag,
 .langHi .investTag,
 .langHi .investScoreTag,
 .langHi .hwCardTag,
+.langHi .hwEarthTag,
 .langHi .roofYieldTag,
 .langHi .roofTerraceLabel,
 .langHi .roofStageTitle,
@@ -132,6 +146,8 @@
 .langHi .vendorBankTag,
 .langHi .invoiceSectionTag,
 .langHi .closingTag,
+.langHi .closingTagInline,
+.langHi .closingPhotoTitle,
 .langHi .expertTag {
   letter-spacing: 0.5px;
 }
@@ -234,7 +250,8 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 2rem 2.5rem 2.25rem;
+  padding: 1.5rem 2.25rem 1.75rem;
+  gap: 0.75rem;
   min-height: 0; /* allow flex child to shrink inside fixed-height page */
   overflow: hidden;
 }
@@ -307,33 +324,111 @@
   white-space: nowrap;
 }
 
-.coverHero {
-  padding: 1.5rem 0 0;
-  flex: 1;
+/* Cover lifestyle photo — unique Atelier asset (not Quantum / Luxe) */
+.coverPhotoPlate {
+  margin: 0;
+  flex: 1.15;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  gap: 0.45rem;
+}
+
+.coverPhotoFrame {
+  position: relative;
+  flex: 1;
+  min-height: 210px;
+  max-height: 320px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.35),
+    inset 0 0 0 1px rgba(249, 115, 22, 0.18);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.coverPhotoImg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 42%;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.coverPhotoVignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.08) 0%, transparent 28%, transparent 62%, rgba(15, 23, 42, 0.45) 100%),
+    radial-gradient(ellipse 80% 70% at 50% 40%, transparent 40%, rgba(15, 23, 42, 0.22) 100%);
+}
+
+.coverPhotoEdge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--or), transparent);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.coverPhotoCaption {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0 0.1rem;
+  flex-shrink: 0;
+}
+
+.coverPhotoTitle {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--or);
+}
+
+.coverPhotoSub {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.35;
+}
+
+.coverHero {
+  padding: 0.15rem 0 0;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
   min-height: 0;
 }
 .coverFor {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.86rem;
+  font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 3px;
   color: rgba(255,255,255,0.45);
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.35rem;
 }
 .coverName {
   font-family: 'Montserrat', sans-serif;
-  font-size: clamp(1.75rem, 4.5vw, 2.5rem);
+  font-size: clamp(1.45rem, 3.8vw, 2.1rem);
   font-weight: 800;
   color: var(--white);
   line-height: 1.1;
-  margin: 0 0 0.4rem;
+  margin: 0 0 0.25rem;
   word-break: break-word;
 }
 .coverLoc {
-  font-size: 1rem;
+  font-size: 0.92rem;
   color: rgba(255,255,255,0.5);
   margin: 0;
   letter-spacing: 0.5px;
@@ -342,9 +437,9 @@
 .coverWealthRow {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
+  gap: 1.25rem;
+  margin-top: 0.25rem;
+  padding-top: 0.95rem;
   border-top: 1px solid rgba(255,255,255,0.1);
   flex-shrink: 0;
 }
@@ -657,24 +752,47 @@
 }
 
 /* ══ P4: WEALTH PROJECTION ══════════════════════════════════════ */
+.wealthPage .pageLead {
+  max-width: 520px;
+}
 .wealthLayout {
   display: grid;
-  grid-template-columns: 1fr 250px;
-  gap: 1.5rem;
+  grid-template-columns: 1fr 240px;
+  gap: 1.1rem;
 }
 .wealthChartBox {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.65rem;
+}
+.wealthChartHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35rem 0.75rem;
+}
+.wealthChartTitle {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--or);
+}
+.wealthChartHint {
+  font-size: 0.72rem;
+  color: var(--gray2);
+  font-weight: 600;
 }
 .wealthChart {
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
+  gap: 0.65rem;
 }
-.wealthMilestone { display: flex; flex-direction: column; gap: 0.3rem; }
+.wealthMilestone { display: flex; flex-direction: column; gap: 0.22rem; }
 .wealthBarWrap {
-  height: 22px;
+  height: 20px;
   background: var(--line);
   border-radius: 4px;
   overflow: hidden;
@@ -684,6 +802,8 @@
   background: linear-gradient(90deg, var(--or), #c05209);
   border-radius: 4px;
   transition: width 0.4s ease;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 .wealthMeta {
   display: flex;
@@ -692,134 +812,139 @@
 }
 .wealthYr {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.86rem;
-  font-weight: 700;
+  font-size: 0.78rem;
+  font-weight: 800;
   letter-spacing: 1px;
   color: var(--gray);
 }
 .wealthAmt {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.95rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 800;
   color: var(--h);
 }
 .wealthChartNote {
-  font-size: 0.88rem;
+  font-size: 0.74rem;
   color: var(--gray);
-  font-style: italic;
-  padding-top: 0.5rem;
+  padding-top: 0.35rem;
   border-top: 1px solid var(--line);
-  line-height: 1.5;
+  line-height: 1.4;
 }
 .wealthContrast {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
-  padding: 0.65rem 0.75rem;
+  gap: 0.15rem;
+  padding: 0.55rem 0.7rem;
   background: #fef2f2;
   border: 1px solid #fecaca;
   border-radius: 6px;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 .wealthContrastLabel {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.74rem;
-  font-weight: 700;
-  letter-spacing: 1px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
   color: #DC2626;
   text-transform: uppercase;
 }
 .wealthContrastVal {
-  font-size: 0.9rem;
+  font-size: 0.84rem;
   font-weight: 700;
   color: var(--c);
-  line-height: 1.4;
+  line-height: 1.35;
 }
 
-/* Investment score card */
-.investScoreBox { display: flex; flex-direction: column; gap: 1rem; }
+/* Investment score card — keep AA+ dominant */
+.investScoreBox { display: flex; flex-direction: column; gap: 0.65rem; }
 .investScoreCard {
   background: var(--h);
   color: var(--white);
   border-radius: var(--card-r);
-  padding: 1.75rem 1.5rem;
+  padding: 1.15rem 1.1rem 1.2rem;
   text-align: center;
+  box-shadow: 0 8px 24px rgba(10, 15, 28, 0.18);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 .investScoreTag {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.82rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 2px;
+  letter-spacing: 1.6px;
   color: rgba(255,255,255,0.45);
   text-transform: uppercase;
   display: block;
-  margin-bottom: 1rem;
+  margin-bottom: 0.55rem;
 }
 .investScoreGrade {
   font-family: 'Montserrat', sans-serif;
-  font-size: 3.5rem;
+  font-size: 3.25rem;
   font-weight: 800;
   color: var(--or);
   line-height: 1;
 }
 .investScoreLabel {
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: 600;
-  color: rgba(255,255,255,0.7);
-  margin-top: 0.35rem;
+  color: rgba(255,255,255,0.75);
+  margin-top: 0.3rem;
 }
 .investScoreDivider {
   height: 1px;
   background: rgba(255,255,255,0.1);
-  margin: 1.25rem 0;
+  margin: 0.85rem 0;
 }
 .investScoreStats {
   display: flex;
   justify-content: space-around;
-  gap: 1rem;
+  gap: 0.65rem;
 }
-.investScoreStat { display: flex; flex-direction: column; gap: 0.2rem; }
+.investScoreStat { display: flex; flex-direction: column; gap: 0.15rem; }
 .investScoreStatVal {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: 1.05rem;
+  font-weight: 800;
   color: var(--white);
 }
 .investScoreStatLabel {
-  font-size: 0.84rem;
-  color: rgba(255,255,255,0.4);
+  font-size: 0.68rem;
+  color: rgba(255,255,255,0.45);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
+  font-weight: 700;
 }
 .investScoreBasis {
-  font-size: 0.84rem;
-  color: rgba(255,255,255,0.4);
-  line-height: 1.55;
+  font-size: 0.74rem;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.4;
   text-align: left;
-  margin: 1rem 0 0;
-  padding-top: 0.85rem;
+  margin: 0.75rem 0 0;
+  padding-top: 0.65rem;
   border-top: 1px solid rgba(255,255,255,0.1);
 }
-.investScoreBasis strong { color: rgba(255,255,255,0.65); }
+.investScoreBasis strong { color: var(--or); }
 
 /* Payback summary card */
 .paybackCard {
   background: var(--al);
   border: 1px solid var(--line);
   border-radius: var(--card-r);
-  padding: 1.25rem 1.25rem;
+  padding: 0.9rem 1rem;
 }
 .paybackAmt {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.9rem;
+  font-size: 1.65rem;
   font-weight: 800;
   color: var(--or);
   line-height: 1;
-  margin: 0.6rem 0 0.4rem;
+  margin: 0.45rem 0 0.35rem;
 }
 .paybackNote {
-  font-size: 0.92rem;
+  font-size: 0.78rem;
   color: var(--gray);
-  line-height: 1.5;
+  line-height: 1.4;
   margin: 0;
 }
 
@@ -967,12 +1092,16 @@
 }
 .genDisclaimer strong { color: var(--c); font-style: normal; }
 
-/* ══ P6: HARDWARE — 4-CARD TRUST GRID ═══════════════════════════ */
+/* ══ P6: HARDWARE TRUST — icons + earthing ══════════════════════ */
+.hwPage .pageLead {
+  max-width: 560px;
+}
+
 .hwCard4Grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.9rem;
-  margin-bottom: 1.15rem;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
 }
 .hwCardV2 {
   background: var(--white);
@@ -982,66 +1111,78 @@
   display: flex;
   flex-direction: column;
   box-shadow: var(--card-s);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 .hwCardTop {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
-  padding: 0.7rem 0.95rem;
+  gap: 0.6rem;
+  padding: 0.6rem 0.85rem;
   background: linear-gradient(90deg, #fff7ed 0%, var(--white) 72%);
   border-bottom: 1px solid var(--line);
 }
 .hwCardIcon {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: var(--h);
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: linear-gradient(145deg, #FFF7ED 0%, #FFEDD5 100%);
+  border: 1px solid rgba(249, 115, 22, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Montserrat', sans-serif;
-  font-size: 0.92rem;
-  font-weight: 800;
-  color: var(--white);
+  color: var(--or);
   flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(10, 15, 28, 0.18);
+  box-shadow: 0 2px 6px rgba(249, 115, 22, 0.12);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+.hwCardIconSvg {
+  width: 20px;
+  height: 20px;
+  display: block;
 }
 .hwCardBody {
-  padding: 0.85rem 0.95rem 0.95rem;
+  padding: 0.7rem 0.85rem 0.8rem;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.28rem;
 }
 .hwCardTag {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 1.5px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1.4px;
   color: var(--or);
   text-transform: uppercase;
 }
 .hwCardTitle {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.02rem;
+  font-size: 0.95rem;
   font-weight: 800;
   color: var(--h);
   line-height: 1.2;
 }
-.hwCardSpec { font-size: 0.92rem; color: var(--gray); margin: 0; line-height: 1.45; }
+.hwCardSpec {
+  font-size: 0.78rem;
+  color: var(--gray);
+  margin: 0;
+  line-height: 1.4;
+}
 .hwCardWhy {
-  font-size: 0.92rem;
+  font-size: 0.78rem;
   color: var(--c);
-  margin: 0.1rem 0 0;
-  line-height: 1.5;
-  padding: 0.45rem 0.55rem;
+  margin: 0.05rem 0 0;
+  line-height: 1.4;
+  padding: 0.4rem 0.5rem;
   background: #fafbfc;
   border-left: 3px solid var(--or);
   border-radius: 0 4px 4px 0;
 }
 .hwCardFooter {
   margin-top: auto;
-  padding-top: 0.65rem;
+  padding-top: 0.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1053,15 +1194,15 @@
   background: var(--h);
   color: var(--white);
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.84rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.75px;
-  padding: 0.25rem 0.6rem;
+  letter-spacing: 0.6px;
+  padding: 0.22rem 0.5rem;
   border-radius: 3px;
   width: fit-content;
 }
 .hwCardDatasheet {
-  font-size: 0.84rem;
+  font-size: 0.74rem;
   font-weight: 700;
   color: var(--or);
   text-decoration: none;
@@ -1072,69 +1213,218 @@
 }
 .hwCardDatasheet:hover { text-decoration: underline; }
 
+/* Earthing & lightning strip */
+.hwEarthStrip {
+  background: linear-gradient(135deg, #FFF7ED 0%, #FFFFFF 55%, #F8FAFC 100%);
+  border: 1px solid rgba(249, 115, 22, 0.28);
+  border-radius: var(--card-r);
+  padding: 0.7rem 0.85rem 0.65rem;
+  margin-bottom: 0.7rem;
+  box-shadow: var(--card-s);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.hwEarthHead {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin-bottom: 0.55rem;
+}
+
+.hwEarthIconWrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--h);
+  color: var(--or);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.hwEarthIconSvg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.hwEarthTag {
+  display: block;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  color: var(--or);
+  margin-bottom: 0.15rem;
+}
+
+.hwEarthLead {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--h);
+  line-height: 1.35;
+  font-weight: 600;
+}
+
+.hwEarthChips {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.45rem;
+}
+
+.hwEarthChip {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.5rem 0.55rem 0.55rem;
+  min-width: 0;
+}
+
+.hwEarthChipVal {
+  display: block;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--or);
+  line-height: 1.1;
+  margin-bottom: 0.2rem;
+}
+
+.hwEarthChipLabel {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--gray);
+  line-height: 1.3;
+}
+
+.hwEarthWhy {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--gray);
+  line-height: 1.35;
+}
+
 /* Compact warranty summary strip */
 .warrantyGridCompact {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 0.75rem;
+  gap: 0.55rem;
 }
-.warrantyGridCompact .warrantyBadge { padding: 0.85rem 0.75rem; }
-.warrantyGridCompact .warrantyCircle { width: 46px; height: 46px; }
-.warrantyGridCompact .warrantyYears { font-size: 1rem; }
+.warrantyGridCompact .warrantyBadge { padding: 0.65rem 0.55rem; }
+.warrantyGridCompact .warrantyCircle { width: 40px; height: 40px; }
+.warrantyGridCompact .warrantyYears { font-size: 0.92rem; }
+.warrantyGridCompact .warrantyLabel { font-size: 0.72rem; }
+.warrantyGridCompact .warrantySub { font-size: 0.68rem; }
 
-/* ══ P7: WHY HARIHAR SOLAR — CREDIBILITY ════════════════════════ */
+/* ══ P7: WHY PARTNER — icon-led trust cards ═════════════════════ */
 .trustPage .pageTitle { max-width: 600px; }
 .trustGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: 0.75rem;
+  margin-bottom: 1.1rem;
 }
 .trustCard {
-  background: var(--al);
+  background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--card-r);
-  padding: 1.25rem 1rem;
-  text-align: center;
+  padding: 0.9rem 0.95rem 1rem;
+  text-align: left;
+  box-shadow: var(--card-s);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+.trustCardTop {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.55rem;
+}
+.trustIconTile {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: linear-gradient(145deg, #FFF7ED 0%, #FFEDD5 100%);
+  border: 1px solid rgba(249, 115, 22, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--or);
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(249, 115, 22, 0.12);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+.trustIconSvg {
+  width: 20px;
+  height: 20px;
+  display: block;
 }
 .trustNum {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.6rem;
+  font-size: 1.45rem;
   font-weight: 800;
   color: var(--or);
   line-height: 1;
-  margin-bottom: 0.4rem;
 }
 .trustLabel {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.94rem;
-  font-weight: 700;
+  font-size: 0.88rem;
+  font-weight: 800;
   color: var(--h);
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.25rem;
+  line-height: 1.25;
 }
-.trustNote { font-size: 0.92rem; color: var(--gray); line-height: 1.5; }
+.trustNote {
+  font-size: 0.78rem;
+  color: var(--gray);
+  line-height: 1.4;
+}
 .trustQuoteBox {
+  position: relative;
   background: var(--h);
   border-radius: var(--card-r);
-  padding: 1.75rem 2rem;
-  text-align: center;
+  padding: 1.35rem 1.5rem 1.35rem 1.65rem;
+  text-align: left;
+  border-left: 4px solid var(--or);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+.trustQuoteMark {
+  position: absolute;
+  top: 0.35rem;
+  right: 1rem;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 3.5rem;
+  line-height: 1;
+  color: rgba(249, 115, 22, 0.28);
+  pointer-events: none;
 }
 .trustQuote {
-  font-size: 1.05rem;
-  color: rgba(255,255,255,0.85);
-  line-height: 1.7;
+  font-size: 0.92rem;
+  color: rgba(255,255,255,0.88);
+  line-height: 1.55;
   font-style: italic;
-  margin: 0 0 0.75rem;
-  max-width: 560px;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0 0 0.65rem;
+  max-width: 640px;
+  position: relative;
+  z-index: 1;
 }
 .trustQuoteAttr {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.86rem;
+  font-size: 0.78rem;
   font-weight: 700;
   color: var(--or);
   letter-spacing: 0.5px;
+  position: relative;
+  z-index: 1;
 }
 
 /* Warranty data cards (shared) */
@@ -1250,12 +1540,15 @@
 .roofPlanFrame {
   width: 100%;
   flex: 1;
-  min-height: 200px;
-  height: 220px;
+  min-height: 220px;
+  height: 240px;
   border-radius: 8px;
   overflow: hidden;
-  background: var(--white);
+  background: linear-gradient(165deg, #F1F5F9 0%, #F8FAFC 45%, #E8EEF5 100%);
   border: 1px solid rgba(226, 232, 240, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .roofPlanSvg {
@@ -1795,84 +2088,258 @@
   display: flex;
   flex-direction: column;
 }
-.termsPage .termsGrid { flex: 1; }
 
-/* ══ P10–P11: TERMS & COMPLIANCE ════════════════════════════════ */
-.termsGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.75rem;
-}
-.termsSubhead {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: 2px;
-  color: var(--or);
-  text-transform: uppercase;
-  margin-bottom: 0.5rem;
-  padding-bottom: 0.3rem;
-  border-bottom: 1px solid var(--line);
-}
-.termsList, .docsList {
-  padding-left: 1rem;
-  margin: 0;
+/* ══ P10–P11: TERMS (Luxe content · Atelier editorial) ═══════════ */
+.termsStack {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.65rem;
+  flex: 1;
+  min-height: 0;
 }
-.termsList li, .docsList li {
-  font-size: 1.05rem;
-  color: var(--c);
-  line-height: 1.48;
+
+.termsSection {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--card-r);
+  padding: 0.7rem 0.85rem 0.75rem;
+  box-shadow: var(--card-s);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
-.docsList { list-style: none; padding-left: 0; }
-.docsList li::before {
-  content: "—  ";
+
+.termsSubhead {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 1.4px;
   color: var(--or);
-  font-weight: 700;
+  text-transform: uppercase;
+  margin: 0 0 0.45rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 2px solid rgba(249, 115, 22, 0.35);
 }
-.amcObjective {
-  font-size: 1.05rem;
-  color: var(--gray);
-  line-height: 1.48;
-  margin: 0 0 0.5rem;
-}
-.amcCostPara {
-  font-size: 1.08rem;
-  color: var(--c);
-  line-height: 1.48;
-  margin: 0 0 0.55rem;
-}
-.termsSignoff {
-  margin-top: auto;
-  padding-top: 1.5rem;
+
+.termsArticleList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
 }
+
+.termsArticle {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 0.45rem;
+  align-items: start;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.termsArticle:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.termsArticleNum {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--or);
+  letter-spacing: 0.04em;
+  padding-top: 0.1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.termsArticleLabel {
+  display: block;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--h);
+  margin-bottom: 0.1rem;
+  line-height: 1.2;
+}
+
+.termsArticleBody {
+  margin: 0;
+  font-size: 0.74rem;
+  line-height: 1.35;
+  color: var(--c);
+}
+
+.termsNumberedList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+
+.termsNumberedList li {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 0.4rem;
+  align-items: start;
+  font-size: 0.78rem;
+  color: var(--c);
+  line-height: 1.35;
+}
+
+.termsListNum {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--or);
+  padding-top: 0.1rem;
+}
+
+.termsSafetyList {
+  margin: 0;
+  padding: 0 0 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.termsSafetyList li {
+  font-size: 0.78rem;
+  color: var(--c);
+  line-height: 1.35;
+}
+
+.termsPara {
+  margin: 0 0 0.4rem;
+  font-size: 0.78rem;
+  color: var(--gray);
+  line-height: 1.4;
+}
+
+.termsAmcLabel {
+  margin: 0.45rem 0 0.25rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--h);
+}
+
+.termsCostBox {
+  background: linear-gradient(180deg, #FFFBF7 0%, var(--al) 100%);
+  border: 1px solid rgba(249, 115, 22, 0.25);
+  border-radius: 8px;
+  padding: 0.55rem 0.7rem;
+  margin-bottom: 0.35rem;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.termsCostBox p {
+  margin: 0 0 0.3rem;
+  font-size: 0.78rem;
+  color: var(--c);
+  line-height: 1.4;
+}
+
+.termsCostBox p:last-child {
+  margin-bottom: 0;
+}
+
+.termsCostBox strong {
+  color: var(--or);
+  font-weight: 800;
+}
+
+.termsNote {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.08), rgba(249, 115, 22, 0.02));
+  border: 1px solid rgba(249, 115, 22, 0.28);
+  border-left: 3px solid var(--or);
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  margin-top: auto;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.termsNoteTag {
+  display: block;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--or);
+  margin-bottom: 0.25rem;
+}
+
+.termsNote p {
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--h);
+  line-height: 1.4;
+}
+
+.termsPageDense .termsStack {
+  gap: 0.5rem;
+}
+
+.termsPageDense .termsSection {
+  padding: 0.55rem 0.75rem 0.6rem;
+}
+
+.termsPageDense .termsArticleBody,
+.termsPageDense .termsNumberedList li,
+.termsPageDense .termsSafetyList li,
+.termsPageDense .termsPara {
+  font-size: 0.72rem;
+  line-height: 1.3;
+}
+
+.termsSignoff {
+  padding-top: 0.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
 .termsRegards {
-  font-size: 1rem;
+  font-size: 0.85rem;
   color: var(--gray);
 }
+
 .termsBrand {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.35rem;
+  font-size: 1.15rem;
   font-weight: 800;
   color: var(--h);
   letter-spacing: 1px;
   text-transform: uppercase;
 }
+
+.termsVendorTag {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--or);
+}
 .closingBrandTop {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1.75rem;
+  gap: 0.65rem;
+  margin-bottom: 0.55rem;
+  flex-shrink: 0;
+  flex-wrap: wrap;
 }
 .closingLogo {
   display: block;
-  max-height: 3.25rem;
-  max-width: 180px;
+  max-height: 2.5rem;
+  max-width: 150px;
   object-fit: contain;
   flex-shrink: 0;
 }
@@ -1886,21 +2353,35 @@
 }
 .closingBrandName {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.92rem;
+  font-size: 0.82rem;
   font-weight: 700;
-  letter-spacing: 3px;
+  letter-spacing: 2.5px;
   color: rgba(255,255,255,0.7);
+}
+.closingTagInline {
+  margin-left: auto;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  color: var(--or);
+  text-transform: uppercase;
+  border: 1px solid rgba(249, 115, 22, 0.4);
+  padding: 0.18rem 0.5rem;
+  border-radius: 2px;
+  white-space: nowrap;
 }
 
 /* ══ CLOSING ════════════════════════════════════════════════════ */
 .closingPage {
   background: var(--h);
   color: var(--white);
+  padding: 0;
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   height: var(--a4-h);
   min-height: var(--a4-h);
   max-height: var(--a4-h);
@@ -1932,10 +2413,91 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 0.55rem;
   min-height: 0;
   min-width: 0;
   overflow: hidden;
+  padding: 1.5rem 2.25rem 1.75rem;
 }
+
+/* Closing RCC rooftop hero */
+.closingPhotoPlate {
+  margin: 0;
+  flex: 1.1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.closingPhotoFrame {
+  position: relative;
+  flex: 1;
+  min-height: 200px;
+  max-height: 290px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.35),
+    inset 0 0 0 1px rgba(249, 115, 22, 0.18);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.closingPhotoImg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 35%;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.closingPhotoVignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.12) 0%, transparent 30%, transparent 55%, rgba(15, 23, 42, 0.5) 100%),
+    radial-gradient(ellipse 80% 70% at 50% 40%, transparent 45%, rgba(15, 23, 42, 0.2) 100%);
+}
+
+.closingPhotoEdge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--or), transparent);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.closingPhotoCaption {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  padding: 0 0.1rem;
+  flex-shrink: 0;
+}
+
+.closingPhotoTitle {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--or);
+}
+
+.closingPhotoSub {
+  font-size: 0.74rem;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.35;
+}
+
 .closingTag {
   font-family: 'Montserrat', sans-serif;
   font-size: 0.86rem;
@@ -1948,34 +2510,34 @@
 }
 .closingTitle {
   font-family: 'Montserrat', sans-serif;
-  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-size: clamp(1.55rem, 3.5vw, 2.1rem);
   font-weight: 800;
   color: var(--white);
   line-height: 1;
-  margin: 0 0 0.85rem;
+  margin: 0 0 0.45rem;
 }
 .closingStatement {
-  font-size: 1.05rem;
+  font-size: 0.9rem;
   color: rgba(255,255,255,0.75);
-  line-height: 1.55;
+  line-height: 1.45;
   max-width: 100%;
-  margin: 0 0 0.85rem;
+  margin: 0 0 0.45rem;
 }
 .closingStatement strong { color: var(--white); font-weight: 700; }
 .closingSub {
-  font-size: 0.95rem;
+  font-size: 0.8rem;
   color: rgba(255,255,255,0.45);
-  line-height: 1.6;
+  line-height: 1.45;
   max-width: 100%;
-  margin: 0 0 1.5rem;
+  margin: 0 0 0.7rem;
 }
 
 .closingStats {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: 0.9rem;
   margin-bottom: 0;
-  padding: 1rem 1.25rem;
+  padding: 0.7rem 0.9rem;
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: var(--card-r);
@@ -1985,20 +2547,20 @@
 }
 .closingStatBig {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.35rem;
+  font-size: 1.1rem;
   font-weight: 800;
   color: var(--or);
   line-height: 1;
 }
 .closingStatLabel {
-  font-size: 0.84rem;
+  font-size: 0.72rem;
   color: rgba(255,255,255,0.4);
-  margin-top: 0.25rem;
+  margin-top: 0.2rem;
   letter-spacing: 0.5px;
 }
 .closingStatDiv {
   width: 1px;
-  height: 40px;
+  height: 32px;
   background: rgba(255,255,255,0.12);
 }
 
@@ -2006,16 +2568,17 @@
   background: var(--or);
   color: var(--white);
   border: none;
-  padding: 0.875rem 2.5rem;
+  padding: 0.65rem 1.5rem;
   font-family: 'Montserrat', sans-serif;
-  font-size: 1rem;
+  font-size: 0.88rem;
   font-weight: 800;
   letter-spacing: 1px;
   border-radius: 4px;
   cursor: pointer;
   transition: background 0.2s, transform 0.15s;
-  margin-bottom: 2rem;
+  margin-bottom: 0;
   display: inline-block;
+  width: fit-content;
 }
 .closingBtn:hover { background: var(--or2); transform: translateY(-1px); }
 
@@ -2033,12 +2596,12 @@
   font-style: italic;
 }
 
-/* ══ WEALTH JOURNEY — 3-phase narrative (P4) ════════════════════ */
+/* ══ WEALTH JOURNEY — money story steps (P4) ═══════════════════ */
 .wealthJourney {
   display: flex;
   align-items: stretch;
   gap: 0;
-  margin-bottom: 1.75rem;
+  margin-bottom: 1rem;
   background: var(--al);
   border: 1px solid var(--line);
   border-radius: var(--card-r);
@@ -2046,55 +2609,120 @@
 }
 .wjPhase {
   flex: 1;
-  padding: 1.25rem 1rem;
+  padding: 0.85rem 0.85rem 0.95rem;
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  border-right: 1px solid var(--line);
+  gap: 0.2rem;
+  min-width: 0;
 }
-.wjPhase:last-child { border-right: none; }
-.wjPhaseActive { background: var(--white); }
-.wjDot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  margin-bottom: 0.25rem;
+.wjPhaseActive {
+  background: var(--white);
+  box-shadow: inset 0 0 0 2px rgba(249, 115, 22, 0.35);
+}
+.wjPhaseHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+.wjStepNum {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: var(--or);
+}
+.wjIconTile {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(145deg, #FFF7ED 0%, #FFEDD5 100%);
+  border: 1px solid rgba(249, 115, 22, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--or);
+  flex-shrink: 0;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+.wjIconTileActive {
+  background: var(--or);
+  border-color: var(--or);
+  color: var(--white);
+}
+.wjIconSvg {
+  width: 17px;
+  height: 17px;
+  display: block;
 }
 .wjLabel {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.82rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 1.5px;
+  letter-spacing: 1.2px;
   color: var(--gray);
   text-transform: uppercase;
 }
 .wjTitle {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 800;
   color: var(--h);
-  line-height: 1.1;
+  line-height: 1.2;
 }
 .wjSpan {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.88rem;
-  font-weight: 700;
+  font-size: 0.92rem;
+  font-weight: 800;
   color: var(--or);
+  margin: 0.1rem 0;
 }
 .wjNote {
-  font-size: 0.86rem;
+  font-size: 0.74rem;
   color: var(--gray);
-  line-height: 1.45;
-  margin-top: 0.15rem;
+  line-height: 1.35;
+  margin-top: 0.1rem;
 }
 .wjArrow {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0 0.25rem;
-  font-size: 1rem;
-  color: var(--gray2);
+  width: 22px;
   flex-shrink: 0;
+  color: var(--or);
+  opacity: 0.7;
+}
+.wjArrowLine {
+  width: 2px;
+  flex: 1;
+  min-height: 12px;
+  background: linear-gradient(180deg, transparent, var(--or), transparent);
+  opacity: 0.35;
+}
+.wjArrowTip {
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--or);
+}
+
+.wealthTakeaway {
+  margin: 0.75rem 0 0;
+  padding: 0.55rem 0.75rem;
+  background: linear-gradient(90deg, #FFF7ED, #FFFFFF);
+  border: 1px solid rgba(249, 115, 22, 0.28);
+  border-left: 3px solid var(--or);
+  border-radius: 8px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--h);
+  line-height: 1.35;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
 /* ══ GENERATION BAR CHART — Estimated vs Potential (P5) ═════════ */
@@ -2191,51 +2819,51 @@
 .closingSplit {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
-  gap: 1.5rem;
-  align-items: center;
+  gap: 0.9rem;
+  align-items: stretch;
   min-height: 0;
   min-width: 0;
-  flex: 1;
+  flex: 0 0 auto;
 }
 .closingLeft {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   min-width: 0;
   height: auto;
-  align-self: center;
+  align-self: stretch;
 }
 .closingRight {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  justify-content: center;
+  align-items: stretch;
+  justify-content: flex-start;
   min-width: 0;
   height: auto;
-  align-self: center;
+  align-self: stretch;
 }
 .closingCTABox {
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(249,115,22,0.3);
   border-radius: var(--card-r);
-  padding: 1.5rem 1.25rem;
+  padding: 0.85rem 0.95rem;
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: 0.55rem;
   width: 100%;
-  max-width: 280px;
+  max-width: none;
   min-width: 0;
   height: auto;
   max-height: none;
-  flex: 0 0 auto;
-  align-self: flex-end;
+  flex: 1 1 auto;
+  align-self: stretch;
   justify-content: flex-start;
   overflow: hidden;
   box-sizing: border-box;
 }
 .ctaTitle {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1rem;
+  font-size: 0.92rem;
   font-weight: 800;
   color: var(--white);
   line-height: 1.3;
@@ -2243,9 +2871,9 @@
   word-break: break-word;
 }
 .ctaDesc {
-  font-size: 0.92rem;
+  font-size: 0.78rem;
   color: rgba(255,255,255,0.5);
-  line-height: 1.5;
+  line-height: 1.4;
   margin: 0;
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -2275,17 +2903,226 @@
   word-break: break-word;
 }
 
-/* ══ MOBILE (screen only) ═══════════════════════════════════════ */
-@media screen and (max-width: 640px) {
-  .page {
-    width: 100%;
-    padding: 2rem 1.25rem 2.5rem;
+/* ══ WEB PREVIEW (screen) — readable folio cards ═══════════════ */
+@media screen {
+  .wrapper {
+    padding: 0 0 2.5rem;
+    background:
+      radial-gradient(ellipse 70% 40% at 50% 0%, rgba(249, 115, 22, 0.08), transparent 55%),
+      var(--al);
   }
-  .coverInner { padding: 1.5rem 1.25rem 2rem; }
-  .pageTitle { font-size: 1.45rem; }
-  .hwCard4Grid, .impactGrid, .genProofGrid, .hw2Grid, .termsGrid,
-  .trustGrid, .wealthLayout {
+
+  .printBarInner {
+    width: min(var(--a4-w), calc(100% - 8px));
+  }
+
+  .page {
+    width: min(var(--a4-w), calc(100% - 28px));
+    max-width: 100%;
+    margin: 1rem auto 1.35rem;
+    border-radius: 14px;
+    border: 1px solid rgba(226, 232, 240, 0.95);
+    box-shadow:
+      0 10px 32px rgba(15, 23, 42, 0.08),
+      0 1px 0 rgba(255, 255, 255, 0.7) inset;
+  }
+
+  .coverPage,
+  .closingPage {
+    box-shadow:
+      0 14px 40px rgba(10, 15, 28, 0.35),
+      0 0 0 1px rgba(249, 115, 22, 0.12);
+  }
+}
+
+/* Tablet + mobile: unlock A4 height locks, stack content */
+@media screen and (max-width: 900px) {
+  .wrapper {
+    padding: 0 0 calc(1.75rem + env(safe-area-inset-bottom, 0px));
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  .printBar {
+    padding: 0.55rem 0.75rem;
+    padding-top: calc(0.55rem + env(safe-area-inset-top, 0px));
+  }
+
+  .printBarInner {
+    max-width: 100%;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.65rem;
+  }
+
+  .printBarBrand {
+    font-size: 0.72rem;
+    letter-spacing: 1.2px;
+    flex: 1 1 auto;
+  }
+
+  .printBarActions {
+    width: 100%;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .langBtn {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.75rem;
+    min-height: 36px;
+  }
+
+  .printBarBtn {
+    font-size: 0.78rem;
+    padding: 0.5rem 0.95rem;
+    min-height: 36px;
+  }
+
+  .page {
+    width: calc(100% - 16px) !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0.65rem auto 1rem !important;
+    padding: 1.35rem 1.1rem 2.35rem !important;
+    overflow: visible !important;
+    border-radius: 12px;
+  }
+
+  .coverPage,
+  .closingPage {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    padding: 0 !important;
+  }
+
+  .coverInner,
+  .closingInner {
+    padding: 1.15rem 1rem 1.35rem !important;
+    gap: 0.55rem;
+    overflow: visible;
+  }
+
+  .pageHead {
+    padding-top: 0.35rem;
+    margin-bottom: 0.9rem;
+  }
+
+  .pageTitle {
+    font-size: clamp(1.35rem, 5.5vw, 1.7rem);
+    max-width: none;
+  }
+
+  .pageLead {
+    font-size: 0.88rem;
+    max-width: none;
+  }
+
+  .pageNum {
+    position: static;
+    display: block;
+    text-align: right;
+    margin-top: 1.1rem;
+    padding-right: 0.15rem;
+    bottom: auto;
+    right: auto;
+  }
+
+  .coverPhotoFrame {
+    min-height: 180px;
+    max-height: none;
+    height: clamp(180px, 42vw, 260px);
+  }
+
+  .closingPhotoFrame {
+    min-height: 160px;
+    max-height: none;
+    height: clamp(160px, 40vw, 240px);
+  }
+
+  .coverWealthRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
+  }
+
+  .coverWealthDivider {
+    width: 100%;
+    height: 1px;
+  }
+
+  .coverSmallStats {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.1rem;
+  }
+
+  .coverWealthAmt {
+    font-size: clamp(1.55rem, 7vw, 2.15rem);
+  }
+
+  .hwCard4Grid,
+  .impactGrid,
+  .genProofGrid,
+  .hw2Grid,
+  .trustGrid,
+  .wealthLayout,
+  .genSpecGrid,
+  .warrantyGrid,
+  .warrantyGridCompact {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .wealthLayout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .billComparison {
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .billArrow {
+    transform: rotate(90deg);
+    align-self: center;
+  }
+
+  .wealthJourney {
+    flex-direction: column;
+  }
+
+  .wjPhase {
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .wjPhase:last-child {
+    border-bottom: none;
+  }
+
+  .wjArrow {
+    display: none;
+  }
+
+  .wealthTakeaway {
+    font-size: 0.78rem;
+  }
+
+  .wealthChartHead {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .genBarRow {
     grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+
+  .invoiceRow {
+    grid-template-columns: 1fr auto;
+    gap: 0.35rem 0.6rem;
   }
 
   .roofMainRow {
@@ -2293,8 +3130,8 @@
   }
 
   .roofPlanFrame {
-    height: 200px;
-    min-height: 180px;
+    height: 210px;
+    min-height: 190px;
   }
 
   .roofSunTeach {
@@ -2317,7 +3154,120 @@
     grid-template-columns: 1fr;
   }
 
-  .closingSplit { grid-template-columns: 1fr; }
+  .closingSplit {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .closingCTABox {
+    max-width: none;
+    width: 100%;
+  }
+
+  .closingStats {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .closingBtn {
+    width: 100%;
+    text-align: center;
+    min-height: 42px;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  .page {
+    width: calc(100% - 12px) !important;
+    padding: 1.15rem 0.95rem 2.1rem !important;
+    margin: 0.5rem auto 0.85rem !important;
+    border-radius: 10px;
+  }
+
+  .hwCard4Grid,
+  .warrantyGrid,
+  .warrantyGridCompact,
+  .genSpecGrid,
+  .trustGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .hwEarthChips {
+    grid-template-columns: 1fr;
+  }
+
+  .hwEarthChipVal {
+    font-size: 1rem;
+  }
+
+  .coverInner,
+  .closingInner {
+    padding: 1rem 0.9rem 1.2rem !important;
+  }
+
+  .coverPhotoFrame {
+    height: clamp(160px, 48vw, 220px);
+  }
+
+  .closingPhotoFrame {
+    height: clamp(150px, 46vw, 200px);
+  }
+
+  .coverPhotoSub,
+  .closingPhotoSub {
+    font-size: 0.7rem;
+  }
+
+  .pageTag {
+    font-size: 0.72rem;
+    letter-spacing: 1.4px;
+  }
+
+  .pageTitle {
+    font-size: clamp(1.25rem, 6vw, 1.5rem);
+  }
+
+  .coverName {
+    font-size: clamp(1.35rem, 6.5vw, 1.85rem);
+  }
+
+  .closingTitle {
+    font-size: clamp(1.4rem, 6.5vw, 1.85rem);
+  }
+
+  .roofEngStrip,
+  .roofMetricGrid,
+  .journeyGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.45rem;
+  }
+
+  .termsArticle {
+    grid-template-columns: 24px 1fr;
+  }
+
+  .termsArticleBody,
+  .termsNumberedList li,
+  .termsSafetyList li {
+    font-size: 0.78rem;
+  }
+
+  .closingStats {
+    gap: 0.55rem;
+    padding: 0.65rem 0.7rem;
+  }
+
+  .closingStatBig {
+    font-size: 0.95rem;
+  }
+
+  .closingStatLabel {
+    font-size: 0.65rem;
+  }
+
+  .printBarBrand {
+    max-width: 42%;
+  }
 }
 
 /* ══ PRINT ═════════════════════════════════════════════════════ */
@@ -2397,37 +3347,64 @@
   .coverInner {
     padding: 0 !important;
     min-height: 0;
+    gap: 0.55rem !important;
+  }
+  .coverPhotoFrame {
+    min-height: 78mm !important;
+    max-height: 105mm !important;
+  }
+  .coverPhotoImg {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .coverName {
+    font-size: 22pt !important;
+  }
+  .coverWealthAmt {
+    font-size: 26pt !important;
   }
   .closingInner {
     padding: 0 !important;
     min-height: 0;
     overflow: hidden !important;
+    gap: 0.45rem !important;
+  }
+  .closingPhotoFrame {
+    min-height: 72mm !important;
+    max-height: 95mm !important;
+  }
+  .closingPhotoImg {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
   .closingSplit {
     grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) !important;
-    gap: 1.25rem !important;
-    align-items: center !important;
+    gap: 0.75rem !important;
+    align-items: stretch !important;
   }
   .closingLeft,
   .closingRight {
     height: auto !important;
-    align-self: center !important;
+    align-self: stretch !important;
   }
   .closingRight {
-    align-items: flex-end !important;
-    justify-content: center !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
   }
   .closingCTABox {
     overflow: hidden !important;
     height: auto !important;
     max-height: none !important;
-    flex: 0 0 auto !important;
-    align-self: flex-end !important;
+    flex: 1 1 auto !important;
+    align-self: stretch !important;
     width: 100% !important;
-    max-width: 260px !important;
+    max-width: none !important;
+  }
+  .closingTitle {
+    font-size: 20pt !important;
   }
   .closingBtn { display: none !important; }
-  .termsGrid { flex-grow: 1; align-content: start; }
+  .termsStack { flex-grow: 1; }
   .wealthLayout { flex-grow: 1; }
   .pageHead { padding-top: 0.5rem; margin-bottom: 0.75rem; }
 
