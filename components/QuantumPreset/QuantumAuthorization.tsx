@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * Quantum last page — payment plan, vendor bank (More settings), terms, signatures.
- * Bank resolve matches Premium Luxe; terms adapted from Luxe TermsCompliance (simple English).
+ * Quantum payment page — plan, vendor bank (More settings), payment rules, signatures.
+ * Full terms live on QuantumTerms pages (Premium Luxe parity).
  */
 
 import { useEffect, useState } from "react";
@@ -38,50 +38,6 @@ const DEFAULT_STEPS: { title: string; desc: string; percent: number }[] = [
   { title: "Commissioning", desc: "Testing and net-meter activation", percent: 5 },
 ];
 
-/** Condensed from Premium Luxe TermsCompliance — simple English. */
-const GENERAL_TERMS: { label: string; text: string }[] = [
-  {
-    label: "Load change",
-    text: "DISCOM load change or pole-to-meter cable work, if needed, is in the customer's scope.",
-  },
-  {
-    label: "Statutory fees",
-    text: "Government fees for net-metering, subsidy, and DISCOM approvals are paid by the client.",
-  },
-  {
-    label: "Arrears",
-    text: "Clear pending DISCOM bills before any load-increase process.",
-  },
-  {
-    label: "Inverter warranty",
-    text: "As per manufacturer — usually 8–10 years on string inverters.",
-  },
-  {
-    label: "Module warranty",
-    text: "Product 15 years; performance ≥80% at year 30. Other parts: 1 year from commissioning.",
-  },
-  {
-    label: "Warranty scope",
-    text: "Covers manufacturing defects only — not physical damage, misuse, or vandalism.",
-  },
-  {
-    label: "Maintenance",
-    text: "Regular panel cleaning (recommended weekly) is the customer's responsibility.",
-  },
-  {
-    label: "Timeline",
-    text: "Installation in about 30–40 working days from advance, as per the agreed schedule.",
-  },
-  {
-    label: "Refunds",
-    text: "If applicable: after 2.5% deduction on the final amount plus documented expenses.",
-  },
-  {
-    label: "Other terms",
-    text: "Anything not listed here follows a mutual written agreement.",
-  },
-];
-
 const DEFAULT_PAYMENT_RULES = [
   "Proposal valid for 30 days from issue date.",
   "Final price may change after site survey.",
@@ -108,19 +64,12 @@ function useResolvedQuantumBank(data: ProposalData) {
   const settings =
     typeof window !== "undefined" ? readProposalBrandingSettings() : null;
 
-  const pptNum = cleanBank(fromData.accountNumber);
-  const pptIfsc = cleanBank(fromData.ifsc);
-  const pptUpi = cleanBank(fromData.upiId);
-  const dataHasCoords = Boolean(pptNum || pptIfsc || pptUpi);
-
   const resolved = resolveProposalBankDetails({
     pptBank: {
-      accountName: dataHasCoords
-        ? cleanBank(fromData.company) || undefined
-        : undefined,
-      accountNumber: pptNum || undefined,
-      ifsc: pptIfsc || undefined,
-      upiId: pptUpi || undefined,
+      accountName: cleanBank(fromData.company) || undefined,
+      accountNumber: cleanBank(fromData.accountNumber) || undefined,
+      ifsc: cleanBank(fromData.ifsc) || undefined,
+      upiId: cleanBank(fromData.upiId) || undefined,
     },
     settings,
   });
@@ -130,10 +79,17 @@ function useResolvedQuantumBank(data: ProposalData) {
   return {
     accountName: cleanBank(resolved.accountName),
     accountNumber: cleanBank(resolved.accountNumber),
-    ifsc: cleanBank(resolved.ifsc),
+    ifsc: cleanBank(resolved.ifsc).toUpperCase(),
     branch: cleanBank(resolved.branch),
     upiId: cleanBank(resolved.upiId),
   };
+}
+
+/** Space account digits in groups for easy reading / copy. */
+function formatAccountDisplay(raw: string): string {
+  const digits = raw.replace(/\s+/g, "");
+  if (!/^\d{9,18}$/.test(digits)) return raw;
+  return digits.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
 }
 
 function IllustBank() {
@@ -240,9 +196,9 @@ export function QuantumAuthorization({ data }: QuantumAuthorizationProps) {
           className={styles.cyanText}
           style={{ fontSize: "0.75rem", letterSpacing: "3px" }}
         >
-          05 // PAYMENT &amp; TERMS
+          05 // PAYMENT &amp; SIGN-OFF
         </span>
-        <h2>Payment &amp; Agreement.</h2>
+        <h2>Payment Plan.</h2>
       </div>
 
       {projectValue > 0 ? (
@@ -259,92 +215,95 @@ export function QuantumAuthorization({ data }: QuantumAuthorizationProps) {
         </p>
       )}
 
-      <div className={styles.payTopGrid}>
-        {/* Payment schedule */}
-        <div className={`${styles.glass3D} ${styles.payScheduleCard}`}>
-          <span className={styles.paySectionTitle}>Payment plan</span>
-          <div className={styles.payScheduleList}>
-            {steps.map((step) => (
-              <div key={step.phase} className={styles.payMilestoneRow}>
-                <span className={styles.payMilestoneNum}>{step.phase}</span>
-                <div className={styles.payMilestoneBody}>
-                  <strong>{step.title}</strong>
-                  <span>
-                    {step.percent}% · {step.desc}
-                  </span>
-                </div>
-                <em className={styles.payMilestoneAmt}>
-                  {step.amountInr > 0 ? formatInr(step.amountInr) : "—"}
-                </em>
+      {/* Payment schedule */}
+      <div className={`${styles.glass3D} ${styles.payScheduleCard}`}>
+        <span className={styles.paySectionTitle}>Payment plan</span>
+        <div className={styles.payScheduleList}>
+          {steps.map((step) => (
+            <div key={step.phase} className={styles.payMilestoneRow}>
+              <span className={styles.payMilestoneNum}>{step.phase}</span>
+              <div className={styles.payMilestoneBody}>
+                <strong>{step.title}</strong>
+                <span>
+                  {step.percent}% · {step.desc}
+                </span>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Bank from More settings */}
-        <div className={`${styles.glass3D} ${styles.payBankCard}`}>
-          <div className={styles.payBankHead}>
-            <IllustBank />
-            <div>
-              <span className={styles.paySectionTitle}>Vendor bank account</span>
-              <p className={styles.payBankNote}>
-                Transfer only to this account (from More → Brand settings).
-              </p>
-            </div>
-          </div>
-
-          {hasBank ? (
-            <div className={styles.payBankGrid}>
-              <div className={styles.payBankCell}>
-                <span>Account name</span>
-                <strong>{company || "—"}</strong>
-              </div>
-              <div className={styles.payBankCell}>
-                <span>Account number</span>
-                <strong>{bank.accountNumber || "—"}</strong>
-              </div>
-              <div className={styles.payBankCell}>
-                <span>IFSC</span>
-                <strong>{bank.ifsc || "—"}</strong>
-              </div>
-              <div className={styles.payBankCell}>
-                <span>UPI</span>
-                <strong>{bank.upiId || "—"}</strong>
-              </div>
-              {bank.branch ? (
-                <div className={`${styles.payBankCell} ${styles.payBankCellWide}`}>
-                  <span>Branch</span>
-                  <strong>{bank.branch}</strong>
-                </div>
-              ) : null}
-            </div>
-          ) : (
-            <div className={styles.payBankEmpty}>
-              Add bank details in More → Brand settings to show them here.
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Terms — from Luxe, Quantum style */}
-      <div className={`${styles.glass3D} ${styles.payTermsCard}`}>
-        <div className={styles.payTermsHead}>
-          <span className={styles.paySectionTitle}>Terms &amp; conditions</span>
-          <span className={styles.payTermsHint}>Key points from this proposal</span>
-        </div>
-        <div className={styles.payTermsGrid}>
-          {GENERAL_TERMS.map((t) => (
-            <div key={t.label} className={styles.payTermItem}>
-              <strong>{t.label}</strong>
-              <p>{t.text}</p>
+              <em className={styles.payMilestoneAmt}>
+                {step.amountInr > 0 ? formatInr(step.amountInr) : "—"}
+              </em>
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Vendor bank — full width, high clarity (More → Brand settings) */}
+      <div className={`${styles.glass3D} ${styles.payBankCard}`}>
+        <div className={styles.payBankHead}>
+          <IllustBank />
+          <div className={styles.payBankHeadText}>
+            <span className={styles.paySectionTitle}>Vendor bank account</span>
+            <p className={styles.payBankNote}>
+              Pay only into this account. Details from More → Brand settings.
+            </p>
+          </div>
+          {hasBank ? (
+            <span className={styles.payBankBadge}>Verified for transfer</span>
+          ) : null}
+        </div>
+
+        {hasBank ? (
+          <div className={styles.payBankClear}>
+            <div className={styles.payBankRow}>
+              <span>Account name</span>
+              <strong>{company || "—"}</strong>
+            </div>
+            <div className={`${styles.payBankRow} ${styles.payBankRowHero}`}>
+              <span>Account number</span>
+              <strong className={styles.payBankMono}>
+                {bank.accountNumber
+                  ? formatAccountDisplay(bank.accountNumber)
+                  : "—"}
+              </strong>
+            </div>
+            <div className={styles.payBankRowPair}>
+              <div className={styles.payBankRow}>
+                <span>IFSC code</span>
+                <strong className={styles.payBankMono}>
+                  {bank.ifsc || "—"}
+                </strong>
+              </div>
+              <div className={styles.payBankRow}>
+                <span>UPI ID</span>
+                <strong className={styles.payBankMono}>
+                  {bank.upiId || "—"}
+                </strong>
+              </div>
+            </div>
+            {bank.branch ? (
+              <div className={styles.payBankRow}>
+                <span>Branch</span>
+                <strong>{bank.branch}</strong>
+              </div>
+            ) : null}
+          </div>
+        ) : (
+          <div className={styles.payBankEmpty}>
+            No bank details yet. Open More → Brand settings and save account
+            name, account number, IFSC, and UPI — they will show here clearly.
+          </div>
+        )}
+      </div>
+
+      <div className={`${styles.glass3D} ${styles.payRulesCard}`}>
+        <span className={styles.paySectionTitle}>Payment rules</span>
         <ul className={styles.payRulesList}>
           {paymentRules.map((rule) => (
             <li key={rule.slice(0, 40)}>{rule}</li>
           ))}
         </ul>
+        <p className={styles.payRulesFoot}>
+          Full terms &amp; conditions continue on the next pages.
+        </p>
       </div>
 
       {/* Signatures */}
@@ -363,7 +322,8 @@ export function QuantumAuthorization({ data }: QuantumAuthorizationProps) {
           </div>
         </div>
         <p className={styles.authDisclaimer}>
-          By signing, both parties agree to the payment plan and terms above.
+          By signing, both parties agree to this payment plan and the full terms
+          &amp; conditions in this proposal.
         </p>
       </div>
     </section>

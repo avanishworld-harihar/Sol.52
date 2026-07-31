@@ -3,7 +3,7 @@
 /**
  * Quantum renderer — Cinematic Neo-Glass residential proposal.
  * Preset id: residential_quantum
- * Pages: Cover → Telemetry → Economics → Hardware → Impact → Authorization
+ * Pages: Cover → Telemetry → Economics → Hardware → Impact → Payment → Terms ×2
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
@@ -13,6 +13,7 @@ import { QuantumEconomics } from "./QuantumEconomics";
 import { QuantumHardware } from "./QuantumHardware";
 import { QuantumImpact } from "./QuantumImpact";
 import { QuantumAuthorization } from "./QuantumAuthorization";
+import { QuantumTermsPage1, QuantumTermsPage2 } from "./QuantumTerms";
 import styles from "./Quantum.module.css";
 
 export type QuantumRendererProps = {
@@ -45,6 +46,8 @@ export function QuantumRenderer({ data }: QuantumRendererProps) {
       <QuantumHardware data={data} />
       <QuantumImpact data={data} />
       <QuantumAuthorization data={data} />
+      <QuantumTermsPage1 data={data} />
+      <QuantumTermsPage2 data={data} />
     </div>
   );
 }

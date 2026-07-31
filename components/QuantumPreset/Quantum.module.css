@@ -1752,13 +1752,6 @@
   font-weight: 600;
 }
 
-.payTopGrid {
-  display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
 .paySectionTitle {
   display: block;
   font-size: 0.68rem;
@@ -1773,6 +1766,17 @@
 .payBankCard,
 .payTermsCard {
   padding: 12px 14px !important;
+  margin-bottom: 10px;
+}
+
+.payBankCard {
+  padding: 14px 16px !important;
+  border-color: rgba(6, 182, 212, 0.55) !important;
+  box-shadow:
+    inset 0 2px 10px rgba(255, 255, 255, 0.12),
+    inset 0 -5px 20px rgba(0, 0, 0, 0.45),
+    0 12px 28px rgba(0, 0, 0, 0.7),
+    0 0 26px rgba(6, 182, 212, 0.22) !important;
 }
 
 .payScheduleList {
@@ -1834,14 +1838,20 @@
 
 .payBankHead {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  margin-bottom: 10px;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.payBankHeadText {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .payBankIcon {
-  width: 56px;
-  height: 44px;
+  width: 60px;
+  height: 46px;
   flex-shrink: 0;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
@@ -1849,109 +1859,115 @@
 
 .payBankNote {
   margin: 2px 0 0;
-  font-size: 0.7rem;
-  color: #64748b;
+  font-size: 0.74rem;
+  color: #94a3b8;
   line-height: 1.35;
 }
 
-.payBankGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+.payBankBadge {
+  flex-shrink: 0;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #67e8f9;
+  border: 1px solid rgba(6, 182, 212, 0.45);
+  background: rgba(6, 182, 212, 0.1);
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-weight: 700;
+}
+
+.payBankClear {
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
-.payBankCell {
-  background: rgba(6, 182, 212, 0.06);
-  border: 1px solid rgba(6, 182, 212, 0.2);
-  border-radius: 8px;
-  padding: 7px 9px;
+.payBankRow {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background: rgba(6, 182, 212, 0.07);
+  border: 1px solid rgba(6, 182, 212, 0.28);
+  border-radius: 10px;
+  padding: 10px 12px;
   min-width: 0;
 }
 
-.payBankCellWide {
-  grid-column: 1 / -1;
-}
-
-.payBankCell span {
-  display: block;
-  font-size: 0.58rem;
-  letter-spacing: 0.1em;
+.payBankRow span {
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #64748b;
-  margin-bottom: 2px;
+  color: #67e8f9;
+  font-weight: 700;
 }
 
-.payBankCell strong {
-  display: block;
-  font-size: 0.82rem;
+.payBankRow strong {
+  font-size: 1.05rem;
   color: #fff;
   font-weight: 600;
   word-break: break-word;
   line-height: 1.3;
 }
 
-.payBankEmpty {
-  font-size: 0.78rem;
-  color: #94a3b8;
-  line-height: 1.4;
-  padding: 10px 0 2px;
+.payBankRowHero {
+  background: rgba(6, 182, 212, 0.12);
+  border-color: rgba(34, 211, 238, 0.5);
+  padding: 12px 14px;
 }
 
-.payTermsCard {
-  margin-bottom: 10px;
-  flex: 1 1 auto;
-  min-height: 0;
+.payBankRowHero strong {
+  font-size: 1.45rem;
+  letter-spacing: 0.04em;
+  color: #ecfeff;
 }
 
-.payTermsHead {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 6px 12px;
-  margin-bottom: 8px;
+.payBankMono {
+  font-family: var(--q-mono), ui-monospace, monospace !important;
+  font-variant-numeric: tabular-nums;
 }
 
-.payTermsHint {
-  font-size: 0.68rem;
-  color: #64748b;
-}
-
-.payTermsGrid {
+.payBankRowPair {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px 12px;
-  margin-bottom: 8px;
+  gap: 8px;
 }
 
-.payTermItem strong {
-  display: block;
-  font-size: 0.72rem;
-  color: #67e8f9;
-  font-weight: 700;
-  margin-bottom: 1px;
+.payBankEmpty {
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  line-height: 1.45;
+  padding: 14px 12px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px dashed rgba(248, 113, 113, 0.35);
+  border-radius: 10px;
 }
 
-.payTermItem p {
-  margin: 0;
-  font-size: 0.68rem;
-  color: #94a3b8;
-  line-height: 1.35;
+.payRulesCard {
+  margin-bottom: 10px;
+  padding: 12px 14px !important;
 }
 
 .payRulesList {
   margin: 0;
-  padding: 8px 0 0 16px;
-  border-top: 1px solid rgba(6, 182, 212, 0.14);
+  padding: 0 0 0 16px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 3px 14px;
+  gap: 4px 16px;
 }
 
 .payRulesList li {
-  font-size: 0.68rem;
-  color: #64748b;
-  line-height: 1.35;
+  font-size: 0.78rem;
+  color: #cbd5e1;
+  line-height: 1.4;
+}
+
+.payRulesFoot {
+  margin: 10px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid rgba(6, 182, 212, 0.16);
+  font-size: 0.72rem;
+  color: #67e8f9;
 }
 
 .authGateway {
@@ -2032,7 +2048,8 @@
       0 0 22px rgba(16, 185, 129, 0.16) !important;
   }
 
-  .payBankCell {
+  .payBankRow,
+  .payBankRowHero {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
@@ -2254,4 +2271,205 @@
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
+}
+
+/* ─── Full terms & conditions (Luxe parity, 2 pages) ───────────────────────── */
+
+.termsPage {
+  gap: 0;
+  justify-content: flex-start;
+}
+
+.termsPage .pageHeader {
+  margin-bottom: 8px;
+  padding-bottom: 10px;
+}
+
+.termsPage .pageHeader h2 {
+  font-size: 2.15rem;
+}
+
+.termsIntro {
+  margin: 0 0 12px;
+  font-size: 0.84rem;
+  color: #94a3b8;
+  line-height: 1.45;
+  max-width: 44rem;
+}
+
+.termsTwoCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.termsBlock {
+  padding: 12px 14px !important;
+  margin-bottom: 10px;
+}
+
+.termsSubhead {
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #06b6d4;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.termsArticleList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.termsArticle {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.termsArticleNum {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: rgba(6, 182, 212, 0.65);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.3;
+}
+
+.termsArticle strong {
+  display: block;
+  font-size: 0.86rem;
+  color: #fff;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.termsArticle p {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+.termsNumberedList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.termsNumberedList li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  font-size: 0.8rem;
+  color: #e2e8f0;
+  line-height: 1.4;
+}
+
+.termsListNum {
+  color: #06b6d4;
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+.termsBulletList {
+  margin: 0;
+  padding: 0 0 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.termsBulletList li {
+  font-size: 0.8rem;
+  color: #e2e8f0;
+  line-height: 1.4;
+}
+
+.termsPara {
+  margin: 0 0 8px;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+.termsAmcLabel {
+  margin: 10px 0 6px;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #67e8f9;
+  font-weight: 700;
+}
+
+.termsCostBox {
+  background: rgba(6, 182, 212, 0.08);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+
+.termsCostBox p {
+  margin: 0 0 6px;
+  font-size: 0.8rem;
+  color: #e2e8f0;
+  line-height: 1.4;
+}
+
+.termsCostBox p:last-child {
+  margin-bottom: 0;
+}
+
+.termsCostBox strong {
+  color: #67e8f9;
+}
+
+.termsCounsel {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(6, 182, 212, 0.08);
+  border: 1px solid rgba(6, 182, 212, 0.22);
+  font-size: 0.78rem;
+  color: #cbd5e1;
+  line-height: 1.4;
+}
+
+.termsSignoff {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+  padding: 8px 0 0;
+}
+
+.termsSignoff span {
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.termsSignoff strong {
+  font-size: 1.05rem;
+  color: #fff;
+  letter-spacing: 0.04em;
+}
+
+.termsSignoff em {
+  font-style: normal;
+  font-size: 0.72rem;
+  color: #06b6d4;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
