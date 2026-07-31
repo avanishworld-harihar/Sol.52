@@ -19,12 +19,14 @@ import {
   resolveProposalBrandConfig,
   resolveProposalBrandPresentation,
   resolveInstallerDisplayName,
+  resolveProposalBankDetails,
 } from "@/lib/proposal-branding-settings";
 import {
   getAtelierCopy,
   type AtelierLang,
 } from "./atelier-copy";
 import { isDarkLogoUrl } from "./atelier-dark-logo";
+import { AtelierRoofPlan } from "./atelier-roof-plan";
 import styles from "./atelier.module.css";
 
 function bomByHint(data: ProposalData, hints: RegExp[]) {
@@ -308,6 +310,28 @@ export function AtelierRenderer({
     grossInr > 0 ? formatInr(grossInr) : netInr > 0 ? formatInr(netInr) : "₹3,00,000";
   const amcCostParagraph = c.amcCostParagraph(invoiceRef);
   const amcTerms = c.amcTerms;
+
+  // Vendor bank — More → Brand settings (+ proposal bank fields)
+  void brandConfig;
+  const vendorBank = resolveProposalBankDetails({
+    pptBank: {
+      accountName: data.execution.bank.company || undefined,
+      accountNumber: data.execution.bank.accountNumber || undefined,
+      ifsc: data.execution.bank.ifsc || undefined,
+      upiId: data.execution.bank.upiId || undefined,
+    },
+    settings:
+      typeof window !== "undefined" ? readProposalBrandingSettings() : null,
+  });
+  const bankName = vendorBank.accountName.trim() || brand;
+  const hasVendorBank = Boolean(
+    vendorBank.accountNumber || vendorBank.ifsc || vendorBank.upiId
+  );
+  const formatAc = (raw: string) => {
+    const digits = raw.replace(/\s+/g, "");
+    if (!/^\d{9,18}$/.test(digits)) return raw;
+    return digits.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
+  };
 
   const handlePrint = () => {
     if (typeof window !== "undefined") window.print();
@@ -1032,171 +1056,244 @@ export function AtelierRenderer({
         <span className={styles.pageNum}>07 / 12</span>
       </section>
 
-      {/* ══ P8: ROOF INTELLIGENCE ════════════════════════════════ */}
+      {/* ══ P8: ROOF INTELLIGENCE — Atelier Sun Plan ══════════════ */}
       <section className={`${styles.page} ${styles.roofPage}`}>
         <header className={styles.pageHead}>
           <span className={styles.pageTag}>{c.roof.tag}</span>
           <h2 className={styles.pageTitle}>{c.roof.title}</h2>
         </header>
 
-        <div className={styles.roofLayout}>
-          <div className={styles.roofVisual}>
-            <div className={styles.compassWrap}>
-              <div className={styles.compass}>
-                <span className={`${styles.compassDir} ${styles.compassN}`}>N</span>
-                <span className={`${styles.compassDir} ${styles.compassS}`}>S</span>
-                <span className={`${styles.compassDir} ${styles.compassE}`}>E</span>
-                <span className={`${styles.compassDir} ${styles.compassW}`}>W</span>
-                <div className={styles.compassCenter}>
-                  <div className={styles.compassNeedle} />
-                </div>
-              </div>
-              <p className={styles.compassNote}>
+        <div className={styles.roofSunStage}>
+          <div className={styles.roofStageHead}>
+            <span className={styles.roofTerraceLabel}>{c.roof.terraceLabel}</span>
+            <span className={styles.roofStageTitle}>
+              {c.roof.panelLayout(panelCount)}
+            </span>
+          </div>
+
+          <div className={styles.roofPlanFrame}>
+            <AtelierRoofPlan
+              modules={panelCount}
+              className={styles.roofPlanSvg}
+            />
+          </div>
+
+          <p className={styles.roofPlanCaption}>
+            {c.roof.planCaption(panelCount, panelWp, tilt)}
+            {panelCount > 18 ? ` · ${c.roof.moreModules(panelCount - 18)}` : null}
+          </p>
+
+          {/* Sun-path / azimuth ribbon — not a round compass */}
+          <div className={styles.roofSunPath} aria-hidden>
+            <span className={styles.roofSunPathLabel}>{c.roof.sunPathLabel}</span>
+            <div className={styles.roofSunArc}>
+              <span className={styles.roofSunTickN}>{c.roof.northShort}</span>
+              <svg
+                className={styles.roofSunArcSvg}
+                viewBox="0 0 280 48"
+                preserveAspectRatio="xMidYMid meet"
+              >
+                <path
+                  d="M20 38 Q140 2 260 38"
+                  fill="none"
+                  stroke="#CBD5E1"
+                  strokeWidth="2"
+                />
+                <path
+                  d="M70 28 Q140 8 210 28"
+                  fill="none"
+                  stroke="#F97316"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  opacity="0.85"
+                />
+                <circle cx="140" cy="36" r="5" fill="#F97316" />
+                <path
+                  d="M140 18 L144 28 L140 26 L136 28 Z"
+                  fill="#F97316"
+                />
+              </svg>
+              <span className={styles.roofSunTickS}>{c.roof.southShort}</span>
+            </div>
+            <div className={styles.roofSunMeta}>
+              <em className={styles.roofSouthCue}>{c.roof.southCue}</em>
+              <p className={styles.roofSunNote}>
                 {c.roof.compassNote(cityLabel)}
               </p>
             </div>
+          </div>
+        </div>
 
-            <div className={styles.panelLayoutBox}>
-              <div className={styles.panelLayoutLabel}>
-                {c.roof.panelLayout(panelCount)}
-              </div>
-              <div
-                className={styles.panelGrid}
-                style={{ gridTemplateColumns: `repeat(3, 1fr)` }}
-              >
-                {Array.from({ length: Math.min(panelCount, 18) }).map(
-                  (_, i) => (
-                    <div key={i} className={styles.panelCell} />
-                  )
-                )}
-              </div>
-              {panelCount > 18 && (
-                <div className={styles.panelMore}>
-                  {c.roof.moreModules(panelCount - 18)}
-                </div>
-              )}
+        <div className={styles.roofYieldRail}>
+          {[
+            {
+              tag: c.roof.modulesTag,
+              val: c.roof.panelsVal(panelCount),
+              note: c.roof.wpEach(panelWp),
+            },
+            {
+              tag: c.roof.areaTag,
+              val: `~${Math.ceil(panelCount * 2)} m²`,
+              note: c.roof.areaNote,
+            },
+            {
+              tag: c.roof.tiltTag,
+              val: `${tilt}°`,
+              note: c.roof.tiltNote(cityLabel),
+            },
+            {
+              tag: c.roof.irradTag,
+              val: "~1,950 kWh/m²",
+              note: c.roof.irradNote(cityLabel),
+            },
+            {
+              tag: c.roof.shadowTag,
+              val: data.bill.hasData
+                ? c.roof.siteVerified
+                : c.roof.methodApplied,
+              note: c.roof.shadowNote,
+            },
+            {
+              tag: c.roof.utilTag,
+              val: `~${Math.min(95, Math.ceil((panelCount * 2 * 100) / Math.ceil(panelCount * 2.2)))}%`,
+              note: c.roof.utilNote,
+            },
+          ].map((m) => (
+            <div key={m.tag} className={styles.roofYieldCol}>
+              <span className={styles.roofYieldTag}>{m.tag}</span>
+              <strong className={styles.roofYieldVal}>{m.val}</strong>
+              <span className={styles.roofYieldNote}>{m.note}</span>
             </div>
-          </div>
-
-          <div className={styles.roofMetrics}>
-            {[
-              {
-                tag: c.roof.modulesTag,
-                val: c.roof.panelsVal(panelCount),
-                note: c.roof.wpEach(panelWp),
-              },
-              {
-                tag: c.roof.areaTag,
-                val: `~${Math.ceil(panelCount * 2)} m²`,
-                note: c.roof.areaNote,
-              },
-              {
-                tag: c.roof.tiltTag,
-                val: `${tilt}°`,
-                note: c.roof.tiltNote(cityLabel),
-              },
-              {
-                tag: c.roof.irradTag,
-                val: "~1,950 kWh/m²",
-                note: c.roof.irradNote(cityLabel),
-              },
-              {
-                tag: c.roof.shadowTag,
-                val: data.bill.hasData
-                  ? c.roof.siteVerified
-                  : c.roof.methodApplied,
-                note: c.roof.shadowNote,
-              },
-              {
-                tag: c.roof.utilTag,
-                val: `~${Math.min(95, Math.ceil((panelCount * 2 * 100) / Math.ceil(panelCount * 2.2)))}%`,
-                note: c.roof.utilNote,
-              },
-            ].map((m) => (
-              <div key={m.tag} className={styles.roofMetricCard}>
-                <span className={styles.roofMetricTag}>{m.tag}</span>
-                <div className={styles.roofMetricVal}>{m.val}</div>
-                <div className={styles.roofMetricNote}>{m.note}</div>
-              </div>
-            ))}
-          </div>
+          ))}
         </div>
 
         <span className={styles.pageNum}>08 / 12</span>
       </section>
 
-      {/* ══ P9: EXECUTION ROADMAP ════════════════════════════════ */}
+      {/* ══ P9: EXECUTION ROADMAP + PAYMENT + BANK ═══════════════ */}
       <section className={`${styles.page} ${styles.roadmapPage}`}>
         <header className={styles.pageHead}>
           <span className={styles.pageTag}>{c.roadmap.tag}</span>
           <h2 className={styles.pageTitle}>{c.roadmap.title}</h2>
         </header>
 
-        <div className={styles.timeline}>
-          {journey.map((step, i) => (
-            <div key={step.num} className={styles.timelineStep}>
-              <div className={styles.timelineTop}>
-                <div className={styles.tlDot}>
-                  <span className={styles.tlDotNum}>{step.num}</span>
-                </div>
-                {i < journey.length - 1 && (
-                  <div className={styles.tlConnector} />
-                )}
-              </div>
-              <div className={styles.tlContent}>
-                <div className={styles.tlTitle}>{step.title}</div>
-                <span className={styles.tlDuration}>
-                  {estimateDuration(step.title, c.durations)}
-                </span>
-                <div className={styles.tlDesc}>{step.desc}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-        <p className={styles.roadmapNote}>
-          {c.roadmap.timelineBefore}
-          <strong>{c.roadmap.timelineStrong}</strong>
-          {c.roadmap.timelineAfter}
-        </p>
-
-        <div className={styles.invoice}>
-          <div className={styles.invoiceHead}>
-            <div>
-              <div className={styles.invoiceFrom}>{brand}</div>
-              <div className={styles.invoiceTo}>
-                {c.roadmap.preparedFor(clientName)}
-              </div>
-            </div>
-            <div className={styles.invoiceTotalBox}>
-              <div className={styles.invoiceTotalAmt}>
-                {netInr > 0 ? formatInr(netInr) : "—"}
-              </div>
-              <div className={styles.invoiceTotalLabel}>
-                {c.roadmap.netPayable}
-              </div>
-            </div>
+        <div className={styles.journeyBlock}>
+          <div className={styles.journeyHead}>
+            <span className={styles.journeyLabel}>{c.roadmap.journeyLabel}</span>
+            <p className={styles.roadmapNote}>
+              {c.roadmap.timelineBefore}
+              <strong>{c.roadmap.timelineStrong}</strong>
+              {c.roadmap.timelineAfter}
+            </p>
           </div>
-          <div className={styles.invoiceBody}>
-            <div className={styles.invoiceRow} data-header="true">
-              <span>{c.roadmap.milestone}</span>
-              <span>{c.roadmap.share}</span>
-              <span>{c.roadmap.amount}</span>
-            </div>
-            {payments.map((p) => (
-              <div key={p.label} className={styles.invoiceRow}>
-                <span>{p.label}</span>
-                <span className={styles.invoicePct}>{p.pctLabel}</span>
-                <span className={styles.invoiceAmt}>
-                  {formatInr(p.amountInr)}
-                </span>
+          <div className={styles.journeyGrid}>
+            {journey.map((step) => (
+              <div key={step.num} className={styles.journeyCard}>
+                <span className={styles.journeyNum}>{step.num}</span>
+                <div className={styles.journeyBody}>
+                  <strong className={styles.journeyTitle}>{step.title}</strong>
+                  <em className={styles.journeyDuration}>
+                    {estimateDuration(step.title, c.durations)}
+                  </em>
+                  <p className={styles.journeyDesc}>{step.desc}</p>
+                </div>
               </div>
             ))}
           </div>
-          <div className={styles.invoiceFooter}>
-            {c.roadmap.subsidyFooter(
-              subsidyInr > 0 ? formatInr(subsidyInr) : "—"
-            )}
+        </div>
+
+        <div className={styles.payBankSplit}>
+          <div className={styles.invoice}>
+            <div className={styles.invoiceHead}>
+              <div>
+                <span className={styles.invoiceSectionTag}>
+                  {c.roadmap.payLabel}
+                </span>
+                <div className={styles.invoiceFrom}>{brand}</div>
+                <div className={styles.invoiceTo}>
+                  {c.roadmap.preparedFor(clientName)}
+                </div>
+              </div>
+              <div className={styles.invoiceTotalBox}>
+                <div className={styles.invoiceTotalAmt}>
+                  {netInr > 0 ? formatInr(netInr) : "—"}
+                </div>
+                <div className={styles.invoiceTotalLabel}>
+                  {c.roadmap.netPayable}
+                </div>
+              </div>
+            </div>
+            <div className={styles.invoiceBody}>
+              <div className={styles.invoiceRow} data-header="true">
+                <span>{c.roadmap.milestone}</span>
+                <span>{c.roadmap.share}</span>
+                <span>{c.roadmap.amount}</span>
+              </div>
+              {payments.map((p) => (
+                <div key={p.label} className={styles.invoiceRow}>
+                  <span>{p.label}</span>
+                  <span className={styles.invoicePct}>{p.pctLabel}</span>
+                  <span className={styles.invoiceAmt}>
+                    {formatInr(p.amountInr)}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className={styles.invoiceFooter}>
+              {c.roadmap.subsidyFooter(
+                subsidyInr > 0 ? formatInr(subsidyInr) : "—"
+              )}
+            </div>
           </div>
+
+          <aside className={styles.vendorBankCard}>
+            <div className={styles.vendorBankHead}>
+              <span className={styles.vendorBankTag}>{c.roadmap.bankLabel}</span>
+              <p className={styles.vendorBankNote}>{c.roadmap.bankNote}</p>
+            </div>
+            {hasVendorBank ? (
+              <div className={styles.vendorBankFields}>
+                <div className={styles.vendorBankField}>
+                  <span>{c.roadmap.accountName}</span>
+                  <strong>{bankName || "—"}</strong>
+                </div>
+                <div
+                  className={`${styles.vendorBankField} ${styles.vendorBankHero}`}
+                >
+                  <span>{c.roadmap.accountNumber}</span>
+                  <strong className={styles.vendorBankMono}>
+                    {vendorBank.accountNumber
+                      ? formatAc(vendorBank.accountNumber)
+                      : "—"}
+                  </strong>
+                </div>
+                <div className={styles.vendorBankPair}>
+                  <div className={styles.vendorBankField}>
+                    <span>{c.roadmap.ifsc}</span>
+                    <strong className={styles.vendorBankMono}>
+                      {(vendorBank.ifsc || "—").toUpperCase()}
+                    </strong>
+                  </div>
+                  <div className={styles.vendorBankField}>
+                    <span>{c.roadmap.upi}</span>
+                    <strong className={styles.vendorBankMono}>
+                      {vendorBank.upiId || "—"}
+                    </strong>
+                  </div>
+                </div>
+                {vendorBank.branch ? (
+                  <div className={styles.vendorBankField}>
+                    <span>{c.roadmap.branch}</span>
+                    <strong>{vendorBank.branch}</strong>
+                  </div>
+                ) : null}
+              </div>
+            ) : (
+              <div className={styles.vendorBankEmpty}>
+                {c.roadmap.bankEmpty}
+              </div>
+            )}
+          </aside>
         </div>
 
         <span className={styles.pageNum}>09 / 12</span>

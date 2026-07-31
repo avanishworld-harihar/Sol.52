@@ -12,7 +12,9 @@
  *    elements. Bare `@page` is document-global and overrides other presets.
  * 3. Do not edit Golden frozen paths for another preset’s sake
  *    (see `lib/golden-proposal-lock.ts`). Duplicate helpers instead.
- * 4. Prefer preset-local CSS modules / packages; keep `globals.css` print
+ * 4. Do not edit Quantum frozen paths for another preset’s sake
+ *    (see `lib/quantum-proposal-lock.ts`). Quantum owns `components/QuantumPreset/`.
+ * 5. Prefer preset-local CSS modules / packages; keep `globals.css` print
  *    rules behind `.commercial-proposal` / `.proposal-document` when possible.
  */
 
@@ -38,4 +40,5 @@ export const PRESET_ISOLATION_NOTES = [
   "Commercial styles: imported by commercial-proposal-view.tsx only.",
   "Named @page only inside preset CSS — no bare @page in Atelier/Zenith/Golden/Canvas when editing print.",
   "Golden editorial transform is Golden-owned; other themes must not force Golden CSS changes.",
+  "Quantum owns components/QuantumPreset/; other themes must not edit Quantum CSS/motion/i18n for their own sake.",
 ] as const;

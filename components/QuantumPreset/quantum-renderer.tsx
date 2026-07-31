@@ -4,6 +4,8 @@
  * Quantum renderer — Cinematic Neo-Glass residential proposal.
  * Preset id: residential_quantum
  * Pages: Cover → Telemetry → Economics → Hardware → Impact → Payment → Terms ×2
+ *
+ * DEVELOPMENT LOCKED — see `lib/quantum-proposal-lock.ts`. Do not edit for other presets.
  */
 
 import { useState } from "react";

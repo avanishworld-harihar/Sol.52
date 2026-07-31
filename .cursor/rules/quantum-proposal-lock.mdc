@@ -1,0 +1,37 @@
+---
+description: Quantum proposal (residential_quantum) is frozen — do not edit unless the user explicitly asks
+alwaysApply: true
+---
+
+# Quantum proposal development lock
+
+The **Quantum** proposal (`residential_quantum`, Cinematic Neo-Glass renderer) is **complete and locked for development**.
+
+## What "locked" means
+
+- **Do NOT** modify Quantum proposal files when fixing or building **other** presets (Golden, Luxe, Sales Premium, Ember, Horizon, Solstice, Legacy, Commercial, etc.).
+- **Do NOT** hide or disable other themes in the UI — users may still choose any template.
+- **Only** edit Quantum when the user **explicitly** asks to change the Quantum proposal.
+
+## Frozen paths (no edits unless user requests Quantum changes)
+
+- `components/QuantumPreset/**`
+- `components/proposals/_registry/adapters/quantum-adapter.tsx`
+
+See also `lib/quantum-proposal-lock.ts`.
+
+## Separation from other proposals
+
+- Quantum lives in its **own** folder and CSS module — not Golden editorial, not Luxe-noir pages.
+- Other presets must not import Quantum CSS/components to “share” look; duplicate or adapt locally if needed.
+- Do not refactor shared Golden/Luxe utilities for Quantum’s sake (or the reverse).
+- Shared `ProposalData` / branding / formatters may feed Quantum; keep those changes lane-safe and do not break `residential_quantum` rendering.
+
+## When working on other presets
+
+- Scope diffs to that preset’s blocks, CSS, and registry entries only.
+- Do not change Quantum glass, motion, i18n, or A4 pages to match another theme.
+
+## Public route
+
+Quantum renders at `preset_id === "residential_quantum"` via `QuantumAdapter` → `QuantumRenderer` — keep that path stable.

@@ -550,6 +550,15 @@ export function getAtelierCopy(lang: AtelierLang) {
         hi
           ? `पैनल लेआउट — ${n} मॉड्यूल`
           : `PANEL LAYOUT — ${n} MODULES`,
+      planCaption: (n: number, wp: number, tilt: number) =>
+        hi
+          ? `${n} मॉड्यूल · ${wp} Wp · दक्षिण मुख · ${tilt}° झुकाव`
+          : `${n} modules · ${wp} Wp · South face · ${tilt}° tilt`,
+      sunPathLabel: hi ? "सूर्य पथ · अज़ीमुथ" : "Sun path · azimuth",
+      northShort: "N",
+      southShort: hi ? "द" : "S",
+      southCue: hi ? "दक्षिण यील्ड" : "South yield",
+      terraceLabel: hi ? "टेरेस प्लान" : "Terrace plan",
       moreModules: (n: number) =>
         hi ? `+${n} और मॉड्यूल` : `+${n} more modules`,
       modulesTag: hi ? "छत पर मॉड्यूल" : "MODULES ON ROOF",
@@ -590,6 +599,20 @@ export function getAtelierCopy(lang: AtelierLang) {
       title: hi
         ? "कागजी प्रक्रिया से बिजली तक"
         : "From Paperwork to Power",
+      journeyLabel: hi ? "कार्य यात्रा" : "Project journey",
+      payLabel: hi ? "भुगतान योजना" : "Payment plan",
+      bankLabel: hi ? "विक्रेता बैंक खाता" : "Vendor bank account",
+      bankNote: hi
+        ? "केवल इसी खाते में भुगतान करें · More → Brand settings"
+        : "Pay only into this account · More → Brand settings",
+      bankEmpty: hi
+        ? "बैंक विवरण जोड़ें: More → Brand settings"
+        : "Add bank details in More → Brand settings",
+      accountName: hi ? "खाता नाम" : "Account name",
+      accountNumber: hi ? "खाता संख्या" : "Account number",
+      ifsc: "IFSC",
+      upi: "UPI",
+      branch: hi ? "शाखा" : "Branch",
       timelineBefore: hi
         ? "अनुमानित समयसीमा: "
         : "Estimated timeline: ",

@@ -123,7 +123,12 @@
 .langHi .investTag,
 .langHi .investScoreTag,
 .langHi .hwCardTag,
-.langHi .roofMetricTag,
+.langHi .roofYieldTag,
+.langHi .roofTerraceLabel,
+.langHi .roofStageTitle,
+.langHi .journeyLabel,
+.langHi .vendorBankTag,
+.langHi .invoiceSectionTag,
 .langHi .closingTag,
 .langHi .expertTag {
   letter-spacing: 0.5px;
@@ -1188,280 +1193,529 @@
 }
 .warrantySub { font-size: 0.84rem; color: var(--gray); line-height: 1.4; }
 
-/* ══ P8: ROOF INTELLIGENCE ══════════════════════════════════════ */
-.roofLayout {
-  display: grid;
-  grid-template-columns: 260px 1fr;
-  gap: 1.75rem;
-}
-.roofVisual { display: flex; flex-direction: column; gap: 1.25rem; }
-
-/* Compass */
-.compassWrap {
+/* ══ P8: ROOF INTELLIGENCE — Sun Plan (editorial, not card grid) ══ */
+.roofPage {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  background: var(--al);
+}
+
+.roofSunStage {
+  background: linear-gradient(180deg, #F8FAFC 0%, var(--al) 100%);
   border: 1px solid var(--line);
   border-radius: var(--card-r);
-  padding: 1.25rem;
+  padding: 1rem 1.15rem 0.85rem;
+  margin-bottom: 1.1rem;
+  box-shadow: var(--card-s);
 }
-.compass {
-  width: 110px;
-  height: 110px;
-  border-radius: 50%;
-  border: 2px solid var(--line);
+
+.roofStageHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.roofTerraceLabel {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--or);
+}
+
+.roofStageTitle {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--gray);
+}
+
+.roofPlanFrame {
+  width: 100%;
+  height: 210px;
+  border-radius: 8px;
+  overflow: hidden;
   background: var(--white);
-  position: relative;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+}
+
+.roofPlanSvg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.roofPlanCaption {
+  margin: 0.55rem 0 0.35rem;
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--h);
+  letter-spacing: 0.02em;
+}
+
+/* Sun-path azimuth ribbon */
+.roofSunPath {
+  display: grid;
+  grid-template-columns: auto 1fr minmax(140px, 0.9fr);
+  gap: 0.65rem 1rem;
+  align-items: center;
+  margin-top: 0.35rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--line);
+}
+
+.roofSunPathLabel {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--gray2);
+  white-space: nowrap;
+}
+
+.roofSunArc {
   display: flex;
   align-items: center;
-  justify-content: center;
-}
-.compassDir {
-  position: absolute;
-  font-family: 'Montserrat', sans-serif;
-  font-size: 0.84rem;
-  font-weight: 800;
-}
-.compassN { top: 6px; left: 50%; transform: translateX(-50%); color: var(--or); }
-.compassS { bottom: 6px; left: 50%; transform: translateX(-50%); color: var(--gray); }
-.compassE { right: 6px; top: 50%; transform: translateY(-50%); color: var(--gray); }
-.compassW { left: 6px; top: 50%; transform: translateY(-50%); color: var(--gray); }
-.compassCenter {
-  width: 14px;
-  height: 14px;
-  background: var(--or);
-  border-radius: 50%;
-}
-.compassNeedle {
-  width: 2px;
-  height: 32px;
-  background: linear-gradient(180deg, var(--or) 50%, var(--gray2) 50%);
-  border-radius: 2px;
-  position: absolute;
-  top: 20%;
-  left: 50%;
-  transform: translateX(-50%);
-}
-.compassNote {
-  font-size: 0.86rem;
-  color: var(--gray);
-  text-align: center;
-  margin: 0;
-  line-height: 1.4;
+  gap: 0.35rem;
+  min-width: 0;
 }
 
-/* Panel layout */
-.panelLayoutBox {
-  background: var(--al);
+.roofSunTickN,
+.roofSunTickS {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--gray);
+  flex-shrink: 0;
+}
+
+.roofSunTickS {
+  color: var(--or);
+}
+
+.roofSunArcSvg {
+  flex: 1;
+  height: 40px;
+  min-width: 0;
+  display: block;
+}
+
+.roofSunMeta {
+  min-width: 0;
+}
+
+.roofSouthCue {
+  display: block;
+  font-style: normal;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--or);
+  margin-bottom: 0.15rem;
+}
+
+.roofSunNote {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--gray);
+  line-height: 1.35;
+}
+
+/* Yield rail — horizontal specs, not 2×3 cards */
+.roofYieldRail {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0;
   border: 1px solid var(--line);
   border-radius: var(--card-r);
-  padding: 1rem;
-}
-.panelLayoutLabel {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 0.84rem;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  color: var(--gray);
-  text-transform: uppercase;
-  margin-bottom: 0.75rem;
-}
-.panelGrid {
-  display: grid;
-  gap: 4px;
-}
-.panelCell {
-  height: 18px;
-  background: var(--or);
-  border-radius: 2px;
-  opacity: 0.75;
-}
-.panelCell:nth-child(even) { opacity: 0.6; }
-.panelMore {
-  font-size: 0.86rem;
-  color: var(--gray);
-  margin-top: 0.5rem;
-  text-align: center;
+  background: var(--white);
+  overflow: hidden;
+  margin-top: auto;
 }
 
-/* Roof metrics */
-.roofMetrics {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.9rem;
-  align-content: start;
+.roofYieldCol {
+  padding: 0.75rem 0.55rem 0.85rem;
+  border-right: 1px solid var(--line);
+  min-width: 0;
 }
-.roofMetricCard {
+
+.roofYieldCol:last-child {
+  border-right: none;
+}
+
+.roofYieldTag {
+  display: block;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--or);
+  margin-bottom: 0.35rem;
+  line-height: 1.25;
+}
+
+.roofYieldVal {
+  display: block;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--h);
+  line-height: 1.15;
+  word-break: break-word;
+}
+
+.roofYieldNote {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.72rem;
+  color: var(--gray);
+  line-height: 1.3;
+}
+
+/* ══ P9: EXECUTION ROADMAP + PAYMENT + VENDOR BANK ══════════════ */
+.roadmapPage {
+  display: flex;
+  flex-direction: column;
+}
+
+.journeyBlock {
+  margin-bottom: 1rem;
+}
+
+.journeyHead {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.journeyLabel {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--or);
+}
+
+.roadmapNote {
+  font-size: 0.82rem;
+  color: var(--gray);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.roadmapNote strong {
+  color: var(--h);
+}
+
+.journeyGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.journeyCard {
+  display: flex;
+  gap: 0.55rem;
+  align-items: flex-start;
   background: var(--al);
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 0.85rem 1rem;
+  padding: 0.7rem 0.75rem;
+  min-width: 0;
 }
-.roofMetricTag {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  color: var(--or);
-  text-transform: uppercase;
-  display: block;
-  margin-bottom: 0.35rem;
-}
-.roofMetricVal {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 1rem;
-  font-weight: 800;
-  color: var(--h);
-  line-height: 1;
-}
-.roofMetricNote { font-size: 0.92rem; color: var(--gray); margin-top: 0.2rem; }
 
-/* ══ P9: EXECUTION ROADMAP ══════════════════════════════════════ */
-/* Horizontal timeline */
-.timeline {
-  display: flex;
-  gap: 0;
-  margin-bottom: 2rem;
-  overflow: hidden;
-}
-.timelineStep {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-.timelineTop {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  margin-bottom: 0.75rem;
-}
-.tlDot {
-  width: 30px;
-  height: 30px;
-  background: var(--h);
+.journeyNum {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
+  background: var(--h);
+  color: var(--white);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  z-index: 1;
 }
-.tlDotNum {
+
+.journeyBody {
+  min-width: 0;
+}
+
+.journeyTitle {
+  display: block;
   font-family: 'Montserrat', sans-serif;
   font-size: 0.82rem;
   font-weight: 800;
-  color: var(--white);
-}
-.tlConnector {
-  flex: 1;
-  height: 2px;
-  background: var(--line);
-}
-.tlContent { padding-right: 0.5rem; }
-.tlTitle {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 0.92rem;
-  font-weight: 800;
   color: var(--h);
-  margin-bottom: 0.15rem;
+  line-height: 1.2;
+  margin-bottom: 0.2rem;
 }
-.tlDuration {
+
+.journeyDuration {
   display: inline-block;
+  font-style: normal;
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.86rem;
+  font-size: 0.68rem;
   font-weight: 700;
   color: var(--or);
-  background: rgba(249,115,22,0.08);
+  background: rgba(249, 115, 22, 0.1);
   border-radius: 3px;
-  padding: 0.1rem 0.4rem;
-  margin-bottom: 0.3rem;
+  padding: 0.08rem 0.35rem;
+  margin-bottom: 0.25rem;
 }
-.tlDesc { font-size: 0.92rem; color: var(--gray); line-height: 1.45; }
-.roadmapNote {
-  font-size: 0.88rem;
-  color: var(--gray);
-  line-height: 1.5;
-  margin: -1rem 0 1.25rem;
-}
-.roadmapNote strong { color: var(--h); }
 
-/* Payment invoice */
+.journeyDesc {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--gray);
+  line-height: 1.35;
+}
+
+/* Payment + bank side-by-side */
+.payBankSplit {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 0.85rem;
+  align-items: stretch;
+  margin-top: auto;
+}
+
 .invoice {
   background: var(--al);
   border: 1px solid var(--line);
   border-radius: var(--card-r);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
+
 .invoiceHead {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding: 1.25rem 1.5rem;
+  gap: 0.75rem;
+  padding: 0.9rem 1.1rem;
   background: var(--h);
   color: var(--white);
 }
+
+.invoiceSectionTag {
+  display: block;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--or);
+  margin-bottom: 0.25rem;
+}
+
 .invoiceFrom {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: var(--white);
 }
-.invoiceTo { font-size: 0.86rem; color: rgba(255,255,255,0.45); margin-top: 0.15rem; }
-.invoiceTotalBox { text-align: right; }
+
+.invoiceTo {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 0.12rem;
+}
+
+.invoiceTotalBox {
+  text-align: right;
+  flex-shrink: 0;
+}
+
 .invoiceTotalAmt {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.4rem;
+  font-size: 1.25rem;
   font-weight: 800;
   color: var(--or);
   line-height: 1;
 }
-.invoiceTotalLabel { font-size: 0.84rem; color: rgba(255,255,255,0.4); margin-top: 0.2rem; }
 
-.invoiceBody { padding: 0 1.5rem; }
+.invoiceTotalLabel {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.45);
+  margin-top: 0.2rem;
+}
+
+.invoiceBody {
+  padding: 0 1.1rem;
+  flex: 1;
+  background: var(--white);
+}
+
 .invoiceRow {
   display: grid;
   grid-template-columns: 1fr auto auto;
-  gap: 1rem;
-  padding: 0.7rem 0;
+  gap: 0.75rem;
+  padding: 0.55rem 0;
   border-bottom: 1px solid var(--line);
   align-items: center;
-  font-size: 0.94rem;
+  font-size: 0.84rem;
   color: var(--c);
 }
+
 .invoiceRow[data-header="true"] {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.86rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 1.5px;
+  letter-spacing: 1.2px;
   color: var(--gray);
   text-transform: uppercase;
+  padding-top: 0.7rem;
 }
+
 .invoicePct {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.86rem;
+  font-size: 0.78rem;
   font-weight: 700;
   color: var(--gray);
-  min-width: 50px;
+  min-width: 42px;
   text-align: right;
 }
+
 .invoiceAmt {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.98rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: var(--h);
-  min-width: 90px;
+  min-width: 78px;
   text-align: right;
 }
+
 .invoiceFooter {
-  padding: 0.85rem 1.5rem;
-  font-size: 0.86rem;
+  padding: 0.7rem 1.1rem;
+  font-size: 0.74rem;
   color: var(--gray);
-  background: var(--white);
+  background: var(--al);
   border-top: 1px solid var(--line);
-  line-height: 1.5;
+  line-height: 1.4;
+}
+
+/* Vendor bank — Atelier aluminum card (not Quantum glass) */
+.vendorBankCard {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--card-r);
+  padding: 0.85rem 0.95rem;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  box-shadow: var(--card-s);
+}
+
+.vendorBankHead {
+  margin-bottom: 0.65rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.vendorBankTag {
+  display: block;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--or);
+  margin-bottom: 0.2rem;
+}
+
+.vendorBankNote {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--gray);
+  line-height: 1.35;
+}
+
+.vendorBankFields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.vendorBankField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  background: var(--al);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.45rem 0.6rem;
+  min-width: 0;
+}
+
+.vendorBankField span {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+  color: var(--gray);
+}
+
+.vendorBankField strong {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--h);
+  word-break: break-word;
+  line-height: 1.25;
+}
+
+.vendorBankHero {
+  border-color: rgba(249, 115, 22, 0.35);
+  background: rgba(249, 115, 22, 0.06);
+}
+
+.vendorBankHero strong {
+  font-size: 1.05rem;
+  letter-spacing: 0.03em;
+  color: var(--h);
+}
+
+.vendorBankMono {
+  font-family: ui-monospace, 'JetBrains Mono', monospace !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.vendorBankPair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.45rem;
+}
+
+.vendorBankEmpty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  font-size: 0.8rem;
+  color: var(--gray);
+  line-height: 1.4;
+  padding: 0.75rem;
+  background: rgba(249, 115, 22, 0.06);
+  border: 1px dashed rgba(249, 115, 22, 0.35);
+  border-radius: 6px;
 }
 
 .termsPage {
@@ -1957,9 +2211,44 @@
   .coverInner { padding: 1.5rem 1.25rem 2rem; }
   .pageTitle { font-size: 1.45rem; }
   .hwCard4Grid, .impactGrid, .genProofGrid, .hw2Grid, .termsGrid,
-  .trustGrid, .roofLayout, .wealthLayout {
+  .trustGrid, .wealthLayout {
     grid-template-columns: 1fr;
   }
+
+  .roofPlanFrame {
+    height: 180px;
+  }
+
+  .roofSunPath {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .roofYieldRail {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .roofYieldCol {
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .roofYieldCol:nth-child(2n) {
+    border-right: none;
+  }
+
+  .roofYieldCol:nth-last-child(-n + 2) {
+    border-bottom: none;
+  }
+
+  .journeyGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .payBankSplit {
+    grid-template-columns: 1fr;
+  }
+
   .closingSplit { grid-template-columns: 1fr; }
 }
 
