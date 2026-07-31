@@ -2,8 +2,8 @@
 
 /**
  * Quantum — south-facing schematic roof array (Glass3D).
- * Compass N-up: panel long edge E–W, tilt face toward South (bottom).
- * Iso floor grid for 3D depth. No under-panel structure shapes.
+ * Compass N-up: long edge E–W, tilt face South. No SOUTH arrow cue.
+ * Mature crystalline modules — not cartoon neon cells.
  * Schematic only — not Design Studio / live SLD.
  */
 
@@ -13,17 +13,14 @@ const MAX_DRAW = 18;
 
 type Pt = { x: number; y: number };
 
-/**
- * Screen basis aligned to compass (N up, S down, E right-down, W left-up).
- * Panel u = East (landscape), v = South (tilt face toward sun / bottom).
- */
-const EAST_X = 48;
-const EAST_Y = 12;
+/** N-up compass basis: u = East, v = South. */
+const EAST_X = 46;
+const EAST_Y = 11.5;
 const SOUTH_X = 0;
-const SOUTH_Y = 16;
+const SOUTH_Y = 15.5;
 
 function LuxPanel({ cx, cy }: { cx: number; cy: number }) {
-  const thick = 2;
+  const thick = 1.7;
 
   const at = (u: number, v: number, z = 0): Pt => ({
     x: cx + EAST_X * u + SOUTH_X * v,
@@ -31,63 +28,63 @@ function LuxPanel({ cx, cy }: { cx: number; cy: number }) {
   });
   const poly = (...pts: Pt[]) => pts.map((p) => `${p.x},${p.y}`).join(" ");
 
-  const p0 = at(0, 0); // NW
-  const p1 = at(1, 0); // NE
-  const p2 = at(1, 1); // SE (south edge)
-  const p3 = at(0, 1); // SW (south edge)
+  const p0 = at(0, 0);
+  const p1 = at(1, 0);
+  const p2 = at(1, 1);
+  const p3 = at(0, 1);
 
-  const inset = 0.042;
+  const inset = 0.05;
   const g0 = at(inset, inset);
   const g1 = at(1 - inset, inset);
   const g2 = at(1 - inset, 1 - inset);
   const g3 = at(inset, 1 - inset);
 
-  const cellCols = 8;
-  const cellRows = 4;
+  // Fine TOPCon mosaic — deep navy, subtle variation (no neon glow fills)
+  const cellCols = 10;
+  const cellRows = 5;
   const cells: { pts: string; fill: string }[] = [];
   for (let r = 0; r < cellRows; r++) {
     for (let c = 0; c < cellCols; c++) {
-      const u0 = inset + ((1 - 2 * inset) * c) / cellCols + 0.002;
-      const u1 = inset + ((1 - 2 * inset) * (c + 1)) / cellCols - 0.002;
-      const v0 = inset + ((1 - 2 * inset) * r) / cellRows + 0.002;
-      const v1 = inset + ((1 - 2 * inset) * (r + 1)) / cellRows - 0.002;
-      const tone =
-        r === cellRows - 1
-          ? 0.32 + (c % 2) * 0.04 // brighter south edge (sun face)
-          : 0.14 + ((c + r) % 3) * 0.05;
+      const u0 = inset + ((1 - 2 * inset) * c) / cellCols + 0.0015;
+      const u1 = inset + ((1 - 2 * inset) * (c + 1)) / cellCols - 0.0015;
+      const v0 = inset + ((1 - 2 * inset) * r) / cellRows + 0.0015;
+      const v1 = inset + ((1 - 2 * inset) * (r + 1)) / cellRows - 0.0015;
+      const shade = 0.08 + ((c + r * 2) % 4) * 0.025 + r * 0.012;
       cells.push({
         pts: poly(at(u0, v0), at(u1, v0), at(u1, v1), at(u0, v1)),
-        fill: `rgba(10,145,175,${tone})`,
+        fill: `rgba(20,55,78,${shade})`,
       });
     }
   }
 
   const bus: string[] = [];
-  for (const t of [0.15, 0.32, 0.5, 0.68, 0.85]) {
-    const a = at(t, inset + 0.03);
-    const b = at(t, 1 - inset - 0.03);
+  for (const t of [0.125, 0.292, 0.458, 0.625, 0.792, 0.958]) {
+    if (t >= 1 - inset) continue;
+    const a = at(t, inset + 0.02);
+    const b = at(t, 1 - inset - 0.02);
     bus.push(`M ${a.x},${a.y} L ${b.x},${b.y}`);
   }
 
   return (
     <g>
-      {/* South + east thickness only — no posts / floor plates */}
       <polygon
         points={poly(p3, p2, at(1, 1, thick), at(0, 1, thick))}
-        fill="#02060a"
+        fill="#05080c"
       />
       <polygon
         points={poly(p1, p2, at(1, 1, thick), at(1, 0, thick))}
-        fill="#0a1520"
+        fill="#121a24"
       />
 
+      {/* Brushed aluminium frame */}
       <polygon
         points={poly(p0, p1, p2, p3)}
         fill="url(#qPanelFrame)"
-        stroke="rgba(226,232,240,0.75)"
-        strokeWidth="0.65"
+        stroke="rgba(180,190,205,0.55)"
+        strokeWidth="0.5"
       />
 
+      {/* Deep crystalline glass */}
       <polygon points={poly(g0, g1, g2, g3)} fill="url(#qPanelGlass)" />
 
       {cells.map((cell, i) => (
@@ -95,61 +92,45 @@ function LuxPanel({ cx, cy }: { cx: number; cy: number }) {
           key={i}
           points={cell.pts}
           fill={cell.fill}
-          stroke="rgba(2,14,22,0.75)"
-          strokeWidth="0.28"
+          stroke="rgba(4,12,20,0.55)"
+          strokeWidth="0.2"
         />
       ))}
 
       <path
         d={bus.join(" ")}
         fill="none"
-        stroke="rgba(186,230,253,0.32)"
-        strokeWidth="0.45"
+        stroke="rgba(160,190,210,0.18)"
+        strokeWidth="0.35"
         strokeLinecap="round"
       />
 
-      {/* Accent south rim — faces compass S */}
-      <path
-        d={`M ${g3.x},${g3.y} L ${g2.x},${g2.y}`}
-        fill="none"
-        stroke="rgba(34,211,238,0.75)"
-        strokeWidth="1.1"
-        strokeLinecap="round"
-      />
+      {/* Quiet edge — no neon rim */}
       <polygon
         points={poly(g0, g1, g2, g3)}
         fill="none"
-        stroke="rgba(34,211,238,0.35)"
-        strokeWidth="0.4"
+        stroke="rgba(100,140,165,0.35)"
+        strokeWidth="0.35"
       />
 
+      {/* Soft specular only */}
       <line
-        x1={g0.x + EAST_X * 0.06}
-        y1={g0.y + EAST_Y * 0.06 + 0.4}
-        x2={g0.x + EAST_X * 0.52}
-        y2={g0.y + EAST_Y * 0.52 + 0.4}
-        stroke="rgba(255,255,255,0.5)"
-        strokeWidth="1.55"
-        strokeLinecap="round"
-      />
-      <line
-        x1={g0.x + EAST_X * 0.1}
-        y1={g0.y + EAST_Y * 0.1 + 1.7}
-        x2={g0.x + EAST_X * 0.38}
-        y2={g0.y + EAST_Y * 0.38 + 1.7}
-        stroke="rgba(103,232,249,0.42)"
-        strokeWidth="0.9"
+        x1={g0.x + EAST_X * 0.07}
+        y1={g0.y + EAST_Y * 0.07 + 0.35}
+        x2={g0.x + EAST_X * 0.42}
+        y2={g0.y + EAST_Y * 0.42 + 0.35}
+        stroke="rgba(255,255,255,0.28)"
+        strokeWidth="1.1"
         strokeLinecap="round"
       />
     </g>
   );
 }
 
-/** Isometric diamond floor grid aligned to E/S basis. */
 function IsoFloorGrid() {
   const lines: string[] = [];
-  const ox = 40;
-  const oy = 48;
+  const ox = 42;
+  const oy = 50;
   const cols = 11;
   const rows = 9;
   const stepU = 26;
@@ -157,36 +138,35 @@ function IsoFloorGrid() {
 
   for (let i = 0; i <= cols; i++) {
     const a = {
-      x: ox + (EAST_X / 48) * stepU * i,
-      y: oy + (EAST_Y / 48) * stepU * i,
+      x: ox + (EAST_X / 46) * stepU * i,
+      y: oy + (EAST_Y / 46) * stepU * i,
     };
     const b = {
-      x: a.x + (SOUTH_X / 16) * stepV * rows,
-      y: a.y + (SOUTH_Y / 16) * stepV * rows,
+      x: a.x + (SOUTH_X / 15.5) * stepV * rows,
+      y: a.y + (SOUTH_Y / 15.5) * stepV * rows,
     };
     lines.push(`M ${a.x},${a.y} L ${b.x},${b.y}`);
   }
   for (let j = 0; j <= rows; j++) {
     const a = {
-      x: ox + (SOUTH_X / 16) * stepV * j,
-      y: oy + (SOUTH_Y / 16) * stepV * j,
+      x: ox + (SOUTH_X / 15.5) * stepV * j,
+      y: oy + (SOUTH_Y / 15.5) * stepV * j,
     };
     const b = {
-      x: a.x + (EAST_X / 48) * stepU * cols,
-      y: a.y + (EAST_Y / 48) * stepU * cols,
+      x: a.x + (EAST_X / 46) * stepU * cols,
+      y: a.y + (EAST_Y / 46) * stepU * cols,
     };
     lines.push(`M ${a.x},${a.y} L ${b.x},${b.y}`);
   }
 
   return (
-    <g opacity="0.55">
+    <g opacity="0.4">
       <path
         d={lines.join(" ")}
         fill="none"
-        stroke="rgba(6,182,212,0.22)"
-        strokeWidth="0.55"
+        stroke="rgba(100,140,170,0.28)"
+        strokeWidth="0.5"
       />
-      {/* Horizon depth fade */}
       <rect x="8" y="8" width="304" height="80" fill="url(#qGridFade)" />
     </g>
   );
@@ -214,11 +194,10 @@ export function QuantumRoofArray({
   const cols = Math.max(1, Math.ceil(modulesDraw / preferredRows));
   const rows = Math.ceil(modulesDraw / cols);
 
-  // Columns = East, rows = North (away from south face)
-  const stepColX = EAST_X + 4;
-  const stepColY = EAST_Y + 1;
-  const stepRowX = -SOUTH_X + 2;
-  const stepRowY = -(SOUTH_Y + 1);
+  const stepColX = EAST_X + 3.5;
+  const stepColY = EAST_Y + 0.8;
+  const stepRowX = -SOUTH_X + 1.5;
+  const stepRowY = -(SOUTH_Y + 0.8);
 
   const arrayW = (cols - 1) * stepColX + (rows - 1) * stepRowX + EAST_X;
   const arrayH =
@@ -226,8 +205,7 @@ export function QuantumRoofArray({
     Math.abs((rows - 1) * stepRowY) +
     SOUTH_Y;
   const isoOriginX = 160 - arrayW / 2;
-  // Place bank so south face sits toward bottom of scene
-  const isoOriginY = 100 - arrayH / 2 + (rows - 1) * Math.abs(stepRowY) * 0.15;
+  const isoOriginY = 102 - arrayH / 2 + (rows - 1) * Math.abs(stepRowY) * 0.12;
 
   const panelPositions = Array.from({ length: modulesDraw }).map((_, i) => {
     const col = i % cols;
@@ -237,20 +215,7 @@ export function QuantumRoofArray({
       cy: isoOriginY + col * stepColY + row * stepRowY,
     };
   });
-  // Draw north rows first so south-facing fronts occlude
   panelPositions.sort((a, b) => a.cy - b.cy || a.cx - b.cx);
-
-  const bankSouthX =
-    isoOriginX +
-    ((cols - 1) * stepColX) / 2 +
-    EAST_X / 2 +
-    ((rows - 1) * stepRowX) / 2;
-  const bankSouthY =
-    isoOriginY +
-    ((cols - 1) * stepColY) / 2 +
-    SOUTH_Y +
-    ((rows - 1) * stepRowY) / 2 +
-    8;
 
   const kwLabel = dcKwp % 1 ? dcKwp.toFixed(2) : dcKwp.toFixed(0);
 
@@ -264,34 +229,31 @@ export function QuantumRoofArray({
     >
       <defs>
         <radialGradient id="qSceneGlow" cx="50%" cy="48%" r="58%">
-          <stop offset="0%" stopColor="rgba(6,182,212,0.12)" />
-          <stop offset="55%" stopColor="rgba(6,100,140,0.04)" />
+          <stop offset="0%" stopColor="rgba(40,70,95,0.14)" />
           <stop offset="100%" stopColor="rgba(0,0,0,0)" />
         </radialGradient>
-        <linearGradient id="qPanelGlass" x1="0" y1="0" x2="0.2" y2="1">
-          <stop offset="0%" stopColor="#1a4a5e" />
-          <stop offset="35%" stopColor="#0e3040" />
-          <stop offset="70%" stopColor="#071820" />
-          <stop offset="100%" stopColor="#02080e" />
+        <linearGradient id="qPanelGlass" x1="0" y1="0" x2="0.15" y2="1">
+          <stop offset="0%" stopColor="#1c3a4c" />
+          <stop offset="40%" stopColor="#0d2432" />
+          <stop offset="100%" stopColor="#040a10" />
         </linearGradient>
         <linearGradient id="qPanelFrame" x1="0" y1="0" x2="0.1" y2="1">
-          <stop offset="0%" stopColor="#f8fafc" />
-          <stop offset="40%" stopColor="#cbd5e1" />
-          <stop offset="75%" stopColor="#64748b" />
-          <stop offset="100%" stopColor="#334155" />
+          <stop offset="0%" stopColor="#e8edf2" />
+          <stop offset="45%" stopColor="#a8b4c0" />
+          <stop offset="100%" stopColor="#4a5564" />
         </linearGradient>
         <linearGradient id="qRoofFloor" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#0e1824" />
-          <stop offset="100%" stopColor="#03070c" />
+          <stop offset="0%" stopColor="#0c141e" />
+          <stop offset="100%" stopColor="#03060a" />
         </linearGradient>
         <linearGradient id="qGridFade" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="rgba(3,7,12,0.55)" />
-          <stop offset="100%" stopColor="rgba(3,7,12,0)" />
+          <stop offset="0%" stopColor="rgba(3,6,10,0.6)" />
+          <stop offset="100%" stopColor="rgba(3,6,10,0)" />
         </linearGradient>
         <linearGradient id="qCaptionBar" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="rgba(2,8,14,0.15)" />
-          <stop offset="40%" stopColor="rgba(2,8,14,0.82)" />
-          <stop offset="100%" stopColor="rgba(2,8,14,0.15)" />
+          <stop offset="0%" stopColor="rgba(2,8,14,0.12)" />
+          <stop offset="40%" stopColor="rgba(2,8,14,0.8)" />
+          <stop offset="100%" stopColor="rgba(2,8,14,0.12)" />
         </linearGradient>
       </defs>
 
@@ -303,78 +265,52 @@ export function QuantumRoofArray({
         <LuxPanel key={i} cx={p.cx} cy={p.cy} />
       ))}
 
-      {/* South cue — tilt faces this way (matches compass S) */}
-      <g transform={`translate(${bankSouthX}, ${Math.min(198, bankSouthY + 10)})`}>
-        <path
-          d="M0 0 L6 10 L2 10 L2 18 L-2 18 L-2 10 L-6 10 Z"
-          fill="#22D3EE"
-          opacity="0.9"
-        />
-        <text
-          y="30"
-          textAnchor="middle"
-          fill="#67E8F9"
-          fontSize="7"
-          fontWeight="700"
-          letterSpacing="1"
-        >
-          SOUTH
-        </text>
-      </g>
-
-      {/* Compass — N up, S down */}
+      {/* Compass only — orientation cue without SOUTH arrow */}
       <g transform="translate(36,34)">
         <circle
-          r="20"
+          r="19"
           fill="rgba(4,10,16,0.94)"
-          stroke="rgba(34,211,238,0.75)"
-          strokeWidth="0.9"
+          stroke="rgba(148,180,200,0.55)"
+          strokeWidth="0.85"
         />
-        <circle r="14" fill="none" stroke="rgba(6,182,212,0.28)" strokeWidth="0.5" />
+        <circle r="13" fill="none" stroke="rgba(120,150,175,0.25)" strokeWidth="0.45" />
         <line
           x1="0"
-          y1="-12"
+          y1="-11"
           x2="0"
-          y2="12"
-          stroke="rgba(255,255,255,0.18)"
-          strokeWidth="0.45"
+          y2="11"
+          stroke="rgba(255,255,255,0.14)"
+          strokeWidth="0.4"
         />
         <line
-          x1="-12"
+          x1="-11"
           y1="0"
-          x2="12"
+          x2="11"
           y2="0"
-          stroke="rgba(255,255,255,0.18)"
-          strokeWidth="0.45"
+          stroke="rgba(255,255,255,0.14)"
+          strokeWidth="0.4"
         />
-        <polygon points="0,-11 2.8,-1.4 0,-3.2 -2.8,-1.4" fill="#22D3EE" />
-        <polygon points="0,11 2.2,2 0,3.8 -2.2,2" fill="#475569" />
+        <polygon points="0,-10 2.5,-1.2 0,-3 -2.5,-1.2" fill="#94A3B8" />
         <text
-          y="-13.5"
+          y="-12.5"
           textAnchor="middle"
-          fill="#22D3EE"
-          fontSize="6.2"
+          fill="#CBD5E1"
+          fontSize="6"
           fontWeight="700"
         >
           N
         </text>
-        <text y="19" textAnchor="middle" fill="#94a3b8" fontSize="5.5" fontWeight="600">
+        <text y="18" textAnchor="middle" fill="#64748b" fontSize="5.2">
           S
-        </text>
-        <text x="15" y="3" textAnchor="middle" fill="#64748b" fontSize="5">
-          E
-        </text>
-        <text x="-15" y="3" textAnchor="middle" fill="#64748b" fontSize="5">
-          W
         </text>
       </g>
       <text
         x="36"
-        y="68"
+        y="66"
         textAnchor="middle"
-        fill="#67E8F9"
-        fontSize="6.5"
-        letterSpacing="1"
+        fill="#94A3B8"
+        fontSize="6.2"
+        letterSpacing="0.9"
         fontWeight="600"
       >
         180° S · {tilt.toFixed(0)}°
@@ -386,20 +322,20 @@ export function QuantumRoofArray({
         y1="214"
         x2="296"
         y2="214"
-        stroke="rgba(34,211,238,0.22)"
-        strokeWidth="0.7"
+        stroke="rgba(100,140,170,0.25)"
+        strokeWidth="0.6"
       />
       <text
         x="160"
         y="231"
         textAnchor="middle"
-        fill="#e2e8f0"
+        fill="#cbd5e1"
         fontSize="9.5"
         fontFamily="ui-sans-serif,system-ui,sans-serif"
-        letterSpacing="0.4"
+        letterSpacing="0.35"
       >
-        {modules} modules · {kwLabel} kWp DC · {strings}×{perString} string · South
-        face · {panelWatt}W
+        {modules} modules · {kwLabel} kWp DC · {strings}×{perString} string · South ·{" "}
+        {panelWatt}W
       </text>
     </svg>
   );
