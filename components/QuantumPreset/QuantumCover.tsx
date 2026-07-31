@@ -15,8 +15,8 @@ import {
 import { QuantumAtmosphere } from "./QuantumAtmosphere";
 import styles from "./Quantum.module.css";
 
-/** India elevated GI (~6–7 ft) + ~20° tilt, evening luxury — /public */
-const COVER_ROOFTOP_SRC = "/assets/proposals/quantum-cover-elevated-india.jpg";
+/** Same elevated India scene as before, cleaner GI structure — /public */
+const COVER_ROOFTOP_SRC = "/assets/proposals/quantum-cover-elevated-clean.jpg";
 
 export type QuantumCoverProps = {
   data: ProposalData;
