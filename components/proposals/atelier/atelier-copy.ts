@@ -368,46 +368,43 @@ export function getAtelierCopy(lang: AtelierLang) {
     finance: {
       tag: hi ? "03 — मासिक अर्थशास्त्र" : "03 — MONTHLY ECONOMICS",
       title: hi
-        ? "आप ऊर्जा नहीं बदल रहे। आप अर्थशास्त्र बदल रहे हैं।"
-        : "You Are Not Switching Energy. You Are Switching Economics.",
+        ? "हर महीने आपकी जेब में क्या रहता है?"
+        : "What stays in your pocket every month?",
       lead: hi
-        ? "असली सवाल सरल है: हर महीने आपकी जेब से क्या निकलता है?"
-        : "The real question is simple: what leaves your pocket every month?",
-      todayTag: hi ? "आज — सौर के बिना" : "TODAY — WITHOUT SOLAR",
-      todayLabel: hi ? "मासिक बिजली बिल" : "Monthly Electricity Bill",
+        ? "तीन नंबर — आज का बिल, सोलर की लागत, और दिन-1 से आपकी बचत।"
+        : "Three numbers — today’s bill, solar’s cost, and your Day-1 gain.",
+      todayTag: hi ? "आज · बिना सोलर" : "Today · no solar",
+      todayLabel: hi ? "मासिक बिजली बिल" : "Monthly electricity bill",
       todayNote: hi
-        ? "हर साल ~6% बढ़ता है। आप ऐसी ऊर्जा के लिए भुगतान करते हैं जिसका स्वामित्व कभी नहीं मिलता — और बिल केवल बढ़ता जाता है।"
-        : "Rises ~6% every year. You pay for energy you never own — and the bill only goes up.",
-      tomorrowTag: hi ? "कल — सौर के साथ" : "TOMORROW — WITH SOLAR",
-      tomorrowLabel: hi
-        ? "समकक्ष मासिक लागत"
-        : "Equivalent Monthly Cost",
+        ? "~6%/वर्ष बढ़ता है — बिल सिर्फ ऊपर जाता है।"
+        : "Rises ~6%/yr — the bill only climbs.",
+      tomorrowTag: hi ? "कल · सोलर के साथ" : "Tomorrow · with solar",
+      tomorrowLabel: hi ? "मासिक सोलर लागत" : "Monthly solar cost",
       tomorrowNote: hi
-        ? "5 वर्षों के लिए निश्चित (ऋण), फिर शून्य। ऊर्जा लागत जो आप हमेशा नियंत्रित करते हैं।"
-        : "Fixed for 5 years (loan), then ZERO. Energy costs you control forever.",
-      profitTag: hi
-        ? "तत्काल मासिक लाभ"
-        : "IMMEDIATE MONTHLY PROFIT",
-      profitLabel: hi
-        ? "दिन 1 से शुद्ध मासिक लाभ"
-        : "Net Monthly Gain from Day 1",
+        ? "5 वर्ष निश्चित, फिर लगभग शून्य।"
+        : "Fixed ~5 years, then near zero.",
+      profitTag: hi ? "आपकी बचत" : "Your gain",
+      profitLabel: hi ? "दिन 1 से हर महीने" : "Every month from Day 1",
       profitNote: hi
-        ? "यह वह पैसा है जो हर महीने आपकी जेब में रहता है, तुरंत शुरू होकर।"
-        : "This is money that stays in your pocket every single month, starting immediately.",
+        ? "इतना पैसा जेब में रहता है — तुरंत।"
+        : "This much stays with you — starting now.",
       trajectoryTag: hi
-        ? "पहले 10 वर्ष — मासिक बिल तुलना"
-        : "FIRST 10 YEARS — MONTHLY BILL COMPARISON",
-      yr: (y: number) => (hi ? `वर्ष ${y}` : `YR ${y}`),
-      legendWithout: hi
-        ? "बिना सौर का बिल (~6%/वर्ष बढ़ता)"
-        : "Bill Without Solar (rising ~6%/yr)",
-      legendWith: hi
-        ? "सौर के साथ बिल (सपाट, फिर लगभग शून्य)"
-        : "Bill With Solar (flat, then near-zero)",
-      legendGap: hi ? "मासिक बचत अंतर" : "Monthly Savings Gap",
-      grossCost: hi ? "सकल लागत" : "GROSS COST",
-      subsidy: hi ? "पीएम सूर्य घर सब्सिडी" : "PM SURYA GHAR SUBSIDY",
-      netInvestment: hi ? "आपका शुद्ध निवेश" : "YOUR NET INVESTMENT",
+        ? "10 वर्ष · बिल की कहानी"
+        : "10 years · the bill story",
+      trajectoryHint: hi
+        ? "नारंगी क्षेत्र = आपकी बचत का अंतर"
+        : "Orange band = your savings gap",
+      loanEndCue: hi ? "ऋण समाप्त → बिल ≈ 0" : "Loan ends → bill ≈ 0",
+      yr: (y: number) => (hi ? `व${y}` : `Y${y}`),
+      legendWithout: hi ? "बिना सोलर (बढ़ता बिल)" : "Without solar (rising)",
+      legendWith: hi ? "सोलर के साथ (नियंत्रित)" : "With solar (controlled)",
+      legendGap: hi ? "मासिक बचत" : "Monthly savings",
+      grossCost: hi ? "सकल लागत" : "Gross cost",
+      subsidy: hi ? "पीएम सूर्य घर सब्सिडी" : "PM Surya Ghar subsidy",
+      netInvestment: hi ? "आपका शुद्ध निवेश" : "Your net investment",
+      netCue: hi
+        ? "यही राशि मासिक अर्थशास्त्र को चालू करती है।"
+        : "This is the amount that powers the monthly math.",
     },
 
     wealth: {
@@ -489,6 +486,15 @@ export function getAtelierCopy(lang: AtelierLang) {
         hi
           ? `~${pb} वर्ष में पेबैक → फिर ~${freeYrs} वर्ष बिल बचत।`
           : `Payback in ~${pb} years — then ~${freeYrs} years of bill savings.`,
+      expertTag: hi
+        ? "विशेषज्ञ सलाह · ईपीसी इंजीनियरिंग"
+        : "EXPERT ADVICE · EPC ENGINEERING",
+      expertBody: (city: string) =>
+        hi
+          ? `डिस्कॉम टैरिफ आमतौर पर ~5–6%/वर्ष बढ़ता है, जबकि टियर-1 मॉड्यूल सिर्फ ~0.4%/वर्ष degrad होते हैं — वर्ष 20 पर भी उत्पादन लगभग ~92% रहता है। यही अंतर पेबैक के बाद धन को तेज़ बढ़ाता है। हम ${city} के लिए झुकाव, स्ट्रिंगिंग और परफॉर्मेंस रेशियो डिज़ाइन करते हैं — ताकि यह प्रक्षेपण इंजीनियरिंग पर टिका हो, अनुमान पर नहीं।`
+          : `DISCOM tariffs typically rise ~5–6%/year, while tier-1 modules degrade only ~0.4%/year — so Year 20 still delivers ~92% of Year-1 output. That widening gap is why wealth accelerates after payback. We engineer tilt, stringing, and performance ratio for ${city} — so this projection is design-backed, not a brochure guess.`,
+      expertAttr: (name: string) =>
+        hi ? `— ${name} डिज़ाइन डेस्क` : `— ${name} Design Desk`,
     },
 
     gen: {

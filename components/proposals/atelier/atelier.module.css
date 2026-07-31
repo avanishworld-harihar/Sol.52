@@ -22,6 +22,10 @@
   --card-s-up: 0 4px 18px rgba(0,0,0,0.10);
   --a4-w: 794px;
   --a4-h: 1123px;
+  /* Shared inset — pageNum footer must match these */
+  --page-pad-x: 1.45rem;
+  --page-pad-t: 1.25rem;
+  --page-pad-b: 2.05rem;
 
   background: var(--al);
   font-family: 'Lato', 'Inter', system-ui, sans-serif;
@@ -158,7 +162,7 @@
   width: 100%;
   max-width: var(--a4-w); /* A4 portrait at 96 DPI = 210mm */
   margin: 0 auto 1.5rem;
-  padding: 2.25rem 2.5rem 2.75rem;
+  padding: var(--page-pad-t) var(--page-pad-x) var(--page-pad-b);
   position: relative;
   border: 1px solid var(--line);
   min-height: var(--a4-h); /* A4 height at 96 DPI = 297mm */
@@ -169,9 +173,10 @@
 .pageHead {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  padding-top: 1.5rem;
-  margin-bottom: 1.25rem;
+  gap: 0.3rem;
+  padding-top: 0;
+  margin-bottom: 0.85rem;
+  flex-shrink: 0;
 }
 .pageTag {
   font-family: 'Montserrat', sans-serif;
@@ -183,28 +188,40 @@
 }
 .pageTitle {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.85rem;
+  font-size: 1.75rem;
   font-weight: 800;
   color: var(--h);
   line-height: 1.25;
-  max-width: 640px;
+  max-width: none;
 }
 .pageLead {
   font-size: 0.95rem;
   color: var(--gray);
   line-height: 1.55;
-  max-width: 560px;
+  max-width: 36rem;
   margin: 0;
 }
+/* Footer stays inside page padding (same inset as content) */
 .pageNum {
   position: absolute;
-  bottom: 1rem;
-  right: 2rem;
+  left: var(--page-pad-x);
+  right: var(--page-pad-x);
+  bottom: 0.55rem;
+  margin: 0;
+  padding: 0;
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.84rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  letter-spacing: 1px;
+  letter-spacing: 0.4px;
   color: var(--gray2);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: none;
+  box-sizing: border-box;
+  pointer-events: none;
+  z-index: 2;
 }
 .pageNumLight { color: rgba(255,255,255,0.5); }
 
@@ -250,7 +267,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 1.5rem 2.25rem 1.75rem;
+  padding: var(--page-pad-t) var(--page-pad-x) var(--page-pad-b);
   gap: 0.75rem;
   min-height: 0; /* allow flex child to shrink inside fixed-height page */
   overflow: hidden;
@@ -493,7 +510,7 @@
 }
 
 /* ══ P2: IMPACT ════════════════════════════════════════════════ */
-.impactPage .pageTitle { max-width: 540px; }
+.impactPage .pageTitle { max-width: none; }
 
 .impactGrid {
   display: grid;
@@ -586,169 +603,369 @@
   line-height: 1.6;
 }
 
-/* ══ P3: FINANCIAL STORY ═══════════════════════════════════════ */
-.billComparison {
-  display: flex;
-  align-items: stretch;
-  gap: 0.75rem;
-  margin-bottom: 2rem;
-}
-.billCard {
-  flex: 1;
-  background: var(--al);
-  border: 1px solid var(--line);
-  border-radius: var(--card-r);
-  padding: 1.5rem;
+/* ══ P3: MONTHLY ECONOMICS — pocket story ══════════════════════ */
+.financePage {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
 }
-.billCardSolar { border-color: #86efac; background: var(--green-bg); }
-.billCardProfit {
-  background: linear-gradient(135deg, #0A0F1C 0%, #1E293B 100%);
-  border-color: var(--or);
+.financePage .pageTitle {
+  font-size: 1.65rem;
 }
+
+.financeFlow {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1.15fr;
+  align-items: stretch;
+  gap: 0.55rem;
+  margin-bottom: 0.85rem;
+  flex: 0 0 auto;
+}
+
+.financeStep {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--card-r);
+  padding: 1rem 1.05rem 1.05rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  min-width: 0;
+  box-shadow: var(--card-s);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.financeStepToday {
+  background: linear-gradient(165deg, #FEF2F2 0%, #FFFFFF 55%);
+  border-color: #FECACA;
+}
+
+.financeStepSolar {
+  background: linear-gradient(165deg, #FFF7ED 0%, #FFFFFF 55%);
+  border-color: rgba(249, 115, 22, 0.35);
+}
+
+.financeStepGain {
+  background: linear-gradient(145deg, #0A0F1C 0%, #1E293B 100%);
+  border-color: rgba(249, 115, 22, 0.55);
+  box-shadow: 0 8px 22px rgba(10, 15, 28, 0.18);
+}
+
+.financeStepIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.2rem;
+  background: rgba(220, 38, 38, 0.1);
+  color: #DC2626;
+  flex-shrink: 0;
+}
+
+.financeStepSolar .financeStepIcon {
+  background: rgba(249, 115, 22, 0.14);
+  color: var(--or);
+}
+
+.financeStepIconGain {
+  background: rgba(249, 115, 22, 0.2) !important;
+  color: var(--or) !important;
+}
+
+.financeIconSvg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
 .billCardTag {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 2px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
   color: var(--gray);
   text-transform: uppercase;
 }
-.billCardProfit .billCardTag { color: rgba(255,255,255,0.5); }
-.billCardAmt {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 2rem;
-  font-weight: 800;
-  line-height: 1;
-  color: var(--or);
-}
-.billCardLabel {
-  font-size: 0.92rem;
-  font-weight: 700;
-  color: var(--c);
-}
-.billCardProfit .billCardLabel { color: rgba(255,255,255,0.7); }
-.billCardNote {
-  font-size: 0.88rem;
-  color: var(--gray);
-  line-height: 1.5;
-  margin: 0;
-}
-.billCardProfit .billCardNote { color: rgba(255,255,255,0.45); }
-.billArrow {
-  font-size: 1.8rem;
-  font-weight: 300;
-  color: var(--gray2);
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  padding: 0 0.25rem;
+
+.financeStepGain .billCardTag {
+  color: rgba(255, 255, 255, 0.55);
 }
 
-/* Bill trajectory line chart */
+.billCardAmt {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.85rem;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--or);
+}
+
+.financeAmtToday { color: #DC2626; }
+.financeAmtSolar { color: var(--or); }
+.financeAmtGain { color: var(--or); }
+
+.billCardLabel {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--c);
+  line-height: 1.25;
+}
+
+.financeStepGain .billCardLabel {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.billCardNote {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--gray);
+  line-height: 1.4;
+  margin: 0.15rem 0 0;
+}
+
+.financeStepGain .billCardNote {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.financeFlowArrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--or);
+  opacity: 0.75;
+  padding: 0 0.1rem;
+}
+
+/* Legacy aliases (unused) */
+.billComparison { display: contents; }
+.billCard { display: contents; }
+.billArrow { display: contents; }
+
+/* Bill trajectory */
 .trajectoryChart {
-  background: var(--al);
+  background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--card-r);
-  padding: 1.25rem 1.25rem 0.75rem;
-  margin-bottom: 1.5rem;
+  padding: 1rem 1.1rem 0.85rem;
+  margin-bottom: 0.85rem;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  box-shadow: var(--card-s);
 }
+
+.trajectoryHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35rem 0.75rem;
+  margin-bottom: 0.35rem;
+  flex-shrink: 0;
+}
+
+.trajectoryTitle {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  color: var(--or);
+}
+
+.trajectoryHint {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--gray2);
+}
+
 .trajectorySvg {
   width: 100%;
-  height: 150px;
-  margin-top: 0.5rem;
-  overflow: hidden;
+  flex: 1 1 auto;
+  min-height: 180px;
+  max-height: 240px;
+  overflow: visible;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
-.trajectoryGap { fill: rgba(249, 115, 22, 0.12); stroke: none; }
+
+.trajectoryGrid {
+  stroke: #E2E8F0;
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+
 .trajectoryLineRed {
   fill: none;
   stroke: #DC2626;
-  stroke-width: 2.5;
+  stroke-width: 2.8;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-.trajectoryLineGreen {
+
+.trajectoryLineSolar {
   fill: none;
-  stroke: #059669;
-  stroke-width: 2.5;
+  stroke: #0A0F1C;
+  stroke-width: 2.8;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+
+.trajectoryDotRed { fill: #DC2626; }
+.trajectoryDotSolar { fill: var(--or); stroke: #fff; stroke-width: 1; }
+
+.trajectoryLoanLine {
+  stroke: var(--or);
+  stroke-width: 1.4;
+  stroke-dasharray: 4 3;
+  opacity: 0.75;
+}
+
+.trajectoryLoanLabel {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  fill: var(--or);
+}
+
 .trajectoryXLabel {
   font-family: 'Montserrat', sans-serif;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
   fill: var(--gray);
 }
+
 .trajectoryLegend {
   display: flex;
-  gap: 1.25rem;
+  gap: 1rem;
   flex-wrap: wrap;
-  padding-top: 0.6rem;
+  padding-top: 0.55rem;
   border-top: 1px solid var(--line);
-  margin-top: 0.25rem;
+  margin-top: 0.35rem;
+  flex-shrink: 0;
 }
+
 .trajLegendItem {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.86rem;
+  font-size: 0.84rem;
+  font-weight: 600;
   color: var(--gray);
 }
-.trajDotRed, .trajDotGreen, .trajDotGap {
-  width: 9px;
-  height: 9px;
-  border-radius: 2px;
+
+.trajDotRed,
+.trajDotSolar,
+.trajDotGap,
+.trajDotGreen {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
   flex-shrink: 0;
   display: inline-block;
 }
-.trajDotRed { background: #DC2626; }
-.trajDotGreen { background: #059669; }
-.trajDotGap { background: rgba(249, 115, 22, 0.35); }
 
-/* Investment breakdown */
+.trajDotRed { background: #DC2626; }
+.trajDotSolar { background: #0A0F1C; }
+.trajDotGreen { background: #0A0F1C; }
+.trajDotGap { background: rgba(249, 115, 22, 0.45); }
+
+/* Investment equation strip */
 .investBreakdown {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1.25fr;
+  align-items: stretch;
+  gap: 0.55rem;
   background: var(--al);
   border: 1px solid var(--line);
   border-radius: var(--card-r);
-  padding: 1.25rem 1.5rem;
+  padding: 0.85rem 0.9rem;
+  flex-shrink: 0;
+  box-shadow: var(--card-s);
 }
+
 .investItem {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
-}
-.investItemFinal {
+  min-width: 0;
+  padding: 0.55rem 0.65rem;
   background: var(--white);
   border: 1px solid var(--line);
-  border-radius: 0.5rem;
-  padding: 0.75rem 1rem;
+  border-radius: 8px;
 }
+
+.investItemSubsidy {
+  border-color: rgba(249, 115, 22, 0.28);
+  background: #FFF7ED;
+}
+
+.investItemFinal {
+  background: var(--h);
+  border-color: var(--h);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
 .investTag {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 1.5px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
   color: var(--gray);
   text-transform: uppercase;
 }
+
+.investItemFinal .investTag {
+  color: rgba(255, 255, 255, 0.5);
+}
+
 .investVal {
   font-family: 'Montserrat', sans-serif;
   font-size: 1.25rem;
   font-weight: 800;
   color: var(--h);
+  line-height: 1.15;
 }
-.investMinus {
+
+.investValSubsidy { color: var(--or); }
+
+.investValNet {
+  color: var(--or);
   font-size: 1.4rem;
-  font-weight: 300;
-  color: var(--gray2);
-  flex-shrink: 0;
+}
+
+.investCue {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.3;
+  margin-top: 0.15rem;
+}
+
+.investOp {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--or);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+}
+
+.investMinus {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--or);
+  display: flex;
+  align-items: center;
 }
 
 /* ══ P4: WEALTH PROJECTION ══════════════════════════════════════ */
@@ -757,16 +974,11 @@
   flex-direction: column;
 }
 .wealthPage .pageHead {
-  margin-bottom: 0.85rem;
-  padding-top: 1.15rem;
-  flex-shrink: 0;
+  margin-bottom: 0.75rem;
 }
 .wealthPage .pageLead {
-  max-width: 560px;
+  max-width: 36rem;
   font-size: 1rem;
-}
-.wealthPage .pageTitle {
-  font-size: 1.75rem;
 }
 
 /* Instant money path — invest → payback → keep */
@@ -775,7 +987,7 @@
   grid-template-columns: 1fr auto 1fr auto 1fr;
   align-items: stretch;
   gap: 0.45rem;
-  margin-bottom: 0.85rem;
+  margin-bottom: 0.7rem;
   flex-shrink: 0;
 }
 .wealthPathCard {
@@ -1120,13 +1332,10 @@
   flex-direction: column;
 }
 .genPage .pageHead {
-  margin-bottom: 0.85rem;
-  padding-top: 1.15rem;
-  flex-shrink: 0;
+  margin-bottom: 0.75rem;
 }
 .genPage .pageTitle {
-  font-size: 1.7rem;
-  max-width: 640px;
+  font-size: 1.65rem;
 }
 
 .genProofGrid {
@@ -1351,7 +1560,7 @@
 
 /* ══ P6: HARDWARE TRUST — icons + earthing ══════════════════════ */
 .hwPage .pageLead {
-  max-width: 560px;
+  max-width: 36rem;
 }
 
 .hwCard4Grid {
@@ -1583,12 +1792,9 @@
   flex-direction: column;
 }
 .trustPage .pageHead {
-  margin-bottom: 0.85rem;
-  padding-top: 1.15rem;
-  flex-shrink: 0;
+  margin-bottom: 0.75rem;
 }
 .trustPage .pageTitle {
-  max-width: 640px;
   font-size: 1.65rem;
 }
 .trustGrid {
@@ -1833,24 +2039,34 @@
   display: flex;
   flex-direction: column;
 }
+.roofPage .pageHead {
+  margin-bottom: 0.7rem;
+}
+.roofPage .pageTitle {
+  font-size: 1.65rem;
+}
 
 .roofMainRow {
   display: grid;
-  grid-template-columns: 1.35fr 1fr;
+  grid-template-columns: 1.4fr 1fr;
   gap: 0.85rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.7rem;
+  flex: 1.35 1 0;
   min-height: 0;
+  align-items: stretch;
 }
 
 .roofArrayStage {
   background: linear-gradient(180deg, #F8FAFC 0%, var(--al) 100%);
   border: 1px solid var(--line);
   border-radius: var(--card-r);
-  padding: 0.85rem 0.95rem 0.7rem;
+  padding: 0.9rem 1rem 0.8rem;
   box-shadow: var(--card-s);
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
 }
 
 .roofStageHead {
@@ -1858,34 +2074,35 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 0.6rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.55rem;
   flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 .roofTerraceLabel {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 1.6px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 1.4px;
   text-transform: uppercase;
   color: var(--or);
 }
 
 .roofStageTitle {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  letter-spacing: 1.1px;
+  letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--gray);
 }
 
 .roofPlanFrame {
   width: 100%;
-  flex: 1;
-  min-height: 220px;
-  height: 240px;
-  border-radius: 8px;
+  flex: 1 1 auto;
+  min-height: 260px;
+  height: auto;
+  border-radius: 10px;
   overflow: hidden;
   background: linear-gradient(165deg, #F1F5F9 0%, #F8FAFC 45%, #E8EEF5 100%);
   border: 1px solid rgba(226, 232, 240, 0.95);
@@ -1903,12 +2120,13 @@
 }
 
 .roofPlanCaption {
-  margin: 0.45rem 0 0;
+  margin: 0.5rem 0 0;
   text-align: center;
-  font-size: 0.78rem;
-  font-weight: 600;
+  font-size: 0.88rem;
+  font-weight: 700;
   color: var(--h);
   letter-spacing: 0.02em;
+  flex-shrink: 0;
 }
 
 /* Sun-path teaching card */
@@ -1916,19 +2134,21 @@
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--card-r);
-  padding: 0.85rem 0.95rem 0.8rem;
+  padding: 0.95rem 1rem 0.9rem;
   box-shadow: var(--card-s);
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
 
 .roofSunPathLabel {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.66rem;
-  font-weight: 700;
+  font-size: 0.72rem;
+  font-weight: 800;
   letter-spacing: 1.2px;
   text-transform: uppercase;
   color: var(--gray2);
@@ -1936,49 +2156,52 @@
 }
 
 .roofSunTeachTitle {
-  margin: 0 0 0.4rem;
+  margin: 0 0 0.45rem;
   font-family: 'Montserrat', sans-serif;
-  font-size: 1rem;
+  font-size: 1.12rem;
   font-weight: 800;
   color: var(--h);
   line-height: 1.2;
 }
 
 .roofSunDiagram {
-  margin: 0.15rem 0 0.45rem;
-  border-radius: 6px;
+  margin: 0.15rem 0 0.5rem;
+  border-radius: 8px;
   background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);
   border: 1px solid rgba(226, 232, 240, 0.9);
-  padding: 0.25rem 0.35rem 0.15rem;
+  padding: 0.3rem 0.4rem 0.2rem;
+  flex-shrink: 0;
 }
 
 .roofSunArcSvg {
   display: block;
   width: 100%;
-  height: 108px;
+  height: 118px;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
 
 .roofSunTeachLead {
-  margin: 0 0 0.4rem;
-  font-size: 0.78rem;
+  margin: 0 0 0.45rem;
+  font-size: 0.9rem;
   color: var(--h);
   line-height: 1.4;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .roofSunBenefits {
-  margin: 0 0 0.45rem;
-  padding: 0 0 0 1rem;
+  margin: 0 0 0.55rem;
+  padding: 0 0 0 1.05rem;
   list-style: disc;
+  flex: 1 1 auto;
 }
 
 .roofSunBenefits li {
-  font-size: 0.74rem;
+  font-size: 0.86rem;
   color: var(--gray);
-  line-height: 1.35;
-  margin-bottom: 0.22rem;
+  line-height: 1.4;
+  margin-bottom: 0.3rem;
+  font-weight: 500;
 }
 
 .roofSunBenefits li:last-child {
@@ -1989,35 +2212,38 @@
   display: block;
   font-style: normal;
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.68rem;
+  font-size: 0.76rem;
   font-weight: 800;
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--or);
-  margin-bottom: 0.12rem;
+  margin-bottom: 0.15rem;
 }
 
 .roofSunNote {
   margin: 0;
-  font-size: 0.74rem;
+  font-size: 0.84rem;
   color: var(--gray);
-  line-height: 1.35;
+  line-height: 1.4;
+  font-weight: 600;
 }
 
 /* Engineering chip strip */
 .roofEngStrip {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.55rem;
-  margin-bottom: 0.75rem;
+  gap: 0.6rem;
+  margin-bottom: 0.7rem;
+  flex: 0 0 auto;
 }
 
 .roofEngChip {
   background: linear-gradient(180deg, #FFFBF7 0%, var(--white) 100%);
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 0.55rem 0.65rem 0.6rem;
+  padding: 0.7rem 0.75rem 0.75rem;
   min-width: 0;
+  box-shadow: var(--card-s);
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -2025,19 +2251,19 @@
 .roofEngTag {
   display: block;
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.6rem;
-  font-weight: 700;
+  font-size: 0.7rem;
+  font-weight: 800;
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--or);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.3rem;
   line-height: 1.2;
 }
 
 .roofEngVal {
   display: block;
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.9rem;
+  font-size: 1.05rem;
   font-weight: 800;
   color: var(--h);
   line-height: 1.15;
@@ -2048,16 +2274,23 @@
 .roofMetricGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.55rem;
-  margin-top: auto;
+  grid-auto-rows: 1fr;
+  gap: 0.6rem;
+  flex: 1 1 0;
+  min-height: 0;
+  align-content: stretch;
 }
 
 .roofMetricCard {
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 0.7rem 0.75rem 0.75rem;
+  padding: 0.85rem 0.9rem 0.9rem;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   box-shadow: var(--card-s);
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
@@ -2066,19 +2299,19 @@
 .roofYieldTag {
   display: block;
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.64rem;
-  font-weight: 700;
+  font-size: 0.72rem;
+  font-weight: 800;
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--or);
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.35rem;
   line-height: 1.25;
 }
 
 .roofYieldVal {
   display: block;
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.05rem;
+  font-size: 1.2rem;
   font-weight: 800;
   color: var(--h);
   line-height: 1.15;
@@ -2087,10 +2320,12 @@
 
 .roofYieldNote {
   display: block;
-  margin-top: 0.28rem;
-  font-size: 0.74rem;
+  margin-top: auto;
+  padding-top: 0.35rem;
+  font-size: 0.84rem;
+  font-weight: 600;
   color: var(--gray);
-  line-height: 1.3;
+  line-height: 1.35;
 }
 
 /* ══ P9: EXECUTION ROADMAP + PAYMENT + VENDOR BANK ══════════════ */
@@ -2101,9 +2336,7 @@
 }
 
 .roadmapPage .pageHead {
-  margin-bottom: 0.75rem;
-  padding-top: 1.1rem;
-  flex-shrink: 0;
+  margin-bottom: 0.7rem;
 }
 
 .journeyBlock {
@@ -2469,12 +2702,15 @@
   display: flex;
   flex-direction: column;
 }
+.termsPage .pageTitle {
+  font-size: 1.55rem;
+}
 
 /* ══ P10–P11: TERMS (Luxe content · Atelier editorial) ═══════════ */
 .termsStack {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.75rem;
   flex: 1;
   min-height: 0;
 }
@@ -2483,7 +2719,7 @@
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--card-r);
-  padding: 0.7rem 0.85rem 0.75rem;
+  padding: 0.85rem 1rem 0.9rem;
   box-shadow: var(--card-s);
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
@@ -2491,13 +2727,13 @@
 
 .termsSubhead {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.7rem;
+  font-size: 0.86rem;
   font-weight: 800;
-  letter-spacing: 1.4px;
+  letter-spacing: 1.2px;
   color: var(--or);
   text-transform: uppercase;
-  margin: 0 0 0.45rem;
-  padding-bottom: 0.35rem;
+  margin: 0 0 0.55rem;
+  padding-bottom: 0.4rem;
   border-bottom: 2px solid rgba(249, 115, 22, 0.35);
 }
 
@@ -2507,15 +2743,15 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.5rem;
 }
 
 .termsArticle {
   display: grid;
-  grid-template-columns: 28px 1fr;
-  gap: 0.45rem;
+  grid-template-columns: 32px 1fr;
+  gap: 0.5rem;
   align-items: start;
-  padding-bottom: 0.35rem;
+  padding-bottom: 0.45rem;
   border-bottom: 1px solid var(--line);
 }
 
@@ -2526,28 +2762,28 @@
 
 .termsArticleNum {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.68rem;
+  font-size: 0.82rem;
   font-weight: 800;
   color: var(--or);
   letter-spacing: 0.04em;
-  padding-top: 0.1rem;
+  padding-top: 0.12rem;
   font-variant-numeric: tabular-nums;
 }
 
 .termsArticleLabel {
   display: block;
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.78rem;
+  font-size: 0.95rem;
   font-weight: 800;
   color: var(--h);
-  margin-bottom: 0.1rem;
-  line-height: 1.2;
+  margin-bottom: 0.15rem;
+  line-height: 1.25;
 }
 
 .termsArticleBody {
   margin: 0;
-  font-size: 0.74rem;
-  line-height: 1.35;
+  font-size: 0.92rem;
+  line-height: 1.45;
   color: var(--c);
 }
 
@@ -2557,54 +2793,55 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.28rem;
+  gap: 0.4rem;
 }
 
 .termsNumberedList li {
   display: grid;
-  grid-template-columns: 22px 1fr;
-  gap: 0.4rem;
+  grid-template-columns: 26px 1fr;
+  gap: 0.45rem;
   align-items: start;
-  font-size: 0.78rem;
+  font-size: 0.92rem;
   color: var(--c);
-  line-height: 1.35;
+  line-height: 1.45;
 }
 
 .termsListNum {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.68rem;
+  font-size: 0.82rem;
   font-weight: 800;
   color: var(--or);
-  padding-top: 0.1rem;
+  padding-top: 0.12rem;
 }
 
 .termsSafetyList {
   margin: 0;
-  padding: 0 0 0 1rem;
+  padding: 0 0 0 1.1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.4rem;
 }
 
 .termsSafetyList li {
-  font-size: 0.78rem;
+  font-size: 0.92rem;
   color: var(--c);
-  line-height: 1.35;
+  line-height: 1.45;
 }
 
 .termsPara {
-  margin: 0 0 0.4rem;
-  font-size: 0.78rem;
+  margin: 0 0 0.45rem;
+  font-size: 0.92rem;
   color: var(--gray);
-  line-height: 1.4;
+  line-height: 1.45;
+  font-weight: 500;
 }
 
 .termsAmcLabel {
-  margin: 0.45rem 0 0.25rem;
+  margin: 0.55rem 0 0.3rem;
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.68rem;
+  font-size: 0.82rem;
   font-weight: 800;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.7px;
   text-transform: uppercase;
   color: var(--h);
 }
@@ -2613,17 +2850,17 @@
   background: linear-gradient(180deg, #FFFBF7 0%, var(--al) 100%);
   border: 1px solid rgba(249, 115, 22, 0.25);
   border-radius: 8px;
-  padding: 0.55rem 0.7rem;
-  margin-bottom: 0.35rem;
+  padding: 0.7rem 0.85rem;
+  margin-bottom: 0.4rem;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
 
 .termsCostBox p {
-  margin: 0 0 0.3rem;
-  font-size: 0.78rem;
+  margin: 0 0 0.35rem;
+  font-size: 0.92rem;
   color: var(--c);
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 .termsCostBox p:last-child {
@@ -2640,7 +2877,7 @@
   border: 1px solid rgba(249, 115, 22, 0.28);
   border-left: 3px solid var(--or);
   border-radius: 8px;
-  padding: 0.6rem 0.75rem;
+  padding: 0.75rem 0.9rem;
   margin-top: auto;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
@@ -2649,52 +2886,57 @@
 .termsNoteTag {
   display: block;
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.62rem;
+  font-size: 0.78rem;
   font-weight: 800;
-  letter-spacing: 1.2px;
+  letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--or);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.3rem;
 }
 
 .termsNote p {
   margin: 0;
-  font-size: 0.76rem;
+  font-size: 0.9rem;
   color: var(--h);
-  line-height: 1.4;
+  line-height: 1.45;
+  font-weight: 500;
 }
 
+/* P11 — same readable type as P10 (no shrink) */
 .termsPageDense .termsStack {
-  gap: 0.5rem;
+  gap: 0.7rem;
 }
 
 .termsPageDense .termsSection {
-  padding: 0.55rem 0.75rem 0.6rem;
+  padding: 0.8rem 0.95rem 0.85rem;
 }
 
 .termsPageDense .termsArticleBody,
 .termsPageDense .termsNumberedList li,
 .termsPageDense .termsSafetyList li,
-.termsPageDense .termsPara {
-  font-size: 0.72rem;
-  line-height: 1.3;
+.termsPageDense .termsPara,
+.termsPageDense .termsCostBox p,
+.termsPageDense .termsNote p {
+  font-size: 0.9rem;
+  line-height: 1.42;
 }
 
 .termsSignoff {
-  padding-top: 0.35rem;
+  padding-top: 0.45rem;
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.2rem;
 }
 
 .termsRegards {
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   color: var(--gray);
+  font-weight: 500;
 }
 
 .termsBrand {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   font-weight: 800;
   color: var(--h);
   letter-spacing: 1px;
@@ -2703,7 +2945,7 @@
 
 .termsVendorTag {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.68rem;
+  font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -2798,25 +3040,26 @@
   min-height: 0;
   min-width: 0;
   overflow: hidden;
-  padding: 1.35rem 2.25rem 1.6rem;
+  padding: var(--page-pad-t) var(--page-pad-x) var(--page-pad-b);
 }
 
-/* Closing RCC rooftop hero — capped so CTA block can grow */
+/* Closing RCC rooftop hero — eats vertical space so CTA needn’t stretch */
 .closingPhotoPlate {
   margin: 0;
-  flex: 0 0 auto;
+  flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.4rem;
+  max-height: 46%;
 }
 
 .closingPhotoFrame {
   position: relative;
-  flex: 0 0 auto;
-  height: 200px;
-  min-height: 180px;
-  max-height: 220px;
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 220px;
+  max-height: 280px;
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -2892,33 +3135,33 @@
 }
 .closingTitle {
   font-family: 'Montserrat', sans-serif;
-  font-size: clamp(2rem, 4.2vw, 2.65rem);
+  font-size: clamp(1.85rem, 3.8vw, 2.4rem);
   font-weight: 800;
   color: var(--white);
-  line-height: 1;
-  margin: 0 0 0.65rem;
+  line-height: 1.05;
+  margin: 0 0 0.55rem;
 }
 .closingStatement {
   font-size: 1.05rem;
   color: rgba(255,255,255,0.78);
   line-height: 1.5;
   max-width: 100%;
-  margin: 0 0 0.55rem;
+  margin: 0 0 0.5rem;
 }
 .closingStatement strong { color: var(--white); font-weight: 700; }
 .closingSub {
-  font-size: 0.92rem;
-  color: rgba(255,255,255,0.5);
+  font-size: 0.95rem;
+  color: rgba(255,255,255,0.55);
   line-height: 1.5;
   max-width: 100%;
-  margin: 0 0 1rem;
+  margin: 0 0 0.85rem;
 }
 
 .closingStats {
   display: flex;
   align-items: center;
   gap: 1.15rem;
-  margin-top: auto;
+  margin-top: 0;
   margin-bottom: 0;
   padding: 1rem 1.15rem;
   background: rgba(255,255,255,0.06);
@@ -2928,6 +3171,7 @@
   max-width: 100%;
   flex-wrap: wrap;
   box-sizing: border-box;
+  flex-shrink: 0;
 }
 .closingStatBig {
   font-family: 'Montserrat', sans-serif;
@@ -3094,15 +3338,62 @@
   color: var(--or);
 }
 
+/* EPC expert note — tariff vs degradation (unique to wealth page) */
+.wealthExpert {
+  margin: 0.7rem 0 0;
+  padding: 0.75rem 0.95rem 0.8rem;
+  background: linear-gradient(135deg, #0A0F1C 0%, #1E293B 100%);
+  border: 1px solid rgba(249, 115, 22, 0.4);
+  border-radius: var(--card-r);
+  flex-shrink: 0;
+  box-shadow: var(--card-s);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.wealthExpertTop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.wealthExpertTag {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  color: var(--or);
+}
+
+.wealthExpertAttr {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.3px;
+}
+
+.wealthExpertBody {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.45;
+}
+
 .wealthTakeaway {
-  margin: 0.8rem 0 0;
-  padding: 0.7rem 0.9rem;
+  margin: 0.55rem 0 0;
+  padding: 0.65rem 0.85rem;
   background: linear-gradient(90deg, #FFF7ED, #FFFFFF);
   border: 1px solid rgba(249, 115, 22, 0.28);
   border-left: 4px solid var(--or);
   border-radius: 8px;
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: var(--h);
   line-height: 1.35;
@@ -3264,56 +3555,56 @@
   margin: 0;
 }
 
-/* ══ CLOSING SPLIT SCREEN — fills leftover A4 height ════════════ */
+/* ══ CLOSING SPLIT — CTA sized to content (no tall empty stretch) ══ */
 .closingSplit {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
-  gap: 1.1rem;
-  align-items: stretch;
+  gap: 1rem;
+  align-items: start;
   min-height: 0;
   min-width: 0;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
 }
 .closingLeft {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   min-width: 0;
   height: auto;
-  align-self: stretch;
-  gap: 0.15rem;
+  align-self: start;
+  gap: 0;
 }
 .closingRight {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  justify-content: stretch;
+  justify-content: flex-start;
   min-width: 0;
   height: auto;
-  align-self: stretch;
+  align-self: start;
 }
 .closingCTABox {
   background: rgba(255,255,255,0.07);
   border: 1px solid rgba(249,115,22,0.4);
   border-radius: var(--card-r);
-  padding: 1.25rem 1.2rem;
+  padding: 1.35rem 1.25rem 1.4rem;
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
+  gap: 0.75rem;
   width: 100%;
   max-width: none;
   min-width: 0;
-  height: 100%;
+  height: auto;
   max-height: none;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   align-self: stretch;
-  justify-content: center;
+  justify-content: flex-start;
   overflow: hidden;
   box-sizing: border-box;
 }
 .ctaTitle {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   font-weight: 800;
   color: var(--white);
   line-height: 1.25;
@@ -3321,8 +3612,8 @@
   word-break: break-word;
 }
 .ctaDesc {
-  font-size: 0.9rem;
-  color: rgba(255,255,255,0.55);
+  font-size: 0.92rem;
+  color: rgba(255,255,255,0.6);
   line-height: 1.45;
   margin: 0;
   overflow-wrap: anywhere;
@@ -3429,13 +3720,16 @@
   }
 
   .page {
+    --page-pad-x: 1.1rem;
+    --page-pad-t: 1.15rem;
+    --page-pad-b: 1.85rem;
     width: calc(100% - 16px) !important;
     max-width: 100% !important;
     height: auto !important;
     min-height: 0 !important;
     max-height: none !important;
     margin: 0.65rem auto 1rem !important;
-    padding: 1.35rem 1.1rem 2.35rem !important;
+    padding: var(--page-pad-t) var(--page-pad-x) var(--page-pad-b) !important;
     overflow: visible !important;
     border-radius: 12px;
   }
@@ -3473,11 +3767,14 @@
   .pageNum {
     position: static;
     display: block;
-    text-align: right;
-    margin-top: 1.1rem;
-    padding-right: 0.15rem;
-    bottom: auto;
+    left: auto;
     right: auto;
+    bottom: auto;
+    text-align: right;
+    margin-top: 1rem;
+    padding: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .coverPhotoFrame {
@@ -3542,14 +3839,29 @@
     height: 200px;
   }
 
-  .billComparison {
-    flex-direction: column;
-    gap: 0.65rem;
+  .financeFlow {
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
   }
 
-  .billArrow {
+  .financeFlowArrow {
     transform: rotate(90deg);
-    align-self: center;
+    padding: 0.1rem 0;
+    font-size: 1.2rem;
+  }
+
+  .investBreakdown {
+    grid-template-columns: 1fr;
+    gap: 0.45rem;
+  }
+
+  .investOp {
+    transform: rotate(90deg);
+    padding: 0.1rem 0;
+  }
+
+  .trajectorySvg {
+    min-height: 160px;
   }
 
   .wealthPath {
@@ -3614,11 +3926,16 @@
 
   .roofMainRow {
     grid-template-columns: 1fr;
+    flex: 0 0 auto;
   }
 
   .roofPlanFrame {
-    height: 210px;
-    min-height: 190px;
+    height: auto;
+    min-height: 220px;
+  }
+
+  .roofMetricGrid {
+    flex: 0 0 auto;
   }
 
   .roofSunTeach {
@@ -3730,13 +4047,23 @@
   }
 
   .termsArticle {
-    grid-template-columns: 24px 1fr;
+    grid-template-columns: 28px 1fr;
   }
 
   .termsArticleBody,
   .termsNumberedList li,
-  .termsSafetyList li {
-    font-size: 0.78rem;
+  .termsSafetyList li,
+  .termsPara,
+  .termsCostBox p {
+    font-size: 0.88rem;
+  }
+
+  .termsArticleLabel {
+    font-size: 0.9rem;
+  }
+
+  .termsSubhead {
+    font-size: 0.8rem;
   }
 
   .closingStats {
@@ -3769,17 +4096,22 @@
     max-width: 100% !important;
   }
   .page {
-    width: 100% !important;
-    max-width: 100% !important;
+    --page-pad-x: 12mm;
+    --page-pad-t: 11mm;
+    --page-pad-b: 14mm;
+    page: atelier-sheet;
+    width: 210mm !important;
+    max-width: 210mm !important;
     margin: 0 !important;
     border: none !important;
-    padding: 10mm 12mm 12mm !important;
+    /* Single inset owner — @page margin is 0 (no double margin) */
+    padding: var(--page-pad-t) var(--page-pad-x) var(--page-pad-b) !important;
     box-shadow: none !important;
     border-radius: 0 !important;
-    min-height: 261mm;
-    height: auto;
-    max-height: none;
-    box-sizing: border-box;
+    min-height: 297mm;
+    height: 297mm;
+    max-height: 297mm;
+    box-sizing: border-box !important;
     overflow: hidden !important;
     break-after: page;
     page-break-after: always;
@@ -3793,14 +4125,9 @@
     page-break-after: avoid;
   }
 
-  .page {
-    page: atelier-sheet;
-  }
-
   /*
-   * Cover is a named page with ZERO @page margin so the dark BG
-   * paints the entire physical A4 sheet (no white border).
-   * Content padding lives on .coverPage itself.
+   * Cover/closing: full-bleed dark BG (@page margin 0).
+   * Content inset matches standard sheet padding.
    */
   .coverPage {
     page: atelier-cover;
@@ -3812,11 +4139,10 @@
     height: 297mm !important;
     min-height: 297mm !important;
     max-height: 297mm !important;
-    padding: 18mm 20mm !important;
+    padding: var(--page-pad-t) var(--page-pad-x) var(--page-pad-b) !important;
     overflow: hidden !important;
     box-sizing: border-box !important;
   }
-  /* Closing — same full-bleed treatment as cover (no white margin) */
   .closingPage {
     page: atelier-closing;
     -webkit-print-color-adjust: exact;
@@ -3827,7 +4153,7 @@
     height: 297mm !important;
     min-height: 297mm !important;
     max-height: 297mm !important;
-    padding: 18mm 20mm !important;
+    padding: var(--page-pad-t) var(--page-pad-x) var(--page-pad-b) !important;
     overflow: hidden !important;
     box-sizing: border-box !important;
   }
@@ -3857,13 +4183,14 @@
     gap: 0.55rem !important;
   }
   .closingPhotoPlate {
-    flex: 0 0 auto !important;
+    flex: 1 1 auto !important;
+    max-height: 48% !important;
   }
   .closingPhotoFrame {
-    height: 68mm !important;
-    min-height: 60mm !important;
-    max-height: 72mm !important;
-    flex: 0 0 auto !important;
+    height: auto !important;
+    min-height: 62mm !important;
+    max-height: 78mm !important;
+    flex: 1 1 auto !important;
   }
   .closingPhotoImg {
     -webkit-print-color-adjust: exact !important;
@@ -3871,33 +4198,36 @@
   }
   .closingSplit {
     grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) !important;
-    gap: 1rem !important;
-    align-items: stretch !important;
-    flex: 1 1 auto !important;
+    gap: 0.9rem !important;
+    align-items: start !important;
+    flex: 0 0 auto !important;
     min-height: 0 !important;
   }
   .closingLeft,
   .closingRight {
     height: auto !important;
-    align-self: stretch !important;
+    align-self: start !important;
   }
   .closingLeft {
-    justify-content: center !important;
+    justify-content: flex-start !important;
   }
   .closingRight {
     align-items: stretch !important;
-    justify-content: stretch !important;
+    justify-content: flex-start !important;
   }
   .closingCTABox {
     overflow: hidden !important;
-    height: 100% !important;
+    height: auto !important;
     max-height: none !important;
-    flex: 1 1 auto !important;
+    flex: 0 0 auto !important;
     align-self: stretch !important;
     width: 100% !important;
     max-width: none !important;
-    justify-content: center !important;
-    padding: 1.15rem 1.1rem !important;
+    justify-content: flex-start !important;
+    padding: 1.2rem 1.15rem !important;
+  }
+  .closingStats {
+    margin-top: 0 !important;
   }
   .closingTitle {
     font-size: 26pt !important;
@@ -3922,34 +4252,44 @@
   .wealthLayout { flex-grow: 1; }
   .trustPage .trustGrid { flex: 1.1 1 0; }
   .trustPage .trustProof { flex: 0.95 1 0; }
+  .roofPage .roofMainRow { flex: 1.25 1 0; }
+  .roofPage .roofMetricGrid { flex: 1 1 0; }
   .roadmapPage .journeyBlock { flex: 1.15 1 0; }
   .roadmapPage .payBankSplit { flex: 1 1 0; margin-top: 0; }
   .roadmapPage .journeyGrid { flex: 1 1 auto; }
-  .pageHead { padding-top: 0.5rem; margin-bottom: 0.75rem; }
+  .pageHead { padding-top: 0; margin-bottom: 0.65rem; }
 
   .pageNum {
-    bottom: 8mm;
-    right: 0;
-    font-size: 9pt;
+    position: absolute !important;
+    left: var(--page-pad-x) !important;
+    right: var(--page-pad-x) !important;
+    bottom: 5mm !important;
+    font-size: 8.5pt;
+    letter-spacing: 0.3px;
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .coverPage .pageNum,
   .closingPage .pageNum {
-    bottom: 12mm;
-    right: 20mm;
+    bottom: 5mm !important;
+    left: var(--page-pad-x) !important;
+    right: var(--page-pad-x) !important;
   }
   .pageNum::before {
-    content: "Harihar Solar · Investment Blueprint   ";
+    content: "Harihar Solar · Investment Blueprint  ";
     color: #94A3B8;
     font-family: 'Montserrat', sans-serif;
-    font-size: 9pt;
+    font-size: 8.5pt;
     font-weight: 600;
-    letter-spacing: 1px;
+    letter-spacing: 0.3px;
   }
 
-  /* Named pages only — bare @page is document-global and fights other presets */
+  /* Named pages — margin 0; .page padding is the only inset */
   @page atelier-sheet {
     size: A4;
-    margin: 18mm 20mm;
+    margin: 0;
   }
   @page atelier-cover {
     size: A4;

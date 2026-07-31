@@ -589,7 +589,7 @@ export function AtelierRenderer({
         <span className={styles.pageNum}>02 / 12</span>
       </section>
 
-      {/* ══ P3: FINANCIAL STORY — immediate monthly economics only ══ */}
+      {/* ══ P3: MONTHLY ECONOMICS — pocket story + trajectory ══ */}
       <section className={`${styles.page} ${styles.financePage}`}>
         <header className={styles.pageHead}>
           <span className={styles.pageTag}>{c.finance.tag}</span>
@@ -597,37 +597,89 @@ export function AtelierRenderer({
           <p className={styles.pageLead}>{c.finance.lead}</p>
         </header>
 
-        <div className={styles.billComparison}>
-          <div className={styles.billCard}>
+        <div className={styles.financeFlow}>
+          <div className={`${styles.financeStep} ${styles.financeStepToday}`}>
+            <span className={styles.financeStepIcon} aria-hidden>
+              <svg viewBox="0 0 24 24" className={styles.financeIconSvg}>
+                <path
+                  d="M4 8h16v10H4zM7 8V6.5A2.5 2.5 0 0 1 9.5 4h5A2.5 2.5 0 0 1 17 6.5V8"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M8 13h4M8 16h6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </span>
             <span className={styles.billCardTag}>{c.finance.todayTag}</span>
-            <div className={styles.billCardAmt} style={{ color: "#DC2626" }}>
+            <strong className={`${styles.billCardAmt} ${styles.financeAmtToday}`}>
               {monthlyBill > 0 ? formatInr(monthlyBill) : "₹5,200"}
-            </div>
-            <div className={styles.billCardLabel}>{c.finance.todayLabel}</div>
+            </strong>
+            <span className={styles.billCardLabel}>{c.finance.todayLabel}</span>
             <p className={styles.billCardNote}>{c.finance.todayNote}</p>
           </div>
 
-          <div className={styles.billArrow}>→</div>
+          <div className={styles.financeFlowArrow} aria-hidden>
+            <span>−</span>
+          </div>
 
-          <div className={`${styles.billCard} ${styles.billCardSolar}`}>
+          <div className={`${styles.financeStep} ${styles.financeStepSolar}`}>
+            <span className={styles.financeStepIcon} aria-hidden>
+              <svg viewBox="0 0 24 24" className={styles.financeIconSvg}>
+                <circle cx="12" cy="9" r="3.2" fill="none" stroke="currentColor" strokeWidth="1.7" />
+                <path
+                  d="M12 3.5v1.4M12 13.4v1.4M6.8 9H5.4M18.6 9h-1.4M8.2 5.2l-1-1M16.8 5.2l1-1M8.2 12.8l-1 1M16.8 12.8l1 1"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M5 18h14"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </span>
             <span className={styles.billCardTag}>{c.finance.tomorrowTag}</span>
-            <div className={styles.billCardAmt} style={{ color: "#059669" }}>
+            <strong className={`${styles.billCardAmt} ${styles.financeAmtSolar}`}>
               {monthlyEmi > 0 ? formatInr(monthlyEmi) : "₹4,100"}
-            </div>
-            <div className={styles.billCardLabel}>{c.finance.tomorrowLabel}</div>
+            </strong>
+            <span className={styles.billCardLabel}>{c.finance.tomorrowLabel}</span>
             <p className={styles.billCardNote}>{c.finance.tomorrowNote}</p>
           </div>
 
-          <div className={styles.billArrow}>=</div>
+          <div className={styles.financeFlowArrow} aria-hidden>
+            <span>=</span>
+          </div>
 
-          <div className={`${styles.billCard} ${styles.billCardProfit}`}>
+          <div className={`${styles.financeStep} ${styles.financeStepGain}`}>
+            <span className={`${styles.financeStepIcon} ${styles.financeStepIconGain}`} aria-hidden>
+              <svg viewBox="0 0 24 24" className={styles.financeIconSvg}>
+                <path
+                  d="M5 18.5V11l3.5 2.5L12 8l3.5 4L19 9.5V18.5H5z"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
             <span className={styles.billCardTag}>{c.finance.profitTag}</span>
-            <div className={styles.billCardAmt}>
+            <strong className={`${styles.billCardAmt} ${styles.financeAmtGain}`}>
               {monthlyProfit > 0
                 ? `+${formatInr(monthlyProfit)}`
-                : formatInr(monthlyInr > 0 ? monthlyInr : 900)}
-            </div>
-            <div className={styles.billCardLabel}>{c.finance.profitLabel}</div>
+                : `+${formatInr(monthlyInr > 0 ? monthlyInr : 900)}`}
+            </strong>
+            <span className={styles.billCardLabel}>{c.finance.profitLabel}</span>
             <p className={styles.billCardNote}>{c.finance.profitNote}</p>
           </div>
         </div>
@@ -638,34 +690,124 @@ export function AtelierRenderer({
           const flatSolarAnnual = (monthlyEmi > 0 ? monthlyEmi : 4100) * 12;
           const loanEndYr = 5;
           const amcAnnual = netInr > 0 ? netInr * 0.02 : flatSolarAnnual * 0.15;
-          const withoutPts = years.map((y) => baseAnnualBill * Math.pow(1.06, y - 1));
-          const withPts = years.map((y) => (y <= loanEndYr ? flatSolarAnnual : amcAnnual));
-          const maxVal = Math.max(...withoutPts) * 1.08;
-          const W = 600;
-          const H = 190;
-          const padL = 8;
-          const padR = 8;
-          const padT = 10;
-          const padB = 24;
-          const xFor = (i: number) => padL + (i / (years.length - 1)) * (W - padL - padR);
-          const yFor = (v: number) => padT + (1 - v / maxVal) * (H - padT - padB);
-          const withoutPath = withoutPts.map((v, i) => `${xFor(i)},${yFor(v)}`).join(" ");
-          const withPath = withPts.map((v, i) => `${xFor(i)},${yFor(v)}`).join(" ");
+          const withoutPts = years.map(
+            (y) => baseAnnualBill * Math.pow(1.06, y - 1)
+          );
+          const withPts = years.map((y) =>
+            y <= loanEndYr ? flatSolarAnnual : amcAnnual
+          );
+          const maxVal = Math.max(...withoutPts) * 1.1;
+          const W = 640;
+          const H = 220;
+          const padL = 14;
+          const padR = 14;
+          const padT = 18;
+          const padB = 28;
+          const xFor = (i: number) =>
+            padL + (i / (years.length - 1)) * (W - padL - padR);
+          const yFor = (v: number) =>
+            padT + (1 - v / maxVal) * (H - padT - padB);
+          const withoutPath = withoutPts
+            .map((v, i) => `${xFor(i)},${yFor(v)}`)
+            .join(" ");
+          const withPath = withPts
+            .map((v, i) => `${xFor(i)},${yFor(v)}`)
+            .join(" ");
           const areaPath =
             `M${xFor(0)},${yFor(withoutPts[0])} ` +
             withoutPts.map((v, i) => `L${xFor(i)},${yFor(v)}`).join(" ") +
             ` L${xFor(years.length - 1)},${yFor(withPts[withPts.length - 1])} ` +
-            withPts.slice().reverse().map((v, i) => `L${xFor(years.length - 1 - i)},${yFor(v)}`).join(" ") +
+            withPts
+              .slice()
+              .reverse()
+              .map((v, i) => `L${xFor(years.length - 1 - i)},${yFor(v)}`)
+              .join(" ") +
             " Z";
+          const loanIdx = years.indexOf(loanEndYr);
           return (
             <div className={styles.trajectoryChart}>
-              <span className={styles.genCardTag}>{c.finance.trajectoryTag}</span>
-              <svg viewBox={`0 0 ${W} ${H}`} className={styles.trajectorySvg}>
-                <path d={areaPath} className={styles.trajectoryGap} />
-                <polyline points={withoutPath} className={styles.trajectoryLineRed} />
-                <polyline points={withPath} className={styles.trajectoryLineGreen} />
+              <div className={styles.trajectoryHead}>
+                <span className={styles.trajectoryTitle}>
+                  {c.finance.trajectoryTag}
+                </span>
+                <span className={styles.trajectoryHint}>
+                  {c.finance.trajectoryHint}
+                </span>
+              </div>
+              <svg
+                viewBox={`0 0 ${W} ${H}`}
+                className={styles.trajectorySvg}
+                aria-hidden
+              >
+                <defs>
+                  <linearGradient id="alFinGap" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="rgba(249,115,22,0.28)" />
+                    <stop offset="100%" stopColor="rgba(249,115,22,0.05)" />
+                  </linearGradient>
+                </defs>
+                {[0.25, 0.5, 0.75].map((t) => (
+                  <line
+                    key={t}
+                    x1={padL}
+                    x2={W - padR}
+                    y1={padT + t * (H - padT - padB)}
+                    y2={padT + t * (H - padT - padB)}
+                    className={styles.trajectoryGrid}
+                  />
+                ))}
+                <path d={areaPath} fill="url(#alFinGap)" />
+                <polyline
+                  points={withoutPath}
+                  className={styles.trajectoryLineRed}
+                />
+                <polyline
+                  points={withPath}
+                  className={styles.trajectoryLineSolar}
+                />
+                {withoutPts.map((v, i) => (
+                  <circle
+                    key={`w-${years[i]}`}
+                    cx={xFor(i)}
+                    cy={yFor(v)}
+                    r="3.2"
+                    className={styles.trajectoryDotRed}
+                  />
+                ))}
+                {withPts.map((v, i) => (
+                  <circle
+                    key={`s-${years[i]}`}
+                    cx={xFor(i)}
+                    cy={yFor(v)}
+                    r="3.2"
+                    className={styles.trajectoryDotSolar}
+                  />
+                ))}
+                {loanIdx >= 0 ? (
+                  <>
+                    <line
+                      x1={xFor(loanIdx)}
+                      x2={xFor(loanIdx)}
+                      y1={padT}
+                      y2={H - padB + 4}
+                      className={styles.trajectoryLoanLine}
+                    />
+                    <text
+                      x={xFor(loanIdx) + 6}
+                      y={padT + 12}
+                      className={styles.trajectoryLoanLabel}
+                    >
+                      {c.finance.loanEndCue}
+                    </text>
+                  </>
+                ) : null}
                 {years.map((y, i) => (
-                  <text key={y} x={xFor(i)} y={H - 6} className={styles.trajectoryXLabel} textAnchor="middle">
+                  <text
+                    key={y}
+                    x={xFor(i)}
+                    y={H - 6}
+                    className={styles.trajectoryXLabel}
+                    textAnchor="middle"
+                  >
                     {c.finance.yr(y)}
                   </text>
                 ))}
@@ -675,7 +817,7 @@ export function AtelierRenderer({
                   <span className={styles.trajDotRed} /> {c.finance.legendWithout}
                 </span>
                 <span className={styles.trajLegendItem}>
-                  <span className={styles.trajDotGreen} /> {c.finance.legendWith}
+                  <span className={styles.trajDotSolar} /> {c.finance.legendWith}
                 </span>
                 <span className={styles.trajLegendItem}>
                   <span className={styles.trajDotGap} /> {c.finance.legendGap}
@@ -692,19 +834,24 @@ export function AtelierRenderer({
               {grossInr > 0 ? formatInr(grossInr) : "—"}
             </span>
           </div>
-          <div className={styles.investMinus}>−</div>
-          <div className={styles.investItem}>
+          <div className={styles.investOp} aria-hidden>
+            −
+          </div>
+          <div className={`${styles.investItem} ${styles.investItemSubsidy}`}>
             <span className={styles.investTag}>{c.finance.subsidy}</span>
-            <span className={styles.investVal} style={{ color: "#059669" }}>
+            <span className={`${styles.investVal} ${styles.investValSubsidy}`}>
               {subsidyInr > 0 ? formatInr(subsidyInr) : "—"}
             </span>
           </div>
-          <div className={styles.investMinus}>=</div>
+          <div className={styles.investOp} aria-hidden>
+            =
+          </div>
           <div className={`${styles.investItem} ${styles.investItemFinal}`}>
             <span className={styles.investTag}>{c.finance.netInvestment}</span>
-            <span className={styles.investVal}>
+            <span className={`${styles.investVal} ${styles.investValNet}`}>
               {netInr > 0 ? formatInr(netInr) : "—"}
             </span>
+            <span className={styles.investCue}>{c.finance.netCue}</span>
           </div>
         </div>
 
@@ -870,6 +1017,18 @@ export function AtelierRenderer({
             </div>
           </div>
         </div>
+
+        <aside className={styles.wealthExpert}>
+          <div className={styles.wealthExpertTop}>
+            <span className={styles.wealthExpertTag}>{c.wealth.expertTag}</span>
+            <span className={styles.wealthExpertAttr}>
+              {c.wealth.expertAttr(brand)}
+            </span>
+          </div>
+          <p className={styles.wealthExpertBody}>
+            {c.wealth.expertBody(cityLabel)}
+          </p>
+        </aside>
 
         <p className={styles.wealthTakeaway}>
           {c.wealth.takeaway(
