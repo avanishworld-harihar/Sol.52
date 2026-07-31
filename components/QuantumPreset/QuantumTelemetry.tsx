@@ -106,9 +106,9 @@ export function QuantumTelemetry({ data }: QuantumTelemetryProps) {
             className={styles.cyanText}
             style={{ fontSize: "0.75rem", letterSpacing: "3px" }}
           >
-            01 // ENGINEERING TELEMETRY
+            01 // ENGINEERING
           </span>
-          <h2 className={styles.telemetryHeadline}>Roof Array Plan.</h2>
+          <h2 className={styles.telemetryHeadline}>System Design.</h2>
         </div>
 
         <div className={styles.engLayout}>
@@ -130,29 +130,29 @@ export function QuantumTelemetry({ data }: QuantumTelemetryProps) {
               <div className={styles.engMetricRow}>
                 <span>Location</span>
                 <strong>{city}</strong>
-                <small>Site irradiance · survey confirms final orientation</small>
+                <small>Final direction confirmed after site survey</small>
               </div>
               <div className={styles.engMetricRow}>
                 <span>Roof area</span>
                 <strong>~{roofSqft} sq ft</strong>
                 <small>
-                  {moduleCount} × ~{SQFT_PER_PANEL} sq ft/module incl. walkway.
-                  Final after survey.
+                  {moduleCount} × ~{SQFT_PER_PANEL} sq ft per module, including
+                  walkway. Final after survey.
                 </small>
               </div>
               <div className={styles.engMetricRow}>
-                <span>String topology</span>
+                <span>String layout</span>
                 <strong>
                   {strings} × {perString} @ {QUANTUM_PANEL_WATT} Wp
                 </strong>
-                <small>Series strings into DCDB / inverter MPPTs</small>
+                <small>Panels wired in series to the inverter</small>
               </div>
               <div className={styles.engMetricRow}>
-                <span>Specific yield</span>
+                <span>Yearly output</span>
                 <strong>{specificYield.toLocaleString("en-IN")} kWh/kW</strong>
                 <small>
-                  Est. {annualUnits.toLocaleString("en-IN")} units/yr · PR ~75% ·
-                  wind 150 km/h mounts.
+                  About {annualUnits.toLocaleString("en-IN")} units/year · real
+                  output ~75% of ideal · structure rated 150 km/h wind.
                 </small>
               </div>
             </div>
@@ -181,8 +181,7 @@ export function QuantumTelemetry({ data }: QuantumTelemetryProps) {
         <div className={`${styles.glass3D} ${styles.engArchPanel}`}>
           <span className={styles.engPanelTitle}>System Architecture</span>
           <p className={styles.engArchLead}>
-            DC generation through protection, inversion, and bi-directional
-            metering — schematic pathway for this proposal.
+            Power flows from the panels to the inverter, then to the grid meter.
           </p>
           <div className={styles.engArchTrack}>
             {ARCH.map((node, i) => {
@@ -202,7 +201,7 @@ export function QuantumTelemetry({ data }: QuantumTelemetryProps) {
           </div>
           <div className={styles.engPrStrip}>
             <span>
-              Real-world PR ~75% · thermal, conversion &amp; cable derating
+              Real-world output ~75% after heat, inverter, and cable losses
             </span>
             <span className={styles.engStandards}>{standards}</span>
           </div>

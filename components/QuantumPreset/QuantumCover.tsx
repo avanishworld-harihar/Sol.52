@@ -15,8 +15,8 @@ import {
 import { QuantumAtmosphere } from "./QuantumAtmosphere";
 import styles from "./Quantum.module.css";
 
-/** Local premium rooftop photograph — /public */
-const COVER_ROOFTOP_SRC = "/assets/proposals/quantum-cover-estate.jpg";
+/** Flat-roof day/evening array + garden lounge — /public */
+const COVER_ROOFTOP_SRC = "/assets/proposals/quantum-cover-flat-roof.jpg";
 
 export type QuantumCoverProps = {
   data: ProposalData;
@@ -55,15 +55,15 @@ export function QuantumCover({ data }: QuantumCoverProps) {
             <div className={styles.coverPhotoGlassSheen} aria-hidden />
           </div>
           <figcaption className={styles.coverPhotoCaption}>
-            <span>Private Estate Array</span>
-            <span>Blue Hour · Infinity Edge</span>
+            <span>Flat roof solar array</span>
+            <span>Garden lounge below · Evening light</span>
           </figcaption>
         </figure>
 
         <div className={styles.glass3D} style={{ alignSelf: "stretch" }}>
-          <span className={styles.label}>Energy Blueprint Prepared For</span>
+          <span className={styles.label}>Prepared for</span>
           <h1 className={styles.clientNameCompact}>{client}</h1>
-          <p className={styles.coverTagline}>Cinematic Grid Architecture</p>
+          <p className={styles.coverTagline}>Your solar proposal</p>
         </div>
 
         <div className={`${styles.bentoGrid} ${styles.glass3D}`}>

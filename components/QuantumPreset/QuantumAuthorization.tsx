@@ -26,22 +26,22 @@ type Milestone = {
 const DEFAULT_STEPS: { phase: string; desc: string; percent: number }[] = [
   {
     phase: "01 / Advance",
-    desc: "Engineering lock & material booking",
+    desc: "Booking and material order",
     percent: 25,
   },
   {
     phase: "02 / Material",
-    desc: "Hardware delivery at site",
+    desc: "Delivery of equipment at site",
     percent: 50,
   },
   {
     phase: "03 / Installation",
-    desc: "Structure & module mounting",
+    desc: "Structure and panel mounting",
     percent: 20,
   },
   {
     phase: "04 / Commissioning",
-    desc: "Grid sync & net-metering activation",
+    desc: "Testing and net-meter activation",
     percent: 5,
   },
 ];
@@ -89,9 +89,9 @@ export function QuantumAuthorization({ data }: QuantumAuthorizationProps) {
             className={styles.cyanText}
             style={{ fontSize: "0.75rem", letterSpacing: "3px" }}
           >
-            05 // EXECUTION &amp; COMPLIANCE
+            05 // PAYMENT &amp; SIGN-OFF
           </span>
-          <h2>Deployment Protocol.</h2>
+          <h2>Payment Plan.</h2>
         </div>
 
         <div className={`${styles.glass3D} ${styles.protocolTracks}`}>
@@ -117,7 +117,7 @@ export function QuantumAuthorization({ data }: QuantumAuthorizationProps) {
                   {step.amountInr > 0 ? formatInr(step.amountInr) : "—"}
                 </span>
                 <span className={styles.protocolAmountPct}>
-                  {step.percent}% of Capex
+                  {step.percent}% of project cost
                 </span>
               </div>
             </div>
@@ -126,22 +126,22 @@ export function QuantumAuthorization({ data }: QuantumAuthorizationProps) {
       </div>
 
       <div className={`${styles.glass3D} ${styles.authGateway}`}>
-        <span className={styles.authGatewayTitle}>Authorization Gateway</span>
+        <span className={styles.authGatewayTitle}>Signatures</span>
         <div className={styles.authSigRow}>
           <div className={styles.authSigCol}>
             <div className={styles.authSigLine} />
             <span className={styles.authSigName}>{client}</span>
-            <span className={styles.authSigRole}>Client Acceptance</span>
+            <span className={styles.authSigRole}>Customer</span>
           </div>
           <div className={styles.authSigCol}>
             <div className={styles.authSigLine} />
             <span className={styles.authSigName}>{brand}</span>
-            <span className={styles.authSigRoleCyan}>Authorized Signatory</span>
+            <span className={styles.authSigRoleCyan}>Installer</span>
           </div>
         </div>
         <p className={styles.authDisclaimer}>
-          Proposal valid for 30 days. Final pricing subject to DISCOM approval
-          and site survey.
+          Valid for 30 days. Final price depends on DISCOM approval and site
+          survey.
         </p>
       </div>
     </section>

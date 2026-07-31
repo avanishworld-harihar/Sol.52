@@ -70,31 +70,31 @@ export function QuantumImpact({ data }: QuantumImpactProps) {
       </div>
 
       <div className={styles.impactIntro}>
-        <span className={styles.impactEyebrow}>04 // Biosphere Dividend</span>
-        <h2 className={styles.impactTitle}>Ecological Impact.</h2>
+        <span className={styles.impactEyebrow}>04 // ENVIRONMENT</span>
+        <h2 className={styles.impactTitle}>Clean Energy Impact.</h2>
         <p className={styles.impactLead}>
-          Every kilowatt-hour displaced from the grid is a tonne of carbon that
-          never reaches the atmosphere.
+          Solar power cuts grid electricity use and lowers carbon emissions over
+          the life of the system.
         </p>
       </div>
 
       <div className={styles.impactMetrics}>
         <div className={`${styles.glass3D} ${styles.impactCard}`}>
           <span className={styles.impactNum}>{co2Label}</span>
-          <span className={styles.impactMetricLabel}>Tonnes CO₂ Avoided</span>
-          <span className={styles.impactMetricSub}>Lifetime Estimate</span>
+          <span className={styles.impactMetricLabel}>Tonnes CO₂ avoided</span>
+          <span className={styles.impactMetricSub}>Lifetime estimate</span>
         </div>
         <div className={`${styles.glass3D} ${styles.impactCard}`}>
           <span className={styles.impactNum}>{formatTrees(trees)}</span>
-          <span className={styles.impactMetricLabel}>Trees Equivalent</span>
-          <span className={styles.impactMetricSub}>Mature Absorption Parity</span>
+          <span className={styles.impactMetricLabel}>Trees equivalent</span>
+          <span className={styles.impactMetricSub}>Similar carbon benefit</span>
         </div>
       </div>
 
       <div className={styles.impactFooterPill}>
-        Clean Energy Generation: ~
-        {annualUnits > 0 ? annualUnits.toLocaleString("en-IN") : "—"} Units /
-        Year
+        Clean energy generated: ~
+        {annualUnits > 0 ? annualUnits.toLocaleString("en-IN") : "—"} units /
+        year
       </div>
     </section>
   );

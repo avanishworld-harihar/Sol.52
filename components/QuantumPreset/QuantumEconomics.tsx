@@ -65,16 +65,16 @@ export function QuantumEconomics({ data }: QuantumEconomicsProps) {
           className={styles.cyanText}
           style={{ fontSize: "0.75rem", letterSpacing: "3px" }}
         >
-          02 // CAPITAL CLARITY
+          02 // COST &amp; SAVINGS
         </span>
-        <h2>Financial Yield Terminal.</h2>
+        <h2>Your Investment.</h2>
       </div>
 
       <div className={styles.bentoGrid}>
         <div
           className={`${styles.glass3D} ${styles.bentoBoxHero} ${styles.span12}`}
         >
-          <span className={styles.label}>Net Investment Outlay</span>
+          <span className={styles.label}>Net amount you pay</span>
           <div className={styles.heroRow}>
             <span className={styles.heroOutlay}>
               {net > 0 ? formatInrCompact(net) : "—"}
@@ -86,7 +86,7 @@ export function QuantumEconomics({ data }: QuantumEconomicsProps) {
         </div>
 
         <div className={`${styles.glass3D} ${styles.span6}`}>
-          <span className={styles.label}>Capital Structure</span>
+          <span className={styles.label}>Price breakup</span>
           <table className={styles.dataTable}>
             <tbody>
               <tr>
@@ -112,7 +112,7 @@ export function QuantumEconomics({ data }: QuantumEconomicsProps) {
         </div>
 
         <div className={`${styles.glass3D} ${styles.span6}`}>
-          <span className={styles.label}>Yield Metrics</span>
+          <span className={styles.label}>Savings</span>
           <table className={styles.dataTable}>
             <tbody>
               <tr>
@@ -124,11 +124,11 @@ export function QuantumEconomics({ data }: QuantumEconomicsProps) {
                 <td>{monthly > 0 ? formatInr(monthly) : "—"}</td>
               </tr>
               <tr>
-                <td>Capital Recovery Time</td>
+                <td>Payback time</td>
                 <td className={styles.accentText}>{paybackLabel}</td>
               </tr>
               <tr>
-                <td>25-Year Lifetime Benefit</td>
+                <td>25-year total savings</td>
                 <td className={styles.accentText}>
                   {lifetime > 0 ? formatInrCompact(lifetime) : "—"}
                 </td>
@@ -153,9 +153,9 @@ export function QuantumEconomics({ data }: QuantumEconomicsProps) {
           <span className={styles.subtext}>Net-Meter Ready</span>
         </div>
         <div className={`${styles.glass3D} ${styles.span3}`}>
-          <span className={styles.label}>Oversampling</span>
+          <span className={styles.label}>DC / AC</span>
           <span className={styles.valueMedium}>{dcAcLabel}</span>
-          <span className={styles.subtext}>DC/AC Ratio</span>
+          <span className={styles.subtext}>Array to inverter ratio</span>
         </div>
       </div>
       </div>
