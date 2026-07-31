@@ -14,6 +14,13 @@ import {
   quantumModuleCount,
 } from "./quantum-brand";
 import { QuantumAtmosphere } from "./QuantumAtmosphere";
+import {
+  IconAcdb,
+  IconDcdb,
+  IconInv,
+  IconMeter,
+  IconPv,
+} from "./QuantumArchIcons";
 import { QuantumRoofArray } from "./QuantumRoofArray";
 import styles from "./Quantum.module.css";
 
@@ -27,11 +34,11 @@ const LOCK_DC_AC = 1.16;
 const SQFT_PER_PANEL = 24;
 
 const ARCH = [
-  { code: "PV", name: "Modules", sub: "" },
-  { code: "DCDB", name: "DC Box", sub: "Fuse + SPD" },
-  { code: "INV", name: "String INV", sub: "" },
-  { code: "ACDB", name: "AC Box", sub: "MCB + SPD" },
-  { code: "GRID", name: "Net meter", sub: "Bi-directional" },
+  { code: "PV", name: "Modules", Icon: IconPv },
+  { code: "DCDB", name: "DC Box", Icon: IconDcdb },
+  { code: "INV", name: "String INV", Icon: IconInv },
+  { code: "ACDB", name: "AC Box", Icon: IconAcdb },
+  { code: "GRID", name: "Net meter", Icon: IconMeter },
 ] as const;
 
 function FlowArrow() {
@@ -178,16 +185,20 @@ export function QuantumTelemetry({ data }: QuantumTelemetryProps) {
             metering — schematic pathway for this proposal.
           </p>
           <div className={styles.engArchTrack}>
-            {ARCH.map((node, i) => (
-              <div key={node.code} className={styles.engArchNodeSlot}>
-                {i > 0 ? <FlowArrow /> : null}
-                <div className={styles.engArchNode}>
-                  <span className={styles.engArchCode}>{node.code}</span>
-                  <strong>{node.name}</strong>
-                  <em>{archSubs[i]}</em>
+            {ARCH.map((node, i) => {
+              const Icon = node.Icon;
+              return (
+                <div key={node.code} className={styles.engArchNodeSlot}>
+                  {i > 0 ? <FlowArrow /> : null}
+                  <div className={styles.engArchNode}>
+                    <Icon />
+                    <span className={styles.engArchCode}>{node.code}</span>
+                    <strong>{node.name}</strong>
+                    <em>{archSubs[i]}</em>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           <div className={styles.engPrStrip}>
             <span>
