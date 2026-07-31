@@ -1,18 +1,20 @@
 "use client";
 
 /**
- * Quantum Telemetry — Advanced Engineering: compass, specs matrix, topology, PR waterfall.
+ * Quantum Telemetry — Luxe-style engineering: Roof Array Plan + metrics + architecture.
+ * Schematic illustration only — not Design Studio / live SLD.
  */
 
-import { Fragment } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
 import {
   QUANTUM_PANEL_WATT,
+  QUANTUM_SPECIFIC_YIELD,
   quantumDcAcRatio,
   quantumDcKwp,
   quantumModuleCount,
 } from "./quantum-brand";
 import { QuantumAtmosphere } from "./QuantumAtmosphere";
+import { QuantumRoofArray } from "./QuantumRoofArray";
 import styles from "./Quantum.module.css";
 
 export type QuantumTelemetryProps = {
@@ -22,23 +24,30 @@ export type QuantumTelemetryProps = {
 const LOCK_AC_KW = 3;
 const LOCK_DC_KWP = 3.48;
 const LOCK_DC_AC = 1.16;
+const SQFT_PER_PANEL = 24;
 
-const TOPO = [
-  { id: "PV", name: "Solar Array", sub: "DC Generation" },
-  { id: "INV", name: "Smart Inverter", sub: "DC to AC Sync" },
-  { id: "NET", name: "Utility Meter", sub: "Bi-directional" },
+const ARCH = [
+  { code: "PV", name: "Modules", sub: "" },
+  { code: "DCDB", name: "DC Box", sub: "Fuse + SPD" },
+  { code: "INV", name: "String INV", sub: "" },
+  { code: "ACDB", name: "AC Box", sub: "MCB + SPD" },
+  { code: "GRID", name: "Net meter", sub: "Bi-directional" },
 ] as const;
 
-const PR_ROWS = [
-  { label: "STC Ideal Yield", width: "100%", value: "100%", tone: "ideal" as const },
-  { label: "Thermal Loss", width: "88%", value: "-12%", tone: "loss" as const },
-  {
-    label: "Conversion & Cable",
-    width: "75%",
-    value: "-13%",
-    tone: "final" as const,
-  },
-];
+function FlowArrow() {
+  return (
+    <span className={styles.engFlowArrow} aria-hidden>
+      <svg width="20" height="12" viewBox="0 0 20 12">
+        <path
+          d="M0 6h14M11 2l7 4-7 4"
+          fill="none"
+          stroke="#06B6D4"
+          strokeWidth="1.5"
+        />
+      </svg>
+    </span>
+  );
+}
 
 export function QuantumTelemetry({ data }: QuantumTelemetryProps) {
   const systemKw = Number(data.meta.systemKw) || LOCK_AC_KW;
@@ -57,12 +66,28 @@ export function QuantumTelemetry({ data }: QuantumTelemetryProps) {
     data.engineering.cityLabel?.trim() ||
     data.meta.locationLine?.split(",")[0]?.trim() ||
     "Satna";
-  const region =
-    data.meta.locationLine?.includes("Madhya") || /mp|madhya/i.test(city)
-      ? "MP"
-      : data.meta.locationLine?.split(",")[1]?.trim()?.slice(0, 12) || "MP";
-  const latLabel = /satna/i.test(city) ? "24.5° N" : "Central India";
-  const acLabel = systemKw % 1 ? systemKw.toFixed(1) : systemKw.toFixed(1);
+  const roofSqft = Math.round(moduleCount * SQFT_PER_PANEL);
+  const strings = Math.max(1, Math.ceil(moduleCount / 6));
+  const perString = Math.ceil(moduleCount / strings);
+  const annualUnits =
+    data.closing.annualUnits > 0
+      ? data.closing.annualUnits
+      : Math.round(systemKw * QUANTUM_SPECIFIC_YIELD);
+  const specificYield =
+    systemKw > 0 ? Math.round(annualUnits / systemKw) : QUANTUM_SPECIFIC_YIELD;
+  const acLabel = systemKw % 1 ? systemKw.toFixed(1) : String(systemKw);
+  const standards =
+    data.engineering.standards.length > 0
+      ? data.engineering.standards.slice(0, 4).join(" · ")
+      : "IS/IEC · CEA · DISCOM net-metering · IS 3043 earthing";
+
+  const archSubs = [
+    `${moduleCount}×${QUANTUM_PANEL_WATT} Wp`,
+    "Fuse + SPD",
+    `${acLabel} kW`,
+    "MCB + SPD",
+    "Bi-directional",
+  ];
 
   return (
     <section className={`${styles.a4Page} ${styles.telemetryPage}`}>
@@ -76,170 +101,99 @@ export function QuantumTelemetry({ data }: QuantumTelemetryProps) {
           >
             01 // ENGINEERING TELEMETRY
           </span>
-          <h2 className={styles.telemetryHeadline}>System Architecture.</h2>
+          <h2 className={styles.telemetryHeadline}>Roof Array Plan.</h2>
         </div>
 
-        <div className={`${styles.bentoGrid} ${styles.telemetryGrid}`}>
-          {/* Azimuth compass */}
-          <div className={`${styles.glass3D} ${styles.span5} ${styles.compassCard}`}>
-            <span className={styles.label} style={{ alignSelf: "flex-start" }}>
-              Solar Geometry
-            </span>
-            <div className={styles.compassWrap}>
-              <svg viewBox="0 0 200 200" fill="none" aria-hidden>
-                <circle
-                  cx="100"
-                  cy="100"
-                  r="90"
-                  stroke="rgba(6,182,212,0.2)"
-                  strokeWidth="1"
-                  strokeDasharray="4 4"
-                />
-                <circle
-                  cx="100"
-                  cy="100"
-                  r="60"
-                  stroke="rgba(6,182,212,0.4)"
-                  strokeWidth="1"
-                />
-                <path
-                  d="M100 10 V190 M10 100 H190"
-                  stroke="rgba(6,182,212,0.3)"
-                  strokeWidth="1"
-                />
-                <path d="M100 100 L100 30" stroke="#06B6D4" strokeWidth="3" />
-                <circle cx="100" cy="30" r="4" fill="#06B6D4" />
-                <text
-                  x="100"
-                  y="145"
-                  fill="#fff"
-                  fontSize="11"
-                  textAnchor="middle"
-                  letterSpacing="1"
-                >
-                  180° TRUE SOUTH
-                </text>
-                <text
-                  x="100"
-                  y="162"
-                  fill="#06B6D4"
-                  fontSize="9"
-                  textAnchor="middle"
-                  letterSpacing="1.5"
-                >
-                  {`LAT ${latLabel} (${city.toUpperCase()}, ${region.toUpperCase()})`}
-                </text>
-                <text
-                  x="100"
-                  y="178"
-                  fill="#94A3B8"
-                  fontSize="9"
-                  textAnchor="middle"
-                >
-                  {`OPTIMAL TILT: ~${tilt}°`}
-                </text>
-              </svg>
-            </div>
+        <div className={styles.engLayout}>
+          <div className={`${styles.glass3D} ${styles.engPanelFlush}`}>
+            <span className={styles.engPanelTitle}>Roof Array Plan</span>
+            <QuantumRoofArray
+              modules={moduleCount}
+              dcKwp={dcKwp}
+              tilt={tilt}
+              panelWatt={QUANTUM_PANEL_WATT}
+              strings={strings}
+              perString={perString}
+            />
           </div>
 
-          {/* Core specs 2×2 */}
-          <div className={`${styles.span7} ${styles.specMatrix}`}>
-            <div className={styles.glass3D}>
-              <span className={styles.label}>DC Array</span>
-              <span className={styles.valueLarge}>
-                {dcKwp.toFixed(2)}
-                <span className={styles.valueUnit}> kWp</span>
-              </span>
-              <span className={styles.subtext}>
-                {moduleCount} × {QUANTUM_PANEL_WATT}W TOPCon
-              </span>
-            </div>
-            <div className={styles.glass3D}>
-              <span className={styles.label}>AC Inverter</span>
-              <span className={styles.valueLarge}>
-                {acLabel}
-                <span className={styles.valueUnit}> kW</span>
-              </span>
-              <span className={styles.subtext}>Max Export Capacity</span>
-            </div>
-            <div className={styles.glass3D}>
-              <span className={styles.label}>DC/AC Ratio</span>
-              <span className={`${styles.valueLarge} ${styles.accentText}`}>
-                {dcAc.toFixed(2)}x
-              </span>
-              <span className={styles.subtext}>Oversampling Multiplier</span>
-            </div>
-            <div className={styles.glass3D}>
-              <span className={styles.label}>Structural Yield</span>
-              <span className={styles.valueLarge}>
-                150
-                <span className={styles.valueUnit}> km/h</span>
-              </span>
-              <span className={styles.subtext}>Wind Load Rating (GI)</span>
-            </div>
-          </div>
-
-          {/* Interconnection pathway */}
-          <div className={`${styles.glass3D} ${styles.span12} ${styles.pathwayCard}`}>
-            <span className={styles.label}>Interconnection Pathway</span>
-            <div className={styles.pathwayRow}>
-              {TOPO.map((node, i) => (
-                <Fragment key={node.id}>
-                  <div className={styles.pathwayNode}>
-                    <div className={styles.pathwayBox}>{node.id}</div>
-                    <span className={styles.pathwayName}>{node.name}</span>
-                    <span className={styles.pathwaySub}>{node.sub}</span>
-                  </div>
-                  {i < TOPO.length - 1 ? (
-                    <div className={styles.pathwayLink}>
-                      <span className={styles.pathwayDot} />
-                    </div>
-                  ) : null}
-                </Fragment>
-              ))}
-            </div>
-          </div>
-
-          {/* PR waterfall */}
-          <div className={`${styles.glass3D} ${styles.span12}`}>
-            <span className={styles.label}>
-              System Derating (Performance Ratio)
-            </span>
-            <p className={styles.prLead}>
-              A standard 100% ideal yield is practically impossible. We engineer
-              for a realistic ~75% PR by accounting for real-world environmental
-              and hardware resistance.
-            </p>
-            <div className={styles.prList}>
-              {PR_ROWS.map((row) => (
-                <div key={row.label} className={styles.prRow}>
-                  <div className={styles.prLabel}>{row.label}</div>
-                  <div className={styles.prTrack}>
-                    <div
-                      className={
-                        row.tone === "ideal"
-                          ? styles.prFillIdeal
-                          : row.tone === "loss"
-                            ? styles.prFillLoss
-                            : styles.prFillFinal
-                      }
-                      style={{ width: row.width }}
-                    />
-                  </div>
-                  <div
-                    className={
-                      row.tone === "ideal" ? styles.prValIdeal : styles.prValLoss
-                    }
-                  >
-                    {row.value}
-                  </div>
-                </div>
-              ))}
-              <div className={styles.prResult}>
-                <div className={styles.prResultLabel}>Real-World PR</div>
-                <div className={styles.prResultValue}>~75%</div>
+          <div className={styles.glass3D}>
+            <span className={styles.engPanelTitle}>Site & Array Metrics</span>
+            <div className={styles.engMetricList}>
+              <div className={styles.engMetricRow}>
+                <span>Location</span>
+                <strong>{city}</strong>
+                <small>Site irradiance · survey confirms final orientation</small>
+              </div>
+              <div className={styles.engMetricRow}>
+                <span>Roof area</span>
+                <strong>~{roofSqft} sq ft</strong>
+                <small>
+                  {moduleCount} × ~{SQFT_PER_PANEL} sq ft/module incl. walkway.
+                  Final after survey.
+                </small>
+              </div>
+              <div className={styles.engMetricRow}>
+                <span>String topology</span>
+                <strong>
+                  {strings} × {perString} @ {QUANTUM_PANEL_WATT} Wp
+                </strong>
+                <small>Series strings into DCDB / inverter MPPTs</small>
+              </div>
+              <div className={styles.engMetricRow}>
+                <span>Specific yield</span>
+                <strong>{specificYield.toLocaleString("en-IN")} kWh/kW</strong>
+                <small>
+                  Est. {annualUnits.toLocaleString("en-IN")} units/yr · PR ~75% ·
+                  wind 150 km/h mounts.
+                </small>
               </div>
             </div>
+
+            <div className={styles.engChipRow}>
+              <div className={styles.engChip}>
+                <em>DC</em>
+                <strong>{dcKwp.toFixed(2)} kWp</strong>
+              </div>
+              <div className={styles.engChip}>
+                <em>AC</em>
+                <strong>{acLabel} kW</strong>
+              </div>
+              <div className={styles.engChip}>
+                <em>DC/AC</em>
+                <strong>{dcAc.toFixed(2)}</strong>
+              </div>
+              <div className={styles.engChip}>
+                <em>TILT</em>
+                <strong>{tilt.toFixed(0)}°</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className={`${styles.glass3D} ${styles.engArchPanel}`}>
+          <span className={styles.engPanelTitle}>System Architecture</span>
+          <p className={styles.engArchLead}>
+            DC generation through protection, inversion, and bi-directional
+            metering — schematic pathway for this proposal.
+          </p>
+          <div className={styles.engArchTrack}>
+            {ARCH.map((node, i) => (
+              <div key={node.code} className={styles.engArchNodeSlot}>
+                {i > 0 ? <FlowArrow /> : null}
+                <div className={styles.engArchNode}>
+                  <span className={styles.engArchCode}>{node.code}</span>
+                  <strong>{node.name}</strong>
+                  <em>{archSubs[i]}</em>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className={styles.engPrStrip}>
+            <span>
+              Real-world PR ~75% · thermal, conversion &amp; cable derating
+            </span>
+            <span className={styles.engStandards}>{standards}</span>
           </div>
         </div>
       </div>

@@ -1549,228 +1549,206 @@
   }
 }
 
-/* ─── Advanced telemetry engineering page ──────────────────────────────────── */
+/* ─── Engineering telemetry — roof array + metrics + architecture ─────────── */
 
 .telemetryPage {
   gap: 0;
 }
 
 .telemetryHeadline {
-  font-size: 2.6rem !important;
+  font-size: 2.4rem !important;
 }
 
-.telemetryGrid {
-  flex-grow: 1;
-  align-content: start;
+.engLayout {
+  display: grid;
+  grid-template-columns: 1.08fr 0.92fr;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-grow: 0;
 }
 
-.compassCard {
+.engPanelFlush {
+  padding-bottom: 10px !important;
+}
+
+.engPanelTitle {
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #06b6d4;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.engSvgDark {
+  display: block;
+  width: 100%;
+  border-radius: 8px;
+  background: #050a10;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.engMetricList {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 260px;
-}
-
-.compassWrap {
-  position: relative;
-  width: 200px;
-  height: 200px;
-  margin-top: 8px;
-}
-
-.compassWrap svg {
-  width: 100%;
-  height: 100%;
-}
-
-.specMatrix {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.specMatrix .glass3D {
-  padding: 18px 20px;
-}
-
-.specMatrix .valueLarge {
-  font-size: 2.2rem;
-  margin: 4px 0 6px;
-}
-
-.pathwayCard {
-  padding: 24px 28px !important;
-}
-
-.pathwayRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 18px;
-  padding: 0 12px;
   gap: 8px;
 }
 
-.pathwayNode {
-  text-align: center;
-  width: 120px;
-  flex-shrink: 0;
-}
-
-.pathwayBox {
-  width: 60px;
-  height: 60px;
-  border: 1px solid #06b6d4;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(6, 182, 212, 0.1);
-  box-shadow: inset 0 0 10px rgba(6, 182, 212, 0.3);
-  font-size: 1.2rem;
-  font-weight: 700;
-  margin: 0 auto;
-  color: #fff;
-}
-
-.pathwayName {
-  font-size: 0.8rem;
-  color: #06b6d4;
-  margin-top: 12px;
-  display: block;
-  letter-spacing: 1px;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.pathwaySub {
-  font-size: 0.7rem;
-  color: #94a3b8;
-}
-
-.pathwayLink {
-  flex-grow: 1;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(6, 182, 212, 0.8),
-    transparent
-  );
-  margin: 0 10px;
-  position: relative;
-  top: -20px;
-  min-width: 24px;
-}
-
-.pathwayDot {
-  position: absolute;
-  top: -3px;
-  left: 50%;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #06b6d4;
-  transform: translateX(-50%);
-  box-shadow: 0 0 10px #06b6d4;
-}
-
-.prLead {
-  font-size: 0.85rem;
-  color: #94a3b8;
-  margin: 0 0 18px;
-  line-height: 1.5;
-}
-
-.prList {
+.engMetricRow {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 2px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(6, 182, 212, 0.12);
 }
 
-.prRow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.engMetricRow:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
 }
 
-.prLabel {
-  width: 150px;
-  font-size: 0.75rem;
+.engMetricRow span {
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: #94a3b8;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  flex-shrink: 0;
 }
 
-.prTrack {
-  flex-grow: 1;
-  height: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.prFillIdeal {
-  height: 100%;
-  background: #fff;
-}
-
-.prFillLoss {
-  height: 100%;
-  background: #94a3b8;
-}
-
-.prFillFinal {
-  height: 100%;
-  background: #06b6d4;
-  box-shadow: 0 0 10px #06b6d4;
-}
-
-.prValIdeal {
-  width: 50px;
-  text-align: right;
-  font-size: 0.8rem;
+.engMetricRow strong {
+  font-size: 1.05rem;
   color: #fff;
-  flex-shrink: 0;
+  font-weight: 600;
 }
 
-.prValLoss {
-  width: 50px;
-  text-align: right;
+.engMetricRow small {
+  font-size: 0.72rem;
+  color: #64748b;
+  line-height: 1.35;
+}
+
+.engChipRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.engChip {
+  background: rgba(6, 182, 212, 0.06);
+  border: 1px solid rgba(6, 182, 212, 0.22);
+  border-radius: 8px;
+  padding: 8px 4px;
+  text-align: center;
+}
+
+.engChip em {
+  display: block;
+  font-style: normal;
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  color: #06b6d4;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.engChip strong {
+  font-size: 0.85rem;
+  color: #fff;
+  font-weight: 600;
+}
+
+.engArchPanel {
+  padding: 14px 16px 12px !important;
+  margin-bottom: 0;
+}
+
+.engArchLead {
+  margin: 0 0 12px;
   font-size: 0.8rem;
-  color: #ef4444;
-  flex-shrink: 0;
+  color: #94a3b8;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
 }
 
-.prResult {
+.engArchTrack {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 2px;
+  margin: 0 0 12px;
+}
+
+.engArchNodeSlot {
   display: flex;
   align-items: center;
-  margin-top: 8px;
-  border-top: 1px solid rgba(6, 182, 212, 0.2);
-  padding-top: 12px;
+  flex: 1;
+  min-width: 0;
+  gap: 2px;
 }
 
-.prResultLabel {
-  width: 150px;
-  font-size: 0.85rem;
-  color: #06b6d4;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+.engFlowArrow {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  opacity: 0.85;
 }
 
-.prResultValue {
-  margin-left: auto;
-  font-size: 1.2rem;
+.engArchNode {
+  flex: 1;
+  background: rgba(6, 182, 212, 0.06);
+  border: 1px solid rgba(6, 182, 212, 0.22);
+  border-radius: 8px;
+  padding: 10px 4px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.engArchCode {
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
   color: #06b6d4;
   font-weight: 700;
+}
+
+.engArchNode strong {
+  font-size: 0.78rem;
+  color: #fff;
+  font-weight: 600;
+}
+
+.engArchNode em {
+  font-style: normal;
+  font-size: 0.68rem;
+  color: #94a3b8;
+}
+
+.engPrStrip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(6, 182, 212, 0.15);
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+
+.engStandards {
+  color: #64748b;
+  letter-spacing: 0.02em;
 }
 
 @media print {
-  .pathwayDot,
-  .prFillFinal {
-    box-shadow: 0 0 8px #06b6d4 !important;
+  .engSvgDark,
+  .engChip,
+  .engArchNode {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }
