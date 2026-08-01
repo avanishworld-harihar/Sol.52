@@ -116,7 +116,9 @@ export function mergeCommercialConfigWithPricing(
       brandIdA: pricing.brandCompare?.brandIdA ?? merged.brandComparison?.brandIdA,
       brandIdB: pricing.brandCompare?.brandIdB ?? merged.brandComparison?.brandIdB,
       proposalTrack:
-        pricing.brandCompare?.proposalTrack ?? merged.brandComparison?.proposalTrack,
+        pricing.brandCompare?.proposalTrack ??
+        merged.brandComparison?.proposalTrack ??
+        "dcr",
     },
   };
   return merged;

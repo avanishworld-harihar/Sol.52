@@ -1821,7 +1821,8 @@ function ProposalPageContent() {
               enabled: commercialPricingConfig.brandCompare?.enabled === true,
               brandIdA: commercialPricingConfig.brandCompare?.brandIdA,
               brandIdB: commercialPricingConfig.brandCompare?.brandIdB,
-              proposalTrack: commercialPricingConfig.brandCompare?.proposalTrack,
+              proposalTrack:
+                commercialPricingConfig.brandCompare?.proposalTrack ?? "dcr",
             },
             capacityScenarios: commercialConfig?.capacityScenarios,
           });
@@ -2114,7 +2115,7 @@ function ProposalPageContent() {
             enabled: next.brandCompare?.enabled === true,
             brandIdA: next.brandCompare?.brandIdA,
             brandIdB: next.brandCompare?.brandIdB,
-            proposalTrack: next.brandCompare?.proposalTrack,
+            proposalTrack: next.brandCompare?.proposalTrack ?? "dcr",
           },
           financing: {
             ...prev.financing,
