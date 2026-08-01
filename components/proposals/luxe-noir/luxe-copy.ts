@@ -289,6 +289,10 @@ export function getLuxeCopy(lang: LuxeLang) {
         ? "स्विच-ऑन के बाद पहले 90 दिन मॉनिटर रखें: ऐप में रोज़ का उत्पादन देखें। अगर कोई दिन साफ़ धूप में भी बहुत कम दिखे, तुरंत बताएँ — जल्दी पकड़ी गई वायरिंग / शैडिंग समस्या सालों की यूनिट बचाती है।"
         : "Watch the first 90 days after switch-on: check daily generation in the app. If a clear sunny day looks unusually low, tell us early — catching a wiring or shading issue fast protects years of units.",
       sealReady: hi ? "तैयार" : "READY",
+      photoCaption: hi
+        ? "आपकी छत · आपका परिवार · आपकी ऊर्जा"
+        : "Your roof · your family · your power",
+      photoFolio: hi ? "समापन दृश्य" : "Closing frame",
     },
     common: {
       unit: hi ? "यू" : "u",
