@@ -359,9 +359,29 @@ export function readProposalBrandingSettings(): ProposalBrandingSettings {
 export function writeProposalBrandingSettings(next: Partial<ProposalBrandingSettings>) {
   if (typeof window === "undefined") return;
   try {
+    // Merge with existing settings so a partial write cannot wipe banking / profile fields.
+    const prev = readProposalBrandingSettings();
     const payload = finalizeBrandingSettings({
+      ...prev,
       ...next,
-      proposalSiteImages: next.proposalSiteImages,
+      companyProfile: {
+        ...prev.companyProfile,
+        ...(next.companyProfile ?? {}),
+      },
+      companyCredentials: {
+        ...prev.companyCredentials,
+        ...(next.companyCredentials ?? {}),
+      },
+      brandSectionRules: {
+        ...prev.brandSectionRules,
+        ...(next.brandSectionRules ?? {}),
+      },
+      proposalAppearance: {
+        ...prev.proposalAppearance,
+        ...(next.proposalAppearance ?? {}),
+      },
+      proposalSiteImages: next.proposalSiteImages ?? prev.proposalSiteImages,
+      portfolioProjects: next.portfolioProjects ?? prev.portfolioProjects,
     });
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     window.dispatchEvent(new Event(PROPOSAL_BRANDING_UPDATED_EVENT));

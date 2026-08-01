@@ -142,7 +142,7 @@ export function BrandProposalsSettingsPanel({ markSaved, markIssue }: Props) {
     };
     return {
       installerName: companyName.trim(),
-      installerContact: companyContact.trim() || DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerContact,
+      installerContact: companyContact.trim(),
       installerEmail: companyEmail.trim(),
       installerLogoUrl: companyLogo.trim(),
       paymentQrCodeUrl: paymentQrCodeUrl.trim(),

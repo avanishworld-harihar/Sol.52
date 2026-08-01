@@ -135,7 +135,13 @@ export function ClosingPage({ data, pptInput }: ClosingPageProps) {
 
   const stepTitles = [...copy.close.stepTitles];
   const stepBodies = [...copy.close.steps];
-  const detailBits = [company.address, company.website].filter(Boolean);
+  const detailBits = [
+    company.address,
+    company.website,
+    company.gstNumber
+      ? `${isHi ? "GSTIN" : "GSTIN"} ${company.gstNumber}`
+      : "",
+  ].filter(Boolean);
 
   return (
     <section
@@ -237,6 +243,14 @@ export function ClosingPage({ data, pptInput }: ClosingPageProps) {
         <div className={styles.closeContactCopy}>
           <span className={styles.closeContactEyebrow}>{copy.close.contact}</span>
           <strong>{contactLine}</strong>
+          {company.contactPerson ? (
+            <span className={styles.closeContactPerson}>
+              {company.contactPerson}
+              {company.contactPersonDesignation
+                ? ` · ${company.contactPersonDesignation}`
+                : ""}
+            </span>
+          ) : null}
           {detailBits.length > 0 ? (
             <em>{detailBits.join(" · ")}</em>
           ) : (

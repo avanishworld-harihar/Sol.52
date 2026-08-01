@@ -2,19 +2,13 @@
 
 /**
  * Premium Luxe — Payment milestones + vendor bank account.
- * Compact schedule · bank details never clipped on A4.
- * Bank fields prefer proposal ppt_input, then More → Brand settings (local).
+ * Bank fields prefer More → Banking settings, then frozen ppt_input.
  */
 
-import { useEffect, useState } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
-import {
-  PROPOSAL_BRANDING_UPDATED_EVENT,
-  readProposalBrandingSettings,
-  resolveProposalBankDetails,
-  type ProposalBrandingSettings,
-} from "@/lib/proposal-branding-settings";
+import type { ProposalBrandingSettings } from "@/lib/proposal-branding-settings";
+import { useProposalBrandingSettings } from "@/lib/use-proposal-branding-settings";
 import { formatLuxeInr, formatLuxeInrReadable } from "./luxe-format";
 import { useLuxeVendorName, luxeVendorOrFallback } from "./luxe-vendor";
 import { ExpertVerdict } from "./ExpertVerdict";
@@ -42,6 +36,14 @@ function cleanBank(value: string | undefined | null): string {
   const v = (value ?? "").trim();
   if (!v || v === "—" || v === "-" || v.toLowerCase() === "n/a") return "";
   return v;
+}
+
+function pickBank(
+  more: string | undefined | null,
+  frozen: string | undefined | null,
+  deck: string | undefined | null
+): string {
+  return cleanBank(more) || cleanBank(frozen) || cleanBank(deck) || "";
 }
 
 /** Clear “pay into bank account” metaphor — building + rupee. */
@@ -86,7 +88,6 @@ function IllustBank() {
         />
       ))}
       <rect x="12" y="58" width="64" height="5" rx="1" fill="#141820" />
-      {/* Rupee badge — pay here */}
       <circle cx="68" cy="22" r="11" fill="#1e2a3a" stroke="#B8962E" strokeWidth="1.4" />
       <text
         x="68"
@@ -103,51 +104,31 @@ function IllustBank() {
   );
 }
 
-function useResolvedLuxeBank(
+function resolveLuxeBankFromMore(
   data: ProposalData,
-  pptInput?: PremiumProposalPptInput | null
+  pptInput: PremiumProposalPptInput | null | undefined,
+  settings: ProposalBrandingSettings
 ) {
-  // Load More → Brand settings after mount so SSR/hydration stay empty-safe,
-  // then fill from localStorage (same pattern as Atelier branding sync).
-  const [settings, setSettings] = useState<ProposalBrandingSettings | null>(null);
-
-  useEffect(() => {
-    const sync = () => setSettings(readProposalBrandingSettings());
-    sync();
-    window.addEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
-    return () => window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
-  }, []);
-
   const ppt = pptInput?.bankDetails;
-  const fromData = data.execution.bank;
+  const deck = data.execution.bank;
 
-  const resolved = resolveProposalBankDetails({
-    pptBank: {
-      accountName:
-        cleanBank(ppt?.accountName) ||
-        cleanBank(fromData.company) ||
-        undefined,
-      accountNumber:
-        cleanBank(ppt?.accountNumber) ||
-        cleanBank(fromData.accountNumber) ||
-        undefined,
-      ifsc:
-        cleanBank(ppt?.ifsc) || cleanBank(fromData.ifsc) || undefined,
-      branch: cleanBank(ppt?.branch) || undefined,
-      upiId:
-        cleanBank(ppt?.upiId) || cleanBank(fromData.upiId) || undefined,
-      paymentQrCodeUrl: cleanBank(ppt?.paymentQrCodeUrl) || undefined,
-    },
-    settings,
-  });
+  // More → Banking is the source of truth for live preview / installer view.
+  const accountNumber = pickBank(
+    settings.bankAccountNumber,
+    ppt?.accountNumber,
+    deck.accountNumber
+  );
+  const ifsc = pickBank(settings.bankIfsc, ppt?.ifsc, deck.ifsc);
+  const upiId = pickBank(settings.bankUpiId, ppt?.upiId, deck.upiId);
+  const branch = pickBank(settings.bankBranch, ppt?.branch, "");
+  const accountName = pickBank(
+    settings.bankAccountName,
+    ppt?.accountName,
+    // Only use deck company when we actually have banking coords
+    accountNumber || ifsc || upiId ? deck.company : ""
+  );
 
-  return {
-    accountName: cleanBank(resolved.accountName),
-    accountNumber: cleanBank(resolved.accountNumber),
-    ifsc: cleanBank(resolved.ifsc),
-    branch: cleanBank(resolved.branch),
-    upiId: cleanBank(resolved.upiId),
-  };
+  return { accountName, accountNumber, ifsc, branch, upiId };
 }
 
 export function PaymentMilestonesPage({
@@ -158,7 +139,8 @@ export function PaymentMilestonesPage({
   pptInput,
 }: PaymentMilestonesPageProps) {
   const { copy, isHi } = useLuxeLang();
-  const bank = useResolvedLuxeBank(data, pptInput);
+  const settings = useProposalBrandingSettings();
+  const bank = resolveLuxeBankFromMore(data, pptInput, settings);
   const fromSettings = useLuxeVendorName(data);
   const vendorName = luxeVendorOrFallback(brand?.trim() || fromSettings, isHi);
   const company = bank.accountName || vendorName;
@@ -209,7 +191,6 @@ export function PaymentMilestonesPage({
         ) : null}
       </p>
 
-      {/* One compact schedule — no duplicate progress track */}
       <div className={styles.paySchedule}>
         <div className={styles.payScheduleHead}>
           <span>{copy.pay.scheduleHead}</span>
@@ -231,7 +212,6 @@ export function PaymentMilestonesPage({
         ))}
       </div>
 
-      {/* Bank — primary block, never flex-shrunk away */}
       <div className={styles.payBankBlock}>
         <div className={styles.payBankHead}>
           <IllustBank />
