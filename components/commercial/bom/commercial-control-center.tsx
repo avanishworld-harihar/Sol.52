@@ -71,7 +71,16 @@ export function CommercialControlCenter({ config, summary, onChange, onOpenRevie
           title="Brand comparison"
           subtitle="Compare 2 panel brands — Rate card (DCR) pricing"
           checked={config.brandComparison?.enabled !== false}
-          onChange={(on) => onChange({ ...config, brandComparison: { ...config.brandComparison, enabled: on } })}
+          onChange={(on) =>
+            onChange({
+              ...config,
+              brandComparison: {
+                ...config.brandComparison,
+                enabled: on,
+                proposalTrack: config.brandComparison?.proposalTrack ?? "dcr",
+              },
+            })
+          }
         />
         <ToggleCard
           icon={Battery}
@@ -116,7 +125,10 @@ export function CommercialControlCenter({ config, summary, onChange, onOpenRevie
                   enabled: true,
                   brandIdA: next.brandIdA,
                   brandIdB: next.brandIdB,
-                  proposalTrack: next.proposalTrack ?? config.brandComparison?.proposalTrack,
+                  proposalTrack:
+                    next.proposalTrack ??
+                    config.brandComparison?.proposalTrack ??
+                    "dcr",
                 },
               })
             }

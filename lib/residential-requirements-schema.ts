@@ -133,8 +133,8 @@ export const residentialBrandCompareSchema = z.object({
   enabled: z.boolean().default(false),
   brandIdA: z.string().max(40).optional(),
   brandIdB: z.string().max(40).optional(),
-  /** Which track row appears on the customer proposal. */
-  proposalTrack: z.enum(["dcr", "non_dcr"]).default("dcr"),
+  /** Which track row appears on the customer proposal. Defaults to DCR when omitted. */
+  proposalTrack: z.enum(["dcr", "non_dcr"]).optional(),
 });
 
 export const residentialPricingSchema = z.object({
