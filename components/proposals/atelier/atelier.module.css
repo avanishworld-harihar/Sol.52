@@ -1598,7 +1598,178 @@
 }
 .genDisclaimer strong { color: var(--c); font-style: normal; }
 
-/* ══ P6: HARDWARE TRUST — icons + earthing ══════════════════════ */
+/* ══ P6: MONTHLY GENERATION FORECAST ═══════════════════════════ */
+.forecastPage {
+  display: flex;
+  flex-direction: column;
+}
+.forecastPage .pageHead {
+  margin-bottom: 0.75rem;
+}
+.forecastStats {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  flex: 0 0 auto;
+}
+.forecastStatCard {
+  background: var(--al);
+  border: 1px solid var(--line);
+  border-radius: var(--card-r);
+  padding: 0.95rem 1.05rem;
+  box-shadow: var(--card-s);
+  min-width: 0;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+.forecastStatCardAccent {
+  background: linear-gradient(145deg, #0A0F1C 0%, #1E293B 100%);
+  border-color: rgba(249, 115, 22, 0.4);
+}
+.forecastStatTag {
+  display: block;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--or);
+  margin-bottom: 0.35rem;
+}
+.forecastStatCardAccent .forecastStatTag {
+  color: rgba(249, 115, 22, 0.9);
+}
+.forecastStatVal {
+  display: block;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--h);
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+.forecastStatCardAccent .forecastStatVal {
+  color: var(--or);
+}
+.forecastStatHint {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--gray);
+  line-height: 1.35;
+}
+.forecastStatCardAccent .forecastStatHint {
+  color: rgba(255, 255, 255, 0.55);
+}
+.forecastChart {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  flex: 0 0 auto;
+  padding: 0.95rem 0.9rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: var(--card-r);
+  background: var(--white);
+  box-shadow: var(--card-s);
+  margin-bottom: 0.75rem;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+.forecastBars {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.35rem;
+  min-height: 220px;
+  padding: 0 0.15rem;
+}
+.forecastCol {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.28rem;
+  min-width: 0;
+  height: 100%;
+}
+.forecastUnits {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--gray);
+  line-height: 1;
+  white-space: nowrap;
+}
+.forecastTrack {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 2rem;
+  display: flex;
+  align-items: flex-end;
+  min-height: 120px;
+}
+.forecastFill {
+  width: 100%;
+  border-radius: 5px 5px 2px 2px;
+  background: linear-gradient(180deg, #fdba74 0%, #fb923c 45%, var(--or) 100%);
+  min-height: 8px;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+.forecastColPeak .forecastFill {
+  background: linear-gradient(180deg, #fb923c 0%, var(--or) 40%, #0A0F1C 100%);
+}
+.forecastMonth {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gray);
+}
+.forecastColPeak .forecastMonth {
+  color: var(--h);
+}
+.forecastSave {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--or);
+  white-space: nowrap;
+}
+.forecastLegend {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0 0.15rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gray2);
+}
+.forecastPeakCue {
+  color: var(--or);
+}
+.forecastBasis {
+  margin: 0;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--gray);
+  line-height: 1.4;
+}
+.forecastExpert {
+  flex: 0 0 auto;
+  margin-bottom: 0;
+}
+
+/* ══ P7: HARDWARE TRUST — icons + earthing ══════════════════════ */
 .hwPage .pageLead {
   max-width: 36rem;
 }
@@ -2104,16 +2275,143 @@
 }
 
 .roofArrayStage {
-  background: linear-gradient(180deg, #F8FAFC 0%, var(--al) 100%);
-  border: 1px solid var(--line);
-  border-radius: var(--card-r);
-  padding: 0.85rem 0.95rem 0.75rem;
-  box-shadow: var(--card-s);
-  display: flex;
-  flex-direction: column;
   min-width: 0;
   min-height: 0;
   height: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Canvas-style engineering blueprint array (left column) */
+.blueprintArray {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  min-width: 0;
+  height: 100%;
+}
+.blueprintHead {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  color: var(--h);
+  line-height: 1.25;
+  flex-shrink: 0;
+}
+.blueprintStage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 240px;
+  border-radius: var(--card-r);
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  color: #fff;
+  background: #0A0F1C;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: var(--card-s);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+.blueprintGrid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 800px;
+}
+.blueprintPanels {
+  display: grid;
+  grid-template-columns: repeat(var(--atelier-bp-cols, 4), 28px);
+  gap: 4px;
+  z-index: 2;
+  transform: rotateX(45deg) rotateZ(-15deg);
+  transform-style: preserve-3d;
+}
+.blueprintPanel {
+  width: 28px;
+  height: 46px;
+  background: rgba(56, 189, 248, 0.4);
+  border: 1px solid rgba(56, 189, 248, 0.85);
+  border-radius: 2px;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+.blueprintCompass {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 48px;
+  height: 48px;
+  border: 2px solid rgba(255, 255, 255, 0.22);
+  border-radius: 50%;
+  z-index: 3;
+  background: rgba(0, 0, 0, 0.28);
+}
+.blueprintN,
+.blueprintE,
+.blueprintS,
+.blueprintW {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.58rem;
+  font-weight: 800;
+}
+.blueprintN {
+  top: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--or);
+}
+.blueprintS {
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.blueprintE {
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.blueprintW {
+  left: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.blueprintCaption {
+  position: relative;
+  z-index: 3;
+  margin-top: auto;
+  background: rgba(0, 0, 0, 0.52);
+  padding: 0.65rem 0.8rem;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  backdrop-filter: blur(4px);
+}
+.blueprintCaption strong {
+  display: block;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #fff;
+}
+.blueprintCaption span {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  line-height: 1.35;
 }
 
 .roofStageHead {
@@ -4032,6 +4330,24 @@
     grid-template-columns: 1fr 1fr;
   }
 
+  .forecastStats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .forecastBars {
+    min-height: 180px;
+    gap: 0.2rem;
+  }
+
+  .forecastUnits,
+  .forecastSave {
+    font-size: 0.55rem;
+  }
+
+  .forecastMonth {
+    font-size: 0.6rem;
+  }
+
   .invoiceRow {
     grid-template-columns: 1fr auto;
     gap: 0.35rem 0.6rem;
@@ -4050,6 +4366,19 @@
     height: auto !important;
     min-height: 200px !important;
     max-height: none !important;
+  }
+
+  .blueprintStage {
+    min-height: 210px;
+  }
+
+  .blueprintPanels {
+    grid-template-columns: repeat(var(--atelier-bp-cols, 4), 24px);
+  }
+
+  .blueprintPanel {
+    width: 24px;
+    height: 40px;
   }
 
   .roofSunTeach {
@@ -4144,6 +4473,27 @@
   .genFormulaGrid {
     grid-template-columns: 1fr 1fr !important;
     gap: 0.4rem;
+  }
+
+  .forecastStats {
+    grid-template-columns: 1fr !important;
+  }
+
+  .forecastBars {
+    min-height: 160px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .forecastTrack {
+    max-width: 1.5rem;
+    min-height: 100px;
+  }
+
+  .forecastLegend {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
   }
 
   .coverInner,

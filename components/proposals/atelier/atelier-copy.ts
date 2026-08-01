@@ -337,7 +337,7 @@ export function getAtelierCopy(lang: AtelierLang) {
     },
 
     impact: {
-      tag: hi ? "02 — आपका प्रभाव" : "02 — YOUR IMPACT",
+      tag: hi ? "10 — आपका प्रभाव" : "10 — YOUR IMPACT",
       title: hi
         ? "आपकी छत दुनिया को क्या वापस देती है"
         : "What Your Roof Gives Back to the World",
@@ -366,7 +366,7 @@ export function getAtelierCopy(lang: AtelierLang) {
     },
 
     finance: {
-      tag: hi ? "03 — मासिक अर्थशास्त्र" : "03 — MONTHLY ECONOMICS",
+      tag: hi ? "02 — मासिक अर्थशास्त्र" : "02 — MONTHLY ECONOMICS",
       title: hi
         ? "हर महीने आपकी जेब में क्या रहता है?"
         : "What stays in your pocket every month?",
@@ -547,8 +547,43 @@ export function getAtelierCopy(lang: AtelierLang) {
         : "Actual generation varies with weather conditions, dust accumulation, shading from nearby structures, and panel cleaning frequency. Figures above represent modelled estimates under standard test conditions, not a guarantee.",
     },
 
+    genForecast: {
+      tag: hi
+        ? "06 — मासिक उत्पादन पूर्वानुमान"
+        : "06 — MONTHLY GENERATION FORECAST",
+      title: hi
+        ? "मासिक उत्पादन पूर्वानुमान"
+        : "Monthly generation forecast",
+      lead: hi
+        ? "जनवरी–दिसंबर अनुमानित यूनिट और बचत — गर्मी/मानसून का अंतर साफ़ दिखे।"
+        : "Jan–Dec estimated units and savings — summer vs monsoon at a glance.",
+      annualGen: hi ? "वार्षिक उत्पादन" : "Annual generation",
+      annualGenHint: hi
+        ? "वर्ष भर का अनुमानित योग।"
+        : "Estimated total across the year.",
+      annualSavings: hi ? "वार्षिक बचत" : "Annual savings",
+      annualSavingsHint: hi
+        ? "वर्ष-1 अनुमानित बिल बचत।"
+        : "Year-1 estimated bill savings.",
+      unitsLabel: hi ? "अनुमानित यूनिट" : "Est. units",
+      savingsLabel: hi ? "अनुमानित बचत" : "Est. savings",
+      savingsBasis: (rate: string) =>
+        hi
+          ? `अनुमानित बचत = मासिक यूनिट × ₹${rate}/यूनिट प्रभावी बचत दर। फिक्स्ड चार्ज शामिल नहीं हैं।`
+          : `Estimated savings = monthly units × ₹${rate}/unit effective saving rate. Fixed charges excluded.`,
+      peakNote: hi
+        ? "अप्रैल–जून गर्मियों के पीक महीने"
+        : "Apr–Jun summer peak months",
+      expertTag: hi
+        ? "मौसमी भिन्नता क्यों मायने रखती है"
+        : "Why seasonal variation matters",
+      expertBody: hi
+        ? "उत्पादन स्थानीय विकिरण प्रोफ़ाइल पर आधारित अनुमान है। गर्मी में ऊँचा उत्पादन अक्सर ऊँचे बिल महीनों से मेल खाता है — बचत का मुख्य इंजन।"
+        : "Generation uses a regional irradiance profile. Higher summer output often aligns with peak bill months — that overlap drives most of the savings.",
+    },
+
     hw: {
-      tag: hi ? "06 — हार्डवेयर विश्वास" : "06 — HARDWARE TRUST",
+      tag: hi ? "07 — हार्डवेयर विश्वास" : "07 — HARDWARE TRUST",
       title: hi
         ? "टियर-1 घटक। शून्य समझौता।"
         : "Tier-1 Components. Zero Compromise.",
@@ -605,7 +640,7 @@ export function getAtelierCopy(lang: AtelierLang) {
 
     trust: {
       tag: (brand: string) =>
-        hi ? `07 — क्यों ${brand}` : `07 — WHY ${brand}`,
+        hi ? `08 — क्यों ${brand}` : `08 — WHY ${brand}`,
       title: hi
         ? "क्योंकि आपकी छत को केवल सर्वोत्तम पैनल नहीं, सर्वोत्तम टीम चाहिए।"
         : "Because Your Rooftop Deserves the Best Team, Not Just the Best Panel.",
@@ -677,7 +712,7 @@ export function getAtelierCopy(lang: AtelierLang) {
     },
 
     roof: {
-      tag: hi ? "08 — छत बुद्धिमत्ता" : "08 — ROOF INTELLIGENCE",
+      tag: hi ? "03 — छत बुद्धिमत्ता" : "03 — ROOF INTELLIGENCE",
       title: hi
         ? "आपकी छत, अधिकतम यील्ड के लिए इंजीनियर"
         : "Your Roof, Engineered for Maximum Yield",
@@ -720,6 +755,18 @@ export function getAtelierCopy(lang: AtelierLang) {
       southEdge: hi ? "दक्षिण" : "SOUTH",
       southCue: hi ? "दक्षिण यील्ड" : "South yield",
       terraceLabel: hi ? "टेरेस प्लान" : "Terrace plan",
+      blueprintTitle: hi
+        ? "इंजीनियरिंग ब्लूप्रिंट (System Architecture)"
+        : "Engineering Blueprint (System Architecture)",
+      blueprintArray: hi
+        ? "इष्टतम दक्षिण-मुखी ऐरे"
+        : "Optimal South-Facing Array",
+      blueprintTiltLine: hi
+        ? "टिल्ट: {tilt}° | अज़ीमुथ: 180° (True South)"
+        : "Tilt: {tilt}° | Azimuth: 180° (True South)",
+      blueprintShowing: hi
+        ? "दृश्य {shown}/{total}"
+        : "showing {shown}/{total}",
       moreModules: (n: number) =>
         hi ? `+${n} और मॉड्यूल` : `+${n} more modules`,
       engString: hi ? "स्ट्रिंग लेआउट" : "STRING LAYOUT",
@@ -810,11 +857,11 @@ export function getAtelierCopy(lang: AtelierLang) {
 
     terms: {
       tag10: hi
-        ? "10 — शर्तें व अनुपालन"
-        : "10 — TERMS & COMPLIANCE",
+        ? "11 — शर्तें व अनुपालन"
+        : "11 — TERMS & COMPLIANCE",
       tag11: hi
-        ? "11 — शर्तें व अनुपालन (जारी)"
-        : "11 — TERMS & COMPLIANCE (CONTD.)",
+        ? "12 — शर्तें व अनुपालन (जारी)"
+        : "12 — TERMS & COMPLIANCE (CONTD.)",
       title: hi ? "नियम व शर्तें" : "Terms & Conditions",
       intro1: hi
         ? "साइन करने से पहले प्रत्येक बिंदु ध्यान से पढ़ें।"
@@ -852,8 +899,8 @@ export function getAtelierCopy(lang: AtelierLang) {
 
     closing: {
       tag: hi
-        ? "12 — ऊर्जा स्वतंत्रता"
-        : "12 — ENERGY INDEPENDENCE",
+        ? "13 — ऊर्जा स्वतंत्रता"
+        : "13 — ENERGY INDEPENDENCE",
       congrats: hi ? "बधाई हो।" : "Congratulations.",
       statement1: hi
         ? "आज आप सौर पैनल नहीं खरीद रहे।"

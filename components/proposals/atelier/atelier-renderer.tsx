@@ -2,11 +2,11 @@
 
 /**
  * Atelier — Investment Blueprint (High-Conversion Sales Journey)
- * Flow: [Cover] → [Impact] → [Financial Story] → [Wealth Proof]
- *       → [Generation] → [Hardware] → [Why Us] → [Roof] → [Roadmap]
- *       → [Compliance] → [Closing]
+ * Flow: [Cover] → [Financial Story] → [Roof] → [Wealth Proof]
+ *       → [Generation] → [Monthly Forecast] → [Hardware] → [Why Us]
+ *       → [Roadmap] → [Impact] → [Compliance] → [Closing]
  *
- * ProposalData-native · Print A4 · 12 pages · break-after: page (print only)
+ * ProposalData-native · Print A4 · 13 pages · break-after: page (print only)
  */
 
 import { useEffect, useState } from "react";
@@ -26,7 +26,8 @@ import {
   type AtelierLang,
 } from "./atelier-copy";
 import { isDarkLogoUrl } from "./atelier-dark-logo";
-import { AtelierRoofPlan } from "./atelier-roof-plan";
+import { AtelierBlueprintArray } from "./atelier-blueprint-array";
+import { buildAtelierForecastMonths } from "./atelier-generation-forecast";
 import { HwCardIcon, HwIconEarth, type HwIconKey } from "./atelier-hw-icons";
 import { TrustCardIcon } from "./atelier-trust-icons";
 import {
@@ -173,6 +174,22 @@ export function AtelierRenderer({
     data.closing.annualSavingsInr > 0
       ? data.closing.annualSavingsInr
       : monthlyInr * 12;
+  const yearOneSavings =
+    monthlyInr > 0 ? monthlyInr * 12 : annualSavings;
+  const forecastAnnualUnits =
+    annualGen > 0
+      ? annualGen
+      : systemKw > 0
+        ? Math.round(systemKw * 5 * 0.75 * 365)
+        : 0;
+  const forecastMonths = buildAtelierForecastMonths(
+    forecastAnnualUnits,
+    yearOneSavings
+  );
+  const effectiveSavingPerUnit =
+    forecastAnnualUnits > 0 && yearOneSavings > 0
+      ? yearOneSavings / forecastAnnualUnits
+      : 0;
   const lifetimeWealth = data.closing.lifetimeWealthInr;
   const tilt = data.engineering.tiltDeg ?? 20;
   const cityLabel = data.engineering.cityLabel || city;
@@ -539,61 +556,10 @@ export function AtelierRenderer({
             </div>
           </div>
         </div>
-        <span className={`${styles.pageNum} ${styles.pageNumLight}`}>01 / 12</span>
+        <span className={`${styles.pageNum} ${styles.pageNumLight}`}>01 / 13</span>
       </section>
 
-      {/* ══ P2: IMPACT MOMENT — environmental only (no financials) ══ */}
-      <section className={`${styles.page} ${styles.impactPage}`}>
-        <header className={styles.pageHead}>
-          <span className={styles.pageTag}>{c.impact.tag}</span>
-          <h2 className={styles.pageTitle}>{c.impact.title}</h2>
-          <p className={styles.pageLead}>{c.impact.lead}</p>
-        </header>
-
-        <div className={styles.impactGrid}>
-          <div className={styles.impactCard}>
-            <div className={styles.impactBig}>{co2 > 0 ? co2 : "—"}</div>
-            <div className={styles.impactUnit}>{c.impact.tons}</div>
-            <div className={styles.impactLabel}>{c.impact.co2Label}</div>
-            <p className={styles.impactSub}>
-              {c.impact.co2Sub(co2 > 0 ? Math.round(co2 / 2) : "—")}
-            </p>
-          </div>
-          <div className={styles.impactCard}>
-            <div className={styles.impactBig}>
-              {trees > 0 ? trees.toLocaleString("en-IN") : "—"}
-            </div>
-            <div className={styles.impactUnit}>{c.impact.trees}</div>
-            <div className={styles.impactLabel}>{c.impact.ecoLabel}</div>
-            <p className={styles.impactSub}>{c.impact.ecoSub}</p>
-          </div>
-        </div>
-
-        <div className={styles.carbonMilestones}>
-          {[1, 10, 25].map((yr) => {
-            const tons = co2 > 0 ? Math.round((co2 / 25) * yr) : 0;
-            return (
-              <div key={yr} className={styles.carbonMilestone}>
-                <div className={styles.cmBar}>
-                  <div
-                    className={styles.cmBarFill}
-                    style={{ height: `${(yr / 25) * 100}%` }}
-                  />
-                </div>
-                <div className={styles.cmYear}>{c.impact.yearN(yr)}</div>
-                <div className={styles.cmTons}>
-                  {tons > 0 ? c.impact.tonsCo2(tons) : "—"}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className={styles.impactTagline}>{c.impact.tagline}</div>
-        <span className={styles.pageNum}>02 / 12</span>
-      </section>
-
-      {/* ══ P3: MONTHLY ECONOMICS — pocket story + trajectory ══ */}
+      {/* ══ P2: MONTHLY ECONOMICS — pocket story + trajectory ══ */}
       <section className={`${styles.page} ${styles.financePage}`}>
         <header className={styles.pageHead}>
           <span className={styles.pageTag}>{c.finance.tag}</span>
@@ -859,550 +825,10 @@ export function AtelierRenderer({
           </div>
         </div>
 
-        <span className={styles.pageNum}>03 / 12</span>
+        <span className={styles.pageNum}>02 / 13</span>
       </section>
 
-      {/* ══ P4: WEALTH PROJECTION — money story + AA+ ════════════ */}
-      <section className={`${styles.page} ${styles.wealthPage}`}>
-        <header className={styles.pageHead}>
-          <span className={styles.pageTag}>{c.wealth.tag}</span>
-          <h2 className={styles.pageTitle}>{c.wealth.title}</h2>
-          <p className={styles.pageLead}>{c.wealth.lead}</p>
-        </header>
-
-        {/* Instant story: invest → payback → keep */}
-        <div className={styles.wealthPath} aria-label={c.wealth.lead}>
-          <div className={styles.wealthPathCard}>
-            <span className={styles.wealthPathIcon} aria-hidden>
-              <WealthIconPay className={styles.wjIconSvg} />
-            </span>
-            <span className={styles.wealthPathLabel}>
-              {c.wealth.step1Num} · {c.wealth.pathInvest}
-            </span>
-            <strong className={styles.wealthPathAmt}>
-              {netInr > 0 ? formatInrCompact(netInr) : "—"}
-            </strong>
-            <span className={styles.wealthPathSub}>
-              {c.wealth.year0To(paybackYears > 0 ? Math.ceil(paybackYears) : 5)}
-            </span>
-            <span className={styles.wealthPathNote}>{c.wealth.phase1Note}</span>
-          </div>
-          <div className={styles.wealthPathArrow} aria-hidden>
-            <span>→</span>
-          </div>
-          <div className={`${styles.wealthPathCard} ${styles.wealthPathMid}`}>
-            <span className={`${styles.wealthPathIcon} ${styles.wealthPathIconOn}`} aria-hidden>
-              <WealthIconPaid className={styles.wjIconSvg} />
-            </span>
-            <span className={styles.wealthPathLabel}>
-              {c.wealth.step2Num} · {c.wealth.pathPayback}
-            </span>
-            <strong className={styles.wealthPathAmt}>
-              {paybackYears > 0
-                ? `${paybackYears.toFixed(1)} ${c.wealth.yrsShort}`
-                : "—"}
-            </strong>
-            <span className={styles.wealthPathSub}>{c.wealth.pathPayoff}</span>
-            <span className={styles.wealthPathNote}>{c.wealth.paybackNote}</span>
-          </div>
-          <div className={styles.wealthPathArrow} aria-hidden>
-            <span>→</span>
-          </div>
-          <div className={`${styles.wealthPathCard} ${styles.wealthPathEnd}`}>
-            <span className={styles.wealthPathIcon} aria-hidden>
-              <WealthIconGrow className={styles.wjIconSvg} />
-            </span>
-            <span className={styles.wealthPathLabel}>
-              {c.wealth.step3Num} · {c.wealth.pathKeep}
-            </span>
-            <strong className={styles.wealthPathAmt}>
-              {totalWealth > 0 ? formatInrCompact(totalWealth) : "—"}
-            </strong>
-            <span className={styles.wealthPathSub}>
-              {c.wealth.yearRange(
-                paybackYears > 0 ? Math.ceil(paybackYears) + 1 : 6
-              )}
-            </span>
-            <span className={styles.wealthPathNote}>{c.wealth.zeroEnergy}</span>
-          </div>
-        </div>
-
-        <div className={styles.wealthLayout}>
-          <div className={styles.wealthChartBox}>
-            <div className={styles.wealthChartHead}>
-              <span className={styles.wealthChartTitle}>{c.wealth.chartTitle}</span>
-              <span className={styles.wealthChartHint}>{c.wealth.chartHint}</span>
-            </div>
-            <div className={styles.wealthChart}>
-              {wealthMilestones.map((m) => (
-                <div key={m.year} className={styles.wealthMilestone}>
-                  <span className={styles.wealthYr}>{c.wealth.yrShort(m.year)}</span>
-                  <div className={styles.wealthBarWrap}>
-                    <div
-                      className={styles.wealthBarFill}
-                      style={{ width: `${Math.max(m.pct, 8)}%` }}
-                    />
-                  </div>
-                  <span className={styles.wealthAmt}>
-                    {m.savings > 0 ? formatInrCompact(m.savings) : "—"}
-                  </span>
-                </div>
-              ))}
-            </div>
-            <div className={styles.wealthVs}>
-              <div className={styles.wealthVsKeep}>
-                <span className={styles.wealthVsLabel}>{c.wealth.withSolar}</span>
-                <strong className={styles.wealthVsAmt}>
-                  {totalWealth > 0 ? formatInrCompact(totalWealth) : "—"}
-                </strong>
-              </div>
-              <div className={styles.wealthVsGrid}>
-                <span className={styles.wealthVsLabel}>{c.wealth.withoutSolar}</span>
-                <strong className={styles.wealthVsAmt}>
-                  {monthlyBill > 0
-                    ? formatInrCompact(monthlyBill * 12 * 22)
-                    : "—"}
-                </strong>
-                <span className={styles.wealthVsHint}>{c.wealth.paidToGrid}</span>
-              </div>
-            </div>
-            <p className={styles.wealthChartNote}>{c.wealth.chartNote}</p>
-          </div>
-
-          <div className={styles.investScoreBox}>
-            <div className={styles.investScoreCard}>
-              <span className={styles.investScoreTag}>{c.wealth.scoreTag}</span>
-              <div className={styles.investScoreGrade}>{investScore}</div>
-              <div className={styles.investScoreLabel}>{investGrade}</div>
-              <div className={styles.investScoreDivider} />
-              <div className={styles.investScoreStats}>
-                <div className={styles.investScoreStat}>
-                  <span className={styles.investScoreStatVal}>
-                    {paybackYears > 0
-                      ? `${paybackYears.toFixed(1)} ${c.wealth.yrsShort}`
-                      : "—"}
-                  </span>
-                  <span className={styles.investScoreStatLabel}>
-                    {c.wealth.paybackLabel}
-                  </span>
-                </div>
-                <div className={styles.investScoreStat}>
-                  <span className={styles.investScoreStatVal}>
-                    {annualSavings > 0 && netInr > 0
-                      ? `${Math.round((annualSavings / netInr) * 100)}%`
-                      : "—"}
-                  </span>
-                  <span className={styles.investScoreStatLabel}>
-                    {c.wealth.annualRoi}
-                  </span>
-                </div>
-              </div>
-              <p className={styles.investScoreBasis}>
-                <strong>{c.wealth.basis}</strong>{" "}
-                {c.wealth.basisText(
-                  paybackYears > 0 ? paybackYears.toFixed(1) : "4–5"
-                )}
-              </p>
-            </div>
-
-            <div className={styles.paybackCard}>
-              <span className={styles.paybackTag}>{c.wealth.totalWealthTag}</span>
-              <div className={styles.paybackAmt}>
-                {totalWealth > 0 ? formatInrCompact(totalWealth) : "—"}
-              </div>
-              <p className={styles.paybackNote}>
-                {c.wealth.returnsNote(
-                  netInr > 0 ? formatInrCompact(netInr).replace(/^₹/, "") : "—",
-                  totalWealth > 0 && netInr > 0
-                    ? formatInrCompact(totalWealth)
-                    : "—"
-                )}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <aside className={styles.wealthExpert}>
-          <div className={styles.wealthExpertTop}>
-            <span className={styles.wealthExpertTag}>{c.wealth.expertTag}</span>
-            <span className={styles.wealthExpertAttr}>
-              {c.wealth.expertAttr(brand)}
-            </span>
-          </div>
-          <p className={styles.wealthExpertBody}>
-            {c.wealth.expertBody(cityLabel)}
-          </p>
-        </aside>
-
-        <p className={styles.wealthTakeaway}>
-          {c.wealth.takeaway(
-            paybackYears > 0 ? paybackYears.toFixed(1) : "4–5",
-            paybackYears > 0
-              ? String(Math.max(1, 25 - Math.ceil(paybackYears)))
-              : "20"
-          )}
-        </p>
-
-        <span className={styles.pageNum}>04 / 12</span>
-      </section>
-
-      {/* ══ P5: GENERATION PROOF ═════════════════════════════════ */}
-      <section className={`${styles.page} ${styles.genPage}`}>
-        <header className={styles.pageHead}>
-          <span className={styles.pageTag}>{c.gen.tag}</span>
-          <h2 className={styles.pageTitle}>
-            {c.gen.title(
-              annualGen > 0 ? annualGen.toLocaleString("en-IN") : "7,200"
-            )}
-          </h2>
-        </header>
-
-        <div className={styles.genProofGrid}>
-          <div className={styles.genCard}>
-            <span className={styles.genCardTag}>{c.gen.pvgis}</span>
-            <div className={styles.genFormulaGrid}>
-              <div className={styles.genFormulaStep}>
-                <span className={styles.genFormulaVal}>
-                  {systemKw > 0 ? `${systemKw} kW` : "5 kW"}
-                </span>
-                <span className={styles.genFormulaLabel}>{c.gen.systemCapacity}</span>
-              </div>
-              <div className={styles.genFormulaStep}>
-                <span className={styles.genFormulaVal}>5.0</span>
-                <span className={styles.genFormulaLabel}>{c.gen.sunHours}</span>
-              </div>
-              <div className={styles.genFormulaStep}>
-                <span className={styles.genFormulaVal}>75%</span>
-                <span className={styles.genFormulaLabel}>{c.gen.perfRatio}</span>
-              </div>
-              <div className={styles.genFormulaStep}>
-                <span className={styles.genFormulaVal}>365</span>
-                <span className={styles.genFormulaLabel}>{c.gen.daysYear}</span>
-              </div>
-            </div>
-            <div className={styles.genFormulaEquals}>
-              <span className={styles.genFormulaEqMark}>=</span>
-              <div className={styles.genFormulaResult}>
-                <span className={styles.genFormulaResultVal}>
-                  {annualGen > 0 ? annualGen.toLocaleString("en-IN") : "6,844"}
-                </span>
-                <span className={styles.genFormulaResultLabel}>
-                  {c.gen.unitsYear}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.genCard}>
-            <span className={styles.genCardTag}>
-              {c.gen.solarResource(cityLabel)}
-            </span>
-            <div className={styles.genIrradTiles}>
-              {[
-                [c.gen.globalHoriz, "~1,850", "kWh/m²/yr"],
-                [c.gen.optimalIncl, "~1,950", "kWh/m²/yr"],
-                [c.gen.annualIrrad, `${tilt}°`, c.gen.tiltUnit],
-                [c.gen.dataSource, "PVGIS", "NREL Atlas"],
-              ].map(([k, v, u]) => (
-                <div key={k} className={styles.genIrradTile}>
-                  <span className={styles.genIrradKey}>{k}</span>
-                  <strong className={styles.genIrradVal}>{v}</strong>
-                  <span className={styles.genIrradUnit}>{u}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {(() => {
-          const est =
-            annualGen > 0
-              ? annualGen
-              : Math.round(systemKw * 5 * 0.75 * 365);
-          const max = Math.round(est * 1.13);
-          const bars = [
-            {
-              label: c.gen.ourEstimate,
-              val: est,
-              pct: Math.round((est / max) * 100),
-              tone: "hero" as const,
-            },
-            {
-              label: c.gen.gridAvg(cityLabel),
-              val: Math.round(est * 0.75),
-              pct: Math.round((est * 0.75) / max * 100),
-              tone: "muted" as const,
-            },
-            {
-              label: c.gen.theoreticalMax,
-              val: max,
-              pct: 100,
-              tone: "soft" as const,
-            },
-          ];
-          return (
-            <div className={styles.genCompare}>
-              <span className={styles.genCardTag}>{c.gen.barTag(cityLabel)}</span>
-              <div className={styles.genCompareList}>
-                {bars.map((b) => (
-                  <div
-                    key={b.label}
-                    className={`${styles.genCompareRow} ${
-                      b.tone === "hero"
-                        ? styles.genCompareHero
-                        : b.tone === "muted"
-                          ? styles.genCompareMuted
-                          : styles.genCompareSoft
-                    }`}
-                  >
-                    <div className={styles.genCompareMeta}>
-                      <span className={styles.genBarLabel}>{b.label}</span>
-                      <span className={styles.genBarVal}>
-                        {b.val.toLocaleString("en-IN")} {c.gen.units}
-                      </span>
-                    </div>
-                    <div className={styles.genBarTrack}>
-                      <div
-                        className={styles.genBarFill}
-                        style={{ width: `${Math.max(b.pct, 12)}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })()}
-
-        <div className={`${styles.expertInsight} ${styles.genExpert}`}>
-          <span className={styles.expertTag}>{c.gen.expertTag}</span>
-          <p>
-            {c.gen.expertBody(
-              systemSize,
-              monthlyBill > 0 ? formatInr(monthlyBill) : "₹5,200",
-              Math.round(
-                ((monthlyBill > 0 ? monthlyBill : 5200) * 12) / 8
-              ).toLocaleString("en-IN"),
-              (
-                annualGen > 0
-                  ? annualGen
-                  : Math.round(systemKw * 5 * 0.75 * 365)
-              ).toLocaleString("en-IN"),
-              cityLabel
-            )}
-          </p>
-        </div>
-
-        <div className={styles.genSpecGrid}>
-          {engMetrics.map(([label, value]) => (
-            <div key={label} className={styles.genSpecCard}>
-              <div className={styles.genSpecVal}>{value}</div>
-              <div className={styles.genSpecLabel}>{label}</div>
-            </div>
-          ))}
-        </div>
-
-        <div className={styles.genFoot}>
-          <div className={styles.genStdRow}>
-            <span className={styles.genStdLabel}>{c.gen.compliance}</span>
-            {standards.map((s) => (
-              <span key={s} className={styles.stdBadge}>
-                {s}
-              </span>
-            ))}
-          </div>
-          <p className={styles.genDisclaimer}>
-            <strong>{c.gen.noteLabel}</strong> {c.gen.noteBody}
-          </p>
-        </div>
-
-        <span className={styles.pageNum}>05 / 12</span>
-      </section>
-
-      {/* ══ P6: HARDWARE TRUST — icons + earthing strip ══════════ */}
-      <section className={`${styles.page} ${styles.hwPage}`}>
-        <header className={styles.pageHead}>
-          <span className={styles.pageTag}>{c.hw.tag}</span>
-          <h2 className={styles.pageTitle}>{c.hw.title}</h2>
-          <p className={styles.pageLead}>{c.hw.lead}</p>
-        </header>
-
-        <div className={styles.hwCard4Grid}>
-          {(
-            [
-              {
-                key: "panel" as HwIconKey,
-                tag: c.hw.panels,
-                title: panelItem
-                  ? panelItem.brand || "Waaree"
-                  : "Waaree Energies",
-                spec: bomLine(panelItem, "580 Wp DCR TOPCon N-Type"),
-                warranty: panelItem?.warranty || c.hw.warrantyPanel,
-                why: c.hw.whyPanel(cityLabel),
-              },
-              {
-                key: "inverter" as HwIconKey,
-                tag: c.hw.inverter,
-                title: inverterItem
-                  ? inverterItem.brand || "Havells / Polycab"
-                  : "Havells / Polycab",
-                spec: bomLine(
-                  inverterItem,
-                  `${systemKw} kW Dual MPPT String Inverter`
-                ),
-                warranty: inverterItem?.warranty || c.hw.warrantyInverter,
-                why: c.hw.whyInverter,
-              },
-              {
-                key: "structure" as HwIconKey,
-                tag: c.hw.structure,
-                title: structureItem ? structureItem.brand || "JSW" : "JSW",
-                spec: bomLine(structureItem, "Hot-Dip Galvanized GI Structure"),
-                warranty: structureItem?.warranty || c.hw.warrantyStructure,
-                why: c.hw.whyStructure,
-              },
-              {
-                key: "protection" as HwIconKey,
-                tag: c.hw.protection,
-                title: protectionItem
-                  ? protectionItem.brand || "Havells / Phoenix"
-                  : "Havells / Phoenix",
-                spec: bomLine(protectionItem, "DCDB + ACDB with SPD"),
-                warranty: protectionItem?.warranty || c.hw.warrantyProtection,
-                why: c.hw.whyProtection,
-              },
-            ] as const
-          ).map((hw) => (
-            <div key={hw.key} className={styles.hwCardV2}>
-              <div className={styles.hwCardTop}>
-                <div className={styles.hwCardIcon} aria-hidden="true">
-                  <HwCardIcon name={hw.key} className={styles.hwCardIconSvg} />
-                </div>
-                <span className={styles.hwCardTag}>{hw.tag}</span>
-              </div>
-              <div className={styles.hwCardBody}>
-                <div className={styles.hwCardTitle}>{hw.title}</div>
-                <p className={styles.hwCardSpec}>{hw.spec}</p>
-                <p className={styles.hwCardWhy}>{hw.why}</p>
-                <div className={styles.hwCardFooter}>
-                  <span className={styles.hwCardWarranty}>{hw.warranty}</span>
-                  <a href="#" className={styles.hwCardDatasheet}>
-                    {c.hw.viewDatasheet}
-                  </a>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <aside className={styles.hwEarthStrip}>
-          <div className={styles.hwEarthHead}>
-            <span className={styles.hwEarthIconWrap} aria-hidden>
-              <HwIconEarth className={styles.hwEarthIconSvg} />
-            </span>
-            <div>
-              <span className={styles.hwEarthTag}>{c.hw.earthTag}</span>
-              <p className={styles.hwEarthLead}>{c.hw.earthLead}</p>
-            </div>
-          </div>
-          <div className={styles.hwEarthChips}>
-            {[
-              {
-                val: c.hw.earthKitsVal,
-                label: c.hw.earthKitsLabel,
-              },
-              {
-                val: c.hw.earthCableVal,
-                label: c.hw.earthCableLabel,
-              },
-              {
-                val: c.hw.earthLaVal,
-                label: c.hw.earthLaLabel,
-              },
-            ].map((chip) => (
-              <div key={chip.label} className={styles.hwEarthChip}>
-                <strong className={styles.hwEarthChipVal}>{chip.val}</strong>
-                <span className={styles.hwEarthChipLabel}>{chip.label}</span>
-              </div>
-            ))}
-          </div>
-          <p className={styles.hwEarthWhy}>{c.hw.earthWhy}</p>
-        </aside>
-
-        <div className={styles.warrantyGridCompact}>
-          {warrantyCards.map((w, i) => (
-            <div
-              key={w.label}
-              className={`${styles.warrantyBadge} ${i === 0 ? styles.warrantyAccent : ""}`}
-            >
-              <div className={styles.warrantyCircle}>
-                <div className={styles.warrantyYears}>{w.years}</div>
-                <div className={styles.warrantyYrsText}>{c.hw.yrs}</div>
-              </div>
-              <div className={styles.warrantyLabel}>{w.label}</div>
-              {w.sub && <div className={styles.warrantySub}>{w.sub}</div>}
-            </div>
-          ))}
-        </div>
-
-        <span className={styles.pageNum}>06 / 12</span>
-      </section>
-
-      {/* ══ P7: WHY PARTNER — trust cards + 1 proof photo ═══════ */}
-      <section className={`${styles.page} ${styles.trustPage}`}>
-        <header className={styles.pageHead}>
-          <span className={styles.pageTag}>
-            {c.trust.tag(brand.toUpperCase())}
-          </span>
-          <h2 className={styles.pageTitle}>{c.trust.title}</h2>
-        </header>
-
-        <div className={styles.trustGrid}>
-          {c.trust.cards.map((t) => (
-            <div key={t.label} className={styles.trustCard}>
-              <div className={styles.trustCardTop}>
-                <span className={styles.trustIconTile} aria-hidden>
-                  <TrustCardIcon
-                    name={t.icon}
-                    className={styles.trustIconSvg}
-                  />
-                </span>
-                <div className={styles.trustNum}>{t.num}</div>
-              </div>
-              <div className={styles.trustLabel}>{t.label}</div>
-              <div className={styles.trustNote}>{t.note}</div>
-            </div>
-          ))}
-        </div>
-
-        <div className={styles.trustProof}>
-          <figure className={styles.trustPhotoFrame}>
-            {/* eslint-disable-next-line @next/next/no-img-element -- print A4 static asset */}
-            <img
-              className={styles.trustPhoto}
-              src="/assets/proposals/atelier-trust-rooftop.jpg"
-              alt={c.trust.photoTitle}
-            />
-            <figcaption className={styles.trustPhotoCap}>
-              <strong>{c.trust.photoTitle}</strong>
-              <span>{c.trust.photoSub}</span>
-            </figcaption>
-          </figure>
-          <div className={styles.trustQuoteBox}>
-            <span className={styles.trustQuoteMark} aria-hidden>
-              “
-            </span>
-            <p className={styles.trustQuote}>{c.trust.quote}</p>
-            <span className={styles.trustQuoteAttr}>
-              {c.trust.quoteAttr(brand)}
-            </span>
-          </div>
-        </div>
-
-        <span className={styles.pageNum}>07 / 12</span>
-      </section>
-
-      {/* ══ P8: ROOF INTELLIGENCE — Yield Story ═══════════════════ */}
+      {/* ══ P3: ROOF INTELLIGENCE — Yield Story ═══════════════════ */}
       <section className={`${styles.page} ${styles.roofPage}`}>
         <header className={styles.pageHead}>
           <span className={styles.pageTag}>{c.roof.tag}</span>
@@ -1411,25 +837,14 @@ export function AtelierRenderer({
 
         <div className={styles.roofMainRow}>
           <div className={styles.roofArrayStage}>
-            <div className={styles.roofStageHead}>
-              <span className={styles.roofTerraceLabel}>{c.roof.terraceLabel}</span>
-              <span className={styles.roofStageTitle}>
-                {c.roof.panelLayout(panelCount)}
-              </span>
-            </div>
-            <div className={styles.roofPlanFrame}>
-              <AtelierRoofPlan
-                modules={panelCount}
-                southLabel={c.roof.southEdge}
-                className={styles.roofPlanSvg}
-              />
-            </div>
-            <p className={styles.roofPlanCaption}>
-              {c.roof.planCaption(panelCount, panelWp, tilt)}
-              {panelCount > 18
-                ? ` · ${c.roof.moreModules(panelCount - 18)}`
-                : null}
-            </p>
+            <AtelierBlueprintArray
+              panelCount={panelCount}
+              tiltDeg={tilt}
+              title={c.roof.blueprintTitle}
+              arrayLabel={c.roof.blueprintArray}
+              tiltAzimuthLine={c.roof.blueprintTiltLine}
+              showingNote={c.roof.blueprintShowing}
+            />
           </div>
 
           <aside className={styles.roofSunTeach}>
@@ -1630,10 +1045,640 @@ export function AtelierRenderer({
           ))}
         </div>
 
-        <span className={styles.pageNum}>08 / 12</span>
+        <span className={styles.pageNum}>03 / 13</span>
       </section>
 
-      {/* ══ P9: EXECUTION ROADMAP + PAYMENT + BANK ═══════════════ */}
+      {/* ══ P4: WEALTH PROJECTION — money story + AA+ ════════════ */}
+      <section className={`${styles.page} ${styles.wealthPage}`}>
+        <header className={styles.pageHead}>
+          <span className={styles.pageTag}>{c.wealth.tag}</span>
+          <h2 className={styles.pageTitle}>{c.wealth.title}</h2>
+          <p className={styles.pageLead}>{c.wealth.lead}</p>
+        </header>
+
+        {/* Instant story: invest → payback → keep */}
+        <div className={styles.wealthPath} aria-label={c.wealth.lead}>
+          <div className={styles.wealthPathCard}>
+            <span className={styles.wealthPathIcon} aria-hidden>
+              <WealthIconPay className={styles.wjIconSvg} />
+            </span>
+            <span className={styles.wealthPathLabel}>
+              {c.wealth.step1Num} · {c.wealth.pathInvest}
+            </span>
+            <strong className={styles.wealthPathAmt}>
+              {netInr > 0 ? formatInrCompact(netInr) : "—"}
+            </strong>
+            <span className={styles.wealthPathSub}>
+              {c.wealth.year0To(paybackYears > 0 ? Math.ceil(paybackYears) : 5)}
+            </span>
+            <span className={styles.wealthPathNote}>{c.wealth.phase1Note}</span>
+          </div>
+          <div className={styles.wealthPathArrow} aria-hidden>
+            <span>→</span>
+          </div>
+          <div className={`${styles.wealthPathCard} ${styles.wealthPathMid}`}>
+            <span className={`${styles.wealthPathIcon} ${styles.wealthPathIconOn}`} aria-hidden>
+              <WealthIconPaid className={styles.wjIconSvg} />
+            </span>
+            <span className={styles.wealthPathLabel}>
+              {c.wealth.step2Num} · {c.wealth.pathPayback}
+            </span>
+            <strong className={styles.wealthPathAmt}>
+              {paybackYears > 0
+                ? `${paybackYears.toFixed(1)} ${c.wealth.yrsShort}`
+                : "—"}
+            </strong>
+            <span className={styles.wealthPathSub}>{c.wealth.pathPayoff}</span>
+            <span className={styles.wealthPathNote}>{c.wealth.paybackNote}</span>
+          </div>
+          <div className={styles.wealthPathArrow} aria-hidden>
+            <span>→</span>
+          </div>
+          <div className={`${styles.wealthPathCard} ${styles.wealthPathEnd}`}>
+            <span className={styles.wealthPathIcon} aria-hidden>
+              <WealthIconGrow className={styles.wjIconSvg} />
+            </span>
+            <span className={styles.wealthPathLabel}>
+              {c.wealth.step3Num} · {c.wealth.pathKeep}
+            </span>
+            <strong className={styles.wealthPathAmt}>
+              {totalWealth > 0 ? formatInrCompact(totalWealth) : "—"}
+            </strong>
+            <span className={styles.wealthPathSub}>
+              {c.wealth.yearRange(
+                paybackYears > 0 ? Math.ceil(paybackYears) + 1 : 6
+              )}
+            </span>
+            <span className={styles.wealthPathNote}>{c.wealth.zeroEnergy}</span>
+          </div>
+        </div>
+
+        <div className={styles.wealthLayout}>
+          <div className={styles.wealthChartBox}>
+            <div className={styles.wealthChartHead}>
+              <span className={styles.wealthChartTitle}>{c.wealth.chartTitle}</span>
+              <span className={styles.wealthChartHint}>{c.wealth.chartHint}</span>
+            </div>
+            <div className={styles.wealthChart}>
+              {wealthMilestones.map((m) => (
+                <div key={m.year} className={styles.wealthMilestone}>
+                  <span className={styles.wealthYr}>{c.wealth.yrShort(m.year)}</span>
+                  <div className={styles.wealthBarWrap}>
+                    <div
+                      className={styles.wealthBarFill}
+                      style={{ width: `${Math.max(m.pct, 8)}%` }}
+                    />
+                  </div>
+                  <span className={styles.wealthAmt}>
+                    {m.savings > 0 ? formatInrCompact(m.savings) : "—"}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className={styles.wealthVs}>
+              <div className={styles.wealthVsKeep}>
+                <span className={styles.wealthVsLabel}>{c.wealth.withSolar}</span>
+                <strong className={styles.wealthVsAmt}>
+                  {totalWealth > 0 ? formatInrCompact(totalWealth) : "—"}
+                </strong>
+              </div>
+              <div className={styles.wealthVsGrid}>
+                <span className={styles.wealthVsLabel}>{c.wealth.withoutSolar}</span>
+                <strong className={styles.wealthVsAmt}>
+                  {monthlyBill > 0
+                    ? formatInrCompact(monthlyBill * 12 * 22)
+                    : "—"}
+                </strong>
+                <span className={styles.wealthVsHint}>{c.wealth.paidToGrid}</span>
+              </div>
+            </div>
+            <p className={styles.wealthChartNote}>{c.wealth.chartNote}</p>
+          </div>
+
+          <div className={styles.investScoreBox}>
+            <div className={styles.investScoreCard}>
+              <span className={styles.investScoreTag}>{c.wealth.scoreTag}</span>
+              <div className={styles.investScoreGrade}>{investScore}</div>
+              <div className={styles.investScoreLabel}>{investGrade}</div>
+              <div className={styles.investScoreDivider} />
+              <div className={styles.investScoreStats}>
+                <div className={styles.investScoreStat}>
+                  <span className={styles.investScoreStatVal}>
+                    {paybackYears > 0
+                      ? `${paybackYears.toFixed(1)} ${c.wealth.yrsShort}`
+                      : "—"}
+                  </span>
+                  <span className={styles.investScoreStatLabel}>
+                    {c.wealth.paybackLabel}
+                  </span>
+                </div>
+                <div className={styles.investScoreStat}>
+                  <span className={styles.investScoreStatVal}>
+                    {annualSavings > 0 && netInr > 0
+                      ? `${Math.round((annualSavings / netInr) * 100)}%`
+                      : "—"}
+                  </span>
+                  <span className={styles.investScoreStatLabel}>
+                    {c.wealth.annualRoi}
+                  </span>
+                </div>
+              </div>
+              <p className={styles.investScoreBasis}>
+                <strong>{c.wealth.basis}</strong>{" "}
+                {c.wealth.basisText(
+                  paybackYears > 0 ? paybackYears.toFixed(1) : "4–5"
+                )}
+              </p>
+            </div>
+
+            <div className={styles.paybackCard}>
+              <span className={styles.paybackTag}>{c.wealth.totalWealthTag}</span>
+              <div className={styles.paybackAmt}>
+                {totalWealth > 0 ? formatInrCompact(totalWealth) : "—"}
+              </div>
+              <p className={styles.paybackNote}>
+                {c.wealth.returnsNote(
+                  netInr > 0 ? formatInrCompact(netInr).replace(/^₹/, "") : "—",
+                  totalWealth > 0 && netInr > 0
+                    ? formatInrCompact(totalWealth)
+                    : "—"
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <aside className={styles.wealthExpert}>
+          <div className={styles.wealthExpertTop}>
+            <span className={styles.wealthExpertTag}>{c.wealth.expertTag}</span>
+            <span className={styles.wealthExpertAttr}>
+              {c.wealth.expertAttr(brand)}
+            </span>
+          </div>
+          <p className={styles.wealthExpertBody}>
+            {c.wealth.expertBody(cityLabel)}
+          </p>
+        </aside>
+
+        <p className={styles.wealthTakeaway}>
+          {c.wealth.takeaway(
+            paybackYears > 0 ? paybackYears.toFixed(1) : "4–5",
+            paybackYears > 0
+              ? String(Math.max(1, 25 - Math.ceil(paybackYears)))
+              : "20"
+          )}
+        </p>
+
+        <span className={styles.pageNum}>04 / 13</span>
+      </section>
+
+      {/* ══ P5: GENERATION PROOF ═════════════════════════════════ */}
+      <section className={`${styles.page} ${styles.genPage}`}>
+        <header className={styles.pageHead}>
+          <span className={styles.pageTag}>{c.gen.tag}</span>
+          <h2 className={styles.pageTitle}>
+            {c.gen.title(
+              annualGen > 0 ? annualGen.toLocaleString("en-IN") : "7,200"
+            )}
+          </h2>
+        </header>
+
+        <div className={styles.genProofGrid}>
+          <div className={styles.genCard}>
+            <span className={styles.genCardTag}>{c.gen.pvgis}</span>
+            <div className={styles.genFormulaGrid}>
+              <div className={styles.genFormulaStep}>
+                <span className={styles.genFormulaVal}>
+                  {systemKw > 0 ? `${systemKw} kW` : "5 kW"}
+                </span>
+                <span className={styles.genFormulaLabel}>{c.gen.systemCapacity}</span>
+              </div>
+              <div className={styles.genFormulaStep}>
+                <span className={styles.genFormulaVal}>5.0</span>
+                <span className={styles.genFormulaLabel}>{c.gen.sunHours}</span>
+              </div>
+              <div className={styles.genFormulaStep}>
+                <span className={styles.genFormulaVal}>75%</span>
+                <span className={styles.genFormulaLabel}>{c.gen.perfRatio}</span>
+              </div>
+              <div className={styles.genFormulaStep}>
+                <span className={styles.genFormulaVal}>365</span>
+                <span className={styles.genFormulaLabel}>{c.gen.daysYear}</span>
+              </div>
+            </div>
+            <div className={styles.genFormulaEquals}>
+              <span className={styles.genFormulaEqMark}>=</span>
+              <div className={styles.genFormulaResult}>
+                <span className={styles.genFormulaResultVal}>
+                  {annualGen > 0 ? annualGen.toLocaleString("en-IN") : "6,844"}
+                </span>
+                <span className={styles.genFormulaResultLabel}>
+                  {c.gen.unitsYear}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.genCard}>
+            <span className={styles.genCardTag}>
+              {c.gen.solarResource(cityLabel)}
+            </span>
+            <div className={styles.genIrradTiles}>
+              {[
+                [c.gen.globalHoriz, "~1,850", "kWh/m²/yr"],
+                [c.gen.optimalIncl, "~1,950", "kWh/m²/yr"],
+                [c.gen.annualIrrad, `${tilt}°`, c.gen.tiltUnit],
+                [c.gen.dataSource, "PVGIS", "NREL Atlas"],
+              ].map(([k, v, u]) => (
+                <div key={k} className={styles.genIrradTile}>
+                  <span className={styles.genIrradKey}>{k}</span>
+                  <strong className={styles.genIrradVal}>{v}</strong>
+                  <span className={styles.genIrradUnit}>{u}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {(() => {
+          const est =
+            annualGen > 0
+              ? annualGen
+              : Math.round(systemKw * 5 * 0.75 * 365);
+          const max = Math.round(est * 1.13);
+          const bars = [
+            {
+              label: c.gen.ourEstimate,
+              val: est,
+              pct: Math.round((est / max) * 100),
+              tone: "hero" as const,
+            },
+            {
+              label: c.gen.gridAvg(cityLabel),
+              val: Math.round(est * 0.75),
+              pct: Math.round((est * 0.75) / max * 100),
+              tone: "muted" as const,
+            },
+            {
+              label: c.gen.theoreticalMax,
+              val: max,
+              pct: 100,
+              tone: "soft" as const,
+            },
+          ];
+          return (
+            <div className={styles.genCompare}>
+              <span className={styles.genCardTag}>{c.gen.barTag(cityLabel)}</span>
+              <div className={styles.genCompareList}>
+                {bars.map((b) => (
+                  <div
+                    key={b.label}
+                    className={`${styles.genCompareRow} ${
+                      b.tone === "hero"
+                        ? styles.genCompareHero
+                        : b.tone === "muted"
+                          ? styles.genCompareMuted
+                          : styles.genCompareSoft
+                    }`}
+                  >
+                    <div className={styles.genCompareMeta}>
+                      <span className={styles.genBarLabel}>{b.label}</span>
+                      <span className={styles.genBarVal}>
+                        {b.val.toLocaleString("en-IN")} {c.gen.units}
+                      </span>
+                    </div>
+                    <div className={styles.genBarTrack}>
+                      <div
+                        className={styles.genBarFill}
+                        style={{ width: `${Math.max(b.pct, 12)}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
+        <div className={`${styles.expertInsight} ${styles.genExpert}`}>
+          <span className={styles.expertTag}>{c.gen.expertTag}</span>
+          <p>
+            {c.gen.expertBody(
+              systemSize,
+              monthlyBill > 0 ? formatInr(monthlyBill) : "₹5,200",
+              Math.round(
+                ((monthlyBill > 0 ? monthlyBill : 5200) * 12) / 8
+              ).toLocaleString("en-IN"),
+              (
+                annualGen > 0
+                  ? annualGen
+                  : Math.round(systemKw * 5 * 0.75 * 365)
+              ).toLocaleString("en-IN"),
+              cityLabel
+            )}
+          </p>
+        </div>
+
+        <div className={styles.genSpecGrid}>
+          {engMetrics.map(([label, value]) => (
+            <div key={label} className={styles.genSpecCard}>
+              <div className={styles.genSpecVal}>{value}</div>
+              <div className={styles.genSpecLabel}>{label}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className={styles.genFoot}>
+          <div className={styles.genStdRow}>
+            <span className={styles.genStdLabel}>{c.gen.compliance}</span>
+            {standards.map((s) => (
+              <span key={s} className={styles.stdBadge}>
+                {s}
+              </span>
+            ))}
+          </div>
+          <p className={styles.genDisclaimer}>
+            <strong>{c.gen.noteLabel}</strong> {c.gen.noteBody}
+          </p>
+        </div>
+
+        <span className={styles.pageNum}>05 / 13</span>
+      </section>
+
+      {/* ══ P6: MONTHLY GENERATION FORECAST ══════════════════════ */}
+      <section className={`${styles.page} ${styles.forecastPage}`}>
+        <header className={styles.pageHead}>
+          <span className={styles.pageTag}>{c.genForecast.tag}</span>
+          <h2 className={styles.pageTitle}>{c.genForecast.title}</h2>
+          <p className={styles.pageLead}>{c.genForecast.lead}</p>
+        </header>
+
+        <div className={styles.forecastStats}>
+          <div className={styles.forecastStatCard}>
+            <span className={styles.forecastStatTag}>
+              {c.genForecast.annualGen}
+            </span>
+            <strong className={styles.forecastStatVal}>
+              {forecastAnnualUnits > 0
+                ? `${forecastAnnualUnits.toLocaleString("en-IN")} ${c.gen.units}`
+                : "—"}
+            </strong>
+            <span className={styles.forecastStatHint}>
+              {c.genForecast.annualGenHint}
+            </span>
+          </div>
+          <div
+            className={`${styles.forecastStatCard} ${styles.forecastStatCardAccent}`}
+          >
+            <span className={styles.forecastStatTag}>
+              {c.genForecast.annualSavings}
+            </span>
+            <strong className={styles.forecastStatVal}>
+              {yearOneSavings > 0 ? formatInrCompact(yearOneSavings) : "—"}
+            </strong>
+            <span className={styles.forecastStatHint}>
+              {c.genForecast.annualSavingsHint}
+            </span>
+          </div>
+        </div>
+
+        <div className={styles.forecastChart}>
+          <div
+            className={styles.forecastBars}
+            role="img"
+            aria-label={c.genForecast.title}
+          >
+            {forecastMonths.map((m) => (
+              <div
+                key={m.label}
+                className={`${styles.forecastCol}${
+                  m.isPeak ? ` ${styles.forecastColPeak}` : ""
+                }`}
+              >
+                <span className={styles.forecastUnits}>
+                  {m.units > 0 ? m.units.toLocaleString("en-IN") : "—"}
+                </span>
+                <div className={styles.forecastTrack}>
+                  <div
+                    className={styles.forecastFill}
+                    style={{ height: `${m.barPct}%` }}
+                  />
+                </div>
+                <span className={styles.forecastMonth}>{m.label}</span>
+                <span className={styles.forecastSave}>
+                  {m.savingsInr > 0
+                    ? `₹${Math.round(m.savingsInr / 1000)}k`
+                    : "—"}
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className={styles.forecastLegend}>
+            <span>{c.genForecast.unitsLabel}</span>
+            <span className={styles.forecastPeakCue}>
+              {c.genForecast.peakNote}
+            </span>
+            <span>{c.genForecast.savingsLabel}</span>
+          </div>
+          {effectiveSavingPerUnit > 0 ? (
+            <p className={styles.forecastBasis}>
+              {c.genForecast.savingsBasis(effectiveSavingPerUnit.toFixed(2))}
+            </p>
+          ) : null}
+        </div>
+
+        <div className={`${styles.expertInsight} ${styles.forecastExpert}`}>
+          <span className={styles.expertTag}>{c.genForecast.expertTag}</span>
+          <p>{c.genForecast.expertBody}</p>
+        </div>
+
+        <span className={styles.pageNum}>06 / 13</span>
+      </section>
+
+      {/* ══ P7: HARDWARE TRUST — icons + earthing strip ══════════ */}
+      <section className={`${styles.page} ${styles.hwPage}`}>
+        <header className={styles.pageHead}>
+          <span className={styles.pageTag}>{c.hw.tag}</span>
+          <h2 className={styles.pageTitle}>{c.hw.title}</h2>
+          <p className={styles.pageLead}>{c.hw.lead}</p>
+        </header>
+
+        <div className={styles.hwCard4Grid}>
+          {(
+            [
+              {
+                key: "panel" as HwIconKey,
+                tag: c.hw.panels,
+                title: panelItem
+                  ? panelItem.brand || "Waaree"
+                  : "Waaree Energies",
+                spec: bomLine(panelItem, "580 Wp DCR TOPCon N-Type"),
+                warranty: panelItem?.warranty || c.hw.warrantyPanel,
+                why: c.hw.whyPanel(cityLabel),
+              },
+              {
+                key: "inverter" as HwIconKey,
+                tag: c.hw.inverter,
+                title: inverterItem
+                  ? inverterItem.brand || "Havells / Polycab"
+                  : "Havells / Polycab",
+                spec: bomLine(
+                  inverterItem,
+                  `${systemKw} kW Dual MPPT String Inverter`
+                ),
+                warranty: inverterItem?.warranty || c.hw.warrantyInverter,
+                why: c.hw.whyInverter,
+              },
+              {
+                key: "structure" as HwIconKey,
+                tag: c.hw.structure,
+                title: structureItem ? structureItem.brand || "JSW" : "JSW",
+                spec: bomLine(structureItem, "Hot-Dip Galvanized GI Structure"),
+                warranty: structureItem?.warranty || c.hw.warrantyStructure,
+                why: c.hw.whyStructure,
+              },
+              {
+                key: "protection" as HwIconKey,
+                tag: c.hw.protection,
+                title: protectionItem
+                  ? protectionItem.brand || "Havells / Phoenix"
+                  : "Havells / Phoenix",
+                spec: bomLine(protectionItem, "DCDB + ACDB with SPD"),
+                warranty: protectionItem?.warranty || c.hw.warrantyProtection,
+                why: c.hw.whyProtection,
+              },
+            ] as const
+          ).map((hw) => (
+            <div key={hw.key} className={styles.hwCardV2}>
+              <div className={styles.hwCardTop}>
+                <div className={styles.hwCardIcon} aria-hidden="true">
+                  <HwCardIcon name={hw.key} className={styles.hwCardIconSvg} />
+                </div>
+                <span className={styles.hwCardTag}>{hw.tag}</span>
+              </div>
+              <div className={styles.hwCardBody}>
+                <div className={styles.hwCardTitle}>{hw.title}</div>
+                <p className={styles.hwCardSpec}>{hw.spec}</p>
+                <p className={styles.hwCardWhy}>{hw.why}</p>
+                <div className={styles.hwCardFooter}>
+                  <span className={styles.hwCardWarranty}>{hw.warranty}</span>
+                  <a href="#" className={styles.hwCardDatasheet}>
+                    {c.hw.viewDatasheet}
+                  </a>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <aside className={styles.hwEarthStrip}>
+          <div className={styles.hwEarthHead}>
+            <span className={styles.hwEarthIconWrap} aria-hidden>
+              <HwIconEarth className={styles.hwEarthIconSvg} />
+            </span>
+            <div>
+              <span className={styles.hwEarthTag}>{c.hw.earthTag}</span>
+              <p className={styles.hwEarthLead}>{c.hw.earthLead}</p>
+            </div>
+          </div>
+          <div className={styles.hwEarthChips}>
+            {[
+              {
+                val: c.hw.earthKitsVal,
+                label: c.hw.earthKitsLabel,
+              },
+              {
+                val: c.hw.earthCableVal,
+                label: c.hw.earthCableLabel,
+              },
+              {
+                val: c.hw.earthLaVal,
+                label: c.hw.earthLaLabel,
+              },
+            ].map((chip) => (
+              <div key={chip.label} className={styles.hwEarthChip}>
+                <strong className={styles.hwEarthChipVal}>{chip.val}</strong>
+                <span className={styles.hwEarthChipLabel}>{chip.label}</span>
+              </div>
+            ))}
+          </div>
+          <p className={styles.hwEarthWhy}>{c.hw.earthWhy}</p>
+        </aside>
+
+        <div className={styles.warrantyGridCompact}>
+          {warrantyCards.map((w, i) => (
+            <div
+              key={w.label}
+              className={`${styles.warrantyBadge} ${i === 0 ? styles.warrantyAccent : ""}`}
+            >
+              <div className={styles.warrantyCircle}>
+                <div className={styles.warrantyYears}>{w.years}</div>
+                <div className={styles.warrantyYrsText}>{c.hw.yrs}</div>
+              </div>
+              <div className={styles.warrantyLabel}>{w.label}</div>
+              {w.sub && <div className={styles.warrantySub}>{w.sub}</div>}
+            </div>
+          ))}
+        </div>
+
+        <span className={styles.pageNum}>07 / 13</span>
+      </section>
+
+      {/* ══ P8: WHY PARTNER — trust cards + 1 proof photo ═══════ */}
+      <section className={`${styles.page} ${styles.trustPage}`}>
+        <header className={styles.pageHead}>
+          <span className={styles.pageTag}>
+            {c.trust.tag(brand.toUpperCase())}
+          </span>
+          <h2 className={styles.pageTitle}>{c.trust.title}</h2>
+        </header>
+
+        <div className={styles.trustGrid}>
+          {c.trust.cards.map((t) => (
+            <div key={t.label} className={styles.trustCard}>
+              <div className={styles.trustCardTop}>
+                <span className={styles.trustIconTile} aria-hidden>
+                  <TrustCardIcon
+                    name={t.icon}
+                    className={styles.trustIconSvg}
+                  />
+                </span>
+                <div className={styles.trustNum}>{t.num}</div>
+              </div>
+              <div className={styles.trustLabel}>{t.label}</div>
+              <div className={styles.trustNote}>{t.note}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className={styles.trustProof}>
+          <figure className={styles.trustPhotoFrame}>
+            {/* eslint-disable-next-line @next/next/no-img-element -- print A4 static asset */}
+            <img
+              className={styles.trustPhoto}
+              src="/assets/proposals/atelier-trust-rooftop.jpg"
+              alt={c.trust.photoTitle}
+            />
+            <figcaption className={styles.trustPhotoCap}>
+              <strong>{c.trust.photoTitle}</strong>
+              <span>{c.trust.photoSub}</span>
+            </figcaption>
+          </figure>
+          <div className={styles.trustQuoteBox}>
+            <span className={styles.trustQuoteMark} aria-hidden>
+              “
+            </span>
+            <p className={styles.trustQuote}>{c.trust.quote}</p>
+            <span className={styles.trustQuoteAttr}>
+              {c.trust.quoteAttr(brand)}
+            </span>
+          </div>
+        </div>
+
+        <span className={styles.pageNum}>08 / 13</span>
+      </section>
+
+      {/* ══ P9: EXECUTION ROADMAP + PAYMENT + BANK ══════════════ */}
       <section className={`${styles.page} ${styles.roadmapPage}`}>
         <header className={styles.pageHead}>
           <span className={styles.pageTag}>{c.roadmap.tag}</span>
@@ -1759,10 +1804,61 @@ export function AtelierRenderer({
           </aside>
         </div>
 
-        <span className={styles.pageNum}>09 / 12</span>
+        <span className={styles.pageNum}>09 / 13</span>
       </section>
 
-      {/* ══ P10: TERMS & COMPLIANCE (Luxe content · Atelier style) ══ */}
+      {/* ══ P10: IMPACT — environmental close (after commercial story) ══ */}
+      <section className={`${styles.page} ${styles.impactPage}`}>
+        <header className={styles.pageHead}>
+          <span className={styles.pageTag}>{c.impact.tag}</span>
+          <h2 className={styles.pageTitle}>{c.impact.title}</h2>
+          <p className={styles.pageLead}>{c.impact.lead}</p>
+        </header>
+
+        <div className={styles.impactGrid}>
+          <div className={styles.impactCard}>
+            <div className={styles.impactBig}>{co2 > 0 ? co2 : "—"}</div>
+            <div className={styles.impactUnit}>{c.impact.tons}</div>
+            <div className={styles.impactLabel}>{c.impact.co2Label}</div>
+            <p className={styles.impactSub}>
+              {c.impact.co2Sub(co2 > 0 ? Math.round(co2 / 2) : "—")}
+            </p>
+          </div>
+          <div className={styles.impactCard}>
+            <div className={styles.impactBig}>
+              {trees > 0 ? trees.toLocaleString("en-IN") : "—"}
+            </div>
+            <div className={styles.impactUnit}>{c.impact.trees}</div>
+            <div className={styles.impactLabel}>{c.impact.ecoLabel}</div>
+            <p className={styles.impactSub}>{c.impact.ecoSub}</p>
+          </div>
+        </div>
+
+        <div className={styles.carbonMilestones}>
+          {[1, 10, 25].map((yr) => {
+            const tons = co2 > 0 ? Math.round((co2 / 25) * yr) : 0;
+            return (
+              <div key={yr} className={styles.carbonMilestone}>
+                <div className={styles.cmBar}>
+                  <div
+                    className={styles.cmBarFill}
+                    style={{ height: `${(yr / 25) * 100}%` }}
+                  />
+                </div>
+                <div className={styles.cmYear}>{c.impact.yearN(yr)}</div>
+                <div className={styles.cmTons}>
+                  {tons > 0 ? c.impact.tonsCo2(tons) : "—"}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className={styles.impactTagline}>{c.impact.tagline}</div>
+        <span className={styles.pageNum}>10 / 13</span>
+      </section>
+
+      {/* ══ P11: TERMS & COMPLIANCE (Luxe content · Atelier style) ══ */}
       <section className={`${styles.page} ${styles.termsPage}`}>
         <header className={styles.pageHead}>
           <span className={styles.pageTag}>{c.terms.tag10}</span>
@@ -1806,10 +1902,10 @@ export function AtelierRenderer({
           </aside>
         </div>
 
-        <span className={styles.pageNum}>10 / 12</span>
+        <span className={styles.pageNum}>11 / 13</span>
       </section>
 
-      {/* ══ P11: TERMS & COMPLIANCE (CONTD.) ══════════════════════ */}
+      {/* ══ P12: TERMS & COMPLIANCE (CONTD.) ═════════════════════ */}
       <section className={`${styles.page} ${styles.termsPage} ${styles.termsPageDense}`}>
         <header className={styles.pageHead}>
           <span className={styles.pageTag}>{c.terms.tag11}</span>
@@ -1921,7 +2017,7 @@ export function AtelierRenderer({
           </aside>
         </div>
 
-        <span className={styles.pageNum}>11 / 12</span>
+        <span className={styles.pageNum}>12 / 13</span>
       </section>
 
       {/* ══ P12: EMOTIONAL CLOSING — RCC rooftop + CTA ═══════════ */}
@@ -2055,7 +2151,7 @@ export function AtelierRenderer({
           </div>
         </div>
         <span className={`${styles.pageNum} ${styles.pageNumLight}`}>
-          12 / 12
+          13 / 13
         </span>
       </section>
     </div>
