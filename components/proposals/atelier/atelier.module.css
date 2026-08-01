@@ -3714,6 +3714,10 @@
     background:
       radial-gradient(ellipse 70% 40% at 50% 0%, rgba(249, 115, 22, 0.08), transparent 55%),
       var(--al);
+    /* Standard A4-style inset for web proposal (~15–16mm sides) */
+    --page-pad-x: 3.5rem;
+    --page-pad-t: 2.75rem;
+    --page-pad-b: 3.25rem;
   }
 
   .printBarInner {
@@ -3729,6 +3733,7 @@
     box-shadow:
       0 10px 32px rgba(15, 23, 42, 0.08),
       0 1px 0 rgba(255, 255, 255, 0.7) inset;
+    padding: var(--page-pad-t) var(--page-pad-x) var(--page-pad-b);
   }
 
   .coverPage,
@@ -3745,6 +3750,9 @@
     padding: 0 0 calc(1.75rem + env(safe-area-inset-bottom, 0px));
     overflow-x: hidden;
     max-width: 100vw;
+    --page-pad-x: 1.75rem;
+    --page-pad-t: 1.5rem;
+    --page-pad-b: 2.25rem;
   }
 
   .printBar {
@@ -3762,6 +3770,7 @@
     font-size: 0.72rem;
     letter-spacing: 1.2px;
     flex: 1 1 auto;
+    min-width: 0;
   }
 
   .printBarActions {
@@ -3773,19 +3782,17 @@
   .langBtn {
     padding: 0.45rem 0.75rem;
     font-size: 0.75rem;
-    min-height: 36px;
+    min-height: 40px;
   }
 
   .printBarBtn {
     font-size: 0.78rem;
     padding: 0.5rem 0.95rem;
-    min-height: 36px;
+    min-height: 40px;
+    flex: 1 1 auto;
   }
 
   .page {
-    --page-pad-x: 1.15rem;
-    --page-pad-t: 1.1rem;
-    --page-pad-b: 1.75rem;
     width: calc(100% - 16px) !important;
     max-width: 100% !important;
     height: auto !important;
@@ -3795,6 +3802,11 @@
     padding: var(--page-pad-t) var(--page-pad-x) var(--page-pad-b) !important;
     overflow: visible !important;
     border-radius: 12px;
+  }
+
+  .page > * {
+    max-width: 100%;
+    min-width: 0;
   }
 
   .coverPage,
@@ -3807,24 +3819,42 @@
 
   .coverInner,
   .closingInner {
-    padding: 1.15rem 1rem 1.35rem !important;
-    gap: 0.55rem;
+    padding: 1.25rem 1.15rem 1.45rem !important;
+    gap: 0.65rem;
     overflow: visible;
   }
 
+  .coverTop {
+    flex-wrap: wrap;
+    gap: 0.65rem 0.75rem;
+  }
+
+  .coverBrandRow {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .coverBrandText {
+    white-space: normal;
+    letter-spacing: 1.5px;
+    font-size: 0.78rem;
+  }
+
   .pageHead {
-    padding-top: 0.35rem;
-    margin-bottom: 0.9rem;
+    padding-top: 0.2rem;
+    margin-bottom: 0.85rem;
   }
 
   .pageTitle {
     font-size: clamp(1.35rem, 5.5vw, 1.7rem);
     max-width: none;
+    overflow-wrap: anywhere;
   }
 
   .pageLead {
-    font-size: 0.88rem;
+    font-size: 0.9rem;
     max-width: none;
+    line-height: 1.45;
   }
 
   .pageNum {
@@ -3834,10 +3864,11 @@
     right: auto;
     bottom: auto;
     text-align: right;
-    margin-top: 1rem;
+    margin-top: 1.1rem;
     padding: 0;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: normal;
   }
 
   .coverPhotoFrame {
@@ -3873,67 +3904,67 @@
     font-size: clamp(1.55rem, 7vw, 2.15rem);
   }
 
+  .impactBig {
+    font-size: clamp(2.2rem, 10vw, 3rem);
+  }
+
   .hwCard4Grid,
   .impactGrid,
-  .genProofGrid,
   .hw2Grid,
   .trustGrid,
-  .wealthLayout,
   .genSpecGrid,
   .warrantyGrid,
   .warrantyGridCompact {
     grid-template-columns: 1fr 1fr !important;
+    gap: 0.65rem !important;
   }
 
-  .wealthLayout {
+  .wealthLayout,
+  .genProofGrid,
+  .trustProof,
+  .roofMainRow,
+  .payBankSplit,
+  .closingSplit {
     grid-template-columns: 1fr !important;
-  }
-
-  .genProofGrid {
-    grid-template-columns: 1fr !important;
-  }
-
-  .trustProof {
-    grid-template-columns: 1fr;
   }
 
   .trustPhotoFrame {
     min-height: 180px;
-    height: 200px;
+    height: clamp(180px, 48vw, 220px);
+    max-height: none;
   }
 
-  .financeFlow {
+  .trustQuoteBox {
+    padding: 1.15rem 1.15rem 1.2rem 1.25rem;
+  }
+
+  .financeFlow,
+  .investBreakdown,
+  .wealthPath {
     grid-template-columns: 1fr;
     gap: 0.55rem;
   }
 
-  .financeFlowArrow {
-    transform: rotate(90deg);
-    padding: 0.1rem 0;
-    font-size: 1.2rem;
-  }
-
-  .investBreakdown {
-    grid-template-columns: 1fr;
-    gap: 0.45rem;
-  }
-
+  .financeFlowArrow,
   .investOp {
     transform: rotate(90deg);
-    padding: 0.1rem 0;
-  }
-
-  .trajectorySvg {
-    min-height: 160px;
-  }
-
-  .wealthPath {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
+    padding: 0.05rem 0;
+    font-size: 1.15rem;
+    justify-self: center;
   }
 
   .wealthPathArrow {
     display: none;
+  }
+
+  .billCardAmt {
+    font-size: clamp(1.35rem, 6vw, 1.65rem);
+  }
+
+  .trajectorySvg {
+    min-height: 150px;
+    height: 170px;
+    max-height: 190px;
   }
 
   .wealthPathAmt {
@@ -3962,23 +3993,42 @@
   }
 
   .wealthMilestone {
-    grid-template-columns: 56px 1fr 64px;
+    grid-template-columns: 52px minmax(0, 1fr) 68px;
+    gap: 0.4rem;
+  }
+
+  .wealthAmt {
+    white-space: normal;
+    font-size: 0.95rem;
   }
 
   .wealthTakeaway {
     font-size: 0.88rem;
   }
 
-  .wealthChartHead {
+  .wealthChartHead,
+  .trajectoryHead {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .genCompareMeta {
-    flex-wrap: wrap;
+  .investScoreGrade {
+    font-size: clamp(3.2rem, 16vw, 4.2rem);
   }
 
-  .genIrradTiles {
+  .genCompareMeta {
+    flex-wrap: wrap;
+    gap: 0.25rem 0.5rem;
+  }
+
+  .genBarVal {
+    white-space: normal;
+    max-width: 100%;
+    text-align: left;
+  }
+
+  .genIrradTiles,
+  .genFormulaGrid {
     grid-template-columns: 1fr 1fr;
   }
 
@@ -3987,43 +4037,34 @@
     gap: 0.35rem 0.6rem;
   }
 
-  .roofMainRow {
-    grid-template-columns: 1fr;
-    flex: 0 0 auto;
+  .invoiceHead {
+    flex-wrap: wrap;
+    gap: 0.65rem;
+  }
+
+  .invoiceTotalBox {
+    text-align: left;
   }
 
   .roofPlanFrame {
-    height: auto;
-    min-height: 220px;
-  }
-
-  .roofMetricGrid {
-    flex: 0 0 auto;
+    height: auto !important;
+    min-height: 200px !important;
+    max-height: none !important;
   }
 
   .roofSunTeach {
     width: 100%;
   }
 
-  .roofEngStrip {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .roofMetricGrid {
-    grid-template-columns: 1fr 1fr;
-  }
-
+  .roofEngStrip,
+  .roofMetricGrid,
   .journeyGrid {
     grid-template-columns: 1fr 1fr;
+    gap: 0.55rem;
   }
 
-  .payBankSplit {
+  .vendorBankPair {
     grid-template-columns: 1fr;
-  }
-
-  .closingSplit {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
   }
 
   .closingCTABox {
@@ -4039,37 +4080,84 @@
   .closingBtn {
     width: 100%;
     text-align: center;
-    min-height: 42px;
+    min-height: 44px;
+  }
+
+  .stdBadge {
+    white-space: normal;
+  }
+
+  .genStdRow {
+    align-items: flex-start;
   }
 }
 
+/* Phones — single-column readability */
 @media screen and (max-width: 640px) {
+  .wrapper {
+    --page-pad-x: 1.15rem;
+    --page-pad-t: 1.15rem;
+    --page-pad-b: 1.85rem;
+  }
+
   .page {
-    width: calc(100% - 12px) !important;
-    padding: 1.15rem 0.95rem 2.1rem !important;
-    margin: 0.5rem auto 0.85rem !important;
+    width: calc(100% - 10px) !important;
+    padding: var(--page-pad-t) var(--page-pad-x) var(--page-pad-b) !important;
+    margin: 0.45rem auto 0.75rem !important;
     border-radius: 10px;
   }
 
+  .printBarBrand {
+    max-width: none;
+    width: 100%;
+    font-size: 0.68rem;
+  }
+
+  .printBarActions {
+    flex-wrap: wrap;
+  }
+
+  .langToggle {
+    flex: 1 1 auto;
+  }
+
+  .langBtn {
+    flex: 1 1 auto;
+  }
+
   .hwCard4Grid,
+  .impactGrid,
+  .hw2Grid,
+  .trustGrid,
+  .genSpecGrid,
   .warrantyGrid,
   .warrantyGridCompact,
-  .genSpecGrid,
-  .trustGrid {
-    grid-template-columns: 1fr !important;
-  }
-
+  .roofEngStrip,
+  .roofMetricGrid,
+  .journeyGrid,
   .hwEarthChips {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
+    gap: 0.6rem !important;
   }
 
-  .hwEarthChipVal {
-    font-size: 1rem;
+  .genIrradTiles,
+  .genFormulaGrid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.4rem;
   }
 
   .coverInner,
   .closingInner {
-    padding: 1rem 0.9rem 1.2rem !important;
+    padding: 1.05rem 1rem 1.25rem !important;
+  }
+
+  .coverTop {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .coverDocType {
+    align-self: flex-start;
   }
 
   .coverPhotoFrame {
@@ -4086,12 +4174,17 @@
   }
 
   .pageTag {
-    font-size: 0.72rem;
-    letter-spacing: 1.4px;
+    font-size: 0.7rem;
+    letter-spacing: 1.3px;
   }
 
   .pageTitle {
-    font-size: clamp(1.25rem, 6vw, 1.5rem);
+    font-size: clamp(1.28rem, 6.2vw, 1.5rem);
+    line-height: 1.22;
+  }
+
+  .pageLead {
+    font-size: 0.86rem;
   }
 
   .coverName {
@@ -4102,11 +4195,33 @@
     font-size: clamp(1.4rem, 6.5vw, 1.85rem);
   }
 
-  .roofEngStrip,
-  .roofMetricGrid,
-  .journeyGrid {
-    grid-template-columns: 1fr 1fr;
-    gap: 0.45rem;
+  .closingStatement {
+    font-size: 0.95rem;
+  }
+
+  .closingSub {
+    font-size: 0.88rem;
+  }
+
+  .impactCard {
+    padding: 1.15rem 1.1rem;
+  }
+
+  .impactBig {
+    font-size: clamp(2.1rem, 11vw, 2.6rem);
+  }
+
+  .financeStep,
+  .investItem,
+  .wealthPathCard,
+  .journeyCard,
+  .roofMetricCard,
+  .roofEngChip {
+    padding: 0.85rem 0.9rem;
+  }
+
+  .wealthMilestone {
+    grid-template-columns: 48px minmax(0, 1fr) auto;
   }
 
   .termsArticle {
@@ -4119,6 +4234,7 @@
   .termsPara,
   .termsCostBox p {
     font-size: 0.88rem;
+    line-height: 1.45;
   }
 
   .termsArticleLabel {
@@ -4130,20 +4246,67 @@
   }
 
   .closingStats {
-    gap: 0.55rem;
-    padding: 0.65rem 0.7rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.55rem 0.65rem;
+    padding: 0.75rem 0.8rem;
   }
 
   .closingStatBig {
-    font-size: 0.95rem;
+    font-size: 1rem;
   }
 
   .closingStatLabel {
     font-size: 0.65rem;
   }
 
-  .printBarBrand {
-    max-width: 42%;
+  .expertInsight,
+  .genExpert,
+  .wealthExpert {
+    padding: 0.8rem 0.9rem;
+  }
+
+  .genPage .genExpert p,
+  .expertInsight p,
+  .wealthExpertBody {
+    font-size: 0.86rem;
+    line-height: 1.45;
+  }
+
+  .trajectoryLegend {
+    flex-wrap: wrap;
+    gap: 0.45rem 0.75rem;
+  }
+}
+
+/* Narrow phones */
+@media screen and (max-width: 400px) {
+  .wrapper {
+    --page-pad-x: 0.95rem;
+    --page-pad-t: 1rem;
+    --page-pad-b: 1.65rem;
+  }
+
+  .genIrradTiles,
+  .genFormulaGrid,
+  .closingStats {
+    grid-template-columns: 1fr !important;
+  }
+
+  .billCardAmt,
+  .investVal,
+  .investValNet,
+  .wealthPathAmt {
+    font-size: 1.25rem;
+  }
+
+  .coverLogo {
+    max-height: 2.25rem;
+    max-width: 120px;
+  }
+
+  .pageNum {
+    font-size: 0.65rem;
   }
 }
 
