@@ -1145,6 +1145,101 @@
   margin-top: 0.15rem;
 }
 
+/* Compact brand compare — Monthly Economics (when builder toggle on) */
+.financePageWithBrand .trajectoryChart {
+  margin-bottom: 0.5rem;
+  padding: 0.55rem 0.75rem 0.5rem;
+}
+.financePageWithBrand .trajectorySvg {
+  min-height: 118px;
+  max-height: 148px;
+  height: 136px;
+}
+.financePageWithBrand .financeFlow {
+  margin-bottom: 0.5rem;
+}
+.financePageWithBrand .investBreakdown {
+  padding: 0.5rem 0.55rem;
+  margin-bottom: 0.5rem;
+}
+.financePageWithBrand .billCardNote {
+  display: none;
+}
+
+.brandCompare {
+  flex: 0 0 auto;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--card-r);
+  background: var(--white);
+  box-shadow: var(--card-s);
+  overflow: hidden;
+}
+.brandCompareHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 0.75rem;
+  padding: 0.4rem 0.65rem;
+  background: var(--al);
+  border-bottom: 1px solid var(--line);
+}
+.brandCompareKicker {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--or);
+}
+.brandCompareSub {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--gray);
+}
+.brandCompareTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.brandCompareTable th,
+.brandCompareTable td {
+  padding: 0.32rem 0.55rem;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.brandCompareTable th {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--gray);
+  background: #FAFBFC;
+  border-bottom: 1px solid var(--line);
+}
+.brandCompareTable td {
+  font-family: ui-monospace, 'JetBrains Mono', Menlo, Consolas, monospace;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--h);
+  border-bottom: 1px solid #edf1f5;
+}
+.brandCompareTable tr:last-child td {
+  border-bottom: 0;
+}
+.brandCompareTable th:first-child,
+.brandCompareTable td:first-child {
+  text-align: left;
+  color: var(--c);
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 0.72rem;
+}
+
 .investOp {
   font-family: 'Montserrat', sans-serif;
   font-size: 1.35rem;
@@ -4437,6 +4532,12 @@
   .billAuditTable td {
     padding: 0.3rem 0.28rem;
     font-size: 0.62rem;
+  }
+
+  .brandCompareTable th,
+  .brandCompareTable td {
+    padding: 0.28rem 0.4rem;
+    font-size: 0.68rem;
   }
 
   .financeFlowArrow,

@@ -15,6 +15,10 @@ import type { ProposalData } from "@/lib/proposal-data";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { formatInr, formatInrCompact } from "@/components/proposals/_shared/formatters";
 import {
+  normalizeBrandCompareSelection,
+  resolveBrandCompareSnapshot,
+} from "@/lib/brand-compare-helpers";
+import {
   PROPOSAL_BRANDING_UPDATED_EVENT,
   readProposalBrandingSettings,
   resolveProposalBrandConfig,
@@ -28,6 +32,7 @@ import {
 } from "./atelier-copy";
 import { isDarkLogoUrl } from "./atelier-dark-logo";
 import { AtelierBillAudit } from "./atelier-bill-audit";
+import { AtelierBrandCompare } from "./atelier-brand-compare";
 import { AtelierBlueprintArray } from "./atelier-blueprint-array";
 import { buildAtelierForecastMonths } from "./atelier-generation-forecast";
 import { HwCardIcon, HwIconEarth, type HwIconKey } from "./atelier-hw-icons";
@@ -172,6 +177,23 @@ export function AtelierRenderer({
   const city = location.split(",")[0]?.trim() || location;
   const systemKw = data.meta.systemKw;
   const systemSize = systemKw > 0 ? `${systemKw} kW` : "—";
+  const brandCatalog =
+    pptInput?.residentialConfig?.brandCatalog ??
+    pptInput?.sharedPlantCatalog ??
+    null;
+  const brandCompareSelection = normalizeBrandCompareSelection(
+    pptInput?.residentialConfig?.brandCompare,
+    brandCatalog
+  );
+  const brandCompareSnapshot =
+    brandCompareSelection.enabled && systemKw > 0
+      ? resolveBrandCompareSnapshot(
+          brandCatalog,
+          brandCompareSelection.brandIdA,
+          brandCompareSelection.brandIdB,
+          systemKw
+        )
+      : null;
   const annualGen =
     data.closing.annualUnits > 0 ? data.closing.annualUnits : 0;
   const grossInr = data.economics.grossInr;
@@ -633,7 +655,11 @@ export function AtelierRenderer({
       ) : null}
 
       {/* ══ MONTHLY ECONOMICS — pocket story + trajectory ══ */}
-      <section className={`${styles.page} ${styles.financePage}`}>
+      <section
+        className={`${styles.page} ${styles.financePage}${
+          brandCompareSnapshot ? ` ${styles.financePageWithBrand}` : ""
+        }`}
+      >
         <header className={styles.pageHead}>
           <span className={styles.pageTag}>
             {withPageTag(c.finance.tag, pn.finance)}
@@ -899,6 +925,19 @@ export function AtelierRenderer({
             <span className={styles.investCue}>{c.finance.netCue}</span>
           </div>
         </div>
+
+        {brandCompareSnapshot ? (
+          <AtelierBrandCompare
+            snapshot={brandCompareSnapshot}
+            labels={{
+              kicker: c.finance.brandCompareKicker,
+              track: c.finance.brandCompareTrack,
+              dcr: c.finance.brandCompareDcr,
+              nonDcr: c.finance.brandCompareNonDcr,
+              subtitle: c.finance.brandCompareSub,
+            }}
+          />
+        ) : null}
 
         <span className={styles.pageNum}>{folio(pn.finance, totalPages)}</span>
       </section>

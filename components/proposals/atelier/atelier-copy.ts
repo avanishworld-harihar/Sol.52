@@ -434,6 +434,14 @@ export function getAtelierCopy(lang: AtelierLang) {
       netCue: hi
         ? "यही राशि मासिक अर्थशास्त्र को चालू करती है।"
         : "This is the amount that powers the monthly math.",
+      brandCompareKicker: hi ? "ब्रांड तुलना" : "Brand comparison",
+      brandCompareTrack: hi ? "ट्रैक" : "Track",
+      brandCompareDcr: "DCR",
+      brandCompareNonDcr: hi ? "Non-DCR" : "Non-DCR",
+      brandCompareSub: (kw: number) =>
+        hi
+          ? `${kw} kW · Smart catalog plant gross`
+          : `${kw} kW · Smart catalog plant gross`,
     },
 
     wealth: {
