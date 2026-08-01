@@ -32,9 +32,7 @@ function metricValue(
   return hit?.value?.trim() || fallback;
 }
 
-/**
- * Landscape module on GI rails — aluminium frame, cell grid, busbars, mid-clamps.
- */
+/** Simple isometric module — flat schematic tile, no cell/frame detail. */
 function IsoPanel({
   cx,
   cy,
@@ -42,12 +40,11 @@ function IsoPanel({
   cx: number;
   cy: number;
 }) {
-  // Landscape on roof; south tilt via down vector
   const rightX = 40;
   const rightY = 11.5;
   const downX = -14;
   const downY = 10.5;
-  const thick = 3.2;
+  const thick = 2.4;
 
   const p0x = cx;
   const p0y = cy;
@@ -65,88 +62,21 @@ function IsoPanel({
   const t3x = p3x;
   const t3y = p3y + thick;
 
-  // Cell grid (6 × 3 landscape)
-  const cells: string[] = [];
-  for (let i = 1; i < 6; i++) {
-    const t = i / 6;
-    cells.push(
-      `M ${p0x + rightX * t},${p0y + rightY * t} L ${p0x + rightX * t + downX},${p0y + rightY * t + downY}`
-    );
-  }
-  for (let j = 1; j < 3; j++) {
-    const t = j / 3;
-    cells.push(
-      `M ${p0x + downX * t},${p0y + downY * t} L ${p0x + downX * t + rightX},${p0y + downY * t + rightY}`
-    );
-  }
-
-  // Thin busbars
-  const bus: string[] = [];
-  for (const t of [0.22, 0.5, 0.78]) {
-    bus.push(
-      `M ${p0x + rightX * t + downX * 0.08},${p0y + rightY * t + downY * 0.08} L ${p0x + rightX * t + downX * 0.92},${p0y + rightY * t + downY * 0.92}`
-    );
-  }
-
-  const inset = 0.06;
-  const g0x = p0x + rightX * inset + downX * inset;
-  const g0y = p0y + rightY * inset + downY * inset;
-  const g1x = p0x + rightX * (1 - inset) + downX * inset;
-  const g1y = p0y + rightY * (1 - inset) + downY * inset;
-  const g2x = p0x + rightX * (1 - inset) + downX * (1 - inset);
-  const g2y = p0y + rightY * (1 - inset) + downY * (1 - inset);
-  const g3x = p0x + rightX * inset + downX * (1 - inset);
-  const g3y = p0y + rightY * inset + downY * (1 - inset);
-
   return (
     <g>
-      {/* Panel thickness (depth) */}
       <polygon
         points={`${p3x},${p3y} ${p2x},${p2y} ${t2x},${t2y} ${t3x},${t3y}`}
-        fill="#121a26"
+        fill="#0d1520"
       />
       <polygon
         points={`${p1x},${p1y} ${p2x},${p2y} ${t2x},${t2y} ${t1x},${t1y}`}
-        fill="#1e2a3a"
+        fill="#152232"
       />
-
-      {/* Aluminium frame */}
       <polygon
         points={`${p0x},${p0y} ${p1x},${p1y} ${p2x},${p2y} ${p3x},${p3y}`}
-        fill="url(#panelFrame)"
-        stroke="#dce2ea"
-        strokeWidth="0.9"
-      />
-
-      {/* Photovoltaic glass + cells */}
-      <polygon
-        points={`${g0x},${g0y} ${g1x},${g1y} ${g2x},${g2y} ${g3x},${g3y}`}
-        fill="url(#panelGlass)"
+        fill="#1e3550"
         stroke="#B8962E"
-        strokeWidth="0.45"
-      />
-      <path
-        d={cells.join(" ")}
-        fill="none"
-        stroke="rgba(180,205,235,0.28)"
-        strokeWidth="0.55"
-      />
-      <path
-        d={bus.join(" ")}
-        fill="none"
-        stroke="rgba(220,230,245,0.45)"
-        strokeWidth="0.7"
-        strokeLinecap="round"
-      />
-      {/* Specular glint */}
-      <line
-        x1={g0x + rightX * 0.06}
-        y1={g0y + rightY * 0.06 + 1.2}
-        x2={g0x + rightX * 0.38}
-        y2={g0y + rightY * 0.38 + 1.2}
-        stroke="rgba(255,255,255,0.38)"
-        strokeWidth="1.6"
-        strokeLinecap="round"
+        strokeWidth="1.1"
       />
     </g>
   );
@@ -155,10 +85,26 @@ function IsoPanel({
 function IconPv() {
   return (
     <svg viewBox="0 0 72 56" className={styles.archIcon} aria-hidden>
-      <rect x="8" y="12" width="26" height="28" rx="1.5" fill="#1e3550" stroke="#B8962E" strokeWidth="1.3" />
-      <path d="M14.5 12v28M21 12v28M27.5 12v28M8 21h26M8 30h26" stroke="rgba(200,220,255,0.28)" strokeWidth="0.8" />
-      <rect x="38" y="12" width="26" height="28" rx="1.5" fill="#1e3550" stroke="#B8962E" strokeWidth="1.3" />
-      <path d="M44.5 12v28M51 12v28M57.5 12v28M38 21h26M38 30h26" stroke="rgba(200,220,255,0.28)" strokeWidth="0.8" />
+      <rect
+        x="10"
+        y="14"
+        width="22"
+        height="28"
+        rx="2"
+        fill="#1e3550"
+        stroke="#B8962E"
+        strokeWidth="1.4"
+      />
+      <rect
+        x="40"
+        y="14"
+        width="22"
+        height="28"
+        rx="2"
+        fill="#1e3550"
+        stroke="#B8962E"
+        strokeWidth="1.4"
+      />
     </svg>
   );
 }
@@ -284,13 +230,13 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
   const strings = Math.max(1, Math.ceil(modulesRaw / 6));
   const perString = Math.ceil(modulesRaw / strings);
 
-  // Isometric step — panels sit on the roof deck (no mount structure)
+  // Isometric step — floating panel bank on grid (no roof slab / mount)
   const stepColX = 42;
   const stepColY = 12;
   const stepRowX = -16;
   const stepRowY = 16;
-  const isoOriginX = 92;
-  const isoOriginY = 102;
+  const isoOriginX = 100;
+  const isoOriginY = 88;
 
   const panelPositions = Array.from({ length: modulesDraw }).map((_, i) => {
     const col = i % cols;
@@ -328,24 +274,9 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
             aria-hidden
           >
             <defs>
-              <linearGradient id="panelGlass" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#4a6f92" />
-                <stop offset="28%" stopColor="#244866" />
-                <stop offset="62%" stopColor="#152a3c" />
-                <stop offset="100%" stopColor="#0a1520" />
-              </linearGradient>
-              <linearGradient id="panelFrame" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#e8ecf2" />
-                <stop offset="45%" stopColor="#b8c0cc" />
-                <stop offset="100%" stopColor="#7a8494" />
-              </linearGradient>
               <linearGradient id="roofFloor" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#1a2230" />
                 <stop offset="100%" stopColor="#080c12" />
-              </linearGradient>
-              <linearGradient id="roofSlab" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#2a3344" />
-                <stop offset="100%" stopColor="#151c28" />
               </linearGradient>
               <pattern
                 id="isoGrid"
@@ -365,50 +296,6 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
 
             <rect width="320" height="240" fill="url(#roofFloor)" rx="6" />
             <rect x="8" y="8" width="304" height="200" fill="url(#isoGrid)" rx="4" />
-
-            {/* Isometric terrace / roof deck — clear surface the array sits on */}
-            <polygon
-              points="36,176 156,118 300,168 180,226"
-              fill="url(#roofSlab)"
-              opacity="0.92"
-            />
-            <polygon
-              points="36,176 156,118 300,168 180,184 36,184"
-              fill="rgba(184,150,46,0.07)"
-            />
-            {/* Deck edge highlight */}
-            <path
-              d="M36 176 L156 118 L300 168"
-              fill="none"
-              stroke="rgba(184,150,46,0.45)"
-              strokeWidth="1.2"
-            />
-            <path
-              d="M36 176 L180 226 L300 168"
-              fill="none"
-              stroke="rgba(255,255,255,0.08)"
-              strokeWidth="1"
-            />
-            {/* Soft contact shadow under panels on the deck */}
-            {panelPositions.length > 0 && (
-              <ellipse
-                cx={
-                  isoOriginX +
-                  ((cols - 1) * stepColX) / 2 +
-                  ((rows - 1) * stepRowX) / 2 +
-                  12
-                }
-                cy={
-                  isoOriginY +
-                  ((cols - 1) * stepColY) / 2 +
-                  ((rows - 1) * stepRowY) / 2 +
-                  18
-                }
-                rx={cols * 20 + 12}
-                ry={8 + rows * 1.5}
-                fill="rgba(0,0,0,0.28)"
-              />
-            )}
 
             {panelPositions.map((p, i) => (
               <IsoPanel key={i} cx={p.cx} cy={p.cy} />
