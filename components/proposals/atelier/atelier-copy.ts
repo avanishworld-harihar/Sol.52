@@ -365,6 +365,35 @@ export function getAtelierCopy(lang: AtelierLang) {
         : "Every unit of solar energy your roof generates is a direct act of climate action.",
     },
 
+    billAudit: {
+      tag: hi ? "02 — बिल ऑडिट" : "02 — BILL AUDIT",
+      title: hi ? "बिल ऑडिट और ब्रेकडाउन" : "Bill Audit & Breakdown",
+      lead: hi
+        ? "माह-दर-माह यूनिट, ऊर्जा शुल्क, फिक्स्ड चार्ज, ड्यूटी और कुल बिल।"
+        : "Month-by-month units, energy charges, fixed liability, duty and net bill.",
+      summerIncrease: hi ? "गर्मी में बिल वृद्धि" : "Summer bill increase",
+      summerHint: hi ? "पीक महीनों का असर" : "Impact of peak months",
+      fixedLiability: hi ? "वार्षिक फिक्स्ड देनदारी" : "Annual fixed liability",
+      fixedHint: hi ? "उपयोग से स्वतंत्र" : "Independent of usage",
+      solarSavings: hi ? "अनुमानित सोलर बचत" : "Estimated solar savings",
+      solarHint: hi
+        ? "ऊर्जा बिल में संभावित कमी"
+        : "Potential energy-bill reduction",
+      month: hi ? "माह" : "Month",
+      units: hi ? "यूनिट" : "Units",
+      energy: hi ? "ऊर्जा" : "Energy",
+      fixed: hi ? "फिक्स्ड" : "Fixed",
+      duty: hi ? "ड्यूटी" : "Duty",
+      netBill: hi ? "कुल बिल" : "Net bill",
+      total: hi ? "कुल" : "Total",
+      chartLabel: hi
+        ? "मासिक बिजली बिल प्रोफ़ाइल"
+        : "Monthly electricity bill profile",
+      footnote: hi
+        ? "ऊर्जा शुल्क खपत के साथ बदलता है; फिक्स्ड शुल्क उपयोग कम होने पर भी जारी रह सकता है। ड्यूटी और कुल राशि उपलब्ध बिल डेटा से ली गई है।"
+        : "Energy charges vary with consumption; fixed charges may continue even when usage falls. Duty and net totals are taken from the available bill data.",
+    },
+
     finance: {
       tag: hi ? "02 — मासिक अर्थशास्त्र" : "02 — MONTHLY ECONOMICS",
       title: hi

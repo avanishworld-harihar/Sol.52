@@ -2,11 +2,12 @@
 
 /**
  * Atelier — Investment Blueprint (High-Conversion Sales Journey)
- * Flow: [Cover] → [Financial Story] → [Roof] → [Wealth Proof]
+ * Flow: [Cover] → [Bill Audit?] → [Financial Story] → [Roof] → [Wealth Proof]
  *       → [Generation] → [Monthly Forecast] → [Hardware] → [Why Us]
  *       → [Roadmap] → [Impact] → [Compliance] → [Closing]
  *
- * ProposalData-native · Print A4 · 13 pages · break-after: page (print only)
+ * ProposalData-native · Print A4 · 13 pages (14 with bill audit)
+ * break-after: page (print only)
  */
 
 import { useEffect, useState } from "react";
@@ -26,6 +27,7 @@ import {
   type AtelierLang,
 } from "./atelier-copy";
 import { isDarkLogoUrl } from "./atelier-dark-logo";
+import { AtelierBillAudit } from "./atelier-bill-audit";
 import { AtelierBlueprintArray } from "./atelier-blueprint-array";
 import { buildAtelierForecastMonths } from "./atelier-generation-forecast";
 import { HwCardIcon, HwIconEarth, type HwIconKey } from "./atelier-hw-icons";
@@ -36,6 +38,15 @@ import {
   WealthIconPay,
 } from "./atelier-wealth-icons";
 import styles from "./atelier.module.css";
+
+function folio(n: number, total: number): string {
+  return `${String(n).padStart(2, "0")} / ${String(total).padStart(2, "0")}`;
+}
+
+/** Rewrite leading "NN — " page index in copy tags when bill audit shifts the deck. */
+function withPageTag(tag: string, n: number): string {
+  return tag.replace(/^\d+\s*—\s*/, `${String(n).padStart(2, "0")} — `);
+}
 
 function bomByHint(data: ProposalData, hints: RegExp[]) {
   return data.bom.find((b) =>
@@ -198,10 +209,32 @@ export function AtelierRenderer({
   const brandGst = data.closing.gstNumber || data.meta.brandGst;
   const contactPerson = data.closing.contactPerson;
 
+  // ── Bill audit (bill-based proposals only) ────────────────────
+  const bill = data.bill;
+  const showBillAudit = bill.hasData && bill.months.length > 0;
+  const totalPages = showBillAudit ? 14 : 13;
+  const off = showBillAudit ? 1 : 0;
+  const pn = {
+    cover: 1,
+    bill: 2,
+    finance: 2 + off,
+    roof: 3 + off,
+    wealth: 4 + off,
+    gen: 5 + off,
+    forecast: 6 + off,
+    hw: 7 + off,
+    trust: 8 + off,
+    roadmap: 9 + off,
+    impact: 10 + off,
+    terms1: 11 + off,
+    terms2: 12 + off,
+    closing: 13 + off,
+  };
+
   // ── New financial calculations ────────────────────────────────
   const monthlyBill =
-    data.bill.yearlyBillInr > 0
-      ? Math.round(data.bill.yearlyBillInr / 12)
+    bill.yearlyBillInr > 0
+      ? Math.round(bill.yearlyBillInr / 12)
       : annualSavings > 0
         ? Math.round(annualSavings / 12 / 0.8)
         : 5200;
@@ -556,13 +589,55 @@ export function AtelierRenderer({
             </div>
           </div>
         </div>
-        <span className={`${styles.pageNum} ${styles.pageNumLight}`}>01 / 13</span>
+        <span className={`${styles.pageNum} ${styles.pageNumLight}`}>
+          {folio(pn.cover, totalPages)}
+        </span>
       </section>
 
-      {/* ══ P2: MONTHLY ECONOMICS — pocket story + trajectory ══ */}
+      {/* ══ P2: BILL AUDIT — 12-month breakdown (bill-based only) ══ */}
+      {showBillAudit ? (
+        <section className={`${styles.page} ${styles.billAuditPage}`}>
+          <header className={styles.pageHead}>
+            <span className={styles.pageTag}>
+              {withPageTag(c.billAudit.tag, pn.bill)}
+            </span>
+            <h2 className={styles.pageTitle}>{c.billAudit.title}</h2>
+            <p className={styles.pageLead}>{c.billAudit.lead}</p>
+          </header>
+          <AtelierBillAudit
+            months={bill.months}
+            totals={bill.totals}
+            summerTrapPct={bill.summerTrapPct}
+            fixedChargesDisplay={bill.fixedChargesDisplay}
+            solarSavingsPct={bill.solarSavingsPct}
+            labels={{
+              summerIncrease: c.billAudit.summerIncrease,
+              summerHint: c.billAudit.summerHint,
+              fixedLiability: c.billAudit.fixedLiability,
+              fixedHint: c.billAudit.fixedHint,
+              solarSavings: c.billAudit.solarSavings,
+              solarHint: c.billAudit.solarHint,
+              month: c.billAudit.month,
+              units: c.billAudit.units,
+              energy: c.billAudit.energy,
+              fixed: c.billAudit.fixed,
+              duty: c.billAudit.duty,
+              netBill: c.billAudit.netBill,
+              total: c.billAudit.total,
+              footnote: c.billAudit.footnote,
+              chartLabel: c.billAudit.chartLabel,
+            }}
+          />
+          <span className={styles.pageNum}>{folio(pn.bill, totalPages)}</span>
+        </section>
+      ) : null}
+
+      {/* ══ MONTHLY ECONOMICS — pocket story + trajectory ══ */}
       <section className={`${styles.page} ${styles.financePage}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>{c.finance.tag}</span>
+          <span className={styles.pageTag}>
+            {withPageTag(c.finance.tag, pn.finance)}
+          </span>
           <h2 className={styles.pageTitle}>{c.finance.title}</h2>
           <p className={styles.pageLead}>{c.finance.lead}</p>
         </header>
@@ -825,13 +900,15 @@ export function AtelierRenderer({
           </div>
         </div>
 
-        <span className={styles.pageNum}>02 / 13</span>
+        <span className={styles.pageNum}>{folio(pn.finance, totalPages)}</span>
       </section>
 
-      {/* ══ P3: ROOF INTELLIGENCE — Yield Story ═══════════════════ */}
+      {/* ══ ROOF INTELLIGENCE — Yield Story ═══════════════════ */}
       <section className={`${styles.page} ${styles.roofPage}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>{c.roof.tag}</span>
+          <span className={styles.pageTag}>
+            {withPageTag(c.roof.tag, pn.roof)}
+          </span>
           <h2 className={styles.pageTitle}>{c.roof.title}</h2>
         </header>
 
@@ -1045,13 +1122,15 @@ export function AtelierRenderer({
           ))}
         </div>
 
-        <span className={styles.pageNum}>03 / 13</span>
+        <span className={styles.pageNum}>{folio(pn.roof, totalPages)}</span>
       </section>
 
       {/* ══ P4: WEALTH PROJECTION — money story + AA+ ════════════ */}
       <section className={`${styles.page} ${styles.wealthPage}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>{c.wealth.tag}</span>
+          <span className={styles.pageTag}>
+            {withPageTag(c.wealth.tag, pn.wealth)}
+          </span>
           <h2 className={styles.pageTitle}>{c.wealth.title}</h2>
           <p className={styles.pageLead}>{c.wealth.lead}</p>
         </header>
@@ -1229,13 +1308,15 @@ export function AtelierRenderer({
           )}
         </p>
 
-        <span className={styles.pageNum}>04 / 13</span>
+        <span className={styles.pageNum}>{folio(pn.wealth, totalPages)}</span>
       </section>
 
       {/* ══ P5: GENERATION PROOF ═════════════════════════════════ */}
       <section className={`${styles.page} ${styles.genPage}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>{c.gen.tag}</span>
+          <span className={styles.pageTag}>
+            {withPageTag(c.gen.tag, pn.gen)}
+          </span>
           <h2 className={styles.pageTitle}>
             {c.gen.title(
               annualGen > 0 ? annualGen.toLocaleString("en-IN") : "7,200"
@@ -1402,13 +1483,15 @@ export function AtelierRenderer({
           </p>
         </div>
 
-        <span className={styles.pageNum}>05 / 13</span>
+        <span className={styles.pageNum}>{folio(pn.gen, totalPages)}</span>
       </section>
 
       {/* ══ P6: MONTHLY GENERATION FORECAST ══════════════════════ */}
       <section className={`${styles.page} ${styles.forecastPage}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>{c.genForecast.tag}</span>
+          <span className={styles.pageTag}>
+            {withPageTag(c.genForecast.tag, pn.forecast)}
+          </span>
           <h2 className={styles.pageTitle}>{c.genForecast.title}</h2>
           <p className={styles.pageLead}>{c.genForecast.lead}</p>
         </header>
@@ -1492,13 +1575,15 @@ export function AtelierRenderer({
           <p>{c.genForecast.expertBody}</p>
         </div>
 
-        <span className={styles.pageNum}>06 / 13</span>
+        <span className={styles.pageNum}>{folio(pn.forecast, totalPages)}</span>
       </section>
 
       {/* ══ P7: HARDWARE TRUST — icons + earthing strip ══════════ */}
       <section className={`${styles.page} ${styles.hwPage}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>{c.hw.tag}</span>
+          <span className={styles.pageTag}>
+            {withPageTag(c.hw.tag, pn.hw)}
+          </span>
           <h2 className={styles.pageTitle}>{c.hw.title}</h2>
           <p className={styles.pageLead}>{c.hw.lead}</p>
         </header>
@@ -1621,14 +1706,14 @@ export function AtelierRenderer({
           ))}
         </div>
 
-        <span className={styles.pageNum}>07 / 13</span>
+        <span className={styles.pageNum}>{folio(pn.hw, totalPages)}</span>
       </section>
 
       {/* ══ P8: WHY PARTNER — trust cards + 1 proof photo ═══════ */}
       <section className={`${styles.page} ${styles.trustPage}`}>
         <header className={styles.pageHead}>
           <span className={styles.pageTag}>
-            {c.trust.tag(brand.toUpperCase())}
+            {withPageTag(c.trust.tag(brand.toUpperCase()), pn.trust)}
           </span>
           <h2 className={styles.pageTitle}>{c.trust.title}</h2>
         </header>
@@ -1675,13 +1760,15 @@ export function AtelierRenderer({
           </div>
         </div>
 
-        <span className={styles.pageNum}>08 / 13</span>
+        <span className={styles.pageNum}>{folio(pn.trust, totalPages)}</span>
       </section>
 
       {/* ══ P9: EXECUTION ROADMAP + PAYMENT + BANK ══════════════ */}
       <section className={`${styles.page} ${styles.roadmapPage}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>{c.roadmap.tag}</span>
+          <span className={styles.pageTag}>
+            {withPageTag(c.roadmap.tag, pn.roadmap)}
+          </span>
           <h2 className={styles.pageTitle}>{c.roadmap.title}</h2>
         </header>
 
@@ -1804,13 +1891,15 @@ export function AtelierRenderer({
           </aside>
         </div>
 
-        <span className={styles.pageNum}>09 / 13</span>
+        <span className={styles.pageNum}>{folio(pn.roadmap, totalPages)}</span>
       </section>
 
       {/* ══ P10: IMPACT — environmental close (after commercial story) ══ */}
       <section className={`${styles.page} ${styles.impactPage}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>{c.impact.tag}</span>
+          <span className={styles.pageTag}>
+            {withPageTag(c.impact.tag, pn.impact)}
+          </span>
           <h2 className={styles.pageTitle}>{c.impact.title}</h2>
           <p className={styles.pageLead}>{c.impact.lead}</p>
         </header>
@@ -1855,13 +1944,15 @@ export function AtelierRenderer({
         </div>
 
         <div className={styles.impactTagline}>{c.impact.tagline}</div>
-        <span className={styles.pageNum}>10 / 13</span>
+        <span className={styles.pageNum}>{folio(pn.impact, totalPages)}</span>
       </section>
 
       {/* ══ P11: TERMS & COMPLIANCE (Luxe content · Atelier style) ══ */}
       <section className={`${styles.page} ${styles.termsPage}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>{c.terms.tag10}</span>
+          <span className={styles.pageTag}>
+            {withPageTag(c.terms.tag10, pn.terms1)}
+          </span>
           <h2 className={styles.pageTitle}>{c.terms.title}</h2>
           <p className={styles.pageLead}>{c.terms.intro1}</p>
         </header>
@@ -1902,13 +1993,15 @@ export function AtelierRenderer({
           </aside>
         </div>
 
-        <span className={styles.pageNum}>11 / 13</span>
+        <span className={styles.pageNum}>{folio(pn.terms1, totalPages)}</span>
       </section>
 
       {/* ══ P12: TERMS & COMPLIANCE (CONTD.) ═════════════════════ */}
       <section className={`${styles.page} ${styles.termsPage} ${styles.termsPageDense}`}>
         <header className={styles.pageHead}>
-          <span className={styles.pageTag}>{c.terms.tag11}</span>
+          <span className={styles.pageTag}>
+            {withPageTag(c.terms.tag11, pn.terms2)}
+          </span>
           <h2 className={styles.pageTitle}>{c.terms.title}</h2>
           <p className={styles.pageLead}>{c.terms.intro2}</p>
         </header>
@@ -2017,7 +2110,7 @@ export function AtelierRenderer({
           </aside>
         </div>
 
-        <span className={styles.pageNum}>12 / 13</span>
+        <span className={styles.pageNum}>{folio(pn.terms2, totalPages)}</span>
       </section>
 
       {/* ══ P12: EMOTIONAL CLOSING — RCC rooftop + CTA ═══════════ */}
@@ -2043,7 +2136,9 @@ export function AtelierRenderer({
                 {(closingBrand.installerName || brand).toUpperCase()}
               </span>
             ) : null}
-            <span className={styles.closingTagInline}>{c.closing.tag}</span>
+            <span className={styles.closingTagInline}>
+              {withPageTag(c.closing.tag, pn.closing)}
+            </span>
           </div>
 
           <figure className={styles.closingPhotoPlate}>
@@ -2151,7 +2246,7 @@ export function AtelierRenderer({
           </div>
         </div>
         <span className={`${styles.pageNum} ${styles.pageNumLight}`}>
-          13 / 13
+          {folio(pn.closing, totalPages)}
         </span>
       </section>
     </div>
