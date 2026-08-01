@@ -106,6 +106,7 @@ export function CommercialControlCenter({ config, summary, onChange, onOpenRevie
               enabled: true,
               brandIdA: config.brandComparison?.brandIdA,
               brandIdB: config.brandComparison?.brandIdB,
+              proposalTrack: config.brandComparison?.proposalTrack,
             }}
             onChange={(next) =>
               onChange({
@@ -115,10 +116,56 @@ export function CommercialControlCenter({ config, summary, onChange, onOpenRevie
                   enabled: true,
                   brandIdA: next.brandIdA,
                   brandIdB: next.brandIdB,
+                  proposalTrack: next.proposalTrack ?? config.brandComparison?.proposalTrack,
                 },
               })
             }
           />
+          <fieldset className="mt-3 rounded-lg border border-slate-200/80 px-3 py-2 dark:border-white/10">
+            <legend className="px-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              On proposal
+            </legend>
+            <div className="flex flex-wrap gap-4">
+              <label className="flex cursor-pointer items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-200">
+                <input
+                  type="radio"
+                  name="commercial-brand-compare-track"
+                  checked={(config.brandComparison?.proposalTrack ?? "dcr") === "dcr"}
+                  onChange={() =>
+                    onChange({
+                      ...config,
+                      brandComparison: {
+                        ...config.brandComparison,
+                        enabled: true,
+                        proposalTrack: "dcr",
+                      },
+                    })
+                  }
+                  className="h-3.5 w-3.5"
+                />
+                DCR only
+              </label>
+              <label className="flex cursor-pointer items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-200">
+                <input
+                  type="radio"
+                  name="commercial-brand-compare-track"
+                  checked={config.brandComparison?.proposalTrack === "non_dcr"}
+                  onChange={() =>
+                    onChange({
+                      ...config,
+                      brandComparison: {
+                        ...config.brandComparison,
+                        enabled: true,
+                        proposalTrack: "non_dcr",
+                      },
+                    })
+                  }
+                  className="h-3.5 w-3.5"
+                />
+                Non-DCR only
+              </label>
+            </div>
+          </fieldset>
         </div>
       ) : null}
 

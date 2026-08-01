@@ -457,6 +457,10 @@ export function renderBlockByKey(
             ctx.residentialConfig?.brandCompare?.brandIdB ??
             ctx.commercialConfig?.brandComparison?.brandIdB
           }
+          proposalTrack={
+            ctx.residentialConfig?.brandCompare?.proposalTrack ??
+            ctx.commercialConfig?.brandComparison?.proposalTrack
+          }
           enabled={
             (ctx.presetId as string) === "residential_smart"
               ? ctx.residentialConfig?.brandCompare?.enabled === true

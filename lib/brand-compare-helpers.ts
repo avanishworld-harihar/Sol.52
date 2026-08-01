@@ -5,10 +5,14 @@
 import { resolvePlantPrice } from "@/lib/plant-pricing-resolver";
 import type { ResidentialBrandCatalog } from "@/lib/residential-brand-catalog";
 
+export type BrandCompareProposalTrack = "dcr" | "non_dcr";
+
 export type BrandCompareSelection = {
   enabled: boolean;
   brandIdA?: string;
   brandIdB?: string;
+  /** Which track row is shown on the customer proposal. */
+  proposalTrack?: BrandCompareProposalTrack;
 };
 
 export type BrandCompareSide = {
@@ -40,10 +44,20 @@ export function defaultBrandCompareIds(
   return { brandIdA: active, brandIdB };
 }
 
+export function normalizeBrandCompareTrack(
+  raw: BrandCompareSelection["proposalTrack"] | null | undefined
+): BrandCompareProposalTrack {
+  return raw === "non_dcr" ? "non_dcr" : "dcr";
+}
+
 export function normalizeBrandCompareSelection(
   raw: BrandCompareSelection | null | undefined,
   catalog: ResidentialBrandCatalog | null | undefined
-): BrandCompareSelection & { brandIdA: string; brandIdB: string } {
+): BrandCompareSelection & {
+  brandIdA: string;
+  brandIdB: string;
+  proposalTrack: BrandCompareProposalTrack;
+} {
   const defaults = defaultBrandCompareIds(catalog);
   const brandIdA = raw?.brandIdA?.trim() || defaults.brandIdA;
   let brandIdB = raw?.brandIdB?.trim() || defaults.brandIdB;
@@ -54,6 +68,7 @@ export function normalizeBrandCompareSelection(
     enabled: raw?.enabled === true,
     brandIdA,
     brandIdB,
+    proposalTrack: normalizeBrandCompareTrack(raw?.proposalTrack),
   };
 }
 

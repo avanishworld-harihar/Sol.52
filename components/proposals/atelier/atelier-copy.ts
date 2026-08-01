@@ -437,11 +437,11 @@ export function getAtelierCopy(lang: AtelierLang) {
       brandCompareKicker: hi ? "ब्रांड तुलना" : "Brand comparison",
       brandCompareTrack: hi ? "ट्रैक" : "Track",
       brandCompareDcr: "DCR",
-      brandCompareNonDcr: hi ? "Non-DCR" : "Non-DCR",
-      brandCompareSub: (kw: number) =>
+      brandCompareNonDcr: "Non-DCR",
+      brandCompareSub: (kw: number, track: "dcr" | "non_dcr") =>
         hi
-          ? `${kw} kW · Smart catalog plant gross`
-          : `${kw} kW · Smart catalog plant gross`,
+          ? `${kw} kW · ${track === "non_dcr" ? "Non-DCR" : "DCR"} plant gross`
+          : `${kw} kW · ${track === "non_dcr" ? "Non-DCR" : "DCR"} plant gross`,
     },
 
     wealth: {

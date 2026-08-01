@@ -929,6 +929,7 @@ export function AtelierRenderer({
         {brandCompareSnapshot ? (
           <AtelierBrandCompare
             snapshot={brandCompareSnapshot}
+            proposalTrack={brandCompareSelection.proposalTrack}
             labels={{
               kicker: c.finance.brandCompareKicker,
               track: c.finance.brandCompareTrack,

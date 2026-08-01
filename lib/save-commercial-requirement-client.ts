@@ -115,6 +115,8 @@ export function mergeCommercialConfigWithPricing(
       enabled: pricing.brandCompare?.enabled !== false,
       brandIdA: pricing.brandCompare?.brandIdA ?? merged.brandComparison?.brandIdA,
       brandIdB: pricing.brandCompare?.brandIdB ?? merged.brandComparison?.brandIdB,
+      proposalTrack:
+        pricing.brandCompare?.proposalTrack ?? merged.brandComparison?.proposalTrack,
     },
   };
   return merged;

@@ -3,17 +3,21 @@
  * Uses Smart catalog snapshot from Proposal Builder brandCompare.
  */
 
-import type { BrandCompareSnapshot } from "@/lib/brand-compare-helpers";
+import type {
+  BrandCompareProposalTrack,
+  BrandCompareSnapshot,
+} from "@/lib/brand-compare-helpers";
 import styles from "./atelier.module.css";
 
 export type AtelierBrandCompareProps = {
   snapshot: BrandCompareSnapshot;
+  proposalTrack: BrandCompareProposalTrack;
   labels: {
     kicker: string;
     track: string;
     dcr: string;
     nonDcr: string;
-    subtitle: (kw: number) => string;
+    subtitle: (kw: number, track: BrandCompareProposalTrack) => string;
   };
 };
 
@@ -23,14 +27,17 @@ function inr(value: number): string {
 
 export function AtelierBrandCompare({
   snapshot,
+  proposalTrack,
   labels,
 }: AtelierBrandCompareProps) {
+  const showNonDcr = proposalTrack === "non_dcr";
+
   return (
     <div className={styles.brandCompare}>
       <div className={styles.brandCompareHead}>
         <span className={styles.brandCompareKicker}>{labels.kicker}</span>
         <span className={styles.brandCompareSub}>
-          {labels.subtitle(snapshot.kw)}
+          {labels.subtitle(snapshot.kw, proposalTrack)}
         </span>
       </div>
       <table className={styles.brandCompareTable}>
@@ -42,28 +49,31 @@ export function AtelierBrandCompare({
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>{labels.dcr}</td>
-            <td>
-              {snapshot.brandA.dcrOk ? inr(snapshot.brandA.dcrGrossInr) : "—"}
-            </td>
-            <td>
-              {snapshot.brandB.dcrOk ? inr(snapshot.brandB.dcrGrossInr) : "—"}
-            </td>
-          </tr>
-          <tr>
-            <td>{labels.nonDcr}</td>
-            <td>
-              {snapshot.brandA.nonDcrOk
-                ? inr(snapshot.brandA.nonDcrGrossInr)
-                : "—"}
-            </td>
-            <td>
-              {snapshot.brandB.nonDcrOk
-                ? inr(snapshot.brandB.nonDcrGrossInr)
-                : "—"}
-            </td>
-          </tr>
+          {showNonDcr ? (
+            <tr>
+              <td>{labels.nonDcr}</td>
+              <td>
+                {snapshot.brandA.nonDcrOk
+                  ? inr(snapshot.brandA.nonDcrGrossInr)
+                  : "—"}
+              </td>
+              <td>
+                {snapshot.brandB.nonDcrOk
+                  ? inr(snapshot.brandB.nonDcrGrossInr)
+                  : "—"}
+              </td>
+            </tr>
+          ) : (
+            <tr>
+              <td>{labels.dcr}</td>
+              <td>
+                {snapshot.brandA.dcrOk ? inr(snapshot.brandA.dcrGrossInr) : "—"}
+              </td>
+              <td>
+                {snapshot.brandB.dcrOk ? inr(snapshot.brandB.dcrGrossInr) : "—"}
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
     </div>

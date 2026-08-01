@@ -86,9 +86,43 @@ export function ResidentialBrandComparePanel({ config, onChange, className, dcrO
               enabled: selection.enabled,
               brandIdA: next.brandIdA,
               brandIdB: next.brandIdB,
+              proposalTrack: selection.proposalTrack,
             })
           }
         />
+
+        {!dcrOnly ? (
+          <fieldset className="rounded-xl border border-slate-200/90 bg-white px-3 py-2.5 dark:border-white/10 dark:bg-[#0c1017]">
+            <legend className="px-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              On proposal
+            </legend>
+            <div className="flex flex-wrap gap-4 pt-0.5">
+              <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
+                <input
+                  type="radio"
+                  name="brand-compare-proposal-track"
+                  checked={selection.proposalTrack === "dcr"}
+                  onChange={() => patchCompare({ proposalTrack: "dcr" })}
+                  className="h-4 w-4 border-slate-300 text-indigo-600"
+                />
+                DCR only
+              </label>
+              <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
+                <input
+                  type="radio"
+                  name="brand-compare-proposal-track"
+                  checked={selection.proposalTrack === "non_dcr"}
+                  onChange={() => patchCompare({ proposalTrack: "non_dcr" })}
+                  className="h-4 w-4 border-slate-300 text-indigo-600"
+                />
+                Non-DCR only
+              </label>
+            </div>
+            <p className="mt-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+              Customer proposal will show only the selected track.
+            </p>
+          </fieldset>
+        ) : null}
 
         {snapshot ? (
           <div className="overflow-x-auto rounded-xl border border-slate-200/90 bg-white dark:border-white/10 dark:bg-[#0c1017]">
@@ -101,18 +135,23 @@ export function ResidentialBrandComparePanel({ config, onChange, className, dcrO
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b border-slate-100 dark:border-white/5">
-                  <td className="px-3 py-2 text-xs font-bold text-slate-600">DCR @ {snapshot.kw} kW</td>
-                  <td className="px-3 py-2 text-xs font-bold tabular-nums">
-                    {snapshot.brandA.dcrOk ? inr(snapshot.brandA.dcrGrossInr) : "—"}
-                  </td>
-                  <td className="px-3 py-2 text-xs font-bold tabular-nums">
-                    {snapshot.brandB.dcrOk ? inr(snapshot.brandB.dcrGrossInr) : "—"}
-                  </td>
-                </tr>
-                {!dcrOnly ? (
+                {dcrOnly || selection.proposalTrack === "dcr" ? (
                   <tr>
-                    <td className="px-3 py-2 text-xs font-bold text-slate-600">Non-DCR @ {snapshot.kw} kW</td>
+                    <td className="px-3 py-2 text-xs font-bold text-slate-600">
+                      DCR @ {snapshot.kw} kW
+                    </td>
+                    <td className="px-3 py-2 text-xs font-bold tabular-nums">
+                      {snapshot.brandA.dcrOk ? inr(snapshot.brandA.dcrGrossInr) : "—"}
+                    </td>
+                    <td className="px-3 py-2 text-xs font-bold tabular-nums">
+                      {snapshot.brandB.dcrOk ? inr(snapshot.brandB.dcrGrossInr) : "—"}
+                    </td>
+                  </tr>
+                ) : (
+                  <tr>
+                    <td className="px-3 py-2 text-xs font-bold text-slate-600">
+                      Non-DCR @ {snapshot.kw} kW
+                    </td>
                     <td className="px-3 py-2 text-xs font-bold tabular-nums text-emerald-700 dark:text-emerald-300">
                       {snapshot.brandA.nonDcrOk ? inr(snapshot.brandA.nonDcrGrossInr) : "—"}
                     </td>
@@ -120,7 +159,7 @@ export function ResidentialBrandComparePanel({ config, onChange, className, dcrO
                       {snapshot.brandB.nonDcrOk ? inr(snapshot.brandB.nonDcrGrossInr) : "—"}
                     </td>
                   </tr>
-                ) : null}
+                )}
               </tbody>
             </table>
           </div>
