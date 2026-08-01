@@ -173,7 +173,6 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
 }
 .page > * {
   max-width: 100%;
@@ -185,7 +184,7 @@
   flex-direction: column;
   gap: 0.25rem;
   padding-top: 0;
-  margin-bottom: 0;
+  margin-bottom: 0.75rem;
   flex-shrink: 0;
 }
 .pageTag {
@@ -522,26 +521,19 @@
 /* ══ P2: IMPACT ════════════════════════════════════════════════ */
 .impactPage .pageTitle { max-width: none; }
 
-.impactPage {
-  gap: 0.75rem;
-}
 .impactGrid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 1.1rem;
-  margin-bottom: 0;
-  flex: 0.85 1 0;
-  align-items: stretch;
-  min-height: 0;
+  margin-bottom: 1.1rem;
+  flex: 0 0 auto;
+  align-items: start;
 }
 .impactCard {
   background: var(--al);
   border-radius: var(--card-r);
   padding: 1.75rem 1.5rem;
   border: 1px solid var(--line);
-  height: 100%;
-  display: flex;
-  flex-direction: column;
 }
 .impactBig {
   font-family: 'Montserrat', sans-serif;
@@ -576,9 +568,8 @@
   border: 1px solid var(--line);
   border-radius: var(--card-r);
   padding: 1.15rem 1.4rem;
-  flex: 1.1 1 0;
-  min-height: 150px;
-  margin-bottom: 0;
+  flex: 0 0 auto;
+  margin-bottom: 0.85rem;
 }
 .carbonMilestone {
   flex: 1;
@@ -629,7 +620,6 @@
 .financePage {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
 }
 .financePage .pageTitle {
   font-size: 1.65rem;
@@ -640,7 +630,7 @@
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1.1fr);
   align-items: stretch;
   gap: 0.4rem;
-  margin-bottom: 0;
+  margin-bottom: 0.65rem;
   flex: 0 0 auto;
   width: 100%;
 }
@@ -773,14 +763,14 @@
 .billCard { display: contents; }
 .billArrow { display: contents; }
 
-/* Bill trajectory — primary filler for economics page */
+/* Bill trajectory */
 .trajectoryChart {
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--card-r);
-  padding: 0.85rem 0.95rem 0.8rem;
-  margin-bottom: 0;
-  flex: 1.35 1 0;
+  padding: 0.75rem 0.85rem 0.7rem;
+  margin-bottom: 0.75rem;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -817,10 +807,10 @@
 
 .trajectorySvg {
   width: 100%;
-  flex: 1 1 auto;
-  min-height: 170px;
-  max-height: none;
-  height: 100%;
+  flex: 0 1 auto;
+  min-height: 150px;
+  max-height: 200px;
+  height: 180px;
   overflow: visible;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
@@ -916,11 +906,10 @@
   background: var(--al);
   border: 1px solid var(--line);
   border-radius: var(--card-r);
-  padding: 0.7rem 0.75rem;
-  flex: 0 0 auto;
+  padding: 0.65rem 0.7rem;
+  flex-shrink: 0;
   width: 100%;
   box-shadow: var(--card-s);
-  margin-top: auto;
 }
 
 .investItem {
@@ -1007,10 +996,9 @@
 .wealthPage {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
 }
 .wealthPage .pageHead {
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.75rem;
 }
 .wealthPage .pageLead {
   max-width: 36rem;
@@ -1023,8 +1011,8 @@
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: stretch;
   gap: 0.35rem;
-  margin-bottom: 0;
-  flex: 0 0 auto;
+  margin-bottom: 0.55rem;
+  flex-shrink: 0;
   width: 100%;
 }
 .wealthPathCard {
@@ -1114,21 +1102,20 @@
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.95fr);
   gap: 0.75rem;
-  flex: 1.25 1 0;
+  flex: 0 0 auto;
   min-height: 0;
-  align-items: stretch;
+  align-items: start;
   width: 100%;
 }
 .wealthChartBox {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.7rem;
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--card-r);
   padding: 1rem 1.1rem 1.05rem;
   min-height: 0;
-  height: 100%;
   box-shadow: var(--card-s);
 }
 .wealthChartHead {
@@ -1155,9 +1142,9 @@
 .wealthChart {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 0.45rem;
-  flex: 1 1 auto;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  flex: 0 0 auto;
   min-height: 0;
 }
 .wealthMilestone {
@@ -1256,9 +1243,8 @@
 .investScoreBox {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.7rem;
   min-height: 0;
-  height: 100%;
 }
 .investScoreCard {
   background: var(--h);
@@ -1267,11 +1253,10 @@
   padding: 1.15rem 1.1rem 1.2rem;
   text-align: center;
   box-shadow: 0 8px 24px rgba(10, 15, 28, 0.18);
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  min-height: 0;
+  justify-content: flex-start;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -1339,7 +1324,7 @@
   border: 1px solid var(--line);
   border-radius: var(--card-r);
   padding: 1rem 1.05rem;
-  flex: 0 0 auto;
+  flex-shrink: 0;
   box-shadow: var(--card-s);
 }
 .paybackTag {
@@ -1371,10 +1356,9 @@
 .genPage {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
 }
 .genPage .pageHead {
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.75rem;
 }
 .genPage .pageTitle {
   font-size: 1.65rem;
@@ -1384,11 +1368,9 @@
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
   gap: 0.7rem;
-  margin-bottom: 0;
-  flex: 0.85 1 0;
-  min-height: 0;
+  margin-bottom: 0.65rem;
+  flex-shrink: 0;
   width: 100%;
-  align-items: stretch;
 }
 .genCard {
   background: var(--al);
@@ -1399,7 +1381,6 @@
   flex-direction: column;
   min-height: 0;
   min-width: 0;
-  height: 100%;
   overflow: hidden;
   box-shadow: var(--card-s);
 }
@@ -1419,10 +1400,9 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 0.5rem;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-width: 0;
   width: 100%;
-  align-content: stretch;
 }
 .genFormulaStep {
   display: flex;
@@ -1507,10 +1487,9 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 0.45rem;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-width: 0;
   width: 100%;
-  align-content: stretch;
 }
 .genIrradTile {
   background: var(--white);
@@ -1579,9 +1558,9 @@
 }
 
 .genFoot {
-  flex: 0 0 auto;
-  margin-top: auto;
-  padding-top: 0.15rem;
+  flex-shrink: 0;
+  margin-top: 0.45rem;
+  padding-top: 0.25rem;
 }
 .genStdRow {
   display: flex;
@@ -1624,19 +1603,13 @@
   max-width: 36rem;
 }
 
-.hwPage {
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-}
 .hwCard4Grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 0.75rem;
-  margin-bottom: 0;
-  align-items: stretch;
-  flex: 1.2 1 0;
-  min-height: 0;
+  margin-bottom: 0.75rem;
+  align-items: start;
+  flex: 0 0 auto;
 }
 .hwCardV2 {
   background: var(--white);
@@ -1645,8 +1618,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 0;
+  height: auto;
   box-shadow: var(--card-s);
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
@@ -1718,7 +1690,7 @@
   border-radius: 0 4px 4px 0;
 }
 .hwCardFooter {
-  margin-top: auto;
+  margin-top: 0.55rem;
   padding-top: 0.5rem;
   display: flex;
   align-items: center;
@@ -1862,10 +1834,9 @@
 .trustPage {
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
 }
 .trustPage .pageHead {
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.75rem;
 }
 .trustPage .pageTitle {
   font-size: 1.65rem;
@@ -1873,12 +1844,12 @@
 .trustGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-auto-rows: 1fr;
-  gap: 0.7rem;
-  margin-bottom: 0;
-  flex: 1.15 1 0;
+  grid-auto-rows: auto;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+  flex: 0 0 auto;
   min-height: 0;
-  align-content: stretch;
+  align-content: start;
 }
 .trustCard {
   background: var(--white);
@@ -1891,7 +1862,7 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  height: 100%;
+  height: auto;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -1942,8 +1913,7 @@
   font-weight: 600;
   color: var(--gray);
   line-height: 1.4;
-  margin-top: auto;
-  padding-top: 0.35rem;
+  margin-top: 0.35rem;
 }
 
 /* Photo + quote proof band — one image only */
@@ -1951,8 +1921,8 @@
   display: grid;
   grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.15fr);
   gap: 0.7rem;
-  align-items: stretch;
-  flex: 1 1 0;
+  align-items: start;
+  flex: 0 0 auto;
   min-height: 0;
   width: 100%;
 }
@@ -1962,9 +1932,9 @@
   border-radius: var(--card-r);
   overflow: hidden;
   border: 1px solid var(--line);
-  height: 100%;
+  height: 220px;
   min-height: 200px;
-  max-height: none;
+  max-height: 240px;
   box-shadow: var(--card-s);
   background: var(--h);
 }
@@ -2014,9 +1984,9 @@
   border-left: 4px solid var(--or);
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   min-height: 0;
-  height: 100%;
+  height: auto;
   box-shadow: var(--card-s);
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
@@ -2114,10 +2084,9 @@
 .roofPage {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
 }
 .roofPage .pageHead {
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.7rem;
 }
 .roofPage .pageTitle {
   font-size: 1.65rem;
@@ -2127,10 +2096,10 @@
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
   gap: 0.7rem;
-  margin-bottom: 0;
-  flex: 1.25 1 0;
+  margin-bottom: 0.65rem;
+  flex: 0 0 auto;
   min-height: 0;
-  align-items: stretch;
+  align-items: start;
   width: 100%;
 }
 
@@ -2144,7 +2113,7 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  height: 100%;
+  height: auto;
 }
 
 .roofStageHead {
@@ -2177,10 +2146,10 @@
 
 .roofPlanFrame {
   width: 100%;
-  flex: 1 1 auto;
-  height: auto;
-  min-height: 200px;
-  max-height: none;
+  flex: 0 0 auto;
+  height: 210px;
+  min-height: 190px;
+  max-height: 230px;
   border-radius: 10px;
   overflow: hidden;
   background: linear-gradient(165deg, #F1F5F9 0%, #F8FAFC 45%, #E8EEF5 100%);
@@ -2219,7 +2188,7 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  height: 100%;
+  height: auto;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -2272,7 +2241,7 @@
   margin: 0 0 0.45rem;
   padding: 0 0 0 1.05rem;
   list-style: disc;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
 }
 
 .roofSunBenefits li {
@@ -2312,7 +2281,7 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.6rem;
-  margin-bottom: 0;
+  margin-bottom: 0.7rem;
   flex: 0 0 auto;
 }
 
@@ -2353,21 +2322,21 @@
 .roofMetricGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-auto-rows: 1fr;
+  grid-auto-rows: auto;
   gap: 0.55rem;
-  flex: 0.9 1 0;
+  flex: 0 0 auto;
   min-height: 0;
-  align-content: stretch;
+  align-content: start;
 }
 
 .roofMetricCard {
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 0.75rem 0.85rem 0.8rem;
+  padding: 0.7rem 0.8rem 0.75rem;
   min-width: 0;
   min-height: 0;
-  height: 100%;
+  height: auto;
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
@@ -2400,8 +2369,8 @@
 
 .roofYieldNote {
   display: block;
-  margin-top: auto;
-  padding-top: 0.3rem;
+  margin-top: 0.2rem;
+  padding-top: 0;
   font-size: 0.8rem;
   font-weight: 600;
   color: var(--gray);
@@ -2412,19 +2381,19 @@
 .roadmapPage {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  /* Keep .page A4 min-height so flex children can fill the sheet */
 }
 
 .roadmapPage .pageHead {
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.7rem;
 }
 
 .journeyBlock {
-  flex: 1.15 1 0;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   min-height: 0;
-  margin-bottom: 0;
+  margin-bottom: 0.7rem;
 }
 
 .journeyHead {
@@ -2458,11 +2427,11 @@
 .journeyGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-auto-rows: 1fr;
+  grid-auto-rows: auto;
   gap: 0.6rem;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-height: 0;
-  align-content: stretch;
+  align-content: start;
 }
 
 .journeyCard {
@@ -2472,10 +2441,10 @@
   background: var(--al);
   border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 0.85rem 0.9rem;
+  padding: 0.8rem 0.85rem;
   min-width: 0;
   min-height: 0;
-  height: 100%;
+  height: auto;
   box-shadow: var(--card-s);
 }
 
@@ -2533,14 +2502,14 @@
   line-height: 1.4;
 }
 
-/* Payment + bank — share leftover sheet with journey */
+/* Payment + bank — content-sized; leftover A4 space stays empty (no stretch) */
 .payBankSplit {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
   gap: 0.7rem;
-  align-items: stretch;
+  align-items: start;
   margin-top: 0;
-  flex: 1 1 0;
+  flex: 0 0 auto;
   min-height: 0;
   width: 100%;
 }
@@ -2554,7 +2523,7 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  height: 100%;
+  height: auto;
   box-shadow: var(--card-s);
 }
 
@@ -2613,10 +2582,10 @@
 
 .invoiceBody {
   padding: 0.35rem 1.1rem;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
+  justify-content: flex-start;
   gap: 0;
   min-height: 0;
   background: var(--white);
@@ -2680,7 +2649,7 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  height: 100%;
+  height: auto;
   box-shadow: var(--card-s);
 }
 
@@ -2711,10 +2680,10 @@
 .vendorBankFields {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  flex: 1 1 auto;
+  gap: 0.45rem;
+  flex: 0 0 auto;
   min-height: 0;
-  justify-content: space-evenly;
+  justify-content: flex-start;
 }
 
 .vendorBankField {
@@ -2768,17 +2737,16 @@
 }
 
 .vendorBankEmpty {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   font-size: 0.8rem;
   color: var(--gray);
   line-height: 1.4;
-  padding: 0.85rem 0.9rem;
+  padding: 0.7rem 0.75rem;
   background: rgba(249, 115, 22, 0.06);
   border: 1px dashed rgba(249, 115, 22, 0.35);
   border-radius: 6px;
-  min-height: 4.5rem;
 }
 
 .termsPage {
@@ -2794,9 +2762,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-height: 0;
-  justify-content: flex-start;
 }
 
 .termsSection {
@@ -2962,7 +2929,7 @@
   border-left: 3px solid var(--or);
   border-radius: 8px;
   padding: 0.75rem 0.9rem;
-  margin-top: auto;
+  margin-top: 0.55rem;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -3424,12 +3391,12 @@
 
 /* EPC expert note — tariff vs degradation (unique to wealth page) */
 .wealthExpert {
-  margin: 0;
+  margin: 0.45rem 0 0;
   padding: 0.55rem 0.7rem 0.6rem;
   background: linear-gradient(135deg, #0A0F1C 0%, #1E293B 100%);
   border: 1px solid rgba(249, 115, 22, 0.4);
   border-radius: var(--card-r);
-  flex: 0 0 auto;
+  flex-shrink: 0;
   box-shadow: var(--card-s);
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
@@ -3473,7 +3440,7 @@
 }
 
 .wealthTakeaway {
-  margin: 0;
+  margin: 0.55rem 0 0;
   padding: 0.65rem 0.85rem;
   background: linear-gradient(90deg, #FFF7ED, #FFFFFF);
   border: 1px solid rgba(249, 115, 22, 0.28);
@@ -3484,7 +3451,7 @@
   font-weight: 700;
   color: var(--h);
   line-height: 1.35;
-  flex: 0 0 auto;
+  flex-shrink: 0;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -3494,9 +3461,9 @@
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--card-r);
-  padding: 0.85rem 0.9rem 0.9rem;
-  margin-bottom: 0;
-  flex: 1.2 1 0;
+  padding: 0.8rem 0.85rem 0.85rem;
+  margin-bottom: 0.7rem;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -3508,10 +3475,9 @@
 .genCompareList {
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
-  flex: 1 1 auto;
-  justify-content: space-evenly;
-  min-height: 0;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+  justify-content: flex-start;
 }
 .genCompareRow {
   border-radius: 10px;
@@ -3592,8 +3558,8 @@
 .genBarRow { display: contents; }
 
 .genExpert {
-  flex: 0 0 auto;
-  margin-bottom: 0;
+  flex-shrink: 0;
+  margin-bottom: 0.75rem;
 }
 .genPage .genExpert p {
   font-size: 0.98rem;
@@ -3607,8 +3573,7 @@
   border-left: 4px solid var(--or);
   border-radius: var(--card-r);
   padding: 1rem 1.25rem;
-  margin-bottom: 0;
-  flex: 0 0 auto;
+  margin-bottom: 1.25rem;
 }
 .expertTag {
   font-family: 'Montserrat', sans-serif;
@@ -3837,70 +3802,11 @@
     padding: var(--page-pad-t) var(--page-pad-x) var(--page-pad-b) !important;
     overflow: visible !important;
     border-radius: 12px;
-    gap: 0.75rem;
   }
 
   .page > * {
     max-width: 100%;
     min-width: 0;
-  }
-
-  /* Mobile: natural stack — do not force A4 flex-fill */
-  .trajectoryChart,
-  .wealthLayout,
-  .genCompare,
-  .genProofGrid,
-  .trustGrid,
-  .trustProof,
-  .roofMainRow,
-  .roofMetricGrid,
-  .journeyBlock,
-  .payBankSplit,
-  .impactGrid,
-  .carbonMilestones,
-  .hwCard4Grid,
-  .termsStack,
-  .investScoreCard,
-  .wealthChart,
-  .invoiceBody,
-  .vendorBankFields,
-  .vendorBankEmpty {
-    flex: 0 0 auto !important;
-  }
-
-  .trustCard,
-  .journeyCard,
-  .roofMetricCard,
-  .invoice,
-  .vendorBankCard,
-  .hwCardV2,
-  .impactCard,
-  .roofArrayStage,
-  .roofSunTeach,
-  .genCard,
-  .wealthChartBox,
-  .investScoreBox,
-  .trustPhotoFrame,
-  .trustQuoteBox {
-    height: auto !important;
-  }
-
-  .trustPhotoFrame {
-    max-height: none !important;
-  }
-
-  .trajectorySvg {
-    flex: 0 0 auto !important;
-    height: 170px !important;
-    min-height: 150px !important;
-    max-height: 190px !important;
-  }
-
-  .roofPlanFrame {
-    flex: 0 0 auto !important;
-    height: auto !important;
-    min-height: 200px !important;
-    max-height: none !important;
   }
 
   .coverPage,
@@ -4572,65 +4478,58 @@
   }
   .closingBtn { display: none !important; }
 
-  /* Fill A4 sheet — hero bands grow; compact strips stay content-sized */
-  .trajectoryChart,
+  /* Content-sized blocks — leftover A4 space is intentional white margin */
+  .termsStack,
   .wealthLayout,
+  .trajectoryChart,
   .genCompare,
-  .genProofGrid,
+  .journeyBlock,
+  .payBankSplit,
   .trustGrid,
   .trustProof,
   .roofMainRow,
   .roofMetricGrid,
-  .journeyBlock,
-  .payBankSplit,
-  .impactGrid,
-  .carbonMilestones,
-  .hwCard4Grid,
-  .termsStack {
-    flex-grow: 1 !important;
-    min-height: 0 !important;
-    max-width: 100% !important;
-  }
   .financeFlow,
   .investBreakdown,
-  .wealthPath {
+  .wealthPath,
+  .genProofGrid,
+  .invoiceBody,
+  .vendorBankFields,
+  .vendorBankEmpty,
+  .investScoreCard,
+  .wealthChart {
     flex: 0 0 auto !important;
+    flex-grow: 0 !important;
+    min-height: 0 !important;
     max-width: 100% !important;
   }
   .roadmapPage .payBankSplit { margin-top: 0; }
 
-  .page {
-    gap: 0.5rem !important;
-  }
-  .pageHead { padding-top: 0; margin-bottom: 0.35rem; }
+  .pageHead { padding-top: 0; margin-bottom: 0.55rem; }
   .pageTitle { font-size: 15pt !important; }
   .pageLead { font-size: 9.5pt !important; }
 
   .roofPlanFrame {
+    height: 52mm !important;
     min-height: 48mm !important;
-    max-height: none !important;
+    max-height: 56mm !important;
+  }
+  .journeyCard {
     height: auto !important;
-    flex: 1 1 auto !important;
+    padding: 0.7rem 0.75rem !important;
   }
-  .trajectorySvg {
-    min-height: 42mm !important;
-    max-height: none !important;
-    height: 100% !important;
-    flex: 1 1 auto !important;
+  .roofMetricCard {
+    height: auto !important;
   }
-  .trustPhotoFrame {
-    min-height: 48mm !important;
-    max-height: none !important;
-    height: 100% !important;
-  }
-  .journeyCard,
-  .roofMetricCard,
-  .trustCard,
   .invoice,
-  .vendorBankCard,
-  .hwCardV2,
-  .impactCard {
-    height: 100% !important;
+  .vendorBankCard {
+    height: auto !important;
+  }
+
+  .trajectorySvg {
+    min-height: 118px !important;
+    max-height: 145px !important;
+    height: 135px !important;
   }
   .genCompareRow {
     padding: 0.55rem 0.7rem 0.6rem !important;
