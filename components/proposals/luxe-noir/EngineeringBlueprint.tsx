@@ -98,12 +98,6 @@ function IsoPanel({
   const g3x = p0x + rightX * inset + downX * (1 - inset);
   const g3y = p0y + rightY * inset + downY * (1 - inset);
 
-  // Mid-clamp positions on long edges (into rails)
-  const clampPts = [
-    { x: p0x + rightX * 0.5 + downX * 0.02, y: p0y + rightY * 0.5 + downY * 0.02 },
-    { x: p0x + rightX * 0.5 + downX * 0.98, y: p0y + rightY * 0.5 + downY * 0.98 },
-  ];
-
   return (
     <g>
       {/* Panel thickness (depth) */}
@@ -154,165 +148,6 @@ function IsoPanel({
         strokeWidth="1.6"
         strokeLinecap="round"
       />
-
-      {/* Mid clamps gripping frame to rail */}
-      {clampPts.map((c, i) => (
-        <rect
-          key={`cl-${i}`}
-          x={c.x - 2.2}
-          y={c.y - 1.1}
-          width="4.4"
-          height="2.2"
-          rx="0.4"
-          fill="#c5ccd6"
-          stroke="#6a7380"
-          strokeWidth="0.4"
-        />
-      ))}
-    </g>
-  );
-}
-
-/** Per-module GI rails + standing legs — sits under that IsoPanel only. */
-function PanelMount({ cx, cy }: { cx: number; cy: number }) {
-  // Must match IsoPanel vectors so rails hug the underside
-  const rightX = 40;
-  const rightY = 11.5;
-  const downX = -14;
-  const downY = 10.5;
-  const thick = 3.4;
-
-  const along = (u: number, v: number) => ({
-    x: cx + rightX * u + downX * v,
-    y: cy + rightY * u + downY * v + thick,
-  });
-
-  // Rails under long edges (v≈0 rear / north, v≈1 front / south)
-  const rearA = along(0.06, 0.18);
-  const rearB = along(0.94, 0.18);
-  const frontA = along(0.06, 0.92);
-  const frontB = along(0.94, 0.92);
-
-  const LEG_FRONT = 26;
-  const LEG_REAR = 36;
-
-  function post(
-    key: string,
-    top: { x: number; y: number },
-    h: number,
-    front: boolean
-  ) {
-    const xBot = top.x + 0.6;
-    const yBot = top.y + h;
-    return (
-      <g key={key}>
-        <ellipse
-          cx={xBot + 0.3}
-          cy={yBot + 1.2}
-          rx="3.4"
-          ry="1.35"
-          fill="rgba(0,0,0,0.48)"
-        />
-        <line
-          x1={top.x}
-          y1={top.y}
-          x2={xBot}
-          y2={yBot}
-          stroke={front ? "#c8d0da" : "#8a93a0"}
-          strokeWidth={front ? 3.2 : 2.8}
-          strokeLinecap="round"
-        />
-        <line
-          x1={top.x - 0.9}
-          y1={top.y + 1.5}
-          x2={xBot - 0.9}
-          y2={yBot - 1.5}
-          stroke="rgba(255,255,255,0.35)"
-          strokeWidth="0.85"
-          strokeLinecap="round"
-        />
-        <rect
-          x={xBot - 3.4}
-          y={yBot - 0.4}
-          width="7.2"
-          height="2.1"
-          rx="0.35"
-          fill="#d4dae2"
-          stroke="#4a5564"
-          strokeWidth="0.4"
-        />
-      </g>
-    );
-  }
-
-  const rearPosts = [along(0.28, 0.18), along(0.72, 0.18)];
-  const frontPosts = [along(0.28, 0.92), along(0.72, 0.92)];
-
-  return (
-    <g>
-      {/* Rear posts first (deeper) */}
-      {rearPosts.map((p, i) => post(`rp-${i}`, p, LEG_REAR, false))}
-      {frontPosts.map((p, i) => post(`fp-${i}`, p, LEG_FRONT, true))}
-
-      {/* Light brace under module */}
-      <line
-        x1={frontPosts[0]!.x}
-        y1={frontPosts[0]!.y + 5}
-        x2={rearPosts[0]!.x}
-        y2={rearPosts[0]!.y + LEG_REAR - 4}
-        stroke="#7a8494"
-        strokeWidth="1.1"
-        opacity="0.7"
-        strokeLinecap="round"
-      />
-      <line
-        x1={frontPosts[1]!.x}
-        y1={frontPosts[1]!.y + 5}
-        x2={rearPosts[1]!.x}
-        y2={rearPosts[1]!.y + LEG_REAR - 4}
-        stroke="#7a8494"
-        strokeWidth="1.1"
-        opacity="0.7"
-        strokeLinecap="round"
-      />
-
-      {/* C-rails under frame edges */}
-      <line
-        x1={rearA.x}
-        y1={rearA.y}
-        x2={rearB.x}
-        y2={rearB.y}
-        stroke="#9aa3b0"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
-      <line
-        x1={rearA.x}
-        y1={rearA.y + 1.4}
-        x2={rearB.x}
-        y2={rearB.y + 1.4}
-        stroke="#5c6573"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-      />
-      <line
-        x1={frontA.x}
-        y1={frontA.y}
-        x2={frontB.x}
-        y2={frontB.y}
-        stroke="#c8d0da"
-        strokeWidth="3.2"
-        strokeLinecap="round"
-      />
-      <line
-        x1={frontA.x}
-        y1={frontA.y + 1.5}
-        x2={frontB.x}
-        y2={frontB.y + 1.5}
-        stroke="#6a7380"
-        strokeWidth="1.25"
-        strokeLinecap="round"
-      />
     </g>
   );
 }
@@ -320,17 +155,10 @@ function PanelMount({ cx, cy }: { cx: number; cy: number }) {
 function IconPv() {
   return (
     <svg viewBox="0 0 72 56" className={styles.archIcon} aria-hidden>
-      <rect x="6" y="4" width="28" height="22" rx="1.5" fill="#1e3550" stroke="#B8962E" strokeWidth="1.3" />
-      <path d="M13 4v22M20 4v22M27 4v22M6 11h28M6 18h28" stroke="rgba(200,220,255,0.28)" strokeWidth="0.8" />
-      <rect x="38" y="4" width="28" height="22" rx="1.5" fill="#1e3550" stroke="#B8962E" strokeWidth="1.3" />
-      <path d="M45 4v22M52 4v22M59 4v22M38 11h28M38 18h28" stroke="rgba(200,220,255,0.28)" strokeWidth="0.8" />
-      {/* Rail bank + short L-feet (not table legs) */}
-      <rect x="8" y="30" width="56" height="4" rx="1" fill="#9aa3b0" stroke="#5c6573" strokeWidth="0.6" />
-      <rect x="10" y="36" width="52" height="3.2" rx="0.8" fill="#7a8494" />
-      <line x1="16" y1="39" x2="16" y2="44" stroke="#8a93a0" strokeWidth="1.8" strokeLinecap="round" />
-      <line x1="36" y1="39" x2="36" y2="44" stroke="#8a93a0" strokeWidth="1.8" strokeLinecap="round" />
-      <line x1="56" y1="39" x2="56" y2="44" stroke="#8a93a0" strokeWidth="1.8" strokeLinecap="round" />
-      <rect x="12" y="44" width="48" height="2.5" rx="0.6" fill="#6a7380" />
+      <rect x="8" y="12" width="26" height="28" rx="1.5" fill="#1e3550" stroke="#B8962E" strokeWidth="1.3" />
+      <path d="M14.5 12v28M21 12v28M27.5 12v28M8 21h26M8 30h26" stroke="rgba(200,220,255,0.28)" strokeWidth="0.8" />
+      <rect x="38" y="12" width="26" height="28" rx="1.5" fill="#1e3550" stroke="#B8962E" strokeWidth="1.3" />
+      <path d="M44.5 12v28M51 12v28M57.5 12v28M38 21h26M38 30h26" stroke="rgba(200,220,255,0.28)" strokeWidth="0.8" />
     </svg>
   );
 }
@@ -456,13 +284,13 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
   const strings = Math.max(1, Math.ceil(modulesRaw / 6));
   const perString = Math.ceil(modulesRaw / strings);
 
-  // Isometric step — array lifted so tall GI legs read above the deck
+  // Isometric step — panels sit on the roof deck (no mount structure)
   const stepColX = 42;
   const stepColY = 12;
   const stepRowX = -16;
   const stepRowY = 16;
   const isoOriginX = 92;
-  const isoOriginY = 58;
+  const isoOriginY = 102;
 
   const panelPositions = Array.from({ length: modulesDraw }).map((_, i) => {
     const col = i % cols;
@@ -473,7 +301,7 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
       z: row * 100 + col,
     };
   });
-  // Draw back-to-front so nearer panels occlude structure behind
+  // Draw back-to-front so nearer panels occlude those behind
   panelPositions.sort((a, b) => a.cy - b.cy || a.cx - b.cx);
 
   const { copy, isHi } = useLuxeLang();
@@ -561,7 +389,7 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
               stroke="rgba(255,255,255,0.08)"
               strokeWidth="1"
             />
-            {/* Soft contact shadow under standing legs */}
+            {/* Soft contact shadow under panels on the deck */}
             {panelPositions.length > 0 && (
               <ellipse
                 cx={
@@ -574,19 +402,16 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
                   isoOriginY +
                   ((cols - 1) * stepColY) / 2 +
                   ((rows - 1) * stepRowY) / 2 +
-                  42
+                  18
                 }
-                rx={cols * 22 + 16}
-                ry={11 + rows * 2}
-                fill="rgba(0,0,0,0.42)"
+                rx={cols * 20 + 12}
+                ry={8 + rows * 1.5}
+                fill="rgba(0,0,0,0.28)"
               />
             )}
 
             {panelPositions.map((p, i) => (
-              <g key={i}>
-                <PanelMount cx={p.cx} cy={p.cy} />
-                <IsoPanel cx={p.cx} cy={p.cy} />
-              </g>
+              <IsoPanel key={i} cx={p.cx} cy={p.cy} />
             ))}
 
             {/* Compass rose */}
@@ -641,7 +466,7 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
               letterSpacing="0.4"
             >
               {modulesRaw} modules · {formatLuxeKw(dcKwp)} kWp DC · {strings}×
-              {perString} string · rail mount · South
+              {perString} string · South
             </text>
           </svg>
         </div>
