@@ -269,7 +269,7 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
           <svg
             viewBox="0 0 320 240"
             width="100%"
-            height="228"
+            height="278"
             className={styles.engSvgDark}
             aria-hidden
           >
