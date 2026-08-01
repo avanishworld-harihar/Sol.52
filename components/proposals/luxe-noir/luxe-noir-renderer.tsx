@@ -8,6 +8,7 @@
 
 import { useState, type ReactNode } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
+import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { formatInr } from "@/components/proposals/_shared/formatters";
 import { ObsidianCover } from "./ObsidianCover";
 import { EngineeringBlueprint } from "./EngineeringBlueprint";
@@ -29,6 +30,7 @@ import styles from "./luxe-noir-shell.module.css";
 
 export type LuxeNoirRendererProps = {
   data: ProposalData;
+  pptInput?: PremiumProposalPptInput | null;
 };
 
 const DEFAULT_PAYMENT_PCTS = [25, 50, 20, 5] as const;
@@ -57,7 +59,13 @@ function A4Page({
   );
 }
 
-function LuxeNoirDocument({ data }: { data: ProposalData }) {
+function LuxeNoirDocument({
+  data,
+  pptInput,
+}: {
+  data: ProposalData;
+  pptInput?: PremiumProposalPptInput | null;
+}) {
   const { lang, setLang, copy, isHi } = useLuxeLang();
   const brand = luxeVendorOrFallback(useLuxeVendorName(data), isHi);
   const systemKw = Number(data.meta.systemKw) || 0;
@@ -193,7 +201,7 @@ function LuxeNoirDocument({ data }: { data: ProposalData }) {
         </div>
       </div>
 
-      <ObsidianCover data={data} />
+      <ObsidianCover data={data} pptInput={pptInput} />
 
       <A4Page pageLabel="02 / 11" brand={brand}>
         <p className={styles.eyebrow}>{copy.load.eyebrow}</p>
@@ -353,18 +361,19 @@ function LuxeNoirDocument({ data }: { data: ProposalData }) {
       <ImpactPage data={data} generationUnits={generationUnits} brand={brand} />
       <PaymentMilestonesPage
         data={data}
+        pptInput={pptInput}
         milestones={paymentMilestones}
         paymentTerms={paymentTerms}
         brand={brand}
       />
       <TermsCompliancePage1 data={data} />
       <TermsCompliancePage2 data={data} />
-      <ClosingPage data={data} />
+      <ClosingPage data={data} pptInput={pptInput} />
     </div>
   );
 }
 
-export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
+export function LuxeNoirRenderer({ data, pptInput }: LuxeNoirRendererProps) {
   const [lang, setLang] = useState<LuxeLang>("en");
 
   if (!data) {
@@ -373,7 +382,7 @@ export function LuxeNoirRenderer({ data }: LuxeNoirRendererProps) {
 
   return (
     <LuxeLangProvider lang={lang} setLang={setLang}>
-      <LuxeNoirDocument data={data} />
+      <LuxeNoirDocument data={data} pptInput={pptInput} />
     </LuxeLangProvider>
   );
 }

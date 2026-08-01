@@ -7,6 +7,9 @@
 import { LuxeNoirRenderer } from "@/components/proposals/luxe-noir/luxe-noir-renderer";
 import type { PresetRendererProps } from "@/components/proposals/_registry/types";
 
-export default function LuxeNoirAdapter({ data }: PresetRendererProps) {
-  return <LuxeNoirRenderer data={data} />;
+export default function LuxeNoirAdapter({
+  data,
+  pptInput,
+}: PresetRendererProps) {
+  return <LuxeNoirRenderer data={data} pptInput={pptInput} />;
 }

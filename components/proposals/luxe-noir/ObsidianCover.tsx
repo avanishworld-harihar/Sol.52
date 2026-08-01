@@ -6,8 +6,13 @@
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
+import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { formatLuxeKw } from "./luxe-format";
-import { useLuxeVendorName, luxeVendorOrFallback } from "./luxe-vendor";
+import {
+  useLuxeCompanyContact,
+  useLuxeVendorName,
+  luxeVendorOrFallback,
+} from "./luxe-vendor";
 import { useLuxeLang } from "./luxe-lang-context";
 import { luxeDisplayFont } from "./luxe-fonts";
 import styles from "./luxe.module.css";
@@ -17,6 +22,7 @@ const COVER_ROOFTOP_SRC = "/assets/proposals/luxe-cover-rooftop.jpg";
 
 export type ObsidianCoverProps = {
   data: ProposalData;
+  pptInput?: PremiumProposalPptInput | null;
 };
 
 function CoverPhotoPlate({
@@ -48,9 +54,10 @@ function CoverPhotoPlate({
   );
 }
 
-export function ObsidianCover({ data }: ObsidianCoverProps) {
+export function ObsidianCover({ data, pptInput }: ObsidianCoverProps) {
   const { copy, isHi } = useLuxeLang();
   const vendor = luxeVendorOrFallback(useLuxeVendorName(data), isHi);
+  const company = useLuxeCompanyContact(data, pptInput);
   const client =
     data.meta.customerName?.trim() ||
     (isHi ? "सम्मानित ग्राहक" : "Valued Customer");
@@ -64,6 +71,7 @@ export function ObsidianCover({ data }: ObsidianCoverProps) {
   const plateCaption = isHi
     ? "निजी रूफटॉप अध्ययन"
     : "PRIVATE ROOFTOP STUDY";
+  const contactLine = company.line;
 
   return (
     <section
@@ -93,6 +101,9 @@ export function ObsidianCover({ data }: ObsidianCoverProps) {
         </h1>
         <div className={styles.coverBrandRule} />
         <p className={styles.coverBrandDiscipline}>{copy.cover.discipline}</p>
+        {contactLine ? (
+          <p className={styles.coverVendorContact}>{contactLine}</p>
+        ) : null}
       </div>
 
       <div className={styles.coverPlate}>

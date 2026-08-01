@@ -223,6 +223,15 @@
   font-weight: 500;
 }
 
+.coverVendorContact {
+  margin: 8px 0 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #5c6573;
+  line-height: 1.35;
+}
+
 .coverPlate {
   margin: 22px 0 0;
   flex: 1 1 auto;
@@ -712,19 +721,18 @@
   grid-template-columns: 1fr 1fr;
   gap: 10px;
   margin-bottom: 10px;
-  flex: 1 1 auto;
-  min-height: 0;
-  align-items: stretch;
+  flex: 0 0 auto;
+  align-items: start;
 }
 
 .closeSigCard {
   background: #ffffff;
   border: 1px solid #e2e6ec;
   border-radius: 10px;
-  padding: 12px 14px 12px;
+  padding: 10px 12px 10px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   min-height: 0;
 }
 
@@ -734,10 +742,12 @@
 }
 
 .closeSigPad {
-  flex: 1 1 auto;
-  min-height: 52px;
+  flex: 0 0 auto;
+  height: 44px;
+  min-height: 44px;
+  max-height: 44px;
   border-bottom: 1.5px solid rgba(20, 24, 32, 0.28);
-  margin: 6px 0 8px;
+  margin: 4px 0 6px;
 }
 
 .closeSigLabel {

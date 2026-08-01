@@ -2,12 +2,17 @@
 
 /**
  * Premium Luxe — Closing folio (last A4).
- * Brand-first close · visual path · signature pads · clear begin CTA.
+ * Brand-first close · visual path · compact signature pads · company contact.
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
+import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { formatLuxeKw } from "./luxe-format";
-import { useLuxeVendorName, luxeVendorOrFallback } from "./luxe-vendor";
+import {
+  useLuxeCompanyContact,
+  useLuxeVendorName,
+  luxeVendorOrFallback,
+} from "./luxe-vendor";
 import { ExpertVerdict } from "./ExpertVerdict";
 import { useLuxeLang } from "./luxe-lang-context";
 import { luxeDisplayFont } from "./luxe-fonts";
@@ -15,6 +20,7 @@ import styles from "./luxe.module.css";
 
 export type ClosingPageProps = {
   data: ProposalData;
+  pptInput?: PremiumProposalPptInput | null;
 };
 
 function ClosingSealArt({ label }: { label: string }) {
@@ -71,7 +77,6 @@ function ClosingSealArt({ label }: { label: string }) {
 }
 
 function StepGlyph({ index }: { index: number }) {
-  // Simple stage icons — confirm / docs / design / power
   if (index === 0) {
     return (
       <svg viewBox="0 0 32 32" className={styles.closeStepGlyph} aria-hidden>
@@ -106,21 +111,22 @@ function StepGlyph({ index }: { index: number }) {
   );
 }
 
-export function ClosingPage({ data }: ClosingPageProps) {
+export function ClosingPage({ data, pptInput }: ClosingPageProps) {
   const { copy, isHi } = useLuxeLang();
   const vendor = luxeVendorOrFallback(useLuxeVendorName(data), isHi);
+  const company = useLuxeCompanyContact(data, pptInput);
   const client =
     data.meta.customerName?.trim() ||
     (isHi ? "सम्मानित ग्राहक" : "Valued Customer");
   const systemKw = Number(data.meta.systemKw) || 0;
-  const contact =
-    data.closing.contactLine?.trim() ||
+  const contactLine =
+    company.line ||
     (isHi
       ? `शुरू करने के लिए ${vendor} को कॉल या WhatsApp करें।`
       : `Call or WhatsApp ${vendor} to begin.`);
-  const contactPerson = data.closing.contactPerson?.trim() || vendor;
+  const contactPerson = company.contactPerson || vendor;
   const contactRole =
-    data.closing.contactPersonDesignation?.trim() ||
+    company.contactPersonDesignation ||
     (isHi ? "अधिकृत हस्ताक्षरकर्ता" : "Authorized Signatory");
   const location =
     data.meta.locationLine && data.meta.locationLine !== "—"
@@ -129,6 +135,7 @@ export function ClosingPage({ data }: ClosingPageProps) {
 
   const stepTitles = [...copy.close.stepTitles];
   const stepBodies = [...copy.close.steps];
+  const detailBits = [company.address, company.website].filter(Boolean);
 
   return (
     <section
@@ -144,7 +151,6 @@ export function ClosingPage({ data }: ClosingPageProps) {
         <span className={styles.closeConfidential}>{copy.close.privateOffer}</span>
       </header>
 
-      {/* Brand-first: vendor is the hero signal */}
       <div className={styles.closeBrandHero}>
         <div className={styles.closeBrandCopy}>
           <span className={styles.closeBrandEyebrow}>{copy.close.vendor}</span>
@@ -174,7 +180,6 @@ export function ClosingPage({ data }: ClosingPageProps) {
         ) : null}
       </div>
 
-      {/* Visual path — 4 stages */}
       <div className={styles.closeJourney}>
         <div className={styles.closeJourneyHead}>
           <span>{copy.close.nextHead}</span>
@@ -199,7 +204,6 @@ export function ClosingPage({ data }: ClosingPageProps) {
         </ol>
       </div>
 
-      {/* Signature folio */}
       <div className={styles.closeSigGrid}>
         <div className={styles.closeSigCard}>
           <span className={styles.closeSigLabel}>{copy.close.clientAccept}</span>
@@ -217,7 +221,6 @@ export function ClosingPage({ data }: ClosingPageProps) {
         </div>
       </div>
 
-      {/* Begin CTA */}
       <div className={styles.closeContact}>
         <div className={styles.closeContactArt} aria-hidden>
           <svg viewBox="0 0 48 48" width="40" height="40">
@@ -233,8 +236,12 @@ export function ClosingPage({ data }: ClosingPageProps) {
         </div>
         <div className={styles.closeContactCopy}>
           <span className={styles.closeContactEyebrow}>{copy.close.contact}</span>
-          <strong>{contact}</strong>
-          <em>{copy.close.contactHint}</em>
+          <strong>{contactLine}</strong>
+          {detailBits.length > 0 ? (
+            <em>{detailBits.join(" · ")}</em>
+          ) : (
+            <em>{copy.close.contactHint}</em>
+          )}
         </div>
       </div>
 

@@ -3,15 +3,17 @@
 /**
  * Premium Luxe — Payment milestones + vendor bank account.
  * Compact schedule · bank details never clipped on A4.
- * Bank fields prefer proposal data, then More → Brand settings (local).
+ * Bank fields prefer proposal ppt_input, then More → Brand settings (local).
  */
 
 import { useEffect, useState } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
+import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import {
   PROPOSAL_BRANDING_UPDATED_EVENT,
   readProposalBrandingSettings,
   resolveProposalBankDetails,
+  type ProposalBrandingSettings,
 } from "@/lib/proposal-branding-settings";
 import { formatLuxeInr, formatLuxeInrReadable } from "./luxe-format";
 import { useLuxeVendorName, luxeVendorOrFallback } from "./luxe-vendor";
@@ -33,6 +35,7 @@ export type PaymentMilestonesPageProps = {
   milestones: PaymentMilestone[];
   paymentTerms: string[];
   brand?: string;
+  pptInput?: PremiumProposalPptInput | null;
 };
 
 function cleanBank(value: string | undefined | null): string {
@@ -100,37 +103,43 @@ function IllustBank() {
   );
 }
 
-function useResolvedLuxeBank(data: ProposalData) {
-  const [tick, setTick] = useState(0);
+function useResolvedLuxeBank(
+  data: ProposalData,
+  pptInput?: PremiumProposalPptInput | null
+) {
+  // Load More → Brand settings after mount so SSR/hydration stay empty-safe,
+  // then fill from localStorage (same pattern as Atelier branding sync).
+  const [settings, setSettings] = useState<ProposalBrandingSettings | null>(null);
 
   useEffect(() => {
-    const bump = () => setTick((t) => t + 1);
-    window.addEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, bump);
-    return () => window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, bump);
+    const sync = () => setSettings(readProposalBrandingSettings());
+    sync();
+    window.addEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
+    return () => window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
   }, []);
 
+  const ppt = pptInput?.bankDetails;
   const fromData = data.execution.bank;
-  const settings =
-    typeof window !== "undefined" ? readProposalBrandingSettings() : null;
-
-  const pptNum = cleanBank(fromData.accountNumber);
-  const pptIfsc = cleanBank(fromData.ifsc);
-  const pptUpi = cleanBank(fromData.upiId);
-  const dataHasCoords = Boolean(pptNum || pptIfsc || pptUpi);
 
   const resolved = resolveProposalBankDetails({
     pptBank: {
-      accountName: dataHasCoords
-        ? cleanBank(fromData.company) || undefined
-        : undefined,
-      accountNumber: pptNum || undefined,
-      ifsc: pptIfsc || undefined,
-      upiId: pptUpi || undefined,
+      accountName:
+        cleanBank(ppt?.accountName) ||
+        cleanBank(fromData.company) ||
+        undefined,
+      accountNumber:
+        cleanBank(ppt?.accountNumber) ||
+        cleanBank(fromData.accountNumber) ||
+        undefined,
+      ifsc:
+        cleanBank(ppt?.ifsc) || cleanBank(fromData.ifsc) || undefined,
+      branch: cleanBank(ppt?.branch) || undefined,
+      upiId:
+        cleanBank(ppt?.upiId) || cleanBank(fromData.upiId) || undefined,
+      paymentQrCodeUrl: cleanBank(ppt?.paymentQrCodeUrl) || undefined,
     },
     settings,
   });
-
-  void tick;
 
   return {
     accountName: cleanBank(resolved.accountName),
@@ -146,9 +155,10 @@ export function PaymentMilestonesPage({
   milestones,
   paymentTerms,
   brand,
+  pptInput,
 }: PaymentMilestonesPageProps) {
   const { copy, isHi } = useLuxeLang();
-  const bank = useResolvedLuxeBank(data);
+  const bank = useResolvedLuxeBank(data, pptInput);
   const fromSettings = useLuxeVendorName(data);
   const vendorName = luxeVendorOrFallback(brand?.trim() || fromSettings, isHi);
   const company = bank.accountName || vendorName;
