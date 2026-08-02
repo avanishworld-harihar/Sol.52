@@ -285,7 +285,7 @@ export function ClosingPage({ data, pptInput }: ClosingPageProps) {
 
       <footer className={`${styles.impactPageFooter} ${styles.closeFooter}`}>
         <span>{vendor.toUpperCase()}</span>
-        <span>11 / 11</span>
+        <span>12 / 12</span>
       </footer>
     </section>
   );

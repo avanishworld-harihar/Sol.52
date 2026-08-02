@@ -152,8 +152,45 @@ export function getLuxeCopy(lang: LuxeLang) {
         ? "अच्छे मॉड्यूल और इन्वर्टर तभी ज़्यादा यूनिट देते हैं जब केबल सही मोटाई की हों, जोड़ कसकर लगे हों, और पैनल साफ़ रहें। ढीला कनेक्शन या धूल भरा शीशा वही हार्डवेयर बेकार कर देता है जिसके पैसे आपने दिए।"
         : "Good modules and an inverter only deliver more units when cables are the right size, joints stay tight, and the glass stays clean. A loose connection or a dusty panel wastes the hardware you paid for.",
     },
+    gen: {
+      tag: hi ? "07 // उत्पादन पूर्वानुमान" : "07 // GENERATION FORECAST",
+      title: hi ? "मासिक उत्पादन पूर्वानुमान।" : "Monthly generation forecast.",
+      lead: hi
+        ? "जनवरी–दिसंबर अनुमानित यूनिट और बचत — गर्मी बनाम मानसून एक नज़र में।"
+        : "Jan–Dec estimated units and savings — summer vs monsoon at a glance.",
+      leadBill: hi
+        ? "सोलर उत्पादन के साथ आपके बिल के मासिक यूनिट — एक ही ग्राफ़ में तुलना।"
+        : "Solar generation alongside your bill months — compared in one chart.",
+      annualGen: hi ? "वार्षिक उत्पादन" : "Annual generation",
+      annualGenHint: hi ? "वर्ष भर का अनुमानित योग।" : "Estimated total across the year.",
+      annualSavings: hi ? "वार्षिक बचत" : "Annual savings",
+      year1Hint: hi ? "वर्ष-1 अनुमानित बिल बचत।" : "Year-1 estimated bill savings.",
+      about: hi ? "लगभग" : "About",
+      perMonth: hi ? "/माह" : "/mo",
+      chartHead: hi ? "मासिक यूनिट" : "MONTHLY UNITS",
+      chartHint: hi ? "मौसमी प्रोफ़ाइल · मध्य भारत" : "Seasonal profile · Central India",
+      legendGen: hi ? "सोलर उत्पादन" : "Solar generation",
+      legendBill: hi ? "बिल खपत" : "Bill usage",
+      noBillMonth: hi ? "इस महीने का बिल उपलब्ध नहीं" : "No bill for this month",
+      unitsLabel: hi ? "अनुमानित यूनिट" : "Est. units",
+      savingsLabel: hi ? "अनुमानित बचत" : "Est. savings",
+      savingsBasis: (rate: string) =>
+        hi
+          ? `अनुमानित बचत = मासिक यूनिट × ₹${rate}/यूनिट प्रभावी बचत दर। फिक्स्ड चार्ज शामिल नहीं।`
+          : `Estimated savings = monthly units × ₹${rate}/unit effective saving rate. Fixed charges excluded.`,
+      billNote: hi
+        ? "गहरे बार = बिल से वास्तविक खपत (जहाँ उपलब्ध)। सोने के बार = अनुमानित सोलर उत्पादन।"
+        : "Ink bars = actual bill usage where available. Gold bars = estimated solar generation.",
+      verdictLabel: hi ? "मौसमी विश्लेषण" : "SEASONAL ANALYSIS",
+      verdict: hi
+        ? "उत्पादन स्थानीय विकिरण प्रोफ़ाइल पर आधारित है। गर्मी में ऊँचा उत्पादन अक्सर ऊँचे बिल महीनों से मिलता है — बचत का मुख्य इंजन।"
+        : "Generation uses a regional irradiance profile. Higher summer output often aligns with peak bill months — that overlap drives most of the savings.",
+      verdictBill: hi
+        ? "जहाँ बिल बार ऊँचे हैं और सोलर भी ऊँचा है, वहीं बचत सबसे तेज़ लगती है। जिन महीनों का बिल नहीं है, वहाँ सिर्फ उत्पादन दिखता है।"
+        : "Where bill bars and solar bars both run high, savings hit hardest. Months without a bill show generation only.",
+    },
     impact: {
-      tag: hi ? "07 // स्वच्छ प्रभाव" : "07 // CLEAN IMPACT",
+      tag: hi ? "08 // स्वच्छ प्रभाव" : "08 // CLEAN IMPACT",
       title: hi ? "आपका स्वच्छ ऊर्जा प्रभाव।" : "Your Clean Energy Impact.",
       lead: hi
         ? "आपकी छत पर सोलर घर पर स्वच्छ बिजली बनाता है। ग्रिड से कम कोयला बिजली। परिवार के लिए साफ़ हवा — कई वर्षों तक।"
@@ -183,7 +220,7 @@ export function getLuxeCopy(lang: LuxeLang) {
         : "Coal plants that back the grid release PM2.5 and NOx with every kilowatt-hour — not only CO₂. Rooftop solar trims that dirty backup power, so the benefit is not just tonnes on a spreadsheet: the air on your street improves in real time as your meter runs backward.",
     },
     pay: {
-      tag: hi ? "08 // भुगतान प्रणाली" : "08 // PAYMENT SYSTEM",
+      tag: hi ? "09 // भुगतान प्रणाली" : "09 // PAYMENT SYSTEM",
       title: hi ? "आप कैसे भुगतान करें।" : "How You Pay.",
       lead: hi
         ? "आप चार साफ़ चरणों में भुगतान करते हैं। हर भुगतान अगला काम खोलता है — बुकिंग से स्विच-ऑन तक।"
@@ -216,8 +253,8 @@ export function getLuxeCopy(lang: LuxeLang) {
         : (["Advance (Booking)", "Material Delivery", "Installation", "Commissioning"] as const),
     },
     terms: {
-      tag1: hi ? "09 / शर्तें और अनुपालन" : "09 / TERMS & COMPLIANCE",
-      tag2: hi ? "10 / शर्तें और अनुपालन (जारी)" : "10 / TERMS & COMPLIANCE (CONTD.)",
+      tag1: hi ? "10 / शर्तें और अनुपालन" : "10 / TERMS & COMPLIANCE",
+      tag2: hi ? "11 / शर्तें और अनुपालन (जारी)" : "11 / TERMS & COMPLIANCE (CONTD.)",
       title: hi ? "नियम और शर्तें" : "Terms & Conditions",
       intro1: hi
         ? "साइन करने से पहले प्रत्येक बिंदु ध्यान से पढ़ें।"
@@ -253,7 +290,7 @@ export function getLuxeCopy(lang: LuxeLang) {
         : "Year-1 AMC is included; from Year 2, budget about 2% of invoice with yearly increase — regular care protects both generation and warranty.",
     },
     close: {
-      series: hi ? "11 · समापन" : "11 · CLOSING",
+      series: hi ? "12 · समापन" : "12 · CLOSING",
       privateOffer: hi ? "निजी प्रस्ताव" : "PRIVATE OFFER",
       title: hi ? "जब आप तैयार हों।" : "Ready when you are.",
       lead: hi

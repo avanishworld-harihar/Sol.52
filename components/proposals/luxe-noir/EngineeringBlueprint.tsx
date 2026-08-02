@@ -518,7 +518,7 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
 
       <footer className={styles.impactPageFooter}>
         <span>{vendor.toUpperCase()}</span>
-        <span>05 / 11</span>
+        <span>05 / 12</span>
       </footer>
     </section>
   );

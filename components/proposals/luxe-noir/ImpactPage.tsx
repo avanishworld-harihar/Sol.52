@@ -442,7 +442,7 @@ export function ImpactPage({ data, generationUnits, brand }: ImpactPageProps) {
 
       <footer className={styles.impactPageFooter}>
         <span>{vendor.toUpperCase()}</span>
-        <span>07 / 11</span>
+        <span>08 / 12</span>
       </footer>
     </section>
   );

@@ -289,7 +289,7 @@ export function TitaniumLedger({ data }: TitaniumLedgerProps) {
 
       <footer className={styles.impactPageFooter}>
         <span>{vendor.toUpperCase()}</span>
-        <span>06 / 11</span>
+        <span>06 / 12</span>
       </footer>
     </section>
   );

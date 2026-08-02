@@ -14,6 +14,7 @@ import { ObsidianCover } from "./ObsidianCover";
 import { EngineeringBlueprint } from "./EngineeringBlueprint";
 import { TitaniumLedger } from "./TitaniumLedger";
 import { WealthTerminal } from "./WealthTerminal";
+import { GenerationForecastPage } from "./GenerationForecastPage";
 import { ImpactPage } from "./ImpactPage";
 import { PaymentMilestonesPage } from "./PaymentMilestonesPage";
 import { ClosingPage } from "./ClosingPage";
@@ -203,7 +204,7 @@ function LuxeNoirDocument({
 
       <ObsidianCover data={data} pptInput={pptInput} />
 
-      <A4Page pageLabel="02 / 11" brand={brand}>
+      <A4Page pageLabel="02 / 12" brand={brand}>
         <p className={styles.eyebrow}>{copy.load.eyebrow}</p>
         <h2 className={styles.title} style={{ fontSize: "28pt" }}>
           {copy.load.title}
@@ -288,7 +289,7 @@ function LuxeNoirDocument({
 
       <WealthTerminal data={data} />
 
-      <A4Page pageLabel="04 / 11" brand={brand}>
+      <A4Page pageLabel="04 / 12" brand={brand}>
         <p className={styles.eyebrow}>{copy.emi.eyebrow}</p>
         <h2 className={styles.title} style={{ fontSize: "28pt" }}>
           {copy.emi.title}
@@ -358,6 +359,12 @@ function LuxeNoirDocument({
 
       <EngineeringBlueprint data={data} />
       <TitaniumLedger data={data} />
+      <GenerationForecastPage
+        data={data}
+        generationUnits={generationUnits}
+        brand={brand}
+        pptInput={pptInput}
+      />
       <ImpactPage data={data} generationUnits={generationUnits} brand={brand} />
       <PaymentMilestonesPage
         data={data}

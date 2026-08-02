@@ -178,7 +178,7 @@ export function TermsCompliancePage1({ data }: TermsComplianceProps) {
 
       <footer className={styles.impactPageFooter}>
         <span>{vendor.toUpperCase()}</span>
-        <span>09 / 11</span>
+        <span>10 / 12</span>
       </footer>
     </section>
   );
@@ -340,7 +340,7 @@ export function TermsCompliancePage2({ data }: TermsComplianceProps) {
 
       <footer className={styles.impactPageFooter}>
         <span>{vendor.toUpperCase()}</span>
-        <span>10 / 11</span>
+        <span>11 / 12</span>
       </footer>
     </section>
   );

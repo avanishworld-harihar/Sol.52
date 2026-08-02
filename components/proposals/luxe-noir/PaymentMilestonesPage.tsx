@@ -239,7 +239,7 @@ export function PaymentMilestonesPage({
 
       <footer className={styles.impactPageFooter}>
         <span>{vendorName.toUpperCase()}</span>
-        <span>08 / 11</span>
+        <span>09 / 12</span>
       </footer>
     </section>
   );

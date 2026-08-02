@@ -451,7 +451,7 @@ export function WealthTerminal({ data }: WealthTerminalProps) {
 
       <footer className={styles.impactPageFooter}>
         <span>{vendor.toUpperCase()}</span>
-        <span>03 / 11</span>
+        <span>03 / 12</span>
       </footer>
     </section>
   );
