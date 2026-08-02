@@ -509,12 +509,10 @@
 .closePhotoImg {
   display: block;
   width: 100%;
-  height: 136px;
+  height: 158px;
   object-fit: cover;
-  /* Bias to family + front of array; crop soft back-left edge artifacts */
-  object-position: 62% 48%;
-  transform: scale(1.06);
-  transform-origin: 62% 48%;
+  /* Keep family heads + plant in the safe band (avoid top/bottom chop) */
+  object-position: 52% 42%;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -525,10 +523,10 @@
   pointer-events: none;
   background: linear-gradient(
     180deg,
-    rgba(10, 14, 20, 0.08) 0%,
-    transparent 35%,
-    transparent 55%,
-    rgba(10, 14, 20, 0.45) 100%
+    rgba(10, 14, 20, 0.04) 0%,
+    transparent 28%,
+    transparent 62%,
+    rgba(10, 14, 20, 0.28) 100%
   );
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
