@@ -18,8 +18,6 @@ import {
   resolveInstallerDisplayName,
   type ProposalBrandingSettings,
 } from "@/lib/proposal-branding-settings";
-import { useProposalBrandingSettings } from "@/lib/use-proposal-branding-settings";
-
 const PLACEHOLDER =
   /^(solar\s*partner|सोलर\s*पार्टनर|vendor|installer|your\s*solar\s*partner|—|-|n\/a|na)$/i;
 
@@ -168,12 +166,24 @@ export function resolveLuxeCompanyContact(
   };
 }
 
-/** Live company contact — More → Company Profile via branding store. */
+/** Live company contact — More → Company Profile (sync read, like Golden bank). */
 export function useLuxeCompanyContact(
   data: ProposalData,
   pptInput?: PremiumProposalPptInput | null
 ): LuxeCompanyContact {
-  const settings = useProposalBrandingSettings();
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    const bump = () => setTick((n) => n + 1);
+    window.addEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, bump);
+    window.addEventListener("storage", bump);
+    return () => {
+      window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, bump);
+      window.removeEventListener("storage", bump);
+    };
+  }, []);
+  void tick;
+  const settings =
+    typeof window !== "undefined" ? readProposalBrandingSettings() : null;
   return resolveLuxeCompanyContact(data, pptInput, settings);
 }
 

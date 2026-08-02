@@ -19,7 +19,7 @@ import { luxeDisplayFont } from "./luxe-fonts";
 import styles from "./luxe.module.css";
 
 /** Local premium closing photograph — served from /public */
-const CLOSING_ROOFTOP_SRC = "/assets/proposals/luxe-closing-rooftop-family-v4.jpg";
+const CLOSING_ROOFTOP_SRC = "/assets/proposals/luxe-closing-rooftop-family-v5.jpg";
 
 export type ClosingPageProps = {
   data: ProposalData;
@@ -122,12 +122,16 @@ export function ClosingPage({ data, pptInput }: ClosingPageProps) {
     data.meta.customerName?.trim() ||
     (isHi ? "सम्मानित ग्राहक" : "Valued Customer");
   const systemKw = Number(data.meta.systemKw) || 0;
+  const phone = company.phone?.trim() || "";
+  const email = company.email?.trim() || "";
   const contactLine =
     company.line ||
+    [phone, email].filter(Boolean).join(" · ") ||
     (isHi
       ? `शुरू करने के लिए ${vendor} को कॉल या WhatsApp करें।`
       : `Call or WhatsApp ${vendor} to begin.`);
   const contactPerson = company.contactPerson || vendor;
+  const hasDirectContact = Boolean(phone || email);
   const contactRole =
     company.contactPersonDesignation ||
     (isHi ? "अधिकृत हस्ताक्षरकर्ता" : "Authorized Signatory");
@@ -264,7 +268,19 @@ export function ClosingPage({ data, pptInput }: ClosingPageProps) {
         </div>
         <div className={styles.closeContactCopy}>
           <span className={styles.closeContactEyebrow}>{copy.close.contact}</span>
-          <strong>{contactLine}</strong>
+          {hasDirectContact ? (
+            <>
+              {phone ? (
+                <strong className={styles.luxeNum}>{phone}</strong>
+              ) : null}
+              {email ? (
+                <strong className={styles.closeContactEmail}>{email}</strong>
+              ) : null}
+              {!phone && !email ? <strong>{contactLine}</strong> : null}
+            </>
+          ) : (
+            <strong>{contactLine}</strong>
+          )}
           {company.contactPerson ? (
             <span className={styles.closeContactPerson}>
               {company.contactPerson}
@@ -275,7 +291,7 @@ export function ClosingPage({ data, pptInput }: ClosingPageProps) {
           ) : null}
           {detailBits.length > 0 ? (
             <em>{detailBits.join(" · ")}</em>
-          ) : (
+          ) : hasDirectContact ? null : (
             <em>{copy.close.contactHint}</em>
           )}
         </div>
