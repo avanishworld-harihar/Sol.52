@@ -19,7 +19,7 @@ import { luxeDisplayFont } from "./luxe-fonts";
 import styles from "./luxe.module.css";
 
 /** Local premium closing photograph — served from /public */
-const CLOSING_ROOFTOP_SRC = "/assets/proposals/luxe-closing-rooftop-family-v2.jpg";
+const CLOSING_ROOFTOP_SRC = "/assets/proposals/luxe-closing-rooftop-family-v3.jpg";
 
 export type ClosingPageProps = {
   data: ProposalData;
