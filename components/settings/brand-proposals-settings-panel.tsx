@@ -280,23 +280,23 @@ export function BrandProposalsSettingsPanel({ markSaved, markIssue }: Props) {
       icon: Building2,
       content: (
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <LabeledInput label="Company name" value={companyName} onChange={setCompanyName} placeholder="Shivangan Solar" />
+          <LabeledInput label="Company name" value={companyName} onChange={setCompanyName} placeholder="Shivangan Solar" onBlurSave={() => saveAll("Company profile saved.")} />
           <div className="sm:col-span-2">
-            <LabeledInput label="Tagline (optional)" value={companyProfile.tagline} onChange={(v) => setCompanyProfile({ ...companyProfile, tagline: v })} placeholder="100% Local · Satna · Madhya Pradesh" />
+            <LabeledInput label="Tagline (optional)" value={companyProfile.tagline} onChange={(v) => setCompanyProfile({ ...companyProfile, tagline: v })} placeholder="100% Local · Satna · Madhya Pradesh" onBlurSave={() => saveAll("Company profile saved.")} />
           </div>
-          <LabeledInput label="Legal name (optional)" value={companyProfile.legalName} onChange={(v) => setCompanyProfile({ ...companyProfile, legalName: v })} placeholder="Registered entity name" />
-          <LabeledInput label="Contact person (optional)" value={companyProfile.contactPerson} onChange={(v) => setCompanyProfile({ ...companyProfile, contactPerson: v })} placeholder="Director / Owner" />
-          <LabeledInput label="Contact designation (optional)" value={companyProfile.contactPersonDesignation} onChange={(v) => setCompanyProfile({ ...companyProfile, contactPersonDesignation: v })} placeholder="Director, Proprietor" />
-          <LabeledInput label="Phone" value={companyContact} onChange={setCompanyContact} placeholder="+91-9993322267" />
-          <LabeledInput label="Email" value={companyEmail} onChange={setCompanyEmail} placeholder="contact@company.com" />
-          <LabeledInput label="GSTIN (optional)" value={companyProfile.gstNumber} onChange={(v) => setCompanyProfile({ ...companyProfile, gstNumber: v.toUpperCase() })} placeholder="23AAAAA0000A1Z5" />
-          <LabeledInput label="PAN (optional)" value={companyProfile.pan} onChange={(v) => setCompanyProfile({ ...companyProfile, pan: v.toUpperCase() })} placeholder="AAAAA0000A" />
-          <LabeledInput label="Registration no. (optional)" value={companyProfile.registrationNumber} onChange={(v) => setCompanyProfile({ ...companyProfile, registrationNumber: v.toUpperCase() })} placeholder="CIN / LLPIN" />
+          <LabeledInput label="Legal name (optional)" value={companyProfile.legalName} onChange={(v) => setCompanyProfile({ ...companyProfile, legalName: v })} placeholder="Registered entity name" onBlurSave={() => saveAll("Company profile saved.")} />
+          <LabeledInput label="Contact person (optional)" value={companyProfile.contactPerson} onChange={(v) => setCompanyProfile({ ...companyProfile, contactPerson: v })} placeholder="Director / Owner" onBlurSave={() => saveAll("Company profile saved.")} />
+          <LabeledInput label="Contact designation (optional)" value={companyProfile.contactPersonDesignation} onChange={(v) => setCompanyProfile({ ...companyProfile, contactPersonDesignation: v })} placeholder="Director, Proprietor" onBlurSave={() => saveAll("Company profile saved.")} />
+          <LabeledInput label="Phone" value={companyContact} onChange={setCompanyContact} placeholder="+91 98765 43210" onBlurSave={() => saveAll("Contact details saved.")} />
+          <LabeledInput label="Email" value={companyEmail} onChange={setCompanyEmail} placeholder="contact@company.com" onBlurSave={() => saveAll("Contact details saved.")} />
+          <LabeledInput label="GSTIN (optional)" value={companyProfile.gstNumber} onChange={(v) => setCompanyProfile({ ...companyProfile, gstNumber: v.toUpperCase() })} placeholder="23AAAAA0000A1Z5" onBlurSave={() => saveAll("Company profile saved.")} />
+          <LabeledInput label="PAN (optional)" value={companyProfile.pan} onChange={(v) => setCompanyProfile({ ...companyProfile, pan: v.toUpperCase() })} placeholder="AAAAA0000A" onBlurSave={() => saveAll("Company profile saved.")} />
+          <LabeledInput label="Registration no. (optional)" value={companyProfile.registrationNumber} onChange={(v) => setCompanyProfile({ ...companyProfile, registrationNumber: v.toUpperCase() })} placeholder="CIN / LLPIN" onBlurSave={() => saveAll("Company profile saved.")} />
           <div className="sm:col-span-2">
-            <LabeledInput label="Address (optional)" value={companyProfile.address} onChange={(v) => setCompanyProfile({ ...companyProfile, address: v })} placeholder="Office / workshop address" />
+            <LabeledInput label="Address (optional)" value={companyProfile.address} onChange={(v) => setCompanyProfile({ ...companyProfile, address: v })} placeholder="Office / workshop address" onBlurSave={() => saveAll("Company profile saved.")} />
           </div>
           <div className="sm:col-span-2">
-            <LabeledInput label="Website (optional)" value={companyProfile.website} onChange={(v) => setCompanyProfile({ ...companyProfile, website: v })} placeholder="https://yourcompany.com" />
+            <LabeledInput label="Website (optional)" value={companyProfile.website} onChange={(v) => setCompanyProfile({ ...companyProfile, website: v })} placeholder="https://yourcompany.com" onBlurSave={() => saveAll("Company profile saved.")} />
           </div>
         </div>
       ),

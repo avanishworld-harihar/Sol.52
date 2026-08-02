@@ -2,12 +2,15 @@
 
 /**
  * Resolve Premium Luxe vendor / brand name + company contact.
- * Prefer More → Brand settings, then proposal snapshot / ppt_input.
+ * Prefer More → Brand settings, then frozen ppt / summary / proposal data.
  */
 
 import { useEffect, useState } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
-import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
+import type {
+  PremiumProposalPptInput,
+  ProposalDeckSummary,
+} from "@/lib/proposal-ppt";
 import {
   DEFAULT_INSTALLER_EMAIL,
   DEFAULT_INSTALLER_PHONE,
@@ -18,6 +21,7 @@ import {
   resolveInstallerDisplayName,
   type ProposalBrandingSettings,
 } from "@/lib/proposal-branding-settings";
+
 const PLACEHOLDER =
   /^(solar\s*partner|सोलर\s*पार्टनर|vendor|installer|your\s*solar\s*partner|—|-|n\/a|na)$/i;
 
@@ -102,44 +106,55 @@ export type LuxeCompanyContact = {
   gstNumber: string;
   contactPerson: string;
   contactPersonDesignation: string;
+  companyName: string;
 };
 
 export function resolveLuxeCompanyContact(
   data: ProposalData,
   pptInput?: PremiumProposalPptInput | null,
-  settings?: ProposalBrandingSettings | null
+  settings?: ProposalBrandingSettings | null,
+  summary?: ProposalDeckSummary | null
 ): LuxeCompanyContact {
   const s = settings ?? null;
   const pptCp = pptInput?.companyProfile;
+  const moreSplit = splitContactLine(cleanField(s?.installerContact) || "");
   const pptSplit = splitContactLine(cleanField(pptInput?.installerContact) || "");
+  const summarySplit = splitContactLine(cleanField(summary?.contact) || "");
   const closingSplit = splitContactLine(cleanField(data.closing?.contactLine) || "");
 
-  // Prefer More → Company Profile, then frozen ppt snapshot, then proposal data.
-  // Sample Sol.52 demo phone/email are treated as empty.
+  // More → Company Profile first, then frozen ppt / summary / deck.
   const phone = firstPhone(
-    s?.installerContact,
+    moreSplit.phone,
+    s?.installerContact?.includes("·") ? "" : s?.installerContact,
     pptSplit.phone,
-    pptInput?.installerContact?.split("·")[0],
+    summarySplit.phone,
     closingSplit.phone
   );
   const email = firstEmail(
     s?.installerEmail,
+    moreSplit.email,
     pptSplit.email,
-    pptInput?.installerContact?.split("·")[1],
+    summarySplit.email,
     closingSplit.email
   );
   const line =
     formatInstallerContactLine(phone, email) ||
-    firstField(
-      phone && email ? `${phone} · ${email}` : "",
-      phone,
-      email
-    );
+    firstField(phone, email);
+
+  const companyName = firstField(
+    s ? resolveInstallerDisplayName(s) : "",
+    s?.companyProfile?.legalName,
+    pptInput?.installerName,
+    summary?.installer,
+    data.closing?.installerName,
+    data.meta?.brandName
+  );
 
   return {
     phone,
     email,
     line,
+    companyName,
     address: firstField(
       s?.companyProfile?.address,
       pptCp?.address,
@@ -166,10 +181,11 @@ export function resolveLuxeCompanyContact(
   };
 }
 
-/** Live company contact — More → Company Profile (sync read, like Golden bank). */
+/** Live company contact — More → Company Profile (sync read). */
 export function useLuxeCompanyContact(
   data: ProposalData,
-  pptInput?: PremiumProposalPptInput | null
+  pptInput?: PremiumProposalPptInput | null,
+  summary?: ProposalDeckSummary | null
 ): LuxeCompanyContact {
   const [tick, setTick] = useState(0);
   useEffect(() => {
@@ -184,14 +200,17 @@ export function useLuxeCompanyContact(
   void tick;
   const settings =
     typeof window !== "undefined" ? readProposalBrandingSettings() : null;
-  return resolveLuxeCompanyContact(data, pptInput, settings);
+  return resolveLuxeCompanyContact(data, pptInput, settings, summary);
 }
 
 /**
  * Sync resolve — safe on server (skips localStorage) and client.
- * Order: More branding → proposal installer / brand → bank company.
+ * Order: More branding → ppt installer → proposal brand.
  */
-export function resolveLuxeVendorName(data: ProposalData): string {
+export function resolveLuxeVendorName(
+  data: ProposalData,
+  pptInput?: PremiumProposalPptInput | null
+): string {
   if (typeof window !== "undefined") {
     try {
       const settings = readProposalBrandingSettings();
@@ -205,6 +224,7 @@ export function resolveLuxeVendorName(data: ProposalData): string {
   }
 
   const fromProposal = [
+    pptInput?.installerName,
     data.closing?.installerName,
     data.meta?.brandName,
     data.execution?.bank?.company,
@@ -218,19 +238,23 @@ export function resolveLuxeVendorName(data: ProposalData): string {
 
 /**
  * Live brand name — re-reads More → Brand when settings update.
- * Falls back to empty string (callers may show a soft placeholder only if needed).
  */
-export function useLuxeVendorName(data: ProposalData): string {
-  const [name, setName] = useState(() => resolveLuxeVendorName(data));
-
+export function useLuxeVendorName(
+  data: ProposalData,
+  pptInput?: PremiumProposalPptInput | null
+): string {
+  const [tick, setTick] = useState(0);
   useEffect(() => {
-    const refresh = () => setName(resolveLuxeVendorName(data));
-    refresh();
-    window.addEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, refresh);
-    return () => window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, refresh);
-  }, [data]);
-
-  return name;
+    const bump = () => setTick((n) => n + 1);
+    window.addEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, bump);
+    window.addEventListener("storage", bump);
+    return () => {
+      window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, bump);
+      window.removeEventListener("storage", bump);
+    };
+  }, []);
+  void tick;
+  return resolveLuxeVendorName(data, pptInput);
 }
 
 /** Soft display fallback when More branding is empty — avoid “Solar Partner”. */

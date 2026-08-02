@@ -6,7 +6,10 @@
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
-import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
+import type {
+  PremiumProposalPptInput,
+  ProposalDeckSummary,
+} from "@/lib/proposal-ppt";
 import { formatLuxeKw } from "./luxe-format";
 import {
   useLuxeCompanyContact,
@@ -24,6 +27,7 @@ const CLOSING_ROOFTOP_SRC = "/assets/proposals/luxe-closing-rooftop-family-v6.jp
 export type ClosingPageProps = {
   data: ProposalData;
   pptInput?: PremiumProposalPptInput | null;
+  summary?: ProposalDeckSummary | null;
 };
 
 function ClosingSealArt({ label }: { label: string }) {
@@ -114,24 +118,18 @@ function StepGlyph({ index }: { index: number }) {
   );
 }
 
-export function ClosingPage({ data, pptInput }: ClosingPageProps) {
+export function ClosingPage({ data, pptInput, summary }: ClosingPageProps) {
   const { copy, isHi } = useLuxeLang();
-  const vendor = luxeVendorOrFallback(useLuxeVendorName(data), isHi);
-  const company = useLuxeCompanyContact(data, pptInput);
+  const vendor = luxeVendorOrFallback(useLuxeVendorName(data, pptInput), isHi);
+  const company = useLuxeCompanyContact(data, pptInput, summary);
   const client =
     data.meta.customerName?.trim() ||
     (isHi ? "सम्मानित ग्राहक" : "Valued Customer");
   const systemKw = Number(data.meta.systemKw) || 0;
   const phone = company.phone?.trim() || "";
   const email = company.email?.trim() || "";
-  const contactLine =
-    company.line ||
-    [phone, email].filter(Boolean).join(" · ") ||
-    (isHi
-      ? `शुरू करने के लिए ${vendor} को कॉल या WhatsApp करें।`
-      : `Call or WhatsApp ${vendor} to begin.`);
+  const hasDirectContact = Boolean(phone || email || company.address || company.website);
   const contactPerson = company.contactPerson || vendor;
-  const hasDirectContact = Boolean(phone || email);
   const contactRole =
     company.contactPersonDesignation ||
     (isHi ? "अधिकृत हस्ताक्षरकर्ता" : "Authorized Signatory");
@@ -268,7 +266,7 @@ export function ClosingPage({ data, pptInput }: ClosingPageProps) {
         </div>
         <div className={styles.closeContactCopy}>
           <span className={styles.closeContactEyebrow}>{copy.close.contact}</span>
-          {hasDirectContact ? (
+          {phone || email ? (
             <>
               {phone ? (
                 <strong className={styles.luxeNum}>{phone}</strong>
@@ -276,10 +274,13 @@ export function ClosingPage({ data, pptInput }: ClosingPageProps) {
               {email ? (
                 <strong className={styles.closeContactEmail}>{email}</strong>
               ) : null}
-              {!phone && !email ? <strong>{contactLine}</strong> : null}
             </>
           ) : (
-            <strong>{contactLine}</strong>
+            <strong>
+              {isHi
+                ? `शुरू करने के लिए ${vendor} को कॉल या WhatsApp करें।`
+                : `Call or WhatsApp ${vendor} to begin.`}
+            </strong>
           )}
           {company.contactPerson ? (
             <span className={styles.closeContactPerson}>
@@ -292,7 +293,11 @@ export function ClosingPage({ data, pptInput }: ClosingPageProps) {
           {detailBits.length > 0 ? (
             <em>{detailBits.join(" · ")}</em>
           ) : hasDirectContact ? null : (
-            <em>{copy.close.contactHint}</em>
+            <em>
+              {isHi
+                ? "More → Company Profile में फोन / ईमेल सेव करें।"
+                : "Save phone / email in More → Company Profile."}
+            </em>
           )}
         </div>
       </div>

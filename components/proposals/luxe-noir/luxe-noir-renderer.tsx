@@ -74,7 +74,7 @@ function LuxeNoirDocument({
   summary?: ProposalDeckSummary | null;
 }) {
   const { lang, setLang, copy, isHi } = useLuxeLang();
-  const brand = luxeVendorOrFallback(useLuxeVendorName(data), isHi);
+  const brand = luxeVendorOrFallback(useLuxeVendorName(data, pptInput), isHi);
   const systemKw = Number(data.meta.systemKw) || 0;
   const eco = data.economics;
   const bill = data.bill;
@@ -208,7 +208,7 @@ function LuxeNoirDocument({
         </div>
       </div>
 
-      <ObsidianCover data={data} pptInput={pptInput} />
+      <ObsidianCover data={data} pptInput={pptInput} summary={summary} />
 
       <A4Page pageLabel="02 / 12" brand={brand}>
         <p className={styles.eyebrow}>{copy.load.eyebrow}</p>
@@ -382,7 +382,7 @@ function LuxeNoirDocument({
       />
       <TermsCompliancePage1 data={data} />
       <TermsCompliancePage2 data={data} />
-      <ClosingPage data={data} pptInput={pptInput} />
+      <ClosingPage data={data} pptInput={pptInput} summary={summary} />
     </div>
   );
 }

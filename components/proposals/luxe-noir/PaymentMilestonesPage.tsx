@@ -162,7 +162,7 @@ export function PaymentMilestonesPage({
     settings,
     preferSettings: true,
   });
-  const fromSettings = useLuxeVendorName(data);
+  const fromSettings = useLuxeVendorName(data, pptInput);
   const vendorName = luxeVendorOrFallback(brand?.trim() || fromSettings, isHi);
   const company = bank.accountName || vendorName;
   const hasBank = Boolean(

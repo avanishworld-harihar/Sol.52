@@ -6,7 +6,10 @@
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
-import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
+import type {
+  PremiumProposalPptInput,
+  ProposalDeckSummary,
+} from "@/lib/proposal-ppt";
 import { formatLuxeKw } from "./luxe-format";
 import {
   useLuxeCompanyContact,
@@ -23,6 +26,7 @@ const COVER_ROOFTOP_SRC = "/assets/proposals/luxe-cover-rooftop.jpg";
 export type ObsidianCoverProps = {
   data: ProposalData;
   pptInput?: PremiumProposalPptInput | null;
+  summary?: ProposalDeckSummary | null;
 };
 
 function CoverPhotoPlate({
@@ -54,10 +58,10 @@ function CoverPhotoPlate({
   );
 }
 
-export function ObsidianCover({ data, pptInput }: ObsidianCoverProps) {
+export function ObsidianCover({ data, pptInput, summary }: ObsidianCoverProps) {
   const { copy, isHi } = useLuxeLang();
-  const vendor = luxeVendorOrFallback(useLuxeVendorName(data), isHi);
-  const company = useLuxeCompanyContact(data, pptInput);
+  const vendor = luxeVendorOrFallback(useLuxeVendorName(data, pptInput), isHi);
+  const company = useLuxeCompanyContact(data, pptInput, summary);
   const client =
     data.meta.customerName?.trim() ||
     (isHi ? "सम्मानित ग्राहक" : "Valued Customer");

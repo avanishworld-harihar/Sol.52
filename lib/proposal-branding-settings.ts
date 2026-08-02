@@ -193,8 +193,9 @@ export function buildInstallerIdentitySnapshot(
 export const DEFAULT_PROPOSAL_BRANDING_SETTINGS: ProposalBrandingSettings = {
   // Empty = app chrome shows Sol.52. Vendor/company identity is set in More → Brand.
   installerName: "",
-  installerContact: DEFAULT_INSTALLER_PHONE,
-  installerEmail: DEFAULT_INSTALLER_EMAIL,
+  // Empty by default — do not persist demo Harihar phone/email into installer settings.
+  installerContact: "",
+  installerEmail: "",
   installerLogoUrl: "",
   personalizedBranding: true,
   themePreset: "greenBlueClassic",
