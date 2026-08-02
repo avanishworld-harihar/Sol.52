@@ -39,15 +39,17 @@ const MONTH_KEY_TO_INDEX: Record<string, number> = {
   oct: 9,
   nov: 10,
   dec: 11,
-  // Hindi short labels sometimes appear in audit rows
+  // Hindi short labels from monthLabels() after slice(0, 3)
   जन: 0,
   फर: 1,
   मार: 2,
   अप्र: 3,
   मई: 4,
+  जून: 5,
   जू: 5,
   जुल: 6,
   अग: 7,
+  सित: 8,
   सि: 8,
   अक्ट: 9,
   नव: 10,
