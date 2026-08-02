@@ -19,7 +19,7 @@ import { luxeDisplayFont } from "./luxe-fonts";
 import styles from "./luxe.module.css";
 
 /** Local premium closing photograph — served from /public */
-const CLOSING_ROOFTOP_SRC = "/assets/proposals/luxe-closing-rooftop-family-v5.jpg";
+const CLOSING_ROOFTOP_SRC = "/assets/proposals/luxe-closing-rooftop-family-v6.jpg";
 
 export type ClosingPageProps = {
   data: ProposalData;
@@ -201,7 +201,7 @@ export function ClosingPage({ data, pptInput }: ClosingPageProps) {
             src={CLOSING_ROOFTOP_SRC}
             alt=""
             width={1600}
-            height={900}
+            height={1000}
           />
           <div className={styles.closePhotoVignette} aria-hidden />
           <div className={styles.closePhotoGoldEdge} aria-hidden />

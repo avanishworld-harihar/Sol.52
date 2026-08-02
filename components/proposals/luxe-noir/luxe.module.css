@@ -509,10 +509,10 @@
 .closePhotoImg {
   display: block;
   width: 100%;
-  height: 168px;
+  height: 212px;
   object-fit: cover;
-  /* Eye-level terrace: keep family + sofa + panels in frame */
-  object-position: 50% 40%;
+  /* High three-quarter angle — keep full plant + family in band */
+  object-position: 48% 38%;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -523,10 +523,10 @@
   pointer-events: none;
   background: linear-gradient(
     180deg,
-    rgba(10, 14, 20, 0.04) 0%,
-    transparent 28%,
-    transparent 62%,
-    rgba(10, 14, 20, 0.28) 100%
+    rgba(10, 14, 20, 0.02) 0%,
+    transparent 22%,
+    transparent 70%,
+    rgba(10, 14, 20, 0.22) 100%
   );
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
