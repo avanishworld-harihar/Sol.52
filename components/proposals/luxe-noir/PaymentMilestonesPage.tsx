@@ -7,7 +7,7 @@
 
 import type { ProposalData } from "@/lib/proposal-data";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
-import type { ProposalBrandingSettings } from "@/lib/proposal-branding-settings";
+import { resolveProposalBankDetails } from "@/lib/proposal-branding-settings";
 import { useProposalBrandingSettings } from "@/lib/use-proposal-branding-settings";
 import { formatLuxeInr, formatLuxeInrReadable } from "./luxe-format";
 import { useLuxeVendorName, luxeVendorOrFallback } from "./luxe-vendor";
@@ -31,20 +31,6 @@ export type PaymentMilestonesPageProps = {
   brand?: string;
   pptInput?: PremiumProposalPptInput | null;
 };
-
-function cleanBank(value: string | undefined | null): string {
-  const v = (value ?? "").trim();
-  if (!v || v === "—" || v === "-" || v.toLowerCase() === "n/a") return "";
-  return v;
-}
-
-function pickBank(
-  more: string | undefined | null,
-  frozen: string | undefined | null,
-  deck: string | undefined | null
-): string {
-  return cleanBank(more) || cleanBank(frozen) || cleanBank(deck) || "";
-}
 
 /** Clear “pay into bank account” metaphor — building + rupee. */
 function IllustBank() {
@@ -104,33 +90,6 @@ function IllustBank() {
   );
 }
 
-function resolveLuxeBankFromMore(
-  data: ProposalData,
-  pptInput: PremiumProposalPptInput | null | undefined,
-  settings: ProposalBrandingSettings
-) {
-  const ppt = pptInput?.bankDetails;
-  const deck = data.execution.bank;
-
-  // More → Banking is the source of truth for live preview / installer view.
-  const accountNumber = pickBank(
-    settings.bankAccountNumber,
-    ppt?.accountNumber,
-    deck.accountNumber
-  );
-  const ifsc = pickBank(settings.bankIfsc, ppt?.ifsc, deck.ifsc);
-  const upiId = pickBank(settings.bankUpiId, ppt?.upiId, deck.upiId);
-  const branch = pickBank(settings.bankBranch, ppt?.branch, "");
-  const accountName = pickBank(
-    settings.bankAccountName,
-    ppt?.accountName,
-    // Only use deck company when we actually have banking coords
-    accountNumber || ifsc || upiId ? deck.company : ""
-  );
-
-  return { accountName, accountNumber, ifsc, branch, upiId };
-}
-
 export function PaymentMilestonesPage({
   data,
   milestones,
@@ -140,7 +99,21 @@ export function PaymentMilestonesPage({
 }: PaymentMilestonesPageProps) {
   const { copy, isHi } = useLuxeLang();
   const settings = useProposalBrandingSettings();
-  const bank = resolveLuxeBankFromMore(data, pptInput, settings);
+  const ppt = pptInput?.bankDetails;
+  const deck = data.execution.bank;
+  // More → Banking first, then frozen ppt / deck (same source as proposal generate).
+  const bank = resolveProposalBankDetails({
+    pptBank: {
+      accountName: ppt?.accountName || deck.company || undefined,
+      accountNumber: ppt?.accountNumber || deck.accountNumber || undefined,
+      ifsc: ppt?.ifsc || deck.ifsc || undefined,
+      branch: ppt?.branch || undefined,
+      upiId: ppt?.upiId || deck.upiId || undefined,
+      paymentQrCodeUrl: ppt?.paymentQrCodeUrl || undefined,
+    },
+    settings,
+    preferSettings: true,
+  });
   const fromSettings = useLuxeVendorName(data);
   const vendorName = luxeVendorOrFallback(brand?.trim() || fromSettings, isHi);
   const company = bank.accountName || vendorName;

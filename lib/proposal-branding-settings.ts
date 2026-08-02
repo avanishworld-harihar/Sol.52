@@ -476,9 +476,16 @@ export type ResolvedProposalBankDetails = {
   paymentQrCodeUrl: string;
 };
 
+function cleanBankField(value: string | undefined | null): string {
+  const v = (value ?? "").trim();
+  if (!v || v === "—" || v === "-" || /^n\/?a$/i.test(v)) return "";
+  return v;
+}
+
 /**
- * Prefer frozen ppt_input bank fields; fill gaps from More → Brand settings
- * so live preview shows saved banking without forcing a regenerate.
+ * Resolve vendor bank for proposal slides.
+ * Default: frozen ppt_input first, then More → Brand & Proposals (Banking).
+ * `preferSettings: true` — More tab wins (live installer preview / Premium Luxe).
  */
 export function resolveProposalBankDetails(sources: {
   pptBank?: {
@@ -490,11 +497,16 @@ export function resolveProposalBankDetails(sources: {
     paymentQrCodeUrl?: string | null;
   } | null;
   settings?: ProposalBrandingSettings | null;
+  /** When true, More → Banking overrides frozen ppt gaps and stale ppt values. */
+  preferSettings?: boolean;
 }): ResolvedProposalBankDetails {
   const ppt = sources.pptBank ?? {};
   const s = sources.settings;
-  const pick = (fromPpt?: string | null, fromSettings?: string) =>
-    (fromPpt?.trim() || fromSettings?.trim() || "");
+  const pick = (fromPpt?: string | null, fromSettings?: string) => {
+    const a = cleanBankField(fromPpt);
+    const b = cleanBankField(fromSettings);
+    return sources.preferSettings ? b || a : a || b;
+  };
 
   return {
     accountName: pick(ppt.accountName, s?.bankAccountName),

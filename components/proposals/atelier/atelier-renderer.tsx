@@ -443,17 +443,25 @@ export function AtelierRenderer({
     grossInr > 0 ? grossInr : netInr > 0 ? netInr : 0;
   const invoiceRef = invoiceBase > 0 ? formatInr(invoiceBase) : "";
 
-  // Vendor bank — More → Brand settings (+ proposal bank fields)
+  // Vendor bank — More → Banking first, then frozen ppt / deck
   void brandConfig;
+  const pptBank = pptInput?.bankDetails;
   const vendorBank = resolveProposalBankDetails({
     pptBank: {
-      accountName: data.execution.bank.company || undefined,
-      accountNumber: data.execution.bank.accountNumber || undefined,
-      ifsc: data.execution.bank.ifsc || undefined,
-      upiId: data.execution.bank.upiId || undefined,
+      accountName:
+        pptBank?.accountName || data.execution.bank.company || undefined,
+      accountNumber:
+        pptBank?.accountNumber ||
+        data.execution.bank.accountNumber ||
+        undefined,
+      ifsc: pptBank?.ifsc || data.execution.bank.ifsc || undefined,
+      branch: pptBank?.branch || undefined,
+      upiId: pptBank?.upiId || data.execution.bank.upiId || undefined,
+      paymentQrCodeUrl: pptBank?.paymentQrCodeUrl || undefined,
     },
     settings:
       typeof window !== "undefined" ? readProposalBrandingSettings() : null,
+    preferSettings: true,
   });
   const bankName = vendorBank.accountName.trim() || brand;
   const hasVendorBank = Boolean(

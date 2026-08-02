@@ -465,12 +465,42 @@ export function BrandProposalsSettingsPanel({ markSaved, markIssue }: Props) {
       content: (
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <LabeledInput label="Account name" value={bankAccName} onChange={setBankAccName} placeholder="Company name" />
-            <LabeledInput label="Account number" value={bankAccNo} onChange={setBankAccNo} placeholder="Account No." />
-            <LabeledInput label="IFSC" value={bankIfsc} onChange={setBankIfsc} placeholder="IFSC" />
-            <LabeledInput label="Branch" value={bankBranch} onChange={setBankBranch} placeholder="Branch" />
+            <LabeledInput
+              label="Account name"
+              value={bankAccName}
+              onChange={setBankAccName}
+              placeholder="Company name"
+              onBlurSave={() => saveAll("Banking details saved.")}
+            />
+            <LabeledInput
+              label="Account number"
+              value={bankAccNo}
+              onChange={setBankAccNo}
+              placeholder="Account No."
+              onBlurSave={() => saveAll("Banking details saved.")}
+            />
+            <LabeledInput
+              label="IFSC"
+              value={bankIfsc}
+              onChange={setBankIfsc}
+              placeholder="IFSC"
+              onBlurSave={() => saveAll("Banking details saved.")}
+            />
+            <LabeledInput
+              label="Branch"
+              value={bankBranch}
+              onChange={setBankBranch}
+              placeholder="Branch"
+              onBlurSave={() => saveAll("Banking details saved.")}
+            />
             <div className="sm:col-span-2">
-              <LabeledInput label="UPI ID" value={bankUpi} onChange={setBankUpi} placeholder="company@bank" />
+              <LabeledInput
+                label="UPI ID"
+                value={bankUpi}
+                onChange={setBankUpi}
+                placeholder="company@bank"
+                onBlurSave={() => saveAll("Banking details saved.")}
+              />
             </div>
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -589,9 +619,27 @@ export function BrandProposalsSettingsPanel({ markSaved, markIssue }: Props) {
   );
 }
 
-function LabeledInput({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (next: string) => void; placeholder: string }) {
+function LabeledInput({
+  label,
+  value,
+  onChange,
+  placeholder,
+  onBlurSave,
+}: {
+  label: string;
+  value: string;
+  onChange: (next: string) => void;
+  placeholder: string;
+  onBlurSave?: () => void;
+}) {
   return (
-    <FloatingLabelInput label={label} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} />
+    <FloatingLabelInput
+      label={label}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      onBlur={onBlurSave}
+      placeholder={placeholder}
+    />
   );
 }
 
