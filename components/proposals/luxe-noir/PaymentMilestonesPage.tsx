@@ -2,13 +2,21 @@
 
 /**
  * Premium Luxe — Payment milestones + vendor bank account.
- * Bank fields prefer More → Banking settings, then frozen ppt_input.
+ * Same resolution as Golden / Atelier: More → Banking (live) + frozen ppt/summary.
  */
 
+import { useEffect, useState } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
-import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
-import { resolveProposalBankDetails } from "@/lib/proposal-branding-settings";
-import { useProposalBrandingSettings } from "@/lib/use-proposal-branding-settings";
+import type {
+  PremiumProposalPptInput,
+  ProposalBankDetails as PptBankDetails,
+  ProposalDeckSummary,
+} from "@/lib/proposal-ppt";
+import {
+  PROPOSAL_BRANDING_UPDATED_EVENT,
+  readProposalBrandingSettings,
+  resolveProposalBankDetails,
+} from "@/lib/proposal-branding-settings";
 import { formatLuxeInr, formatLuxeInrReadable } from "./luxe-format";
 import { useLuxeVendorName, luxeVendorOrFallback } from "./luxe-vendor";
 import { ExpertVerdict } from "./ExpertVerdict";
@@ -30,7 +38,18 @@ export type PaymentMilestonesPageProps = {
   paymentTerms: string[];
   brand?: string;
   pptInput?: PremiumProposalPptInput | null;
+  summary?: ProposalDeckSummary | null;
 };
+
+function pickBankField(
+  ...candidates: Array<string | null | undefined>
+): string | undefined {
+  for (const c of candidates) {
+    const v = (c ?? "").trim();
+    if (v && v !== "—" && v !== "-" && !/^n\/?a$/i.test(v)) return v;
+  }
+  return undefined;
+}
 
 /** Clear “pay into bank account” metaphor — building + rupee. */
 function IllustBank() {
@@ -96,20 +115,49 @@ export function PaymentMilestonesPage({
   paymentTerms,
   brand,
   pptInput,
+  summary,
 }: PaymentMilestonesPageProps) {
   const { copy, isHi } = useLuxeLang();
-  const settings = useProposalBrandingSettings();
-  const ppt = pptInput?.bankDetails;
+  const [brandingTick, setBrandingTick] = useState(0);
+
+  useEffect(() => {
+    const bump = () => setBrandingTick((n) => n + 1);
+    window.addEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, bump);
+    window.addEventListener("storage", bump);
+    return () => {
+      window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, bump);
+      window.removeEventListener("storage", bump);
+    };
+  }, []);
+
+  // Sync read — same as Golden / Atelier (not delayed empty useState).
+  void brandingTick;
+  const settings =
+    typeof window !== "undefined" ? readProposalBrandingSettings() : null;
+
+  const ppt: PptBankDetails | undefined = pptInput?.bankDetails;
+  const fromSummary: PptBankDetails | undefined = summary?.bankDetails;
   const deck = data.execution.bank;
-  // More → Banking first, then frozen ppt / deck (same source as proposal generate).
+
   const bank = resolveProposalBankDetails({
     pptBank: {
-      accountName: ppt?.accountName || deck.company || undefined,
-      accountNumber: ppt?.accountNumber || deck.accountNumber || undefined,
-      ifsc: ppt?.ifsc || deck.ifsc || undefined,
-      branch: ppt?.branch || undefined,
-      upiId: ppt?.upiId || deck.upiId || undefined,
-      paymentQrCodeUrl: ppt?.paymentQrCodeUrl || undefined,
+      accountName: pickBankField(
+        ppt?.accountName,
+        fromSummary?.accountName,
+        deck.company
+      ),
+      accountNumber: pickBankField(
+        ppt?.accountNumber,
+        fromSummary?.accountNumber,
+        deck.accountNumber
+      ),
+      ifsc: pickBankField(ppt?.ifsc, fromSummary?.ifsc, deck.ifsc),
+      branch: pickBankField(ppt?.branch, fromSummary?.branch),
+      upiId: pickBankField(ppt?.upiId, fromSummary?.upiId, deck.upiId),
+      paymentQrCodeUrl: pickBankField(
+        ppt?.paymentQrCodeUrl,
+        fromSummary?.paymentQrCodeUrl
+      ),
     },
     settings,
     preferSettings: true,
@@ -117,7 +165,9 @@ export function PaymentMilestonesPage({
   const fromSettings = useLuxeVendorName(data);
   const vendorName = luxeVendorOrFallback(brand?.trim() || fromSettings, isHi);
   const company = bank.accountName || vendorName;
-  const hasBank = Boolean(bank.accountNumber || bank.ifsc || bank.upiId);
+  const hasBank = Boolean(
+    bank.accountNumber || bank.ifsc || bank.upiId || bank.paymentQrCodeUrl
+  );
 
   const gross = data.economics.grossInr;
   const net = data.economics.netInr;

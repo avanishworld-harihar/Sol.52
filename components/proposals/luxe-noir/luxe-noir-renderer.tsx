@@ -8,7 +8,10 @@
 
 import { useState, type ReactNode } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
-import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
+import type {
+  PremiumProposalPptInput,
+  ProposalDeckSummary,
+} from "@/lib/proposal-ppt";
 import { formatInr } from "@/components/proposals/_shared/formatters";
 import { ObsidianCover } from "./ObsidianCover";
 import { EngineeringBlueprint } from "./EngineeringBlueprint";
@@ -32,6 +35,7 @@ import styles from "./luxe-noir-shell.module.css";
 export type LuxeNoirRendererProps = {
   data: ProposalData;
   pptInput?: PremiumProposalPptInput | null;
+  summary?: ProposalDeckSummary | null;
 };
 
 const DEFAULT_PAYMENT_PCTS = [25, 50, 20, 5] as const;
@@ -63,9 +67,11 @@ function A4Page({
 function LuxeNoirDocument({
   data,
   pptInput,
+  summary,
 }: {
   data: ProposalData;
   pptInput?: PremiumProposalPptInput | null;
+  summary?: ProposalDeckSummary | null;
 }) {
   const { lang, setLang, copy, isHi } = useLuxeLang();
   const brand = luxeVendorOrFallback(useLuxeVendorName(data), isHi);
@@ -369,6 +375,7 @@ function LuxeNoirDocument({
       <PaymentMilestonesPage
         data={data}
         pptInput={pptInput}
+        summary={summary}
         milestones={paymentMilestones}
         paymentTerms={paymentTerms}
         brand={brand}
@@ -380,7 +387,11 @@ function LuxeNoirDocument({
   );
 }
 
-export function LuxeNoirRenderer({ data, pptInput }: LuxeNoirRendererProps) {
+export function LuxeNoirRenderer({
+  data,
+  pptInput,
+  summary,
+}: LuxeNoirRendererProps) {
   const [lang, setLang] = useState<LuxeLang>("en");
 
   if (!data) {
@@ -389,7 +400,7 @@ export function LuxeNoirRenderer({ data, pptInput }: LuxeNoirRendererProps) {
 
   return (
     <LuxeLangProvider lang={lang} setLang={setLang}>
-      <LuxeNoirDocument data={data} pptInput={pptInput} />
+      <LuxeNoirDocument data={data} pptInput={pptInput} summary={summary} />
     </LuxeLangProvider>
   );
 }

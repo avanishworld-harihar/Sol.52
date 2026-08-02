@@ -10,6 +10,9 @@ import type { PresetRendererProps } from "@/components/proposals/_registry/types
 export default function LuxeNoirAdapter({
   data,
   pptInput,
+  summary,
 }: PresetRendererProps) {
-  return <LuxeNoirRenderer data={data} pptInput={pptInput} />;
+  return (
+    <LuxeNoirRenderer data={data} pptInput={pptInput} summary={summary} />
+  );
 }

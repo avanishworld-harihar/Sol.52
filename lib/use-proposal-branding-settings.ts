@@ -2,7 +2,8 @@
 
 /**
  * Subscribe to More → Brand & Proposals settings (localStorage).
- * useState + event listener — stable across refresh (no unstable useSyncExternalStore snapshots).
+ * Reads synchronously on the client so bank/contact appear on first paint
+ * (same behavior as Golden / Atelier).
  */
 
 import { useEffect, useState } from "react";
@@ -25,9 +26,7 @@ function readClientSettings(): ProposalBrandingSettings {
 }
 
 export function useProposalBrandingSettings(): ProposalBrandingSettings {
-  const [settings, setSettings] = useState<ProposalBrandingSettings>(
-    DEFAULT_PROPOSAL_BRANDING_SETTINGS
-  );
+  const [settings, setSettings] = useState<ProposalBrandingSettings>(readClientSettings);
 
   useEffect(() => {
     const refresh = () => setSettings(readClientSettings());
