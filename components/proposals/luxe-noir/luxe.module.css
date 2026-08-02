@@ -509,9 +509,12 @@
 .closePhotoImg {
   display: block;
   width: 100%;
-  height: 128px;
+  height: 136px;
   object-fit: cover;
-  object-position: center 35%;
+  /* Bias to family + front of array; crop soft back-left edge artifacts */
+  object-position: 62% 48%;
+  transform: scale(1.06);
+  transform-origin: 62% 48%;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
