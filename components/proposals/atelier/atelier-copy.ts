@@ -337,7 +337,7 @@ export function getAtelierCopy(lang: AtelierLang) {
     },
 
     impact: {
-      tag: hi ? "10 — आपका प्रभाव" : "10 — YOUR IMPACT",
+      tag: hi ? "09 — आपका प्रभाव" : "09 — YOUR IMPACT",
       title: hi
         ? "आपकी छत दुनिया को क्या वापस देती है"
         : "What Your Roof Gives Back to the World",
@@ -897,7 +897,7 @@ export function getAtelierCopy(lang: AtelierLang) {
     },
 
     roadmap: {
-      tag: hi ? "09 — निष्पादन रोडमैप" : "09 — EXECUTION ROADMAP",
+      tag: hi ? "10 — निष्पादन रोडमैप" : "10 — EXECUTION ROADMAP",
       title: hi
         ? "कागजी प्रक्रिया से बिजली तक"
         : "From Paperwork to Power",
