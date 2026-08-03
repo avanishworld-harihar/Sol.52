@@ -468,7 +468,7 @@ export function getAtelierCopy(lang: AtelierLang) {
     },
 
     wealth: {
-      tag: hi ? "04 — 25-वर्ष बचत" : "04 — 25-YEAR SAVINGS",
+      tag: hi ? "03 — 25-वर्ष बचत" : "03 — 25-YEAR SAVINGS",
       title: hi
         ? "साल दर साल आपकी बचत कैसे बढ़ती है"
         : "How your savings build year by year",
@@ -795,7 +795,7 @@ export function getAtelierCopy(lang: AtelierLang) {
     },
 
     roof: {
-      tag: hi ? "03 — छत बुद्धिमत्ता" : "03 — ROOF INTELLIGENCE",
+      tag: hi ? "04 — छत बुद्धिमत्ता" : "04 — ROOF INTELLIGENCE",
       title: hi
         ? "आपकी छत, अधिकतम यील्ड के लिए इंजीनियर"
         : "Your Roof, Engineered for Maximum Yield",

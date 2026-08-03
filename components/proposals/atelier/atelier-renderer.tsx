@@ -2,8 +2,8 @@
 
 /**
  * Atelier — Investment Blueprint (High-Conversion Sales Journey)
- * Flow: [Cover] → [Bill Audit?] → [Financial Story] → [Roof] → [Wealth Proof]
- *       → [Generation] → [Monthly Forecast] → [Hardware] → [Why Us]
+ * Flow: [Cover] → [Bill Audit?] → [Wealth Projection] → [25-Year Savings]
+ *       → [Roof] → [Generation] → [Monthly Forecast] → [Hardware] → [Why Us]
  *       → [Roadmap] → [Impact] → [Compliance] → [Closing]
  *
  * ProposalData-native · Print A4 · 13 pages (14 with bill audit)
@@ -252,8 +252,8 @@ export function AtelierRenderer({
     cover: 1,
     bill: 2,
     finance: 2 + off,
-    roof: 3 + off,
-    wealth: 4 + off,
+    wealth: 3 + off,
+    roof: 4 + off,
     gen: 5 + off,
     forecast: 6 + off,
     hw: 7 + off,
@@ -1005,7 +1005,129 @@ export function AtelierRenderer({
         <span className={styles.pageNum}>{folio(pn.finance, totalPages)}</span>
       </section>
 
-      {/* ══ ROOF INTELLIGENCE — Yield Story ═══════════════════ */}
+      {/* ══ 25-YEAR SAVINGS — path + year chart (after wealth projection) ══ */}
+      <section className={`${styles.page} ${styles.wealthPage}`}>
+        <header className={styles.pageHead}>
+          <span className={styles.pageTag}>
+            {withPageTag(c.wealth.tag, pn.wealth)}
+          </span>
+          <h2 className={styles.pageTitle}>{c.wealth.title}</h2>
+          <p className={styles.pageLead}>{c.wealth.lead}</p>
+        </header>
+
+        {/* Instant story: invest → payback → keep */}
+        <div className={styles.wealthPath} aria-label={c.wealth.lead}>
+          <div className={styles.wealthPathCard}>
+            <span className={styles.wealthPathIcon} aria-hidden>
+              <WealthIconPay className={styles.wjIconSvg} />
+            </span>
+            <span className={styles.wealthPathLabel}>
+              {c.wealth.step1Num} · {c.wealth.pathInvest}
+            </span>
+            <strong className={styles.wealthPathAmt}>
+              {netInr > 0 ? formatInrCompact(netInr) : "—"}
+            </strong>
+            <span className={styles.wealthPathSub}>
+              {c.wealth.year0To(paybackYears > 0 ? Math.ceil(paybackYears) : 5)}
+            </span>
+            <span className={styles.wealthPathNote}>{c.wealth.phase1Note}</span>
+          </div>
+          <div className={styles.wealthPathArrow} aria-hidden>
+            <span>→</span>
+          </div>
+          <div className={`${styles.wealthPathCard} ${styles.wealthPathMid}`}>
+            <span className={`${styles.wealthPathIcon} ${styles.wealthPathIconOn}`} aria-hidden>
+              <WealthIconPaid className={styles.wjIconSvg} />
+            </span>
+            <span className={styles.wealthPathLabel}>
+              {c.wealth.step2Num} · {c.wealth.pathPayback}
+            </span>
+            <strong className={styles.wealthPathAmt}>
+              {paybackYears > 0
+                ? `${paybackYears.toFixed(1)} ${c.wealth.yrsShort}`
+                : "—"}
+            </strong>
+            <span className={styles.wealthPathSub}>{c.wealth.pathPayoff}</span>
+            <span className={styles.wealthPathNote}>{c.wealth.paybackNote}</span>
+          </div>
+          <div className={styles.wealthPathArrow} aria-hidden>
+            <span>→</span>
+          </div>
+          <div className={`${styles.wealthPathCard} ${styles.wealthPathEnd}`}>
+            <span className={styles.wealthPathIcon} aria-hidden>
+              <WealthIconGrow className={styles.wjIconSvg} />
+            </span>
+            <span className={styles.wealthPathLabel}>
+              {c.wealth.step3Num} · {c.wealth.pathKeep}
+            </span>
+            <strong className={styles.wealthPathAmt}>
+              {totalWealth > 0 ? formatInrCompact(totalWealth) : "—"}
+            </strong>
+            <span className={styles.wealthPathSub}>
+              {c.wealth.yearRange(
+                paybackYears > 0 ? Math.ceil(paybackYears) + 1 : 6
+              )}
+            </span>
+            <span className={styles.wealthPathNote}>{c.wealth.zeroEnergy}</span>
+          </div>
+        </div>
+
+        <div className={`${styles.wealthLayout} ${styles.wealthLayoutSolo}`}>
+          <div className={styles.wealthChartBox}>
+            <div className={styles.wealthChartHead}>
+              <span className={styles.wealthChartTitle}>{c.wealth.chartTitle}</span>
+              <span className={styles.wealthChartHint}>{c.wealth.chartHint}</span>
+            </div>
+            <div className={styles.wealthChart}>
+              {wealthMilestones.map((m) => (
+                <div key={m.year} className={styles.wealthMilestone}>
+                  <span className={styles.wealthYr}>{c.wealth.yrShort(m.year)}</span>
+                  <div className={styles.wealthBarWrap}>
+                    <div
+                      className={styles.wealthBarFill}
+                      style={{ width: `${Math.max(m.pct, 8)}%` }}
+                    />
+                  </div>
+                  <span className={styles.wealthAmt}>
+                    {m.savings > 0 ? formatInrCompact(m.savings) : "—"}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className={styles.wealthVs}>
+              <div className={styles.wealthVsKeep}>
+                <span className={styles.wealthVsLabel}>{c.wealth.withSolar}</span>
+                <strong className={styles.wealthVsAmt}>
+                  {totalWealth > 0 ? formatInrCompact(totalWealth) : "—"}
+                </strong>
+              </div>
+              <div className={styles.wealthVsGrid}>
+                <span className={styles.wealthVsLabel}>{c.wealth.withoutSolar}</span>
+                <strong className={styles.wealthVsAmt}>
+                  {monthlyBill > 0
+                    ? formatInrCompact(monthlyBill * 12 * 22)
+                    : "—"}
+                </strong>
+                <span className={styles.wealthVsHint}>{c.wealth.paidToGrid}</span>
+              </div>
+            </div>
+            <p className={styles.wealthChartNote}>{c.wealth.chartNote}</p>
+          </div>
+        </div>
+
+        <p className={styles.wealthTakeaway}>
+          {c.wealth.takeaway(
+            paybackYears > 0 ? paybackYears.toFixed(1) : "4–5",
+            paybackYears > 0
+              ? String(Math.max(1, 25 - Math.ceil(paybackYears)))
+              : "20"
+          )}
+        </p>
+
+        <span className={styles.pageNum}>{folio(pn.wealth, totalPages)}</span>
+      </section>
+
+      {/* ══ ROOF INTELLIGENCE — after 25-year savings ═══════════ */}
       <section className={`${styles.page} ${styles.roofPage}`}>
         <header className={styles.pageHead}>
           <span className={styles.pageTag}>
@@ -1225,128 +1347,6 @@ export function AtelierRenderer({
         </div>
 
         <span className={styles.pageNum}>{folio(pn.roof, totalPages)}</span>
-      </section>
-
-      {/* ══ P4: 25-YEAR SAVINGS — path + year chart ════════════ */}
-      <section className={`${styles.page} ${styles.wealthPage}`}>
-        <header className={styles.pageHead}>
-          <span className={styles.pageTag}>
-            {withPageTag(c.wealth.tag, pn.wealth)}
-          </span>
-          <h2 className={styles.pageTitle}>{c.wealth.title}</h2>
-          <p className={styles.pageLead}>{c.wealth.lead}</p>
-        </header>
-
-        {/* Instant story: invest → payback → keep */}
-        <div className={styles.wealthPath} aria-label={c.wealth.lead}>
-          <div className={styles.wealthPathCard}>
-            <span className={styles.wealthPathIcon} aria-hidden>
-              <WealthIconPay className={styles.wjIconSvg} />
-            </span>
-            <span className={styles.wealthPathLabel}>
-              {c.wealth.step1Num} · {c.wealth.pathInvest}
-            </span>
-            <strong className={styles.wealthPathAmt}>
-              {netInr > 0 ? formatInrCompact(netInr) : "—"}
-            </strong>
-            <span className={styles.wealthPathSub}>
-              {c.wealth.year0To(paybackYears > 0 ? Math.ceil(paybackYears) : 5)}
-            </span>
-            <span className={styles.wealthPathNote}>{c.wealth.phase1Note}</span>
-          </div>
-          <div className={styles.wealthPathArrow} aria-hidden>
-            <span>→</span>
-          </div>
-          <div className={`${styles.wealthPathCard} ${styles.wealthPathMid}`}>
-            <span className={`${styles.wealthPathIcon} ${styles.wealthPathIconOn}`} aria-hidden>
-              <WealthIconPaid className={styles.wjIconSvg} />
-            </span>
-            <span className={styles.wealthPathLabel}>
-              {c.wealth.step2Num} · {c.wealth.pathPayback}
-            </span>
-            <strong className={styles.wealthPathAmt}>
-              {paybackYears > 0
-                ? `${paybackYears.toFixed(1)} ${c.wealth.yrsShort}`
-                : "—"}
-            </strong>
-            <span className={styles.wealthPathSub}>{c.wealth.pathPayoff}</span>
-            <span className={styles.wealthPathNote}>{c.wealth.paybackNote}</span>
-          </div>
-          <div className={styles.wealthPathArrow} aria-hidden>
-            <span>→</span>
-          </div>
-          <div className={`${styles.wealthPathCard} ${styles.wealthPathEnd}`}>
-            <span className={styles.wealthPathIcon} aria-hidden>
-              <WealthIconGrow className={styles.wjIconSvg} />
-            </span>
-            <span className={styles.wealthPathLabel}>
-              {c.wealth.step3Num} · {c.wealth.pathKeep}
-            </span>
-            <strong className={styles.wealthPathAmt}>
-              {totalWealth > 0 ? formatInrCompact(totalWealth) : "—"}
-            </strong>
-            <span className={styles.wealthPathSub}>
-              {c.wealth.yearRange(
-                paybackYears > 0 ? Math.ceil(paybackYears) + 1 : 6
-              )}
-            </span>
-            <span className={styles.wealthPathNote}>{c.wealth.zeroEnergy}</span>
-          </div>
-        </div>
-
-        <div className={`${styles.wealthLayout} ${styles.wealthLayoutSolo}`}>
-          <div className={styles.wealthChartBox}>
-            <div className={styles.wealthChartHead}>
-              <span className={styles.wealthChartTitle}>{c.wealth.chartTitle}</span>
-              <span className={styles.wealthChartHint}>{c.wealth.chartHint}</span>
-            </div>
-            <div className={styles.wealthChart}>
-              {wealthMilestones.map((m) => (
-                <div key={m.year} className={styles.wealthMilestone}>
-                  <span className={styles.wealthYr}>{c.wealth.yrShort(m.year)}</span>
-                  <div className={styles.wealthBarWrap}>
-                    <div
-                      className={styles.wealthBarFill}
-                      style={{ width: `${Math.max(m.pct, 8)}%` }}
-                    />
-                  </div>
-                  <span className={styles.wealthAmt}>
-                    {m.savings > 0 ? formatInrCompact(m.savings) : "—"}
-                  </span>
-                </div>
-              ))}
-            </div>
-            <div className={styles.wealthVs}>
-              <div className={styles.wealthVsKeep}>
-                <span className={styles.wealthVsLabel}>{c.wealth.withSolar}</span>
-                <strong className={styles.wealthVsAmt}>
-                  {totalWealth > 0 ? formatInrCompact(totalWealth) : "—"}
-                </strong>
-              </div>
-              <div className={styles.wealthVsGrid}>
-                <span className={styles.wealthVsLabel}>{c.wealth.withoutSolar}</span>
-                <strong className={styles.wealthVsAmt}>
-                  {monthlyBill > 0
-                    ? formatInrCompact(monthlyBill * 12 * 22)
-                    : "—"}
-                </strong>
-                <span className={styles.wealthVsHint}>{c.wealth.paidToGrid}</span>
-              </div>
-            </div>
-            <p className={styles.wealthChartNote}>{c.wealth.chartNote}</p>
-          </div>
-        </div>
-
-        <p className={styles.wealthTakeaway}>
-          {c.wealth.takeaway(
-            paybackYears > 0 ? paybackYears.toFixed(1) : "4–5",
-            paybackYears > 0
-              ? String(Math.max(1, 25 - Math.ceil(paybackYears)))
-              : "20"
-          )}
-        </p>
-
-        <span className={styles.pageNum}>{folio(pn.wealth, totalPages)}</span>
       </section>
 
       {/* ══ P5: GENERATION PROOF ═════════════════════════════════ */}
