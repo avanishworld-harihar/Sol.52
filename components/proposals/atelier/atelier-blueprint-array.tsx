@@ -28,6 +28,11 @@ export function AtelierBlueprintArray({
   const count = Math.max(1, panelCount);
   const visualPanels = Math.min(count, MAX_VISUAL_PANELS);
   const cols = Math.min(6, Math.max(3, Math.ceil(Math.sqrt(visualPanels))));
+  const dense = cols >= 6 || visualPanels >= 20;
+  const mid = cols >= 5 || visualPanels >= 16;
+  const cellPx = dense ? 22 : mid ? 25 : 28;
+  const gapPx = dense ? 3 : 4;
+  const scale = dense ? 0.82 : mid ? 0.9 : 1;
 
   return (
     <div className={styles.blueprintArray}>
@@ -45,6 +50,9 @@ export function AtelierBlueprintArray({
             style={
               {
                 ["--atelier-bp-cols"]: String(cols),
+                ["--atelier-bp-cell"]: `${cellPx}px`,
+                ["--atelier-bp-gap"]: `${gapPx}px`,
+                ["--atelier-bp-scale"]: String(scale),
               } as CSSProperties
             }
           >

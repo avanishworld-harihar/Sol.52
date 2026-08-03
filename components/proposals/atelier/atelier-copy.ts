@@ -395,13 +395,13 @@ export function getAtelierCopy(lang: AtelierLang) {
     },
 
     finance: {
-      tag: hi ? "02 — मासिक अर्थशास्त्र" : "02 — MONTHLY ECONOMICS",
+      tag: hi ? "02 — धन प्रक्षेपण" : "02 — WEALTH PROJECTION",
       title: hi
-        ? "हर महीने आपकी जेब में क्या रहता है?"
-        : "What stays in your pocket every month?",
+        ? "आपका पैसा कैसे बढ़ता है"
+        : "How your money grows",
       lead: hi
-        ? "तीन नंबर — आज का बिल, सोलर की लागत, और दिन-1 से आपकी बचत।"
-        : "Three numbers — today’s bill, solar’s cost, and your Day-1 gain.",
+        ? "शुद्ध निवेश, मासिक बचत, और निवेश स्कोर — एक ही नज़र में।"
+        : "Net investment, monthly gain, and your investment score — at a glance.",
       todayTag: hi ? "आज · बिना सोलर" : "Today · no solar",
       todayLabel: hi ? "मासिक बिजली बिल" : "Monthly electricity bill",
       todayNote: hi
@@ -418,8 +418,8 @@ export function getAtelierCopy(lang: AtelierLang) {
         ? "इतना पैसा जेब में रहता है — तुरंत।"
         : "This much stays with you — starting now.",
       trajectoryTag: hi
-        ? "10 वर्ष · बिल की कहानी"
-        : "10 years · the bill story",
+        ? "25 वर्ष · बिल की कहानी"
+        : "25 years · the bill story",
       trajectoryHint: hi
         ? "नारंगी क्षेत्र = आपकी बचत का अंतर"
         : "Orange band = your savings gap",
@@ -432,8 +432,8 @@ export function getAtelierCopy(lang: AtelierLang) {
       subsidy: hi ? "पीएम सूर्य घर सब्सिडी" : "PM Surya Ghar subsidy",
       netInvestment: hi ? "आपका शुद्ध निवेश" : "Your net investment",
       netCue: hi
-        ? "यही राशि मासिक अर्थशास्त्र को चालू करती है।"
-        : "This is the amount that powers the monthly math.",
+        ? "यही राशि मासिक बचत की गणना चलाती है।"
+        : "This is the amount that powers the monthly savings math.",
       brandCompareKicker: hi ? "ब्रांड तुलना" : "Brand comparison",
       brandCompareTrack: hi ? "ट्रैक" : "Track",
       brandCompareDcr: "DCR",
@@ -445,10 +445,10 @@ export function getAtelierCopy(lang: AtelierLang) {
     },
 
     wealth: {
-      tag: hi ? "04 — धन प्रक्षेपण" : "04 — WEALTH PROJECTION",
+      tag: hi ? "04 — 25-वर्ष बचत" : "04 — 25-YEAR SAVINGS",
       title: hi
-        ? "आपका पैसा कैसे बढ़ता है"
-        : "How your money grows",
+        ? "साल दर साल आपकी बचत कैसे बढ़ती है"
+        : "How your savings build year by year",
       lead: hi
         ? "तीन आसान कदम — निवेश → पैसा वापस → फिर बचत आपके पास।"
         : "Three simple steps — invest → money back → then savings stay with you.",
@@ -594,6 +594,20 @@ export function getAtelierCopy(lang: AtelierLang) {
       lead: hi
         ? "जनवरी–दिसंबर अनुमानित यूनिट और बचत — गर्मी/मानसून का अंतर साफ़ दिखे।"
         : "Jan–Dec estimated units and savings — summer vs monsoon at a glance.",
+      leadBill: hi
+        ? "सोलर उत्पादन के साथ आपके अपलोड किए बिल की यूनिट — महीने दर महीने तुलना।"
+        : "Solar generation beside your uploaded bill units — month-by-month comparison.",
+      legendGen: hi ? "सोलर उत्पादन" : "Solar generation",
+      legendBill: hi ? "बिल यूनिट" : "Bill units",
+      chartAriaDual: hi
+        ? "मासिक सोलर उत्पादन और बिल यूनिट"
+        : "Monthly solar generation and bill units",
+      noBillMonth: hi
+        ? "इस महीने का बिल उपलब्ध नहीं"
+        : "No bill for this month",
+      billNote: hi
+        ? "नीले बार = अपलोड किए बिल की यूनिट। नारंगी = अनुमानित सोलर उत्पादन।"
+        : "Blue bars = units from your uploaded bills. Orange = estimated solar generation.",
       annualGen: hi ? "वार्षिक उत्पादन" : "Annual generation",
       annualGenHint: hi
         ? "वर्ष भर का अनुमानित योग।"

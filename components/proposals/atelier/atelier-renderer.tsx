@@ -209,15 +209,22 @@ export function AtelierRenderer({
       : monthlyInr * 12;
   const yearOneSavings =
     monthlyInr > 0 ? monthlyInr * 12 : annualSavings;
+  const bill = data.bill;
   const forecastAnnualUnits =
     annualGen > 0
       ? annualGen
       : systemKw > 0
         ? Math.round(systemKw * 5 * 0.75 * 365)
         : 0;
+  const showForecastBillBars =
+    bill.hasData && bill.months.some((m) => (m.units || 0) > 0);
   const forecastMonths = buildAtelierForecastMonths(
     forecastAnnualUnits,
-    yearOneSavings
+    yearOneSavings,
+    {
+      billMonths: bill.months,
+      includeBillSeries: showForecastBillBars,
+    }
   );
   const effectiveSavingPerUnit =
     forecastAnnualUnits > 0 && yearOneSavings > 0
@@ -232,7 +239,6 @@ export function AtelierRenderer({
   const contactPerson = data.closing.contactPerson;
 
   // ── Bill audit (bill-based proposals only) ────────────────────
-  const bill = data.bill;
   const showBillAudit = bill.hasData && bill.months.length > 0;
   const totalPages = showBillAudit ? 14 : 13;
   const off = showBillAudit ? 1 : 0;
@@ -654,7 +660,7 @@ export function AtelierRenderer({
         </section>
       ) : null}
 
-      {/* ══ MONTHLY ECONOMICS — pocket story + trajectory ══ */}
+      {/* ══ WEALTH PROJECTION — net cost, pocket, score, expert ══ */}
       <section
         className={`${styles.page} ${styles.financePage}${
           brandCompareSnapshot ? ` ${styles.financePageWithBrand}` : ""
@@ -667,6 +673,34 @@ export function AtelierRenderer({
           <h2 className={styles.pageTitle}>{c.finance.title}</h2>
           <p className={styles.pageLead}>{c.finance.lead}</p>
         </header>
+
+        <div className={styles.investBreakdown}>
+          <div className={styles.investItem}>
+            <span className={styles.investTag}>{c.finance.grossCost}</span>
+            <span className={styles.investVal}>
+              {grossInr > 0 ? formatInr(grossInr) : "—"}
+            </span>
+          </div>
+          <div className={styles.investOp} aria-hidden>
+            −
+          </div>
+          <div className={`${styles.investItem} ${styles.investItemSubsidy}`}>
+            <span className={styles.investTag}>{c.finance.subsidy}</span>
+            <span className={`${styles.investVal} ${styles.investValSubsidy}`}>
+              {subsidyInr > 0 ? formatInr(subsidyInr) : "—"}
+            </span>
+          </div>
+          <div className={styles.investOp} aria-hidden>
+            =
+          </div>
+          <div className={`${styles.investItem} ${styles.investItemFinal}`}>
+            <span className={styles.investTag}>{c.finance.netInvestment}</span>
+            <span className={`${styles.investVal} ${styles.investValNet}`}>
+              {netInr > 0 ? formatInr(netInr) : "—"}
+            </span>
+            <span className={styles.investCue}>{c.finance.netCue}</span>
+          </div>
+        </div>
 
         <div className={styles.financeFlow}>
           <div className={`${styles.financeStep} ${styles.financeStepToday}`}>
@@ -756,7 +790,7 @@ export function AtelierRenderer({
         </div>
 
         {(() => {
-          const years = [1, 2, 3, 4, 5, 7, 10];
+          const years = [1, 5, 10, 15, 20, 25];
           const baseAnnualBill = (monthlyBill > 0 ? monthlyBill : 5200) * 12;
           const flatSolarAnnual = (monthlyEmi > 0 ? monthlyEmi : 4100) * 12;
           const loanEndYr = 5;
@@ -898,34 +932,56 @@ export function AtelierRenderer({
           );
         })()}
 
-        <div className={styles.investBreakdown}>
-          <div className={styles.investItem}>
-            <span className={styles.investTag}>{c.finance.grossCost}</span>
-            <span className={styles.investVal}>
-              {grossInr > 0 ? formatInr(grossInr) : "—"}
-            </span>
-          </div>
-          <div className={styles.investOp} aria-hidden>
-            −
-          </div>
-          <div className={`${styles.investItem} ${styles.investItemSubsidy}`}>
-            <span className={styles.investTag}>{c.finance.subsidy}</span>
-            <span className={`${styles.investVal} ${styles.investValSubsidy}`}>
-              {subsidyInr > 0 ? formatInr(subsidyInr) : "—"}
-            </span>
-          </div>
-          <div className={styles.investOp} aria-hidden>
-            =
-          </div>
-          <div className={`${styles.investItem} ${styles.investItemFinal}`}>
-            <span className={styles.investTag}>{c.finance.netInvestment}</span>
-            <span className={`${styles.investVal} ${styles.investValNet}`}>
-              {netInr > 0 ? formatInr(netInr) : "—"}
-            </span>
-            <span className={styles.investCue}>{c.finance.netCue}</span>
+        <div className={styles.financeScoreRow}>
+          <div className={styles.investScoreCard}>
+            <span className={styles.investScoreTag}>{c.wealth.scoreTag}</span>
+            <div className={styles.investScoreGrade}>{investScore}</div>
+            <div className={styles.investScoreLabel}>{investGrade}</div>
+            <div className={styles.investScoreDivider} />
+            <div className={styles.investScoreStats}>
+              <div className={styles.investScoreStat}>
+                <span className={styles.investScoreStatVal}>
+                  {paybackYears > 0
+                    ? `${paybackYears.toFixed(1)} ${c.wealth.yrsShort}`
+                    : "—"}
+                </span>
+                <span className={styles.investScoreStatLabel}>
+                  {c.wealth.paybackLabel}
+                </span>
+              </div>
+              <div className={styles.investScoreStat}>
+                <span className={styles.investScoreStatVal}>
+                  {annualSavings > 0 && netInr > 0
+                    ? `${Math.round((annualSavings / netInr) * 100)}%`
+                    : "—"}
+                </span>
+                <span className={styles.investScoreStatLabel}>
+                  {c.wealth.annualRoi}
+                </span>
+              </div>
+            </div>
+            <p className={styles.investScoreBasis}>
+              <strong>{c.wealth.basis}</strong>{" "}
+              {c.wealth.basisText(
+                paybackYears > 0 ? paybackYears.toFixed(1) : "4–5"
+              )}
+            </p>
           </div>
         </div>
 
+        <aside className={styles.wealthExpert}>
+          <div className={styles.wealthExpertTop}>
+            <span className={styles.wealthExpertTag}>{c.wealth.expertTag}</span>
+            <span className={styles.wealthExpertAttr}>
+              {c.wealth.expertAttr(brand)}
+            </span>
+          </div>
+          <p className={styles.wealthExpertBody}>
+            {c.wealth.expertBody(cityLabel)}
+          </p>
+        </aside>
+
+        {/* Bottom reserved for brand comparison when enabled */}
         {brandCompareSnapshot ? (
           <AtelierBrandCompare
             snapshot={brandCompareSnapshot}
@@ -1165,7 +1221,7 @@ export function AtelierRenderer({
         <span className={styles.pageNum}>{folio(pn.roof, totalPages)}</span>
       </section>
 
-      {/* ══ P4: WEALTH PROJECTION — money story + AA+ ════════════ */}
+      {/* ══ P4: 25-YEAR SAVINGS — path + year chart ════════════ */}
       <section className={`${styles.page} ${styles.wealthPage}`}>
         <header className={styles.pageHead}>
           <span className={styles.pageTag}>
@@ -1232,7 +1288,7 @@ export function AtelierRenderer({
           </div>
         </div>
 
-        <div className={styles.wealthLayout}>
+        <div className={`${styles.wealthLayout} ${styles.wealthLayoutSolo}`}>
           <div className={styles.wealthChartBox}>
             <div className={styles.wealthChartHead}>
               <span className={styles.wealthChartTitle}>{c.wealth.chartTitle}</span>
@@ -1273,71 +1329,7 @@ export function AtelierRenderer({
             </div>
             <p className={styles.wealthChartNote}>{c.wealth.chartNote}</p>
           </div>
-
-          <div className={styles.investScoreBox}>
-            <div className={styles.investScoreCard}>
-              <span className={styles.investScoreTag}>{c.wealth.scoreTag}</span>
-              <div className={styles.investScoreGrade}>{investScore}</div>
-              <div className={styles.investScoreLabel}>{investGrade}</div>
-              <div className={styles.investScoreDivider} />
-              <div className={styles.investScoreStats}>
-                <div className={styles.investScoreStat}>
-                  <span className={styles.investScoreStatVal}>
-                    {paybackYears > 0
-                      ? `${paybackYears.toFixed(1)} ${c.wealth.yrsShort}`
-                      : "—"}
-                  </span>
-                  <span className={styles.investScoreStatLabel}>
-                    {c.wealth.paybackLabel}
-                  </span>
-                </div>
-                <div className={styles.investScoreStat}>
-                  <span className={styles.investScoreStatVal}>
-                    {annualSavings > 0 && netInr > 0
-                      ? `${Math.round((annualSavings / netInr) * 100)}%`
-                      : "—"}
-                  </span>
-                  <span className={styles.investScoreStatLabel}>
-                    {c.wealth.annualRoi}
-                  </span>
-                </div>
-              </div>
-              <p className={styles.investScoreBasis}>
-                <strong>{c.wealth.basis}</strong>{" "}
-                {c.wealth.basisText(
-                  paybackYears > 0 ? paybackYears.toFixed(1) : "4–5"
-                )}
-              </p>
-            </div>
-
-            <div className={styles.paybackCard}>
-              <span className={styles.paybackTag}>{c.wealth.totalWealthTag}</span>
-              <div className={styles.paybackAmt}>
-                {totalWealth > 0 ? formatInrCompact(totalWealth) : "—"}
-              </div>
-              <p className={styles.paybackNote}>
-                {c.wealth.returnsNote(
-                  netInr > 0 ? formatInrCompact(netInr).replace(/^₹/, "") : "—",
-                  totalWealth > 0 && netInr > 0
-                    ? formatInrCompact(totalWealth)
-                    : "—"
-                )}
-              </p>
-            </div>
-          </div>
         </div>
-
-        <aside className={styles.wealthExpert}>
-          <div className={styles.wealthExpertTop}>
-            <span className={styles.wealthExpertTag}>{c.wealth.expertTag}</span>
-            <span className={styles.wealthExpertAttr}>
-              {c.wealth.expertAttr(brand)}
-            </span>
-          </div>
-          <p className={styles.wealthExpertBody}>
-            {c.wealth.expertBody(cityLabel)}
-          </p>
-        </aside>
 
         <p className={styles.wealthTakeaway}>
           {c.wealth.takeaway(
@@ -1481,25 +1473,6 @@ export function AtelierRenderer({
           );
         })()}
 
-        <div className={`${styles.expertInsight} ${styles.genExpert}`}>
-          <span className={styles.expertTag}>{c.gen.expertTag}</span>
-          <p>
-            {c.gen.expertBody(
-              systemSize,
-              monthlyBill > 0 ? formatInr(monthlyBill) : "₹5,200",
-              Math.round(
-                ((monthlyBill > 0 ? monthlyBill : 5200) * 12) / 8
-              ).toLocaleString("en-IN"),
-              (
-                annualGen > 0
-                  ? annualGen
-                  : Math.round(systemKw * 5 * 0.75 * 365)
-              ).toLocaleString("en-IN"),
-              cityLabel
-            )}
-          </p>
-        </div>
-
         <div className={styles.genSpecGrid}>
           {engMetrics.map(([label, value]) => (
             <div key={label} className={styles.genSpecCard}>
@@ -1523,6 +1496,25 @@ export function AtelierRenderer({
           </p>
         </div>
 
+        <div className={`${styles.expertInsight} ${styles.genExpert}`}>
+          <span className={styles.expertTag}>{c.gen.expertTag}</span>
+          <p>
+            {c.gen.expertBody(
+              systemSize,
+              monthlyBill > 0 ? formatInr(monthlyBill) : "₹5,200",
+              Math.round(
+                ((monthlyBill > 0 ? monthlyBill : 5200) * 12) / 8
+              ).toLocaleString("en-IN"),
+              (
+                annualGen > 0
+                  ? annualGen
+                  : Math.round(systemKw * 5 * 0.75 * 365)
+              ).toLocaleString("en-IN"),
+              cityLabel
+            )}
+          </p>
+        </div>
+
         <span className={styles.pageNum}>{folio(pn.gen, totalPages)}</span>
       </section>
 
@@ -1533,7 +1525,11 @@ export function AtelierRenderer({
             {withPageTag(c.genForecast.tag, pn.forecast)}
           </span>
           <h2 className={styles.pageTitle}>{c.genForecast.title}</h2>
-          <p className={styles.pageLead}>{c.genForecast.lead}</p>
+          <p className={styles.pageLead}>
+            {showForecastBillBars
+              ? c.genForecast.leadBill
+              : c.genForecast.lead}
+          </p>
         </header>
 
         <div className={styles.forecastStats}>
@@ -1566,10 +1562,28 @@ export function AtelierRenderer({
         </div>
 
         <div className={styles.forecastChart}>
+          {showForecastBillBars ? (
+            <div className={styles.forecastChartHead}>
+              <div className={styles.forecastSeriesLegend}>
+                <span className={styles.forecastLegendGen}>
+                  <i aria-hidden /> {c.genForecast.legendGen}
+                </span>
+                <span className={styles.forecastLegendBill}>
+                  <i aria-hidden /> {c.genForecast.legendBill}
+                </span>
+              </div>
+            </div>
+          ) : null}
           <div
-            className={styles.forecastBars}
+            className={`${styles.forecastBars}${
+              showForecastBillBars ? ` ${styles.forecastBarsDual}` : ""
+            }`}
             role="img"
-            aria-label={c.genForecast.title}
+            aria-label={
+              showForecastBillBars
+                ? c.genForecast.chartAriaDual
+                : c.genForecast.title
+            }
           >
             {forecastMonths.map((m) => (
               <div
@@ -1581,11 +1595,38 @@ export function AtelierRenderer({
                 <span className={styles.forecastUnits}>
                   {m.units > 0 ? m.units.toLocaleString("en-IN") : "—"}
                 </span>
-                <div className={styles.forecastTrack}>
+                {showForecastBillBars ? (
+                  <span className={styles.forecastBillUnits}>
+                    {m.billUnits != null && m.billUnits > 0
+                      ? m.billUnits.toLocaleString("en-IN")
+                      : "·"}
+                  </span>
+                ) : null}
+                <div
+                  className={`${styles.forecastTrack}${
+                    showForecastBillBars ? ` ${styles.forecastTrackDual}` : ""
+                  }`}
+                >
                   <div
                     className={styles.forecastFill}
                     style={{ height: `${m.barPct}%` }}
+                    title={`${c.genForecast.legendGen}: ${m.units}`}
                   />
+                  {showForecastBillBars ? (
+                    <div
+                      className={styles.forecastFillBill}
+                      style={{
+                        height:
+                          m.billBarPct > 0 ? `${m.billBarPct}%` : "4px",
+                        opacity: m.billBarPct > 0 ? 1 : 0.28,
+                      }}
+                      title={
+                        m.billUnits != null && m.billUnits > 0
+                          ? `${c.genForecast.legendBill}: ${m.billUnits}`
+                          : c.genForecast.noBillMonth
+                      }
+                    />
+                  ) : null}
                 </div>
                 <span className={styles.forecastMonth}>{m.label}</span>
                 <span className={styles.forecastSave}>
@@ -1607,6 +1648,9 @@ export function AtelierRenderer({
             <p className={styles.forecastBasis}>
               {c.genForecast.savingsBasis(effectiveSavingPerUnit.toFixed(2))}
             </p>
+          ) : null}
+          {showForecastBillBars ? (
+            <p className={styles.forecastBillNote}>{c.genForecast.billNote}</p>
           ) : null}
         </div>
 

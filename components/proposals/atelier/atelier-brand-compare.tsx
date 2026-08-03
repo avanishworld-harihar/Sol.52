@@ -1,5 +1,5 @@
 /**
- * Compact two-brand plant-gross compare for Atelier Monthly Economics.
+ * Compact two-brand plant-gross compare for Atelier Net Investment page.
  * Uses Smart catalog snapshot from Proposal Builder brandCompare.
  */
 
