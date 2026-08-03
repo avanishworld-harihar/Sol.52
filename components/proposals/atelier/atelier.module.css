@@ -2141,7 +2141,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-height: 0;
   padding: 0.95rem 0.9rem 0.85rem;
   border: 1px solid var(--line);
@@ -2194,9 +2194,13 @@
   display: flex;
   align-items: flex-end;
   gap: 0.28rem;
-  min-height: 300px;
-  flex: 1 1 auto;
+  height: 260px;
+  min-height: 260px;
+  flex: 0 0 auto;
   padding: 0 0.1rem;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
 }
 .forecastBarsDual {
   gap: 0.2rem;
@@ -2206,9 +2210,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-end;
   gap: 0.22rem;
   min-width: 0;
   height: 100%;
+  box-sizing: border-box;
 }
 .forecastUnits {
   font-family: 'Montserrat', sans-serif;
@@ -2217,6 +2223,7 @@
   color: var(--gray);
   line-height: 1;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 .forecastBillUnits {
   font-family: 'Montserrat', sans-serif;
@@ -2225,21 +2232,27 @@
   color: #0369a1;
   line-height: 1;
   white-space: nowrap;
+  flex-shrink: 0;
 }
+/* Fixed track height so % bar heights resolve on web + print */
 .forecastTrack {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   width: 100%;
   max-width: 1.55rem;
+  height: 160px;
+  min-height: 160px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
   gap: 2px;
-  min-height: 180px;
+  box-sizing: border-box;
 }
 .forecastTrackDual {
   max-width: 1.85rem;
 }
 .forecastFill {
+  flex: none;
+  align-self: flex-end;
   width: 100%;
   max-width: 0.85rem;
   border-radius: 4px 4px 2px 2px;
@@ -2253,10 +2266,11 @@
 }
 .forecastTrackDual .forecastFill {
   max-width: 0.62rem;
-  flex: 1 1 0;
+  flex: none;
 }
 .forecastFillBill {
-  flex: 1 1 0;
+  flex: none;
+  align-self: flex-end;
   max-width: 0.62rem;
   width: 100%;
   border-radius: 4px 4px 2px 2px;
@@ -5020,6 +5034,7 @@
 
   .forecastBars {
     min-height: 220px;
+    height: 220px;
     gap: 0.18rem;
     max-width: 100%;
     overflow-x: auto;
@@ -5027,7 +5042,8 @@
   }
 
   .forecastTrack {
-    min-height: 150px;
+    height: 140px;
+    min-height: 140px;
   }
 
   .forecastUnits,
@@ -5202,13 +5218,15 @@
 
   .forecastBars {
     min-height: 200px;
+    height: 200px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
 
   .forecastTrack {
     max-width: 1.65rem;
-    min-height: 130px;
+    height: 120px;
+    min-height: 120px;
   }
 
   .forecastLegend {
@@ -5697,15 +5715,19 @@
     height: 135px !important;
   }
   .forecastChart {
-    flex: 1 1 auto !important;
+    flex: 0 0 auto !important;
   }
   .forecastBars {
-    min-height: 78mm !important;
+    height: 62mm !important;
+    min-height: 62mm !important;
   }
   .forecastTrack {
-    min-height: 52mm !important;
+    height: 42mm !important;
+    min-height: 42mm !important;
   }
+  .forecastFill,
   .forecastFillBill {
+    flex: none !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
