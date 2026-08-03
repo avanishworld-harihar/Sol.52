@@ -38,6 +38,12 @@ import { buildAtelierForecastMonths } from "./atelier-generation-forecast";
 import { HwCardIcon, HwIconEarth, type HwIconKey } from "./atelier-hw-icons";
 import { TrustCardIcon } from "./atelier-trust-icons";
 import {
+  ImpactIconCar,
+  ImpactIconLeaf,
+  ImpactIconRoof,
+  ImpactIconTrees,
+} from "./atelier-impact-icons";
+import {
   WealthIconGrow,
   WealthIconPaid,
   WealthIconPay,
@@ -1820,12 +1826,12 @@ export function AtelierRenderer({
           ))}
         </div>
 
-        <div className={styles.trustProof}>
+        <div className={styles.trustShowcase}>
           <figure className={styles.trustPhotoFrame}>
             {/* eslint-disable-next-line @next/next/no-img-element -- print A4 static asset */}
             <img
               className={styles.trustPhoto}
-              src="/assets/proposals/atelier-trust-rooftop.jpg"
+              src="/assets/proposals/quantum-cover-estate.jpg"
               alt={c.trust.photoTitle}
             />
             <figcaption className={styles.trustPhotoCap}>
@@ -1843,6 +1849,18 @@ export function AtelierRenderer({
             </span>
           </div>
         </div>
+
+        <aside className={`${styles.wealthExpert} ${styles.trustExpert}`}>
+          <div className={styles.wealthExpertTop}>
+            <span className={styles.wealthExpertTag}>{c.trust.expertTag}</span>
+            <span className={styles.wealthExpertAttr}>
+              {c.trust.expertAttr(brand)}
+            </span>
+          </div>
+          <p className={styles.wealthExpertBody}>
+            {c.trust.expertBody(cityLabel, brand)}
+          </p>
+        </aside>
 
         <span className={styles.pageNum}>{folio(pn.trust, totalPages)}</span>
       </section>
@@ -1978,7 +1996,7 @@ export function AtelierRenderer({
         <span className={styles.pageNum}>{folio(pn.roadmap, totalPages)}</span>
       </section>
 
-      {/* ══ P10: IMPACT — environmental close (after commercial story) ══ */}
+      {/* ══ P10: IMPACT — visual climate story ══════════════════ */}
       <section className={`${styles.page} ${styles.impactPage}`}>
         <header className={styles.pageHead}>
           <span className={styles.pageTag}>
@@ -1989,42 +2007,89 @@ export function AtelierRenderer({
         </header>
 
         <div className={styles.impactGrid}>
-          <div className={styles.impactCard}>
-            <div className={styles.impactBig}>{co2 > 0 ? co2 : "—"}</div>
-            <div className={styles.impactUnit}>{c.impact.tons}</div>
+          <div className={`${styles.impactCard} ${styles.impactCardAccent}`}>
+            <div className={styles.impactCardHead}>
+              <ImpactIconLeaf className={styles.impactCardIcon} />
+              <div>
+                <div className={styles.impactBig}>{co2 > 0 ? co2 : "—"}</div>
+                <div className={styles.impactUnit}>{c.impact.tons}</div>
+              </div>
+            </div>
             <div className={styles.impactLabel}>{c.impact.co2Label}</div>
             <p className={styles.impactSub}>
               {c.impact.co2Sub(co2 > 0 ? Math.round(co2 / 2) : "—")}
             </p>
           </div>
           <div className={styles.impactCard}>
-            <div className={styles.impactBig}>
-              {trees > 0 ? trees.toLocaleString("en-IN") : "—"}
+            <div className={styles.impactCardHead}>
+              <ImpactIconTrees className={styles.impactCardIcon} />
+              <div>
+                <div className={styles.impactBig}>
+                  {trees > 0 ? trees.toLocaleString("en-IN") : "—"}
+                </div>
+                <div className={styles.impactUnit}>{c.impact.trees}</div>
+              </div>
             </div>
-            <div className={styles.impactUnit}>{c.impact.trees}</div>
             <div className={styles.impactLabel}>{c.impact.ecoLabel}</div>
             <p className={styles.impactSub}>{c.impact.ecoSub}</p>
           </div>
         </div>
 
-        <div className={styles.carbonMilestones}>
-          {[1, 10, 25].map((yr) => {
-            const tons = co2 > 0 ? Math.round((co2 / 25) * yr) : 0;
-            return (
-              <div key={yr} className={styles.carbonMilestone}>
-                <div className={styles.cmBar}>
-                  <div
-                    className={styles.cmBarFill}
-                    style={{ height: `${(yr / 25) * 100}%` }}
-                  />
+        <div className={styles.carbonPanel}>
+          <div className={styles.carbonPanelHead}>
+            <span className={styles.carbonPanelTitle}>{c.impact.chartTitle}</span>
+            <span className={styles.carbonPanelHint}>{c.impact.chartHint}</span>
+          </div>
+          <div className={styles.carbonMilestones}>
+            {[1, 10, 25].map((yr) => {
+              const tons = co2 > 0 ? Math.round((co2 / 25) * yr) : 0;
+              return (
+                <div key={yr} className={styles.carbonMilestone}>
+                  <div className={styles.cmTons}>
+                    {tons > 0 ? c.impact.tonsCo2(tons) : "—"}
+                  </div>
+                  <div className={styles.cmBar}>
+                    <div
+                      className={styles.cmBarFill}
+                      style={{ height: `${Math.max(8, (yr / 25) * 100)}%` }}
+                    />
+                  </div>
+                  <div className={styles.cmYear}>{c.impact.yearN(yr)}</div>
                 </div>
-                <div className={styles.cmYear}>{c.impact.yearN(yr)}</div>
-                <div className={styles.cmTons}>
-                  {tons > 0 ? c.impact.tonsCo2(tons) : "—"}
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+        </div>
+
+        <div className={styles.impactMeaning}>
+          <span className={styles.impactMeaningTitle}>
+            {c.impact.meaningTitle}
+          </span>
+          <div className={styles.impactMeaningGrid}>
+            <div className={styles.impactMeaningCard}>
+              <ImpactIconCar className={styles.impactMeaningIcon} />
+              <strong>{c.impact.meaningCarTitle}</strong>
+              <p>
+                {c.impact.meaningCarBody(
+                  co2 > 0 ? Math.round(co2 / 2) : "—"
+                )}
+              </p>
+            </div>
+            <div className={styles.impactMeaningCard}>
+              <ImpactIconTrees className={styles.impactMeaningIcon} />
+              <strong>{c.impact.meaningTreeTitle}</strong>
+              <p>
+                {c.impact.meaningTreeBody(
+                  trees > 0 ? trees.toLocaleString("en-IN") : "—"
+                )}
+              </p>
+            </div>
+            <div className={styles.impactMeaningCard}>
+              <ImpactIconRoof className={styles.impactMeaningIcon} />
+              <strong>{c.impact.meaningRoofTitle}</strong>
+              <p>{c.impact.meaningRoofBody}</p>
+            </div>
+          </div>
         </div>
 
         <div className={styles.impactTagline}>{c.impact.tagline}</div>

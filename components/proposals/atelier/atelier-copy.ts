@@ -360,6 +360,29 @@ export function getAtelierCopy(lang: AtelierLang) {
       yearN: (n: number) => (hi ? `वर्ष ${n}` : `Year ${n}`),
       tonsCo2: (tons: number) =>
         hi ? `${tons}ट CO₂` : `${tons}T CO₂`,
+      chartTitle: hi
+        ? "CO₂ ऑफसेट कैसे बढ़ता है"
+        : "How your CO₂ offset grows",
+      chartHint: hi
+        ? "साल दर साल — आपकी छत की जलवायु बचत"
+        : "Year by year — climate savings from your roof",
+      meaningTitle: hi
+        ? "आसान भाषा में समझें"
+        : "What this means in plain words",
+      meaningCarTitle: hi ? "कार के साल" : "Car-years avoided",
+      meaningCarBody: (yrs: string | number) =>
+        hi
+          ? `लगभग ${yrs} वर्ष की पेट्रोल कार सड़क से हटाने जितना।`
+          : `About ${yrs} years of petrol-car emissions kept off the road.`,
+      meaningTreeTitle: hi ? "पेड़ों जैसा असर" : "Like planting trees",
+      meaningTreeBody: (n: string | number) =>
+        hi
+          ? `लगभग ${n} पेड़ लगाने के पारिस्थितिक समकक्ष।`
+          : `Ecological equivalent of planting about ${n} trees.`,
+      meaningRoofTitle: hi ? "हर दिन स्वच्छ यूनिट" : "Clean units every day",
+      meaningRoofBody: hi
+        ? "आपकी छत चुपचाप ग्रीन यूनिट बनाती है — बिल और ग्रह दोनों के लिए।"
+        : "Your roof quietly makes green units — for your bill and the planet.",
       tagline: hi
         ? "आपकी छत द्वारा उत्पन्न सौर ऊर्जा की हर इकाई जलवायु कार्रवाई का सीधा कार्य है।"
         : "Every unit of solar energy your roof generates is a direct act of climate action.",
@@ -748,11 +771,11 @@ export function getAtelierCopy(lang: AtelierLang) {
         },
       ],
       photoTitle: hi
-        ? "असली छतें · स्थानीय टीम"
-        : "Real rooftops · local team",
+        ? "प्रीमियम छत · इंजीनियर डिज़ाइन"
+        : "Premium rooftops · engineered design",
       photoSub: hi
-        ? "हर इंस्टॉल के पीछे पहुँच योग्य इंजीनियर — कॉल सेंटर नहीं।"
-        : "Reachable engineers behind every install — not a call centre.",
+        ? "लक्ज़री घरों के लिए स्ट्रक्चर, स्ट्रिंगिंग और यील्ड — डिज़ाइन डेस्क से।"
+        : "Structure, stringing, and yield planned for luxury homes — from our design desk.",
       quote: hi
         ? "“हम केवल सौर सिस्टम नहीं बेचते — हम 25-वर्ष के संबंध इंजीनियर करते हैं। हर स्थापना एक स्थानीय टीम द्वारा समर्थित है जो पहुँच योग्य, जवाबदेह है और स्थापना दिन के बहुत बाद भी आपके सिस्टम के प्रदर्शन में निवेशित है।”"
         : "“We don't just sell solar systems — we engineer 25-year relationships. Every installation is backed by a local team that's reachable, accountable, and invested in your system's performance long after installation day.”",
@@ -760,6 +783,15 @@ export function getAtelierCopy(lang: AtelierLang) {
         hi
           ? `— ${brand} इंजीनियरिंग टीम`
           : `— ${brand} Engineering Team`,
+      expertTag: hi
+        ? "विशेषज्ञ सलाह · डिज़ाइन इंजीनियरिंग"
+        : "EXPERT ADVICE · DESIGN ENGINEERING",
+      expertAttr: (brand: string) =>
+        hi ? `— ${brand} डिज़ाइन डेस्क` : `— ${brand} Design Desk`,
+      expertBody: (city: string, brand: string) =>
+        hi
+          ? `${brand} केवल कैटलॉग किट नहीं लगाता। हर प्रोजेक्ट पर हम ${city} के लिए विंड लोड (IS 875), स्ट्रिंग वोल्टेज, शैडो लॉस और परफॉर्मेंस रेशियो मॉडल करते हैं — ताकि यील्ड अनुमान कागज़ पर नहीं, छत पर साबित हो। यही इन-हाउस इंजीनियरिंग आपको सामान्य इंस्टॉलर से अलग विक्रेता देती है।`
+          : `${brand} does not drop a catalogue kit on your roof. On every project we model wind load (IS 875), string voltage, shade loss, and performance ratio for ${city} — so yield is proven on the terrace, not just on paper. That in-house engineering is what sets this vendor apart from a typical installer.`,
     },
 
     roof: {
