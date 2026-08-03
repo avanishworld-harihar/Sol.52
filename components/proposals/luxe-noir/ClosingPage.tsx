@@ -11,11 +11,9 @@ import type {
   ProposalDeckSummary,
 } from "@/lib/proposal-ppt";
 import { formatLuxeKw } from "./luxe-format";
-import {
-  useLuxeCompanyContact,
-  useLuxeVendorName,
-  luxeVendorOrFallback,
-} from "./luxe-vendor";
+import { installerLogoAlt } from "@/lib/proposal-branding-settings";
+import { useLuxeCompanyContact } from "./luxe-vendor";
+import { LuxePageFooter, useLuxeBrand } from "./luxe-brand";
 import { ExpertVerdict } from "./ExpertVerdict";
 import { useLuxeLang } from "./luxe-lang-context";
 import { luxeDisplayFont } from "./luxe-fonts";
@@ -120,8 +118,10 @@ function StepGlyph({ index }: { index: number }) {
 
 export function ClosingPage({ data, pptInput, summary }: ClosingPageProps) {
   const { copy, isHi } = useLuxeLang();
-  const vendor = luxeVendorOrFallback(useLuxeVendorName(data, pptInput), isHi);
+  const brand = useLuxeBrand();
+  const vendor = brand.vendorName;
   const company = useLuxeCompanyContact(data, pptInput, summary);
+  const showClosingName = brand.closing.showName || !brand.closing.showLogo;
   const client =
     data.meta.customerName?.trim() ||
     (isHi ? "सम्मानित ग्राहक" : "Valued Customer");
@@ -165,7 +165,22 @@ export function ClosingPage({ data, pptInput, summary }: ClosingPageProps) {
       <div className={styles.closeBrandHero}>
         <div className={styles.closeBrandCopy}>
           <span className={styles.closeBrandEyebrow}>{copy.close.vendor}</span>
-          <h1 className={styles.closeVendorName}>{vendor}</h1>
+          {brand.closing.showLogo ? (
+            <div className={styles.coverLogoWrap}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                className={styles.coverBrandLogo}
+                src={brand.closing.logoUrl}
+                alt={installerLogoAlt(vendor)}
+              />
+            </div>
+          ) : null}
+          {showClosingName ? (
+            <h1 className={styles.closeVendorName}>{vendor}</h1>
+          ) : null}
+          {brand.closing.showTagline && brand.tagline ? (
+            <p className={styles.closeLead}>{brand.tagline}</p>
+          ) : null}
           <p className={styles.closeTitle}>{copy.close.title}</p>
           <p className={styles.closeLead}>{copy.close.lead}</p>
         </div>
@@ -304,10 +319,9 @@ export function ClosingPage({ data, pptInput, summary }: ClosingPageProps) {
 
       <ExpertVerdict label={copy.close.finalLabel}>{copy.close.final}</ExpertVerdict>
 
-      <footer className={`${styles.impactPageFooter} ${styles.closeFooter}`}>
-        <span>{vendor.toUpperCase()}</span>
-        <span>12 / 12</span>
-      </footer>
+      <div className={styles.closeFooter}>
+        <LuxePageFooter pageLabel="12 / 12" />
+      </div>
     </section>
   );
 }

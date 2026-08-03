@@ -3,6 +3,7 @@
 /**
  * Premium Luxe — Cover (Page 01).
  * Brand-first folio + photoreal rooftop hero plate (print-safe local asset).
+ * Logo / company name follow More → Brand cover settings.
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
@@ -10,12 +11,10 @@ import type {
   PremiumProposalPptInput,
   ProposalDeckSummary,
 } from "@/lib/proposal-ppt";
+import { installerLogoAlt } from "@/lib/proposal-branding-settings";
 import { formatLuxeKw } from "./luxe-format";
-import {
-  useLuxeCompanyContact,
-  useLuxeVendorName,
-  luxeVendorOrFallback,
-} from "./luxe-vendor";
+import { useLuxeCompanyContact } from "./luxe-vendor";
+import { useLuxeBrand } from "./luxe-brand";
 import { useLuxeLang } from "./luxe-lang-context";
 import { luxeDisplayFont } from "./luxe-fonts";
 import styles from "./luxe.module.css";
@@ -60,7 +59,8 @@ function CoverPhotoPlate({
 
 export function ObsidianCover({ data, pptInput, summary }: ObsidianCoverProps) {
   const { copy, isHi } = useLuxeLang();
-  const vendor = luxeVendorOrFallback(useLuxeVendorName(data, pptInput), isHi);
+  const brand = useLuxeBrand();
+  const vendor = brand.vendorName;
   const company = useLuxeCompanyContact(data, pptInput, summary);
   const client =
     data.meta.customerName?.trim() ||
@@ -76,6 +76,7 @@ export function ObsidianCover({ data, pptInput, summary }: ObsidianCoverProps) {
     ? "निजी रूफटॉप अध्ययन"
     : "PRIVATE ROOFTOP STUDY";
   const contactLine = company.line;
+  const showHeroName = brand.cover.showName || !brand.cover.showLogo;
 
   return (
     <section
@@ -95,14 +96,30 @@ export function ObsidianCover({ data, pptInput, summary }: ObsidianCoverProps) {
       <div className={styles.coverTopRule} aria-hidden />
 
       <div className={styles.coverHero}>
+        {brand.cover.showLogo ? (
+          <div className={styles.coverLogoWrap}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              className={styles.coverBrandLogo}
+              src={brand.cover.logoUrl}
+              alt={installerLogoAlt(vendor)}
+            />
+          </div>
+        ) : null}
+
         <span className={styles.coverVendorLabel}>{copy.cover.vendor}</span>
-        <h1
-          className={`${styles.coverVendorName} ${
-            longName ? styles.coverVendorNameLong : ""
-          }`}
-        >
-          {vendor}
-        </h1>
+        {showHeroName ? (
+          <h1
+            className={`${styles.coverVendorName} ${
+              longName ? styles.coverVendorNameLong : ""
+            }`}
+          >
+            {vendor}
+          </h1>
+        ) : null}
+        {brand.cover.showTagline && brand.tagline ? (
+          <p className={styles.coverBrandDiscipline}>{brand.tagline}</p>
+        ) : null}
         <div className={styles.coverBrandRule} />
         <p className={styles.coverBrandDiscipline}>{copy.cover.discipline}</p>
         {contactLine ? (

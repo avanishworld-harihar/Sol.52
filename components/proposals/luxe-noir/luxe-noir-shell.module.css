@@ -169,15 +169,41 @@
   text-transform: uppercase;
 }
 
+.pageFooterBrand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.pageFooterLogo {
+  display: block;
+  max-height: 18px;
+  max-width: 80px;
+  width: auto;
+  object-fit: contain;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
 .pageFooterGold {
   color: var(--luxe-gold);
+  font-weight: 700;
+}
+
+.shellHeaderRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
 }
 
 /* ── Shared typography ───────────────────────────────────────── */
 .eyebrow {
   color: var(--luxe-gold);
-  font-size: 0.68rem;
-  letter-spacing: 0.28em;
+  font-size: 0.78rem;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   font-weight: 800;
   margin: 0 0 8px;
@@ -189,14 +215,15 @@
   color: #141820;
   margin: 0;
   line-height: 1.12;
+  font-size: 30pt;
 }
 
 .lead {
   margin: 10px 0 0;
   color: var(--luxe-muted);
-  font-size: 10.5pt;
+  font-size: 11.5pt;
   line-height: 1.5;
-  max-width: 46ch;
+  max-width: 48ch;
 }
 
 .goldRule {
@@ -292,8 +319,8 @@
 
 .cardLabel {
   display: block;
-  font-size: 0.62rem;
-  letter-spacing: 0.16em;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--luxe-muted);
   margin-bottom: 6px;
@@ -302,9 +329,9 @@
 
 .cardValue {
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-  font-size: 18pt;
+  font-size: 20pt;
   color: #141820;
-  font-weight: 700;
+  font-weight: 800;
   display: block;
   font-variant-numeric: tabular-nums lining-nums;
   font-feature-settings: "tnum" 1, "lnum" 1;
@@ -314,7 +341,7 @@
 .cardHint {
   display: block;
   margin-top: 6px;
-  font-size: 8.5pt;
+  font-size: 9.5pt;
   color: var(--luxe-muted);
   line-height: 1.4;
 }
@@ -361,18 +388,19 @@
 .expertVerdict .verdictLabel,
 .verdictLabel {
   display: block;
-  font-size: 0.58rem;
-  letter-spacing: 0.18em;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   color: #b8962e;
   margin-bottom: 4px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .expertVerdict p {
   margin: 0;
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
-  font-size: 0.95rem;
-  line-height: 1.4;
+  font-size: 1.05rem;
+  line-height: 1.45;
   color: #1e2430;
 }
 
@@ -385,19 +413,20 @@
 .emiTable th {
   text-align: left;
   color: var(--luxe-gold);
-  font-size: 0.62rem;
+  font-size: 0.74rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  padding: 8px 6px;
+  padding: 10px 6px;
   border-bottom: 1px solid rgba(212, 175, 55, 0.35);
   font-weight: 800;
 }
 
 .emiTable td {
-  padding: 10px 6px;
+  padding: 12px 6px;
   border-bottom: 1px solid rgba(20, 24, 32, 0.08);
   color: #141820;
   font-weight: 600;
+  font-size: 11pt;
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
   font-variant-numeric: tabular-nums lining-nums;
   font-feature-settings: "tnum" 1, "lnum" 1;
@@ -405,6 +434,7 @@
 
 .emiTable td:last-child {
   font-weight: 800;
+  font-size: 12pt;
 }
 
 .emiTable td:last-child,

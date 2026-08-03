@@ -11,8 +11,14 @@ export default function LuxeNoirAdapter({
   data,
   pptInput,
   summary,
+  installerLogoUrl,
 }: PresetRendererProps) {
   return (
-    <LuxeNoirRenderer data={data} pptInput={pptInput} summary={summary} />
+    <LuxeNoirRenderer
+      data={data}
+      pptInput={pptInput}
+      summary={summary}
+      installerLogoUrl={installerLogoUrl}
+    />
   );
 }

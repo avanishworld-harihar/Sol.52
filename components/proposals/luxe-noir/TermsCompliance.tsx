@@ -7,10 +7,10 @@
 
 import type { ProposalData } from "@/lib/proposal-data";
 import { formatLuxeInr, formatLuxeInrReadable } from "./luxe-format";
-import { useLuxeVendorName, luxeVendorOrFallback } from "./luxe-vendor";
 import { ExpertVerdict } from "./ExpertVerdict";
 import { useLuxeLang } from "./luxe-lang-context";
 import { luxeDisplayFont } from "./luxe-fonts";
+import { LuxeHeaderBrand, LuxePageFooter, useLuxeBrand } from "./luxe-brand";
 import styles from "./luxe.module.css";
 
 export type TermsComplianceProps = {
@@ -126,8 +126,7 @@ function take<T>(arr: T[], n: number): T[] {
 }
 
 export function TermsCompliancePage1({ data }: TermsComplianceProps) {
-  const { copy, isHi } = useLuxeLang();
-  const vendor = luxeVendorOrFallback(useLuxeVendorName(data), isHi);
+  const { copy } = useLuxeLang();
   const docs = take(
     data.terms.documents.length > 0 ? data.terms.documents : DEFAULT_DOCS,
     6
@@ -138,8 +137,13 @@ export function TermsCompliancePage1({ data }: TermsComplianceProps) {
       className={`${styles.a4Page} ${styles.termsPage} ${styles.termsPageRoomy} ${luxeDisplayFont.variable}`}
     >
       <header className={styles.termsHead}>
-        <span className={styles.termsTag}>{copy.terms.tag1}</span>
-        <h2 className={styles.termsTitle}>{copy.terms.title}</h2>
+        <div className={styles.luxeHeaderRow}>
+          <div className={styles.luxeHeaderCopy}>
+            <span className={styles.termsTag}>{copy.terms.tag1}</span>
+            <h2 className={styles.termsTitle}>{copy.terms.title}</h2>
+          </div>
+          <LuxeHeaderBrand />
+        </div>
         <p className={styles.termsIntro}>{copy.terms.intro1}</p>
       </header>
 
@@ -176,17 +180,15 @@ export function TermsCompliancePage1({ data }: TermsComplianceProps) {
 
       <ExpertVerdict label={copy.terms.counselLabel}>{copy.terms.counsel}</ExpertVerdict>
 
-      <footer className={styles.impactPageFooter}>
-        <span>{vendor.toUpperCase()}</span>
-        <span>10 / 12</span>
-      </footer>
+      <LuxePageFooter pageLabel="10 / 12" />
     </section>
   );
 }
 
 export function TermsCompliancePage2({ data }: TermsComplianceProps) {
   const { copy, isHi } = useLuxeLang();
-  const vendor = luxeVendorOrFallback(useLuxeVendorName(data), isHi);
+  const brand = useLuxeBrand();
+  const vendor = brand.vendorName;
   const invoiceBase =
     data.economics.grossInr > 0
       ? data.economics.grossInr
@@ -234,8 +236,13 @@ export function TermsCompliancePage2({ data }: TermsComplianceProps) {
       className={`${styles.a4Page} ${styles.termsPage} ${styles.termsPageDense} ${luxeDisplayFont.variable}`}
     >
       <header className={styles.termsHead}>
-        <span className={styles.termsTag}>{copy.terms.tag2}</span>
-        <h2 className={styles.termsTitle}>{copy.terms.title}</h2>
+        <div className={styles.luxeHeaderRow}>
+          <div className={styles.luxeHeaderCopy}>
+            <span className={styles.termsTag}>{copy.terms.tag2}</span>
+            <h2 className={styles.termsTitle}>{copy.terms.title}</h2>
+          </div>
+          <LuxeHeaderBrand />
+        </div>
         <p className={styles.termsIntro}>{copy.terms.intro2}</p>
       </header>
 
@@ -338,10 +345,7 @@ export function TermsCompliancePage2({ data }: TermsComplianceProps) {
 
       <ExpertVerdict label={copy.terms.omLabel}>{copy.terms.om}</ExpertVerdict>
 
-      <footer className={styles.impactPageFooter}>
-        <span>{vendor.toUpperCase()}</span>
-        <span>11 / 12</span>
-      </footer>
+      <LuxePageFooter pageLabel="11 / 12" />
     </section>
   );
 }

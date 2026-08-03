@@ -30,35 +30,55 @@ import {
 import { LuxeLangProvider, useLuxeLang } from "./luxe-lang-context";
 import type { LuxeLang } from "./luxe-copy";
 import { luxeDisplayFont } from "./luxe-fonts";
-import { useLuxeVendorName, luxeVendorOrFallback } from "./luxe-vendor";
+import {
+  LuxeBrandProvider,
+  LuxeHeaderBrand,
+  useLuxeBrand,
+} from "./luxe-brand";
+import { installerLogoAlt } from "@/lib/proposal-branding-settings";
 import styles from "./luxe-noir-shell.module.css";
 
 export type LuxeNoirRendererProps = {
   data: ProposalData;
   pptInput?: PremiumProposalPptInput | null;
   summary?: ProposalDeckSummary | null;
+  installerLogoUrl?: string | null;
 };
 
 const DEFAULT_PAYMENT_PCTS = [25, 50, 20, 5] as const;
 
 function A4Page({
   pageLabel,
-  brand,
   children,
   contentClassName,
 }: {
   pageLabel: string;
-  brand: string;
   children: ReactNode;
   contentClassName?: string;
 }) {
+  const brand = useLuxeBrand();
+  const showName = brand.footer.showName || !brand.footer.showLogo;
   return (
     <section className={styles.a4Page}>
       <div className={`${styles.pageInner} ${contentClassName ?? ""}`.trim()}>
         {children}
       </div>
       <footer className={styles.pageFooter}>
-        <span className={styles.pageFooterGold}>{brand.toUpperCase()}</span>
+        <div className={styles.pageFooterBrand}>
+          {brand.footer.showLogo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={brand.footer.logoUrl}
+              alt={installerLogoAlt(brand.vendorName)}
+              className={styles.pageFooterLogo}
+            />
+          ) : null}
+          {showName ? (
+            <span className={styles.pageFooterGold}>
+              {(brand.footer.installerName || brand.vendorName).toUpperCase()}
+            </span>
+          ) : null}
+        </div>
         <span>{pageLabel}</span>
       </footer>
     </section>
@@ -75,7 +95,8 @@ function LuxeNoirDocument({
   summary?: ProposalDeckSummary | null;
 }) {
   const { lang, setLang, copy, isHi } = useLuxeLang();
-  const brand = luxeVendorOrFallback(useLuxeVendorName(data, pptInput), isHi);
+  const brandBundle = useLuxeBrand();
+  const brand = brandBundle.vendorName;
   const systemKw = Number(data.meta.systemKw) || 0;
   const eco = data.economics;
   const bill = data.bill;
@@ -214,11 +235,14 @@ function LuxeNoirDocument({
       {bill.hasData && bill.months.length > 0 ? (
         <BillAuditPage data={data} pptInput={pptInput} />
       ) : (
-        <A4Page pageLabel="02 / 12" brand={brand}>
-          <p className={styles.eyebrow}>{copy.load.eyebrow}</p>
-          <h2 className={styles.title} style={{ fontSize: "28pt" }}>
-            {copy.load.title}
-          </h2>
+        <A4Page pageLabel="02 / 12">
+          <div className={styles.shellHeaderRow}>
+            <div>
+              <p className={styles.eyebrow}>{copy.load.eyebrow}</p>
+              <h2 className={styles.title}>{copy.load.title}</h2>
+            </div>
+            <LuxeHeaderBrand />
+          </div>
           <div className={styles.goldRule} />
           <p className={styles.lead}>{copy.load.lead}</p>
 
@@ -285,11 +309,14 @@ function LuxeNoirDocument({
 
       <WealthTerminal data={data} />
 
-      <A4Page pageLabel="04 / 12" brand={brand}>
-        <p className={styles.eyebrow}>{copy.emi.eyebrow}</p>
-        <h2 className={styles.title} style={{ fontSize: "28pt" }}>
-          {copy.emi.title}
-        </h2>
+      <A4Page pageLabel="04 / 12">
+        <div className={styles.shellHeaderRow}>
+          <div>
+            <p className={styles.eyebrow}>{copy.emi.eyebrow}</p>
+            <h2 className={styles.title}>{copy.emi.title}</h2>
+          </div>
+          <LuxeHeaderBrand />
+        </div>
         <div className={styles.goldRule} />
         <p className={styles.lead}>{copy.emi.lead}</p>
         <p className={styles.cardHint} style={{ marginTop: 8, fontSize: "9.5pt" }}>
@@ -381,6 +408,7 @@ export function LuxeNoirRenderer({
   data,
   pptInput,
   summary,
+  installerLogoUrl,
 }: LuxeNoirRendererProps) {
   const [lang, setLang] = useState<LuxeLang>("en");
 
@@ -390,7 +418,17 @@ export function LuxeNoirRenderer({
 
   return (
     <LuxeLangProvider lang={lang} setLang={setLang}>
-      <LuxeNoirDocument data={data} pptInput={pptInput} summary={summary} />
+      <LuxeBrandProvider
+        data={data}
+        pptInput={pptInput}
+        installerLogoUrl={installerLogoUrl}
+      >
+        <LuxeNoirDocument
+          data={data}
+          pptInput={pptInput}
+          summary={summary}
+        />
+      </LuxeBrandProvider>
     </LuxeLangProvider>
   );
 }

@@ -7,10 +7,10 @@
 
 import type { ProposalData } from "@/lib/proposal-data";
 import { formatLuxeUnits } from "./luxe-format";
-import { useLuxeVendorName, luxeVendorOrFallback } from "./luxe-vendor";
 import { ExpertVerdict } from "./ExpertVerdict";
 import { useLuxeLang } from "./luxe-lang-context";
 import { luxeDisplayFont } from "./luxe-fonts";
+import { LuxeHeaderBrand, LuxePageFooter } from "./luxe-brand";
 import styles from "./luxe.module.css";
 
 export type ImpactPageProps = {
@@ -260,10 +260,8 @@ function IllustYears() {
   );
 }
 
-export function ImpactPage({ data, generationUnits, brand }: ImpactPageProps) {
+export function ImpactPage({ data, generationUnits }: ImpactPageProps) {
   const { copy, isHi } = useLuxeLang();
-  const fromSettings = useLuxeVendorName(data);
-  const vendor = luxeVendorOrFallback(brand?.trim() || fromSettings, isHi);
   const co2 = impactTons(data);
   const trees =
     data.impact.treesEquivalent > 0
@@ -290,8 +288,13 @@ export function ImpactPage({ data, generationUnits, brand }: ImpactPageProps) {
       className={`${styles.a4Page} ${styles.impactPage} ${luxeDisplayFont.variable}`}
     >
       <header className={styles.luxeHeaderBlock}>
-        <span className={styles.goldTag}>{copy.impact.tag}</span>
-        <h2 className={styles.luxeHeadline}>{copy.impact.title}</h2>
+        <div className={styles.luxeHeaderRow}>
+          <div className={styles.luxeHeaderCopy}>
+            <span className={styles.goldTag}>{copy.impact.tag}</span>
+            <h2 className={styles.luxeHeadline}>{copy.impact.title}</h2>
+          </div>
+          <LuxeHeaderBrand />
+        </div>
       </header>
 
       <p className={styles.impactLead}>{copy.impact.lead}</p>
@@ -454,10 +457,7 @@ export function ImpactPage({ data, generationUnits, brand }: ImpactPageProps) {
         {copy.impact.verdict}
       </ExpertVerdict>
 
-      <footer className={styles.impactPageFooter}>
-        <span>{vendor.toUpperCase()}</span>
-        <span>08 / 12</span>
-      </footer>
+      <LuxePageFooter pageLabel="08 / 12" />
     </section>
   );
 }

@@ -11,7 +11,7 @@ import { formatLuxeKw, formatLuxeUnits } from "./luxe-format";
 import { ExpertVerdict } from "./ExpertVerdict";
 import { useLuxeLang } from "./luxe-lang-context";
 import { luxeDisplayFont } from "./luxe-fonts";
-import { useLuxeVendorName, luxeVendorOrFallback } from "./luxe-vendor";
+import { LuxeHeaderBrand, LuxePageFooter } from "./luxe-brand";
 import styles from "./luxe.module.css";
 
 export type EngineeringBlueprintProps = {
@@ -284,15 +284,19 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
   );
 
   const { copy, isHi } = useLuxeLang();
-  const vendor = luxeVendorOrFallback(useLuxeVendorName(data), isHi);
 
   return (
     <section
       className={`${styles.a4Page} ${styles.hudPage} ${luxeDisplayFont.variable}`}
     >
       <header className={styles.luxeHeaderBlock}>
-        <span className={styles.goldTag}>{copy.eng.tag}</span>
-        <h2 className={styles.luxeHeadline}>{copy.eng.title}</h2>
+        <div className={styles.luxeHeaderRow}>
+          <div className={styles.luxeHeaderCopy}>
+            <span className={styles.goldTag}>{copy.eng.tag}</span>
+            <h2 className={styles.luxeHeadline}>{copy.eng.title}</h2>
+          </div>
+          <LuxeHeaderBrand />
+        </div>
       </header>
 
       <div className={styles.engDesignLayout}>
@@ -572,10 +576,7 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
 
       <p className={styles.standardsStrip}>{standards}</p>
 
-      <footer className={styles.impactPageFooter}>
-        <span>{vendor.toUpperCase()}</span>
-        <span>05 / 12</span>
-      </footer>
+      <LuxePageFooter pageLabel="05 / 12" />
     </section>
   );
 }

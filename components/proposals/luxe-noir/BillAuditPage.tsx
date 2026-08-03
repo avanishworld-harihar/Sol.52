@@ -10,7 +10,7 @@ import type { ProposalData } from "@/lib/proposal-data";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { useLuxeLang } from "./luxe-lang-context";
 import { luxeDisplayFont } from "./luxe-fonts";
-import { useLuxeVendorName, luxeVendorOrFallback } from "./luxe-vendor";
+import { LuxeHeaderBrand, LuxePageFooter } from "./luxe-brand";
 import { ExpertVerdict } from "./ExpertVerdict";
 import styles from "./luxe.module.css";
 
@@ -23,9 +23,8 @@ function auditInr(value: number): string {
   return `₹${Math.round(value).toLocaleString("en-IN")}`;
 }
 
-export function BillAuditPage({ data, pptInput }: BillAuditPageProps) {
-  const { copy, isHi } = useLuxeLang();
-  const vendor = luxeVendorOrFallback(useLuxeVendorName(data, pptInput), isHi);
+export function BillAuditPage({ data }: BillAuditPageProps) {
+  const { copy } = useLuxeLang();
   const bill = data.bill;
   const rows = bill.months.slice(0, 12);
   const colCount = Math.max(rows.length, 1);
@@ -43,8 +42,13 @@ export function BillAuditPage({ data, pptInput }: BillAuditPageProps) {
       className={`${styles.a4Page} ${styles.billAuditPage} ${luxeDisplayFont.variable}`}
     >
       <header className={styles.luxeHeaderBlock}>
-        <span className={styles.goldTag}>{c.tag}</span>
-        <h2 className={styles.luxeHeadline}>{c.title}</h2>
+        <div className={styles.luxeHeaderRow}>
+          <div className={styles.luxeHeaderCopy}>
+            <span className={styles.goldTag}>{c.tag}</span>
+            <h2 className={styles.luxeHeadline}>{c.title}</h2>
+          </div>
+          <LuxeHeaderBrand />
+        </div>
         <p className={styles.billAuditLead}>{c.lead}</p>
       </header>
 
@@ -178,10 +182,7 @@ export function BillAuditPage({ data, pptInput }: BillAuditPageProps) {
           : c.verdictFallback}
       </ExpertVerdict>
 
-      <footer className={styles.impactPageFooter}>
-        <span>{vendor.toUpperCase()}</span>
-        <span>02 / 12</span>
-      </footer>
+      <LuxePageFooter pageLabel="02 / 12" />
     </section>
   );
 }

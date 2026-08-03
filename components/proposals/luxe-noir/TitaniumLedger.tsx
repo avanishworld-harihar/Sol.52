@@ -12,7 +12,7 @@ import { formatLuxeKw } from "./luxe-format";
 import { ExpertVerdict } from "./ExpertVerdict";
 import { useLuxeLang } from "./luxe-lang-context";
 import { luxeDisplayFont } from "./luxe-fonts";
-import { useLuxeVendorName, luxeVendorOrFallback } from "./luxe-vendor";
+import { LuxeHeaderBrand, LuxePageFooter } from "./luxe-brand";
 import styles from "./luxe.module.css";
 
 export type TitaniumLedgerProps = {
@@ -147,7 +147,6 @@ export function TitaniumLedger({ data }: TitaniumLedgerProps) {
   const sharedProtect = claimBom(bom, used, /protection|safety|spd|mcb/i);
 
   const { copy, isHi } = useLuxeLang();
-  const vendor = luxeVendorOrFallback(useLuxeVendorName(data), isHi);
 
   const rows: LedgerRow[] = [
     buildRow(panel, {
@@ -255,8 +254,13 @@ export function TitaniumLedger({ data }: TitaniumLedgerProps) {
       className={`${styles.a4Page} ${styles.ledgerPage} ${luxeDisplayFont.variable}`}
     >
       <header className={styles.luxeHeaderBlock}>
-        <span className={styles.goldTag}>{copy.bom.tag}</span>
-        <h2 className={styles.luxeHeadline}>{copy.bom.title}</h2>
+        <div className={styles.luxeHeaderRow}>
+          <div className={styles.luxeHeaderCopy}>
+            <span className={styles.goldTag}>{copy.bom.tag}</span>
+            <h2 className={styles.luxeHeadline}>{copy.bom.title}</h2>
+          </div>
+          <LuxeHeaderBrand />
+        </div>
       </header>
 
       <p className={styles.bomLead}>
@@ -287,10 +291,7 @@ export function TitaniumLedger({ data }: TitaniumLedgerProps) {
         {copy.bom.verdict}
       </ExpertVerdict>
 
-      <footer className={styles.impactPageFooter}>
-        <span>{vendor.toUpperCase()}</span>
-        <span>06 / 12</span>
-      </footer>
+      <LuxePageFooter pageLabel="06 / 12" />
     </section>
   );
 }

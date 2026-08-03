@@ -10,10 +10,10 @@ import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { isProposalBillAuditBacked } from "@/lib/proposal-bill-audit-eligibility";
 import { formatLuxeInr, formatLuxeInrReadable } from "./luxe-format";
 import { buildLuxeForecastMonths } from "./luxe-generation-forecast";
-import { useLuxeVendorName, luxeVendorOrFallback } from "./luxe-vendor";
 import { ExpertVerdict } from "./ExpertVerdict";
 import { useLuxeLang } from "./luxe-lang-context";
 import { luxeDisplayFont } from "./luxe-fonts";
+import { LuxeHeaderBrand, LuxePageFooter } from "./luxe-brand";
 import styles from "./luxe.module.css";
 
 export type GenerationForecastPageProps = {
@@ -26,12 +26,9 @@ export type GenerationForecastPageProps = {
 export function GenerationForecastPage({
   data,
   generationUnits,
-  brand,
   pptInput,
 }: GenerationForecastPageProps) {
   const { copy, isHi } = useLuxeLang();
-  const fromSettings = useLuxeVendorName(data);
-  const vendorName = luxeVendorOrFallback(brand?.trim() || fromSettings, isHi);
 
   const annualSavings =
     data.closing.annualSavingsInr > 0
@@ -70,8 +67,13 @@ export function GenerationForecastPage({
       className={`${styles.a4Page} ${styles.genForecastPage} ${luxeDisplayFont.variable}`}
     >
       <header className={styles.luxeHeaderBlock}>
-        <span className={styles.goldTag}>{copy.gen.tag}</span>
-        <h2 className={styles.luxeHeadline}>{copy.gen.title}</h2>
+        <div className={styles.luxeHeaderRow}>
+          <div className={styles.luxeHeaderCopy}>
+            <span className={styles.goldTag}>{copy.gen.tag}</span>
+            <h2 className={styles.luxeHeadline}>{copy.gen.title}</h2>
+          </div>
+          <LuxeHeaderBrand />
+        </div>
       </header>
 
       <p className={styles.genForecastLead}>
@@ -193,10 +195,7 @@ export function GenerationForecastPage({
         {billBased ? copy.gen.verdictBill : copy.gen.verdict}
       </ExpertVerdict>
 
-      <footer className={styles.impactPageFooter}>
-        <span>{vendorName.toUpperCase()}</span>
-        <span>07 / 12</span>
-      </footer>
+      <LuxePageFooter pageLabel="07 / 12" />
     </section>
   );
 }

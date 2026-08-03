@@ -14,7 +14,7 @@ import {
 import { ExpertVerdict } from "./ExpertVerdict";
 import { useLuxeLang } from "./luxe-lang-context";
 import { luxeDisplayFont } from "./luxe-fonts";
-import { useLuxeVendorName, luxeVendorOrFallback } from "./luxe-vendor";
+import { LuxeHeaderBrand, LuxePageFooter } from "./luxe-brand";
 import styles from "./luxe.module.css";
 
 export type WealthTerminalProps = {
@@ -133,15 +133,19 @@ export function WealthTerminal({ data }: WealthTerminalProps) {
   const subsidyPct = subsidy > 0 ? (subsidy / capitalTotal) * 100 : 0;
   const netPct = net > 0 ? (net / capitalTotal) * 100 : 100;
   const { copy, isHi } = useLuxeLang();
-  const vendor = luxeVendorOrFallback(useLuxeVendorName(data), isHi);
 
   return (
     <section
       className={`${styles.a4Page} ${styles.luxeTerminal} ${luxeDisplayFont.variable}`}
     >
       <header className={styles.luxeHeaderBlock}>
-        <span className={styles.goldTag}>{copy.wealth.tag}</span>
-        <h2 className={styles.luxeHeadline}>{copy.wealth.title}</h2>
+        <div className={styles.luxeHeaderRow}>
+          <div className={styles.luxeHeaderCopy}>
+            <span className={styles.goldTag}>{copy.wealth.tag}</span>
+            <h2 className={styles.luxeHeadline}>{copy.wealth.title}</h2>
+          </div>
+          <LuxeHeaderBrand />
+        </div>
       </header>
 
       {/* Net cost hero — after-subsidy first */}
@@ -478,10 +482,7 @@ export function WealthTerminal({ data }: WealthTerminalProps) {
         {copy.wealth.verdict}
       </ExpertVerdict>
 
-      <footer className={styles.impactPageFooter}>
-        <span>{vendor.toUpperCase()}</span>
-        <span>03 / 12</span>
-      </footer>
+      <LuxePageFooter pageLabel="03 / 12" />
     </section>
   );
 }

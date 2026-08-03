@@ -18,10 +18,10 @@ import {
   resolveProposalBankDetails,
 } from "@/lib/proposal-branding-settings";
 import { formatLuxeInr, formatLuxeInrReadable } from "./luxe-format";
-import { useLuxeVendorName, luxeVendorOrFallback } from "./luxe-vendor";
 import { ExpertVerdict } from "./ExpertVerdict";
 import { useLuxeLang } from "./luxe-lang-context";
 import { luxeDisplayFont } from "./luxe-fonts";
+import { LuxeHeaderBrand, LuxePageFooter, useLuxeBrand } from "./luxe-brand";
 import styles from "./luxe.module.css";
 
 export type PaymentMilestone = {
@@ -162,8 +162,8 @@ export function PaymentMilestonesPage({
     settings,
     preferSettings: true,
   });
-  const fromSettings = useLuxeVendorName(data, pptInput);
-  const vendorName = luxeVendorOrFallback(brand?.trim() || fromSettings, isHi);
+  const brandLive = useLuxeBrand();
+  const vendorName = brand?.trim() || brandLive.vendorName;
   const company = bank.accountName || vendorName;
   const hasBank = Boolean(
     bank.accountNumber || bank.ifsc || bank.upiId || bank.paymentQrCodeUrl
@@ -195,8 +195,13 @@ export function PaymentMilestonesPage({
       className={`${styles.a4Page} ${styles.payPage} ${luxeDisplayFont.variable}`}
     >
       <header className={styles.luxeHeaderBlock}>
-        <span className={styles.goldTag}>{copy.pay.tag}</span>
-        <h2 className={styles.luxeHeadline}>{copy.pay.title}</h2>
+        <div className={styles.luxeHeaderRow}>
+          <div className={styles.luxeHeaderCopy}>
+            <span className={styles.goldTag}>{copy.pay.tag}</span>
+            <h2 className={styles.luxeHeadline}>{copy.pay.title}</h2>
+          </div>
+          <LuxeHeaderBrand />
+        </div>
       </header>
 
       <p className={styles.payLead}>
@@ -287,10 +292,7 @@ export function PaymentMilestonesPage({
         <ExpertVerdict label={copy.pay.verdictLabel}>{copy.pay.verdict}</ExpertVerdict>
       </div>
 
-      <footer className={styles.impactPageFooter}>
-        <span>{vendorName.toUpperCase()}</span>
-        <span>09 / 12</span>
-      </footer>
+      <LuxePageFooter pageLabel="09 / 12" />
     </section>
   );
 }

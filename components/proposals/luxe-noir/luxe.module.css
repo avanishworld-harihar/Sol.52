@@ -348,11 +348,11 @@
 
 .coverPrepared {
   display: block;
-  font-size: 0.62rem;
-  letter-spacing: 0.26em;
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: #b8962e;
-  font-weight: 700;
+  font-weight: 800;
   margin-bottom: 8px;
 }
 
@@ -360,7 +360,7 @@
   margin: 0 0 8px;
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
   font-size: clamp(1.7rem, 4.2vw, 2.35rem);
-  font-weight: 400;
+  font-weight: 700;
   line-height: 1.12;
   color: #141820;
   letter-spacing: 0.01em;
@@ -369,11 +369,11 @@
 
 .coverOfferLine {
   margin: 0;
-  font-size: 0.92rem;
+  font-size: 0.98rem;
   line-height: 1.5;
   color: #1e2430;
-  max-width: 34em;
   font-weight: 400;
+  max-width: 34em;
 }
 
 .coverMeta {
@@ -395,16 +395,16 @@
 }
 
 .coverMetaCell span {
-  font-size: 0.58rem;
-  letter-spacing: 0.2em;
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: #1e2430;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .coverMetaCell strong {
-  font-size: 1.05rem;
-  font-weight: 600;
+  font-size: 1.12rem;
+  font-weight: 700;
   color: #141820;
   line-height: 1.25;
 }
@@ -583,17 +583,19 @@
 }
 
 .closeSeries {
-  font-size: 0.62rem;
+  font-size: 0.72rem;
   letter-spacing: 0.18em;
-  font-weight: 700;
+  font-weight: 800;
   color: #1e2430;
+  text-transform: uppercase;
 }
 
 .closeConfidential {
-  font-size: 0.62rem;
+  font-size: 0.72rem;
   letter-spacing: 0.16em;
-  font-weight: 700;
+  font-weight: 800;
   color: #b8962e;
+  text-transform: uppercase;
 }
 
 .closeBrandHero {
@@ -612,11 +614,11 @@
 
 .closeBrandEyebrow {
   display: block;
-  font-size: 0.62rem;
+  font-size: 0.72rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: #b8962e;
-  font-weight: 700;
+  font-weight: 800;
   margin-bottom: 6px;
 }
 
@@ -624,7 +626,7 @@
   margin: 0 0 6px;
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
   font-size: clamp(2rem, 5.5vw, 2.85rem);
-  font-weight: 400;
+  font-weight: 700;
   line-height: 0.98;
   color: #141820;
   letter-spacing: -0.01em;
@@ -633,16 +635,16 @@
 .closeTitle {
   margin: 0 0 6px;
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
-  font-size: clamp(1.35rem, 3.2vw, 1.7rem);
-  font-weight: 500;
+  font-size: clamp(1.45rem, 3.2vw, 1.85rem);
+  font-weight: 700;
   line-height: 1.15;
   color: #1e2430;
 }
 
 .closeLead {
   margin: 0;
-  font-size: 0.86rem;
-  line-height: 1.4;
+  font-size: 0.95rem;
+  line-height: 1.45;
   color: #1e2430;
   max-width: 36em;
 }
@@ -719,15 +721,16 @@
 }
 
 .closeJourneyHead span {
-  font-size: 0.6rem;
-  letter-spacing: 0.16em;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: #b8962e;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .closeJourneyHead em {
   font-style: normal;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   color: #5c6573;
   font-weight: 600;
 }
@@ -791,16 +794,16 @@
 }
 
 .closeJourneyStep strong {
-  font-size: 0.82rem;
+  font-size: 0.92rem;
   color: #141820;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.2;
 }
 
 .closeJourneyStep p {
   margin: 0;
-  font-size: 0.68rem;
-  line-height: 1.3;
+  font-size: 0.78rem;
+  line-height: 1.35;
   color: #1e2430;
 }
 
@@ -954,14 +957,145 @@
   font-style: normal;
 }
 
-/* SHARED HEADER */
+/* BRAND MARK — More → Brand settings (cover / header / footer / closing) */
+.luxeBrandMark {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.luxeBrandLogo {
+  display: block;
+  width: auto;
+  object-fit: contain;
+  object-position: left center;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.luxeBrandText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.luxeBrandName {
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #141820;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.luxeBrandTagline {
+  font-size: 0.78rem;
+  color: #5c6573;
+  line-height: 1.3;
+}
+
+.luxeBrandCover {
+  margin-bottom: 10px;
+}
+
+.luxeBrandCover .luxeBrandLogo {
+  max-height: 56px;
+  max-width: 220px;
+}
+
+.luxeBrandCover .luxeBrandName {
+  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.luxeBrandHeader {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.luxeBrandHeader .luxeBrandLogo {
+  max-height: 28px;
+  max-width: 110px;
+}
+
+.luxeBrandHeader .luxeBrandName {
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+}
+
+.luxeBrandClosing .luxeBrandLogo {
+  max-height: 48px;
+  max-width: 180px;
+}
+
+.luxeBrandClosing .luxeBrandName {
+  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  font-weight: 700;
+}
+
+.luxeBrandFooter .luxeBrandLogo {
+  max-height: 22px;
+  max-width: 90px;
+}
+
+.luxeFooterBrand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.luxeFooterLogo {
+  display: block;
+  max-height: 20px;
+  max-width: 88px;
+  width: auto;
+  object-fit: contain;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.coverLogoWrap {
+  margin-bottom: 12px;
+}
+
+.coverBrandLogo {
+  display: block;
+  max-height: 64px;
+  max-width: 240px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  object-position: left center;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.luxeHeaderRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.luxeHeaderCopy {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+/* SHARED HEADER — deck-wide type hierarchy */
 .luxeHeaderBlock {
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .goldTag {
-  font-size: 0.72rem;
-  letter-spacing: 3px;
+  font-size: 0.78rem;
+  letter-spacing: 0.2em;
   color: #b8962e;
   font-weight: 800;
   text-transform: uppercase;
@@ -969,12 +1103,59 @@
 
 .luxeHeadline {
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
-  font-size: 2.4rem;
-  margin: 5px 0 0 0;
-  border-bottom: 1px solid #d8dee6;
-  padding-bottom: 12px;
+  font-size: 2.45rem;
+  margin: 6px 0 0 0;
+  border-bottom: 2px solid rgba(184, 150, 46, 0.4);
+  padding-bottom: 10px;
   color: #141820;
   font-weight: 700;
+  line-height: 1.1;
+}
+
+/* Page tags / titles always bold across every Luxe page */
+.billAuditPage .goldTag,
+.hudPage .goldTag,
+.ledgerPage .goldTag,
+.luxeTerminal .goldTag,
+.impactPage .goldTag,
+.genForecastPage .goldTag,
+.payPage .goldTag,
+.termsPage .termsTag,
+.closePage .goldTag {
+  font-weight: 800 !important;
+}
+
+.billAuditPage .luxeHeadline,
+.hudPage .luxeHeadline,
+.ledgerPage .luxeHeadline,
+.luxeTerminal .luxeHeadline,
+.impactPage .luxeHeadline,
+.genForecastPage .luxeHeadline,
+.payPage .luxeHeadline,
+.termsPage .termsTitle {
+  font-weight: 700 !important;
+}
+
+/* Shared subheads (section labels inside cards) */
+.engPanelTitle,
+.impactHeroLabel,
+.impactCardLabel,
+.impactChartHead,
+.genForecastKpi span,
+.billAuditTable th,
+.billAuditMetric span,
+.capitalStackTitle,
+.netLabel,
+.billCompareHead,
+.chartHead,
+.wealthKpi span,
+.payScheduleHead,
+.payBankEyebrow,
+.payTermsLabel,
+.verdictLabel,
+.termsSubhead {
+  font-weight: 800 !important;
+  letter-spacing: 0.12em;
 }
 
 /* BILL AUDIT — bill-based page 02 (Atelier-inspired, Luxe-local) */
@@ -990,15 +1171,14 @@
 }
 
 .billAuditPage .luxeHeadline {
-  font-size: 2.15rem;
+  font-size: 2.35rem;
   padding-bottom: 8px;
-  border-bottom: none;
 }
 
 .billAuditLead {
-  margin: 6px 0 0;
-  max-width: 40em;
-  font-size: 0.88rem;
+  margin: 8px 0 0;
+  max-width: 42em;
+  font-size: 0.98rem;
   line-height: 1.45;
   color: #2a3140;
   font-weight: 400;
@@ -1062,16 +1242,16 @@
 
 .billAuditMetric span {
   margin-top: 6px;
-  font-size: 0.62rem;
+  font-size: 0.7rem;
   font-weight: 800;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #141820;
 }
 
 .billAuditMetric small {
   margin-top: 3px;
-  font-size: 0.7rem;
+  font-size: 0.78rem;
   font-weight: 500;
   color: #5c6573;
   line-height: 1.3;
@@ -1159,15 +1339,15 @@
 .billAuditTable th {
   color: #b8962e;
   background: #f7f4ee;
-  font-size: 0.62rem;
-  font-weight: 700;
+  font-size: 0.72rem;
+  font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .billAuditTable td {
   color: #384352;
-  font-size: 0.82rem;
+  font-size: 0.9rem;
 }
 
 .billAuditTable th:first-child,
@@ -1209,19 +1389,19 @@
 .billAuditFootnote {
   margin: 0;
   color: #5c6573;
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   line-height: 1.4;
   flex-shrink: 0;
 }
 
 .billAuditPage .expertVerdict {
   margin-top: 8px;
-  padding: 9px 12px;
+  padding: 10px 12px;
   flex-shrink: 0;
 }
 
 .billAuditPage .expertVerdict p {
-  font-size: 0.9rem;
+  font-size: 0.98rem;
   line-height: 1.4;
 }
 
@@ -1240,10 +1420,12 @@
 
 .hudPage .luxeHeadline {
   font-size: 2.55rem;
+  font-weight: 700;
 }
 
 .hudPage .goldTag {
-  font-size: 0.8rem;
+  font-size: 0.82rem;
+  font-weight: 800;
 }
 
 .engDesignLayout {
@@ -1269,10 +1451,11 @@
 }
 
 .engPanelTitle {
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: #b8962e;
-  font-weight: 700;
+  font-weight: 800;
   margin-bottom: 8px;
 }
 
@@ -1314,19 +1497,21 @@
 }
 
 .engMetricRow span {
-  font-size: 0.68rem;
-  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #2a3140;
+  font-weight: 800;
 }
 
 .engMetricRow strong {
-  font-size: 1.05rem;
+  font-size: 1.12rem;
   color: #141820;
+  font-weight: 700;
 }
 
 .engMetricRow small {
-  font-size: 0.78rem;
+  font-size: 0.86rem;
   color: #2a3140;
   line-height: 1.35;
 }
@@ -1435,14 +1620,15 @@
 
 .flowNode strong,
 .archNode strong {
-  font-size: 0.84rem;
+  font-size: 0.92rem;
   color: #141820;
+  font-weight: 800;
 }
 
 .flowNode em,
 .archNode em {
   font-style: normal;
-  font-size: 0.74rem;
+  font-size: 0.82rem;
   color: #2a3140;
 }
 
@@ -1493,14 +1679,15 @@
 
 .archProtectItem strong {
   display: block;
-  font-size: 0.84rem;
+  font-size: 0.92rem;
   color: #141820;
+  font-weight: 800;
   margin-bottom: 2px;
 }
 
 .archProtectItem small {
   display: block;
-  font-size: 0.74rem;
+  font-size: 0.82rem;
   color: #2a3140;
   line-height: 1.35;
 }
@@ -1512,7 +1699,8 @@
 }
 
 .hudPage .verdictLabel {
-  font-size: 0.68rem;
+  font-size: 0.72rem;
+  font-weight: 800;
 }
 
 .hudPage .standardsStrip {
@@ -1521,13 +1709,14 @@
 
 .bomLead {
   margin: -4px 0 10px;
-  font-size: 0.82rem;
+  font-size: 0.95rem;
   color: #2a3140;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 .ledgerPage .luxeHeadline {
-  font-size: 2.15rem;
+  font-size: 2.35rem;
+  font-weight: 700;
   padding-bottom: 8px;
 }
 
@@ -1536,13 +1725,14 @@
 }
 
 .ledgerPage .goldTag {
-  font-size: 0.76rem;
+  font-size: 0.8rem;
+  font-weight: 800;
 }
 
 .ledgerPage .bomLead {
   margin: 0 0 8px;
-  font-size: 0.86rem;
-  line-height: 1.4;
+  font-size: 0.95rem;
+  line-height: 1.45;
   overflow-wrap: anywhere;
   word-break: break-word;
   max-width: 100%;
@@ -1611,20 +1801,21 @@
 
 .ledgerTitleRow h3 {
   margin: 0;
-  font-size: 0.92rem;
+  font-size: 1.02rem;
   color: #141820;
-  font-weight: 600;
+  font-weight: 800;
 }
 
 .ledgerRole {
-  font-size: 0.55rem;
-  letter-spacing: 0.14em;
-  font-weight: 700;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  font-weight: 800;
   color: #b8962e;
+  text-transform: uppercase;
 }
 
 .ledgerPage .ledgerRole {
-  font-size: 0.62rem;
+  font-size: 0.68rem;
 }
 
 .ledgerPage .specBadge {
@@ -1643,9 +1834,9 @@
 
 .ledgerPage .itemContent h3,
 .ledgerPage .bomMaterialName {
-  font-size: 0.98rem;
+  font-size: 1.05rem;
   margin: 0 0 3px;
-  font-weight: 700;
+  font-weight: 800;
   color: #141820;
   line-height: 1.25;
   overflow-wrap: anywhere;
@@ -1654,7 +1845,7 @@
 }
 
 .ledgerPage .bomMaterialBody {
-  font-size: 0.84rem;
+  font-size: 0.92rem;
   line-height: 1.4;
   color: #1e2430;
   margin: 0;
@@ -2344,10 +2535,11 @@
 }
 
 .impactHeroLabel {
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: #b8962e;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .impactHeroValueRow {
@@ -2418,10 +2610,11 @@
 }
 
 .impactCardLabel {
-  font-size: 0.7rem;
+  font-size: 0.76rem;
   letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: #b8962e;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .impactCardValue {
@@ -2440,7 +2633,7 @@
 }
 
 .impactCardHint {
-  font-size: 0.85rem;
+  font-size: 0.92rem;
   color: #1e2430;
   line-height: 1.4;
 }
@@ -2560,7 +2753,8 @@
 }
 
 .impactPage .verdictLabel {
-  font-size: 0.68rem;
+  font-size: 0.72rem;
+  font-weight: 800;
 }
 
 .impactPageFooter {
@@ -2584,20 +2778,22 @@
 }
 
 .genForecastPage .luxeHeadline {
-  font-size: 2.05rem;
+  font-size: 2.35rem;
+  font-weight: 700;
 }
 
 .genForecastPage .goldTag {
-  font-size: 0.76rem;
+  font-size: 0.8rem;
+  font-weight: 800;
 }
 
 .genForecastPage .luxeHeaderBlock {
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .genForecastLead {
   margin: 0 0 10px;
-  font-size: 0.92rem;
+  font-size: 1.02rem;
   line-height: 1.45;
   color: #1e2430;
   max-width: 48em;
@@ -2621,23 +2817,23 @@
 }
 
 .genForecastKpi span {
-  font-size: 0.62rem;
-  font-weight: 700;
+  font-size: 0.72rem;
+  font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #8a6e22;
 }
 
 .genForecastKpi strong {
-  font-size: 1.35rem;
-  font-weight: 700;
+  font-size: 1.4rem;
+  font-weight: 800;
   color: #141820;
   line-height: 1.15;
 }
 
 .genForecastKpi em {
   font-style: normal;
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   color: #5c6570;
   line-height: 1.3;
 }
@@ -2666,15 +2862,15 @@
   justify-content: space-between;
   gap: 8px;
   padding: 0 4px 4px;
-  font-size: 0.68rem;
-  font-weight: 700;
+  font-size: 0.78rem;
+  font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #8a6e22;
 }
 
 .genForecastHeadHint {
-  font-size: 0.62rem;
+  font-size: 0.72rem;
   letter-spacing: 0.06em;
   color: #8b939e;
   font-weight: 600;
@@ -2684,7 +2880,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  font-size: 0.62rem;
+  font-size: 0.72rem;
   letter-spacing: 0.04em;
   text-transform: none;
   font-weight: 600;
@@ -2863,27 +3059,31 @@
 }
 
 .payPage .luxeHeadline {
-  font-size: 2.2rem;
+  font-size: 2.45rem;
+  font-weight: 700;
 }
 
 .payPage .goldTag {
-  font-size: 0.76rem;
+  font-size: 0.82rem;
+  font-weight: 800;
 }
 
 .payPage .luxeHeaderBlock {
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .payLead {
-  margin: 0 0 10px;
-  font-size: 0.92rem;
-  line-height: 1.45;
+  margin: 0 0 12px;
+  font-size: 1.05rem;
+  line-height: 1.5;
   color: #1e2430;
   max-width: 48em;
 }
 
 .payLead strong {
   color: #141820;
+  font-weight: 800;
+  font-size: 1.08rem;
 }
 
 .paySchedule {
@@ -2892,8 +3092,8 @@
   background: #ffffff;
   border: 1px solid #e2e6ec;
   border-radius: 10px;
-  padding: 8px 14px 4px;
-  margin-bottom: 10px;
+  padding: 10px 16px 6px;
+  margin-bottom: 12px;
   flex-shrink: 0;
 }
 
@@ -2902,29 +3102,30 @@
   justify-content: space-between;
   align-items: baseline;
   gap: 10px;
-  padding: 2px 0 8px;
+  padding: 2px 0 10px;
   border-bottom: 1px solid #eef1f5;
   margin-bottom: 2px;
-  font-size: 0.68rem;
-  letter-spacing: 0.12em;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: #b8962e;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .payScheduleHeadHint {
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   color: #5c6573;
   font-weight: 600;
   text-transform: none;
-  font-size: 0.72rem;
+  font-size: 0.88rem;
 }
 
 .payMilestoneRow {
   display: grid;
-  grid-template-columns: 32px 1fr auto;
-  gap: 10px;
+  grid-template-columns: 36px 1fr auto;
+  gap: 12px;
   align-items: center;
-  padding: 7px 0;
+  padding: 10px 0;
   border-bottom: 1px solid #eef1f5;
 }
 
@@ -2933,37 +3134,40 @@
 }
 
 .payMilestoneNum {
-  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
-  font-size: 1.15rem;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 1.2rem;
   color: #b8962e;
-  font-weight: 500;
+  font-weight: 800;
   line-height: 1;
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
 .payMilestoneBody {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
   min-width: 0;
 }
 
 .payMilestoneBody strong {
-  font-size: 0.92rem;
+  font-size: 1.12rem;
   color: #141820;
-  font-weight: 600;
+  font-weight: 800;
   line-height: 1.25;
+  text-transform: capitalize;
 }
 
 .payMilestoneBody span {
-  font-size: 0.75rem;
+  font-size: 0.9rem;
   color: #5c6573;
-  line-height: 1.3;
+  line-height: 1.35;
+  font-weight: 500;
 }
 
 .payMilestoneAmt {
   font-style: normal;
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 1.22rem;
+  font-weight: 800;
   color: #141820;
   white-space: nowrap;
 }
@@ -2972,8 +3176,8 @@
   background: #ffffff;
   border: 1px solid #e2e6ec;
   border-radius: 10px;
-  padding: 12px 14px 14px;
-  margin-bottom: 10px;
+  padding: 14px 16px 16px;
+  margin-bottom: 12px;
   flex: 0 0 auto;
   flex-shrink: 0;
   overflow: visible;
@@ -2984,9 +3188,9 @@
 .payBankHead {
   display: grid;
   grid-template-columns: 72px 1fr;
-  gap: 12px;
+  gap: 14px;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .payBankIcon {
@@ -2998,40 +3202,41 @@
 
 .payBankEyebrow {
   display: block;
-  font-size: 0.66rem;
+  font-size: 0.76rem;
   letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: #b8962e;
-  font-weight: 700;
-  margin-bottom: 2px;
+  font-weight: 800;
+  margin-bottom: 4px;
 }
 
 .payBankTitle {
-  margin: 0 0 4px;
-  font-size: 1.05rem;
+  margin: 0 0 5px;
+  font-size: 1.28rem;
   color: #141820;
-  font-weight: 600;
+  font-weight: 800;
   line-height: 1.25;
 }
 
 .payBankNote {
   margin: 0;
-  font-size: 0.8rem;
-  line-height: 1.4;
+  font-size: 0.95rem;
+  line-height: 1.45;
   color: #1e2430;
 }
 
 .payBankGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 10px;
 }
 
 .payBankCell {
   background: #f8f9fb;
   border: 1.5px solid #e2e6ec;
   border-radius: 8px;
-  padding: 10px 12px;
-  min-height: 52px;
+  padding: 12px 14px;
+  min-height: 58px;
 }
 
 .payBankCellWide {
@@ -3040,27 +3245,27 @@
 
 .payBankCell span {
   display: block;
-  font-size: 0.64rem;
-  letter-spacing: 0.1em;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #b8962e;
-  font-weight: 700;
-  margin-bottom: 3px;
+  font-weight: 800;
+  margin-bottom: 4px;
 }
 
 .payBankCell strong {
-  font-size: 0.98rem;
+  font-size: 1.12rem;
   color: #141820;
-  font-weight: 600;
+  font-weight: 700;
   word-break: break-word;
-  line-height: 1.3;
+  line-height: 1.35;
 }
 
 .payBankEmpty {
-  padding: 12px 12px;
+  padding: 14px 14px;
   background: #f8f9fb;
   border-left: 3px solid #b8962e;
-  font-size: 0.88rem;
+  font-size: 1rem;
   line-height: 1.45;
   color: #1e2430;
 }
@@ -3078,17 +3283,18 @@
   background: #ffffff;
   border: 1px solid #e2e6ec;
   border-radius: 10px;
-  padding: 10px 12px;
+  padding: 12px 14px;
   margin-bottom: 0;
 }
 
 .payTermsLabel {
   display: block;
-  font-size: 0.66rem;
-  letter-spacing: 0.12em;
+  font-size: 0.76rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: #b8962e;
-  font-weight: 700;
-  margin-bottom: 6px;
+  font-weight: 800;
+  margin-bottom: 8px;
 }
 
 .payTermsBox ul {
@@ -3097,14 +3303,14 @@
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .payTermsBox li {
   position: relative;
-  padding-left: 12px;
-  font-size: 0.78rem;
-  line-height: 1.35;
+  padding-left: 14px;
+  font-size: 0.92rem;
+  line-height: 1.4;
   color: #1e2430;
 }
 
@@ -3112,7 +3318,7 @@
   content: "";
   position: absolute;
   left: 0;
-  top: 6px;
+  top: 7px;
   width: 5px;
   height: 5px;
   border-radius: 50%;
@@ -3122,18 +3328,19 @@
 .payPage .expertVerdict {
   margin-top: 0;
   margin-bottom: 0;
-  padding: 10px 12px;
+  padding: 12px 14px;
   height: 100%;
   box-sizing: border-box;
 }
 
 .payPage .expertVerdict p {
-  font-size: 0.88rem;
-  line-height: 1.4;
+  font-size: 1rem;
+  line-height: 1.45;
 }
 
 .payPage .verdictLabel {
-  font-size: 0.64rem;
+  font-size: 0.72rem;
+  font-weight: 800;
 }
 
 .payGateTrack,
@@ -3795,18 +4002,18 @@
 .termsTag {
   display: block;
   text-align: left;
-  font-size: 0.62rem;
+  font-size: 0.72rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: #b8962e;
-  font-weight: 700;
+  font-weight: 800;
   margin-bottom: 4px;
 }
 
 .termsTitle {
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
-  font-size: 20pt;
-  font-weight: 500;
+  font-size: 22pt;
+  font-weight: 700;
   color: #141820;
   margin: 0;
   letter-spacing: 0.02em;
@@ -3814,8 +4021,8 @@
 
 .termsIntro {
   margin: 4px 0 0;
-  font-size: 0.78rem;
-  line-height: 1.35;
+  font-size: 0.92rem;
+  line-height: 1.4;
   color: #1e2430;
   max-width: 92%;
 }
@@ -3853,8 +4060,8 @@
 }
 
 .termsSubhead {
-  font-size: 0.64rem;
-  font-weight: 700;
+  font-size: 0.76rem;
+  font-weight: 800;
   letter-spacing: 0.12em;
   color: #141820;
   text-transform: uppercase;
@@ -3892,8 +4099,8 @@
 
 .termsArticleNum {
   font-family: "Segoe UI", system-ui, sans-serif;
-  font-size: 0.65rem;
-  font-weight: 700;
+  font-size: 0.78rem;
+  font-weight: 800;
   color: #b8962e;
   letter-spacing: 0.04em;
   padding-top: 1px;
@@ -3902,17 +4109,17 @@
 
 .termsArticleLabel {
   display: block;
-  font-size: 0.74rem;
-  font-weight: 700;
+  font-size: 0.88rem;
+  font-weight: 800;
   color: #141820;
-  margin-bottom: 1px;
-  line-height: 1.2;
+  margin-bottom: 2px;
+  line-height: 1.25;
 }
 
 .termsArticleBody {
   margin: 0;
-  font-size: 0.7rem;
-  line-height: 1.3;
+  font-size: 0.86rem;
+  line-height: 1.4;
   color: #1e2430;
 }
 
@@ -3922,16 +4129,16 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
 }
 
 .termsNumberedList li {
   display: grid;
-  grid-template-columns: 20px 1fr;
-  gap: 6px;
+  grid-template-columns: 22px 1fr;
+  gap: 8px;
   align-items: start;
-  font-size: 0.74rem;
-  line-height: 1.32;
+  font-size: 0.9rem;
+  line-height: 1.4;
   color: #1e2430;
 }
 
@@ -3939,13 +4146,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: rgba(184, 150, 46, 0.14);
   color: #141820;
-  font-size: 0.6rem;
-  font-weight: 700;
+  font-size: 0.72rem;
+  font-weight: 800;
   margin-top: 1px;
   font-variant-numeric: tabular-nums;
 }
@@ -3956,16 +4163,16 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
 }
 
 .termsSafetyList li {
   position: relative;
-  padding: 6px 8px 6px 10px;
+  padding: 8px 10px 8px 12px;
   background: #f8f9fb;
   border-left: 3px solid #b8962e;
-  font-size: 0.74rem;
-  line-height: 1.32;
+  font-size: 0.9rem;
+  line-height: 1.4;
   color: #141820;
   font-weight: 500;
 }
@@ -3985,8 +4192,8 @@
 .termsDotList li {
   position: relative;
   padding-left: 14px;
-  font-size: 0.74rem;
-  line-height: 1.32;
+  font-size: 0.9rem;
+  line-height: 1.4;
   color: #1e2430;
 }
 
@@ -4016,8 +4223,8 @@
 }
 
 .termsPara {
-  font-size: 0.74rem;
-  line-height: 1.32;
+  font-size: 0.9rem;
+  line-height: 1.4;
   color: #1e2430;
   margin: 0 0 6px;
 }
@@ -4032,8 +4239,8 @@
 
 .termsCostBox p {
   margin: 0 0 5px;
-  font-size: 0.74rem;
-  line-height: 1.35;
+  font-size: 0.9rem;
+  line-height: 1.4;
   color: #1e2430;
 }
 
@@ -4046,9 +4253,9 @@
 }
 
 .termsAmcIncludes {
-  font-size: 0.72rem;
+  font-size: 0.88rem;
   color: #141820;
-  font-weight: 700;
+  font-weight: 800;
   margin: 6px 0 3px;
 }
 
@@ -4101,49 +4308,87 @@
 }
 
 .termsPage .expertVerdict p {
-  font-size: 0.85rem;
-  line-height: 1.35;
+  font-size: 0.95rem;
+  line-height: 1.4;
 }
 
 .termsPage .verdictLabel {
-  font-size: 0.55rem;
+  font-size: 0.68rem;
+  font-weight: 800;
   margin-bottom: 3px;
 }
 
 .termsPageDense .termsStack {
-  gap: 6px;
+  gap: 8px;
 }
 
 .termsPageDense .termsSection {
-  padding: 7px 9px 8px;
+  padding: 10px 12px 11px;
+}
+
+.termsPageDense .termsTitle {
+  font-size: 24pt;
+  font-weight: 700;
+}
+
+.termsPageDense .termsIntro {
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.termsPageDense .termsSubhead {
+  font-size: 0.8rem;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+}
+
+.termsPageDense .termsNumberedList li,
+.termsPageDense .termsSafetyList li,
+.termsPageDense .termsPara,
+.termsPageDense .termsCostBox p,
+.termsPageDense .termsDiamondList li,
+.termsPageDense .termsDotList li {
+  font-size: 0.92rem;
+  line-height: 1.42;
+}
+
+.termsPageDense .termsAmcIncludes {
+  font-size: 0.9rem;
 }
 
 .termsPageDense .termsSafetyList li {
-  padding: 5px 8px 5px 9px;
+  padding: 7px 10px 7px 11px;
 }
 
 .termsPageDense .termsSignoff {
-  padding: 6px 9px;
+  padding: 8px 10px;
 }
 
-/* Page 1 — fill A4: larger type + air (page 2 stays dense) */
+.termsPageDense .expertVerdict p {
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+/* Page 1 — fill A4: larger type + air */
 .termsPageRoomy .termsHead {
   margin-bottom: 12px;
 }
 
 .termsPageRoomy .termsTag {
-  font-size: 0.72rem;
+  font-size: 0.8rem;
+  font-weight: 800;
   margin-bottom: 6px;
 }
 
 .termsPageRoomy .termsTitle {
   font-size: 26pt;
+  font-weight: 700;
   line-height: 1.08;
 }
 
 .termsPageRoomy .termsIntro {
   margin-top: 8px;
-  font-size: 0.95rem;
+  font-size: 1.02rem;
   line-height: 1.45;
 }
 
@@ -4163,14 +4408,15 @@
 }
 
 .termsPageRoomy .termsSubhead {
-  font-size: 0.78rem;
+  font-size: 0.84rem;
+  font-weight: 800;
   letter-spacing: 0.14em;
   margin-bottom: 10px;
   padding-bottom: 8px;
 }
 
 .termsPageRoomy .termsArticleList {
-  gap: 8px;
+  gap: 7px;
   flex: 1;
   justify-content: space-evenly;
 }
@@ -4178,22 +4424,23 @@
 .termsPageRoomy .termsArticle {
   grid-template-columns: 34px 1fr;
   gap: 10px;
-  padding-bottom: 8px;
+  padding-bottom: 7px;
 }
 
 .termsPageRoomy .termsArticleNum {
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   padding-top: 2px;
 }
 
 .termsPageRoomy .termsArticleLabel {
-  font-size: 0.92rem;
+  font-size: 1rem;
+  font-weight: 800;
   margin-bottom: 3px;
   line-height: 1.25;
 }
 
 .termsPageRoomy .termsArticleBody {
-  font-size: 0.88rem;
+  font-size: 0.96rem;
   line-height: 1.42;
 }
 
@@ -4204,14 +4451,14 @@
 .termsPageRoomy .termsNumberedList li {
   grid-template-columns: 28px 1fr;
   gap: 10px;
-  font-size: 0.92rem;
-  line-height: 1.4;
+  font-size: 1rem;
+  line-height: 1.42;
 }
 
 .termsPageRoomy .termsListNum {
   width: 22px;
   height: 22px;
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   margin-top: 0;
 }
 
@@ -4221,12 +4468,13 @@
 }
 
 .termsPageRoomy .expertVerdict p {
-  font-size: 1rem;
+  font-size: 1.05rem;
   line-height: 1.45;
 }
 
 .termsPageRoomy .verdictLabel {
-  font-size: 0.64rem;
+  font-size: 0.72rem;
+  font-weight: 800;
   margin-bottom: 4px;
 }
 
