@@ -2194,8 +2194,8 @@
   display: flex;
   align-items: flex-end;
   gap: 0.28rem;
-  height: 260px;
-  min-height: 260px;
+  height: 340px;
+  min-height: 340px;
   flex: 0 0 auto;
   padding: 0 0.1rem;
   box-sizing: border-box;
@@ -2239,8 +2239,8 @@
   flex: 0 0 auto;
   width: 100%;
   max-width: 1.55rem;
-  height: 160px;
-  min-height: 160px;
+  height: 230px;
+  min-height: 230px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -5033,8 +5033,8 @@
   }
 
   .forecastBars {
-    min-height: 220px;
-    height: 220px;
+    min-height: 280px;
+    height: 280px;
     gap: 0.18rem;
     max-width: 100%;
     overflow-x: auto;
@@ -5042,8 +5042,8 @@
   }
 
   .forecastTrack {
-    height: 140px;
-    min-height: 140px;
+    height: 180px;
+    min-height: 180px;
   }
 
   .forecastUnits,
@@ -5217,16 +5217,16 @@
   }
 
   .forecastBars {
-    min-height: 200px;
-    height: 200px;
+    min-height: 240px;
+    height: 240px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
 
   .forecastTrack {
     max-width: 1.65rem;
-    height: 120px;
-    min-height: 120px;
+    height: 150px;
+    min-height: 150px;
   }
 
   .forecastLegend {
@@ -5718,12 +5718,12 @@
     flex: 0 0 auto !important;
   }
   .forecastBars {
-    height: 62mm !important;
-    min-height: 62mm !important;
+    height: 88mm !important;
+    min-height: 88mm !important;
   }
   .forecastTrack {
-    height: 42mm !important;
-    min-height: 42mm !important;
+    height: 62mm !important;
+    min-height: 62mm !important;
   }
   .forecastFill,
   .forecastFillBill {
