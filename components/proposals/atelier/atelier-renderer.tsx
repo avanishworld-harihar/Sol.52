@@ -589,14 +589,6 @@ export function AtelierRenderer({
           </div>
 
           <div className={styles.coverWealthRow}>
-            <div className={styles.coverWealthCard}>
-              <span className={styles.coverWealthTag}>{c.cover.wealthTag}</span>
-              <div className={styles.coverWealthAmt}>
-                {totalWealth > 0 ? formatInrCompact(totalWealth) : "—"}
-              </div>
-              <span className={styles.coverWealthSub}>{c.cover.wealthSub}</span>
-            </div>
-            <div className={styles.coverWealthDivider} />
             <div className={styles.coverSmallStats}>
               <div className={styles.coverSmallStat}>
                 <span className={styles.coverSmallNum}>
