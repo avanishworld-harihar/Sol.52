@@ -34,6 +34,8 @@
   padding: 40px;
   overflow: hidden;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
   margin: 12px auto;
   box-shadow: 0 8px 28px rgba(20, 24, 32, 0.08);
   -webkit-print-color-adjust: exact !important;
@@ -173,7 +175,7 @@
 }
 
 .coverHero {
-  margin-top: 28px;
+  margin-top: 16px;
   max-width: 100%;
   flex: 0 0 auto;
 }
@@ -184,7 +186,7 @@
   letter-spacing: 0.32em;
   color: #b8962e;
   font-weight: 700;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   text-transform: uppercase;
 }
 
@@ -192,7 +194,7 @@
   margin: 0;
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
   font-weight: 300;
-  font-size: clamp(3.2rem, 9vw, 5.2rem);
+  font-size: clamp(2.6rem, 7.2vw, 3.8rem);
   line-height: 0.98;
   letter-spacing: -0.01em;
   color: #141820;
@@ -200,7 +202,7 @@
 }
 
 .coverVendorNameLong {
-  font-size: clamp(2.4rem, 6.5vw, 3.6rem);
+  font-size: clamp(2rem, 5.5vw, 2.9rem);
   line-height: 1.05;
   font-weight: 400;
 }
@@ -209,7 +211,7 @@
   width: 72px;
   height: 2px;
   background: linear-gradient(90deg, #b8962e, #d4b45a);
-  margin: 18px 0 14px;
+  margin: 10px 0 8px;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -233,11 +235,12 @@
 }
 
 .coverPlate {
-  margin: 22px 0 0;
-  flex: 1 1 auto;
+  margin: 12px 0 0;
+  flex: 0 0 48%;
+  max-height: 48%;
   min-height: 0;
   display: flex;
-  align-items: center;
+  align-items: stretch;
 }
 
 .coverPlateSvg {
@@ -254,15 +257,18 @@
 .coverPhotoPlate {
   margin: 0;
   width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   gap: 0;
-  max-height: 100%;
+  min-height: 0;
 }
 
 .coverPhotoFrame {
   position: relative;
   width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: hidden;
   border-radius: 2px;
   background: #0a0e14;
@@ -274,9 +280,9 @@
 .coverPhotoImg {
   display: block;
   width: 100%;
-  height: clamp(168px, 22vh, 228px);
+  height: 100%;
   object-fit: cover;
-  object-position: center 42%;
+  object-position: center 48%;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -310,6 +316,7 @@
   align-items: center;
   gap: 12px;
   margin-top: 0;
+  flex: 0 0 auto;
   padding: 9px 12px;
   background: #121820;
   color: rgba(232, 236, 242, 0.88);
@@ -328,10 +335,11 @@
 }
 
 .coverDedication {
-  margin-top: 18px;
-  margin-bottom: 16px;
-  padding: 16px 0 0;
+  margin-top: 12px;
+  margin-bottom: 10px;
+  padding: 12px 0 0;
   border-top: 1px solid rgba(20, 24, 32, 0.1);
+  flex: 0 0 auto;
 }
 
 .coverDedicationCopy {
@@ -373,7 +381,9 @@
   align-items: stretch;
   gap: 0;
   border-top: 1px solid rgba(184, 150, 46, 0.35);
-  padding-top: 14px;
+  padding-top: 12px;
+  flex: 0 0 auto;
+  margin-top: auto;
 }
 
 .coverMetaCell {
@@ -935,12 +945,13 @@
   flex-shrink: 0;
 }
 
-/* Readable numbers everywhere */
+/* Readable numbers everywhere — simple lining digits, never oldstyle serif */
 .luxeNum {
-  font-variant-numeric: tabular-nums lining-nums;
-  font-feature-settings: "tnum" 1, "lnum" 1;
+  font-variant-numeric: tabular-nums lining-nums !important;
+  font-feature-settings: "tnum" 1, "lnum" 1, "onum" 0 !important;
   letter-spacing: 0.01em;
-  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif !important;
+  font-style: normal;
 }
 
 /* SHARED HEADER */
@@ -952,6 +963,8 @@
   font-size: 0.72rem;
   letter-spacing: 3px;
   color: #b8962e;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .luxeHeadline {
@@ -961,7 +974,260 @@
   border-bottom: 1px solid #d8dee6;
   padding-bottom: 12px;
   color: #141820;
-  font-weight: 300;
+  font-weight: 700;
+}
+
+/* BILL AUDIT — bill-based page 02 (Atelier-inspired, Luxe-local) */
+.billAuditPage {
+  display: flex;
+  flex-direction: column;
+  background-color: #f8f9fb !important;
+}
+
+.billAuditPage .luxeHeaderBlock {
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.billAuditPage .luxeHeadline {
+  font-size: 2.15rem;
+  padding-bottom: 8px;
+  border-bottom: none;
+}
+
+.billAuditLead {
+  margin: 6px 0 0;
+  max-width: 40em;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: #2a3140;
+  font-weight: 400;
+}
+
+.billAudit {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+}
+
+.billAuditMetrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid rgba(20, 24, 32, 0.1);
+  border-radius: 4px;
+  background: #ffffff;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 8px 24px rgba(20, 24, 32, 0.05);
+}
+
+.billAuditMetric {
+  min-width: 0;
+  padding: 12px 14px;
+  text-align: center;
+  border-right: 1px solid rgba(20, 24, 32, 0.08);
+}
+
+.billAuditMetric:last-child {
+  border-right: 0;
+}
+
+.billAuditMetric strong {
+  display: block;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: #141820;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+.billAuditMetricWarn strong {
+  color: #b8962e;
+}
+
+.billAuditMetricPositive strong {
+  color: #141820;
+}
+
+.billAuditMetric span,
+.billAuditMetric small {
+  display: block;
+}
+
+.billAuditMetric span {
+  margin-top: 6px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #141820;
+}
+
+.billAuditMetric small {
+  margin-top: 3px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #5c6573;
+  line-height: 1.3;
+}
+
+.billAuditChart {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  align-items: end;
+  flex: 0 0 auto;
+  height: 148px;
+  min-height: 132px;
+  padding: 10px 12px 22px;
+  border: 1px solid rgba(184, 150, 46, 0.28);
+  border-radius: 4px;
+  background: linear-gradient(180deg, #fbf8f2 0%, #f3f0e8 100%);
+  box-shadow: 0 8px 24px rgba(20, 24, 32, 0.05);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.billAuditBarColumn {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  height: 100%;
+  min-width: 0;
+}
+
+.billAuditBarColumn span {
+  position: absolute;
+  bottom: -1.05rem;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #5c6573;
+}
+
+.billAuditBar {
+  width: 72%;
+  max-width: 1.1rem;
+  min-width: 0.55rem;
+  max-height: 100%;
+  border-radius: 2px 2px 0 0;
+  background: #1e2430;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.billAuditBarPeak {
+  background: #b8962e;
+}
+
+.billAuditTableWrap {
+  overflow: hidden;
+  border: 1px solid rgba(20, 24, 32, 0.1);
+  border-radius: 4px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(20, 24, 32, 0.05);
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.billAuditTable {
+  width: 100%;
+  height: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.billAuditTable th,
+.billAuditTable td {
+  padding: 0.42rem 0.5rem;
+  border-bottom: 1px solid #edf1f5;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.billAuditTable th {
+  color: #b8962e;
+  background: #f7f4ee;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.billAuditTable td {
+  color: #384352;
+  font-size: 0.82rem;
+}
+
+.billAuditTable th:first-child,
+.billAuditTable td:first-child {
+  text-align: left;
+}
+
+.billAuditTable td:first-child {
+  color: #141820;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.billAuditPeakMark {
+  font-style: normal;
+  color: #b8962e;
+  font-weight: 700;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.billAuditNetPeak {
+  color: #b8962e !important;
+  font-weight: 700;
+}
+
+.billAuditTotal td {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-top: 1px solid #141820;
+  border-bottom: 0;
+  color: #141820;
+  font-weight: 700;
+  font-size: 0.86rem;
+  background: #fbf8f2;
+}
+
+.billAuditFootnote {
+  margin: 0;
+  color: #5c6573;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+
+.billAuditPage .expertVerdict {
+  margin-top: 8px;
+  padding: 9px 12px;
+  flex-shrink: 0;
+}
+
+.billAuditPage .expertVerdict p {
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.billAuditPage .impactPageFooter {
+  margin-top: 6px;
+  flex-shrink: 0;
 }
 
 /* HUD & ENGINEERING DESIGN */
@@ -982,7 +1248,7 @@
 
 .engDesignLayout {
   display: grid;
-  grid-template-columns: 1.08fr 0.92fr;
+  grid-template-columns: 1.28fr 0.72fr;
   gap: 10px;
   margin-bottom: 10px;
   align-items: stretch;
@@ -1021,7 +1287,7 @@
   display: block;
   width: 100%;
   flex: 1 1 auto;
-  min-height: 278px;
+  min-height: 300px;
   border-radius: 8px;
   background: #0a0e14;
   -webkit-print-color-adjust: exact !important;
@@ -1607,56 +1873,161 @@
   background-color: #f8f9fb !important;
 }
 
+.luxeTerminal .goldTag {
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.luxeTerminal .luxeHeadline {
+  font-weight: 700;
+  border-bottom: 2px solid rgba(184, 150, 46, 0.45);
+}
+
+.luxeTerminal .luxeHeaderBlock {
+  margin-bottom: 12px;
+}
+
 .netHero {
   text-align: left;
   margin-bottom: 0;
+  background: #ffffff;
+  border: 1px solid rgba(184, 150, 46, 0.35);
+  border-left: 4px solid #b8962e;
+  border-radius: 4px;
+  padding: 14px 16px 12px;
+  box-shadow: 0 10px 28px rgba(20, 24, 32, 0.06);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
 .netLabel {
   display: block;
-  font-size: 0.62rem;
-  letter-spacing: 0.22em;
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
   color: #b8962e;
-  margin-bottom: 6px;
-  font-weight: 700;
+  margin-bottom: 4px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.netAfterTag {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #141820;
+  margin-bottom: 4px;
 }
 
 .netFigure {
   display: block;
-  font-size: 2.6rem;
-  font-weight: 600;
+  font-size: clamp(2.8rem, 6vw, 3.55rem);
+  font-weight: 800;
   color: #141820;
-  line-height: 1.05;
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+}
+
+.netExact {
+  margin: 6px 0 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #141820;
+  line-height: 1.3;
 }
 
 .netQuiet {
   margin: 8px 0 0;
-  font-size: 0.8rem;
-  color: #1e2430;
+  font-size: 0.78rem;
+  color: #5c6573;
   line-height: 1.4;
+}
+
+.costEquation {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1.15fr;
+  align-items: stretch;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(20, 24, 32, 0.1);
+}
+
+.costEqCell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  padding: 6px 8px;
+  background: #f8f9fb;
+  border-radius: 3px;
+}
+
+.costEqCell span {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #5c6573;
+}
+
+.costEqCell strong {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #141820;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.costEqOp {
+  align-self: center;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #b8962e;
+  padding: 0 2px;
+}
+
+.costEqNet {
+  background: rgba(184, 150, 46, 0.12);
+  border: 1px solid rgba(184, 150, 46, 0.35);
+}
+
+.costEqNet span {
+  color: #8a6e22;
+}
+
+.costEqNet strong {
+  font-size: 1.02rem;
+  font-weight: 800;
 }
 
 .wealthTop {
   display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
-  gap: 14px;
+  grid-template-columns: 1.35fr 0.65fr;
+  gap: 12px;
   margin-bottom: 12px;
-  align-items: end;
+  align-items: stretch;
 }
 
 .capitalStack {
   background: #ffffff;
   border: 1px solid #e2e6ec;
-  border-radius: 10px;
+  border-radius: 4px;
   padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .capitalStackTitle {
   display: block;
-  font-size: 0.55rem;
+  font-size: 0.62rem;
   letter-spacing: 0.16em;
   color: #b8962e;
-  font-weight: 700;
+  font-weight: 800;
+  text-transform: uppercase;
   margin-bottom: 10px;
 }
 
@@ -1730,10 +2101,11 @@
   justify-content: space-between;
   align-items: baseline;
   gap: 8px;
-  font-size: 0.55rem;
+  font-size: 0.58rem;
   letter-spacing: 0.14em;
-  color: #1e2430;
-  font-weight: 600;
+  color: #141820;
+  font-weight: 800;
+  text-transform: uppercase;
   margin-bottom: 8px;
 }
 
@@ -1807,10 +2179,11 @@
 }
 
 .billReliefCard span {
-  font-size: 0.55rem;
+  font-size: 0.58rem;
   letter-spacing: 0.14em;
   color: #b8962e;
-  font-weight: 700;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .billReliefValue {
@@ -1845,10 +2218,11 @@
 }
 
 .wealthKpi span {
-  font-size: 0.52rem;
+  font-size: 0.56rem;
   letter-spacing: 0.14em;
   color: #b8962e;
-  font-weight: 700;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .wealthKpi strong {
@@ -1877,10 +2251,11 @@
 .chartHead {
   display: flex;
   justify-content: space-between;
-  font-size: 0.58rem;
+  font-size: 0.62rem;
   letter-spacing: 0.14em;
-  color: #1e2430;
-  font-weight: 600;
+  color: #141820;
+  font-weight: 800;
+  text-transform: uppercase;
   margin-bottom: 4px;
 }
 
@@ -1932,10 +2307,12 @@
 
 .impactPage .luxeHeadline {
   font-size: 2.5rem;
+  font-weight: 700;
 }
 
 .impactPage .goldTag {
   font-size: 0.8rem;
+  font-weight: 800;
 }
 
 .impactLead {
@@ -1981,9 +2358,8 @@
 }
 
 .impactHeroNum {
-  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
   font-size: 3.5rem;
-  font-weight: 400;
+  font-weight: 800;
   color: #141820;
   line-height: 1;
 }
@@ -2088,32 +2464,87 @@
   justify-content: space-between;
   align-items: baseline;
   gap: 12px;
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   letter-spacing: 0.12em;
-  color: #1e2430;
-  font-weight: 700;
+  color: #141820;
+  font-weight: 800;
+  text-transform: uppercase;
   margin-bottom: 4px;
 }
 
 .impactChartSteady {
-  margin: 0 0 6px;
+  margin: 0 0 8px;
   font-size: 0.88rem;
   color: #2a3140;
   line-height: 1.35;
+}
+
+.impactEqRow {
+  display: grid;
+  grid-template-columns: 1.2fr auto 0.7fr auto 1.35fr;
+  align-items: stretch;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.impactEqCell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 10px;
+  background: #f8f9fb;
+  border: 1px solid #e2e6ec;
+  border-radius: 4px;
+  min-width: 0;
+}
+
+.impactEqCell span {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #5c6573;
+}
+
+.impactEqCell strong {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #141820;
+  line-height: 1.15;
+}
+
+.impactEqOp {
+  align-self: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #b8962e;
+}
+
+.impactEqTotal {
+  background: rgba(184, 150, 46, 0.12);
+  border-color: rgba(184, 150, 46, 0.4);
+}
+
+.impactEqTotal span {
+  color: #8a6e22;
+}
+
+.impactEqTotal strong {
+  font-size: 1.35rem;
 }
 
 .impactChartSvg {
   display: block;
   width: 100%;
   flex: 1;
-  min-height: 160px;
+  min-height: 148px;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
 
 .impactChartFoot {
   margin: 6px 0 0;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: #1e2430;
   line-height: 1.45;
 }
@@ -3821,8 +4252,17 @@
     font-size: clamp(2rem, 9vw, 2.8rem) !important;
   }
 
+  .coverPlate {
+    flex: 0 0 auto !important;
+    max-height: none !important;
+  }
+
+  .coverPhotoFrame {
+    flex: 0 0 auto !important;
+  }
+
   .coverPhotoImg {
-    height: clamp(140px, 28vw, 200px) !important;
+    height: clamp(220px, 52vw, 340px) !important;
   }
 
   .coverMeta {
@@ -3835,6 +4275,19 @@
   }
 
   .engDesignLayout,
+  .costEquation {
+    grid-template-columns: 1fr !important;
+    gap: 4px !important;
+  }
+
+  .costEqOp {
+    display: none;
+  }
+
+  .netFigure {
+    font-size: clamp(2.4rem, 11vw, 3rem) !important;
+  }
+
   .wealthTop,
   .wealthMid,
   .impactHeroRow,
@@ -3895,6 +4348,14 @@
     justify-self: start;
   }
 
+  .impactEqRow {
+    grid-template-columns: 1fr !important;
+  }
+
+  .impactEqOp {
+    display: none;
+  }
+
   .paybackSvg,
   .impactChartSvg,
   .engSvgDark {
@@ -3905,6 +4366,30 @@
   .wealthKpis {
     display: grid;
     grid-template-columns: 1fr;
+  }
+
+  .billAuditMetrics {
+    grid-template-columns: 1fr !important;
+  }
+
+  .billAuditMetric {
+    border-right: 0 !important;
+    border-bottom: 1px solid rgba(20, 24, 32, 0.08);
+  }
+
+  .billAuditMetric:last-child {
+    border-bottom: 0;
+  }
+
+  .billAuditChart {
+    height: 160px !important;
+    overflow-x: auto;
+  }
+
+  .billAuditTable th,
+  .billAuditTable td {
+    font-size: 0.72rem !important;
+    padding: 0.35rem 0.3rem !important;
   }
 }
 
@@ -3961,12 +4446,17 @@
     padding: 28px 34px 26px 46px !important;
   }
 
+  .coverPlate {
+    flex: 0 0 48% !important;
+    max-height: 48% !important;
+  }
+
   .closePage {
     padding: 28px 34px 22px 46px !important;
   }
 
   .engDesignLayout {
-    grid-template-columns: 1.08fr 0.92fr !important;
+    grid-template-columns: 1.28fr 0.72fr !important;
   }
 
   .wealthTop {

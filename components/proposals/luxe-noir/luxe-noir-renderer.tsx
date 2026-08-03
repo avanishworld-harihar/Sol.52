@@ -14,6 +14,7 @@ import type {
 } from "@/lib/proposal-ppt";
 import { formatInr } from "@/components/proposals/_shared/formatters";
 import { ObsidianCover } from "./ObsidianCover";
+import { BillAuditPage } from "./BillAuditPage";
 import { EngineeringBlueprint } from "./EngineeringBlueprint";
 import { TitaniumLedger } from "./TitaniumLedger";
 import { WealthTerminal } from "./WealthTerminal";
@@ -210,88 +211,77 @@ function LuxeNoirDocument({
 
       <ObsidianCover data={data} pptInput={pptInput} summary={summary} />
 
-      <A4Page pageLabel="02 / 12" brand={brand}>
-        <p className={styles.eyebrow}>{copy.load.eyebrow}</p>
-        <h2 className={styles.title} style={{ fontSize: "28pt" }}>
-          {copy.load.title}
-        </h2>
-        <div className={styles.goldRule} />
-        <p className={styles.lead}>{copy.load.lead}</p>
+      {bill.hasData && bill.months.length > 0 ? (
+        <BillAuditPage data={data} pptInput={pptInput} />
+      ) : (
+        <A4Page pageLabel="02 / 12" brand={brand}>
+          <p className={styles.eyebrow}>{copy.load.eyebrow}</p>
+          <h2 className={styles.title} style={{ fontSize: "28pt" }}>
+            {copy.load.title}
+          </h2>
+          <div className={styles.goldRule} />
+          <p className={styles.lead}>{copy.load.lead}</p>
 
-        <div className={styles.cardGrid3} style={{ marginTop: 20 }}>
-          <div className={`${styles.card} ${styles.cardAccent}`}>
-            <span className={styles.cardLabel}>{copy.load.avgUnits}</span>
-            <span className={styles.cardValue}>
-              {monthlyUnitsAvg > 0 ? monthlyUnitsAvg.toLocaleString("en-IN") : "—"}
-            </span>
-            <span className={styles.cardHint}>{copy.load.fromBill}</span>
-          </div>
-          <div className={`${styles.card} ${styles.cardAccent}`}>
-            <span className={styles.cardLabel}>{copy.load.estBill}</span>
-            <span className={styles.cardValue}>
-              {monthlyBillApprox > 0 ? formatInr(monthlyBillApprox) : "—"}
-            </span>
-            <span className={styles.cardHint}>{copy.load.billHint}</span>
-          </div>
-          <div className={`${styles.card} ${styles.cardAccent}`}>
-            <span className={styles.cardLabel}>{copy.load.capacity}</span>
-            <span className={styles.cardValue}>
-              {systemKw > 0 ? `${systemKw} kW` : "—"}
-            </span>
-            <span className={styles.cardHint}>{copy.load.acRating}</span>
-          </div>
-        </div>
-
-        <div className={styles.stack} style={{ marginTop: 18 }}>
-          <div className={styles.card}>
-            <span className={styles.cardLabel}>{copy.load.annualGen}</span>
-            <span className={styles.cardValue} style={{ fontSize: "22pt" }}>
-              {generationUnits > 0
-                ? `${generationUnits.toLocaleString("en-IN")} ${
-                    isHi ? "यूनिट" : "units"
-                  }`
-                : "—"}
-            </span>
-            <span className={styles.cardHint}>{copy.load.yieldHint}</span>
-          </div>
-          {bill.hasData && bill.months.length > 0 ? (
-            <div className={styles.card}>
-              <span className={styles.cardLabel}>{copy.load.recentMonths}</span>
-              <div className={styles.stack} style={{ marginTop: 8, gap: 0 }}>
-                {bill.months.slice(0, 6).map((m) => (
-                  <div key={m.label} className={styles.listRow}>
-                    <span>
-                      {m.label}
-                      {m.isSummerPeak ? ` · ${copy.load.peak}` : ""}
-                    </span>
-                    <strong>
-                      {m.units.toLocaleString("en-IN")} {copy.common.unit} ·{" "}
-                      {formatInr(m.netInr)}
-                    </strong>
-                  </div>
-                ))}
-              </div>
+          <div className={styles.cardGrid3} style={{ marginTop: 20 }}>
+            <div className={`${styles.card} ${styles.cardAccent}`}>
+              <span className={styles.cardLabel}>{copy.load.avgUnits}</span>
+              <span className={styles.cardValue}>
+                {monthlyUnitsAvg > 0
+                  ? monthlyUnitsAvg.toLocaleString("en-IN")
+                  : "—"}
+              </span>
+              <span className={styles.cardHint}>{copy.load.fromBill}</span>
             </div>
-          ) : (
+            <div className={`${styles.card} ${styles.cardAccent}`}>
+              <span className={styles.cardLabel}>{copy.load.estBill}</span>
+              <span className={styles.cardValue}>
+                {monthlyBillApprox > 0 ? formatInr(monthlyBillApprox) : "—"}
+              </span>
+              <span className={styles.cardHint}>{copy.load.billHint}</span>
+            </div>
+            <div className={`${styles.card} ${styles.cardAccent}`}>
+              <span className={styles.cardLabel}>{copy.load.capacity}</span>
+              <span className={styles.cardValue}>
+                {systemKw > 0 ? `${systemKw} kW` : "—"}
+              </span>
+              <span className={styles.cardHint}>{copy.load.acRating}</span>
+            </div>
+          </div>
+
+          <div className={styles.stack} style={{ marginTop: 18 }}>
+            <div className={styles.card}>
+              <span className={styles.cardLabel}>{copy.load.annualGen}</span>
+              <span className={styles.cardValue} style={{ fontSize: "22pt" }}>
+                {generationUnits > 0
+                  ? `${generationUnits.toLocaleString("en-IN")} ${
+                      isHi ? "यूनिट" : "units"
+                    }`
+                  : "—"}
+              </span>
+              <span className={styles.cardHint}>{copy.load.yieldHint}</span>
+            </div>
             <div className={styles.card}>
               <span className={styles.cardLabel}>{copy.load.coverage}</span>
-              <p className={styles.cardHint} style={{ marginTop: 8, fontSize: "10pt" }}>
+              <p
+                className={styles.cardHint}
+                style={{ marginTop: 8, fontSize: "10pt" }}
+              >
                 {copy.load.coverageBody}
               </p>
             </div>
-          )}
-        </div>
+          </div>
 
-        <ExpertVerdict label={copy.load.verdictLabel}>
-          {monthlyUnitsAvg > 0 && systemKw > 0
-            ? copy.load.verdictWithData(
-                monthlyUnitsAvg.toLocaleString("en-IN"),
-                String(systemKw),
-                genLabel
-              )
-            : copy.load.verdictFallback}
-        </ExpertVerdict>
-      </A4Page>
+          <ExpertVerdict label={copy.load.verdictLabel}>
+            {monthlyUnitsAvg > 0 && systemKw > 0
+              ? copy.load.verdictWithData(
+                  monthlyUnitsAvg.toLocaleString("en-IN"),
+                  String(systemKw),
+                  genLabel
+                )
+              : copy.load.verdictFallback}
+          </ExpertVerdict>
+        </A4Page>
+      )}
 
       <WealthTerminal data={data} />
 

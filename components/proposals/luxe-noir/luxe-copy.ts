@@ -55,15 +55,59 @@ export function getLuxeCopy(lang: LuxeLang) {
         ? "हम आपकी असली खपत से साइज़ करते हैं ताकि दिन का उत्पादन आपके बिल से जुड़े — क्षमता लोड से मैच है, अनुमान नहीं।"
         : "We size from your actual consumption pattern so daytime generation tracks the bill you already pay — capacity is a match to load, not a guess.",
     },
+    billAudit: {
+      tag: hi ? "02 // बिल ऑडिट" : "02 // BILL AUDIT",
+      title: hi ? "बिल ऑडिट और ब्रेकडाउन" : "Bill Audit & Breakdown",
+      lead: hi
+        ? "माह-दर-माह यूनिट, ऊर्जा शुल्क, फिक्स्ड चार्ज, ड्यूटी और कुल बिल — आपकी असली खपत का पूरा खाता।"
+        : "Month-by-month units, energy charges, fixed liability, duty and net bill — the full ledger from your consumption.",
+      summerIncrease: hi ? "गर्मी में बिल वृद्धि" : "Summer bill increase",
+      summerHint: hi ? "पीक महीनों का असर" : "Impact of peak months",
+      fixedLiability: hi ? "वार्षिक फिक्स्ड देनदारी" : "Annual fixed liability",
+      fixedHint: hi ? "उपयोग से स्वतंत्र" : "Independent of usage",
+      solarSavings: hi ? "अनुमानित सोलर बचत" : "Estimated solar savings",
+      solarHint: hi
+        ? "ऊर्जा बिल में संभावित कमी"
+        : "Potential energy-bill reduction",
+      month: hi ? "माह" : "Month",
+      units: hi ? "यूनिट" : "Units",
+      energy: hi ? "ऊर्जा" : "Energy",
+      fixed: hi ? "फिक्स्ड" : "Fixed",
+      duty: hi ? "ड्यूटी" : "Duty",
+      netBill: hi ? "कुल बिल" : "Net bill",
+      total: hi ? "कुल" : "Total",
+      peak: hi ? "पीक" : "peak",
+      chartLabel: hi
+        ? "मासिक बिजली बिल प्रोफ़ाइल"
+        : "Monthly electricity bill profile",
+      footnote: hi
+        ? "ऊर्जा शुल्क खपत के साथ बदलता है; फिक्स्ड शुल्क उपयोग कम होने पर भी जारी रह सकता है। ड्यूटी और कुल राशि उपलब्ध बिल डेटा से ली गई है।"
+        : "Energy charges vary with consumption; fixed charges may continue even when usage falls. Duty and net totals are taken from the available bill data.",
+      verdictLabel: hi ? "बिल विश्लेषक का निष्कर्ष" : "BILL ANALYST'S VERDICT",
+      verdictWithData: (units: string, kw: string, monthCount: string) =>
+        hi
+          ? `आपकी ~${units} यूनिट मासिक औसत (${monthCount} महीने का बिल इतिहास) ${kw} kW AC सिस्टम से मैप होती है — साइज़िंग इसी खपत पैटर्न पर है, कैटलॉग अनुमान पर नहीं।`
+          : `Your ~${units} unit monthly average across ${monthCount} bill months maps to a ${kw} kW AC system — sized from this consumption pattern, not a catalogue default.`,
+      verdictFallback: hi
+        ? "हर महीने के यूनिट और शुल्क दिखाते हैं कि गर्मी का पीक और फिक्स्ड देनदारी कहाँ बैठती है — सोलर इसी असली बिल प्रोफ़ाइल पर कैलिब्रेट होता है।"
+        : "Month-by-month units and charges show where summer peaks and fixed liability land — solar is calibrated to this real bill profile.",
+    },
     wealth: {
       tag: hi ? "03 // पूँजी स्पष्टता" : "03 // CAPITAL CLARITY",
       title: hi ? "आपकी नेट स्थिति।" : "Your Net Position.",
       netInvest: hi ? "आपका नेट निवेश" : "YOUR NET INVESTMENT",
+      afterSubsidy: hi
+        ? "सब्सिडी के बाद · आपका भुगतान"
+        : "AFTER SUBSIDY · YOU PAY",
+      youPay: hi ? "आप चुकाएँगे" : "You pay",
       exact: hi ? "सटीक" : "Exact",
       gross: hi ? "सकल" : "Gross",
       subsidy: hi ? "सब्सिडी" : "Subsidy",
       capitalComp: hi ? "पूँजी संरचना" : "CAPITAL COMPOSITION",
       yourNet: hi ? "आपका नेट" : "Your net",
+      noSubsidyNote: hi
+        ? "इस प्रस्ताव में सब्सिडी लाइन शून्य / लागू नहीं — दिखाया गया आँकड़ा ही आपका भुगतान है।"
+        : "No subsidy line on this offer — the figure above is what you pay.",
       billCompare: hi ? "वार्षिक बिल — पहले बनाम बाद" : "ANNUAL BILL — BEFORE VS AFTER",
       relief: hi ? "राहत" : "Relief",
       todayGrid: hi ? "आज · ग्रिड" : "Today · grid",
@@ -208,12 +252,21 @@ export function getLuxeCopy(lang: LuxeLang) {
       forHome: hi ? "आपके घर के लिए" : "FOR YOUR HOME",
       years25: hi ? "25 वर्ष" : "25 years",
       homeHint: hi ? "साफ़ स्थानीय हवा, कम बिल" : "cleaner local air, lower bills",
-      chartHead: hi ? "स्वच्छ यूनिट — पहले 5 वर्ष" : "CLEAN UNITS — FIRST 5 YEARS",
-      chartSteady: hi ? "हर साल स्थिर स्वच्छ बिजली" : "Steady clean power each year",
-      chartSameLine: hi ? "समान हर वर्ष" : "SAME EACH YEAR",
+      chartHead: hi
+        ? "पहले 5 वर्ष · स्वच्छ यूनिट कैसे जुड़ते हैं"
+        : "FIRST 5 YEARS · HOW CLEAN UNITS ADD UP",
+      chartPerYear: hi ? "हर वर्ष" : "Each year",
+      chartTimes: hi ? "×" : "×",
+      chartYears: hi ? "5 वर्ष" : "5 years",
+      chartEquals: hi ? "=" : "=",
+      chartFiveTotal: hi ? "5 वर्ष कुल" : "5-year total",
+      chartSteady: hi
+        ? "हर साल लगभग उतनी ही स्वच्छ बिजली — नीचे जोड़ बढ़ता दिखता है।"
+        : "About the same clean power each year — the bars show the running total.",
       chartFoot: hi
-        ? "हर साल वही स्वच्छ यूनिट — जबकि ग्रिड बिजली अभी भी कोयला जलाती।"
-        : "Same clean units, year after year — while grid power would still burn coal.",
+        ? "हर वर्ष ~उतनी ही यूनिट जुड़ती हैं। 5 वर्ष बाद छत से लगभग इतनी स्वच्छ बिजली बन चुकी होती है — ग्रिड कोयला जलाता रहता।"
+        : "Each year adds about the same clean units. After 5 years your roof has made this much clean power — while the grid would still burn coal.",
+      chartCumLabel: hi ? "जोड़" : "Total",
       verdictLabel: hi ? "एक्सपर्ट सलाह" : "EXPERT ADVICE",
       verdict: hi
         ? "कोयला प्लांट हर यूनिट के साथ CO₂ के अलावा PM2.5 और NOx भी छोड़ते हैं। छत का सोलर ग्रिड की गंदी बैकअप बिजली घटाता है — इसलिए फायदा सिर्फ़ स्प्रेडशीट का टन नहीं: आपके इलाके की हवा असल में साफ़ होती है जब मीटर रिवर्स चलता है।"

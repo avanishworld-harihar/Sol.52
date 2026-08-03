@@ -21,7 +21,23 @@ export type EngineeringBlueprintProps = {
 const PANEL_WATT = 580;
 /** Incl. walkway allowance; ~2.2 m² × 10.764 → sq ft */
 const SQFT_PER_PANEL = 24;
-const MAX_DRAW = 18;
+/** Draw up to this many modules so larger plants still show a full bank */
+const MAX_DRAW = 36;
+
+/** Front-side isometric — more face visible than a flat side strip */
+const ISO = {
+  rightX: 30,
+  rightY: 17,
+  downX: -20,
+  downY: 22,
+  thick: 2.6,
+  stepColX: 32,
+  stepColY: 18,
+  stepRowX: -21,
+  stepRowY: 23,
+} as const;
+
+const ARRAY_VB = { w: 400, h: 248, floorY: 220 } as const;
 
 function metricValue(
   data: ProposalData,
@@ -32,7 +48,7 @@ function metricValue(
   return hit?.value?.trim() || fallback;
 }
 
-/** Simple isometric module — flat schematic tile, no cell/frame detail. */
+/** Simple isometric module — front-facing face, gold edge. */
 function IsoPanel({
   cx,
   cy,
@@ -40,11 +56,7 @@ function IsoPanel({
   cx: number;
   cy: number;
 }) {
-  const rightX = 40;
-  const rightY = 11.5;
-  const downX = -14;
-  const downY = 10.5;
-  const thick = 2.4;
+  const { rightX, rightY, downX, downY, thick } = ISO;
 
   const p0x = cx;
   const p0y = cy;
@@ -76,7 +88,7 @@ function IsoPanel({
         points={`${p0x},${p0y} ${p1x},${p1y} ${p2x},${p2y} ${p3x},${p3y}`}
         fill="#1e3550"
         stroke="#B8962E"
-        strokeWidth="1.1"
+        strokeWidth="1.05"
       />
     </g>
   );
@@ -222,33 +234,54 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
       ? data.engineering.standards.slice(0, 4).join(" · ")
       : "IS/IEC · CEA · DISCOM net-metering · IS 3043 earthing";
 
-  // Landscape bank: prefer wide rows (panels lying flat E–W), 1–3 rows
+  // Wide bank: more columns than rows so the front face reads clearly
   const preferredRows =
-    modulesDraw <= 4 ? 1 : modulesDraw <= 12 ? 2 : 3;
+    modulesDraw <= 6 ? 1 : modulesDraw <= 12 ? 2 : modulesDraw <= 24 ? 3 : 4;
   const cols = Math.max(1, Math.ceil(modulesDraw / preferredRows));
-  const rows = Math.ceil(modulesDraw / cols);
   const strings = Math.max(1, Math.ceil(modulesRaw / 6));
   const perString = Math.ceil(modulesRaw / strings);
 
-  // Isometric step — floating panel bank on grid (no roof slab / mount)
-  const stepColX = 42;
-  const stepColY = 12;
-  const stepRowX = -16;
-  const stepRowY = 16;
-  const isoOriginX = 100;
-  const isoOriginY = 88;
+  const { stepColX, stepColY, stepRowX, stepRowY, rightX, rightY, downX, downY } =
+    ISO;
 
-  const panelPositions = Array.from({ length: modulesDraw }).map((_, i) => {
+  const rawPositions = Array.from({ length: modulesDraw }).map((_, i) => {
     const col = i % cols;
     const row = Math.floor(i / cols);
     return {
-      cx: isoOriginX + col * stepColX + row * stepRowX,
-      cy: isoOriginY + col * stepColY + row * stepRowY,
-      z: row * 100 + col,
+      cx: col * stepColX + row * stepRowX,
+      cy: col * stepColY + row * stepRowY,
     };
   });
-  // Draw back-to-front so nearer panels occlude those behind
-  panelPositions.sort((a, b) => a.cy - b.cy || a.cx - b.cx);
+
+  // Bounds include full panel diamonds so nothing clips the viewBox edges
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  for (const p of rawPositions) {
+    const xs = [p.cx, p.cx + rightX, p.cx + rightX + downX, p.cx + downX];
+    const ys = [p.cy, p.cy + rightY, p.cy + rightY + downY, p.cy + downY];
+    minX = Math.min(minX, ...xs);
+    maxX = Math.max(maxX, ...xs);
+    minY = Math.min(minY, ...ys);
+    maxY = Math.max(maxY, ...ys);
+  }
+
+  const padX = 36;
+  const padTop = 40;
+  const padBottom = 28;
+  const contentW = Math.max(1, maxX - minX);
+  const contentH = Math.max(1, maxY - minY);
+  const fitW = ARRAY_VB.w - padX * 2;
+  const fitH = ARRAY_VB.floorY - padTop - padBottom;
+  const scale = Math.min(1, fitW / contentW, fitH / contentH);
+  const offsetX = padX + (fitW - contentW * scale) / 2 - minX * scale;
+  const offsetY = padTop + (fitH - contentH * scale) / 2 - minY * scale;
+
+  // Sort in raw space (back → front), then draw inside a fitted transform
+  const panelPositions = [...rawPositions].sort(
+    (a, b) => a.cy - b.cy || a.cx - b.cx
+  );
 
   const { copy, isHi } = useLuxeLang();
   const vendor = luxeVendorOrFallback(useLuxeVendorName(data), isHi);
@@ -267,9 +300,9 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
         <div className={`${styles.engPanel} ${styles.engPanelFlush}`}>
           <div className={styles.engPanelTitle}>{copy.eng.roofPlan}</div>
           <svg
-            viewBox="0 0 320 240"
+            viewBox={`0 0 ${ARRAY_VB.w} ${ARRAY_VB.h}`}
             width="100%"
-            height="278"
+            height="300"
             className={styles.engSvgDark}
             aria-hidden
           >
@@ -283,7 +316,7 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
                 width="28"
                 height="16"
                 patternUnits="userSpaceOnUse"
-                patternTransform="skewX(-30)"
+                patternTransform="skewX(-26)"
               >
                 <path
                   d="M0 16V0H28"
@@ -294,23 +327,37 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
               </pattern>
             </defs>
 
-            <rect width="320" height="240" fill="url(#roofFloor)" rx="6" />
-            <rect x="8" y="8" width="304" height="200" fill="url(#isoGrid)" rx="4" />
+            <rect
+              width={ARRAY_VB.w}
+              height={ARRAY_VB.h}
+              fill="url(#roofFloor)"
+              rx="6"
+            />
+            <rect
+              x="10"
+              y="8"
+              width={ARRAY_VB.w - 20}
+              height={ARRAY_VB.floorY - 16}
+              fill="url(#isoGrid)"
+              rx="4"
+            />
 
-            {panelPositions.map((p, i) => (
-              <IsoPanel key={i} cx={p.cx} cy={p.cy} />
-            ))}
+            <g transform={`translate(${offsetX} ${offsetY}) scale(${scale})`}>
+              {panelPositions.map((p, i) => (
+                <IsoPanel key={i} cx={p.cx} cy={p.cy} />
+              ))}
+            </g>
 
             {/* Compass rose */}
-            <g transform="translate(42,42)">
-              <circle r="24" fill="rgba(10,14,20,0.88)" stroke="#B8962E" strokeWidth="1.1" />
-              <circle r="17" fill="none" stroke="rgba(184,150,46,0.4)" strokeWidth="0.7" />
-              <line x1="0" y1="-15" x2="0" y2="15" stroke="rgba(255,255,255,0.28)" strokeWidth="0.7" />
-              <line x1="-15" y1="0" x2="15" y2="0" stroke="rgba(255,255,255,0.28)" strokeWidth="0.7" />
-              <polygon points="0,-14 3.8,-2 0,-4.2 -3.8,-2" fill="#B8962E" />
-              <polygon points="0,14 3.2,3 0,5.2 -3.2,3" fill="#2a3140" />
+            <g transform="translate(40,38)">
+              <circle r="22" fill="rgba(10,14,20,0.88)" stroke="#B8962E" strokeWidth="1.1" />
+              <circle r="16" fill="none" stroke="rgba(184,150,46,0.4)" strokeWidth="0.7" />
+              <line x1="0" y1="-14" x2="0" y2="14" stroke="rgba(255,255,255,0.28)" strokeWidth="0.7" />
+              <line x1="-14" y1="0" x2="14" y2="0" stroke="rgba(255,255,255,0.28)" strokeWidth="0.7" />
+              <polygon points="0,-13 3.6,-2 0,-4 -3.6,-2" fill="#B8962E" />
+              <polygon points="0,13 3,2.8 0,5 -3,2.8" fill="#2a3140" />
               <text
-                y="-17"
+                y="-16"
                 textAnchor="middle"
                 fill="#B8962E"
                 fontSize="7"
@@ -319,19 +366,19 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
               >
                 N
               </text>
-              <text y="24" textAnchor="middle" fill="#a8b0bc" fontSize="6.5">
+              <text y="22" textAnchor="middle" fill="#a8b0bc" fontSize="6.5">
                 S
               </text>
-              <text x="19" y="3.5" textAnchor="middle" fill="#a8b0bc" fontSize="6">
+              <text x="18" y="3.5" textAnchor="middle" fill="#a8b0bc" fontSize="6">
                 E
               </text>
-              <text x="-19" y="3.5" textAnchor="middle" fill="#a8b0bc" fontSize="6">
+              <text x="-18" y="3.5" textAnchor="middle" fill="#a8b0bc" fontSize="6">
                 W
               </text>
             </g>
             <text
-              x="42"
-              y="82"
+              x="40"
+              y="74"
               textAnchor="middle"
               fill="#B8962E"
               fontSize="8"
@@ -342,10 +389,16 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
             </text>
 
             {/* Caption bar */}
-            <rect x="0" y="212" width="320" height="28" fill="rgba(0,0,0,0.6)" />
+            <rect
+              x="0"
+              y={ARRAY_VB.floorY}
+              width={ARRAY_VB.w}
+              height={ARRAY_VB.h - ARRAY_VB.floorY}
+              fill="rgba(0,0,0,0.6)"
+            />
             <text
-              x="160"
-              y="230"
+              x={ARRAY_VB.w / 2}
+              y={ARRAY_VB.floorY + 18}
               textAnchor="middle"
               fill="#e8ecf2"
               fontSize="10"
@@ -354,6 +407,9 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
             >
               {modulesRaw} modules · {formatLuxeKw(dcKwp)} kWp DC · {strings}×
               {perString} string · South
+              {modulesRaw > modulesDraw
+                ? ` · showing ${modulesDraw}`
+                : ""}
             </text>
           </svg>
         </div>

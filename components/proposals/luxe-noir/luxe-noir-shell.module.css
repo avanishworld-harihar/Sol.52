@@ -118,6 +118,8 @@
   display: flex;
   flex-direction: column;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
   margin: 12px auto;
   box-shadow: 0 8px 28px rgba(20, 24, 32, 0.08);
   -webkit-print-color-adjust: exact !important;
@@ -177,13 +179,13 @@
   font-size: 0.68rem;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  font-weight: 600;
+  font-weight: 800;
   margin: 0 0 8px;
 }
 
 .title {
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
-  font-weight: 300;
+  font-weight: 700;
   color: #141820;
   margin: 0;
   line-height: 1.12;
@@ -255,10 +257,12 @@
 }
 
 .metaValue {
-  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
   font-size: 16pt;
   color: #141820;
-  font-weight: 400;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
 }
 
 /* ── Cards / grids ───────────────────────────────────────────── */
@@ -293,14 +297,18 @@
   text-transform: uppercase;
   color: var(--luxe-muted);
   margin-bottom: 6px;
+  font-weight: 800;
 }
 
 .cardValue {
-  font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
   font-size: 18pt;
   color: #141820;
-  font-weight: 400;
+  font-weight: 700;
   display: block;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  letter-spacing: 0.01em;
 }
 
 .cardHint {
@@ -330,7 +338,10 @@
 
 .listRow strong {
   color: #141820;
-  font-weight: 500;
+  font-weight: 700;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
 }
 
 .listRow span {
@@ -379,18 +390,21 @@
   text-transform: uppercase;
   padding: 8px 6px;
   border-bottom: 1px solid rgba(212, 175, 55, 0.35);
+  font-weight: 800;
 }
 
 .emiTable td {
   padding: 10px 6px;
   border-bottom: 1px solid rgba(20, 24, 32, 0.08);
   color: #141820;
-  font-weight: 500;
+  font-weight: 600;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
 }
 
 .emiTable td:last-child {
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
+  font-weight: 800;
 }
 
 .emiTable td:last-child,

@@ -20,8 +20,8 @@ import { useLuxeLang } from "./luxe-lang-context";
 import { luxeDisplayFont } from "./luxe-fonts";
 import styles from "./luxe.module.css";
 
-/** Local premium cover photograph — served from /public */
-const COVER_ROOFTOP_SRC = "/assets/proposals/luxe-cover-rooftop.jpg";
+/** Local premium cover photograph — Indian RCC rooftop lifestyle (served from /public) */
+const COVER_ROOFTOP_SRC = "/assets/proposals/luxe-cover-rooftop-india.jpg";
 
 export type ObsidianCoverProps = {
   data: ProposalData;
@@ -45,7 +45,7 @@ function CoverPhotoPlate({
           src={COVER_ROOFTOP_SRC}
           alt=""
           width={1600}
-          height={900}
+          height={1000}
         />
         <div className={styles.coverPhotoVignette} aria-hidden />
         <div className={styles.coverPhotoGoldEdge} aria-hidden />

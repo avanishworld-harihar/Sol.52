@@ -272,15 +272,18 @@ export function ImpactPage({ data, generationUnits, brand }: ImpactPageProps) {
         ? Math.round(co2 * 45)
         : 0;
   const yearly = generationUnits > 0 ? generationUnits : 0;
+  const fiveYearTotal = yearly > 0 ? yearly * 5 : 0;
 
+  /** Cumulative totals — each year adds the same clean units. */
   const yearBars = [1, 2, 3, 4, 5].map((y) => ({
     y,
     label: isHi ? `वर्ष ${y}` : `Y${y}`,
+    units: yearly > 0 ? yearly * y : 0,
   }));
-
-  /** Equal height — same clean units every year (not growing). */
-  const barH = yearly > 0 ? 96 : 56;
-  const barW = 56;
+  const maxCum = fiveYearTotal > 0 ? fiveYearTotal : 1;
+  const barMaxH = 108;
+  const barW = 52;
+  const chartBaseY = 158;
 
   return (
     <section
@@ -335,22 +338,40 @@ export function ImpactPage({ data, generationUnits, brand }: ImpactPageProps) {
       <div className={styles.impactChartBlock}>
         <div className={styles.impactChartHead}>
           <span>{copy.impact.chartHead}</span>
-          <span className={styles.luxeNum}>
-            {yearly > 0
-              ? `~${formatLuxeUnits(yearly)} / ${isHi ? "वर्ष" : "year"}`
-              : "—"}
-          </span>
         </div>
-        <p className={styles.impactChartSteady}>
-          {copy.impact.chartSteady}
-          {yearly > 0 ? ` · ${copy.impact.chartSameLine}` : ""}
-        </p>
+        <p className={styles.impactChartSteady}>{copy.impact.chartSteady}</p>
+
+        <div className={styles.impactEqRow}>
+          <div className={styles.impactEqCell}>
+            <span>{copy.impact.chartPerYear}</span>
+            <strong className={styles.luxeNum}>
+              {yearly > 0 ? `~${formatLuxeUnits(yearly)}` : "—"}
+            </strong>
+          </div>
+          <span className={styles.impactEqOp} aria-hidden>
+            {copy.impact.chartTimes}
+          </span>
+          <div className={styles.impactEqCell}>
+            <span>{copy.impact.chartYears}</span>
+            <strong className={styles.luxeNum}>5</strong>
+          </div>
+          <span className={styles.impactEqOp} aria-hidden>
+            {copy.impact.chartEquals}
+          </span>
+          <div className={`${styles.impactEqCell} ${styles.impactEqTotal}`}>
+            <span>{copy.impact.chartFiveTotal}</span>
+            <strong className={styles.luxeNum}>
+              {fiveYearTotal > 0 ? `~${formatLuxeUnits(fiveYearTotal)}` : "—"}
+            </strong>
+          </div>
+        </div>
+
         <svg
-          viewBox="0 0 520 200"
+          viewBox="0 0 520 188"
           width="100%"
-          height="188"
+          height="168"
           className={styles.impactChartSvg}
-          aria-hidden
+          aria-label={copy.impact.chartHead}
         >
           <defs>
             <linearGradient id="impactBar" x1="0" y1="0" x2="0" y2="1">
@@ -358,74 +379,67 @@ export function ImpactPage({ data, generationUnits, brand }: ImpactPageProps) {
               <stop offset="55%" stopColor="#B8962E" />
               <stop offset="100%" stopColor="#8A6E22" />
             </linearGradient>
-            <linearGradient id="impactBarShade" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="rgba(255,255,255,0.18)" />
-              <stop offset="100%" stopColor="rgba(0,0,0,0.12)" />
-            </linearGradient>
           </defs>
 
-          {/* Steady-level guide (label lives in chartSteady — avoids bar-value overlap) */}
-          <line
-            x1="36"
-            y1={168 - barH}
-            x2="500"
-            y2={168 - barH}
-            stroke="rgba(184,150,46,0.35)"
-            strokeWidth="1.2"
-            strokeDasharray="4 4"
-          />
+          <text
+            x="36"
+            y="16"
+            fill="#5c6573"
+            fontSize="10"
+            fontFamily="system-ui,sans-serif"
+            fontWeight="700"
+            letterSpacing="0.8"
+          >
+            {copy.impact.chartCumLabel.toUpperCase()}
+          </text>
 
           <line
             x1="36"
-            y1="168"
+            y1={chartBaseY}
             x2="500"
-            y2="168"
+            y2={chartBaseY}
             stroke="#E2E6EC"
             strokeWidth="1.5"
           />
 
           {yearBars.map((b, i) => {
-            const x = 52 + i * 92;
-            const y = 168 - barH;
+            const x = 56 + i * 90;
+            const h =
+              yearly > 0
+                ? Math.max(18, (b.units / maxCum) * barMaxH)
+                : 18;
+            const y = chartBaseY - h;
+            const isLast = i === yearBars.length - 1;
             return (
               <g key={b.label}>
                 <rect
                   x={x}
                   y={y}
                   width={barW}
-                  height={barH}
-                  rx="5"
+                  height={h}
+                  rx="4"
                   fill="url(#impactBar)"
-                  opacity="0.88"
-                />
-                <rect
-                  x={x}
-                  y={y}
-                  width={barW * 0.28}
-                  height={barH}
-                  rx="5"
-                  fill="url(#impactBarShade)"
-                  opacity="0.5"
+                  opacity={0.55 + i * 0.09}
                 />
                 <text
                   x={x + barW / 2}
-                  y={y - 10}
+                  y={y - 8}
                   textAnchor="middle"
                   fill="#141820"
-                  fontSize="13"
+                  fontSize={isLast ? "13" : "11"}
                   fontFamily="system-ui,sans-serif"
                   fontWeight="700"
                 >
-                  {yearly > 0 ? formatLuxeUnits(yearly) : "—"}
+                  {b.units > 0 ? formatLuxeUnits(b.units) : "—"}
                 </text>
                 <text
                   x={x + barW / 2}
-                  y={186}
+                  y={chartBaseY + 18}
                   textAnchor="middle"
                   fill="#1e2430"
                   fontSize="12"
                   fontFamily="system-ui,sans-serif"
-                  fontWeight="600"
+                  fontWeight="700"
                 >
                   {b.label}
                 </text>

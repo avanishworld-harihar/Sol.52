@@ -144,23 +144,46 @@ export function WealthTerminal({ data }: WealthTerminalProps) {
         <h2 className={styles.luxeHeadline}>{copy.wealth.title}</h2>
       </header>
 
-      {/* Net + capital composition */}
+      {/* Net cost hero — after-subsidy first */}
       <div className={styles.wealthTop}>
         <div className={styles.netHero}>
           <span className={styles.netLabel}>{copy.wealth.netInvest}</span>
+          <span className={styles.netAfterTag}>{copy.wealth.afterSubsidy}</span>
           <strong className={`${styles.netFigure} ${styles.luxeNum}`}>
-            {formatLuxeInrReadable(net)}
+            {net > 0 ? formatLuxeInrReadable(net) : "—"}
           </strong>
-          <p className={`${styles.netQuiet} ${styles.luxeNum}`}>
-            {copy.wealth.exact} {formatLuxeInr(net)}
-            {gross > 0
-              ? ` · ${copy.wealth.gross} ${formatLuxeInr(gross)}${
-                  subsidy > 0
-                    ? ` − ${copy.wealth.subsidy} ${formatLuxeInr(subsidy)}`
-                    : ""
-                }`
-              : ""}
+          <p className={`${styles.netExact} ${styles.luxeNum}`}>
+            {copy.wealth.exact} {net > 0 ? formatLuxeInr(net) : "—"}
           </p>
+
+          {gross > 0 ? (
+            <div className={styles.costEquation} aria-label={copy.wealth.capitalComp}>
+              <div className={styles.costEqCell}>
+                <span>{copy.wealth.gross}</span>
+                <strong className={styles.luxeNum}>{formatLuxeInr(gross)}</strong>
+              </div>
+              <span className={styles.costEqOp} aria-hidden>
+                −
+              </span>
+              <div className={styles.costEqCell}>
+                <span>{copy.wealth.subsidy}</span>
+                <strong className={styles.luxeNum}>
+                  {subsidy > 0 ? formatLuxeInr(subsidy) : "₹0"}
+                </strong>
+              </div>
+              <span className={styles.costEqOp} aria-hidden>
+                =
+              </span>
+              <div className={`${styles.costEqCell} ${styles.costEqNet}`}>
+                <span>{copy.wealth.youPay}</span>
+                <strong className={styles.luxeNum}>
+                  {net > 0 ? formatLuxeInr(net) : "—"}
+                </strong>
+              </div>
+            </div>
+          ) : (
+            <p className={styles.netQuiet}>{copy.wealth.noSubsidyNote}</p>
+          )}
         </div>
 
         <div className={styles.capitalStack}>
@@ -183,17 +206,23 @@ export function WealthTerminal({ data }: WealthTerminalProps) {
             {subsidy > 0 ? (
               <span>
                 <i className={styles.dotSubsidy} /> {copy.wealth.subsidy}{" "}
-                <strong className={styles.luxeNum}>{formatLuxeInrReadable(subsidy)}</strong>
+                <strong className={styles.luxeNum}>
+                  {formatLuxeInrReadable(subsidy)}
+                </strong>
               </span>
             ) : null}
             <span>
               <i className={styles.dotNet} /> {copy.wealth.yourNet}{" "}
-              <strong className={styles.luxeNum}>{formatLuxeInrReadable(net)}</strong>
+              <strong className={styles.luxeNum}>
+                {formatLuxeInrReadable(net)}
+              </strong>
             </span>
             {gross > 0 ? (
               <span>
                 {copy.wealth.gross}{" "}
-                <strong className={styles.luxeNum}>{formatLuxeInrReadable(gross)}</strong>
+                <strong className={styles.luxeNum}>
+                  {formatLuxeInrReadable(gross)}
+                </strong>
               </span>
             ) : null}
           </div>
