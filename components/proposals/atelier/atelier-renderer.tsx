@@ -488,27 +488,98 @@ export function AtelierRenderer({
   useEffect(() => {
     if (typeof document === "undefined") return;
     const STYLE_ID = "atelier-print-page-box";
+    const IOS_CLASS = "atelier-print-ios";
+
+    const isAppleTouchPrint = () => {
+      const nav = window.navigator;
+      const ua = nav.userAgent || "";
+      // iPadOS 13+ reports as MacIntel with touch
+      const iPadDesktopUa =
+        nav.platform === "MacIntel" && (nav.maxTouchPoints || 0) > 1;
+      return /iPad|iPhone|iPod/i.test(ua) || iPadDesktopUa;
+    };
+
     const ensurePrintPageBox = () => {
+      const ios = isAppleTouchPrint();
+      document.documentElement.classList.toggle(IOS_CLASS, ios);
+
       let el = document.getElementById(STYLE_ID) as HTMLStyleElement | null;
       if (!el) {
         el = document.createElement("style");
         el.id = STYLE_ID;
-        document.head.appendChild(el);
       }
-      // Last head style wins over globals.css 8mm margins on iOS Safari
-      // (named @page atelier-* is ignored there → pages were clipped).
-      el.textContent = `
+      // Re-append so this sheet wins cascade over globals.css / CSS modules.
+      document.head.appendChild(el);
+
+      /*
+       * iPad / iOS Safari:
+       * 1) Often ignores @page { margin: 0 } → keeps ~8–10mm → 210×297mm sheets shrink
+       *    (white bands + wrong pagination, as in print preview).
+       * 2) break-after: page inserts a blank sheet after every section (~2× page count).
+       * Fit sheets inside a 10mm page margin and paginate with break-before only.
+       */
+      el.textContent = ios
+        ? `
+@media print {
+  @page { size: A4; margin: 10mm; }
+  html, body, #proposal-route-root {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  [data-atelier-root] {
+    width: 190mm !important;
+    max-width: 190mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+  [data-atelier-root] > section {
+    width: 190mm !important;
+    max-width: 190mm !important;
+    height: 277mm !important;
+    min-height: 277mm !important;
+    max-height: 277mm !important;
+    margin: 0 !important;
+    padding: 10mm 11mm 11mm !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    page-break-after: auto !important;
+    break-after: auto !important;
+    page-break-before: auto !important;
+    break-before: auto !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  [data-atelier-root] > section + section {
+    page-break-before: always !important;
+    break-before: page !important;
+  }
+}
+`
+        : `
 @media print {
   @page { size: A4; margin: 0; }
   html, body {
     margin: 0 !important;
     padding: 0 !important;
+    height: auto !important;
     overflow: visible !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 }`;
     };
+
     ensurePrintPageBox();
     const onBeforePrint = () => {
       ensurePrintPageBox();
@@ -517,6 +588,7 @@ export function AtelierRenderer({
     window.addEventListener("beforeprint", onBeforePrint);
     return () => {
       window.removeEventListener("beforeprint", onBeforePrint);
+      document.documentElement.classList.remove(IOS_CLASS);
       document.getElementById(STYLE_ID)?.remove();
     };
   }, []);
@@ -532,7 +604,10 @@ export function AtelierRenderer({
 
   // ── JSX ──────────────────────────────────────────────────────
   return (
-    <div className={`${styles.wrapper}${isHi ? ` ${styles.langHi}` : ""}`}>
+    <div
+      data-atelier-root
+      className={`${styles.wrapper}${isHi ? ` ${styles.langHi}` : ""}`}
+    >
       <style>{`
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Lato:wght@300;400;700&display=swap');
 @media print {
@@ -546,9 +621,8 @@ export function AtelierRenderer({
     print-color-adjust: exact !important;
   }
   /*
-   * Bare @page is required for iPad/iOS Safari: named pages are ignored there,
-   * so globals.css @page { margin: 8mm } would shrink the box and clip 210×297mm pages.
-   * Named pages still override on Chromium desktop. Loaded only with Atelier renderer.
+   * Desktop Chromium: full-bleed A4 via margin:0 + named pages.
+   * iPad overrides are injected into #atelier-print-page-box (see useEffect).
    */
   @page { size: A4; margin: 0; }
   @page atelier-sheet { size: A4; margin: 0; }

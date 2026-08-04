@@ -5491,8 +5491,11 @@
     max-height: 297mm !important;
     box-sizing: border-box !important;
     overflow: hidden !important;
-    break-after: page;
-    page-break-after: always;
+    /* iOS WebKit inserts a blank sheet after break-after:page — use break-before instead */
+    break-after: auto;
+    page-break-after: auto;
+    break-before: auto;
+    page-break-before: auto;
     break-inside: avoid;
     page-break-inside: avoid;
     display: flex;
@@ -5500,9 +5503,10 @@
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
-  .page:last-of-type {
-    break-after: avoid;
-    page-break-after: avoid;
+  /* Each sheet after the first starts a new page (WebKit-safe; no trailing blank) */
+  .page + .page {
+    break-before: page;
+    page-break-before: always;
   }
 
   /*
@@ -5539,6 +5543,47 @@
     box-sizing: border-box !important;
     break-inside: avoid;
     page-break-inside: avoid;
+  }
+
+  /*
+   * iPad / iOS: Safari rarely honors margin:0. Full 210×297mm sheets then
+   * shrink-to-fit (white bands) and break-after blank sheets (~2× page count).
+   * html.atelier-print-ios is set by AtelierRenderer on Apple touch devices.
+   */
+  :global(html.atelier-print-ios) .wrapper {
+    width: 190mm !important;
+    max-width: 190mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  :global(html.atelier-print-ios) .page,
+  :global(html.atelier-print-ios) .coverPage,
+  :global(html.atelier-print-ios) .closingPage {
+    --page-pad-x: 11mm;
+    --page-pad-t: 10mm;
+    --page-pad-b: 11mm;
+    width: 190mm !important;
+    max-width: 190mm !important;
+    height: 277mm !important;
+    min-height: 277mm !important;
+    max-height: 277mm !important;
+    padding: var(--page-pad-t) var(--page-pad-x) var(--page-pad-b) !important;
+    break-after: auto !important;
+    page-break-after: auto !important;
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+  }
+  :global(html.atelier-print-ios) .page + .page {
+    break-before: page !important;
+    page-break-before: always !important;
+  }
+  /* 3D iso can inflate the ink overflow box → Safari shrink-to-fit */
+  :global(html.atelier-print-ios) .blueprintPanels {
+    transform: rotateX(28deg) rotateZ(-12deg) scale(0.92) !important;
+  }
+  :global(html.atelier-print-ios) .blueprintStage {
+    perspective: none !important;
+    overflow: hidden !important;
   }
   .coverInner {
     padding: 0 !important;
