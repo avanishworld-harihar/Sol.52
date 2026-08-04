@@ -88,6 +88,10 @@
   flex-shrink: 0;
 }
 .printBarBtn:hover { background: var(--or2); }
+.printBarBtn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
 
 .printBarActions {
   display: flex;
@@ -5929,4 +5933,77 @@
     size: A4;
     margin: 0;
   }
+}
+
+/*
+ * html2canvas capture mode (iPad-safe PDF).
+ * Forces desktop A4 sheet geometry even when the viewport is narrow,
+ * so mobile stacking rules do not break the exported pages.
+ */
+:global(html.atelier-pdf-capture) .printBar {
+  display: none !important;
+}
+:global(html.atelier-pdf-capture) .wrapper {
+  width: 794px !important;
+  max-width: 794px !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  background: #fff !important;
+}
+:global(html.atelier-pdf-capture) .page,
+:global(html.atelier-pdf-capture) .coverPage,
+:global(html.atelier-pdf-capture) .closingPage {
+  width: 794px !important;
+  max-width: 794px !important;
+  height: 1123px !important;
+  min-height: 1123px !important;
+  max-height: 1123px !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
+:global(html.atelier-pdf-capture) .pageNum {
+  position: absolute !important;
+  display: block !important;
+  bottom: 0.55rem !important;
+  margin-top: 0 !important;
+}
+:global(html.atelier-pdf-capture) .wealthLayout {
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.95fr) !important;
+}
+:global(html.atelier-pdf-capture) .roofMainRow {
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) !important;
+}
+:global(html.atelier-pdf-capture) .payBankSplit {
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr) !important;
+}
+:global(html.atelier-pdf-capture) .closingSplit {
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) !important;
+}
+:global(html.atelier-pdf-capture) .genProofGrid {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) !important;
+}
+:global(html.atelier-pdf-capture) .forecastStats {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+}
+:global(html.atelier-pdf-capture) .financeFlow {
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1.1fr) !important;
+}
+:global(html.atelier-pdf-capture) .investBreakdown {
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1.25fr) !important;
+}
+:global(html.atelier-pdf-capture) .financeFlowArrow,
+:global(html.atelier-pdf-capture) .investOp {
+  transform: none !important;
+}
+:global(html.atelier-pdf-capture) .coverWealthRow {
+  flex-direction: row !important;
+}
+:global(html.atelier-pdf-capture) .wealthJourney {
+  flex-direction: row !important;
+}
+:global(html.atelier-pdf-capture) .billAuditMetrics {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
 }

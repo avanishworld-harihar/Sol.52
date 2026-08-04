@@ -10,7 +10,7 @@
  * break-after: page (print only)
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { formatInr, formatInrCompact } from "@/components/proposals/_shared/formatters";
@@ -48,6 +48,7 @@ import {
   WealthIconPaid,
   WealthIconPay,
 } from "./atelier-wealth-icons";
+import { downloadAtelierProposalPdf } from "./atelier-proposal-pdf";
 import styles from "./atelier.module.css";
 
 function folio(n: number, total: number): string {
@@ -105,6 +106,9 @@ export function AtelierRenderer({
   const [lang, setLang] = useState<AtelierLang>("en");
   const c = getAtelierCopy(lang);
   const isHi = lang === "hi";
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfProgress, setPdfProgress] = useState("");
 
   const [logoUrl, setLogoUrl] = useState<string | undefined>(() => {
     return data?.meta.brandLogoUrl?.trim() || installerLogoUrl?.trim() || undefined;
@@ -593,18 +597,35 @@ export function AtelierRenderer({
     };
   }, []);
 
-  const handlePrint = () => {
-    if (typeof window === "undefined") return;
-    window.scrollTo(0, 0);
-    // Let layout settle (esp. iPad Safari) before the print dialog captures pages.
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => window.print());
-    });
+  const handleDownloadPdf = async () => {
+    if (typeof window === "undefined" || pdfBusy) return;
+    const root = rootRef.current;
+    if (!root) return;
+
+    setPdfBusy(true);
+    setPdfProgress(c.print.preparingPdf);
+    try {
+      window.scrollTo(0, 0);
+      await downloadAtelierProposalPdf({
+        root,
+        customerName: data.meta.customerName?.trim() || clientName,
+        onProgress: ({ current, total }) => {
+          setPdfProgress(`${c.print.preparingPdf} ${current}/${total}`);
+        },
+      });
+    } catch (err) {
+      console.error("[atelier-pdf]", err);
+      window.alert(c.print.pdfFailed);
+    } finally {
+      setPdfBusy(false);
+      setPdfProgress("");
+    }
   };
 
   // ── JSX ──────────────────────────────────────────────────────
   return (
     <div
+      ref={rootRef}
       data-atelier-root
       className={`${styles.wrapper}${isHi ? ` ${styles.langHi}` : ""}`}
     >
@@ -632,7 +653,7 @@ export function AtelierRenderer({
 `}</style>
 
       {/* Sticky print bar */}
-      <div className={styles.printBar}>
+      <div className={styles.printBar} data-atelier-print-bar>
         <div className={styles.printBarInner}>
           <span className={styles.printBarBrand}>{brand}</span>
           <div className={styles.printBarActions}>
@@ -654,8 +675,14 @@ export function AtelierRenderer({
                 {c.print.langHi}
               </button>
             </div>
-            <button type="button" onClick={handlePrint} className={styles.printBarBtn}>
-              {c.print.downloadPdf}
+            <button
+              type="button"
+              onClick={() => void handleDownloadPdf()}
+              className={styles.printBarBtn}
+              disabled={pdfBusy}
+              aria-busy={pdfBusy}
+            >
+              {pdfBusy ? pdfProgress || c.print.preparingPdf : c.print.downloadPdf}
             </button>
           </div>
         </div>
@@ -2475,10 +2502,12 @@ export function AtelierRenderer({
                 <p className={styles.ctaDesc}>{c.closing.ctaDesc}</p>
                 <button
                   type="button"
-                  onClick={handlePrint}
+                  onClick={() => void handleDownloadPdf()}
                   className={`${styles.closingBtn} print:hidden`}
+                  disabled={pdfBusy}
+                  aria-busy={pdfBusy}
                 >
-                  {c.closing.ctaBtn}
+                  {pdfBusy ? pdfProgress || c.print.preparingPdf : c.closing.ctaBtn}
                 </button>
                 <div className={styles.ctaDivider} />
                 <div className={styles.ctaContact}>

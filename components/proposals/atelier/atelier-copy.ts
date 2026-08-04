@@ -28,6 +28,13 @@ export function getAtelierCopy(lang: AtelierLang) {
   return {
     print: {
       downloadPdf: hi ? "PDF डाउनलोड" : "Download PDF",
+      preparingPdf: hi ? "PDF बन रहा है…" : "Preparing PDF…",
+      pdfFailed: hi
+        ? "PDF नहीं बन सका। फिर कोशिश करें।"
+        : "Could not create PDF. Please try again.",
+      pdfShareHint: hi
+        ? "Share → Save to Files चुनें"
+        : "Choose Share → Save to Files",
       langEn: "EN",
       langHi: "हिंदी",
     },
