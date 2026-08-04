@@ -485,8 +485,49 @@ export function AtelierRenderer({
     return digits.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
   };
 
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const STYLE_ID = "atelier-print-page-box";
+    const ensurePrintPageBox = () => {
+      let el = document.getElementById(STYLE_ID) as HTMLStyleElement | null;
+      if (!el) {
+        el = document.createElement("style");
+        el.id = STYLE_ID;
+        document.head.appendChild(el);
+      }
+      // Last head style wins over globals.css 8mm margins on iOS Safari
+      // (named @page atelier-* is ignored there → pages were clipped).
+      el.textContent = `
+@media print {
+  @page { size: A4; margin: 0; }
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}`;
+    };
+    ensurePrintPageBox();
+    const onBeforePrint = () => {
+      ensurePrintPageBox();
+      window.scrollTo(0, 0);
+    };
+    window.addEventListener("beforeprint", onBeforePrint);
+    return () => {
+      window.removeEventListener("beforeprint", onBeforePrint);
+      document.getElementById(STYLE_ID)?.remove();
+    };
+  }, []);
+
   const handlePrint = () => {
-    if (typeof window !== "undefined") window.print();
+    if (typeof window === "undefined") return;
+    window.scrollTo(0, 0);
+    // Let layout settle (esp. iPad Safari) before the print dialog captures pages.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => window.print());
+    });
   };
 
   // ── JSX ──────────────────────────────────────────────────────
@@ -499,15 +540,17 @@ export function AtelierRenderer({
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
-    overflow: hidden !important;
+    height: auto !important;
+    overflow: visible !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
   /*
-   * Named pages only — never bare @page (bleeds into other presets).
-   * margin:0 is required: .page is already 210×297mm with its own padding.
-   * Non-zero @page margins shrink the printable box → right clip + blank spill pages.
+   * Bare @page is required for iPad/iOS Safari: named pages are ignored there,
+   * so globals.css @page { margin: 8mm } would shrink the box and clip 210×297mm pages.
+   * Named pages still override on Chromium desktop. Loaded only with Atelier renderer.
    */
+  @page { size: A4; margin: 0; }
   @page atelier-sheet { size: A4; margin: 0; }
   @page atelier-cover { size: A4; margin: 0; }
   @page atelier-closing { size: A4; margin: 0; }

@@ -5401,6 +5401,17 @@
 
 /* ══ PRINT ═════════════════════════════════════════════════════ */
 @media print {
+  /*
+   * iPad / iOS Safari ignores CSS named pages and falls back to globals.css
+   * @page { margin: 8mm }. Atelier sheets are full 210×297mm — those 8mm margins
+   * clip every edge. Bare @page (margin: 0) restores a full A4 box on WebKit.
+   * Chromium still prefers named pages below when supported.
+   */
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
   .printBar  { display: none !important; }
   .closingBtn { display: none !important; }
 
@@ -5448,8 +5459,19 @@
   .wrapper {
     background: var(--white) !important;
     overflow: visible !important;
-    width: 100% !important;
-    max-width: 100% !important;
+    width: 210mm !important;
+    max-width: 210mm !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    /* Avoid WebKit print raster/clip from screen blurs */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .wrapper *,
+  .wrapper *::before,
+  .wrapper *::after {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
   .page {
     --page-pad-x: 14mm;
@@ -5475,6 +5497,8 @@
     page-break-inside: avoid;
     display: flex;
     flex-direction: column;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
   .page:last-of-type {
     break-after: avoid;
@@ -5847,7 +5871,7 @@
     letter-spacing: 0.3px;
   }
 
-  /* Named pages — margin 0; .page padding is the only inset */
+  /* Named pages (Chromium) — margin 0; .page padding is the only inset */
   @page atelier-sheet {
     size: A4;
     margin: 0;
