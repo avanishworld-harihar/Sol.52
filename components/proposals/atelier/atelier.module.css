@@ -5937,19 +5937,26 @@
 
 /*
  * html2canvas capture mode (iPad-safe PDF).
- * Forces desktop A4 sheet geometry even when the viewport is narrow,
- * so mobile stacking rules do not break the exported pages.
+ * Must beat @media screen / max-width:900px rules that unlock A4 height,
+ * set img{height:auto}, and stack grids — those caused half-empty cover
+ * photos, cut page numbers, and wrong spacing in iPad PDFs.
  */
 :global(html.atelier-pdf-capture) .printBar {
   display: none !important;
 }
-:global(html.atelier-pdf-capture) .wrapper {
+:global(html.atelier-pdf-capture) .wrapper,
+:global(html.atelier-pdf-capture) #atelier-pdf-capture-host {
   width: 794px !important;
   max-width: 794px !important;
-  margin: 0 auto !important;
+  margin: 0 !important;
   padding: 0 !important;
   overflow: visible !important;
   background: #fff !important;
+  --page-pad-x: 48px;
+  --page-pad-t: 40px;
+  --page-pad-b: 52px;
+  --a4-w: 794px;
+  --a4-h: 1123px;
 }
 :global(html.atelier-pdf-capture) .page,
 :global(html.atelier-pdf-capture) .coverPage,
@@ -5960,15 +5967,83 @@
   min-height: 1123px !important;
   max-height: 1123px !important;
   margin: 0 !important;
+  border: none !important;
   border-radius: 0 !important;
   box-shadow: none !important;
+  overflow: hidden !important;
+  padding: var(--page-pad-t) var(--page-pad-x) var(--page-pad-b) !important;
+  box-sizing: border-box !important;
+}
+:global(html.atelier-pdf-capture) .page img,
+:global(html.atelier-pdf-capture) .page svg {
+  max-width: 100% !important;
+}
+/* Screen preview sets height:auto on all imgs — breaks object-fit cover frames */
+:global(html.atelier-pdf-capture) .coverPhotoImg,
+:global(html.atelier-pdf-capture) .closingPhotoImg,
+:global(html.atelier-pdf-capture) .trustPhotoImg {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: none !important;
+  object-fit: cover !important;
+  display: block !important;
+}
+:global(html.atelier-pdf-capture) .coverPhotoPlate,
+:global(html.atelier-pdf-capture) .closingPhotoPlate {
+  flex: 0 0 auto !important;
+  max-height: none !important;
+  min-height: 0 !important;
+}
+:global(html.atelier-pdf-capture) .coverPhotoFrame {
+  position: relative !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  height: 300px !important;
+  min-height: 300px !important;
+  max-height: 300px !important;
+  overflow: hidden !important;
+  border-radius: 10px !important;
+}
+:global(html.atelier-pdf-capture) .closingPhotoFrame {
+  position: relative !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  height: 240px !important;
+  min-height: 240px !important;
+  max-height: 240px !important;
+  overflow: hidden !important;
+}
+:global(html.atelier-pdf-capture) .trustPhotoFrame {
+  position: relative !important;
+  height: 220px !important;
+  min-height: 220px !important;
+  max-height: 220px !important;
+  overflow: hidden !important;
+}
+:global(html.atelier-pdf-capture) .coverInner,
+:global(html.atelier-pdf-capture) .closingInner {
+  padding: 0 !important;
+  gap: 0.65rem !important;
+  min-height: 0 !important;
   overflow: hidden !important;
 }
 :global(html.atelier-pdf-capture) .pageNum {
   position: absolute !important;
   display: block !important;
-  bottom: 0.55rem !important;
+  left: var(--page-pad-x) !important;
+  right: var(--page-pad-x) !important;
+  bottom: 18px !important;
+  margin: 0 !important;
   margin-top: 0 !important;
+  padding: 0 !important;
+  z-index: 20 !important;
+  text-align: right !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  font-size: 11px !important;
+  line-height: 1.2 !important;
 }
 :global(html.atelier-pdf-capture) .wealthLayout {
   grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.95fr) !important;
@@ -5994,16 +6069,36 @@
 :global(html.atelier-pdf-capture) .investBreakdown {
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1.25fr) !important;
 }
+:global(html.atelier-pdf-capture) .impactGrid,
+:global(html.atelier-pdf-capture) .hwCard4Grid,
+:global(html.atelier-pdf-capture) .hw2Grid,
+:global(html.atelier-pdf-capture) .trustGrid,
+:global(html.atelier-pdf-capture) .warrantyGrid,
+:global(html.atelier-pdf-capture) .warrantyGridCompact {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+}
 :global(html.atelier-pdf-capture) .financeFlowArrow,
 :global(html.atelier-pdf-capture) .investOp {
   transform: none !important;
 }
 :global(html.atelier-pdf-capture) .coverWealthRow {
   flex-direction: row !important;
+  align-items: flex-end !important;
 }
 :global(html.atelier-pdf-capture) .wealthJourney {
   flex-direction: row !important;
 }
+:global(html.atelier-pdf-capture) .wealthVs {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+}
 :global(html.atelier-pdf-capture) .billAuditMetrics {
   grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+:global(html.atelier-pdf-capture) .billAuditMetric {
+  border-bottom: 0 !important;
+  border-right: 1px solid var(--line) !important;
+}
+:global(html.atelier-pdf-capture) .wjArrow,
+:global(html.atelier-pdf-capture) .wealthPathArrow {
+  display: flex !important;
 }

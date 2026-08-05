@@ -1,14 +1,8 @@
 /**
  * Atelier PDF export via per-page capture (html2canvas + jsPDF).
  *
- * Why not window.print() on iPad:
- * iOS Safari's print engine breaks fixed A4 sheet layouts (shrink, blank pages).
- *
- * Strategy:
- * - Temporarily mark <html> with atelier-pdf-capture (desktop A4 geometry CSS)
- * - Capture each live <section> page to JPEG
- * - Build portrait A4 PDF
- * - On iOS: navigator.share({ files }) when available, else open blob URL
+ * Captures offscreen A4 clones under html.atelier-pdf-capture so iPad mobile
+ * layout rules do not leak into the PDF (cover image gaps, cut footers, etc.).
  */
 
 type JsPdfCtor = typeof import("jspdf").jsPDF;
@@ -46,28 +40,49 @@ async function waitForImages(root: ParentNode): Promise<void> {
   );
 }
 
-function forceA4Box(el: HTMLElement): void {
-  el.style.setProperty("width", `${A4_W_PX}px`, "important");
-  el.style.setProperty("max-width", `${A4_W_PX}px`, "important");
-  el.style.setProperty("height", `${A4_H_PX}px`, "important");
-  el.style.setProperty("min-height", `${A4_H_PX}px`, "important");
-  el.style.setProperty("max-height", `${A4_H_PX}px`, "important");
-  el.style.setProperty("margin", "0", "important");
-  el.style.setProperty("box-shadow", "none", "important");
-  el.style.setProperty("border-radius", "0", "important");
-  el.style.setProperty("overflow", "hidden", "important");
-  el.style.setProperty("position", "relative", "important");
-  el.style.setProperty("box-sizing", "border-box", "important");
-  el.style.setProperty("left", "auto", "important");
-  el.style.setProperty("right", "auto", "important");
-  el.style.setProperty("transform", "none", "important");
+function applyCaptureBox(el: HTMLElement): void {
+  el.style.cssText = [
+    `width:${A4_W_PX}px`,
+    `max-width:${A4_W_PX}px`,
+    `height:${A4_H_PX}px`,
+    `min-height:${A4_H_PX}px`,
+    `max-height:${A4_H_PX}px`,
+    "margin:0",
+    "box-shadow:none",
+    "border-radius:0",
+    "overflow:hidden",
+    "position:relative",
+    "box-sizing:border-box",
+    "left:auto",
+    "right:auto",
+    "transform:none",
+  ].join(";");
+}
+
+function createCaptureHost(): HTMLDivElement {
+  const host = document.createElement("div");
+  host.id = "atelier-pdf-capture-host";
+  host.setAttribute("aria-hidden", "true");
+  host.style.cssText = [
+    "position:fixed",
+    "left:0",
+    "top:0",
+    `width:${A4_W_PX}px`,
+    `height:${A4_H_PX}px`,
+    "overflow:hidden",
+    "opacity:0.01",
+    "pointer-events:none",
+    "z-index:2147483646",
+    "background:#fff",
+  ].join(";");
+  document.body.appendChild(host);
+  return host;
 }
 
 async function deliverPdfBlob(blob: Blob, fileName: string): Promise<void> {
   const ios = isAppleTouchDevice();
   const file = new File([blob], fileName, { type: "application/pdf" });
 
-  // Best iPad path: native share sheet → Save to Files / Print
   const nav = navigator as Navigator & {
     canShare?: (data?: ShareData) => boolean;
     share?: (data?: ShareData) => Promise<void>;
@@ -80,20 +95,15 @@ async function deliverPdfBlob(blob: Blob, fileName: string): Promise<void> {
         return;
       }
     } catch (err) {
-      // User cancel should not fall through as failure noise
       const name = err instanceof Error ? err.name : "";
       if (name === "AbortError") return;
     }
   }
 
   const url = URL.createObjectURL(blob);
-
   if (ios) {
     const opened = window.open(url, "_blank");
-    if (!opened) {
-      // Same-tab fallback — user can share from Safari PDF viewer
-      window.location.assign(url);
-    }
+    if (!opened) window.location.assign(url);
     window.setTimeout(() => URL.revokeObjectURL(url), 180_000);
     return;
   }
@@ -137,8 +147,9 @@ export async function downloadAtelierProposalPdf(options: {
   ])) as [{ jsPDF: JsPdfCtor }, { default: Html2CanvasFn }];
 
   const ios = isAppleTouchDevice();
-  const scale = ios ? 1.35 : 2;
-  const jpegQuality = ios ? 0.8 : 0.9;
+  // Higher scale = sharper type; keep iOS memory-safe.
+  const scale = ios ? 1.75 : 2;
+  const jpegQuality = ios ? 0.86 : 0.92;
 
   const pdf = new jsPDF({
     orientation: "portrait",
@@ -150,78 +161,110 @@ export async function downloadAtelierProposalPdf(options: {
   const pageHeight = pdf.internal.pageSize.getHeight();
 
   const prevHtmlClass = document.documentElement.className;
-  const prevBodyOverflow = document.body.style.overflow;
-  const styleSnapshots = sections.map((s) => s.getAttribute("style"));
-
+  const host = createCaptureHost();
   document.documentElement.classList.add(CAPTURE_CLASS);
-  document.body.style.overflow = "hidden";
-  options.root.setAttribute("data-atelier-capturing", "1");
 
   try {
     await waitForImages(options.root);
-    window.scrollTo(0, 0);
-    await new Promise((r) => window.setTimeout(r, 120));
+    await new Promise((r) => window.setTimeout(r, 100));
 
     for (let i = 0; i < sections.length; i += 1) {
       options.onProgress?.({ current: i + 1, total: sections.length });
-      const section = sections[i];
 
-      forceA4Box(section);
-      section.scrollIntoView({ block: "start", inline: "nearest" });
-      await waitForImages(section);
+      host.replaceChildren();
+      const clone = sections[i].cloneNode(true) as HTMLElement;
+      applyCaptureBox(clone);
+      host.appendChild(clone);
+
+      // Re-point images that failed after clone (same src reload)
+      for (const img of Array.from(clone.querySelectorAll("img"))) {
+        const src = img.currentSrc || img.src;
+        if (src) {
+          img.removeAttribute("srcset");
+          img.src = src;
+        }
+      }
+
+      await waitForImages(clone);
       await new Promise((r) =>
         requestAnimationFrame(() => requestAnimationFrame(() => r(undefined)))
       );
-      // Extra settle time for iOS layout / web fonts
-      await new Promise((r) => window.setTimeout(r, ios ? 80 : 30));
+      await new Promise((r) => window.setTimeout(r, ios ? 120 : 40));
 
-      const canvas = await html2canvas(section, {
+      const canvas = await html2canvas(clone, {
         scale,
-        width: A4_W_PX,
-        height: A4_H_PX,
-        windowWidth: Math.max(window.innerWidth, A4_W_PX),
-        windowHeight: Math.max(window.innerHeight, A4_H_PX),
-        backgroundColor: "#ffffff",
+        backgroundColor:
+          clone.className.includes("cover") || clone.className.includes("closing")
+            ? "#0A0F1C"
+            : "#ffffff",
         useCORS: true,
         allowTaint: false,
-        imageTimeout: 10000,
+        imageTimeout: 12000,
         logging: false,
+        // Capture the exact A4 box — avoid viewport crop on iPad
+        width: A4_W_PX,
+        height: A4_H_PX,
+        windowWidth: A4_W_PX,
+        windowHeight: A4_H_PX,
         scrollX: 0,
         scrollY: 0,
         x: 0,
         y: 0,
         onclone: (clonedDoc, clonedEl) => {
           clonedDoc.documentElement.classList.add(CAPTURE_CLASS);
-          forceA4Box(clonedEl as HTMLElement);
+          applyCaptureBox(clonedEl as HTMLElement);
           const bar = clonedDoc.querySelector("[data-atelier-print-bar]");
           if (bar instanceof HTMLElement) bar.style.display = "none";
+
+          // Force cover/closing photos to fill their frames (screen CSS sets img height:auto)
+          for (const img of Array.from(
+            clonedDoc.querySelectorAll<HTMLImageElement>(
+              "img[class*='coverPhoto'], img[class*='closingPhoto'], img[class*='trustPhoto']"
+            )
+          )) {
+            img.style.setProperty("width", "100%", "important");
+            img.style.setProperty("height", "100%", "important");
+            img.style.setProperty("object-fit", "cover", "important");
+            img.style.setProperty("max-height", "none", "important");
+            img.style.setProperty("position", "absolute", "important");
+            img.style.setProperty("inset", "0", "important");
+          }
+          for (const frame of Array.from(
+            clonedDoc.querySelectorAll<HTMLElement>(
+              "[class*='coverPhotoFrame'], [class*='closingPhotoFrame'], [class*='trustPhotoFrame']"
+            )
+          )) {
+            frame.style.setProperty("position", "relative", "important");
+            frame.style.setProperty("overflow", "hidden", "important");
+          }
         },
       });
 
-      const image = canvas.toDataURL("image/jpeg", jpegQuality);
+      // Normalize to exact A4 pixel canvas (guards against sub-pixel crop)
+      const out = document.createElement("canvas");
+      out.width = Math.round(A4_W_PX * scale);
+      out.height = Math.round(A4_H_PX * scale);
+      const ctx = out.getContext("2d");
+      if (!ctx) throw new Error("PDF canvas unavailable.");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, out.width, out.height);
+      ctx.drawImage(canvas, 0, 0, out.width, out.height);
+
+      const image = out.toDataURL("image/jpeg", jpegQuality);
       if (i > 0) pdf.addPage("a4", "portrait");
       pdf.addImage(image, "JPEG", 0, 0, pageWidth, pageHeight, undefined, "FAST");
 
       canvas.width = 0;
       canvas.height = 0;
-
-      // Restore this section's inline style before next page
-      const snap = styleSnapshots[i];
-      if (snap == null) section.removeAttribute("style");
-      else section.setAttribute("style", snap);
+      out.width = 0;
+      out.height = 0;
+      host.replaceChildren();
     }
 
     const fileName = `${safeFileName(options.customerName ?? "atelier")}-atelier-proposal.pdf`;
     await deliverPdfBlob(pdf.output("blob"), fileName);
   } finally {
     document.documentElement.className = prevHtmlClass;
-    document.body.style.overflow = prevBodyOverflow;
-    options.root.removeAttribute("data-atelier-capturing");
-    sections.forEach((section, i) => {
-      const snap = styleSnapshots[i];
-      if (snap == null) section.removeAttribute("style");
-      else section.setAttribute("style", snap);
-    });
-    window.scrollTo(0, 0);
+    host.remove();
   }
 }
