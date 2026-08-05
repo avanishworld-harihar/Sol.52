@@ -233,6 +233,33 @@ export async function buildAtelierProposalPdf(options: {
           const bar = clonedDoc.querySelector("[data-atelier-print-bar]");
           if (bar instanceof HTMLElement) bar.style.display = "none";
 
+          // Cover: kill space-between (caused empty middle + clipped savings row)
+          for (const inner of Array.from(
+            clonedDoc.querySelectorAll<HTMLElement>("[class*='coverInner']")
+          )) {
+            inner.style.setProperty("justify-content", "flex-start", "important");
+            inner.style.setProperty("gap", "14px", "important");
+            inner.style.setProperty("height", "100%", "important");
+            inner.style.setProperty("padding", "36px 44px 44px", "important");
+            inner.style.setProperty("box-sizing", "border-box", "important");
+          }
+          for (const wealth of Array.from(
+            clonedDoc.querySelectorAll<HTMLElement>("[class*='coverWealthRow']")
+          )) {
+            wealth.style.setProperty("margin-top", "auto", "important");
+            wealth.style.setProperty("flex-shrink", "0", "important");
+          }
+          for (const frame of Array.from(
+            clonedDoc.querySelectorAll<HTMLElement>("[class*='coverPhotoFrame']")
+          )) {
+            frame.style.setProperty("height", "320px", "important");
+            frame.style.setProperty("min-height", "320px", "important");
+            frame.style.setProperty("max-height", "320px", "important");
+            frame.style.setProperty("flex", "0 0 auto", "important");
+            frame.style.setProperty("position", "relative", "important");
+            frame.style.setProperty("overflow", "hidden", "important");
+          }
+
           for (const img of Array.from(
             clonedDoc.querySelectorAll<HTMLImageElement>(
               "img[class*='coverPhoto'], img[class*='closingPhoto'], img[class*='trustPhoto']"
@@ -247,7 +274,7 @@ export async function buildAtelierProposalPdf(options: {
           }
           for (const frame of Array.from(
             clonedDoc.querySelectorAll<HTMLElement>(
-              "[class*='coverPhotoFrame'], [class*='closingPhotoFrame'], [class*='trustPhotoFrame']"
+              "[class*='closingPhotoFrame'], [class*='trustPhotoFrame']"
             )
           )) {
             frame.style.setProperty("position", "relative", "important");

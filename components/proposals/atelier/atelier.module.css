@@ -4785,8 +4785,11 @@
   }
 }
 
-/* Tablet + mobile: unlock A4 height locks, stack content */
-@media screen and (max-width: 900px) {
+/*
+ * Phones only — keep iPad/tablet on desktop A4 folio layout.
+ * (max-width:900px was stacking iPad into a broken mobile proposal.)
+ */
+@media screen and (max-width: 640px) {
   .wrapper {
     padding: 0 0 calc(1.75rem + env(safe-area-inset-bottom, 0px));
     overflow-x: hidden;
@@ -6012,10 +6015,9 @@
 }
 
 /*
- * html2canvas capture mode (iPad-safe PDF).
- * Must beat @media screen / max-width:900px rules that unlock A4 height,
- * set img{height:auto}, and stack grids — those caused half-empty cover
- * photos, cut page numbers, and wrong spacing in iPad PDFs.
+ * html2canvas capture mode (iPad PDF).
+ * Cover used justify-content:space-between → huge empty middle + clipped
+ * savings row / page numbers. Lock a compact top-to-bottom cover stack.
  */
 :global(html.atelier-pdf-capture) .printBar {
   display: none !important;
@@ -6028,15 +6030,20 @@
   padding: 0 !important;
   overflow: visible !important;
   background: #fff !important;
-  --page-pad-x: 48px;
-  --page-pad-t: 40px;
-  --page-pad-b: 52px;
+  --page-pad-x: 44px;
+  --page-pad-t: 36px;
+  --page-pad-b: 48px;
   --a4-w: 794px;
   --a4-h: 1123px;
+  --c: #1e293b;
+  --h: #0a0f1c;
+  --or: #f97316;
+  --gray: #64748b;
+  --gray2: #94a3b8;
+  --line: #e2e8f0;
+  --white: #ffffff;
 }
-:global(html.atelier-pdf-capture) .page,
-:global(html.atelier-pdf-capture) .coverPage,
-:global(html.atelier-pdf-capture) .closingPage {
+:global(html.atelier-pdf-capture) .page {
   width: 794px !important;
   max-width: 794px !important;
   height: 1123px !important;
@@ -6049,12 +6056,31 @@
   overflow: hidden !important;
   padding: var(--page-pad-t) var(--page-pad-x) var(--page-pad-b) !important;
   box-sizing: border-box !important;
+  background: #fff !important;
+  color: #1e293b !important;
+}
+:global(html.atelier-pdf-capture) .coverPage,
+:global(html.atelier-pdf-capture) .closingPage {
+  width: 794px !important;
+  max-width: 794px !important;
+  height: 1123px !important;
+  min-height: 1123px !important;
+  max-height: 1123px !important;
+  margin: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+  /* Cover/closing keep padding on inner — not on the section */
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  background: #0a0f1c !important;
+  color: #fff !important;
 }
 :global(html.atelier-pdf-capture) .page img,
 :global(html.atelier-pdf-capture) .page svg {
   max-width: 100% !important;
 }
-/* Screen preview sets height:auto on all imgs — breaks object-fit cover frames */
 :global(html.atelier-pdf-capture) .coverPhotoImg,
 :global(html.atelier-pdf-capture) .closingPhotoImg,
 :global(html.atelier-pdf-capture) .trustPhotoImg {
@@ -6066,53 +6092,111 @@
   object-fit: cover !important;
   display: block !important;
 }
-:global(html.atelier-pdf-capture) .coverPhotoPlate,
-:global(html.atelier-pdf-capture) .closingPhotoPlate {
-  flex: 0 0 auto !important;
-  max-height: none !important;
+:global(html.atelier-pdf-capture) .coverInner {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: stretch !important;
+  gap: 14px !important;
+  height: 100% !important;
+  max-height: 100% !important;
   min-height: 0 !important;
+  overflow: hidden !important;
+  padding: 36px 44px 44px !important;
+  box-sizing: border-box !important;
+}
+:global(html.atelier-pdf-capture) .closingInner {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  gap: 12px !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  padding: 36px 44px 44px !important;
+  box-sizing: border-box !important;
+}
+:global(html.atelier-pdf-capture) .coverTop,
+:global(html.atelier-pdf-capture) .coverHero,
+:global(html.atelier-pdf-capture) .coverWealthRow {
+  flex: 0 0 auto !important;
+}
+:global(html.atelier-pdf-capture) .coverPhotoPlate {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 0 0 auto !important;
+  gap: 8px !important;
+  margin: 0 !important;
+  min-height: 0 !important;
+  max-height: none !important;
 }
 :global(html.atelier-pdf-capture) .coverPhotoFrame {
   position: relative !important;
   flex: 0 0 auto !important;
   width: 100% !important;
-  height: 300px !important;
-  min-height: 300px !important;
-  max-height: 300px !important;
+  height: 320px !important;
+  min-height: 320px !important;
+  max-height: 320px !important;
   overflow: hidden !important;
   border-radius: 10px !important;
+}
+:global(html.atelier-pdf-capture) .closingPhotoPlate {
+  flex: 0 0 auto !important;
+  max-height: none !important;
 }
 :global(html.atelier-pdf-capture) .closingPhotoFrame {
   position: relative !important;
   flex: 0 0 auto !important;
   width: 100% !important;
-  height: 240px !important;
-  min-height: 240px !important;
-  max-height: 240px !important;
-  overflow: hidden !important;
-}
-:global(html.atelier-pdf-capture) .trustPhotoFrame {
-  position: relative !important;
   height: 220px !important;
   min-height: 220px !important;
   max-height: 220px !important;
   overflow: hidden !important;
 }
-:global(html.atelier-pdf-capture) .coverInner,
-:global(html.atelier-pdf-capture) .closingInner {
-  padding: 0 !important;
-  gap: 0.65rem !important;
-  min-height: 0 !important;
+:global(html.atelier-pdf-capture) .trustPhotoFrame {
+  position: relative !important;
+  height: 200px !important;
+  min-height: 200px !important;
+  max-height: 200px !important;
   overflow: hidden !important;
+}
+:global(html.atelier-pdf-capture) .coverPhotoTitle,
+:global(html.atelier-pdf-capture) .coverDocType {
+  color: #f97316 !important;
+}
+:global(html.atelier-pdf-capture) .coverName,
+:global(html.atelier-pdf-capture) .coverSmallNum {
+  color: #fff !important;
+}
+:global(html.atelier-pdf-capture) .coverWealthRow {
+  margin-top: auto !important;
+  width: 100% !important;
+  padding-bottom: 4px !important;
+}
+:global(html.atelier-pdf-capture) .coverSmallStats {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  width: 100% !important;
+  gap: 1.25rem !important;
+  align-items: flex-start !important;
+}
+:global(html.atelier-pdf-capture) .coverSmallStat {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+}
+:global(html.atelier-pdf-capture) .coverSmallNum {
+  font-size: 1.35rem !important;
+  line-height: 1.15 !important;
+  white-space: nowrap !important;
 }
 :global(html.atelier-pdf-capture) .pageNum {
   position: absolute !important;
   display: block !important;
-  left: var(--page-pad-x) !important;
-  right: var(--page-pad-x) !important;
-  bottom: 18px !important;
+  left: 44px !important;
+  right: 44px !important;
+  bottom: 16px !important;
   margin: 0 !important;
-  margin-top: 0 !important;
   padding: 0 !important;
   z-index: 20 !important;
   text-align: right !important;
@@ -6156,10 +6240,6 @@
 :global(html.atelier-pdf-capture) .financeFlowArrow,
 :global(html.atelier-pdf-capture) .investOp {
   transform: none !important;
-}
-:global(html.atelier-pdf-capture) .coverWealthRow {
-  flex-direction: row !important;
-  align-items: flex-end !important;
 }
 :global(html.atelier-pdf-capture) .wealthJourney {
   flex-direction: row !important;
