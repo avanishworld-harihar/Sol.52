@@ -32,6 +32,15 @@ export function getAtelierCopy(lang: AtelierLang) {
       pdfFailed: hi
         ? "PDF नहीं बन सका। फिर कोशिश करें।"
         : "Could not create PDF. Please try again.",
+      pdfReadyTitle: hi ? "PDF तैयार है" : "PDF ready",
+      pdfReadyBody: hi
+        ? "Share दबाएँ, फिर Save to Files या Print चुनें। Proposal पेज खुला रहेगा।"
+        : "Tap Share, then Save to Files or Print. Your proposal page stays open.",
+      pdfShare: hi ? "Share / Save PDF" : "Share / Save PDF",
+      pdfClose: hi ? "बंद करें" : "Close",
+      pdfShareFailed: hi
+        ? "Share नहीं खुल सका। फिर Share बटन दबाएँ।"
+        : "Could not open Share. Tap Share again.",
       pdfShareHint: hi
         ? "Share → Save to Files चुनें"
         : "Choose Share → Save to Files",

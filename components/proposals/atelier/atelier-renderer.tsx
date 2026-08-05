@@ -48,7 +48,13 @@ import {
   WealthIconPaid,
   WealthIconPay,
 } from "./atelier-wealth-icons";
-import { downloadAtelierProposalPdf } from "./atelier-proposal-pdf";
+import {
+  buildAtelierProposalPdf,
+  downloadPdfFile,
+  isAppleTouchDevice,
+  sharePdfFile,
+  type AtelierPdfFile,
+} from "./atelier-proposal-pdf";
 import styles from "./atelier.module.css";
 
 function folio(n: number, total: number): string {
@@ -109,6 +115,8 @@ export function AtelierRenderer({
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
   const [pdfProgress, setPdfProgress] = useState("");
+  const [pdfReady, setPdfReady] = useState<AtelierPdfFile | null>(null);
+  const [pdfSharing, setPdfSharing] = useState(false);
 
   const [logoUrl, setLogoUrl] = useState<string | undefined>(() => {
     return data?.meta.brandLogoUrl?.trim() || installerLogoUrl?.trim() || undefined;
@@ -604,21 +612,42 @@ export function AtelierRenderer({
 
     setPdfBusy(true);
     setPdfProgress(c.print.preparingPdf);
+    setPdfReady(null);
     try {
       window.scrollTo(0, 0);
-      await downloadAtelierProposalPdf({
+      const file = await buildAtelierProposalPdf({
         root,
         customerName: data.meta.customerName?.trim() || clientName,
         onProgress: ({ current, total }) => {
           setPdfProgress(`${c.print.preparingPdf} ${current}/${total}`);
         },
       });
+
+      // iOS: never open blob: URLs (WebKitBlobResource error 1). Show Share sheet UI instead.
+      if (isAppleTouchDevice()) {
+        setPdfReady(file);
+      } else {
+        downloadPdfFile(file);
+      }
     } catch (err) {
       console.error("[atelier-pdf]", err);
       window.alert(c.print.pdfFailed);
     } finally {
       setPdfBusy(false);
       setPdfProgress("");
+    }
+  };
+
+  const handleSharePdf = async () => {
+    if (!pdfReady || pdfSharing) return;
+    setPdfSharing(true);
+    try {
+      await sharePdfFile(pdfReady);
+    } catch (err) {
+      console.error("[atelier-pdf-share]", err);
+      window.alert(c.print.pdfShareFailed);
+    } finally {
+      setPdfSharing(false);
     }
   };
 
@@ -687,6 +716,40 @@ export function AtelierRenderer({
           </div>
         </div>
       </div>
+
+      {pdfReady ? (
+        <div
+          className={styles.pdfReadyOverlay}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="atelier-pdf-ready-title"
+        >
+          <div className={styles.pdfReadyCard}>
+            <h3 id="atelier-pdf-ready-title" className={styles.pdfReadyTitle}>
+              {c.print.pdfReadyTitle}
+            </h3>
+            <p className={styles.pdfReadyBody}>{c.print.pdfReadyBody}</p>
+            <p className={styles.pdfReadyFile}>{pdfReady.fileName}</p>
+            <div className={styles.pdfReadyActions}>
+              <button
+                type="button"
+                className={styles.pdfReadyShare}
+                disabled={pdfSharing}
+                onClick={() => void handleSharePdf()}
+              >
+                {pdfSharing ? c.print.preparingPdf : c.print.pdfShare}
+              </button>
+              <button
+                type="button"
+                className={styles.pdfReadyClose}
+                onClick={() => setPdfReady(null)}
+              >
+                {c.print.pdfClose}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {/* ══ P1: CINEMATIC COVER ══════════════════════════════════ */}
       <section className={`${styles.page} ${styles.coverPage}`}>

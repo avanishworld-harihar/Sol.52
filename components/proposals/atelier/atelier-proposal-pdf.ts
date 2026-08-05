@@ -1,8 +1,11 @@
 /**
  * Atelier PDF export via per-page capture (html2canvas + jsPDF).
  *
- * Captures offscreen A4 clones under html.atelier-pdf-capture so iPad mobile
- * layout rules do not leak into the PDF (cover image gaps, cut footers, etc.).
+ * iPad / iOS Safari notes:
+ * - Never navigate to blob: URLs (window.open / location.assign) — causes
+ *   "WebKitBlobResource error 1" and breaks refresh of the proposal tab.
+ * - navigator.share({ files }) needs a fresh user gesture; after a long capture
+ *   the original tap is expired, so the UI must show a Share button to tap again.
  */
 
 type JsPdfCtor = typeof import("jspdf").jsPDF;
@@ -12,7 +15,7 @@ const A4_W_PX = 794;
 const A4_H_PX = 1123;
 const CAPTURE_CLASS = "atelier-pdf-capture";
 
-function isAppleTouchDevice(): boolean {
+export function isAppleTouchDevice(): boolean {
   if (typeof navigator === "undefined") return false;
   const ua = navigator.userAgent || "";
   const iPadDesktopUa =
@@ -63,6 +66,7 @@ function createCaptureHost(): HTMLDivElement {
   const host = document.createElement("div");
   host.id = "atelier-pdf-capture-host";
   host.setAttribute("aria-hidden", "true");
+  // Keep in viewport (opacity only) — far off-screen clones often rasterize blank on iOS.
   host.style.cssText = [
     "position:fixed",
     "left:0",
@@ -79,57 +83,72 @@ function createCaptureHost(): HTMLDivElement {
   return host;
 }
 
-async function deliverPdfBlob(blob: Blob, fileName: string): Promise<void> {
-  const ios = isAppleTouchDevice();
-  const file = new File([blob], fileName, { type: "application/pdf" });
+export type AtelierPdfProgress = {
+  current: number;
+  total: number;
+};
 
-  const nav = navigator as Navigator & {
-    canShare?: (data?: ShareData) => boolean;
-    share?: (data?: ShareData) => Promise<void>;
-  };
-  if (ios && typeof nav.share === "function") {
-    try {
-      const shareData: ShareData = { files: [file], title: fileName };
-      if (!nav.canShare || nav.canShare(shareData)) {
-        await nav.share(shareData);
-        return;
-      }
-    } catch (err) {
-      const name = err instanceof Error ? err.name : "";
-      if (name === "AbortError") return;
-    }
-  }
+export type AtelierPdfFile = {
+  blob: Blob;
+  fileName: string;
+};
 
-  const url = URL.createObjectURL(blob);
-  if (ios) {
-    const opened = window.open(url, "_blank");
-    if (!opened) window.location.assign(url);
-    window.setTimeout(() => URL.revokeObjectURL(url), 180_000);
-    return;
-  }
-
+/** Desktop: trigger a file download. Never used for iOS navigation. */
+export function downloadPdfFile(file: AtelierPdfFile): void {
+  const url = URL.createObjectURL(file.blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = fileName;
+  a.download = file.fileName;
+  a.rel = "noopener";
   document.body.appendChild(a);
   a.click();
   a.remove();
   window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
 }
 
-export type AtelierPdfProgress = {
-  current: number;
-  total: number;
-};
+/**
+ * iOS-safe share. Call from a direct button tap (fresh user gesture).
+ * Returns true if the share sheet was shown / completed.
+ */
+export async function sharePdfFile(file: AtelierPdfFile): Promise<boolean> {
+  const pdfFile = new File([file.blob], file.fileName, {
+    type: "application/pdf",
+  });
+  const nav = navigator as Navigator & {
+    canShare?: (data?: ShareData) => boolean;
+    share?: (data?: ShareData) => Promise<void>;
+  };
+
+  if (typeof nav.share !== "function") {
+    throw new Error("Share is not supported on this device.");
+  }
+
+  const shareData: ShareData = {
+    files: [pdfFile],
+    title: file.fileName,
+  };
+  if (nav.canShare && !nav.canShare(shareData)) {
+    throw new Error("Sharing PDF files is not supported on this device.");
+  }
+
+  try {
+    await nav.share(shareData);
+    return true;
+  } catch (err) {
+    const name = err instanceof Error ? err.name : "";
+    if (name === "AbortError") return false;
+    throw err;
+  }
+}
 
 /**
- * Capture each Atelier A4 section under `[data-atelier-root]` into a portrait PDF.
+ * Build a portrait A4 PDF from Atelier page sections (does not navigate the browser).
  */
-export async function downloadAtelierProposalPdf(options: {
+export async function buildAtelierProposalPdf(options: {
   root: HTMLElement;
   customerName?: string;
   onProgress?: (p: AtelierPdfProgress) => void;
-}): Promise<void> {
+}): Promise<AtelierPdfFile> {
   if (typeof window === "undefined" || typeof document === "undefined") {
     throw new Error("PDF download is supported only in browser.");
   }
@@ -147,9 +166,9 @@ export async function downloadAtelierProposalPdf(options: {
   ])) as [{ jsPDF: JsPdfCtor }, { default: Html2CanvasFn }];
 
   const ios = isAppleTouchDevice();
-  // Higher scale = sharper type; keep iOS memory-safe.
-  const scale = ios ? 1.75 : 2;
-  const jpegQuality = ios ? 0.86 : 0.92;
+  // Keep iOS memory lower — large blobs + open(blob) is what triggers WebKitBlobResource.
+  const scale = ios ? 1.25 : 2;
+  const jpegQuality = ios ? 0.78 : 0.92;
 
   const pdf = new jsPDF({
     orientation: "portrait",
@@ -166,7 +185,7 @@ export async function downloadAtelierProposalPdf(options: {
 
   try {
     await waitForImages(options.root);
-    await new Promise((r) => window.setTimeout(r, 100));
+    await new Promise((r) => window.setTimeout(r, 80));
 
     for (let i = 0; i < sections.length; i += 1) {
       options.onProgress?.({ current: i + 1, total: sections.length });
@@ -176,7 +195,6 @@ export async function downloadAtelierProposalPdf(options: {
       applyCaptureBox(clone);
       host.appendChild(clone);
 
-      // Re-point images that failed after clone (same src reload)
       for (const img of Array.from(clone.querySelectorAll("img"))) {
         const src = img.currentSrc || img.src;
         if (src) {
@@ -189,7 +207,7 @@ export async function downloadAtelierProposalPdf(options: {
       await new Promise((r) =>
         requestAnimationFrame(() => requestAnimationFrame(() => r(undefined)))
       );
-      await new Promise((r) => window.setTimeout(r, ios ? 120 : 40));
+      await new Promise((r) => window.setTimeout(r, ios ? 90 : 30));
 
       const canvas = await html2canvas(clone, {
         scale,
@@ -201,7 +219,6 @@ export async function downloadAtelierProposalPdf(options: {
         allowTaint: false,
         imageTimeout: 12000,
         logging: false,
-        // Capture the exact A4 box — avoid viewport crop on iPad
         width: A4_W_PX,
         height: A4_H_PX,
         windowWidth: A4_W_PX,
@@ -216,7 +233,6 @@ export async function downloadAtelierProposalPdf(options: {
           const bar = clonedDoc.querySelector("[data-atelier-print-bar]");
           if (bar instanceof HTMLElement) bar.style.display = "none";
 
-          // Force cover/closing photos to fill their frames (screen CSS sets img height:auto)
           for (const img of Array.from(
             clonedDoc.querySelectorAll<HTMLImageElement>(
               "img[class*='coverPhoto'], img[class*='closingPhoto'], img[class*='trustPhoto']"
@@ -240,7 +256,6 @@ export async function downloadAtelierProposalPdf(options: {
         },
       });
 
-      // Normalize to exact A4 pixel canvas (guards against sub-pixel crop)
       const out = document.createElement("canvas");
       out.width = Math.round(A4_W_PX * scale);
       out.height = Math.round(A4_H_PX * scale);
@@ -261,10 +276,25 @@ export async function downloadAtelierProposalPdf(options: {
       host.replaceChildren();
     }
 
-    const fileName = `${safeFileName(options.customerName ?? "atelier")}-atelier-proposal.pdf`;
-    await deliverPdfBlob(pdf.output("blob"), fileName);
+    return {
+      blob: pdf.output("blob"),
+      fileName: `${safeFileName(options.customerName ?? "atelier")}-atelier-proposal.pdf`,
+    };
   } finally {
     document.documentElement.className = prevHtmlClass;
     host.remove();
   }
+}
+
+/** @deprecated use buildAtelierProposalPdf + share/download helpers */
+export async function downloadAtelierProposalPdf(options: {
+  root: HTMLElement;
+  customerName?: string;
+  onProgress?: (p: AtelierPdfProgress) => void;
+}): Promise<AtelierPdfFile> {
+  const file = await buildAtelierProposalPdf(options);
+  if (!isAppleTouchDevice()) {
+    downloadPdfFile(file);
+  }
+  return file;
 }
