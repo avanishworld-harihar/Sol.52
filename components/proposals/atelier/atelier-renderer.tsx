@@ -50,7 +50,6 @@ import {
 } from "./atelier-wealth-icons";
 import {
   buildAtelierProposalPdf,
-  downloadPdfFile,
   isAppleTouchDevice,
   sharePdfFile,
   type AtelierPdfFile,
@@ -607,6 +606,21 @@ export function AtelierRenderer({
 
   const handleDownloadPdf = async () => {
     if (typeof window === "undefined" || pdfBusy) return;
+
+    /*
+     * Desktop Chrome/Edge: window.print() → Save as PDF matches the on-screen
+     * Atelier colors/layout. html2canvas capture flattens accents and clips pages.
+     * iPad/iOS: keep page-capture + Share sheet (Safari print is unreliable;
+     * blob: navigation causes WebKitBlobResource error 1).
+     */
+    if (!isAppleTouchDevice()) {
+      window.scrollTo(0, 0);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => window.print());
+      });
+      return;
+    }
+
     const root = rootRef.current;
     if (!root) return;
 
@@ -622,13 +636,7 @@ export function AtelierRenderer({
           setPdfProgress(`${c.print.preparingPdf} ${current}/${total}`);
         },
       });
-
-      // iOS: never open blob: URLs (WebKitBlobResource error 1). Show Share sheet UI instead.
-      if (isAppleTouchDevice()) {
-        setPdfReady(file);
-      } else {
-        downloadPdfFile(file);
-      }
+      setPdfReady(file);
     } catch (err) {
       console.error("[atelier-pdf]", err);
       window.alert(c.print.pdfFailed);
