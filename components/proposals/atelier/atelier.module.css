@@ -5676,14 +5676,45 @@
     padding: 0 !important;
     min-height: 0;
     gap: 0.55rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    height: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .coverTop {
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+  }
+  .coverPhotoPlate {
+    flex: 0 0 auto !important;
+    flex-grow: 0 !important;
+    flex-shrink: 0 !important;
+    min-height: 0 !important;
+    max-height: none !important;
   }
   .coverPhotoFrame {
-    min-height: 78mm !important;
-    max-height: 105mm !important;
+    height: 88mm !important;
+    min-height: 88mm !important;
+    max-height: 88mm !important;
+    flex: 0 0 auto !important;
   }
   .coverPhotoImg {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    object-fit: cover !important;
+    object-position: center center !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+  .coverHero {
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+  }
+  .coverWealthRow {
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+    margin-top: auto !important;
   }
   .coverName {
     font-size: 22pt !important;

@@ -244,8 +244,26 @@ export async function buildAtelierProposalPdf(options: {
           for (const inner of Array.from(
             clonedEl.querySelectorAll<HTMLElement>("[class*='coverInner']")
           )) {
+            inner.style.setProperty("display", "flex", "important");
+            inner.style.setProperty("flex-direction", "column", "important");
             inner.style.setProperty("justify-content", "flex-start", "important");
             inner.style.setProperty("gap", "14px", "important");
+            inner.style.setProperty("height", "100%", "important");
+          }
+          for (const photoPlate of Array.from(
+            clonedEl.querySelectorAll<HTMLElement>("[class*='coverPhotoPlate']")
+          )) {
+            photoPlate.style.setProperty("flex", "0 0 auto", "important");
+            photoPlate.style.setProperty("min-height", "0", "important");
+          }
+          for (const photoFrame of Array.from(
+            clonedEl.querySelectorAll<HTMLElement>("[class*='coverPhotoFrame']")
+          )) {
+            photoFrame.style.setProperty("height", "320px", "important");
+            photoFrame.style.setProperty("min-height", "320px", "important");
+            photoFrame.style.setProperty("max-height", "320px", "important");
+            photoFrame.style.setProperty("flex", "0 0 auto", "important");
+            photoFrame.style.setProperty("overflow", "hidden", "important");
           }
           for (const wealth of Array.from(
             clonedEl.querySelectorAll<HTMLElement>("[class*='coverWealthRow']")
@@ -259,6 +277,7 @@ export async function buildAtelierProposalPdf(options: {
             )
           )) {
             img.style.setProperty("object-fit", "cover", "important");
+            img.style.setProperty("object-position", "center center", "important");
             img.style.setProperty("width", "100%", "important");
             img.style.setProperty("height", "100%", "important");
           }
