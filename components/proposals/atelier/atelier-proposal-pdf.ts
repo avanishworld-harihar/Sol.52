@@ -13,7 +13,6 @@ type Html2CanvasFn = typeof import("html2canvas")["default"];
 
 const A4_W_PX = 794;
 const A4_H_PX = 1123;
-const CAPTURE_CLASS = "atelier-pdf-capture";
 
 export function isAppleTouchDevice(): boolean {
   if (typeof navigator === "undefined") return false;
@@ -62,9 +61,12 @@ function applyCaptureBox(el: HTMLElement): void {
   ].join(";");
 }
 
-function createCaptureHost(): HTMLDivElement {
+function createCaptureHost(wrapperClassName: string): HTMLDivElement {
   const host = document.createElement("div");
   host.id = "atelier-pdf-capture-host";
+  // Reuse the real proposal wrapper so its CSS variables and desktop rules are
+  // inherited by the page clone. Do not apply a second "PDF layout" variant.
+  host.className = wrapperClassName;
   host.setAttribute("aria-hidden", "true");
   // Keep in viewport (opacity only) — far off-screen clones often rasterize blank on iOS.
   host.style.cssText = [
@@ -179,9 +181,7 @@ export async function buildAtelierProposalPdf(options: {
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
 
-  const prevHtmlClass = document.documentElement.className;
-  const host = createCaptureHost();
-  document.documentElement.classList.add(CAPTURE_CLASS);
+  const host = createCaptureHost(options.root.className);
 
   try {
     await waitForImages(options.root);
@@ -227,60 +227,6 @@ export async function buildAtelierProposalPdf(options: {
         scrollY: 0,
         x: 0,
         y: 0,
-        onclone: (clonedDoc, clonedEl) => {
-          clonedDoc.documentElement.classList.add(CAPTURE_CLASS);
-          applyCaptureBox(clonedEl as HTMLElement);
-          const bar = clonedDoc.querySelector("[data-atelier-print-bar]");
-          if (bar instanceof HTMLElement) bar.style.display = "none";
-
-          // Cover: kill space-between (caused empty middle + clipped savings row)
-          for (const inner of Array.from(
-            clonedDoc.querySelectorAll<HTMLElement>("[class*='coverInner']")
-          )) {
-            inner.style.setProperty("justify-content", "flex-start", "important");
-            inner.style.setProperty("gap", "14px", "important");
-            inner.style.setProperty("height", "100%", "important");
-            inner.style.setProperty("padding", "36px 44px 44px", "important");
-            inner.style.setProperty("box-sizing", "border-box", "important");
-          }
-          for (const wealth of Array.from(
-            clonedDoc.querySelectorAll<HTMLElement>("[class*='coverWealthRow']")
-          )) {
-            wealth.style.setProperty("margin-top", "auto", "important");
-            wealth.style.setProperty("flex-shrink", "0", "important");
-          }
-          for (const frame of Array.from(
-            clonedDoc.querySelectorAll<HTMLElement>("[class*='coverPhotoFrame']")
-          )) {
-            frame.style.setProperty("height", "320px", "important");
-            frame.style.setProperty("min-height", "320px", "important");
-            frame.style.setProperty("max-height", "320px", "important");
-            frame.style.setProperty("flex", "0 0 auto", "important");
-            frame.style.setProperty("position", "relative", "important");
-            frame.style.setProperty("overflow", "hidden", "important");
-          }
-
-          for (const img of Array.from(
-            clonedDoc.querySelectorAll<HTMLImageElement>(
-              "img[class*='coverPhoto'], img[class*='closingPhoto'], img[class*='trustPhoto']"
-            )
-          )) {
-            img.style.setProperty("width", "100%", "important");
-            img.style.setProperty("height", "100%", "important");
-            img.style.setProperty("object-fit", "cover", "important");
-            img.style.setProperty("max-height", "none", "important");
-            img.style.setProperty("position", "absolute", "important");
-            img.style.setProperty("inset", "0", "important");
-          }
-          for (const frame of Array.from(
-            clonedDoc.querySelectorAll<HTMLElement>(
-              "[class*='closingPhotoFrame'], [class*='trustPhotoFrame']"
-            )
-          )) {
-            frame.style.setProperty("position", "relative", "important");
-            frame.style.setProperty("overflow", "hidden", "important");
-          }
-        },
       });
 
       const out = document.createElement("canvas");
@@ -308,7 +254,6 @@ export async function buildAtelierProposalPdf(options: {
       fileName: `${safeFileName(options.customerName ?? "atelier")}-atelier-proposal.pdf`,
     };
   } finally {
-    document.documentElement.className = prevHtmlClass;
     host.remove();
   }
 }
