@@ -48,10 +48,42 @@ export function isValidPresetId(id: unknown): id is ProposalPresetId {
   return typeof id === "string" && PROPOSAL_PRESET_IDS.includes(id as ProposalPresetId);
 }
 
-/** Legacy / removed residential ids remap to Golden; unknown → Golden. */
+/**
+ * Historic document ids have a deliberate, auditable fallback.  Unknown ids
+ * are not assumed to be a customer-facing theme; callers can surface the
+ * diagnostic and keep the public document from silently becoming another
+ * preset.
+ */
+export const LEGACY_RESIDENTIAL_PRESET_FALLBACKS = {
+  residential_smart: "residential_executive",
+  residential_sales_premium: "residential_executive",
+  residential_bank_loan: "residential_executive",
+  residential_solstice: "residential_executive",
+  residential_energy_freedom: "residential_executive",
+} as const satisfies Record<string, ProposalPresetId>;
+
+export type PresetResolution = {
+  presetId: ProposalPresetId;
+  status: "active" | "legacy" | "unknown";
+};
+
+export function resolvePresetId(raw: string | null | undefined): PresetResolution {
+  if (raw && isValidPresetId(raw)) return { presetId: raw, status: "active" };
+  if (raw && raw in LEGACY_RESIDENTIAL_PRESET_FALLBACKS) {
+    return {
+      presetId:
+        LEGACY_RESIDENTIAL_PRESET_FALLBACKS[
+          raw as keyof typeof LEGACY_RESIDENTIAL_PRESET_FALLBACKS
+        ],
+      status: "legacy",
+    };
+  }
+  return { presetId: "residential_executive", status: "unknown" };
+}
+
+/** Compatibility wrapper for existing consumers. Prefer `resolvePresetId`. */
 export function normalizePresetId(raw: string | null | undefined): ProposalPresetId {
-  if (raw && isValidPresetId(raw)) return raw;
-  return "residential_executive";
+  return resolvePresetId(raw).presetId;
 }
 
 /** Returns true only for the legacy block-loop web renderer (not isolated document presets). */

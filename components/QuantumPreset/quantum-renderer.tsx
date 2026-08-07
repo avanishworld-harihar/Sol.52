@@ -8,7 +8,7 @@
  * DEVELOPMENT LOCKED — see `lib/quantum-proposal-lock.ts`. Do not edit for other presets.
  */
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
 import { QuantumCover } from "./QuantumCover";
 import { QuantumTelemetry } from "./QuantumTelemetry";
@@ -20,6 +20,11 @@ import { QuantumTermsPage1, QuantumTermsPage2 } from "./QuantumTerms";
 import { QuantumLangProvider, useQuantumLang } from "./quantum-lang-context";
 import { getQuantumCopy, type QuantumLang } from "./quantum-copy";
 import styles from "./Quantum.module.css";
+import {
+  buildAtelierProposalPdf,
+  downloadPdfFile,
+  isAppleTouchDevice,
+} from "@/components/proposals/_shared/residential-pdf-export";
 
 export type QuantumRendererProps = {
   data: ProposalData;
@@ -27,13 +32,30 @@ export type QuantumRendererProps = {
 
 function QuantumDocument({ data }: { data: ProposalData }) {
   const { lang, setLang, copy } = useQuantumLang();
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [pdfBusy, setPdfBusy] = useState(false);
 
-  const handlePrint = () => {
-    if (typeof window !== "undefined") window.print();
+  const handlePrint = async () => {
+    if (typeof window === "undefined" || pdfBusy) return;
+    if (isAppleTouchDevice() && rootRef.current) {
+      setPdfBusy(true);
+      try {
+        downloadPdfFile(await buildAtelierProposalPdf({
+          root: rootRef.current,
+          customerName: data.meta.customerName,
+          presetId: "residential_quantum",
+          pageSelector: ":scope > section",
+        }));
+      } finally {
+        setPdfBusy(false);
+      }
+      return;
+    }
+    window.print();
   };
 
   return (
-    <div className={styles.root}>
+    <div ref={rootRef} data-proposal-preset="residential_quantum" className={styles.root}>
       <div className={styles.printBar}>
         <div className={styles.printBarInner}>
           <span className={styles.printBarBrand}>{copy.print.brand}</span>

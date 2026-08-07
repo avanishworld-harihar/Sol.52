@@ -5,7 +5,7 @@
  * Data: ProposalData only — does not import Golden transform/CSS.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
 import {
   formatInr,
@@ -19,6 +19,11 @@ import {
   resolveProposalBrandPresentation,
 } from "@/lib/proposal-branding-settings";
 import { getZenithCopy, type ZenithLang } from "./zenith-copy";
+import {
+  buildAtelierProposalPdf,
+  downloadPdfFile,
+  isAppleTouchDevice,
+} from "@/components/proposals/_shared/residential-pdf-export";
 import styles from "./zenith.module.css";
 
 export type ZenithProposalRendererProps = {
@@ -76,6 +81,8 @@ export function ZenithProposalRenderer({
   const [logoUrl, setLogoUrl] = useState<string | undefined>(() => {
     return data?.meta.brandLogoUrl?.trim() || installerLogoUrl?.trim() || undefined;
   });
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [pdfBusy, setPdfBusy] = useState(false);
 
   useEffect(() => {
     const sync = () => {
@@ -144,12 +151,27 @@ export function ZenithProposalRenderer({
     execution.payments.length > 0 ||
     Boolean(execution.bank.company || execution.bank.accountNumber || execution.bank.upiId);
 
-  const handlePrint = () => {
-    if (typeof window !== "undefined") window.print();
+  const handlePrint = async () => {
+    if (typeof window === "undefined" || pdfBusy) return;
+    if (isAppleTouchDevice() && rootRef.current) {
+      setPdfBusy(true);
+      try {
+        downloadPdfFile(await buildAtelierProposalPdf({
+          root: rootRef.current,
+          customerName: customer,
+          presetId: "residential_zenith",
+          pageSelector: ":scope > section",
+        }));
+      } finally {
+        setPdfBusy(false);
+      }
+      return;
+    }
+    window.print();
   };
 
   return (
-    <div className={`${styles.shell}${isHi ? ` ${styles.langHi}` : ""}`}>
+    <div ref={rootRef} data-proposal-preset="residential_zenith" className={`${styles.shell}${isHi ? ` ${styles.langHi}` : ""}`}>
       <div className={styles.printBar}>
         <div className={styles.printBarInner}>
           <span className={styles.printBarBrand}>{brand}</span>

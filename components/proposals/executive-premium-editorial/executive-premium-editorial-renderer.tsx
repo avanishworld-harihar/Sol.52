@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposal-ppt";
 import type { ProposalLang } from "@/lib/proposal-i18n";
 import { epGoldenCopy } from "@/lib/executive-premium-editorial/ep-golden-i18n";
@@ -28,6 +28,11 @@ import { EpWarrantyPage } from "@/components/proposals/executive-premium-editori
 import { EpClosingPage } from "@/components/proposals/executive-premium-editorial/pages/ep-closing-page";
 import "@/components/proposals/executive-premium-editorial/ep-golden.css";
 import { isProposalBillAuditBacked } from "@/lib/proposal-bill-audit-eligibility";
+import {
+  buildAtelierProposalPdf,
+  downloadPdfFile,
+  isAppleTouchDevice,
+} from "@/components/proposals/_shared/residential-pdf-export";
 
 export type ExecutivePremiumEditorialRendererProps = {
   pptInput: PremiumProposalPptInput;
@@ -44,6 +49,8 @@ export function ExecutivePremiumEditorialRenderer({
   const [lang, setLang] = useState<ProposalLang>(summary.lang ?? "en");
   const copy = epGoldenCopy(lang);
   const [brandingTick, setBrandingTick] = useState(0);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [pdfBusy, setPdfBusy] = useState(false);
 
   useEffect(() => {
     const bump = () => setBrandingTick((n) => n + 1);
@@ -131,19 +138,38 @@ export function ExecutivePremiumEditorialRenderer({
   const closingBrand = resolveProposalBrandPresentation(brandConfig, "closing", identity);
 
   const billAuditBacked = isProposalBillAuditBacked(pptInput);
+  const handlePrint = async () => {
+    if (typeof window === "undefined" || pdfBusy) return;
+    if (isAppleTouchDevice() && rootRef.current) {
+      setPdfBusy(true);
+      try {
+        downloadPdfFile(await buildAtelierProposalPdf({
+          root: rootRef.current,
+          customerName: model.customer_name,
+          presetId: "residential_executive",
+          pageSelector: ":scope > .ep-gl-toolbar + .ep-gl-doc-canvas > section, :scope > .ep-gl-doc-canvas > section",
+        }));
+      } finally {
+        setPdfBusy(false);
+      }
+      return;
+    }
+    window.print();
+  };
 
   return (
     <EpGoldenLangProvider
       lang={lang}
       footerBrand={footerBrand.showName ? footerBrand.installerName : undefined}
     >
-      <div className={`ep-golden-root w-full${lang === "hi" ? " lang-hi" : ""}`}>
+      <div ref={rootRef} data-proposal-preset="residential_executive" className={`ep-golden-root w-full${lang === "hi" ? " lang-hi" : ""}`}>
         <EpProposalShell
           lang={lang}
           onLangToggle={() => setLang((l) => (l === "en" ? "hi" : "en"))}
           langToggleLabel={copy.toolbar.langToggle}
           printLabel={copy.toolbar.printPdf}
           presetLabel={copy.toolbar.preset}
+          onPrint={handlePrint}
         >
           <div className="ep-gl-doc-canvas">
             <EpCoverPage

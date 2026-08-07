@@ -17,6 +17,7 @@ import {
   validateCommercialLayoutPlan,
 } from "@/lib/proposal-stability/commercial-layout";
 import { validatePrintLayoutGuards } from "@/lib/proposal-stability/print-layout-guards";
+import { validateResidentialPresetGuards } from "@/lib/proposal-stability/residential-preset-guards";
 
 export type GoldenFixture = {
   id: string;
@@ -129,6 +130,11 @@ export function runProposalStabilityChecks(rootDir: string): StabilityReport {
     errors.push(err);
   }
   if (errors.length === 0) passed.push("print-layout-guards");
+
+  for (const err of validateResidentialPresetGuards()) {
+    errors.push(err);
+  }
+  if (errors.length === 0) passed.push("residential-preset-guards");
 
   // ── Golden fixtures ──────────────────────────────────────────────────────
   const fixtureNames = ["residential", "school", "factory"] as const;

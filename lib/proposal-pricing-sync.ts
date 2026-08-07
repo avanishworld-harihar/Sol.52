@@ -143,7 +143,7 @@ export async function persistProposalLayoutChange(proposalId: string, layout: Pr
   const pricing = await getProposalPricingByProposalId(proposalId);
   const presetId = isValidPresetId(proposal.preset_id)
     ? proposal.preset_id
-    : ("residential_sales_premium" as ProposalPresetId);
+    : ("residential_zenith" as ProposalPresetId);
   const normalized = normalizeProposalLayoutForPreset(layout, presetId);
   const mergedPpt = mergeProposalPricingIntoPptInput(
     { ...proposal.ppt_input, proposalLayout: normalized },

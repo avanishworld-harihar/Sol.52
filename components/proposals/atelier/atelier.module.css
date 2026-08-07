@@ -88,6 +88,112 @@
   flex-shrink: 0;
 }
 .printBarBtn:hover { background: var(--or2); }
+.printBarBtn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+/* iPad PDF capture host — size lock only; keep live section layout */
+.pdfCaptureHost {
+  width: 794px !important;
+  max-width: 794px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  background: #fff !important;
+}
+.pdfCaptureHost,
+.pdfCaptureHost * {
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+.pdfCaptureHost > section {
+  width: 794px !important;
+  max-width: 794px !important;
+  height: 1123px !important;
+  min-height: 1123px !important;
+  max-height: 1123px !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+.pdfReadyOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 1rem;
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  background: rgba(10, 15, 28, 0.55);
+  box-sizing: border-box;
+}
+.pdfReadyCard {
+  width: min(420px, 100%);
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.25rem 1.2rem 1.15rem;
+  box-shadow: 0 18px 48px rgba(10, 15, 28, 0.35);
+}
+.pdfReadyTitle {
+  margin: 0 0 0.45rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--h);
+}
+.pdfReadyBody {
+  margin: 0 0 0.65rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--gray);
+}
+.pdfReadyFile {
+  margin: 0 0 1rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--c);
+  word-break: break-all;
+}
+.pdfReadyActions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.pdfReadyShare {
+  appearance: none;
+  border: none;
+  border-radius: 10px;
+  background: var(--or);
+  color: #fff;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 0.85rem 1rem;
+  min-height: 48px;
+  cursor: pointer;
+}
+.pdfReadyShare:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+.pdfReadyClose {
+  appearance: none;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--c);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  min-height: 44px;
+  cursor: pointer;
+}
 
 .printBarActions {
   display: flex;
@@ -5613,17 +5719,32 @@
     min-height: 0 !important;
     max-height: none !important;
   }
+  /*
+   * Print must keep near-16:9 framing. A short fixed height (e.g. 88mm) on a
+   * full A4 content width makes object-fit:cover zoom into the middle and
+   * crop the rooftop panels that look fine on screen.
+   */
   .coverPhotoFrame {
-    height: 88mm !important;
-    min-height: 88mm !important;
-    max-height: 88mm !important;
+    position: relative !important;
+    /* Keep true 16:9 when height is capped — avoids ultra-wide zoom crop */
+    width: min(100%, calc(92mm * 16 / 9)) !important;
+    max-width: 100% !important;
+    margin-inline: auto !important;
+    height: auto !important;
+    aspect-ratio: 16 / 9 !important;
+    min-height: 0 !important;
+    max-height: 92mm !important;
     flex: 0 0 auto !important;
+    overflow: hidden !important;
   }
   .coverPhotoImg {
+    position: absolute !important;
+    inset: 0 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     object-fit: cover !important;
-    object-position: center center !important;
+    /* Same bias as screen — keep array/panels in frame */
+    object-position: center 42% !important;
     width: 100% !important;
     height: 100% !important;
   }

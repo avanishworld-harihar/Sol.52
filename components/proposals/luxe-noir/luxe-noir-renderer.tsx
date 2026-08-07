@@ -6,7 +6,7 @@
  * Atelier (residential_premium_luxe) stays separate.
  */
 
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
 import type {
   PremiumProposalPptInput,
@@ -37,6 +37,11 @@ import {
 } from "./luxe-brand";
 import { installerLogoAlt } from "@/lib/proposal-branding-settings";
 import styles from "./luxe-noir-shell.module.css";
+import {
+  buildAtelierProposalPdf,
+  downloadPdfFile,
+  isAppleTouchDevice,
+} from "@/components/proposals/_shared/residential-pdf-export";
 
 export type LuxeNoirRendererProps = {
   data: ProposalData;
@@ -97,6 +102,8 @@ function LuxeNoirDocument({
   const { lang, setLang, copy, isHi } = useLuxeLang();
   const brandBundle = useLuxeBrand();
   const brand = brandBundle.vendorName;
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [pdfBusy, setPdfBusy] = useState(false);
   const systemKw = Number(data.meta.systemKw) || 0;
   const eco = data.economics;
   const bill = data.bill;
@@ -188,8 +195,23 @@ function LuxeNoirDocument({
             "Commissioning follows net-metering approval by the DISCOM.",
           ];
 
-  const handlePrint = () => {
-    if (typeof window !== "undefined") window.print();
+  const handlePrint = async () => {
+    if (typeof window === "undefined" || pdfBusy) return;
+    if (isAppleTouchDevice() && rootRef.current) {
+      setPdfBusy(true);
+      try {
+        downloadPdfFile(await buildAtelierProposalPdf({
+          root: rootRef.current,
+          customerName: data.meta.customerName,
+          presetId: "residential_luxe_noir",
+          pageSelector: ":scope > section",
+        }));
+      } finally {
+        setPdfBusy(false);
+      }
+      return;
+    }
+    window.print();
   };
 
   const genLabel =
@@ -200,7 +222,7 @@ function LuxeNoirDocument({
         : "annual";
 
   return (
-    <div className={`${styles.root} ${luxeDisplayFont.variable}`}>
+    <div ref={rootRef} data-proposal-preset="residential_luxe_noir" className={`${styles.root} ${luxeDisplayFont.variable}`}>
       <div className={styles.printBar}>
         <div className={styles.printBarInner}>
           <span className={styles.printBarBrand}>{copy.print.brand}</span>

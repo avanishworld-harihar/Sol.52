@@ -245,7 +245,7 @@ function mapProposalListRow(r: Record<string, unknown>): ProposalListItem {
     panel_brand: typeof brand === "string" && brand.trim() ? brand.trim() : null,
     annual_saving_inr: typeof saving === "number" && Number.isFinite(saving) ? saving : null,
     proposal_status: normalizeProposalStatus(typeof r.proposal_status === "string" ? r.proposal_status : "draft"),
-    preset_id: typeof r.preset_id === "string" && r.preset_id ? r.preset_id : "residential_sales_premium",
+    preset_id: typeof r.preset_id === "string" && r.preset_id ? r.preset_id : "residential_zenith",
     location: typeof loc === "string" && loc.trim() ? loc.trim() : null,
     view_count: typeof r.view_count === "number" ? r.view_count : null,
     last_viewed_at: r.last_viewed_at != null ? String(r.last_viewed_at) : null,

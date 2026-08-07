@@ -10,7 +10,7 @@
  * break-after: page (print only)
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { formatInr, formatInrCompact } from "@/components/proposals/_shared/formatters";
@@ -49,6 +49,12 @@ import {
   WealthIconPay,
 } from "./atelier-wealth-icons";
 import styles from "./atelier.module.css";
+import {
+  buildAtelierProposalPdf,
+  isAppleTouchDevice,
+  sharePdfFile,
+  type AtelierPdfFile,
+} from "./atelier-proposal-pdf";
 
 function folio(n: number, total: number): string {
   return `${String(n).padStart(2, "0")} / ${String(total).padStart(2, "0")}`;
@@ -116,6 +122,10 @@ export function AtelierRenderer({
     })
   );
   const [logoNeedsPlate, setLogoNeedsPlate] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfReady, setPdfReady] = useState<AtelierPdfFile | null>(null);
+  const [pdfSharing, setPdfSharing] = useState(false);
 
   useEffect(() => {
     const sync = () => {
@@ -593,18 +603,54 @@ export function AtelierRenderer({
     };
   }, []);
 
-  const handleDownloadPdf = () => {
-    if (typeof window === "undefined") return;
+  const handleDownloadPdf = async () => {
+    if (typeof window === "undefined" || pdfBusy) return;
     window.scrollTo(0, 0);
+
+    if (isAppleTouchDevice()) {
+      const root = rootRef.current;
+      if (!root) return;
+      setPdfBusy(true);
+      try {
+        const file = await buildAtelierProposalPdf({
+          root,
+          customerName: clientName,
+          presetId: "residential_premium_luxe",
+        });
+        setPdfReady(file);
+      } catch (err) {
+        console.error("[atelier] PDF export failed", err);
+        window.alert(c.print.pdfFailed);
+      } finally {
+        setPdfBusy(false);
+      }
+      return;
+    }
+
     requestAnimationFrame(() => {
       requestAnimationFrame(() => window.print());
     });
   };
 
+  const handleSharePdf = async () => {
+    if (!pdfReady || pdfSharing) return;
+    setPdfSharing(true);
+    try {
+      await sharePdfFile(pdfReady);
+    } catch (err) {
+      console.error("[atelier] PDF share failed", err);
+      window.alert(c.print.pdfFailed);
+    } finally {
+      setPdfSharing(false);
+    }
+  };
+
   // ── JSX ──────────────────────────────────────────────────────
   return (
     <div
+      ref={rootRef}
       data-atelier-root
+      data-proposal-preset="residential_premium_luxe"
       className={`${styles.wrapper}${isHi ? ` ${styles.langHi}` : ""}`}
     >
       <style>{`
@@ -657,8 +703,9 @@ export function AtelierRenderer({
               type="button"
               onClick={handleDownloadPdf}
               className={styles.printBarBtn}
+              disabled={pdfBusy}
             >
-              {c.print.downloadPdf}
+              {pdfBusy ? c.print.pdfBuilding : c.print.downloadPdf}
             </button>
           </div>
         </div>
@@ -2480,8 +2527,9 @@ export function AtelierRenderer({
                   type="button"
                   onClick={handleDownloadPdf}
                   className={`${styles.closingBtn} print:hidden`}
+                  disabled={pdfBusy}
                 >
-                  {c.closing.ctaBtn}
+                  {pdfBusy ? c.print.pdfBuilding : c.closing.ctaBtn}
                 </button>
                 <div className={styles.ctaDivider} />
                 <div className={styles.ctaContact}>
@@ -2518,6 +2566,40 @@ export function AtelierRenderer({
           {folio(pn.closing, totalPages)}
         </span>
       </section>
+
+      {pdfReady ? (
+        <div
+          className={styles.pdfReadyOverlay}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="atelier-pdf-ready-title"
+        >
+          <div className={styles.pdfReadyCard}>
+            <h2 id="atelier-pdf-ready-title" className={styles.pdfReadyTitle}>
+              {c.print.pdfReadyTitle}
+            </h2>
+            <p className={styles.pdfReadyBody}>{c.print.pdfReadyBody}</p>
+            <p className={styles.pdfReadyFile}>{pdfReady.fileName}</p>
+            <div className={styles.pdfReadyActions}>
+              <button
+                type="button"
+                className={styles.pdfReadyShare}
+                onClick={handleSharePdf}
+                disabled={pdfSharing}
+              >
+                {pdfSharing ? c.print.pdfBuilding : c.print.pdfReadyShare}
+              </button>
+              <button
+                type="button"
+                className={styles.pdfReadyClose}
+                onClick={() => setPdfReady(null)}
+              >
+                {c.print.pdfReadyClose}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

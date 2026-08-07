@@ -7,7 +7,7 @@
  * Hardware images: /assets/hardware/* (public/assets/).
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ProposalBomItem, ProposalData } from "@/lib/proposal-data";
 import {
   formatInr,
@@ -21,6 +21,11 @@ import {
   resolveProposalBrandPresentation,
 } from "@/lib/proposal-branding-settings";
 import { getCanvasCopy, type CanvasLang } from "./canvas-copy";
+import {
+  buildAtelierProposalPdf,
+  downloadPdfFile,
+  isAppleTouchDevice,
+} from "@/components/proposals/_shared/residential-pdf-export";
 import {
   EvidenceCard,
   EvidenceGrid,
@@ -102,6 +107,8 @@ export function CanvasProposalRenderer({
   const [logoUrl, setLogoUrl] = useState<string | undefined>(() => {
     return data?.meta.brandLogoUrl?.trim() || installerLogoUrl?.trim() || undefined;
   });
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [pdfBusy, setPdfBusy] = useState(false);
 
   useEffect(() => {
     const sync = () => {
@@ -342,8 +349,27 @@ export function CanvasProposalRenderer({
             "Net metering timelines depend on local DISCOM processing.",
           ];
 
-  const handlePrint = () => {
-    if (typeof window !== "undefined") window.print();
+  const handlePrint = async () => {
+    if (typeof window === "undefined" || pdfBusy) return;
+    if (isAppleTouchDevice()) {
+      const root = rootRef.current;
+      if (!root) return;
+      setPdfBusy(true);
+      try {
+        downloadPdfFile(
+          await buildAtelierProposalPdf({
+            root,
+            customerName: customer,
+            presetId: "residential_blueprint",
+            pageSelector: ":scope > .canvasContainer > section",
+          })
+        );
+      } finally {
+        setPdfBusy(false);
+      }
+      return;
+    }
+    window.print();
   };
 
   const foot = (n: string) => ({
@@ -352,7 +378,11 @@ export function CanvasProposalRenderer({
   });
 
   return (
-    <div className={`${styles.shell} ${styles.canvasTheme}${isHi ? ` ${styles.langHi}` : ""}`}>
+    <div
+      ref={rootRef}
+      data-proposal-preset="residential_blueprint"
+      className={`${styles.shell} ${styles.canvasTheme}${isHi ? ` ${styles.langHi}` : ""}`}
+    >
       <div className={styles.printBar}>
         <div className={styles.printBarInner}>
           <span className={styles.printBarBrand}>{brand}</span>
@@ -375,8 +405,8 @@ export function CanvasProposalRenderer({
                 {c.print.langHi}
               </button>
             </div>
-            <button type="button" onClick={handlePrint} className={styles.printBarBtn}>
-              {c.print.downloadPdf}
+            <button type="button" onClick={handlePrint} className={styles.printBarBtn} disabled={pdfBusy}>
+              {pdfBusy ? "Preparing PDF…" : c.print.downloadPdf}
             </button>
           </div>
         </div>

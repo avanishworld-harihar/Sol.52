@@ -52,7 +52,7 @@ export async function POST(req: NextRequest, ctx: RouteCtx) {
     const customerName = duplicateCustomerNameForMode(srcName, mode);
     const pptInput = buildDuplicatePptInput(srcPpt, mode, customerName);
     const summary = summarizeProposalDeck(pptInput);
-    const presetId = source.preset_id ?? "residential_sales_premium";
+    const presetId = source.preset_id ?? "residential_zenith";
 
     const orgId = await resolveDefaultOrgId();
     const identity = extractTrialIdentityFromRequest(req);

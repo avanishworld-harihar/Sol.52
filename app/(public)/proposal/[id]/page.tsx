@@ -7,7 +7,7 @@ import { getProposalPricingByProposalId } from "@/lib/proposal-pricing-store";
 import { getProposalById, trackProposalView } from "@/lib/proposals-store";
 import { isProposalBillAuditBacked } from "@/lib/proposal-bill-audit-eligibility";
 import { summarizeProposalDeck } from "@/lib/proposal-ppt";
-import { normalizePresetId } from "@/lib/proposal-preset-engine";
+import { resolvePresetId } from "@/lib/proposal-preset-engine";
 import { shouldShowPdfWatermark } from "@/lib/billing/entitlements";
 import { buildProposalData } from "@/lib/proposal-data";
 import { ProposalWatermarkShell } from "@/components/proposals/proposal-watermark-shell";
@@ -89,7 +89,16 @@ export default async function PublicProposalPage({ params }: PageProps) {
       ? (proposal as { organization_id: string }).organization_id
       : null;
   const showWatermark = await shouldShowPdfWatermark(orgId);
-  const presetId = normalizePresetId(proposal.preset_id);
+  const presetResolution = resolvePresetId(proposal.preset_id);
+  const presetId = presetResolution.presetId;
+  if (presetResolution.status !== "active") {
+    console.warn("[proposal] non-active preset resolved", {
+      proposalId: id,
+      storedPresetId: proposal.preset_id,
+      resolvedPresetId: presetId,
+      status: presetResolution.status,
+    });
+  }
 
   const leadId = proposal.lead_id?.trim() ? proposal.lead_id.trim() : null;
   const surveyStatus = await getLeadSurveyStatus(leadId);

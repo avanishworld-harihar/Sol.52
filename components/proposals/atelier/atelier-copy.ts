@@ -30,6 +30,16 @@ export function getAtelierCopy(lang: AtelierLang) {
       downloadPdf: hi ? "PDF डाउनलोड" : "Download PDF",
       langEn: "EN",
       langHi: "हिंदी",
+      pdfBuilding: hi ? "PDF तैयार हो रही है…" : "Building PDF…",
+      pdfFailed: hi
+        ? "PDF नहीं बन सकी। कृपया दोबारा कोशिश करें।"
+        : "Could not create PDF. Please try again.",
+      pdfReadyTitle: hi ? "PDF तैयार है" : "Your PDF is ready",
+      pdfReadyBody: hi
+        ? "सेव करने के लिए Share दबाएँ, फिर “Save to Files” चुनें।"
+        : "Tap Share, then choose Save to Files.",
+      pdfReadyShare: hi ? "Share" : "Share",
+      pdfReadyClose: hi ? "बंद करें" : "Close",
     },
 
     fallbacks: {
