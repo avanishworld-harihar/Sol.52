@@ -62,6 +62,12 @@ export const PRINT_LAYOUT_GUARD_RULES: PrintLayoutGuardRule[] = [
       if (!content.includes("createRootShell(options.root)")) {
         return "capture no longer clones the renderer root";
       }
+      if (!content.includes('shell.dataset.pdfCaptureRoot = "true"')) {
+        return "capture root marker is missing";
+      }
+      if (!content.includes('min-width", `${A4_W_PX}px`')) {
+        return "capture root no longer locks its minimum A4 width";
+      }
       if (content.includes('"opacity:0.01"')) {
         return "capture host opacity will wash out PDF colours";
       }

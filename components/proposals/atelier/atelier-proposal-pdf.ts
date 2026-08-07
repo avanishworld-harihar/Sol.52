@@ -107,8 +107,10 @@ function createRootShell(root: HTMLElement): HTMLElement {
   const shell = root.cloneNode(false) as HTMLElement;
   shell.removeAttribute("id");
   shell.removeAttribute("aria-label");
+  shell.dataset.pdfCaptureRoot = "true";
   shell.style.setProperty("display", "block", "important");
   shell.style.setProperty("width", `${A4_W_PX}px`, "important");
+  shell.style.setProperty("min-width", `${A4_W_PX}px`, "important");
   shell.style.setProperty("max-width", `${A4_W_PX}px`, "important");
   shell.style.setProperty("height", `${A4_H_PX}px`, "important");
   shell.style.setProperty("min-height", `${A4_H_PX}px`, "important");

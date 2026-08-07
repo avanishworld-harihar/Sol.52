@@ -96,6 +96,7 @@
 /* iPad PDF capture host — size lock only; keep live section layout */
 .pdfCaptureHost {
   width: 794px !important;
+  min-width: 794px !important;
   max-width: 794px !important;
   margin: 0 !important;
   padding: 0 !important;
@@ -107,8 +108,21 @@
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
-.pdfCaptureHost > section {
+.pdfCaptureHost [data-pdf-capture-root='true'] {
   width: 794px !important;
+  min-width: 794px !important;
+  max-width: 794px !important;
+  height: 1123px !important;
+  min-height: 1123px !important;
+  max-height: 1123px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  transform: none !important;
+}
+.pdfCaptureHost [data-pdf-capture-root='true'] > section {
+  width: 794px !important;
+  min-width: 794px !important;
   max-width: 794px !important;
   height: 1123px !important;
   min-height: 1123px !important;
@@ -118,6 +132,94 @@
   box-shadow: none !important;
   overflow: hidden !important;
   box-sizing: border-box !important;
+}
+
+/*
+ * Atelier iPad/WebKit capture safety. Keep these rules under the capture
+ * marker so the responsive web proposal and desktop print remain untouched.
+ */
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe'] {
+  --a4-w: 794px;
+  --a4-h: 1123px;
+  --page-pad-x: 1.5rem;
+  --page-pad-t: 1.25rem;
+  --page-pad-b: 42px;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  > section {
+  padding-bottom: 42px !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .pageNum {
+  bottom: 18px !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .coverPage {
+  padding: 0 !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .coverInner {
+  padding: 28px 44px 42px !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .coverTop {
+  width: 100% !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  gap: 20px !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .coverBrandRow {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .coverBrandText {
+  max-width: 320px !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .coverDocType {
+  margin-left: auto !important;
+  margin-right: 0 !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .wealthPathMid {
+  background: #ffede0 !important;
+  border-color: #fdba74 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .wealthPathEnd {
+  background: #fff7ed !important;
+  box-shadow: none !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .wealthPathIcon {
+  background: #ffedd5 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .wealthPathIconOn {
+  background: #f97316 !important;
 }
 
 .pdfReadyOverlay {
