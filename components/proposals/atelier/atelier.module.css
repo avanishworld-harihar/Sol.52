@@ -5558,22 +5558,22 @@
    * html.atelier-print-ios is set by AtelierRenderer on Apple touch devices.
    */
   :global(html.atelier-print-ios) .wrapper {
-    width: 190mm !important;
-    max-width: 190mm !important;
-    margin: 0 !important;
+    width: 182mm !important;
+    max-width: 182mm !important;
+    margin: 0 auto !important;
     padding: 0 !important;
   }
   :global(html.atelier-print-ios) .page,
   :global(html.atelier-print-ios) .coverPage,
   :global(html.atelier-print-ios) .closingPage {
-    --page-pad-x: 11mm;
-    --page-pad-t: 10mm;
-    --page-pad-b: 11mm;
-    width: 190mm !important;
-    max-width: 190mm !important;
-    height: 277mm !important;
-    min-height: 277mm !important;
-    max-height: 277mm !important;
+    --page-pad-x: 9mm;
+    --page-pad-t: 8mm;
+    --page-pad-b: 9mm;
+    width: 182mm !important;
+    max-width: 182mm !important;
+    height: 265mm !important;
+    min-height: 265mm !important;
+    max-height: 265mm !important;
     padding: var(--page-pad-t) var(--page-pad-x) var(--page-pad-b) !important;
     break-after: auto !important;
     page-break-after: auto !important;

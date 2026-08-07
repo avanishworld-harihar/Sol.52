@@ -508,20 +508,20 @@ export function AtelierRenderer({
         el = document.createElement("style");
         el.id = STYLE_ID;
       }
-      // Re-append so this sheet wins cascade over globals.css / CSS modules.
-      document.head.appendChild(el);
+      // Re-append late in the body so this sheet wins over module + inline print styles.
+      (document.body || document.head).appendChild(el);
 
       /*
        * iPad / iOS Safari:
        * 1) Often ignores @page { margin: 0 } → keeps ~8–10mm → 210×297mm sheets shrink
        *    (white bands + wrong pagination, as in print preview).
        * 2) break-after: page inserts a blank sheet after every section (~2× page count).
-       * Fit sheets inside a 10mm page margin and paginate with break-before only.
+       * Fit sheets inside iPad's real printable area and paginate with break-before only.
        */
       el.textContent = ios
         ? `
 @media print {
-  @page { size: A4; margin: 10mm; }
+  @page { size: A4; margin: 0; }
   html, body, #proposal-route-root {
     margin: 0 !important;
     padding: 0 !important;
@@ -534,21 +534,21 @@ export function AtelierRenderer({
     print-color-adjust: exact !important;
   }
   [data-atelier-root] {
-    width: 190mm !important;
-    max-width: 190mm !important;
-    margin: 0 !important;
+    width: 182mm !important;
+    max-width: 182mm !important;
+    margin: 0 auto !important;
     padding: 0 !important;
     overflow: visible !important;
     background: #fff !important;
   }
   [data-atelier-root] > section {
-    width: 190mm !important;
-    max-width: 190mm !important;
-    height: 277mm !important;
-    min-height: 277mm !important;
-    max-height: 277mm !important;
+    width: 182mm !important;
+    max-width: 182mm !important;
+    height: 265mm !important;
+    min-height: 265mm !important;
+    max-height: 265mm !important;
     margin: 0 !important;
-    padding: 10mm 11mm 11mm !important;
+    padding: 8mm 9mm 9mm !important;
     box-sizing: border-box !important;
     overflow: hidden !important;
     page-break-after: auto !important;
