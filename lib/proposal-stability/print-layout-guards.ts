@@ -53,6 +53,21 @@ export const PRINT_LAYOUT_GUARD_RULES: PrintLayoutGuardRule[] = [
     mustInclude: "proposal-financial-engine",
     description: "Deck summarizer must use proposal-financial-engine",
   },
+  {
+    id: "residential-capture-preserves-theme-context",
+    file: "components/proposals/atelier/atelier-proposal-pdf.ts",
+    description:
+      "Residential PDF capture must keep the preset root context and full opacity",
+    validate: (content: string) => {
+      if (!content.includes("createRootShell(options.root)")) {
+        return "capture no longer clones the renderer root";
+      }
+      if (content.includes('"opacity:0.01"')) {
+        return "capture host opacity will wash out PDF colours";
+      }
+      return null;
+    },
+  },
 ];
 
 export function validatePrintLayoutGuards(rootDir: string): string[] {

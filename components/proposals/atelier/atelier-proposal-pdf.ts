@@ -79,18 +79,44 @@ function createCaptureHost(): HTMLDivElement {
   host.setAttribute("aria-hidden", "true");
   host.style.cssText = [
     "position:fixed",
-    "left:0",
+    /*
+     * Keep the capture tree fully opaque. html2canvas includes ancestor
+     * opacity in the bitmap, so opacity:0.01 washed out colours and made
+     * chart bars effectively disappear on iPad.
+     */
+    "left:-10000px",
     "top:0",
     `width:${A4_W_PX}px`,
     `height:${A4_H_PX}px`,
     "overflow:hidden",
-    "opacity:0.01",
     "pointer-events:none",
-    "z-index:2147483646",
+    "z-index:-1",
     "background:#fff",
   ].join(";");
   document.body.appendChild(host);
   return host;
+}
+
+function createRootShell(root: HTMLElement): HTMLElement {
+  /*
+   * Pages depend on theme variables and descendant selectors declared on the
+   * renderer root (Atelier's --page-pad-x, --or, --h, etc.). Cloning a page
+   * directly under a generic host drops that context and produces zero
+   * padding, wrong colours and broken charts.
+   */
+  const shell = root.cloneNode(false) as HTMLElement;
+  shell.removeAttribute("id");
+  shell.removeAttribute("aria-label");
+  shell.style.setProperty("display", "block", "important");
+  shell.style.setProperty("width", `${A4_W_PX}px`, "important");
+  shell.style.setProperty("max-width", `${A4_W_PX}px`, "important");
+  shell.style.setProperty("height", `${A4_H_PX}px`, "important");
+  shell.style.setProperty("min-height", `${A4_H_PX}px`, "important");
+  shell.style.setProperty("margin", "0", "important");
+  shell.style.setProperty("padding", "0", "important");
+  shell.style.setProperty("overflow", "hidden", "important");
+  shell.style.setProperty("transform", "none", "important");
+  return shell;
 }
 
 export type AtelierPdfProgress = {
@@ -202,7 +228,9 @@ export async function buildAtelierProposalPdf(options: {
       host.replaceChildren();
       const clone = sections[i].cloneNode(true) as HTMLElement;
       applyPageBox(clone);
-      host.appendChild(clone);
+      const rootShell = createRootShell(options.root);
+      rootShell.appendChild(clone);
+      host.appendChild(rootShell);
       syncCloneImages(clone);
 
       await waitForImages(clone);
@@ -226,8 +254,6 @@ export async function buildAtelierProposalPdf(options: {
         windowHeight: A4_H_PX,
         scrollX: 0,
         scrollY: 0,
-        x: 0,
-        y: 0,
         onclone: (_doc, clonedEl) => {
           applyPageBox(clonedEl as HTMLElement);
         },
