@@ -10,7 +10,7 @@
  * break-after: page (print only)
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { formatInr, formatInrCompact } from "@/components/proposals/_shared/formatters";
@@ -48,12 +48,6 @@ import {
   WealthIconPaid,
   WealthIconPay,
 } from "./atelier-wealth-icons";
-import {
-  buildAtelierProposalPdf,
-  isAppleTouchDevice,
-  sharePdfFile,
-  type AtelierPdfFile,
-} from "./atelier-proposal-pdf";
 import styles from "./atelier.module.css";
 
 function folio(n: number, total: number): string {
@@ -111,11 +105,6 @@ export function AtelierRenderer({
   const [lang, setLang] = useState<AtelierLang>("en");
   const c = getAtelierCopy(lang);
   const isHi = lang === "hi";
-  const rootRef = useRef<HTMLDivElement | null>(null);
-  const [pdfBusy, setPdfBusy] = useState(false);
-  const [pdfProgress, setPdfProgress] = useState("");
-  const [pdfReady, setPdfReady] = useState<AtelierPdfFile | null>(null);
-  const [pdfSharing, setPdfSharing] = useState(false);
 
   const [logoUrl, setLogoUrl] = useState<string | undefined>(() => {
     return data?.meta.brandLogoUrl?.trim() || installerLogoUrl?.trim() || undefined;
@@ -604,65 +593,17 @@ export function AtelierRenderer({
     };
   }, []);
 
-  const handleDownloadPdf = async () => {
-    if (typeof window === "undefined" || pdfBusy) return;
-
-    /*
-     * Desktop: window.print() → Save as PDF (native engine, best colors).
-     * iPad/iOS: page-capture PDF + Share sheet. Safari window.print() shrinks,
-     * clips footers, and drops colors; blob: URLs break the proposal tab.
-     * Capture runs in #atelier-pdf-capture-host only — live layout unchanged.
-     */
-    if (!isAppleTouchDevice()) {
-      window.scrollTo(0, 0);
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => window.print());
-      });
-      return;
-    }
-
-    const root = rootRef.current;
-    if (!root) return;
-
-    setPdfBusy(true);
-    setPdfProgress(c.print.preparingPdf);
-    setPdfReady(null);
-    try {
-      window.scrollTo(0, 0);
-      const file = await buildAtelierProposalPdf({
-        root,
-        customerName: data.meta.customerName?.trim() || clientName,
-        onProgress: ({ current, total }) => {
-          setPdfProgress(`${c.print.preparingPdf} ${current}/${total}`);
-        },
-      });
-      setPdfReady(file);
-    } catch (err) {
-      console.error("[atelier-pdf]", err);
-      window.alert(c.print.pdfFailed);
-    } finally {
-      setPdfBusy(false);
-      setPdfProgress("");
-    }
-  };
-
-  const handleSharePdf = async () => {
-    if (!pdfReady || pdfSharing) return;
-    setPdfSharing(true);
-    try {
-      await sharePdfFile(pdfReady);
-    } catch (err) {
-      console.error("[atelier-pdf-share]", err);
-      window.alert(c.print.pdfShareFailed);
-    } finally {
-      setPdfSharing(false);
-    }
+  const handleDownloadPdf = () => {
+    if (typeof window === "undefined") return;
+    window.scrollTo(0, 0);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => window.print());
+    });
   };
 
   // ── JSX ──────────────────────────────────────────────────────
   return (
     <div
-      ref={rootRef}
       data-atelier-root
       className={`${styles.wrapper}${isHi ? ` ${styles.langHi}` : ""}`}
     >
@@ -714,50 +655,14 @@ export function AtelierRenderer({
             </div>
             <button
               type="button"
-              onClick={() => void handleDownloadPdf()}
+              onClick={handleDownloadPdf}
               className={styles.printBarBtn}
-              disabled={pdfBusy}
-              aria-busy={pdfBusy}
             >
-              {pdfBusy ? pdfProgress || c.print.preparingPdf : c.print.downloadPdf}
+              {c.print.downloadPdf}
             </button>
           </div>
         </div>
       </div>
-
-      {pdfReady ? (
-        <div
-          className={styles.pdfReadyOverlay}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="atelier-pdf-ready-title"
-        >
-          <div className={styles.pdfReadyCard}>
-            <h3 id="atelier-pdf-ready-title" className={styles.pdfReadyTitle}>
-              {c.print.pdfReadyTitle}
-            </h3>
-            <p className={styles.pdfReadyBody}>{c.print.pdfReadyBody}</p>
-            <p className={styles.pdfReadyFile}>{pdfReady.fileName}</p>
-            <div className={styles.pdfReadyActions}>
-              <button
-                type="button"
-                className={styles.pdfReadyShare}
-                disabled={pdfSharing}
-                onClick={() => void handleSharePdf()}
-              >
-                {pdfSharing ? c.print.preparingPdf : c.print.pdfShare}
-              </button>
-              <button
-                type="button"
-                className={styles.pdfReadyClose}
-                onClick={() => setPdfReady(null)}
-              >
-                {c.print.pdfClose}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
 
       {/* ══ P1: CINEMATIC COVER ══════════════════════════════════ */}
       <section className={`${styles.page} ${styles.coverPage}`}>
@@ -2573,12 +2478,10 @@ export function AtelierRenderer({
                 <p className={styles.ctaDesc}>{c.closing.ctaDesc}</p>
                 <button
                   type="button"
-                  onClick={() => void handleDownloadPdf()}
+                  onClick={handleDownloadPdf}
                   className={`${styles.closingBtn} print:hidden`}
-                  disabled={pdfBusy}
-                  aria-busy={pdfBusy}
                 >
-                  {pdfBusy ? pdfProgress || c.print.preparingPdf : c.closing.ctaBtn}
+                  {c.closing.ctaBtn}
                 </button>
                 <div className={styles.ctaDivider} />
                 <div className={styles.ctaContact}>
