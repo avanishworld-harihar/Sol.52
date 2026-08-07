@@ -1,0 +1,19 @@
+---
+description: After agent tasks with file changes, remind user to commit/push via SCM or explicit request.
+alwaysApply: true
+---
+
+# Post-task commit / push reminder
+
+When you finish an **implementation task** that changed tracked files:
+
+1. End the response with a short **Commit & push** block (2–3 lines max):
+   - Say changes are ready to review.
+   - Tell the user they can use **Source Control** (`Ctrl+Shift+G`) → review diff → **Commit** → **Sync/Push**.
+   - Or they can reply **"commit and push"** and you will run git (only when they ask).
+
+2. **Do not** run `git commit` or `git push` unless the user explicitly requests it in that conversation.
+
+3. If there are **no file changes**, skip the reminder.
+
+4. Do not claim there is a Commit button inside the Browser tab — Cursor shows **Commit & push** in the **agent diff / review pane** when agent-scoped changes exist; deterministic commits still go through Source Control.
