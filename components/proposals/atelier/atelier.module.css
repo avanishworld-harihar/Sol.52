@@ -6019,24 +6019,14 @@
 }
 
 /*
- * html2canvas capture mode (iPad PDF).
- * Cover used justify-content:space-between → huge empty middle + clipped
- * savings row / page numbers. Lock a compact top-to-bottom cover stack.
+ * html2canvas capture mode (iPad PDF only).
+ * Scoped to offscreen host + html2canvas clone — never the live proposal page.
  */
-:global(html.atelier-pdf-capture) .printBar {
-  display: none !important;
-}
-:global(html.atelier-pdf-capture) .wrapper,
-:global(html.atelier-pdf-capture) #atelier-pdf-capture-host {
-  width: 794px !important;
-  max-width: 794px !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow: visible !important;
-  background: #fff !important;
+:global(#atelier-pdf-capture-host),
+:global(html[data-atelier-pdf-capture]) {
   --page-pad-x: 44px;
   --page-pad-t: 36px;
-  --page-pad-b: 48px;
+  --page-pad-b: 52px;
   --a4-w: 794px;
   --a4-h: 1123px;
   --c: #1e293b;
@@ -6047,7 +6037,28 @@
   --line: #e2e8f0;
   --white: #ffffff;
 }
-:global(html.atelier-pdf-capture) .page {
+:global(#atelier-pdf-capture-host),
+:global(#atelier-pdf-capture-host) *,
+:global(html[data-atelier-pdf-capture]) *,
+:global(html[data-atelier-pdf-capture]) {
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+:global(#atelier-pdf-capture-host) [class*="logoPlate"],
+:global(html[data-atelier-pdf-capture]) [class*="logoPlate"] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+:global(#atelier-pdf-capture-host) {
+  width: 794px !important;
+  max-width: 794px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  background: #fff !important;
+}
+:global(#atelier-pdf-capture-host) .page,
+:global(html[data-atelier-pdf-capture]) .page {
   width: 794px !important;
   max-width: 794px !important;
   height: 1123px !important;
@@ -6063,8 +6074,10 @@
   background: #fff !important;
   color: #1e293b !important;
 }
-:global(html.atelier-pdf-capture) .coverPage,
-:global(html.atelier-pdf-capture) .closingPage {
+:global(#atelier-pdf-capture-host) .coverPage,
+:global(#atelier-pdf-capture-host) .closingPage,
+:global(html[data-atelier-pdf-capture]) .coverPage,
+:global(html[data-atelier-pdf-capture]) .closingPage {
   width: 794px !important;
   max-width: 794px !important;
   height: 1123px !important;
@@ -6075,19 +6088,23 @@
   border-radius: 0 !important;
   box-shadow: none !important;
   overflow: hidden !important;
-  /* Cover/closing keep padding on inner — not on the section */
   padding: 0 !important;
   box-sizing: border-box !important;
   background: #0a0f1c !important;
   color: #fff !important;
 }
-:global(html.atelier-pdf-capture) .page img,
-:global(html.atelier-pdf-capture) .page svg {
+:global(#atelier-pdf-capture-host) .page img,
+:global(#atelier-pdf-capture-host) .page svg,
+:global(html[data-atelier-pdf-capture]) .page img,
+:global(html[data-atelier-pdf-capture]) .page svg {
   max-width: 100% !important;
 }
-:global(html.atelier-pdf-capture) .coverPhotoImg,
-:global(html.atelier-pdf-capture) .closingPhotoImg,
-:global(html.atelier-pdf-capture) .trustPhotoImg {
+:global(#atelier-pdf-capture-host) .coverPhotoImg,
+:global(#atelier-pdf-capture-host) .closingPhotoImg,
+:global(#atelier-pdf-capture-host) .trustPhotoImg,
+:global(html[data-atelier-pdf-capture]) .coverPhotoImg,
+:global(html[data-atelier-pdf-capture]) .closingPhotoImg,
+:global(html[data-atelier-pdf-capture]) .trustPhotoImg {
   position: absolute !important;
   inset: 0 !important;
   width: 100% !important;
@@ -6096,7 +6113,8 @@
   object-fit: cover !important;
   display: block !important;
 }
-:global(html.atelier-pdf-capture) .coverInner {
+:global(#atelier-pdf-capture-host) .coverInner,
+:global(html[data-atelier-pdf-capture]) .coverInner {
   display: flex !important;
   flex-direction: column !important;
   justify-content: flex-start !important;
@@ -6106,10 +6124,11 @@
   max-height: 100% !important;
   min-height: 0 !important;
   overflow: hidden !important;
-  padding: 36px 44px 44px !important;
+  padding: 36px 44px 52px !important;
   box-sizing: border-box !important;
 }
-:global(html.atelier-pdf-capture) .closingInner {
+:global(#atelier-pdf-capture-host) .closingInner,
+:global(html[data-atelier-pdf-capture]) .closingInner {
   display: flex !important;
   flex-direction: column !important;
   justify-content: flex-start !important;
@@ -6117,15 +6136,19 @@
   height: 100% !important;
   min-height: 0 !important;
   overflow: hidden !important;
-  padding: 36px 44px 44px !important;
+  padding: 36px 44px 52px !important;
   box-sizing: border-box !important;
 }
-:global(html.atelier-pdf-capture) .coverTop,
-:global(html.atelier-pdf-capture) .coverHero,
-:global(html.atelier-pdf-capture) .coverWealthRow {
+:global(#atelier-pdf-capture-host) .coverTop,
+:global(#atelier-pdf-capture-host) .coverHero,
+:global(#atelier-pdf-capture-host) .coverWealthRow,
+:global(html[data-atelier-pdf-capture]) .coverTop,
+:global(html[data-atelier-pdf-capture]) .coverHero,
+:global(html[data-atelier-pdf-capture]) .coverWealthRow {
   flex: 0 0 auto !important;
 }
-:global(html.atelier-pdf-capture) .coverPhotoPlate {
+:global(#atelier-pdf-capture-host) .coverPhotoPlate,
+:global(html[data-atelier-pdf-capture]) .coverPhotoPlate {
   display: flex !important;
   flex-direction: column !important;
   flex: 0 0 auto !important;
@@ -6134,7 +6157,8 @@
   min-height: 0 !important;
   max-height: none !important;
 }
-:global(html.atelier-pdf-capture) .coverPhotoFrame {
+:global(#atelier-pdf-capture-host) .coverPhotoFrame,
+:global(html[data-atelier-pdf-capture]) .coverPhotoFrame {
   position: relative !important;
   flex: 0 0 auto !important;
   width: 100% !important;
@@ -6144,11 +6168,13 @@
   overflow: hidden !important;
   border-radius: 10px !important;
 }
-:global(html.atelier-pdf-capture) .closingPhotoPlate {
+:global(#atelier-pdf-capture-host) .closingPhotoPlate,
+:global(html[data-atelier-pdf-capture]) .closingPhotoPlate {
   flex: 0 0 auto !important;
   max-height: none !important;
 }
-:global(html.atelier-pdf-capture) .closingPhotoFrame {
+:global(#atelier-pdf-capture-host) .closingPhotoFrame,
+:global(html[data-atelier-pdf-capture]) .closingPhotoFrame {
   position: relative !important;
   flex: 0 0 auto !important;
   width: 100% !important;
@@ -6157,27 +6183,34 @@
   max-height: 220px !important;
   overflow: hidden !important;
 }
-:global(html.atelier-pdf-capture) .trustPhotoFrame {
+:global(#atelier-pdf-capture-host) .trustPhotoFrame,
+:global(html[data-atelier-pdf-capture]) .trustPhotoFrame {
   position: relative !important;
   height: 200px !important;
   min-height: 200px !important;
   max-height: 200px !important;
   overflow: hidden !important;
 }
-:global(html.atelier-pdf-capture) .coverPhotoTitle,
-:global(html.atelier-pdf-capture) .coverDocType {
+:global(#atelier-pdf-capture-host) .coverPhotoTitle,
+:global(#atelier-pdf-capture-host) .coverDocType,
+:global(html[data-atelier-pdf-capture]) .coverPhotoTitle,
+:global(html[data-atelier-pdf-capture]) .coverDocType {
   color: #f97316 !important;
 }
-:global(html.atelier-pdf-capture) .coverName,
-:global(html.atelier-pdf-capture) .coverSmallNum {
+:global(#atelier-pdf-capture-host) .coverName,
+:global(#atelier-pdf-capture-host) .coverSmallNum,
+:global(html[data-atelier-pdf-capture]) .coverName,
+:global(html[data-atelier-pdf-capture]) .coverSmallNum {
   color: #fff !important;
 }
-:global(html.atelier-pdf-capture) .coverWealthRow {
+:global(#atelier-pdf-capture-host) .coverWealthRow,
+:global(html[data-atelier-pdf-capture]) .coverWealthRow {
   margin-top: auto !important;
   width: 100% !important;
-  padding-bottom: 4px !important;
+  padding-bottom: 28px !important;
 }
-:global(html.atelier-pdf-capture) .coverSmallStats {
+:global(#atelier-pdf-capture-host) .coverSmallStats,
+:global(html[data-atelier-pdf-capture]) .coverSmallStats {
   display: flex !important;
   flex-direction: row !important;
   flex-wrap: nowrap !important;
@@ -6185,80 +6218,113 @@
   gap: 1.25rem !important;
   align-items: flex-start !important;
 }
-:global(html.atelier-pdf-capture) .coverSmallStat {
+:global(#atelier-pdf-capture-host) .coverSmallStat,
+:global(html[data-atelier-pdf-capture]) .coverSmallStat {
   flex: 1 1 0 !important;
   min-width: 0 !important;
 }
-:global(html.atelier-pdf-capture) .coverSmallNum {
+:global(#atelier-pdf-capture-host) .coverSmallNum,
+:global(html[data-atelier-pdf-capture]) .coverSmallNum {
   font-size: 1.35rem !important;
   line-height: 1.15 !important;
   white-space: nowrap !important;
 }
-:global(html.atelier-pdf-capture) .pageNum {
+:global(#atelier-pdf-capture-host) .pageNum,
+:global(html[data-atelier-pdf-capture]) .pageNum {
   position: absolute !important;
   display: block !important;
   left: 44px !important;
   right: 44px !important;
-  bottom: 16px !important;
+  bottom: 18px !important;
   margin: 0 !important;
   padding: 0 !important;
-  z-index: 20 !important;
+  z-index: 30 !important;
   text-align: right !important;
   white-space: nowrap !important;
   overflow: visible !important;
+  text-overflow: clip !important;
   font-size: 11px !important;
-  line-height: 1.2 !important;
+  line-height: 1.25 !important;
 }
-:global(html.atelier-pdf-capture) .wealthLayout {
+:global(#atelier-pdf-capture-host) .coverPage .pageNum,
+:global(#atelier-pdf-capture-host) .closingPage .pageNum,
+:global(html[data-atelier-pdf-capture]) .coverPage .pageNum,
+:global(html[data-atelier-pdf-capture]) .closingPage .pageNum {
+  bottom: 20px !important;
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+:global(#atelier-pdf-capture-host) .wealthLayout,
+:global(html[data-atelier-pdf-capture]) .wealthLayout {
   grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.95fr) !important;
 }
-:global(html.atelier-pdf-capture) .roofMainRow {
+:global(#atelier-pdf-capture-host) .roofMainRow,
+:global(html[data-atelier-pdf-capture]) .roofMainRow {
   grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) !important;
 }
-:global(html.atelier-pdf-capture) .payBankSplit {
+:global(#atelier-pdf-capture-host) .payBankSplit,
+:global(html[data-atelier-pdf-capture]) .payBankSplit {
   grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr) !important;
 }
-:global(html.atelier-pdf-capture) .closingSplit {
+:global(#atelier-pdf-capture-host) .closingSplit,
+:global(html[data-atelier-pdf-capture]) .closingSplit {
   grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) !important;
 }
-:global(html.atelier-pdf-capture) .genProofGrid {
+:global(#atelier-pdf-capture-host) .genProofGrid,
+:global(html[data-atelier-pdf-capture]) .genProofGrid {
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) !important;
 }
-:global(html.atelier-pdf-capture) .forecastStats {
+:global(#atelier-pdf-capture-host) .forecastStats,
+:global(html[data-atelier-pdf-capture]) .forecastStats {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
 }
-:global(html.atelier-pdf-capture) .financeFlow {
+:global(#atelier-pdf-capture-host) .financeFlow,
+:global(html[data-atelier-pdf-capture]) .financeFlow {
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1.1fr) !important;
 }
-:global(html.atelier-pdf-capture) .investBreakdown {
+:global(#atelier-pdf-capture-host) .investBreakdown,
+:global(html[data-atelier-pdf-capture]) .investBreakdown {
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1.25fr) !important;
 }
-:global(html.atelier-pdf-capture) .impactGrid,
-:global(html.atelier-pdf-capture) .hwCard4Grid,
-:global(html.atelier-pdf-capture) .hw2Grid,
-:global(html.atelier-pdf-capture) .trustGrid,
-:global(html.atelier-pdf-capture) .warrantyGrid,
-:global(html.atelier-pdf-capture) .warrantyGridCompact {
+:global(#atelier-pdf-capture-host) .impactGrid,
+:global(#atelier-pdf-capture-host) .hwCard4Grid,
+:global(#atelier-pdf-capture-host) .hw2Grid,
+:global(#atelier-pdf-capture-host) .trustGrid,
+:global(#atelier-pdf-capture-host) .warrantyGrid,
+:global(#atelier-pdf-capture-host) .warrantyGridCompact,
+:global(html[data-atelier-pdf-capture]) .impactGrid,
+:global(html[data-atelier-pdf-capture]) .hwCard4Grid,
+:global(html[data-atelier-pdf-capture]) .hw2Grid,
+:global(html[data-atelier-pdf-capture]) .trustGrid,
+:global(html[data-atelier-pdf-capture]) .warrantyGrid,
+:global(html[data-atelier-pdf-capture]) .warrantyGridCompact {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
 }
-:global(html.atelier-pdf-capture) .financeFlowArrow,
-:global(html.atelier-pdf-capture) .investOp {
+:global(#atelier-pdf-capture-host) .financeFlowArrow,
+:global(#atelier-pdf-capture-host) .investOp,
+:global(html[data-atelier-pdf-capture]) .financeFlowArrow,
+:global(html[data-atelier-pdf-capture]) .investOp {
   transform: none !important;
 }
-:global(html.atelier-pdf-capture) .wealthJourney {
+:global(#atelier-pdf-capture-host) .wealthJourney,
+:global(html[data-atelier-pdf-capture]) .wealthJourney {
   flex-direction: row !important;
 }
-:global(html.atelier-pdf-capture) .wealthVs {
+:global(#atelier-pdf-capture-host) .wealthVs,
+:global(html[data-atelier-pdf-capture]) .wealthVs {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
 }
-:global(html.atelier-pdf-capture) .billAuditMetrics {
+:global(#atelier-pdf-capture-host) .billAuditMetrics,
+:global(html[data-atelier-pdf-capture]) .billAuditMetrics {
   grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
 }
-:global(html.atelier-pdf-capture) .billAuditMetric {
+:global(#atelier-pdf-capture-host) .billAuditMetric,
+:global(html[data-atelier-pdf-capture]) .billAuditMetric {
   border-bottom: 0 !important;
   border-right: 1px solid var(--line) !important;
 }
-:global(html.atelier-pdf-capture) .wjArrow,
-:global(html.atelier-pdf-capture) .wealthPathArrow {
+:global(#atelier-pdf-capture-host) .wjArrow,
+:global(#atelier-pdf-capture-host) .wealthPathArrow,
+:global(html[data-atelier-pdf-capture]) .wjArrow,
+:global(html[data-atelier-pdf-capture]) .wealthPathArrow {
   display: flex !important;
 }

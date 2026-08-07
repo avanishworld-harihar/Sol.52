@@ -608,10 +608,10 @@ export function AtelierRenderer({
     if (typeof window === "undefined" || pdfBusy) return;
 
     /*
-     * Desktop Chrome/Edge: window.print() → Save as PDF matches the on-screen
-     * Atelier colors/layout. html2canvas capture flattens accents and clips pages.
-     * iPad/iOS: keep page-capture + Share sheet (Safari print is unreliable;
-     * blob: navigation causes WebKitBlobResource error 1).
+     * Desktop: window.print() → Save as PDF (native engine, best colors).
+     * iPad/iOS: page-capture PDF + Share sheet. Safari window.print() shrinks,
+     * clips footers, and drops colors; blob: URLs break the proposal tab.
+     * Capture runs in #atelier-pdf-capture-host only — live layout unchanged.
      */
     if (!isAppleTouchDevice()) {
       window.scrollTo(0, 0);

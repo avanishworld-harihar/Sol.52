@@ -13,6 +13,8 @@ type Html2CanvasFn = typeof import("html2canvas")["default"];
 
 const A4_W_PX = 794;
 const A4_H_PX = 1123;
+/** Styles in atelier.module.css are scoped to this host id only. */
+export const ATELIER_PDF_CAPTURE_HOST_ID = "atelier-pdf-capture-host";
 
 export function isAppleTouchDevice(): boolean {
   if (typeof navigator === "undefined") return false;
@@ -61,12 +63,10 @@ function applyCaptureBox(el: HTMLElement): void {
   ].join(";");
 }
 
-function createCaptureHost(wrapperClassName: string): HTMLDivElement {
+function createCaptureHost(): HTMLDivElement {
   const host = document.createElement("div");
-  host.id = "atelier-pdf-capture-host";
-  // Reuse the real proposal wrapper so its CSS variables and desktop rules are
-  // inherited by the page clone. Do not apply a second "PDF layout" variant.
-  host.className = wrapperClassName;
+  host.id = ATELIER_PDF_CAPTURE_HOST_ID;
+  host.setAttribute("data-atelier-pdf-capture", "true");
   host.setAttribute("aria-hidden", "true");
   // Keep in viewport (opacity only) — far off-screen clones often rasterize blank on iOS.
   host.style.cssText = [
@@ -168,9 +168,9 @@ export async function buildAtelierProposalPdf(options: {
   ])) as [{ jsPDF: JsPdfCtor }, { default: Html2CanvasFn }];
 
   const ios = isAppleTouchDevice();
-  // Keep iOS memory lower — large blobs + open(blob) is what triggers WebKitBlobResource.
-  const scale = ios ? 1.25 : 2;
-  const jpegQuality = ios ? 0.78 : 0.92;
+  // iOS: balance memory vs legibility (page numbers, orange accents).
+  const scale = ios ? 1.5 : 2;
+  const jpegQuality = ios ? 0.88 : 0.92;
 
   const pdf = new jsPDF({
     orientation: "portrait",
@@ -181,7 +181,7 @@ export async function buildAtelierProposalPdf(options: {
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
 
-  const host = createCaptureHost(options.root.className);
+  const host = createCaptureHost();
 
   try {
     await waitForImages(options.root);
@@ -209,12 +209,12 @@ export async function buildAtelierProposalPdf(options: {
       );
       await new Promise((r) => window.setTimeout(r, ios ? 90 : 30));
 
+      const isDarkSheet =
+        clone.className.includes("cover") || clone.className.includes("closing");
+
       const canvas = await html2canvas(clone, {
         scale,
-        backgroundColor:
-          clone.className.includes("cover") || clone.className.includes("closing")
-            ? "#0A0F1C"
-            : "#ffffff",
+        backgroundColor: isDarkSheet ? "#0A0F1C" : "#ffffff",
         useCORS: true,
         allowTaint: false,
         imageTimeout: 12000,
@@ -227,6 +227,39 @@ export async function buildAtelierProposalPdf(options: {
         scrollY: 0,
         x: 0,
         y: 0,
+        onclone: (clonedDoc, clonedEl) => {
+          clonedDoc.documentElement.setAttribute("data-atelier-pdf-capture", "true");
+          applyCaptureBox(clonedEl as HTMLElement);
+          for (const pageNum of Array.from(
+            clonedEl.querySelectorAll<HTMLElement>("[class*='pageNum']")
+          )) {
+            pageNum.style.setProperty("position", "absolute", "important");
+            pageNum.style.setProperty("overflow", "visible", "important");
+            pageNum.style.setProperty("bottom", "18px", "important");
+            pageNum.style.setProperty("z-index", "30", "important");
+          }
+          for (const inner of Array.from(
+            clonedEl.querySelectorAll<HTMLElement>("[class*='coverInner']")
+          )) {
+            inner.style.setProperty("justify-content", "flex-start", "important");
+            inner.style.setProperty("gap", "14px", "important");
+          }
+          for (const wealth of Array.from(
+            clonedEl.querySelectorAll<HTMLElement>("[class*='coverWealthRow']")
+          )) {
+            wealth.style.setProperty("margin-top", "auto", "important");
+            wealth.style.setProperty("padding-bottom", "28px", "important");
+          }
+          for (const img of Array.from(
+            clonedEl.querySelectorAll<HTMLImageElement>(
+              "img[class*='coverPhoto'], img[class*='closingPhoto'], img[class*='trustPhoto']"
+            )
+          )) {
+            img.style.setProperty("object-fit", "cover", "important");
+            img.style.setProperty("width", "100%", "important");
+            img.style.setProperty("height", "100%", "important");
+          }
+        },
       });
 
       const out = document.createElement("canvas");
