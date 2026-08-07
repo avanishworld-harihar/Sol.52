@@ -6141,15 +6141,16 @@
   height: 100% !important;
   max-height: none !important;
   object-fit: cover !important;
+  object-position: center 42% !important;
   display: block !important;
 }
 .pdfCaptureHost .coverInner,
 :global(html[data-atelier-pdf-capture]) .coverInner {
   display: flex !important;
   flex-direction: column !important;
-  justify-content: flex-start !important;
+  justify-content: space-between !important;
   align-items: stretch !important;
-  gap: 14px !important;
+  gap: 12px !important;
   height: 100% !important;
   max-height: 100% !important;
   min-height: 0 !important;
@@ -6181,7 +6182,7 @@
 :global(html[data-atelier-pdf-capture]) .coverPhotoPlate {
   display: flex !important;
   flex-direction: column !important;
-  flex: 0 0 auto !important;
+  flex: 1.15 1 0 !important;
   gap: 8px !important;
   margin: 0 !important;
   min-height: 0 !important;
@@ -6190,10 +6191,10 @@
 .pdfCaptureHost .coverPhotoFrame,
 :global(html[data-atelier-pdf-capture]) .coverPhotoFrame {
   position: relative !important;
-  flex: 0 0 auto !important;
+  flex: 1 1 auto !important;
   width: 100% !important;
-  height: 320px !important;
-  min-height: 320px !important;
+  height: auto !important;
+  min-height: 210px !important;
   max-height: 320px !important;
   overflow: hidden !important;
   border-radius: 10px !important;
