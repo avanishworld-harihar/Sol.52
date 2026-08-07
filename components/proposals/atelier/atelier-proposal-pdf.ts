@@ -11,6 +11,8 @@
 type JsPdfCtor = typeof import("jspdf").jsPDF;
 type Html2CanvasFn = typeof import("html2canvas")["default"];
 
+import styles from "./atelier.module.css";
+
 const A4_W_PX = 794;
 const A4_H_PX = 1123;
 /** Styles in atelier.module.css are scoped to this host id only. */
@@ -66,6 +68,7 @@ function applyCaptureBox(el: HTMLElement): void {
 function createCaptureHost(): HTMLDivElement {
   const host = document.createElement("div");
   host.id = ATELIER_PDF_CAPTURE_HOST_ID;
+  host.className = styles.pdfCaptureHost;
   host.setAttribute("data-atelier-pdf-capture", "true");
   host.setAttribute("aria-hidden", "true");
   // Keep in viewport (opacity only) — far off-screen clones often rasterize blank on iOS.
