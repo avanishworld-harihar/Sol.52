@@ -51,6 +51,7 @@ import {
 import styles from "./atelier.module.css";
 import {
   buildAtelierProposalPdf,
+  downloadPdfFile,
   isAppleTouchDevice,
   sharePdfFile,
   type AtelierPdfFile,
@@ -495,141 +496,29 @@ export function AtelierRenderer({
     return digits.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
   };
 
-  useEffect(() => {
-    if (typeof document === "undefined") return;
-    const STYLE_ID = "atelier-print-page-box";
-    const IOS_CLASS = "atelier-print-ios";
-
-    const isAppleTouchPrint = () => {
-      const nav = window.navigator;
-      const ua = nav.userAgent || "";
-      // iPadOS 13+ reports as MacIntel with touch
-      const iPadDesktopUa =
-        nav.platform === "MacIntel" && (nav.maxTouchPoints || 0) > 1;
-      return /iPad|iPhone|iPod/i.test(ua) || iPadDesktopUa;
-    };
-
-    const ensurePrintPageBox = () => {
-      const ios = isAppleTouchPrint();
-      document.documentElement.classList.toggle(IOS_CLASS, ios);
-
-      let el = document.getElementById(STYLE_ID) as HTMLStyleElement | null;
-      if (!el) {
-        el = document.createElement("style");
-        el.id = STYLE_ID;
-      }
-      // Re-append late in the body so this sheet wins over module + inline print styles.
-      (document.body || document.head).appendChild(el);
-
-      /*
-       * iPad / iOS Safari:
-       * 1) Often ignores @page { margin: 0 } → keeps ~8–10mm → 210×297mm sheets shrink
-       *    (white bands + wrong pagination, as in print preview).
-       * 2) break-after: page inserts a blank sheet after every section (~2× page count).
-       * Fit sheets inside iPad's real printable area and paginate with break-before only.
-       */
-      el.textContent = ios
-        ? `
-@media print {
-  @page { size: A4; margin: 0; }
-  html, body, #proposal-route-root {
-    margin: 0 !important;
-    padding: 0 !important;
-    width: auto !important;
-    max-width: none !important;
-    height: auto !important;
-    min-height: 0 !important;
-    overflow: visible !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-  [data-atelier-root] {
-    width: 182mm !important;
-    max-width: 182mm !important;
-    margin: 0 auto !important;
-    padding: 0 !important;
-    overflow: visible !important;
-    background: #fff !important;
-  }
-  [data-atelier-root] > section {
-    width: 182mm !important;
-    max-width: 182mm !important;
-    height: 265mm !important;
-    min-height: 265mm !important;
-    max-height: 265mm !important;
-    margin: 0 !important;
-    padding: 8mm 9mm 9mm !important;
-    box-sizing: border-box !important;
-    overflow: hidden !important;
-    page-break-after: auto !important;
-    break-after: auto !important;
-    page-break-before: auto !important;
-    break-before: auto !important;
-    page-break-inside: auto !important;
-    break-inside: auto !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-  [data-atelier-root] > section + section {
-    page-break-before: always !important;
-    break-before: page !important;
-  }
-}
-`
-        : `
-@media print {
-  @page { size: A4; margin: 0; }
-  html, body {
-    margin: 0 !important;
-    padding: 0 !important;
-    height: auto !important;
-    overflow: visible !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-}`;
-    };
-
-    ensurePrintPageBox();
-    const onBeforePrint = () => {
-      ensurePrintPageBox();
-      window.scrollTo(0, 0);
-    };
-    window.addEventListener("beforeprint", onBeforePrint);
-    return () => {
-      window.removeEventListener("beforeprint", onBeforePrint);
-      document.documentElement.classList.remove(IOS_CLASS);
-      document.getElementById(STYLE_ID)?.remove();
-    };
-  }, []);
-
   const handleDownloadPdf = async () => {
     if (typeof window === "undefined" || pdfBusy) return;
     window.scrollTo(0, 0);
-
-    if (isAppleTouchDevice()) {
-      const root = rootRef.current;
-      if (!root) return;
-      setPdfBusy(true);
-      try {
-        const file = await buildAtelierProposalPdf({
-          root,
-          customerName: clientName,
-          presetId: "residential_premium_luxe",
-        });
+    const root = rootRef.current;
+    if (!root) return;
+    setPdfBusy(true);
+    try {
+      const file = await buildAtelierProposalPdf({
+        root,
+        customerName: clientName,
+        presetId: "residential_premium_luxe",
+      });
+      if (isAppleTouchDevice()) {
         setPdfReady(file);
-      } catch (err) {
-        console.error("[atelier] PDF export failed", err);
-        window.alert(c.print.pdfFailed);
-      } finally {
-        setPdfBusy(false);
+      } else {
+        downloadPdfFile(file);
       }
-      return;
+    } catch (err) {
+      console.error("[atelier] PDF export failed", err);
+      window.alert(c.print.pdfFailed);
+    } finally {
+      setPdfBusy(false);
     }
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => window.print());
-    });
   };
 
   const handleSharePdf = async () => {
@@ -639,7 +528,12 @@ export function AtelierRenderer({
       await sharePdfFile(pdfReady);
     } catch (err) {
       console.error("[atelier] PDF share failed", err);
-      window.alert(c.print.pdfFailed);
+      /*
+       * Some WebKit builds expose navigator.share but reject PDF files.
+       * Preserve a standards-based anchor download instead of losing the
+       * already generated document.
+       */
+      downloadPdfFile(pdfReady);
     } finally {
       setPdfSharing(false);
     }
@@ -1998,7 +1892,7 @@ export function AtelierRenderer({
             {/* eslint-disable-next-line @next/next/no-img-element -- print A4 static asset */}
             <img
               className={styles.trustPhoto}
-              src="/assets/proposals/quantum-cover-estate.jpg"
+              src="/assets/proposals/atelier-trust-rooftop.jpg"
               alt={c.trust.photoTitle}
             />
             <figcaption className={styles.trustPhotoCap}>

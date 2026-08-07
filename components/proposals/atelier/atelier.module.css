@@ -108,6 +108,16 @@
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
+.pdfCaptureHost [data-pdf-capture-root='true'] *,
+.pdfCaptureHost [data-pdf-capture-root='true'] *::before,
+.pdfCaptureHost [data-pdf-capture-root='true'] *::after {
+  /* WebKit capture fallbacks: the PDF contains pixels, not live glass effects. */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  mix-blend-mode: normal !important;
+  mask-image: none !important;
+  -webkit-mask-image: none !important;
+}
 .pdfCaptureHost [data-pdf-capture-root='true'] {
   width: 794px !important;
   min-width: 794px !important;
@@ -142,19 +152,20 @@
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe'] {
   --a4-w: 794px;
   --a4-h: 1123px;
-  --page-pad-x: 1.5rem;
-  --page-pad-t: 1.25rem;
-  --page-pad-b: 42px;
+  /* 48–56px = 12.7–14.8mm at the 96dpi capture grid. */
+  --page-pad-x: 48px;
+  --page-pad-t: 48px;
+  --page-pad-b: 56px;
 }
 .pdfCaptureHost
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
   > section {
-  padding-bottom: 42px !important;
+  padding-bottom: 56px !important;
 }
 .pdfCaptureHost
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
   .pageNum {
-  bottom: 18px !important;
+  bottom: 48px !important;
 }
 .pdfCaptureHost
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
@@ -164,7 +175,7 @@
 .pdfCaptureHost
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
   .coverInner {
-  padding: 28px 44px 42px !important;
+  padding: 48px 48px 56px !important;
 }
 .pdfCaptureHost
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
@@ -220,6 +231,104 @@
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
   .wealthPathIconOn {
   background: #f97316 !important;
+}
+
+/* Dense-page capture compaction mirrors the proven A4 print lane. */
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  :is(
+    .termsStack,
+    .wealthLayout,
+    .trajectoryChart,
+    .genCompare,
+    .journeyBlock,
+    .payBankSplit,
+    .trustGrid,
+    .trustShowcase,
+    .roofMainRow,
+    .roofMetricGrid,
+    .financeFlow,
+    .investBreakdown,
+    .wealthPath,
+    .genProofGrid,
+    .investScoreCard,
+    .wealthChart
+  ) {
+  flex: 0 0 auto !important;
+  flex-grow: 0 !important;
+  min-height: 0 !important;
+  max-width: 100% !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .billAuditChart {
+  height: 175px !important;
+  min-height: 160px !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .trajectorySvg {
+  width: 100% !important;
+  height: 135px !important;
+  min-height: 118px !important;
+  max-height: 145px !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .forecastBars {
+  height: 333px !important;
+  min-height: 333px !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .forecastTrack {
+  height: 234px !important;
+  min-height: 234px !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .roofPlanFrame {
+  height: 197px !important;
+  min-height: 181px !important;
+  max-height: 212px !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .blueprintStage {
+  height: 317px !important;
+  min-height: 295px !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .blueprintGrid {
+  perspective: none !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .blueprintPanels {
+  transform: none !important;
+  transform-style: flat !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .logoPlate {
+  background: #ffffff !important;
+  color: #0a0f1c !important;
+  box-shadow: none !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .blueprintCaption {
+  background: #111827 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .trustPhotoFrame {
+  height: 234px !important;
+  min-height: 212px !important;
+  max-height: 257px !important;
 }
 
 .pdfReadyOverlay {
@@ -5760,46 +5869,6 @@
     page-break-inside: avoid;
   }
 
-  /*
-   * iPad / iOS: Safari rarely honors margin:0. Full 210×297mm sheets then
-   * shrink-to-fit (white bands) and break-after blank sheets (~2× page count).
-   * html.atelier-print-ios is set by AtelierRenderer on Apple touch devices.
-   */
-  :global(html.atelier-print-ios) .wrapper {
-    width: 182mm !important;
-    max-width: 182mm !important;
-    margin: 0 auto !important;
-    padding: 0 !important;
-  }
-  :global(html.atelier-print-ios) .page,
-  :global(html.atelier-print-ios) .coverPage,
-  :global(html.atelier-print-ios) .closingPage {
-    --page-pad-x: 9mm;
-    --page-pad-t: 8mm;
-    --page-pad-b: 9mm;
-    width: 182mm !important;
-    max-width: 182mm !important;
-    height: 265mm !important;
-    min-height: 265mm !important;
-    max-height: 265mm !important;
-    padding: var(--page-pad-t) var(--page-pad-x) var(--page-pad-b) !important;
-    break-after: auto !important;
-    page-break-after: auto !important;
-    break-inside: auto !important;
-    page-break-inside: auto !important;
-  }
-  :global(html.atelier-print-ios) .page + .page {
-    break-before: page !important;
-    page-break-before: always !important;
-  }
-  /* 3D iso can inflate the ink overflow box → Safari shrink-to-fit */
-  :global(html.atelier-print-ios) .blueprintPanels {
-    transform: rotateX(28deg) rotateZ(-12deg) scale(0.92) !important;
-  }
-  :global(html.atelier-print-ios) .blueprintStage {
-    perspective: none !important;
-    overflow: hidden !important;
-  }
   .coverInner {
     padding: 0 !important;
     min-height: 0;
@@ -6154,7 +6223,7 @@
     position: absolute !important;
     left: var(--page-pad-x) !important;
     right: var(--page-pad-x) !important;
-    bottom: 3.5mm !important;
+    bottom: 12mm !important;
     font-size: 7.5pt;
     letter-spacing: 0.2px;
     text-align: right;

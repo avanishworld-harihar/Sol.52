@@ -68,8 +68,29 @@ export const PRINT_LAYOUT_GUARD_RULES: PrintLayoutGuardRule[] = [
       if (!content.includes('min-width", `${A4_W_PX}px`')) {
         return "capture root no longer locks its minimum A4 width";
       }
+      if (!content.includes("const scale = 2;")) {
+        return "capture scale must remain an integer";
+      }
       if (content.includes('"opacity:0.01"')) {
         return "capture host opacity will wash out PDF colours";
+      }
+      return null;
+    },
+  },
+  {
+    id: "atelier-pdf-safe-area",
+    file: "components/proposals/atelier/atelier.module.css",
+    description: "Atelier PDF pages must retain an A4-safe content inset",
+    validate: (content: string) => {
+      if (
+        !content.includes("--page-pad-x: 48px") ||
+        !content.includes("--page-pad-b: 56px") ||
+        !content.includes("bottom: 48px !important")
+      ) {
+        return "capture safe-area values changed";
+      }
+      if (content.includes("atelier-print-ios")) {
+        return "obsolete WebKit print-size override is still present";
       }
       return null;
     },

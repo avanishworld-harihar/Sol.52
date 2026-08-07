@@ -47,6 +47,14 @@ async function waitForImages(root: ParentNode): Promise<void> {
   );
 }
 
+async function waitForFonts(): Promise<void> {
+  if (!("fonts" in document)) return;
+  await Promise.race([
+    document.fonts.ready,
+    new Promise<void>((resolve) => window.setTimeout(resolve, 8000)),
+  ]);
+}
+
 function applyPageBox(el: HTMLElement): void {
   el.style.setProperty("width", `${A4_W_PX}px`, "important");
   el.style.setProperty("max-width", `${A4_W_PX}px`, "important");
@@ -55,6 +63,7 @@ function applyPageBox(el: HTMLElement): void {
   el.style.setProperty("max-height", `${A4_H_PX}px`, "important");
   el.style.setProperty("margin", "0", "important");
   el.style.setProperty("box-shadow", "none", "important");
+  el.style.setProperty("border", "0", "important");
   el.style.setProperty("border-radius", "0", "important");
   el.style.setProperty("overflow", "hidden", "important");
   el.style.setProperty("box-sizing", "border-box", "important");
@@ -68,6 +77,7 @@ function syncCloneImages(clone: ParentNode): void {
     if (!src) continue;
     img.removeAttribute("srcset");
     img.removeAttribute("sizes");
+    img.crossOrigin = "anonymous";
     img.src = src;
   }
 }
@@ -206,8 +216,12 @@ export async function buildAtelierProposalPdf(options: {
   ])) as [{ jsPDF: JsPdfCtor }, { default: Html2CanvasFn }];
 
   const ios = isAppleTouchDevice();
-  const scale = ios ? 1.5 : 2;
-  const jpegQuality = ios ? 0.9 : 0.92;
+  /*
+   * Integer scale only. 1.5 made the 1123px sheet resolve to 1684.5 device
+   * pixels, which WebKit rounded differently and could lose the final row.
+   */
+  const scale = 2;
+  const jpegQuality = 0.92;
 
   const pdf = new jsPDF({
     orientation: "portrait",
@@ -221,6 +235,7 @@ export async function buildAtelierProposalPdf(options: {
   const host = createCaptureHost();
 
   try {
+    await waitForFonts();
     await waitForImages(options.root);
     await new Promise((r) => window.setTimeout(r, 100));
 
@@ -263,7 +278,7 @@ export async function buildAtelierProposalPdf(options: {
 
       const image = canvas.toDataURL("image/jpeg", jpegQuality);
       if (i > 0) pdf.addPage("a4", "portrait");
-      pdf.addImage(image, "JPEG", 0, 0, pageWidth, pageHeight, undefined, "FAST");
+      pdf.addImage(image, "JPEG", 0, 0, pageWidth, pageHeight);
 
       canvas.width = 0;
       canvas.height = 0;
