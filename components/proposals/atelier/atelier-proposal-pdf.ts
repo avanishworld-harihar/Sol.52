@@ -47,12 +47,51 @@ async function waitForImages(root: ParentNode): Promise<void> {
   );
 }
 
+/*
+ * Atelier's only font source is a runtime `@import url(fonts.googleapis.com...)`
+ * inside a <style> tag rendered as a child of the root (see atelier-renderer.tsx).
+ * html2canvas re-resolves that @import inside a *fresh* cloned document/iframe,
+ * which means the fonts must be re-fetched there too. On desktop this usually
+ * resolves from cache in a few ms; on iPad Safari, cross-origin font requests
+ * made from that freshly created capture context are far more likely to hit a
+ * slow/blocked network round trip (stricter cache partitioning for third-party
+ * resources) — so the capture proceeds before Montserrat/Lato are ready and
+ * silently falls back to the system font, changing line-wrapping, spacing and
+ * page fills only in the exported PDF. Explicitly loading the exact families
+ * we use and awaiting `document.fonts.ready` on *that* document closes the race.
+ */
+const ATELIER_FONT_SPECS = [
+  "300 16px Lato",
+  "400 16px Lato",
+  "700 16px Lato",
+  "400 16px Montserrat",
+  "500 16px Montserrat",
+  "600 16px Montserrat",
+  "700 16px Montserrat",
+  "800 16px Montserrat",
+];
+
+async function waitForFontSet(
+  fontSet: FontFaceSet | undefined,
+  timeoutMs: number
+): Promise<void> {
+  if (!fontSet) return;
+  try {
+    await Promise.all(
+      ATELIER_FONT_SPECS.map((spec) => fontSet.load(spec).catch(() => []))
+    );
+  } catch {
+    /* best-effort — fall through to the ready race below */
+  }
+  await Promise.race([
+    fontSet.ready,
+    new Promise<void>((resolve) => window.setTimeout(resolve, timeoutMs)),
+  ]);
+}
+
 async function waitForFonts(): Promise<void> {
   if (!("fonts" in document)) return;
-  await Promise.race([
-    document.fonts.ready,
-    new Promise<void>((resolve) => window.setTimeout(resolve, 8000)),
-  ]);
+  await waitForFontSet(document.fonts, 8000);
 }
 
 function applyPageBox(el: HTMLElement): void {
@@ -72,13 +111,54 @@ function applyPageBox(el: HTMLElement): void {
 }
 
 function syncCloneImages(clone: ParentNode): void {
+  const currentOrigin =
+    typeof window !== "undefined" ? window.location.origin : "";
   for (const img of Array.from(clone.querySelectorAll("img"))) {
     const src = img.currentSrc || img.src;
     if (!src) continue;
     img.removeAttribute("srcset");
     img.removeAttribute("sizes");
-    img.crossOrigin = "anonymous";
-    img.src = src;
+    /*
+     * Off-screen (left:-10000px) images never intersect the viewport, and
+     * Safari's lazy-load implementation is far more conservative than
+     * Chromium's about ever firing `load` for an element that will never be
+     * seen — drop the hint so every image decodes eagerly for capture.
+     */
+    img.removeAttribute("loading");
+    img.decoding = "sync";
+
+    let isCrossOrigin = false;
+    try {
+      isCrossOrigin = Boolean(currentOrigin) && new URL(src, currentOrigin).origin !== currentOrigin;
+    } catch {
+      isCrossOrigin = false;
+    }
+    /*
+     * Only force a CORS-mode reload when the image is actually cross-origin.
+     * Re-assigning `src` after adding `crossOrigin` always triggers a brand
+     * new network request in CORS mode — on Safari/iPadOS that request can
+     * fail (or simply never resolve in time) even though the same asset just
+     * displayed fine live without CORS, which silently drops or blanks
+     * photos only in the exported PDF.
+     */
+    if (isCrossOrigin) {
+      img.crossOrigin = "anonymous";
+      img.src = src;
+    }
+  }
+}
+
+function cloneRootStyleTags(root: HTMLElement, shell: HTMLElement): void {
+  /*
+   * `createRootShell` deliberately uses a shallow clone of the root so it
+   * keeps only the class/attributes needed for descendant selectors. That
+   * also drops any <style> children rendered directly under the root (e.g.
+   * Atelier's Google Fonts @import + print @page rules). html2canvas builds
+   * its own document clone independently, but carrying these over on our own
+   * clone removes any dependency on how faithfully it does that.
+   */
+  for (const styleEl of Array.from(root.querySelectorAll(":scope > style"))) {
+    shell.appendChild(styleEl.cloneNode(true));
   }
 }
 
@@ -246,6 +326,7 @@ export async function buildAtelierProposalPdf(options: {
       const clone = sections[i].cloneNode(true) as HTMLElement;
       applyPageBox(clone);
       const rootShell = createRootShell(options.root);
+      cloneRootStyleTags(options.root, rootShell);
       rootShell.appendChild(clone);
       host.appendChild(rootShell);
       syncCloneImages(clone);
@@ -271,8 +352,15 @@ export async function buildAtelierProposalPdf(options: {
         windowHeight: A4_H_PX,
         scrollX: 0,
         scrollY: 0,
-        onclone: (_doc, clonedEl) => {
+        onclone: async (clonedDoc, clonedEl) => {
           applyPageBox(clonedEl as HTMLElement);
+          /*
+           * html2canvas rasterizes a *separate* cloned document. Its font
+           * cache starts cold for the @import'd Google Fonts, so we must
+           * wait for fonts on *this* document — html2canvas awaits whatever
+           * this callback returns before it paints the canvas.
+           */
+          await waitForFontSet(clonedDoc.fonts, ios ? 4000 : 1500);
         },
       });
 
@@ -283,6 +371,17 @@ export async function buildAtelierProposalPdf(options: {
       canvas.width = 0;
       canvas.height = 0;
       host.replaceChildren();
+      /*
+       * Give WebKit a beat to reclaim the canvas backing store before the
+       * next page — iPad Safari has a much tighter canvas memory ceiling
+       * than desktop, and back-to-back captures across a 13+ page document
+       * were the most likely place for a later page to silently render
+       * blank/garbled only on iPad.
+       */
+      if (ios) {
+        await new Promise((r) => requestAnimationFrame(() => r(undefined)));
+        await new Promise((r) => window.setTimeout(r, 60));
+      }
     }
 
     return {
