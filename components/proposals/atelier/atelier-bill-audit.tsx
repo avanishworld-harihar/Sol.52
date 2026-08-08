@@ -93,6 +93,22 @@ export function AtelierBillAudit({
 
       <div className={styles.billAuditTableWrap}>
         <table className={styles.billAuditTable}>
+          {/*
+           * table-layout:fixed splits width evenly across 6 columns by
+           * default. "Month" and "Units" need far less room than the ₹
+           * amount columns, so equal split was the tightest fit for large
+           * totals (e.g. "Total" row) and truncated with an ellipsis —
+           * this reads as "numbers getting cut" even though it's rendering
+           * correctly, just clipped by the column being too narrow.
+           */}
+          <colgroup>
+            <col style={{ width: "17%" }} />
+            <col style={{ width: "13%" }} />
+            <col style={{ width: "17.5%" }} />
+            <col style={{ width: "17.5%" }} />
+            <col style={{ width: "17.5%" }} />
+            <col style={{ width: "17.5%" }} />
+          </colgroup>
           <thead>
             <tr>
               <th>{labels.month}</th>

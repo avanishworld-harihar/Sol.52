@@ -5798,9 +5798,17 @@
     print-color-adjust: exact !important;
   }
   .page {
-    --page-pad-x: 14mm;
-    --page-pad-t: 12mm;
-    --page-pad-b: 14mm;
+    /*
+     * Must match the real web padding — `@media screen` (line ~4933) sets
+     * 3.5rem/2.75rem/3.25rem for every screen ≥640px (iPad + desktop), not
+     * the unused :root fallback near the top of this file. The page box is
+     * a FIXED height with overflow:hidden in both web and print, so any
+     * mismatch here directly changes how much content fits before the
+     * bottom edge silently clips it — only in print/PDF, never on screen.
+     */
+    --page-pad-x: 3.5rem;
+    --page-pad-t: 2.75rem;
+    --page-pad-b: 3.25rem;
     page: atelier-sheet;
     width: 210mm !important;
     max-width: 210mm !important;
