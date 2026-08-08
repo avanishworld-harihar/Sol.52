@@ -372,7 +372,7 @@ export function ImpactPage({ data, generationUnits }: ImpactPageProps) {
         <svg
           viewBox="0 0 520 188"
           width="100%"
-          height="168"
+          height="148"
           className={styles.impactChartSvg}
           aria-label={copy.impact.chartHead}
         >

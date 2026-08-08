@@ -519,7 +519,7 @@
 .closePhotoImg {
   display: block;
   width: 100%;
-  height: 212px;
+  height: 178px;
   object-fit: cover;
   /* High three-quarter angle — keep full plant + family in band */
   object-position: 48% 38%;
@@ -943,8 +943,8 @@
 
 .closeFooter {
   position: relative;
-  z-index: 2;
-  margin-top: 8px;
+  z-index: 3;
+  margin-top: auto;
   flex-shrink: 0;
 }
 
@@ -1262,9 +1262,9 @@
   grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
   align-items: end;
   flex: 0 0 auto;
-  height: 148px;
-  min-height: 132px;
-  padding: 10px 12px 22px;
+  height: 124px;
+  min-height: 112px;
+  padding: 8px 12px 20px;
   border: 1px solid rgba(184, 150, 46, 0.28);
   border-radius: 4px;
   background: linear-gradient(180deg, #fbf8f2 0%, #f3f0e8 100%);
@@ -1308,12 +1308,12 @@
 }
 
 .billAuditTableWrap {
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid rgba(20, 24, 32, 0.1);
   border-radius: 4px;
   background: #ffffff;
   box-shadow: 0 8px 24px rgba(20, 24, 32, 0.05);
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -1321,14 +1321,13 @@
 
 .billAuditTable {
   width: 100%;
-  height: 100%;
   border-collapse: collapse;
   table-layout: fixed;
 }
 
 .billAuditTable th,
 .billAuditTable td {
-  padding: 0.42rem 0.5rem;
+  padding: 0.34rem 0.45rem;
   border-bottom: 1px solid #edf1f5;
   text-align: right;
   white-space: nowrap;
@@ -1376,14 +1375,16 @@
 }
 
 .billAuditTotal td {
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
   border-top: 1px solid #141820;
   border-bottom: 0;
   color: #141820;
   font-weight: 700;
   font-size: 0.86rem;
   background: #fbf8f2;
+  overflow: visible;
+  text-overflow: clip;
 }
 
 .billAuditFootnote {
@@ -1406,8 +1407,18 @@
 }
 
 .billAuditPage .impactPageFooter {
-  margin-top: 6px;
+  margin-top: auto;
   flex-shrink: 0;
+}
+
+/* Pin footers on dense interior pages so logo + folio stay inside A4 */
+.hudPage .impactPageFooter,
+.impactPage .impactPageFooter,
+.payPage .impactPageFooter {
+  margin-top: auto;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 3;
 }
 
 /* HUD & ENGINEERING DESIGN */
@@ -1469,8 +1480,10 @@
 .engSvgDark {
   display: block;
   width: 100%;
-  flex: 1 1 auto;
-  min-height: 300px;
+  flex: 0 0 auto;
+  min-height: 0;
+  height: 240px;
+  max-height: 240px;
   border-radius: 8px;
   background: #0a0e14;
   -webkit-print-color-adjust: exact !important;
@@ -1550,8 +1563,9 @@
   background: #ffffff;
   border: 1px solid #e2e6ec;
   border-radius: 10px;
-  padding: 12px 12px 10px;
-  margin-bottom: 8px;
+  padding: 10px 12px 8px;
+  margin-bottom: 6px;
+  flex-shrink: 0;
 }
 
 .archLead {
@@ -1585,8 +1599,8 @@
 .archIcon {
   width: 100%;
   max-width: 96px;
-  height: 58px;
-  margin-bottom: 4px;
+  height: 50px;
+  margin-bottom: 2px;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -1694,17 +1708,27 @@
 
 .hudPage .expertVerdict p,
 .hudPage .engineerVerdict p {
-  font-size: 1.05rem;
-  line-height: 1.45;
+  font-size: 0.96rem;
+  line-height: 1.4;
+}
+
+.hudPage .expertVerdict,
+.hudPage .standardsStrip {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+  margin-top: 0;
+}
+
+.hudPage .standardsStrip {
+  margin-top: 6px;
+  padding-top: 6px;
+  font-size: 0.68rem;
 }
 
 .hudPage .verdictLabel {
   font-size: 0.72rem;
   font-weight: 800;
-}
-
-.hudPage .standardsStrip {
-  font-size: 0.76rem;
 }
 
 .bomLead {
@@ -1944,6 +1968,9 @@
 .engineerVerdict {
   margin-top: auto;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   padding: 10px 14px;
   border-left: 2px solid #b8962e;
   background: linear-gradient(90deg, rgba(184, 150, 46, 0.08) 0%, transparent 100%);
@@ -1956,7 +1983,7 @@
   font-size: 0.58rem;
   letter-spacing: 0.18em;
   color: #b8962e;
-  margin-bottom: 4px;
+  margin-bottom: 0;
   font-weight: 700;
 }
 
@@ -2642,9 +2669,9 @@
   background: #ffffff;
   border: 1px solid #e2e6ec;
   border-radius: 10px;
-  padding: 14px 16px 12px;
-  margin-bottom: 8px;
-  flex: 1;
+  padding: 12px 14px 10px;
+  margin-bottom: 6px;
+  flex: 0 0 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -2729,8 +2756,10 @@
 .impactChartSvg {
   display: block;
   width: 100%;
-  flex: 1;
-  min-height: 148px;
+  flex: 0 0 auto;
+  height: 148px;
+  min-height: 140px;
+  max-height: 148px;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -2743,13 +2772,17 @@
 }
 
 .impactPage .expertVerdict {
-  margin-top: 8px;
-  padding: 12px 14px;
+  margin-top: 6px;
+  padding: 10px 12px;
+  flex-shrink: 0;
+  clear: both;
+  position: relative;
+  z-index: 2;
 }
 
 .impactPage .expertVerdict p {
-  font-size: 1.05rem;
-  line-height: 1.45;
+  font-size: 0.98rem;
+  line-height: 1.42;
 }
 
 .impactPage .verdictLabel {
@@ -2760,13 +2793,18 @@
 .impactPageFooter {
   display: flex;
   justify-content: space-between;
-  margin-top: 8px;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
   padding-top: 10px;
   border-top: 1px solid #e2e6ec;
   font-size: 0.7rem;
   letter-spacing: 0.12em;
   color: #b8962e;
   font-weight: 600;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 3;
 }
 
 /* GENERATION FORECAST PAGE (Canvas-style + bill overlay) */
@@ -3092,8 +3130,8 @@
   background: #ffffff;
   border: 1px solid #e2e6ec;
   border-radius: 10px;
-  padding: 10px 16px 6px;
-  margin-bottom: 12px;
+  padding: 8px 14px 4px;
+  margin-bottom: 10px;
   flex-shrink: 0;
 }
 
@@ -3125,7 +3163,7 @@
   grid-template-columns: 36px 1fr auto;
   gap: 12px;
   align-items: center;
-  padding: 10px 0;
+  padding: 7px 0;
   border-bottom: 1px solid #eef1f5;
 }
 
@@ -3176,8 +3214,8 @@
   background: #ffffff;
   border: 1px solid #e2e6ec;
   border-radius: 10px;
-  padding: 14px 16px 16px;
-  margin-bottom: 12px;
+  padding: 12px 14px 12px;
+  margin-bottom: 10px;
   flex: 0 0 auto;
   flex-shrink: 0;
   overflow: visible;
@@ -3235,8 +3273,8 @@
   background: #f8f9fb;
   border: 1.5px solid #e2e6ec;
   border-radius: 8px;
-  padding: 12px 14px;
-  min-height: 58px;
+  padding: 10px 12px;
+  min-height: 52px;
 }
 
 .payBankCellWide {
@@ -4763,5 +4801,34 @@
   .archNode {
     flex: 1 !important;
     min-width: 0 !important;
+  }
+
+  .engSvgDark {
+    height: 228px !important;
+    max-height: 228px !important;
+  }
+
+  .closePhotoImg {
+    height: 168px !important;
+  }
+
+  .impactChartSvg {
+    height: 136px !important;
+    min-height: 132px !important;
+    max-height: 136px !important;
+  }
+
+  .billAuditChart {
+    height: 112px !important;
+    min-height: 108px !important;
+  }
+
+  .hudPage .impactPageFooter,
+  .impactPage .impactPageFooter,
+  .payPage .impactPageFooter,
+  .billAuditPage .impactPageFooter,
+  .closeFooter {
+    margin-top: auto !important;
+    flex-shrink: 0 !important;
   }
 }

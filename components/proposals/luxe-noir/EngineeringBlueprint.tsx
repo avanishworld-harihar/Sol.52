@@ -234,9 +234,10 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
       ? data.engineering.standards.slice(0, 4).join(" · ")
       : "IS/IEC · CEA · DISCOM net-metering · IS 3043 earthing";
 
-  // Wide bank: more columns than rows so the front face reads clearly
+  // Physical layout on roof — 6 modules render as two rows of three (3+3),
+  // not a single long string line (matches site survey / client expectation).
   const preferredRows =
-    modulesDraw <= 6 ? 1 : modulesDraw <= 12 ? 2 : modulesDraw <= 24 ? 3 : 4;
+    modulesDraw <= 6 ? 2 : modulesDraw <= 12 ? 2 : modulesDraw <= 24 ? 3 : 4;
   const cols = Math.max(1, Math.ceil(modulesDraw / preferredRows));
   const strings = Math.max(1, Math.ceil(modulesRaw / 6));
   const perString = Math.ceil(modulesRaw / strings);
@@ -306,7 +307,7 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
           <svg
             viewBox={`0 0 ${ARRAY_VB.w} ${ARRAY_VB.h}`}
             width="100%"
-            height="300"
+            height="240"
             className={styles.engSvgDark}
             aria-hidden
           >

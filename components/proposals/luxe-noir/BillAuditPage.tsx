@@ -107,6 +107,14 @@ export function BillAuditPage({ data }: BillAuditPageProps) {
 
         <div className={styles.billAuditTableWrap}>
           <table className={styles.billAuditTable}>
+            <colgroup>
+              <col style={{ width: "17%" }} />
+              <col style={{ width: "13%" }} />
+              <col style={{ width: "17.5%" }} />
+              <col style={{ width: "17.5%" }} />
+              <col style={{ width: "17.5%" }} />
+              <col style={{ width: "17.5%" }} />
+            </colgroup>
             <thead>
               <tr>
                 <th>{c.month}</th>
