@@ -289,9 +289,9 @@
 .pdfCaptureHost
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
   .roofPlanFrame {
-  height: 197px !important;
-  min-height: 181px !important;
-  max-height: 212px !important;
+  height: 210px !important;
+  min-height: 190px !important;
+  max-height: 230px !important;
 }
 .pdfCaptureHost
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
@@ -327,9 +327,9 @@
 .pdfCaptureHost
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
   .trustPhotoFrame {
-  height: 234px !important;
-  min-height: 212px !important;
-  max-height: 257px !important;
+  height: 268px !important;
+  min-height: 240px !important;
+  max-height: 290px !important;
 }
 
 .pdfReadyOverlay {
@@ -5966,8 +5966,8 @@
   }
   .closingPhotoFrame {
     height: auto !important;
-    min-height: 62mm !important;
-    max-height: 78mm !important;
+    min-height: 220px !important;
+    max-height: 280px !important;
     flex: 1 1 auto !important;
   }
   .closingPhotoImg {
@@ -6059,9 +6059,9 @@
   .pageLead { font-size: 9.5pt !important; }
 
   .roofPlanFrame {
-    height: 52mm !important;
-    min-height: 48mm !important;
-    max-height: 56mm !important;
+    height: 210px !important;
+    min-height: 190px !important;
+    max-height: 230px !important;
   }
   .blueprintStage {
     min-height: 78mm !important;
@@ -6151,9 +6151,9 @@
     print-color-adjust: exact !important;
   }
   .trustPhotoFrame {
-    height: 62mm !important;
-    min-height: 56mm !important;
-    max-height: 68mm !important;
+    height: 268px !important;
+    min-height: 240px !important;
+    max-height: 290px !important;
   }
   .trustExpert {
     margin-top: 0.35rem !important;
