@@ -340,25 +340,61 @@ function normalizeBrandingSettings(parsed: Partial<ProposalBrandingSettings>): P
   return finalizeBrandingSettings(parsed);
 }
 
+const BACKUP_STORAGE_KEY = "ss_proposal_branding_settings_v2_backup";
+
+export function brandingIdentityScore(settings: ProposalBrandingSettings): number {
+  let score = 0;
+  if (settings.installerName.trim()) score += 3;
+  if (settings.installerLogoUrl.trim()) score += 3;
+  if (settings.installerContact.trim()) score += 1;
+  if (settings.installerEmail.trim()) score += 1;
+  if (settings.companyProfile.gstNumber.trim()) score += 1;
+  if (settings.companyProfile.address.trim()) score += 1;
+  if (settings.bankAccountNumber.trim()) score += 1;
+  if (settings.portfolioProjects.length > 0) score += 1;
+  return score;
+}
+
+function readRawBrandingJson(raw: string | null): ProposalBrandingSettings | null {
+  if (!raw) return null;
+  try {
+    return normalizeBrandingSettings(JSON.parse(raw) as Partial<ProposalBrandingSettings>);
+  } catch {
+    return null;
+  }
+}
+
 export function readProposalBrandingSettings(): ProposalBrandingSettings {
   if (typeof window === "undefined") return { ...DEFAULT_PROPOSAL_BRANDING_SETTINGS };
   try {
-    const rawV2 = localStorage.getItem(STORAGE_KEY);
-    if (rawV2) {
-      return normalizeBrandingSettings(JSON.parse(rawV2) as Partial<ProposalBrandingSettings>);
-    }
-    const rawV1 = localStorage.getItem(STORAGE_KEY_V1);
-    if (rawV1) {
-      return normalizeBrandingSettings(JSON.parse(rawV1) as Partial<ProposalBrandingSettings>);
-    }
+    const fromV2 = readRawBrandingJson(localStorage.getItem(STORAGE_KEY));
+    if (fromV2) return fromV2;
+    const fromBackup = readRawBrandingJson(localStorage.getItem(BACKUP_STORAGE_KEY));
+    if (fromBackup) return fromBackup;
+    const fromV1 = readRawBrandingJson(localStorage.getItem(STORAGE_KEY_V1));
+    if (fromV1) return fromV1;
     return { ...DEFAULT_PROPOSAL_BRANDING_SETTINGS };
   } catch {
     return { ...DEFAULT_PROPOSAL_BRANDING_SETTINGS };
   }
 }
 
-export function writeProposalBrandingSettings(next: Partial<ProposalBrandingSettings>) {
-  if (typeof window === "undefined") return;
+export type WriteProposalBrandingResult = {
+  ok: boolean;
+  error?: string;
+};
+
+/**
+ * Persist Brand & Proposals settings.
+ * Refuses accidental empty overwrites of a populated profile (common when a
+ * form saves before hydration finishes).
+ */
+export function writeProposalBrandingSettings(
+  next: Partial<ProposalBrandingSettings>
+): WriteProposalBrandingResult {
+  if (typeof window === "undefined") {
+    return { ok: false, error: "Branding can only be saved in the browser." };
+  }
   try {
     // Merge with existing settings so a partial write cannot wipe banking / profile fields.
     const prev = readProposalBrandingSettings();
@@ -384,10 +420,46 @@ export function writeProposalBrandingSettings(next: Partial<ProposalBrandingSett
       proposalSiteImages: next.proposalSiteImages ?? prev.proposalSiteImages,
       portfolioProjects: next.portfolioProjects ?? prev.portfolioProjects,
     });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+
+    const prevScore = brandingIdentityScore(prev);
+    const nextScore = brandingIdentityScore(payload);
+    const prevHadCore =
+      Boolean(prev.installerName.trim()) || Boolean(prev.installerLogoUrl.trim());
+    const nextLostCore =
+      !payload.installerName.trim() && !payload.installerLogoUrl.trim();
+    // Block empty-form races: unhydrated UI with defaults must not erase a saved company.
+    if (
+      (prevScore >= 3 && nextScore === 0) ||
+      (prevHadCore && nextLostCore && nextScore < prevScore && nextScore <= 1)
+    ) {
+      return {
+        ok: false,
+        error:
+          "Blocked an empty overwrite of your saved company branding. Re-open More → Brand & proposals and save again.",
+      };
+    }
+
+    const serialized = JSON.stringify(payload);
+    localStorage.setItem(STORAGE_KEY, serialized);
+    try {
+      localStorage.setItem(BACKUP_STORAGE_KEY, serialized);
+    } catch {
+      /* backup is best-effort */
+    }
     window.dispatchEvent(new Event(PROPOSAL_BRANDING_UPDATED_EVENT));
-  } catch {
-    /* ignore storage errors */
+    return { ok: true };
+  } catch (err) {
+    const quota =
+      err instanceof DOMException &&
+      (err.name === "QuotaExceededError" || err.name === "NS_ERROR_DOM_QUOTA_REACHED");
+    return {
+      ok: false,
+      error: quota
+        ? "Browser storage is full. Remove large portfolio photos or free site data, then save again."
+        : err instanceof Error
+          ? err.message
+          : "Could not save branding settings.",
+    };
   }
 }
 

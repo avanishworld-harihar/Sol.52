@@ -1,12 +1,12 @@
 "use client";
 
 /**
- * Subscribe to More → Brand & Proposals settings (localStorage).
- * Reads synchronously on the client so bank/contact appear on first paint
- * (same behavior as Golden / Atelier).
+ * Subscribe to More → Brand & Proposals settings.
+ * Fast path: localStorage cache. Then sync once from Supabase org branding.
  */
 
 import { useEffect, useState } from "react";
+import { syncOrgBrandingFromCloud } from "@/lib/org-branding-client";
 import {
   DEFAULT_PROPOSAL_BRANDING_SETTINGS,
   PROPOSAL_BRANDING_UPDATED_EVENT,
@@ -31,6 +31,7 @@ export function useProposalBrandingSettings(): ProposalBrandingSettings {
   useEffect(() => {
     const refresh = () => setSettings(readClientSettings());
     refresh();
+    void syncOrgBrandingFromCloud().then(() => refresh());
     window.addEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, refresh);
     window.addEventListener("storage", refresh);
     return () => {

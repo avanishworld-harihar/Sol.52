@@ -26,8 +26,8 @@ import {
   type ProposalBrandDisplayMode,
   type ProposalBrandingSettings,
   type ProposalThemePreset,
-  writeProposalBrandingSettings,
 } from "@/lib/proposal-branding-settings";
+import { persistOrgBranding, syncOrgBrandingFromCloud } from "@/lib/org-branding-client";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Building2,
@@ -40,7 +40,7 @@ import {
   Trash2,
   UploadCloud,
 } from "lucide-react";
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 type Props = {
   markSaved: (message: string) => void;
@@ -55,44 +55,55 @@ type SettingsSectionId =
   | "banking"
   | "appearance";
 
+function readInitialBranding(): ProposalBrandingSettings {
+  if (typeof window === "undefined") return DEFAULT_PROPOSAL_BRANDING_SETTINGS;
+  try {
+    return readProposalBrandingSettings();
+  } catch {
+    return DEFAULT_PROPOSAL_BRANDING_SETTINGS;
+  }
+}
+
 export function BrandProposalsSettingsPanel({ markSaved, markIssue }: Props) {
   const [openSection, setOpenSection] = useState<SettingsSectionId | null>("companyProfile");
+  const initial = useState(readInitialBranding)[0];
+  // Stay false until hydrate() runs — SSR leaves empty defaults; blur/save must not wipe storage.
+  const hydratedRef = useRef(false);
+  const writingRef = useRef(false);
 
-  const [companyName, setCompanyName] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerName);
-  const [companyProfile, setCompanyProfile] = useState<CompanyProfileCore>(
-    DEFAULT_PROPOSAL_BRANDING_SETTINGS.companyProfile
-  );
-  const [companyContact, setCompanyContact] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerContact);
-  const [companyEmail, setCompanyEmail] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerEmail);
-  const [companyLogo, setCompanyLogo] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.installerLogoUrl);
+  const [companyName, setCompanyName] = useState(initial.installerName);
+  const [companyProfile, setCompanyProfile] = useState<CompanyProfileCore>(initial.companyProfile);
+  const [companyContact, setCompanyContact] = useState(initial.installerContact);
+  const [companyEmail, setCompanyEmail] = useState(initial.installerEmail);
+  const [companyLogo, setCompanyLogo] = useState(initial.installerLogoUrl);
 
   const [brandDisplayPreference, setBrandDisplayPreference] = useState<
     ProposalBrandDisplayMode | "nameOnly"
-  >(DEFAULT_PROPOSAL_BRANDING_SETTINGS.brandDisplayPreference);
-  const [brandSectionRules, setBrandSectionRules] = useState(
-    DEFAULT_PROPOSAL_BRANDING_SETTINGS.brandSectionRules
+  >(initial.brandDisplayPreference);
+  const [brandSectionRules, setBrandSectionRules] = useState(initial.brandSectionRules);
+
+  const [credentials, setCredentials] = useState<CompanyCredentials>(initial.companyCredentials);
+  const [portfolioProjects, setPortfolioProjects] = useState<PortfolioProject[]>(
+    initial.portfolioProjects
   );
 
-  const [credentials, setCredentials] = useState<CompanyCredentials>(
-    DEFAULT_PROPOSAL_BRANDING_SETTINGS.companyCredentials
-  );
-  const [portfolioProjects, setPortfolioProjects] = useState<PortfolioProject[]>([]);
-
-  const [bankAccName, setBankAccName] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.bankAccountName);
-  const [bankAccNo, setBankAccNo] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.bankAccountNumber);
-  const [bankIfsc, setBankIfsc] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.bankIfsc);
-  const [bankBranch, setBankBranch] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.bankBranch);
-  const [bankUpi, setBankUpi] = useState(DEFAULT_PROPOSAL_BRANDING_SETTINGS.bankUpiId);
-  const [paymentQrCodeUrl, setPaymentQrCodeUrl] = useState(
-    DEFAULT_PROPOSAL_BRANDING_SETTINGS.paymentQrCodeUrl
-  );
+  const [bankAccName, setBankAccName] = useState(initial.bankAccountName);
+  const [bankAccNo, setBankAccNo] = useState(initial.bankAccountNumber);
+  const [bankIfsc, setBankIfsc] = useState(initial.bankIfsc);
+  const [bankBranch, setBankBranch] = useState(initial.bankBranch);
+  const [bankUpi, setBankUpi] = useState(initial.bankUpiId);
+  const [paymentQrCodeUrl, setPaymentQrCodeUrl] = useState(initial.paymentQrCodeUrl);
 
   const [themePreset, setThemePreset] = useState<ProposalThemePreset>(
-    DEFAULT_PROPOSAL_BRANDING_SETTINGS.themePreset
+    initial.proposalAppearance.themePreset
   );
-  const [colorStyle, setColorStyle] = useState<ProposalColorStyle>("greenBlueClassic");
-  const [typographyPreset, setTypographyPreset] = useState<ProposalTypographyPreset>("montserrat");
-  const [amcYears, setAmcYears] = useState<ProposalAmcYears>(DEFAULT_PROPOSAL_BRANDING_SETTINGS.amcSelectedYears);
+  const [colorStyle, setColorStyle] = useState<ProposalColorStyle>(
+    initial.proposalAppearance.colorStyle
+  );
+  const [typographyPreset, setTypographyPreset] = useState<ProposalTypographyPreset>(
+    initial.proposalAppearance.typographyPreset
+  );
+  const [amcYears, setAmcYears] = useState<ProposalAmcYears>(initial.amcSelectedYears);
 
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingQr, setUploadingQr] = useState(false);
@@ -119,13 +130,52 @@ export function BrandProposalsSettingsPanel({ markSaved, markIssue }: Props) {
     setColorStyle(s.proposalAppearance.colorStyle);
     setTypographyPreset(s.proposalAppearance.typographyPreset);
     setAmcYears(s.amcSelectedYears);
+    hydratedRef.current = true;
   }, []);
 
   useEffect(() => {
-    hydrate();
-    const onUpdate = () => hydrate();
+    let cancelled = false;
+    void (async () => {
+      writingRef.current = true;
+      const sync = await syncOrgBrandingFromCloud();
+      writingRef.current = false;
+      if (cancelled) return;
+      hydrate();
+      if (sync.seededCloud && sync.cloudSynced) {
+        markSaved("Existing branding uploaded to cloud.");
+      } else if (!sync.ok && sync.error) {
+        // Soft warning — local cache still works until migration / org is ready.
+        console.warn("[branding] cloud sync:", sync.error);
+      }
+    })();
+
+    const onUpdate = () => {
+      // Ignore the event we ourselves just dispatched — re-reading would race
+      // with in-progress edits and briefly flash empty defaults.
+      if (writingRef.current) return;
+      hydrate();
+    };
+    const onStorage = (event: StorageEvent) => {
+      if (
+        event.key &&
+        event.key !== "ss_proposal_branding_settings_v2" &&
+        event.key !== "ss_proposal_branding_settings_v2_backup" &&
+        event.key !== "ss_proposal_branding_settings_v1"
+      ) {
+        return;
+      }
+      if (writingRef.current) return;
+      hydrate();
+    };
     window.addEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, onUpdate);
-    return () => window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, onUpdate);
+    window.addEventListener("storage", onStorage);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, onUpdate);
+      window.removeEventListener("storage", onStorage);
+    };
+    // markSaved intentionally omitted — parent recreates it each render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrate]);
 
   function buildSnapshot(overrides: Partial<ProposalBrandingSettings> = {}): Partial<ProposalBrandingSettings> {
@@ -163,9 +213,42 @@ export function BrandProposalsSettingsPanel({ markSaved, markIssue }: Props) {
     };
   }
 
+  async function persist(
+    snapshot: Partial<ProposalBrandingSettings>,
+    message = "Company profile settings saved."
+  ): Promise<boolean> {
+    if (!hydratedRef.current) return false;
+    writingRef.current = true;
+    const result = await persistOrgBranding(snapshot);
+    window.setTimeout(() => {
+      writingRef.current = false;
+    }, 0);
+    if (!result.ok) {
+      markIssue(result.error || "Could not save branding settings.");
+      hydrate();
+      return false;
+    }
+    if (result.cloudError) {
+      markSaved(`${message} (this device only)`);
+      markIssue(`Cloud sync failed: ${result.cloudError}`);
+    } else {
+      markSaved(`${message} Synced to cloud.`);
+    }
+    return true;
+  }
+
   function saveAll(message = "Company profile settings saved.") {
-    writeProposalBrandingSettings(buildSnapshot());
-    markSaved(message);
+    if (!hydratedRef.current) {
+      markIssue("Still loading saved branding — wait a moment, then save again.");
+      return;
+    }
+    void persist(buildSnapshot(), message);
+  }
+
+  /** Blur autosave — never toast "still loading" when accordion unmounts pre-hydrate. */
+  function blurSave(message: string) {
+    if (!hydratedRef.current) return;
+    void persist(buildSnapshot(), message);
   }
 
   async function uploadLogo(file: File | null) {
@@ -178,8 +261,9 @@ export function BrandProposalsSettingsPanel({ markSaved, markIssue }: Props) {
       const payload = (await res.json()) as { ok?: boolean; url?: string; error?: string };
       if (!res.ok || !payload.ok || !payload.url) throw new Error(payload.error || "Logo upload failed.");
       setCompanyLogo(payload.url);
-      writeProposalBrandingSettings(buildSnapshot({ installerLogoUrl: payload.url }));
-      markSaved("Logo uploaded and saved.");
+      if (!(await persist(buildSnapshot({ installerLogoUrl: payload.url }), "Logo uploaded and saved."))) {
+        throw new Error("Logo uploaded but could not be saved.");
+      }
     } catch (e) {
       markIssue(e instanceof Error ? e.message : "Logo upload failed.");
     } finally {
@@ -197,8 +281,9 @@ export function BrandProposalsSettingsPanel({ markSaved, markIssue }: Props) {
       const payload = (await res.json()) as { ok?: boolean; url?: string; error?: string };
       if (!res.ok || !payload.ok || !payload.url) throw new Error(payload.error || "QR upload failed.");
       setPaymentQrCodeUrl(payload.url);
-      writeProposalBrandingSettings(buildSnapshot({ paymentQrCodeUrl: payload.url }));
-      markSaved("Payment QR code uploaded and saved.");
+      if (!(await persist(buildSnapshot({ paymentQrCodeUrl: payload.url }), "Payment QR code uploaded and saved."))) {
+        throw new Error("QR uploaded but could not be saved.");
+      }
     } catch (e) {
       markIssue(e instanceof Error ? e.message : "QR upload failed.");
     } finally {
@@ -215,12 +300,14 @@ export function BrandProposalsSettingsPanel({ markSaved, markIssue }: Props) {
       const res = await fetch("/api/site-photo-upload", { method: "POST", body: form });
       const payload = (await res.json()) as { ok?: boolean; url?: string; error?: string };
       if (!res.ok || !payload.ok || !payload.url) throw new Error(payload.error || "Photo upload failed.");
+      let nextProjects: PortfolioProject[] = [];
       setPortfolioProjects((prev) => {
-        const next = prev.map((p) => (p.id === projectId ? { ...p, photoUrl: payload.url! } : p));
-        writeProposalBrandingSettings(buildSnapshot({ portfolioProjects: next }));
-        return next;
+        nextProjects = prev.map((p) => (p.id === projectId ? { ...p, photoUrl: payload.url! } : p));
+        return nextProjects;
       });
-      markSaved("Portfolio photo uploaded.");
+      if (!(await persist(buildSnapshot({ portfolioProjects: nextProjects }), "Portfolio photo uploaded."))) {
+        throw new Error("Photo uploaded but could not be saved.");
+      }
     } catch (e) {
       markIssue(e instanceof Error ? e.message : "Photo upload failed.");
     } finally {
@@ -241,29 +328,44 @@ export function BrandProposalsSettingsPanel({ markSaved, markIssue }: Props) {
   }
 
   function applyGlobalBrandPreference(pref: ProposalBrandDisplayMode | "nameOnly") {
-    setBrandDisplayPreference(pref);
+    let rules = brandSectionRules;
     if (pref === "logoOnly") {
-      setBrandSectionRules({
+      rules = {
         cover: "logoOnly",
         header: "logoOnly",
         footer: "logoOnly",
         closing: "logoOnly",
-      });
+      };
     } else if (pref === "logoAndName") {
-      setBrandSectionRules({
+      rules = {
         cover: "logoAndName",
         header: "logoAndName",
         footer: "logoAndName",
         closing: "logoAndName",
-      });
+      };
     } else if (pref === "nameOnly") {
-      setBrandSectionRules({
+      rules = {
         cover: "nameOnly",
         header: "nameOnly",
         footer: "nameOnly",
         closing: "nameOnly",
-      });
+      };
     }
+    setBrandDisplayPreference(pref);
+    setBrandSectionRules(rules);
+    void persist(
+      buildSnapshot({ brandDisplayPreference: pref, brandSectionRules: rules }),
+      "Branding display saved."
+    );
+  }
+
+  function applyBrandSectionRule(
+    surface: keyof typeof brandSectionRules,
+    mode: BrandSectionDisplayPreference
+  ) {
+    const rules = { ...brandSectionRules, [surface]: mode };
+    setBrandSectionRules(rules);
+    void persist(buildSnapshot({ brandSectionRules: rules }), "Branding display saved.");
   }
 
   const sections: {
@@ -280,23 +382,23 @@ export function BrandProposalsSettingsPanel({ markSaved, markIssue }: Props) {
       icon: Building2,
       content: (
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <LabeledInput label="Company name" value={companyName} onChange={setCompanyName} placeholder="Shivangan Solar" onBlurSave={() => saveAll("Company profile saved.")} />
+          <LabeledInput label="Company name" value={companyName} onChange={setCompanyName} placeholder="Shivangan Solar" onBlurSave={() => blurSave("Company profile saved.")} />
           <div className="sm:col-span-2">
-            <LabeledInput label="Tagline (optional)" value={companyProfile.tagline} onChange={(v) => setCompanyProfile({ ...companyProfile, tagline: v })} placeholder="100% Local · Satna · Madhya Pradesh" onBlurSave={() => saveAll("Company profile saved.")} />
+            <LabeledInput label="Tagline (optional)" value={companyProfile.tagline} onChange={(v) => setCompanyProfile({ ...companyProfile, tagline: v })} placeholder="100% Local · Satna · Madhya Pradesh" onBlurSave={() => blurSave("Company profile saved.")} />
           </div>
-          <LabeledInput label="Legal name (optional)" value={companyProfile.legalName} onChange={(v) => setCompanyProfile({ ...companyProfile, legalName: v })} placeholder="Registered entity name" onBlurSave={() => saveAll("Company profile saved.")} />
-          <LabeledInput label="Contact person (optional)" value={companyProfile.contactPerson} onChange={(v) => setCompanyProfile({ ...companyProfile, contactPerson: v })} placeholder="Director / Owner" onBlurSave={() => saveAll("Company profile saved.")} />
-          <LabeledInput label="Contact designation (optional)" value={companyProfile.contactPersonDesignation} onChange={(v) => setCompanyProfile({ ...companyProfile, contactPersonDesignation: v })} placeholder="Director, Proprietor" onBlurSave={() => saveAll("Company profile saved.")} />
-          <LabeledInput label="Phone" value={companyContact} onChange={setCompanyContact} placeholder="+91 98765 43210" onBlurSave={() => saveAll("Contact details saved.")} />
-          <LabeledInput label="Email" value={companyEmail} onChange={setCompanyEmail} placeholder="contact@company.com" onBlurSave={() => saveAll("Contact details saved.")} />
-          <LabeledInput label="GSTIN (optional)" value={companyProfile.gstNumber} onChange={(v) => setCompanyProfile({ ...companyProfile, gstNumber: v.toUpperCase() })} placeholder="23AAAAA0000A1Z5" onBlurSave={() => saveAll("Company profile saved.")} />
-          <LabeledInput label="PAN (optional)" value={companyProfile.pan} onChange={(v) => setCompanyProfile({ ...companyProfile, pan: v.toUpperCase() })} placeholder="AAAAA0000A" onBlurSave={() => saveAll("Company profile saved.")} />
-          <LabeledInput label="Registration no. (optional)" value={companyProfile.registrationNumber} onChange={(v) => setCompanyProfile({ ...companyProfile, registrationNumber: v.toUpperCase() })} placeholder="CIN / LLPIN" onBlurSave={() => saveAll("Company profile saved.")} />
+          <LabeledInput label="Legal name (optional)" value={companyProfile.legalName} onChange={(v) => setCompanyProfile({ ...companyProfile, legalName: v })} placeholder="Registered entity name" onBlurSave={() => blurSave("Company profile saved.")} />
+          <LabeledInput label="Contact person (optional)" value={companyProfile.contactPerson} onChange={(v) => setCompanyProfile({ ...companyProfile, contactPerson: v })} placeholder="Director / Owner" onBlurSave={() => blurSave("Company profile saved.")} />
+          <LabeledInput label="Contact designation (optional)" value={companyProfile.contactPersonDesignation} onChange={(v) => setCompanyProfile({ ...companyProfile, contactPersonDesignation: v })} placeholder="Director, Proprietor" onBlurSave={() => blurSave("Company profile saved.")} />
+          <LabeledInput label="Phone" value={companyContact} onChange={setCompanyContact} placeholder="+91 98765 43210" onBlurSave={() => blurSave("Contact details saved.")} />
+          <LabeledInput label="Email" value={companyEmail} onChange={setCompanyEmail} placeholder="contact@company.com" onBlurSave={() => blurSave("Contact details saved.")} />
+          <LabeledInput label="GSTIN (optional)" value={companyProfile.gstNumber} onChange={(v) => setCompanyProfile({ ...companyProfile, gstNumber: v.toUpperCase() })} placeholder="23AAAAA0000A1Z5" onBlurSave={() => blurSave("Company profile saved.")} />
+          <LabeledInput label="PAN (optional)" value={companyProfile.pan} onChange={(v) => setCompanyProfile({ ...companyProfile, pan: v.toUpperCase() })} placeholder="AAAAA0000A" onBlurSave={() => blurSave("Company profile saved.")} />
+          <LabeledInput label="Registration no. (optional)" value={companyProfile.registrationNumber} onChange={(v) => setCompanyProfile({ ...companyProfile, registrationNumber: v.toUpperCase() })} placeholder="CIN / LLPIN" onBlurSave={() => blurSave("Company profile saved.")} />
           <div className="sm:col-span-2">
-            <LabeledInput label="Address (optional)" value={companyProfile.address} onChange={(v) => setCompanyProfile({ ...companyProfile, address: v })} placeholder="Office / workshop address" onBlurSave={() => saveAll("Company profile saved.")} />
+            <LabeledInput label="Address (optional)" value={companyProfile.address} onChange={(v) => setCompanyProfile({ ...companyProfile, address: v })} placeholder="Office / workshop address" onBlurSave={() => blurSave("Company profile saved.")} />
           </div>
           <div className="sm:col-span-2">
-            <LabeledInput label="Website (optional)" value={companyProfile.website} onChange={(v) => setCompanyProfile({ ...companyProfile, website: v })} placeholder="https://yourcompany.com" onBlurSave={() => saveAll("Company profile saved.")} />
+            <LabeledInput label="Website (optional)" value={companyProfile.website} onChange={(v) => setCompanyProfile({ ...companyProfile, website: v })} placeholder="https://yourcompany.com" onBlurSave={() => blurSave("Company profile saved.")} />
           </div>
         </div>
       ),
@@ -309,7 +411,13 @@ export function BrandProposalsSettingsPanel({ markSaved, markIssue }: Props) {
       content: (
         <div className="space-y-4">
           <div className="space-y-2">
-            <LabeledInput label="Logo URL" value={companyLogo} onChange={setCompanyLogo} placeholder="https://.../logo.png" />
+            <LabeledInput
+              label="Logo URL"
+              value={companyLogo}
+              onChange={setCompanyLogo}
+              placeholder="https://.../logo.png"
+              onBlurSave={() => blurSave("Logo saved.")}
+            />
             <label className="inline-flex min-h-10 w-fit cursor-pointer items-center justify-center rounded-xl border border-brand-300 bg-brand-50 px-4 text-xs font-bold text-brand-800 hover:bg-brand-100">
               {uploadingLogo ? <Skeleton className="mr-2 h-4 w-4 rounded-full" /> : <UploadCloud className="mr-2 h-4 w-4" />}
               Upload logo
@@ -350,10 +458,10 @@ export function BrandProposalsSettingsPanel({ markSaved, markIssue }: Props) {
 
             {brandDisplayPreference === "customPerSection" ? (
               <div className="space-y-2 border-t border-slate-200/70 pt-3">
-                <BrandSectionRuleRow label="Cover page" value={brandSectionRules.cover} onChange={(mode) => setBrandSectionRules({ ...brandSectionRules, cover: mode })} />
-                <BrandSectionRuleRow label="Header" value={brandSectionRules.header} onChange={(mode) => setBrandSectionRules({ ...brandSectionRules, header: mode })} />
-                <BrandSectionRuleRow label="Footer" value={brandSectionRules.footer} onChange={(mode) => setBrandSectionRules({ ...brandSectionRules, footer: mode })} />
-                <BrandSectionRuleRow label="Closing page" value={brandSectionRules.closing} onChange={(mode) => setBrandSectionRules({ ...brandSectionRules, closing: mode })} />
+                <BrandSectionRuleRow label="Cover page" value={brandSectionRules.cover} onChange={(mode) => applyBrandSectionRule("cover", mode)} />
+                <BrandSectionRuleRow label="Header" value={brandSectionRules.header} onChange={(mode) => applyBrandSectionRule("header", mode)} />
+                <BrandSectionRuleRow label="Footer" value={brandSectionRules.footer} onChange={(mode) => applyBrandSectionRule("footer", mode)} />
+                <BrandSectionRuleRow label="Closing page" value={brandSectionRules.closing} onChange={(mode) => applyBrandSectionRule("closing", mode)} />
               </div>
             ) : null}
           </div>
@@ -470,28 +578,28 @@ export function BrandProposalsSettingsPanel({ markSaved, markIssue }: Props) {
               value={bankAccName}
               onChange={setBankAccName}
               placeholder="Company name"
-              onBlurSave={() => saveAll("Banking details saved.")}
+              onBlurSave={() => blurSave("Banking details saved.")}
             />
             <LabeledInput
               label="Account number"
               value={bankAccNo}
               onChange={setBankAccNo}
               placeholder="Account No."
-              onBlurSave={() => saveAll("Banking details saved.")}
+              onBlurSave={() => blurSave("Banking details saved.")}
             />
             <LabeledInput
               label="IFSC"
               value={bankIfsc}
               onChange={setBankIfsc}
               placeholder="IFSC"
-              onBlurSave={() => saveAll("Banking details saved.")}
+              onBlurSave={() => blurSave("Banking details saved.")}
             />
             <LabeledInput
               label="Branch"
               value={bankBranch}
               onChange={setBankBranch}
               placeholder="Branch"
-              onBlurSave={() => saveAll("Banking details saved.")}
+              onBlurSave={() => blurSave("Banking details saved.")}
             />
             <div className="sm:col-span-2">
               <LabeledInput
@@ -499,7 +607,7 @@ export function BrandProposalsSettingsPanel({ markSaved, markIssue }: Props) {
                 value={bankUpi}
                 onChange={setBankUpi}
                 placeholder="company@bank"
-                onBlurSave={() => saveAll("Banking details saved.")}
+                onBlurSave={() => blurSave("Banking details saved.")}
               />
             </div>
           </div>
@@ -511,7 +619,14 @@ export function BrandProposalsSettingsPanel({ markSaved, markIssue }: Props) {
                 <input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(e) => void uploadPaymentQr(e.target.files?.[0] ?? null)} disabled={uploadingQr} />
               </label>
               {paymentQrCodeUrl ? (
-                <button type="button" onClick={() => { setPaymentQrCodeUrl(""); writeProposalBrandingSettings(buildSnapshot({ paymentQrCodeUrl: "" })); markSaved("Payment QR removed."); }} className="block text-[11px] font-semibold text-rose-600 hover:underline">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPaymentQrCodeUrl("");
+                    void persist(buildSnapshot({ paymentQrCodeUrl: "" }), "Payment QR removed.");
+                  }}
+                  className="block text-[11px] font-semibold text-rose-600 hover:underline"
+                >
                   Remove QR
                 </button>
               ) : null}
@@ -615,6 +730,9 @@ export function BrandProposalsSettingsPanel({ markSaved, markIssue }: Props) {
       <button type="button" onClick={() => saveAll()} className="ss-cta-primary mt-4 w-full sm:w-auto">
         Save company profile settings
       </button>
+      <p className="mt-2 text-[11px] font-medium text-slate-500">
+        Saves to this browser and syncs to your organization in Supabase (logo file + profile).
+      </p>
     </>
   );
 }
