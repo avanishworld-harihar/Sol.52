@@ -4911,6 +4911,21 @@
   margin-bottom: 4px;
 }
 
+/* ── iPad / tablet landscape — same A4 width, grow height so footers never clip ─ */
+@media screen and (max-width: 1400px) {
+  .a4Page {
+    width: min(210mm, calc(100% - 16px)) !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 297mm !important;
+    max-height: none !important;
+    overflow: visible !important;
+    margin: 10px auto 16px !important;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+}
+
 /* ── Screen mobile / tablet — fluid pages, stacked grids ─────── */
 @media screen and (max-width: 860px) {
   .a4Page {
@@ -5038,10 +5053,21 @@
   }
 
   .paybackSvg,
-  .impactChartSvg,
-  .engSvgDark {
+  .impactChartSvg {
     min-height: 140px;
     max-height: none;
+  }
+
+  .hudPage .engSvgDark {
+    height: 188px !important;
+    max-height: 188px !important;
+    min-height: 0 !important;
+  }
+
+  .impactPage .impactChartSvg {
+    height: 120px !important;
+    max-height: 120px !important;
+    min-height: 116px !important;
   }
 
   .wealthKpis {

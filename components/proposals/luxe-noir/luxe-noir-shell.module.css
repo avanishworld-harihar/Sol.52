@@ -619,6 +619,38 @@
   letter-spacing: 0.04em;
 }
 
+/* ── iPad / tablet landscape — grow page height, keep desktop grid layout ─ */
+@media screen and (max-width: 1400px) {
+  .root {
+    overflow-x: hidden;
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+    padding-bottom: max(28px, env(safe-area-inset-bottom));
+  }
+
+  .a4Page {
+    width: min(210mm, calc(100% - 16px)) !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 297mm !important;
+    max-height: none !important;
+    overflow: visible !important;
+    margin: 10px auto 16px !important;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  .pageInner {
+    overflow: visible;
+  }
+
+  .printBar {
+    padding-top: max(0.55rem, env(safe-area-inset-top));
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+}
+
 /* ── Screen: phones / narrow tablets — readable, no clipped A4 ─ */
 @media screen and (max-width: 860px) {
   .root {
