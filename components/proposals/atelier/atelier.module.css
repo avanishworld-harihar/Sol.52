@@ -152,10 +152,13 @@
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe'] {
   --a4-w: 794px;
   --a4-h: 1123px;
-  /* 48–56px = 12.7–14.8mm at the 96dpi capture grid. */
-  --page-pad-x: 48px;
-  --page-pad-t: 48px;
-  --page-pad-b: 56px;
+  /* Match the real web padding exactly (3.5rem/2.75rem/3.25rem via
+     @media screen) — this was previously 48/48/56px, a few px off in every
+     direction, shrinking or growing the usable content area vs. what the
+     customer actually saw on screen before downloading. */
+  --page-pad-x: 56px;
+  --page-pad-t: 44px;
+  --page-pad-b: 52px;
 }
 .pdfCaptureHost
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
@@ -165,17 +168,15 @@
 .pdfCaptureHost
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
   .pageNum {
-  bottom: 48px !important;
+  /* Match web exactly (0.55rem) instead of sitting 5x further from the
+     edge than the live page — that mismatch alone changes how much of the
+     page reads as "usable" before the folio, without fixing anything. */
+  bottom: 0.55rem !important;
 }
 .pdfCaptureHost
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
   .coverPage {
   padding: 0 !important;
-}
-.pdfCaptureHost
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
-  .coverInner {
-  padding: 48px 48px 56px !important;
 }
 .pdfCaptureHost
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
@@ -534,7 +535,7 @@
   right: var(--page-pad-x);
   bottom: 0.55rem;
   margin: 0;
-  padding: 0;
+  padding: 0.15rem 0.35rem;
   font-family: 'Montserrat', sans-serif;
   font-size: 0.7rem;
   font-weight: 600;
@@ -548,8 +549,21 @@
   box-sizing: border-box;
   pointer-events: none;
   z-index: 2;
+  /*
+   * Belt-and-suspenders: the real fix for content colliding with the folio
+   * is not letting text grow taller than the page in the first place (see
+   * the html2canvas font-loading fix). But this is a LAST line of defence —
+   * if any box above ever does overflow into this reserved strip, an
+   * opaque pill keeps the page number legible instead of both the folio
+   * and the content underneath rendering as an unreadable overlapping mess.
+   */
+  background: var(--white);
+  border-radius: 3px;
 }
-.pageNumLight { color: rgba(255,255,255,0.5); }
+.pageNumLight {
+  color: rgba(255,255,255,0.5);
+  background: rgba(10, 15, 28, 0.55);
+}
 
 /* ══ P1: CINEMATIC COVER ════════════════════════════════════════ */
 .coverPage {
@@ -5891,29 +5905,27 @@
     flex: 0 0 auto !important;
     flex-shrink: 0 !important;
   }
+  /*
+   * Match the web frame exactly (flex:1.15, no width/aspect-ratio lock) so
+   * the photo spans full width like on screen. The previous fixed-width
+   * 16:9 lock (`width: min(100%, calc(92mm*16/9))`) narrowed the photo into
+   * a letterboxed box with empty side gutters that never appears on web —
+   * that mismatch is what "image sahi nahi hai" on the cover was.
+   */
   .coverPhotoPlate {
-    flex: 0 0 auto !important;
-    flex-grow: 0 !important;
-    flex-shrink: 0 !important;
+    flex: 1.15 !important;
     min-height: 0 !important;
     max-height: none !important;
   }
-  /*
-   * Print must keep near-16:9 framing. A short fixed height (e.g. 88mm) on a
-   * full A4 content width makes object-fit:cover zoom into the middle and
-   * crop the rooftop panels that look fine on screen.
-   */
   .coverPhotoFrame {
     position: relative !important;
-    /* Keep true 16:9 when height is capped — avoids ultra-wide zoom crop */
-    width: min(100%, calc(92mm * 16 / 9)) !important;
+    width: 100% !important;
     max-width: 100% !important;
     margin-inline: auto !important;
     height: auto !important;
-    aspect-ratio: 16 / 9 !important;
-    min-height: 0 !important;
-    max-height: 92mm !important;
-    flex: 0 0 auto !important;
+    min-height: 210px !important;
+    max-height: 320px !important;
+    flex: 1 !important;
     overflow: hidden !important;
   }
   .coverPhotoImg {
@@ -6227,13 +6239,22 @@
     margin-bottom: 0.45rem !important;
   }
 
+  /*
+   * Must render exactly what web shows — just the folio, nothing else.
+   * This used to sit at a different offset than web (12mm/5mm vs web's
+   * 0.55rem) AND inject a "Harihar Solar · Investment Blueprint" prefix via
+   * ::before that never appears on screen. That prefix, crammed into the
+   * same nowrap+ellipsis box as the real page number, is very likely what
+   * read as "footer number cut/missing" — print showed different, longer
+   * text than web, not a shorter/clipped version of the same text.
+   */
   .pageNum {
     position: absolute !important;
     left: var(--page-pad-x) !important;
     right: var(--page-pad-x) !important;
-    bottom: 12mm !important;
-    font-size: 7.5pt;
-    letter-spacing: 0.2px;
+    bottom: 0.55rem !important;
+    font-size: 0.7rem;
+    letter-spacing: 0.25px;
     text-align: right;
     white-space: nowrap;
     overflow: hidden;
@@ -6241,17 +6262,9 @@
   }
   .coverPage .pageNum,
   .closingPage .pageNum {
-    bottom: 5mm !important;
+    bottom: 0.55rem !important;
     left: var(--page-pad-x) !important;
     right: var(--page-pad-x) !important;
-  }
-  .pageNum::before {
-    content: "Harihar Solar · Investment Blueprint  ";
-    color: #94A3B8;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 8.5pt;
-    font-weight: 600;
-    letter-spacing: 0.3px;
   }
 
   /* Named pages (Chromium) — margin 0; .page padding is the only inset */
