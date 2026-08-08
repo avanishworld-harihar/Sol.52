@@ -82,10 +82,12 @@ export const PRINT_LAYOUT_GUARD_RULES: PrintLayoutGuardRule[] = [
     file: "components/proposals/atelier/atelier.module.css",
     description: "Atelier PDF pages must retain an A4-safe content inset",
     validate: (content: string) => {
+      // Capture host must match live web padding (3.5rem/2.75rem/3.25rem ≈ 56/44/52px).
       if (
-        !content.includes("--page-pad-x: 48px") ||
-        !content.includes("--page-pad-b: 56px") ||
-        !content.includes("bottom: 48px !important")
+        !content.includes("--page-pad-x: 56px") ||
+        !content.includes("--page-pad-t: 44px") ||
+        !content.includes("--page-pad-b: 52px") ||
+        !content.includes("bottom: 0.55rem !important")
       ) {
         return "capture safe-area values changed";
       }
