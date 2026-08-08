@@ -307,7 +307,7 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
           <svg
             viewBox={`0 0 ${ARRAY_VB.w} ${ARRAY_VB.h}`}
             width="100%"
-            height="240"
+            height="188"
             className={styles.engSvgDark}
             aria-hidden
           >

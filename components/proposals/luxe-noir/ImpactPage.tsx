@@ -279,9 +279,9 @@ export function ImpactPage({ data, generationUnits }: ImpactPageProps) {
     units: yearly > 0 ? yearly * y : 0,
   }));
   const maxCum = fiveYearTotal > 0 ? fiveYearTotal : 1;
-  const barMaxH = 108;
-  const barW = 52;
-  const chartBaseY = 158;
+  const barMaxH = 88;
+  const barW = 48;
+  const chartBaseY = 148;
 
   return (
     <section
@@ -372,7 +372,7 @@ export function ImpactPage({ data, generationUnits }: ImpactPageProps) {
         <svg
           viewBox="0 0 520 188"
           width="100%"
-          height="148"
+          height="120"
           className={styles.impactChartSvg}
           aria-label={copy.impact.chartHead}
         >

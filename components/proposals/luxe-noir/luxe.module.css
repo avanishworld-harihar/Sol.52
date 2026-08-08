@@ -1430,13 +1430,143 @@
 }
 
 .hudPage .luxeHeadline {
-  font-size: 2.55rem;
+  font-size: 2.15rem;
   font-weight: 700;
+  line-height: 1.05;
 }
 
 .hudPage .goldTag {
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 800;
+}
+
+.hudPage .luxeHeaderBlock {
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+
+.hudPage .engDesignLayout {
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 8px;
+  margin-bottom: 6px;
+  align-items: start;
+}
+
+.hudPage .engPanel {
+  padding: 8px 10px;
+}
+
+.hudPage .engPanelTitle {
+  font-size: 0.72rem;
+  margin-bottom: 5px;
+}
+
+.hudPage .engSvgDark {
+  height: 188px;
+  max-height: 188px;
+}
+
+.hudPage .engMetricList {
+  gap: 4px;
+}
+
+.hudPage .engMetricRow {
+  padding-bottom: 4px;
+  gap: 1px;
+}
+
+.hudPage .engMetricRow span {
+  font-size: 0.62rem;
+}
+
+.hudPage .engMetricRow strong {
+  font-size: 0.96rem;
+}
+
+.hudPage .engMetricRow small {
+  font-size: 0.72rem;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.hudPage .engChipRow {
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.hudPage .engChip {
+  padding: 5px 3px;
+}
+
+.hudPage .engChip strong {
+  font-size: 0.82rem;
+}
+
+.hudPage .powerFlow {
+  padding: 8px 10px 6px;
+  margin-bottom: 4px;
+}
+
+.hudPage .archLead {
+  margin: 0 0 6px;
+  font-size: 0.76rem;
+  line-height: 1.3;
+}
+
+.hudPage .archTrack {
+  margin: 0 0 6px;
+}
+
+.hudPage .archNode {
+  padding: 6px 3px;
+  gap: 2px;
+  border-radius: 6px;
+}
+
+.hudPage .archIcon {
+  height: 38px;
+  max-width: 72px;
+  margin-bottom: 0;
+}
+
+.hudPage .archNode strong {
+  font-size: 0.8rem;
+}
+
+.hudPage .archNode em {
+  font-size: 0.7rem;
+}
+
+.hudPage .flowCode {
+  font-size: 0.52rem;
+}
+
+.hudPage .archProtect {
+  gap: 6px;
+  padding-top: 6px;
+}
+
+.hudPage .archProtectItem {
+  grid-template-columns: 24px 1fr;
+  gap: 6px;
+}
+
+.hudPage .archProtectIcon {
+  width: 22px;
+  height: 22px;
+}
+
+.hudPage .archProtectItem strong {
+  font-size: 0.78rem;
+  margin-bottom: 1px;
+}
+
+.hudPage .archProtectItem small {
+  font-size: 0.68rem;
+  line-height: 1.25;
 }
 
 .engDesignLayout {
@@ -1708,8 +1838,12 @@
 
 .hudPage .expertVerdict p,
 .hudPage .engineerVerdict p {
-  font-size: 0.96rem;
-  line-height: 1.4;
+  font-size: 0.88rem;
+  line-height: 1.35;
+}
+
+.hudPage .expertVerdict {
+  padding: 8px 12px;
 }
 
 .hudPage .expertVerdict,
@@ -1721,9 +1855,11 @@
 }
 
 .hudPage .standardsStrip {
-  margin-top: 6px;
-  padding-top: 6px;
-  font-size: 0.68rem;
+  margin-top: 4px;
+  padding-top: 4px;
+  font-size: 0.62rem;
+  line-height: 1.25;
+  border-top: 0;
 }
 
 .hudPage .verdictLabel {
@@ -2523,14 +2659,158 @@
   background-color: #f8f9fb !important;
 }
 
+.impactPage .luxeHeaderBlock {
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+
 .impactPage .luxeHeadline {
-  font-size: 2.5rem;
+  font-size: 2.1rem;
   font-weight: 700;
+  line-height: 1.08;
 }
 
 .impactPage .goldTag {
-  font-size: 0.8rem;
+  font-size: 0.76rem;
   font-weight: 800;
+}
+
+.impactPage .impactLead {
+  margin: -2px 0 8px;
+  font-size: 0.92rem;
+  line-height: 1.42;
+}
+
+.impactPage .impactHeroRow {
+  gap: 12px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+}
+
+.impactPage .impactHeroNum {
+  font-size: 2.75rem;
+}
+
+.impactPage .impactHeroUnit {
+  font-size: 0.95rem;
+}
+
+.impactPage .impactHeroNote {
+  margin: 4px 0 0;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.impactPage .impactHeroArt {
+  max-width: 132px;
+}
+
+.impactPage .impactCardGrid {
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.impactPage .impactCard {
+  padding: 10px 10px 11px;
+  gap: 3px;
+  border-radius: 8px;
+}
+
+.impactPage .impactIcon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 2px;
+}
+
+.impactPage .impactCardValue,
+.impactPage .impactCardValueSoft {
+  font-size: 1.22rem;
+}
+
+.impactPage .impactCardHint {
+  font-size: 0.82rem;
+  line-height: 1.32;
+}
+
+.impactPage .impactChartBlock {
+  padding: 10px 12px 8px;
+  margin-bottom: 4px;
+}
+
+.impactPage .impactChartSteady {
+  margin: 0 0 6px;
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+
+.impactPage .impactEqRow {
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.impactPage .impactEqCell {
+  padding: 6px 8px;
+}
+
+.impactPage .impactEqCell strong {
+  font-size: 1rem;
+}
+
+.impactPage .impactEqTotal strong {
+  font-size: 1.12rem;
+}
+
+.impactPage .impactChartSvg {
+  height: 120px;
+  min-height: 116px;
+  max-height: 120px;
+}
+
+.impactPage .impactChartFoot {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  line-height: 1.32;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.impactPage .expertVerdict {
+  margin-top: 4px;
+  padding: 8px 12px;
+  flex-shrink: 0;
+  clear: both;
+  position: relative;
+  z-index: 2;
+}
+
+.impactPage .expertVerdict p {
+  font-size: 0.88rem;
+  line-height: 1.35;
+}
+
+.impactPage .impactPageFooter {
+  min-height: 38px;
+  margin-top: auto;
+  padding: 10px 0 2px;
+  border-top: 1px solid #e2e6ec;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  flex-shrink: 0;
+}
+
+.impactPage .luxeFooterLogo {
+  max-height: 30px;
+  max-width: 112px;
+}
+
+.impactPage .luxeFooterBrand span {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
 }
 
 .impactLead {
@@ -2757,9 +3037,9 @@
   display: block;
   width: 100%;
   flex: 0 0 auto;
-  height: 148px;
-  min-height: 140px;
-  max-height: 148px;
+  height: 120px;
+  min-height: 116px;
+  max-height: 120px;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -2771,22 +3051,8 @@
   line-height: 1.45;
 }
 
-.impactPage .expertVerdict {
-  margin-top: 6px;
-  padding: 10px 12px;
-  flex-shrink: 0;
-  clear: both;
-  position: relative;
-  z-index: 2;
-}
-
-.impactPage .expertVerdict p {
-  font-size: 0.98rem;
-  line-height: 1.42;
-}
-
 .impactPage .verdictLabel {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 800;
 }
 
@@ -3097,17 +3363,146 @@
 }
 
 .payPage .luxeHeadline {
-  font-size: 2.45rem;
+  font-size: 2.1rem;
   font-weight: 700;
+  line-height: 1.08;
 }
 
 .payPage .goldTag {
-  font-size: 0.82rem;
+  font-size: 0.76rem;
   font-weight: 800;
 }
 
 .payPage .luxeHeaderBlock {
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+
+.payPage .payLead {
+  margin: 0 0 8px;
+  font-size: 0.94rem;
+  line-height: 1.42;
+}
+
+.payPage .payLead strong {
+  font-size: 0.98rem;
+}
+
+.payPage .paySchedule {
+  padding: 6px 12px 2px;
   margin-bottom: 8px;
+  border-radius: 8px;
+}
+
+.payPage .payScheduleHead {
+  padding: 0 0 6px;
+  margin-bottom: 0;
+  font-size: 0.72rem;
+}
+
+.payPage .payScheduleHeadHint {
+  font-size: 0.78rem;
+}
+
+.payPage .payMilestoneRow {
+  gap: 10px;
+  padding: 5px 0;
+}
+
+.payPage .payMilestoneNum {
+  font-size: 1.05rem;
+}
+
+.payPage .payMilestoneBody strong {
+  font-size: 1rem;
+}
+
+.payPage .payMilestoneBody span {
+  font-size: 0.82rem;
+}
+
+.payPage .payMilestoneAmt {
+  font-size: 1.05rem;
+}
+
+.payPage .payBankBlock {
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+}
+
+.payPage .payBankHead {
+  grid-template-columns: 56px 1fr;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.payPage .payBankIcon {
+  width: 56px;
+  height: 46px;
+}
+
+.payPage .payBankTitle {
+  font-size: 1.08rem;
+  margin: 0 0 3px;
+}
+
+.payPage .payBankNote {
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
+.payPage .payBankGrid {
+  gap: 7px;
+}
+
+.payPage .payBankCell {
+  padding: 7px 10px;
+  min-height: 44px;
+  border-radius: 6px;
+}
+
+.payPage .payBankCell span {
+  font-size: 0.66rem;
+  margin-bottom: 2px;
+}
+
+.payPage .payBankCell strong {
+  font-size: 0.98rem;
+  line-height: 1.25;
+}
+
+.payPage .payBottomRow {
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.payPage .payTermsBox {
+  padding: 8px 10px;
+}
+
+.payPage .payTermsBox li {
+  font-size: 0.84rem;
+  line-height: 1.32;
+}
+
+.payPage .impactPageFooter {
+  min-height: 38px;
+  padding: 10px 0 2px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.payPage .luxeFooterLogo {
+  max-height: 30px;
+  max-width: 112px;
+}
+
+.payPage .luxeFooterBrand span {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
 }
 
 .payLead {
@@ -3366,14 +3761,14 @@
 .payPage .expertVerdict {
   margin-top: 0;
   margin-bottom: 0;
-  padding: 12px 14px;
-  height: 100%;
+  padding: 8px 12px;
+  height: auto;
   box-sizing: border-box;
 }
 
 .payPage .expertVerdict p {
-  font-size: 1rem;
-  line-height: 1.45;
+  font-size: 0.88rem;
+  line-height: 1.35;
 }
 
 .payPage .verdictLabel {
@@ -4804,8 +5199,21 @@
   }
 
   .engSvgDark {
-    height: 228px !important;
-    max-height: 228px !important;
+    height: 176px !important;
+    max-height: 176px !important;
+  }
+
+  .hudPage .engSvgDark {
+    height: 176px !important;
+    max-height: 176px !important;
+  }
+
+  .hudPage .luxeHeadline {
+    font-size: 2rem !important;
+  }
+
+  .hudPage .archIcon {
+    height: 34px !important;
   }
 
   .closePhotoImg {
@@ -4813,14 +5221,38 @@
   }
 
   .impactChartSvg {
-    height: 136px !important;
-    min-height: 132px !important;
-    max-height: 136px !important;
+    height: 112px !important;
+    min-height: 108px !important;
+    max-height: 112px !important;
+  }
+
+  .impactPage .impactChartSvg {
+    height: 112px !important;
+    min-height: 108px !important;
+    max-height: 112px !important;
+  }
+
+  .impactPage .luxeFooterLogo {
+    max-height: 28px !important;
+  }
+
+  .impactPage .impactPageFooter {
+    font-size: 0.8rem !important;
+    min-height: 36px !important;
   }
 
   .billAuditChart {
     height: 112px !important;
     min-height: 108px !important;
+  }
+
+  .payPage .luxeFooterLogo {
+    max-height: 28px !important;
+  }
+
+  .payPage .impactPageFooter {
+    font-size: 0.8rem !important;
+    min-height: 36px !important;
   }
 
   .hudPage .impactPageFooter,
