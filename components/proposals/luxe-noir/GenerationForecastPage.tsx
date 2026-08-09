@@ -16,6 +16,9 @@ import { luxeDisplayFont } from "./luxe-fonts";
 import { LuxeHeaderBrand, LuxePageFooter } from "./luxe-brand";
 import styles from "./luxe.module.css";
 
+/** Fixed track height — inline px heights avoid iPad Safari / html2canvas calc(var()) collapse. */
+const GEN_BAR_TRACK_PX = 96;
+
 export type GenerationForecastPageProps = {
   data: ProposalData;
   generationUnits: number;
@@ -149,21 +152,27 @@ export function GenerationForecastPage({
               >
                 <div
                   className={styles.genBarFill}
-                  style={
-                    { "--gen-bar-pct": m.genBarPct } as React.CSSProperties
-                  }
+                  style={{
+                    height: `${Math.max(
+                      6,
+                      Math.round((m.genBarPct / 100) * GEN_BAR_TRACK_PX)
+                    )}px`,
+                  }}
                   title={`${copy.gen.legendGen}: ${m.genUnits}`}
                 />
                 {billBased ? (
                   <div
                     className={styles.genBarFillBill}
-                    style={
-                      {
-                        "--bill-bar-pct":
-                          m.billBarPct > 0 ? m.billBarPct : 4,
-                        opacity: m.billBarPct > 0 ? 1 : 0.25,
-                      } as React.CSSProperties
-                    }
+                    style={{
+                      height: `${Math.max(
+                        4,
+                        Math.round(
+                          ((m.billBarPct > 0 ? m.billBarPct : 4) / 100) *
+                            GEN_BAR_TRACK_PX
+                        )
+                      )}px`,
+                      opacity: m.billBarPct > 0 ? 1 : 0.25,
+                    }}
                     title={
                       m.billUnits != null && m.billUnits > 0
                         ? `${copy.gen.legendBill}: ${m.billUnits}`

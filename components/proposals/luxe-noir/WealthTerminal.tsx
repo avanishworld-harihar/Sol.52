@@ -94,10 +94,10 @@ function buildWealthSeries(
 
 function barHeights(today: number, after: number): { todayH: number; afterH: number } {
   const max = Math.max(today, after, 1);
-  const scale = 92;
+  const scale = 80;
   return {
-    todayH: Math.max(8, (today / max) * scale),
-    afterH: Math.max(8, (after / max) * scale),
+    todayH: Math.max(8, Math.min(80, (today / max) * scale)),
+    afterH: Math.max(8, Math.min(80, (after / max) * scale)),
   };
 }
 

@@ -213,8 +213,8 @@
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
   font-weight: 700;
   color: #141820;
-  margin: 0;
-  line-height: 1.12;
+  margin: 0 0 2px;
+  line-height: 1.15;
   font-size: 30pt;
 }
 
@@ -651,11 +651,10 @@
   }
 }
 
-/* ── Portrait tablet + phone — full-width readable pages ─ */
-@media screen and (max-width: 1180px) and (orientation: portrait),
-  screen and (max-width: 860px) {
+/* ── iPad / tablet — margins + fluid pages, desktop grids preserved ─ */
+@media screen and (max-width: 1180px) {
   .root {
-    padding: 0 14px max(28px, env(safe-area-inset-bottom));
+    padding: 0 16px max(28px, env(safe-area-inset-bottom));
     overflow-x: hidden;
     width: 100%;
     max-width: 100vw;
@@ -693,9 +692,11 @@
     min-height: 0 !important;
     max-height: none !important;
     margin: 12px auto 16px !important;
-    padding: 20px 16px 22px !important;
+    padding: 40px !important;
     overflow: visible !important;
     box-shadow: 0 4px 16px rgba(20, 24, 32, 0.08);
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   .pageInner {
@@ -703,16 +704,64 @@
   }
 
   .title {
-    font-size: clamp(1.45rem, 7vw, 1.85rem) !important;
+    font-size: 30pt !important;
+    line-height: 1.12 !important;
   }
 
   .lead {
     max-width: none;
+    font-size: 11.5pt !important;
   }
 
-  .cardGrid2,
+  .goldRule {
+    margin: 14px 0 18px !important;
+  }
+
   .cardGrid3 {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .cardGrid2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .card {
+    padding: 14px 16px !important;
+    min-width: 0;
+  }
+
+  .cardValue {
+    font-size: 20pt !important;
+  }
+
+  .cardLabel {
+    font-size: 0.72rem !important;
+  }
+
+  .cardHint {
+    font-size: 9.5pt !important;
+  }
+
+  .emiTable {
+    font-size: 9.5pt !important;
+  }
+
+  .emiTable th {
+    font-size: 0.74rem !important;
+  }
+
+  .emiTable td {
+    font-size: 11pt !important;
+  }
+
+  .emiTable td:last-child {
+    font-size: 12pt !important;
+  }
+
+  .termsBox {
+    font-size: 8.5pt !important;
   }
 
   .shellHeaderRow {
@@ -721,13 +770,25 @@
   }
 }
 
-@media screen and (min-width: 481px) and (max-width: 1180px) and (orientation: portrait) {
-  .cardGrid3 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+/* ── Phone only — stacked cards / smaller type ─ */
+@media screen and (max-width: 640px) {
+  .title {
+    font-size: clamp(1.45rem, 7vw, 1.85rem) !important;
+    line-height: 1.15 !important;
   }
 
-  .cardGrid2 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .goldRule {
+    margin: 12px 0 16px !important;
+  }
+
+  .cardGrid2,
+  .cardGrid3 {
+    grid-template-columns: 1fr;
+  }
+
+  .a4Page {
+    padding: 18px 14px 20px !important;
+    margin: 8px auto 12px !important;
   }
 }
 

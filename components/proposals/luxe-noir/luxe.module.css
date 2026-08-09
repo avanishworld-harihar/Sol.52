@@ -117,6 +117,10 @@
   left: 28px;
   border: 1px solid rgba(184, 150, 46, 0.28);
   pointer-events: none;
+  z-index: 1;
+  box-sizing: border-box;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
 .coverFrame::before {
@@ -124,6 +128,9 @@
   position: absolute;
   inset: 5px;
   border: 1px solid rgba(20, 24, 32, 0.06);
+  box-sizing: border-box;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
 .coverTopRail,
@@ -508,10 +515,13 @@
 .closePhotoFrame {
   position: relative;
   width: 100%;
+  height: 178px;
+  max-height: 178px;
   overflow: hidden;
   border-radius: 8px 8px 0 0;
   background: #0a0e14;
   box-shadow: 0 10px 28px rgba(20, 24, 32, 0.14);
+  flex-shrink: 0;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -520,9 +530,12 @@
   display: block;
   width: 100%;
   height: 178px;
+  min-height: 178px;
+  max-height: 178px;
   object-fit: cover;
   /* High three-quarter angle — keep full plant + family in band */
   object-position: 48% 38%;
+  flex-shrink: 0;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -934,6 +947,7 @@
   flex-shrink: 0;
   position: relative;
   z-index: 2;
+  padding: 10px 14px;
 }
 
 .closePage .expertVerdict p {
@@ -946,6 +960,21 @@
   z-index: 3;
   margin-top: auto;
   flex-shrink: 0;
+}
+
+.closePage .impactPageFooter,
+.closeFooter .impactPageFooter {
+  margin-top: 0;
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 8px 0 4px;
+}
+
+.closePage .luxeFooterLogo {
+  max-height: 28px;
+  max-width: 112px;
+  display: block;
+  object-fit: contain;
 }
 
 /* Readable numbers everywhere — simple lining digits, never oldstyle serif */
@@ -1106,10 +1135,11 @@
   font-size: 2.45rem;
   margin: 6px 0 0 0;
   border-bottom: 2px solid rgba(184, 150, 46, 0.4);
-  padding-bottom: 10px;
+  padding-bottom: 12px;
+  margin-bottom: 2px;
   color: #141820;
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.12;
 }
 
 /* Page tags / titles always bold across every Luxe page */
@@ -1414,7 +1444,9 @@
 /* Pin footers on dense interior pages so logo + folio stay inside A4 */
 .hudPage .impactPageFooter,
 .impactPage .impactPageFooter,
-.payPage .impactPageFooter {
+.payPage .impactPageFooter,
+.closePage .impactPageFooter,
+.closeFooter .impactPageFooter {
   margin-top: auto;
   flex-shrink: 0;
   position: relative;
@@ -1877,7 +1909,9 @@
 .ledgerPage .luxeHeadline {
   font-size: 2.35rem;
   font-weight: 700;
-  padding-bottom: 8px;
+  padding-bottom: 14px;
+  line-height: 1.12;
+  margin-bottom: 4px;
 }
 
 .ledgerPage .luxeHeaderBlock {
@@ -1989,7 +2023,7 @@
 .ledgerPage .itemContent {
   min-width: 0;
   max-width: 100%;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .ledgerPage .itemContent h3,
@@ -2006,7 +2040,7 @@
 
 .ledgerPage .bomMaterialBody {
   font-size: 0.92rem;
-  line-height: 1.4;
+  line-height: 1.45;
   color: #1e2430;
   margin: 0;
   overflow-wrap: anywhere;
@@ -2030,7 +2064,7 @@
 
 .ledgerPage .expertVerdict {
   margin-top: 8px;
-  padding: 9px 12px;
+  padding: 12px 16px;
   flex-shrink: 0;
 }
 
@@ -2236,6 +2270,9 @@
 .luxeTerminal .luxeHeadline {
   font-weight: 700;
   border-bottom: 2px solid rgba(184, 150, 46, 0.45);
+  padding-bottom: 14px !important;
+  margin-bottom: 4px;
+  line-height: 1.14 !important;
 }
 
 .luxeTerminal .luxeHeaderBlock {
@@ -2448,6 +2485,8 @@
   border: 1px solid #e2e6ec;
   border-radius: 10px;
   padding: 12px 14px 10px;
+  overflow: hidden;
+  isolation: isolate;
 }
 
 .billCompareHead {
@@ -2460,39 +2499,51 @@
   color: #141820;
   font-weight: 800;
   text-transform: uppercase;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
 }
 
 .billBars {
   display: grid;
   grid-template-columns: 1fr 1fr 1.15fr;
   gap: 12px;
-  align-items: end;
-  min-height: 128px;
+  align-items: stretch;
+  min-height: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .billBarCol {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: grid;
+  grid-template-rows: 88px auto auto;
+  align-items: end;
+  justify-items: center;
   gap: 4px;
+  min-width: 0;
 }
 
 .billBarTrack {
   width: 100%;
   max-width: 56px;
-  height: 100px;
+  height: 88px;
+  max-height: 88px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
+  overflow: hidden;
   background: linear-gradient(180deg, transparent 0%, #f4f6f9 100%);
   border-radius: 6px 6px 0 0;
+  box-sizing: border-box;
 }
 
 .billBarToday,
 .billBarAfter {
   width: 36px;
+  max-height: 100%;
   border-radius: 5px 5px 2px 2px;
+  flex-shrink: 0;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -2529,7 +2580,8 @@
   flex-direction: column;
   justify-content: center;
   gap: 4px;
-  min-height: 118px;
+  min-height: 0;
+  align-self: center;
 }
 
 .billReliefCard span {
@@ -2667,7 +2719,9 @@
 .impactPage .luxeHeadline {
   font-size: 2.1rem;
   font-weight: 700;
-  line-height: 1.08;
+  padding-bottom: 14px;
+  line-height: 1.12;
+  margin-bottom: 4px;
 }
 
 .impactPage .goldTag {
@@ -2779,7 +2833,7 @@
 
 .impactPage .expertVerdict {
   margin-top: 4px;
-  padding: 8px 12px;
+  padding: 12px 16px;
   flex-shrink: 0;
   clear: both;
   position: relative;
@@ -3084,6 +3138,9 @@
 .genForecastPage .luxeHeadline {
   font-size: 2.35rem;
   font-weight: 700;
+  padding-bottom: 14px;
+  line-height: 1.12;
+  margin-bottom: 4px;
 }
 
 .genForecastPage .goldTag {
@@ -3151,9 +3208,9 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-height: 0;
-  padding: 12px 10px 10px;
+  padding: 12px 14px 10px;
   border: 1px solid #e2e6ec;
   border-radius: 8px;
   background: #fff;
@@ -3350,7 +3407,8 @@
 }
 
 .genForecastPage .expertVerdict {
-  margin-top: 10px;
+  margin-top: auto;
+  padding: 12px 16px;
 }
 
 .genForecastPage .expertVerdict p {
@@ -3372,7 +3430,9 @@
 .payPage .luxeHeadline {
   font-size: 2.1rem;
   font-weight: 700;
-  line-height: 1.08;
+  padding-bottom: 14px;
+  line-height: 1.12;
+  margin-bottom: 4px;
 }
 
 .payPage .goldTag {
@@ -3495,10 +3555,12 @@
 
 .payPage .impactPageFooter {
   min-height: 38px;
-  padding: 10px 0 2px;
+  margin-top: auto;
+  padding: 10px 0 4px;
   font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.16em;
+  flex-shrink: 0;
 }
 
 .payPage .luxeFooterLogo {
@@ -3768,7 +3830,7 @@
 .payPage .expertVerdict {
   margin-top: 0;
   margin-bottom: 0;
-  padding: 8px 12px;
+  padding: 12px 16px;
   height: auto;
   box-sizing: border-box;
 }
@@ -4479,6 +4541,10 @@
   overflow: hidden;
 }
 
+.termsPage .termsStack {
+  overflow: visible;
+}
+
 .termsCol {
   display: flex !important;
   flex-direction: column !important;
@@ -4506,7 +4572,8 @@
   color: #141820;
   text-transform: uppercase;
   margin: 0 0 6px;
-  padding-bottom: 5px;
+  padding-bottom: 10px;
+  line-height: 1.12;
   border-bottom: 2px solid #b8962e;
 }
 
@@ -4779,7 +4846,8 @@
 .termsPageDense .termsSubhead {
   font-size: 0.8rem;
   margin-bottom: 8px;
-  padding-bottom: 6px;
+  padding-bottom: 10px;
+  line-height: 1.12;
 }
 
 .termsPageDense .termsNumberedList li,
@@ -4841,10 +4909,11 @@
 }
 
 .termsPageRoomy .termsSection:first-child {
-  flex: 1 1 auto !important;
+  flex: 0 1 auto !important;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  min-height: auto;
+  overflow: visible;
 }
 
 .termsPageRoomy .termsSubhead {
@@ -4852,13 +4921,14 @@
   font-weight: 800;
   letter-spacing: 0.14em;
   margin-bottom: 10px;
-  padding-bottom: 8px;
+  padding-bottom: 14px;
+  line-height: 1.12;
 }
 
 .termsPageRoomy .termsArticleList {
   gap: 7px;
-  flex: 1;
-  justify-content: space-evenly;
+  flex: 0 1 auto;
+  justify-content: flex-start;
 }
 
 .termsPageRoomy .termsArticle {
@@ -4918,6 +4988,11 @@
   margin-bottom: 4px;
 }
 
+.termsPage .impactPageFooter {
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
 /* ── iPad / tablet landscape — same A4 width, grow height so footers never clip ─ */
 @media screen and (max-width: 1400px) and (orientation: landscape) {
   .a4Page {
@@ -4933,9 +5008,8 @@
   }
 }
 
-/* ── Portrait tablet + phone — full-width fluid pages, stacked grids ─ */
-@media screen and (max-width: 1180px) and (orientation: portrait),
-  screen and (max-width: 860px) {
+/* ── iPad / tablet — fluid pages + margins, desktop grid layout preserved ─ */
+@media screen and (max-width: 1180px) {
   .a4Page {
     width: 100% !important;
     max-width: min(210mm, 100%) !important;
@@ -4943,31 +5017,459 @@
     min-height: 0 !important;
     max-height: none !important;
     margin: 12px auto 16px !important;
-    padding: 20px 16px 22px !important;
+    padding: 40px !important;
     overflow: visible !important;
     box-shadow: 0 4px 16px rgba(20, 24, 32, 0.08);
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   .obsidianCover,
   .closePage {
-    padding: 20px 14px 22px 22px !important;
+    padding: 28px 34px 26px 46px !important;
+  }
+
+  .coverSpine,
+  .closeSpine {
+    width: 12px;
   }
 
   .coverFrame {
-    display: none;
+    display: block;
+    top: 14px;
+    right: 14px;
+    bottom: 14px;
+    left: 22px;
   }
 
-  .coverSpine {
-    width: 8px;
+  .coverFrame::before {
+    inset: 5px;
   }
 
-  .closeSpine {
-    width: 8px;
+  .closeCornerTL {
+    top: 14px;
+    left: 20px;
   }
 
-  .closeCornerTL,
   .closeCornerBR {
-    display: none;
+    right: 14px;
+    bottom: 14px;
+  }
+
+  .luxeHeadline,
+  .billAuditPage .luxeHeadline,
+  .hudPage .luxeHeadline,
+  .ledgerPage .luxeHeadline,
+  .luxeTerminal .luxeHeadline,
+  .impactPage .luxeHeadline,
+  .genForecastPage .luxeHeadline,
+  .payPage .luxeHeadline {
+    padding-bottom: 14px !important;
+    margin-bottom: 4px !important;
+    line-height: 1.14 !important;
+  }
+
+  .wealthTop,
+  .wealthMid {
+    grid-template-columns: 1.35fr 0.65fr !important;
+  }
+
+  .billBars {
+    grid-template-columns: 1fr 1fr 1.15fr !important;
+    align-items: stretch !important;
+  }
+
+  .billBarCol {
+    grid-template-rows: 88px auto auto !important;
+  }
+
+  .hudPage .engDesignLayout,
+  .engDesignLayout {
+    display: grid !important;
+    grid-template-columns: 1.28fr 0.72fr !important;
+    gap: 10px !important;
+    align-items: stretch !important;
+  }
+
+  .engChipRow {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  .archTrack {
+    flex-wrap: nowrap !important;
+  }
+
+  .archNode {
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+
+  .archProtect {
+    grid-template-columns: 1fr 1fr 1fr !important;
+  }
+
+  .hudPage .luxeHeadline {
+    font-size: 2.15rem !important;
+  }
+
+  .hudPage .engSvgDark {
+    height: 188px !important;
+    max-height: 188px !important;
+  }
+
+  .ledgerPage .luxeHeadline {
+    font-size: 2.35rem !important;
+    padding-bottom: 14px !important;
+    line-height: 1.12 !important;
+  }
+
+  .ledgerPage .itemContent {
+    overflow: visible !important;
+  }
+
+  .ledgerPage .ledgerItemDense {
+    padding: 6px 0 !important;
+  }
+
+  .ledgerPage .bomLead {
+    margin-bottom: 6px !important;
+    font-size: 0.92rem !important;
+    line-height: 1.4 !important;
+  }
+
+  .ledgerPage .expertVerdict {
+    padding: 12px 16px !important;
+  }
+
+  .genForecastPage .luxeHeadline {
+    font-size: 2.35rem !important;
+    padding-bottom: 14px !important;
+    line-height: 1.12 !important;
+  }
+
+  .genForecastPage .genForecast {
+    flex: 0 1 auto !important;
+  }
+
+  .genForecastPage .expertVerdict {
+    margin-top: auto !important;
+    padding: 12px 16px !important;
+  }
+
+  .genForecastBars {
+    min-height: 168px !important;
+    align-items: flex-end !important;
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .genBarTrack {
+    flex: 0 0 96px !important;
+    height: 96px !important;
+    min-height: 96px !important;
+  }
+
+  .genForecastKpi {
+    padding: 12px 14px !important;
+  }
+
+  .impactPage .luxeHeadline {
+    font-size: 2.1rem !important;
+    padding-bottom: 14px !important;
+    line-height: 1.12 !important;
+  }
+
+  .impactHeroRow {
+    grid-template-columns: 1.15fr 0.85fr !important;
+    align-items: center !important;
+  }
+
+  .impactCardGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .impactCard {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  .impactEqRow {
+    grid-template-columns: 1.2fr auto 0.7fr auto 1.35fr !important;
+  }
+
+  .impactEqOp {
+    display: inline !important;
+  }
+
+  .impactPage .impactChartSvg {
+    height: 120px !important;
+    min-height: 116px !important;
+    max-height: 120px !important;
+  }
+
+  .impactPage .expertVerdict {
+    padding: 12px 16px !important;
+  }
+
+  .payPage .luxeHeadline {
+    font-size: 2.1rem !important;
+    padding-bottom: 14px !important;
+    line-height: 1.12 !important;
+  }
+
+  .payBottomRow {
+    grid-template-columns: 1.15fr 0.85fr !important;
+    align-items: stretch !important;
+  }
+
+  .payBankGrid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .payBankHead {
+    grid-template-columns: 72px 1fr !important;
+  }
+
+  .payPage .expertVerdict {
+    padding: 12px 16px !important;
+  }
+
+  .payPage .impactPageFooter {
+    margin-top: auto !important;
+    flex-shrink: 0 !important;
+    padding-bottom: 4px !important;
+  }
+
+  .closePage {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+    padding: 28px 34px 26px 46px !important;
+  }
+
+  .closeBrandHero {
+    grid-template-columns: 1.35fr 0.65fr !important;
+    align-items: center !important;
+    margin-top: 8px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .closeSigGrid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .closeJourneyTrack {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+
+  .closeJourneyRail {
+    display: block !important;
+  }
+
+  .closeVendorName {
+    font-size: 2.75rem !important;
+    line-height: 0.98 !important;
+  }
+
+  .closeTitle {
+    font-size: 1.85rem !important;
+    line-height: 1.15 !important;
+  }
+
+  .closeLead {
+    font-size: 0.95rem !important;
+    line-height: 1.45 !important;
+  }
+
+  .closeBrandEyebrow,
+  .closeSeries,
+  .closeConfidential {
+    font-size: 0.72rem !important;
+  }
+
+  .closePhotoFrame {
+    height: 178px !important;
+    max-height: 178px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .closePhotoImg {
+    width: 100% !important;
+    height: 178px !important;
+    min-height: 178px !important;
+    max-height: 178px !important;
+    object-fit: cover !important;
+    flex-shrink: 0 !important;
+  }
+
+  .closePage .coverBrandLogo {
+    display: block !important;
+    max-height: 64px !important;
+    max-width: 240px !important;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
+  }
+
+  .closePage .expertVerdict {
+    padding: 10px 14px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .closePage .expertVerdict p {
+    font-size: 0.88rem !important;
+    line-height: 1.4 !important;
+  }
+
+  .closeFooter {
+    margin-top: auto !important;
+    flex-shrink: 0 !important;
+  }
+
+  .closePage .impactPageFooter,
+  .closeFooter .impactPageFooter {
+    flex-shrink: 0 !important;
+    min-height: 36px !important;
+    padding: 8px 0 4px !important;
+  }
+
+  .closePage .luxeFooterLogo {
+    display: block !important;
+    max-height: 28px !important;
+    max-width: 112px !important;
+    object-fit: contain !important;
+  }
+
+  .termsPage {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  .termsStack {
+    overflow: visible !important;
+    flex: 0 1 auto !important;
+  }
+
+  .termsPageRoomy .termsTitle {
+    font-size: 26pt !important;
+    line-height: 1.08 !important;
+  }
+
+  .termsPageRoomy .termsTag {
+    font-size: 0.8rem !important;
+  }
+
+  .termsPageRoomy .termsIntro {
+    font-size: 1.02rem !important;
+    line-height: 1.45 !important;
+  }
+
+  .termsPageRoomy .termsSection {
+    padding: 14px 16px 16px !important;
+  }
+
+  .termsPageRoomy .termsSection:first-child {
+    flex: 0 1 auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+  }
+
+  .termsPageRoomy .termsSubhead {
+    font-size: 0.84rem !important;
+    padding-bottom: 14px !important;
+    line-height: 1.12 !important;
+    margin-bottom: 10px !important;
+  }
+
+  .termsPageRoomy .termsArticleList {
+    flex: 0 1 auto !important;
+    justify-content: flex-start !important;
+    gap: 7px !important;
+  }
+
+  .termsPageRoomy .termsArticleLabel {
+    font-size: 1rem !important;
+  }
+
+  .termsPageRoomy .termsArticleBody {
+    font-size: 0.96rem !important;
+    line-height: 1.42 !important;
+  }
+
+  .termsPageRoomy .termsNumberedList li {
+    font-size: 1rem !important;
+    line-height: 1.42 !important;
+  }
+
+  .termsPageRoomy .expertVerdict {
+    margin-top: auto !important;
+    padding: 12px 16px !important;
+  }
+
+  .termsPageRoomy .expertVerdict p {
+    font-size: 1.05rem !important;
+    line-height: 1.45 !important;
+  }
+
+  .termsPageRoomy .verdictLabel {
+    font-size: 0.72rem !important;
+  }
+
+  .termsPage .impactPageFooter {
+    margin-top: auto !important;
+    flex-shrink: 0 !important;
+  }
+
+  .luxeHeaderRow {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .expertVerdict p,
+  .engineerVerdict p {
+    font-size: 0.92rem !important;
+  }
+
+  .verdictLabel {
+    font-size: 0.58rem !important;
+  }
+
+  .termsPageRoomy .expertVerdict p {
+    font-size: 1.05rem !important;
+    line-height: 1.45 !important;
+  }
+
+  .termsPageRoomy .verdictLabel {
+    font-size: 0.72rem !important;
+  }
+
+  .termsPageDense .expertVerdict p {
+    font-size: 0.95rem !important;
+    line-height: 1.4 !important;
+  }
+
+  .termsPageDense .verdictLabel {
+    font-size: 0.68rem !important;
+  }
+
+  .closePage .expertVerdict p {
+    font-size: 0.88rem !important;
+    line-height: 1.4 !important;
+  }
+}
+
+/* ── Phone only — stacked layout (iPad keeps desktop-like grids) ─ */
+@media screen and (max-width: 640px) {
+  .a4Page {
+    padding: 18px 14px 20px !important;
+    margin: 8px auto 12px !important;
+  }
+
+  .obsidianCover,
+  .closePage {
+    padding: 18px 14px 20px 20px !important;
   }
 
   .coverVendorName {
@@ -4996,12 +5498,6 @@
     display: none;
   }
 
-  .engDesignLayout,
-  .costEquation {
-    grid-template-columns: 1fr !important;
-    gap: 4px !important;
-  }
-
   .costEqOp {
     display: none;
   }
@@ -5011,25 +5507,159 @@
   }
 
   .wealthTop,
-  .wealthMid,
-  .impactHeroRow,
-  .payBottomRow,
-  .payBankGrid,
-  .payBankHead,
+  .wealthMid {
+    grid-template-columns: 1fr !important;
+  }
+
   .closeBrandHero,
   .closeSigGrid {
     grid-template-columns: 1fr !important;
   }
 
+  .billBars {
+    grid-template-columns: 1fr 1fr !important;
+    min-height: 0 !important;
+    align-items: stretch !important;
+  }
+
+  .billReliefCard {
+    grid-column: 1 / -1;
+    min-height: 0 !important;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 12px;
+    padding: 10px 12px !important;
+  }
+
+  .billBarTrack {
+    height: 72px !important;
+    max-height: 72px !important;
+  }
+
+  .billBarCol {
+    grid-template-rows: 72px auto auto !important;
+  }
+
+  .closeJourneyTrack {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .closeJourneyRail {
+    display: none !important;
+  }
+
+  .luxeHeadline,
+  .billAuditPage .luxeHeadline,
+  .luxeTerminal .luxeHeadline {
+    font-size: clamp(1.5rem, 7vw, 2rem) !important;
+    padding-bottom: 12px !important;
+  }
+
+  .netFigure,
+  .closeVendorName {
+    font-size: clamp(1.8rem, 8vw, 2.6rem) !important;
+  }
+
+  .closePhotoFrame {
+    height: clamp(150px, 42vw, 178px) !important;
+    max-height: 178px !important;
+  }
+
+  .closePhotoImg {
+    height: clamp(150px, 42vw, 178px) !important;
+    min-height: 150px !important;
+    max-height: 178px !important;
+    object-fit: cover !important;
+  }
+
+  .paybackSvg {
+    min-height: 140px;
+    max-height: none;
+  }
+
+  .hudPage .engSvgDark {
+    height: 188px !important;
+    max-height: 188px !important;
+    min-height: 0 !important;
+  }
+
+  .impactPage .impactChartSvg {
+    height: 120px !important;
+    max-height: 120px !important;
+    min-height: 116px !important;
+  }
+
+  .wealthKpis {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .wealthKpi {
+    flex: none;
+  }
+
+  .genForecastKpis {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .billAuditMetrics {
+    grid-template-columns: 1fr !important;
+  }
+
+  .billAuditMetric {
+    border-right: 0 !important;
+    border-bottom: 1px solid rgba(20, 24, 32, 0.08);
+  }
+
+  .billAuditMetric:last-child {
+    border-bottom: 0;
+  }
+
+  .billAuditChart {
+    height: 160px !important;
+    overflow-x: auto;
+  }
+
+  .billAuditTable th,
+  .billAuditTable td {
+    font-size: 0.72rem !important;
+    padding: 0.35rem 0.3rem !important;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .a4Page {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 16px 14px 18px !important;
+    margin: 8px auto 12px !important;
+  }
+
+  .obsidianCover,
+  .closePage {
+    padding: 16px 12px 18px 18px !important;
+  }
+
+  .closeBrandHero,
+  .closeSigGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .closeJourneyTrack {
+    grid-template-columns: 1fr !important;
+  }
+
   .impactCardGrid {
     grid-template-columns: 1fr !important;
-    gap: 8px !important;
   }
 
   .impactCard {
     flex-direction: row;
-    flex-wrap: wrap;
     align-items: center;
+    flex-wrap: wrap;
     gap: 8px 12px;
     padding: 12px 14px !important;
   }
@@ -5065,237 +5695,32 @@
     justify-self: end;
   }
 
-  .billBars {
-    grid-template-columns: 1fr 1fr !important;
-    min-height: 0 !important;
-    gap: 8px !important;
-    align-items: stretch !important;
-  }
-
-  .billReliefCard {
-    grid-column: 1 / -1;
-    min-height: 0 !important;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 6px 12px;
-    padding: 10px 12px !important;
-  }
-
-  .billBarTrack {
-    height: 72px !important;
-  }
-
-  .closeJourneyTrack {
-    grid-template-columns: 1fr 1fr !important;
-  }
-
-  .closeJourneyRail {
-    display: none !important;
-  }
-
-  .engChipRow {
-    grid-template-columns: 1fr 1fr !important;
-  }
-
-  .archTrack {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .archNode {
-    flex: 1 1 calc(50% - 8px);
-    min-width: 120px;
-  }
-
-  .archProtect {
-    grid-template-columns: 1fr !important;
-  }
-
-  .luxeHeadline,
-  .hudPage .luxeHeadline,
-  .impactPage .luxeHeadline,
-  .payPage .luxeHeadline,
-  .genForecastPage .luxeHeadline {
-    font-size: clamp(1.5rem, 7vw, 2rem) !important;
-  }
-
-  .netFigure,
-  .impactHeroNum {
-    font-size: clamp(2rem, 10vw, 2.8rem) !important;
-  }
-
-  .closeVendorName {
-    font-size: clamp(1.8rem, 8vw, 2.6rem) !important;
-  }
-
   .impactEqRow {
     grid-template-columns: 1fr !important;
   }
 
   .impactEqOp {
-    display: none;
+    display: none !important;
   }
 
-  .paybackSvg,
+  .impactPage .luxeHeadline {
+    font-size: clamp(1.5rem, 7vw, 2rem) !important;
+    padding-bottom: 12px !important;
+  }
+
+  .impactHeroNum {
+    font-size: clamp(2rem, 10vw, 2.8rem) !important;
+  }
+
   .impactChartSvg {
     min-height: 140px;
     max-height: none;
-  }
-
-  .hudPage .engSvgDark {
-    height: 188px !important;
-    max-height: 188px !important;
-    min-height: 0 !important;
   }
 
   .impactPage .impactChartSvg {
     height: 120px !important;
     max-height: 120px !important;
     min-height: 116px !important;
-  }
-
-  .wealthKpis {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-  }
-
-  .wealthKpi {
-    flex: none;
-  }
-
-  .genForecastKpis {
-    grid-template-columns: 1fr 1fr !important;
-  }
-
-  .genForecastBars {
-    min-height: 148px;
-    overflow-x: auto;
-    overflow-y: visible;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .genBarTrack {
-    flex: 0 0 88px;
-    height: 88px;
-  }
-
-  .genBarFill {
-    height: calc(88px * var(--gen-bar-pct, 10) / 100);
-  }
-
-  .genBarFillBill {
-    height: calc(88px * var(--bill-bar-pct, 4) / 100);
-  }
-
-  .billAuditMetrics {
-    grid-template-columns: 1fr !important;
-  }
-
-  .billAuditMetric {
-    border-right: 0 !important;
-    border-bottom: 1px solid rgba(20, 24, 32, 0.08);
-  }
-
-  .billAuditMetric:last-child {
-    border-bottom: 0;
-  }
-
-  .billAuditChart {
-    height: 160px !important;
-    overflow-x: auto;
-  }
-
-  .billAuditTable th,
-  .billAuditTable td {
-    font-size: 0.72rem !important;
-    padding: 0.35rem 0.3rem !important;
-  }
-
-  .luxeHeaderRow {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-}
-
-/* Portrait tablet — 2-up grids where single column feels too tall */
-@media screen and (min-width: 481px) and (max-width: 1180px) and (orientation: portrait) {
-  .impactCardGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
-
-  .impactCard {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 10px 10px 11px !important;
-  }
-
-  .impactCardLabel {
-    flex: none;
-  }
-
-  .impactIcon {
-    width: 64px !important;
-    height: 64px !important;
-  }
-
-  .closeJourneyTrack {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
-
-  .closeBrandHero {
-    grid-template-columns: 1.2fr 0.8fr !important;
-  }
-
-  .wealthMid {
-    grid-template-columns: 1.1fr 0.9fr !important;
-  }
-
-  .engChipRow {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
-
-  .archTrack {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    justify-content: flex-start;
-    gap: 6px;
-    padding-bottom: 4px;
-  }
-
-  .archNode {
-    flex: 0 0 88px;
-    min-width: 88px;
-  }
-}
-
-@media screen and (max-width: 480px) {
-  .a4Page {
-    width: 100% !important;
-    max-width: 100% !important;
-    padding: 16px 14px 18px !important;
-    margin: 8px auto 12px !important;
-  }
-
-  .obsidianCover,
-  .closePage {
-    padding: 16px 12px 18px 18px !important;
-  }
-
-  .closeJourneyTrack {
-    grid-template-columns: 1fr !important;
-  }
-
-  .impactCardGrid {
-    grid-template-columns: 1fr !important;
-  }
-
-  .impactCard {
-    flex-direction: row;
-    align-items: center;
   }
 
   .wealthKpis {
@@ -5314,8 +5739,53 @@
     flex: 1 1 100%;
   }
 
+  .engDesignLayout,
+  .costEquation {
+    grid-template-columns: 1fr !important;
+    gap: 4px !important;
+  }
+
   .engChipRow {
     grid-template-columns: 1fr 1fr !important;
+  }
+
+  .archTrack {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .archProtect {
+    grid-template-columns: 1fr !important;
+  }
+
+  .hudPage .luxeHeadline {
+    font-size: clamp(1.45rem, 7vw, 1.85rem) !important;
+  }
+
+  .ledgerPage .luxeHeadline {
+    font-size: clamp(1.5rem, 7vw, 2rem) !important;
+    padding-bottom: 12px !important;
+  }
+
+  .genForecastPage .luxeHeadline {
+    font-size: clamp(1.5rem, 7vw, 2rem) !important;
+    padding-bottom: 12px !important;
+  }
+
+  .payBottomRow,
+  .payBankGrid,
+  .payBankHead {
+    grid-template-columns: 1fr !important;
+  }
+
+  .payPage .luxeHeadline {
+    font-size: clamp(1.5rem, 7vw, 2rem) !important;
+    padding-bottom: 12px !important;
+  }
+
+  .genBarTrack {
+    flex: 0 0 88px;
+    height: 88px;
   }
 }
 
@@ -5346,6 +5816,32 @@
 
   .obsidianCover {
     padding: 28px 34px 26px 46px !important;
+  }
+
+  .coverSpine,
+  .closeSpine {
+    width: 12px !important;
+  }
+
+  .coverFrame {
+    display: block !important;
+    top: 18px !important;
+    right: 18px !important;
+    bottom: 18px !important;
+    left: 28px !important;
+    border: 1px solid rgba(184, 150, 46, 0.28) !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .coverFrame::before {
+    inset: 5px !important;
+    border: 1px solid rgba(20, 24, 32, 0.06) !important;
+  }
+
+  .closeCornerTL,
+  .closeCornerBR {
+    display: block !important;
   }
 
   .coverPlate {
@@ -5390,8 +5886,48 @@
     grid-template-columns: 1.15fr 0.85fr !important;
   }
 
+  .impactEqRow {
+    grid-template-columns: 1.2fr auto 0.7fr auto 1.35fr !important;
+  }
+
+  .impactEqOp {
+    display: inline !important;
+  }
+
+  .impactPage .luxeHeadline {
+    font-size: 2rem !important;
+    padding-bottom: 14px !important;
+    line-height: 1.12 !important;
+  }
+
+  .impactPage .expertVerdict {
+    padding: 10px 14px !important;
+  }
+
   .billBars {
     grid-template-columns: 1fr 1fr 1.15fr !important;
+    align-items: stretch !important;
+    min-height: 0 !important;
+  }
+
+  .billBarCol {
+    grid-template-rows: 88px auto auto !important;
+  }
+
+  .billBarTrack {
+    height: 88px !important;
+    max-height: 88px !important;
+    overflow: hidden !important;
+  }
+
+  .billCompareHead {
+    margin-bottom: 12px !important;
+  }
+
+  .luxeTerminal .luxeHeadline {
+    padding-bottom: 14px !important;
+    margin-bottom: 4px !important;
+    line-height: 1.14 !important;
   }
 
   .payBankGrid {
@@ -5400,6 +5936,44 @@
 
   .payBankHead {
     grid-template-columns: 72px 1fr !important;
+  }
+
+  .payPage .luxeHeadline {
+    font-size: 2rem !important;
+    padding-bottom: 14px !important;
+    line-height: 1.12 !important;
+  }
+
+  .payPage .payMilestoneRow {
+    padding: 4px 0 !important;
+  }
+
+  .payPage .payBankBlock {
+    padding: 8px 10px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .payPage .payBankCell {
+    min-height: 40px !important;
+    padding: 6px 8px !important;
+  }
+
+  .payPage .payTermsBox {
+    padding: 8px 10px !important;
+  }
+
+  .payPage .payTermsBox li {
+    font-size: 0.8rem !important;
+    line-height: 1.3 !important;
+  }
+
+  .payPage .expertVerdict {
+    padding: 10px 14px !important;
+  }
+
+  .payPage .impactPageFooter {
+    min-height: 36px !important;
+    padding: 8px 0 4px !important;
   }
 
   .closeBrandHero {
@@ -5433,12 +6007,130 @@
     font-size: 2rem !important;
   }
 
+  .ledgerPage .luxeHeadline {
+    font-size: 2.2rem !important;
+    padding-bottom: 14px !important;
+    line-height: 1.12 !important;
+  }
+
+  .ledgerPage .itemContent {
+    overflow: visible !important;
+  }
+
+  .ledgerPage .ledgerItemDense {
+    padding: 5px 0 !important;
+  }
+
+  .ledgerPage .expertVerdict {
+    padding: 10px 14px !important;
+  }
+
+  .genForecastPage .luxeHeadline {
+    font-size: 2.2rem !important;
+    padding-bottom: 14px !important;
+    line-height: 1.12 !important;
+  }
+
+  .genForecastPage .genForecast {
+    flex: 0 1 auto !important;
+  }
+
+  .genForecastPage .expertVerdict {
+    margin-top: auto !important;
+    padding: 10px 14px !important;
+  }
+
+  .genForecastBars {
+    min-height: 168px !important;
+    align-items: flex-end !important;
+  }
+
+  .genBarTrack {
+    flex: 0 0 96px !important;
+    height: 96px !important;
+    min-height: 96px !important;
+  }
+
   .hudPage .archIcon {
     height: 34px !important;
   }
 
   .closePhotoImg {
     height: 168px !important;
+    min-height: 168px !important;
+    max-height: 168px !important;
+    object-fit: cover !important;
+  }
+
+  .closePhotoFrame {
+    height: 168px !important;
+    max-height: 168px !important;
+  }
+
+  .closePage {
+    padding: 24px 30px 18px 42px !important;
+  }
+
+  .closeBrandHero {
+    grid-template-columns: 1.35fr 0.65fr !important;
+    margin-top: 6px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .closeVendorName {
+    font-size: 2.65rem !important;
+    line-height: 0.98 !important;
+  }
+
+  .closeTitle {
+    font-size: 1.75rem !important;
+    line-height: 1.15 !important;
+  }
+
+  .closeMetaStrip {
+    margin-bottom: 8px !important;
+  }
+
+  .closeJourney {
+    padding: 6px 8px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .closeSigGrid {
+    margin-bottom: 6px !important;
+    gap: 8px !important;
+  }
+
+  .closeSigPad {
+    height: 38px !important;
+    min-height: 38px !important;
+    max-height: 38px !important;
+  }
+
+  .closeContact {
+    padding: 9px 12px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .closePage .expertVerdict {
+    padding: 8px 12px !important;
+  }
+
+  .closePage .expertVerdict p {
+    font-size: 0.86rem !important;
+    line-height: 1.38 !important;
+  }
+
+  .closePage .luxeFooterLogo {
+    max-height: 28px !important;
+    display: block !important;
+  }
+
+  .closePage .impactPageFooter,
+  .closeFooter .impactPageFooter {
+    min-height: 36px !important;
+    padding: 8px 0 4px !important;
+    font-size: 0.8rem !important;
   }
 
   .impactChartSvg {
@@ -5480,8 +6172,691 @@
   .impactPage .impactPageFooter,
   .payPage .impactPageFooter,
   .billAuditPage .impactPageFooter,
-  .closeFooter {
+  .termsPage .impactPageFooter,
+  .closePage .impactPageFooter,
+  .closeFooter,
+  .closeFooter .impactPageFooter {
     margin-top: auto !important;
     flex-shrink: 0 !important;
   }
+
+  .termsPageRoomy .termsTitle {
+    font-size: 26pt !important;
+    line-height: 1.08 !important;
+  }
+
+  .termsPageRoomy .termsSubhead {
+    padding-bottom: 14px !important;
+    line-height: 1.12 !important;
+  }
+
+  .termsPageRoomy .termsSection:first-child {
+    flex: 0 1 auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+  }
+
+  .termsPageRoomy .termsArticleList {
+    flex: 0 1 auto !important;
+    justify-content: flex-start !important;
+  }
+
+  .termsPageRoomy .termsArticleLabel {
+    font-size: 1rem !important;
+  }
+
+  .termsPageRoomy .termsArticleBody {
+    font-size: 0.96rem !important;
+  }
+
+  .termsPageRoomy .termsNumberedList li {
+    font-size: 1rem !important;
+  }
+
+  .termsPageRoomy .expertVerdict {
+    margin-top: auto !important;
+    padding: 10px 14px !important;
+  }
+
+  .termsPageRoomy .expertVerdict p {
+    font-size: 1.05rem !important;
+    line-height: 1.45 !important;
+  }
+
+  .termsPageRoomy .verdictLabel {
+    font-size: 0.72rem !important;
+  }
+
+  .termsPageDense .termsSubhead {
+    padding-bottom: 10px !important;
+    line-height: 1.12 !important;
+  }
+
+  .termsPageDense .expertVerdict {
+    padding: 10px 14px !important;
+  }
+
+  .termsPageDense .expertVerdict p {
+    font-size: 0.95rem !important;
+  }
+}
+
+/*
+ * iPad PDF capture — html2canvas uses live screen CSS, not @media print.
+ * Force print-equivalent layout inside the off-screen capture host only.
+ */
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .a4Page {
+  width: 794px !important;
+  min-width: 794px !important;
+  max-width: 794px !important;
+  height: 1123px !important;
+  min-height: 1123px !important;
+  max-height: 1123px !important;
+  margin: 0 !important;
+  padding: 40px !important;
+  overflow: hidden !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .hudPage
+  .engDesignLayout,
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .engDesignLayout {
+  display: grid !important;
+  grid-template-columns: 1.28fr 0.72fr !important;
+  gap: 10px !important;
+  align-items: stretch !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .engChipRow {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .archTrack {
+  flex-wrap: nowrap !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .archNode {
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .archProtect {
+  grid-template-columns: 1fr 1fr 1fr !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .hudPage
+  .luxeHeadline {
+  font-size: 2rem !important;
+  padding-bottom: 14px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .hudPage
+  .engSvgDark,
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .engSvgDark {
+  height: 176px !important;
+  max-height: 176px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .wealthTop {
+  grid-template-columns: 1.05fr 0.95fr !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .wealthMid {
+  grid-template-columns: 1.35fr 0.65fr !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .billBars {
+  grid-template-columns: 1fr 1fr 1.15fr !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .impactCardGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .impactHeroRow {
+  grid-template-columns: 1.15fr 0.85fr !important;
+  align-items: center !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .impactEqRow {
+  grid-template-columns: 1.2fr auto 0.7fr auto 1.35fr !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .impactEqOp {
+  display: inline !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .impactCard {
+  flex-direction: column !important;
+  align-items: flex-start !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .impactPage
+  .luxeHeadline {
+  font-size: 2rem !important;
+  padding-bottom: 14px !important;
+  line-height: 1.12 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .impactPage
+  .impactChartSvg {
+  height: 120px !important;
+  min-height: 116px !important;
+  max-height: 120px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .impactPage
+  .expertVerdict {
+  padding: 10px 14px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .payPage
+  .luxeHeadline {
+  font-size: 2rem !important;
+  padding-bottom: 14px !important;
+  line-height: 1.12 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .payBottomRow {
+  grid-template-columns: 1.15fr 0.85fr !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .payBankGrid {
+  grid-template-columns: 1fr 1fr !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .payBankHead {
+  grid-template-columns: 72px 1fr !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .payPage
+  .payMilestoneRow {
+  padding: 4px 0 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .payPage
+  .payBankBlock {
+  padding: 8px 10px !important;
+  margin-bottom: 6px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .payPage
+  .payBankCell {
+  min-height: 40px !important;
+  padding: 6px 8px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .payPage
+  .expertVerdict {
+  padding: 10px 14px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .payPage
+  .impactPageFooter {
+  margin-top: auto !important;
+  flex-shrink: 0 !important;
+  min-height: 36px !important;
+  padding: 8px 0 4px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .ledgerPage
+  .luxeHeadline {
+  font-size: 2.2rem !important;
+  padding-bottom: 14px !important;
+  line-height: 1.12 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .ledgerPage
+  .itemContent {
+  overflow: visible !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .ledgerPage
+  .ledgerItemDense {
+  padding: 5px 0 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .ledgerPage
+  .bomLead {
+  margin-bottom: 4px !important;
+  font-size: 0.88rem !important;
+  line-height: 1.38 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .ledgerPage
+  .bomMaterialBody {
+  font-size: 0.88rem !important;
+  line-height: 1.42 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .ledgerPage
+  .expertVerdict {
+  padding: 10px 14px !important;
+  margin-top: 4px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .genForecastPage
+  .luxeHeadline {
+  font-size: 2.2rem !important;
+  padding-bottom: 14px !important;
+  line-height: 1.12 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .genForecastPage
+  .genForecast {
+  flex: 0 1 auto !important;
+  padding: 12px 14px 10px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .genForecastPage
+  .expertVerdict {
+  margin-top: auto !important;
+  padding: 10px 14px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .genForecastBars {
+  min-height: 168px !important;
+  align-items: flex-end !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .genBarTrack {
+  flex: 0 0 96px !important;
+  height: 96px !important;
+  min-height: 96px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageRoomy
+  .termsHead {
+  margin-bottom: 8px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageRoomy
+  .termsTitle {
+  font-size: 26pt !important;
+  line-height: 1.08 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageRoomy
+  .termsIntro {
+  font-size: 1.02rem !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageRoomy
+  .termsStack {
+  gap: 8px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageRoomy
+  .termsSection {
+  padding: 10px 14px 12px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageRoomy
+  .termsSection:first-child {
+  flex: 0 1 auto !important;
+  min-height: auto !important;
+  overflow: visible !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageRoomy
+  .termsSubhead {
+  font-size: 0.84rem !important;
+  padding-bottom: 14px !important;
+  line-height: 1.12 !important;
+  margin-bottom: 8px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageRoomy
+  .termsArticleList {
+  flex: 0 1 auto !important;
+  justify-content: flex-start !important;
+  gap: 5px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageRoomy
+  .termsArticle {
+  padding-bottom: 4px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageRoomy
+  .termsArticleLabel {
+  font-size: 1rem !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageRoomy
+  .termsArticleBody {
+  font-size: 0.96rem !important;
+  line-height: 1.4 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageRoomy
+  .termsNumberedList li {
+  font-size: 1rem !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageRoomy
+  .expertVerdict {
+  margin-top: 8px !important;
+  padding: 10px 14px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageRoomy
+  .expertVerdict
+  p {
+  font-size: 1.05rem !important;
+  line-height: 1.42 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageRoomy
+  .verdictLabel {
+  font-size: 0.72rem !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPage
+  .impactPageFooter {
+  margin-top: auto !important;
+  flex-shrink: 0 !important;
+  min-height: 36px !important;
+  padding: 8px 0 4px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageDense
+  .termsSubhead {
+  padding-bottom: 10px !important;
+  line-height: 1.12 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageDense
+  .expertVerdict {
+  padding: 10px 14px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageDense
+  .expertVerdict
+  p {
+  font-size: 0.95rem !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closePage {
+  padding: 24px 30px 18px 42px !important;
+  overflow: hidden !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closeBrandHero {
+  grid-template-columns: 1.35fr 0.65fr !important;
+  align-items: center !important;
+  margin-top: 6px !important;
+  margin-bottom: 6px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closeVendorName {
+  font-size: 2.65rem !important;
+  line-height: 0.98 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closeTitle {
+  font-size: 1.75rem !important;
+  line-height: 1.15 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closeLead {
+  font-size: 0.95rem !important;
+  line-height: 1.42 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closePage
+  .coverBrandLogo {
+  display: block !important;
+  max-height: 56px !important;
+  max-width: 220px !important;
+  object-fit: contain !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closeMetaStrip {
+  margin-bottom: 8px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closePhotoFrame {
+  height: 168px !important;
+  max-height: 168px !important;
+  flex-shrink: 0 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closePhotoImg {
+  width: 100% !important;
+  height: 168px !important;
+  min-height: 168px !important;
+  max-height: 168px !important;
+  object-fit: cover !important;
+  flex-shrink: 0 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closeJourney {
+  padding: 6px 8px !important;
+  margin-bottom: 6px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closeJourneyTrack {
+  grid-template-columns: repeat(4, 1fr) !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closeJourneyRail {
+  display: block !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closeSigGrid {
+  grid-template-columns: 1fr 1fr !important;
+  margin-bottom: 6px !important;
+  gap: 8px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closeSigPad {
+  height: 38px !important;
+  min-height: 38px !important;
+  max-height: 38px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closeContact {
+  padding: 9px 12px !important;
+  margin-bottom: 6px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closePage
+  .expertVerdict {
+  padding: 8px 12px !important;
+  flex-shrink: 0 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closePage
+  .expertVerdict
+  p {
+  font-size: 0.86rem !important;
+  line-height: 1.38 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closeFooter {
+  margin-top: auto !important;
+  flex-shrink: 0 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closePage
+  .impactPageFooter,
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closeFooter
+  .impactPageFooter {
+  margin-top: 0 !important;
+  flex-shrink: 0 !important;
+  min-height: 36px !important;
+  padding: 8px 0 4px !important;
+  font-size: 0.8rem !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closePage
+  .luxeFooterLogo {
+  display: block !important;
+  max-height: 28px !important;
+  max-width: 112px !important;
+  object-fit: contain !important;
 }
