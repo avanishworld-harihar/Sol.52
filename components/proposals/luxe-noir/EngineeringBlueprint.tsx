@@ -37,7 +37,8 @@ const ISO = {
   stepRowY: 23,
 } as const;
 
-const ARRAY_VB = { w: 400, h: 248, floorY: 220 } as const;
+/** Caption strip below the working grid (px in SVG user units). */
+const ARRAY_CAPTION_H = 28;
 
 function metricValue(
   data: ProposalData,
@@ -268,16 +269,31 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
     maxY = Math.max(maxY, ...ys);
   }
 
-  const padX = 36;
-  const padTop = 40;
-  const padBottom = 28;
+  const sidePad = 10;
+  const topPad = 44;
+  const bottomPad = 8;
+  const maxDrawW = 300;
+  const maxDrawH = 132;
   const contentW = Math.max(1, maxX - minX);
   const contentH = Math.max(1, maxY - minY);
-  const fitW = ARRAY_VB.w - padX * 2;
-  const fitH = ARRAY_VB.floorY - padTop - padBottom;
-  const scale = Math.min(1, fitW / contentW, fitH / contentH);
-  const offsetX = padX + (fitW - contentW * scale) / 2 - minX * scale;
-  const offsetY = padTop + (fitH - contentH * scale) / 2 - minY * scale;
+  const scale = Math.min(1, maxDrawW / contentW, maxDrawH / contentH);
+  const offsetX = sidePad - minX * scale;
+  const offsetY = topPad - minY * scale;
+
+  const tMinX = minX * scale + offsetX;
+  const tMaxX = maxX * scale + offsetX;
+  const tMinY = minY * scale + offsetY;
+  const tMaxY = maxY * scale + offsetY;
+
+  const gridX = Math.min(tMinX, sidePad) - 6;
+  const gridY = topPad - 12;
+  const gridW = tMaxX - gridX + sidePad;
+  const gridH = tMaxY - gridY + bottomPad;
+  const floorY = tMaxY + bottomPad;
+  const vbW = Math.ceil(tMaxX + sidePad);
+  const vbH = floorY + ARRAY_CAPTION_H;
+  const compassCx = gridX + 34;
+  const compassCy = gridY + 28;
 
   // Sort in raw space (back → front), then draw inside a fitted transform
   const panelPositions = [...rawPositions].sort(
@@ -305,9 +321,10 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
         <div className={`${styles.engPanel} ${styles.engPanelFlush}`}>
           <div className={styles.engPanelTitle}>{copy.eng.roofPlan}</div>
           <svg
-            viewBox={`0 0 ${ARRAY_VB.w} ${ARRAY_VB.h}`}
+            viewBox={`0 0 ${vbW} ${vbH}`}
             width="100%"
-            height="188"
+            height="204"
+            preserveAspectRatio="xMidYMid meet"
             className={styles.engSvgDark}
             aria-hidden
           >
@@ -333,16 +350,16 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
             </defs>
 
             <rect
-              width={ARRAY_VB.w}
-              height={ARRAY_VB.h}
+              width={vbW}
+              height={floorY}
               fill="url(#roofFloor)"
               rx="6"
             />
             <rect
-              x="10"
-              y="8"
-              width={ARRAY_VB.w - 20}
-              height={ARRAY_VB.floorY - 16}
+              x={gridX}
+              y={gridY}
+              width={gridW}
+              height={gridH}
               fill="url(#isoGrid)"
               rx="4"
             />
@@ -354,7 +371,7 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
             </g>
 
             {/* Compass rose */}
-            <g transform="translate(40,38)">
+            <g transform={`translate(${compassCx},${compassCy})`}>
               <circle r="22" fill="rgba(10,14,20,0.88)" stroke="#B8962E" strokeWidth="1.1" />
               <circle r="16" fill="none" stroke="rgba(184,150,46,0.4)" strokeWidth="0.7" />
               <line x1="0" y1="-14" x2="0" y2="14" stroke="rgba(255,255,255,0.28)" strokeWidth="0.7" />
@@ -382,8 +399,8 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
               </text>
             </g>
             <text
-              x="40"
-              y="74"
+              x={compassCx}
+              y={compassCy + 36}
               textAnchor="middle"
               fill="#B8962E"
               fontSize="8"
@@ -396,14 +413,14 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
             {/* Caption bar */}
             <rect
               x="0"
-              y={ARRAY_VB.floorY}
-              width={ARRAY_VB.w}
-              height={ARRAY_VB.h - ARRAY_VB.floorY}
+              y={floorY}
+              width={vbW}
+              height={ARRAY_CAPTION_H}
               fill="rgba(0,0,0,0.6)"
             />
             <text
-              x={ARRAY_VB.w / 2}
-              y={ARRAY_VB.floorY + 18}
+              x={vbW / 2}
+              y={floorY + 18}
               textAnchor="middle"
               fill="#e8ecf2"
               fontSize="10"
@@ -420,7 +437,7 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
         </div>
 
         {/* Site metrics — denser */}
-        <div className={styles.engPanel}>
+        <div className={`${styles.engPanel} ${styles.engPanelMetrics}`}>
           <div className={styles.engPanelTitle}>{copy.eng.siteMetrics}</div>
           <div className={styles.engMetricList}>
             <div className={styles.engMetricRow}>

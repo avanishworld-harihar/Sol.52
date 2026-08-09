@@ -1478,14 +1478,20 @@
 }
 
 .hudPage .engDesignLayout {
-  grid-template-columns: 1.2fr 0.8fr;
+  grid-template-columns: 1.02fr 0.98fr;
   gap: 8px;
   margin-bottom: 6px;
-  align-items: start;
+  align-items: stretch;
 }
 
 .hudPage .engPanel {
   padding: 8px 10px;
+  overflow: visible;
+}
+
+.hudPage .engPanelMetrics {
+  min-width: 0;
+  overflow: visible;
 }
 
 .hudPage .engPanelTitle {
@@ -1494,12 +1500,14 @@
 }
 
 .hudPage .engSvgDark {
-  height: 188px;
-  max-height: 188px;
+  height: 204px;
+  max-height: 204px;
+  min-height: 204px;
 }
 
 .hudPage .engMetricList {
   gap: 4px;
+  overflow: visible;
 }
 
 .hudPage .engMetricRow {
@@ -1517,11 +1525,13 @@
 
 .hudPage .engMetricRow small {
   font-size: 0.72rem;
-  line-height: 1.25;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  line-height: 1.3;
+  display: block;
+  overflow: visible;
+}
+
+.engPanelMetrics .engMetricRow small {
+  overflow: visible;
 }
 
 .hudPage .engChipRow {
@@ -1603,7 +1613,7 @@
 
 .engDesignLayout {
   display: grid;
-  grid-template-columns: 1.28fr 0.72fr;
+  grid-template-columns: 1.05fr 0.95fr;
   gap: 10px;
   margin-bottom: 10px;
   align-items: stretch;
@@ -1621,6 +1631,12 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
+  min-width: 0;
+}
+
+.engPanelMetrics {
+  min-width: 0;
+  overflow: visible;
 }
 
 .engPanelTitle {
@@ -1643,9 +1659,9 @@
   display: block;
   width: 100%;
   flex: 0 0 auto;
-  min-height: 0;
-  height: 240px;
-  max-height: 240px;
+  min-height: 204px;
+  height: 204px;
+  max-height: 204px;
   border-radius: 8px;
   background: #0a0e14;
   -webkit-print-color-adjust: exact !important;
@@ -1925,7 +1941,7 @@
 
 .ledgerPage .bomLead {
   margin: 0 0 8px;
-  font-size: 0.95rem;
+  font-size: 1.02rem;
   line-height: 1.45;
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -1957,7 +1973,7 @@
 .ledgerPage .ledgerItemDense {
   grid-template-columns: 48px minmax(0, 1fr);
   gap: 10px;
-  padding: 7px 0;
+  padding: 8px 0 10px;
 }
 
 .ledgerItemDense:last-child {
@@ -2009,40 +2025,50 @@
 }
 
 .ledgerPage .ledgerRole {
-  font-size: 0.68rem;
+  font-size: 0.72rem;
 }
 
 .ledgerPage .specBadge {
-  font-size: 0.58rem;
-  padding: 3px 8px;
-  letter-spacing: 1.1px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 0.62rem;
+  padding: 4px 12px;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  box-sizing: border-box;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
   max-width: 100%;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
 }
 
 .ledgerPage .itemContent {
   min-width: 0;
   max-width: 100%;
   overflow: visible;
+  padding-bottom: 2px;
 }
 
 .ledgerPage .itemContent h3,
 .ledgerPage .bomMaterialName {
-  font-size: 1.05rem;
+  font-size: 1.12rem;
   margin: 0 0 3px;
   font-weight: 800;
   color: #141820;
-  line-height: 1.25;
+  line-height: 1.28;
   overflow-wrap: anywhere;
   word-break: break-word;
   max-width: 100%;
 }
 
 .ledgerPage .bomMaterialBody {
-  font-size: 0.92rem;
+  font-size: 0.98rem;
   line-height: 1.45;
   color: #1e2430;
-  margin: 0;
+  margin: 0 0 4px;
+  padding-bottom: 4px;
   overflow-wrap: anywhere;
   word-break: break-word;
   max-width: 100%;
@@ -2054,8 +2080,8 @@
 }
 
 .ledgerPage .itemContent p {
-  font-size: 0.84rem;
-  line-height: 1.4;
+  font-size: 0.92rem;
+  line-height: 1.42;
   color: #1e2430;
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -2069,12 +2095,12 @@
 }
 
 .ledgerPage .expertVerdict p {
-  font-size: 0.95rem;
-  line-height: 1.4;
+  font-size: 1rem;
+  line-height: 1.42;
 }
 
 .ledgerPage .verdictLabel {
-  font-size: 0.64rem;
+  font-size: 0.68rem;
 }
 
 .ledgerPage .impactPageFooter {
@@ -2237,14 +2263,22 @@
 }
 
 .specBadge {
-  display: inline-block;
-  padding: 3px 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4px 12px;
   border: 1px solid #b8962e;
   color: #b8962e;
   font-size: 0.55rem;
-  letter-spacing: 1.5px;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
   border-radius: 20px;
   margin-bottom: 0;
+  box-sizing: border-box;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  max-width: 100%;
 }
 
 .itemContent p {
@@ -5086,9 +5120,21 @@
   .hudPage .engDesignLayout,
   .engDesignLayout {
     display: grid !important;
-    grid-template-columns: 1.28fr 0.72fr !important;
+    grid-template-columns: 1.05fr 0.95fr !important;
     gap: 10px !important;
     align-items: stretch !important;
+  }
+
+  .hudPage .engPanelMetrics,
+  .hudPage .engMetricList {
+    overflow: visible !important;
+  }
+
+  .hudPage .engMetricRow small {
+    display: block !important;
+    overflow: visible !important;
+    -webkit-line-clamp: unset !important;
+    line-height: 1.3 !important;
   }
 
   .engChipRow {
@@ -5113,8 +5159,9 @@
   }
 
   .hudPage .engSvgDark {
-    height: 188px !important;
-    max-height: 188px !important;
+    height: 204px !important;
+    max-height: 204px !important;
+    min-height: 204px !important;
   }
 
   .ledgerPage .luxeHeadline {
@@ -5128,17 +5175,51 @@
   }
 
   .ledgerPage .ledgerItemDense {
-    padding: 6px 0 !important;
+    padding: 7px 0 10px !important;
   }
 
   .ledgerPage .bomLead {
     margin-bottom: 6px !important;
-    font-size: 0.92rem !important;
-    line-height: 1.4 !important;
+    font-size: 1.02rem !important;
+    line-height: 1.45 !important;
+  }
+
+  .ledgerPage .bomMaterialName,
+  .ledgerPage .itemContent h3 {
+    font-size: 1.12rem !important;
+    line-height: 1.28 !important;
+  }
+
+  .ledgerPage .bomMaterialBody,
+  .ledgerPage .itemContent p {
+    font-size: 0.98rem !important;
+    line-height: 1.45 !important;
+    margin-bottom: 4px !important;
+    padding-bottom: 4px !important;
+  }
+
+  .ledgerPage .ledgerRole {
+    font-size: 0.72rem !important;
+  }
+
+  .ledgerPage .specBadge {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    font-size: 0.62rem !important;
+    padding: 4px 12px !important;
+    letter-spacing: 0.06em !important;
+    line-height: 1.2 !important;
   }
 
   .ledgerPage .expertVerdict {
     padding: 12px 16px !important;
+  }
+
+  .ledgerPage .expertVerdict p {
+    font-size: 1rem !important;
+    line-height: 1.42 !important;
   }
 
   .genForecastPage .luxeHeadline {
@@ -5458,6 +5539,11 @@
     font-size: 0.88rem !important;
     line-height: 1.4 !important;
   }
+
+  .ledgerPage .expertVerdict p {
+    font-size: 1rem !important;
+    line-height: 1.42 !important;
+  }
 }
 
 /* ── Phone only — stacked layout (iPad keeps desktop-like grids) ─ */
@@ -5580,9 +5666,9 @@
   }
 
   .hudPage .engSvgDark {
-    height: 188px !important;
-    max-height: 188px !important;
-    min-height: 0 !important;
+    height: 204px !important;
+    max-height: 204px !important;
+    min-height: 204px !important;
   }
 
   .impactPage .impactChartSvg {
@@ -5854,7 +5940,20 @@
   }
 
   .engDesignLayout {
-    grid-template-columns: 1.28fr 0.72fr !important;
+    grid-template-columns: 1.05fr 0.95fr !important;
+  }
+
+  .hudPage .engSvgDark,
+  .engSvgDark {
+    height: 204px !important;
+    max-height: 204px !important;
+    min-height: 204px !important;
+  }
+
+  .hudPage .engPanelMetrics .engMetricRow small {
+    display: block !important;
+    overflow: visible !important;
+    -webkit-line-clamp: unset !important;
   }
 
   .wealthTop {
@@ -5994,13 +6093,15 @@
   }
 
   .engSvgDark {
-    height: 176px !important;
-    max-height: 176px !important;
+    height: 204px !important;
+    max-height: 204px !important;
+    min-height: 204px !important;
   }
 
   .hudPage .engSvgDark {
-    height: 176px !important;
-    max-height: 176px !important;
+    height: 204px !important;
+    max-height: 204px !important;
+    min-height: 204px !important;
   }
 
   .hudPage .luxeHeadline {
@@ -6008,7 +6109,7 @@
   }
 
   .ledgerPage .luxeHeadline {
-    font-size: 2.2rem !important;
+    font-size: 2.35rem !important;
     padding-bottom: 14px !important;
     line-height: 1.12 !important;
   }
@@ -6018,11 +6119,55 @@
   }
 
   .ledgerPage .ledgerItemDense {
-    padding: 5px 0 !important;
+    padding: 7px 0 10px !important;
+  }
+
+  .ledgerPage .bomLead {
+    font-size: 1.02rem !important;
+    line-height: 1.45 !important;
+    margin-bottom: 6px !important;
+  }
+
+  .ledgerPage .bomMaterialName,
+  .ledgerPage .itemContent h3 {
+    font-size: 1.12rem !important;
+    line-height: 1.28 !important;
+  }
+
+  .ledgerPage .bomMaterialBody,
+  .ledgerPage .itemContent p {
+    font-size: 0.98rem !important;
+    line-height: 1.45 !important;
+    margin-bottom: 4px !important;
+    padding-bottom: 4px !important;
+  }
+
+  .ledgerPage .ledgerRole {
+    font-size: 0.72rem !important;
+  }
+
+  .ledgerPage .specBadge {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    font-size: 0.62rem !important;
+    padding: 4px 12px !important;
+    letter-spacing: 0.06em !important;
+    line-height: 1.2 !important;
   }
 
   .ledgerPage .expertVerdict {
     padding: 10px 14px !important;
+  }
+
+  .ledgerPage .expertVerdict p {
+    font-size: 1rem !important;
+    line-height: 1.42 !important;
+  }
+
+  .ledgerPage .verdictLabel {
+    font-size: 0.68rem !important;
   }
 
   .genForecastPage .luxeHeadline {
@@ -6269,9 +6414,26 @@
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .engDesignLayout {
   display: grid !important;
-  grid-template-columns: 1.28fr 0.72fr !important;
+  grid-template-columns: 1.05fr 0.95fr !important;
   gap: 10px !important;
   align-items: stretch !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .hudPage
+  .engPanelMetrics
+  .engMetricRow
+  small,
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .engPanelMetrics
+  .engMetricRow
+  small {
+  display: block !important;
+  overflow: visible !important;
+  -webkit-line-clamp: unset !important;
+  line-height: 1.3 !important;
 }
 
 :global(#atelier-pdf-capture-host)
@@ -6314,8 +6476,9 @@
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .engSvgDark {
-  height: 176px !important;
-  max-height: 176px !important;
+  height: 204px !important;
+  max-height: 204px !important;
+  min-height: 204px !important;
 }
 
 :global(#atelier-pdf-capture-host)
@@ -6480,7 +6643,21 @@
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .ledgerPage
   .ledgerItemDense {
-  padding: 5px 0 !important;
+  padding: 7px 0 10px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .ledgerPage
+  .specBadge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  padding: 4px 12px !important;
+  letter-spacing: 0.06em !important;
+  line-height: 1.2 !important;
+  font-size: 0.62rem !important;
 }
 
 :global(#atelier-pdf-capture-host)
@@ -6488,16 +6665,31 @@
   .ledgerPage
   .bomLead {
   margin-bottom: 4px !important;
-  font-size: 0.88rem !important;
-  line-height: 1.38 !important;
+  font-size: 1.02rem !important;
+  line-height: 1.45 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .ledgerPage
+  .bomMaterialName,
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .ledgerPage
+  .itemContent
+  h3 {
+  font-size: 1.12rem !important;
+  line-height: 1.28 !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .ledgerPage
   .bomMaterialBody {
-  font-size: 0.88rem !important;
-  line-height: 1.42 !important;
+  font-size: 0.98rem !important;
+  line-height: 1.45 !important;
+  margin-bottom: 4px !important;
+  padding-bottom: 4px !important;
 }
 
 :global(#atelier-pdf-capture-host)
