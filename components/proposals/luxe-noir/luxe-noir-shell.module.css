@@ -199,6 +199,17 @@
   width: 100%;
 }
 
+/* Full-width title rule — border renders reliably on iPad print/PDF (not a 2px div). */
+.shellHeaderBlock {
+  width: 100%;
+  flex-shrink: 0;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--luxe-gold);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
 /* ── Shared typography ───────────────────────────────────────── */
 .eyebrow {
   color: var(--luxe-gold);
@@ -213,8 +224,8 @@
   font-family: var(--luxe-display), "Cormorant Garamond", Georgia, serif;
   font-weight: 700;
   color: #141820;
-  margin: 0 0 2px;
-  line-height: 1.15;
+  margin: 0;
+  line-height: 1.12;
   font-size: 30pt;
 }
 
@@ -227,10 +238,15 @@
 }
 
 .goldRule {
-  width: 48px;
+  display: block;
+  width: 100%;
+  max-width: 100%;
   height: 2px;
   background: var(--luxe-gold);
   margin: 14px 0 18px;
+  flex-shrink: 0;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
 /* ── Page 01 Cover ───────────────────────────────────────────── */
@@ -336,6 +352,9 @@
   font-variant-numeric: tabular-nums lining-nums;
   font-feature-settings: "tnum" 1, "lnum" 1;
   letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: keep-all;
 }
 
 .cardHint {
@@ -706,6 +725,7 @@
   .title {
     font-size: 30pt !important;
     line-height: 1.12 !important;
+    margin-bottom: 0 !important;
   }
 
   .lead {
@@ -713,8 +733,21 @@
     font-size: 11.5pt !important;
   }
 
+  .shellHeaderBlock {
+    width: 100% !important;
+    padding-bottom: 14px !important;
+    margin-bottom: 18px !important;
+    border-bottom: 2px solid var(--luxe-gold) !important;
+    flex-shrink: 0 !important;
+  }
+
   .goldRule {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 2px !important;
     margin: 14px 0 18px !important;
+    flex-shrink: 0 !important;
   }
 
   .cardGrid3 {
@@ -734,6 +767,9 @@
 
   .cardValue {
     font-size: 20pt !important;
+    white-space: nowrap !important;
+    overflow-wrap: normal !important;
+    word-break: keep-all !important;
   }
 
   .cardLabel {
@@ -777,7 +813,18 @@
     line-height: 1.15 !important;
   }
 
+  .shellHeaderBlock {
+    width: 100% !important;
+    padding-bottom: 14px !important;
+    margin-bottom: 16px !important;
+    border-bottom: 2px solid var(--luxe-gold) !important;
+  }
+
   .goldRule {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 2px !important;
     margin: 12px 0 16px !important;
   }
 
@@ -865,4 +912,72 @@
   .cardGrid3 {
     grid-template-columns: repeat(3, 1fr) !important;
   }
+
+  .title {
+    line-height: 1.12 !important;
+    margin-bottom: 0 !important;
+  }
+
+  .shellHeaderBlock {
+    width: 100% !important;
+    padding-bottom: 14px !important;
+    margin-bottom: 18px !important;
+    border-bottom: 2px solid var(--luxe-gold) !important;
+    flex-shrink: 0 !important;
+  }
+
+  .cardValue {
+    white-space: nowrap !important;
+    overflow-wrap: normal !important;
+    word-break: keep-all !important;
+  }
+
+  .goldRule {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 2px !important;
+    margin: 14px 0 18px !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+/*
+ * iPad PDF capture — html2canvas uses live screen CSS, not @media print.
+ */
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .shellHeaderBlock {
+  width: 100% !important;
+  padding-bottom: 14px !important;
+  margin-bottom: 18px !important;
+  border-bottom: 2px solid #b8962e !important;
+  flex-shrink: 0 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .cardValue {
+  white-space: nowrap !important;
+  overflow-wrap: normal !important;
+  word-break: keep-all !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .title {
+  line-height: 1.12 !important;
+  margin-bottom: 0 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .goldRule {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 2px !important;
+  margin: 14px 0 18px !important;
+  flex-shrink: 0 !important;
+  background: #b8962e !important;
 }

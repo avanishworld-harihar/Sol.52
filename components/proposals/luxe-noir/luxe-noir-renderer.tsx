@@ -258,14 +258,15 @@ function LuxeNoirDocument({
         <BillAuditPage data={data} pptInput={pptInput} />
       ) : (
         <A4Page pageLabel="02 / 12">
-          <div className={styles.shellHeaderRow}>
-            <div>
-              <p className={styles.eyebrow}>{copy.load.eyebrow}</p>
-              <h2 className={styles.title}>{copy.load.title}</h2>
+          <div className={styles.shellHeaderBlock}>
+            <div className={styles.shellHeaderRow}>
+              <div>
+                <p className={styles.eyebrow}>{copy.load.eyebrow}</p>
+                <h2 className={styles.title}>{copy.load.title}</h2>
+              </div>
+              <LuxeHeaderBrand />
             </div>
-            <LuxeHeaderBrand />
           </div>
-          <div className={styles.goldRule} />
           <p className={styles.lead}>{copy.load.lead}</p>
 
           <div className={styles.cardGrid3} style={{ marginTop: 20 }}>
@@ -332,14 +333,15 @@ function LuxeNoirDocument({
       <WealthTerminal data={data} />
 
       <A4Page pageLabel="04 / 12">
-        <div className={styles.shellHeaderRow}>
-          <div>
-            <p className={styles.eyebrow}>{copy.emi.eyebrow}</p>
-            <h2 className={styles.title}>{copy.emi.title}</h2>
+        <div className={styles.shellHeaderBlock}>
+          <div className={styles.shellHeaderRow}>
+            <div>
+              <p className={styles.eyebrow}>{copy.emi.eyebrow}</p>
+              <h2 className={styles.title}>{copy.emi.title}</h2>
+            </div>
+            <LuxeHeaderBrand />
           </div>
-          <LuxeHeaderBrand />
         </div>
-        <div className={styles.goldRule} />
         <p className={styles.lead}>{copy.emi.lead}</p>
         <p className={styles.cardHint} style={{ marginTop: 8, fontSize: "9.5pt" }}>
           {copy.emi.rateLabel}:{" "}

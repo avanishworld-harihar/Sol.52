@@ -269,11 +269,11 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
     maxY = Math.max(maxY, ...ys);
   }
 
-  const sidePad = 10;
-  const topPad = 44;
-  const bottomPad = 8;
-  const maxDrawW = 300;
-  const maxDrawH = 132;
+  const sidePad = 8;
+  const topPad = 10;
+  const bottomPad = 6;
+  const maxDrawW = 268;
+  const maxDrawH = 148;
   const contentW = Math.max(1, maxX - minX);
   const contentH = Math.max(1, maxY - minY);
   const scale = Math.min(1, maxDrawW / contentW, maxDrawH / contentH);
@@ -285,15 +285,17 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
   const tMinY = minY * scale + offsetY;
   const tMaxY = maxY * scale + offsetY;
 
-  const gridX = Math.min(tMinX, sidePad) - 6;
-  const gridY = topPad - 12;
-  const gridW = tMaxX - gridX + sidePad;
-  const gridH = tMaxY - gridY + bottomPad;
+  const gridInset = 6;
+  const gridX = tMinX - gridInset;
+  const gridY = tMinY - gridInset;
+  const gridW = tMaxX - tMinX + gridInset * 2;
+  const gridH = tMaxY - tMinY + gridInset * 2;
   const floorY = tMaxY + bottomPad;
-  const vbW = Math.ceil(tMaxX + sidePad);
+  const compassZone = 58;
+  const vbW = Math.ceil(tMaxX + sidePad + compassZone);
   const vbH = floorY + ARRAY_CAPTION_H;
-  const compassCx = gridX + 34;
-  const compassCy = gridY + 28;
+  const compassCx = vbW - sidePad - 26;
+  const compassCy = topPad + 26;
 
   // Sort in raw space (back → front), then draw inside a fitted transform
   const panelPositions = [...rawPositions].sort(
@@ -323,7 +325,6 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
           <svg
             viewBox={`0 0 ${vbW} ${vbH}`}
             width="100%"
-            height="204"
             preserveAspectRatio="xMidYMid meet"
             className={styles.engSvgDark}
             aria-hidden
@@ -350,8 +351,10 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
             </defs>
 
             <rect
-              width={vbW}
-              height={floorY}
+              x={gridX}
+              y={gridY}
+              width={gridW}
+              height={gridH}
               fill="url(#roofFloor)"
               rx="6"
             />
@@ -370,65 +373,66 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
               ))}
             </g>
 
-            {/* Compass rose */}
+            {/* Compass rose — top-right corner, clear of the module bank */}
             <g transform={`translate(${compassCx},${compassCy})`}>
-              <circle r="22" fill="rgba(10,14,20,0.88)" stroke="#B8962E" strokeWidth="1.1" />
-              <circle r="16" fill="none" stroke="rgba(184,150,46,0.4)" strokeWidth="0.7" />
-              <line x1="0" y1="-14" x2="0" y2="14" stroke="rgba(255,255,255,0.28)" strokeWidth="0.7" />
-              <line x1="-14" y1="0" x2="14" y2="0" stroke="rgba(255,255,255,0.28)" strokeWidth="0.7" />
-              <polygon points="0,-13 3.6,-2 0,-4 -3.6,-2" fill="#B8962E" />
-              <polygon points="0,13 3,2.8 0,5 -3,2.8" fill="#2a3140" />
+              <circle r="18" fill="rgba(10,14,20,0.92)" stroke="#B8962E" strokeWidth="1.05" />
+              <circle r="13" fill="none" stroke="rgba(184,150,46,0.4)" strokeWidth="0.65" />
+              <line x1="0" y1="-11" x2="0" y2="11" stroke="rgba(255,255,255,0.28)" strokeWidth="0.65" />
+              <line x1="-11" y1="0" x2="11" y2="0" stroke="rgba(255,255,255,0.28)" strokeWidth="0.65" />
+              <polygon points="0,-10.5 3.2,-2 0,-3.5 -3.2,-2" fill="#B8962E" />
+              <polygon points="0,10.5 2.6,2.4 0,4.2 -2.6,2.4" fill="#2a3140" />
               <text
-                y="-16"
+                y="-13"
                 textAnchor="middle"
                 fill="#B8962E"
-                fontSize="7"
+                fontSize="6.5"
                 fontWeight="700"
-                letterSpacing="1"
+                letterSpacing="0.8"
               >
                 N
               </text>
-              <text y="22" textAnchor="middle" fill="#a8b0bc" fontSize="6.5">
+              <text y="17" textAnchor="middle" fill="#a8b0bc" fontSize="6">
                 S
               </text>
-              <text x="18" y="3.5" textAnchor="middle" fill="#a8b0bc" fontSize="6">
+              <text x="14" y="3" textAnchor="middle" fill="#a8b0bc" fontSize="5.5">
                 E
               </text>
-              <text x="-18" y="3.5" textAnchor="middle" fill="#a8b0bc" fontSize="6">
+              <text x="-14" y="3" textAnchor="middle" fill="#a8b0bc" fontSize="5.5">
                 W
               </text>
             </g>
             <text
               x={compassCx}
-              y={compassCy + 36}
+              y={compassCy + 30}
               textAnchor="middle"
               fill="#B8962E"
-              fontSize="8"
-              letterSpacing="1.2"
+              fontSize="6.5"
+              letterSpacing="0.8"
               fontWeight="600"
             >
-              180° S · TILT {tilt.toFixed(0)}°
+              180° S · {tilt.toFixed(0)}°
             </text>
 
             {/* Caption bar */}
             <rect
-              x="0"
+              x={gridX}
               y={floorY}
-              width={vbW}
+              width={gridW}
               height={ARRAY_CAPTION_H}
-              fill="rgba(0,0,0,0.6)"
+              fill="rgba(0,0,0,0.72)"
+              rx="0 0 6 6"
             />
             <text
-              x={vbW / 2}
+              x={gridX + gridW / 2}
               y={floorY + 18}
               textAnchor="middle"
               fill="#e8ecf2"
-              fontSize="10"
+              fontSize="9.5"
               fontFamily="system-ui,sans-serif"
-              letterSpacing="0.4"
+              letterSpacing="0.35"
             >
               {modulesRaw} modules · {formatLuxeKw(dcKwp)} kWp DC · {strings}×
-              {perString} string · South
+              {perString} string · South · tilt {tilt.toFixed(0)}°
               {modulesRaw > modulesDraw
                 ? ` · showing ${modulesDraw}`
                 : ""}
