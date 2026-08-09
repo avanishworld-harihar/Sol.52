@@ -149,16 +149,21 @@ export function GenerationForecastPage({
               >
                 <div
                   className={styles.genBarFill}
-                  style={{ height: `${m.genBarPct}%` }}
+                  style={
+                    { "--gen-bar-pct": m.genBarPct } as React.CSSProperties
+                  }
                   title={`${copy.gen.legendGen}: ${m.genUnits}`}
                 />
                 {billBased ? (
                   <div
                     className={styles.genBarFillBill}
-                    style={{
-                      height: m.billBarPct > 0 ? `${m.billBarPct}%` : "4px",
-                      opacity: m.billBarPct > 0 ? 1 : 0.25,
-                    }}
+                    style={
+                      {
+                        "--bill-bar-pct":
+                          m.billBarPct > 0 ? m.billBarPct : 4,
+                        opacity: m.billBarPct > 0 ? 1 : 0.25,
+                      } as React.CSSProperties
+                    }
                     title={
                       m.billUnits != null && m.billUnits > 0
                         ? `${copy.gen.legendBill}: ${m.billUnits}`
