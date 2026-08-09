@@ -4912,7 +4912,7 @@
 }
 
 /* ── iPad / tablet landscape — same A4 width, grow height so footers never clip ─ */
-@media screen and (max-width: 1400px) {
+@media screen and (max-width: 1400px) and (orientation: landscape) {
   .a4Page {
     width: min(210mm, calc(100% - 16px)) !important;
     max-width: 100% !important;
@@ -4926,22 +4926,41 @@
   }
 }
 
-/* ── Screen mobile / tablet — fluid pages, stacked grids ─────── */
-@media screen and (max-width: 860px) {
+/* ── Portrait tablet + phone — full-width fluid pages, stacked grids ─ */
+@media screen and (max-width: 1180px) and (orientation: portrait),
+  screen and (max-width: 860px) {
   .a4Page {
-    width: calc(100% - 16px) !important;
-    max-width: 100% !important;
+    width: calc(100% - 12px) !important;
+    max-width: none !important;
     height: auto !important;
     min-height: 0 !important;
     max-height: none !important;
-    margin: 8px auto 14px !important;
-    padding: 22px 16px 24px !important;
+    margin: 6px auto 12px !important;
+    padding: 20px 14px 22px !important;
     overflow: visible !important;
+    box-shadow: 0 4px 16px rgba(20, 24, 32, 0.08);
   }
 
   .obsidianCover,
   .closePage {
-    padding: 22px 16px 24px 20px !important;
+    padding: 20px 14px 22px 22px !important;
+  }
+
+  .coverFrame {
+    display: none;
+  }
+
+  .coverSpine {
+    width: 8px;
+  }
+
+  .closeSpine {
+    width: 8px;
+  }
+
+  .closeCornerTL,
+  .closeCornerBR {
+    display: none;
   }
 
   .coverVendorName {
@@ -4987,14 +5006,78 @@
   .wealthTop,
   .wealthMid,
   .impactHeroRow,
-  .impactCardGrid,
   .payBottomRow,
   .payBankGrid,
   .payBankHead,
   .closeBrandHero,
-  .closeSigGrid,
-  .billBars {
+  .closeSigGrid {
     grid-template-columns: 1fr !important;
+  }
+
+  .impactCardGrid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .impactCard {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    padding: 12px 14px !important;
+  }
+
+  .impactIcon {
+    width: 52px !important;
+    height: 52px !important;
+    margin-bottom: 0 !important;
+    flex-shrink: 0;
+  }
+
+  .impactCardLabel {
+    flex: 1 1 100%;
+  }
+
+  .impactCardValue,
+  .impactCardValueSoft,
+  .impactCardHint {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .impactHeroRow {
+    grid-template-columns: 1fr auto !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 14px 14px !important;
+  }
+
+  .impactHeroArt {
+    max-width: 112px !important;
+    width: 112px !important;
+    justify-self: end;
+  }
+
+  .billBars {
+    grid-template-columns: 1fr 1fr !important;
+    min-height: 0 !important;
+    gap: 8px !important;
+    align-items: stretch !important;
+  }
+
+  .billReliefCard {
+    grid-column: 1 / -1;
+    min-height: 0 !important;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 12px;
+    padding: 10px 12px !important;
+  }
+
+  .billBarTrack {
+    height: 72px !important;
   }
 
   .closeJourneyTrack {
@@ -5026,7 +5109,8 @@
   .luxeHeadline,
   .hudPage .luxeHeadline,
   .impactPage .luxeHeadline,
-  .payPage .luxeHeadline {
+  .payPage .luxeHeadline,
+  .genForecastPage .luxeHeadline {
     font-size: clamp(1.5rem, 7vw, 2rem) !important;
   }
 
@@ -5037,11 +5121,6 @@
 
   .closeVendorName {
     font-size: clamp(1.8rem, 8vw, 2.6rem) !important;
-  }
-
-  .impactHeroArt {
-    max-width: 140px;
-    justify-self: start;
   }
 
   .impactEqRow {
@@ -5072,7 +5151,22 @@
 
   .wealthKpis {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .wealthKpi {
+    flex: none;
+  }
+
+  .genForecastKpis {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .genForecastBars {
+    min-height: 140px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .billAuditMetrics {
@@ -5098,20 +5192,99 @@
     font-size: 0.72rem !important;
     padding: 0.35rem 0.3rem !important;
   }
+
+  .luxeHeaderRow {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+/* Portrait tablet — 2-up grids where single column feels too tall */
+@media screen and (min-width: 481px) and (max-width: 1180px) and (orientation: portrait) {
+  .impactCardGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .impactCard {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px 10px 11px !important;
+  }
+
+  .impactCardLabel {
+    flex: none;
+  }
+
+  .impactIcon {
+    width: 64px !important;
+    height: 64px !important;
+  }
+
+  .closeJourneyTrack {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .closeBrandHero {
+    grid-template-columns: 1.2fr 0.8fr !important;
+  }
+
+  .wealthMid {
+    grid-template-columns: 1.1fr 0.9fr !important;
+  }
+
+  .engChipRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .archTrack {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    justify-content: flex-start;
+    gap: 6px;
+    padding-bottom: 4px;
+  }
+
+  .archNode {
+    flex: 0 0 88px;
+    min-width: 88px;
+  }
 }
 
 @media screen and (max-width: 480px) {
   .a4Page {
-    width: calc(100% - 12px) !important;
-    padding: 18px 12px 20px !important;
+    width: calc(100% - 8px) !important;
+    padding: 16px 12px 18px !important;
+    margin: 4px auto 10px !important;
   }
 
   .obsidianCover,
   .closePage {
-    padding: 18px 12px 20px 16px !important;
+    padding: 16px 12px 18px 18px !important;
   }
 
   .closeJourneyTrack {
+    grid-template-columns: 1fr !important;
+  }
+
+  .impactCardGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .impactCard {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .wealthKpis {
+    grid-template-columns: 1fr !important;
+  }
+
+  .genForecastKpis {
+    grid-template-columns: 1fr !important;
+  }
+
+  .billBars {
     grid-template-columns: 1fr !important;
   }
 
