@@ -129,7 +129,7 @@ export function TermsCompliancePage1({ data }: TermsComplianceProps) {
   const { copy } = useLuxeLang();
   const docs = take(
     data.terms.documents.length > 0 ? data.terms.documents : DEFAULT_DOCS,
-    5
+    6
   );
 
   return (
@@ -211,7 +211,7 @@ export function TermsCompliancePage2({ data }: TermsComplianceProps) {
   );
   const amcIncludes = take(
     includeItems.length > 0 ? includeItems : DEFAULT_AMC_INCLUDES,
-    3
+    4
   );
 
   const notesRaw =
@@ -224,7 +224,7 @@ export function TermsCompliancePage2({ data }: TermsComplianceProps) {
   );
   const amcExcludes = take(
     excludesFromNotes.length > 0 ? excludesFromNotes : DEFAULT_AMC_EXCLUDES,
-    2
+    3
   );
   const amcCommercial = take(
     commercialNotes.length > 0 ? commercialNotes : DEFAULT_AMC_COMMERCIAL,
@@ -259,7 +259,7 @@ export function TermsCompliancePage2({ data }: TermsComplianceProps) {
         <section className={styles.termsSection}>
           <div className={styles.termsSubhead}>{copy.terms.clientScope}</div>
           <ol className={styles.termsNumberedList}>
-            {take(CLIENT_SCOPE, 5).map((s, i) => (
+            {take(CLIENT_SCOPE, 6).map((s, i) => (
               <li key={s.slice(0, 48)}>
                 <span className={styles.termsListNum}>{i + 1}</span>
                 <span>{s}</span>

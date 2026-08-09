@@ -110,10 +110,10 @@ function buildRow(
   } else if (!isGenericProtection(item) && detail) {
     body = detail.length <= 220 ? detail : base.body;
   }
-  if (body.length > 240) {
-    const cut = body.lastIndexOf(" · ", 228);
+  if (body.length > 320) {
+    const cut = body.lastIndexOf(" · ", 310);
     body =
-      cut > 100 ? `${body.slice(0, cut).trim()}…` : `${body.slice(0, 228).trim()}…`;
+      cut > 120 ? `${body.slice(0, cut).trim()}…` : `${body.slice(0, 310).trim()}…`;
   }
 
   return {

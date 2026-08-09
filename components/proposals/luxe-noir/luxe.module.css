@@ -1202,9 +1202,7 @@
 
 .billAuditPage .luxeHeadline {
   font-size: 2.35rem;
-  padding-bottom: 14px;
-  line-height: 1.12;
-  margin-bottom: 4px;
+  padding-bottom: 8px;
 }
 
 .billAuditLead {
@@ -1466,10 +1464,7 @@
 .hudPage .luxeHeadline {
   font-size: 2.15rem;
   font-weight: 700;
-  line-height: 1.12;
-  border-bottom: none;
-  padding-bottom: 0;
-  margin-bottom: 0;
+  line-height: 1.05;
 }
 
 .hudPage .goldTag {
@@ -1478,13 +1473,8 @@
 }
 
 .hudPage .luxeHeaderBlock {
-  width: 100%;
-  margin-bottom: 12px;
-  padding-bottom: 14px;
-  border-bottom: 2px solid rgba(184, 150, 46, 0.4);
+  margin-bottom: 6px;
   flex-shrink: 0;
-  -webkit-print-color-adjust: exact !important;
-  print-color-adjust: exact !important;
 }
 
 .hudPage .engDesignLayout {
@@ -1509,16 +1499,10 @@
   margin-bottom: 5px;
 }
 
-.hudPage .engPanelFlush {
-  flex: 1 1 auto;
-  min-height: 0;
-}
-
 .hudPage .engSvgDark {
-  height: 228px;
-  max-height: 228px;
-  min-height: 228px;
-  flex: 1 1 auto;
+  height: 204px;
+  max-height: 204px;
+  min-height: 204px;
 }
 
 .hudPage .engMetricList {
@@ -1643,12 +1627,11 @@
 }
 
 .engPanelFlush {
-  padding-bottom: 6px;
+  padding-bottom: 8px;
   display: flex;
   flex-direction: column;
   min-height: 0;
   min-width: 0;
-  flex: 1 1 auto;
 }
 
 .engPanelMetrics {
@@ -1675,13 +1658,12 @@
 .engSvgDark {
   display: block;
   width: 100%;
-  flex: 1 1 auto;
-  min-height: 228px;
-  height: 228px;
-  max-height: 228px;
+  flex: 0 0 auto;
+  min-height: 204px;
+  height: 204px;
+  max-height: 204px;
   border-radius: 8px;
-  background: transparent;
-  overflow: hidden;
+  background: #0a0e14;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -1941,37 +1923,29 @@
 }
 
 .ledgerPage .luxeHeadline {
-  font-size: 2.1rem;
+  font-size: 2.35rem;
   font-weight: 700;
+  padding-bottom: 14px;
   line-height: 1.12;
-  border-bottom: none;
-  padding-bottom: 0;
-  margin-bottom: 0;
+  margin-bottom: 4px;
 }
 
 .ledgerPage .luxeHeaderBlock {
-  width: 100%;
-  margin-bottom: 6px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid rgba(184, 150, 46, 0.4);
-  flex-shrink: 0;
-  -webkit-print-color-adjust: exact !important;
-  print-color-adjust: exact !important;
+  margin-bottom: 8px;
 }
 
 .ledgerPage .goldTag {
-  font-size: 0.76rem;
+  font-size: 0.8rem;
   font-weight: 800;
 }
 
 .ledgerPage .bomLead {
-  margin: 0 0 5px;
-  font-size: 0.88rem;
-  line-height: 1.38;
+  margin: 0 0 8px;
+  font-size: 1.02rem;
+  line-height: 1.45;
   overflow-wrap: anywhere;
   word-break: break-word;
   max-width: 100%;
-  flex-shrink: 0;
 }
 
 .ledgerListDense {
@@ -1982,13 +1956,6 @@
   min-height: 0;
   min-width: 0;
   width: 100%;
-  overflow: hidden;
-}
-
-.ledgerPage .ledgerListDense {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: hidden;
 }
 
 .ledgerItemDense {
@@ -2004,9 +1971,9 @@
 }
 
 .ledgerPage .ledgerItemDense {
-  grid-template-columns: 42px minmax(0, 1fr);
-  gap: 8px;
-  padding: 4px 0 5px;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 10px;
+  padding: 8px 0 10px;
 }
 
 .ledgerItemDense:last-child {
@@ -2023,7 +1990,7 @@
 }
 
 .ledgerPage .hugeNumberDense {
-  font-size: 1.45rem;
+  font-size: 1.7rem;
   color: rgba(168, 135, 42, 0.58);
 }
 
@@ -2038,8 +2005,8 @@
 }
 
 .ledgerPage .ledgerTitleRow {
-  gap: 6px;
-  margin-bottom: 1px;
+  gap: 8px;
+  margin-bottom: 2px;
 }
 
 .ledgerTitleRow h3 {
@@ -2058,7 +2025,7 @@
 }
 
 .ledgerPage .ledgerRole {
-  font-size: 0.62rem;
+  font-size: 0.72rem;
 }
 
 .ledgerPage .specBadge {
@@ -2066,10 +2033,10 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  font-size: 0.58rem;
-  padding: 3px 8px;
-  letter-spacing: 0.05em;
-  line-height: 1.15;
+  font-size: 0.62rem;
+  padding: 4px 12px;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
   box-sizing: border-box;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -2086,22 +2053,22 @@
 
 .ledgerPage .itemContent h3,
 .ledgerPage .bomMaterialName {
-  font-size: 0.98rem;
-  margin: 0 0 1px;
+  font-size: 1.12rem;
+  margin: 0 0 3px;
   font-weight: 800;
   color: #141820;
-  line-height: 1.22;
+  line-height: 1.28;
   overflow-wrap: anywhere;
   word-break: break-word;
   max-width: 100%;
 }
 
 .ledgerPage .bomMaterialBody {
-  font-size: 0.82rem;
-  line-height: 1.36;
+  font-size: 0.98rem;
+  line-height: 1.45;
   color: #1e2430;
-  margin: 0 0 2px;
-  padding-bottom: 2px;
+  margin: 0 0 4px;
+  padding-bottom: 4px;
   overflow-wrap: anywhere;
   word-break: break-word;
   max-width: 100%;
@@ -2113,8 +2080,8 @@
 }
 
 .ledgerPage .itemContent p {
-  font-size: 0.82rem;
-  line-height: 1.36;
+  font-size: 0.92rem;
+  line-height: 1.42;
   color: #1e2430;
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -2122,23 +2089,23 @@
 }
 
 .ledgerPage .expertVerdict {
-  margin-top: auto;
-  padding: 8px 12px;
+  margin-top: 8px;
+  padding: 12px 16px;
   flex-shrink: 0;
 }
 
 .ledgerPage .expertVerdict p {
-  font-size: 0.86rem;
-  line-height: 1.34;
+  font-size: 1rem;
+  line-height: 1.42;
 }
 
 .ledgerPage .verdictLabel {
-  font-size: 0.58rem;
+  font-size: 0.68rem;
 }
 
 .ledgerPage .impactPageFooter {
-  margin-top: 4px;
-  padding-top: 6px;
+  margin-top: 6px;
+  padding-top: 8px;
   flex-shrink: 0;
 }
 
@@ -2405,7 +2372,7 @@
 
 .costEquation {
   display: grid;
-  grid-template-columns: minmax(92px, 1fr) auto minmax(68px, 0.9fr) auto minmax(92px, 1.12fr);
+  grid-template-columns: 1fr auto 1fr auto 1.15fr;
   align-items: stretch;
   gap: 6px;
   margin-top: 12px;
@@ -2421,7 +2388,6 @@
   padding: 6px 8px;
   background: #f8f9fb;
   border-radius: 3px;
-  align-items: flex-start;
 }
 
 .costEqCell span {
@@ -2437,10 +2403,7 @@
   font-weight: 700;
   color: #141820;
   line-height: 1.2;
-  white-space: nowrap;
-  overflow-wrap: normal;
-  word-break: keep-all;
-  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
 }
 
 .costEqOp {
@@ -2463,7 +2426,6 @@
 .costEqNet strong {
   font-size: 1.02rem;
   font-weight: 800;
-  white-space: nowrap;
 }
 
 .wealthTop {
@@ -2784,22 +2746,16 @@
 }
 
 .impactPage .luxeHeaderBlock {
-  width: 100%;
-  margin-bottom: 8px;
-  padding-bottom: 14px;
-  border-bottom: 2px solid rgba(184, 150, 46, 0.4);
+  margin-bottom: 6px;
   flex-shrink: 0;
-  -webkit-print-color-adjust: exact !important;
-  print-color-adjust: exact !important;
 }
 
 .impactPage .luxeHeadline {
   font-size: 2.1rem;
   font-weight: 700;
+  padding-bottom: 14px;
   line-height: 1.12;
-  border-bottom: none;
-  padding-bottom: 0;
-  margin-bottom: 0;
+  margin-bottom: 4px;
 }
 
 .impactPage .goldTag {
@@ -2871,38 +2827,21 @@
 }
 
 .impactPage .impactChartSteady {
-  margin: 0 0 14px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #eef1f5;
+  margin: 0 0 6px;
   font-size: 0.8rem;
   line-height: 1.3;
 }
 
 .impactPage .impactEqRow {
-  gap: 8px;
-  margin-top: 6px;
-  margin-bottom: 8px;
+  gap: 6px;
+  margin-bottom: 6px;
 }
 
 .impactPage .impactEqCell {
-  display: flex;
-  flex-direction: column;
-  padding: 10px 8px;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: 6px;
-}
-
-.impactPage .impactEqCell span {
-  width: 100%;
-  text-align: center;
+  padding: 6px 8px;
 }
 
 .impactPage .impactEqCell strong {
-  display: block;
-  width: 100%;
-  text-align: center;
   font-size: 1rem;
 }
 
@@ -3118,14 +3057,11 @@
   color: #141820;
   font-weight: 800;
   text-transform: uppercase;
-  margin-bottom: 6px;
-  padding-bottom: 0;
+  margin-bottom: 4px;
 }
 
 .impactChartSteady {
-  margin: 0 0 10px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #eef1f5;
+  margin: 0 0 8px;
   font-size: 0.88rem;
   color: #2a3140;
   line-height: 1.35;
@@ -3133,25 +3069,21 @@
 
 .impactEqRow {
   display: grid;
-  grid-template-columns: 1.15fr auto 0.85fr auto 1.25fr;
+  grid-template-columns: 1.2fr auto 0.7fr auto 1.35fr;
   align-items: stretch;
   gap: 8px;
-  margin-top: 6px;
   margin-bottom: 10px;
 }
 
 .impactEqCell {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  padding: 10px 8px;
+  gap: 3px;
+  padding: 8px 10px;
   background: #f8f9fb;
   border: 1px solid #e2e6ec;
   border-radius: 4px;
   min-width: 0;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
 }
 
 .impactEqCell span {
@@ -3160,14 +3092,9 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #5c6573;
-  width: 100%;
-  text-align: center;
 }
 
 .impactEqCell strong {
-  display: block;
-  width: 100%;
-  text-align: center;
   font-size: 1.15rem;
   font-weight: 800;
   color: #141820;
@@ -3245,10 +3172,9 @@
 .genForecastPage .luxeHeadline {
   font-size: 2.35rem;
   font-weight: 700;
+  padding-bottom: 14px;
   line-height: 1.12;
-  border-bottom: none;
-  padding-bottom: 0;
-  margin-bottom: 0;
+  margin-bottom: 4px;
 }
 
 .genForecastPage .goldTag {
@@ -3257,13 +3183,7 @@
 }
 
 .genForecastPage .luxeHeaderBlock {
-  width: 100%;
-  margin-bottom: 10px;
-  padding-bottom: 14px;
-  border-bottom: 2px solid rgba(184, 150, 46, 0.4);
-  flex-shrink: 0;
-  -webkit-print-color-adjust: exact !important;
-  print-color-adjust: exact !important;
+  margin-bottom: 8px;
 }
 
 .genForecastLead {
@@ -4656,9 +4576,7 @@
 }
 
 .termsPage .termsStack {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .termsCol {
@@ -4915,9 +4833,9 @@
   font-weight: 700;
 }
 
-/* Dense page-2: compact so all sections + footer stay inside A4 */
+/* Dense page-2: keep verdict clear of body (no auto-overlap) */
 .termsPage .expertVerdict {
-  margin-top: auto;
+  margin-top: 8px;
   flex-shrink: 0;
   position: relative;
   z-index: 2;
@@ -4941,39 +4859,29 @@
   margin-bottom: 3px;
 }
 
-.termsPageDense .termsHead {
-  margin-bottom: 6px;
-}
-
 .termsPageDense .termsStack {
-  gap: 5px;
+  gap: 8px;
 }
 
 .termsPageDense .termsSection {
-  padding: 6px 8px 7px;
+  padding: 10px 12px 11px;
 }
 
 .termsPageDense .termsTitle {
-  font-size: 20pt;
+  font-size: 24pt;
   font-weight: 700;
-  line-height: 1.1;
 }
 
 .termsPageDense .termsIntro {
-  font-size: 0.84rem;
-  line-height: 1.35;
-  margin-top: 4px;
+  font-size: 0.95rem;
+  line-height: 1.4;
 }
 
 .termsPageDense .termsSubhead {
-  font-size: 0.72rem;
-  margin-bottom: 4px;
-  padding-bottom: 6px;
-  line-height: 1.1;
-}
-
-.termsPageDense .termsNumberedList {
-  gap: 3px;
+  font-size: 0.8rem;
+  margin-bottom: 8px;
+  padding-bottom: 10px;
+  line-height: 1.12;
 }
 
 .termsPageDense .termsNumberedList li,
@@ -4982,181 +4890,136 @@
 .termsPageDense .termsCostBox p,
 .termsPageDense .termsDiamondList li,
 .termsPageDense .termsDotList li {
-  font-size: 0.8rem;
-  line-height: 1.32;
+  font-size: 0.92rem;
+  line-height: 1.42;
 }
 
 .termsPageDense .termsAmcIncludes {
-  font-size: 0.78rem;
-  margin: 3px 0 2px;
-}
-
-.termsPageDense .termsSafetyList {
-  gap: 4px;
+  font-size: 0.9rem;
 }
 
 .termsPageDense .termsSafetyList li {
-  padding: 5px 8px 5px 10px;
-}
-
-.termsPageDense .termsPara {
-  margin: 0 0 3px;
-}
-
-.termsPageDense .termsCostBox {
-  padding: 5px 8px;
-  margin-bottom: 4px;
-}
-
-.termsPageDense .termsCostBox p {
-  margin: 0 0 3px;
-}
-
-.termsPageDense .termsListNum {
-  width: 18px;
-  height: 18px;
-  font-size: 0.65rem;
+  padding: 7px 10px 7px 11px;
 }
 
 .termsPageDense .termsSignoff {
-  padding: 5px 8px;
-  gap: 1px;
-}
-
-.termsPageDense .termsBrand {
-  font-size: 11pt;
-}
-
-.termsPageDense .termsRegards {
-  font-size: 0.74rem;
-}
-
-.termsPageDense .expertVerdict {
-  margin-top: auto;
-  padding: 6px 10px;
+  padding: 8px 10px;
 }
 
 .termsPageDense .expertVerdict p {
-  font-size: 0.82rem;
-  line-height: 1.32;
+  font-size: 0.95rem;
+  line-height: 1.4;
 }
 
-.termsPageDense .verdictLabel {
-  font-size: 0.58rem;
-  margin-bottom: 2px;
-}
-
-/* Page 1 — readable but A4-safe */
+/* Page 1 — fill A4: larger type + air */
 .termsPageRoomy .termsHead {
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .termsPageRoomy .termsTag {
-  font-size: 0.76rem;
+  font-size: 0.8rem;
   font-weight: 800;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .termsPageRoomy .termsTitle {
-  font-size: 22pt;
+  font-size: 26pt;
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1.08;
 }
 
 .termsPageRoomy .termsIntro {
-  margin-top: 6px;
-  font-size: 0.9rem;
-  line-height: 1.38;
+  margin-top: 8px;
+  font-size: 1.02rem;
+  line-height: 1.45;
 }
 
 .termsPageRoomy .termsStack {
-  gap: 8px;
+  gap: 12px;
 }
 
 .termsPageRoomy .termsSection {
-  padding: 10px 12px 11px;
+  padding: 14px 16px 16px;
 }
 
 .termsPageRoomy .termsSection:first-child {
   flex: 0 1 auto !important;
   display: flex;
   flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
+  min-height: auto;
+  overflow: visible;
 }
 
 .termsPageRoomy .termsSubhead {
-  font-size: 0.78rem;
+  font-size: 0.84rem;
   font-weight: 800;
-  letter-spacing: 0.12em;
-  margin-bottom: 6px;
-  padding-bottom: 10px;
-  line-height: 1.1;
+  letter-spacing: 0.14em;
+  margin-bottom: 10px;
+  padding-bottom: 14px;
+  line-height: 1.12;
 }
 
 .termsPageRoomy .termsArticleList {
-  gap: 4px;
+  gap: 7px;
   flex: 0 1 auto;
   justify-content: flex-start;
-  min-height: 0;
-  overflow: hidden;
 }
 
 .termsPageRoomy .termsArticle {
-  grid-template-columns: 28px 1fr;
-  gap: 8px;
-  padding-bottom: 4px;
+  grid-template-columns: 34px 1fr;
+  gap: 10px;
+  padding-bottom: 7px;
 }
 
 .termsPageRoomy .termsArticleNum {
-  font-size: 0.8rem;
-  padding-top: 1px;
+  font-size: 0.88rem;
+  padding-top: 2px;
 }
 
 .termsPageRoomy .termsArticleLabel {
-  font-size: 0.92rem;
+  font-size: 1rem;
   font-weight: 800;
-  margin-bottom: 2px;
-  line-height: 1.22;
+  margin-bottom: 3px;
+  line-height: 1.25;
 }
 
 .termsPageRoomy .termsArticleBody {
-  font-size: 0.86rem;
-  line-height: 1.36;
+  font-size: 0.96rem;
+  line-height: 1.42;
 }
 
 .termsPageRoomy .termsNumberedList {
-  gap: 4px;
+  gap: 10px;
 }
 
 .termsPageRoomy .termsNumberedList li {
-  grid-template-columns: 22px 1fr;
-  gap: 8px;
-  font-size: 0.88rem;
-  line-height: 1.36;
+  grid-template-columns: 28px 1fr;
+  gap: 10px;
+  font-size: 1rem;
+  line-height: 1.42;
 }
 
 .termsPageRoomy .termsListNum {
-  width: 20px;
-  height: 20px;
-  font-size: 0.7rem;
+  width: 22px;
+  height: 22px;
+  font-size: 0.78rem;
   margin-top: 0;
 }
 
 .termsPageRoomy .expertVerdict {
-  margin-top: auto;
-  padding: 8px 12px;
+  margin-top: 12px;
+  padding: 12px 14px;
 }
 
 .termsPageRoomy .expertVerdict p {
-  font-size: 0.9rem;
-  line-height: 1.36;
+  font-size: 1.05rem;
+  line-height: 1.45;
 }
 
 .termsPageRoomy .verdictLabel {
-  font-size: 0.62rem;
+  font-size: 0.72rem;
   font-weight: 800;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 .termsPage .impactPageFooter {
@@ -5245,13 +5108,6 @@
     grid-template-columns: 1.35fr 0.65fr !important;
   }
 
-  .costEqCell strong,
-  .costEqNet strong {
-    white-space: nowrap !important;
-    overflow-wrap: normal !important;
-    word-break: keep-all !important;
-  }
-
   .billBars {
     grid-template-columns: 1fr 1fr 1.15fr !important;
     align-items: stretch !important;
@@ -5300,53 +5156,18 @@
 
   .hudPage .luxeHeadline {
     font-size: 2.15rem !important;
-    border-bottom: none !important;
-    padding-bottom: 0 !important;
-    margin-bottom: 0 !important;
-    line-height: 1.12 !important;
-  }
-
-  .hudPage .luxeHeaderBlock {
-    width: 100% !important;
-    padding-bottom: 14px !important;
-    margin-bottom: 12px !important;
-    border-bottom: 2px solid rgba(184, 150, 46, 0.4) !important;
-    flex-shrink: 0 !important;
   }
 
   .hudPage .engSvgDark {
-    height: 228px !important;
-    max-height: 228px !important;
-    min-height: 228px !important;
-  }
-
-  .ledgerPage {
-    height: 297mm !important;
-    min-height: 297mm !important;
-    max-height: 297mm !important;
-    overflow: hidden !important;
+    height: 204px !important;
+    max-height: 204px !important;
+    min-height: 204px !important;
   }
 
   .ledgerPage .luxeHeadline {
-    font-size: 2.1rem !important;
-    border-bottom: none !important;
-    padding-bottom: 0 !important;
-    margin-bottom: 0 !important;
+    font-size: 2.35rem !important;
+    padding-bottom: 14px !important;
     line-height: 1.12 !important;
-  }
-
-  .ledgerPage .luxeHeaderBlock {
-    width: 100% !important;
-    padding-bottom: 12px !important;
-    margin-bottom: 6px !important;
-    border-bottom: 2px solid rgba(184, 150, 46, 0.4) !important;
-    flex-shrink: 0 !important;
-  }
-
-  .ledgerPage .ledgerListDense {
-    flex: 1 1 auto !important;
-    min-height: 0 !important;
-    overflow: hidden !important;
   }
 
   .ledgerPage .itemContent {
@@ -5354,35 +5175,31 @@
   }
 
   .ledgerPage .ledgerItemDense {
-    padding: 4px 0 5px !important;
-    grid-template-columns: 42px minmax(0, 1fr) !important;
-    gap: 8px !important;
+    padding: 7px 0 10px !important;
   }
 
   .ledgerPage .bomLead {
-    margin-bottom: 5px !important;
-    font-size: 0.88rem !important;
-    line-height: 1.38 !important;
-    flex-shrink: 0 !important;
+    margin-bottom: 6px !important;
+    font-size: 1.02rem !important;
+    line-height: 1.45 !important;
   }
 
   .ledgerPage .bomMaterialName,
   .ledgerPage .itemContent h3 {
-    font-size: 0.98rem !important;
-    line-height: 1.22 !important;
-    margin-bottom: 1px !important;
+    font-size: 1.12rem !important;
+    line-height: 1.28 !important;
   }
 
   .ledgerPage .bomMaterialBody,
   .ledgerPage .itemContent p {
-    font-size: 0.82rem !important;
-    line-height: 1.36 !important;
-    margin-bottom: 2px !important;
-    padding-bottom: 2px !important;
+    font-size: 0.98rem !important;
+    line-height: 1.45 !important;
+    margin-bottom: 4px !important;
+    padding-bottom: 4px !important;
   }
 
   .ledgerPage .ledgerRole {
-    font-size: 0.62rem !important;
+    font-size: 0.72rem !important;
   }
 
   .ledgerPage .specBadge {
@@ -5390,43 +5207,25 @@
     align-items: center !important;
     justify-content: center !important;
     text-align: center !important;
-    font-size: 0.58rem !important;
-    padding: 3px 8px !important;
-    letter-spacing: 0.05em !important;
-    line-height: 1.15 !important;
+    font-size: 0.62rem !important;
+    padding: 4px 12px !important;
+    letter-spacing: 0.06em !important;
+    line-height: 1.2 !important;
   }
 
   .ledgerPage .expertVerdict {
-    margin-top: auto !important;
-    padding: 8px 12px !important;
-    flex-shrink: 0 !important;
+    padding: 12px 16px !important;
   }
 
   .ledgerPage .expertVerdict p {
-    font-size: 0.86rem !important;
-    line-height: 1.34 !important;
-  }
-
-  .ledgerPage .impactPageFooter {
-    margin-top: 4px !important;
-    padding-top: 6px !important;
-    flex-shrink: 0 !important;
+    font-size: 1rem !important;
+    line-height: 1.42 !important;
   }
 
   .genForecastPage .luxeHeadline {
     font-size: 2.35rem !important;
-    border-bottom: none !important;
-    padding-bottom: 0 !important;
-    margin-bottom: 0 !important;
-    line-height: 1.12 !important;
-  }
-
-  .genForecastPage .luxeHeaderBlock {
-    width: 100% !important;
     padding-bottom: 14px !important;
-    margin-bottom: 10px !important;
-    border-bottom: 2px solid rgba(184, 150, 46, 0.4) !important;
-    flex-shrink: 0 !important;
+    line-height: 1.12 !important;
   }
 
   .genForecastPage .genForecast {
@@ -5458,49 +5257,8 @@
 
   .impactPage .luxeHeadline {
     font-size: 2.1rem !important;
-    border-bottom: none !important;
-    padding-bottom: 0 !important;
-    margin-bottom: 0 !important;
-    line-height: 1.12 !important;
-  }
-
-  .impactPage .luxeHeaderBlock {
-    width: 100% !important;
     padding-bottom: 14px !important;
-    margin-bottom: 8px !important;
-    border-bottom: 2px solid rgba(184, 150, 46, 0.4) !important;
-    flex-shrink: 0 !important;
-  }
-
-  .impactPage .impactChartSteady {
-    margin-bottom: 14px !important;
-    padding-bottom: 12px !important;
-    border-bottom: 1px solid #eef1f5 !important;
-  }
-
-  .impactPage .impactEqCell,
-  .impactEqCell {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    text-align: center !important;
-    padding: 10px 8px !important;
-    gap: 6px !important;
-  }
-
-  .impactPage .impactEqCell span,
-  .impactPage .impactEqCell strong,
-  .impactEqCell span,
-  .impactEqCell strong {
-    text-align: center !important;
-    width: 100% !important;
-  }
-
-  .impactEqRow {
-    margin-top: 6px !important;
-    margin-bottom: 8px !important;
-    grid-template-columns: 1.15fr auto 0.85fr auto 1.25fr !important;
+    line-height: 1.12 !important;
   }
 
   .impactHeroRow {
@@ -5518,7 +5276,7 @@
   }
 
   .impactEqRow {
-    grid-template-columns: 1.15fr auto 0.85fr auto 1.25fr !important;
+    grid-template-columns: 1.2fr auto 0.7fr auto 1.35fr !important;
   }
 
   .impactEqOp {
@@ -5665,142 +5423,79 @@
   }
 
   .termsPage {
-    height: 297mm !important;
-    min-height: 297mm !important;
-    max-height: 297mm !important;
-    overflow: hidden !important;
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
   }
 
   .termsStack {
-    overflow: hidden !important;
-    flex: 1 1 auto !important;
-    min-height: 0 !important;
+    overflow: visible !important;
+    flex: 0 1 auto !important;
   }
 
   .termsPageRoomy .termsTitle {
-    font-size: 22pt !important;
-    line-height: 1.1 !important;
+    font-size: 26pt !important;
+    line-height: 1.08 !important;
   }
 
   .termsPageRoomy .termsTag {
-    font-size: 0.76rem !important;
+    font-size: 0.8rem !important;
   }
 
   .termsPageRoomy .termsIntro {
-    font-size: 0.9rem !important;
-    line-height: 1.38 !important;
-  }
-
-  .termsPageRoomy .termsStack {
-    gap: 8px !important;
+    font-size: 1.02rem !important;
+    line-height: 1.45 !important;
   }
 
   .termsPageRoomy .termsSection {
-    padding: 10px 12px 11px !important;
+    padding: 14px 16px 16px !important;
   }
 
   .termsPageRoomy .termsSection:first-child {
     flex: 0 1 auto !important;
-    min-height: 0 !important;
-    overflow: hidden !important;
+    min-height: auto !important;
+    overflow: visible !important;
   }
 
   .termsPageRoomy .termsSubhead {
-    font-size: 0.78rem !important;
-    padding-bottom: 10px !important;
-    line-height: 1.1 !important;
-    margin-bottom: 6px !important;
+    font-size: 0.84rem !important;
+    padding-bottom: 14px !important;
+    line-height: 1.12 !important;
+    margin-bottom: 10px !important;
   }
 
   .termsPageRoomy .termsArticleList {
     flex: 0 1 auto !important;
     justify-content: flex-start !important;
-    gap: 4px !important;
-    overflow: hidden !important;
+    gap: 7px !important;
   }
 
   .termsPageRoomy .termsArticleLabel {
-    font-size: 0.92rem !important;
+    font-size: 1rem !important;
   }
 
   .termsPageRoomy .termsArticleBody {
-    font-size: 0.86rem !important;
-    line-height: 1.36 !important;
+    font-size: 0.96rem !important;
+    line-height: 1.42 !important;
   }
 
   .termsPageRoomy .termsNumberedList li {
-    font-size: 0.88rem !important;
-    line-height: 1.36 !important;
+    font-size: 1rem !important;
+    line-height: 1.42 !important;
   }
 
   .termsPageRoomy .expertVerdict {
     margin-top: auto !important;
-    padding: 8px 12px !important;
+    padding: 12px 16px !important;
   }
 
   .termsPageRoomy .expertVerdict p {
-    font-size: 0.9rem !important;
-    line-height: 1.36 !important;
+    font-size: 1.05rem !important;
+    line-height: 1.45 !important;
   }
 
   .termsPageRoomy .verdictLabel {
-    font-size: 0.62rem !important;
-  }
-
-  .termsPageDense .termsTitle {
-    font-size: 20pt !important;
-    line-height: 1.1 !important;
-  }
-
-  .termsPageDense .termsIntro {
-    font-size: 0.84rem !important;
-    line-height: 1.35 !important;
-  }
-
-  .termsPageDense .termsStack {
-    gap: 5px !important;
-  }
-
-  .termsPageDense .termsSection {
-    padding: 6px 8px 7px !important;
-  }
-
-  .termsPageDense .termsSubhead {
     font-size: 0.72rem !important;
-    padding-bottom: 6px !important;
-    line-height: 1.1 !important;
-    margin-bottom: 4px !important;
-  }
-
-  .termsPageDense .termsNumberedList li,
-  .termsPageDense .termsSafetyList li,
-  .termsPageDense .termsPara,
-  .termsPageDense .termsCostBox p {
-    font-size: 0.8rem !important;
-    line-height: 1.32 !important;
-  }
-
-  .termsPageDense .termsAmcIncludes {
-    font-size: 0.78rem !important;
-    margin: 3px 0 2px !important;
-  }
-
-  .termsPageDense .termsSafetyList li {
-    padding: 5px 8px 5px 10px !important;
-  }
-
-  .termsPageDense .expertVerdict {
-    margin-top: auto !important;
-    padding: 6px 10px !important;
-  }
-
-  .termsPageDense .expertVerdict p {
-    font-size: 0.82rem !important;
-    line-height: 1.32 !important;
-  }
-
-  .termsPageDense .verdictLabel {
-    font-size: 0.58rem !important;
   }
 
   .termsPage .impactPageFooter {
@@ -5823,21 +5518,21 @@
   }
 
   .termsPageRoomy .expertVerdict p {
-    font-size: 0.9rem !important;
-    line-height: 1.36 !important;
+    font-size: 1.05rem !important;
+    line-height: 1.45 !important;
   }
 
   .termsPageRoomy .verdictLabel {
-    font-size: 0.62rem !important;
+    font-size: 0.72rem !important;
   }
 
   .termsPageDense .expertVerdict p {
-    font-size: 0.82rem !important;
-    line-height: 1.32 !important;
+    font-size: 0.95rem !important;
+    line-height: 1.4 !important;
   }
 
   .termsPageDense .verdictLabel {
-    font-size: 0.58rem !important;
+    font-size: 0.68rem !important;
   }
 
   .closePage .expertVerdict p {
@@ -5846,8 +5541,8 @@
   }
 
   .ledgerPage .expertVerdict p {
-    font-size: 0.86rem !important;
-    line-height: 1.34 !important;
+    font-size: 1rem !important;
+    line-height: 1.42 !important;
   }
 }
 
@@ -5971,9 +5666,9 @@
   }
 
   .hudPage .engSvgDark {
-    height: 228px !important;
-    max-height: 228px !important;
-    min-height: 228px !important;
+    height: 204px !important;
+    max-height: 204px !important;
+    min-height: 204px !important;
   }
 
   .impactPage .impactChartSvg {
@@ -6096,16 +5791,7 @@
 
   .impactPage .luxeHeadline {
     font-size: clamp(1.5rem, 7vw, 2rem) !important;
-    border-bottom: none !important;
-    padding-bottom: 0 !important;
-    margin-bottom: 0 !important;
-  }
-
-  .impactPage .luxeHeaderBlock {
-    width: 100% !important;
-    padding-bottom: 14px !important;
-    margin-bottom: 8px !important;
-    border-bottom: 2px solid rgba(184, 150, 46, 0.4) !important;
+    padding-bottom: 12px !important;
   }
 
   .impactHeroNum {
@@ -6169,16 +5855,7 @@
 
   .genForecastPage .luxeHeadline {
     font-size: clamp(1.5rem, 7vw, 2rem) !important;
-    border-bottom: none !important;
-    padding-bottom: 0 !important;
-    margin-bottom: 0 !important;
-  }
-
-  .genForecastPage .luxeHeaderBlock {
-    width: 100% !important;
-    padding-bottom: 14px !important;
-    margin-bottom: 10px !important;
-    border-bottom: 2px solid rgba(184, 150, 46, 0.4) !important;
+    padding-bottom: 12px !important;
   }
 
   .payBottomRow,
@@ -6268,9 +5945,9 @@
 
   .hudPage .engSvgDark,
   .engSvgDark {
-    height: 228px !important;
-    max-height: 228px !important;
-    min-height: 228px !important;
+    height: 204px !important;
+    max-height: 204px !important;
+    min-height: 204px !important;
   }
 
   .hudPage .engPanelMetrics .engMetricRow small {
@@ -6285,17 +5962,6 @@
 
   .wealthMid {
     grid-template-columns: 1.35fr 0.65fr !important;
-  }
-
-  .costEquation {
-    grid-template-columns: minmax(92px, 1fr) auto minmax(68px, 0.9fr) auto minmax(92px, 1.12fr) !important;
-  }
-
-  .costEqCell strong,
-  .costEqNet strong {
-    white-space: nowrap !important;
-    overflow-wrap: normal !important;
-    word-break: keep-all !important;
   }
 
   .impactCardGrid {
@@ -6320,7 +5986,7 @@
   }
 
   .impactEqRow {
-    grid-template-columns: 1.15fr auto 0.85fr auto 1.25fr !important;
+    grid-template-columns: 1.2fr auto 0.7fr auto 1.35fr !important;
   }
 
   .impactEqOp {
@@ -6329,47 +5995,8 @@
 
   .impactPage .luxeHeadline {
     font-size: 2rem !important;
-    border-bottom: none !important;
-    padding-bottom: 0 !important;
-    margin-bottom: 0 !important;
-    line-height: 1.12 !important;
-  }
-
-  .impactPage .luxeHeaderBlock {
-    width: 100% !important;
     padding-bottom: 14px !important;
-    margin-bottom: 8px !important;
-    border-bottom: 2px solid rgba(184, 150, 46, 0.4) !important;
-    flex-shrink: 0 !important;
-  }
-
-  .impactPage .impactChartSteady {
-    margin-bottom: 14px !important;
-    padding-bottom: 12px !important;
-    border-bottom: 1px solid #eef1f5 !important;
-  }
-
-  .impactPage .impactEqRow {
-    margin-top: 6px !important;
-  }
-
-  .impactPage .impactEqCell {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    text-align: center !important;
-    gap: 6px !important;
-  }
-
-  .impactPage .impactEqCell span,
-  .impactPage .impactEqCell strong {
-    width: 100% !important;
-    text-align: center !important;
-  }
-
-  .impactPage .impactEqCell strong {
-    display: block !important;
+    line-height: 1.12 !important;
   }
 
   .impactPage .expertVerdict {
@@ -6466,53 +6093,25 @@
   }
 
   .engSvgDark {
-    height: 228px !important;
-    max-height: 228px !important;
-    min-height: 228px !important;
+    height: 204px !important;
+    max-height: 204px !important;
+    min-height: 204px !important;
   }
 
   .hudPage .engSvgDark {
-    height: 228px !important;
-    max-height: 228px !important;
-    min-height: 228px !important;
+    height: 204px !important;
+    max-height: 204px !important;
+    min-height: 204px !important;
   }
 
   .hudPage .luxeHeadline {
     font-size: 2rem !important;
-    border-bottom: none !important;
-    padding-bottom: 0 !important;
-    margin-bottom: 0 !important;
-    line-height: 1.12 !important;
-  }
-
-  .hudPage .luxeHeaderBlock {
-    width: 100% !important;
-    padding-bottom: 14px !important;
-    margin-bottom: 12px !important;
-    border-bottom: 2px solid rgba(184, 150, 46, 0.4) !important;
-    flex-shrink: 0 !important;
   }
 
   .ledgerPage .luxeHeadline {
-    font-size: 2.1rem !important;
-    border-bottom: none !important;
-    padding-bottom: 0 !important;
-    margin-bottom: 0 !important;
+    font-size: 2.35rem !important;
+    padding-bottom: 14px !important;
     line-height: 1.12 !important;
-  }
-
-  .ledgerPage .luxeHeaderBlock {
-    width: 100% !important;
-    padding-bottom: 12px !important;
-    margin-bottom: 6px !important;
-    border-bottom: 2px solid rgba(184, 150, 46, 0.4) !important;
-    flex-shrink: 0 !important;
-  }
-
-  .ledgerPage .ledgerListDense {
-    flex: 1 1 auto !important;
-    min-height: 0 !important;
-    overflow: hidden !important;
   }
 
   .ledgerPage .itemContent {
@@ -6520,35 +6119,31 @@
   }
 
   .ledgerPage .ledgerItemDense {
-    padding: 4px 0 5px !important;
-    grid-template-columns: 42px minmax(0, 1fr) !important;
-    gap: 8px !important;
+    padding: 7px 0 10px !important;
   }
 
   .ledgerPage .bomLead {
-    font-size: 0.88rem !important;
-    line-height: 1.38 !important;
-    margin-bottom: 5px !important;
-    flex-shrink: 0 !important;
+    font-size: 1.02rem !important;
+    line-height: 1.45 !important;
+    margin-bottom: 6px !important;
   }
 
   .ledgerPage .bomMaterialName,
   .ledgerPage .itemContent h3 {
-    font-size: 0.98rem !important;
-    line-height: 1.22 !important;
-    margin-bottom: 1px !important;
+    font-size: 1.12rem !important;
+    line-height: 1.28 !important;
   }
 
   .ledgerPage .bomMaterialBody,
   .ledgerPage .itemContent p {
-    font-size: 0.82rem !important;
-    line-height: 1.36 !important;
-    margin-bottom: 2px !important;
-    padding-bottom: 2px !important;
+    font-size: 0.98rem !important;
+    line-height: 1.45 !important;
+    margin-bottom: 4px !important;
+    padding-bottom: 4px !important;
   }
 
   .ledgerPage .ledgerRole {
-    font-size: 0.62rem !important;
+    font-size: 0.72rem !important;
   }
 
   .ledgerPage .specBadge {
@@ -6556,47 +6151,29 @@
     align-items: center !important;
     justify-content: center !important;
     text-align: center !important;
-    font-size: 0.58rem !important;
-    padding: 3px 8px !important;
-    letter-spacing: 0.05em !important;
-    line-height: 1.15 !important;
+    font-size: 0.62rem !important;
+    padding: 4px 12px !important;
+    letter-spacing: 0.06em !important;
+    line-height: 1.2 !important;
   }
 
   .ledgerPage .expertVerdict {
-    margin-top: auto !important;
-    padding: 8px 12px !important;
-    flex-shrink: 0 !important;
+    padding: 10px 14px !important;
   }
 
   .ledgerPage .expertVerdict p {
-    font-size: 0.86rem !important;
-    line-height: 1.34 !important;
+    font-size: 1rem !important;
+    line-height: 1.42 !important;
   }
 
   .ledgerPage .verdictLabel {
-    font-size: 0.58rem !important;
-  }
-
-  .ledgerPage .impactPageFooter {
-    margin-top: 4px !important;
-    padding-top: 6px !important;
-    flex-shrink: 0 !important;
+    font-size: 0.68rem !important;
   }
 
   .genForecastPage .luxeHeadline {
     font-size: 2.2rem !important;
-    border-bottom: none !important;
-    padding-bottom: 0 !important;
-    margin-bottom: 0 !important;
-    line-height: 1.12 !important;
-  }
-
-  .genForecastPage .luxeHeaderBlock {
-    width: 100% !important;
     padding-bottom: 14px !important;
-    margin-bottom: 10px !important;
-    border-bottom: 2px solid rgba(184, 150, 46, 0.4) !important;
-    flex-shrink: 0 !important;
+    line-height: 1.12 !important;
   }
 
   .genForecastPage .genForecast {
@@ -6749,90 +6326,63 @@
   }
 
   .termsPageRoomy .termsTitle {
-    font-size: 22pt !important;
-    line-height: 1.1 !important;
+    font-size: 26pt !important;
+    line-height: 1.08 !important;
   }
 
   .termsPageRoomy .termsSubhead {
-    padding-bottom: 10px !important;
-    line-height: 1.1 !important;
-    margin-bottom: 6px !important;
+    padding-bottom: 14px !important;
+    line-height: 1.12 !important;
   }
 
   .termsPageRoomy .termsSection:first-child {
     flex: 0 1 auto !important;
-    min-height: 0 !important;
-    overflow: hidden !important;
+    min-height: auto !important;
+    overflow: visible !important;
   }
 
   .termsPageRoomy .termsArticleList {
     flex: 0 1 auto !important;
     justify-content: flex-start !important;
-    overflow: hidden !important;
   }
 
   .termsPageRoomy .termsArticleLabel {
-    font-size: 0.92rem !important;
+    font-size: 1rem !important;
   }
 
   .termsPageRoomy .termsArticleBody {
-    font-size: 0.86rem !important;
+    font-size: 0.96rem !important;
   }
 
   .termsPageRoomy .termsNumberedList li {
-    font-size: 0.88rem !important;
+    font-size: 1rem !important;
   }
 
   .termsPageRoomy .expertVerdict {
     margin-top: auto !important;
-    padding: 8px 12px !important;
+    padding: 10px 14px !important;
   }
 
   .termsPageRoomy .expertVerdict p {
-    font-size: 0.9rem !important;
-    line-height: 1.36 !important;
+    font-size: 1.05rem !important;
+    line-height: 1.45 !important;
   }
 
   .termsPageRoomy .verdictLabel {
-    font-size: 0.62rem !important;
-  }
-
-  .termsPageDense .termsTitle {
-    font-size: 20pt !important;
-    line-height: 1.1 !important;
-  }
-
-  .termsPageDense .termsStack {
-    gap: 5px !important;
-  }
-
-  .termsPageDense .termsSection {
-    padding: 6px 8px 7px !important;
+    font-size: 0.72rem !important;
   }
 
   .termsPageDense .termsSubhead {
-    font-size: 0.72rem !important;
-    padding-bottom: 6px !important;
-    line-height: 1.1 !important;
-    margin-bottom: 4px !important;
-  }
-
-  .termsPageDense .termsNumberedList li,
-  .termsPageDense .termsSafetyList li,
-  .termsPageDense .termsPara,
-  .termsPageDense .termsCostBox p {
-    font-size: 0.8rem !important;
-    line-height: 1.32 !important;
+    padding-bottom: 10px !important;
+    line-height: 1.12 !important;
   }
 
   .termsPageDense .expertVerdict {
-    margin-top: auto !important;
-    padding: 6px 10px !important;
+    padding: 10px 14px !important;
   }
 
   .termsPageDense .expertVerdict p {
-    font-size: 0.82rem !important;
-    line-height: 1.32 !important;
+    font-size: 0.95rem !important;
   }
 }
 
@@ -6914,23 +6464,9 @@
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .hudPage
-  .luxeHeaderBlock {
-  width: 100% !important;
-  padding-bottom: 14px !important;
-  margin-bottom: 12px !important;
-  border-bottom: 2px solid rgba(184, 150, 46, 0.4) !important;
-  flex-shrink: 0 !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .hudPage
   .luxeHeadline {
   font-size: 2rem !important;
-  border-bottom: none !important;
-  padding-bottom: 0 !important;
-  margin-bottom: 0 !important;
-  line-height: 1.12 !important;
+  padding-bottom: 14px !important;
 }
 
 :global(#atelier-pdf-capture-host)
@@ -6940,34 +6476,15 @@
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .engSvgDark {
-  height: 228px !important;
-  max-height: 228px !important;
-  min-height: 228px !important;
+  height: 204px !important;
+  max-height: 204px !important;
+  min-height: 204px !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .wealthTop {
   grid-template-columns: 1.05fr 0.95fr !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .costEquation {
-  grid-template-columns: minmax(92px, 1fr) auto minmax(68px, 0.9fr) auto minmax(92px, 1.12fr) !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .costEqCell
-  strong,
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .costEqNet
-  strong {
-  white-space: nowrap !important;
-  overflow-wrap: normal !important;
-  word-break: keep-all !important;
 }
 
 :global(#atelier-pdf-capture-host)
@@ -6998,8 +6515,7 @@
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .impactEqRow {
-  grid-template-columns: 1.15fr auto 0.85fr auto 1.25fr !important;
-  margin-top: 6px !important;
+  grid-template-columns: 1.2fr auto 0.7fr auto 1.35fr !important;
 }
 
 :global(#atelier-pdf-capture-host)
@@ -7020,65 +6536,8 @@
   .impactPage
   .luxeHeadline {
   font-size: 2rem !important;
-  border-bottom: none !important;
-  padding-bottom: 0 !important;
-  margin-bottom: 0 !important;
-  line-height: 1.12 !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .impactPage
-  .luxeHeaderBlock {
-  width: 100% !important;
   padding-bottom: 14px !important;
-  margin-bottom: 8px !important;
-  border-bottom: 2px solid rgba(184, 150, 46, 0.4) !important;
-  flex-shrink: 0 !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .impactPage
-  .impactChartSteady {
-  margin-bottom: 14px !important;
-  padding-bottom: 12px !important;
-  border-bottom: 1px solid #eef1f5 !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .impactPage
-  .impactEqCell {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: center !important;
-  text-align: center !important;
-  padding: 10px 8px !important;
-  gap: 6px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .impactPage
-  .impactEqCell
-  span,
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .impactPage
-  .impactEqCell
-  strong {
-  width: 100% !important;
-  text-align: center !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .impactPage
-  .impactEqCell
-  strong {
-  display: block !important;
+  line-height: 1.12 !important;
 }
 
 :global(#atelier-pdf-capture-host)
@@ -7168,31 +6627,9 @@
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .ledgerPage
   .luxeHeadline {
-  font-size: 2.1rem !important;
-  border-bottom: none !important;
-  padding-bottom: 0 !important;
-  margin-bottom: 0 !important;
+  font-size: 2.2rem !important;
+  padding-bottom: 14px !important;
   line-height: 1.12 !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .ledgerPage
-  .luxeHeaderBlock {
-  width: 100% !important;
-  padding-bottom: 12px !important;
-  margin-bottom: 6px !important;
-  border-bottom: 2px solid rgba(184, 150, 46, 0.4) !important;
-  flex-shrink: 0 !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .ledgerPage
-  .ledgerListDense {
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
-  overflow: hidden !important;
 }
 
 :global(#atelier-pdf-capture-host)
@@ -7206,9 +6643,7 @@
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .ledgerPage
   .ledgerItemDense {
-  padding: 4px 0 5px !important;
-  grid-template-columns: 42px minmax(0, 1fr) !important;
-  gap: 8px !important;
+  padding: 7px 0 10px !important;
 }
 
 :global(#atelier-pdf-capture-host)
@@ -7219,20 +6654,19 @@
   align-items: center !important;
   justify-content: center !important;
   text-align: center !important;
-  padding: 3px 8px !important;
-  letter-spacing: 0.05em !important;
-  line-height: 1.15 !important;
-  font-size: 0.58rem !important;
+  padding: 4px 12px !important;
+  letter-spacing: 0.06em !important;
+  line-height: 1.2 !important;
+  font-size: 0.62rem !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .ledgerPage
   .bomLead {
-  margin-bottom: 5px !important;
-  font-size: 0.88rem !important;
-  line-height: 1.38 !important;
-  flex-shrink: 0 !important;
+  margin-bottom: 4px !important;
+  font-size: 1.02rem !important;
+  line-height: 1.45 !important;
 }
 
 :global(#atelier-pdf-capture-host)
@@ -7244,51 +6678,26 @@
   .ledgerPage
   .itemContent
   h3 {
-  font-size: 0.98rem !important;
-  line-height: 1.22 !important;
-  margin-bottom: 1px !important;
+  font-size: 1.12rem !important;
+  line-height: 1.28 !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .ledgerPage
-  .bomMaterialBody,
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .ledgerPage
-  .itemContent
-  p {
-  font-size: 0.82rem !important;
-  line-height: 1.36 !important;
-  margin-bottom: 2px !important;
-  padding-bottom: 2px !important;
+  .bomMaterialBody {
+  font-size: 0.98rem !important;
+  line-height: 1.45 !important;
+  margin-bottom: 4px !important;
+  padding-bottom: 4px !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .ledgerPage
   .expertVerdict {
-  margin-top: auto !important;
-  padding: 8px 12px !important;
-  flex-shrink: 0 !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .ledgerPage
-  .expertVerdict
-  p {
-  font-size: 0.86rem !important;
-  line-height: 1.34 !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .ledgerPage
-  .impactPageFooter {
+  padding: 10px 14px !important;
   margin-top: 4px !important;
-  padding-top: 6px !important;
-  flex-shrink: 0 !important;
 }
 
 :global(#atelier-pdf-capture-host)
@@ -7296,21 +6705,8 @@
   .genForecastPage
   .luxeHeadline {
   font-size: 2.2rem !important;
-  border-bottom: none !important;
-  padding-bottom: 0 !important;
-  margin-bottom: 0 !important;
-  line-height: 1.12 !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .genForecastPage
-  .luxeHeaderBlock {
-  width: 100% !important;
   padding-bottom: 14px !important;
-  margin-bottom: 10px !important;
-  border-bottom: 2px solid rgba(184, 150, 46, 0.4) !important;
-  flex-shrink: 0 !important;
+  line-height: 1.12 !important;
 }
 
 :global(#atelier-pdf-capture-host)
@@ -7346,42 +6742,24 @@
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPage {
-  height: 1123px !important;
-  min-height: 1123px !important;
-  max-height: 1123px !important;
-  overflow: hidden !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsStack {
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
-  overflow: hidden !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .termsPageRoomy
   .termsHead {
-  margin-bottom: 6px !important;
+  margin-bottom: 8px !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .termsPageRoomy
   .termsTitle {
-  font-size: 22pt !important;
-  line-height: 1.1 !important;
+  font-size: 26pt !important;
+  line-height: 1.08 !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .termsPageRoomy
   .termsIntro {
-  font-size: 0.9rem !important;
-  line-height: 1.38 !important;
+  font-size: 1.02rem !important;
 }
 
 :global(#atelier-pdf-capture-host)
@@ -7395,7 +6773,7 @@
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .termsPageRoomy
   .termsSection {
-  padding: 10px 12px 11px !important;
+  padding: 10px 14px 12px !important;
 }
 
 :global(#atelier-pdf-capture-host)
@@ -7403,18 +6781,18 @@
   .termsPageRoomy
   .termsSection:first-child {
   flex: 0 1 auto !important;
-  min-height: 0 !important;
-  overflow: hidden !important;
+  min-height: auto !important;
+  overflow: visible !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .termsPageRoomy
   .termsSubhead {
-  font-size: 0.78rem !important;
-  padding-bottom: 10px !important;
-  line-height: 1.1 !important;
-  margin-bottom: 6px !important;
+  font-size: 0.84rem !important;
+  padding-bottom: 14px !important;
+  line-height: 1.12 !important;
+  margin-bottom: 8px !important;
 }
 
 :global(#atelier-pdf-capture-host)
@@ -7423,8 +6801,7 @@
   .termsArticleList {
   flex: 0 1 auto !important;
   justify-content: flex-start !important;
-  gap: 4px !important;
-  overflow: hidden !important;
+  gap: 5px !important;
 }
 
 :global(#atelier-pdf-capture-host)
@@ -7438,31 +6815,30 @@
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .termsPageRoomy
   .termsArticleLabel {
-  font-size: 0.92rem !important;
+  font-size: 1rem !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .termsPageRoomy
   .termsArticleBody {
-  font-size: 0.86rem !important;
-  line-height: 1.36 !important;
+  font-size: 0.96rem !important;
+  line-height: 1.4 !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .termsPageRoomy
   .termsNumberedList li {
-  font-size: 0.88rem !important;
-  line-height: 1.36 !important;
+  font-size: 1rem !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .termsPageRoomy
   .expertVerdict {
-  margin-top: auto !important;
-  padding: 8px 12px !important;
+  margin-top: 8px !important;
+  padding: 10px 14px !important;
 }
 
 :global(#atelier-pdf-capture-host)
@@ -7470,15 +6846,15 @@
   .termsPageRoomy
   .expertVerdict
   p {
-  font-size: 0.9rem !important;
-  line-height: 1.36 !important;
+  font-size: 1.05rem !important;
+  line-height: 1.42 !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .termsPageRoomy
   .verdictLabel {
-  font-size: 0.62rem !important;
+  font-size: 0.72rem !important;
 }
 
 :global(#atelier-pdf-capture-host)
@@ -7494,92 +6870,16 @@
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .termsPageDense
-  .termsTitle {
-  font-size: 20pt !important;
-  line-height: 1.1 !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .termsIntro {
-  font-size: 0.84rem !important;
-  line-height: 1.35 !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .termsStack {
-  gap: 5px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .termsSection {
-  padding: 6px 8px 7px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
   .termsSubhead {
-  font-size: 0.72rem !important;
-  padding-bottom: 6px !important;
-  line-height: 1.1 !important;
-  margin-bottom: 4px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .termsNumberedList li,
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .termsSafetyList li,
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .termsPara,
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .termsCostBox
-  p {
-  font-size: 0.8rem !important;
-  line-height: 1.32 !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .termsAmcIncludes {
-  font-size: 0.78rem !important;
-  margin: 3px 0 2px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .termsSafetyList li {
-  padding: 5px 8px 5px 10px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .termsSignoff {
-  padding: 5px 8px !important;
+  padding-bottom: 10px !important;
+  line-height: 1.12 !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .termsPageDense
   .expertVerdict {
-  margin-top: auto !important;
-  padding: 6px 10px !important;
+  padding: 10px 14px !important;
 }
 
 :global(#atelier-pdf-capture-host)
@@ -7587,8 +6887,7 @@
   .termsPageDense
   .expertVerdict
   p {
-  font-size: 0.82rem !important;
-  line-height: 1.32 !important;
+  font-size: 0.95rem !important;
 }
 
 :global(#atelier-pdf-capture-host)
@@ -7752,4 +7051,135 @@
   max-height: 28px !important;
   max-width: 112px !important;
   object-fit: contain !important;
+}
+
+/*
+ * iPad PDF capture only — Terms page 2 overflow lock (PC / browser print unchanged).
+ */
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPage {
+  height: 1123px !important;
+  max-height: 1123px !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsStack {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageDense
+  .termsStack {
+  gap: 5px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageDense
+  .termsSection {
+  padding: 6px 8px 7px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageDense
+  .termsTitle {
+  font-size: 20pt !important;
+  line-height: 1.1 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageDense
+  .termsIntro {
+  font-size: 0.84rem !important;
+  line-height: 1.35 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageDense
+  .termsSubhead {
+  font-size: 0.72rem !important;
+  margin-bottom: 4px !important;
+  padding-bottom: 6px !important;
+  line-height: 1.1 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageDense
+  .termsNumberedList {
+  gap: 3px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageDense
+  .termsNumberedList
+  li,
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageDense
+  .termsSafetyList
+  li,
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageDense
+  .termsPara,
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageDense
+  .termsCostBox
+  p {
+  font-size: 0.8rem !important;
+  line-height: 1.32 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageDense
+  .termsAmcIncludes {
+  font-size: 0.78rem !important;
+  margin: 3px 0 2px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageDense
+  .termsSafetyList
+  li {
+  padding: 5px 8px 5px 10px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageDense
+  .termsSignoff {
+  padding: 5px 8px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageDense
+  .expertVerdict {
+  margin-top: auto !important;
+  padding: 6px 10px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPageDense
+  .expertVerdict
+  p {
+  font-size: 0.82rem !important;
+  line-height: 1.32 !important;
 }
