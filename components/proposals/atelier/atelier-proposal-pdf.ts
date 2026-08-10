@@ -108,6 +108,22 @@ function applyPageBox(el: HTMLElement): void {
   el.style.setProperty("box-sizing", "border-box", "important");
   el.style.setProperty("position", "relative", "important");
   el.style.setProperty("transform", "none", "important");
+  el.style.setProperty("display", "flex", "important");
+  el.style.setProperty("flex-direction", "column", "important");
+}
+
+function prepareCaptureClone(root: ParentNode): void {
+  for (const inner of Array.from(root.querySelectorAll<HTMLElement>("[class*='pageInner']"))) {
+    inner.style.setProperty("flex", "1 1 auto", "important");
+    inner.style.setProperty("min-height", "0", "important");
+    inner.style.setProperty("overflow", "hidden", "important");
+    inner.style.setProperty("display", "flex", "important");
+    inner.style.setProperty("flex-direction", "column", "important");
+  }
+  for (const footer of Array.from(root.querySelectorAll<HTMLElement>("[class*='pageFooter']"))) {
+    footer.style.setProperty("margin-top", "auto", "important");
+    footer.style.setProperty("flex-shrink", "0", "important");
+  }
 }
 
 function syncCloneImages(clone: ParentNode): void {
@@ -325,6 +341,7 @@ export async function buildAtelierProposalPdf(options: {
       host.replaceChildren();
       const clone = sections[i].cloneNode(true) as HTMLElement;
       applyPageBox(clone);
+      prepareCaptureClone(clone);
       const rootShell = createRootShell(options.root);
       cloneRootStyleTags(options.root, rootShell);
       rootShell.appendChild(clone);
@@ -354,6 +371,7 @@ export async function buildAtelierProposalPdf(options: {
         scrollY: 0,
         onclone: async (clonedDoc, clonedEl) => {
           applyPageBox(clonedEl as HTMLElement);
+          prepareCaptureClone(clonedEl);
           /*
            * html2canvas rasterizes a *separate* cloned document. Its font
            * cache starts cold for the @import'd Google Fonts, so we must

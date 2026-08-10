@@ -40,6 +40,7 @@ import styles from "./luxe-noir-shell.module.css";
 import {
   buildAtelierProposalPdf,
   downloadPdfFile,
+  isAppleTouchDevice,
 } from "@/components/proposals/_shared/residential-pdf-export";
 
 export type LuxeNoirRendererProps = {
@@ -195,20 +196,24 @@ function LuxeNoirDocument({
           ];
 
   const handlePrint = async () => {
-    if (typeof window === "undefined" || pdfBusy || !rootRef.current) return;
-    setPdfBusy(true);
-    try {
-      downloadPdfFile(
-        await buildAtelierProposalPdf({
-          root: rootRef.current,
-          customerName: data.meta.customerName,
-          presetId: "residential_luxe_noir",
-          pageSelector: ":scope > section",
-        })
-      );
-    } finally {
-      setPdfBusy(false);
+    if (typeof window === "undefined" || pdfBusy) return;
+    if (isAppleTouchDevice() && rootRef.current) {
+      setPdfBusy(true);
+      try {
+        downloadPdfFile(
+          await buildAtelierProposalPdf({
+            root: rootRef.current,
+            customerName: data.meta.customerName,
+            presetId: "residential_luxe_noir",
+            pageSelector: ":scope > section",
+          })
+        );
+      } finally {
+        setPdfBusy(false);
+      }
+      return;
     }
+    window.print();
   };
 
   const genLabel =
@@ -219,7 +224,12 @@ function LuxeNoirDocument({
         : "annual";
 
   return (
-    <div ref={rootRef} data-proposal-preset="residential_luxe_noir" className={`${styles.root} ${luxeDisplayFont.variable}`}>
+    <div
+      ref={rootRef}
+      data-proposal-preset="residential_luxe_noir"
+      data-proposal-live="true"
+      className={`${styles.root} ${luxeDisplayFont.variable}`}
+    >
       <div className={styles.printBar}>
         <div className={styles.printBarInner}>
           <span className={styles.printBarBrand}>{copy.print.brand}</span>

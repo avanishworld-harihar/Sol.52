@@ -5029,7 +5029,7 @@
 
 /* ── iPad / tablet landscape — same A4 width, grow height so footers never clip ─ */
 @media screen and (max-width: 1400px) and (orientation: landscape) {
-  .a4Page {
+  :global([data-proposal-live='true']) .a4Page {
     width: min(210mm, calc(100% - 16px)) !important;
     max-width: 100% !important;
     height: auto !important;
@@ -5040,12 +5040,14 @@
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
   }
+
 }
+
 
 /* ── iPad / tablet — fluid pages + margins, desktop grid layout preserved ─ */
 /* Live preview only — #atelier-pdf-capture-host uses print mirror + isolation block below. */
 @media screen and (max-width: 1180px) {
-  .a4Page {
+  :global([data-proposal-live='true']) .a4Page {
     width: 100% !important;
     max-width: min(210mm, 100%) !important;
     height: auto !important;
@@ -5059,17 +5061,17 @@
     text-size-adjust: 100%;
   }
 
-  .obsidianCover,
-  .closePage {
+  :global([data-proposal-live='true']) .obsidianCover,
+  :global([data-proposal-live='true']) .closePage {
     padding: 28px 34px 26px 46px !important;
   }
 
-  .coverSpine,
-  .closeSpine {
+  :global([data-proposal-live='true']) .coverSpine,
+  :global([data-proposal-live='true']) .closeSpine {
     width: 12px;
   }
 
-  .coverFrame {
+  :global([data-proposal-live='true']) .coverFrame {
     display: block;
     top: 14px;
     right: 14px;
@@ -5077,133 +5079,133 @@
     left: 22px;
   }
 
-  .coverFrame::before {
+  :global([data-proposal-live='true']) .coverFrame::before {
     inset: 5px;
   }
 
-  .closeCornerTL {
+  :global([data-proposal-live='true']) .closeCornerTL {
     top: 14px;
     left: 20px;
   }
 
-  .closeCornerBR {
+  :global([data-proposal-live='true']) .closeCornerBR {
     right: 14px;
     bottom: 14px;
   }
 
-  .luxeHeadline,
-  .billAuditPage .luxeHeadline,
-  .hudPage .luxeHeadline,
-  .ledgerPage .luxeHeadline,
-  .luxeTerminal .luxeHeadline,
-  .impactPage .luxeHeadline,
-  .genForecastPage .luxeHeadline,
-  .payPage .luxeHeadline {
+  :global([data-proposal-live='true']) .luxeHeadline,
+  :global([data-proposal-live='true']) .billAuditPage .luxeHeadline,
+  :global([data-proposal-live='true']) .hudPage .luxeHeadline,
+  :global([data-proposal-live='true']) .ledgerPage .luxeHeadline,
+  :global([data-proposal-live='true']) .luxeTerminal .luxeHeadline,
+  :global([data-proposal-live='true']) .impactPage .luxeHeadline,
+  :global([data-proposal-live='true']) .genForecastPage .luxeHeadline,
+  :global([data-proposal-live='true']) .payPage .luxeHeadline {
     padding-bottom: 14px !important;
     margin-bottom: 4px !important;
     line-height: 1.14 !important;
   }
 
-  .wealthTop,
-  .wealthMid {
+  :global([data-proposal-live='true']) .wealthTop,
+  :global([data-proposal-live='true']) .wealthMid {
     grid-template-columns: 1.35fr 0.65fr !important;
   }
 
-  .billBars {
+  :global([data-proposal-live='true']) .billBars {
     grid-template-columns: 1fr 1fr 1.15fr !important;
     align-items: stretch !important;
   }
 
-  .billBarCol {
+  :global([data-proposal-live='true']) .billBarCol {
     grid-template-rows: 88px auto auto !important;
   }
 
-  .hudPage .engDesignLayout,
-  .engDesignLayout {
+  :global([data-proposal-live='true']) .hudPage .engDesignLayout,
+  :global([data-proposal-live='true']) .engDesignLayout {
     display: grid !important;
     grid-template-columns: 1.05fr 0.95fr !important;
     gap: 10px !important;
     align-items: stretch !important;
   }
 
-  .hudPage .engPanelMetrics,
-  .hudPage .engMetricList {
+  :global([data-proposal-live='true']) .hudPage .engPanelMetrics,
+  :global([data-proposal-live='true']) .hudPage .engMetricList {
     overflow: visible !important;
   }
 
-  .hudPage .engMetricRow small {
+  :global([data-proposal-live='true']) .hudPage .engMetricRow small {
     display: block !important;
     overflow: visible !important;
     -webkit-line-clamp: unset !important;
     line-height: 1.3 !important;
   }
 
-  .engChipRow {
+  :global([data-proposal-live='true']) .engChipRow {
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   }
 
-  .archTrack {
+  :global([data-proposal-live='true']) .archTrack {
     flex-wrap: nowrap !important;
   }
 
-  .archNode {
+  :global([data-proposal-live='true']) .archNode {
     flex: 1 !important;
     min-width: 0 !important;
   }
 
-  .archProtect {
+  :global([data-proposal-live='true']) .archProtect {
     grid-template-columns: 1fr 1fr 1fr !important;
   }
 
-  .hudPage .luxeHeadline {
+  :global([data-proposal-live='true']) .hudPage .luxeHeadline {
     font-size: 2.15rem !important;
   }
 
-  .hudPage .engSvgDark {
+  :global([data-proposal-live='true']) .hudPage .engSvgDark {
     height: 204px !important;
     max-height: 204px !important;
     min-height: 204px !important;
   }
 
-  .ledgerPage .luxeHeadline {
+  :global([data-proposal-live='true']) .ledgerPage .luxeHeadline {
     font-size: 2.35rem !important;
     padding-bottom: 14px !important;
     line-height: 1.12 !important;
   }
 
-  .ledgerPage .itemContent {
+  :global([data-proposal-live='true']) .ledgerPage .itemContent {
     overflow: visible !important;
   }
 
-  .ledgerPage .ledgerItemDense {
+  :global([data-proposal-live='true']) .ledgerPage .ledgerItemDense {
     padding: 7px 0 10px !important;
   }
 
-  .ledgerPage .bomLead {
+  :global([data-proposal-live='true']) .ledgerPage .bomLead {
     margin-bottom: 6px !important;
     font-size: 1.02rem !important;
     line-height: 1.45 !important;
   }
 
-  .ledgerPage .bomMaterialName,
-  .ledgerPage .itemContent h3 {
+  :global([data-proposal-live='true']) .ledgerPage .bomMaterialName,
+  :global([data-proposal-live='true']) .ledgerPage .itemContent h3 {
     font-size: 1.12rem !important;
     line-height: 1.28 !important;
   }
 
-  .ledgerPage .bomMaterialBody,
-  .ledgerPage .itemContent p {
+  :global([data-proposal-live='true']) .ledgerPage .bomMaterialBody,
+  :global([data-proposal-live='true']) .ledgerPage .itemContent p {
     font-size: 0.98rem !important;
     line-height: 1.45 !important;
     margin-bottom: 4px !important;
     padding-bottom: 4px !important;
   }
 
-  .ledgerPage .ledgerRole {
+  :global([data-proposal-live='true']) .ledgerPage .ledgerRole {
     font-size: 0.72rem !important;
   }
 
-  .ledgerPage .specBadge {
+  :global([data-proposal-live='true']) .ledgerPage .specBadge {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -5214,31 +5216,31 @@
     line-height: 1.2 !important;
   }
 
-  .ledgerPage .expertVerdict {
+  :global([data-proposal-live='true']) .ledgerPage .expertVerdict {
     padding: 12px 16px !important;
   }
 
-  .ledgerPage .expertVerdict p {
+  :global([data-proposal-live='true']) .ledgerPage .expertVerdict p {
     font-size: 1rem !important;
     line-height: 1.42 !important;
   }
 
-  .genForecastPage .luxeHeadline {
+  :global([data-proposal-live='true']) .genForecastPage .luxeHeadline {
     font-size: 2.35rem !important;
     padding-bottom: 14px !important;
     line-height: 1.12 !important;
   }
 
-  .genForecastPage .genForecast {
+  :global([data-proposal-live='true']) .genForecastPage .genForecast {
     flex: 0 1 auto !important;
   }
 
-  .genForecastPage .expertVerdict {
+  :global([data-proposal-live='true']) .genForecastPage .expertVerdict {
     margin-top: auto !important;
     padding: 12px 16px !important;
   }
 
-  .genForecastBars {
+  :global([data-proposal-live='true']) .genForecastBars {
     min-height: 168px !important;
     align-items: flex-end !important;
     overflow-x: auto;
@@ -5246,137 +5248,137 @@
     -webkit-overflow-scrolling: touch;
   }
 
-  .genBarTrack {
+  :global([data-proposal-live='true']) .genBarTrack {
     flex: 0 0 96px !important;
     height: 96px !important;
     min-height: 96px !important;
   }
 
-  .genForecastKpi {
+  :global([data-proposal-live='true']) .genForecastKpi {
     padding: 12px 14px !important;
   }
 
-  .impactPage .luxeHeadline {
+  :global([data-proposal-live='true']) .impactPage .luxeHeadline {
     font-size: 2.1rem !important;
     padding-bottom: 14px !important;
     line-height: 1.12 !important;
   }
 
-  .impactHeroRow {
+  :global([data-proposal-live='true']) .impactHeroRow {
     grid-template-columns: 1.15fr 0.85fr !important;
     align-items: center !important;
   }
 
-  .impactCardGrid {
+  :global([data-proposal-live='true']) .impactCardGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
   }
 
-  .impactCard {
+  :global([data-proposal-live='true']) .impactCard {
     flex-direction: column !important;
     align-items: flex-start !important;
   }
 
-  .impactEqRow {
+  :global([data-proposal-live='true']) .impactEqRow {
     grid-template-columns: 1.2fr auto 0.7fr auto 1.35fr !important;
   }
 
-  .impactEqOp {
+  :global([data-proposal-live='true']) .impactEqOp {
     display: inline !important;
   }
 
-  .impactPage .impactChartSvg {
+  :global([data-proposal-live='true']) .impactPage .impactChartSvg {
     height: 120px !important;
     min-height: 116px !important;
     max-height: 120px !important;
   }
 
-  .impactPage .expertVerdict {
+  :global([data-proposal-live='true']) .impactPage .expertVerdict {
     padding: 12px 16px !important;
   }
 
-  .payPage .luxeHeadline {
+  :global([data-proposal-live='true']) .payPage .luxeHeadline {
     font-size: 2.1rem !important;
     padding-bottom: 14px !important;
     line-height: 1.12 !important;
   }
 
-  .payBottomRow {
+  :global([data-proposal-live='true']) .payBottomRow {
     grid-template-columns: 1.15fr 0.85fr !important;
     align-items: stretch !important;
   }
 
-  .payBankGrid {
+  :global([data-proposal-live='true']) .payBankGrid {
     grid-template-columns: 1fr 1fr !important;
   }
 
-  .payBankHead {
+  :global([data-proposal-live='true']) .payBankHead {
     grid-template-columns: 72px 1fr !important;
   }
 
-  .payPage .expertVerdict {
+  :global([data-proposal-live='true']) .payPage .expertVerdict {
     padding: 12px 16px !important;
   }
 
-  .payPage .impactPageFooter {
+  :global([data-proposal-live='true']) .payPage .impactPageFooter {
     margin-top: auto !important;
     flex-shrink: 0 !important;
     padding-bottom: 4px !important;
   }
 
-  .closePage {
+  :global([data-proposal-live='true']) .closePage {
     overflow: visible !important;
     height: auto !important;
     max-height: none !important;
     padding: 28px 34px 26px 46px !important;
   }
 
-  .closeBrandHero {
+  :global([data-proposal-live='true']) .closeBrandHero {
     grid-template-columns: 1.35fr 0.65fr !important;
     align-items: center !important;
     margin-top: 8px !important;
     margin-bottom: 8px !important;
   }
 
-  .closeSigGrid {
+  :global([data-proposal-live='true']) .closeSigGrid {
     grid-template-columns: 1fr 1fr !important;
   }
 
-  .closeJourneyTrack {
+  :global([data-proposal-live='true']) .closeJourneyTrack {
     grid-template-columns: repeat(4, 1fr) !important;
   }
 
-  .closeJourneyRail {
+  :global([data-proposal-live='true']) .closeJourneyRail {
     display: block !important;
   }
 
-  .closeVendorName {
+  :global([data-proposal-live='true']) .closeVendorName {
     font-size: 2.75rem !important;
     line-height: 0.98 !important;
   }
 
-  .closeTitle {
+  :global([data-proposal-live='true']) .closeTitle {
     font-size: 1.85rem !important;
     line-height: 1.15 !important;
   }
 
-  .closeLead {
+  :global([data-proposal-live='true']) .closeLead {
     font-size: 0.95rem !important;
     line-height: 1.45 !important;
   }
 
-  .closeBrandEyebrow,
-  .closeSeries,
-  .closeConfidential {
+  :global([data-proposal-live='true']) .closeBrandEyebrow,
+  :global([data-proposal-live='true']) .closeSeries,
+  :global([data-proposal-live='true']) .closeConfidential {
     font-size: 0.72rem !important;
   }
 
-  .closePhotoFrame {
+  :global([data-proposal-live='true']) .closePhotoFrame {
     height: 178px !important;
     max-height: 178px !important;
     flex-shrink: 0 !important;
   }
 
-  .closePhotoImg {
+  :global([data-proposal-live='true']) .closePhotoImg {
     width: 100% !important;
     height: 178px !important;
     min-height: 178px !important;
@@ -5385,7 +5387,7 @@
     flex-shrink: 0 !important;
   }
 
-  .closePage .coverBrandLogo {
+  :global([data-proposal-live='true']) .closePage .coverBrandLogo {
     display: block !important;
     max-height: 64px !important;
     max-width: 240px !important;
@@ -5394,222 +5396,224 @@
     object-fit: contain !important;
   }
 
-  .closePage .expertVerdict {
+  :global([data-proposal-live='true']) .closePage .expertVerdict {
     padding: 10px 14px !important;
     flex-shrink: 0 !important;
   }
 
-  .closePage .expertVerdict p {
+  :global([data-proposal-live='true']) .closePage .expertVerdict p {
     font-size: 0.88rem !important;
     line-height: 1.4 !important;
   }
 
-  .closeFooter {
+  :global([data-proposal-live='true']) .closeFooter {
     margin-top: auto !important;
     flex-shrink: 0 !important;
   }
 
-  .closePage .impactPageFooter,
-  .closeFooter .impactPageFooter {
+  :global([data-proposal-live='true']) .closePage .impactPageFooter,
+  :global([data-proposal-live='true']) .closeFooter .impactPageFooter {
     flex-shrink: 0 !important;
     min-height: 36px !important;
     padding: 8px 0 4px !important;
   }
 
-  .closePage .luxeFooterLogo {
+  :global([data-proposal-live='true']) .closePage .luxeFooterLogo {
     display: block !important;
     max-height: 28px !important;
     max-width: 112px !important;
     object-fit: contain !important;
   }
 
-  .termsPage {
+  :global([data-proposal-live='true']) .termsPage {
     overflow: visible !important;
     height: auto !important;
     max-height: none !important;
   }
 
-  .termsStack {
+  :global([data-proposal-live='true']) .termsStack {
     overflow: visible !important;
     flex: 0 1 auto !important;
   }
 
-  .termsPageRoomy .termsTitle {
+  :global([data-proposal-live='true']) .termsPageRoomy .termsTitle {
     font-size: 26pt !important;
     line-height: 1.08 !important;
   }
 
-  .termsPageRoomy .termsTag {
+  :global([data-proposal-live='true']) .termsPageRoomy .termsTag {
     font-size: 0.8rem !important;
   }
 
-  .termsPageRoomy .termsIntro {
+  :global([data-proposal-live='true']) .termsPageRoomy .termsIntro {
     font-size: 1.02rem !important;
     line-height: 1.45 !important;
   }
 
-  .termsPageRoomy .termsSection {
+  :global([data-proposal-live='true']) .termsPageRoomy .termsSection {
     padding: 14px 16px 16px !important;
   }
 
-  .termsPageRoomy .termsSection:first-child {
+  :global([data-proposal-live='true']) .termsPageRoomy .termsSection:first-child {
     flex: 0 1 auto !important;
     min-height: auto !important;
     overflow: visible !important;
   }
 
-  .termsPageRoomy .termsSubhead {
+  :global([data-proposal-live='true']) .termsPageRoomy .termsSubhead {
     font-size: 0.84rem !important;
     padding-bottom: 14px !important;
     line-height: 1.12 !important;
     margin-bottom: 10px !important;
   }
 
-  .termsPageRoomy .termsArticleList {
+  :global([data-proposal-live='true']) .termsPageRoomy .termsArticleList {
     flex: 0 1 auto !important;
     justify-content: flex-start !important;
     gap: 7px !important;
   }
 
-  .termsPageRoomy .termsArticleLabel {
+  :global([data-proposal-live='true']) .termsPageRoomy .termsArticleLabel {
     font-size: 1rem !important;
   }
 
-  .termsPageRoomy .termsArticleBody {
+  :global([data-proposal-live='true']) .termsPageRoomy .termsArticleBody {
     font-size: 0.96rem !important;
     line-height: 1.42 !important;
   }
 
-  .termsPageRoomy .termsNumberedList li {
+  :global([data-proposal-live='true']) .termsPageRoomy .termsNumberedList li {
     font-size: 1rem !important;
     line-height: 1.42 !important;
   }
 
-  .termsPageRoomy .expertVerdict {
+  :global([data-proposal-live='true']) .termsPageRoomy .expertVerdict {
     margin-top: auto !important;
     padding: 12px 16px !important;
   }
 
-  .termsPageRoomy .expertVerdict p {
+  :global([data-proposal-live='true']) .termsPageRoomy .expertVerdict p {
     font-size: 1.05rem !important;
     line-height: 1.45 !important;
   }
 
-  .termsPageRoomy .verdictLabel {
+  :global([data-proposal-live='true']) .termsPageRoomy .verdictLabel {
     font-size: 0.72rem !important;
   }
 
-  .termsPage .impactPageFooter {
+  :global([data-proposal-live='true']) .termsPage .impactPageFooter {
     margin-top: auto !important;
     flex-shrink: 0 !important;
   }
 
-  .luxeHeaderRow {
+  :global([data-proposal-live='true']) .luxeHeaderRow {
     flex-wrap: wrap;
     gap: 8px;
   }
 
-  .expertVerdict p,
-  .engineerVerdict p {
+  :global([data-proposal-live='true']) .expertVerdict p,
+  :global([data-proposal-live='true']) .engineerVerdict p {
     font-size: 0.92rem !important;
   }
 
-  .verdictLabel {
+  :global([data-proposal-live='true']) .verdictLabel {
     font-size: 0.58rem !important;
   }
 
-  .termsPageRoomy .expertVerdict p {
+  :global([data-proposal-live='true']) .termsPageRoomy .expertVerdict p {
     font-size: 1.05rem !important;
     line-height: 1.45 !important;
   }
 
-  .termsPageRoomy .verdictLabel {
+  :global([data-proposal-live='true']) .termsPageRoomy .verdictLabel {
     font-size: 0.72rem !important;
   }
 
-  .termsPageDense .expertVerdict p {
+  :global([data-proposal-live='true']) .termsPageDense .expertVerdict p {
     font-size: 0.95rem !important;
     line-height: 1.4 !important;
   }
 
-  .termsPageDense .verdictLabel {
+  :global([data-proposal-live='true']) .termsPageDense .verdictLabel {
     font-size: 0.68rem !important;
   }
 
-  .closePage .expertVerdict p {
+  :global([data-proposal-live='true']) .closePage .expertVerdict p {
     font-size: 0.88rem !important;
     line-height: 1.4 !important;
   }
 
-  .ledgerPage .expertVerdict p {
+  :global([data-proposal-live='true']) .ledgerPage .expertVerdict p {
     font-size: 1rem !important;
     line-height: 1.42 !important;
   }
+
 }
+
 
 /* ── Phone only — stacked layout (iPad keeps desktop-like grids) ─ */
 @media screen and (max-width: 640px) {
-  .a4Page {
+  :global([data-proposal-live='true']) .a4Page {
     padding: 18px 14px 20px !important;
     margin: 8px auto 12px !important;
   }
 
-  .obsidianCover,
-  .closePage {
+  :global([data-proposal-live='true']) .obsidianCover,
+  :global([data-proposal-live='true']) .closePage {
     padding: 18px 14px 20px 20px !important;
   }
 
-  .coverVendorName {
+  :global([data-proposal-live='true']) .coverVendorName {
     font-size: clamp(2rem, 9vw, 2.8rem) !important;
   }
 
-  .coverPlate {
+  :global([data-proposal-live='true']) .coverPlate {
     flex: 0 0 auto !important;
     max-height: none !important;
   }
 
-  .coverPhotoFrame {
+  :global([data-proposal-live='true']) .coverPhotoFrame {
     flex: 0 0 auto !important;
   }
 
-  .coverPhotoImg {
+  :global([data-proposal-live='true']) .coverPhotoImg {
     height: clamp(220px, 52vw, 340px) !important;
   }
 
-  .coverMeta {
+  :global([data-proposal-live='true']) .coverMeta {
     flex-direction: column;
     gap: 10px;
   }
 
-  .coverMetaDivider {
+  :global([data-proposal-live='true']) .coverMetaDivider {
     display: none;
   }
 
-  .costEqOp {
+  :global([data-proposal-live='true']) .costEqOp {
     display: none;
   }
 
-  .netFigure {
+  :global([data-proposal-live='true']) .netFigure {
     font-size: clamp(2.4rem, 11vw, 3rem) !important;
   }
 
-  .wealthTop,
-  .wealthMid {
+  :global([data-proposal-live='true']) .wealthTop,
+  :global([data-proposal-live='true']) .wealthMid {
     grid-template-columns: 1fr !important;
   }
 
-  .closeBrandHero,
-  .closeSigGrid {
+  :global([data-proposal-live='true']) .closeBrandHero,
+  :global([data-proposal-live='true']) .closeSigGrid {
     grid-template-columns: 1fr !important;
   }
 
-  .billBars {
+  :global([data-proposal-live='true']) .billBars {
     grid-template-columns: 1fr 1fr !important;
     min-height: 0 !important;
     align-items: stretch !important;
   }
 
-  .billReliefCard {
+  :global([data-proposal-live='true']) .billReliefCard {
     grid-column: 1 / -1;
     min-height: 0 !important;
     flex-direction: row;
@@ -5620,130 +5624,132 @@
     padding: 10px 12px !important;
   }
 
-  .billBarTrack {
+  :global([data-proposal-live='true']) .billBarTrack {
     height: 72px !important;
     max-height: 72px !important;
   }
 
-  .billBarCol {
+  :global([data-proposal-live='true']) .billBarCol {
     grid-template-rows: 72px auto auto !important;
   }
 
-  .closeJourneyTrack {
+  :global([data-proposal-live='true']) .closeJourneyTrack {
     grid-template-columns: 1fr 1fr !important;
   }
 
-  .closeJourneyRail {
+  :global([data-proposal-live='true']) .closeJourneyRail {
     display: none !important;
   }
 
-  .luxeHeadline,
-  .billAuditPage .luxeHeadline,
-  .luxeTerminal .luxeHeadline {
+  :global([data-proposal-live='true']) .luxeHeadline,
+  :global([data-proposal-live='true']) .billAuditPage .luxeHeadline,
+  :global([data-proposal-live='true']) .luxeTerminal .luxeHeadline {
     font-size: clamp(1.5rem, 7vw, 2rem) !important;
     padding-bottom: 12px !important;
   }
 
-  .netFigure,
-  .closeVendorName {
+  :global([data-proposal-live='true']) .netFigure,
+  :global([data-proposal-live='true']) .closeVendorName {
     font-size: clamp(1.8rem, 8vw, 2.6rem) !important;
   }
 
-  .closePhotoFrame {
+  :global([data-proposal-live='true']) .closePhotoFrame {
     height: clamp(150px, 42vw, 178px) !important;
     max-height: 178px !important;
   }
 
-  .closePhotoImg {
+  :global([data-proposal-live='true']) .closePhotoImg {
     height: clamp(150px, 42vw, 178px) !important;
     min-height: 150px !important;
     max-height: 178px !important;
     object-fit: cover !important;
   }
 
-  .paybackSvg {
+  :global([data-proposal-live='true']) .paybackSvg {
     min-height: 140px;
     max-height: none;
   }
 
-  .hudPage .engSvgDark {
+  :global([data-proposal-live='true']) .hudPage .engSvgDark {
     height: 204px !important;
     max-height: 204px !important;
     min-height: 204px !important;
   }
 
-  .impactPage .impactChartSvg {
+  :global([data-proposal-live='true']) .impactPage .impactChartSvg {
     height: 120px !important;
     max-height: 120px !important;
     min-height: 116px !important;
   }
 
-  .wealthKpis {
+  :global([data-proposal-live='true']) .wealthKpis {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
   }
 
-  .wealthKpi {
+  :global([data-proposal-live='true']) .wealthKpi {
     flex: none;
   }
 
-  .genForecastKpis {
+  :global([data-proposal-live='true']) .genForecastKpis {
     grid-template-columns: 1fr 1fr !important;
   }
 
-  .billAuditMetrics {
+  :global([data-proposal-live='true']) .billAuditMetrics {
     grid-template-columns: 1fr !important;
   }
 
-  .billAuditMetric {
+  :global([data-proposal-live='true']) .billAuditMetric {
     border-right: 0 !important;
     border-bottom: 1px solid rgba(20, 24, 32, 0.08);
   }
 
-  .billAuditMetric:last-child {
+  :global([data-proposal-live='true']) .billAuditMetric:last-child {
     border-bottom: 0;
   }
 
-  .billAuditChart {
+  :global([data-proposal-live='true']) .billAuditChart {
     height: 160px !important;
     overflow-x: auto;
   }
 
-  .billAuditTable th,
-  .billAuditTable td {
+  :global([data-proposal-live='true']) .billAuditTable th,
+  :global([data-proposal-live='true']) .billAuditTable td {
     font-size: 0.72rem !important;
     padding: 0.35rem 0.3rem !important;
   }
+
 }
 
+
 @media screen and (max-width: 480px) {
-  .a4Page {
+  :global([data-proposal-live='true']) .a4Page {
     width: 100% !important;
     max-width: 100% !important;
     padding: 16px 14px 18px !important;
     margin: 8px auto 12px !important;
   }
 
-  .obsidianCover,
-  .closePage {
+  :global([data-proposal-live='true']) .obsidianCover,
+  :global([data-proposal-live='true']) .closePage {
     padding: 16px 12px 18px 18px !important;
   }
 
-  .closeBrandHero,
-  .closeSigGrid {
+  :global([data-proposal-live='true']) .closeBrandHero,
+  :global([data-proposal-live='true']) .closeSigGrid {
     grid-template-columns: 1fr !important;
   }
 
-  .closeJourneyTrack {
+  :global([data-proposal-live='true']) .closeJourneyTrack {
     grid-template-columns: 1fr !important;
   }
 
-  .impactCardGrid {
+  :global([data-proposal-live='true']) .impactCardGrid {
     grid-template-columns: 1fr !important;
   }
 
-  .impactCard {
+  :global([data-proposal-live='true']) .impactCard {
     flex-direction: row;
     align-items: center;
     flex-wrap: wrap;
@@ -5751,136 +5757,154 @@
     padding: 12px 14px !important;
   }
 
-  .impactIcon {
+  :global([data-proposal-live='true']) .impactIcon {
     width: 52px !important;
     height: 52px !important;
     margin-bottom: 0 !important;
     flex-shrink: 0;
   }
 
-  .impactCardLabel {
+  :global([data-proposal-live='true']) .impactCardLabel {
     flex: 1 1 100%;
   }
 
-  .impactCardValue,
-  .impactCardValueSoft,
-  .impactCardHint {
+  :global([data-proposal-live='true']) .impactCardValue,
+  :global([data-proposal-live='true']) .impactCardValueSoft,
+  :global([data-proposal-live='true']) .impactCardHint {
     flex: 1 1 auto;
     min-width: 0;
   }
 
-  .impactHeroRow {
+  :global([data-proposal-live='true']) .impactHeroRow {
     grid-template-columns: 1fr auto !important;
     align-items: center !important;
     gap: 10px !important;
     padding: 14px 14px !important;
   }
 
-  .impactHeroArt {
+  :global([data-proposal-live='true']) .impactHeroArt {
     max-width: 112px !important;
     width: 112px !important;
     justify-self: end;
   }
 
-  .impactEqRow {
+  :global([data-proposal-live='true']) .impactEqRow {
     grid-template-columns: 1fr !important;
   }
 
-  .impactEqOp {
+  :global([data-proposal-live='true']) .impactEqOp {
     display: none !important;
   }
 
-  .impactPage .luxeHeadline {
+  :global([data-proposal-live='true']) .impactPage .luxeHeadline {
     font-size: clamp(1.5rem, 7vw, 2rem) !important;
     padding-bottom: 12px !important;
   }
 
-  .impactHeroNum {
+  :global([data-proposal-live='true']) .impactHeroNum {
     font-size: clamp(2rem, 10vw, 2.8rem) !important;
   }
 
-  .impactChartSvg {
+  :global([data-proposal-live='true']) .impactChartSvg {
     min-height: 140px;
     max-height: none;
   }
 
-  .impactPage .impactChartSvg {
+  :global([data-proposal-live='true']) .impactPage .impactChartSvg {
     height: 120px !important;
     max-height: 120px !important;
     min-height: 116px !important;
   }
 
-  .wealthKpis {
+  :global([data-proposal-live='true']) .wealthKpis {
     grid-template-columns: 1fr !important;
   }
 
-  .genForecastKpis {
+  :global([data-proposal-live='true']) .genForecastKpis {
     grid-template-columns: 1fr !important;
   }
 
-  .billBars {
+  :global([data-proposal-live='true']) .billBars {
     grid-template-columns: 1fr !important;
   }
 
-  .archNode {
+  :global([data-proposal-live='true']) .archNode {
     flex: 1 1 100%;
   }
 
-  .engDesignLayout,
-  .costEquation {
+  :global([data-proposal-live='true']) .engDesignLayout,
+  :global([data-proposal-live='true']) .costEquation {
     grid-template-columns: 1fr !important;
     gap: 4px !important;
   }
 
-  .engChipRow {
+  :global([data-proposal-live='true']) .engChipRow {
     grid-template-columns: 1fr 1fr !important;
   }
 
-  .archTrack {
+  :global([data-proposal-live='true']) .archTrack {
     flex-wrap: wrap;
     gap: 8px;
   }
 
-  .archProtect {
+  :global([data-proposal-live='true']) .archProtect {
     grid-template-columns: 1fr !important;
   }
 
-  .hudPage .luxeHeadline {
+  :global([data-proposal-live='true']) .hudPage .luxeHeadline {
     font-size: clamp(1.45rem, 7vw, 1.85rem) !important;
   }
 
-  .ledgerPage .luxeHeadline {
+  :global([data-proposal-live='true']) .ledgerPage .luxeHeadline {
     font-size: clamp(1.5rem, 7vw, 2rem) !important;
     padding-bottom: 12px !important;
   }
 
-  .genForecastPage .luxeHeadline {
+  :global([data-proposal-live='true']) .genForecastPage .luxeHeadline {
     font-size: clamp(1.5rem, 7vw, 2rem) !important;
     padding-bottom: 12px !important;
   }
 
-  .payBottomRow,
-  .payBankGrid,
-  .payBankHead {
+  :global([data-proposal-live='true']) .payBottomRow,
+  :global([data-proposal-live='true']) .payBankGrid,
+  :global([data-proposal-live='true']) .payBankHead {
     grid-template-columns: 1fr !important;
   }
 
-  .payPage .luxeHeadline {
+  :global([data-proposal-live='true']) .payPage .luxeHeadline {
     font-size: clamp(1.5rem, 7vw, 2rem) !important;
     padding-bottom: 12px !important;
   }
 
-  .genBarTrack {
+  :global([data-proposal-live='true']) .genBarTrack {
     flex: 0 0 88px;
     height: 88px;
   }
+
 }
+
 
 /*
  * PDF capture isolation — off-screen export tree on document.body.
  * Responsive preview rules above still match via viewport MQs; re-lock the
  * fixed A4 canvas here so tablet fluid overrides never reach html2canvas.
  */
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  :global(section) {
+  width: 794px !important;
+  max-width: 794px !important;
+  height: 1123px !important;
+  min-height: 1123px !important;
+  max-height: 1123px !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-sizing: border-box !important;
+}
+
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .a4Page {
