@@ -40,6 +40,15 @@ const ISO = {
 /** Caption strip below the working grid (px in SVG user units). */
 const ARRAY_CAPTION_H = 34;
 
+/** Fixed roof-plan canvas — panels scale inside; outer box stays CSS-sized. */
+const ROOF_ARENA_W = 300;
+const ROOF_ARENA_PAD = 10;
+const ROOF_ARENA_TOP = 12;
+const ROOF_PANEL_ARENA_H = 168;
+const ROOF_COMPASS_RESERVE = 44;
+const ROOF_ARENA_BOTTOM = 6;
+const ROOF_PANEL_MAX_SCALE = 0.64;
+
 function metricValue(
   data: ProposalData,
   pattern: RegExp,
@@ -269,32 +278,39 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
     maxY = Math.max(maxY, ...ys);
   }
 
-  const sidePad = 4;
-  const topPad = 8;
-  const bottomPad = 8;
-  const maxDrawW = 308;
-  const maxDrawH = 215;
+  const roofPanelArenaW =
+    ROOF_ARENA_W - ROOF_ARENA_PAD * 2 - ROOF_COMPASS_RESERVE;
+  const captionY = ROOF_ARENA_TOP + ROOF_PANEL_ARENA_H + 6;
+  const vbW = ROOF_ARENA_W;
+  const vbH =
+    ROOF_ARENA_TOP +
+    ROOF_PANEL_ARENA_H +
+    ARRAY_CAPTION_H +
+    ROOF_ARENA_BOTTOM;
+
   const contentW = Math.max(1, maxX - minX);
   const contentH = Math.max(1, maxY - minY);
-  const scale = Math.min(1, maxDrawW / contentW, maxDrawH / contentH);
-  const offsetX = sidePad - minX * scale;
-  const offsetY = topPad - minY * scale;
+  const fitScale = Math.min(
+    roofPanelArenaW / contentW,
+    ROOF_PANEL_ARENA_H / contentH
+  );
+  /** Small banks stay smaller so 24–36 module plants still fit the same frame. */
+  const scale = Math.min(ROOF_PANEL_MAX_SCALE, fitScale);
 
-  const tMinX = minX * scale + offsetX;
-  const tMaxX = maxX * scale + offsetX;
-  const tMinY = minY * scale + offsetY;
-  const tMaxY = maxY * scale + offsetY;
+  const scaledW = contentW * scale;
+  const scaledH = contentH * scale;
+  const bankX = ROOF_ARENA_PAD + (roofPanelArenaW - scaledW) / 2;
+  const bankY = ROOF_ARENA_TOP + (ROOF_PANEL_ARENA_H - scaledH) / 2;
+  const offsetX = bankX - minX * scale;
+  const offsetY = bankY - minY * scale;
 
-  const gridInset = 4;
-  const gridX = tMinX - gridInset;
-  const gridY = tMinY - gridInset;
-  const gridW = tMaxX - tMinX + gridInset * 2;
-  const gridH = tMaxY - tMinY + gridInset * 2;
-  const floorY = tMaxY + bottomPad;
-  const compassCx = gridX + gridW - 24;
-  const compassCy = gridY + 24;
-  const vbW = Math.ceil(gridX + gridW + sidePad);
-  const vbH = floorY + ARRAY_CAPTION_H + 6;
+  const gridX = ROOF_ARENA_PAD;
+  const gridY = ROOF_ARENA_TOP;
+  const gridW = roofPanelArenaW;
+  const gridH = ROOF_PANEL_ARENA_H;
+  const floorY = captionY;
+  const compassCx = ROOF_ARENA_W - ROOF_ARENA_PAD - 22;
+  const compassCy = ROOF_ARENA_TOP + 22;
 
   // Sort in raw space (back → front), then draw inside a fitted transform
   const panelPositions = [...rawPositions].sort(
