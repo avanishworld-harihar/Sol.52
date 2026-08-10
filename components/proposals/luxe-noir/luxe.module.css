@@ -5043,6 +5043,7 @@
 }
 
 /* ── iPad / tablet — fluid pages + margins, desktop grid layout preserved ─ */
+/* Live preview only — #atelier-pdf-capture-host uses print mirror + isolation block below. */
 @media screen and (max-width: 1180px) {
   .a4Page {
     width: 100% !important;
@@ -5875,6 +5876,24 @@
   }
 }
 
+/*
+ * PDF capture isolation — off-screen export tree on document.body.
+ * Responsive preview rules above still match via viewport MQs; re-lock the
+ * fixed A4 canvas here so tablet fluid overrides never reach html2canvas.
+ */
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  :global(section) {
+  width: 794px !important;
+  max-width: 794px !important;
+  height: 1123px !important;
+  min-height: 1123px !important;
+  max-height: 1123px !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+}
+
 @media print {
   .a4Page,
   .a4Page :global(*) {
@@ -6387,799 +6406,807 @@
 }
 
 /*
- * iPad PDF capture — html2canvas uses live screen CSS, not @media print.
- * Force print-equivalent layout inside the off-screen capture host only.
+ * PDF capture — 1:1 mirror of @media print (html2canvas reads screen CSS, not print).
+ * Keep in sync with the @media print block above.
  */
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir'],
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  :global(*) {
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .a4Page {
-  width: 794px !important;
-  min-width: 794px !important;
-  max-width: 794px !important;
-  height: 1123px !important;
-  min-height: 1123px !important;
-  max-height: 1123px !important;
-  margin: 0 !important;
-  padding: 40px !important;
-  overflow: hidden !important;
-  box-shadow: none !important;
-  border-radius: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .hudPage
-  .engDesignLayout,
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .engDesignLayout {
-  display: grid !important;
-  grid-template-columns: 1.05fr 0.95fr !important;
-  gap: 10px !important;
-  align-items: stretch !important;
+  .a4Page :global(*) {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .hudPage
-  .engPanelMetrics
-  .engMetricRow
-  small,
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .engPanelMetrics
-  .engMetricRow
-  small {
-  display: block !important;
-  overflow: visible !important;
-  -webkit-line-clamp: unset !important;
-  line-height: 1.3 !important;
+  .a4Page {
+    width: 794px !important;
+    height: 1123px !important;
+    min-height: 1123px !important;
+    max-height: 1123px !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    background-color: #f8f9fb !important;
+    color: #141820 !important;
+    overflow: hidden !important;
+    padding: 40px !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .engChipRow {
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  .obsidianCover {
+    padding: 28px 34px 26px 46px !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .archTrack {
-  flex-wrap: nowrap !important;
+  .coverSpine {
+    width: 12px !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .archNode {
-  flex: 1 !important;
-  min-width: 0 !important;
+  .closeSpine {
+    width: 12px !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .archProtect {
-  grid-template-columns: 1fr 1fr 1fr !important;
+  .coverFrame {
+    display: block !important;
+    top: 18px !important;
+    right: 18px !important;
+    bottom: 18px !important;
+    left: 28px !important;
+    border: 1px solid rgba(184, 150, 46, 0.28) !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .hudPage
-  .luxeHeadline {
-  font-size: 2rem !important;
-  padding-bottom: 14px !important;
+  .coverFrame::before {
+    inset: 5px !important;
+    border: 1px solid rgba(20, 24, 32, 0.06) !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .hudPage
-  .engSvgDark,
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .engSvgDark {
-  height: 204px !important;
-  max-height: 204px !important;
-  min-height: 204px !important;
+  .closeCornerTL {
+    display: block !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .wealthTop {
-  grid-template-columns: 1.05fr 0.95fr !important;
+  .closeCornerBR {
+    display: block !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .wealthMid {
-  grid-template-columns: 1.35fr 0.65fr !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .billBars {
-  grid-template-columns: 1fr 1fr 1.15fr !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .impactCardGrid {
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .impactHeroRow {
-  grid-template-columns: 1.15fr 0.85fr !important;
-  align-items: center !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .impactEqRow {
-  grid-template-columns: 1.2fr auto 0.7fr auto 1.35fr !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .impactEqOp {
-  display: inline !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .impactCard {
-  flex-direction: column !important;
-  align-items: flex-start !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .impactPage
-  .luxeHeadline {
-  font-size: 2rem !important;
-  padding-bottom: 14px !important;
-  line-height: 1.12 !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .impactPage
-  .impactChartSvg {
-  height: 120px !important;
-  min-height: 116px !important;
-  max-height: 120px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .impactPage
-  .expertVerdict {
-  padding: 10px 14px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .payPage
-  .luxeHeadline {
-  font-size: 2rem !important;
-  padding-bottom: 14px !important;
-  line-height: 1.12 !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .payBottomRow {
-  grid-template-columns: 1.15fr 0.85fr !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .payBankGrid {
-  grid-template-columns: 1fr 1fr !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .payBankHead {
-  grid-template-columns: 72px 1fr !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .payPage
-  .payMilestoneRow {
-  padding: 4px 0 !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .payPage
-  .payBankBlock {
-  padding: 8px 10px !important;
-  margin-bottom: 6px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .payPage
-  .payBankCell {
-  min-height: 40px !important;
-  padding: 6px 8px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .payPage
-  .expertVerdict {
-  padding: 10px 14px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .payPage
-  .impactPageFooter {
-  margin-top: auto !important;
-  flex-shrink: 0 !important;
-  min-height: 36px !important;
-  padding: 8px 0 4px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .ledgerPage
-  .luxeHeadline {
-  font-size: 2.2rem !important;
-  padding-bottom: 14px !important;
-  line-height: 1.12 !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .ledgerPage
-  .itemContent {
-  overflow: visible !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .ledgerPage
-  .ledgerItemDense {
-  padding: 7px 0 10px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .ledgerPage
-  .specBadge {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  text-align: center !important;
-  padding: 4px 12px !important;
-  letter-spacing: 0.06em !important;
-  line-height: 1.2 !important;
-  font-size: 0.62rem !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .ledgerPage
-  .bomLead {
-  margin-bottom: 4px !important;
-  font-size: 1.02rem !important;
-  line-height: 1.45 !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .ledgerPage
-  .bomMaterialName,
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .ledgerPage
-  .itemContent
-  h3 {
-  font-size: 1.12rem !important;
-  line-height: 1.28 !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .ledgerPage
-  .bomMaterialBody {
-  font-size: 0.98rem !important;
-  line-height: 1.45 !important;
-  margin-bottom: 4px !important;
-  padding-bottom: 4px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .ledgerPage
-  .expertVerdict {
-  padding: 10px 14px !important;
-  margin-top: 4px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .genForecastPage
-  .luxeHeadline {
-  font-size: 2.2rem !important;
-  padding-bottom: 14px !important;
-  line-height: 1.12 !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .genForecastPage
-  .genForecast {
-  flex: 0 1 auto !important;
-  padding: 12px 14px 10px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .genForecastPage
-  .expertVerdict {
-  margin-top: auto !important;
-  padding: 10px 14px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .genForecastBars {
-  min-height: 168px !important;
-  align-items: flex-end !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .genBarTrack {
-  flex: 0 0 96px !important;
-  height: 96px !important;
-  min-height: 96px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageRoomy
-  .termsHead {
-  margin-bottom: 8px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageRoomy
-  .termsTitle {
-  font-size: 26pt !important;
-  line-height: 1.08 !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageRoomy
-  .termsIntro {
-  font-size: 1.02rem !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageRoomy
-  .termsStack {
-  gap: 8px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageRoomy
-  .termsSection {
-  padding: 10px 14px 12px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageRoomy
-  .termsSection:first-child {
-  flex: 0 1 auto !important;
-  min-height: auto !important;
-  overflow: visible !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageRoomy
-  .termsSubhead {
-  font-size: 0.84rem !important;
-  padding-bottom: 14px !important;
-  line-height: 1.12 !important;
-  margin-bottom: 8px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageRoomy
-  .termsArticleList {
-  flex: 0 1 auto !important;
-  justify-content: flex-start !important;
-  gap: 5px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageRoomy
-  .termsArticle {
-  padding-bottom: 4px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageRoomy
-  .termsArticleLabel {
-  font-size: 1rem !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageRoomy
-  .termsArticleBody {
-  font-size: 0.96rem !important;
-  line-height: 1.4 !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageRoomy
-  .termsNumberedList li {
-  font-size: 1rem !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageRoomy
-  .expertVerdict {
-  margin-top: 8px !important;
-  padding: 10px 14px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageRoomy
-  .expertVerdict
-  p {
-  font-size: 1.05rem !important;
-  line-height: 1.42 !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageRoomy
-  .verdictLabel {
-  font-size: 0.72rem !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPage
-  .impactPageFooter {
-  margin-top: auto !important;
-  flex-shrink: 0 !important;
-  min-height: 36px !important;
-  padding: 8px 0 4px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .termsSubhead {
-  padding-bottom: 10px !important;
-  line-height: 1.12 !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .expertVerdict {
-  padding: 10px 14px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .expertVerdict
-  p {
-  font-size: 0.95rem !important;
+  .coverPlate {
+    flex: 0 0 48% !important;
+    max-height: 48% !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .closePage {
-  padding: 24px 30px 18px 42px !important;
-  overflow: hidden !important;
+    padding: 28px 34px 22px 46px !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .closeBrandHero {
-  grid-template-columns: 1.35fr 0.65fr !important;
-  align-items: center !important;
-  margin-top: 6px !important;
-  margin-bottom: 6px !important;
+  .engDesignLayout {
+    grid-template-columns: 1.05fr 0.95fr !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .closeVendorName {
-  font-size: 2.65rem !important;
-  line-height: 0.98 !important;
+  .hudPage .engSvgDark {
+    height: 204px !important;
+    max-height: 204px !important;
+    min-height: 204px !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .closeTitle {
-  font-size: 1.75rem !important;
-  line-height: 1.15 !important;
+  .engSvgDark {
+    height: 204px !important;
+    max-height: 204px !important;
+    min-height: 204px !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .closeLead {
-  font-size: 0.95rem !important;
-  line-height: 1.42 !important;
+  .hudPage .engPanelMetrics .engMetricRow small {
+    display: block !important;
+    overflow: visible !important;
+    -webkit-line-clamp: unset !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .closePage
-  .coverBrandLogo {
-  display: block !important;
-  max-height: 56px !important;
-  max-width: 220px !important;
-  object-fit: contain !important;
+  .wealthTop {
+    grid-template-columns: 1.05fr 0.95fr !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .closeMetaStrip {
-  margin-bottom: 8px !important;
+  .wealthMid {
+    grid-template-columns: 1.35fr 0.65fr !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .closePhotoFrame {
-  height: 168px !important;
-  max-height: 168px !important;
-  flex-shrink: 0 !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .closePhotoImg {
-  width: 100% !important;
-  height: 168px !important;
-  min-height: 168px !important;
-  max-height: 168px !important;
-  object-fit: cover !important;
-  flex-shrink: 0 !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .closeJourney {
-  padding: 6px 8px !important;
-  margin-bottom: 6px !important;
+  .impactCardGrid {
+    grid-template-columns: repeat(3, 1fr) !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .closeJourneyTrack {
-  grid-template-columns: repeat(4, 1fr) !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .closeJourneyRail {
-  display: block !important;
+    grid-template-columns: repeat(4, 1fr) !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .closeSigGrid {
-  grid-template-columns: 1fr 1fr !important;
-  margin-bottom: 6px !important;
-  gap: 8px !important;
+    grid-template-columns: 1fr 1fr !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .payBottomRow {
+    grid-template-columns: 1fr 1fr !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closeJourneyRail {
+    display: block !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .impactHeroRow {
+    grid-template-columns: 1.15fr 0.85fr !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .impactEqRow {
+    grid-template-columns: 1.2fr auto 0.7fr auto 1.35fr !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .impactEqOp {
+    display: inline !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .impactPage .luxeHeadline {
+    font-size: 2rem !important;
+    padding-bottom: 14px !important;
+    line-height: 1.12 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .impactPage .expertVerdict {
+    padding: 10px 14px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .billBars {
+    grid-template-columns: 1fr 1fr 1.15fr !important;
+    align-items: stretch !important;
+    min-height: 0 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .billBarCol {
+    grid-template-rows: 88px auto auto !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .billBarTrack {
+    height: 88px !important;
+    max-height: 88px !important;
+    overflow: hidden !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .billCompareHead {
+    margin-bottom: 12px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .luxeTerminal .luxeHeadline {
+    padding-bottom: 14px !important;
+    margin-bottom: 4px !important;
+    line-height: 1.14 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .payBankGrid {
+    grid-template-columns: 1fr 1fr !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .payBankHead {
+    grid-template-columns: 72px 1fr !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .payPage .luxeHeadline {
+    font-size: 2rem !important;
+    padding-bottom: 14px !important;
+    line-height: 1.12 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .payPage .payMilestoneRow {
+    padding: 4px 0 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .payPage .payBankBlock {
+    padding: 8px 10px !important;
+    margin-bottom: 6px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .payPage .payBankCell {
+    min-height: 40px !important;
+    padding: 6px 8px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .payPage .payTermsBox {
+    padding: 8px 10px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .payPage .payTermsBox li {
+    font-size: 0.8rem !important;
+    line-height: 1.3 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .payPage .expertVerdict {
+    padding: 10px 14px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .payPage .impactPageFooter {
+    min-height: 36px !important;
+    padding: 8px 0 4px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closeBrandHero {
+    grid-template-columns: 1.35fr 0.65fr !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .engChipRow {
+    grid-template-columns: repeat(4, 1fr) !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .archTrack {
+    flex-wrap: nowrap !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .archNode {
+    flex: 1 !important;
+    min-width: 0 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .engSvgDark {
+    height: 204px !important;
+    max-height: 204px !important;
+    min-height: 204px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .hudPage .engSvgDark {
+    height: 204px !important;
+    max-height: 204px !important;
+    min-height: 204px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .hudPage .luxeHeadline {
+    font-size: 2rem !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .ledgerPage .luxeHeadline {
+    font-size: 2.35rem !important;
+    padding-bottom: 14px !important;
+    line-height: 1.12 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .ledgerPage .itemContent {
+    overflow: visible !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .ledgerPage .ledgerItemDense {
+    padding: 7px 0 10px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .ledgerPage .bomLead {
+    font-size: 1.02rem !important;
+    line-height: 1.45 !important;
+    margin-bottom: 6px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .ledgerPage .bomMaterialName {
+    font-size: 1.12rem !important;
+    line-height: 1.28 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .ledgerPage .itemContent h3 {
+    font-size: 1.12rem !important;
+    line-height: 1.28 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .ledgerPage .bomMaterialBody {
+    font-size: 0.98rem !important;
+    line-height: 1.45 !important;
+    margin-bottom: 4px !important;
+    padding-bottom: 4px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .ledgerPage .itemContent p {
+    font-size: 0.98rem !important;
+    line-height: 1.45 !important;
+    margin-bottom: 4px !important;
+    padding-bottom: 4px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .ledgerPage .ledgerRole {
+    font-size: 0.72rem !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .ledgerPage .specBadge {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    font-size: 0.62rem !important;
+    padding: 4px 12px !important;
+    letter-spacing: 0.06em !important;
+    line-height: 1.2 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .ledgerPage .expertVerdict {
+    padding: 10px 14px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .ledgerPage .expertVerdict p {
+    font-size: 1rem !important;
+    line-height: 1.42 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .ledgerPage .verdictLabel {
+    font-size: 0.68rem !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .genForecastPage .luxeHeadline {
+    font-size: 2.2rem !important;
+    padding-bottom: 14px !important;
+    line-height: 1.12 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .genForecastPage .genForecast {
+    flex: 0 1 auto !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .genForecastPage .expertVerdict {
+    margin-top: auto !important;
+    padding: 10px 14px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .genForecastBars {
+    min-height: 168px !important;
+    align-items: flex-end !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .genBarTrack {
+    flex: 0 0 96px !important;
+    height: 96px !important;
+    min-height: 96px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .hudPage .archIcon {
+    height: 34px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closePhotoImg {
+    height: 168px !important;
+    min-height: 168px !important;
+    max-height: 168px !important;
+    object-fit: cover !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closePhotoFrame {
+    height: 168px !important;
+    max-height: 168px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closePage {
+    padding: 24px 30px 18px 42px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closeBrandHero {
+    grid-template-columns: 1.35fr 0.65fr !important;
+    margin-top: 6px !important;
+    margin-bottom: 6px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closeVendorName {
+    font-size: 2.65rem !important;
+    line-height: 0.98 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closeTitle {
+    font-size: 1.75rem !important;
+    line-height: 1.15 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closeMetaStrip {
+    margin-bottom: 8px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closeJourney {
+    padding: 6px 8px !important;
+    margin-bottom: 6px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closeSigGrid {
+    margin-bottom: 6px !important;
+    gap: 8px !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .closeSigPad {
-  height: 38px !important;
-  min-height: 38px !important;
-  max-height: 38px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    max-height: 38px !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .closeContact {
-  padding: 9px 12px !important;
-  margin-bottom: 6px !important;
+    padding: 9px 12px !important;
+    margin-bottom: 6px !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .closePage
-  .expertVerdict {
-  padding: 8px 12px !important;
-  flex-shrink: 0 !important;
+  .closePage .expertVerdict {
+    padding: 8px 12px !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .closePage
-  .expertVerdict
-  p {
-  font-size: 0.86rem !important;
-  line-height: 1.38 !important;
+  .closePage .expertVerdict p {
+    font-size: 0.86rem !important;
+    line-height: 1.38 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closePage .luxeFooterLogo {
+    max-height: 28px !important;
+    display: block !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closePage .impactPageFooter {
+    min-height: 36px !important;
+    padding: 8px 0 4px !important;
+    font-size: 0.8rem !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closeFooter .impactPageFooter {
+    min-height: 36px !important;
+    padding: 8px 0 4px !important;
+    font-size: 0.8rem !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .impactChartSvg {
+    height: 112px !important;
+    min-height: 108px !important;
+    max-height: 112px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .impactPage .impactChartSvg {
+    height: 112px !important;
+    min-height: 108px !important;
+    max-height: 112px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .impactPage .luxeFooterLogo {
+    max-height: 28px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .impactPage .impactPageFooter {
+    font-size: 0.8rem !important;
+    min-height: 36px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .billAuditChart {
+    height: 112px !important;
+    min-height: 108px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .payPage .luxeFooterLogo {
+    max-height: 28px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .payPage .impactPageFooter {
+    font-size: 0.8rem !important;
+    min-height: 36px !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .hudPage .impactPageFooter {
+    margin-top: auto !important;
+    flex-shrink: 0 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .impactPage .impactPageFooter {
+    margin-top: auto !important;
+    flex-shrink: 0 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .payPage .impactPageFooter {
+    margin-top: auto !important;
+    flex-shrink: 0 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .billAuditPage .impactPageFooter {
+    margin-top: auto !important;
+    flex-shrink: 0 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .termsPage .impactPageFooter {
+    margin-top: auto !important;
+    flex-shrink: 0 !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .closePage .impactPageFooter {
+    margin-top: auto !important;
+    flex-shrink: 0 !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .closeFooter {
-  margin-top: auto !important;
-  flex-shrink: 0 !important;
+    margin-top: auto !important;
+    flex-shrink: 0 !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .closePage
-  .impactPageFooter,
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .closeFooter
-  .impactPageFooter {
-  margin-top: 0 !important;
-  flex-shrink: 0 !important;
-  min-height: 36px !important;
-  padding: 8px 0 4px !important;
-  font-size: 0.8rem !important;
+  .closeFooter .impactPageFooter {
+    margin-top: auto !important;
+    flex-shrink: 0 !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .closePage
-  .luxeFooterLogo {
-  display: block !important;
-  max-height: 28px !important;
-  max-width: 112px !important;
-  object-fit: contain !important;
-}
-
-/*
- * iPad PDF capture only — Terms page 2 overflow lock (PC / browser print unchanged).
- */
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPage {
-  height: 1123px !important;
-  max-height: 1123px !important;
-  overflow: hidden !important;
-  display: flex !important;
-  flex-direction: column !important;
+  .termsPageRoomy .termsTitle {
+    font-size: 26pt !important;
+    line-height: 1.08 !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsStack {
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
-  overflow: hidden !important;
+  .termsPageRoomy .termsSubhead {
+    padding-bottom: 14px !important;
+    line-height: 1.12 !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .termsStack {
-  gap: 5px !important;
+  .termsPageRoomy .termsSection:first-child {
+    flex: 0 1 auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .termsSection {
-  padding: 6px 8px 7px !important;
+  .termsPageRoomy .termsArticleList {
+    flex: 0 1 auto !important;
+    justify-content: flex-start !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .termsTitle {
-  font-size: 20pt !important;
-  line-height: 1.1 !important;
+  .termsPageRoomy .termsArticleLabel {
+    font-size: 1rem !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .termsIntro {
-  font-size: 0.84rem !important;
-  line-height: 1.35 !important;
+  .termsPageRoomy .termsArticleBody {
+    font-size: 0.96rem !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .termsSubhead {
-  font-size: 0.72rem !important;
-  margin-bottom: 4px !important;
-  padding-bottom: 6px !important;
-  line-height: 1.1 !important;
+  .termsPageRoomy .termsNumberedList li {
+    font-size: 1rem !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .termsNumberedList {
-  gap: 3px !important;
+  .termsPageRoomy .expertVerdict {
+    margin-top: auto !important;
+    padding: 10px 14px !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .termsNumberedList
-  li,
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .termsSafetyList
-  li,
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .termsPara,
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .termsCostBox
-  p {
-  font-size: 0.8rem !important;
-  line-height: 1.32 !important;
+  .termsPageRoomy .expertVerdict p {
+    font-size: 1.05rem !important;
+    line-height: 1.45 !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .termsAmcIncludes {
-  font-size: 0.78rem !important;
-  margin: 3px 0 2px !important;
+  .termsPageRoomy .verdictLabel {
+    font-size: 0.72rem !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .termsSafetyList
-  li {
-  padding: 5px 8px 5px 10px !important;
+  .termsPageDense .termsSubhead {
+    padding-bottom: 10px !important;
+    line-height: 1.12 !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .termsSignoff {
-  padding: 5px 8px !important;
+  .termsPageDense .expertVerdict {
+    padding: 10px 14px !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .expertVerdict {
-  margin-top: auto !important;
-  padding: 6px 10px !important;
+  .termsPageDense .expertVerdict p {
+    font-size: 0.95rem !important;
 }
 
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .termsPageDense
-  .expertVerdict
-  p {
-  font-size: 0.82rem !important;
-  line-height: 1.32 !important;
-}
