@@ -1501,10 +1501,15 @@
   margin-bottom: 5px;
 }
 
+.hudPage .engPanelFlush {
+  height: 100%;
+}
+
 .hudPage .engSvgDark {
-  height: 220px;
-  max-height: 220px;
+  flex: 1 1 auto;
   min-height: 220px;
+  height: auto;
+  max-height: none;
 }
 
 .hudPage .engMetricList {
@@ -1634,6 +1639,7 @@
   flex-direction: column;
   min-height: 0;
   min-width: 0;
+  height: 100%;
 }
 
 .engPanelMetrics {
@@ -1660,12 +1666,12 @@
 .engSvgDark {
   display: block;
   width: 100%;
-  flex: 0 0 auto;
+  flex: 1 1 auto;
   min-height: 220px;
-  height: 220px;
-  max-height: 220px;
+  height: auto;
+  max-height: none;
   border-radius: 8px;
-  background: transparent;
+  background: #0a0e14;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -5175,10 +5181,15 @@
     font-size: 2.15rem !important;
   }
 
+  :global([data-proposal-live='true']) .hudPage .engPanelFlush {
+    height: 100% !important;
+  }
+
   :global([data-proposal-live='true']) .hudPage .engSvgDark {
-    height: 204px !important;
-    max-height: 204px !important;
-    min-height: 204px !important;
+    flex: 1 1 auto !important;
+    min-height: 220px !important;
+    height: auto !important;
+    max-height: none !important;
   }
 
   :global([data-proposal-live='true']) .ledgerPage .luxeHeadline {
@@ -5685,10 +5696,15 @@
     max-height: none;
   }
 
+  :global([data-proposal-live='true']) .hudPage .engPanelFlush {
+    height: 100% !important;
+  }
+
   :global([data-proposal-live='true']) .hudPage .engSvgDark {
-    height: 204px !important;
-    max-height: 204px !important;
-    min-height: 204px !important;
+    flex: 1 1 auto !important;
+    min-height: 220px !important;
+    height: auto !important;
+    max-height: none !important;
   }
 
   :global([data-proposal-live='true']) .impactPage .impactChartSvg {

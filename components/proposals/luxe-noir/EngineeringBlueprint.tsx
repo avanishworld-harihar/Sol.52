@@ -273,7 +273,7 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
   const topPad = 8;
   const bottomPad = 8;
   const maxDrawW = 308;
-  const maxDrawH = 168;
+  const maxDrawH = 215;
   const contentW = Math.max(1, maxX - minX);
   const contentH = Math.max(1, maxY - minY);
   const scale = Math.min(1, maxDrawW / contentW, maxDrawH / contentH);
@@ -348,6 +348,16 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
                 />
               </pattern>
             </defs>
+
+            {/* Full canvas — dark fill so flex-grow never shows white letterboxing */}
+            <rect
+              x="0"
+              y="0"
+              width={vbW}
+              height={vbH}
+              fill="#0a0e14"
+              rx="8"
+            />
 
             <rect
               x={gridX}
