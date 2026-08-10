@@ -5906,7 +5906,7 @@
  */
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  :global(section) {
+  .a4Page {
   width: 794px !important;
   max-width: 794px !important;
   height: 1123px !important;
@@ -6451,10 +6451,11 @@
  */
 
 :global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir'],
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .a4Page,
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  :global(*) {
+  .a4Page :global(*) {
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -6462,15 +6463,15 @@
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .a4Page {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .a4Page :global(*) {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
 }
 
 :global(#atelier-pdf-capture-host)

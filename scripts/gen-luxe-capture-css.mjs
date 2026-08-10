@@ -92,10 +92,11 @@ function generateCaptureFromPrint(css, marker) {
  */
 
 :global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir'],
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .a4Page,
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  :global(*) {
+  .a4Page :global(*) {
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -119,9 +120,9 @@ function generateShellCaptureFromPrint(css) {
  */
 
 :global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir'],
+  .root[data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir'],
 :global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .root[data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   :global(*) {
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
@@ -161,9 +162,9 @@ const shellHeader = `/*
  */
 
 :global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir'],
+  .root[data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir'],
 :global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .root[data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   :global(*) {
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
