@@ -6014,14 +6014,20 @@
   }
 
   .engDesignLayout {
-    grid-template-columns: 1.05fr 0.95fr !important;
+    grid-template-columns: 1.02fr 0.98fr !important;
+    align-items: stretch !important;
+  }
+
+  .hudPage .engPanelFlush {
+    height: 100% !important;
   }
 
   .hudPage .engSvgDark,
   .engSvgDark {
-    height: 204px !important;
-    max-height: 204px !important;
-    min-height: 204px !important;
+    flex: 1 1 auto !important;
+    min-height: 220px !important;
+    height: auto !important;
+    max-height: none !important;
   }
 
   .hudPage .engPanelMetrics .engMetricRow small {
@@ -6166,20 +6172,8 @@
     min-width: 0 !important;
   }
 
-  .engSvgDark {
-    height: 204px !important;
-    max-height: 204px !important;
-    min-height: 204px !important;
-  }
-
-  .hudPage .engSvgDark {
-    height: 204px !important;
-    max-height: 204px !important;
-    min-height: 204px !important;
-  }
-
   .hudPage .luxeHeadline {
-    font-size: 2rem !important;
+    font-size: 2.15rem !important;
   }
 
   .ledgerPage .luxeHeadline {
@@ -6246,18 +6240,18 @@
   }
 
   .genForecastPage .luxeHeadline {
-    font-size: 2.2rem !important;
+    font-size: 2.35rem !important;
     padding-bottom: 14px !important;
     line-height: 1.12 !important;
   }
 
   .genForecastPage .genForecast {
-    flex: 0 1 auto !important;
+    flex: 1 1 auto !important;
   }
 
   .genForecastPage .expertVerdict {
     margin-top: auto !important;
-    padding: 10px 14px !important;
+    padding: 12px 16px !important;
   }
 
   .genForecastBars {
@@ -6269,10 +6263,6 @@
     flex: 0 0 180px !important;
     height: 180px !important;
     min-height: 180px !important;
-  }
-
-  .hudPage .archIcon {
-    height: 34px !important;
   }
 
   .closePhotoImg {
@@ -6479,15 +6469,15 @@
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .a4Page {
-  -webkit-print-color-adjust: exact !important;
-  print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .a4Page :global(*) {
-  -webkit-print-color-adjust: exact !important;
-  print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
 }
 
 :global(#atelier-pdf-capture-host)
@@ -6571,23 +6561,32 @@
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .engDesignLayout {
-    grid-template-columns: 1.05fr 0.95fr !important;
+    grid-template-columns: 1.02fr 0.98fr !important;
+    align-items: stretch !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .hudPage .engPanelFlush {
+    height: 100% !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .hudPage .engSvgDark {
-    height: 204px !important;
-    max-height: 204px !important;
-    min-height: 204px !important;
+    flex: 1 1 auto !important;
+    min-height: 220px !important;
+    height: auto !important;
+    max-height: none !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .engSvgDark {
-    height: 204px !important;
-    max-height: 204px !important;
-    min-height: 204px !important;
+    flex: 1 1 auto !important;
+    min-height: 220px !important;
+    height: auto !important;
+    max-height: none !important;
 }
 
 :global(#atelier-pdf-capture-host)
@@ -6801,24 +6800,8 @@
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .engSvgDark {
-    height: 204px !important;
-    max-height: 204px !important;
-    min-height: 204px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .hudPage .engSvgDark {
-    height: 204px !important;
-    max-height: 204px !important;
-    min-height: 204px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .hudPage .luxeHeadline {
-    font-size: 2rem !important;
+    font-size: 2.15rem !important;
 }
 
 :global(#atelier-pdf-capture-host)
@@ -6923,7 +6906,7 @@
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .genForecastPage .luxeHeadline {
-    font-size: 2.2rem !important;
+    font-size: 2.35rem !important;
     padding-bottom: 14px !important;
     line-height: 1.12 !important;
 }
@@ -6931,14 +6914,14 @@
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .genForecastPage .genForecast {
-    flex: 0 1 auto !important;
+    flex: 1 1 auto !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .genForecastPage .expertVerdict {
     margin-top: auto !important;
-    padding: 10px 14px !important;
+    padding: 12px 16px !important;
 }
 
 :global(#atelier-pdf-capture-host)
@@ -6954,12 +6937,6 @@
     flex: 0 0 180px !important;
     height: 180px !important;
     min-height: 180px !important;
-}
-
-:global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .hudPage .archIcon {
-    height: 34px !important;
 }
 
 :global(#atelier-pdf-capture-host)

@@ -1002,7 +1002,22 @@
 }
 
 :global(#atelier-pdf-capture-host)
-  .root[data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir'] {
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .root {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .root :global(*) {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+}
+
+:global(#atelier-pdf-capture-host)
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
+  .root {
     background: #F8F9FB !important;
     padding: 0 !important;
 }
