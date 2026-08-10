@@ -42,12 +42,10 @@ const ARRAY_CAPTION_H = 34;
 
 /** Fixed roof-plan canvas — panels scale inside; outer box stays CSS-sized. */
 const ROOF_ARENA_W = 300;
-const ROOF_ARENA_PAD = 10;
-const ROOF_ARENA_TOP = 12;
-const ROOF_PANEL_ARENA_H = 168;
-const ROOF_COMPASS_RESERVE = 44;
-const ROOF_ARENA_BOTTOM = 6;
+const ROOF_ARENA_H = 186;
+const ROOF_BANK_INSET = 6;
 const ROOF_PANEL_MAX_SCALE = 0.64;
+const ROOF_COMPASS_INSET = 22;
 
 function metricValue(
   data: ProposalData,
@@ -278,39 +276,34 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
     maxY = Math.max(maxY, ...ys);
   }
 
-  const roofPanelArenaW =
-    ROOF_ARENA_W - ROOF_ARENA_PAD * 2 - ROOF_COMPASS_RESERVE;
-  const captionY = ROOF_ARENA_TOP + ROOF_PANEL_ARENA_H + 6;
   const vbW = ROOF_ARENA_W;
-  const vbH =
-    ROOF_ARENA_TOP +
-    ROOF_PANEL_ARENA_H +
-    ARRAY_CAPTION_H +
-    ROOF_ARENA_BOTTOM;
+  const vbH = ROOF_ARENA_H + ARRAY_CAPTION_H;
+  const roofPanelArenaW = vbW - ROOF_BANK_INSET * 2;
+  const roofPanelArenaH = ROOF_ARENA_H - ROOF_BANK_INSET * 2;
 
   const contentW = Math.max(1, maxX - minX);
   const contentH = Math.max(1, maxY - minY);
   const fitScale = Math.min(
     roofPanelArenaW / contentW,
-    ROOF_PANEL_ARENA_H / contentH
+    roofPanelArenaH / contentH
   );
   /** Small banks stay smaller so 24–36 module plants still fit the same frame. */
   const scale = Math.min(ROOF_PANEL_MAX_SCALE, fitScale);
 
   const scaledW = contentW * scale;
   const scaledH = contentH * scale;
-  const bankX = ROOF_ARENA_PAD + (roofPanelArenaW - scaledW) / 2;
-  const bankY = ROOF_ARENA_TOP + (ROOF_PANEL_ARENA_H - scaledH) / 2;
+  const bankX = ROOF_BANK_INSET + (roofPanelArenaW - scaledW) / 2;
+  const bankY = ROOF_BANK_INSET + (roofPanelArenaH - scaledH) / 2;
   const offsetX = bankX - minX * scale;
   const offsetY = bankY - minY * scale;
 
-  const gridX = ROOF_ARENA_PAD;
-  const gridY = ROOF_ARENA_TOP;
-  const gridW = roofPanelArenaW;
-  const gridH = ROOF_PANEL_ARENA_H;
-  const floorY = captionY;
-  const compassCx = ROOF_ARENA_W - ROOF_ARENA_PAD - 22;
-  const compassCy = ROOF_ARENA_TOP + 22;
+  const gridX = 0;
+  const gridY = 0;
+  const gridW = vbW;
+  const gridH = ROOF_ARENA_H;
+  const floorY = ROOF_ARENA_H;
+  const compassCx = vbW - ROOF_COMPASS_INSET;
+  const compassCy = ROOF_COMPASS_INSET;
 
   // Sort in raw space (back → front), then draw inside a fitted transform
   const panelPositions = [...rawPositions].sort(
@@ -365,23 +358,12 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
               </pattern>
             </defs>
 
-            {/* Full canvas — dark fill so flex-grow never shows white letterboxing */}
-            <rect
-              x="0"
-              y="0"
-              width={vbW}
-              height={vbH}
-              fill="#0a0e14"
-              rx="8"
-            />
-
             <rect
               x={gridX}
               y={gridY}
               width={gridW}
               height={gridH}
               fill="url(#roofFloor)"
-              rx="6"
             />
             <rect
               x={gridX}
@@ -389,7 +371,6 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
               width={gridW}
               height={gridH}
               fill="url(#isoGrid)"
-              rx="4"
             />
 
             <g transform={`translate(${offsetX} ${offsetY}) scale(${scale})`}>
@@ -445,7 +426,6 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
               width={gridW}
               height={ARRAY_CAPTION_H}
               fill="rgba(0,0,0,0.78)"
-              rx="0 0 6 6"
             />
             <text
               x={gridX + gridW / 2}
