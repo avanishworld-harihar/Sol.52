@@ -1459,6 +1459,8 @@
   display: flex;
   flex-direction: column;
   background-color: #f8f9fb !important;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .hudPage .luxeHeadline {
@@ -1500,9 +1502,9 @@
 }
 
 .hudPage .engSvgDark {
-  height: 204px;
-  max-height: 204px;
-  min-height: 204px;
+  height: 220px;
+  max-height: 220px;
+  min-height: 220px;
 }
 
 .hudPage .engMetricList {
@@ -1659,11 +1661,11 @@
   display: block;
   width: 100%;
   flex: 0 0 auto;
-  min-height: 204px;
-  height: 204px;
-  max-height: 204px;
+  min-height: 220px;
+  height: 220px;
+  max-height: 220px;
   border-radius: 8px;
-  background: #0a0e14;
+  background: transparent;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -1923,29 +1925,39 @@
 }
 
 .ledgerPage .luxeHeadline {
-  font-size: 2.35rem;
+  font-size: 2.05rem;
   font-weight: 700;
-  padding-bottom: 14px;
-  line-height: 1.12;
-  margin-bottom: 4px;
+  padding-bottom: 10px;
+  line-height: 1.1;
+  margin-bottom: 2px;
 }
 
 .ledgerPage .luxeHeaderBlock {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+  flex-shrink: 0;
 }
 
 .ledgerPage .goldTag {
-  font-size: 0.8rem;
+  font-size: 0.76rem;
   font-weight: 800;
 }
 
+.ledgerPageStack {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .ledgerPage .bomLead {
-  margin: 0 0 8px;
-  font-size: 1.02rem;
-  line-height: 1.45;
+  margin: 0 0 6px;
+  font-size: 0.88rem;
+  line-height: 1.35;
   overflow-wrap: anywhere;
   word-break: break-word;
   max-width: 100%;
+  flex-shrink: 0;
 }
 
 .ledgerListDense {
@@ -1971,13 +1983,14 @@
 }
 
 .ledgerPage .ledgerItemDense {
-  grid-template-columns: 48px minmax(0, 1fr);
-  gap: 10px;
-  padding: 8px 0 10px;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 8px;
+  padding: 4px 0 5px;
 }
 
 .ledgerItemDense:last-child {
   border-bottom: none;
+  padding-bottom: 2px;
 }
 
 .hugeNumberDense {
@@ -1990,7 +2003,7 @@
 }
 
 .ledgerPage .hugeNumberDense {
-  font-size: 1.7rem;
+  font-size: 1.45rem;
   color: rgba(168, 135, 42, 0.58);
 }
 
@@ -2047,28 +2060,28 @@
 .ledgerPage .itemContent {
   min-width: 0;
   max-width: 100%;
-  overflow: visible;
-  padding-bottom: 2px;
+  overflow: hidden;
+  padding-bottom: 0;
 }
 
 .ledgerPage .itemContent h3,
 .ledgerPage .bomMaterialName {
-  font-size: 1.12rem;
-  margin: 0 0 3px;
+  font-size: 1rem;
+  margin: 0 0 2px;
   font-weight: 800;
   color: #141820;
-  line-height: 1.28;
+  line-height: 1.22;
   overflow-wrap: anywhere;
   word-break: break-word;
   max-width: 100%;
 }
 
 .ledgerPage .bomMaterialBody {
-  font-size: 0.98rem;
-  line-height: 1.45;
+  font-size: 0.84rem;
+  line-height: 1.32;
   color: #1e2430;
-  margin: 0 0 4px;
-  padding-bottom: 4px;
+  margin: 0;
+  padding-bottom: 0;
   overflow-wrap: anywhere;
   word-break: break-word;
   max-width: 100%;
@@ -2089,24 +2102,25 @@
 }
 
 .ledgerPage .expertVerdict {
-  margin-top: 8px;
-  padding: 12px 16px;
+  margin-top: auto;
+  padding: 8px 12px;
   flex-shrink: 0;
 }
 
 .ledgerPage .expertVerdict p {
-  font-size: 1rem;
-  line-height: 1.42;
+  font-size: 0.86rem;
+  line-height: 1.34;
 }
 
 .ledgerPage .verdictLabel {
-  font-size: 0.68rem;
+  font-size: 0.62rem;
 }
 
 .ledgerPage .impactPageFooter {
-  margin-top: 6px;
-  padding-top: 8px;
+  margin-top: 0;
+  padding-top: 6px;
   flex-shrink: 0;
+  min-height: 28px;
 }
 
 .technicalStage {
@@ -3242,7 +3256,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  flex: 0 1 auto;
+  flex: 1 1 auto;
   min-height: 0;
   padding: 12px 14px 10px;
   border: 1px solid #e2e6ec;
@@ -3309,8 +3323,8 @@
   display: flex;
   align-items: flex-end;
   gap: 5px;
-  flex: 0 0 auto;
-  min-height: 168px;
+  flex: 1 1 auto;
+  min-height: 260px;
   padding: 0 2px;
   overflow-x: auto;
   overflow-y: visible;
@@ -3343,10 +3357,10 @@
 }
 
 .genBarTrack {
-  flex: 0 0 96px;
+  flex: 0 0 180px;
   width: 100%;
   max-width: 26px;
-  height: 96px;
+  height: 180px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -3359,7 +3373,7 @@
 
 .genBarFill {
   width: 100%;
-  height: calc(96px * var(--gen-bar-pct, 10) / 100);
+  height: calc(180px * var(--gen-bar-pct, 10) / 100);
   border-radius: 3px 3px 1px 1px;
   background: linear-gradient(
     180deg,
@@ -3377,7 +3391,7 @@
 
 .genBarFillBill {
   width: 46%;
-  height: calc(96px * var(--bill-bar-pct, 4) / 100);
+  height: calc(180px * var(--bill-bar-pct, 4) / 100);
   border-radius: 3px 3px 1px 1px;
   background: linear-gradient(
     180deg,
@@ -5168,37 +5182,37 @@
   }
 
   :global([data-proposal-live='true']) .ledgerPage .luxeHeadline {
-    font-size: 2.35rem !important;
-    padding-bottom: 14px !important;
-    line-height: 1.12 !important;
+    font-size: 2.05rem !important;
+    padding-bottom: 10px !important;
+    line-height: 1.1 !important;
   }
 
   :global([data-proposal-live='true']) .ledgerPage .itemContent {
-    overflow: visible !important;
+    overflow: hidden !important;
   }
 
   :global([data-proposal-live='true']) .ledgerPage .ledgerItemDense {
-    padding: 7px 0 10px !important;
+    padding: 4px 0 5px !important;
   }
 
   :global([data-proposal-live='true']) .ledgerPage .bomLead {
     margin-bottom: 6px !important;
-    font-size: 1.02rem !important;
-    line-height: 1.45 !important;
+    font-size: 0.88rem !important;
+    line-height: 1.35 !important;
   }
 
   :global([data-proposal-live='true']) .ledgerPage .bomMaterialName,
   :global([data-proposal-live='true']) .ledgerPage .itemContent h3 {
-    font-size: 1.12rem !important;
-    line-height: 1.28 !important;
+    font-size: 1rem !important;
+    line-height: 1.22 !important;
   }
 
   :global([data-proposal-live='true']) .ledgerPage .bomMaterialBody,
   :global([data-proposal-live='true']) .ledgerPage .itemContent p {
-    font-size: 0.98rem !important;
-    line-height: 1.45 !important;
-    margin-bottom: 4px !important;
-    padding-bottom: 4px !important;
+    font-size: 0.84rem !important;
+    line-height: 1.32 !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
   }
 
   :global([data-proposal-live='true']) .ledgerPage .ledgerRole {
@@ -5217,12 +5231,13 @@
   }
 
   :global([data-proposal-live='true']) .ledgerPage .expertVerdict {
-    padding: 12px 16px !important;
+    margin-top: auto !important;
+    padding: 8px 12px !important;
   }
 
   :global([data-proposal-live='true']) .ledgerPage .expertVerdict p {
-    font-size: 1rem !important;
-    line-height: 1.42 !important;
+    font-size: 0.86rem !important;
+    line-height: 1.34 !important;
   }
 
   :global([data-proposal-live='true']) .genForecastPage .luxeHeadline {
@@ -5232,7 +5247,7 @@
   }
 
   :global([data-proposal-live='true']) .genForecastPage .genForecast {
-    flex: 0 1 auto !important;
+    flex: 1 1 auto !important;
   }
 
   :global([data-proposal-live='true']) .genForecastPage .expertVerdict {
@@ -5241,7 +5256,7 @@
   }
 
   :global([data-proposal-live='true']) .genForecastBars {
-    min-height: 168px !important;
+    min-height: 260px !important;
     align-items: flex-end !important;
     overflow-x: auto;
     overflow-y: visible;
@@ -5249,9 +5264,9 @@
   }
 
   :global([data-proposal-live='true']) .genBarTrack {
-    flex: 0 0 96px !important;
-    height: 96px !important;
-    min-height: 96px !important;
+    flex: 0 0 180px !important;
+    height: 180px !important;
+    min-height: 180px !important;
   }
 
   :global([data-proposal-live='true']) .genForecastKpi {
@@ -5877,8 +5892,8 @@
   }
 
   :global([data-proposal-live='true']) .genBarTrack {
-    flex: 0 0 88px;
-    height: 88px;
+    flex: 0 0 120px;
+    height: 120px;
   }
 
 }
@@ -6152,37 +6167,37 @@
   }
 
   .ledgerPage .luxeHeadline {
-    font-size: 2.35rem !important;
-    padding-bottom: 14px !important;
-    line-height: 1.12 !important;
+    font-size: 2.05rem !important;
+    padding-bottom: 10px !important;
+    line-height: 1.1 !important;
   }
 
   .ledgerPage .itemContent {
-    overflow: visible !important;
+    overflow: hidden !important;
   }
 
   .ledgerPage .ledgerItemDense {
-    padding: 7px 0 10px !important;
+    padding: 4px 0 5px !important;
   }
 
   .ledgerPage .bomLead {
-    font-size: 1.02rem !important;
-    line-height: 1.45 !important;
+    font-size: 0.88rem !important;
+    line-height: 1.35 !important;
     margin-bottom: 6px !important;
   }
 
   .ledgerPage .bomMaterialName,
   .ledgerPage .itemContent h3 {
-    font-size: 1.12rem !important;
-    line-height: 1.28 !important;
+    font-size: 1rem !important;
+    line-height: 1.22 !important;
   }
 
   .ledgerPage .bomMaterialBody,
   .ledgerPage .itemContent p {
-    font-size: 0.98rem !important;
-    line-height: 1.45 !important;
-    margin-bottom: 4px !important;
-    padding-bottom: 4px !important;
+    font-size: 0.84rem !important;
+    line-height: 1.32 !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
   }
 
   .ledgerPage .ledgerRole {
@@ -6201,16 +6216,17 @@
   }
 
   .ledgerPage .expertVerdict {
-    padding: 10px 14px !important;
+    margin-top: auto !important;
+    padding: 8px 12px !important;
   }
 
   .ledgerPage .expertVerdict p {
-    font-size: 1rem !important;
-    line-height: 1.42 !important;
+    font-size: 0.86rem !important;
+    line-height: 1.34 !important;
   }
 
   .ledgerPage .verdictLabel {
-    font-size: 0.68rem !important;
+    font-size: 0.62rem !important;
   }
 
   .genForecastPage .luxeHeadline {
@@ -6229,14 +6245,14 @@
   }
 
   .genForecastBars {
-    min-height: 168px !important;
+    min-height: 260px !important;
     align-items: flex-end !important;
   }
 
   .genBarTrack {
-    flex: 0 0 96px !important;
-    height: 96px !important;
-    min-height: 96px !important;
+    flex: 0 0 180px !important;
+    height: 180px !important;
+    min-height: 180px !important;
   }
 
   .hudPage .archIcon {
@@ -6435,11 +6451,10 @@
  */
 
 :global(#atelier-pdf-capture-host)
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .a4Page,
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir'],
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
-  .a4Page :global(*) {
+  :global(*) {
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -6792,61 +6807,61 @@
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .ledgerPage .luxeHeadline {
-    font-size: 2.35rem !important;
-    padding-bottom: 14px !important;
-    line-height: 1.12 !important;
+    font-size: 2.05rem !important;
+    padding-bottom: 10px !important;
+    line-height: 1.1 !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .ledgerPage .itemContent {
-    overflow: visible !important;
+    overflow: hidden !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .ledgerPage .ledgerItemDense {
-    padding: 7px 0 10px !important;
+    padding: 4px 0 5px !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .ledgerPage .bomLead {
-    font-size: 1.02rem !important;
-    line-height: 1.45 !important;
+    font-size: 0.88rem !important;
+    line-height: 1.35 !important;
     margin-bottom: 6px !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .ledgerPage .bomMaterialName {
-    font-size: 1.12rem !important;
-    line-height: 1.28 !important;
+    font-size: 1rem !important;
+    line-height: 1.22 !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .ledgerPage .itemContent h3 {
-    font-size: 1.12rem !important;
-    line-height: 1.28 !important;
+    font-size: 1rem !important;
+    line-height: 1.22 !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .ledgerPage .bomMaterialBody {
-    font-size: 0.98rem !important;
-    line-height: 1.45 !important;
-    margin-bottom: 4px !important;
-    padding-bottom: 4px !important;
+    font-size: 0.84rem !important;
+    line-height: 1.32 !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .ledgerPage .itemContent p {
-    font-size: 0.98rem !important;
-    line-height: 1.45 !important;
-    margin-bottom: 4px !important;
-    padding-bottom: 4px !important;
+    font-size: 0.84rem !important;
+    line-height: 1.32 !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
 }
 
 :global(#atelier-pdf-capture-host)
@@ -6871,20 +6886,21 @@
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .ledgerPage .expertVerdict {
-    padding: 10px 14px !important;
+    margin-top: auto !important;
+    padding: 8px 12px !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .ledgerPage .expertVerdict p {
-    font-size: 1rem !important;
-    line-height: 1.42 !important;
+    font-size: 0.86rem !important;
+    line-height: 1.34 !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .ledgerPage .verdictLabel {
-    font-size: 0.68rem !important;
+    font-size: 0.62rem !important;
 }
 
 :global(#atelier-pdf-capture-host)
@@ -6911,16 +6927,16 @@
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .genForecastBars {
-    min-height: 168px !important;
+    min-height: 260px !important;
     align-items: flex-end !important;
 }
 
 :global(#atelier-pdf-capture-host)
   [data-pdf-capture-root='true'][data-proposal-preset='residential_luxe_noir']
   .genBarTrack {
-    flex: 0 0 96px !important;
-    height: 96px !important;
-    min-height: 96px !important;
+    flex: 0 0 180px !important;
+    height: 180px !important;
+    min-height: 180px !important;
 }
 
 :global(#atelier-pdf-capture-host)

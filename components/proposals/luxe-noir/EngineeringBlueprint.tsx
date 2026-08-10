@@ -38,7 +38,7 @@ const ISO = {
 } as const;
 
 /** Caption strip below the working grid (px in SVG user units). */
-const ARRAY_CAPTION_H = 28;
+const ARRAY_CAPTION_H = 34;
 
 function metricValue(
   data: ProposalData,
@@ -269,11 +269,11 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
     maxY = Math.max(maxY, ...ys);
   }
 
-  const sidePad = 8;
-  const topPad = 10;
-  const bottomPad = 6;
-  const maxDrawW = 268;
-  const maxDrawH = 148;
+  const sidePad = 4;
+  const topPad = 8;
+  const bottomPad = 8;
+  const maxDrawW = 308;
+  const maxDrawH = 168;
   const contentW = Math.max(1, maxX - minX);
   const contentH = Math.max(1, maxY - minY);
   const scale = Math.min(1, maxDrawW / contentW, maxDrawH / contentH);
@@ -285,17 +285,16 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
   const tMinY = minY * scale + offsetY;
   const tMaxY = maxY * scale + offsetY;
 
-  const gridInset = 6;
+  const gridInset = 4;
   const gridX = tMinX - gridInset;
   const gridY = tMinY - gridInset;
   const gridW = tMaxX - tMinX + gridInset * 2;
   const gridH = tMaxY - tMinY + gridInset * 2;
   const floorY = tMaxY + bottomPad;
-  const compassZone = 58;
-  const vbW = Math.ceil(tMaxX + sidePad + compassZone);
-  const vbH = floorY + ARRAY_CAPTION_H;
-  const compassCx = vbW - sidePad - 26;
-  const compassCy = topPad + 26;
+  const compassCx = gridX + gridW - 24;
+  const compassCy = gridY + 24;
+  const vbW = Math.ceil(gridX + gridW + sidePad);
+  const vbH = floorY + ARRAY_CAPTION_H + 6;
 
   // Sort in raw space (back → front), then draw inside a fitted transform
   const panelPositions = [...rawPositions].sort(
@@ -413,23 +412,23 @@ export function EngineeringBlueprint({ data }: EngineeringBlueprintProps) {
               180° S · {tilt.toFixed(0)}°
             </text>
 
-            {/* Caption bar */}
+            {/* Caption bar — full grid width, inset text so labels never clip edges */}
             <rect
               x={gridX}
               y={floorY}
               width={gridW}
               height={ARRAY_CAPTION_H}
-              fill="rgba(0,0,0,0.72)"
+              fill="rgba(0,0,0,0.78)"
               rx="0 0 6 6"
             />
             <text
               x={gridX + gridW / 2}
-              y={floorY + 18}
+              y={floorY + 22}
               textAnchor="middle"
               fill="#e8ecf2"
-              fontSize="9.5"
+              fontSize="8.75"
               fontFamily="system-ui,sans-serif"
-              letterSpacing="0.35"
+              letterSpacing="0.25"
             >
               {modulesRaw} modules · {formatLuxeKw(dcKwp)} kWp DC · {strings}×
               {perString} string · South · tilt {tilt.toFixed(0)}°

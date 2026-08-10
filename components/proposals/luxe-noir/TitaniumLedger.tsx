@@ -266,28 +266,30 @@ export function TitaniumLedger({ data }: TitaniumLedgerProps) {
         </div>
       </header>
 
-      <p className={styles.bomLead}>
-        {isHi
-          ? "सात परतें — मॉड्यूल, इन्वर्टर, स्ट्रक्चर, DCDB (1), ACDB (1), LA + 4 sqmm केबल, और 17 mm अर्थिंग (3 सेट)। मात्रा इंस्टॉलर BOM शीट के अनुसार।"
-          : "Seven layers — modules, inverter, structure, DCDB (1), ACDB (1), LA + 4 sqmm cabling, and 17 mm earthing (3 sets). Quantities follow the installer BOM sheet."}
-      </p>
+      <div className={styles.ledgerPageStack}>
+        <p className={styles.bomLead}>
+          {isHi
+            ? "सात परतें — मॉड्यूल, इन्वर्टर, स्ट्रक्चर, DCDB (1), ACDB (1), LA + 4 sqmm केबल, और 17 mm अर्थिंग (3 सेट)। मात्रा इंस्टॉलर BOM शीट के अनुसार।"
+            : "Seven layers — modules, inverter, structure, DCDB (1), ACDB (1), LA + 4 sqmm cabling, and 17 mm earthing (3 sets). Quantities follow the installer BOM sheet."}
+        </p>
 
-      <div className={styles.ledgerListDense}>
-        {rows.map((row) => (
-          <div key={row.num} className={styles.ledgerItemDense}>
-            <div className={styles.hugeNumberDense}>{row.num}</div>
-            <div className={styles.itemContent}>
-              <div className={styles.ledgerTitleRow}>
-                <span className={styles.ledgerRole}>{row.role}</span>
-                <span className={styles.specBadge}>{row.badge}</span>
+        <div className={styles.ledgerListDense}>
+          {rows.map((row) => (
+            <div key={row.num} className={styles.ledgerItemDense}>
+              <div className={styles.hugeNumberDense}>{row.num}</div>
+              <div className={styles.itemContent}>
+                <div className={styles.ledgerTitleRow}>
+                  <span className={styles.ledgerRole}>{row.role}</span>
+                  <span className={styles.specBadge}>{row.badge}</span>
+                </div>
+                <h3 className={styles.bomMaterialName}>{row.title}</h3>
+                <p className={styles.bomMaterialBody}>
+                  {formatBomBody(row.body)}
+                </p>
               </div>
-              <h3 className={styles.bomMaterialName}>{row.title}</h3>
-              <p className={styles.bomMaterialBody}>
-                {formatBomBody(row.body)}
-              </p>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       <ExpertVerdict label={copy.bom.verdictLabel}>

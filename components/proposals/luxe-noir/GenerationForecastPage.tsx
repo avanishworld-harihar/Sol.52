@@ -17,7 +17,7 @@ import { LuxeHeaderBrand, LuxePageFooter } from "./luxe-brand";
 import styles from "./luxe.module.css";
 
 /** Fixed track height — inline px heights avoid iPad Safari / html2canvas calc(var()) collapse. */
-const GEN_BAR_TRACK_PX = 96;
+const GEN_BAR_TRACK_PX = 180;
 
 export type GenerationForecastPageProps = {
   data: ProposalData;
