@@ -19,9 +19,23 @@ export const ATELIER_PDF_CAPTURE_HOST_ID = "atelier-pdf-capture-host";
 export function isAppleTouchDevice(): boolean {
   if (typeof navigator === "undefined") return false;
   const ua = navigator.userAgent || "";
-  const iPadDesktopUa =
-    navigator.platform === "MacIntel" && (navigator.maxTouchPoints || 0) > 1;
-  return /iPad|iPhone|iPod/i.test(ua) || iPadDesktopUa;
+  // Classic iOS/iPadOS UA still carries the device name.
+  if (/iPad|iPhone|iPod/i.test(ua)) return true;
+  /*
+   * iPadOS 13+ Safari requests desktop sites by default: the UA reports as
+   * "Macintosh" and navigator.platform can be "MacIntel" — indistinguishable
+   * from a real Mac by UA alone. A genuine desktop Mac has no touch screen
+   * (maxTouchPoints === 0), so touch capability on an Apple-reported platform
+   * means it is really an iPad. navigator.platform is deprecated and empty in
+   * some browsers, so also accept an Apple-looking UA. This keeps real Macs on
+   * the native (vector) print path while routing every iPad to the raster
+   * html2canvas capture, which is the only path that reproduces the A4 layout
+   * on iPadOS (native print mis-paginates and splits single pages).
+   */
+  const maxTouch = navigator.maxTouchPoints || 0;
+  const applePlatform =
+    navigator.platform === "MacIntel" || /Mac/i.test(ua);
+  return applePlatform && maxTouch > 1;
 }
 
 function safeFileName(input: string): string {
@@ -113,6 +127,21 @@ function applyPageBox(el: HTMLElement): void {
 }
 
 function prepareCaptureClone(root: ParentNode): void {
+  /*
+   * Drop any live-preview marker inside the capture subtree so viewport-based
+   * @media (max-width) tablet rules can never match on small screens (iPad).
+   * The capture host must render the fixed desktop/print A4 layout everywhere.
+   */
+  if (root instanceof HTMLElement) {
+    root.removeAttribute("data-proposal-live");
+    delete root.dataset.proposalLive;
+  }
+  for (const live of Array.from(
+    root.querySelectorAll<HTMLElement>("[data-proposal-live]")
+  )) {
+    live.removeAttribute("data-proposal-live");
+    delete live.dataset.proposalLive;
+  }
   for (const inner of Array.from(root.querySelectorAll<HTMLElement>("[class*='pageInner']"))) {
     inner.style.setProperty("flex", "1 1 auto", "important");
     inner.style.setProperty("min-height", "0", "important");
@@ -213,6 +242,19 @@ function createRootShell(root: HTMLElement): HTMLElement {
   const shell = root.cloneNode(false) as HTMLElement;
   shell.removeAttribute("id");
   shell.removeAttribute("aria-label");
+  /*
+   * The live root carries data-proposal-live="true" so responsive
+   * @media screen (max-width) tablet/phone rules scope to the on-screen
+   * preview only. cloneNode copies that marker onto the capture shell, and
+   * because the off-screen host still lives in the real document, on an iPad
+   * (viewport < 1180px) those fluid rules would match the capture clone —
+   * turning fixed A4 sheets into auto-height/overflowing pages (wrong colours,
+   * broken layout, 12 pages ballooning to ~24). Strip it so only the
+   * capture-host print-mirror CSS applies, matching the PC print/@media print
+   * output on every device.
+   */
+  shell.removeAttribute("data-proposal-live");
+  delete shell.dataset.proposalLive;
   shell.dataset.pdfCaptureRoot = "true";
   shell.style.setProperty("display", "block", "important");
   shell.style.setProperty("width", `${A4_W_PX}px`, "important");
