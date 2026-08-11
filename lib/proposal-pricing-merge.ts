@@ -1,6 +1,12 @@
 import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposal-ppt";
 import { summarizeProposalDeck } from "@/lib/proposal-ppt";
-import { resolveProposalPanelBrand } from "@/lib/residential-deck-helpers";
+import { residentialCostBreakdown, resolveProposalPanelBrand } from "@/lib/residential-deck-helpers";
+import type { ResidentialProposalConfig } from "@/lib/residential-requirements-schema";
+import {
+  ensureProposalPricingRow,
+  getProposalPricingByProposalId,
+  replaceProposalPricing,
+} from "@/lib/proposal-pricing-store";
 import { defaultResidentialConfig, parseResidentialConfig } from "@/lib/residential-proposal-config";
 import { solarFromResidentialPanelLine } from "@/lib/residential-solar-engine";
 import { computeGrossSystemCostInr } from "@/lib/solar-engine";
@@ -225,4 +231,71 @@ export function applyProposalPricingPatch(current: ProposalPricingRow, patch: Pr
   }
 
   return next;
+}
+
+export type ProposalPricingFinancials = {
+  systemKw: number;
+  grossInr: number;
+  subsidyInr: number;
+  netInr: number;
+};
+
+/** Keep `proposal_pricing` aligned with deck / rate-card totals (unless manually overridden). */
+export async function syncProposalPricingFinancials(
+  proposalId: string,
+  financials: ProposalPricingFinancials,
+  ppt: PremiumProposalPptInput,
+  opts?: { presetId?: string | null }
+): Promise<ProposalPricingRow | null> {
+  const systemKw = Math.max(0, Number(financials.systemKw) || 0);
+  const grossInr = Math.max(0, Math.round(financials.grossInr));
+  const subsidyInr = Math.max(0, Math.round(financials.subsidyInr));
+  const netInr = Math.max(0, Math.round(financials.netInr));
+
+  let pricing = await getProposalPricingByProposalId(proposalId);
+  if (!pricing) {
+    const seedSummary = {
+      grossSystemCost: grossInr,
+      pmSubsidy: subsidyInr,
+      netCost: netInr,
+    } as ProposalDeckSummary;
+    await ensureProposalPricingRow(
+      defaultProposalPricingFromDeck(proposalId, ppt, seedSummary, { presetId: opts?.presetId })
+    );
+    pricing = await getProposalPricingByProposalId(proposalId);
+  }
+  if (!pricing || pricing.manual_final_override) return pricing;
+
+  const patched = applyProposalPricingPatch(pricing, {
+    system_kw: systemKw > 0 ? systemKw : pricing.system_kw,
+    hardware_inr: grossInr,
+    subsidy_inr: subsidyInr,
+    final_amount_inr: netInr,
+    manual_final_override: false,
+  });
+  return replaceProposalPricing(patched);
+}
+
+/** Sync pricing row from Smart Catalog / requirement residentialConfig. */
+export async function syncProposalPricingFromResidentialConfig(
+  proposalId: string,
+  ppt: PremiumProposalPptInput,
+  resCfg: ResidentialProposalConfig,
+  opts?: { isCommercialDeck?: boolean; presetId?: string | null }
+): Promise<ProposalPricingRow | null> {
+  const breakdown = residentialCostBreakdown(resCfg, {
+    connectionType: ppt.connectionType ?? resCfg.connectionType,
+    subsidyEligible: opts?.isCommercialDeck ? false : undefined,
+  });
+  return syncProposalPricingFinancials(
+    proposalId,
+    {
+      systemKw: resCfg.solar.plantCapacityKw,
+      grossInr: breakdown.grossInr,
+      subsidyInr: breakdown.subsidyInr,
+      netInr: breakdown.netInr,
+    },
+    { ...ppt, residentialConfig: resCfg },
+    opts
+  );
 }

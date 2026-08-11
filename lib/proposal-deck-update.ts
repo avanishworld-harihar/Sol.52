@@ -1,9 +1,10 @@
 import { z } from "zod";
 import { fetchMpAuditOverridesByRef } from "@/lib/mp-bill-audit-fetch";
 import { appendActivityEvent } from "@/lib/followup-store";
-import { mergeProposalPricingIntoPptInput } from "@/lib/proposal-pricing-merge";
+import { mergeProposalPricingIntoPptInput, syncProposalPricingFinancials, syncProposalPricingFromResidentialConfig } from "@/lib/proposal-pricing-merge";
 import { getProposalPricingByProposalId } from "@/lib/proposal-pricing-store";
 import { persistMergedProposalDeck } from "@/lib/proposal-pricing-sync";
+import { parseResidentialConfig } from "@/lib/residential-proposal-config";
 import { proposalExtrasShape } from "@/lib/proposal-extras-schema";
 import { summarizeProposalDeck, type PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { PROPOSAL_PRESET_IDS } from "@/lib/proposal-preset-engine";
@@ -164,6 +165,33 @@ export async function updateProposalDeckFromBody(
   if (!proposal) return { ok: false, error: "not_found" };
 
   const pptInput = await buildPptInputFromBody(payload, proposal.ppt_input);
+  const resCfg =
+    parseResidentialConfig(pptInput.residentialConfig) ??
+    parseResidentialConfig(proposal.ppt_input.residentialConfig);
+
+  if (resCfg?.solar) {
+    await syncProposalPricingFromResidentialConfig(proposalId, pptInput, resCfg, {
+      isCommercialDeck: Boolean(proposal.ppt_input.commercialConfig),
+      presetId: proposal.preset_id,
+    });
+  } else if (
+    payload.grossSystemCostInr != null &&
+    payload.pmSuryaGharSubsidyInr != null &&
+    payload.netCostInr != null
+  ) {
+    await syncProposalPricingFinancials(
+      proposalId,
+      {
+        systemKw: payload.systemKw,
+        grossInr: payload.grossSystemCostInr,
+        subsidyInr: payload.pmSuryaGharSubsidyInr,
+        netInr: payload.netCostInr,
+      },
+      pptInput,
+      { presetId: proposal.preset_id }
+    );
+  }
+
   const pricing = await getProposalPricingByProposalId(proposalId);
   const mergedPpt = mergeProposalPricingIntoPptInput(pptInput, pricing);
   const leadId = payload.leadId?.trim() || proposal.lead_id || null;

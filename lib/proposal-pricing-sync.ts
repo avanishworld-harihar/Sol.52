@@ -24,7 +24,7 @@ import {
 } from "@/lib/residential-solar-engine";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { summarizeProposalDeck } from "@/lib/proposal-ppt";
-import { mergeProposalPricingIntoPptInput } from "@/lib/proposal-pricing-merge";
+import { mergeProposalPricingIntoPptInput, syncProposalPricingFromResidentialConfig } from "@/lib/proposal-pricing-merge";
 import { normalizeLineItems } from "@/lib/proposal-pricing-lines";
 import { getProposalPricingByProposalId } from "@/lib/proposal-pricing-store";
 import {
@@ -187,21 +187,26 @@ export async function persistResidentialConfigChange(
 ): Promise<boolean> {
   const proposal = await getProposalById(proposalId);
   if (!proposal) return false;
-  const pricing = await getProposalPricingByProposalId(proposalId);
+
   const baseLayout =
     proposalLayout ??
     proposal.ppt_input.proposalLayout ??
     normalizeProposalTemplateV1({ version: 1, blocks: [] });
   const syncedLayout = applyResidentialFlagsToLayout(baseLayout, residentialConfig);
-  const mergedPpt = mergeProposalPricingIntoPptInput(
-    {
-      ...proposal.ppt_input,
-      residentialConfig,
-      proposalLayout: syncedLayout,
-      dataSource:
-        residentialConfig.inputMode === "requirement" ? "requirement" : proposal.ppt_input.dataSource,
-    },
-    pricing
-  );
+  const pptWithConfig: PremiumProposalPptInput = {
+    ...proposal.ppt_input,
+    residentialConfig,
+    proposalLayout: syncedLayout,
+    dataSource:
+      residentialConfig.inputMode === "requirement" ? "requirement" : proposal.ppt_input.dataSource,
+  };
+
+  await syncProposalPricingFromResidentialConfig(proposalId, pptWithConfig, residentialConfig, {
+    isCommercialDeck: Boolean(proposal.ppt_input.commercialConfig),
+    presetId: proposal.preset_id,
+  });
+
+  const pricing = await getProposalPricingByProposalId(proposalId);
+  const mergedPpt = mergeProposalPricingIntoPptInput(pptWithConfig, pricing);
   return persistMergedProposalDeck(proposalId, mergedPpt);
 }

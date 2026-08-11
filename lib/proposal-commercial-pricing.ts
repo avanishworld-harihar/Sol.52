@@ -70,18 +70,14 @@ export function resolveProposalCommercialPricing(
   const hasExplicitSubsidy =
     input.pmSuryaGharSubsidyInr != null && Number.isFinite(input.pmSuryaGharSubsidyInr);
 
-  /** Pricing-row merge — gross, subsidy, and net were written together. */
-  if (hasExplicitGross && hasExplicitSubsidy && netOverride != null) {
-    return fromTriple(input.grossSystemCostInr!, input.pmSuryaGharSubsidyInr!, netOverride);
-  }
-
   const resCfg = ctx.resCfg ?? parseResidentialConfig(input.residentialConfig);
+  /** Rate-card / requirement config beats stale `proposal_pricing` scalars merged into ppt_input. */
   if (resCfg?.solar) {
     const breakdown = residentialCostBreakdown(resCfg, {
       connectionType: input.connectionType ?? resCfg.connectionType,
       subsidyEligible: ctx.isCommercialDeck ? false : undefined,
     });
-    if (netOverride != null) {
+    if (netOverride != null && !hasExplicitGross && !hasExplicitSubsidy) {
       return fromTriple(
         breakdown.grossInr,
         breakdown.subsidyInr,
@@ -96,6 +92,11 @@ export function resolveProposalCommercialPricing(
       discountInr: breakdown.discountInr,
       netCost: breakdown.netInr,
     };
+  }
+
+  /** Pricing-row merge — gross, subsidy, and net were written together (no residentialConfig). */
+  if (hasExplicitGross && hasExplicitSubsidy && netOverride != null) {
+    return fromTriple(input.grossSystemCostInr!, input.pmSuryaGharSubsidyInr!, netOverride);
   }
 
   const gross = hasExplicitGross
