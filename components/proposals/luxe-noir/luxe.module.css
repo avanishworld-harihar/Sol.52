@@ -3037,6 +3037,7 @@
   color: #141820;
   font-weight: 600;
   line-height: 1.1;
+  white-space: nowrap;
 }
 
 .impactCardValueSoft {
@@ -3045,6 +3046,11 @@
   color: #141820;
   font-weight: 500;
   line-height: 1.1;
+  /*
+   * Shrink-to-fit flex item: PDF capture pins the measured width, so a hair of
+   * font-metric drift would wrap "25 years" onto the caption below it.
+   */
+  white-space: nowrap;
 }
 
 .impactCardHint {
@@ -4635,6 +4641,23 @@
   margin-top: 0;
 }
 
+/*
+ * Two-column article/list flow. The terms copy is fixed-length and must stay
+ * whole across exactly two A4 sheets; a single column overruns the sheet by
+ * ~414px, which the fixed-height PDF capture then clips.
+ */
+.termsGrid2 {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 18px;
+  align-items: start;
+}
+
+.termsGrid2 > li:nth-last-child(-n + 2) {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
 .termsArticleList {
   list-style: none;
   margin: 0;
@@ -4955,11 +4978,11 @@
 }
 
 .termsPageRoomy .termsStack {
-  gap: 12px;
+  gap: 9px;
 }
 
 .termsPageRoomy .termsSection {
-  padding: 14px 16px 16px;
+  padding: 11px 13px 12px;
 }
 
 .termsPageRoomy .termsSection:first-child {
@@ -4974,21 +4997,21 @@
   font-size: 0.84rem;
   font-weight: 800;
   letter-spacing: 0.14em;
-  margin-bottom: 10px;
-  padding-bottom: 14px;
+  margin-bottom: 8px;
+  padding-bottom: 10px;
   line-height: 1.12;
 }
 
 .termsPageRoomy .termsArticleList {
-  gap: 7px;
+  gap: 5px;
   flex: 0 1 auto;
   justify-content: flex-start;
 }
 
 .termsPageRoomy .termsArticle {
-  grid-template-columns: 34px 1fr;
-  gap: 10px;
-  padding-bottom: 7px;
+  grid-template-columns: 28px 1fr;
+  gap: 8px;
+  padding-bottom: 5px;
 }
 
 .termsPageRoomy .termsArticleNum {
@@ -4997,26 +5020,26 @@
 }
 
 .termsPageRoomy .termsArticleLabel {
-  font-size: 1rem;
+  font-size: 0.94rem;
   font-weight: 800;
-  margin-bottom: 3px;
-  line-height: 1.25;
+  margin-bottom: 2px;
+  line-height: 1.22;
 }
 
 .termsPageRoomy .termsArticleBody {
-  font-size: 0.96rem;
-  line-height: 1.42;
+  font-size: 0.89rem;
+  line-height: 1.36;
 }
 
 .termsPageRoomy .termsNumberedList {
-  gap: 10px;
+  gap: 7px;
 }
 
 .termsPageRoomy .termsNumberedList li {
-  grid-template-columns: 28px 1fr;
-  gap: 10px;
-  font-size: 1rem;
-  line-height: 1.42;
+  grid-template-columns: 26px 1fr;
+  gap: 8px;
+  font-size: 0.94rem;
+  line-height: 1.38;
 }
 
 .termsPageRoomy .termsListNum {
@@ -5027,13 +5050,13 @@
 }
 
 .termsPageRoomy .expertVerdict {
-  margin-top: 12px;
-  padding: 12px 14px;
+  margin-top: 9px;
+  padding: 10px 12px;
 }
 
 .termsPageRoomy .expertVerdict p {
-  font-size: 1.05rem;
-  line-height: 1.45;
+  font-size: 0.97rem;
+  line-height: 1.4;
 }
 
 .termsPageRoomy .verdictLabel {

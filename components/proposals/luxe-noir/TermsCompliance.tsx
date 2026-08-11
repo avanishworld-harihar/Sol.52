@@ -150,7 +150,7 @@ export function TermsCompliancePage1({ data }: TermsComplianceProps) {
       <div className={styles.termsStack}>
         <section className={styles.termsSection}>
           <div className={styles.termsSubhead}>{copy.terms.general}</div>
-          <ol className={styles.termsArticleList}>
+          <ol className={`${styles.termsArticleList} ${styles.termsGrid2}`}>
             {GENERAL_TERMS.map((t, i) => (
               <li key={t.label} className={styles.termsArticle}>
                 <span className={styles.termsArticleNum}>
@@ -167,7 +167,7 @@ export function TermsCompliancePage1({ data }: TermsComplianceProps) {
 
         <section className={styles.termsSection}>
           <div className={styles.termsSubhead}>{copy.terms.documents}</div>
-          <ol className={styles.termsNumberedList}>
+          <ol className={`${styles.termsNumberedList} ${styles.termsGrid2}`}>
             {docs.map((d, i) => (
               <li key={d.slice(0, 48)}>
                 <span className={styles.termsListNum}>{i + 1}</span>
@@ -175,6 +175,15 @@ export function TermsCompliancePage1({ data }: TermsComplianceProps) {
               </li>
             ))}
           </ol>
+        </section>
+
+        <section className={styles.termsSection}>
+          <div className={styles.termsSubhead}>{copy.terms.safety}</div>
+          <ul className={styles.termsSafetyList}>
+            {SAFETY_NOTES.map((s) => (
+              <li key={s.slice(0, 40)}>{s}</li>
+            ))}
+          </ul>
         </section>
       </div>
 
@@ -248,17 +257,8 @@ export function TermsCompliancePage2({ data }: TermsComplianceProps) {
 
       <div className={styles.termsStack}>
         <section className={styles.termsSection}>
-          <div className={styles.termsSubhead}>{copy.terms.safety}</div>
-          <ul className={styles.termsSafetyList}>
-            {SAFETY_NOTES.map((s) => (
-              <li key={s.slice(0, 40)}>{s}</li>
-            ))}
-          </ul>
-        </section>
-
-        <section className={styles.termsSection}>
           <div className={styles.termsSubhead}>{copy.terms.clientScope}</div>
-          <ol className={styles.termsNumberedList}>
+          <ol className={`${styles.termsNumberedList} ${styles.termsGrid2}`}>
             {take(CLIENT_SCOPE, 6).map((s, i) => (
               <li key={s.slice(0, 48)}>
                 <span className={styles.termsListNum}>{i + 1}</span>
@@ -275,7 +275,7 @@ export function TermsCompliancePage2({ data }: TermsComplianceProps) {
           {planOptions.length > 0 ? (
             <>
               <p className={styles.termsAmcIncludes}>{copy.terms.availablePlans}</p>
-              <ol className={styles.termsNumberedList}>
+              <ol className={`${styles.termsNumberedList} ${styles.termsGrid2}`}>
                 {planOptions.map((s, i) => (
                   <li key={`plan-${s.slice(0, 32)}`}>
                     <span className={styles.termsListNum}>{i + 1}</span>
@@ -287,7 +287,7 @@ export function TermsCompliancePage2({ data }: TermsComplianceProps) {
           ) : null}
 
           <p className={styles.termsAmcIncludes}>{copy.terms.amcIncludes}</p>
-          <ol className={styles.termsNumberedList}>
+          <ol className={`${styles.termsNumberedList} ${styles.termsGrid2}`}>
             {amcIncludes.map((s, i) => (
               <li key={`inc-${s.slice(0, 32)}`}>
                 <span className={styles.termsListNum}>{i + 1}</span>
@@ -297,7 +297,7 @@ export function TermsCompliancePage2({ data }: TermsComplianceProps) {
           </ol>
 
           <p className={styles.termsAmcIncludes}>{copy.terms.amcExcludes}</p>
-          <ol className={styles.termsNumberedList}>
+          <ol className={`${styles.termsNumberedList} ${styles.termsGrid2}`}>
             {amcExcludes.map((s, i) => (
               <li key={`exc-${s.slice(0, 32)}`}>
                 <span className={styles.termsListNum}>{i + 1}</span>
@@ -324,7 +324,7 @@ export function TermsCompliancePage2({ data }: TermsComplianceProps) {
           {amcCommercial.length > 0 ? (
             <>
               <p className={styles.termsAmcIncludes}>{copy.terms.paymentNotes}</p>
-              <ol className={styles.termsNumberedList}>
+              <ol className={`${styles.termsNumberedList} ${styles.termsGrid2}`}>
                 {amcCommercial.map((t, i) => (
                   <li key={`com-${t.slice(0, 32)}`}>
                     <span className={styles.termsListNum}>{i + 1}</span>

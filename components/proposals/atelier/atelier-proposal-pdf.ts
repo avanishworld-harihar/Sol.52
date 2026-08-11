@@ -1,13 +1,22 @@
 /**
- * Atelier PDF export — per-page html2canvas capture.
+ * Atelier PDF export — per-page raster capture.
  *
  * iPad / iOS: native window.print() mis-paginates (26 pages), drops photos, and
  * cannot match the on-screen A4 layout. Capture clones each live section at the
  * same 794×1123px geometry the web proposal uses — no alternate capture layout.
+ *
+ * Rasterizer: modern-screenshot (SVG <foreignObject>) is preferred because the
+ * browser itself paints the markup, so the bitmap matches the live proposal
+ * exactly. html2canvas re-implements CSS layout and text metrics, which on iPad
+ * produced object-fit images stretching, text baselines drifting into bars and
+ * card edges, heading underlines colliding with the heading, and content
+ * spilling past the sheet. It stays only as a fallback if foreignObject
+ * capture fails.
  */
 
 type JsPdfCtor = typeof import("jspdf").jsPDF;
 type Html2CanvasFn = typeof import("html2canvas")["default"];
+type DomToCanvasFn = typeof import("modern-screenshot")["domToCanvas"];
 
 import styles from "./atelier.module.css";
 
@@ -348,10 +357,16 @@ export async function buildAtelierProposalPdf(options: {
     throw new Error("No Atelier pages found to export.");
   }
 
-  const [{ jsPDF }, { default: html2canvas }] = (await Promise.all([
-    import("jspdf"),
-    import("html2canvas"),
-  ])) as [{ jsPDF: JsPdfCtor }, { default: Html2CanvasFn }];
+  const [{ jsPDF }, { default: html2canvas }, { domToCanvas }] =
+    (await Promise.all([
+      import("jspdf"),
+      import("html2canvas"),
+      import("modern-screenshot"),
+    ])) as [
+      { jsPDF: JsPdfCtor },
+      { default: Html2CanvasFn },
+      { domToCanvas: DomToCanvasFn },
+    ];
 
   const ios = isAppleTouchDevice();
   /*
@@ -397,32 +412,54 @@ export async function buildAtelierProposalPdf(options: {
       await new Promise((r) => window.setTimeout(r, ios ? 120 : 40));
 
       const isDarkSheet = /coverPage|closingPage/.test(clone.className);
+      const background = isDarkSheet ? "#0A0F1C" : "#ffffff";
 
-      const canvas = await html2canvas(clone, {
-        scale,
-        backgroundColor: isDarkSheet ? "#0A0F1C" : "#ffffff",
-        useCORS: true,
-        allowTaint: false,
-        imageTimeout: 15000,
-        logging: false,
-        width: A4_W_PX,
-        height: A4_H_PX,
-        windowWidth: A4_W_PX,
-        windowHeight: A4_H_PX,
-        scrollX: 0,
-        scrollY: 0,
-        onclone: async (clonedDoc, clonedEl) => {
-          applyPageBox(clonedEl as HTMLElement);
-          prepareCaptureClone(clonedEl);
-          /*
-           * html2canvas rasterizes a *separate* cloned document. Its font
-           * cache starts cold for the @import'd Google Fonts, so we must
-           * wait for fonts on *this* document — html2canvas awaits whatever
-           * this callback returns before it paints the canvas.
-           */
-          await waitForFontSet(clonedDoc.fonts, ios ? 4000 : 1500);
-        },
-      });
+      let canvas: HTMLCanvasElement;
+      try {
+        /*
+         * foreignObject capture: the live element is cloned with its *computed*
+         * styles inlined and handed back to the browser to paint, so every box,
+         * baseline and object-fit image resolves exactly as on screen.
+         */
+        canvas = await domToCanvas(clone, {
+          width: A4_W_PX,
+          height: A4_H_PX,
+          scale,
+          backgroundColor: background,
+          timeout: 30000,
+          fetch: { requestInit: { mode: "cors", cache: "force-cache" } },
+        });
+      } catch (err) {
+        console.warn(
+          "[proposal-pdf] foreignObject capture failed, falling back to html2canvas",
+          err
+        );
+        canvas = await html2canvas(clone, {
+          scale,
+          backgroundColor: background,
+          useCORS: true,
+          allowTaint: false,
+          imageTimeout: 15000,
+          logging: false,
+          width: A4_W_PX,
+          height: A4_H_PX,
+          windowWidth: A4_W_PX,
+          windowHeight: A4_H_PX,
+          scrollX: 0,
+          scrollY: 0,
+          onclone: async (clonedDoc, clonedEl) => {
+            applyPageBox(clonedEl as HTMLElement);
+            prepareCaptureClone(clonedEl);
+            /*
+             * html2canvas rasterizes a *separate* cloned document. Its font
+             * cache starts cold for the @import'd Google Fonts, so we must
+             * wait for fonts on *this* document — html2canvas awaits whatever
+             * this callback returns before it paints the canvas.
+             */
+            await waitForFontSet(clonedDoc.fonts, ios ? 4000 : 1500);
+          },
+        });
+      }
 
       const image = canvas.toDataURL("image/jpeg", jpegQuality);
       if (i > 0) pdf.addPage("a4", "portrait");
