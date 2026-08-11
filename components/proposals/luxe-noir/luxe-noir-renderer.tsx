@@ -6,7 +6,7 @@
  * Atelier (residential_premium_luxe) stays separate.
  */
 
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
 import type {
   PremiumProposalPptInput,
@@ -41,6 +41,8 @@ import {
   buildAtelierProposalPdf,
   downloadPdfFile,
   isAppleTouchDevice,
+  sharePdfFile,
+  type ResidentialPdfFile,
 } from "@/components/proposals/_shared/residential-pdf-export";
 
 export type LuxeNoirRendererProps = {
@@ -104,6 +106,13 @@ function LuxeNoirDocument({
   const brand = brandBundle.vendorName;
   const rootRef = useRef<HTMLDivElement>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfSharing, setPdfSharing] = useState(false);
+  const [pdfReady, setPdfReady] = useState<ResidentialPdfFile | null>(null);
+  const [appleTouch, setAppleTouch] = useState(false);
+
+  useEffect(() => {
+    setAppleTouch(isAppleTouchDevice());
+  }, []);
   const systemKw = Number(data.meta.systemKw) || 0;
   const eco = data.economics;
   const bill = data.bill;
@@ -195,25 +204,48 @@ function LuxeNoirDocument({
             "Commissioning follows net-metering approval by the DISCOM.",
           ];
 
-  const handlePrint = async () => {
+  const handlePrint = () => {
     if (typeof window === "undefined" || pdfBusy) return;
-    if (isAppleTouchDevice() && rootRef.current) {
-      setPdfBusy(true);
-      try {
-        downloadPdfFile(
-          await buildAtelierProposalPdf({
-            root: rootRef.current,
-            customerName: data.meta.customerName,
-            presetId: "residential_luxe_noir",
-            pageSelector: ":scope > section",
-          })
-        );
-      } finally {
-        setPdfBusy(false);
-      }
-      return;
-    }
     window.print();
+  };
+
+  const handleDownloadPdf = async () => {
+    if (typeof window === "undefined" || pdfBusy) return;
+    const root = rootRef.current;
+    if (!root) return;
+    window.scrollTo(0, 0);
+    setPdfBusy(true);
+    try {
+      const file = await buildAtelierProposalPdf({
+        root,
+        customerName: data.meta.customerName,
+        presetId: "residential_luxe_noir",
+        pageSelector: ":scope > section",
+      });
+      if (isAppleTouchDevice()) {
+        setPdfReady(file);
+      } else {
+        downloadPdfFile(file);
+      }
+    } catch (err) {
+      console.error("[luxe-noir] PDF export failed", err);
+      window.alert(copy.print.pdfFailed);
+    } finally {
+      setPdfBusy(false);
+    }
+  };
+
+  const handleSharePdf = async () => {
+    if (!pdfReady || pdfSharing) return;
+    setPdfSharing(true);
+    try {
+      await sharePdfFile(pdfReady);
+    } catch (err) {
+      console.error("[luxe-noir] PDF share failed", err);
+      downloadPdfFile(pdfReady);
+    } finally {
+      setPdfSharing(false);
+    }
   };
 
   const genLabel =
@@ -252,8 +284,23 @@ function LuxeNoirDocument({
                 {copy.print.langHi}
               </button>
             </div>
-            <button type="button" className={styles.printBarBtn} onClick={handlePrint}>
-              {copy.print.downloadPdf}
+            {!appleTouch ? (
+              <button
+                type="button"
+                className={styles.printBarBtnGhost}
+                onClick={handlePrint}
+                disabled={pdfBusy}
+              >
+                {copy.print.print}
+              </button>
+            ) : null}
+            <button
+              type="button"
+              className={styles.printBarBtn}
+              onClick={handleDownloadPdf}
+              disabled={pdfBusy}
+            >
+              {pdfBusy ? copy.print.pdfBuilding : copy.print.downloadPdf}
             </button>
           </div>
         </div>
@@ -431,6 +478,40 @@ function LuxeNoirDocument({
       <TermsCompliancePage1 data={data} />
       <TermsCompliancePage2 data={data} />
       <ClosingPage data={data} pptInput={pptInput} summary={summary} />
+
+      {pdfReady ? (
+        <div
+          className={styles.pdfReadyOverlay}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="luxe-pdf-ready-title"
+        >
+          <div className={styles.pdfReadyCard}>
+            <h2 id="luxe-pdf-ready-title" className={styles.pdfReadyTitle}>
+              {copy.print.pdfReadyTitle}
+            </h2>
+            <p className={styles.pdfReadyBody}>{copy.print.pdfReadyBody}</p>
+            <p className={styles.pdfReadyFile}>{pdfReady.fileName}</p>
+            <div className={styles.pdfReadyActions}>
+              <button
+                type="button"
+                className={styles.pdfReadyShare}
+                onClick={handleSharePdf}
+                disabled={pdfSharing}
+              >
+                {pdfSharing ? copy.print.pdfBuilding : copy.print.pdfReadyShare}
+              </button>
+              <button
+                type="button"
+                className={styles.pdfReadyClose}
+                onClick={() => setPdfReady(null)}
+              >
+                {copy.print.pdfReadyClose}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

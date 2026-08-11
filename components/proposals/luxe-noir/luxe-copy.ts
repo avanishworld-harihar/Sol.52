@@ -9,9 +9,20 @@ export function getLuxeCopy(lang: LuxeLang) {
   return {
     print: {
       brand: hi ? "प्रीमियम लक्स · A4 प्रस्ताव" : "Premium Luxe · A4 Proposal",
-      downloadPdf: hi ? "प्रिंट / PDF सेव" : "Print / Save PDF",
+      downloadPdf: hi ? "PDF डाउनलोड" : "Download PDF",
+      print: hi ? "प्रिंट" : "Print",
       langEn: "EN",
       langHi: "हिंदी",
+      pdfBuilding: hi ? "PDF तैयार हो रही है…" : "Building PDF…",
+      pdfFailed: hi
+        ? "PDF नहीं बन सकी। कृपया दोबारा कोशिश करें।"
+        : "Could not create PDF. Please try again.",
+      pdfReadyTitle: hi ? "PDF तैयार है" : "Your PDF is ready",
+      pdfReadyBody: hi
+        ? "सेव करने के लिए Share दबाएँ, फिर “Save to Files” चुनें।"
+        : "Tap Share, then choose Save to Files.",
+      pdfReadyShare: hi ? "Share" : "Share",
+      pdfReadyClose: hi ? "बंद करें" : "Close",
     },
     cover: {
       series: hi ? "प्रीमियम लक्स प्रस्ताव" : "PREMIUM LUXE PROPOSAL",
