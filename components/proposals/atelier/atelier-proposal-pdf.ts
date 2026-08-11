@@ -329,12 +329,109 @@ export async function sharePdfFile(file: AtelierPdfFile): Promise<boolean> {
   }
 }
 
+function relaxPageBox(el: HTMLElement): void {
+  el.style.setProperty("width", `${A4_W_PX}px`, "important");
+  el.style.setProperty("max-width", `${A4_W_PX}px`, "important");
+  el.style.setProperty("height", "auto", "important");
+  el.style.setProperty("min-height", "0", "important");
+  el.style.setProperty("max-height", "none", "important");
+  el.style.setProperty("overflow", "visible", "important");
+  el.style.setProperty("margin", "0", "important");
+  el.style.setProperty("box-shadow", "none", "important");
+  el.style.setProperty("border", "0", "important");
+  el.style.setProperty("border-radius", "0", "important");
+  el.style.setProperty("box-sizing", "border-box", "important");
+  el.style.setProperty("position", "relative", "important");
+  el.style.setProperty("transform", "none", "important");
+}
+
+function sliceCanvasToA4Pages(
+  fullCanvas: HTMLCanvasElement,
+  scale: number,
+  background: string
+): HTMLCanvasElement[] {
+  const slicePx = A4_H_PX * scale;
+  const pages: HTMLCanvasElement[] = [];
+  for (let y = 0; y < fullCanvas.height; y += slicePx) {
+    const sliceH = Math.min(slicePx, fullCanvas.height - y);
+    const page = document.createElement("canvas");
+    page.width = A4_W_PX * scale;
+    page.height = slicePx;
+    const ctx = page.getContext("2d");
+    if (!ctx) continue;
+    ctx.fillStyle = background;
+    ctx.fillRect(0, 0, page.width, page.height);
+    ctx.drawImage(
+      fullCanvas,
+      0,
+      y,
+      fullCanvas.width,
+      sliceH,
+      0,
+      0,
+      fullCanvas.width,
+      sliceH
+    );
+    pages.push(page);
+  }
+  return pages.length > 0 ? pages : [fullCanvas];
+}
+
+async function rasterizeCapturePage(
+  el: HTMLElement,
+  width: number,
+  height: number,
+  scale: number,
+  background: string,
+  domToCanvas: DomToCanvasFn,
+  html2canvas: Html2CanvasFn,
+  ios: boolean
+): Promise<HTMLCanvasElement> {
+  try {
+    return await domToCanvas(el, {
+      width,
+      height,
+      scale,
+      backgroundColor: background,
+      timeout: 30000,
+      fetch: { requestInit: { mode: "cors", cache: "force-cache" } },
+    });
+  } catch (err) {
+    console.warn(
+      "[proposal-pdf] foreignObject capture failed, falling back to html2canvas",
+      err
+    );
+    return html2canvas(el, {
+      scale,
+      backgroundColor: background,
+      useCORS: true,
+      allowTaint: false,
+      imageTimeout: 15000,
+      logging: false,
+      width,
+      height,
+      windowWidth: width,
+      windowHeight: height,
+      scrollX: 0,
+      scrollY: 0,
+      onclone: async (clonedDoc, clonedEl) => {
+        prepareCaptureClone(clonedEl as HTMLElement);
+        await waitForFontSet(clonedDoc.fonts, ios ? 4000 : 1500);
+      },
+    });
+  }
+}
+
 export async function buildAtelierProposalPdf(options: {
   root: HTMLElement;
   customerName?: string;
   /** The preset owns this selector; never capture the route/document body. */
   pageSelector?: string;
   presetId?: string;
+  /** Slice sections taller than one A4 sheet into multiple PDF pages (commercial). */
+  paginateOverflow?: boolean;
+  /** Run once before capture (e.g. commercial print snap / lazy reveal). */
+  beforeCapture?: () => Promise<void>;
   onProgress?: (p: AtelierPdfProgress) => void;
 }): Promise<AtelierPdfFile> {
   if (typeof window === "undefined" || typeof document === "undefined") {
@@ -390,14 +487,18 @@ export async function buildAtelierProposalPdf(options: {
   try {
     await waitForFonts();
     await waitForImages(options.root);
+    if (options.beforeCapture) {
+      await options.beforeCapture();
+    }
     await new Promise((r) => window.setTimeout(r, 100));
+
+    let pdfPageIndex = 0;
 
     for (let i = 0; i < sections.length; i += 1) {
       options.onProgress?.({ current: i + 1, total: sections.length });
 
       host.replaceChildren();
       const clone = sections[i].cloneNode(true) as HTMLElement;
-      applyPageBox(clone);
       prepareCaptureClone(clone);
       const rootShell = createRootShell(options.root);
       cloneRootStyleTags(options.root, rootShell);
@@ -414,59 +515,71 @@ export async function buildAtelierProposalPdf(options: {
       const isDarkSheet = /coverPage|closingPage/.test(clone.className);
       const background = isDarkSheet ? "#0A0F1C" : "#ffffff";
 
-      let canvas: HTMLCanvasElement;
-      try {
-        /*
-         * foreignObject capture: the live element is cloned with its *computed*
-         * styles inlined and handed back to the browser to paint, so every box,
-         * baseline and object-fit image resolves exactly as on screen.
-         */
-        canvas = await domToCanvas(clone, {
-          width: A4_W_PX,
-          height: A4_H_PX,
-          scale,
-          backgroundColor: background,
-          timeout: 30000,
-          fetch: { requestInit: { mode: "cors", cache: "force-cache" } },
-        });
-      } catch (err) {
-        console.warn(
-          "[proposal-pdf] foreignObject capture failed, falling back to html2canvas",
-          err
+      let canvases: HTMLCanvasElement[];
+      if (options.paginateOverflow) {
+        relaxPageBox(clone);
+        await new Promise((r) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => r(undefined)))
         );
-        canvas = await html2canvas(clone, {
-          scale,
-          backgroundColor: background,
-          useCORS: true,
-          allowTaint: false,
-          imageTimeout: 15000,
-          logging: false,
-          width: A4_W_PX,
-          height: A4_H_PX,
-          windowWidth: A4_W_PX,
-          windowHeight: A4_H_PX,
-          scrollX: 0,
-          scrollY: 0,
-          onclone: async (clonedDoc, clonedEl) => {
-            applyPageBox(clonedEl as HTMLElement);
-            prepareCaptureClone(clonedEl);
-            /*
-             * html2canvas rasterizes a *separate* cloned document. Its font
-             * cache starts cold for the @import'd Google Fonts, so we must
-             * wait for fonts on *this* document — html2canvas awaits whatever
-             * this callback returns before it paints the canvas.
-             */
-            await waitForFontSet(clonedDoc.fonts, ios ? 4000 : 1500);
-          },
-        });
+        const contentH = Math.max(
+          A4_H_PX,
+          Math.ceil(clone.getBoundingClientRect().height)
+        );
+        if (contentH <= A4_H_PX) {
+          applyPageBox(clone);
+          canvases = [
+            await rasterizeCapturePage(
+              clone,
+              A4_W_PX,
+              A4_H_PX,
+              scale,
+              background,
+              domToCanvas,
+              html2canvas,
+              ios
+            ),
+          ];
+        } else {
+          clone.style.setProperty("height", `${contentH}px`, "important");
+          const fullCanvas = await rasterizeCapturePage(
+            clone,
+            A4_W_PX,
+            contentH,
+            scale,
+            background,
+            domToCanvas,
+            html2canvas,
+            ios
+          );
+          canvases = sliceCanvasToA4Pages(fullCanvas, scale, background);
+          fullCanvas.width = 0;
+          fullCanvas.height = 0;
+        }
+      } else {
+        applyPageBox(clone);
+        canvases = [
+          await rasterizeCapturePage(
+            clone,
+            A4_W_PX,
+            A4_H_PX,
+            scale,
+            background,
+            domToCanvas,
+            html2canvas,
+            ios
+          ),
+        ];
       }
 
-      const image = canvas.toDataURL("image/jpeg", jpegQuality);
-      if (i > 0) pdf.addPage("a4", "portrait");
-      pdf.addImage(image, "JPEG", 0, 0, pageWidth, pageHeight);
+      for (const canvas of canvases) {
+        const image = canvas.toDataURL("image/jpeg", jpegQuality);
+        if (pdfPageIndex > 0) pdf.addPage("a4", "portrait");
+        pdf.addImage(image, "JPEG", 0, 0, pageWidth, pageHeight);
+        pdfPageIndex += 1;
+        canvas.width = 0;
+        canvas.height = 0;
+      }
 
-      canvas.width = 0;
-      canvas.height = 0;
       host.replaceChildren();
       /*
        * Give WebKit a beat to reclaim the canvas backing store before the

@@ -68,6 +68,13 @@ import {
   prepareCommercialPrint,
   subscribeCommercialPrintSnap,
 } from "./blocks/commercial/commercial-print-mode";
+import {
+  buildAtelierProposalPdf,
+  downloadPdfFile,
+  isAppleTouchDevice,
+  sharePdfFile,
+  type ResidentialPdfFile,
+} from "@/components/proposals/_shared/residential-pdf-export";
 import { commercialDcCapacityKwp } from "@/lib/commercial-bom-panels";
 import { isCommercialFinancingEnabled } from "@/lib/commercial-proposal-config";
 
@@ -186,6 +193,11 @@ export default function CommercialProposalView({
   const [presentIdx, setPresentIdx] = useState(0);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [printSnap, setPrintSnap] = useState(false);
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfSharing, setPdfSharing] = useState(false);
+  const [pdfReady, setPdfReady] = useState<ResidentialPdfFile | null>(null);
+  const [appleTouch, setAppleTouch] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
   const [displayInstaller, setDisplayInstaller] = useState(installer);
   const [displayLogoUrl, setDisplayLogoUrl] = useState(installerLogoUrl);
   const [displayBrandConfig, setDisplayBrandConfig] = useState<ProposalBrandConfig>(() =>
@@ -211,6 +223,10 @@ export default function CommercialProposalView({
   useEffect(() => installCommercialPrintListeners(), []);
 
   useEffect(() => subscribeCommercialPrintSnap(setPrintSnap), []);
+
+  useEffect(() => {
+    setAppleTouch(isAppleTouchDevice());
+  }, []);
 
   // ── Active-section tracking via IntersectionObserver ─────────────────────
   const isSchoolProposal = isSchoolInstitutionOrg(pptInput.commercialConfig?.orgType);
@@ -311,13 +327,53 @@ export default function CommercialProposalView({
   }, [id]);
 
   const handleDownloadPdf = useCallback(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || pdfBusy) return;
+
+    if (isAppleTouchDevice()) {
+      const root = rootRef.current;
+      if (!root) return;
+      window.scrollTo(0, 0);
+      setPdfBusy(true);
+      void (async () => {
+        try {
+          await prepareCommercialPrint();
+          const file = await buildAtelierProposalPdf({
+            root,
+            customerName,
+            presetId: "commercial_executive",
+            pageSelector: ":scope > section.commercial-print-page",
+            paginateOverflow: true,
+          });
+          setPdfReady(file);
+        } catch (err) {
+          console.error("[commercial] PDF export failed", err);
+          window.alert("PDF export failed. Please try again.");
+        } finally {
+          clearCommercialPrintSnap();
+          setPdfBusy(false);
+        }
+      })();
+      return;
+    }
+
     void (async () => {
       await prepareCommercialPrint();
       window.print();
       window.setTimeout(() => clearCommercialPrintSnap(), 500);
     })();
-  }, []);
+  }, [customerName, pdfBusy]);
+
+  const handleSharePdf = useCallback(async () => {
+    if (!pdfReady || pdfSharing) return;
+    setPdfSharing(true);
+    try {
+      await sharePdfFile(pdfReady);
+    } catch (err) {
+      console.error("[commercial] PDF share failed", err);
+    } finally {
+      setPdfSharing(false);
+    }
+  }, [pdfReady, pdfSharing]);
 
   const handleShare = useCallback(() => {
     if (typeof navigator === "undefined") return;
@@ -363,6 +419,8 @@ export default function CommercialProposalView({
   return (
     <MotionConfig reducedMotion={printSnap ? "always" : "user"}>
       <div
+      ref={rootRef}
+      data-proposal-preset="commercial_executive"
       className={`commercial-proposal proposal-document ${PROPOSAL_PREMIUM_DOC_CLASS} mx-auto min-h-screen max-w-[210mm] bg-[#fafafa] font-sans antialiased print:max-w-none print:w-full print:overflow-visible print:bg-white`}
         style={{ colorScheme: "light" }}
       >
@@ -445,10 +503,11 @@ export default function CommercialProposalView({
                   <button
                     type="button"
                     onClick={handleDownloadPdf}
-                    className="hidden items-center gap-1 rounded px-2 py-1 text-[10px] font-semibold text-slate-500 transition-colors hover:bg-white/10 hover:text-slate-200 sm:inline-flex print:hidden"
+                    disabled={pdfBusy}
+                    className="hidden items-center gap-1 rounded px-2 py-1 text-[10px] font-semibold text-slate-500 transition-colors hover:bg-white/10 hover:text-slate-200 disabled:opacity-50 sm:inline-flex print:hidden"
                   >
                     <Download className="h-3 w-3" />
-                    PDF
+                    {pdfBusy ? "Building PDF…" : "PDF"}
                   </button>
                   <button
                     onClick={handleShare}
@@ -680,6 +739,47 @@ export default function CommercialProposalView({
 
         {/* Minimal bottom padding */}
         <div className="h-20" />
+
+        {pdfReady ? (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/70 p-4 print:hidden">
+            <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-slate-900 p-6 shadow-2xl">
+              <h3 className="text-lg font-semibold text-white">PDF ready</h3>
+              <p className="mt-2 text-sm text-slate-400">
+                {appleTouch
+                  ? "Tap Share to save this commercial proposal to Files."
+                  : "Your PDF is ready to download."}
+              </p>
+              <p className="mt-3 truncate text-xs text-slate-500">{pdfReady.fileName}</p>
+              <div className="mt-5 flex flex-col gap-2">
+                {appleTouch ? (
+                  <button
+                    type="button"
+                    onClick={() => void handleSharePdf()}
+                    disabled={pdfSharing}
+                    className="rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+                  >
+                    {pdfSharing ? "Opening share…" : "Share"}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => downloadPdfFile(pdfReady)}
+                    className="rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white"
+                  >
+                    Download
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setPdfReady(null)}
+                  className="rounded-lg border border-white/15 px-4 py-2.5 text-sm font-medium text-slate-300"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </div>
     </MotionConfig>
   );

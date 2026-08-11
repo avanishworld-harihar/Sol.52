@@ -10,6 +10,15 @@ export function getHtCommercialCopy(lang: HtCommercialLang) {
   return {
     print: {
       downloadPdf: hi ? "PDF डाउनलोड" : "Download PDF",
+      pdfBuilding: hi ? "PDF बन रही है…" : "Building PDF…",
+      pdfFailed: hi ? "PDF निर्यात विफल। पुनः प्रयास करें।" : "PDF export failed. Please try again.",
+      pdfReadyTitle: hi ? "PDF तैयार" : "PDF ready",
+      pdfReadyBody: hi
+        ? "Share दबाकर Files में सहेजें।"
+        : "Tap Share to save this proposal to Files.",
+      pdfReadyShare: hi ? "Share" : "Share",
+      pdfSharing: hi ? "Share खोल रहे हैं…" : "Opening share…",
+      pdfReadyClose: hi ? "बंद करें" : "Close",
       langEn: "EN",
       langHi: "हिंदी",
     },

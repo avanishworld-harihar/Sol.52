@@ -16,10 +16,17 @@
  * All finance math comes from lib/ht-solar-engine (computeHtSolarSavings).
  */
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { computeHtSolarSavings } from "@/lib/ht-solar-engine";
+import {
+  buildAtelierProposalPdf,
+  downloadPdfFile,
+  isAppleTouchDevice,
+  sharePdfFile,
+  type ResidentialPdfFile,
+} from "@/components/proposals/_shared/residential-pdf-export";
 import { getHtCommercialCopy, type HtCommercialLang } from "./ht-commercial-copy";
 import styles from "./ht-commercial.module.css";
 
@@ -55,8 +62,17 @@ export function HtCommercialProposalRenderer({
   pptInput,
 }: HtCommercialRendererProps) {
   const [lang, setLang] = useState<HtCommercialLang>("en");
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfSharing, setPdfSharing] = useState(false);
+  const [pdfReady, setPdfReady] = useState<ResidentialPdfFile | null>(null);
+  const [appleTouch, setAppleTouch] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
   const c = getHtCommercialCopy(lang);
   const isHi = lang === "hi";
+
+  useEffect(() => {
+    setAppleTouch(isAppleTouchDevice());
+  }, []);
 
   if (!data) {
     return <div className={styles.loading}>Loading Proposal…</div>;
@@ -129,8 +145,49 @@ export function HtCommercialProposalRenderer({
     </footer>
   );
 
+  const handleDownloadPdf = async () => {
+    if (typeof window === "undefined" || pdfBusy) return;
+
+    if (isAppleTouchDevice()) {
+      const root = rootRef.current;
+      if (!root) return;
+      window.scrollTo(0, 0);
+      setPdfBusy(true);
+      try {
+        const file = await buildAtelierProposalPdf({
+          root,
+          customerName: customer,
+          presetId: "commercial_ht",
+          pageSelector: ":scope > section",
+          paginateOverflow: true,
+        });
+        setPdfReady(file);
+      } catch (err) {
+        console.error("[ht-commercial] PDF export failed", err);
+        window.alert(c.print.pdfFailed);
+      } finally {
+        setPdfBusy(false);
+      }
+      return;
+    }
+
+    window.print();
+  };
+
+  const handleSharePdf = async () => {
+    if (!pdfReady || pdfSharing) return;
+    setPdfSharing(true);
+    try {
+      await sharePdfFile(pdfReady);
+    } catch (err) {
+      console.error("[ht-commercial] PDF share failed", err);
+    } finally {
+      setPdfSharing(false);
+    }
+  };
+
   return (
-    <div className={styles.root}>
+    <div ref={rootRef} data-proposal-preset="commercial_ht" className={styles.root}>
       <div className={styles.toolbar}>
         <button
           type="button"
@@ -146,8 +203,13 @@ export function HtCommercialProposalRenderer({
         >
           {c.print.langHi}
         </button>
-        <button type="button" className={styles.toolbarBtn} onClick={() => window.print()}>
-          {c.print.downloadPdf}
+        <button
+          type="button"
+          className={styles.toolbarBtn}
+          disabled={pdfBusy}
+          onClick={() => void handleDownloadPdf()}
+        >
+          {pdfBusy ? c.print.pdfBuilding : c.print.downloadPdf}
         </button>
       </div>
 
@@ -613,6 +675,43 @@ export function HtCommercialProposalRenderer({
         <p className={styles.note}>{c.footer.disclaimer}</p>
         {foot("08 / 08")}
       </section>
+
+      {pdfReady ? (
+        <div className={styles.pdfReadyOverlay}>
+          <div className={styles.pdfReadyCard}>
+            <h3 className={styles.pdfReadyTitle}>{c.print.pdfReadyTitle}</h3>
+            <p className={styles.pdfReadyBody}>{c.print.pdfReadyBody}</p>
+            <p className={styles.pdfReadyFile}>{pdfReady.fileName}</p>
+            <div className={styles.pdfReadyActions}>
+              {appleTouch ? (
+                <button
+                  type="button"
+                  className={styles.pdfReadyShare}
+                  disabled={pdfSharing}
+                  onClick={() => void handleSharePdf()}
+                >
+                  {pdfSharing ? c.print.pdfSharing : c.print.pdfReadyShare}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className={styles.pdfReadyShare}
+                  onClick={() => downloadPdfFile(pdfReady)}
+                >
+                  {c.print.downloadPdf}
+                </button>
+              )}
+              <button
+                type="button"
+                className={styles.pdfReadyClose}
+                onClick={() => setPdfReady(null)}
+              >
+                {c.print.pdfReadyClose}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
