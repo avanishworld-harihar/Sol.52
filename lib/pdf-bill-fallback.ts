@@ -150,8 +150,11 @@ function collectNumberStamps(text: string): NumberStamp[] {
   return out;
 }
 
+/** Older 1-page MP bills say "Last Six Months Consumption"; newer 2-page MPPKVVCL
+ *  bills print the same trailing-history table under "CONSUMPTION HISTORY" (below a
+ *  "CONSUMPTION TREND" bar chart) instead — same data, different heading text. */
 function extractLastSixMonthsSection(text: string): string {
-  const match = /Last\s+(?:Six|6)\s+Months?\s+Consumption/i.exec(text);
+  const match = /Last\s+(?:Six|6)\s+Months?\s+Consumption|Consumption\s+History/i.exec(text);
   if (!match) return text;
   const start = Math.max(0, match.index - 120);
   return text.slice(start, start + 3400);
@@ -353,8 +356,9 @@ function applyMpSixMonthTableHeuristic(
   }
 
   const section = extractLastSixMonthsSection(text);
-  const headingIdx = section.search(/Last\s+(?:Six|6)\s+Months?\s+Consumption/i);
-  // Support both old "Unit Reading Date" and current "Bill Month | Date | Reading | Unit".
+  const headingIdx = section.search(/Last\s+(?:Six|6)\s+Months?\s+Consumption|Consumption\s+History/i);
+  // Support both old "Unit Reading Date" and current "Bill Month | Date | Reading | Unit"
+  // (2-page MPPKVVCL layout adds MD/PF columns after Unit — still matched, no boundary after "Unit").
   const headerIdx = Math.max(
     section.search(/Unit\s+Reading\s+Date/i),
     section.search(/Bill\s*Month[\s\S]{0,40}Reading[\s\S]{0,20}Unit/i),
