@@ -331,17 +331,6 @@
 }
 .pdfCaptureHost
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
-  .blueprintGrid {
-  perspective: none !important;
-}
-.pdfCaptureHost
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
-  .blueprintPanels {
-  transform: none !important;
-  transform-style: flat !important;
-}
-.pdfCaptureHost
-  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
   .logoPlate {
   background: #ffffff !important;
   color: #0a0f1c !important;
@@ -3423,7 +3412,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  perspective: 900px;
   padding: 1.1rem 0.85rem 0.5rem;
   box-sizing: border-box;
 }
@@ -3432,8 +3420,12 @@
   grid-template-columns: repeat(var(--atelier-bp-cols, 4), var(--atelier-bp-cell, 28px));
   gap: var(--atelier-bp-gap, 4px);
   z-index: 2;
-  transform: rotateX(42deg) rotateZ(-15deg) scale(var(--atelier-bp-scale, 1));
-  transform-style: preserve-3d;
+  /* 2D isometric — html2canvas/PDF-safe; azimuth rotates plan (180° = south baseline). */
+  transform:
+    rotateZ(calc(var(--atelier-bp-azimuth, 180) * 1deg - 195deg))
+    scaleY(0.68)
+    skewX(-10deg)
+    scale(var(--atelier-bp-scale, 1));
   transform-origin: center center;
 }
 .blueprintPanel {

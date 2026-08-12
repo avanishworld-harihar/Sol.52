@@ -11,6 +11,8 @@ const MAX_VISUAL_PANELS = 24;
 export type AtelierBlueprintArrayProps = {
   panelCount: number;
   tiltDeg: number;
+  /** Panel facing direction (0° = north, 180° = true south). */
+  azimuthDeg?: number;
   title: string;
   arrayLabel: string;
   tiltAzimuthLine: string;
@@ -20,6 +22,7 @@ export type AtelierBlueprintArrayProps = {
 export function AtelierBlueprintArray({
   panelCount,
   tiltDeg,
+  azimuthDeg = 180,
   title,
   arrayLabel,
   tiltAzimuthLine,
@@ -53,6 +56,7 @@ export function AtelierBlueprintArray({
                 ["--atelier-bp-cell"]: `${cellPx}px`,
                 ["--atelier-bp-gap"]: `${gapPx}px`,
                 ["--atelier-bp-scale"]: String(scale),
+                ["--atelier-bp-azimuth"]: String(azimuthDeg),
               } as CSSProperties
             }
           >
@@ -64,7 +68,9 @@ export function AtelierBlueprintArray({
         <div className={styles.blueprintCaption}>
           <strong>{arrayLabel}</strong>
           <span>
-            {tiltAzimuthLine.replace("{tilt}", String(tiltDeg))}
+            {tiltAzimuthLine
+              .replace("{tilt}", String(tiltDeg))
+              .replace("{azimuth}", String(Math.round(azimuthDeg)))}
             {count > MAX_VISUAL_PANELS && showingNote
               ? ` · ${showingNote
                   .replace("{shown}", String(visualPanels))

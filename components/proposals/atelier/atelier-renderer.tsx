@@ -249,6 +249,8 @@ export function AtelierRenderer({
       : 0;
   const lifetimeWealth = data.closing.lifetimeWealthInr;
   const tilt = data.engineering.tiltDeg ?? 20;
+  /** Roof azimuth — 180° true south default for MP residential. */
+  const azimuth = 180;
   const cityLabel = data.engineering.cityLabel || city;
   const contact = data.closing.contactLine?.trim() || "";
   const brandAddress = data.closing.address || data.meta.brandAddress;
@@ -1204,6 +1206,7 @@ export function AtelierRenderer({
             <AtelierBlueprintArray
               panelCount={panelCount}
               tiltDeg={tilt}
+              azimuthDeg={azimuth}
               title={c.roof.blueprintTitle}
               arrayLabel={c.roof.blueprintArray}
               tiltAzimuthLine={c.roof.blueprintTiltLine}

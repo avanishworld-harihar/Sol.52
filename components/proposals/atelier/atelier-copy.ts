@@ -855,8 +855,8 @@ export function getAtelierCopy(lang: AtelierLang) {
         ? "इष्टतम दक्षिण-मुखी ऐरे"
         : "Optimal South-Facing Array",
       blueprintTiltLine: hi
-        ? "टिल्ट: {tilt}° | अज़ीमुथ: 180° (True South)"
-        : "Tilt: {tilt}° | Azimuth: 180° (True South)",
+        ? "टिल्ट: {tilt}° | अज़ीमुथ: {azimuth}° (True South)"
+        : "Tilt: {tilt}° | Azimuth: {azimuth}° (True South)",
       blueprintShowing: hi
         ? "दृश्य {shown}/{total}"
         : "showing {shown}/{total}",
