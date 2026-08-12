@@ -1896,6 +1896,8 @@ export function AtelierRenderer({
               className={styles.trustPhoto}
               src="/assets/proposals/atelier-trust-rooftop.jpg"
               alt={c.trust.photoTitle}
+              width={1536}
+              height={1024}
             />
             <figcaption className={styles.trustPhotoCap}>
               <strong>{c.trust.photoTitle}</strong>

@@ -306,15 +306,70 @@
 }
 .pdfCaptureHost
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .forecastChart {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
   .forecastBars {
-  height: 333px !important;
-  min-height: 333px !important;
+  flex: 1 1 auto !important;
+  height: auto !important;
+  min-height: 430px !important;
+  align-items: stretch !important;
 }
 .pdfCaptureHost
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
   .forecastTrack {
-  height: 234px !important;
-  min-height: 234px !important;
+  flex: 1 1 auto !important;
+  height: auto !important;
+  min-height: 310px !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .forecastLegend {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, auto) minmax(0, 1fr) !important;
+  padding-top: 0.45rem !important;
+  border-top: 1px solid var(--line) !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .forecastBasis {
+  border-top: none !important;
+  padding-top: 0 !important;
+  line-height: 1.45 !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .hwPage {
+  padding-bottom: calc(var(--page-pad-b) + 0.35rem) !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .hwCardWhy {
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .hwPage .warrantyGridCompact {
+  margin-top: auto !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 0.45rem !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .warrantyGridCompact .warrantyBadge {
+  padding: 0.65rem 0.45rem !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .warrantyGridCompact .warrantyCircle {
+  width: 44px !important;
+  height: 44px !important;
 }
 .pdfCaptureHost
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
@@ -356,10 +411,38 @@
 }
 .pdfCaptureHost
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .trustShowcase {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr) !important;
+  gap: 0.6rem !important;
+  align-items: stretch !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
   .trustPhotoFrame {
-  height: 268px !important;
-  min-height: 240px !important;
-  max-height: 290px !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  aspect-ratio: 3 / 2 !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .trustQuoteBox {
+  height: 100% !important;
+  justify-content: center !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .trustExpert .wealthExpertTop {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: start !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .trustExpert .wealthExpertTag {
+  display: block !important;
+  line-height: 1.35 !important;
 }
 
 .pdfReadyOverlay {
@@ -2575,13 +2658,14 @@
   flex-direction: column;
 }
 .forecastPage .pageHead {
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.65rem;
+  flex-shrink: 0;
 }
 .forecastStats {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
+  gap: 0.65rem;
+  margin-bottom: 0.65rem;
   flex: 0 0 auto;
 }
 .forecastStatCard {
@@ -2637,15 +2721,15 @@
 .forecastChart {
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
-  flex: 0 0 auto;
+  gap: 0.6rem;
+  flex: 1 1 auto;
   min-height: 0;
-  padding: 0.95rem 0.9rem 0.85rem;
+  padding: 0.9rem 0.9rem 0.8rem;
   border: 1px solid var(--line);
   border-radius: var(--card-r);
   background: var(--white);
   box-shadow: var(--card-s);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.55rem;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -2689,11 +2773,11 @@
 }
 .forecastBars {
   display: flex;
-  align-items: flex-end;
+  align-items: stretch;
   gap: 0.28rem;
-  height: 340px;
-  min-height: 340px;
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+  min-height: 430px;
+  height: auto;
   padding: 0 0.1rem;
   box-sizing: border-box;
   width: 100%;
@@ -2707,18 +2791,18 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
-  gap: 0.22rem;
+  gap: 0.25rem;
   min-width: 0;
+  min-height: 0;
   height: 100%;
   box-sizing: border-box;
 }
 .forecastUnits {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.58rem;
+  font-size: 0.62rem;
   font-weight: 700;
   color: var(--gray);
-  line-height: 1;
+  line-height: 1.1;
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -2731,13 +2815,13 @@
   white-space: nowrap;
   flex-shrink: 0;
 }
-/* Fixed track height so % bar heights resolve on web + print */
+/* Track grows with chart — taller bars use leftover A4 space on this page */
 .forecastTrack {
-  flex: 0 0 auto;
+  flex: 1 1 auto;
   width: 100%;
   max-width: 1.55rem;
-  height: 230px;
-  min-height: 230px;
+  min-height: 300px;
+  height: auto;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -2805,33 +2889,47 @@
   white-space: nowrap;
 }
 .forecastLegend {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, auto) minmax(0, 1fr);
   align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  padding: 0 0.15rem;
+  column-gap: 0.5rem;
+  row-gap: 0.3rem;
+  flex-shrink: 0;
+  width: 100%;
+  padding: 0.45rem 0.15rem 0;
+  border-top: 1px solid var(--line);
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--gray2);
 }
+.forecastLegend > span:first-child {
+  justify-self: start;
+}
 .forecastPeakCue {
+  justify-self: center;
+  text-align: center;
   color: var(--or);
+  line-height: 1.3;
+}
+.forecastLegend > span:last-child {
+  justify-self: end;
 }
 .forecastBasis {
   margin: 0;
-  padding-top: 0.35rem;
-  border-top: 1px solid var(--line);
-  font-size: 0.78rem;
+  padding-top: 0;
+  border-top: none;
+  font-size: 0.76rem;
   font-weight: 500;
   color: var(--gray);
-  line-height: 1.4;
+  line-height: 1.45;
+  flex-shrink: 0;
 }
 .forecastExpert {
-  flex: 0 0 auto;
+  flex-shrink: 0;
+  margin-top: auto;
   margin-bottom: 0;
 }
 
@@ -2839,25 +2937,30 @@
 .hwPage {
   display: flex;
   flex-direction: column;
+  padding-bottom: calc(var(--page-pad-b) + 0.25rem);
 }
 .hwPage .pageHead {
-  margin-bottom: 0.7rem;
+  margin-bottom: 0.5rem;
+  flex-shrink: 0;
 }
 .hwPage .pageTitle {
-  font-size: 1.7rem;
+  font-size: 1.55rem;
+  line-height: 1.15;
 }
 .hwPage .pageLead {
   max-width: 40rem;
-  font-size: 0.98rem;
+  font-size: 0.9rem;
+  line-height: 1.35;
 }
 
 .hwCard4Grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 0.85rem;
-  margin-bottom: 0.85rem;
+  gap: 0.6rem;
+  margin-bottom: 0.6rem;
   align-items: stretch;
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  min-height: 0;
 }
 .hwCardV2 {
   background: var(--white);
@@ -2874,14 +2977,14 @@
 .hwCardTop {
   display: flex;
   align-items: center;
-  gap: 0.7rem;
-  padding: 0.75rem 1rem;
+  gap: 0.6rem;
+  padding: 0.6rem 0.85rem;
   background: linear-gradient(90deg, #fff7ed 0%, var(--white) 72%);
   border-bottom: 1px solid var(--line);
 }
 .hwCardIcon {
-  width: 42px;
-  height: 42px;
+  width: 38px;
+  height: 38px;
   border-radius: 10px;
   background: linear-gradient(145deg, #FFF7ED 0%, #FFEDD5 100%);
   border: 1px solid rgba(249, 115, 22, 0.35);
@@ -2900,50 +3003,55 @@
   display: block;
 }
 .hwCardBody {
-  padding: 0.9rem 1rem 0.95rem;
+  padding: 0.7rem 0.85rem 0.75rem;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.28rem;
+  min-height: 0;
 }
 .hwCardTag {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.8rem;
+  font-size: 0.74rem;
   font-weight: 800;
-  letter-spacing: 1.4px;
+  letter-spacing: 1.2px;
   color: var(--or);
   text-transform: uppercase;
 }
 .hwCardTitle {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.08rem;
+  font-size: 1rem;
   font-weight: 800;
   color: var(--h);
   line-height: 1.2;
 }
 .hwCardSpec {
-  font-size: 0.9rem;
+  font-size: 0.84rem;
   color: var(--gray);
   margin: 0;
-  line-height: 1.45;
+  line-height: 1.35;
 }
 .hwCardWhy {
-  font-size: 0.88rem;
+  font-size: 0.8rem;
   color: var(--c);
-  margin: 0.1rem 0 0;
-  line-height: 1.45;
-  padding: 0.5rem 0.6rem;
+  margin: 0;
+  line-height: 1.38;
+  padding: 0.4rem 0.5rem;
   background: #fafbfc;
   border-left: 3px solid var(--or);
   border-radius: 0 4px 4px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .hwCardFooter {
-  margin-top: 0.65rem;
-  padding-top: 0.55rem;
+  margin-top: auto;
+  padding-top: 0.45rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: 0.45rem;
   border-top: 1px dashed var(--line);
 }
 .hwCardWarranty {
@@ -2951,15 +3059,15 @@
   background: var(--h);
   color: var(--white);
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.6px;
-  padding: 0.28rem 0.6rem;
+  letter-spacing: 0.5px;
+  padding: 0.22rem 0.5rem;
   border-radius: 4px;
   width: fit-content;
 }
 .hwCardDatasheet {
-  font-size: 0.82rem;
+  font-size: 0.76rem;
   font-weight: 700;
   color: var(--or);
   text-decoration: none;
@@ -2975,9 +3083,10 @@
   background: linear-gradient(135deg, #FFF7ED 0%, #FFFFFF 55%, #F8FAFC 100%);
   border: 1px solid rgba(249, 115, 22, 0.28);
   border-radius: var(--card-r);
-  padding: 0.9rem 1rem 0.85rem;
-  margin-bottom: 0.85rem;
+  padding: 0.7rem 0.85rem;
+  margin-bottom: 0.55rem;
   box-shadow: var(--card-s);
+  flex-shrink: 0;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -2985,8 +3094,13 @@
 .hwEarthHead {
   display: flex;
   align-items: flex-start;
-  gap: 0.75rem;
-  margin-bottom: 0.65rem;
+  gap: 0.65rem;
+  margin-bottom: 0.5rem;
+}
+
+.hwEarthHead > div {
+  flex: 1;
+  min-width: 0;
 }
 
 .hwEarthIconWrap {
@@ -3020,52 +3134,61 @@
 
 .hwEarthLead {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 0.84rem;
   color: var(--h);
-  line-height: 1.4;
+  line-height: 1.35;
   font-weight: 600;
 }
 
 .hwEarthChips {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.65rem;
-  margin-bottom: 0.55rem;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
 }
 
 .hwEarthChip {
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 0.7rem 0.75rem 0.75rem;
+  padding: 0.55rem 0.6rem 0.6rem;
   min-width: 0;
 }
 
 .hwEarthChipVal {
   display: block;
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.22rem;
+  font-size: 1.05rem;
   font-weight: 800;
   color: var(--or);
   line-height: 1.1;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.2rem;
 }
 
 .hwEarthChipLabel {
   display: block;
-  font-size: 0.8rem;
+  font-size: 0.74rem;
   color: var(--gray);
-  line-height: 1.35;
+  line-height: 1.3;
 }
 
 .hwEarthWhy {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: 0.76rem;
   color: var(--gray);
-  line-height: 1.4;
+  line-height: 1.35;
 }
 
-/* Compact warranty summary strip */
+/* Compact warranty summary strip — pinned above folio */
+.hwPage .warrantyGridCompact {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: auto;
+  flex-shrink: 0;
+  padding-bottom: 0.1rem;
+}
 .warrantyGridCompact {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
@@ -3073,42 +3196,51 @@
   width: 100%;
 }
 .warrantyGridCompact .warrantyBadge {
-  padding: 0.95rem 0.75rem;
+  padding: 0.7rem 0.5rem;
 }
 .warrantyGridCompact .warrantyCircle {
-  width: 52px;
-  height: 52px;
+  width: 46px;
+  height: 46px;
 }
 .warrantyGridCompact .warrantyYears {
-  font-size: 1.15rem;
+  font-size: 1rem;
 }
 .warrantyGridCompact .warrantyYrsText {
-  font-size: 0.72rem;
+  font-size: 0.65rem;
 }
 .warrantyGridCompact .warrantyLabel {
-  font-size: 0.86rem;
+  font-size: 0.78rem;
+  line-height: 1.25;
 }
 .warrantyGridCompact .warrantySub {
-  font-size: 0.78rem;
+  font-size: 0.72rem;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-/* ══ P7: WHY PARTNER — trust cards + 1 proof photo ═════════════ */
+/* ══ P8: WHY PARTNER — trust cards + photo / quote split ═════════ */
 .trustPage {
   display: flex;
   flex-direction: column;
+  padding-bottom: calc(var(--page-pad-b) + 0.15rem);
 }
 .trustPage .pageHead {
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.55rem;
+  flex-shrink: 0;
 }
 .trustPage .pageTitle {
-  font-size: 1.65rem;
+  font-size: 1.5rem;
+  line-height: 1.15;
 }
 .trustGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-auto-rows: auto;
-  gap: 0.75rem;
-  margin-bottom: 0.85rem;
+  gap: 0.55rem;
+  margin-bottom: 0.6rem;
   flex: 0 0 auto;
   min-height: 0;
   align-content: start;
@@ -3117,7 +3249,7 @@
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--card-r);
-  padding: 0.95rem 1rem 1rem;
+  padding: 0.75rem 0.85rem 0.8rem;
   text-align: left;
   box-shadow: var(--card-s);
   display: flex;
@@ -3131,8 +3263,8 @@
 .trustCardTop {
   display: flex;
   align-items: center;
-  gap: 0.7rem;
-  margin-bottom: 0.65rem;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
 }
 .trustIconTile {
   width: 44px;
@@ -3156,7 +3288,7 @@
 }
 .trustNum {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.7rem;
+  font-size: 1.45rem;
   font-weight: 800;
   color: var(--or);
   line-height: 1;
@@ -3164,29 +3296,30 @@
 }
 .trustLabel {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1rem;
+  font-size: 0.92rem;
   font-weight: 800;
   color: var(--h);
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.25rem;
   line-height: 1.25;
 }
 .trustNote {
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   font-weight: 600;
   color: var(--gray);
-  line-height: 1.4;
-  margin-top: 0.35rem;
+  line-height: 1.35;
+  margin-top: 0.2rem;
 }
 
-/* Photo + quote showcase — full-bleed luxury image, then quote */
+/* Photo + quote — side-by-side boxes, image at native 3:2 */
 .trustShowcase {
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
-  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  gap: 0.65rem;
+  align-items: stretch;
+  flex: 0 1 auto;
   min-height: 0;
   width: 100%;
-  margin-bottom: 0.65rem;
+  margin-bottom: 0.55rem;
 }
 .trustPhotoFrame {
   margin: 0;
@@ -3194,17 +3327,21 @@
   border-radius: var(--card-r);
   overflow: hidden;
   border: 1px solid var(--line);
-  height: 268px;
-  min-height: 240px;
-  max-height: 290px;
+  aspect-ratio: 3 / 2;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  max-height: none;
   box-shadow: var(--card-s);
   background: var(--h);
 }
 .trustPhoto {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 55%;
+  object-position: center center;
   display: block;
 }
 .trustPhotoCap {
@@ -3212,10 +3349,10 @@
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 1rem 1.1rem;
+  padding: 0.75rem 0.85rem;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.15rem;
   background: linear-gradient(
     180deg,
     transparent 0%,
@@ -3226,62 +3363,91 @@
 }
 .trustPhotoCap strong {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1rem;
+  font-size: 0.92rem;
   font-weight: 800;
   color: var(--or);
   letter-spacing: 0.3px;
 }
 .trustPhotoCap span {
-  font-size: 0.88rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.88);
-  line-height: 1.35;
-  max-width: 36rem;
+  line-height: 1.32;
 }
 .trustQuoteBox {
   position: relative;
   background: var(--h);
   border-radius: var(--card-r);
-  padding: 1.05rem 1.25rem 1.05rem 1.35rem;
+  padding: 0.95rem 1rem 0.95rem 1.1rem;
   text-align: left;
   border-left: 4px solid var(--or);
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: center;
   min-height: 0;
-  height: auto;
+  height: 100%;
   box-shadow: var(--card-s);
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
 .trustQuoteMark {
   position: absolute;
-  top: 0.45rem;
-  right: 1rem;
+  top: 0.35rem;
+  right: 0.75rem;
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: 4rem;
+  font-size: 3.2rem;
   line-height: 1;
   color: rgba(249, 115, 22, 0.28);
   pointer-events: none;
 }
 .trustQuote {
-  font-size: 1.02rem;
+  font-size: 0.94rem;
   color: rgba(255,255,255,0.9);
-  line-height: 1.55;
+  line-height: 1.48;
   font-style: italic;
-  margin: 0 0 0.85rem;
+  margin: 0 0 0.65rem;
   max-width: none;
   position: relative;
   z-index: 1;
 }
 .trustQuoteAttr {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.86rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--or);
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
   position: relative;
   z-index: 1;
+}
+.trustExpert.wealthExpert {
+  margin: 0;
+  margin-top: auto;
+  padding: 0.5rem 0.65rem 0.55rem;
+  flex-shrink: 0;
+}
+.trustExpert .wealthExpertTop {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: 0.65rem;
+  row-gap: 0.15rem;
+  margin-bottom: 0.4rem;
+}
+.trustExpert .wealthExpertTag {
+  grid-column: 1;
+  grid-row: 1;
+  display: block;
+  line-height: 1.35;
+}
+.trustExpert .wealthExpertAttr {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
+  white-space: nowrap;
+}
+.trustExpert .wealthExpertBody {
+  font-size: 0.76rem;
+  line-height: 1.38;
 }
 .trustExpert {
   margin: 0;
@@ -5388,13 +5554,14 @@
   }
 
   .trustPhotoFrame {
-    min-height: 200px;
-    height: clamp(200px, 52vw, 260px);
+    aspect-ratio: 3 / 2;
+    height: auto;
+    min-height: 0;
     max-height: none;
   }
 
   .trustQuoteBox {
-    padding: 1.15rem 1.15rem 1.2rem 1.25rem;
+    padding: 1rem 1rem 1.05rem 1.15rem;
   }
 
   .financeFlow,
@@ -5744,9 +5911,15 @@
   }
 
   .forecastLegend {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.25rem;
+    grid-template-columns: 1fr;
+    row-gap: 0.25rem;
+  }
+
+  .forecastLegend > span:first-child,
+  .forecastLegend > span:last-child,
+  .forecastPeakCue {
+    justify-self: start;
+    text-align: left;
   }
 
   .coverInner,
@@ -6317,15 +6490,19 @@
     height: 135px !important;
   }
   .forecastChart {
-    flex: 0 0 auto !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
   }
   .forecastBars {
-    height: 88mm !important;
-    min-height: 88mm !important;
+    flex: 1 1 auto !important;
+    height: auto !important;
+    min-height: 100mm !important;
+    align-items: stretch !important;
   }
   .forecastTrack {
-    height: 62mm !important;
-    min-height: 62mm !important;
+    flex: 1 1 auto !important;
+    height: auto !important;
+    min-height: 72mm !important;
   }
   .forecastFill,
   .forecastFillBill {
@@ -6333,13 +6510,31 @@
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
-  .trustPhotoFrame {
-    height: 268px !important;
-    min-height: 240px !important;
-    max-height: 290px !important;
+  .trustShowcase {
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr) !important;
+    gap: 0.55rem !important;
   }
-  .trustExpert {
-    margin-top: 0.35rem !important;
+
+  .trustPhotoFrame {
+    aspect-ratio: 3 / 2;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+  }
+
+  .trustQuoteBox {
+    height: 100%;
+    padding: 0.85rem 0.95rem !important;
+  }
+
+  .trustExpert .wealthExpertTop {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+  }
+
+  .trustExpert .wealthExpertBody {
+    font-size: 8.5pt !important;
+    line-height: 1.38 !important;
   }
   .carbonMilestones {
     min-height: 48mm !important;
@@ -6358,43 +6553,62 @@
     height: 52px !important;
   }
   .hwPage .pageTitle {
-    font-size: 15.5pt !important;
+    font-size: 14.5pt !important;
+    line-height: 1.15 !important;
   }
   .hwPage .pageLead {
-    font-size: 9.5pt !important;
+    font-size: 9pt !important;
+    line-height: 1.35 !important;
+  }
+  .hwCard4Grid {
+    gap: 0.45rem !important;
+    margin-bottom: 0.45rem !important;
   }
   .hwCardBody {
-    padding: 0.85rem 0.95rem 0.9rem !important;
+    padding: 0.65rem 0.8rem 0.7rem !important;
   }
   .hwCardTitle {
-    font-size: 11pt !important;
+    font-size: 10.5pt !important;
   }
   .hwCardSpec,
   .hwCardWhy {
-    font-size: 9pt !important;
+    font-size: 8.5pt !important;
+    line-height: 1.35 !important;
+  }
+  .hwCardWhy {
+    -webkit-line-clamp: 2 !important;
   }
   .hwCardTag {
-    font-size: 8pt !important;
+    font-size: 7.5pt !important;
+  }
+  .hwEarthStrip {
+    padding: 0.55rem 0.75rem !important;
+    margin-bottom: 0.45rem !important;
   }
   .hwEarthChipVal {
-    font-size: 12pt !important;
-  }
-  .hwEarthChipLabel,
-  .hwEarthLead {
-    font-size: 9pt !important;
-  }
-  .warrantyGridCompact .warrantyBadge {
-    padding: 0.85rem 0.7rem !important;
-  }
-  .warrantyGridCompact .warrantyCircle {
-    width: 48px !important;
-    height: 48px !important;
-  }
-  .warrantyGridCompact .warrantyYears {
     font-size: 11pt !important;
   }
+  .hwEarthChipLabel,
+  .hwEarthLead,
+  .hwEarthWhy {
+    font-size: 8.5pt !important;
+  }
+  .hwPage .warrantyGridCompact {
+    gap: 0.4rem !important;
+    margin-top: auto !important;
+  }
+  .warrantyGridCompact .warrantyBadge {
+    padding: 0.6rem 0.45rem !important;
+  }
+  .warrantyGridCompact .warrantyCircle {
+    width: 42px !important;
+    height: 42px !important;
+  }
+  .warrantyGridCompact .warrantyYears {
+    font-size: 10pt !important;
+  }
   .warrantyGridCompact .warrantyLabel {
-    font-size: 9pt !important;
+    font-size: 8.5pt !important;
   }
   .genCompareRow {
     padding: 0.55rem 0.7rem 0.6rem !important;
