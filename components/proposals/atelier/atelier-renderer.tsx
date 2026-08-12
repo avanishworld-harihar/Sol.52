@@ -98,6 +98,14 @@ function estimateDuration(
   return durations.default;
 }
 
+/** Split "7 Days" / "7 दिन" into badge value + unit label for journey cards. */
+function splitDurationLabel(raw: string): { value: string; unit: string } {
+  const trimmed = raw.trim();
+  const match = trimmed.match(/^([\d][\d–\-]*)\s*(.+)$/u);
+  if (match) return { value: match[1], unit: match[2] };
+  return { value: trimmed, unit: "" };
+}
+
 export type AtelierRendererProps = {
   data: ProposalData;
   installerLogoUrl?: string;
@@ -2052,9 +2060,21 @@ export function AtelierRenderer({
                 <span className={styles.journeyNum}>{step.num}</span>
                 <div className={styles.journeyBody}>
                   <strong className={styles.journeyTitle}>{step.title}</strong>
-                  <em className={styles.journeyDuration}>
-                    {estimateDuration(step.title, c.durations)}
-                  </em>
+                  {(() => {
+                    const { value, unit } = splitDurationLabel(
+                      estimateDuration(step.title, c.durations)
+                    );
+                    return (
+                      <em className={styles.journeyDuration}>
+                        <span className={styles.journeyDurationVal}>{value}</span>
+                        {unit ? (
+                          <span className={styles.journeyDurationUnit}>
+                            {unit}
+                          </span>
+                        ) : null}
+                      </em>
+                    );
+                  })()}
                   <p className={styles.journeyDesc}>{step.desc}</p>
                 </div>
               </div>
