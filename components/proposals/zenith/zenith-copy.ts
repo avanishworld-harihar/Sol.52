@@ -82,8 +82,15 @@ export function getZenithCopy(lang: ZenithLang) {
         : "Clean generation measured in carbon avoided and trees equivalent.",
       engineering: hi ? "इंजीनियरिंग ब्रीफ" : "Engineering Brief",
       engineeringLead: hi
-        ? "उत्पादन, झुकाव और अनुपालन मेट्रिक्स।"
-        : "Site-tuned metrics for generation, tilt, and compliance.",
+        ? "साइट-विशिष्ट डिज़ाइन, उत्पादन मॉडल और अनुपालन — पूर्ण इंजीनियरिंग दृष्टि।"
+        : "Site-specific design, yield modeling, and compliance — full engineering view.",
+      engMethodology: hi ? "डिज़ाइन दृष्टि" : "Design approach",
+      engArray: hi ? "ऐरे और अभिविन्यास" : "Array & orientation",
+      engPerformance: hi ? "प्रदर्शन मॉडल" : "Performance model",
+      engElectrical: hi ? "विद्युत और सुरक्षा" : "Electrical & protection",
+      engStructural: hi ? "संरचना और सुरक्षा" : "Structural & safety",
+      engDeliverables: hi ? "इंजीनियरिंग डिलिवरेबल" : "Engineering deliverables",
+      engPhases: hi ? "डिज़ाइन से कमीशनिंग" : "Design to commissioning",
       phases: hi ? "डिज़ाइन और स्थापना चरण" : "Design & install phases",
       assurance: hi ? "सिस्टम पार्ट्स" : "System Parts",
       assuranceLead: hi

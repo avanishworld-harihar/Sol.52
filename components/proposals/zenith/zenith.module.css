@@ -778,6 +778,221 @@
   color: var(--muted);
 }
 
+/* ── Engineering brief (detailed) ─────────────────────────────── */
+.pageEngineering {
+  padding-bottom: 3rem;
+}
+
+.engMetrics {
+  display: grid;
+  gap: 0.65rem;
+  width: 100%;
+  margin-bottom: 1.35rem;
+}
+
+.engMethodology {
+  margin: 0 0 1.5rem;
+  padding: 1rem 1.05rem;
+  background: var(--accent-wash);
+  border: 1px solid rgba(15, 118, 110, 0.16);
+  border-radius: 10px;
+  font-size: 0.92rem;
+  line-height: 1.62;
+  color: var(--ink);
+}
+
+.engMethodologyTag {
+  display: block;
+  margin-bottom: 0.45rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.engGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-bottom: 1.35rem;
+}
+
+.engBlock {
+  padding: 0.95rem 1rem;
+  background: var(--soft);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  min-width: 0;
+}
+
+.engBlockTitle {
+  margin: 0 0 0.75rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.engRows {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.engRow {
+  margin: 0;
+}
+
+.engRowLabel {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.engRowValue {
+  margin: 0.15rem 0 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+.engRowHint {
+  display: block;
+  margin-top: 0.12rem;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.engStandards {
+  margin-bottom: 1.35rem;
+}
+
+.engStandardsLabel {
+  display: block;
+  margin-bottom: 0.55rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.engStandardsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.engStandardsPill {
+  padding: 0.32rem 0.62rem;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 118, 110, 0.22);
+  background: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--accent);
+  line-height: 1.3;
+}
+
+.engDeliverables {
+  margin-bottom: 1.35rem;
+}
+
+.engCheckList {
+  margin: 0.55rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.engCheckItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  font-size: 0.88rem;
+  color: var(--ink);
+  line-height: 1.45;
+}
+
+.engCheckMark {
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--accent-wash);
+  color: var(--accent);
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
+.engPhases {
+  margin-top: 0.25rem;
+}
+
+.engPhaseList {
+  margin: 0.65rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.engPhaseItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.engPhaseNum {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  min-width: 1.75rem;
+}
+
+.engPhaseTitle {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.engPhaseDesc {
+  margin: 0.12rem 0 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+@media (max-width: 640px) {
+  .engGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .pending {
   padding: 1.75rem 1.35rem;
   background: var(--surface);
@@ -1262,6 +1477,18 @@
   .coverHighlights,
   .coverHiCell {
     display: none;
+  }
+
+  .pageEngineering .engGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 3mm;
+  }
+
+  .pageEngineering .engBlock,
+  .pageEngineering .engMethodology,
+  .pageEngineering .engPhaseItem {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .pageBom .lineTable,

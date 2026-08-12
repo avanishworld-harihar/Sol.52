@@ -26,7 +26,38 @@ import {
 } from "@/components/proposals/_shared/residential-pdf-export";
 import styles from "./zenith.module.css";
 
+import {
+  buildZenithEngineeringModel,
+  type ZenithEngRow,
+} from "./zenith-engineering";
+
 const ZENITH_COVER_PHOTO = "/assets/proposals/zenith-cover-luxury-rooftop.jpg";
+
+function EngDetailBlock({
+  title,
+  rows,
+}: {
+  title: string;
+  rows: ZenithEngRow[];
+}) {
+  if (rows.length === 0) return null;
+  return (
+    <div className={styles.engBlock}>
+      <h3 className={styles.engBlockTitle}>{title}</h3>
+      <dl className={styles.engRows}>
+        {rows.map((row) => (
+          <div key={row.label} className={styles.engRow}>
+            <dt className={styles.engRowLabel}>{row.label}</dt>
+            <dd className={styles.engRowValue}>
+              {row.value}
+              {row.hint ? <span className={styles.engRowHint}>{row.hint}</span> : null}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  );
+}
 
 export type ZenithProposalRendererProps = {
   data: ProposalData;
@@ -125,6 +156,7 @@ export function ZenithProposalRenderer({
   const bill = data.bill;
   const bom = Array.isArray(data.bom) ? data.bom : [];
   const eng = data.engineering;
+  const engModel = buildZenithEngineeringModel(data, lang);
   const warranty = data.warranty;
   const execution = data.execution;
   const terms = data.terms;
@@ -446,14 +478,20 @@ export function ZenithProposalRenderer({
 
         {/* 4 — Engineering (skip if empty) */}
         {hasEngineering ? (
-          <section className={styles.page}>
+          <section className={`${styles.page} ${styles.pageEngineering}`}>
             <PageHeader
               title={c.pages.engineering}
               lead={eng.tiltNote || c.pages.engineeringLead}
             />
-            {eng.metrics.length > 0 ? (
-              <div className={styles.strip} style={{ gridTemplateColumns: `repeat(${Math.min(eng.metrics.length, 3)}, minmax(0, 1fr))` }}>
-                {eng.metrics.slice(0, 6).map((m) => (
+
+            {engModel.headlineMetrics.length > 0 ? (
+              <div
+                className={styles.engMetrics}
+                style={{
+                  gridTemplateColumns: `repeat(${Math.min(engModel.headlineMetrics.length, 3)}, minmax(0, 1fr))`,
+                }}
+              >
+                {engModel.headlineMetrics.map((m) => (
                   <div key={m.label} className={styles.stripCell}>
                     <span className={styles.stripLabel}>{m.label}</span>
                     <span className={styles.stripValue}>{m.value}</span>
@@ -461,10 +499,63 @@ export function ZenithProposalRenderer({
                 ))}
               </div>
             ) : null}
-            {eng.standards.length > 0 ? (
-              <p className={styles.standards}>
-                {c.pages.standards} · {eng.standards.join(" · ")}
-              </p>
+
+            <p className={styles.engMethodology}>
+              <span className={styles.engMethodologyTag}>{c.pages.engMethodology}</span>
+              {engModel.methodology}
+            </p>
+
+            <div className={styles.engGrid}>
+              <EngDetailBlock title={c.pages.engArray} rows={engModel.arrayDesign} />
+              <EngDetailBlock title={c.pages.engPerformance} rows={engModel.performance} />
+              <EngDetailBlock title={c.pages.engElectrical} rows={engModel.electrical} />
+              <EngDetailBlock title={c.pages.engStructural} rows={engModel.structural} />
+            </div>
+
+            {engModel.standards.length > 0 ? (
+              <div className={styles.engStandards}>
+                <span className={styles.engStandardsLabel}>{c.pages.standards}</span>
+                <ul className={styles.engStandardsList}>
+                  {engModel.standards.map((s) => (
+                    <li key={s} className={styles.engStandardsPill}>
+                      {s}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            {engModel.deliverables.length > 0 ? (
+              <div className={styles.engDeliverables}>
+                <h3 className={styles.subTitle}>{c.pages.engDeliverables}</h3>
+                <ul className={styles.engCheckList}>
+                  {engModel.deliverables.map((item) => (
+                    <li key={item} className={styles.engCheckItem}>
+                      <span className={styles.engCheckMark} aria-hidden>
+                        ✓
+                      </span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            {engModel.phases.length > 0 ? (
+              <div className={styles.engPhases}>
+                <h3 className={styles.subTitle}>{c.pages.engPhases}</h3>
+                <ol className={styles.engPhaseList}>
+                  {engModel.phases.map((p) => (
+                    <li key={p.num + p.title} className={styles.engPhaseItem}>
+                      <span className={styles.engPhaseNum}>{p.num}</span>
+                      <div>
+                        <p className={styles.engPhaseTitle}>{p.title}</p>
+                        <p className={styles.engPhaseDesc}>{p.description}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </div>
             ) : null}
           </section>
         ) : null}
