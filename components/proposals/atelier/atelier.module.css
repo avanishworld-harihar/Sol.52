@@ -366,6 +366,37 @@
 }
 .pdfCaptureHost
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .hwPage {
+  padding-bottom: calc(var(--page-pad-b) + 0.35rem) !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .hwCardWhy {
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .hwPage .warrantyGridCompact {
+  margin-top: auto !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 0.45rem !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .warrantyGridCompact .warrantyBadge {
+  padding: 0.65rem 0.45rem !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .warrantyGridCompact .warrantyCircle {
+  width: 44px !important;
+  height: 44px !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
   .roofPlanFrame {
   height: 210px !important;
   min-height: 190px !important;
@@ -2891,25 +2922,30 @@
 .hwPage {
   display: flex;
   flex-direction: column;
+  padding-bottom: calc(var(--page-pad-b) + 0.25rem);
 }
 .hwPage .pageHead {
-  margin-bottom: 0.7rem;
+  margin-bottom: 0.5rem;
+  flex-shrink: 0;
 }
 .hwPage .pageTitle {
-  font-size: 1.7rem;
+  font-size: 1.55rem;
+  line-height: 1.15;
 }
 .hwPage .pageLead {
   max-width: 40rem;
-  font-size: 0.98rem;
+  font-size: 0.9rem;
+  line-height: 1.35;
 }
 
 .hwCard4Grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 0.85rem;
-  margin-bottom: 0.85rem;
+  gap: 0.6rem;
+  margin-bottom: 0.6rem;
   align-items: stretch;
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  min-height: 0;
 }
 .hwCardV2 {
   background: var(--white);
@@ -2926,14 +2962,14 @@
 .hwCardTop {
   display: flex;
   align-items: center;
-  gap: 0.7rem;
-  padding: 0.75rem 1rem;
+  gap: 0.6rem;
+  padding: 0.6rem 0.85rem;
   background: linear-gradient(90deg, #fff7ed 0%, var(--white) 72%);
   border-bottom: 1px solid var(--line);
 }
 .hwCardIcon {
-  width: 42px;
-  height: 42px;
+  width: 38px;
+  height: 38px;
   border-radius: 10px;
   background: linear-gradient(145deg, #FFF7ED 0%, #FFEDD5 100%);
   border: 1px solid rgba(249, 115, 22, 0.35);
@@ -2952,50 +2988,55 @@
   display: block;
 }
 .hwCardBody {
-  padding: 0.9rem 1rem 0.95rem;
+  padding: 0.7rem 0.85rem 0.75rem;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.28rem;
+  min-height: 0;
 }
 .hwCardTag {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.8rem;
+  font-size: 0.74rem;
   font-weight: 800;
-  letter-spacing: 1.4px;
+  letter-spacing: 1.2px;
   color: var(--or);
   text-transform: uppercase;
 }
 .hwCardTitle {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.08rem;
+  font-size: 1rem;
   font-weight: 800;
   color: var(--h);
   line-height: 1.2;
 }
 .hwCardSpec {
-  font-size: 0.9rem;
+  font-size: 0.84rem;
   color: var(--gray);
   margin: 0;
-  line-height: 1.45;
+  line-height: 1.35;
 }
 .hwCardWhy {
-  font-size: 0.88rem;
+  font-size: 0.8rem;
   color: var(--c);
-  margin: 0.1rem 0 0;
-  line-height: 1.45;
-  padding: 0.5rem 0.6rem;
+  margin: 0;
+  line-height: 1.38;
+  padding: 0.4rem 0.5rem;
   background: #fafbfc;
   border-left: 3px solid var(--or);
   border-radius: 0 4px 4px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .hwCardFooter {
-  margin-top: 0.65rem;
-  padding-top: 0.55rem;
+  margin-top: auto;
+  padding-top: 0.45rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: 0.45rem;
   border-top: 1px dashed var(--line);
 }
 .hwCardWarranty {
@@ -3003,15 +3044,15 @@
   background: var(--h);
   color: var(--white);
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.6px;
-  padding: 0.28rem 0.6rem;
+  letter-spacing: 0.5px;
+  padding: 0.22rem 0.5rem;
   border-radius: 4px;
   width: fit-content;
 }
 .hwCardDatasheet {
-  font-size: 0.82rem;
+  font-size: 0.76rem;
   font-weight: 700;
   color: var(--or);
   text-decoration: none;
@@ -3027,9 +3068,10 @@
   background: linear-gradient(135deg, #FFF7ED 0%, #FFFFFF 55%, #F8FAFC 100%);
   border: 1px solid rgba(249, 115, 22, 0.28);
   border-radius: var(--card-r);
-  padding: 0.9rem 1rem 0.85rem;
-  margin-bottom: 0.85rem;
+  padding: 0.7rem 0.85rem;
+  margin-bottom: 0.55rem;
   box-shadow: var(--card-s);
+  flex-shrink: 0;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -3037,8 +3079,13 @@
 .hwEarthHead {
   display: flex;
   align-items: flex-start;
-  gap: 0.75rem;
-  margin-bottom: 0.65rem;
+  gap: 0.65rem;
+  margin-bottom: 0.5rem;
+}
+
+.hwEarthHead > div {
+  flex: 1;
+  min-width: 0;
 }
 
 .hwEarthIconWrap {
@@ -3072,52 +3119,61 @@
 
 .hwEarthLead {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 0.84rem;
   color: var(--h);
-  line-height: 1.4;
+  line-height: 1.35;
   font-weight: 600;
 }
 
 .hwEarthChips {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.65rem;
-  margin-bottom: 0.55rem;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
 }
 
 .hwEarthChip {
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 0.7rem 0.75rem 0.75rem;
+  padding: 0.55rem 0.6rem 0.6rem;
   min-width: 0;
 }
 
 .hwEarthChipVal {
   display: block;
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.22rem;
+  font-size: 1.05rem;
   font-weight: 800;
   color: var(--or);
   line-height: 1.1;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.2rem;
 }
 
 .hwEarthChipLabel {
   display: block;
-  font-size: 0.8rem;
+  font-size: 0.74rem;
   color: var(--gray);
-  line-height: 1.35;
+  line-height: 1.3;
 }
 
 .hwEarthWhy {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: 0.76rem;
   color: var(--gray);
-  line-height: 1.4;
+  line-height: 1.35;
 }
 
-/* Compact warranty summary strip */
+/* Compact warranty summary strip — pinned above folio */
+.hwPage .warrantyGridCompact {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: auto;
+  flex-shrink: 0;
+  padding-bottom: 0.1rem;
+}
 .warrantyGridCompact {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
@@ -3125,23 +3181,29 @@
   width: 100%;
 }
 .warrantyGridCompact .warrantyBadge {
-  padding: 0.95rem 0.75rem;
+  padding: 0.7rem 0.5rem;
 }
 .warrantyGridCompact .warrantyCircle {
-  width: 52px;
-  height: 52px;
+  width: 46px;
+  height: 46px;
 }
 .warrantyGridCompact .warrantyYears {
-  font-size: 1.15rem;
+  font-size: 1rem;
 }
 .warrantyGridCompact .warrantyYrsText {
-  font-size: 0.72rem;
+  font-size: 0.65rem;
 }
 .warrantyGridCompact .warrantyLabel {
-  font-size: 0.86rem;
+  font-size: 0.78rem;
+  line-height: 1.25;
 }
 .warrantyGridCompact .warrantySub {
-  font-size: 0.78rem;
+  font-size: 0.72rem;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* ══ P7: WHY PARTNER — trust cards + 1 proof photo ═════════════ */
@@ -6429,43 +6491,62 @@
     height: 52px !important;
   }
   .hwPage .pageTitle {
-    font-size: 15.5pt !important;
+    font-size: 14.5pt !important;
+    line-height: 1.15 !important;
   }
   .hwPage .pageLead {
-    font-size: 9.5pt !important;
+    font-size: 9pt !important;
+    line-height: 1.35 !important;
+  }
+  .hwCard4Grid {
+    gap: 0.45rem !important;
+    margin-bottom: 0.45rem !important;
   }
   .hwCardBody {
-    padding: 0.85rem 0.95rem 0.9rem !important;
+    padding: 0.65rem 0.8rem 0.7rem !important;
   }
   .hwCardTitle {
-    font-size: 11pt !important;
+    font-size: 10.5pt !important;
   }
   .hwCardSpec,
   .hwCardWhy {
-    font-size: 9pt !important;
+    font-size: 8.5pt !important;
+    line-height: 1.35 !important;
+  }
+  .hwCardWhy {
+    -webkit-line-clamp: 2 !important;
   }
   .hwCardTag {
-    font-size: 8pt !important;
+    font-size: 7.5pt !important;
+  }
+  .hwEarthStrip {
+    padding: 0.55rem 0.75rem !important;
+    margin-bottom: 0.45rem !important;
   }
   .hwEarthChipVal {
-    font-size: 12pt !important;
-  }
-  .hwEarthChipLabel,
-  .hwEarthLead {
-    font-size: 9pt !important;
-  }
-  .warrantyGridCompact .warrantyBadge {
-    padding: 0.85rem 0.7rem !important;
-  }
-  .warrantyGridCompact .warrantyCircle {
-    width: 48px !important;
-    height: 48px !important;
-  }
-  .warrantyGridCompact .warrantyYears {
     font-size: 11pt !important;
   }
+  .hwEarthChipLabel,
+  .hwEarthLead,
+  .hwEarthWhy {
+    font-size: 8.5pt !important;
+  }
+  .hwPage .warrantyGridCompact {
+    gap: 0.4rem !important;
+    margin-top: auto !important;
+  }
+  .warrantyGridCompact .warrantyBadge {
+    padding: 0.6rem 0.45rem !important;
+  }
+  .warrantyGridCompact .warrantyCircle {
+    width: 42px !important;
+    height: 42px !important;
+  }
+  .warrantyGridCompact .warrantyYears {
+    font-size: 10pt !important;
+  }
   .warrantyGridCompact .warrantyLabel {
-    font-size: 9pt !important;
+    font-size: 8.5pt !important;
   }
   .genCompareRow {
     padding: 0.55rem 0.7rem 0.6rem !important;
