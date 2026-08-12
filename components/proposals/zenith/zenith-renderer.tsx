@@ -26,6 +26,8 @@ import {
 } from "@/components/proposals/_shared/residential-pdf-export";
 import styles from "./zenith.module.css";
 
+const ZENITH_COVER_PHOTO = "/assets/proposals/zenith-cover-luxury-rooftop.jpg";
+
 export type ZenithProposalRendererProps = {
   data: ProposalData;
   installerLogoUrl?: string;
@@ -222,6 +224,21 @@ export function ZenithProposalRenderer({
               {coverBrand.showTagline && data.meta.brandTagline ? (
                 <p className={styles.heroSub}>{data.meta.brandTagline}</p>
               ) : null}
+              <figure className={styles.coverVisual}>
+                <div className={styles.coverPhotoFrame}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={ZENITH_COVER_PHOTO}
+                    alt={c.cover.photoTitle}
+                    className={styles.coverPhotoImg}
+                  />
+                  <div className={styles.coverPhotoScrim} aria-hidden />
+                </div>
+                <figcaption className={styles.coverPhotoCaption}>
+                  <span className={styles.coverPhotoTitle}>{c.cover.photoTitle}</span>
+                  <span className={styles.coverPhotoSub}>{c.cover.photoSub}</span>
+                </figcaption>
+              </figure>
               <div className={styles.coverAccent} aria-hidden />
               <h1 className={styles.heroTitle}>{c.cover.hero}</h1>
               <p className={styles.heroSub}>{c.cover.sub}</p>

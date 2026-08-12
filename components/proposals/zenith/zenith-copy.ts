@@ -21,6 +21,10 @@ export function getZenithCopy(lang: ZenithLang) {
         : "A solar proposal shaped for your rooftop — clean power for the next 25 years.",
       preparedFor: hi ? "के लिए तैयार" : "Prepared for",
       proposalLabel: hi ? "सौर प्रस्ताव" : "Solar proposal",
+      photoTitle: hi ? "प्रीमियम छत · हरित जीवन" : "Premium rooftop · green living",
+      photoSub: hi
+        ? "सौर पैनल, मिनी गार्डन और भारतीय लक्ज़री होम — एक ही छत पर।"
+        : "Solar panels, a mini garden, and a luxury Indian home — on one rooftop.",
     },
     closing: {
       tag: hi ? "अगला कदम" : "Let's begin",
