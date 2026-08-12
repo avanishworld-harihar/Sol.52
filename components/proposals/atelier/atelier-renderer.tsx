@@ -643,8 +643,8 @@ export function AtelierRenderer({
                 className={styles.coverPhotoImg}
                 src="/assets/proposals/atelier-cover-terrace-garden.jpg"
                 alt=""
-                width={1600}
-                height={900}
+                width={1536}
+                height={1024}
               />
               <div className={styles.coverPhotoVignette} aria-hidden />
               <div className={styles.coverPhotoEdge} aria-hidden />

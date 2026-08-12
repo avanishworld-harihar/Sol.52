@@ -681,11 +681,10 @@
   white-space: nowrap;
 }
 
-/* Cover lifestyle photo — unique Atelier asset (not Quantum / Luxe) */
+/* Cover lifestyle photo — unique Atelier asset (1536×1024, 3:2) */
 .coverPhotoPlate {
   margin: 0;
-  flex: 1.15;
-  min-height: 0;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
@@ -693,9 +692,9 @@
 
 .coverPhotoFrame {
   position: relative;
-  flex: 1;
-  min-height: 210px;
-  max-height: 320px;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  flex: 0 0 auto;
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -711,7 +710,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 42%;
+  object-position: center center;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -721,8 +720,8 @@
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(15, 23, 42, 0.08) 0%, transparent 28%, transparent 62%, rgba(15, 23, 42, 0.45) 100%),
-    radial-gradient(ellipse 80% 70% at 50% 40%, transparent 40%, rgba(15, 23, 42, 0.22) 100%);
+    linear-gradient(180deg, rgba(15, 23, 42, 0.06) 0%, transparent 22%, transparent 78%, rgba(15, 23, 42, 0.22) 100%),
+    radial-gradient(ellipse 80% 70% at 50% 45%, transparent 45%, rgba(15, 23, 42, 0.16) 100%);
 }
 
 .coverPhotoEdge {
@@ -5170,9 +5169,11 @@
   }
 
   .coverPhotoFrame {
-    min-height: 180px;
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    height: auto !important;
+    min-height: 0;
     max-height: none;
-    height: clamp(180px, 42vw, 260px);
   }
 
   .closingPhotoFrame {
@@ -5584,7 +5585,11 @@
   }
 
   .coverPhotoFrame {
-    height: clamp(160px, 48vw, 220px);
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    height: auto !important;
+    min-height: 0;
+    max-height: none;
   }
 
   .closingPhotoFrame {
@@ -5906,14 +5911,11 @@
     flex-shrink: 0 !important;
   }
   /*
-   * Match the web frame exactly (flex:1.15, no width/aspect-ratio lock) so
-   * the photo spans full width like on screen. The previous fixed-width
-   * 16:9 lock (`width: min(100%, calc(92mm*16/9))`) narrowed the photo into
-   * a letterboxed box with empty side gutters that never appears on web —
-   * that mismatch is what "image sahi nahi hai" on the cover was.
+   * Match asset aspect (1536×1024 = 3:2) so the terrace/garden photo is not
+   * letterboxed into a short wide strip that crops the family & pots at bottom.
    */
   .coverPhotoPlate {
-    flex: 1.15 !important;
+    flex: 0 0 auto !important;
     min-height: 0 !important;
     max-height: none !important;
   }
@@ -5922,10 +5924,11 @@
     width: 100% !important;
     max-width: 100% !important;
     margin-inline: auto !important;
+    aspect-ratio: 3 / 2 !important;
     height: auto !important;
-    min-height: 210px !important;
-    max-height: 320px !important;
-    flex: 1 !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    flex: 0 0 auto !important;
     overflow: hidden !important;
   }
   .coverPhotoImg {
@@ -5934,8 +5937,7 @@
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     object-fit: cover !important;
-    /* Same bias as screen — keep array/panels in frame */
-    object-position: center 42% !important;
+    object-position: center center !important;
     width: 100% !important;
     height: 100% !important;
   }
