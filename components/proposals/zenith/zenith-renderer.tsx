@@ -32,6 +32,7 @@ import {
 } from "./zenith-engineering";
 
 const ZENITH_COVER_PHOTO = "/assets/proposals/zenith-cover-luxury-rooftop.jpg";
+const ZENITH_CLOSING_PHOTO = "/assets/proposals/zenith-closing-sunset-rooftop.jpg";
 
 function EngDetailBlock({
   title,
@@ -776,19 +777,37 @@ export function ZenithProposalRenderer({
           </div>
         </section>
 
-        {/* Closing — light last page */}
+        {/* Closing — aspirational last page with hero visual */}
         <section className={`${styles.page} ${styles.pageClosing}`}>
-          <div>
-            <p className={styles.closingTag}>{c.closing.tag}</p>
-            <div className={styles.goldRule} aria-hidden />
-            <h2 className={styles.closingTitle}>{c.closing.title}</h2>
-            <p className={styles.closingBody}>{c.closing.body}</p>
-            <p className={styles.closingFor}>
-              {c.pages.preparedBy(
-                closing.customerName || customer,
-                closing.installerName || brand
-              )}
-            </p>
+          <div className={styles.closingHead}>
+            <div className={styles.closingIntro}>
+              <p className={styles.closingTag}>{c.closing.tag}</p>
+              <div className={styles.goldRule} aria-hidden />
+              <h2 className={styles.closingTitle}>{c.closing.title}</h2>
+              <p className={styles.closingBody}>{c.closing.body}</p>
+              <p className={styles.closingFor}>
+                {c.pages.preparedBy(
+                  closing.customerName || customer,
+                  closing.installerName || brand
+                )}
+              </p>
+            </div>
+
+            <figure className={styles.closingVisual}>
+              <div className={styles.closingPhotoFrame}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={ZENITH_CLOSING_PHOTO}
+                  alt={c.closing.photoTitle}
+                  className={styles.closingPhotoImg}
+                />
+                <div className={styles.closingPhotoScrim} aria-hidden />
+                <div className={styles.closingPhotoCaptionOverlay}>
+                  <span className={styles.closingPhotoTitle}>{c.closing.photoTitle}</span>
+                  <span className={styles.closingPhotoSub}>{c.closing.photoSub}</span>
+                </div>
+              </div>
+            </figure>
           </div>
 
           <div className={styles.closingStats}>
@@ -815,6 +834,20 @@ export function ZenithProposalRenderer({
               </span>
             </div>
           </div>
+
+          <ul className={styles.closingSteps} aria-label={c.closing.tag}>
+            {c.closing.steps.map((step, i) => (
+              <li key={step.title} className={styles.closingStep}>
+                <span className={styles.closingStepNum}>
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div>
+                  <p className={styles.closingStepTitle}>{step.title}</p>
+                  <p className={styles.closingStepDesc}>{step.desc}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
 
           <div className={styles.closingFooter}>
             <div>

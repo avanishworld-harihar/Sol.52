@@ -1199,20 +1199,144 @@
   line-height: 1.55;
 }
 
-/* Closing page — light, distinct from Golden cream + Zenith dark legacy */
+/* Closing page — aspirational hero + stats + next steps */
 .pageClosing {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 1.75rem;
+  justify-content: flex-start;
+  gap: 1.35rem;
   min-height: min(92vh, 52rem);
   background:
-    radial-gradient(ellipse 80% 45% at 100% 0%, rgba(20, 184, 166, 0.14), transparent 55%),
+    radial-gradient(ellipse 80% 45% at 100% 0%, rgba(20, 184, 166, 0.1), transparent 55%),
     linear-gradient(180deg, #ffffff 0%, var(--accent-wash) 100%);
   color: var(--ink);
   border-bottom: none;
-  padding-top: 2.75rem;
-  padding-bottom: 2.75rem;
+  padding-top: 2.25rem;
+  padding-bottom: 2.25rem;
+}
+
+.closingHead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+.closingIntro {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.closingVisual {
+  margin: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.closingPhotoFrame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(15, 118, 110, 0.2);
+  box-shadow:
+    0 24px 52px rgba(15, 118, 110, 0.16),
+    0 6px 18px rgba(11, 18, 32, 0.08);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.closingPhotoImg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 45%;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.closingPhotoScrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, transparent 35%, rgba(11, 18, 32, 0.55) 100%),
+    linear-gradient(90deg, rgba(11, 18, 32, 0.08) 0%, transparent 40%);
+}
+
+.closingPhotoCaptionOverlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 1rem 1.05rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  z-index: 1;
+}
+
+.closingPhotoTitle {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.closingPhotoSub {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.4;
+  max-width: 28ch;
+}
+
+.closingSteps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.closingStep {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.88);
+  min-width: 0;
+}
+
+.closingStepNum {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+}
+
+.closingStepTitle {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.closingStepDesc {
+  margin: 0.1rem 0 0;
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.35;
 }
 
 .closingTag {
@@ -1383,8 +1507,17 @@
   }
 
   .coverHighlights,
-  .closingStats {
+  .closingStats,
+  .closingSteps {
     grid-template-columns: 1fr;
+  }
+
+  .closingHead {
+    grid-template-columns: 1fr;
+  }
+
+  .closingPhotoFrame {
+    aspect-ratio: 16 / 10;
   }
 
   .coverHiCell {
@@ -1530,6 +1663,28 @@
     color: var(--ink) !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+
+  .pageClosing .closingHead {
+    grid-template-columns: 1fr 1.05fr;
+    gap: 4mm;
+  }
+
+  .pageClosing .closingPhotoFrame {
+    aspect-ratio: auto;
+    height: 58mm;
+    max-height: 58mm;
+  }
+
+  .pageClosing .closingVisual,
+  .pageClosing .closingStep {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .pageClosing .closingSteps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2mm;
   }
 
   @page zenith-sheet {
