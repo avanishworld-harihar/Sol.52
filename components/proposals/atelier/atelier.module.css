@@ -527,6 +527,44 @@
   letter-spacing: 0.05em !important;
   line-height: 1.25 !important;
 }
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .closingInner {
+  overflow: visible !important;
+  gap: 0.5rem !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .closingBrandTop {
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  z-index: 2 !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .closingTagInline {
+  margin-left: 0 !important;
+  display: inline-block !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .closingPhotoPlate {
+  flex: 0 0 auto !important;
+  max-height: none !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .closingPhotoFrame {
+  aspect-ratio: 16 / 9 !important;
+  max-height: 220px !important;
+  min-height: 0 !important;
+  flex: 0 0 auto !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .closingCTABox {
+  overflow: visible !important;
+}
 
 .pdfReadyOverlay {
   position: fixed;
@@ -4703,16 +4741,27 @@
 }
 .closingBrandTop {
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  margin-bottom: 0.65rem;
+  flex-shrink: 0;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+}
+.closingBrandRow {
+  display: flex;
   align-items: center;
   gap: 0.65rem;
-  margin-bottom: 0.55rem;
-  flex-shrink: 0;
   flex-wrap: wrap;
+  width: 100%;
+  min-width: 0;
 }
 .closingLogo {
   display: block;
-  max-height: 2.5rem;
-  max-width: 150px;
+  max-height: 2.35rem;
+  max-width: 140px;
   object-fit: contain;
   flex-shrink: 0;
 }
@@ -4732,17 +4781,19 @@
   color: rgba(255,255,255,0.7);
 }
 .closingTagInline {
-  margin-left: auto;
+  display: inline-block;
+  margin-left: 0;
   font-family: 'Montserrat', sans-serif;
   font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 1.6px;
+  letter-spacing: 1.4px;
   color: var(--or);
   text-transform: uppercase;
   border: 1px solid rgba(249, 115, 22, 0.4);
-  padding: 0.18rem 0.5rem;
+  padding: 0.2rem 0.55rem;
   border-radius: 2px;
   white-space: nowrap;
+  line-height: 1.2;
 }
 
 /* ══ CLOSING ════════════════════════════════════════════════════ */
@@ -4786,30 +4837,34 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.55rem;
   min-height: 0;
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
   padding: var(--page-pad-t) var(--page-pad-x) var(--page-pad-b);
 }
 
-/* Closing RCC rooftop hero — eats vertical space so CTA needn’t stretch */
+/* Closing RCC rooftop hero — fixed aspect, no overlap with brand header */
 .closingPhotoPlate {
   margin: 0;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  max-height: 46%;
+  gap: 0.35rem;
+  width: 100%;
+  position: relative;
+  z-index: 1;
 }
 
 .closingPhotoFrame {
   position: relative;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
+  width: 100%;
+  aspect-ratio: 16 / 9;
   height: auto;
-  min-height: 220px;
-  max-height: 280px;
+  min-height: 0;
+  max-height: 230px;
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -4885,35 +4940,35 @@
 }
 .closingTitle {
   font-family: 'Montserrat', sans-serif;
-  font-size: clamp(1.85rem, 3.8vw, 2.4rem);
+  font-size: clamp(1.65rem, 3.4vw, 2.15rem);
   font-weight: 800;
   color: var(--white);
   line-height: 1.05;
-  margin: 0 0 0.55rem;
+  margin: 0 0 0.45rem;
 }
 .closingStatement {
-  font-size: 1.05rem;
+  font-size: 0.98rem;
   color: rgba(255,255,255,0.78);
-  line-height: 1.5;
+  line-height: 1.45;
   max-width: 100%;
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.4rem;
 }
 .closingStatement strong { color: var(--white); font-weight: 700; }
 .closingSub {
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   color: rgba(255,255,255,0.55);
-  line-height: 1.5;
+  line-height: 1.42;
   max-width: 100%;
-  margin: 0 0 0.85rem;
+  margin: 0 0 0.65rem;
 }
 
 .closingStats {
   display: flex;
   align-items: center;
-  gap: 1.15rem;
+  gap: 0.9rem;
   margin-top: 0;
   margin-bottom: 0;
-  padding: 1rem 1.15rem;
+  padding: 0.85rem 1rem;
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(249, 115, 22, 0.28);
   border-radius: var(--card-r);
@@ -4968,10 +5023,13 @@
   gap: 0.2rem;
 }
 .closingValidity {
-  font-size: 0.86rem;
-  color: rgba(255,255,255,0.25);
-  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.35);
+  margin-top: 0.35rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   font-style: italic;
+  line-height: 1.4;
 }
 
 /* ══ WEALTH JOURNEY — money story steps (P4) ═══════════════════ */
@@ -5327,11 +5385,12 @@
 .closingSplit {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
-  gap: 1rem;
+  gap: 0.85rem;
   align-items: start;
   min-height: 0;
   min-width: 0;
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+  margin-top: auto;
 }
 .closingLeft {
   display: flex;
@@ -5355,10 +5414,10 @@
   background: rgba(255,255,255,0.07);
   border: 1px solid rgba(249,115,22,0.4);
   border-radius: var(--card-r);
-  padding: 1.35rem 1.25rem 1.4rem;
+  padding: 1.1rem 1.05rem 1.15rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.6rem;
   width: 100%;
   max-width: none;
   min-width: 0;
@@ -5367,12 +5426,12 @@
   flex: 0 0 auto;
   align-self: stretch;
   justify-content: flex-start;
-  overflow: hidden;
+  overflow: visible;
   box-sizing: border-box;
 }
 .ctaTitle {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1.2rem;
+  font-size: 1.08rem;
   font-weight: 800;
   color: var(--white);
   line-height: 1.25;
@@ -5380,9 +5439,9 @@
   word-break: break-word;
 }
 .ctaDesc {
-  font-size: 0.92rem;
+  font-size: 0.86rem;
   color: rgba(255,255,255,0.6);
-  line-height: 1.45;
+  line-height: 1.42;
   margin: 0;
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -5395,14 +5454,15 @@
 .ctaContact {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.28rem;
   min-width: 0;
 }
 .ctaBrand {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: var(--white);
+  line-height: 1.25;
 }
 .ctaInfo {
   font-size: 0.86rem;
@@ -5647,9 +5707,10 @@
   }
 
   .closingPhotoFrame {
-    min-height: 160px;
-    max-height: none;
-    height: clamp(160px, 40vw, 240px);
+    aspect-ratio: 16 / 9;
+    min-height: 0;
+    max-height: 220px;
+    height: auto;
   }
 
   .coverWealthRow {
@@ -6451,18 +6512,23 @@
   .closingInner {
     padding: 0 !important;
     min-height: 0;
-    overflow: hidden !important;
-    gap: 0.55rem !important;
+    overflow: visible !important;
+    gap: 0.5rem !important;
+  }
+  .closingBrandTop {
+    margin-bottom: 0.55rem !important;
+    z-index: 2 !important;
   }
   .closingPhotoPlate {
-    flex: 1 1 auto !important;
-    max-height: 48% !important;
+    flex: 0 0 auto !important;
+    max-height: none !important;
   }
   .closingPhotoFrame {
     height: auto !important;
-    min-height: 220px !important;
-    max-height: 280px !important;
-    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: 220px !important;
+    aspect-ratio: 16 / 9 !important;
+    flex: 0 0 auto !important;
   }
   .closingPhotoImg {
     -webkit-print-color-adjust: exact !important;

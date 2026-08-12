@@ -2354,25 +2354,27 @@ export function AtelierRenderer({
       <section className={`${styles.page} ${styles.closingPage}`}>
         <div className={styles.closingInner}>
           <div className={styles.closingBrandTop}>
-            {closingBrand.showLogo ? (
-              <span
-                className={
-                  logoNeedsPlate ? styles.logoPlate : styles.logoBare
-                }
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={closingBrand.logoUrl}
-                  alt={closingBrand.installerName || brand}
-                  className={styles.closingLogo}
-                />
-              </span>
-            ) : null}
-            {closingBrand.showName || !closingBrand.showLogo ? (
-              <span className={styles.closingBrandName}>
-                {(closingBrand.installerName || brand).toUpperCase()}
-              </span>
-            ) : null}
+            <div className={styles.closingBrandRow}>
+              {closingBrand.showLogo ? (
+                <span
+                  className={
+                    logoNeedsPlate ? styles.logoPlate : styles.logoBare
+                  }
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={closingBrand.logoUrl}
+                    alt={closingBrand.installerName || brand}
+                    className={styles.closingLogo}
+                  />
+                </span>
+              ) : null}
+              {closingBrand.showName || !closingBrand.showLogo ? (
+                <span className={styles.closingBrandName}>
+                  {(closingBrand.installerName || brand).toUpperCase()}
+                </span>
+              ) : null}
+            </div>
             <span className={styles.closingTagInline}>
               {withPageTag(c.closing.tag, pn.closing)}
             </span>
