@@ -4690,13 +4690,27 @@
   font-weight: 500;
 }
 
-/* P11 — same readable type as P10 (no shrink) */
+/* P12 — safety / client / AMC (dense continuation) */
 .termsPageDense .termsStack {
-  gap: 0.7rem;
+  gap: 0.55rem;
 }
 
 .termsPageDense .termsSection {
-  padding: 0.8rem 0.95rem 0.85rem;
+  padding: 0.72rem 0.9rem 0.78rem;
+}
+
+.termsPageDense .termsSubhead {
+  margin-bottom: 0.45rem;
+  padding-bottom: 0.32rem;
+}
+
+.termsPageDense .termsNumberedList,
+.termsPageDense .termsSafetyList {
+  gap: 0.32rem;
+}
+
+.termsPageDense .termsAmcLabel {
+  margin: 0.42rem 0 0.22rem;
 }
 
 .termsPageDense .termsArticleBody,
