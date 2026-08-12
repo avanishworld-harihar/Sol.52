@@ -261,6 +261,30 @@
   border-top: 1px solid rgba(226, 232, 240, 0.95) !important;
   line-height: 1.38 !important;
 }
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .genCompareMeta {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: start !important;
+  margin-bottom: 0.5rem !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .genBarLabel {
+  display: block !important;
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  line-height: 1.35 !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .genBarVal {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  align-self: start !important;
+  max-width: none !important;
+}
 
 /* Dense-page capture compaction mirrors the proven A4 print lane. */
 .pdfCaptureHost
@@ -4876,13 +4900,13 @@
 .genCompareList {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.6rem;
   flex: 0 0 auto;
   justify-content: flex-start;
 }
 .genCompareRow {
   border-radius: 10px;
-  padding: 0.75rem 0.85rem 0.8rem;
+  padding: 0.75rem 0.85rem 0.85rem;
   border: 1px solid var(--line);
   background: var(--al);
   -webkit-print-color-adjust: exact !important;
@@ -4902,22 +4926,29 @@
   border-color: #F1E7D8;
 }
 .genCompareMeta {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 0.5rem;
-  margin-bottom: 0.45rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 0.65rem;
+  row-gap: 0.15rem;
+  margin-bottom: 0.5rem;
+  align-items: start;
   min-width: 0;
 }
 .genBarLabel {
+  grid-column: 1;
+  grid-row: 1;
+  display: block;
   font-size: 0.86rem;
   font-weight: 700;
   color: var(--c);
-  line-height: 1.3;
+  line-height: 1.35;
   min-width: 0;
   overflow-wrap: anywhere;
 }
 .genBarVal {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
   font-family: 'Montserrat', sans-serif;
   font-size: 0.95rem;
   font-weight: 800;
@@ -4925,13 +4956,11 @@
   text-align: right;
   white-space: nowrap;
   flex-shrink: 0;
-  max-width: 42%;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 .genCompareHero .genBarVal { color: var(--or); }
 .genBarTrack {
   height: 14px;
+  margin-top: 0.05rem;
   background: rgba(15, 23, 42, 0.08);
   border-radius: 999px;
   overflow: hidden;
@@ -5531,13 +5560,14 @@
   }
 
   .genCompareMeta {
-    flex-wrap: wrap;
-    gap: 0.25rem 0.5rem;
+    grid-template-columns: 1fr;
+    row-gap: 0.2rem;
   }
 
   .genBarVal {
+    grid-column: 1;
+    grid-row: 2;
     white-space: normal;
-    max-width: 100%;
     text-align: left;
   }
 
