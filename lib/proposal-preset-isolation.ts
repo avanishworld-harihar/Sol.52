@@ -12,9 +12,13 @@
  *    elements. Bare `@page` is document-global and overrides other presets.
  * 3. Do not edit Golden frozen paths for another preset’s sake
  *    (see `lib/golden-proposal-lock.ts`). Duplicate helpers instead.
- * 4. Do not edit Quantum frozen paths for another preset’s sake
+ * 4. Do not edit Atelier frozen paths for another preset’s sake
+ *    (see `lib/atelier-proposal-lock.ts`). Atelier owns `components/proposals/atelier/`.
+ * 5. Do not edit Premium Luxe Noir frozen paths for another preset’s sake
+ *    (see `lib/luxe-noir-proposal-lock.ts`). Luxe Noir owns `components/proposals/luxe-noir/`.
+ * 6. Do not edit Quantum frozen paths for another preset’s sake
  *    (see `lib/quantum-proposal-lock.ts`). Quantum owns `components/QuantumPreset/`.
- * 5. Prefer preset-local CSS modules / packages; keep `globals.css` print
+ * 7. Prefer preset-local CSS modules / packages; keep `globals.css` print
  *    rules behind `.commercial-proposal` / `.proposal-document` when possible.
  */
 
@@ -40,5 +44,7 @@ export const PRESET_ISOLATION_NOTES = [
   "Commercial styles: imported by commercial-proposal-view.tsx only.",
   "Named @page only inside preset CSS — no bare @page in Atelier/Zenith/Golden/Canvas when editing print.",
   "Golden editorial transform is Golden-owned; other themes must not force Golden CSS changes.",
+  "Atelier owns components/proposals/atelier/; other themes must not edit Atelier CSS/layout/PDF for their own sake.",
+  "Premium Luxe Noir owns components/proposals/luxe-noir/; other themes must not edit Luxe Noir CSS/layout for their own sake.",
   "Quantum owns components/QuantumPreset/; other themes must not edit Quantum CSS/motion/i18n for their own sake.",
 ] as const;

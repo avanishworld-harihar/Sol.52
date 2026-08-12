@@ -1,0 +1,32 @@
+---
+description: Premium Luxe Noir proposal (residential_luxe_noir) is frozen — do not edit unless the user explicitly asks
+alwaysApply: true
+---
+
+# Premium Luxe Noir proposal development lock
+
+The **Premium Luxe** (noir cinematic) proposal (`residential_luxe_noir`, `LuxeNoirRenderer`) is **complete and locked for development**.
+
+## What "locked" means
+
+- **Do NOT** modify Premium Luxe Noir files when fixing or building **other** presets (Golden, Atelier, Quantum, Ember, Horizon, Solstice, Legacy, Commercial, etc.).
+- **Do NOT** hide or disable other themes in the UI — users may still choose any template.
+- **Only** edit Premium Luxe Noir when the user **explicitly** asks to change that proposal.
+
+## Frozen paths (no edits unless user requests Premium Luxe Noir changes)
+
+- `components/proposals/luxe-noir/**`
+- `components/proposals/_registry/adapters/luxe-noir-adapter.tsx`
+
+See also `lib/luxe-noir-proposal-lock.ts`.
+
+## When working on other presets
+
+- Scope diffs to that preset's blocks, CSS, and registry entries only.
+- Do not refactor shared Luxe Noir utilities or CSS for another theme's sake — duplicate or adapt in the other preset's folder if needed.
+- Other presets may **read** Luxe Noir patterns for inspiration; do not change Luxe Noir pages/CSS to match them.
+- **Atelier** (`residential_premium_luxe`) is a separate locked preset — see `lib/atelier-proposal-lock.ts`.
+
+## Public route
+
+Premium Luxe Noir renders at `preset_id === "residential_luxe_noir"` via `LuxeNoirAdapter` → `LuxeNoirRenderer` — keep that path stable.

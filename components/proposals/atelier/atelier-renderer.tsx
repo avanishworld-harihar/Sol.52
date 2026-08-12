@@ -2,6 +2,9 @@
 
 /**
  * Atelier — Investment Blueprint (High-Conversion Sales Journey)
+ *
+ * DEVELOPMENT LOCKED — see `lib/atelier-proposal-lock.ts`. Do not edit for other presets.
+ *
  * Flow: [Cover] → [Bill Audit?] → [Wealth Projection] → [25-Year Savings]
  *       → [Roof] → [Generation] → [Monthly Forecast] → [Hardware] → [Why Us]
  *       → [Impact] → [Roadmap/Payment] → [Compliance] → [Closing]

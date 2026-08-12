@@ -2,6 +2,8 @@
 
 /**
  * Adapter — Premium Luxe (noir cinematic) · preset id residential_luxe_noir
+ *
+ * DEVELOPMENT LOCKED — see `lib/luxe-noir-proposal-lock.ts`.
  */
 
 import { LuxeNoirRenderer } from "@/components/proposals/luxe-noir/luxe-noir-renderer";

@@ -2,6 +2,8 @@
 
 /**
  * Adapter — Premium Luxe preset (UI label: Atelier) for the Proposal OS registry.
+ *
+ * DEVELOPMENT LOCKED — see `lib/atelier-proposal-lock.ts`.
  */
 
 import { AtelierRenderer } from "@/components/proposals/atelier/atelier-renderer";

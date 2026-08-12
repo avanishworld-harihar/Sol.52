@@ -2,8 +2,11 @@
 
 /**
  * Premium Luxe (noir) — A4 multi-page residential proposal.
+ *
+ * DEVELOPMENT LOCKED — see `lib/luxe-noir-proposal-lock.ts`. Do not edit for other presets.
+ *
  * Preset id: residential_luxe_noir · Canvas-style pagination · daylight porcelain + ink + champagne gold.
- * Atelier (residential_premium_luxe) stays separate.
+ * Atelier (residential_premium_luxe) stays separate and locked under `lib/atelier-proposal-lock.ts`.
  */
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
