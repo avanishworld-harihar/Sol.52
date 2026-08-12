@@ -644,7 +644,7 @@ function ProposalPageContent() {
     const merged = new Set<keyof MonthlyUnits>();
     const allBills = [latestBill, ...additionalBills].filter(Boolean) as ParsedBillShape[];
     for (const bill of allBills) {
-      for (const key of extractDetectedMonths(bill)) merged.add(key);
+      for (const key of extractDetectedMonths(bill).keys()) merged.add(key);
     }
     return merged.size;
   }, [latestBill, additionalBills]);
@@ -4483,28 +4483,64 @@ function buildMonthlyAuditOverridesFromBills(
   return out;
 }
 
-function extractDetectedMonths(parsed: ParsedBillShape | null): Set<keyof MonthlyUnits> {
-  const detected = new Set<keyof MonthlyUnits>();
+/**
+ * Detects which calendar months this bill actually reports data for, tagged with the
+ * best-known YEAR for each (so two upload cards can both legitimately show e.g. "Jul" —
+ * one for Jul-2026 (this bill's own current month), the other for Jul-2025 (a prior
+ * month inside a different bill's own 6-month history table) — without looking like a
+ * duplicate/wrong badge. Map value is the 4-digit year, or null if it truly can't be
+ * inferred.
+ *
+ * IMPORTANT: merges BOTH `months` and `consumption_history` (never one-or-the-other).
+ * Previously this returned early as soon as `months` had ANY entry, which silently hid
+ * real history rows whenever the model only partially filled `months` (e.g. the new
+ * MPPKVVCL 2-page bill layout, whose page-1 "CONSUMPTION HISTORY" table has extra
+ * MD/PF columns and can trip up partial extraction) — making the coverage badges look
+ * incomplete even though the row-level history data was captured correctly.
+ */
+function extractDetectedMonths(parsed: ParsedBillShape | null): Map<keyof MonthlyUnits, number | null> {
+  const detected = new Map<keyof MonthlyUnits, number | null>();
   if (!parsed) return detected;
 
-  // Prefer concrete filled month slots from this bill (not a synthetic window from a wrong label).
+  const connectionMonthIndex = parseConnectionMonthIndex(parsed.connection_date);
+  const billMonthIndex = parseBillMonthIndex(parsed.bill_month);
+
+  // Concrete filled month slots from this bill's own `months` object (year resolved below).
   if (parsed.months) {
     for (const key of MONTH_KEYS) {
       const raw = parsed.months[key];
       if (raw == null) continue;
       const n = typeof raw === "number" ? raw : Number.parseInt(String(raw).replace(/[^\d]/g, ""), 10);
-      if (Number.isFinite(n) && n > 0) detected.add(key);
+      if (Number.isFinite(n) && n > 0) detected.set(key, null);
     }
   }
-  if (detected.size > 0) {
-    const billKey = monthKeyFromBillLabel(parsed.bill_month);
-    if (billKey) detected.add(billKey);
-    return detected;
+
+  // Row-level consumption_history carries an explicit "MMM-YYYY" label — always merge
+  // it in on top of `months` (never skip it), since it is the most reliable year source.
+  const history = parsed.consumption_history ?? [];
+  for (const row of history) {
+    if (!row || Number(row.units) <= 0) continue;
+    const rowMonthIndex = parseHistoryMonthIndex(String(row.month ?? ""));
+    if (connectionMonthIndex != null && rowMonthIndex != null && rowMonthIndex < connectionMonthIndex) continue;
+    const parts = String(row.month ?? "")
+      .split(/[\s/-]+/)
+      .map((part) => part.trim())
+      .filter(Boolean);
+    for (const part of parts) {
+      const normalized = normalizeMonthToken(part);
+      if (normalized) {
+        detected.set(normalized, rowMonthIndex != null ? Math.floor(rowMonthIndex / 12) : null);
+        break;
+      }
+    }
   }
 
-  const billMonthIndex = parseBillMonthIndex(parsed.bill_month);
-  if (billMonthIndex != null) {
-    const connectionMonthIndex = parseConnectionMonthIndex(parsed.connection_date);
+  // The bill's own current month always gets its printed year, explicitly (overrides guesses).
+  const billKey = monthKeyFromBillLabel(parsed.bill_month);
+  if (billKey) detected.set(billKey, billMonthIndex != null ? Math.floor(billMonthIndex / 12) : null);
+
+  // No explicit months/history data at all → best-effort trailing window from bill_month.
+  if (detected.size === 0 && billMonthIndex != null) {
     let window = 6;
     if (connectionMonthIndex != null && billMonthIndex >= connectionMonthIndex) {
       const monthsSinceConnection = billMonthIndex - connectionMonthIndex + 1;
@@ -4513,61 +4549,21 @@ function extractDetectedMonths(parsed: ParsedBillShape | null): Set<keyof Monthl
     for (let offset = 0; offset < window; offset += 1) {
       const monthAbs = billMonthIndex - offset;
       const monthIdx = ((monthAbs % 12) + 12) % 12;
-      const key = MONTH_KEYS[monthIdx];
-      detected.add(key);
+      detected.set(MONTH_KEYS[monthIdx], Math.floor(monthAbs / 12));
     }
     return detected;
   }
 
-  const history = parsed.consumption_history ?? [];
-  if (history.length > 0) {
-    const connectionMonthIndex = parseConnectionMonthIndex(parsed.connection_date);
-    for (const row of history) {
-      if (!row || Number(row.units) <= 0) continue;
-      if (connectionMonthIndex != null) {
-        const rowMonthIndex = parseHistoryMonthIndex(String(row.month ?? ""));
-        if (rowMonthIndex != null && rowMonthIndex < connectionMonthIndex) continue;
-      }
-      const parts = String(row.month ?? "")
-        .split(/[\s/-]+/)
-        .map((part) => part.trim())
-        .filter(Boolean);
-      for (const part of parts) {
-        const normalized = normalizeMonthToken(part);
-        if (normalized) {
-          detected.add(normalized);
-          break;
-        }
-      }
-    }
-    // When history table exists, use it as source-of-truth for upload coverage chips.
-    return detected;
-  }
-
-  for (const key of MONTH_KEYS) {
-    const raw = parsed.months?.[key];
-    if (typeof raw === "number" && Number.isFinite(raw) && raw > 0) {
-      detected.add(key);
-      continue;
-    }
-    if (typeof raw === "string") {
-      const num = Number.parseInt(raw.replace(/[^\d]/g, ""), 10);
-      if (!Number.isNaN(num) && num > 0) detected.add(key);
-    }
-  }
-
-  for (const row of history) {
-    if (!row || Number(row.units) <= 0) continue;
-    const parts = String(row.month ?? "")
-      .split(/[\s/-]+/)
-      .map((part) => part.trim())
-      .filter(Boolean);
-    for (const part of parts) {
-      const normalized = normalizeMonthToken(part);
-      if (normalized) {
-        detected.add(normalized);
-        break;
-      }
+  // Best-guess a year for any month still untagged (e.g. came only from `months`, no
+  // matching history row): pick the most recent occurrence of that calendar month at
+  // or before the bill month — history/previous-month tables never point to the future.
+  if (billMonthIndex != null) {
+    for (const [key, year] of detected) {
+      if (year != null) continue;
+      const monthIdx = MONTH_KEYS.indexOf(key);
+      let guessYear = Math.floor(billMonthIndex / 12);
+      if (guessYear * 12 + monthIdx > billMonthIndex) guessYear -= 1;
+      detected.set(key, guessYear);
     }
   }
 
@@ -4746,9 +4742,11 @@ function UploadCard({
         <div className="grid grid-cols-6 gap-1">
           {topRowMonths.map((month) => {
             const checked = detectedMonths.has(month);
+            const year = detectedMonths.get(month);
             return (
               <span
                 key={`top-${month}`}
+                title={checked && year ? `${MONTH_LABELS[month]}-${year}` : undefined}
                 className={cn(
                   "inline-flex items-center justify-center rounded-md border px-1 py-1 text-[10px] font-bold tracking-wide sm:text-[11px]",
                   checked
@@ -4760,6 +4758,7 @@ function UploadCard({
                   <span className="inline-flex items-center justify-center gap-0.5">
                     <Check className="h-2.5 w-2.5 shrink-0" aria-hidden />
                     {MONTH_LABELS[month]}
+                    {year ? <span className="opacity-70">&rsquo;{String(year).slice(-2)}</span> : null}
                   </span>
                 ) : (
                   MONTH_LABELS[month]
@@ -4771,9 +4770,11 @@ function UploadCard({
         <div className="grid grid-cols-6 gap-1">
           {bottomRowMonths.map((month) => {
             const checked = detectedMonths.has(month);
+            const year = detectedMonths.get(month);
             return (
               <span
                 key={`bottom-${month}`}
+                title={checked && year ? `${MONTH_LABELS[month]}-${year}` : undefined}
                 className={cn(
                   "inline-flex items-center justify-center rounded-md border px-1 py-1 text-[10px] font-bold tracking-wide sm:text-[11px]",
                   checked
@@ -4785,6 +4786,7 @@ function UploadCard({
                   <span className="inline-flex items-center justify-center gap-0.5">
                     <Check className="h-2.5 w-2.5 shrink-0" aria-hidden />
                     {MONTH_LABELS[month]}
+                    {year ? <span className="opacity-70">&rsquo;{String(year).slice(-2)}</span> : null}
                   </span>
                 ) : (
                   MONTH_LABELS[month]
