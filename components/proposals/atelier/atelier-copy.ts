@@ -497,7 +497,7 @@ export function getAtelierCopy(lang: AtelierLang) {
       phase1: hi ? "चरण 1" : "Step 1",
       investment: hi ? "सोलर के लिए भुगतान" : "You pay for solar",
       year0To: (n: number) =>
-        hi ? `वर्ष 0 → ${n}` : `Year 0 → ${n}`,
+        hi ? `वर्ष 0–${n}` : `Year 0–${n}`,
       phase1Note: hi
         ? "बिल कम होता रहता है।"
         : "Bills keep getting smaller.",
@@ -510,7 +510,7 @@ export function getAtelierCopy(lang: AtelierLang) {
       phase2: hi ? "चरण 3" : "Step 3",
       passiveIncome: hi ? "बचत आपका पैसा" : "Savings become yours",
       yearRange: (from: number) =>
-        hi ? `वर्ष ${from} → 25` : `Year ${from} → 25`,
+        hi ? `वर्ष ${from}–25` : `Year ${from}–25`,
       passiveWealth: (amt: string) =>
         hi ? `लगभग ${amt} और।` : `About ${amt} more.`,
       pureWealth: hi ? "बचत बढ़ती रहती है।" : "Savings keep growing.",
