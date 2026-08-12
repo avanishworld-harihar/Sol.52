@@ -897,145 +897,146 @@ export function AtelierRenderer({
             " Z";
           const loanIdx = years.indexOf(loanEndYr);
           return (
-            <div className={styles.trajectoryChart}>
-              <div className={styles.trajectoryHead}>
-                <span className={styles.trajectoryTitle}>
-                  {c.finance.trajectoryTag}
-                </span>
-                <span className={styles.trajectoryHint}>
-                  {c.finance.trajectoryHint}
-                </span>
-              </div>
-              <svg
-                viewBox={`0 0 ${W} ${H}`}
-                className={styles.trajectorySvg}
-                aria-hidden
-              >
-                <defs>
-                  <linearGradient id="alFinGap" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="rgba(249,115,22,0.28)" />
-                    <stop offset="100%" stopColor="rgba(249,115,22,0.05)" />
-                  </linearGradient>
-                </defs>
-                {[0.25, 0.5, 0.75].map((t) => (
-                  <line
-                    key={t}
-                    x1={padL}
-                    x2={W - padR}
-                    y1={padT + t * (H - padT - padB)}
-                    y2={padT + t * (H - padT - padB)}
-                    className={styles.trajectoryGrid}
-                  />
-                ))}
-                <path d={areaPath} fill="url(#alFinGap)" />
-                <polyline
-                  points={withoutPath}
-                  className={styles.trajectoryLineRed}
-                />
-                <polyline
-                  points={withPath}
-                  className={styles.trajectoryLineSolar}
-                />
-                {withoutPts.map((v, i) => (
-                  <circle
-                    key={`w-${years[i]}`}
-                    cx={xFor(i)}
-                    cy={yFor(v)}
-                    r="3.2"
-                    className={styles.trajectoryDotRed}
-                  />
-                ))}
-                {withPts.map((v, i) => (
-                  <circle
-                    key={`s-${years[i]}`}
-                    cx={xFor(i)}
-                    cy={yFor(v)}
-                    r="3.2"
-                    className={styles.trajectoryDotSolar}
-                  />
-                ))}
-                {loanIdx >= 0 ? (
-                  <>
+            <div className={styles.financeStoryRow}>
+              <div className={styles.trajectoryChart}>
+                <div className={styles.trajectoryHead}>
+                  <span className={styles.trajectoryTitle}>
+                    {c.finance.trajectoryTag}
+                  </span>
+                  <span className={styles.trajectoryHint}>
+                    {c.finance.trajectoryHint}
+                  </span>
+                </div>
+                <svg
+                  viewBox={`0 0 ${W} ${H}`}
+                  className={styles.trajectorySvg}
+                  aria-hidden
+                >
+                  <defs>
+                    <linearGradient id="alFinGap" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="rgba(249,115,22,0.28)" />
+                      <stop offset="100%" stopColor="rgba(249,115,22,0.05)" />
+                    </linearGradient>
+                  </defs>
+                  {[0.25, 0.5, 0.75].map((t) => (
                     <line
-                      x1={xFor(loanIdx)}
-                      x2={xFor(loanIdx)}
-                      y1={padT}
-                      y2={H - padB + 4}
-                      className={styles.trajectoryLoanLine}
+                      key={t}
+                      x1={padL}
+                      x2={W - padR}
+                      y1={padT + t * (H - padT - padB)}
+                      y2={padT + t * (H - padT - padB)}
+                      className={styles.trajectoryGrid}
                     />
+                  ))}
+                  <path d={areaPath} fill="url(#alFinGap)" />
+                  <polyline
+                    points={withoutPath}
+                    className={styles.trajectoryLineRed}
+                  />
+                  <polyline
+                    points={withPath}
+                    className={styles.trajectoryLineSolar}
+                  />
+                  {withoutPts.map((v, i) => (
+                    <circle
+                      key={`w-${years[i]}`}
+                      cx={xFor(i)}
+                      cy={yFor(v)}
+                      r="3.2"
+                      className={styles.trajectoryDotRed}
+                    />
+                  ))}
+                  {withPts.map((v, i) => (
+                    <circle
+                      key={`s-${years[i]}`}
+                      cx={xFor(i)}
+                      cy={yFor(v)}
+                      r="3.2"
+                      className={styles.trajectoryDotSolar}
+                    />
+                  ))}
+                  {loanIdx >= 0 ? (
+                    <>
+                      <line
+                        x1={xFor(loanIdx)}
+                        x2={xFor(loanIdx)}
+                        y1={padT}
+                        y2={H - padB + 4}
+                        className={styles.trajectoryLoanLine}
+                      />
+                      <text
+                        x={xFor(loanIdx) + 6}
+                        y={padT + 12}
+                        className={styles.trajectoryLoanLabel}
+                      >
+                        {c.finance.loanEndCue}
+                      </text>
+                    </>
+                  ) : null}
+                  {years.map((y, i) => (
                     <text
-                      x={xFor(loanIdx) + 6}
-                      y={padT + 12}
-                      className={styles.trajectoryLoanLabel}
+                      key={y}
+                      x={xFor(i)}
+                      y={H - 6}
+                      className={styles.trajectoryXLabel}
+                      textAnchor="middle"
                     >
-                      {c.finance.loanEndCue}
+                      {c.finance.yr(y)}
                     </text>
-                  </>
-                ) : null}
-                {years.map((y, i) => (
-                  <text
-                    key={y}
-                    x={xFor(i)}
-                    y={H - 6}
-                    className={styles.trajectoryXLabel}
-                    textAnchor="middle"
-                  >
-                    {c.finance.yr(y)}
-                  </text>
-                ))}
-              </svg>
-              <div className={styles.trajectoryLegend}>
-                <span className={styles.trajLegendItem}>
-                  <span className={styles.trajDotRed} /> {c.finance.legendWithout}
-                </span>
-                <span className={styles.trajLegendItem}>
-                  <span className={styles.trajDotSolar} /> {c.finance.legendWith}
-                </span>
-                <span className={styles.trajLegendItem}>
-                  <span className={styles.trajDotGap} /> {c.finance.legendGap}
-                </span>
+                  ))}
+                </svg>
+                <div className={styles.trajectoryLegend}>
+                  <span className={styles.trajLegendItem}>
+                    <span className={styles.trajDotRed} /> {c.finance.legendWithout}
+                  </span>
+                  <span className={styles.trajLegendItem}>
+                    <span className={styles.trajDotSolar} /> {c.finance.legendWith}
+                  </span>
+                  <span className={styles.trajLegendItem}>
+                    <span className={styles.trajDotGap} /> {c.finance.legendGap}
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.investScoreCard}>
+                <span className={styles.investScoreTag}>{c.wealth.scoreTag}</span>
+                <div className={styles.investScoreGrade}>{investScore}</div>
+                <div className={styles.investScoreLabel}>{investGrade}</div>
+                <div className={styles.investScoreDivider} />
+                <div className={styles.investScoreStats}>
+                  <div className={styles.investScoreStat}>
+                    <span className={styles.investScoreStatVal}>
+                      {paybackYears > 0
+                        ? `${paybackYears.toFixed(1)} ${c.wealth.yrsShort}`
+                        : "—"}
+                    </span>
+                    <span className={styles.investScoreStatLabel}>
+                      {c.wealth.paybackLabel}
+                    </span>
+                  </div>
+                  <div className={styles.investScoreStat}>
+                    <span className={styles.investScoreStatVal}>
+                      {annualSavings > 0 && netInr > 0
+                        ? `${Math.round((annualSavings / netInr) * 100)}%`
+                        : "—"}
+                    </span>
+                    <span className={styles.investScoreStatLabel}>
+                      {c.wealth.annualRoi}
+                    </span>
+                  </div>
+                </div>
+                <p className={styles.investScoreBasis}>
+                  <strong>{c.wealth.basis}</strong>{" "}
+                  {c.wealth.basisText(
+                    paybackYears > 0 ? paybackYears.toFixed(1) : "4–5"
+                  )}
+                </p>
               </div>
             </div>
           );
         })()}
 
-        <div className={styles.financeScoreRow}>
-          <div className={styles.investScoreCard}>
-            <span className={styles.investScoreTag}>{c.wealth.scoreTag}</span>
-            <div className={styles.investScoreGrade}>{investScore}</div>
-            <div className={styles.investScoreLabel}>{investGrade}</div>
-            <div className={styles.investScoreDivider} />
-            <div className={styles.investScoreStats}>
-              <div className={styles.investScoreStat}>
-                <span className={styles.investScoreStatVal}>
-                  {paybackYears > 0
-                    ? `${paybackYears.toFixed(1)} ${c.wealth.yrsShort}`
-                    : "—"}
-                </span>
-                <span className={styles.investScoreStatLabel}>
-                  {c.wealth.paybackLabel}
-                </span>
-              </div>
-              <div className={styles.investScoreStat}>
-                <span className={styles.investScoreStatVal}>
-                  {annualSavings > 0 && netInr > 0
-                    ? `${Math.round((annualSavings / netInr) * 100)}%`
-                    : "—"}
-                </span>
-                <span className={styles.investScoreStatLabel}>
-                  {c.wealth.annualRoi}
-                </span>
-              </div>
-            </div>
-            <p className={styles.investScoreBasis}>
-              <strong>{c.wealth.basis}</strong>{" "}
-              {c.wealth.basisText(
-                paybackYears > 0 ? paybackYears.toFixed(1) : "4–5"
-              )}
-            </p>
-          </div>
-        </div>
-
+        <div className={styles.financePageFooter}>
         <aside className={styles.wealthExpert}>
           <div className={styles.wealthExpertTop}>
             <span className={styles.wealthExpertTag}>{c.wealth.expertTag}</span>
@@ -1062,6 +1063,7 @@ export function AtelierRenderer({
             }}
           />
         ) : null}
+        </div>
 
         <span className={styles.pageNum}>{folio(pn.finance, totalPages)}</span>
       </section>

@@ -251,6 +251,8 @@
     .financeFlow,
     .investBreakdown,
     .wealthPath,
+    .financeStoryRow,
+    .financePageFooter,
     .genProofGrid,
     .investScoreCard,
     .wealthChart
@@ -1251,13 +1253,175 @@
 .financePage {
   display: flex;
   flex-direction: column;
+  min-height: 0;
+}
+.financePage .pageHead {
+  margin-bottom: 0.55rem;
 }
 .financePage .pageTitle {
-  font-size: 1.75rem;
+  font-size: 1.55rem;
 }
 .financePage .pageLead {
-  font-size: 0.98rem;
+  font-size: 0.92rem;
   max-width: 38rem;
+}
+.financePage .investBreakdown {
+  padding: 0.65rem 0.75rem;
+  margin-bottom: 0.55rem;
+}
+.financePage .investItem {
+  padding: 0.6rem 0.7rem;
+}
+.financePage .investVal {
+  font-size: 1.25rem;
+}
+.financePage .investValNet {
+  font-size: 1.4rem;
+}
+.financePage .financeFlow {
+  margin-bottom: 0.45rem;
+}
+.financePage .financeStep {
+  padding: 0.55rem 0.6rem 0.62rem;
+}
+.financePage .billCardAmt {
+  font-size: 1.32rem;
+}
+.financePage .billCardNote {
+  font-size: 0.76rem;
+  margin-top: 0.1rem;
+}
+
+/* Bill story + investment score side-by-side */
+.financeStoryRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1.58fr) minmax(0, 0.82fr);
+  gap: 0.5rem;
+  align-items: stretch;
+  margin-bottom: 0.45rem;
+  flex: 0 0 auto;
+  width: 100%;
+  min-height: 0;
+}
+.financeStoryRow .trajectoryChart {
+  margin-bottom: 0;
+  padding: 0.5rem 0.6rem 0.45rem;
+  min-height: 0;
+}
+.financeStoryRow .trajectoryHead {
+  margin-bottom: 0.25rem;
+}
+.financeStoryRow .trajectoryTitle {
+  font-size: 0.74rem;
+  letter-spacing: 0.9px;
+}
+.financeStoryRow .trajectoryHint {
+  font-size: 0.72rem;
+}
+.financeStoryRow .trajectorySvg {
+  min-height: 96px;
+  max-height: 112px;
+  height: 104px;
+}
+.financeStoryRow .trajectoryLegend {
+  padding-top: 0.3rem;
+  margin-top: 0.2rem;
+  gap: 0.45rem 0.65rem;
+}
+.financeStoryRow .trajLegendItem {
+  font-size: 0.72rem;
+}
+.financeStoryRow .investScoreCard {
+  padding: 0.55rem 0.6rem 0.58rem;
+  text-align: center;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  box-shadow: 0 6px 18px rgba(10, 15, 28, 0.16);
+}
+.financeStoryRow .investScoreTag {
+  font-size: 0.62rem;
+  letter-spacing: 1.1px;
+  margin-bottom: 0.25rem;
+}
+.financeStoryRow .investScoreGrade {
+  font-size: 1.85rem;
+}
+.financeStoryRow .investScoreLabel {
+  font-size: 0.76rem;
+  margin-top: 0.2rem;
+}
+.financeStoryRow .investScoreDivider {
+  margin: 0.35rem 0;
+}
+.financeStoryRow .investScoreStats {
+  flex-direction: column;
+  gap: 0.28rem;
+  align-items: stretch;
+}
+.financeStoryRow .investScoreStat {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+.financeStoryRow .investScoreStatVal {
+  font-size: 0.92rem;
+}
+.financeStoryRow .investScoreStatLabel {
+  font-size: 0.62rem;
+  letter-spacing: 0.45px;
+  text-align: right;
+}
+.financeStoryRow .investScoreBasis {
+  font-size: 0.66rem;
+  line-height: 1.32;
+  margin-top: auto;
+  padding-top: 0.35rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Expert note + brand compare pinned above page folio */
+.financePageFooter {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  min-height: 0;
+  padding-bottom: 1.25rem;
+  width: 100%;
+}
+.financePage .wealthExpert {
+  margin: 0;
+  padding: 0.42rem 0.58rem 0.48rem;
+}
+.financePage .wealthExpertTop {
+  margin-bottom: 0.25rem;
+}
+.financePage .wealthExpertBody {
+  font-size: 0.72rem;
+  line-height: 1.32;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.financePage .brandCompare {
+  flex-shrink: 0;
+}
+.financePage .brandCompareHead {
+  padding: 0.32rem 0.55rem;
+}
+.financePage .brandCompareTable th,
+.financePage .brandCompareTable td {
+  padding: 0.26rem 0.45rem;
+  font-size: 0.68rem;
 }
 
 .financeFlow {
@@ -1622,93 +1786,52 @@
   margin-top: 0.2rem;
 }
 
-.financePage .trajectoryChart {
-  margin-bottom: 0.5rem;
-  padding: 0.55rem 0.75rem 0.5rem;
-}
-.financePage .trajectorySvg {
-  min-height: 118px;
-  max-height: 150px;
-  height: 138px;
-}
-.financePage .financeFlow {
-  margin-bottom: 0.5rem;
-}
-.financePage .billCardNote {
-  font-size: 0.78rem;
-}
-
 /* Compact mid sections when brand compare fills bottom */
-.financePageWithBrand .trajectoryChart {
-  margin-bottom: 0.4rem;
-  padding: 0.45rem 0.65rem 0.4rem;
+.financePageWithBrand .financeStoryRow {
+  margin-bottom: 0.32rem;
 }
-.financePageWithBrand .trajectorySvg {
-  min-height: 100px;
-  max-height: 128px;
-  height: 118px;
+.financePageWithBrand .financeStoryRow .trajectoryChart {
+  padding: 0.38rem 0.5rem 0.35rem;
+}
+.financePageWithBrand .financeStoryRow .trajectorySvg {
+  min-height: 78px;
+  max-height: 90px;
+  height: 84px;
+}
+.financePageWithBrand .financeStoryRow .trajectoryLegend {
+  display: none;
+}
+.financePageWithBrand .financeStoryRow .investScoreGrade {
+  font-size: 1.5rem;
+}
+.financePageWithBrand .financeStoryRow .investScoreBasis {
+  -webkit-line-clamp: 2;
 }
 .financePageWithBrand .financeFlow {
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.35rem;
 }
 .financePageWithBrand .investBreakdown {
-  padding: 0.65rem 0.75rem;
-  margin-bottom: 0.45rem;
+  padding: 0.5rem 0.6rem;
+  margin-bottom: 0.35rem;
 }
 .financePageWithBrand .investItem {
-  padding: 0.6rem 0.75rem;
+  padding: 0.48rem 0.55rem;
 }
 .financePageWithBrand .investVal {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
 }
 .financePageWithBrand .investValNet {
-  font-size: 1.45rem;
+  font-size: 1.25rem;
 }
 .financePageWithBrand .billCardNote {
   display: none;
 }
-
-/* Score + expert on Wealth Projection (former monthly page) */
-.financeScoreRow {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 0.55rem;
-  margin: 0 0 0.55rem;
-  flex-shrink: 0;
-  width: 100%;
-}
-.financePage .investScoreCard {
-  padding: 0.85rem 1rem 0.9rem;
-  text-align: left;
-}
-.financePage .investScoreGrade {
-  font-size: 2.6rem;
-}
-.financePage .investScoreDivider {
-  margin: 0.55rem 0;
-}
-.financePage .investScoreBasis {
-  margin-top: 0.55rem;
-  padding-top: 0.5rem;
-  font-size: 0.78rem;
-}
-.financePage .wealthExpert {
-  margin: 0 0 0.55rem;
-}
-.financePageWithBrand .financeScoreRow {
-  margin-bottom: 0.4rem;
-}
-.financePageWithBrand .investScoreGrade {
-  font-size: 2.1rem;
-}
-.financePageWithBrand .investScoreBasis {
-  display: none;
+.financePageWithBrand .financePageFooter {
+  padding-bottom: 1.1rem;
+  gap: 0.28rem;
 }
 .financePageWithBrand .wealthExpertBody {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  -webkit-line-clamp: 2;
 }
 
 .brandCompare {
@@ -5232,10 +5355,22 @@
 
   .financeFlow,
   .investBreakdown,
-  .wealthPath {
+  .wealthPath,
+  .financeStoryRow {
     grid-template-columns: 1fr !important;
     gap: 0.55rem;
     width: 100%;
+  }
+
+  .financeStoryRow .trajectorySvg {
+    min-height: 118px;
+    height: 132px;
+    max-height: 148px;
+  }
+
+  .financeStoryRow .investScoreStats {
+    flex-direction: row;
+    justify-content: space-around;
   }
 
   .billAuditMetrics {
@@ -6043,6 +6178,8 @@
   .financeFlow,
   .investBreakdown,
   .wealthPath,
+  .financeStoryRow,
+  .financePageFooter,
   .genProofGrid,
   .invoiceBody,
   .vendorBankFields,
