@@ -1687,25 +1687,40 @@ export function AtelierRenderer({
                     showForecastBillBars ? ` ${styles.forecastTrackDual}` : ""
                   }`}
                 >
-                  <div
-                    className={styles.forecastFill}
-                    style={{ height: `${m.barPct}%` }}
-                    title={`${c.genForecast.legendGen}: ${m.units}`}
-                  />
-                  {showForecastBillBars ? (
+                  <div className={styles.forecastBarLane}>
                     <div
-                      className={styles.forecastFillBill}
-                      style={{
-                        height:
-                          m.billBarPct > 0 ? `${m.billBarPct}%` : "4px",
-                        opacity: m.billBarPct > 0 ? 1 : 0.28,
-                      }}
-                      title={
-                        m.billUnits != null && m.billUnits > 0
-                          ? `${c.genForecast.legendBill}: ${m.billUnits}`
-                          : c.genForecast.noBillMonth
-                      }
+                      className={styles.forecastBarSpacer}
+                      style={{ flex: `${100 - m.barPct} 1 0` }}
+                      aria-hidden
                     />
+                    <div
+                      className={styles.forecastFill}
+                      style={{ flex: `${m.barPct} 0 0` }}
+                      title={`${c.genForecast.legendGen}: ${m.units}`}
+                    />
+                  </div>
+                  {showForecastBillBars ? (
+                    <div className={styles.forecastBarLane}>
+                      <div
+                        className={styles.forecastBarSpacer}
+                        style={{
+                          flex: `${100 - (m.billBarPct > 0 ? m.billBarPct : 4)} 1 0`,
+                        }}
+                        aria-hidden
+                      />
+                      <div
+                        className={styles.forecastFillBill}
+                        style={{
+                          flex: `${m.billBarPct > 0 ? m.billBarPct : 4} 0 0`,
+                          opacity: m.billBarPct > 0 ? 1 : 0.28,
+                        }}
+                        title={
+                          m.billUnits != null && m.billUnits > 0
+                            ? `${c.genForecast.legendBill}: ${m.billUnits}`
+                            : c.genForecast.noBillMonth
+                        }
+                      />
+                    </div>
                   ) : null}
                 </div>
                 <span className={styles.forecastMonth}>{m.label}</span>
