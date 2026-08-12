@@ -407,10 +407,9 @@
 .pdfCaptureHost
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
   .hwCardWhy {
-  display: -webkit-box !important;
-  -webkit-line-clamp: 2 !important;
-  -webkit-box-orient: vertical !important;
-  overflow: hidden !important;
+  display: block !important;
+  overflow: visible !important;
+  -webkit-line-clamp: unset !important;
 }
 .pdfCaptureHost
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
@@ -3316,18 +3315,16 @@
   line-height: 1.35;
 }
 .hwCardWhy {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--c);
   margin: 0;
-  line-height: 1.38;
-  padding: 0.4rem 0.5rem;
+  line-height: 1.36;
+  padding: 0.38rem 0.48rem;
   background: #fafbfc;
   border-left: 3px solid var(--or);
   border-radius: 0 4px 4px 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  display: block;
+  overflow: visible;
 }
 .hwCardFooter {
   margin-top: auto;
@@ -3485,12 +3482,18 @@
 .warrantyGridCompact .warrantyCircle {
   width: 46px;
   height: 46px;
+  padding: 0.1rem;
+  box-sizing: border-box;
 }
 .warrantyGridCompact .warrantyYears {
-  font-size: 1rem;
+  font-size: 0.82rem;
+  line-height: 1.05;
+  text-align: center;
 }
 .warrantyGridCompact .warrantyYrsText {
-  font-size: 0.65rem;
+  font-size: 0.58rem;
+  line-height: 1;
+  margin-top: 0.05rem;
 }
 .warrantyGridCompact .warrantyLabel {
   font-size: 0.78rem;
@@ -3499,10 +3502,8 @@
 .warrantyGridCompact .warrantySub {
   font-size: 0.72rem;
   line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  display: block;
+  overflow: visible;
 }
 
 /* ══ P8: WHY PARTNER — trust cards + photo / quote split ═════════ */
@@ -7146,7 +7147,9 @@
     line-height: 1.35 !important;
   }
   .hwCardWhy {
-    -webkit-line-clamp: 2 !important;
+    display: block !important;
+    overflow: visible !important;
+    -webkit-line-clamp: unset !important;
   }
   .hwCardTag {
     font-size: 7.5pt !important;

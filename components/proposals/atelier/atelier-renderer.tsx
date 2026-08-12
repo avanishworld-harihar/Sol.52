@@ -1865,19 +1865,30 @@ export function AtelierRenderer({
         </aside>
 
         <div className={styles.warrantyGridCompact}>
-          {warrantyCards.map((w, i) => (
+          {warrantyCards.map((w, i) => {
+            const yearsHasUnit = /yrs?|years?/i.test(w.years);
+            const subIsRedundant =
+              !w.sub ||
+              /^(yrs?|years?)$/i.test(w.sub.trim()) ||
+              w.sub.trim().toLowerCase() === w.years.trim().toLowerCase();
+            return (
             <div
               key={w.label}
               className={`${styles.warrantyBadge} ${i === 0 ? styles.warrantyAccent : ""}`}
             >
               <div className={styles.warrantyCircle}>
                 <div className={styles.warrantyYears}>{w.years}</div>
-                <div className={styles.warrantyYrsText}>{c.hw.yrs}</div>
+                {!yearsHasUnit ? (
+                  <div className={styles.warrantyYrsText}>{c.hw.yrs}</div>
+                ) : null}
               </div>
               <div className={styles.warrantyLabel}>{w.label}</div>
-              {w.sub && <div className={styles.warrantySub}>{w.sub}</div>}
+              {w.sub && !subIsRedundant ? (
+                <div className={styles.warrantySub}>{w.sub}</div>
+              ) : null}
             </div>
-          ))}
+            );
+          })}
         </div>
 
         <span className={styles.pageNum}>{folio(pn.hw, totalPages)}</span>
