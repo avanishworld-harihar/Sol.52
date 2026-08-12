@@ -3593,6 +3593,11 @@ function ProposalPageContent() {
               alignState && alignState.current && !alignState.aligned
                 ? `Uploaded ${alignState.current} • Please match ${targetLabel}`
                 : `Required • ${targetLabel}`;
+            // Month names already shown as checked on the latest card should not also
+            // appear checked here — the same name (e.g. "Jul") in two cards refers to
+            // different years and confuses users. Secondary cards yield any overlapping
+            // month-name to the latest card so each card shows only its unique window.
+            const latestClaimedKeys = new Set(extractDetectedMonths(latestBill).keys());
             return (
               <UploadCard
                 key={`secondary-card-${idx}`}
@@ -3600,6 +3605,7 @@ function ProposalPageContent() {
                 subtitle={mismatchHint}
                 busy={Boolean(isAnalyzingAdditional[idx])}
                 parsedBill={additionalBills[idx] ?? null}
+                claimedMonthKeys={latestClaimedKeys}
                 onPick={(file) => onBillUpload(file, idx)}
               />
             );
@@ -4701,12 +4707,18 @@ function UploadCard({
   subtitle,
   busy,
   parsedBill,
+  claimedMonthKeys,
   onPick
 }: {
   title: string;
   subtitle: string;
   busy: boolean;
   parsedBill: ParsedBillShape | null;
+  /** Month names already marked checked on the latest-bill card. Secondary cards
+   *  must not light up the same month-name even if their own history table contains
+   *  it (e.g. "Jul" in a Jan-bill's history refers to Jul-2025, while the latest
+   *  card's "Jul" is Jul-2026 — two different years, one name). */
+  claimedMonthKeys?: ReadonlySet<keyof MonthlyUnits>;
   onPick: (file: File | null) => void;
 }) {
   const detectedMonths = extractDetectedMonths(parsedBill);
@@ -4741,7 +4753,7 @@ function UploadCard({
       <div className="space-y-1.5">
         <div className="grid grid-cols-6 gap-1">
           {topRowMonths.map((month) => {
-            const checked = detectedMonths.has(month);
+            const checked = detectedMonths.has(month) && !claimedMonthKeys?.has(month);
             const year = detectedMonths.get(month);
             return (
               <span
@@ -4769,7 +4781,7 @@ function UploadCard({
         </div>
         <div className="grid grid-cols-6 gap-1">
           {bottomRowMonths.map((month) => {
-            const checked = detectedMonths.has(month);
+            const checked = detectedMonths.has(month) && !claimedMonthKeys?.has(month);
             const year = detectedMonths.get(month);
             return (
               <span
