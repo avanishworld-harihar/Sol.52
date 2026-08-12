@@ -459,6 +459,34 @@
 }
 .pdfCaptureHost
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .carbonPanelHead {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  row-gap: 0.2rem !important;
+  margin-bottom: 0.75rem !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .carbonPanelTitle,
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .carbonPanelHint {
+  display: block !important;
+  line-height: 1.35 !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .carbonPanelHint {
+  justify-self: end !important;
+  text-align: right !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .cmYear {
+  white-space: nowrap !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
   .carbonMilestones {
   align-items: stretch !important;
   min-height: 230px !important;
@@ -1341,25 +1369,34 @@
   print-color-adjust: exact !important;
 }
 .carbonPanelHead {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.35rem 0.75rem;
-  margin-bottom: 0.65rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 0.2rem;
+  margin-bottom: 0.75rem;
 }
 .carbonPanelTitle {
+  grid-column: 1;
+  grid-row: 1;
+  display: block;
   font-family: 'Montserrat', sans-serif;
   font-size: 0.82rem;
   font-weight: 800;
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--or);
+  line-height: 1.35;
 }
 .carbonPanelHint {
+  grid-column: 1;
+  grid-row: 2;
+  justify-self: end;
+  display: block;
   font-size: 0.82rem;
   font-weight: 600;
   color: var(--gray2);
+  line-height: 1.35;
+  text-align: right;
+  max-width: 100%;
 }
 
 /* Carbon milestone bars */
@@ -1411,6 +1448,8 @@
   font-weight: 800;
   letter-spacing: 0.6px;
   color: var(--h);
+  white-space: nowrap;
+  text-align: center;
 }
 .cmTons {
   font-family: 'Montserrat', sans-serif;
@@ -6758,6 +6797,29 @@
     font-size: 8.5pt !important;
     line-height: 1.38 !important;
   }
+
+  .carbonPanelHead {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    row-gap: 0.2rem !important;
+    margin-bottom: 0.75rem !important;
+  }
+
+  .carbonPanelTitle,
+  .carbonPanelHint {
+    display: block !important;
+    line-height: 1.35 !important;
+  }
+
+  .carbonPanelHint {
+    justify-self: end !important;
+    text-align: right !important;
+  }
+
+  .cmYear {
+    white-space: nowrap !important;
+  }
+
   .carbonMilestones {
     min-height: 52mm !important;
     padding: 0.75rem 1.1rem 0.85rem !important;
