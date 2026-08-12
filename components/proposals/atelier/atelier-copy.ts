@@ -955,13 +955,19 @@ export function getAtelierCopy(lang: AtelierLang) {
       tag11: hi
         ? "12 — शर्तें व अनुपालन (जारी)"
         : "12 — TERMS & COMPLIANCE (CONTD.)",
+      tag12: hi
+        ? "13 — शर्तें व अनुपालन (जारी)"
+        : "13 — TERMS & COMPLIANCE (CONTD.)",
       title: hi ? "नियम व शर्तें" : "Terms & Conditions",
       intro1: hi
         ? "साइन करने से पहले प्रत्येक बिंदु ध्यान से पढ़ें।"
         : "Please read each point carefully before signing.",
       intro2: hi
-        ? "सुरक्षा, आपकी ज़िम्मेदारियाँ, AMC स्कोप और रखरखाव लागत — एक के बाद एक।"
-        : "Safety, your duties, AMC scope, and maintenance cost — one section after another.",
+        ? "सुरक्षा, आपकी ज़िम्मेदारियाँ और AMC स्कोप — एक के बाद एक।"
+        : "Safety, your duties, and AMC scope — one section after another.",
+      intro3: hi
+        ? "रखरखाव लागत, भुगतान शर्तें और अंतिम हस्ताक्षर।"
+        : "Maintenance cost, payment terms, and final sign-off.",
       general: hi ? "01 · सामान्य शर्तें" : "01 · General Terms",
       documents: hi ? "02 · आवश्यक दस्तावेज़" : "02 · Documents Required",
       safety: hi ? "03 · सुरक्षा और सुरक्षात्मक उपाय" : "03 · Safety & Protection",
@@ -992,8 +998,8 @@ export function getAtelierCopy(lang: AtelierLang) {
 
     closing: {
       tag: hi
-        ? "13 — ऊर्जा स्वतंत्रता"
-        : "13 — ENERGY INDEPENDENCE",
+        ? "14 — ऊर्जा स्वतंत्रता"
+        : "14 — ENERGY INDEPENDENCE",
       congrats: hi ? "बधाई हो।" : "Congratulations.",
       statement1: hi
         ? "आज आप सौर पैनल नहीं खरीद रहे।"

@@ -6,7 +6,7 @@
  *       → [Roof] → [Generation] → [Monthly Forecast] → [Hardware] → [Why Us]
  *       → [Impact] → [Roadmap/Payment] → [Compliance] → [Closing]
  *
- * ProposalData-native · Print A4 · 13 pages (14 with bill audit)
+ * ProposalData-native · Print A4 · 14 pages (15 with bill audit)
  * break-after: page (print only)
  */
 
@@ -267,7 +267,7 @@ export function AtelierRenderer({
 
   // ── Bill audit (bill-based proposals only) ────────────────────
   const showBillAudit = bill.hasData && bill.months.length > 0;
-  const totalPages = showBillAudit ? 14 : 13;
+  const totalPages = showBillAudit ? 15 : 14;
   const off = showBillAudit ? 1 : 0;
   const pn = {
     cover: 1,
@@ -283,7 +283,8 @@ export function AtelierRenderer({
     roadmap: 10 + off,
     terms1: 11 + off,
     terms2: 12 + off,
-    closing: 13 + off,
+    terms3: 13 + off,
+    closing: 14 + off,
   };
 
   // ── New financial calculations ────────────────────────────────
@@ -2303,7 +2304,22 @@ export function AtelierRenderer({
               ))}
             </ol>
           </section>
+        </div>
 
+        <span className={styles.pageNum}>{folio(pn.terms2, totalPages)}</span>
+      </section>
+
+      {/* ══ P13: TERMS & COMPLIANCE (CONTD.) — cost + sign-off ═══ */}
+      <section className={`${styles.page} ${styles.termsPage} ${styles.termsPageDense}`}>
+        <header className={styles.pageHead}>
+          <span className={styles.pageTag}>
+            {withPageTag(c.terms.tag12, pn.terms3)}
+          </span>
+          <h2 className={styles.pageTitle}>{c.terms.title}</h2>
+          <p className={styles.pageLead}>{c.terms.intro3}</p>
+        </header>
+
+        <div className={styles.termsStack}>
           <section className={styles.termsSection}>
             <div className={styles.termsSubhead}>{c.terms.costMaint}</div>
             <div className={styles.termsCostBox}>
@@ -2347,10 +2363,10 @@ export function AtelierRenderer({
           </aside>
         </div>
 
-        <span className={styles.pageNum}>{folio(pn.terms2, totalPages)}</span>
+        <span className={styles.pageNum}>{folio(pn.terms3, totalPages)}</span>
       </section>
 
-      {/* ══ P12: EMOTIONAL CLOSING — RCC rooftop + CTA ═══════════ */}
+      {/* ══ P14: EMOTIONAL CLOSING — RCC rooftop + CTA ═══════════ */}
       <section className={`${styles.page} ${styles.closingPage}`}>
         <div className={styles.closingInner}>
           <div className={styles.closingBrandTop}>
