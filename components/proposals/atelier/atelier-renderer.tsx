@@ -429,7 +429,7 @@ export function AtelierRenderer({
       ? data.terms.documents.slice(0, 6)
       : c.docs;
   const safetyNotes = c.safetyNotes;
-  const clientScope = c.clientScope;
+  const clientScope = c.clientScope.slice(0, 6);
   const amcObjective = data.terms.amcObjective?.trim() || c.amcObjective;
 
   const isAmcPlanLabel = (s: string) =>
@@ -2184,8 +2184,8 @@ export function AtelierRenderer({
         <span className={styles.pageNum}>{folio(pn.roadmap, totalPages)}</span>
       </section>
 
-      {/* ══ P11: TERMS & COMPLIANCE (Luxe content · Atelier style) ══ */}
-      <section className={`${styles.page} ${styles.termsPage}`}>
+      {/* ══ P11: TERMS & COMPLIANCE (Luxe 2-page split · page 1) ═══ */}
+      <section className={`${styles.page} ${styles.termsPage} ${styles.termsPageRoomy}`}>
         <header className={styles.pageHead}>
           <span className={styles.pageTag}>
             {withPageTag(c.terms.tag10, pn.terms1)}
@@ -2197,7 +2197,7 @@ export function AtelierRenderer({
         <div className={styles.termsStack}>
           <section className={styles.termsSection}>
             <div className={styles.termsSubhead}>{c.terms.general}</div>
-            <ol className={styles.termsArticleList}>
+            <ol className={`${styles.termsArticleList} ${styles.termsGrid2}`}>
               {generalTerms.map((t, i) => (
                 <li key={t.label} className={styles.termsArticle}>
                   <span className={styles.termsArticleNum}>
@@ -2214,7 +2214,7 @@ export function AtelierRenderer({
 
           <section className={styles.termsSection}>
             <div className={styles.termsSubhead}>{c.terms.documents}</div>
-            <ol className={styles.termsNumberedList}>
+            <ol className={`${styles.termsNumberedList} ${styles.termsGrid2}`}>
               {docs.map((d, i) => (
                 <li key={d.slice(0, 48)}>
                   <span className={styles.termsListNum}>{i + 1}</span>
@@ -2224,16 +2224,25 @@ export function AtelierRenderer({
             </ol>
           </section>
 
-          <aside className={styles.termsNote}>
-            <span className={styles.termsNoteTag}>{c.terms.counselLabel}</span>
-            <p>{c.terms.counsel}</p>
-          </aside>
+          <section className={styles.termsSection}>
+            <div className={styles.termsSubhead}>{c.terms.safety}</div>
+            <ul className={styles.termsSafetyList}>
+              {safetyNotes.map((s) => (
+                <li key={s.slice(0, 40)}>{s}</li>
+              ))}
+            </ul>
+          </section>
         </div>
+
+        <aside className={styles.termsNote}>
+          <span className={styles.termsNoteTag}>{c.terms.counselLabel}</span>
+          <p>{c.terms.counsel}</p>
+        </aside>
 
         <span className={styles.pageNum}>{folio(pn.terms1, totalPages)}</span>
       </section>
 
-      {/* ══ P12: TERMS & COMPLIANCE (CONTD.) ═════════════════════ */}
+      {/* ══ P12: TERMS & COMPLIANCE (Luxe 2-page split · page 2) ═══ */}
       <section className={`${styles.page} ${styles.termsPage} ${styles.termsPageDense}`}>
         <header className={styles.pageHead}>
           <span className={styles.pageTag}>
@@ -2245,17 +2254,8 @@ export function AtelierRenderer({
 
         <div className={styles.termsStack}>
           <section className={styles.termsSection}>
-            <div className={styles.termsSubhead}>{c.terms.safety}</div>
-            <ul className={styles.termsSafetyList}>
-              {safetyNotes.map((s) => (
-                <li key={s.slice(0, 40)}>{s}</li>
-              ))}
-            </ul>
-          </section>
-
-          <section className={styles.termsSection}>
             <div className={styles.termsSubhead}>{c.terms.clientScope}</div>
-            <ol className={styles.termsNumberedList}>
+            <ol className={`${styles.termsNumberedList} ${styles.termsGrid2}`}>
               {clientScope.map((s, i) => (
                 <li key={s.slice(0, 48)}>
                   <span className={styles.termsListNum}>{i + 1}</span>
@@ -2272,7 +2272,7 @@ export function AtelierRenderer({
             {planOptions.length > 0 ? (
               <>
                 <p className={styles.termsAmcLabel}>{c.terms.availablePlans}</p>
-                <ol className={styles.termsNumberedList}>
+                <ol className={`${styles.termsNumberedList} ${styles.termsGrid2}`}>
                   {planOptions.map((s, i) => (
                     <li key={`plan-${s.slice(0, 32)}`}>
                       <span className={styles.termsListNum}>{i + 1}</span>
@@ -2284,7 +2284,7 @@ export function AtelierRenderer({
             ) : null}
 
             <p className={styles.termsAmcLabel}>{c.terms.amcIncludes}</p>
-            <ol className={styles.termsNumberedList}>
+            <ol className={`${styles.termsNumberedList} ${styles.termsGrid2}`}>
               {amcIncludes.map((s, i) => (
                 <li key={`inc-${s.slice(0, 32)}`}>
                   <span className={styles.termsListNum}>{i + 1}</span>
@@ -2294,7 +2294,7 @@ export function AtelierRenderer({
             </ol>
 
             <p className={styles.termsAmcLabel}>{c.terms.amcExcludes}</p>
-            <ol className={styles.termsNumberedList}>
+            <ol className={`${styles.termsNumberedList} ${styles.termsGrid2}`}>
               {amcExcludes.map((s, i) => (
                 <li key={`exc-${s.slice(0, 32)}`}>
                   <span className={styles.termsListNum}>{i + 1}</span>
@@ -2321,7 +2321,7 @@ export function AtelierRenderer({
             {amcCommercial.length > 0 ? (
               <>
                 <p className={styles.termsAmcLabel}>{c.terms.paymentNotes}</p>
-                <ol className={styles.termsNumberedList}>
+                <ol className={`${styles.termsNumberedList} ${styles.termsGrid2}`}>
                   {amcCommercial.map((t, i) => (
                     <li key={`com-${t.slice(0, 32)}`}>
                       <span className={styles.termsListNum}>{i + 1}</span>
@@ -2340,12 +2340,12 @@ export function AtelierRenderer({
             </span>
             <span className={styles.termsVendorTag}>{c.terms.vendorTag}</span>
           </div>
-
-          <aside className={styles.termsNote}>
-            <span className={styles.termsNoteTag}>{c.terms.omLabel}</span>
-            <p>{c.terms.om}</p>
-          </aside>
         </div>
+
+        <aside className={styles.termsNote}>
+          <span className={styles.termsNoteTag}>{c.terms.omLabel}</span>
+          <p>{c.terms.om}</p>
+        </aside>
 
         <span className={styles.pageNum}>{folio(pn.terms2, totalPages)}</span>
       </section>

@@ -960,8 +960,8 @@ export function getAtelierCopy(lang: AtelierLang) {
         ? "साइन करने से पहले प्रत्येक बिंदु ध्यान से पढ़ें।"
         : "Please read each point carefully before signing.",
       intro2: hi
-        ? "सुरक्षा, आपकी ज़िम्मेदारियाँ, AMC स्कोप और रखरखाव लागत — एक के बाद एक।"
-        : "Safety, your duties, AMC scope, and maintenance cost — one section after another.",
+        ? "ग्राहक दायरा, AMC स्कोप, रखरखाव लागत और हस्ताक्षर — एक के बाद एक।"
+        : "Client scope, AMC scope, maintenance cost, and sign-off — one section after another.",
       general: hi ? "01 · सामान्य शर्तें" : "01 · General Terms",
       documents: hi ? "02 · आवश्यक दस्तावेज़" : "02 · Documents Required",
       safety: hi ? "03 · सुरक्षा और सुरक्षात्मक उपाय" : "03 · Safety & Protection",
