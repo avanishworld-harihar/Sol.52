@@ -110,6 +110,7 @@ export async function POST(req: NextRequest) {
           status: "pending",
           install_progress: 10,
           next_action: SITE_SURVEY_NEXT_ACTION,
+          dashboard_visible: false,
         });
         if (project && typeof project["id"] === "string") {
           projectId = project["id"] as string;

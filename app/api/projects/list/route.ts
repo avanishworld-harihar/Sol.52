@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { listProjects, syncWonLeadProjects } from "@/lib/project-store";
+import { listProjects, repairPreWonProjectVisibility } from "@/lib/project-store";
 import { isProjectStageId } from "@/lib/project-stages";
 import { denyIfStrictUnauthenticated, resolveOrgScope } from "@/lib/auth/org-scope";
 
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
     const offset = Math.max(0, Number(offsetParam ?? 0));
 
     const orgId = scope.organizationId;
-    await syncWonLeadProjects();
+    await repairPreWonProjectVisibility();
     const rows = await listProjects({
       organizationId: orgId,
       includeNullOrg: scope.includeUnscopedRows,

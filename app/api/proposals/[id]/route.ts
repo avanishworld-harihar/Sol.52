@@ -147,6 +147,7 @@ async function onProposalApproved(
           status: "pending",
           install_progress: 20,
           next_action: "Material planning",
+          dashboard_visible: true,
         });
         if (project && typeof project["id"] === "string") {
           projectId = project["id"] as string;

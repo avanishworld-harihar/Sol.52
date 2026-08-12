@@ -423,6 +423,57 @@ export function isWonLeadStatus(status: string | null | undefined): boolean {
   return normalizeLeadStatus(String(status ?? "")) === "won";
 }
 
+/**
+ * Hide dashboard-visible projects whose CRM lead is not Won yet.
+ * Repairs legacy rows created when proposal auto-convert defaulted to visible.
+ */
+export async function repairPreWonProjectVisibility(): Promise<number> {
+  const client = db();
+  if (!client) return 0;
+
+  const { resolveLeadsTable } = await import("@/lib/supabase");
+  const leadsTable = await resolveLeadsTable();
+  if (!leadsTable) return 0;
+
+  const { data: rows, error } = await client
+    .from("projects")
+    .select("id, lead_id")
+    .eq("dashboard_visible", true)
+    .is("archived_at", null)
+    .not("lead_id", "is", null)
+    .limit(300);
+  if (error || !rows?.length) return 0;
+
+  const leadIds = [...new Set(rows.map((r) => String(r.lead_id)).filter(Boolean))];
+  const { data: leads } = await client
+    .from(leadsTable)
+    .select("id, status")
+    .in("id", leadIds);
+
+  const wonIds = new Set<string>();
+  for (const lead of leads ?? []) {
+    if (isWonLeadStatus(String((lead as { status?: string }).status ?? ""))) {
+      wonIds.add(String((lead as { id: string }).id));
+    }
+  }
+
+  const toHide = rows
+    .filter((r) => r.lead_id && !wonIds.has(String(r.lead_id)))
+    .map((r) => String(r.id));
+  if (toHide.length === 0) return 0;
+
+  const now = new Date().toISOString();
+  const { error: hideErr } = await client
+    .from("projects")
+    .update({ dashboard_visible: false, updated_at: now })
+    .in("id", toHide);
+  if (hideErr) {
+    console.warn("[repairPreWonProjectVisibility]", hideErr.message);
+    return 0;
+  }
+  return toHide.length;
+}
+
 // ---------------------------------------------------------------------------
 // Shared types
 // ---------------------------------------------------------------------------

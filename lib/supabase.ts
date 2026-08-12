@@ -278,6 +278,8 @@ export async function upsertPipelineProject(payload: {
   install_progress?: number;
   next_action?: string | null;
   contract_amount_inr?: number | null;
+  /** When omitted on insert, defaults false (hidden until CRM Won). Pass true for manual pipeline create. */
+  dashboard_visible?: boolean;
 }): Promise<Record<string, unknown> | null> {
   const client = createSupabaseAdmin() ?? supabase;
   if (!client) return null;
@@ -302,12 +304,14 @@ export async function upsertPipelineProject(payload: {
     /* keep payload name */
   }
 
-  const { data: existing, error: existingErr } = await client
+  const { data: existingRows, error: existingErr } = await client
     .from("projects")
     .select("*")
     .eq("lead_id", payload.lead_id)
-    .maybeSingle();
-  if (existingErr && !/no rows/i.test(existingErr.message)) throw existingErr;
+    .order("updated_at", { ascending: false })
+    .limit(1);
+  if (existingErr) throw existingErr;
+  const existing = (existingRows?.[0] ?? null) as Record<string, unknown> | null;
 
   if (existing) {
     const patch: Record<string, unknown> = { updated_at: now };
@@ -325,11 +329,12 @@ export async function upsertPipelineProject(payload: {
     }
     if (payload.next_action !== undefined) patch.next_action = payload.next_action?.trim() || null;
     if (payload.contract_amount_inr !== undefined) patch.contract_amount_inr = payload.contract_amount_inr;
+    if (payload.dashboard_visible !== undefined) patch.dashboard_visible = payload.dashboard_visible;
 
     const { data, error } = await client
       .from("projects")
       .update(patch)
-      .eq("id", String((existing as { id: unknown }).id))
+      .eq("id", String(existing.id))
       .select("*")
       .single();
     if (error) throw error;
@@ -344,6 +349,9 @@ export async function upsertPipelineProject(payload: {
     detail: payload.detail?.trim() || null,
     status: payload.status ?? "pending",
     install_progress: Math.min(100, Math.max(0, Math.round(payload.install_progress ?? 0))),
+    current_stage: "survey",
+    stage_status: "in_progress",
+    dashboard_visible: payload.dashboard_visible ?? false,
     updated_at: now,
     ...(payload.next_action !== undefined ? { next_action: payload.next_action?.trim() || null } : {}),
     ...(payload.contract_amount_inr !== undefined ? { contract_amount_inr: payload.contract_amount_inr } : {}),

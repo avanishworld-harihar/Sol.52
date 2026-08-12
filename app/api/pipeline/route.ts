@@ -35,7 +35,8 @@ export async function POST(req: NextRequest) {
       detail: parsed.detail ?? undefined,
       status: parsed.status,
       install_progress: parsed.install_progress,
-      next_action: parsed.next_action
+      next_action: parsed.next_action,
+      dashboard_visible: true,
     });
     if (!row) {
       return NextResponse.json({ ok: false, error: "db_unavailable" }, { status: 503 });

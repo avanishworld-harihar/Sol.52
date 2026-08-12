@@ -254,8 +254,8 @@ export async function POST(req: NextRequest) {
     /**
      * Server-owned auto-conversion (Sol.52 spec): when a web proposal is
      * generated for a real CRM lead, the lead automatically transitions to
-     * `proposal-sent` and a Project pipeline card is created with
-     * `next_action = "Site survey pending"`. No client mutation needed.
+     * `proposal-sent` and a hidden pipeline row is ensured for Design Studio
+     * (visible on /projects only after CRM Won).
      *
      * Best-effort: a failure here must NOT block returning the proposal to
      * the caller (the share link is the user-facing artifact).
@@ -275,7 +275,8 @@ export async function POST(req: NextRequest) {
           detail: detail ?? undefined,
           status: "pending",
           install_progress: 10,
-          next_action: SITE_SURVEY_NEXT_ACTION
+          next_action: SITE_SURVEY_NEXT_ACTION,
+          dashboard_visible: false,
         });
         if (project && typeof project["id"] === "string") {
           projectId = project["id"] as string;

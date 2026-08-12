@@ -209,6 +209,7 @@ export async function updateProposalDeckFromBody(
         status: "pending",
         install_progress: 10,
         next_action: SITE_SURVEY_NEXT_ACTION,
+        dashboard_visible: false,
       });
     } catch {
       /* ignore */
