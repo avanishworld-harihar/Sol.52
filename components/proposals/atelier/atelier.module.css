@@ -3801,20 +3801,18 @@
 }
 .blueprintPanels {
   display: grid;
-  grid-template-columns: repeat(var(--atelier-bp-cols, 4), var(--atelier-bp-cell, 28px));
+  grid-template-columns: repeat(var(--atelier-bp-cols, 4), calc(var(--atelier-bp-cell, 28px) * 1.48));
+  grid-auto-rows: calc(var(--atelier-bp-cell, 28px) * 0.92);
   gap: var(--atelier-bp-gap, 4px);
   z-index: 2;
-  /* 2D isometric — html2canvas/PDF-safe; azimuth rotates plan (180° = south baseline). */
-  transform:
-    rotateZ(calc(var(--atelier-bp-azimuth, 180) * 1deg - 195deg))
-    scaleY(0.68)
-    skewX(-10deg)
+  /* Plan (top-down) view — azimuth rotates array on roof; 180° = south baseline. */
+  transform: rotate(calc(var(--atelier-bp-azimuth, 180) * 1deg - 180deg))
     scale(var(--atelier-bp-scale, 1));
   transform-origin: center center;
 }
 .blueprintPanel {
-  width: var(--atelier-bp-cell, 28px);
-  height: calc(var(--atelier-bp-cell, 28px) * 1.64);
+  width: 100%;
+  height: 100%;
   background: rgba(56, 189, 248, 0.4);
   border: 1px solid rgba(56, 189, 248, 0.85);
   border-radius: 2px;
@@ -6036,12 +6034,13 @@
   }
 
   .blueprintPanels {
-    grid-template-columns: repeat(var(--atelier-bp-cols, 4), var(--atelier-bp-cell, 24px));
+    grid-template-columns: repeat(var(--atelier-bp-cols, 4), calc(var(--atelier-bp-cell, 24px) * 1.48));
+    grid-auto-rows: calc(var(--atelier-bp-cell, 24px) * 0.92);
   }
 
   .blueprintPanel {
-    width: var(--atelier-bp-cell, 24px);
-    height: calc(var(--atelier-bp-cell, 24px) * 1.64);
+    width: 100%;
+    height: 100%;
   }
 
   .roofSunTeach {
