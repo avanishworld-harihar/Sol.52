@@ -648,6 +648,13 @@ function ProposalPageContent() {
     }
     return merged.size;
   }, [latestBill, additionalBills]);
+  /** Month-name keys the latest bill already covers — secondary cards must not re-show these. */
+  const latestClaimedMonthKeys = useMemo(() => {
+    const keys = new Set(extractDetectedMonths(latestBill).keys());
+    const latestMonthKey = monthKeyFromBillLabel(latestBill?.bill_month);
+    if (latestMonthKey) keys.add(latestMonthKey);
+    return keys;
+  }, [latestBill]);
   const requiredSecondaryCount = useMemo(() => {
     // HT bills carry full CD/MD/PF/ToD + kWh in a single bill — no history table.
     if (isCommercialBillMode && osPresetId === "commercial_ht") return 0;
@@ -3593,11 +3600,8 @@ function ProposalPageContent() {
               alignState && alignState.current && !alignState.aligned
                 ? `Uploaded ${alignState.current} • Please match ${targetLabel}`
                 : `Required • ${targetLabel}`;
-            // Month names already shown as checked on the latest card should not also
-            // appear checked here — the same name (e.g. "Jul") in two cards refers to
-            // different years and confuses users. Secondary cards yield any overlapping
-            // month-name to the latest card so each card shows only its unique window.
-            const latestClaimedKeys = new Set(extractDetectedMonths(latestBill).keys());
+            // Secondary cards yield month-names already lit on the latest card (e.g. Jul-2026
+            // on latest vs Jul-2025 row inside Jan bill history — same badge label, different years).
             return (
               <UploadCard
                 key={`secondary-card-${idx}`}
@@ -3605,7 +3609,7 @@ function ProposalPageContent() {
                 subtitle={mismatchHint}
                 busy={Boolean(isAnalyzingAdditional[idx])}
                 parsedBill={additionalBills[idx] ?? null}
-                claimedMonthKeys={latestClaimedKeys}
+                claimedMonthKeys={latestClaimedMonthKeys}
                 onPick={(file) => onBillUpload(file, idx)}
               />
             );
@@ -4576,6 +4580,18 @@ function extractDetectedMonths(parsed: ParsedBillShape | null): Map<keyof Monthl
   return detected;
 }
 
+/** Secondary upload-card badges: this bill's detected months minus anything the latest bill already claims. */
+function extractSecondaryCardMonths(
+  parsed: ParsedBillShape | null,
+  claimedMonthKeys: ReadonlySet<keyof MonthlyUnits> | undefined
+): Map<keyof MonthlyUnits, number | null> {
+  const detected = extractDetectedMonths(parsed);
+  if (!claimedMonthKeys?.size) return detected;
+  const filtered = new Map(detected);
+  for (const key of claimedMonthKeys) filtered.delete(key);
+  return filtered;
+}
+
 function buildUnitsFromConsumptionHistory(parsed: ParsedBillShape | null): Partial<MonthlyUnits> {
   const out: Partial<MonthlyUnits> = {};
   if (!parsed) return out;
@@ -4721,7 +4737,7 @@ function UploadCard({
   claimedMonthKeys?: ReadonlySet<keyof MonthlyUnits>;
   onPick: (file: File | null) => void;
 }) {
-  const detectedMonths = extractDetectedMonths(parsedBill);
+  const detectedMonths = extractSecondaryCardMonths(parsedBill, claimedMonthKeys);
   const topRowMonths = MONTH_KEYS.slice(0, 6);
   const bottomRowMonths = MONTH_KEYS.slice(6);
 
@@ -4753,7 +4769,7 @@ function UploadCard({
       <div className="space-y-1.5">
         <div className="grid grid-cols-6 gap-1">
           {topRowMonths.map((month) => {
-            const checked = detectedMonths.has(month) && !claimedMonthKeys?.has(month);
+            const checked = detectedMonths.has(month);
             const year = detectedMonths.get(month);
             return (
               <span
@@ -4781,7 +4797,7 @@ function UploadCard({
         </div>
         <div className="grid grid-cols-6 gap-1">
           {bottomRowMonths.map((month) => {
-            const checked = detectedMonths.has(month) && !claimedMonthKeys?.has(month);
+            const checked = detectedMonths.has(month);
             const year = detectedMonths.get(month);
             return (
               <span
