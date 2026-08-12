@@ -1265,8 +1265,8 @@
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(180deg, transparent 35%, rgba(11, 18, 32, 0.55) 100%),
-    linear-gradient(90deg, rgba(11, 18, 32, 0.08) 0%, transparent 40%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, transparent 40%, transparent 65%, rgba(11, 18, 32, 0.42) 100%),
+    linear-gradient(90deg, rgba(15, 118, 110, 0.06) 0%, transparent 45%);
 }
 
 .closingPhotoCaptionOverlay {
@@ -1426,12 +1426,107 @@
 
 .closingFooter {
   display: flex;
-  align-items: flex-end;
+  align-items: stretch;
   justify-content: space-between;
-  gap: 1.25rem;
-  margin-top: auto;
-  padding-top: 1.5rem;
-  border-top: 2px solid var(--accent);
+  gap: 1rem;
+  margin-top: 0.35rem;
+  padding-top: 0;
+  border-top: none;
+}
+
+.closingContactCard {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 1.1rem 1.15rem;
+  border: 1px solid rgba(15, 118, 110, 0.22);
+  border-radius: 14px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 253, 250, 0.92) 100%);
+  box-shadow: 0 10px 28px rgba(15, 118, 110, 0.08);
+}
+
+.closingContactHead {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  margin-bottom: 0.95rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.closingContactLogo {
+  flex-shrink: 0;
+  max-height: 2.75rem;
+  max-width: 5.5rem;
+  object-fit: contain;
+}
+
+.closingContactBrandBlock {
+  min-width: 0;
+}
+
+.closingContactTagline {
+  margin: 0.25rem 0 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent);
+  line-height: 1.4;
+}
+
+.closingContactLead {
+  margin: 0.45rem 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.closingContactGrid {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem 1rem;
+}
+
+.closingContactRow {
+  margin: 0;
+  min-width: 0;
+}
+
+.closingContactLabel {
+  margin: 0;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.closingContactValue {
+  margin: 0.18rem 0 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.closingContactLink {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.closingContactLink:hover {
+  text-decoration: underline;
+}
+
+.closingQrCard {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #fff;
 }
 
 .closingBrand {
@@ -1531,7 +1626,15 @@
 
   .closingFooter {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+  }
+
+  .closingContactGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .closingQrCard {
+    align-self: flex-start;
   }
 
   .ledgerOp {
@@ -1685,6 +1788,22 @@
   .pageClosing .closingSteps {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 2mm;
+  }
+
+  .pageClosing .closingContactCard,
+  .pageClosing .closingQrCard {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .pageClosing .closingContactGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 2mm 3mm;
+  }
+
+  .closingContactLink {
+    color: var(--ink) !important;
+    text-decoration: none !important;
   }
 
   @page zenith-sheet {

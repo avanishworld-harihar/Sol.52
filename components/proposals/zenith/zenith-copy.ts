@@ -33,10 +33,21 @@ export function getZenithCopy(lang: ZenithLang) {
         ? "कॉल या मैसेज करें — सर्वे, डिज़ाइन और गो-लाइव तक हम साथ हैं।"
         : "Call or message when you are ready. We handle survey, design, and go-live with you.",
       contact: hi ? "संपर्क" : "Contact",
-      photoTitle: hi ? "सूर्यास्त · स्वतंत्र ऊर्जा" : "Sunset · energy independence",
+      contactLead: hi
+        ? "सवाल या अगला कदम — सीधे अपने इंस्टॉलर से बात करें।"
+        : "Questions or ready to proceed — reach your installer directly.",
+      photoTitle: hi ? "दिन का प्रकाश · स्वच्छ ऊर्जा" : "Daylight · clean power",
       photoSub: hi
-        ? "आपकी छत — कल की बचत, आज से शुरू।"
-        : "Your rooftop — tomorrow's savings start today.",
+        ? "भारतीय घर · सौर छत · हरित जीवन — आपका भविष्य तैयार है।"
+        : "Indian home · solar rooftop · green living — your future is ready.",
+      contactLabels: {
+        phone: hi ? "फ़ोन / व्हाट्सऐप" : "Phone / WhatsApp",
+        email: hi ? "ईमेल" : "Email",
+        website: hi ? "वेबसाइट" : "Website",
+        address: hi ? "कार्यालय पता" : "Office address",
+        gst: hi ? "GSTIN" : "GSTIN",
+        person: hi ? "आपका संपर्क" : "Your contact",
+      },
       steps: hi
         ? [
             { title: "सर्वे", desc: "छत और लोड जाँच" },

@@ -27,12 +27,16 @@ import {
 import styles from "./zenith.module.css";
 
 import {
+  buildZenithClosingContact,
+  type ZenithClosingContact,
+} from "./zenith-closing-contact";
+import {
   buildZenithEngineeringModel,
   type ZenithEngRow,
 } from "./zenith-engineering";
 
 const ZENITH_COVER_PHOTO = "/assets/proposals/zenith-cover-luxury-rooftop.jpg";
-const ZENITH_CLOSING_PHOTO = "/assets/proposals/zenith-closing-sunset-rooftop.jpg";
+const ZENITH_CLOSING_PHOTO = "/assets/proposals/zenith-closing-daytime-home.jpg";
 
 function EngDetailBlock({
   title,
@@ -115,6 +119,14 @@ export function ZenithProposalRenderer({
   const [logoUrl, setLogoUrl] = useState<string | undefined>(() => {
     return data?.meta.brandLogoUrl?.trim() || installerLogoUrl?.trim() || undefined;
   });
+  const [brandingSettings, setBrandingSettings] = useState(() => readProposalBrandingSettings());
+
+  useEffect(() => {
+    const syncBranding = () => setBrandingSettings(readProposalBrandingSettings());
+    syncBranding();
+    window.addEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, syncBranding);
+    return () => window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, syncBranding);
+  }, []);
   const rootRef = useRef<HTMLDivElement>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
 
@@ -163,6 +175,10 @@ export function ZenithProposalRenderer({
   const terms = data.terms;
   const impact = data.impact;
   const closing = data.closing;
+  const closingContact: ZenithClosingContact = buildZenithClosingContact(data, {
+    branding: brandingSettings,
+    labels: c.closing.contactLabels,
+  });
 
   const capacity =
     data.meta.systemKw > 0
@@ -850,40 +866,59 @@ export function ZenithProposalRenderer({
           </ul>
 
           <div className={styles.closingFooter}>
-            <div>
-              <p className={styles.cardLabel}>{c.closing.contact}</p>
-              {closingBrand.showLogo && logoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={logoUrl} alt={brand} className={styles.logo} style={{ maxHeight: 36, marginBottom: 8 }} />
-              ) : null}
-              {closingBrand.showName ? (
-                <p className={styles.closingBrand}>{closing.installerName || brand}</p>
-              ) : null}
-              {closingBrand.showTagline && (closing.brandTagline || data.meta.brandTagline) ? (
-                <p className={styles.closingContact}>
-                  {closing.brandTagline || data.meta.brandTagline}
+            <div className={styles.closingContactCard}>
+              <div className={styles.closingContactHead}>
+                {closingBrand.showLogo && logoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={logoUrl}
+                    alt={closingContact.brandName}
+                    className={styles.closingContactLogo}
+                  />
+                ) : null}
+                <div className={styles.closingContactBrandBlock}>
+                  <p className={styles.cardLabel}>{c.closing.contact}</p>
+                  {closingBrand.showName ? (
+                    <p className={styles.closingBrand}>{closingContact.brandName}</p>
+                  ) : null}
+                  {closingBrand.showTagline && closingContact.tagline ? (
+                    <p className={styles.closingContactTagline}>{closingContact.tagline}</p>
+                  ) : null}
+                  <p className={styles.closingContactLead}>{c.closing.contactLead}</p>
+                </div>
+              </div>
+
+              {closingContact.rows.length > 0 ? (
+                <dl className={styles.closingContactGrid}>
+                  {closingContact.rows.map((row) => (
+                    <div key={row.label} className={styles.closingContactRow}>
+                      <dt className={styles.closingContactLabel}>{row.label}</dt>
+                      <dd className={styles.closingContactValue}>
+                        {row.href ? (
+                          <a href={row.href} className={styles.closingContactLink}>
+                            {row.value}
+                          </a>
+                        ) : (
+                          row.value
+                        )}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              ) : (
+                <p className={styles.closingContactLead}>
+                  {closing.contactLine?.trim() || c.closing.body}
                 </p>
-              ) : null}
-              {closing.contactLine ? (
-                <p className={styles.closingContact}>{closing.contactLine}</p>
-              ) : null}
-              {(closing.address || data.meta.brandAddress) ? (
-                <p className={styles.closingContact}>{closing.address || data.meta.brandAddress}</p>
-              ) : null}
-              {(closing.gstNumber || data.meta.brandGst) ? (
-                <p className={styles.closingContact}>
-                  GSTIN {closing.gstNumber || data.meta.brandGst}
-                </p>
-              ) : null}
-              {closing.contactPerson ? (
-                <p className={styles.closingContact}>{closing.contactPerson}</p>
-              ) : null}
+              )}
             </div>
+
             {closing.qrUrl ? (
-              <div className={styles.qrWrap}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={closing.qrUrl} alt="Payment / contact QR" className={styles.qrImg} />
-                <span className={styles.cardLabel}>{c.labels.scan}</span>
+              <div className={styles.closingQrCard}>
+                <div className={styles.qrWrap}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={closing.qrUrl} alt="Payment / contact QR" className={styles.qrImg} />
+                  <span className={styles.cardLabel}>{c.labels.scan}</span>
+                </div>
               </div>
             ) : null}
           </div>
