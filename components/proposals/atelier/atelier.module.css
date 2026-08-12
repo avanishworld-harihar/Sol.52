@@ -306,15 +306,39 @@
 }
 .pdfCaptureHost
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .forecastChart {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
   .forecastBars {
-  height: 333px !important;
-  min-height: 333px !important;
+  flex: 1 1 auto !important;
+  height: auto !important;
+  min-height: 430px !important;
+  align-items: stretch !important;
 }
 .pdfCaptureHost
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
   .forecastTrack {
-  height: 234px !important;
-  min-height: 234px !important;
+  flex: 1 1 auto !important;
+  height: auto !important;
+  min-height: 310px !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .forecastLegend {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, auto) minmax(0, 1fr) !important;
+  padding-top: 0.45rem !important;
+  border-top: 1px solid var(--line) !important;
+}
+.pdfCaptureHost
+  [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
+  .forecastBasis {
+  border-top: none !important;
+  padding-top: 0 !important;
+  line-height: 1.45 !important;
 }
 .pdfCaptureHost
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
@@ -2575,13 +2599,14 @@
   flex-direction: column;
 }
 .forecastPage .pageHead {
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.65rem;
+  flex-shrink: 0;
 }
 .forecastStats {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
+  gap: 0.65rem;
+  margin-bottom: 0.65rem;
   flex: 0 0 auto;
 }
 .forecastStatCard {
@@ -2637,15 +2662,15 @@
 .forecastChart {
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
-  flex: 0 0 auto;
+  gap: 0.6rem;
+  flex: 1 1 auto;
   min-height: 0;
-  padding: 0.95rem 0.9rem 0.85rem;
+  padding: 0.9rem 0.9rem 0.8rem;
   border: 1px solid var(--line);
   border-radius: var(--card-r);
   background: var(--white);
   box-shadow: var(--card-s);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.55rem;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -2689,11 +2714,11 @@
 }
 .forecastBars {
   display: flex;
-  align-items: flex-end;
+  align-items: stretch;
   gap: 0.28rem;
-  height: 340px;
-  min-height: 340px;
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+  min-height: 430px;
+  height: auto;
   padding: 0 0.1rem;
   box-sizing: border-box;
   width: 100%;
@@ -2707,18 +2732,18 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
-  gap: 0.22rem;
+  gap: 0.25rem;
   min-width: 0;
+  min-height: 0;
   height: 100%;
   box-sizing: border-box;
 }
 .forecastUnits {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.58rem;
+  font-size: 0.62rem;
   font-weight: 700;
   color: var(--gray);
-  line-height: 1;
+  line-height: 1.1;
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -2731,13 +2756,13 @@
   white-space: nowrap;
   flex-shrink: 0;
 }
-/* Fixed track height so % bar heights resolve on web + print */
+/* Track grows with chart — taller bars use leftover A4 space on this page */
 .forecastTrack {
-  flex: 0 0 auto;
+  flex: 1 1 auto;
   width: 100%;
   max-width: 1.55rem;
-  height: 230px;
-  min-height: 230px;
+  min-height: 300px;
+  height: auto;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -2805,33 +2830,47 @@
   white-space: nowrap;
 }
 .forecastLegend {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, auto) minmax(0, 1fr);
   align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  padding: 0 0.15rem;
+  column-gap: 0.5rem;
+  row-gap: 0.3rem;
+  flex-shrink: 0;
+  width: 100%;
+  padding: 0.45rem 0.15rem 0;
+  border-top: 1px solid var(--line);
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--gray2);
 }
+.forecastLegend > span:first-child {
+  justify-self: start;
+}
 .forecastPeakCue {
+  justify-self: center;
+  text-align: center;
   color: var(--or);
+  line-height: 1.3;
+}
+.forecastLegend > span:last-child {
+  justify-self: end;
 }
 .forecastBasis {
   margin: 0;
-  padding-top: 0.35rem;
-  border-top: 1px solid var(--line);
-  font-size: 0.78rem;
+  padding-top: 0;
+  border-top: none;
+  font-size: 0.76rem;
   font-weight: 500;
   color: var(--gray);
-  line-height: 1.4;
+  line-height: 1.45;
+  flex-shrink: 0;
 }
 .forecastExpert {
-  flex: 0 0 auto;
+  flex-shrink: 0;
+  margin-top: auto;
   margin-bottom: 0;
 }
 
@@ -5744,9 +5783,15 @@
   }
 
   .forecastLegend {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.25rem;
+    grid-template-columns: 1fr;
+    row-gap: 0.25rem;
+  }
+
+  .forecastLegend > span:first-child,
+  .forecastLegend > span:last-child,
+  .forecastPeakCue {
+    justify-self: start;
+    text-align: left;
   }
 
   .coverInner,
@@ -6317,15 +6362,19 @@
     height: 135px !important;
   }
   .forecastChart {
-    flex: 0 0 auto !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
   }
   .forecastBars {
-    height: 88mm !important;
-    min-height: 88mm !important;
+    flex: 1 1 auto !important;
+    height: auto !important;
+    min-height: 100mm !important;
+    align-items: stretch !important;
   }
   .forecastTrack {
-    height: 62mm !important;
-    min-height: 62mm !important;
+    flex: 1 1 auto !important;
+    height: auto !important;
+    min-height: 72mm !important;
   }
   .forecastFill,
   .forecastFillBill {
