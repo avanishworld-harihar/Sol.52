@@ -34,7 +34,10 @@ import { isDarkLogoUrl } from "./atelier-dark-logo";
 import { AtelierBillAudit } from "./atelier-bill-audit";
 import { AtelierBrandCompare } from "./atelier-brand-compare";
 import { AtelierBlueprintArray } from "./atelier-blueprint-array";
-import { buildAtelierForecastMonths } from "./atelier-generation-forecast";
+import {
+  buildAtelierForecastMonths,
+  forecastBarHeightPx,
+} from "./atelier-generation-forecast";
 import { HwCardIcon, HwIconEarth, type HwIconKey } from "./atelier-hw-icons";
 import { TrustCardIcon } from "./atelier-trust-icons";
 import {
@@ -1689,29 +1692,21 @@ export function AtelierRenderer({
                 >
                   <div className={styles.forecastBarLane}>
                     <div
-                      className={styles.forecastBarSpacer}
-                      style={{ flex: `${100 - m.barPct} 1 0` }}
-                      aria-hidden
-                    />
-                    <div
                       className={styles.forecastFill}
-                      style={{ flex: `${m.barPct} 0 0` }}
+                      style={{
+                        height: `${forecastBarHeightPx(m.barPct)}px`,
+                      }}
                       title={`${c.genForecast.legendGen}: ${m.units}`}
                     />
                   </div>
                   {showForecastBillBars ? (
                     <div className={styles.forecastBarLane}>
                       <div
-                        className={styles.forecastBarSpacer}
-                        style={{
-                          flex: `${100 - (m.billBarPct > 0 ? m.billBarPct : 4)} 1 0`,
-                        }}
-                        aria-hidden
-                      />
-                      <div
                         className={styles.forecastFillBill}
                         style={{
-                          flex: `${m.billBarPct > 0 ? m.billBarPct : 4} 0 0`,
+                          height: `${forecastBarHeightPx(
+                            m.billBarPct > 0 ? m.billBarPct : 4
+                          )}px`,
                           opacity: m.billBarPct > 0 ? 1 : 0.28,
                         }}
                         title={

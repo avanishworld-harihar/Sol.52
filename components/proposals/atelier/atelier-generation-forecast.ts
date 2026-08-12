@@ -68,6 +68,16 @@ export type AtelierForecastMonth = {
   isPeak?: boolean;
 };
 
+/** Bar track height (px) — keep in sync with `.forecastTrack` min-height in CSS. */
+export const ATELIER_FORECAST_TRACK_PX = 260;
+
+export function forecastBarHeightPx(
+  barPct: number,
+  trackPx = ATELIER_FORECAST_TRACK_PX
+): number {
+  return Math.max(8, Math.round((barPct / 100) * trackPx));
+}
+
 function monthIndexFromLabel(label: string): number | null {
   const raw = label.trim();
   if (!raw) return null;

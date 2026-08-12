@@ -363,6 +363,7 @@
   .forecastTrack {
   flex: 1 1 0 !important;
   min-height: 260px !important;
+  height: 260px !important;
 }
 .pdfCaptureHost
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
@@ -379,7 +380,7 @@
 .pdfCaptureHost
   [data-pdf-capture-root='true'][data-proposal-preset='residential_premium_luxe']
   .forecastFillBill {
-  flex: 0 0 auto !important;
+  flex: none !important;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
@@ -3120,13 +3121,8 @@
   justify-content: flex-end;
   align-items: center;
 }
-.forecastBarSpacer {
-  flex: 1 1 0;
-  min-height: 0;
-  width: 100%;
-}
 .forecastFill {
-  flex: 0 0 auto;
+  flex: none;
   width: 100%;
   max-width: 1.15rem;
   min-height: 8px;
@@ -3139,7 +3135,7 @@
   max-width: 0.62rem;
 }
 .forecastFillBill {
-  flex: 0 0 auto;
+  flex: none;
   max-width: 0.62rem;
   width: 100%;
   min-height: 4px;
@@ -6983,6 +6979,7 @@
   .forecastTrack {
     flex: 1 1 0 !important;
     min-height: 260px !important;
+    height: 260px !important;
   }
   .forecastBarLane {
     display: flex !important;
@@ -6993,7 +6990,7 @@
   }
   .forecastFill,
   .forecastFillBill {
-    flex: 0 0 auto !important;
+    flex: none !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
