@@ -3879,11 +3879,11 @@
 }
 .blueprintPanels {
   display: grid;
-  grid-template-columns: repeat(var(--atelier-bp-cols, 4), calc(var(--atelier-bp-cell, 28px) * 1.48));
-  grid-auto-rows: calc(var(--atelier-bp-cell, 28px) * 0.92);
+  grid-template-columns: repeat(var(--atelier-bp-cols, 4), calc(var(--atelier-bp-cell, 28px) * 0.92));
+  grid-auto-rows: calc(var(--atelier-bp-cell, 28px) * 1.48);
   gap: var(--atelier-bp-gap, 4px);
   z-index: 2;
-  /* Plan (top-down) view — azimuth rotates array on roof; 180° = south baseline. */
+  /* Plan (top-down) view — portrait modules; azimuth rotates array on roof. */
   transform: rotate(calc(var(--atelier-bp-azimuth, 180) * 1deg - 180deg))
     scale(var(--atelier-bp-scale, 1));
   transform-origin: center center;
@@ -6208,8 +6208,8 @@
   }
 
   .blueprintPanels {
-    grid-template-columns: repeat(var(--atelier-bp-cols, 4), calc(var(--atelier-bp-cell, 24px) * 1.48));
-    grid-auto-rows: calc(var(--atelier-bp-cell, 24px) * 0.92);
+    grid-template-columns: repeat(var(--atelier-bp-cols, 4), calc(var(--atelier-bp-cell, 24px) * 0.92));
+    grid-auto-rows: calc(var(--atelier-bp-cell, 24px) * 1.48);
   }
 
   .blueprintPanel {
