@@ -191,20 +191,24 @@ export function getCanvasCopy(lang: CanvasLang) {
       paymentLead: hi ? "माइलस्टोन अनुसूची और शर्तें।" : "Milestone schedule and conditions.",
       closing: hi ? "बधाई" : "Congratulations",
       closingEyebrow: hi ? "अंतिम कदम" : "The final step",
-      closingTitle: hi ? "बधाई।" : "Congratulations.",
+      closingTitle: hi ? "ऊर्जा स्वतंत्रता," : "Energy Independence,",
       closingTitleLock: hi
-        ? "बढ़ते बिजली टैरिफ के जोखिम को दशकों तक कम कर सकते हैं।"
-        : "You can reduce exposure to rising electricity tariffs for decades.",
+        ? "दशकों के लिए इंजीनियर।"
+        : "Engineered for Decades.",
       closingSubtitle: (city: string) =>
         hi
-          ? `जब सूरज ${city} पर चमकता है, आपकी छत अनुमानित यूनिट बनाती है। बचत बिल और टैरिफ पर निर्भर करती है — यह खर्च घटाने और ग्रिड निर्भरता कम करने की योजना है।`
-          : `When the sun shines over ${city}, your roof produces estimated units. Savings depend on bills and tariffs — this plan is about lowering costs and grid dependence.`,
-      closingCtaTitle: hi ? "शुरू करने को तैयार?" : "Ready to begin?",
-      closingCtaBody: hi
-        ? "इस ब्लूप्रिंट पर हस्ताक्षर करें। इंजीनियरिंग, DISCOM कागज़ात, और इंस्टॉलेशन हम संभालेंगे।"
-        : "Sign this blueprint. We will handle the engineering, the DISCOM paperwork, and the installation.",
+          ? `जब सूरज ${city} पर चमकता है, आपकी छत अनुमानित यूनिट बनाती है। बचत वास्तविक खपत पर निर्भर करती है — यह ब्लूप्रिंट खर्च घटाने और ग्रिड निर्भरता तोड़ने का रास्ता है।`
+          : `When the sun shines over ${city}, your roof produces estimated units. Savings depend on actual consumption — this blueprint is your path to lowering costs and breaking grid dependence.`,
+      closingCtaTitle: hi ? "शुरू करने को तैयार?" : "Ready to initiate?",
+      closingCtaBody: (brand: string) =>
+        hi
+          ? `इस ब्लूप्रिंट पर हस्ताक्षर करें। ${brand} इंजीनियरिंग, DISCOM कागज़ात, और इंस्टॉलेशन टाइमलाइन शुरू करेगा।`
+          : `Sign this blueprint to authorize the project. ${brand} will commence engineering, DISCOM paperwork, and schedule installation.`,
       closingSystemLabel: hi ? "सिस्टम इंजन" : "System engine",
       closingSignature: hi ? "अधिकृत हस्ताक्षर" : "Authorized Signature",
+      closingClientSign: hi ? "ग्राहक स्वीकृति" : "Client acceptance",
+      closingCompanySign: hi ? "अधिकृत हस्ताक्षरकर्ता" : "Authorized signatory",
+      closingHeroAlt: hi ? "सोलर आर्किटेक्चर" : "Solar architecture",
       closingBody: hi
         ? "आप अगले 25 वर्षों के लिए अपनी बिजली की कीमत लॉक कर रहे हैं।"
         : "You are locking your electricity price for the next 25 years.",
