@@ -418,13 +418,9 @@ export function CanvasProposalRenderer({
           brandName={brand}
           logoUrl={coverBrand.showLogo ? logoUrl : undefined}
           showName={coverBrand.showName}
-          tagline={coverBrand.showTagline ? data.meta.brandTagline : undefined}
           customerName={customer}
-          locationLine={location || undefined}
-          documentTitle={c.cover.documentTitle}
-          documentSubtitle={c.cover.sub}
-          preparedForLabel={c.cover.preparedFor}
-          badge={c.cover.badge}
+          eyebrow={c.cover.eyebrow}
+          subtitle={c.cover.subtitle}
           systemKw={capacityKw}
           annualYield={
             generationUnits > 0
@@ -445,12 +441,7 @@ export function CanvasProposalRenderer({
                 ? "CO₂ कटौती"
                 : "CO₂ avoided"
           }
-          blueprintCaption={c.cover.blueprintCaption}
-          blueprintHint={c.cover.blueprintHint}
-          confidentialLabel={c.cover.confidential}
-          proposalDate={c.cover.proposalDate(proposalDateLabel)}
-          pageNo="01 / 12"
-          footerBrand={footerBrandPres.showName ? footerBrandPres.installerName : undefined}
+          proposalDate={proposalDateLabel}
         />
 
         {/* Page 02: Bill / Requirement */}

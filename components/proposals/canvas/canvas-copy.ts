@@ -14,29 +14,13 @@ export function getCanvasCopy(lang: CanvasLang) {
     },
     cover: {
       brandFallback: "HARIHAR SOLAR",
-      badge: hi ? "सौर प्रस्ताव" : "Solar proposal",
-      title: "Investment Blueprint",
-      documentTitle: hi
-        ? "आर्किटेक्चरल एनर्जी ब्लूप्रिंट"
-        : "Architectural Energy Blueprint",
-      sub: hi
-        ? "आपकी छत के लिए स्पष्ट वित्तीय और तकनीकी योजना।"
-        : "A clear financial and technical plan shaped for your rooftop.",
-      lifetime: hi ? "आजीवन लाभ" : "Lifetime wealth",
-      system: hi ? "सिस्टम" : "System",
-      preparedFor: hi ? "विशेष रूप से तैयार" : "Prepared exclusively for",
+      eyebrow: hi ? "निजी ऊर्जा पोर्टफोलियो" : "Private Energy Portfolio",
+      subtitle: hi
+        ? "प्रीमियम रूफटॉप आर्किटेक्चर"
+        : "Premium Rooftop Architecture",
       capacity: hi ? "सिस्टम क्षमता" : "System Capacity",
-      yield: hi ? "वार्षिक उत्पादन" : "Annual Yield",
-      impact: hi ? "स्वच्छ ऊर्जा प्रभाव" : "Clean Energy Impact",
-      blueprintCaption: hi
-        ? "दक्षिण-मुखी वास्तु योजना"
-        : "South-facing architectural plan",
-      blueprintHint: hi
-        ? "टिल्ट और ऐरे साइट सर्वे के बाद अंतिम होंगे।"
-        : "Tilt and array are confirmed after the site survey.",
-      confidential: hi ? "गोपनीय प्रस्ताव" : "Confidential proposal",
-      proposalDate: (date: string) =>
-        hi ? `प्रस्ताव तिथि · ${date}` : `Proposal date · ${date}`,
+      yield: hi ? "वार्षिक उत्पादन अनुमान" : "Annual Yield Est.",
+      impact: hi ? "पारिस्थितिक प्रभाव" : "Ecological Impact",
     },
     pages: {
       bill: hi ? "बिल ऑडिट और ब्रेकडाउन" : "Bill Audit & Breakdown",
