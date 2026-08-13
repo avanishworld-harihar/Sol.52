@@ -28,11 +28,18 @@ export type CoverPageProps = {
   customerName: string;
   locationLine?: string;
   documentTitle?: string;
+  documentSubtitle?: string;
   preparedForLabel?: string;
+  badge?: string;
   systemKw: string;
   annualYield: string;
+  capacityLabel?: string;
+  yieldLabel?: string;
   impactLabel?: string;
   impactValue?: string;
+  blueprintCaption?: string;
+  blueprintHint?: string;
+  confidentialLabel?: string;
   proposalDate?: string;
   pageNo?: string;
   footerBrand?: string;
@@ -46,11 +53,18 @@ export function CoverPage({
   customerName,
   locationLine,
   documentTitle = "Architectural Energy Blueprint",
+  documentSubtitle,
   preparedForLabel = "Prepared exclusively for",
+  badge = "Solar proposal",
   systemKw,
   annualYield,
+  capacityLabel = "System Capacity",
+  yieldLabel = "Annual Yield",
   impactLabel = "Clean Energy Impact",
   impactValue = "CO₂ avoided",
+  blueprintCaption = "South-facing architectural plan",
+  blueprintHint,
+  confidentialLabel = "Confidential proposal",
   proposalDate,
   pageNo = "01 / 12",
   footerBrand,
@@ -63,54 +77,93 @@ export function CoverPage({
     <section
       className={`${styles.page} ${styles.pageCover} ${styles.coverPage} ${styles.canvasTheme}`.trim()}
     >
-      <div className={styles.coverHeader}>
-        {logoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={logoUrl} alt={brandName} className={styles.coverLogoImg} />
-        ) : showName ? (
-          <>
-            <div className={styles.logoMark}>{logoMark}</div>
-            <div className={styles.logoSub}>{logoSub}</div>
-          </>
-        ) : null}
-        {showName && logoUrl ? (
-          <div className={styles.logoSub} style={{ marginTop: 8 }}>
-            {brandName}
+      <div className={styles.coverStage}>
+        <aside className={styles.coverRail}>
+          <div className={styles.coverRailTop}>
+            {logoUrl ? (
+              <span className={styles.coverLogoPlate}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={logoUrl} alt={brandName} className={styles.coverLogoImg} />
+              </span>
+            ) : showName ? (
+              <>
+                <div className={styles.coverRailMark}>{logoMark}</div>
+                <div className={styles.coverRailSub}>{logoSub}</div>
+              </>
+            ) : null}
+            {showName && logoUrl ? (
+              <p className={styles.coverRailBrandName}>{brandName}</p>
+            ) : null}
+            {tagline ? <p className={styles.coverRailTagline}>{tagline}</p> : null}
           </div>
-        ) : null}
-        {tagline ? <p className={styles.coverDate}>{tagline}</p> : null}
-      </div>
 
-        <div className={styles.coverCenter}>
-        <span className={styles.preparedFor}>{preparedForLabel}</span>
-        <h1 className={styles.clientName}>{customerName}</h1>
-        <div className={styles.coverDivider} aria-hidden />
-        <h2 className={styles.documentTitle}>{documentTitle}</h2>
-        {locationLine ? <p className={styles.location}>{locationLine}</p> : null}
-        {proposalDate ? (
-          <p className={styles.coverDate}>{proposalDate}</p>
-        ) : null}
-      </div>
+          <div className={styles.coverRailSpecs}>
+            <div className={styles.coverRailSpec}>
+              <span className={styles.coverRailSpecValue}>{systemKw}</span>
+              <span className={styles.coverRailSpecLabel}>{capacityLabel}</span>
+            </div>
+            <div className={styles.coverRailSpec}>
+              <span className={styles.coverRailSpecValue}>{annualYield}</span>
+              <span className={styles.coverRailSpecLabel}>{yieldLabel}</span>
+            </div>
+            <div className={styles.coverRailSpec}>
+              <span className={styles.coverRailSpecValue}>{impactValue}</span>
+              <span className={styles.coverRailSpecLabel}>{impactLabel}</span>
+            </div>
+          </div>
 
-      <div className={styles.coverFooter}>
-        <div className={styles.specBox}>
-          <span className={styles.specLabel}>System Capacity</span>
-          <span className={styles.specValue}>{systemKw}</span>
-        </div>
-        <div className={styles.specBox}>
-          <span className={styles.specLabel}>Annual Yield</span>
-          <span className={styles.specValue}>{annualYield}</span>
-        </div>
-        <div className={styles.specBox}>
-          <span className={styles.specLabel}>{impactLabel}</span>
-          <span className={styles.specValue}>{impactValue}</span>
+          <div className={styles.coverRailFoot}>
+            {proposalDate ? (
+              <p className={styles.coverRailDate}>{proposalDate}</p>
+            ) : null}
+            <p className={styles.coverRailPage}>{pageNo}</p>
+          </div>
+        </aside>
+
+        <div className={styles.coverMain}>
+          <span className={styles.coverIndex} aria-hidden>
+            01
+          </span>
+
+          {badge ? <span className={styles.coverDocBadge}>{badge}</span> : null}
+
+          <div className={styles.coverCenter}>
+            <span className={styles.preparedFor}>{preparedForLabel}</span>
+            <h1 className={styles.clientName}>{customerName}</h1>
+            <div className={styles.coverDivider} aria-hidden />
+            <h2 className={styles.documentTitle}>{documentTitle}</h2>
+            {documentSubtitle ? (
+              <p className={styles.coverSubline}>{documentSubtitle}</p>
+            ) : null}
+            {locationLine ? <p className={styles.location}>{locationLine}</p> : null}
+          </div>
+
+          <div className={styles.coverBlueprint}>
+            <div className={styles.coverBlueprintStage} aria-hidden>
+              <div className={styles.coverCompass}>
+                <span className={styles.north}>N</span>
+                <span className={styles.east}>E</span>
+                <span className={styles.south}>S</span>
+                <span className={styles.west}>W</span>
+              </div>
+              <div className={styles.coverPanelGrid}>
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <div key={i} className={styles.coverPanel} />
+                ))}
+              </div>
+            </div>
+            <div className={styles.coverBlueprintCaption}>
+              <strong>{blueprintCaption}</strong>
+              {blueprintHint ? <span>{blueprintHint}</span> : null}
+            </div>
+          </div>
+
+          <footer className={styles.coverPageFooter}>
+            <span>{footerBrand || (showName ? brandName : "")}</span>
+            <span>{confidentialLabel}</span>
+          </footer>
         </div>
       </div>
-
-      <footer className={styles.coverPageFooter}>
-        <span>{footerBrand || (showName ? brandName : "")}</span>
-        <span>{pageNo}</span>
-      </footer>
     </section>
   );
 }

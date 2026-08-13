@@ -268,71 +268,232 @@
   font-weight: 700;
 }
 
-/* Cover — Architectural Editorial (no cost / wealth on page 01) */
+/* Cover — Architectural split (no cost / wealth on page 01) */
 .coverPage {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: 14mm 16mm 12mm !important;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  justify-content: stretch !important;
+  padding: 0 !important;
+  background: var(--paper);
   position: relative;
   overflow: hidden;
 }
 
-.coverPage::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(15, 23, 42, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
-  background-size: 30px 30px;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.coverHeader,
-.coverCenter,
-.coverFooter,
-.coverPageFooter {
+.coverStage {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: 68mm minmax(0, 1fr);
+  min-height: 0;
+  height: 100%;
   position: relative;
   z-index: 2;
 }
 
-.coverHeader {
-  flex-shrink: 0;
+.coverRail {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 28px;
+  padding: 18mm 12mm 14mm;
+  min-height: 0;
+  color: #fff;
+  background:
+    radial-gradient(ellipse 90% 55% at 0% 100%, rgba(194, 65, 12, 0.28), transparent 58%),
+    linear-gradient(180deg, #0a0f1c 0%, #111827 55%, #1e293b 100%);
+  overflow: hidden;
+}
+
+.coverRail::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--canvas-accent-soft), var(--canvas-accent));
+}
+
+.coverRailTop,
+.coverRailSpecs,
+.coverRailFoot {
+  position: relative;
+  z-index: 1;
+}
+
+.coverLogoPlate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  padding: 8px 10px;
+  background: #fff;
+  border-radius: 8px;
 }
 
 .coverLogoImg {
-  max-height: 42px;
-  max-width: 180px;
+  max-height: 36px;
+  max-width: 132px;
   object-fit: contain;
 }
 
-.logoMark {
+.coverRailMark {
   font-family: var(--serif);
-  font-size: 22pt;
-  font-weight: 900;
-  letter-spacing: 0.28em;
-  color: var(--canvas-ink-deep);
+  font-size: 18pt;
+  font-weight: 800;
+  letter-spacing: 0.22em;
   line-height: 1;
+  color: #fff;
 }
 
-.logoSub {
-  font-size: 9pt;
-  font-weight: 700;
-  letter-spacing: 0.55em;
-  color: var(--canvas-muted);
+.coverRailSub {
   margin-top: 6px;
+  font-size: 8pt;
+  font-weight: 700;
+  letter-spacing: 0.42em;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.coverRailBrandName {
+  margin: 10px 0 0;
+  font-size: 8.5pt;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.35;
+}
+
+.coverRailTagline {
+  margin: 8px 0 0;
+  font-size: 8pt;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.coverRailSpecs {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.coverRailSpec {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.coverRailSpec:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.coverRailSpecValue {
+  font-family: var(--display);
+  font-size: 16pt;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: #fff;
+  overflow-wrap: break-word;
+}
+
+.coverRailSpecLabel {
+  font-size: 6.5pt;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #fdba74;
+}
+
+.coverRailDate {
+  margin: 0 0 6px;
+  font-size: 7.5pt;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.4;
+}
+
+.coverRailPage {
+  margin: 0;
+  font-size: 8pt;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.coverMain {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding: 16mm 16mm 12mm 18mm;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  overflow: hidden;
+}
+
+.coverMain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(15, 23, 42, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.035) 1px, transparent 1px);
+  background-size: 28px 28px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.coverIndex,
+.coverDocBadge,
+.coverCenter,
+.coverBlueprint,
+.coverPageFooter {
+  position: relative;
+  z-index: 1;
+}
+
+.coverIndex {
+  position: absolute;
+  top: 10mm;
+  right: 12mm;
+  z-index: 0;
+  font-family: var(--display);
+  font-size: 64pt;
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  line-height: 1;
+  color: rgba(10, 15, 28, 0.05);
+  pointer-events: none;
+  user-select: none;
+}
+
+.coverDocBadge {
+  align-self: flex-start;
+  margin-bottom: 22px;
+  padding: 5px 10px;
+  border: 1px solid rgba(194, 65, 12, 0.28);
+  border-radius: 999px;
+  background: var(--canvas-accent-wash);
+  color: var(--canvas-accent);
+  font-size: 7.5pt;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
 .coverCenter {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   min-height: 0;
-  padding: 24px 0;
+  padding: 4px 0 0;
 }
 
 .preparedFor {
@@ -342,95 +503,141 @@
   color: var(--canvas-accent-soft);
   text-transform: uppercase;
   display: block;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
 .clientName {
   font-family: var(--display);
-  font-size: 36pt;
+  font-size: 32pt;
   line-height: 1.08;
   color: var(--canvas-ink-deep);
   margin: 0;
   font-weight: 700;
   letter-spacing: -0.02em;
-  max-width: 18ch;
+  max-width: 14ch;
   overflow-wrap: break-word;
+}
+
+.langHi .clientName,
+.langHi .documentTitle {
+  font-family: var(--font-noto-deva, "Noto Sans Devanagari"), var(--display);
 }
 
 .coverDivider {
   height: 3px;
-  width: 72px;
+  width: 64px;
   background-color: var(--canvas-accent);
-  margin: 28px 0;
+  margin: 20px 0 18px;
   flex-shrink: 0;
 }
 
 .documentTitle {
   font-family: var(--sans);
-  font-size: 16pt;
-  font-weight: 300;
+  font-size: 14pt;
+  font-weight: 400;
   color: #334155;
   margin: 0 0 8px;
   letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+.coverSubline {
+  margin: 0 0 10px;
+  max-width: 36ch;
+  font-size: 10pt;
+  line-height: 1.5;
+  color: var(--canvas-muted);
 }
 
 .location {
   margin: 0;
-  font-size: 11pt;
+  font-size: 10.5pt;
   color: var(--canvas-aluminum);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
 }
 
-.coverDate {
-  margin: 8px 0 0;
-  font-size: 8.5pt;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--canvas-aluminum);
-}
-
-.coverFooter {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  border-top: 1px solid rgba(15, 23, 42, 0.1);
-  padding-top: 18px;
-  gap: 14px;
+.coverBlueprint {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   flex-shrink: 0;
 }
 
-.specBox {
+.coverBlueprintStage {
+  position: relative;
+  height: 152px;
+  border-radius: 12px;
+  overflow: hidden;
+  perspective: 900px;
+  background:
+    radial-gradient(ellipse 70% 80% at 88% 12%, rgba(194, 65, 12, 0.22), transparent 58%),
+    linear-gradient(165deg, #0a0f1c 0%, #1e293b 55%, #334155 100%);
+  border: 1px solid rgba(15, 23, 42, 0.18);
+}
+
+.coverCompass {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 2;
+  width: 42px;
+  height: 42px;
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.coverPanelGrid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 26px);
+  gap: 5px;
+  place-content: center;
+  transform: rotateX(48deg) rotateZ(-16deg);
+  transform-style: preserve-3d;
+}
+
+.coverPanel {
+  width: 26px;
+  height: 42px;
+  border-radius: 2px;
+  background: rgba(251, 146, 60, 0.38);
+  border: 1px solid rgba(253, 186, 116, 0.9);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.45);
+}
+
+.coverBlueprintCaption {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  min-width: 0;
+  gap: 2px;
+  padding: 0 2px;
 }
 
-.specLabel {
-  font-size: 7pt;
-  letter-spacing: 0.16em;
-  color: var(--canvas-muted);
+.coverBlueprintCaption strong {
+  font-size: 8pt;
   font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
+  color: var(--canvas-accent);
 }
 
-.specValue {
-  font-family: var(--serif);
-  font-size: 14pt;
-  font-weight: 800;
-  color: var(--canvas-ink-deep);
-  line-height: 1.15;
-  overflow-wrap: break-word;
+.coverBlueprintCaption span {
+  font-size: 8pt;
+  color: var(--canvas-muted);
+  line-height: 1.4;
 }
 
 .coverPageFooter {
-  margin-top: 14px;
+  margin-top: 12px;
   flex-shrink: 0;
   padding-top: 10px;
   border-top: 1px solid var(--canvas-line);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   font-size: 7.5pt;
   color: var(--canvas-muted);
   letter-spacing: 0.06em;
@@ -438,7 +645,7 @@
 }
 
 .pageCover.coverPage {
-  justify-content: space-between;
+  justify-content: stretch;
 }
 
 /* Legacy cover helpers (unused by CoverPage) */
@@ -2861,6 +3068,64 @@
     overflow: visible;
   }
 
+  .coverPage {
+    height: auto;
+    min-height: auto;
+    padding: 0 !important;
+  }
+
+  .coverStage {
+    grid-template-columns: 1fr;
+  }
+
+  .coverRail {
+    gap: 20px;
+    padding: 24px 20px 20px;
+  }
+
+  .coverRail::after {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: auto;
+    height: 4px;
+  }
+
+  .coverRailSpecs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .coverRailSpec {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .coverRailSpecValue {
+    font-size: 13pt;
+  }
+
+  .coverMain {
+    padding: 24px 20px 20px;
+  }
+
+  .coverIndex {
+    font-size: 48pt;
+    top: 16px;
+    right: 16px;
+  }
+
+  .clientName {
+    font-size: 26pt;
+    max-width: none;
+  }
+
+  .coverBlueprintStage {
+    height: 132px;
+  }
+
   .evidenceGrid,
   .evidenceGrid3,
   .hardwareGrid,
@@ -3048,7 +3313,7 @@
   }
 
   .coverPage {
-    padding: 16mm 16mm 12mm !important;
+    padding: 0 !important;
   }
 
   .closingPage {
@@ -3073,15 +3338,22 @@
     margin: 20px 0;
   }
 
-  .coverPage::before {
+  .coverRail,
+  .coverBlueprintStage,
+  .coverPanel,
+  .coverLogoPlate,
+  .coverMain::before {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
   .clientName {
-    font-size: 32pt;
+    font-size: 28pt;
   }
 
+  .coverStage,
+  .coverRail,
+  .coverBlueprint,
   .coverFooter,
   .specBox,
   .coverCenter,

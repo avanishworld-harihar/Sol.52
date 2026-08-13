@@ -421,21 +421,21 @@ export function CanvasProposalRenderer({
           tagline={coverBrand.showTagline ? data.meta.brandTagline : undefined}
           customerName={customer}
           locationLine={location || undefined}
-          documentTitle={
-            isHi ? "आर्किटेक्चरल एनर्जी ब्लूप्रिंट" : "Architectural Energy Blueprint"
-          }
-          preparedForLabel={
-            isHi ? "विशेष रूप से तैयार" : "Prepared exclusively for"
-          }
+          documentTitle={c.cover.documentTitle}
+          documentSubtitle={c.cover.sub}
+          preparedForLabel={c.cover.preparedFor}
+          badge={c.cover.badge}
           systemKw={capacityKw}
           annualYield={
             generationUnits > 0
-              ? `${generationUnits.toLocaleString("en-IN")} Units`
+              ? `${generationUnits.toLocaleString("en-IN")} ${isHi ? "यूनिट" : "Units"}`
               : generation !== "—"
                 ? generation
                 : "—"
           }
-          impactLabel={isHi ? "स्वच्छ ऊर्जा प्रभाव" : "Clean Energy Impact"}
+          capacityLabel={c.cover.capacity}
+          yieldLabel={c.cover.yield}
+          impactLabel={c.cover.impact}
           impactValue={
             impact.co2Tons > 0
               ? isHi
@@ -445,9 +445,10 @@ export function CanvasProposalRenderer({
                 ? "CO₂ कटौती"
                 : "CO₂ avoided"
           }
-          proposalDate={
-            isHi ? `प्रस्ताव तिथि · ${proposalDateLabel}` : `Proposal date · ${proposalDateLabel}`
-          }
+          blueprintCaption={c.cover.blueprintCaption}
+          blueprintHint={c.cover.blueprintHint}
+          confidentialLabel={c.cover.confidential}
+          proposalDate={c.cover.proposalDate(proposalDateLabel)}
           pageNo="01 / 12"
           footerBrand={footerBrandPres.showName ? footerBrandPres.installerName : undefined}
         />
