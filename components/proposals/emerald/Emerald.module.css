@@ -435,4 +435,170 @@
     flex-wrap: wrap;
     gap: 16px;
   }
+
+  .bondMath {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .cascadeItem {
+    width: 100%;
+  }
+}
+
+/* --- THE CAPITAL LEDGER (BOND LAYOUT) --- */
+.ledgerBond {
+  background-color: #ffffff !important;
+  border: 1px solid #064e3b !important;
+  padding: 40px;
+  position: relative;
+  box-shadow: 15px 15px 0px rgba(6, 78, 59, 0.05) !important;
+  margin-top: 20px;
+}
+
+.bondHeader {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 2px dashed #d4af37 !important;
+  padding-bottom: 15px;
+  margin-bottom: 30px;
+}
+
+.bondTitle {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.5rem;
+  color: #064e3b !important;
+}
+
+.bondCode {
+  color: #d4af37;
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+}
+
+.bondMath {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mathBlock {
+  display: flex;
+  flex-direction: column;
+}
+
+.mathLabel {
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  color: #78716c !important;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.mathValue {
+  font-size: 2.2rem;
+  font-family: "Cormorant Garamond", serif;
+  color: #064e3b !important;
+}
+
+.mathValueSubsidy {
+  color: #10b981 !important;
+}
+
+.mathValueNet {
+  font-size: 3rem;
+  color: #d4af37 !important;
+}
+
+.mathOperator {
+  font-size: 2rem;
+  color: #d4af37 !important;
+  font-weight: 300;
+}
+
+.econMetricRow {
+  margin-top: 50px;
+  display: flex;
+  gap: 50px;
+}
+
+.econMetric {
+  min-width: 0;
+}
+
+.econRule {
+  display: block;
+  width: 30px;
+  height: 2px;
+  background: #d4af37;
+  margin-bottom: 15px;
+}
+
+.econMetricValue {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 2.5rem;
+  color: #064e3b;
+  display: block;
+}
+
+.econMetricHint {
+  font-size: 0.8rem;
+  color: #78716c;
+}
+
+/* --- THE MATERIAL ANTHOLOGY (CASCADING LAYOUT) --- */
+.cascadeWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 50px;
+  margin-top: 30px;
+}
+
+.cascadeItem {
+  display: flex;
+  flex-direction: column;
+  width: 75%;
+  position: relative;
+}
+
+/* Push every even item to the right to break the grid */
+.cascadeItem:nth-child(even) {
+  align-self: flex-end;
+  text-align: right;
+}
+
+.cascadeNumber {
+  position: absolute;
+  font-size: 6rem;
+  font-family: "Cormorant Garamond", serif;
+  color: rgba(212, 175, 55, 0.15) !important;
+  top: -40px;
+  left: -20px;
+  line-height: 1;
+  z-index: 0;
+}
+
+.cascadeItem:nth-child(even) .cascadeNumber {
+  left: auto;
+  right: -20px;
+}
+
+.cascadeContent {
+  position: relative;
+  z-index: 10;
+}
+
+.cascadeTitle {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 2rem;
+  color: #064e3b !important;
+  margin: 0 0 10px 0;
+  line-height: 1.1;
+}
+
+.cascadeDesc {
+  font-size: 0.9rem;
+  color: #57534e !important;
+  line-height: 1.6;
+  margin: 0;
 }
