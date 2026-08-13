@@ -140,3 +140,24 @@ export function quantumDcKwp(moduleCount: number): number {
 export function quantumDcAcRatio(dcKwp: number, systemKw: number): number {
   return systemKw > 0 && dcKwp > 0 ? dcKwp / systemKw : 0;
 }
+
+/** Even string split (9 → [5, 4], not a fake 2×5). */
+export function quantumStringSizes(
+  modules: number,
+  maxPerString = 6
+): number[] {
+  const n = Math.max(1, Math.floor(modules));
+  const strings = Math.max(1, Math.ceil(n / maxPerString));
+  const base = Math.floor(n / strings);
+  const rem = n % strings;
+  return Array.from({ length: strings }, (_, i) => base + (i < rem ? 1 : 0));
+}
+
+export function quantumStringLabel(sizes: number[]): string {
+  if (sizes.length === 0) return "—";
+  if (sizes.length === 1) return `1 × ${sizes[0]}`;
+  if (sizes.every((s) => s === sizes[0])) {
+    return `${sizes.length} × ${sizes[0]}`;
+  }
+  return sizes.join(" + ");
+}

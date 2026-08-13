@@ -30,7 +30,7 @@ export function getQuantumCopy(lang: QuantumLang) {
     eng: {
       eyebrow: hi ? "01 // इंजीनियरिंग" : "01 // ENGINEERING",
       title: hi ? "सिस्टम डिज़ाइन।" : "System Design.",
-      roofPlan: hi ? "रूफ ऐरे प्लान" : "Roof Array Plan",
+      roofPlan: hi ? "रूफ ऐरे प्लान · टॉप व्यू" : "Roof Array Plan · Top view",
       metrics: hi ? "साइट और ऐरे मेट्रिक्स" : "Site & Array Metrics",
       location: hi ? "स्थान" : "Location",
       locationNote: hi
@@ -73,13 +73,13 @@ export function getQuantumCopy(lang: QuantumLang) {
       arrayCaption: (
         modules: number,
         kw: string,
-        strings: number,
-        perString: number,
+        stringLabel: string,
         watt: number
       ) =>
         hi
-          ? `${modules} मॉड्यूल · ${kw} kWp DC · ${strings}×${perString} स्ट्रिंग · दक्षिण · ${watt}W`
-          : `${modules} modules · ${kw} kWp DC · ${strings}×${perString} string · South · ${watt}W`,
+          ? `${modules} मॉड्यूल · ${kw} kWp DC · ${stringLabel} · दक्षिण मुख · ${watt}W`
+          : `${modules} modules · ${kw} kWp DC · ${stringLabel} · facing South · ${watt}W`,
+      facingSouth: hi ? "दक्षिण मुख" : "Facing South",
     },
     econ: {
       eyebrow: hi ? "02 // लागत और बचत" : "02 // COST & SAVINGS",
