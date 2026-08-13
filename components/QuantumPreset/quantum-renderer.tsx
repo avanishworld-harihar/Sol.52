@@ -3,16 +3,18 @@
 /**
  * Quantum renderer — Cinematic Neo-Glass residential proposal.
  * Preset id: residential_quantum
- * Pages: Cover → Telemetry → Economics → Hardware → Impact → Payment → Terms ×2
+ * Pages: Cover → Telemetry → Economics → Generation → Hardware → Impact → Payment → Terms ×2
  *
  * DEVELOPMENT LOCKED — see `lib/quantum-proposal-lock.ts`. Do not edit for other presets.
  */
 
 import { useRef, useState } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
+import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { QuantumCover } from "./QuantumCover";
 import { QuantumTelemetry } from "./QuantumTelemetry";
 import { QuantumEconomics } from "./QuantumEconomics";
+import { QuantumGeneration } from "./QuantumGeneration";
 import { QuantumHardware } from "./QuantumHardware";
 import { QuantumImpact } from "./QuantumImpact";
 import { QuantumAuthorization } from "./QuantumAuthorization";
@@ -29,14 +31,17 @@ import {
 export type QuantumRendererProps = {
   data: ProposalData;
   installerLogoUrl?: string;
+  pptInput?: PremiumProposalPptInput | null;
 };
 
 function QuantumDocument({
   data,
   installerLogoUrl,
+  pptInput,
 }: {
   data: ProposalData;
   installerLogoUrl?: string;
+  pptInput?: PremiumProposalPptInput | null;
 }) {
   const { lang, setLang, copy } = useQuantumLang();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -99,6 +104,7 @@ function QuantumDocument({
       <QuantumCover data={data} installerLogoUrl={installerLogoUrl} />
       <QuantumTelemetry data={data} />
       <QuantumEconomics data={data} />
+      <QuantumGeneration data={data} pptInput={pptInput} />
       <QuantumHardware data={data} />
       <QuantumImpact data={data} />
       <QuantumAuthorization data={data} />
@@ -108,7 +114,11 @@ function QuantumDocument({
   );
 }
 
-export function QuantumRenderer({ data, installerLogoUrl }: QuantumRendererProps) {
+export function QuantumRenderer({
+  data,
+  installerLogoUrl,
+  pptInput,
+}: QuantumRendererProps) {
   const [lang, setLang] = useState<QuantumLang>("en");
 
   if (!data) {
@@ -119,7 +129,11 @@ export function QuantumRenderer({ data, installerLogoUrl }: QuantumRendererProps
 
   return (
     <QuantumLangProvider lang={lang} setLang={setLang}>
-      <QuantumDocument data={data} installerLogoUrl={installerLogoUrl} />
+      <QuantumDocument
+        data={data}
+        installerLogoUrl={installerLogoUrl}
+        pptInput={pptInput}
+      />
     </QuantumLangProvider>
   );
 }

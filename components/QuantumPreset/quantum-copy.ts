@@ -121,8 +121,78 @@ export function getQuantumCopy(lang: QuantumLang) {
           : `Curve starts at your net cost, reaches break-even at ${pb}, then grows toward about ${lifetime} over 25 years.`,
       longTerm: hi ? "दीर्घकालिक बचत" : "long-term savings",
     },
+    gen: {
+      eyebrow: hi ? "03 // उत्पादन पूर्वानुमान" : "03 // GENERATION FORECAST",
+      title: hi ? "मासिक उत्पादन पूर्वानुमान।" : "Monthly generation forecast.",
+      lead: hi
+        ? "जनवरी–दिसंबर अनुमानित यूनिट और बचत — गर्मी बनाम मानसून एक नज़र में।"
+        : "Jan–Dec estimated units and savings — summer vs monsoon at a glance.",
+      leadBill: hi
+        ? "सोलर उत्पादन के साथ आपके बिल के मासिक यूनिट — एक ही चार्ट में तुलना।"
+        : "Solar generation alongside your bill months — compared in one chart.",
+      annualGen: hi ? "वार्षिक उत्पादन" : "Annual generation",
+      annualGenHint: hi ? "वर्ष भर का अनुमानित योग।" : "Estimated total across the year.",
+      annualSavings: hi ? "वार्षिक बचत" : "Annual savings",
+      year1Hint: hi ? "वर्ष-1 अनुमानित बिल बचत।" : "Year-1 estimated bill savings.",
+      about: hi ? "लगभग" : "About",
+      perMonth: hi ? "/माह" : "/mo",
+      unitsWord: hi ? "यूनिट" : "units",
+      chartHead: hi ? "मासिक यूनिट" : "Monthly units",
+      chartHint: hi ? "मौसमी प्रोफ़ाइल · मध्य भारत" : "Seasonal profile · Central India",
+      legendGen: hi ? "सोलर उत्पादन" : "Solar generation",
+      legendBill: hi ? "बिल खपत" : "Bill usage",
+      ariaGen: hi ? "मासिक सोलर उत्पादन" : "Monthly solar generation",
+      ariaBoth: hi
+        ? "मासिक सोलर उत्पादन और बिल खपत"
+        : "Monthly generation and bill units",
+      unitsLabel: hi ? "अनुमानित यूनिट" : "Est. units",
+      savingsLabel: hi ? "अनुमानित बचत" : "Est. savings",
+      savingsBasis: (rate: string) =>
+        hi
+          ? `अनुमानित बचत = मासिक यूनिट × ₹${rate}/यूनिट प्रभावी बचत दर। फिक्स्ड चार्ज शामिल नहीं।`
+          : `Estimated savings = monthly units × ₹${rate}/unit effective saving rate. Fixed charges excluded.`,
+      billNote: hi
+        ? "सियान बार = अनुमानित सोलर उत्पादन। सफ़ेद बार = बिल से वास्तविक खपत (जहाँ उपलब्ध)।"
+        : "Cyan bars = estimated solar generation. Pale bars = actual bill usage where available.",
+      verdictLabel: hi ? "मौसमी विश्लेषण" : "Seasonal analysis",
+      verdict: hi
+        ? "उत्पादन स्थानीय विकिरण प्रोफ़ाइल पर आधारित है। गर्मी में ऊँचा उत्पादन अक्सर ऊँचे बिल महीनों से मिलता है — बचत का मुख्य इंजन।"
+        : "Generation uses a regional irradiance profile. Higher summer output often aligns with peak bill months — that overlap drives most of the savings.",
+      verdictBill: hi
+        ? "जहाँ बिल बार और सोलर बार दोनों ऊँचे हैं, वहीं बचत सबसे तेज़ लगती है। जिन महीनों का बिल नहीं है, वहाँ सिर्फ उत्पादन दिखता है।"
+        : "Where bill bars and solar bars both run high, savings hit hardest. Months without a bill show generation only.",
+      months: hi
+        ? ([
+            "जन",
+            "फर",
+            "मार",
+            "अप्र",
+            "मई",
+            "जून",
+            "जुल",
+            "अग",
+            "सित",
+            "अक्ट",
+            "नव",
+            "दिस",
+          ] as const)
+        : ([
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
+          ] as const),
+    },
     bom: {
-      eyebrow: hi ? "03 // सामग्री सूची" : "03 // BILL OF MATERIALS",
+      eyebrow: hi ? "04 // सामग्री सूची" : "04 // BILL OF MATERIALS",
       title: hi ? "हम क्या लगाते हैं।" : "What We Install.",
       lead: hi
         ? "सात भाग — मॉड्यूल, इन्वर्टर, स्ट्रक्चर, DCDB, ACDB, लाइटनिंग + केबल, और अर्थिंग। मात्रा इंस्टॉलर BOM से।"
@@ -234,7 +304,7 @@ export function getQuantumCopy(lang: QuantumLang) {
             ],
     },
     impact: {
-      eyebrow: hi ? "04 // पर्यावरण" : "04 // ENVIRONMENT",
+      eyebrow: hi ? "05 // पर्यावरण" : "05 // ENVIRONMENT",
       title: hi ? "स्वच्छ ऊर्जा प्रभाव।" : "Clean Energy Impact.",
       lead: hi
         ? "आपका सोलर प्लांट घर पर स्वच्छ बिजली बनाता है — कम ग्रिड, कम कार्बन, 25 वर्षों तक हरित पदचिह्न।"
@@ -263,7 +333,7 @@ export function getQuantumCopy(lang: QuantumLang) {
         : "Clean home power · lower carbon · greener choice for your family",
     },
     pay: {
-      eyebrow: hi ? "05 // भुगतान और हस्ताक्षर" : "05 // PAYMENT & SIGN-OFF",
+      eyebrow: hi ? "06 // भुगतान और हस्ताक्षर" : "06 // PAYMENT & SIGN-OFF",
       title: hi ? "भुगतान योजना।" : "Payment Plan.",
       leadWithValue: (project: string, netPart: string) =>
         hi
@@ -324,10 +394,10 @@ export function getQuantumCopy(lang: QuantumLang) {
           ],
     },
     terms: {
-      eyebrow: hi ? "06 // नियम और शर्तें" : "06 // TERMS & CONDITIONS",
+      eyebrow: hi ? "07 // नियम और शर्तें" : "07 // TERMS & CONDITIONS",
       eyebrowCont: hi
-        ? "06 // नियम और शर्तें · जारी"
-        : "06 // TERMS & CONDITIONS · CONT.",
+        ? "07 // नियम और शर्तें · जारी"
+        : "07 // TERMS & CONDITIONS · CONT.",
       title: hi ? "नियम और शर्तें।" : "Terms & Conditions.",
       title2: hi ? "सुरक्षा, दायरा और AMC।" : "Safety, Scope & AMC.",
       intro1: hi
