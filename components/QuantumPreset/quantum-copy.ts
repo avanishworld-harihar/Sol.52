@@ -85,8 +85,8 @@ export function getQuantumCopy(lang: QuantumLang) {
       eyebrow: hi ? "02 // लागत और बचत" : "02 // COST & SAVINGS",
       title: hi ? "आपका निवेश।" : "Your Investment.",
       lead: hi
-        ? "देखें आप क्या देते हैं, कब वापस आता है, और 25 वर्षों में बचत कैसे बढ़ती है।"
-        : "See what you pay, how soon it returns, and how savings grow over 25 years.",
+        ? "देखें आप क्या देते हैं, EMI विकल्प, कब वापस आता है, और 25 वर्षों में बचत कैसे बढ़ती है।"
+        : "See what you pay, EMI options, how soon it returns, and how savings grow over 25 years.",
       youPay: hi ? "आप देते हैं (नेट)" : "You pay (net)",
       afterSubsidy: hi ? "सब्सिडी के बाद" : "After subsidy",
       saveMonth: hi ? "हर महीने बचत" : "Save every month",
@@ -120,6 +120,19 @@ export function getQuantumCopy(lang: QuantumLang) {
           ? `वक्र आपके नेट खर्च से शुरू होता है, ${pb} पर ब्रेक-ईवन, फिर 25 वर्षों में लगभग ${lifetime} की ओर बढ़ता है।`
           : `Curve starts at your net cost, reaches break-even at ${pb}, then grows toward about ${lifetime} over 25 years.`,
       longTerm: hi ? "दीर्घकालिक बचत" : "long-term savings",
+      financeTitle: hi ? "फाइनेंसिंग · मासिक EMI" : "Financing · Monthly EMI",
+      financeLead: (rate: string) =>
+        hi
+          ? `नेट लागत पर ऋण अवधि — अनुमानित EMI (~${rate}% p.a.)। अंतिम दर बैंक/NBFC पर निर्भर।`
+          : `Loan tenures on your net cost — estimated EMI (~${rate}% p.a.). Final rate depends on the lender.`,
+      emiUnit: hi ? "/ महीना" : "/ month",
+      tenureLoan: (years: number) =>
+        hi ? `${years}-वर्ष ऋण` : `${years}-Year Loan`,
+      interestTotal: (amt: string) =>
+        hi ? `कुल ब्याज ~${amt}` : `Total interest ~${amt}`,
+      emiSelected: hi ? "चुनी हुई अवधि" : "Selected tenure",
+      savingsCoverEmi: hi ? "बचत EMI कवर करती है" : "Savings cover EMI",
+      emiAboveSavings: hi ? "EMI बचत से अधिक" : "EMI above savings",
     },
     gen: {
       eyebrow: hi ? "03 // उत्पादन पूर्वानुमान" : "03 // GENERATION FORECAST",

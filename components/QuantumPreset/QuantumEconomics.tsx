@@ -6,6 +6,7 @@
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
+import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import {
   formatInr,
   formatInrCompact,
@@ -25,6 +26,7 @@ const fmtInr = (n: number) => formatInr(n);
 
 export type QuantumEconomicsProps = {
   data: ProposalData;
+  pptInput?: PremiumProposalPptInput | null;
 };
 
 type ChartSeries = {
@@ -35,6 +37,7 @@ type ChartSeries = {
   breakY: number;
   endX: number;
   endY: number;
+  plotBottom: number;
   yearTicks: { x: number; label: string }[];
 };
 
@@ -45,7 +48,7 @@ function buildWealthSeries(
 ): ChartSeries {
   const years = 25;
   const w = 560;
-  const h = 168;
+  const h = 148;
   const padL = 40;
   const padR = 14;
   const padT = 20;
@@ -82,6 +85,8 @@ function buildWealthSeries(
   const breakIdx = Math.min(Math.round(pb), points.length - 1);
   const breakPt = points[breakIdx]!;
 
+  const plotBottom = h - padB;
+
   return {
     areaPath,
     linePath,
@@ -90,6 +95,7 @@ function buildWealthSeries(
     breakY: breakPt.y,
     endX: last.x,
     endY: last.y,
+    plotBottom,
     yearTicks: [0, 5, 10, 15, 20, 25].map((y) => ({
       x: toX(y),
       label: `Y${y}`,
@@ -97,7 +103,7 @@ function buildWealthSeries(
   };
 }
 
-export function QuantumEconomics({ data }: QuantumEconomicsProps) {
+export function QuantumEconomics({ data, pptInput }: QuantumEconomicsProps) {
   const { copy } = useQuantumLang();
   const eco = data.economics;
   const gross = eco.grossInr;
@@ -122,6 +128,15 @@ export function QuantumEconomics({ data }: QuantumEconomicsProps) {
         ? Math.round(annual * 1.18)
         : 0;
   const billAfter = Math.max(0, billToday - annual);
+
+  const ratePct =
+    eco.interestRatePct && eco.interestRatePct > 0 ? eco.interestRatePct : 7;
+  const selectedTenure =
+    pptInput?.financeOption?.selectedTenureYears &&
+    pptInput.financeOption.selectedTenureYears > 0
+      ? pptInput.financeOption.selectedTenureYears
+      : null;
+  const emiRows = (eco.emiRows ?? []).slice(0, 3).filter((r) => r.monthlyEmiInr > 0);
 
   const paybackLabel =
     payback > 0
@@ -293,6 +308,77 @@ export function QuantumEconomics({ data }: QuantumEconomicsProps) {
           </QuantumFadeUp>
         </div>
 
+        {emiRows.length > 0 ? (
+          <QuantumFadeUp delay={0.1}>
+            <div className={`${styles.glass3D} ${styles.econFinance}`}>
+              <div className={styles.econFinanceHead}>
+                <span className={styles.econPanelTitle}>
+                  {copy.econ.financeTitle}
+                </span>
+                <p className={styles.econFinanceLead}>
+                  {copy.econ.financeLead(
+                    Number.isInteger(ratePct)
+                      ? String(ratePct)
+                      : ratePct.toFixed(1)
+                  )}
+                </p>
+              </div>
+              <div className={styles.econEmiGrid}>
+                {emiRows.map((row) => {
+                  const yearsMatch = row.tenureLabel.match(/(\d+)/);
+                  const years = yearsMatch ? Number(yearsMatch[1]) : 0;
+                  const selected = selectedTenure != null && years === selectedTenure;
+                  const covers = monthly > 0 && monthly >= row.monthlyEmiInr;
+                  return (
+                    <article
+                      key={row.tenureLabel}
+                      className={`${styles.econEmiCard}${
+                        selected ? ` ${styles.econEmiCardSelected}` : ""
+                      }`}
+                    >
+                      <span className={styles.econEmiTenure}>
+                        {years > 0
+                          ? copy.econ.tenureLoan(years)
+                          : row.tenureLabel}
+                      </span>
+                      <strong className={styles.econEmiValue}>
+                        {formatInr(row.monthlyEmiInr)}
+                      </strong>
+                      <span className={styles.econEmiUnit}>
+                        {copy.econ.emiUnit}
+                      </span>
+                      {row.interestPaidInr > 0 ? (
+                        <span className={styles.econEmiNote}>
+                          {copy.econ.interestTotal(
+                            formatInrCompact(row.interestPaidInr)
+                          )}
+                        </span>
+                      ) : null}
+                      {selected ? (
+                        <span className={styles.econEmiBadge}>
+                          {copy.econ.emiSelected}
+                        </span>
+                      ) : monthly > 0 ? (
+                        <span
+                          className={
+                            covers
+                              ? styles.econEmiCover
+                              : styles.econEmiShort
+                          }
+                        >
+                          {covers
+                            ? copy.econ.savingsCoverEmi
+                            : copy.econ.emiAboveSavings}
+                        </span>
+                      ) : null}
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
+          </QuantumFadeUp>
+        ) : null}
+
         {/* 25-year graph */}
         <QuantumFadeUp delay={0.1}>
           <div className={`${styles.glass3D} ${styles.econChartCard}`}>
@@ -307,9 +393,9 @@ export function QuantumEconomics({ data }: QuantumEconomicsProps) {
             </div>
 
             <svg
-              viewBox="0 0 560 168"
+              viewBox="0 0 560 148"
               width="100%"
-              height="168"
+              height="148"
               className={styles.econChartSvg}
               aria-hidden
             >
@@ -328,12 +414,12 @@ export function QuantumEconomics({ data }: QuantumEconomicsProps) {
                 x="40"
                 y={chart.zeroY}
                 width="506"
-                height={Math.max(0, 142 - chart.zeroY)}
+                height={Math.max(0, chart.plotBottom - chart.zeroY)}
                 fill="rgba(239,68,68,0.04)"
               />
 
               {[0.25, 0.5, 0.75].map((t) => {
-                const y = 20 + t * (168 - 20 - 26);
+                const y = 20 + t * (chart.plotBottom - 20);
                 return (
                   <line
                     key={t}
@@ -374,7 +460,7 @@ export function QuantumEconomics({ data }: QuantumEconomicsProps) {
                   x1={chart.breakX}
                   y1={18}
                   x2={chart.breakX}
-                  y2={142}
+                  y2={chart.plotBottom}
                   stroke="rgba(6,182,212,0.35)"
                   strokeWidth="1"
                   strokeDasharray="3 3"
@@ -427,15 +513,15 @@ export function QuantumEconomics({ data }: QuantumEconomicsProps) {
                 <g key={t.label}>
                   <line
                     x1={t.x}
-                    y1={142}
+                    y1={chart.plotBottom}
                     x2={t.x}
-                    y2={146}
+                    y2={chart.plotBottom + 4}
                     stroke="#64748b"
                     strokeWidth="1"
                   />
                   <text
                     x={t.x}
-                    y="158"
+                    y={chart.plotBottom + 16}
                     textAnchor="middle"
                     fill="#94a3b8"
                     fontSize="9"

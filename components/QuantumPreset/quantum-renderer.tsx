@@ -103,7 +103,7 @@ function QuantumDocument({
 
       <QuantumCover data={data} installerLogoUrl={installerLogoUrl} />
       <QuantumTelemetry data={data} />
-      <QuantumEconomics data={data} />
+      <QuantumEconomics data={data} pptInput={pptInput} />
       <QuantumGeneration data={data} pptInput={pptInput} />
       <QuantumHardware data={data} />
       <QuantumImpact data={data} />
