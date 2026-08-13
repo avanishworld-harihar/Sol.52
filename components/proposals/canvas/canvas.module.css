@@ -2587,262 +2587,230 @@
   font-size: 10pt;
 }
 
-.closingHero {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 16px;
-  max-width: 28ch;
-}
-
-/* --- Page 12: Cinematic Closing Styles --- */
+/* --- Page 12: Full-bleed dark closing --- */
 .closingPage {
-  padding: 10mm !important;
-  background: var(--canvas-wash) !important;
+  padding: 0 !important;
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  font-family: Inter, var(--sans);
   justify-content: stretch !important;
   align-items: stretch;
   overflow: hidden;
-}
-
-.closingCard {
-  background: var(--canvas-ink-deep); /* Deep Charcoal — immersive after light pages */
-  color: white;
-  border-radius: 16px;
-  padding: 36px 40px;
-  height: 100%;
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
   position: relative;
-  overflow: hidden;
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.2);
-  break-inside: avoid;
 }
 
-/* Subtle background texture for the dark card */
-.closingCard::before {
-  content: "";
+.closingHero {
+  height: 45%;
+  position: relative;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.closingHero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 40%;
+  opacity: 0.4;
+  mix-blend-mode: luminosity;
+  display: block;
+}
+
+.closingOverlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: radial-gradient(
-    circle at 100% 0%,
-    rgba(249, 115, 22, 0.15) 0%,
-    transparent 50%
-  );
-  z-index: 1;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0.1) 0%,
+    rgba(15, 23, 42, 0.8) 70%,
+    #0f172a 100%
+  ) !important;
   pointer-events: none;
 }
 
-.closingHeader,
-.finalStatsGrid,
-.closingFooter {
-  position: relative;
+.closingTitleBox {
+  position: absolute;
+  bottom: 0;
+  left: 40px;
+  right: 40px;
+  padding-bottom: 20px;
   z-index: 2;
 }
 
-.closingHeader {
-  max-width: 100%;
-}
-
 .closingEyebrow {
+  color: #ea580c !important;
   font-size: 0.85rem;
-  letter-spacing: 4px;
-  color: #f97316; /* Burnt Orange */
-  font-weight: 700;
+  letter-spacing: 5px;
   text-transform: uppercase;
-  display: block;
-  margin-bottom: 20px;
-}
-
-.closingTitle {
-  font-family: var(--display), "Playfair Display", Georgia, serif;
-  font-size: 2.35rem;
-  line-height: 1.15;
-  margin: 0 0 20px 0;
   font-weight: 700;
-  color: white;
+  display: block;
+  margin-bottom: 15px;
 }
 
-.closingSubtitle {
-  font-size: 1.05rem;
+.closingHeadline {
+  font-family: "Cormorant Garamond", var(--display);
+  font-size: 3.8rem;
+  line-height: 1.1;
+  font-weight: 300;
+  color: #ffffff !important;
+  margin: 0 0 15px;
+}
+
+.langHi .closingHeadline {
+  font-family: var(--font-noto-deva, "Noto Sans Devanagari"), "Cormorant Garamond", var(--display);
+  font-weight: 400;
+}
+
+.closingSubtext {
+  font-size: 1rem;
+  color: #94a3b8 !important;
   line-height: 1.6;
-  color: #cbd5e1;
-  max-width: 85%;
+  max-width: 80%;
   margin: 0;
 }
 
-/* Final Stats Grid */
-.finalStatsGrid {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.closingMetricsBanner {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  background: #1e293b !important;
+  border: 1px solid rgba(234, 88, 12, 0.2) !important;
+  border-left: 6px solid #ea580c !important;
+  margin: 24px 40px 0;
   border-radius: 12px;
-  padding: 28px 36px;
-  margin: 28px 0;
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  break-inside: avoid;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4) !important;
+  flex-shrink: 0;
 }
 
-.finalStatItem {
+.closingMetric {
+  padding: 22px 16px;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
   text-align: center;
   min-width: 0;
-  flex: 1 1 0;
 }
 
-.finalStatValue {
-  font-family: var(--display), "Playfair Display", Georgia, serif;
-  font-size: 2.1rem;
-  font-weight: 800;
-  color: #f97316;
-  margin-bottom: 5px;
-  letter-spacing: -0.02em;
+.closingMetric:last-child {
+  border-right: none;
+}
+
+.closingMetricValue {
+  font-size: 2.2rem;
+  color: #ea580c !important;
+  font-weight: 400;
   line-height: 1.1;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 10px rgba(234, 88, 12, 0.2);
+  overflow-wrap: break-word;
 }
 
-.finalStatLabel {
-  font-size: 0.75rem;
-  letter-spacing: 2px;
-  color: #94a3b8;
-  font-weight: 600;
+.closingMetricLabel {
+  font-size: 0.65rem;
+  color: #94a3b8 !important;
   text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: 600;
 }
 
-.finalStatDivider {
-  width: 1px;
-  height: 60px;
-  flex: 0 0 auto;
-  background: rgba(255, 255, 255, 0.1);
-}
-
-/* Footer & CTA */
-.closingFooter {
+.closingAuthGateway {
+  margin: auto 40px 48px;
+  padding-top: 28px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
   gap: 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-top: 28px;
 }
 
-.ctaBox h3 {
-  font-family: var(--display), "Playfair Display", Georgia, serif;
-  font-size: 1.35rem;
-  margin: 0 0 10px 0;
-  color: white;
-  font-weight: 700;
+.closingAuthIntro {
+  width: 40%;
+  min-width: 0;
 }
 
-.ctaBox p {
-  color: #94a3b8;
-  font-size: 0.95rem;
-  max-width: 300px;
-  margin: 0;
+.closingAuthIntro h3 {
+  font-size: 1.5rem;
+  color: #ffffff !important;
+  margin: 0 0 10px;
+  font-weight: 400;
+  font-family: "Cormorant Garamond", var(--display);
+}
+
+.closingAuthIntro p {
+  font-size: 0.8rem;
+  color: #64748b !important;
   line-height: 1.5;
+  margin: 0;
 }
 
-.signatureBlock {
+.closingSigGrid {
   display: flex;
-  gap: 40px;
-  text-align: right;
+  gap: 30px;
+  width: 55%;
+  min-width: 0;
+}
+
+.closingSigBlock {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.closingSigPad {
+  height: 60px;
+  display: flex;
   align-items: flex-end;
+  padding-bottom: 8px;
 }
 
-.contactDetails {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  text-align: right;
+.closingSigLogo {
+  max-height: 36px;
+  max-width: 120px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  opacity: 0.85;
 }
 
-.contactDetails strong {
-  font-size: 1.15rem;
-  letter-spacing: 1px;
-  color: white;
-  font-weight: 700;
+.closingGhostMark {
+  font-family: "Cormorant Garamond", var(--display);
+  font-size: 1.5rem;
+  color: rgba(255, 255, 255, 0.2);
 }
 
-.contactDetails span {
-  font-size: 0.9rem;
-  color: #cbd5e1;
+.closingSigLine {
+  height: 1px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.3) !important;
+  margin-bottom: 12px;
 }
 
-.authSignature {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  width: 150px;
+.closingSigName {
+  font-size: 1rem;
+  color: #ffffff !important;
+  font-weight: 500;
+  margin-bottom: 4px;
+  overflow-wrap: break-word;
 }
 
-.signLine {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-  margin-bottom: 8px;
-  height: 0;
-  margin-top: 36px;
-}
-
-.authSignature span {
-  font-size: 0.75rem;
-  color: #64748b;
-  letter-spacing: 1px;
-  text-align: center;
+.closingSigTitle {
+  font-size: 0.65rem;
+  color: #ea580c !important;
   text-transform: uppercase;
-  font-weight: 600;
+  letter-spacing: 2px;
 }
 
 .closingPageNum {
   position: absolute;
-  right: 28px;
-  bottom: 16px;
+  right: 40px;
+  bottom: 18px;
   z-index: 2;
   font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
+  font-weight: 600;
+  letter-spacing: 2px;
   text-transform: uppercase;
   color: #64748b;
-}
-
-.closingBody {
-  margin: 0;
-  font-size: 14pt;
-  color: var(--muted);
-  line-height: 1.5;
-}
-
-.closingCta {
-  appearance: none;
-  border: 0;
-  align-self: flex-start;
-  margin-top: 12px;
-  background: var(--accent);
-  color: #fff;
-  font-family: var(--sans);
-  font-size: 12pt;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  padding: 14px 28px;
-  border-radius: 999px;
-  cursor: pointer;
-}
-
-.closingCta:hover {
-  background: var(--accent-soft);
-}
-
-.closingContact {
-  margin-top: auto;
-  padding-top: 24px;
 }
 
 .warrantyTable {
@@ -2938,6 +2906,44 @@
   .finalStatDivider {
     width: 100%;
     height: 1px;
+  }
+
+  .closingHero {
+    height: 220px;
+  }
+
+  .closingHeadline {
+    font-size: 2.2rem;
+  }
+
+  .closingTitleBox {
+    left: 20px;
+    right: 20px;
+  }
+
+  .closingMetricsBanner {
+    margin: 16px 16px 0;
+    grid-template-columns: 1fr;
+  }
+
+  .closingMetric {
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .closingMetric:last-child {
+    border-bottom: none;
+  }
+
+  .closingAuthGateway {
+    flex-direction: column;
+    align-items: stretch;
+    margin: 20px 16px 40px;
+  }
+
+  .closingAuthIntro,
+  .closingSigGrid {
+    width: 100%;
   }
 
   .closingFooter,
@@ -3118,8 +3124,21 @@
   }
 
   .closingPage {
-    padding: 8mm !important;
-    background: var(--canvas-wash) !important;
+    padding: 0 !important;
+    background-color: #0f172a !important;
+  }
+
+  .closingPage,
+  .closingPage *,
+  .closingHero img,
+  .closingOverlay,
+  .closingMetricsBanner {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .closingHeadline {
+    font-size: 3.2rem;
   }
 
   .closingCard {
@@ -3210,8 +3229,8 @@
 
   .hardwareImg,
   .coverHeroImage,
-  .closingCard,
-  .finalStatsGrid,
+  .closingHero img,
+  .closingMetricsBanner,
   .closingPage,
   .impactMetricsBar,
   .heroImpactCard {

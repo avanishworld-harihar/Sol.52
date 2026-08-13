@@ -953,31 +953,14 @@ export function CanvasProposalRenderer({
           systemValue={capacityKw}
           systemLabel={c.pages.closingSystemLabel}
           ctaTitle={c.pages.closingCtaTitle}
-          ctaBody={c.pages.closingCtaBody}
+          ctaBody={c.pages.closingCtaBody(closing.installerName || brand)}
+          customerName={customer}
           companyName={closingBrand.showName ? closing.installerName || brand : ""}
           logoUrl={closingBrand.showLogo ? logoUrl : undefined}
-          tagline={
-            closingBrand.showTagline
-              ? closing.brandTagline || data.meta.brandTagline
-              : undefined
-          }
-          address={closing.address || data.meta.brandAddress}
-          gstNumber={closing.gstNumber || data.meta.brandGst}
           contactPerson={closing.contactPerson}
-          phone={
-            closing.contactLine
-              ?.split(/[·•|]/)
-              .map((p) => p.trim())
-              .find((p) => p && !p.includes("@")) || undefined
-          }
-          email={
-            closing.contactLine
-              ?.split(/[·•|]/)
-              .map((p) => p.trim())
-              .find((p) => p.includes("@")) || undefined
-          }
-          contactLine={closing.contactLine || undefined}
-          signatureLabel={c.pages.closingSignature}
+          clientSignLabel={c.pages.closingClientSign}
+          companySignLabel={c.pages.closingCompanySign}
+          heroAlt={c.pages.closingHeroAlt}
           pageNo="12 / 12"
         />
       </div>

@@ -151,18 +151,18 @@ export type ClosingPageProps = {
   systemLabel: string;
   ctaTitle: string;
   ctaBody: string;
+  customerName: string;
   companyName: string;
   logoUrl?: string;
-  tagline?: string;
-  address?: string;
-  gstNumber?: string;
   contactPerson?: string;
-  phone?: string;
-  email?: string;
-  contactLine?: string;
-  signatureLabel: string;
+  clientSignLabel: string;
+  companySignLabel: string;
+  heroAlt?: string;
   pageNo?: string;
 };
+
+const CANVAS_CLOSING_PHOTO =
+  "/assets/proposals/canvas-closing-solar-architecture.jpg";
 
 export function ClosingPage({
   eyebrow,
@@ -177,83 +177,92 @@ export function ClosingPage({
   systemLabel,
   ctaTitle,
   ctaBody,
+  customerName,
   companyName,
   logoUrl,
-  tagline,
-  address,
-  gstNumber,
   contactPerson,
-  phone,
-  email,
-  contactLine,
-  signatureLabel,
+  clientSignLabel,
+  companySignLabel,
+  heroAlt = "Solar architecture",
   pageNo = "12 / 12",
 }: ClosingPageProps) {
+  const companyMark =
+    (companyName || "Harihar").trim().split(/\s+/).filter(Boolean)[0] ||
+    "Harihar";
+
   return (
     <section
       className={`${styles.page} ${styles.pageClosing} ${styles.closingPage} ${styles.canvasTheme}`.trim()}
     >
-      <div className={styles.closingCard}>
-        <div className={styles.closingHeader}>
+      <div className={styles.closingHero}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={CANVAS_CLOSING_PHOTO} alt={heroAlt} />
+        <div className={styles.closingOverlay} aria-hidden />
+        <div className={styles.closingTitleBox}>
           <span className={styles.closingEyebrow}>{eyebrow}</span>
-          <h1 className={styles.closingTitle}>
+          <h1 className={styles.closingHeadline}>
             {titleLine1}
             <br />
             {titleLine2}
           </h1>
-          <p className={styles.closingSubtitle}>{subtitle}</p>
+          <p className={styles.closingSubtext}>{subtitle}</p>
+        </div>
+      </div>
+
+      <div className={styles.closingMetricsBanner}>
+        <div className={styles.closingMetric}>
+          <span className={styles.closingMetricValue}>{lifetimeValue}</span>
+          <span className={styles.closingMetricLabel}>{lifetimeLabel}</span>
+        </div>
+        <div className={styles.closingMetric}>
+          <span className={styles.closingMetricValue}>{monthlyValue}</span>
+          <span className={styles.closingMetricLabel}>{monthlyLabel}</span>
+        </div>
+        <div className={styles.closingMetric}>
+          <span className={styles.closingMetricValue}>{systemValue}</span>
+          <span className={styles.closingMetricLabel}>{systemLabel}</span>
+        </div>
+      </div>
+
+      <div className={styles.closingAuthGateway}>
+        <div className={styles.closingAuthIntro}>
+          <h3>{ctaTitle}</h3>
+          <p>{ctaBody}</p>
         </div>
 
-        <div className={styles.finalStatsGrid}>
-          <div className={styles.finalStatItem}>
-            <span className={styles.finalStatValue}>{lifetimeValue}</span>
-            <span className={styles.finalStatLabel}>{lifetimeLabel}</span>
-          </div>
-          <div className={styles.finalStatDivider} aria-hidden />
-          <div className={styles.finalStatItem}>
-            <span className={styles.finalStatValue}>{monthlyValue}</span>
-            <span className={styles.finalStatLabel}>{monthlyLabel}</span>
-          </div>
-          <div className={styles.finalStatDivider} aria-hidden />
-          <div className={styles.finalStatItem}>
-            <span className={styles.finalStatValue}>{systemValue}</span>
-            <span className={styles.finalStatLabel}>{systemLabel}</span>
-          </div>
-        </div>
-
-        <div className={styles.closingFooter}>
-          <div className={styles.ctaBox}>
-            <h3>{ctaTitle}</h3>
-            <p>{ctaBody}</p>
+        <div className={styles.closingSigGrid}>
+          <div className={styles.closingSigBlock}>
+            <div className={styles.closingSigPad} aria-hidden />
+            <div className={styles.closingSigLine} />
+            <span className={styles.closingSigName}>{customerName}</span>
+            <span className={styles.closingSigTitle}>{clientSignLabel}</span>
           </div>
 
-          <div className={styles.signatureBlock}>
-            <div className={styles.contactDetails}>
+          <div className={styles.closingSigBlock}>
+            <div className={styles.closingSigPad}>
               {logoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={logoUrl} alt={companyName || "Company"} style={{ maxHeight: 40, marginBottom: 6 }} />
-              ) : null}
-              {companyName ? <strong>{companyName}</strong> : null}
-              {tagline ? <span>{tagline}</span> : null}
-              {phone ? <span>{phone}</span> : null}
-              {email ? <span>{email}</span> : null}
-              {!phone && !email && contactLine ? (
-                <span>{contactLine}</span>
-              ) : null}
-              {address ? <span>{address}</span> : null}
-              {gstNumber ? <span>GSTIN {gstNumber}</span> : null}
+                <img
+                  src={logoUrl}
+                  alt=""
+                  className={styles.closingSigLogo}
+                />
+              ) : (
+                <span className={styles.closingGhostMark}>{companyMark}</span>
+              )}
             </div>
-            <div className={styles.authSignature}>
-              <div className={styles.signLine} aria-hidden />
-              <span>{contactPerson ? `${signatureLabel} · ${contactPerson}` : signatureLabel}</span>
-            </div>
+            <div className={styles.closingSigLine} />
+            <span className={styles.closingSigName}>
+              {contactPerson || companyName || companyMark}
+            </span>
+            <span className={styles.closingSigTitle}>{companySignLabel}</span>
           </div>
         </div>
-
-        {pageNo ? (
-          <span className={styles.closingPageNum}>{pageNo}</span>
-        ) : null}
       </div>
+
+      {pageNo ? (
+        <span className={styles.closingPageNum}>{pageNo}</span>
+      ) : null}
     </section>
   );
 }
