@@ -19,8 +19,8 @@ export function getCanvasCopy(lang: CanvasLang) {
         ? "प्रीमियम रूफटॉप आर्किटेक्चर"
         : "Premium Rooftop Architecture",
       heroAlt: hi
-        ? "लक्ज़री भारतीय छत — सोलर प्लांट, मिनी गार्डन और बच्चे"
-        : "Luxury Indian rooftop with solar plant, mini garden, and children",
+        ? "भारतीय RCC छत — 8–9 फुट ऊँचा सोलर प्लांट, नीचे बैठक और मिनी गार्डन"
+        : "Indian RCC rooftop with elevated 8–9 ft solar plant, sitting area and mini garden below",
       capacity: hi ? "सिस्टम क्षमता" : "System Capacity",
       yield: hi ? "वार्षिक उत्पादन अनुमान" : "Annual Yield Est.",
       impact: hi ? "पारिस्थितिक प्रभाव" : "Ecological Impact",
