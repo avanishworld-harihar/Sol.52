@@ -442,6 +442,7 @@ export function CanvasProposalRenderer({
                 : "CO₂ avoided"
           }
           proposalDate={proposalDateLabel}
+          heroAlt={c.cover.heroAlt}
         />
 
         {/* Page 02: Bill / Requirement */}
