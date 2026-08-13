@@ -409,8 +409,8 @@ export function getQuantumCopy(lang: QuantumLang) {
         ? "पूर्ण नियम व शर्तें अगले पृष्ठों पर जारी हैं।"
         : "Full terms & conditions continue on the next pages.",
       sceneAlt: hi
-        ? "भारतीय घर की छत — एलिवेटेड सोलर प्लांट के नीचे सोफा, मिनी गार्डन, पति-पत्नी दिन के समय बैठे हुए"
-        : "Indian home terrace — elevated solar plant, sofa and mini garden below, husband and wife sitting in daytime",
+        ? "भारतीय घर की छत — ऊपर से एलिवेटेड सोलर प्लांट और मिनी गार्डन"
+        : "Indian home rooftop — elevated solar plant and mini garden from above"
       signatures: hi ? "हस्ताक्षर" : "Signatures",
       customer: hi ? "ग्राहक" : "Customer",
       installer: hi ? "इंस्टॉलर" : "Installer",
