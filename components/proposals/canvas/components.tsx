@@ -17,7 +17,9 @@ import styles from "./canvas.module.css";
 
 export { resolveHardwareImageSrc } from "./hardware-assets";
 
-/* ── CoverPage — Page 01 Pure Minimalist ─────────────────────── */
+/* ── CoverPage — Page 01 Magazine Cover ──────────────────────── */
+
+const CANVAS_COVER_PHOTO = "/assets/proposals/canvas-cover-solar-home.jpg";
 
 export type CoverPageProps = {
   brandName: string;
@@ -34,6 +36,7 @@ export type CoverPageProps = {
   impactLabel?: string;
   impactValue?: string;
   proposalDate?: string;
+  heroAlt?: string;
 };
 
 function splitMetric(raw: string): { value: string; unit?: string } {
@@ -57,8 +60,20 @@ function CoverMetric({
       <span className={styles.coverMetricLabel}>{label}</span>
       <span className={styles.coverMetricValue}>
         {value}
-        {unit ? <span>{unit}</span> : null}
+        {unit ? <span className={styles.coverMetricUnit}>{unit}</span> : null}
       </span>
+    </div>
+  );
+}
+
+function CoverWordmark({ brandName }: { brandName: string }) {
+  const parts = brandName.trim().split(/\s+/).filter(Boolean);
+  const primary = (parts[0] || "HARIHAR").toUpperCase();
+  const secondary = (parts.slice(1).join(" ") || "SOLAR").toUpperCase();
+  return (
+    <div className={styles.coverWordmark}>
+      <span className={styles.coverWordmarkPrimary}>{primary}</span>
+      <span className={styles.coverWordmarkSecondary}>{secondary}</span>
     </div>
   );
 }
@@ -77,39 +92,40 @@ export function CoverPage({
   impactLabel = "Ecological Impact",
   impactValue = "CO₂ avoided",
   proposalDate,
+  heroAlt = "Solar rooftop home",
 }: CoverPageProps) {
-  const hasDevanagari = /[\u0900-\u097F]/.test(brandName);
-  const brandLockup = hasDevanagari ? brandName : brandName.toUpperCase();
-  const showBrandText = showName || !logoUrl;
-
   return (
     <section
       className={`${styles.page} ${styles.pageCover} ${styles.coverPage} ${styles.canvasTheme}`.trim()}
     >
-      <div className={styles.coverSolarAura} aria-hidden />
+      <div className={styles.coverHero}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={CANVAS_COVER_PHOTO}
+          alt={heroAlt}
+          className={styles.coverHeroImage}
+        />
+        <div className={styles.coverHeroOverlay} aria-hidden />
+      </div>
 
-      <div className={styles.coverContent}>
-        <header className={styles.coverMinimalHeader}>
-          <div className={styles.coverBrandName}>
-            {logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={logoUrl} alt={brandName} className={styles.coverLogoImg} />
-            ) : (
-              <span className={styles.coverBrandDot} aria-hidden />
-            )}
-            {showBrandText ? brandLockup : null}
-          </div>
-          {proposalDate ? (
-            <div className={styles.coverDateText}>{proposalDate}</div>
+      <header className={styles.coverMagHeader}>
+        <div className={styles.coverLogoBadge}>
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logoUrl} alt={brandName} className={styles.coverLogoImg} />
+          ) : showName ? (
+            <CoverWordmark brandName={brandName} />
           ) : null}
-        </header>
-
-        <div className={styles.coverTitleCenter}>
-          <span className={styles.coverEyebrow}>{eyebrow}</span>
-          <h1 className={styles.clientName}>{customerName}</h1>
-          <h2 className={styles.coverSubtitle}>{subtitle}</h2>
         </div>
+        {proposalDate ? (
+          <div className={styles.coverDateText}>{proposalDate}</div>
+        ) : null}
+      </header>
 
+      <div className={styles.coverContentCard}>
+        <span className={styles.coverEyebrow}>{eyebrow}</span>
+        <h1 className={styles.clientName}>{customerName}</h1>
+        <h2 className={styles.coverSubtitle}>{subtitle}</h2>
         <div className={styles.coverMetrics}>
           <CoverMetric label={capacityLabel} raw={systemKw} />
           <CoverMetric label={yieldLabel} raw={annualYield} />

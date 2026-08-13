@@ -18,6 +18,7 @@ export function getCanvasCopy(lang: CanvasLang) {
       subtitle: hi
         ? "प्रीमियम रूफटॉप आर्किटेक्चर"
         : "Premium Rooftop Architecture",
+      heroAlt: hi ? "सोलर रूफटॉप घर" : "Indian solar rooftop home",
       capacity: hi ? "सिस्टम क्षमता" : "System Capacity",
       yield: hi ? "वार्षिक उत्पादन अनुमान" : "Annual Yield Est.",
       impact: hi ? "पारिस्थितिक प्रभाव" : "Ecological Impact",
