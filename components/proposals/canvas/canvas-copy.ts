@@ -14,14 +14,13 @@ export function getCanvasCopy(lang: CanvasLang) {
     },
     cover: {
       brandFallback: "HARIHAR SOLAR",
-      badge: hi ? "सौर प्रस्ताव" : "Solar proposal",
-      title: "Investment Blueprint",
-      sub: hi
-        ? "आपकी छत के लिए स्पष्ट वित्तीय और तकनीकी योजना।"
-        : "A clear financial and technical plan shaped for your rooftop.",
-      lifetime: hi ? "आजीवन लाभ" : "Lifetime wealth",
-      system: hi ? "सिस्टम" : "System",
-      preparedFor: hi ? "के लिए तैयार" : "Prepared for",
+      eyebrow: hi ? "निजी ऊर्जा पोर्टफोलियो" : "Private Energy Portfolio",
+      subtitle: hi
+        ? "प्रीमियम रूफटॉप आर्किटेक्चर"
+        : "Premium Rooftop Architecture",
+      capacity: hi ? "सिस्टम क्षमता" : "System Capacity",
+      yield: hi ? "वार्षिक उत्पादन अनुमान" : "Annual Yield Est.",
+      impact: hi ? "पारिस्थितिक प्रभाव" : "Ecological Impact",
     },
     pages: {
       bill: hi ? "बिल ऑडिट और ब्रेकडाउन" : "Bill Audit & Breakdown",

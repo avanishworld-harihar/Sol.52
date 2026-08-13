@@ -418,24 +418,20 @@ export function CanvasProposalRenderer({
           brandName={brand}
           logoUrl={coverBrand.showLogo ? logoUrl : undefined}
           showName={coverBrand.showName}
-          tagline={coverBrand.showTagline ? data.meta.brandTagline : undefined}
           customerName={customer}
-          locationLine={location || undefined}
-          documentTitle={
-            isHi ? "आर्किटेक्चरल एनर्जी ब्लूप्रिंट" : "Architectural Energy Blueprint"
-          }
-          preparedForLabel={
-            isHi ? "विशेष रूप से तैयार" : "Prepared exclusively for"
-          }
+          eyebrow={c.cover.eyebrow}
+          subtitle={c.cover.subtitle}
           systemKw={capacityKw}
           annualYield={
             generationUnits > 0
-              ? `${generationUnits.toLocaleString("en-IN")} Units`
+              ? `${generationUnits.toLocaleString("en-IN")} ${isHi ? "यूनिट" : "Units"}`
               : generation !== "—"
                 ? generation
                 : "—"
           }
-          impactLabel={isHi ? "स्वच्छ ऊर्जा प्रभाव" : "Clean Energy Impact"}
+          capacityLabel={c.cover.capacity}
+          yieldLabel={c.cover.yield}
+          impactLabel={c.cover.impact}
           impactValue={
             impact.co2Tons > 0
               ? isHi
@@ -445,11 +441,7 @@ export function CanvasProposalRenderer({
                 ? "CO₂ कटौती"
                 : "CO₂ avoided"
           }
-          proposalDate={
-            isHi ? `प्रस्ताव तिथि · ${proposalDateLabel}` : `Proposal date · ${proposalDateLabel}`
-          }
-          pageNo="01 / 12"
-          footerBrand={footerBrandPres.showName ? footerBrandPres.installerName : undefined}
+          proposalDate={proposalDateLabel}
         />
 
         {/* Page 02: Bill / Requirement */}

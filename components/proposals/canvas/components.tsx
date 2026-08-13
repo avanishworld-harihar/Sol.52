@@ -17,100 +17,105 @@ import styles from "./canvas.module.css";
 
 export { resolveHardwareImageSrc } from "./hardware-assets";
 
-/* ── CoverPage — Page 01 Architectural Editorial ─────────────── */
+/* ── CoverPage — Page 01 Pure Minimalist ─────────────────────── */
 
 export type CoverPageProps = {
   brandName: string;
   logoUrl?: string;
   /** When false, hide text name/mark (logo-only branding). */
   showName?: boolean;
-  tagline?: string;
   customerName: string;
-  locationLine?: string;
-  documentTitle?: string;
-  preparedForLabel?: string;
+  eyebrow?: string;
+  subtitle?: string;
   systemKw: string;
   annualYield: string;
+  capacityLabel?: string;
+  yieldLabel?: string;
   impactLabel?: string;
   impactValue?: string;
   proposalDate?: string;
-  pageNo?: string;
-  footerBrand?: string;
 };
+
+function splitMetric(raw: string): { value: string; unit?: string } {
+  const text = raw.trim();
+  if (!text || text === "—") return { value: text || "—" };
+  const match = text.match(/^([~≈]?\s*[\d,.]+)\s+(.+)$/u);
+  if (!match) return { value: text };
+  return { value: match[1]!.replace(/\s+/g, ""), unit: match[2] };
+}
+
+function CoverMetric({
+  label,
+  raw,
+}: {
+  label: string;
+  raw: string;
+}) {
+  const { value, unit } = splitMetric(raw);
+  return (
+    <div className={styles.coverMetricItem}>
+      <span className={styles.coverMetricLabel}>{label}</span>
+      <span className={styles.coverMetricValue}>
+        {value}
+        {unit ? <span>{unit}</span> : null}
+      </span>
+    </div>
+  );
+}
 
 export function CoverPage({
   brandName,
   logoUrl,
   showName = true,
-  tagline,
   customerName,
-  locationLine,
-  documentTitle = "Architectural Energy Blueprint",
-  preparedForLabel = "Prepared exclusively for",
+  eyebrow = "Private Energy Portfolio",
+  subtitle = "Premium Rooftop Architecture",
   systemKw,
   annualYield,
-  impactLabel = "Clean Energy Impact",
+  capacityLabel = "System Capacity",
+  yieldLabel = "Annual Yield Est.",
+  impactLabel = "Ecological Impact",
   impactValue = "CO₂ avoided",
   proposalDate,
-  pageNo = "01 / 12",
-  footerBrand,
 }: CoverPageProps) {
-  const parts = brandName.trim().split(/\s+/).filter(Boolean);
-  const logoMark = (parts[0] || "SOLAR").toUpperCase();
-  const logoSub = (parts.slice(1).join(" ") || "PARTNER").toUpperCase();
+  const hasDevanagari = /[\u0900-\u097F]/.test(brandName);
+  const brandLockup = hasDevanagari ? brandName : brandName.toUpperCase();
+  const showBrandText = showName || !logoUrl;
 
   return (
     <section
       className={`${styles.page} ${styles.pageCover} ${styles.coverPage} ${styles.canvasTheme}`.trim()}
     >
-      <div className={styles.coverHeader}>
-        {logoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={logoUrl} alt={brandName} className={styles.coverLogoImg} />
-        ) : showName ? (
-          <>
-            <div className={styles.logoMark}>{logoMark}</div>
-            <div className={styles.logoSub}>{logoSub}</div>
-          </>
-        ) : null}
-        {showName && logoUrl ? (
-          <div className={styles.logoSub} style={{ marginTop: 8 }}>
-            {brandName}
+      <div className={styles.coverSolarAura} aria-hidden />
+
+      <div className={styles.coverContent}>
+        <header className={styles.coverMinimalHeader}>
+          <div className={styles.coverBrandName}>
+            {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logoUrl} alt={brandName} className={styles.coverLogoImg} />
+            ) : (
+              <span className={styles.coverBrandDot} aria-hidden />
+            )}
+            {showBrandText ? brandLockup : null}
           </div>
-        ) : null}
-        {tagline ? <p className={styles.coverDate}>{tagline}</p> : null}
-      </div>
+          {proposalDate ? (
+            <div className={styles.coverDateText}>{proposalDate}</div>
+          ) : null}
+        </header>
 
-        <div className={styles.coverCenter}>
-        <span className={styles.preparedFor}>{preparedForLabel}</span>
-        <h1 className={styles.clientName}>{customerName}</h1>
-        <div className={styles.coverDivider} aria-hidden />
-        <h2 className={styles.documentTitle}>{documentTitle}</h2>
-        {locationLine ? <p className={styles.location}>{locationLine}</p> : null}
-        {proposalDate ? (
-          <p className={styles.coverDate}>{proposalDate}</p>
-        ) : null}
-      </div>
+        <div className={styles.coverTitleCenter}>
+          <span className={styles.coverEyebrow}>{eyebrow}</span>
+          <h1 className={styles.clientName}>{customerName}</h1>
+          <h2 className={styles.coverSubtitle}>{subtitle}</h2>
+        </div>
 
-      <div className={styles.coverFooter}>
-        <div className={styles.specBox}>
-          <span className={styles.specLabel}>System Capacity</span>
-          <span className={styles.specValue}>{systemKw}</span>
-        </div>
-        <div className={styles.specBox}>
-          <span className={styles.specLabel}>Annual Yield</span>
-          <span className={styles.specValue}>{annualYield}</span>
-        </div>
-        <div className={styles.specBox}>
-          <span className={styles.specLabel}>{impactLabel}</span>
-          <span className={styles.specValue}>{impactValue}</span>
+        <div className={styles.coverMetrics}>
+          <CoverMetric label={capacityLabel} raw={systemKw} />
+          <CoverMetric label={yieldLabel} raw={annualYield} />
+          <CoverMetric label={impactLabel} raw={impactValue} />
         </div>
       </div>
-
-      <footer className={styles.coverPageFooter}>
-        <span>{footerBrand || (showName ? brandName : "")}</span>
-        <span>{pageNo}</span>
-      </footer>
     </section>
   );
 }
