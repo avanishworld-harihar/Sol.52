@@ -75,11 +75,19 @@
     min-height: 0 !important;
   }
 
+  .authScene {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+  }
+
   .coverHero,
   .coverHeroImg,
   .coverHeroFade,
   .coverLogoBadge,
-  .coverFolio {
+  .coverFolio,
+  .authScene,
+  .authSceneImg,
+  .authSceneFade {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
@@ -2286,6 +2294,48 @@
   color: #67e8f9;
 }
 
+.authScene {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 132px;
+  margin: 0 0 10px;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid rgba(6, 182, 212, 0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 0 1px rgba(6, 182, 212, 0.1),
+    0 10px 28px rgba(0, 0, 0, 0.35);
+  background: #030712;
+}
+
+.authSceneImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 48% 62%;
+  display: block;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.authSceneFade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(7, 11, 20, 0.22) 0%,
+    transparent 26%,
+    transparent 68%,
+    rgba(7, 11, 20, 0.42) 100%
+  );
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
 .authGateway {
   border-color: rgba(148, 180, 200, 0.35) !important;
   background: linear-gradient(
@@ -2299,7 +2349,8 @@
     0 10px 28px rgba(0, 0, 0, 0.4),
     0 0 0 1px rgba(6, 182, 212, 0.16) !important;
   padding: 14px 18px 12px !important;
-  margin-top: auto;
+  margin-top: 0;
+  flex: 0 0 auto;
 }
 
 .authGatewayTitle {
@@ -3451,6 +3502,12 @@
     font-size: 0.68rem;
   }
 
+  .authScene {
+    flex: 0 0 auto;
+    height: min(200px, 42vw);
+    min-height: 140px;
+  }
+
   .coverFolio {
     margin: -28px 12px 12px;
     padding: 14px 14px 12px;
@@ -3720,6 +3777,12 @@
 
   .econKpiValue {
     font-size: 1.05rem;
+  }
+
+  .authScene {
+    flex: 0 0 auto;
+    height: min(168px, 38vw);
+    min-height: 120px;
   }
 
   .authGateway {

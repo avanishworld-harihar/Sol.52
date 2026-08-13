@@ -21,6 +21,8 @@ import { useQuantumLang } from "./quantum-lang-context";
 import type { QuantumCopy } from "./quantum-copy";
 import styles from "./Quantum.module.css";
 
+const PAY_TERRACE_SRC = "/assets/proposals/quantum-pay-terrace-day.jpg";
+
 export type QuantumAuthorizationProps = {
   data: ProposalData;
 };
@@ -288,6 +290,18 @@ export function QuantumAuthorization({ data }: QuantumAuthorizationProps) {
           ))}
         </ul>
         <p className={styles.payRulesFoot}>{copy.pay.rulesFoot}</p>
+      </div>
+
+      <div className={styles.authScene}>
+        {/* eslint-disable-next-line @next/next/no-img-element -- print A4 static asset */}
+        <img
+          className={styles.authSceneImg}
+          src={PAY_TERRACE_SRC}
+          alt={copy.pay.sceneAlt}
+          width={1536}
+          height={1024}
+        />
+        <div className={styles.authSceneFade} aria-hidden />
       </div>
 
       <div className={`${styles.glass3D} ${styles.authGateway}`}>
