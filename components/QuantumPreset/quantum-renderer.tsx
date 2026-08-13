@@ -3,7 +3,7 @@
 /**
  * Quantum renderer — Cinematic Neo-Glass residential proposal.
  * Preset id: residential_quantum
- * Pages: Cover → Telemetry → Economics → Generation → Hardware → Impact → Payment → Terms ×2
+ * Pages: Cover → Bill Audit (bill-based) → Telemetry → Economics → Generation → Hardware → Impact → Payment → Terms ×2
  *
  * DEVELOPMENT LOCKED — see `lib/quantum-proposal-lock.ts`. Do not edit for other presets.
  */
@@ -12,6 +12,7 @@ import { useRef, useState } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { QuantumCover } from "./QuantumCover";
+import { QuantumBillAudit } from "./QuantumBillAudit";
 import { QuantumTelemetry } from "./QuantumTelemetry";
 import { QuantumEconomics } from "./QuantumEconomics";
 import { QuantumGeneration } from "./QuantumGeneration";
@@ -21,6 +22,7 @@ import { QuantumAuthorization } from "./QuantumAuthorization";
 import { QuantumTermsPage1, QuantumTermsPage2 } from "./QuantumTerms";
 import { QuantumLangProvider, useQuantumLang } from "./quantum-lang-context";
 import { getQuantumCopy, type QuantumLang } from "./quantum-copy";
+import { isQuantumBillBased } from "./quantum-brand";
 import styles from "./Quantum.module.css";
 import {
   buildAtelierProposalPdf,
@@ -102,6 +104,9 @@ function QuantumDocument({
       </div>
 
       <QuantumCover data={data} installerLogoUrl={installerLogoUrl} />
+      {isQuantumBillBased(data, pptInput) ? (
+        <QuantumBillAudit data={data} />
+      ) : null}
       <QuantumTelemetry data={data} />
       <QuantumEconomics data={data} pptInput={pptInput} />
       <QuantumGeneration data={data} pptInput={pptInput} />
