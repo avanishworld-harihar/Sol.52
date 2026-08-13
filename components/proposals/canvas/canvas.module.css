@@ -2610,9 +2610,9 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 52% 38%;
-  opacity: 0.4;
-  mix-blend-mode: luminosity;
+  object-position: 50% 32%;
+  opacity: 0.88;
+  mix-blend-mode: normal;
   display: block;
 }
 
