@@ -7,9 +7,8 @@
 
 import type { ProposalData } from "@/lib/proposal-data";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
-import { isProposalBillAuditBacked } from "@/lib/proposal-bill-audit-eligibility";
 import { formatInr, formatInrCompact } from "@/components/proposals/_shared/formatters";
-import { QUANTUM_SPECIFIC_YIELD } from "./quantum-brand";
+import { QUANTUM_SPECIFIC_YIELD, isQuantumBillBased } from "./quantum-brand";
 import { buildQuantumForecastMonths } from "./quantum-generation-forecast";
 import { QuantumAtmosphere } from "./QuantumAtmosphere";
 import { QuantumGrowBar } from "./quantum-motion";
@@ -37,11 +36,7 @@ export function QuantumGeneration({ data, pptInput }: QuantumGenerationProps) {
         ? data.economics.monthlySavingsInr * 12
         : 0;
 
-  const billBased = Boolean(
-    pptInput &&
-      isProposalBillAuditBacked(pptInput) &&
-      data.bill.months.some((m) => m.units > 0)
-  );
+  const billBased = isQuantumBillBased(data, pptInput);
 
   const months = buildQuantumForecastMonths({
     annualGenUnits: annualGen,

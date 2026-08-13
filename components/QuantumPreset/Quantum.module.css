@@ -2611,12 +2611,186 @@
   .engSvgDark,
   .engChip,
   .engArchNode,
+  .billAuditBar,
+  .billAuditBarPeak,
+  .billAuditTableWrap,
   .genBarFill,
   .genBarFillBill,
   .genChartCard {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
+}
+
+/* ─── Bill audit (bill-based only) ────────────────────────────────────────── */
+
+.billAuditPage {
+  gap: 0;
+  justify-content: flex-start;
+}
+
+.billAuditPage .pageHeader {
+  margin-bottom: 8px;
+  padding-bottom: 10px;
+}
+
+.billAuditPage .pageHeader h2 {
+  font-size: 2.15rem;
+}
+
+.billAuditLead {
+  margin: 0 0 10px;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: #cbd5e1;
+  max-width: 48em;
+}
+
+.billAuditKpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.billAuditKpi {
+  padding: 10px 12px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.billAuditKpi strong {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.15;
+}
+
+.billAuditKpi em {
+  font-style: normal;
+  font-size: 0.68rem;
+  color: #94a3b8;
+}
+
+.billAuditChartCard {
+  padding: 10px 12px 8px !important;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.billAuditChart {
+  display: grid;
+  gap: 6px;
+  align-items: end;
+  min-height: 110px;
+}
+
+.billAuditBarCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.billAuditBarTrack {
+  width: 100%;
+  height: 88px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.billAuditBar {
+  width: 100%;
+  max-width: 18px;
+  border-radius: 3px 3px 0 0;
+  background: linear-gradient(180deg, #67e8f9 0%, #0e7490 100%);
+}
+
+.billAuditBarPeak {
+  background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.28);
+}
+
+.billAuditBarCol span {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.billAuditTableWrap {
+  padding: 8px 10px 6px !important;
+  overflow-x: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.billAuditTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.72rem;
+}
+
+.billAuditTable th {
+  text-align: left;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #06b6d4;
+  font-weight: 700;
+  padding: 5px 6px;
+  border-bottom: 1px solid rgba(6, 182, 212, 0.28);
+}
+
+.billAuditTable td {
+  padding: 4px 6px;
+  color: #e2e8f0;
+  border-bottom: 1px solid rgba(148, 180, 200, 0.1);
+  white-space: nowrap;
+}
+
+.billAuditPeak {
+  font-style: normal;
+  color: #fbbf24;
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+.billAuditNetPeak {
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+.billAuditTotal td {
+  font-weight: 700;
+  color: #fff;
+  border-bottom: none;
+  padding-top: 7px;
+}
+
+.billAuditFoot {
+  margin: 8px 0 0;
+  font-size: 0.68rem;
+  line-height: 1.4;
+  color: #94a3b8;
+}
+
+.billAuditVerdict {
+  margin-top: 8px;
+  padding: 10px 12px !important;
+  flex-shrink: 0;
+}
+
+.billAuditVerdict p {
+  margin: 5px 0 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: #e2e8f0;
 }
 
 /* ─── Monthly generation forecast ─────────────────────────────────────────── */
@@ -3155,6 +3329,7 @@
   .impactTitle,
   .econPage .pageHeader h2,
   .genPage .pageHeader h2,
+  .billAuditPage .pageHeader h2,
   .termsPage .pageHeader h2 {
     font-size: clamp(1.45rem, 6.5vw, 2rem) !important;
     line-height: 1.15;
@@ -3188,6 +3363,10 @@
   }
 
   .econEmiGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .billAuditKpis {
     grid-template-columns: 1fr !important;
   }
 

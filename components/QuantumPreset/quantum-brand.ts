@@ -7,6 +7,8 @@
 
 import { useEffect, useState } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
+import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
+import { isProposalBillAuditBacked } from "@/lib/proposal-bill-audit-eligibility";
 import {
   PROPOSAL_BRANDING_UPDATED_EVENT,
   readProposalBrandingSettings,
@@ -160,4 +162,17 @@ export function quantumStringLabel(sizes: number[]): string {
     return `${sizes.length} × ${sizes[0]}`;
   }
   return sizes.join(" + ");
+}
+
+/** True when this Quantum deck was built from uploaded bills. */
+export function isQuantumBillBased(
+  data: ProposalData | null | undefined,
+  pptInput?: PremiumProposalPptInput | null
+): boolean {
+  if (!data || !pptInput) return false;
+  if (!isProposalBillAuditBacked(pptInput)) return false;
+  return (
+    Boolean(data.bill.hasData) &&
+    data.bill.months.some((m) => m.units > 0 || m.netInr > 0)
+  );
 }

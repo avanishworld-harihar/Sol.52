@@ -27,6 +27,43 @@ export function getQuantumCopy(lang: QuantumLang) {
       moduleType: hi ? "मॉड्यूल प्रकार" : "Module Type",
       customerFallback: hi ? "ग्राहक" : "Customer",
     },
+    billAudit: {
+      eyebrow: hi ? "01 // बिल ऑडिट" : "01 // BILL AUDIT",
+      title: hi ? "बिल ऑडिट और ब्रेकडाउन।" : "Bill Audit & Breakdown.",
+      lead: hi
+        ? "माह-दर-माह यूनिट, ऊर्जा शुल्क, फिक्स्ड चार्ज, ड्यूटी और कुल बिल — आपकी असली खपत का खाता।"
+        : "Month-by-month units, energy charges, fixed liability, duty and net bill — the ledger from your consumption.",
+      summerIncrease: hi ? "गर्मी में बिल वृद्धि" : "Summer bill increase",
+      summerHint: hi ? "पीक महीनों का असर" : "Impact of peak months",
+      fixedLiability: hi ? "वार्षिक फिक्स्ड देनदारी" : "Annual fixed liability",
+      fixedHint: hi ? "उपयोग से स्वतंत्र" : "Independent of usage",
+      solarSavings: hi ? "अनुमानित सोलर बचत" : "Estimated solar savings",
+      solarHint: hi
+        ? "ऊर्जा बिल में संभावित कमी"
+        : "Potential energy-bill reduction",
+      chartLabel: hi
+        ? "मासिक बिजली बिल प्रोफ़ाइल"
+        : "Monthly electricity bill profile",
+      month: hi ? "माह" : "Month",
+      units: hi ? "यूनिट" : "Units",
+      energy: hi ? "ऊर्जा" : "Energy",
+      fixed: hi ? "फिक्स्ड" : "Fixed",
+      duty: hi ? "ड्यूटी" : "Duty",
+      netBill: hi ? "कुल बिल" : "Net bill",
+      total: hi ? "कुल" : "Total",
+      peak: hi ? "पीक" : "peak",
+      footnote: hi
+        ? "ऊर्जा शुल्क खपत के साथ बदलता है; फिक्स्ड शुल्क उपयोग कम होने पर भी जारी रह सकता है। ड्यूटी और कुल राशि उपलब्ध बिल डेटा से ली गई है।"
+        : "Energy charges vary with consumption; fixed charges may continue even when usage falls. Duty and net totals are taken from the available bill data.",
+      verdictLabel: hi ? "बिल विश्लेषक का निष्कर्ष" : "Bill analyst's verdict",
+      verdictWithData: (units: string, kw: string, monthCount: string) =>
+        hi
+          ? `आपकी ~${units} यूनिट मासिक औसत (${monthCount} महीने का बिल इतिहास) ${kw} kW AC सिस्टम से मैप होती है — साइज़िंग इसी खपत पर है, कैटलॉग अनुमान पर नहीं।`
+          : `Your ~${units} unit monthly average across ${monthCount} bill months maps to a ${kw} kW AC system — sized from this consumption, not a catalogue default.`,
+      verdictFallback: hi
+        ? "हर महीने के यूनिट और शुल्क दिखाते हैं कि गर्मी का पीक और फिक्स्ड देनदारी कहाँ बैठती है — सोलर इसी असली बिल प्रोफ़ाइल पर कैलिब्रेट होता है।"
+        : "Month-by-month units and charges show where summer peaks and fixed liability land — solar is calibrated to this real bill profile.",
+    },
     eng: {
       eyebrow: hi ? "01 // इंजीनियरिंग" : "01 // ENGINEERING",
       title: hi ? "सिस्टम डिज़ाइन।" : "System Design.",
