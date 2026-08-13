@@ -9,7 +9,8 @@
  *   4. residential_luxe_noir     — Premium Luxe dark cinematic
  *   5. residential_blueprint     — Blueprint Investment Blueprint (modular light cards)
  *   6. residential_quantum       — Quantum Cinematic Neo-Glass
- *   7. commercial_executive      — C&I commercial (hotel / hospital / industry…)
+ *   7. residential_emerald       — Emerald Signature split-folio
+ *   8. commercial_executive      — C&I commercial (hotel / hospital / industry…)
  *
  * Removed residential presets remap via normalizePresetId → residential_executive.
  */
@@ -35,6 +36,7 @@ export const PROPOSAL_PRESET_IDS = [
   "residential_luxe_noir",
   "residential_blueprint",
   "residential_quantum",
+  "residential_emerald",
   "commercial_executive",
   "commercial_ht",
 ] as const;
@@ -99,7 +101,8 @@ export function isResidentialDocumentPreset(presetId: ProposalPresetId): boolean
     presetId === "residential_premium_luxe" ||
     presetId === "residential_luxe_noir" ||
     presetId === "residential_blueprint" ||
-    presetId === "residential_quantum"
+    presetId === "residential_quantum" ||
+    presetId === "residential_emerald"
   );
 }
 
@@ -209,6 +212,18 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     label: "Quantum",
     description:
       "Cinematic Neo-Glass — deep-space HUD telemetry, structural PV wireframes, and capital recovery terminal.",
+    bill_requirement: "optional",
+    theme_hint: "residential",
+    default_data_source: "requirement",
+    default_blocks: [],
+    optional_blocks: [],
+  },
+
+  residential_emerald: {
+    id: "residential_emerald",
+    label: "Emerald",
+    description:
+      "Emerald Signature — Deep Forest / Champagne Gold split-folio. Architectural catalog: 30% emerald sidebar, 70% ivory content.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "requirement",

@@ -35,6 +35,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
       {variant === "luxe_noir" ? <LuxeNoirThumb size={size} /> : null}
       {variant === "blueprint" ? <BlueprintThumb size={size} /> : null}
       {variant === "quantum" ? <QuantumThumb size={size} /> : null}
+      {variant === "emerald" ? <EmeraldThumb size={size} /> : null}
       {![
         "golden",
         "pearl",
@@ -51,6 +52,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
         "luxe_noir",
         "blueprint",
         "quantum",
+        "emerald",
       ].includes(variant) ? (
         <GenericThumb size={size} label={variant} />
       ) : null}
@@ -329,6 +331,69 @@ function QuantumThumb({ size }: { size: "card" | "preview" }) {
                 style={{ height: size === "preview" ? 14 : 6 }}
               />
             ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EmeraldThumb({ size }: { size: "card" | "preview" }) {
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-[#f5f0e6]">
+      <div
+        className={cn(
+          "relative flex overflow-hidden rounded-[3px] border border-[#D4AF37]/50 shadow-sm",
+          size === "preview" ? "h-[62%] w-[68%]" : "h-[58%] w-[72%]"
+        )}
+      >
+        <div
+          className="flex h-full flex-col justify-between"
+          style={{
+            width: "30%",
+            background: "#064E3B",
+            padding: size === "preview" ? "8% 6%" : "7% 5%",
+            borderRight: "2px solid #D4AF37",
+          }}
+        >
+          <div
+            className="rounded-full"
+            style={{
+              width: size === "preview" ? 10 : 6,
+              height: size === "preview" ? 10 : 6,
+              border: "1px solid #D4AF37",
+            }}
+          />
+          <div
+            className={cn(
+              "font-bold uppercase tracking-[0.16em] text-[#FDE68A]",
+              size === "preview" ? "text-[5px]" : "text-[2.5px]"
+            )}
+          >
+            EM
+          </div>
+        </div>
+        <div
+          className="flex flex-1 flex-col justify-center"
+          style={{ background: "#FAFAF9", padding: size === "preview" ? "8%" : "7%" }}
+        >
+          <div
+            className={cn(
+              "font-bold uppercase tracking-[0.18em] text-[#D4AF37]",
+              size === "preview" ? "text-[5px]" : "text-[2.5px]"
+            )}
+          >
+            SIGNATURE
+          </div>
+          <div
+            className={cn(
+              "font-serif leading-tight text-[#064E3B]",
+              size === "preview" ? "text-[10px]" : "text-[4.5px]"
+            )}
+          >
+            Split
+            <br />
+            Folio
           </div>
         </div>
       </div>

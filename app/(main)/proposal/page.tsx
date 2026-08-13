@@ -1796,7 +1796,9 @@ function ProposalPageContent() {
               ? { galleryThemeKey: "blueprint" }
               : osPresetId === "residential_quantum"
                 ? { galleryThemeKey: "quantum" }
-                : osPresetId === "residential_executive"
+                : osPresetId === "residential_emerald"
+                  ? { galleryThemeKey: "emerald" }
+                  : osPresetId === "residential_executive"
                   ? { galleryThemeKey: "golden" }
                   : {}),
       proposalLayout: (() => {
@@ -2413,7 +2415,11 @@ function ProposalPageContent() {
                     ? "residential_blueprint"
                     : preset === "residential_quantum" || preset === "quantum"
                       ? "residential_quantum"
-                      : preset === "residential_executive"
+                      : preset === "residential_emerald" ||
+                          preset === "emerald" ||
+                          preset === "emerald_signature"
+                        ? "residential_emerald"
+                        : preset === "residential_executive"
                         ? "residential_executive"
                         : "residential_executive";
           setOsPresetId((prev) => prev ?? normalized);

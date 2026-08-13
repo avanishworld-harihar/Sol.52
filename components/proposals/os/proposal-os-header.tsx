@@ -79,6 +79,14 @@ const PRESET_META: Record<ProposalPresetId, PresetMeta> = {
       "border-cyan-200 bg-slate-900 text-cyan-200 dark:border-cyan-500/40 dark:bg-slate-950 dark:text-cyan-200",
     dotClass: "bg-cyan-400",
   },
+  residential_emerald: {
+    icon: <Gem className="h-4 w-4" />,
+    label: "Emerald",
+    description: "Split-folio · Deep Forest & Champagne Gold",
+    pillClass:
+      "border-emerald-200 bg-emerald-950 text-amber-200 dark:border-emerald-500/40 dark:bg-[#022C22] dark:text-[#D4AF37]",
+    dotClass: "bg-[#D4AF37]",
+  },
   commercial_executive: {
     icon: <Building2 className="h-4 w-4" />,
     label: "Commercial",

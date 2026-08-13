@@ -91,6 +91,12 @@ export function parsePrefillFromSearchParams(params: URLSearchParams): BuilderPr
     prefill.preset = "residential_blueprint";
   } else if (preset === "residential_quantum" || preset === "quantum") {
     prefill.preset = "residential_quantum";
+  } else if (
+    preset === "residential_emerald" ||
+    preset === "emerald" ||
+    preset === "emerald_signature"
+  ) {
+    prefill.preset = "residential_emerald";
   } else if (preset === "commercial_executive" || preset === "commercial") {
     prefill.preset = "commercial_executive";
   } else if (preset) {

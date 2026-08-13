@@ -216,7 +216,9 @@ export function BuilderStageBar({
                         ? "Canvas"
                         : presetId === "residential_quantum"
                           ? "Quantum"
-                          : "Residential"}
+                          : presetId === "residential_emerald"
+                            ? "Emerald"
+                            : "Residential"}
             </span>
           </div>
         )}

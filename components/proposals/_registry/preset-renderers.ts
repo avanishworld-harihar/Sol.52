@@ -1,6 +1,6 @@
 /**
  * Dynamic preset renderer registry.
- * Active presets: Golden + Zenith + Atelier + Canvas (blueprint id) + Commercial Executive.
+ * Active presets: Golden + Zenith + Atelier + Canvas + Quantum + Emerald + Commercial.
  */
 
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
@@ -38,6 +38,13 @@ export const QUANTUM_PRESET_ALIASES = [
   "quantum",
 ] as const;
 
+/** Local / mock aliases that resolve to Emerald Signature. */
+export const EMERALD_PRESET_ALIASES = [
+  "residential_emerald",
+  "emerald",
+  "emerald_signature",
+] as const;
+
 export function isZenithPresetId(presetId: string): boolean {
   return (ZENITH_PRESET_ALIASES as readonly string[]).includes(presetId);
 }
@@ -56,6 +63,10 @@ export function isBlueprintPresetId(presetId: string): boolean {
 
 export function isQuantumPresetId(presetId: string): boolean {
   return (QUANTUM_PRESET_ALIASES as readonly string[]).includes(presetId);
+}
+
+export function isEmeraldPresetId(presetId: string): boolean {
+  return (EMERALD_PRESET_ALIASES as readonly string[]).includes(presetId);
 }
 
 export function isCommercialPresetId(presetId: string): boolean {
@@ -79,6 +90,8 @@ export const PRESET_RENDERER_LOADERS: PresetRendererRegistry = {
     import("@/components/proposals/_registry/adapters/blueprint-adapter"),
   residential_quantum: () =>
     import("@/components/proposals/_registry/adapters/quantum-adapter"),
+  residential_emerald: () =>
+    import("@/components/proposals/_registry/adapters/emerald-adapter"),
   commercial_executive: () =>
     import("@/components/proposals/_registry/adapters/commercial-adapter"),
   commercial_ht: () =>
@@ -103,6 +116,9 @@ export function getPresetRendererLoader(
   }
   if (isQuantumPresetId(presetId)) {
     return () => import("@/components/proposals/_registry/adapters/quantum-adapter");
+  }
+  if (isEmeraldPresetId(presetId)) {
+    return () => import("@/components/proposals/_registry/adapters/emerald-adapter");
   }
   if (isLuxeNoirPresetId(presetId)) {
     return () => import("@/components/proposals/_registry/adapters/luxe-noir-adapter");

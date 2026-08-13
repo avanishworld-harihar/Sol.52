@@ -47,4 +47,5 @@ export const PRESET_ISOLATION_NOTES = [
   "Atelier owns components/proposals/atelier/; other themes must not edit Atelier CSS/layout/PDF for their own sake.",
   "Premium Luxe Noir owns components/proposals/luxe-noir/; other themes must not edit Luxe Noir CSS/layout for their own sake.",
   "Quantum owns components/QuantumPreset/; other themes must not edit Quantum CSS/motion/i18n for their own sake.",
+  "Emerald Signature owns components/proposals/emerald/; other themes must not edit Emerald CSS/layout for their own sake.",
 ] as const;

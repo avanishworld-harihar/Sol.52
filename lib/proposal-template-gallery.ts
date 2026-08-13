@@ -36,7 +36,7 @@ export const PROPOSAL_TEMPLATE_CATEGORIES: ProposalTemplateCategoryMeta[] = [
   {
     id: "residential",
     label: "Residential",
-    description: "Homes & rooftops — Golden, Zenith, Atelier, Premium Luxe, Canvas, or Quantum.",
+    description: "Homes & rooftops — Golden, Zenith, Atelier, Premium Luxe, Canvas, Quantum, or Emerald.",
   },
   {
     id: "commercial",
@@ -96,6 +96,15 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
     description:
       "Cinematic Neo-Glass — deep-space HUD, structural PV wireframes, and capital recovery terminal.",
     thumbnailVariant: "quantum",
+  },
+  {
+    key: "emerald",
+    presetId: "residential_emerald",
+    category: "residential",
+    name: "Emerald",
+    description:
+      "Emerald Signature — Deep Forest & Champagne Gold split-folio, architectural catalog layout.",
+    thumbnailVariant: "emerald",
   },
 ];
 
@@ -164,6 +173,7 @@ export function resolveActiveGalleryKey(
   if (presetId === "residential_luxe_noir") return "luxe_noir";
   if (presetId === "residential_blueprint") return "blueprint";
   if (presetId === "residential_quantum") return "quantum";
+  if (presetId === "residential_emerald") return "emerald";
   return "zenith";
 }
 
