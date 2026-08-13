@@ -195,7 +195,6 @@ export function QuantumRoofArray({
   }
 
   const kwLabel = dcKwp % 1 ? dcKwp.toFixed(2) : dcKwp.toFixed(0);
-  const roofPad = 10;
   const roofX = originX - roofPad;
   const roofY = originY - roofPad;
   const roofW = arrayW + roofPad * 2;
