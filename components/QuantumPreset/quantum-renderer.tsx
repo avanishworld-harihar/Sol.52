@@ -28,9 +28,16 @@ import {
 
 export type QuantumRendererProps = {
   data: ProposalData;
+  installerLogoUrl?: string;
 };
 
-function QuantumDocument({ data }: { data: ProposalData }) {
+function QuantumDocument({
+  data,
+  installerLogoUrl,
+}: {
+  data: ProposalData;
+  installerLogoUrl?: string;
+}) {
   const { lang, setLang, copy } = useQuantumLang();
   const rootRef = useRef<HTMLDivElement>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
@@ -89,7 +96,7 @@ function QuantumDocument({ data }: { data: ProposalData }) {
         </div>
       </div>
 
-      <QuantumCover data={data} />
+      <QuantumCover data={data} installerLogoUrl={installerLogoUrl} />
       <QuantumTelemetry data={data} />
       <QuantumEconomics data={data} />
       <QuantumHardware data={data} />
@@ -101,7 +108,7 @@ function QuantumDocument({ data }: { data: ProposalData }) {
   );
 }
 
-export function QuantumRenderer({ data }: QuantumRendererProps) {
+export function QuantumRenderer({ data, installerLogoUrl }: QuantumRendererProps) {
   const [lang, setLang] = useState<QuantumLang>("en");
 
   if (!data) {
@@ -112,7 +119,7 @@ export function QuantumRenderer({ data }: QuantumRendererProps) {
 
   return (
     <QuantumLangProvider lang={lang} setLang={setLang}>
-      <QuantumDocument data={data} />
+      <QuantumDocument data={data} installerLogoUrl={installerLogoUrl} />
     </QuantumLangProvider>
   );
 }

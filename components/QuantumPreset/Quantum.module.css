@@ -65,6 +65,30 @@
     padding: 40px !important;
   }
 
+  .coverPage {
+    padding: 0 !important;
+  }
+
+  .coverHero {
+    flex: 1 1 auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  .coverHero,
+  .coverHeroImg,
+  .coverHeroFade,
+  .coverLogoBadge,
+  .coverFolio {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .coverHeroSheen {
+    mix-blend-mode: normal;
+    opacity: 0.35;
+  }
+
   .printBar {
     display: none !important;
   }
@@ -307,7 +331,12 @@
     0 10px 24px rgba(0, 0, 0, 0.35);
 }
 
-/* --- COVER PAGE --- */
+/* --- COVER PAGE — full-bleed hero + overlapping glass folio --- */
+.coverPage {
+  padding: 0 !important;
+  justify-content: flex-start;
+}
+
 .coverLayout {
   display: flex;
   flex-direction: column;
@@ -452,107 +481,210 @@
 .coverTagline {
   color: #06b6d4;
   letter-spacing: 2px;
-  font-size: 1rem;
-  margin: 0;
+  font-size: 0.92rem;
+  margin: 0 0 14px;
 }
 
-.coverPhotoPlate {
-  margin: 0;
-  width: 100%;
+.coverHero {
+  position: relative;
+  z-index: 2;
   flex: 1 1 auto;
   min-height: 0;
-  display: flex;
-  flex-direction: column;
-  z-index: 2;
-}
-
-.coverPhotoFrame {
-  position: relative;
-  width: 100%;
-  flex: 1 1 auto;
-  min-height: 220px;
   overflow: hidden;
-  border-radius: 14px 14px 0 0;
   background: #030712;
-  box-shadow:
-    0 18px 40px rgba(0, 0, 0, 0.55),
-    0 0 30px rgba(6, 182, 212, 0.12);
-  -webkit-print-color-adjust: exact !important;
-  print-color-adjust: exact !important;
 }
 
-.coverPhotoImg {
-  display: block;
+.coverHeroImg {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  min-height: 240px;
-  max-height: 300px;
   object-fit: cover;
-  object-position: center 38%;
+  object-position: 50% 42%;
+  display: block;
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
 
-.coverPhotoVignette {
+.coverHeroFade {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background: linear-gradient(
     180deg,
-    rgba(3, 7, 18, 0.28) 0%,
-    transparent 32%,
-    transparent 55%,
-    rgba(3, 7, 18, 0.62) 100%
+    rgba(3, 7, 18, 0.18) 0%,
+    rgba(3, 7, 18, 0.04) 22%,
+    rgba(3, 7, 18, 0.08) 48%,
+    rgba(3, 7, 18, 0.55) 72%,
+    rgba(3, 7, 18, 0.92) 88%,
+    #030712 100%
   );
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
 
-.coverPhotoCyanEdge {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border: 1px solid rgba(148, 180, 200, 0.35);
-  box-shadow: inset 0 0 0 1px rgba(6, 182, 212, 0.12);
-}
-
-.coverPhotoGlassSheen {
+.coverHeroSheen {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background: linear-gradient(
     125deg,
-    rgba(255, 255, 255, 0.1) 0%,
-    rgba(255, 255, 255, 0.02) 26%,
-    transparent 46%
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.02) 24%,
+    transparent 48%
   );
   mix-blend-mode: soft-light;
 }
 
-.coverPhotoCaption {
+.coverMagHeader {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
+  padding: 22px 28px 0;
+  pointer-events: none;
+}
+
+.coverLogoBadge {
+  pointer-events: auto;
+  background: #ffffff !important;
+  padding: 10px 16px;
+  border-radius: 12px;
+  min-width: 132px;
+  min-height: 56px;
+  max-width: 180px;
+  display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 12px;
-  margin: 0;
-  padding: 10px 14px;
-  background: rgba(10, 16, 28, 0.94);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  color: rgba(226, 232, 240, 0.9);
-  font-size: 0.62rem;
-  letter-spacing: 0.16em;
-  font-weight: 700;
-  text-transform: uppercase;
-  border: 1px solid rgba(6, 182, 212, 0.4);
-  border-top: none;
-  border-radius: 0 0 14px 14px;
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(6, 182, 212, 0.25);
   -webkit-print-color-adjust: exact !important;
   print-color-adjust: exact !important;
 }
 
-.coverPhotoCaption span:last-child {
+.coverLogoImg {
+  width: 100%;
+  height: auto;
+  max-height: 42px;
+  object-fit: contain;
+  display: block;
+}
+
+.coverWordmark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.coverWordmarkPrimary {
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  color: #0f172a;
+}
+
+.coverWordmarkSecondary {
+  margin-top: 4px;
+  font-size: 0.58rem;
+  letter-spacing: 0.28em;
+  color: #0891b2;
+  font-weight: 700;
+}
+
+.coverConfidential {
+  pointer-events: none;
+  color: #e2e8f0;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.55);
+  padding-top: 8px;
+}
+
+.coverHeroCaption {
+  position: absolute;
+  left: 28px;
+  right: 28px;
+  bottom: 56px;
+  z-index: 3;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  color: rgba(226, 232, 240, 0.92);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.65);
+}
+
+.coverHeroCaption span:last-child {
   color: #22d3ee;
+}
+
+.coverFolio {
+  position: relative;
+  z-index: 4;
+  flex-shrink: 0;
+  margin: -42px 22px 22px;
+  padding: 18px 22px 16px;
+  border-radius: 16px;
+  background: linear-gradient(
+    155deg,
+    rgba(36, 52, 74, 0.92) 0%,
+    rgba(14, 24, 40, 0.96) 48%,
+    rgba(8, 14, 26, 0.98) 100%
+  ) !important;
+  border: 1px solid rgba(160, 190, 210, 0.32);
+  border-top-color: rgba(226, 232, 240, 0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 16px 36px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(6, 182, 212, 0.12);
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.coverMetrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin-top: 4px;
+  border-top: 1px solid rgba(6, 182, 212, 0.28);
+  padding-top: 12px;
+}
+
+.coverMetric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 14px;
+  border-right: 1px solid rgba(148, 180, 200, 0.18);
+}
+
+.coverMetric:first-child {
+  padding-left: 0;
+}
+
+.coverMetric:last-child {
+  padding-right: 0;
+  border-right: none;
+}
+
+.coverMetricModules {
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: #fff;
+  line-height: 1.2;
 }
 
 .coverFooter {
@@ -2665,6 +2797,10 @@
       0 0 0 1px rgba(6, 182, 212, 0.1);
   }
 
+  .coverPage {
+    padding: 0 !important;
+  }
+
   .pageStack,
   .coverLayout {
     height: auto !important;
@@ -2773,29 +2909,60 @@
     display: none;
   }
 
-  .coverPhotoPlate {
+  .coverHero {
+    height: auto;
+    min-height: 280px;
     flex: 0 0 auto;
   }
 
-  .coverPhotoFrame {
-    flex: 0 0 auto;
-    min-height: 0;
-    border-radius: 12px 12px 0 0;
+  .coverHeroImg {
+    position: absolute;
+    height: 100%;
+    min-height: 280px;
   }
 
-  .coverPhotoImg {
-    height: clamp(150px, 38vw, 210px) !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    object-fit: cover;
+  .coverMagHeader {
+    padding: 14px 14px 0;
   }
 
-  .coverPhotoCaption {
+  .coverLogoBadge {
+    min-width: 108px;
+    min-height: 48px;
+    padding: 8px 12px;
+    max-width: 148px;
+  }
+
+  .coverHeroCaption {
+    left: 14px;
+    right: 14px;
+    bottom: 48px;
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
-    padding: 8px 12px;
-    font-size: 0.72rem;
+    font-size: 0.68rem;
+  }
+
+  .coverFolio {
+    margin: -28px 12px 12px;
+    padding: 14px 14px 12px;
+  }
+
+  .coverMetrics {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding-top: 10px;
+  }
+
+  .coverMetric {
+    padding: 0;
+    border-right: none;
+    border-bottom: 1px solid rgba(148, 180, 200, 0.16);
+    padding-bottom: 8px;
+  }
+
+  .coverMetric:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
   }
 
   .clientNameCompact {
@@ -2936,6 +3103,18 @@
     border-radius: 12px;
   }
 
+  .coverPage {
+    padding: 0 !important;
+  }
+
+  .coverHero {
+    min-height: 240px;
+  }
+
+  .coverHeroImg {
+    min-height: 240px;
+  }
+
   .printBarActions {
     gap: 6px;
   }
@@ -2998,8 +3177,8 @@
     max-width: 22px;
   }
 
-  .coverPhotoImg {
-    height: clamp(132px, 42vw, 180px) !important;
+  .coverHero {
+    min-height: 220px;
   }
 
   .clientNameCompact {

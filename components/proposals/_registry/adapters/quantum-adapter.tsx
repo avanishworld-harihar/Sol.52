@@ -7,6 +7,6 @@
 import { QuantumRenderer } from "@/components/QuantumPreset/quantum-renderer";
 import type { PresetRendererProps } from "@/components/proposals/_registry/types";
 
-export default function QuantumAdapter({ data }: PresetRendererProps) {
-  return <QuantumRenderer data={data} />;
+export default function QuantumAdapter({ data, installerLogoUrl }: PresetRendererProps) {
+  return <QuantumRenderer data={data} installerLogoUrl={installerLogoUrl} />;
 }
