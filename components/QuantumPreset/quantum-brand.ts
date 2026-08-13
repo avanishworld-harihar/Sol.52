@@ -11,6 +11,9 @@ import {
   PROPOSAL_BRANDING_UPDATED_EVENT,
   readProposalBrandingSettings,
   resolveInstallerDisplayName,
+  resolveProposalBrandConfig,
+  resolveProposalBrandPresentation,
+  type ProposalBrandPresentation,
 } from "@/lib/proposal-branding-settings";
 
 export const QUANTUM_PANEL_WATT = 580;
@@ -67,6 +70,61 @@ export function useQuantumBrand(data: ProposalData): string {
   }, [data]);
 
   return name;
+}
+
+export function resolveQuantumLogoUrl(
+  data: ProposalData,
+  installerLogoUrl?: string
+): string {
+  const fromData = data.meta?.brandLogoUrl?.trim() ?? "";
+  const fromProp = installerLogoUrl?.trim() ?? "";
+  if (fromData) return fromData;
+  if (fromProp) return fromProp;
+  if (typeof window !== "undefined") {
+    try {
+      const fromLocal =
+        readProposalBrandingSettings().installerLogoUrl?.trim() ?? "";
+      if (fromLocal) return fromLocal;
+    } catch {
+      /* ignore */
+    }
+  }
+  return "";
+}
+
+/** Cover branding — logo from proposal snapshot, adapter prop, or More settings. */
+export function useQuantumCoverBrand(
+  data: ProposalData,
+  installerLogoUrl?: string
+): ProposalBrandPresentation {
+  const installerName = useQuantumBrand(data);
+  const [logoUrl, setLogoUrl] = useState(() =>
+    resolveQuantumLogoUrl(data, installerLogoUrl)
+  );
+
+  useEffect(() => {
+    const sync = () => setLogoUrl(resolveQuantumLogoUrl(data, installerLogoUrl));
+    sync();
+    window.addEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, [data, installerLogoUrl]);
+
+  const config = resolveProposalBrandConfig({
+    pptInput: {
+      brandDisplayMode: data.meta.brandDisplayMode,
+      brandSectionConfig: data.meta.brandSectionConfig,
+    },
+  });
+
+  return resolveProposalBrandPresentation(config, "cover", {
+    installerName,
+    logoUrl,
+    tagline: data.meta.brandTagline,
+  });
 }
 
 /** Modules sized for AC kW — ceil so 3 kW → 6 × 580W (3.48 kWp, ~1.16 DC/AC). */
