@@ -12,6 +12,8 @@ import {
   quantumDcAcRatio,
   quantumDcKwp,
   quantumModuleCount,
+  quantumStringLabel,
+  quantumStringSizes,
 } from "./quantum-brand";
 import { QuantumAtmosphere } from "./QuantumAtmosphere";
 import {
@@ -71,8 +73,8 @@ export function QuantumTelemetry({ data }: QuantumTelemetryProps) {
     data.meta.locationLine?.split(",")[0]?.trim() ||
     "Satna";
   const roofSqft = Math.round(moduleCount * SQFT_PER_PANEL);
-  const strings = Math.max(1, Math.ceil(moduleCount / 6));
-  const perString = Math.ceil(moduleCount / strings);
+  const stringSizes = quantumStringSizes(moduleCount);
+  const stringLabel = quantumStringLabel(stringSizes);
   const annualUnits =
     data.closing.annualUnits > 0
       ? data.closing.annualUnits
@@ -116,8 +118,7 @@ export function QuantumTelemetry({ data }: QuantumTelemetryProps) {
               dcKwp={dcKwp}
               tilt={tilt}
               panelWatt={QUANTUM_PANEL_WATT}
-              strings={strings}
-              perString={perString}
+              stringLabel={stringLabel}
             />
           </div>
 
@@ -139,7 +140,7 @@ export function QuantumTelemetry({ data }: QuantumTelemetryProps) {
               <div className={styles.engMetricRow}>
                 <span>{copy.eng.stringLayout}</span>
                 <strong>
-                  {strings} × {perString} @ {QUANTUM_PANEL_WATT} Wp
+                  {stringLabel} @ {QUANTUM_PANEL_WATT} Wp
                 </strong>
                 <small>{copy.eng.stringNote}</small>
               </div>
