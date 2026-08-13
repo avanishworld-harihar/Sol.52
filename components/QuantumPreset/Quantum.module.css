@@ -2427,6 +2427,8 @@
 .engSvgDark {
   display: block;
   width: 100%;
+  min-height: 280px;
+  height: 300px;
   border-radius: 10px;
   background: radial-gradient(ellipse at 50% 42%, #122436 0%, #070d14 72%);
   box-shadow:
@@ -3328,7 +3330,7 @@
   }
 
   .engSvgDark {
-    min-height: 168px;
+    min-height: 240px;
     height: auto !important;
     max-height: none;
   }
