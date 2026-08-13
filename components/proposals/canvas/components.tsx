@@ -183,7 +183,7 @@ export function ClosingPage({
   contactPerson,
   clientSignLabel,
   companySignLabel,
-  heroAlt = "Solar architecture",
+  heroAlt = "Indian home with rooftop solar plant",
   pageNo = "12 / 12",
 }: ClosingPageProps) {
   const companyMark =

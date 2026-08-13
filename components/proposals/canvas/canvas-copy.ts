@@ -210,7 +210,9 @@ export function getCanvasCopy(lang: CanvasLang) {
       closingSignature: hi ? "अधिकृत हस्ताक्षर" : "Authorized Signature",
       closingClientSign: hi ? "ग्राहक स्वीकृति" : "Client acceptance",
       closingCompanySign: hi ? "अधिकृत हस्ताक्षरकर्ता" : "Authorized signatory",
-      closingHeroAlt: hi ? "सोलर आर्किटेक्चर" : "Solar architecture",
+      closingHeroAlt: hi
+        ? "भारतीय घर और छत का सोलर प्लांट"
+        : "Indian home with rooftop solar plant",
       closingBody: hi
         ? "आप अगले 25 वर्षों के लिए अपनी बिजली की कीमत लॉक कर रहे हैं।"
         : "You are locking your electricity price for the next 25 years.",
