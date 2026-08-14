@@ -784,4 +784,180 @@
   .sigLine {
     width: 100%;
   }
+
+  .forecastContainer {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+/* --- BILL AUDIT (TARIFF ANATOMY) --- */
+.auditCard {
+  background-color: #ffffff !important;
+  border: 1px solid #e7e5e4 !important;
+  padding: 40px;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03) !important;
+}
+
+.auditLead {
+  font-size: 0.95rem;
+  color: #57534e;
+  margin: 0 0 30px;
+  line-height: 1.6;
+}
+
+.auditHeader {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.8rem;
+  color: #064e3b !important;
+  margin-bottom: 20px;
+}
+
+.auditRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid rgba(6, 78, 59, 0.1) !important;
+}
+
+.auditLabel {
+  font-size: 0.85rem;
+  color: #57534e !important;
+  letter-spacing: 1px;
+}
+
+.auditValue {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.5rem;
+  color: #064e3b !important;
+  font-weight: 600;
+}
+
+.auditValueWarn {
+  color: #ea580c !important;
+}
+
+.auditHighlight {
+  background: #064e3b !important;
+  color: #d4af37 !important;
+  padding: 30px;
+  margin-top: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.auditHighlightKicker {
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+  color: #a7f3d0;
+}
+
+.auditHighlightTitle {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 2rem;
+  line-height: 1;
+  color: #fafaf9;
+}
+
+.auditHighlightValue {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 3rem;
+  font-weight: 600;
+  color: #d4af37;
+  white-space: nowrap;
+}
+
+/* --- MONTHLY FORECAST (SEASONAL YIELD) --- */
+.forecastLead {
+  font-size: 0.95rem;
+  color: #57534e;
+  margin: 0 0 20px;
+  line-height: 1.6;
+}
+
+.forecastContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-top: 30px;
+}
+
+.monthRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2) !important;
+}
+
+.monthName {
+  font-size: 0.75rem;
+  letter-spacing: 3px;
+  color: #78716c !important;
+  text-transform: uppercase;
+  width: 40px;
+  flex-shrink: 0;
+}
+
+.monthBarTrack {
+  flex-grow: 1;
+  height: 2px;
+  background: #e7e5e4 !important;
+  margin: 0 15px;
+  position: relative;
+}
+
+.monthBarFill {
+  position: absolute;
+  top: -1px;
+  left: 0;
+  height: 4px;
+  background: #064e3b !important;
+}
+
+.monthBarFillGold {
+  background: #d4af37 !important;
+}
+
+.monthData {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.4rem;
+  color: #064e3b !important;
+  width: 50px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.forecastTotal {
+  margin-top: 40px;
+  display: flex;
+  justify-content: flex-end;
+  border-top: 2px solid #d4af37;
+  padding-top: 20px;
+}
+
+.forecastTotalInner {
+  text-align: right;
+}
+
+.forecastTotalLabel {
+  display: block;
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  color: #78716c;
+  text-transform: uppercase;
+}
+
+.forecastTotalValue {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 2.5rem;
+  color: #064e3b;
+  font-weight: 600;
 }
