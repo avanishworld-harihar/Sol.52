@@ -6,7 +6,6 @@
 
 import type { ProposalData } from "@/lib/proposal-data";
 import {
-  EMERALD_DEFAULT_BRAND,
   splitEmeraldWordmark,
   useEmeraldSurfaceBrand,
 } from "./emerald-brand";
@@ -27,9 +26,9 @@ export function EmeraldBackCover({
 }: EmeraldBackCoverProps) {
   const { copy } = useEmeraldLang();
   const closingBrand = useEmeraldSurfaceBrand(data, "closing", installerLogoUrl);
-  const brand = closingBrand.installerName || EMERALD_DEFAULT_BRAND;
+  const brand = closingBrand.installerName?.trim() || "";
   const logoUrl = closingBrand.showLogo ? closingBrand.logoUrl : "";
-  const showWordmark = closingBrand.showName || !logoUrl;
+  const showWordmark = Boolean(brand) && (closingBrand.showName || !logoUrl);
   const { primary, secondary } = splitEmeraldWordmark(brand);
   const customer = data.meta.customerName?.trim() || copy.common.youFallback;
   const contact = useEmeraldContact(data);
@@ -39,13 +38,13 @@ export function EmeraldBackCover({
       <header className={styles.backCoverHeader}>
         {logoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element -- print A4 installer logo
-          <img src={logoUrl} alt={brand} className={styles.backCoverLogo} />
+          <img src={logoUrl} alt={brand || copy.common.installerFallback} className={styles.backCoverLogo} />
         ) : (
           <div className={styles.backCoverMark}>
             <div className={styles.backCoverMarkDot} />
           </div>
         )}
-        {showWordmark ? (
+        {showWordmark && primary ? (
           <div>
             <span className={styles.backCoverBrand}>{primary}</span>
             {secondary ? (
@@ -83,7 +82,9 @@ export function EmeraldBackCover({
       <div className={styles.backCoverContact}>
         <div>
           <span className={styles.backCoverMetaLabel}>{copy.back.installer}</span>
-          <span className={styles.backCoverMetaValue}>{brand}</span>
+          <span className={styles.backCoverMetaValue}>
+            {brand || copy.common.installerFallback}
+          </span>
         </div>
         {contact.rows.map((row) =>
           row.href ? (

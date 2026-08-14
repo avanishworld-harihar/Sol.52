@@ -12,9 +12,8 @@ import {
   type ProposalBrandSurface,
 } from "@/lib/proposal-branding-settings";
 
-export const EMERALD_PANEL_WATT = 580;
-export const EMERALD_SPECIFIC_YIELD = 1440;
-export const EMERALD_DEFAULT_BRAND = "Harihar Solar";
+/** Empty on purpose — never invent a company name. */
+export const EMERALD_DEFAULT_BRAND = "";
 
 const PLACEHOLDER =
   /^(solar\s*partner|सोलर\s*पार्टनर|vendor|installer|your\s*solar\s*partner|—|-|n\/a|na)$/i;
@@ -136,18 +135,9 @@ export function splitEmeraldWordmark(brandName: string): {
   secondary: string;
 } {
   const parts = brandName.trim().split(/\s+/).filter(Boolean);
-  const primary = (parts[0] || EMERALD_DEFAULT_BRAND).toUpperCase();
+  const primary = (parts[0] || "").toUpperCase();
   const secondary = parts.slice(1).join(" ").toUpperCase();
   return { primary, secondary };
-}
-
-export function emeraldModuleCount(systemKw: number): number {
-  if (!(systemKw > 0)) return 0;
-  return Math.max(1, Math.ceil((systemKw * 1000) / EMERALD_PANEL_WATT));
-}
-
-export function emeraldDcKwp(moduleCount: number): number {
-  return moduleCount > 0 ? (moduleCount * EMERALD_PANEL_WATT) / 1000 : 0;
 }
 
 export function formatEmeraldKw(kw: number, digits = 2): string {

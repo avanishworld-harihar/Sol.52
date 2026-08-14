@@ -1,11 +1,17 @@
 "use client";
 
 /**
- * Emerald Signature — Execution Mandate (vintage receipt + signatures).
+ * Emerald Signature — payment on GROSS (subsidy credited later) + bank + signatures.
  */
 
+import { useEffect, useState } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
 import { formatInr, formatInrCompact } from "@/components/proposals/_shared/formatters";
+import {
+  PROPOSAL_BRANDING_UPDATED_EVENT,
+  readProposalBrandingSettings,
+  resolveProposalBankDetails,
+} from "@/lib/proposal-branding-settings";
 import { splitEmeraldWordmark, useEmeraldBrand } from "./emerald-brand";
 import { useEmeraldLang } from "./emerald-lang-context";
 import type { EmeraldCopy } from "./emerald-copy";
@@ -13,6 +19,7 @@ import styles from "./Emerald.module.css";
 
 export type EmeraldClosingProps = {
   data: ProposalData;
+  folio: string;
 };
 
 const DEFAULT_STEPS = [
@@ -68,23 +75,59 @@ function buildMilestones(
   }));
 }
 
-export function EmeraldClosing({ data }: EmeraldClosingProps) {
+function readBank(data: ProposalData) {
+  return resolveProposalBankDetails({
+    pptBank: {
+      accountName: data.execution.bank.company,
+      accountNumber: data.execution.bank.accountNumber,
+      ifsc: data.execution.bank.ifsc,
+      upiId: data.execution.bank.upiId,
+    },
+    settings: readProposalBrandingSettings(),
+  });
+}
+
+export function EmeraldClosing({ data, folio }: EmeraldClosingProps) {
   const { copy } = useEmeraldLang();
   const brand = useEmeraldBrand(data);
-  const { primary } = splitEmeraldWordmark(brand);
+  const company = brand || copy.common.installerFallback;
+  const { primary } = splitEmeraldWordmark(company);
   const client = data.meta.customerName?.trim() || copy.common.customerFallback;
   const gross =
     data.economics.grossInr > 0
       ? data.economics.grossInr
       : data.economics.netInr;
   const steps = buildMilestones(data, copy);
+  const [bank, setBank] = useState(() => readBank(data));
+
+  useEffect(() => {
+    const sync = () => setBank(readBank(data));
+    sync();
+    window.addEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, [data]);
+
+  const bankRows = [
+    bank.accountName
+      ? { label: copy.pay.accountName, value: bank.accountName }
+      : null,
+    bank.accountNumber
+      ? { label: copy.pay.account, value: bank.accountNumber }
+      : null,
+    bank.ifsc ? { label: copy.pay.ifsc, value: bank.ifsc } : null,
+    bank.upiId ? { label: copy.pay.upi, value: bank.upiId } : null,
+  ].filter(Boolean) as { label: string; value: string }[];
 
   return (
     <section className={styles.a4Page}>
       <div className={styles.sidebar}>
-        <span className={styles.folioNum}>05</span>
+        <span className={styles.folioNum}>{folio}</span>
         <div>
-          <span className={styles.goldEyebrow}>{copy.pay.eyebrow}</span>
+          <span className={styles.goldEyebrow}>{copy.common.section(folio)}</span>
           <h3 className={styles.sidebarTitle}>
             {copy.pay.sidebarTitle[0]}
             <br />
@@ -121,6 +164,20 @@ export function EmeraldClosing({ data }: EmeraldClosingProps) {
           ))}
         </div>
 
+        {bankRows.length > 0 ? (
+          <div className={styles.bankBox}>
+            <span className={styles.bankTitle}>{copy.pay.bank}</span>
+            <div className={styles.bankGrid}>
+              {bankRows.map((row) => (
+                <div key={row.label}>
+                  <span className={styles.bankLabel}>{row.label}</span>
+                  <span className={styles.bankValue}>{row.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
         <div className={styles.signatureArea}>
           <div className={styles.sigLine}>
             <div className={styles.sigSpace} />
@@ -130,16 +187,16 @@ export function EmeraldClosing({ data }: EmeraldClosingProps) {
 
           <div className={styles.sigLine}>
             <div className={styles.sigSpace}>
-              <span className={styles.sigMark}>{primary}</span>
+              {primary ? (
+                <span className={styles.sigMark}>{primary}</span>
+              ) : null}
             </div>
-            <span className={styles.sigName}>{brand}</span>
+            <span className={styles.sigName}>{company}</span>
             <span className={styles.sigTitle}>{copy.pay.companySig}</span>
           </div>
         </div>
 
-        <p className={styles.closingDisclaimer}>
-          {copy.pay.disclaimer}
-        </p>
+        <p className={styles.closingDisclaimer}>{copy.pay.disclaimer}</p>
       </div>
     </section>
   );
