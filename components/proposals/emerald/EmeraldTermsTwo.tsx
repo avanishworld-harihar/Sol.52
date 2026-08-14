@@ -27,9 +27,9 @@ function jurisdictionLine(data: ProposalData): string {
     data.closing.address?.trim() ||
     "";
   if (loc) {
-    return `Both parties irrevocably agree that the courts having jurisdiction over ${loc} shall have exclusive jurisdiction to settle any dispute or claim that arises out of this project deployment.`;
+    return `Both sides agree that courts in ${loc} will handle any dispute from this project.`;
   }
-  return "Both parties irrevocably agree that the courts of India shall have exclusive jurisdiction to settle any dispute or claim that arises out of this project deployment.";
+  return "Both sides agree that courts in India will handle any dispute from this project.";
 }
 
 export function EmeraldTermsTwo({ data }: EmeraldTermsTwoProps) {
@@ -57,20 +57,19 @@ export function EmeraldTermsTwo({ data }: EmeraldTermsTwoProps) {
         <div>
           <span className={styles.goldEyebrow}>SECTION SEVEN</span>
           <h3 className={styles.sidebarTitle}>
-            Legal
+            Terms
             <br />
-            Framework.
+            &amp; Conditions.
           </h3>
           <p className={styles.sidebarBlurb}>
-            Standard terms of deployment, commercial agreements, and operational
-            liabilities (Part II).
+            Warranty, generation estimates, and governing law (Part 2).
           </p>
         </div>
       </div>
 
       <div className={styles.contentArea}>
         <h2 className={`${styles.pageHeader} ${styles.pageHeaderGhost}`}>
-          Continuation
+          Terms (continued)
         </h2>
 
         <div className={styles.legalGrid}>
@@ -78,16 +77,14 @@ export function EmeraldTermsTwo({ data }: EmeraldTermsTwoProps) {
             <span className={styles.clauseNum}>05</span>
             <div className={styles.clauseBody}>
               <span className={styles.clauseTitle}>
-                Hardware Warranties & Maintenance
+                Warranties and maintenance
               </span>
               <p className={styles.clauseText}>
-                Product warranties (e.g., {panelYrs}-year linear performance for
-                PV modules, {inverterYrs}-year for inverters) are provided
-                directly by the respective Original Equipment Manufacturers
-                (OEMs). {brand} provides a comprehensive {workYrs}-year
-                workmanship warranty on the installation framework. Regular
-                cleaning of panels is the responsibility of the client unless a
-                separate Annual Maintenance Contract (AMC) is executed.
+                Product warranties (for example, {panelYrs}-year linear
+                performance for panels and {inverterYrs}-year for inverters)
+                come from the manufacturers. {brand} gives a {workYrs}-year
+                workmanship warranty on the installation. You must clean the
+                panels unless you take a separate AMC.
               </p>
             </div>
           </div>
@@ -96,15 +93,12 @@ export function EmeraldTermsTwo({ data }: EmeraldTermsTwoProps) {
             <span className={styles.clauseNum}>06</span>
             <div className={styles.clauseBody}>
               <span className={styles.clauseTitle}>
-                Yield Estimates & Shadowing
+                Generation estimates and shadows
               </span>
               <p className={styles.clauseText}>
-                Annual generation figures (Units/kWh) and financial return
-                estimates provided in this document are simulated using
-                historical meteorological data. Actual generation may vary due
-                to unprecedented weather conditions, heavy soiling, or new
-                shadow-casting structures built in the vicinity
-                post-installation.
+                Yearly units and savings in this proposal are estimates based on
+                past weather data. Actual generation can change due to weather,
+                dirty panels, or new shadows after installation.
               </p>
             </div>
           </div>
@@ -112,14 +106,13 @@ export function EmeraldTermsTwo({ data }: EmeraldTermsTwoProps) {
           <div className={styles.legalClause}>
             <span className={styles.clauseNum}>07</span>
             <div className={styles.clauseBody}>
-              <span className={styles.clauseTitle}>Force Majeure</span>
+              <span className={styles.clauseTitle}>
+                Events outside our control
+              </span>
               <p className={styles.clauseText}>
-                {brand} shall not be held liable for any failure or delay in
-                fulfilling its obligations if such delay is caused by events
-                beyond reasonable control, including but not limited to acts of
-                God, extreme weather events (cyclones, earthquakes), pandemics,
-                sudden statutory lockdowns, or severe national supply chain
-                disruptions.
+                {brand} is not responsible for delay caused by events outside
+                our control, such as natural disasters, extreme weather,
+                pandemics, lockdowns, or major supply shortages.
               </p>
             </div>
           </div>
@@ -128,19 +121,17 @@ export function EmeraldTermsTwo({ data }: EmeraldTermsTwoProps) {
             <span className={styles.clauseNum}>08</span>
             <div className={styles.clauseBody}>
               <span className={styles.clauseTitle}>
-                Governing Law & Jurisdiction
+                Governing law
               </span>
               <p className={styles.clauseText}>
-                This agreement and any dispute or claim arising out of or in
-                connection with it shall be governed by and construed in
-                accordance with the laws of India. {jurisdictionLine(data)}
+                This agreement follows the laws of India. {jurisdictionLine(data)}
               </p>
             </div>
           </div>
         </div>
 
         <div className={styles.legalEnd}>
-          END OF DOCUMENT • {brand} • SOL.52 ARCHITECTURE
+          END OF DOCUMENT • {brand}
         </div>
       </div>
     </section>

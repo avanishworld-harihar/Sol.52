@@ -40,17 +40,16 @@ export function EmeraldArchitecture({ data }: EmeraldArchitectureProps) {
           <h3 className={styles.sidebarTitle}>
             System
             <br />
-            Architecture.
+            Design.
           </h3>
           <p className={styles.sidebarBlurb}>
-            Precision engineering mapping the journey of photons to usable grid
-            power.
+            How sunlight on your roof becomes electricity for your home.
           </p>
         </div>
       </div>
 
       <div className={styles.contentArea}>
-        <h2 className={styles.pageHeader}>Interconnection Design</h2>
+        <h2 className={styles.pageHeader}>How the System Connects</h2>
 
         <div className={styles.archRow}>
           <div className={styles.goldTrack}>
@@ -67,15 +66,15 @@ export function EmeraldArchitecture({ data }: EmeraldArchitectureProps) {
                 className={styles.goldEyebrow}
                 style={{ marginBottom: "2px" }}
               >
-                01 / SOLAR ARRAY
+                01 / SOLAR PANELS
               </span>
               <span className={styles.archStepTitle}>
-                {dcLabel} kWp DC Source
+                {dcLabel} kWp DC Array
               </span>
               <span className={styles.archStepHint}>
                 {modules > 0
-                  ? `${modules} × ${EMERALD_PANEL_WATT}W N-Type TOPCon Modules capturing raw irradiance.`
-                  : "N-Type TOPCon modules capturing raw irradiance."}
+                  ? `${modules} × ${EMERALD_PANEL_WATT}W N-Type TOPCon panels that capture sunlight.`
+                  : "N-Type TOPCon panels that capture sunlight."}
               </span>
             </div>
 
@@ -84,11 +83,12 @@ export function EmeraldArchitecture({ data }: EmeraldArchitectureProps) {
                 className={styles.goldEyebrow}
                 style={{ marginBottom: "2px" }}
               >
-                02 / INVERTER PROCESSOR
+                02 / INVERTER
               </span>
-              <span className={styles.archStepTitle}>{acLabel} kW AC Sync</span>
+              <span className={styles.archStepTitle}>{acLabel} kW AC Output</span>
               <span className={styles.archStepHint}>
-                Dual-MPPT tracking converting DC to AC with 97.5% efficiency.
+                Converts DC power to AC power at 97.5% efficiency, with dual
+                MPPT for better output.
               </span>
             </div>
 
@@ -97,32 +97,32 @@ export function EmeraldArchitecture({ data }: EmeraldArchitectureProps) {
                 className={styles.goldEyebrow}
                 style={{ marginBottom: "2px" }}
               >
-                03 / UTILITY GRID
+                03 / GRID
               </span>
               <span className={styles.archStepTitle}>
-                Bi-directional Net Meter
+                Two-way Net Meter
               </span>
               <span className={styles.archStepHint}>
-                Exporting excess power to the local DISCOM grid structure.
+                Extra power goes to your local DISCOM grid.
               </span>
             </div>
           </div>
         </div>
 
         <div className={styles.metricsWrap}>
-          <span className={styles.goldEyebrow}>PERFORMANCE METRICS</span>
+          <span className={styles.goldEyebrow}>KEY NUMBERS</span>
           <table className={styles.goldTable}>
             <tbody>
               <tr>
-                <td>System Oversampling (DC/AC)</td>
+                <td>DC / AC ratio</td>
                 <td>{ratio > 0 ? `${ratio.toFixed(2)}x` : "—"}</td>
               </tr>
               <tr>
-                <td>Estimated Performance Ratio (PR)</td>
+                <td>Estimated performance ratio (PR)</td>
                 <td>{prMetric?.value || "~75%"}</td>
               </tr>
               <tr>
-                <td>Wind Load Resistance</td>
+                <td>Wind resistance</td>
                 <td>{windMetric?.value || "150 km/h"}</td>
               </tr>
             </tbody>

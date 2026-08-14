@@ -29,7 +29,7 @@ export function EmeraldBackCover({
   const logoUrl = closingBrand.showLogo ? closingBrand.logoUrl : "";
   const showWordmark = closingBrand.showName || !logoUrl;
   const { primary, secondary } = splitEmeraldWordmark(brand);
-  const customer = data.meta.customerName?.trim() || "the estate";
+  const customer = data.meta.customerName?.trim() || "you";
   const contact = useEmeraldContact(data);
 
   return (
@@ -58,14 +58,14 @@ export function EmeraldBackCover({
         <img
           className={styles.backCoverPhotoImg}
           src={EMERALD_BACK_PHOTO}
-          alt="Golden-hour view along an elevated rooftop solar array"
+          alt="Rooftop solar panels at sunset"
           width={1536}
           height={1024}
         />
       </div>
 
       <div className={styles.backCoverCenter}>
-        <span className={styles.backCoverEyebrow}>END OF COMMISSION</span>
+        <span className={styles.backCoverEyebrow}>THANK YOU</span>
         <h2 className={styles.backCoverTitle}>
           Prepared for
           <br />
@@ -75,8 +75,8 @@ export function EmeraldBackCover({
           <p className={styles.backCoverLead}>{contact.tagline}</p>
         ) : (
           <p className={styles.backCoverLead}>
-            A private rooftop solar architecture — engineered for yield,
-            endurance, and the quiet accumulation of wealth.
+            A rooftop solar system made for strong generation, long life, and
+            steady savings.
           </p>
         )}
       </div>

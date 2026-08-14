@@ -31,19 +31,18 @@ export function EmeraldImpact({ data }: EmeraldImpactProps) {
         <div>
           <span className={styles.goldEyebrow}>SECTION FOUR</span>
           <h3 className={styles.sidebarTitle}>
-            Biosphere
+            Green
             <br />
-            Dividend.
+            Impact.
           </h3>
           <p className={styles.sidebarBlurb}>
-            A quantifiable commitment to ecological preservation and carbon
-            offset.
+            How this system helps the environment.
           </p>
         </div>
       </div>
 
       <div className={styles.contentArea}>
-        <h2 className={styles.pageHeader}>Ecological Impact</h2>
+        <h2 className={styles.pageHeader}>Environmental Impact</h2>
 
         <div className={styles.monolithCard}>
           <div className={styles.monolithStat}>
@@ -51,10 +50,10 @@ export function EmeraldImpact({ data }: EmeraldImpactProps) {
               {co2Label}
               {co2 > 0 ? <span className={styles.monolithUnit}>t</span> : null}
             </span>
-            <span className={styles.monolithLabel}>Tonnes CO₂ Avoided</span>
+            <span className={styles.monolithLabel}>Tonnes of CO₂ avoided</span>
             <span className={styles.monolithSubtext}>
-              Estimated lifetime carbon offset. Displacing fossil-fuel reliant
-              grid power with zero-emission solar generation over 25 years.
+              CO₂ saved over 25 years by using solar instead of grid power from
+              coal and other fossil fuels.
             </span>
           </div>
 
@@ -62,17 +61,15 @@ export function EmeraldImpact({ data }: EmeraldImpactProps) {
             <span className={styles.monolithValue}>
               {trees > 0 ? trees.toLocaleString("en-IN") : "—"}
             </span>
-            <span className={styles.monolithLabel}>Trees Equivalent</span>
+            <span className={styles.monolithLabel}>Equal to this many trees</span>
             <span className={styles.monolithSubtext}>
-              Mature tree absorption parity. An indicative ecological metric
-              measuring the environmental relief provided by your specific
-              array.
+              About the same CO₂ absorbed by this many mature trees.
             </span>
           </div>
         </div>
 
         <div className={styles.impactFoot}>
-          CLEAN ENERGY GENERATION:{" "}
+          CLEAN ENERGY:{" "}
           {annualUnits > 0
             ? `~${annualUnits.toLocaleString("en-IN")} UNITS / YEAR`
             : "—"}

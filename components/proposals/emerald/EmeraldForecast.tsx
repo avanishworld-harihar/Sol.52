@@ -32,24 +32,23 @@ export function EmeraldForecast({ data }: EmeraldForecastProps) {
         <div>
           <span className={styles.goldEyebrow}>SECTION SIX</span>
           <h3 className={styles.sidebarTitle}>
-            Yield
+            Yearly
             <br />
-            Forecast.
+            Output.
           </h3>
           <p className={styles.sidebarBlurb}>
-            Site-calibrated seasonal generation modeling over a standard
-            12-month meteorological cycle.
+            Expected monthly generation over one year.
           </p>
         </div>
       </div>
 
       <div className={styles.contentArea}>
-        <h2 className={styles.pageHeader}>Seasonal Generation</h2>
+        <h2 className={styles.pageHeader}>Monthly Generation</h2>
 
         <p className={styles.forecastLead}>
-          Energy production naturally scales with regional irradiance. Peak
-          summer output intrinsically aligns with your highest air-conditioning
-          consumption months, maximizing your direct savings.
+          Generation is higher in summer, when you also use more
+          air-conditioning. That means more savings when your bill is usually
+          highest.
         </p>
 
         <div className={styles.forecastContainer}>
@@ -58,7 +57,7 @@ export function EmeraldForecast({ data }: EmeraldForecastProps) {
               className={styles.goldEyebrow}
               style={{ marginBottom: "15px" }}
             >
-              FIRST HALF (H1)
+              JAN – JUN
             </span>
             {h1.map((item) => (
               <div className={styles.monthRow} key={item.m}>
@@ -81,7 +80,7 @@ export function EmeraldForecast({ data }: EmeraldForecastProps) {
               className={styles.goldEyebrow}
               style={{ marginBottom: "15px" }}
             >
-              SECOND HALF (H2)
+              JUL – DEC
             </span>
             {h2.map((item) => (
               <div className={styles.monthRow} key={item.m}>
@@ -103,7 +102,7 @@ export function EmeraldForecast({ data }: EmeraldForecastProps) {
         <div className={styles.forecastTotal}>
           <div className={styles.forecastTotalInner}>
             <span className={styles.forecastTotalLabel}>
-              Total Estimated Annual Yield
+              Estimated yearly generation
             </span>
             <span className={styles.forecastTotalValue}>
               {annualUnits > 0

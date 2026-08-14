@@ -22,13 +22,12 @@ export function EmeraldTermsOne({ data }: EmeraldTermsOneProps) {
         <div>
           <span className={styles.goldEyebrow}>SECTION SEVEN</span>
           <h3 className={styles.sidebarTitle}>
-            Legal
+            Terms
             <br />
-            Framework.
+            &amp; Conditions.
           </h3>
           <p className={styles.sidebarBlurb}>
-            Standard terms of deployment, commercial agreements, and operational
-            liabilities (Part I).
+            Price, subsidy, payments, and net metering (Part 1).
           </p>
         </div>
       </div>
@@ -41,15 +40,13 @@ export function EmeraldTermsOne({ data }: EmeraldTermsOneProps) {
             <span className={styles.clauseNum}>01</span>
             <div className={styles.clauseBody}>
               <span className={styles.clauseTitle}>
-                Commercial Validity & Pricing
+                Price and validity
               </span>
               <p className={styles.clauseText}>
-                The commercial values stated in this proposal are valid for a
-                period of 30 days from the date of issue. Final system sizing
-                and exact pricing are subject to a detailed physical site survey
-                and load-bearing assessment of the deployment area. Any
-                structural modifications required on the roof will be billed at
-                actuals.
+                Prices in this proposal are valid for 30 days from the date of
+                issue. Final system size and price depend on a site survey and a
+                check of the roof&apos;s load capacity. Any extra roof work needed
+                will be charged at actual cost.
               </p>
             </div>
           </div>
@@ -58,16 +55,14 @@ export function EmeraldTermsOne({ data }: EmeraldTermsOneProps) {
             <span className={styles.clauseNum}>02</span>
             <div className={styles.clauseBody}>
               <span className={styles.clauseTitle}>
-                Subsidy & Government Approvals
+                Subsidy and government approvals
               </span>
               <p className={styles.clauseText}>
-                Any subsidy mentioned (e.g., PM Surya Ghar Muft Bijli Yojana) is
-                an estimate based on current central/state policies. {brand} acts
-                as an implementation partner and facilitator. The final
-                disbursement of the subsidy amount is strictly at the discretion
-                of the Ministry of New and Renewable Energy (MNRE) and the
-                respective nodal agencies. {brand} is not liable for delays in
-                portal approvals or subsidy credits.
+                Any subsidy shown (for example, PM Surya Ghar Muft Bijli Yojana)
+                is an estimate based on current government rules. {brand} helps
+                with the application. The final subsidy amount and payment are
+                decided by MNRE and the local agencies. {brand} is not
+                responsible for delays in portal approval or subsidy credit.
               </p>
             </div>
           </div>
@@ -76,15 +71,12 @@ export function EmeraldTermsOne({ data }: EmeraldTermsOneProps) {
             <span className={styles.clauseNum}>03</span>
             <div className={styles.clauseBody}>
               <span className={styles.clauseTitle}>
-                Payment Milestones & Default
+                Payments
               </span>
               <p className={styles.clauseText}>
-                Project execution is strictly tethered to the approved milestone
-                schedule. Delay in clearance of material or installation
-                advances beyond 7 working days will result in a corresponding
-                pause in procurement and deployment. All hardware remains the
-                exclusive property of {brand} until the final 100% payment is
-                cleared by the client.
+                Work follows the agreed payment stages. If a payment is late by
+                more than 7 working days, buying and installation will pause.
+                All equipment stays with {brand} until the full amount is paid.
               </p>
             </div>
           </div>
@@ -93,15 +85,13 @@ export function EmeraldTermsOne({ data }: EmeraldTermsOneProps) {
             <span className={styles.clauseNum}>04</span>
             <div className={styles.clauseBody}>
               <span className={styles.clauseTitle}>
-                Net Metering & Grid Connectivity
+                Net metering and grid connection
               </span>
               <p className={styles.clauseText}>
-                The timeline for net meter installation and grid synchronization
-                is heavily dependent on the local utility provider (DISCOM).
-                While {brand} will prepare and submit all necessary technical
-                documentation and liaise with authorities, statutory delays
-                caused by the DISCOM&apos;s testing or meter availability are
-                outside our operational control.
+                The time needed for net meter installation and grid connection
+                depends on your local DISCOM. {brand} will file the papers and
+                follow up. Delays from DISCOM testing or meter availability are
+                outside our control.
               </p>
             </div>
           </div>

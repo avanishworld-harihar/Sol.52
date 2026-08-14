@@ -57,46 +57,45 @@ export function EmeraldBillAudit({ data }: EmeraldBillAuditProps) {
             Audit.
           </h3>
           <p className={styles.sidebarBlurb}>
-            A comprehensive analysis of your current utility liabilities versus
-            post-solar independence.
+            Your current electricity bill compared with savings after solar.
           </p>
         </div>
       </div>
 
       <div className={styles.contentArea}>
-        <h2 className={styles.pageHeader}>Tariff Anatomy</h2>
+        <h2 className={styles.pageHeader}>Your Electricity Bill</h2>
 
         <p className={styles.auditLead}>
-          By shifting your primary energy reliance from the traditional grid to
-          a localized solar architecture, we neutralize escalating tariff rates
-          and establish a fixed, predictable energy economy for your estate.
+          Solar on your roof reduces how much power you buy from the grid. That
+          helps protect you from rising unit rates and makes your yearly
+          electricity cost more stable.
         </p>
 
         <div className={styles.auditCard}>
-          <h4 className={styles.auditHeader}>Current Grid Liability</h4>
+          <h4 className={styles.auditHeader}>Current electricity cost</h4>
 
           <div className={styles.auditRow}>
-            <span className={styles.auditLabel}>Average Monthly Consumption</span>
+            <span className={styles.auditLabel}>Average monthly use</span>
             <span className={styles.auditValue}>
               {dashOr(`${avgUnits.toLocaleString("en-IN")} Units`, avgUnits > 0)}
             </span>
           </div>
           <div className={styles.auditRow}>
             <span className={styles.auditLabel}>
-              Effective Blended Tariff (per Unit)
+              Average rate (per unit)
             </span>
             <span className={styles.auditValue}>
               {dashOr(`₹ ${tariff.toFixed(2)}`, tariff > 0)}
             </span>
           </div>
           <div className={styles.auditRow}>
-            <span className={styles.auditLabel}>Estimated Current Monthly Bill</span>
+            <span className={styles.auditLabel}>Estimated monthly bill</span>
             <span className={styles.auditValue}>
               {dashOr(formatInr(monthlyBill), monthlyBill > 0)}
             </span>
           </div>
           <div className={styles.auditRow}>
-            <span className={styles.auditLabel}>Estimated Annual Grid Expense</span>
+            <span className={styles.auditLabel}>Estimated yearly bill</span>
             <span className={`${styles.auditValue} ${styles.auditValueWarn}`}>
               {dashOr(formatInr(annualBill), annualBill > 0)}
             </span>
@@ -105,10 +104,10 @@ export function EmeraldBillAudit({ data }: EmeraldBillAuditProps) {
           <div className={styles.auditHighlight}>
             <div>
               <span className={styles.auditHighlightKicker}>
-                Post-Solar Projection
+                After solar
               </span>
               <span className={styles.auditHighlightTitle}>
-                Estimated Monthly Savings
+                Estimated monthly savings
               </span>
             </div>
             <span className={styles.auditHighlightValue}>

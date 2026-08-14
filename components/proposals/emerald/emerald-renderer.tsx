@@ -100,7 +100,7 @@ export function EmeraldRenderer({
   proposalId,
 }: EmeraldRendererProps) {
   if (!data) {
-    return <div className={styles.loading}>Preparing Emerald Signature…</div>;
+    return <div className={styles.loading}>Preparing your proposal…</div>;
   }
 
   return (

@@ -14,10 +14,10 @@ export type EmeraldClosingProps = {
 };
 
 const DEFAULT_STEPS = [
-  { title: "Project Advance", percent: 25 },
-  { title: "Material Delivery", percent: 50 },
-  { title: "Installation Setup", percent: 20 },
-  { title: "Grid Commissioning", percent: 5 },
+      { title: "Advance", percent: 25 },
+      { title: "Material delivery", percent: 50 },
+      { title: "Installation", percent: 20 },
+      { title: "Grid connection", percent: 5 },
 ] as const;
 
 type Milestone = {
@@ -77,33 +77,31 @@ export function EmeraldClosing({ data }: EmeraldClosingProps) {
       <div className={styles.sidebar}>
         <span className={styles.folioNum}>05</span>
         <div>
-          <span className={styles.goldEyebrow}>FINAL SECTION</span>
+          <span className={styles.goldEyebrow}>PAYMENT PLAN</span>
           <h3 className={styles.sidebarTitle}>
-            Execution
+            How We
             <br />
-            Mandate.
+            Get Paid.
           </h3>
           <p className={styles.sidebarBlurb}>
-            Formal deployment protocol, payment scheduling, and project
-            authorization.
+            Payment stages and signatures to start the project.
           </p>
         </div>
       </div>
 
       <div className={styles.contentArea}>
-        <h2 className={styles.pageHeader}>Deployment Protocol</h2>
+        <h2 className={styles.pageHeader}>Payment Schedule</h2>
 
         <p className={styles.closingLead}>
-          Capital deployment is gated against clear project milestones to ensure
-          risk-free execution and complete transparency throughout the
-          installation lifecycle.
+          You pay in stages as the work moves forward. This keeps the project
+          clear and easy to follow from start to finish.
         </p>
 
         <div className={styles.dossierReceipt}>
           <div className={styles.receiptHeader}>
-            Investment Milestone Schedule
+            Payment stages
             {gross > 0
-              ? ` (Based on ${formatInrCompact(gross)} Gross)`
+              ? ` (based on ${formatInrCompact(gross)} gross)`
               : ""}
           </div>
 
@@ -113,7 +111,7 @@ export function EmeraldClosing({ data }: EmeraldClosingProps) {
                 {step.phase}. {step.title}
               </span>
               <span className={styles.receiptPercent}>
-                {step.percent}% of Project Value
+                {step.percent}% of project value
               </span>
               <span className={styles.receiptAmount}>
                 {step.amountInr > 0 ? formatInr(step.amountInr) : "—"}
@@ -126,7 +124,7 @@ export function EmeraldClosing({ data }: EmeraldClosingProps) {
           <div className={styles.sigLine}>
             <div className={styles.sigSpace} />
             <span className={styles.sigName}>{client}</span>
-            <span className={styles.sigTitle}>CLIENT ACCEPTANCE</span>
+            <span className={styles.sigTitle}>CUSTOMER SIGNATURE</span>
           </div>
 
           <div className={styles.sigLine}>
@@ -134,13 +132,13 @@ export function EmeraldClosing({ data }: EmeraldClosingProps) {
               <span className={styles.sigMark}>{primary}</span>
             </div>
             <span className={styles.sigName}>{brand}</span>
-            <span className={styles.sigTitle}>AUTHORIZED SIGNATORY</span>
+            <span className={styles.sigTitle}>COMPANY SIGNATURE</span>
           </div>
         </div>
 
         <p className={styles.closingDisclaimer}>
-          PROPOSAL VALID FOR 30 DAYS. FINAL PRICING IS SUBJECT TO DISCOM
-          APPROVAL AND DETAILED SITE SURVEY.
+          THIS PROPOSAL IS VALID FOR 30 DAYS. FINAL PRICE DEPENDS ON DISCOM
+          APPROVAL AND A DETAILED SITE SURVEY.
         </p>
       </div>
     </section>

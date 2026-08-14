@@ -41,23 +41,23 @@ function fallbackAnthology(data: ProposalData): AnthologyItem[] {
     {
       num: "01",
       eyebrow: `${panelW?.value ?? "30"}-YEAR PERFORMANCE`,
-      title: "N-Type TOPCon Array",
+      title: "Solar Panels",
       desc:
         modules > 0
-          ? `Deploying ${modules} × ${EMERALD_PANEL_WATT}Wp ultra-high efficiency modules. Engineered with N-Type technology for superior low-light performance and ultra-low thermal degradation. DCR compliant and rated at ≥21% photon conversion efficiency.`
-          : "Ultra-high efficiency N-Type TOPCon modules. Engineered for superior low-light performance and ultra-low thermal degradation. DCR compliant and rated at ≥21% photon conversion efficiency.",
+          ? `${modules} × ${EMERALD_PANEL_WATT}W high-efficiency N-Type TOPCon panels. They work well in low light, lose less power in heat, are DCR compliant, and convert about 21% of sunlight into electricity.`
+          : "High-efficiency N-Type TOPCon panels. They work well in low light, lose less power in heat, are DCR compliant, and convert about 21% of sunlight into electricity.",
     },
     {
       num: "02",
       eyebrow: `${inverterW?.value ?? "10"}-YEAR REPLACEMENT`,
       title: "Grid-Tie Inverter",
-      desc: `Intelligent ${acLabel} kW string inverter acting as the brain of your array. Features independent Dual-MPPT tracking for shade tolerance, IP65 weatherproofing, and a seamless 97.5% grid-synchronization architecture.`,
+      desc: `A ${acLabel} kW string inverter that converts panel power for your home. Dual MPPT helps in shade, IP65 weather protection, and about 97.5% efficiency.`,
     },
     {
       num: "03",
       eyebrow: `${String(wind).replace(/\s+/g, " ").toUpperCase()} WIND RATING`,
-      title: "Galvanized Exoskeleton",
-      desc: "JSW Hot-Dip Galvanized Iron (GI) mounting structure engineered to anchor the array safely through extreme monsoons. Equipped with TUV-approved fire-resistant cabling and Type-II Surge Protection Devices (SPD).",
+      title: "Mounting Structure",
+      desc: "JSW hot-dip galvanized iron (GI) structure made to hold the panels safely in heavy monsoon and wind. Includes TUV-approved fire-resistant cables and Type-II surge protection (SPD).",
     },
   ];
 }
@@ -72,7 +72,7 @@ function fromBom(items: ProposalBomItem[]): AnthologyItem[] {
       [item.spec, item.brand, ...(item.technicalPoints ?? [])]
         .filter(Boolean)
         .join(". ") ||
-      "Specified for this rooftop commission.",
+      "Chosen for this rooftop project.",
   }));
 }
 
@@ -87,19 +87,18 @@ export function EmeraldHardware({ data }: EmeraldHardwareProps) {
         <div>
           <span className={styles.goldEyebrow}>SECTION THREE</span>
           <h3 className={styles.sidebarTitle}>
-            Material
+            Hardware
             <br />
-            Anthology.
+            List.
           </h3>
           <p className={styles.sidebarBlurb}>
-            Tier-1 silicon, smart processors, and galvanized steel curated for
-            decades of endurance.
+            Quality panels, inverter, and steel structure built to last.
           </p>
         </div>
       </div>
 
       <div className={styles.contentArea}>
-        <h2 className={styles.pageHeader}>Bill of Materials</h2>
+        <h2 className={styles.pageHeader}>What We Will Install</h2>
 
         <div className={styles.cascadeWrapper}>
           {items.map((item) => (
