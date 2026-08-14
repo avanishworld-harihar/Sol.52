@@ -2,10 +2,12 @@
 
 /**
  * Emerald Signature cover — 30% emerald sidebar + 70% ivory folio.
+ * Logo from More → Brand; new rooftop photograph in the ivory column.
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
 import {
+  EMERALD_DEFAULT_BRAND,
   EMERALD_SPECIFIC_YIELD,
   emeraldDcKwp,
   emeraldModuleCount,
@@ -13,18 +15,39 @@ import {
   formatEmeraldIssueDate,
   formatEmeraldKw,
   splitEmeraldWordmark,
-  useEmeraldBrand,
+  useEmeraldSurfaceBrand,
 } from "./emerald-brand";
 import styles from "./Emerald.module.css";
+
+export const EMERALD_COVER_PHOTO = "/assets/proposals/emerald-cover-indian-rcc.jpg";
 
 export type EmeraldCoverProps = {
   data: ProposalData;
   proposalId?: string;
+  installerLogoUrl?: string;
 };
 
-export function EmeraldCover({ data, proposalId }: EmeraldCoverProps) {
-  const brand = useEmeraldBrand(data);
-  const { primary, secondary } = splitEmeraldWordmark(brand);
+function CoverWordmark({ brandName }: { brandName: string }) {
+  const { primary, secondary } = splitEmeraldWordmark(brandName);
+  return (
+    <>
+      <span className={styles.brandPrimary}>{primary}</span>
+      {secondary ? (
+        <span className={styles.brandSecondary}>{secondary}</span>
+      ) : null}
+    </>
+  );
+}
+
+export function EmeraldCover({
+  data,
+  proposalId,
+  installerLogoUrl,
+}: EmeraldCoverProps) {
+  const coverBrand = useEmeraldSurfaceBrand(data, "cover", installerLogoUrl);
+  const brand = coverBrand.installerName || EMERALD_DEFAULT_BRAND;
+  const logoUrl = coverBrand.showLogo ? coverBrand.logoUrl : "";
+  const showWordmark = coverBrand.showName || !logoUrl;
   const customer = data.meta.customerName?.trim() || "Customer Name";
   const systemKw = Number(data.meta.systemKw) || 0;
   const modules = emeraldModuleCount(systemKw);
@@ -36,20 +59,21 @@ export function EmeraldCover({ data, proposalId }: EmeraldCoverProps) {
       : systemKw > 0
         ? Math.round(systemKw * EMERALD_SPECIFIC_YIELD)
         : 0;
-  const location =
-    data.meta.locationLine?.trim() || "your estate";
+  const location = data.meta.locationLine?.trim() || "your estate";
 
   return (
     <section className={styles.a4Page}>
       <div className={styles.sidebar}>
         <div>
-          <div className={styles.markRing}>
-            <div className={styles.markDot} />
-          </div>
-          <span className={styles.brandPrimary}>{primary}</span>
-          {secondary ? (
-            <span className={styles.brandSecondary}>{secondary}</span>
-          ) : null}
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element -- print A4 installer logo
+            <img src={logoUrl} alt={brand} className={styles.coverLogo} />
+          ) : (
+            <div className={styles.markRing}>
+              <div className={styles.markDot} />
+            </div>
+          )}
+          {showWordmark ? <CoverWordmark brandName={brand} /> : null}
         </div>
 
         <div>
@@ -65,36 +89,21 @@ export function EmeraldCover({ data, proposalId }: EmeraldCoverProps) {
         </div>
       </div>
 
-      <div className={styles.contentArea}>
-        <div className={styles.watermark} aria-hidden>
-          <svg width="400" height="400" viewBox="0 0 100 100">
-            <circle
-              cx="50"
-              cy="50"
-              r="45"
-              fill="none"
-              stroke="#064E3B"
-              strokeWidth="2"
-            />
-            <circle
-              cx="50"
-              cy="50"
-              r="30"
-              fill="none"
-              stroke="#064E3B"
-              strokeWidth="1"
-            />
-            <path
-              d="M50 0 V100 M0 50 H100"
-              stroke="#064E3B"
-              strokeWidth="0.5"
-            />
-          </svg>
+      <div className={`${styles.contentArea} ${styles.coverContent}`}>
+        <div className={styles.coverPhoto}>
+          {/* eslint-disable-next-line @next/next/no-img-element -- print A4 static asset */}
+          <img
+            className={styles.coverPhotoImg}
+            src={EMERALD_COVER_PHOTO}
+            alt="Elevated rooftop solar array on an Indian RCC terrace"
+            width={1536}
+            height={1024}
+          />
         </div>
 
         <div className={styles.coverBody}>
           <span className={styles.goldEyebrow}>PRIVATE ROOFTOP COMMISSION</span>
-          <h1 className={styles.serifTitle}>{customer}</h1>
+          <h1 className={`${styles.serifTitle} ${styles.coverTitle}`}>{customer}</h1>
           <p className={styles.coverLead}>
             A bespoke solar architecture blueprint engineered specifically for{" "}
             {location}. Designed for maximum yield and aesthetic integration.

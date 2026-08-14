@@ -6,6 +6,10 @@ import {
   PROPOSAL_BRANDING_UPDATED_EVENT,
   readProposalBrandingSettings,
   resolveInstallerDisplayName,
+  resolveProposalBrandConfig,
+  resolveProposalBrandPresentation,
+  type ProposalBrandPresentation,
+  type ProposalBrandSurface,
 } from "@/lib/proposal-branding-settings";
 
 export const EMERALD_PANEL_WATT = 580;
@@ -60,6 +64,71 @@ export function useEmeraldBrand(data: ProposalData): string {
   }, [data]);
 
   return name;
+}
+
+/** Logo from proposal snapshot → adapter prop → More → Brand & proposals. */
+export function resolveEmeraldLogoUrl(
+  data: ProposalData,
+  installerLogoUrl?: string
+): string {
+  const fromData = data.meta?.brandLogoUrl?.trim() ?? "";
+  const fromProp = installerLogoUrl?.trim() ?? "";
+  if (fromData) return fromData;
+  if (fromProp) return fromProp;
+  if (typeof window !== "undefined") {
+    try {
+      const fromLocal =
+        readProposalBrandingSettings().installerLogoUrl?.trim() ?? "";
+      if (fromLocal) return fromLocal;
+    } catch {
+      /* ignore */
+    }
+  }
+  return "";
+}
+
+export function useEmeraldLogoUrl(
+  data: ProposalData,
+  installerLogoUrl?: string
+): string {
+  const [logoUrl, setLogoUrl] = useState(() =>
+    resolveEmeraldLogoUrl(data, installerLogoUrl)
+  );
+
+  useEffect(() => {
+    const sync = () => setLogoUrl(resolveEmeraldLogoUrl(data, installerLogoUrl));
+    sync();
+    window.addEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, [data, installerLogoUrl]);
+
+  return logoUrl;
+}
+
+export function useEmeraldSurfaceBrand(
+  data: ProposalData,
+  surface: ProposalBrandSurface,
+  installerLogoUrl?: string
+): ProposalBrandPresentation {
+  const installerName = useEmeraldBrand(data);
+  const logoUrl = useEmeraldLogoUrl(data, installerLogoUrl);
+
+  const config = resolveProposalBrandConfig({
+    pptInput: {
+      brandDisplayMode: data.meta.brandDisplayMode,
+      brandSectionConfig: data.meta.brandSectionConfig,
+    },
+  });
+
+  return resolveProposalBrandPresentation(config, surface, {
+    installerName,
+    logoUrl,
+    tagline: data.meta.brandTagline,
+  });
 }
 
 export function splitEmeraldWordmark(brandName: string): {

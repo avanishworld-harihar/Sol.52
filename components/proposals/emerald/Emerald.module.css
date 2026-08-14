@@ -76,11 +76,24 @@
 }
 
 .printBarBrand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: #064e3b;
+}
+
+.printBarLogo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  background: #fff;
+  border: 1px solid rgba(212, 175, 55, 0.55);
+  border-radius: 4px;
+  padding: 2px;
 }
 
 .printBarBtn {
@@ -257,6 +270,18 @@
   margin-bottom: 20px;
 }
 
+.coverLogo {
+  width: 76px;
+  height: 76px;
+  object-fit: contain;
+  background: #fafaf9;
+  border: 2px solid #d4af37;
+  border-radius: 6px;
+  padding: 6px;
+  margin-bottom: 18px;
+  display: block;
+}
+
 .markDot {
   width: 15px;
   height: 15px;
@@ -315,28 +340,63 @@
   pointer-events: none;
 }
 
+.coverContent {
+  padding: 0 0 36px;
+  overflow: hidden;
+}
+
+.coverPhoto {
+  width: 100%;
+  height: 102mm;
+  overflow: hidden;
+  flex-shrink: 0;
+  border-bottom: 2px solid #d4af37;
+}
+
+.coverPhotoImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 62% 42%;
+  display: block;
+}
+
+.coverTitle {
+  font-size: 2.85rem;
+}
+
 .coverBody {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-end;
   z-index: 10;
+  padding: 22px 40px 0;
 }
 
 .coverLead {
   color: #57534e;
-  font-size: 1.1rem;
-  max-width: 80%;
-  line-height: 1.6;
+  font-size: 1rem;
+  max-width: 92%;
+  line-height: 1.55;
   margin: 0;
 }
 
 .coverFooter {
   display: flex;
-  gap: 40px;
+  gap: 28px;
   border-top: 2px solid #d4af37;
-  padding-top: 30px;
+  padding: 18px 40px 0;
+  margin-top: 18px;
   z-index: 10;
+}
+
+.coverFooter .valueBlock {
+  margin-bottom: 0;
+}
+
+.coverFooter .valueBlock span:last-child {
+  font-size: 1.65rem;
 }
 
 .folioNum {
@@ -1046,9 +1106,27 @@
   color: #fde68a !important;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: 56px 48px;
+  justify-content: flex-start;
+  padding: 32px 36px 28px;
   border: 1px solid #d4af37;
+}
+
+.backCoverHeader {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-shrink: 0;
+}
+
+.backCoverLogo {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  background: #fafaf9;
+  border: 2px solid #d4af37;
+  border-radius: 6px;
+  padding: 6px;
+  flex-shrink: 0;
 }
 
 .backCoverMark {
@@ -1059,6 +1137,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .backCoverMarkDot {
@@ -1069,22 +1148,39 @@
 }
 
 .backCoverBrand {
-  font-size: 1.6rem;
+  font-size: 1.35rem;
   font-weight: 700;
   letter-spacing: 0.28em;
   color: #fff;
   text-transform: uppercase;
-  margin-top: 28px;
+  margin-top: 0;
   display: block;
 }
 
 .backCoverBrandSub {
   display: block;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   letter-spacing: 0.42em;
   color: #d4af37;
   text-transform: uppercase;
-  margin-top: 8px;
+  margin-top: 6px;
+}
+
+.backCoverPhoto {
+  width: 100%;
+  height: 92mm;
+  overflow: hidden;
+  margin: 22px 0 0;
+  flex-shrink: 0;
+  border: 1px solid #d4af37;
+}
+
+.backCoverPhotoImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 55%;
+  display: block;
 }
 
 .backCoverCenter {
@@ -1092,33 +1188,48 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  max-width: 78%;
+  max-width: 92%;
+  padding: 18px 0 12px;
 }
 
 .backCoverEyebrow {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   letter-spacing: 0.32em;
   text-transform: uppercase;
   color: #d4af37;
   font-weight: 700;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 
 .backCoverTitle {
   font-family: "Cormorant Garamond", serif;
-  font-size: 3.4rem;
+  font-size: 2.35rem;
   font-weight: 400;
   color: #fafaf9 !important;
-  line-height: 1.05;
-  margin: 0 0 18px;
+  line-height: 1.08;
+  margin: 0 0 10px;
 }
 
 .backCoverLead {
-  font-size: 1rem;
+  font-size: 0.92rem;
   color: #a7f3d0;
-  line-height: 1.6;
+  line-height: 1.5;
   margin: 0;
-  max-width: 90%;
+  max-width: 95%;
+}
+
+.backCoverContact {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 28px;
+  border-top: 1px solid rgba(212, 175, 55, 0.35);
+  padding-top: 16px;
+  flex-shrink: 0;
+}
+
+.backCoverContactLink {
+  text-decoration: none;
+  color: inherit;
 }
 
 .backCoverMeta {
@@ -1131,16 +1242,17 @@
 
 .backCoverMetaLabel {
   display: block;
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: #a7f3d0;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .backCoverMetaValue {
   display: block;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   color: #fafaf9;
   font-family: "Cormorant Garamond", serif;
+  line-height: 1.35;
 }

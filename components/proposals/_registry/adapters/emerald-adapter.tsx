@@ -9,7 +9,16 @@ import type { PresetRendererProps } from "@/components/proposals/_registry/types
 
 export default function EmeraldAdapter({
   data,
+  installerLogoUrl,
+  pptInput,
   proposalId,
 }: PresetRendererProps) {
-  return <EmeraldRenderer data={data} proposalId={proposalId} />;
+  return (
+    <EmeraldRenderer
+      data={data}
+      installerLogoUrl={installerLogoUrl || pptInput?.installerLogoUrl}
+      pptInput={pptInput}
+      proposalId={proposalId}
+    />
+  );
 }

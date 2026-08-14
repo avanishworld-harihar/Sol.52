@@ -10,7 +10,7 @@ import { useRef, useState } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { EmeraldProposal } from "./EmeraldProposal";
-import { useEmeraldBrand } from "./emerald-brand";
+import { useEmeraldBrand, useEmeraldLogoUrl } from "./emerald-brand";
 import styles from "./Emerald.module.css";
 import {
   buildAtelierProposalPdf,
@@ -27,12 +27,15 @@ export type EmeraldRendererProps = {
 
 function EmeraldDocument({
   data,
+  installerLogoUrl,
   proposalId,
 }: {
   data: ProposalData;
+  installerLogoUrl?: string;
   proposalId?: string;
 }) {
   const brand = useEmeraldBrand(data);
+  const logoUrl = useEmeraldLogoUrl(data, installerLogoUrl);
   const rootRef = useRef<HTMLDivElement>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
 
@@ -66,6 +69,10 @@ function EmeraldDocument({
       <div className={styles.printBar}>
         <div className={styles.printBarInner}>
           <span className={styles.printBarBrand}>
+            {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element -- web toolbar logo
+              <img src={logoUrl} alt={brand} className={styles.printBarLogo} />
+            ) : null}
             {brand} · Emerald Signature
           </span>
           <button
@@ -78,20 +85,31 @@ function EmeraldDocument({
         </div>
       </div>
 
-      <EmeraldProposal data={data} proposalId={proposalId} />
+      <EmeraldProposal
+        data={data}
+        proposalId={proposalId}
+        installerLogoUrl={installerLogoUrl}
+      />
     </div>
   );
 }
 
 export function EmeraldRenderer({
   data,
+  installerLogoUrl,
   proposalId,
 }: EmeraldRendererProps) {
   if (!data) {
     return <div className={styles.loading}>Preparing Emerald Signature…</div>;
   }
 
-  return <EmeraldDocument data={data} proposalId={proposalId} />;
+  return (
+    <EmeraldDocument
+      data={data}
+      installerLogoUrl={installerLogoUrl}
+      proposalId={proposalId}
+    />
+  );
 }
 
 export default EmeraldRenderer;

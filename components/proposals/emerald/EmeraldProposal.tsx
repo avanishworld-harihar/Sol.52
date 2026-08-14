@@ -21,12 +21,21 @@ import styles from "./Emerald.module.css";
 export type EmeraldProposalProps = {
   data: ProposalData;
   proposalId?: string;
+  installerLogoUrl?: string;
 };
 
-export function EmeraldProposal({ data, proposalId }: EmeraldProposalProps) {
+export function EmeraldProposal({
+  data,
+  proposalId,
+  installerLogoUrl,
+}: EmeraldProposalProps) {
   return (
     <div className={styles.proposalStage}>
-      <EmeraldCover data={data} proposalId={proposalId} />
+      <EmeraldCover
+        data={data}
+        proposalId={proposalId}
+        installerLogoUrl={installerLogoUrl}
+      />
       <EmeraldArchitecture data={data} />
       <EmeraldEconomics data={data} />
       <EmeraldHardware data={data} />
@@ -36,7 +45,7 @@ export function EmeraldProposal({ data, proposalId }: EmeraldProposalProps) {
       <EmeraldClosing data={data} />
       <EmeraldTermsOne data={data} />
       <EmeraldTermsTwo data={data} />
-      <EmeraldBackCover data={data} />
+      <EmeraldBackCover data={data} installerLogoUrl={installerLogoUrl} />
     </div>
   );
 }

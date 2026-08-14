@@ -1,37 +1,67 @@
 "use client";
 
 /**
- * Emerald Signature — back cover (full forest folio).
+ * Emerald Signature — back cover (forest folio + photograph + contact).
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
 import {
+  EMERALD_DEFAULT_BRAND,
   splitEmeraldWordmark,
-  useEmeraldBrand,
+  useEmeraldSurfaceBrand,
 } from "./emerald-brand";
+import { useEmeraldContact } from "./emerald-contact";
 import styles from "./Emerald.module.css";
+
+export const EMERALD_BACK_PHOTO = "/assets/proposals/emerald-back-golden-hour.jpg";
 
 export type EmeraldBackCoverProps = {
   data: ProposalData;
+  installerLogoUrl?: string;
 };
 
-export function EmeraldBackCover({ data }: EmeraldBackCoverProps) {
-  const brand = useEmeraldBrand(data);
+export function EmeraldBackCover({
+  data,
+  installerLogoUrl,
+}: EmeraldBackCoverProps) {
+  const closingBrand = useEmeraldSurfaceBrand(data, "closing", installerLogoUrl);
+  const brand = closingBrand.installerName || EMERALD_DEFAULT_BRAND;
+  const logoUrl = closingBrand.showLogo ? closingBrand.logoUrl : "";
+  const showWordmark = closingBrand.showName || !logoUrl;
   const { primary, secondary } = splitEmeraldWordmark(brand);
   const customer = data.meta.customerName?.trim() || "the estate";
-  const contact = data.closing.contactLine?.trim() || "";
-  const address = data.closing.address?.trim() || data.meta.locationLine?.trim() || "";
+  const contact = useEmeraldContact(data);
 
   return (
     <section className={`${styles.a4Page} ${styles.backCoverPage}`}>
-      <div>
-        <div className={styles.backCoverMark}>
-          <div className={styles.backCoverMarkDot} />
-        </div>
-        <span className={styles.backCoverBrand}>{primary}</span>
-        {secondary ? (
-          <span className={styles.backCoverBrandSub}>{secondary}</span>
+      <header className={styles.backCoverHeader}>
+        {logoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element -- print A4 installer logo
+          <img src={logoUrl} alt={brand} className={styles.backCoverLogo} />
+        ) : (
+          <div className={styles.backCoverMark}>
+            <div className={styles.backCoverMarkDot} />
+          </div>
+        )}
+        {showWordmark ? (
+          <div>
+            <span className={styles.backCoverBrand}>{primary}</span>
+            {secondary ? (
+              <span className={styles.backCoverBrandSub}>{secondary}</span>
+            ) : null}
+          </div>
         ) : null}
+      </header>
+
+      <div className={styles.backCoverPhoto}>
+        {/* eslint-disable-next-line @next/next/no-img-element -- print A4 static asset */}
+        <img
+          className={styles.backCoverPhotoImg}
+          src={EMERALD_BACK_PHOTO}
+          alt="Golden-hour view along an elevated rooftop solar array"
+          width={1536}
+          height={1024}
+        />
       </div>
 
       <div className={styles.backCoverCenter}>
@@ -41,23 +71,38 @@ export function EmeraldBackCover({ data }: EmeraldBackCoverProps) {
           <br />
           {customer}.
         </h2>
-        <p className={styles.backCoverLead}>
-          A private rooftop solar architecture — engineered for yield, endurance,
-          and the quiet accumulation of wealth.
-        </p>
+        {contact.tagline ? (
+          <p className={styles.backCoverLead}>{contact.tagline}</p>
+        ) : (
+          <p className={styles.backCoverLead}>
+            A private rooftop solar architecture — engineered for yield,
+            endurance, and the quiet accumulation of wealth.
+          </p>
+        )}
       </div>
 
-      <div className={styles.backCoverMeta}>
+      <div className={styles.backCoverContact}>
         <div>
           <span className={styles.backCoverMetaLabel}>Installer</span>
           <span className={styles.backCoverMetaValue}>{brand}</span>
         </div>
-        <div>
-          <span className={styles.backCoverMetaLabel}>Correspondence</span>
-          <span className={styles.backCoverMetaValue}>
-            {contact || address || "—"}
-          </span>
-        </div>
+        {contact.rows.map((row) =>
+          row.href ? (
+            <a
+              key={row.label}
+              className={styles.backCoverContactLink}
+              href={row.href}
+            >
+              <span className={styles.backCoverMetaLabel}>{row.label}</span>
+              <span className={styles.backCoverMetaValue}>{row.value}</span>
+            </a>
+          ) : (
+            <div key={row.label}>
+              <span className={styles.backCoverMetaLabel}>{row.label}</span>
+              <span className={styles.backCoverMetaValue}>{row.value}</span>
+            </div>
+          )
+        )}
       </div>
     </section>
   );
