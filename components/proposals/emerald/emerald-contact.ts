@@ -13,7 +13,7 @@ import {
   readProposalBrandingSettings,
   type ProposalBrandingSettings,
 } from "@/lib/proposal-branding-settings";
-import { EMERALD_DEFAULT_BRAND, resolveEmeraldBrand } from "./emerald-brand";
+import { resolveEmeraldBrand } from "./emerald-brand";
 import { useEmeraldLang } from "./emerald-lang-context";
 
 export type EmeraldContactRow = {
@@ -123,7 +123,7 @@ export function buildEmeraldContact(
   const brandName =
     resolveEmeraldBrand(data) ||
     closing.installerName?.trim() ||
-    EMERALD_DEFAULT_BRAND;
+    "";
 
   const rows: EmeraldContactRow[] = [];
 

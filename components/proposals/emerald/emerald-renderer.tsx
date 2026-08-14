@@ -6,7 +6,7 @@
  * Pages compiled by EmeraldProposal.
  */
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { EmeraldProposal } from "./EmeraldProposal";
@@ -30,14 +30,38 @@ export type EmeraldRendererProps = {
   proposalId?: string;
 };
 
+const EMERALD_LANG_KEY = "sol52-emerald-lang";
+
+function readStoredLang(): EmeraldLang {
+  if (typeof window === "undefined") return "en";
+  try {
+    const stored = window.localStorage.getItem(EMERALD_LANG_KEY);
+    if (stored === "hi" || stored === "en") return stored;
+  } catch {
+    /* ignore */
+  }
+  const nav = window.navigator?.language || "";
+  return /^hi\b/i.test(nav) ? "hi" : "en";
+}
+
+function persistLang(lang: EmeraldLang) {
+  try {
+    window.localStorage.setItem(EMERALD_LANG_KEY, lang);
+  } catch {
+    /* ignore */
+  }
+}
+
 function EmeraldDocument({
   data,
   installerLogoUrl,
   proposalId,
+  selectedTenureYears,
 }: {
   data: ProposalData;
   installerLogoUrl?: string;
   proposalId?: string;
+  selectedTenureYears?: number | null;
 }) {
   const brand = useEmeraldBrand(data);
   const logoUrl = useEmeraldLogoUrl(data, installerLogoUrl);
@@ -77,9 +101,14 @@ function EmeraldDocument({
           <span className={styles.printBarBrand}>
             {logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element -- web toolbar logo
-              <img src={logoUrl} alt={brand} className={styles.printBarLogo} />
+              <img
+                src={logoUrl}
+                alt={brand || copy.print.brand}
+                className={styles.printBarLogo}
+              />
             ) : null}
-            {brand} · {copy.print.brand}
+            {brand ? `${brand} · ` : ""}
+            {copy.print.brand}
           </span>
           <div className={styles.printBarActions}>
             <div
@@ -120,6 +149,7 @@ function EmeraldDocument({
         data={data}
         proposalId={proposalId}
         installerLogoUrl={installerLogoUrl}
+        selectedTenureYears={selectedTenureYears}
       />
     </div>
   );
@@ -128,9 +158,24 @@ function EmeraldDocument({
 export function EmeraldRenderer({
   data,
   installerLogoUrl,
+  pptInput,
   proposalId,
 }: EmeraldRendererProps) {
-  const [lang, setLang] = useState<EmeraldLang>("en");
+  const [lang, setLangState] = useState<EmeraldLang>("en");
+  const selectedTenureYears =
+    pptInput?.financeOption?.selectedTenureYears &&
+    pptInput.financeOption.selectedTenureYears > 0
+      ? pptInput.financeOption.selectedTenureYears
+      : null;
+
+  useEffect(() => {
+    setLangState(readStoredLang());
+  }, []);
+
+  const setLang = (next: EmeraldLang) => {
+    setLangState(next);
+    persistLang(next);
+  };
 
   if (!data) {
     return (
@@ -146,6 +191,7 @@ export function EmeraldRenderer({
         data={data}
         installerLogoUrl={installerLogoUrl}
         proposalId={proposalId}
+        selectedTenureYears={selectedTenureYears}
       />
     </EmeraldLangProvider>
   );

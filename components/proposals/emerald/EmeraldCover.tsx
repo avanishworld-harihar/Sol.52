@@ -2,21 +2,18 @@
 
 /**
  * Emerald Signature cover — 30% emerald sidebar + 70% ivory folio.
- * Logo from More → Brand; new rooftop photograph in the ivory column.
+ * Logo from More → Brand; rooftop photograph in the ivory column.
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
 import {
-  EMERALD_DEFAULT_BRAND,
-  EMERALD_SPECIFIC_YIELD,
-  emeraldDcKwp,
-  emeraldModuleCount,
   formatEmeraldDocNo,
   formatEmeraldIssueDate,
   formatEmeraldKw,
   splitEmeraldWordmark,
   useEmeraldSurfaceBrand,
 } from "./emerald-brand";
+import { emeraldAnnualUnits, resolveEmeraldPanelSpec } from "./emerald-live";
 import styles from "./Emerald.module.css";
 import { useEmeraldLang } from "./emerald-lang-context";
 
@@ -30,6 +27,7 @@ export type EmeraldCoverProps = {
 
 function CoverWordmark({ brandName }: { brandName: string }) {
   const { primary, secondary } = splitEmeraldWordmark(brandName);
+  if (!primary) return null;
   return (
     <>
       <span className={styles.brandPrimary}>{primary}</span>
@@ -47,20 +45,14 @@ export function EmeraldCover({
 }: EmeraldCoverProps) {
   const { copy, lang } = useEmeraldLang();
   const coverBrand = useEmeraldSurfaceBrand(data, "cover", installerLogoUrl);
-  const brand = coverBrand.installerName || EMERALD_DEFAULT_BRAND;
+  const brand = coverBrand.installerName?.trim() || "";
   const logoUrl = coverBrand.showLogo ? coverBrand.logoUrl : "";
-  const showWordmark = coverBrand.showName || !logoUrl;
+  const showWordmark = Boolean(brand) && (coverBrand.showName || !logoUrl);
   const customer = data.meta.customerName?.trim() || copy.common.customerFallback;
   const systemKw = Number(data.meta.systemKw) || 0;
-  const modules = emeraldModuleCount(systemKw);
-  const dcKwp = emeraldDcKwp(modules);
+  const { dcKwp } = resolveEmeraldPanelSpec(data);
   const acLabel = formatEmeraldKw(systemKw, 1);
-  const yieldUnits =
-    data.closing.annualUnits > 0
-      ? Math.round(data.closing.annualUnits)
-      : systemKw > 0
-        ? Math.round(systemKw * EMERALD_SPECIFIC_YIELD)
-        : 0;
+  const yieldUnits = emeraldAnnualUnits(data);
   const location = data.meta.locationLine?.trim() || copy.common.homeFallback;
 
   return (
@@ -69,7 +61,7 @@ export function EmeraldCover({
         <div>
           {logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element -- print A4 installer logo
-            <img src={logoUrl} alt={brand} className={styles.coverLogo} />
+            <img src={logoUrl} alt={brand || copy.common.installerFallback} className={styles.coverLogo} />
           ) : (
             <div className={styles.markRing}>
               <div className={styles.markDot} />
