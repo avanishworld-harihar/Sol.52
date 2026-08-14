@@ -23,7 +23,13 @@ export type ObsidianRendererProps = {
   proposalId?: string;
 };
 
-function ObsidianDocument({ data }: { data: ProposalData }) {
+function ObsidianDocument({
+  data,
+  pptInput,
+}: {
+  data: ProposalData;
+  pptInput?: PremiumProposalPptInput | null;
+}) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
 
@@ -67,16 +73,16 @@ function ObsidianDocument({ data }: { data: ProposalData }) {
           </button>
         </div>
       </div>
-      <ObsidianProposal data={data} />
+      <ObsidianProposal data={data} pptInput={pptInput} />
     </div>
   );
 }
 
-export function ObsidianRenderer({ data }: ObsidianRendererProps) {
+export function ObsidianRenderer({ data, pptInput }: ObsidianRendererProps) {
   if (!data) {
     return <div className={styles.loading}>Preparing Obsidian…</div>;
   }
-  return <ObsidianDocument data={data} />;
+  return <ObsidianDocument data={data} pptInput={pptInput} />;
 }
 
 export default ObsidianRenderer;
