@@ -961,3 +961,63 @@
   color: #064e3b;
   font-weight: 600;
 }
+
+/* --- LEGAL DOSSIER (T&C PAGES) --- */
+.legalGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  margin-top: 20px;
+}
+
+.legalClause {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.clauseNum {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.8rem;
+  color: #d4af37 !important; /* Gold Numbers */
+  line-height: 0.8;
+  min-width: 35px;
+}
+
+.clauseBody {
+  display: flex;
+  flex-direction: column;
+}
+
+.clauseTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #064e3b !important;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.clauseText {
+  font-size: 0.8rem;
+  color: #57534e !important;
+  line-height: 1.6;
+  text-align: justify;
+  margin: 0;
+}
+
+.pageHeaderGhost {
+  color: transparent !important;
+  border-bottom-color: transparent !important;
+  margin-bottom: 10px;
+}
+
+.legalEnd {
+  margin-top: auto;
+  text-align: center;
+  border-top: 1px solid rgba(212, 175, 55, 0.3);
+  padding-top: 20px;
+  font-size: 0.7rem;
+  color: #a8a29e;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
