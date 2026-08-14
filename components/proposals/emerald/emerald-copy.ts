@@ -30,8 +30,8 @@ export function getEmeraldCopy(lang: EmeraldLang) {
       docNo: hi ? "दस्तावेज़ संख्या" : "DOCUMENT NUMBER",
       issueDate: hi ? "जारी करने की तारीख" : "DATE OF ISSUE",
       photoAlt: hi
-        ? "भारतीय घर की छत पर सोलर पैनल"
-        : "Rooftop solar panels on an Indian house",
+        ? "भारतीय छत पर सोलर पैनल, नीचे सोफा और मिनी गार्डन में खुश पति-पत्नी"
+        : "Indian rooftop solar above a terrace sofa and mini garden with a happy couple",
       eyebrow: hi ? "रूफटॉप सोलर प्रस्ताव" : "ROOFTOP SOLAR PROPOSAL",
       lead: (location: string) =>
         hi

@@ -17,7 +17,7 @@ import { emeraldAnnualUnits, resolveEmeraldPanelSpec } from "./emerald-live";
 import styles from "./Emerald.module.css";
 import { useEmeraldLang } from "./emerald-lang-context";
 
-export const EMERALD_COVER_PHOTO = "/assets/proposals/emerald-cover-indian-rcc.jpg";
+export const EMERALD_COVER_PHOTO = "/assets/proposals/emerald-cover-terrace-couple.jpg";
 
 export type EmeraldCoverProps = {
   data: ProposalData;
