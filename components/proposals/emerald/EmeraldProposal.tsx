@@ -10,7 +10,7 @@ import { EmeraldCover } from "./EmeraldCover";
 import { EmeraldBillAudit } from "./EmeraldBillAudit";
 import { EmeraldEconomics } from "./EmeraldEconomics";
 import { EmeraldArchitecture } from "./EmeraldArchitecture";
-import { EmeraldHardware } from "./EmeraldHardware";
+import { EmeraldHardware, emeraldHardwarePages } from "./EmeraldHardware";
 import { EmeraldForecast } from "./EmeraldForecast";
 import { EmeraldClosing } from "./EmeraldClosing";
 import { EmeraldTermsOne } from "./EmeraldTermsOne";
@@ -32,6 +32,7 @@ export function EmeraldProposal({
   selectedTenureYears,
 }: EmeraldProposalProps) {
   const showBill = hasEmeraldBill(data);
+  const bomPages = emeraldHardwarePages(data);
   let n = 1;
   const nextFolio = () => String(n++).padStart(2, "0");
 
@@ -49,7 +50,16 @@ export function EmeraldProposal({
         selectedTenureYears={selectedTenureYears}
       />
       <EmeraldArchitecture data={data} folio={nextFolio()} />
-      <EmeraldHardware data={data} folio={nextFolio()} />
+      {bomPages.map((items, i) => (
+        <EmeraldHardware
+          key={`bom-${i}`}
+          data={data}
+          folio={nextFolio()}
+          items={items}
+          continued={i > 0}
+          startIndex={i * 3}
+        />
+      ))}
       <EmeraldForecast data={data} folio={nextFolio()} />
       <EmeraldClosing data={data} folio={nextFolio()} />
       <EmeraldTermsOne data={data} folio={nextFolio()} />

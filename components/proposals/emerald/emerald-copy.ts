@@ -71,6 +71,12 @@ export function getEmeraldCopy(lang: EmeraldLang) {
         : "Extra power goes to your local DISCOM grid.",
       keyNumbers: hi ? "मुख्य आँकड़े" : "KEY NUMBERS",
       dcAc: hi ? "DC / AC अनुपात" : "DC / AC ratio",
+      modules: hi ? "मॉड्यूल" : "Modules",
+      panelBrand: hi ? "पैनल ब्रांड" : "Panel brand",
+      inverterBrand: hi ? "इनवर्टर ब्रांड" : "Inverter brand",
+      annualGen: hi ? "सालाना उत्पादन" : "Annual generation",
+      coverage: hi ? "लोड कवरेज" : "Load coverage",
+      tilt: hi ? "ऐरे टिल्ट" : "Array tilt",
       pr: hi ? "अनुमानित परफॉर्मेंस रेशियो (PR)" : "Estimated performance ratio (PR)",
       wind: hi ? "पवन प्रतिरोध" : "Wind resistance",
     },
@@ -114,9 +120,13 @@ export function getEmeraldCopy(lang: EmeraldLang) {
     hardware: {
       sidebarTitle: hi ? ["हार्डवेयर", "सूची।"] : ["Hardware", "List."],
       sidebarBlurb: hi
-        ? "पैनल, इनवर्टर और स्ट्रक्चर — इस प्रोजेक्ट के लिए।"
-        : "Panels, inverter, and structure chosen for this project.",
+        ? "पैनल, इनवर्टर, स्ट्रक्चर, केबल और सुरक्षा — पूरा मटीरियल लिस्ट।"
+        : "Panels, inverter, structure, cables, and protection — the full material list.",
       pageHeader: hi ? "हम क्या लगाएँगे" : "What We Will Install",
+      pageHeaderMore: hi ? "मटीरियल (जारी)" : "Materials (continued)",
+      brand: hi ? "ब्रांड" : "Brand",
+      spec: hi ? "स्पेक" : "Spec",
+      warranty: hi ? "वारंटी" : "Warranty",
       panelTitle: hi ? "सोलर पैनल" : "Solar Panels",
       panelDesc: (modules: number, watt: number) =>
         modules > 0 && watt > 0

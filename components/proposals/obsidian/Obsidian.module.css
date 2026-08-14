@@ -144,7 +144,7 @@
   font-family: "Inter", sans-serif;
   page-break-after: always;
   break-after: page;
-  padding: 40px;
+  padding: 28px;
   margin: 0 auto;
   page: obsidian-sheet;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
@@ -222,8 +222,8 @@
   display: flex;
   justify-content: space-between;
   border-bottom: 1px dashed rgba(255, 255, 255, 0.2) !important;
-  padding-bottom: 15px;
-  margin-bottom: 40px;
+  padding-bottom: 12px;
+  margin-bottom: 18px;
 }
 
 .headerRight {
@@ -244,7 +244,7 @@
 }
 
 .mainTitle {
-  font-size: 3.5rem;
+  font-size: 2.55rem;
   font-weight: 200;
   text-transform: uppercase;
   line-height: 1;
@@ -257,10 +257,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 50px;
+  margin-bottom: 16px;
   background: rgba(255, 255, 255, 0.02) !important;
   border-left: 4px solid #ff5500 !important;
-  padding: 30px;
+  padding: 16px 18px;
   gap: 16px;
 }
 
@@ -290,7 +290,7 @@
 }
 
 .dataValue {
-  font-size: 2.8rem;
+  font-size: 2.15rem;
   font-weight: 300;
   color: #ffffff !important;
   line-height: 1;
@@ -345,4 +345,70 @@
 
 .terminalHighlight {
   color: #fff;
+}
+
+.bomStack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: auto;
+  min-height: 0;
+}
+
+.bomCard {
+  display: flex;
+  gap: 12px;
+  border: 1px solid rgba(255, 85, 0, 0.28);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 8px 10px;
+}
+
+.bomIndex {
+  font-family: "JetBrains Mono", "Courier New", monospace;
+  color: #ff5500;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  min-width: 24px;
+}
+
+.bomCopy {
+  min-width: 0;
+  flex: 1;
+}
+
+.bomTitle {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #f8fafc;
+  line-height: 1.2;
+}
+
+.bomMeta {
+  display: block;
+  font-family: "JetBrains Mono", "Courier New", monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #ff5500;
+  margin: 2px 0 4px;
+}
+
+.bomSpec {
+  margin: 0 0 4px;
+  font-size: 0.72rem;
+  color: #e2e8f0;
+  line-height: 1.35;
+}
+
+.bomPoints {
+  margin: 0;
+  padding-left: 14px;
+  font-size: 0.65rem;
+  color: #94a3b8;
+  line-height: 1.35;
+}
+
+.bomPoints li {
+  margin-bottom: 1px;
 }
