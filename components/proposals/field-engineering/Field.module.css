@@ -1,10 +1,10 @@
 /**
- * SOL.52 — Field Engineering preset
+ * SOL.52 — Field Engineering preset (v2 readability / contrast pass)
  * Source-matched to the uploaded engineering-preset.css + DrawingSheet.
  * Survey drawing sheets, not a brochure.
  */
 
-@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap");
 
 @page field-sheet {
   size: A4 portrait;
@@ -12,15 +12,16 @@
 }
 
 .root {
-  --eng-paper: #f6f3ea;
+  --eng-paper: #f4f0e4;
   --eng-sheet: #ffffff;
-  --eng-grid: #dfd8c6;
-  --eng-ink: #1b2a32;
-  --eng-ink-soft: #47565d;
-  --eng-ink-faint: #8a9299;
-  --eng-signal: #e1631f;
-  --eng-verified: #2e6b4c;
-  --eng-border: #1b2a32;
+  --eng-grid: #cfc5ac;
+  --eng-ink: #12212a;
+  --eng-ink-soft: #2e3e46;
+  --eng-ink-faint: #647079;
+  --eng-signal: #d9540f;
+  --eng-signal-tint: #f6e3d4;
+  --eng-verified: #1f5c3e;
+  --eng-border: #12212a;
   --eng-font-display: "Space Grotesk", sans-serif;
   --eng-font-body: "IBM Plex Sans", sans-serif;
   --eng-font-mono: "IBM Plex Mono", monospace;
@@ -28,6 +29,7 @@
   font-family: var(--eng-font-body);
   color: var(--eng-ink-soft);
   background: var(--eng-paper);
+  font-size: 13px;
   min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
 }
@@ -69,7 +71,7 @@
   display: flex;
   justify-content: center;
   padding: 10px 16px;
-  background: rgba(246, 243, 234, 0.96);
+  background: rgba(244, 240, 228, 0.96);
   border-bottom: 1px solid var(--eng-border);
 }
 
@@ -129,7 +131,7 @@
     linear-gradient(var(--eng-grid) 1px, transparent 1px) 0 0 / 100% 8mm,
     linear-gradient(90deg, var(--eng-grid) 1px, transparent 1px) 0 0 / 8mm 100%,
     var(--eng-sheet);
-  border: 1.5px solid var(--eng-border);
+  border: 2px solid var(--eng-border);
   display: flex;
   flex-direction: column;
   page-break-after: always;
@@ -147,25 +149,26 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 4mm 8mm;
-  border-bottom: 1px solid var(--eng-border);
+  padding: 5mm 10mm;
+  border-bottom: 2px solid var(--eng-border);
   font-family: var(--eng-font-mono);
-  font-size: 8px;
+  font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--eng-ink-faint);
+  color: var(--eng-ink);
+  background: var(--eng-sheet);
   flex-shrink: 0;
 }
 
 .microbar strong {
   color: var(--eng-ink);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .body {
   flex: 1;
   min-height: 0;
-  padding: 10mm 12mm 6mm;
+  padding: 12mm 14mm 8mm;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -174,15 +177,16 @@
 .titleBlock {
   display: grid;
   grid-template-columns: 1.6fr 1fr 1fr 1fr 1fr 1.2fr;
-  border-top: 1.5px solid var(--eng-border);
+  border-top: 2px solid var(--eng-border);
   font-family: var(--eng-font-mono);
-  font-size: 8px;
+  font-size: 10px;
+  background: var(--eng-sheet);
   flex-shrink: 0;
 }
 
 .titleBlock > div {
-  padding: 2.5mm 3mm;
-  border-right: 1px solid var(--eng-border);
+  padding: 3.5mm 3.5mm;
+  border-right: 1.5px solid var(--eng-border);
   min-width: 0;
 }
 
@@ -195,13 +199,15 @@
   color: var(--eng-ink-faint);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  font-size: 6.5px;
-  margin-bottom: 1mm;
+  font-size: 8px;
+  margin-bottom: 1.2mm;
+  font-weight: 600;
 }
 
 .tbValue {
   color: var(--eng-ink);
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 10.5px;
   display: block;
   white-space: nowrap;
   overflow: hidden;
@@ -211,138 +217,158 @@
 .tbStamp {
   display: flex;
   align-items: center;
-  gap: 1.5mm;
+  gap: 2mm;
   color: var(--eng-verified);
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 10.5px;
 }
 
 .tbStamp::before {
   content: "";
-  width: 6px;
-  height: 6px;
-  border: 1.5px solid var(--eng-verified);
+  width: 7px;
+  height: 7px;
+  background: var(--eng-verified);
   border-radius: 50%;
   flex-shrink: 0;
 }
 
 .eyebrow {
   font-family: var(--eng-font-mono);
-  font-size: 9.5px;
-  letter-spacing: 0.14em;
+  font-size: 11px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--eng-signal);
-  font-weight: 600;
-  margin-bottom: 3mm;
+  font-weight: 700;
+  margin-bottom: 3.5mm;
+  padding-bottom: 2mm;
+  border-bottom: 1.5px solid var(--eng-grid);
 }
 
 .h1 {
   font-family: var(--eng-font-display);
   font-weight: 700;
-  font-size: 26px;
-  line-height: 1.15;
+  font-size: 32px;
+  line-height: 1.12;
   color: var(--eng-ink);
-  margin: 0 0 2mm;
+  margin: 0 0 3mm;
 }
 
 .h2 {
   font-family: var(--eng-font-display);
-  font-weight: 600;
-  font-size: 15px;
+  font-weight: 700;
+  font-size: 19px;
   color: var(--eng-ink);
-  margin: 0 0 4mm;
+  margin: 0 0 5mm;
   display: flex;
   align-items: baseline;
-  gap: 2.5mm;
+  gap: 3mm;
 }
 
 .tag {
   font-family: var(--eng-font-mono);
-  font-size: 9px;
+  font-size: 10.5px;
   color: var(--eng-ink-faint);
-  font-weight: 400;
+  font-weight: 500;
 }
 
 .bodyText {
-  font-size: 12px;
-  line-height: 1.6;
+  font-size: 13.5px;
+  line-height: 1.65;
   color: var(--eng-ink-soft);
   margin: 0;
 }
 
 .note {
-  font-size: 9.5px;
+  font-size: 11px;
   color: var(--eng-ink-faint);
-  line-height: 1.5;
+  line-height: 1.55;
   margin: 0;
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 11px;
+  font-size: 12.5px;
 }
 
 .table th,
 .table td {
   text-align: left;
-  padding: 2.6mm 3mm;
-  border-bottom: 1px solid var(--eng-grid);
+  padding: 3.4mm 3.4mm;
+  border-bottom: 1.5px solid var(--eng-grid);
   vertical-align: top;
 }
 
 .table th {
   font-family: var(--eng-font-mono);
-  font-size: 8.5px;
+  font-size: 10px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--eng-ink-faint);
-  font-weight: 500;
-  border-bottom: 1.5px solid var(--eng-border);
+  color: var(--eng-ink);
+  font-weight: 700;
+  border-bottom: 2px solid var(--eng-border);
+}
+
+.table tbody tr:nth-child(even):not(.totalRow) {
+  background: rgba(207, 197, 172, 0.18);
 }
 
 .mono {
   font-family: var(--eng-font-mono);
   color: var(--eng-ink);
+  font-weight: 500;
 }
 
 .totalRow td {
-  border-top: 1.5px solid var(--eng-border);
+  border-top: 2px solid var(--eng-border);
   border-bottom: none;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--eng-ink);
-  padding-top: 3.5mm;
+  font-size: 13.5px;
+  padding-top: 4mm;
 }
 
 .signal {
   color: var(--eng-signal) !important;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .callout {
   display: inline-flex;
   align-items: baseline;
-  gap: 1.5mm;
+  gap: 2mm;
   font-family: var(--eng-font-mono);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--eng-signal);
 }
 
 .unit {
-  font-size: 8px;
+  font-size: 10px;
   color: var(--eng-ink-faint);
-  font-weight: 400;
+  font-weight: 500;
+}
+
+.specLabel {
+  font-family: var(--eng-font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--eng-ink-faint);
+  font-weight: 600;
+  margin-bottom: 2mm;
 }
 
 .specStrip {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  border: 1px solid var(--eng-border);
+  border: 2px solid var(--eng-border);
+  background: var(--eng-sheet);
   margin-top: 10mm;
 }
 
 .specCell {
   padding: 5mm;
-  border-right: 1px solid var(--eng-border);
+  border-right: 1.5px solid var(--eng-border);
   min-width: 0;
 }
 
@@ -353,7 +379,8 @@
 .spec3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  border: 1px solid var(--eng-border);
+  border: 2px solid var(--eng-border);
+  background: var(--eng-sheet);
   margin-top: 8mm;
 }
 
@@ -372,19 +399,20 @@
 
 .dimLine {
   stroke: var(--eng-ink-soft);
-  stroke-width: 0.75;
+  stroke-width: 1.1;
   fill: none;
 }
 
 .dimText {
   font-family: var(--eng-font-mono);
-  font-size: 8px;
-  fill: var(--eng-ink-soft);
+  font-size: 11px;
+  fill: var(--eng-ink);
+  font-weight: 500;
 }
 
 .leaderLine {
   stroke: var(--eng-signal);
-  stroke-width: 1;
+  stroke-width: 1.4;
   fill: none;
 }
 

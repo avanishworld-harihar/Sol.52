@@ -17,9 +17,9 @@ export function PerformancePage({ data }: { data: ProposalData }) {
   const annual = fieldAnnualUnits(data);
   const monthly = buildFieldForecastMonths(annual);
   const max = Math.max(...monthly.map((d) => d.val), 1);
-  const chartW = 480;
-  const chartH = 140;
-  const barW = 28;
+  const chartW = 500;
+  const chartH = 190;
+  const barW = 30;
   const gap = 12;
   const pr = fieldMetric(data, /performance|pr\b/i);
   const { dcKwp, modules, watt } = resolveFieldPanelSpec(data);
@@ -45,7 +45,7 @@ export function PerformancePage({ data }: { data: ProposalData }) {
         <span className={styles.tag}>seasonal share on this proposal’s year-1 units</span>
       </h2>
 
-      <svg viewBox={`0 0 ${chartW} ${chartH + 40}`} className={styles.diagram} style={{ marginTop: 0 }}>
+      <svg viewBox={`0 0 ${chartW} ${chartH + 50}`} className={styles.diagram} style={{ marginTop: 0 }}>
         {[0, 0.25, 0.5, 0.75, 1].map((f) => (
           <line
             key={f}
@@ -54,11 +54,11 @@ export function PerformancePage({ data }: { data: ProposalData }) {
             y1={chartH - f * chartH}
             y2={chartH - f * chartH}
             stroke="var(--eng-grid)"
-            strokeWidth="1"
+            strokeWidth="1.4"
           />
         ))}
         {monthly.map((d, i) => {
-          const h = annual > 0 ? (d.val / max) * (chartH - 10) : 8;
+          const h = annual > 0 ? (d.val / max) * (chartH - 16) : 8;
           const x = i * (barW + gap);
           return (
             <g key={d.m}>
@@ -68,25 +68,25 @@ export function PerformancePage({ data }: { data: ProposalData }) {
                 width={barW}
                 height={h}
                 fill="var(--eng-signal)"
-                opacity="0.85"
               />
               <text
                 x={x + barW / 2}
-                y={chartH - h - 4}
+                y={chartH - h - 6}
                 textAnchor="middle"
                 className={styles.dimText}
-                fontSize="7"
+                fontSize="10"
+                fontWeight="700"
               >
                 {annual > 0 ? d.val : "—"}
               </text>
               <text
                 x={x + barW / 2}
-                y={chartH + 14}
+                y={chartH + 20}
                 textAnchor="middle"
                 className={styles.dimText}
-                fontSize="8"
+                fontSize="10"
               >
-                {d.m}
+                {d.m.toUpperCase()}
               </text>
             </g>
           );
@@ -100,14 +100,16 @@ export function PerformancePage({ data }: { data: ProposalData }) {
             value: annual > 0 ? annual.toLocaleString("en-IN") : "—",
             unit: annual > 0 ? "kWh" : "",
           },
-          { label: "Performance Ratio", value: pr || "—", unit: pr ? "" : "" },
-          { label: "Specific Yield", value: specific, unit: specific !== "—" ? "kWh/kWp" : "" },
+          { label: "Performance Ratio", value: pr || "—", unit: "" },
+          {
+            label: "Specific Yield",
+            value: specific,
+            unit: specific !== "—" ? "kWh/kWp" : "",
+          },
         ].map((item) => (
           <div key={item.label} className={styles.specCell}>
-            <div className={styles.note} style={{ textTransform: "uppercase" }}>
-              {item.label}
-            </div>
-            <div className={styles.callout} style={{ fontSize: "15px", marginTop: "1.5mm" }}>
+            <div className={styles.specLabel}>{item.label}</div>
+            <div className={styles.callout} style={{ fontSize: "18px" }}>
               {item.value} {item.unit ? <span className={styles.unit}>{item.unit}</span> : null}
             </div>
           </div>
@@ -115,7 +117,8 @@ export function PerformancePage({ data }: { data: ProposalData }) {
       </div>
 
       <p className={styles.note} style={{ marginTop: "6mm" }}>
-        Basis: {modules > 0 && watt > 0 ? `${modules} × ${watt}W modules` : "module count from BOM"}
+        Simulation basis:{" "}
+        {modules > 0 && watt > 0 ? `${modules} × ${watt}W modules` : "module count from BOM"}
         {dcKwp > 0 ? `, ${formatFieldKw(dcKwp)} kWp DC` : ""}, {tiltNote}. Actual generation
         varies with weather and grid availability. PR is shown only when it exists on the
         engineering record.

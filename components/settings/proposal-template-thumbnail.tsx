@@ -405,22 +405,22 @@ function EmeraldThumb({ size }: { size: "card" | "preview" }) {
 
 function FieldThumb({ size }: { size: "card" | "preview" }) {
   return (
-    <div className="flex h-full w-full items-center justify-center bg-[#d8d2c4]">
+    <div className="flex h-full w-full items-center justify-center bg-[#cfc5ac]">
       <div
         className={cn(
-          "relative flex flex-col overflow-hidden rounded-[2px] border border-[#1B2A32] shadow-sm",
+          "relative flex flex-col overflow-hidden rounded-[2px] border border-[#12212A] shadow-sm",
           size === "preview" ? "h-[62%] w-[68%]" : "h-[58%] w-[72%]"
         )}
         style={{
-          backgroundColor: "#F6F3EA",
+          backgroundColor: "#F4F0E4",
           backgroundImage:
-            "linear-gradient(rgba(27,42,50,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(27,42,50,0.08) 1px, transparent 1px)",
+            "linear-gradient(rgba(18,33,42,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(18,33,42,0.12) 1px, transparent 1px)",
           backgroundSize: "6px 6px",
         }}
       >
         <div
           className={cn(
-            "border-b border-[#1B2A32] font-mono font-bold uppercase tracking-[0.16em] text-[#E1631F]",
+            "border-b border-[#12212A] font-mono font-bold uppercase tracking-[0.16em] text-[#D9540F]",
             size === "preview" ? "px-[6%] py-[4%] text-[5px]" : "px-[6%] py-[5%] text-[2.5px]"
           )}
         >
@@ -428,7 +428,7 @@ function FieldThumb({ size }: { size: "card" | "preview" }) {
         </div>
         <div
           className={cn(
-            "font-semibold leading-tight text-[#1B2A32]",
+            "font-semibold leading-tight text-[#12212A]",
             size === "preview" ? "px-[6%] pt-[8%] text-[9px]" : "px-[6%] pt-[8%] text-[4px]"
           )}
         >
@@ -437,13 +437,13 @@ function FieldThumb({ size }: { size: "card" | "preview" }) {
           FE-01
         </div>
         <div
-          className="mt-auto grid grid-cols-5 border-t border-[#1B2A32]"
+          className="mt-auto grid grid-cols-5 border-t border-[#12212A]"
           style={{ fontSize: size === "preview" ? 4 : 2 }}
         >
           {["DRN", "CHK", "NTS", "DATE", "FE-01"].map((c) => (
             <div
               key={c}
-              className="border-r border-[#1B2A32] px-[4%] py-[6%] font-mono text-[#1B2A32] last:border-r-0"
+              className="border-r border-[#12212A] px-[4%] py-[6%] font-mono text-[#12212A] last:border-r-0"
             >
               {c}
             </div>

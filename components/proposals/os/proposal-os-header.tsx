@@ -92,8 +92,8 @@ const PRESET_META: Record<ProposalPresetId, PresetMeta> = {
     label: "Field Engineering",
     description: "Survey drawings · title block · graph paper",
     pillClass:
-      "border-orange-300 bg-[#F6F3EA] text-[#1B2A32] dark:border-orange-500/40 dark:bg-[#1B2A32] dark:text-[#F6F3EA]",
-    dotClass: "bg-[#E1631F]",
+      "border-orange-300 bg-[#F4F0E4] text-[#12212A] dark:border-orange-500/40 dark:bg-[#12212A] dark:text-[#F4F0E4]",
+    dotClass: "bg-[#D9540F]",
   },
   commercial_executive: {
     icon: <Building2 className="h-4 w-4" />,

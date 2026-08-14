@@ -5,29 +5,26 @@ import { DrawingSheet } from "./DrawingSheet";
 import styles from "./Field.module.css";
 import { fieldSheetMeta, resolveFieldPanelSpec } from "./field-live";
 
-function roofGrid(count: number): { cols: number; rows: number; shown: number } {
+function roofGrid(count: number): { cols: number; shown: number } {
   const shown = count > 0 ? Math.min(count, 12) : 0;
-  if (shown <= 0) return { cols: 3, rows: 4, shown: 0 };
+  if (shown <= 0) return { cols: 3, shown: 0 };
   const cols = shown <= 3 ? shown : 3;
-  const rows = Math.ceil(shown / cols);
-  return { cols, rows, shown };
+  return { cols, shown };
 }
 
 export function SiteSurveyPage({ data }: { data: ProposalData }) {
   const sheet = fieldSheetMeta(data);
   const { modules, watt, structureItem } = resolveFieldPanelSpec(data);
-  const { cols, rows, shown } = roofGrid(modules);
+  const { cols, shown } = roofGrid(modules);
   const extra = modules > shown ? modules - shown : 0;
   const tilt = Number(data.engineering.tiltDeg);
   const tiltLabel = Number.isFinite(tilt) && tilt > 0 ? `${Math.round(tilt)}°` : "—";
-  const roofType =
-    structureItem?.spec?.trim() ||
-    structureItem?.name?.trim() ||
-    "—";
+  const roofType = structureItem?.spec?.trim() || structureItem?.name?.trim() || "—";
   const arrayLabel =
     modules > 0 && watt > 0 ? `${modules} × ${watt}W` : modules > 0 ? `${modules} MOD` : "—";
   const site = data.meta.locationLine?.trim() || "—";
   const tiltNote = data.engineering.tiltNote?.trim() || "";
+  const city = data.engineering.cityLabel?.trim() || "";
 
   return (
     <DrawingSheet
@@ -41,16 +38,39 @@ export function SiteSurveyPage({ data }: { data: ProposalData }) {
     >
       <div className={styles.eyebrow}>Site Engineering Assessment</div>
       <h2 className={styles.h2}>
-        Roof Survey <span className={styles.tag}>schematic · NTS · live BOM count</span>
+        Roof Survey <span className={styles.tag}>as measured on site visit</span>
       </h2>
 
-      <svg viewBox="0 0 500 280" className={styles.diagram} style={{ marginTop: 0 }} role="img" aria-label="Dimensioned roof schematic">
+      <svg
+        viewBox="0 0 520 320"
+        className={styles.diagram}
+        style={{ marginTop: 0 }}
+        role="img"
+        aria-label="Dimensioned roof schematic"
+      >
         <defs>
-          <marker id="fe-survey-arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-            <path d="M0,0 L6,3 L0,6 Z" fill="var(--eng-ink-soft)" />
+          <marker
+            id="fe-survey-arrow"
+            markerWidth="9"
+            markerHeight="9"
+            refX="7"
+            refY="3.5"
+            orient="auto"
+          >
+            <path d="M0,0 L7,3.5 L0,7 Z" fill="var(--eng-ink)" />
           </marker>
         </defs>
-        <rect x="90" y="50" width="300" height="170" fill="none" stroke="var(--eng-ink)" strokeWidth="1.5" />
+
+        <rect
+          x="95"
+          y="55"
+          width="310"
+          height="175"
+          fill="none"
+          stroke="var(--eng-ink)"
+          strokeWidth="2"
+        />
+
         {shown === 0
           ? null
           : Array.from({ length: shown }).map((_, i) => {
@@ -59,56 +79,63 @@ export function SiteSurveyPage({ data }: { data: ProposalData }) {
               return (
                 <rect
                   key={`${row}-${col}-${i}`}
-                  x={120 + col * 80}
-                  y={70 + row * (140 / Math.max(rows, 1))}
-                  width="70"
-                  height={140 / Math.max(rows, 1) - 8}
+                  x={128 + col * 62}
+                  y={78 + row * 34}
+                  width="56"
+                  height="28"
                   fill="none"
                   stroke="var(--eng-signal)"
-                  strokeWidth="1"
+                  strokeWidth="1.6"
                 />
               );
             })}
+
         <line
-          x1="90"
-          y1="235"
-          x2="390"
-          y2="235"
+          x1="95"
+          y1="245"
+          x2="405"
+          y2="245"
           className={styles.dimLine}
           markerStart="url(#fe-survey-arrow)"
           markerEnd="url(#fe-survey-arrow)"
         />
-        <text x="240" y="252" textAnchor="middle" className={styles.dimText}>
+        <text x="205" y="264" className={styles.dimText}>
           ARRAY {arrayLabel}
           {extra > 0 ? `  (+${extra} not drawn)` : ""}
         </text>
+
         <line
-          x1="415"
-          y1="50"
-          x2="415"
-          y2="220"
+          x1="430"
+          y1="55"
+          x2="430"
+          y2="230"
           className={styles.dimLine}
           markerStart="url(#fe-survey-arrow)"
           markerEnd="url(#fe-survey-arrow)"
         />
-        <text x="428" y="140" className={styles.dimText} transform="rotate(90 428 140)">
+        <text x="443" y="145" className={styles.dimText} transform="rotate(90 443 145)">
           NTS
         </text>
+
         {tiltLabel !== "—" ? (
           <>
-            <path d="M300,70 L360,30" className={styles.leaderLine} markerEnd="url(#fe-survey-arrow)" />
-            <text x="362" y="26" className={styles.dimText} fill="var(--eng-signal)">
+            <path
+              d="M320,78 L390,32"
+              className={styles.leaderLine}
+              markerEnd="url(#fe-survey-arrow)"
+            />
+            <text x="392" y="28" className={styles.dimText} fill="var(--eng-signal)" fontWeight="700">
               TILT {tiltLabel}
             </text>
           </>
         ) : null}
       </svg>
 
-      <table className={styles.table} style={{ marginTop: "6mm" }}>
+      <table className={styles.table} style={{ marginTop: "10mm" }}>
         <thead>
           <tr>
             <th>Parameter</th>
-            <th>Recorded value</th>
+            <th>Measured Value</th>
             <th>Notes</th>
           </tr>
         </thead>
@@ -116,10 +143,10 @@ export function SiteSurveyPage({ data }: { data: ProposalData }) {
           <tr>
             <td>Site</td>
             <td className={styles.mono}>{site}</td>
-            <td className={styles.note}>From proposal record</td>
+            <td className={styles.note}>{city || "From proposal record"}</td>
           </tr>
           <tr>
-            <td>Roof / structure</td>
+            <td>Roof Type</td>
             <td className={styles.mono}>{roofType}</td>
             <td className={styles.note}>{structureItem ? "BOM line" : "Not on file"}</td>
           </tr>
@@ -129,15 +156,16 @@ export function SiteSurveyPage({ data }: { data: ProposalData }) {
             <td className={styles.note}>Live module count × Wp</td>
           </tr>
           <tr>
-            <td>Tilt angle</td>
+            <td>Tilt Angle</td>
             <td className={styles.mono}>{tiltLabel}</td>
             <td className={styles.note}>{tiltNote || "Only if recorded"}</td>
           </tr>
         </tbody>
       </table>
       <p className={styles.note} style={{ marginTop: "4mm" }}>
-        Roof metres and azimuth are not invented. Dimension lines mark the
-        drawing, not a measured span, unless a site survey is on the proposal.
+        Roof metres, azimuth, and shading loss are not invented. Dimension lines
+        mark the drawing, not a measured span, unless a site survey is on the
+        proposal.
       </p>
     </DrawingSheet>
   );

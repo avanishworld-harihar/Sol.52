@@ -69,8 +69,8 @@ export function FinancialLedgerPage({ data }: { data: ProposalData }) {
         </tbody>
       </table>
 
-      <h2 className={styles.h2} style={{ marginTop: "10mm" }}>
-        Payback Calculation <span className={styles.tag}>D ÷ annual savings = years</span>
+      <h2 className={styles.h2} style={{ marginTop: "12mm" }}>
+        Payback Calculation <span className={styles.tag}>D ÷ Annual Savings = Years</span>
       </h2>
       <table className={styles.table}>
         <thead>

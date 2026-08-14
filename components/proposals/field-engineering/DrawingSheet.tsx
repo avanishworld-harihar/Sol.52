@@ -1,5 +1,9 @@
 "use client";
 
+/**
+ * DrawingSheet — sheet shell + title block (signature element).
+ * v2: no logic change; readability comes from Field.module.css tokens.
+ */
 import type { ReactNode } from "react";
 import styles from "./Field.module.css";
 
