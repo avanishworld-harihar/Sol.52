@@ -44,9 +44,37 @@ export function getEmeraldCopy(lang: EmeraldLang) {
     arch: {
       sidebarTitle: hi ? ["सिस्टम", "आर्किटेक्चर।"] : ["System", "Architecture."],
       sidebarBlurb: hi
-        ? "पैनल से ग्रिड तक — इस छत का सिस्टम कैसे जुड़ता है।"
-        : "How the rooftop system connects — from panels to the grid.",
+        ? "वायरिंग टोपोलॉजी, पावर कन्वर्ज़न रूट, और फिज़िक्स-आधारित जनरेशन मॉडल।"
+        : "Wiring topology, power conversion routing, and physics-based generation modeling.",
       pageHeader: hi ? "इंजीनियरिंग टोपोलॉजी" : "Engineering Topology",
+      schematicEyebrow: hi ? "पावर फ्लो स्कीमैटिक" : "POWER FLOW SCHEMATIC",
+      totalArray: hi ? "कुल ऐरे" : "Total Array",
+      acOutput: hi ? "AC आउटपुट" : "AC Output",
+      dcAcRatio: hi ? "DC/AC अनुपात" : "DC/AC Ratio",
+      topology: hi ? "टोपोलॉजी" : "Topology",
+      onGrid: hi ? "ऑन-ग्रिड" : "ON-GRID",
+      pvArray: hi ? "PV ऐरे" : "PV ARRAY",
+      inverter: hi ? "इनवर्टर" : "INVERTER",
+      localLoad: hi ? "घर का लोड" : "LOCAL LOAD",
+      utilityGrid: hi ? "यूटिलिटी ग्रिड" : "UTILITY GRID",
+      prioritySync: hi ? "पहले घर" : "Priority Sync",
+      netMetering: hi ? "नेट मीटरिंग" : "Net Metering",
+      mpptSuffix: hi ? "kW MPPT" : "kW MPPT",
+      dcWatts: (count: number, watt: number) =>
+        count > 0 && watt > 0
+          ? hi
+            ? `${count}× ${watt}W DC`
+            : `${count}x ${watt}W DC`
+          : "—",
+      prDerating: hi
+        ? "परफॉर्मेंस रेशियो (PR) डिरेटिंग"
+        : "PERFORMANCE RATIO (PR) DERATING",
+      prBlurb: hi
+        ? "असली पैदावार गर्मी, केबल प्रतिरोध, और इनवर्टर क्लिपिंग को जोड़कर निकाली जाती है। PR से जनरेशन टारगेट साफ रहते हैं।"
+        : "Real-world yield is modeled with thermal loss, cable resistance, and inverter clipping. The Performance Ratio keeps generation targets transparent.",
+      prFormulaAria: hi
+        ? "PR बराबर E ग्रिड बटे P नॉम गुणा H बटे G STC"
+        : "PR equals E grid over P nom times H over G STC",
       nodeDc: hi ? "DC सोर्स मैट्रिक्स" : "DC Source Matrix",
       nodeAc: hi ? "कन्वर्ज़न कोर" : "Conversion Core",
       nodeGrid: hi ? "दो-तरफ़ा गेटवे" : "Bi-Directional Gateway",

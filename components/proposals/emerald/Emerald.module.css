@@ -1616,8 +1616,9 @@
     height: 90px;
   }
 
-  .techBento {
-    grid-template-columns: 1fr;
+  .techBento,
+  .engineeringGrid {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
@@ -1761,7 +1762,165 @@
 }
 
 .langHi .nodeTitle,
-.langHi .bentoValue {
+.langHi .bentoValue,
+.langHi .diagramValue,
+.langHi .engValue {
   font-family: "Noto Sans Devanagari", "Cormorant Garamond", serif;
+}
+
+/* --- ENGINEERING SCHEMATIC VISUALS --- */
+.schematicWrapper {
+  background: #ffffff !important;
+  border: 1px solid rgba(6, 78, 59, 0.15) !important;
+  border-radius: 8px;
+  padding: 36px 16px 8px;
+  margin: 0 0 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02) !important;
+  position: relative;
+}
+
+.schematicEyebrow {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  margin-bottom: 0;
+  font-size: 0.58rem;
+  letter-spacing: 2.5px;
+}
+
+.svgDiagram {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.diagramLabel {
+  font-family: "Courier New", ui-monospace, monospace;
+  font-size: 0.65rem;
+  fill: #78716c;
+  letter-spacing: 1px;
+}
+
+.diagramValue {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.05rem;
+  fill: #064e3b;
+  font-weight: 600;
+}
+
+/* --- TECHNICAL METRICS GRID --- */
+.engineeringGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.engCard {
+  background: rgba(212, 175, 55, 0.05) !important;
+  border-left: 3px solid #d4af37 !important;
+  padding: 12px 10px;
+  min-width: 0;
+}
+
+.engLabel {
+  display: block;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 1.6px;
+  color: #57534e !important;
+  margin-bottom: 4px;
+}
+
+.engValue {
+  font-family: "Courier New", ui-monospace, monospace;
+  font-size: 0.95rem;
+  color: #064e3b !important;
+  font-weight: 700;
+  display: block;
+  line-height: 1.2;
+}
+
+/* --- MATHEMATICAL DERATING BLOCK (Architecture only — do not reuse .mathBlock; Cost page owns that) --- */
+.prMathBlock {
+  background: #064e3b !important;
+  color: #fafaf9 !important;
+  padding: 16px 18px;
+  border-radius: 6px;
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.prMathText {
+  flex: 1;
+  min-width: 0;
+}
+
+.prMathText .goldEyebrow {
+  margin-bottom: 0;
+  color: #d4af37 !important;
+}
+
+.prMathText p {
+  font-size: 0.78rem;
+  margin: 8px 0 0;
+  line-height: 1.5;
+  color: #fafaf9 !important;
+  opacity: 0.92;
+}
+
+.prMathFormula {
+  background: #fafaf9 !important;
+  color: #064e3b !important;
+  padding: 10px 16px;
+  border-radius: 4px;
+  box-shadow: 4px 4px 0 #d4af37 !important;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: "Cormorant Garamond", serif;
+}
+
+.prEq {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #064e3b !important;
+}
+
+.prEqOp {
+  font-size: 1.15rem;
+  color: #064e3b !important;
+}
+
+.prFrac {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.15;
+}
+
+.prNum,
+.prDen {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #064e3b !important;
+  white-space: nowrap;
+}
+
+.prNum {
+  padding-bottom: 4px;
+  border-bottom: 1.5px solid #064e3b;
+}
+
+.prDen {
+  padding-top: 4px;
+  font-size: 0.82rem;
+}
+
+.langHi .prMathText p {
+  font-family: "Noto Sans Devanagari", "Inter", sans-serif;
 }
 
