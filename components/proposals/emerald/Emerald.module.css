@@ -1615,5 +1615,153 @@
     grid-template-columns: repeat(6, minmax(0, 1fr));
     height: 90px;
   }
+
+  .techBento {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- THE GOLDEN TOPOLOGY (ENGINEERING PAGE) --- */
+.topologyContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 18px;
+  position: relative;
+}
+
+.topologyNode {
+  display: flex;
+  align-items: stretch;
+  min-height: 96px;
+}
+
+.topologyNodeLast {
+  min-height: auto;
+}
+
+.nodeVisual {
+  width: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.nodeIconBox {
+  width: 60px;
+  height: 60px;
+  background: #fafaf9 !important;
+  border: 2px solid #064e3b !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+  position: relative;
+  box-shadow: 4px 4px 0px rgba(212, 175, 55, 0.3) !important;
+}
+
+.nodeIconFill {
+  background: #064e3b !important;
+}
+
+.nodeLine {
+  width: 2px;
+  flex-grow: 1;
+  min-height: 24px;
+  background: repeating-linear-gradient(
+    to bottom,
+    #d4af37,
+    #d4af37 4px,
+    transparent 4px,
+    transparent 8px
+  ) !important;
+  z-index: 1;
+}
+
+.nodeData {
+  flex-grow: 1;
+  padding-left: 20px;
+  padding-bottom: 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+.nodeDataLast {
+  padding-bottom: 0;
+}
+
+.nodeHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 15px;
+  margin-bottom: 8px;
+  margin-top: -5px;
+  flex-wrap: wrap;
+}
+
+.nodeTitle {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.55rem;
+  color: #064e3b !important;
+  line-height: 1;
+}
+
+.nodeSpec {
+  font-family: "Courier New", ui-monospace, monospace;
+  font-size: 0.75rem;
+  color: #d4af37 !important;
+  letter-spacing: 1px;
+  font-weight: 600;
+  background: #064e3b !important;
+  padding: 2px 8px;
+}
+
+.nodeDesc {
+  font-size: 0.85rem;
+  color: #57534e !important;
+  line-height: 1.55;
+  max-width: 90%;
+  margin: 0;
+}
+
+.techBento {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-top: auto;
+  border-top: 1px solid rgba(212, 175, 55, 0.4) !important;
+  padding-top: 18px;
+}
+
+.bentoCell {
+  background: rgba(6, 78, 59, 0.03) !important;
+  border: 1px solid rgba(6, 78, 59, 0.1) !important;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.bentoLabel {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #78716c !important;
+  margin-bottom: 5px;
+}
+
+.bentoValue {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.5rem;
+  color: #064e3b !important;
+  font-weight: 600;
+}
+
+.langHi .nodeTitle,
+.langHi .bentoValue {
+  font-family: "Noto Sans Devanagari", "Cormorant Garamond", serif;
 }
 
