@@ -220,6 +220,8 @@ export function BuilderStageBar({
                             ? "Emerald"
                             : presetId === "residential_obsidian"
                               ? "Obsidian"
+                            : presetId === "residential_field"
+                              ? "Field"
                             : "Residential"}
             </span>
           </div>

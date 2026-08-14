@@ -1800,6 +1800,8 @@ function ProposalPageContent() {
                   ? { galleryThemeKey: "emerald" }
                 : osPresetId === "residential_obsidian"
                   ? { galleryThemeKey: "obsidian" }
+                : osPresetId === "residential_field"
+                  ? { galleryThemeKey: "field" }
                   : osPresetId === "residential_executive"
                   ? { galleryThemeKey: "golden" }
                   : {}),
@@ -2424,6 +2426,10 @@ function ProposalPageContent() {
                         : preset === "residential_obsidian" ||
                             preset === "obsidian"
                           ? "residential_obsidian"
+                        : preset === "residential_field" ||
+                            preset === "field" ||
+                            preset === "field_engineering"
+                          ? "residential_field"
                         : preset === "residential_executive"
                         ? "residential_executive"
                         : "residential_executive";

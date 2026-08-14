@@ -45,6 +45,9 @@ export function resolveQuickQuotePresetOptions(): {
   if (presetId === "residential_obsidian") {
     return { presetId, galleryThemeKey: "obsidian" };
   }
+  if (presetId === "residential_field") {
+    return { presetId, galleryThemeKey: "field" };
+  }
   if (presetId === "residential_executive") {
     return { presetId, galleryThemeKey: "golden" };
   }

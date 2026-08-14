@@ -99,6 +99,12 @@ export function parsePrefillFromSearchParams(params: URLSearchParams): BuilderPr
     prefill.preset = "residential_emerald";
   } else if (preset === "residential_obsidian" || preset === "obsidian") {
     prefill.preset = "residential_obsidian";
+  } else if (
+    preset === "residential_field" ||
+    preset === "field" ||
+    preset === "field_engineering"
+  ) {
+    prefill.preset = "residential_field";
   } else if (preset === "commercial_executive" || preset === "commercial") {
     prefill.preset = "commercial_executive";
   } else if (preset) {

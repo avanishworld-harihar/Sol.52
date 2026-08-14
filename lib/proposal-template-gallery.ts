@@ -36,7 +36,7 @@ export const PROPOSAL_TEMPLATE_CATEGORIES: ProposalTemplateCategoryMeta[] = [
   {
     id: "residential",
     label: "Residential",
-    description: "Homes & rooftops — Golden, Zenith, Atelier, Premium Luxe, Canvas, Quantum, Emerald, or Obsidian.",
+    description: "Homes & rooftops — Golden, Zenith, Atelier, Premium Luxe, Canvas, Quantum, Emerald, Obsidian, or Field Engineering.",
   },
   {
     id: "commercial",
@@ -115,6 +115,15 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
       "Pitch-black cinematic HUD — viewfinder frame, PV matrix, inverter sine wave, and yield terminal.",
     thumbnailVariant: "obsidian",
   },
+  {
+    key: "field",
+    presetId: "residential_field",
+    category: "residential",
+    name: "Field Engineering",
+    description:
+      "Survey drawing sheets — graph-paper cream, dimensioned roof plan, SLD, and a title block on every page.",
+    thumbnailVariant: "field",
+  },
 ];
 
 /** Commercial themes — Executive (LT / C&I) and HT Industrial (HV ToD/PF). */
@@ -184,6 +193,7 @@ export function resolveActiveGalleryKey(
   if (presetId === "residential_quantum") return "quantum";
   if (presetId === "residential_emerald") return "emerald";
   if (presetId === "residential_obsidian") return "obsidian";
+  if (presetId === "residential_field") return "field";
   return "zenith";
 }
 

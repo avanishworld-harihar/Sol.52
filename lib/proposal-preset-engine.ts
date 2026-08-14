@@ -11,7 +11,8 @@
  *   6. residential_quantum       — Quantum Cinematic Neo-Glass
  *   7. residential_emerald       — Emerald Signature split-folio
  *   8. residential_obsidian      — Obsidian cinematic HUD / viewfinder
- *   9. commercial_executive      — C&I commercial (hotel / hospital / industry…)
+ *   9. residential_field         — Field Engineering survey drawing sheets
+ *  10. commercial_executive      — C&I commercial (hotel / hospital / industry…)
  *
  * Removed residential presets remap via normalizePresetId → residential_executive.
  */
@@ -39,6 +40,7 @@ export const PROPOSAL_PRESET_IDS = [
   "residential_quantum",
   "residential_emerald",
   "residential_obsidian",
+  "residential_field",
   "commercial_executive",
   "commercial_ht",
 ] as const;
@@ -105,7 +107,8 @@ export function isResidentialDocumentPreset(presetId: ProposalPresetId): boolean
     presetId === "residential_blueprint" ||
     presetId === "residential_quantum" ||
     presetId === "residential_emerald" ||
-    presetId === "residential_obsidian"
+    presetId === "residential_obsidian" ||
+    presetId === "residential_field"
   );
 }
 
@@ -239,6 +242,18 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     label: "Obsidian",
     description:
       "Obsidian — pitch-black cinematic HUD / viewfinder. Engineering telemetry, PV matrix, and yield terminal.",
+    bill_requirement: "optional",
+    theme_hint: "residential",
+    default_data_source: "requirement",
+    default_blocks: [],
+    optional_blocks: [],
+  },
+
+  residential_field: {
+    id: "residential_field",
+    label: "Field Engineering",
+    description:
+      "Survey drawing sheets — graph-paper, dimensioned diagrams, spec tables, and a persistent title block. Trust through method.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "requirement",

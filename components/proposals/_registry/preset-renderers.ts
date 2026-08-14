@@ -1,6 +1,6 @@
 /**
  * Dynamic preset renderer registry.
- * Active presets: Golden + Zenith + Atelier + Canvas + Quantum + Emerald + Obsidian + Commercial.
+ * Active presets: Golden + Zenith + Atelier + Canvas + Quantum + Emerald + Obsidian + Field Engineering + Commercial.
  */
 
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
@@ -51,6 +51,13 @@ export const OBSIDIAN_PRESET_ALIASES = [
   "obsidian",
 ] as const;
 
+/** Local / mock aliases that resolve to Field Engineering. */
+export const FIELD_PRESET_ALIASES = [
+  "residential_field",
+  "field",
+  "field_engineering",
+] as const;
+
 export function isZenithPresetId(presetId: string): boolean {
   return (ZENITH_PRESET_ALIASES as readonly string[]).includes(presetId);
 }
@@ -79,6 +86,10 @@ export function isObsidianPresetId(presetId: string): boolean {
   return (OBSIDIAN_PRESET_ALIASES as readonly string[]).includes(presetId);
 }
 
+export function isFieldPresetId(presetId: string): boolean {
+  return (FIELD_PRESET_ALIASES as readonly string[]).includes(presetId);
+}
+
 export function isCommercialPresetId(presetId: string): boolean {
   return presetId === "commercial_executive";
 }
@@ -104,6 +115,8 @@ export const PRESET_RENDERER_LOADERS: PresetRendererRegistry = {
     import("@/components/proposals/_registry/adapters/emerald-adapter"),
   residential_obsidian: () =>
     import("@/components/proposals/_registry/adapters/obsidian-adapter"),
+  residential_field: () =>
+    import("@/components/proposals/_registry/adapters/field-engineering-adapter"),
   commercial_executive: () =>
     import("@/components/proposals/_registry/adapters/commercial-adapter"),
   commercial_ht: () =>
@@ -134,6 +147,9 @@ export function getPresetRendererLoader(
   }
   if (isObsidianPresetId(presetId)) {
     return () => import("@/components/proposals/_registry/adapters/obsidian-adapter");
+  }
+  if (isFieldPresetId(presetId)) {
+    return () => import("@/components/proposals/_registry/adapters/field-engineering-adapter");
   }
   if (isLuxeNoirPresetId(presetId)) {
     return () => import("@/components/proposals/_registry/adapters/luxe-noir-adapter");
