@@ -2,64 +2,61 @@
 
 /**
  * Obsidian — Powerplant Blueprint (HUD telemetry + SVG architecture).
+ * Live ProposalData only — no 3 kW / 580W / Satna lat-long fallbacks.
  */
 
 import { Fragment } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
-import {
-  OBSIDIAN_PANEL_WATT,
-  OBSIDIAN_SPECIFIC_YIELD,
-  formatObsidianKw,
-  obsidianDcKwp,
-  obsidianModuleCount,
-} from "./obsidian-brand";
+import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
+import { formatObsidianKw, resolveObsidianPanelSpec } from "./obsidian-brand";
 import styles from "./Obsidian.module.css";
 
 export type ObsidianEngineeringProps = {
   data: ProposalData;
+  pptInput?: PremiumProposalPptInput | null;
 };
 
-function PanelMatrix({ count }: { count: number }) {
-  const n = Math.min(Math.max(count, 1), 12);
-  const cols = n <= 3 ? n : Math.ceil(n / 2);
-  const rows = n <= 3 ? 1 : 2;
-  const cellW = 55;
-  const cellH = 35;
-  const gap = 10;
-  const width = cols * cellW + (cols - 1) * gap;
-  const height = rows * cellH + (rows - 1) * gap;
-
-  const cells: { x: number; y: number; key: string }[] = [];
-  let i = 0;
-  for (let r = 0; r < rows && i < n; r++) {
-    for (let c = 0; c < cols && i < n; c++) {
-      cells.push({
-        x: c * (cellW + gap),
-        y: r * (cellH + gap),
-        key: `pv-${r}-${c}`,
-      });
-      i += 1;
-    }
-  }
-
+function PanelMatrix() {
   return (
-    <svg width={Math.min(200, width)} height={height} viewBox={`0 0 ${width} ${height}`}>
-      {cells.map((cell) => (
-        <Fragment key={cell.key}>
+    <svg width="200" height="80" viewBox="0 0 200 80">
+      {[0, 1, 2].map((x) => (
+        <Fragment key={`row1-${x}`}>
           <rect
-            x={cell.x}
-            y={cell.y}
-            width={cellW}
-            height={cellH}
+            x={x * 65}
+            y="0"
+            width="55"
+            height="35"
             fill="rgba(255,85,0,0.1)"
             stroke="#FF5500"
             strokeWidth="1"
           />
           <rect
-            x={cell.x + 2}
-            y={cell.y + 2}
-            width={cellW - 4}
-            height={cellH - 4}
+            x={x * 65 + 2}
+            y="2"
+            width="51"
+            height="31"
+            fill="none"
+            stroke="rgba(255,255,255,0.2)"
+            strokeWidth="0.5"
+          />
+        </Fragment>
+      ))}
+      {[0, 1, 2].map((x) => (
+        <Fragment key={`row2-${x}`}>
+          <rect
+            x={x * 65}
+            y="45"
+            width="55"
+            height="35"
+            fill="rgba(255,85,0,0.1)"
+            stroke="#FF5500"
+            strokeWidth="1"
+          />
+          <rect
+            x={x * 65 + 2}
+            y="47"
+            width="51"
+            height="31"
             fill="none"
             stroke="rgba(255,255,255,0.2)"
             strokeWidth="0.5"
@@ -70,31 +67,43 @@ function PanelMatrix({ count }: { count: number }) {
   );
 }
 
-export function ObsidianEngineering({ data }: ObsidianEngineeringProps) {
+export function ObsidianEngineering({ data, pptInput }: ObsidianEngineeringProps) {
   const systemKw = Number(data.meta.systemKw) || 0;
-  const modules = obsidianModuleCount(systemKw);
-  const dcKwp = obsidianDcKwp(modules);
-  const acLabel = formatObsidianKw(systemKw, 1);
-  const dcLabel = dcKwp > 0 ? formatObsidianKw(dcKwp) : "—";
+  const { watt, modules, dcKwp, panelItem, inverterItem } =
+    resolveObsidianPanelSpec(data);
+  const inverterKw = systemKw;
   const ratio = systemKw > 0 && dcKwp > 0 ? dcKwp / systemKw : 0;
-  const prMetric = data.engineering.metrics.find((m) =>
-    /performance|pr\b/i.test(m.label)
-  );
-  const windMetric = data.engineering.metrics.find((m) =>
-    /wind/i.test(m.label)
-  );
-  const pr = prMetric?.value || "75%";
-  const wind = windMetric?.value || "150 km/h";
-  const annualUnits =
-    data.closing.annualUnits > 0
-      ? Math.round(data.closing.annualUnits)
-      : systemKw > 0
-        ? Math.round(systemKw * OBSIDIAN_SPECIFIC_YIELD)
-        : 0;
+  const annualYield =
+    data.closing.annualUnits > 0 ? Math.round(data.closing.annualUnits) : 0;
+  const customerName = data.meta.customerName?.trim() || "";
+  const panelMake = panelItem?.brand?.trim() || panelItem?.spec?.trim() || "";
+  const inverterMake = inverterItem?.brand?.trim() || inverterItem?.name?.trim() || "";
   const location =
-    data.engineering.cityLabel?.trim() ||
-    data.meta.locationLine?.trim() ||
-    "";
+    data.engineering.cityLabel?.trim() || data.meta.locationLine?.trim() || "";
+  const siteLat = pptInput?.residentialTechnicalSpecs?.mounting?.siteLat;
+  const hasLat = typeof siteLat === "number" && Number.isFinite(siteLat);
+  const geoLine = hasLat
+    ? `LAT: ${siteLat.toFixed(1)}° N`
+    : location
+      ? location
+      : "";
+
+  const dcLabel = formatObsidianKw(dcKwp);
+  const acLabel = formatObsidianKw(inverterKw, 1);
+  const ratioLabel = ratio > 0 ? ratio.toFixed(2) : "—";
+
+  const arrayHint =
+    modules > 0 && watt > 0
+      ? `${modules}x ${watt}W${panelMake ? ` ${panelMake}` : ""} Array. Highly engineered silicon matrix designed to capture raw solar irradiance.`
+      : "Highly engineered silicon matrix designed to capture raw solar irradiance.";
+
+  const inverterHint = inverterMake
+    ? `${inverterMake} inverter. Processing raw DC into clean, grid-synchronized 230V AC output.`
+    : "Intelligent inverter. Processing raw DC into clean, grid-synchronized 230V AC output.";
+
+  const telemetryTag = customerName
+    ? `[ SYS_ARCH_01 ] :: ENG_TELEMETRY :: ${customerName.toUpperCase()}`
+    : "[ SYS_ARCH_01 ] :: ENG_TELEMETRY";
 
   return (
     <section className={styles.a4TechSpec}>
@@ -106,9 +115,7 @@ export function ObsidianEngineering({ data }: ObsidianEngineeringProps) {
       <div className={styles.contentArea}>
         <div className={styles.techHeader}>
           <div>
-            <span className={styles.systemCode}>
-              [ SYS_ARCH_01 ] :: ENG_TELEMETRY
-            </span>
+            <span className={styles.systemCode}>{telemetryTag}</span>
             <h2 className={styles.mainTitle}>
               Powerplant
               <br />
@@ -117,9 +124,7 @@ export function ObsidianEngineering({ data }: ObsidianEngineeringProps) {
           </div>
           <div className={styles.headerRight}>
             <span className={styles.systemCode}>STATUS: ACTIVE</span>
-            {location ? (
-              <div className={styles.headerMeta}>{location}</div>
-            ) : null}
+            {geoLine ? <div className={styles.headerMeta}>{geoLine}</div> : null}
           </div>
         </div>
 
@@ -129,14 +134,10 @@ export function ObsidianEngineering({ data }: ObsidianEngineeringProps) {
             <span className={styles.dataValue}>
               {dcLabel} <span>kWp</span>
             </span>
-            <p className={styles.dataHint}>
-              {modules > 0
-                ? `${modules} × ${OBSIDIAN_PANEL_WATT}W N-Type TOPCon array. High-efficiency panels that capture sunlight for this rooftop.`
-                : "N-Type TOPCon array. High-efficiency panels that capture sunlight for this rooftop."}
-            </p>
+            <p className={styles.dataHint}>{arrayHint}</p>
           </div>
           <div className={styles.chartVisual}>
-            <PanelMatrix count={modules > 0 ? modules : 6} />
+            <PanelMatrix />
           </div>
         </div>
 
@@ -148,10 +149,7 @@ export function ObsidianEngineering({ data }: ObsidianEngineeringProps) {
             <span className={styles.dataValue}>
               {acLabel} <span>kW</span>
             </span>
-            <p className={styles.dataHint}>
-              Dual-MPPT inverter. Converts DC from the panels into clean,
-              grid-ready 230V AC.
-            </p>
+            <p className={styles.dataHint}>{inverterHint}</p>
           </div>
           <div className={styles.chartVisual}>
             <svg width="100%" height="80" viewBox="0 0 300 80">
@@ -176,28 +174,30 @@ export function ObsidianEngineering({ data }: ObsidianEngineeringProps) {
           <div className={styles.dataCluster}>
             <span className={styles.dataLabel}>03 // Structural Yield Engine</span>
             <span className={styles.dataValue}>
-              {ratio > 0 ? `${ratio.toFixed(2)}x` : "—"}{" "}
+              {ratio > 0 ? `${ratioLabel}x` : "—"}{" "}
               <span>DC/AC Ratio</span>
             </span>
             <p className={styles.dataHint}>
-              Extra DC capacity for better output in low light and monsoon.
-              Wind rating {wind}.
+              Oversampled architecture ensuring maximum yield during low-light
+              conditions. Wind-load certified deployment.
             </p>
           </div>
           <div className={`${styles.chartVisual} ${styles.terminalBox}`}>
             <div className={styles.terminalText}>
               &gt; INITIATING YIELD CALC...
               <br />
-              &gt; PR_DERATING_APPLIED: {pr}
+              &gt; SYSTEM_CAPACITY: {acLabel !== "—" ? `${acLabel} kW` : "—"}
               <br />
-              &gt; WIND_RATING: {wind}
+              &gt; ARRAY_PEAK: {dcLabel !== "—" ? `${dcLabel} kWp` : "—"}
+              <br />
+              &gt; EFFICIENCY_DERATING_ACTIVE
               <br />
               &gt; ----------------------
               <br />
               <span className={styles.terminalHighlight}>
                 &gt; NET_EST_YIELD:{" "}
-                {annualUnits > 0
-                  ? `${annualUnits.toLocaleString("en-IN")} U/YR`
+                {annualYield > 0
+                  ? `${annualYield.toLocaleString("en-IN")} U/YR`
                   : "—"}
               </span>
             </div>
