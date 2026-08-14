@@ -21,7 +21,7 @@ export type FieldRendererProps = {
   proposalId?: string;
 };
 
-function FieldDocument({ data }: { data: ProposalData }) {
+function FieldDocument({ data, proposalId }: { data: ProposalData; proposalId?: string }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
 
@@ -65,16 +65,16 @@ function FieldDocument({ data }: { data: ProposalData }) {
           </button>
         </div>
       </div>
-      <FieldProposal data={data} />
+      <FieldProposal data={data} proposalId={proposalId} />
     </div>
   );
 }
 
-export function FieldRenderer({ data }: FieldRendererProps) {
+export function FieldRenderer({ data, proposalId }: FieldRendererProps) {
   if (!data) {
     return <div className={styles.loading}>Preparing Field Engineering…</div>;
   }
-  return <FieldDocument data={data} />;
+  return <FieldDocument data={data} proposalId={proposalId} />;
 }
 
 export default FieldRenderer;

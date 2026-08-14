@@ -3,9 +3,17 @@
 import type { ProposalData } from "@/lib/proposal-data";
 import { DrawingSheet } from "./DrawingSheet";
 import styles from "./Field.module.css";
-import { fieldDrawnBy, fieldSheetDate } from "./field-live";
+import { fieldSheetMeta } from "./field-live";
+
+const DISCOM_STEPS = [
+  "Site survey recorded",
+  "Net-meter application to DISCOM",
+  "CEIG / safety as applicable",
+  "Meter installation & commissioning",
+];
 
 export function CompliancePage({ data }: { data: ProposalData }) {
+  const sheet = fieldSheetMeta(data);
   const standards = (data.engineering.standards ?? []).filter((s) => s.trim());
   const warranty = (data.warranty.rows ?? []).filter((r) => r.item?.trim());
   const highlights = (data.warranty.highlights ?? []).filter((h) => h.label?.trim());
@@ -14,25 +22,51 @@ export function CompliancePage({ data }: { data: ProposalData }) {
     <DrawingSheet
       dwgNo="FE-07"
       sheetLabel="COMPLIANCE & CERTIFICATION"
-      drawnBy={fieldDrawnBy(data)}
-      date={fieldSheetDate(data.meta.generatedAt)}
+      pageOf="07 / 09"
+      familyName={sheet.familyName}
+      scale="—"
+      date={sheet.date}
+      preparedBy={sheet.preparedBy}
+      verified
     >
-      <span className={styles.eyebrow}>Inspection vernacular</span>
-      <h2 className={styles.h2}>Standards, warranty, and the verified stamp.</h2>
-      <p className={styles.lede}>
-        This sheet lists what is on the proposal record for DISCOM / MNRE
-        inspection talk — not marketing claims.
-      </p>
-
-      <span className={`${styles.tag} ${styles.tagOk}`}>VERIFIED AGAINST RECORD</span>
-
-      <h2 className={styles.h2} style={{ marginTop: 14 }}>
-        Referenced standards
+      <div className={styles.eyebrow}>Certification Sheet</div>
+      <h2 className={styles.h2}>
+        Standards & warranty <span className={styles.tag}>against the proposal record</span>
       </h2>
-      {standards.length === 0 ? (
-        <p className={styles.note}>No standards listed on this proposal.</p>
-      ) : (
-        <table className={styles.table}>
+
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            <th />
+            <th>Item</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td className={styles.verifiedMark}>●</td>
+            <td>IS / IEC standards on file</td>
+            <td className={styles.mono}>
+              {standards.length > 0 ? `${standards.length} listed` : "—"}
+            </td>
+          </tr>
+          <tr>
+            <td className={styles.verifiedMark}>●</td>
+            <td>ALMM / make as per selected modules</td>
+            <td className={styles.note}>Follows live BOM — not a certificate number</td>
+          </tr>
+          <tr>
+            <td className={styles.verifiedMark}>●</td>
+            <td>Warranty rows</td>
+            <td className={styles.mono}>
+              {warranty.length > 0 || highlights.length > 0 ? "On record" : "—"}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      {standards.length > 0 ? (
+        <table className={styles.table} style={{ marginTop: "8mm" }}>
           <thead>
             <tr>
               <th>#</th>
@@ -40,43 +74,38 @@ export function CompliancePage({ data }: { data: ProposalData }) {
             </tr>
           </thead>
           <tbody>
-            {standards.slice(0, 8).map((s, i) => (
+            {standards.slice(0, 6).map((s, i) => (
               <tr key={`${s}-${i}`}>
-                <td className={styles.ref}>{String(i + 1).padStart(2, "0")}</td>
+                <td className={styles.mono}>{String(i + 1).padStart(2, "0")}</td>
                 <td>{s}</td>
               </tr>
             ))}
           </tbody>
         </table>
-      )}
+      ) : null}
 
-      <h2 className={styles.h2} style={{ marginTop: 14 }}>
-        Warranty highlights
-      </h2>
-      {warranty.length === 0 && highlights.length === 0 ? (
-        <p className={styles.note}>No warranty rows on this proposal.</p>
-      ) : (
-        <table className={styles.table}>
+      {warranty.length > 0 || highlights.length > 0 ? (
+        <table className={styles.table} style={{ marginTop: "8mm" }}>
           <thead>
             <tr>
-              <th>Item</th>
+              <th>Warranty</th>
               <th>Duration</th>
               <th>By</th>
             </tr>
           </thead>
           <tbody>
-            {warranty.slice(0, 6).map((row) => (
+            {warranty.slice(0, 5).map((row) => (
               <tr key={row.item}>
                 <td>{row.item}</td>
-                <td>{row.duration || "—"}</td>
-                <td>{row.by || "—"}</td>
+                <td className={styles.mono}>{row.duration || "—"}</td>
+                <td className={styles.note}>{row.by || "—"}</td>
               </tr>
             ))}
             {warranty.length === 0
               ? highlights.slice(0, 4).map((h) => (
                   <tr key={h.label}>
                     <td>{h.label}</td>
-                    <td>
+                    <td className={styles.mono}>
                       {h.value || "—"} {h.unit || ""}
                     </td>
                     <td>—</td>
@@ -85,13 +114,27 @@ export function CompliancePage({ data }: { data: ProposalData }) {
               : null}
           </tbody>
         </table>
-      )}
+      ) : null}
 
-      <div className={styles.stamp} aria-hidden>
-        FIELD
-        <br />
-        CHECK
-      </div>
+      <h2 className={styles.h2} style={{ marginTop: "8mm" }}>
+        DISCOM net-metering steps <span className={styles.tag}>sequence</span>
+      </h2>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            <th>Step</th>
+            <th>Activity</th>
+          </tr>
+        </thead>
+        <tbody>
+          {DISCOM_STEPS.map((s, i) => (
+            <tr key={s}>
+              <td className={styles.mono}>{String(i + 1).padStart(2, "0")}</td>
+              <td>{s}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </DrawingSheet>
   );
 }

@@ -18,16 +18,17 @@ import styles from "./Field.module.css";
 
 export type FieldProposalProps = {
   data: ProposalData;
+  proposalId?: string;
 };
 
-export function FieldProposal({ data }: FieldProposalProps) {
+export function FieldProposal({ data, proposalId }: FieldProposalProps) {
   return (
     <div className={styles.proposalStage}>
-      <CoverPage data={data} />
+      <CoverPage data={data} proposalId={proposalId} />
+      <LoadProfilePage data={data} />
       <SiteSurveyPage data={data} />
       <ArchitecturePage data={data} />
       <PerformancePage data={data} />
-      <LoadProfilePage data={data} />
       <FinancialLedgerPage data={data} />
       <CompliancePage data={data} />
       <TimelinePage data={data} />

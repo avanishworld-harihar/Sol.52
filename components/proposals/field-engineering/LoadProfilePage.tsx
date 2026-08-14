@@ -1,72 +1,84 @@
 "use client";
 
 import type { ProposalData } from "@/lib/proposal-data";
-import { formatInr } from "@/components/proposals/_shared/formatters";
 import { DrawingSheet } from "./DrawingSheet";
 import styles from "./Field.module.css";
-import { fieldDrawnBy, fieldSheetDate, hasFieldBill } from "./field-live";
+import { fieldSheetMeta, hasFieldBill } from "./field-live";
 
 export function LoadProfilePage({ data }: { data: ProposalData }) {
+  const sheet = fieldSheetMeta(data);
   const live = hasFieldBill(data);
-  const months = data.bill.months ?? [];
-  const maxUnits = Math.max(...months.map((m) => m.units), 1);
+  const months = (data.bill.months ?? []).slice(0, 12);
 
   return (
     <DrawingSheet
-      dwgNo="FE-05"
-      sheetLabel="ENERGY LOAD PROFILE"
-      drawnBy={fieldDrawnBy(data)}
-      date={fieldSheetDate(data.meta.generatedAt)}
+      dwgNo="FE-02"
+      sheetLabel="FAMILY ENERGY LOAD PROFILE"
+      pageOf="02 / 09"
+      familyName={sheet.familyName}
+      scale="—"
+      date={sheet.date}
+      preparedBy={sheet.preparedBy}
     >
-      <span className={styles.eyebrow}>Bill record</span>
-      <h2 className={styles.h2}>How the home uses electricity today.</h2>
-      <p className={styles.lede}>
-        Plotted from the uploaded DISCOM bill. If no bill is on file, this
-        sheet stays empty rather than guessing a load.
+      <div className={styles.eyebrow}>Load Ledger</div>
+      <h2 className={styles.h2}>
+        Monthly unit consumption <span className={styles.tag}>from the DISCOM bill on file</span>
+      </h2>
+      <p className={styles.bodyText}>
+        This sheet is a load ledger, not an estimate. If no bill was uploaded,
+        rows stay blank.
       </p>
 
       {!live ? (
-        <div className={styles.callout}>
+        <p className={styles.note} style={{ marginTop: "8mm" }}>
           No bill on this proposal — load profile not plotted.
-        </div>
+        </p>
       ) : (
-        <>
-          <div className={styles.metaGrid}>
-            <div className={styles.metaCell}>
-              <span>Yearly bill</span>
-              <strong>
-                {data.bill.yearlyBillInr > 0 ? formatInr(data.bill.yearlyBillInr) : "—"}
-              </strong>
-            </div>
-            <div className={styles.metaCell}>
-              <span>Recorded units</span>
-              <strong>
+        <table className={styles.table} style={{ marginTop: "8mm" }}>
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th>Units</th>
+              <th>Energy (₹)</th>
+              <th>Net bill (₹)</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            {months.map((m, i) => (
+              <tr key={`${m.label}-${i}`}>
+                <td>{m.label || "—"}</td>
+                <td className={styles.mono}>{m.units > 0 ? Math.round(m.units) : "—"}</td>
+                <td className={styles.mono}>
+                  {m.energyInr > 0 ? Math.round(m.energyInr).toLocaleString("en-IN") : "—"}
+                </td>
+                <td className={styles.mono}>
+                  {m.netInr > 0 ? Math.round(m.netInr).toLocaleString("en-IN") : "—"}
+                </td>
+                <td className={styles.note}>{m.isSummerPeak ? "Summer peak" : "—"}</td>
+              </tr>
+            ))}
+            <tr className={styles.totalRow}>
+              <td>Yearly / totals</td>
+              <td className={styles.mono}>
                 {data.bill.totals?.units
-                  ? `${Math.round(data.bill.totals.units).toLocaleString("en-IN")} u`
+                  ? Math.round(data.bill.totals.units).toLocaleString("en-IN")
                   : "—"}
-              </strong>
-            </div>
-          </div>
-          <div className={styles.chart}>
-            {months.slice(0, 12).map((m, i) => {
-              const h = m.units > 0 ? Math.max(6, Math.round((m.units / maxUnits) * 100)) : 8;
-              return (
-                <div className={styles.barCol} key={`${m.label}-${i}`}>
-                  <span className={styles.barVal}>{m.units > 0 ? Math.round(m.units) : "—"}</span>
-                  <div
-                    className={`${styles.barFill} ${m.isSummerPeak ? styles.barFillPeak : ""}`}
-                    style={{ height: `${h}%` }}
-                  />
-                  <span className={styles.barLbl}>{(m.label || "").slice(0, 3) || "—"}</span>
-                </div>
-              );
-            })}
-          </div>
-          <p className={styles.note}>
-            Orange marks summer-peak months from the bill audit. Solar covers
-            daytime load first.
-          </p>
-        </>
+              </td>
+              <td className={styles.mono}>
+                {data.bill.totals?.energyInr
+                  ? Math.round(data.bill.totals.energyInr).toLocaleString("en-IN")
+                  : "—"}
+              </td>
+              <td className={`${styles.mono} ${styles.signal}`}>
+                {data.bill.yearlyBillInr > 0
+                  ? Math.round(data.bill.yearlyBillInr).toLocaleString("en-IN")
+                  : "—"}
+              </td>
+              <td className={styles.note}>{data.bill.fixedChargesDisplay || "—"}</td>
+            </tr>
+          </tbody>
+        </table>
       )}
     </DrawingSheet>
   );

@@ -1,139 +1,106 @@
 "use client";
 
 import type { ProposalData } from "@/lib/proposal-data";
-import { formatInr } from "@/components/proposals/_shared/formatters";
 import { DrawingSheet } from "./DrawingSheet";
 import styles from "./Field.module.css";
-import { fieldDrawnBy, fieldSheetDate } from "./field-live";
+import { fieldSheetMeta } from "./field-live";
 
 export function FinancialLedgerPage({ data }: { data: ProposalData }) {
+  const sheet = fieldSheetMeta(data);
   const gross = data.economics.grossInr;
   const subsidy = data.economics.subsidyInr;
   const net = data.economics.netInr;
   const showSubsidy = subsidy > 0;
   const payback = data.economics.paybackYears;
-  const monthly = data.economics.monthlySavingsInr;
+  const annualSavings = data.closing.annualSavingsInr || data.economics.monthlySavingsInr * 12;
   const lifetime =
     data.closing.lifetimeWealthInr > 0
       ? data.closing.lifetimeWealthInr
       : data.economics.lifetimeProfitInr;
-  const emi = data.economics.emiRows ?? [];
 
-  const rows: { ref: string; item: string; formula: string; value: string; emph?: boolean }[] = [
-    {
-      ref: "A",
-      item: "System cost (turnkey)",
-      formula: "Quoted",
-      value: gross > 0 ? formatInr(gross) : "—",
-    },
-  ];
-  if (showSubsidy) {
-    rows.push({
-      ref: "B",
-      item: "Subsidy (credited later)",
-      formula: "Record",
-      value: formatInr(subsidy),
-    });
-    rows.push({
-      ref: "C",
-      item: "After subsidy",
-      formula: "A − B",
-      value: net > 0 ? formatInr(net) : "—",
-      emph: true,
-    });
-  } else {
-    rows.push({
-      ref: "C",
-      item: "Amount on this quote",
-      formula: "A",
-      value: gross > 0 ? formatInr(gross) : "—",
-      emph: true,
-    });
-  }
+  const rupee = (n: number) => (n > 0 ? `₹${Math.round(n).toLocaleString("en-IN")}` : "—");
 
   return (
     <DrawingSheet
       dwgNo="FE-06"
       sheetLabel="FINANCIAL ENGINEERING LEDGER"
-      drawnBy={fieldDrawnBy(data)}
-      date={fieldSheetDate(data.meta.generatedAt)}
+      pageOf="06 / 09"
+      familyName={sheet.familyName}
+      scale="—"
+      date={sheet.date}
+      preparedBy={sheet.preparedBy}
     >
-      <span className={styles.eyebrow}>Calculation sheet</span>
-      <h2 className={styles.h2}>Investment ledger with working refs.</h2>
-      <p className={styles.lede}>
-        Stage payments stay on gross. Subsidy, when present, is credited later
-        — it is not deducted from the payment schedule.
-      </p>
+      <div className={styles.eyebrow}>Investment Calculation</div>
+      <h2 className={styles.h2}>
+        Net Investment{" "}
+        <span className={styles.tag}>{showSubsidy ? "A − B = D" : "A = D"}</span>
+      </h2>
 
       <table className={styles.table}>
         <thead>
           <tr>
-            <th>Ref</th>
-            <th>Line</th>
-            <th>Basis</th>
-            <th>Amount</th>
+            <th>Line Item</th>
+            <th>Ref.</th>
+            <th>Amount (₹)</th>
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
-            <tr key={row.ref} className={row.emph ? styles.emphRow : undefined}>
-              <td className={styles.ref}>{row.ref}</td>
-              <td>{row.item}</td>
-              <td>{row.formula}</td>
-              <td>{row.value}</td>
+          <tr>
+            <td>System Cost (Turnkey)</td>
+            <td className={`${styles.mono} ${styles.note}`}>A</td>
+            <td className={styles.mono}>{rupee(gross)}</td>
+          </tr>
+          {showSubsidy ? (
+            <tr>
+              <td>Subsidy (credited later)</td>
+              <td className={`${styles.mono} ${styles.note}`}>B</td>
+              <td className={styles.mono}>
+                −₹{Math.round(subsidy).toLocaleString("en-IN")}
+              </td>
             </tr>
-          ))}
+          ) : null}
+          <tr className={styles.totalRow}>
+            <td>Net Investment</td>
+            <td className={`${styles.mono} ${styles.note}`}>D</td>
+            <td className={`${styles.mono} ${styles.signal}`}>
+              {showSubsidy ? rupee(net) : rupee(gross)}
+            </td>
+          </tr>
         </tbody>
       </table>
 
-      <div className={styles.specRow} style={{ marginTop: 14 }}>
-        <div className={styles.specCard}>
-          <span>Payback</span>
-          <strong>{payback > 0 ? `${payback} yr` : "—"}</strong>
-        </div>
-        <div className={styles.specCard}>
-          <span>Monthly saving</span>
-          <strong>{monthly > 0 ? formatInr(monthly) : "—"}</strong>
-        </div>
-        <div className={styles.specCard}>
-          <span>Lifetime benefit</span>
-          <strong>{lifetime > 0 ? formatInr(lifetime) : "—"}</strong>
-        </div>
-        <div className={styles.specCard}>
-          <span>Payments</span>
-          <strong>GROSS</strong>
-        </div>
-      </div>
+      <h2 className={styles.h2} style={{ marginTop: "10mm" }}>
+        Payback Calculation <span className={styles.tag}>D ÷ annual savings = years</span>
+      </h2>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Est. Annual Bill Savings</td>
+            <td className={styles.mono}>{rupee(annualSavings)}</td>
+          </tr>
+          <tr>
+            <td>Simple Payback Period</td>
+            <td className={`${styles.mono} ${styles.signal}`}>
+              {payback > 0 ? `${payback} years` : "—"}
+            </td>
+          </tr>
+          <tr>
+            <td>25-Year Cumulative Savings (est.)</td>
+            <td className={styles.mono}>{rupee(lifetime)}</td>
+          </tr>
+        </tbody>
+      </table>
 
-      {emi.length > 0 ? (
-        <>
-          <h2 className={styles.h2} style={{ marginTop: 14 }}>
-            EMI cases
-          </h2>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Tenure</th>
-                <th>Monthly EMI</th>
-                <th>Interest</th>
-              </tr>
-            </thead>
-            <tbody>
-              {emi.slice(0, 4).map((row) => (
-                <tr key={row.tenureLabel}>
-                  <td>{row.tenureLabel || "—"}</td>
-                  <td>{row.monthlyEmiInr > 0 ? formatInr(row.monthlyEmiInr) : "—"}</td>
-                  <td>{row.interestPaidInr > 0 ? formatInr(row.interestPaidInr) : "—"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </>
-      ) : null}
-
-      <p className={styles.note}>
-        Refs A / B / C are working labels on this sheet only. Subsidy is not
-        split into central vs state unless those amounts exist on the proposal.
+      <p className={styles.note} style={{ marginTop: "6mm" }}>
+        Stage payments stay on gross (A). Subsidy, when present, is credited later
+        and is not split into central vs state unless those amounts exist on this
+        proposal. Tariff is not invented.
       </p>
     </DrawingSheet>
   );

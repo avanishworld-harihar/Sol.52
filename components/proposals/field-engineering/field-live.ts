@@ -94,3 +94,28 @@ export function fieldSheetDate(generatedAt?: string): string {
     year: "numeric",
   });
 }
+
+export function fieldFamilyName(data: ProposalData): string {
+  return data.meta.customerName?.trim() || data.closing.customerName?.trim() || "Residence";
+}
+
+export function fieldMetric(data: ProposalData, test: RegExp): string {
+  const hit = data.engineering.metrics.find((m) => test.test(m.label));
+  return hit?.value?.trim() || "";
+}
+
+export function fieldDocNo(proposalId?: string, generatedAt?: string): string {
+  const year = generatedAt
+    ? new Date(generatedAt).getFullYear()
+    : new Date().getFullYear();
+  const tail = (proposalId ?? "").replace(/[^a-zA-Z0-9]/g, "").slice(-4).toUpperCase();
+  return tail ? `FE-${year}-${tail}` : `FE-${year}`;
+}
+
+export function fieldSheetMeta(data: ProposalData) {
+  return {
+    familyName: fieldFamilyName(data),
+    date: fieldSheetDate(data.meta.generatedAt),
+    preparedBy: fieldDrawnBy(data),
+  };
+}

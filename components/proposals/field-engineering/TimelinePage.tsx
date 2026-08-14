@@ -1,72 +1,97 @@
 "use client";
 
 import type { ProposalData } from "@/lib/proposal-data";
-import { formatInr } from "@/components/proposals/_shared/formatters";
 import { DrawingSheet } from "./DrawingSheet";
 import styles from "./Field.module.css";
-import { fieldDrawnBy, fieldSheetDate } from "./field-live";
+import { fieldSheetMeta } from "./field-live";
+
+const DEFAULT_PHASES = [
+  "Survey",
+  "Approval",
+  "Procurement",
+  "Installation",
+  "Commissioning",
+  "Net-meter",
+];
 
 export function TimelinePage({ data }: { data: ProposalData }) {
+  const sheet = fieldSheetMeta(data);
   const steps = (data.execution.steps ?? []).filter((s) => s.title?.trim());
-  const pays = (data.execution.payments ?? []).filter((p) => p.label?.trim());
+  const phases = steps.length > 0 ? steps.slice(0, 6).map((s) => s.title) : DEFAULT_PHASES;
+  const chartW = 480;
+  const rowH = 22;
+  const chartH = phases.length * rowH + 8;
+  const barW = chartW - 130;
 
   return (
     <DrawingSheet
       dwgNo="FE-08"
       sheetLabel="INSTALLATION TIMELINE"
-      drawnBy={fieldDrawnBy(data)}
-      date={fieldSheetDate(data.meta.generatedAt)}
+      pageOf="08 / 09"
+      familyName={sheet.familyName}
+      scale="—"
+      date={sheet.date}
+      preparedBy={sheet.preparedBy}
     >
-      <span className={styles.eyebrow}>Works sequence</span>
-      <h2 className={styles.h2}>From kickoff to net meter.</h2>
-      <p className={styles.lede}>
-        Sequence is the execution plan on this proposal. Payment amounts are
-        on gross — subsidy is credited later.
-      </p>
+      <div className={styles.eyebrow}>Works Sequence</div>
+      <h2 className={styles.h2}>
+        Install phases <span className={styles.tag}>Gantt · schematic sequence, not a calendar</span>
+      </h2>
 
-      {steps.length === 0 ? (
-        <div className={styles.callout}>No installation steps on file.</div>
-      ) : (
-        <div className={styles.steps}>
-          {steps.slice(0, 6).map((step, i) => (
-            <div className={styles.step} key={`${step.num}-${step.title}`}>
-              <span className={styles.stepNum}>
-                {step.num || String(i + 1).padStart(2, "0")}
-              </span>
-              <div>
-                <h3>{step.title}</h3>
-                <p>{step.description || "—"}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      <svg
+        viewBox={`0 0 ${chartW} ${chartH}`}
+        className={styles.diagram}
+        style={{ marginTop: 0 }}
+        role="img"
+        aria-label="Installation phase gantt"
+      >
+        {phases.map((title, i) => {
+          const y = i * rowH + 4;
+          const x = 120 + i * (barW / Math.max(phases.length, 1)) * 0.35;
+          const w = barW * 0.45;
+          return (
+            <g key={`${title}-${i}`}>
+              <text x="0" y={y + 12} className={styles.dimText}>
+                {String(i + 1).padStart(2, "0")}  {title}
+              </text>
+              <rect
+                x={x}
+                y={y + 4}
+                width={w}
+                height="12"
+                fill="var(--eng-signal)"
+                opacity="0.85"
+              />
+            </g>
+          );
+        })}
+      </svg>
 
-      {pays.length > 0 ? (
-        <>
-          <h2 className={styles.h2} style={{ marginTop: 12 }}>
-            Payment stages (gross)
-          </h2>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Stage</th>
-                <th>%</th>
-                <th>Amount</th>
+      {steps.length > 0 ? (
+        <table className={styles.table} style={{ marginTop: "8mm" }}>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Phase</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {steps.slice(0, 6).map((s, i) => (
+              <tr key={`${s.num}-${s.title}`}>
+                <td className={styles.mono}>{s.num || String(i + 1).padStart(2, "0")}</td>
+                <td>{s.title}</td>
+                <td className={styles.note}>{s.description || "—"}</td>
               </tr>
-            </thead>
-            <tbody>
-              {pays.map((row) => (
-                <tr key={row.label} className={row.isTotal ? styles.emphRow : undefined}>
-                  <td>{row.label}</td>
-                  <td>{row.pctLabel || "—"}</td>
-                  <td>{row.amountInr > 0 ? formatInr(row.amountInr) : "—"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </>
-      ) : null}
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p className={styles.note} style={{ marginTop: "6mm" }}>
+          Bars show the typical field sequence. Duration weeks are not invented
+          when this proposal has no execution plan.
+        </p>
+      )}
     </DrawingSheet>
   );
 }

@@ -6,54 +6,67 @@ import styles from "./Field.module.css";
 export type DrawingSheetProps = {
   dwgNo: string;
   sheetLabel: string;
-  drawnBy: string;
-  date: string;
+  pageOf: string;
+  familyName?: string;
   scale?: string;
-  checked?: string;
+  date: string;
+  preparedBy: string;
+  verified?: boolean;
   children: ReactNode;
 };
 
 export function DrawingSheet({
   dwgNo,
   sheetLabel,
-  drawnBy,
-  date,
+  pageOf,
+  familyName,
   scale = "NTS",
-  checked = "—",
+  date,
+  preparedBy,
+  verified = false,
   children,
 }: DrawingSheetProps) {
   return (
     <section className={styles.sheet}>
-      <div className={styles.frame}>
-        <header className={styles.sheetHead}>
-          <span className={styles.sheetHeadMark}>FIELD ENGINEERING</span>
-          <span>{sheetLabel}</span>
-          <span>REV 0 · ISSUED FOR CLIENT</span>
-        </header>
-        <div className={styles.body}>{children}</div>
-        <footer className={styles.titleBlock}>
-          <div className={styles.titleCell}>
-            <span>Drawn by</span>
-            <strong>{drawnBy || "—"}</strong>
-          </div>
-          <div className={styles.titleCell}>
-            <span>Checked</span>
-            <strong>{checked}</strong>
-          </div>
-          <div className={styles.titleCell}>
-            <span>Scale</span>
-            <strong>{scale}</strong>
-          </div>
-          <div className={styles.titleCell}>
-            <span>Date</span>
-            <strong>{date}</strong>
-          </div>
-          <div className={styles.titleCell}>
-            <span>Dwg no</span>
-            <strong className={styles.dwgNo}>{dwgNo}</strong>
-          </div>
-        </footer>
+      <div className={styles.microbar}>
+        <span>SOL.52 · FIELD ENGINEERING SET</span>
+        <strong>
+          {familyName || "RESIDENCE"} — DWG {dwgNo}
+        </strong>
       </div>
+      <div className={styles.body}>{children}</div>
+      <footer className={styles.titleBlock}>
+        <div>
+          <span className={styles.tbLabel}>Sheet Title</span>
+          <span className={styles.tbValue}>{sheetLabel}</span>
+        </div>
+        <div>
+          <span className={styles.tbLabel}>Dwg No.</span>
+          <span className={styles.tbValue}>{dwgNo}</span>
+        </div>
+        <div>
+          <span className={styles.tbLabel}>Sheet</span>
+          <span className={styles.tbValue}>{pageOf}</span>
+        </div>
+        <div>
+          <span className={styles.tbLabel}>Scale</span>
+          <span className={styles.tbValue}>{scale}</span>
+        </div>
+        <div>
+          <span className={styles.tbLabel}>Date</span>
+          <span className={styles.tbValue}>{date}</span>
+        </div>
+        <div>
+          {verified ? (
+            <span className={styles.tbStamp}>VERIFIED</span>
+          ) : (
+            <>
+              <span className={styles.tbLabel}>Prepared By</span>
+              <span className={styles.tbValue}>{preparedBy || "—"}</span>
+            </>
+          )}
+        </div>
+      </footer>
     </section>
   );
 }
