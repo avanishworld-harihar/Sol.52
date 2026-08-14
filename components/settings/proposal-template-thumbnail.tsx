@@ -405,7 +405,7 @@ function EmeraldThumb({ size }: { size: "card" | "preview" }) {
 
 function FieldThumb({ size }: { size: "card" | "preview" }) {
   return (
-    <div className="flex h-full w-full items-center justify-center bg-[#cfc5ac]">
+    <div className="flex h-full w-full items-center justify-center bg-[#e7e2d6]">
       <div
         className={cn(
           "relative flex flex-col overflow-hidden rounded-[2px] border border-[#12212A] shadow-sm",
@@ -414,7 +414,7 @@ function FieldThumb({ size }: { size: "card" | "preview" }) {
         style={{
           backgroundColor: "#F4F0E4",
           backgroundImage:
-            "linear-gradient(rgba(18,33,42,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(18,33,42,0.12) 1px, transparent 1px)",
+            "linear-gradient(rgba(18,33,42,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(18,33,42,0.06) 1px, transparent 1px)",
           backgroundSize: "6px 6px",
         }}
       >

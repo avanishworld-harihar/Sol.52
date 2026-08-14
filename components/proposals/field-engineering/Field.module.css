@@ -14,7 +14,8 @@
 .root {
   --eng-paper: #f4f0e4;
   --eng-sheet: #ffffff;
-  --eng-grid: #cfc5ac;
+  /* v2 base #cfc5ac — sheet grid lines at 50% lightness for a quieter background */
+  --eng-grid: color-mix(in srgb, #cfc5ac 50%, #ffffff);
   --eng-ink: #12212a;
   --eng-ink-soft: #2e3e46;
   --eng-ink-faint: #647079;
