@@ -1617,8 +1617,13 @@
   }
 
   .techBento,
-  .engineeringGrid {
+  .engineeringGrid,
+  .anatomyLegend {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .photonPath {
+    flex-wrap: wrap;
   }
 }
 
@@ -1922,5 +1927,178 @@
 
 .langHi .prMathText p {
   font-family: "Noto Sans Devanagari", "Inter", sans-serif;
+}
+
+/* --- PLANT ANATOMY (exploded orthographic plate) --- */
+.anatomyPage .contentArea {
+  padding: 26px 22px 18px;
+}
+
+.anatomyPage .pageHeader {
+  font-size: 2.05rem;
+  margin-bottom: 4px;
+  padding-bottom: 6px;
+}
+
+.anatomyKicker {
+  display: block;
+  font-size: 0.58rem;
+  letter-spacing: 3px;
+  color: #d4af37 !important;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.anatomyPlate {
+  background: #ffffff !important;
+  border: 1px solid rgba(6, 78, 59, 0.14) !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.03) !important;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.anatomySvg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.anatomyLegendEyebrow {
+  display: block;
+  font-size: 0.55rem;
+  letter-spacing: 2.4px;
+  color: #78716c !important;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin: 2px 0 8px;
+}
+
+.anatomyLegend {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.anatomyItem {
+  border-top: 2px solid #d4af37 !important;
+  padding: 8px 2px 0;
+  min-width: 0;
+}
+
+.anatomyNum {
+  display: block;
+  font-family: "Courier New", ui-monospace, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 1px;
+  color: #d4af37 !important;
+  font-weight: 700;
+}
+
+.anatomyItemLabel {
+  display: block;
+  font-size: 0.58rem;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: #57534e !important;
+  margin: 2px 0 4px;
+}
+
+.anatomyItemValue {
+  display: block;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 0.95rem;
+  color: #064e3b !important;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.anatomyItemHint {
+  display: block;
+  font-family: "Courier New", ui-monospace, monospace;
+  font-size: 0.58rem;
+  color: #78716c !important;
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.photonPath {
+  display: flex;
+  align-items: stretch;
+  margin-bottom: 12px;
+}
+
+.photonStageWrap {
+  display: flex;
+  align-items: stretch;
+  flex: 1;
+  min-width: 0;
+}
+
+.photonChevron {
+  width: 0;
+  height: 0;
+  margin: auto -1px;
+  border-top: 22px solid transparent;
+  border-bottom: 22px solid transparent;
+  border-left: 10px solid #d4af37;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.photonStage {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 10px 9px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.photonStage span {
+  font-size: 0.52rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.photonStage strong {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.2;
+  margin-top: 2px;
+}
+
+.photonGold {
+  background: #d4af37 !important;
+  color: #064e3b !important;
+}
+
+.photonForest {
+  background: #064e3b !important;
+  color: #fafaf9 !important;
+}
+
+.photonIvory {
+  background: #fafaf9 !important;
+  color: #064e3b !important;
+  border: 1px solid rgba(6, 78, 59, 0.2) !important;
+  box-shadow: 3px 3px 0 #d4af37;
+}
+
+.anatomyPage .prMathBlock {
+  margin-top: 2px;
+  padding: 12px 14px;
+  gap: 12px;
+}
+
+.langHi .anatomyItemValue,
+.langHi .photonStage strong {
+  font-family: "Noto Sans Devanagari", "Cormorant Garamond", serif;
 }
 
