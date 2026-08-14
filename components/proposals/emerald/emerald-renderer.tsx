@@ -3,7 +3,8 @@
 /**
  * Emerald Signature renderer — split-folio eco-luxury residential proposal.
  * Preset id: residential_emerald
- * Pages: Cover → Architecture → Capital Ledger → Material Anthology.
+ * Pages: Cover → Architecture → Capital Ledger → Material Anthology →
+ * Impact → Execution Mandate.
  */
 
 import { useRef, useState } from "react";
@@ -13,6 +14,8 @@ import { EmeraldCover } from "./EmeraldCover";
 import { EmeraldArchitecture } from "./EmeraldArchitecture";
 import { EmeraldEconomics } from "./EmeraldEconomics";
 import { EmeraldHardware } from "./EmeraldHardware";
+import { EmeraldImpact } from "./EmeraldImpact";
+import { EmeraldClosing } from "./EmeraldClosing";
 import { useEmeraldBrand } from "./emerald-brand";
 import styles from "./Emerald.module.css";
 import {
@@ -85,6 +88,8 @@ function EmeraldDocument({
       <EmeraldArchitecture data={data} />
       <EmeraldEconomics data={data} />
       <EmeraldHardware data={data} />
+      <EmeraldImpact data={data} />
+      <EmeraldClosing data={data} />
     </div>
   );
 }
