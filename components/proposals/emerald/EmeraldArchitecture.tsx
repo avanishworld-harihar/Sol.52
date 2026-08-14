@@ -1,15 +1,13 @@
 "use client";
 
 /**
- * Emerald Signature architecture — system connection + live engineering numbers.
+ * Emerald Signature — Engineering Topology (golden node map + bento metrics).
+ * Live ProposalData / BOM only — no 5 kW / 615W / Waaree / 75% PR fallbacks.
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
 import { formatEmeraldKw } from "./emerald-brand";
-import {
-  emeraldMetric,
-  resolveEmeraldPanelSpec,
-} from "./emerald-live";
+import { emeraldMetric, resolveEmeraldPanelSpec } from "./emerald-live";
 import styles from "./Emerald.module.css";
 import { useEmeraldLang } from "./emerald-lang-context";
 
@@ -25,56 +23,10 @@ export function EmeraldArchitecture({ data, folio }: EmeraldArchitectureProps) {
     resolveEmeraldPanelSpec(data);
   const ratio = systemKw > 0 && dcKwp > 0 ? dcKwp / systemKw : 0;
   const acLabel = formatEmeraldKw(systemKw, 1);
-  const dcLabel = dcKwp > 0 ? formatEmeraldKw(dcKwp) : "";
-  const panelHint =
-    [panelItem?.brand, panelItem?.spec].filter(Boolean).join(" · ") ||
-    copy.arch.step1Hint(modules, watt);
-  const inverterHint =
-    [inverterItem?.brand, inverterItem?.spec].filter(Boolean).join(" · ") ||
-    copy.arch.step2Hint;
-
-  const metricRows: { label: string; value: string }[] = [];
-  if (modules > 0 && watt > 0) {
-    metricRows.push({
-      label: copy.arch.modules,
-      value: `${modules} × ${watt}W`,
-    });
-  }
-  if (dcKwp > 0) {
-    metricRows.push({
-      label: copy.cover.solarArray,
-      value: `${formatEmeraldKw(dcKwp)} kWp`,
-    });
-  }
-  if (systemKw > 0) {
-    metricRows.push({
-      label: copy.cover.systemSize,
-      value: `${acLabel} kW`,
-    });
-  }
-  if (ratio > 0) {
-    metricRows.push({ label: copy.arch.dcAc, value: `${ratio.toFixed(2)}x` });
-  }
-  if (panelItem?.brand) {
-    metricRows.push({ label: copy.arch.panelBrand, value: panelItem.brand });
-  }
-  if (inverterItem?.brand) {
-    metricRows.push({
-      label: copy.arch.inverterBrand,
-      value: inverterItem.brand,
-    });
-  }
-
-  const annual = emeraldMetric(data, /annual generation|yearly/i);
-  const coverage = emeraldMetric(data, /coverage|load/i);
-  const tilt = emeraldMetric(data, /tilt/i);
+  const dcLabel = dcKwp > 0 ? formatEmeraldKw(dcKwp) : "—";
+  const panelMake = panelItem?.brand?.trim() || "";
+  const inverterMake = inverterItem?.brand?.trim() || "";
   const prValue = emeraldMetric(data, /performance|pr\b/i);
-  const windValue = emeraldMetric(data, /wind/i);
-  if (annual) metricRows.push({ label: copy.arch.annualGen, value: annual });
-  if (coverage) metricRows.push({ label: copy.arch.coverage, value: coverage });
-  if (tilt) metricRows.push({ label: copy.arch.tilt, value: tilt });
-  if (prValue) metricRows.push({ label: copy.arch.pr, value: prValue });
-  if (windValue) metricRows.push({ label: copy.arch.wind, value: windValue });
 
   return (
     <section className={styles.a4Page}>
@@ -94,63 +46,115 @@ export function EmeraldArchitecture({ data, folio }: EmeraldArchitectureProps) {
       <div className={styles.contentArea}>
         <h2 className={styles.pageHeader}>{copy.arch.pageHeader}</h2>
 
-        <div className={styles.archRow}>
-          <div className={styles.goldTrack}>
-            <div className={styles.trackNode} />
-            <div className={styles.trackLine} />
-            <div className={styles.trackNode} />
-            <div className={styles.trackLine} />
-            <div className={styles.trackNodeFill} />
+        <div className={styles.topologyContainer}>
+          <div className={styles.topologyNode}>
+            <div className={styles.nodeVisual}>
+              <div className={styles.nodeIconBox}>
+                <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden>
+                  <rect
+                    x="2"
+                    y="2"
+                    width="26"
+                    height="26"
+                    fill="none"
+                    stroke="#064E3B"
+                    strokeWidth="2"
+                  />
+                  <line
+                    x1="15"
+                    y1="2"
+                    x2="15"
+                    y2="28"
+                    stroke="#064E3B"
+                    strokeWidth="1.5"
+                  />
+                  <line
+                    x1="2"
+                    y1="15"
+                    x2="28"
+                    y2="15"
+                    stroke="#064E3B"
+                    strokeWidth="1.5"
+                  />
+                </svg>
+              </div>
+              <div className={styles.nodeLine} />
+            </div>
+            <div className={styles.nodeData}>
+              <div className={styles.nodeHeader}>
+                <span className={styles.nodeTitle}>{copy.arch.nodeDc}</span>
+                <span className={styles.nodeSpec}>{dcLabel} kWp</span>
+              </div>
+              <p className={styles.nodeDesc}>
+                {copy.arch.nodeDcDesc(modules, watt, panelMake)}
+              </p>
+            </div>
           </div>
 
-          <div className={styles.archDetails}>
-            <div>
-              <span className={styles.goldEyebrow} style={{ marginBottom: "2px" }}>
-                {copy.arch.step1}
-              </span>
-              <span className={styles.archStepTitle}>
-                {dcLabel ? copy.arch.dcTitle(dcLabel) : copy.arch.dcTitleEmpty}
-              </span>
-              <span className={styles.archStepHint}>{panelHint}</span>
+          <div className={styles.topologyNode}>
+            <div className={styles.nodeVisual}>
+              <div className={styles.nodeIconBox}>
+                <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden>
+                  <path
+                    d="M2 15 Q 8.5 2, 15 15 T 28 15"
+                    fill="none"
+                    stroke="#D4AF37"
+                    strokeWidth="2.5"
+                  />
+                </svg>
+              </div>
+              <div className={styles.nodeLine} />
             </div>
-
-            <div>
-              <span className={styles.goldEyebrow} style={{ marginBottom: "2px" }}>
-                {copy.arch.step2}
-              </span>
-              <span className={styles.archStepTitle}>
-                {acLabel !== "—"
-                  ? copy.arch.acTitle(acLabel)
-                  : copy.arch.acTitleEmpty}
-              </span>
-              <span className={styles.archStepHint}>{inverterHint}</span>
+            <div className={styles.nodeData}>
+              <div className={styles.nodeHeader}>
+                <span className={styles.nodeTitle}>{copy.arch.nodeAc}</span>
+                <span className={styles.nodeSpec}>{acLabel} kW AC</span>
+              </div>
+              <p className={styles.nodeDesc}>{copy.arch.nodeAcDesc(inverterMake)}</p>
             </div>
+          </div>
 
-            <div>
-              <span className={styles.goldEyebrow} style={{ marginBottom: "2px" }}>
-                {copy.arch.step3}
-              </span>
-              <span className={styles.archStepTitle}>{copy.arch.gridTitle}</span>
-              <span className={styles.archStepHint}>{copy.arch.step3Hint}</span>
+          <div className={`${styles.topologyNode} ${styles.topologyNodeLast}`}>
+            <div className={styles.nodeVisual}>
+              <div className={`${styles.nodeIconBox} ${styles.nodeIconFill}`}>
+                <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden>
+                  <path
+                    d="M5 12 L15 2 L25 12 M15 2 V28 M5 18 L15 28 L25 18"
+                    fill="none"
+                    stroke="#D4AF37"
+                    strokeWidth="2"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div className={`${styles.nodeData} ${styles.nodeDataLast}`}>
+              <div className={styles.nodeHeader}>
+                <span className={styles.nodeTitle}>{copy.arch.nodeGrid}</span>
+                <span className={styles.nodeSpec}>{copy.arch.nodeGridSpec}</span>
+              </div>
+              <p className={styles.nodeDesc}>{copy.arch.nodeGridDesc}</p>
             </div>
           </div>
         </div>
 
-        {metricRows.length > 0 ? (
-          <div className={styles.metricsWrap}>
-            <span className={styles.goldEyebrow}>{copy.arch.keyNumbers}</span>
-            <table className={styles.goldTable}>
-              <tbody>
-                {metricRows.map((row) => (
-                  <tr key={row.label}>
-                    <td>{row.label}</td>
-                    <td>{row.value}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <div className={styles.techBento}>
+          <div className={styles.bentoCell}>
+            <span className={styles.bentoLabel}>{copy.arch.bentoSize}</span>
+            <span className={styles.bentoValue}>
+              {systemKw > 0 ? `${acLabel} kW` : "—"}
+            </span>
           </div>
-        ) : null}
+          <div className={styles.bentoCell}>
+            <span className={styles.bentoLabel}>{copy.arch.bentoRatio}</span>
+            <span className={styles.bentoValue}>
+              {ratio > 0 ? `${ratio.toFixed(2)}x` : "—"}
+            </span>
+          </div>
+          <div className={styles.bentoCell}>
+            <span className={styles.bentoLabel}>{copy.arch.bentoPr}</span>
+            <span className={styles.bentoValue}>{prValue || "—"}</span>
+          </div>
+        </div>
       </div>
     </section>
   );

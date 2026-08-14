@@ -42,11 +42,40 @@ export function getEmeraldCopy(lang: EmeraldLang) {
       year1Units: hi ? "पहले साल की यूनिट" : "YEAR 1 UNITS",
     },
     arch: {
-      sidebarTitle: hi ? ["सिस्टम", "डिज़ाइन।"] : ["System", "Design."],
+      sidebarTitle: hi ? ["सिस्टम", "आर्किटेक्चर।"] : ["System", "Architecture."],
       sidebarBlurb: hi
-        ? "छत की धूप घर की बिजली कैसे बनती है।"
-        : "How sunlight on your roof becomes electricity for your home.",
-      pageHeader: hi ? "सिस्टम कैसे जुड़ता है" : "How the System Connects",
+        ? "पैनल से ग्रिड तक — इस छत का सिस्टम कैसे जुड़ता है।"
+        : "How the rooftop system connects — from panels to the grid.",
+      pageHeader: hi ? "इंजीनियरिंग टोपोलॉजी" : "Engineering Topology",
+      nodeDc: hi ? "DC सोर्स मैट्रिक्स" : "DC Source Matrix",
+      nodeAc: hi ? "कन्वर्ज़न कोर" : "Conversion Core",
+      nodeGrid: hi ? "दो-तरफ़ा गेटवे" : "Bi-Directional Gateway",
+      nodeGridSpec: hi ? "DISCOM नेट मीटर" : "DISCOM NET METER",
+      nodeDcDesc: (count: number, watt: number, make: string) => {
+        const who = make ? ` ${make}` : "";
+        if (count > 0 && watt > 0) {
+          return hi
+            ? `${count} × ${watt}W${who} मॉड्यूल छत की धूप पकड़ते हैं।`
+            : `${count} × ${watt}W${who} modules capturing sunlight on this roof.`;
+        }
+        return hi
+          ? `${who ? `${make} ` : ""}सोलर मॉड्यूल छत की धूप पकड़ते हैं।`
+          : `${make ? `${make} ` : ""}solar modules capturing sunlight on this roof.`;
+      },
+      nodeAcDesc: (make: string) =>
+        make
+          ? hi
+            ? `${make} ऑन-ग्रिड स्ट्रिंग इनवर्टर DC को घर और ग्रिड के लिए 230V AC में बदलता है।`
+            : `${make} on-grid string inverter converting DC into 230V AC for the home and grid.`
+          : hi
+            ? "ऑन-ग्रिड स्ट्रिंग इनवर्टर DC को घर और ग्रिड के लिए 230V AC में बदलता है।"
+            : "On-grid string inverter converting DC into 230V AC for the home and grid.",
+      nodeGridDesc: hi
+        ? "दो-तरफ़ा नेट मीटर: घर पहले इस्तेमाल करता है, बची बिजली DISCOM ग्रिड में जाती है।"
+        : "Two-way net meter: the home uses power first, and extra units go to the DISCOM grid.",
+      bentoSize: hi ? "सिस्टम साइज़" : "System Size",
+      bentoRatio: hi ? "DC/AC अनुपात" : "DC/AC Overclock",
+      bentoPr: hi ? "परफॉर्मेंस रेशियो" : "Performance Ratio",
       step1: hi ? "01 / सोलर पैनल" : "01 / SOLAR PANELS",
       dcTitle: (kwp: string) => (hi ? `${kwp} kWp DC ऐरे` : `${kwp} kWp DC Array`),
       dcTitleEmpty: hi ? "DC ऐरे" : "DC Array",
