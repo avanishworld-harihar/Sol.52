@@ -6,6 +6,7 @@
 
 import type { ProposalData } from "@/lib/proposal-data";
 import { formatInr } from "@/components/proposals/_shared/formatters";
+import { useEmeraldLang } from "./emerald-lang-context";
 import styles from "./Emerald.module.css";
 
 export type EmeraldBillAuditProps = {
@@ -17,6 +18,7 @@ function dashOr(value: string, ok: boolean): string {
 }
 
 export function EmeraldBillAudit({ data }: EmeraldBillAuditProps) {
+  const { copy } = useEmeraldLang();
   const months = (data.bill.months ?? []).filter(
     (m) => m.units > 0 || m.netInr > 0
   );
@@ -50,52 +52,47 @@ export function EmeraldBillAudit({ data }: EmeraldBillAuditProps) {
       <div className={styles.sidebar}>
         <span className={styles.folioNum}>06</span>
         <div>
-          <span className={styles.goldEyebrow}>SECTION FIVE</span>
+          <span className={styles.goldEyebrow}>{copy.bill.eyebrow}</span>
           <h3 className={styles.sidebarTitle}>
-            Energy
+            {copy.bill.sidebarTitle[0]}
             <br />
-            Audit.
+            {copy.bill.sidebarTitle[1]}
           </h3>
-          <p className={styles.sidebarBlurb}>
-            Your current electricity bill compared with savings after solar.
-          </p>
+          <p className={styles.sidebarBlurb}>{copy.bill.sidebarBlurb}</p>
         </div>
       </div>
 
       <div className={styles.contentArea}>
-        <h2 className={styles.pageHeader}>Your Electricity Bill</h2>
+        <h2 className={styles.pageHeader}>{copy.bill.pageHeader}</h2>
 
-        <p className={styles.auditLead}>
-          Solar on your roof reduces how much power you buy from the grid. That
-          helps protect you from rising unit rates and makes your yearly
-          electricity cost more stable.
-        </p>
+        <p className={styles.auditLead}>{copy.bill.lead}</p>
 
         <div className={styles.auditCard}>
-          <h4 className={styles.auditHeader}>Current electricity cost</h4>
+          <h4 className={styles.auditHeader}>{copy.bill.currentCost}</h4>
 
           <div className={styles.auditRow}>
-            <span className={styles.auditLabel}>Average monthly use</span>
+            <span className={styles.auditLabel}>{copy.bill.avgUse}</span>
             <span className={styles.auditValue}>
-              {dashOr(`${avgUnits.toLocaleString("en-IN")} Units`, avgUnits > 0)}
+              {dashOr(
+                copy.bill.unitsWord(avgUnits.toLocaleString("en-IN")),
+                avgUnits > 0
+              )}
             </span>
           </div>
           <div className={styles.auditRow}>
-            <span className={styles.auditLabel}>
-              Average rate (per unit)
-            </span>
+            <span className={styles.auditLabel}>{copy.bill.avgRate}</span>
             <span className={styles.auditValue}>
               {dashOr(`₹ ${tariff.toFixed(2)}`, tariff > 0)}
             </span>
           </div>
           <div className={styles.auditRow}>
-            <span className={styles.auditLabel}>Estimated monthly bill</span>
+            <span className={styles.auditLabel}>{copy.bill.monthlyBill}</span>
             <span className={styles.auditValue}>
               {dashOr(formatInr(monthlyBill), monthlyBill > 0)}
             </span>
           </div>
           <div className={styles.auditRow}>
-            <span className={styles.auditLabel}>Estimated yearly bill</span>
+            <span className={styles.auditLabel}>{copy.bill.yearlyBill}</span>
             <span className={`${styles.auditValue} ${styles.auditValueWarn}`}>
               {dashOr(formatInr(annualBill), annualBill > 0)}
             </span>
@@ -104,10 +101,10 @@ export function EmeraldBillAudit({ data }: EmeraldBillAuditProps) {
           <div className={styles.auditHighlight}>
             <div>
               <span className={styles.auditHighlightKicker}>
-                After solar
+                {copy.bill.afterSolar}
               </span>
               <span className={styles.auditHighlightTitle}>
-                Estimated monthly savings
+                {copy.bill.monthlySavings}
               </span>
             </div>
             <span className={styles.auditHighlightValue}>

@@ -163,22 +163,16 @@ export function formatEmeraldDocNo(proposalId?: string, generatedAt?: string): s
   return tail ? `EM-${year}-${tail}` : `EM-${year}`;
 }
 
-export function formatEmeraldIssueDate(generatedAt?: string): string {
+export function formatEmeraldIssueDate(
+  generatedAt?: string,
+  locale: "en" | "hi" = "en"
+): string {
   const d = generatedAt ? new Date(generatedAt) : new Date();
-  if (Number.isNaN(d.getTime())) {
-    return new Intl.DateTimeFormat("en-GB", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-    })
-      .format(new Date())
-      .toUpperCase();
-  }
-  return new Intl.DateTimeFormat("en-GB", {
+  const safe = Number.isNaN(d.getTime()) ? new Date() : d;
+  const formatted = new Intl.DateTimeFormat(locale === "hi" ? "hi-IN" : "en-GB", {
     day: "2-digit",
     month: "long",
     year: "numeric",
-  })
-    .format(d)
-    .toUpperCase();
+  }).format(safe);
+  return locale === "hi" ? formatted : formatted.toUpperCase();
 }

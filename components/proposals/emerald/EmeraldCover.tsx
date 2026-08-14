@@ -18,6 +18,7 @@ import {
   useEmeraldSurfaceBrand,
 } from "./emerald-brand";
 import styles from "./Emerald.module.css";
+import { useEmeraldLang } from "./emerald-lang-context";
 
 export const EMERALD_COVER_PHOTO = "/assets/proposals/emerald-cover-indian-rcc.jpg";
 
@@ -44,11 +45,12 @@ export function EmeraldCover({
   proposalId,
   installerLogoUrl,
 }: EmeraldCoverProps) {
+  const { copy, lang } = useEmeraldLang();
   const coverBrand = useEmeraldSurfaceBrand(data, "cover", installerLogoUrl);
   const brand = coverBrand.installerName || EMERALD_DEFAULT_BRAND;
   const logoUrl = coverBrand.showLogo ? coverBrand.logoUrl : "";
   const showWordmark = coverBrand.showName || !logoUrl;
-  const customer = data.meta.customerName?.trim() || "Customer Name";
+  const customer = data.meta.customerName?.trim() || copy.common.customerFallback;
   const systemKw = Number(data.meta.systemKw) || 0;
   const modules = emeraldModuleCount(systemKw);
   const dcKwp = emeraldDcKwp(modules);
@@ -59,7 +61,7 @@ export function EmeraldCover({
       : systemKw > 0
         ? Math.round(systemKw * EMERALD_SPECIFIC_YIELD)
         : 0;
-  const location = data.meta.locationLine?.trim() || "your home";
+  const location = data.meta.locationLine?.trim() || copy.common.homeFallback;
 
   return (
     <section className={styles.a4Page}>
@@ -78,13 +80,13 @@ export function EmeraldCover({
 
         <div>
           <div className={styles.sidebarRule} />
-          <span className={styles.metaLabel}>DOCUMENT NUMBER</span>
+          <span className={styles.metaLabel}>{copy.cover.docNo}</span>
           <span className={styles.metaValueSpaced}>
             {formatEmeraldDocNo(proposalId, data.meta.generatedAt)}
           </span>
-          <span className={styles.metaLabel}>DATE OF ISSUE</span>
+          <span className={styles.metaLabel}>{copy.cover.issueDate}</span>
           <span className={styles.metaValue}>
-            {formatEmeraldIssueDate(data.meta.generatedAt)}
+            {formatEmeraldIssueDate(data.meta.generatedAt, lang)}
           </span>
         </div>
       </div>
@@ -95,36 +97,35 @@ export function EmeraldCover({
           <img
             className={styles.coverPhotoImg}
             src={EMERALD_COVER_PHOTO}
-            alt="Rooftop solar panels on an Indian house"
+            alt={copy.cover.photoAlt}
             width={1536}
             height={1024}
           />
         </div>
 
         <div className={styles.coverBody}>
-          <span className={styles.goldEyebrow}>ROOFTOP SOLAR PROPOSAL</span>
+          <span className={styles.goldEyebrow}>{copy.cover.eyebrow}</span>
           <h1 className={`${styles.serifTitle} ${styles.coverTitle}`}>{customer}</h1>
-          <p className={styles.coverLead}>
-            A rooftop solar plan made for {location}. Built for strong generation
-            and a clean look on your roof.
-          </p>
+          <p className={styles.coverLead}>{copy.cover.lead(location)}</p>
         </div>
 
         <div className={styles.coverFooter}>
           <div className={styles.valueBlock}>
-            <span>SYSTEM SIZE</span>
+            <span>{copy.cover.systemSize}</span>
             <span>{acLabel} kW</span>
           </div>
           <div className={styles.valueBlock}>
-            <span>SOLAR ARRAY</span>
+            <span>{copy.cover.solarArray}</span>
             <span>
               {dcKwp > 0 ? formatEmeraldKw(dcKwp) : "—"} kWp
             </span>
           </div>
           <div className={styles.valueBlock}>
-            <span>YEAR 1 UNITS</span>
+            <span>{copy.cover.year1Units}</span>
             <span>
-              {yieldUnits > 0 ? yieldUnits.toLocaleString("en-IN") : "—"} U
+              {yieldUnits > 0
+                ? `${yieldUnits.toLocaleString("en-IN")} ${copy.common.unitsShort}`
+                : "—"}
             </span>
           </div>
         </div>

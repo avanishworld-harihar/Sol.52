@@ -10,6 +10,8 @@ import {
   emeraldModuleCount,
   formatEmeraldKw,
 } from "./emerald-brand";
+import { useEmeraldLang } from "./emerald-lang-context";
+import type { EmeraldCopy } from "./emerald-copy";
 import styles from "./Emerald.module.css";
 
 export type EmeraldHardwareProps = {
@@ -23,7 +25,10 @@ type AnthologyItem = {
   desc: string;
 };
 
-function fallbackAnthology(data: ProposalData): AnthologyItem[] {
+function fallbackAnthology(
+  data: ProposalData,
+  copy: EmeraldCopy
+): AnthologyItem[] {
   const systemKw = Number(data.meta.systemKw) || 0;
   const modules = emeraldModuleCount(systemKw);
   const acLabel = formatEmeraldKw(systemKw, 1);
@@ -40,29 +45,28 @@ function fallbackAnthology(data: ProposalData): AnthologyItem[] {
   return [
     {
       num: "01",
-      eyebrow: `${panelW?.value ?? "30"}-YEAR PERFORMANCE`,
-      title: "Solar Panels",
-      desc:
-        modules > 0
-          ? `${modules} × ${EMERALD_PANEL_WATT}W high-efficiency N-Type TOPCon panels. They work well in low light, lose less power in heat, are DCR compliant, and convert about 21% of sunlight into electricity.`
-          : "High-efficiency N-Type TOPCon panels. They work well in low light, lose less power in heat, are DCR compliant, and convert about 21% of sunlight into electricity.",
+      eyebrow: copy.hardware.panelEyebrow(panelW?.value ?? "30"),
+      title: copy.hardware.panelTitle,
+      desc: copy.hardware.panelDesc(modules, EMERALD_PANEL_WATT),
     },
     {
       num: "02",
-      eyebrow: `${inverterW?.value ?? "10"}-YEAR REPLACEMENT`,
-      title: "Grid-Tie Inverter",
-      desc: `A ${acLabel} kW string inverter that converts panel power for your home. Dual MPPT helps in shade, IP65 weather protection, and about 97.5% efficiency.`,
+      eyebrow: copy.hardware.inverterEyebrow(inverterW?.value ?? "10"),
+      title: copy.hardware.inverterTitle,
+      desc: copy.hardware.inverterDesc(acLabel),
     },
     {
       num: "03",
-      eyebrow: `${String(wind).replace(/\s+/g, " ").toUpperCase()} WIND RATING`,
-      title: "Mounting Structure",
-      desc: "JSW hot-dip galvanized iron (GI) structure made to hold the panels safely in heavy monsoon and wind. Includes TUV-approved fire-resistant cables and Type-II surge protection (SPD).",
+      eyebrow: copy.hardware.structureEyebrow(
+        String(wind).replace(/\s+/g, " ").toUpperCase()
+      ),
+      title: copy.hardware.structureTitle,
+      desc: copy.hardware.structureDesc,
     },
   ];
 }
 
-function fromBom(items: ProposalBomItem[]): AnthologyItem[] {
+function fromBom(items: ProposalBomItem[], chosen: string): AnthologyItem[] {
   return items.slice(0, 3).map((item, i) => ({
     num: String(i + 1).padStart(2, "0"),
     eyebrow: (item.warranty || item.brand || "TIER-1").toUpperCase(),
@@ -72,33 +76,35 @@ function fromBom(items: ProposalBomItem[]): AnthologyItem[] {
       [item.spec, item.brand, ...(item.technicalPoints ?? [])]
         .filter(Boolean)
         .join(". ") ||
-      "Chosen for this rooftop project.",
+      chosen,
   }));
 }
 
 export function EmeraldHardware({ data }: EmeraldHardwareProps) {
+  const { copy } = useEmeraldLang();
   const live = (data.bom ?? []).filter((b) => b.name?.trim());
-  const items = live.length >= 3 ? fromBom(live) : fallbackAnthology(data);
+  const items =
+    live.length >= 3
+      ? fromBom(live, copy.hardware.chosen)
+      : fallbackAnthology(data, copy);
 
   return (
     <section className={styles.a4Page}>
       <div className={styles.sidebar}>
         <span className={styles.folioNum}>03</span>
         <div>
-          <span className={styles.goldEyebrow}>SECTION THREE</span>
+          <span className={styles.goldEyebrow}>{copy.hardware.eyebrow}</span>
           <h3 className={styles.sidebarTitle}>
-            Hardware
+            {copy.hardware.sidebarTitle[0]}
             <br />
-            List.
+            {copy.hardware.sidebarTitle[1]}
           </h3>
-          <p className={styles.sidebarBlurb}>
-            Quality panels, inverter, and steel structure built to last.
-          </p>
+          <p className={styles.sidebarBlurb}>{copy.hardware.sidebarBlurb}</p>
         </div>
       </div>
 
       <div className={styles.contentArea}>
-        <h2 className={styles.pageHeader}>What We Will Install</h2>
+        <h2 className={styles.pageHeader}>{copy.hardware.pageHeader}</h2>
 
         <div className={styles.cascadeWrapper}>
           {items.map((item) => (

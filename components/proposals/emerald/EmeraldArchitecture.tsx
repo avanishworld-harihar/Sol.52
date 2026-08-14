@@ -12,12 +12,14 @@ import {
   formatEmeraldKw,
 } from "./emerald-brand";
 import styles from "./Emerald.module.css";
+import { useEmeraldLang } from "./emerald-lang-context";
 
 export type EmeraldArchitectureProps = {
   data: ProposalData;
 };
 
 export function EmeraldArchitecture({ data }: EmeraldArchitectureProps) {
+  const { copy } = useEmeraldLang();
   const systemKw = Number(data.meta.systemKw) || 0;
   const modules = emeraldModuleCount(systemKw);
   const dcKwp = emeraldDcKwp(modules);
@@ -36,20 +38,18 @@ export function EmeraldArchitecture({ data }: EmeraldArchitectureProps) {
       <div className={styles.sidebar}>
         <span className={styles.folioNum}>01</span>
         <div>
-          <span className={styles.goldEyebrow}>SECTION ONE</span>
+          <span className={styles.goldEyebrow}>{copy.arch.eyebrow}</span>
           <h3 className={styles.sidebarTitle}>
-            System
+            {copy.arch.sidebarTitle[0]}
             <br />
-            Design.
+            {copy.arch.sidebarTitle[1]}
           </h3>
-          <p className={styles.sidebarBlurb}>
-            How sunlight on your roof becomes electricity for your home.
-          </p>
+          <p className={styles.sidebarBlurb}>{copy.arch.sidebarBlurb}</p>
         </div>
       </div>
 
       <div className={styles.contentArea}>
-        <h2 className={styles.pageHeader}>How the System Connects</h2>
+        <h2 className={styles.pageHeader}>{copy.arch.pageHeader}</h2>
 
         <div className={styles.archRow}>
           <div className={styles.goldTrack}>
@@ -66,15 +66,13 @@ export function EmeraldArchitecture({ data }: EmeraldArchitectureProps) {
                 className={styles.goldEyebrow}
                 style={{ marginBottom: "2px" }}
               >
-                01 / SOLAR PANELS
+                {copy.arch.step1}
               </span>
               <span className={styles.archStepTitle}>
-                {dcLabel} kWp DC Array
+                {copy.arch.dcTitle(dcLabel)}
               </span>
               <span className={styles.archStepHint}>
-                {modules > 0
-                  ? `${modules} × ${EMERALD_PANEL_WATT}W N-Type TOPCon panels that capture sunlight.`
-                  : "N-Type TOPCon panels that capture sunlight."}
+                {copy.arch.step1Hint(modules, EMERALD_PANEL_WATT)}
               </span>
             </div>
 
@@ -83,13 +81,12 @@ export function EmeraldArchitecture({ data }: EmeraldArchitectureProps) {
                 className={styles.goldEyebrow}
                 style={{ marginBottom: "2px" }}
               >
-                02 / INVERTER
+                {copy.arch.step2}
               </span>
-              <span className={styles.archStepTitle}>{acLabel} kW AC Output</span>
-              <span className={styles.archStepHint}>
-                Converts DC power to AC power at 97.5% efficiency, with dual
-                MPPT for better output.
+              <span className={styles.archStepTitle}>
+                {copy.arch.acTitle(acLabel)}
               </span>
+              <span className={styles.archStepHint}>{copy.arch.step2Hint}</span>
             </div>
 
             <div>
@@ -97,32 +94,28 @@ export function EmeraldArchitecture({ data }: EmeraldArchitectureProps) {
                 className={styles.goldEyebrow}
                 style={{ marginBottom: "2px" }}
               >
-                03 / GRID
+                {copy.arch.step3}
               </span>
-              <span className={styles.archStepTitle}>
-                Two-way Net Meter
-              </span>
-              <span className={styles.archStepHint}>
-                Extra power goes to your local DISCOM grid.
-              </span>
+              <span className={styles.archStepTitle}>{copy.arch.gridTitle}</span>
+              <span className={styles.archStepHint}>{copy.arch.step3Hint}</span>
             </div>
           </div>
         </div>
 
         <div className={styles.metricsWrap}>
-          <span className={styles.goldEyebrow}>KEY NUMBERS</span>
+          <span className={styles.goldEyebrow}>{copy.arch.keyNumbers}</span>
           <table className={styles.goldTable}>
             <tbody>
               <tr>
-                <td>DC / AC ratio</td>
+                <td>{copy.arch.dcAc}</td>
                 <td>{ratio > 0 ? `${ratio.toFixed(2)}x` : "—"}</td>
               </tr>
               <tr>
-                <td>Estimated performance ratio (PR)</td>
+                <td>{copy.arch.pr}</td>
                 <td>{prMetric?.value || "~75%"}</td>
               </tr>
               <tr>
-                <td>Wind resistance</td>
+                <td>{copy.arch.wind}</td>
                 <td>{windMetric?.value || "150 km/h"}</td>
               </tr>
             </tbody>

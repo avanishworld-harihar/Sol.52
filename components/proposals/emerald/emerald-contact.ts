@@ -14,6 +14,7 @@ import {
   type ProposalBrandingSettings,
 } from "@/lib/proposal-branding-settings";
 import { EMERALD_DEFAULT_BRAND, resolveEmeraldBrand } from "./emerald-brand";
+import { useEmeraldLang } from "./emerald-lang-context";
 
 export type EmeraldContactRow = {
   label: string;
@@ -69,9 +70,26 @@ function pick(
   return fallback?.trim() ?? "";
 }
 
+export type EmeraldContactLabels = {
+  phone: string;
+  email: string;
+  website: string;
+  office: string;
+  person: string;
+};
+
+const DEFAULT_CONTACT_LABELS: EmeraldContactLabels = {
+  phone: "Phone / WhatsApp",
+  email: "Email",
+  website: "Website",
+  office: "Office",
+  person: "Your contact",
+};
+
 export function buildEmeraldContact(
   data: ProposalData,
-  branding?: ProposalBrandingSettings
+  branding?: ProposalBrandingSettings,
+  labels: EmeraldContactLabels = DEFAULT_CONTACT_LABELS
 ): EmeraldContact {
   const closing = data.closing;
   const settings = branding ?? readProposalBrandingSettings();
@@ -111,43 +129,53 @@ export function buildEmeraldContact(
 
   if (phone) {
     rows.push({
-      label: "Phone / WhatsApp",
+      label: labels.phone,
       value: phone,
       href: phoneHref(phone),
     });
   }
   if (email) {
     rows.push({
-      label: "Email",
+      label: labels.email,
       value: email,
       href: emailHref(email),
     });
   }
   if (website) {
     rows.push({
-      label: "Website",
+      label: labels.website,
       value: website.replace(/^https?:\/\//i, ""),
       href: websiteHref(website),
     });
   }
   if (address) {
-    rows.push({ label: "Office", value: address });
+    rows.push({ label: labels.office, value: address });
   }
   if (contactPerson) {
     const personLine = designation
       ? `${contactPerson} · ${designation}`
       : contactPerson;
-    rows.push({ label: "Your contact", value: personLine });
+    rows.push({ label: labels.person, value: personLine });
   }
 
   return { brandName, tagline: tagline || undefined, rows };
 }
 
 export function useEmeraldContact(data: ProposalData): EmeraldContact {
-  const [contact, setContact] = useState(() => buildEmeraldContact(data));
+  const { copy } = useEmeraldLang();
+  const labels: EmeraldContactLabels = {
+    phone: copy.back.phone,
+    email: copy.back.email,
+    website: copy.back.website,
+    office: copy.back.office,
+    person: copy.back.person,
+  };
+  const [contact, setContact] = useState(() =>
+    buildEmeraldContact(data, undefined, labels)
+  );
 
   useEffect(() => {
-    const sync = () => setContact(buildEmeraldContact(data));
+    const sync = () => setContact(buildEmeraldContact(data, undefined, labels));
     sync();
     window.addEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
     window.addEventListener("storage", sync);
@@ -155,7 +183,14 @@ export function useEmeraldContact(data: ProposalData): EmeraldContact {
       window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
       window.removeEventListener("storage", sync);
     };
-  }, [data]);
+  }, [
+    data,
+    labels.phone,
+    labels.email,
+    labels.website,
+    labels.office,
+    labels.person,
+  ]);
 
   return contact;
 }

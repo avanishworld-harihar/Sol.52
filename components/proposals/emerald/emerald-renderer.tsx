@@ -11,6 +11,11 @@ import type { ProposalData } from "@/lib/proposal-data";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { EmeraldProposal } from "./EmeraldProposal";
 import { useEmeraldBrand, useEmeraldLogoUrl } from "./emerald-brand";
+import {
+  EmeraldLangProvider,
+  useEmeraldLang,
+} from "./emerald-lang-context";
+import { getEmeraldCopy, type EmeraldLang } from "./emerald-copy";
 import styles from "./Emerald.module.css";
 import {
   buildAtelierProposalPdf,
@@ -36,6 +41,7 @@ function EmeraldDocument({
 }) {
   const brand = useEmeraldBrand(data);
   const logoUrl = useEmeraldLogoUrl(data, installerLogoUrl);
+  const { lang, setLang, copy, isHi } = useEmeraldLang();
   const rootRef = useRef<HTMLDivElement>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
 
@@ -64,7 +70,7 @@ function EmeraldDocument({
     <div
       ref={rootRef}
       data-proposal-preset="residential_emerald"
-      className={styles.root}
+      className={`${styles.root}${isHi ? ` ${styles.langHi}` : ""}`}
     >
       <div className={styles.printBar}>
         <div className={styles.printBarInner}>
@@ -73,15 +79,40 @@ function EmeraldDocument({
               // eslint-disable-next-line @next/next/no-img-element -- web toolbar logo
               <img src={logoUrl} alt={brand} className={styles.printBarLogo} />
             ) : null}
-            {brand} · Emerald Signature
+            {brand} · {copy.print.brand}
           </span>
-          <button
-            type="button"
-            className={styles.printBarBtn}
-            onClick={handlePrint}
-          >
-            Download PDF
-          </button>
+          <div className={styles.printBarActions}>
+            <div
+              className={styles.langToggle}
+              role="group"
+              aria-label={copy.print.langAria}
+            >
+              <button
+                type="button"
+                className={`${styles.langBtn}${lang === "en" ? ` ${styles.langBtnActive}` : ""}`}
+                onClick={() => setLang("en")}
+                aria-pressed={lang === "en"}
+              >
+                {copy.print.langEn}
+              </button>
+              <button
+                type="button"
+                className={`${styles.langBtn}${lang === "hi" ? ` ${styles.langBtnActive}` : ""}`}
+                onClick={() => setLang("hi")}
+                aria-pressed={lang === "hi"}
+              >
+                {copy.print.langHi}
+              </button>
+            </div>
+            <button
+              type="button"
+              className={styles.printBarBtn}
+              onClick={handlePrint}
+              disabled={pdfBusy}
+            >
+              {pdfBusy ? copy.print.preparingPdf : copy.print.downloadPdf}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -99,16 +130,24 @@ export function EmeraldRenderer({
   installerLogoUrl,
   proposalId,
 }: EmeraldRendererProps) {
+  const [lang, setLang] = useState<EmeraldLang>("en");
+
   if (!data) {
-    return <div className={styles.loading}>Preparing your proposal…</div>;
+    return (
+      <div className={styles.loading}>
+        {getEmeraldCopy(lang).print.loading}
+      </div>
+    );
   }
 
   return (
-    <EmeraldDocument
-      data={data}
-      installerLogoUrl={installerLogoUrl}
-      proposalId={proposalId}
-    />
+    <EmeraldLangProvider lang={lang} setLang={setLang}>
+      <EmeraldDocument
+        data={data}
+        installerLogoUrl={installerLogoUrl}
+        proposalId={proposalId}
+      />
+    </EmeraldLangProvider>
   );
 }
 

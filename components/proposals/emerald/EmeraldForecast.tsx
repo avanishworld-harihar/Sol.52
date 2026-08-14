@@ -7,6 +7,7 @@
 import type { ProposalData } from "@/lib/proposal-data";
 import { EMERALD_SPECIFIC_YIELD } from "./emerald-brand";
 import { buildEmeraldForecastMonths } from "./emerald-forecast";
+import { useEmeraldLang } from "./emerald-lang-context";
 import styles from "./Emerald.module.css";
 
 export type EmeraldForecastProps = {
@@ -14,6 +15,7 @@ export type EmeraldForecastProps = {
 };
 
 export function EmeraldForecast({ data }: EmeraldForecastProps) {
+  const { copy } = useEmeraldLang();
   const systemKw = Number(data.meta.systemKw) || 0;
   const annualUnits =
     data.closing.annualUnits > 0
@@ -21,7 +23,7 @@ export function EmeraldForecast({ data }: EmeraldForecastProps) {
       : systemKw > 0
         ? Math.round(systemKw * EMERALD_SPECIFIC_YIELD)
         : 0;
-  const forecast = buildEmeraldForecastMonths(annualUnits);
+  const forecast = buildEmeraldForecastMonths(annualUnits, copy.forecast.months);
   const h1 = forecast.slice(0, 6);
   const h2 = forecast.slice(6, 12);
 
@@ -30,26 +32,20 @@ export function EmeraldForecast({ data }: EmeraldForecastProps) {
       <div className={styles.sidebar}>
         <span className={styles.folioNum}>07</span>
         <div>
-          <span className={styles.goldEyebrow}>SECTION SIX</span>
+          <span className={styles.goldEyebrow}>{copy.forecast.eyebrow}</span>
           <h3 className={styles.sidebarTitle}>
-            Yearly
+            {copy.forecast.sidebarTitle[0]}
             <br />
-            Output.
+            {copy.forecast.sidebarTitle[1]}
           </h3>
-          <p className={styles.sidebarBlurb}>
-            Expected monthly generation over one year.
-          </p>
+          <p className={styles.sidebarBlurb}>{copy.forecast.sidebarBlurb}</p>
         </div>
       </div>
 
       <div className={styles.contentArea}>
-        <h2 className={styles.pageHeader}>Monthly Generation</h2>
+        <h2 className={styles.pageHeader}>{copy.forecast.pageHeader}</h2>
 
-        <p className={styles.forecastLead}>
-          Generation is higher in summer, when you also use more
-          air-conditioning. That means more savings when your bill is usually
-          highest.
-        </p>
+        <p className={styles.forecastLead}>{copy.forecast.lead}</p>
 
         <div className={styles.forecastContainer}>
           <div>
@@ -57,7 +53,7 @@ export function EmeraldForecast({ data }: EmeraldForecastProps) {
               className={styles.goldEyebrow}
               style={{ marginBottom: "15px" }}
             >
-              JAN – JUN
+              {copy.forecast.h1}
             </span>
             {h1.map((item) => (
               <div className={styles.monthRow} key={item.m}>
@@ -80,7 +76,7 @@ export function EmeraldForecast({ data }: EmeraldForecastProps) {
               className={styles.goldEyebrow}
               style={{ marginBottom: "15px" }}
             >
-              JUL – DEC
+              {copy.forecast.h2}
             </span>
             {h2.map((item) => (
               <div className={styles.monthRow} key={item.m}>
@@ -102,11 +98,11 @@ export function EmeraldForecast({ data }: EmeraldForecastProps) {
         <div className={styles.forecastTotal}>
           <div className={styles.forecastTotalInner}>
             <span className={styles.forecastTotalLabel}>
-              Estimated yearly generation
+              {copy.forecast.yearly}
             </span>
             <span className={styles.forecastTotalValue}>
               {annualUnits > 0
-                ? `${annualUnits.toLocaleString("en-IN")} Units`
+                ? copy.forecast.yearlyValue(annualUnits.toLocaleString("en-IN"))
                 : "—"}
             </span>
           </div>

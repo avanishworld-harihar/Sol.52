@@ -6,6 +6,7 @@
 
 import type { ProposalData } from "@/lib/proposal-data";
 import { useEmeraldBrand } from "./emerald-brand";
+import { useEmeraldLang } from "./emerald-lang-context";
 import styles from "./Emerald.module.css";
 
 export type EmeraldTermsTwoProps = {
@@ -21,18 +22,8 @@ function highlightYears(
   return hit?.value || fallback;
 }
 
-function jurisdictionLine(data: ProposalData): string {
-  const loc =
-    data.meta.locationLine?.trim() ||
-    data.closing.address?.trim() ||
-    "";
-  if (loc) {
-    return `Both sides agree that courts in ${loc} will handle any dispute from this project.`;
-  }
-  return "Both sides agree that courts in India will handle any dispute from this project.";
-}
-
 export function EmeraldTermsTwo({ data }: EmeraldTermsTwoProps) {
+  const { copy } = useEmeraldLang();
   const brand = useEmeraldBrand(data);
   const panelYrs = highlightYears(
     data.warranty.highlights,
@@ -55,36 +46,28 @@ export function EmeraldTermsTwo({ data }: EmeraldTermsTwoProps) {
       <div className={styles.sidebar}>
         <span className={styles.folioNum}>09</span>
         <div>
-          <span className={styles.goldEyebrow}>SECTION SEVEN</span>
+          <span className={styles.goldEyebrow}>{copy.terms.eyebrow}</span>
           <h3 className={styles.sidebarTitle}>
-            Terms
+            {copy.terms.sidebarTitle[0]}
             <br />
-            &amp; Conditions.
+            {copy.terms.sidebarTitle[1]}
           </h3>
-          <p className={styles.sidebarBlurb}>
-            Warranty, generation estimates, and governing law (Part 2).
-          </p>
+          <p className={styles.sidebarBlurb}>{copy.terms.sidebarBlurb2}</p>
         </div>
       </div>
 
       <div className={styles.contentArea}>
         <h2 className={`${styles.pageHeader} ${styles.pageHeaderGhost}`}>
-          Terms (continued)
+          {copy.terms.continued}
         </h2>
 
         <div className={styles.legalGrid}>
           <div className={styles.legalClause}>
             <span className={styles.clauseNum}>05</span>
             <div className={styles.clauseBody}>
-              <span className={styles.clauseTitle}>
-                Warranties and maintenance
-              </span>
+              <span className={styles.clauseTitle}>{copy.terms.c5Title}</span>
               <p className={styles.clauseText}>
-                Product warranties (for example, {panelYrs}-year linear
-                performance for panels and {inverterYrs}-year for inverters)
-                come from the manufacturers. {brand} gives a {workYrs}-year
-                workmanship warranty on the installation. You must clean the
-                panels unless you take a separate AMC.
+                {copy.terms.c5(brand, panelYrs, inverterYrs, workYrs)}
               </p>
             </div>
           </div>
@@ -92,46 +75,39 @@ export function EmeraldTermsTwo({ data }: EmeraldTermsTwoProps) {
           <div className={styles.legalClause}>
             <span className={styles.clauseNum}>06</span>
             <div className={styles.clauseBody}>
-              <span className={styles.clauseTitle}>
-                Generation estimates and shadows
-              </span>
-              <p className={styles.clauseText}>
-                Yearly units and savings in this proposal are estimates based on
-                past weather data. Actual generation can change due to weather,
-                dirty panels, or new shadows after installation.
-              </p>
+              <span className={styles.clauseTitle}>{copy.terms.c6Title}</span>
+              <p className={styles.clauseText}>{copy.terms.c6}</p>
             </div>
           </div>
 
           <div className={styles.legalClause}>
             <span className={styles.clauseNum}>07</span>
             <div className={styles.clauseBody}>
-              <span className={styles.clauseTitle}>
-                Events outside our control
-              </span>
-              <p className={styles.clauseText}>
-                {brand} is not responsible for delay caused by events outside
-                our control, such as natural disasters, extreme weather,
-                pandemics, lockdowns, or major supply shortages.
-              </p>
+              <span className={styles.clauseTitle}>{copy.terms.c7Title}</span>
+              <p className={styles.clauseText}>{copy.terms.c7(brand)}</p>
             </div>
           </div>
 
           <div className={styles.legalClause}>
             <span className={styles.clauseNum}>08</span>
             <div className={styles.clauseBody}>
-              <span className={styles.clauseTitle}>
-                Governing law
-              </span>
+              <span className={styles.clauseTitle}>{copy.terms.c8Title}</span>
               <p className={styles.clauseText}>
-                This agreement follows the laws of India. {jurisdictionLine(data)}
+                {copy.terms.c8Lead}{" "}
+                {data.meta.locationLine?.trim() || data.closing.address?.trim()
+                  ? copy.terms.courtsLoc(
+                      data.meta.locationLine?.trim() ||
+                        data.closing.address?.trim() ||
+                        ""
+                    )
+                  : copy.terms.courtsIndia}
               </p>
             </div>
           </div>
         </div>
 
         <div className={styles.legalEnd}>
-          END OF DOCUMENT • {brand}
+          {copy.terms.end(brand)}
         </div>
       </div>
     </section>

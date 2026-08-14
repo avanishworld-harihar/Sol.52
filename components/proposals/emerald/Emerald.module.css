@@ -3,7 +3,7 @@
  * Palette: Deep Forest / Emerald (#064E3B, #022C22) · Champagne Gold (#D4AF37) · Warm Ivory (#FAFAF9).
  */
 
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap");
 
 @page emerald-sheet {
   size: A4 portrait;
@@ -96,6 +96,38 @@
   padding: 2px;
 }
 
+.printBarActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.langToggle {
+  display: inline-flex;
+  border: 1px solid rgba(6, 78, 59, 0.35);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.langBtn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #064e3b;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 7px 10px;
+  cursor: pointer;
+}
+
+.langBtnActive {
+  background: #064e3b;
+  color: #fde68a;
+}
+
 .printBarBtn {
   appearance: none;
   border: 1px solid rgba(212, 175, 55, 0.65);
@@ -107,6 +139,41 @@
   padding: 8px 14px;
   border-radius: 8px;
   cursor: pointer;
+}
+
+.langHi,
+.langHi .a4Page {
+  font-family: "Noto Sans Devanagari", var(--em-sans), sans-serif;
+}
+
+.langHi .serifTitle,
+.langHi .coverTitle,
+.langHi .pageHeader,
+.langHi .sidebarTitle,
+.langHi .backCoverTitle,
+.langHi .cascadeTitle,
+.langHi .econMetricValue,
+.langHi .monolithValue,
+.langHi .mathValue,
+.langHi .backCoverMetaValue {
+  font-family: "Noto Sans Devanagari", "Cormorant Garamond", serif;
+}
+
+.langHi .goldEyebrow,
+.langHi .brandPrimary,
+.langHi .brandSecondary,
+.langHi .metaLabel,
+.langHi .printBarBrand {
+  letter-spacing: 0.06em;
+}
+
+.langHi .printBarBrand {
+  text-transform: none;
+}
+
+.printBarBtn:disabled {
+  opacity: 0.7;
+  cursor: wait;
 }
 
 .printBarBtn:hover {

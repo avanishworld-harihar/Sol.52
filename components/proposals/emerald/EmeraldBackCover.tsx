@@ -11,6 +11,7 @@ import {
   useEmeraldSurfaceBrand,
 } from "./emerald-brand";
 import { useEmeraldContact } from "./emerald-contact";
+import { useEmeraldLang } from "./emerald-lang-context";
 import styles from "./Emerald.module.css";
 
 export const EMERALD_BACK_PHOTO = "/assets/proposals/emerald-back-golden-hour.jpg";
@@ -24,12 +25,13 @@ export function EmeraldBackCover({
   data,
   installerLogoUrl,
 }: EmeraldBackCoverProps) {
+  const { copy } = useEmeraldLang();
   const closingBrand = useEmeraldSurfaceBrand(data, "closing", installerLogoUrl);
   const brand = closingBrand.installerName || EMERALD_DEFAULT_BRAND;
   const logoUrl = closingBrand.showLogo ? closingBrand.logoUrl : "";
   const showWordmark = closingBrand.showName || !logoUrl;
   const { primary, secondary } = splitEmeraldWordmark(brand);
-  const customer = data.meta.customerName?.trim() || "you";
+  const customer = data.meta.customerName?.trim() || copy.common.youFallback;
   const contact = useEmeraldContact(data);
 
   return (
@@ -58,32 +60,29 @@ export function EmeraldBackCover({
         <img
           className={styles.backCoverPhotoImg}
           src={EMERALD_BACK_PHOTO}
-          alt="Rooftop solar panels at sunset"
+          alt={copy.back.photoAlt}
           width={1536}
           height={1024}
         />
       </div>
 
       <div className={styles.backCoverCenter}>
-        <span className={styles.backCoverEyebrow}>THANK YOU</span>
+        <span className={styles.backCoverEyebrow}>{copy.back.thankYou}</span>
         <h2 className={styles.backCoverTitle}>
-          Prepared for
+          {copy.back.preparedFor}
           <br />
           {customer}.
         </h2>
         {contact.tagline ? (
           <p className={styles.backCoverLead}>{contact.tagline}</p>
         ) : (
-          <p className={styles.backCoverLead}>
-            A rooftop solar system made for strong generation, long life, and
-            steady savings.
-          </p>
+          <p className={styles.backCoverLead}>{copy.back.lead}</p>
         )}
       </div>
 
       <div className={styles.backCoverContact}>
         <div>
-          <span className={styles.backCoverMetaLabel}>Installer</span>
+          <span className={styles.backCoverMetaLabel}>{copy.back.installer}</span>
           <span className={styles.backCoverMetaValue}>{brand}</span>
         </div>
         {contact.rows.map((row) =>
