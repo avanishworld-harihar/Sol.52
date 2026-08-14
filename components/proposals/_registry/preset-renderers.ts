@@ -52,6 +52,13 @@ export const FIELD_PRESET_ALIASES = [
   "field_engineering",
 ] as const;
 
+/** Local / mock aliases that resolve to Wall Street Ledger. */
+export const WALL_STREET_PRESET_ALIASES = [
+  "residential_wall_street",
+  "wall_street",
+  "wallstreet",
+] as const;
+
 export function isZenithPresetId(presetId: string): boolean {
   return (ZENITH_PRESET_ALIASES as readonly string[]).includes(presetId);
 }
@@ -80,6 +87,10 @@ export function isFieldPresetId(presetId: string): boolean {
   return (FIELD_PRESET_ALIASES as readonly string[]).includes(presetId);
 }
 
+export function isWallStreetPresetId(presetId: string): boolean {
+  return (WALL_STREET_PRESET_ALIASES as readonly string[]).includes(presetId);
+}
+
 export function isCommercialPresetId(presetId: string): boolean {
   return presetId === "commercial_executive";
 }
@@ -105,6 +116,8 @@ export const PRESET_RENDERER_LOADERS: PresetRendererRegistry = {
     import("@/components/proposals/_registry/adapters/emerald-adapter"),
   residential_field: () =>
     import("@/components/proposals/_registry/adapters/field-engineering-adapter"),
+  residential_wall_street: () =>
+    import("@/components/proposals/_registry/adapters/wall-street-adapter"),
   commercial_executive: () =>
     import("@/components/proposals/_registry/adapters/commercial-adapter"),
   commercial_ht: () =>
@@ -135,6 +148,9 @@ export function getPresetRendererLoader(
   }
   if (isFieldPresetId(presetId)) {
     return () => import("@/components/proposals/_registry/adapters/field-engineering-adapter");
+  }
+  if (isWallStreetPresetId(presetId)) {
+    return () => import("@/components/proposals/_registry/adapters/wall-street-adapter");
   }
   if (isLuxeNoirPresetId(presetId)) {
     return () => import("@/components/proposals/_registry/adapters/luxe-noir-adapter");

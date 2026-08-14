@@ -36,7 +36,7 @@ export const PROPOSAL_TEMPLATE_CATEGORIES: ProposalTemplateCategoryMeta[] = [
   {
     id: "residential",
     label: "Residential",
-    description: "Homes & rooftops — Golden, Zenith, Atelier, Premium Luxe, Canvas, Quantum, Emerald, or Field Engineering.",
+    description: "Homes & rooftops — Golden, Zenith, Atelier, Premium Luxe, Canvas, Quantum, Emerald, Field Engineering, or Wall Street Ledger.",
   },
   {
     id: "commercial",
@@ -115,6 +115,15 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
       "Survey drawing sheets — graph-paper cream, dimensioned roof plan, SLD, and a title block on every page.",
     thumbnailVariant: "field",
   },
+  {
+    key: "wall_street",
+    presetId: "residential_wall_street",
+    category: "residential",
+    name: "Wall Street Ledger",
+    description:
+      "Salmon newsprint financial editorial — masthead, stock ticker, two-column copy, and dotted ledger rows.",
+    thumbnailVariant: "wall_street",
+  },
 ];
 
 /** Commercial themes — Executive (LT / C&I) and HT Industrial (HV ToD/PF). */
@@ -184,6 +193,7 @@ export function resolveActiveGalleryKey(
   if (presetId === "residential_quantum") return "quantum";
   if (presetId === "residential_emerald") return "emerald";
   if (presetId === "residential_field") return "field";
+  if (presetId === "residential_wall_street") return "wall_street";
   return "zenith";
 }
 

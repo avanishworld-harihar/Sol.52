@@ -11,7 +11,8 @@
  *   6. residential_quantum       — Quantum Cinematic Neo-Glass
  *   7. residential_emerald       — Emerald Signature split-folio
  *   8. residential_field         — Field Engineering survey drawing sheets
- *   9. commercial_executive      — C&I commercial (hotel / hospital / industry…)
+ *   9. residential_wall_street   — Wall Street Ledger salmon newsprint
+ *  10. commercial_executive      — C&I commercial (hotel / hospital / industry…)
  *
  * Removed residential presets remap via normalizePresetId → residential_executive.
  */
@@ -39,6 +40,7 @@ export const PROPOSAL_PRESET_IDS = [
   "residential_quantum",
   "residential_emerald",
   "residential_field",
+  "residential_wall_street",
   "commercial_executive",
   "commercial_ht",
 ] as const;
@@ -106,7 +108,8 @@ export function isResidentialDocumentPreset(presetId: ProposalPresetId): boolean
     presetId === "residential_blueprint" ||
     presetId === "residential_quantum" ||
     presetId === "residential_emerald" ||
-    presetId === "residential_field"
+    presetId === "residential_field" ||
+    presetId === "residential_wall_street"
   );
 }
 
@@ -240,6 +243,18 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     label: "Field Engineering",
     description:
       "Survey drawing sheets — graph-paper, dimensioned diagrams, spec tables, and a persistent title block. Trust through method.",
+    bill_requirement: "optional",
+    theme_hint: "residential",
+    default_data_source: "requirement",
+    default_blocks: [],
+    optional_blocks: [],
+  },
+
+  residential_wall_street: {
+    id: "residential_wall_street",
+    label: "Wall Street Ledger",
+    description:
+      "Salmon newsprint financial editorial — masthead, stock ticker, dotted ledger rows, and executive summary.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "requirement",

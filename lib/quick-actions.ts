@@ -103,6 +103,11 @@ export function parsePrefillFromSearchParams(params: URLSearchParams): BuilderPr
     preset === "field_engineering"
   ) {
     prefill.preset = "residential_field";
+  } else if (
+    preset === "residential_wall_street" ||
+    preset === "wall_street"
+  ) {
+    prefill.preset = "residential_wall_street";
   } else if (preset === "commercial_executive" || preset === "commercial") {
     prefill.preset = "commercial_executive";
   } else if (preset) {

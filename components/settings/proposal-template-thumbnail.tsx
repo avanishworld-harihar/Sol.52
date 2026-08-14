@@ -37,6 +37,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
       {variant === "quantum" ? <QuantumThumb size={size} /> : null}
       {variant === "emerald" ? <EmeraldThumb size={size} /> : null}
       {variant === "field" ? <FieldThumb size={size} /> : null}
+      {variant === "wall_street" ? <WallStreetThumb size={size} /> : null}
       {![
         "golden",
         "pearl",
@@ -55,6 +56,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
         "quantum",
         "emerald",
         "field",
+        "wall_street",
       ].includes(variant) ? (
         <GenericThumb size={size} label={variant} />
       ) : null}
@@ -397,6 +399,56 @@ function EmeraldThumb({ size }: { size: "card" | "preview" }) {
             <br />
             Folio
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function WallStreetThumb({ size }: { size: "card" | "preview" }) {
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-[#e8dfd6]">
+      <div
+        className={cn(
+          "relative flex flex-col overflow-hidden rounded-[2px] border-2 border-[#0B2545] shadow-sm",
+          size === "preview" ? "h-[62%] w-[68%]" : "h-[58%] w-[72%]"
+        )}
+        style={{ backgroundColor: "#F9EBE0" }}
+      >
+        <div
+          className={cn(
+            "border-b-[3px] border-[#0B2545] text-center font-serif font-black uppercase tracking-[0.08em] text-[#0B2545]",
+            size === "preview" ? "px-[6%] py-[5%] text-[7px]" : "px-[6%] py-[5%] text-[3px]"
+          )}
+        >
+          ENERGY LEDGER
+        </div>
+        <div
+          className={cn(
+            "flex items-center justify-between bg-[#0B2545] font-sans font-bold uppercase tracking-[0.1em] text-[#F9EBE0]",
+            size === "preview" ? "px-[5%] py-[3%] text-[4px]" : "px-[5%] py-[3%] text-[2px]"
+          )}
+        >
+          <span>SYMB</span>
+          <span className="text-[#16A34A]">▲ YIELD</span>
+        </div>
+        <div
+          className={cn(
+            "font-serif font-bold leading-tight text-[#0B2545]",
+            size === "preview" ? "px-[6%] pt-[8%] text-[8px]" : "px-[6%] pt-[8%] text-[3.5px]"
+          )}
+        >
+          ROOFTOP
+          <br />
+          ASSET
+        </div>
+        <div
+          className={cn(
+            "mx-[6%] mt-auto border-t border-dotted border-[#9CA3AF] pb-[6%] pt-[4%] font-serif text-[#374151]",
+            size === "preview" ? "text-[5px]" : "text-[2.5px]"
+          )}
+        >
+          Net outlay · · · ₹ —
         </div>
       </div>
     </div>

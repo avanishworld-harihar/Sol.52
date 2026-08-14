@@ -41,6 +41,7 @@ export function resolveResidentialThemeKey(input: {
   if (input.galleryKey === "emerald") return "golden";
   if (input.galleryKey === "obsidian") return "golden";
   if (input.galleryKey === "field") return "golden";
+  if (input.galleryKey === "wall_street") return "golden";
 
   const preset = input.presetId;
   if (preset === "residential_executive") return "golden";
@@ -52,6 +53,7 @@ export function resolveResidentialThemeKey(input: {
   if (preset === "residential_emerald") return "golden";
   if (preset === "residential_obsidian") return "golden";
   if (preset === "residential_field") return "golden";
+  if (preset === "residential_wall_street") return "golden";
   if (preset === "residential_horizon" || preset.includes("horizon")) return "horizon";
   if (preset === "residential_ember" || preset.includes("ember")) return "ember";
   if (preset.includes("solstice")) return "solstice";

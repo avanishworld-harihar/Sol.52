@@ -12,7 +12,7 @@
  */
 
 import { motion } from "framer-motion";
-import { Building2, ChevronRight, Compass, Gem, LayoutTemplate, RefreshCw, Sparkles, Zap } from "lucide-react";
+import { Building2, ChevronRight, Compass, Gem, Landmark, LayoutTemplate, RefreshCw, Sparkles, Zap } from "lucide-react";
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 import { PresenceStack } from "@/components/workspace/presence-stack";
 
@@ -94,6 +94,14 @@ const PRESET_META: Record<ProposalPresetId, PresetMeta> = {
     pillClass:
       "border-orange-300 bg-[#F4F0E4] text-[#12212A] dark:border-orange-500/40 dark:bg-[#12212A] dark:text-[#F4F0E4]",
     dotClass: "bg-[#D9540F]",
+  },
+  residential_wall_street: {
+    icon: <Landmark className="h-4 w-4" />,
+    label: "Wall Street Ledger",
+    description: "Salmon newsprint · ticker · dotted ledger",
+    pillClass:
+      "border-[#0B2545]/30 bg-[#F9EBE0] text-[#0B2545] dark:border-[#F9EBE0]/30 dark:bg-[#0B2545] dark:text-[#F9EBE0]",
+    dotClass: "bg-[#0B2545]",
   },
   commercial_executive: {
     icon: <Building2 className="h-4 w-4" />,
