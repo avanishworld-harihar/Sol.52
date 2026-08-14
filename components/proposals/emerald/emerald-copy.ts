@@ -42,12 +42,40 @@ export function getEmeraldCopy(lang: EmeraldLang) {
       year1Units: hi ? "पहले साल की यूनिट" : "YEAR 1 UNITS",
     },
     arch: {
-      sidebarTitle: hi ? ["प्लांट", "एनाटॉमी।"] : ["Plant", "Anatomy."],
+      sidebarTitle: hi ? ["सोलर", "कैसे चलता है।"] : ["How Solar", "Works."],
       sidebarBlurb: hi
-        ? "इस छत के प्लांट की खुली तकनीकी ड्राइंग — मॉड्यूल, कन्वर्ज़न, और घर से ग्रिड तक बिजली का रास्ता।"
-        : "An exploded drawing of this rooftop plant — modules, conversion, and the path power takes to the home and the grid.",
-      pageHeader: hi ? "प्लांट एनाटॉमी" : "Plant Anatomy",
-      plateEyebrow: hi ? "एक्सप्लोडेड ऑर्थोग्राफ़िक" : "EXPLODED ORTHOGRAPHIC",
+        ? "धूप छत पर पड़ती है। पैनल बिजली बनाते हैं। इनवर्टर उसे घर के लिए ठीक करता है। बची यूनिट ग्रिड में जाती है।"
+        : "Sunlight hits the roof. Panels make power. The inverter makes it safe for the home. Extra units go to the grid.",
+      pageHeader: hi ? "धूप से घर तक" : "From sunlight to your home",
+      storyEyebrow: hi ? "जनरेशन कैसे होती है" : "HOW GENERATION WORKS",
+      stepSun: hi ? "धूप" : "Sunlight",
+      stepSunHint: hi
+        ? "सूरज की रोशनी आपकी छत पर पड़ती है।"
+        : "Sunlight falls on your roof all day.",
+      stepPanels: hi ? "पैनल" : "Panels",
+      stepPanelsHint: (count: number, watt: number) =>
+        count > 0 && watt > 0
+          ? hi
+            ? `${count} × ${watt}W पैनल रोशनी को DC बिजली बनाते हैं।`
+            : `${count} × ${watt}W panels turn light into DC power.`
+          : hi
+            ? "पैनल रोशनी को DC बिजली बनाते हैं।"
+            : "Panels turn light into DC power.",
+      stepInverter: hi ? "इनवर्टर" : "Inverter",
+      stepInverterHint: hi
+        ? "यह DC को 230V AC में बदलता है — पंखे, लाइट, सॉकेट के लिए।"
+        : "It changes DC into 230V AC for fans, lights, and sockets.",
+      stepHome: hi ? "पहले घर" : "Home first",
+      stepHomeHint: hi
+        ? "घर पहले इस बिजली का इस्तेमाल करता है। बची यूनिट DISCOM ग्रिड में जाती है।"
+        : "The house uses this power first. Extra units go to the DISCOM grid.",
+      specEyebrow: hi ? "इस सिस्टम के आँकड़े" : "THIS SYSTEM",
+      labelDc: "DC",
+      labelAc: "AC",
+      labelLight: hi ? "रोशनी" : "LIGHT",
+      labelHome: hi ? "घर" : "HOME",
+      labelGrid: hi ? "ग्रिड" : "GRID",
+      plateEyebrow: hi ? "जनरेशन कैसे होती है" : "HOW GENERATION WORKS",
       plateDwg: hi ? "प्लेट A · ऑन-ग्रिड" : "PLATE A · ON-GRID",
       callModule: hi ? "मॉड्यूल" : "Module",
       callArray: hi ? "ऐरे" : "Array",
@@ -85,12 +113,10 @@ export function getEmeraldCopy(lang: EmeraldLang) {
             ? `${count}× ${watt}W DC`
             : `${count}x ${watt}W DC`
           : "—",
-      prDerating: hi
-        ? "परफॉर्मेंस रेशियो (PR) डिरेटिंग"
-        : "PERFORMANCE RATIO (PR) DERATING",
+      prDerating: hi ? "असली यूनिट (PR)" : "HONEST UNITS (PR)",
       prBlurb: hi
-        ? "असली पैदावार गर्मी, केबल प्रतिरोध, और इनवर्टर क्लिपिंग को जोड़कर निकाली जाती है। PR से जनरेशन टारगेट साफ रहते हैं।"
-        : "Real-world yield is modeled with thermal loss, cable resistance, and inverter clipping. The Performance Ratio keeps generation targets transparent.",
+        ? "गर्मी, केबल और इनवर्टर थोड़ी ऊर्जा ले लेते हैं। PR बताता है कि धूप का कितना हिस्सा असल यूनिट बनता है।"
+        : "Heat, cables, and the inverter use a little energy. PR is the share of sunlight that actually becomes units.",
       prFormulaAria: hi
         ? "PR बराबर E ग्रिड बटे P नॉम गुणा H बटे G STC"
         : "PR equals E grid over P nom times H over G STC",

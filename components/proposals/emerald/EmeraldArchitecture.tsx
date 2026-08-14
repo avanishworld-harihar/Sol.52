@@ -1,17 +1,13 @@
 "use client";
 
 /**
- * Emerald Signature — Plant Anatomy (exploded orthographic drawing).
+ * Emerald Signature — How solar generation works (clear pictorial path).
  * Live ProposalData / BOM only — no 5 kW / 615W / 9-panel / 75% PR fallbacks.
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
 import { formatEmeraldKw } from "./emerald-brand";
-import {
-  emeraldAnnualUnits,
-  emeraldMetric,
-  resolveEmeraldPanelSpec,
-} from "./emerald-live";
+import { emeraldMetric, resolveEmeraldPanelSpec } from "./emerald-live";
 import styles from "./Emerald.module.css";
 import { useEmeraldLang } from "./emerald-lang-context";
 
@@ -20,283 +16,202 @@ export type EmeraldArchitectureProps = {
   folio: string;
 };
 
-const ROOF = {
-  a: [268, 208],
-  b: [528, 112],
-  c: [768, 214],
-  d: [508, 312],
-} as const;
-
-function roofPt(u: number, v: number): [number, number] {
-  const { a, b, c, d } = ROOF;
-  const x =
-    (1 - u) * (1 - v) * a[0] + u * (1 - v) * b[0] + u * v * c[0] + (1 - u) * v * d[0];
-  const y =
-    (1 - u) * (1 - v) * a[1] + u * (1 - v) * b[1] + u * v * c[1] + (1 - u) * v * d[1];
-  return [x, y];
-}
-
-function panelPoly(col: number, row: number, cols: number, rows: number): string {
-  const gap = 0.08;
-  const u0 = 0.1 + (col / cols) * 0.8;
-  const u1 = 0.1 + ((col + 1 - gap) / cols) * 0.8;
-  const v0 = 0.12 + (row / rows) * 0.72;
-  const v1 = 0.12 + ((row + 1 - gap) / rows) * 0.72;
-  const p = [roofPt(u0, v0), roofPt(u1, v0), roofPt(u1, v1), roofPt(u0, v1)];
-  return p.map(([x, y]) => `${x},${y}`).join(" ");
-}
+type StoryLabels = {
+  light: string;
+  dc: string;
+  ac: string;
+  home: string;
+  grid: string;
+  panels: string;
+  inverter: string;
+};
 
 function visualGrid(count: number): { cols: number; rows: number; shown: number } {
-  const shown = count > 0 ? Math.min(count, 12) : 0;
-  if (shown <= 0) return { cols: 3, rows: 2, shown: 0 };
-  if (shown <= 4) return { cols: shown, rows: 1, shown };
-  if (shown <= 8) return { cols: Math.ceil(shown / 2), rows: 2, shown };
-  return { cols: 4, rows: Math.ceil(shown / 4), shown };
+  const shown = count > 0 ? Math.min(count, 10) : 6;
+  const cols = shown <= 5 ? shown : Math.ceil(shown / 2);
+  const rows = shown <= 5 ? 1 : 2;
+  return { cols, rows, shown: count > 0 ? shown : 6 };
 }
 
-function Callout({
-  n,
-  from,
-  to,
-}: {
-  n: string;
-  from: [number, number];
-  to: [number, number];
-}) {
-  return (
-    <g>
-      <polyline
-        points={`${from[0]},${from[1]} ${to[0]},${to[1]}`}
-        fill="none"
-        stroke="#D4AF37"
-        strokeWidth="1.4"
-      />
-      <circle cx={to[0]} cy={to[1]} r="12" fill="#064E3B" stroke="#D4AF37" strokeWidth="1.5" />
-      <text
-        x={to[0]}
-        y={to[1] + 4}
-        textAnchor="middle"
-        fill="#FAFAF9"
-        fontSize="11"
-        fontFamily="Courier New, ui-monospace, monospace"
-        fontWeight="700"
-      >
-        {n}
-      </text>
-    </g>
-  );
-}
-
-function AnatomyDrawing({
+function GenerationScene({
   modules,
   watt,
-  dcLabel,
-  acLabel,
-  tiltLabel,
-  year1Label,
-  plateDwg,
+  labels,
+  ghost,
 }: {
   modules: number;
   watt: number;
-  dcLabel: string;
-  acLabel: string;
-  tiltLabel: string;
-  year1Label: string;
-  plateDwg: string;
+  labels: StoryLabels;
+  ghost: boolean;
 }) {
   const { cols, rows, shown } = visualGrid(modules);
-  const extra = modules > shown ? modules - shown : 0;
-  const arrayPts: string[] = [];
-  for (let i = 0; i < shown; i += 1) {
-    arrayPts.push(panelPoly(i % cols, Math.floor(i / cols), cols, rows));
-  }
+  const roofX = 248;
+  const roofY = 78;
+  const roofW = 268;
+  const roofH = 56;
+  const cellW = (roofW - 16) / cols;
+  const cellH = (roofH - 12) / rows;
 
   return (
     <svg
-      viewBox="0 0 880 360"
+      viewBox="0 0 900 250"
       className={styles.anatomySvg}
       role="img"
-      aria-label={plateDwg}
+      aria-label={`${labels.light} → ${labels.panels} → ${labels.inverter} → ${labels.home} / ${labels.grid}`}
     >
       <defs>
-        <linearGradient id="em-anatomy-sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#ECFDF5" />
+        <linearGradient id="em-gen-sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#D1FAE5" />
+          <stop offset="55%" stopColor="#ECFDF5" />
           <stop offset="100%" stopColor="#FAFAF9" />
         </linearGradient>
-        <linearGradient id="em-anatomy-panel" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#0F766E" />
-          <stop offset="55%" stopColor="#064E3B" />
-          <stop offset="100%" stopColor="#022C22" />
+        <linearGradient id="em-gen-panel" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#115E59" />
+          <stop offset="100%" stopColor="#064E3B" />
         </linearGradient>
-        <pattern
-          id="em-anatomy-iso"
-          width="28"
-          height="16"
-          patternUnits="userSpaceOnUse"
-          patternTransform="skewX(-30)"
-        >
-          <path d="M0 16 L28 0" stroke="rgba(6,78,59,0.07)" strokeWidth="1" fill="none" />
-        </pattern>
+        <marker id="em-gen-arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+          <path d="M0 0 L8 4 L0 8 Z" fill="#D4AF37" />
+        </marker>
+        <marker id="em-gen-arrow-ac" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+          <path d="M0 0 L8 4 L0 8 Z" fill="#064E3B" />
+        </marker>
       </defs>
 
-      <rect width="880" height="360" fill="url(#em-anatomy-sky)" />
-      <rect width="880" height="360" fill="url(#em-anatomy-iso)" />
+      <rect width="900" height="250" fill="url(#em-gen-sky)" />
+      <rect x="0" y="218" width="900" height="32" fill="#E7E5E4" />
+      <rect x="0" y="218" width="900" height="3" fill="#D4AF37" />
 
-      <rect x="10" y="10" width="860" height="340" fill="none" stroke="rgba(212,175,55,0.55)" strokeWidth="1" />
-      <rect x="16" y="16" width="848" height="328" fill="none" stroke="rgba(6,78,59,0.12)" strokeWidth="0.75" />
-
-      {/* Sun + photon rays */}
+      {/* 1. Sun + light */}
       <g>
-        <circle cx="92" cy="62" r="22" fill="#D4AF37" />
-        <circle cx="92" cy="62" r="14" fill="#FAFAF9" opacity="0.35" />
-        {[
-          [118, 72, 250, 150],
-          [112, 86, 290, 175],
-          [104, 94, 330, 198],
-        ].map(([x1, y1, x2, y2]) => (
-          <line
-            key={`${x1}-${y1}`}
-            x1={x1}
-            y1={y1}
-            x2={x2}
-            y2={y2}
-            stroke="#D4AF37"
-            strokeWidth="1.6"
-            strokeDasharray="5 4"
-            opacity="0.85"
-          />
-        ))}
-      </g>
-
-      {/* Terrace slab (isometric) */}
-      <polygon
-        points={`${ROOF.a.join(",")} ${ROOF.b.join(",")} ${ROOF.c.join(",")} ${ROOF.d.join(",")}`}
-        fill="#E7E5E4"
-        stroke="#064E3B"
-        strokeWidth="2"
-      />
-      <polygon
-        points={`${ROOF.a.join(",")} ${ROOF.d.join(",")} 508,332 268,228`}
-        fill="#D6D3D1"
-        stroke="#064E3B"
-        strokeWidth="1.5"
-      />
-      <polygon
-        points={`${ROOF.d.join(",")} ${ROOF.c.join(",")} 768,234 508,332`}
-        fill="#A8A29E"
-        stroke="#064E3B"
-        strokeWidth="1.5"
-      />
-
-      {/* Array envelope if no live count */}
-      {shown === 0 ? (
-        <polygon
-          points={`${roofPt(0.12, 0.14).join(",")} ${roofPt(0.88, 0.14).join(",")} ${roofPt(0.88, 0.82).join(",")} ${roofPt(0.12, 0.82).join(",")}`}
+        <circle cx="78" cy="72" r="34" fill="#D4AF37" />
+        <circle cx="78" cy="72" r="22" fill="#FAFAF9" opacity="0.28" />
+        {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => {
+          const r = (deg * Math.PI) / 180;
+          return (
+            <line
+              key={deg}
+              x1={78 + Math.cos(r) * 40}
+              y1={72 + Math.sin(r) * 40}
+              x2={78 + Math.cos(r) * 52}
+              y2={72 + Math.sin(r) * 52}
+              stroke="#D4AF37"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+          );
+        })}
+        <path
+          d="M112 92 C 160 108, 200 96, 248 92"
           fill="none"
           stroke="#D4AF37"
-          strokeWidth="1.4"
-          strokeDasharray="6 4"
+          strokeWidth="4"
+          strokeDasharray="7 6"
+          markerEnd="url(#em-gen-arrow)"
         />
-      ) : (
-        arrayPts.map((pts, i) => (
-          <polygon
-            key={`pv-${i}`}
-            points={pts}
-            fill="url(#em-anatomy-panel)"
-            stroke="#D4AF37"
-            strokeWidth="0.9"
-          />
-        ))
-      )}
-
-      {/* Inverter — exploded isometric cube */}
-      <g>
-        <polygon points="168,248 228,228 228,278 168,298" fill="#FAFAF9" stroke="#064E3B" strokeWidth="2" />
-        <polygon points="228,228 268,248 268,298 228,278" fill="#D6D3D1" stroke="#064E3B" strokeWidth="2" />
-        <polygon points="168,248 228,228 268,248 208,268" fill="#064E3B" />
-        <path d="M182 268 Q198 256, 214 268 T246 268" fill="none" stroke="#D4AF37" strokeWidth="2" />
-        <path
-          d="M248 258 L310 210"
-          fill="none"
-          stroke="#D4AF37"
-          strokeWidth="2"
-          strokeDasharray="6 3"
-        />
+        <text x="78" y="148" textAnchor="middle" className={styles.storySvgLabel}>
+          1 · {labels.light}
+        </text>
       </g>
 
-      {/* Home — isometric cottage */}
+      {/* 2. House + rooftop array */}
       <g>
-        <polygon points="790,168 830,152 858,168 858,208 790,224 790,168" fill="#E7E5E4" stroke="#064E3B" strokeWidth="1.6" />
-        <polygon points="790,168 824,138 858,168" fill="#064E3B" />
-        <rect x="812" y="180" width="14" height="16" fill="#D4AF37" />
+        <rect x="260" y="132" width="248" height="86" rx="3" fill="#FAFAF9" stroke="#064E3B" strokeWidth="2.5" />
+        <rect x="248" y="118" width="272" height="18" fill="#064E3B" />
+        <rect x={roofX} y={roofY} width={roofW} height={roofH} rx="3" fill="#E7E5E4" stroke="#064E3B" strokeWidth="2" />
+        {Array.from({ length: shown }).map((_, i) => {
+          const col = i % cols;
+          const row = Math.floor(i / cols);
+          return (
+            <rect
+              key={`p-${i}`}
+              x={roofX + 8 + col * cellW + 2}
+              y={roofY + 6 + row * cellH + 1}
+              width={cellW - 6}
+              height={cellH - 4}
+              rx="1.5"
+              fill={ghost ? "rgba(6,78,59,0.18)" : "url(#em-gen-panel)"}
+              stroke="#D4AF37"
+              strokeWidth="0.8"
+              opacity={ghost ? 0.7 : 1}
+            />
+          );
+        })}
+        <rect x="368" y="168" width="28" height="50" fill="#064E3B" />
+        <rect x="292" y="150" width="36" height="28" fill="#A7F3D0" stroke="#064E3B" strokeWidth="1.2" />
+        <rect x="432" y="150" width="36" height="28" fill="#FEF3C7" stroke="#D4AF37" strokeWidth="1.5" />
+        <text x="384" y="242" textAnchor="middle" className={styles.storySvgLabel}>
+          2 · {labels.panels}
+          {modules > 0 && watt > 0 ? `  ${modules}×${watt}W` : ""}
+        </text>
       </g>
 
-      {/* Grid pylon */}
+      {/* DC drop to inverter */}
+      <path
+        d="M516 134 L 516 168 L 548 168"
+        fill="none"
+        stroke="#D4AF37"
+        strokeWidth="5"
+        markerEnd="url(#em-gen-arrow)"
+      />
+      <rect x="500" y="146" width="28" height="16" rx="8" fill="#FAFAF9" stroke="#D4AF37" strokeWidth="1.5" />
+      <text x="514" y="158" textAnchor="middle" fill="#D4AF37" fontSize="9" fontWeight="700" fontFamily="Courier New, monospace">
+        {labels.dc}
+      </text>
+
+      {/* 3. Inverter */}
+      <g>
+        <rect x="548" y="148" width="78" height="70" rx="6" fill="#FAFAF9" stroke="#064E3B" strokeWidth="2.5" />
+        <path d="M562 183 Q 576 166, 588 183 T 614 183" fill="none" stroke="#064E3B" strokeWidth="3" />
+        <text x="587" y="242" textAnchor="middle" className={styles.storySvgLabel}>
+          3 · {labels.inverter}
+        </text>
+      </g>
+
+      {/* AC split */}
+      <path
+        d="M626 170 L 668 170 L 668 118 L 712 118"
+        fill="none"
+        stroke="#064E3B"
+        strokeWidth="4"
+        markerEnd="url(#em-gen-arrow-ac)"
+      />
+      <path
+        d="M626 190 L 668 190 L 668 198 L 742 198"
+        fill="none"
+        stroke="#064E3B"
+        strokeWidth="4"
+        markerEnd="url(#em-gen-arrow-ac)"
+      />
+      <rect x="640" y="176" width="28" height="16" rx="8" fill="#064E3B" />
+      <text x="654" y="188" textAnchor="middle" fill="#FAFAF9" fontSize="9" fontWeight="700" fontFamily="Courier New, monospace">
+        {labels.ac}
+      </text>
+
+      {/* 4a Home load */}
+      <g>
+        <circle cx="748" cy="118" r="28" fill="#FEF3C7" stroke="#D4AF37" strokeWidth="2" />
+        <path d="M748 102 L748 118 M738 118 Q748 132 758 118" fill="none" stroke="#064E3B" strokeWidth="2.4" strokeLinecap="round" />
+        <circle cx="748" cy="102" r="3.5" fill="#D4AF37" />
+        <text x="748" y="162" textAnchor="middle" className={styles.storySvgLabel}>
+          4 · {labels.home}
+        </text>
+      </g>
+
+      {/* 4b Grid */}
       <g>
         <path
-          d="M792 292 L808 220 L824 292 M800 248 L816 248 M804 268 L820 268"
+          d="M768 218 L784 148 L800 218 M776 178 L792 178 M778 198 L794 198"
           fill="none"
           stroke="#064E3B"
-          strokeWidth="2.2"
+          strokeWidth="3"
           strokeLinejoin="round"
         />
-        <line x1="808" y1="220" x2="838" y2="208" stroke="#D4AF37" strokeWidth="1.6" />
+        <line x1="784" y1="148" x2="818" y2="138" stroke="#D4AF37" strokeWidth="2" />
+        <line x1="784" y1="148" x2="754" y2="138" stroke="#D4AF37" strokeWidth="2" />
+        <text x="804" y="242" textAnchor="middle" className={styles.storySvgLabel}>
+          4 · {labels.grid}
+        </text>
       </g>
-
-      {/* AC split from inverter */}
-      <path
-        d="M268 270 C 420 300, 620 250, 790 210"
-        fill="none"
-        stroke="#064E3B"
-        strokeWidth="2.2"
-      />
-      <path
-        d="M268 278 C 430 320, 640 300, 808 248"
-        fill="none"
-        stroke="#064E3B"
-        strokeWidth="2.2"
-        strokeDasharray="5 3"
-      />
-
-      <Callout n="01" from={roofPt(0.18, 0.22)} to={[86, 168]} />
-      <Callout n="02" from={roofPt(0.55, 0.08)} to={[430, 48]} />
-      <Callout n="03" from={[208, 268]} to={[86, 268]} />
-      <Callout n="04" from={[790, 176]} to={[730, 86]} />
-      <Callout n="05" from={[808, 268]} to={[730, 318]} />
-
-      {extra > 0 ? (
-        <text x="640" y="128" fill="#064E3B" fontSize="11" fontFamily="Courier New, monospace">
-          +{extra}
-        </text>
-      ) : null}
-
-      {tiltLabel ? (
-        <text
-          x="640"
-          y="300"
-          fill="#78716C"
-          fontSize="10"
-          fontFamily="Courier New, ui-monospace, monospace"
-          letterSpacing="1.4"
-        >
-          {tiltLabel}
-        </text>
-      ) : null}
-
-      <text
-        x="28"
-        y="338"
-        fill="#78716C"
-        fontSize="9"
-        fontFamily="Courier New, ui-monospace, monospace"
-        letterSpacing="1.6"
-      >
-        {plateDwg}
-        {dcLabel !== "—" ? `  ·  ${dcLabel} kWp DC` : ""}
-        {acLabel !== "—" ? `  ·  ${acLabel} kW AC` : ""}
-        {year1Label ? `  ·  ${year1Label}` : ""}
-        {watt > 0 ? `  ·  ${watt} Wp` : ""}
-      </text>
     </svg>
   );
 }
@@ -310,72 +225,39 @@ export function EmeraldArchitecture({ data, folio }: EmeraldArchitectureProps) {
   const acLabel = formatEmeraldKw(systemKw, 1);
   const dcLabel = dcKwp > 0 ? formatEmeraldKw(dcKwp) : "—";
   const prValue = emeraldMetric(data, /performance|pr\b/i);
-  const tiltDeg = Number(data.engineering.tiltDeg);
-  const tiltLabel =
-    Number.isFinite(tiltDeg) && tiltDeg > 0 ? copy.arch.tiltDim(Math.round(tiltDeg)) : "";
-  const year1 = emeraldAnnualUnits(data);
-  const year1Label =
-    year1 > 0 ? copy.arch.year1Dim(year1.toLocaleString("en-IN")) : "";
   const panelBrand = panelItem?.brand?.trim() || "";
   const inverterBrand = inverterItem?.brand?.trim() || "";
 
-  const legend = [
+  const steps = [
+    { n: "01", title: copy.arch.stepSun, hint: copy.arch.stepSunHint },
+    { n: "02", title: copy.arch.stepPanels, hint: copy.arch.stepPanelsHint(modules, watt) },
+    { n: "03", title: copy.arch.stepInverter, hint: copy.arch.stepInverterHint },
+    { n: "04", title: copy.arch.stepHome, hint: copy.arch.stepHomeHint },
+  ];
+
+  const pills = [
     {
-      n: "01",
-      label: copy.arch.callModule,
-      value: watt > 0 ? `${watt} W` : "—",
-      hint: panelBrand || "—",
-    },
-    {
-      n: "02",
-      label: copy.arch.callArray,
+      label: copy.arch.stepPanels,
       value:
         modules > 0 && watt > 0
           ? `${modules} × ${watt}W`
-          : dcKwp > 0
-            ? `${dcLabel} kWp`
-            : "—",
-      hint: dcKwp > 0 ? `${dcLabel} kWp DC` : "—",
+          : panelBrand || "—",
     },
     {
-      n: "03",
-      label: copy.arch.callInverter,
-      value: systemKw > 0 ? `${acLabel} kW` : "—",
-      hint: inverterBrand || copy.arch.mpptSuffix,
-    },
-    {
-      n: "04",
-      label: copy.arch.callHome,
-      value: copy.arch.callHomeHint,
-      hint: ratio > 0 ? `${ratio.toFixed(2)}x DC/AC` : "—",
-    },
-    {
-      n: "05",
-      label: copy.arch.callGrid,
-      value: copy.arch.onGrid,
-      hint: copy.arch.callGridHint,
-    },
-  ];
-
-  const cascade = [
-    { k: "sun", title: copy.arch.photonSun, value: copy.arch.photonSunHint, tone: "gold" as const },
-    {
-      k: "dc",
-      title: copy.arch.photonDc,
+      label: copy.arch.totalArray,
       value: dcKwp > 0 ? `${dcLabel} kWp` : "—",
-      tone: "forest" as const,
     },
     {
-      k: "ac",
-      title: copy.arch.photonAc,
-      value: systemKw > 0 ? `${acLabel} kW AC` : "—",
-      tone: "forest" as const,
+      label: copy.arch.acOutput,
+      value: systemKw > 0 ? `${acLabel} kW` : "—",
     },
     {
-      k: "out",
-      title: copy.arch.photonOut,
-      value: prValue || copy.arch.callGridHint,
-      tone: "ivory" as const,
+      label: copy.arch.dcAcRatio,
+      value: ratio > 0 ? `${ratio.toFixed(2)}x` : "—",
+    },
+    {
+      label: copy.arch.topology,
+      value: copy.arch.onGrid,
     },
   ];
 
@@ -396,57 +278,57 @@ export function EmeraldArchitecture({ data, folio }: EmeraldArchitectureProps) {
 
       <div className={styles.contentArea}>
         <h2 className={styles.pageHeader}>{copy.arch.pageHeader}</h2>
-        <span className={styles.anatomyKicker}>{copy.arch.plateEyebrow}</span>
+        <span className={styles.anatomyKicker}>{copy.arch.storyEyebrow}</span>
 
         <div className={styles.anatomyPlate}>
-          <AnatomyDrawing
+          <GenerationScene
             modules={modules}
             watt={watt}
-            dcLabel={dcLabel}
-            acLabel={acLabel}
-            tiltLabel={tiltLabel}
-            year1Label={year1Label}
-            plateDwg={copy.arch.plateDwg}
+            ghost={modules <= 0}
+            labels={{
+              light: copy.arch.labelLight,
+              dc: copy.arch.labelDc,
+              ac: copy.arch.labelAc,
+              home: copy.arch.labelHome,
+              grid: copy.arch.labelGrid,
+              panels: copy.arch.stepPanels,
+              inverter: copy.arch.stepInverter,
+            }}
           />
         </div>
 
-        <span className={styles.anatomyLegendEyebrow}>{copy.arch.legendEyebrow}</span>
-        <div className={styles.anatomyLegend}>
-          {legend.map((item) => (
-            <div className={styles.anatomyItem} key={item.n}>
-              <span className={styles.anatomyNum}>{item.n}</span>
-              <span className={styles.anatomyItemLabel}>{item.label}</span>
-              <span className={styles.anatomyItemValue}>{item.value}</span>
-              <span className={styles.anatomyItemHint}>{item.hint}</span>
+        <div className={styles.storySteps}>
+          {steps.map((step) => (
+            <div className={styles.storyStep} key={step.n}>
+              <span className={styles.storyNum}>{step.n}</span>
+              <span className={styles.storyTitle}>{step.title}</span>
+              <p className={styles.storyHint}>{step.hint}</p>
             </div>
           ))}
         </div>
 
-        <span className={styles.anatomyLegendEyebrow}>{copy.arch.photonEyebrow}</span>
-        <div className={styles.photonPath}>
-          {cascade.map((stage, i) => (
-            <div key={stage.k} className={styles.photonStageWrap}>
-              {i > 0 ? <span className={styles.photonChevron} aria-hidden /> : null}
-              <div
-                className={`${styles.photonStage} ${
-                  stage.tone === "gold"
-                    ? styles.photonGold
-                    : stage.tone === "ivory"
-                      ? styles.photonIvory
-                      : styles.photonForest
-                }`}
-              >
-                <span>{stage.title}</span>
-                <strong>{stage.value}</strong>
-              </div>
+        <span className={styles.anatomyLegendEyebrow}>{copy.arch.specEyebrow}</span>
+        <div className={styles.specPills}>
+          {pills.map((pill) => (
+            <div className={styles.specPill} key={pill.label}>
+              <span>{pill.label}</span>
+              <strong>{pill.value}</strong>
             </div>
           ))}
         </div>
+        {panelBrand || inverterBrand ? (
+          <p className={styles.storyBrands}>
+            {[panelBrand, inverterBrand].filter(Boolean).join("  ·  ")}
+          </p>
+        ) : null}
 
         <div className={styles.prMathBlock}>
           <div className={styles.prMathText}>
             <span className={styles.goldEyebrow}>{copy.arch.prDerating}</span>
-            <p>{copy.arch.prBlurb}</p>
+            <p>
+              {copy.arch.prBlurb}
+              {prValue ? `  ${prValue}` : ""}
+            </p>
           </div>
           <div className={styles.prMathFormula} aria-label={copy.arch.prFormulaAria}>
             <span className={styles.prEq}>PR</span>
