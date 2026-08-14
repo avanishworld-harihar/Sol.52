@@ -3,24 +3,13 @@
 /**
  * Emerald Signature renderer — split-folio eco-luxury residential proposal.
  * Preset id: residential_emerald
- * Pages: Cover → Architecture → Capital Ledger → Material Anthology →
- * Impact → Energy Audit → Yield Forecast → Execution Mandate →
- * Terms I → Terms II.
+ * Pages compiled by EmeraldProposal.
  */
 
 import { useRef, useState } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
-import { EmeraldCover } from "./EmeraldCover";
-import { EmeraldArchitecture } from "./EmeraldArchitecture";
-import { EmeraldEconomics } from "./EmeraldEconomics";
-import { EmeraldHardware } from "./EmeraldHardware";
-import { EmeraldImpact } from "./EmeraldImpact";
-import { EmeraldBillAudit } from "./EmeraldBillAudit";
-import { EmeraldForecast } from "./EmeraldForecast";
-import { EmeraldClosing } from "./EmeraldClosing";
-import { EmeraldTermsOne } from "./EmeraldTermsOne";
-import { EmeraldTermsTwo } from "./EmeraldTermsTwo";
+import { EmeraldProposal } from "./EmeraldProposal";
 import { useEmeraldBrand } from "./emerald-brand";
 import styles from "./Emerald.module.css";
 import {
@@ -57,7 +46,7 @@ function EmeraldDocument({
             root: rootRef.current,
             customerName: data.meta.customerName,
             presetId: "residential_emerald",
-            pageSelector: ":scope > section",
+            pageSelector: "section",
           })
         );
       } finally {
@@ -89,16 +78,7 @@ function EmeraldDocument({
         </div>
       </div>
 
-      <EmeraldCover data={data} proposalId={proposalId} />
-      <EmeraldArchitecture data={data} />
-      <EmeraldEconomics data={data} />
-      <EmeraldHardware data={data} />
-      <EmeraldImpact data={data} />
-      <EmeraldBillAudit data={data} />
-      <EmeraldForecast data={data} />
-      <EmeraldClosing data={data} />
-      <EmeraldTermsOne data={data} />
-      <EmeraldTermsTwo data={data} />
+      <EmeraldProposal data={data} proposalId={proposalId} />
     </div>
   );
 }

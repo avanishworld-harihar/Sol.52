@@ -23,7 +23,7 @@
   position: relative;
   width: 100%;
   min-height: 100dvh;
-  background: #f5f0e6;
+  background: #1c1917;
   color: var(--em-ink);
   font-family: var(--em-sans);
   -webkit-font-smoothing: antialiased;
@@ -100,6 +100,24 @@
   background: #022c22;
 }
 
+.proposalStage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 40px 0;
+  gap: 20px;
+  background-color: #1c1917;
+}
+
+@media print {
+  .proposalStage {
+    background: transparent !important;
+    padding: 0;
+    gap: 0;
+  }
+}
+
 .loading {
   display: grid;
   place-items: center;
@@ -121,7 +139,7 @@
   break-after: page;
   font-family: "Inter", sans-serif;
   box-sizing: border-box;
-  margin: 0 auto 24px;
+  margin: 0 auto;
   page: emerald-sheet;
   box-shadow:
     0 24px 80px rgba(2, 44, 34, 0.18),
@@ -1020,4 +1038,109 @@
   color: #a8a29e;
   letter-spacing: 2px;
   text-transform: uppercase;
+}
+
+/* --- BACK COVER --- */
+.backCoverPage {
+  background-color: #022c22 !important;
+  color: #fde68a !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 56px 48px;
+  border: 1px solid #d4af37;
+}
+
+.backCoverMark {
+  width: 56px;
+  height: 56px;
+  border: 2px solid #d4af37;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.backCoverMarkDot {
+  width: 18px;
+  height: 18px;
+  background: #d4af37;
+  border-radius: 50%;
+}
+
+.backCoverBrand {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  color: #fff;
+  text-transform: uppercase;
+  margin-top: 28px;
+  display: block;
+}
+
+.backCoverBrandSub {
+  display: block;
+  font-size: 0.75rem;
+  letter-spacing: 0.42em;
+  color: #d4af37;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+
+.backCoverCenter {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 78%;
+}
+
+.backCoverEyebrow {
+  font-size: 0.7rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: #d4af37;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.backCoverTitle {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 3.4rem;
+  font-weight: 400;
+  color: #fafaf9 !important;
+  line-height: 1.05;
+  margin: 0 0 18px;
+}
+
+.backCoverLead {
+  font-size: 1rem;
+  color: #a7f3d0;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 90%;
+}
+
+.backCoverMeta {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  border-top: 1px solid rgba(212, 175, 55, 0.35);
+  padding-top: 22px;
+}
+
+.backCoverMetaLabel {
+  display: block;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #a7f3d0;
+  margin-bottom: 6px;
+}
+
+.backCoverMetaValue {
+  display: block;
+  font-size: 0.95rem;
+  color: #fafaf9;
+  font-family: "Cormorant Garamond", serif;
 }
