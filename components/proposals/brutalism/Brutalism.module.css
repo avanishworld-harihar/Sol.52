@@ -1,0 +1,262 @@
+/**
+ * Brutalism — concrete gray, heavy black frame, industrial orange.
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@600;800;900&display=swap");
+
+@page brutalism-sheet {
+  size: A4 portrait;
+  margin: 0;
+}
+
+.root {
+  --br-concrete: #e5e5e5;
+  --br-black: #000000;
+  --br-white: #ffffff;
+  --br-orange: #ff4500;
+  --br-sans: "Inter", system-ui, sans-serif;
+
+  background: #cfcfcf;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.root * {
+  box-sizing: border-box;
+}
+
+@media print {
+  .root :global(*),
+  .a4Brutalist :global(*) {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .root {
+    background: transparent;
+  }
+
+  .printBar {
+    display: none !important;
+  }
+
+  .a4Brutalist {
+    margin: 0 !important;
+    box-shadow: none !important;
+    page: brutalism-sheet;
+  }
+}
+
+.printBar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  padding: 10px 16px;
+  background: var(--br-black);
+  border-bottom: 8px solid var(--br-orange);
+}
+
+.printBarInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: min(210mm, 100%);
+}
+
+.printBarBrand {
+  font-family: var(--br-sans);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--br-white);
+}
+
+.printBarBtn {
+  appearance: none;
+  border: 0;
+  background: var(--br-orange);
+  color: var(--br-white);
+  font-family: var(--br-sans);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+.printBarBtn:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12mm;
+  padding: 12mm 8mm 20mm;
+}
+
+.a4Brutalist {
+  width: 210mm;
+  max-width: min(210mm, 100%);
+  height: 297mm;
+  min-height: 297mm;
+  background-color: var(--br-concrete);
+  color: var(--br-black);
+  position: relative;
+  overflow: hidden;
+  font-family: var(--br-sans);
+  page-break-after: always;
+  break-after: page;
+  padding: 8mm 9mm 9mm;
+  border: 12px solid var(--br-black);
+  box-shadow: 12px 12px 0 var(--br-black);
+  display: flex;
+  flex-direction: column;
+}
+
+.a4Brutalist:last-child {
+  page-break-after: auto;
+  break-after: auto;
+}
+
+.brutalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 8px;
+  border-bottom: 8px solid var(--br-black);
+  padding-bottom: 4mm;
+  margin-bottom: 6mm;
+}
+
+.brandBlock {
+  background: var(--br-black);
+  color: var(--br-white);
+  padding: 8px 14px;
+  font-weight: 900;
+  font-size: clamp(0.85rem, 2vw, 1.2rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+}
+
+.cautionBadge {
+  background: var(--br-orange);
+  color: var(--br-white);
+  padding: 8px 14px;
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: clamp(0.65rem, 1.6vw, 0.85rem);
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  text-align: right;
+}
+
+.massiveTitle {
+  font-size: clamp(2.4rem, 7vw, 4.4rem);
+  font-weight: 900;
+  line-height: 0.88;
+  text-transform: uppercase;
+  margin: 0 0 5mm;
+  letter-spacing: -2px;
+}
+
+.lede {
+  border-left: 8px solid var(--br-orange);
+  padding-left: 14px;
+  margin-bottom: 7mm;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.brutalGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.brutalRow {
+  display: flex;
+  background: var(--br-white);
+  border: 4px solid var(--br-black);
+  align-items: stretch;
+}
+
+.brutalRowAccent {
+  border-color: var(--br-orange);
+}
+
+.brutalLabel {
+  background: var(--br-black);
+  color: var(--br-white);
+  padding: 12px 14px;
+  font-weight: 800;
+  font-size: clamp(0.7rem, 1.8vw, 0.95rem);
+  text-transform: uppercase;
+  width: 32%;
+  min-width: 32%;
+  display: flex;
+  align-items: center;
+  letter-spacing: 0.04em;
+}
+
+.brutalLabelAccent {
+  background: var(--br-orange);
+}
+
+.brutalValue {
+  padding: 10px 14px;
+  font-size: clamp(1.2rem, 4vw, 2.2rem);
+  font-weight: 900;
+  color: var(--br-black);
+  display: flex;
+  align-items: center;
+  line-height: 1.05;
+}
+
+.pageFooter {
+  margin-top: auto;
+  border-top: 8px solid var(--br-black);
+  padding-top: 8px;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.loading {
+  padding: 48px;
+  text-align: center;
+  font-family: var(--br-sans);
+  font-weight: 900;
+}
+
+@media screen and (max-width: 900px) {
+  .a4Brutalist {
+    height: auto;
+    min-height: 0;
+    border-width: 8px;
+  }
+
+  .brutalHeader {
+    flex-direction: column;
+  }
+
+  .brutalRow {
+    flex-direction: column;
+  }
+
+  .brutalLabel {
+    width: 100%;
+  }
+}

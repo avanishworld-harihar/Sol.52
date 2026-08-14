@@ -224,6 +224,8 @@ export function BuilderStageBar({
                               ? "Wall Street"
                             : presetId === "residential_cyanotype"
                               ? "Cyanotype"
+                            : presetId === "residential_brutalism"
+                              ? "Brutalism"
                             : "Residential"}
             </span>
           </div>

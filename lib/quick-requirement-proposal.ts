@@ -91,6 +91,8 @@ export async function buildQuickRequirementProposal(
                   ? { galleryThemeKey: "wall_street" }
                 : presetId === "residential_cyanotype"
                   ? { galleryThemeKey: "cyanotype" }
+                : presetId === "residential_brutalism"
+                  ? { galleryThemeKey: "brutalism" }
                   : presetId === "residential_executive"
                   ? { galleryThemeKey: "golden" }
                   : {}),

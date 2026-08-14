@@ -12,6 +12,7 @@ export const RESIDENTIAL_TEMPLATE_PRESET_IDS = [
   "residential_field",
   "residential_wall_street",
   "residential_cyanotype",
+  "residential_brutalism",
 ] as const;
 
 export type ResidentialTemplatePresetId = (typeof RESIDENTIAL_TEMPLATE_PRESET_IDS)[number];
@@ -79,6 +80,11 @@ export const RESIDENTIAL_TEMPLATE_OPTIONS: ResidentialTemplateOption[] = [
     id: "residential_cyanotype",
     label: "Cyanotype",
     subtitle: "Indigo blueprint — drafting grid, dimension lines, and data boxes.",
+  },
+  {
+    id: "residential_brutalism",
+    label: "Brutalism",
+    subtitle: "Concrete gray — heavy black frame, industrial orange, massive type.",
   },
 ];
 

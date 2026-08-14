@@ -83,6 +83,7 @@ export type PresetAffinity =
       | "residential_field"
       | "residential_wall_street"
       | "residential_cyanotype"
+      | "residential_brutalism"
     >;
 
 export type ProposalBlockMeta = {

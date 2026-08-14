@@ -15,6 +15,7 @@ const ACTIVE_RESIDENTIAL = [
   "residential_field",
   "residential_wall_street",
   "residential_cyanotype",
+  "residential_brutalism",
 ] as const;
 
 /** Structural guard: route resolution must never cross from Atelier to Canvas. */

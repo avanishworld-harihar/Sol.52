@@ -39,6 +39,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
       {variant === "field" ? <FieldThumb size={size} /> : null}
       {variant === "wall_street" ? <WallStreetThumb size={size} /> : null}
       {variant === "cyanotype" ? <CyanotypeThumb size={size} /> : null}
+      {variant === "brutalism" ? <BrutalismThumb size={size} /> : null}
       {![
         "golden",
         "pearl",
@@ -59,6 +60,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
         "field",
         "wall_street",
         "cyanotype",
+        "brutalism",
       ].includes(variant) ? (
         <GenericThumb size={size} label={variant} />
       ) : null}
@@ -400,6 +402,66 @@ function EmeraldThumb({ size }: { size: "card" | "preview" }) {
             Split
             <br />
             Folio
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BrutalismThumb({ size }: { size: "card" | "preview" }) {
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-[#cfcfcf]">
+      <div
+        className={cn(
+          "relative flex flex-col overflow-hidden bg-[#E5E5E5] shadow-sm",
+          size === "preview" ? "h-[62%] w-[68%] border-[6px] border-black" : "h-[58%] w-[72%] border-[4px] border-black"
+        )}
+      >
+        <div className="flex items-stretch justify-between border-b-4 border-black">
+          <div
+            className={cn(
+              "bg-black font-black uppercase tracking-widest text-white",
+              size === "preview" ? "px-[6%] py-[4%] text-[5px]" : "px-[6%] py-[4%] text-[2.5px]"
+            )}
+          >
+            SPEC
+          </div>
+          <div
+            className={cn(
+              "bg-[#FF4500] font-black uppercase text-white",
+              size === "preview" ? "px-[6%] py-[4%] text-[5px]" : "px-[6%] py-[4%] text-[2.5px]"
+            )}
+          >
+            DEPLOY
+          </div>
+        </div>
+        <div
+          className={cn(
+            "px-[6%] pt-[8%] font-black uppercase leading-[0.85] text-black",
+            size === "preview" ? "text-[11px]" : "text-[5px]"
+          )}
+        >
+          POWER
+          <br />
+          INFRA.
+        </div>
+        <div className="mx-[6%] mt-auto mb-[8%] flex border-4 border-black">
+          <div
+            className={cn(
+              "bg-black font-black uppercase text-white",
+              size === "preview" ? "px-[6%] py-[4%] text-[4px]" : "px-[6%] py-[4%] text-[2px]"
+            )}
+          >
+            kW
+          </div>
+          <div
+            className={cn(
+              "flex-1 bg-white font-black",
+              size === "preview" ? "px-[6%] py-[4%] text-[6px]" : "px-[6%] py-[4%] text-[3px]"
+            )}
+          >
+            —
           </div>
         </div>
       </div>

@@ -36,7 +36,7 @@ export const PROPOSAL_TEMPLATE_CATEGORIES: ProposalTemplateCategoryMeta[] = [
   {
     id: "residential",
     label: "Residential",
-    description: "Homes & rooftops — Golden, Zenith, Atelier, Premium Luxe, Canvas, Quantum, Emerald, Field Engineering, Wall Street Ledger, or Cyanotype.",
+    description: "Homes & rooftops — Golden, Zenith, Atelier, Premium Luxe, Canvas, Quantum, Emerald, Field Engineering, Wall Street Ledger, Cyanotype, or Brutalism.",
   },
   {
     id: "commercial",
@@ -133,6 +133,15 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
       "Deep indigo blueprint — drafting grid, dimension lines, crosshairs, and monospace capital data boxes.",
     thumbnailVariant: "cyanotype",
   },
+  {
+    key: "brutalism",
+    presetId: "residential_brutalism",
+    category: "residential",
+    name: "Brutalism",
+    description:
+      "Concrete gray industrial spec — heavy black frame, caution orange, and massive type.",
+    thumbnailVariant: "brutalism",
+  },
 ];
 
 /** Commercial themes — Executive (LT / C&I) and HT Industrial (HV ToD/PF). */
@@ -204,6 +213,7 @@ export function resolveActiveGalleryKey(
   if (presetId === "residential_field") return "field";
   if (presetId === "residential_wall_street") return "wall_street";
   if (presetId === "residential_cyanotype") return "cyanotype";
+  if (presetId === "residential_brutalism") return "brutalism";
   return "zenith";
 }
 

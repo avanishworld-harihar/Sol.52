@@ -12,7 +12,7 @@
  */
 
 import { motion } from "framer-motion";
-import { Building2, ChevronRight, Compass, Gem, Landmark, LayoutTemplate, PenLine, RefreshCw, Sparkles, Zap } from "lucide-react";
+import { Building2, ChevronRight, Compass, Gem, Landmark, LayoutTemplate, PenLine, RefreshCw, Sparkles, Square, Zap } from "lucide-react";
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 import { PresenceStack } from "@/components/workspace/presence-stack";
 
@@ -110,6 +110,14 @@ const PRESET_META: Record<ProposalPresetId, PresetMeta> = {
     pillClass:
       "border-[#88CCEE]/40 bg-[#0F3B66] text-[#88CCEE] dark:border-[#88CCEE]/30 dark:bg-[#0F3B66] dark:text-[#88CCEE]",
     dotClass: "bg-[#88CCEE]",
+  },
+  residential_brutalism: {
+    icon: <Square className="h-4 w-4" />,
+    label: "Brutalism",
+    description: "Concrete gray · heavy frame · industrial orange",
+    pillClass:
+      "border-black bg-[#E5E5E5] text-black dark:border-orange-500 dark:bg-black dark:text-[#FF4500]",
+    dotClass: "bg-[#FF4500]",
   },
   commercial_executive: {
     icon: <Building2 className="h-4 w-4" />,

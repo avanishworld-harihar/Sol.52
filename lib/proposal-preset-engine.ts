@@ -13,7 +13,8 @@
  *   8. residential_field         — Field Engineering survey drawing sheets
  *   9. residential_wall_street   — Wall Street Ledger salmon newsprint
  *  10. residential_cyanotype      — Cyanotype indigo blueprint drafting
- *  11. commercial_executive      — C&I commercial (hotel / hospital / industry…)
+ *  11. residential_brutalism      — Brutalism concrete industrial spec
+ *  12. commercial_executive      — C&I commercial (hotel / hospital / industry…)
  *
  * Removed residential presets remap via normalizePresetId → residential_executive.
  */
@@ -43,6 +44,7 @@ export const PROPOSAL_PRESET_IDS = [
   "residential_field",
   "residential_wall_street",
   "residential_cyanotype",
+  "residential_brutalism",
   "commercial_executive",
   "commercial_ht",
 ] as const;
@@ -112,7 +114,8 @@ export function isResidentialDocumentPreset(presetId: ProposalPresetId): boolean
     presetId === "residential_emerald" ||
     presetId === "residential_field" ||
     presetId === "residential_wall_street" ||
-    presetId === "residential_cyanotype"
+    presetId === "residential_cyanotype" ||
+    presetId === "residential_brutalism"
   );
 }
 
@@ -270,6 +273,18 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     label: "Cyanotype",
     description:
       "Deep indigo blueprint — drafting grid, dimension lines, crosshairs, and monospace data boxes.",
+    bill_requirement: "optional",
+    theme_hint: "residential",
+    default_data_source: "requirement",
+    default_blocks: [],
+    optional_blocks: [],
+  },
+
+  residential_brutalism: {
+    id: "residential_brutalism",
+    label: "Brutalism",
+    description:
+      "Concrete gray industrial spec — heavy black frame, caution orange, and massive type.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "requirement",
