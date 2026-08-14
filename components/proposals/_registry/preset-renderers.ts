@@ -1,6 +1,6 @@
 /**
  * Dynamic preset renderer registry.
- * Active presets: Golden + Zenith + Atelier + Canvas + Quantum + Emerald + Obsidian + Field Engineering + Commercial.
+ * Active presets: Golden + Zenith + Atelier + Canvas + Quantum + Emerald + Field Engineering + Commercial.
  */
 
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
@@ -45,12 +45,6 @@ export const EMERALD_PRESET_ALIASES = [
   "emerald_signature",
 ] as const;
 
-/** Local / mock aliases that resolve to Obsidian HUD. */
-export const OBSIDIAN_PRESET_ALIASES = [
-  "residential_obsidian",
-  "obsidian",
-] as const;
-
 /** Local / mock aliases that resolve to Field Engineering. */
 export const FIELD_PRESET_ALIASES = [
   "residential_field",
@@ -82,10 +76,6 @@ export function isEmeraldPresetId(presetId: string): boolean {
   return (EMERALD_PRESET_ALIASES as readonly string[]).includes(presetId);
 }
 
-export function isObsidianPresetId(presetId: string): boolean {
-  return (OBSIDIAN_PRESET_ALIASES as readonly string[]).includes(presetId);
-}
-
 export function isFieldPresetId(presetId: string): boolean {
   return (FIELD_PRESET_ALIASES as readonly string[]).includes(presetId);
 }
@@ -113,8 +103,6 @@ export const PRESET_RENDERER_LOADERS: PresetRendererRegistry = {
     import("@/components/proposals/_registry/adapters/quantum-adapter"),
   residential_emerald: () =>
     import("@/components/proposals/_registry/adapters/emerald-adapter"),
-  residential_obsidian: () =>
-    import("@/components/proposals/_registry/adapters/obsidian-adapter"),
   residential_field: () =>
     import("@/components/proposals/_registry/adapters/field-engineering-adapter"),
   commercial_executive: () =>
@@ -144,9 +132,6 @@ export function getPresetRendererLoader(
   }
   if (isEmeraldPresetId(presetId)) {
     return () => import("@/components/proposals/_registry/adapters/emerald-adapter");
-  }
-  if (isObsidianPresetId(presetId)) {
-    return () => import("@/components/proposals/_registry/adapters/obsidian-adapter");
   }
   if (isFieldPresetId(presetId)) {
     return () => import("@/components/proposals/_registry/adapters/field-engineering-adapter");

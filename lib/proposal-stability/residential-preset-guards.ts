@@ -12,7 +12,6 @@ const ACTIVE_RESIDENTIAL = [
   "residential_blueprint",
   "residential_quantum",
   "residential_emerald",
-  "residential_obsidian",
   "residential_field",
 ] as const;
 

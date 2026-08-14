@@ -1798,8 +1798,6 @@ function ProposalPageContent() {
                 ? { galleryThemeKey: "quantum" }
                 : osPresetId === "residential_emerald"
                   ? { galleryThemeKey: "emerald" }
-                : osPresetId === "residential_obsidian"
-                  ? { galleryThemeKey: "obsidian" }
                 : osPresetId === "residential_field"
                   ? { galleryThemeKey: "field" }
                   : osPresetId === "residential_executive"
@@ -2423,9 +2421,6 @@ function ProposalPageContent() {
                           preset === "emerald" ||
                           preset === "emerald_signature"
                         ? "residential_emerald"
-                        : preset === "residential_obsidian" ||
-                            preset === "obsidian"
-                          ? "residential_obsidian"
                         : preset === "residential_field" ||
                             preset === "field" ||
                             preset === "field_engineering"

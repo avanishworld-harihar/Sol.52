@@ -10,9 +10,8 @@
  *   5. residential_blueprint     — Blueprint Investment Blueprint (modular light cards)
  *   6. residential_quantum       — Quantum Cinematic Neo-Glass
  *   7. residential_emerald       — Emerald Signature split-folio
- *   8. residential_obsidian      — Obsidian cinematic HUD / viewfinder
- *   9. residential_field         — Field Engineering survey drawing sheets
- *  10. commercial_executive      — C&I commercial (hotel / hospital / industry…)
+ *   8. residential_field         — Field Engineering survey drawing sheets
+ *   9. commercial_executive      — C&I commercial (hotel / hospital / industry…)
  *
  * Removed residential presets remap via normalizePresetId → residential_executive.
  */
@@ -39,7 +38,6 @@ export const PROPOSAL_PRESET_IDS = [
   "residential_blueprint",
   "residential_quantum",
   "residential_emerald",
-  "residential_obsidian",
   "residential_field",
   "commercial_executive",
   "commercial_ht",
@@ -66,6 +64,7 @@ export const LEGACY_RESIDENTIAL_PRESET_FALLBACKS = {
   residential_bank_loan: "residential_executive",
   residential_solstice: "residential_executive",
   residential_energy_freedom: "residential_executive",
+  residential_obsidian: "residential_executive",
 } as const satisfies Record<string, ProposalPresetId>;
 
 export type PresetResolution = {
@@ -107,7 +106,6 @@ export function isResidentialDocumentPreset(presetId: ProposalPresetId): boolean
     presetId === "residential_blueprint" ||
     presetId === "residential_quantum" ||
     presetId === "residential_emerald" ||
-    presetId === "residential_obsidian" ||
     presetId === "residential_field"
   );
 }
@@ -230,18 +228,6 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     label: "Emerald",
     description:
       "Emerald Signature — Deep Forest / Champagne Gold split-folio. Architectural catalog: 30% emerald sidebar, 70% ivory content.",
-    bill_requirement: "optional",
-    theme_hint: "residential",
-    default_data_source: "requirement",
-    default_blocks: [],
-    optional_blocks: [],
-  },
-
-  residential_obsidian: {
-    id: "residential_obsidian",
-    label: "Obsidian",
-    description:
-      "Obsidian — pitch-black cinematic HUD / viewfinder. Engineering telemetry, PV matrix, and yield terminal.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "requirement",
