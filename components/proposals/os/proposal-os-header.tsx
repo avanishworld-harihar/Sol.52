@@ -12,7 +12,7 @@
  */
 
 import { motion } from "framer-motion";
-import { Building2, ChevronRight, Compass, Gem, Landmark, LayoutTemplate, RefreshCw, Sparkles, Zap } from "lucide-react";
+import { Building2, ChevronRight, Compass, Gem, Landmark, LayoutTemplate, PenLine, RefreshCw, Sparkles, Zap } from "lucide-react";
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 import { PresenceStack } from "@/components/workspace/presence-stack";
 
@@ -102,6 +102,14 @@ const PRESET_META: Record<ProposalPresetId, PresetMeta> = {
     pillClass:
       "border-[#0B2545]/30 bg-[#F9EBE0] text-[#0B2545] dark:border-[#F9EBE0]/30 dark:bg-[#0B2545] dark:text-[#F9EBE0]",
     dotClass: "bg-[#0B2545]",
+  },
+  residential_cyanotype: {
+    icon: <PenLine className="h-4 w-4" />,
+    label: "Cyanotype",
+    description: "Indigo blueprint · drafting grid · dimension lines",
+    pillClass:
+      "border-[#88CCEE]/40 bg-[#0F3B66] text-[#88CCEE] dark:border-[#88CCEE]/30 dark:bg-[#0F3B66] dark:text-[#88CCEE]",
+    dotClass: "bg-[#88CCEE]",
   },
   commercial_executive: {
     icon: <Building2 className="h-4 w-4" />,

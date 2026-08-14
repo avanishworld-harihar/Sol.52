@@ -222,6 +222,8 @@ export function BuilderStageBar({
                               ? "Field"
                             : presetId === "residential_wall_street"
                               ? "Wall Street"
+                            : presetId === "residential_cyanotype"
+                              ? "Cyanotype"
                             : "Residential"}
             </span>
           </div>

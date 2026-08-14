@@ -59,6 +59,12 @@ export const WALL_STREET_PRESET_ALIASES = [
   "wallstreet",
 ] as const;
 
+/** Local / mock aliases that resolve to Cyanotype blueprint. */
+export const CYANOTYPE_PRESET_ALIASES = [
+  "residential_cyanotype",
+  "cyanotype",
+] as const;
+
 export function isZenithPresetId(presetId: string): boolean {
   return (ZENITH_PRESET_ALIASES as readonly string[]).includes(presetId);
 }
@@ -91,6 +97,10 @@ export function isWallStreetPresetId(presetId: string): boolean {
   return (WALL_STREET_PRESET_ALIASES as readonly string[]).includes(presetId);
 }
 
+export function isCyanotypePresetId(presetId: string): boolean {
+  return (CYANOTYPE_PRESET_ALIASES as readonly string[]).includes(presetId);
+}
+
 export function isCommercialPresetId(presetId: string): boolean {
   return presetId === "commercial_executive";
 }
@@ -118,6 +128,8 @@ export const PRESET_RENDERER_LOADERS: PresetRendererRegistry = {
     import("@/components/proposals/_registry/adapters/field-engineering-adapter"),
   residential_wall_street: () =>
     import("@/components/proposals/_registry/adapters/wall-street-adapter"),
+  residential_cyanotype: () =>
+    import("@/components/proposals/_registry/adapters/cyanotype-adapter"),
   commercial_executive: () =>
     import("@/components/proposals/_registry/adapters/commercial-adapter"),
   commercial_ht: () =>
@@ -151,6 +163,9 @@ export function getPresetRendererLoader(
   }
   if (isWallStreetPresetId(presetId)) {
     return () => import("@/components/proposals/_registry/adapters/wall-street-adapter");
+  }
+  if (isCyanotypePresetId(presetId)) {
+    return () => import("@/components/proposals/_registry/adapters/cyanotype-adapter");
   }
   if (isLuxeNoirPresetId(presetId)) {
     return () => import("@/components/proposals/_registry/adapters/luxe-noir-adapter");

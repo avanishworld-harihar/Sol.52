@@ -38,6 +38,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
       {variant === "emerald" ? <EmeraldThumb size={size} /> : null}
       {variant === "field" ? <FieldThumb size={size} /> : null}
       {variant === "wall_street" ? <WallStreetThumb size={size} /> : null}
+      {variant === "cyanotype" ? <CyanotypeThumb size={size} /> : null}
       {![
         "golden",
         "pearl",
@@ -57,6 +58,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
         "emerald",
         "field",
         "wall_street",
+        "cyanotype",
       ].includes(variant) ? (
         <GenericThumb size={size} label={variant} />
       ) : null}
@@ -399,6 +401,53 @@ function EmeraldThumb({ size }: { size: "card" | "preview" }) {
             <br />
             Folio
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CyanotypeThumb({ size }: { size: "card" | "preview" }) {
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-[#0a2844]">
+      <div
+        className={cn(
+          "relative flex flex-col overflow-hidden rounded-[2px] border border-[#88CCEE] shadow-sm",
+          size === "preview" ? "h-[62%] w-[68%]" : "h-[58%] w-[72%]"
+        )}
+        style={{
+          backgroundColor: "#0F3B66",
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
+          backgroundSize: "8px 8px",
+        }}
+      >
+        <div
+          className={cn(
+            "border-b border-[#88CCEE] font-mono uppercase tracking-[0.14em] text-[#88CCEE]",
+            size === "preview" ? "px-[6%] py-[4%] text-[5px]" : "px-[6%] py-[5%] text-[2.5px]"
+          )}
+        >
+          CYANOTYPE
+        </div>
+        <div
+          className={cn(
+            "font-light uppercase leading-tight text-white",
+            size === "preview" ? "px-[6%] pt-[8%] text-[9px]" : "px-[6%] pt-[8%] text-[4px]"
+          )}
+        >
+          ROOFTOP
+          <br />
+          ELEVATION
+        </div>
+        <div
+          className={cn(
+            "mx-[6%] mt-auto grid grid-cols-2 gap-[4%] border-t border-[#88CCEE]/50 pb-[6%] pt-[4%]",
+            size === "preview" ? "text-[4px]" : "text-[2px]"
+          )}
+        >
+          <div className="border border-white/30 p-[6%] font-mono text-[#88CCEE]">kW</div>
+          <div className="border border-white/30 p-[6%] font-mono text-[#88CCEE]">₹</div>
         </div>
       </div>
     </div>

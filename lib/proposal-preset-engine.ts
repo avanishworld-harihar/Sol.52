@@ -12,7 +12,8 @@
  *   7. residential_emerald       — Emerald Signature split-folio
  *   8. residential_field         — Field Engineering survey drawing sheets
  *   9. residential_wall_street   — Wall Street Ledger salmon newsprint
- *  10. commercial_executive      — C&I commercial (hotel / hospital / industry…)
+ *  10. residential_cyanotype      — Cyanotype indigo blueprint drafting
+ *  11. commercial_executive      — C&I commercial (hotel / hospital / industry…)
  *
  * Removed residential presets remap via normalizePresetId → residential_executive.
  */
@@ -41,6 +42,7 @@ export const PROPOSAL_PRESET_IDS = [
   "residential_emerald",
   "residential_field",
   "residential_wall_street",
+  "residential_cyanotype",
   "commercial_executive",
   "commercial_ht",
 ] as const;
@@ -109,7 +111,8 @@ export function isResidentialDocumentPreset(presetId: ProposalPresetId): boolean
     presetId === "residential_quantum" ||
     presetId === "residential_emerald" ||
     presetId === "residential_field" ||
-    presetId === "residential_wall_street"
+    presetId === "residential_wall_street" ||
+    presetId === "residential_cyanotype"
   );
 }
 
@@ -255,6 +258,18 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     label: "Wall Street Ledger",
     description:
       "Salmon newsprint financial editorial — masthead, stock ticker, dotted ledger rows, and executive summary.",
+    bill_requirement: "optional",
+    theme_hint: "residential",
+    default_data_source: "requirement",
+    default_blocks: [],
+    optional_blocks: [],
+  },
+
+  residential_cyanotype: {
+    id: "residential_cyanotype",
+    label: "Cyanotype",
+    description:
+      "Deep indigo blueprint — drafting grid, dimension lines, crosshairs, and monospace data boxes.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "requirement",

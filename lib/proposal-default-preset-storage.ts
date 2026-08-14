@@ -11,6 +11,7 @@ export const RESIDENTIAL_TEMPLATE_PRESET_IDS = [
   "residential_emerald",
   "residential_field",
   "residential_wall_street",
+  "residential_cyanotype",
 ] as const;
 
 export type ResidentialTemplatePresetId = (typeof RESIDENTIAL_TEMPLATE_PRESET_IDS)[number];
@@ -73,6 +74,11 @@ export const RESIDENTIAL_TEMPLATE_OPTIONS: ResidentialTemplateOption[] = [
     id: "residential_wall_street",
     label: "Wall Street Ledger",
     subtitle: "Salmon newsprint — masthead, ticker bar, and dotted capital ledger.",
+  },
+  {
+    id: "residential_cyanotype",
+    label: "Cyanotype",
+    subtitle: "Indigo blueprint — drafting grid, dimension lines, and data boxes.",
   },
 ];
 

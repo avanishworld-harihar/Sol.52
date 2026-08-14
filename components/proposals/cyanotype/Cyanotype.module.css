@@ -1,0 +1,335 @@
+/**
+ * Cyanotype — deep indigo blueprint, drafting grid, dimension lines.
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;600&display=swap");
+
+@page cyanotype-sheet {
+  size: A4 portrait;
+  margin: 0;
+}
+
+.root {
+  --cy-blue: #0f3b66;
+  --cy-accent: #88ccee;
+  --cy-white: #ffffff;
+  --cy-mono: "Courier New", Courier, monospace;
+  --cy-sans: "Inter", system-ui, sans-serif;
+
+  background: #0a2844;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.root * {
+  box-sizing: border-box;
+}
+
+@media print {
+  .root :global(*),
+  .a4Blueprint :global(*) {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .root {
+    background: transparent;
+  }
+
+  .printBar {
+    display: none !important;
+  }
+
+  .a4Blueprint {
+    margin: 0 !important;
+    box-shadow: none !important;
+    page: cyanotype-sheet;
+  }
+}
+
+.printBar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  padding: 10px 16px;
+  background: rgba(15, 59, 102, 0.96);
+  border-bottom: 2px solid var(--cy-accent);
+}
+
+.printBarInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: min(210mm, 100%);
+}
+
+.printBarBrand {
+  font-family: var(--cy-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cy-accent);
+}
+
+.printBarBtn {
+  appearance: none;
+  border: 2px solid var(--cy-accent);
+  background: transparent;
+  color: var(--cy-white);
+  font-family: var(--cy-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.printBarBtn:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12mm;
+  padding: 12mm 8mm 20mm;
+}
+
+.a4Blueprint {
+  width: 210mm;
+  max-width: min(210mm, 100%);
+  height: 297mm;
+  min-height: 297mm;
+  background-color: var(--cy-blue);
+  color: var(--cy-white);
+  position: relative;
+  overflow: hidden;
+  font-family: var(--cy-mono);
+  page-break-after: always;
+  break-after: page;
+  padding: 10mm 12mm 12mm;
+  border: 2px solid var(--cy-accent);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+}
+
+.a4Blueprint:last-child {
+  page-break-after: auto;
+  break-after: auto;
+}
+
+.draftGrid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.draftGrid::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.2) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.2) 2px, transparent 2px);
+  background-size: 100px 100px;
+}
+
+.crosshair {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.crosshair::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  border-top: 1px solid var(--cy-white);
+}
+
+.crosshair::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  border-left: 1px solid var(--cy-white);
+}
+
+.chTL {
+  top: 20px;
+  left: 20px;
+}
+
+.chTR {
+  top: 20px;
+  right: 20px;
+}
+
+.chBL {
+  bottom: 20px;
+  left: 20px;
+}
+
+.chBR {
+  bottom: 20px;
+  right: 20px;
+}
+
+.contentWrapper {
+  position: relative;
+  z-index: 10;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.stamp {
+  border: 2px solid var(--cy-white);
+  padding: 8px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  margin-bottom: 8mm;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.stampDivider {
+  border-left: 1px solid var(--cy-white);
+  padding-left: 10px;
+}
+
+.dimensionLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--cy-accent);
+  margin-bottom: 5mm;
+  padding-bottom: 5px;
+}
+
+.dimArrow {
+  color: var(--cy-accent);
+  font-size: 1rem;
+}
+
+.dimText {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  color: var(--cy-accent);
+  text-transform: uppercase;
+  text-align: center;
+  flex: 1;
+  padding: 0 8px;
+}
+
+.blueprintTitle {
+  font-family: var(--cy-sans);
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
+  font-weight: 300;
+  text-transform: uppercase;
+  margin: 0 0 6mm;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.sectionTitle {
+  font-family: var(--cy-sans);
+  font-size: 1.4rem;
+  font-weight: 300;
+  text-transform: uppercase;
+  margin: 0 0 5mm;
+  letter-spacing: 0.06em;
+  color: var(--cy-accent);
+}
+
+.dataGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5mm;
+  margin-top: 5mm;
+}
+
+.dataGridSingle {
+  grid-template-columns: 1fr;
+}
+
+.dataBox {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 5mm;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dataBoxLabel {
+  font-size: 0.65rem;
+  color: var(--cy-accent);
+  display: block;
+  margin-bottom: 8px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.dataBoxValue {
+  font-family: var(--cy-sans);
+  font-size: clamp(1.6rem, 4vw, 2.6rem);
+  font-weight: 200;
+  line-height: 1.1;
+}
+
+.dataBoxValueSm {
+  font-size: clamp(1rem, 2.5vw, 1.35rem);
+}
+
+.bodyCopy {
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.92);
+  margin: 0 0 4mm;
+}
+
+.pageFooter {
+  margin-top: auto;
+  border-top: 1px solid var(--cy-accent);
+  padding-top: 8px;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cy-accent);
+  text-align: center;
+}
+
+.loading {
+  padding: 48px;
+  text-align: center;
+  font-family: var(--cy-mono);
+  color: var(--cy-accent);
+}
+
+@media screen and (max-width: 900px) {
+  .a4Blueprint {
+    height: auto;
+    min-height: 0;
+  }
+
+  .dataGrid {
+    grid-template-columns: 1fr;
+  }
+}

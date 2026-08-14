@@ -36,7 +36,7 @@ export const PROPOSAL_TEMPLATE_CATEGORIES: ProposalTemplateCategoryMeta[] = [
   {
     id: "residential",
     label: "Residential",
-    description: "Homes & rooftops — Golden, Zenith, Atelier, Premium Luxe, Canvas, Quantum, Emerald, Field Engineering, or Wall Street Ledger.",
+    description: "Homes & rooftops — Golden, Zenith, Atelier, Premium Luxe, Canvas, Quantum, Emerald, Field Engineering, Wall Street Ledger, or Cyanotype.",
   },
   {
     id: "commercial",
@@ -124,6 +124,15 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
       "Salmon newsprint financial editorial — masthead, stock ticker, two-column copy, and dotted ledger rows.",
     thumbnailVariant: "wall_street",
   },
+  {
+    key: "cyanotype",
+    presetId: "residential_cyanotype",
+    category: "residential",
+    name: "Cyanotype",
+    description:
+      "Deep indigo blueprint — drafting grid, dimension lines, crosshairs, and monospace capital data boxes.",
+    thumbnailVariant: "cyanotype",
+  },
 ];
 
 /** Commercial themes — Executive (LT / C&I) and HT Industrial (HV ToD/PF). */
@@ -194,6 +203,7 @@ export function resolveActiveGalleryKey(
   if (presetId === "residential_emerald") return "emerald";
   if (presetId === "residential_field") return "field";
   if (presetId === "residential_wall_street") return "wall_street";
+  if (presetId === "residential_cyanotype") return "cyanotype";
   return "zenith";
 }
 

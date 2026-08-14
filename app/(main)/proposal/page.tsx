@@ -1802,6 +1802,8 @@ function ProposalPageContent() {
                   ? { galleryThemeKey: "field" }
                 : osPresetId === "residential_wall_street"
                   ? { galleryThemeKey: "wall_street" }
+                : osPresetId === "residential_cyanotype"
+                  ? { galleryThemeKey: "cyanotype" }
                   : osPresetId === "residential_executive"
                   ? { galleryThemeKey: "golden" }
                   : {}),
@@ -2430,6 +2432,9 @@ function ProposalPageContent() {
                         : preset === "residential_wall_street" ||
                             preset === "wall_street"
                           ? "residential_wall_street"
+                        : preset === "residential_cyanotype" ||
+                            preset === "cyanotype"
+                          ? "residential_cyanotype"
                         : preset === "residential_executive"
                         ? "residential_executive"
                         : "residential_executive";

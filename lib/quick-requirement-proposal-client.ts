@@ -48,6 +48,9 @@ export function resolveQuickQuotePresetOptions(): {
   if (presetId === "residential_wall_street") {
     return { presetId, galleryThemeKey: "wall_street" };
   }
+  if (presetId === "residential_cyanotype") {
+    return { presetId, galleryThemeKey: "cyanotype" };
+  }
   if (presetId === "residential_executive") {
     return { presetId, galleryThemeKey: "golden" };
   }

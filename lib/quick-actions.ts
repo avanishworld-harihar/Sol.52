@@ -108,6 +108,11 @@ export function parsePrefillFromSearchParams(params: URLSearchParams): BuilderPr
     preset === "wall_street"
   ) {
     prefill.preset = "residential_wall_street";
+  } else if (
+    preset === "residential_cyanotype" ||
+    preset === "cyanotype"
+  ) {
+    prefill.preset = "residential_cyanotype";
   } else if (preset === "commercial_executive" || preset === "commercial") {
     prefill.preset = "commercial_executive";
   } else if (preset) {

@@ -82,6 +82,7 @@ export type PresetAffinity =
       | "residential_emerald"
       | "residential_field"
       | "residential_wall_street"
+      | "residential_cyanotype"
     >;
 
 export type ProposalBlockMeta = {
