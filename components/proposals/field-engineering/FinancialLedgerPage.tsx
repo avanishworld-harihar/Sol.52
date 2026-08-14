@@ -2,11 +2,17 @@
 
 import type { ProposalData } from "@/lib/proposal-data";
 import { DrawingSheet } from "./DrawingSheet";
+import { GeneralNotes } from "./GeneralNotes";
 import styles from "./Field.module.css";
-import { fieldSheetMeta } from "./field-live";
+import { fieldDrawingSheetProps } from "./field-live";
 
-export function FinancialLedgerPage({ data }: { data: ProposalData }) {
-  const sheet = fieldSheetMeta(data);
+export function FinancialLedgerPage({
+  data,
+  proposalId,
+}: {
+  data: ProposalData;
+  proposalId?: string;
+}) {
   const gross = data.economics.grossInr;
   const subsidy = data.economics.subsidyInr;
   const net = data.economics.netInr;
@@ -17,18 +23,19 @@ export function FinancialLedgerPage({ data }: { data: ProposalData }) {
     data.closing.lifetimeWealthInr > 0
       ? data.closing.lifetimeWealthInr
       : data.economics.lifetimeProfitInr;
+  const payments = (data.execution.payments ?? []).filter((p) => p.label?.trim());
 
   const rupee = (n: number) => (n > 0 ? `₹${Math.round(n).toLocaleString("en-IN")}` : "—");
 
   return (
     <DrawingSheet
-      dwgNo="FE-06"
-      sheetLabel="FINANCIAL ENGINEERING LEDGER"
-      pageOf="06 / 09"
-      familyName={sheet.familyName}
-      scale="—"
-      date={sheet.date}
-      preparedBy={sheet.preparedBy}
+      {...fieldDrawingSheetProps({
+        data,
+        proposalId,
+        dwgNo: "FE-06",
+        sheetLabel: "FINANCIAL ENGINEERING LEDGER",
+        page: 7,
+      })}
     >
       <div className={styles.eyebrow}>Investment Calculation</div>
       <h2 className={styles.h2}>
@@ -54,9 +61,7 @@ export function FinancialLedgerPage({ data }: { data: ProposalData }) {
             <tr>
               <td>Subsidy (credited later)</td>
               <td className={`${styles.mono} ${styles.note}`}>B</td>
-              <td className={styles.mono}>
-                −₹{Math.round(subsidy).toLocaleString("en-IN")}
-              </td>
+              <td className={styles.mono}>−₹{Math.round(subsidy).toLocaleString("en-IN")}</td>
             </tr>
           ) : null}
           <tr className={styles.totalRow}>
@@ -69,7 +74,7 @@ export function FinancialLedgerPage({ data }: { data: ProposalData }) {
         </tbody>
       </table>
 
-      <h2 className={styles.h2} style={{ marginTop: "12mm" }}>
+      <h2 className={styles.h2} style={{ marginTop: "10mm" }}>
         Payback Calculation <span className={styles.tag}>D ÷ Annual Savings = Years</span>
       </h2>
       <table className={styles.table}>
@@ -97,11 +102,40 @@ export function FinancialLedgerPage({ data }: { data: ProposalData }) {
         </tbody>
       </table>
 
-      <p className={styles.note} style={{ marginTop: "6mm" }}>
-        Stage payments stay on gross (A). Subsidy, when present, is credited later
-        and is not split into central vs state unless those amounts exist on this
-        proposal. Tariff is not invented.
-      </p>
+      {payments.length > 0 ? (
+        <>
+          <h2 className={styles.h2} style={{ marginTop: "8mm" }}>
+            Stage payments <span className={styles.tag}>on gross · cross-ref FE-08 / FE-09</span>
+          </h2>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Milestone</th>
+                <th>%</th>
+                <th>Amount (₹)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {payments.map((p) => (
+                <tr key={p.label}>
+                  <td>{p.label}</td>
+                  <td className={styles.mono}>{p.pctLabel || "—"}</td>
+                  <td className={styles.mono}>
+                    {p.amountInr > 0 ? rupee(p.amountInr) : "—"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      ) : null}
+
+      <GeneralNotes
+        extra={[
+          "Stage payments stay on gross (A). Subsidy is credited later when on file.",
+          "Acceptance on FE-09 references this ledger and the install sequence on FE-08.",
+        ]}
+      />
     </DrawingSheet>
   );
 }

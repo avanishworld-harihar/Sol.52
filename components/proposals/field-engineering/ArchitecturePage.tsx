@@ -2,28 +2,42 @@
 
 import type { ProposalData } from "@/lib/proposal-data";
 import { DrawingSheet } from "./DrawingSheet";
+import { GeneralNotes } from "./GeneralNotes";
 import styles from "./Field.module.css";
-import { fieldLiveBom, fieldSheetMeta, formatFieldKw, resolveFieldPanelSpec } from "./field-live";
+import {
+  fieldDrawingSheetProps,
+  fieldLiveBom,
+  formatFieldKw,
+  resolveFieldPanelSpec,
+  resolveFieldStringing,
+} from "./field-live";
 
 const NODES = ["Solar Array", "DC Combiner", "Inverter", "AC Distribution", "Net Meter", "DISCOM Grid"];
 
-export function ArchitecturePage({ data }: { data: ProposalData }) {
-  const sheet = fieldSheetMeta(data);
+export function ArchitecturePage({
+  data,
+  proposalId,
+}: {
+  data: ProposalData;
+  proposalId?: string;
+}) {
   const systemKw = Number(data.meta.systemKw) || 0;
   const { modules, watt, dcKwp } = resolveFieldPanelSpec(data);
   const bom = fieldLiveBom(data).slice(0, 6);
   const ac = formatFieldKw(systemKw, 1);
   const dc = dcKwp > 0 ? formatFieldKw(dcKwp) : "—";
+  const stringing = resolveFieldStringing(data);
 
   return (
     <DrawingSheet
-      dwgNo="FE-04"
-      sheetLabel="SYSTEM ARCHITECTURE — SINGLE LINE"
-      pageOf="04 / 09"
-      familyName={sheet.familyName}
-      scale="NTS"
-      date={sheet.date}
-      preparedBy={sheet.preparedBy}
+      {...fieldDrawingSheetProps({
+        data,
+        proposalId,
+        dwgNo: "FE-04",
+        sheetLabel: "SYSTEM ARCHITECTURE — SINGLE LINE",
+        page: 5,
+        scale: "NTS",
+      })}
     >
       <div className={styles.eyebrow}>System Engineering</div>
       <h2 className={styles.h2}>
@@ -94,12 +108,44 @@ export function ArchitecturePage({ data }: { data: ProposalData }) {
         </text>
       </svg>
 
+      {stringing ? (
+        <div className={styles.stringingBlock}>
+          <h2 className={styles.h2} style={{ marginBottom: "3mm", fontSize: "15px" }}>
+            DC stringing <span className={styles.tag}>MPPT allocation · live module count</span>
+          </h2>
+          <svg viewBox="0 0 520 72" className={styles.diagram} style={{ marginTop: 0 }} role="img">
+            {stringing.tracks.map((t, i) => {
+              const x = 12 + i * 160;
+              return (
+                <g key={t.track}>
+                  <rect
+                    x={x}
+                    y="8"
+                    width="140"
+                    height="36"
+                    fill="none"
+                    stroke="var(--eng-signal)"
+                    strokeWidth="1.6"
+                  />
+                  <text x={x + 8} y="24" className={styles.dimText} fontWeight="700">
+                    MPPT {t.track}
+                  </text>
+                  <text x={x + 8} y="38" className={styles.dimText}>
+                    {t.label}
+                  </text>
+                </g>
+              );
+            })}
+          </svg>
+        </div>
+      ) : null}
+
       {bom.length === 0 ? (
-        <p className={styles.note} style={{ marginTop: "10mm" }}>
+        <p className={styles.note} style={{ marginTop: "8mm" }}>
           No BOM lines on this proposal.
         </p>
       ) : (
-        <table className={styles.table} style={{ marginTop: "10mm" }}>
+        <table className={styles.table} style={{ marginTop: stringing ? "4mm" : "8mm" }}>
           <thead>
             <tr>
               <th>Component</th>
@@ -120,10 +166,15 @@ export function ArchitecturePage({ data }: { data: ProposalData }) {
           </tbody>
         </table>
       )}
-      <p className={styles.note} style={{ marginTop: "6mm" }}>
-        Specs are the live BOM on this proposal. Datasheets and listed standards
-        appear on FE-07 when they exist on file.
-      </p>
+
+      <GeneralNotes
+        extra={[
+          stringing
+            ? `String split assumes ${stringing.mpptCount} MPPT track(s) from inverter BOM — verify on site.`
+            : "Stringing diagram appears when module count and inverter are on the BOM.",
+          "Full compliance standards listed on FE-07 when on file.",
+        ]}
+      />
     </DrawingSheet>
   );
 }

@@ -19,9 +19,18 @@ export type FieldRendererProps = {
   data: ProposalData;
   installerLogoUrl?: string;
   proposalId?: string;
+  siteImages?: string[];
 };
 
-function FieldDocument({ data, proposalId }: { data: ProposalData; proposalId?: string }) {
+function FieldDocument({
+  data,
+  proposalId,
+  siteImages,
+}: {
+  data: ProposalData;
+  proposalId?: string;
+  siteImages?: string[];
+}) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
 
@@ -54,7 +63,7 @@ function FieldDocument({ data, proposalId }: { data: ProposalData; proposalId?: 
     >
       <div className={styles.printBar}>
         <div className={styles.printBarInner}>
-          <span className={styles.printBarBrand}>Field Engineering · FE-01…09</span>
+          <span className={styles.printBarBrand}>Field Engineering · FE-00…09</span>
           <button
             type="button"
             className={styles.printBarBtn}
@@ -65,16 +74,16 @@ function FieldDocument({ data, proposalId }: { data: ProposalData; proposalId?: 
           </button>
         </div>
       </div>
-      <FieldProposal data={data} proposalId={proposalId} />
+      <FieldProposal data={data} proposalId={proposalId} siteImages={siteImages} />
     </div>
   );
 }
 
-export function FieldRenderer({ data, proposalId }: FieldRendererProps) {
+export function FieldRenderer({ data, proposalId, siteImages }: FieldRendererProps) {
   if (!data) {
     return <div className={styles.loading}>Preparing Field Engineering…</div>;
   }
-  return <FieldDocument data={data} proposalId={proposalId} />;
+  return <FieldDocument data={data} proposalId={proposalId} siteImages={siteImages} />;
 }
 
 export default FieldRenderer;

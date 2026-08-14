@@ -2,8 +2,9 @@
 
 import type { ProposalData } from "@/lib/proposal-data";
 import { DrawingSheet } from "./DrawingSheet";
+import { GeneralNotes } from "./GeneralNotes";
 import styles from "./Field.module.css";
-import { fieldSheetMeta } from "./field-live";
+import { fieldDrawingSheetProps } from "./field-live";
 
 const DEFAULT_PHASES = [
   "Survey",
@@ -14,10 +15,16 @@ const DEFAULT_PHASES = [
   "Net-meter",
 ];
 
-export function TimelinePage({ data }: { data: ProposalData }) {
-  const sheet = fieldSheetMeta(data);
+export function TimelinePage({
+  data,
+  proposalId,
+}: {
+  data: ProposalData;
+  proposalId?: string;
+}) {
   const steps = (data.execution.steps ?? []).filter((s) => s.title?.trim());
   const phases = steps.length > 0 ? steps.slice(0, 6).map((s) => s.title) : DEFAULT_PHASES;
+  const payments = (data.execution.payments ?? []).filter((p) => p.label?.trim());
   const chartW = 480;
   const rowH = 22;
   const chartH = phases.length * rowH + 8;
@@ -25,13 +32,13 @@ export function TimelinePage({ data }: { data: ProposalData }) {
 
   return (
     <DrawingSheet
-      dwgNo="FE-08"
-      sheetLabel="INSTALLATION TIMELINE"
-      pageOf="08 / 09"
-      familyName={sheet.familyName}
-      scale="—"
-      date={sheet.date}
-      preparedBy={sheet.preparedBy}
+      {...fieldDrawingSheetProps({
+        data,
+        proposalId,
+        dwgNo: "FE-08",
+        sheetLabel: "INSTALLATION TIMELINE",
+        page: 9,
+      })}
     >
       <div className={styles.eyebrow}>Works Sequence</div>
       <h2 className={styles.h2}>
@@ -52,23 +59,16 @@ export function TimelinePage({ data }: { data: ProposalData }) {
           return (
             <g key={`${title}-${i}`}>
               <text x="0" y={y + 12} className={styles.dimText}>
-                {String(i + 1).padStart(2, "0")}  {title}
+                {String(i + 1).padStart(2, "0")} {title}
               </text>
-              <rect
-                x={x}
-                y={y + 4}
-                width={w}
-                height="12"
-                fill="var(--eng-signal)"
-                opacity="0.85"
-              />
+              <rect x={x} y={y + 4} width={w} height="12" fill="var(--eng-signal)" opacity="0.85" />
             </g>
           );
         })}
       </svg>
 
       {steps.length > 0 ? (
-        <table className={styles.table} style={{ marginTop: "8mm" }}>
+        <table className={styles.table} style={{ marginTop: "6mm" }}>
           <thead>
             <tr>
               <th>#</th>
@@ -87,11 +87,40 @@ export function TimelinePage({ data }: { data: ProposalData }) {
           </tbody>
         </table>
       ) : (
-        <p className={styles.note} style={{ marginTop: "6mm" }}>
-          Bars show the typical field sequence. Duration weeks are not invented
-          when this proposal has no execution plan.
+        <p className={styles.note} style={{ marginTop: "4mm" }}>
+          Bars show the typical field sequence. Duration weeks are not invented when
+          this proposal has no execution plan.
         </p>
       )}
+
+      {payments.length > 0 ? (
+        <table className={styles.table} style={{ marginTop: "6mm" }}>
+          <thead>
+            <tr>
+              <th>Payment gate</th>
+              <th>Linked ledger</th>
+            </tr>
+          </thead>
+          <tbody>
+            {payments.slice(0, 4).map((p) => (
+              <tr key={p.label}>
+                <td>
+                  {p.label}
+                  {p.pctLabel ? ` (${p.pctLabel})` : ""}
+                </td>
+                <td className={styles.note}>FE-06 gross milestone · FE-09 sign-off</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : null}
+
+      <GeneralNotes
+        extra={[
+          "Install sequence aligns with payment gates on FE-06 when milestones exist.",
+          "Calendar durations are not invented on this schematic Gantt.",
+        ]}
+      />
     </DrawingSheet>
   );
 }

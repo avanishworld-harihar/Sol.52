@@ -11,12 +11,14 @@ export default function FieldEngineeringAdapter({
   data,
   installerLogoUrl,
   proposalId,
+  siteImages,
 }: PresetRendererProps) {
   return (
     <FieldRenderer
       data={data}
       installerLogoUrl={installerLogoUrl}
       proposalId={proposalId}
+      siteImages={siteImages}
     />
   );
 }

@@ -119,3 +119,119 @@ export function fieldSheetMeta(data: ProposalData) {
     preparedBy: fieldDrawnBy(data),
   };
 }
+
+/** Ten-sheet set: FE-00 register through FE-09 acceptance. */
+export const FIELD_SHEET_TOTAL = 10;
+
+export const FIELD_REGISTER = [
+  { dwgNo: "FE-00", title: "DRAWING REGISTER / INDEX", page: 1 },
+  { dwgNo: "FE-01", title: "COVER / SYSTEM SPEC SHEET", page: 2 },
+  { dwgNo: "FE-02", title: "FAMILY ENERGY LOAD PROFILE", page: 3 },
+  { dwgNo: "FE-03", title: "SITE SURVEY & ROOF SCHEMATIC", page: 4 },
+  { dwgNo: "FE-04", title: "SYSTEM ARCHITECTURE — SINGLE LINE", page: 5 },
+  { dwgNo: "FE-05", title: "PERFORMANCE SIMULATION", page: 6 },
+  { dwgNo: "FE-06", title: "FINANCIAL ENGINEERING LEDGER", page: 7 },
+  { dwgNo: "FE-07", title: "COMPLIANCE & CERTIFICATION", page: 8 },
+  { dwgNo: "FE-08", title: "INSTALLATION TIMELINE", page: 9 },
+  { dwgNo: "FE-09", title: "ACCEPTANCE / SIGN-OFF", page: 10 },
+] as const;
+
+export function fieldPageOf(page: number): string {
+  const p = Math.max(1, Math.min(page, FIELD_SHEET_TOTAL));
+  return `${String(p).padStart(2, "0")} / ${String(FIELD_SHEET_TOTAL).padStart(2, "0")}`;
+}
+
+export function fieldRevision(): string {
+  return "Rev A";
+}
+
+export type FieldDrawingContext = {
+  data: ProposalData;
+  proposalId?: string;
+  dwgNo: string;
+  sheetLabel: string;
+  page: number;
+  scale?: string;
+  verified?: boolean;
+};
+
+export function fieldDrawingSheetProps(ctx: FieldDrawingContext) {
+  const sheet = fieldSheetMeta(ctx.data);
+  return {
+    dwgNo: ctx.dwgNo,
+    sheetLabel: ctx.sheetLabel,
+    pageOf: fieldPageOf(ctx.page),
+    familyName: sheet.familyName,
+    scale: ctx.scale ?? "—",
+    date: sheet.date,
+    preparedBy: sheet.preparedBy,
+    revision: fieldRevision(),
+    docId: fieldDocNo(ctx.proposalId, ctx.data.meta.generatedAt),
+    verified: ctx.verified,
+  };
+}
+
+export const FIELD_DEFAULT_NOTES = [
+  "Dimensions NTS unless a site survey dimension is recorded on FE-03.",
+  "Stage payments follow FE-06 on gross; subsidy is credited later when on file.",
+  "Spec values are live on this proposal — blank cells are not invented.",
+] as const;
+
+export type FieldStringTrack = {
+  track: number;
+  modules: number;
+  label: string;
+};
+
+export function resolveFieldStringing(data: ProposalData): {
+  mpptCount: number;
+  tracks: FieldStringTrack[];
+} | null {
+  const { modules, watt, inverterItem } = resolveFieldPanelSpec(data);
+  if (modules <= 0) return null;
+
+  const invText = bomText(inverterItem);
+  const mpptMatch = invText.match(/MPPT\s*[×x]?\s*(\d+)/i);
+  let mpptCount = mpptMatch ? Math.max(1, Number(mpptMatch[1])) : 0;
+  if (mpptCount <= 0 && inverterItem) {
+    mpptCount = modules > 12 ? 2 : 1;
+  }
+  if (mpptCount <= 0) return null;
+
+  const base = Math.floor(modules / mpptCount);
+  const rem = modules % mpptCount;
+  const tracks: FieldStringTrack[] = [];
+  for (let i = 0; i < mpptCount; i++) {
+    const count = base + (i < rem ? 1 : 0);
+    tracks.push({
+      track: i + 1,
+      modules: count,
+      label: watt > 0 ? `${count}×${watt}W` : `${count} mod`,
+    });
+  }
+  return { mpptCount, tracks };
+}
+
+export function fieldBillUnitsTotal(data: ProposalData): number {
+  const fromTotals = data.bill.totals?.units ?? 0;
+  if (fromTotals > 0) return Math.round(fromTotals);
+  const months = data.bill.months ?? [];
+  const sum = months.reduce((s, m) => s + (m.units > 0 ? m.units : 0), 0);
+  return sum > 0 ? Math.round(sum) : 0;
+}
+
+export function fieldLoadCoverage(data: ProposalData): {
+  billUnits: number;
+  genUnits: number;
+  coveragePct: number | null;
+  surplusUnits: number | null;
+} {
+  const billUnits = fieldBillUnitsTotal(data);
+  const genUnits = fieldAnnualUnits(data);
+  if (billUnits > 0 && genUnits > 0) {
+    const coveragePct = Math.min(100, Math.round((genUnits / billUnits) * 100));
+    const surplusUnits = genUnits > billUnits ? genUnits - billUnits : null;
+    return { billUnits, genUnits, coveragePct, surplusUnits };
+  }
+  return { billUnits, genUnits, coveragePct: null, surplusUnits: null };
+}

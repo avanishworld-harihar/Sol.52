@@ -2,8 +2,9 @@
 
 import type { ProposalData } from "@/lib/proposal-data";
 import { DrawingSheet } from "./DrawingSheet";
+import { GeneralNotes } from "./GeneralNotes";
 import styles from "./Field.module.css";
-import { fieldSheetMeta } from "./field-live";
+import { fieldDrawingSheetProps } from "./field-live";
 
 const DISCOM_STEPS = [
   "Site survey recorded",
@@ -12,22 +13,27 @@ const DISCOM_STEPS = [
   "Meter installation & commissioning",
 ];
 
-export function CompliancePage({ data }: { data: ProposalData }) {
-  const sheet = fieldSheetMeta(data);
+export function CompliancePage({
+  data,
+  proposalId,
+}: {
+  data: ProposalData;
+  proposalId?: string;
+}) {
   const standards = (data.engineering.standards ?? []).filter((s) => s.trim());
   const warranty = (data.warranty.rows ?? []).filter((r) => r.item?.trim());
   const highlights = (data.warranty.highlights ?? []).filter((h) => h.label?.trim());
 
   return (
     <DrawingSheet
-      dwgNo="FE-07"
-      sheetLabel="COMPLIANCE & CERTIFICATION"
-      pageOf="07 / 09"
-      familyName={sheet.familyName}
-      scale="—"
-      date={sheet.date}
-      preparedBy={sheet.preparedBy}
-      verified
+      {...fieldDrawingSheetProps({
+        data,
+        proposalId,
+        dwgNo: "FE-07",
+        sheetLabel: "COMPLIANCE & CERTIFICATION",
+        page: 8,
+        verified: true,
+      })}
     >
       <div className={styles.eyebrow}>Certification Sheet</div>
       <h2 className={styles.h2}>
@@ -66,7 +72,7 @@ export function CompliancePage({ data }: { data: ProposalData }) {
       </table>
 
       {standards.length > 0 ? (
-        <table className={styles.table} style={{ marginTop: "8mm" }}>
+        <table className={styles.table} style={{ marginTop: "6mm" }}>
           <thead>
             <tr>
               <th>#</th>
@@ -74,7 +80,7 @@ export function CompliancePage({ data }: { data: ProposalData }) {
             </tr>
           </thead>
           <tbody>
-            {standards.slice(0, 6).map((s, i) => (
+            {standards.slice(0, 5).map((s, i) => (
               <tr key={`${s}-${i}`}>
                 <td className={styles.mono}>{String(i + 1).padStart(2, "0")}</td>
                 <td>{s}</td>
@@ -85,7 +91,7 @@ export function CompliancePage({ data }: { data: ProposalData }) {
       ) : null}
 
       {warranty.length > 0 || highlights.length > 0 ? (
-        <table className={styles.table} style={{ marginTop: "8mm" }}>
+        <table className={styles.table} style={{ marginTop: "6mm" }}>
           <thead>
             <tr>
               <th>Warranty</th>
@@ -94,7 +100,7 @@ export function CompliancePage({ data }: { data: ProposalData }) {
             </tr>
           </thead>
           <tbody>
-            {warranty.slice(0, 5).map((row) => (
+            {warranty.slice(0, 4).map((row) => (
               <tr key={row.item}>
                 <td>{row.item}</td>
                 <td className={styles.mono}>{row.duration || "—"}</td>
@@ -102,7 +108,7 @@ export function CompliancePage({ data }: { data: ProposalData }) {
               </tr>
             ))}
             {warranty.length === 0
-              ? highlights.slice(0, 4).map((h) => (
+              ? highlights.slice(0, 3).map((h) => (
                   <tr key={h.label}>
                     <td>{h.label}</td>
                     <td className={styles.mono}>
@@ -116,7 +122,7 @@ export function CompliancePage({ data }: { data: ProposalData }) {
         </table>
       ) : null}
 
-      <h2 className={styles.h2} style={{ marginTop: "8mm" }}>
+      <h2 className={styles.h2} style={{ marginTop: "6mm" }}>
         DISCOM net-metering steps <span className={styles.tag}>sequence</span>
       </h2>
       <table className={styles.table}>
@@ -135,6 +141,8 @@ export function CompliancePage({ data }: { data: ProposalData }) {
           ))}
         </tbody>
       </table>
+
+      <GeneralNotes extra={["VERIFIED stamp on this sheet indicates compliance review against the live BOM."]} />
     </DrawingSheet>
   );
 }

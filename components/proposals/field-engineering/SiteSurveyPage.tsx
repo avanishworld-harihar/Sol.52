@@ -2,8 +2,9 @@
 
 import type { ProposalData } from "@/lib/proposal-data";
 import { DrawingSheet } from "./DrawingSheet";
+import { GeneralNotes } from "./GeneralNotes";
 import styles from "./Field.module.css";
-import { fieldSheetMeta, resolveFieldPanelSpec } from "./field-live";
+import { fieldDrawingSheetProps, resolveFieldPanelSpec } from "./field-live";
 
 function roofGrid(count: number): { cols: number; shown: number } {
   const shown = count > 0 ? Math.min(count, 12) : 0;
@@ -12,8 +13,15 @@ function roofGrid(count: number): { cols: number; shown: number } {
   return { cols, shown };
 }
 
-export function SiteSurveyPage({ data }: { data: ProposalData }) {
-  const sheet = fieldSheetMeta(data);
+export function SiteSurveyPage({
+  data,
+  proposalId,
+  siteImages,
+}: {
+  data: ProposalData;
+  proposalId?: string;
+  siteImages?: string[];
+}) {
   const { modules, watt, structureItem } = resolveFieldPanelSpec(data);
   const { cols, shown } = roofGrid(modules);
   const extra = modules > shown ? modules - shown : 0;
@@ -25,16 +33,18 @@ export function SiteSurveyPage({ data }: { data: ProposalData }) {
   const site = data.meta.locationLine?.trim() || "—";
   const tiltNote = data.engineering.tiltNote?.trim() || "";
   const city = data.engineering.cityLabel?.trim() || "";
+  const photos = (siteImages ?? []).filter(Boolean).slice(0, 2);
 
   return (
     <DrawingSheet
-      dwgNo="FE-03"
-      sheetLabel="SITE SURVEY & ROOF SCHEMATIC"
-      pageOf="03 / 09"
-      familyName={sheet.familyName}
-      scale="NTS"
-      date={sheet.date}
-      preparedBy={sheet.preparedBy}
+      {...fieldDrawingSheetProps({
+        data,
+        proposalId,
+        dwgNo: "FE-03",
+        sheetLabel: "SITE SURVEY & ROOF SCHEMATIC",
+        page: 4,
+        scale: "NTS",
+      })}
     >
       <div className={styles.eyebrow}>Site Engineering Assessment</div>
       <h2 className={styles.h2}>
@@ -42,7 +52,7 @@ export function SiteSurveyPage({ data }: { data: ProposalData }) {
       </h2>
 
       <svg
-        viewBox="0 0 520 320"
+        viewBox="0 0 520 280"
         className={styles.diagram}
         style={{ marginTop: 0 }}
         role="img"
@@ -131,7 +141,21 @@ export function SiteSurveyPage({ data }: { data: ProposalData }) {
         ) : null}
       </svg>
 
-      <table className={styles.table} style={{ marginTop: "10mm" }}>
+      {photos.length > 0 ? (
+        <div className={styles.photoAnnex}>
+          {photos.map((src, i) => (
+            <figure key={src} className={styles.photoFrame}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={src} alt={`Site survey photo ${i + 1}`} />
+              <figcaption className={styles.photoCaption}>
+                Survey photo {i + 1} — roof / array zone
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      ) : null}
+
+      <table className={styles.table} style={{ marginTop: photos.length > 0 ? "4mm" : "6mm" }}>
         <thead>
           <tr>
             <th>Parameter</th>
@@ -160,13 +184,20 @@ export function SiteSurveyPage({ data }: { data: ProposalData }) {
             <td className={styles.mono}>{tiltLabel}</td>
             <td className={styles.note}>{tiltNote || "Only if recorded"}</td>
           </tr>
+          <tr>
+            <td>Survey photos</td>
+            <td className={styles.mono}>{photos.length > 0 ? `${photos.length} on file` : "—"}</td>
+            <td className={styles.note}>Evidence annex when uploaded</td>
+          </tr>
         </tbody>
       </table>
-      <p className={styles.note} style={{ marginTop: "4mm" }}>
-        Roof metres, azimuth, and shading loss are not invented. Dimension lines
-        mark the drawing, not a measured span, unless a site survey is on the
-        proposal.
-      </p>
+
+      <GeneralNotes
+        extra={[
+          "Photo annex shows uploaded site images only — not stock photography.",
+          "Azimuth and measured roof spans are not invented on this sheet.",
+        ]}
+      />
     </DrawingSheet>
   );
 }

@@ -444,6 +444,80 @@
   font-size: 10px;
 }
 
+.generalNotes {
+  margin-top: auto;
+  padding-top: 5mm;
+  border-top: 1.5px solid var(--eng-grid);
+}
+
+.generalNotesTitle {
+  font-family: var(--eng-font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--eng-ink-faint);
+  font-weight: 700;
+  margin-bottom: 2mm;
+}
+
+.generalNotesList {
+  margin: 0;
+  padding-left: 4.5mm;
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--eng-ink-faint);
+}
+
+.generalNotesList li {
+  margin-bottom: 1mm;
+}
+
+.photoAnnex {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4mm;
+  margin-top: 6mm;
+}
+
+.photoFrame {
+  border: 1.5px solid var(--eng-border);
+  background: var(--eng-sheet);
+  overflow: hidden;
+  min-height: 36mm;
+}
+
+.photoFrame img {
+  display: block;
+  width: 100%;
+  height: 36mm;
+  object-fit: cover;
+}
+
+.photoCaption {
+  padding: 2mm 2.5mm;
+  font-family: var(--eng-font-mono);
+  font-size: 9px;
+  color: var(--eng-signal);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-top: 1px solid var(--eng-grid);
+}
+
+.stringingBlock {
+  margin-top: 6mm;
+  padding-top: 4mm;
+  border-top: 1.5px dashed var(--eng-grid);
+}
+
+.reconStrip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 2px solid var(--eng-border);
+  background: var(--eng-sheet);
+  margin-top: 6mm;
+}
+
 .loading {
   padding: 48px;
   text-align: center;
@@ -458,6 +532,8 @@
 
   .specStrip,
   .spec3,
+  .reconStrip,
+  .photoAnnex,
   .titleBlock,
   .signGrid {
     grid-template-columns: 1fr 1fr;

@@ -2,18 +2,24 @@
 
 import type { ProposalData } from "@/lib/proposal-data";
 import { DrawingSheet } from "./DrawingSheet";
+import { GeneralNotes } from "./GeneralNotes";
 import styles from "./Field.module.css";
 import { buildFieldForecastMonths } from "./field-forecast";
 import {
   fieldAnnualUnits,
+  fieldDrawingSheetProps,
   fieldMetric,
-  fieldSheetMeta,
   formatFieldKw,
   resolveFieldPanelSpec,
 } from "./field-live";
 
-export function PerformancePage({ data }: { data: ProposalData }) {
-  const sheet = fieldSheetMeta(data);
+export function PerformancePage({
+  data,
+  proposalId,
+}: {
+  data: ProposalData;
+  proposalId?: string;
+}) {
   const annual = fieldAnnualUnits(data);
   const monthly = buildFieldForecastMonths(annual);
   const max = Math.max(...monthly.map((d) => d.val), 1);
@@ -31,13 +37,13 @@ export function PerformancePage({ data }: { data: ProposalData }) {
 
   return (
     <DrawingSheet
-      dwgNo="FE-05"
-      sheetLabel="PERFORMANCE SIMULATION"
-      pageOf="05 / 09"
-      familyName={sheet.familyName}
-      scale="—"
-      date={sheet.date}
-      preparedBy={sheet.preparedBy}
+      {...fieldDrawingSheetProps({
+        data,
+        proposalId,
+        dwgNo: "FE-05",
+        sheetLabel: "PERFORMANCE SIMULATION",
+        page: 6,
+      })}
     >
       <div className={styles.eyebrow}>Generation Modelling</div>
       <h2 className={styles.h2}>
@@ -62,13 +68,7 @@ export function PerformancePage({ data }: { data: ProposalData }) {
           const x = i * (barW + gap);
           return (
             <g key={d.m}>
-              <rect
-                x={x}
-                y={chartH - h}
-                width={barW}
-                height={h}
-                fill="var(--eng-signal)"
-              />
+              <rect x={x} y={chartH - h} width={barW} height={h} fill="var(--eng-signal)" />
               <text
                 x={x + barW / 2}
                 y={chartH - h - 6}
@@ -116,13 +116,12 @@ export function PerformancePage({ data }: { data: ProposalData }) {
         ))}
       </div>
 
-      <p className={styles.note} style={{ marginTop: "6mm" }}>
-        Simulation basis:{" "}
-        {modules > 0 && watt > 0 ? `${modules} × ${watt}W modules` : "module count from BOM"}
-        {dcKwp > 0 ? `, ${formatFieldKw(dcKwp)} kWp DC` : ""}, {tiltNote}. Actual generation
-        varies with weather and grid availability. PR is shown only when it exists on the
-        engineering record.
-      </p>
+      <GeneralNotes
+        extra={[
+          `Basis: ${modules > 0 && watt > 0 ? `${modules} × ${watt}W` : "BOM module count"}${dcKwp > 0 ? `, ${formatFieldKw(dcKwp)} kWp DC` : ""}, ${tiltNote}.`,
+          "Monthly bars match the seasonal share used on FE-02 load reconciliation.",
+        ]}
+      />
     </DrawingSheet>
   );
 }

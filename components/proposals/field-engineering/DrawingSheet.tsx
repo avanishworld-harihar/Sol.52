@@ -15,6 +15,8 @@ export type DrawingSheetProps = {
   scale?: string;
   date: string;
   preparedBy: string;
+  revision?: string;
+  docId?: string;
   verified?: boolean;
   children: ReactNode;
 };
@@ -27,13 +29,23 @@ export function DrawingSheet({
   scale = "NTS",
   date,
   preparedBy,
+  revision,
+  docId,
   verified = false,
   children,
 }: DrawingSheetProps) {
+  const metaLine = [
+    "SOL.52 · FIELD ENGINEERING SET",
+    docId,
+    revision,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
   return (
     <section className={styles.sheet}>
       <div className={styles.microbar}>
-        <span>SOL.52 · FIELD ENGINEERING SET</span>
+        <span>{metaLine}</span>
         <strong>
           {familyName || "RESIDENCE"} — DWG {dwgNo}
         </strong>

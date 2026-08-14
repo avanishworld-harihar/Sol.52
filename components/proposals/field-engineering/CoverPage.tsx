@@ -6,6 +6,7 @@ import styles from "./Field.module.css";
 import {
   fieldAnnualUnits,
   fieldDocNo,
+  fieldDrawingSheetProps,
   fieldSheetMeta,
   formatFieldKw,
   resolveFieldPanelSpec,
@@ -50,13 +51,13 @@ export function CoverPage({
 
   return (
     <DrawingSheet
-      dwgNo="FE-01"
-      sheetLabel="COVER / SYSTEM SPEC SHEET"
-      pageOf="01 / 09"
-      familyName={sheet.familyName}
-      scale="—"
-      date={sheet.date}
-      preparedBy={sheet.preparedBy}
+      {...fieldDrawingSheetProps({
+        data,
+        proposalId,
+        dwgNo: "FE-01",
+        sheetLabel: "COVER / SYSTEM SPEC SHEET",
+        page: 2,
+      })}
     >
       <div className={styles.eyebrow}>Residential Solar · Field Engineering Proposal</div>
       <h1 className={styles.h1}>
