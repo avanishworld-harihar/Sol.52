@@ -13,7 +13,7 @@ import { useEmeraldContact } from "./emerald-contact";
 import { useEmeraldLang } from "./emerald-lang-context";
 import styles from "./Emerald.module.css";
 
-export const EMERALD_BACK_PHOTO = "/assets/proposals/emerald-back-golden-hour.jpg";
+export const EMERALD_BACK_PHOTO = "/assets/proposals/emerald-back-rooftop-plant.jpg";
 
 export type EmeraldBackCoverProps = {
   data: ProposalData;

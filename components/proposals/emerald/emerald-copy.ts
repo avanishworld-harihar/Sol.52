@@ -359,8 +359,8 @@ export function getEmeraldCopy(lang: EmeraldLang) {
     },
     back: {
       photoAlt: hi
-        ? "सूर्यास्त के समय छत के सोलर पैनल"
-        : "Rooftop solar panels at sunset",
+        ? "भारतीय छत पर बड़ा रूफटॉप सोलर प्लांट"
+        : "Large rooftop solar plant on an Indian building",
       thankYou: hi ? "धन्यवाद" : "THANK YOU",
       preparedFor: hi ? "के लिए तैयार" : "Prepared for",
       lead: hi
