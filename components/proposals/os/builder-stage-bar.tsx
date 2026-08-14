@@ -218,6 +218,8 @@ export function BuilderStageBar({
                           ? "Quantum"
                           : presetId === "residential_emerald"
                             ? "Emerald"
+                            : presetId === "residential_obsidian"
+                              ? "Obsidian"
                             : "Residential"}
             </span>
           </div>

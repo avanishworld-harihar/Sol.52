@@ -97,6 +97,8 @@ export function parsePrefillFromSearchParams(params: URLSearchParams): BuilderPr
     preset === "emerald_signature"
   ) {
     prefill.preset = "residential_emerald";
+  } else if (preset === "residential_obsidian" || preset === "obsidian") {
+    prefill.preset = "residential_obsidian";
   } else if (preset === "commercial_executive" || preset === "commercial") {
     prefill.preset = "commercial_executive";
   } else if (preset) {

@@ -42,6 +42,9 @@ export function resolveQuickQuotePresetOptions(): {
   if (presetId === "residential_emerald") {
     return { presetId, galleryThemeKey: "emerald" };
   }
+  if (presetId === "residential_obsidian") {
+    return { presetId, galleryThemeKey: "obsidian" };
+  }
   if (presetId === "residential_executive") {
     return { presetId, galleryThemeKey: "golden" };
   }

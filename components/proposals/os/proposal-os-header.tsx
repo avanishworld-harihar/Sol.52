@@ -12,7 +12,7 @@
  */
 
 import { motion } from "framer-motion";
-import { Building2, ChevronRight, Gem, LayoutTemplate, RefreshCw, Sparkles, Zap } from "lucide-react";
+import { Aperture, Building2, ChevronRight, Gem, LayoutTemplate, RefreshCw, Sparkles, Zap } from "lucide-react";
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 import { PresenceStack } from "@/components/workspace/presence-stack";
 
@@ -86,6 +86,14 @@ const PRESET_META: Record<ProposalPresetId, PresetMeta> = {
     pillClass:
       "border-emerald-200 bg-emerald-950 text-amber-200 dark:border-emerald-500/40 dark:bg-[#022C22] dark:text-[#D4AF37]",
     dotClass: "bg-[#D4AF37]",
+  },
+  residential_obsidian: {
+    icon: <Aperture className="h-4 w-4" />,
+    label: "Obsidian",
+    description: "Pitch-black HUD · viewfinder · yield terminal",
+    pillClass:
+      "border-orange-500/40 bg-zinc-950 text-orange-400 dark:border-orange-500/50 dark:bg-black dark:text-orange-400",
+    dotClass: "bg-[#FF5500]",
   },
   commercial_executive: {
     icon: <Building2 className="h-4 w-4" />,

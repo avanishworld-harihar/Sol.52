@@ -36,7 +36,7 @@ export const PROPOSAL_TEMPLATE_CATEGORIES: ProposalTemplateCategoryMeta[] = [
   {
     id: "residential",
     label: "Residential",
-    description: "Homes & rooftops — Golden, Zenith, Atelier, Premium Luxe, Canvas, Quantum, or Emerald.",
+    description: "Homes & rooftops — Golden, Zenith, Atelier, Premium Luxe, Canvas, Quantum, Emerald, or Obsidian.",
   },
   {
     id: "commercial",
@@ -106,6 +106,15 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
       "Emerald Signature — Deep Forest & Champagne Gold split-folio, architectural catalog layout.",
     thumbnailVariant: "emerald",
   },
+  {
+    key: "obsidian",
+    presetId: "residential_obsidian",
+    category: "residential",
+    name: "Obsidian",
+    description:
+      "Pitch-black cinematic HUD — viewfinder frame, PV matrix, inverter sine wave, and yield terminal.",
+    thumbnailVariant: "obsidian",
+  },
 ];
 
 /** Commercial themes — Executive (LT / C&I) and HT Industrial (HV ToD/PF). */
@@ -174,6 +183,7 @@ export function resolveActiveGalleryKey(
   if (presetId === "residential_blueprint") return "blueprint";
   if (presetId === "residential_quantum") return "quantum";
   if (presetId === "residential_emerald") return "emerald";
+  if (presetId === "residential_obsidian") return "obsidian";
   return "zenith";
 }
 

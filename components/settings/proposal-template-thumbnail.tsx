@@ -36,6 +36,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
       {variant === "blueprint" ? <BlueprintThumb size={size} /> : null}
       {variant === "quantum" ? <QuantumThumb size={size} /> : null}
       {variant === "emerald" ? <EmeraldThumb size={size} /> : null}
+      {variant === "obsidian" ? <ObsidianThumb size={size} /> : null}
       {![
         "golden",
         "pearl",
@@ -53,6 +54,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
         "blueprint",
         "quantum",
         "emerald",
+        "obsidian",
       ].includes(variant) ? (
         <GenericThumb size={size} label={variant} />
       ) : null}
@@ -394,6 +396,79 @@ function EmeraldThumb({ size }: { size: "card" | "preview" }) {
             Split
             <br />
             Folio
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ObsidianThumb({ size }: { size: "card" | "preview" }) {
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-[#050505]">
+      <div
+        className={cn(
+          "relative flex flex-col justify-start overflow-hidden rounded-[3px] border border-[#FF5500]/40 shadow-sm",
+          size === "preview" ? "h-[62%] w-[68%]" : "h-[58%] w-[72%]"
+        )}
+        style={{ background: "#0a0a0a" }}
+      >
+        <div
+          className="pointer-events-none absolute"
+          style={{
+            top: 4,
+            left: 4,
+            width: size === "preview" ? 10 : 6,
+            height: size === "preview" ? 10 : 6,
+            borderTop: "1px solid #FF5500",
+            borderLeft: "1px solid #FF5500",
+          }}
+        />
+        <div
+          className="pointer-events-none absolute"
+          style={{
+            bottom: 4,
+            right: 4,
+            width: size === "preview" ? 10 : 6,
+            height: size === "preview" ? 10 : 6,
+            borderBottom: "1px solid #FF5500",
+            borderRight: "1px solid #FF5500",
+          }}
+        />
+        <div style={{ padding: size === "preview" ? "8%" : "7%" }} className="flex flex-col gap-[8%] flex-1">
+          <div
+            className={cn(
+              "font-bold uppercase tracking-[0.18em] text-[#FF5500]",
+              size === "preview" ? "text-[5px]" : "text-[2.5px]"
+            )}
+          >
+            OBSIDIAN
+          </div>
+          <div
+            className={cn(
+              "font-light leading-tight text-white",
+              size === "preview" ? "text-[10px]" : "text-[4.5px]"
+            )}
+          >
+            Powerplant
+            <br />
+            Blueprint
+          </div>
+          <div
+            style={{
+              width: size === "preview" ? 20 : 10,
+              height: size === "preview" ? 2 : 1,
+              background: "#FF5500",
+            }}
+          />
+          <div className="mt-auto grid grid-cols-3 gap-[6%]">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="rounded-[1px] border border-[#FF5500]/50 bg-[#FF5500]/10"
+                style={{ height: size === "preview" ? 14 : 6 }}
+              />
+            ))}
           </div>
         </div>
       </div>

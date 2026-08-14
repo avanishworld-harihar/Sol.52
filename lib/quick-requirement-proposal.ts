@@ -85,6 +85,8 @@ export async function buildQuickRequirementProposal(
                 ? { galleryThemeKey: "quantum" }
                 : presetId === "residential_emerald"
                   ? { galleryThemeKey: "emerald" }
+                : presetId === "residential_obsidian"
+                  ? { galleryThemeKey: "obsidian" }
                   : presetId === "residential_executive"
                   ? { galleryThemeKey: "golden" }
                   : {}),

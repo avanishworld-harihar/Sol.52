@@ -9,6 +9,7 @@ export const RESIDENTIAL_TEMPLATE_PRESET_IDS = [
   "residential_blueprint",
   "residential_quantum",
   "residential_emerald",
+  "residential_obsidian",
 ] as const;
 
 export type ResidentialTemplatePresetId = (typeof RESIDENTIAL_TEMPLATE_PRESET_IDS)[number];
@@ -61,6 +62,11 @@ export const RESIDENTIAL_TEMPLATE_OPTIONS: ResidentialTemplateOption[] = [
     id: "residential_emerald",
     label: "Emerald",
     subtitle: "Eco-luxury split-folio — Deep Forest sidebar & Champagne Gold.",
+  },
+  {
+    id: "residential_obsidian",
+    label: "Obsidian",
+    subtitle: "Pitch-black HUD / viewfinder — engineering telemetry & yield terminal.",
   },
 ];
 
