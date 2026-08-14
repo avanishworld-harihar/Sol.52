@@ -1,13 +1,12 @@
 "use client";
 
 /**
- * Emerald Signature architecture — vertical gold elevator track beside the sidebar.
+ * Emerald Signature architecture — system connection + live engineering numbers.
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
 import { formatEmeraldKw } from "./emerald-brand";
 import {
-  emeraldBomLine,
   emeraldMetric,
   resolveEmeraldPanelSpec,
 } from "./emerald-live";
@@ -27,11 +26,55 @@ export function EmeraldArchitecture({ data, folio }: EmeraldArchitectureProps) {
   const ratio = systemKw > 0 && dcKwp > 0 ? dcKwp / systemKw : 0;
   const acLabel = formatEmeraldKw(systemKw, 1);
   const dcLabel = dcKwp > 0 ? formatEmeraldKw(dcKwp) : "";
+  const panelHint =
+    [panelItem?.brand, panelItem?.spec].filter(Boolean).join(" · ") ||
+    copy.arch.step1Hint(modules, watt);
+  const inverterHint =
+    [inverterItem?.brand, inverterItem?.spec].filter(Boolean).join(" · ") ||
+    copy.arch.step2Hint;
+
+  const metricRows: { label: string; value: string }[] = [];
+  if (modules > 0 && watt > 0) {
+    metricRows.push({
+      label: copy.arch.modules,
+      value: `${modules} × ${watt}W`,
+    });
+  }
+  if (dcKwp > 0) {
+    metricRows.push({
+      label: copy.cover.solarArray,
+      value: `${formatEmeraldKw(dcKwp)} kWp`,
+    });
+  }
+  if (systemKw > 0) {
+    metricRows.push({
+      label: copy.cover.systemSize,
+      value: `${acLabel} kW`,
+    });
+  }
+  if (ratio > 0) {
+    metricRows.push({ label: copy.arch.dcAc, value: `${ratio.toFixed(2)}x` });
+  }
+  if (panelItem?.brand) {
+    metricRows.push({ label: copy.arch.panelBrand, value: panelItem.brand });
+  }
+  if (inverterItem?.brand) {
+    metricRows.push({
+      label: copy.arch.inverterBrand,
+      value: inverterItem.brand,
+    });
+  }
+
+  const annual = emeraldMetric(data, /annual generation|yearly/i);
+  const coverage = emeraldMetric(data, /coverage|load/i);
+  const tilt = emeraldMetric(data, /tilt/i);
   const prValue = emeraldMetric(data, /performance|pr\b/i);
   const windValue = emeraldMetric(data, /wind/i);
-  const panelHint = emeraldBomLine(panelItem) || copy.arch.step1Hint(modules, watt);
-  const inverterHint = emeraldBomLine(inverterItem) || copy.arch.step2Hint;
-  const showMetrics = ratio > 0 || Boolean(prValue) || Boolean(windValue);
+  if (annual) metricRows.push({ label: copy.arch.annualGen, value: annual });
+  if (coverage) metricRows.push({ label: copy.arch.coverage, value: coverage });
+  if (tilt) metricRows.push({ label: copy.arch.tilt, value: tilt });
+  if (prValue) metricRows.push({ label: copy.arch.pr, value: prValue });
+  if (windValue) metricRows.push({ label: copy.arch.wind, value: windValue });
 
   return (
     <section className={styles.a4Page}>
@@ -62,10 +105,7 @@ export function EmeraldArchitecture({ data, folio }: EmeraldArchitectureProps) {
 
           <div className={styles.archDetails}>
             <div>
-              <span
-                className={styles.goldEyebrow}
-                style={{ marginBottom: "2px" }}
-              >
+              <span className={styles.goldEyebrow} style={{ marginBottom: "2px" }}>
                 {copy.arch.step1}
               </span>
               <span className={styles.archStepTitle}>
@@ -75,10 +115,7 @@ export function EmeraldArchitecture({ data, folio }: EmeraldArchitectureProps) {
             </div>
 
             <div>
-              <span
-                className={styles.goldEyebrow}
-                style={{ marginBottom: "2px" }}
-              >
+              <span className={styles.goldEyebrow} style={{ marginBottom: "2px" }}>
                 {copy.arch.step2}
               </span>
               <span className={styles.archStepTitle}>
@@ -90,10 +127,7 @@ export function EmeraldArchitecture({ data, folio }: EmeraldArchitectureProps) {
             </div>
 
             <div>
-              <span
-                className={styles.goldEyebrow}
-                style={{ marginBottom: "2px" }}
-              >
+              <span className={styles.goldEyebrow} style={{ marginBottom: "2px" }}>
                 {copy.arch.step3}
               </span>
               <span className={styles.archStepTitle}>{copy.arch.gridTitle}</span>
@@ -102,29 +136,17 @@ export function EmeraldArchitecture({ data, folio }: EmeraldArchitectureProps) {
           </div>
         </div>
 
-        {showMetrics ? (
+        {metricRows.length > 0 ? (
           <div className={styles.metricsWrap}>
             <span className={styles.goldEyebrow}>{copy.arch.keyNumbers}</span>
             <table className={styles.goldTable}>
               <tbody>
-                {ratio > 0 ? (
-                  <tr>
-                    <td>{copy.arch.dcAc}</td>
-                    <td>{`${ratio.toFixed(2)}x`}</td>
+                {metricRows.map((row) => (
+                  <tr key={row.label}>
+                    <td>{row.label}</td>
+                    <td>{row.value}</td>
                   </tr>
-                ) : null}
-                {prValue ? (
-                  <tr>
-                    <td>{copy.arch.pr}</td>
-                    <td>{prValue}</td>
-                  </tr>
-                ) : null}
-                {windValue ? (
-                  <tr>
-                    <td>{copy.arch.wind}</td>
-                    <td>{windValue}</td>
-                  </tr>
-                ) : null}
+                ))}
               </tbody>
             </table>
           </div>

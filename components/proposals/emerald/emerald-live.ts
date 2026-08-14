@@ -62,11 +62,37 @@ export function resolveEmeraldPanelSpec(data: ProposalData): EmeraldPanelSpec {
 export function emeraldBomLine(item: ProposalBomItem | null): string {
   if (!item) return "";
   return (
-    item.description?.trim() ||
     [item.spec, item.brand, ...(item.technicalPoints ?? [])]
+      .map((v) => (v ?? "").trim())
       .filter(Boolean)
-      .join(". ")
+      .join(". ") || item.description?.trim() || ""
   );
+}
+
+export type EmeraldBomDetail = {
+  title: string;
+  brand: string;
+  spec: string;
+  warranty: string;
+  points: string[];
+};
+
+export function emeraldBomDetail(item: ProposalBomItem): EmeraldBomDetail {
+  const points = (item.technicalPoints ?? [])
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .slice(0, 4);
+  return {
+    title: item.name.trim(),
+    brand: item.brand.trim(),
+    spec: item.spec.trim(),
+    warranty: item.warranty.trim(),
+    points,
+  };
+}
+
+export function emeraldLiveBom(data: ProposalData): ProposalBomItem[] {
+  return (data.bom ?? []).filter((b) => b.name?.trim());
 }
 
 export function emeraldMetric(

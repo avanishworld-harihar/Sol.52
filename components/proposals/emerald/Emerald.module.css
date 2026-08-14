@@ -296,9 +296,9 @@
 }
 
 .goldTable td {
-  padding: 15px 0;
+  padding: 7px 0;
   border-bottom: 1px solid rgba(212, 175, 55, 0.3);
-  font-size: 0.95rem;
+  font-size: 0.82rem;
 }
 
 .goldTable td:last-child {
@@ -524,20 +524,20 @@
 
 .trackLine {
   width: 2px;
-  height: 100px;
+  height: 52px;
   background: #d4af37;
 }
 
 .archDetails {
   display: flex;
   flex-direction: column;
-  gap: 55px;
+  gap: 22px;
   padding-top: 2px;
   min-width: 0;
 }
 
 .archStepTitle {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   color: #064e3b;
   font-family: "Cormorant Garamond", serif;
   display: block;
@@ -748,6 +748,71 @@
   color: #57534e !important;
   line-height: 1.6;
   margin: 0;
+}
+
+.bomList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.bomRow {
+  display: flex;
+  gap: 12px;
+  border: 1px solid rgba(6, 78, 59, 0.12);
+  background: #fff;
+  padding: 12px 14px;
+}
+
+.bomNum {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.35rem;
+  color: #d4af37;
+  line-height: 1;
+  min-width: 28px;
+}
+
+.bomBody {
+  min-width: 0;
+  flex: 1;
+}
+
+.bomTitle {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.35rem;
+  color: #064e3b;
+  margin: 0 0 2px;
+  line-height: 1.15;
+}
+
+.bomMeta {
+  display: block;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #d4af37;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.bomSpec {
+  font-size: 0.8rem;
+  color: #1c1917;
+  margin: 0 0 6px;
+  line-height: 1.4;
+}
+
+.bomPoints {
+  margin: 0;
+  padding-left: 16px;
+  color: #57534e;
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+.bomPoints li {
+  margin-bottom: 2px;
 }
 
 /* --- THE DATA MONOLITH (IMPACT PAGE) --- */

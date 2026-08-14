@@ -1,13 +1,14 @@
 "use client";
 
 /**
- * Emerald Signature — hardware list from live BOM only.
+ * Emerald Signature — full live BOM (all materials, spec / brand / warranty / points).
  */
 
 import type { ProposalBomItem, ProposalData } from "@/lib/proposal-data";
 import { formatEmeraldKw } from "./emerald-brand";
 import {
-  emeraldBomLine,
+  emeraldBomDetail,
+  emeraldLiveBom,
   emeraldWarranty,
   resolveEmeraldPanelSpec,
 } from "./emerald-live";
@@ -18,64 +19,56 @@ import styles from "./Emerald.module.css";
 export type EmeraldHardwareProps = {
   data: ProposalData;
   folio: string;
+  items: ProposalBomItem[];
+  continued?: boolean;
+  startIndex?: number;
 };
 
-type AnthologyItem = {
-  num: string;
-  eyebrow: string;
-  title: string;
-  desc: string;
-};
-
-function fallbackAnthology(
-  data: ProposalData,
-  copy: EmeraldCopy
-): AnthologyItem[] {
+function fallbackItems(data: ProposalData, copy: EmeraldCopy): ProposalBomItem[] {
   const { modules, watt } = resolveEmeraldPanelSpec(data);
   const systemKw = Number(data.meta.systemKw) || 0;
   const acLabel = formatEmeraldKw(systemKw, 1);
-  const panelW = emeraldWarranty(data, /panel|module/i);
-  const inverterW = emeraldWarranty(data, /inverter/i);
-  const structureW = emeraldWarranty(data, /structure|mount|work/i);
-
   return [
     {
-      num: "01",
-      eyebrow: panelW,
-      title: copy.hardware.panelTitle,
-      desc: copy.hardware.panelDesc(modules, watt),
+      name: copy.hardware.panelTitle,
+      brand: "",
+      spec: copy.hardware.panelDesc(modules, watt),
+      warranty: emeraldWarranty(data, /panel|module/i),
     },
     {
-      num: "02",
-      eyebrow: inverterW,
-      title: copy.hardware.inverterTitle,
-      desc: copy.hardware.inverterDesc(acLabel === "—" ? "" : acLabel),
+      name: copy.hardware.inverterTitle,
+      brand: "",
+      spec: copy.hardware.inverterDesc(acLabel === "—" ? "" : acLabel),
+      warranty: emeraldWarranty(data, /inverter/i),
     },
     {
-      num: "03",
-      eyebrow: structureW,
-      title: copy.hardware.structureTitle,
-      desc: copy.hardware.structureDesc,
+      name: copy.hardware.structureTitle,
+      brand: "",
+      spec: copy.hardware.structureDesc,
+      warranty: emeraldWarranty(data, /structure|mount|work/i),
     },
   ];
 }
 
-function fromBom(items: ProposalBomItem[], chosen: string): AnthologyItem[] {
-  return items.slice(0, 3).map((item, i) => ({
-    num: String(i + 1).padStart(2, "0"),
-    eyebrow: (item.warranty || item.brand || "").toUpperCase(),
-    title: item.name,
-    desc: emeraldBomLine(item) || chosen,
-  }));
+export function emeraldHardwarePages(data: ProposalData): ProposalBomItem[][] {
+  const live = emeraldLiveBom(data);
+  if (live.length === 0) return [[]];
+  const pages: ProposalBomItem[][] = [];
+  for (let i = 0; i < live.length; i += 3) {
+    pages.push(live.slice(i, i + 3));
+  }
+  return pages;
 }
 
-export function EmeraldHardware({ data, folio }: EmeraldHardwareProps) {
+export function EmeraldHardware({
+  data,
+  folio,
+  items,
+  continued = false,
+  startIndex = 0,
+}: EmeraldHardwareProps) {
   const { copy } = useEmeraldLang();
-  const live = (data.bom ?? []).filter((b) => b.name?.trim());
-  const items =
-    live.length > 0
-      ? fromBom(live, copy.hardware.chosen)
-      : fallbackAnthology(data, copy);
+  const rows = items.length > 0 ? items : fallbackItems(data, copy);
 
   return (
     <section className={styles.a4Page}>
@@ -93,21 +86,36 @@ export function EmeraldHardware({ data, folio }: EmeraldHardwareProps) {
       </div>
 
       <div className={styles.contentArea}>
-        <h2 className={styles.pageHeader}>{copy.hardware.pageHeader}</h2>
+        <h2 className={styles.pageHeader}>
+          {continued ? copy.hardware.pageHeaderMore : copy.hardware.pageHeader}
+        </h2>
 
-        <div className={styles.cascadeWrapper}>
-          {items.map((item) => (
-            <div key={item.num} className={styles.cascadeItem}>
-              <span className={styles.cascadeNumber}>{item.num}</span>
-              <div className={styles.cascadeContent}>
-                {item.eyebrow ? (
-                  <span className={styles.goldEyebrow}>{item.eyebrow}</span>
-                ) : null}
-                <h3 className={styles.cascadeTitle}>{item.title}</h3>
-                <p className={styles.cascadeDesc}>{item.desc}</p>
-              </div>
-            </div>
-          ))}
+        <div className={styles.bomList}>
+          {rows.map((item, i) => {
+            const detail = emeraldBomDetail(item);
+            const meta = [detail.brand, detail.warranty].filter(Boolean).join(" · ");
+            return (
+              <article key={`${detail.title}-${i}`} className={styles.bomRow}>
+                <span className={styles.bomNum}>
+                  {String(startIndex + i + 1).padStart(2, "0")}
+                </span>
+                <div className={styles.bomBody}>
+                  <h3 className={styles.bomTitle}>{detail.title}</h3>
+                  {meta ? <span className={styles.bomMeta}>{meta}</span> : null}
+                  {detail.spec ? (
+                    <p className={styles.bomSpec}>{detail.spec}</p>
+                  ) : null}
+                  {detail.points.length > 0 ? (
+                    <ul className={styles.bomPoints}>
+                      {detail.points.map((point) => (
+                        <li key={point}>{point}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+              </article>
+            );
+          })}
         </div>
       </div>
     </section>
