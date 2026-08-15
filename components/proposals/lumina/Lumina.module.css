@@ -779,8 +779,90 @@
   text-transform: uppercase;
 }
 
-.closeBrandBar {
+.closeHero {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.closeHeroImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 40%;
+  display: block;
+}
+
+.closeHeroOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0.55) 0%,
+    rgba(15, 23, 42, 0.15) 38%,
+    rgba(15, 23, 42, 0.78) 100%
+  );
+}
+
+.closeHeroCopy {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  padding: 28px 32px 24px;
+}
+
+.closeKicker {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #a7f3d0;
+  margin-bottom: 12px;
+}
+
+.closeTitle {
+  font-size: clamp(2.4rem, 6vw, 3.6rem);
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.05;
+  letter-spacing: -1px;
+  margin: 0 0 10px;
+  max-width: 90%;
+}
+
+.closeLead {
+  font-size: 1.05rem;
+  color: rgba(248, 250, 252, 0.88);
+  line-height: 1.45;
+  max-width: 82%;
+  margin: 0;
+}
+
+.closeSigDock {
   margin-top: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.closeSigCard {
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 14px;
+  padding: 16px 18px 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
+}
+
+.closeSigLine {
+  height: 1px;
+  background: #cbd5e1;
+  margin-bottom: 12px;
+}
+
+.closeBrandBar {
+  margin-top: 0;
   background: var(--lu-ink);
   padding: 14px 16px;
   text-align: center;
@@ -823,6 +905,10 @@
   }
 
   .forecastGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .closeSigDock {
     grid-template-columns: 1fr;
   }
 
