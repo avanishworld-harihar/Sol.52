@@ -220,7 +220,7 @@
   color: var(--lu-green);
 }
 
-.contentArea {
+.contentCover {
   position: relative;
   z-index: 2;
   margin-top: -22px;
@@ -231,6 +231,35 @@
   background: var(--lu-bg);
   border-radius: 22px 22px 0 0;
   box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.contentArea {
+  position: relative;
+  z-index: 2;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-height: 0;
+  background: transparent;
+}
+
+.innerSheet {
+  padding: 16mm 16mm 14mm;
+}
+
+.innerSheet .contentArea,
+.innerSheet .contentArea.hardwareSheet {
+  margin-top: 0;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  min-height: 0;
+}
+
+.innerSheet .pageFooter {
+  padding: 8px 0 0;
 }
 
 .dateTag {
@@ -703,7 +732,7 @@
 
 .contentArea.hardwareSheet {
   margin-top: 0;
-  padding: 11mm 11mm 4mm;
+  padding: 0;
   border-radius: 0;
   box-shadow: none;
   min-height: 0;

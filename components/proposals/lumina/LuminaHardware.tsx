@@ -52,7 +52,7 @@ export function LuminaHardware({ data }: { data: ProposalData }) {
   const rows = luminaHardwareRows(data);
 
   return (
-    <section className={styles.a4Lumina}>
+    <section className={`${styles.a4Lumina} ${styles.innerSheet}`}>
       <div className={`${styles.contentArea} ${styles.hardwareSheet}`}>
         <div className={styles.dateTag}>System architecture · 6-item BOM</div>
         <h1 className={styles.clientTitle}>Hardware Specs.</h1>

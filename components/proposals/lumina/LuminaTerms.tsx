@@ -18,7 +18,7 @@ export function LuminaTerms({ data }: { data: ProposalData }) {
   const model = buildLuminaTermsModel(data);
 
   return (
-    <section className={styles.a4Lumina}>
+    <section className={`${styles.a4Lumina} ${styles.innerSheet}`}>
       <div className={styles.contentArea}>
         <div className={styles.dateTag}>Terms & compliance</div>
         <h1 className={styles.clientTitle}>Terms & Conditions.</h1>
@@ -53,7 +53,7 @@ export function LuminaTermsContinued({ data }: { data: ProposalData }) {
   const model = buildLuminaTermsModel(data);
 
   return (
-    <section className={styles.a4Lumina}>
+    <section className={`${styles.a4Lumina} ${styles.innerSheet}`}>
       <div className={styles.contentArea}>
         <div className={styles.dateTag}>Terms & compliance · continued</div>
         <h1 className={styles.clientTitle}>Maintenance & client scope.</h1>
