@@ -4,10 +4,9 @@
 
 import type { ProposalBillMonth, ProposalBomItem, ProposalData } from "@/lib/proposal-data";
 
-/** Street view of an Indian RCC home with elevated GI MMS — walkable terrace under the array. */
-export const LUMINA_HERO_PHOTO = "/assets/proposals/quantum-cover-indian-day.jpg";
+export const LUMINA_HERO_PHOTO = "/assets/proposals/lumina-cover-luxury-evening.jpg";
 export const LUMINA_HERO_ALT =
-  "Indian RCC rooftop with elevated galvanized mounting structure and south-tilt solar array";
+  "Luxury Indian rooftop at evening: elevated solar plant, garden and sofa underneath, family and friends with a guitar, neighboring roofs also on solar";
 export const LUMINA_CLOSE_PHOTO = "/assets/proposals/lumina-close-indian-luxury-terrace.jpg";
 export const LUMINA_CLOSE_ALT =
   "Indian luxury rooftop with an 8–9 ft elevated solar plant, garden and sofa under the array, and a couple at the glass railing";
