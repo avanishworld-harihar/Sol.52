@@ -45,7 +45,7 @@ export function LuminaTerms({ data }: { data: ProposalData }) {
           </div>
         </div>
       </div>
-      <LuminaDocFooter data={data} page="06 / 08" />
+      <LuminaDocFooter data={data} page="07 / 09" />
     </section>
   );
 }
@@ -79,7 +79,7 @@ export function LuminaTermsContinued({ data }: { data: ProposalData }) {
           <strong>{model.installerName || "—"}</strong>
         </div>
       </div>
-      <LuminaDocFooter data={data} page="07 / 08" />
+      <LuminaDocFooter data={data} page="08 / 09" />
     </section>
   );
 }

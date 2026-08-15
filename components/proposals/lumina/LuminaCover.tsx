@@ -114,7 +114,7 @@ export function LuminaCover({ data, installerLogoUrl }: LuminaCoverProps) {
       <div className={styles.pageFooter}>
         {brand ? `${brand} · ` : ""}
         {location ? `${location} · ` : ""}
-        01 / 08
+        01 / 09
       </div>
     </section>
   );

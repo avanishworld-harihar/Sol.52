@@ -89,7 +89,7 @@ export function LuminaHardware({ data }: { data: ProposalData }) {
           ))}
         </div>
       </div>
-      <LuminaDocFooter data={data} page="03 / 08" />
+      <LuminaDocFooter data={data} page="03 / 09" />
     </section>
   );
 }
