@@ -2,6 +2,7 @@
 
 import type { ProposalData } from "@/lib/proposal-data";
 import styles from "./Lumina.module.css";
+import { LuminaDocFooter } from "./lumina-brand";
 import { buildLuminaTermsModel } from "./lumina-terms-copy";
 
 function TermList({ items }: { items: string[] }) {
@@ -44,7 +45,7 @@ export function LuminaTerms({ data }: { data: ProposalData }) {
           </div>
         </div>
       </div>
-      <div className={styles.pageFooter}>Lumina · 06 / 08</div>
+      <LuminaDocFooter data={data} page="06 / 08" />
     </section>
   );
 }
@@ -78,7 +79,7 @@ export function LuminaTermsContinued({ data }: { data: ProposalData }) {
           <strong>{model.installerName || "—"}</strong>
         </div>
       </div>
-      <div className={styles.pageFooter}>Lumina · 07 / 08</div>
+      <LuminaDocFooter data={data} page="07 / 08" />
     </section>
   );
 }

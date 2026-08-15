@@ -7,6 +7,7 @@ import {
   formatLifetimeBenefitInr,
 } from "@/components/proposals/_shared/formatters";
 import styles from "./Lumina.module.css";
+import { LuminaDocFooter } from "./lumina-brand";
 import { luminaAnnualUnits } from "./lumina-live";
 
 function Figure({
@@ -151,7 +152,7 @@ export function LuminaLedgerPage({ data }: { data: ProposalData }) {
           ) : null}
         </div>
 
-        <div className={styles.pageFooter}>Lumina · 04 / 08</div>
+        <LuminaDocFooter data={data} page="04 / 08" />
       </div>
     </section>
   );

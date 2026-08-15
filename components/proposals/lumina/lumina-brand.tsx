@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
+import styles from "./Lumina.module.css";
 import {
   PROPOSAL_BRANDING_UPDATED_EVENT,
   readProposalBrandingSettings,
@@ -162,4 +163,20 @@ export function splitLuminaWordmark(brandName: string): {
   const parts = brandName.trim().split(/\s+/).filter(Boolean);
   if (parts.length < 2) return { head: brandName.trim(), tail: "" };
   return { head: parts.slice(0, -1).join(" "), tail: parts[parts.length - 1] };
+}
+
+/** Inner-page mark: company name from More / snapshot, never “Lumina”. */
+export function LuminaDocFooter({
+  data,
+  page,
+}: {
+  data: ProposalData;
+  page: string;
+}) {
+  const brand = useLuminaBrand(data);
+  return (
+    <div className={styles.pageFooter}>
+      {brand ? `${brand} · ${page}` : page}
+    </div>
+  );
 }

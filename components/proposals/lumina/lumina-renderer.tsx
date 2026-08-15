@@ -9,6 +9,7 @@ import { useRef, useState } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
 import { LuminaProposal } from "./LuminaProposal";
 import styles from "./Lumina.module.css";
+import { useLuminaBrand } from "./lumina-brand";
 import {
   buildAtelierProposalPdf,
   downloadPdfFile,
@@ -30,6 +31,8 @@ function LuminaDocument({
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
+
+  const brand = useLuminaBrand(data);
 
   const handlePrint = async () => {
     if (typeof window === "undefined" || pdfBusy) return;
@@ -56,7 +59,9 @@ function LuminaDocument({
     <div ref={rootRef} data-proposal-preset="residential_lumina" className={styles.root}>
       <div className={styles.printBar}>
         <div className={styles.printBarInner}>
-          <span className={styles.printBarBrand}>Lumina · 8 pages</span>
+          <span className={styles.printBarBrand}>
+            {brand ? `${brand} · 8 pages` : "8 pages"}
+          </span>
           <button
             type="button"
             className={styles.printBarBtn}
@@ -77,7 +82,7 @@ export function LuminaRenderer({
   installerLogoUrl,
 }: LuminaRendererProps) {
   if (!data) {
-    return <div className={styles.loading}>Preparing Lumina proposal…</div>;
+    return <div className={styles.loading}>Preparing proposal…</div>;
   }
   return <LuminaDocument data={data} installerLogoUrl={installerLogoUrl} />;
 }
