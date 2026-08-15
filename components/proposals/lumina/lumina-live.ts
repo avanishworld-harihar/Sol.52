@@ -4,6 +4,7 @@
 
 import type { ProposalBillMonth, ProposalBomItem, ProposalData } from "@/lib/proposal-data";
 import { RESIDENTIAL_ENGINEERING_STANDARDS } from "@/lib/proposal-engineering-metrics";
+import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { recommendedTiltFromLatitude, resolveSiteLatitude } from "@/lib/proposal-site-geo";
 
 export const LUMINA_HERO_PHOTO = "/assets/proposals/lumina-cover-wide-plant.jpg";
@@ -677,6 +678,57 @@ export function luminaHardwareRows(data: ProposalData): LuminaHardwareRow[] {
 
 const LUMINA_M2_PER_PANEL = 2.2;
 const LUMINA_MAX_VISUAL_PANELS = 24;
+const LUMINA_M2_TO_SQFT = 10.764;
+
+export function luminaSqFtFromM2(m2: number): number {
+  if (!(m2 > 0)) return 0;
+  return Math.round(m2 * LUMINA_M2_TO_SQFT);
+}
+
+/** e.g. ~18 m² (~194 sq ft). Empty when area is missing — never invents a roof size. */
+export function formatLuminaAreaM2(m2: number): string {
+  if (!(m2 > 0)) return "—";
+  const sqft = luminaSqFtFromM2(m2);
+  return `~${m2} m² (~${sqft.toLocaleString("en-IN")} sq ft)`;
+}
+
+function luminaParseMetricNumber(data: ProposalData, match: RegExp): number {
+  const raw = luminaMetricValue(data, match);
+  if (!raw) return 0;
+  const n = Number(raw.replace(/[^\d.]/g, ""));
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+
+function luminaLiveCable(
+  data: ProposalData,
+  pptInput?: PremiumProposalPptInput | null
+): { note: string | null; dcM: number; acM: number; vdPct: number } {
+  const layout = pptInput?.residentialTechnicalSpecs?.layout;
+  const dcM =
+    Number(layout?.dcRunLengthM) > 0
+      ? Number(layout?.dcRunLengthM)
+      : luminaParseMetricNumber(data, /dc\s*run/i);
+  const acM =
+    Number(layout?.acRunLengthM) > 0
+      ? Number(layout?.acRunLengthM)
+      : luminaParseMetricNumber(data, /ac\s*run/i);
+  const vdPct =
+    Number(layout?.voltageDropDcPct) > 0
+      ? Number(layout?.voltageDropDcPct)
+      : luminaParseMetricNumber(data, /voltage\s*drop|\bvd\b/i);
+  const bits: string[] = [];
+  if (dcM > 0) bits.push(`DC run ${dcM} m`);
+  if (acM > 0) bits.push(`AC run ${acM} m`);
+  if (vdPct > 0) bits.push(`VD ${vdPct}%`);
+  return { note: bits.length ? bits.join(" · ") : null, dcM, acM, vdPct };
+}
+
+function luminaEngineeringStandards(data: ProposalData): string[] {
+  const live = (data.engineering.standards ?? []).map((s) => s.trim()).filter(Boolean);
+  const detailed = live.filter((s) => /IEC|IS\s*\d{3,5}|ALMM|62446|3043|732/i.test(s));
+  if (detailed.length >= 3) return live;
+  return [...RESIDENTIAL_ENGINEERING_STANDARDS];
+}
 
 function luminaMetricValue(data: ProposalData, match: RegExp): string {
   const row = (data.engineering.metrics ?? []).find((m) => match.test(m.label));
@@ -712,16 +764,82 @@ export type LuminaEngineeringModel = {
   cityLabel: string;
   siteLatLabel: string;
   roofAreaM2: number;
+  roofAreaLabel: string;
   m2PerPanel: number;
+  m2PerPanelLabel: string;
   performanceRatioPct: number;
   peakSunHours: number;
   specificYield: number;
   loadCoveragePct: number;
   standards: string[];
   tiltNote: string;
+  cableNote: string | null;
+  dcRunM: number;
+  acRunM: number;
+  vdPct: number;
+  rowSpacingM: number;
 };
 
-export function luminaEngineeringModel(data: ProposalData): LuminaEngineeringModel {
+export type LuminaEngInsightCard = {
+  title: string;
+  body: string;
+};
+
+export function luminaEngineeringInsights(eng: LuminaEngineeringModel): LuminaEngInsightCard[] {
+  const panelBit =
+    eng.panelCount > 0
+      ? `${eng.panelCount} module${eng.panelCount === 1 ? "" : "s"}`
+      : "each module";
+  const areaBit =
+    eng.roofAreaM2 > 0
+      ? `${formatLuminaAreaM2(eng.roofAreaM2)}`
+      : "the planning area";
+  const how =
+    eng.panelCount > 0
+      ? `${panelBit} × ${eng.m2PerPanelLabel} (glass + walkway + shade gap) = ${areaBit}. The extra is not wasted roof — it is the aisle, the wind path, and the winter-sun buffer.`
+      : `We plan about ${eng.m2PerPanelLabel} per module: the glass itself plus a walkway and a small shade gap. The total appears when module count is on this proposal.`;
+
+  const liveCable = [
+    eng.dcRunM > 0 ? `DC run ${eng.dcRunM} m` : null,
+    eng.acRunM > 0 ? `AC run ${eng.acRunM} m` : null,
+    eng.vdPct > 0 ? `voltage drop ${eng.vdPct}%` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  const vdLine =
+    eng.vdPct > 0
+      ? ` On this drawing ${liveCable}. Under 2% drop means almost all roof power reaches the house.`
+      : liveCable
+        ? ` On this drawing: ${liveCable}.`
+        : " Exact metres are locked after the site survey; the rule stays the same — keep both runs short and the cable thick enough.";
+
+  const ratioLine =
+    eng.dcAcRatio >= 1
+      ? ` Extra panel on the roof (DC/AC ${eng.dcAcRatio}) means the inverter starts earning earlier in the morning and keeps going later in the evening.`
+      : "";
+
+  return [
+    {
+      title: "Why this much roof?",
+      body: `Picture each panel as a door lying on the terrace. If we packed doors edge-to-edge, nobody could walk between them to wipe the glass — and stepping on a panel can make tiny cracks. We also leave gaps so wind can slip through (a packed roof acts like a sail) and so hot glass can grow a little in summer without pushing the next panel.`,
+    },
+    {
+      title: "How the space is counted",
+      body: `A high-efficiency module is about as tall as a door (~2.3 m) and ~1.1 m wide. ${how} Front-to-back space also stops the first row shading the next when the winter sun sits low.${
+        eng.rowSpacingM > 0 ? ` On this drawing the row gap is ${eng.rowSpacingM} m.` : ""
+      }`,
+    },
+    {
+      title: "DC run vs AC run",
+      body: `Panels make “raw” electricity (DC) — like uncooked food. The DC run is the sun-proof cable from the roof to the inverter (the kitchen). We keep it short and thick so power does not leak away as heat — that leak is voltage drop. The inverter “cooks” DC into AC, the kind your fan and fridge already eat. The AC run is the short cable from the inverter to your main switchboard — serving the meal to the table.${vdLine}${ratioLine}`,
+    },
+  ];
+}
+
+export function luminaEngineeringModel(
+  data: ProposalData,
+  pptInput?: PremiumProposalPptInput | null
+): LuminaEngineeringModel {
   const acKw = Number(data.meta.systemKw) || 0;
   const annual = luminaAnnualUnits(data);
   const { count, watt } = luminaParsePanelArray(data);
@@ -752,6 +870,10 @@ export function luminaEngineeringModel(data: ProposalData): LuminaEngineeringMod
   }
 
   const visualPanelCount = Math.min(Math.max(0, count), LUMINA_MAX_VISUAL_PANELS);
+  const roofAreaM2 = count > 0 ? Math.round(count * LUMINA_M2_PER_PANEL) : 0;
+  const cable = luminaLiveCable(data, pptInput);
+  const rowSpacingRaw = Number(pptInput?.residentialTechnicalSpecs?.mounting?.rowSpacingM);
+  const rowSpacingM = Number.isFinite(rowSpacingRaw) && rowSpacingRaw > 0 ? rowSpacingRaw : 0;
 
   return {
     acKw,
@@ -762,19 +884,23 @@ export function luminaEngineeringModel(data: ProposalData): LuminaEngineeringMod
     visualPanelCount,
     showingPartial: count > visualPanelCount,
     tiltDeg,
-    azimuthDeg: count > 0 ? 180 : 0,
+    azimuthDeg: count > 0 || tiltDeg > 0 ? 180 : 0,
     cityLabel: loc,
     siteLatLabel,
-    roofAreaM2: count > 0 ? Math.round(count * LUMINA_M2_PER_PANEL) : 0,
+    roofAreaM2,
+    roofAreaLabel: formatLuminaAreaM2(roofAreaM2),
     m2PerPanel: LUMINA_M2_PER_PANEL,
+    m2PerPanelLabel: formatLuminaAreaM2(LUMINA_M2_PER_PANEL),
     performanceRatioPct: acKw > 0 ? 75 : 0,
     peakSunHours: loc ? 5 : 0,
     specificYield,
     loadCoveragePct,
-    standards:
-      (data.engineering.standards ?? []).filter((s) => s.trim()).length > 0
-        ? data.engineering.standards.map((s) => s.trim()).filter(Boolean)
-        : [...RESIDENTIAL_ENGINEERING_STANDARDS],
+    standards: luminaEngineeringStandards(data),
     tiltNote: data.engineering.tiltNote?.trim() || "",
+    cableNote: cable.note,
+    dcRunM: cable.dcM,
+    acRunM: cable.acM,
+    vdPct: cable.vdPct,
+    rowSpacingM,
   };
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import type { ProposalData } from "@/lib/proposal-data";
+import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { LuminaCover } from "./LuminaCover";
 import { LuminaAudit } from "./LuminaAudit";
 import { LuminaHardware } from "./LuminaHardware";
@@ -14,18 +15,20 @@ import styles from "./Lumina.module.css";
 export type LuminaProposalProps = {
   data: ProposalData;
   installerLogoUrl?: string;
+  pptInput?: PremiumProposalPptInput;
 };
 
 export function LuminaProposal({
   data,
   installerLogoUrl,
+  pptInput,
 }: LuminaProposalProps) {
   return (
     <div className={styles.stage}>
       <LuminaCover data={data} installerLogoUrl={installerLogoUrl} />
       <LuminaAudit data={data} />
       <LuminaHardware data={data} />
-      <LuminaEngineering data={data} />
+      <LuminaEngineering data={data} pptInput={pptInput} />
       <LuminaLedgerPage data={data} />
       <LuminaForecast data={data} />
       <LuminaTerms data={data} />
