@@ -4,9 +4,9 @@
 
 import type { ProposalBillMonth, ProposalBomItem, ProposalData } from "@/lib/proposal-data";
 
-export const LUMINA_HERO_PHOTO = "/assets/proposals/lumina-cover-friends-center.jpg";
+export const LUMINA_HERO_PHOTO = "/assets/proposals/lumina-cover-wide-plant.jpg";
 export const LUMINA_HERO_ALT =
-  "Family and friends gathered under an elevated rooftop solar plant at evening, guitar and sofas centered on this terrace";
+  "Wide rooftop view: elevated solar array overhead, family and friends enjoying the terrace underneath at golden hour";
 export const LUMINA_CLOSE_PHOTO = "/assets/proposals/lumina-close-look-out.jpg";
 export const LUMINA_CLOSE_ALT =
   "Indian couple at the rooftop glass railing with coffee, both looking out at the sunset, elevated solar plant behind them";

@@ -131,8 +131,9 @@
 }
 
 .heroHeader {
-  height: 58%;
-  min-height: 152mm;
+  height: 44%;
+  min-height: 118mm;
+  max-height: 132mm;
   position: relative;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
@@ -142,7 +143,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 52% 46%;
+  object-position: center 38%;
   display: block;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
@@ -1551,8 +1552,9 @@
   }
 
   .heroHeader {
-    height: 280px;
-    min-height: 280px;
+    height: 220px;
+    min-height: 220px;
+    max-height: none;
   }
 
   .heroCaption {
