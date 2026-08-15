@@ -37,7 +37,7 @@ export function LuminaCover({ data, installerLogoUrl }: LuminaCoverProps) {
   const kwLabel = systemKw > 0 ? formatLuminaKw(systemKw) : "";
 
   return (
-    <section className={styles.a4Lumina}>
+    <section className={`${styles.a4Lumina} ${styles.bleedSheet}`}>
       <div className={styles.heroHeader}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={LUMINA_HERO_PHOTO} alt={LUMINA_HERO_ALT} className={styles.heroImage} />
