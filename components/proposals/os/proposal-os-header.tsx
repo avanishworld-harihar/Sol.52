@@ -12,7 +12,7 @@
  */
 
 import { motion } from "framer-motion";
-import { Building2, ChevronRight, Compass, Gem, Landmark, LayoutTemplate, PenLine, RefreshCw, Sparkles, Square, Zap } from "lucide-react";
+import { Building2, ChevronRight, Compass, Gem, Landmark, LayoutTemplate, PenLine, RefreshCw, Sparkles, Square, Sun, Zap } from "lucide-react";
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 import { PresenceStack } from "@/components/workspace/presence-stack";
 
@@ -118,6 +118,14 @@ const PRESET_META: Record<ProposalPresetId, PresetMeta> = {
     pillClass:
       "border-black bg-[#E5E5E5] text-black dark:border-orange-500 dark:bg-black dark:text-[#FF4500]",
     dotClass: "bg-[#FF4500]",
+  },
+  residential_lumina: {
+    icon: <Sun className="h-4 w-4" />,
+    label: "Lumina",
+    description: "Clean light app UI · hero photo · trust-green cards",
+    pillClass:
+      "border-emerald-200 bg-slate-50 text-slate-900 dark:border-emerald-500/40 dark:bg-slate-900 dark:text-emerald-300",
+    dotClass: "bg-[#10B981]",
   },
   commercial_executive: {
     icon: <Building2 className="h-4 w-4" />,

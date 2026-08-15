@@ -71,6 +71,12 @@ export const BRUTALISM_PRESET_ALIASES = [
   "brutalism",
 ] as const;
 
+/** Local / mock aliases that resolve to Lumina. */
+export const LUMINA_PRESET_ALIASES = [
+  "residential_lumina",
+  "lumina",
+] as const;
+
 export function isZenithPresetId(presetId: string): boolean {
   return (ZENITH_PRESET_ALIASES as readonly string[]).includes(presetId);
 }
@@ -111,6 +117,10 @@ export function isBrutalismPresetId(presetId: string): boolean {
   return (BRUTALISM_PRESET_ALIASES as readonly string[]).includes(presetId);
 }
 
+export function isLuminaPresetId(presetId: string): boolean {
+  return (LUMINA_PRESET_ALIASES as readonly string[]).includes(presetId);
+}
+
 export function isCommercialPresetId(presetId: string): boolean {
   return presetId === "commercial_executive";
 }
@@ -142,6 +152,8 @@ export const PRESET_RENDERER_LOADERS: PresetRendererRegistry = {
     import("@/components/proposals/_registry/adapters/cyanotype-adapter"),
   residential_brutalism: () =>
     import("@/components/proposals/_registry/adapters/brutalism-adapter"),
+  residential_lumina: () =>
+    import("@/components/proposals/_registry/adapters/lumina-adapter"),
   commercial_executive: () =>
     import("@/components/proposals/_registry/adapters/commercial-adapter"),
   commercial_ht: () =>
@@ -181,6 +193,9 @@ export function getPresetRendererLoader(
   }
   if (isBrutalismPresetId(presetId)) {
     return () => import("@/components/proposals/_registry/adapters/brutalism-adapter");
+  }
+  if (isLuminaPresetId(presetId)) {
+    return () => import("@/components/proposals/_registry/adapters/lumina-adapter");
   }
   if (isLuxeNoirPresetId(presetId)) {
     return () => import("@/components/proposals/_registry/adapters/luxe-noir-adapter");

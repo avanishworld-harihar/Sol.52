@@ -36,7 +36,7 @@ export const PROPOSAL_TEMPLATE_CATEGORIES: ProposalTemplateCategoryMeta[] = [
   {
     id: "residential",
     label: "Residential",
-    description: "Homes & rooftops — Golden, Zenith, Atelier, Premium Luxe, Canvas, Quantum, Emerald, Field Engineering, Wall Street Ledger, Cyanotype, or Brutalism.",
+    description: "Homes & rooftops — Golden, Zenith, Atelier, Premium Luxe, Canvas, Quantum, Emerald, Field Engineering, Wall Street Ledger, Cyanotype, Brutalism, or Lumina.",
   },
   {
     id: "commercial",
@@ -142,6 +142,15 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
       "Concrete gray industrial spec — heavy black frame, caution orange, and massive type.",
     thumbnailVariant: "brutalism",
   },
+  {
+    key: "lumina",
+    presetId: "residential_lumina",
+    category: "residential",
+    name: "Lumina",
+    description:
+      "Clean light app UI — hero photo, Inter, trust-green cards. Consumer-friendly, no dark theme.",
+    thumbnailVariant: "lumina",
+  },
 ];
 
 /** Commercial themes — Executive (LT / C&I) and HT Industrial (HV ToD/PF). */
@@ -214,6 +223,7 @@ export function resolveActiveGalleryKey(
   if (presetId === "residential_wall_street") return "wall_street";
   if (presetId === "residential_cyanotype") return "cyanotype";
   if (presetId === "residential_brutalism") return "brutalism";
+  if (presetId === "residential_lumina") return "lumina";
   return "zenith";
 }
 

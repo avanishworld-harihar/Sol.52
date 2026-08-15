@@ -118,6 +118,11 @@ export function parsePrefillFromSearchParams(params: URLSearchParams): BuilderPr
     preset === "brutalism"
   ) {
     prefill.preset = "residential_brutalism";
+  } else if (
+    preset === "residential_lumina" ||
+    preset === "lumina"
+  ) {
+    prefill.preset = "residential_lumina";
   } else if (preset === "commercial_executive" || preset === "commercial") {
     prefill.preset = "commercial_executive";
   } else if (preset) {

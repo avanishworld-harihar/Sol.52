@@ -1806,6 +1806,8 @@ function ProposalPageContent() {
                   ? { galleryThemeKey: "cyanotype" }
                 : osPresetId === "residential_brutalism"
                   ? { galleryThemeKey: "brutalism" }
+                : osPresetId === "residential_lumina"
+                  ? { galleryThemeKey: "lumina" }
                   : osPresetId === "residential_executive"
                   ? { galleryThemeKey: "golden" }
                   : {}),
@@ -2440,6 +2442,9 @@ function ProposalPageContent() {
                         : preset === "residential_brutalism" ||
                             preset === "brutalism"
                           ? "residential_brutalism"
+                        : preset === "residential_lumina" ||
+                            preset === "lumina"
+                          ? "residential_lumina"
                         : preset === "residential_executive"
                         ? "residential_executive"
                         : "residential_executive";

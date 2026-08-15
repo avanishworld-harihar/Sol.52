@@ -226,6 +226,8 @@ export function BuilderStageBar({
                               ? "Cyanotype"
                             : presetId === "residential_brutalism"
                               ? "Brutalism"
+                            : presetId === "residential_lumina"
+                              ? "Lumina"
                             : "Residential"}
             </span>
           </div>

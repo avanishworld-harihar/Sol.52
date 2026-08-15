@@ -54,6 +54,9 @@ export function resolveQuickQuotePresetOptions(): {
   if (presetId === "residential_brutalism") {
     return { presetId, galleryThemeKey: "brutalism" };
   }
+  if (presetId === "residential_lumina") {
+    return { presetId, galleryThemeKey: "lumina" };
+  }
   if (presetId === "residential_executive") {
     return { presetId, galleryThemeKey: "golden" };
   }

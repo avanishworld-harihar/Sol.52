@@ -40,6 +40,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
       {variant === "wall_street" ? <WallStreetThumb size={size} /> : null}
       {variant === "cyanotype" ? <CyanotypeThumb size={size} /> : null}
       {variant === "brutalism" ? <BrutalismThumb size={size} /> : null}
+      {variant === "lumina" ? <LuminaThumb size={size} /> : null}
       {![
         "golden",
         "pearl",
@@ -61,6 +62,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
         "wall_street",
         "cyanotype",
         "brutalism",
+        "lumina",
       ].includes(variant) ? (
         <GenericThumb size={size} label={variant} />
       ) : null}
@@ -403,6 +405,49 @@ function EmeraldThumb({ size }: { size: "card" | "preview" }) {
             <br />
             Folio
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LuminaThumb({ size }: { size: "card" | "preview" }) {
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-[#eef2f6]">
+      <div
+        className={cn(
+          "relative flex flex-col overflow-hidden rounded-[6px] border border-[#E2E8F0] bg-[#F8FAFC] shadow-sm",
+          size === "preview" ? "h-[62%] w-[68%]" : "h-[58%] w-[72%]"
+        )}
+      >
+        <div
+          className="relative overflow-hidden bg-slate-700"
+          style={{ height: "42%", borderBottomLeftRadius: 10, borderBottomRightRadius: 10 }}
+        >
+          <div className="absolute left-[8%] top-[18%] rounded-[4px] bg-white px-[6%] py-[4%] font-extrabold text-slate-900"
+            style={{ fontSize: size === "preview" ? 5 : 2.5 }}
+          >
+            LUMINA
+          </div>
+        </div>
+        <div
+          className={cn(
+            "px-[8%] pt-[8%] font-bold leading-tight text-slate-900",
+            size === "preview" ? "text-[8px]" : "text-[3.5px]"
+          )}
+        >
+          Smart Energy
+        </div>
+        <div className="mx-[8%] mt-auto mb-[8%] grid grid-cols-3 gap-[6%]">
+          {["kW", "U", "₹"].map((c) => (
+            <div
+              key={c}
+              className="rounded-[3px] border border-[#E2E8F0] bg-white text-center font-bold text-slate-900"
+              style={{ fontSize: size === "preview" ? 4 : 2, padding: "12% 0" }}
+            >
+              {c}
+            </div>
+          ))}
         </div>
       </div>
     </div>

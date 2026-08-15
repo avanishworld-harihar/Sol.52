@@ -14,7 +14,8 @@
  *   9. residential_wall_street   — Wall Street Ledger salmon newsprint
  *  10. residential_cyanotype      — Cyanotype indigo blueprint drafting
  *  11. residential_brutalism      — Brutalism concrete industrial spec
- *  12. commercial_executive      — C&I commercial (hotel / hospital / industry…)
+ *  12. residential_lumina         — Lumina clean light app UI
+ *  13. commercial_executive      — C&I commercial (hotel / hospital / industry…)
  *
  * Removed residential presets remap via normalizePresetId → residential_executive.
  */
@@ -45,6 +46,7 @@ export const PROPOSAL_PRESET_IDS = [
   "residential_wall_street",
   "residential_cyanotype",
   "residential_brutalism",
+  "residential_lumina",
   "commercial_executive",
   "commercial_ht",
 ] as const;
@@ -115,7 +117,8 @@ export function isResidentialDocumentPreset(presetId: ProposalPresetId): boolean
     presetId === "residential_field" ||
     presetId === "residential_wall_street" ||
     presetId === "residential_cyanotype" ||
-    presetId === "residential_brutalism"
+    presetId === "residential_brutalism" ||
+    presetId === "residential_lumina"
   );
 }
 
@@ -285,6 +288,18 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     label: "Brutalism",
     description:
       "Concrete gray industrial spec — heavy black frame, caution orange, and massive type.",
+    bill_requirement: "optional",
+    theme_hint: "residential",
+    default_data_source: "requirement",
+    default_blocks: [],
+    optional_blocks: [],
+  },
+
+  residential_lumina: {
+    id: "residential_lumina",
+    label: "Lumina",
+    description:
+      "Clean light app UI — hero photo, Inter, trust-green cards. Consumer-friendly, no dark theme.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "requirement",
