@@ -477,6 +477,149 @@
   margin: 0;
 }
 
+.capStack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.capSection {
+  background: #ffffff;
+  border: 1px solid var(--lu-line);
+  border-radius: 16px;
+  padding: 16px 18px 14px;
+}
+
+.capSectionPay {
+  border-left: 4px solid #334155;
+}
+
+.capSectionGet {
+  border-left: 4px solid #3b82f6;
+}
+
+.capSectionSave {
+  border-left: 4px solid var(--lu-green);
+  background: var(--lu-green-soft);
+}
+
+.capSectionPaySchedule {
+  border-left: 4px solid #94a3b8;
+}
+
+.capSectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.capKicker {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--lu-muted);
+}
+
+.capHint {
+  font-size: 0.72rem;
+  color: var(--lu-muted);
+  font-weight: 500;
+}
+
+.capMetricGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+}
+
+.capMetric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.capMetricWide {
+  grid-column: 1 / -1;
+}
+
+.capName {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--lu-muted);
+}
+
+.capFigure {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--lu-ink);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+.capFigureSave {
+  color: var(--lu-green-ink);
+}
+
+.capUnit {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--lu-muted);
+  margin-left: 4px;
+}
+
+.capUnitSave {
+  color: var(--lu-green);
+}
+
+.payList {
+  display: flex;
+  flex-direction: column;
+}
+
+.payRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.payRow:last-child {
+  border-bottom: none;
+}
+
+.payStep {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: var(--lu-ink);
+  font-size: 0.72rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.payLabel {
+  flex: 1;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--lu-ink);
+}
+
+.payAmt {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--lu-ink);
+  font-variant-numeric: tabular-nums;
+}
+
 .loading {
   padding: 48px;
   text-align: center;
@@ -502,5 +645,9 @@
 
   .auditSplit {
     flex-direction: column;
+  }
+
+  .capMetricGrid {
+    grid-template-columns: 1fr;
   }
 }
