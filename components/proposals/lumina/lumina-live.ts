@@ -94,17 +94,73 @@ export function luminaLifetime(data: ProposalData): number {
   return 0;
 }
 
-function findBom(items: ProposalBomItem[], test: RegExp): ProposalBomItem | null {
-  return items.find((item) => test.test(`${item.name} ${item.brand} ${item.spec}`)) ?? null;
-}
+
+export type LuminaHwKind = "panel" | "inverter" | "structure" | "dcdb" | "acdb" | "earth";
 
 export type LuminaHardwareRow = {
+  kind: LuminaHwKind;
   role: string;
   title: string;
   detail: string;
   chips: string[];
   image: string;
   accent?: boolean;
+};
+
+/** Commercial BOM headings / specs (tiered BOM + system architecture). Local copy — do not import commercial blocks. */
+type LuminaHwCatalog = {
+  kind: LuminaHwKind;
+  role: string;
+  title: string;
+  detail: string;
+  chips: string[];
+  accent?: boolean;
+};
+
+const LUMINA_HW_CATALOG: Record<LuminaHwKind, LuminaHwCatalog> = {
+  panel: {
+    kind: "panel",
+    role: "Solar PV Modules",
+    title: "Tier-1 ALMM-listed",
+    detail: "BIS / MNRE listed PV modules",
+    chips: ["25 yr linear", "ALMM"],
+  },
+  inverter: {
+    kind: "inverter",
+    role: "String Inverter",
+    title: "IEC 62109",
+    detail: "On-grid string inverter · MPPT · IP65 · LCD",
+    chips: ["MPPT", "IP65", "5 yr standard"],
+    accent: true,
+  },
+  structure: {
+    kind: "structure",
+    role: "Module Mounting Structure",
+    title: "IS 2062, zinc ≥ 85 µm",
+    detail: "Hot-dip galvanised MS / Aluminium, wind-load engineered",
+    chips: ["HDG", "10 yr structural"],
+  },
+  dcdb: {
+    kind: "dcdb",
+    role: "DCDB (DC Distribution Box)",
+    title: "Havells / Phoenix",
+    detail: "Fuse + Type II SPD · protects DC side (panels → inverter)",
+    chips: ["1 nos", "Type II SPD", "Fuse"],
+  },
+  acdb: {
+    kind: "acdb",
+    role: "ACDB (AC Distribution Box)",
+    title: "Havells / Schneider",
+    detail: "IP54 weatherproof · MCB + RCCB + SPD + energy meter",
+    chips: ["1 nos", "IP54", "MCB + RCCB + SPD"],
+  },
+  earth: {
+    kind: "earth",
+    role: "Earthing System",
+    title: "Copper-bonded / GI",
+    detail: "3 nos × 17 mm copper rod · IS 3043 earth pit",
+    chips: ["3 nos", "17 mm copper rod", "IS 3043"],
+  },
 };
 
 const LUMINA_HW_IMAGES: Array<{ match: RegExp; src: string }> = [
@@ -135,30 +191,88 @@ function uniqueChips(values: Array<string | undefined>): string[] {
   return out.slice(0, 4);
 }
 
-function rowFromBom(
-  item: ProposalBomItem,
-  role: string,
-  accent?: boolean
-): LuminaHardwareRow {
-  const hay = `${item.name} ${item.brand} ${item.spec}`;
-  const title = item.brand?.trim() || item.name;
+function bomHay(item: ProposalBomItem): string {
+  return `${item.name} ${item.brand} ${item.spec}`;
+}
+
+function isCombinedProtect(item: ProposalBomItem): boolean {
+  const hay = bomHay(item);
+  const name = item.name;
+  return (
+    (/acdb/i.test(hay) && /dcdb/i.test(hay)) ||
+    /protection|safety/i.test(name)
+  );
+}
+
+function claimBom(
+  items: ProposalBomItem[],
+  used: Set<number>,
+  pred: (item: ProposalBomItem) => boolean
+): ProposalBomItem | null {
+  const idx = items.findIndex((item, i) => !used.has(i) && pred(item));
+  if (idx < 0) return null;
+  used.add(idx);
+  return items[idx];
+}
+
+function pickLiveDetail(item: ProposalBomItem, title: string, fallback: string): string {
+  const points = (item.technicalPoints ?? []).map((p) => p.trim()).filter(Boolean);
+  const joined = points.slice(0, 2).join(" · ");
   const specLine = [item.spec, item.warranty].filter(Boolean).join(" · ");
-  const point = item.technicalPoints?.find((p) => p.trim())?.trim();
-  const detail =
-    point && point.toLowerCase() !== title.toLowerCase()
-      ? point
-      : specLine && specLine.toLowerCase() !== title.toLowerCase()
-        ? specLine
-        : item.description?.trim() && item.description.trim().toLowerCase() !== title.toLowerCase()
-          ? item.description.trim()
-          : role;
+  const desc = item.description?.trim() ?? "";
+  const candidates = [joined, specLine, desc];
+  for (const raw of candidates) {
+    const v = raw.trim();
+    if (!v) continue;
+    if (v.toLowerCase() === title.toLowerCase()) continue;
+    return v;
+  }
+  return fallback;
+}
+
+function extractSideSpec(item: ProposalBomItem | null, side: "dcdb" | "acdb"): string | null {
+  if (!item) return null;
+  const blob = [item.spec, item.description, ...(item.technicalPoints ?? [])]
+    .filter(Boolean)
+    .join(" · ");
+  const re = side === "dcdb" ? /dcdb\s*[:·]\s*([^·]+)/i : /acdb\s*[:·]\s*([^·]+)/i;
+  const match = blob.match(re)?.[1]?.trim();
+  return match || null;
+}
+
+function rowFromCatalog(
+  kind: LuminaHwKind,
+  item: ProposalBomItem | null,
+  extras?: { title?: string; detail?: string; chips?: Array<string | undefined> }
+): LuminaHardwareRow {
+  const catalog = LUMINA_HW_CATALOG[kind];
+  const title = extras?.title?.trim() || item?.brand?.trim() || catalog.title;
+  const liveDetail = item ? pickLiveDetail(item, title, catalog.detail) : "";
+  const detail = extras?.detail?.trim() || liveDetail || catalog.detail;
+  const hay = item ? bomHay(item) : catalog.role;
+  const combined = item ? isCombinedProtect(item) : false;
+  const specChip =
+    item?.spec && item.spec.length <= 42 && !(/acdb/i.test(item.spec) && /dcdb/i.test(item.spec))
+      ? item.spec
+      : undefined;
+  const nameChip =
+    item && item.name !== item.brand && !combined && !/protection|safety/i.test(item.name)
+      ? item.name
+      : undefined;
   return {
-    role,
+    kind,
+    role: catalog.role,
     title,
     detail,
-    chips: uniqueChips([item.spec, item.warranty, item.name !== item.brand ? item.name : undefined]),
+    chips: uniqueChips([
+      ...(extras?.chips ?? []),
+      specChip,
+      item?.warranty,
+      nameChip,
+      ...catalog.chips,
+    ]),
     image: luminaHardwareImage(hay),
-    accent,
+    accent: catalog.accent,
   };
 }
 
@@ -288,37 +402,71 @@ export function luminaTermCards(data: ProposalData): LuminaTermCard[] {
 
 export function luminaHardwareRows(data: ProposalData): LuminaHardwareRow[] {
   const items = (data.bom ?? []).filter((b) => b.name?.trim());
-  const panel = findBom(items, /panel|module|pv\b/i);
-  const inverter = findBom(items, /inverter/i);
-  const structure = findBom(items, /mount|structure|racking|mms/i);
-  const cable = findBom(items, /cable|wire|conductor/i);
-  const earth = findBom(items, /earth|earthing|cu\s*rod|copper\s*rod|gi\s*pipe/i);
+  const used = new Set<number>();
 
-  const rows: LuminaHardwareRow[] = [];
-  if (panel) rows.push(rowFromBom(panel, "Solar modules"));
-  if (inverter) rows.push(rowFromBom(inverter, "Inverter", true));
-  if (structure) rows.push(rowFromBom(structure, "Mounting structure"));
-  if (cable) rows.push(rowFromBom(cable, "DC + AC cabling"));
+  const panel = claimBom(
+    items,
+    used,
+    (it) => /panel|module|pv\b/i.test(bomHay(it)) && !/inverter/i.test(it.name)
+  );
+  const inverter = claimBom(items, used, (it) => /inverter/i.test(bomHay(it)));
+  const structure = claimBom(items, used, (it) =>
+    /mount|structure|racking|mms/i.test(bomHay(it))
+  );
+  const dcdb = claimBom(
+    items,
+    used,
+    (it) => /\bdcdb\b|dc\s*distribution/i.test(bomHay(it)) && !isCombinedProtect(it)
+  );
+  const acdb = claimBom(
+    items,
+    used,
+    (it) => /\bacdb\b|ac\s*distribution/i.test(bomHay(it)) && !isCombinedProtect(it)
+  );
+  const earth = claimBom(items, used, (it) => {
+    const nameBrand = `${it.name} ${it.brand}`;
+    if (/earth|earthing|cu\s*rod|copper\s*rod|gi\s*pipe/i.test(nameBrand)) return true;
+    return /earth|earthing/i.test(bomHay(it)) && !isCombinedProtect(it);
+  });
+  const sharedProtect = claimBom(
+    items,
+    used,
+    (it) => isCombinedProtect(it) || /protection|safety|spd|mcb/i.test(bomHay(it))
+  );
 
-  if (earth) {
-    const live = rowFromBom(earth, "Earthing");
-    const hasQty = /3\s*nos|17\s*mm/i.test(`${live.detail} ${live.chips.join(" ")} ${earth.spec}`);
-    rows.push({
-      ...live,
-      chips: uniqueChips([...live.chips, "3 nos", "17 mm copper rod"]),
-      detail: hasQty
-        ? live.detail
-        : [live.detail, "3 nos · 17 mm copper rod"].filter(Boolean).join(" · "),
-    });
-  } else {
-    rows.push({
-      role: "Earthing",
-      title: "Copper earth rod",
-      detail: "3 nos · 17 mm copper rod · IS 3043 earth pit",
-      chips: ["3 nos", "17 mm", "IS 3043"],
-      image: "/assets/hardware/default.svg",
-    });
-  }
+  const dcdbItem = dcdb ?? sharedProtect;
+  const acdbItem = acdb ?? sharedProtect;
+  const dcdbSide = extractSideSpec(dcdbItem, "dcdb");
+  const acdbSide = extractSideSpec(acdbItem, "acdb");
 
-  return rows.slice(0, 5);
+  const earthLive = earth ? rowFromCatalog("earth", earth) : rowFromCatalog("earth", null);
+  const earthBlob = `${earthLive.detail} ${earthLive.chips.join(" ")} ${earth?.spec ?? ""}`;
+  const earthHasQty = /3\s*nos|17\s*mm/i.test(earthBlob);
+
+  return [
+    rowFromCatalog("panel", panel),
+    rowFromCatalog("inverter", inverter),
+    rowFromCatalog("structure", structure),
+    rowFromCatalog("dcdb", dcdbItem, {
+      detail: dcdb
+        ? undefined
+        : dcdbSide
+          ? `${dcdbSide.trim()} · panels → inverter`
+          : LUMINA_HW_CATALOG.dcdb.detail,
+    }),
+    rowFromCatalog("acdb", acdbItem, {
+      detail: acdb
+        ? undefined
+        : acdbSide
+          ? `IP54 · ${acdbSide.trim()} · energy meter`
+          : LUMINA_HW_CATALOG.acdb.detail,
+    }),
+    {
+      ...earthLive,
+      chips: uniqueChips([...earthLive.chips, "3 nos", "17 mm copper rod", "IS 3043"]),
+      detail: earthHasQty
+        ? earthLive.detail
+        : [earthLive.detail, "3 nos × 17 mm copper rod"].filter(Boolean).join(" · "),
+    },
+  ];
 }
