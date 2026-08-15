@@ -2,13 +2,32 @@
 
 import type { CSSProperties } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
+import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import styles from "./Lumina.module.css";
 import { LuminaDocFooter } from "./lumina-brand";
-import { formatLuminaKw, luminaEngineeringModel } from "./lumina-live";
+import {
+  formatLuminaKw,
+  luminaEngineeringInsights,
+  luminaEngineeringModel,
+} from "./lumina-live";
 
-export function LuminaEngineering({ data }: { data: ProposalData }) {
-  const eng = luminaEngineeringModel(data);
+export function LuminaEngineering({
+  data,
+  pptInput,
+}: {
+  data: ProposalData;
+  pptInput?: PremiumProposalPptInput | null;
+}) {
+  const eng = luminaEngineeringModel(data, pptInput);
+  const insights = luminaEngineeringInsights(eng);
   const cols = Math.min(6, Math.max(3, Math.ceil(Math.sqrt(Math.max(eng.visualPanelCount, 1)))));
+
+  const arrayMeta =
+    eng.tiltDeg > 0
+      ? `Tilt: ${eng.tiltDeg}° | Azimuth: ${eng.azimuthDeg}° (True South)`
+      : eng.azimuthDeg > 0
+        ? `Azimuth: ${eng.azimuthDeg}° (True South) · tilt appears with site latitude`
+        : "Tilt appears when site latitude is on this proposal.";
 
   const siteItems = [
     {
@@ -18,10 +37,10 @@ export function LuminaEngineering({ data }: { data: ProposalData }) {
     },
     {
       label: "Required roof area",
-      value: eng.roofAreaM2 > 0 ? `~${eng.roofAreaM2} m²` : "—",
+      value: eng.roofAreaLabel,
       caption:
         eng.panelCount > 0
-          ? `${eng.panelCount} × ~${eng.m2PerPanel} m²/module (panel + walkway). Final after survey.`
+          ? `${eng.panelCount} × ${eng.m2PerPanelLabel}/module (panel + walkway). Final after survey.`
           : "Appears when module count is on this proposal.",
     },
     {
@@ -58,7 +77,7 @@ export function LuminaEngineering({ data }: { data: ProposalData }) {
   ];
 
   return (
-    <section className={`${styles.a4Lumina} ${styles.innerSheet}`}>
+    <section className={`${styles.a4Lumina} ${styles.innerSheet} ${styles.engSheet}`}>
       <div className={styles.contentArea}>
         <div className={styles.dateTag}>Engineering design</div>
         <h1 className={styles.clientTitle}>Design & Performance.</h1>
@@ -90,11 +109,9 @@ export function LuminaEngineering({ data }: { data: ProposalData }) {
               )}
             </div>
             <div className={styles.engRoofCaption}>
-              <strong>South-facing array</strong>
+              <strong>Optimal south-facing array</strong>
               <span>
-                {eng.tiltDeg > 0
-                  ? `Tilt ${eng.tiltDeg}° · Azimuth ${eng.azimuthDeg}° (true south)`
-                  : "Tilt appears when site latitude is on this proposal."}
+                {arrayMeta}
                 {eng.showingPartial ? ` · showing ${eng.visualPanelCount}/${eng.panelCount}` : ""}
               </span>
             </div>
@@ -111,6 +128,10 @@ export function LuminaEngineering({ data }: { data: ProposalData }) {
                 </div>
               ))}
             </div>
+            <p className={styles.engCableNote}>
+              {eng.cableNote ||
+                "DC run (roof → inverter) · AC run (inverter → main board) · VD after survey"}
+            </p>
             {eng.tiltNote ? <p className={styles.engCableNote}>{eng.tiltNote}</p> : null}
           </div>
         </div>
@@ -152,13 +173,17 @@ export function LuminaEngineering({ data }: { data: ProposalData }) {
           ))}
         </div>
 
-        {eng.dcAcRatio > 0 ? (
-          <p className={styles.engInsight}>
-            <span>Design note</span>
-            We sized around a {eng.dcAcRatio} DC/AC ratio so the inverter stays near capacity on
-            low-sun days — steadier yield through winter and monsoon.
-          </p>
-        ) : null}
+        <aside className={styles.engExpert}>
+          <p className={styles.engExpertTag}>Expert insight</p>
+          <div className={styles.engExpertGrid}>
+            {insights.map((card) => (
+              <div key={card.title} className={styles.engExpertCard}>
+                <h3 className={styles.engExpertTitle}>{card.title}</h3>
+                <p className={styles.engExpertBody}>{card.body}</p>
+              </div>
+            ))}
+          </div>
+        </aside>
       </div>
       <LuminaDocFooter data={data} page="04 / 09" />
     </section>

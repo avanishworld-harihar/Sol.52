@@ -17,6 +17,7 @@ export default function LuminaAdapter({
     <LuminaRenderer
       data={data}
       installerLogoUrl={installerLogoUrl || pptInput?.installerLogoUrl}
+      pptInput={pptInput}
       proposalId={proposalId}
     />
   );

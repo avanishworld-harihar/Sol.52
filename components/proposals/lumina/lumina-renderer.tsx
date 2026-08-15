@@ -7,6 +7,7 @@
 
 import { useRef, useState } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
+import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { LuminaProposal } from "./LuminaProposal";
 import styles from "./Lumina.module.css";
 import { useLuminaBrand } from "./lumina-brand";
@@ -20,14 +21,17 @@ export type LuminaRendererProps = {
   data: ProposalData;
   installerLogoUrl?: string;
   proposalId?: string;
+  pptInput?: PremiumProposalPptInput;
 };
 
 function LuminaDocument({
   data,
   installerLogoUrl,
+  pptInput,
 }: {
   data: ProposalData;
   installerLogoUrl?: string;
+  pptInput?: PremiumProposalPptInput;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
@@ -72,7 +76,7 @@ function LuminaDocument({
           </button>
         </div>
       </div>
-      <LuminaProposal data={data} installerLogoUrl={installerLogoUrl} />
+      <LuminaProposal data={data} installerLogoUrl={installerLogoUrl} pptInput={pptInput} />
     </div>
   );
 }
@@ -80,11 +84,14 @@ function LuminaDocument({
 export function LuminaRenderer({
   data,
   installerLogoUrl,
+  pptInput,
 }: LuminaRendererProps) {
   if (!data) {
     return <div className={styles.loading}>Preparing proposal…</div>;
   }
-  return <LuminaDocument data={data} installerLogoUrl={installerLogoUrl} />;
+  return (
+    <LuminaDocument data={data} installerLogoUrl={installerLogoUrl} pptInput={pptInput} />
+  );
 }
 
 export default LuminaRenderer;
