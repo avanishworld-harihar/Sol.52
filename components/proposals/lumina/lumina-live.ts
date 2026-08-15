@@ -107,12 +107,17 @@ export type LuminaHardwareRow = {
   accent?: boolean;
 };
 
-/** Commercial BOM headings / specs (tiered BOM + system architecture). Local copy — do not import commercial blocks. */
+/**
+ * Commercial BOM headings / specs (tiered BOM + system architecture).
+ * Local copy — do not import commercial blocks. Earthing stays residential
+ * 3 × 17 mm copper rod (not commercial kW-based electrode count).
+ */
 type LuminaHwCatalog = {
   kind: LuminaHwKind;
   role: string;
   title: string;
   detail: string;
+  extraDetails: string[];
   chips: string[];
   accent?: boolean;
 };
@@ -122,44 +127,69 @@ const LUMINA_HW_CATALOG: Record<LuminaHwKind, LuminaHwCatalog> = {
     kind: "panel",
     role: "Solar PV Modules",
     title: "Tier-1 ALMM-listed",
-    detail: "BIS / MNRE listed PV modules",
-    chips: ["25 yr linear", "ALMM"],
+    detail: "η ≥ 21% · BIS IS 14286 · MNRE ALMM · IEC 61215 & IEC 61730 · 25 yr linear",
+    extraDetails: [
+      "BIS IS 14286 · MNRE ALMM · IEC 61215 & IEC 61730",
+      "≤0.55%/yr linear degradation after Y1",
+    ],
+    chips: ["25 yr linear", "ALMM", "IEC 61215"],
   },
   inverter: {
     kind: "inverter",
     role: "String Inverter",
     title: "IEC 62109",
-    detail: "On-grid string inverter · MPPT · IP65 · LCD",
-    chips: ["MPPT", "IP65", "5 yr standard"],
+    detail: "On-grid string inverter · dual MPPT · IP65 outdoor · LCD · anti-islanding · IEC 62109",
+    extraDetails: [
+      "Grid-tie sync · anti-islanding · IEC 62109",
+      "IP65 outdoor enclosure · LCD display",
+    ],
+    chips: ["Dual MPPT", "IP65", "IEC 62109", "5 yr standard"],
     accent: true,
   },
   structure: {
     kind: "structure",
     role: "Module Mounting Structure",
     title: "IS 2062, zinc ≥ 85 µm",
-    detail: "Hot-dip galvanised MS / Aluminium, wind-load engineered",
-    chips: ["HDG", "10 yr structural"],
+    detail: "Hot-dip galvanised MS / Aluminium · wind-load engineered · IS 2062 · zinc ≥ 85 µm",
+    extraDetails: [
+      "IS 2062 MS · zinc coating ≥ 85 µm",
+      "M12/M16 SS 304 chemical anchor",
+      "IS 875 wind load",
+    ],
+    chips: ["HDG", "IS 2062", "Zn ≥ 85 µm", "10 yr structural"],
   },
   dcdb: {
     kind: "dcdb",
     role: "DCDB (DC Distribution Box)",
     title: "Havells / Phoenix",
-    detail: "Fuse + Type II SPD · protects DC side (panels → inverter)",
-    chips: ["1 nos", "Type II SPD", "Fuse"],
+    detail: "IP65 enclosure · DC isolator · fuse + Type II SPD · PV array to inverter",
+    extraDetails: [
+      "IP65 enclosure · DC isolator",
+      "Fuse + Type II SPD · panels → inverter",
+    ],
+    chips: ["IP65", "DC isolator", "Type II SPD", "Fuse"],
   },
   acdb: {
     kind: "acdb",
     role: "ACDB (AC Distribution Box)",
     title: "Havells / Schneider",
-    detail: "IP54 weatherproof · MCB + RCCB + SPD + energy meter",
-    chips: ["1 nos", "IP54", "MCB + RCCB + SPD"],
+    detail: "IP54 weatherproof · MCB + RCCB + Type II SPD + energy meter · isolator",
+    extraDetails: [
+      "IP54 weatherproof · MCB + RCCB + SPD + energy meter",
+      "Isolator · over-current / over-voltage protection",
+    ],
+    chips: ["IP54", "MCB + RCCB", "SPD", "Energy meter"],
   },
   earth: {
     kind: "earth",
     role: "Earthing System",
     title: "Copper-bonded / GI",
-    detail: "3 nos × 17 mm copper rod · IS 3043 earth pit",
-    chips: ["3 nos", "17 mm copper rod", "IS 3043"],
+    detail: "3 nos × 17 mm copper-bonded rod · IS 3043 earth pit · chemical compound · ≤1 Ω",
+    extraDetails: [
+      "3 nos × 17 mm copper-bonded rod · IS 3043",
+      "Chemical earthing compound · resistance ≤1 Ω",
+    ],
+    chips: ["3 nos", "17 mm", "IS 3043", "≤1 Ω"],
   },
 };
 
@@ -177,18 +207,58 @@ function luminaHardwareImage(hay: string): string {
   return "/assets/hardware/default.svg";
 }
 
-function uniqueChips(values: Array<string | undefined>): string[] {
+function fragKey(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[·,;]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function alreadyCovered(hay: string, frag: string): boolean {
+  const f = fragKey(frag);
+  if (!f) return true;
+  if (hay.includes(f)) return true;
+  const tokens = f.split(" ").filter((t) => t.length > 2 && !/^(and|the|with|for)$/.test(t));
+  if (tokens.length === 0) return false;
+  return tokens.every((t) => hay.includes(t));
+}
+
+function mergeDetails(base: string, extras: string[]): string {
+  const start = base.trim();
+  let hay = fragKey(start);
+  const out: string[] = start ? [start] : [];
+  for (const extra of extras) {
+    for (const frag of extra.split(/\s*·\s*/)) {
+      const t = frag.trim();
+      if (!t || alreadyCovered(hay, t)) continue;
+      out.push(t);
+      hay = `${hay} ${fragKey(t)}`.trim();
+    }
+  }
+  return out.join(" · ");
+}
+
+function uniqueChips(values: Array<string | undefined>, details = ""): string[] {
   const seen = new Set<string>();
+  const years = new Set<string>();
+  const hay = details.toLowerCase();
   const out: string[] = [];
   for (const raw of values) {
     const v = raw?.trim();
-    if (!v) continue;
-    const key = v.toLowerCase();
+    if (!v || v.length > 32) continue;
+    const key = v.toLowerCase().replace(/\s+/g, " ");
     if (seen.has(key)) continue;
+    const year = v.match(/(\d+)\s*(yr|year)/i)?.[1];
+    if (year) {
+      if (years.has(year)) continue;
+      years.add(year);
+    }
+    if (v.length > 14 && hay.includes(key)) continue;
     seen.add(key);
     out.push(v);
   }
-  return out.slice(0, 4);
+  return out.slice(0, 5);
 }
 
 function bomHay(item: ProposalBomItem): string {
@@ -217,7 +287,7 @@ function claimBom(
 
 function pickLiveDetail(item: ProposalBomItem, title: string, fallback: string): string {
   const points = (item.technicalPoints ?? []).map((p) => p.trim()).filter(Boolean);
-  const joined = points.slice(0, 2).join(" · ");
+  const joined = points.slice(0, 3).join(" · ");
   const specLine = [item.spec, item.warranty].filter(Boolean).join(" · ");
   const desc = item.description?.trim() ?? "";
   const candidates = [joined, specLine, desc];
@@ -248,15 +318,23 @@ function rowFromCatalog(
   const catalog = LUMINA_HW_CATALOG[kind];
   const title = extras?.title?.trim() || item?.brand?.trim() || catalog.title;
   const liveDetail = item ? pickLiveDetail(item, title, catalog.detail) : "";
-  const detail = extras?.detail?.trim() || liveDetail || catalog.detail;
+  const preferred = extras?.detail?.trim() || liveDetail || catalog.detail;
+  const detail = mergeDetails(preferred, catalog.extraDetails);
   const hay = item ? bomHay(item) : catalog.role;
   const combined = item ? isCombinedProtect(item) : false;
   const specChip =
-    item?.spec && item.spec.length <= 42 && !(/acdb/i.test(item.spec) && /dcdb/i.test(item.spec))
+    item?.spec &&
+    item.spec.length <= 22 &&
+    !(/acdb/i.test(item.spec) && /dcdb/i.test(item.spec))
       ? item.spec
       : undefined;
   const nameChip =
-    item && item.name !== item.brand && !combined && !/protection|safety/i.test(item.name)
+    item &&
+    item.name !== item.brand &&
+    !combined &&
+    !/protection|safety|panels?|modules?|inverter|structure|mounting|dcdb|acdb|earth/i.test(
+      item.name
+    )
       ? item.name
       : undefined;
   return {
@@ -264,13 +342,10 @@ function rowFromCatalog(
     role: catalog.role,
     title,
     detail,
-    chips: uniqueChips([
-      ...(extras?.chips ?? []),
-      specChip,
-      item?.warranty,
-      nameChip,
-      ...catalog.chips,
-    ]),
+    chips: uniqueChips(
+      [...(extras?.chips ?? []), specChip, item?.warranty, nameChip, ...catalog.chips],
+      detail
+    ),
     image: luminaHardwareImage(hay),
     accent: catalog.accent,
   };
@@ -442,6 +517,9 @@ export function luminaHardwareRows(data: ProposalData): LuminaHardwareRow[] {
   const earthLive = earth ? rowFromCatalog("earth", earth) : rowFromCatalog("earth", null);
   const earthBlob = `${earthLive.detail} ${earthLive.chips.join(" ")} ${earth?.spec ?? ""}`;
   const earthHasQty = /3\s*nos|17\s*mm/i.test(earthBlob);
+  const earthDetail = earthHasQty
+    ? earthLive.detail
+    : mergeDetails(earthLive.detail, ["3 nos × 17 mm copper rod"]);
 
   return [
     rowFromCatalog("panel", panel),
@@ -463,10 +541,11 @@ export function luminaHardwareRows(data: ProposalData): LuminaHardwareRow[] {
     }),
     {
       ...earthLive,
-      chips: uniqueChips([...earthLive.chips, "3 nos", "17 mm copper rod", "IS 3043"]),
-      detail: earthHasQty
-        ? earthLive.detail
-        : [earthLive.detail, "3 nos × 17 mm copper rod"].filter(Boolean).join(" · "),
+      detail: earthDetail,
+      chips: uniqueChips(
+        [...earthLive.chips, "3 nos", "17 mm copper rod", "IS 3043"],
+        earthDetail
+      ),
     },
   ];
 }

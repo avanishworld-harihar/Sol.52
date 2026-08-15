@@ -57,7 +57,8 @@ export function LuminaHardware({ data }: { data: ProposalData }) {
         <div className={styles.dateTag}>System architecture · 6-item BOM</div>
         <h1 className={styles.clientTitle}>Hardware Specs.</h1>
         <p className={styles.subText}>
-          DCDB, ACDB and earthing are separate. Earthing: 3 nos × 17 mm copper rod (IS 3043).
+          Commercial-grade BOS specs. DCDB, ACDB and earthing are separate. Earthing stays
+          residential: 3 nos × 17 mm copper rod (IS 3043).
         </p>
 
         <div className={styles.hardwareGrid}>
