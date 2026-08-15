@@ -6,6 +6,7 @@ import { installerLogoAlt } from "@/lib/proposal-branding-settings";
 import styles from "./Lumina.module.css";
 import { splitLuminaWordmark, useLuminaSurfaceBrand } from "./lumina-brand";
 import {
+  LUMINA_HERO_ALT,
   LUMINA_HERO_PHOTO,
   formatLuminaKw,
   luminaAnnualUnits,
@@ -36,7 +37,7 @@ export function LuminaCover({ data, installerLogoUrl }: LuminaCoverProps) {
     <section className={styles.a4Lumina}>
       <div className={styles.heroHeader}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={LUMINA_HERO_PHOTO} alt="" className={styles.heroImage} />
+        <img src={LUMINA_HERO_PHOTO} alt={LUMINA_HERO_ALT} className={styles.heroImage} />
         <div className={styles.heroOverlay} />
         {logo || showWordmark ? (
           <div
@@ -58,6 +59,10 @@ export function LuminaCover({ data, installerLogoUrl }: LuminaCoverProps) {
             ) : null}
           </div>
         ) : null}
+        <div className={styles.heroCaption}>
+          <span>Elevated GI MMS</span>
+          <span>RCC terrace · walkable under array</span>
+        </div>
       </div>
 
       <div className={styles.contentArea}>

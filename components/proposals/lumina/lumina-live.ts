@@ -4,7 +4,10 @@
 
 import type { ProposalBomItem, ProposalData } from "@/lib/proposal-data";
 
-export const LUMINA_HERO_PHOTO = "/assets/proposals/canvas-cover-solar-home.jpg";
+/** Street view of an Indian RCC home with elevated GI MMS — walkable terrace under the array. */
+export const LUMINA_HERO_PHOTO = "/assets/proposals/quantum-cover-indian-day.jpg";
+export const LUMINA_HERO_ALT =
+  "Indian RCC rooftop with elevated galvanized mounting structure and south-tilt solar array";
 export const LUMINA_CLOSE_PHOTO = "/assets/proposals/luxe-cover-rooftop-india.jpg";
 
 export function luminaBrand(data: ProposalData): string {
