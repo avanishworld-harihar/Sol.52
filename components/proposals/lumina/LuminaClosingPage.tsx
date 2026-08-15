@@ -3,6 +3,7 @@
 import type { ProposalData } from "@/lib/proposal-data";
 import styles from "./Lumina.module.css";
 import {
+  LUMINA_CLOSE_ALT,
   LUMINA_CLOSE_PHOTO,
   formatLuminaKw,
   luminaBrand,
@@ -30,7 +31,7 @@ export function LuminaClosingPage({ data }: { data: ProposalData }) {
     <section className={styles.a4Lumina}>
       <div className={styles.closeHero}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={LUMINA_CLOSE_PHOTO} alt="" className={styles.closeHeroImg} />
+        <img src={LUMINA_CLOSE_PHOTO} alt={LUMINA_CLOSE_ALT} className={styles.closeHeroImg} />
         <div className={styles.closeHeroOverlay} />
         <div className={styles.closeHeroCopy}>
           <div className={styles.closeKicker}>Execution mandate</div>
