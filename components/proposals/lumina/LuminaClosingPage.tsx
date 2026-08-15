@@ -49,7 +49,7 @@ export function LuminaClosingPage({ data }: { data: ProposalData }) {
           </div>
         </div>
 
-        <div className={styles.pageFooter}>Lumina · 03 / 03 · End of proposal</div>
+        <div className={styles.pageFooter}>Lumina · 05 / 05 · End of proposal</div>
       </div>
     </section>
   );

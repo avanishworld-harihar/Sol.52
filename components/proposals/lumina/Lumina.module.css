@@ -310,13 +310,171 @@
 }
 
 .pageFooter {
-  margin-top: 12px;
+  margin-top: auto;
+  padding: 12px 0 8px;
   font-size: 0.65rem;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--lu-muted);
+  color: #94a3b8;
   text-align: center;
+}
+
+.logoContainer {
+  position: absolute;
+  top: 28px;
+  left: 28px;
+  background: #ffffff;
+  padding: 12px 20px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 20;
+  min-width: 120px;
+}
+
+.logoImage {
+  max-height: 36px;
+  max-width: 140px;
+  object-fit: contain;
+  margin-bottom: 6px;
+}
+
+.logoTextMain {
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  color: var(--lu-ink);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.logoTextSub {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  color: var(--lu-green);
+  margin-top: 4px;
+  text-transform: uppercase;
+}
+
+.auditSplit {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.auditBox {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 22px;
+  border: 1px solid var(--lu-line);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+}
+
+.auditBoxDark {
+  background: var(--lu-ink);
+  color: var(--lu-bg);
+}
+
+.auditTitle {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--lu-muted);
+}
+
+.auditTitleDark {
+  color: #94a3b8;
+}
+
+.auditRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.auditRowDark {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.auditRow:last-child {
+  border-bottom: none;
+}
+
+.auditMuted {
+  color: var(--lu-muted);
+}
+
+.auditMutedDark {
+  color: #94a3b8;
+}
+
+.auditVal {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.auditRisk {
+  color: #ef4444;
+}
+
+.highlightGreen {
+  color: var(--lu-green);
+  font-size: 2.1rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.hardwareGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.hwCard {
+  background: #ffffff;
+  border: 1px solid var(--lu-line);
+  border-left: 4px solid var(--lu-ink);
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.hwCardAccent {
+  border-left-color: var(--lu-green);
+}
+
+.hwNumber {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #f1f5f9;
+  flex-shrink: 0;
+  width: 48px;
+}
+
+.hwDetails h4 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--lu-ink);
+  margin: 0 0 4px;
+}
+
+.hwDetails p {
+  font-size: 0.82rem;
+  color: var(--lu-body);
+  line-height: 1.45;
+  margin: 0;
 }
 
 .loading {
@@ -340,5 +498,9 @@
   .cardGrid,
   .cardGridTwo {
     grid-template-columns: 1fr;
+  }
+
+  .auditSplit {
+    flex-direction: column;
   }
 }

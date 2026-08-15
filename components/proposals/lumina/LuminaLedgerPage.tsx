@@ -94,7 +94,7 @@ export function LuminaLedgerPage({ data }: { data: ProposalData }) {
           ))}
         </div>
 
-        <div className={styles.pageFooter}>Lumina · 02 / 03</div>
+        <div className={styles.pageFooter}>Lumina · 04 / 05</div>
       </div>
     </section>
   );
