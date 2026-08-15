@@ -58,7 +58,7 @@ export function LuminaLedgerPage({ data }: { data: ProposalData }) {
 
   return (
     <section className={styles.a4Lumina}>
-      <div className={styles.contentArea} style={{ paddingTop: 32 }}>
+      <div className={styles.contentArea}>
         <div>
           <div className={styles.dateTag}>Capital summary</div>
           <h2 className={styles.sectionTitle}>What you pay. What you get.</h2>
