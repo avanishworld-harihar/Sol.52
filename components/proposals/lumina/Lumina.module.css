@@ -1630,7 +1630,7 @@
 
 .engBlueprint {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr);
   gap: 8px;
   margin-top: 6px;
   min-height: 0;
@@ -1638,7 +1638,8 @@
 
 .engRoof {
   position: relative;
-  min-height: 148px;
+  min-height: 210px;
+  flex: 1 1 auto;
   border-radius: 14px;
   overflow: hidden;
   background: #0f172a;
@@ -1663,20 +1664,20 @@
 
 .engPanelLayout {
   display: grid;
-  grid-template-columns: repeat(var(--lu-panel-cols, 4), 22px);
-  gap: 3px;
+  grid-template-columns: repeat(var(--lu-panel-cols, 4), 28px);
+  gap: 4px;
   z-index: 2;
   transform: rotateX(42deg) rotateZ(-12deg);
   transform-style: preserve-3d;
 }
 
 .engPanelBox {
-  width: 22px;
-  height: 36px;
+  width: 28px;
+  height: 46px;
   border-radius: 2px;
-  background: linear-gradient(180deg, #34d399 0%, #047857 100%);
-  border: 1px solid #6ee7b7;
-  box-shadow: inset 0 0 8px rgba(15, 23, 42, 0.35);
+  background: linear-gradient(180deg, #60a5fa 0%, #1d4ed8 100%);
+  border: 1px solid #93c5fd;
+  box-shadow: inset 0 0 8px rgba(15, 23, 42, 0.4);
 }
 
 .engRoofEmpty {
@@ -1716,7 +1717,7 @@
   top: 2px;
   left: 50%;
   transform: translateX(-50%);
-  color: #34d399;
+  color: #60a5fa;
 }
 
 .engCompassS {
