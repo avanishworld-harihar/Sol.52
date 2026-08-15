@@ -65,7 +65,7 @@ export function LuminaCover({ data, installerLogoUrl }: LuminaCoverProps) {
         </div>
       </div>
 
-      <div className={styles.contentArea}>
+      <div className={styles.contentCover}>
         <div>
           <div className={styles.dateTag}>
             {customer !== "—" ? `Prepared for ${customer}` : "Prepared for this property"}

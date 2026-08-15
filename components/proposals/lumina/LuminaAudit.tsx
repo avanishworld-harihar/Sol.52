@@ -41,7 +41,7 @@ export function LuminaAudit({ data }: { data: ProposalData }) {
   const maxBar = Math.max(...barHeights, 1);
 
   return (
-    <section className={styles.a4Lumina}>
+    <section className={`${styles.a4Lumina} ${styles.innerSheet}`}>
       <div className={styles.contentArea}>
         <div className={styles.dateTag}>Bill vs solar</div>
         <h1 className={styles.clientTitle}>What you pay today.</h1>

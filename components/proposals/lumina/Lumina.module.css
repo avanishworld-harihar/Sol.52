@@ -221,17 +221,46 @@
   color: var(--lu-green);
 }
 
-.contentArea {
+.contentCover {
   position: relative;
   z-index: 2;
   margin-top: -22px;
-  padding: 26px 32px 20px;
+  padding: 26px 32px 16px;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
   background: var(--lu-bg);
   border-radius: 22px 22px 0 0;
   box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.contentArea {
+  position: relative;
+  z-index: 2;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-height: 0;
+  background: transparent;
+}
+
+.innerSheet {
+  padding: 18mm 16mm 16mm;
+}
+
+.innerSheet .contentArea,
+.innerSheet .contentArea.hardwareSheet {
+  margin-top: 0;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  min-height: 0;
+}
+
+.innerSheet .pageFooter {
+  padding: 10px 0 0;
 }
 
 .dateTag {
@@ -342,7 +371,7 @@
 
 .pageFooter {
   margin-top: auto;
-  padding: 12px 0 8px;
+  padding: 14px 0 16px;
   font-size: 0.65rem;
   font-weight: 600;
   letter-spacing: 0.12em;
@@ -704,7 +733,7 @@
 
 .contentArea.hardwareSheet {
   margin-top: 0;
-  padding: 11mm 11mm 4mm;
+  padding: 0;
   border-radius: 0;
   box-shadow: none;
   min-height: 0;
@@ -1515,7 +1544,7 @@
 .closeBrandBar {
   margin-top: 0;
   background: var(--lu-ink);
-  padding: 12px 16px;
+  padding: 14px 20px 16px;
   text-align: center;
   color: var(--lu-bg);
   font-size: 0.72rem;
