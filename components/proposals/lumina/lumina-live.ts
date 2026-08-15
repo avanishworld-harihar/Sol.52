@@ -298,6 +298,8 @@ export type LuminaMonthRow = {
   peak: boolean;
   /** Live bill consumption for this calendar month; null when no bill series. */
   billUnits: number | null;
+  /** Monthly ₹ saving from live annual saving × this month's share. 0 when no live saving. */
+  savingsInr: number;
 };
 
 const MONTH_KEY_TO_INDEX: Record<string, number> = {
@@ -364,14 +366,20 @@ export function luminaBillYearUnits(data: ProposalData): number {
 
 export function luminaMonthlyForecast(data: ProposalData): LuminaMonthRow[] {
   const annual = luminaAnnualUnits(data);
+  const annualSave = luminaAnnualSavings(data);
+  const rate = annual > 0 && annualSave > 0 ? annualSave / annual : 0;
   const billByMonth = mapBillUnitsByCalendarMonth(data.bill.months);
   const showBill = luminaHasBillUnits(data);
-  return LUMINA_MONTH_SHARE.map((row, i) => ({
-    m: row.m,
-    val: annual > 0 ? Math.round(annual * row.share) : 0,
-    peak: row.peak,
-    billUnits: showBill ? billByMonth[i] : null,
-  }));
+  return LUMINA_MONTH_SHARE.map((row, i) => {
+    const val = annual > 0 ? Math.round(annual * row.share) : 0;
+    return {
+      m: row.m,
+      val,
+      peak: row.peak,
+      billUnits: showBill ? billByMonth[i] : null,
+      savingsInr: rate > 0 && val > 0 ? Math.round(val * rate) : 0,
+    };
+  });
 }
 
 export type LuminaTermCard = { title: string; body: string };

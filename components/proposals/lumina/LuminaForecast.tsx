@@ -1,6 +1,7 @@
 "use client";
 
 import type { ProposalData } from "@/lib/proposal-data";
+import { formatInrCompact } from "@/components/proposals/_shared/formatters";
 import styles from "./Lumina.module.css";
 import { LuminaDocFooter } from "./lumina-brand";
 import {
@@ -24,7 +25,7 @@ export function LuminaForecast({ data }: { data: ProposalData }) {
   const low = months.reduce((best, m) => (m.val > 0 && m.val < best.val ? m : best), months[0]!);
 
   return (
-    <section className={`${styles.a4Lumina} ${styles.innerSheet}`}>
+    <section className={`${styles.a4Lumina} ${styles.innerSheet} ${styles.forecastSheet}`}>
       <div className={styles.contentArea}>
         <div className={styles.dateTag}>Yield intelligence</div>
         <h1 className={styles.clientTitle}>Seasonal Forecast.</h1>
@@ -138,9 +139,16 @@ export function LuminaForecast({ data }: { data: ProposalData }) {
                   <span className={`${styles.barMonth} ${item.peak ? styles.barMonthPeak : ""}`}>
                     {item.m}
                   </span>
+                  <span className={styles.barSave}>
+                    {item.savingsInr > 0 ? formatInrCompact(item.savingsInr) : "—"}
+                  </span>
                 </div>
               );
             })}
+          </div>
+          <div className={styles.chartAxis}>
+            <span>Units on each bar</span>
+            <span>₹ saving under the month</span>
           </div>
         </div>
       </div>
