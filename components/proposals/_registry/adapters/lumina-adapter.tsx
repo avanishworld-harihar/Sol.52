@@ -7,6 +7,17 @@
 import { LuminaRenderer } from "@/components/proposals/lumina/lumina-renderer";
 import type { PresetRendererProps } from "@/components/proposals/_registry/types";
 
-export default function LuminaAdapter({ data, proposalId }: PresetRendererProps) {
-  return <LuminaRenderer data={data} proposalId={proposalId} />;
+export default function LuminaAdapter({
+  data,
+  installerLogoUrl,
+  pptInput,
+  proposalId,
+}: PresetRendererProps) {
+  return (
+    <LuminaRenderer
+      data={data}
+      installerLogoUrl={installerLogoUrl || pptInput?.installerLogoUrl}
+      proposalId={proposalId}
+    />
+  );
 }

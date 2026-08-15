@@ -335,11 +335,23 @@
   min-width: 120px;
 }
 
+.logoContainerSolo {
+  padding: 10px 14px;
+  min-width: 0;
+}
+
 .logoImage {
   max-height: 36px;
   max-width: 140px;
   object-fit: contain;
   margin-bottom: 6px;
+}
+
+.logoImageSolo {
+  max-height: 56px;
+  max-width: 180px;
+  object-fit: contain;
+  margin-bottom: 0;
 }
 
 .logoTextMain {
@@ -1036,13 +1048,27 @@
 .closeBrandBar {
   margin-top: 0;
   background: var(--lu-ink);
-  padding: 14px 16px;
+  padding: 12px 16px;
   text-align: center;
   color: var(--lu-bg);
   font-size: 0.72rem;
   letter-spacing: 0.14em;
   font-weight: 600;
   text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.closeBrandLogo {
+  height: 22px;
+  max-width: 88px;
+  object-fit: contain;
+  flex-shrink: 0;
+  background: #ffffff;
+  border-radius: 4px;
+  padding: 2px 6px;
 }
 
 .loading {

@@ -21,7 +21,13 @@ export type LuminaRendererProps = {
   proposalId?: string;
 };
 
-function LuminaDocument({ data }: { data: ProposalData }) {
+function LuminaDocument({
+  data,
+  installerLogoUrl,
+}: {
+  data: ProposalData;
+  installerLogoUrl?: string;
+}) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
 
@@ -61,16 +67,19 @@ function LuminaDocument({ data }: { data: ProposalData }) {
           </button>
         </div>
       </div>
-      <LuminaProposal data={data} />
+      <LuminaProposal data={data} installerLogoUrl={installerLogoUrl} />
     </div>
   );
 }
 
-export function LuminaRenderer({ data }: LuminaRendererProps) {
+export function LuminaRenderer({
+  data,
+  installerLogoUrl,
+}: LuminaRendererProps) {
   if (!data) {
     return <div className={styles.loading}>Preparing Lumina proposal…</div>;
   }
-  return <LuminaDocument data={data} />;
+  return <LuminaDocument data={data} installerLogoUrl={installerLogoUrl} />;
 }
 
 export default LuminaRenderer;
