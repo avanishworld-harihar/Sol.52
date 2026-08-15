@@ -2,6 +2,7 @@
 
 import type { ProposalData } from "@/lib/proposal-data";
 import styles from "./Lumina.module.css";
+import { LuminaDocFooter } from "./lumina-brand";
 import {
   luminaAnnualUnits,
   luminaBillYearUnits,
@@ -143,7 +144,7 @@ export function LuminaForecast({ data }: { data: ProposalData }) {
           </div>
         </div>
       </div>
-      <div className={styles.pageFooter}>Lumina · 05 / 08</div>
+      <LuminaDocFooter data={data} page="05 / 08" />
     </section>
   );
 }

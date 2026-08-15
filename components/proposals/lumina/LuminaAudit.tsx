@@ -7,6 +7,7 @@ import {
   formatLifetimeBenefitInr,
 } from "@/components/proposals/_shared/formatters";
 import styles from "./Lumina.module.css";
+import { LuminaDocFooter } from "./lumina-brand";
 import {
   luminaAnnualSavings,
   luminaBillMonths,
@@ -151,7 +152,7 @@ export function LuminaAudit({ data }: { data: ProposalData }) {
               : "When a bill and subsidy are saved on the proposal, they will fill these three boxes."}
         </p>
       </div>
-      <div className={styles.pageFooter}>Lumina · 02 / 08</div>
+      <LuminaDocFooter data={data} page="02 / 08" />
     </section>
   );
 }

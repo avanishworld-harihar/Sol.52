@@ -12,7 +12,7 @@ export const LUMINA_CLOSE_ALT =
   "Indian luxury rooftop with an 8–9 ft elevated solar plant, garden and sofa under the array, and a couple at the glass railing";
 
 export function luminaBrand(data: ProposalData): string {
-  return data.meta.brandName?.trim() || data.closing.installerName?.trim() || "SOL.52";
+  return data.meta.brandName?.trim() || data.closing.installerName?.trim() || "";
 }
 
 export function luminaBrandParts(data: ProposalData): { head: string; tail: string } {

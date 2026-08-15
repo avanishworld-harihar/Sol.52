@@ -2,6 +2,7 @@
 
 import type { ProposalData } from "@/lib/proposal-data";
 import styles from "./Lumina.module.css";
+import { LuminaDocFooter } from "./lumina-brand";
 import type { LuminaHwKind } from "./lumina-live";
 import { luminaHardwareRows } from "./lumina-live";
 
@@ -88,7 +89,7 @@ export function LuminaHardware({ data }: { data: ProposalData }) {
           ))}
         </div>
       </div>
-      <div className={styles.pageFooter}>Lumina · 03 / 08</div>
+      <LuminaDocFooter data={data} page="03 / 08" />
     </section>
   );
 }
