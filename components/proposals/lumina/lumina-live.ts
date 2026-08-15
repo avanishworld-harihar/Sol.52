@@ -81,6 +81,62 @@ export type LuminaHardwareRow = {
   accent?: boolean;
 };
 
+/** Typical central-India rooftop share of year-1 yield. Applied only to live annual units. */
+const LUMINA_MONTH_SHARE: ReadonlyArray<{ m: string; share: number; peak: boolean }> = [
+  { m: "JAN", share: 0.072, peak: false },
+  { m: "FEB", share: 0.078, peak: false },
+  { m: "MAR", share: 0.092, peak: true },
+  { m: "APR", share: 0.098, peak: true },
+  { m: "MAY", share: 0.105, peak: true },
+  { m: "JUN", share: 0.095, peak: true },
+  { m: "JUL", share: 0.068, peak: false },
+  { m: "AUG", share: 0.065, peak: false },
+  { m: "SEP", share: 0.082, peak: false },
+  { m: "OCT", share: 0.095, peak: true },
+  { m: "NOV", share: 0.088, peak: false },
+  { m: "DEC", share: 0.062, peak: false },
+];
+
+export type LuminaMonthRow = { m: string; val: number; peak: boolean };
+
+export function luminaMonthlyForecast(data: ProposalData): LuminaMonthRow[] {
+  const annual = luminaAnnualUnits(data);
+  if (!(annual > 0)) {
+    return LUMINA_MONTH_SHARE.map((row) => ({ m: row.m, val: 0, peak: row.peak }));
+  }
+  return LUMINA_MONTH_SHARE.map((row) => ({
+    m: row.m,
+    val: Math.round(annual * row.share),
+    peak: row.peak,
+  }));
+}
+
+export type LuminaTermCard = { title: string; body: string };
+
+export function luminaTermCards(data: ProposalData): LuminaTermCard[] {
+  const raw = (data.terms.conditions ?? []).map((t) => t.trim()).filter(Boolean);
+  const cards: LuminaTermCard[] = raw.slice(0, 4).map((text) => {
+    const split = text.match(/^(.{8,48}?)[:.—–-]\s+(.+)$/);
+    if (split) return { title: split[1].trim(), body: split[2].trim() };
+    const words = text.split(/\s+/);
+    if (words.length > 8) {
+      return { title: words.slice(0, 5).join(" "), body: text };
+    }
+    return { title: text.slice(0, 42), body: text };
+  });
+
+  const warranties = (data.warranty.highlights ?? [])
+    .filter((h) => h.label?.trim() && h.value?.trim())
+    .slice(0, 2)
+    .map((h) => ({
+      title: h.label.trim(),
+      body: [h.value, h.unit, h.label].filter(Boolean).join(" "),
+    }));
+
+  if (cards.length > 0) return cards;
+  return warranties;
+}
+
 export function luminaHardwareRows(data: ProposalData): LuminaHardwareRow[] {
   const items = (data.bom ?? []).filter((b) => b.name?.trim());
   if (items.length === 0) return [];

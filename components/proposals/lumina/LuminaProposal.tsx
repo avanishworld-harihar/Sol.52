@@ -5,6 +5,8 @@ import { LuminaCover } from "./LuminaCover";
 import { LuminaAudit } from "./LuminaAudit";
 import { LuminaHardware } from "./LuminaHardware";
 import { LuminaLedgerPage } from "./LuminaLedgerPage";
+import { LuminaForecast } from "./LuminaForecast";
+import { LuminaTerms } from "./LuminaTerms";
 import { LuminaClosingPage } from "./LuminaClosingPage";
 import styles from "./Lumina.module.css";
 
@@ -15,6 +17,8 @@ export function LuminaProposal({ data }: { data: ProposalData }) {
       <LuminaAudit data={data} />
       <LuminaHardware data={data} />
       <LuminaLedgerPage data={data} />
+      <LuminaForecast data={data} />
+      <LuminaTerms data={data} />
       <LuminaClosingPage data={data} />
     </div>
   );

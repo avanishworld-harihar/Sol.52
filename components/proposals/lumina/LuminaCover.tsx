@@ -85,7 +85,7 @@ export function LuminaCover({ data }: { data: ProposalData }) {
       </div>
 
       <div className={styles.pageFooter}>
-        SOL.52 DEPLOYMENT SPEC{location ? ` · ${location}` : ""} · 01 / 05
+        SOL.52 DEPLOYMENT SPEC{location ? ` · ${location}` : ""} · 01 / 07
       </div>
     </section>
   );

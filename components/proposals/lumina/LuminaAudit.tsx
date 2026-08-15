@@ -58,7 +58,7 @@ export function LuminaAudit({ data }: { data: ProposalData }) {
           </div>
         </div>
       </div>
-      <div className={styles.pageFooter}>Lumina · 02 / 05</div>
+      <div className={styles.pageFooter}>Lumina · 02 / 07</div>
     </section>
   );
 }
