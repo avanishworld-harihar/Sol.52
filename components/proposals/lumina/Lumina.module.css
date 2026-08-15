@@ -1284,8 +1284,24 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 32%;
+  object-position: 42% 58%;
   display: block;
+}
+
+.closeHeroWide {
+  position: relative;
+  height: 58%;
+  min-height: 148mm;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.closeHeroCopyWide {
+  position: absolute;
+  inset: 0 auto auto 0;
+  right: 0;
+  z-index: 2;
+  padding: 22px 28px 0;
 }
 
 .closeHeroOverlay {
@@ -1293,9 +1309,9 @@
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(15, 23, 42, 0.55) 0%,
-    rgba(15, 23, 42, 0.15) 38%,
-    rgba(15, 23, 42, 0.78) 100%
+    rgba(15, 23, 42, 0.48) 0%,
+    rgba(15, 23, 42, 0.08) 42%,
+    rgba(15, 23, 42, 0.22) 100%
   );
 }
 
@@ -1342,6 +1358,15 @@
   gap: 12px;
 }
 
+.closeDock .closeSigDock {
+  margin-top: 0;
+}
+
+.closeDock .closeSigCard {
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+  border: 1px solid var(--lu-line);
+}
+
 .closeSigCard {
   background: rgba(255, 255, 255, 0.96);
   border-radius: 14px;
@@ -1369,6 +1394,65 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
+}
+
+.closeDock {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14mm 12mm 10mm;
+  background: var(--lu-bg);
+}
+
+.closeBrandLockup {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #ffffff;
+  border: 1px solid var(--lu-line);
+  border-radius: 16px;
+  padding: 12px 16px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+}
+
+.closeBrandMark {
+  height: 44px;
+  max-width: 120px;
+  object-fit: contain;
+  flex-shrink: 0;
+  background: #ffffff;
+}
+
+.closeBrandCopy {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.closeBrandCopy strong {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--lu-ink);
+  letter-spacing: -0.02em;
+}
+
+.closeBrandCopy span {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--lu-muted);
+}
+
+.closeFolio {
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #94a3b8;
 }
 
 .closeBrandLogo {
@@ -1439,6 +1523,10 @@
 
   .closeSigDock {
     grid-template-columns: 1fr;
+  }
+
+  .closeBrandLockup {
+    flex-wrap: wrap;
   }
 
   .sigGrid {
