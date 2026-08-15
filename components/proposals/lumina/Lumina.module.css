@@ -627,6 +627,128 @@
   margin-top: 18px;
 }
 
+.forecastStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.forecastStat {
+  background: #ffffff;
+  border: 1px solid var(--lu-line);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.forecastStatPeak {
+  background: var(--lu-green-soft);
+  border-color: var(--lu-green);
+}
+
+.chartCard {
+  margin-top: 16px;
+  background: #ffffff;
+  border: 1px solid var(--lu-line);
+  border-radius: 16px;
+  padding: 18px 16px 14px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+.chartLegend {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--lu-muted);
+}
+
+.legendSwatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: #94a3b8;
+}
+
+.legendSwatchPeak {
+  background: var(--lu-green);
+}
+
+.barChart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 168px;
+  padding: 0 4px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.barCol {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.barVal {
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: var(--lu-ink);
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+
+.barValPeak {
+  color: var(--lu-green-ink);
+}
+
+.barTrack {
+  width: 100%;
+  max-width: 22px;
+  height: 132px;
+  display: flex;
+  align-items: flex-end;
+  background: #f1f5f9;
+  border-radius: 6px 6px 2px 2px;
+  overflow: hidden;
+}
+
+.barFill {
+  width: 100%;
+  background: #94a3b8;
+  border-radius: 6px 6px 2px 2px;
+  min-height: 4px;
+}
+
+.barFillPeak {
+  background: var(--lu-green);
+}
+
+.barMonth {
+  margin-top: 6px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--lu-muted);
+}
+
+.barMonthPeak {
+  color: var(--lu-green-ink);
+}
+
 .monthCard {
   display: flex;
   justify-content: space-between;
@@ -904,7 +1026,8 @@
     grid-template-columns: 1fr;
   }
 
-  .forecastGrid {
+  .forecastGrid,
+  .forecastStats {
     grid-template-columns: 1fr;
   }
 
