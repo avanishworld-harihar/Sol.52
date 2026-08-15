@@ -433,6 +433,232 @@
   line-height: 1.1;
 }
 
+.auditStory {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.auditStep {
+  background: #ffffff;
+  border: 1px solid var(--lu-line);
+  border-radius: 16px;
+  padding: 16px 16px 18px;
+  display: flex;
+  flex-direction: column;
+  min-height: 168px;
+}
+
+.auditStepSave {
+  background: var(--lu-ink);
+  border-color: var(--lu-ink);
+}
+
+.auditStepSubsidy {
+  background: var(--lu-green-soft);
+  border-color: #a7f3d0;
+}
+
+.auditStepNum {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: var(--lu-ink);
+  font-size: 0.7rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.auditStepSave .auditStepNum {
+  background: #334155;
+  color: #f8fafc;
+}
+
+.auditStepSubsidy .auditStepNum {
+  background: #d1fae5;
+  color: var(--lu-green-ink);
+}
+
+.auditStepKicker {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lu-muted);
+  margin-bottom: 10px;
+}
+
+.auditStepSave .auditStepKicker {
+  color: #94a3b8;
+}
+
+.auditStepSubsidy .auditStepKicker {
+  color: var(--lu-green-ink);
+}
+
+.auditStepValue {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--lu-ink);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+.auditStepValueSave {
+  color: #6ee7b7;
+}
+
+.auditStepValueSubsidy {
+  color: var(--lu-green-ink);
+}
+
+.auditStepHint {
+  margin-top: auto;
+  padding-top: 12px;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--lu-body);
+}
+
+.auditStepSave .auditStepHint {
+  color: #cbd5e1;
+}
+
+.auditSubsidyBar {
+  margin-top: 12px;
+  background: #ffffff;
+  border: 1px solid #a7f3d0;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.auditSubsidyBar strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--lu-green-ink);
+}
+
+.auditSubsidyKicker {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lu-green-ink);
+}
+
+.auditSubsidyNote {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--lu-muted);
+  text-align: right;
+}
+
+.auditMonthBlock {
+  margin-top: 16px;
+}
+
+.auditMonthHead {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--lu-muted);
+  margin-bottom: 8px;
+}
+
+.auditMonthChart {
+  display: grid;
+  gap: 6px;
+  height: 88px;
+  align-items: end;
+}
+
+.auditMonthCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  min-width: 0;
+}
+
+.auditMonthTrack {
+  flex: 1;
+  width: 100%;
+  max-width: 18px;
+  background: #e2e8f0;
+  border-radius: 6px 6px 2px 2px;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.auditMonthFill {
+  width: 100%;
+  background: #94a3b8;
+  border-radius: 6px 6px 2px 2px;
+}
+
+.auditMonthFillPeak {
+  background: var(--lu-green);
+}
+
+.auditMonthLbl {
+  margin-top: 4px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--lu-muted);
+}
+
+.auditChips {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.auditChip {
+  background: #ffffff;
+  border: 1px solid var(--lu-line);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.auditChip span {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lu-muted);
+  margin-bottom: 6px;
+}
+
+.auditChip strong {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--lu-ink);
+}
+
+.auditPlain {
+  margin-top: 16px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--lu-body);
+}
+
 .hardwareGrid {
   display: grid;
   grid-template-columns: 1fr;
@@ -1070,6 +1296,20 @@
 
   .auditSplit {
     flex-direction: column;
+  }
+
+  .auditStory,
+  .auditChips {
+    grid-template-columns: 1fr;
+  }
+
+  .auditSubsidyBar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .auditSubsidyNote {
+    text-align: left;
   }
 
   .capMetricGrid {

@@ -62,8 +62,26 @@ export function luminaAnnualSavings(data: ProposalData): number {
 }
 
 export function luminaYearlyBill(data: ProposalData): number {
-  if (data.bill.hasData && data.bill.yearlyBillInr > 0) return Math.round(data.bill.yearlyBillInr);
+  if (data.bill.yearlyBillInr > 0) return Math.round(data.bill.yearlyBillInr);
+  const totals = data.bill.totals?.netInr ?? 0;
+  if (totals > 0) return Math.round(totals);
+  const fromMonths = (data.bill.months ?? []).reduce((sum, m) => sum + (m.netInr || 0), 0);
+  if (fromMonths > 0) return Math.round(fromMonths);
   return 0;
+}
+
+export function luminaMonthlyBill(data: ProposalData): number {
+  const months = (data.bill.months ?? []).filter((m) => m.netInr > 0);
+  if (months.length > 0) {
+    const sum = months.reduce((s, m) => s + m.netInr, 0);
+    return Math.round(sum / months.length);
+  }
+  const yearly = luminaYearlyBill(data);
+  return yearly > 0 ? Math.round(yearly / 12) : 0;
+}
+
+export function luminaBillMonths(data: ProposalData): ProposalData["bill"]["months"] {
+  return (data.bill.months ?? []).filter((m) => m.units > 0 || m.netInr > 0);
 }
 
 export function luminaLifetime(data: ProposalData): number {
