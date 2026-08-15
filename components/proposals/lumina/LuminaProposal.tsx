@@ -24,7 +24,7 @@ export function LuminaProposal({
   pptInput,
 }: LuminaProposalProps) {
   return (
-    <div className={styles.stage}>
+    <div className={styles.stage} data-lumina-stage>
       <LuminaCover data={data} installerLogoUrl={installerLogoUrl} />
       <LuminaAudit data={data} />
       <LuminaHardware data={data} />

@@ -73,7 +73,7 @@ function LuminaDocument({
             root: rootRef.current,
             customerName: data.meta.customerName,
             presetId: "residential_lumina",
-            pageSelector: "section",
+            pageSelector: "[data-lumina-stage] > section",
           })
         );
       } finally {
