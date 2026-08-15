@@ -786,54 +786,48 @@ export type LuminaEngInsightCard = {
 };
 
 export function luminaEngineeringInsights(eng: LuminaEngineeringModel): LuminaEngInsightCard[] {
-  const panelBit =
-    eng.panelCount > 0
-      ? `${eng.panelCount} module${eng.panelCount === 1 ? "" : "s"}`
-      : "each module";
-  const areaBit =
-    eng.roofAreaM2 > 0
-      ? `${formatLuminaAreaM2(eng.roofAreaM2)}`
-      : "the planning area";
-  const how =
-    eng.panelCount > 0
-      ? `${panelBit} × ${eng.m2PerPanelLabel} (glass + walkway + shade gap) = ${areaBit}. The extra is not wasted roof — it is the aisle, the wind path, and the winter-sun buffer.`
-      : `We plan about ${eng.m2PerPanelLabel} per module: the glass itself plus a walkway and a small shade gap. The total appears when module count is on this proposal.`;
+  const prPct = eng.performanceRatioPct;
+  const pr =
+    prPct > 0
+      ? {
+          title: `Why ~${prPct}%, not 100?`,
+          body: `Pretend the sun sends 100 cups of power to the roof. Heat, wires, and the inverter spill some. About ${prPct} cups still reach your fan and lights. Nobody gets 100 cups — ~${prPct}% is a healthy score, not a broken plant.`,
+        }
+      : {
+          title: "Why not 100%?",
+          body: "Pretend the sun sends 100 cups of power to the roof. Heat, wires, and the inverter spill some. The rest still reach your fan and lights. That leftover score is the performance ratio. The number appears when plant size is on this proposal.",
+        };
 
-  const liveCable = [
-    eng.dcRunM > 0 ? `DC run ${eng.dcRunM} m` : null,
-    eng.acRunM > 0 ? `AC run ${eng.acRunM} m` : null,
-    eng.vdPct > 0 ? `voltage drop ${eng.vdPct}%` : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
-  const vdLine =
-    eng.vdPct > 0
-      ? ` On this drawing ${liveCable}. Under 2% drop means almost all roof power reaches the house.`
-      : liveCable
-        ? ` On this drawing: ${liveCable}.`
-        : " Exact metres are locked after the site survey; the rule stays the same — keep both runs short and the cable thick enough.";
+  const r = eng.dcAcRatio;
+  const ratio =
+    r > 0 && r >= 1
+      ? {
+          title: `DC/AC ${r} — extra panel`,
+          body: `The inverter is a lunchbox of a fixed size. We pack a little extra food on the roof (DC/AC ${r}). Weak morning and evening sun still fills the box. At noon the box is already full, so a tiny bit is leftover. Extra food means more hours of lunch — not a bigger box.`,
+        }
+      : r > 0
+        ? {
+            title: `DC/AC ${r}`,
+            body: `The inverter is a lunchbox. Panels on the roof are the food. DC/AC ${r} means the box can take all the roof power without spilling.`,
+          }
+        : {
+            title: "DC/AC — extra panel",
+            body: "The inverter is a lunchbox of a fixed size. A little extra panel on the roof is extra food: weak morning and evening sun still fills the box. The live ratio appears when both panel size and inverter size are on this proposal.",
+          };
 
-  const ratioLine =
-    eng.dcAcRatio >= 1
-      ? ` Extra panel on the roof (DC/AC ${eng.dcAcRatio}) means the inverter starts earning earlier in the morning and keeps going later in the evening.`
-      : "";
+  const y = eng.specificYield;
+  const yieldCard =
+    y > 0
+      ? {
+          title: `${y} — one year's score`,
+          body: `Think of 1 kW as one school bag of plant. In a year this roof fills that bag about ${y} times with units of electricity (kWh). A bigger plant is more bags — same score per bag. That number is this city's sun report card.`,
+        }
+      : {
+          title: "Specific yield — one year's score",
+          body: "Think of 1 kW as one school bag of plant. Specific yield says how many units of electricity one bag makes in a year. The number appears when yearly generation is on this proposal.",
+        };
 
-  return [
-    {
-      title: "Why this much roof?",
-      body: `Picture each panel as a door lying on the terrace. If we packed doors edge-to-edge, nobody could walk between them to wipe the glass — and stepping on a panel can make tiny cracks. We also leave gaps so wind can slip through (a packed roof acts like a sail) and so hot glass can grow a little in summer without pushing the next panel.`,
-    },
-    {
-      title: "How the space is counted",
-      body: `A high-efficiency module is about as tall as a door (~2.3 m) and ~1.1 m wide. ${how} Front-to-back space also stops the first row shading the next when the winter sun sits low.${
-        eng.rowSpacingM > 0 ? ` On this drawing the row gap is ${eng.rowSpacingM} m.` : ""
-      }`,
-    },
-    {
-      title: "DC run vs AC run",
-      body: `Panels make “raw” electricity (DC) — like uncooked food. The DC run is the sun-proof cable from the roof to the inverter (the kitchen). We keep it short and thick so power does not leak away as heat — that leak is voltage drop. The inverter “cooks” DC into AC, the kind your fan and fridge already eat. The AC run is the short cable from the inverter to your main switchboard — serving the meal to the table.${vdLine}${ratioLine}`,
-    },
-  ];
+  return [pr, ratio, yieldCard];
 }
 
 export function luminaEngineeringModel(
