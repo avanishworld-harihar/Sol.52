@@ -97,7 +97,7 @@ export function luminaLifetime(data: ProposalData): number {
 }
 
 
-export type LuminaHwKind = "panel" | "inverter" | "structure" | "dcdb" | "acdb" | "earth";
+export type LuminaHwKind = "panel" | "inverter" | "structure" | "dcdb" | "acdb" | "la" | "earth";
 
 export type LuminaHardwareRow = {
   kind: LuminaHwKind;
@@ -190,9 +190,20 @@ const LUMINA_HW_CATALOG: Record<LuminaHwKind, LuminaHwCatalog> = {
     detail: "3 nos × 17 mm copper rod · IS 3043 earth pit",
     extraDetails: [
       "Chemical earthing compound · resistance ≤1 Ω",
-      "Bonds inverter, DCDB, ACDB and lightning path",
+      "Bonds inverter, DCDB, ACDB and lightning arrester",
     ],
     chips: ["3 nos", "17 mm", "IS 3043", "≤1 Ω"],
+  },
+  la: {
+    kind: "la",
+    role: "Lightning Arrester",
+    title: "IEC 62305",
+    detail: "Roof air terminal · down conductor to earth pit",
+    extraDetails: [
+      "Air terminal at the array high point · down conductor to earth",
+      "Bonded to the earth pit · IEC 62305 / NBC lightning protection",
+    ],
+    chips: ["IEC 62305", "Air terminal", "Down conductor", "Bonded earth"],
   },
 };
 
@@ -229,9 +240,14 @@ function alreadyCovered(hay: string, frag: string): boolean {
 
 function filterPointsForKind(kind: LuminaHwKind, points: string[]): string[] {
   return points.filter((p) => {
-    if (kind === "dcdb") return !/\bacdb\b/i.test(p) && !/earthing|earth pit|copper earthing/i.test(p);
-    if (kind === "acdb") return !/\bdcdb\b/i.test(p) && !/earthing|earth pit|copper earthing/i.test(p);
-    if (kind === "earth") return !/\bdcdb\b/i.test(p) && !/\bacdb\b/i.test(p);
+    if (kind === "dcdb")
+      return !/\bacdb\b/i.test(p) && !/earthing|earth pit|copper earthing|lightning arrest/i.test(p);
+    if (kind === "acdb")
+      return !/\bdcdb\b/i.test(p) && !/earthing|earth pit|copper earthing|lightning arrest/i.test(p);
+    if (kind === "la")
+      return !/\bdcdb\b/i.test(p) && !/\bacdb\b/i.test(p) && !/17\s*mm|copper rod|earth pit/i.test(p);
+    if (kind === "earth")
+      return !/\bdcdb\b/i.test(p) && !/\bacdb\b/i.test(p) && !/air terminal|lightning arrest/i.test(p);
     return true;
   });
 }
@@ -350,7 +366,7 @@ function rowFromCatalog(
     item &&
     item.name !== item.brand &&
     !combined &&
-    !/protection|safety|panels?|modules?|inverter|structure|mounting|dcdb|acdb|earth/i.test(
+    !/protection|safety|panels?|modules?|inverter|structure|mounting|dcdb|acdb|earth|lightning|arrester|\bla\b/i.test(
       item.name
     )
       ? item.name
@@ -525,6 +541,10 @@ export function luminaHardwareRows(data: ProposalData): LuminaHardwareRow[] {
     used,
     (it) => /\bacdb\b|ac\s*distribution/i.test(bomHay(it)) && !isCombinedProtect(it)
   );
+  const la = claimBom(items, used, (it) => {
+    const nameBrand = `${it.name} ${it.brand}`;
+    return /lightning|arrester|\bla\b|air\s*terminal|down\s*conductor|ese\b/i.test(nameBrand);
+  });
   const earth = claimBom(items, used, (it) => {
     const nameBrand = `${it.name} ${it.brand}`;
     if (/earth|earthing|cu\s*rod|copper\s*rod|gi\s*pipe/i.test(nameBrand)) return true;
@@ -567,6 +587,7 @@ export function luminaHardwareRows(data: ProposalData): LuminaHardwareRow[] {
           ? `IP54 · ${acdbSide.trim()} · energy meter`
           : LUMINA_HW_CATALOG.acdb.detail,
     }),
+    rowFromCatalog("la", la),
     {
       ...earthLive,
       points: earthPoints,

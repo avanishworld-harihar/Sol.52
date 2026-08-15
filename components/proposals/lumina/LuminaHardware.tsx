@@ -34,10 +34,19 @@ function AcdbIcon() {
   );
 }
 
+function LaIcon() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0F172A" strokeWidth="1.8" aria-hidden>
+      <path d="M13 2 4 14h8l-1 8 9-12h-8l1-8Z" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function HardwareThumb({ kind, image }: { kind: LuminaHwKind; image: string }) {
   if (kind === "earth") return <EarthIcon />;
   if (kind === "dcdb") return <DcdbIcon />;
   if (kind === "acdb") return <AcdbIcon />;
+  if (kind === "la") return <LaIcon />;
   // eslint-disable-next-line @next/next/no-img-element
   return <img src={image} alt="" />;
 }
@@ -46,19 +55,36 @@ function cardKindClass(kind: LuminaHwKind): string {
   if (kind === "dcdb") return styles.hwCardDcdb;
   if (kind === "acdb") return styles.hwCardAcdb;
   if (kind === "earth") return styles.hwCardEarth;
+  if (kind === "la") return styles.hwCardLa;
   return "";
+}
+
+function HwSpecLine({ text }: { text: string }) {
+  const parts = text.split(/\s*·\s*/).map((p) => p.trim()).filter(Boolean);
+  if (parts.length === 0) return null;
+  return (
+    <p className={styles.hwSpecLine}>
+      {parts.map((part, i) => (
+        <span key={`${i}-${part}`} className={styles.hwSpecPart}>
+          {i > 0 ? <span className={styles.hwSpecDot} aria-hidden /> : null}
+          {part}
+        </span>
+      ))}
+    </p>
+  );
 }
 
 export function LuminaHardware({ data }: { data: ProposalData }) {
   const rows = luminaHardwareRows(data);
 
   return (
-    <section className={`${styles.a4Lumina} ${styles.innerSheet}`}>
+    <section className={`${styles.a4Lumina} ${styles.innerSheet} ${styles.hardwarePage}`}>
       <div className={`${styles.contentArea} ${styles.hardwareSheet}`}>
-        <div className={styles.dateTag}>System architecture · 6-item BOM</div>
+        <div className={styles.dateTag}>System architecture · 7-item BOM</div>
         <h1 className={styles.clientTitle}>Hardware Specs.</h1>
         <p className={styles.subText}>
-          DCDB, ACDB and earthing are separate. Earthing: 3 nos × 17 mm copper rod (IS 3043).
+          DCDB, ACDB, lightning arrester and earthing are separate. Earthing: 3 nos × 17 mm
+          copper rod (IS 3043).
         </p>
 
         <div className={styles.hardwareGrid}>
@@ -74,7 +100,7 @@ export function LuminaHardware({ data }: { data: ProposalData }) {
               <div className={styles.hwDetails}>
                 <div className={styles.hwRole}>{row.role}</div>
                 <h4>{row.title}</h4>
-                <p>{row.detail}</p>
+                <HwSpecLine text={row.detail} />
                 {row.chips.length > 0 ? (
                   <div className={styles.hwChips}>
                     {row.chips.map((chip) => (
