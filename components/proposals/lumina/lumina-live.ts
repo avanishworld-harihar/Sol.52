@@ -2,7 +2,7 @@
  * Lumina — live ProposalData only. No Harihar / Satna / 5 kW / ₹2.2L / Waaree fallbacks.
  */
 
-import type { ProposalBomItem, ProposalData } from "@/lib/proposal-data";
+import type { ProposalBillMonth, ProposalBomItem, ProposalData } from "@/lib/proposal-data";
 
 export const LUMINA_HERO_PHOTO = "/assets/proposals/canvas-cover-solar-home.jpg";
 export const LUMINA_CLOSE_PHOTO = "/assets/proposals/luxe-cover-rooftop-india.jpg";
@@ -156,17 +156,85 @@ const LUMINA_MONTH_SHARE: ReadonlyArray<{ m: string; share: number; peak: boolea
   { m: "DEC", share: 0.062, peak: false },
 ];
 
-export type LuminaMonthRow = { m: string; val: number; peak: boolean };
+export type LuminaMonthRow = {
+  m: string;
+  val: number;
+  peak: boolean;
+  /** Live bill consumption for this calendar month; null when no bill series. */
+  billUnits: number | null;
+};
+
+const MONTH_KEY_TO_INDEX: Record<string, number> = {
+  jan: 0,
+  feb: 1,
+  mar: 2,
+  apr: 3,
+  may: 4,
+  jun: 5,
+  jul: 6,
+  aug: 7,
+  sep: 8,
+  oct: 9,
+  nov: 10,
+  dec: 11,
+  जन: 0,
+  फर: 1,
+  मार: 2,
+  अप्र: 3,
+  मई: 4,
+  जून: 5,
+  जू: 5,
+  जुल: 6,
+  अग: 7,
+  सित: 8,
+  सि: 8,
+  अक्ट: 9,
+  नव: 10,
+  दिस: 11,
+};
+
+function monthIndexFromLabel(label: string): number | null {
+  const raw = label.trim();
+  if (!raw) return null;
+  const key3 = raw.slice(0, 3).toLowerCase();
+  if (key3 in MONTH_KEY_TO_INDEX) return MONTH_KEY_TO_INDEX[key3]!;
+  const key2 = raw.slice(0, 2).toLowerCase();
+  if (key2 in MONTH_KEY_TO_INDEX) return MONTH_KEY_TO_INDEX[key2]!;
+  const full = raw.toLowerCase();
+  const idx = LUMINA_MONTH_SHARE.findIndex((row) => full.startsWith(row.m.toLowerCase()));
+  return idx >= 0 ? idx : null;
+}
+
+function mapBillUnitsByCalendarMonth(
+  billMonths: ProposalBillMonth[] | undefined
+): Array<number | null> {
+  const out: Array<number | null> = Array.from({ length: 12 }, () => null);
+  if (!billMonths?.length) return out;
+  for (const row of billMonths) {
+    const idx = monthIndexFromLabel(row.label);
+    if (idx == null) continue;
+    out[idx] = Math.max(0, Math.round(Number(row.units) || 0));
+  }
+  return out;
+}
+
+export function luminaHasBillUnits(data: ProposalData): boolean {
+  return (data.bill.months ?? []).some((m) => m.units > 0);
+}
+
+export function luminaBillYearUnits(data: ProposalData): number {
+  return (data.bill.months ?? []).reduce((sum, m) => sum + (m.units > 0 ? m.units : 0), 0);
+}
 
 export function luminaMonthlyForecast(data: ProposalData): LuminaMonthRow[] {
   const annual = luminaAnnualUnits(data);
-  if (!(annual > 0)) {
-    return LUMINA_MONTH_SHARE.map((row) => ({ m: row.m, val: 0, peak: row.peak }));
-  }
-  return LUMINA_MONTH_SHARE.map((row) => ({
+  const billByMonth = mapBillUnitsByCalendarMonth(data.bill.months);
+  const showBill = luminaHasBillUnits(data);
+  return LUMINA_MONTH_SHARE.map((row, i) => ({
     m: row.m,
-    val: Math.round(annual * row.share),
+    val: annual > 0 ? Math.round(annual * row.share) : 0,
     peak: row.peak,
+    billUnits: showBill ? billByMonth[i] : null,
   }));
 }
 
