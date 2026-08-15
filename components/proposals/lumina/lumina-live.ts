@@ -189,7 +189,6 @@ const LUMINA_HW_CATALOG: Record<LuminaHwKind, LuminaHwCatalog> = {
     title: "Copper-bonded / GI",
     detail: "3 nos × 17 mm copper rod · IS 3043 earth pit",
     extraDetails: [
-      "3 nos × 17 mm copper-bonded rod · IS 3043 earth pit",
       "Chemical earthing compound · resistance ≤1 Ω",
       "Bonds inverter, DCDB, ACDB and lightning path",
     ],
@@ -228,6 +227,15 @@ function alreadyCovered(hay: string, frag: string): boolean {
   return tokens.every((t) => hay.includes(t));
 }
 
+function filterPointsForKind(kind: LuminaHwKind, points: string[]): string[] {
+  return points.filter((p) => {
+    if (kind === "dcdb") return !/\bacdb\b/i.test(p) && !/earthing|earth pit|copper earthing/i.test(p);
+    if (kind === "acdb") return !/\bdcdb\b/i.test(p) && !/earthing|earth pit|copper earthing/i.test(p);
+    if (kind === "earth") return !/\bdcdb\b/i.test(p) && !/\bacdb\b/i.test(p);
+    return true;
+  });
+}
+
 function collectPoints(parts: string[], max = 3): string[] {
   const out: string[] = [];
   let hay = "";
@@ -263,7 +271,7 @@ function uniqueChips(values: Array<string | undefined>, details = ""): string[] 
     seen.add(key);
     out.push(v);
   }
-  return out.slice(0, 5);
+  return out.slice(0, 4);
 }
 
 function bomHay(item: ProposalBomItem): string {
@@ -324,11 +332,11 @@ function rowFromCatalog(
   const title = extras?.title?.trim() || item?.brand?.trim() || catalog.title;
   const liveDetail = item ? pickLiveDetail(item, title, catalog.detail) : "";
   const preferred = extras?.detail?.trim() || liveDetail || catalog.detail;
-  const livePoints = (item?.technicalPoints ?? []).map((p) => p.trim()).filter(Boolean);
-  const points = collectPoints(
-    [...livePoints, preferred, ...catalog.extraDetails],
-    3
+  const livePoints = filterPointsForKind(
+    kind,
+    (item?.technicalPoints ?? []).map((p) => p.trim()).filter(Boolean)
   );
+  const points = collectPoints([...livePoints, preferred, ...catalog.extraDetails], 3);
   const detail = points.join(" · ") || catalog.detail;
   const hay = item ? bomHay(item) : catalog.role;
   const combined = item ? isCombinedProtect(item) : false;

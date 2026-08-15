@@ -749,26 +749,27 @@
 }
 
 .hardwareSheet .dateTag {
-  margin-bottom: 3px;
+  margin-bottom: 4px;
+  font-size: 0.78rem;
 }
 
 .hardwareSheet .clientTitle {
-  font-size: clamp(1.35rem, 3vw, 1.85rem);
-  margin-bottom: 2px;
+  font-size: clamp(1.85rem, 3.6vw, 2.35rem);
+  margin-bottom: 4px;
 }
 
 .hardwareSheet .subText {
-  font-size: 0.72rem;
-  line-height: 1.35;
+  font-size: 0.88rem;
+  line-height: 1.4;
   max-width: 100%;
-  margin-bottom: 2mm;
+  margin-bottom: 3mm;
 }
 
 .hardwareGrid {
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: repeat(6, minmax(0, 1fr));
-  gap: 5px;
+  gap: 8px;
   margin-top: 6px;
   flex: 1;
   min-height: 0;
@@ -778,11 +779,11 @@
   background: #ffffff;
   border: 1px solid var(--lu-line);
   border-left: 4px solid var(--lu-ink);
-  border-radius: 10px;
-  padding: 6px 10px;
+  border-radius: 12px;
+  padding: 10px 14px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   min-height: 0;
   overflow: hidden;
 }
@@ -804,9 +805,9 @@
 }
 
 .hwThumb {
-  width: 38px;
-  height: 38px;
-  border-radius: 8px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   display: flex;
@@ -824,11 +825,11 @@
 }
 
 .hwNumber {
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   font-weight: 900;
   color: #e2e8f0;
   flex-shrink: 0;
-  width: 24px;
+  width: 28px;
 }
 
 .hwDetails {
@@ -837,79 +838,51 @@
 }
 
 .hwRole {
-  font-size: 0.55rem;
+  font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--lu-muted);
-  margin-bottom: 0;
+  margin-bottom: 1px;
 }
 
 .hwDetails h4 {
-  font-size: 0.8rem;
-  font-weight: 700;
+  font-size: 1.02rem;
+  font-weight: 800;
   color: var(--lu-ink);
-  margin: 0 0 1px;
+  margin: 0 0 3px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .hwDetails p {
-  font-size: 0.62rem;
+  font-size: 0.8rem;
   color: var(--lu-body);
-  line-height: 1.32;
-  margin: 0 0 3px;
+  line-height: 1.4;
+  margin: 0 0 5px;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-.hwPoints {
-  margin: 0 0 3px;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.hwPoints li {
-  font-size: 0.6rem;
-  color: var(--lu-body);
-  line-height: 1.3;
-  padding-left: 9px;
-  position: relative;
-}
-
-.hwPoints li::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0.45em;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--lu-green);
 }
 
 .hwChips {
   display: flex;
   flex-wrap: wrap;
-  gap: 3px;
+  gap: 5px;
   overflow: hidden;
-  max-height: 1.55rem;
+  max-height: 1.7rem;
 }
 
 .hwChip {
-  font-size: 0.55rem;
+  font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.02em;
   color: var(--lu-ink);
   background: #f1f5f9;
   border-radius: 999px;
-  padding: 2px 6px;
+  padding: 3px 8px;
   white-space: nowrap;
   flex-shrink: 0;
 }
