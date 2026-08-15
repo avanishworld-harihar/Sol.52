@@ -53,13 +53,17 @@ export function LuminaClosingPage({
           <div className={styles.closeSigDock}>
             <div className={styles.closeSigCard}>
               <div className={styles.closeSigLine} />
-              <span className={styles.sigName}>{customer}</span>
-              <span className={styles.sigRole}>Client authorization</span>
+              <div className={styles.closeSigMeta}>
+                <span className={styles.sigName}>{customer}</span>
+                <span className={styles.sigRole}>Client authorization</span>
+              </div>
             </div>
             <div className={styles.closeSigCard}>
               <div className={styles.closeSigLine} />
-              <span className={styles.sigName}>{installer}</span>
-              <span className={styles.sigRole}>Official signatory</span>
+              <div className={styles.closeSigMeta}>
+                <span className={styles.sigName}>{installer}</span>
+                <span className={styles.sigRole}>Official signatory</span>
+              </div>
             </div>
           </div>
         </div>
