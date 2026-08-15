@@ -263,6 +263,15 @@
   padding: 10px 0 0;
 }
 
+.forecastSheet {
+  padding: 20mm 16mm 18mm;
+}
+
+.forecastSheet .pageFooter {
+  flex-shrink: 0;
+  padding: 12px 0 0;
+}
+
 .dateTag {
   font-size: 0.72rem;
   font-weight: 600;
@@ -1059,6 +1068,7 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
+  padding-bottom: 12px;
 }
 
 .chartLegend {
@@ -1105,7 +1115,7 @@
 .barChartTall {
   flex: 1;
   height: auto;
-  min-height: 268px;
+  min-height: 220px;
 }
 
 .barCol {
@@ -1147,7 +1157,7 @@
   gap: 3px;
   width: 100%;
   flex: 1;
-  min-height: 220px;
+  min-height: 168px;
 }
 
 .barTrack {
@@ -1164,13 +1174,13 @@
 .barChartTall .barTrack {
   height: auto;
   flex: 1;
-  min-height: 220px;
+  min-height: 168px;
 }
 
 .barTrackTwin {
   max-width: 11px;
   flex: 1;
-  min-height: 220px;
+  min-height: 168px;
 }
 
 .barFill {
@@ -1191,15 +1201,41 @@
 
 .barMonth {
   margin-top: 6px;
-  font-size: 0.62rem;
+  font-size: 0.58rem;
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--lu-muted);
+  line-height: 1.1;
 }
 
 .barMonthPeak {
   color: var(--lu-green-ink);
+}
+
+.barSave {
+  margin-top: 2px;
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: var(--lu-ink);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.chartAxis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lu-muted);
 }
 
 .monthCard {
