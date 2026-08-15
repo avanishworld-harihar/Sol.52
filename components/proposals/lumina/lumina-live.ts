@@ -810,6 +810,77 @@ export function luminaEngineeringInsights(
   lang: "en" | "hi" = "en"
 ): LuminaEngInsightCard[] {
   const hi = lang === "hi";
+  const panelBit =
+    eng.panelCount > 0
+      ? `${eng.panelCount} module${eng.panelCount === 1 ? "" : "s"}`
+      : hi
+        ? "हर module"
+        : "each module";
+  const areaBit =
+    eng.roofAreaM2 > 0
+      ? `${formatLuminaAreaM2(eng.roofAreaM2)}`
+      : hi
+        ? "planning area"
+        : "the planning area";
+  const how =
+    eng.panelCount > 0
+      ? hi
+        ? `${panelBit} × ${eng.m2PerPanelLabel} (glass + walkway + shade gap) = ${areaBit}. Extra छत बर्बाद नहीं — यह गली, हवा का रास्ता, और winter sun का buffer है।`
+        : `${panelBit} × ${eng.m2PerPanelLabel} (glass + walkway + shade gap) = ${areaBit}. The extra is not wasted roof — it is the aisle, the wind path, and the winter-sun buffer.`
+      : hi
+        ? `हम हर module के लिए लगभग ${eng.m2PerPanelLabel} रखते हैं: काँच + walkway + छोटा shade gap. Module count proposal पर होने पर कुल area आएगा।`
+        : `We plan about ${eng.m2PerPanelLabel} per module: the glass itself plus a walkway and a small shade gap. The total appears when module count is on this proposal.`;
+
+  const liveCable = [
+    eng.dcRunM > 0 ? `DC run ${eng.dcRunM} m` : null,
+    eng.acRunM > 0 ? `AC run ${eng.acRunM} m` : null,
+    eng.vdPct > 0 ? `voltage drop ${eng.vdPct}%` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  const vdLine =
+    eng.vdPct > 0
+      ? hi
+        ? ` इस drawing पर ${liveCable}. 2% से कम drop मतलब छत की लगभग सारी power घर तक पहुँचती है।`
+        : ` On this drawing ${liveCable}. Under 2% drop means almost all roof power reaches the house.`
+      : liveCable
+        ? hi
+          ? ` इस drawing पर: ${liveCable}.`
+          : ` On this drawing: ${liveCable}.`
+        : hi
+          ? " Exact metres site survey के बाद lock होते हैं; नियम वही है — दोनों run छोटे रखो और cable मोटी।"
+          : " Exact metres are locked after the site survey; the rule stays the same — keep both runs short and the cable thick enough.";
+
+  const ratioLine =
+    eng.dcAcRatio >= 1
+      ? hi
+        ? ` छत पर थोड़ा extra panel (DC/AC ${eng.dcAcRatio}) मतलब inverter सुबह जल्दी चालू होता है और शाम तक चलता है।`
+        : ` Extra panel on the roof (DC/AC ${eng.dcAcRatio}) means the inverter starts earning earlier in the morning and keeps going later in the evening.`
+      : "";
+
+  const roof: LuminaEngInsightCard = {
+    title: hi ? "इतनी छत क्यों?" : "Why this much roof?",
+    body: hi
+      ? "हर panel को छत पर पड़े दरवाज़े जैसा सोचो। अगर दरवाज़े चिपका कर रख दें, तो काँच पोंछने कोई चल नहीं सकता — और panel पर पैर रखने से छोटी cracks पड़ सकती हैं। Gap इसलिए भी है कि हवा निकल सके (भरी छत पाल जैसी बन जाती है) और गर्मी में काँच थोड़ा फैल सके।"
+      : "Picture each panel as a door lying on the terrace. If we packed doors edge-to-edge, nobody could walk between them to wipe the glass — and stepping on a panel can make tiny cracks. We also leave gaps so wind can slip through (a packed roof acts like a sail) and so hot glass can grow a little in summer without pushing the next panel.",
+  };
+  const space: LuminaEngInsightCard = {
+    title: hi ? "Space का हिसाब" : "How the space is counted",
+    body: hi
+      ? `High-efficiency module लगभग दरवाज़े जितना ऊँचा (~2.3 m) और ~1.1 m चौड़ा होता है। ${how} आगे-पीछे जगह इसलिए भी है कि winter में नीचा सूरज अगली row पर छाया न डाले।${
+          eng.rowSpacingM > 0 ? ` इस drawing पर row gap ${eng.rowSpacingM} m है।` : ""
+        }`
+      : `A high-efficiency module is about as tall as a door (~2.3 m) and ~1.1 m wide. ${how} Front-to-back space also stops the first row shading the next when the winter sun sits low.${
+          eng.rowSpacingM > 0 ? ` On this drawing the row gap is ${eng.rowSpacingM} m.` : ""
+        }`,
+  };
+  const cable: LuminaEngInsightCard = {
+    title: "DC run vs AC run",
+    body: hi
+      ? `Panel “कच्ची” बिजली बनाता है (DC) — जैसे कच्चा खाना। DC run छत से inverter (रसोई) तक का sun-proof cable है। इसे छोटा और मोटा रखते हैं ताकि power गर्मी बनकर न बहे — उसी leak को voltage drop कहते हैं। Inverter DC को AC बनाता है, जो पंखा-fridge पहले से खाते हैं। AC run inverter से main board तक छोटा तार है — पका खाना मेज़ तक।${vdLine}${ratioLine}`
+      : `Panels make “raw” electricity (DC) — like uncooked food. The DC run is the sun-proof cable from the roof to the inverter (the kitchen). We keep it short and thick so power does not leak away as heat — that leak is voltage drop. The inverter “cooks” DC into AC, the kind your fan and fridge already eat. The AC run is the short cable from the inverter to your main switchboard — serving the meal to the table.${vdLine}${ratioLine}`,
+  };
+
   const prPct = eng.performanceRatioPct;
   const pr =
     prPct > 0
@@ -865,7 +936,7 @@ export function luminaEngineeringInsights(
             : "Think of 1 kW as one school bag of plant. Specific yield says how many units of electricity one bag makes in a year. The number appears when yearly generation is on this proposal.",
         };
 
-  return [pr, ratio, yieldCard];
+  return [roof, space, cable, pr, ratio, yieldCard];
 }
 
 export function luminaEngineeringModel(
