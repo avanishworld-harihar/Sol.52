@@ -8,7 +8,9 @@ import type { ProposalBillMonth, ProposalBomItem, ProposalData } from "@/lib/pro
 export const LUMINA_HERO_PHOTO = "/assets/proposals/quantum-cover-indian-day.jpg";
 export const LUMINA_HERO_ALT =
   "Indian RCC rooftop with elevated galvanized mounting structure and south-tilt solar array";
-export const LUMINA_CLOSE_PHOTO = "/assets/proposals/luxe-cover-rooftop-india.jpg";
+export const LUMINA_CLOSE_PHOTO = "/assets/proposals/lumina-close-indian-luxury-terrace.jpg";
+export const LUMINA_CLOSE_ALT =
+  "Indian luxury rooftop with an 8–9 ft elevated solar plant, garden and sofa under the array, and a couple at the glass railing";
 
 export function luminaBrand(data: ProposalData): string {
   return data.meta.brandName?.trim() || data.closing.installerName?.trim() || "SOL.52";
