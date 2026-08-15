@@ -6,6 +6,7 @@
 
 import type { ProposalData } from "@/lib/proposal-data";
 import { formatInr } from "@/components/proposals/_shared/formatters";
+import type { LuminaLang } from "./lumina-copy";
 
 export type LuminaTermsModel = {
   installerName: string;
@@ -65,6 +66,53 @@ const AMC_TERMS: string[] = [
   "Standard force majeure provisions apply; service deficiencies during such events shall be communicated to the client within one week of occurrence.",
 ];
 
+const GENERAL_HI: string[] = [
+  "DISCOM / state electricity board का load change, या pole से meter तक cable change और उसका liaison — अगर ज़रूरी हो — customer के scope में रहेगा।",
+  "Net-metering, subsidy (PM Surya Ghar / state schemes), DISCOM approvals या किसी official application से जुड़े government fees, regulatory charges और legal cost customer सीधे भरेंगे।",
+  "Solar connection के लिए sanctioned load या connected load बढ़ाना पड़े तो customer पहले DISCOM के सारे pending bills और dues क्लियर करेंगे। Uncleared dues से delay या rejection customer की ज़िम्मेदारी रहेगी।",
+  "Inverter warranty manufacturer के अनुसार (string inverter पर आमतौर पर 8–10 साल)।",
+  "Solar PV module product warranty: 15 साल; performance warranty: 30वें साल के अंत पर ≥80% rated output (manufacturer). ऊपर न लिखे parts और overall system: commissioning से 1 साल।",
+  "Warranty सिर्फ manufacturing defect पर है। Physical damage, misuse या vandalism cover नहीं।",
+  "Module की routine सफाई (हफ्ते में एक बार बेहतर) customer के scope में है — यही generation को सीधा affect करती है।",
+  "Advance payment और agreed purchase order / payment schedule मिलने के 30–40 working days में installation पूरा होगा।",
+  "यहाँ न लिखी बातें दोनों पक्षों के written agreement से चलेंगी।",
+  "Refund, अगर लागू हो, project finalization amount पर 2.5% काट कर और पहले हुए documented expenses काट कर होगा।",
+];
+
+const DOCUMENTS_HI: string[] = [
+  "Latest electricity bill (साफ़ copy)",
+  "PAN card की copy",
+  "Aadhaar card की copy (साफ़, ज़रूरत हो तो दोनों तरफ)",
+  "Ownership proof — property tax receipt / sale deed / municipal record",
+  "Applicant की passport-size photo",
+  "Single-line diagram (SLD) — draft हम देंगे; customer का signed copy चाहिए",
+];
+
+const AMC_SCOPE_HI: string[] = [
+  "Annual Maintenance Contract (AMC) में:",
+  "Plant performance और energy generation की daily / periodic monitoring",
+  "Plant और equipment का routine preventive maintenance",
+  "Emergency breakdown (48 working hours में response)",
+  "Warranty support और defect ठीक करने के लिए OEM से coordination",
+  "DC & AC protection, earthing और cable termination की periodic inspection",
+];
+
+const CLIENT_SCOPE_HI: string[] = [
+  "Site security, watch and ward",
+  "Plant और equipment का insurance (अगर चाहिए)",
+  "Remote monitoring के लिए site पर stable internet (जहाँ लागू हो)",
+  "Maintenance के लिए पानी और auxiliary power, site पर ज़रूरत अनुसार",
+  "रोज़ की visual check और छत तक सुरक्षित पहुँच",
+  "Manufacturer के हिसाब से नियमित module सफाई",
+];
+
+const AMC_TERMS_HI: string[] = [
+  "Maintenance charges, जब लागू हों, half-yearly advance में payable हैं।",
+  "Minimum O&M 2 साल; दोनों की सहमति से 2-2 साल बढ़ाया जा सकता है (commissioning से 25 साल तक)।",
+  "Theft, stand damage या vandalism से module / equipment loss की ज़िम्मेदारी हमारी नहीं।",
+  "Standard force majeure लागू; ऐसी घटना में service कमी एक हफ्ते में customer को बताई जाएगी।",
+];
+
 function freeAmcYears(data: ProposalData): 1 | 5 | 10 {
   const fromHighlight = (data.warranty.highlights ?? []).find((h) =>
     /amc|maintenance/i.test(`${h.label} ${h.unit}`)
@@ -74,22 +122,29 @@ function freeAmcYears(data: ProposalData): 1 | 5 | 10 {
   return 1;
 }
 
-export function buildLuminaTermsModel(data: ProposalData): LuminaTermsModel {
+export function buildLuminaTermsModel(
+  data: ProposalData,
+  lang: LuminaLang = "en"
+): LuminaTermsModel {
+  const hi = lang === "hi";
   const years = freeAmcYears(data);
   const gross = data.economics.grossInr > 0 ? Math.round(data.economics.grossInr) : 0;
-  const invoice = gross > 0 ? formatInr(gross) : "the invoice value";
+  const invoice = gross > 0 ? formatInr(gross) : hi ? "invoice value" : "the invoice value";
   const installer =
     data.closing.installerName?.trim() || data.meta.brandName?.trim() || "";
 
   return {
     installerName: installer,
-    general: GENERAL,
-    documents: DOCUMENTS,
-    amcObjective:
-      "The objective of Annual Maintenance Services is to maintain the performance ratio and general upkeep of the rooftop SPV plant throughout the contract period.",
-    amcScope: AMC_SCOPE,
-    clientScope: CLIENT_SCOPE,
-    amcCostParagraph: `First ${years} year${years > 1 ? "s" : ""} AMC is included in the quoted price. From Year ${years + 1} onwards, annual maintenance may be charged at 2% of invoice value (${invoice}) with 5% year-on-year escalation, subject to a signed O&M agreement.`,
-    amcTerms: AMC_TERMS,
+    general: hi ? GENERAL_HI : GENERAL,
+    documents: hi ? DOCUMENTS_HI : DOCUMENTS,
+    amcObjective: hi
+      ? "Annual Maintenance का मकसद contract अवधि तक rooftop SPV plant का performance ratio और सामान्य upkeep बनाए रखना है।"
+      : "The objective of Annual Maintenance Services is to maintain the performance ratio and general upkeep of the rooftop SPV plant throughout the contract period.",
+    amcScope: hi ? AMC_SCOPE_HI : AMC_SCOPE,
+    clientScope: hi ? CLIENT_SCOPE_HI : CLIENT_SCOPE,
+    amcCostParagraph: hi
+      ? `पहले ${years} साल का AMC quoted price में शामिल है। Year ${years + 1} से annual maintenance invoice value (${invoice}) का 2% हो सकता है, हर साल 5% escalation, signed O&M agreement पर।`
+      : `First ${years} year${years > 1 ? "s" : ""} AMC is included in the quoted price. From Year ${years + 1} onwards, annual maintenance may be charged at 2% of invoice value (${invoice}) with 5% year-on-year escalation, subject to a signed O&M agreement.`,
+    amcTerms: hi ? AMC_TERMS_HI : AMC_TERMS,
   };
 }

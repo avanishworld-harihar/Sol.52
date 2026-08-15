@@ -4,6 +4,7 @@ import type { ProposalData } from "@/lib/proposal-data";
 import { installerLogoAlt } from "@/lib/proposal-branding-settings";
 import styles from "./Lumina.module.css";
 import { useLuminaSurfaceBrand } from "./lumina-brand";
+import { useLuminaLang } from "./lumina-lang-context";
 import {
   LUMINA_CLOSE_ALT,
   LUMINA_CLOSE_PHOTO,
@@ -20,6 +21,7 @@ export function LuminaClosingPage({
   data,
   installerLogoUrl,
 }: LuminaClosingPageProps) {
+  const { copy } = useLuminaLang();
   const customer = data.meta.customerName?.trim() || "—";
   const systemKw = Number(data.meta.systemKw) || 0;
   const closingBrand = useLuminaSurfaceBrand(data, "closing", installerLogoUrl);
@@ -30,14 +32,9 @@ export function LuminaClosingPage({
   const contact = data.closing.contactLine?.trim();
 
   const title =
-    customer !== "—" ? `${customer}, this roof is ready.` : "This roof is ready.";
-  const lead = [
-    systemKw > 0 ? `A ${formatLuminaKw(systemKw)} kW rooftop plant` : "This rooftop plant",
-    location ? `for ${location}` : null,
-    "— accept when you are.",
-  ]
-    .filter(Boolean)
-    .join(" ");
+    customer !== "—" ? copy.close.titleNamed(customer) : copy.close.titlePlain;
+  const plant = systemKw > 0 ? copy.close.plantKw(formatLuminaKw(systemKw)) : copy.close.plantPlain;
+  const lead = copy.close.lead(plant, location || null);
 
   return (
     <section className={styles.a4Lumina}>
@@ -46,7 +43,7 @@ export function LuminaClosingPage({
         <img src={LUMINA_CLOSE_PHOTO} alt={LUMINA_CLOSE_ALT} className={styles.closeHeroImg} />
         <div className={styles.closeHeroOverlay} />
         <div className={styles.closeHeroCopy}>
-          <div className={styles.closeKicker}>Execution mandate</div>
+          <div className={styles.closeKicker}>{copy.close.kicker}</div>
           <h1 className={styles.closeTitle}>{title}</h1>
           <p className={styles.closeLead}>{lead}</p>
 
@@ -55,14 +52,14 @@ export function LuminaClosingPage({
               <div className={styles.closeSigLine} />
               <div className={styles.closeSigMeta}>
                 <span className={styles.sigName}>{customer}</span>
-                <span className={styles.sigRole}>Client authorization</span>
+                <span className={styles.sigRole}>{copy.close.clientRole}</span>
               </div>
             </div>
             <div className={styles.closeSigCard}>
               <div className={styles.closeSigLine} />
               <div className={styles.closeSigMeta}>
                 <span className={styles.sigName}>{installer}</span>
-                <span className={styles.sigRole}>Official signatory</span>
+                <span className={styles.sigRole}>{copy.close.officialRole}</span>
               </div>
             </div>
           </div>

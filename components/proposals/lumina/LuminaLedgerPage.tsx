@@ -8,6 +8,7 @@ import {
 } from "@/components/proposals/_shared/formatters";
 import styles from "./Lumina.module.css";
 import { LuminaDocFooter } from "./lumina-brand";
+import { useLuminaLang } from "./lumina-lang-context";
 import { luminaAnnualUnits } from "./lumina-live";
 
 function Figure({
@@ -37,18 +38,12 @@ function Figure({
 }
 
 export function LuminaLedgerPage({ data }: { data: ProposalData }) {
+  const { copy } = useLuminaLang();
   const gross = data.economics.grossInr;
   const subsidy = data.economics.subsidyInr;
   const net = data.economics.netInr;
   const showSubsidy = subsidy > 0;
   const payback = data.economics.paybackYears;
-  const monthly = data.economics.monthlySavingsInr;
-  const annualSave =
-    data.closing.annualSavingsInr > 0
-      ? data.closing.annualSavingsInr
-      : monthly > 0
-        ? monthly * 12
-        : 0;
   const lifetime =
     data.closing.lifetimeWealthInr > 0
       ? data.closing.lifetimeWealthInr
@@ -61,69 +56,28 @@ export function LuminaLedgerPage({ data }: { data: ProposalData }) {
     <section className={`${styles.a4Lumina} ${styles.innerSheet}`}>
       <div className={styles.contentArea}>
         <div>
-          <div className={styles.dateTag}>Capital summary</div>
-          <h2 className={styles.sectionTitle}>What you pay. What you get.</h2>
-          <p className={styles.subText}>
-            Four blocks, four meanings. Stage payments stay on gross; subsidy is credited later
-            when it exists. Blank fields are not estimated.
-          </p>
+          <div className={styles.dateTag}>{copy.capital.tag}</div>
+          <h2 className={styles.sectionTitle}>{copy.capital.title}</h2>
+          <p className={styles.subText}>{copy.capital.lead}</p>
         </div>
 
         <div className={styles.capStack}>
           <div className={`${styles.capSection} ${styles.capSectionPay}`}>
             <div className={styles.capSectionHead}>
-              <span className={styles.capKicker}>1 · You pay</span>
-              <span className={styles.capHint}>Investment to install the plant</span>
+              <span className={styles.capKicker}>{copy.capital.pay}</span>
+              <span className={styles.capHint}>{copy.capital.payHint}</span>
             </div>
             <div className={styles.capMetricGrid}>
-              <Figure name="System cost (gross)" value={gross > 0 ? formatInrCompact(gross) : "—"} />
+              <Figure name={copy.capital.gross} value={gross > 0 ? formatInrCompact(gross) : "—"} />
               {showSubsidy ? (
-                <Figure name="Subsidy (credited later)" value={`− ${formatInrCompact(subsidy)}`} />
+                <Figure name={copy.capital.subsidyLater} value={`− ${formatInrCompact(subsidy)}`} />
               ) : (
-                <Figure name="Subsidy on this quote" value="None on file" />
+                <Figure name={copy.capital.subsidyNone} value={copy.capital.noneOnFile} />
               )}
               <Figure
-                name={showSubsidy ? "Net outlay after subsidy" : "Net outlay (same as gross)"}
+                name={showSubsidy ? copy.capital.netAfter : copy.capital.netSame}
                 value={netValue > 0 ? formatInrCompact(netValue) : "—"}
                 wide
-              />
-            </div>
-          </div>
-
-          <div className={`${styles.capSection} ${styles.capSectionGet}`}>
-            <div className={styles.capSectionHead}>
-              <span className={styles.capKicker}>2 · The plant produces</span>
-              <span className={styles.capHint}>Energy and recovery time — not rupees</span>
-            </div>
-            <div className={styles.capMetricGrid}>
-              <Figure
-                name="Year-1 generation"
-                value={units > 0 ? units.toLocaleString("en-IN") : "—"}
-                unit={units > 0 ? "kWh" : undefined}
-              />
-              <Figure
-                name="Simple payback"
-                value={payback > 0 ? String(payback) : "—"}
-                unit={payback > 0 ? "years" : undefined}
-              />
-            </div>
-          </div>
-
-          <div className={`${styles.capSection} ${styles.capSectionSave}`}>
-            <div className={styles.capSectionHead}>
-              <span className={styles.capKicker}>3 · You save</span>
-              <span className={styles.capHint}>Bill money that stays with you</span>
-            </div>
-            <div className={styles.capMetricGrid}>
-              <Figure
-                name="Every year (est.)"
-                value={annualSave > 0 ? `+${formatInr(annualSave)}` : "—"}
-                save
-              />
-              <Figure
-                name="Over 25 years (est.)"
-                value={lifetime > 0 ? formatLifetimeBenefitInr(lifetime) : "—"}
-                save
               />
             </div>
           </div>
@@ -131,8 +85,8 @@ export function LuminaLedgerPage({ data }: { data: ProposalData }) {
           {payments.length > 0 ? (
             <div className={`${styles.capSection} ${styles.capSectionPaySchedule}`}>
               <div className={styles.capSectionHead}>
-                <span className={styles.capKicker}>4 · How you pay</span>
-                <span className={styles.capHint}>Stage schedule on gross cost</span>
+                <span className={styles.capKicker}>{copy.capital.howPay}</span>
+                <span className={styles.capHint}>{copy.capital.howPayHint}</span>
               </div>
               <div className={styles.payList}>
                 {payments.map((p, i) => (
@@ -150,6 +104,31 @@ export function LuminaLedgerPage({ data }: { data: ProposalData }) {
               </div>
             </div>
           ) : null}
+
+          <div className={`${styles.capSection} ${styles.capSectionSave}`}>
+            <div className={styles.capSectionHead}>
+              <span className={styles.capKicker}>{copy.capital.produce}</span>
+              <span className={styles.capHint}>{copy.capital.produceHint}</span>
+            </div>
+            <div className={styles.capMetricGrid}>
+              <Figure
+                name={copy.capital.year1Gen}
+                value={units > 0 ? units.toLocaleString("en-IN") : "—"}
+                unit={units > 0 ? "kWh" : undefined}
+              />
+              <Figure
+                name={copy.capital.payback}
+                value={payback > 0 ? String(payback) : "—"}
+                unit={payback > 0 ? copy.capital.years : undefined}
+              />
+              <Figure
+                name={copy.capital.over25}
+                value={lifetime > 0 ? formatLifetimeBenefitInr(lifetime) : "—"}
+                save
+                wide
+              />
+            </div>
+          </div>
         </div>
 
         <LuminaDocFooter data={data} page="05 / 09" />

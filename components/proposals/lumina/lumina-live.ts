@@ -512,7 +512,11 @@ export function luminaEffectiveSavingRate(data: ProposalData): number {
  * Generation-engineering footnote + insight for Seasonal Forecast.
  * Uses live tilt when present; seasonal GHI / soiling copy is climate knowledge, not a fake site audit.
  */
-export function luminaForecastNotes(data: ProposalData): LuminaForecastNotes {
+export function luminaForecastNotes(
+  data: ProposalData,
+  lang: "en" | "hi" = "en"
+): LuminaForecastNotes {
+  const hi = lang === "hi";
   const months = luminaMonthlyForecast(data);
   const annual = luminaAnnualUnits(data);
   const peakMonths = months.filter((m) => m.peak).map((m) => m.m);
@@ -529,41 +533,57 @@ export function luminaForecastNotes(data: ProposalData): LuminaForecastNotes {
   const parts: string[] = [];
   if (annual > 0) {
     parts.push(
-      `Green bars (${peakSpan}) are pre-monsoon high-GHI months: the sun sits high and skies are typically clear, so the array sees the year’s strongest irradiance.`
+      hi
+        ? `Green bars (${peakSpan}) monsoon से पहले की तेज़ धूप (GHI) हैं: सूरज ऊँचा रहता है, आसमान साफ़ रहता है, इसलिए array को साल की सबसे तेज़ रोशनी मिलती है।`
+        : `Green bars (${peakSpan}) are pre-monsoon high-GHI months: the sun sits high and skies are typically clear, so the array sees the year’s strongest irradiance.`
     );
     parts.push(
-      `Output then falls in the rains because monsoon cloud cover cuts GHI even though daylight hours stay long.${
-        trough.val > 0 ? ` ${trough.m} is the trough as solar altitude is shallower.` : ""
-      }`
+      hi
+        ? `बारिश में generation गिरती है क्योंकि monsoon के बादल GHI काट देते हैं — दिन लंबे होने पर भी।${
+            trough.val > 0 ? ` ${trough.m} सबसे नीचा महीना है क्योंकि सूरज नीचा रहता है।` : ""
+          }`
+        : `Output then falls in the rains because monsoon cloud cover cuts GHI even though daylight hours stay long.${
+            trough.val > 0 ? ` ${trough.m} is the trough as solar altitude is shallower.` : ""
+          }`
     );
   } else {
     parts.push(
-      "On a central-India rooftop, generation typically peaks before the monsoon when GHI is highest and skies are clear, then falls in July–August as cloud cover cuts irradiance."
+      hi
+        ? "Central-India rooftop पर generation आमतौर पर monsoon से पहले peak पर होती है जब GHI सबसे ज़्यादा हो, फिर July–August में बादलों से गिरती है।"
+        : "On a central-India rooftop, generation typically peaks before the monsoon when GHI is highest and skies are clear, then falls in July–August as cloud cover cuts irradiance."
     );
   }
 
   if (tiltDeg > 0) {
     parts.push(
-      `Array tilt is set to ${tiltDeg}° so summer and winter harvest stay balanced on this latitude — a flat terrace would give away winter yield.`
+      hi
+        ? `Array tilt ${tiltDeg}° रखा गया है ताकि summer और winter दोनों में yield balance रहे — बिलकुल सपाट छत winter की रोशनी गवा देती है।`
+        : `Array tilt is set to ${tiltDeg}° so summer and winter harvest stay balanced on this latitude — a flat terrace would give away winter yield.`
     );
   } else {
     parts.push(
-      "A latitude-matched tilt recovers more winter light than a flat terrace, which is why the winter bars are low, not zero."
+      hi
+        ? "Latitude के हिसाब से tilt winter की रोशनी बचाता है। इसलिए winter bars कम हैं, zero नहीं।"
+        : "A latitude-matched tilt recovers more winter light than a flat terrace, which is why the winter bars are low, not zero."
     );
   }
 
   parts.push(
-    "Dust and pre-monsoon haze sit on the glass in late summer — a scheduled wash before June recovers more year-1 kWh than adding extra modules."
+    hi
+      ? "May–June में धूल और धुंध काँच पर बैठती है — June से पहले एक scheduled wash extra modules लगाने से ज़्यादा Year-1 kWh बचाती है।"
+      : "Dust and pre-monsoon haze sit on the glass in late summer — a scheduled wash before June recovers more year-1 kWh than adding extra modules."
   );
 
   const rate = luminaEffectiveSavingRate(data);
   return {
     insightTag: "Expert insight",
-    insightTitle: "Why the bars rise and fall",
+    insightTitle: hi ? "Bars ऊपर-नीचे क्यों होते हैं" : "Why the bars rise and fall",
     insightBody: parts.join(" "),
     savingsBasis:
       rate > 0
-        ? `Estimated savings = monthly units × ₹${rate.toFixed(2)}/unit effective saving rate. Fixed charges excluded.`
+        ? hi
+          ? `Estimated savings = महीने की units × ₹${rate.toFixed(2)}/unit effective saving rate. Fixed charges शामिल नहीं।`
+          : `Estimated savings = monthly units × ₹${rate.toFixed(2)}/unit effective saving rate. Fixed charges excluded.`
         : null,
   };
 }
@@ -785,46 +805,64 @@ export type LuminaEngInsightCard = {
   body: string;
 };
 
-export function luminaEngineeringInsights(eng: LuminaEngineeringModel): LuminaEngInsightCard[] {
+export function luminaEngineeringInsights(
+  eng: LuminaEngineeringModel,
+  lang: "en" | "hi" = "en"
+): LuminaEngInsightCard[] {
+  const hi = lang === "hi";
   const prPct = eng.performanceRatioPct;
   const pr =
     prPct > 0
       ? {
-          title: `Why ~${prPct}%, not 100?`,
-          body: `Pretend the sun sends 100 cups of power to the roof. Heat, wires, and the inverter spill some. About ${prPct} cups still reach your fan and lights. Nobody gets 100 cups — ~${prPct}% is a healthy score, not a broken plant.`,
+          title: hi ? `~${prPct}% क्यों, 100 क्यों नहीं?` : `Why ~${prPct}%, not 100?`,
+          body: hi
+            ? `सूरज छत पर 100 cups power भेजता है। गर्मी, wires, और inverter कुछ गिरा देते हैं। घर के पंखे-lights तक लगभग ${prPct} cups पहुँचती हैं। 100 cups किसी को नहीं मिलते — ~${prPct}% अच्छा score है, plant खराब नहीं।`
+            : `Pretend the sun sends 100 cups of power to the roof. Heat, wires, and the inverter spill some. About ${prPct} cups still reach your fan and lights. Nobody gets 100 cups — ~${prPct}% is a healthy score, not a broken plant.`,
         }
       : {
-          title: "Why not 100%?",
-          body: "Pretend the sun sends 100 cups of power to the roof. Heat, wires, and the inverter spill some. The rest still reach your fan and lights. That leftover score is the performance ratio. The number appears when plant size is on this proposal.",
+          title: hi ? "100% क्यों नहीं?" : "Why not 100%?",
+          body: hi
+            ? "सूरज छत पर 100 cups power भेजता है। गर्मी, wires, और inverter कुछ गिरा देते हैं। बाकी पंखे-lights तक पहुँचती हैं। बचे हुए score को performance ratio कहते हैं। Plant size proposal पर होने पर यह नंबर आएगा।"
+            : "Pretend the sun sends 100 cups of power to the roof. Heat, wires, and the inverter spill some. The rest still reach your fan and lights. That leftover score is the performance ratio. The number appears when plant size is on this proposal.",
         };
 
   const r = eng.dcAcRatio;
   const ratio =
     r > 0 && r >= 1
       ? {
-          title: `DC/AC ${r} — extra panel`,
-          body: `The inverter is a lunchbox of a fixed size. We pack a little extra food on the roof (DC/AC ${r}). Weak morning and evening sun still fills the box. At noon the box is already full, so a tiny bit is leftover. Extra food means more hours of lunch — not a bigger box.`,
+          title: hi ? `DC/AC ${r} — extra panel` : `DC/AC ${r} — extra panel`,
+          body: hi
+            ? `Inverter एक fixed size का lunchbox है। छत पर थोड़ा extra खाना रखते हैं (DC/AC ${r})। कमजोर सुबह-शाम की धूप से भी box भर जाता है। दोपहर में box पहले से भरा है, तो थोड़ा बच जाता है। Extra खाना मतलब lunch के ज़्यादा घंटे — बड़ा box नहीं।`
+            : `The inverter is a lunchbox of a fixed size. We pack a little extra food on the roof (DC/AC ${r}). Weak morning and evening sun still fills the box. At noon the box is already full, so a tiny bit is leftover. Extra food means more hours of lunch — not a bigger box.`,
         }
       : r > 0
         ? {
             title: `DC/AC ${r}`,
-            body: `The inverter is a lunchbox. Panels on the roof are the food. DC/AC ${r} means the box can take all the roof power without spilling.`,
+            body: hi
+              ? `Inverter एक lunchbox है। छत के panel खाना हैं। DC/AC ${r} मतलब box सारी roof power बिना गिराए ले सकता है।`
+              : `The inverter is a lunchbox. Panels on the roof are the food. DC/AC ${r} means the box can take all the roof power without spilling.`,
           }
         : {
-            title: "DC/AC — extra panel",
-            body: "The inverter is a lunchbox of a fixed size. A little extra panel on the roof is extra food: weak morning and evening sun still fills the box. The live ratio appears when both panel size and inverter size are on this proposal.",
+            title: hi ? "DC/AC — extra panel" : "DC/AC — extra panel",
+            body: hi
+              ? "Inverter एक fixed size का lunchbox है। छत पर थोड़ा extra panel extra खाना है: कमजोर सुबह-शाम में भी box भर जाता है। Panel size और inverter size दोनों proposal पर होने पर live ratio आएगा।"
+              : "The inverter is a lunchbox of a fixed size. A little extra panel on the roof is extra food: weak morning and evening sun still fills the box. The live ratio appears when both panel size and inverter size are on this proposal.",
           };
 
   const y = eng.specificYield;
   const yieldCard =
     y > 0
       ? {
-          title: `${y} — one year's score`,
-          body: `Think of 1 kW as one school bag of plant. In a year this roof fills that bag about ${y} times with units of electricity (kWh). A bigger plant is more bags — same score per bag. That number is this city's sun report card.`,
+          title: hi ? `${y} — साल का score` : `${y} — one year's score`,
+          body: hi
+            ? `1 kW को एक school bag सोचो। इस छत से उस bag में साल में लगभग ${y} बार बिजली की units (kWh) भरती हैं। बड़ा plant = ज़्यादा bags, हर bag का score वही। यह इस शहर का sun report card है।`
+            : `Think of 1 kW as one school bag of plant. In a year this roof fills that bag about ${y} times with units of electricity (kWh). A bigger plant is more bags — same score per bag. That number is this city's sun report card.`,
         }
       : {
-          title: "Specific yield — one year's score",
-          body: "Think of 1 kW as one school bag of plant. Specific yield says how many units of electricity one bag makes in a year. The number appears when yearly generation is on this proposal.",
+          title: hi ? "Specific yield — साल का score" : "Specific yield — one year's score",
+          body: hi
+            ? "1 kW को एक school bag सोचो। Specific yield बताता है एक bag साल में कितनी units बनाता है। Yearly generation proposal पर होने पर यह नंबर आएगा।"
+            : "Think of 1 kW as one school bag of plant. Specific yield says how many units of electricity one bag makes in a year. The number appears when yearly generation is on this proposal.",
         };
 
   return [pr, ratio, yieldCard];

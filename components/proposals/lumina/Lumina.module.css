@@ -2,7 +2,7 @@
  * Lumina — clean light app UI. Slate, Inter, trust green. No dark theme, no serif.
  */
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=Noto+Sans+Devanagari:wght@500;600;700;800&display=swap");
 
 @page lumina-sheet {
   size: A4 portrait;
@@ -19,7 +19,7 @@
   --lu-green-ink: #047857;
   --lu-green-soft: #f0fdf4;
   --lu-icon-bg: #f1f5f9;
-  --lu-sans: "Inter", system-ui, sans-serif;
+  --lu-sans: "Inter", "Noto Sans Devanagari", system-ui, sans-serif;
 
   background: #eef2f6;
   min-height: 100dvh;
@@ -78,6 +78,49 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--lu-ink);
+}
+
+.printBarActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.langToggle {
+  display: inline-flex;
+  border: 1px solid var(--lu-line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.langBtn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--lu-ink);
+  font-family: var(--lu-sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 7px 10px;
+  cursor: pointer;
+}
+
+.langBtnActive {
+  background: var(--lu-ink);
+  color: #ffffff;
+}
+
+.langHi {
+  font-family: "Noto Sans Devanagari", var(--lu-sans);
+}
+
+.langHi .clientTitle,
+.langHi .sectionTitle,
+.langHi .closeTitle {
+  letter-spacing: 0;
 }
 
 .printBarBtn {
@@ -1698,27 +1741,27 @@
 .closeBrandBar {
   margin-top: 0;
   background: var(--lu-ink);
-  padding: 14px 20px 16px;
+  padding: 12px 20px;
   text-align: center;
   color: var(--lu-bg);
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
   font-weight: 600;
   text-transform: uppercase;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 14px;
 }
 
 .closeBrandLogo {
-  height: 22px;
-  max-width: 88px;
+  height: 44px;
+  max-width: 168px;
   object-fit: contain;
   flex-shrink: 0;
   background: #ffffff;
-  border-radius: 4px;
-  padding: 2px 6px;
+  border-radius: 8px;
+  padding: 5px 8px;
 }
 
 .engBlueprint {
@@ -1768,9 +1811,9 @@
   width: 28px;
   height: 46px;
   border-radius: 2px;
-  background: linear-gradient(180deg, #60a5fa 0%, #1d4ed8 100%);
-  border: 1px solid #93c5fd;
-  box-shadow: inset 0 0 8px rgba(15, 23, 42, 0.4);
+  background: linear-gradient(180deg, #67e8f9 0%, #06b6d4 55%, #0891b2 100%);
+  border: 1px solid #a5f3fc;
+  box-shadow: inset 0 0 8px rgba(8, 51, 68, 0.35);
 }
 
 .engRoofEmpty {
@@ -1810,7 +1853,7 @@
   top: 2px;
   left: 50%;
   transform: translateX(-50%);
-  color: #60a5fa;
+  color: #22d3ee;
 }
 
 .engCompassS {
