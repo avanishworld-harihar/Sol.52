@@ -90,6 +90,13 @@ function LuminaDocument({
       data-proposal-preset="residential_lumina"
       className={`${styles.root}${isHi ? ` ${styles.langHi}` : ""}`}
     >
+      <style>{`
+        @media print {
+          @page { size: A4 portrait; margin: 0; }
+          @page lumina-sheet { size: A4 portrait; margin: 0; }
+          @page lumina-cover { size: A4 portrait; margin: 0; }
+        }
+      `}</style>
       <div className={styles.printBar}>
         <div className={styles.printBarInner}>
           <span className={styles.printBarBrand}>

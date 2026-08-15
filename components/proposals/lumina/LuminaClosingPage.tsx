@@ -37,7 +37,7 @@ export function LuminaClosingPage({
   const lead = copy.close.lead(plant, location || null);
 
   return (
-    <section className={styles.a4Lumina}>
+    <section className={`${styles.a4Lumina} ${styles.bleedSheet}`}>
       <div className={styles.closeHero}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={LUMINA_CLOSE_PHOTO} alt={LUMINA_CLOSE_ALT} className={styles.closeHeroImg} />
