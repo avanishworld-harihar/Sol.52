@@ -1724,27 +1724,27 @@
 .closeBrandBar {
   margin-top: 0;
   background: var(--lu-ink);
-  padding: 14px 20px 16px;
+  padding: 12px 20px;
   text-align: center;
   color: var(--lu-bg);
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
   font-weight: 600;
   text-transform: uppercase;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 14px;
 }
 
 .closeBrandLogo {
-  height: 22px;
-  max-width: 88px;
+  height: 44px;
+  max-width: 168px;
   object-fit: contain;
   flex-shrink: 0;
   background: #ffffff;
-  border-radius: 4px;
-  padding: 2px 6px;
+  border-radius: 8px;
+  padding: 5px 8px;
 }
 
 .engBlueprint {
