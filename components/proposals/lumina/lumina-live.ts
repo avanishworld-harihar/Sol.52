@@ -4,7 +4,9 @@
 
 import type { ProposalBomItem, ProposalData } from "@/lib/proposal-data";
 
-export const LUMINA_HERO_PHOTO = "/assets/proposals/canvas-cover-solar-home.jpg";
+export const LUMINA_HERO_PHOTO = "/assets/proposals/lumina-cover-luxury-evening.jpg";
+export const LUMINA_HERO_ALT =
+  "Luxury Indian rooftop at evening: elevated solar plant, garden and sofa underneath, family and friends with a guitar, neighboring roofs also on solar";
 export const LUMINA_CLOSE_PHOTO = "/assets/proposals/luxe-cover-rooftop-india.jpg";
 
 export function luminaBrand(data: ProposalData): string {

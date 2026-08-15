@@ -4,6 +4,7 @@ import type { ProposalData } from "@/lib/proposal-data";
 import { formatInrCompact } from "@/components/proposals/_shared/formatters";
 import styles from "./Lumina.module.css";
 import {
+  LUMINA_HERO_ALT,
   LUMINA_HERO_PHOTO,
   formatLuminaKw,
   luminaAnnualUnits,
@@ -26,7 +27,7 @@ export function LuminaCover({ data }: { data: ProposalData }) {
     <section className={styles.a4Lumina}>
       <div className={styles.heroHeader}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={LUMINA_HERO_PHOTO} alt="" className={styles.heroImage} />
+        <img src={LUMINA_HERO_PHOTO} alt={LUMINA_HERO_ALT} className={styles.heroImage} />
         <div className={styles.heroOverlay} />
         <div className={styles.logoContainer}>
           {logo ? (
