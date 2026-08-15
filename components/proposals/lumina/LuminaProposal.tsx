@@ -6,7 +6,7 @@ import { LuminaAudit } from "./LuminaAudit";
 import { LuminaHardware } from "./LuminaHardware";
 import { LuminaLedgerPage } from "./LuminaLedgerPage";
 import { LuminaForecast } from "./LuminaForecast";
-import { LuminaTerms } from "./LuminaTerms";
+import { LuminaTerms, LuminaTermsContinued } from "./LuminaTerms";
 import { LuminaClosingPage } from "./LuminaClosingPage";
 import styles from "./Lumina.module.css";
 
@@ -27,6 +27,7 @@ export function LuminaProposal({
       <LuminaLedgerPage data={data} />
       <LuminaForecast data={data} />
       <LuminaTerms data={data} />
+      <LuminaTermsContinued data={data} />
       <LuminaClosingPage data={data} installerLogoUrl={installerLogoUrl} />
     </div>
   );

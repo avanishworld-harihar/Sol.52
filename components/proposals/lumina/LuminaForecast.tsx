@@ -143,7 +143,7 @@ export function LuminaForecast({ data }: { data: ProposalData }) {
           </div>
         </div>
       </div>
-      <div className={styles.pageFooter}>Lumina · 05 / 07</div>
+      <div className={styles.pageFooter}>Lumina · 05 / 08</div>
     </section>
   );
 }
