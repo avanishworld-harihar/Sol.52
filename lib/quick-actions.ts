@@ -98,27 +98,6 @@ export function parsePrefillFromSearchParams(params: URLSearchParams): BuilderPr
   ) {
     prefill.preset = "residential_emerald";
   } else if (
-    preset === "residential_field" ||
-    preset === "field" ||
-    preset === "field_engineering"
-  ) {
-    prefill.preset = "residential_field";
-  } else if (
-    preset === "residential_wall_street" ||
-    preset === "wall_street"
-  ) {
-    prefill.preset = "residential_wall_street";
-  } else if (
-    preset === "residential_cyanotype" ||
-    preset === "cyanotype"
-  ) {
-    prefill.preset = "residential_cyanotype";
-  } else if (
-    preset === "residential_brutalism" ||
-    preset === "brutalism"
-  ) {
-    prefill.preset = "residential_brutalism";
-  } else if (
     preset === "residential_lumina" ||
     preset === "lumina"
   ) {

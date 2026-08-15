@@ -42,18 +42,6 @@ export function resolveQuickQuotePresetOptions(): {
   if (presetId === "residential_emerald") {
     return { presetId, galleryThemeKey: "emerald" };
   }
-  if (presetId === "residential_field") {
-    return { presetId, galleryThemeKey: "field" };
-  }
-  if (presetId === "residential_wall_street") {
-    return { presetId, galleryThemeKey: "wall_street" };
-  }
-  if (presetId === "residential_cyanotype") {
-    return { presetId, galleryThemeKey: "cyanotype" };
-  }
-  if (presetId === "residential_brutalism") {
-    return { presetId, galleryThemeKey: "brutalism" };
-  }
   if (presetId === "residential_lumina") {
     return { presetId, galleryThemeKey: "lumina" };
   }

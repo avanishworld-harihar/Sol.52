@@ -85,14 +85,6 @@ export async function buildQuickRequirementProposal(
                 ? { galleryThemeKey: "quantum" }
                 : presetId === "residential_emerald"
                   ? { galleryThemeKey: "emerald" }
-                : presetId === "residential_field"
-                  ? { galleryThemeKey: "field" }
-                : presetId === "residential_wall_street"
-                  ? { galleryThemeKey: "wall_street" }
-                : presetId === "residential_cyanotype"
-                  ? { galleryThemeKey: "cyanotype" }
-                : presetId === "residential_brutalism"
-                  ? { galleryThemeKey: "brutalism" }
                 : presetId === "residential_lumina"
                   ? { galleryThemeKey: "lumina" }
                   : presetId === "residential_executive"

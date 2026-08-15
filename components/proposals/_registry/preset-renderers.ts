@@ -1,6 +1,6 @@
 /**
  * Dynamic preset renderer registry.
- * Active presets: Golden + Zenith + Atelier + Canvas + Quantum + Emerald + Field Engineering + Commercial.
+ * Active presets: Golden + Zenith + Atelier + Canvas + Quantum + Emerald + Lumina + Commercial.
  */
 
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
@@ -45,32 +45,6 @@ export const EMERALD_PRESET_ALIASES = [
   "emerald_signature",
 ] as const;
 
-/** Local / mock aliases that resolve to Field Engineering. */
-export const FIELD_PRESET_ALIASES = [
-  "residential_field",
-  "field",
-  "field_engineering",
-] as const;
-
-/** Local / mock aliases that resolve to Wall Street Ledger. */
-export const WALL_STREET_PRESET_ALIASES = [
-  "residential_wall_street",
-  "wall_street",
-  "wallstreet",
-] as const;
-
-/** Local / mock aliases that resolve to Cyanotype blueprint. */
-export const CYANOTYPE_PRESET_ALIASES = [
-  "residential_cyanotype",
-  "cyanotype",
-] as const;
-
-/** Local / mock aliases that resolve to Brutalism spec. */
-export const BRUTALISM_PRESET_ALIASES = [
-  "residential_brutalism",
-  "brutalism",
-] as const;
-
 /** Local / mock aliases that resolve to Lumina. */
 export const LUMINA_PRESET_ALIASES = [
   "residential_lumina",
@@ -101,22 +75,6 @@ export function isEmeraldPresetId(presetId: string): boolean {
   return (EMERALD_PRESET_ALIASES as readonly string[]).includes(presetId);
 }
 
-export function isFieldPresetId(presetId: string): boolean {
-  return (FIELD_PRESET_ALIASES as readonly string[]).includes(presetId);
-}
-
-export function isWallStreetPresetId(presetId: string): boolean {
-  return (WALL_STREET_PRESET_ALIASES as readonly string[]).includes(presetId);
-}
-
-export function isCyanotypePresetId(presetId: string): boolean {
-  return (CYANOTYPE_PRESET_ALIASES as readonly string[]).includes(presetId);
-}
-
-export function isBrutalismPresetId(presetId: string): boolean {
-  return (BRUTALISM_PRESET_ALIASES as readonly string[]).includes(presetId);
-}
-
 export function isLuminaPresetId(presetId: string): boolean {
   return (LUMINA_PRESET_ALIASES as readonly string[]).includes(presetId);
 }
@@ -144,14 +102,6 @@ export const PRESET_RENDERER_LOADERS: PresetRendererRegistry = {
     import("@/components/proposals/_registry/adapters/quantum-adapter"),
   residential_emerald: () =>
     import("@/components/proposals/_registry/adapters/emerald-adapter"),
-  residential_field: () =>
-    import("@/components/proposals/_registry/adapters/field-engineering-adapter"),
-  residential_wall_street: () =>
-    import("@/components/proposals/_registry/adapters/wall-street-adapter"),
-  residential_cyanotype: () =>
-    import("@/components/proposals/_registry/adapters/cyanotype-adapter"),
-  residential_brutalism: () =>
-    import("@/components/proposals/_registry/adapters/brutalism-adapter"),
   residential_lumina: () =>
     import("@/components/proposals/_registry/adapters/lumina-adapter"),
   commercial_executive: () =>
@@ -181,18 +131,6 @@ export function getPresetRendererLoader(
   }
   if (isEmeraldPresetId(presetId)) {
     return () => import("@/components/proposals/_registry/adapters/emerald-adapter");
-  }
-  if (isFieldPresetId(presetId)) {
-    return () => import("@/components/proposals/_registry/adapters/field-engineering-adapter");
-  }
-  if (isWallStreetPresetId(presetId)) {
-    return () => import("@/components/proposals/_registry/adapters/wall-street-adapter");
-  }
-  if (isCyanotypePresetId(presetId)) {
-    return () => import("@/components/proposals/_registry/adapters/cyanotype-adapter");
-  }
-  if (isBrutalismPresetId(presetId)) {
-    return () => import("@/components/proposals/_registry/adapters/brutalism-adapter");
   }
   if (isLuminaPresetId(presetId)) {
     return () => import("@/components/proposals/_registry/adapters/lumina-adapter");

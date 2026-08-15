@@ -1798,14 +1798,6 @@ function ProposalPageContent() {
                 ? { galleryThemeKey: "quantum" }
                 : osPresetId === "residential_emerald"
                   ? { galleryThemeKey: "emerald" }
-                : osPresetId === "residential_field"
-                  ? { galleryThemeKey: "field" }
-                : osPresetId === "residential_wall_street"
-                  ? { galleryThemeKey: "wall_street" }
-                : osPresetId === "residential_cyanotype"
-                  ? { galleryThemeKey: "cyanotype" }
-                : osPresetId === "residential_brutalism"
-                  ? { galleryThemeKey: "brutalism" }
                 : osPresetId === "residential_lumina"
                   ? { galleryThemeKey: "lumina" }
                   : osPresetId === "residential_executive"
@@ -2429,19 +2421,6 @@ function ProposalPageContent() {
                           preset === "emerald" ||
                           preset === "emerald_signature"
                         ? "residential_emerald"
-                        : preset === "residential_field" ||
-                            preset === "field" ||
-                            preset === "field_engineering"
-                          ? "residential_field"
-                        : preset === "residential_wall_street" ||
-                            preset === "wall_street"
-                          ? "residential_wall_street"
-                        : preset === "residential_cyanotype" ||
-                            preset === "cyanotype"
-                          ? "residential_cyanotype"
-                        : preset === "residential_brutalism" ||
-                            preset === "brutalism"
-                          ? "residential_brutalism"
                         : preset === "residential_lumina" ||
                             preset === "lumina"
                           ? "residential_lumina"

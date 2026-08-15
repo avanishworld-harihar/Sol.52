@@ -36,7 +36,7 @@ export const PROPOSAL_TEMPLATE_CATEGORIES: ProposalTemplateCategoryMeta[] = [
   {
     id: "residential",
     label: "Residential",
-    description: "Homes & rooftops — Golden, Zenith, Atelier, Premium Luxe, Canvas, Quantum, Emerald, Field Engineering, Wall Street Ledger, Cyanotype, Brutalism, or Lumina.",
+    description: "Homes & rooftops — Golden, Zenith, Atelier, Premium Luxe, Canvas, Quantum, Emerald, or Lumina.",
   },
   {
     id: "commercial",
@@ -105,42 +105,6 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
     description:
       "Emerald Signature — Deep Forest & Champagne Gold split-folio, architectural catalog layout.",
     thumbnailVariant: "emerald",
-  },
-  {
-    key: "field",
-    presetId: "residential_field",
-    category: "residential",
-    name: "Field Engineering",
-    description:
-      "Survey drawing sheets — graph-paper cream, dimensioned roof plan, SLD, and a title block on every page.",
-    thumbnailVariant: "field",
-  },
-  {
-    key: "wall_street",
-    presetId: "residential_wall_street",
-    category: "residential",
-    name: "Wall Street Ledger",
-    description:
-      "Salmon newsprint financial editorial — masthead, stock ticker, two-column copy, and dotted ledger rows.",
-    thumbnailVariant: "wall_street",
-  },
-  {
-    key: "cyanotype",
-    presetId: "residential_cyanotype",
-    category: "residential",
-    name: "Cyanotype",
-    description:
-      "Deep indigo blueprint — drafting grid, dimension lines, crosshairs, and monospace capital data boxes.",
-    thumbnailVariant: "cyanotype",
-  },
-  {
-    key: "brutalism",
-    presetId: "residential_brutalism",
-    category: "residential",
-    name: "Brutalism",
-    description:
-      "Concrete gray industrial spec — heavy black frame, caution orange, and massive type.",
-    thumbnailVariant: "brutalism",
   },
   {
     key: "lumina",
@@ -219,10 +183,6 @@ export function resolveActiveGalleryKey(
   if (presetId === "residential_blueprint") return "blueprint";
   if (presetId === "residential_quantum") return "quantum";
   if (presetId === "residential_emerald") return "emerald";
-  if (presetId === "residential_field") return "field";
-  if (presetId === "residential_wall_street") return "wall_street";
-  if (presetId === "residential_cyanotype") return "cyanotype";
-  if (presetId === "residential_brutalism") return "brutalism";
   if (presetId === "residential_lumina") return "lumina";
   return "zenith";
 }

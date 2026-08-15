@@ -9,10 +9,6 @@ export const RESIDENTIAL_TEMPLATE_PRESET_IDS = [
   "residential_blueprint",
   "residential_quantum",
   "residential_emerald",
-  "residential_field",
-  "residential_wall_street",
-  "residential_cyanotype",
-  "residential_brutalism",
   "residential_lumina",
 ] as const;
 
@@ -66,26 +62,6 @@ export const RESIDENTIAL_TEMPLATE_OPTIONS: ResidentialTemplateOption[] = [
     id: "residential_emerald",
     label: "Emerald",
     subtitle: "Eco-luxury split-folio — Deep Forest sidebar & Champagne Gold.",
-  },
-  {
-    id: "residential_field",
-    label: "Field Engineering",
-    subtitle: "Survey drawings — graph paper, title block, trust through method.",
-  },
-  {
-    id: "residential_wall_street",
-    label: "Wall Street Ledger",
-    subtitle: "Salmon newsprint — masthead, ticker bar, and dotted capital ledger.",
-  },
-  {
-    id: "residential_cyanotype",
-    label: "Cyanotype",
-    subtitle: "Indigo blueprint — drafting grid, dimension lines, and data boxes.",
-  },
-  {
-    id: "residential_brutalism",
-    label: "Brutalism",
-    subtitle: "Concrete gray — heavy black frame, industrial orange, massive type.",
   },
   {
     id: "residential_lumina",

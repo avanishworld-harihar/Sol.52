@@ -12,7 +12,7 @@
  */
 
 import { motion } from "framer-motion";
-import { Building2, ChevronRight, Compass, Gem, Landmark, LayoutTemplate, PenLine, RefreshCw, Sparkles, Square, Sun, Zap } from "lucide-react";
+import { Building2, ChevronRight, Gem, LayoutTemplate, RefreshCw, Sparkles, Sun, Zap } from "lucide-react";
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 import { PresenceStack } from "@/components/workspace/presence-stack";
 
@@ -86,38 +86,6 @@ const PRESET_META: Record<ProposalPresetId, PresetMeta> = {
     pillClass:
       "border-emerald-200 bg-emerald-950 text-amber-200 dark:border-emerald-500/40 dark:bg-[#022C22] dark:text-[#D4AF37]",
     dotClass: "bg-[#D4AF37]",
-  },
-  residential_field: {
-    icon: <Compass className="h-4 w-4" />,
-    label: "Field Engineering",
-    description: "Survey drawings · title block · graph paper",
-    pillClass:
-      "border-orange-300 bg-[#F4F0E4] text-[#12212A] dark:border-orange-500/40 dark:bg-[#12212A] dark:text-[#F4F0E4]",
-    dotClass: "bg-[#D9540F]",
-  },
-  residential_wall_street: {
-    icon: <Landmark className="h-4 w-4" />,
-    label: "Wall Street Ledger",
-    description: "Salmon newsprint · ticker · dotted ledger",
-    pillClass:
-      "border-[#0B2545]/30 bg-[#F9EBE0] text-[#0B2545] dark:border-[#F9EBE0]/30 dark:bg-[#0B2545] dark:text-[#F9EBE0]",
-    dotClass: "bg-[#0B2545]",
-  },
-  residential_cyanotype: {
-    icon: <PenLine className="h-4 w-4" />,
-    label: "Cyanotype",
-    description: "Indigo blueprint · drafting grid · dimension lines",
-    pillClass:
-      "border-[#88CCEE]/40 bg-[#0F3B66] text-[#88CCEE] dark:border-[#88CCEE]/30 dark:bg-[#0F3B66] dark:text-[#88CCEE]",
-    dotClass: "bg-[#88CCEE]",
-  },
-  residential_brutalism: {
-    icon: <Square className="h-4 w-4" />,
-    label: "Brutalism",
-    description: "Concrete gray · heavy frame · industrial orange",
-    pillClass:
-      "border-black bg-[#E5E5E5] text-black dark:border-orange-500 dark:bg-black dark:text-[#FF4500]",
-    dotClass: "bg-[#FF4500]",
   },
   residential_lumina: {
     icon: <Sun className="h-4 w-4" />,

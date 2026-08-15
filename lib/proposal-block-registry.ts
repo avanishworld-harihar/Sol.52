@@ -80,10 +80,6 @@ export type PresetAffinity =
       | "residential_blueprint"
       | "residential_quantum"
       | "residential_emerald"
-      | "residential_field"
-      | "residential_wall_street"
-      | "residential_cyanotype"
-      | "residential_brutalism"
       | "residential_lumina"
     >;
 
