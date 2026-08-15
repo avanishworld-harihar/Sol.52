@@ -59,7 +59,7 @@ export function LuminaHardware({ data }: { data: ProposalData }) {
           ))}
         </div>
       </div>
-      <div className={styles.pageFooter}>Lumina · 03 / 07</div>
+      <div className={styles.pageFooter}>03 / 08</div>
     </section>
   );
 }
