@@ -45,46 +45,37 @@ export function getLuminaCopy(lang: LuminaLang) {
       turnkeyInvestment: hi ? "Turnkey investment" : "Turnkey Investment",
     },
     audit: {
-      tag: hi ? "Bill vs solar" : "Bill vs solar",
-      title: hi ? "आज आप क्या दे रहे हैं." : "What you pay today.",
+      tag: hi ? "Finance · बिजली का bill" : "Finance · the electricity bill",
+      title: hi ? "Bill का पैसा कहाँ जाता है." : "Where the bill money goes.",
       lead: hi
-        ? "तीन live नंबर: proposal पर मौजूद grid bill, महीने की saving, और plant पर subsidy. खाली जगह खाली रहती है — अंदाज़ा नहीं लगाया जाता।"
-        : "Three live numbers: the grid bill on file, the monthly saving on this proposal, and the subsidy credited on the plant. Empty fields stay blank — they are not guessed.",
-      step1: hi ? "आज — grid bill" : "Today — grid bill",
+        ? "यह पेज सिर्फ बिजली का पैसा है — आज का grid bill, और solar के बाद हर महीने क्या बचता है। Plant की कीमत, subsidy और payback Capital पेज पर हैं। खाली जगह अंदाज़ा नहीं।"
+        : "This page is only electricity money — today’s grid bill, and what solar keeps in your pocket each month. Plant price, subsidy, and payback live on the Capital page. Blank fields are not guessed.",
+      step1: hi ? "1 · आज का bill" : "1 · Today’s bill",
       step1Hint: (monthly: string) =>
         hi ? `File पर लगभग ${monthly} हर महीने।` : `About ${monthly} each month on the bill on file.`,
       step1Empty: hi ? "इस proposal पर yearly bill अभी नहीं है।" : "No yearly bill is on this proposal yet.",
-      step2: hi ? "Solar के बाद — आपके पास रहता है" : "After solar — you keep",
-      step2Hint: (yearly: string, cover: string) =>
-        hi ? `Year-1 में ${yearly}${cover}.` : `${yearly} in year 1${cover}.`,
-      step2Cover: (pct: number) => (hi ? ` · bill का ~${pct}%` : ` · ~${pct}% of the bill`),
+      step2: hi ? "2 · हर महीने बचता है" : "2 · You keep each month",
+      step2Hint: (yearly: string) =>
+        hi ? `पूरे साल यही ${yearly} बनता है — यही finance है।` : `That is ${yearly} across the year — this is the finance.`,
       step2Empty: hi ? "Monthly saving इस proposal पर अभी नहीं है।" : "Monthly saving is not on this proposal yet.",
-      step3: hi ? "इस plant पर subsidy" : "Subsidy on this plant",
-      noneOnFile: hi ? "File पर नहीं" : "None on file",
-      step3HintYes: hi
-        ? "बाद में credit होता है। Plant की cost कटती है, महीने का bill नहीं।"
-        : "Credited later. It cuts plant cost, not the monthly bill.",
-      step3HintNo: hi ? "इस quote पर subsidy amount सेव नहीं है।" : "No subsidy amount is saved on this quote.",
-      plantAfterSubsidy: hi ? "Subsidy के बाद plant cost" : "Plant cost after subsidy",
-      fromProposal: hi ? "इसी proposal से" : "From this proposal",
-      grossSubsidy: (gross: string, subsidy: string) =>
-        hi ? `Gross ${gross} − subsidy ${subsidy}` : `Gross ${gross} − subsidy ${subsidy}`,
+      step3: hi ? "3 · Bill का कितना हिस्सा" : "3 · How much of the bill",
+      step3Hint: hi
+        ? "इतना bill solar cover कर सकता है। बाकी grid से आता है।"
+        : "This much of the bill solar can cover. The rest still comes from the grid.",
+      step3Empty: hi
+        ? "Coverage तब आएगा जब bill और solar saving file पर हों।"
+        : "Coverage appears when bill and solar saving are on file.",
       monthsOnBill: hi ? "Bill के महीने" : "Months on the bill",
-      year1Saving: hi ? "Year-1 saving" : "Year-1 saving",
-      year25: hi ? "25 साल का कुल" : "25-year total",
-      payback: hi ? "Payback" : "Payback",
-      yr: hi ? "yr" : "yr",
-      readBoth: (month: string, subsidy: string) =>
-        hi
-          ? `ऐसे पढ़ें: bill हर महीने लगभग ${month} कम होता है। ${subsidy} की subsidy plant पर एक बार credit है — capital पेज पर फिर दिखेगी।`
-          : `Read it this way: the bill drops by about ${month} a month. The subsidy of ${subsidy} is a one-time credit on the plant, shown again on the capital page.`,
+      monthsEmpty: hi
+        ? "महीने-महीने की bars तब दिखेंगी जब bill months file पर हों।"
+        : "Month-by-month bars appear when bill months are on file.",
       readSave: (month: string) =>
         hi
-          ? `ऐसे पढ़ें: solar के बाद इस proposal पर हर महीने लगभग ${month} आपके पास रहता है। Subsidy तभी दिखती है जब quote पर amount हो।`
-          : `Read it this way: after solar you keep about ${month} a month on this proposal. Subsidy appears here only when an amount is on the quote.`,
+          ? `सीधी बात: हर महीने लगभग ${month} bill में कम। Plant खरीदने का पैसा Capital पेज पर है।`
+          : `Plain talk: about ${month} less on the bill each month. Money to buy the plant is on the Capital page.`,
       readEmpty: hi
-        ? "जब bill और subsidy proposal पर सेव होंगे, ये तीन boxes भर जाएँगे।"
-        : "When a bill and subsidy are saved on the proposal, they will fill these three boxes.",
+        ? "जब bill file पर सेव होगा, ये boxes भर जाएँगे। Plant की कीमत Capital पेज पर है।"
+        : "When a bill is saved on the proposal, these boxes fill. Plant price sits on the Capital page.",
     },
     hardware: {
       tag: hi ? "System architecture · 7-item BOM" : "System architecture · 7-item BOM",
@@ -157,30 +148,32 @@ export function getLuminaCopy(lang: LuminaLang) {
       expertTag: hi ? "Expert insight" : "Expert insight",
     },
     capital: {
-      tag: hi ? "Capital summary" : "Capital summary",
-      title: hi ? "आप क्या देते हैं. आपको क्या मिलता है." : "What you pay. What you get.",
+      tag: hi ? "Capital · plant की कीमत" : "Capital · the plant price",
+      title: hi ? "Plant लगाने में कितना लगेगा." : "What it costs to put the plant up.",
       lead: hi
-        ? "चार blocks, चार मतलब. Stage payment gross पर चलती है; subsidy बाद में credit होती है जब amount हो. खाली field अनुमान नहीं है।"
-        : "Four blocks, four meanings. Stage payments stay on gross; subsidy is credited later when it exists. Blank fields are not estimated.",
-      pay: hi ? "1 · आप देते हैं" : "1 · You pay",
-      payHint: hi ? "Plant लगाने का investment" : "Investment to install the plant",
+        ? "यह पेज खरीद का पैसा है। Bill में कितना बचता है Finance पेज पर है। यहाँ: कीमत, subsidy, किस्तें, और कितने साल में पैसा वापस आता है।"
+        : "This page is money to buy the plant. What the bill saves is on the Finance page. Here: price, subsidy, stage payments, and how many years until the plant pays itself back.",
+      pay: hi ? "1 · Plant की कीमत" : "1 · Plant price",
+      payHint: hi ? "एक बार का investment" : "One-time money to install",
       gross: hi ? "System cost (gross)" : "System cost (gross)",
       subsidyLater: hi ? "Subsidy (बाद में credit)" : "Subsidy (credited later)",
       subsidyNone: hi ? "इस quote पर subsidy" : "Subsidy on this quote",
       noneOnFile: hi ? "File पर नहीं" : "None on file",
-      netAfter: hi ? "Subsidy के बाद net outlay" : "Net outlay after subsidy",
-      netSame: hi ? "Net outlay (gross जैसा)" : "Net outlay (same as gross)",
-      produce: hi ? "2 · Plant बनाता है" : "2 · The plant produces",
-      produceHint: hi ? "Energy और payback time — रुपये नहीं" : "Energy and recovery time — not rupees",
+      netAfter: hi ? "Subsidy के बाद आपको देना" : "Net outlay after subsidy",
+      netSame: hi ? "आपको देना (gross जैसा)" : "You pay (same as gross)",
+      howPay: hi ? "2 · पैसे कैसे देते हैं" : "2 · How you pay",
+      howPayHint: hi ? "Gross cost पर stage schedule" : "Stage schedule on gross cost",
+      produce: hi ? "3 · पैसे कब लौटते हैं" : "3 · When the money comes back",
+      produceHint: hi
+        ? "Payback = Finance पेज की saving से plant की कीमत कितने साल में भरती है"
+        : "Payback = years for the Finance-page saving to cover this plant price",
       year1Gen: hi ? "Year-1 generation" : "Year-1 generation",
       payback: hi ? "Simple payback" : "Simple payback",
       years: hi ? "years" : "years",
-      save: hi ? "3 · आप बचाते हैं" : "3 · You save",
-      saveHint: hi ? "Bill का पैसा आपके पास रहता है" : "Bill money that stays with you",
-      everyYear: hi ? "हर साल (est.)" : "Every year (est.)",
-      over25: hi ? "25 साल में (est.)" : "Over 25 years (est.)",
-      howPay: hi ? "4 · कैसे देते हैं" : "4 · How you pay",
-      howPayHint: hi ? "Gross cost पर stage schedule" : "Stage schedule on gross cost",
+      over25: hi ? "25 साल में यह capital" : "This capital over 25 years",
+      over25Hint: hi
+        ? "Bill saving Capital पेज पर दोहराई नहीं — सिर्फ plant पर लंबा return।"
+        : "Bill saving is not repeated here — only the long return on this plant.",
     },
     forecast: {
       tag: hi ? "Yield intelligence" : "Yield intelligence",

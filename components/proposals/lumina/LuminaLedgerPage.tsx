@@ -44,13 +44,6 @@ export function LuminaLedgerPage({ data }: { data: ProposalData }) {
   const net = data.economics.netInr;
   const showSubsidy = subsidy > 0;
   const payback = data.economics.paybackYears;
-  const monthly = data.economics.monthlySavingsInr;
-  const annualSave =
-    data.closing.annualSavingsInr > 0
-      ? data.closing.annualSavingsInr
-      : monthly > 0
-        ? monthly * 12
-        : 0;
   const lifetime =
     data.closing.lifetimeWealthInr > 0
       ? data.closing.lifetimeWealthInr
@@ -89,44 +82,6 @@ export function LuminaLedgerPage({ data }: { data: ProposalData }) {
             </div>
           </div>
 
-          <div className={`${styles.capSection} ${styles.capSectionGet}`}>
-            <div className={styles.capSectionHead}>
-              <span className={styles.capKicker}>{copy.capital.produce}</span>
-              <span className={styles.capHint}>{copy.capital.produceHint}</span>
-            </div>
-            <div className={styles.capMetricGrid}>
-              <Figure
-                name={copy.capital.year1Gen}
-                value={units > 0 ? units.toLocaleString("en-IN") : "—"}
-                unit={units > 0 ? "kWh" : undefined}
-              />
-              <Figure
-                name={copy.capital.payback}
-                value={payback > 0 ? String(payback) : "—"}
-                unit={payback > 0 ? copy.capital.years : undefined}
-              />
-            </div>
-          </div>
-
-          <div className={`${styles.capSection} ${styles.capSectionSave}`}>
-            <div className={styles.capSectionHead}>
-              <span className={styles.capKicker}>{copy.capital.save}</span>
-              <span className={styles.capHint}>{copy.capital.saveHint}</span>
-            </div>
-            <div className={styles.capMetricGrid}>
-              <Figure
-                name={copy.capital.everyYear}
-                value={annualSave > 0 ? `+${formatInr(annualSave)}` : "—"}
-                save
-              />
-              <Figure
-                name={copy.capital.over25}
-                value={lifetime > 0 ? formatLifetimeBenefitInr(lifetime) : "—"}
-                save
-              />
-            </div>
-          </div>
-
           {payments.length > 0 ? (
             <div className={`${styles.capSection} ${styles.capSectionPaySchedule}`}>
               <div className={styles.capSectionHead}>
@@ -149,6 +104,31 @@ export function LuminaLedgerPage({ data }: { data: ProposalData }) {
               </div>
             </div>
           ) : null}
+
+          <div className={`${styles.capSection} ${styles.capSectionSave}`}>
+            <div className={styles.capSectionHead}>
+              <span className={styles.capKicker}>{copy.capital.produce}</span>
+              <span className={styles.capHint}>{copy.capital.produceHint}</span>
+            </div>
+            <div className={styles.capMetricGrid}>
+              <Figure
+                name={copy.capital.year1Gen}
+                value={units > 0 ? units.toLocaleString("en-IN") : "—"}
+                unit={units > 0 ? "kWh" : undefined}
+              />
+              <Figure
+                name={copy.capital.payback}
+                value={payback > 0 ? String(payback) : "—"}
+                unit={payback > 0 ? copy.capital.years : undefined}
+              />
+              <Figure
+                name={copy.capital.over25}
+                value={lifetime > 0 ? formatLifetimeBenefitInr(lifetime) : "—"}
+                save
+                wide
+              />
+            </div>
+          </div>
         </div>
 
         <LuminaDocFooter data={data} page="05 / 09" />
