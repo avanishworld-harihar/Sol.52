@@ -975,6 +975,13 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 }
 
+.chartCardTall {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .chartLegend {
   display: flex;
   gap: 16px;
@@ -1003,6 +1010,10 @@
   background: var(--lu-green);
 }
 
+.legendSwatchBill {
+  background: var(--lu-ink);
+}
+
 .barChart {
   display: flex;
   align-items: flex-end;
@@ -1010,6 +1021,12 @@
   height: 168px;
   padding: 0 4px;
   border-bottom: 2px solid #e2e8f0;
+}
+
+.barChartTall {
+  flex: 1;
+  height: auto;
+  min-height: 268px;
 }
 
 .barCol {
@@ -1028,10 +1045,30 @@
   color: var(--lu-ink);
   margin-bottom: 4px;
   white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.15;
 }
 
 .barValPeak {
   color: var(--lu-green-ink);
+}
+
+.barValBill {
+  color: var(--lu-ink);
+  font-weight: 600;
+  opacity: 0.72;
+}
+
+.barPair {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3px;
+  width: 100%;
+  flex: 1;
+  min-height: 220px;
 }
 
 .barTrack {
@@ -1045,6 +1082,18 @@
   overflow: hidden;
 }
 
+.barChartTall .barTrack {
+  height: auto;
+  flex: 1;
+  min-height: 220px;
+}
+
+.barTrackTwin {
+  max-width: 11px;
+  flex: 1;
+  min-height: 220px;
+}
+
 .barFill {
   width: 100%;
   background: #94a3b8;
@@ -1054,6 +1103,11 @@
 
 .barFillPeak {
   background: var(--lu-green);
+}
+
+.barFillBill {
+  background: var(--lu-ink);
+  min-height: 0;
 }
 
 .barMonth {
