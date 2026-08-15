@@ -41,25 +41,30 @@ function HardwareThumb({ kind, image }: { kind: LuminaHwKind; image: string }) {
   return <img src={image} alt="" />;
 }
 
+function cardKindClass(kind: LuminaHwKind): string {
+  if (kind === "dcdb") return styles.hwCardDcdb;
+  if (kind === "acdb") return styles.hwCardAcdb;
+  if (kind === "earth") return styles.hwCardEarth;
+  return "";
+}
+
 export function LuminaHardware({ data }: { data: ProposalData }) {
   const rows = luminaHardwareRows(data);
 
   return (
     <section className={styles.a4Lumina}>
       <div className={`${styles.contentArea} ${styles.hardwareSheet}`}>
-        <div className={styles.dateTag}>System architecture</div>
+        <div className={styles.dateTag}>System architecture · 6-item BOM</div>
         <h1 className={styles.clientTitle}>Hardware Specs.</h1>
         <p className={styles.subText}>
-          Live BOM with commercial headings. DCDB, ACDB and earthing are listed as
-          separate items. Earthing is 3 nos × 17 mm copper rod (IS 3043) when the
-          quote does not already list it.
+          DCDB, ACDB and earthing are separate. Earthing: 3 nos × 17 mm copper rod (IS 3043).
         </p>
 
         <div className={styles.hardwareGrid}>
           {rows.map((row, i) => (
             <div
               key={`${row.kind}-${row.title}-${i}`}
-              className={`${styles.hwCard} ${row.accent ? styles.hwCardAccent : ""}`}
+              className={`${styles.hwCard} ${row.accent ? styles.hwCardAccent : ""} ${cardKindClass(row.kind)}`}
             >
               <div className={styles.hwThumb}>
                 <HardwareThumb kind={row.kind} image={row.image} />
