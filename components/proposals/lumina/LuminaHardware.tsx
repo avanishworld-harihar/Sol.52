@@ -58,7 +58,8 @@ export function LuminaHardware({ data }: { data: ProposalData }) {
         <div className={styles.dateTag}>System architecture · 6-item BOM</div>
         <h1 className={styles.clientTitle}>Hardware Specs.</h1>
         <p className={styles.subText}>
-          DCDB, ACDB and earthing are separate. Earthing: 3 nos × 17 mm copper rod (IS 3043).
+          Golden-grade BOM specs. DCDB, ACDB and earthing are separate. Earthing stays
+          residential: 3 nos × 17 mm copper rod (IS 3043).
         </p>
 
         <div className={styles.hardwareGrid}>
@@ -74,7 +75,15 @@ export function LuminaHardware({ data }: { data: ProposalData }) {
               <div className={styles.hwDetails}>
                 <div className={styles.hwRole}>{row.role}</div>
                 <h4>{row.title}</h4>
-                <p>{row.detail}</p>
+                {row.points.length > 0 ? (
+                  <ul className={styles.hwPoints}>
+                    {row.points.map((point) => (
+                      <li key={point}>{point}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>{row.detail}</p>
+                )}
                 {row.chips.length > 0 ? (
                   <div className={styles.hwChips}>
                     {row.chips.map((chip) => (
