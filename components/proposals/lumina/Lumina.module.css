@@ -1041,7 +1041,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-  margin-top: 16px;
+  margin-top: 12px;
 }
 
 .forecastStat {
@@ -1057,11 +1057,11 @@
 }
 
 .chartCard {
-  margin-top: 16px;
+  margin-top: 12px;
   background: #ffffff;
   border: 1px solid var(--lu-line);
   border-radius: 16px;
-  padding: 18px 16px 14px;
+  padding: 14px 14px 10px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 }
 
@@ -1117,7 +1117,7 @@
 .barChartTall {
   flex: 1;
   height: auto;
-  min-height: 220px;
+  min-height: 168px;
 }
 
 .barCol {
@@ -1238,6 +1238,50 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--lu-muted);
+}
+
+.forecastBasis {
+  margin: 8px 0 0;
+  text-align: center;
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: var(--lu-body);
+  line-height: 1.35;
+}
+
+.forecastInsight {
+  flex: 0 0 auto;
+  margin-top: 12px;
+  padding: 12px 14px 11px;
+  background: #ffffff;
+  border: 1px solid var(--lu-line);
+  border-left: 3px solid var(--lu-green);
+  border-radius: 12px;
+}
+
+.forecastInsightTag {
+  margin: 0 0 3px;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--lu-green-ink);
+}
+
+.forecastInsightTitle {
+  margin: 0 0 5px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--lu-ink);
+  line-height: 1.2;
+}
+
+.forecastInsightBody {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--lu-body);
+  line-height: 1.45;
 }
 
 .monthCard {

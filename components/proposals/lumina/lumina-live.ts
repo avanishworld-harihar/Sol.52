@@ -476,6 +476,81 @@ export function luminaMonthlyForecast(data: ProposalData): LuminaMonthRow[] {
   });
 }
 
+export type LuminaForecastNotes = {
+  insightTag: string;
+  insightTitle: string;
+  insightBody: string;
+  savingsBasis: string | null;
+};
+
+/** Live ₹/unit only. 0 when year-1 units or savings are missing — never invent a tariff. */
+export function luminaEffectiveSavingRate(data: ProposalData): number {
+  const units = luminaAnnualUnits(data);
+  const sav = luminaAnnualSavings(data);
+  if (!(units > 0) || !(sav > 0)) return 0;
+  return sav / units;
+}
+
+/**
+ * Generation-engineering footnote + insight for Seasonal Forecast.
+ * Uses live tilt when present; seasonal GHI / soiling copy is climate knowledge, not a fake site audit.
+ */
+export function luminaForecastNotes(data: ProposalData): LuminaForecastNotes {
+  const months = luminaMonthlyForecast(data);
+  const annual = luminaAnnualUnits(data);
+  const peakMonths = months.filter((m) => m.peak).map((m) => m.m);
+  const peakSpan =
+    peakMonths.length >= 2
+      ? `${peakMonths[0]}–${peakMonths[peakMonths.length - 1]}`
+      : peakMonths[0] || "Mar–Jun";
+  const trough = months.reduce((best, m) => (m.val > 0 && m.val < best.val ? m : best), months[0]!);
+
+  const eng = luminaEngineeringModel(data);
+  const tiltLive = data.engineering.tiltDeg && data.engineering.tiltDeg > 0;
+  const tiltDeg = tiltLive ? data.engineering.tiltDeg! : eng.siteLatLabel && eng.tiltDeg > 0 ? eng.tiltDeg : 0;
+
+  const parts: string[] = [];
+  if (annual > 0) {
+    parts.push(
+      `Green bars (${peakSpan}) are pre-monsoon high-GHI months: the sun sits high and skies are typically clear, so the array sees the year’s strongest irradiance.`
+    );
+    parts.push(
+      `Output then falls in the rains because monsoon cloud cover cuts GHI even though daylight hours stay long.${
+        trough.val > 0 ? ` ${trough.m} is the trough as solar altitude is shallower.` : ""
+      }`
+    );
+  } else {
+    parts.push(
+      "On a central-India rooftop, generation typically peaks before the monsoon when GHI is highest and skies are clear, then falls in July–August as cloud cover cuts irradiance."
+    );
+  }
+
+  if (tiltDeg > 0) {
+    parts.push(
+      `Array tilt is set to ${tiltDeg}° so summer and winter harvest stay balanced on this latitude — a flat terrace would give away winter yield.`
+    );
+  } else {
+    parts.push(
+      "A latitude-matched tilt recovers more winter light than a flat terrace, which is why the winter bars are low, not zero."
+    );
+  }
+
+  parts.push(
+    "Dust and pre-monsoon haze sit on the glass in late summer — a scheduled wash before June recovers more year-1 kWh than adding extra modules."
+  );
+
+  const rate = luminaEffectiveSavingRate(data);
+  return {
+    insightTag: "Expert insight",
+    insightTitle: "Why the bars rise and fall",
+    insightBody: parts.join(" "),
+    savingsBasis:
+      rate > 0
+        ? `Estimated savings = monthly units × ₹${rate.toFixed(2)}/unit effective saving rate. Fixed charges excluded.`
+        : null,
+  };
+}
+
 export type LuminaTermCard = { title: string; body: string };
 
 export function luminaTermCards(data: ProposalData): LuminaTermCard[] {

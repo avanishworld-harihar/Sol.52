@@ -7,6 +7,7 @@ import { LuminaDocFooter } from "./lumina-brand";
 import {
   luminaAnnualUnits,
   luminaBillYearUnits,
+  luminaForecastNotes,
   luminaHasBillUnits,
   luminaMonthlyForecast,
 } from "./lumina-live";
@@ -23,6 +24,7 @@ export function LuminaForecast({ data }: { data: ProposalData }) {
   );
   const peak = months.reduce((best, m) => (m.val > best.val ? m : best), months[0]!);
   const low = months.reduce((best, m) => (m.val > 0 && m.val < best.val ? m : best), months[0]!);
+  const notes = luminaForecastNotes(data);
 
   return (
     <section className={`${styles.a4Lumina} ${styles.innerSheet} ${styles.forecastSheet}`}>
@@ -150,7 +152,16 @@ export function LuminaForecast({ data }: { data: ProposalData }) {
             <span>Units on each bar</span>
             <span>₹ saving under the month</span>
           </div>
+          {notes.savingsBasis ? (
+            <p className={styles.forecastBasis}>{notes.savingsBasis}</p>
+          ) : null}
         </div>
+
+        <aside className={styles.forecastInsight}>
+          <p className={styles.forecastInsightTag}>{notes.insightTag}</p>
+          <h2 className={styles.forecastInsightTitle}>{notes.insightTitle}</h2>
+          <p className={styles.forecastInsightBody}>{notes.insightBody}</p>
+        </aside>
       </div>
       <LuminaDocFooter data={data} page="06 / 09" />
     </section>
