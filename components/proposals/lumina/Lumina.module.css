@@ -436,8 +436,8 @@
 .hardwareGrid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
-  margin-top: 16px;
+  gap: 10px;
+  margin-top: 14px;
 }
 
 .hwCard {
@@ -445,36 +445,86 @@
   border: 1px solid var(--lu-line);
   border-left: 4px solid var(--lu-ink);
   border-radius: 12px;
-  padding: 16px 18px;
+  padding: 12px 14px;
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 14px;
 }
 
 .hwCardAccent {
   border-left-color: var(--lu-green);
 }
 
-.hwNumber {
-  font-size: 2rem;
-  font-weight: 900;
-  color: #f1f5f9;
+.hwThumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  width: 48px;
+  overflow: hidden;
+}
+
+.hwThumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 6px;
+}
+
+.hwNumber {
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: #e2e8f0;
+  flex-shrink: 0;
+  width: 32px;
+}
+
+.hwDetails {
+  min-width: 0;
+  flex: 1;
+}
+
+.hwRole {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--lu-muted);
+  margin-bottom: 2px;
 }
 
 .hwDetails h4 {
-  font-size: 1.05rem;
+  font-size: 0.98rem;
   font-weight: 700;
   color: var(--lu-ink);
   margin: 0 0 4px;
 }
 
 .hwDetails p {
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   color: var(--lu-body);
-  line-height: 1.45;
-  margin: 0;
+  line-height: 1.4;
+  margin: 0 0 6px;
+}
+
+.hwChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.hwChip {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--lu-ink);
+  background: #f1f5f9;
+  border-radius: 999px;
+  padding: 3px 8px;
 }
 
 .capStack {

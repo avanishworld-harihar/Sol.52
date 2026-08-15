@@ -77,10 +77,68 @@ function findBom(items: ProposalBomItem[], test: RegExp): ProposalBomItem | null
 }
 
 export type LuminaHardwareRow = {
+  role: string;
   title: string;
   detail: string;
+  chips: string[];
+  image: string;
   accent?: boolean;
 };
+
+const LUMINA_HW_IMAGES: Array<{ match: RegExp; src: string }> = [
+  { match: /waaree|waree|adani|panel|module|pv\b/i, src: "/assets/hardware/panel.png" },
+  { match: /inverter|mppt|ongrid|havells/i, src: "/assets/hardware/inverter.png" },
+  { match: /structure|mount|jsw|mms|racking/i, src: "/assets/hardware/structure.png" },
+  { match: /cable|wire|polycab|conductor/i, src: "/assets/hardware/cable.png" },
+];
+
+function luminaHardwareImage(hay: string): string {
+  for (const row of LUMINA_HW_IMAGES) {
+    if (row.match.test(hay)) return row.src;
+  }
+  return "/assets/hardware/default.svg";
+}
+
+function uniqueChips(values: Array<string | undefined>): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of values) {
+    const v = raw?.trim();
+    if (!v) continue;
+    const key = v.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(v);
+  }
+  return out.slice(0, 4);
+}
+
+function rowFromBom(
+  item: ProposalBomItem,
+  role: string,
+  accent?: boolean
+): LuminaHardwareRow {
+  const hay = `${item.name} ${item.brand} ${item.spec}`;
+  const title = item.brand?.trim() || item.name;
+  const specLine = [item.spec, item.warranty].filter(Boolean).join(" · ");
+  const point = item.technicalPoints?.find((p) => p.trim())?.trim();
+  const detail =
+    point && point.toLowerCase() !== title.toLowerCase()
+      ? point
+      : specLine && specLine.toLowerCase() !== title.toLowerCase()
+        ? specLine
+        : item.description?.trim() && item.description.trim().toLowerCase() !== title.toLowerCase()
+          ? item.description.trim()
+          : role;
+  return {
+    role,
+    title,
+    detail,
+    chips: uniqueChips([item.spec, item.warranty, item.name !== item.brand ? item.name : undefined]),
+    image: luminaHardwareImage(hay),
+    accent,
+  };
+}
 
 /** Typical central-India rooftop share of year-1 yield. Applied only to live annual units. */
 const LUMINA_MONTH_SHARE: ReadonlyArray<{ m: string; share: number; peak: boolean }> = [
@@ -140,25 +198,37 @@ export function luminaTermCards(data: ProposalData): LuminaTermCard[] {
 
 export function luminaHardwareRows(data: ProposalData): LuminaHardwareRow[] {
   const items = (data.bom ?? []).filter((b) => b.name?.trim());
-  if (items.length === 0) return [];
-
   const panel = findBom(items, /panel|module|pv\b/i);
   const inverter = findBom(items, /inverter/i);
   const structure = findBom(items, /mount|structure|racking|mms/i);
-  const picked = [panel, inverter, structure].filter(Boolean) as ProposalBomItem[];
-  const rest = items.filter((item) => !picked.includes(item));
-  const ordered = [...picked, ...rest].slice(0, 4);
+  const cable = findBom(items, /cable|wire|conductor/i);
+  const earth = findBom(items, /earth|earthing|cu\s*rod|copper\s*rod|gi\s*pipe/i);
 
-  return ordered.map((item, i) => {
-    const title = [item.brand, item.name].filter(Boolean).join(" · ") || item.name;
-    const detail =
-      item.description?.trim() ||
-      [item.spec, item.warranty].filter(Boolean).join(" · ") ||
-      "Specification on this proposal record.";
-    return {
-      title,
-      detail,
-      accent: Boolean(inverter && item === inverter) || (i === 1 && !inverter),
-    };
-  });
+  const rows: LuminaHardwareRow[] = [];
+  if (panel) rows.push(rowFromBom(panel, "Solar modules"));
+  if (inverter) rows.push(rowFromBom(inverter, "Inverter", true));
+  if (structure) rows.push(rowFromBom(structure, "Mounting structure"));
+  if (cable) rows.push(rowFromBom(cable, "DC + AC cabling"));
+
+  if (earth) {
+    const live = rowFromBom(earth, "Earthing");
+    const hasQty = /3\s*nos|17\s*mm/i.test(`${live.detail} ${live.chips.join(" ")} ${earth.spec}`);
+    rows.push({
+      ...live,
+      chips: uniqueChips([...live.chips, "3 nos", "17 mm copper rod"]),
+      detail: hasQty
+        ? live.detail
+        : [live.detail, "3 nos · 17 mm copper rod"].filter(Boolean).join(" · "),
+    });
+  } else {
+    rows.push({
+      role: "Earthing",
+      title: "Copper earth rod",
+      detail: "3 nos · 17 mm copper rod · IS 3043 earth pit",
+      chips: ["3 nos", "17 mm", "IS 3043"],
+      image: "/assets/hardware/default.svg",
+    });
+  }
+
+  return rows.slice(0, 5);
 }
