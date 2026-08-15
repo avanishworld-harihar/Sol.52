@@ -1774,7 +1774,7 @@
 
 .engRoof {
   position: relative;
-  min-height: 210px;
+  min-height: 168px;
   flex: 1 1 auto;
   border-radius: 14px;
   overflow: hidden;
@@ -2070,8 +2070,8 @@
 
 .engExpert {
   flex: 0 0 auto;
-  margin-top: 8px;
-  padding: 8px 10px 9px;
+  margin-top: 6px;
+  padding: 7px 10px 8px;
   background: #ffffff;
   border: 1px solid var(--lu-line);
   border-left: 3px solid var(--lu-green);
@@ -2079,7 +2079,7 @@
 }
 
 .engExpertTag {
-  margin: 0 0 6px;
+  margin: 0 0 5px;
   font-size: 0.55rem;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -2090,7 +2090,7 @@
 .engExpertGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px 10px;
 }
 
 .engExpertCard {
@@ -2098,8 +2098,8 @@
 }
 
 .engExpertTitle {
-  margin: 0 0 3px;
-  font-size: 0.72rem;
+  margin: 0 0 2px;
+  font-size: 0.66rem;
   font-weight: 700;
   color: var(--lu-ink);
   line-height: 1.2;
@@ -2107,10 +2107,10 @@
 
 .engExpertBody {
   margin: 0;
-  font-size: 0.6rem;
+  font-size: 0.5rem;
   font-weight: 500;
   color: var(--lu-body);
-  line-height: 1.38;
+  line-height: 1.32;
 }
 
 .loading {
