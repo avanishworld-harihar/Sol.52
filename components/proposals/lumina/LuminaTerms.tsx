@@ -38,7 +38,7 @@ export function LuminaTerms({ data }: { data: ProposalData }) {
           </div>
         )}
       </div>
-      <div className={styles.pageFooter}>Lumina · 06 / 07</div>
+      <div className={styles.pageFooter}>06 / 07</div>
     </section>
   );
 }

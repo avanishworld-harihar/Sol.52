@@ -1,6 +1,7 @@
 "use client";
 
 import type { ProposalData } from "@/lib/proposal-data";
+import { formatInrCompact } from "@/components/proposals/_shared/formatters";
 import styles from "./Lumina.module.css";
 import {
   luminaAnnualUnits,
@@ -134,6 +135,9 @@ export function LuminaForecast({ data }: { data: ProposalData }) {
                       />
                     </div>
                   )}
+                  <span className={styles.barAmt}>
+                    {item.amountInr > 0 ? formatInrCompact(item.amountInr) : "—"}
+                  </span>
                   <span className={`${styles.barMonth} ${item.peak ? styles.barMonthPeak : ""}`}>
                     {item.m}
                   </span>
@@ -143,7 +147,7 @@ export function LuminaForecast({ data }: { data: ProposalData }) {
           </div>
         </div>
       </div>
-      <div className={styles.pageFooter}>Lumina · 05 / 07</div>
+      <div className={styles.pageFooter}>05 / 07</div>
     </section>
   );
 }

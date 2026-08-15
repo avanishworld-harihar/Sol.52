@@ -184,6 +184,8 @@ export type LuminaMonthRow = {
   peak: boolean;
   /** Live bill consumption for this calendar month; null when no bill series. */
   billUnits: number | null;
+  /** Live monthly savings share (₹). 0 when annual saving is not on file. */
+  amountInr: number;
 };
 
 const MONTH_KEY_TO_INDEX: Record<string, number> = {
@@ -250,6 +252,7 @@ export function luminaBillYearUnits(data: ProposalData): number {
 
 export function luminaMonthlyForecast(data: ProposalData): LuminaMonthRow[] {
   const annual = luminaAnnualUnits(data);
+  const yearlySave = luminaAnnualSavings(data);
   const billByMonth = mapBillUnitsByCalendarMonth(data.bill.months);
   const showBill = luminaHasBillUnits(data);
   return LUMINA_MONTH_SHARE.map((row, i) => ({
@@ -257,6 +260,7 @@ export function luminaMonthlyForecast(data: ProposalData): LuminaMonthRow[] {
     val: annual > 0 ? Math.round(annual * row.share) : 0,
     peak: row.peak,
     billUnits: showBill ? billByMonth[i] : null,
+    amountInr: yearlySave > 0 ? Math.round(yearlySave * row.share) : 0,
   }));
 }
 

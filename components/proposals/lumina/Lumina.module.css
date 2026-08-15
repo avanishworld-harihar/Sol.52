@@ -223,8 +223,18 @@
 .contentArea {
   position: relative;
   z-index: 2;
+  padding: 14mm 12mm 4mm;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-height: 0;
+}
+
+.contentCover {
+  position: relative;
+  z-index: 2;
   margin-top: -22px;
-  padding: 26px 32px 20px;
+  padding: 22px 12mm 4mm;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
@@ -341,7 +351,8 @@
 
 .pageFooter {
   margin-top: auto;
-  padding: 12px 0 8px;
+  flex-shrink: 0;
+  padding: 8px 12mm 12mm;
   font-size: 0.65rem;
   font-weight: 600;
   letter-spacing: 0.12em;
@@ -969,7 +980,7 @@
   background: #ffffff;
   border: 1px solid var(--lu-line);
   border-radius: 16px;
-  padding: 18px 16px 14px;
+  padding: 16px 16px 18px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 }
 
@@ -978,6 +989,7 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
+  margin-bottom: 10mm;
 }
 
 .chartLegend {
@@ -1108,8 +1120,19 @@
   min-height: 0;
 }
 
-.barMonth {
+.barAmt {
   margin-top: 6px;
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--lu-ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.barMonth {
+  margin-top: 2px;
+  margin-bottom: 4px;
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.04em;

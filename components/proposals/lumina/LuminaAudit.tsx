@@ -151,7 +151,7 @@ export function LuminaAudit({ data }: { data: ProposalData }) {
               : "When a bill and subsidy are saved on the proposal, they will fill these three boxes."}
         </p>
       </div>
-      <div className={styles.pageFooter}>Lumina · 02 / 07</div>
+      <div className={styles.pageFooter}>02 / 07</div>
     </section>
   );
 }
