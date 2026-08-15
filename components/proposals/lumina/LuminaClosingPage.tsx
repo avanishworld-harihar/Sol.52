@@ -1,18 +1,30 @@
 "use client";
 
 import type { ProposalData } from "@/lib/proposal-data";
+import { installerLogoAlt } from "@/lib/proposal-branding-settings";
 import styles from "./Lumina.module.css";
+import { useLuminaSurfaceBrand } from "./lumina-brand";
 import {
   LUMINA_CLOSE_PHOTO,
   formatLuminaKw,
-  luminaBrand,
   luminaLocation,
 } from "./lumina-live";
 
-export function LuminaClosingPage({ data }: { data: ProposalData }) {
+export type LuminaClosingPageProps = {
+  data: ProposalData;
+  installerLogoUrl?: string;
+};
+
+export function LuminaClosingPage({
+  data,
+  installerLogoUrl,
+}: LuminaClosingPageProps) {
   const customer = data.meta.customerName?.trim() || "—";
   const systemKw = Number(data.meta.systemKw) || 0;
-  const installer = data.closing.installerName?.trim() || luminaBrand(data);
+  const closingBrand = useLuminaSurfaceBrand(data, "closing", installerLogoUrl);
+  const installer = closingBrand.installerName?.trim() || "—";
+  const logo = closingBrand.showLogo ? closingBrand.logoUrl : "";
+  const showName = Boolean(installer !== "—" && (closingBrand.showName || !logo));
   const location = luminaLocation(data);
   const contact = data.closing.contactLine?.trim();
 
@@ -53,10 +65,23 @@ export function LuminaClosingPage({ data }: { data: ProposalData }) {
       </div>
 
       <div className={styles.closeBrandBar}>
-        {installer}
-        {location ? ` · ${location}` : ""}
-        {contact ? ` · ${contact}` : ""}
-        {" · 07 / 07"}
+        {logo ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={logo}
+            alt={installerLogoAlt(installer)}
+            className={styles.closeBrandLogo}
+          />
+        ) : null}
+        <span>
+          {showName ? installer : null}
+          {showName && (location || contact) ? " · " : null}
+          {location ? location : null}
+          {location && contact ? " · " : null}
+          {contact ? contact : null}
+          {(showName || location || contact) ? " · " : null}
+          07 / 07
+        </span>
       </div>
     </section>
   );

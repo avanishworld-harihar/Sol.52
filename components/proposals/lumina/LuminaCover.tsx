@@ -2,25 +2,35 @@
 
 import type { ProposalData } from "@/lib/proposal-data";
 import { formatInrCompact } from "@/components/proposals/_shared/formatters";
+import { installerLogoAlt } from "@/lib/proposal-branding-settings";
 import styles from "./Lumina.module.css";
+import { splitLuminaWordmark, useLuminaSurfaceBrand } from "./lumina-brand";
 import {
   LUMINA_HERO_PHOTO,
   formatLuminaKw,
   luminaAnnualUnits,
-  luminaBrandParts,
   luminaLocation,
   luminaNetInvestment,
 } from "./lumina-live";
 
-export function LuminaCover({ data }: { data: ProposalData }) {
+export type LuminaCoverProps = {
+  data: ProposalData;
+  installerLogoUrl?: string;
+};
+
+export function LuminaCover({ data, installerLogoUrl }: LuminaCoverProps) {
   const customer = data.meta.customerName?.trim() || "—";
   const systemKw = Number(data.meta.systemKw) || 0;
   const annual = luminaAnnualUnits(data);
   const net = luminaNetInvestment(data);
   const showSubsidy = data.economics.subsidyInr > 0;
   const location = luminaLocation(data);
-  const { head, tail } = luminaBrandParts(data);
-  const logo = data.meta.brandLogoUrl?.trim();
+  const coverBrand = useLuminaSurfaceBrand(data, "cover", installerLogoUrl);
+  const brand = coverBrand.installerName?.trim() || "";
+  const logo = coverBrand.showLogo ? coverBrand.logoUrl : "";
+  const showWordmark = Boolean(brand) && (coverBrand.showName || !logo);
+  const { head, tail } = splitLuminaWordmark(brand);
+  const logoOnly = Boolean(logo) && !showWordmark;
 
   return (
     <section className={styles.a4Lumina}>
@@ -28,14 +38,26 @@ export function LuminaCover({ data }: { data: ProposalData }) {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={LUMINA_HERO_PHOTO} alt="" className={styles.heroImage} />
         <div className={styles.heroOverlay} />
-        <div className={styles.logoContainer}>
-          {logo ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={logo} alt="" className={styles.logoImage} />
-          ) : null}
-          <span className={styles.logoTextMain}>{head}</span>
-          {tail ? <span className={styles.logoTextSub}>{tail}</span> : null}
-        </div>
+        {logo || showWordmark ? (
+          <div
+            className={`${styles.logoContainer}${logoOnly ? ` ${styles.logoContainerSolo}` : ""}`}
+          >
+            {logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={logo}
+                alt={installerLogoAlt(brand)}
+                className={logoOnly ? styles.logoImageSolo : styles.logoImage}
+              />
+            ) : null}
+            {showWordmark ? (
+              <>
+                <span className={styles.logoTextMain}>{head}</span>
+                {tail ? <span className={styles.logoTextSub}>{tail}</span> : null}
+              </>
+            ) : null}
+          </div>
+        ) : null}
       </div>
 
       <div className={styles.contentArea}>
@@ -85,7 +107,9 @@ export function LuminaCover({ data }: { data: ProposalData }) {
       </div>
 
       <div className={styles.pageFooter}>
-        SOL.52 DEPLOYMENT SPEC{location ? ` · ${location}` : ""} · 01 / 07
+        {brand ? `${brand} · ` : ""}
+        {location ? `${location} · ` : ""}
+        01 / 07
       </div>
     </section>
   );

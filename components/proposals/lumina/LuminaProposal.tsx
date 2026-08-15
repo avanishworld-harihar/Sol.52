@@ -10,16 +10,24 @@ import { LuminaTerms } from "./LuminaTerms";
 import { LuminaClosingPage } from "./LuminaClosingPage";
 import styles from "./Lumina.module.css";
 
-export function LuminaProposal({ data }: { data: ProposalData }) {
+export type LuminaProposalProps = {
+  data: ProposalData;
+  installerLogoUrl?: string;
+};
+
+export function LuminaProposal({
+  data,
+  installerLogoUrl,
+}: LuminaProposalProps) {
   return (
     <div className={styles.stage}>
-      <LuminaCover data={data} />
+      <LuminaCover data={data} installerLogoUrl={installerLogoUrl} />
       <LuminaAudit data={data} />
       <LuminaHardware data={data} />
       <LuminaLedgerPage data={data} />
       <LuminaForecast data={data} />
       <LuminaTerms data={data} />
-      <LuminaClosingPage data={data} />
+      <LuminaClosingPage data={data} installerLogoUrl={installerLogoUrl} />
     </div>
   );
 }
