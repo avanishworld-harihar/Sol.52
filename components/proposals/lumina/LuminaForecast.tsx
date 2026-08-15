@@ -24,7 +24,7 @@ export function LuminaForecast({ data }: { data: ProposalData }) {
   const low = months.reduce((best, m) => (m.val > 0 && m.val < best.val ? m : best), months[0]!);
 
   return (
-    <section className={styles.a4Lumina}>
+    <section className={`${styles.a4Lumina} ${styles.innerSheet}`}>
       <div className={styles.contentArea}>
         <div className={styles.dateTag}>Yield intelligence</div>
         <h1 className={styles.clientTitle}>Seasonal Forecast.</h1>
