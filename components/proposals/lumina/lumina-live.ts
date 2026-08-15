@@ -3,6 +3,8 @@
  */
 
 import type { ProposalBillMonth, ProposalBomItem, ProposalData } from "@/lib/proposal-data";
+import { RESIDENTIAL_ENGINEERING_STANDARDS } from "@/lib/proposal-engineering-metrics";
+import { recommendedTiltFromLatitude, resolveSiteLatitude } from "@/lib/proposal-site-geo";
 
 export const LUMINA_HERO_PHOTO = "/assets/proposals/lumina-cover-wide-plant.jpg";
 export const LUMINA_HERO_ALT =
@@ -477,4 +479,108 @@ export function luminaHardwareRows(data: ProposalData): LuminaHardwareRow[] {
         : [earthLive.detail, "3 nos × 17 mm copper rod"].filter(Boolean).join(" · "),
     },
   ];
+}
+
+const LUMINA_M2_PER_PANEL = 2.2;
+const LUMINA_MAX_VISUAL_PANELS = 24;
+
+function luminaMetricValue(data: ProposalData, match: RegExp): string {
+  const row = (data.engineering.metrics ?? []).find((m) => match.test(m.label));
+  return row?.value?.trim() ?? "";
+}
+
+function luminaParsePanelArray(data: ProposalData): { count: number; watt: number } {
+  const panel = (data.bom ?? []).find(
+    (it) => /panel|module|pv\b/i.test(`${it.name} ${it.spec}`) && !/inverter/i.test(it.name)
+  );
+  const blob = [panel?.spec, panel?.description, ...(panel?.technicalPoints ?? [])].join(" ");
+  const pair = blob.match(/(\d+)\s*(?:modules?|nos\.?|pcs)?\s*[x×]\s*(\d{3,4})\s*(?:wp|w)/i);
+  if (pair) {
+    return { count: Number(pair[1]) || 0, watt: Number(pair[2]) || 0 };
+  }
+  const wattOnly = blob.match(/(\d{3,4})\s*(?:wp|w)/i);
+  const watt = wattOnly ? Number(wattOnly[1]) || 0 : 0;
+  const kw = Number(data.meta.systemKw) || 0;
+  const count = watt > 0 && kw > 0 ? Math.max(1, Math.ceil((kw * 1000) / watt)) : 0;
+  return { count, watt };
+}
+
+export type LuminaEngineeringModel = {
+  acKw: number;
+  dcKwp: number;
+  dcAcRatio: number;
+  panelCount: number;
+  panelWatt: number;
+  visualPanelCount: number;
+  showingPartial: boolean;
+  tiltDeg: number;
+  azimuthDeg: number;
+  cityLabel: string;
+  siteLatLabel: string;
+  roofAreaM2: number;
+  m2PerPanel: number;
+  performanceRatioPct: number;
+  peakSunHours: number;
+  specificYield: number;
+  loadCoveragePct: number;
+  standards: string[];
+  tiltNote: string;
+};
+
+export function luminaEngineeringModel(data: ProposalData): LuminaEngineeringModel {
+  const acKw = Number(data.meta.systemKw) || 0;
+  const annual = luminaAnnualUnits(data);
+  const { count, watt } = luminaParsePanelArray(data);
+  const dcKwp = count > 0 && watt > 0 ? Math.round(((count * watt) / 1000) * 100) / 100 : 0;
+  const dcAcRatio = acKw > 0 && dcKwp > 0 ? Math.round((dcKwp / acKw) * 100) / 100 : 0;
+  const specificYield = acKw > 0 && annual > 0 ? Math.round(annual / acKw) : 0;
+
+  const coverageRaw = luminaMetricValue(data, /load\s*coverage|coverage/i);
+  const coverageFromMetric = Number(coverageRaw.replace(/[^\d.]/g, ""));
+  const loadCoveragePct =
+    coverageFromMetric > 0
+      ? Math.round(coverageFromMetric)
+      : data.bill.solarSavingsPct > 0
+        ? Math.round(data.bill.solarSavingsPct)
+        : 0;
+
+  const liveCity = data.engineering.cityLabel?.trim() || luminaLocation(data);
+  const loc = liveCity;
+  let siteLatLabel = "";
+  let tiltDeg = data.engineering.tiltDeg && data.engineering.tiltDeg > 0 ? data.engineering.tiltDeg : 0;
+  if (loc) {
+    const geo = resolveSiteLatitude(loc);
+    const token = geo.cityLabel.toLowerCase().replace(" region", "").split(" ")[0] ?? "";
+    if (token && loc.toLowerCase().includes(token)) {
+      siteLatLabel = `~${geo.lat.toFixed(1)}° N (${geo.cityLabel})`;
+      if (!tiltDeg) tiltDeg = recommendedTiltFromLatitude(geo.lat);
+    }
+  }
+
+  const visualPanelCount = Math.min(Math.max(0, count), LUMINA_MAX_VISUAL_PANELS);
+
+  return {
+    acKw,
+    dcKwp,
+    dcAcRatio,
+    panelCount: count,
+    panelWatt: watt,
+    visualPanelCount,
+    showingPartial: count > visualPanelCount,
+    tiltDeg,
+    azimuthDeg: count > 0 ? 180 : 0,
+    cityLabel: loc,
+    siteLatLabel,
+    roofAreaM2: count > 0 ? Math.round(count * LUMINA_M2_PER_PANEL) : 0,
+    m2PerPanel: LUMINA_M2_PER_PANEL,
+    performanceRatioPct: acKw > 0 ? 75 : 0,
+    peakSunHours: loc ? 5 : 0,
+    specificYield,
+    loadCoveragePct,
+    standards:
+      (data.engineering.standards ?? []).filter((s) => s.trim()).length > 0
+        ? data.engineering.standards.map((s) => s.trim()).filter(Boolean)
+        : [...RESIDENTIAL_ENGINEERING_STANDARDS],
+    tiltNote: data.engineering.tiltNote?.trim() || "",
+  };
 }

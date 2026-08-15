@@ -4,6 +4,7 @@ import type { ProposalData } from "@/lib/proposal-data";
 import { LuminaCover } from "./LuminaCover";
 import { LuminaAudit } from "./LuminaAudit";
 import { LuminaHardware } from "./LuminaHardware";
+import { LuminaEngineering } from "./LuminaEngineering";
 import { LuminaLedgerPage } from "./LuminaLedgerPage";
 import { LuminaForecast } from "./LuminaForecast";
 import { LuminaTerms, LuminaTermsContinued } from "./LuminaTerms";
@@ -24,6 +25,7 @@ export function LuminaProposal({
       <LuminaCover data={data} installerLogoUrl={installerLogoUrl} />
       <LuminaAudit data={data} />
       <LuminaHardware data={data} />
+      <LuminaEngineering data={data} />
       <LuminaLedgerPage data={data} />
       <LuminaForecast data={data} />
       <LuminaTerms data={data} />

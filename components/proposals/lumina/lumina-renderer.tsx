@@ -60,7 +60,7 @@ function LuminaDocument({
       <div className={styles.printBar}>
         <div className={styles.printBarInner}>
           <span className={styles.printBarBrand}>
-            {brand ? `${brand} · 8 pages` : "8 pages"}
+            {brand ? `${brand} · 9 pages` : "9 pages"}
           </span>
           <button
             type="button"
