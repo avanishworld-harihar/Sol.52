@@ -1527,7 +1527,7 @@
   z-index: 2;
   display: flex;
   flex-direction: column;
-  padding: 28px 32px 24px;
+  padding: 28px 32px 32px;
 }
 
 .closeKicker {
@@ -1559,12 +1559,17 @@
 
 .closeSigDock {
   margin-top: auto;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  width: 100%;
+  padding-bottom: 4px;
 }
 
 .closeSigCard {
+  flex: 0 0 calc(50% - 10px);
+  width: calc(50% - 10px);
+  min-width: 0;
   background: rgba(255, 255, 255, 0.96);
   border-radius: 14px;
   padding: 16px 18px 14px;
@@ -1966,7 +1971,12 @@
   }
 
   .closeSigDock {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+  }
+
+  .closeSigCard {
+    flex: 1 1 auto;
+    width: 100%;
   }
 
   .sigGrid {
