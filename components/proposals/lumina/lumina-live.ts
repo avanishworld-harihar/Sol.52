@@ -7,9 +7,9 @@ import type { ProposalBillMonth, ProposalBomItem, ProposalData } from "@/lib/pro
 export const LUMINA_HERO_PHOTO = "/assets/proposals/lumina-cover-luxury-evening.jpg";
 export const LUMINA_HERO_ALT =
   "Luxury Indian rooftop at evening: elevated solar plant, garden and sofa underneath, family and friends with a guitar, neighboring roofs also on solar";
-export const LUMINA_CLOSE_PHOTO = "/assets/proposals/lumina-close-indian-luxury-terrace.jpg";
+export const LUMINA_CLOSE_PHOTO = "/assets/proposals/lumina-close-look-out.jpg";
 export const LUMINA_CLOSE_ALT =
-  "Indian luxury rooftop with an 8–9 ft elevated solar plant, garden and sofa under the array, and a couple at the glass railing";
+  "Indian couple at the rooftop glass railing with coffee, both looking out at the sunset, elevated solar plant behind them";
 
 export function luminaBrand(data: ProposalData): string {
   return data.meta.brandName?.trim() || data.closing.installerName?.trim() || "SOL.52";
