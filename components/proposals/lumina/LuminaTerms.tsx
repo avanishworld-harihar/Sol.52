@@ -2,43 +2,83 @@
 
 import type { ProposalData } from "@/lib/proposal-data";
 import styles from "./Lumina.module.css";
-import { luminaTermCards } from "./lumina-live";
+import { buildLuminaTermsModel } from "./lumina-terms-copy";
+
+function TermList({ items }: { items: string[] }) {
+  return (
+    <ul className={styles.termsList}>
+      {items.map((item) => (
+        <li key={item}>{item}</li>
+      ))}
+    </ul>
+  );
+}
 
 export function LuminaTerms({ data }: { data: ProposalData }) {
-  const cards = luminaTermCards(data);
+  const model = buildLuminaTermsModel(data);
 
   return (
     <section className={styles.a4Lumina}>
       <div className={styles.contentArea}>
-        <div className={styles.dateTag}>Legal framework</div>
-        <h1 className={styles.clientTitle}>Clear Terms.</h1>
+        <div className={styles.dateTag}>Terms & compliance</div>
+        <h1 className={styles.clientTitle}>Terms & Conditions.</h1>
         <p className={styles.subText}>
-          Conditions below are the live terms on this proposal — not a generic Harihar script.
+          General terms, documents needed for net-metering, and what annual maintenance covers.
         </p>
 
-        {cards.length > 0 ? (
-          <div className={styles.termsGrid}>
-            {cards.map((card, i) => (
-              <div key={`${card.title}-${i}`} className={styles.termCard}>
-                <div className={styles.termNum}>{String(i + 1).padStart(2, "0")}</div>
-                <div className={styles.termText}>
-                  <h4>{card.title}</h4>
-                  <p>{card.body}</p>
-                </div>
-              </div>
-            ))}
+        <div className={styles.termsSplit}>
+          <article className={`${styles.termsBlock} ${styles.termsBlockWide}`}>
+            <h3>General terms</h3>
+            <TermList items={model.general} />
+          </article>
+          <div className={styles.termsStack}>
+            <article className={styles.termsBlock}>
+              <h3>Documents required</h3>
+              <TermList items={model.documents} />
+            </article>
+            <article className={styles.termsBlock}>
+              <h3>Annual maintenance — scope</h3>
+              <p className={styles.termsLead}>{model.amcObjective}</p>
+              <TermList items={model.amcScope} />
+            </article>
           </div>
-        ) : (
-          <div className={styles.termCard}>
-            <div className={styles.termNum}>—</div>
-            <div className={styles.termText}>
-              <h4>Terms not on file</h4>
-              <p>Smart cards appear here when conditions or warranty highlights exist on this proposal.</p>
-            </div>
-          </div>
-        )}
+        </div>
       </div>
-      <div className={styles.pageFooter}>Lumina · 06 / 07</div>
+      <div className={styles.pageFooter}>Lumina · 06 / 08</div>
+    </section>
+  );
+}
+
+export function LuminaTermsContinued({ data }: { data: ProposalData }) {
+  const model = buildLuminaTermsModel(data);
+
+  return (
+    <section className={styles.a4Lumina}>
+      <div className={styles.contentArea}>
+        <div className={styles.dateTag}>Terms & compliance · continued</div>
+        <h1 className={styles.clientTitle}>Maintenance & client scope.</h1>
+        <p className={styles.subText}>
+          What we cover under AMC, what stays with you, and how later-year maintenance is charged.
+        </p>
+
+        <div className={styles.termsEqual}>
+          <article className={styles.termsBlock}>
+            <h3>Client&apos;s scope</h3>
+            <TermList items={model.clientScope} />
+          </article>
+          <article className={styles.termsBlock}>
+            <h3>Cost of maintenance</h3>
+            <p className={styles.termsLead}>{model.amcCostParagraph}</p>
+            <TermList items={model.amcTerms} />
+          </article>
+        </div>
+
+        <div className={styles.termsSignoff}>
+          <span>Regards,</span>
+          <strong>{model.installerName || "—"}</strong>
+        </div>
+      </div>
+      <div className={styles.pageFooter}>Lumina · 07 / 08</div>
     </section>
   );
 }

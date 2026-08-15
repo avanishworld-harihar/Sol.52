@@ -81,7 +81,7 @@ export function LuminaClosingPage({
           {location && contact ? " · " : null}
           {contact ? contact : null}
           {(showName || location || contact) ? " · " : null}
-          07 / 07
+          08 / 08
         </span>
       </div>
     </section>

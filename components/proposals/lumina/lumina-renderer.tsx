@@ -56,7 +56,7 @@ function LuminaDocument({
     <div ref={rootRef} data-proposal-preset="residential_lumina" className={styles.root}>
       <div className={styles.printBar}>
         <div className={styles.printBarInner}>
-          <span className={styles.printBarBrand}>Lumina · 7 pages</span>
+          <span className={styles.printBarBrand}>Lumina · 8 pages</span>
           <button
             type="button"
             className={styles.printBarBtn}
