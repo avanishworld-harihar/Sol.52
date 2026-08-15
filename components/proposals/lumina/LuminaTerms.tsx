@@ -3,6 +3,7 @@
 import type { ProposalData } from "@/lib/proposal-data";
 import styles from "./Lumina.module.css";
 import { LuminaDocFooter } from "./lumina-brand";
+import { useLuminaLang } from "./lumina-lang-context";
 import { buildLuminaTermsModel } from "./lumina-terms-copy";
 
 function TermList({ items }: { items: string[] }) {
@@ -16,29 +17,28 @@ function TermList({ items }: { items: string[] }) {
 }
 
 export function LuminaTerms({ data }: { data: ProposalData }) {
-  const model = buildLuminaTermsModel(data);
+  const { copy, lang } = useLuminaLang();
+  const model = buildLuminaTermsModel(data, lang);
 
   return (
     <section className={`${styles.a4Lumina} ${styles.innerSheet}`}>
       <div className={styles.contentArea}>
-        <div className={styles.dateTag}>Terms & compliance</div>
-        <h1 className={styles.clientTitle}>Terms & Conditions.</h1>
-        <p className={styles.subText}>
-          General terms, documents needed for net-metering, and what annual maintenance covers.
-        </p>
+        <div className={styles.dateTag}>{copy.terms.tag}</div>
+        <h1 className={styles.clientTitle}>{copy.terms.title}</h1>
+        <p className={styles.subText}>{copy.terms.lead}</p>
 
         <div className={styles.termsSplit}>
           <article className={`${styles.termsBlock} ${styles.termsBlockWide}`}>
-            <h3>General terms</h3>
+            <h3>{copy.terms.general}</h3>
             <TermList items={model.general} />
           </article>
           <div className={styles.termsStack}>
             <article className={styles.termsBlock}>
-              <h3>Documents required</h3>
+              <h3>{copy.terms.documents}</h3>
               <TermList items={model.documents} />
             </article>
             <article className={styles.termsBlock}>
-              <h3>Annual maintenance — scope</h3>
+              <h3>{copy.terms.amcScope}</h3>
               <p className={styles.termsLead}>{model.amcObjective}</p>
               <TermList items={model.amcScope} />
             </article>
@@ -51,31 +51,30 @@ export function LuminaTerms({ data }: { data: ProposalData }) {
 }
 
 export function LuminaTermsContinued({ data }: { data: ProposalData }) {
-  const model = buildLuminaTermsModel(data);
+  const { copy, lang } = useLuminaLang();
+  const model = buildLuminaTermsModel(data, lang);
 
   return (
     <section className={`${styles.a4Lumina} ${styles.innerSheet}`}>
       <div className={styles.contentArea}>
-        <div className={styles.dateTag}>Terms & compliance · continued</div>
-        <h1 className={styles.clientTitle}>Maintenance & client scope.</h1>
-        <p className={styles.subText}>
-          What we cover under AMC, what stays with you, and how later-year maintenance is charged.
-        </p>
+        <div className={styles.dateTag}>{copy.terms.tag2}</div>
+        <h1 className={styles.clientTitle}>{copy.terms.title2}</h1>
+        <p className={styles.subText}>{copy.terms.lead2}</p>
 
         <div className={styles.termsEqual}>
           <article className={styles.termsBlock}>
-            <h3>Client&apos;s scope</h3>
+            <h3>{copy.terms.clientScope}</h3>
             <TermList items={model.clientScope} />
           </article>
           <article className={styles.termsBlock}>
-            <h3>Cost of maintenance</h3>
+            <h3>{copy.terms.cost}</h3>
             <p className={styles.termsLead}>{model.amcCostParagraph}</p>
             <TermList items={model.amcTerms} />
           </article>
         </div>
 
         <div className={styles.termsSignoff}>
-          <span>Regards,</span>
+          <span>{copy.terms.regards}</span>
           <strong>{model.installerName || "—"}</strong>
         </div>
       </div>

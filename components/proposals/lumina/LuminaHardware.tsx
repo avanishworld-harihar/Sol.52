@@ -5,6 +5,7 @@ import styles from "./Lumina.module.css";
 import { LuminaDocFooter } from "./lumina-brand";
 import type { LuminaHwKind } from "./lumina-live";
 import { luminaHardwareRows } from "./lumina-live";
+import { useLuminaLang } from "./lumina-lang-context";
 
 function EarthIcon() {
   return (
@@ -75,17 +76,15 @@ function HwSpecLine({ text }: { text: string }) {
 }
 
 export function LuminaHardware({ data }: { data: ProposalData }) {
+  const { copy } = useLuminaLang();
   const rows = luminaHardwareRows(data);
 
   return (
     <section className={`${styles.a4Lumina} ${styles.innerSheet} ${styles.hardwarePage}`}>
       <div className={`${styles.contentArea} ${styles.hardwareSheet}`}>
-        <div className={styles.dateTag}>System architecture · 7-item BOM</div>
-        <h1 className={styles.clientTitle}>Hardware Specs.</h1>
-        <p className={styles.subText}>
-          DCDB, ACDB, lightning arrester and earthing are separate. Earthing: 3 nos × 17 mm
-          copper rod (IS 3043).
-        </p>
+        <div className={styles.dateTag}>{copy.hardware.tag}</div>
+        <h1 className={styles.clientTitle}>{copy.hardware.title}</h1>
+        <p className={styles.subText}>{copy.hardware.lead}</p>
 
         <div className={styles.hardwareGrid}>
           {rows.map((row, i) => (

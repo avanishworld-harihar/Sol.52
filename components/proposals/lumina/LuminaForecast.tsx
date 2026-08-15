@@ -4,6 +4,7 @@ import type { ProposalData } from "@/lib/proposal-data";
 import { formatInrCompact } from "@/components/proposals/_shared/formatters";
 import styles from "./Lumina.module.css";
 import { LuminaDocFooter } from "./lumina-brand";
+import { useLuminaLang } from "./lumina-lang-context";
 import {
   luminaAnnualUnits,
   luminaBillYearUnits,
@@ -13,6 +14,7 @@ import {
 } from "./lumina-live";
 
 export function LuminaForecast({ data }: { data: ProposalData }) {
+  const { copy, lang } = useLuminaLang();
   const annual = luminaAnnualUnits(data);
   const months = luminaMonthlyForecast(data);
   const showBill = luminaHasBillUnits(data);
@@ -24,33 +26,29 @@ export function LuminaForecast({ data }: { data: ProposalData }) {
   );
   const peak = months.reduce((best, m) => (m.val > best.val ? m : best), months[0]!);
   const low = months.reduce((best, m) => (m.val > 0 && m.val < best.val ? m : best), months[0]!);
-  const notes = luminaForecastNotes(data);
+  const notes = luminaForecastNotes(data, lang);
 
   return (
     <section className={`${styles.a4Lumina} ${styles.innerSheet} ${styles.forecastSheet}`}>
       <div className={styles.contentArea}>
-        <div className={styles.dateTag}>Yield intelligence</div>
-        <h1 className={styles.clientTitle}>Seasonal Forecast.</h1>
+        <div className={styles.dateTag}>{copy.forecast.tag}</div>
+        <h1 className={styles.clientTitle}>{copy.forecast.title}</h1>
         <p className={styles.subText}>
           {annual > 0
-            ? `Year-1 yield on this proposal is ${annual.toLocaleString("en-IN")} units. Bars follow a typical central-India rooftop curve.${
-                showBill
-                  ? " Dark bars are bill units from the uploaded bill."
-                  : " Green = peak-sun months."
-              }`
-            : "The chart appears when year-1 yield exists on this proposal — nothing is invented."}
+            ? copy.forecast.lead(annual.toLocaleString("en-IN"), showBill)
+            : copy.forecast.leadEmpty}
         </p>
 
         <div className={styles.forecastStats}>
           <div className={styles.forecastStat}>
-            <span className={styles.cardLabel}>Year-1 solar</span>
+            <span className={styles.cardLabel}>{copy.forecast.year1Solar}</span>
             <span className={styles.cardValue}>
               {annual > 0 ? annual.toLocaleString("en-IN") : "—"}
             </span>
-            {annual > 0 ? <span className={styles.cardUnit}>units</span> : null}
+            {annual > 0 ? <span className={styles.cardUnit}>{copy.forecast.units}</span> : null}
           </div>
           <div className={`${styles.forecastStat} ${styles.forecastStatPeak}`}>
-            <span className={`${styles.cardLabel} ${styles.cardLabelAccent}`}>Highest month</span>
+            <span className={`${styles.cardLabel} ${styles.cardLabelAccent}`}>{copy.forecast.highest}</span>
             <span className={`${styles.cardValue} ${styles.cardValueAccent}`}>
               {peak.val > 0 ? peak.m : "—"}
             </span>
@@ -60,15 +58,15 @@ export function LuminaForecast({ data }: { data: ProposalData }) {
           </div>
           {showBill ? (
             <div className={styles.forecastStat}>
-              <span className={styles.cardLabel}>Bill year units</span>
+              <span className={styles.cardLabel}>{copy.forecast.billYear}</span>
               <span className={styles.cardValue}>
                 {billYear > 0 ? billYear.toLocaleString("en-IN") : "—"}
               </span>
-              {billYear > 0 ? <span className={styles.cardUnit}>units</span> : null}
+              {billYear > 0 ? <span className={styles.cardUnit}>{copy.forecast.units}</span> : null}
             </div>
           ) : (
             <div className={styles.forecastStat}>
-              <span className={styles.cardLabel}>Lowest month</span>
+              <span className={styles.cardLabel}>{copy.forecast.lowest}</span>
               <span className={styles.cardValue}>{low.val > 0 ? low.m : "—"}</span>
               {low.val > 0 ? (
                 <span className={styles.cardUnit}>{low.val.toLocaleString("en-IN")} U</span>
@@ -80,25 +78,21 @@ export function LuminaForecast({ data }: { data: ProposalData }) {
         <div className={`${styles.chartCard} ${styles.chartCardTall}`}>
           <div className={styles.chartLegend}>
             <span className={styles.legendItem}>
-              <span className={styles.legendSwatch} /> Solar
+              <span className={styles.legendSwatch} /> {copy.forecast.legendSolar}
             </span>
             <span className={styles.legendItem}>
-              <span className={`${styles.legendSwatch} ${styles.legendSwatchPeak}`} /> Peak sun
+              <span className={`${styles.legendSwatch} ${styles.legendSwatchPeak}`} /> {copy.forecast.legendPeak}
             </span>
             {showBill ? (
               <span className={styles.legendItem}>
-                <span className={`${styles.legendSwatch} ${styles.legendSwatchBill}`} /> Bill units
+                <span className={`${styles.legendSwatch} ${styles.legendSwatchBill}`} /> {copy.forecast.legendBill}
               </span>
             ) : null}
           </div>
           <div
             className={`${styles.barChart} ${styles.barChartTall}`}
             role="img"
-            aria-label={
-              showBill
-                ? "Monthly solar generation versus bill units"
-                : "Monthly generation forecast"
-            }
+              aria-label={copy.forecast.chartAria(showBill)}
           >
             {months.map((item) => {
               const solarPct = item.val > 0 ? Math.max(8, Math.round((item.val / max) * 100)) : 0;
@@ -149,8 +143,8 @@ export function LuminaForecast({ data }: { data: ProposalData }) {
             })}
           </div>
           <div className={styles.chartAxis}>
-            <span>Units on each bar</span>
-            <span>₹ saving under the month</span>
+            <span>{copy.forecast.axisUnits}</span>
+            <span>{copy.forecast.axisSave}</span>
           </div>
           {notes.savingsBasis ? (
             <p className={styles.forecastBasis}>{notes.savingsBasis}</p>

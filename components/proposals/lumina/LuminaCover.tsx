@@ -5,6 +5,7 @@ import { formatInrCompact } from "@/components/proposals/_shared/formatters";
 import { installerLogoAlt } from "@/lib/proposal-branding-settings";
 import styles from "./Lumina.module.css";
 import { splitLuminaWordmark, useLuminaSurfaceBrand } from "./lumina-brand";
+import { useLuminaLang } from "./lumina-lang-context";
 import {
   LUMINA_HERO_ALT,
   LUMINA_HERO_PHOTO,
@@ -20,6 +21,7 @@ export type LuminaCoverProps = {
 };
 
 export function LuminaCover({ data, installerLogoUrl }: LuminaCoverProps) {
+  const { copy } = useLuminaLang();
   const customer = data.meta.customerName?.trim() || "—";
   const systemKw = Number(data.meta.systemKw) || 0;
   const annual = luminaAnnualUnits(data);
@@ -32,6 +34,7 @@ export function LuminaCover({ data, installerLogoUrl }: LuminaCoverProps) {
   const showWordmark = Boolean(brand) && (coverBrand.showName || !logo);
   const { head, tail } = splitLuminaWordmark(brand);
   const logoOnly = Boolean(logo) && !showWordmark;
+  const kwLabel = systemKw > 0 ? formatLuminaKw(systemKw) : "";
 
   return (
     <section className={styles.a4Lumina}>
@@ -60,28 +63,21 @@ export function LuminaCover({ data, installerLogoUrl }: LuminaCoverProps) {
           </div>
         ) : null}
         <div className={styles.heroCaption}>
-          <span>Elevated GI MMS</span>
-          <span>RCC terrace · walkable under array</span>
+          <span>{copy.cover.heroMms}</span>
+          <span>{copy.cover.heroTerrace}</span>
         </div>
       </div>
 
       <div className={styles.contentCover}>
         <div>
-          <div className={styles.dateTag}>
-            {customer !== "—" ? `Prepared for ${customer}` : "Prepared for this property"}
-          </div>
-          <h1 className={styles.clientTitle}>Smart Energy Portfolio.</h1>
-          <p className={styles.subText}>
-            A high-efficiency
-            {systemKw > 0 ? ` ${formatLuminaKw(systemKw)} kW` : ""} photovoltaic system
-            {location ? ` for ${location}` : ""} engineered to reduce grid reliance and deliver
-            reliable returns when live economics are on file.
-          </p>
+          <div className={styles.dateTag}>{copy.cover.preparedFor(customer)}</div>
+          <h1 className={styles.clientTitle}>{copy.cover.title}</h1>
+          <p className={styles.subText}>{copy.cover.lead(kwLabel, location)}</p>
         </div>
 
         <div className={styles.cardGrid}>
           <div className={styles.dataCard}>
-            <span className={styles.cardLabel}>System Engine</span>
+            <span className={styles.cardLabel}>{copy.cover.systemEngine}</span>
             <div>
               <span className={styles.cardValue}>{systemKw > 0 ? formatLuminaKw(systemKw) : "—"}</span>
               {systemKw > 0 ? <span className={styles.cardUnit}>kW</span> : null}
@@ -89,18 +85,18 @@ export function LuminaCover({ data, installerLogoUrl }: LuminaCoverProps) {
           </div>
 
           <div className={styles.dataCard}>
-            <span className={styles.cardLabel}>Est. Year 1 Yield</span>
+            <span className={styles.cardLabel}>{copy.cover.year1Yield}</span>
             <div>
               <span className={styles.cardValue}>
                 {annual > 0 ? annual.toLocaleString("en-IN") : "—"}
               </span>
-              {annual > 0 ? <span className={styles.cardUnit}>Units</span> : null}
+              {annual > 0 ? <span className={styles.cardUnit}>{copy.cover.units}</span> : null}
             </div>
           </div>
 
           <div className={`${styles.dataCard} ${styles.dataCardAccent}`}>
             <span className={`${styles.cardLabel} ${styles.cardLabelAccent}`}>
-              {showSubsidy ? "Net Investment" : "Turnkey Investment"}
+              {showSubsidy ? copy.cover.netInvestment : copy.cover.turnkeyInvestment}
             </span>
             <div>
               <span className={`${styles.cardValue} ${styles.cardValueAccent}`}>

@@ -512,7 +512,11 @@ export function luminaEffectiveSavingRate(data: ProposalData): number {
  * Generation-engineering footnote + insight for Seasonal Forecast.
  * Uses live tilt when present; seasonal GHI / soiling copy is climate knowledge, not a fake site audit.
  */
-export function luminaForecastNotes(data: ProposalData): LuminaForecastNotes {
+export function luminaForecastNotes(
+  data: ProposalData,
+  lang: "en" | "hi" = "en"
+): LuminaForecastNotes {
+  const hi = lang === "hi";
   const months = luminaMonthlyForecast(data);
   const annual = luminaAnnualUnits(data);
   const peakMonths = months.filter((m) => m.peak).map((m) => m.m);
@@ -529,41 +533,57 @@ export function luminaForecastNotes(data: ProposalData): LuminaForecastNotes {
   const parts: string[] = [];
   if (annual > 0) {
     parts.push(
-      `Green bars (${peakSpan}) are pre-monsoon high-GHI months: the sun sits high and skies are typically clear, so the array sees the year’s strongest irradiance.`
+      hi
+        ? `Green bars (${peakSpan}) monsoon से पहले की तेज़ धूप (GHI) हैं: सूरज ऊँचा रहता है, आसमान साफ़ रहता है, इसलिए array को साल की सबसे तेज़ रोशनी मिलती है।`
+        : `Green bars (${peakSpan}) are pre-monsoon high-GHI months: the sun sits high and skies are typically clear, so the array sees the year’s strongest irradiance.`
     );
     parts.push(
-      `Output then falls in the rains because monsoon cloud cover cuts GHI even though daylight hours stay long.${
-        trough.val > 0 ? ` ${trough.m} is the trough as solar altitude is shallower.` : ""
-      }`
+      hi
+        ? `बारिश में generation गिरती है क्योंकि monsoon के बादल GHI काट देते हैं — दिन लंबे होने पर भी।${
+            trough.val > 0 ? ` ${trough.m} सबसे नीचा महीना है क्योंकि सूरज नीचा रहता है।` : ""
+          }`
+        : `Output then falls in the rains because monsoon cloud cover cuts GHI even though daylight hours stay long.${
+            trough.val > 0 ? ` ${trough.m} is the trough as solar altitude is shallower.` : ""
+          }`
     );
   } else {
     parts.push(
-      "On a central-India rooftop, generation typically peaks before the monsoon when GHI is highest and skies are clear, then falls in July–August as cloud cover cuts irradiance."
+      hi
+        ? "Central-India rooftop पर generation आमतौर पर monsoon से पहले peak पर होती है जब GHI सबसे ज़्यादा हो, फिर July–August में बादलों से गिरती है।"
+        : "On a central-India rooftop, generation typically peaks before the monsoon when GHI is highest and skies are clear, then falls in July–August as cloud cover cuts irradiance."
     );
   }
 
   if (tiltDeg > 0) {
     parts.push(
-      `Array tilt is set to ${tiltDeg}° so summer and winter harvest stay balanced on this latitude — a flat terrace would give away winter yield.`
+      hi
+        ? `Array tilt ${tiltDeg}° रखा गया है ताकि summer और winter दोनों में yield balance रहे — बिलकुल सपाट छत winter की रोशनी गवा देती है।`
+        : `Array tilt is set to ${tiltDeg}° so summer and winter harvest stay balanced on this latitude — a flat terrace would give away winter yield.`
     );
   } else {
     parts.push(
-      "A latitude-matched tilt recovers more winter light than a flat terrace, which is why the winter bars are low, not zero."
+      hi
+        ? "Latitude के हिसाब से tilt winter की रोशनी बचाता है। इसलिए winter bars कम हैं, zero नहीं।"
+        : "A latitude-matched tilt recovers more winter light than a flat terrace, which is why the winter bars are low, not zero."
     );
   }
 
   parts.push(
-    "Dust and pre-monsoon haze sit on the glass in late summer — a scheduled wash before June recovers more year-1 kWh than adding extra modules."
+    hi
+      ? "May–June में धूल और धुंध काँच पर बैठती है — June से पहले एक scheduled wash extra modules लगाने से ज़्यादा Year-1 kWh बचाती है।"
+      : "Dust and pre-monsoon haze sit on the glass in late summer — a scheduled wash before June recovers more year-1 kWh than adding extra modules."
   );
 
   const rate = luminaEffectiveSavingRate(data);
   return {
     insightTag: "Expert insight",
-    insightTitle: "Why the bars rise and fall",
+    insightTitle: hi ? "Bars ऊपर-नीचे क्यों होते हैं" : "Why the bars rise and fall",
     insightBody: parts.join(" "),
     savingsBasis:
       rate > 0
-        ? `Estimated savings = monthly units × ₹${rate.toFixed(2)}/unit effective saving rate. Fixed charges excluded.`
+        ? hi
+          ? `Estimated savings = महीने की units × ₹${rate.toFixed(2)}/unit effective saving rate. Fixed charges शामिल नहीं।`
+          : `Estimated savings = monthly units × ₹${rate.toFixed(2)}/unit effective saving rate. Fixed charges excluded.`
         : null,
   };
 }
@@ -785,19 +805,31 @@ export type LuminaEngInsightCard = {
   body: string;
 };
 
-export function luminaEngineeringInsights(eng: LuminaEngineeringModel): LuminaEngInsightCard[] {
+export function luminaEngineeringInsights(
+  eng: LuminaEngineeringModel,
+  lang: "en" | "hi" = "en"
+): LuminaEngInsightCard[] {
+  const hi = lang === "hi";
   const panelBit =
     eng.panelCount > 0
       ? `${eng.panelCount} module${eng.panelCount === 1 ? "" : "s"}`
-      : "each module";
+      : hi
+        ? "हर module"
+        : "each module";
   const areaBit =
     eng.roofAreaM2 > 0
       ? `${formatLuminaAreaM2(eng.roofAreaM2)}`
-      : "the planning area";
+      : hi
+        ? "planning area"
+        : "the planning area";
   const how =
     eng.panelCount > 0
-      ? `${panelBit} × ${eng.m2PerPanelLabel} (glass + walkway + shade gap) = ${areaBit}. The extra is not wasted roof — it is the aisle, the wind path, and the winter-sun buffer.`
-      : `We plan about ${eng.m2PerPanelLabel} per module: the glass itself plus a walkway and a small shade gap. The total appears when module count is on this proposal.`;
+      ? hi
+        ? `${panelBit} × ${eng.m2PerPanelLabel} (glass + walkway + shade gap) = ${areaBit}. Extra छत बर्बाद नहीं — यह गली, हवा का रास्ता, और winter sun का buffer है।`
+        : `${panelBit} × ${eng.m2PerPanelLabel} (glass + walkway + shade gap) = ${areaBit}. The extra is not wasted roof — it is the aisle, the wind path, and the winter-sun buffer.`
+      : hi
+        ? `हम हर module के लिए लगभग ${eng.m2PerPanelLabel} रखते हैं: काँच + walkway + छोटा shade gap. Module count proposal पर होने पर कुल area आएगा।`
+        : `We plan about ${eng.m2PerPanelLabel} per module: the glass itself plus a walkway and a small shade gap. The total appears when module count is on this proposal.`;
 
   const liveCable = [
     eng.dcRunM > 0 ? `DC run ${eng.dcRunM} m` : null,
@@ -808,30 +840,46 @@ export function luminaEngineeringInsights(eng: LuminaEngineeringModel): LuminaEn
     .join(" · ");
   const vdLine =
     eng.vdPct > 0
-      ? ` On this drawing ${liveCable}. Under 2% drop means almost all roof power reaches the house.`
+      ? hi
+        ? ` इस drawing पर ${liveCable}. 2% से कम drop मतलब छत की लगभग सारी power घर तक पहुँचती है।`
+        : ` On this drawing ${liveCable}. Under 2% drop means almost all roof power reaches the house.`
       : liveCable
-        ? ` On this drawing: ${liveCable}.`
-        : " Exact metres are locked after the site survey; the rule stays the same — keep both runs short and the cable thick enough.";
+        ? hi
+          ? ` इस drawing पर: ${liveCable}.`
+          : ` On this drawing: ${liveCable}.`
+        : hi
+          ? " Exact metres site survey के बाद lock होते हैं; नियम वही है — दोनों run छोटे रखो और cable मोटी।"
+          : " Exact metres are locked after the site survey; the rule stays the same — keep both runs short and the cable thick enough.";
 
   const ratioLine =
     eng.dcAcRatio >= 1
-      ? ` Extra panel on the roof (DC/AC ${eng.dcAcRatio}) means the inverter starts earning earlier in the morning and keeps going later in the evening.`
+      ? hi
+        ? ` छत पर थोड़ा extra panel (DC/AC ${eng.dcAcRatio}) मतलब inverter सुबह जल्दी चालू होता है और शाम तक चलता है।`
+        : ` Extra panel on the roof (DC/AC ${eng.dcAcRatio}) means the inverter starts earning earlier in the morning and keeps going later in the evening.`
       : "";
 
   return [
     {
-      title: "Why this much roof?",
-      body: `Picture each panel as a door lying on the terrace. If we packed doors edge-to-edge, nobody could walk between them to wipe the glass — and stepping on a panel can make tiny cracks. We also leave gaps so wind can slip through (a packed roof acts like a sail) and so hot glass can grow a little in summer without pushing the next panel.`,
+      title: hi ? "इतनी छत क्यों?" : "Why this much roof?",
+      body: hi
+        ? "हर panel को छत पर पड़े दरवाज़े जैसा सोचो। अगर दरवाज़े चिपका कर रख दें, तो काँच पोंछने कोई चल नहीं सकता — और panel पर पैर रखने से छोटी cracks पड़ सकती हैं। Gap इसलिए भी है कि हवा निकल सके (भरी छत पाल जैसी बन जाती है) और गर्मी में काँच थोड़ा फैल सके।"
+        : "Picture each panel as a door lying on the terrace. If we packed doors edge-to-edge, nobody could walk between them to wipe the glass — and stepping on a panel can make tiny cracks. We also leave gaps so wind can slip through (a packed roof acts like a sail) and so hot glass can grow a little in summer without pushing the next panel.",
     },
     {
-      title: "How the space is counted",
-      body: `A high-efficiency module is about as tall as a door (~2.3 m) and ~1.1 m wide. ${how} Front-to-back space also stops the first row shading the next when the winter sun sits low.${
-        eng.rowSpacingM > 0 ? ` On this drawing the row gap is ${eng.rowSpacingM} m.` : ""
-      }`,
+      title: hi ? "Space का हिसाब" : "How the space is counted",
+      body: hi
+        ? `High-efficiency module लगभग दरवाज़े जितना ऊँचा (~2.3 m) और ~1.1 m चौड़ा होता है। ${how} आगे-पीछे जगह इसलिए भी है कि winter में नीचा सूरज अगली row पर छाया न डाले।${
+            eng.rowSpacingM > 0 ? ` इस drawing पर row gap ${eng.rowSpacingM} m है।` : ""
+          }`
+        : `A high-efficiency module is about as tall as a door (~2.3 m) and ~1.1 m wide. ${how} Front-to-back space also stops the first row shading the next when the winter sun sits low.${
+            eng.rowSpacingM > 0 ? ` On this drawing the row gap is ${eng.rowSpacingM} m.` : ""
+          }`,
     },
     {
       title: "DC run vs AC run",
-      body: `Panels make “raw” electricity (DC) — like uncooked food. The DC run is the sun-proof cable from the roof to the inverter (the kitchen). We keep it short and thick so power does not leak away as heat — that leak is voltage drop. The inverter “cooks” DC into AC, the kind your fan and fridge already eat. The AC run is the short cable from the inverter to your main switchboard — serving the meal to the table.${vdLine}${ratioLine}`,
+      body: hi
+        ? `Panel “कच्ची” बिजली बनाता है (DC) — जैसे कच्चा खाना। DC run छत से inverter (रसोई) तक का sun-proof cable है। इसे छोटा और मोटा रखते हैं ताकि power गर्मी बनकर न बहे — उसी leak को voltage drop कहते हैं। Inverter DC को AC बनाता है, जो पंखा-fridge पहले से खाते हैं। AC run inverter से main board तक छोटा तार है — पका खाना मेज़ तक।${vdLine}${ratioLine}`
+        : `Panels make “raw” electricity (DC) — like uncooked food. The DC run is the sun-proof cable from the roof to the inverter (the kitchen). We keep it short and thick so power does not leak away as heat — that leak is voltage drop. The inverter “cooks” DC into AC, the kind your fan and fridge already eat. The AC run is the short cable from the inverter to your main switchboard — serving the meal to the table.${vdLine}${ratioLine}`,
     },
   ];
 }

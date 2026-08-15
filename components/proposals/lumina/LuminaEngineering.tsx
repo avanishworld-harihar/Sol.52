@@ -5,6 +5,7 @@ import type { ProposalData } from "@/lib/proposal-data";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import styles from "./Lumina.module.css";
 import { LuminaDocFooter } from "./lumina-brand";
+import { useLuminaLang } from "./lumina-lang-context";
 import {
   formatLuminaKw,
   luminaEngineeringInsights,
@@ -18,73 +19,71 @@ export function LuminaEngineering({
   data: ProposalData;
   pptInput?: PremiumProposalPptInput | null;
 }) {
+  const { copy, lang } = useLuminaLang();
   const eng = luminaEngineeringModel(data, pptInput);
-  const insights = luminaEngineeringInsights(eng);
+  const insights = luminaEngineeringInsights(eng, lang);
   const cols = Math.min(6, Math.max(3, Math.ceil(Math.sqrt(Math.max(eng.visualPanelCount, 1)))));
 
   const arrayMeta =
     eng.tiltDeg > 0
-      ? `Tilt: ${eng.tiltDeg}° | Azimuth: ${eng.azimuthDeg}° (True South)`
+      ? copy.engineering.arrayTilt(eng.tiltDeg, eng.azimuthDeg)
       : eng.azimuthDeg > 0
-        ? `Azimuth: ${eng.azimuthDeg}° (True South) · tilt appears with site latitude`
-        : "Tilt appears when site latitude is on this proposal.";
+        ? copy.engineering.arrayAzimuthOnly(eng.azimuthDeg)
+        : copy.engineering.arrayNoTilt;
 
   const siteItems = [
     {
-      label: "Latitude",
+      label: copy.engineering.latitude,
       value: eng.siteLatLabel || "—",
-      caption: "Sets the capture angle for this roof.",
+      caption: copy.engineering.latitudeCaption,
     },
     {
-      label: "Required roof area",
+      label: copy.engineering.roofArea,
       value: eng.roofAreaLabel,
       caption:
         eng.panelCount > 0
-          ? `${eng.panelCount} × ${eng.m2PerPanelLabel}/module (panel + walkway). Final after survey.`
-          : "Appears when module count is on this proposal.",
+          ? copy.engineering.roofAreaCaption(eng.panelCount, eng.m2PerPanelLabel)
+          : copy.engineering.roofAreaEmpty,
     },
     {
-      label: "Shadow tolerance",
-      value: "Dual MPPT tracking",
-      caption: "Inverter adjusts dynamically to passing clouds.",
+      label: copy.engineering.shadow,
+      value: copy.engineering.shadowValue,
+      caption: copy.engineering.shadowCaption,
     },
   ];
 
   const specCards = [
     {
       value: eng.acKw > 0 ? `${formatLuminaKw(eng.acKw)} kW AC` : "—",
-      label: "Inverter capacity",
-      desc: "Max power delivered to the home grid.",
+      label: copy.engineering.specInverter,
+      desc: copy.engineering.specInverterDesc,
     },
     {
       value: eng.dcKwp > 0 ? `${eng.dcKwp.toFixed(2)} kWp` : "—",
-      label: "DC array (panels)",
+      label: copy.engineering.specDc,
       desc:
         eng.panelCount > 0 && eng.panelWatt > 0
-          ? `${eng.panelCount} × ${eng.panelWatt} Wp modules.`
-          : "Module count and wattage from the live BOM.",
+          ? copy.engineering.specDcDesc(eng.panelCount, eng.panelWatt)
+          : copy.engineering.specDcEmpty,
     },
     {
       value: eng.performanceRatioPct > 0 ? `~${eng.performanceRatioPct}%` : "—",
-      label: "Performance ratio",
-      desc: "Typical efficiency after temperature and grid losses.",
+      label: copy.engineering.specPr,
+      desc: copy.engineering.specPrDesc,
     },
     {
       value: eng.dcAcRatio > 0 ? String(eng.dcAcRatio) : "—",
-      label: "DC/AC ratio",
-      desc: "Over-paneled for stronger morning and evening yield.",
+      label: copy.engineering.specDcAc,
+      desc: copy.engineering.specDcAcDesc,
     },
   ];
 
   return (
     <section className={`${styles.a4Lumina} ${styles.innerSheet} ${styles.engSheet}`}>
       <div className={styles.contentArea}>
-        <div className={styles.dateTag}>Engineering design</div>
-        <h1 className={styles.clientTitle}>Design & Performance.</h1>
-        <p className={styles.subText}>
-          Rooftop layout, site latitude, tilt, and Indian standards for this plant. Blank
-          fields stay blank — they are not guessed.
-        </p>
+        <div className={styles.dateTag}>{copy.engineering.tag}</div>
+        <h1 className={styles.clientTitle}>{copy.engineering.title}</h1>
+        <p className={styles.subText}>{copy.engineering.lead}</p>
 
         <div className={styles.engBlueprint}>
           <div className={styles.engRoof}>
@@ -105,20 +104,22 @@ export function LuminaEngineering({
                   ))}
                 </div>
               ) : (
-                <p className={styles.engRoofEmpty}>Array layout appears when module count is on file.</p>
+                <p className={styles.engRoofEmpty}>{copy.engineering.roofEmpty}</p>
               )}
             </div>
             <div className={styles.engRoofCaption}>
-              <strong>Optimal south-facing array</strong>
+              <strong>{copy.engineering.arrayTitle}</strong>
               <span>
                 {arrayMeta}
-                {eng.showingPartial ? ` · showing ${eng.visualPanelCount}/${eng.panelCount}` : ""}
+                {eng.showingPartial
+                  ? copy.engineering.showing(eng.visualPanelCount, eng.panelCount)
+                  : ""}
               </span>
             </div>
           </div>
 
           <div className={styles.engSite}>
-            <h2 className={styles.engSiteTitle}>Site & roof</h2>
+            <h2 className={styles.engSiteTitle}>{copy.engineering.siteTitle}</h2>
             <div className={styles.engSiteList}>
               {siteItems.map((item) => (
                 <div key={item.label} className={styles.engSiteItem}>
@@ -129,14 +130,13 @@ export function LuminaEngineering({
               ))}
             </div>
             <p className={styles.engCableNote}>
-              {eng.cableNote ||
-                "DC run (roof → inverter) · AC run (inverter → main board) · VD after survey"}
+              {eng.cableNote || copy.engineering.cableFallback}
             </p>
             {eng.tiltNote ? <p className={styles.engCableNote}>{eng.tiltNote}</p> : null}
           </div>
         </div>
 
-        <h2 className={styles.engBlockTitle}>Technical specifications</h2>
+        <h2 className={styles.engBlockTitle}>{copy.engineering.specsTitle}</h2>
         <div className={styles.engSpecs}>
           {specCards.map((card) => (
             <div key={card.label} className={styles.engSpecCard}>
@@ -149,22 +149,24 @@ export function LuminaEngineering({
 
         <div className={styles.engYieldStrip}>
           <div className={styles.engYieldItem}>
-            <span>Peak sun hours</span>
-            <strong>{eng.peakSunHours > 0 ? `${eng.peakSunHours} hrs/day` : "—"}</strong>
+            <span>{copy.engineering.peakSun}</span>
+            <strong>
+              {eng.peakSunHours > 0 ? copy.engineering.hrsDay(eng.peakSunHours) : "—"}
+            </strong>
           </div>
           <div className={styles.engYieldItem}>
-            <span>Specific yield</span>
+            <span>{copy.engineering.specificYield}</span>
             <strong>
               {eng.specificYield > 0 ? `${eng.specificYield} kWh/kWp/yr` : "—"}
             </strong>
           </div>
           <div className={styles.engYieldItem}>
-            <span>Load coverage</span>
+            <span>{copy.engineering.loadCoverage}</span>
             <strong>{eng.loadCoveragePct > 0 ? `${eng.loadCoveragePct}%` : "—"}</strong>
           </div>
         </div>
 
-        <h2 className={styles.engBlockTitle}>Standards compliance</h2>
+        <h2 className={styles.engBlockTitle}>{copy.engineering.standards}</h2>
         <div className={styles.engChips}>
           {eng.standards.slice(0, 7).map((s) => (
             <span key={s} className={styles.engChip}>
@@ -174,7 +176,7 @@ export function LuminaEngineering({
         </div>
 
         <aside className={styles.engExpert}>
-          <p className={styles.engExpertTag}>Expert insight</p>
+          <p className={styles.engExpertTag}>{copy.engineering.expertTag}</p>
           <div className={styles.engExpertGrid}>
             {insights.map((card) => (
               <div key={card.title} className={styles.engExpertCard}>
