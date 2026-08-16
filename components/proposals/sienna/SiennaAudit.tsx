@@ -30,7 +30,7 @@ export function SiennaAudit({ data }: { data: ProposalData }) {
   const maxBar = Math.max(...barHeights, 1);
 
   return (
-    <SiennaSheet data={data} page="02 / 09">
+    <SiennaSheet data={data} page="02 / 09" chapter={copy.spine.bill}>
       <p className={styles.kicker}>{copy.audit.kicker}</p>
       <h1 className={styles.displayTitle}>{copy.audit.title}</h1>
       <p className={styles.lead}>{copy.audit.lead}</p>

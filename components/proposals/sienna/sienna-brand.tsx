@@ -247,19 +247,24 @@ export function SiennaDocFooter({
   );
 }
 
-/** Bound folio frame: laterite spine is a silent staple gutter (no text). Cover and close stay bleed. */
+/** Bound folio frame: laterite spine with page name + number. Cover and close stay bleed. */
 export function SiennaSheet({
   data,
   page,
+  chapter,
   children,
 }: {
   data: ProposalData;
   page: string;
+  chapter: string;
   children: ReactNode;
 }) {
   return (
     <section className={`${styles.a4Sienna} ${styles.folio}`}>
-      <aside className={styles.spine} aria-hidden />
+      <aside className={styles.spine} aria-hidden>
+        <span className={styles.spineChapter}>{chapter}</span>
+        <span className={styles.spinePage}>{page}</span>
+      </aside>
       <div className={styles.folioMain}>
         {children}
         <SiennaDocFooter data={data} page={page} />
