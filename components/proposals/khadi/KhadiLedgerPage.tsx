@@ -24,7 +24,8 @@ export function KhadiLedgerPage({ data }: { data: ProposalData }) {
       : data.economics.lifetimeProfitInr;
   const units = khadiAnnualUnits(data);
   const payments = (data.execution.payments ?? []).filter((p) => p.label?.trim()).slice(0, 3);
-  const netValue = showSubsidy ? net : gross;
+  const netValue =
+    showSubsidy && net > 0 ? net : showSubsidy && gross > subsidy ? gross - subsidy : gross;
 
   return (
     <KhadiSheet data={data} page="06 / 09" chapter={copy.spine.outlay}>
@@ -35,25 +36,28 @@ export function KhadiLedgerPage({ data }: { data: ProposalData }) {
           <p className={styles.lead}>{copy.capital.lead}</p>
 
           <div className={styles.millTicket}>
-            <span className={styles.millTicketLabel}>{copy.capital.youPay}</span>
-            <div className={styles.millTicketVal}>
-              {netValue > 0 ? formatInrCompact(netValue) : "—"}
+            <div
+              className={styles.costStack}
+              aria-label={`${copy.capital.gross} ${copy.capital.minus} ${copy.capital.subsidy} ${copy.capital.equals} ${copy.capital.youPay}`}
+            >
+              <div className={styles.costLine}>
+                <span>{copy.capital.gross}</span>
+                <strong>{gross > 0 ? formatInrCompact(gross) : "—"}</strong>
+              </div>
+              <div className={`${styles.costLine} ${styles.costMinus}`}>
+                <span>{copy.capital.subsidy}</span>
+                <strong>
+                  {showSubsidy ? `${copy.capital.minus} ${formatInrCompact(subsidy)}` : copy.capital.subsidyNone}
+                </strong>
+              </div>
+              <div className={`${styles.costLine} ${styles.costNet}`}>
+                <span>{copy.capital.youPay}</span>
+                <strong>{netValue > 0 ? formatInrCompact(netValue) : "—"}</strong>
+              </div>
             </div>
             <p className={styles.millTicketHint}>
               {showSubsidy ? copy.capital.netHint : copy.capital.netSameHint}
             </p>
-            <div className={styles.millSeals}>
-              <div className={styles.millSeal}>
-                <span>{copy.capital.gross}</span>
-                <strong>{gross > 0 ? formatInrCompact(gross) : "—"}</strong>
-              </div>
-              <div className={styles.millSeal}>
-                <span>{copy.capital.subsidy}</span>
-                <strong>
-                  {showSubsidy ? `− ${formatInrCompact(subsidy)}` : copy.capital.subsidyNone}
-                </strong>
-              </div>
-            </div>
           </div>
         </aside>
 

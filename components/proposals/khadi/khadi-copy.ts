@@ -152,12 +152,14 @@ export function getKhadiCopy(lang: KhadiLang) {
       kicker: hi ? "Outlay" : "Outlay",
       title: hi ? "लगाने में कितना देना है." : "What you pay to put it up.",
       lead: hi
-        ? "खरीद का पैसा. Bill saving पिछले Year पेज पर है."
-        : "Money to buy the plant. Bill saving is on the previous Year page.",
-      youPay: hi ? "आपको देना" : "You pay",
-      gross: hi ? "Gross" : "Gross",
+        ? "Plant ki keemat, usme se subsidy ghat-ti hai, bachi net aap dete ho. Bill saving Year page par hai."
+        : "Plant price, minus subsidy, is what you pay. Bill saving is on the Year page.",
+      youPay: hi ? "Net / आपको देना" : "Net / you pay",
+      gross: hi ? "Gross cost" : "Gross cost",
       subsidy: hi ? "Subsidy" : "Subsidy",
       subsidyNone: hi ? "File पर नहीं" : "None on file",
+      minus: "−",
+      equals: "=",
       netHint: hi ? "Subsidy बाद में credit — यहाँ net." : "Subsidy credited later — net here.",
       netSameHint: hi ? "Gross जैसा." : "Same as gross.",
       stages: hi ? "किस्तें" : "Stage payments",

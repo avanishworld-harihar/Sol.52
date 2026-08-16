@@ -1879,6 +1879,58 @@
   border-left: 4px solid var(--kh-indigo);
 }
 
+.costStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.costLine {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--kh-line);
+}
+
+.costLine span {
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--kh-muted);
+}
+
+.costLine strong {
+  font-family: var(--kh-serif);
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.1;
+  text-align: right;
+}
+
+.costMinus span,
+.costMinus strong {
+  color: var(--kh-olive);
+}
+
+.costNet {
+  border-bottom: 0;
+  padding-top: 12px;
+  margin-top: 2px;
+  border-top: 2px solid var(--kh-indigo);
+}
+
+.costNet span {
+  color: var(--kh-madder);
+}
+
+.costNet strong {
+  font-size: 1.85rem;
+  color: var(--kh-ink);
+}
+
 .millTicketLabel {
   display: block;
   font-size: 0.66rem;
