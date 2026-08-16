@@ -1,6 +1,6 @@
 /**
  * Dynamic preset renderer registry.
- * Active presets: Golden + Zenith + Atelier + Canvas + Quantum + Emerald + Lumina + Sienna + Commercial.
+ * Active presets: Golden + Zenith + Atelier + Canvas + Quantum + Emerald + Lumina + Sienna + Khadi + Commercial.
  */
 
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
@@ -57,6 +57,12 @@ export const SIENNA_PRESET_ALIASES = [
   "sienna",
 ] as const;
 
+/** Local / mock aliases that resolve to Khadi. */
+export const KHADI_PRESET_ALIASES = [
+  "residential_khadi",
+  "khadi",
+] as const;
+
 export function isZenithPresetId(presetId: string): boolean {
   return (ZENITH_PRESET_ALIASES as readonly string[]).includes(presetId);
 }
@@ -89,6 +95,10 @@ export function isSiennaPresetId(presetId: string): boolean {
   return (SIENNA_PRESET_ALIASES as readonly string[]).includes(presetId);
 }
 
+export function isKhadiPresetId(presetId: string): boolean {
+  return (KHADI_PRESET_ALIASES as readonly string[]).includes(presetId);
+}
+
 export function isCommercialPresetId(presetId: string): boolean {
   return presetId === "commercial_executive";
 }
@@ -116,6 +126,8 @@ export const PRESET_RENDERER_LOADERS: PresetRendererRegistry = {
     import("@/components/proposals/_registry/adapters/lumina-adapter"),
   residential_sienna: () =>
     import("@/components/proposals/_registry/adapters/sienna-adapter"),
+  residential_khadi: () =>
+    import("@/components/proposals/_registry/adapters/khadi-adapter"),
   commercial_executive: () =>
     import("@/components/proposals/_registry/adapters/commercial-adapter"),
   commercial_ht: () =>
@@ -149,6 +161,9 @@ export function getPresetRendererLoader(
   }
   if (isSiennaPresetId(presetId)) {
     return () => import("@/components/proposals/_registry/adapters/sienna-adapter");
+  }
+  if (isKhadiPresetId(presetId)) {
+    return () => import("@/components/proposals/_registry/adapters/khadi-adapter");
   }
   if (isLuxeNoirPresetId(presetId)) {
     return () => import("@/components/proposals/_registry/adapters/luxe-noir-adapter");

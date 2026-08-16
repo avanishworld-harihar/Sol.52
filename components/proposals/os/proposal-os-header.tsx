@@ -12,7 +12,7 @@
  */
 
 import { motion } from "framer-motion";
-import { Building2, ChevronRight, Flame, Gem, LayoutTemplate, RefreshCw, Sparkles, Sun, Zap } from "lucide-react";
+import { Building2, ChevronRight, Droplets, Flame, Gem, LayoutTemplate, RefreshCw, Sparkles, Sun, Zap } from "lucide-react";
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 import { PresenceStack } from "@/components/workspace/presence-stack";
 
@@ -102,6 +102,14 @@ const PRESET_META: Record<ProposalPresetId, PresetMeta> = {
     pillClass:
       "border-[#c9a090] bg-[#f1e8d9] text-[#9c3b24] dark:border-[#9c3b24]/40 dark:bg-[#241812] dark:text-[#e8c4a0]",
     dotClass: "bg-[#9c3b24]",
+  },
+  residential_khadi: {
+    icon: <Droplets className="h-4 w-4" />,
+    label: "Khadi",
+    description: "Cloth-press · indigo dye band · madder stamps · khadi paper",
+    pillClass:
+      "border-[#234e8c]/30 bg-[#f3eadc] text-[#234e8c] dark:border-[#234e8c]/50 dark:bg-[#1a2744] dark:text-[#e8c4a0]",
+    dotClass: "bg-[#234e8c]",
   },
   commercial_executive: {
     icon: <Building2 className="h-4 w-4" />,

@@ -36,7 +36,7 @@ export const PROPOSAL_TEMPLATE_CATEGORIES: ProposalTemplateCategoryMeta[] = [
   {
     id: "residential",
     label: "Residential",
-    description: "Homes & rooftops — Golden, Zenith, Atelier, Premium Luxe, Canvas, Quantum, Emerald, Lumina, or Sienna.",
+    description: "Homes & rooftops — Golden, Zenith, Atelier, Premium Luxe, Canvas, Quantum, Emerald, Lumina, Sienna, or Khadi.",
   },
   {
     id: "commercial",
@@ -124,6 +124,15 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
       "Laterite Folio — bound household plant book. Bone paper, laterite spine, indigo drawings. Cover shows kW + site; price on Outlay.",
     thumbnailVariant: "sienna",
   },
+  {
+    key: "khadi",
+    presetId: "residential_khadi",
+    category: "residential",
+    name: "Khadi",
+    description:
+      "Cloth-press — indigo dye band, madder stamps, Libre Baskerville. Full-bleed cover with a bottom stamp; price on Outlay.",
+    thumbnailVariant: "khadi",
+  },
 ];
 
 /** Commercial themes — Executive (LT / C&I) and HT Industrial (HV ToD/PF). */
@@ -194,6 +203,7 @@ export function resolveActiveGalleryKey(
   if (presetId === "residential_emerald") return "emerald";
   if (presetId === "residential_lumina") return "lumina";
   if (presetId === "residential_sienna") return "sienna";
+  if (presetId === "residential_khadi") return "khadi";
   return "zenith";
 }
 

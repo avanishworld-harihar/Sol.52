@@ -107,6 +107,11 @@ export function parsePrefillFromSearchParams(params: URLSearchParams): BuilderPr
     preset === "sienna"
   ) {
     prefill.preset = "residential_sienna";
+  } else if (
+    preset === "residential_khadi" ||
+    preset === "khadi"
+  ) {
+    prefill.preset = "residential_khadi";
   } else if (preset === "commercial_executive" || preset === "commercial") {
     prefill.preset = "commercial_executive";
   } else if (preset) {

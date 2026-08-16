@@ -43,6 +43,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
       {variant === "emerald" ? <EmeraldThumb size={size} /> : null}
       {variant === "lumina" ? <LuminaThumb size={size} /> : null}
       {variant === "sienna" ? <SiennaThumb size={size} /> : null}
+      {variant === "khadi" ? <KhadiThumb size={size} /> : null}
       {![
         "golden",
         "pearl",
@@ -62,6 +63,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
         "emerald",
         "lumina",
         "sienna",
+        "khadi",
       ].includes(variant) ? (
         <GenericThumb size={size} label={variant} />
       ) : null}
@@ -452,6 +454,51 @@ function SiennaThumb({ size }: { size: "card" | "preview" }) {
                 "linear-gradient(135deg, #9c3b24 0%, #314056 55%, #241812 100%)",
             }}
           />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function KhadiThumb({ size }: { size: "card" | "preview" }) {
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-[#d4cfc4]">
+      <div
+        className={cn(
+          "relative overflow-hidden rounded-[2px] shadow-sm",
+          thumbSheet(size)
+        )}
+      >
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(160deg, #314056 0%, #234e8c 48%, #1a2744 100%)",
+          }}
+        />
+        <div
+          className="absolute left-[8%] right-[8%] bottom-[8%] bg-[#f3eadc]"
+          style={{ padding: size === "preview" ? "7% 8% 6%" : "6% 7% 5%" }}
+        >
+          <div
+            className="font-semibold leading-tight text-[#1a2744]"
+            style={{ fontFamily: "Georgia, serif", fontSize: size === "preview" ? 7 : 8 }}
+          >
+            Cloth
+            <br />
+            press
+          </div>
+          <div className="mt-[10%] grid grid-cols-3 gap-[6%]">
+            {["kW", "Yr-1", "Site"].map((c) => (
+              <div
+                key={c}
+                className="border border-dashed border-[#234e8c] font-bold uppercase tracking-wider text-[#9e2a2b]"
+                style={{ fontSize: size === "preview" ? 3.5 : 4, padding: "18% 8%" }}
+              >
+                {c}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

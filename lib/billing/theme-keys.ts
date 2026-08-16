@@ -46,6 +46,7 @@ export function resolveResidentialThemeKey(input: {
   if (input.galleryKey === "brutalism") return "golden";
   if (input.galleryKey === "lumina") return "golden";
   if (input.galleryKey === "sienna") return "golden";
+  if (input.galleryKey === "khadi") return "golden";
 
   const preset = input.presetId;
   if (preset === "residential_executive") return "golden";
@@ -62,6 +63,7 @@ export function resolveResidentialThemeKey(input: {
   if (preset === "residential_brutalism") return "golden";
   if (preset === "residential_lumina") return "golden";
   if (preset === "residential_sienna") return "golden";
+  if (preset === "residential_khadi") return "golden";
   if (preset === "residential_horizon" || preset.includes("horizon")) return "horizon";
   if (preset === "residential_ember" || preset.includes("ember")) return "ember";
   if (preset.includes("solstice")) return "solstice";

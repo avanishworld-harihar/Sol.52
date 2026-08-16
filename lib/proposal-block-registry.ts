@@ -82,6 +82,7 @@ export type PresetAffinity =
       | "residential_emerald"
       | "residential_lumina"
       | "residential_sienna"
+      | "residential_khadi"
     >;
 
 export type ProposalBlockMeta = {

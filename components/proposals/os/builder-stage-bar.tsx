@@ -222,6 +222,8 @@ export function BuilderStageBar({
                               ? "Lumina"
                             : presetId === "residential_sienna"
                               ? "Sienna"
+                            : presetId === "residential_khadi"
+                              ? "Khadi"
                             : "Residential"}
             </span>
           </div>
