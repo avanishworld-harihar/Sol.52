@@ -20,7 +20,7 @@ export function getJaaliCopy(lang: JaaliLang) {
     spine: {
       bill: hi ? "Bill" : "Bill",
       parts: hi ? "Parts" : "Parts",
-      drawing: hi ? "Drawing" : "Drawing",
+      drawing: hi ? "सूरज" : "Sun",
       year: hi ? "Year" : "Year",
       outlay: hi ? "Outlay" : "Outlay",
       terms: hi ? "Terms" : "Terms",
@@ -94,68 +94,43 @@ export function getJaaliCopy(lang: JaaliLang) {
       colMark: hi ? "Mark" : "Mark",
     },
     engineering: {
-      kicker: hi ? "Drawing" : "Drawing",
-      title: hi ? "छत पर array कैसे बैठता है." : "How the array sits on this roof.",
+      kicker: hi ? "सूरज का रास्ता" : "Sun path",
+      title: hi
+        ? "यह छत धूप को पंखे तक कैसे पहुँचाती है."
+        : "How this roof turns light into the fan.",
       lead: hi
-        ? "Layout, latitude, tilt, Indian standards. Year-round yield अगले पेज पर. Guess नहीं."
-        : "Layout, latitude, tilt, Indian standards. Year-round yield is next. Nothing is guessed.",
-      drawingNo: hi ? "Sheet 04 · roof plan" : "Sheet 04 · roof plan",
-      arrayTitle: hi ? "South-facing array" : "South-facing array",
-      arrayTilt: (tilt: number, az: number) => `Tilt ${tilt}° · Azimuth ${az}° (True South)`,
-      arrayAzimuthOnly: (az: number) =>
-        hi
-          ? `Azimuth ${az}° (True South) · tilt latitude के साथ`
-          : `Azimuth ${az}° (True South) · tilt with latitude`,
-      arrayNoTilt: hi
-        ? "Tilt तब जब site latitude file पर हो।"
-        : "Tilt appears when site latitude is on file.",
-      showing: (shown: number, total: number) =>
-        hi ? ` · ${shown}/${total}` : ` · ${shown}/${total}`,
-      roofEmpty: hi
-        ? "Module count file पर होने पर plan दिखेगा।"
-        : "Plan appears when module count is on file.",
-      planLegend: hi
-        ? "Har block = 1 module. Dashed = gap. South front edge."
-        : "Each block = 1 module. Dashed = gap. South is the front edge.",
-      planTag: hi ? "Roof plan · upar se" : "Roof plan · top view",
-      southEdge: hi ? "S · front edge" : "S · front edge",
-      walkAisle: hi
-        ? "Neeche walkway · elevated GI MMS"
-        : "Walkable under array · elevated GI MMS",
-      tableKind: (kind: string) =>
-        hi ? `${kind} tables · elevated GI MMS` : `${kind} tables · elevated GI MMS`,
-      siteTitle: hi ? "Title block" : "Title block",
-      latitude: "Latitude",
-      latitudeCaption: hi ? "इसी छत का capture angle." : "Sets the capture angle for this roof.",
-      roofArea: hi ? "Roof area" : "Roof area",
-      roofAreaCaption: (n: number, per: string) =>
-        hi
-          ? `${n} × ${per}/module. Survey के बाद final.`
-          : `${n} × ${per}/module. Final after survey.`,
-      roofAreaEmpty: hi ? "Module count के साथ आएगा।" : "Appears with module count.",
-      shadow: hi ? "Shadow" : "Shadow",
-      shadowValue: "Dual MPPT",
-      shadowCaption: hi
-        ? "बादल पर inverter खुद adjust करता है।"
-        : "Inverter adjusts to passing cloud.",
-      cableFallback: hi
-        ? "DC: roof → inverter · AC: inverter → main board · VD survey के बाद"
-        : "DC: roof → inverter · AC: inverter → main board · VD after survey",
-      specInverter: hi ? "Inverter" : "Inverter",
-      specInverterDesc: hi ? "घर की grid को max power." : "Max power to the home grid.",
-      specDc: hi ? "DC array" : "DC array",
-      specDcDesc: (n: number, w: number) => `${n} × ${w} Wp`,
-      specDcEmpty: hi ? "Live BOM से." : "From the live BOM.",
-      specPr: "PR",
-      specPrDesc: hi ? "Losses के बाद typical." : "Typical after losses.",
-      specDcAc: "DC/AC",
-      specDcAcDesc: hi ? "सुबह-शाम के लिए extra panel." : "Over-panel for morning and evening.",
-      peakSun: hi ? "Peak sun" : "Peak sun",
-      specificYield: hi ? "Specific yield" : "Specific yield",
-      loadCoverage: hi ? "Load cover" : "Load cover",
+        ? "Top-view sticker sheet नहीं. चार कदम: यह आसमान → यह काँच → rasoi → यह switchboard. अंक इसी proposal के हैं."
+        : "Not a top-view sticker sheet. Four steps: this sky → this glass → the kitchen → this switchboard. Figures are from this proposal.",
+      drawingNo: hi ? "Sheet 04 · south section" : "Sheet 04 · south section",
+      plateCaption: hi
+        ? "Elevated GI MMS = courtyard pavilion. Ek south plane. Neeche chal sakte ho."
+        : "Elevated GI MMS as a courtyard pavilion: one south plane, walkable under the glass.",
+      walkLabel: hi ? "WALK UNDER" : "WALK UNDER",
+      southLabel: hi ? "SOUTH · front edge" : "SOUTH · front edge",
+      tiltCaption: (tilt: number) =>
+        tilt > 0 ? `TILT ${tilt}°` : hi ? "TILT · latitude के साथ" : "TILT · with latitude",
+      pathSky: hi ? "आسمان" : "Sky",
+      pathGlass: hi ? "काँच" : "Glass",
+      pathKitchen: hi ? "रसोई" : "Kitchen",
+      pathHome: hi ? "घर" : "Home",
+      pathSkyHint: hi ? "Peak sun, is shehar ka." : "Peak sun for this city.",
+      pathGlassHint: hi ? "Modules · DC array." : "Modules · DC array.",
+      pathKitchenHint: hi ? "Inverter · PR after losses." : "Inverter · PR after losses.",
+      pathHomeHint: hi ? "Bill cover · extra glass for dawn." : "Bill cover · extra glass for dawn.",
+      measureLat: "Latitude",
+      measureTilt: "Tilt",
+      measureAz: hi ? "Azimuth" : "Azimuth",
+      measureArea: hi ? "Roof" : "Roof",
+      measureYield: hi ? "kWh / kW" : "kWh / kW",
+      measureCover: hi ? "Load" : "Load",
       hrsDay: (n: number) => `${n} hrs/day`,
-      standards: hi ? "Standards" : "Standards",
-      expertTag: hi ? "Notes on this roof" : "Notes on this roof",
+      specDcDesc: (n: number, w: number) => `${n} × ${w} Wp`,
+      specDcEmpty: hi ? "Live BOM se." : "From the live BOM.",
+      cableFallback: hi
+        ? "DC: roof → inverter · AC: inverter → main board · VD survey ke baad"
+        : "DC: roof → inverter · AC: inverter → main board · VD after survey",
+      arrayTilt: (tilt: number, az: number) => `Tilt ${tilt}° · Azimuth ${az}°`,
+      arrayNoTilt: hi ? "Tilt city file par ho to." : "Tilt appears with city on file.",
     },
     capital: {
       kicker: hi ? "Outlay" : "Outlay",

@@ -968,6 +968,76 @@ export function jaaliEngineeringInsights(
   return [roof, space, cable, pr, ratio, yieldCard];
 }
 
+/** Courtyard-science lessons for the Jaali engineering plate — not the shared top-view insight pack. */
+export function jaaliSunLessons(
+  eng: JaaliEngineeringModel,
+  lang: "en" | "hi" = "en"
+): JaaliEngInsightCard[] {
+  const hi = lang === "hi";
+  const tiltBit =
+    eng.tiltDeg > 0
+      ? hi
+        ? `इस छत का tilt ${eng.tiltDeg}° है`
+        : `this roof is tilted ${eng.tiltDeg}°`
+      : hi
+        ? "tilt tab lock hota hai jab is shehar ki latitude file par ho"
+        : "tilt locks when this city’s latitude is on file";
+  const latBit = eng.siteLatLabel
+    ? hi
+      ? ` ${eng.siteLatLabel} is shehar ka sun angle hai.`
+      : ` ${eng.siteLatLabel} is this city’s sun angle.`
+    : hi
+      ? " City file par ho to capture angle yahan aayega."
+      : " The capture angle appears when the city is on file.";
+
+  const liveCable = [
+    eng.dcRunM > 0 ? `DC ${eng.dcRunM} m` : null,
+    eng.acRunM > 0 ? `AC ${eng.acRunM} m` : null,
+    eng.vdPct > 0 ? `VD ${eng.vdPct}%` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  const lift: JaaliEngInsightCard = {
+    title: hi ? "Table kyun uthate hain" : "Why we lift the table",
+    body: hi
+      ? "Elevated GI MMS ek chhota pavilion hai: kaanch upar, aap neeche. Walkway se glass saaf rehta hai, monsoon ki hawa nikal jaati hai, aur garm panel terrace ko tawa nahi banata. Panel par kadam nahi — isliye plant uthaya jata hai, farsh par nahi bipchaya jata."
+      : "Elevated GI MMS is a small pavilion: glass above, you below. The walkway lets you wipe the glass, monsoon wind can slip through, and hot modules do not turn the terrace into a tawa. Nobody steps on a panel — that is why the plant is lifted, not laid like a carpet.",
+  };
+
+  const handshake: JaaliEngInsightCard = {
+    title: hi ? "Is shehar se handshake" : "Handshake with this sky",
+    body: hi
+      ? `Module south dekhe, ${tiltBit}. Rule seedha hai: tilt is shehar ki latitude ke kareeb rakho taaki saal bhar kaanch ko seedhi dhoop mile, wall ko nahi.${latBit} Winter ka neecha suraj agli row par chhaya na daale — isliye table ke aage-peeche hawa aur gap rehta hai.`
+      : `Modules face true south, ${tiltBit}. The rule is plain: keep tilt close to this city’s latitude so the glass sees the year, not the wall.${latBit} Winter sun sits low — the gap in front of the table stops one row from shading the next.`,
+  };
+
+  const twoCurrents: JaaliEngInsightCard = {
+    title: hi ? "Do current, ek ghar" : "Two currents, one house",
+    body: hi
+      ? `Kaanch “kacchi” DC banata hai. Woh inverter (rasoi) tak moti, chhoti DC run se jaati hai. Inverter use AC “pakaata” hai — jo pankha-fridge pehle se khaate hain — phir chhoti AC run main board tak.${
+          liveCable
+            ? ` Is proposal par: ${liveCable}.`
+            : " Exact metres survey ke baad lock hote hain; niyam wahi — dono run chhoti, cable moti."
+        }${
+          eng.dcAcRatio >= 1
+            ? ` Extra glass (DC/AC ${eng.dcAcRatio}) subah-shaam ke kamzor suraj ko bhi kitchen bharne deta hai.`
+            : ""
+        }`
+      : `The glass makes “raw” DC. A short, thick DC run carries it to the inverter (the kitchen). The inverter cooks it into AC — what your fan and fridge already eat — then a short AC run serves the main board.${
+          liveCable
+            ? ` On this proposal: ${liveCable}.`
+            : " Exact metres lock after survey; the rule stays — both runs short, cable thick enough."
+        }${
+          eng.dcAcRatio >= 1
+            ? ` Extra glass (DC/AC ${eng.dcAcRatio}) still fills the kitchen in weak morning and evening sun.`
+            : ""
+        }`,
+  };
+
+  return [lift, handshake, twoCurrents];
+}
+
 export function jaaliEngineeringModel(
   data: ProposalData,
   pptInput?: PremiumProposalPptInput | null

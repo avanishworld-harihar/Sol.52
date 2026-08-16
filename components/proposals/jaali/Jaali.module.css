@@ -1271,6 +1271,137 @@
   line-height: 1.35;
 }
 
+.sunPage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.sunPlate {
+  margin: 0;
+  border: 1.5px solid var(--ja-brass);
+  background: #f3ead8;
+  overflow: hidden;
+}
+
+.sunSvg {
+  width: 100%;
+  height: 148px;
+  display: block;
+  font-family: var(--ja-sans);
+}
+
+.sunCaption {
+  margin: 0;
+  padding: 6px 10px 7px;
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: var(--ja-muted);
+  background: var(--ja-card);
+  border-top: 1px solid var(--ja-line);
+}
+
+.sunPath {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1.5px solid var(--ja-brass);
+  background: var(--ja-card);
+}
+
+.sunStep {
+  min-width: 0;
+  padding: 9px 10px 10px;
+  border-right: 1px solid var(--ja-line);
+}
+
+.sunStep:last-child {
+  border-right: 0;
+}
+
+.sunStepN {
+  display: block;
+  font-size: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--ja-brass);
+}
+
+.sunStepLab {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ja-muted);
+}
+
+.sunStepVal {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--ja-serif);
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.sunStepHint {
+  margin: 4px 0 0;
+  font-size: 0.58rem;
+  line-height: 1.3;
+  color: var(--ja-body);
+}
+
+.sunMeasures {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  border-top: 1px solid var(--ja-line);
+  border-bottom: 1px solid var(--ja-line);
+}
+
+.sunMeasure {
+  min-width: 0;
+  padding: 7px 8px 8px;
+  border-right: 1px solid var(--ja-line);
+}
+
+.sunMeasure:last-child {
+  border-right: 0;
+}
+
+.sunMeasure dt {
+  font-size: 0.48rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ja-muted);
+}
+
+.sunMeasure dd {
+  margin: 2px 0 0;
+  font-family: var(--ja-serif);
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.sunLessons {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px 14px;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid var(--ja-line);
+}
+
 /* ── Forecast season ribbon ── */
 
 .seasonHero {
@@ -2328,6 +2459,9 @@
   .arcade,
   .courtRow,
   .drawNotes,
+  .sunPath,
+  .sunMeasures,
+  .sunLessons,
   .specStrip,
   .auditTwin,
   .drawingMeta,
