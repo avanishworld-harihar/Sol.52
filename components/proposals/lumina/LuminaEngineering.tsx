@@ -4,6 +4,7 @@ import type { CSSProperties } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import styles from "./Lumina.module.css";
+import { luminaArenaLayout } from "./lumina-arena";
 import { LuminaDocFooter } from "./lumina-brand";
 import { useLuminaLang } from "./lumina-lang-context";
 import {
@@ -22,7 +23,8 @@ export function LuminaEngineering({
   const { copy, lang } = useLuminaLang();
   const eng = luminaEngineeringModel(data, pptInput);
   const insights = luminaEngineeringInsights(eng, lang);
-  const cols = Math.min(6, Math.max(3, Math.ceil(Math.sqrt(Math.max(eng.visualPanelCount, 1)))));
+  const arena = luminaArenaLayout(eng.visualPanelCount);
+  const shortTableCentered = arena.heights.some((h) => h > 0 && h < arena.rows);
 
   const arrayMeta =
     eng.tiltDeg > 0
@@ -97,10 +99,14 @@ export function LuminaEngineering({
               {eng.visualPanelCount > 0 ? (
                 <div
                   className={styles.engPanelLayout}
-                  style={{ "--lu-panel-cols": String(cols) } as CSSProperties}
+                  style={{ "--lu-panel-cols": String(arena.cols) } as CSSProperties}
                 >
-                  {Array.from({ length: eng.visualPanelCount }).map((_, i) => (
-                    <div key={i} className={styles.engPanelBox} />
+                  {arena.cells.map((filled, i) => (
+                    <div
+                      key={i}
+                      className={filled ? styles.engPanelBox : styles.engPanelGap}
+                      aria-hidden={!filled}
+                    />
                   ))}
                 </div>
               ) : (
@@ -115,6 +121,9 @@ export function LuminaEngineering({
                   ? copy.engineering.showing(eng.visualPanelCount, eng.panelCount)
                   : ""}
               </span>
+              {eng.visualPanelCount > 0 ? (
+                <span>{copy.engineering.arrayMms(arena.tableKind, shortTableCentered)}</span>
+              ) : null}
             </div>
           </div>
 

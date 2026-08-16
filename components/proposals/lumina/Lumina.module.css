@@ -1958,13 +1958,22 @@
   transform-style: preserve-3d;
 }
 
-.engPanelBox {
+.engPanelBox,
+.engPanelGap {
   width: 28px;
   height: 46px;
   border-radius: 2px;
+}
+
+.engPanelBox {
   background: linear-gradient(180deg, #67e8f9 0%, #06b6d4 55%, #0891b2 100%);
   border: 1px solid #a5f3fc;
   box-shadow: inset 0 0 8px rgba(8, 51, 68, 0.35);
+}
+
+.engPanelGap {
+  background: transparent;
+  border: 1px dashed rgba(165, 243, 252, 0.22);
 }
 
 .engRoofEmpty {
