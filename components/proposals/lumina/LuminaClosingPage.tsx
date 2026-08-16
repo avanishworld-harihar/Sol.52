@@ -67,7 +67,15 @@ export function LuminaClosingPage({
             {contactLine ? (
               <aside className={styles.closeContactCard} aria-label={copy.close.contactTitle}>
                 <span className={styles.closeContactKicker}>{copy.close.contactTitle}</span>
-                <p className={styles.closeContactLine}>{contactLine}</p>
+                {vendorContact.phone ? (
+                  <p className={styles.closeContactLine}>{vendorContact.phone}</p>
+                ) : null}
+                {vendorContact.email ? (
+                  <p className={styles.closeContactLine}>{vendorContact.email}</p>
+                ) : null}
+                {vendorContact.website ? (
+                  <p className={styles.closeContactLine}>{vendorContact.website}</p>
+                ) : null}
               </aside>
             ) : null}
 
