@@ -28,7 +28,7 @@ export function getJaaliCopy(lang: JaaliLang) {
     },
     cover: {
       kicker: hi ? "jali के पार." : "Through the screen.",
-      heroMms: "Elevated GI MMS",
+      heroMms: hi ? "Jali ke paar" : "Through the jaali",
       heroTerrace: hi ? "RCC terrace · नीचे चल सकते हैं" : "RCC terrace · walkable under array",
       preparedFor: (name: string) =>
         hi

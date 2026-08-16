@@ -9,7 +9,7 @@ import { recommendedTiltFromLatitude, resolveSiteLatitude } from "@/lib/proposal
 
 export const JAALI_HERO_PHOTO = "/assets/proposals/jaali-cover-day.jpg";
 export const JAALI_HERO_ALT =
-  "Daytime haveli courtyard: sandstone jali screen, elevated GI MMS array on the terrace above";
+  "Through a sandstone jaali jharokha: cream haveli courtyard below, elevated GI MMS solar array on the terrace";
 export const JAALI_CLOSE_PHOTO = "/assets/proposals/jaali-close-evening.jpg";
 export const JAALI_CLOSE_ALT =
   "Evening haveli courtyard: Indian family under lattice shadows, solar array on the terrace above";

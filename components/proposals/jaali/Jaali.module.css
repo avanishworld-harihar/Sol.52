@@ -400,7 +400,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 36%;
+  object-position: center 28%;
   display: block;
 }
 
@@ -409,8 +409,8 @@
   inset: 0;
   background: linear-gradient(
     180deg,
-    transparent 38%,
-    rgba(26, 39, 68, 0.45) 100%
+    transparent 52%,
+    rgba(42, 33, 24, 0.28) 100%
   );
   pointer-events: none;
 }
