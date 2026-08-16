@@ -154,7 +154,7 @@ export function getKhadiCopy(lang: KhadiLang) {
       lead: hi
         ? "Plant ki keemat, usme se subsidy ghat-ti hai, bachi net aap dete ho. Bill saving Year page par hai."
         : "Plant price, minus subsidy, is what you pay. Bill saving is on the Year page.",
-      youPay: hi ? "Net / आपको देना" : "Net / you pay",
+      youPay: hi ? "Net cost" : "Net cost",
       gross: hi ? "Gross cost" : "Gross cost",
       subsidy: hi ? "Subsidy" : "Subsidy",
       subsidyNone: hi ? "File पर नहीं" : "None on file",
