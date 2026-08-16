@@ -33,21 +33,16 @@ function TermsBankCallout({ data }: { data: ProposalData }) {
       <p className={styles.termsBankIntro}>
         <strong>{copy.terms.bankTitle}:</strong> {copy.terms.bankIntro}
       </p>
-      <p className={styles.termsBankLine}>
-        <strong>{copy.terms.bankAccountName}:</strong> {accountName || dash}
-        <span className={styles.termsBankSep} aria-hidden>
-          |
-        </span>
-        <strong>{copy.terms.bankAcNo}:</strong> {accountNumber || dash}
-        <span className={styles.termsBankSep} aria-hidden>
-          |
-        </span>
-        <strong>{copy.terms.bankIfsc}:</strong> {ifsc || dash}
-        <span className={styles.termsBankSep} aria-hidden>
-          |
-        </span>
-        <strong>{copy.terms.bankUpi}:</strong> {upi || dash}
-      </p>
+      <dl className={styles.termsBankGrid}>
+        <dt>{copy.terms.bankAccountName}</dt>
+        <dd>{accountName || dash}</dd>
+        <dt>{copy.terms.bankAcNo}</dt>
+        <dd>{accountNumber || dash}</dd>
+        <dt>{copy.terms.bankIfsc}</dt>
+        <dd>{ifsc || dash}</dd>
+        <dt>{copy.terms.bankUpi}</dt>
+        <dd className={styles.termsBankUpi}>{upi || dash}</dd>
+      </dl>
     </aside>
   );
 }

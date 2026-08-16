@@ -1656,23 +1656,29 @@
   color: var(--lu-green-ink);
 }
 
-.termsBankLine {
-  font-size: 0.8rem;
-  line-height: 1.5;
-  color: var(--lu-ink);
+.termsBankGrid {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 5px 16px;
   margin: 0;
-  font-weight: 600;
+  font-size: 0.8rem;
+  line-height: 1.4;
 }
 
-.termsBankLine strong {
+.termsBankGrid dt {
   font-weight: 800;
   color: var(--lu-ink);
+  margin: 0;
 }
 
-.termsBankSep {
-  margin: 0 8px;
-  color: #94a3b8;
-  font-weight: 400;
+.termsBankGrid dd {
+  margin: 0;
+  font-weight: 600;
+  color: var(--lu-ink);
+}
+
+.termsBankUpi {
+  word-break: break-all;
 }
 
 .termsSignoff span {
