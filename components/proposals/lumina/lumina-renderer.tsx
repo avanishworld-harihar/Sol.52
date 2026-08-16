@@ -95,6 +95,7 @@ function LuminaDocument({
           @page { size: A4 portrait; margin: 0; }
           @page lumina-sheet { size: A4 portrait; margin: 0; }
           @page lumina-cover { size: A4 portrait; margin: 0; }
+          html, body { font-size: 16.5px !important; }
         }
       `}</style>
       <div className={styles.printBar}>
