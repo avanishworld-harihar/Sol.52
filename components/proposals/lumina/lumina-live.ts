@@ -130,65 +130,68 @@ const LUMINA_HW_CATALOG: Record<LuminaHwKind, LuminaHwCatalog> = {
     kind: "panel",
     role: "Solar PV Modules",
     title: "Tier-1 ALMM-listed",
-    detail: "BIS IS 14286 · MNRE ALMM · IEC 61215 & IEC 61730",
+    detail: "η ≥ 21% · BIS IS 14286 · MNRE ALMM · IEC 61215 & IEC 61730",
     extraDetails: [
       "≥21% module efficiency · ≤0.55%/yr linear degradation after Y1",
+      "Mono PERC / TOPCon · PID-resistant · 30 yr performance warranty",
       "BIS IS 14286 · MNRE ALMM · IEC 61215 & IEC 61730",
     ],
-    chips: ["25 yr linear", "ALMM", "IEC 61215"],
+    chips: ["30 yr performance", "25 yr linear", "ALMM", "IEC 61215"],
   },
   inverter: {
     kind: "inverter",
     role: "String Inverter",
     title: "IEC 62109",
-    detail: "On-grid string inverter · dual MPPT · IP65 · LCD",
+    detail: "On-grid string inverter · dual MPPT · ≥97.5% max efficiency · IP65",
     extraDetails: [
-      "≥97.5% max efficiency · IP65 outdoor enclosure",
+      "≥97.5% max efficiency · IP65 outdoor enclosure · LCD display",
       "Grid-tie sync · anti-islanding · IEC 62109",
+      "Remote monitoring (where applicable) · grid synchronization",
     ],
-    chips: ["Dual MPPT", "IP65", "IEC 62109"],
+    chips: ["10 Year", "Dual MPPT", "IP65", "IEC 62109"],
     accent: true,
   },
   structure: {
     kind: "structure",
     role: "Module Mounting Structure",
     title: "IS 2062, zinc ≥ 85 µm",
-    detail: "Hot-dip galvanized (HDG) mild steel structure",
+    detail: "Hot-dip galvanized (HDG) mild steel structure · IS 2062 · zinc ≥ 85 µm",
     extraDetails: [
       "150 km/h wind load (IS 875) · RCC penetration / clamp system",
       "Corrosion-resistant fasteners · 25-year service life",
-      "IS 2062 MS · zinc coating ≥ 85 µm",
+      "M12/M16 SS 304 chemical anchor · IS 2062 MS · zinc coating ≥ 85 µm",
     ],
-    chips: ["HDG", "IS 2062", "Zn ≥ 85 µm", "10 yr structural"],
+    chips: ["10 Year", "HDG", "IS 2062", "Zn ≥ 85 µm"],
   },
   dcdb: {
     kind: "dcdb",
     role: "DCDB (DC Distribution Box)",
     title: "Havells / Phoenix",
-    detail: "Fuse + Type II SPD · panels → inverter",
+    detail: "IP65 enclosure · DC isolator · fuse + Type II SPD · PV array to inverter",
     extraDetails: [
+      "Lightning protection · over-current / over-voltage protection",
+      "Fuse + Type II SPD · panels → inverter",
       "IP65 enclosure · DC isolator",
-      "Fuse + Type II SPD · PV array to inverter",
-      "Over-current / over-voltage protection",
     ],
-    chips: ["IP65", "DC isolator", "Type II SPD", "Fuse"],
+    chips: ["5 Year", "IP65", "DC isolator", "Type II SPD"],
   },
   acdb: {
     kind: "acdb",
     role: "ACDB (AC Distribution Box)",
     title: "Havells / Schneider",
-    detail: "IP54 weatherproof · MCB + RCCB + SPD + energy meter",
+    detail: "IP54 weatherproof · MCB + RCCB + Type II SPD + energy meter · isolator",
     extraDetails: [
-      "IP54 weatherproof · MCB + RCCB + Type II SPD + energy meter",
+      "Lightning protection · over-current / over-voltage protection · IP54",
+      "IP54 weatherproof · MCB + RCCB + SPD + energy meter",
       "Isolator · over-current / over-voltage protection",
     ],
-    chips: ["IP54", "MCB + RCCB", "SPD", "Energy meter"],
+    chips: ["5 Year", "IP54", "MCB + RCCB", "SPD"],
   },
   earth: {
     kind: "earth",
     role: "Earthing System",
     title: "Copper-bonded / GI",
-    detail: "3 nos × 17 mm copper rod · IS 3043 earth pit",
+    detail: "3 nos × 17 mm copper rod · IS 3043 earth pit · chemical compound · ≤1 Ω",
     extraDetails: [
       "Chemical earthing compound · resistance ≤1 Ω",
       "Bonds inverter, DCDB, ACDB and lightning arrester",
@@ -199,10 +202,10 @@ const LUMINA_HW_CATALOG: Record<LuminaHwKind, LuminaHwCatalog> = {
     kind: "la",
     role: "Lightning Arrester",
     title: "IEC 62305",
-    detail: "Roof air terminal · down conductor to earth pit",
+    detail: "Roof air terminal · down conductor to earth pit · array high point",
     extraDetails: [
       "Air terminal at the array high point · down conductor to earth",
-      "Bonded to the earth pit · IEC 62305 / NBC lightning protection",
+      "IEC 62305 Class I/II · NBC lightning protection · bonded earth pit",
     ],
     chips: ["IEC 62305", "Air terminal", "Down conductor", "Bonded earth"],
   },
@@ -253,7 +256,7 @@ function filterPointsForKind(kind: LuminaHwKind, points: string[]): string[] {
   });
 }
 
-function collectPoints(parts: string[], max = 3): string[] {
+function collectPoints(parts: string[], max = 4): string[] {
   const out: string[] = [];
   let hay = "";
   for (const part of parts) {
@@ -288,7 +291,7 @@ function uniqueChips(values: Array<string | undefined>, details = ""): string[] 
     seen.add(key);
     out.push(v);
   }
-  return out.slice(0, 4);
+  return out.slice(0, 5);
 }
 
 function bomHay(item: ProposalBomItem): string {
@@ -343,7 +346,12 @@ function extractSideSpec(item: ProposalBomItem | null, side: "dcdb" | "acdb"): s
 function rowFromCatalog(
   kind: LuminaHwKind,
   item: ProposalBomItem | null,
-  extras?: { title?: string; detail?: string; chips?: Array<string | undefined> }
+  extras?: {
+    title?: string;
+    detail?: string;
+    chips?: Array<string | undefined>;
+    prependPoints?: string[];
+  }
 ): LuminaHardwareRow {
   const catalog = LUMINA_HW_CATALOG[kind];
   const title = extras?.title?.trim() || item?.brand?.trim() || catalog.title;
@@ -353,7 +361,10 @@ function rowFromCatalog(
     kind,
     (item?.technicalPoints ?? []).map((p) => p.trim()).filter(Boolean)
   );
-  const points = collectPoints([...livePoints, preferred, ...catalog.extraDetails], 3);
+  const points = collectPoints(
+    [...(extras?.prependPoints ?? []), ...livePoints, preferred, ...catalog.extraDetails],
+    4
+  );
   const detail = points.join(" · ") || catalog.detail;
   const hay = item ? bomHay(item) : catalog.role;
   const combined = item ? isCombinedProtect(item) : false;
@@ -662,12 +673,30 @@ export function luminaHardwareRows(data: ProposalData): LuminaHardwareRow[] {
   const earthHasQty = /3\s*nos|17\s*mm/i.test(earthBlob);
   const earthPoints = earthHasQty
     ? earthLive.points
-    : collectPoints([...earthLive.points, "3 nos × 17 mm copper rod"], 3);
+    : collectPoints([...earthLive.points, "3 nos × 17 mm copper rod"], 4);
   const earthDetail = earthPoints.join(" · ");
 
+  const { count: panelCount, watt: panelWatt } = luminaParsePanelArray(data);
+  const acKw = Number(data.meta.systemKw) || 0;
+  const dcKwp =
+    panelCount > 0 && panelWatt > 0
+      ? Math.round(((panelCount * panelWatt) / 1000) * 100) / 100
+      : 0;
+  const dcKwpLabel = Number.isInteger(dcKwp) ? String(dcKwp) : dcKwp.toFixed(2);
+  const panelArrayLine =
+    panelCount > 0 && panelWatt > 0
+      ? `${panelCount} modules × ${panelWatt} Wp — ${dcKwpLabel} kWp DC array`
+      : null;
+  const inverterKwLine =
+    acKw > 0 ? `${acKw} kW on-grid string inverter · dual MPPT` : null;
+
   return [
-    rowFromCatalog("panel", panel),
-    rowFromCatalog("inverter", inverter),
+    rowFromCatalog("panel", panel, {
+      prependPoints: panelArrayLine ? [panelArrayLine] : undefined,
+    }),
+    rowFromCatalog("inverter", inverter, {
+      prependPoints: inverterKwLine ? [inverterKwLine] : undefined,
+    }),
     rowFromCatalog("structure", structure),
     rowFromCatalog("dcdb", dcdbItem, {
       detail: dcdb
