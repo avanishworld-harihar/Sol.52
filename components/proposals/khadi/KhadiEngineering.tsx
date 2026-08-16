@@ -60,69 +60,70 @@ export function KhadiEngineering({
 
   return (
     <KhadiSheet data={data} page="04 / 09" chapter={copy.spine.drawing}>
-      <div className={`${styles.mill} ${styles.millInvert}`}>
-        <div className={styles.millWork}>
-          <p className={styles.kicker}>{copy.engineering.kicker}</p>
-          <h1 className={`${styles.displayTitle} ${styles.drawingTitle}`}>
-            {copy.engineering.title}
-          </h1>
-          <p className={`${styles.lead} ${styles.leadShort}`}>{copy.engineering.lead}</p>
-
-          <div className={`${styles.planBoard} ${styles.millPlan}`}>
-            <div className={styles.planGrid} />
-            <div className={styles.compass} aria-hidden>
-              <span className={styles.compassN}>N</span>
-              <span className={styles.compassE}>E</span>
-              <span className={styles.compassS}>S</span>
-              <span className={styles.compassW}>W</span>
-            </div>
-            {eng.visualPanelCount > 0 ? (
-              <div
-                className={styles.planLayout}
-                style={{ "--kh-panel-cols": String(arena.cols) } as CSSProperties}
-              >
-                {arena.cells.map((filled, i) => (
-                  <div
-                    key={i}
-                    className={filled ? styles.planCell : styles.planGap}
-                    aria-hidden={!filled}
-                  />
-                ))}
-              </div>
-            ) : (
-              <p className={styles.planEmpty}>{copy.engineering.roofEmpty}</p>
-            )}
+      <div className={styles.drawPage}>
+        <div className={styles.drawHead}>
+          <div>
+            <p className={styles.kicker}>{copy.engineering.kicker}</p>
+            <h1 className={`${styles.displayTitle} ${styles.drawingTitle}`}>
+              {copy.engineering.title}
+            </h1>
           </div>
-
-          <div className={styles.millYield}>
-            <div className={styles.millCoin}>
-              <span>{copy.engineering.peakSun}</span>
-              <strong>
-                {eng.peakSunHours > 0 ? copy.engineering.hrsDay(eng.peakSunHours) : "—"}
-              </strong>
-            </div>
-            <div className={styles.millCoin}>
-              <span>{copy.engineering.specificYield}</span>
-              <strong>
-                {eng.specificYield > 0 ? `${eng.specificYield}` : "—"}
-              </strong>
-            </div>
-            <div className={`${styles.millCoin} ${styles.millCoinKeep}`}>
-              <span>{copy.engineering.loadCoverage}</span>
-              <strong>{eng.loadCoveragePct > 0 ? `${eng.loadCoveragePct}%` : "—"}</strong>
-            </div>
-          </div>
-          {insights.length > 0 ? (
-            <p className={styles.millCaption}>
-              <strong>{insights[0]!.title}</strong>
-              {insights[0]!.body}
-            </p>
-          ) : null}
-        </div>
-
-        <aside className={styles.millSelvage}>
           <span className={styles.drawingNo}>{copy.engineering.drawingNo}</span>
-          <div className={styles.millStack}>
+        </div>
+        <p className={`${styles.lead} ${styles.leadShort}`}>{copy.engineering.lead}</p>
+
+        <div className={styles.drawBody}>
+          <div className={styles.drawPad}>
+            <div className={`${styles.planBoard} ${styles.millPlan}`}>
+              <div className={styles.planGrid} />
+              <div className={styles.compass} aria-hidden>
+                <span className={styles.compassN}>N</span>
+                <span className={styles.compassE}>E</span>
+                <span className={styles.compassS}>S</span>
+                <span className={styles.compassW}>W</span>
+              </div>
+              {eng.visualPanelCount > 0 ? (
+                <div
+                  className={styles.planLayout}
+                  style={{ "--kh-panel-cols": String(arena.cols) } as CSSProperties}
+                >
+                  {arena.cells.map((filled, i) => (
+                    <div
+                      key={i}
+                      className={filled ? styles.planCell : styles.planGap}
+                      aria-hidden={!filled}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p className={styles.planEmpty}>{copy.engineering.roofEmpty}</p>
+              )}
+            </div>
+            <p className={styles.drawLegend}>{copy.engineering.planLegend}</p>
+
+            <div className={styles.millYield}>
+              <div className={styles.millCoin}>
+                <span>{copy.engineering.peakSun}</span>
+                <strong>
+                  {eng.peakSunHours > 0 ? copy.engineering.hrsDay(eng.peakSunHours) : "—"}
+                </strong>
+              </div>
+              <div className={styles.millCoin}>
+                <span>{copy.engineering.specificYield}</span>
+                <strong>
+                  {eng.specificYield > 0 ? `${eng.specificYield}` : "—"}
+                </strong>
+              </div>
+              <div className={`${styles.millCoin} ${styles.millCoinKeep}`}>
+                <span>{copy.engineering.loadCoverage}</span>
+                <strong>
+                  {eng.loadCoveragePct > 0 ? `${eng.loadCoveragePct}%` : "—"}
+                </strong>
+              </div>
+            </div>
+          </div>
+
+          <aside className={styles.drawFacts}>
             <div className={styles.millStamp}>
               <span>{copy.engineering.arrayTitle}</span>
               <strong>
@@ -155,11 +156,22 @@ export function KhadiEngineering({
                 </div>
               ))}
             </div>
+            <p className={styles.millCaption}>
+              {eng.cableNote || copy.engineering.cableFallback}
+            </p>
+          </aside>
+        </div>
+
+        {insights.length > 0 ? (
+          <div className={styles.drawNotes}>
+            {insights.slice(0, 3).map((card) => (
+              <p key={card.title} className={styles.millCaption}>
+                <strong>{card.title}</strong>
+                {card.body}
+              </p>
+            ))}
           </div>
-          <p className={styles.millCaption}>
-            {eng.cableNote || copy.engineering.cableFallback}
-          </p>
-        </aside>
+        ) : null}
       </div>
     </KhadiSheet>
   );

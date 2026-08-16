@@ -114,6 +114,7 @@ export function getKhadiCopy(lang: KhadiLang) {
       roofEmpty: hi
         ? "Module count file पर होने पर plan दिखेगा।"
         : "Plan appears when module count is on file.",
+      planLegend: hi ? "Har block = 1 module. Dashed = gap." : "Each block = 1 module. Dashed = gap.",
       siteTitle: hi ? "Title block" : "Title block",
       latitude: "Latitude",
       latitudeCaption: hi ? "इसी छत का capture angle." : "Sets the capture angle for this roof.",

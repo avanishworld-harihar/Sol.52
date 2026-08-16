@@ -1884,6 +1884,11 @@
   margin-top: 0;
 }
 
+.drawFacts .millParts {
+  flex: 0 0 auto;
+  margin-top: 0;
+}
+
 .millPart {
   border: 1.5px dashed var(--kh-indigo);
   padding: 8px 10px 8px;
@@ -1923,10 +1928,64 @@
 }
 
 .millPlan {
+  flex: 0 0 auto;
+  min-height: 118px;
+  height: 128px;
+  max-height: 128px;
+  margin-top: 0;
+}
+
+.drawPage {
   flex: 1;
-  min-height: 168px;
-  height: auto;
-  margin-top: 8px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.drawHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.drawHead .displayTitle {
+  margin-bottom: 0;
+}
+
+.drawBody {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(220px, 0.95fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.drawPad {
+  min-width: 0;
+}
+
+.drawLegend {
+  margin: 6px 0 0;
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: var(--kh-muted);
+}
+
+.drawFacts {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.drawNotes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 12px;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px dashed var(--kh-indigo);
 }
 
 .millYield {
@@ -2235,7 +2294,9 @@
   .millParts,
   .millTerms,
   .millCloth,
-  .millMonths {
+  .millMonths,
+  .drawBody,
+  .drawNotes {
     grid-template-columns: 1fr;
   }
 
