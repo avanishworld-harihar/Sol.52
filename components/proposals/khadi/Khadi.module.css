@@ -598,6 +598,124 @@
   margin-top: 16px;
 }
 
+.billPage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.billTrio {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.billCard {
+  min-width: 0;
+  border: 1.5px dashed var(--kh-indigo);
+  background: var(--kh-card);
+  padding: 14px 14px 12px;
+}
+
+.billCardKeep {
+  background: var(--kh-indigo);
+  color: var(--kh-bone);
+  border-style: solid;
+  border-color: var(--kh-indigo);
+}
+
+.billCardCover {
+  border-color: var(--kh-olive);
+  background: var(--kh-olive-soft);
+}
+
+.billCard span {
+  display: block;
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--kh-madder);
+  margin-bottom: 8px;
+}
+
+.billCardKeep span {
+  color: #e8c4a0;
+}
+
+.billCardCover span {
+  color: var(--kh-olive);
+}
+
+.billCard strong {
+  display: block;
+  font-family: var(--kh-serif);
+  font-size: 1.7rem;
+  font-weight: 600;
+  line-height: 1.05;
+}
+
+.billCard p {
+  margin: 8px 0 0;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: var(--kh-body);
+}
+
+.billCardKeep p {
+  color: rgba(243, 234, 220, 0.78);
+}
+
+.billCardCover p {
+  color: var(--kh-body);
+}
+
+.billEmpty {
+  flex: 1;
+  min-height: 160px;
+  margin-top: 14px;
+  border: 1.5px dashed var(--kh-line);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px 28px;
+  background: var(--kh-bone);
+}
+
+.billEmpty strong {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--kh-madder);
+  margin-bottom: 8px;
+}
+
+.billEmpty p {
+  margin: 0;
+  max-width: 36em;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--kh-muted);
+}
+
+.billChart {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+}
+
+.billChart .ribbon {
+  flex: 1;
+}
+
 .monthRail {
   display: flex;
   gap: 6px;
@@ -2311,6 +2429,7 @@
   }
 
   .auditTwin,
+  .billTrio,
   .drawingMeta,
   .clauseGrid,
   .outlayPair,

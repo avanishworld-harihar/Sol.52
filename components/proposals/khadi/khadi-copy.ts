@@ -72,8 +72,8 @@ export function getKhadiCopy(lang: KhadiLang) {
         : "Coverage appears when bill and saving are both on file.",
       months: hi ? "Bill के महीने" : "Months on the bill",
       monthsEmpty: hi
-        ? "महीने तब दिखेंगे जब bill months file पर हों।"
-        : "Months appear when bill months are on file.",
+        ? "Bill upload ke baad har mahine ki ₹ yahan bars mein aayegi. Sirf requirement se bani proposal par yeh khali rehti hai."
+        : "Month bars fill after a bill is uploaded. A requirement-only proposal leaves this chart empty.",
       readSave: (month: string) =>
         hi
           ? `सीधी बात: हर महीने लगभग ${month} कम. खरीद का पैसा Outlay पेज पर.`

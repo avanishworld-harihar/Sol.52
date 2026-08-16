@@ -1,7 +1,7 @@
 "use client";
 
 import type { ProposalData } from "@/lib/proposal-data";
-import { formatInr } from "@/components/proposals/_shared/formatters";
+import { formatInr, formatInrCompact } from "@/components/proposals/_shared/formatters";
 import styles from "./Khadi.module.css";
 import { KhadiSheet } from "./khadi-brand";
 import { useKhadiLang } from "./khadi-lang-context";
@@ -31,67 +31,89 @@ export function KhadiAudit({ data }: { data: ProposalData }) {
 
   return (
     <KhadiSheet data={data} page="02 / 09" chapter={copy.spine.bill}>
-      <div className={styles.mill}>
-        <aside className={styles.millSelvage}>
-          <p className={styles.kicker}>{copy.audit.kicker}</p>
-          <h1 className={styles.displayTitle}>{copy.audit.title}</h1>
-          <p className={styles.lead}>{copy.audit.lead}</p>
-          <div className={styles.millCoin}>
+      <div className={styles.billPage}>
+        <p className={styles.kicker}>{copy.audit.kicker}</p>
+        <h1 className={styles.displayTitle}>{copy.audit.title}</h1>
+        <p className={styles.lead}>{copy.audit.lead}</p>
+
+        <div className={styles.billTrio}>
+          <article className={styles.billCard}>
+            <span>{copy.audit.today}</span>
+            <strong>{money(yearlyBill)}</strong>
+            <p>
+              {yearlyBill > 0
+                ? copy.audit.todayHint(money(monthlyBill))
+                : copy.audit.todayEmpty}
+            </p>
+          </article>
+          <article className={`${styles.billCard} ${styles.billCardKeep}`}>
+            <span>{copy.audit.keep}</span>
+            <strong>{monthlySave > 0 ? `+${formatInr(monthlySave)}` : "—"}</strong>
+            <p>
+              {yearlySave > 0
+                ? copy.audit.keepHint(money(yearlySave))
+                : copy.audit.keepEmpty}
+            </p>
+          </article>
+          <article className={`${styles.billCard} ${styles.billCardCover}`}>
             <span>{copy.audit.cover}</span>
             <strong>{coverPct > 0 ? `~${coverPct}%` : "—"}</strong>
-          </div>
-          <p className={styles.millCaption}>
-            {monthlySave > 0
-              ? copy.audit.readSave(formatInr(monthlySave))
-              : copy.audit.readEmpty}
-          </p>
-        </aside>
-
-        <div className={styles.millWork}>
-          <div className={styles.millOverlap}>
-            <article className={styles.millStrip}>
-              <span>{copy.audit.today}</span>
-              <strong>{money(yearlyBill)}</strong>
-              <p>
-                {yearlyBill > 0
-                  ? copy.audit.todayHint(money(monthlyBill))
-                  : copy.audit.todayEmpty}
-              </p>
-            </article>
-            <article className={styles.millKeep}>
-              <span>{copy.audit.keep}</span>
-              <strong>{monthlySave > 0 ? `+${formatInr(monthlySave)}` : "—"}</strong>
-              <p>
-                {yearlySave > 0
-                  ? copy.audit.keepHint(money(yearlySave))
-                  : copy.audit.keepEmpty}
-              </p>
-            </article>
-          </div>
-
-          {months.length > 0 ? (
-            <div className={styles.millMonths} aria-label={copy.audit.months}>
-              {months.map((month, i) => (
-                <div
-                  key={month.label}
-                  className={`${styles.millMonth}${
-                    month.isSummerPeak ? ` ${styles.millMonthPeak}` : ""
-                  }`}
-                >
-                  <span className={styles.millMonthLbl}>{month.label}</span>
-                  <div
-                    className={styles.millDye}
-                    style={{
-                      width: `${Math.max(18, Math.round((barHeights[i] / maxBar) * 100))}%`,
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className={styles.note}>{copy.audit.monthsEmpty}</p>
-          )}
+            <p>
+              {coverPct > 0
+                ? monthlySave > 0
+                  ? copy.audit.readSave(formatInr(monthlySave))
+                  : copy.audit.keepHint(money(yearlySave))
+                : copy.audit.coverEmpty}
+            </p>
+          </article>
         </div>
+
+        {months.length > 0 ? (
+          <div className={styles.billChart}>
+            <p className={`${styles.kicker} ${styles.monthKicker}`}>{copy.audit.months}</p>
+            <div className={styles.ribbon} role="img" aria-label={copy.audit.months}>
+              {months.map((month, i) => {
+                const pct = Math.max(8, Math.round((barHeights[i] / maxBar) * 100));
+                return (
+                  <div key={month.label} className={styles.ribbonCol}>
+                    <div className={styles.ribbonNums}>
+                      <span
+                        className={`${styles.ribbonVal}${
+                          month.isSummerPeak ? ` ${styles.ribbonValPeak}` : ""
+                        }`}
+                      >
+                        {month.netInr > 0 ? formatInrCompact(month.netInr) : "—"}
+                      </span>
+                    </div>
+                    <div className={styles.ribbonTrack}>
+                      <div
+                        className={`${styles.ribbonFill}${
+                          month.isSummerPeak ? ` ${styles.ribbonFillPeak}` : ""
+                        }`}
+                        style={{ height: `${pct}%` }}
+                      />
+                    </div>
+                    <span
+                      className={`${styles.ribbonMonth}${
+                        month.isSummerPeak ? ` ${styles.ribbonMonthPeak}` : ""
+                      }`}
+                    >
+                      {month.label}
+                    </span>
+                    <span className={styles.ribbonSave}>
+                      {month.units > 0 ? `${month.units} u` : "—"}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          <div className={styles.billEmpty}>
+            <strong>{copy.audit.months}</strong>
+            <p>{copy.audit.monthsEmpty}</p>
+          </div>
+        )}
       </div>
     </KhadiSheet>
   );
