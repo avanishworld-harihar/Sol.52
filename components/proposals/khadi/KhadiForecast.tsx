@@ -37,103 +37,82 @@ export function KhadiForecast({ data }: { data: ProposalData }) {
 
   return (
     <KhadiSheet data={data} page="05 / 09" chapter={copy.spine.year}>
-      <p className={styles.kicker}>{copy.forecast.kicker}</p>
-      <h1 className={styles.displayTitle}>{copy.forecast.title}</h1>
-      <p className={styles.lead}>
-        {annual > 0
-          ? copy.forecast.lead(annual.toLocaleString("en-IN"), showBill)
-          : copy.forecast.leadEmpty}
-      </p>
+      <div className={styles.mill}>
+        <aside className={styles.millSelvage}>
+          <p className={styles.kicker}>{copy.forecast.kicker}</p>
+          <h1 className={styles.displayTitle}>{copy.forecast.title}</h1>
+          <p className={styles.lead}>
+            {annual > 0
+              ? copy.forecast.lead(annual.toLocaleString("en-IN"), showBill)
+              : copy.forecast.leadEmpty}
+          </p>
 
-      <div className={styles.seasonHero}>
-        <div>
-          <span className={styles.seasonHeroVal}>
-            {annual > 0 ? annual.toLocaleString("en-IN") : "—"}
-          </span>
-          {annual > 0 ? (
-            <span className={styles.colophonUnit}> {copy.forecast.units}</span>
-          ) : null}
-        </div>
-        <div className={styles.seasonHeroMeta}>{side}</div>
-      </div>
-
-      <div
-        className={styles.ribbon}
-        role="img"
-        aria-label={copy.forecast.chartAria(showBill)}
-      >
-        {months.map((item) => {
-          const solarPct = item.val > 0 ? Math.max(8, Math.round((item.val / max) * 100)) : 0;
-          const bill = item.billUnits;
-          const billPct =
-            bill != null && bill > 0 ? Math.max(8, Math.round((bill / max) * 100)) : 0;
-          return (
-            <div key={item.m} className={styles.ribbonCol}>
-              <div className={styles.ribbonNums}>
-                <span className={`${styles.ribbonVal} ${item.peak ? styles.ribbonValPeak : ""}`}>
-                  {item.val > 0 ? item.val : "—"}
-                </span>
-                {showBill ? (
-                  <span className={styles.ribbonValBill}>
-                    {bill != null && bill > 0 ? bill : "—"}
-                  </span>
-                ) : null}
-              </div>
-              {showBill ? (
-                <div className={styles.ribbonPair}>
-                  <div className={styles.ribbonTrack}>
-                    <div
-                      className={`${styles.ribbonFill} ${item.peak ? styles.ribbonFillPeak : ""}`}
-                      style={{ height: `${solarPct}%` }}
-                    />
-                  </div>
-                  <div className={styles.ribbonTrack}>
-                    <div
-                      className={`${styles.ribbonFill} ${styles.ribbonFillBill}`}
-                      style={{ height: `${billPct}%` }}
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className={styles.ribbonTrack}>
-                  <div
-                    className={`${styles.ribbonFill} ${item.peak ? styles.ribbonFillPeak : ""}`}
-                    style={{ height: `${solarPct}%` }}
-                  />
-                </div>
-              )}
-              <span className={`${styles.ribbonMonth} ${item.peak ? styles.ribbonMonthPeak : ""}`}>
-                {item.m}
-              </span>
-              <span className={styles.ribbonSave}>
-                {item.savingsInr > 0 ? formatInrCompact(item.savingsInr) : "—"}
-              </span>
+          <div className={styles.millTicket}>
+            <span className={styles.millTicketLabel}>{copy.forecast.units}</span>
+            <div className={styles.millTicketVal}>
+              {annual > 0 ? annual.toLocaleString("en-IN") : "—"}
             </div>
-          );
-        })}
+            <p className={styles.millTicketHint}>{side}</p>
+          </div>
+
+          {notes.savingsBasis ? (
+            <p className={styles.millCaption}>{notes.savingsBasis}</p>
+          ) : null}
+
+          <div className={styles.millNote}>
+            <span>{notes.insightTag}</span>
+            <h2>{notes.insightTitle}</h2>
+            <p>{notes.insightBody}</p>
+          </div>
+        </aside>
+
+        <div className={styles.millWork}>
+          <div
+            className={styles.millCloth}
+            role="img"
+            aria-label={copy.forecast.chartAria(showBill)}
+          >
+            {months.map((item) => {
+              const dyePct = item.val > 0 ? Math.max(18, Math.round((item.val / max) * 100)) : 0;
+              const bill = item.billUnits;
+              return (
+                <article
+                  key={item.m}
+                  className={`${styles.millTile}${item.peak ? ` ${styles.millTilePeak}` : ""}`}
+                >
+                  <div className={styles.millTileHead}>
+                    <span className={styles.millTileMonth}>{item.m}</span>
+                    <span className={styles.millTileVal}>{item.val > 0 ? item.val : "—"}</span>
+                  </div>
+                  {showBill ? (
+                    <span className={styles.millTileBill}>
+                      {copy.forecast.legendBill}{" "}
+                      {bill != null && bill > 0 ? bill : "—"}
+                    </span>
+                  ) : null}
+                  <div className={styles.millTileDye} style={{ width: `${dyePct}%` }} />
+                  <span className={styles.millTileSave}>
+                    {item.savingsInr > 0 ? formatInrCompact(item.savingsInr) : "—"}
+                  </span>
+                </article>
+              );
+            })}
+          </div>
+          <div className={styles.legend}>
+            <span>
+              <span className={styles.swatch} /> {copy.forecast.legendSolar}
+            </span>
+            <span>
+              <span className={`${styles.swatch} ${styles.swatchPeak}`} /> {copy.forecast.legendPeak}
+            </span>
+            {showBill ? (
+              <span>
+                <span className={`${styles.swatch} ${styles.swatchBill}`} /> {copy.forecast.legendBill}
+              </span>
+            ) : null}
+          </div>
+        </div>
       </div>
-
-      <div className={styles.legend}>
-        <span>
-          <span className={styles.swatch} /> {copy.forecast.legendSolar}
-        </span>
-        <span>
-          <span className={`${styles.swatch} ${styles.swatchPeak}`} /> {copy.forecast.legendPeak}
-        </span>
-        {showBill ? (
-          <span>
-            <span className={`${styles.swatch} ${styles.swatchBill}`} /> {copy.forecast.legendBill}
-          </span>
-        ) : null}
-      </div>
-
-      {notes.savingsBasis ? <p className={styles.forecastBasis}>{notes.savingsBasis}</p> : null}
-
-      <aside className={styles.forecastNote}>
-        <p className={styles.forecastNoteTag}>{notes.insightTag}</p>
-        <h2 className={styles.forecastNoteTitle}>{notes.insightTitle}</h2>
-        <p className={styles.forecastNoteBody}>{notes.insightBody}</p>
-      </aside>
     </KhadiSheet>
   );
 }

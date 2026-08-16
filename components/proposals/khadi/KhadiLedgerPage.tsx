@@ -28,77 +28,74 @@ export function KhadiLedgerPage({ data }: { data: ProposalData }) {
 
   return (
     <KhadiSheet data={data} page="06 / 09" chapter={copy.spine.outlay}>
-      <p className={styles.kicker}>{copy.capital.kicker}</p>
-      <h2 className={styles.displayTitle}>{copy.capital.title}</h2>
-      <p className={styles.lead}>{copy.capital.lead}</p>
+      <div className={styles.mill}>
+        <aside className={styles.millSelvage}>
+          <p className={styles.kicker}>{copy.capital.kicker}</p>
+          <h2 className={styles.displayTitle}>{copy.capital.title}</h2>
+          <p className={styles.lead}>{copy.capital.lead}</p>
 
-      <div className={styles.outlayHero}>
-        <span className={styles.outlayHeroLabel}>{copy.capital.youPay}</span>
-        <div className={styles.outlayHeroValue}>
-          {netValue > 0 ? formatInrCompact(netValue) : "—"}
-        </div>
-        <p className={styles.outlayHeroHint}>
-          {showSubsidy ? copy.capital.netHint : copy.capital.netSameHint}
-        </p>
-      </div>
-
-      <div className={styles.outlayPair}>
-        <div className={styles.outlayCell}>
-          <span className={styles.outlayName}>{copy.capital.gross}</span>
-          <span className={styles.outlayFig}>
-            {gross > 0 ? formatInrCompact(gross) : "—"}
-          </span>
-        </div>
-        <div className={styles.outlayCell}>
-          <span className={styles.outlayName}>{copy.capital.subsidy}</span>
-          <span className={styles.outlayFig}>
-            {showSubsidy ? `− ${formatInrCompact(subsidy)}` : copy.capital.subsidyNone}
-          </span>
-        </div>
-      </div>
-
-      {payments.length > 0 ? (
-        <div className={styles.rail}>
-          <div className={styles.railHead}>
-            {copy.capital.stages} · {copy.capital.stagesHint}
-          </div>
-          {payments.map((p, i) => (
-            <div key={p.label} className={styles.railRow}>
-              <span className={styles.railNo}>{i + 1}</span>
-              <span className={styles.railLabel}>
-                {p.label}
-                {p.pctLabel ? ` · ${p.pctLabel}` : ""}
-              </span>
-              <span className={styles.railAmt}>
-                {p.amountInr > 0 ? formatInr(p.amountInr) : "—"}
-              </span>
+          <div className={styles.millTicket}>
+            <span className={styles.millTicketLabel}>{copy.capital.youPay}</span>
+            <div className={styles.millTicketVal}>
+              {netValue > 0 ? formatInrCompact(netValue) : "—"}
             </div>
-          ))}
-        </div>
-      ) : null}
+            <p className={styles.millTicketHint}>
+              {showSubsidy ? copy.capital.netHint : copy.capital.netSameHint}
+            </p>
+            <div className={styles.millSeals}>
+              <div className={styles.millSeal}>
+                <span>{copy.capital.gross}</span>
+                <strong>{gross > 0 ? formatInrCompact(gross) : "—"}</strong>
+              </div>
+              <div className={styles.millSeal}>
+                <span>{copy.capital.subsidy}</span>
+                <strong>
+                  {showSubsidy ? `− ${formatInrCompact(subsidy)}` : copy.capital.subsidyNone}
+                </strong>
+              </div>
+            </div>
+          </div>
+        </aside>
 
-      <div className={styles.returnGrid}>
-        <div className={styles.returnCell}>
-          <span className={styles.returnName}>{copy.capital.year1}</span>
-          <span className={styles.returnFig}>
-            {units > 0 ? units.toLocaleString("en-IN") : "—"}
-            {units > 0 ? <span className={styles.returnUnit}>kWh</span> : null}
-          </span>
-        </div>
-        <div className={styles.returnCell}>
-          <span className={styles.returnName}>{copy.capital.payback}</span>
-          <span className={styles.returnFig}>
-            {payback > 0 ? String(payback) : "—"}
-            {payback > 0 ? (
-              <span className={styles.returnUnit}>{copy.capital.years}</span>
-            ) : null}
-          </span>
-        </div>
-        <div className={styles.returnCell}>
-          <span className={styles.returnName}>{copy.capital.over25}</span>
-          <span className={styles.returnFig}>
-            {lifetime > 0 ? formatLifetimeBenefitInr(lifetime) : "—"}
-          </span>
+        <div className={styles.millWork}>
+          {payments.length > 0 ? (
+            <div className={styles.millReceipt}>
+              <h3>
+                {copy.capital.stages} · {copy.capital.stagesHint}
+              </h3>
+              {payments.map((p) => (
+                <div key={p.label} className={styles.millCut}>
+                  <span>
+                    {p.label}
+                    {p.pctLabel ? ` · ${p.pctLabel}` : ""}
+                  </span>
+                  <strong>{p.amountInr > 0 ? formatInr(p.amountInr) : "—"}</strong>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          <div className={styles.millCoins}>
+            <div className={styles.millCoin}>
+              <span>{copy.capital.year1}</span>
+              <strong>
+                {units > 0 ? units.toLocaleString("en-IN") : "—"}
+              </strong>
+            </div>
+            <div className={styles.millCoin}>
+              <span>{copy.capital.payback}</span>
+              <strong>
+                {payback > 0 ? `${payback}` : "—"}
+                {payback > 0 ? (
+                  <span className={styles.returnUnit}> {copy.capital.years}</span>
+                ) : null}
+              </strong>
+            </div>
+            <div className={`${styles.millCoin} ${styles.millCoinKeep}`}>
+              <span>{copy.capital.over25}</span>
+              <strong>{lifetime > 0 ? formatLifetimeBenefitInr(lifetime) : "—"}</strong>
+            </div>
+          </div>
         </div>
       </div>
     </KhadiSheet>

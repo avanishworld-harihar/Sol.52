@@ -1634,6 +1634,571 @@
   pointer-events: none;
 }
 
+/* ── Mill press structure (not Sienna stacked boxes) ── */
+
+.mill {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 0.92fr 1.18fr;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.millInvert {
+  grid-template-columns: 1.2fr 0.88fr;
+}
+
+.millSelvage,
+.millWork {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.millSelvage .displayTitle {
+  font-size: 1.45rem;
+}
+
+.millSelvage .lead {
+  font-size: 0.78rem;
+  margin-bottom: 10px;
+}
+
+.millTicket {
+  background: var(--kh-indigo);
+  color: var(--kh-bone);
+  padding: 16px 14px 14px;
+  margin-top: 4px;
+}
+
+.millTicketLabel {
+  display: block;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #e8c4a0;
+  margin-bottom: 6px;
+}
+
+.millTicketVal {
+  font-family: var(--kh-serif);
+  font-size: 2.05rem;
+  font-weight: 600;
+  line-height: 1.05;
+}
+
+.millTicketHint {
+  margin: 8px 0 0;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: rgba(243, 234, 220, 0.78);
+}
+
+.millSeals {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.millSeal {
+  border: 1.5px dashed rgba(243, 234, 220, 0.55);
+  padding: 8px 8px 6px;
+}
+
+.millSeal span {
+  display: block;
+  font-size: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #e8c4a0;
+}
+
+.millSeal strong {
+  display: block;
+  margin-top: 3px;
+  font-family: var(--kh-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.millCoin {
+  width: 92px;
+  height: 92px;
+  border: 2px dashed var(--kh-indigo);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 8px;
+  margin: 8px auto 0;
+  background: var(--kh-bone);
+}
+
+.millCoin span {
+  font-size: 0.48rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--kh-madder);
+}
+
+.millCoin strong {
+  font-family: var(--kh-serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.1;
+  margin-top: 2px;
+}
+
+.millCoinKeep {
+  border-color: var(--kh-olive);
+  background: var(--kh-olive-soft);
+}
+
+.millCoinKeep span {
+  color: var(--kh-olive);
+}
+
+.millOverlap {
+  position: relative;
+  min-height: 132px;
+  margin-bottom: 12px;
+}
+
+.millStrip {
+  background: var(--kh-card);
+  border: 1px solid var(--kh-indigo);
+  padding: 14px 14px 12px;
+  width: 78%;
+}
+
+.millKeep {
+  position: absolute;
+  right: 0;
+  top: 28px;
+  width: 46%;
+  background: var(--kh-indigo);
+  color: var(--kh-bone);
+  padding: 12px 12px 10px;
+  border: 1.5px dashed #e8c4a0;
+}
+
+.millKeep span,
+.millStrip span {
+  display: block;
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.millStrip span {
+  color: var(--kh-madder);
+}
+
+.millKeep span {
+  color: #e8c4a0;
+}
+
+.millStrip strong,
+.millKeep strong {
+  display: block;
+  font-family: var(--kh-serif);
+  font-size: 1.45rem;
+  font-weight: 600;
+  line-height: 1.05;
+}
+
+.millStrip p,
+.millKeep p {
+  margin: 6px 0 0;
+  font-size: 0.68rem;
+  line-height: 1.35;
+}
+
+.millKeep p {
+  color: rgba(243, 234, 220, 0.78);
+}
+
+.millMonths {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: auto;
+}
+
+.millMonth {
+  border: 1px dashed var(--kh-indigo);
+  padding: 6px 4px 5px;
+  text-align: center;
+  background: var(--kh-bone);
+}
+
+.millMonthPeak {
+  border-color: var(--kh-madder);
+  border-style: solid;
+}
+
+.millMonthLbl {
+  display: block;
+  font-size: 0.48rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--kh-muted);
+}
+
+.millMonthPeak .millMonthLbl {
+  color: var(--kh-madder);
+}
+
+.millDye {
+  height: 6px;
+  margin-top: 6px;
+  background: var(--kh-indigo);
+}
+
+.millMonthPeak .millDye {
+  background: var(--kh-madder);
+}
+
+.millParts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+  flex: 1;
+  min-height: 0;
+}
+
+.millStack .millParts {
+  flex: 0 0 auto;
+  margin-top: 0;
+}
+
+.millPart {
+  border: 1.5px dashed var(--kh-indigo);
+  padding: 8px 10px 8px;
+  background: var(--kh-card);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.millPartNo {
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--kh-madder);
+}
+
+.millPartRole {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--kh-muted);
+}
+
+.millPartTitle {
+  font-family: var(--kh-serif);
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.millPartSpec {
+  font-size: 0.68rem;
+  line-height: 1.3;
+  color: var(--kh-body);
+}
+
+.millPlan {
+  flex: 1;
+  min-height: 168px;
+  height: auto;
+  margin-top: 8px;
+}
+
+.millYield {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.millYield .millCoin {
+  width: auto;
+  height: auto;
+  min-height: 0;
+  border-radius: 0;
+  flex: 1;
+  margin: 0;
+  padding: 7px 6px;
+}
+
+.millYield .millCoin strong {
+  font-size: 0.82rem;
+}
+
+.millStack {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  flex: 1;
+  min-height: 0;
+}
+
+.millStamp {
+  border: 1.5px dashed var(--kh-indigo);
+  padding: 8px 10px 7px;
+  background: var(--kh-card);
+}
+
+.millStamp span {
+  display: block;
+  font-size: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--kh-madder);
+}
+
+.millStamp strong {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--kh-serif);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.millStamp p {
+  margin: 2px 0 0;
+  font-size: 0.58rem;
+  line-height: 1.3;
+  color: var(--kh-body);
+}
+
+.millCaption {
+  margin-top: 8px;
+  font-size: 0.62rem;
+  line-height: 1.35;
+  color: var(--kh-body);
+}
+
+.millCaption strong {
+  display: block;
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--kh-madder);
+  margin-bottom: 2px;
+}
+
+.millCloth {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+}
+
+.millTile {
+  border: 1.5px dashed var(--kh-indigo);
+  background: var(--kh-bone);
+  padding: 8px 8px 7px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.millTilePeak {
+  border-color: var(--kh-madder);
+  border-style: solid;
+  background: #f7ebe6;
+}
+
+.millTileHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.millTileMonth {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--kh-muted);
+}
+
+.millTilePeak .millTileMonth {
+  color: var(--kh-madder);
+}
+
+.millTileVal {
+  font-family: var(--kh-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.millTileBill {
+  font-size: 0.52rem;
+  font-weight: 700;
+  color: var(--kh-muted);
+  margin-top: 3px;
+}
+
+.millTileSave {
+  margin-top: auto;
+  padding-top: 6px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: var(--kh-olive);
+}
+
+.millTileDye {
+  height: 5px;
+  margin-top: 8px;
+  background: var(--kh-indigo);
+}
+
+.millTilePeak .millTileDye {
+  background: var(--kh-madder);
+}
+
+.millNote {
+  margin-top: auto;
+  padding-top: 10px;
+}
+
+.millNote span {
+  display: block;
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--kh-madder);
+  margin-bottom: 4px;
+}
+
+.millNote h2 {
+  margin: 0 0 4px;
+  font-family: var(--kh-serif);
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+.millNote p {
+  margin: 0;
+  font-size: 0.68rem;
+  line-height: 1.38;
+  color: var(--kh-body);
+}
+
+.millReceipt {
+  flex: 1;
+  min-height: 0;
+  border-left: 3px solid var(--kh-madder);
+  padding-left: 12px;
+}
+
+.millReceipt h3 {
+  margin: 0 0 10px;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--kh-madder);
+}
+
+.millCut {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  padding: 9px 0;
+  border-bottom: 1px dashed var(--kh-line);
+}
+
+.millCut:last-child {
+  border-bottom: 0;
+}
+
+.millCut span {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.millCut strong {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.88rem;
+}
+
+.millCoins {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.millCoins .millCoin {
+  flex: 1;
+  width: auto;
+  height: auto;
+  min-height: 78px;
+  margin: 0;
+  border-radius: 0;
+}
+
+.millTerms {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 18px;
+  margin-top: 8px;
+  flex: 1;
+  min-height: 0;
+}
+
+.millCol {
+  min-width: 0;
+  padding-right: 14px;
+  border-right: 1.5px dashed var(--kh-indigo);
+}
+
+.millCol:last-child {
+  padding-right: 0;
+  padding-left: 4px;
+  border-right: 0;
+}
+
+.millCol h3 {
+  margin: 0 0 8px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--kh-madder);
+}
+
+.millCol + .millCol h3:not(:first-child),
+.millStackHead {
+  margin-top: 14px;
+}
+
 .loading {
   padding: 48px;
   text-align: center;
@@ -1663,6 +2228,25 @@
   .coverPhoto,
   .closePhoto {
     min-height: 220px;
+  }
+
+  .mill,
+  .millInvert,
+  .millParts,
+  .millTerms,
+  .millCloth,
+  .millMonths {
+    grid-template-columns: 1fr;
+  }
+
+  .millKeep {
+    position: relative;
+    top: 8px;
+    width: auto;
+  }
+
+  .millStrip {
+    width: auto;
   }
 
   .auditTwin,
