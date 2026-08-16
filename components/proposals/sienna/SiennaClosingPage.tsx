@@ -46,6 +46,12 @@ export function SiennaClosingPage({
 
   return (
     <section className={`${styles.a4Sienna} ${styles.bleedSheet}`}>
+      <div className={styles.closePhoto}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={SIENNA_CLOSE_PHOTO} alt={SIENNA_CLOSE_ALT} />
+        <div className={styles.closePhotoScrim} />
+      </div>
+
       <div className={styles.closeColophon}>
         {logo || showWordmark ? (
           <div className={styles.closeBrand}>
@@ -93,12 +99,6 @@ export function SiennaClosingPage({
             </div>
           </div>
         </div>
-      </div>
-
-      <div className={styles.closePhoto}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={SIENNA_CLOSE_PHOTO} alt={SIENNA_CLOSE_ALT} />
-        <div className={styles.closePhotoScrim} />
       </div>
     </section>
   );

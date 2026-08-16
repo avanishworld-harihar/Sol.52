@@ -1410,7 +1410,8 @@
   color: var(--sn-bone);
   display: flex;
   flex-direction: column;
-  padding: 22px 16px 18px 16mm;
+  /* Outer-right gutter; left edge is the photo, not the staple. */
+  padding: 22px 14mm 18px 16px;
 }
 
 .closeBrand {
@@ -1548,9 +1549,9 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    90deg,
-    rgba(156, 59, 36, 0.22) 0%,
-    transparent 24%
+    270deg,
+    rgba(156, 59, 36, 0.28) 0%,
+    transparent 28%
   );
   pointer-events: none;
 }
