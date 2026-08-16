@@ -330,7 +330,8 @@
   background: var(--sn-bone);
   display: flex;
   flex-direction: column;
-  padding: 22px 20px 18px;
+  /* 16mm left gutter so staple / file clip does not cover brand, kW, or site. */
+  padding: 22px 16px 18px 16mm;
   border-right: 1px solid var(--sn-line);
 }
 
@@ -384,7 +385,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 38%;
+  object-position: center 36%;
   display: block;
 }
 
@@ -1421,7 +1422,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 58% 48%;
+  object-position: center 40%;
   display: block;
 }
 
@@ -1442,7 +1443,7 @@
   z-index: 2;
   display: flex;
   flex-direction: column;
-  padding: 24px 26px 20px;
+  padding: 24px 26px 20px 16mm;
 }
 
 .closeKicker {
@@ -1535,7 +1536,7 @@
 .closeBar {
   background: var(--sn-laterite);
   color: var(--sn-bone);
-  padding: 10px 16px;
+  padding: 10px 16px 10px 16mm;
   display: flex;
   align-items: center;
   justify-content: center;

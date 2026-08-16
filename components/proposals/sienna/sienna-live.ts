@@ -7,12 +7,12 @@ import { RESIDENTIAL_ENGINEERING_STANDARDS } from "@/lib/proposal-engineering-me
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import { recommendedTiltFromLatitude, resolveSiteLatitude } from "@/lib/proposal-site-geo";
 
-export const SIENNA_HERO_PHOTO = "/assets/proposals/lumina-cover-wide-plant.jpg";
+export const SIENNA_HERO_PHOTO = "/assets/proposals/sienna-cover-day.jpg";
 export const SIENNA_HERO_ALT =
-  "Wide rooftop view: elevated solar array overhead, family and friends enjoying the terrace underneath at golden hour";
-export const SIENNA_CLOSE_PHOTO = "/assets/proposals/lumina-close-look-out.jpg";
+  "Daytime rooftop: elevated GI MMS array overhead, Indian couple on the walkable RCC terrace underneath";
+export const SIENNA_CLOSE_PHOTO = "/assets/proposals/lumina-cover-wide-plant.jpg";
 export const SIENNA_CLOSE_ALT =
-  "Indian couple at the rooftop glass railing with coffee, both looking out at the sunset, elevated solar plant behind them";
+  "Evening rooftop gathering under the elevated solar array, string lights and golden-hour sky";
 
 export function siennaBrand(data: ProposalData): string {
   return data.meta.brandName?.trim() || data.closing.installerName?.trim() || "";
