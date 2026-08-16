@@ -246,6 +246,9 @@ export function getJaaliCopy(lang: JaaliLang) {
       clientRole: hi ? "Customer" : "Client",
       officialRole: hi ? "Company" : "Company",
       contactTitle: hi ? "Contact" : "Contact",
+      contactPhone: hi ? "Phone" : "Phone",
+      contactEmail: "Email",
+      contactWeb: hi ? "Web" : "Web",
     },
   };
 }

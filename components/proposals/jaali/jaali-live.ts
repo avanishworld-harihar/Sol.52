@@ -12,7 +12,7 @@ export const JAALI_HERO_ALT =
   "Through a sandstone jaali jharokha: cream haveli courtyard below, elevated GI MMS solar array on the terrace";
 export const JAALI_CLOSE_PHOTO = "/assets/proposals/jaali-close-evening.jpg";
 export const JAALI_CLOSE_ALT =
-  "Evening haveli courtyard: Indian family under lattice shadows, solar array on the terrace above";
+  "Haveli courtyard at dusk: a smiling Indian family under sandstone jaali, south-facing solar array on the terrace above";
 
 export function jaaliBrand(data: ProposalData): string {
   return data.meta.brandName?.trim() || data.closing.installerName?.trim() || "";

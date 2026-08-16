@@ -32,7 +32,6 @@ export function JaaliClosingPage({
   const logo = closingBrand.showLogo ? closingBrand.logoUrl : "";
   const showWordmark = Boolean(installer !== "—" && (closingBrand.showName || !logo));
   const { head, tail } = splitJaaliWordmark(installer !== "—" ? installer : "");
-  const logoOnly = Boolean(logo) && !showWordmark;
   const location = jaaliLocation(data);
   const vendorContact = useJaaliContactDetails(data, pptWebsite);
   const hasContact = Boolean(
@@ -57,12 +56,10 @@ export function JaaliClosingPage({
           {logo || showWordmark ? (
             <div className={styles.closeBrand}>
               {logo ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={logo}
-                  alt={installerLogoAlt(installer)}
-                  className={logoOnly ? styles.coverLogoSolo : styles.coverLogo}
-                />
+                <div className={styles.closeLogoPlate}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={logo} alt={installerLogoAlt(installer)} />
+                </div>
               ) : null}
               {showWordmark ? (
                 <div className={styles.closeWordmark}>
@@ -79,11 +76,26 @@ export function JaaliClosingPage({
 
         <div className={styles.closePanel}>
           {hasContact ? (
-            <div className={styles.closeContact}>
+            <div className={styles.closeContact} aria-label={copy.close.contactTitle}>
               <span>{copy.close.contactTitle}</span>
-              {vendorContact.phone ? <strong>{vendorContact.phone}</strong> : null}
-              {vendorContact.email ? <strong>{vendorContact.email}</strong> : null}
-              {vendorContact.website ? <strong>{vendorContact.website}</strong> : null}
+              {vendorContact.phone ? (
+                <p className={styles.closeContactRow}>
+                  <em>{copy.close.contactPhone}</em>
+                  <strong>{vendorContact.phone}</strong>
+                </p>
+              ) : null}
+              {vendorContact.email ? (
+                <p className={styles.closeContactRow}>
+                  <em>{copy.close.contactEmail}</em>
+                  <strong>{vendorContact.email}</strong>
+                </p>
+              ) : null}
+              {vendorContact.website ? (
+                <p className={styles.closeContactRow}>
+                  <em>{copy.close.contactWeb}</em>
+                  <strong>{vendorContact.website}</strong>
+                </p>
+              ) : null}
             </div>
           ) : null}
 
