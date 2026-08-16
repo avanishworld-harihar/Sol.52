@@ -105,10 +105,10 @@ export function getLuminaCopy(lang: LuminaLang) {
       arrayMms: (kind: string, centered: boolean) =>
         hi
           ? centered
-            ? `${kind} elevated MMS · अधूरी टेबल बीच में (कोने में gap नहीं)`
+            ? `${kind} elevated MMS · gap array के बीच में (top/corner नहीं)`
             : `${kind} elevated MMS · portrait tables, south front-edge`
           : centered
-            ? `${kind} elevated MMS · short table centered (no corner gap)`
+            ? `${kind} elevated MMS · gap in the array center (not top or corner)`
             : `${kind} elevated MMS · portrait tables, south front-edge`,
       roofEmpty: hi
         ? "Module count file पर होने पर array layout दिखेगा।"

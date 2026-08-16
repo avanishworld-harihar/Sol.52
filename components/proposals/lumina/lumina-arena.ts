@@ -4,8 +4,9 @@
  * Residential rooftop shorthand (walkable-under-array stands):
  * - 1P / 2P / 3P = portrait modules stacked on one table along the tilt (N–S).
  * - 3P is the usual elevated table: three portrait modules, front edge south.
- * - Tables sit side-by-side east–west. A leftover 1P/2P table is centered
- *   so the missing module is a center gap — never a side-corner hole.
+ * - Tables sit side-by-side east–west. A leftover 1P/2P table is centered.
+ * - A single missing module sits in the *middle* of that table (true center),
+ *   not the north/top cell and never a side-corner hole.
  */
 
 export type LuminaArenaKind = "1P" | "2P" | "3P";
@@ -47,6 +48,21 @@ function pickKind(count: number): LuminaArenaKind {
   return count >= 2 ? "2P" : "1P";
 }
 
+/** Place `height` modules in a column of `rows`, keeping leftover gaps in the middle. */
+function columnFill(height: number, rows: number): boolean[] {
+  const out = Array.from({ length: rows }, () => false);
+  if (height <= 0) return out;
+  if (height >= rows) return Array.from({ length: rows }, () => true);
+  const gap = rows - height;
+  if (gap === 1) {
+    const mid = Math.floor(rows / 2);
+    return out.map((_, r) => r !== mid);
+  }
+  const start = Math.floor(gap / 2);
+  for (let i = 0; i < height; i++) out[start + i] = true;
+  return out;
+}
+
 export function luminaArenaLayout(count: number): LuminaArenaLayout {
   const n = Math.max(0, Math.floor(count));
   if (n <= 0) {
@@ -67,11 +83,11 @@ export function luminaArenaLayout(count: number): LuminaArenaLayout {
   const rows = tableKind === "3P" ? 3 : 2;
   const heights = columnHeights(n, rows);
   const cols = heights.length;
+  const fills = heights.map((h) => columnFill(h, rows));
   const cells: boolean[] = [];
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
-      const missingFromNorth = rows - heights[c];
-      cells.push(r >= missingFromNorth);
+      cells.push(fills[c][r]);
     }
   }
   return { rows, cols, cells, tableKind, heights };
