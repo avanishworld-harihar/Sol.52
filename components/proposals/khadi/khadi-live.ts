@@ -9,7 +9,7 @@ import { recommendedTiltFromLatitude, resolveSiteLatitude } from "@/lib/proposal
 
 export const KHADI_HERO_PHOTO = "/assets/proposals/khadi-cover-day.jpg";
 export const KHADI_HERO_ALT =
-  "Three-quarter terrace view: elevated GI solar array with blue module faces, family having tea under the near bay";
+  "Luxury Indian rooftop garden under a full elevated GI solar array: husband and wife having tea";
 export const KHADI_CLOSE_PHOTO = "/assets/proposals/khadi-close-evening.jpg";
 export const KHADI_CLOSE_ALT =
   "Warm evening on the terrace: family sharing tea under a lit elevated solar array, faces clearly lit";
