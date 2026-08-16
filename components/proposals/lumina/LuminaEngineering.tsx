@@ -24,7 +24,6 @@ export function LuminaEngineering({
   const eng = luminaEngineeringModel(data, pptInput);
   const insights = luminaEngineeringInsights(eng, lang);
   const arena = luminaArenaLayout(eng.visualPanelCount);
-  const shortTableCentered = arena.heights.some((h) => h > 0 && h < arena.rows);
 
   const arrayMeta =
     eng.tiltDeg > 0
@@ -121,9 +120,6 @@ export function LuminaEngineering({
                   ? copy.engineering.showing(eng.visualPanelCount, eng.panelCount)
                   : ""}
               </span>
-              {eng.visualPanelCount > 0 ? (
-                <span>{copy.engineering.arrayMms(arena.tableKind, shortTableCentered)}</span>
-              ) : null}
             </div>
           </div>
 

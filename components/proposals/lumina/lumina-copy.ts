@@ -102,14 +102,6 @@ export function getLuminaCopy(lang: LuminaLang) {
         : "Tilt appears when site latitude is on this proposal.",
       showing: (shown: number, total: number) =>
         hi ? ` · ${shown}/${total} दिख रहे हैं` : ` · showing ${shown}/${total}`,
-      arrayMms: (kind: string, centered: boolean) =>
-        hi
-          ? centered
-            ? `${kind} elevated MMS · gap array के बीच में (top/corner नहीं)`
-            : `${kind} elevated MMS · portrait tables, south front-edge`
-          : centered
-            ? `${kind} elevated MMS · gap in the array center (not top or corner)`
-            : `${kind} elevated MMS · portrait tables, south front-edge`,
       roofEmpty: hi
         ? "Module count file पर होने पर array layout दिखेगा।"
         : "Array layout appears when module count is on file.",
