@@ -24,7 +24,10 @@ export function JaaliLedgerPage({ data }: { data: ProposalData }) {
       : data.economics.lifetimeProfitInr;
   const units = jaaliAnnualUnits(data);
   const payments = (data.execution.payments ?? []).filter((p) => p.label?.trim()).slice(0, 3);
-  const netValue = showSubsidy ? net : gross;
+  const netValue =
+    showSubsidy && net > 0 ? net : showSubsidy && gross > subsidy ? gross - subsidy : gross;
+
+  const money = (value: number) => (value > 0 ? formatInrCompact(value) : "—");
 
   return (
     <JaaliSheet data={data} page="06 / 09" chapter={copy.spine.outlay}>
@@ -33,28 +36,29 @@ export function JaaliLedgerPage({ data }: { data: ProposalData }) {
         <h1 className={styles.displayTitle}>{copy.capital.title}</h1>
         <p className={styles.lead}>{copy.capital.lead}</p>
 
-        <div className={styles.payHero}>
-          <span className={styles.payHeroLabel}>{copy.capital.youPay}</span>
-          <strong className={styles.payHeroVal}>
-            {netValue > 0 ? formatInrCompact(netValue) : "—"}
-          </strong>
-          <p className={styles.payHeroHint}>
-            {showSubsidy ? copy.capital.netHint : copy.capital.netSameHint}
-          </p>
-        </div>
-
-        <div className={styles.outlayPair}>
-          <div className={styles.outlayCell}>
-            <span className={styles.outlayName}>{copy.capital.gross}</span>
-            <span className={styles.outlayFig}>
-              {gross > 0 ? formatInrCompact(gross) : "—"}
-            </span>
+        <div
+          className={styles.costEq}
+          aria-label={`${copy.capital.gross} ${copy.capital.minus} ${copy.capital.subsidy} ${copy.capital.equals} ${copy.capital.youPay}`}
+        >
+          <div className={styles.costTerm}>
+            <span>{copy.capital.gross}</span>
+            <strong>{money(gross)}</strong>
           </div>
-          <div className={styles.outlayCell}>
-            <span className={styles.outlayName}>{copy.capital.subsidy}</span>
-            <span className={styles.outlayFig}>
-              {showSubsidy ? `− ${formatInrCompact(subsidy)}` : copy.capital.subsidyNone}
-            </span>
+          <span className={styles.costOp} aria-hidden>
+            {copy.capital.minus}
+          </span>
+          <div className={`${styles.costTerm} ${showSubsidy ? styles.costCut : ""}`}>
+            <span>{copy.capital.subsidy}</span>
+            <strong>{showSubsidy ? money(subsidy) : "—"}</strong>
+            {!showSubsidy ? <p>{copy.capital.subsidyNone}</p> : null}
+          </div>
+          <span className={styles.costOp} aria-hidden>
+            {copy.capital.equals}
+          </span>
+          <div className={`${styles.costTerm} ${styles.costNet}`}>
+            <span>{copy.capital.youPay}</span>
+            <strong>{money(netValue)}</strong>
+            <p>{showSubsidy ? copy.capital.netHint : copy.capital.netSameHint}</p>
           </div>
         </div>
 

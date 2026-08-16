@@ -1455,6 +1455,81 @@
   color: var(--ja-muted);
 }
 
+.costEq {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) 32px minmax(0, 1.05fr) 32px minmax(0, 1.4fr);
+  align-items: stretch;
+  margin-top: 4px;
+  border-top: 1.5px solid var(--ja-brass);
+  background: var(--ja-card);
+}
+
+.costTerm {
+  min-width: 0;
+  padding: 14px 14px 12px;
+}
+
+.costTerm span {
+  display: block;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ja-muted);
+  margin-bottom: 6px;
+}
+
+.costTerm strong {
+  display: block;
+  font-family: var(--ja-serif);
+  font-size: 1.55rem;
+  font-weight: 600;
+  line-height: 1.05;
+}
+
+.costTerm p {
+  margin: 6px 0 0;
+  font-size: 0.68rem;
+  line-height: 1.35;
+  color: var(--ja-muted);
+}
+
+.costOp {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--ja-serif);
+  font-size: 1.7rem;
+  font-weight: 600;
+  color: var(--ja-brass);
+  line-height: 1;
+}
+
+.costCut {
+  background: var(--ja-moss-soft);
+}
+
+.costCut span {
+  color: var(--ja-moss);
+}
+
+.costCut strong {
+  color: var(--ja-moss);
+}
+
+.costNet {
+  background: var(--ja-sand);
+  border-left: 1.5px solid var(--ja-brass);
+}
+
+.costNet span {
+  color: var(--ja-terra);
+}
+
+.costNet strong {
+  font-size: 2.05rem;
+}
+
 .outlayPair {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -2062,10 +2137,20 @@
   .drawingMeta,
   .clauseGrid,
   .outlayPair,
+  .costEq,
   .returnGrid,
   .insightGrid,
   .yieldRail {
     grid-template-columns: 1fr;
+  }
+
+  .costNet {
+    border-left: 0;
+    border-top: 1.5px solid var(--ja-brass);
+  }
+
+  .costOp {
+    min-height: 22px;
   }
 
   .planMeta {
