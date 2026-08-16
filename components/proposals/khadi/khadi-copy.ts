@@ -175,10 +175,14 @@ export function getKhadiCopy(lang: KhadiLang) {
       lead: (units: string, bill: boolean) =>
         hi
           ? `Year-1 yield ${units} units. Central-India rooftop का typical curve.${
-              bill ? " गहरी पट्टी bill units हैं." : " Lal columns = peak-sun महीने."
+              bill
+                ? " Patli indigo = solar, stone = bill units. Lal = peak-sun."
+                : " Lal marks = peak-sun महीने."
             }`
           : `Year-1 yield is ${units} units. Typical central-India rooftop curve.${
-              bill ? " Dark strip is bill units." : " Red columns are peak-sun months."
+              bill
+                ? " Slim indigo is solar; stone is bill units. Red marks peak-sun months."
+                : " Red marks are peak-sun months."
             }`,
       leadEmpty: hi
         ? "Year-1 yield file पर हो तो महीने की bars दिखेंगी."

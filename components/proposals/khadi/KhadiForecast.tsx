@@ -58,7 +58,7 @@ export function KhadiForecast({ data }: { data: ProposalData }) {
       </div>
 
       <div
-        className={styles.ribbon}
+        className={`${styles.ribbon} ${styles.ribbonYear}`}
         role="img"
         aria-label={copy.forecast.chartAria(showBill)}
       >
@@ -79,29 +79,24 @@ export function KhadiForecast({ data }: { data: ProposalData }) {
                   </span>
                 ) : null}
               </div>
-              {showBill ? (
-                <div className={styles.ribbonPair}>
-                  <div className={styles.ribbonTrack}>
+              <div className={styles.ribbonPair}>
+                <div className={styles.ribbonTrack}>
+                  {solarPct > 0 ? (
                     <div
                       className={`${styles.ribbonFill} ${item.peak ? styles.ribbonFillPeak : ""}`}
                       style={{ height: `${solarPct}%` }}
                     />
-                  </div>
-                  <div className={styles.ribbonTrack}>
+                  ) : null}
+                </div>
+                <div className={styles.ribbonTrack}>
+                  {billPct > 0 ? (
                     <div
                       className={`${styles.ribbonFill} ${styles.ribbonFillBill}`}
                       style={{ height: `${billPct}%` }}
                     />
-                  </div>
+                  ) : null}
                 </div>
-              ) : (
-                <div className={styles.ribbonTrack}>
-                  <div
-                    className={`${styles.ribbonFill} ${item.peak ? styles.ribbonFillPeak : ""}`}
-                    style={{ height: `${solarPct}%` }}
-                  />
-                </div>
-              )}
+              </div>
               <span className={`${styles.ribbonMonth} ${item.peak ? styles.ribbonMonthPeak : ""}`}>
                 {item.m}
               </span>

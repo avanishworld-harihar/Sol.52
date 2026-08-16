@@ -1271,8 +1271,8 @@
 }
 
 .ribbonFillBill {
-  background: var(--kh-ink);
-  opacity: 0.35;
+  background: #7a7268;
+  opacity: 1;
 }
 
 .ribbonPair {
@@ -1282,6 +1282,19 @@
   display: flex;
   gap: 2px;
   align-items: flex-end;
+}
+
+/* Year page: slim solar + bill columns so both units fit in a month slot. */
+.ribbonYear .ribbonPair {
+  justify-content: center;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.ribbonYear .ribbonTrack {
+  flex: 0 0 10px;
+  width: 10px;
+  min-height: 0;
 }
 
 .ribbonMonth {
@@ -1327,7 +1340,7 @@
 }
 
 .swatchBill {
-  background: var(--kh-ink);
+  background: #7a7268;
 }
 
 .forecastNote {
