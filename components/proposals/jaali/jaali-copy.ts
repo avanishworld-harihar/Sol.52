@@ -29,7 +29,7 @@ export function getJaaliCopy(lang: JaaliLang) {
     cover: {
       kicker: hi ? "jali के पार." : "Through the screen.",
       heroMms: hi ? "Jali ke paar" : "Through the jaali",
-      heroTerrace: hi ? "RCC terrace · नीचे चल सकते हैं" : "RCC terrace · walkable under array",
+      heroTerrace: hi ? "Sofa · plant ki chhaya" : "Sofa · shade under the plant",
       preparedFor: (name: string) =>
         hi
           ? name !== "—"
