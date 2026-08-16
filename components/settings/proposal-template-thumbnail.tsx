@@ -11,13 +11,18 @@ type Props = {
   size?: "card" | "preview";
 };
 
+/** Mini A4 inset only in modal preview; gallery cards fill edge-to-edge. */
+function thumbSheet(size: "card" | "preview") {
+  return size === "preview" ? "h-[62%] w-[68%] rounded-[3px] shadow-sm" : "h-full w-full rounded-none";
+}
+
 /** Gamma-style mini slide preview for a residential proposal template. */
 export function ProposalTemplateThumbnail({ variant, className, size = "card" }: Props) {
-  const scale = size === "preview" ? "min-h-[200px] sm:min-h-[240px]" : "aspect-[4/3] w-full";
+  const scale = size === "preview" ? "min-h-[200px] sm:min-h-[240px] rounded-lg" : "aspect-[16/10] w-full";
 
   return (
     <div
-      className={cn("relative flex items-center justify-center overflow-hidden rounded-lg", scale, className)}
+      className={cn("relative flex items-center justify-center overflow-hidden", scale, className)}
       aria-hidden
     >
       {variant === "golden" ? <GoldenThumb size={size} /> : null}
@@ -73,16 +78,17 @@ function MiniSlide({
   children: ReactNode;
   size: "card" | "preview";
 }) {
-  const w = size === "preview" ? "w-[68%]" : "w-[72%]";
-  const h = size === "preview" ? "h-[62%]" : "h-[58%]";
-  const pad = size === "preview" ? "p-[6%]" : "p-[7%]";
-  const titleSize = size === "preview" ? "text-[11px]" : "text-[5px]";
-  const bodySize = size === "preview" ? "text-[9px]" : "text-[4px]";
+  const w = size === "preview" ? "w-[68%]" : "w-full";
+  const h = size === "preview" ? "h-[62%]" : "h-full";
+  const pad = size === "preview" ? "p-[6%]" : "p-[8%]";
+  const titleSize = size === "preview" ? "text-[11px]" : "text-[8px]";
+  const bodySize = size === "preview" ? "text-[9px]" : "text-[6px]";
 
   return (
     <div
       className={cn(
-        "flex flex-col rounded-[3px] border border-black/5 shadow-sm",
+        "flex flex-col border border-black/5 shadow-sm",
+        size === "preview" ? "rounded-[3px]" : "rounded-none",
         w,
         h,
         pad
@@ -102,14 +108,14 @@ function GoldenThumb({ size }: { size: "card" | "preview" }) {
       <div
         className={cn(
           "flex flex-col items-center justify-center rounded-[3px] border border-[#b59a57]/30 bg-[#fdfcf9] shadow-sm",
-          size === "preview" ? "h-[62%] w-[68%] p-[8%]" : "h-[58%] w-[72%] p-[7%]"
+          cn(thumbSheet(size), "p-[8%]")
         )}
       >
-        <div className={cn("font-serif italic text-[#111e38]", size === "preview" ? "text-[10px]" : "text-[4px]")}>
+        <div className={cn("font-serif italic text-[#111e38]", size === "preview" ? "text-[10px]" : "text-[9px]")}>
           Title
         </div>
-        <div className={cn("bg-[#b59a57]", size === "preview" ? "mt-[8%] h-[2px] w-[1px] min-h-[20px]" : "mt-[8%] h-[12px] w-[1px]")} />
-        <div className={cn("mt-[8%] text-[#718096] uppercase tracking-widest", size === "preview" ? "text-[6px]" : "text-[3px]")}>
+        <div className={cn("bg-[#b59a57]", size === "preview" ? "mt-[8%] h-[2px] w-[1px] min-h-[20px]" : "mt-[8%] h-[14px] w-[1px]")} />
+        <div className={cn("mt-[8%] text-[#718096] uppercase tracking-widest", size === "preview" ? "text-[6px]" : "text-[6px]")}>
           Body
         </div>
       </div>
@@ -123,7 +129,7 @@ function ZenithThumb({ size }: { size: "card" | "preview" }) {
       <div
         className={cn(
           "relative flex flex-col justify-center overflow-hidden rounded-[3px] border border-[#1e293b] bg-[#0a0f1c] shadow-sm",
-          size === "preview" ? "h-[62%] w-[68%] p-[8%]" : "h-[58%] w-[72%] p-[7%]"
+          cn(thumbSheet(size), "p-[8%]")
         )}
       >
         <div
@@ -136,7 +142,7 @@ function ZenithThumb({ size }: { size: "card" | "preview" }) {
         <div
           className={cn(
             "relative font-semibold uppercase tracking-[0.2em] text-white",
-            size === "preview" ? "text-[7px]" : "text-[3px]"
+            size === "preview" ? "text-[7px]" : "text-[6px]"
           )}
         >
           Harihar <span className="text-[#c5a059]">Solar</span>
@@ -144,7 +150,7 @@ function ZenithThumb({ size }: { size: "card" | "preview" }) {
         <div
           className={cn(
             "relative mt-[10%] font-serif text-white",
-            size === "preview" ? "text-[11px]" : "text-[5px]"
+            size === "preview" ? "text-[11px]" : "text-[10px]"
           )}
         >
           Energy Independent.
@@ -166,7 +172,7 @@ function LuxeThumb({ size }: { size: "card" | "preview" }) {
       <div
         className={cn(
           "relative flex flex-col justify-start overflow-hidden rounded-[3px] border border-[#d6cbb8] shadow-sm",
-          size === "preview" ? "h-[62%] w-[68%]" : "h-[58%] w-[72%]"
+          thumbSheet(size)
         )}
         style={{ background: "#F8F5F0" }}
       >
@@ -174,25 +180,25 @@ function LuxeThumb({ size }: { size: "card" | "preview" }) {
           <div
             className={cn(
               "font-bold uppercase tracking-[0.14em] text-[#8B7355]",
-              size === "preview" ? "text-[5px]" : "text-[2.5px]"
+              size === "preview" ? "text-[5px]" : "text-[5px]"
             )}
           >
             HARIHAR SOLAR
           </div>
           <div
-            className={cn("font-serif font-bold text-[#1F2A36] leading-tight", size === "preview" ? "text-[10px]" : "text-[4.5px]")}
+            className={cn("font-serif font-bold text-[#1F2A36] leading-tight", size === "preview" ? "text-[10px]" : "text-[9px]")}
           >
             The Energy<br />Masterplan
           </div>
           <div
-            style={{ width: size === "preview" ? 20 : 10, height: size === "preview" ? 2 : 1, background: "#C4A574" }}
+            style={{ width: size === "preview" ? 20 : 16, height: size === "preview" ? 2 : 2, background: "#C4A574" }}
           />
           <div className="grid grid-cols-3 gap-[6%] mt-auto">
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
                 className="rounded-[2px] border border-[#e5dccf] bg-white/70"
-                style={{ height: size === "preview" ? 16 : 7 }}
+                style={{ height: size === "preview" ? 16 : 14 }}
               />
             ))}
           </div>
@@ -208,7 +214,7 @@ function LuxeNoirThumb({ size }: { size: "card" | "preview" }) {
       <div
         className={cn(
           "relative flex flex-col justify-start overflow-hidden rounded-[3px] border border-[#D4AF37]/40 shadow-sm",
-          size === "preview" ? "h-[62%] w-[68%]" : "h-[58%] w-[72%]"
+          thumbSheet(size)
         )}
         style={{ background: "#0a0a0a" }}
       >
@@ -216,7 +222,7 @@ function LuxeNoirThumb({ size }: { size: "card" | "preview" }) {
           <div
             className={cn(
               "font-bold uppercase tracking-[0.14em] text-[#D4AF37]",
-              size === "preview" ? "text-[5px]" : "text-[2.5px]"
+              size === "preview" ? "text-[5px]" : "text-[5px]"
             )}
           >
             PREMIUM LUXE
@@ -224,20 +230,20 @@ function LuxeNoirThumb({ size }: { size: "card" | "preview" }) {
           <div
             className={cn(
               "font-serif font-light text-white leading-tight",
-              size === "preview" ? "text-[10px]" : "text-[4.5px]"
+              size === "preview" ? "text-[10px]" : "text-[9px]"
             )}
           >
             Precision<br />Engineered
           </div>
           <div
-            style={{ width: size === "preview" ? 20 : 10, height: size === "preview" ? 2 : 1, background: "#D4AF37" }}
+            style={{ width: size === "preview" ? 20 : 16, height: size === "preview" ? 2 : 2, background: "#D4AF37" }}
           />
           <div className="grid grid-cols-3 gap-[6%] mt-auto">
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
                 className="rounded-[1px] border border-[#D4AF37]/50 bg-[#D4AF37]/10"
-                style={{ height: size === "preview" ? 16 : 7 }}
+                style={{ height: size === "preview" ? 16 : 14 }}
               />
             ))}
           </div>
@@ -253,7 +259,7 @@ function BlueprintThumb({ size }: { size: "card" | "preview" }) {
       <div
         className={cn(
           "relative flex flex-col justify-start overflow-hidden rounded-[3px] shadow-sm",
-          size === "preview" ? "h-[62%] w-[68%]" : "h-[58%] w-[72%]"
+          thumbSheet(size)
         )}
         style={{ background: "#fff" }}
       >
@@ -262,21 +268,21 @@ function BlueprintThumb({ size }: { size: "card" | "preview" }) {
           style={{ padding: size === "preview" ? "6% 8% 4%" : "5% 7% 3%" }}
         >
           <div
-            className={cn("font-bold tracking-widest text-white", size === "preview" ? "text-[5px]" : "text-[2.5px]")}
+            className={cn("font-bold tracking-widest text-white", size === "preview" ? "text-[5px]" : "text-[5px]")}
           >
             HARIHAR <span style={{ color: "#F97316" }}>SOLAR</span>
           </div>
         </div>
         <div style={{ padding: size === "preview" ? "8%" : "7%" }} className="flex flex-col gap-[8%] flex-1">
           <div
-            className={cn("font-bold text-[#0a0f1c] leading-tight", size === "preview" ? "text-[10px]" : "text-[4.5px]")}
+            className={cn("font-bold text-[#0a0f1c] leading-tight", size === "preview" ? "text-[10px]" : "text-[9px]")}
           >
             Investment<br />Blueprint
           </div>
           <div
-            style={{ width: size === "preview" ? 20 : 10, height: size === "preview" ? 2 : 1, background: "#F97316" }}
+            style={{ width: size === "preview" ? 20 : 16, height: size === "preview" ? 2 : 2, background: "#F97316" }}
           />
-          <div className="mt-auto flex items-end gap-[6%]" style={{ height: size === "preview" ? 22 : 10 }}>
+          <div className="mt-auto flex items-end gap-[6%]" style={{ height: size === "preview" ? 22 : 18 }}>
             {[35, 48, 62, 78, 90, 100].map((h, i) => (
               <div
                 key={i}
@@ -297,7 +303,7 @@ function QuantumThumb({ size }: { size: "card" | "preview" }) {
       <div
         className={cn(
           "relative flex flex-col justify-start overflow-hidden rounded-[3px] border border-cyan-500/30 shadow-sm",
-          size === "preview" ? "h-[62%] w-[68%]" : "h-[58%] w-[72%]"
+          thumbSheet(size)
         )}
         style={{ background: "#111827" }}
       >
@@ -305,7 +311,7 @@ function QuantumThumb({ size }: { size: "card" | "preview" }) {
           <div
             className={cn(
               "font-bold uppercase tracking-[0.18em] text-cyan-400",
-              size === "preview" ? "text-[5px]" : "text-[2.5px]"
+              size === "preview" ? "text-[5px]" : "text-[5px]"
             )}
           >
             QUANTUM
@@ -313,7 +319,7 @@ function QuantumThumb({ size }: { size: "card" | "preview" }) {
           <div
             className={cn(
               "font-semibold leading-tight text-slate-50",
-              size === "preview" ? "text-[10px]" : "text-[4.5px]"
+              size === "preview" ? "text-[10px]" : "text-[9px]"
             )}
           >
             Neo-Glass
@@ -322,8 +328,8 @@ function QuantumThumb({ size }: { size: "card" | "preview" }) {
           </div>
           <div
             style={{
-              width: size === "preview" ? 20 : 10,
-              height: size === "preview" ? 2 : 1,
+              width: size === "preview" ? 20 : 16,
+              height: size === "preview" ? 2 : 2,
               background: "#06b6d4",
             }}
           />
@@ -332,7 +338,7 @@ function QuantumThumb({ size }: { size: "card" | "preview" }) {
               <div
                 key={i}
                 className="rounded-[1px] border border-cyan-500/30 bg-cyan-400/10"
-                style={{ height: size === "preview" ? 14 : 6 }}
+                style={{ height: size === "preview" ? 14 : 12 }}
               />
             ))}
           </div>
@@ -348,7 +354,7 @@ function EmeraldThumb({ size }: { size: "card" | "preview" }) {
       <div
         className={cn(
           "relative flex overflow-hidden rounded-[3px] border border-[#D4AF37]/50 shadow-sm",
-          size === "preview" ? "h-[62%] w-[68%]" : "h-[58%] w-[72%]"
+          thumbSheet(size)
         )}
       >
         <div
@@ -371,7 +377,7 @@ function EmeraldThumb({ size }: { size: "card" | "preview" }) {
           <div
             className={cn(
               "font-bold uppercase tracking-[0.16em] text-[#FDE68A]",
-              size === "preview" ? "text-[5px]" : "text-[2.5px]"
+              size === "preview" ? "text-[5px]" : "text-[5px]"
             )}
           >
             EM
@@ -384,7 +390,7 @@ function EmeraldThumb({ size }: { size: "card" | "preview" }) {
           <div
             className={cn(
               "font-bold uppercase tracking-[0.18em] text-[#D4AF37]",
-              size === "preview" ? "text-[5px]" : "text-[2.5px]"
+              size === "preview" ? "text-[5px]" : "text-[5px]"
             )}
           >
             SIGNATURE
@@ -392,7 +398,7 @@ function EmeraldThumb({ size }: { size: "card" | "preview" }) {
           <div
             className={cn(
               "font-serif leading-tight text-[#064E3B]",
-              size === "preview" ? "text-[10px]" : "text-[4.5px]"
+              size === "preview" ? "text-[10px]" : "text-[9px]"
             )}
           >
             Split
@@ -411,7 +417,7 @@ function SiennaThumb({ size }: { size: "card" | "preview" }) {
       <div
         className={cn(
           "relative flex overflow-hidden rounded-[2px] shadow-sm",
-          size === "preview" ? "h-[62%] w-[68%]" : "h-[58%] w-[72%]"
+          thumbSheet(size)
         )}
       >
         <div
@@ -420,7 +426,7 @@ function SiennaThumb({ size }: { size: "card" | "preview" }) {
         >
           <div
             className="font-semibold leading-tight text-[#241812]"
-            style={{ fontFamily: "Georgia, serif", fontSize: size === "preview" ? 7 : 3.5 }}
+            style={{ fontFamily: "Georgia, serif", fontSize: size === "preview" ? 7 : 8 }}
           >
             Terrace
             <br />
@@ -431,7 +437,7 @@ function SiennaThumb({ size }: { size: "card" | "preview" }) {
               <div
                 key={c}
                 className="border-t border-[#e2d4c0] font-bold uppercase tracking-wider text-[#9c3b24]"
-                style={{ fontSize: size === "preview" ? 3.5 : 2, padding: "10% 0 0", marginTop: "8%" }}
+                style={{ fontSize: size === "preview" ? 3.5 : 4, padding: "10% 0 0", marginTop: "8%" }}
               >
                 {c}
               </div>
@@ -458,7 +464,7 @@ function LuminaThumb({ size }: { size: "card" | "preview" }) {
       <div
         className={cn(
           "relative flex flex-col overflow-hidden rounded-[6px] border border-[#E2E8F0] bg-[#F8FAFC] shadow-sm",
-          size === "preview" ? "h-[62%] w-[68%]" : "h-[58%] w-[72%]"
+          thumbSheet(size)
         )}
       >
         <div
@@ -466,7 +472,7 @@ function LuminaThumb({ size }: { size: "card" | "preview" }) {
           style={{ height: "42%", borderBottomLeftRadius: 10, borderBottomRightRadius: 10 }}
         >
           <div className="absolute left-[8%] top-[18%] rounded-[4px] bg-white px-[6%] py-[4%] font-extrabold text-slate-900"
-            style={{ fontSize: size === "preview" ? 5 : 2.5 }}
+            style={{ fontSize: size === "preview" ? 5 : 6 }}
           >
             LUMINA
           </div>
@@ -474,7 +480,7 @@ function LuminaThumb({ size }: { size: "card" | "preview" }) {
         <div
           className={cn(
             "px-[8%] pt-[8%] font-bold leading-tight text-slate-900",
-            size === "preview" ? "text-[8px]" : "text-[3.5px]"
+            size === "preview" ? "text-[8px]" : "text-[8px]"
           )}
         >
           Smart Energy
@@ -484,7 +490,7 @@ function LuminaThumb({ size }: { size: "card" | "preview" }) {
             <div
               key={c}
               className="rounded-[3px] border border-[#E2E8F0] bg-white text-center font-bold text-slate-900"
-              style={{ fontSize: size === "preview" ? 4 : 2, padding: "12% 0" }}
+              style={{ fontSize: size === "preview" ? 4 : 5, padding: "12% 0" }}
             >
               {c}
             </div>
@@ -518,7 +524,7 @@ function GenericThumb({ size, label }: { size: "card" | "preview"; label: string
       <div
         className={cn(
           "flex flex-col items-center justify-center rounded-[3px] border border-slate-200 bg-white shadow-sm",
-          size === "preview" ? "h-[62%] w-[68%] p-[8%]" : "h-[58%] w-[72%] p-[7%]"
+          cn(thumbSheet(size), "p-[8%]")
         )}
       >
         <div className={cn("font-bold uppercase tracking-wider text-slate-500", textSize)}>
@@ -538,7 +544,7 @@ function SlateThumb({ size }: { size: "card" | "preview" }) {
       <div
         className={cn(
           "flex flex-col rounded-[3px] border border-[#d2d2d7]/60 bg-[#f5f5f7] shadow-sm",
-          size === "preview" ? "h-[62%] w-[68%] p-[8%]" : "h-[58%] w-[72%] p-[7%]"
+          cn(thumbSheet(size), "p-[8%]")
         )}
       >
         <div className={cn("font-bold uppercase tracking-[0.2em] text-[#86868b]", titleSize)}>
@@ -584,7 +590,7 @@ function SolsticeThumb({ size }: { size: "card" | "preview" }) {
       <div
         className={cn(
           "flex flex-col rounded-[3px] border border-slate-200 bg-slate-50 shadow-sm",
-          size === "preview" ? "h-[62%] w-[68%] p-[8%]" : "h-[58%] w-[72%] p-[7%]"
+          cn(thumbSheet(size), "p-[8%]")
         )}
       >
         <div className="flex items-center gap-[4%]">
@@ -612,7 +618,7 @@ function FreedomThumb({ size }: { size: "card" | "preview" }) {
       <div
         className={cn(
           "flex flex-col rounded-[3px] border border-[#008080]/20 bg-white shadow-sm",
-          size === "preview" ? "h-[62%] w-[68%] p-[8%]" : "h-[58%] w-[72%] p-[7%]"
+          cn(thumbSheet(size), "p-[8%]")
         )}
       >
         <div className={cn("font-black text-[#2D3748]", heroSize)}>HARIHAR</div>
@@ -670,7 +676,7 @@ function AuroraThumb({ size }: { size: "card" | "preview" }) {
       <div
         className={cn(
           "flex flex-col rounded-[3px] border border-indigo-200/30 shadow-sm",
-          size === "preview" ? "h-[62%] w-[68%] p-[8%]" : "h-[58%] w-[72%] p-[7%]"
+          cn(thumbSheet(size), "p-[8%]")
         )}
         style={{ background: "rgba(248,250,252,0.97)" }}
       >
@@ -708,13 +714,13 @@ function HtIndustrialThumb({ size }: { size: "card" | "preview" }) {
       <div
         className={cn(
           "flex flex-col rounded-[3px] border border-[#dbe3ec] bg-white shadow-sm",
-          size === "preview" ? "h-[62%] w-[68%] p-[8%]" : "h-[58%] w-[72%] p-[7%]"
+          cn(thumbSheet(size), "p-[8%]")
         )}
       >
         <div
           className={cn(
             "font-bold uppercase tracking-[0.18em] text-[#0b5fa5]",
-            size === "preview" ? "text-[6px]" : "text-[2.5px]"
+            size === "preview" ? "text-[6px]" : "text-[6px]"
           )}
         >
           HT · 33 kV
@@ -722,13 +728,13 @@ function HtIndustrialThumb({ size }: { size: "card" | "preview" }) {
         <div
           className={cn(
             "mt-[6%] font-serif font-bold leading-tight text-[#0f1c2e]",
-            size === "preview" ? "text-[10px]" : "text-[4.5px]"
+            size === "preview" ? "text-[10px]" : "text-[9px]"
           )}
         >
           ToD Savings
         </div>
         {/* Mini ToD bars — TOD3 (solar) highlighted */}
-        <div className="mt-auto flex items-end gap-[6%]" style={{ height: size === "preview" ? 22 : 10 }}>
+        <div className="mt-auto flex items-end gap-[6%]" style={{ height: size === "preview" ? 22 : 18 }}>
           {[
             { h: 30, solar: false },
             { h: 55, solar: false },
@@ -748,11 +754,11 @@ function HtIndustrialThumb({ size }: { size: "card" | "preview" }) {
 }
 
 function CommercialThumb({ size }: { size: "card" | "preview" }) {
-  const rowH = size === "preview" ? "h-[2px]" : "h-[1px]";
+  const rowH = size === "preview" ? "h-[2px]" : "h-[3px]";
   return (
     <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-800 to-slate-950">
       <MiniSlide bg="#0f172a" size={size}>
-        <div className={cn("font-bold uppercase tracking-wider text-teal-400", size === "preview" ? "text-[7px]" : "text-[3px]")}>
+        <div className={cn("font-bold uppercase tracking-wider text-teal-400", size === "preview" ? "text-[7px]" : "text-[7px]")}>
           Executive
         </div>
         <div className={cn("mt-[8%] space-y-[5%]")}>

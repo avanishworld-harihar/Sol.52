@@ -151,10 +151,10 @@ export function ProposalTemplateGallery({ markSaved }: Props) {
 
       <div
         className={cn(
-          "grid grid-cols-1 gap-4",
+          "grid grid-cols-2 gap-2.5",
           category === "residential"
-            ? "sm:grid-cols-2 xl:grid-cols-4"
-            : "sm:grid-cols-2 lg:max-w-2xl"
+            ? "sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6"
+            : "sm:grid-cols-3 lg:max-w-xl"
         )}
       >
         {items.map((item) => {
@@ -168,7 +168,7 @@ export function ProposalTemplateGallery({ markSaved }: Props) {
               type="button"
               onClick={() => choose(item)}
               className={cn(
-                "flex flex-col overflow-hidden rounded-xl border bg-white/80 text-left transition touch-manipulation dark:bg-white/[0.04]",
+                "flex flex-col overflow-hidden rounded-lg border bg-white/80 text-left transition touch-manipulation dark:bg-white/[0.04]",
                 "focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
                 active
                   ? "border-blue-500 ring-2 ring-blue-500/30 dark:border-blue-400"
@@ -177,27 +177,25 @@ export function ProposalTemplateGallery({ markSaved }: Props) {
               aria-pressed={active}
               aria-label={`Select ${item.name} as default theme`}
             >
-              <div className="relative p-2 pb-0">
-                <div className="overflow-hidden rounded-lg">
-                  <ProposalTemplateThumbnail variant={item.thumbnailVariant} />
-                </div>
+              <div className="relative">
+                <ProposalTemplateThumbnail variant={item.thumbnailVariant} />
                 {active ? (
-                  <span className="absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-white shadow-md">
-                    <Check className="h-3.5 w-3.5 stroke-[3]" aria-hidden />
+                  <span className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-white shadow-md">
+                    <Check className="h-3 w-3 stroke-[3]" aria-hidden />
                   </span>
                 ) : null}
               </div>
 
-              <div className="flex flex-1 flex-col p-3 pt-2">
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-xs font-extrabold text-slate-900 dark:text-slate-100">{item.name}</span>
+              <div className="flex flex-1 flex-col px-2 py-1.5">
+                <div className="flex flex-wrap items-center gap-1">
+                  <span className="text-[11px] font-extrabold text-slate-900 dark:text-slate-100">{item.name}</span>
                   {item.recommended ? (
-                    <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-800 dark:bg-amber-500/20 dark:text-amber-200">
+                    <span className="rounded-full bg-amber-100 px-1.5 py-px text-[8px] font-bold uppercase tracking-wide text-amber-800 dark:bg-amber-500/20 dark:text-amber-200">
                       {category === "commercial" ? "Default" : "Recommended"}
                     </span>
                   ) : null}
                 </div>
-                <span className="mt-1 text-[11px] font-medium leading-snug text-slate-600 dark:text-slate-400">
+                <span className="mt-0.5 line-clamp-2 text-[10px] font-medium leading-snug text-slate-600 dark:text-slate-400">
                   {item.description}
                 </span>
               </div>
