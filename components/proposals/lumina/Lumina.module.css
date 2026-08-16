@@ -36,12 +36,6 @@
 }
 
 @media print {
-  /* Screen html is 16.5px; globals print forces 13px and shrinks every rem. */
-  :global(html),
-  :global(body) {
-    font-size: 16.5px !important;
-  }
-
   .root :global(*),
   .a4Lumina :global(*) {
     -webkit-print-color-adjust: exact !important;
