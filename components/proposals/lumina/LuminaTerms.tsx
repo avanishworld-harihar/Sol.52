@@ -16,6 +16,43 @@ function TermList({ items }: { items: string[] }) {
   );
 }
 
+function TermsBankCallout({ data }: { data: ProposalData }) {
+  const { copy } = useLuminaLang();
+  const bank = data.execution.bank;
+  const accountName =
+    bank.company?.trim() || data.meta.brandName?.trim() || data.closing.installerName?.trim() || "";
+  const accountNumber = bank.accountNumber?.trim() || "";
+  const ifsc = bank.ifsc?.trim().toUpperCase() || "";
+  const upi = bank.upiId?.trim() || "";
+  const hasBank = Boolean(accountName || accountNumber || ifsc || upi);
+  if (!hasBank) return null;
+
+  const dash = "—";
+
+  return (
+    <aside className={styles.termsBankCallout} aria-label={copy.terms.bankTitle}>
+      <p className={styles.termsBankIntro}>
+        <strong>{copy.terms.bankTitle}:</strong> {copy.terms.bankIntro}
+      </p>
+      <p className={styles.termsBankLine}>
+        <strong>{copy.terms.bankAccountName}:</strong> {accountName || dash}
+        <span className={styles.termsBankSep} aria-hidden>
+          |
+        </span>
+        <strong>{copy.terms.bankAcNo}:</strong> {accountNumber || dash}
+        <span className={styles.termsBankSep} aria-hidden>
+          |
+        </span>
+        <strong>{copy.terms.bankIfsc}:</strong> {ifsc || dash}
+        <span className={styles.termsBankSep} aria-hidden>
+          |
+        </span>
+        <strong>{copy.terms.bankUpi}:</strong> {upi || dash}
+      </p>
+    </aside>
+  );
+}
+
 export function LuminaTerms({ data }: { data: ProposalData }) {
   const { copy, lang } = useLuminaLang();
   const model = buildLuminaTermsModel(data, lang);
@@ -72,6 +109,8 @@ export function LuminaTermsContinued({ data }: { data: ProposalData }) {
             <TermList items={model.amcTerms} />
           </article>
         </div>
+
+        <TermsBankCallout data={data} />
 
         <div className={styles.termsSignoff}>
           <span>{copy.terms.regards}</span>

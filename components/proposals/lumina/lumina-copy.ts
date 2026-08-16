@@ -225,6 +225,14 @@ export function getLuminaCopy(lang: LuminaLang) {
       clientScope: hi ? "Customer का scope" : "Client's scope",
       cost: hi ? "Maintenance की cost" : "Cost of maintenance",
       regards: hi ? "Regards," : "Regards,",
+      bankTitle: hi ? "Payment Terms & Bank Details" : "Payment Terms & Bank Details",
+      bankIntro: hi
+        ? "सभी stage payments सीधे नीचे दिए company account में transfer करें:"
+        : "All stage payments must be transferred directly to the following company account:",
+      bankAccountName: hi ? "Account Name" : "Account Name",
+      bankAcNo: hi ? "A/c No" : "A/c No",
+      bankIfsc: "IFSC",
+      bankUpi: "UPI",
     },
     close: {
       kicker: hi ? "Execution mandate" : "Execution mandate",

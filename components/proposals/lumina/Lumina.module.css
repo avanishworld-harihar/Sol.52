@@ -1634,6 +1634,47 @@
   padding: 14px 16px;
 }
 
+.termsBankCallout {
+  margin-top: 16px;
+  background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 55%, #ffffff 100%);
+  border: 2px solid var(--lu-green);
+  border-left: 5px solid var(--lu-green);
+  border-radius: 14px;
+  padding: 14px 16px 12px;
+  box-shadow: 0 4px 18px rgba(16, 185, 129, 0.12);
+}
+
+.termsBankIntro {
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--lu-ink);
+  margin: 0 0 10px;
+}
+
+.termsBankIntro strong {
+  font-weight: 800;
+  color: var(--lu-green-ink);
+}
+
+.termsBankLine {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--lu-ink);
+  margin: 0;
+  font-weight: 600;
+}
+
+.termsBankLine strong {
+  font-weight: 800;
+  color: var(--lu-ink);
+}
+
+.termsBankSep {
+  margin: 0 8px;
+  color: #94a3b8;
+  font-weight: 400;
+}
+
 .termsSignoff span {
   display: block;
   font-size: 0.7rem;
