@@ -33,7 +33,11 @@ export function LuminaProposal({
       <LuminaForecast data={data} />
       <LuminaTerms data={data} />
       <LuminaTermsContinued data={data} />
-      <LuminaClosingPage data={data} installerLogoUrl={installerLogoUrl} />
+      <LuminaClosingPage
+        data={data}
+        installerLogoUrl={installerLogoUrl}
+        pptWebsite={pptInput?.companyProfile?.website}
+      />
     </div>
   );
 }

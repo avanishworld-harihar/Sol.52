@@ -1884,6 +1884,27 @@
   gap: 14px;
 }
 
+.closeBrandMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.closeBrandHead {
+  letter-spacing: 0.12em;
+}
+
+.closeBrandContact {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  opacity: 0.95;
+  line-height: 1.35;
+}
+
 .closeBrandLogo {
   height: 44px;
   max-width: 168px;

@@ -4,6 +4,10 @@ import type { ProposalData } from "@/lib/proposal-data";
 import { installerLogoAlt } from "@/lib/proposal-branding-settings";
 import styles from "./Lumina.module.css";
 import { useLuminaSurfaceBrand } from "./lumina-brand";
+import {
+  formatLuminaContactFooter,
+  useLuminaContactDetails,
+} from "./lumina-closing-contact";
 import { useLuminaLang } from "./lumina-lang-context";
 import {
   LUMINA_CLOSE_ALT,
@@ -15,11 +19,13 @@ import {
 export type LuminaClosingPageProps = {
   data: ProposalData;
   installerLogoUrl?: string;
+  pptWebsite?: string;
 };
 
 export function LuminaClosingPage({
   data,
   installerLogoUrl,
+  pptWebsite,
 }: LuminaClosingPageProps) {
   const { copy } = useLuminaLang();
   const customer = data.meta.customerName?.trim() || "—";
@@ -29,7 +35,17 @@ export function LuminaClosingPage({
   const logo = closingBrand.showLogo ? closingBrand.logoUrl : "";
   const showName = Boolean(installer !== "—" && (closingBrand.showName || !logo));
   const location = luminaLocation(data);
-  const contact = data.closing.contactLine?.trim();
+  const vendorContact = useLuminaContactDetails(data, pptWebsite);
+  const contactLine = formatLuminaContactFooter([
+    vendorContact.phone,
+    vendorContact.email,
+    vendorContact.website,
+  ]);
+  const headLine = formatLuminaContactFooter([
+    showName ? installer : "",
+    location,
+    "09 / 09",
+  ]);
 
   const title =
     customer !== "—" ? copy.close.titleNamed(customer) : copy.close.titlePlain;
@@ -75,15 +91,12 @@ export function LuminaClosingPage({
             className={styles.closeBrandLogo}
           />
         ) : null}
-        <span>
-          {showName ? installer : null}
-          {showName && (location || contact) ? " · " : null}
-          {location ? location : null}
-          {location && contact ? " · " : null}
-          {contact ? contact : null}
-          {(showName || location || contact) ? " · " : null}
-          09 / 09
-        </span>
+        <div className={styles.closeBrandMeta}>
+          {headLine ? <span className={styles.closeBrandHead}>{headLine}</span> : null}
+          {contactLine ? (
+            <span className={styles.closeBrandContact}>{contactLine}</span>
+          ) : null}
+        </div>
       </div>
     </section>
   );
