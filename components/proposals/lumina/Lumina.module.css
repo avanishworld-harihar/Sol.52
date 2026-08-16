@@ -411,6 +411,10 @@
   padding: 8px 0 0;
 }
 
+.engSheet .contentArea {
+  flex: 1 1 auto;
+}
+
 .forecastSheet {
   padding: 20mm 16mm 18mm;
 }
@@ -2289,7 +2293,7 @@
 
 .engExpert {
   flex: 0 0 auto;
-  margin-top: 6px;
+  margin-top: auto;
   padding: 7px 10px 8px;
   background: #ffffff;
   border: 1px solid var(--lu-line);
