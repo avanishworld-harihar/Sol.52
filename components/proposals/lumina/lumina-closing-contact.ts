@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
 import {
   PROPOSAL_BRANDING_UPDATED_EVENT,
+  formatInstallerContactLine,
   readProposalBrandingSettings,
 } from "@/lib/proposal-branding-settings";
 
@@ -32,7 +33,10 @@ function splitContactLine(line: string): { phone: string; email: string } {
 }
 
 function cleanWebsite(raw: string): string {
-  return raw.trim().replace(/^https?:\/\//i, "").replace(/\/+$/, "");
+  const t = raw.trim().replace(/^https?:\/\//i, "").replace(/\/+$/, "");
+  if (!t || t.includes("@")) return t;
+  if (/^www\./i.test(t)) return t;
+  return `www.${t}`;
 }
 
 function hasLiveContactSettings(): boolean {
@@ -57,9 +61,15 @@ export function resolveLuminaContactDetails(
   const fromLine = splitContactLine(data.closing.contactLine ?? "");
   const settings =
     typeof window !== "undefined" ? readProposalBrandingSettings() : null;
+  const fromSettingsLine = splitContactLine(
+    formatInstallerContactLine(
+      settings?.installerContact ?? "",
+      settings?.installerEmail ?? ""
+    )
+  );
   const fromSettings = {
-    phone: settings?.installerContact?.trim() ?? "",
-    email: settings?.installerEmail?.trim() ?? "",
+    phone: fromSettingsLine.phone || (settings?.installerContact?.trim() ?? ""),
+    email: fromSettingsLine.email || (settings?.installerEmail?.trim() ?? ""),
     website: settings?.companyProfile?.website?.trim() ?? "",
   };
   const snapshotWebsite = pptWebsite?.trim() ?? "";

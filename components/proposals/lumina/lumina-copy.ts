@@ -255,6 +255,7 @@ export function getLuminaCopy(lang: LuminaLang) {
       plantPlain: hi ? "यह rooftop plant" : "This rooftop plant",
       clientRole: hi ? "Customer sign" : "Client authorization",
       officialRole: hi ? "Company sign" : "Official signatory",
+      contactTitle: hi ? "Contact" : "Contact",
     },
   };
 }

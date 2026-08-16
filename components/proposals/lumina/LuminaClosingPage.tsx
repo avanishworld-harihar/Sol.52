@@ -63,19 +63,28 @@ export function LuminaClosingPage({
           <h1 className={styles.closeTitle}>{title}</h1>
           <p className={styles.closeLead}>{lead}</p>
 
-          <div className={styles.closeSigDock}>
-            <div className={styles.closeSigCard}>
-              <div className={styles.closeSigLine} />
-              <div className={styles.closeSigMeta}>
-                <span className={styles.sigName}>{customer}</span>
-                <span className={styles.sigRole}>{copy.close.clientRole}</span>
+          <div className={styles.closeFooterStack}>
+            {contactLine ? (
+              <aside className={styles.closeContactCard} aria-label={copy.close.contactTitle}>
+                <span className={styles.closeContactKicker}>{copy.close.contactTitle}</span>
+                <p className={styles.closeContactLine}>{contactLine}</p>
+              </aside>
+            ) : null}
+
+            <div className={styles.closeSigDock}>
+              <div className={styles.closeSigCard}>
+                <div className={styles.closeSigLine} />
+                <div className={styles.closeSigMeta}>
+                  <span className={styles.sigName}>{customer}</span>
+                  <span className={styles.sigRole}>{copy.close.clientRole}</span>
+                </div>
               </div>
-            </div>
-            <div className={styles.closeSigCard}>
-              <div className={styles.closeSigLine} />
-              <div className={styles.closeSigMeta}>
-                <span className={styles.sigName}>{installer}</span>
-                <span className={styles.sigRole}>{copy.close.officialRole}</span>
+              <div className={styles.closeSigCard}>
+                <div className={styles.closeSigLine} />
+                <div className={styles.closeSigMeta}>
+                  <span className={styles.sigName}>{installer}</span>
+                  <span className={styles.sigRole}>{copy.close.officialRole}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -93,9 +102,6 @@ export function LuminaClosingPage({
         ) : null}
         <div className={styles.closeBrandMeta}>
           {headLine ? <span className={styles.closeBrandHead}>{headLine}</span> : null}
-          {contactLine ? (
-            <span className={styles.closeBrandContact}>{contactLine}</span>
-          ) : null}
         </div>
       </div>
     </section>
