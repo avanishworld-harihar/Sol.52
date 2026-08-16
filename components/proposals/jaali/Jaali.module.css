@@ -1256,6 +1256,192 @@
   text-align: right;
 }
 
+.yearPage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.yearWell {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin-top: 2px;
+  padding: 10px 10px 8px;
+  background: var(--ja-card);
+  border: 1.5px solid var(--ja-brass);
+}
+
+.yearHero {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 4px 10px;
+  border-bottom: 1.5px solid var(--ja-brass);
+}
+
+.yearHeroVal {
+  font-family: var(--ja-serif);
+  font-size: 2.2rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.yearHeroMeta {
+  font-size: 0.78rem;
+  color: var(--ja-body);
+  text-align: right;
+}
+
+.arcadeYear {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 0;
+  flex: 1;
+  min-height: 0;
+  margin-top: 8px;
+  border-bottom: 2px solid var(--ja-brass);
+}
+
+.arcadeMonth {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  height: 100%;
+  padding: 0 3px 7px;
+  border-right: 1px solid var(--ja-line);
+}
+
+.arcadeMonth:last-child {
+  border-right: 0;
+}
+
+.arcadeMonthPeak {
+  background: rgba(180, 74, 42, 0.07);
+}
+
+.arcadeNums {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  margin-bottom: 5px;
+}
+
+.arcadeVal {
+  font-size: 0.58rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--ja-ink);
+  line-height: 1.1;
+}
+
+.arcadeValPeak {
+  color: var(--ja-terra);
+}
+
+.arcadeValBill {
+  font-size: 0.45rem;
+  font-weight: 700;
+  color: var(--ja-muted);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.arcadeShaft,
+.arcadePair {
+  flex: 1;
+  width: 100%;
+  min-height: 150px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: linear-gradient(180deg, var(--ja-court) 0%, #e7dcc8 100%);
+}
+
+.arcadePair {
+  gap: 2px;
+}
+
+.arcadeSlot {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.arcadePier {
+  position: relative;
+  width: 58%;
+  max-width: 18px;
+  min-height: 4px;
+  background-color: var(--ja-jali);
+  background-image:
+    linear-gradient(45deg, rgba(176, 141, 62, 0.38) 12%, transparent 12.5%, transparent 87%, rgba(176, 141, 62, 0.38) 87.5%),
+    linear-gradient(-45deg, rgba(176, 141, 62, 0.38) 12%, transparent 12.5%, transparent 87%, rgba(176, 141, 62, 0.38) 87.5%);
+  background-size: 5px 5px;
+}
+
+.arcadePierPeak {
+  background-color: var(--ja-terra);
+  background-image:
+    linear-gradient(45deg, rgba(251, 246, 236, 0.28) 12%, transparent 12.5%, transparent 87%, rgba(251, 246, 236, 0.28) 87.5%),
+    linear-gradient(-45deg, rgba(251, 246, 236, 0.28) 12%, transparent 12.5%, transparent 87%, rgba(251, 246, 236, 0.28) 87.5%);
+}
+
+.arcadePierBill {
+  width: 70%;
+  background-color: var(--ja-ink);
+  background-image: none;
+  opacity: 0.32;
+}
+
+.arcadeCap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--ja-brass);
+}
+
+.arcadeLbl {
+  margin-top: 6px;
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ja-muted);
+}
+
+.arcadeLblPeak {
+  color: var(--ja-terra);
+}
+
+.arcadeSave {
+  font-size: 0.5rem;
+  font-weight: 700;
+  color: var(--ja-moss);
+}
+
+.yearFoot {
+  margin-top: 8px;
+  padding: 0 4px;
+}
+
+.yearFoot .legend {
+  margin-top: 0;
+}
+
+.yearFoot .forecastBasis {
+  margin-top: 4px;
+}
+
 .ribbon {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -1383,7 +1569,7 @@
 .forecastNote {
   margin-top: auto;
   padding: 10px 0 0;
-  border-top: 1px solid var(--ja-line);
+  border-top: 1.5px solid var(--ja-brass);
 }
 
 .forecastNoteTag {

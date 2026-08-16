@@ -545,8 +545,8 @@ export function jaaliForecastNotes(
   if (annual > 0) {
     parts.push(
       hi
-        ? `Terracotta पट्टियाँ (${peakSpan}) monsoon से पहले की तेज़ धूप (GHI) हैं: सूरज ऊँचा रहता है, आसमान साफ़ रहता है, इसलिए array को साल की सबसे तेज़ रोशनी मिलती है।`
-        : `Terracotta bars (${peakSpan}) are pre-monsoon high-GHI months: the sun sits high and skies are typically clear, so the array sees the year’s strongest irradiance.`
+        ? `Terracotta columns (${peakSpan}) monsoon से पहले की तेज़ धूप (GHI) हैं: सूरज ऊँचा रहता है, आसमान साफ़ रहता है, इसलिए array को साल की सबसे तेज़ रोशनी मिलती है।`
+        : `Terracotta columns (${peakSpan}) are pre-monsoon high-GHI months: the sun sits high and skies are typically clear, so the array sees the year’s strongest irradiance.`
     );
     parts.push(
       hi

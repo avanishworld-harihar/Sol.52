@@ -37,103 +37,119 @@ export function JaaliForecast({ data }: { data: ProposalData }) {
 
   return (
     <JaaliSheet data={data} page="05 / 09" chapter={copy.spine.year}>
-      <p className={styles.kicker}>{copy.forecast.kicker}</p>
-      <h1 className={styles.displayTitle}>{copy.forecast.title}</h1>
-      <p className={styles.lead}>
-        {annual > 0
-          ? copy.forecast.lead(annual.toLocaleString("en-IN"), showBill)
-          : copy.forecast.leadEmpty}
-      </p>
+      <div className={styles.yearPage}>
+        <p className={styles.kicker}>{copy.forecast.kicker}</p>
+        <h1 className={styles.displayTitle}>{copy.forecast.title}</h1>
+        <p className={styles.lead}>
+          {annual > 0
+            ? copy.forecast.lead(annual.toLocaleString("en-IN"), showBill)
+            : copy.forecast.leadEmpty}
+        </p>
 
-      <div className={styles.seasonHero}>
-        <div>
-          <span className={styles.seasonHeroVal}>
-            {annual > 0 ? annual.toLocaleString("en-IN") : "—"}
-          </span>
-          {annual > 0 ? (
-            <span className={styles.colophonUnit}> {copy.forecast.units}</span>
-          ) : null}
-        </div>
-        <div className={styles.seasonHeroMeta}>{side}</div>
-      </div>
-
-      <div
-        className={styles.ribbon}
-        role="img"
-        aria-label={copy.forecast.chartAria(showBill)}
-      >
-        {months.map((item) => {
-          const solarPct = item.val > 0 ? Math.max(8, Math.round((item.val / max) * 100)) : 0;
-          const bill = item.billUnits;
-          const billPct =
-            bill != null && bill > 0 ? Math.max(8, Math.round((bill / max) * 100)) : 0;
-          return (
-            <div key={item.m} className={styles.ribbonCol}>
-              <div className={styles.ribbonNums}>
-                <span className={`${styles.ribbonVal} ${item.peak ? styles.ribbonValPeak : ""}`}>
-                  {item.val > 0 ? item.val : "—"}
-                </span>
-                {showBill ? (
-                  <span className={styles.ribbonValBill}>
-                    {bill != null && bill > 0 ? bill : "—"}
-                  </span>
-                ) : null}
-              </div>
-              {showBill ? (
-                <div className={styles.ribbonPair}>
-                  <div className={styles.ribbonTrack}>
-                    <div
-                      className={`${styles.ribbonFill} ${item.peak ? styles.ribbonFillPeak : ""}`}
-                      style={{ height: `${solarPct}%` }}
-                    />
-                  </div>
-                  <div className={styles.ribbonTrack}>
-                    <div
-                      className={`${styles.ribbonFill} ${styles.ribbonFillBill}`}
-                      style={{ height: `${billPct}%` }}
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className={styles.ribbonTrack}>
-                  <div
-                    className={`${styles.ribbonFill} ${item.peak ? styles.ribbonFillPeak : ""}`}
-                    style={{ height: `${solarPct}%` }}
-                  />
-                </div>
-              )}
-              <span className={`${styles.ribbonMonth} ${item.peak ? styles.ribbonMonthPeak : ""}`}>
-                {item.m}
+        <div className={styles.yearWell}>
+          <div className={styles.yearHero}>
+            <div>
+              <span className={styles.yearHeroVal}>
+                {annual > 0 ? annual.toLocaleString("en-IN") : "—"}
               </span>
-              <span className={styles.ribbonSave}>
-                {item.savingsInr > 0 ? formatInrCompact(item.savingsInr) : "—"}
-              </span>
+              {annual > 0 ? (
+                <span className={styles.colophonUnit}> {copy.forecast.units}</span>
+              ) : null}
             </div>
-          );
-        })}
+            <div className={styles.yearHeroMeta}>{side}</div>
+          </div>
+
+          <div
+            className={styles.arcadeYear}
+            role="img"
+            aria-label={copy.forecast.chartAria(showBill)}
+          >
+            {months.map((item) => {
+              const solarPct = item.val > 0 ? Math.max(8, Math.round((item.val / max) * 100)) : 0;
+              const bill = item.billUnits;
+              const billPct =
+                bill != null && bill > 0 ? Math.max(8, Math.round((bill / max) * 100)) : 0;
+              return (
+                <div
+                  key={item.m}
+                  className={`${styles.arcadeMonth}${item.peak ? ` ${styles.arcadeMonthPeak}` : ""}`}
+                >
+                  <div className={styles.arcadeNums}>
+                    <span
+                      className={`${styles.arcadeVal}${item.peak ? ` ${styles.arcadeValPeak}` : ""}`}
+                    >
+                      {item.val > 0 ? item.val : "—"}
+                    </span>
+                    {showBill ? (
+                      <span className={styles.arcadeValBill}>
+                        {bill != null && bill > 0 ? bill : "—"}
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className={showBill ? styles.arcadePair : styles.arcadeShaft}>
+                    {showBill ? (
+                      <>
+                        <div className={styles.arcadeSlot}>
+                          <div
+                            className={`${styles.arcadePier}${item.peak ? ` ${styles.arcadePierPeak}` : ""}`}
+                            style={{ height: `${solarPct}%` }}
+                          >
+                            <span className={styles.arcadeCap} aria-hidden />
+                          </div>
+                        </div>
+                        <div className={styles.arcadeSlot}>
+                          <div
+                            className={`${styles.arcadePier} ${styles.arcadePierBill}`}
+                            style={{ height: `${billPct}%` }}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <div
+                        className={`${styles.arcadePier}${item.peak ? ` ${styles.arcadePierPeak}` : ""}`}
+                        style={{ height: `${solarPct}%` }}
+                      >
+                        <span className={styles.arcadeCap} aria-hidden />
+                      </div>
+                    )}
+                  </div>
+                  <span
+                    className={`${styles.arcadeLbl}${item.peak ? ` ${styles.arcadeLblPeak}` : ""}`}
+                  >
+                    {item.m}
+                  </span>
+                  <span className={styles.arcadeSave}>
+                    {item.savingsInr > 0 ? formatInrCompact(item.savingsInr) : "—"}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className={styles.yearFoot}>
+            <div className={styles.legend}>
+              <span>
+                <span className={styles.swatch} /> {copy.forecast.legendSolar}
+              </span>
+              <span>
+                <span className={`${styles.swatch} ${styles.swatchPeak}`} /> {copy.forecast.legendPeak}
+              </span>
+              {showBill ? (
+                <span>
+                  <span className={`${styles.swatch} ${styles.swatchBill}`} /> {copy.forecast.legendBill}
+                </span>
+              ) : null}
+            </div>
+            {notes.savingsBasis ? <p className={styles.forecastBasis}>{notes.savingsBasis}</p> : null}
+          </div>
+        </div>
+
+        <aside className={styles.forecastNote}>
+          <p className={styles.forecastNoteTag}>{notes.insightTag}</p>
+          <h2 className={styles.forecastNoteTitle}>{notes.insightTitle}</h2>
+          <p className={styles.forecastNoteBody}>{notes.insightBody}</p>
+        </aside>
       </div>
-
-      <div className={styles.legend}>
-        <span>
-          <span className={styles.swatch} /> {copy.forecast.legendSolar}
-        </span>
-        <span>
-          <span className={`${styles.swatch} ${styles.swatchPeak}`} /> {copy.forecast.legendPeak}
-        </span>
-        {showBill ? (
-          <span>
-            <span className={`${styles.swatch} ${styles.swatchBill}`} /> {copy.forecast.legendBill}
-          </span>
-        ) : null}
-      </div>
-
-      {notes.savingsBasis ? <p className={styles.forecastBasis}>{notes.savingsBasis}</p> : null}
-
-      <aside className={styles.forecastNote}>
-        <p className={styles.forecastNoteTag}>{notes.insightTag}</p>
-        <h2 className={styles.forecastNoteTitle}>{notes.insightTitle}</h2>
-        <p className={styles.forecastNoteBody}>{notes.insightBody}</p>
-      </aside>
     </JaaliSheet>
   );
 }
