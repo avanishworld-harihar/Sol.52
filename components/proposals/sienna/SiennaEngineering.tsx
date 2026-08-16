@@ -5,7 +5,7 @@ import type { ProposalData } from "@/lib/proposal-data";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
 import styles from "./Sienna.module.css";
 import { siennaArenaLayout } from "./sienna-arena";
-import { SiennaDocFooter } from "./sienna-brand";
+import { SiennaSheet } from "./sienna-brand";
 import { useSiennaLang } from "./sienna-lang-context";
 import {
   formatSiennaKw,
@@ -31,27 +31,6 @@ export function SiennaEngineering({
       : eng.azimuthDeg > 0
         ? copy.engineering.arrayAzimuthOnly(eng.azimuthDeg)
         : copy.engineering.arrayNoTilt;
-
-  const siteItems = [
-    {
-      label: copy.engineering.latitude,
-      value: eng.siteLatLabel || "—",
-      caption: copy.engineering.latitudeCaption,
-    },
-    {
-      label: copy.engineering.roofArea,
-      value: eng.roofAreaLabel,
-      caption:
-        eng.panelCount > 0
-          ? copy.engineering.roofAreaCaption(eng.panelCount, eng.m2PerPanelLabel)
-          : copy.engineering.roofAreaEmpty,
-    },
-    {
-      label: copy.engineering.shadow,
-      value: copy.engineering.shadowValue,
-      caption: copy.engineering.shadowCaption,
-    },
-  ];
 
   const specCards = [
     {
@@ -80,120 +59,118 @@ export function SiennaEngineering({
   ];
 
   return (
-    <section className={`${styles.a4Sienna} ${styles.innerSheet} ${styles.engSheet}`}>
-      <div className={styles.contentArea}>
-        <div className={styles.dateTag}>{copy.engineering.tag}</div>
-        <h1 className={styles.clientTitle}>{copy.engineering.title}</h1>
-        <p className={styles.subText}>{copy.engineering.lead}</p>
-
-        <div className={styles.engBlueprint}>
-          <div className={styles.engRoof}>
-            <div className={styles.engCompass} aria-hidden>
-              <span className={styles.engCompassN}>N</span>
-              <span className={styles.engCompassE}>E</span>
-              <span className={styles.engCompassS}>S</span>
-              <span className={styles.engCompassW}>W</span>
-            </div>
-            <div className={styles.engRoofGrid}>
-              {eng.visualPanelCount > 0 ? (
-                <div
-                  className={styles.engPanelLayout}
-                  style={{ "--sn-panel-cols": String(arena.cols) } as CSSProperties}
-                >
-                  {arena.cells.map((filled, i) => (
-                    <div
-                      key={i}
-                      className={filled ? styles.engPanelBox : styles.engPanelGap}
-                      aria-hidden={!filled}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <p className={styles.engRoofEmpty}>{copy.engineering.roofEmpty}</p>
-              )}
-            </div>
-            <div className={styles.engRoofCaption}>
-              <strong>{copy.engineering.arrayTitle}</strong>
-              <span>
-                {arrayMeta}
-                {eng.showingPartial
-                  ? copy.engineering.showing(eng.visualPanelCount, eng.panelCount)
-                  : ""}
-              </span>
-            </div>
-          </div>
-
-          <div className={styles.engSite}>
-            <h2 className={styles.engSiteTitle}>{copy.engineering.siteTitle}</h2>
-            <div className={styles.engSiteList}>
-              {siteItems.map((item) => (
-                <div key={item.label} className={styles.engSiteItem}>
-                  <span className={styles.engSiteLabel}>{item.label}</span>
-                  <strong className={styles.engSiteValue}>{item.value}</strong>
-                  <small className={styles.engSiteCaption}>{item.caption}</small>
-                </div>
-              ))}
-            </div>
-            <p className={styles.engCableNote}>
-              {eng.cableNote || copy.engineering.cableFallback}
-            </p>
-            {eng.tiltNote ? <p className={styles.engCableNote}>{eng.tiltNote}</p> : null}
-          </div>
+    <SiennaSheet data={data} page="04 / 09" chapter={copy.spine.drawing}>
+      <div className={styles.drawingHead}>
+        <div>
+          <p className={styles.kicker}>{copy.engineering.kicker}</p>
+          <h1 className={`${styles.displayTitle} ${styles.drawingTitle}`}>
+            {copy.engineering.title}
+          </h1>
         </div>
+        <span className={styles.drawingNo}>{copy.engineering.drawingNo}</span>
+      </div>
+      <p className={`${styles.lead} ${styles.leadShort}`}>{copy.engineering.lead}</p>
 
-        <h2 className={styles.engBlockTitle}>{copy.engineering.specsTitle}</h2>
-        <div className={styles.engSpecs}>
-          {specCards.map((card) => (
-            <div key={card.label} className={styles.engSpecCard}>
-              <p className={styles.engSpecValue}>{card.value}</p>
-              <p className={styles.engSpecLabel}>{card.label}</p>
-              <p className={styles.engSpecDesc}>{card.desc}</p>
-            </div>
-          ))}
+      <div className={styles.planBoard}>
+        <div className={styles.planGrid} />
+        <div className={styles.compass} aria-hidden>
+          <span className={styles.compassN}>N</span>
+          <span className={styles.compassE}>E</span>
+          <span className={styles.compassS}>S</span>
+          <span className={styles.compassW}>W</span>
         </div>
-
-        <div className={styles.engYieldStrip}>
-          <div className={styles.engYieldItem}>
-            <span>{copy.engineering.peakSun}</span>
-            <strong>
-              {eng.peakSunHours > 0 ? copy.engineering.hrsDay(eng.peakSunHours) : "—"}
-            </strong>
-          </div>
-          <div className={styles.engYieldItem}>
-            <span>{copy.engineering.specificYield}</span>
-            <strong>
-              {eng.specificYield > 0 ? `${eng.specificYield} kWh/kWp/yr` : "—"}
-            </strong>
-          </div>
-          <div className={styles.engYieldItem}>
-            <span>{copy.engineering.loadCoverage}</span>
-            <strong>{eng.loadCoveragePct > 0 ? `${eng.loadCoveragePct}%` : "—"}</strong>
-          </div>
-        </div>
-
-        <h2 className={styles.engBlockTitle}>{copy.engineering.standards}</h2>
-        <div className={styles.engChips}>
-          {eng.standards.slice(0, 7).map((s) => (
-            <span key={s} className={styles.engChip}>
-              {s}
-            </span>
-          ))}
-        </div>
-
-        <aside className={styles.engExpert}>
-          <p className={styles.engExpertTag}>{copy.engineering.expertTag}</p>
-          <div className={styles.engExpertGrid}>
-            {insights.map((card) => (
-              <div key={card.title} className={styles.engExpertCard}>
-                <h3 className={styles.engExpertTitle}>{card.title}</h3>
-                <p className={styles.engExpertBody}>{card.body}</p>
-              </div>
+        {eng.visualPanelCount > 0 ? (
+          <div
+            className={styles.planLayout}
+            style={{ "--sn-panel-cols": String(arena.cols) } as CSSProperties}
+          >
+            {arena.cells.map((filled, i) => (
+              <div
+                key={i}
+                className={filled ? styles.planCell : styles.planGap}
+                aria-hidden={!filled}
+              />
             ))}
           </div>
-        </aside>
+        ) : (
+          <p className={styles.planEmpty}>{copy.engineering.roofEmpty}</p>
+        )}
       </div>
-      <SiennaDocFooter data={data} page="04 / 09" />
-    </section>
+
+      <div className={styles.drawingMeta}>
+        <div className={styles.titleBlock}>
+          <h2>{copy.engineering.siteTitle}</h2>
+          <div className={styles.tbRow}>
+            <span className={styles.tbLabel}>{copy.engineering.arrayTitle}</span>
+            <strong className={styles.tbValue}>
+              {arrayMeta}
+              {eng.showingPartial
+                ? copy.engineering.showing(eng.visualPanelCount, eng.panelCount)
+                : ""}
+            </strong>
+          </div>
+          <div className={styles.tbRow}>
+            <span className={styles.tbLabel}>{copy.engineering.latitude}</span>
+            <strong className={styles.tbValue}>{eng.siteLatLabel || "—"}</strong>
+            <small className={styles.tbCap}>{copy.engineering.latitudeCaption}</small>
+          </div>
+          <div className={styles.tbRow}>
+            <span className={styles.tbLabel}>{copy.engineering.roofArea}</span>
+            <strong className={styles.tbValue}>{eng.roofAreaLabel}</strong>
+            <small className={styles.tbCap}>
+              {eng.panelCount > 0
+                ? copy.engineering.roofAreaCaption(eng.panelCount, eng.m2PerPanelLabel)
+                : copy.engineering.roofAreaEmpty}
+            </small>
+          </div>
+          <p className={styles.cableNote}>
+            {eng.cableNote || copy.engineering.cableFallback}
+          </p>
+          {eng.tiltNote ? <p className={styles.cableNote}>{eng.tiltNote}</p> : null}
+        </div>
+
+        <div className={styles.specStrip}>
+          {specCards.map((card) => (
+            <div key={card.label} className={styles.specCell}>
+              <p className={styles.specVal}>{card.value}</p>
+              <p className={styles.specLab}>{card.label}</p>
+              <p className={styles.specDesc}>{card.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className={styles.yieldRail}>
+        <div className={styles.yieldCell}>
+          <span>{copy.engineering.peakSun}</span>
+          <strong>
+            {eng.peakSunHours > 0 ? copy.engineering.hrsDay(eng.peakSunHours) : "—"}
+          </strong>
+        </div>
+        <div className={styles.yieldCell}>
+          <span>{copy.engineering.specificYield}</span>
+          <strong>
+            {eng.specificYield > 0 ? `${eng.specificYield} kWh/kWp/yr` : "—"}
+          </strong>
+        </div>
+        <div className={styles.yieldCell}>
+          <span>{copy.engineering.loadCoverage}</span>
+          <strong>{eng.loadCoveragePct > 0 ? `${eng.loadCoveragePct}%` : "—"}</strong>
+        </div>
+      </div>
+
+      <aside className={styles.insightBand}>
+        <h3>{copy.engineering.expertTag}</h3>
+        <div className={styles.insightGrid}>
+          {insights.slice(0, 3).map((card) => (
+            <div key={card.title}>
+              <p className={styles.insightTitle}>{card.title}</p>
+              <p className={styles.insightBody}>{card.body}</p>
+            </div>
+          ))}
+        </div>
+      </aside>
+    </SiennaSheet>
   );
 }
 

@@ -54,63 +54,55 @@ export function SiennaClosingPage({
 
   return (
     <section className={`${styles.a4Sienna} ${styles.bleedSheet}`}>
-      <div className={styles.closeHero}>
+      <div className={styles.closeSplit}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={SIENNA_CLOSE_PHOTO} alt={SIENNA_CLOSE_ALT} className={styles.closeHeroImg} />
-        <div className={styles.closeHeroOverlay} />
-        <div className={styles.closeHeroCopy}>
+        <img src={SIENNA_CLOSE_PHOTO} alt={SIENNA_CLOSE_ALT} />
+        <div className={styles.closeScrim} />
+        <div className={styles.closeCopy}>
           <div className={styles.closeKicker}>{copy.close.kicker}</div>
           <h1 className={styles.closeTitle}>{title}</h1>
           <p className={styles.closeLead}>{lead}</p>
 
-          <div className={styles.closeFooterStack}>
+          <div className={styles.closeSlab}>
             {contactLine ? (
-              <aside className={styles.closeContactCard} aria-label={copy.close.contactTitle}>
-                <span className={styles.closeContactKicker}>{copy.close.contactTitle}</span>
-                {vendorContact.phone ? (
-                  <p className={styles.closeContactLine}>{vendorContact.phone}</p>
-                ) : null}
-                {vendorContact.email ? (
-                  <p className={styles.closeContactLine}>{vendorContact.email}</p>
-                ) : null}
-                {vendorContact.website ? (
-                  <p className={styles.closeContactLine}>{vendorContact.website}</p>
-                ) : null}
-              </aside>
+              <div className={styles.closeContact}>
+                <span>{copy.close.contactTitle}</span>
+                {vendorContact.phone}
+                {vendorContact.phone && (vendorContact.email || vendorContact.website)
+                  ? " · "
+                  : ""}
+                {vendorContact.email}
+                {vendorContact.email && vendorContact.website ? " · " : ""}
+                {vendorContact.website}
+              </div>
             ) : null}
 
-            <div className={styles.closeSigDock}>
-              <div className={styles.closeSigCard}>
-                <div className={styles.closeSigLine} />
-                <div className={styles.closeSigMeta}>
-                  <span className={styles.sigName}>{customer}</span>
-                  <span className={styles.sigRole}>{copy.close.clientRole}</span>
-                </div>
+            <div className={styles.sigRow}>
+              <div className={styles.sig}>
+                <div className={styles.sigRule} />
+                <span className={styles.sigName}>{customer}</span>
+                <span className={styles.sigRole}>{copy.close.clientRole}</span>
               </div>
-              <div className={styles.closeSigCard}>
-                <div className={styles.closeSigLine} />
-                <div className={styles.closeSigMeta}>
-                  <span className={styles.sigName}>{installer}</span>
-                  <span className={styles.sigRole}>{copy.close.officialRole}</span>
-                </div>
+              <div className={styles.sig}>
+                <div className={styles.sigRule} />
+                <span className={styles.sigName}>{installer}</span>
+                <span className={styles.sigRole}>{copy.close.officialRole}</span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className={styles.closeBrandBar}>
+      <div className={styles.closeBar}>
         {logo ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={logo}
             alt={installerLogoAlt(installer)}
-            className={styles.closeBrandLogo}
+            className={styles.closeBarLogo}
           />
         ) : null}
-        <div className={styles.closeBrandMeta}>
-          {headLine ? <span className={styles.closeBrandHead}>{headLine}</span> : null}
-        </div>
+        <span>{headLine || "09 / 09"}</span>
       </div>
     </section>
   );

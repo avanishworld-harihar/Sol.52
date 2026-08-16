@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Adapter — Sienna (warm paper flagship) · residential_sienna
+ * Adapter — Sienna Laterite Folio · residential_sienna
  */
 
 import { SiennaRenderer } from "@/components/proposals/sienna/sienna-renderer";

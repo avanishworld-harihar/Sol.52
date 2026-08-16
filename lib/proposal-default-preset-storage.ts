@@ -72,7 +72,7 @@ export const RESIDENTIAL_TEMPLATE_OPTIONS: ResidentialTemplateOption[] = [
   {
     id: "residential_sienna",
     label: "Sienna",
-    subtitle: "Warm paper flagship — copper chrome, forest yield, consumer-friendly.",
+    subtitle: "Laterite Folio — bone paper, laterite spine, indigo drawings.",
   },
 ];
 

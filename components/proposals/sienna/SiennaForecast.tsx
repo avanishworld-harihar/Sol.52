@@ -3,7 +3,7 @@
 import type { ProposalData } from "@/lib/proposal-data";
 import { formatInrCompact } from "@/components/proposals/_shared/formatters";
 import styles from "./Sienna.module.css";
-import { SiennaDocFooter } from "./sienna-brand";
+import { SiennaSheet } from "./sienna-brand";
 import { useSiennaLang } from "./sienna-lang-context";
 import {
   siennaAnnualUnits,
@@ -28,137 +28,106 @@ export function SiennaForecast({ data }: { data: ProposalData }) {
   const low = months.reduce((best, m) => (m.val > 0 && m.val < best.val ? m : best), months[0]!);
   const notes = siennaForecastNotes(data, lang);
 
+  const side =
+    showBill && billYear > 0
+      ? `${copy.forecast.billYear} ${billYear.toLocaleString("en-IN")}`
+      : peak.val > 0
+        ? `${copy.forecast.highest} ${peak.m} · ${copy.forecast.lowest} ${low.val > 0 ? low.m : "—"}`
+        : "—";
+
   return (
-    <section className={`${styles.a4Sienna} ${styles.innerSheet} ${styles.forecastSheet}`}>
-      <div className={styles.contentArea}>
-        <div className={styles.dateTag}>{copy.forecast.tag}</div>
-        <h1 className={styles.clientTitle}>{copy.forecast.title}</h1>
-        <p className={styles.subText}>
-          {annual > 0
-            ? copy.forecast.lead(annual.toLocaleString("en-IN"), showBill)
-            : copy.forecast.leadEmpty}
-        </p>
+    <SiennaSheet data={data} page="05 / 09" chapter={copy.spine.year}>
+      <p className={styles.kicker}>{copy.forecast.kicker}</p>
+      <h1 className={styles.displayTitle}>{copy.forecast.title}</h1>
+      <p className={styles.lead}>
+        {annual > 0
+          ? copy.forecast.lead(annual.toLocaleString("en-IN"), showBill)
+          : copy.forecast.leadEmpty}
+      </p>
 
-        <div className={styles.forecastStats}>
-          <div className={styles.forecastStat}>
-            <span className={styles.cardLabel}>{copy.forecast.year1Solar}</span>
-            <span className={styles.cardValue}>
-              {annual > 0 ? annual.toLocaleString("en-IN") : "—"}
-            </span>
-            {annual > 0 ? <span className={`${styles.cardUnit} ${styles.cardUnitYield}`}>{copy.forecast.units}</span> : null}
-          </div>
-          <div className={`${styles.forecastStat} ${styles.forecastStatPeak}`}>
-            <span className={`${styles.cardLabel} ${styles.cardLabelAccent}`}>{copy.forecast.highest}</span>
-            <span className={`${styles.cardValue} ${styles.cardValueAccent}`}>
-              {peak.val > 0 ? peak.m : "—"}
-            </span>
-            {peak.val > 0 ? (
-              <span className={styles.cardUnit}>{peak.val.toLocaleString("en-IN")} U</span>
-            ) : null}
-          </div>
-          {showBill ? (
-            <div className={styles.forecastStat}>
-              <span className={styles.cardLabel}>{copy.forecast.billYear}</span>
-              <span className={styles.cardValue}>
-                {billYear > 0 ? billYear.toLocaleString("en-IN") : "—"}
-              </span>
-              {billYear > 0 ? <span className={styles.cardUnit}>{copy.forecast.units}</span> : null}
-            </div>
-          ) : (
-            <div className={styles.forecastStat}>
-              <span className={styles.cardLabel}>{copy.forecast.lowest}</span>
-              <span className={styles.cardValue}>{low.val > 0 ? low.m : "—"}</span>
-              {low.val > 0 ? (
-                <span className={styles.cardUnit}>{low.val.toLocaleString("en-IN")} U</span>
-              ) : null}
-            </div>
-          )}
-        </div>
-
-        <div className={`${styles.chartCard} ${styles.chartCardTall}`}>
-          <div className={styles.chartLegend}>
-            <span className={styles.legendItem}>
-              <span className={styles.legendSwatch} /> {copy.forecast.legendSolar}
-            </span>
-            <span className={styles.legendItem}>
-              <span className={`${styles.legendSwatch} ${styles.legendSwatchPeak}`} /> {copy.forecast.legendPeak}
-            </span>
-            {showBill ? (
-              <span className={styles.legendItem}>
-                <span className={`${styles.legendSwatch} ${styles.legendSwatchBill}`} /> {copy.forecast.legendBill}
-              </span>
-            ) : null}
-          </div>
-          <div
-            className={`${styles.barChart} ${styles.barChartTall}`}
-            role="img"
-              aria-label={copy.forecast.chartAria(showBill)}
-          >
-            {months.map((item) => {
-              const solarPct = item.val > 0 ? Math.max(8, Math.round((item.val / max) * 100)) : 0;
-              const bill = item.billUnits;
-              const billPct =
-                bill != null && bill > 0 ? Math.max(8, Math.round((bill / max) * 100)) : 0;
-              return (
-                <div key={item.m} className={styles.barCol}>
-                  <span className={`${styles.barVal} ${item.peak ? styles.barValPeak : ""}`}>
-                    {item.val > 0 ? item.val : "—"}
-                    {showBill ? (
-                      <span className={styles.barValBill}>
-                        {bill != null && bill > 0 ? bill : "—"}
-                      </span>
-                    ) : null}
-                  </span>
-                  {showBill ? (
-                    <div className={styles.barPair}>
-                      <div className={`${styles.barTrack} ${styles.barTrackTwin}`}>
-                        <div
-                          className={`${styles.barFill} ${item.peak ? styles.barFillPeak : ""}`}
-                          style={{ height: `${solarPct}%` }}
-                        />
-                      </div>
-                      <div className={`${styles.barTrack} ${styles.barTrackTwin}`}>
-                        <div
-                          className={`${styles.barFill} ${styles.barFillBill}`}
-                          style={{ height: `${billPct}%` }}
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className={styles.barTrack}>
-                      <div
-                        className={`${styles.barFill} ${item.peak ? styles.barFillPeak : ""}`}
-                        style={{ height: `${solarPct}%` }}
-                      />
-                    </div>
-                  )}
-                  <span className={`${styles.barMonth} ${item.peak ? styles.barMonthPeak : ""}`}>
-                    {item.m}
-                  </span>
-                  <span className={styles.barSave}>
-                    {item.savingsInr > 0 ? formatInrCompact(item.savingsInr) : "—"}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-          <div className={styles.chartAxis}>
-            <span>{copy.forecast.axisUnits}</span>
-            <span>{copy.forecast.axisSave}</span>
-          </div>
-          {notes.savingsBasis ? (
-            <p className={styles.forecastBasis}>{notes.savingsBasis}</p>
+      <div className={styles.seasonHero}>
+        <div>
+          <span className={styles.seasonHeroVal}>
+            {annual > 0 ? annual.toLocaleString("en-IN") : "—"}
+          </span>
+          {annual > 0 ? (
+            <span className={styles.colophonUnit}> {copy.forecast.units}</span>
           ) : null}
         </div>
-
-        <aside className={styles.forecastInsight}>
-          <p className={styles.forecastInsightTag}>{notes.insightTag}</p>
-          <h2 className={styles.forecastInsightTitle}>{notes.insightTitle}</h2>
-          <p className={styles.forecastInsightBody}>{notes.insightBody}</p>
-        </aside>
+        <div className={styles.seasonHeroMeta}>{side}</div>
       </div>
-      <SiennaDocFooter data={data} page="05 / 09" />
-    </section>
+
+      <div
+        className={styles.ribbon}
+        role="img"
+        aria-label={copy.forecast.chartAria(showBill)}
+      >
+        {months.map((item) => {
+          const solarPct = item.val > 0 ? Math.max(8, Math.round((item.val / max) * 100)) : 0;
+          const bill = item.billUnits;
+          const billPct =
+            bill != null && bill > 0 ? Math.max(8, Math.round((bill / max) * 100)) : 0;
+          return (
+            <div key={item.m} className={styles.ribbonCol}>
+              <span className={`${styles.ribbonVal} ${item.peak ? styles.ribbonValPeak : ""}`}>
+                {item.val > 0 ? item.val : "—"}
+              </span>
+              {showBill ? (
+                <div className={styles.ribbonPair}>
+                  <div className={styles.ribbonTrack}>
+                    <div
+                      className={`${styles.ribbonFill} ${item.peak ? styles.ribbonFillPeak : ""}`}
+                      style={{ height: `${solarPct}%` }}
+                    />
+                  </div>
+                  <div className={styles.ribbonTrack}>
+                    <div
+                      className={`${styles.ribbonFill} ${styles.ribbonFillBill}`}
+                      style={{ height: `${billPct}%` }}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className={styles.ribbonTrack}>
+                  <div
+                    className={`${styles.ribbonFill} ${item.peak ? styles.ribbonFillPeak : ""}`}
+                    style={{ height: `${solarPct}%` }}
+                  />
+                </div>
+              )}
+              <span className={`${styles.ribbonMonth} ${item.peak ? styles.ribbonMonthPeak : ""}`}>
+                {item.m}
+              </span>
+              <span className={styles.ribbonSave}>
+                {item.savingsInr > 0 ? formatInrCompact(item.savingsInr) : "—"}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className={styles.legend}>
+        <span>
+          <span className={styles.swatch} /> {copy.forecast.legendSolar}
+        </span>
+        <span>
+          <span className={`${styles.swatch} ${styles.swatchPeak}`} /> {copy.forecast.legendPeak}
+        </span>
+        {showBill ? (
+          <span>
+            <span className={`${styles.swatch} ${styles.swatchBill}`} /> {copy.forecast.legendBill}
+          </span>
+        ) : null}
+      </div>
+
+      {notes.savingsBasis ? <p className={styles.forecastBasis}>{notes.savingsBasis}</p> : null}
+
+      <aside className={styles.forecastNote}>
+        <p className={styles.forecastNoteTag}>{notes.insightTag}</p>
+        <h2 className={styles.forecastNoteTitle}>{notes.insightTitle}</h2>
+        <p className={styles.forecastNoteBody}>{notes.insightBody}</p>
+      </aside>
+    </SiennaSheet>
   );
 }
 

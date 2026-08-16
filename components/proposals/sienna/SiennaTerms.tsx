@@ -2,13 +2,13 @@
 
 import type { ProposalData } from "@/lib/proposal-data";
 import styles from "./Sienna.module.css";
-import { SiennaDocFooter, useSiennaBankDetails } from "./sienna-brand";
+import { SiennaSheet, useSiennaBankDetails } from "./sienna-brand";
 import { useSiennaLang } from "./sienna-lang-context";
 import { buildSiennaTermsModel } from "./sienna-terms-copy";
 
 function TermList({ items }: { items: string[] }) {
   return (
-    <ul className={styles.termsList}>
+    <ul className={styles.clauseList}>
       {items.map((item) => (
         <li key={item}>{item}</li>
       ))}
@@ -16,32 +16,29 @@ function TermList({ items }: { items: string[] }) {
   );
 }
 
-function TermsBankCallout({ data }: { data: ProposalData }) {
+function TermsBankPlate({ data }: { data: ProposalData }) {
   const { copy } = useSiennaLang();
   const bank = useSiennaBankDetails(data);
-  const accountName = bank.accountName;
-  const accountNumber = bank.accountNumber;
-  const ifsc = bank.ifsc;
-  const upi = bank.upiId;
-  const hasBank = Boolean(accountName || accountNumber || ifsc || upi);
+  const hasBank = Boolean(
+    bank.accountName || bank.accountNumber || bank.ifsc || bank.upiId
+  );
   if (!hasBank) return null;
-
   const dash = "—";
 
   return (
-    <aside className={styles.termsBankCallout} aria-label={copy.terms.bankTitle}>
-      <p className={styles.termsBankIntro}>
-        <strong>{copy.terms.bankTitle}:</strong> {copy.terms.bankIntro}
+    <aside className={styles.bankPlate} aria-label={copy.terms.bankTitle}>
+      <p>
+        <strong>{copy.terms.bankTitle}.</strong> {copy.terms.bankIntro}
       </p>
-      <dl className={styles.termsBankGrid}>
+      <dl className={styles.bankGrid}>
         <dt>{copy.terms.bankAccountName}</dt>
-        <dd>{accountName || dash}</dd>
+        <dd>{bank.accountName || dash}</dd>
         <dt>{copy.terms.bankAcNo}</dt>
-        <dd>{accountNumber || dash}</dd>
+        <dd>{bank.accountNumber || dash}</dd>
         <dt>{copy.terms.bankIfsc}</dt>
-        <dd>{ifsc || dash}</dd>
+        <dd>{bank.ifsc || dash}</dd>
         <dt>{copy.terms.bankUpi}</dt>
-        <dd className={styles.termsBankUpi}>{upi || dash}</dd>
+        <dd>{bank.upiId || dash}</dd>
       </dl>
     </aside>
   );
@@ -52,32 +49,29 @@ export function SiennaTerms({ data }: { data: ProposalData }) {
   const model = buildSiennaTermsModel(data, lang);
 
   return (
-    <section className={`${styles.a4Sienna} ${styles.innerSheet}`}>
-      <div className={styles.contentArea}>
-        <div className={styles.dateTag}>{copy.terms.tag}</div>
-        <h1 className={styles.clientTitle}>{copy.terms.title}</h1>
-        <p className={styles.subText}>{copy.terms.lead}</p>
+    <SiennaSheet data={data} page="07 / 09" chapter={copy.spine.terms}>
+      <p className={styles.kicker}>{copy.terms.kicker}</p>
+      <h1 className={styles.displayTitle}>{copy.terms.title}</h1>
+      <p className={styles.lead}>{copy.terms.lead}</p>
 
-        <div className={styles.termsSplit}>
-          <article className={`${styles.termsBlock} ${styles.termsBlockWide}`}>
-            <h3>{copy.terms.general}</h3>
-            <TermList items={model.general} />
+      <div className={styles.clauseGrid}>
+        <article className={styles.clause}>
+          <h3>{copy.terms.general}</h3>
+          <TermList items={model.general} />
+        </article>
+        <div>
+          <article className={styles.clause}>
+            <h3>{copy.terms.documents}</h3>
+            <TermList items={model.documents} />
           </article>
-          <div className={styles.termsStack}>
-            <article className={styles.termsBlock}>
-              <h3>{copy.terms.documents}</h3>
-              <TermList items={model.documents} />
-            </article>
-            <article className={styles.termsBlock}>
-              <h3>{copy.terms.amcScope}</h3>
-              <p className={styles.termsLead}>{model.amcObjective}</p>
-              <TermList items={model.amcScope} />
-            </article>
-          </div>
+          <article className={`${styles.clause} ${styles.clauseStacked}`}>
+            <h3>{copy.terms.amcScope}</h3>
+            <p className={styles.clauseLead}>{model.amcObjective}</p>
+            <TermList items={model.amcScope} />
+          </article>
         </div>
       </div>
-      <SiennaDocFooter data={data} page="07 / 09" />
-    </section>
+    </SiennaSheet>
   );
 }
 
@@ -86,33 +80,30 @@ export function SiennaTermsContinued({ data }: { data: ProposalData }) {
   const model = buildSiennaTermsModel(data, lang);
 
   return (
-    <section className={`${styles.a4Sienna} ${styles.innerSheet}`}>
-      <div className={styles.contentArea}>
-        <div className={styles.dateTag}>{copy.terms.tag2}</div>
-        <h1 className={styles.clientTitle}>{copy.terms.title2}</h1>
-        <p className={styles.subText}>{copy.terms.lead2}</p>
+    <SiennaSheet data={data} page="08 / 09" chapter={copy.spine.terms2}>
+      <p className={styles.kicker}>{copy.terms.kicker2}</p>
+      <h1 className={styles.displayTitle}>{copy.terms.title2}</h1>
+      <p className={styles.lead}>{copy.terms.lead2}</p>
 
-        <div className={styles.termsEqual}>
-          <article className={styles.termsBlock}>
-            <h3>{copy.terms.clientScope}</h3>
-            <TermList items={model.clientScope} />
-          </article>
-          <article className={styles.termsBlock}>
-            <h3>{copy.terms.cost}</h3>
-            <p className={styles.termsLead}>{model.amcCostParagraph}</p>
-            <TermList items={model.amcTerms} />
-          </article>
-        </div>
-
-        <TermsBankCallout data={data} />
-
-        <div className={styles.termsSignoff}>
-          <span>{copy.terms.regards}</span>
-          <strong>{model.installerName || "—"}</strong>
-        </div>
+      <div className={`${styles.clauseGrid} ${styles.clauseEqual}`}>
+        <article className={styles.clause}>
+          <h3>{copy.terms.clientScope}</h3>
+          <TermList items={model.clientScope} />
+        </article>
+        <article className={styles.clause}>
+          <h3>{copy.terms.cost}</h3>
+          <p className={styles.clauseLead}>{model.amcCostParagraph}</p>
+          <TermList items={model.amcTerms} />
+        </article>
       </div>
-      <SiennaDocFooter data={data} page="08 / 09" />
-    </section>
+
+      <TermsBankPlate data={data} />
+
+      <div className={styles.signoff}>
+        <span>{copy.terms.regards}</span>
+        <strong>{model.installerName || "—"}</strong>
+      </div>
+    </SiennaSheet>
   );
 }
 

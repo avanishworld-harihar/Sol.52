@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Sienna renderer — warm paper flagship residential proposal.
+ * Sienna renderer — Laterite Folio household plant book.
  * Preset id: residential_sienna
  */
 

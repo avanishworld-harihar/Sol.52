@@ -34,81 +34,66 @@ export function SiennaCover({ data, installerLogoUrl }: SiennaCoverProps) {
 
   return (
     <section className={`${styles.a4Sienna} ${styles.bleedSheet}`}>
-      <div className={styles.heroHeader}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={SIENNA_HERO_PHOTO} alt={SIENNA_HERO_ALT} className={styles.heroImage} />
-        <div className={styles.heroOverlay} />
+      <div className={styles.coverColophon}>
         {logo || showWordmark ? (
-          <div
-            className={`${styles.logoContainer}${logoOnly ? ` ${styles.logoContainerSolo}` : ""}`}
-          >
+          <div className={styles.coverBrand}>
             {logo ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={logo}
                 alt={installerLogoAlt(brand)}
-                className={logoOnly ? styles.logoImageSolo : styles.logoImage}
+                className={logoOnly ? styles.coverLogoSolo : styles.coverLogo}
               />
             ) : null}
             {showWordmark ? (
-              <>
-                <span className={styles.logoTextMain}>{head}</span>
-                {tail ? <span className={styles.logoTextSub}>{tail}</span> : null}
-              </>
+              <div className={styles.coverWordmark}>
+                {head}
+                {tail ? <span className={styles.coverWordmarkTail}>{tail}</span> : null}
+              </div>
             ) : null}
           </div>
         ) : null}
-        <div className={styles.heroCaption}>
+
+        <p className={styles.kicker}>{copy.cover.preparedFor(customer)}</p>
+        <h1 className={styles.displayTitle}>{copy.cover.title}</h1>
+        <p className={styles.lead}>{copy.cover.lead(kwLabel, location)}</p>
+
+        <div className={styles.colophonStack}>
+          <div className={styles.colophonRow}>
+            <span className={styles.colophonLabel}>{copy.cover.system}</span>
+            <span className={styles.colophonValue}>
+              {systemKw > 0 ? formatSiennaKw(systemKw) : "—"}
+              {systemKw > 0 ? <span className={styles.colophonUnit}>kW</span> : null}
+            </span>
+          </div>
+          <div className={styles.colophonRow}>
+            <span className={styles.colophonLabel}>{copy.cover.yield}</span>
+            <span className={styles.colophonValue}>
+              {annual > 0 ? annual.toLocaleString("en-IN") : "—"}
+              {annual > 0 ? (
+                <span className={styles.colophonUnit}>{copy.cover.units}</span>
+              ) : null}
+            </span>
+          </div>
+          <div className={styles.colophonRow}>
+            <span className={styles.colophonLabel}>{copy.cover.site}</span>
+            <span className={styles.colophonValue}>{location || "—"}</span>
+          </div>
+        </div>
+
+        <div className={styles.coverFoot}>
+          {copy.cover.kicker} · 01 / 09
+        </div>
+      </div>
+
+      <div className={styles.coverPhoto}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={SIENNA_HERO_PHOTO} alt={SIENNA_HERO_ALT} />
+        <div className={styles.coverPhotoScrim} />
+        <div className={styles.coverCaption}>
           <span>{copy.cover.heroMms}</span>
           <span>{copy.cover.heroTerrace}</span>
         </div>
-      </div>
-
-      <div className={styles.contentCover}>
-        <div>
-          <div className={styles.dateTag}>{copy.cover.preparedFor(customer)}</div>
-          <h1 className={styles.clientTitle}>{copy.cover.title}</h1>
-          <p className={styles.subText}>{copy.cover.lead(kwLabel, location)}</p>
-        </div>
-
-        <div className={styles.cardGrid}>
-          <div className={styles.dataCard}>
-            <span className={styles.cardLabel}>{copy.cover.systemEngine}</span>
-            <div>
-              <span className={styles.cardValue}>{systemKw > 0 ? formatSiennaKw(systemKw) : "—"}</span>
-              {systemKw > 0 ? <span className={styles.cardUnit}>kW</span> : null}
-            </div>
-          </div>
-
-          <div className={`${styles.dataCard} ${styles.dataCardYield}`}>
-            <span className={`${styles.cardLabel} ${styles.cardLabelAccent}`}>
-              {copy.cover.year1Yield}
-            </span>
-            <div>
-              <span className={`${styles.cardValue} ${styles.cardValueAccent}`}>
-                {annual > 0 ? annual.toLocaleString("en-IN") : "—"}
-              </span>
-              {annual > 0 ? (
-                <span className={`${styles.cardUnit} ${styles.cardUnitYield}`}>{copy.cover.units}</span>
-              ) : null}
-            </div>
-          </div>
-
-          <div className={`${styles.dataCard} ${styles.dataCardAccent}`}>
-            <span className={`${styles.cardLabel} ${styles.cardLabelSite}`}>{copy.cover.site}</span>
-            <div>
-              <span className={`${styles.cardValue} ${styles.cardValueSite}`}>
-                {location || "—"}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className={styles.pageFooter}>
-        {brand ? `${brand} · ` : ""}
-        {location ? `${location} · ` : ""}
-        01 / 09
       </div>
     </section>
   );

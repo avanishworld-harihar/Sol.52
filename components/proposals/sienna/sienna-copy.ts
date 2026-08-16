@@ -1,7 +1,6 @@
 /**
- * Sienna EN / Hindi UI copy.
- * Hindi is spoken Hinglish: keep popular English words (customer, panel, inverter,
- * DC, AC, unit, bill, subsidy, net-metering, BOM). Never “ग्राहक”.
+ * Sienna EN / Hindi UI copy — Laterite Folio voice.
+ * Hindi is spoken Hinglish. Never “ग्राहक”.
  */
 
 export type SiennaLang = "en" | "hi";
@@ -18,234 +17,224 @@ export function getSiennaCopy(lang: SiennaLang) {
       langAria: hi ? "Language" : "Language",
       loading: hi ? "Proposal तैयार हो रहा है…" : "Preparing proposal…",
     },
+    spine: {
+      bill: hi ? "Bill" : "Bill",
+      parts: hi ? "Parts" : "Parts",
+      drawing: hi ? "Drawing" : "Drawing",
+      year: hi ? "Year" : "Year",
+      outlay: hi ? "Outlay" : "Outlay",
+      terms: hi ? "Terms" : "Terms",
+      terms2: hi ? "AMC" : "AMC",
+    },
     cover: {
+      kicker: hi ? "घर का plant book" : "Household plant book",
       heroMms: "Elevated GI MMS",
       heroTerrace: hi ? "RCC terrace · नीचे चल सकते हैं" : "RCC terrace · walkable under array",
       preparedFor: (name: string) =>
         hi
           ? name !== "—"
-            ? `${name} के लिए तैयार`
-            : "इस property के लिए तैयार"
+            ? `${name} के लिए`
+            : "इस property के लिए"
           : name !== "—"
-            ? `Prepared for ${name}`
-            : "Prepared for this property",
-      title: hi ? "Smart Energy Portfolio." : "Smart Energy Portfolio.",
+            ? `For ${name}`
+            : "For this property",
+      title: hi ? "आपकी terrace. एक working plant." : "Your terrace. A working plant.",
       lead: (kw: string, location: string) =>
         hi
-          ? `एक high-efficiency${kw ? ` ${kw} kW` : ""} photovoltaic system${
+          ? `${kw ? `${kw} kW ` : ""}rooftop plant${
               location ? ` — ${location}` : ""
-            } जो grid पर कम निर्भर करे, और live economics होने पर साफ return दिखाए।`
-          : `A high-efficiency${kw ? ` ${kw} kW` : ""} photovoltaic system${
-              location ? ` for ${location}` : ""
-            } engineered to reduce grid reliance and deliver reliable returns when live economics are on file.`,
-      systemEngine: hi ? "System size" : "System Engine",
-      year1Yield: hi ? "Year-1 yield" : "Est. Year 1 Yield",
-      units: hi ? "units" : "Units",
+            }. Grid कम, terrace वही. खाली field guess नहीं।`
+          : `${kw ? `${kw} kW ` : ""}rooftop plant${
+              location ? ` in ${location}` : ""
+            }. Less grid, same terrace. Blank fields are not guessed.`,
+      system: hi ? "Plant size" : "Plant size",
+      yield: hi ? "Year-1 units" : "Year-1 units",
+      units: hi ? "units" : "units",
       site: hi ? "Site" : "Site",
     },
     audit: {
-      tag: hi ? "Finance · बिजली का bill" : "Finance · the electricity bill",
-      title: hi ? "Bill का पैसा कहाँ जाता है." : "Where the bill money goes.",
+      kicker: hi ? "आज का bill" : "Today’s bill",
+      title: hi ? "पैसा अभी कहाँ जाता है." : "Where the money goes now.",
       lead: hi
-        ? "यह पेज सिर्फ बिजली का पैसा है — आज का grid bill, और solar के बाद हर महीने क्या बचता है। Plant की कीमत, subsidy और payback Capital पेज पर हैं। खाली जगह अंदाज़ा नहीं।"
-        : "This page is only electricity money — today’s grid bill, and what solar keeps in your pocket each month. Plant price, subsidy, and payback live on the Capital page. Blank fields are not guessed.",
-      step1: hi ? "1 · आज का bill" : "1 · Today’s bill",
-      step1Hint: (monthly: string) =>
+        ? "यह पेज सिर्फ बिजली का bill है. Plant की कीमत Outlay पेज पर है."
+        : "This page is only the electricity bill. Plant price sits on the Outlay page.",
+      today: hi ? "आज / साल" : "Today / year",
+      keep: hi ? "Solar के बाद / महीना" : "After solar / month",
+      todayHint: (monthly: string) =>
         hi ? `File पर लगभग ${monthly} हर महीने।` : `About ${monthly} each month on the bill on file.`,
-      step1Empty: hi ? "इस proposal पर yearly bill अभी नहीं है।" : "No yearly bill is on this proposal yet.",
-      step2: hi ? "2 · हर महीने बचता है" : "2 · You keep each month",
-      step2Hint: (yearly: string) =>
-        hi ? `पूरे साल यही ${yearly} बनता है — यही finance है।` : `That is ${yearly} across the year — this is the finance.`,
-      step2Empty: hi ? "Monthly saving इस proposal पर अभी नहीं है।" : "Monthly saving is not on this proposal yet.",
-      step3: hi ? "3 · Bill का कितना हिस्सा" : "3 · How much of the bill",
-      step3Hint: hi
-        ? "इतना bill solar cover कर सकता है। बाकी grid से आता है।"
-        : "This much of the bill solar can cover. The rest still comes from the grid.",
-      step3Empty: hi
-        ? "Coverage तब आएगा जब bill और solar saving file पर हों।"
-        : "Coverage appears when bill and solar saving are on file.",
-      monthsOnBill: hi ? "Bill के महीने" : "Months on the bill",
+      todayEmpty: hi ? "Yearly bill इस proposal पर अभी नहीं है।" : "No yearly bill is on this proposal yet.",
+      keepHint: (yearly: string) =>
+        hi ? `पूरे साल यही ${yearly}.` : `That is ${yearly} across the year.`,
+      keepEmpty: hi ? "Monthly saving अभी file पर नहीं।" : "Monthly saving is not on file yet.",
+      cover: hi ? "Bill का कितना हिस्सा solar ले सकता है" : "How much of the bill solar can take",
+      coverEmpty: hi
+        ? "Coverage तब जब bill और saving दोनों file पर हों।"
+        : "Coverage appears when bill and saving are both on file.",
+      months: hi ? "Bill के महीने" : "Months on the bill",
       monthsEmpty: hi
-        ? "महीने-महीने की bars तब दिखेंगी जब bill months file पर हों।"
-        : "Month-by-month bars appear when bill months are on file.",
+        ? "महीने तब दिखेंगे जब bill months file पर हों।"
+        : "Months appear when bill months are on file.",
       readSave: (month: string) =>
         hi
-          ? `सीधी बात: हर महीने लगभग ${month} bill में कम। Plant खरीदने का पैसा Capital पेज पर है।`
-          : `Plain talk: about ${month} less on the bill each month. Money to buy the plant is on the Capital page.`,
+          ? `सीधी बात: हर महीने लगभग ${month} कम. खरीद का पैसा Outlay पेज पर.`
+          : `Plain talk: about ${month} less each month. Money to buy the plant is on Outlay.`,
       readEmpty: hi
-        ? "जब bill file पर सेव होगा, ये boxes भर जाएँगे। Plant की कीमत Capital पेज पर है।"
-        : "When a bill is saved on the proposal, these boxes fill. Plant price sits on the Capital page.",
+        ? "जब bill सेव होगा, ये संख्याएँ भरेंगी. कीमत Outlay पर है."
+        : "When a bill is saved, these figures fill. Price sits on Outlay.",
     },
     hardware: {
-      tag: hi ? "System architecture · 7-item BOM" : "System architecture · 7-item BOM",
-      title: "Hardware Specs.",
+      kicker: hi ? "सात हिस्से" : "Seven parts",
+      title: hi ? "Plant क्या-क्या लगाता है." : "What the plant is made of.",
       lead: hi
-        ? "DCDB, ACDB, lightning arrester और earthing अलग-अलग हैं। Earthing: 3 nos × 17 mm copper rod (IS 3043)."
+        ? "DCDB, ACDB, lightning arrester और earthing अलग हैं. Earthing: 3 nos × 17 mm copper rod (IS 3043)."
         : "DCDB, ACDB, lightning arrester and earthing are separate. Earthing: 3 nos × 17 mm copper rod (IS 3043).",
+      colNo: "No.",
+      colPart: hi ? "हिस्सा" : "Part",
+      colSpec: hi ? "Spec" : "Spec",
+      colMark: hi ? "Mark" : "Mark",
     },
     engineering: {
-      tag: hi ? "Engineering design" : "Engineering design",
-      title: "Design & Performance.",
+      kicker: hi ? "Drawing" : "Drawing",
+      title: hi ? "छत पर array कैसे बैठता है." : "How the array sits on this roof.",
       lead: hi
-        ? "इस plant का rooftop layout, site latitude, tilt और Indian standards. Year-round yield अगले पेज पर है। खाली field खाली रहती है — guess नहीं।"
-        : "Rooftop layout, site latitude, tilt, and Indian standards for this plant. Year-round yield is on the next page. Blank fields stay blank — they are not guessed.",
-      arrayTitle: hi ? "South-facing array" : "Optimal south-facing array",
-      arrayTilt: (tilt: number, az: number) =>
-        `Tilt: ${tilt}° | Azimuth: ${az}° (True South)`,
+        ? "Layout, latitude, tilt, Indian standards. Year-round yield अगले पेज पर. Guess नहीं."
+        : "Layout, latitude, tilt, Indian standards. Year-round yield is next. Nothing is guessed.",
+      drawingNo: hi ? "Sheet 04 · roof plan" : "Sheet 04 · roof plan",
+      arrayTitle: hi ? "South-facing array" : "South-facing array",
+      arrayTilt: (tilt: number, az: number) => `Tilt ${tilt}° · Azimuth ${az}° (True South)`,
       arrayAzimuthOnly: (az: number) =>
         hi
-          ? `Azimuth: ${az}° (True South) · tilt site latitude के साथ आएगा`
-          : `Azimuth: ${az}° (True South) · tilt appears with site latitude`,
+          ? `Azimuth ${az}° (True South) · tilt latitude के साथ`
+          : `Azimuth ${az}° (True South) · tilt with latitude`,
       arrayNoTilt: hi
-        ? "Tilt तब दिखेगा जब site latitude इस proposal पर हो।"
-        : "Tilt appears when site latitude is on this proposal.",
+        ? "Tilt तब जब site latitude file पर हो।"
+        : "Tilt appears when site latitude is on file.",
       showing: (shown: number, total: number) =>
-        hi ? ` · ${shown}/${total} दिख रहे हैं` : ` · showing ${shown}/${total}`,
+        hi ? ` · ${shown}/${total}` : ` · ${shown}/${total}`,
       roofEmpty: hi
-        ? "Module count file पर होने पर array layout दिखेगा।"
-        : "Array layout appears when module count is on file.",
-      siteTitle: hi ? "Site & roof" : "Site & roof",
+        ? "Module count file पर होने पर plan दिखेगा।"
+        : "Plan appears when module count is on file.",
+      siteTitle: hi ? "Title block" : "Title block",
       latitude: "Latitude",
-      latitudeCaption: hi ? "इसी छत का capture angle सेट करता है।" : "Sets the capture angle for this roof.",
-      roofArea: hi ? "Required roof area" : "Required roof area",
+      latitudeCaption: hi ? "इसी छत का capture angle." : "Sets the capture angle for this roof.",
+      roofArea: hi ? "Roof area" : "Roof area",
       roofAreaCaption: (n: number, per: string) =>
         hi
-          ? `${n} × ${per}/module (panel + walkway). Survey के बाद final.`
-          : `${n} × ${per}/module (panel + walkway). Final after survey.`,
-      roofAreaEmpty: hi
-        ? "Module count proposal पर होने पर दिखेगा।"
-        : "Appears when module count is on this proposal.",
-      shadow: hi ? "Shadow tolerance" : "Shadow tolerance",
-      shadowValue: "Dual MPPT tracking",
+          ? `${n} × ${per}/module. Survey के बाद final.`
+          : `${n} × ${per}/module. Final after survey.`,
+      roofAreaEmpty: hi ? "Module count के साथ आएगा।" : "Appears with module count.",
+      shadow: hi ? "Shadow" : "Shadow",
+      shadowValue: "Dual MPPT",
       shadowCaption: hi
-        ? "बादल आने पर inverter खुद adjust करता है।"
-        : "Inverter adjusts dynamically to passing clouds.",
+        ? "बादल पर inverter खुद adjust करता है।"
+        : "Inverter adjusts to passing cloud.",
       cableFallback: hi
-        ? "DC run (roof → inverter) · AC run (inverter → main board) · VD survey के बाद"
-        : "DC run (roof → inverter) · AC run (inverter → main board) · VD after survey",
-      specsTitle: hi ? "Technical specifications" : "Technical specifications",
-      specInverter: hi ? "Inverter capacity" : "Inverter capacity",
-      specInverterDesc: hi
-        ? "घर की grid को मिलने वाली max power."
-        : "Max power delivered to the home grid.",
-      specDc: hi ? "DC array (panels)" : "DC array (panels)",
-      specDcDesc: (n: number, w: number) => `${n} × ${w} Wp modules.`,
-      specDcEmpty: hi ? "Module count और wattage live BOM से।" : "Module count and wattage from the live BOM.",
-      specPr: hi ? "Performance ratio" : "Performance ratio",
-      specPrDesc: hi
-        ? "Temperature और grid losses के बाद typical efficiency."
-        : "Typical efficiency after temperature and grid losses.",
-      specDcAc: "DC/AC ratio",
-      specDcAcDesc: hi
-        ? "सुबह-शाम बेहतर yield के लिए थोड़ा extra panel."
-        : "Over-paneled for stronger morning and evening yield.",
-      peakSun: hi ? "Peak sun hours" : "Peak sun hours",
+        ? "DC: roof → inverter · AC: inverter → main board · VD survey के बाद"
+        : "DC: roof → inverter · AC: inverter → main board · VD after survey",
+      specInverter: hi ? "Inverter" : "Inverter",
+      specInverterDesc: hi ? "घर की grid को max power." : "Max power to the home grid.",
+      specDc: hi ? "DC array" : "DC array",
+      specDcDesc: (n: number, w: number) => `${n} × ${w} Wp`,
+      specDcEmpty: hi ? "Live BOM से." : "From the live BOM.",
+      specPr: "PR",
+      specPrDesc: hi ? "Losses के बाद typical." : "Typical after losses.",
+      specDcAc: "DC/AC",
+      specDcAcDesc: hi ? "सुबह-शाम के लिए extra panel." : "Over-panel for morning and evening.",
+      peakSun: hi ? "Peak sun" : "Peak sun",
       specificYield: hi ? "Specific yield" : "Specific yield",
-      loadCoverage: hi ? "Load coverage" : "Load coverage",
-      hrsDay: (n: number) => (hi ? `${n} hrs/day` : `${n} hrs/day`),
-      standards: hi ? "Standards compliance" : "Standards compliance",
-      expertTag: hi ? "Expert insight" : "Expert insight",
+      loadCoverage: hi ? "Load cover" : "Load cover",
+      hrsDay: (n: number) => `${n} hrs/day`,
+      standards: hi ? "Standards" : "Standards",
+      expertTag: hi ? "Notes on this roof" : "Notes on this roof",
     },
     capital: {
-      tag: hi ? "Capital · plant की कीमत" : "Capital · the plant price",
-      title: hi ? "Plant लगाने में कितना लगेगा." : "What it costs to put the plant up.",
+      kicker: hi ? "Outlay" : "Outlay",
+      title: hi ? "लगाने में कितना देना है." : "What you pay to put it up.",
       lead: hi
-        ? "यह पेज खरीद का पैसा है। Bill में कितना बचता है पिछले Forecast पेज पर है। यहाँ: कीमत, subsidy, किस्तें, और कितने साल में पैसा वापस आता है।"
-        : "This page is money to buy the plant. What the bill saves is on the previous Forecast page. Here: price, subsidy, stage payments, and how many years until the plant pays itself back.",
-      pay: hi ? "1 · Plant की कीमत" : "1 · Plant price",
-      payHint: hi ? "एक बार का investment" : "One-time money to install",
-      gross: hi ? "System cost (gross)" : "System cost (gross)",
-      subsidyLater: hi ? "Subsidy (बाद में credit)" : "Subsidy (credited later)",
-      subsidyNone: hi ? "इस quote पर subsidy" : "Subsidy on this quote",
-      noneOnFile: hi ? "File पर नहीं" : "None on file",
-      netAfter: hi ? "Subsidy के बाद आपको देना" : "Net outlay after subsidy",
-      netSame: hi ? "आपको देना (gross जैसा)" : "You pay (same as gross)",
-      howPay: hi ? "2 · पैसे कैसे देते हैं" : "2 · How you pay",
-      howPayHint: hi ? "Gross cost पर stage schedule" : "Stage schedule on gross cost",
-      produce: hi ? "3 · पैसे कब लौटते हैं" : "3 · When the money comes back",
-      produceHint: hi
-        ? "Payback = Forecast पेज की saving से plant की कीमत कितने साल में भरती है"
-        : "Payback = years for the Forecast-page saving to cover this plant price",
-      year1Gen: hi ? "Year-1 generation" : "Year-1 generation",
-      payback: hi ? "Simple payback" : "Simple payback",
+        ? "खरीद का पैसा. Bill saving पिछले Year पेज पर है."
+        : "Money to buy the plant. Bill saving is on the previous Year page.",
+      youPay: hi ? "आपको देना" : "You pay",
+      gross: hi ? "Gross" : "Gross",
+      subsidy: hi ? "Subsidy" : "Subsidy",
+      subsidyNone: hi ? "File पर नहीं" : "None on file",
+      netHint: hi ? "Subsidy बाद में credit — यहाँ net." : "Subsidy credited later — net here.",
+      netSameHint: hi ? "Gross जैसा." : "Same as gross.",
+      stages: hi ? "किस्तें" : "Stage payments",
+      stagesHint: hi ? "Gross पर schedule" : "Schedule on gross",
+      year1: hi ? "Year-1 generation" : "Year-1 generation",
+      payback: hi ? "Payback" : "Payback",
       years: hi ? "years" : "years",
-      over25: hi ? "25 साल में यह capital" : "This capital over 25 years",
-      over25Hint: hi
-        ? "Bill saving Forecast पेज पर है — यहाँ सिर्फ plant पर लंबा return।"
-        : "Bill saving sits on the Forecast page — here only the long return on this plant.",
+      over25: hi ? "25 साल" : "25 years",
     },
     forecast: {
-      tag: hi ? "Yield · array के बाद" : "Yield · after the array",
-      title: "Seasonal Forecast.",
+      kicker: hi ? "साल का सूरज" : "A year of sun",
+      title: hi ? "बारह महीने, एक छत." : "Twelve months, one roof.",
       lead: (units: string, bill: boolean) =>
         hi
-          ? `Engineering के बाद: Year-1 yield ${units} units. Bars central-India rooftop का typical curve हैं.${
-              bill ? " गहरी bars uploaded bill की units हैं." : " हरे = peak-sun महीने."
+          ? `Year-1 yield ${units} units. Central-India rooftop का typical curve.${
+              bill ? " गहरी पट्टी bill units हैं." : " Laterite = peak-sun महीने."
             }`
-          : `After the array design: Year-1 yield is ${units} units. Bars follow a typical central-India rooftop curve.${
-              bill ? " Dark bars are bill units from the uploaded bill." : " Green = peak-sun months."
+          : `Year-1 yield is ${units} units. Typical central-India rooftop curve.${
+              bill ? " Dark strip is bill units." : " Laterite = peak-sun months."
             }`,
       leadEmpty: hi
-        ? "Year-1 yield proposal पर होने पर chart दिखेगा — कुछ गढ़ा नहीं जाता।"
-        : "The chart appears when year-1 yield exists on this proposal — nothing is invented.",
-      year1Solar: hi ? "Year-1 solar" : "Year-1 solar",
+        ? "Year-1 yield file पर हो तो ribbon दिखेगा."
+        : "The ribbon appears when year-1 yield is on file.",
       units: "units",
-      highest: hi ? "सबसे ऊँचा महीना" : "Highest month",
-      lowest: hi ? "सबसे नीचा महीना" : "Lowest month",
-      billYear: hi ? "Bill year units" : "Bill year units",
+      highest: hi ? "ऊँचा महीना" : "Highest",
+      lowest: hi ? "नीचा महीना" : "Lowest",
+      billYear: hi ? "Bill year" : "Bill year",
       legendSolar: "Solar",
-      legendPeak: hi ? "Peak sun" : "Peak sun",
-      legendBill: hi ? "Bill units" : "Bill units",
+      legendPeak: hi ? "Peak" : "Peak",
+      legendBill: hi ? "Bill" : "Bill",
       chartAria: (bill: boolean) =>
         hi
           ? bill
-            ? "महीने की solar generation vs bill units"
-            : "महीने की generation forecast"
+            ? "महीने की solar vs bill units"
+            : "महीने की generation"
           : bill
-            ? "Monthly solar generation versus bill units"
-            : "Monthly generation forecast",
-      axisUnits: hi ? "हर bar पर units" : "Units on each bar",
-      axisSave: hi ? "महीने के नीचे ₹ saving" : "₹ saving under the month",
+            ? "Monthly solar versus bill units"
+            : "Monthly generation",
     },
     terms: {
-      tag: hi ? "Terms & compliance" : "Terms & compliance",
-      title: "Terms & Conditions.",
+      kicker: hi ? "नियम" : "Rules",
+      title: hi ? "काम कैसे चलेगा." : "How the work runs.",
       lead: hi
-        ? "General terms, net-metering के documents, और annual maintenance क्या cover करता है।"
-        : "General terms, documents needed for net-metering, and what annual maintenance covers.",
-      general: hi ? "General terms" : "General terms",
-      documents: hi ? "Documents required" : "Documents required",
-      amcScope: hi ? "Annual maintenance — scope" : "Annual maintenance — scope",
-      tag2: hi ? "Terms & compliance · आगे" : "Terms & compliance · continued",
-      title2: hi ? "Maintenance और आपका scope." : "Maintenance & client scope.",
+        ? "General terms, net-metering documents, AMC क्या cover करता है."
+        : "General terms, net-metering documents, and what AMC covers.",
+      general: hi ? "General" : "General",
+      documents: hi ? "Documents" : "Documents",
+      amcScope: hi ? "AMC — scope" : "AMC — scope",
+      kicker2: hi ? "AMC आगे" : "AMC continued",
+      title2: hi ? "आपका हिस्सा, हमारी cost." : "Your scope, our cost.",
       lead2: hi
-        ? "AMC में हम क्या करते हैं, क्या आपके पास रहता है, और बाद के सालों का maintenance कैसे charge होता है।"
-        : "What we cover under AMC, what stays with you, and how later-year maintenance is charged.",
-      clientScope: hi ? "Customer का scope" : "Client's scope",
-      cost: hi ? "Maintenance की cost" : "Cost of maintenance",
+        ? "AMC में हम क्या करते हैं, क्या आपके पास रहता है, बाद के साल कैसे charge होते हैं."
+        : "What we cover, what stays with you, and how later years are charged.",
+      clientScope: hi ? "Customer का scope" : "Your scope",
+      cost: hi ? "Maintenance cost" : "Maintenance cost",
       regards: hi ? "Regards," : "Regards,",
-      bankTitle: hi ? "Payment Terms & Bank Details" : "Payment Terms & Bank Details",
+      bankTitle: hi ? "Bank details" : "Bank details",
       bankIntro: hi
-        ? "सभी stage payments सीधे नीचे दिए company account में transfer करें:"
-        : "All stage payments must be transferred directly to the following company account:",
-      bankAccountName: hi ? "Account Name" : "Account Name",
+        ? "सभी stage payments इसी account में:"
+        : "All stage payments to this account:",
+      bankAccountName: hi ? "Account" : "Account",
       bankAcNo: hi ? "A/c No" : "A/c No",
       bankIfsc: "IFSC",
       bankUpi: "UPI",
     },
     close: {
-      kicker: hi ? "Execution mandate" : "Execution mandate",
+      kicker: hi ? "दस्तखत" : "Sign",
       titleNamed: (name: string) =>
-        hi ? `${name}, यह छत तैयार है.` : `${name}, this roof is ready.`,
-      titlePlain: hi ? "यह छत तैयार है." : "This roof is ready.",
+        hi ? `${name}, छत ready है.` : `${name}, the roof is ready.`,
+      titlePlain: hi ? "छत ready है." : "The roof is ready.",
       lead: (plant: string, location: string | null) =>
         hi
-          ? `${plant}${location ? ` — ${location}` : ""} — जब आप ready हों, accept करें.`
-          : `${plant}${location ? ` for ${location}` : ""} — accept when you are.`,
-      plantKw: (kw: string) => (hi ? `एक ${kw} kW rooftop plant` : `A ${kw} kW rooftop plant`),
+          ? `${plant}${location ? ` — ${location}` : ""}. जब तैयार हों, sign करें.`
+          : `${plant}${location ? ` in ${location}` : ""}. Sign when you are ready.`,
+      plantKw: (kw: string) => (hi ? `${kw} kW rooftop plant` : `${kw} kW rooftop plant`),
       plantPlain: hi ? "यह rooftop plant" : "This rooftop plant",
-      clientRole: hi ? "Customer sign" : "Client authorization",
-      officialRole: hi ? "Company sign" : "Official signatory",
+      clientRole: hi ? "Customer" : "Client",
+      officialRole: hi ? "Company" : "Company",
       contactTitle: hi ? "Contact" : "Contact",
     },
   };

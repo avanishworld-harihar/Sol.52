@@ -7,35 +7,9 @@ import {
   formatLifetimeBenefitInr,
 } from "@/components/proposals/_shared/formatters";
 import styles from "./Sienna.module.css";
-import { SiennaDocFooter } from "./sienna-brand";
+import { SiennaSheet } from "./sienna-brand";
 import { useSiennaLang } from "./sienna-lang-context";
 import { siennaAnnualUnits } from "./sienna-live";
-
-function Figure({
-  name,
-  value,
-  unit,
-  save,
-  wide,
-}: {
-  name: string;
-  value: string;
-  unit?: string;
-  save?: boolean;
-  wide?: boolean;
-}) {
-  return (
-    <div className={`${styles.capMetric} ${wide ? styles.capMetricWide : ""}`}>
-      <span className={styles.capName}>{name}</span>
-      <div>
-        <span className={`${styles.capFigure} ${save ? styles.capFigureSave : ""}`}>{value}</span>
-        {unit ? (
-          <span className={`${styles.capUnit} ${save ? styles.capUnitSave : ""}`}>{unit}</span>
-        ) : null}
-      </div>
-    </div>
-  );
-}
 
 export function SiennaLedgerPage({ data }: { data: ProposalData }) {
   const { copy } = useSiennaLang();
@@ -53,87 +27,81 @@ export function SiennaLedgerPage({ data }: { data: ProposalData }) {
   const netValue = showSubsidy ? net : gross;
 
   return (
-    <section className={`${styles.a4Sienna} ${styles.innerSheet}`}>
-      <div className={styles.contentArea}>
-        <div>
-          <div className={styles.dateTag}>{copy.capital.tag}</div>
-          <h2 className={styles.sectionTitle}>{copy.capital.title}</h2>
-          <p className={styles.subText}>{copy.capital.lead}</p>
+    <SiennaSheet data={data} page="06 / 09" chapter={copy.spine.outlay}>
+      <p className={styles.kicker}>{copy.capital.kicker}</p>
+      <h2 className={styles.displayTitle}>{copy.capital.title}</h2>
+      <p className={styles.lead}>{copy.capital.lead}</p>
+
+      <div className={styles.outlayHero}>
+        <span className={styles.outlayHeroLabel}>{copy.capital.youPay}</span>
+        <div className={styles.outlayHeroValue}>
+          {netValue > 0 ? formatInrCompact(netValue) : "—"}
         </div>
-
-        <div className={styles.capStack}>
-          <div className={`${styles.capSection} ${styles.capSectionPay}`}>
-            <div className={styles.capSectionHead}>
-              <span className={styles.capKicker}>{copy.capital.pay}</span>
-              <span className={styles.capHint}>{copy.capital.payHint}</span>
-            </div>
-            <div className={styles.capMetricGrid}>
-              <Figure name={copy.capital.gross} value={gross > 0 ? formatInrCompact(gross) : "—"} />
-              {showSubsidy ? (
-                <Figure name={copy.capital.subsidyLater} value={`− ${formatInrCompact(subsidy)}`} />
-              ) : (
-                <Figure name={copy.capital.subsidyNone} value={copy.capital.noneOnFile} />
-              )}
-              <Figure
-                name={showSubsidy ? copy.capital.netAfter : copy.capital.netSame}
-                value={netValue > 0 ? formatInrCompact(netValue) : "—"}
-                wide
-              />
-            </div>
-          </div>
-
-          {payments.length > 0 ? (
-            <div className={`${styles.capSection} ${styles.capSectionPaySchedule}`}>
-              <div className={styles.capSectionHead}>
-                <span className={styles.capKicker}>{copy.capital.howPay}</span>
-                <span className={styles.capHint}>{copy.capital.howPayHint}</span>
-              </div>
-              <div className={styles.payList}>
-                {payments.map((p, i) => (
-                  <div key={p.label} className={styles.payRow}>
-                    <span className={styles.payStep}>{i + 1}</span>
-                    <span className={styles.payLabel}>
-                      {p.label}
-                      {p.pctLabel ? ` · ${p.pctLabel}` : ""}
-                    </span>
-                    <span className={styles.payAmt}>
-                      {p.amountInr > 0 ? formatInr(p.amountInr) : "—"}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : null}
-
-          <div className={`${styles.capSection} ${styles.capSectionSave}`}>
-            <div className={styles.capSectionHead}>
-              <span className={styles.capKicker}>{copy.capital.produce}</span>
-              <span className={styles.capHint}>{copy.capital.produceHint}</span>
-            </div>
-            <div className={styles.capMetricGrid}>
-              <Figure
-                name={copy.capital.year1Gen}
-                value={units > 0 ? units.toLocaleString("en-IN") : "—"}
-                unit={units > 0 ? "kWh" : undefined}
-              />
-              <Figure
-                name={copy.capital.payback}
-                value={payback > 0 ? String(payback) : "—"}
-                unit={payback > 0 ? copy.capital.years : undefined}
-              />
-              <Figure
-                name={copy.capital.over25}
-                value={lifetime > 0 ? formatLifetimeBenefitInr(lifetime) : "—"}
-                save
-                wide
-              />
-            </div>
-          </div>
-        </div>
-
-        <SiennaDocFooter data={data} page="06 / 09" />
+        <p className={styles.outlayHeroHint}>
+          {showSubsidy ? copy.capital.netHint : copy.capital.netSameHint}
+        </p>
       </div>
-    </section>
+
+      <div className={styles.outlayPair}>
+        <div className={styles.outlayCell}>
+          <span className={styles.outlayName}>{copy.capital.gross}</span>
+          <span className={styles.outlayFig}>
+            {gross > 0 ? formatInrCompact(gross) : "—"}
+          </span>
+        </div>
+        <div className={styles.outlayCell}>
+          <span className={styles.outlayName}>{copy.capital.subsidy}</span>
+          <span className={styles.outlayFig}>
+            {showSubsidy ? `− ${formatInrCompact(subsidy)}` : copy.capital.subsidyNone}
+          </span>
+        </div>
+      </div>
+
+      {payments.length > 0 ? (
+        <div className={styles.rail}>
+          <div className={styles.railHead}>
+            {copy.capital.stages} · {copy.capital.stagesHint}
+          </div>
+          {payments.map((p, i) => (
+            <div key={p.label} className={styles.railRow}>
+              <span className={styles.railNo}>{i + 1}</span>
+              <span className={styles.railLabel}>
+                {p.label}
+                {p.pctLabel ? ` · ${p.pctLabel}` : ""}
+              </span>
+              <span className={styles.railAmt}>
+                {p.amountInr > 0 ? formatInr(p.amountInr) : "—"}
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      <div className={styles.returnGrid}>
+        <div className={styles.returnCell}>
+          <span className={styles.returnName}>{copy.capital.year1}</span>
+          <span className={styles.returnFig}>
+            {units > 0 ? units.toLocaleString("en-IN") : "—"}
+            {units > 0 ? <span className={styles.returnUnit}>kWh</span> : null}
+          </span>
+        </div>
+        <div className={styles.returnCell}>
+          <span className={styles.returnName}>{copy.capital.payback}</span>
+          <span className={styles.returnFig}>
+            {payback > 0 ? String(payback) : "—"}
+            {payback > 0 ? (
+              <span className={styles.returnUnit}>{copy.capital.years}</span>
+            ) : null}
+          </span>
+        </div>
+        <div className={styles.returnCell}>
+          <span className={styles.returnName}>{copy.capital.over25}</span>
+          <span className={styles.returnFig}>
+            {lifetime > 0 ? formatLifetimeBenefitInr(lifetime) : "—"}
+          </span>
+        </div>
+      </div>
+    </SiennaSheet>
   );
 }
 

@@ -5,7 +5,7 @@
  * Never invent a company name or logo.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
 import styles from "./Sienna.module.css";
 import {
@@ -244,5 +244,31 @@ export function SiennaDocFooter({
     <div className={styles.pageFooter}>
       {brand ? `${brand} · ${page}` : page}
     </div>
+  );
+}
+
+/** Bound folio frame: laterite spine + body. Cover and close stay bleed. */
+export function SiennaSheet({
+  data,
+  page,
+  chapter,
+  children,
+}: {
+  data: ProposalData;
+  page: string;
+  chapter: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className={`${styles.a4Sienna} ${styles.folio}`}>
+      <aside className={styles.spine} aria-hidden>
+        <span className={styles.spineChapter}>{chapter}</span>
+        <span className={styles.spinePage}>{page}</span>
+      </aside>
+      <div className={styles.folioMain}>
+        {children}
+        <SiennaDocFooter data={data} page={page} />
+      </div>
+    </section>
   );
 }

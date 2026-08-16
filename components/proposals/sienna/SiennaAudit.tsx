@@ -1,9 +1,9 @@
 "use client";
 
 import type { ProposalData } from "@/lib/proposal-data";
-import { formatInr, formatInrCompact } from "@/components/proposals/_shared/formatters";
+import { formatInr } from "@/components/proposals/_shared/formatters";
 import styles from "./Sienna.module.css";
-import { SiennaDocFooter } from "./sienna-brand";
+import { SiennaSheet } from "./sienna-brand";
 import { useSiennaLang } from "./sienna-lang-context";
 import {
   siennaAnnualSavings,
@@ -13,9 +13,9 @@ import {
   siennaYearlyBill,
 } from "./sienna-live";
 
-function money(value: number, compact = false): string {
+function money(value: number): string {
   if (!(value > 0)) return "—";
-  return compact ? formatInrCompact(value) : formatInr(value);
+  return formatInr(value);
 }
 
 export function SiennaAudit({ data }: { data: ProposalData }) {
@@ -30,85 +30,71 @@ export function SiennaAudit({ data }: { data: ProposalData }) {
   const maxBar = Math.max(...barHeights, 1);
 
   return (
-    <section className={`${styles.a4Sienna} ${styles.innerSheet}`}>
-      <div className={styles.contentArea}>
-        <div className={styles.dateTag}>{copy.audit.tag}</div>
-        <h1 className={styles.clientTitle}>{copy.audit.title}</h1>
-        <p className={styles.subText}>{copy.audit.lead}</p>
+    <SiennaSheet data={data} page="02 / 09" chapter={copy.spine.bill}>
+      <p className={styles.kicker}>{copy.audit.kicker}</p>
+      <h1 className={styles.displayTitle}>{copy.audit.title}</h1>
+      <p className={styles.lead}>{copy.audit.lead}</p>
 
-        <div className={styles.auditStory}>
-          <article className={styles.auditStep}>
-            <span className={styles.auditStepNum}>1</span>
-            <span className={styles.auditStepKicker}>{copy.audit.step1}</span>
-            <strong className={styles.auditStepValue}>{money(yearlyBill)}</strong>
-            <span className={styles.auditStepHint}>
-              {yearlyBill > 0
-                ? copy.audit.step1Hint(money(monthlyBill))
-                : copy.audit.step1Empty}
-            </span>
-          </article>
-
-          <article className={`${styles.auditStep} ${styles.auditStepSave}`}>
-            <span className={styles.auditStepNum}>2</span>
-            <span className={styles.auditStepKicker}>{copy.audit.step2}</span>
-            <strong className={`${styles.auditStepValue} ${styles.auditStepValueSave}`}>
-              {monthlySave > 0 ? `+${formatInr(monthlySave)}` : "—"}
-            </strong>
-            <span className={styles.auditStepHint}>
-              {yearlySave > 0
-                ? copy.audit.step2Hint(money(yearlySave))
-                : copy.audit.step2Empty}
-            </span>
-          </article>
-
-          <article className={`${styles.auditStep} ${styles.auditStepSubsidy}`}>
-            <span className={styles.auditStepNum}>3</span>
-            <span className={styles.auditStepKicker}>{copy.audit.step3}</span>
-            <strong className={`${styles.auditStepValue} ${styles.auditStepValueSubsidy}`}>
-              {coverPct > 0 ? `~${coverPct}%` : "—"}
-            </strong>
-            <span className={styles.auditStepHint}>
-              {coverPct > 0 ? copy.audit.step3Hint : copy.audit.step3Empty}
-            </span>
-          </article>
-        </div>
-
-        {months.length > 0 ? (
-          <div className={styles.auditMonthBlock}>
-            <div className={styles.auditMonthHead}>{copy.audit.monthsOnBill}</div>
-            <div
-              className={styles.auditMonthChart}
-              style={{ gridTemplateColumns: `repeat(${months.length}, minmax(0, 1fr))` }}
-            >
-              {months.map((month, i) => (
-                <div key={month.label} className={styles.auditMonthCol}>
-                  <div className={styles.auditMonthTrack}>
-                    <div
-                      className={`${styles.auditMonthFill}${
-                        month.isSummerPeak ? ` ${styles.auditMonthFillPeak}` : ""
-                      }`}
-                      style={{
-                        height: `${Math.max(8, Math.round((barHeights[i] / maxBar) * 100))}%`,
-                      }}
-                    />
-                  </div>
-                  <span className={styles.auditMonthLbl}>{month.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <p className={styles.auditPlain}>{copy.audit.monthsEmpty}</p>
-        )}
-
-        <p className={styles.auditPlain}>
-          {monthlySave > 0
-            ? copy.audit.readSave(formatInr(monthlySave))
-            : copy.audit.readEmpty}
-        </p>
+      <div className={styles.auditTwin}>
+        <article className={styles.auditPane}>
+          <span className={styles.auditPaneLabel}>{copy.audit.today}</span>
+          <strong className={styles.auditPaneValue}>{money(yearlyBill)}</strong>
+          <span className={styles.auditPaneHint}>
+            {yearlyBill > 0 ? copy.audit.todayHint(money(monthlyBill)) : copy.audit.todayEmpty}
+          </span>
+        </article>
+        <article className={`${styles.auditPane} ${styles.auditPaneKeep}`}>
+          <span className={styles.auditPaneLabel}>{copy.audit.keep}</span>
+          <strong className={styles.auditPaneValue}>
+            {monthlySave > 0 ? `+${formatInr(monthlySave)}` : "—"}
+          </strong>
+          <span className={styles.auditPaneHint}>
+            {yearlySave > 0 ? copy.audit.keepHint(money(yearlySave)) : copy.audit.keepEmpty}
+          </span>
+        </article>
       </div>
-      <SiennaDocFooter data={data} page="02 / 09" />
-    </section>
+
+      <div className={styles.auditCover}>
+        <div className={styles.auditCoverLabel}>{copy.audit.cover}</div>
+        <div className={styles.auditCoverValue}>
+          {coverPct > 0 ? `~${coverPct}%` : "—"}
+        </div>
+        {coverPct > 0 ? null : <p className={styles.note}>{copy.audit.coverEmpty}</p>}
+      </div>
+
+      {months.length > 0 ? (
+        <div>
+          <p className={`${styles.kicker} ${styles.monthKicker}`}>
+            {copy.audit.months}
+          </p>
+          <div className={styles.monthRail}>
+            {months.map((month, i) => (
+              <div key={month.label} className={styles.monthTick}>
+                <div className={styles.monthStem}>
+                  <div
+                    className={`${styles.monthFill}${
+                      month.isSummerPeak ? ` ${styles.monthFillPeak}` : ""
+                    }`}
+                    style={{
+                      height: `${Math.max(8, Math.round((barHeights[i] / maxBar) * 100))}%`,
+                    }}
+                  />
+                </div>
+                <span className={styles.monthLbl}>{month.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <p className={styles.note}>{copy.audit.monthsEmpty}</p>
+      )}
+
+      <p className={styles.note}>
+        {monthlySave > 0
+          ? copy.audit.readSave(formatInr(monthlySave))
+          : copy.audit.readEmpty}
+      </p>
+    </SiennaSheet>
   );
 }
 

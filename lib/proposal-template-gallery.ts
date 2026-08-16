@@ -121,7 +121,7 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
     category: "residential",
     name: "Sienna",
     description:
-      "Warm paper flagship — copper chrome, forest yield, Inter. Cover shows plant + site; price on Capital.",
+      "Laterite Folio — bound household plant book. Bone paper, laterite spine, indigo drawings. Cover shows kW + site; price on Outlay.",
     thumbnailVariant: "sienna",
   },
 ];

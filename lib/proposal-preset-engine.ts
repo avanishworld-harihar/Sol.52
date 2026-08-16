@@ -11,7 +11,7 @@
  *   6. residential_quantum       — Quantum Cinematic Neo-Glass
  *   7. residential_emerald       — Emerald Signature split-folio
  *   8. residential_lumina         — Lumina clean light app UI
- *   9. residential_sienna         — Sienna warm-paper flagship (copper + forest)
+ *   9. residential_sienna         — Sienna Laterite Folio (bone paper, laterite spine)
  *  10. commercial_executive      — C&I commercial (hotel / hospital / industry…)
  *
  * Removed residential presets remap via normalizePresetId → residential_executive.
@@ -258,7 +258,7 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     id: "residential_sienna",
     label: "Sienna",
     description:
-      "Warm paper flagship — copper chrome, forest yield, Inter. Cover shows kW + site; price lives on Capital.",
+      "Laterite Folio — bound household plant book. Bone paper, laterite spine, indigo drawings. Cover shows kW + site; price lives on Outlay.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "requirement",

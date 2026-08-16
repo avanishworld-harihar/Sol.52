@@ -407,42 +407,45 @@ function EmeraldThumb({ size }: { size: "card" | "preview" }) {
 
 function SiennaThumb({ size }: { size: "card" | "preview" }) {
   return (
-    <div className="flex h-full w-full items-center justify-center bg-[#ede6d9]">
+    <div className="flex h-full w-full items-center justify-center bg-[#e4d5c2]">
       <div
         className={cn(
-          "relative flex flex-col overflow-hidden rounded-[6px] border border-[#E4D8C8] bg-[#F7F3EC] shadow-sm",
+          "relative flex overflow-hidden rounded-[2px] shadow-sm",
           size === "preview" ? "h-[62%] w-[68%]" : "h-[58%] w-[72%]"
         )}
       >
         <div
-          className="relative overflow-hidden bg-[#3A2A1C]"
-          style={{ height: "42%", borderBottomLeftRadius: 10, borderBottomRightRadius: 10 }}
+          className="flex h-full shrink-0 flex-col bg-[#f1e8d9]"
+          style={{ width: "42%", padding: size === "preview" ? "8% 7% 7%" : "7% 6% 6%" }}
         >
           <div
-            className="absolute left-[8%] top-[18%] rounded-[4px] bg-[#FFFCF7] px-[6%] py-[4%] font-extrabold text-[#1C1814]"
-            style={{ fontSize: size === "preview" ? 5 : 2.5 }}
+            className="font-semibold leading-tight text-[#241812]"
+            style={{ fontFamily: "Georgia, serif", fontSize: size === "preview" ? 7 : 3.5 }}
           >
-            SIENNA
+            Terrace
+            <br />
+            plant
+          </div>
+          <div className="mt-auto">
+            {["kW", "Yr-1", "Site"].map((c) => (
+              <div
+                key={c}
+                className="border-t border-[#e2d4c0] font-bold uppercase tracking-wider text-[#9c3b24]"
+                style={{ fontSize: size === "preview" ? 3.5 : 2, padding: "10% 0 0", marginTop: "8%" }}
+              >
+                {c}
+              </div>
+            ))}
           </div>
         </div>
-        <div
-          className={cn(
-            "px-[8%] pt-[8%] font-bold leading-tight text-[#1C1814]",
-            size === "preview" ? "text-[8px]" : "text-[3.5px]"
-          )}
-        >
-          Smart Energy
-        </div>
-        <div className="mx-[8%] mt-auto mb-[8%] grid grid-cols-3 gap-[6%]">
-          {["kW", "U", "Site"].map((c) => (
-            <div
-              key={c}
-              className="rounded-[3px] border border-[#E4D8C8] bg-[#FFFCF7] text-center font-bold text-[#9A4318]"
-              style={{ fontSize: size === "preview" ? 4 : 2, padding: "12% 0" }}
-            >
-              {c}
-            </div>
-          ))}
+        <div className="relative h-full flex-1 bg-[#314056]">
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(135deg, #9c3b24 0%, #314056 55%, #241812 100%)",
+            }}
+          />
         </div>
       </div>
     </div>

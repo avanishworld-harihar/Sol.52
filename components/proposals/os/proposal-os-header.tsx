@@ -98,10 +98,10 @@ const PRESET_META: Record<ProposalPresetId, PresetMeta> = {
   residential_sienna: {
     icon: <Flame className="h-4 w-4" />,
     label: "Sienna",
-    description: "Warm paper flagship · copper chrome · forest yield",
+    description: "Laterite Folio · bone paper · laterite spine · indigo drawings",
     pillClass:
-      "border-orange-200 bg-[#F7F3EC] text-[#9A4318] dark:border-orange-500/40 dark:bg-[#1C1814] dark:text-[#E8C4A8]",
-    dotClass: "bg-[#C45C26]",
+      "border-[#c9a090] bg-[#f1e8d9] text-[#9c3b24] dark:border-[#9c3b24]/40 dark:bg-[#241812] dark:text-[#e8c4a0]",
+    dotClass: "bg-[#9c3b24]",
   },
   commercial_executive: {
     icon: <Building2 className="h-4 w-4" />,
