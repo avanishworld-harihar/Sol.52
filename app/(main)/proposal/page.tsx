@@ -1800,6 +1800,8 @@ function ProposalPageContent() {
                   ? { galleryThemeKey: "emerald" }
                 : osPresetId === "residential_lumina"
                   ? { galleryThemeKey: "lumina" }
+                : osPresetId === "residential_sienna"
+                  ? { galleryThemeKey: "sienna" }
                   : osPresetId === "residential_executive"
                   ? { galleryThemeKey: "golden" }
                   : {}),
@@ -2424,6 +2426,9 @@ function ProposalPageContent() {
                         : preset === "residential_lumina" ||
                             preset === "lumina"
                           ? "residential_lumina"
+                        : preset === "residential_sienna" ||
+                            preset === "sienna"
+                          ? "residential_sienna"
                         : preset === "residential_executive"
                         ? "residential_executive"
                         : "residential_executive";

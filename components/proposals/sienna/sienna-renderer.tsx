@@ -1,37 +1,37 @@
 "use client";
 
 /**
- * Lumina renderer — clean light app-like residential proposal.
- * Preset id: residential_lumina
+ * Sienna renderer — warm paper flagship residential proposal.
+ * Preset id: residential_sienna
  */
 
 import { useEffect, useRef, useState } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
-import { LuminaProposal } from "./LuminaProposal";
-import styles from "./Lumina.module.css";
-import { useLuminaBrand } from "./lumina-brand";
-import { getLuminaCopy, type LuminaLang } from "./lumina-copy";
-import { LuminaLangProvider, useLuminaLang } from "./lumina-lang-context";
+import { SiennaProposal } from "./SiennaProposal";
+import styles from "./Sienna.module.css";
+import { useSiennaBrand } from "./sienna-brand";
+import { getSiennaCopy, type SiennaLang } from "./sienna-copy";
+import { SiennaLangProvider, useSiennaLang } from "./sienna-lang-context";
 import {
   buildAtelierProposalPdf,
   downloadPdfFile,
   isAppleTouchDevice,
 } from "@/components/proposals/_shared/residential-pdf-export";
 
-export type LuminaRendererProps = {
+export type SiennaRendererProps = {
   data: ProposalData;
   installerLogoUrl?: string;
   proposalId?: string;
   pptInput?: PremiumProposalPptInput;
 };
 
-const LUMINA_LANG_KEY = "sol52-lumina-lang";
+const SIENNA_LANG_KEY = "sol52-sienna-lang";
 
-function readStoredLang(): LuminaLang {
+function readStoredLang(): SiennaLang {
   if (typeof window === "undefined") return "en";
   try {
-    const raw = window.localStorage.getItem(LUMINA_LANG_KEY);
+    const raw = window.localStorage.getItem(SIENNA_LANG_KEY);
     if (raw === "hi" || raw === "en") return raw;
   } catch {
     /* ignore */
@@ -40,15 +40,15 @@ function readStoredLang(): LuminaLang {
   return /^hi\b/i.test(nav) ? "hi" : "en";
 }
 
-function persistLang(lang: LuminaLang) {
+function persistLang(lang: SiennaLang) {
   try {
-    window.localStorage.setItem(LUMINA_LANG_KEY, lang);
+    window.localStorage.setItem(SIENNA_LANG_KEY, lang);
   } catch {
     /* ignore */
   }
 }
 
-function LuminaDocument({
+function SiennaDocument({
   data,
   installerLogoUrl,
   pptInput,
@@ -59,9 +59,9 @@ function LuminaDocument({
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
-  const { lang, setLang, copy, isHi } = useLuminaLang();
+  const { lang, setLang, copy, isHi } = useSiennaLang();
 
-  const brand = useLuminaBrand(data);
+  const brand = useSiennaBrand(data);
 
   const handlePrint = async () => {
     if (typeof window === "undefined" || pdfBusy) return;
@@ -72,8 +72,8 @@ function LuminaDocument({
           await buildAtelierProposalPdf({
             root: rootRef.current,
             customerName: data.meta.customerName,
-            presetId: "residential_lumina",
-            pageSelector: "[data-lumina-stage] > section",
+            presetId: "residential_sienna",
+            pageSelector: "[data-sienna-stage] > section",
           })
         );
       } finally {
@@ -87,14 +87,14 @@ function LuminaDocument({
   return (
     <div
       ref={rootRef}
-      data-proposal-preset="residential_lumina"
+      data-proposal-preset="residential_sienna"
       className={`${styles.root}${isHi ? ` ${styles.langHi}` : ""}`}
     >
       <style>{`
         @media print {
           @page { size: A4 portrait; margin: 0; }
-          @page lumina-sheet { size: A4 portrait; margin: 0; }
-          @page lumina-cover { size: A4 portrait; margin: 0; }
+          @page sienna-sheet { size: A4 portrait; margin: 0; }
+          @page sienna-cover { size: A4 portrait; margin: 0; }
           html, body { font-size: 16.5px !important; }
         }
       `}</style>
@@ -133,36 +133,36 @@ function LuminaDocument({
           </div>
         </div>
       </div>
-      <LuminaProposal data={data} installerLogoUrl={installerLogoUrl} pptInput={pptInput} />
+      <SiennaProposal data={data} installerLogoUrl={installerLogoUrl} pptInput={pptInput} />
     </div>
   );
 }
 
-export function LuminaRenderer({
+export function SiennaRenderer({
   data,
   installerLogoUrl,
   pptInput,
-}: LuminaRendererProps) {
-  const [lang, setLangState] = useState<LuminaLang>("en");
+}: SiennaRendererProps) {
+  const [lang, setLangState] = useState<SiennaLang>("en");
 
   useEffect(() => {
     setLangState(readStoredLang());
   }, []);
 
-  const setLang = (next: LuminaLang) => {
+  const setLang = (next: SiennaLang) => {
     setLangState(next);
     persistLang(next);
   };
 
   if (!data) {
-    return <div className={styles.loading}>{getLuminaCopy(lang).print.loading}</div>;
+    return <div className={styles.loading}>{getSiennaCopy(lang).print.loading}</div>;
   }
 
   return (
-    <LuminaLangProvider lang={lang} setLang={setLang}>
-      <LuminaDocument data={data} installerLogoUrl={installerLogoUrl} pptInput={pptInput} />
-    </LuminaLangProvider>
+    <SiennaLangProvider lang={lang} setLang={setLang}>
+      <SiennaDocument data={data} installerLogoUrl={installerLogoUrl} pptInput={pptInput} />
+    </SiennaLangProvider>
   );
 }
 
-export default LuminaRenderer;
+export default SiennaRenderer;

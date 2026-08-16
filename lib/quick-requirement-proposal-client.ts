@@ -45,6 +45,9 @@ export function resolveQuickQuotePresetOptions(): {
   if (presetId === "residential_lumina") {
     return { presetId, galleryThemeKey: "lumina" };
   }
+  if (presetId === "residential_sienna") {
+    return { presetId, galleryThemeKey: "sienna" };
+  }
   if (presetId === "residential_executive") {
     return { presetId, galleryThemeKey: "golden" };
   }

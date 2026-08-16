@@ -1,15 +1,15 @@
 "use client";
 
 import type { ProposalData } from "@/lib/proposal-data";
-import styles from "./Lumina.module.css";
-import { LuminaDocFooter } from "./lumina-brand";
-import type { LuminaHwKind } from "./lumina-live";
-import { luminaHardwareRows } from "./lumina-live";
-import { useLuminaLang } from "./lumina-lang-context";
+import styles from "./Sienna.module.css";
+import { SiennaDocFooter } from "./sienna-brand";
+import type { SiennaHwKind } from "./sienna-live";
+import { siennaHardwareRows } from "./sienna-live";
+import { useSiennaLang } from "./sienna-lang-context";
 
 function EarthIcon() {
   return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0F172A" strokeWidth="1.8" aria-hidden>
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1C1814" strokeWidth="1.8" aria-hidden>
       <circle cx="12" cy="9" r="5" />
       <path d="M12 14v6M8 20h8M10 17h4" strokeLinecap="round" />
     </svg>
@@ -18,7 +18,7 @@ function EarthIcon() {
 
 function DcdbIcon() {
   return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0F172A" strokeWidth="1.7" aria-hidden>
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1C1814" strokeWidth="1.7" aria-hidden>
       <rect x="4" y="3" width="16" height="18" rx="2" />
       <path d="M8 8h8M8 12h8M8 16h5" strokeLinecap="round" />
     </svg>
@@ -27,7 +27,7 @@ function DcdbIcon() {
 
 function AcdbIcon() {
   return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0F172A" strokeWidth="1.7" aria-hidden>
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1C1814" strokeWidth="1.7" aria-hidden>
       <rect x="4" y="3" width="16" height="18" rx="2" />
       <path d="M12 7v4M10 11h4" strokeLinecap="round" />
       <path d="M8 16h8" strokeLinecap="round" />
@@ -37,13 +37,13 @@ function AcdbIcon() {
 
 function LaIcon() {
   return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0F172A" strokeWidth="1.8" aria-hidden>
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1C1814" strokeWidth="1.8" aria-hidden>
       <path d="M13 2 4 14h8l-1 8 9-12h-8l1-8Z" strokeLinejoin="round" />
     </svg>
   );
 }
 
-function HardwareThumb({ kind, image }: { kind: LuminaHwKind; image: string }) {
+function HardwareThumb({ kind, image }: { kind: SiennaHwKind; image: string }) {
   if (kind === "earth") return <EarthIcon />;
   if (kind === "dcdb") return <DcdbIcon />;
   if (kind === "acdb") return <AcdbIcon />;
@@ -52,7 +52,7 @@ function HardwareThumb({ kind, image }: { kind: LuminaHwKind; image: string }) {
   return <img src={image} alt="" />;
 }
 
-function cardKindClass(kind: LuminaHwKind): string {
+function cardKindClass(kind: SiennaHwKind): string {
   if (kind === "dcdb") return styles.hwCardDcdb;
   if (kind === "acdb") return styles.hwCardAcdb;
   if (kind === "earth") return styles.hwCardEarth;
@@ -75,12 +75,12 @@ function HwSpecLine({ text }: { text: string }) {
   );
 }
 
-export function LuminaHardware({ data }: { data: ProposalData }) {
-  const { copy } = useLuminaLang();
-  const rows = luminaHardwareRows(data);
+export function SiennaHardware({ data }: { data: ProposalData }) {
+  const { copy } = useSiennaLang();
+  const rows = siennaHardwareRows(data);
 
   return (
-    <section className={`${styles.a4Lumina} ${styles.innerSheet} ${styles.hardwarePage}`}>
+    <section className={`${styles.a4Sienna} ${styles.innerSheet} ${styles.hardwarePage}`}>
       <div className={`${styles.contentArea} ${styles.hardwareSheet}`}>
         <div className={styles.dateTag}>{copy.hardware.tag}</div>
         <h1 className={styles.clientTitle}>{copy.hardware.title}</h1>
@@ -114,9 +114,9 @@ export function LuminaHardware({ data }: { data: ProposalData }) {
           ))}
         </div>
       </div>
-      <LuminaDocFooter data={data} page="03 / 09" />
+      <SiennaDocFooter data={data} page="03 / 09" />
     </section>
   );
 }
 
-export default LuminaHardware;
+export default SiennaHardware;

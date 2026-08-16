@@ -1,12 +1,12 @@
 /**
- * Lumina EN / Hindi UI copy.
+ * Sienna EN / Hindi UI copy.
  * Hindi is spoken Hinglish: keep popular English words (customer, panel, inverter,
  * DC, AC, unit, bill, subsidy, net-metering, BOM). Never “ग्राहक”.
  */
 
-export type LuminaLang = "en" | "hi";
+export type SiennaLang = "en" | "hi";
 
-export function getLuminaCopy(lang: LuminaLang) {
+export function getSiennaCopy(lang: SiennaLang) {
   const hi = lang === "hi";
   return {
     print: {
@@ -41,8 +41,7 @@ export function getLuminaCopy(lang: LuminaLang) {
       systemEngine: hi ? "System size" : "System Engine",
       year1Yield: hi ? "Year-1 yield" : "Est. Year 1 Yield",
       units: hi ? "units" : "Units",
-      netInvestment: hi ? "Net investment" : "Net Investment",
-      turnkeyInvestment: hi ? "Turnkey investment" : "Turnkey Investment",
+      site: hi ? "Site" : "Site",
     },
     audit: {
       tag: hi ? "Finance · बिजली का bill" : "Finance · the electricity bill",
@@ -176,14 +175,14 @@ export function getLuminaCopy(lang: LuminaLang) {
         : "Bill saving sits on the Forecast page — here only the long return on this plant.",
     },
     forecast: {
-      tag: hi ? "Yield intelligence" : "Yield intelligence",
+      tag: hi ? "Yield · array के बाद" : "Yield · after the array",
       title: "Seasonal Forecast.",
       lead: (units: string, bill: boolean) =>
         hi
-          ? `इस proposal का Year-1 yield ${units} units है. Bars central-India rooftop का typical curve हैं.${
-              bill ? " गहरी bars uploaded bill की units हैं." : " Green = peak-sun महीने."
+          ? `Engineering के बाद: Year-1 yield ${units} units. Bars central-India rooftop का typical curve हैं.${
+              bill ? " गहरी bars uploaded bill की units हैं." : " हरे = peak-sun महीने."
             }`
-          : `Year-1 yield on this proposal is ${units} units. Bars follow a typical central-India rooftop curve.${
+          : `After the array design: Year-1 yield is ${units} units. Bars follow a typical central-India rooftop curve.${
               bill ? " Dark bars are bill units from the uploaded bill." : " Green = peak-sun months."
             }`,
       leadEmpty: hi
@@ -252,4 +251,4 @@ export function getLuminaCopy(lang: LuminaLang) {
   };
 }
 
-export type LuminaCopy = ReturnType<typeof getLuminaCopy>;
+export type SiennaCopy = ReturnType<typeof getSiennaCopy>;

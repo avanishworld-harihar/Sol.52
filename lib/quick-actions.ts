@@ -102,6 +102,11 @@ export function parsePrefillFromSearchParams(params: URLSearchParams): BuilderPr
     preset === "lumina"
   ) {
     prefill.preset = "residential_lumina";
+  } else if (
+    preset === "residential_sienna" ||
+    preset === "sienna"
+  ) {
+    prefill.preset = "residential_sienna";
   } else if (preset === "commercial_executive" || preset === "commercial") {
     prefill.preset = "commercial_executive";
   } else if (preset) {

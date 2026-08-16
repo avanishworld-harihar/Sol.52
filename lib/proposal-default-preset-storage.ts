@@ -10,6 +10,7 @@ export const RESIDENTIAL_TEMPLATE_PRESET_IDS = [
   "residential_quantum",
   "residential_emerald",
   "residential_lumina",
+  "residential_sienna",
 ] as const;
 
 export type ResidentialTemplatePresetId = (typeof RESIDENTIAL_TEMPLATE_PRESET_IDS)[number];
@@ -66,6 +67,11 @@ export const RESIDENTIAL_TEMPLATE_OPTIONS: ResidentialTemplateOption[] = [
   {
     id: "residential_lumina",
     label: "Lumina",
+    subtitle: "Clean light app UI — hero photo, trust-green cards, consumer-friendly.",
+  },
+  {
+    id: "residential_sienna",
+    label: "Sienna",
     subtitle: "Warm paper flagship — copper chrome, forest yield, consumer-friendly.",
   },
 ];

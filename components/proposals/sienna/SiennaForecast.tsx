@@ -2,23 +2,23 @@
 
 import type { ProposalData } from "@/lib/proposal-data";
 import { formatInrCompact } from "@/components/proposals/_shared/formatters";
-import styles from "./Lumina.module.css";
-import { LuminaDocFooter } from "./lumina-brand";
-import { useLuminaLang } from "./lumina-lang-context";
+import styles from "./Sienna.module.css";
+import { SiennaDocFooter } from "./sienna-brand";
+import { useSiennaLang } from "./sienna-lang-context";
 import {
-  luminaAnnualUnits,
-  luminaBillYearUnits,
-  luminaForecastNotes,
-  luminaHasBillUnits,
-  luminaMonthlyForecast,
-} from "./lumina-live";
+  siennaAnnualUnits,
+  siennaBillYearUnits,
+  siennaForecastNotes,
+  siennaHasBillUnits,
+  siennaMonthlyForecast,
+} from "./sienna-live";
 
-export function LuminaForecast({ data }: { data: ProposalData }) {
-  const { copy, lang } = useLuminaLang();
-  const annual = luminaAnnualUnits(data);
-  const months = luminaMonthlyForecast(data);
-  const showBill = luminaHasBillUnits(data);
-  const billYear = luminaBillYearUnits(data);
+export function SiennaForecast({ data }: { data: ProposalData }) {
+  const { copy, lang } = useSiennaLang();
+  const annual = siennaAnnualUnits(data);
+  const months = siennaMonthlyForecast(data);
+  const showBill = siennaHasBillUnits(data);
+  const billYear = siennaBillYearUnits(data);
   const max = Math.max(
     ...months.map((m) => m.val),
     ...months.map((m) => (m.billUnits != null && m.billUnits > 0 ? m.billUnits : 0)),
@@ -26,10 +26,10 @@ export function LuminaForecast({ data }: { data: ProposalData }) {
   );
   const peak = months.reduce((best, m) => (m.val > best.val ? m : best), months[0]!);
   const low = months.reduce((best, m) => (m.val > 0 && m.val < best.val ? m : best), months[0]!);
-  const notes = luminaForecastNotes(data, lang);
+  const notes = siennaForecastNotes(data, lang);
 
   return (
-    <section className={`${styles.a4Lumina} ${styles.innerSheet} ${styles.forecastSheet}`}>
+    <section className={`${styles.a4Sienna} ${styles.innerSheet} ${styles.forecastSheet}`}>
       <div className={styles.contentArea}>
         <div className={styles.dateTag}>{copy.forecast.tag}</div>
         <h1 className={styles.clientTitle}>{copy.forecast.title}</h1>
@@ -45,7 +45,7 @@ export function LuminaForecast({ data }: { data: ProposalData }) {
             <span className={styles.cardValue}>
               {annual > 0 ? annual.toLocaleString("en-IN") : "—"}
             </span>
-            {annual > 0 ? <span className={styles.cardUnit}>{copy.forecast.units}</span> : null}
+            {annual > 0 ? <span className={`${styles.cardUnit} ${styles.cardUnitYield}`}>{copy.forecast.units}</span> : null}
           </div>
           <div className={`${styles.forecastStat} ${styles.forecastStatPeak}`}>
             <span className={`${styles.cardLabel} ${styles.cardLabelAccent}`}>{copy.forecast.highest}</span>
@@ -157,9 +157,9 @@ export function LuminaForecast({ data }: { data: ProposalData }) {
           <p className={styles.forecastInsightBody}>{notes.insightBody}</p>
         </aside>
       </div>
-      <LuminaDocFooter data={data} page="05 / 09" />
+      <SiennaDocFooter data={data} page="05 / 09" />
     </section>
   );
 }
 
-export default LuminaForecast;
+export default SiennaForecast;

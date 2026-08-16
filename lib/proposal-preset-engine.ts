@@ -10,8 +10,9 @@
  *   5. residential_blueprint     — Blueprint Investment Blueprint (modular light cards)
  *   6. residential_quantum       — Quantum Cinematic Neo-Glass
  *   7. residential_emerald       — Emerald Signature split-folio
- *   8. residential_lumina         — Lumina warm-paper flagship (copper + forest)
- *   9. commercial_executive      — C&I commercial (hotel / hospital / industry…)
+ *   8. residential_lumina         — Lumina clean light app UI
+ *   9. residential_sienna         — Sienna warm-paper flagship (copper + forest)
+ *  10. commercial_executive      — C&I commercial (hotel / hospital / industry…)
  *
  * Removed residential presets remap via normalizePresetId → residential_executive.
  */
@@ -39,6 +40,7 @@ export const PROPOSAL_PRESET_IDS = [
   "residential_quantum",
   "residential_emerald",
   "residential_lumina",
+  "residential_sienna",
   "commercial_executive",
   "commercial_ht",
 ] as const;
@@ -110,7 +112,8 @@ export function isResidentialDocumentPreset(presetId: ProposalPresetId): boolean
     presetId === "residential_blueprint" ||
     presetId === "residential_quantum" ||
     presetId === "residential_emerald" ||
-    presetId === "residential_lumina"
+    presetId === "residential_lumina" ||
+    presetId === "residential_sienna"
   );
 }
 
@@ -242,6 +245,18 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
   residential_lumina: {
     id: "residential_lumina",
     label: "Lumina",
+    description:
+      "Clean light app UI — hero photo, Inter, trust-green cards. Consumer-friendly, no dark theme.",
+    bill_requirement: "optional",
+    theme_hint: "residential",
+    default_data_source: "requirement",
+    default_blocks: [],
+    optional_blocks: [],
+  },
+
+  residential_sienna: {
+    id: "residential_sienna",
+    label: "Sienna",
     description:
       "Warm paper flagship — copper chrome, forest yield, Inter. Cover shows kW + site; price lives on Capital.",
     bill_requirement: "optional",

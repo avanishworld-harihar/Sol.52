@@ -1,6 +1,6 @@
 /**
  * Dynamic preset renderer registry.
- * Active presets: Golden + Zenith + Atelier + Canvas + Quantum + Emerald + Lumina + Commercial.
+ * Active presets: Golden + Zenith + Atelier + Canvas + Quantum + Emerald + Lumina + Sienna + Commercial.
  */
 
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
@@ -51,6 +51,12 @@ export const LUMINA_PRESET_ALIASES = [
   "lumina",
 ] as const;
 
+/** Local / mock aliases that resolve to Sienna. */
+export const SIENNA_PRESET_ALIASES = [
+  "residential_sienna",
+  "sienna",
+] as const;
+
 export function isZenithPresetId(presetId: string): boolean {
   return (ZENITH_PRESET_ALIASES as readonly string[]).includes(presetId);
 }
@@ -79,6 +85,10 @@ export function isLuminaPresetId(presetId: string): boolean {
   return (LUMINA_PRESET_ALIASES as readonly string[]).includes(presetId);
 }
 
+export function isSiennaPresetId(presetId: string): boolean {
+  return (SIENNA_PRESET_ALIASES as readonly string[]).includes(presetId);
+}
+
 export function isCommercialPresetId(presetId: string): boolean {
   return presetId === "commercial_executive";
 }
@@ -104,6 +114,8 @@ export const PRESET_RENDERER_LOADERS: PresetRendererRegistry = {
     import("@/components/proposals/_registry/adapters/emerald-adapter"),
   residential_lumina: () =>
     import("@/components/proposals/_registry/adapters/lumina-adapter"),
+  residential_sienna: () =>
+    import("@/components/proposals/_registry/adapters/sienna-adapter"),
   commercial_executive: () =>
     import("@/components/proposals/_registry/adapters/commercial-adapter"),
   commercial_ht: () =>
@@ -134,6 +146,9 @@ export function getPresetRendererLoader(
   }
   if (isLuminaPresetId(presetId)) {
     return () => import("@/components/proposals/_registry/adapters/lumina-adapter");
+  }
+  if (isSiennaPresetId(presetId)) {
+    return () => import("@/components/proposals/_registry/adapters/sienna-adapter");
   }
   if (isLuxeNoirPresetId(presetId)) {
     return () => import("@/components/proposals/_registry/adapters/luxe-noir-adapter");

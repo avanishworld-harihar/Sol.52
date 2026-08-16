@@ -36,7 +36,7 @@ export const PROPOSAL_TEMPLATE_CATEGORIES: ProposalTemplateCategoryMeta[] = [
   {
     id: "residential",
     label: "Residential",
-    description: "Homes & rooftops — Golden, Zenith, Atelier, Premium Luxe, Canvas, Quantum, Emerald, or Lumina.",
+    description: "Homes & rooftops — Golden, Zenith, Atelier, Premium Luxe, Canvas, Quantum, Emerald, Lumina, or Sienna.",
   },
   {
     id: "commercial",
@@ -112,8 +112,17 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
     category: "residential",
     name: "Lumina",
     description:
-      "Warm paper flagship — copper chrome, forest yield, Inter. Cover shows plant + site; price on Capital.",
+      "Clean light app UI — hero photo, Inter, trust-green cards. Consumer-friendly, no dark theme.",
     thumbnailVariant: "lumina",
+  },
+  {
+    key: "sienna",
+    presetId: "residential_sienna",
+    category: "residential",
+    name: "Sienna",
+    description:
+      "Warm paper flagship — copper chrome, forest yield, Inter. Cover shows plant + site; price on Capital.",
+    thumbnailVariant: "sienna",
   },
 ];
 
@@ -184,6 +193,7 @@ export function resolveActiveGalleryKey(
   if (presetId === "residential_quantum") return "quantum";
   if (presetId === "residential_emerald") return "emerald";
   if (presetId === "residential_lumina") return "lumina";
+  if (presetId === "residential_sienna") return "sienna";
   return "zenith";
 }
 

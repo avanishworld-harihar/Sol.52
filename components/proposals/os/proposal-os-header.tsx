@@ -12,7 +12,7 @@
  */
 
 import { motion } from "framer-motion";
-import { Building2, ChevronRight, Gem, LayoutTemplate, RefreshCw, Sparkles, Sun, Zap } from "lucide-react";
+import { Building2, ChevronRight, Flame, Gem, LayoutTemplate, RefreshCw, Sparkles, Sun, Zap } from "lucide-react";
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 import { PresenceStack } from "@/components/workspace/presence-stack";
 
@@ -94,6 +94,14 @@ const PRESET_META: Record<ProposalPresetId, PresetMeta> = {
     pillClass:
       "border-emerald-200 bg-slate-50 text-slate-900 dark:border-emerald-500/40 dark:bg-slate-900 dark:text-emerald-300",
     dotClass: "bg-[#10B981]",
+  },
+  residential_sienna: {
+    icon: <Flame className="h-4 w-4" />,
+    label: "Sienna",
+    description: "Warm paper flagship · copper chrome · forest yield",
+    pillClass:
+      "border-orange-200 bg-[#F7F3EC] text-[#9A4318] dark:border-orange-500/40 dark:bg-[#1C1814] dark:text-[#E8C4A8]",
+    dotClass: "bg-[#C45C26]",
   },
   commercial_executive: {
     icon: <Building2 className="h-4 w-4" />,
