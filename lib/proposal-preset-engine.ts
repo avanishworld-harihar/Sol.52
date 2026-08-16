@@ -10,7 +10,7 @@
  *   5. residential_blueprint     — Blueprint Investment Blueprint (modular light cards)
  *   6. residential_quantum       — Quantum Cinematic Neo-Glass
  *   7. residential_emerald       — Emerald Signature split-folio
- *   8. residential_lumina         — Lumina clean light app UI
+ *   8. residential_lumina         — Lumina warm-paper flagship (copper + forest)
  *   9. commercial_executive      — C&I commercial (hotel / hospital / industry…)
  *
  * Removed residential presets remap via normalizePresetId → residential_executive.
@@ -243,7 +243,7 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     id: "residential_lumina",
     label: "Lumina",
     description:
-      "Clean light app UI — hero photo, Inter, trust-green cards. Consumer-friendly, no dark theme.",
+      "Warm paper flagship — copper chrome, forest yield, Inter. Cover shows kW + site; price lives on Capital.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "requirement",

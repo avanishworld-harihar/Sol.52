@@ -45,7 +45,7 @@ export function LuminaForecast({ data }: { data: ProposalData }) {
             <span className={styles.cardValue}>
               {annual > 0 ? annual.toLocaleString("en-IN") : "—"}
             </span>
-            {annual > 0 ? <span className={styles.cardUnit}>{copy.forecast.units}</span> : null}
+            {annual > 0 ? <span className={`${styles.cardUnit} ${styles.cardUnitYield}`}>{copy.forecast.units}</span> : null}
           </div>
           <div className={`${styles.forecastStat} ${styles.forecastStatPeak}`}>
             <span className={`${styles.cardLabel} ${styles.cardLabelAccent}`}>{copy.forecast.highest}</span>
@@ -157,7 +157,7 @@ export function LuminaForecast({ data }: { data: ProposalData }) {
           <p className={styles.forecastInsightBody}>{notes.insightBody}</p>
         </aside>
       </div>
-      <LuminaDocFooter data={data} page="06 / 09" />
+      <LuminaDocFooter data={data} page="05 / 09" />
     </section>
   );
 }

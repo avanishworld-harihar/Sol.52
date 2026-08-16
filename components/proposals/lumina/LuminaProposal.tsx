@@ -29,8 +29,8 @@ export function LuminaProposal({
       <LuminaAudit data={data} />
       <LuminaHardware data={data} />
       <LuminaEngineering data={data} pptInput={pptInput} />
-      <LuminaLedgerPage data={data} />
       <LuminaForecast data={data} />
+      <LuminaLedgerPage data={data} />
       <LuminaTerms data={data} />
       <LuminaTermsContinued data={data} />
       <LuminaClosingPage

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Lumina renderer — clean light app-like residential proposal.
+ * Lumina renderer — warm paper flagship residential proposal.
  * Preset id: residential_lumina
  */
 

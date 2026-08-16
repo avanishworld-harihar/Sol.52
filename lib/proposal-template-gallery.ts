@@ -112,7 +112,7 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
     category: "residential",
     name: "Lumina",
     description:
-      "Clean light app UI — hero photo, Inter, trust-green cards. Consumer-friendly, no dark theme.",
+      "Warm paper flagship — copper chrome, forest yield, Inter. Cover shows plant + site; price on Capital.",
     thumbnailVariant: "lumina",
   },
 ];

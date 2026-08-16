@@ -131,7 +131,7 @@ export function LuminaLedgerPage({ data }: { data: ProposalData }) {
           </div>
         </div>
 
-        <LuminaDocFooter data={data} page="05 / 09" />
+        <LuminaDocFooter data={data} page="06 / 09" />
       </div>
     </section>
   );

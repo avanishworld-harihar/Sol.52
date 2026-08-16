@@ -1,5 +1,6 @@
 /**
- * Lumina — clean light app UI. Slate, Inter, trust green. No dark theme, no serif.
+ * Lumina — warm paper flagship. Ink, copper chrome, forest for yield/savings.
+ * Inter + Noto Sans Devanagari. No dark theme, no serif.
  */
 
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=Noto+Sans+Devanagari:wght@500;600;700;800&display=swap");
@@ -15,18 +16,22 @@
 }
 
 .root {
-  --lu-bg: #f8fafc;
-  --lu-ink: #0f172a;
-  --lu-muted: #64748b;
-  --lu-body: #475569;
-  --lu-line: #e2e8f0;
-  --lu-green: #10b981;
-  --lu-green-ink: #047857;
-  --lu-green-soft: #f0fdf4;
-  --lu-icon-bg: #f1f5f9;
+  --lu-bg: #f7f3ec;
+  --lu-card: #fffcf7;
+  --lu-ink: #1c1814;
+  --lu-muted: #6b5e52;
+  --lu-body: #3d342c;
+  --lu-line: #e4d8c8;
+  --lu-accent: #c45c26;
+  --lu-accent-ink: #9a4318;
+  --lu-accent-soft: #f8ede4;
+  --lu-green: #2f6b45;
+  --lu-green-ink: #245536;
+  --lu-green-soft: #eef6f0;
+  --lu-icon-bg: #f1e9dc;
   --lu-sans: "Inter", "Noto Sans Devanagari", system-ui, sans-serif;
 
-  background: #eef2f6;
+  background: #ede6d9;
   min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
 }
@@ -107,6 +112,10 @@
     font-size: 1.7rem !important;
   }
 
+  .cardValueSite {
+    font-size: 1.35rem !important;
+  }
+
   .closeTitle {
     font-size: 3.2rem !important;
   }
@@ -139,7 +148,7 @@
   display: flex;
   justify-content: center;
   padding: 10px 16px;
-  background: rgba(248, 250, 252, 0.96);
+  background: rgba(247, 243, 236, 0.96);
   border-bottom: 1px solid var(--lu-line);
 }
 
@@ -172,7 +181,7 @@
   border: 1px solid var(--lu-line);
   border-radius: 10px;
   overflow: hidden;
-  background: #ffffff;
+  background: var(--lu-card);
 }
 
 .langBtn {
@@ -206,7 +215,7 @@
 .printBarBtn {
   appearance: none;
   border: 0;
-  background: var(--lu-green);
+  background: var(--lu-accent);
   color: #fff;
   font-family: var(--lu-sans);
   font-size: 11px;
@@ -243,7 +252,7 @@
   display: flex;
   flex-direction: column;
   border-radius: 4px;
-  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 18px 50px rgba(28, 24, 20, 0.1);
 }
 
 .bleedSheet {
@@ -285,9 +294,9 @@
   pointer-events: none;
   background: linear-gradient(
     180deg,
-    rgba(15, 23, 42, 0.28) 0%,
-    rgba(15, 23, 42, 0.06) 42%,
-    rgba(15, 23, 42, 0.38) 100%
+    rgba(28, 24, 20, 0.32) 0%,
+    rgba(28, 24, 20, 0.08) 42%,
+    rgba(28, 24, 20, 0.42) 100%
   );
 }
 
@@ -301,16 +310,16 @@
   justify-content: space-between;
   align-items: baseline;
   gap: 12px;
-  color: #f8fafc;
+  color: #f7f3ec;
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  text-shadow: 0 2px 10px rgba(15, 23, 42, 0.55);
+  text-shadow: 0 2px 10px rgba(28, 24, 20, 0.55);
 }
 
 .heroCaption span:last-child {
-  color: #6ee7b7;
+  color: #e8c4a8;
 }
 
 .brandBadge {
@@ -329,7 +338,7 @@
 .brandDot {
   width: 12px;
   height: 12px;
-  background-color: var(--lu-green);
+  background-color: var(--lu-accent);
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -348,7 +357,7 @@
 }
 
 .brandAccent {
-  color: var(--lu-green);
+  color: var(--lu-accent);
 }
 
 .contentCover {
@@ -361,7 +370,7 @@
   flex-grow: 1;
   background: var(--lu-bg);
   border-radius: 22px 22px 0 0;
-  box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 -8px 24px rgba(28, 24, 20, 0.06);
 }
 
 .contentArea {
@@ -426,9 +435,9 @@
 
 .dateTag {
   font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--lu-muted);
-  letter-spacing: 0.14em;
+  font-weight: 700;
+  color: var(--lu-accent);
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   margin-bottom: 8px;
 }
@@ -470,18 +479,25 @@
 }
 
 .dataCard {
-  background: #ffffff;
+  background: var(--lu-card);
   border-radius: 16px;
   padding: 18px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 4px 20px rgba(28, 24, 20, 0.04);
   border: 1px solid var(--lu-line);
+  border-left: 3px solid var(--lu-accent);
   display: flex;
   flex-direction: column;
 }
 
-.dataCardAccent {
-  border-color: var(--lu-green);
+.dataCardYield {
+  border-left-color: var(--lu-green);
   background: var(--lu-green-soft);
+}
+
+.dataCardAccent {
+  border-color: var(--lu-accent);
+  border-left-color: var(--lu-accent);
+  background: var(--lu-accent-soft);
 }
 
 .cardIcon {
@@ -496,7 +512,7 @@
 }
 
 .cardIconAccent {
-  background: #d1fae5;
+  background: var(--lu-accent-soft);
 }
 
 .cardLabel {
@@ -512,6 +528,10 @@
   color: var(--lu-green-ink);
 }
 
+.cardLabelSite {
+  color: var(--lu-accent-ink);
+}
+
 .cardValue {
   font-size: clamp(1.2rem, 2.8vw, 1.7rem);
   font-weight: 700;
@@ -523,11 +543,25 @@
   color: var(--lu-green-ink);
 }
 
+.cardValueSite {
+  color: var(--lu-accent-ink);
+  font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+
 .cardUnit {
   font-size: 0.85rem;
   font-weight: 500;
-  color: var(--lu-green);
+  color: var(--lu-muted);
   margin-left: 4px;
+}
+
+.cardUnitYield {
+  color: var(--lu-green);
 }
 
 .pageFooter {
@@ -537,8 +571,9 @@
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #94a3b8;
+  color: var(--lu-muted);
   text-align: center;
+  border-top: 1px solid var(--lu-line);
 }
 
 .logoContainer {
@@ -588,7 +623,7 @@
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.32em;
-  color: var(--lu-green);
+  color: var(--lu-accent);
   margin-top: 4px;
   text-transform: uppercase;
 }
@@ -601,11 +636,11 @@
 
 .auditBox {
   flex: 1;
-  background: #ffffff;
+  background: var(--lu-card);
   border-radius: 16px;
   padding: 22px;
   border: 1px solid var(--lu-line);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 4px 15px rgba(28, 24, 20, 0.03);
 }
 
 .auditBoxDark {
@@ -623,7 +658,7 @@
 }
 
 .auditTitleDark {
-  color: #94a3b8;
+  color: rgba(247, 243, 236, 0.62);
 }
 
 .auditRow {
@@ -631,7 +666,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 0;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--lu-line);
 }
 
 .auditRowDark {
@@ -647,7 +682,7 @@
 }
 
 .auditMutedDark {
-  color: #94a3b8;
+  color: rgba(247, 243, 236, 0.62);
 }
 
 .auditVal {
@@ -674,7 +709,7 @@
 }
 
 .auditStep {
-  background: #ffffff;
+  background: var(--lu-card);
   border: 1px solid var(--lu-line);
   border-radius: 16px;
   padding: 16px 16px 18px;
@@ -690,14 +725,14 @@
 
 .auditStepSubsidy {
   background: var(--lu-green-soft);
-  border-color: #a7f3d0;
+  border-color: var(--lu-green);
 }
 
 .auditStepNum {
   width: 22px;
   height: 22px;
   border-radius: 999px;
-  background: #f1f5f9;
+  background: var(--lu-icon-bg);
   color: var(--lu-ink);
   font-size: 0.7rem;
   font-weight: 800;
@@ -708,12 +743,12 @@
 }
 
 .auditStepSave .auditStepNum {
-  background: #334155;
-  color: #f8fafc;
+  background: #3a322c;
+  color: var(--lu-bg);
 }
 
 .auditStepSubsidy .auditStepNum {
-  background: #d1fae5;
+  background: var(--lu-green-soft);
   color: var(--lu-green-ink);
 }
 
@@ -727,7 +762,7 @@
 }
 
 .auditStepSave .auditStepKicker {
-  color: #94a3b8;
+  color: rgba(247, 243, 236, 0.62);
 }
 
 .auditStepSubsidy .auditStepKicker {
@@ -743,7 +778,7 @@
 }
 
 .auditStepValueSave {
-  color: #6ee7b7;
+  color: #b7d4c0;
 }
 
 .auditStepValueSubsidy {
@@ -759,13 +794,13 @@
 }
 
 .auditStepSave .auditStepHint {
-  color: #cbd5e1;
+  color: rgba(247, 243, 236, 0.72);
 }
 
 .auditSubsidyBar {
   margin-top: 12px;
-  background: #ffffff;
-  border: 1px solid #a7f3d0;
+  background: var(--lu-card);
+  border: 1px solid var(--lu-green);
   border-radius: 14px;
   padding: 14px 16px;
   display: flex;
@@ -829,7 +864,7 @@
   flex: 1;
   width: 100%;
   max-width: 18px;
-  background: #e2e8f0;
+  background: var(--lu-icon-bg);
   border-radius: 6px 6px 2px 2px;
   display: flex;
   align-items: flex-end;
@@ -838,7 +873,7 @@
 
 .auditMonthFill {
   width: 100%;
-  background: #94a3b8;
+  background: var(--lu-muted);
   border-radius: 6px 6px 2px 2px;
 }
 
@@ -863,7 +898,7 @@
 }
 
 .auditChip {
-  background: #ffffff;
+  background: var(--lu-card);
   border: 1px solid var(--lu-line);
   border-radius: 12px;
   padding: 12px 14px;
@@ -937,9 +972,9 @@
 }
 
 .hwCard {
-  background: #ffffff;
+  background: var(--lu-card);
   border: 1px solid var(--lu-line);
-  border-left: 4px solid var(--lu-ink);
+  border-left: 4px solid var(--lu-accent);
   border-radius: 10px;
   padding: 7px 12px;
   display: flex;
@@ -950,31 +985,31 @@
 }
 
 .hwCardAccent {
-  border-left-color: var(--lu-green);
+  border-left-color: var(--lu-accent-ink);
 }
 
 .hwCardDcdb {
-  border-left-color: #2563eb;
+  border-left-color: #5c4a3a;
 }
 
 .hwCardAcdb {
-  border-left-color: #0f172a;
+  border-left-color: var(--lu-ink);
 }
 
 .hwCardEarth {
-  border-left-color: #047857;
+  border-left-color: var(--lu-green);
 }
 
 .hwCardLa {
-  border-left-color: #0284c7;
+  border-left-color: #b45309;
 }
 
 .hwThumb {
   width: 38px;
   height: 38px;
   border-radius: 8px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--lu-icon-bg);
+  border: 1px solid var(--lu-line);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -993,7 +1028,7 @@
 .hwNumber {
   font-size: 0.92rem;
   font-weight: 900;
-  color: #e2e8f0;
+  color: var(--lu-line);
   flex-shrink: 0;
   width: 24px;
   line-height: 1.2;
@@ -1048,10 +1083,10 @@
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: var(--lu-green);
+  background: var(--lu-accent);
   margin: 0 7px;
   flex-shrink: 0;
-  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.25);
+  box-shadow: 0 0 0 1px rgba(196, 92, 38, 0.22);
 }
 
 .hwChips {
@@ -1067,7 +1102,7 @@
   font-weight: 700;
   letter-spacing: 0.02em;
   color: var(--lu-ink);
-  background: #f1f5f9;
+  background: var(--lu-icon-bg);
   border-radius: 999px;
   padding: 2px 7px;
   white-space: nowrap;
@@ -1082,18 +1117,18 @@
 }
 
 .capSection {
-  background: #ffffff;
+  background: var(--lu-card);
   border: 1px solid var(--lu-line);
   border-radius: 16px;
   padding: 16px 18px 14px;
 }
 
 .capSectionPay {
-  border-left: 4px solid #334155;
+  border-left: 4px solid var(--lu-ink);
 }
 
 .capSectionGet {
-  border-left: 4px solid #3b82f6;
+  border-left: 4px solid var(--lu-accent);
 }
 
 .capSectionSave {
@@ -1102,7 +1137,7 @@
 }
 
 .capSectionPaySchedule {
-  border-left: 4px solid #94a3b8;
+  border-left: 4px solid var(--lu-muted);
 }
 
 .capSectionHead {
@@ -1182,7 +1217,7 @@
   align-items: center;
   gap: 12px;
   padding: 9px 0;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--lu-line);
 }
 
 .payRow:last-child {
@@ -1193,7 +1228,7 @@
   width: 26px;
   height: 26px;
   border-radius: 8px;
-  background: #f1f5f9;
+  background: var(--lu-icon-bg);
   color: var(--lu-ink);
   font-size: 0.72rem;
   font-weight: 800;
@@ -1232,7 +1267,7 @@
 }
 
 .forecastStat {
-  background: #ffffff;
+  background: var(--lu-card);
   border: 1px solid var(--lu-line);
   border-radius: 12px;
   padding: 12px 14px;
@@ -1245,11 +1280,11 @@
 
 .chartCard {
   margin-top: 12px;
-  background: #ffffff;
+  background: var(--lu-card);
   border: 1px solid var(--lu-line);
   border-radius: 16px;
   padding: 14px 14px 10px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 4px 20px rgba(28, 24, 20, 0.04);
 }
 
 .chartCardTall {
@@ -1281,7 +1316,7 @@
   width: 10px;
   height: 10px;
   border-radius: 3px;
-  background: #94a3b8;
+  background: var(--lu-muted);
 }
 
 .legendSwatchPeak {
@@ -1298,7 +1333,7 @@
   gap: 6px;
   height: 168px;
   padding: 0 4px;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--lu-line);
 }
 
 .barChartTall {
@@ -1355,7 +1390,7 @@
   height: 132px;
   display: flex;
   align-items: flex-end;
-  background: #f1f5f9;
+  background: var(--lu-icon-bg);
   border-radius: 6px 6px 2px 2px;
   overflow: hidden;
 }
@@ -1374,7 +1409,7 @@
 
 .barFill {
   width: 100%;
-  background: #94a3b8;
+  background: var(--lu-muted);
   border-radius: 6px 6px 2px 2px;
   min-height: 4px;
 }
@@ -1419,7 +1454,7 @@
   justify-content: space-between;
   margin-top: 8px;
   padding-top: 6px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--lu-line);
   font-size: 0.58rem;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -1440,7 +1475,7 @@
   flex: 0 0 auto;
   margin-top: 12px;
   padding: 12px 14px 11px;
-  background: #ffffff;
+  background: var(--lu-card);
   border: 1px solid var(--lu-line);
   border-left: 3px solid var(--lu-green);
   border-radius: 12px;
@@ -1476,7 +1511,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 11px 16px;
-  background: #ffffff;
+  background: var(--lu-card);
   border: 1px solid var(--lu-line);
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.01);
@@ -1517,7 +1552,7 @@
 }
 
 .termCard {
-  background: #ffffff;
+  background: var(--lu-card);
   padding: 16px 18px;
   border-radius: 12px;
   border: 1px solid var(--lu-line);
@@ -1527,8 +1562,8 @@
 }
 
 .termNum {
-  background: #f1f5f9;
-  color: var(--lu-green);
+  background: var(--lu-accent-soft);
+  color: var(--lu-accent-ink);
   font-weight: 900;
   font-size: 0.95rem;
   width: 36px;
@@ -1580,7 +1615,7 @@
 }
 
 .termsBlock {
-  background: #ffffff;
+  background: var(--lu-card);
   border: 1px solid var(--lu-line);
   border-radius: 14px;
   padding: 12px 14px 10px;
@@ -1597,7 +1632,7 @@
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--lu-green-ink);
+  color: var(--lu-accent-ink);
 }
 
 .termsLead {
@@ -1634,7 +1669,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--lu-green);
+  background: var(--lu-accent);
 }
 
 .termsSignoff {
@@ -1647,12 +1682,12 @@
 
 .termsBankCallout {
   margin-top: 16px;
-  background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 55%, #ffffff 100%);
+  background: linear-gradient(135deg, #eef6f0 0%, #f7faf7 55%, var(--lu-card) 100%);
   border: 2px solid var(--lu-green);
   border-left: 5px solid var(--lu-green);
   border-radius: 14px;
   padding: 14px 16px 12px;
-  box-shadow: 0 4px 18px rgba(16, 185, 129, 0.12);
+  box-shadow: 0 4px 18px rgba(47, 107, 69, 0.1);
 }
 
 .termsBankIntro {
@@ -1697,7 +1732,7 @@
   font-size: 0.7rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #94a3b8;
+  color: rgba(247, 243, 236, 0.62);
   margin-bottom: 4px;
 }
 
@@ -1707,12 +1742,12 @@
 }
 
 .payCard {
-  background: #ffffff;
+  background: var(--lu-card);
   border: 1px solid var(--lu-line);
   border-radius: 12px;
   padding: 20px 22px;
   margin-top: 16px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 4px 15px rgba(28, 24, 20, 0.03);
 }
 
 .scheduleRow {
@@ -1721,7 +1756,7 @@
   align-items: baseline;
   gap: 12px;
   padding: 12px 0;
-  border-bottom: 1px dashed #cbd5e1;
+  border-bottom: 1px dashed var(--lu-line);
   font-size: 0.92rem;
 }
 
@@ -1736,7 +1771,7 @@
 }
 
 .schedulePct {
-  color: #94a3b8;
+  color: var(--lu-muted);
   font-weight: 400;
 }
 
@@ -1755,7 +1790,7 @@
 
 .sigBox {
   width: 45%;
-  border-top: 2px solid #cbd5e1;
+  border-top: 2px solid var(--lu-line);
   padding-top: 10px;
   display: flex;
   flex-direction: column;
@@ -1799,10 +1834,10 @@
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(15, 23, 42, 0.18) 0%,
-    rgba(15, 23, 42, 0.02) 28%,
+    rgba(28, 24, 20, 0.18) 0%,
+    rgba(28, 24, 20, 0.02) 28%,
     transparent 48%,
-    rgba(255, 247, 237, 0.06) 100%
+    rgba(255, 247, 237, 0.08) 100%
   );
 }
 
@@ -1820,7 +1855,7 @@
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #a7f3d0;
+  color: #e8c4a8;
   margin-bottom: 12px;
 }
 
@@ -1832,7 +1867,7 @@
   letter-spacing: -1px;
   margin: 0 0 10px;
   max-width: 90%;
-  text-shadow: 0 2px 16px rgba(15, 23, 42, 0.45);
+  text-shadow: 0 2px 16px rgba(28, 24, 20, 0.45);
 }
 
 .closeLead {
@@ -1841,7 +1876,7 @@
   line-height: 1.45;
   max-width: 82%;
   margin: 0;
-  text-shadow: 0 1px 10px rgba(15, 23, 42, 0.4);
+  text-shadow: 0 1px 10px rgba(28, 24, 20, 0.4);
 }
 
 .closeFooterStack {
@@ -1861,9 +1896,9 @@
   -webkit-backdrop-filter: blur(14px) saturate(160%);
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.7);
-  border-left: 4px solid var(--lu-green);
+  border-left: 4px solid var(--lu-accent);
   padding: 11px 14px 10px;
-  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.12);
+  box-shadow: 0 8px 22px rgba(28, 24, 20, 0.12);
 }
 
 .closeContactKicker {
@@ -1872,7 +1907,7 @@
   font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--lu-green-ink);
+  color: var(--lu-accent-ink);
   margin-bottom: 5px;
 }
 
@@ -1905,7 +1940,7 @@
   border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: 14px;
   padding: 16px 18px 14px;
-  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.12);
+  box-shadow: 0 8px 22px rgba(28, 24, 20, 0.12);
 }
 
 .closeSigCard .sigName {
@@ -1921,7 +1956,7 @@
   display: block;
   width: 100%;
   height: 1px;
-  background: rgba(15, 23, 42, 0.18);
+  background: rgba(28, 24, 20, 0.18);
   margin-bottom: 10px;
 }
 
@@ -1995,8 +2030,8 @@
   flex: 1 1 auto;
   border-radius: 14px;
   overflow: hidden;
-  background: #0f172a;
-  border: 1px solid #1e293b;
+  background: #1c1814;
+  border: 1px solid #3a2e24;
   display: flex;
   flex-direction: column;
 }
@@ -2031,14 +2066,14 @@
 }
 
 .engPanelBox {
-  background: linear-gradient(180deg, #67e8f9 0%, #06b6d4 55%, #0891b2 100%);
-  border: 1px solid #a5f3fc;
-  box-shadow: inset 0 0 8px rgba(8, 51, 68, 0.35);
+  background: linear-gradient(180deg, #3a2a1c 0%, #1c1814 52%, #0e0c0a 100%);
+  border: 1px solid #c45c26;
+  box-shadow: inset 0 0 8px rgba(196, 92, 38, 0.28);
 }
 
 .engPanelGap {
   background: transparent;
-  border: 1px dashed rgba(165, 243, 252, 0.22);
+  border: 1px dashed rgba(196, 92, 38, 0.28);
 }
 
 .engRoofEmpty {
@@ -2047,7 +2082,7 @@
   margin: 0;
   padding: 0 16px;
   text-align: center;
-  color: #94a3b8;
+  color: var(--lu-muted);
   font-size: 0.72rem;
   font-weight: 600;
 }
@@ -2061,7 +2096,7 @@
   border: 1.5px solid rgba(255, 255, 255, 0.22);
   border-radius: 50%;
   z-index: 3;
-  background: rgba(15, 23, 42, 0.45);
+  background: rgba(28, 24, 20, 0.45);
 }
 
 .engCompassN,
@@ -2078,7 +2113,7 @@
   top: 2px;
   left: 50%;
   transform: translateX(-50%);
-  color: #22d3ee;
+  color: #e8c4a8;
 }
 
 .engCompassS {
@@ -2108,7 +2143,7 @@
   margin: 0;
   padding: 6px 10px 7px;
   border-radius: 0 0 14px 14px;
-  background: rgba(15, 23, 42, 0.88);
+  background: rgba(28, 24, 20, 0.88);
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -2122,11 +2157,11 @@
 
 .engRoofCaption span {
   font-size: 0.58rem;
-  color: #cbd5e1;
+  color: #e4d8c8;
 }
 
 .engSite {
-  background: #ffffff;
+  background: var(--lu-card);
   border: 1px solid var(--lu-line);
   border-radius: 14px;
   padding: 10px 12px;
@@ -2199,7 +2234,7 @@
 }
 
 .engSpecCard {
-  background: #ffffff;
+  background: var(--lu-card);
   border: 1px solid var(--lu-line);
   border-radius: 12px;
   padding: 8px 9px 7px;
@@ -2238,7 +2273,7 @@
 
 .engYieldItem {
   background: var(--lu-green-soft);
-  border: 1px solid #bbf7d0;
+  border: 1px solid var(--lu-green);
   border-radius: 12px;
   padding: 6px 9px;
 }
@@ -2269,7 +2304,7 @@
   font-size: 0.52rem;
   font-weight: 700;
   color: var(--lu-ink);
-  background: #ffffff;
+  background: var(--lu-card);
   border: 1px solid var(--lu-line);
   border-radius: 999px;
   padding: 3px 8px;
@@ -2278,7 +2313,7 @@
 .engInsight {
   margin: 10px 0 0;
   padding: 8px 10px;
-  background: #ffffff;
+  background: var(--lu-card);
   border: 1px solid var(--lu-line);
   border-radius: 10px;
   font-size: 0.68rem;
@@ -2292,7 +2327,7 @@
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--lu-green-ink);
+  color: var(--lu-accent-ink);
   margin-bottom: 2px;
 }
 
@@ -2300,9 +2335,9 @@
   flex: 0 0 auto;
   margin-top: auto;
   padding: 7px 10px 8px;
-  background: #ffffff;
+  background: var(--lu-card);
   border: 1px solid var(--lu-line);
-  border-left: 3px solid var(--lu-green);
+  border-left: 3px solid var(--lu-accent);
   border-radius: 12px;
 }
 
@@ -2312,7 +2347,7 @@
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--lu-green-ink);
+  color: var(--lu-accent-ink);
 }
 
 .engExpertGrid {

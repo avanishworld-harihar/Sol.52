@@ -1,7 +1,6 @@
 "use client";
 
 import type { ProposalData } from "@/lib/proposal-data";
-import { formatInrCompact } from "@/components/proposals/_shared/formatters";
 import { installerLogoAlt } from "@/lib/proposal-branding-settings";
 import styles from "./Lumina.module.css";
 import { splitLuminaWordmark, useLuminaSurfaceBrand } from "./lumina-brand";
@@ -12,7 +11,6 @@ import {
   formatLuminaKw,
   luminaAnnualUnits,
   luminaLocation,
-  luminaNetInvestment,
 } from "./lumina-live";
 
 export type LuminaCoverProps = {
@@ -25,8 +23,6 @@ export function LuminaCover({ data, installerLogoUrl }: LuminaCoverProps) {
   const customer = data.meta.customerName?.trim() || "—";
   const systemKw = Number(data.meta.systemKw) || 0;
   const annual = luminaAnnualUnits(data);
-  const net = luminaNetInvestment(data);
-  const showSubsidy = data.economics.subsidyInr > 0;
   const location = luminaLocation(data);
   const coverBrand = useLuminaSurfaceBrand(data, "cover", installerLogoUrl);
   const brand = coverBrand.installerName?.trim() || "";
@@ -84,23 +80,25 @@ export function LuminaCover({ data, installerLogoUrl }: LuminaCoverProps) {
             </div>
           </div>
 
-          <div className={styles.dataCard}>
-            <span className={styles.cardLabel}>{copy.cover.year1Yield}</span>
+          <div className={`${styles.dataCard} ${styles.dataCardYield}`}>
+            <span className={`${styles.cardLabel} ${styles.cardLabelAccent}`}>
+              {copy.cover.year1Yield}
+            </span>
             <div>
-              <span className={styles.cardValue}>
+              <span className={`${styles.cardValue} ${styles.cardValueAccent}`}>
                 {annual > 0 ? annual.toLocaleString("en-IN") : "—"}
               </span>
-              {annual > 0 ? <span className={styles.cardUnit}>{copy.cover.units}</span> : null}
+              {annual > 0 ? (
+                <span className={`${styles.cardUnit} ${styles.cardUnitYield}`}>{copy.cover.units}</span>
+              ) : null}
             </div>
           </div>
 
           <div className={`${styles.dataCard} ${styles.dataCardAccent}`}>
-            <span className={`${styles.cardLabel} ${styles.cardLabelAccent}`}>
-              {showSubsidy ? copy.cover.netInvestment : copy.cover.turnkeyInvestment}
-            </span>
+            <span className={`${styles.cardLabel} ${styles.cardLabelSite}`}>{copy.cover.site}</span>
             <div>
-              <span className={`${styles.cardValue} ${styles.cardValueAccent}`}>
-                {net > 0 ? formatInrCompact(net) : "—"}
+              <span className={`${styles.cardValue} ${styles.cardValueSite}`}>
+                {location || "—"}
               </span>
             </div>
           </div>

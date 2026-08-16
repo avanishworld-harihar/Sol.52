@@ -66,7 +66,7 @@ export const RESIDENTIAL_TEMPLATE_OPTIONS: ResidentialTemplateOption[] = [
   {
     id: "residential_lumina",
     label: "Lumina",
-    subtitle: "Clean light app UI — hero photo, trust-green cards, consumer-friendly.",
+    subtitle: "Warm paper flagship — copper chrome, forest yield, consumer-friendly.",
   },
 ];
 

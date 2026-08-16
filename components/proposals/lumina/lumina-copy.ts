@@ -41,8 +41,7 @@ export function getLuminaCopy(lang: LuminaLang) {
       systemEngine: hi ? "System size" : "System Engine",
       year1Yield: hi ? "Year-1 yield" : "Est. Year 1 Yield",
       units: hi ? "units" : "Units",
-      netInvestment: hi ? "Net investment" : "Net Investment",
-      turnkeyInvestment: hi ? "Turnkey investment" : "Turnkey Investment",
+      site: hi ? "Site" : "Site",
     },
     audit: {
       tag: hi ? "Finance · बिजली का bill" : "Finance · the electricity bill",
@@ -88,8 +87,8 @@ export function getLuminaCopy(lang: LuminaLang) {
       tag: hi ? "Engineering design" : "Engineering design",
       title: "Design & Performance.",
       lead: hi
-        ? "इस plant का rooftop layout, site latitude, tilt और Indian standards. खाली field खाली रहती है — guess नहीं।"
-        : "Rooftop layout, site latitude, tilt, and Indian standards for this plant. Blank fields stay blank — they are not guessed.",
+        ? "इस plant का rooftop layout, site latitude, tilt और Indian standards. Year-round yield अगले पेज पर है। खाली field खाली रहती है — guess नहीं।"
+        : "Rooftop layout, site latitude, tilt, and Indian standards for this plant. Year-round yield is on the next page. Blank fields stay blank — they are not guessed.",
       arrayTitle: hi ? "South-facing array" : "Optimal south-facing array",
       arrayTilt: (tilt: number, az: number) =>
         `Tilt: ${tilt}° | Azimuth: ${az}° (True South)`,
@@ -151,8 +150,8 @@ export function getLuminaCopy(lang: LuminaLang) {
       tag: hi ? "Capital · plant की कीमत" : "Capital · the plant price",
       title: hi ? "Plant लगाने में कितना लगेगा." : "What it costs to put the plant up.",
       lead: hi
-        ? "यह पेज खरीद का पैसा है। Bill में कितना बचता है Finance पेज पर है। यहाँ: कीमत, subsidy, किस्तें, और कितने साल में पैसा वापस आता है।"
-        : "This page is money to buy the plant. What the bill saves is on the Finance page. Here: price, subsidy, stage payments, and how many years until the plant pays itself back.",
+        ? "यह पेज खरीद का पैसा है। Bill में कितना बचता है पिछले Forecast पेज पर है। यहाँ: कीमत, subsidy, किस्तें, और कितने साल में पैसा वापस आता है।"
+        : "This page is money to buy the plant. What the bill saves is on the previous Forecast page. Here: price, subsidy, stage payments, and how many years until the plant pays itself back.",
       pay: hi ? "1 · Plant की कीमत" : "1 · Plant price",
       payHint: hi ? "एक बार का investment" : "One-time money to install",
       gross: hi ? "System cost (gross)" : "System cost (gross)",
@@ -165,25 +164,25 @@ export function getLuminaCopy(lang: LuminaLang) {
       howPayHint: hi ? "Gross cost पर stage schedule" : "Stage schedule on gross cost",
       produce: hi ? "3 · पैसे कब लौटते हैं" : "3 · When the money comes back",
       produceHint: hi
-        ? "Payback = Finance पेज की saving से plant की कीमत कितने साल में भरती है"
-        : "Payback = years for the Finance-page saving to cover this plant price",
+        ? "Payback = Forecast पेज की saving से plant की कीमत कितने साल में भरती है"
+        : "Payback = years for the Forecast-page saving to cover this plant price",
       year1Gen: hi ? "Year-1 generation" : "Year-1 generation",
       payback: hi ? "Simple payback" : "Simple payback",
       years: hi ? "years" : "years",
       over25: hi ? "25 साल में यह capital" : "This capital over 25 years",
       over25Hint: hi
-        ? "Bill saving Capital पेज पर दोहराई नहीं — सिर्फ plant पर लंबा return।"
-        : "Bill saving is not repeated here — only the long return on this plant.",
+        ? "Bill saving Forecast पेज पर है — यहाँ सिर्फ plant पर लंबा return।"
+        : "Bill saving sits on the Forecast page — here only the long return on this plant.",
     },
     forecast: {
-      tag: hi ? "Yield intelligence" : "Yield intelligence",
+      tag: hi ? "Yield · array के बाद" : "Yield · after the array",
       title: "Seasonal Forecast.",
       lead: (units: string, bill: boolean) =>
         hi
-          ? `इस proposal का Year-1 yield ${units} units है. Bars central-India rooftop का typical curve हैं.${
-              bill ? " गहरी bars uploaded bill की units हैं." : " Green = peak-sun महीने."
+          ? `Engineering के बाद: Year-1 yield ${units} units. Bars central-India rooftop का typical curve हैं.${
+              bill ? " गहरी bars uploaded bill की units हैं." : " हरे = peak-sun महीने."
             }`
-          : `Year-1 yield on this proposal is ${units} units. Bars follow a typical central-India rooftop curve.${
+          : `After the array design: Year-1 yield is ${units} units. Bars follow a typical central-India rooftop curve.${
               bill ? " Dark bars are bill units from the uploaded bill." : " Green = peak-sun months."
             }`,
       leadEmpty: hi
