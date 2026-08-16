@@ -734,11 +734,11 @@ export function jaaliSqFtFromM2(m2: number): number {
   return Math.round(m2 * JAALI_M2_TO_SQFT);
 }
 
-/** e.g. ~18 m² (~194 sq ft). Empty when area is missing — never invents a roof size. */
+/** e.g. 18 m² · 194 sq ft. Empty when area is missing — never invents a roof size. */
 export function formatJaaliAreaM2(m2: number): string {
   if (!(m2 > 0)) return "—";
   const sqft = jaaliSqFtFromM2(m2);
-  return `~${m2} m² (~${sqft.toLocaleString("en-IN")} sq ft)`;
+  return `${m2} m² · ${sqft.toLocaleString("en-IN")} sq ft`;
 }
 
 function jaaliParseMetricNumber(data: ProposalData, match: RegExp): number {
@@ -1066,7 +1066,7 @@ export function jaaliEngineeringModel(
     const geo = resolveSiteLatitude(loc);
     const token = geo.cityLabel.toLowerCase().replace(" region", "").split(" ")[0] ?? "";
     if (token && loc.toLowerCase().includes(token)) {
-      siteLatLabel = `~${geo.lat.toFixed(1)}° N (${geo.cityLabel})`;
+      siteLatLabel = `${geo.lat.toFixed(1)}° N (${geo.cityLabel})`;
       if (!tiltDeg) tiltDeg = recommendedTiltFromLatitude(geo.lat);
     }
   }

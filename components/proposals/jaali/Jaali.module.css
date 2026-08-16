@@ -1259,16 +1259,17 @@
 
 .insightBody {
   margin: 0;
-  font-size: 0.66rem;
-  line-height: 1.4;
+  font-size: 0.72rem;
+  line-height: 1.42;
   color: var(--ja-body);
 }
 
 .cableNote {
   margin: 2px 0 0;
-  font-size: 0.62rem;
-  color: var(--ja-muted);
-  line-height: 1.35;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ja-body);
+  line-height: 1.4;
 }
 
 .sunPage {
@@ -1288,17 +1289,22 @@
 
 .sunSvg {
   width: 100%;
-  height: 148px;
+  height: 188px;
   display: block;
+  font-family: var(--ja-sans);
+}
+
+.sunSvg text {
   font-family: var(--ja-sans);
 }
 
 .sunCaption {
   margin: 0;
-  padding: 6px 10px 7px;
-  font-size: 0.58rem;
-  font-weight: 600;
-  color: var(--ja-muted);
+  padding: 7px 12px 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--ja-body);
   background: var(--ja-card);
   border-top: 1px solid var(--ja-line);
 }
@@ -1312,12 +1318,11 @@
   list-style: none;
   border-top: 1.5px solid var(--ja-brass);
   background: var(--ja-card);
-  box-shadow: 0 4px 12px rgba(42, 33, 24, 0.04);
 }
 
 .sunStep {
   min-width: 0;
-  padding: 12px 14px 14px;
+  padding: 10px 12px 12px;
   border-right: 1px solid var(--ja-line);
   position: relative;
 }
@@ -1328,42 +1333,45 @@
 
 .sunStepN {
   display: block;
-  font-size: 0.55rem;
+  font-size: 0.68rem;
   font-weight: 800;
-  letter-spacing: 0.14em;
-  color: var(--ja-brass);
+  letter-spacing: 0.08em;
+  color: var(--ja-terra);
 }
 
 .sunStepLab {
   display: block;
   margin-top: 2px;
-  font-size: 0.55rem;
+  font-size: 0.68rem;
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--ja-muted);
+  color: var(--ja-ink);
 }
 
 .sunStepVal {
   display: block;
   margin-top: 6px;
-  font-family: var(--ja-serif);
-  font-size: 1.35rem;
-  font-weight: 600;
-  line-height: 1.1;
+  font-family: var(--ja-sans);
+  font-size: 1.45rem;
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
   color: var(--ja-ink);
 }
 
 .sunStepHint {
-  margin: 6px 0 0;
-  font-size: 0.62rem;
-  line-height: 1.3;
+  margin: 5px 0 0;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  font-weight: 600;
   color: var(--ja-body);
 }
 
 .sunMeasures {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0;
   margin: 0;
   border-top: 1px solid var(--ja-line);
@@ -1373,28 +1381,36 @@
 
 .sunMeasure {
   min-width: 0;
-  padding: 8px 10px 10px;
+  padding: 10px 12px 11px;
   border-right: 1px solid var(--ja-line);
+  border-bottom: 1px solid var(--ja-line);
 }
 
-.sunMeasure:last-child {
+.sunMeasure:nth-child(3n) {
   border-right: 0;
 }
 
+.sunMeasure:nth-last-child(-n + 3) {
+  border-bottom: 0;
+}
+
 .sunMeasure dt {
-  font-size: 0.5rem;
+  font-size: 0.64rem;
   font-weight: 800;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--ja-muted);
+  color: var(--ja-terra);
 }
 
 .sunMeasure dd {
   margin: 4px 0 0;
-  font-family: var(--ja-serif);
-  font-size: 1rem;
-  font-weight: 600;
+  font-family: var(--ja-sans);
+  font-size: 1.22rem;
+  font-weight: 800;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
   color: var(--ja-ink);
+  overflow-wrap: anywhere;
 }
 
 .sunLessons {

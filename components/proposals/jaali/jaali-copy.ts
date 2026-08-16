@@ -99,20 +99,20 @@ export function getJaaliCopy(lang: JaaliLang) {
         ? "यह छत धूप को पंखे तक कैसे पहुँचाती है."
         : "How this roof turns light into the fan.",
       lead: hi
-        ? "Top-view sticker sheet नहीं. चार कदम: यह आसमान → यह काँच → rasoi → यह switchboard. अंक इसी proposal के हैं."
-        : "Not a top-view sticker sheet. Four steps: this sky → this glass → the kitchen → this switchboard. Figures are from this proposal.",
+        ? "South section: GHI (1) south glass par padti hai, tilt ≈ is shehar ki latitude. Kaanch DC (2) banata hai, inverter AC (3) pakaata hai, board (4) ghar ko deta hai. Ank is proposal ke hain."
+        : "South section: GHI (1) hits south-facing glass, tilt ≈ this city’s latitude. Modules make DC (2), the inverter cooks AC (3), the board (4) feeds the house. Figures are from this proposal.",
       drawingNo: hi ? "Sheet 04 · south section" : "Sheet 04 · south section",
       plateCaption: hi
-        ? "Elevated GI MMS = courtyard pavilion. Ek south plane. Neeche chal sakte ho."
-        : "Elevated GI MMS as a courtyard pavilion: one south plane, walkable under the glass.",
-      walkLabel: hi ? "WALK UNDER" : "WALK UNDER",
-      southLabel: hi ? "SOUTH · front edge" : "SOUTH · front edge",
+        ? "Elevated GI MMS · modules true south (180°) · neeche walk. Tilt ≈ latitude (MNRE rooftop rule)."
+        : "Elevated GI MMS · modules true south (180°) · walkable under the table. Tilt ≈ latitude (MNRE rooftop rule).",
+      walkLabel: hi ? "WALK" : "WALK",
+      southLabel: hi ? "SOUTH · 180°" : "SOUTH · 180°",
       tiltCaption: (tilt: number) =>
-        tilt > 0 ? `TILT ${tilt}°` : hi ? "TILT · latitude के साथ" : "TILT · with latitude",
-      pathSky: hi ? "आسمان" : "Sky",
-      pathGlass: hi ? "काँच" : "Glass",
-      pathKitchen: hi ? "रसोई" : "Kitchen",
-      pathHome: hi ? "घर" : "Home",
+        tilt > 0 ? `θ ${tilt}°` : hi ? "θ · latitude" : "θ · latitude",
+      pathSky: hi ? "Sun · GHI" : "Sun · GHI",
+      pathGlass: hi ? "PV · DC" : "PV · DC",
+      pathKitchen: hi ? "Inverter" : "Inverter",
+      pathHome: hi ? "Home · AC" : "Home · AC",
       pathSkyHint: hi ? "Peak sun, is shehar ka." : "Peak sun for this city.",
       pathGlassHint: hi ? "Modules · DC array." : "Modules · DC array.",
       pathKitchenHint: hi ? "Inverter · PR after losses." : "Inverter · PR after losses.",

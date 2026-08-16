@@ -36,28 +36,28 @@ export function JaaliEngineering({
 
   const path = [
     {
-      n: "01",
+      n: "1",
       label: copy.engineering.pathSky,
       value: eng.peakSunHours > 0 ? copy.engineering.hrsDay(eng.peakSunHours) : "—",
       hint: copy.engineering.pathSkyHint,
     },
     {
-      n: "02",
+      n: "2",
       label: copy.engineering.pathGlass,
       value: glassValue,
       hint: glassHint,
     },
     {
-      n: "03",
+      n: "3",
       label: copy.engineering.pathKitchen,
       value: eng.acKw > 0 ? `${formatJaaliKw(eng.acKw)} kW AC` : "—",
       hint:
         eng.performanceRatioPct > 0
-          ? `PR ~${eng.performanceRatioPct}%`
+          ? `PR ${eng.performanceRatioPct}%`
           : copy.engineering.pathKitchenHint,
     },
     {
-      n: "04",
+      n: "4",
       label: copy.engineering.pathHome,
       value: eng.loadCoveragePct > 0 ? `${eng.loadCoveragePct}%` : "—",
       hint:
