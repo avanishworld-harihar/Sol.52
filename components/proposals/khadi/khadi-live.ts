@@ -12,7 +12,7 @@ export const KHADI_HERO_ALT =
   "Morning terrace: Indian family having tea, faces clear under a south-facing elevated solar array";
 export const KHADI_CLOSE_PHOTO = "/assets/proposals/khadi-close-evening.jpg";
 export const KHADI_CLOSE_ALT =
-  "Evening rooftop gathering under a clearly visible elevated solar array, string lights on the MMS";
+  "Warm evening on the terrace: family sharing tea under a lit elevated solar array, faces clearly lit";
 
 export function khadiBrand(data: ProposalData): string {
   return data.meta.brandName?.trim() || data.closing.installerName?.trim() || "";
