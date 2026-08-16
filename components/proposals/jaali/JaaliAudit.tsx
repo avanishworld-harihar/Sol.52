@@ -36,8 +36,8 @@ export function JaaliAudit({ data }: { data: ProposalData }) {
         <h1 className={styles.displayTitle}>{copy.audit.title}</h1>
         <p className={styles.lead}>{copy.audit.lead}</p>
 
-        <div className={styles.billTrio}>
-          <article className={styles.billCard}>
+        <div className={styles.arcade}>
+          <article className={styles.bay}>
             <span>{copy.audit.today}</span>
             <strong>{money(yearlyBill)}</strong>
             <p>
@@ -46,7 +46,7 @@ export function JaaliAudit({ data }: { data: ProposalData }) {
                 : copy.audit.todayEmpty}
             </p>
           </article>
-          <article className={`${styles.billCard} ${styles.billCardKeep}`}>
+          <article className={`${styles.bay} ${styles.baySave}`}>
             <span>{copy.audit.keep}</span>
             <strong>{monthlySave > 0 ? `+${formatInr(monthlySave)}` : "—"}</strong>
             <p>
@@ -55,7 +55,7 @@ export function JaaliAudit({ data }: { data: ProposalData }) {
                 : copy.audit.keepEmpty}
             </p>
           </article>
-          <article className={`${styles.billCard} ${styles.billCardCover}`}>
+          <article className={`${styles.bay} ${styles.bayCover}`}>
             <span>{copy.audit.cover}</span>
             <strong>{coverPct > 0 ? `~${coverPct}%` : "—"}</strong>
             <p>

@@ -74,7 +74,7 @@ export function JaaliEngineering({
 
         <div className={styles.drawBody}>
           <div className={styles.drawPad}>
-            <div className={`${styles.planBoard} ${styles.millPlan}`}>
+            <div className={`${styles.planBoard} ${styles.window}`}>
               <div className={styles.planGrid} />
               <div className={styles.compass} aria-hidden>
                 <span className={styles.compassN}>N</span>
@@ -101,20 +101,18 @@ export function JaaliEngineering({
             </div>
             <p className={styles.drawLegend}>{copy.engineering.planLegend}</p>
 
-            <div className={styles.millYield}>
-              <div className={styles.millCoin}>
+            <div className={styles.yieldRail}>
+              <div className={styles.yieldCell}>
                 <span>{copy.engineering.peakSun}</span>
                 <strong>
                   {eng.peakSunHours > 0 ? copy.engineering.hrsDay(eng.peakSunHours) : "—"}
                 </strong>
               </div>
-              <div className={styles.millCoin}>
+              <div className={styles.yieldCell}>
                 <span>{copy.engineering.specificYield}</span>
-                <strong>
-                  {eng.specificYield > 0 ? `${eng.specificYield}` : "—"}
-                </strong>
+                <strong>{eng.specificYield > 0 ? `${eng.specificYield}` : "—"}</strong>
               </div>
-              <div className={`${styles.millCoin} ${styles.millCoinKeep}`}>
+              <div className={styles.yieldCell}>
                 <span>{copy.engineering.loadCoverage}</span>
                 <strong>
                   {eng.loadCoveragePct > 0 ? `${eng.loadCoveragePct}%` : "—"}
@@ -124,51 +122,55 @@ export function JaaliEngineering({
           </div>
 
           <aside className={styles.drawFacts}>
-            <div className={styles.millStamp}>
-              <span>{copy.engineering.arrayTitle}</span>
-              <strong>
-                {arrayMeta}
-                {eng.showingPartial
-                  ? copy.engineering.showing(eng.visualPanelCount, eng.panelCount)
-                  : ""}
-              </strong>
-            </div>
-            <div className={styles.millStamp}>
-              <span>{copy.engineering.latitude}</span>
-              <strong>{eng.siteLatLabel || "—"}</strong>
-              <p>{copy.engineering.latitudeCaption}</p>
-            </div>
-            <div className={styles.millStamp}>
-              <span>{copy.engineering.roofArea}</span>
-              <strong>{eng.roofAreaLabel}</strong>
-              <p>
-                {eng.panelCount > 0
-                  ? copy.engineering.roofAreaCaption(eng.panelCount, eng.m2PerPanelLabel)
-                  : copy.engineering.roofAreaEmpty}
-              </p>
-            </div>
-            <div className={styles.millParts}>
-              {specCards.map((card) => (
-                <div key={card.label} className={styles.millStamp}>
-                  <span>{card.label}</span>
-                  <strong>{card.value}</strong>
-                  <p>{card.desc}</p>
-                </div>
-              ))}
-            </div>
-            <p className={styles.millCaption}>
-              {eng.cableNote || copy.engineering.cableFallback}
-            </p>
+            <dl className={styles.facts}>
+              <div className={styles.fact}>
+                <dt>{copy.engineering.arrayTitle}</dt>
+                <dd>
+                  {arrayMeta}
+                  {eng.showingPartial
+                    ? copy.engineering.showing(eng.visualPanelCount, eng.panelCount)
+                    : ""}
+                </dd>
+              </div>
+              <div className={styles.fact}>
+                <dt>{copy.engineering.latitude}</dt>
+                <dd>{eng.siteLatLabel || "—"}</dd>
+                <p>{copy.engineering.latitudeCaption}</p>
+              </div>
+              <div className={styles.fact}>
+                <dt>{copy.engineering.roofArea}</dt>
+                <dd>{eng.roofAreaLabel}</dd>
+                <p>
+                  {eng.panelCount > 0
+                    ? copy.engineering.roofAreaCaption(eng.panelCount, eng.m2PerPanelLabel)
+                    : copy.engineering.roofAreaEmpty}
+                </p>
+              </div>
+            </dl>
           </aside>
         </div>
+
+        <div className={styles.specStrip}>
+          {specCards.map((card) => (
+            <div key={card.label} className={styles.specCell}>
+              <p className={styles.specVal}>{card.value}</p>
+              <p className={styles.specLab}>{card.label}</p>
+              <p className={styles.specDesc}>{card.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        <p className={styles.cableNote}>
+          {eng.cableNote || copy.engineering.cableFallback}
+        </p>
 
         {insights.length > 0 ? (
           <div className={styles.drawNotes}>
             {insights.slice(0, 3).map((card) => (
-              <p key={card.title} className={styles.millCaption}>
-                <strong>{card.title}</strong>
-                {card.body}
-              </p>
+              <div key={card.title}>
+                <p className={styles.insightTitle}>{card.title}</p>
+                <p className={styles.insightBody}>{card.body}</p>
+              </div>
             ))}
           </div>
         ) : null}

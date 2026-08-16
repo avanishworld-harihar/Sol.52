@@ -54,15 +54,15 @@ export function JaaliTerms({ data }: { data: ProposalData }) {
       <h1 className={styles.displayTitle}>{copy.terms.title}</h1>
       <p className={styles.lead}>{copy.terms.lead}</p>
 
-      <div className={styles.millTerms}>
-        <article className={styles.millCol}>
+      <div className={styles.clauseGrid}>
+        <article className={styles.clause}>
           <h3>{copy.terms.general}</h3>
           <TermList items={model.general} />
         </article>
-        <div className={styles.millCol}>
+        <div className={styles.clause}>
           <h3>{copy.terms.documents}</h3>
           <TermList items={model.documents} />
-          <h3 className={styles.millStackHead}>{copy.terms.amcScope}</h3>
+          <h3 className={styles.clauseStacked}>{copy.terms.amcScope}</h3>
           <p className={styles.clauseLead}>{model.amcObjective}</p>
           <TermList items={model.amcScope} />
         </div>
@@ -81,12 +81,12 @@ export function JaaliTermsContinued({ data }: { data: ProposalData }) {
       <h1 className={styles.displayTitle}>{copy.terms.title2}</h1>
       <p className={styles.lead}>{copy.terms.lead2}</p>
 
-      <div className={styles.millTerms}>
-        <article className={styles.millCol}>
+      <div className={`${styles.clauseGrid} ${styles.clauseEqual}`}>
+        <article className={styles.clause}>
           <h3>{copy.terms.clientScope}</h3>
           <TermList items={model.clientScope} />
         </article>
-        <article className={styles.millCol}>
+        <article className={styles.clause}>
           <h3>{copy.terms.cost}</h3>
           <p className={styles.clauseLead}>{model.amcCostParagraph}</p>
           <TermList items={model.amcTerms} />

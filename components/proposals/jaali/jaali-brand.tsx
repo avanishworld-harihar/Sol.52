@@ -247,7 +247,7 @@ export function JaaliDocFooter({
   );
 }
 
-/** Courtyard frame: brass jali lattice on top, sandstone wall, cream courtyard. */
+/** Inner courtyard: thin lintel + cream well. Jali stays a small motif, not a loud band. */
 export function JaaliSheet({
   data,
   page,
@@ -261,10 +261,10 @@ export function JaaliSheet({
 }) {
   return (
     <section className={`${styles.a4Jaali} ${styles.folio}`}>
-      <header className={styles.dyeBand}>
-        <span className={styles.dyeGutter} aria-hidden />
-        <span className={styles.dyeChapter}>{chapter}</span>
-        <span className={styles.dyePage}>{page}</span>
+      <header className={styles.lintel}>
+        <span className={styles.lintelMotif} aria-hidden />
+        <span className={styles.lintelChapter}>{chapter}</span>
+        <span className={styles.lintelPage}>{page}</span>
       </header>
       <div className={styles.folioMain}>
         {children}
