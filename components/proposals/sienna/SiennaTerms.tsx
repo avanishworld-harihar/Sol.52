@@ -49,7 +49,7 @@ export function SiennaTerms({ data }: { data: ProposalData }) {
   const model = buildSiennaTermsModel(data, lang);
 
   return (
-    <SiennaSheet data={data} page="07 / 09" chapter={copy.spine.terms}>
+    <SiennaSheet data={data} page="07 / 09">
       <p className={styles.kicker}>{copy.terms.kicker}</p>
       <h1 className={styles.displayTitle}>{copy.terms.title}</h1>
       <p className={styles.lead}>{copy.terms.lead}</p>
@@ -80,7 +80,7 @@ export function SiennaTermsContinued({ data }: { data: ProposalData }) {
   const model = buildSiennaTermsModel(data, lang);
 
   return (
-    <SiennaSheet data={data} page="08 / 09" chapter={copy.spine.terms2}>
+    <SiennaSheet data={data} page="08 / 09">
       <p className={styles.kicker}>{copy.terms.kicker2}</p>
       <h1 className={styles.displayTitle}>{copy.terms.title2}</h1>
       <p className={styles.lead}>{copy.terms.lead2}</p>

@@ -36,7 +36,7 @@ export function SiennaForecast({ data }: { data: ProposalData }) {
         : "—";
 
   return (
-    <SiennaSheet data={data} page="05 / 09" chapter={copy.spine.year}>
+    <SiennaSheet data={data} page="05 / 09">
       <p className={styles.kicker}>{copy.forecast.kicker}</p>
       <h1 className={styles.displayTitle}>{copy.forecast.title}</h1>
       <p className={styles.lead}>
@@ -69,9 +69,16 @@ export function SiennaForecast({ data }: { data: ProposalData }) {
             bill != null && bill > 0 ? Math.max(8, Math.round((bill / max) * 100)) : 0;
           return (
             <div key={item.m} className={styles.ribbonCol}>
-              <span className={`${styles.ribbonVal} ${item.peak ? styles.ribbonValPeak : ""}`}>
-                {item.val > 0 ? item.val : "—"}
-              </span>
+              <div className={styles.ribbonNums}>
+                <span className={`${styles.ribbonVal} ${item.peak ? styles.ribbonValPeak : ""}`}>
+                  {item.val > 0 ? item.val : "—"}
+                </span>
+                {showBill ? (
+                  <span className={styles.ribbonValBill}>
+                    {bill != null && bill > 0 ? bill : "—"}
+                  </span>
+                ) : null}
+              </div>
               {showBill ? (
                 <div className={styles.ribbonPair}>
                   <div className={styles.ribbonTrack}>

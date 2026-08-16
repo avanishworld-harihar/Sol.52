@@ -11,7 +11,7 @@ export function SiennaHardware({ data }: { data: ProposalData }) {
   const rows = siennaHardwareRows(data);
 
   return (
-    <SiennaSheet data={data} page="03 / 09" chapter={copy.spine.parts}>
+    <SiennaSheet data={data} page="03 / 09">
       <p className={styles.kicker}>{copy.hardware.kicker}</p>
       <h1 className={styles.displayTitle}>{copy.hardware.title}</h1>
       <p className={styles.lead}>{copy.hardware.lead}</p>

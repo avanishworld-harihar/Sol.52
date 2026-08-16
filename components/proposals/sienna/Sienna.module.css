@@ -233,30 +233,6 @@
   width: 13mm;
   flex-shrink: 0;
   background: var(--sn-laterite);
-  color: var(--sn-bone);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 0 14px;
-}
-
-.spineChapter {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-}
-
-.spinePage {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  font-size: 0.58rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  opacity: 0.85;
 }
 
 .folioMain {
@@ -1023,7 +999,23 @@
   font-size: 0.52rem;
   font-weight: 800;
   color: var(--sn-ink);
+  line-height: 1.1;
+}
+
+.ribbonNums {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
   margin-bottom: 4px;
+}
+
+.ribbonValBill {
+  font-size: 0.45rem;
+  font-weight: 700;
+  color: var(--sn-muted);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
 }
 
 .ribbonValPeak {
@@ -1571,14 +1563,8 @@
 
   .spine {
     width: 100%;
-    flex-direction: row;
-    padding: 8px 14px;
-  }
-
-  .spineChapter,
-  .spinePage {
-    writing-mode: horizontal-tb;
-    transform: none;
+    height: 6px;
+    padding: 0;
   }
 
   .coverColophon,
