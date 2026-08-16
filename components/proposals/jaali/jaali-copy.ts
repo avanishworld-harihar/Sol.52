@@ -182,14 +182,14 @@ export function getJaaliCopy(lang: JaaliLang) {
       lead: (units: string, bill: boolean) =>
         hi
           ? `Year-1 yield ${units} units. Central-India rooftop का typical curve.${
-              bill ? " गहरी पट्टी bill units हैं." : " Terracotta = peak-sun महीने."
+              bill ? " गहरी पट्टी bill units हैं." : " Terracotta columns = peak-sun महीने."
             }`
           : `Year-1 yield is ${units} units. Typical central-India rooftop curve.${
-              bill ? " Dark strip is bill units." : " Terracotta = peak-sun months."
+              bill ? " Dark strip is bill units." : " Terracotta columns = peak-sun months."
             }`,
       leadEmpty: hi
-        ? "Year-1 yield file पर हो तो ribbon दिखेगा."
-        : "The ribbon appears when year-1 yield is on file.",
+        ? "Year-1 yield file par ho to columns dikhengi."
+        : "The month columns appear when year-1 yield is on file.",
       units: "units",
       highest: hi ? "ऊँचा महीना" : "Highest",
       lowest: hi ? "नीचा महीना" : "Lowest",
