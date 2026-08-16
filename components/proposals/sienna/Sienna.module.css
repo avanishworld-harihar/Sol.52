@@ -1596,8 +1596,4 @@
   .yieldRail {
     grid-template-columns: 1fr;
   }
-
-  .sigRow {
-    flex-direction: column;
-  }
 }
