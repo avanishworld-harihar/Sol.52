@@ -3,11 +3,8 @@
 import type { ProposalData } from "@/lib/proposal-data";
 import { installerLogoAlt } from "@/lib/proposal-branding-settings";
 import styles from "./Sienna.module.css";
-import { useSiennaSurfaceBrand } from "./sienna-brand";
-import {
-  formatSiennaContactFooter,
-  useSiennaContactDetails,
-} from "./sienna-closing-contact";
+import { splitSiennaWordmark, useSiennaSurfaceBrand } from "./sienna-brand";
+import { useSiennaContactDetails } from "./sienna-closing-contact";
 import { useSiennaLang } from "./sienna-lang-context";
 import {
   SIENNA_CLOSE_ALT,
@@ -33,19 +30,14 @@ export function SiennaClosingPage({
   const closingBrand = useSiennaSurfaceBrand(data, "closing", installerLogoUrl);
   const installer = closingBrand.installerName?.trim() || "—";
   const logo = closingBrand.showLogo ? closingBrand.logoUrl : "";
-  const showName = Boolean(installer !== "—" && (closingBrand.showName || !logo));
+  const showWordmark = Boolean(installer !== "—" && (closingBrand.showName || !logo));
+  const { head, tail } = splitSiennaWordmark(installer !== "—" ? installer : "");
+  const logoOnly = Boolean(logo) && !showWordmark;
   const location = siennaLocation(data);
   const vendorContact = useSiennaContactDetails(data, pptWebsite);
-  const contactLine = formatSiennaContactFooter([
-    vendorContact.phone,
-    vendorContact.email,
-    vendorContact.website,
-  ]);
-  const headLine = formatSiennaContactFooter([
-    showName ? installer : "",
-    location,
-    "09 / 09",
-  ]);
+  const hasContact = Boolean(
+    vendorContact.phone || vendorContact.email || vendorContact.website
+  );
 
   const title =
     customer !== "—" ? copy.close.titleNamed(customer) : copy.close.titlePlain;
@@ -54,55 +46,59 @@ export function SiennaClosingPage({
 
   return (
     <section className={`${styles.a4Sienna} ${styles.bleedSheet}`}>
-      <div className={styles.closeSplit}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={SIENNA_CLOSE_PHOTO} alt={SIENNA_CLOSE_ALT} />
-        <div className={styles.closeScrim} />
-        <div className={styles.closeCopy}>
-          <div className={styles.closeKicker}>{copy.close.kicker}</div>
-          <h1 className={styles.closeTitle}>{title}</h1>
-          <p className={styles.closeLead}>{lead}</p>
-
-          <div className={styles.closeSlab}>
-            {contactLine ? (
-              <div className={styles.closeContact}>
-                <span>{copy.close.contactTitle}</span>
-                {vendorContact.phone}
-                {vendorContact.phone && (vendorContact.email || vendorContact.website)
-                  ? " · "
-                  : ""}
-                {vendorContact.email}
-                {vendorContact.email && vendorContact.website ? " · " : ""}
-                {vendorContact.website}
+      <div className={styles.closeColophon}>
+        {logo || showWordmark ? (
+          <div className={styles.closeBrand}>
+            {logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={logo}
+                alt={installerLogoAlt(installer)}
+                className={logoOnly ? styles.coverLogoSolo : styles.coverLogo}
+              />
+            ) : null}
+            {showWordmark ? (
+              <div className={styles.closeWordmark}>
+                {head}
+                {tail ? <span className={styles.closeWordmarkTail}>{tail}</span> : null}
               </div>
             ) : null}
+          </div>
+        ) : null}
 
-            <div className={styles.sigRow}>
-              <div className={styles.sig}>
-                <div className={styles.sigRule} />
-                <span className={styles.sigName}>{customer}</span>
-                <span className={styles.sigRole}>{copy.close.clientRole}</span>
-              </div>
-              <div className={styles.sig}>
-                <div className={styles.sigRule} />
-                <span className={styles.sigName}>{installer}</span>
-                <span className={styles.sigRole}>{copy.close.officialRole}</span>
-              </div>
+        <p className={styles.closeKicker}>{copy.close.kicker}</p>
+        <h1 className={styles.closeTitle}>{title}</h1>
+        <p className={styles.closeLead}>{lead}</p>
+
+        <div className={styles.closePanel}>
+          {hasContact ? (
+            <div className={styles.closeContact}>
+              <span>{copy.close.contactTitle}</span>
+              {vendorContact.phone ? <strong>{vendorContact.phone}</strong> : null}
+              {vendorContact.email ? <strong>{vendorContact.email}</strong> : null}
+              {vendorContact.website ? <strong>{vendorContact.website}</strong> : null}
+            </div>
+          ) : null}
+
+          <div className={styles.sigStack}>
+            <div className={styles.sig}>
+              <div className={styles.sigRule} />
+              <span className={styles.sigName}>{customer}</span>
+              <span className={styles.sigRole}>{copy.close.clientRole}</span>
+            </div>
+            <div className={styles.sig}>
+              <div className={styles.sigRule} />
+              <span className={styles.sigName}>{installer}</span>
+              <span className={styles.sigRole}>{copy.close.officialRole}</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className={styles.closeBar}>
-        {logo ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={logo}
-            alt={installerLogoAlt(installer)}
-            className={styles.closeBarLogo}
-          />
-        ) : null}
-        <span>{headLine || "09 / 09"}</span>
+      <div className={styles.closePhoto}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={SIENNA_CLOSE_PHOTO} alt={SIENNA_CLOSE_ALT} />
+        <div className={styles.closePhotoScrim} />
       </div>
     </section>
   );

@@ -10,9 +10,9 @@ import { recommendedTiltFromLatitude, resolveSiteLatitude } from "@/lib/proposal
 export const SIENNA_HERO_PHOTO = "/assets/proposals/sienna-cover-day.jpg";
 export const SIENNA_HERO_ALT =
   "Daytime rooftop: elevated GI MMS array overhead, Indian couple on the walkable RCC terrace underneath";
-export const SIENNA_CLOSE_PHOTO = "/assets/proposals/lumina-cover-wide-plant.jpg";
+export const SIENNA_CLOSE_PHOTO = "/assets/proposals/sienna-close-evening.jpg";
 export const SIENNA_CLOSE_ALT =
-  "Evening rooftop gathering under the elevated solar array, string lights and golden-hour sky";
+  "Evening rooftop: Indian family under the elevated solar array, warm string lights, plant visible overhead";
 
 export function siennaBrand(data: ProposalData): string {
   return data.meta.brandName?.trim() || data.closing.installerName?.trim() || "";

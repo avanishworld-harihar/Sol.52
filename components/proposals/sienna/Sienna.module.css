@@ -107,7 +107,7 @@
   }
 
   .closeTitle {
-    font-size: 2.8rem !important;
+    font-size: 1.85rem !important;
   }
 }
 
@@ -1401,41 +1401,44 @@
   font-weight: 600;
 }
 
-/* ── Closing ── */
+/* ── Closing: laterite sign strip + evening photo ── */
 
-.closeSplit {
-  flex: 1;
-  min-width: 0;
-  position: relative;
-  overflow: hidden;
-}
-
-.closeSplit img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 40%;
-  display: block;
-}
-
-.closeScrim {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(36, 24, 18, 0.2) 0%,
-    transparent 36%,
-    rgba(36, 24, 18, 0.55) 100%
-  );
-}
-
-.closeCopy {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
+.closeColophon {
+  width: 42%;
+  flex-shrink: 0;
+  background: var(--sn-laterite);
+  color: var(--sn-bone);
   display: flex;
   flex-direction: column;
-  padding: 24px 26px 20px 16mm;
+  padding: 22px 16px 18px 16mm;
+}
+
+.closeBrand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+
+.closeWordmark {
+  font-family: var(--sn-serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--sn-bone);
+  line-height: 1.15;
+}
+
+.closeWordmarkTail {
+  display: block;
+  font-family: var(--sn-sans);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #e8c4a0;
+  margin-top: 4px;
 }
 
 .closeKicker {
@@ -1444,43 +1447,36 @@
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: #e8c4a0;
-  margin-bottom: 10px;
+  margin: 0 0 10px;
 }
 
 .closeTitle {
   font-family: var(--sn-serif);
-  font-size: clamp(2.1rem, 5.2vw, 2.9rem);
+  font-size: clamp(1.55rem, 3.2vw, 1.95rem);
   font-weight: 600;
-  color: #f7f1e6;
-  line-height: 1.08;
+  color: var(--sn-bone);
+  line-height: 1.12;
   margin: 0 0 10px;
-  max-width: 88%;
-  text-shadow: 0 2px 14px rgba(36, 24, 18, 0.45);
 }
 
 .closeLead {
-  font-size: 1rem;
-  color: rgba(247, 241, 230, 0.95);
-  line-height: 1.4;
-  max-width: 78%;
+  font-size: 0.88rem;
+  color: rgba(247, 241, 230, 0.88);
+  line-height: 1.45;
   margin: 0;
-  text-shadow: 0 1px 8px rgba(36, 24, 18, 0.4);
 }
 
-.closeSlab {
+.closePanel {
   margin-top: auto;
-  background: var(--sn-bone);
-  color: var(--sn-ink);
-  padding: 14px 16px 12px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .closeContact {
   font-size: 0.78rem;
   font-weight: 700;
-  line-height: 1.4;
+  line-height: 1.35;
 }
 
 .closeContact span {
@@ -1489,62 +1485,74 @@
   font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--sn-laterite);
-  margin-bottom: 4px;
+  color: #e8c4a0;
+  margin-bottom: 6px;
 }
 
-.sigRow {
+.closeContact strong {
+  display: block;
+  font-weight: 700;
+  word-break: break-word;
+}
+
+.sigStack {
   display: flex;
-  gap: 16px;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .sig {
-  flex: 1;
-  min-width: 0;
+  background: var(--sn-bone);
+  color: var(--sn-ink);
+  padding: 12px 12px 10px;
 }
 
 .sigRule {
   height: 1px;
   background: var(--sn-ink);
-  opacity: 0.35;
+  opacity: 0.28;
   margin-bottom: 8px;
 }
 
 .sigName {
   display: block;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   font-weight: 800;
 }
 
 .sigRole {
   display: block;
-  font-size: 0.58rem;
+  font-size: 0.55rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--sn-muted);
 }
 
-.closeBar {
-  background: var(--sn-laterite);
-  color: var(--sn-bone);
-  padding: 10px 16px 10px 16mm;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+.closePhoto {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
 }
 
-.closeBarLogo {
-  height: 36px;
-  max-width: 140px;
-  object-fit: contain;
-  background: var(--sn-bone);
-  padding: 3px 6px;
+.closePhoto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 42%;
+  display: block;
+}
+
+.closePhotoScrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(156, 59, 36, 0.22) 0%,
+    transparent 24%
+  );
+  pointer-events: none;
 }
 
 .loading {
@@ -1568,11 +1576,14 @@
   }
 
   .coverColophon,
-  .coverPhoto {
+  .coverPhoto,
+  .closeColophon,
+  .closePhoto {
     width: 100%;
   }
 
-  .coverPhoto {
+  .coverPhoto,
+  .closePhoto {
     min-height: 220px;
   }
 
