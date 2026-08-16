@@ -59,7 +59,7 @@ export function SiennaEngineering({
   ];
 
   return (
-    <SiennaSheet data={data} page="04 / 09">
+    <SiennaSheet data={data} page="04 / 09" chapter={copy.spine.drawing}>
       <div className={styles.drawingHead}>
         <div>
           <p className={styles.kicker}>{copy.engineering.kicker}</p>

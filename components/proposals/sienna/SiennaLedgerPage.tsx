@@ -27,7 +27,7 @@ export function SiennaLedgerPage({ data }: { data: ProposalData }) {
   const netValue = showSubsidy ? net : gross;
 
   return (
-    <SiennaSheet data={data} page="06 / 09">
+    <SiennaSheet data={data} page="06 / 09" chapter={copy.spine.outlay}>
       <p className={styles.kicker}>{copy.capital.kicker}</p>
       <h2 className={styles.displayTitle}>{copy.capital.title}</h2>
       <p className={styles.lead}>{copy.capital.lead}</p>

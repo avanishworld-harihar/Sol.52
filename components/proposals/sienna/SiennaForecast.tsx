@@ -36,7 +36,7 @@ export function SiennaForecast({ data }: { data: ProposalData }) {
         : "—";
 
   return (
-    <SiennaSheet data={data} page="05 / 09">
+    <SiennaSheet data={data} page="05 / 09" chapter={copy.spine.year}>
       <p className={styles.kicker}>{copy.forecast.kicker}</p>
       <h1 className={styles.displayTitle}>{copy.forecast.title}</h1>
       <p className={styles.lead}>
