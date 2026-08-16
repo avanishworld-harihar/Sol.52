@@ -12,7 +12,7 @@ export const KHADI_HERO_ALT =
   "Luxury Indian rooftop garden under a full elevated GI solar array: husband and wife having tea";
 export const KHADI_CLOSE_PHOTO = "/assets/proposals/khadi-close-evening.jpg";
 export const KHADI_CLOSE_ALT =
-  "Warm evening on the terrace: family sharing tea under a lit elevated solar array, faces clearly lit";
+  "Beautiful evening rooftop garden: family and friends under a full elevated GI solar array, sunset sky, warm lights";
 
 export function khadiBrand(data: ProposalData): string {
   return data.meta.brandName?.trim() || data.closing.installerName?.trim() || "";
