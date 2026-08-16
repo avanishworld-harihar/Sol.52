@@ -29,7 +29,7 @@ export function getKhadiCopy(lang: KhadiLang) {
     cover: {
       kicker: hi ? "यह छत" : "This roof",
       heroMms: "Elevated GI MMS",
-      heroTerrace: hi ? "RCC terrace · नीचे चल सकते हैं" : "RCC terrace · walkable under array",
+      heroTerrace: hi ? "Garden · plant ke neeche" : "Garden under the array",
       preparedFor: (name: string) =>
         hi
           ? name !== "—"
@@ -43,10 +43,10 @@ export function getKhadiCopy(lang: KhadiLang) {
         hi
           ? `${kw ? `${kw} kW ` : ""}rooftop plant${
               location ? ` — ${location}` : ""
-            }. Terrace वही रहती है. Grid कम होता है.`
+            }. Garden plant ke neeche. Grid kam.`
           : `${kw ? `${kw} kW ` : ""}rooftop plant${
               location ? ` in ${location}` : ""
-            }. Same terrace. Less grid.`,
+            }. Garden under the plant. Less grid.`,
       system: hi ? "Plant size" : "Plant size",
       yield: hi ? "Year-1 units" : "Year-1 units",
       units: hi ? "units" : "units",
