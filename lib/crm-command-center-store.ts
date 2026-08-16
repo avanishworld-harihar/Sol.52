@@ -68,6 +68,7 @@ function overdueUrgency(priority: string, dueMs: number, nowMs: number): Command
 type LeadCtx = {
   name: string;
   phone: string | null;
+  location: string | null;
   status: LeadStatusKey;
   last_touched_at: string | null;
 };
@@ -143,6 +144,7 @@ export async function getCommandCenterPayload(): Promise<CommandCenterPayload> {
     leadById.set(l.id, {
       name: l.consumer_name ? `${l.consumer_name} (${l.name})` : l.name,
       phone: l.phone ?? null,
+      location: l.location?.trim() || l.city?.trim() || null,
       status: normalizeLeadStatus(l.status),
       last_touched_at: l.last_touched_at ?? null,
     });
@@ -165,6 +167,7 @@ export async function getCommandCenterPayload(): Promise<CommandCenterPayload> {
     return {
       customer_name: lead?.name ?? "Customer",
       phone: lead?.phone ?? null,
+      location: lead?.location ?? null,
       stage: lead?.status ?? "new",
       system_kw: prop?.system_kw ?? null,
       deal_value_inr: prop?.net_cost_inr ?? null,

@@ -15,6 +15,7 @@ import {
   Loader2,
   RefreshCw,
   Zap,
+  MapPin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -259,10 +260,18 @@ function ActionRow({
           </span>
           <div className="min-w-0 flex-1">
             <Link
-              href={`/customers?lead=${encodeURIComponent(action.lead_id)}`}
-              className="block truncate text-sm font-extrabold text-slate-900 hover:text-brand-700 dark:text-white dark:hover:text-brand-300 sm:text-[15px]"
+              href={`/customers/${encodeURIComponent(action.lead_id)}`}
+              className="block min-w-0 hover:text-brand-700 dark:hover:text-brand-300"
             >
-              {action.customer_name}
+              <span className="block truncate text-sm font-extrabold text-slate-900 dark:text-white sm:text-[15px]">
+                {action.customer_name}
+              </span>
+              {action.location ? (
+                <span className="mt-0.5 flex min-w-0 items-center gap-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400 sm:text-xs">
+                  <MapPin className="h-3 w-3 shrink-0" strokeWidth={2.4} aria-hidden />
+                  <span className="truncate">{action.location}</span>
+                </span>
+              ) : null}
             </Link>
             <p className="mt-0.5 text-xs font-bold text-slate-800 dark:text-slate-200 sm:text-sm">{action.action_title}</p>
             <p className="mt-1 text-[11px] font-medium leading-snug text-slate-500 dark:text-slate-400 sm:text-xs">

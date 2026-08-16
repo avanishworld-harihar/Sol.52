@@ -19,6 +19,8 @@ export type CommandActionItem = {
   lead_id: string;
   customer_name: string;
   phone: string | null;
+  /** Lead location / city — distinguishes same names on the dashboard. */
+  location: string | null;
   stage: string;
   system_kw: number | null;
   deal_value_inr: number | null;

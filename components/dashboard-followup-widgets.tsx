@@ -66,7 +66,7 @@ function CallbackRow({
 
   return (
     <Link
-      href={`/customers?lead=${encodeURIComponent(reminder.lead_id)}`}
+      href={`/customers/${encodeURIComponent(reminder.lead_id)}`}
       className={`mb-1.5 block rounded-lg border px-2.5 py-2 transition ${className}`}
     >
       <p className="truncate text-xs font-bold">{reminder.title}</p>
@@ -171,7 +171,7 @@ export function DashboardFollowupWidgets() {
             visits.slice(0, 5).map((v) => (
               <Link
                 key={v.id}
-                href={`/customers?lead=${encodeURIComponent(v.lead_id)}`}
+                href={`/customers/${encodeURIComponent(v.lead_id)}`}
                 className="mb-1.5 block rounded-lg border border-teal-200/80 bg-teal-50 px-2.5 py-2 text-xs font-semibold text-teal-900 hover:bg-teal-100 dark:border-teal-500/30 dark:bg-teal-950/25 dark:text-teal-100"
               >
                 {formatCrmDateTime(v.scheduled_at)}
