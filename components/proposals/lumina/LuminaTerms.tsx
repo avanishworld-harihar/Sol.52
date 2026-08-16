@@ -2,7 +2,7 @@
 
 import type { ProposalData } from "@/lib/proposal-data";
 import styles from "./Lumina.module.css";
-import { LuminaDocFooter } from "./lumina-brand";
+import { LuminaDocFooter, useLuminaBankDetails } from "./lumina-brand";
 import { useLuminaLang } from "./lumina-lang-context";
 import { buildLuminaTermsModel } from "./lumina-terms-copy";
 
@@ -18,12 +18,11 @@ function TermList({ items }: { items: string[] }) {
 
 function TermsBankCallout({ data }: { data: ProposalData }) {
   const { copy } = useLuminaLang();
-  const bank = data.execution.bank;
-  const accountName =
-    bank.company?.trim() || data.meta.brandName?.trim() || data.closing.installerName?.trim() || "";
-  const accountNumber = bank.accountNumber?.trim() || "";
-  const ifsc = bank.ifsc?.trim().toUpperCase() || "";
-  const upi = bank.upiId?.trim() || "";
+  const bank = useLuminaBankDetails(data);
+  const accountName = bank.accountName;
+  const accountNumber = bank.accountNumber;
+  const ifsc = bank.ifsc;
+  const upi = bank.upiId;
   const hasBank = Boolean(accountName || accountNumber || ifsc || upi);
   if (!hasBank) return null;
 

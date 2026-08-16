@@ -12,6 +12,7 @@ import {
   PROPOSAL_BRANDING_UPDATED_EVENT,
   readProposalBrandingSettings,
   resolveInstallerDisplayName,
+  resolveProposalBankDetails,
   resolveProposalBrandConfig,
   resolveProposalBrandPresentation,
   type ProposalBrandPresentation,
@@ -25,6 +26,71 @@ function clean(value: string | undefined | null): string {
   const v = (value ?? "").trim();
   if (!v || PLACEHOLDER.test(v)) return "";
   return v;
+}
+
+export type LuminaBankDetails = {
+  accountName: string;
+  accountNumber: string;
+  ifsc: string;
+  upiId: string;
+};
+
+function hasLiveBankSettings(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const s = readProposalBrandingSettings();
+    return Boolean(
+      s.bankAccountName?.trim() ||
+        s.bankAccountNumber?.trim() ||
+        s.bankIfsc?.trim() ||
+        s.bankUpiId?.trim()
+    );
+  } catch {
+    return false;
+  }
+}
+
+/** More → Banking first on live preview; frozen snapshot on shared links. */
+export function resolveLuminaBankDetails(data: ProposalData): LuminaBankDetails {
+  const fromData = data.execution.bank;
+  const settings =
+    typeof window !== "undefined" ? readProposalBrandingSettings() : null;
+  const resolved = resolveProposalBankDetails({
+    pptBank: {
+      accountName: clean(fromData.company) || undefined,
+      accountNumber: clean(fromData.accountNumber) || undefined,
+      ifsc: clean(fromData.ifsc) || undefined,
+      upiId: clean(fromData.upiId) || undefined,
+    },
+    settings,
+    preferSettings: hasLiveBankSettings(),
+  });
+
+  const accountName = clean(resolved.accountName) || resolveLuminaBrand(data);
+
+  return {
+    accountName,
+    accountNumber: clean(resolved.accountNumber),
+    ifsc: clean(resolved.ifsc).toUpperCase(),
+    upiId: clean(resolved.upiId),
+  };
+}
+
+export function useLuminaBankDetails(data: ProposalData): LuminaBankDetails {
+  const [bank, setBank] = useState(() => resolveLuminaBankDetails(data));
+
+  useEffect(() => {
+    const sync = () => setBank(resolveLuminaBankDetails(data));
+    sync();
+    window.addEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(PROPOSAL_BRANDING_UPDATED_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, [data]);
+
+  return bank;
 }
 
 export function resolveLuminaBrand(data: ProposalData): string {
