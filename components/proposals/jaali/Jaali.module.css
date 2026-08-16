@@ -109,6 +109,16 @@
   .closeTitle {
     font-size: 1.85rem !important;
   }
+
+  .coverStamp {
+    background: var(--ja-court) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .seal {
+    background: var(--ja-sand) !important;
+  }
 }
 
 .printBar {
@@ -400,7 +410,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 28%;
+  object-position: center 34%;
   display: block;
 }
 
@@ -409,8 +419,8 @@
   inset: 0;
   background: linear-gradient(
     180deg,
-    transparent 52%,
-    rgba(42, 33, 24, 0.28) 100%
+    transparent 58%,
+    rgba(42, 33, 24, 0.18) 100%
   );
   pointer-events: none;
 }
@@ -494,11 +504,29 @@
   right: 12mm;
   bottom: 12mm;
   z-index: 3;
-  background: var(--ja-court);
+  background: rgba(246, 239, 227, 0.64);
+  -webkit-backdrop-filter: blur(18px) saturate(1.12);
+  backdrop-filter: blur(18px) saturate(1.12);
   padding: 14px 16px 12px;
-  border: 1px solid var(--ja-brass);
-  border-top: 5px solid var(--ja-brass);
-  box-shadow: 0 14px 34px rgba(42, 33, 24, 0.28);
+  border: 1px solid rgba(176, 141, 62, 0.55);
+  border-top: 2px solid var(--ja-brass);
+  box-shadow: 0 10px 28px rgba(42, 33, 24, 0.14);
+  overflow: hidden;
+}
+
+.coverStamp::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 0;
+  right: 0;
+  height: 6px;
+  pointer-events: none;
+  opacity: 0.32;
+  background-image:
+    linear-gradient(45deg, var(--ja-brass) 12%, transparent 12.5%, transparent 87%, var(--ja-brass) 87.5%),
+    linear-gradient(-45deg, var(--ja-brass) 12%, transparent 12.5%, transparent 87%, var(--ja-brass) 87.5%);
+  background-size: 6px 6px;
 }
 
 .jaliCorner {
@@ -563,10 +591,10 @@
 }
 
 .seal {
-  border: 1.5px solid var(--ja-brass);
+  border: 1px solid rgba(176, 141, 62, 0.45);
   padding: 8px 8px 6px;
   min-width: 0;
-  background: var(--ja-sand);
+  background: rgba(234, 217, 193, 0.42);
 }
 
 .seal .colophonValue {
