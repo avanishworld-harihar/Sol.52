@@ -36,6 +36,12 @@
 }
 
 @media print {
+  /* Screen html is 16.5px; globals print forces 13px and shrinks every rem. */
+  :global(html),
+  :global(body) {
+    font-size: 16.5px !important;
+  }
+
   .root :global(*),
   .a4Lumina :global(*) {
     -webkit-print-color-adjust: exact !important;
@@ -48,6 +54,7 @@
     padding: 0 !important;
     margin: 0 !important;
     page: lumina-sheet;
+    font-size: 16.5px !important;
   }
 
   .printBar {
@@ -90,6 +97,37 @@
     padding: 0 !important;
     border-radius: 0 !important;
     page: lumina-cover;
+  }
+
+  /* Pin clamp()/vw titles to the screen max — print vw is the paper, not the monitor. */
+  .clientTitle {
+    font-size: 2.6rem !important;
+  }
+
+  .engSheet .clientTitle,
+  .hardwareSheet .clientTitle {
+    font-size: 2.05rem !important;
+  }
+
+  .cardValue {
+    font-size: 1.7rem !important;
+  }
+
+  .closeTitle {
+    font-size: 3.2rem !important;
+  }
+
+  .engExpertTitle {
+    font-size: 0.72rem !important;
+  }
+
+  .engExpertBody {
+    font-size: 0.58rem !important;
+    line-height: 1.35 !important;
+  }
+
+  .engChip {
+    font-size: 0.58rem !important;
   }
 }
 
