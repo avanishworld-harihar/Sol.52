@@ -426,7 +426,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 32% 36%;
+  object-position: 42% 34%;
   display: block;
 }
 
@@ -445,7 +445,8 @@
   position: absolute;
   left: 16px;
   right: 16px;
-  bottom: 16px;
+  top: 16px;
+  bottom: auto;
   display: flex;
   justify-content: space-between;
   gap: 10px;
@@ -520,13 +521,21 @@
   right: 12mm;
   bottom: 12mm;
   z-index: 3;
-  background: rgba(246, 240, 228, 0.46);
-  -webkit-backdrop-filter: blur(16px) saturate(1.12);
-  backdrop-filter: blur(16px) saturate(1.12);
+  background: rgba(255, 250, 241, 0.22);
+  -webkit-backdrop-filter: blur(22px) saturate(1.35) brightness(1.06);
+  backdrop-filter: blur(22px) saturate(1.35) brightness(1.06);
   padding: 12px 14px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.48);
   border-top: 3px solid var(--kh-indigo);
-  box-shadow: 0 14px 34px rgba(26, 39, 68, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 14px 34px rgba(26, 39, 68, 0.16);
+}
+
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .coverStamp {
+    background: rgba(246, 240, 228, 0.92);
+  }
 }
 
 .coverStamp .coverBrand {
@@ -551,8 +560,8 @@
 }
 
 .seal {
-  border: 1px solid rgba(35, 78, 140, 0.28);
-  background: rgba(255, 250, 241, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  background: rgba(255, 250, 241, 0.28);
   padding: 8px 8px 6px;
   min-width: 0;
 }
