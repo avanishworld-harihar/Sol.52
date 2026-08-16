@@ -91,6 +91,8 @@ export async function buildQuickRequirementProposal(
                   ? { galleryThemeKey: "sienna" }
                   : presetId === "residential_khadi"
                     ? { galleryThemeKey: "khadi" }
+                  : presetId === "residential_jaali"
+                    ? { galleryThemeKey: "jaali" }
                   : presetId === "residential_executive"
                   ? { galleryThemeKey: "golden" }
                   : {}),

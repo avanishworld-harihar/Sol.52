@@ -44,6 +44,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
       {variant === "lumina" ? <LuminaThumb size={size} /> : null}
       {variant === "sienna" ? <SiennaThumb size={size} /> : null}
       {variant === "khadi" ? <KhadiThumb size={size} /> : null}
+      {variant === "jaali" ? <JaaliThumb size={size} /> : null}
       {![
         "golden",
         "pearl",
@@ -64,6 +65,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
         "lumina",
         "sienna",
         "khadi",
+        "jaali",
       ].includes(variant) ? (
         <GenericThumb size={size} label={variant} />
       ) : null}
@@ -493,6 +495,51 @@ function KhadiThumb({ size }: { size: "card" | "preview" }) {
               <div
                 key={c}
                 className="border border-dashed border-[#234e8c] font-bold uppercase tracking-wider text-[#9e2a2b]"
+                style={{ fontSize: size === "preview" ? 3.5 : 4, padding: "18% 8%" }}
+              >
+                {c}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function JaaliThumb({ size }: { size: "card" | "preview" }) {
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-[#dcc9a8]">
+      <div
+        className={cn(
+          "relative overflow-hidden rounded-[2px] shadow-sm",
+          thumbSheet(size)
+        )}
+      >
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(160deg, #ead9c1 0%, #3a3228 42%, #2a2118 100%)",
+          }}
+        />
+        <div
+          className="absolute left-[8%] right-[8%] bottom-[8%] border-t-4 border-[#b08d3e] bg-[#f6efe3]"
+          style={{ padding: size === "preview" ? "7% 8% 6%" : "6% 7% 5%" }}
+        >
+          <div
+            className="font-semibold leading-tight text-[#2a2118]"
+            style={{ fontFamily: "Georgia, serif", fontSize: size === "preview" ? 7 : 8 }}
+          >
+            Court
+            <br />
+            yard
+          </div>
+          <div className="mt-[10%] grid grid-cols-3 gap-[6%]">
+            {["kW", "Yr-1", "Site"].map((c) => (
+              <div
+                key={c}
+                className="border border-[#b08d3e] bg-[#ead9c1] font-bold uppercase tracking-wider text-[#b44a2a]"
                 style={{ fontSize: size === "preview" ? 3.5 : 4, padding: "18% 8%" }}
               >
                 {c}

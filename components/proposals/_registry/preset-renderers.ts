@@ -63,6 +63,12 @@ export const KHADI_PRESET_ALIASES = [
   "khadi",
 ] as const;
 
+/** Local / mock aliases that resolve to Jaali. */
+export const JAALI_PRESET_ALIASES = [
+  "residential_jaali",
+  "jaali",
+] as const;
+
 export function isZenithPresetId(presetId: string): boolean {
   return (ZENITH_PRESET_ALIASES as readonly string[]).includes(presetId);
 }
@@ -99,6 +105,10 @@ export function isKhadiPresetId(presetId: string): boolean {
   return (KHADI_PRESET_ALIASES as readonly string[]).includes(presetId);
 }
 
+export function isJaaliPresetId(presetId: string): boolean {
+  return (JAALI_PRESET_ALIASES as readonly string[]).includes(presetId);
+}
+
 export function isCommercialPresetId(presetId: string): boolean {
   return presetId === "commercial_executive";
 }
@@ -128,6 +138,8 @@ export const PRESET_RENDERER_LOADERS: PresetRendererRegistry = {
     import("@/components/proposals/_registry/adapters/sienna-adapter"),
   residential_khadi: () =>
     import("@/components/proposals/_registry/adapters/khadi-adapter"),
+  residential_jaali: () =>
+    import("@/components/proposals/_registry/adapters/jaali-adapter"),
   commercial_executive: () =>
     import("@/components/proposals/_registry/adapters/commercial-adapter"),
   commercial_ht: () =>
@@ -164,6 +176,9 @@ export function getPresetRendererLoader(
   }
   if (isKhadiPresetId(presetId)) {
     return () => import("@/components/proposals/_registry/adapters/khadi-adapter");
+  }
+  if (isJaaliPresetId(presetId)) {
+    return () => import("@/components/proposals/_registry/adapters/jaali-adapter");
   }
   if (isLuxeNoirPresetId(presetId)) {
     return () => import("@/components/proposals/_registry/adapters/luxe-noir-adapter");

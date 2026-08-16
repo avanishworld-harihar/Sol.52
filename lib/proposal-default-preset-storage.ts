@@ -12,6 +12,7 @@ export const RESIDENTIAL_TEMPLATE_PRESET_IDS = [
   "residential_lumina",
   "residential_sienna",
   "residential_khadi",
+  "residential_jaali",
 ] as const;
 
 export type ResidentialTemplatePresetId = (typeof RESIDENTIAL_TEMPLATE_PRESET_IDS)[number];
@@ -79,6 +80,11 @@ export const RESIDENTIAL_TEMPLATE_OPTIONS: ResidentialTemplateOption[] = [
     id: "residential_khadi",
     label: "Khadi",
     subtitle: "Cloth-press — indigo dye band, madder stamps, khadi paper.",
+  },
+  {
+    id: "residential_jaali",
+    label: "Jaali",
+    subtitle: "Haveli courtyard — sandstone wall, brass jali lattice.",
   },
 ];
 

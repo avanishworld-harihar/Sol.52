@@ -1,0 +1,2492 @@
+/**
+ * Jaali — haveli courtyard residential proposal.
+ * Sandstone wall, brass jali lattice, cream courtyard. Not a bound book, not cloth-press.
+ * Not Sienna folio, not Khadi mill, not Lumina app-UI, not Golden editorial.
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Nunito+Sans:wght@500;600;700;800&family=Noto+Sans+Devanagari:wght@500;600;700;800&display=swap");
+
+@page jaali-sheet {
+  size: A4 portrait;
+  margin: 0;
+}
+
+@page jaali-cover {
+  size: A4 portrait;
+  margin: 0;
+}
+
+.root {
+  --ja-sand: #ead9c1;
+  --ja-court: #f6efe3;
+  --ja-card: #fbf6ec;
+  --ja-ink: #2a2118;
+  --ja-muted: #6b5e4e;
+  --ja-body: #3d3428;
+  --ja-line: #d4c2a4;
+  --ja-terra: #b44a2a;
+  --ja-brass: #b08d3e;
+  --ja-jali: #3a3228;
+  --ja-moss: #3c5e4a;
+  --ja-moss-soft: #e6efe8;
+  --ja-serif: "Cormorant Garamond", "Noto Sans Devanagari", Georgia, serif;
+  --ja-sans: "Nunito Sans", "Noto Sans Devanagari", system-ui, sans-serif;
+
+  background: #d4cfc4;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.root * {
+  box-sizing: border-box;
+}
+
+@media print {
+  .root :global(*),
+  .a4Jaali :global(*) {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .root {
+    background: transparent !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    page: jaali-sheet;
+    font-size: 16.5px !important;
+  }
+
+  .printBar {
+    display: none !important;
+  }
+
+  .stage {
+    padding: 0 !important;
+    gap: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+  }
+
+  .a4Jaali {
+    margin: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    page: jaali-sheet;
+    width: 210mm !important;
+    max-width: 210mm !important;
+    height: 297mm !important;
+    min-height: 297mm !important;
+    max-height: 297mm !important;
+    overflow: hidden !important;
+    break-after: auto;
+    page-break-after: auto;
+    break-before: auto;
+    page-break-before: auto;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .a4Jaali + .a4Jaali {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  .bleedSheet {
+    padding: 0 !important;
+    border-radius: 0 !important;
+    page: jaali-cover;
+  }
+
+  .displayTitle {
+    font-size: 2.35rem !important;
+  }
+
+  .drawingTitle {
+    font-size: 1.45rem !important;
+  }
+
+  .closeTitle {
+    font-size: 1.85rem !important;
+  }
+}
+
+.printBar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  padding: 10px 16px;
+  background: rgba(241, 232, 217, 0.96);
+  border-top: 3px solid var(--ja-terra);
+  border-bottom: 1px solid var(--ja-line);
+}
+
+.printBarInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: min(210mm, 100%);
+}
+
+.printBarBrand {
+  font-family: var(--ja-sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ja-ink);
+}
+
+.printBarActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.langToggle {
+  display: inline-flex;
+  border: 1px solid var(--ja-line);
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--ja-card);
+}
+
+.langBtn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--ja-ink);
+  font-family: var(--ja-sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 7px 10px;
+  cursor: pointer;
+}
+
+.langBtnActive {
+  background: var(--ja-ink);
+  color: var(--ja-court);
+}
+
+.langHi {
+  font-family: "Noto Sans Devanagari", var(--ja-sans);
+}
+
+.langHi .displayTitle,
+.langHi .closeTitle {
+  font-family: "Noto Sans Devanagari", var(--ja-serif);
+  letter-spacing: 0;
+}
+
+.printBarBtn {
+  appearance: none;
+  border: 0;
+  background: var(--ja-terra);
+  color: #fff8ee;
+  font-family: var(--ja-sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 8px 14px;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.printBarBtn:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12mm;
+  padding: 12mm 0 20mm;
+}
+
+.a4Jaali {
+  width: 210mm;
+  max-width: min(210mm, 100%);
+  height: 297mm;
+  min-height: 297mm;
+  background-color: var(--ja-sand);
+  color: var(--ja-ink);
+  position: relative;
+  overflow: hidden;
+  font-family: var(--ja-sans);
+  display: flex;
+  border-radius: 2px;
+  box-shadow: 0 22px 48px rgba(36, 24, 18, 0.14);
+}
+
+.folio {
+  flex-direction: column;
+  background: var(--ja-sand);
+}
+
+.dyeBand {
+  flex-shrink: 0;
+  height: 11mm;
+  background-color: var(--ja-jali);
+  background-image:
+    linear-gradient(45deg, var(--ja-brass) 12%, transparent 12.5%, transparent 87%, var(--ja-brass) 87.5%),
+    linear-gradient(-45deg, var(--ja-brass) 12%, transparent 12.5%, transparent 87%, var(--ja-brass) 87.5%);
+  background-size: 9px 9px;
+  color: var(--ja-court);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14mm 0 16mm;
+  border-bottom: 3px solid var(--ja-brass);
+}
+
+.dyeGutter {
+  flex: 1;
+}
+
+.dyeChapter {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.dyePage {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  opacity: 0.85;
+}
+
+.folioMain {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin: 0 8mm 8mm 10mm;
+  padding: 10mm 12mm 10mm 14mm;
+  background: var(--ja-court);
+  border: 1px solid var(--ja-brass);
+  box-shadow: inset 0 0 0 4px var(--ja-sand);
+}
+
+.bleedSheet {
+  flex-direction: row;
+  border-radius: 0;
+  width: 210mm;
+  max-width: 100%;
+}
+
+.coverBleed,
+.closeBleed {
+  flex-direction: column;
+  position: relative;
+}
+
+.coverBleed .coverPhoto,
+.closeBleed .closePhoto {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  flex: none;
+}
+
+.kicker {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ja-terra);
+  margin: 0 0 8px;
+}
+
+.displayTitle {
+  font-family: var(--ja-serif);
+  font-size: clamp(1.7rem, 3.6vw, 2.35rem);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  margin: 0 0 10px;
+  color: var(--ja-ink);
+}
+
+.lead {
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--ja-body);
+  margin: 0 0 4mm;
+  max-width: 42em;
+}
+
+.leadShort {
+  margin-bottom: 8px;
+  font-size: 0.82rem;
+}
+
+.drawingTitle {
+  font-size: 1.45rem;
+  margin-bottom: 0;
+}
+
+.pageFooter {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--ja-line);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ja-muted);
+}
+
+/* ── Cover: full-bleed photo + jaali stamp ── */
+
+.coverBrand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+
+.coverLogo {
+  max-height: 44px;
+  max-width: 140px;
+  object-fit: contain;
+}
+
+.coverLogoSolo {
+  max-height: 56px;
+  max-width: 168px;
+}
+
+.coverWordmark {
+  font-family: var(--ja-serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--ja-ink);
+  line-height: 1.15;
+}
+
+.coverWordmarkTail {
+  display: block;
+  font-family: var(--ja-sans);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ja-terra);
+  margin-top: 4px;
+}
+
+.coverPhoto {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.coverPhoto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 36%;
+  display: block;
+}
+
+.coverPhotoScrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 38%,
+    rgba(26, 39, 68, 0.45) 100%
+  );
+  pointer-events: none;
+}
+
+.coverCaption {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: #f7f1e6;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 10px rgba(36, 24, 18, 0.55);
+}
+
+.coverCaption span:last-child {
+  color: #e8c4a0;
+}
+
+.colophonStack {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--ja-line);
+}
+
+.colophonRow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ja-line);
+}
+
+.colophonRow:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.colophonLabel {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ja-terra);
+}
+
+.colophonValue {
+  font-family: var(--ja-serif);
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--ja-ink);
+}
+
+.colophonUnit {
+  font-family: var(--ja-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ja-muted);
+  margin-left: 4px;
+}
+
+.coverFoot {
+  margin-top: 12px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ja-muted);
+}
+
+.coverStamp {
+  position: absolute;
+  left: 16mm;
+  right: 12mm;
+  bottom: 12mm;
+  z-index: 3;
+  background: var(--ja-court);
+  padding: 14px 16px 12px;
+  border: 1px solid var(--ja-brass);
+  border-top: 5px solid var(--ja-brass);
+  box-shadow: 0 14px 34px rgba(42, 33, 24, 0.28);
+}
+
+.jaliCorner {
+  position: absolute;
+  z-index: 4;
+  width: 42px;
+  height: 42px;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--ja-brass), var(--ja-brass)),
+    linear-gradient(var(--ja-brass), var(--ja-brass));
+  background-repeat: no-repeat;
+}
+
+.jaliCornerNW {
+  top: 10px;
+  left: 16mm;
+  background-size: 22px 2px, 2px 22px;
+  background-position: left top, left top;
+}
+
+.jaliCornerNE {
+  top: 10px;
+  right: 10px;
+  background-size: 22px 2px, 2px 22px;
+  background-position: right top, right top;
+}
+
+.jaliCornerSW {
+  bottom: 118px;
+  left: 16mm;
+  background-size: 22px 2px, 2px 22px;
+  background-position: left bottom, left bottom;
+}
+
+.jaliCornerSE {
+  bottom: 118px;
+  right: 10px;
+  background-size: 22px 2px, 2px 22px;
+  background-position: right bottom, right bottom;
+}
+
+.coverStamp .coverBrand {
+  margin-bottom: 8px;
+}
+
+.coverStamp .displayTitle {
+  font-size: clamp(1.45rem, 3vw, 1.9rem);
+  margin-bottom: 6px;
+}
+
+.coverStamp .lead {
+  margin-bottom: 0;
+  font-size: 0.82rem;
+}
+
+.coverSeals {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.seal {
+  border: 1.5px solid var(--ja-brass);
+  padding: 8px 8px 6px;
+  min-width: 0;
+  background: var(--ja-sand);
+}
+
+.seal .colophonValue {
+  font-size: 1.05rem;
+}
+
+/* ── Audit: two registers ── */
+
+.auditTwin {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  margin-top: 14px;
+  border: 1px solid var(--ja-line);
+}
+
+.auditPane {
+  padding: 18px 16px 16px;
+  background: var(--ja-card);
+}
+
+.auditPaneKeep {
+  background: var(--ja-ink);
+  color: var(--ja-court);
+}
+
+.auditPaneLabel {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ja-terra);
+  margin-bottom: 10px;
+}
+
+.auditPaneKeep .auditPaneLabel {
+  color: #e8c4a0;
+}
+
+.auditPaneValue {
+  display: block;
+  font-family: var(--ja-serif);
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1.05;
+  margin-bottom: 8px;
+}
+
+.auditPaneHint {
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--ja-body);
+}
+
+.auditPaneKeep .auditPaneHint {
+  color: rgba(241, 232, 217, 0.72);
+}
+
+.auditCover {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: var(--ja-moss-soft);
+  border-left: 4px solid var(--ja-moss);
+}
+
+.auditCoverLabel {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ja-moss);
+}
+
+.auditCoverValue {
+  font-family: var(--ja-serif);
+  font-size: 1.55rem;
+  font-weight: 600;
+}
+
+.monthKicker {
+  margin-top: 16px;
+}
+
+.billPage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.billTrio {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.billCard {
+  min-width: 0;
+  border: 1.5px dashed var(--ja-jali);
+  background: var(--ja-card);
+  padding: 14px 14px 12px;
+}
+
+.billCardKeep {
+  background: var(--ja-jali);
+  color: var(--ja-court);
+  border-style: solid;
+  border-color: var(--ja-jali);
+}
+
+.billCardCover {
+  border-color: var(--ja-moss);
+  background: var(--ja-moss-soft);
+}
+
+.billCard span {
+  display: block;
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ja-terra);
+  margin-bottom: 8px;
+}
+
+.billCardKeep span {
+  color: #e8c4a0;
+}
+
+.billCardCover span {
+  color: var(--ja-moss);
+}
+
+.billCard strong {
+  display: block;
+  font-family: var(--ja-serif);
+  font-size: 1.7rem;
+  font-weight: 600;
+  line-height: 1.05;
+}
+
+.billCard p {
+  margin: 8px 0 0;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: var(--ja-body);
+}
+
+.billCardKeep p {
+  color: rgba(243, 234, 220, 0.78);
+}
+
+.billCardCover p {
+  color: var(--ja-body);
+}
+
+.billEmpty {
+  flex: 1;
+  min-height: 160px;
+  margin-top: 14px;
+  border: 1.5px dashed var(--ja-line);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px 28px;
+  background: var(--ja-court);
+}
+
+.billEmpty strong {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ja-terra);
+  margin-bottom: 8px;
+}
+
+.billEmpty p {
+  margin: 0;
+  max-width: 36em;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--ja-muted);
+}
+
+.billChart {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+}
+
+.billChart .ribbon {
+  flex: 1;
+}
+
+.monthRail {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+  height: 72px;
+  margin-top: 16px;
+}
+
+.monthTick {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  min-width: 0;
+}
+
+.monthStem {
+  flex: 1;
+  width: 100%;
+  max-width: 10px;
+  display: flex;
+  align-items: flex-end;
+  background: var(--ja-line);
+}
+
+.monthFill {
+  width: 100%;
+  background: var(--ja-jali);
+  min-height: 3px;
+}
+
+.monthFillPeak {
+  background: var(--ja-terra);
+}
+
+.monthLbl {
+  margin-top: 4px;
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ja-muted);
+}
+
+.note {
+  margin: 14px 0 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--ja-body);
+}
+
+/* ── Hardware inventory ── */
+
+.invTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  flex: 1;
+}
+
+.invTable th {
+  text-align: left;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ja-terra);
+  padding: 0 8px 8px 0;
+  border-bottom: 2px solid var(--ja-terra);
+}
+
+.invTable td {
+  padding: 9px 8px 9px 0;
+  border-bottom: 1px solid var(--ja-line);
+  vertical-align: top;
+}
+
+.invNo {
+  width: 28px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--ja-muted);
+}
+
+.invRole {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ja-ink);
+}
+
+.invTitle {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ja-body);
+  margin-top: 2px;
+}
+
+.invSpec {
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: var(--ja-body);
+}
+
+.invMarks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.invMark {
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--ja-ink);
+  border: 1px solid var(--ja-line);
+  padding: 2px 6px;
+  background: var(--ja-court);
+}
+
+/* ── Engineering drawing sheet ── */
+
+.drawingHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  border-bottom: 2px solid var(--ja-jali);
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+}
+
+.drawingNo {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ja-jali);
+}
+
+.planBoard {
+  position: relative;
+  min-height: 128px;
+  height: 138px;
+  background: #ece4d4;
+  border: 1px solid var(--ja-jali);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.planGrid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(49, 64, 86, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(49, 64, 86, 0.08) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+.planLayout {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(var(--ja-panel-cols, 4), 22px);
+  gap: 3px;
+}
+
+.planCell,
+.planGap {
+  width: 22px;
+  height: 34px;
+}
+
+.planCell {
+  background: var(--ja-terra);
+  box-shadow: inset 0 0 0 1px rgba(36, 24, 18, 0.25);
+}
+
+.planGap {
+  border: 1px dashed rgba(49, 64, 86, 0.35);
+}
+
+.planEmpty {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  padding: 0 16px;
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ja-muted);
+}
+
+.compass {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--ja-jali);
+  border-radius: 50%;
+  background: rgba(247, 241, 230, 0.85);
+}
+
+.compassN,
+.compassE,
+.compassS,
+.compassW {
+  position: absolute;
+  font-size: 0.48rem;
+  font-weight: 800;
+  color: var(--ja-jali);
+}
+
+.compassN {
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--ja-terra);
+}
+
+.compassS {
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.compassE {
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.compassW {
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.drawingMeta {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.titleBlock {
+  border: 1px solid var(--ja-jali);
+  padding: 10px 12px;
+  background: var(--ja-card);
+}
+
+.titleBlock h2 {
+  margin: 0 0 8px;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ja-jali);
+}
+
+.tbRow {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--ja-line);
+}
+
+.tbRow:last-child {
+  border-bottom: 0;
+}
+
+.tbLabel {
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ja-muted);
+}
+
+.tbValue {
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.tbCap {
+  font-size: 0.6rem;
+  color: var(--ja-body);
+  line-height: 1.3;
+}
+
+.specStrip {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: 1px solid var(--ja-line);
+}
+
+.specCell {
+  padding: 8px 10px;
+  border-right: 1px solid var(--ja-line);
+  border-bottom: 1px solid var(--ja-line);
+}
+
+.specCell:nth-child(2n) {
+  border-right: 0;
+}
+
+.specVal {
+  margin: 0;
+  font-family: var(--ja-serif);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.specLab {
+  margin: 2px 0 0;
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ja-terra);
+}
+
+.specDesc {
+  margin: 2px 0 0;
+  font-size: 0.58rem;
+  color: var(--ja-body);
+  line-height: 1.3;
+}
+
+.yieldRail {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  margin-top: 8px;
+  border: 1px solid var(--ja-moss);
+  background: var(--ja-moss-soft);
+}
+
+.yieldCell {
+  padding: 7px 10px;
+  border-right: 1px solid rgba(58, 83, 64, 0.25);
+}
+
+.yieldCell:last-child {
+  border-right: 0;
+}
+
+.yieldCell span {
+  display: block;
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ja-moss);
+}
+
+.yieldCell strong {
+  font-size: 0.92rem;
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.chip {
+  font-size: 0.52rem;
+  font-weight: 700;
+  color: var(--ja-jali);
+  border: 1px solid var(--ja-jali);
+  padding: 3px 7px;
+  background: var(--ja-card);
+}
+
+.insightBand {
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.insightBand h3 {
+  margin: 0 0 6px;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ja-terra);
+}
+
+.insightGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px 12px;
+}
+
+.insightTitle {
+  margin: 0 0 2px;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.insightBody {
+  margin: 0;
+  font-size: 0.55rem;
+  line-height: 1.32;
+  color: var(--ja-body);
+}
+
+.cableNote {
+  margin: 6px 0 0;
+  font-size: 0.6rem;
+  color: var(--ja-muted);
+  line-height: 1.35;
+}
+
+/* ── Forecast season ribbon ── */
+
+.seasonHero {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--ja-line);
+}
+
+.seasonHeroVal {
+  font-family: var(--ja-serif);
+  font-size: 2.2rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.seasonHeroMeta {
+  font-size: 0.78rem;
+  color: var(--ja-body);
+  text-align: right;
+}
+
+.ribbon {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 4px;
+  margin-top: 14px;
+  flex: 1;
+  min-height: 0;
+}
+
+.ribbonCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  height: 100%;
+}
+
+.ribbonVal {
+  font-size: 0.52rem;
+  font-weight: 800;
+  color: var(--ja-ink);
+  line-height: 1.1;
+}
+
+.ribbonNums {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  margin-bottom: 4px;
+}
+
+.ribbonValBill {
+  font-size: 0.45rem;
+  font-weight: 700;
+  color: var(--ja-muted);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.ribbonValPeak {
+  color: var(--ja-terra);
+}
+
+.ribbonTrack {
+  flex: 1;
+  width: 100%;
+  min-height: 140px;
+  display: flex;
+  align-items: flex-end;
+  background: var(--ja-court);
+  border: 1px solid var(--ja-line);
+}
+
+.ribbonFill {
+  width: 100%;
+  background: var(--ja-jali);
+  min-height: 4px;
+}
+
+.ribbonFillPeak {
+  background: var(--ja-terra);
+}
+
+.ribbonFillBill {
+  background: var(--ja-ink);
+  opacity: 0.35;
+}
+
+.ribbonPair {
+  flex: 1;
+  width: 100%;
+  min-height: 140px;
+  display: flex;
+  gap: 2px;
+  align-items: flex-end;
+}
+
+.ribbonMonth {
+  margin-top: 5px;
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ja-muted);
+}
+
+.ribbonMonthPeak {
+  color: var(--ja-terra);
+}
+
+.ribbonSave {
+  font-size: 0.5rem;
+  font-weight: 700;
+  color: var(--ja-ink);
+}
+
+.legend {
+  display: flex;
+  gap: 14px;
+  margin-top: 8px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ja-muted);
+}
+
+.swatch {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 5px;
+  background: var(--ja-jali);
+}
+
+.swatchPeak {
+  background: var(--ja-terra);
+}
+
+.swatchBill {
+  background: var(--ja-ink);
+}
+
+.forecastNote {
+  margin-top: auto;
+  padding: 10px 0 0;
+  border-top: 1px solid var(--ja-line);
+}
+
+.forecastNoteTag {
+  margin: 0 0 3px;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ja-terra);
+}
+
+.forecastNoteTitle {
+  margin: 0 0 4px;
+  font-family: var(--ja-serif);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.forecastNoteBody,
+.forecastBasis {
+  margin: 0;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: var(--ja-body);
+}
+
+.forecastBasis {
+  margin-top: 6px;
+  font-size: 0.62rem;
+}
+
+/* ── Capital outlay ── */
+
+.outlayHero {
+  margin-top: 8px;
+  padding: 16px 18px 14px;
+  background: var(--ja-ink);
+  color: var(--ja-court);
+}
+
+.outlayHeroLabel {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #e8c4a0;
+  margin-bottom: 6px;
+}
+
+.outlayHeroValue {
+  font-family: var(--ja-serif);
+  font-size: 2.2rem;
+  font-weight: 600;
+  line-height: 1.05;
+}
+
+.outlayHeroHint {
+  margin: 6px 0 0;
+  font-size: 0.78rem;
+  color: rgba(241, 232, 217, 0.7);
+}
+
+.outlayPair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: 1px solid var(--ja-line);
+  border-top: 0;
+}
+
+.outlayCell {
+  padding: 12px 14px;
+}
+
+.outlayCell + .outlayCell {
+  border-left: 1px solid var(--ja-line);
+}
+
+.outlayName {
+  display: block;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ja-muted);
+  margin-bottom: 4px;
+}
+
+.outlayFig {
+  font-family: var(--ja-serif);
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+
+.rail {
+  margin-top: 14px;
+}
+
+.railHead {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ja-terra);
+  margin-bottom: 8px;
+}
+
+.railRow {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  gap: 10px;
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--ja-line);
+}
+
+.railNo {
+  font-weight: 800;
+  color: var(--ja-terra);
+}
+
+.railLabel {
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.railAmt {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.returnGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.2fr;
+  gap: 0;
+  margin-top: 14px;
+  border: 1px solid var(--ja-moss);
+}
+
+.returnCell {
+  padding: 12px 12px 10px;
+  border-right: 1px solid rgba(58, 83, 64, 0.25);
+}
+
+.returnCell:last-child {
+  border-right: 0;
+  background: var(--ja-moss-soft);
+}
+
+.returnName {
+  display: block;
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ja-moss);
+  margin-bottom: 4px;
+}
+
+.returnFig {
+  font-family: var(--ja-serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.returnUnit {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ja-muted);
+  margin-left: 4px;
+}
+
+/* ── Terms ── */
+
+.clauseGrid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 14px;
+  margin-top: 10px;
+  flex: 1;
+  min-height: 0;
+}
+
+.clauseEqual {
+  grid-template-columns: 1fr 1fr;
+}
+
+.clause {
+  min-width: 0;
+}
+
+.clauseStacked {
+  margin-top: 14px;
+}
+
+.clause h3 {
+  margin: 0 0 8px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ja-terra);
+  border-bottom: 1px solid var(--ja-terra);
+  padding-bottom: 4px;
+}
+
+.clauseLead {
+  margin: 0 0 8px;
+  font-size: 0.74rem;
+  line-height: 1.4;
+  color: var(--ja-body);
+}
+
+.clauseList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.clauseList li {
+  position: relative;
+  padding-left: 14px;
+  margin-bottom: 6px;
+  font-size: 0.7rem;
+  line-height: 1.4;
+  color: var(--ja-body);
+}
+
+.clauseList li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.45em;
+  width: 6px;
+  height: 1.5px;
+  background: var(--ja-terra);
+}
+
+.bankPlate {
+  margin-top: 14px;
+  border: 2px solid var(--ja-terra);
+  padding: 12px 14px;
+  background: var(--ja-court);
+}
+
+.bankPlate p {
+  margin: 0 0 8px;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.bankPlate strong {
+  color: var(--ja-terra);
+}
+
+.bankGrid {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 16px;
+  margin: 0;
+  font-size: 0.78rem;
+}
+
+.bankGrid dt {
+  font-weight: 800;
+  margin: 0;
+}
+
+.bankGrid dd {
+  margin: 0;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.signoff {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--ja-line);
+}
+
+.signoff span {
+  display: block;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ja-muted);
+}
+
+.signoff strong {
+  font-family: var(--ja-serif);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* ── Closing: brass plaque + evening courtyard ── */
+
+.closeDock {
+  position: absolute;
+  left: 16mm;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  background: var(--ja-jali);
+  color: var(--ja-court);
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 16px;
+  padding: 16px 16px 14px 18px;
+  border-top: 4px solid var(--ja-brass);
+}
+
+.closeDockCopy {
+  min-width: 0;
+}
+
+.closeBrand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+
+.closeWordmark {
+  font-family: var(--ja-serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--ja-court);
+  line-height: 1.15;
+}
+
+.closeWordmarkTail {
+  display: block;
+  font-family: var(--ja-sans);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #e8c4a0;
+  margin-top: 4px;
+}
+
+.closeKicker {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #e8c4a0;
+  margin: 0 0 10px;
+}
+
+.closeTitle {
+  font-family: var(--ja-serif);
+  font-size: clamp(1.25rem, 2.8vw, 1.55rem);
+  font-weight: 700;
+  color: var(--ja-court);
+  line-height: 1.12;
+  margin: 0 0 6px;
+}
+
+.closeLead {
+  font-size: 0.88rem;
+  color: rgba(247, 241, 230, 0.88);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.closePanel {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.closeContact {
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.closeContact span {
+  display: block;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #e8c4a0;
+  margin-bottom: 6px;
+}
+
+.closeContact strong {
+  display: block;
+  font-weight: 700;
+  word-break: break-word;
+}
+
+.sigStack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sig {
+  background: var(--ja-court);
+  color: var(--ja-ink);
+  padding: 12px 12px 10px;
+}
+
+.sigRule {
+  height: 1px;
+  background: var(--ja-ink);
+  opacity: 0.28;
+  margin-bottom: 8px;
+}
+
+.sigName {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.sigRole {
+  display: block;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ja-muted);
+}
+
+.closePhoto {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.closePhoto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 42%;
+  display: block;
+}
+
+.closePhotoScrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 42%,
+    rgba(26, 39, 68, 0.55) 100%
+  );
+  pointer-events: none;
+}
+
+/* ── Mill press structure (not Sienna stacked boxes) ── */
+
+.mill {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 0.92fr 1.18fr;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.millInvert {
+  grid-template-columns: 1.2fr 0.88fr;
+}
+
+.millSelvage,
+.millWork {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.millSelvage .displayTitle {
+  font-size: 1.45rem;
+}
+
+.millSelvage .lead {
+  font-size: 0.78rem;
+  margin-bottom: 10px;
+}
+
+.millTicket {
+  background: var(--ja-jali);
+  color: var(--ja-court);
+  padding: 16px 14px 14px;
+  margin-top: 4px;
+}
+
+.millTicketLabel {
+  display: block;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #e8c4a0;
+  margin-bottom: 6px;
+}
+
+.millTicketVal {
+  font-family: var(--ja-serif);
+  font-size: 2.05rem;
+  font-weight: 600;
+  line-height: 1.05;
+}
+
+.millTicketHint {
+  margin: 8px 0 0;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: rgba(243, 234, 220, 0.78);
+}
+
+.millSeals {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.millSeal {
+  border: 1.5px dashed rgba(243, 234, 220, 0.55);
+  padding: 8px 8px 6px;
+}
+
+.millSeal span {
+  display: block;
+  font-size: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #e8c4a0;
+}
+
+.millSeal strong {
+  display: block;
+  margin-top: 3px;
+  font-family: var(--ja-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.millCoin {
+  width: 92px;
+  height: 92px;
+  border: 2px dashed var(--ja-jali);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 8px;
+  margin: 8px auto 0;
+  background: var(--ja-court);
+}
+
+.millCoin span {
+  font-size: 0.48rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ja-terra);
+}
+
+.millCoin strong {
+  font-family: var(--ja-serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.1;
+  margin-top: 2px;
+}
+
+.millCoinKeep {
+  border-color: var(--ja-moss);
+  background: var(--ja-moss-soft);
+}
+
+.millCoinKeep span {
+  color: var(--ja-moss);
+}
+
+.millOverlap {
+  position: relative;
+  min-height: 132px;
+  margin-bottom: 12px;
+}
+
+.millStrip {
+  background: var(--ja-card);
+  border: 1px solid var(--ja-jali);
+  padding: 14px 14px 12px;
+  width: 78%;
+}
+
+.millKeep {
+  position: absolute;
+  right: 0;
+  top: 28px;
+  width: 46%;
+  background: var(--ja-jali);
+  color: var(--ja-court);
+  padding: 12px 12px 10px;
+  border: 1.5px dashed #e8c4a0;
+}
+
+.millKeep span,
+.millStrip span {
+  display: block;
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.millStrip span {
+  color: var(--ja-terra);
+}
+
+.millKeep span {
+  color: #e8c4a0;
+}
+
+.millStrip strong,
+.millKeep strong {
+  display: block;
+  font-family: var(--ja-serif);
+  font-size: 1.45rem;
+  font-weight: 600;
+  line-height: 1.05;
+}
+
+.millStrip p,
+.millKeep p {
+  margin: 6px 0 0;
+  font-size: 0.68rem;
+  line-height: 1.35;
+}
+
+.millKeep p {
+  color: rgba(243, 234, 220, 0.78);
+}
+
+.millMonths {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: auto;
+}
+
+.millMonth {
+  border: 1px dashed var(--ja-jali);
+  padding: 6px 4px 5px;
+  text-align: center;
+  background: var(--ja-court);
+}
+
+.millMonthPeak {
+  border-color: var(--ja-terra);
+  border-style: solid;
+}
+
+.millMonthLbl {
+  display: block;
+  font-size: 0.48rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ja-muted);
+}
+
+.millMonthPeak .millMonthLbl {
+  color: var(--ja-terra);
+}
+
+.millDye {
+  height: 6px;
+  margin-top: 6px;
+  background: var(--ja-jali);
+}
+
+.millMonthPeak .millDye {
+  background: var(--ja-terra);
+}
+
+.millParts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+  flex: 1;
+  min-height: 0;
+}
+
+.millStack .millParts {
+  flex: 0 0 auto;
+  margin-top: 0;
+}
+
+.drawFacts .millParts {
+  flex: 0 0 auto;
+  margin-top: 0;
+}
+
+.millPart {
+  border: 1.5px dashed var(--ja-jali);
+  padding: 8px 10px 8px;
+  background: var(--ja-card);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.millPartNo {
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--ja-terra);
+}
+
+.millPartRole {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ja-muted);
+}
+
+.millPartTitle {
+  font-family: var(--ja-serif);
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.millPartSpec {
+  font-size: 0.68rem;
+  line-height: 1.3;
+  color: var(--ja-body);
+}
+
+.millPlan {
+  flex: 0 0 auto;
+  min-height: 118px;
+  height: 128px;
+  max-height: 128px;
+  margin-top: 0;
+}
+
+.drawPage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.drawHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.drawHead .displayTitle {
+  margin-bottom: 0;
+}
+
+.drawBody {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(220px, 0.95fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.drawPad {
+  min-width: 0;
+}
+
+.drawLegend {
+  margin: 6px 0 0;
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: var(--ja-muted);
+}
+
+.drawFacts {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.drawNotes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 12px;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px dashed var(--ja-jali);
+}
+
+.millYield {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.millYield .millCoin {
+  width: auto;
+  height: auto;
+  min-height: 0;
+  border-radius: 0;
+  flex: 1;
+  margin: 0;
+  padding: 7px 6px;
+}
+
+.millYield .millCoin strong {
+  font-size: 0.82rem;
+}
+
+.millStack {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  flex: 1;
+  min-height: 0;
+}
+
+.millStamp {
+  border: 1.5px dashed var(--ja-jali);
+  padding: 8px 10px 7px;
+  background: var(--ja-card);
+}
+
+.millStamp span {
+  display: block;
+  font-size: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ja-terra);
+}
+
+.millStamp strong {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--ja-serif);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.millStamp p {
+  margin: 2px 0 0;
+  font-size: 0.58rem;
+  line-height: 1.3;
+  color: var(--ja-body);
+}
+
+.millCaption {
+  margin-top: 8px;
+  font-size: 0.62rem;
+  line-height: 1.35;
+  color: var(--ja-body);
+}
+
+.millCaption strong {
+  display: block;
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ja-terra);
+  margin-bottom: 2px;
+}
+
+.millCloth {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+}
+
+.millTile {
+  border: 1.5px dashed var(--ja-jali);
+  background: var(--ja-court);
+  padding: 8px 8px 7px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.millTilePeak {
+  border-color: var(--ja-terra);
+  border-style: solid;
+  background: #f7ebe6;
+}
+
+.millTileHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.millTileMonth {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ja-muted);
+}
+
+.millTilePeak .millTileMonth {
+  color: var(--ja-terra);
+}
+
+.millTileVal {
+  font-family: var(--ja-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.millTileBill {
+  font-size: 0.52rem;
+  font-weight: 700;
+  color: var(--ja-muted);
+  margin-top: 3px;
+}
+
+.millTileSave {
+  margin-top: auto;
+  padding-top: 6px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: var(--ja-moss);
+}
+
+.millTileDye {
+  height: 5px;
+  margin-top: 8px;
+  background: var(--ja-jali);
+}
+
+.millTilePeak .millTileDye {
+  background: var(--ja-terra);
+}
+
+.millNote {
+  margin-top: auto;
+  padding-top: 10px;
+}
+
+.millNote span {
+  display: block;
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ja-terra);
+  margin-bottom: 4px;
+}
+
+.millNote h2 {
+  margin: 0 0 4px;
+  font-family: var(--ja-serif);
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+.millNote p {
+  margin: 0;
+  font-size: 0.68rem;
+  line-height: 1.38;
+  color: var(--ja-body);
+}
+
+.millReceipt {
+  flex: 1;
+  min-height: 0;
+  border-left: 3px solid var(--ja-terra);
+  padding-left: 12px;
+}
+
+.millReceipt h3 {
+  margin: 0 0 10px;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ja-terra);
+}
+
+.millCut {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  padding: 9px 0;
+  border-bottom: 1px dashed var(--ja-line);
+}
+
+.millCut:last-child {
+  border-bottom: 0;
+}
+
+.millCut span {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.millCut strong {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.88rem;
+}
+
+.millCoins {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.millCoins .millCoin {
+  flex: 1;
+  width: auto;
+  height: auto;
+  min-height: 78px;
+  margin: 0;
+  border-radius: 0;
+}
+
+.millTerms {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 18px;
+  margin-top: 8px;
+  flex: 1;
+  min-height: 0;
+}
+
+.millCol {
+  min-width: 0;
+  padding-right: 14px;
+  border-right: 1.5px dashed var(--ja-jali);
+}
+
+.millCol:last-child {
+  padding-right: 0;
+  padding-left: 4px;
+  border-right: 0;
+}
+
+.millCol h3 {
+  margin: 0 0 8px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ja-terra);
+}
+
+.millCol + .millCol h3:not(:first-child),
+.millStackHead {
+  margin-top: 14px;
+}
+
+.loading {
+  padding: 48px;
+  text-align: center;
+  font-family: var(--ja-sans);
+  color: var(--ja-muted);
+}
+
+@media screen and (max-width: 900px) {
+  .a4Jaali {
+    height: auto;
+    min-height: 0;
+    flex-direction: column;
+  }
+
+  .dyeBand {
+    padding: 8px 14px;
+  }
+
+  .coverStamp,
+  .closeDock {
+    position: relative;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+
+  .coverPhoto,
+  .closePhoto {
+    min-height: 220px;
+  }
+
+  .mill,
+  .millInvert,
+  .millParts,
+  .millTerms,
+  .millCloth,
+  .millMonths,
+  .drawBody,
+  .drawNotes {
+    grid-template-columns: 1fr;
+  }
+
+  .millKeep {
+    position: relative;
+    top: 8px;
+    width: auto;
+  }
+
+  .millStrip {
+    width: auto;
+  }
+
+  .auditTwin,
+  .billTrio,
+  .drawingMeta,
+  .clauseGrid,
+  .outlayPair,
+  .returnGrid,
+  .insightGrid,
+  .yieldRail {
+    grid-template-columns: 1fr;
+  }
+}

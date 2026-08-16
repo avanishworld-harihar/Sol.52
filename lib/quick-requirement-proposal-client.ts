@@ -51,6 +51,9 @@ export function resolveQuickQuotePresetOptions(): {
   if (presetId === "residential_khadi") {
     return { presetId, galleryThemeKey: "khadi" };
   }
+  if (presetId === "residential_jaali") {
+    return { presetId, galleryThemeKey: "jaali" };
+  }
   if (presetId === "residential_executive") {
     return { presetId, galleryThemeKey: "golden" };
   }

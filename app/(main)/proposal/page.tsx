@@ -1804,6 +1804,8 @@ function ProposalPageContent() {
                   ? { galleryThemeKey: "sienna" }
                 : osPresetId === "residential_khadi"
                   ? { galleryThemeKey: "khadi" }
+                : osPresetId === "residential_jaali"
+                  ? { galleryThemeKey: "jaali" }
                   : osPresetId === "residential_executive"
                   ? { galleryThemeKey: "golden" }
                   : {}),
@@ -2434,6 +2436,9 @@ function ProposalPageContent() {
                         : preset === "residential_khadi" ||
                             preset === "khadi"
                           ? "residential_khadi"
+                        : preset === "residential_jaali" ||
+                            preset === "jaali"
+                          ? "residential_jaali"
                         : preset === "residential_executive"
                         ? "residential_executive"
                         : "residential_executive";

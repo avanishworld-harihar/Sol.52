@@ -36,7 +36,7 @@ export const PROPOSAL_TEMPLATE_CATEGORIES: ProposalTemplateCategoryMeta[] = [
   {
     id: "residential",
     label: "Residential",
-    description: "Homes & rooftops — Golden, Zenith, Atelier, Premium Luxe, Canvas, Quantum, Emerald, Lumina, Sienna, or Khadi.",
+    description: "Homes & rooftops — Golden, Zenith, Atelier, Premium Luxe, Canvas, Quantum, Emerald, Lumina, Sienna, Khadi, or Jaali.",
   },
   {
     id: "commercial",
@@ -133,6 +133,15 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
       "Cloth-press — indigo dye band, madder stamps, Libre Baskerville. Full-bleed cover with a bottom stamp; price on Outlay.",
     thumbnailVariant: "khadi",
   },
+  {
+    key: "jaali",
+    presetId: "residential_jaali",
+    category: "residential",
+    name: "Jaali",
+    description:
+      "Haveli courtyard — sandstone wall, brass jali lattice, cream courtyard. Cover shows kW + site; price on Outlay.",
+    thumbnailVariant: "jaali",
+  },
 ];
 
 /** Commercial themes — Executive (LT / C&I) and HT Industrial (HV ToD/PF). */
@@ -204,6 +213,7 @@ export function resolveActiveGalleryKey(
   if (presetId === "residential_lumina") return "lumina";
   if (presetId === "residential_sienna") return "sienna";
   if (presetId === "residential_khadi") return "khadi";
+  if (presetId === "residential_jaali") return "jaali";
   return "zenith";
 }
 

@@ -83,6 +83,7 @@ export type PresetAffinity =
       | "residential_lumina"
       | "residential_sienna"
       | "residential_khadi"
+      | "residential_jaali"
     >;
 
 export type ProposalBlockMeta = {

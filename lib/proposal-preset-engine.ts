@@ -13,7 +13,8 @@
  *   8. residential_lumina         — Lumina clean light app UI
  *   9. residential_sienna         — Sienna Laterite Folio (bone paper, laterite spine)
  *  10. residential_khadi          — Khadi cloth-press (indigo dye band, madder stamps)
- *  11. commercial_executive      — C&I commercial (hotel / hospital / industry…)
+ *  11. residential_jaali          — Jaali courtyard (sandstone wall, brass lattice)
+ *  12. commercial_executive      — C&I commercial (hotel / hospital / industry…)
  *
  * Removed residential presets remap via normalizePresetId → residential_executive.
  */
@@ -43,6 +44,7 @@ export const PROPOSAL_PRESET_IDS = [
   "residential_lumina",
   "residential_sienna",
   "residential_khadi",
+  "residential_jaali",
   "commercial_executive",
   "commercial_ht",
 ] as const;
@@ -116,7 +118,8 @@ export function isResidentialDocumentPreset(presetId: ProposalPresetId): boolean
     presetId === "residential_emerald" ||
     presetId === "residential_lumina" ||
     presetId === "residential_sienna" ||
-    presetId === "residential_khadi"
+    presetId === "residential_khadi" ||
+    presetId === "residential_jaali"
   );
 }
 
@@ -274,6 +277,18 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     label: "Khadi",
     description:
       "Cloth-press household proposal — khadi paper, indigo dye band, madder stamps. Full-bleed cover with a bottom stamp; price lives on Outlay.",
+    bill_requirement: "optional",
+    theme_hint: "residential",
+    default_data_source: "requirement",
+    default_blocks: [],
+    optional_blocks: [],
+  },
+
+  residential_jaali: {
+    id: "residential_jaali",
+    label: "Jaali",
+    description:
+      "Haveli courtyard — sandstone wall, brass jali lattice, cream courtyard. Cover shows kW + site; price lives on Outlay.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "requirement",

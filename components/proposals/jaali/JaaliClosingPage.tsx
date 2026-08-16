@@ -1,0 +1,108 @@
+"use client";
+
+import type { ProposalData } from "@/lib/proposal-data";
+import { installerLogoAlt } from "@/lib/proposal-branding-settings";
+import styles from "./Jaali.module.css";
+import { splitJaaliWordmark, useJaaliSurfaceBrand } from "./jaali-brand";
+import { useJaaliContactDetails } from "./jaali-closing-contact";
+import { useJaaliLang } from "./jaali-lang-context";
+import {
+  JAALI_CLOSE_ALT,
+  JAALI_CLOSE_PHOTO,
+  formatJaaliKw,
+  jaaliLocation,
+} from "./jaali-live";
+
+export type JaaliClosingPageProps = {
+  data: ProposalData;
+  installerLogoUrl?: string;
+  pptWebsite?: string;
+};
+
+export function JaaliClosingPage({
+  data,
+  installerLogoUrl,
+  pptWebsite,
+}: JaaliClosingPageProps) {
+  const { copy } = useJaaliLang();
+  const customer = data.meta.customerName?.trim() || "—";
+  const systemKw = Number(data.meta.systemKw) || 0;
+  const closingBrand = useJaaliSurfaceBrand(data, "closing", installerLogoUrl);
+  const installer = closingBrand.installerName?.trim() || "—";
+  const logo = closingBrand.showLogo ? closingBrand.logoUrl : "";
+  const showWordmark = Boolean(installer !== "—" && (closingBrand.showName || !logo));
+  const { head, tail } = splitJaaliWordmark(installer !== "—" ? installer : "");
+  const logoOnly = Boolean(logo) && !showWordmark;
+  const location = jaaliLocation(data);
+  const vendorContact = useJaaliContactDetails(data, pptWebsite);
+  const hasContact = Boolean(
+    vendorContact.phone || vendorContact.email || vendorContact.website
+  );
+
+  const title =
+    customer !== "—" ? copy.close.titleNamed(customer) : copy.close.titlePlain;
+  const plant = systemKw > 0 ? copy.close.plantKw(formatJaaliKw(systemKw)) : copy.close.plantPlain;
+  const lead = copy.close.lead(plant, location || null);
+
+  return (
+    <section className={`${styles.a4Jaali} ${styles.bleedSheet} ${styles.closeBleed}`}>
+      <div className={styles.closePhoto}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={JAALI_CLOSE_PHOTO} alt={JAALI_CLOSE_ALT} />
+        <div className={styles.closePhotoScrim} />
+      </div>
+
+      <div className={styles.closeDock}>
+        <div className={styles.closeDockCopy}>
+          {logo || showWordmark ? (
+            <div className={styles.closeBrand}>
+              {logo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={logo}
+                  alt={installerLogoAlt(installer)}
+                  className={logoOnly ? styles.coverLogoSolo : styles.coverLogo}
+                />
+              ) : null}
+              {showWordmark ? (
+                <div className={styles.closeWordmark}>
+                  {head}
+                  {tail ? <span className={styles.closeWordmarkTail}>{tail}</span> : null}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+          <p className={styles.closeKicker}>{copy.close.kicker}</p>
+          <h1 className={styles.closeTitle}>{title}</h1>
+          <p className={styles.closeLead}>{lead}</p>
+        </div>
+
+        <div className={styles.closePanel}>
+          {hasContact ? (
+            <div className={styles.closeContact}>
+              <span>{copy.close.contactTitle}</span>
+              {vendorContact.phone ? <strong>{vendorContact.phone}</strong> : null}
+              {vendorContact.email ? <strong>{vendorContact.email}</strong> : null}
+              {vendorContact.website ? <strong>{vendorContact.website}</strong> : null}
+            </div>
+          ) : null}
+
+          <div className={styles.sigStack}>
+            <div className={styles.sig}>
+              <div className={styles.sigRule} />
+              <span className={styles.sigName}>{customer}</span>
+              <span className={styles.sigRole}>{copy.close.clientRole}</span>
+            </div>
+            <div className={styles.sig}>
+              <div className={styles.sigRule} />
+              <span className={styles.sigName}>{installer}</span>
+              <span className={styles.sigRole}>{copy.close.officialRole}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default JaaliClosingPage;

@@ -12,7 +12,7 @@
  */
 
 import { motion } from "framer-motion";
-import { Building2, ChevronRight, Droplets, Flame, Gem, LayoutTemplate, RefreshCw, Sparkles, Sun, Zap } from "lucide-react";
+import { Building2, ChevronRight, Droplets, Flame, Gem, Grid3x3, LayoutTemplate, RefreshCw, Sparkles, Sun, Zap } from "lucide-react";
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 import { PresenceStack } from "@/components/workspace/presence-stack";
 
@@ -110,6 +110,14 @@ const PRESET_META: Record<ProposalPresetId, PresetMeta> = {
     pillClass:
       "border-[#234e8c]/30 bg-[#f3eadc] text-[#234e8c] dark:border-[#234e8c]/50 dark:bg-[#1a2744] dark:text-[#e8c4a0]",
     dotClass: "bg-[#234e8c]",
+  },
+  residential_jaali: {
+    icon: <Grid3x3 className="h-4 w-4" />,
+    label: "Jaali",
+    description: "Haveli courtyard · sandstone wall · brass jali lattice",
+    pillClass:
+      "border-[#b08d3e]/40 bg-[#ead9c1] text-[#3a3228] dark:border-[#b08d3e]/50 dark:bg-[#2a2118] dark:text-[#ead9c1]",
+    dotClass: "bg-[#b08d3e]",
   },
   commercial_executive: {
     icon: <Building2 className="h-4 w-4" />,
