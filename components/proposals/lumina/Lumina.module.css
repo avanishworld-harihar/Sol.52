@@ -1988,7 +1988,7 @@
 
 .engRoof {
   position: relative;
-  min-height: 168px;
+  min-height: 188px;
   flex: 1 1 auto;
   border-radius: 14px;
   overflow: hidden;
@@ -1996,12 +1996,11 @@
   border: 1px solid #1e293b;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
 }
 
 .engRoofGrid {
   position: absolute;
-  inset: 0;
+  inset: 0 0 50px 0;
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
@@ -2098,12 +2097,15 @@
 }
 
 .engRoofCaption {
-  position: relative;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 3;
-  margin: 8px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  background: rgba(15, 23, 42, 0.72);
+  margin: 0;
+  padding: 6px 10px 7px;
+  border-radius: 0 0 14px 14px;
+  background: rgba(15, 23, 42, 0.88);
   display: flex;
   flex-direction: column;
   gap: 2px;
