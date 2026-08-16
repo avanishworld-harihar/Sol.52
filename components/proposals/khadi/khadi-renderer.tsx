@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Khadi renderer — cloth-press household proposal.
+ * Khadi renderer — household rooftop proposal in quiet indigo cloth.
  * Preset id: residential_khadi
  */
 

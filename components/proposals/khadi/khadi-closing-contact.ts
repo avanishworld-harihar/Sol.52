@@ -14,29 +14,44 @@ export type KhadiContactDetails = {
   website: string;
 };
 
+const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
+
+function extractEmail(raw: string): string {
+  const m = raw.match(EMAIL_RE);
+  return m ? m[0] : "";
+}
+
+function extractPhone(raw: string, email: string): string {
+  const stripped = (email ? raw.replace(email, " ") : raw)
+    .replace(/[·•|,;/]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!stripped) return "";
+  if (EMAIL_RE.test(stripped)) return "";
+  if (/@/.test(stripped)) return "";
+  if (/[a-z]/i.test(stripped) && !/[\d+]/.test(stripped)) return "";
+  return stripped;
+}
+
 function splitContactLine(line: string): { phone: string; email: string } {
-  const parts = line
-    .split(/[·|/,;]+/)
-    .map((p) => p.trim())
-    .filter(Boolean);
-  let phone = "";
-  let email = "";
-  for (const part of parts) {
-    if (/@/.test(part)) email = email || part;
-    else if (/[\d+]/.test(part)) phone = phone || part;
-  }
-  if (!phone && !email && line.trim()) {
-    if (/@/.test(line)) email = line.trim();
-    else phone = line.trim();
-  }
+  const email = extractEmail(line);
+  const phone = extractPhone(line, email);
   return { phone, email };
 }
 
 function cleanWebsite(raw: string): string {
   const t = raw.trim().replace(/^https?:\/\//i, "").replace(/\/+$/, "");
-  if (!t || t.includes("@")) return t;
+  if (!t || t.includes("@")) return "";
   if (/^www\./i.test(t)) return t;
   return `www.${t}`;
+}
+
+function firstFilled(...values: string[]): string {
+  for (const v of values) {
+    const t = v.trim();
+    if (t) return t;
+  }
+  return "";
 }
 
 function hasLiveContactSettings(): boolean {
@@ -61,28 +76,50 @@ export function resolveKhadiContactDetails(
   const fromLine = splitContactLine(data.closing.contactLine ?? "");
   const settings =
     typeof window !== "undefined" ? readProposalBrandingSettings() : null;
+  const settingsEmail = (settings?.installerEmail ?? "").trim();
+  const settingsPhoneRaw = (settings?.installerContact ?? "").trim();
   const fromSettingsLine = splitContactLine(
-    formatInstallerContactLine(
-      settings?.installerContact ?? "",
-      settings?.installerEmail ?? ""
-    )
+    formatInstallerContactLine(settingsPhoneRaw, settingsEmail)
   );
-  const fromSettings = {
-    phone: fromSettingsLine.phone || (settings?.installerContact?.trim() ?? ""),
-    email: fromSettingsLine.email || (settings?.installerEmail?.trim() ?? ""),
-    website: settings?.companyProfile?.website?.trim() ?? "",
-  };
+  const settingsWebsite = settings?.companyProfile?.website?.trim() ?? "";
   const snapshotWebsite = pptWebsite?.trim() ?? "";
   const preferSettings = hasLiveContactSettings();
 
-  const pick = (snapshot: string, live: string) =>
-    preferSettings ? live || snapshot : snapshot || live;
+  const phone = preferSettings
+    ? firstFilled(
+        fromSettingsLine.phone,
+        extractPhone(settingsPhoneRaw, settingsEmail || extractEmail(settingsPhoneRaw)),
+        fromLine.phone
+      )
+    : firstFilled(
+        fromLine.phone,
+        fromSettingsLine.phone,
+        extractPhone(settingsPhoneRaw, settingsEmail || extractEmail(settingsPhoneRaw))
+      );
 
-  const websiteRaw = pick(snapshotWebsite, fromSettings.website);
+  const email = preferSettings
+    ? firstFilled(
+        settingsEmail,
+        fromSettingsLine.email,
+        extractEmail(settingsPhoneRaw),
+        extractEmail(settingsWebsite),
+        fromLine.email
+      )
+    : firstFilled(
+        fromLine.email,
+        settingsEmail,
+        fromSettingsLine.email,
+        extractEmail(settingsPhoneRaw),
+        extractEmail(settingsWebsite)
+      );
+
+  const websiteRaw = preferSettings
+    ? firstFilled(settingsWebsite, snapshotWebsite)
+    : firstFilled(snapshotWebsite, settingsWebsite);
 
   return {
-    phone: pick(fromLine.phone, fromSettings.phone),
-    email: pick(fromLine.email, fromSettings.email),
+    phone,
+    email,
     website: websiteRaw ? cleanWebsite(websiteRaw) : "",
   };
 }

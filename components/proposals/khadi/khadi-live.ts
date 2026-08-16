@@ -9,10 +9,10 @@ import { recommendedTiltFromLatitude, resolveSiteLatitude } from "@/lib/proposal
 
 export const KHADI_HERO_PHOTO = "/assets/proposals/khadi-cover-day.jpg";
 export const KHADI_HERO_ALT =
-  "Daytime rooftop: elevated GI MMS array overhead, Indian couple on the walkable RCC terrace underneath";
+  "Morning RCC terrace: Indian family having tea under an elevated GI MMS solar canopy";
 export const KHADI_CLOSE_PHOTO = "/assets/proposals/khadi-close-evening.jpg";
 export const KHADI_CLOSE_ALT =
-  "Evening rooftop: Indian family under the elevated solar array, warm string lights, plant visible overhead";
+  "Evening rooftop gathering under a clearly visible elevated solar array, string lights on the MMS";
 
 export function khadiBrand(data: ProposalData): string {
   return data.meta.brandName?.trim() || data.closing.installerName?.trim() || "";

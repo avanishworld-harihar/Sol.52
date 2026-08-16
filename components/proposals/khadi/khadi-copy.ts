@@ -1,5 +1,5 @@
 /**
- * Khadi EN / Hindi UI copy — Khadi cloth-press voice.
+ * Khadi EN / Hindi UI copy — household solar, quiet Khadi voice.
  * Hindi is spoken Hinglish. Never “ग्राहक”.
  */
 
@@ -27,7 +27,7 @@ export function getKhadiCopy(lang: KhadiLang) {
       terms2: hi ? "AMC" : "AMC",
     },
     cover: {
-      kicker: hi ? "खेत नहीं. कपड़ा." : "Not a field. A cloth.",
+      kicker: hi ? "यह छत" : "This roof",
       heroMms: "Elevated GI MMS",
       heroTerrace: hi ? "RCC terrace · नीचे चल सकते हैं" : "RCC terrace · walkable under array",
       preparedFor: (name: string) =>
@@ -38,15 +38,15 @@ export function getKhadiCopy(lang: KhadiLang) {
           : name !== "—"
             ? `For ${name}`
             : "For this property",
-      title: hi ? "सूरज, terrace, एक stamp." : "Sun, terrace, one stamp.",
+      title: hi ? "Yeh plant ke neeche ghar chalta hai." : "Life under this plant.",
       lead: (kw: string, location: string) =>
         hi
           ? `${kw ? `${kw} kW ` : ""}rooftop plant${
               location ? ` — ${location}` : ""
-            }. Grid कम, terrace वही. खाली field guess नहीं।`
+            }. Terrace वही रहती है. Grid कम होता है.`
           : `${kw ? `${kw} kW ` : ""}rooftop plant${
               location ? ` in ${location}` : ""
-            }. Less grid, same terrace. Blank fields are not guessed.`,
+            }. Same terrace. Less grid.`,
       system: hi ? "Plant size" : "Plant size",
       yield: hi ? "Year-1 units" : "Year-1 units",
       units: hi ? "units" : "units",
@@ -173,14 +173,14 @@ export function getKhadiCopy(lang: KhadiLang) {
       lead: (units: string, bill: boolean) =>
         hi
           ? `Year-1 yield ${units} units. Central-India rooftop का typical curve.${
-              bill ? " गहरी पट्टी bill units हैं." : " Madder = peak-sun महीने."
+              bill ? " गहरी पट्टी bill units हैं." : " Lal columns = peak-sun महीने."
             }`
           : `Year-1 yield is ${units} units. Typical central-India rooftop curve.${
-              bill ? " Dark strip is bill units." : " Madder = peak-sun months."
+              bill ? " Dark strip is bill units." : " Red columns are peak-sun months."
             }`,
       leadEmpty: hi
-        ? "Year-1 yield file पर हो तो ribbon दिखेगा."
-        : "The ribbon appears when year-1 yield is on file.",
+        ? "Year-1 yield file पर हो तो महीने की bars दिखेंगी."
+        : "The month columns appear when year-1 yield is on file.",
       units: "units",
       highest: hi ? "ऊँचा महीना" : "Highest",
       lowest: hi ? "नीचा महीना" : "Lowest",
@@ -237,6 +237,9 @@ export function getKhadiCopy(lang: KhadiLang) {
       clientRole: hi ? "Customer" : "Client",
       officialRole: hi ? "Company" : "Company",
       contactTitle: hi ? "Contact" : "Contact",
+      contactPhone: hi ? "Phone" : "Phone",
+      contactEmail: "Email",
+      contactWeb: hi ? "Web" : "Web",
     },
   };
 }

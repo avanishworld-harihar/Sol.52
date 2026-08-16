@@ -247,7 +247,7 @@ export function KhadiDocFooter({
   );
 }
 
-/** Cloth-press frame: indigo dye band on top. Cover and close stay bleed. */
+/** Inner sheet: quiet indigo hairline. Cover and close stay bleed. */
 export function KhadiSheet({
   data,
   page,

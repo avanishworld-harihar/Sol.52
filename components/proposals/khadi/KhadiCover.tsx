@@ -29,7 +29,6 @@ export function KhadiCover({ data, installerLogoUrl }: KhadiCoverProps) {
   const logo = coverBrand.showLogo ? coverBrand.logoUrl : "";
   const showWordmark = Boolean(brand) && (coverBrand.showName || !logo);
   const { head, tail } = splitKhadiWordmark(brand);
-  const logoOnly = Boolean(logo) && !showWordmark;
   const kwLabel = systemKw > 0 ? formatKhadiKw(systemKw) : "";
 
   return (
@@ -48,12 +47,10 @@ export function KhadiCover({ data, installerLogoUrl }: KhadiCoverProps) {
         {logo || showWordmark ? (
           <div className={styles.coverBrand}>
             {logo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={logo}
-                alt={installerLogoAlt(brand)}
-                className={logoOnly ? styles.coverLogoSolo : styles.coverLogo}
-              />
+              <div className={styles.coverLogoPlate}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={logo} alt={installerLogoAlt(brand)} />
+              </div>
             ) : null}
             {showWordmark ? (
               <div className={styles.coverWordmark}>
