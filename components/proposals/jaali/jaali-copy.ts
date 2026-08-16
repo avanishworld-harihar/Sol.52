@@ -136,16 +136,22 @@ export function getJaaliCopy(lang: JaaliLang) {
       kicker: hi ? "Outlay" : "Outlay",
       title: hi ? "लगाने में कितना देना है." : "What you pay to put it up.",
       lead: hi
-        ? "खरीद का पैसा. Bill saving पिछले Year पेज पर है."
-        : "Money to buy the plant. Bill saving is on the previous Year page.",
+        ? "Pehle plant ki keemat, phir subsidy ghat-ti hai, bachi net aap dete ho. Bill saving Year page par hai."
+        : "Plant price, minus subsidy, is what you pay. Bill saving is on the Year page.",
       youPay: hi ? "आपको देना" : "You pay",
-      gross: hi ? "Gross" : "Gross",
+      gross: hi ? "Plant price" : "Plant price",
       subsidy: hi ? "Subsidy" : "Subsidy",
-      subsidyNone: hi ? "File पर नहीं" : "None on file",
-      netHint: hi ? "Subsidy बाद में credit — यहाँ net." : "Subsidy credited later — net here.",
-      netSameHint: hi ? "Gross जैसा." : "Same as gross.",
+      subsidyNone: hi ? "File par nahi" : "None on file",
+      minus: "−",
+      equals: "=",
+      netHint: hi
+        ? "Subsidy baad mein credit. Yeh net hai."
+        : "Subsidy credited later. This is the net.",
+      netSameHint: hi
+        ? "Subsidy file par nahi — gross hi dena."
+        : "No subsidy on file — you pay gross.",
       stages: hi ? "किस्तें" : "Stage payments",
-      stagesHint: hi ? "Gross पर schedule" : "Schedule on gross",
+      stagesHint: hi ? "Gross par schedule" : "Schedule on gross",
       year1: hi ? "Year-1 generation" : "Year-1 generation",
       payback: hi ? "Payback" : "Payback",
       years: hi ? "years" : "years",
