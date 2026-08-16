@@ -114,7 +114,16 @@ export function getJaaliCopy(lang: JaaliLang) {
       roofEmpty: hi
         ? "Module count file पर होने पर plan दिखेगा।"
         : "Plan appears when module count is on file.",
-      planLegend: hi ? "Har block = 1 module. Dashed = gap." : "Each block = 1 module. Dashed = gap.",
+      planLegend: hi
+        ? "Har block = 1 module. Dashed = gap. South front edge."
+        : "Each block = 1 module. Dashed = gap. South is the front edge.",
+      planTag: hi ? "Roof plan · upar se" : "Roof plan · top view",
+      southEdge: hi ? "S · front edge" : "S · front edge",
+      walkAisle: hi
+        ? "Neeche walkway · elevated GI MMS"
+        : "Walkable under array · elevated GI MMS",
+      tableKind: (kind: string) =>
+        hi ? `${kind} tables · elevated GI MMS` : `${kind} tables · elevated GI MMS`,
       siteTitle: hi ? "Title block" : "Title block",
       latitude: "Latitude",
       latitudeCaption: hi ? "इसी छत का capture angle." : "Sets the capture angle for this roof.",

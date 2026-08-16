@@ -36,25 +36,45 @@ export function JaaliEngineering({
     {
       value: eng.acKw > 0 ? `${formatJaaliKw(eng.acKw)} kW AC` : "—",
       label: copy.engineering.specInverter,
-      desc: copy.engineering.specInverterDesc,
     },
     {
       value: eng.dcKwp > 0 ? `${eng.dcKwp.toFixed(2)} kWp` : "—",
       label: copy.engineering.specDc,
-      desc:
+      hint:
         eng.panelCount > 0 && eng.panelWatt > 0
           ? copy.engineering.specDcDesc(eng.panelCount, eng.panelWatt)
-          : copy.engineering.specDcEmpty,
+          : undefined,
     },
     {
       value: eng.performanceRatioPct > 0 ? `~${eng.performanceRatioPct}%` : "—",
       label: copy.engineering.specPr,
-      desc: copy.engineering.specPrDesc,
     },
     {
       value: eng.dcAcRatio > 0 ? String(eng.dcAcRatio) : "—",
       label: copy.engineering.specDcAc,
-      desc: copy.engineering.specDcAcDesc,
+    },
+  ];
+
+  const siteFacts = [
+    {
+      label: copy.engineering.arrayTitle,
+      value: arrayMeta,
+      hint: eng.showingPartial
+        ? copy.engineering.showing(eng.visualPanelCount, eng.panelCount).replace(/^ · /, "")
+        : undefined,
+    },
+    {
+      label: copy.engineering.latitude,
+      value: eng.siteLatLabel || "—",
+      hint: copy.engineering.latitudeCaption,
+    },
+    {
+      label: copy.engineering.roofArea,
+      value: eng.roofAreaLabel,
+      hint:
+        eng.panelCount > 0
+          ? copy.engineering.roofAreaCaption(eng.panelCount, eng.m2PerPanelLabel)
+          : copy.engineering.roofAreaEmpty,
     },
   ];
 
@@ -72,21 +92,22 @@ export function JaaliEngineering({
         </div>
         <p className={`${styles.lead} ${styles.leadShort}`}>{copy.engineering.lead}</p>
 
-        <div className={styles.drawBody}>
-          <div className={styles.drawPad}>
-            <div className={`${styles.planBoard} ${styles.window}`}>
-              <div className={styles.planGrid} />
-              <div className={styles.compass} aria-hidden>
-                <span className={styles.compassN}>N</span>
-                <span className={styles.compassE}>E</span>
-                <span className={styles.compassS}>S</span>
-                <span className={styles.compassW}>W</span>
-              </div>
-              {eng.visualPanelCount > 0 ? (
-                <div
-                  className={styles.planLayout}
-                  style={{ "--ja-panel-cols": String(arena.cols) } as CSSProperties}
-                >
+        <div className={styles.planSheet}>
+          <div className={`${styles.planBoard} ${styles.window}`}>
+            <span className={styles.planTag}>{copy.engineering.planTag}</span>
+            <div className={styles.planGrid} />
+            <div className={styles.compass} aria-hidden>
+              <span className={styles.compassN}>N</span>
+              <span className={styles.compassE}>E</span>
+              <span className={styles.compassS}>S</span>
+              <span className={styles.compassW}>W</span>
+            </div>
+            {eng.visualPanelCount > 0 ? (
+              <div
+                className={styles.planStage}
+                style={{ "--ja-panel-cols": String(arena.cols) } as CSSProperties}
+              >
+                <div className={styles.planLayout}>
                   {arena.cells.map((filled, i) => (
                     <div
                       key={i}
@@ -95,69 +116,61 @@ export function JaaliEngineering({
                     />
                   ))}
                 </div>
-              ) : (
-                <p className={styles.planEmpty}>{copy.engineering.roofEmpty}</p>
-              )}
-            </div>
-            <p className={styles.drawLegend}>{copy.engineering.planLegend}</p>
-
-            <div className={styles.yieldRail}>
-              <div className={styles.yieldCell}>
-                <span>{copy.engineering.peakSun}</span>
-                <strong>
-                  {eng.peakSunHours > 0 ? copy.engineering.hrsDay(eng.peakSunHours) : "—"}
-                </strong>
+                <span className={styles.planSouth}>{copy.engineering.southEdge}</span>
+                <span className={styles.planAisle} aria-hidden />
               </div>
-              <div className={styles.yieldCell}>
-                <span>{copy.engineering.specificYield}</span>
-                <strong>{eng.specificYield > 0 ? `${eng.specificYield}` : "—"}</strong>
-              </div>
-              <div className={styles.yieldCell}>
-                <span>{copy.engineering.loadCoverage}</span>
-                <strong>
-                  {eng.loadCoveragePct > 0 ? `${eng.loadCoveragePct}%` : "—"}
-                </strong>
-              </div>
-            </div>
+            ) : (
+              <p className={styles.planEmpty}>{copy.engineering.roofEmpty}</p>
+            )}
           </div>
-
-          <aside className={styles.drawFacts}>
-            <dl className={styles.facts}>
-              <div className={styles.fact}>
-                <dt>{copy.engineering.arrayTitle}</dt>
-                <dd>
-                  {arrayMeta}
-                  {eng.showingPartial
-                    ? copy.engineering.showing(eng.visualPanelCount, eng.panelCount)
-                    : ""}
-                </dd>
-              </div>
-              <div className={styles.fact}>
-                <dt>{copy.engineering.latitude}</dt>
-                <dd>{eng.siteLatLabel || "—"}</dd>
-                <p>{copy.engineering.latitudeCaption}</p>
-              </div>
-              <div className={styles.fact}>
-                <dt>{copy.engineering.roofArea}</dt>
-                <dd>{eng.roofAreaLabel}</dd>
-                <p>
-                  {eng.panelCount > 0
-                    ? copy.engineering.roofAreaCaption(eng.panelCount, eng.m2PerPanelLabel)
-                    : copy.engineering.roofAreaEmpty}
-                </p>
-              </div>
-            </dl>
-          </aside>
+          <div className={styles.planMeta}>
+            <p className={styles.drawLegend}>
+              {copy.engineering.planLegend}
+              {eng.visualPanelCount > 0 ? ` · ${copy.engineering.tableKind(arena.tableKind)}` : ""}
+            </p>
+            <p className={styles.planWalkNote}>{copy.engineering.walkAisle}</p>
+          </div>
         </div>
 
-        <div className={styles.specStrip}>
-          {specCards.map((card) => (
-            <div key={card.label} className={styles.specCell}>
-              <p className={styles.specVal}>{card.value}</p>
-              <p className={styles.specLab}>{card.label}</p>
-              <p className={styles.specDesc}>{card.desc}</p>
+        <div className={styles.drawFloor}>
+          <div className={styles.courtRow}>
+            {siteFacts.map((fact) => (
+              <div key={fact.label} className={styles.courtBay}>
+                <span>{fact.label}</span>
+                <strong>{fact.value}</strong>
+                {fact.hint ? <p>{fact.hint}</p> : null}
+              </div>
+            ))}
+          </div>
+
+          <div className={styles.specStrip}>
+            {specCards.map((card) => (
+              <div key={card.label} className={styles.specCell}>
+                <p className={styles.specVal}>{card.value}</p>
+                <p className={styles.specLab}>{card.label}</p>
+                {card.hint ? <p className={styles.specDesc}>{card.hint}</p> : null}
+              </div>
+            ))}
+          </div>
+
+          <div className={styles.yieldRail}>
+            <div className={styles.yieldCell}>
+              <span>{copy.engineering.peakSun}</span>
+              <strong>
+                {eng.peakSunHours > 0 ? copy.engineering.hrsDay(eng.peakSunHours) : "—"}
+              </strong>
             </div>
-          ))}
+            <div className={styles.yieldCell}>
+              <span>{copy.engineering.specificYield}</span>
+              <strong>{eng.specificYield > 0 ? `${eng.specificYield}` : "—"}</strong>
+            </div>
+            <div className={styles.yieldCell}>
+              <span>{copy.engineering.loadCoverage}</span>
+              <strong>
+                {eng.loadCoveragePct > 0 ? `${eng.loadCoveragePct}%` : "—"}
+              </strong>
+            </div>
+          </div>
         </div>
 
         <p className={styles.cableNote}>
@@ -166,12 +179,14 @@ export function JaaliEngineering({
 
         {insights.length > 0 ? (
           <div className={styles.drawNotes}>
-            {insights.slice(0, 3).map((card) => (
-              <div key={card.title}>
-                <p className={styles.insightTitle}>{card.title}</p>
-                <p className={styles.insightBody}>{card.body}</p>
-              </div>
-            ))}
+            {[insights[0], insights[1], insights[3] ?? insights[2]]
+              .filter((card): card is NonNullable<typeof card> => Boolean(card))
+              .map((card) => (
+                <div key={card.title}>
+                  <p className={styles.insightTitle}>{card.title}</p>
+                  <p className={styles.insightBody}>{card.body}</p>
+                </div>
+              ))}
           </div>
         ) : null}
       </div>

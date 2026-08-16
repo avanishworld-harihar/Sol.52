@@ -908,10 +908,10 @@
 
 .planBoard {
   position: relative;
-  min-height: 118px;
-  height: 128px;
-  max-height: 128px;
-  background: #ece4d4;
+  min-height: 148px;
+  height: 156px;
+  max-height: 156px;
+  background: #e7dcc8;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -922,36 +922,77 @@
   border: 1.5px solid var(--ja-brass);
 }
 
+.planTag {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  z-index: 2;
+  font-size: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ja-muted);
+}
+
 .planGrid {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(49, 64, 86, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(49, 64, 86, 0.08) 1px, transparent 1px);
-  background-size: 16px 16px;
+    linear-gradient(rgba(176, 141, 62, 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(176, 141, 62, 0.16) 1px, transparent 1px);
+  background-size: 14px 14px;
+}
+
+.planStage {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
 }
 
 .planLayout {
-  position: relative;
-  z-index: 1;
   display: grid;
-  grid-template-columns: repeat(var(--ja-panel-cols, 4), 22px);
+  grid-template-columns: repeat(var(--ja-panel-cols, 4), 24px);
   gap: 3px;
 }
 
 .planCell,
 .planGap {
-  width: 22px;
-  height: 34px;
+  width: 24px;
+  height: 38px;
 }
 
 .planCell {
-  background: var(--ja-terra);
-  box-shadow: inset 0 0 0 1px rgba(36, 24, 18, 0.25);
+  background: var(--ja-jali);
+  box-shadow: inset 0 0 0 1px var(--ja-brass);
 }
 
 .planGap {
-  border: 1px dashed rgba(49, 64, 86, 0.35);
+  border: 1px dashed rgba(176, 141, 62, 0.7);
+}
+
+.planSouth {
+  font-size: 0.48rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ja-terra);
+}
+
+.planAisle {
+  width: calc(var(--ja-panel-cols, 4) * 27px);
+  max-width: 72%;
+  height: 8px;
+  border: 1px dashed var(--ja-brass);
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 5px,
+    rgba(176, 141, 62, 0.28) 5px,
+    rgba(176, 141, 62, 0.28) 7px
+  );
 }
 
 .planEmpty {
@@ -972,9 +1013,9 @@
   z-index: 2;
   width: 38px;
   height: 38px;
-  border: 1px solid var(--ja-jali);
+  border: 1px solid var(--ja-brass);
   border-radius: 50%;
-  background: rgba(247, 241, 230, 0.85);
+  background: rgba(247, 241, 230, 0.9);
 }
 
 .compassN,
@@ -1069,24 +1110,23 @@
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 0;
-  margin-top: 2px;
-  border: 1px solid var(--ja-line);
 }
 
 .specCell {
-  padding: 8px 10px;
+  padding: 8px 12px 9px;
   border-right: 1px solid var(--ja-line);
-}
-
-.specCell:nth-child(4n) {
-  border-right: 0;
 }
 
 .specVal {
   margin: 0;
   font-family: var(--ja-serif);
-  font-size: 0.95rem;
+  font-size: 1.15rem;
   font-weight: 600;
+  line-height: 1.1;
+}
+
+.specCell:nth-child(4n) {
+  border-right: 0;
 }
 
 .specLab {
@@ -1109,13 +1149,10 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0;
-  margin-top: 8px;
-  border: 1px solid var(--ja-line);
-  background: var(--ja-card);
 }
 
 .yieldCell {
-  padding: 7px 10px;
+  padding: 8px 12px 9px;
   border-right: 1px solid var(--ja-line);
 }
 
@@ -1173,21 +1210,23 @@
 }
 
 .insightTitle {
-  margin: 0 0 2px;
-  font-size: 0.68rem;
-  font-weight: 800;
+  margin: 0 0 4px;
+  font-family: var(--ja-serif);
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.15;
 }
 
 .insightBody {
   margin: 0;
-  font-size: 0.55rem;
-  line-height: 1.32;
+  font-size: 0.66rem;
+  line-height: 1.4;
   color: var(--ja-body);
 }
 
 .cableNote {
-  margin: 6px 0 0;
-  font-size: 0.6rem;
+  margin: 2px 0 0;
+  font-size: 0.62rem;
   color: var(--ja-muted);
   line-height: 1.35;
 }
@@ -1880,7 +1919,7 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 7px;
 }
 
 .drawHead {
@@ -1894,37 +1933,92 @@
   margin-bottom: 0;
 }
 
-.drawBody {
-  display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(220px, 0.95fr);
-  gap: 12px;
-  align-items: start;
-}
-
-.drawPad {
+.planSheet {
   min-width: 0;
 }
 
 .drawLegend {
-  margin: 6px 0 0;
+  margin: 0;
   font-size: 0.58rem;
   font-weight: 600;
   color: var(--ja-muted);
 }
 
-.drawFacts {
+.planMeta {
   display: flex;
-  flex-direction: column;
-  gap: 7px;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.planWalkNote {
+  margin: 0;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ja-jali);
+  text-align: right;
+}
+
+.drawFloor {
+  border-top: 1.5px solid var(--ja-brass);
+  background: var(--ja-card);
+}
+
+.courtRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+  border-bottom: 1px solid var(--ja-line);
+}
+
+.courtBay {
   min-width: 0;
+  padding: 9px 12px 10px;
+  border-right: 1px solid var(--ja-line);
+}
+
+.courtBay:last-child {
+  border-right: 0;
+}
+
+.courtBay span {
+  display: block;
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ja-muted);
+  margin-bottom: 4px;
+}
+
+.courtBay strong {
+  display: block;
+  font-family: var(--ja-serif);
+  font-size: 1.02rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.courtBay p {
+  margin: 4px 0 0;
+  font-size: 0.6rem;
+  line-height: 1.35;
+  color: var(--ja-body);
+}
+
+.specStrip {
+  border-bottom: 1px solid var(--ja-line);
 }
 
 .drawNotes {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px 12px;
+  gap: 12px 16px;
   margin-top: auto;
-  padding-top: 8px;
+  padding-top: 10px;
   border-top: 1px solid var(--ja-line);
 }
 
@@ -1961,7 +2055,7 @@
   }
 
   .arcade,
-  .drawBody,
+  .courtRow,
   .drawNotes,
   .specStrip,
   .auditTwin,
@@ -1972,6 +2066,16 @@
   .insightGrid,
   .yieldRail {
     grid-template-columns: 1fr;
+  }
+
+  .planMeta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .planWalkNote {
+    text-align: left;
   }
 
   .clauseGrid > :last-child {
