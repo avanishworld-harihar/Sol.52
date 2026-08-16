@@ -111,8 +111,9 @@
     font-size: 3.2rem !important;
   }
 
-  .closeContactCard {
-    background: rgba(15, 23, 42, 0.42) !important;
+  .closeContactCard,
+  .closeSigCard {
+    background: rgba(15, 23, 42, 0.5) !important;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
@@ -1891,17 +1892,29 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  background: rgba(255, 255, 255, 0.96);
+  background: rgba(15, 23, 42, 0.42);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: 14px;
   padding: 16px 18px 14px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+}
+
+.closeSigCard .sigName {
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.closeSigCard .sigRole {
+  color: #d1fae5;
 }
 
 .closeSigLine {
   display: block;
   width: 100%;
   height: 1px;
-  background: #cbd5e1;
+  background: rgba(255, 255, 255, 0.45);
   margin-bottom: 10px;
 }
 
