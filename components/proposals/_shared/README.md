@@ -26,7 +26,7 @@ Both run against every preset, including ones added later.
 | Check | Command | What it does |
 | --- | --- | --- |
 | Static | `npm run test:proposal-stability` | Scans preset CSS for sheet-resizing rules above 640 px. Runs in `npm run build`. |
-| Runtime | `npm run test:proposal-sheet-fit` | Loads preview routes in a headless browser at phone/tablet/desktop widths and asserts the sheet measures 794 × 1123 everywhere. Needs a running server and `npx playwright install chromium`. |
+| Runtime | `npm run test:proposal-sheet-fit` | Loads preview routes in a headless browser and asserts the sheet measures 794 × 1123 at phone/tablet/desktop widths, after rotating without a reload, and under print media. Needs a running server and `npx playwright install chromium`. |
 
 Add new preview routes to `ROUTES` in `scripts/check-proposal-sheet-fit.mjs` to cover a new preset in the runtime check.
 

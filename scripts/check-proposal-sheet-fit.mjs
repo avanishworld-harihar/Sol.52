@@ -35,6 +35,17 @@ const VIEWPORTS = [
   { label: "desktop", width: 1440, height: 900, expectSheet: true },
 ];
 
+/**
+ * Rotating a tablet resizes the viewport without reloading, so the shell has to
+ * re-measure on the fly. Printing must drop the scale entirely. Both are how
+ * the layout diverged before, so both are asserted rather than assumed.
+ */
+const ROTATION_STEPS = [
+  { label: "portrait", width: 834, height: 1112 },
+  { label: "landscape (rotated)", width: 1194, height: 834 },
+  { label: "portrait (rotated back)", width: 834, height: 1112 },
+];
+
 const MEASURE = `(() => {
   const wrap = document.querySelector('[data-proposal-fit]');
   if (!wrap) return { error: 'no fit wrapper' };
@@ -123,6 +134,55 @@ async function main() {
         } finally {
           await page.close();
         }
+      }
+
+      // Rotation + print on a single page instance (no reload between steps).
+      const page = await browser.newPage({
+        viewport: { width: 834, height: 1112 },
+        deviceScaleFactor: 1,
+      });
+      try {
+        await page.goto(`${base}${route.path}`, {
+          waitUntil: "networkidle",
+          timeout: 90_000,
+        });
+        await page.waitForSelector("[data-proposal-fit] section", { timeout: 60_000 });
+
+        for (const step of ROTATION_STEPS) {
+          await page.setViewportSize({ width: step.width, height: step.height });
+          await page.waitForTimeout(1200);
+          const result = await page.evaluate(MEASURE);
+          const id = `${route.label} @ ${step.label}`;
+          if (result.error) {
+            failures.push(`${id}: ${result.error}`);
+            continue;
+          }
+          rows.push({ id, ...result });
+          if (Math.abs(result.sheetCssWidth - SHEET_WIDTH_PX) > WIDTH_TOLERANCE_PX) {
+            failures.push(
+              `${id}: sheet width ${result.sheetCssWidth}px after rotation, expected ~${SHEET_WIDTH_PX}px.`
+            );
+          }
+          if (result.scrollWidth > result.innerWidth + 2) {
+            failures.push(`${id}: horizontal overflow after rotation`);
+          }
+        }
+
+        await page.emulateMedia({ media: "print" });
+        await page.waitForTimeout(600);
+        const printed = await page.evaluate(MEASURE);
+        const printId = `${route.label} @ print`;
+        rows.push({ id: printId, ...printed });
+        if (printed.zoom !== 1) {
+          failures.push(`${printId}: print must not be scaled (zoom ${printed.zoom})`);
+        }
+        if (Math.abs(printed.sheetCssWidth - SHEET_WIDTH_PX) > WIDTH_TOLERANCE_PX) {
+          failures.push(
+            `${printId}: sheet width ${printed.sheetCssWidth}px, expected ~${SHEET_WIDTH_PX}px.`
+          );
+        }
+      } finally {
+        await page.close();
       }
     }
   } finally {
