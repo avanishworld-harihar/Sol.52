@@ -17,6 +17,7 @@ import {
   validateCommercialLayoutPlan,
 } from "@/lib/proposal-stability/commercial-layout";
 import { validatePrintLayoutGuards } from "@/lib/proposal-stability/print-layout-guards";
+import { validatePresetLayoutGuards } from "@/lib/proposal-stability/preset-layout-guards";
 import { validateResidentialPresetGuards } from "@/lib/proposal-stability/residential-preset-guards";
 
 export type GoldenFixture = {
@@ -135,6 +136,13 @@ export function runProposalStabilityChecks(rootDir: string): StabilityReport {
     errors.push(err);
   }
   if (errors.length === 0) passed.push("residential-preset-guards");
+
+  // ── Shared A4 sheet contract (tablet + print parity for every preset) ─────
+  const presetLayoutErrors = validatePresetLayoutGuards(rootDir);
+  for (const err of presetLayoutErrors) {
+    errors.push(err);
+  }
+  if (presetLayoutErrors.length === 0) passed.push("preset-layout-guards");
 
   // ── Golden fixtures ──────────────────────────────────────────────────────
   const fixtureNames = ["residential", "school", "factory"] as const;

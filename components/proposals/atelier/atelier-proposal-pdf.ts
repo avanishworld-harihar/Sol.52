@@ -404,6 +404,26 @@ export async function sharePdfFile(file: AtelierPdfFile): Promise<boolean> {
   }
 }
 
+/**
+ * Backing colour behind a captured sheet.
+ *
+ * Read it from the live page instead of matching class names: a class-name
+ * heuristic only knows the preset it was written for, so every other preset
+ * (and every preset added later) fell back to white and dark themes rendered a
+ * white halo around the sheet edges.
+ */
+function resolveSheetBackground(source: HTMLElement): string {
+  let node: HTMLElement | null = source;
+  for (let depth = 0; node && depth < 4; depth += 1) {
+    const color = getComputedStyle(node).backgroundColor;
+    if (color && !/^(transparent|rgba\(0,\s*0,\s*0,\s*0\))$/.test(color)) {
+      return color;
+    }
+    node = node.parentElement;
+  }
+  return "#ffffff";
+}
+
 function relaxPageBox(el: HTMLElement): void {
   el.style.setProperty("width", `${A4_W_PX}px`, "important");
   el.style.setProperty("max-width", `${A4_W_PX}px`, "important");
@@ -526,7 +546,7 @@ export async function buildAtelierProposalPdf(options: {
     )
   );
   if (sections.length === 0) {
-    throw new Error("No Atelier pages found to export.");
+    throw new Error("No proposal pages found to export.");
   }
 
   const [{ jsPDF }, { default: html2canvas }, { domToCanvas }] =
@@ -587,8 +607,7 @@ export async function buildAtelierProposalPdf(options: {
       );
       await new Promise((r) => window.setTimeout(r, ios ? 120 : 40));
 
-      const isDarkSheet = /coverPage|closingPage/.test(clone.className);
-      const background = isDarkSheet ? "#0A0F1C" : "#ffffff";
+      const background = resolveSheetBackground(sections[i]);
 
       let canvases: HTMLCanvasElement[];
       if (options.paginateOverflow) {

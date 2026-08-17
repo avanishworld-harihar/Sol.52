@@ -11,6 +11,7 @@ import {
   isZenithPresetId,
 } from "@/components/proposals/_registry/preset-renderers";
 import type { PresetRendererProps } from "@/components/proposals/_registry/types";
+import { ProposalPageFit } from "@/components/proposals/_shared/proposal-page-fit";
 import { isSparseProposalData } from "@/lib/proposal-data/is-sparse-proposal-data";
 import { MOCK_ZENITH_DATA } from "@/components/proposals/zenith/mock-zenith-data";
 
@@ -35,5 +36,14 @@ export async function ProposalRenderer({
       ? MOCK_ZENITH_DATA
       : data;
 
-  return <Renderer {...rest} data={resolvedData} />;
+  /*
+   * Every preset — residential, commercial, and anything added later — renders
+   * inside the shared fit shell so one A4 layout serves phone, tablet, desktop
+   * and print instead of each preset inventing its own tablet behaviour.
+   */
+  return (
+    <ProposalPageFit>
+      <Renderer {...rest} data={resolvedData} />
+    </ProposalPageFit>
+  );
 }

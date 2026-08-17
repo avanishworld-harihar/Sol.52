@@ -1,0 +1,46 @@
+/*
+ * Shared A4 fit shell — applies to every proposal preset.
+ *
+ * Problem this solves: preset pages are a fixed-height A4 sheet (297mm) with a
+ * fluid width (`max-width: min(210mm, 100%)`). On a viewport narrower than
+ * 210mm (~794px) the sheet keeps full height but loses width, so the layout is
+ * squeezed and clipped. An iPad is ~768-834px in portrait and ~1024-1194px in
+ * landscape, which is exactly why the same proposal looked different in the two
+ * orientations while Windows (wide) always looked right.
+ *
+ * Fix: never reflow the sheet. Keep it at its designed width and scale the whole
+ * document down with `zoom`, the way a PDF viewer does. Because `zoom` also
+ * scales the layout viewport, the sheet still resolves to its full 210mm and the
+ * preset renders its desktop layout on every device.
+ *
+ * Print and PDF capture must always use the unscaled sheet.
+ */
+
+/* Only set when the sheet does not fit, so wide screens keep an untouched
+   stacking/containing-block context. */
+[data-proposal-fit="on"] {
+  zoom: var(--proposal-page-scale, 1);
+}
+
+/*
+ * Below the phone breakpoint presets switch to their own stacked layout, which
+ * is readable at 1:1. Scaling that down would only make the text smaller.
+ */
+@media screen and (max-width: 640px) {
+  [data-proposal-fit="on"] {
+    zoom: 1;
+  }
+}
+
+@media print {
+  [data-proposal-fit],
+  [data-proposal-fit="on"] {
+    zoom: 1 !important;
+  }
+}
+
+/* The raster PDF capture host renders off-screen at exact A4 pixels. */
+#atelier-pdf-capture-host,
+#atelier-pdf-capture-host [data-pdf-capture-root="true"] {
+  zoom: 1 !important;
+}

@@ -2837,7 +2837,8 @@
   background: var(--wash);
 }
 
-@media (max-width: 720px) {
+/* Phone-only stacking. Tablets keep the desktop A4 sheet and scale to fit. */
+@media screen and (max-width: 640px) {
   .page {
     width: 100%;
     max-width: 100%;

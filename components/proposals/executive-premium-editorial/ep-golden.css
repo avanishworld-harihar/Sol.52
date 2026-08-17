@@ -1394,8 +1394,10 @@
   line-height: 1.6;
 }
 
-/* ── Mobile / narrow web (not print) — readable data, no clipped columns ── */
-@media screen and (max-width: 720px) {
+/* ── Phone-only (not print) — readable data, no clipped columns.
+ *    Tablets keep the desktop A4 sheet and scale to fit; see
+ *    components/proposals/_shared/proposal-page-fit.css. ── */
+@media screen and (max-width: 640px) {
   .ep-golden-root .ep-gl-doc-canvas {
     padding: 12px 10px 32px;
     max-width: 100%;
