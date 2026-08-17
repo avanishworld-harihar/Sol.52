@@ -117,7 +117,7 @@ async function waitForFonts(): Promise<void> {
   await waitForFontSet(document.fonts, 8000);
 }
 
-function applyPageBox(el: HTMLElement): void {
+function applyPageBox(el: HTMLElement, source?: HTMLElement): void {
   el.style.setProperty("width", `${A4_W_PX}px`, "important");
   el.style.setProperty("max-width", `${A4_W_PX}px`, "important");
   el.style.setProperty("height", `${A4_H_PX}px`, "important");
@@ -131,8 +131,28 @@ function applyPageBox(el: HTMLElement): void {
   el.style.setProperty("box-sizing", "border-box", "important");
   el.style.setProperty("position", "relative", "important");
   el.style.setProperty("transform", "none", "important");
-  el.style.setProperty("display", "flex", "important");
-  el.style.setProperty("flex-direction", "column", "important");
+  /*
+   * Copy the live page's flex axis. Atelier sheets are column; Emerald /
+   * Sienna split-folios are row (sidebar | content). Forcing column here
+   * stacked Emerald's green rail on top of the photo — iPad PDF looked
+   * nothing like the on-screen A4 split.
+   */
+  let display = "flex";
+  let dir = "column";
+  try {
+    const cs = getComputedStyle(source && source.isConnected ? source : el);
+    if (cs.display && cs.display !== "none") display = cs.display;
+    if (cs.flexDirection === "row" || cs.flexDirection === "row-reverse") {
+      dir = cs.flexDirection;
+    }
+  } catch {
+    /* keep column default */
+  }
+  el.style.setProperty("display", display, "important");
+  el.style.setProperty("flex-direction", dir, "important");
+  if (dir === "row" || dir === "row-reverse") {
+    el.style.setProperty("align-items", "stretch", "important");
+  }
 }
 
 function prepareCaptureClone(root: ParentNode): void {
@@ -341,7 +361,7 @@ function presentPdfOverlay(file: AtelierPdfFile): void {
   close.style.cssText =
     "min-height:44px;padding:8px 16px;border:0;border-radius:8px;background:#f8fafc;color:#0f172a;font:600 14px/1.2 system-ui,sans-serif;";
   const iframe = document.createElement("iframe");
-  iframe.src = url;
+  iframe.src = `${url}#view=FitH`;
   iframe.title = file.fileName;
   iframe.style.cssText = "flex:1;width:100%;border:0;background:#fff;";
   const cleanup = () => {
@@ -581,7 +601,7 @@ export async function buildAtelierProposalPdf(options: {
           Math.ceil(clone.getBoundingClientRect().height)
         );
         if (contentH <= A4_H_PX) {
-          applyPageBox(clone);
+          applyPageBox(clone, sections[i]);
           canvases = [
             await rasterizeCapturePage(
               clone,
@@ -611,7 +631,7 @@ export async function buildAtelierProposalPdf(options: {
           fullCanvas.height = 0;
         }
       } else {
-        applyPageBox(clone);
+        applyPageBox(clone, sections[i]);
         canvases = [
           await rasterizeCapturePage(
             clone,
