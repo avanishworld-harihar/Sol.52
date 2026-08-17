@@ -16,6 +16,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ProposalData } from "@/lib/proposal-data";
 import type { PremiumProposalPptInput } from "@/lib/proposal-ppt";
+import { buildEmiTable } from "@/lib/proposal-deck-helpers";
 import { formatInr, formatInrCompact } from "@/components/proposals/_shared/formatters";
 import {
   normalizeBrandCompareSelection,
@@ -65,6 +66,37 @@ import {
 
 function folio(n: number, total: number): string {
   return `${String(n).padStart(2, "0")} / ${String(total).padStart(2, "0")}`;
+}
+
+const ATELIER_SMALL_SYSTEM_KW = 3;
+const ATELIER_SMALL_SYSTEM_RATE_PCT = 6;
+const ATELIER_DEFAULT_TENURES = [3, 5, 7];
+const ATELIER_DEFAULT_TENURE_YEARS = 5;
+
+function resolveAtelierInterestRatePct(
+  systemKw: number,
+  pptInput: PremiumProposalPptInput | null | undefined,
+  economicsRate?: number
+): number {
+  if (systemKw > 0 && systemKw <= ATELIER_SMALL_SYSTEM_KW) {
+    return ATELIER_SMALL_SYSTEM_RATE_PCT;
+  }
+  const candidates = [
+    pptInput?.residentialConfig?.financing?.interestRatePct,
+    pptInput?.financeOption?.interestRatePct,
+    economicsRate,
+  ];
+  for (const raw of candidates) {
+    if (typeof raw === "number" && Number.isFinite(raw) && raw > 0) return raw;
+  }
+  return 7;
+}
+
+function formatAtelierRatePct(rate: number): string {
+  if (!Number.isFinite(rate)) return "7";
+  return Number.isInteger(rate)
+    ? String(rate)
+    : rate.toFixed(1).replace(/\.0$/, "");
 }
 
 /** Rewrite leading "NN — " page index in copy tags when bill audit shifts the deck. */
@@ -299,11 +331,46 @@ export function AtelierRenderer({
       : annualSavings > 0
         ? Math.round(annualSavings / 12 / 0.8)
         : 5200;
-  // Simple 5-yr EMI at ~9%
-  const r = 0.09 / 12;
+  const financing = pptInput?.residentialConfig?.financing;
+  const showEmi = financing?.enabled !== false;
+  const interestRatePct = resolveAtelierInterestRatePct(
+    systemKw,
+    pptInput,
+    data.economics.interestRatePct
+  );
+  const interestRateLabel = formatAtelierRatePct(interestRatePct);
+  const tenureSource =
+    financing?.tenuresYears && financing.tenuresYears.length > 0
+      ? financing.tenuresYears
+      : pptInput?.financeOption?.tenuresYears &&
+          pptInput.financeOption.tenuresYears.length > 0
+        ? pptInput.financeOption.tenuresYears
+        : ATELIER_DEFAULT_TENURES;
+  const emiTenures = tenureSource.slice(0, 4);
+  const selectedPref =
+    financing?.selectedTenureYears ??
+    pptInput?.financeOption?.selectedTenureYears ??
+    ATELIER_DEFAULT_TENURE_YEARS;
+  const selectedTenureYears = emiTenures.includes(selectedPref)
+    ? selectedPref
+    : emiTenures.includes(ATELIER_DEFAULT_TENURE_YEARS)
+      ? ATELIER_DEFAULT_TENURE_YEARS
+      : (emiTenures[0] ?? ATELIER_DEFAULT_TENURE_YEARS);
+  const emiTable =
+    showEmi && netInr > 0
+      ? buildEmiTable(netInr, interestRatePct, emiTenures)
+      : [];
+  const selectedEmiRow =
+    emiTable.find((row) => row.tenureYears === selectedTenureYears) ??
+    emiTable[0];
   const monthlyEmi =
-    netInr > 0 ? Math.round((netInr * r) / (1 - Math.pow(1 + r, -60))) : 0;
-  const monthlyProfit = monthlyBill - monthlyEmi;
+    showEmi && selectedEmiRow && selectedEmiRow.monthlyEmi > 0
+      ? selectedEmiRow.monthlyEmi
+      : 0;
+  const solarMonthlyCost =
+    monthlyEmi > 0 ? monthlyEmi : netInr > 0 ? 0 : 4100;
+  const monthlyProfit = monthlyBill - solarMonthlyCost;
+  const loanEndYr = showEmi ? selectedTenureYears : 0;
 
   // Investment grade
   const investScore =
@@ -623,54 +690,55 @@ export function AtelierRenderer({
 
       {/* ══ P1: CINEMATIC COVER ══════════════════════════════════ */}
       <section className={`${styles.page} ${styles.coverPage}`}>
-        <div className={styles.coverInner}>
-          <div className={styles.coverTop}>
-            <div className={styles.coverBrandRow}>
-              {coverBrand.showLogo ? (
-                <span
-                  className={
-                    logoNeedsPlate ? styles.logoPlate : styles.logoBare
-                  }
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={coverBrand.logoUrl}
-                    alt={coverBrand.installerName || brand}
-                    className={styles.coverLogo}
-                  />
-                </span>
-              ) : null}
-              {coverBrand.showName || !coverBrand.showLogo ? (
-                <span className={styles.coverBrandText}>
-                  {(coverBrand.installerName || brand).toUpperCase()}
-                </span>
-              ) : null}
+        <figure className={styles.coverPhotoPlate}>
+          <div className={styles.coverPhotoFrame}>
+            {/* eslint-disable-next-line @next/next/no-img-element -- print A4 static asset */}
+            <img
+              className={styles.coverPhotoImg}
+              src="/assets/proposals/atelier-cover-terrace-garden.jpg"
+              alt=""
+              width={1536}
+              height={1024}
+            />
+            <div className={styles.coverPhotoVignette} aria-hidden />
+            <div className={styles.coverPhotoEdge} aria-hidden />
+            <div className={styles.coverPhotoOverlay}>
+              <div className={styles.coverTop}>
+                <div className={styles.coverBrandRow}>
+                  {coverBrand.showLogo ? (
+                    <span
+                      className={
+                        logoNeedsPlate ? styles.logoPlate : styles.logoBare
+                      }
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={coverBrand.logoUrl}
+                        alt={coverBrand.installerName || brand}
+                        className={styles.coverLogo}
+                      />
+                    </span>
+                  ) : null}
+                  {coverBrand.showName || !coverBrand.showLogo ? (
+                    <span className={styles.coverBrandText}>
+                      {(coverBrand.installerName || brand).toUpperCase()}
+                    </span>
+                  ) : null}
+                </div>
+                {coverBrand.showTagline && data.meta.brandTagline ? (
+                  <p className={styles.coverLoc}>{data.meta.brandTagline}</p>
+                ) : null}
+                <span className={styles.coverDocType}>{c.cover.docType}</span>
+              </div>
             </div>
-            {coverBrand.showTagline && data.meta.brandTagline ? (
-              <p className={styles.coverLoc}>{data.meta.brandTagline}</p>
-            ) : null}
-            <span className={styles.coverDocType}>{c.cover.docType}</span>
           </div>
+          <figcaption className={styles.coverPhotoCaption}>
+            <span className={styles.coverPhotoTitle}>{c.cover.photoTitle}</span>
+            <span className={styles.coverPhotoSub}>{c.cover.photoSub}</span>
+          </figcaption>
+        </figure>
 
-          <figure className={styles.coverPhotoPlate}>
-            <div className={styles.coverPhotoFrame}>
-              {/* eslint-disable-next-line @next/next/no-img-element -- print A4 static asset */}
-              <img
-                className={styles.coverPhotoImg}
-                src="/assets/proposals/atelier-cover-terrace-garden.jpg"
-                alt=""
-                width={1536}
-                height={1024}
-              />
-              <div className={styles.coverPhotoVignette} aria-hidden />
-              <div className={styles.coverPhotoEdge} aria-hidden />
-            </div>
-            <figcaption className={styles.coverPhotoCaption}>
-              <span className={styles.coverPhotoTitle}>{c.cover.photoTitle}</span>
-              <span className={styles.coverPhotoSub}>{c.cover.photoSub}</span>
-            </figcaption>
-          </figure>
-
+        <div className={styles.coverInner}>
           <div className={styles.coverHero}>
             <p className={styles.coverFor}>{c.cover.preparedFor}</p>
             <h1 className={styles.coverName}>{clientName}</h1>
@@ -747,7 +815,7 @@ export function AtelierRenderer({
       <section
         className={`${styles.page} ${styles.financePage}${
           brandCompareSnapshot ? ` ${styles.financePageWithBrand}` : ""
-        }`}
+        }${showEmi ? ` ${styles.financePageWithEmi}` : ""}`}
       >
         <header className={styles.pageHead}>
           <span className={styles.pageTag}>
@@ -784,6 +852,64 @@ export function AtelierRenderer({
             <span className={styles.investCue}>{c.finance.netCue}</span>
           </div>
         </div>
+
+        {showEmi ? (
+          <div className={styles.emiBlock}>
+            <div className={styles.emiHead}>
+              <span className={styles.emiKicker}>{c.finance.emiKicker}</span>
+              <span className={styles.emiRate}>
+                {c.finance.emiRateLabel}:{" "}
+                <strong>{c.finance.emiRateValue(interestRateLabel)}</strong>
+              </span>
+            </div>
+            <p className={styles.emiLead}>{c.finance.emiLead(interestRateLabel)}</p>
+            {emiTable.length > 0 ? (
+              <table className={styles.emiTable}>
+                <thead>
+                  <tr>
+                    <th>{c.finance.emiTenure}</th>
+                    <th>{c.finance.emiInterest}</th>
+                    <th>{c.finance.emiMonthly}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {emiTable.map((row) => {
+                    const selected = row.tenureYears === selectedTenureYears;
+                    return (
+                      <tr
+                        key={row.tenureYears}
+                        className={selected ? styles.emiRowSelected : undefined}
+                      >
+                        <td>
+                          {c.finance.emiTenureLabel(row.tenureYears)}
+                          {selected ? (
+                            <span className={styles.emiSelectedBadge}>
+                              {c.finance.emiSelected}
+                            </span>
+                          ) : null}
+                        </td>
+                        <td>
+                          {row.totalInterest > 0
+                            ? formatInr(row.totalInterest)
+                            : "—"}
+                        </td>
+                        <td>
+                          <strong>
+                            {row.monthlyEmi > 0
+                              ? formatInr(row.monthlyEmi)
+                              : "—"}
+                          </strong>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            ) : (
+              <p className={styles.emiEmpty}>{c.finance.emiEmpty}</p>
+            )}
+          </div>
+        ) : null}
 
         <div className={styles.financeFlow}>
           <div className={`${styles.financeStep} ${styles.financeStepToday}`}>
@@ -839,10 +965,12 @@ export function AtelierRenderer({
             </span>
             <span className={styles.billCardTag}>{c.finance.tomorrowTag}</span>
             <strong className={`${styles.billCardAmt} ${styles.financeAmtSolar}`}>
-              {monthlyEmi > 0 ? formatInr(monthlyEmi) : "₹4,100"}
+              {solarMonthlyCost > 0 ? formatInr(solarMonthlyCost) : "₹0"}
             </strong>
             <span className={styles.billCardLabel}>{c.finance.tomorrowLabel}</span>
-            <p className={styles.billCardNote}>{c.finance.tomorrowNote}</p>
+            <p className={styles.billCardNote}>
+              {c.finance.tomorrowNote(selectedTenureYears)}
+            </p>
           </div>
 
           <div className={styles.financeFlowArrow} aria-hidden>
@@ -873,10 +1001,13 @@ export function AtelierRenderer({
         </div>
 
         {(() => {
-          const years = [1, 5, 10, 15, 20, 25];
+          const years = Array.from(
+            new Set([1, loanEndYr || 5, 5, 10, 15, 20, 25])
+          )
+            .filter((y) => y > 0)
+            .sort((a, b) => a - b);
           const baseAnnualBill = (monthlyBill > 0 ? monthlyBill : 5200) * 12;
-          const flatSolarAnnual = (monthlyEmi > 0 ? monthlyEmi : 4100) * 12;
-          const loanEndYr = 5;
+          const flatSolarAnnual = (solarMonthlyCost > 0 ? solarMonthlyCost : 4100) * 12;
           const amcAnnual = netInr > 0 ? netInr * 0.02 : flatSolarAnnual * 0.15;
           const withoutPts = years.map(
             (y) => baseAnnualBill * Math.pow(1.06, y - 1)
@@ -971,7 +1102,7 @@ export function AtelierRenderer({
                       className={styles.trajectoryDotSolar}
                     />
                   ))}
-                  {loanIdx >= 0 ? (
+                  {loanIdx >= 0 && loanEndYr > 0 ? (
                     <>
                       <line
                         x1={xFor(loanIdx)}
@@ -2376,57 +2507,58 @@ export function AtelierRenderer({
 
       {/* ══ P12: EMOTIONAL CLOSING — RCC rooftop + CTA ═══════════ */}
       <section className={`${styles.page} ${styles.closingPage}`}>
-        <div className={styles.closingInner}>
-          <div className={styles.closingBrandTop}>
-            <div className={styles.closingBrandRow}>
-              {closingBrand.showLogo ? (
-                <span
-                  className={
-                    logoNeedsPlate ? styles.logoPlate : styles.logoBare
-                  }
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={closingBrand.logoUrl}
-                    alt={closingBrand.installerName || brand}
-                    className={styles.closingLogo}
-                  />
+        <figure className={styles.closingPhotoPlate}>
+          <div className={styles.closingPhotoFrame}>
+            {/* eslint-disable-next-line @next/next/no-img-element -- print A4 static asset */}
+            <img
+              className={styles.closingPhotoImg}
+              src="/assets/proposals/atelier-closing-rcc-rooftop.jpg"
+              alt=""
+              width={1600}
+              height={900}
+            />
+            <div className={styles.closingPhotoVignette} aria-hidden />
+            <div className={styles.closingPhotoEdge} aria-hidden />
+            <div className={styles.closingPhotoOverlay}>
+              <div className={styles.closingBrandTop}>
+                <div className={styles.closingBrandRow}>
+                  {closingBrand.showLogo ? (
+                    <span
+                      className={
+                        logoNeedsPlate ? styles.logoPlate : styles.logoBare
+                      }
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={closingBrand.logoUrl}
+                        alt={closingBrand.installerName || brand}
+                        className={styles.closingLogo}
+                      />
+                    </span>
+                  ) : null}
+                  {closingBrand.showName || !closingBrand.showLogo ? (
+                    <span className={styles.closingBrandName}>
+                      {(closingBrand.installerName || brand).toUpperCase()}
+                    </span>
+                  ) : null}
+                </div>
+                <span className={styles.closingTagInline}>
+                  {withPageTag(c.closing.tag, pn.closing)}
                 </span>
-              ) : null}
-              {closingBrand.showName || !closingBrand.showLogo ? (
-                <span className={styles.closingBrandName}>
-                  {(closingBrand.installerName || brand).toUpperCase()}
-                </span>
-              ) : null}
+              </div>
             </div>
-            <span className={styles.closingTagInline}>
-              {withPageTag(c.closing.tag, pn.closing)}
-            </span>
           </div>
+          <figcaption className={styles.closingPhotoCaption}>
+            <span className={styles.closingPhotoTitle}>
+              {c.closing.photoTitle}
+            </span>
+            <span className={styles.closingPhotoSub}>
+              {c.closing.photoSub}
+            </span>
+          </figcaption>
+        </figure>
 
-          <figure className={styles.closingPhotoPlate}>
-            <div className={styles.closingPhotoFrame}>
-              {/* eslint-disable-next-line @next/next/no-img-element -- print A4 static asset */}
-              <img
-                className={styles.closingPhotoImg}
-                src="/assets/proposals/atelier-closing-rcc-rooftop.jpg"
-                alt=""
-                width={1600}
-                height={900}
-              />
-              <div className={styles.closingPhotoVignette} aria-hidden />
-              <div className={styles.closingPhotoEdge} aria-hidden />
-            </div>
-            <figcaption className={styles.closingPhotoCaption}>
-              <span className={styles.closingPhotoTitle}>
-                {c.closing.photoTitle}
-              </span>
-              <span className={styles.closingPhotoSub}>
-                {c.closing.photoSub}
-              </span>
-            </figcaption>
-          </figure>
-
+        <div className={styles.closingInner}>
           <div className={styles.closingSplit}>
             <div className={styles.closingLeft}>
               <h2 className={styles.closingTitle}>{c.closing.congrats}</h2>

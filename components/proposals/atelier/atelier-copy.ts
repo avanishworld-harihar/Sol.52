@@ -442,9 +442,27 @@ export function getAtelierCopy(lang: AtelierLang) {
         : "Rises ~6%/yr — the bill only climbs.",
       tomorrowTag: hi ? "कल · सोलर के साथ" : "Tomorrow · with solar",
       tomorrowLabel: hi ? "मासिक सोलर लागत" : "Monthly solar cost",
-      tomorrowNote: hi
-        ? "5 वर्ष निश्चित, फिर लगभग शून्य।"
-        : "Fixed ~5 years, then near zero.",
+      tomorrowNote: (yrs: number) =>
+        hi
+          ? `${yrs} वर्ष निश्चित, फिर लगभग शून्य।`
+          : `Fixed ~${yrs} years, then near zero.`,
+      emiKicker: hi ? "फाइनेंसिंग · मासिक EMI" : "Financing · Monthly EMI",
+      emiLead: (pct: string) =>
+        hi
+          ? `नेट लागत पर ऋण अवधि — अनुमानित EMI (~${pct}% वार्षिक)। अंतिम दर बैंक/NBFC पर निर्भर।`
+          : `Loan tenures on your net cost — estimated EMI (~${pct}% p.a.). Final rate depends on the lender.`,
+      emiTenure: hi ? "अवधि" : "Tenure",
+      emiMonthly: hi ? "मासिक EMI" : "Monthly EMI",
+      emiInterest: hi ? "कुल ब्याज" : "Total interest",
+      emiSelected: hi ? "चयनित" : "Selected",
+      emiTenureLabel: (y: number) =>
+        hi ? `${y}-वर्ष ऋण` : `${y}-Year Loan`,
+      emiEmpty: hi
+        ? "EMI विकल्प नेट निवेश उपलब्ध होने पर दिखेंगे।"
+        : "EMI options appear once net investment is available.",
+      emiRateLabel: hi ? "ब्याज दर" : "Interest rate",
+      emiRateValue: (pct: string) =>
+        hi ? `${pct}% प्रति वर्ष` : `${pct}% p.a.`,
       profitTag: hi ? "आपकी बचत" : "Your gain",
       profitLabel: hi ? "दिन 1 से हर महीने" : "Every month from Day 1",
       profitNote: hi
