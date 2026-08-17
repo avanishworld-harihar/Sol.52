@@ -5087,9 +5087,11 @@
 }
 
 
-/* ── iPad / tablet — fluid pages + margins, desktop grid layout preserved ─ */
-/* Live preview only — #atelier-pdf-capture-host uses print mirror + isolation block below. */
-@media screen and (max-width: 1180px) {
+/* ── Phone — fluid pages + margins, desktop grid layout preserved ─ */
+/* Live preview only — #atelier-pdf-capture-host uses print mirror + isolation block below.
+ * Tablets keep the desktop A4 sheet; the shared fit shell scales it so iPad
+ * portrait, iPad landscape and print all show the same document. */
+@media screen and (max-width: 640px) {
   :global([data-proposal-live='true']) .a4Page {
     width: 100% !important;
     max-width: min(210mm, 100%) !important;

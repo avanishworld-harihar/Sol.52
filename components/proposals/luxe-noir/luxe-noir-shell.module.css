@@ -774,9 +774,11 @@
 }
 
 
-/* ── iPad / tablet — margins + fluid pages, desktop grids preserved ─ */
-/* Live preview only — #atelier-pdf-capture-host uses print mirror + isolation block below. */
-@media screen and (max-width: 1180px) {
+/* ── Phone — margins + fluid pages, desktop grids preserved ─ */
+/* Live preview only — #atelier-pdf-capture-host uses print mirror + isolation block below.
+ * Tablets keep the desktop A4 sheet; the shared fit shell scales it so iPad
+ * portrait, iPad landscape and print all show the same document. */
+@media screen and (max-width: 640px) {
   .root[data-proposal-live='true'] {
     padding: 0 16px max(28px, env(safe-area-inset-bottom));
     overflow-x: hidden;

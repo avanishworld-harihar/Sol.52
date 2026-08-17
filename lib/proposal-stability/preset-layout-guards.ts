@@ -40,15 +40,17 @@ const EXEMPT_FILES = new Set([
   "components/proposals/sales-premium-institutional/sp-institutional.css",
 ]);
 
-/** Properties that change the A4 sheet box rather than the content inside it. */
-const PAGE_BOX_PROPERTIES = [
-  "height",
-  "min-height",
-  "max-height",
-  "width",
-  "max-width",
-  "flex-direction",
-];
+/**
+ * Declarations that break the sheet rather than adjust content inside it.
+ *
+ * Narrowing the sheet or flipping its axis changes the document itself, which
+ * is what made tablets disagree with desktop and print. Letting a sheet grow
+ * taller (`height: auto` with a kept `min-height`) is safe, so it is not listed.
+ */
+const PAGE_BOX_PROPERTIES = ["width", "max-width", "flex-direction"];
+
+/** Collapsing the reserved sheet height also reflows the document. */
+const COLLAPSING_DECLARATION = /min-height\s*:\s*0(?![.\d])/;
 
 /** Selectors that identify a full-sheet container. */
 const PAGE_SELECTOR_PATTERN =
@@ -121,11 +123,10 @@ function findPageBoxOverrides(body: string): string[] {
     const selector = match[1].trim();
     const declarations = match[2];
     if (!PAGE_SELECTOR_PATTERN.test(selector)) continue;
-    /* Live-preview scoped rules never reach print or the capture host. */
-    if (selector.includes("data-proposal-live")) continue;
     const touched = PAGE_BOX_PROPERTIES.filter((prop) =>
       new RegExp(`(^|[;{\\s])${prop}\\s*:`).test(declarations)
     );
+    if (COLLAPSING_DECLARATION.test(declarations)) touched.push("min-height");
     if (touched.length > 0) {
       offenders.push(`${selector.replace(/\s+/g, " ")} (${touched.join(", ")})`);
     }
