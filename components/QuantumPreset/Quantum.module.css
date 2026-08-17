@@ -3289,7 +3289,7 @@
   }
 }
 
-@media screen and (max-width: 900px) {
+@media screen and (max-width: 640px) {
   .root {
     padding: 0 0 calc(28px + env(safe-area-inset-bottom, 0px));
     overflow-x: hidden;

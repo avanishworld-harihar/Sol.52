@@ -2534,7 +2534,7 @@
   color: var(--ja-muted);
 }
 
-@media screen and (max-width: 900px) {
+@media screen and (max-width: 640px) {
   .a4Jaali {
     height: auto;
     min-height: 0;

@@ -289,6 +289,16 @@ export type AtelierPdfFile = {
 };
 
 export function downloadPdfFile(file: AtelierPdfFile): void {
+  if (typeof window === "undefined") return;
+  /*
+   * iOS Safari ignores <a download> and navigates to the blob: URL. Refreshing
+   * that tab then fails with WebKitBlobResource error 1 because the blob is gone.
+   * Share the file in-place (or an overlay on this page) — never change location.
+   */
+  if (isAppleTouchDevice()) {
+    void sharePdfOnAppleTouch(file);
+    return;
+  }
   const url = URL.createObjectURL(file.blob);
   const a = document.createElement("a");
   a.href = url;
@@ -298,6 +308,51 @@ export function downloadPdfFile(file: AtelierPdfFile): void {
   a.click();
   a.remove();
   window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+}
+
+async function sharePdfOnAppleTouch(file: AtelierPdfFile): Promise<void> {
+  try {
+    const shared = await sharePdfFile(file);
+    if (shared) return;
+    return;
+  } catch {
+    /* Share unavailable — keep the user on the proposal page. */
+  }
+  presentPdfOverlay(file);
+}
+
+function presentPdfOverlay(file: AtelierPdfFile): void {
+  const existing = document.querySelector("[data-proposal-pdf-overlay='true']");
+  existing?.remove();
+  const url = URL.createObjectURL(file.blob);
+  const wrap = document.createElement("div");
+  wrap.setAttribute("data-proposal-pdf-overlay", "true");
+  wrap.setAttribute("role", "dialog");
+  wrap.setAttribute("aria-modal", "true");
+  wrap.setAttribute("aria-label", file.fileName);
+  wrap.style.cssText =
+    "position:fixed;inset:0;z-index:2147483646;background:#0f172a;display:flex;flex-direction:column;";
+  const bar = document.createElement("div");
+  bar.style.cssText =
+    "flex:0 0 auto;display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top));background:#0f172a;";
+  const close = document.createElement("button");
+  close.type = "button";
+  close.textContent = "Close";
+  close.style.cssText =
+    "min-height:44px;padding:8px 16px;border:0;border-radius:8px;background:#f8fafc;color:#0f172a;font:600 14px/1.2 system-ui,sans-serif;";
+  const iframe = document.createElement("iframe");
+  iframe.src = url;
+  iframe.title = file.fileName;
+  iframe.style.cssText = "flex:1;width:100%;border:0;background:#fff;";
+  const cleanup = () => {
+    wrap.remove();
+    URL.revokeObjectURL(url);
+  };
+  close.addEventListener("click", cleanup);
+  bar.appendChild(close);
+  wrap.appendChild(bar);
+  wrap.appendChild(iframe);
+  document.body.appendChild(wrap);
 }
 
 /** iOS Share — files only (no title) to avoid extra text.txt in Files. */

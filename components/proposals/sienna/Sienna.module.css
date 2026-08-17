@@ -79,6 +79,7 @@
     min-height: 297mm !important;
     max-height: 297mm !important;
     overflow: hidden !important;
+    flex-direction: row !important;
     break-after: auto;
     page-break-after: auto;
     break-before: auto;
@@ -1587,7 +1588,7 @@
   color: var(--sn-muted);
 }
 
-@media screen and (max-width: 900px) {
+@media screen and (max-width: 640px) {
   .a4Sienna {
     height: auto;
     min-height: 0;

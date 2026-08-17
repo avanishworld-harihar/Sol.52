@@ -51,7 +51,19 @@
     width: 210mm !important;
     height: 297mm !important;
     max-height: 297mm !important;
+    flex-direction: row !important;
     page: emerald-sheet;
+  }
+
+  .sidebar {
+    width: 30% !important;
+    min-height: 0 !important;
+    border-right: 2px solid #d4af37 !important;
+    border-bottom: none !important;
+  }
+
+  .contentArea {
+    width: 70% !important;
   }
 }
 
@@ -552,7 +564,10 @@
   margin-top: auto;
 }
 
-@media screen and (max-width: 900px) {
+/* Phones only — keep iPad/tablet on the same A4 split as Windows Chrome.
+ * max-width: 900px stacked iPad portrait (~768–834px) while landscape stayed
+ * desktop, so screen and PDF capture diverged by orientation. */
+@media screen and (max-width: 640px) {
   .a4Page {
     flex-direction: column;
     height: auto;
@@ -983,7 +998,7 @@
   color: #78716c !important;
 }
 
-@media screen and (max-width: 900px) {
+@media screen and (max-width: 640px) {
   .monolithValue {
     font-size: clamp(3.2rem, 14vw, 6.5rem);
   }
@@ -1601,7 +1616,7 @@
   padding-top: 10px;
 }
 
-@media screen and (max-width: 900px) {
+@media screen and (max-width: 640px) {
   .emiGrid,
   .legalGrid,
   .impactStrip,
