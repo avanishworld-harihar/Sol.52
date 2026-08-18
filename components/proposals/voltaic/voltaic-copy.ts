@@ -63,6 +63,7 @@ export function getVoltaicCopy(lang: VoltaicLang) {
         hi ? "सामग्री सूची — BOS" : "Bill of materials — BOS",
         hi ? "गुणवत्ता और कमीशनिंग" : "Quality & commissioning",
         hi ? "उत्पादन पूर्वानुमान" : "Generation forecast",
+        hi ? "नियम, AMC और दस्तावेज़" : "Terms, AMC & documents",
       ],
     },
 
@@ -419,14 +420,19 @@ export function getVoltaicCopy(lang: VoltaicLang) {
         : "Each stage is owned by our team, including the DISCOM paperwork.",
       payTitle: hi ? "भुगतान चरण" : "Payment stages",
       bankTitle: hi ? "बैंक विवरण" : "Bank details",
-      account: hi ? "खाता" : "Account",
+      accountName: hi ? "खाता नाम" : "Account name",
+      account: hi ? "खाता संख्या" : "Account no.",
       ifsc: "IFSC",
+      branch: hi ? "शाखा" : "Branch",
       upi: "UPI",
+      qr: hi ? "भुगतान QR" : "Payment QR",
     },
 
     terms: {
       sheet: hi ? "नियम और दस्तावेज़" : "Terms & documents",
+      sheetAmc: hi ? "AMC और कार्य-सीमा" : "AMC & scope",
       title: hi ? "शर्तें, साफ़ शब्दों में।" : "The terms, in plain words.",
+      titleAmc: hi ? "AMC, कार्य-सीमा और वारंटी।" : "Scope, AMC, and warranty.",
       conditions: hi ? "नियम व शर्तें" : "Terms & conditions",
       documents: hi ? "आवश्यक दस्तावेज़" : "Documents required",
       warranty: hi ? "वारंटी सार" : "Warranty summary",
@@ -434,6 +440,11 @@ export function getVoltaicCopy(lang: VoltaicLang) {
       duration: hi ? "अवधि" : "Duration",
       by: hi ? "द्वारा" : "By",
       amc: hi ? "रखरखाव" : "Maintenance",
+      amcObjective: hi ? "AMC का उद्देश्य" : "AMC objective",
+      amcScope: hi ? "AMC — हमारा दायरा" : "AMC — our scope",
+      clientScope: hi ? "ग्राहक का दायरा" : "Client scope",
+      amcCost: hi ? "AMC शुल्क" : "AMC cost",
+      amcTerms: hi ? "AMC शर्तें" : "AMC terms",
     },
 
     closing: {
@@ -448,10 +459,13 @@ export function getVoltaicCopy(lang: VoltaicLang) {
       wealth: hi ? "25-वर्ष लाभ" : "25-year gain",
       cta: hi ? "आइए शुरू करें" : "Let's begin",
       validity: hi
-        ? "यह प्रस्ताव 15 दिन के लिए मान्य है। सामग्री की उपलब्धता के अनुसार दरें बदल सकती हैं।"
-        : "This proposal is valid for 15 days. Rates may change with material availability.",
+        ? "यह प्रस्ताव जारी होने की तिथि से 30 दिनों तक वैध है। सामग्री की उपलब्धता के अनुसार दरें बदल सकती हैं।"
+        : "This proposal is valid for 30 days from the date of issue. Rates may change with material availability.",
       signOff: hi ? "आपके सोलर पार्टनर" : "Your solar partner",
       gstin: "GSTIN",
+      phone: hi ? "फ़ोन" : "Phone",
+      email: hi ? "ईमेल" : "Email",
+      web: hi ? "वेब" : "Web",
     },
   };
 }

@@ -36,6 +36,8 @@ export type VoltaicSheetProps = {
     status: string;
   };
   tone?: "vellum" | "cyan";
+  logoUrl?: string;
+  logoAlt?: string;
   children: ReactNode;
 };
 
@@ -51,6 +53,8 @@ export function VoltaicSheet({
   drawn,
   labels,
   tone = "vellum",
+  logoUrl,
+  logoAlt,
   children,
 }: VoltaicSheetProps) {
   return (
@@ -76,7 +80,13 @@ export function VoltaicSheet({
       </div>
 
       <header className={styles.sheetHead}>
-        <span className={styles.sheetKicker}>{kicker}</span>
+        <span className={styles.sheetKickerRow}>
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element -- print asset
+            <img src={logoUrl} alt={logoAlt || ""} className={styles.sheetHeadLogo} />
+          ) : null}
+          <span className={styles.sheetKicker}>{kicker}</span>
+        </span>
         <span className={styles.sheetCode}>{code}</span>
       </header>
 

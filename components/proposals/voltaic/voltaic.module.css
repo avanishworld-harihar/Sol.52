@@ -251,7 +251,7 @@
   position: relative;
   z-index: 1;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   padding-bottom: 2.5mm;
@@ -261,6 +261,25 @@
 
 .sheetCyan .sheetHead {
   border-bottom-color: rgba(127, 216, 255, 0.28);
+}
+
+.sheetKickerRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 2.4mm;
+  min-width: 0;
+}
+
+.sheetHeadLogo {
+  height: 7mm;
+  width: auto;
+  max-width: 22mm;
+  object-fit: contain;
+  display: block;
+  flex-shrink: 0;
+  background: #fff;
+  border-radius: 2px;
+  padding: 0.4mm 0.8mm;
 }
 
 .sheetKicker {
@@ -1283,6 +1302,32 @@
   background: var(--vt-rule-strong);
 }
 
+.termsList {
+  gap: 1.5mm;
+}
+
+.termsList li {
+  font-size: 7.7pt;
+  line-height: 1.38;
+}
+
+.docList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.4mm 4mm;
+}
+
+.termsBlock {
+  min-height: 0;
+}
+
+.amcPara {
+  margin: 0;
+  font-size: 8pt;
+  line-height: 1.42;
+  color: var(--vt-ink);
+}
+
 /* ── Phases ────────────────────────────────────────────────────────── */
 .phaseList {
   list-style: none;
@@ -1331,6 +1376,39 @@
   grid-template-columns: auto minmax(0, 1fr);
   gap: 1.2mm 3mm;
   font-size: 8.4pt;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.bankWrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 4mm;
+}
+
+.bankQr {
+  margin: 0;
+  flex-shrink: 0;
+  width: 22mm;
+  text-align: center;
+}
+
+.bankQr img {
+  width: 22mm;
+  height: 22mm;
+  object-fit: contain;
+  background: #fff;
+  border: 1px solid var(--vt-rule);
+  display: block;
+}
+
+.bankQr figcaption {
+  font-family: var(--vt-mono);
+  font-size: 5.6pt;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vt-muted);
+  margin-top: 1mm;
 }
 
 .bankList dt {
@@ -1476,6 +1554,23 @@
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--vt-orange);
+}
+
+.closeLogoPlate {
+  display: inline-flex;
+  background: #fff;
+  border-radius: 4px;
+  padding: 3px 6px;
+  width: fit-content;
+  margin-bottom: 1mm;
+}
+
+.closeLogo {
+  height: 11mm;
+  width: auto;
+  max-width: 36mm;
+  object-fit: contain;
+  display: block;
 }
 
 .closeBrand {
@@ -1672,8 +1767,13 @@
   .twoCol,
   .impactRow,
   .phaseList,
-  .coverContentsList {
+  .coverContentsList,
+  .docList {
     grid-template-columns: 1fr;
+  }
+
+  .bankWrap {
+    flex-direction: column;
   }
 
   .moneyRow {
