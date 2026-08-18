@@ -5,18 +5,19 @@
  * cannot match the on-screen A4 layout. Capture clones each live section at the
  * same 794×1123px geometry the web proposal uses — no alternate capture layout.
  *
- * Rasterizer: modern-screenshot (SVG <foreignObject>) is preferred because the
- * browser itself paints the markup, so the bitmap matches the live proposal
- * exactly. html2canvas re-implements CSS layout and text metrics, which on iPad
- * produced object-fit images stretching, text baselines drifting into bars and
- * card edges, heading underlines colliding with the heading, and content
- * spilling past the sheet. It stays only as a fallback if foreignObject
- * capture fails.
+ * Rasterizer: modern-screenshot (SVG <foreignObject>) only — the browser itself
+ * paints the markup, so the bitmap matches the live proposal exactly. There is
+ * no html2canvas fallback: it re-implements CSS layout and text metrics and
+ * does not understand grid or multi-stop gradients, so a "successful" fallback
+ * capture looked more broken than a failed modern-screenshot one. See
+ * `captureElementToCanvas` for how a capture is made to actually succeed on
+ * WebKit instead.
  */
 
 type JsPdfCtor = typeof import("jspdf").jsPDF;
-type Html2CanvasFn = typeof import("html2canvas")["default"];
-type DomToCanvasFn = typeof import("modern-screenshot")["domToCanvas"];
+type CreateContextFn = typeof import("modern-screenshot")["createContext"];
+type DomToForeignObjectSvgFn = typeof import("modern-screenshot")["domToForeignObjectSvg"];
+type DestroyContextFn = typeof import("modern-screenshot")["destroyContext"];
 
 import styles from "./atelier.module.css";
 
@@ -38,8 +39,8 @@ export function isAppleTouchDevice(): boolean {
    * means it is really an iPad. navigator.platform is deprecated and empty in
    * some browsers, so also accept an Apple-looking UA. This keeps real Macs on
    * the native (vector) print path while routing every iPad to the raster
-   * html2canvas capture, which is the only path that reproduces the A4 layout
-   * on iPadOS (native print mis-paginates and splits single pages).
+   * capture, which is the only path that reproduces the A4 layout on iPadOS
+   * (native print mis-paginates and splits single pages).
    */
   const maxTouch = navigator.maxTouchPoints || 0;
   const applePlatform =
@@ -73,10 +74,10 @@ async function waitForImages(root: ParentNode): Promise<void> {
 /*
  * Atelier's only font source is a runtime `@import url(fonts.googleapis.com...)`
  * inside a <style> tag rendered as a child of the root (see atelier-renderer.tsx).
- * html2canvas re-resolves that @import inside a *fresh* cloned document/iframe,
- * which means the fonts must be re-fetched there too. On desktop this usually
- * resolves from cache in a few ms; on iPad Safari, cross-origin font requests
- * made from that freshly created capture context are far more likely to hit a
+ * The capture clones that style tag into a fresh subtree, which means the
+ * fonts must be re-fetched there too. On desktop this usually resolves from
+ * cache in a few ms; on iPad Safari, cross-origin font requests made from
+ * that freshly created capture context are far more likely to hit a
  * slow/blocked network round trip (stricter cache partitioning for third-party
  * resources) — so the capture proceeds before Montserrat/Lato are ready and
  * silently falls back to the system font, changing line-wrapping, spacing and
@@ -227,9 +228,8 @@ function cloneRootStyleTags(root: HTMLElement, shell: HTMLElement): void {
    * `createRootShell` deliberately uses a shallow clone of the root so it
    * keeps only the class/attributes needed for descendant selectors. That
    * also drops any <style> children rendered directly under the root (e.g.
-   * Atelier's Google Fonts @import + print @page rules). html2canvas builds
-   * its own document clone independently, but carrying these over on our own
-   * clone removes any dependency on how faithfully it does that.
+   * Atelier's Google Fonts @import + print @page rules), so they are carried
+   * over onto our own clone explicitly instead.
    */
   for (const styleEl of Array.from(root.querySelectorAll(":scope > style"))) {
     shell.appendChild(styleEl.cloneNode(true));
@@ -244,9 +244,10 @@ function createCaptureHost(): HTMLDivElement {
   host.style.cssText = [
     "position:fixed",
     /*
-     * Keep the capture tree fully opaque. html2canvas includes ancestor
-     * opacity in the bitmap, so opacity:0.01 washed out colours and made
-     * chart bars effectively disappear on iPad.
+     * Keep the capture tree fully opaque. Because the capture host is a real
+     * DOM subtree, ancestor opacity genuinely renders into the bitmap — an
+     * opacity:0.01 host washed out colours and made chart bars effectively
+     * disappear on iPad.
      */
     "left:-10000px",
     "top:0",
@@ -472,48 +473,163 @@ function sliceCanvasToA4Pages(
   return pages.length > 0 ? pages : [fullCanvas];
 }
 
-async function rasterizeCapturePage(
+/**
+ * Sample a small downscaled copy of the canvas and hash it. Cheap enough to
+ * call every frame; used only to tell whether the last two draws produced
+ * the same pixels, not to inspect the image itself.
+ */
+function sampleCanvasHash(
+  source: CanvasImageSource,
+  sample: HTMLCanvasElement,
+  sampleCtx: CanvasRenderingContext2D
+): string {
+  sampleCtx.clearRect(0, 0, sample.width, sample.height);
+  sampleCtx.drawImage(source, 0, 0, sample.width, sample.height);
+  const { data } = sampleCtx.getImageData(0, 0, sample.width, sample.height);
+  let hash = 0;
+  for (let i = 0; i < data.length; i += 1) {
+    hash = (hash * 31 + data[i]) | 0;
+  }
+  return String(hash);
+}
+
+/**
+ * Keep redrawing `img` into `canvas` until two consecutive frames produce
+ * identical pixels, instead of guessing a fixed retry count.
+ *
+ * WebKit can fire `load` and resolve `decode()` for an <img src="data:image/
+ * svg+xml..."> containing a <foreignObject> before it has actually finished
+ * painting that foreignObject's nested HTML — grid tracks, multi-stop
+ * gradients and custom fonts settle a frame or more later. A single
+ * `drawImage` right after decode() rasterizes whatever WebKit had ready at
+ * that instant, which is why plain drawing sheets (no photos to stall on)
+ * came back with flat navy where a gradient should be, or content shifted
+ * as if a grid track hadn't resolved yet — while photo-heavy sheets, which
+ * modern-screenshot happens to redraw a few times while waiting on image
+ * decodes, painted correctly by coincidence.
+ */
+async function drawUntilPaintSettles(
+  img: HTMLImageElement,
+  canvas: HTMLCanvasElement,
+  ctx2d: CanvasRenderingContext2D,
+  background: string,
+  ios: boolean
+): Promise<void> {
+  const sample = canvas.ownerDocument.createElement("canvas");
+  sample.width = 48;
+  sample.height = 48;
+  const sampleCtx = sample.getContext("2d", { willReadFrequently: true });
+
+  const maxAttempts = ios ? 8 : 2;
+  let previousHash: string | null = null;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    /*
+     * A real frame boundary — not a microtask — is what gives WebKit's async
+     * paint pipeline room to actually finish between attempts.
+     */
+    await new Promise<void>((r) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => r()))
+    );
+    if (background) {
+      ctx2d.fillStyle = background;
+      ctx2d.fillRect(0, 0, canvas.width, canvas.height);
+    } else {
+      ctx2d.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    ctx2d.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    if (!sampleCtx) return;
+    const hash = sampleCanvasHash(canvas, sample, sampleCtx);
+    if (previousHash !== null && hash === previousHash) return;
+    previousHash = hash;
+    if (ios) await new Promise((r) => window.setTimeout(r, 70));
+  }
+}
+
+/**
+ * Renders `el` to a canvas via modern-screenshot's dom → SVG foreignObject →
+ * image pipeline, reimplemented here (rather than calling its `domToCanvas`
+ * directly) for one reason: the intermediate `<img>` must be attached to the
+ * live document, off-screen, before it is drawn. An unattached `new Image()`
+ * — which is what `domToCanvas` uses internally — never receives a full
+ * layout/paint pass on WebKit, so its foreignObject content can rasterize
+ * incompletely no matter how long you wait on `decode()`. Once attached,
+ * `drawUntilPaintSettles` keeps redrawing until the paint has visibly
+ * stabilized.
+ *
+ * There is no fallback rasterizer. If this cannot produce a stable paint it
+ * throws, so a broken sheet fails the export loudly instead of silently
+ * shipping a half-painted page.
+ */
+async function captureElementToCanvas(
   el: HTMLElement,
   width: number,
   height: number,
   scale: number,
   background: string,
-  domToCanvas: DomToCanvasFn,
-  html2canvas: Html2CanvasFn,
-  ios: boolean
+  ios: boolean,
+  createContext: CreateContextFn,
+  domToForeignObjectSvg: DomToForeignObjectSvgFn,
+  destroyContext: DestroyContextFn
 ): Promise<HTMLCanvasElement> {
+  const context = await createContext(el, {
+    width,
+    height,
+    scale,
+    backgroundColor: background,
+    timeout: 30000,
+    fetch: { requestInit: { mode: "cors", cache: "force-cache" } },
+  });
+
+  let svgImage: HTMLImageElement | null = null;
   try {
-    return await domToCanvas(el, {
-      width,
-      height,
-      scale,
-      backgroundColor: background,
-      timeout: 30000,
-      fetch: { requestInit: { mode: "cors", cache: "force-cache" } },
+    const svg = await domToForeignObjectSvg(context);
+    const svgDataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
+      new XMLSerializer().serializeToString(svg)
+    )}`;
+
+    const ownerDocument = el.ownerDocument;
+    svgImage = ownerDocument.createElement("img");
+    svgImage.decoding = "sync";
+    svgImage.width = Math.floor(width * scale);
+    svgImage.height = Math.floor(height * scale);
+    /*
+     * Off-screen but attached, and at full size — see the function doc above
+     * for why an unattached Image() paints incompletely on WebKit. Sizing the
+     * CSS box down to save space (e.g. 1x1px) backfires here: WebKit
+     * rasterizes an SVG <img> at its *displayed* box size, not its intrinsic
+     * one, so a 1x1 box discards all detail before drawImage ever runs,
+     * leaving a smeared, single-colour canvas — worse than the original bug.
+     */
+    svgImage.style.cssText = `position:fixed;left:-99999px;top:0;width:${width}px;height:${height}px;pointer-events:none;`;
+    ownerDocument.body.appendChild(svgImage);
+
+    await new Promise<void>((resolve, reject) => {
+      svgImage!.addEventListener("load", () => resolve(), { once: true });
+      svgImage!.addEventListener(
+        "error",
+        () => reject(new Error("Failed to load the captured sheet image")),
+        { once: true }
+      );
+      svgImage!.src = svgDataUrl;
     });
-  } catch (err) {
-    console.warn(
-      "[proposal-pdf] foreignObject capture failed, falling back to html2canvas",
-      err
-    );
-    return html2canvas(el, {
-      scale,
-      backgroundColor: background,
-      useCORS: true,
-      allowTaint: false,
-      imageTimeout: 15000,
-      logging: false,
-      width,
-      height,
-      windowWidth: width,
-      windowHeight: height,
-      scrollX: 0,
-      scrollY: 0,
-      onclone: async (clonedDoc, clonedEl) => {
-        prepareCaptureClone(clonedEl as HTMLElement);
-        await waitForFontSet(clonedDoc.fonts, ios ? 4000 : 1500);
-      },
+    await svgImage.decode().catch(() => {
+      /* decode() can reject even after a real load event on some WebKit
+         builds — drawUntilPaintSettles is the actual completion guard. */
     });
+
+    const canvas = ownerDocument.createElement("canvas");
+    canvas.width = Math.floor(width * scale);
+    canvas.height = Math.floor(height * scale);
+    const ctx2d = canvas.getContext("2d");
+    if (!ctx2d) throw new Error("2D canvas context is unavailable");
+
+    await drawUntilPaintSettles(svgImage, canvas, ctx2d, background, ios);
+    return canvas;
+  } finally {
+    svgImage?.remove();
+    destroyContext(context);
   }
 }
 
@@ -549,15 +665,17 @@ export async function buildAtelierProposalPdf(options: {
     throw new Error("No proposal pages found to export.");
   }
 
-  const [{ jsPDF }, { default: html2canvas }, { domToCanvas }] =
+  const [{ jsPDF }, { createContext, domToForeignObjectSvg, destroyContext }] =
     (await Promise.all([
       import("jspdf"),
-      import("html2canvas"),
       import("modern-screenshot"),
     ])) as [
       { jsPDF: JsPdfCtor },
-      { default: Html2CanvasFn },
-      { domToCanvas: DomToCanvasFn },
+      {
+        createContext: CreateContextFn;
+        domToForeignObjectSvg: DomToForeignObjectSvgFn;
+        destroyContext: DestroyContextFn;
+      },
     ];
 
   const ios = isAppleTouchDevice();
@@ -622,28 +740,30 @@ export async function buildAtelierProposalPdf(options: {
         if (contentH <= A4_H_PX) {
           applyPageBox(clone, sections[i]);
           canvases = [
-            await rasterizeCapturePage(
+            await captureElementToCanvas(
               clone,
               A4_W_PX,
               A4_H_PX,
               scale,
               background,
-              domToCanvas,
-              html2canvas,
-              ios
+              ios,
+              createContext,
+              domToForeignObjectSvg,
+              destroyContext
             ),
           ];
         } else {
           clone.style.setProperty("height", `${contentH}px`, "important");
-          const fullCanvas = await rasterizeCapturePage(
+          const fullCanvas = await captureElementToCanvas(
             clone,
             A4_W_PX,
             contentH,
             scale,
             background,
-            domToCanvas,
-            html2canvas,
-            ios
+            ios,
+            createContext,
+            domToForeignObjectSvg,
+            destroyContext
           );
           canvases = sliceCanvasToA4Pages(fullCanvas, scale, background);
           fullCanvas.width = 0;
@@ -652,15 +772,16 @@ export async function buildAtelierProposalPdf(options: {
       } else {
         applyPageBox(clone, sections[i]);
         canvases = [
-          await rasterizeCapturePage(
+          await captureElementToCanvas(
             clone,
             A4_W_PX,
             A4_H_PX,
             scale,
             background,
-            domToCanvas,
-            html2canvas,
-            ios
+            ios,
+            createContext,
+            domToForeignObjectSvg,
+            destroyContext
           ),
         ];
       }
