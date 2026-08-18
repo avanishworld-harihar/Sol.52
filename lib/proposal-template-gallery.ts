@@ -142,6 +142,15 @@ export const RESIDENTIAL_TEMPLATE_GALLERY: ProposalTemplateGalleryItem[] = [
       "Haveli courtyard — sandstone wall, brass jali lattice, cream courtyard. Cover shows kW + site; price on Outlay.",
     thumbnailVariant: "jaali",
   },
+  {
+    key: "voltaic",
+    presetId: "residential_voltaic",
+    category: "residential",
+    name: "Voltaic",
+    description:
+      "Engineering dossier — cyanotype drawing sheets with a title block on every page. Single-line diagram, string sizing, cable schedule and a part-by-part bill of materials.",
+    thumbnailVariant: "voltaic",
+  },
 ];
 
 /** Commercial themes — Executive (LT / C&I) and HT Industrial (HV ToD/PF). */
@@ -214,6 +223,7 @@ export function resolveActiveGalleryKey(
   if (presetId === "residential_sienna") return "sienna";
   if (presetId === "residential_khadi") return "khadi";
   if (presetId === "residential_jaali") return "jaali";
+  if (presetId === "residential_voltaic") return "voltaic";
   return "zenith";
 }
 

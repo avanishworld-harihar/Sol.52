@@ -1,0 +1,1598 @@
+/**
+ * Voltaic — engineering dossier.
+ *
+ * Identity: a cyanotype drawing set. Vellum sheets carry blueprint-blue linework
+ * and monospaced annotation; the cover, both engineering sheets and the closing
+ * invert to full cyanotype. Every page is framed with edge coordinates and a
+ * title block, so the document reads as a submittal, not a brochure.
+ *
+ * Sheet contract: fixed 210 × 297 mm above the 640px phone breakpoint. See
+ * components/proposals/_shared/README.md.
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap");
+
+@page voltaic-sheet {
+  size: A4 portrait;
+  margin: 0;
+}
+
+.root {
+  --vt-navy: #0a2e52;
+  --vt-deep: #06203a;
+  --vt-cyan: #5fc8f5;
+  --vt-cyan-soft: #7fd8ff;
+  --vt-vellum: #f5f8fb;
+  --vt-paper: #ffffff;
+  --vt-orange: #ff6a2b;
+  --vt-ink: #16202c;
+  --vt-muted: #5c6b7c;
+  --vt-rule: #d6e0ea;
+  --vt-rule-strong: #a9bccd;
+  --vt-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --vt-sans: "IBM Plex Sans", system-ui, sans-serif;
+
+  --vt-sheet-w: 210mm;
+  --vt-sheet-h: 297mm;
+  --vt-pad: 13mm;
+
+  background: #dfe7ee;
+  min-height: 100dvh;
+  font-family: var(--vt-sans);
+  color: var(--vt-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+.root * {
+  box-sizing: border-box;
+}
+
+.langHi {
+  font-family: "Noto Sans Devanagari", var(--vt-sans);
+}
+
+.langHi .sheetKicker,
+.langHi .blockLabel,
+.langHi .specLabel,
+.langHi .captionLabel,
+.langHi .tbLabel {
+  letter-spacing: 0.06em;
+}
+
+.loading {
+  padding: 48px;
+  text-align: center;
+  color: var(--vt-muted);
+  font-family: var(--vt-mono);
+}
+
+/* ── Toolbar ───────────────────────────────────────────────────────── */
+.printBar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--vt-deep);
+  border-bottom: 1px solid rgba(95, 200, 245, 0.35);
+}
+
+.printBarInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: min(var(--vt-sheet-w), 100%);
+  margin: 0 auto;
+  padding: 10px 14px;
+}
+
+.printBarBrand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #cfe6f7;
+  font-family: var(--vt-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.printBarLogo {
+  height: 24px;
+  width: auto;
+  max-width: 96px;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 3px;
+  padding: 2px 4px;
+}
+
+.printBarActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.langToggle {
+  display: inline-flex;
+  border: 1px solid rgba(95, 200, 245, 0.4);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.langBtn {
+  background: transparent;
+  border: 0;
+  color: #9fc9e4;
+  font-family: var(--vt-mono);
+  font-size: 11px;
+  padding: 6px 12px;
+  min-height: 34px;
+  cursor: pointer;
+}
+
+.langBtnActive {
+  background: var(--vt-cyan);
+  color: var(--vt-deep);
+  font-weight: 600;
+}
+
+.printBarBtn {
+  background: var(--vt-orange);
+  color: #fff;
+  border: 0;
+  border-radius: 3px;
+  font-family: var(--vt-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  min-height: 34px;
+  cursor: pointer;
+}
+
+.printBarBtn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14mm;
+  padding: 12mm 0 18mm;
+}
+
+/* ── Sheet ─────────────────────────────────────────────────────────── */
+.sheet {
+  position: relative;
+  width: var(--vt-sheet-w);
+  max-width: min(var(--vt-sheet-w), 100%);
+  height: var(--vt-sheet-h);
+  min-height: var(--vt-sheet-h);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: var(--vt-pad);
+  page: voltaic-sheet;
+  box-shadow: 0 18px 44px rgba(10, 46, 82, 0.16);
+}
+
+.sheetVellum {
+  background: var(--vt-vellum);
+  color: var(--vt-ink);
+}
+
+.sheetCyan {
+  background:
+    radial-gradient(ellipse 70% 50% at 20% 0%, rgba(95, 200, 245, 0.16), transparent 60%),
+    linear-gradient(160deg, #0b3358 0%, #06203a 100%);
+  color: #e8f2fa;
+}
+
+/* Drawing border + edge coordinates */
+.sheetFrame {
+  position: absolute;
+  inset: 7mm;
+  border: 1px solid var(--vt-rule-strong);
+  pointer-events: none;
+}
+
+.sheetCyan .sheetFrame {
+  border-color: rgba(127, 216, 255, 0.45);
+}
+
+.edgeTop,
+.edgeLeft,
+.edgeRight {
+  position: absolute;
+  display: flex;
+  font-family: var(--vt-mono);
+  font-size: 6.5pt;
+  color: var(--vt-rule-strong);
+}
+
+.sheetCyan .edgeTop,
+.sheetCyan .edgeLeft,
+.sheetCyan .edgeRight {
+  color: rgba(127, 216, 255, 0.55);
+}
+
+.edgeTop {
+  top: -4.6mm;
+  left: 0;
+  right: 0;
+  justify-content: space-around;
+}
+
+.edgeLeft,
+.edgeRight {
+  top: 0;
+  bottom: 0;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.edgeLeft {
+  left: -4.2mm;
+}
+
+.edgeRight {
+  right: -4.2mm;
+}
+
+.sheetHead {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 2.5mm;
+  border-bottom: 1px solid var(--vt-rule);
+  flex-shrink: 0;
+}
+
+.sheetCyan .sheetHead {
+  border-bottom-color: rgba(127, 216, 255, 0.28);
+}
+
+.sheetKicker {
+  font-family: var(--vt-mono);
+  font-size: 8pt;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--vt-orange);
+}
+
+.sheetCode {
+  font-family: var(--vt-mono);
+  font-size: 9pt;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--vt-muted);
+}
+
+.sheetCyan .sheetCode {
+  color: rgba(207, 230, 247, 0.8);
+}
+
+.sheetBody {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3.5mm;
+  padding-top: 3.5mm;
+  overflow: hidden;
+}
+
+/* Title block */
+.titleBlock {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1.5fr 1.4fr 1fr 0.9fr 0.7fr 0.6fr 0.45fr;
+  border: 1px solid var(--vt-rule-strong);
+  flex-shrink: 0;
+  margin-top: 2.5mm;
+}
+
+.sheetCyan .titleBlock {
+  border-color: rgba(127, 216, 255, 0.4);
+}
+
+.tbCell {
+  padding: 1.6mm 2mm;
+  border-right: 1px solid var(--vt-rule);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4mm;
+}
+
+.sheetCyan .tbCell {
+  border-right-color: rgba(127, 216, 255, 0.22);
+}
+
+.tbCell:last-child {
+  border-right: 0;
+}
+
+.tbLabel {
+  font-family: var(--vt-mono);
+  font-size: 5.6pt;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--vt-muted);
+}
+
+.sheetCyan .tbLabel {
+  color: rgba(207, 230, 247, 0.6);
+}
+
+.tbValue,
+.tbValueStrong {
+  font-family: var(--vt-mono);
+  font-size: 7.4pt;
+  color: var(--vt-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sheetCyan .tbValue,
+.sheetCyan .tbValueStrong {
+  color: #e8f2fa;
+}
+
+.tbValueStrong {
+  font-weight: 600;
+}
+
+.tbCellSheet .tbValueStrong,
+.tbCellStatus .tbValueStrong {
+  color: var(--vt-orange);
+}
+
+/* ── Page headings ─────────────────────────────────────────────────── */
+.pageHead {
+  flex-shrink: 0;
+}
+
+.pageTitle {
+  font-size: 21pt;
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  margin: 0 0 1.6mm;
+}
+
+.sheetCyan .pageTitle {
+  color: #ffffff;
+}
+
+.pageLead {
+  font-size: 9.4pt;
+  line-height: 1.5;
+  color: var(--vt-muted);
+  margin: 0;
+  max-width: 62ch;
+}
+
+.sheetCyan .pageLead {
+  color: rgba(207, 230, 247, 0.78);
+}
+
+.pageNote {
+  font-size: 8.2pt;
+  line-height: 1.45;
+  color: var(--vt-muted);
+  margin: 1.2mm 0 0;
+}
+
+.sheetCyan .pageNote {
+  color: rgba(207, 230, 247, 0.62);
+}
+
+.caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid var(--vt-rule);
+  padding-bottom: 1.2mm;
+  flex-shrink: 0;
+}
+
+.sheetCyan .caption {
+  border-bottom-color: rgba(127, 216, 255, 0.25);
+}
+
+.captionLabel {
+  font-family: var(--vt-mono);
+  font-size: 7.4pt;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--vt-navy);
+}
+
+.sheetCyan .captionLabel {
+  color: var(--vt-cyan-soft);
+}
+
+.captionRight {
+  font-family: var(--vt-mono);
+  font-size: 7pt;
+  color: var(--vt-muted);
+}
+
+.sheetCyan .captionRight {
+  color: rgba(207, 230, 247, 0.6);
+}
+
+.blockLabel {
+  display: block;
+  font-family: var(--vt-mono);
+  font-size: 7.2pt;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--vt-orange);
+  margin-bottom: 1.4mm;
+}
+
+.block {
+  flex-shrink: 0;
+}
+
+.twoCol {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 5mm;
+  flex-shrink: 0;
+}
+
+/* ── Cover ─────────────────────────────────────────────────────────── */
+.coverGrid {
+  position: absolute;
+  inset: 7mm;
+  background-image:
+    linear-gradient(rgba(127, 216, 255, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(127, 216, 255, 0.09) 1px, transparent 1px);
+  background-size: 9mm 9mm;
+  pointer-events: none;
+}
+
+.coverInner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  gap: 5mm;
+}
+
+.coverBrandRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.coverLogoPlate {
+  display: inline-flex;
+  background: #fff;
+  border-radius: 4px;
+  padding: 4px 7px;
+}
+
+.coverLogo {
+  height: 30px;
+  width: auto;
+  max-width: 130px;
+  object-fit: contain;
+  display: block;
+}
+
+.coverBrandName {
+  font-family: var(--vt-mono);
+  font-size: 8.5pt;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  color: rgba(207, 230, 247, 0.85);
+}
+
+.coverHero {
+  flex-shrink: 0;
+  margin-top: 2mm;
+}
+
+.coverTitle {
+  font-size: 34pt;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  color: #ffffff;
+  margin: 0 0 3mm;
+}
+
+.coverTitle em {
+  font-style: normal;
+  color: var(--vt-cyan-soft);
+}
+
+.coverLead {
+  font-size: 10pt;
+  line-height: 1.55;
+  color: rgba(207, 230, 247, 0.82);
+  max-width: 54ch;
+  margin: 0;
+}
+
+.coverClient {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8mm;
+  padding: 3.5mm 0;
+  border-top: 1px solid rgba(127, 216, 255, 0.3);
+  border-bottom: 1px solid rgba(127, 216, 255, 0.3);
+  flex-shrink: 0;
+}
+
+.coverClientLabel {
+  font-family: var(--vt-mono);
+  font-size: 7pt;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--vt-orange);
+}
+
+.coverClientName {
+  font-size: 18pt;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1.15;
+}
+
+.coverClientLoc {
+  font-family: var(--vt-mono);
+  font-size: 8.5pt;
+  color: rgba(207, 230, 247, 0.7);
+}
+
+.coverStats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 3mm;
+  flex-shrink: 0;
+}
+
+.coverStat {
+  border: 1px solid rgba(127, 216, 255, 0.3);
+  background: rgba(127, 216, 255, 0.06);
+  padding: 3mm;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5mm;
+  min-width: 0;
+}
+
+.coverStatVal {
+  font-family: var(--vt-mono);
+  font-size: 17pt;
+  font-weight: 600;
+  color: var(--vt-cyan-soft);
+  line-height: 1;
+  overflow-wrap: anywhere;
+}
+
+.coverStatUnit {
+  font-family: var(--vt-mono);
+  font-size: 7.5pt;
+  color: rgba(207, 230, 247, 0.7);
+}
+
+.coverStatLabel {
+  font-family: var(--vt-mono);
+  font-size: 6.6pt;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(207, 230, 247, 0.55);
+  margin-top: 1mm;
+}
+
+.coverContents {
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
+.coverContentsLabel {
+  display: block;
+  font-family: var(--vt-mono);
+  font-size: 7pt;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--vt-orange);
+  margin-bottom: 2mm;
+}
+
+.coverContentsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.4mm 5mm;
+}
+
+.coverContentsList li {
+  display: flex;
+  align-items: baseline;
+  gap: 2.5mm;
+  font-size: 8.6pt;
+  color: rgba(232, 242, 250, 0.9);
+  border-bottom: 1px dotted rgba(127, 216, 255, 0.22);
+  padding-bottom: 1.1mm;
+}
+
+.coverContentsNum {
+  font-family: var(--vt-mono);
+  font-size: 7pt;
+  color: var(--vt-cyan);
+  flex-shrink: 0;
+}
+
+/* ── Why solar ─────────────────────────────────────────────────────── */
+.whyGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3mm;
+  flex-shrink: 0;
+}
+
+.whyCard {
+  position: relative;
+  border: 1px solid var(--vt-rule);
+  border-left: 2px solid var(--vt-orange);
+  background: var(--vt-paper);
+  padding: 3.2mm 3.5mm;
+  min-width: 0;
+}
+
+.whyNum {
+  font-family: var(--vt-mono);
+  font-size: 7pt;
+  font-weight: 600;
+  color: var(--vt-orange);
+  letter-spacing: 0.14em;
+}
+
+.whyCardTitle {
+  font-size: 10.5pt;
+  font-weight: 600;
+  margin: 1mm 0 1.2mm;
+  line-height: 1.25;
+  color: var(--vt-navy);
+}
+
+.whyCardBody {
+  font-size: 8.6pt;
+  line-height: 1.5;
+  color: var(--vt-muted);
+  margin: 0;
+}
+
+.whyChart {
+  flex-shrink: 0;
+}
+
+.wealthSvg {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin-top: 1.5mm;
+}
+
+.wealthMark {
+  font-family: var(--vt-mono);
+  font-size: 7px;
+  fill: var(--vt-navy);
+  font-weight: 600;
+}
+
+.wealthAxis {
+  font-family: var(--vt-mono);
+  font-size: 7px;
+  fill: #94a9bc;
+}
+
+.mythBlock {
+  flex-shrink: 0;
+  border-top: 1px solid var(--vt-rule);
+  padding-top: 2.5mm;
+}
+
+.mythGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 3.5mm;
+}
+
+.mythQ {
+  font-family: var(--vt-mono);
+  font-size: 8pt;
+  font-weight: 600;
+  color: var(--vt-navy);
+  margin: 0 0 0.8mm;
+}
+
+.mythA {
+  font-size: 8.2pt;
+  line-height: 1.45;
+  color: var(--vt-muted);
+  margin: 0;
+}
+
+/* ── Tables ────────────────────────────────────────────────────────── */
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 8.4pt;
+}
+
+.dataTable th {
+  font-family: var(--vt-mono);
+  font-size: 6.6pt;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vt-muted);
+  text-align: left;
+  padding: 1.6mm 1.8mm;
+  border-bottom: 1px solid var(--vt-rule-strong);
+  white-space: nowrap;
+}
+
+.dataTable td {
+  padding: 1.5mm 1.8mm;
+  border-bottom: 1px solid var(--vt-rule);
+  vertical-align: top;
+  line-height: 1.35;
+}
+
+.sheetCyan .dataTable th {
+  color: rgba(207, 230, 247, 0.7);
+  border-bottom-color: rgba(127, 216, 255, 0.4);
+}
+
+.sheetCyan .dataTable td {
+  border-bottom-color: rgba(127, 216, 255, 0.18);
+  color: #dfeefb;
+}
+
+.tableTight td,
+.tableTight th {
+  padding: 1.1mm 1.4mm;
+  font-size: 7.6pt;
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.mono {
+  font-family: var(--vt-mono);
+  font-size: 7.6pt;
+}
+
+.strong {
+  font-weight: 600;
+  color: var(--vt-navy);
+}
+
+.sheetCyan .strong {
+  color: #ffffff;
+}
+
+.rowPeak td {
+  background: rgba(255, 106, 43, 0.07);
+}
+
+.rowHighlight td {
+  background: rgba(95, 200, 245, 0.1);
+}
+
+.rowTotal td {
+  border-top: 1.5px solid var(--vt-rule-strong);
+  border-bottom: 0;
+  font-weight: 600;
+  color: var(--vt-navy);
+}
+
+/* ── BOM ───────────────────────────────────────────────────────────── */
+.bomGroup {
+  flex-shrink: 0;
+  margin-bottom: 2.5mm;
+}
+
+.bomGroupHead {
+  display: flex;
+  align-items: baseline;
+  gap: 2.5mm;
+  background: var(--vt-navy);
+  color: #fff;
+  padding: 1.4mm 2.5mm;
+}
+
+.bomGroupCode {
+  font-family: var(--vt-mono);
+  font-size: 7.4pt;
+  font-weight: 600;
+  color: var(--vt-cyan-soft);
+}
+
+.bomGroupTitle {
+  font-family: var(--vt-mono);
+  font-size: 7.4pt;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.bomNoteRow td {
+  border-bottom: 1px solid var(--vt-rule);
+  padding-top: 0;
+  font-size: 7.6pt;
+  line-height: 1.4;
+  color: var(--vt-muted);
+}
+
+.bomNoteLabel {
+  font-family: var(--vt-mono);
+  font-size: 6.4pt;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vt-orange);
+  margin-right: 2mm;
+}
+
+/* ── Specs / KPI ───────────────────────────────────────────────────── */
+.specGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 2.5mm;
+  flex-shrink: 0;
+}
+
+.specCell {
+  border: 1px solid var(--vt-rule);
+  padding: 2.2mm 2.5mm;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6mm;
+  min-width: 0;
+  background: var(--vt-paper);
+}
+
+.sheetCyan .specCell {
+  border-color: rgba(127, 216, 255, 0.28);
+  background: rgba(127, 216, 255, 0.06);
+}
+
+.specLabel {
+  font-family: var(--vt-mono);
+  font-size: 6.4pt;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vt-muted);
+}
+
+.sheetCyan .specLabel {
+  color: rgba(207, 230, 247, 0.62);
+}
+
+.specValue {
+  font-family: var(--vt-mono);
+  font-size: 9.4pt;
+  font-weight: 600;
+  color: var(--vt-navy);
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+}
+
+.sheetCyan .specValue {
+  color: var(--vt-cyan-soft);
+}
+
+.kpiRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 3mm;
+  flex-shrink: 0;
+}
+
+.kpi {
+  border: 1px solid var(--vt-rule);
+  border-top: 2px solid var(--vt-navy);
+  background: var(--vt-paper);
+  padding: 3mm;
+  display: flex;
+  flex-direction: column;
+  gap: 1mm;
+  min-width: 0;
+}
+
+.kpiVal {
+  font-family: var(--vt-mono);
+  font-size: 15pt;
+  font-weight: 600;
+  color: var(--vt-navy);
+  line-height: 1;
+  overflow-wrap: anywhere;
+}
+
+.kpiLabel {
+  font-family: var(--vt-mono);
+  font-size: 6.6pt;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vt-muted);
+}
+
+/* ── Money equation ────────────────────────────────────────────────── */
+.moneyRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1.2fr);
+  align-items: stretch;
+  gap: 2.5mm;
+  flex-shrink: 0;
+}
+
+.moneyCell {
+  border: 1px solid var(--vt-rule);
+  background: var(--vt-paper);
+  padding: 3mm;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2mm;
+  min-width: 0;
+}
+
+.moneyCellSub {
+  border-color: rgba(255, 106, 43, 0.4);
+  background: #fff6f1;
+}
+
+.moneyCellNet {
+  background: var(--vt-navy);
+  border-color: var(--vt-navy);
+}
+
+.moneyLabel {
+  font-family: var(--vt-mono);
+  font-size: 6.6pt;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vt-muted);
+}
+
+.moneyCellNet .moneyLabel {
+  color: rgba(207, 230, 247, 0.75);
+}
+
+.moneyVal {
+  font-family: var(--vt-mono);
+  font-size: 13pt;
+  font-weight: 600;
+  color: var(--vt-ink);
+  overflow-wrap: anywhere;
+}
+
+.moneyCellSub .moneyVal {
+  color: var(--vt-orange);
+}
+
+.moneyValNet {
+  font-family: var(--vt-mono);
+  font-size: 16pt;
+  font-weight: 600;
+  color: var(--vt-cyan-soft);
+  overflow-wrap: anywhere;
+}
+
+.moneyOp {
+  display: flex;
+  align-items: center;
+  font-family: var(--vt-mono);
+  font-size: 12pt;
+  color: var(--vt-rule-strong);
+}
+
+/* ── Drawings ──────────────────────────────────────────────────────── */
+.drawing {
+  border: 1px solid rgba(127, 216, 255, 0.3);
+  background: rgba(6, 32, 58, 0.35);
+  padding: 2mm;
+  flex-shrink: 0;
+}
+
+.voltaicStackSvg,
+.voltaicGeomSvg,
+.voltaicSldSvg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.voltaicStackLabel {
+  font-family: var(--vt-mono);
+  font-size: 9px;
+  font-weight: 600;
+  fill: #ffffff;
+}
+
+.voltaicStackNote {
+  font-family: var(--vt-mono);
+  font-size: 7.5px;
+  fill: rgba(207, 230, 247, 0.65);
+}
+
+.voltaicStackNum {
+  font-family: var(--vt-mono);
+  font-size: 9px;
+  font-weight: 700;
+  fill: #ffffff;
+  text-anchor: middle;
+}
+
+.voltaicStackDim {
+  font-family: var(--vt-mono);
+  font-size: 8px;
+  fill: rgba(127, 216, 255, 0.85);
+}
+
+.voltaicGeomLabel {
+  font-family: var(--vt-mono);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  fill: rgba(207, 230, 247, 0.7);
+}
+
+.voltaicGeomTilt {
+  font-family: var(--vt-mono);
+  font-size: 12px;
+  font-weight: 700;
+  fill: #ff6a2b;
+}
+
+.voltaicGeomDim {
+  font-family: var(--vt-mono);
+  font-size: 8px;
+  fill: rgba(127, 216, 255, 0.85);
+}
+
+.voltaicSldZone {
+  font-family: var(--vt-mono);
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  fill: rgba(127, 216, 255, 0.75);
+}
+
+.voltaicSldZoneAc {
+  font-family: var(--vt-mono);
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  fill: rgba(255, 180, 140, 0.9);
+}
+
+.voltaicSldMicro {
+  font-family: var(--vt-mono);
+  font-size: 7.5px;
+  fill: rgba(207, 230, 247, 0.8);
+}
+
+.voltaicSldMicroAc {
+  font-family: var(--vt-mono);
+  font-size: 7.5px;
+  fill: rgba(255, 190, 155, 0.9);
+}
+
+.voltaicSldBox {
+  font-family: var(--vt-mono);
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  fill: #ffffff;
+}
+
+.voltaicSldBoxAc {
+  font-family: var(--vt-mono);
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  fill: #ffd9c4;
+}
+
+.voltaicSldValue {
+  font-family: var(--vt-mono);
+  font-size: 8px;
+  fill: var(--vt-cyan-soft);
+}
+
+.voltaicSldValueAc {
+  font-family: var(--vt-mono);
+  font-size: 8px;
+  fill: #ffb48c;
+}
+
+.voltaicSldSym {
+  font-family: var(--vt-mono);
+  font-size: 12px;
+  font-weight: 700;
+  fill: #7fd8ff;
+}
+
+.voltaicSldSymAc {
+  font-family: var(--vt-mono);
+  font-size: 8px;
+  font-weight: 600;
+  fill: #ffb48c;
+}
+
+.insight {
+  border-left: 2px solid var(--vt-orange);
+  padding: 2mm 0 2mm 3mm;
+  flex-shrink: 0;
+}
+
+.insight p {
+  margin: 0;
+  font-size: 8.6pt;
+  line-height: 1.5;
+  color: rgba(207, 230, 247, 0.82);
+}
+
+/* ── Charts ────────────────────────────────────────────────────────── */
+.billChart,
+.genChart {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5mm;
+  height: 34mm;
+  border-bottom: 1px solid var(--vt-rule-strong);
+  padding-bottom: 1mm;
+  flex-shrink: 0;
+}
+
+.billCol,
+.genCol {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  min-width: 0;
+  gap: 1mm;
+}
+
+.billBar,
+.genBar {
+  width: 100%;
+  max-width: 8mm;
+  background: var(--vt-navy);
+  min-height: 2mm;
+}
+
+.billBarPeak {
+  background: var(--vt-orange);
+}
+
+.genBarBest {
+  background: var(--vt-orange);
+}
+
+.billColVal,
+.genVal {
+  font-family: var(--vt-mono);
+  font-size: 6.4pt;
+  color: var(--vt-muted);
+}
+
+.billColLabel,
+.genLabel {
+  font-family: var(--vt-mono);
+  font-size: 6.6pt;
+  color: var(--vt-muted);
+}
+
+/* ── Lists ─────────────────────────────────────────────────────────── */
+.checkList,
+.stdList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2mm;
+}
+
+.checkList li,
+.stdList li {
+  position: relative;
+  padding-left: 5mm;
+  font-size: 8.4pt;
+  line-height: 1.45;
+  color: var(--vt-ink);
+}
+
+.checkList li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 1.2mm;
+  width: 2.4mm;
+  height: 1.3mm;
+  border-left: 1.4px solid var(--vt-orange);
+  border-bottom: 1.4px solid var(--vt-orange);
+  transform: rotate(-45deg);
+}
+
+.stdList li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 1.6mm;
+  width: 2.6mm;
+  height: 1px;
+  background: var(--vt-rule-strong);
+}
+
+/* ── Phases ────────────────────────────────────────────────────────── */
+.phaseList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 3mm;
+  flex-shrink: 0;
+}
+
+.phaseItem {
+  display: flex;
+  gap: 2.5mm;
+  border-top: 2px solid var(--vt-navy);
+  padding-top: 2mm;
+  min-width: 0;
+}
+
+.phaseNum {
+  font-family: var(--vt-mono);
+  font-size: 11pt;
+  font-weight: 600;
+  color: var(--vt-cyan);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.phaseTitle {
+  font-size: 9pt;
+  font-weight: 600;
+  margin: 0 0 0.8mm;
+  color: var(--vt-navy);
+}
+
+.phaseDesc {
+  font-size: 8pt;
+  line-height: 1.4;
+  color: var(--vt-muted);
+  margin: 0;
+}
+
+.bankList {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1.2mm 3mm;
+  font-size: 8.4pt;
+}
+
+.bankList dt {
+  font-family: var(--vt-mono);
+  font-size: 6.8pt;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vt-muted);
+}
+
+.bankList dd {
+  margin: 0;
+  color: var(--vt-ink);
+  overflow-wrap: anywhere;
+}
+
+/* ── Impact ────────────────────────────────────────────────────────── */
+.impactRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4mm;
+  flex-shrink: 0;
+}
+
+.impactCard {
+  border: 1px solid var(--vt-rule);
+  border-top: 3px solid var(--vt-orange);
+  background: var(--vt-paper);
+  padding: 6mm 5mm;
+  display: flex;
+  flex-direction: column;
+  gap: 1mm;
+}
+
+.impactVal {
+  font-family: var(--vt-mono);
+  font-size: 30pt;
+  font-weight: 600;
+  color: var(--vt-navy);
+  line-height: 1;
+}
+
+.impactUnit {
+  font-family: var(--vt-mono);
+  font-size: 9pt;
+  color: var(--vt-orange);
+}
+
+.impactLabel {
+  font-family: var(--vt-mono);
+  font-size: 7.4pt;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--vt-muted);
+  margin-top: 1.5mm;
+}
+
+/* ── Closing ───────────────────────────────────────────────────────── */
+.closeInner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  gap: 5mm;
+  justify-content: center;
+}
+
+.closeTitle {
+  font-size: 32pt;
+  font-weight: 700;
+  line-height: 1.06;
+  letter-spacing: -0.025em;
+  color: #ffffff;
+  margin: 0;
+}
+
+.closeTitle em {
+  font-style: normal;
+  color: var(--vt-cyan-soft);
+}
+
+.closeLead {
+  font-size: 10pt;
+  line-height: 1.55;
+  color: rgba(207, 230, 247, 0.82);
+  max-width: 52ch;
+  margin: 0;
+}
+
+.closeStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 3mm;
+  border-top: 1px solid rgba(127, 216, 255, 0.3);
+  border-bottom: 1px solid rgba(127, 216, 255, 0.3);
+  padding: 4mm 0;
+}
+
+.closeStats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 1mm;
+  min-width: 0;
+}
+
+.closeStatVal {
+  font-family: var(--vt-mono);
+  font-size: 15pt;
+  font-weight: 600;
+  color: var(--vt-cyan-soft);
+  overflow-wrap: anywhere;
+}
+
+.closeStatLabel {
+  font-family: var(--vt-mono);
+  font-size: 6.8pt;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(207, 230, 247, 0.6);
+}
+
+.closeSign {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 5mm;
+}
+
+.closeSign > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8mm;
+  min-width: 0;
+}
+
+.closeSignLabel {
+  font-family: var(--vt-mono);
+  font-size: 6.8pt;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--vt-orange);
+}
+
+.closeBrand {
+  font-size: 13pt;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.closeContact {
+  font-family: var(--vt-mono);
+  font-size: 7.8pt;
+  color: rgba(207, 230, 247, 0.68);
+  overflow-wrap: anywhere;
+}
+
+.closeBtn {
+  background: var(--vt-orange);
+  color: #fff;
+  border: 0;
+  border-radius: 3px;
+  font-family: var(--vt-mono);
+  font-size: 9pt;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3mm 7mm;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.closeValidity {
+  font-family: var(--vt-mono);
+  font-size: 7.2pt;
+  color: rgba(207, 230, 247, 0.5);
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* ── Print ─────────────────────────────────────────────────────────── */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  .root {
+    background: #fff !important;
+  }
+
+  .root :global(*) {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .printBar,
+  .closeBtn {
+    display: none !important;
+  }
+
+  .stage {
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+
+  .sheet {
+    width: 210mm !important;
+    max-width: 210mm !important;
+    height: 297mm !important;
+    min-height: 297mm !important;
+    max-height: 297mm !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+    page: voltaic-sheet;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .sheet + .sheet {
+    break-before: page;
+    page-break-before: always;
+  }
+}
+
+/* ── Phone only. Tablets keep the A4 sheet; the shared fit shell scales it. ── */
+@media screen and (max-width: 640px) {
+  .root {
+    --vt-pad: 6mm;
+  }
+
+  .sheet {
+    width: calc(100% - 12px);
+    max-width: 100%;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .stage {
+    gap: 8mm;
+    padding: 6mm 0 10mm;
+  }
+
+  .coverStats,
+  .specGrid,
+  .whyGrid,
+  .mythGrid,
+  .kpiRow,
+  .twoCol,
+  .impactRow,
+  .phaseList,
+  .coverContentsList {
+    grid-template-columns: 1fr;
+  }
+
+  .moneyRow {
+    grid-template-columns: 1fr;
+  }
+
+  .moneyOp {
+    justify-content: center;
+  }
+
+  .titleBlock {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .coverTitle {
+    font-size: 24pt;
+  }
+
+  .closeTitle {
+    font-size: 22pt;
+  }
+
+  .dataTable {
+    font-size: 7.6pt;
+  }
+}

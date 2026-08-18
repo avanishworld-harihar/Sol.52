@@ -69,6 +69,12 @@ export const JAALI_PRESET_ALIASES = [
   "jaali",
 ] as const;
 
+/** Local / mock aliases that resolve to Voltaic. */
+export const VOLTAIC_PRESET_ALIASES = [
+  "residential_voltaic",
+  "voltaic",
+] as const;
+
 export function isZenithPresetId(presetId: string): boolean {
   return (ZENITH_PRESET_ALIASES as readonly string[]).includes(presetId);
 }
@@ -109,6 +115,10 @@ export function isJaaliPresetId(presetId: string): boolean {
   return (JAALI_PRESET_ALIASES as readonly string[]).includes(presetId);
 }
 
+export function isVoltaicPresetId(presetId: string): boolean {
+  return (VOLTAIC_PRESET_ALIASES as readonly string[]).includes(presetId);
+}
+
 export function isCommercialPresetId(presetId: string): boolean {
   return presetId === "commercial_executive";
 }
@@ -140,6 +150,8 @@ export const PRESET_RENDERER_LOADERS: PresetRendererRegistry = {
     import("@/components/proposals/_registry/adapters/khadi-adapter"),
   residential_jaali: () =>
     import("@/components/proposals/_registry/adapters/jaali-adapter"),
+  residential_voltaic: () =>
+    import("@/components/proposals/_registry/adapters/voltaic-adapter"),
   commercial_executive: () =>
     import("@/components/proposals/_registry/adapters/commercial-adapter"),
   commercial_ht: () =>
@@ -179,6 +191,9 @@ export function getPresetRendererLoader(
   }
   if (isJaaliPresetId(presetId)) {
     return () => import("@/components/proposals/_registry/adapters/jaali-adapter");
+  }
+  if (isVoltaicPresetId(presetId)) {
+    return () => import("@/components/proposals/_registry/adapters/voltaic-adapter");
   }
   if (isLuxeNoirPresetId(presetId)) {
     return () => import("@/components/proposals/_registry/adapters/luxe-noir-adapter");

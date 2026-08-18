@@ -13,6 +13,7 @@ export const RESIDENTIAL_TEMPLATE_PRESET_IDS = [
   "residential_sienna",
   "residential_khadi",
   "residential_jaali",
+  "residential_voltaic",
 ] as const;
 
 export type ResidentialTemplatePresetId = (typeof RESIDENTIAL_TEMPLATE_PRESET_IDS)[number];
@@ -85,6 +86,11 @@ export const RESIDENTIAL_TEMPLATE_OPTIONS: ResidentialTemplateOption[] = [
     id: "residential_jaali",
     label: "Jaali",
     subtitle: "Haveli courtyard — sandstone wall, brass jali lattice.",
+  },
+  {
+    id: "residential_voltaic",
+    label: "Voltaic",
+    subtitle: "Engineering dossier — drawing sheets, SLD, part-by-part BOM.",
   },
 ];
 

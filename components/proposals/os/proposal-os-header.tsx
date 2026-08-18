@@ -12,7 +12,7 @@
  */
 
 import { motion } from "framer-motion";
-import { Building2, ChevronRight, Droplets, Flame, Gem, Grid3x3, LayoutTemplate, RefreshCw, Sparkles, Sun, Zap } from "lucide-react";
+import { Building2, ChevronRight, CircuitBoard, Droplets, Flame, Gem, Grid3x3, LayoutTemplate, RefreshCw, Sparkles, Sun, Zap } from "lucide-react";
 import type { ProposalPresetId } from "@/lib/proposal-preset-engine";
 import { PresenceStack } from "@/components/workspace/presence-stack";
 
@@ -118,6 +118,14 @@ const PRESET_META: Record<ProposalPresetId, PresetMeta> = {
     pillClass:
       "border-[#b08d3e]/40 bg-[#ead9c1] text-[#3a3228] dark:border-[#b08d3e]/50 dark:bg-[#2a2118] dark:text-[#ead9c1]",
     dotClass: "bg-[#b08d3e]",
+  },
+  residential_voltaic: {
+    icon: <CircuitBoard className="h-4 w-4" />,
+    label: "Voltaic",
+    description: "Engineering dossier · drawing sheets · SLD · part-by-part BOM",
+    pillClass:
+      "border-[#0a2e52]/30 bg-[#e4eef6] text-[#0a2e52] dark:border-[#5fc8f5]/40 dark:bg-[#06203a] dark:text-[#7fd8ff]",
+    dotClass: "bg-[#0a2e52]",
   },
   commercial_executive: {
     icon: <Building2 className="h-4 w-4" />,

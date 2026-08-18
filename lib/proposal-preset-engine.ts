@@ -14,7 +14,8 @@
  *   9. residential_sienna         — Sienna Laterite Folio (bone paper, laterite spine)
  *  10. residential_khadi          — Khadi cloth-press (indigo dye band, madder stamps)
  *  11. residential_jaali          — Jaali courtyard (sandstone wall, brass lattice)
- *  12. commercial_executive      — C&I commercial (hotel / hospital / industry…)
+ *  12. residential_voltaic        — Voltaic engineering dossier (cyanotype drawing sheets)
+ *  13. commercial_executive      — C&I commercial (hotel / hospital / industry…)
  *
  * Removed residential presets remap via normalizePresetId → residential_executive.
  */
@@ -45,6 +46,7 @@ export const PROPOSAL_PRESET_IDS = [
   "residential_sienna",
   "residential_khadi",
   "residential_jaali",
+  "residential_voltaic",
   "commercial_executive",
   "commercial_ht",
 ] as const;
@@ -119,7 +121,8 @@ export function isResidentialDocumentPreset(presetId: ProposalPresetId): boolean
     presetId === "residential_lumina" ||
     presetId === "residential_sienna" ||
     presetId === "residential_khadi" ||
-    presetId === "residential_jaali"
+    presetId === "residential_jaali" ||
+    presetId === "residential_voltaic"
   );
 }
 
@@ -289,6 +292,20 @@ export const PROPOSAL_PRESET_REGISTRY: Record<ProposalPresetId, ProposalPreset> 
     label: "Jaali",
     description:
       "Haveli courtyard — sandstone wall, brass jali lattice, cream courtyard. Cover shows kW + site; price lives on Outlay.",
+    bill_requirement: "optional",
+    theme_hint: "residential",
+    default_data_source: "requirement",
+    default_blocks: [],
+    optional_blocks: [],
+  },
+
+  residential_voltaic: {
+    id: "residential_voltaic",
+    label: "Voltaic",
+    description:
+      "Engineering dossier — cyanotype drawing sheets with a title block on every page. " +
+      "Carries a single-line diagram, temperature-corrected string sizing, a cable schedule, " +
+      "a commissioning test matrix, and a bill of materials down to connectors and earthing.",
     bill_requirement: "optional",
     theme_hint: "residential",
     default_data_source: "requirement",

@@ -45,6 +45,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
       {variant === "sienna" ? <SiennaThumb size={size} /> : null}
       {variant === "khadi" ? <KhadiThumb size={size} /> : null}
       {variant === "jaali" ? <JaaliThumb size={size} /> : null}
+      {variant === "voltaic" ? <VoltaicThumb size={size} /> : null}
       {![
         "golden",
         "pearl",
@@ -66,6 +67,7 @@ export function ProposalTemplateThumbnail({ variant, className, size = "card" }:
         "sienna",
         "khadi",
         "jaali",
+        "voltaic",
       ].includes(variant) ? (
         <GenericThumb size={size} label={variant} />
       ) : null}
@@ -546,6 +548,75 @@ function JaaliThumb({ size }: { size: "card" | "preview" }) {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function VoltaicThumb({ size }: { size: "card" | "preview" }) {
+  const micro = size === "preview" ? 3.4 : 4;
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-[#dfe7ee]">
+      <div
+        className={cn("relative overflow-hidden shadow-sm", thumbSheet(size))}
+        style={{ background: "linear-gradient(160deg, #0b3358 0%, #06203a 100%)" }}
+      >
+        {/* blueprint grid */}
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(127,216,255,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(127,216,255,0.12) 1px, transparent 1px)",
+            backgroundSize: "12% 14%",
+          }}
+        />
+        {/* drawing border */}
+        <div className="absolute inset-[6%] border border-[rgba(127,216,255,0.45)]" />
+        <div
+          className="absolute left-[10%] right-[10%] top-[11%] flex items-baseline justify-between font-bold uppercase tracking-[0.18em]"
+          style={{ fontSize: micro }}
+        >
+          <span className="text-[#ff6a2b]">Electrical design</span>
+          <span className="text-[rgba(207,230,247,0.75)]">E-102</span>
+        </div>
+        {/* mini single-line diagram */}
+        <svg
+          viewBox="0 0 120 44"
+          className="absolute left-[10%] right-[10%] top-[24%] w-[80%]"
+          preserveAspectRatio="xMidYMid meet"
+        >
+          <g stroke="#7FD8FF" strokeWidth="1" fill="none">
+            <rect x="2" y="8" width="14" height="9" />
+            <line x1="2" y1="17" x2="16" y2="8" />
+            <line x1="16" y1="13" x2="34" y2="13" />
+            <line x1="34" y1="13" x2="41" y2="8" />
+            <rect x="46" y="7" width="10" height="12" />
+            <line x1="56" y1="13" x2="70" y2="13" />
+            <rect x="70" y="4" width="18" height="18" />
+            <line x1="88" y1="13" x2="100" y2="13" />
+            <circle cx="107" cy="13" r="6" />
+            <line x1="79" y1="22" x2="79" y2="32" />
+            <line x1="72" y1="32" x2="86" y2="32" />
+            <line x1="74" y1="35" x2="84" y2="35" />
+          </g>
+          <text x="72" y="16" fill="#7FD8FF" fontSize="7" fontWeight="700" fontFamily="monospace">
+            =
+          </text>
+        </svg>
+        {/* title block */}
+        <div
+          className="absolute bottom-[8%] left-[10%] right-[10%] grid grid-cols-4 border border-[rgba(127,216,255,0.45)]"
+          style={{ fontSize: micro }}
+        >
+          {["Client", "kW", "Rev", "Sheet"].map((t) => (
+            <div
+              key={t}
+              className="border-r border-[rgba(127,216,255,0.25)] px-[6%] py-[8%] uppercase tracking-wider text-[rgba(207,230,247,0.65)] last:border-r-0"
+            >
+              {t}
+            </div>
+          ))}
         </div>
       </div>
     </div>

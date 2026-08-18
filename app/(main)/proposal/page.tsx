@@ -1806,6 +1806,8 @@ function ProposalPageContent() {
                   ? { galleryThemeKey: "khadi" }
                 : osPresetId === "residential_jaali"
                   ? { galleryThemeKey: "jaali" }
+                : osPresetId === "residential_voltaic"
+                  ? { galleryThemeKey: "voltaic" }
                   : osPresetId === "residential_executive"
                   ? { galleryThemeKey: "golden" }
                   : {}),
