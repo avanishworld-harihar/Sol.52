@@ -915,6 +915,16 @@
   flex-shrink: 0;
 }
 
+.equipGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2.5mm;
+}
+
+.twoCol .equipGrid {
+  grid-template-columns: 1fr;
+}
+
 .specCell {
   border: 1px solid var(--vt-rule);
   padding: 1.8mm 2.2mm;
@@ -1768,7 +1778,8 @@
   .impactRow,
   .phaseList,
   .coverContentsList,
-  .docList {
+  .docList,
+  .equipGrid {
     grid-template-columns: 1fr;
   }
 

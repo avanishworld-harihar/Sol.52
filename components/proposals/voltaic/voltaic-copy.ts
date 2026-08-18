@@ -150,6 +150,18 @@ export function getVoltaicCopy(lang: VoltaicLang) {
         ? "6% वार्षिक टैरिफ वृद्धि मानकर। पेबैक के बाद हर यूनिट शुद्ध लाभ है।"
         : "Assumes 6% annual tariff escalation. After payback, every unit is net gain.",
       breakEven: hi ? "पेबैक" : "Payback",
+      brandCompare: hi ? "ब्रांड तुलना" : "Brand comparison",
+      brandTrack: hi ? "ट्रैक" : "Track",
+      brandDcr: "DCR",
+      brandNonDcr: "Non-DCR",
+      brandCompareSub: (kw: number, track: "dcr" | "non_dcr") =>
+        hi
+          ? `${kw} kW · ${track === "non_dcr" ? "Non-DCR" : "DCR"} संयंत्र लागत`
+          : `${kw} kW · ${track === "non_dcr" ? "Non-DCR" : "DCR"} plant gross`,
+      equipTitle: hi ? "प्रस्तावित उपकरण" : "Quoted equipment",
+      equipPanel: hi ? "पैनल" : "Panels",
+      equipInverter: hi ? "इन्वर्टर" : "Inverter",
+      equipWire: hi ? "DC / AC केबल" : "DC / AC cable",
     },
 
     bill: {

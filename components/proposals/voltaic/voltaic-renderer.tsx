@@ -26,6 +26,7 @@ import { RESIDENTIAL_ENGINEERING_STANDARDS } from "@/lib/proposal-engineering-me
 import { getVoltaicCopy, type VoltaicLang } from "./voltaic-copy";
 import {
   buildVoltaicEngineering,
+  resolveVoltaicEquipmentMakes,
   voltaicBalanceBom,
   voltaicMajorBom,
   VOLTAIC_INVERTER_MAX_DC_V,
@@ -39,6 +40,12 @@ import { VoltaicCaption, VoltaicHead, VoltaicSheet } from "./voltaic-sheet";
 import { useVoltaicIdentity } from "./voltaic-brand";
 import { useVoltaicClosingContact } from "./voltaic-closing-contact";
 import { buildVoltaicTermsCopy } from "./voltaic-terms";
+import {
+  normalizeBrandCompareSelection,
+  resolveBrandCompareSnapshot,
+  type BrandCompareProposalTrack,
+  type BrandCompareSide,
+} from "@/lib/brand-compare-helpers";
 import styles from "./voltaic.module.css";
 
 const LANG_KEY = "sol52-voltaic-lang";
@@ -139,6 +146,11 @@ export function VoltaicRenderer({
     return Math.round(((systemKw * 1000) / (volts * factor * 0.98)) * 10) / 10;
   }, [systemKw, eng.threePhase]);
 
+  const makes = useMemo(
+    () => resolveVoltaicEquipmentMakes(data, pptInput),
+    [data, pptInput]
+  );
+
   const majorBom = useMemo(
     () =>
       voltaicMajorBom(data, eng.design, {
@@ -147,8 +159,9 @@ export function VoltaicRenderer({
         systemKw,
         threePhase: eng.threePhase,
         isHi,
+        makes,
       }),
-    [data, eng, systemKw, isHi]
+    [data, eng, systemKw, isHi, makes]
   );
 
   const bosBom = useMemo(
@@ -157,9 +170,26 @@ export function VoltaicRenderer({
         threePhase: eng.threePhase,
         panelCount: eng.metrics.panelCount,
         isHi,
+        wireMake: makes.wire,
       }),
-    [eng, isHi]
+    [eng, isHi, makes.wire]
   );
+
+  const brandCatalog =
+    pptInput?.residentialConfig?.brandCatalog ?? pptInput?.sharedPlantCatalog ?? null;
+  const brandCompareSelection = normalizeBrandCompareSelection(
+    pptInput?.residentialConfig?.brandCompare,
+    brandCatalog
+  );
+  const brandCompareSnapshot =
+    brandCompareSelection.enabled && systemKw > 0
+      ? resolveBrandCompareSnapshot(
+          brandCatalog,
+          brandCompareSelection.brandIdA,
+          brandCompareSelection.brandIdB,
+          systemKw
+        )
+      : null;
 
   const months = useMemo(() => {
     const names = isHi ? MONTH_KEYS_HI : MONTH_KEYS_EN;
@@ -518,13 +548,74 @@ export function VoltaicRenderer({
             </div>
           </div>
 
+          {brandCompareSnapshot ? (
+            <div className={styles.twoCol}>
+              <div className={styles.block}>
+                <span className={styles.blockLabel}>{c.econ.brandCompare}</span>
+                <p className={styles.pageNote}>
+                  {c.econ.brandCompareSub(
+                    brandCompareSnapshot.kw,
+                    brandCompareSelection.proposalTrack
+                  )}
+                </p>
+                <table className={`${styles.dataTable} ${styles.tableTight}`}>
+                  <thead>
+                    <tr>
+                      <th>{c.econ.brandTrack}</th>
+                      <th>{brandCompareSnapshot.brandA.brandLabel}</th>
+                      <th>{brandCompareSnapshot.brandB.brandLabel}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        {brandCompareSelection.proposalTrack === "non_dcr"
+                          ? c.econ.brandNonDcr
+                          : c.econ.brandDcr}
+                      </td>
+                      <td className={`${styles.num} ${styles.strong}`}>
+                        {brandCompareGross(
+                          brandCompareSnapshot.brandA,
+                          brandCompareSelection.proposalTrack
+                        )}
+                      </td>
+                      <td className={`${styles.num} ${styles.strong}`}>
+                        {brandCompareGross(
+                          brandCompareSnapshot.brandB,
+                          brandCompareSelection.proposalTrack
+                        )}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div className={styles.block}>
+                <span className={styles.blockLabel}>{c.econ.equipTitle}</span>
+                <div className={styles.equipGrid}>
+                  <Spec label={c.econ.equipPanel} value={makes.panel} />
+                  <Spec label={c.econ.equipInverter} value={makes.inverter} />
+                  <Spec label={c.econ.equipWire} value={makes.wire} />
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className={styles.block}>
+              <span className={styles.blockLabel}>{c.econ.equipTitle}</span>
+              <div className={styles.equipGrid}>
+                <Spec label={c.econ.equipPanel} value={makes.panel} />
+                <Spec label={c.econ.equipInverter} value={makes.inverter} />
+                <Spec label={c.econ.equipWire} value={makes.wire} />
+              </div>
+            </div>
+          )}
+
           {data.economics.emiRows.length > 0 ? (
             <div className={styles.block}>
               <VoltaicCaption label={c.econ.emiTitle} />
               <p className={styles.pageNote}>
                 {c.econ.emiLead(String(data.economics.interestRatePct ?? 7))}
               </p>
-              <table className={styles.dataTable}>
+              <table className={`${styles.dataTable} ${styles.tableTight}`}>
                 <thead>
                   <tr>
                     <th>{c.econ.tenure}</th>
@@ -1227,6 +1318,13 @@ export function VoltaicRenderer({
 }
 
 /* ── Small building blocks ─────────────────────────────────────────── */
+
+function brandCompareGross(side: BrandCompareSide, track: BrandCompareProposalTrack): string {
+  if (track === "non_dcr") {
+    return side.nonDcrOk ? formatInr(side.nonDcrGrossInr) : "—";
+  }
+  return side.dcrOk ? formatInr(side.dcrGrossInr) : "—";
+}
 
 function Spec({ label, value }: { label: string; value: string }) {
   return (
