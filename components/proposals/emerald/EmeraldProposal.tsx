@@ -37,7 +37,7 @@ export function EmeraldProposal({
   const nextFolio = () => String(n++).padStart(2, "0");
 
   return (
-    <div className={styles.proposalStage}>
+    <div className={styles.proposalStage} data-emerald-stage>
       <EmeraldCover
         data={data}
         proposalId={proposalId}

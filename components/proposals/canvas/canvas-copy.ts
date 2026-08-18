@@ -9,6 +9,17 @@ export function getCanvasCopy(lang: CanvasLang) {
   return {
     print: {
       downloadPdf: hi ? "PDF डाउनलोड" : "Download PDF",
+      pdfBuilding: hi ? "PDF तैयार हो रही है…" : "Preparing PDF…",
+      pdfSharing: hi ? "खुल रहा है…" : "Opening…",
+      pdfFailed: hi
+        ? "PDF नहीं बन सकी। कृपया दोबारा कोशिश करें।"
+        : "Could not create PDF. Please try again.",
+      pdfReadyTitle: hi ? "PDF तैयार है" : "Your PDF is ready",
+      pdfReadyBody: hi
+        ? "सेव करने के लिए Share दबाएँ, फिर “Save to Files” चुनें।"
+        : "Tap Share, then choose Save to Files.",
+      pdfReadyShare: hi ? "Share" : "Share",
+      pdfReadyClose: hi ? "बंद करें" : "Close",
       langEn: "EN",
       langHi: "हिंदी",
     },

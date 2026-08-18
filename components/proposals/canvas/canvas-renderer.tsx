@@ -25,6 +25,8 @@ import {
   buildAtelierProposalPdf,
   downloadPdfFile,
   isAppleTouchDevice,
+  sharePdfFile,
+  type ResidentialPdfFile,
 } from "@/components/proposals/_shared/residential-pdf-export";
 import {
   EvidenceCard,
@@ -109,6 +111,8 @@ export function CanvasProposalRenderer({
   });
   const rootRef = useRef<HTMLDivElement>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfSharing, setPdfSharing] = useState(false);
+  const [pdfReady, setPdfReady] = useState<ResidentialPdfFile | null>(null);
 
   useEffect(() => {
     const sync = () => {
@@ -356,20 +360,48 @@ export function CanvasProposalRenderer({
       if (!root) return;
       setPdfBusy(true);
       try {
-        downloadPdfFile(
-          await buildAtelierProposalPdf({
-            root,
-            customerName: customer,
-            presetId: "residential_blueprint",
-            pageSelector: ":scope > .canvasContainer > section",
-          })
-        );
+        const file = await buildAtelierProposalPdf({
+          root,
+          customerName: customer,
+          presetId: "residential_blueprint",
+          /*
+           * `.canvasContainer` is a CSS Module class — its runtime name is
+           * hashed (e.g. "canvas_canvasContainer__ab12c"), so the literal
+           * class-name selector this used to have never matched anything in
+           * a real build. The export always threw "No proposal pages
+           * found". A plain data attribute survives the CSS Modules hash.
+           */
+          pageSelector: "[data-canvas-stage] > section",
+        });
+        setPdfReady(file);
+      } catch (err) {
+        console.error("[canvas] PDF export failed", err);
+        window.alert(c.print.pdfFailed);
       } finally {
         setPdfBusy(false);
       }
       return;
     }
     window.print();
+  };
+
+  /*
+   * iOS Safari's navigator.share() needs a fresh, real click — the tap that
+   * started the 15-30s PDF build above is long expired by the time the file
+   * is ready, so share() is only ever called from this button's own click,
+   * never automatically after the build.
+   */
+  const handleSharePdf = async () => {
+    if (!pdfReady || pdfSharing) return;
+    setPdfSharing(true);
+    try {
+      await sharePdfFile(pdfReady);
+    } catch (err) {
+      console.error("[canvas] PDF share failed", err);
+      void downloadPdfFile(pdfReady);
+    } finally {
+      setPdfSharing(false);
+    }
   };
 
   const foot = (n: string) => ({
@@ -406,13 +438,13 @@ export function CanvasProposalRenderer({
               </button>
             </div>
             <button type="button" onClick={handlePrint} className={styles.printBarBtn} disabled={pdfBusy}>
-              {pdfBusy ? "Preparing PDF…" : c.print.downloadPdf}
+              {pdfBusy ? c.print.pdfBuilding : c.print.downloadPdf}
             </button>
           </div>
         </div>
       </div>
 
-      <div className={styles.canvasContainer}>
+      <div className={styles.canvasContainer} data-canvas-stage>
         {/* Page 01: Architectural cover — no cost / wealth figures */}
         <CoverPage
           brandName={brand}
@@ -964,6 +996,40 @@ export function CanvasProposalRenderer({
           pageNo="12 / 12"
         />
       </div>
+
+      {pdfReady ? (
+        <div
+          className={styles.pdfReadyOverlay}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="canvas-pdf-ready-title"
+        >
+          <div className={styles.pdfReadyCard}>
+            <h2 id="canvas-pdf-ready-title" className={styles.pdfReadyTitle}>
+              {c.print.pdfReadyTitle}
+            </h2>
+            <p className={styles.pdfReadyBody}>{c.print.pdfReadyBody}</p>
+            <p className={styles.pdfReadyFile}>{pdfReady.fileName}</p>
+            <div className={styles.pdfReadyActions}>
+              <button
+                type="button"
+                className={styles.pdfReadyShare}
+                onClick={handleSharePdf}
+                disabled={pdfSharing}
+              >
+                {pdfSharing ? c.print.pdfSharing : c.print.pdfReadyShare}
+              </button>
+              <button
+                type="button"
+                className={styles.pdfReadyClose}
+                onClick={() => setPdfReady(null)}
+              >
+                {c.print.pdfReadyClose}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

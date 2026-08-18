@@ -147,6 +147,94 @@
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
 
+.printBarBtn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.pdfReadyOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  padding-top: max(20px, env(safe-area-inset-top, 0px));
+  padding-bottom: max(20px, env(safe-area-inset-bottom, 0px));
+  background: rgba(11, 18, 32, 0.6);
+}
+
+.pdfReadyCard {
+  width: min(340px, 100%);
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 1.4rem 1.25rem 1.15rem;
+  box-shadow: 0 18px 48px rgba(11, 18, 32, 0.35);
+}
+
+.pdfReadyTitle {
+  margin: 0 0 0.45rem;
+  font-size: 1.1rem;
+  font-weight: 800;
+  /*
+   * Hardcoded, not var(--ink): this overlay sits outside .presetZenith (a
+   * sibling, not a descendant), which is the only place --ink is defined —
+   * see the note on .shell above.
+   */
+  color: #0b1220;
+}
+
+.pdfReadyBody {
+  margin: 0 0 0.65rem;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: #5b6575;
+}
+
+.pdfReadyFile {
+  margin: 0 0 1rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--accent);
+  word-break: break-all;
+}
+
+.pdfReadyActions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.pdfReadyShare {
+  appearance: none;
+  border: none;
+  border-radius: 8px;
+  background: #14b8a6;
+  color: #0b1220;
+  font-size: 0.9rem;
+  font-weight: 700;
+  min-height: 46px;
+  cursor: pointer;
+}
+
+.pdfReadyShare:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.pdfReadyClose {
+  appearance: none;
+  border: 1px solid rgba(11, 18, 32, 0.15);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #0b1220;
+  font-size: 0.85rem;
+  font-weight: 600;
+  min-height: 42px;
+  cursor: pointer;
+}
+
 .printBarBtn:hover {
   background: #2dd4bf;
   color: #0b1220;

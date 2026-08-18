@@ -309,15 +309,32 @@ export type AtelierPdfFile = {
   fileName: string;
 };
 
-export function downloadPdfFile(file: AtelierPdfFile): void {
+/**
+ * Hands the built PDF to the user.
+ *
+ * On iOS/iPadOS this deliberately does *not* attempt `navigator.share()`
+ * itself. `share()` requires "transient activation" from a user gesture that
+ * is at most a few seconds old, and a 9-14 sheet proposal takes 15-30s to
+ * rasterize — by the time a PDF built from the original button tap is ready,
+ * that gesture is long expired and `share()` rejects with `NotAllowedError`
+ * every time. There is no way to "wait longer" or retry around this; the
+ * only fix is a fresh gesture. So this presents an overlay with its own
+ * Save/Share button, and `navigator.share()` is called only from *that*
+ * button's own click handler (see `presentPdfSaveOverlay`), several
+ * preset renderers (Atelier, Luxe Noir, HT-Commercial, Commercial) already
+ * do the equivalent with their own React-rendered overlay bound to a
+ * `pdfReady` state — this is the same pattern for callers that hand a file
+ * straight to `downloadPdfFile` instead of managing that state themselves.
+ *
+ * Desktop/Android downloads are synchronous, but this is `async` (and every
+ * caller should `await` it) so the caller's own busy state does not clear
+ * before the hand-off — either the trigger of a real download, or the
+ * overlay being attached to the document — has actually happened.
+ */
+export async function downloadPdfFile(file: AtelierPdfFile): Promise<void> {
   if (typeof window === "undefined") return;
-  /*
-   * iOS Safari ignores <a download> and navigates to the blob: URL. Refreshing
-   * that tab then fails with WebKitBlobResource error 1 because the blob is gone.
-   * Share the file in-place (or an overlay on this page) — never change location.
-   */
   if (isAppleTouchDevice()) {
-    void sharePdfOnAppleTouch(file);
+    presentPdfSaveOverlay(file);
     return;
   }
   const url = URL.createObjectURL(file.blob);
@@ -331,20 +348,22 @@ export function downloadPdfFile(file: AtelierPdfFile): void {
   window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
 }
 
-async function sharePdfOnAppleTouch(file: AtelierPdfFile): Promise<void> {
-  try {
-    const shared = await sharePdfFile(file);
-    if (shared) return;
-    return;
-  } catch {
-    /* Share unavailable — keep the user on the proposal page. */
-  }
-  presentPdfOverlay(file);
-}
+/** Cleans up whichever save overlay is currently on screen, if any. */
+let activePdfOverlayCleanup: (() => void) | null = null;
 
-function presentPdfOverlay(file: AtelierPdfFile): void {
-  const existing = document.querySelector("[data-proposal-pdf-overlay='true']");
-  existing?.remove();
+/**
+ * A minimal "PDF ready" card with a Save/Share button — deliberately not a
+ * PDF previewer. iOS Safari's `<iframe>` cannot reliably display a
+ * multi-page PDF blob (it ignores `#view=FitH` and only ever paints the
+ * first page), so a preview here would misrepresent a correctly-built
+ * multi-page document as broken. The only job of this overlay is to give
+ * the Save/Share button a fresh, real click to trigger `navigator.share()`
+ * from.
+ */
+function presentPdfSaveOverlay(file: AtelierPdfFile): void {
+  activePdfOverlayCleanup?.();
+  document.querySelector("[data-proposal-pdf-overlay='true']")?.remove();
+
   const url = URL.createObjectURL(file.blob);
   const wrap = document.createElement("div");
   wrap.setAttribute("data-proposal-pdf-overlay", "true");
@@ -352,27 +371,81 @@ function presentPdfOverlay(file: AtelierPdfFile): void {
   wrap.setAttribute("aria-modal", "true");
   wrap.setAttribute("aria-label", file.fileName);
   wrap.style.cssText =
-    "position:fixed;inset:0;z-index:2147483646;background:#0f172a;display:flex;flex-direction:column;";
-  const bar = document.createElement("div");
-  bar.style.cssText =
-    "flex:0 0 auto;display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top));background:#0f172a;";
-  const close = document.createElement("button");
-  close.type = "button";
-  close.textContent = "Close";
-  close.style.cssText =
-    "min-height:44px;padding:8px 16px;border:0;border-radius:8px;background:#f8fafc;color:#0f172a;font:600 14px/1.2 system-ui,sans-serif;";
-  const iframe = document.createElement("iframe");
-  iframe.src = `${url}#view=FitH`;
-  iframe.title = file.fileName;
-  iframe.style.cssText = "flex:1;width:100%;border:0;background:#fff;";
+    "position:fixed;inset:0;z-index:2147483646;background:rgba(15,23,42,0.72);display:flex;align-items:center;justify-content:center;padding:20px;padding-top:max(20px,env(safe-area-inset-top));padding-bottom:max(20px,env(safe-area-inset-bottom));";
+
+  const card = document.createElement("div");
+  card.style.cssText =
+    "width:100%;max-width:340px;background:#fff;border-radius:16px;padding:24px 20px;display:flex;flex-direction:column;gap:14px;box-shadow:0 20px 60px rgba(0,0,0,0.35);font-family:system-ui,sans-serif;";
+
+  const title = document.createElement("p");
+  title.textContent = "Your PDF is ready";
+  title.style.cssText = "margin:0;font:700 17px/1.3 system-ui,sans-serif;color:#0f172a;";
+
+  const nameEl = document.createElement("p");
+  nameEl.textContent = file.fileName;
+  nameEl.style.cssText = "margin:0;font:400 12px/1.4 system-ui,sans-serif;color:#64748b;word-break:break-all;";
+
+  const statusEl = document.createElement("p");
+  statusEl.setAttribute("role", "status");
+  statusEl.style.cssText =
+    "margin:0;display:none;font:500 12px/1.4 system-ui,sans-serif;color:#b91c1c;";
+
+  const shareBtn = document.createElement("button");
+  shareBtn.type = "button";
+  const shareBtnDefaultLabel = "Save / Share PDF";
+  shareBtn.textContent = shareBtnDefaultLabel;
+  shareBtn.style.cssText =
+    "min-height:48px;border:0;border-radius:10px;background:#0f172a;color:#fff;font:600 15px/1.2 system-ui,sans-serif;";
+
+  const closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.textContent = "Close";
+  closeBtn.style.cssText =
+    "min-height:44px;border:0;background:transparent;color:#64748b;font:600 14px/1.2 system-ui,sans-serif;";
+
   const cleanup = () => {
     wrap.remove();
     URL.revokeObjectURL(url);
+    window.removeEventListener("pagehide", cleanup);
+    if (activePdfOverlayCleanup === cleanup) activePdfOverlayCleanup = null;
   };
-  close.addEventListener("click", cleanup);
-  bar.appendChild(close);
-  wrap.appendChild(bar);
-  wrap.appendChild(iframe);
+
+  shareBtn.addEventListener("click", () => {
+    void (async () => {
+      shareBtn.disabled = true;
+      shareBtn.textContent = "Opening share sheet…";
+      statusEl.style.display = "none";
+      try {
+        const shared = await sharePdfFile(file);
+        if (shared) {
+          cleanup();
+          return;
+        }
+        /* User dismissed the native share sheet — leave the card open. */
+      } catch (err) {
+        console.error("[proposal-pdf] share failed", err);
+        statusEl.textContent =
+          err instanceof Error && err.name === "NotAllowedError"
+            ? "That tap didn't reach Safari's share sheet in time — please try again."
+            : "Couldn't open the share sheet. Please try again.";
+        statusEl.style.display = "block";
+      } finally {
+        shareBtn.disabled = false;
+        shareBtn.textContent = shareBtnDefaultLabel;
+      }
+    })();
+  });
+  closeBtn.addEventListener("click", cleanup);
+  /*
+   * `pagehide` (not `beforeunload`/`unload`) is the reliable, bfcache-safe
+   * signal on iOS Safari for "the user is navigating away" — covers both
+   * the blob URL leak and a stray overlay surviving a back/forward move.
+   */
+  window.addEventListener("pagehide", cleanup, { once: true });
+  activePdfOverlayCleanup = cleanup;
+
+  card.append(title, nameEl, shareBtn, statusEl, closeBtn);
+  wrap.appendChild(card);
   document.body.appendChild(wrap);
 }
 

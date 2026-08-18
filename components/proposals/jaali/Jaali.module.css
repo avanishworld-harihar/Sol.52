@@ -217,6 +217,90 @@
   cursor: wait;
 }
 
+.pdfReadyOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  padding-top: max(20px, env(safe-area-inset-top, 0px));
+  padding-bottom: max(20px, env(safe-area-inset-bottom, 0px));
+  background: rgba(42, 33, 24, 0.55);
+}
+
+.pdfReadyCard {
+  width: min(340px, 100%);
+  background: var(--ja-card);
+  border: 1px solid var(--ja-line);
+  border-radius: 4px;
+  padding: 1.4rem 1.25rem 1.15rem;
+  box-shadow: 0 18px 48px rgba(42, 33, 24, 0.35);
+}
+
+.pdfReadyTitle {
+  margin: 0 0 0.45rem;
+  font-family: var(--ja-serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ja-ink);
+}
+
+.pdfReadyBody {
+  margin: 0 0 0.65rem;
+  font-family: var(--ja-sans);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--ja-muted);
+}
+
+.pdfReadyFile {
+  margin: 0 0 1rem;
+  font-family: var(--ja-sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ja-terra);
+  word-break: break-all;
+}
+
+.pdfReadyActions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.pdfReadyShare {
+  appearance: none;
+  border: 0;
+  border-radius: 2px;
+  background: var(--ja-terra);
+  color: #fff8ee;
+  font-family: var(--ja-sans);
+  font-size: 0.9rem;
+  font-weight: 700;
+  min-height: 46px;
+  cursor: pointer;
+}
+
+.pdfReadyShare:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.pdfReadyClose {
+  appearance: none;
+  border: 1px solid var(--ja-line);
+  border-radius: 2px;
+  background: var(--ja-card);
+  color: var(--ja-ink);
+  font-family: var(--ja-sans);
+  font-size: 0.85rem;
+  font-weight: 600;
+  min-height: 42px;
+  cursor: pointer;
+}
+
 .stage {
   display: flex;
   flex-direction: column;

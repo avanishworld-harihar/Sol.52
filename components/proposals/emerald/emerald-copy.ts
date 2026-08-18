@@ -11,6 +11,16 @@ export function getEmeraldCopy(lang: EmeraldLang) {
       brand: hi ? "एमराल्ड सिग्नेचर" : "Emerald Signature",
       downloadPdf: hi ? "PDF डाउनलोड" : "Download PDF",
       preparingPdf: hi ? "PDF बन रहा है…" : "Preparing PDF…",
+      pdfBuilding: hi ? "खुल रहा है…" : "Opening…",
+      pdfFailed: hi
+        ? "PDF नहीं बन सकी। कृपया दोबारा कोशिश करें।"
+        : "Could not create PDF. Please try again.",
+      pdfReadyTitle: hi ? "PDF तैयार है" : "Your PDF is ready",
+      pdfReadyBody: hi
+        ? "सेव करने के लिए Share दबाएँ, फिर “Save to Files” चुनें।"
+        : "Tap Share, then choose Save to Files.",
+      pdfReadyShare: hi ? "Share" : "Share",
+      pdfReadyClose: hi ? "बंद करें" : "Close",
       langEn: "EN",
       langHi: "हिंदी",
       langAria: hi ? "भाषा" : "Language",

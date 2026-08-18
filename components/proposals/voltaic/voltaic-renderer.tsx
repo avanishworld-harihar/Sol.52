@@ -19,6 +19,8 @@ import {
   buildResidentialProposalPdf,
   downloadPdfFile,
   isAppleTouchDevice,
+  sharePdfFile,
+  type ResidentialPdfFile,
 } from "@/components/proposals/_shared/residential-pdf-export";
 import { RESIDENTIAL_ENGINEERING_STANDARDS } from "@/lib/proposal-engineering-metrics";
 import { getVoltaicCopy, type VoltaicLang } from "./voltaic-copy";
@@ -73,6 +75,8 @@ export function VoltaicRenderer({
 }: VoltaicRendererProps) {
   const [lang, setLang] = useState<VoltaicLang>("en");
   const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfSharing, setPdfSharing] = useState(false);
+  const [pdfReady, setPdfReady] = useState<ResidentialPdfFile | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -182,20 +186,41 @@ export function VoltaicRenderer({
     if (isAppleTouchDevice() && rootRef.current) {
       setPdfBusy(true);
       try {
-        downloadPdfFile(
-          await buildResidentialProposalPdf({
-            root: rootRef.current,
-            customerName: client,
-            presetId: "residential_voltaic",
-            pageSelector: "[data-voltaic-stage] > section",
-          })
-        );
+        const file = await buildResidentialProposalPdf({
+          root: rootRef.current,
+          customerName: client,
+          presetId: "residential_voltaic",
+          pageSelector: "[data-voltaic-stage] > section",
+        });
+        setPdfReady(file);
+      } catch (err) {
+        console.error("[voltaic] PDF export failed", err);
+        window.alert(c.print.pdfFailed);
       } finally {
         setPdfBusy(false);
       }
       return;
     }
     window.print();
+  };
+
+  /*
+   * iOS Safari's navigator.share() needs a fresh, real click — the tap that
+   * started the 15-30s PDF build above is long expired by the time the file
+   * is ready, so share() is only ever called from this button's own click,
+   * never automatically after the build.
+   */
+  const handleSharePdf = async () => {
+    if (!pdfReady || pdfSharing) return;
+    setPdfSharing(true);
+    try {
+      await sharePdfFile(pdfReady);
+    } catch (err) {
+      console.error("[voltaic] PDF share failed", err);
+      void downloadPdfFile(pdfReady);
+    } finally {
+      setPdfSharing(false);
+    }
   };
 
   if (!data) return <div className={styles.loading}>{c.print.loading}</div>;
@@ -1043,6 +1068,40 @@ export function VoltaicRenderer({
           </div>
         </VoltaicSheet>
       </div>
+
+      {pdfReady ? (
+        <div
+          className={styles.pdfReadyOverlay}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="voltaic-pdf-ready-title"
+        >
+          <div className={styles.pdfReadyCard}>
+            <h2 id="voltaic-pdf-ready-title" className={styles.pdfReadyTitle}>
+              {c.print.pdfReadyTitle}
+            </h2>
+            <p className={styles.pdfReadyBody}>{c.print.pdfReadyBody}</p>
+            <p className={styles.pdfReadyFile}>{pdfReady.fileName}</p>
+            <div className={styles.pdfReadyActions}>
+              <button
+                type="button"
+                className={styles.pdfReadyShare}
+                onClick={handleSharePdf}
+                disabled={pdfSharing}
+              >
+                {pdfSharing ? c.print.pdfSharing : c.print.pdfReadyShare}
+              </button>
+              <button
+                type="button"
+                className={styles.pdfReadyClose}
+                onClick={() => setPdfReady(null)}
+              >
+                {c.print.pdfReadyClose}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

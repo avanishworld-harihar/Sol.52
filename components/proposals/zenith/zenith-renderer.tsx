@@ -23,6 +23,8 @@ import {
   buildAtelierProposalPdf,
   downloadPdfFile,
   isAppleTouchDevice,
+  sharePdfFile,
+  type ResidentialPdfFile,
 } from "@/components/proposals/_shared/residential-pdf-export";
 import styles from "./zenith.module.css";
 
@@ -129,6 +131,8 @@ export function ZenithProposalRenderer({
   }, []);
   const rootRef = useRef<HTMLDivElement>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfSharing, setPdfSharing] = useState(false);
+  const [pdfReady, setPdfReady] = useState<ResidentialPdfFile | null>(null);
 
   useEffect(() => {
     const sync = () => {
@@ -207,18 +211,47 @@ export function ZenithProposalRenderer({
     if (isAppleTouchDevice() && rootRef.current) {
       setPdfBusy(true);
       try {
-        downloadPdfFile(await buildAtelierProposalPdf({
+        const file = await buildAtelierProposalPdf({
           root: rootRef.current,
           customerName: customer,
           presetId: "residential_zenith",
-          pageSelector: ":scope > section",
-        }));
+          /*
+           * Sections are nested one level inside .presetZenith, not direct
+           * children of the root — ":scope > section" never matched any
+           * page, so the iPad export threw "No proposal pages found" every
+           * time.
+           */
+          pageSelector: "[data-zenith-stage] > section",
+        });
+        setPdfReady(file);
+      } catch (err) {
+        console.error("[zenith] PDF export failed", err);
+        window.alert(c.print.pdfFailed);
       } finally {
         setPdfBusy(false);
       }
       return;
     }
     window.print();
+  };
+
+  /*
+   * iOS Safari's navigator.share() needs a fresh, real click — the tap that
+   * started the 15-30s PDF build above is long expired by the time the file
+   * is ready, so share() is only ever called from this button's own click,
+   * never automatically after the build.
+   */
+  const handleSharePdf = async () => {
+    if (!pdfReady || pdfSharing) return;
+    setPdfSharing(true);
+    try {
+      await sharePdfFile(pdfReady);
+    } catch (err) {
+      console.error("[zenith] PDF share failed", err);
+      void downloadPdfFile(pdfReady);
+    } finally {
+      setPdfSharing(false);
+    }
   };
 
   return (
@@ -245,14 +278,19 @@ export function ZenithProposalRenderer({
                 {c.print.langHi}
               </button>
             </div>
-            <button type="button" onClick={handlePrint} className={styles.printBarBtn}>
-              {c.print.downloadPdf}
+            <button
+              type="button"
+              onClick={handlePrint}
+              className={styles.printBarBtn}
+              disabled={pdfBusy}
+            >
+              {pdfBusy ? c.print.pdfBuilding : c.print.downloadPdf}
             </button>
           </div>
         </div>
       </div>
 
-      <div className={styles.presetZenith}>
+      <div className={styles.presetZenith} data-zenith-stage>
         {/* 1 — Cover (brand-first; no project cost on first page) */}
         <section className={`${styles.page} ${styles.pageCover}`}>
           <div className={styles.coverStage}>
@@ -924,6 +962,40 @@ export function ZenithProposalRenderer({
           </div>
         </section>
       </div>
+
+      {pdfReady ? (
+        <div
+          className={styles.pdfReadyOverlay}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="zenith-pdf-ready-title"
+        >
+          <div className={styles.pdfReadyCard}>
+            <h2 id="zenith-pdf-ready-title" className={styles.pdfReadyTitle}>
+              {c.print.pdfReadyTitle}
+            </h2>
+            <p className={styles.pdfReadyBody}>{c.print.pdfReadyBody}</p>
+            <p className={styles.pdfReadyFile}>{pdfReady.fileName}</p>
+            <div className={styles.pdfReadyActions}>
+              <button
+                type="button"
+                className={styles.pdfReadyShare}
+                onClick={handleSharePdf}
+                disabled={pdfSharing}
+              >
+                {pdfSharing ? c.print.pdfSharing : c.print.pdfReadyShare}
+              </button>
+              <button
+                type="button"
+                className={styles.pdfReadyClose}
+                onClick={() => setPdfReady(null)}
+              >
+                {c.print.pdfReadyClose}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
