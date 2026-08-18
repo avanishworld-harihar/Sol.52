@@ -36,6 +36,9 @@ import {
 import { VoltaicGeometryDiagram, VoltaicStackDiagram } from "./voltaic-stack-diagram";
 import { VoltaicSld } from "./voltaic-sld";
 import { VoltaicCaption, VoltaicHead, VoltaicSheet } from "./voltaic-sheet";
+import { useVoltaicIdentity } from "./voltaic-brand";
+import { useVoltaicClosingContact } from "./voltaic-closing-contact";
+import { buildVoltaicTermsCopy } from "./voltaic-terms";
 import styles from "./voltaic.module.css";
 
 const LANG_KEY = "sol52-voltaic-lang";
@@ -100,9 +103,17 @@ export function VoltaicRenderer({
     [data, pptInput, summary, lang]
   );
 
-  const brand =
-    data.meta.brandName?.trim() || data.closing.installerName?.trim() || "Solar Partner";
-  const logoUrl = data.meta.brandLogoUrl?.trim() || installerLogoUrl?.trim();
+  const identity = useVoltaicIdentity(
+    data,
+    installerLogoUrl,
+    pptInput,
+    summary?.amcSelectedYears
+  );
+  const contact = useVoltaicClosingContact(data, pptInput);
+  const brand = identity.brandName;
+  const logoUrl = identity.header.showLogo ? identity.logoUrl : "";
+  const coverLogoUrl = identity.cover.showLogo ? identity.cover.logoUrl : "";
+  const closingLogoUrl = identity.closing.showLogo ? identity.closing.logoUrl : "";
   const client = data.meta.customerName?.trim() || "—";
   const location =
     data.meta.locationLine && data.meta.locationLine !== "—"
@@ -162,7 +173,17 @@ export function VoltaicRenderer({
     }));
   }, [annualUnits, isHi]);
 
-  const totalSheets = showBill ? 14 : 13;
+  const terms = useMemo(
+    () =>
+      buildVoltaicTermsCopy(
+        lang,
+        identity.amcYears,
+        data.economics.grossInr || summary?.grossSystemCost || 0
+      ),
+    [lang, identity.amcYears, data.economics.grossInr, summary?.grossSystemCost]
+  );
+
+  const totalSheets = showBill ? 15 : 14;
   let sheetNo = 0;
   const next = () => String(++sheetNo).padStart(2, "0");
   const total = String(totalSheets).padStart(2, "0");
@@ -177,7 +198,9 @@ export function VoltaicRenderer({
     project: `${systemKw} kW · ${location}`,
     date: dateLabel,
     scale: sheetLabels.nts,
-    drawn: brand,
+    drawn: brand || "—",
+    logoUrl,
+    logoAlt: identity.logoAlt,
     labels: sheetLabels,
   });
 
@@ -245,9 +268,9 @@ export function VoltaicRenderer({
           <span className={styles.printBarBrand}>
             {logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element -- toolbar chrome
-              <img src={logoUrl} alt={brand} className={styles.printBarLogo} />
+              <img src={logoUrl} alt={identity.logoAlt} className={styles.printBarLogo} />
             ) : null}
-            {brand} · {c.print.series}
+            {brand ? `${brand} · ${c.print.series}` : c.print.series}
           </span>
           <div className={styles.printBarActions}>
             <div className={styles.langToggle} role="group" aria-label={c.print.langAria}>
@@ -282,18 +305,26 @@ export function VoltaicRenderer({
 
       <div className={styles.stage} data-voltaic-stage>
         {/* ══ G-001 · COVER ══════════════════════════════════════════ */}
-        <VoltaicSheet {...frame("G-001", c.cover.docType)} tone="cyan">
+        <VoltaicSheet {...frame("G-001", c.cover.docType)} tone="cyan" logoUrl={undefined}>
           <div className={styles.coverGrid} aria-hidden />
           <div className={styles.coverInner}>
-            <div className={styles.coverBrandRow}>
-              {logoUrl ? (
-                <span className={styles.coverLogoPlate}>
-                  {/* eslint-disable-next-line @next/next/no-img-element -- print asset */}
-                  <img src={logoUrl} alt={brand} className={styles.coverLogo} />
-                </span>
-              ) : null}
-              <span className={styles.coverBrandName}>{brand.toUpperCase()}</span>
-            </div>
+            {coverLogoUrl || identity.cover.showName ? (
+              <div className={styles.coverBrandRow}>
+                {coverLogoUrl ? (
+                  <span className={styles.coverLogoPlate}>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- print asset */}
+                    <img
+                      src={coverLogoUrl}
+                      alt={identity.logoAlt}
+                      className={styles.coverLogo}
+                    />
+                  </span>
+                ) : null}
+                {identity.cover.showName ? (
+                  <span className={styles.coverBrandName}>{brand.toUpperCase()}</span>
+                ) : null}
+              </div>
+            ) : null}
 
             <div className={styles.coverHero}>
               <h1 className={styles.coverTitle}>
@@ -945,14 +976,38 @@ export function VoltaicRenderer({
             </div>
             <div className={styles.block}>
               <span className={styles.blockLabel}>{c.exec.bankTitle}</span>
-              <dl className={styles.bankList}>
-                <dt>{c.exec.account}</dt>
-                <dd className={styles.mono}>{data.execution.bank.accountNumber || "—"}</dd>
-                <dt>{c.exec.ifsc}</dt>
-                <dd className={styles.mono}>{data.execution.bank.ifsc || "—"}</dd>
-                <dt>{c.exec.upi}</dt>
-                <dd className={styles.mono}>{data.execution.bank.upiId || "—"}</dd>
-              </dl>
+              <div className={styles.bankWrap}>
+                <dl className={styles.bankList}>
+                  {identity.bank.accountName ? (
+                    <>
+                      <dt>{c.exec.accountName}</dt>
+                      <dd>{identity.bank.accountName}</dd>
+                    </>
+                  ) : null}
+                  <dt>{c.exec.account}</dt>
+                  <dd className={styles.mono}>{identity.bank.accountNumber || "—"}</dd>
+                  <dt>{c.exec.ifsc}</dt>
+                  <dd className={styles.mono}>{identity.bank.ifsc || "—"}</dd>
+                  {identity.bank.branch ? (
+                    <>
+                      <dt>{c.exec.branch}</dt>
+                      <dd>{identity.bank.branch}</dd>
+                    </>
+                  ) : null}
+                  <dt>{c.exec.upi}</dt>
+                  <dd className={styles.mono}>{identity.bank.upiId || "—"}</dd>
+                </dl>
+                {identity.bank.paymentQrCodeUrl ? (
+                  <figure className={styles.bankQr}>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- print asset */}
+                    <img
+                      src={identity.bank.paymentQrCodeUrl}
+                      alt={c.exec.qr}
+                    />
+                    <figcaption>{c.exec.qr}</figcaption>
+                  </figure>
+                ) : null}
+              </div>
             </div>
           </div>
         </VoltaicSheet>
@@ -960,28 +1015,30 @@ export function VoltaicRenderer({
         {/* ══ T-700 · TERMS ═════════════════════════════════════════ */}
         <VoltaicSheet {...frame("T-700", c.terms.sheet)}>
           <VoltaicHead title={c.terms.title} />
-          <div className={styles.twoCol}>
-            <div className={styles.block}>
-              <span className={styles.blockLabel}>{c.terms.conditions}</span>
-              <ul className={styles.stdList}>
-                {data.terms.conditions.map((t) => (
-                  <li key={t}>{t}</li>
-                ))}
-              </ul>
-            </div>
-            <div className={styles.block}>
-              <span className={styles.blockLabel}>{c.terms.documents}</span>
-              <ul className={styles.checkList}>
-                {data.terms.documents.map((t) => (
-                  <li key={t}>{t}</li>
-                ))}
-              </ul>
-            </div>
+          <div className={`${styles.block} ${styles.termsBlock}`}>
+            <span className={styles.blockLabel}>{c.terms.conditions}</span>
+            <ul className={`${styles.stdList} ${styles.termsList}`}>
+              {terms.conditions.map((t) => (
+                <li key={t}>{t}</li>
+              ))}
+            </ul>
           </div>
+          <div className={`${styles.block} ${styles.termsBlock}`}>
+            <span className={styles.blockLabel}>{c.terms.documents}</span>
+            <ul className={`${styles.checkList} ${styles.docList}`}>
+              {terms.documents.map((t) => (
+                <li key={t}>{t}</li>
+              ))}
+            </ul>
+          </div>
+        </VoltaicSheet>
 
+        {/* ══ T-701 · AMC & WARRANTY ════════════════════════════════ */}
+        <VoltaicSheet {...frame("T-701", c.terms.sheetAmc)}>
+          <VoltaicHead title={c.terms.titleAmc} />
           <div className={styles.block}>
             <span className={styles.blockLabel}>{c.terms.warranty}</span>
-            <table className={styles.dataTable}>
+            <table className={`${styles.dataTable} ${styles.tableTight}`}>
               <thead>
                 <tr>
                   <th>{c.terms.item}</th>
@@ -1000,10 +1057,46 @@ export function VoltaicRenderer({
               </tbody>
             </table>
           </div>
+
+          <p className={styles.amcPara}>{terms.amcObjective}</p>
+
+          <div className={styles.twoCol}>
+            <div className={styles.block}>
+              <span className={styles.blockLabel}>{c.terms.amcScope}</span>
+              <ul className={`${styles.stdList} ${styles.termsList}`}>
+                {terms.amcScope.map((t) => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ul>
+            </div>
+            <div className={styles.block}>
+              <span className={styles.blockLabel}>{c.terms.clientScope}</span>
+              <ul className={`${styles.checkList} ${styles.termsList}`}>
+                {terms.clientScope.map((t) => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className={styles.twoCol}>
+            <div className={styles.block}>
+              <span className={styles.blockLabel}>{c.terms.amcCost}</span>
+              <p className={styles.amcPara}>{terms.amcCost}</p>
+            </div>
+            <div className={styles.block}>
+              <span className={styles.blockLabel}>{c.terms.amcTerms}</span>
+              <ul className={`${styles.stdList} ${styles.termsList}`}>
+                {terms.amcTerms.map((t) => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </VoltaicSheet>
 
         {/* ══ Z-900 · ACCEPTANCE ════════════════════════════════════ */}
-        <VoltaicSheet {...frame("Z-900", c.closing.sheet)} tone="cyan">
+        <VoltaicSheet {...frame("Z-900", c.closing.sheet)} tone="cyan" logoUrl={undefined}>
           <div className={styles.coverGrid} aria-hidden />
           <div className={styles.closeInner}>
             <h2 className={styles.closeTitle}>
@@ -1040,18 +1133,45 @@ export function VoltaicRenderer({
 
             <div className={styles.closeSign}>
               <div>
-                <span className={styles.closeSignLabel}>{c.closing.signOff}</span>
-                <span className={styles.closeBrand}>{brand}</span>
-                {data.closing.contactLine ? (
-                  <span className={styles.closeContact}>{data.closing.contactLine}</span>
-                ) : null}
-                {data.closing.address ? (
-                  <span className={styles.closeContact}>{data.closing.address}</span>
-                ) : null}
-                {data.closing.gstNumber ? (
-                  <span className={styles.closeContact}>
-                    {c.closing.gstin} {data.closing.gstNumber}
+                {closingLogoUrl ? (
+                  <span className={styles.closeLogoPlate}>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- print asset */}
+                    <img
+                      src={closingLogoUrl}
+                      alt={identity.logoAlt}
+                      className={styles.closeLogo}
+                    />
                   </span>
+                ) : null}
+                <span className={styles.closeSignLabel}>{c.closing.signOff}</span>
+                {identity.closing.showName || brand ? (
+                  <span className={styles.closeBrand}>{brand || identity.closing.installerName}</span>
+                ) : null}
+                {contact.phone ? (
+                  <span className={styles.closeContact}>
+                    {c.closing.phone} · {contact.phone}
+                  </span>
+                ) : null}
+                {contact.email ? (
+                  <span className={styles.closeContact}>
+                    {c.closing.email} · {contact.email}
+                  </span>
+                ) : null}
+                {contact.website ? (
+                  <span className={styles.closeContact}>
+                    {c.closing.web} · {contact.website}
+                  </span>
+                ) : null}
+                {contact.address ? (
+                  <span className={styles.closeContact}>{contact.address}</span>
+                ) : null}
+                {contact.gstin ? (
+                  <span className={styles.closeContact}>
+                    {c.closing.gstin} {contact.gstin}
+                  </span>
+                ) : null}
+                {!contact.phone && !contact.email && contact.contactLine ? (
+                  <span className={styles.closeContact}>{contact.contactLine}</span>
                 ) : null}
               </div>
               <button
