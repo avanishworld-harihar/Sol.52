@@ -2441,6 +2441,9 @@ function ProposalPageContent() {
                         : preset === "residential_jaali" ||
                             preset === "jaali"
                           ? "residential_jaali"
+                        : preset === "residential_voltaic" ||
+                            preset === "voltaic"
+                          ? "residential_voltaic"
                         : preset === "residential_executive"
                         ? "residential_executive"
                         : "residential_executive";

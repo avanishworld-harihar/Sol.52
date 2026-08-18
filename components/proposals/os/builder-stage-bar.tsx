@@ -226,6 +226,8 @@ export function BuilderStageBar({
                               ? "Khadi"
                             : presetId === "residential_jaali"
                               ? "Jaali"
+                            : presetId === "residential_voltaic"
+                              ? "Voltaic"
                             : "Residential"}
             </span>
           </div>

@@ -117,6 +117,11 @@ export function parsePrefillFromSearchParams(params: URLSearchParams): BuilderPr
     preset === "jaali"
   ) {
     prefill.preset = "residential_jaali";
+  } else if (
+    preset === "residential_voltaic" ||
+    preset === "voltaic"
+  ) {
+    prefill.preset = "residential_voltaic";
   } else if (preset === "commercial_executive" || preset === "commercial") {
     prefill.preset = "commercial_executive";
   } else if (preset) {
