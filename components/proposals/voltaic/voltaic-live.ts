@@ -14,6 +14,11 @@
 import { computeResidentialEngineeringMetrics } from "@/lib/proposal-engineering-metrics";
 import type { ProposalData } from "@/lib/proposal-data";
 import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposal-ppt";
+import {
+  inverterBrandsLabel,
+  resolveProposalPanelBrand,
+  wireBrandsLabel,
+} from "@/lib/residential-deck-helpers";
 
 export type VoltaicLang = "en" | "hi";
 
@@ -337,6 +342,35 @@ function brandOf(
   };
 }
 
+export type VoltaicEquipmentMakes = {
+  panel: string;
+  inverter: string;
+  wire: string;
+};
+
+/** Panel / inverter / wire makes from Proposal Builder, then BOM snapshot. */
+export function resolveVoltaicEquipmentMakes(
+  data: ProposalData,
+  pptInput?: PremiumProposalPptInput | null
+): VoltaicEquipmentMakes {
+  const cfg = pptInput?.residentialConfig ?? null;
+  const panelBom = brandOf(data, /panel|module/i, "");
+  const inverterBom = brandOf(data, /inverter/i, "");
+  const cableBom = brandOf(data, /cable|wire|cabling/i, "");
+
+  const panel = cfg
+    ? resolveProposalPanelBrand(cfg, panelBom.brand || "Tier-1")
+    : panelBom.brand || "Tier-1";
+  const inverter = cfg
+    ? inverterBrandsLabel(cfg.inverterBrandOptions, inverterBom.brand || "Tier-1")
+    : inverterBom.brand || "Tier-1";
+  const wire = cfg
+    ? wireBrandsLabel(cfg.pricing, cableBom.brand || "Polycab")
+    : cableBom.brand || "Polycab / Havells";
+
+  return { panel, inverter, wire };
+}
+
 /**
  * Major equipment, split into real line items rather than rolled-up rows.
  * Every line carries make, spec, quantity with unit, the standard it is bought
@@ -351,12 +385,15 @@ export function voltaicMajorBom(
     systemKw: number;
     threePhase: boolean;
     isHi: boolean;
+    makes?: VoltaicEquipmentMakes;
   }
 ): VoltaicBomGroup[] {
   const hi = opts.isHi;
   const panel = brandOf(data, /panel|module/i, "Tier-1");
   const inverter = brandOf(data, /inverter/i, "Tier-1");
   const structure = brandOf(data, /structure|mount/i, "HDG GI");
+  const panelMake = opts.makes?.panel?.trim() || panel.brand;
+  const inverterMake = opts.makes?.inverter?.trim() || inverter.brand;
   const acVolts = opts.threePhase ? "415 V, 3Φ" : "230 V, 1Φ";
 
   return [
@@ -367,7 +404,7 @@ export function voltaicMajorBom(
         {
           ref: "10.1",
           item: hi ? "पीवी मॉड्यूल" : "PV module",
-          make: panel.brand,
+          make: panelMake,
           spec: `${opts.panelWatt} Wp · Mono PERC / TOPCon · ${design.moduleVocV} V Voc · ${design.moduleIscA} A Isc`,
           qty: `${opts.panelCount} ${hi ? "नग" : "nos"}`,
           standard: "IEC 61215 / 61730 · IS 14286 · ALMM",
@@ -379,7 +416,7 @@ export function voltaicMajorBom(
         {
           ref: "10.2",
           item: hi ? "स्ट्रिंग इन्वर्टर" : "String inverter",
-          make: inverter.brand,
+          make: inverterMake,
           spec: `${opts.systemKw} kW · ${design.mpptCount} MPPT · ${acVolts} · IP65`,
           qty: `1 ${hi ? "नग" : "no"}`,
           standard: "IEC 62109-1/2 · CEA grid code",
@@ -429,9 +466,10 @@ export function voltaicMajorBom(
 export function voltaicBalanceBom(
   design: VoltaicStringDesign,
   cables: VoltaicCableRun[],
-  opts: { threePhase: boolean; panelCount: number; isHi: boolean }
+  opts: { threePhase: boolean; panelCount: number; isHi: boolean; wireMake?: string }
 ): VoltaicBomGroup[] {
   const hi = opts.isHi;
+  const wireMake = opts.wireMake?.trim() || "Polycab / Havells";
   const dcRun = cables.find((c) => c.ref === "DC-1");
   const acRun = cables.find((c) => c.ref === "AC-2");
   const dcTotalM = cables
@@ -449,7 +487,7 @@ export function voltaicBalanceBom(
         {
           ref: "30.1",
           item: hi ? "DC सोलर केबल" : "DC solar cable",
-          make: "Polycab / Havells",
+          make: wireMake,
           spec: `${dcRun?.sizeSqMm ?? 4} mm² · 1.5 kV DC · ${hi ? "UV स्थिर, XLPE" : "UV-stable XLPE"}`,
           qty: `${Math.round(dcTotalM)} m`,
           standard: "TUV 2PfG 1169 / IEC 62930",
@@ -461,7 +499,7 @@ export function voltaicBalanceBom(
         {
           ref: "30.2",
           item: hi ? "AC केबल" : "AC cable",
-          make: "Polycab / Havells",
+          make: wireMake,
           spec: `${acRun?.sizeSqMm ?? 4} mm² · ${acRun?.cores ?? "3C + E"} · FRLS`,
           qty: `${Math.round(acTotalM)} m`,
           standard: "IS 694 · IS 7098",
