@@ -291,9 +291,14 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 3.5mm;
-  padding-top: 3.5mm;
+  gap: 3mm;
+  padding-top: 3mm;
   overflow: hidden;
+}
+
+/* Drawing sheets carry two figures plus a spec block, so they run tighter. */
+.sheetCyan .sheetBody {
+  gap: 2.4mm;
 }
 
 /* Title block */
@@ -695,7 +700,10 @@
 }
 
 .whyChart {
-  flex-shrink: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .wealthSvg {
@@ -766,10 +774,10 @@
 }
 
 .dataTable td {
-  padding: 1.5mm 1.8mm;
+  padding: 1.3mm 1.8mm;
   border-bottom: 1px solid var(--vt-rule);
   vertical-align: top;
-  line-height: 1.35;
+  line-height: 1.32;
 }
 
 .sheetCyan .dataTable th {
@@ -784,8 +792,13 @@
 
 .tableTight td,
 .tableTight th {
-  padding: 1.1mm 1.4mm;
-  font-size: 7.6pt;
+  padding: 1mm 1.4mm;
+  font-size: 7.5pt;
+}
+
+.tableTight .bomNoteRow td {
+  font-size: 7.1pt;
+  line-height: 1.32;
 }
 
 .num {
@@ -826,7 +839,11 @@
 /* ── BOM ───────────────────────────────────────────────────────────── */
 .bomGroup {
   flex-shrink: 0;
-  margin-bottom: 2.5mm;
+  margin-bottom: 2mm;
+}
+
+.bomGroup:last-child {
+  margin-bottom: 0;
 }
 
 .bomGroupHead {
@@ -881,10 +898,10 @@
 
 .specCell {
   border: 1px solid var(--vt-rule);
-  padding: 2.2mm 2.5mm;
+  padding: 1.8mm 2.2mm;
   display: flex;
   flex-direction: column;
-  gap: 0.6mm;
+  gap: 0.5mm;
   min-width: 0;
   background: var(--vt-paper);
 }
@@ -1027,7 +1044,7 @@
 .drawing {
   border: 1px solid rgba(127, 216, 255, 0.3);
   background: rgba(6, 32, 58, 0.35);
-  padding: 2mm;
+  padding: 1.6mm;
   flex-shrink: 0;
 }
 
@@ -1239,8 +1256,8 @@
 .stdList li {
   position: relative;
   padding-left: 5mm;
-  font-size: 8.4pt;
-  line-height: 1.45;
+  font-size: 8.2pt;
+  line-height: 1.4;
   color: var(--vt-ink);
 }
 
@@ -1335,7 +1352,8 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 4mm;
-  flex-shrink: 0;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .impactCard {
@@ -1345,6 +1363,7 @@
   padding: 6mm 5mm;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 1mm;
 }
 

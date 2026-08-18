@@ -641,6 +641,101 @@ export function VoltaicRenderer({
           {majorBom.map((group) => (
             <BomGroup key={group.code} group={group} cols={c.bom.cols} noteLabel={c.bom.subNote} />
           ))}
+
+          {/* Datasheet extract — the numbers an installer would check before ordering */}
+          <div className={styles.block}>
+            <VoltaicCaption label={c.bom.datasheetTitle} />
+            <div className={styles.twoCol}>
+              <table className={`${styles.dataTable} ${styles.tableTight}`}>
+                <thead>
+                  <tr>
+                    <th colSpan={2}>{c.bom.moduleCol}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{c.bom.ds.voc}</td>
+                    <td className={styles.num}>{d.moduleVocV} V</td>
+                  </tr>
+                  <tr>
+                    <td>{c.bom.ds.vmp}</td>
+                    <td className={styles.num}>{d.moduleVmpV} V</td>
+                  </tr>
+                  <tr>
+                    <td>{c.bom.ds.isc}</td>
+                    <td className={styles.num}>{d.moduleIscA} A</td>
+                  </tr>
+                  <tr>
+                    <td>{c.bom.ds.imp}</td>
+                    <td className={styles.num}>{d.moduleImpA} A</td>
+                  </tr>
+                  <tr>
+                    <td>{c.bom.ds.tempCoeff}</td>
+                    <td className={styles.num}>{VOLTAIC_VOC_TEMP_COEFF} %/°C</td>
+                  </tr>
+                  <tr>
+                    <td>{c.bom.ds.eff}</td>
+                    <td className={styles.num}>≥ 21%</td>
+                  </tr>
+                  <tr>
+                    <td>{c.bom.ds.degradation}</td>
+                    <td className={styles.num}>≤ 0.55 %/yr</td>
+                  </tr>
+                  <tr>
+                    <td>{c.bom.ds.cells}</td>
+                    <td className={styles.num}>144 half-cut</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <table className={`${styles.dataTable} ${styles.tableTight}`}>
+                <thead>
+                  <tr>
+                    <th colSpan={2}>{c.bom.inverterCol}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{c.bom.ds.acOut}</td>
+                    <td className={styles.num}>
+                      {systemKw} kW · {eng.threePhase ? "415 V 3Φ" : "230 V 1Φ"}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>{c.bom.ds.mppt}</td>
+                    <td className={styles.num}>{d.mpptCount}</td>
+                  </tr>
+                  <tr>
+                    <td>{c.bom.ds.mpptRange}</td>
+                    <td className={styles.num}>
+                      {Math.round(d.vmpHotV * d.minModulesPerString)}–{d.stringVocColdV} V
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>{c.bom.ds.maxDc}</td>
+                    <td className={styles.num}>{VOLTAIC_INVERTER_MAX_DC_V} V</td>
+                  </tr>
+                  <tr>
+                    <td>{c.bom.ds.peakEff}</td>
+                    <td className={styles.num}>≥ 97.5%</td>
+                  </tr>
+                  <tr>
+                    <td>{c.bom.ds.protection}</td>
+                    <td className={styles.num}>IP65</td>
+                  </tr>
+                  <tr>
+                    <td>{c.bom.ds.islanding}</td>
+                    <td className={styles.num}>IEC 62109</td>
+                  </tr>
+                  <tr>
+                    <td>{c.bom.ds.monitoring}</td>
+                    <td className={styles.num}>Wi-Fi · per-string</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p className={styles.pageNote}>{c.bom.dsNote}</p>
+          </div>
         </VoltaicSheet>
 
         {/* ══ M-301 · BOM · BALANCE OF SYSTEM ═══════════════════════ */}
@@ -698,6 +793,26 @@ export function VoltaicRenderer({
                 ))}
               </ul>
             </div>
+          </div>
+
+          <div className={styles.block}>
+            <VoltaicCaption label={c.quality.serviceTitle} />
+            <table className={styles.dataTable}>
+              <thead>
+                <tr>
+                  <th>{c.quality.serviceCols.when}</th>
+                  <th>{c.quality.serviceCols.work}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {c.quality.service.map((s) => (
+                  <tr key={s.when}>
+                    <td className={styles.strong}>{s.when}</td>
+                    <td>{s.work}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </VoltaicSheet>
 
@@ -1020,7 +1135,7 @@ function WealthChart({
 }) {
   if (!points || points.length === 0) return null;
   const W = 660;
-  const H = 150;
+  const H = 200;
   const padL = 8;
   const padB = 20;
   const max = Math.max(...points.map((p) => p.cumulativeInr), 1);

@@ -25,6 +25,7 @@ const HEIGHT_TOLERANCE_PX = 8;
 const ROUTES = [
   { path: "/dev/luxe-preview", label: "atelier" },
   { path: "/dev/premium-luxe-preview", label: "luxe-noir" },
+  { path: "/dev/voltaic-preview", label: "voltaic" },
 ];
 
 const VIEWPORTS = [

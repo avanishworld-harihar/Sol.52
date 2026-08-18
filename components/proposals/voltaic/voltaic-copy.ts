@@ -288,6 +288,30 @@ export function getVoltaicCopy(lang: VoltaicLang) {
         warranty: hi ? "वारंटी" : "Warranty",
       },
       subNote: hi ? "क्यों मायने रखता है" : "Why it matters",
+      datasheetTitle: hi ? "मुख्य डेटाशीट पैरामीटर" : "Key datasheet parameters",
+      moduleCol: hi ? "पीवी मॉड्यूल" : "PV module",
+      inverterCol: hi ? "स्ट्रिंग इन्वर्टर" : "String inverter",
+      ds: {
+        voc: hi ? "ओपन-सर्किट वोल्टेज (Voc)" : "Open-circuit voltage (Voc)",
+        vmp: hi ? "अधिकतम पावर वोल्टेज (Vmp)" : "Max-power voltage (Vmp)",
+        isc: hi ? "शॉर्ट-सर्किट धारा (Isc)" : "Short-circuit current (Isc)",
+        imp: hi ? "अधिकतम पावर धारा (Imp)" : "Max-power current (Imp)",
+        tempCoeff: hi ? "Voc तापमान गुणांक" : "Voc temperature coefficient",
+        eff: hi ? "मॉड्यूल दक्षता" : "Module efficiency",
+        degradation: hi ? "वार्षिक ह्रास" : "Annual degradation",
+        cells: hi ? "सेल विन्यास" : "Cell configuration",
+        acOut: hi ? "AC आउटपुट" : "AC output",
+        mppt: hi ? "MPPT ट्रैकर" : "MPPT trackers",
+        mpptRange: hi ? "MPPT वोल्टेज रेंज" : "MPPT voltage range",
+        maxDc: hi ? "अधिकतम DC इनपुट" : "Max DC input",
+        peakEff: hi ? "अधिकतम दक्षता" : "Peak efficiency",
+        protection: hi ? "सुरक्षा श्रेणी" : "Protection class",
+        islanding: hi ? "एंटी-आइलैंडिंग" : "Anti-islanding",
+        monitoring: hi ? "मॉनिटरिंग" : "Monitoring",
+      },
+      dsNote: hi
+        ? "अंतिम ब्रांड की डेटाशीट के अनुसार मान थोड़े भिन्न हो सकते हैं; ऑर्डर से पहले पुष्टि की जाती है।"
+        : "Values follow the final selected make's datasheet and are confirmed before ordering.",
     },
 
     quality: {
@@ -312,6 +336,37 @@ export function getVoltaicCopy(lang: VoltaicLang) {
         hi ? "नेट-मीटर और DISCOM स्वीकृति" : "Net-meter and DISCOM approval",
       ],
       standardsTitle: hi ? "लागू मानक" : "Standards applied",
+      serviceTitle: hi ? "सेवा अनुसूची" : "Service schedule",
+      serviceCols: {
+        when: hi ? "कब" : "When",
+        work: hi ? "कार्य" : "Work",
+      },
+      service: [
+        {
+          when: hi ? "मासिक" : "Monthly",
+          work: hi
+            ? "मॉड्यूल की पानी से सफ़ाई · जनरेशन ऐप में जाँच"
+            : "Water rinse of modules · check generation in the app",
+        },
+        {
+          when: hi ? "तिमाही (वर्ष 1)" : "Quarterly (year 1)",
+          work: hi
+            ? "टर्मिनल टाइटनेस · स्ट्रक्चर बोल्ट · केबल टाई जाँच"
+            : "Terminal tightness · structure bolts · cable tie inspection",
+        },
+        {
+          when: hi ? "वार्षिक" : "Annual",
+          work: hi
+            ? "अर्थ प्रतिरोध मापन · SPD स्थिति · इन्वर्टर एरर लॉग"
+            : "Earth resistance measurement · SPD status · inverter error log",
+        },
+        {
+          when: hi ? "मानसून से पहले" : "Pre-monsoon",
+          work: hi
+            ? "एनक्लोज़र सीलिंग · वॉटरप्रूफिंग और ड्रेनेज जाँच"
+            : "Enclosure sealing · waterproofing and drainage check",
+        },
+      ],
     },
 
     gen: {
