@@ -12,6 +12,9 @@
  *   fixedCharge    = MPERC LV-* fixed-charge rule:
  *                      LV1.2 >150u: ceil(units/15) blocks × verified ₹/block
  *                      ≤150u: fixed connection-based slab (₹76/₹129 urban)
+ *                      LV2.2/LV2.1/LV4 demand-based: billingDemand × ₹/kW
+ *                        billingDemand = round(max(MD, 90% × CD)) — both FYs
+ *                      LV2.2 ≤10 kW sanctioned-load: load × ₹/kW (≤50/>50 split)
  *   fppasCharge    = units × monthly FPPAS ₹/unit adjustment
  *                    Auto-looked up from MP_FPPAS_MONTHLY_RATES if billMonth provided
  *   electricityDuty = (energyCharge + fppas − exemption) × dutyRate   for LV2.2
@@ -74,8 +77,21 @@ export type MpBillEngineInput = {
   units: number;
   /** Sanctioned/Connected load in kW; required for >150 unit domestic + LV-2/3/4/6. */
   sanctionedLoadKw?: number;
-  /** Contract demand in kVA — preferred for LV-2.2/LV-4 if present on bill. */
+  /**
+   * Contract demand as printed (often kW on LT MPEZ bills, or kVA when metered that way).
+   * For demand-based LV-2/LV-4, fixed charge uses MPERC billing demand, not full CD.
+   */
   contractDemandKva?: number;
+  /**
+   * Recorded maximum demand for the billing month (same unit as CD — typically kW on LT).
+   * Used with the 90% CD floor to derive billing demand.
+   */
+  maxDemandKw?: number;
+  /**
+   * Printed billing demand when the bill shows it explicitly.
+   * When set, overrides max(MD, 90% CD) computation.
+   */
+  billingDemandKw?: number;
   phase?: MpPhase;
   area?: MpAreaProfile;
   /**
@@ -264,6 +280,58 @@ function isSanctionedLoadTariff(input: MpBillEngineInput, lf: NonNullable<Catego
   return loadKw > 0 && loadKw <= lf.sanctionedLoadLimitKw;
 }
 
+/**
+ * MPERC LT General Terms — billing demand rounding:
+ * fraction of 0.5 or above → next higher integer; fraction below 0.5 ignored.
+ */
+export function roundMpBillingDemand(value: number): number {
+  if (!Number.isFinite(value) || value <= 0) return 0;
+  return Math.floor(value + 0.5);
+}
+
+/**
+ * MPERC LT demand-based: billing demand = max(recorded MD, 90% of contract demand),
+ * then rounded. Applies in both FY 2025-26 and FY 2026-27 (not Apr-2026-only).
+ * Rate ₹/kW still switches via billMonth / getMpCategoryTariff.
+ */
+export function computeLtBillingDemandKw(opts: {
+  contractDemandKw: number;
+  maxDemandKw?: number | null;
+  billingDemandKw?: number | null;
+}): number {
+  const printed = opts.billingDemandKw;
+  if (printed != null && Number.isFinite(printed) && printed > 0) {
+    return Math.max(1, roundMpBillingDemand(printed));
+  }
+  const cd = Math.max(0, Number(opts.contractDemandKw) || 0);
+  const md = Math.max(0, Number(opts.maxDemandKw) || 0);
+  if (cd <= 0 && md <= 0) return 0;
+  const floor = cd > 0 ? cd * 0.9 : 0;
+  return Math.max(1, roundMpBillingDemand(Math.max(md, floor)));
+}
+
+function resolveDemandContractKw(input: MpBillEngineInput, lf: NonNullable<CategoryTariff["loadFixed"]>): number {
+  const cd = Number(input.contractDemandKva) || 0;
+  if (cd > 0) return cd;
+  const load = Number(input.sanctionedLoadKw) || 0;
+  // >10 kW LV-2 is mandatory demand-based; treat sanctioned load as CD when CD omitted.
+  if (lf.sanctionedLoadLimitKw != null && load > lf.sanctionedLoadLimitKw) return load;
+  if (input.category === "LV4" && load > 0) return load;
+  return load > 0 ? load : 0;
+}
+
+function isDemandBasedFixedPath(
+  input: MpBillEngineInput,
+  t: CategoryTariff,
+  lf: NonNullable<CategoryTariff["loadFixed"]>
+): boolean {
+  if (t.category === "LV4") return true;
+  if (t.category !== "LV2.1" && t.category !== "LV2.2") return false;
+  if (input.contractDemandKva && input.contractDemandKva > 0) return true;
+  const load = input.sanctionedLoadKw ?? 0;
+  return lf.sanctionedLoadLimitKw != null && load > lf.sanctionedLoadLimitKw;
+}
+
 function fixedLoadBased(input: MpBillEngineInput, t: CategoryTariff): { amount: number; formula: string } {
   const lf = t.loadFixed;
   if (!lf) return { amount: 0, formula: "no FC rule" };
@@ -317,14 +385,35 @@ function fixedLoadBased(input: MpBillEngineInput, t: CategoryTariff): { amount: 
     return { amount: amt, formula: `LV5.1 metered agriculture: ${r2(hp)} HP × ₹${perHp}/HP = ₹${amt}` };
   }
 
-  // LV-2.2 Sub-type B (Demand-Based) / LV4 / LV3 / LV6 — demand/kW-based.
-  // Prefer kVA when contractDemandKva is given.
-  if (input.contractDemandKva && input.contractDemandKva > 0 && (lf.perKvaUrban || lf.perKvaRural)) {
-    const perKva = isRural ? lf.perKvaRural ?? 0 : lf.perKvaUrban ?? 0;
-    const amt = Math.round(input.contractDemandKva * perKva);
-    return { amount: amt, formula: `${input.contractDemandKva} kVA × ₹${perKva} = ₹${amt}` };
+  // LV-2.1 / LV-2.2 Sub-type B / LV4 — demand-based: FC on billing demand (90% CD floor).
+  // MPEZ LT bills print Contract Demand in kW and charge ₹/kW × billing demand
+  // (verified: 23×302 Feb-2026, 23×312 Aug-2026). Prefer ₹/kW over ₹/kVA when both exist.
+  if (isDemandBasedFixedPath(input, t, lf)) {
+    const contractKw = resolveDemandContractKw(input, lf);
+    const billingDemand = computeLtBillingDemandKw({
+      contractDemandKw: contractKw,
+      maxDemandKw: input.maxDemandKw,
+      billingDemandKw: input.billingDemandKw
+    });
+    if (billingDemand > 0 && (lf.perKwUrban != null || lf.perKwRural != null)) {
+      const perKw = isRural ? lf.perKwRural ?? 0 : lf.perKwUrban ?? 0;
+      const amt = Math.round(billingDemand * perKw);
+      return {
+        amount: amt,
+        formula: `BD ${billingDemand} (max(MD, 90%×${contractKw})) × ₹${perKw}/${isRural ? "kW rural" : "kW"} = ₹${amt}`
+      };
+    }
+    if (billingDemand > 0 && (lf.perKvaUrban || lf.perKvaRural)) {
+      const perKva = isRural ? lf.perKvaRural ?? 0 : lf.perKvaUrban ?? 0;
+      const amt = Math.round(billingDemand * perKva);
+      return {
+        amount: amt,
+        formula: `BD ${billingDemand} kVA × ₹${perKva} = ₹${amt}`
+      };
+    }
   }
 
+  // LV3 / LV6 (and residual) — sanctioned-load × ₹/kW (no 90% demand floor).
   if (lf.perKwUrban != null || lf.perKwRural != null) {
     const loadKw = Math.max(1, input.sanctionedLoadKw ?? 1);
     const perKw = isRural ? lf.perKwRural ?? 0 : lf.perKwUrban ?? 0;

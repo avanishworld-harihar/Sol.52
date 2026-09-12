@@ -86,6 +86,16 @@ export type MpPptRowsInput = {
   connectedLoadKw?: number;
   areaProfile?: MpAreaProfile;
   contractDemandKva?: number;
+  /**
+   * Recorded MD (kW) for the reference bill — used as fallback when a month
+   * has no entry in `monthlyMaxDemandKw`. Demand-based FC still applies the
+   * 90% CD floor when MD is absent/low.
+   */
+  maxDemandKw?: number;
+  /** Optional per-month recorded MD (kW) for demand-based LV-2/LV-4 FC. */
+  monthlyMaxDemandKw?: Partial<Record<keyof MonthlyUnits, number>>;
+  /** Printed billing demand when available (overrides MD/90% computation). */
+  billingDemandKw?: number;
   monthlyUnits: MonthlyUnits;
   /** Direct input from proposal flow (legacy). */
   monthlyBillActuals?: Partial<Record<keyof MonthlyUnits, number>>;
@@ -302,12 +312,34 @@ export function buildMpAuditRows(input: MpPptRowsInput): {
         ? Math.round(priorMonthUnitsRaw)
         : undefined;
 
+    const rowMdRaw = Number(input.monthlyMaxDemandKw?.[monthKey] ?? input.maxDemandKw);
+    const rowMaxDemandKw =
+      Number.isFinite(rowMdRaw) && rowMdRaw > 0 ? rowMdRaw : undefined;
+    const rowBdRaw = Number(input.billingDemandKw);
+    const rowBillingDemandKw =
+      Number.isFinite(rowBdRaw) && rowBdRaw > 0 ? rowBdRaw : undefined;
+    // Demand-based LV-2: when CD omitted but connected load > 10 kW, pass load as CD
+    // so the engine can apply the 90% billing-demand floor.
+    const contractDemandForRow = (() => {
+      const cd = Number(input.contractDemandKva);
+      if (Number.isFinite(cd) && cd > 0) return cd;
+      if (
+        (category === "LV2.2" || category === "LV2.1" || category === "LV4") &&
+        sanctionedLoadKwForEngine > 10
+      ) {
+        return sanctionedLoadKwForEngine;
+      }
+      return undefined;
+    })();
+
     const breakdown = calculateMpBill({
       discomCode,
       category,
       units,
       sanctionedLoadKw: sanctionedLoadKwForEngine > 0 ? sanctionedLoadKwForEngine : undefined,
-      contractDemandKva: input.contractDemandKva,
+      contractDemandKva: contractDemandForRow,
+      maxDemandKw: rowMaxDemandKw,
+      billingDemandKw: rowBillingDemandKw,
       area,
       billMonth: rowBillMonthIso,
       fppasPct: input.monthlyFppasPct?.[monthKey],

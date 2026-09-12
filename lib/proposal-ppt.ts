@@ -512,6 +512,8 @@ function buildAuditRows(input: PremiumProposalPptInput, labels: string[]): {
       connectionType: input.connectionType,
       connectedLoadKw: input.connectedLoadKw,
       contractDemandKva: input.contractDemandKva,
+      maxDemandKw: input.maxDemandKva,
+      billingDemandKw: input.billingDemandKva,
       areaProfile: input.areaProfile,
       monthlyUnits: input.monthlyUnits,
       monthlyBillActuals: merged,
