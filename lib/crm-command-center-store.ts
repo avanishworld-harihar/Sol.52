@@ -239,6 +239,8 @@ export async function getCommandCenterPayload(options?: {
         id: `reminder-${r.id}`,
         lead_id: r.lead_id,
         reminder_id: r.id,
+        reminder_title: r.title,
+        reminder_notes: r.notes ?? null,
         ...ctx,
         action_title: deriveActionTitle(kind, r.followup_type, r.title),
         event_context: eventContext,

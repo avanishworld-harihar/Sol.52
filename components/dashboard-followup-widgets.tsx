@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
-import { AlarmClock, ArrowRight, CalendarDays, Clock3, MapPin } from "lucide-react";
+import { AlarmClock, ArrowRight, CalendarDays, Clock3, MapPin, MessageSquareText } from "lucide-react";
 import { formatCrmTime } from "@/lib/crm-datetime";
 import { cn } from "@/lib/utils";
 import { CreateReminderDialog } from "@/components/agenda/create-reminder-dialog";
@@ -16,7 +16,7 @@ export type WidgetReminder = {
 };
 export type WidgetVisit = {
   id: string; lead_id: string; scheduled_at: string; visit_status: string;
-  summary?: string | null; location?: string | null;
+  summary?: string | null; location?: string | null; subject_label?: string | null;
 };
 export type WidgetPayload = {
   today: WidgetReminder[]; overdue: WidgetReminder[]; upcoming: WidgetReminder[];
@@ -52,7 +52,9 @@ function makeDays(count = 7) {
 /** iPad-inspired unified agenda for callbacks and site visits. */
 export function DashboardFollowupWidgets({ expanded = false }: { expanded?: boolean }) {
   const { mutate: mutateGlobal } = useSWRConfig();
-  const widgetsKey = expanded ? "/api/followups/widgets?view=all" : "/api/followups/widgets";
+  // A date picker can jump beyond the seven-day strip, so retain the full
+  // one-year agenda in both dashboard and expanded views.
+  const widgetsKey = "/api/followups/widgets?view=all";
   const { data, isLoading, mutate: refreshWidgets } = useSWR<WidgetPayload>(widgetsKey, fetchWidgets, {
     dedupingInterval: 30_000, revalidateOnFocus: true,
   });
@@ -65,7 +67,19 @@ export function DashboardFollowupWidgets({ expanded = false }: { expanded?: bool
   const selectedReminders = reminders.filter((item) => dayKey(item.due_at) === selectedDay);
   const selectedVisits = (data?.upcomingVisits ?? []).filter((item) => dayKey(item.scheduled_at) === selectedDay);
   const overdue = [...(data?.overdue ?? [])].sort((a, b) => Date.parse(a.due_at) - Date.parse(b.due_at));
-  const selectedMeta = days.find((day) => day.key === selectedDay) ?? days[0];
+  const selectedOverdue = overdue.filter((item) => dayKey(item.due_at) === selectedDay);
+  const selectedMeta = useMemo(() => {
+    const inStrip = days.find((day) => day.key === selectedDay);
+    if (inStrip) return inStrip;
+    const date = new Date(`${selectedDay}T12:00:00+05:30`);
+    return {
+      key: selectedDay,
+      date,
+      day: date.toLocaleDateString("en-IN", { weekday: "short", timeZone: "Asia/Kolkata" }),
+      number: date.toLocaleDateString("en-IN", { day: "numeric", timeZone: "Asia/Kolkata" }),
+      month: date.toLocaleDateString("en-IN", { month: "short", timeZone: "Asia/Kolkata" }),
+    };
+  }, [days, selectedDay]);
   const isToday = selectedDay === days[0]?.key;
   const totalPending = reminders.length + overdue.length;
 
@@ -92,7 +106,7 @@ export function DashboardFollowupWidgets({ expanded = false }: { expanded?: bool
           <div className="-mx-1 mt-5 flex snap-x gap-2 overflow-x-auto px-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:grid md:grid-cols-4 md:overflow-visible xl:grid-cols-7">
             {days.map((item, index) => {
               const active = item.key === selectedDay;
-              const count = reminders.filter((r) => dayKey(r.due_at) === item.key).length + (data?.upcomingVisits ?? []).filter((v) => dayKey(v.scheduled_at) === item.key).length;
+              const count = reminders.filter((r) => dayKey(r.due_at) === item.key).length + overdue.filter((r) => dayKey(r.due_at) === item.key).length + (data?.upcomingVisits ?? []).filter((v) => dayKey(v.scheduled_at) === item.key).length;
               return (
                 <button key={item.key} type="button" onClick={() => setSelectedDay(item.key)} aria-pressed={active}
                   className={cn("relative min-w-[4.25rem] snap-start rounded-2xl border px-2 py-2.5 text-center transition active:scale-[0.98] md:min-w-0", active ? "border-slate-900 bg-slate-900 text-white shadow-lg dark:border-white dark:bg-white dark:text-slate-950" : "border-slate-200/90 bg-white/80 text-slate-600 hover:border-teal-300 dark:border-white/10 dark:bg-white/5 dark:text-slate-300")}
@@ -110,9 +124,13 @@ export function DashboardFollowupWidgets({ expanded = false }: { expanded?: bool
               <CalendarDays className="h-5 w-5 text-teal-600 dark:text-teal-300" aria-hidden />
               <div>
                 <p className="text-sm font-extrabold text-slate-900 dark:text-white">{isToday ? "Today" : selectedMeta?.day}, {selectedMeta?.number} {selectedMeta?.month}</p>
-                <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">{selectedReminders.length} callbacks · {selectedVisits.length} visits</p>
+                <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">{selectedReminders.length + selectedOverdue.length} reminders · {selectedVisits.length} visits</p>
               </div>
             </div>
+            <label className="mt-3 flex items-center justify-between gap-3 border-t border-slate-100 pt-3 text-[11px] font-bold text-slate-500 dark:border-white/10 dark:text-slate-400">
+              Jump to any date
+              <input type="date" value={selectedDay} onChange={(event) => event.target.value && setSelectedDay(event.target.value)} className="h-9 rounded-xl border border-slate-200 bg-white px-2 text-xs font-bold text-slate-800 outline-none focus:border-teal-500 dark:border-white/10 dark:bg-slate-900 dark:text-slate-100" />
+            </label>
           </div>
         </div>
 
@@ -123,7 +141,7 @@ export function DashboardFollowupWidgets({ expanded = false }: { expanded?: bool
               <h3 className="mt-0.5 text-lg font-black text-slate-950 dark:text-white">{isToday ? "Focus for today" : `${selectedMeta?.day}'s plan`}</h3>
             </div>
             <div className="flex items-center gap-1">
-              <CreateReminderDialog compact />
+              <CreateReminderDialog compact initialDate={selectedDay} triggerLabel="Plan this day" />
               <Link href="/agenda" className="inline-flex min-h-10 items-center gap-1 rounded-xl px-3 text-xs font-bold text-teal-700 hover:bg-teal-50 dark:text-teal-300 dark:hover:bg-teal-950/30">Full agenda <ArrowRight className="h-3.5 w-3.5" aria-hidden /></Link>
             </div>
           </div>
@@ -131,9 +149,10 @@ export function DashboardFollowupWidgets({ expanded = false }: { expanded?: bool
             {isLoading ? Array.from({ length: 4 }, (_, i) => <div key={i} className="h-[4.25rem] animate-pulse rounded-2xl bg-slate-100 dark:bg-white/5" />) : (
               <>
                 {isToday && overdue.slice(0, 3).map((item) => <AgendaReminder key={item.id} reminder={item} overdue onComplete={completeReminder} />)}
+                {!isToday && selectedOverdue.map((item) => <AgendaReminder key={item.id} reminder={item} overdue onComplete={completeReminder} />)}
                 {selectedReminders.map((item) => <AgendaReminder key={item.id} reminder={item} onComplete={completeReminder} />)}
                 {selectedVisits.map((item) => <AgendaVisit key={item.id} visit={item} />)}
-                {(isToday ? overdue.length : 0) + selectedReminders.length + selectedVisits.length === 0 ? (
+                {(isToday ? overdue.length : selectedOverdue.length) + selectedReminders.length + selectedVisits.length === 0 ? (
                   <div className="flex min-h-44 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 px-5 text-center dark:border-white/10 dark:bg-white/[0.025]">
                     <CalendarDays className="h-7 w-7 text-teal-500" aria-hidden />
                     <p className="mt-2 text-sm font-extrabold text-slate-800 dark:text-slate-100">Your schedule is clear</p>
@@ -155,8 +174,9 @@ function AgendaReminder({ reminder, overdue = false, onComplete }: { reminder: W
   const content = <>
       <button type="button" disabled={busy} onClick={() => { setBusy(true); void onComplete(reminder.id).finally(() => setBusy(false)); }} className={cn("h-5 w-5 shrink-0 rounded-full border-2 bg-white transition hover:scale-110 disabled:animate-pulse dark:bg-transparent", overdue ? "border-rose-400" : "border-slate-300 hover:border-teal-500 dark:border-slate-600")} aria-label={`Mark ${reminder.title} complete`} />
       <span className="min-w-0 flex-1">
-        {reminder.lead_id ? <Link href={`/customers/${encodeURIComponent(reminder.lead_id)}`} className="block truncate text-sm font-extrabold text-slate-900 hover:text-teal-700 dark:text-slate-50 dark:hover:text-teal-300">{reminder.title}</Link> : <span className="block truncate text-sm font-extrabold text-slate-900 dark:text-slate-50">{reminder.title}</span>}
-        <span className={cn("mt-0.5 flex items-center gap-1 text-[11px] font-semibold", overdue ? "text-rose-700 dark:text-rose-300" : "text-slate-500 dark:text-slate-400")}><Clock3 className="h-3 w-3" aria-hidden />{overdue ? "Overdue · " : ""}{formatCrmTime(reminder.due_at)}{reminder.subject_label ? ` · ${reminder.subject_label}` : ""}{reminder.notes ? ` · ${reminder.notes}` : ""}</span>
+        {reminder.lead_id ? <Link href={`/customers/${encodeURIComponent(reminder.lead_id)}`} className="block truncate text-sm font-extrabold text-slate-900 hover:text-teal-700 dark:text-slate-50 dark:hover:text-teal-300">{reminder.subject_label || "Customer"}</Link> : <span className="block truncate text-sm font-extrabold text-slate-900 dark:text-slate-50">{reminder.title}</span>}
+        {reminder.lead_id ? <span className="mt-0.5 block truncate text-xs font-semibold text-slate-700 dark:text-slate-300"><MessageSquareText className="mr-1 inline h-3 w-3" aria-hidden />{reminder.title}</span> : null}
+        <span className={cn("mt-0.5 flex items-center gap-1 truncate text-[11px] font-semibold", overdue ? "text-rose-700 dark:text-rose-300" : "text-slate-500 dark:text-slate-400")}><Clock3 className="h-3 w-3 shrink-0" aria-hidden />{overdue ? "Overdue · " : ""}{formatCrmTime(reminder.due_at)}{!reminder.lead_id && reminder.subject_label ? ` · ${reminder.subject_label}` : ""}{reminder.notes ? ` · Note: ${reminder.notes}` : ""}</span>
       </span>
       <AlarmClock className={cn("h-4 w-4 shrink-0", overdue ? "text-rose-500" : "text-teal-500")} aria-hidden />
     </>;
@@ -167,7 +187,7 @@ function AgendaVisit({ visit }: { visit: WidgetVisit }) {
   return (
     <Link href={`/customers/${encodeURIComponent(visit.lead_id)}`} className="group flex min-h-[4.25rem] items-center gap-3 rounded-2xl border border-indigo-200/80 bg-indigo-50/60 px-3 py-2.5 transition hover:bg-indigo-100/70 dark:border-indigo-500/30 dark:bg-indigo-950/20">
       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white"><MapPin className="h-4 w-4" aria-hidden /></span>
-      <span className="min-w-0 flex-1"><span className="block truncate text-sm font-extrabold text-slate-900 dark:text-slate-50">{visit.summary || "Site visit"}</span><span className="mt-0.5 block truncate text-[11px] font-semibold text-indigo-700 dark:text-indigo-300">{formatCrmTime(visit.scheduled_at)}{visit.location ? ` · ${visit.location}` : ""}</span></span>
+      <span className="min-w-0 flex-1"><span className="block truncate text-sm font-extrabold text-slate-900 dark:text-slate-50">{visit.subject_label || "Customer"}</span><span className="mt-0.5 block truncate text-xs font-semibold text-slate-700 dark:text-slate-300">{visit.summary || "Site visit"}</span><span className="mt-0.5 block truncate text-[11px] font-semibold text-indigo-700 dark:text-indigo-300">{formatCrmTime(visit.scheduled_at)}{visit.location ? ` · ${visit.location}` : ""}</span></span>
     </Link>
   );
 }

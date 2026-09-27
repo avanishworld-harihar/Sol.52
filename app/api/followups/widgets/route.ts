@@ -16,6 +16,14 @@ export async function GET(req: NextRequest) {
   const expanded = req.nextUrl.searchParams.get("view") === "all";
   const data = await getFollowupDashboardWidgets({
     leadIds: leads.map((lead) => String(lead.id ?? "")).filter(Boolean),
+    leadLabels: Object.fromEntries(
+      leads.map((lead) => {
+        const id = String(lead.id ?? "");
+        const friendlyName = String(lead.name ?? "").trim();
+        const billName = String(lead.consumer_name ?? "").trim();
+        return [id, billName && billName !== friendlyName ? `${billName} (${friendlyName})` : friendlyName || "Customer"];
+      }).filter(([id]) => Boolean(id))
+    ),
     organizationId: scope.organizationId,
     includeUnscopedRows: scope.includeUnscopedRows,
     horizonDays: expanded ? 365 : 90,

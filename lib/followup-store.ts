@@ -225,6 +225,7 @@ export async function listLeadProposalHistory(leadId: string, page?: FollowupPag
 
 export async function getFollowupDashboardWidgets(input: {
   leadIds: string[];
+  leadLabels?: Record<string, string>;
   organizationId?: string | null;
   includeUnscopedRows?: boolean;
   horizonDays?: number;
@@ -243,11 +244,15 @@ export async function getFollowupDashboardWidgets(input: {
   ].filter(Boolean).join(",");
   const now = new Date();
   const { start, end } = crmIstDayBounds(now);
-  const weekEnd = new Date(start);
-  weekEnd.setDate(weekEnd.getDate() + 7);
   const horizonEnd = new Date(start);
   horizonEnd.setDate(horizonEnd.getDate() + Math.max(7, Math.min(365, input.horizonDays ?? 90)));
   const queryLimit = Math.max(25, Math.min(500, input.limit ?? 25));
+
+  const withCustomerLabels = (rows: Record<string, unknown>[]) => rows.map((row) => {
+    const leadId = row.lead_id == null ? "" : String(row.lead_id);
+    const customerLabel = leadId ? input.leadLabels?.[leadId]?.trim() : "";
+    return customerLabel ? { ...row, subject_type: "customer", subject_label: customerLabel } : row;
+  });
 
   const reminderSelect =
     "id, lead_id, organization_id, subject_type, subject_label, title, due_at, priority, followup_type, status, notes";
@@ -285,7 +290,7 @@ export async function getFollowupDashboardWidgets(input: {
       .in("lead_id", scopedLeadIds.length ? scopedLeadIds : ["00000000-0000-0000-0000-000000000000"])
       .in("visit_status", ["scheduled", "rescheduled"])
       .gte("scheduled_at", now.toISOString())
-      .lt("scheduled_at", weekEnd.toISOString())
+      .lt("scheduled_at", horizonEnd.toISOString())
       .order("scheduled_at", { ascending: true })
       .limit(20),
   ]);
@@ -308,10 +313,10 @@ export async function getFollowupDashboardWidgets(input: {
   }
 
   return {
-    today: todayRows,
-    overdue: overdueRows,
-    upcoming: upcomingRows,
-    upcomingVisits: upcomingVisits.data ?? [],
+    today: withCustomerLabels(todayRows),
+    overdue: withCustomerLabels(overdueRows),
+    upcoming: withCustomerLabels(upcomingRows),
+    upcomingVisits: withCustomerLabels((upcomingVisits.data ?? []) as Record<string, unknown>[]),
     counts: {
       overdue: overdueRows.length,
       today: todayRows.length,

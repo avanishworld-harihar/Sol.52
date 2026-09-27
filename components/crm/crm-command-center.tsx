@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import { useCallback, useMemo, useState } from "react";
 import {
   AlarmClock,
@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatCrmDateTime, formatCrmTime, crmDatetimeLocalToIso } from "@/lib/crm-datetime";
+import { formatCrmDateTime, formatCrmTime, crmDatetimeLocalToIso, crmIsoToDatetimeLocal } from "@/lib/crm-datetime";
 import { resolveCallbackDueAt } from "@/lib/crm-callback-schedule";
 import { createReminder, logCustomerContact, patchReminder } from "@/lib/followup-client";
 import { buildCommandActionWhatsAppUrl } from "@/lib/crm-command-center-messages";
@@ -173,7 +173,10 @@ function ActionRow({
 }) {
   const [busy, setBusy] = useState(false);
   const [snoozeOpen, setSnoozeOpen] = useState(false);
-  const [customSnooze, setCustomSnooze] = useState("");
+  const [customSnooze, setCustomSnooze] = useState(() => action.due_at ? crmIsoToDatetimeLocal(action.due_at) : "");
+  const [rescheduleMessage, setRescheduleMessage] = useState(action.reminder_title ?? action.action_title);
+  const [rescheduleNote, setRescheduleNote] = useState(action.reminder_notes ?? "");
+  const { mutate: mutateGlobal } = useSWRConfig();
 
   const visual = URGENCY_VISUAL[action.urgency];
   const waUrl = action.phone
@@ -213,25 +216,31 @@ function ActionRow({
     });
   }
 
-  async function handleSnooze(preset: SnoozePreset) {
+  async function handleReschedule(preset: SnoozePreset = "custom") {
     const until = snoozeIso(preset, customSnooze);
     await run(async () => {
       if (action.reminder_id) {
         await patchReminder(action.reminder_id, {
-          status: "snoozed",
-          snoozed_until: until,
+          status: "pending",
+          snoozed_until: null,
           due_at: until,
+          title: rescheduleMessage.trim() || action.action_title,
+          notes: rescheduleNote.trim() || null,
         });
       } else {
         await createReminder(action.lead_id, {
-          title: `Follow-up — ${(action.event_context || action.action_title).slice(0, 80)}`,
+          title: rescheduleMessage.trim() || `Follow-up — ${(action.event_context || action.action_title).slice(0, 80)}`,
           due_at: until,
           followup_type: "call",
           priority: action.urgency === "critical" || action.urgency === "overdue" ? "high" : "medium",
+          notes: rescheduleNote.trim() || null,
         });
       }
       onDismiss(action.id);
       setSnoozeOpen(false);
+      void mutateGlobal("/api/followups/widgets");
+      void mutateGlobal("/api/followups/widgets?view=all");
+      void mutateGlobal("/api/customers");
     });
   }
 
@@ -345,9 +354,10 @@ function ActionRow({
             className="h-9 shrink-0 px-2 text-[11px] font-bold text-slate-600"
             disabled={busy}
             onClick={() => setSnoozeOpen((v) => !v)}
+            aria-label="Reschedule with message and note"
           >
             <Clock className="h-3.5 w-3.5 sm:mr-1" aria-hidden />
-            <span className="hidden sm:inline">Snooze</span>
+            <span className="hidden sm:inline">Reschedule</span>
           </Button>
         </div>
       </div>
@@ -369,11 +379,19 @@ function ActionRow({
                 variant="secondary"
                 className="h-7 text-[11px]"
                 disabled={busy}
-                onClick={() => void handleSnooze(preset)}
+                onClick={() => setCustomSnooze(crmIsoToDatetimeLocal(snoozeIso(preset)))}
               >
                 {label}
               </Button>
             ))}
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <label className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Message / purpose
+              <input value={rescheduleMessage} onChange={(e) => setRescheduleMessage(e.target.value)} placeholder="What needs to happen?" className="mt-1 h-10 w-full rounded-md border border-slate-300 bg-white px-2 text-xs font-medium normal-case tracking-normal dark:border-slate-600 dark:bg-slate-950" />
+            </label>
+            <label className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Internal note
+              <input value={rescheduleNote} onChange={(e) => setRescheduleNote(e.target.value)} placeholder="Optional context" className="mt-1 h-10 w-full rounded-md border border-slate-300 bg-white px-2 text-xs font-medium normal-case tracking-normal dark:border-slate-600 dark:bg-slate-950" />
+            </label>
           </div>
           <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center">
             <input
@@ -381,16 +399,16 @@ function ActionRow({
               value={customSnooze}
               onChange={(e) => setCustomSnooze(e.target.value)}
               className="h-9 flex-1 rounded-md border border-slate-300 bg-white px-2 text-xs dark:border-slate-600 dark:bg-slate-950"
-              aria-label="Custom snooze date and time"
+              aria-label="Reschedule date and time"
             />
             <Button
               type="button"
               size="sm"
               className="h-9 shrink-0 text-[11px]"
               disabled={busy || !customSnooze.trim()}
-              onClick={() => void handleSnooze("custom")}
+              onClick={() => void handleReschedule("custom")}
             >
-              Custom
+              Save reschedule
             </Button>
           </div>
         </div>

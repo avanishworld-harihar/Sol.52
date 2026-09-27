@@ -35,6 +35,9 @@ export type CommandActionItem = {
   urgency: CommandUrgency;
   kind: CommandActionKind;
   reminder_id?: string;
+  /** Editable reminder message/title and private note used by reschedule. */
+  reminder_title?: string;
+  reminder_notes?: string | null;
   visit_id?: string;
   sort_score: number;
 };

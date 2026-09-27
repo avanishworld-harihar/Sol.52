@@ -148,11 +148,15 @@ export function ScheduleCallbackSheet({
         : row),
       { revalidate: false }
     );
-    void mutate(
-      "/api/followups/widgets",
+    const updateWidgets = (key: string) => void mutate(
+      key,
       (current?: WidgetPayload) => {
         if (!current) return current;
-        const reminder: WidgetReminder = created;
+        const reminder: WidgetReminder = {
+          ...created,
+          subject_type: "customer",
+          subject_label: customerName,
+        };
         const withoutCurrent = {
           overdue: current.overdue.filter((item) => item.id !== created.id),
           today: current.today.filter((item) => item.id !== created.id),
@@ -177,7 +181,9 @@ export function ScheduleCallbackSheet({
       },
       { revalidate: false }
     );
-  }, [leadId, mutate]);
+    updateWidgets("/api/followups/widgets");
+    updateWidgets("/api/followups/widgets?view=all");
+  }, [customerName, leadId, mutate]);
 
   function validateBeforeSave(): string | null {
     if (preset === "custom_date" && !customDate.trim()) {

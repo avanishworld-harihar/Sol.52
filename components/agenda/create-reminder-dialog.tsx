@@ -10,7 +10,15 @@ import { createGeneralReminder } from "@/lib/followup-client";
 import type { FollowupReminder } from "@/lib/followup-types";
 import { useSWRConfig } from "swr";
 
-export function CreateReminderDialog({ compact = false }: { compact?: boolean }) {
+export function CreateReminderDialog({
+  compact = false,
+  initialDate,
+  triggerLabel,
+}: {
+  compact?: boolean;
+  initialDate?: string;
+  triggerLabel?: string;
+}) {
   const toast = useToast();
   const { mutate } = useSWRConfig();
   const [open, setOpen] = useState(false);
@@ -20,6 +28,11 @@ export function CreateReminderDialog({ compact = false }: { compact?: boolean })
   const [dueLocal, setDueLocal] = useState("");
   const [notes, setNotes] = useState("");
   const [priority, setPriority] = useState<FollowupReminder["priority"]>("medium");
+
+  function openDialog() {
+    if (initialDate) setDueLocal(`${initialDate}T10:00`);
+    setOpen(true);
+  }
 
   async function save() {
     if (!title.trim() || !dueLocal) {
@@ -50,8 +63,8 @@ export function CreateReminderDialog({ compact = false }: { compact?: boolean })
 
   return (
     <>
-      <Button type="button" variant={compact ? "ghost" : "outline"} size="sm" className="min-h-10 gap-1.5 rounded-xl" onClick={() => setOpen(true)}>
-        <BellPlus className="h-4 w-4" aria-hidden /> New reminder
+      <Button type="button" variant={compact ? "ghost" : "outline"} size="sm" className="min-h-10 gap-1.5 rounded-xl" onClick={openDialog}>
+        <BellPlus className="h-4 w-4" aria-hidden /> {triggerLabel ?? "New reminder"}
       </Button>
       {open && typeof document !== "undefined" ? createPortal(
         <div className="fixed inset-0 z-[10100] flex items-end justify-center bg-slate-950/60 p-0 backdrop-blur-sm sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-labelledby="general-reminder-title">

@@ -98,6 +98,11 @@ export function formatCrmShortDate(iso: string | null | undefined, locale?: stri
 
 /** Current IST value for `<input type="datetime-local" />` */
 export function crmNowDatetimeLocal(): string {
+  return crmIsoToDatetimeLocal(new Date().toISOString());
+}
+
+/** ISO timestamp → IST value for `<input type="datetime-local" />`. */
+export function crmIsoToDatetimeLocal(iso: string): string {
   const parts = new Intl.DateTimeFormat("en-GB", {
     ...TZ,
     year: "numeric",
@@ -106,7 +111,7 @@ export function crmNowDatetimeLocal(): string {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
-  }).formatToParts(new Date());
+  }).formatToParts(new Date(iso));
   const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "00";
   return `${get("year")}-${get("month")}-${get("day")}T${normalizeHour(get("hour"))}:${get("minute")}`;
 }

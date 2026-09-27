@@ -275,12 +275,12 @@ function DashboardPageContent() {
           <DashboardCommandCenter name={greetingName} stats={stats} loading={showMetricSkeleton} />
         </DashboardItem>
 
-        <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-command cc-hero-zone">
-          <CrmCommandCenter compact />
-        </DashboardItem>
-
         <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-agenda">
           <DashboardFollowupWidgets />
+        </DashboardItem>
+
+        <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-command cc-hero-zone">
+          <CrmCommandCenter compact />
         </DashboardItem>
 
         {stats && (stats.pendingPayments > 0 || attentionProjects.length > 0) && (
