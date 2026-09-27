@@ -61,12 +61,11 @@ export function DashboardCommandCenter({ name, stats, loading, className }: Dash
   const { t, locale } = useLanguage();
   const reduced = useReducedMotion();
   const uiLang = locale === "en" ? "en" : "hi";
-  const displayName = name?.trim();
-  const greeting = displayName
-    ? t("dashboard_greetingName", { name: displayName })
-    : uiLang === "hi"
-      ? "नमस्ते!"
-      : "Welcome back!";
+  const rawDisplayName = name?.trim();
+  const displayName = rawDisplayName
+    ? `${rawDisplayName.charAt(0).toLocaleUpperCase()}${rawDisplayName.slice(1)}`
+    : "";
+  const greeting = displayName ? `Hi! ${displayName}` : uiLang === "hi" ? "नमस्ते!" : "Hi!";
   const now = new Date();
   const dateStr = now.toLocaleDateString("en-IN", {
     weekday: "short",
@@ -147,10 +146,16 @@ export function DashboardCommandCenter({ name, stats, loading, className }: Dash
                 <span className="ws-live-pill ws-live-pill--muted">{uiLang === "hi" ? "सिंक" : "Sync"}</span>
               ) : null}
             </div>
-            <p className="ws-type-greeting text-balance">
-              {greeting}
-              <span className="ws-type-greeting-meta"> · {dateStr}</span>
-            </p>
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span className="relative flex h-3 w-3 shrink-0" aria-label={uiLang === "hi" ? "ऑनलाइन" : "Online"} role="status">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-70 motion-safe:animate-ping" aria-hidden />
+                <span className="relative inline-flex h-3 w-3 rounded-full border-2 border-white bg-emerald-500 shadow-[0_0_14px_rgba(16,185,129,0.9)] dark:border-slate-900" aria-hidden />
+              </span>
+              <p className="ws-type-greeting min-w-0 text-balance">
+                {greeting}
+                <span className="ws-type-greeting-meta"> · {dateStr}</span>
+              </p>
+            </div>
           </div>
           <div className="flex shrink-0 items-center gap-2 lg:gap-2.5">
             <Link

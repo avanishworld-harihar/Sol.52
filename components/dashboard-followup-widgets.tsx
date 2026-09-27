@@ -142,7 +142,7 @@ export function DashboardFollowupWidgets({ expanded = false }: { expanded?: bool
             </div>
             <div className="flex items-center gap-1">
               <CreateReminderDialog compact initialDate={selectedDay} triggerLabel="Plan this day" />
-              <Link href="/agenda" className="inline-flex min-h-10 items-center gap-1 rounded-xl px-3 text-xs font-bold text-teal-700 hover:bg-teal-50 dark:text-teal-300 dark:hover:bg-teal-950/30">Full agenda <ArrowRight className="h-3.5 w-3.5" aria-hidden /></Link>
+              {!expanded ? <Link href="/agenda" className="inline-flex min-h-10 items-center gap-1 rounded-xl px-3 text-xs font-bold text-teal-700 hover:bg-teal-50 dark:text-teal-300 dark:hover:bg-teal-950/30">Full agenda <ArrowRight className="h-3.5 w-3.5" aria-hidden /></Link> : null}
             </div>
           </div>
           <div className="mt-4 space-y-2">

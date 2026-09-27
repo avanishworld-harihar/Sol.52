@@ -40,11 +40,12 @@ import {
   resolveDiscomCode,
   writeInstallerRegion
 } from "@/lib/installer-region-storage";
-import { AlertTriangle, ArrowRight, MapPin, UserPlus, Wallet } from "lucide-react";
+import { detectInstallerLocation, inferDiscomForLocation, type DetectedInstallerLocation } from "@/lib/installer-location";
+import { AlertTriangle, ArrowRight, Loader2, LocateFixed, MapPin, UserPlus, Wallet } from "lucide-react";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import { buildMetricTrendLines, writeTrendBaseline, type MetricTrendLines } from "@/lib/dashboard-trends";
 import { useLanguage } from "@/lib/language-context";
-import { useEffect, useLayoutEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 const dashboardStagger = {
   visible: { opacity: 1 },
@@ -124,6 +125,11 @@ function DashboardPageContent() {
   const [installerState, setInstallerState] = useState("");
   const [installerDiscom, setInstallerDiscom] = useState("");
   const [installerSaved, setInstallerSaved] = useState(false);
+  const [regionHydrated, setRegionHydrated] = useState(false);
+  const [detectedLocation, setDetectedLocation] = useState<DetectedInstallerLocation | null>(null);
+  const [locationPhase, setLocationPhase] = useState<"idle" | "locating" | "resolving" | "confirm" | "error">("idle");
+  const [locationMessage, setLocationMessage] = useState("");
+  const autoLocationAttempted = useRef(false);
   const [greetingName, setGreetingName] = useState("");
   const { options: discomOptions, loading: discomListLoading } = useInstallerDiscoms(installerState);
   const discomSelectOptions = useMemo(
@@ -134,14 +140,46 @@ function DashboardPageContent() {
   /** Only true "finger-first" pointers skip stagger — keeps entrance motion on mouse / hybrid laptops. */
   const [isPointerCoarse, setIsPointerCoarse] = useState(false);
 
-  useEffect(() => {
-    const { state, discom } = readInstallerRegion();
-    if (state) {
-      setInstallerState(state);
-      setInstallerDiscom(discom);
-      setInstallerSaved(true);
+  const detectRegionFromDevice = useCallback(async () => {
+    setLocationPhase("locating");
+    setLocationMessage("Location permission allow karein…");
+    try {
+      const location = await detectInstallerLocation();
+      setDetectedLocation(location);
+      setInstallerState(location.state);
+      setInstallerDiscom("");
+      setLocationPhase("resolving");
+      setLocationMessage(`${location.city || location.district || location.state} mila. DISCOM detect ho raha hai…`);
+    } catch (error) {
+      const code = typeof error === "object" && error && "code" in error ? Number(error.code) : 0;
+      setLocationPhase("error");
+      setLocationMessage(
+        code === 1
+          ? "Location permission denied. Neeche state aur DISCOM manually select kar sakte hain."
+          : error instanceof Error
+            ? error.message
+            : "Location detect nahi hui. Region manually select karein."
+      );
     }
   }, []);
+
+  useEffect(() => {
+    const { state, discom } = readInstallerRegion();
+    setInstallerState(state);
+    setInstallerDiscom(discom);
+    setInstallerSaved(Boolean(state && discom));
+    setRegionHydrated(true);
+  }, []);
+
+  /** Already-granted permission can restore the region without another prompt. */
+  useEffect(() => {
+    if (!regionHydrated || installerSaved || autoLocationAttempted.current) return;
+    autoLocationAttempted.current = true;
+    if (typeof navigator === "undefined" || !navigator.permissions?.query) return;
+    void navigator.permissions.query({ name: "geolocation" }).then((permission) => {
+      if (permission.state === "granted") void detectRegionFromDevice();
+    }).catch(() => undefined);
+  }, [detectRegionFromDevice, installerSaved, regionHydrated]);
 
   /** Greeting name from company profile (contact person → company name). Never hardcoded. */
   useEffect(() => {
@@ -161,11 +199,10 @@ function DashboardPageContent() {
   useEffect(() => {
     const sync = () => {
       const { state, discom } = readInstallerRegion();
-      if (state) {
-        setInstallerState(state);
-        setInstallerDiscom(discom);
-        setInstallerSaved(true);
-      }
+      setInstallerState(state);
+      setInstallerDiscom(discom);
+      setInstallerSaved(Boolean(state && discom));
+      setRegionHydrated(true);
     };
     window.addEventListener(INSTALLER_REGION_EVENT, sync);
     return () => window.removeEventListener(INSTALLER_REGION_EVENT, sync);
@@ -176,9 +213,26 @@ function DashboardPageContent() {
       setInstallerDiscom("");
       return;
     }
-    if (discomOptions.length === 0) return;
+    if (discomOptions.length === 0 || detectedLocation) return;
     setInstallerDiscom((prev) => resolveDiscomCode(prev.trim(), discomOptions));
-  }, [installerState, discomOptions]);
+  }, [detectedLocation, installerState, discomOptions]);
+
+  useEffect(() => {
+    if (!detectedLocation || discomListLoading || discomOptions.length === 0) return;
+    const detectedDiscom = inferDiscomForLocation(detectedLocation, discomOptions);
+    if (detectedDiscom) {
+      setInstallerDiscom(detectedDiscom);
+      writeInstallerRegion(detectedLocation.state, detectedDiscom);
+      setInstallerSaved(true);
+      setLocationPhase("idle");
+      setLocationMessage("");
+      setDetectedLocation(null);
+      return;
+    }
+    setLocationPhase("confirm");
+    setLocationMessage(`${detectedLocation.state} detect hua. Is area ka DISCOM confirm karein.`);
+    setDetectedLocation(null);
+  }, [detectedLocation, discomListLoading, discomOptions]);
 
   /** Purane installs: LS me state thi, DISCOM key nahi — seed sirf tab jab UI state LS se match ho. */
   useEffect(() => {
@@ -263,6 +317,8 @@ function DashboardPageContent() {
     try {
       writeInstallerRegion(installerState, installerDiscom);
       setInstallerSaved(true);
+      setLocationPhase("idle");
+      setLocationMessage("");
     } catch {
       setInstallerSaved(false);
     }
@@ -351,7 +407,7 @@ function DashboardPageContent() {
           </DashboardItem>
         )}
 
-        {!installerSaved && (
+        {regionHydrated && !installerSaved && (
           <DashboardItem animate={shouldAnimateDashboard}>
             <Card className="glass-surface border-white/55 dark:border dark:border-emerald-500/45 dark:bg-[#070b12] dark:shadow-[0_12px_40px_rgba(0,0,0,0.55)]">
               <CardHeader className="space-y-1 p-4 pb-2 sm:p-6 sm:pb-3">
@@ -373,6 +429,25 @@ function DashboardPageContent() {
                 />
               </CardHeader>
               <CardContent className="space-y-3 p-4 pt-0 sm:p-6 sm:pt-0">
+                <div className="rounded-2xl border border-teal-200/80 bg-teal-50/70 p-3 dark:border-teal-500/25 dark:bg-teal-950/20">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                      <p className="text-sm font-extrabold text-teal-950 dark:text-teal-100">Location se setup karein</p>
+                      <p className="mt-0.5 text-xs font-medium leading-relaxed text-teal-800/80 dark:text-teal-200/70">Mobile ya iPad par Allow tap karte hi state aur supported area ka DISCOM fill ho jayega.</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-11 shrink-0 gap-2 border-teal-300 bg-white font-bold text-teal-800 hover:bg-teal-100 dark:border-teal-500/40 dark:bg-slate-900 dark:text-teal-200"
+                      disabled={locationPhase === "locating" || locationPhase === "resolving"}
+                      onClick={() => void detectRegionFromDevice()}
+                    >
+                      {locationPhase === "locating" || locationPhase === "resolving" ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <LocateFixed className="h-4 w-4" aria-hidden />}
+                      {locationPhase === "locating" ? "Finding location…" : locationPhase === "resolving" ? "Finding DISCOM…" : "Use my location"}
+                    </Button>
+                  </div>
+                  {locationMessage ? <p className={`mt-2 text-xs font-semibold ${locationPhase === "error" ? "text-rose-700 dark:text-rose-300" : "text-teal-800 dark:text-teal-200"}`} role="status">{locationMessage}</p> : null}
+                </div>
                 <div className="flex flex-col gap-2 md:flex-row md:flex-nowrap md:items-center md:gap-3">
                   <FloatingLabelSelect
                     label={t("dashboard_selectState")}
@@ -430,7 +505,7 @@ function DashboardPageContent() {
           </DashboardItem>
         )}
 
-        {installerSaved && (
+        {regionHydrated && installerSaved && (
           <DashboardItem animate={shouldAnimateDashboard}>
             <Link
               href="/more"
