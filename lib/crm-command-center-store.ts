@@ -10,6 +10,7 @@ import type {
   CommandCenterPayload,
   CommandUrgency,
 } from "@/lib/crm-command-center-types";
+import { crmIstDayBounds } from "@/lib/crm-datetime";
 
 const HOT_WINDOW_MS = 48 * 60 * 60 * 1000;
 const STALE_MS = 7 * 24 * 60 * 60 * 1000;
@@ -33,11 +34,8 @@ function priorityBoost(priority: string): number {
   return 20;
 }
 
-function istDayBounds(now: Date) {
-  const start = new Date(now);
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 1);
+function commandDayBounds(now: Date) {
+  const { start, end } = crmIstDayBounds(now);
   const weekEnd = new Date(start);
   weekEnd.setDate(weekEnd.getDate() + 7);
   const horizonEnd = new Date(start);
@@ -93,24 +91,31 @@ function buildAction(
   };
 }
 
-export async function getCommandCenterPayload(): Promise<CommandCenterPayload> {
+export async function getCommandCenterPayload(options?: {
+  organizationId?: string | null;
+  includeNullOrg?: boolean;
+}): Promise<CommandCenterPayload> {
   const client = db();
   if (!client) return emptyPayload();
 
   const now = new Date();
   const nowMs = now.getTime();
-  const { start, end, weekEnd, horizonEnd } = istDayBounds(now);
+  const { start, end, weekEnd, horizonEnd } = commandDayBounds(now);
   const hotSince = new Date(nowMs - HOT_WINDOW_MS).toISOString();
   const staleBefore = new Date(nowMs - STALE_MS).toISOString();
 
   const reminderSelect =
     "id, lead_id, title, due_at, priority, followup_type, status, notes, created_at";
 
-  const [rawLeads, remindersRes, visitsRes, hotEventsRes, proposalsRes] = await Promise.all([
-    listCustomers(),
+  const rawLeads = await listCustomers(options);
+  const leadIds = rawLeads.map((row) => String(row.id ?? "")).filter(Boolean);
+  if (leadIds.length === 0) return emptyPayload();
+
+  const [remindersRes, visitsRes, hotEventsRes, proposalsRes] = await Promise.all([
     client
       .from("followup_reminders")
       .select(reminderSelect)
+      .in("lead_id", leadIds)
       .eq("status", "pending")
       .lte("due_at", horizonEnd.toISOString())
       .order("due_at", { ascending: true })
@@ -118,6 +123,7 @@ export async function getCommandCenterPayload(): Promise<CommandCenterPayload> {
     client
       .from("lead_visits")
       .select("id, lead_id, scheduled_at, visit_status, summary, location")
+      .in("lead_id", leadIds)
       .in("visit_status", ["scheduled", "rescheduled"])
       .gte("scheduled_at", now.toISOString())
       .lt("scheduled_at", weekEnd.toISOString())
@@ -126,6 +132,7 @@ export async function getCommandCenterPayload(): Promise<CommandCenterPayload> {
     client
       .from("activity_events")
       .select("lead_id, event_type, occurred_at")
+      .in("lead_id", leadIds)
       .in("event_type", ["proposal_opened", "file_uploaded"])
       .gte("occurred_at", hotSince)
       .order("occurred_at", { ascending: false })
@@ -133,6 +140,7 @@ export async function getCommandCenterPayload(): Promise<CommandCenterPayload> {
     client
       .from("proposals")
       .select("lead_id, system_kw, net_cost_inr, generated_at")
+      .in("lead_id", leadIds)
       .not("lead_id", "is", null)
       .order("generated_at", { ascending: false })
       .limit(400),

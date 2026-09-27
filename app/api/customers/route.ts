@@ -120,6 +120,7 @@ export async function GET(req: NextRequest) {
           household_member_names: members.filter((n) => n !== c.name),
           customer_stage: isWonLeadStatus(c.status) ? "active-project" : "lead",
           primary_proposal_id: proposalByLead[c.id] ?? null,
+          next_followup_id: nextFollowups[c.id]?.id ?? null,
           next_followup_at: nextFollowups[c.id]?.due_at ?? null,
           next_followup_title: nextFollowups[c.id]?.title ?? null,
           last_activity_at: lastActivities[c.id]?.occurred_at ?? null,

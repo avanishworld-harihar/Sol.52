@@ -276,7 +276,7 @@ function DashboardPageContent() {
         </DashboardItem>
 
         <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-command cc-hero-zone">
-          <CrmCommandCenter />
+          <CrmCommandCenter compact />
         </DashboardItem>
 
         <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-agenda">

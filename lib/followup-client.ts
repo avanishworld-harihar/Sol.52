@@ -55,6 +55,24 @@ export async function patchReminder(reminderId: string, patch: Record<string, un
   return json.data as FollowupReminder;
 }
 
+export async function createGeneralReminder(payload: {
+  title: string;
+  due_at: string;
+  priority?: FollowupReminder["priority"];
+  followup_type?: FollowupReminder["followup_type"];
+  notes?: string | null;
+  subject_label?: string | null;
+}) {
+  const res = await fetch("/api/reminders", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const json = (await res.json()) as { ok?: boolean; data?: FollowupReminder; error?: string };
+  if (!res.ok || !json.ok) throw new Error(json.error || "request_failed");
+  return json.data as FollowupReminder;
+}
+
 export async function createLeadNote(leadId: string, payload: { body_text: string }) {
   const res = await fetch(`/api/customers/${encodeURIComponent(leadId)}/notes`, {
     method: "POST",

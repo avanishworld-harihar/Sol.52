@@ -22,13 +22,13 @@ export async function PATCH(req: NextRequest, ctx: RouteCtx) {
     const updated = await updateLeadReminder(id, patch);
     if (!updated) return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
 
-    if (patch.status === "completed") {
+    if (patch.status === "completed" && updated.lead_id) {
       await appendActivityEvent({
         leadId: updated.lead_id,
         eventType: "reminder_completed",
         meta: { reminderId: updated.id, title: updated.title },
       });
-    } else if (patch.status === "snoozed") {
+    } else if (patch.status === "snoozed" && updated.lead_id) {
       await appendActivityEvent({
         leadId: updated.lead_id,
         eventType: "followup_snoozed",

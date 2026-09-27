@@ -53,6 +53,8 @@ export type CustomerLead = {
   primary_proposal_id?: string | null;
   /** CRM Phase 2 — next pending follow-up (from followup_reminders). */
   next_followup_at?: string | null;
+  /** Pending reminder id — used to update/reschedule instead of creating duplicates. */
+  next_followup_id?: string | null;
   /** CRM Phase 2 — title of next followup reminder. */
   next_followup_title?: string | null;
   /** CRM Phase 2 — latest activity ISO timestamp (from activity_events). */

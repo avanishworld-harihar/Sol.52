@@ -46,6 +46,8 @@ export function mapCustomerRow(row: Record<string, unknown>): CustomerLead {
     /* Phase 2 CRM summary fields — populated only by /api/customers list */
     next_followup_at:
       row.next_followup_at != null ? String(row.next_followup_at) : null,
+    next_followup_id:
+      row.next_followup_id != null ? String(row.next_followup_id) : null,
     next_followup_title:
       row.next_followup_title != null ? String(row.next_followup_title) : null,
     last_activity_at:

@@ -399,7 +399,7 @@ function ActionRow({
   );
 }
 
-export function CrmCommandCenter() {
+export function CrmCommandCenter({ compact = false }: { compact?: boolean }) {
   const installerName = getInstallerBrandName();
   const [dismissed, setDismissed] = useState<Set<string>>(() => new Set());
   const [filter, setFilter] = useState<CommandFilterId>("all");
@@ -419,6 +419,7 @@ export function CrmCommandCenter() {
     () => (data?.actions ?? []).filter((a) => !dismissed.has(a.id)),
     [data?.actions, dismissed]
   );
+  const shownActions = compact ? visibleActions.slice(0, 6) : visibleActions;
 
   const dismiss = useCallback((id: string) => {
     setDismissed((prev) => new Set(prev).add(id));
@@ -525,7 +526,10 @@ export function CrmCommandCenter() {
             Today&apos;s priority actions
           </h3>
           {!loading ? (
-            <span className="text-[10px] font-bold text-slate-400 sm:text-xs">{visibleActions.length} shown</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold text-slate-400 sm:text-xs">{compact && visibleActions.length > shownActions.length ? `${shownActions.length} of ${visibleActions.length}` : `${visibleActions.length} shown`}</span>
+              {compact ? <Link href="/agenda" className="text-[11px] font-bold text-teal-700 hover:underline dark:text-teal-300">View all →</Link> : null}
+            </div>
           ) : null}
         </div>
 
@@ -579,7 +583,7 @@ export function CrmCommandCenter() {
               )}
             </div>
           ) : (
-            visibleActions.map((action) => (
+            shownActions.map((action) => (
               <ActionRow
                 key={action.id}
                 action={action}

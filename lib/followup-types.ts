@@ -23,7 +23,10 @@ export type ReminderFollowupType = "call" | "visit" | "proposal" | "payment" | "
 
 export type FollowupReminder = {
   id: string;
-  lead_id: string;
+  lead_id: string | null;
+  organization_id?: string | null;
+  subject_type?: "customer" | "project" | "general";
+  subject_label?: string | null;
   proposal_id?: string | null;
   project_id?: string | null;
   title: string;

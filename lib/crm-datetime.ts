@@ -3,6 +3,21 @@ export const CRM_TIMEZONE = "Asia/Kolkata";
 
 const TZ = { timeZone: CRM_TIMEZONE } as const;
 
+/** Exact UTC bounds for the current IST calendar day (safe on UTC servers). */
+export function crmIstDayBounds(now = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    ...TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(now);
+  const value = (type: string) => Number(parts.find((part) => part.type === type)?.value ?? 0);
+  const startMs = Date.UTC(value("year"), value("month") - 1, value("day")) - 330 * 60_000;
+  const start = new Date(startMs);
+  const end = new Date(startMs + 86_400_000);
+  return { start, end };
+}
+
 function parseIso(iso: string | null | undefined): Date | null {
   if (!iso) return null;
   const d = new Date(iso);

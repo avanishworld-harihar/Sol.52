@@ -6,7 +6,7 @@ import { AlarmClock, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FloatingLabelInput } from "@/components/ui/floating-label-input";
 import { useToast } from "@/components/ui/toast-center";
-import { createReminder } from "@/lib/followup-client";
+import { createReminder, patchReminder } from "@/lib/followup-client";
 import type { FollowupReminder } from "@/lib/followup-types";
 import {
   CALLBACK_PRESETS,
@@ -27,6 +27,9 @@ type Props = {
   onClose: () => void;
   leadId: string;
   customerName: string;
+  reminderId?: string | null;
+  reminderDueAt?: string | null;
+  reminderTitle?: string | null;
   onScheduled?: () => void;
 };
 
@@ -60,6 +63,9 @@ export function ScheduleCallbackSheet({
   onClose,
   leadId,
   customerName,
+  reminderId,
+  reminderDueAt,
+  reminderTitle,
   onScheduled,
 }: Props) {
   const toast = useToast();
@@ -83,15 +89,23 @@ export function ScheduleCallbackSheet({
       return;
     }
     lockBodyScroll(true);
-    setPreset("in_3_months");
+    const existing = reminderDueAt ? new Date(reminderDueAt) : null;
+    const validExisting = existing && !Number.isNaN(existing.getTime());
+    const dateParts = validExisting
+      ? new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).format(existing)
+      : "";
+    const timeParts = validExisting
+      ? new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", hour12: false }).format(existing)
+      : "10:00";
+    setPreset(validExisting ? "custom_datetime" : "in_3_months");
     setShowMore(false);
-    setCustomDate("");
-    setCustomTime("10:00");
+    setCustomDate(dateParts);
+    setCustomTime(timeParts === "24:00" ? "00:00" : timeParts);
     setNote("");
-    setTitle("");
+    setTitle(reminderTitle ?? "");
     setPriority("medium");
     return () => lockBodyScroll(false);
-  }, [open, leadId]);
+  }, [open, leadId, reminderDueAt, reminderTitle]);
 
   const resolvedTitle = title.trim() || defaultCallbackTitle(preset, note);
 
@@ -121,6 +135,7 @@ export function ScheduleCallbackSheet({
       mutate(`/api/customers/${encodeURIComponent(leadId)}/reminders`),
       mutate(CUSTOMERS_SWR_KEY),
       mutate("/api/followups/widgets"),
+      mutate("/api/followups/widgets?view=all"),
       mutate("crm-command-center"),
     ]);
   }, [leadId, mutate]);
@@ -129,7 +144,7 @@ export function ScheduleCallbackSheet({
     void mutate(
       CUSTOMERS_SWR_KEY,
       (rows?: CustomerLead[]) => rows?.map((row) => row.id === leadId
-        ? { ...row, next_followup_at: created.due_at, next_followup_title: created.title }
+        ? { ...row, next_followup_id: created.id, next_followup_at: created.due_at, next_followup_title: created.title }
         : row),
       { revalidate: false }
     );
@@ -138,6 +153,11 @@ export function ScheduleCallbackSheet({
       (current?: WidgetPayload) => {
         if (!current) return current;
         const reminder: WidgetReminder = created;
+        const withoutCurrent = {
+          overdue: current.overdue.filter((item) => item.id !== created.id),
+          today: current.today.filter((item) => item.id !== created.id),
+          upcoming: current.upcoming.filter((item) => item.id !== created.id),
+        };
         const now = new Date();
         const due = new Date(created.due_at);
         const start = new Date(now);
@@ -145,7 +165,7 @@ export function ScheduleCallbackSheet({
         const end = new Date(start);
         end.setDate(end.getDate() + 1);
         const bucket = due < now ? "overdue" : due < end ? "today" : "upcoming";
-        const next = { ...current, [bucket]: [...current[bucket], reminder] };
+        const next = { ...current, ...withoutCurrent, [bucket]: [...withoutCurrent[bucket], reminder] };
         return {
           ...next,
           counts: {
@@ -185,17 +205,21 @@ export function ScheduleCallbackSheet({
         throw new Error("Invalid callback date — please pick again");
       }
 
-      const created = await createReminder(leadId, {
+      const reminderPayload = {
         title: resolvedTitle,
         due_at,
         priority,
-        followup_type: "call",
-        status: "pending",
+        followup_type: "call" as const,
+        status: "pending" as const,
         notes: note.trim() || null,
-      });
+        snoozed_until: null,
+      };
+      const created = reminderId
+        ? await patchReminder(reminderId, reminderPayload)
+        : await createReminder(leadId, reminderPayload);
       applyOptimisticReminder(created);
       onScheduled?.();
-      toast.success(`Callback scheduled for ${formatCrmDateTime(due_at)}`);
+      toast.success(`${reminderId ? "Callback rescheduled" : "Callback scheduled"} for ${formatCrmDateTime(due_at)}`);
       onClose();
       refreshCachesInBackground();
     } catch (e) {

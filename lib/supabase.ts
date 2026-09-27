@@ -422,7 +422,7 @@ export async function mapLeadIdsToLatestProposalIds(leadIds: string[]): Promise<
 /** CRM Phase 2: batch-fetch next pending followup per lead. */
 export async function batchNextFollowups(
   leadIds: string[]
-): Promise<Record<string, { due_at: string; title: string; priority: string }>> {
+): Promise<Record<string, { id: string; due_at: string; title: string; priority: string }>> {
   const uniq = [...new Set(leadIds.filter(Boolean))];
   if (uniq.length === 0) return {};
   const client = createSupabaseAdmin() ?? supabase;
@@ -430,15 +430,15 @@ export async function batchNextFollowups(
   try {
     const { data, error } = await client
       .from("followup_reminders")
-      .select("lead_id, due_at, title, priority")
+      .select("id, lead_id, due_at, title, priority")
       .in("lead_id", uniq)
       .eq("status", "pending")
       .order("due_at", { ascending: true });
     if (error || !Array.isArray(data)) return {};
-    const out: Record<string, { due_at: string; title: string; priority: string }> = {};
-    for (const r of data as { lead_id: string; due_at: string; title: string; priority: string }[]) {
+    const out: Record<string, { id: string; due_at: string; title: string; priority: string }> = {};
+    for (const r of data as { id: string; lead_id: string; due_at: string; title: string; priority: string }[]) {
       if (!out[r.lead_id]) {
-        out[r.lead_id] = { due_at: r.due_at, title: r.title, priority: r.priority };
+        out[r.lead_id] = { id: r.id, due_at: r.due_at, title: r.title, priority: r.priority };
       }
     }
     return out;

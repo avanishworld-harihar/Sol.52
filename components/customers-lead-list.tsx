@@ -821,6 +821,9 @@ export function CustomersLeadList({
           onClose={() => setScheduleTarget(null)}
           leadId={scheduleTarget.id}
           customerName={scheduleTarget.name}
+          reminderId={scheduleTarget.next_followup_id ?? null}
+          reminderDueAt={scheduleTarget.next_followup_at ?? null}
+          reminderTitle={scheduleTarget.next_followup_title ?? null}
           onScheduled={() => setScheduleTarget(null)}
         />
       ) : null}

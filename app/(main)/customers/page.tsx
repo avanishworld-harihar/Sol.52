@@ -745,7 +745,7 @@ function CustomersPageContent() {
                 </div>
                 <div className="grid grid-cols-3 gap-2" aria-label="Follow-up summary">
                   <div className="rounded-xl bg-teal-50 px-2.5 py-2 text-teal-800 dark:bg-teal-950/30 dark:text-teal-200">
-                    <p className="flex items-center gap-1 text-[9px] font-extrabold uppercase tracking-wide"><CalendarCheck2 className="h-3 w-3" /> Scheduled</p>
+                    <p className="flex items-center gap-1 text-[9px] font-extrabold uppercase tracking-wide" title="Customers with a pending follow-up"><CalendarCheck2 className="h-3 w-3" /> Scheduled leads</p>
                     <p className="mt-0.5 text-lg font-black tabular-nums">{followupCounts.scheduled}</p>
                   </div>
                   <div className="rounded-xl bg-amber-50 px-2.5 py-2 text-amber-900 dark:bg-amber-950/30 dark:text-amber-100">

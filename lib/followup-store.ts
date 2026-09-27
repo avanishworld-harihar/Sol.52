@@ -9,6 +9,7 @@ import type {
   LeadVisit,
   ReminderStatus,
 } from "@/lib/followup-types";
+import { crmIstDayBounds } from "@/lib/crm-datetime";
 
 function db() {
   return createSupabaseAdmin() ?? supabase;
@@ -222,49 +223,66 @@ export async function listLeadProposalHistory(leadId: string, page?: FollowupPag
   return data as Record<string, unknown>[];
 }
 
-export async function getFollowupDashboardWidgets() {
+export async function getFollowupDashboardWidgets(input: {
+  leadIds: string[];
+  organizationId?: string | null;
+  includeUnscopedRows?: boolean;
+  horizonDays?: number;
+  limit?: number;
+}) {
   const client = db();
   if (!client) return { today: [], overdue: [], upcoming: [], upcomingVisits: [], counts: { overdue: 0, today: 0, upcoming: 0 } };
+  const scopedLeadIds = [...new Set((input.leadIds ?? []).filter(Boolean))];
+  if (scopedLeadIds.length === 0 && !input.organizationId) {
+    return { today: [], overdue: [], upcoming: [], upcomingVisits: [], counts: { overdue: 0, today: 0, upcoming: 0 } };
+  }
+  const reminderScope = [
+    scopedLeadIds.length ? `lead_id.in.(${scopedLeadIds.join(",")})` : "",
+    input.organizationId ? `organization_id.eq.${input.organizationId}` : "",
+    input.includeUnscopedRows ? "and(lead_id.is.null,organization_id.is.null)" : "",
+  ].filter(Boolean).join(",");
   const now = new Date();
-  const start = new Date(now);
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 1);
+  const { start, end } = crmIstDayBounds(now);
   const weekEnd = new Date(start);
   weekEnd.setDate(weekEnd.getDate() + 7);
   const horizonEnd = new Date(start);
-  horizonEnd.setDate(horizonEnd.getDate() + 90);
+  horizonEnd.setDate(horizonEnd.getDate() + Math.max(7, Math.min(365, input.horizonDays ?? 90)));
+  const queryLimit = Math.max(25, Math.min(500, input.limit ?? 25));
 
   const reminderSelect =
-    "id, lead_id, title, due_at, priority, followup_type, status, notes";
+    "id, lead_id, organization_id, subject_type, subject_label, title, due_at, priority, followup_type, status, notes";
 
   const [today, overdue, upcoming, upcomingVisits] = await Promise.all([
     client
       .from("followup_reminders")
       .select(reminderSelect)
+      .or(reminderScope)
       .eq("status", "pending")
       .gte("due_at", start.toISOString())
       .lt("due_at", end.toISOString())
       .order("due_at", { ascending: true })
-      .limit(25),
+      .limit(queryLimit),
     client
       .from("followup_reminders")
       .select(reminderSelect)
+      .or(reminderScope)
       .eq("status", "pending")
       .lt("due_at", now.toISOString())
       .order("due_at", { ascending: true })
-      .limit(25),
+      .limit(queryLimit),
     client
       .from("followup_reminders")
       .select(reminderSelect)
+      .or(reminderScope)
       .eq("status", "pending")
       .gte("due_at", end.toISOString())
       .lt("due_at", horizonEnd.toISOString())
       .order("due_at", { ascending: true })
-      .limit(25),
+      .limit(queryLimit),
     client
       .from("lead_visits")
       .select("id, lead_id, scheduled_at, visit_status, summary, location")
+      .in("lead_id", scopedLeadIds.length ? scopedLeadIds : ["00000000-0000-0000-0000-000000000000"])
       .in("visit_status", ["scheduled", "rescheduled"])
       .gte("scheduled_at", now.toISOString())
       .lt("scheduled_at", weekEnd.toISOString())
@@ -272,9 +290,22 @@ export async function getFollowupDashboardWidgets() {
       .limit(20),
   ]);
 
-  const todayRows = today.data ?? [];
-  const overdueRows = overdue.data ?? [];
-  const upcomingRows = upcoming.data ?? [];
+  // Rolling deployments can serve app code before migration 094 reaches the
+  // database. Preserve customer-linked reminders instead of painting an empty
+  // agenda; general reminders become available as soon as the migration lands.
+  let todayRows: Record<string, unknown>[] = today.data ?? [];
+  let overdueRows: Record<string, unknown>[] = overdue.data ?? [];
+  let upcomingRows: Record<string, unknown>[] = upcoming.data ?? [];
+  if (today.error || overdue.error || upcoming.error) {
+    const [legacyToday, legacyOverdue, legacyUpcoming] = await Promise.all([
+      client.from("followup_reminders").select("id, lead_id, title, due_at, priority, followup_type, status, notes").in("lead_id", scopedLeadIds).eq("status", "pending").gte("due_at", start.toISOString()).lt("due_at", end.toISOString()).order("due_at", { ascending: true }).limit(queryLimit),
+      client.from("followup_reminders").select("id, lead_id, title, due_at, priority, followup_type, status, notes").in("lead_id", scopedLeadIds).eq("status", "pending").lt("due_at", now.toISOString()).order("due_at", { ascending: true }).limit(queryLimit),
+      client.from("followup_reminders").select("id, lead_id, title, due_at, priority, followup_type, status, notes").in("lead_id", scopedLeadIds).eq("status", "pending").gte("due_at", end.toISOString()).lt("due_at", horizonEnd.toISOString()).order("due_at", { ascending: true }).limit(queryLimit),
+    ]);
+    todayRows = legacyToday.data ?? [];
+    overdueRows = legacyOverdue.data ?? [];
+    upcomingRows = legacyUpcoming.data ?? [];
+  }
 
   return {
     today: todayRows,
