@@ -47,7 +47,7 @@ import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useState } 
 import { createPortal } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
 import useSWR, { useSWRConfig } from "swr";
-import { Search, X } from "lucide-react";
+import { AlarmClock, CalendarCheck2, Search, X } from "lucide-react";
 
 /** Above `#ss-bottom-nav-portal` (9999) so lead sheet footer stays tappable on mobile. */
 const LEAD_MODAL_Z = "z-[10060]";
@@ -119,7 +119,7 @@ function CustomersPageContent() {
     onSuccess: (list) => writeCustomersCache(list)
   });
 
-  const allCustomers = data ?? [];
+  const allCustomers = useMemo(() => data ?? [], [data]);
 
   const [stageFilter, setStageFilter] = useState<StageFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -168,6 +168,24 @@ function CustomersPageContent() {
     }),
     [allCustomers]
   );
+
+  const followupCounts = useMemo(() => {
+    const now = new Date();
+    const todayKey = now.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+    return allCustomers.reduce(
+      (counts, customer) => {
+        if (!customer.next_followup_at) return counts;
+        const due = new Date(customer.next_followup_at);
+        if (Number.isNaN(due.getTime())) return counts;
+        counts.scheduled += 1;
+        const dueKey = due.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+        if (dueKey === todayKey) counts.today += 1;
+        if (due.getTime() < now.getTime() && dueKey !== todayKey) counts.overdue += 1;
+        return counts;
+      },
+      { scheduled: 0, today: 0, overdue: 0 }
+    );
+  }, [allCustomers]);
 
   const showListSkeleton = isLoading && data === undefined && !loadError;
 
@@ -701,38 +719,46 @@ function CustomersPageContent() {
 
         <WorkspaceStaggerItem>
           <div className="space-y-3">
-            <div className="relative flex items-center">
-              <Search
-                className="pointer-events-none absolute left-3 h-4 w-4 text-slate-400"
-                aria-hidden
-                strokeWidth={2.25}
-              />
-              <input
-                type="search"
-                placeholder={t("customers_searchPlaceholder")}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className={cn(
-                  "w-full rounded-xl border bg-white py-2.5 pl-9 pr-9 text-sm font-medium",
-                  "border-slate-200/80 text-slate-800 placeholder:text-slate-400",
-                  "focus:border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-400/20",
-                  "dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:placeholder:text-slate-500",
-                  "dark:focus:border-teal-500 dark:focus:ring-teal-500/20"
-                )}
-                aria-label={t("customers_searchAria")}
-              />
-              {searchQuery ? (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery("")}
-                  aria-label={t("actions_close")}
-                  className="absolute right-3 rounded-md p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              ) : null}
-            </div>
-            <div className="workspace-filter-rail">
+            <div className="rounded-2xl border border-slate-200/80 bg-white/85 p-3 shadow-[0_10px_35px_-24px_rgba(15,23,42,0.32)] backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.035] sm:p-4">
+              <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(18rem,1fr)_auto] lg:items-center">
+                <div className="relative flex items-center">
+                  <Search className="pointer-events-none absolute left-3.5 h-4 w-4 text-slate-400" aria-hidden strokeWidth={2.25} />
+                  <input
+                    type="search"
+                    placeholder={t("customers_searchPlaceholder")}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className={cn(
+                      "h-12 w-full rounded-xl border bg-slate-50/70 py-2.5 pl-10 pr-10 text-sm font-medium",
+                      "border-slate-200/80 text-slate-800 placeholder:text-slate-400",
+                      "focus:border-teal-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-400/20",
+                      "dark:border-white/10 dark:bg-black/15 dark:text-slate-100 dark:placeholder:text-slate-500",
+                      "dark:focus:border-teal-500 dark:focus:ring-teal-500/20"
+                    )}
+                    aria-label={t("customers_searchAria")}
+                  />
+                  {searchQuery ? (
+                    <button type="button" onClick={() => setSearchQuery("")} aria-label={t("actions_close")} className="absolute right-3 flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-200/70 hover:text-slate-600 dark:hover:bg-white/10 dark:hover:text-slate-200">
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  ) : null}
+                </div>
+                <div className="grid grid-cols-3 gap-2" aria-label="Follow-up summary">
+                  <div className="rounded-xl bg-teal-50 px-2.5 py-2 text-teal-800 dark:bg-teal-950/30 dark:text-teal-200">
+                    <p className="flex items-center gap-1 text-[9px] font-extrabold uppercase tracking-wide"><CalendarCheck2 className="h-3 w-3" /> Scheduled</p>
+                    <p className="mt-0.5 text-lg font-black tabular-nums">{followupCounts.scheduled}</p>
+                  </div>
+                  <div className="rounded-xl bg-amber-50 px-2.5 py-2 text-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
+                    <p className="flex items-center gap-1 text-[9px] font-extrabold uppercase tracking-wide"><AlarmClock className="h-3 w-3" /> Today</p>
+                    <p className="mt-0.5 text-lg font-black tabular-nums">{followupCounts.today}</p>
+                  </div>
+                  <div className="rounded-xl bg-rose-50 px-2.5 py-2 text-rose-800 dark:bg-rose-950/30 dark:text-rose-200">
+                    <p className="text-[9px] font-extrabold uppercase tracking-wide">Overdue</p>
+                    <p className="mt-0.5 text-lg font-black tabular-nums">{followupCounts.overdue}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="workspace-filter-rail mt-3">
           {(
             [
               { key: "all", label: t("customers_filterAll") },
@@ -765,6 +791,7 @@ function CustomersPageContent() {
               </button>
             );
           })}
+              </div>
             </div>
 
             <CustomersLeadList

@@ -4,6 +4,7 @@ import { DashboardCommandCenter } from "@/components/dashboard-command-center";
 import { CrmCommandCenter } from "@/components/crm/crm-command-center";
 import { DashboardOperationalInsights } from "@/components/dashboard-operational-insights";
 import { DashboardQuickActions } from "@/components/dashboard-quick-actions";
+import { DashboardFollowupWidgets } from "@/components/dashboard-followup-widgets";
 import { duplicateSheetExtrasFromT, quickQuoteLabelsFromT } from "@/lib/proposal-hub-i18n";
 import { QuickQuoteLauncher } from "@/components/proposals/quick-quote-launcher";
 import { DashboardSectionTitle } from "@/components/dashboard-section-title";
@@ -276,6 +277,10 @@ function DashboardPageContent() {
 
         <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-command cc-hero-zone">
           <CrmCommandCenter />
+        </DashboardItem>
+
+        <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-agenda">
+          <DashboardFollowupWidgets />
         </DashboardItem>
 
         {stats && (stats.pendingPayments > 0 || attentionProjects.length > 0) && (

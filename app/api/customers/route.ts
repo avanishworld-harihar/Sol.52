@@ -37,6 +37,27 @@ const customerSchema = z.object({
   is_whatsapp_contact: z.boolean().optional(),
 });
 
+let lastCustomerRepairAt = 0;
+const CUSTOMER_REPAIR_INTERVAL_MS = 5 * 60 * 1000;
+
+function scheduleCustomerRepairs() {
+  const now = Date.now();
+  if (now - lastCustomerRepairAt < CUSTOMER_REPAIR_INTERVAL_MS) return;
+  lastCustomerRepairAt = now;
+  void Promise.allSettled([
+    purgeSyntheticCrmLeads(),
+    unmergeBillHolderFromProjectLeads(),
+    syncMissingHouseholdLeadsFromProposals(),
+  ]).then((repairs) => {
+    repairs.forEach((result, index) => {
+      if (result.status === "rejected") {
+        const labels = ["purge synthetic", "unmerge bill holder", "household sync"];
+        console.warn(`[customers GET] ${labels[index]}:`, result.reason);
+      }
+    });
+  });
+}
+
 export async function GET(req: NextRequest) {
   try {
     const scope = await resolveOrgScope(req);
@@ -48,21 +69,9 @@ export async function GET(req: NextRequest) {
      * (proposal person) appears and Bharti's stolen bill/CA are cleared.
      * Heavier project backfills stay in the background.
      */
-    try {
-      await purgeSyntheticCrmLeads();
-    } catch (err) {
-      console.warn("[customers GET] purge synthetic:", err);
-    }
-    try {
-      await unmergeBillHolderFromProjectLeads();
-    } catch (err) {
-      console.warn("[customers GET] unmerge bill holder:", err);
-    }
-    try {
-      await syncMissingHouseholdLeadsFromProposals();
-    } catch (err) {
-      console.warn("[customers GET] household sync:", err);
-    }
+    // Repair/backfill work is throttled and best-effort. A read should never
+    // wait on three write-heavy maintenance jobs before returning the list.
+    scheduleCustomerRepairs();
 
     void (async () => {
       try {

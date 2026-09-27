@@ -82,7 +82,7 @@ async function ensureHouseholdLink(
   const hasWhatsapp = existingRows.some((r) => r.is_whatsapp_contact === true);
   const createdId = String(created.id ?? "");
 
-  for (const id of ids) {
+  await Promise.all(ids.map(async (id) => {
     const patch: Record<string, unknown> = { household_id: householdId };
     if (id === createdId) {
       patch.is_whatsapp_contact = opts?.newIsWhatsapp === true ? true : hasWhatsapp ? false : true;
@@ -92,7 +92,7 @@ async function ensureHouseholdLink(
       if (id === firstExisting) patch.is_whatsapp_contact = true;
     }
     await client.from(leadsTable).update(patch).eq("id", id);
-  }
+  }));
 
   const { data } = await client.from(leadsTable).select("*").eq("id", createdId).maybeSingle();
   return (data as Record<string, unknown> | null) ?? { ...created, household_id: householdId };

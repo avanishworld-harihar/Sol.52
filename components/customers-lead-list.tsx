@@ -401,12 +401,12 @@ export function CustomersLeadList({
 
       {loading ? (
         <>
-          <div className="space-y-3 px-0.5 md:hidden">
+          <div className="grid grid-cols-1 gap-3 px-0.5 md:grid-cols-2 lg:hidden">
             {Array.from({ length: 4 }).map((_, i) => (
               <LeadMobileCardSkeleton key={`m-sk-${i}`} />
             ))}
           </div>
-          <div className="hidden overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#0c1017] md:block">
+          <div className="hidden overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#0c1017] lg:block">
             {Array.from({ length: 5 }).map((_, i) => (
               <LeadRowSkeleton key={i} />
             ))}
@@ -416,7 +416,7 @@ export function CustomersLeadList({
 
       {!loading && customers.length > 0 ? (
         <>
-          <div className="space-y-3 px-0.5 md:hidden">
+          <div className="grid grid-cols-1 gap-3 px-0.5 md:grid-cols-2 lg:hidden">
             {customers.map((customer) => {
               const statusKey = normalizeLeadStatus(customer.status);
               const commercialCta = resolveCustomerCommercialCta(customer);
@@ -596,7 +596,7 @@ export function CustomersLeadList({
             })}
           </div>
 
-          <div className="hidden overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_8px_30px_-12px_rgba(15,23,42,0.12)] dark:border-white/10 dark:bg-[#0c1017] md:block">
+          <div className="hidden overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_8px_30px_-12px_rgba(15,23,42,0.12)] dark:border-white/10 dark:bg-[#0c1017] lg:block">
             {showHeader && (
               <div className="grid grid-cols-12 gap-4 border-b border-slate-200/90 bg-gradient-to-r from-slate-50 to-white px-5 py-3 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:border-white/10 dark:from-[#141a22] dark:to-[#0c1017] dark:text-slate-400">
                 <div className="col-span-5 pl-[3.25rem]">{t("customers_tableLead")}</div>

@@ -34,7 +34,9 @@ export async function POST(req: NextRequest, ctx: RouteCtx) {
     const parsed = reminderSchema.parse(await req.json());
     const created = await createLeadReminder({ lead_id: id, ...parsed });
     if (!created) return NextResponse.json({ ok: false, error: "create_failed" }, { status: 400 });
-    await appendActivityEvent({
+    // The reminder is the user-facing transaction. Timeline logging is best-effort
+    // and must not add another database round trip to the save response.
+    void appendActivityEvent({
       leadId: id,
       eventType: "followup_created",
       meta: { reminderId: created.id, dueAt: created.due_at, followupType: created.followup_type },

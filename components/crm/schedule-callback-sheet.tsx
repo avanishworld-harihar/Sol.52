@@ -18,6 +18,9 @@ import {
 import { formatCrmDateTime } from "@/lib/crm-datetime";
 import { cn } from "@/lib/utils";
 import { useSWRConfig } from "swr";
+import { CUSTOMERS_SWR_KEY } from "@/lib/customers-client";
+import type { CustomerLead } from "@/lib/types";
+import type { WidgetPayload, WidgetReminder } from "@/components/dashboard-followup-widgets";
 
 type Props = {
   open: boolean;
@@ -92,7 +95,7 @@ export function ScheduleCallbackSheet({
 
   const resolvedTitle = title.trim() || defaultCallbackTitle(preset, note);
 
-  function resolveDueIso(): string {
+  const resolveDueIso = useCallback((): string => {
     if (preset === "custom_date" && customDate.trim()) {
       return resolveCallbackDueAt("custom_datetime", {
         customLocal: `${customDate.trim()}T${customTime || "10:00"}`,
@@ -103,7 +106,7 @@ export function ScheduleCallbackSheet({
       customLocal:
         preset === "custom_datetime" && customDate && customTime ? `${customDate}T${customTime}` : undefined,
     });
-  }
+  }, [customDate, customTime, preset]);
 
   const duePreview = useMemo(() => {
     try {
@@ -111,15 +114,49 @@ export function ScheduleCallbackSheet({
     } catch {
       return "—";
     }
-  }, [preset, customDate, customTime]);
+  }, [resolveDueIso]);
 
-  const invalidateCaches = useCallback(async () => {
-    await Promise.all([
+  const refreshCachesInBackground = useCallback(() => {
+    void Promise.allSettled([
       mutate(`/api/customers/${encodeURIComponent(leadId)}/reminders`),
-      mutate("/api/customers"),
+      mutate(CUSTOMERS_SWR_KEY),
       mutate("/api/followups/widgets"),
       mutate("crm-command-center"),
     ]);
+  }, [leadId, mutate]);
+
+  const applyOptimisticReminder = useCallback((created: FollowupReminder) => {
+    void mutate(
+      CUSTOMERS_SWR_KEY,
+      (rows?: CustomerLead[]) => rows?.map((row) => row.id === leadId
+        ? { ...row, next_followup_at: created.due_at, next_followup_title: created.title }
+        : row),
+      { revalidate: false }
+    );
+    void mutate(
+      "/api/followups/widgets",
+      (current?: WidgetPayload) => {
+        if (!current) return current;
+        const reminder: WidgetReminder = created;
+        const now = new Date();
+        const due = new Date(created.due_at);
+        const start = new Date(now);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(start);
+        end.setDate(end.getDate() + 1);
+        const bucket = due < now ? "overdue" : due < end ? "today" : "upcoming";
+        const next = { ...current, [bucket]: [...current[bucket], reminder] };
+        return {
+          ...next,
+          counts: {
+            overdue: next.overdue.length,
+            today: next.today.length,
+            upcoming: next.upcoming.length,
+          },
+        };
+      },
+      { revalidate: false }
+    );
   }, [leadId, mutate]);
 
   function validateBeforeSave(): string | null {
@@ -148,7 +185,7 @@ export function ScheduleCallbackSheet({
         throw new Error("Invalid callback date — please pick again");
       }
 
-      await createReminder(leadId, {
+      const created = await createReminder(leadId, {
         title: resolvedTitle,
         due_at,
         priority,
@@ -156,10 +193,11 @@ export function ScheduleCallbackSheet({
         status: "pending",
         notes: note.trim() || null,
       });
-      await invalidateCaches();
+      applyOptimisticReminder(created);
       onScheduled?.();
       toast.success(`Callback scheduled for ${formatCrmDateTime(due_at)}`);
       onClose();
+      refreshCachesInBackground();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not schedule callback");
     } finally {
