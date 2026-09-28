@@ -45,7 +45,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { FormEvent } from "react";
-import { Suspense, useCallback, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 
 type ProjectsView = "active" | "hidden" | "archived";
@@ -148,7 +148,20 @@ function ProjectsBoard() {
     status: "pending" as ProjectEditStatus,
   });
   const [projError, setProjError] = useState("");
-  const [collectionsOpen, setCollectionsOpen] = useState(false);
+  const [collectionsOpen, setCollectionsOpen] = useState(() => searchParams.get("collections") === "1");
+
+  useEffect(() => {
+    if (searchParams.get("collections") === "1") setCollectionsOpen(true);
+  }, [searchParams]);
+
+  const closeCollections = useCallback(() => {
+    setCollectionsOpen(false);
+    if (searchParams.get("collections") !== "1") return;
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("collections");
+    const query = params.toString();
+    router.replace(query ? `/projects?${query}` : "/projects", { scroll: false });
+  }, [router, searchParams]);
 
   const modalFloatingClass =
     "h-12 rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 focus:border-teal-500 focus:ring-teal-200/70";
@@ -703,7 +716,7 @@ function ProjectsBoard() {
 
       <OutstandingCollectionsSheet
         open={collectionsOpen}
-        onClose={() => setCollectionsOpen(false)}
+        onClose={closeCollections}
         rows={collectionsPayload?.collections ?? []}
         totalPendingInr={collectionsPayload?.total_pending_inr ?? 0}
         projectCount={collectionsPayload?.projects_with_balance_count ?? 0}

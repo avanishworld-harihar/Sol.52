@@ -11,8 +11,7 @@ import { DashboardSectionTitle } from "@/components/dashboard-section-title";
 import { OfflineDataNotice } from "@/components/offline-data-notice";
 import { GlassProjectCard, type GlassProjectSummary } from "@/components/glass-project-card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { HelpHint } from "@/components/ui/help-hint";
+import { Card, CardContent } from "@/components/ui/card";
 import { FloatingLabelSelect } from "@/components/ui/floating-label-input";
 import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
@@ -41,7 +40,7 @@ import {
   writeInstallerRegion
 } from "@/lib/installer-region-storage";
 import { detectInstallerLocation, inferDiscomForLocation, type DetectedInstallerLocation } from "@/lib/installer-location";
-import { AlertTriangle, ArrowRight, Loader2, LocateFixed, MapPin, UserPlus, Wallet } from "lucide-react";
+import { AlertTriangle, ArrowRight, ChevronDown, Loader2, LocateFixed, MapPin, Wallet, X } from "lucide-react";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import { buildMetricTrendLines, writeTrendBaseline, type MetricTrendLines } from "@/lib/dashboard-trends";
 import { useLanguage } from "@/lib/language-context";
@@ -72,10 +71,12 @@ const dashboardItem = {
   }
 } as const;
 
+const INSTALLER_SETUP_DISMISSED_KEY = "sol52.dashboard.installer-setup-dismissed";
+
 function DashboardStaggerRoot({ animate, children }: { animate: boolean; children: ReactNode }) {
-  if (!animate) return <div className="space-y-5 sm:space-y-6 md:space-y-7">{children}</div>;
+  if (!animate) return <div className="space-y-4 sm:space-y-5">{children}</div>;
   return (
-    <motion.div initial="hidden" animate="show" variants={dashboardStagger} className="space-y-5 sm:space-y-6 md:space-y-7">
+    <motion.div initial="hidden" animate="show" variants={dashboardStagger} className="space-y-4 sm:space-y-5">
       {children}
     </motion.div>
   );
@@ -125,6 +126,8 @@ function DashboardPageContent() {
   const [installerState, setInstallerState] = useState("");
   const [installerDiscom, setInstallerDiscom] = useState("");
   const [installerSaved, setInstallerSaved] = useState(false);
+  const [installerSetupDismissed, setInstallerSetupDismissed] = useState(false);
+  const [installerSetupExpanded, setInstallerSetupExpanded] = useState(false);
   const [regionHydrated, setRegionHydrated] = useState(false);
   const [detectedLocation, setDetectedLocation] = useState<DetectedInstallerLocation | null>(null);
   const [locationPhase, setLocationPhase] = useState<"idle" | "locating" | "resolving" | "confirm" | "error">("idle");
@@ -168,6 +171,11 @@ function DashboardPageContent() {
     setInstallerState(state);
     setInstallerDiscom(discom);
     setInstallerSaved(Boolean(state && discom));
+    try {
+      setInstallerSetupDismissed(localStorage.getItem(INSTALLER_SETUP_DISMISSED_KEY) === "1");
+    } catch {
+      setInstallerSetupDismissed(false);
+    }
     setRegionHydrated(true);
   }, []);
 
@@ -324,6 +332,15 @@ function DashboardPageContent() {
     }
   }
 
+  function dismissInstallerSetup() {
+    setInstallerSetupDismissed(true);
+    try {
+      localStorage.setItem(INSTALLER_SETUP_DISMISSED_KEY, "1");
+    } catch {
+      /* private mode */
+    }
+  }
+
   return (
     <div className="workspace-dashboard">
     <DashboardStaggerRoot animate={shouldAnimateDashboard}>
@@ -331,12 +348,12 @@ function DashboardPageContent() {
           <DashboardCommandCenter name={greetingName} stats={stats} loading={showMetricSkeleton} />
         </DashboardItem>
 
-        <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-agenda">
-          <DashboardFollowupWidgets />
-        </DashboardItem>
-
         <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-command cc-hero-zone">
           <CrmCommandCenter compact />
+        </DashboardItem>
+
+        <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-agenda">
+          <DashboardFollowupWidgets />
         </DashboardItem>
 
         {stats && (stats.pendingPayments > 0 || attentionProjects.length > 0) && (
@@ -407,28 +424,22 @@ function DashboardPageContent() {
           </DashboardItem>
         )}
 
-        {regionHydrated && !installerSaved && (
+        {regionHydrated && !installerSaved && !installerSetupDismissed && (
           <DashboardItem animate={shouldAnimateDashboard}>
-            <Card className="glass-surface border-white/55 dark:border dark:border-emerald-500/45 dark:bg-[#070b12] dark:shadow-[0_12px_40px_rgba(0,0,0,0.55)]">
-              <CardHeader className="space-y-1 p-4 pb-2 sm:p-6 sm:pb-3">
-                <div className="flex items-center gap-2">
-                  <span
-                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 text-indigo-700 dark:bg-emerald-500/15 dark:text-emerald-200"
-                    aria-hidden
-                  >
-                    <MapPin className="h-4 w-4" strokeWidth={2.25} />
-                  </span>
-                  <CardTitle className="text-sm font-semibold text-slate-900 dark:text-[#94A3B8] sm:text-base">
-                    {t("dashboard_installerSetup")}
-                  </CardTitle>
+            <Card className="overflow-hidden border-teal-200/80 bg-gradient-to-r from-white via-teal-50/65 to-cyan-50/60 shadow-sm dark:border-teal-500/25 dark:from-[#0c1017] dark:via-teal-950/20 dark:to-cyan-950/15">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-600 text-white shadow-md shadow-teal-600/20" aria-hidden><MapPin className="h-4 w-4" strokeWidth={2.25} /></span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2"><p className="truncate text-sm font-extrabold text-slate-950 dark:text-white">Finish installer setup</p><span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-amber-800 dark:bg-amber-500/15 dark:text-amber-200">1 step left</span></div>
+                    <p className="mt-0.5 truncate text-xs font-medium text-slate-500 dark:text-slate-400">Set your state and DISCOM for accurate billing defaults.</p>
+                    <div className="mt-2 h-1.5 max-w-48 overflow-hidden rounded-full bg-slate-200/80 dark:bg-white/10"><span className="block h-full w-1/2 rounded-full bg-teal-500" /></div>
+                  </div>
+                  <button type="button" onClick={() => setInstallerSetupExpanded((value) => !value)} className="hidden min-h-10 items-center gap-1.5 rounded-xl bg-slate-950 px-3 text-xs font-extrabold text-white transition hover:bg-teal-700 sm:inline-flex dark:bg-white dark:text-slate-950" aria-expanded={installerSetupExpanded}>Complete setup <ChevronDown className={`h-4 w-4 transition-transform ${installerSetupExpanded ? "rotate-180" : ""}`} /></button>
+                  <button type="button" onClick={dismissInstallerSetup} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white/80 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-white" aria-label="Dismiss installer setup"><X className="h-4 w-4" /></button>
                 </div>
-                <HelpHint
-                  className="text-xs sm:text-sm"
-                  label={t("dashboard_installerSetupSub")}
-                  detail={`${t("dashboard_installerSetupSub_detail")} ${INDIAN_STATES_AND_UTS.length} states and UTs available.`}
-                />
-              </CardHeader>
-              <CardContent className="space-y-3 p-4 pt-0 sm:p-6 sm:pt-0">
+                <button type="button" onClick={() => setInstallerSetupExpanded((value) => !value)} className="mt-3 flex min-h-10 w-full items-center justify-center gap-1.5 rounded-xl bg-slate-950 px-3 text-xs font-extrabold text-white sm:hidden dark:bg-white dark:text-slate-950" aria-expanded={installerSetupExpanded}>Complete setup <ChevronDown className={`h-4 w-4 transition-transform ${installerSetupExpanded ? "rotate-180" : ""}`} /></button>
+                {installerSetupExpanded ? <div className="mt-4 space-y-3 border-t border-teal-200/70 pt-4 dark:border-white/10">
                 <div className="rounded-2xl border border-teal-200/80 bg-teal-50/70 p-3 dark:border-teal-500/25 dark:bg-teal-950/20">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="min-w-0">
@@ -500,6 +511,7 @@ function DashboardPageContent() {
                     {t("actions_save")}
                   </Button>
                 </div>
+                </div> : null}
               </CardContent>
             </Card>
           </DashboardItem>

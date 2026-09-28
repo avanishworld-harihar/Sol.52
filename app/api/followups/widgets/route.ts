@@ -29,5 +29,8 @@ export async function GET(req: NextRequest) {
     horizonDays: expanded ? 365 : 90,
     limit: expanded ? 500 : 25,
   });
-  return NextResponse.json({ ok: true, data }, { headers: { "Cache-Control": "no-store" } });
+  return NextResponse.json(
+    { ok: true, data: { ...data, generated_at: new Date().toISOString() } },
+    { headers: { "Cache-Control": "no-store" } }
+  );
 }

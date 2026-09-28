@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
-import { AlarmClock, ArrowRight, CalendarDays, Clock3, MapPin, MessageSquareText } from "lucide-react";
+import { AlarmClock, ArrowRight, CalendarDays, Check, Clock3, Loader2, MapPin, MessageSquareText, RefreshCw } from "lucide-react";
 import { formatCrmTime } from "@/lib/crm-datetime";
 import { cn } from "@/lib/utils";
 import { CreateReminderDialog } from "@/components/agenda/create-reminder-dialog";
 import { patchReminder } from "@/lib/followup-client";
 import { AgendaCalendarDialog } from "@/components/agenda/agenda-calendar-dialog";
+import { resolveCallbackDueAt } from "@/lib/crm-callback-schedule";
 
 export type WidgetReminder = {
   id: string; lead_id: string | null; title: string; due_at: string; priority: string;
@@ -22,6 +23,7 @@ export type WidgetVisit = {
 export type WidgetPayload = {
   today: WidgetReminder[]; overdue: WidgetReminder[]; upcoming: WidgetReminder[];
   upcomingVisits: WidgetVisit[]; counts?: { overdue: number; today: number; upcoming: number };
+  generated_at?: string;
 };
 
 async function fetchWidgets(url: string): Promise<WidgetPayload> {
@@ -56,7 +58,7 @@ export function DashboardFollowupWidgets({ expanded = false }: { expanded?: bool
   // A date picker can jump beyond the seven-day strip, so retain the full
   // one-year agenda in both dashboard and expanded views.
   const widgetsKey = "/api/followups/widgets?view=all";
-  const { data, isLoading, mutate: refreshWidgets } = useSWR<WidgetPayload>(widgetsKey, fetchWidgets, {
+  const { data, isLoading, isValidating, mutate: refreshWidgets } = useSWR<WidgetPayload>(widgetsKey, fetchWidgets, {
     dedupingInterval: 30_000, revalidateOnFocus: true,
   });
   const days = useMemo(() => makeDays(expanded ? 14 : 7), [expanded]);
@@ -92,6 +94,16 @@ export function DashboardFollowupWidgets({ expanded = false }: { expanded?: bool
     void mutateGlobal("/api/customers");
   }
 
+  async function rescheduleReminder(reminderId: string, preset: "tomorrow" | "next_week") {
+    await patchReminder(reminderId, {
+      status: "pending",
+      snoozed_until: null,
+      due_at: resolveCallbackDueAt(preset),
+    });
+    await refreshWidgets();
+    void mutateGlobal("crm-command-center");
+  }
+
   function openCalendar(event: React.MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
     event.stopPropagation();
@@ -100,7 +112,7 @@ export function DashboardFollowupWidgets({ expanded = false }: { expanded?: bool
 
   return (
     <section aria-labelledby="agenda-heading" className="overflow-hidden rounded-[1.75rem] border border-slate-200/80 bg-white shadow-[0_20px_55px_-32px_rgba(15,23,42,0.35)] dark:border-white/10 dark:bg-[#0c1017]">
-      <div className="grid min-h-[24rem] grid-cols-1 md:grid-cols-[minmax(16rem,0.85fr)_minmax(20rem,1.25fr)]">
+      <div className="grid grid-cols-1 md:min-h-[24rem] md:grid-cols-[minmax(16rem,0.85fr)_minmax(20rem,1.25fr)]">
         <div className="border-b border-slate-200/80 bg-gradient-to-br from-slate-50 via-white to-teal-50/60 p-4 sm:p-5 md:border-b-0 md:border-r dark:border-white/10 dark:from-white/[0.05] dark:via-white/[0.02] dark:to-teal-950/20">
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -150,19 +162,25 @@ export function DashboardFollowupWidgets({ expanded = false }: { expanded?: bool
               <h3 className="mt-0.5 text-lg font-black text-slate-950 dark:text-white">{isToday ? "Focus for today" : `${selectedMeta?.day}'s plan`}</h3>
             </div>
             <div className="flex w-full items-center justify-between gap-1 sm:w-auto sm:justify-start">
+              <div className="flex items-center gap-1.5 pr-1 text-[10px] font-semibold text-slate-400 sm:text-[11px]">
+                {data?.generated_at ? <span className="whitespace-nowrap">Updated {formatCrmTime(data.generated_at)}</span> : null}
+                <button type="button" onClick={() => void refreshWidgets()} disabled={isValidating} className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-teal-700 disabled:opacity-60 dark:hover:bg-white/5 dark:hover:text-teal-300" aria-label="Refresh agenda">
+                  <RefreshCw className={cn("h-4 w-4", isValidating && "animate-spin")} aria-hidden />
+                </button>
+              </div>
               <CreateReminderDialog compact initialDate={selectedDay} triggerLabel="Plan this day" />
               {!expanded ? <Link href="/agenda" className="inline-flex min-h-10 items-center gap-1 rounded-xl px-3 text-xs font-bold text-teal-700 hover:bg-teal-50 dark:text-teal-300 dark:hover:bg-teal-950/30">Full agenda <ArrowRight className="h-3.5 w-3.5" aria-hidden /></Link> : null}
             </div>
           </div>
           <div className="mt-4 space-y-2">
-            {isLoading ? Array.from({ length: 4 }, (_, i) => <div key={i} className="h-[4.25rem] animate-pulse rounded-2xl bg-slate-100 dark:bg-white/5" />) : (
+            {isLoading ? Array.from({ length: expanded ? 4 : 3 }, (_, i) => <div key={i} className="h-[4.25rem] animate-pulse rounded-2xl bg-slate-100 dark:bg-white/5" />) : (
               <>
-                {isToday && overdue.slice(0, 3).map((item) => <AgendaReminder key={item.id} reminder={item} overdue onComplete={completeReminder} />)}
-                {!isToday && selectedOverdue.map((item) => <AgendaReminder key={item.id} reminder={item} overdue onComplete={completeReminder} />)}
-                {selectedReminders.map((item) => <AgendaReminder key={item.id} reminder={item} onComplete={completeReminder} />)}
+                {isToday && overdue.slice(0, 3).map((item) => <AgendaReminder key={item.id} reminder={item} overdue onComplete={completeReminder} onReschedule={rescheduleReminder} />)}
+                {!isToday && selectedOverdue.map((item) => <AgendaReminder key={item.id} reminder={item} overdue onComplete={completeReminder} onReschedule={rescheduleReminder} />)}
+                {selectedReminders.map((item) => <AgendaReminder key={item.id} reminder={item} onComplete={completeReminder} onReschedule={rescheduleReminder} />)}
                 {selectedVisits.map((item) => <AgendaVisit key={item.id} visit={item} />)}
                 {(isToday ? overdue.length : selectedOverdue.length) + selectedReminders.length + selectedVisits.length === 0 ? (
-                  <div className="flex min-h-44 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 px-5 text-center dark:border-white/10 dark:bg-white/[0.025]">
+                  <div className="flex min-h-36 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 px-5 text-center dark:border-white/10 dark:bg-white/[0.025] sm:min-h-44">
                     <CalendarDays className="h-7 w-7 text-teal-500" aria-hidden />
                     <p className="mt-2 text-sm font-extrabold text-slate-800 dark:text-slate-100">Your schedule is clear</p>
                     <p className="mt-1 max-w-xs text-xs text-slate-500">Schedule a callback from any customer card and it will appear here.</p>
@@ -186,19 +204,20 @@ export function DashboardFollowupWidgets({ expanded = false }: { expanded?: bool
   );
 }
 
-function AgendaReminder({ reminder, overdue = false, onComplete }: { reminder: WidgetReminder; overdue?: boolean; onComplete: (id: string) => Promise<void> }) {
+function AgendaReminder({ reminder, overdue = false, onComplete, onReschedule }: { reminder: WidgetReminder; overdue?: boolean; onComplete: (id: string) => Promise<void>; onReschedule: (id: string, preset: "tomorrow" | "next_week") => Promise<void> }) {
   const [busy, setBusy] = useState(false);
-  const className = cn("group flex min-h-[4.25rem] items-center gap-3 rounded-2xl border px-3 py-2.5 transition", overdue ? "border-rose-200 bg-rose-50/80 hover:bg-rose-100 dark:border-rose-500/30 dark:bg-rose-950/20" : "border-slate-200/80 bg-white hover:border-teal-300 hover:bg-teal-50/50 dark:border-white/10 dark:bg-white/[0.025] dark:hover:bg-teal-950/20");
+  const [rescheduleOpen, setRescheduleOpen] = useState(false);
+  const className = cn("group rounded-2xl border px-3 py-2.5 transition", overdue ? "border-rose-200 bg-rose-50/80 hover:bg-rose-100 dark:border-rose-500/30 dark:bg-rose-950/20" : "border-slate-200/80 bg-white hover:border-teal-300 hover:bg-teal-50/50 dark:border-white/10 dark:bg-white/[0.025] dark:hover:bg-teal-950/20");
   const content = <>
-      <button type="button" disabled={busy} onClick={() => { setBusy(true); void onComplete(reminder.id).finally(() => setBusy(false)); }} className={cn("h-5 w-5 shrink-0 rounded-full border-2 bg-white transition hover:scale-110 disabled:animate-pulse dark:bg-transparent", overdue ? "border-rose-400" : "border-slate-300 hover:border-teal-500 dark:border-slate-600")} aria-label={`Mark ${reminder.title} complete`} />
+      <button type="button" disabled={busy} onClick={() => { setBusy(true); void onComplete(reminder.id).catch(() => undefined).finally(() => setBusy(false)); }} className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 bg-white transition hover:scale-105 disabled:opacity-60 dark:bg-transparent", overdue ? "border-rose-400 text-rose-600" : "border-slate-300 text-teal-600 hover:border-teal-500 dark:border-slate-600")} aria-label={`Mark ${reminder.title} complete`}><Check className="h-3.5 w-3.5" aria-hidden /></button>
       <span className="min-w-0 flex-1">
         {reminder.lead_id ? <Link href={`/customers/${encodeURIComponent(reminder.lead_id)}`} className="block truncate text-sm font-extrabold text-slate-900 hover:text-teal-700 dark:text-slate-50 dark:hover:text-teal-300">{reminder.subject_label || "Customer"}</Link> : <span className="block truncate text-sm font-extrabold text-slate-900 dark:text-slate-50">{reminder.title}</span>}
         {reminder.lead_id ? <span className="mt-0.5 block truncate text-xs font-semibold text-slate-700 dark:text-slate-300"><MessageSquareText className="mr-1 inline h-3 w-3" aria-hidden />{reminder.title}</span> : null}
         <span className={cn("mt-0.5 flex items-center gap-1 truncate text-[11px] font-semibold", overdue ? "text-rose-700 dark:text-rose-300" : "text-slate-500 dark:text-slate-400")}><Clock3 className="h-3 w-3 shrink-0" aria-hidden />{overdue ? "Overdue · " : ""}{formatCrmTime(reminder.due_at)}{!reminder.lead_id && reminder.subject_label ? ` · ${reminder.subject_label}` : ""}{reminder.notes ? ` · Note: ${reminder.notes}` : ""}</span>
       </span>
-      <AlarmClock className={cn("h-4 w-4 shrink-0", overdue ? "text-rose-500" : "text-teal-500")} aria-hidden />
+      <button type="button" disabled={busy} onClick={() => setRescheduleOpen((value) => !value)} className={cn("inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition hover:bg-white/80 disabled:opacity-60 dark:hover:bg-white/10", overdue ? "text-rose-600" : "text-teal-600")} aria-label={`Reschedule ${reminder.title}`} aria-expanded={rescheduleOpen}><AlarmClock className="h-4 w-4" aria-hidden /></button>
     </>;
-  return <div className={className}>{content}</div>;
+  return <article className={className}><div className="flex min-h-[3rem] items-center gap-3">{content}</div>{rescheduleOpen ? <div className="mt-2 flex items-center gap-2 border-t border-current/10 pt-2 pl-10"><span className="mr-auto text-[10px] font-bold uppercase tracking-wide text-slate-500">Move to</span>{([ ["tomorrow", "Tomorrow"], ["next_week", "Next week"] ] as const).map(([preset, label]) => <button key={preset} type="button" disabled={busy} onClick={() => { setBusy(true); void onReschedule(reminder.id, preset).catch(() => undefined).finally(() => { setBusy(false); setRescheduleOpen(false); }); }} className="min-h-9 rounded-lg border border-slate-200 bg-white px-3 text-[11px] font-extrabold text-slate-700 shadow-sm transition hover:border-teal-300 hover:text-teal-700 disabled:opacity-60 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">{busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : label}</button>)}</div> : null}</article>;
 }
 
 function AgendaVisit({ visit }: { visit: WidgetVisit }) {

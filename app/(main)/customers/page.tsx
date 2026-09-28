@@ -55,6 +55,11 @@ const LEAD_MODAL_Z = "z-[10060]";
 type LeadModal = "none" | "add" | "edit";
 type StageFilter = "all" | "leads" | "proposal-sent" | "active-projects";
 
+function resolveStageFilter(value: string | null): StageFilter {
+  if (value === "leads" || value === "proposal-sent" || value === "active-projects") return value;
+  return "all";
+}
+
 function CustomersPageContent() {
   const { t } = useLanguage();
   const toast = useToast();
@@ -121,8 +126,23 @@ function CustomersPageContent() {
 
   const allCustomers = useMemo(() => data ?? [], [data]);
 
-  const [stageFilter, setStageFilter] = useState<StageFilter>("all");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [stageFilter, setStageFilter] = useState<StageFilter>(() => resolveStageFilter(searchParams.get("stage")));
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get("q") ?? "");
+
+  useEffect(() => {
+    setStageFilter(resolveStageFilter(searchParams.get("stage")));
+    setSearchQuery(searchParams.get("q") ?? "");
+  }, [searchParams]);
+
+  const updateListUrl = useCallback((nextStage: StageFilter, nextSearch = searchQuery) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (nextStage === "all") params.delete("stage");
+    else params.set("stage", nextStage);
+    if (nextSearch.trim()) params.set("q", nextSearch.trim());
+    else params.delete("q");
+    const query = params.toString();
+    router.replace(query ? `/customers?${query}` : "/customers", { scroll: false });
+  }, [router, searchParams, searchQuery]);
 
   const customers = useMemo(() => {
     let list = allCustomers;
@@ -728,6 +748,8 @@ function CustomersPageContent() {
                     placeholder={t("customers_searchPlaceholder")}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    onBlur={() => updateListUrl(stageFilter, searchQuery)}
+                    onKeyDown={(e) => { if (e.key === "Enter") updateListUrl(stageFilter, searchQuery); }}
                     className={cn(
                       "h-12 w-full rounded-xl border bg-slate-50/70 py-2.5 pl-10 pr-10 text-sm font-medium",
                       "border-slate-200/80 text-slate-800 placeholder:text-slate-400",
@@ -738,7 +760,7 @@ function CustomersPageContent() {
                     aria-label={t("customers_searchAria")}
                   />
                   {searchQuery ? (
-                    <button type="button" onClick={() => setSearchQuery("")} aria-label={t("actions_close")} className="absolute right-3 flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-200/70 hover:text-slate-600 dark:hover:bg-white/10 dark:hover:text-slate-200">
+                    <button type="button" onClick={() => { setSearchQuery(""); updateListUrl(stageFilter, ""); }} aria-label={t("actions_close")} className="absolute right-3 flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-200/70 hover:text-slate-600 dark:hover:bg-white/10 dark:hover:text-slate-200">
                       <X className="h-3.5 w-3.5" />
                     </button>
                   ) : null}
@@ -772,7 +794,7 @@ function CustomersPageContent() {
               <button
                 key={opt.key}
                 type="button"
-                onClick={() => setStageFilter(opt.key)}
+                onClick={() => { setStageFilter(opt.key); updateListUrl(opt.key); }}
                 className={cn(
                   "workspace-filter-pill",
                   isActive ? "workspace-filter-pill--active" : "workspace-filter-pill--idle"

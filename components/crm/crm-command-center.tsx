@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import useSWR, { useSWRConfig } from "swr";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlarmClock,
   CalendarCheck,
@@ -428,6 +428,13 @@ export function CrmCommandCenter({ compact = false }: { compact?: boolean }) {
     revalidateOnFocus: true,
   });
 
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("filter");
+    if (requested && FILTERS.some((item) => item.id === requested)) {
+      setFilter(requested as CommandFilterId);
+    }
+  }, []);
+
   const visibleActions = useMemo(() => {
     const base = (data?.actions ?? []).filter((a) => !dismissed.has(a.id));
     return base.filter((a) => matchesFilter(a, filter));
@@ -437,7 +444,7 @@ export function CrmCommandCenter({ compact = false }: { compact?: boolean }) {
     () => (data?.actions ?? []).filter((a) => !dismissed.has(a.id)),
     [data?.actions, dismissed]
   );
-  const shownActions = compact ? visibleActions.slice(0, 6) : visibleActions;
+  const shownActions = compact ? visibleActions.slice(0, 5) : visibleActions;
 
   const dismiss = useCallback((id: string) => {
     setDismissed((prev) => new Set(prev).add(id));
@@ -455,7 +462,7 @@ export function CrmCommandCenter({ compact = false }: { compact?: boolean }) {
   }
 
   return (
-    <section className="cc-hero-shell">
+    <section id="priority-queue" className={cn("cc-hero-shell scroll-mt-24", compact && "cc-hero-shell--compact")}>
       {/* Header */}
       <div className="mb-3 flex flex-wrap items-start justify-between gap-2 sm:mb-4">
         <div className="min-w-0">
@@ -464,11 +471,11 @@ export function CrmCommandCenter({ compact = false }: { compact?: boolean }) {
               <Zap className="h-4 w-4" strokeWidth={2.5} aria-hidden />
             </span>
             <h2 className="text-sm font-black uppercase tracking-[0.18em] text-slate-800 dark:text-white sm:text-base">
-              Command Center
+              {compact ? "Today’s priorities" : "Command Center"}
             </h2>
           </div>
           <p className="mt-1 pl-10 text-xs font-medium text-slate-500 dark:text-slate-400 sm:text-sm">
-            Aaj kya karna hai — overdue, callbacks, hot leads, visits.
+            {compact ? "Highest-impact work first — act, complete, or reschedule." : "Aaj kya karna hai — overdue, callbacks, hot leads, visits."}
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
@@ -492,7 +499,7 @@ export function CrmCommandCenter({ compact = false }: { compact?: boolean }) {
       </div>
 
       {/* KPI strip — Overdue first (highest weight) */}
-      <div className="-mx-0.5 mb-4 flex gap-2.5 overflow-x-auto px-0.5 pb-1 snap-x snap-mandatory sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-3 sm:overflow-visible lg:grid-cols-4">
+      {!compact ? <div className="-mx-0.5 mb-4 flex gap-2.5 overflow-x-auto px-0.5 pb-1 snap-x snap-mandatory sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-3 sm:overflow-visible lg:grid-cols-4">
         <KpiCard
           label="Overdue"
           value={String(data?.kpis.overdue_followups ?? 0)}
@@ -529,7 +536,7 @@ export function CrmCommandCenter({ compact = false }: { compact?: boolean }) {
           icon={IndianRupee}
           loading={loading}
         />
-      </div>
+      </div> : null}
 
       {error ? (
         <p className="mb-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-800 dark:border-rose-500/40 dark:bg-rose-950/30 dark:text-rose-200">
@@ -541,18 +548,18 @@ export function CrmCommandCenter({ compact = false }: { compact?: boolean }) {
       <div className="cc-actions-panel rounded-2xl border border-white/70 bg-white/55 p-3 backdrop-blur-xl dark:border-white/10 dark:bg-[#070b12]/75 sm:p-4">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-slate-700 dark:text-slate-200 sm:text-sm">
-            Today&apos;s priority actions
+            {compact ? "Priority queue" : "Today’s priority actions"}
           </h3>
           {!loading ? (
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-bold text-slate-400 sm:text-xs">{compact && visibleActions.length > shownActions.length ? `${shownActions.length} of ${visibleActions.length}` : `${visibleActions.length} shown`}</span>
-              {compact ? <Link href="/agenda" className="text-[11px] font-bold text-teal-700 hover:underline dark:text-teal-300">View all →</Link> : null}
+              {compact ? <Link href={`/agenda?filter=${filter}#priority-queue`} className="text-[11px] font-bold text-teal-700 hover:underline dark:text-teal-300">View all →</Link> : null}
             </div>
           ) : null}
         </div>
 
         {/* Filters */}
-        <div className="mb-3 flex gap-1.5 overflow-x-auto pb-0.5 snap-x">
+        <div className="mb-3 flex gap-1.5 overflow-x-auto pb-0.5 snap-x [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {FILTERS.map((f) => {
             const count = countForFilter(allActions, f.id);
             const active = filter === f.id;
@@ -583,7 +590,7 @@ export function CrmCommandCenter({ compact = false }: { compact?: boolean }) {
               <Skeleton className="h-[4.5rem] w-full rounded-xl" />
             </>
           ) : visibleActions.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-slate-300/80 bg-slate-50/60 px-4 py-8 text-center dark:border-slate-600/50 dark:bg-slate-900/30">
+            <div className={cn("rounded-xl border border-dashed border-slate-300/80 bg-slate-50/60 px-4 text-center dark:border-slate-600/50 dark:bg-slate-900/30", compact ? "py-5" : "py-8")}>
               <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
                 {filter === "all" ? "All clear for now" : `No ${FILTERS.find((f) => f.id === filter)?.label.toLowerCase()} actions`}
               </p>
