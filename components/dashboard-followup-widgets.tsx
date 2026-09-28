@@ -8,6 +8,7 @@ import { formatCrmTime } from "@/lib/crm-datetime";
 import { cn } from "@/lib/utils";
 import { CreateReminderDialog } from "@/components/agenda/create-reminder-dialog";
 import { patchReminder } from "@/lib/followup-client";
+import { AgendaCalendarDialog } from "@/components/agenda/agenda-calendar-dialog";
 
 export type WidgetReminder = {
   id: string; lead_id: string | null; title: string; due_at: string; priority: string;
@@ -60,6 +61,7 @@ export function DashboardFollowupWidgets({ expanded = false }: { expanded?: bool
   });
   const days = useMemo(() => makeDays(expanded ? 14 : 7), [expanded]);
   const [selectedDay, setSelectedDay] = useState(days[0]?.key ?? dayKey(new Date()));
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const reminders = useMemo(
     () => [...(data?.today ?? []), ...(data?.upcoming ?? [])].sort((a, b) => Date.parse(a.due_at) - Date.parse(b.due_at)),
     [data]
@@ -90,17 +92,27 @@ export function DashboardFollowupWidgets({ expanded = false }: { expanded?: bool
     void mutateGlobal("/api/customers");
   }
 
+  function openCalendar(event: React.MouseEvent<HTMLButtonElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    setCalendarOpen(true);
+  }
+
   return (
     <section aria-labelledby="agenda-heading" className="overflow-hidden rounded-[1.75rem] border border-slate-200/80 bg-white shadow-[0_20px_55px_-32px_rgba(15,23,42,0.35)] dark:border-white/10 dark:bg-[#0c1017]">
       <div className="grid min-h-[24rem] grid-cols-1 md:grid-cols-[minmax(16rem,0.85fr)_minmax(20rem,1.25fr)]">
         <div className="border-b border-slate-200/80 bg-gradient-to-br from-slate-50 via-white to-teal-50/60 p-4 sm:p-5 md:border-b-0 md:border-r dark:border-white/10 dark:from-white/[0.05] dark:via-white/[0.02] dark:to-teal-950/20">
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-teal-700 dark:text-teal-300">Today &amp; schedule</p>
               <h2 id="agenda-heading" className="mt-1 text-xl font-black tracking-tight text-slate-950 sm:text-2xl dark:text-white">Your agenda</h2>
               <p className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">Callbacks and visits, in one place.</p>
             </div>
-            <span className="flex h-11 min-w-11 items-center justify-center rounded-2xl bg-teal-600 px-3 text-sm font-black tabular-nums text-white shadow-lg shadow-teal-600/20" aria-label={`${totalPending} pending reminders`}>{totalPending}</span>
+            <button type="button" onClick={openCalendar} className="group flex min-h-11 items-center gap-2 rounded-2xl border border-teal-200 bg-white px-2.5 text-teal-700 shadow-sm transition hover:-translate-y-0.5 hover:border-teal-400 hover:shadow-md dark:border-teal-500/25 dark:bg-white/5 dark:text-teal-300" aria-label={`Open calendar. ${totalPending} pending reminders`}>
+              <CalendarDays className="h-4 w-4" aria-hidden />
+              <span className="hidden text-xs font-extrabold sm:inline">Calendar</span>
+              <span className="flex h-6 min-w-6 items-center justify-center rounded-lg bg-teal-600 px-1.5 text-[10px] font-black tabular-nums text-white">{totalPending}</span>
+            </button>
           </div>
 
           <div className="-mx-1 mt-5 flex snap-x gap-2 overflow-x-auto px-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:grid md:grid-cols-4 md:overflow-visible xl:grid-cols-7">
@@ -119,28 +131,25 @@ export function DashboardFollowupWidgets({ expanded = false }: { expanded?: bool
             })}
           </div>
 
-          <div className="mt-4 rounded-2xl border border-slate-200/80 bg-white/80 p-3.5 dark:border-white/10 dark:bg-black/10">
+          <button type="button" onClick={openCalendar} className="mt-4 w-full rounded-2xl border border-slate-200/80 bg-white/80 p-3.5 text-left transition hover:border-teal-300 hover:bg-teal-50/50 dark:border-white/10 dark:bg-black/10 dark:hover:border-teal-500/30 dark:hover:bg-teal-950/20">
             <div className="flex items-center gap-3">
               <CalendarDays className="h-5 w-5 text-teal-600 dark:text-teal-300" aria-hidden />
-              <div>
+              <div className="min-w-0 flex-1">
                 <p className="text-sm font-extrabold text-slate-900 dark:text-white">{isToday ? "Today" : selectedMeta?.day}, {selectedMeta?.number} {selectedMeta?.month}</p>
                 <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">{selectedReminders.length + selectedOverdue.length} reminders · {selectedVisits.length} visits</p>
               </div>
+              <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-teal-700 dark:text-teal-300">Open calendar <ArrowRight className="h-3.5 w-3.5" /></span>
             </div>
-            <label className="mt-3 flex items-center justify-between gap-3 border-t border-slate-100 pt-3 text-[11px] font-bold text-slate-500 dark:border-white/10 dark:text-slate-400">
-              Jump to any date
-              <input type="date" value={selectedDay} onChange={(event) => event.target.value && setSelectedDay(event.target.value)} className="h-9 rounded-xl border border-slate-200 bg-white px-2 text-xs font-bold text-slate-800 outline-none focus:border-teal-500 dark:border-white/10 dark:bg-slate-900 dark:text-slate-100" />
-            </label>
-          </div>
+          </button>
         </div>
 
         <div className="p-4 sm:p-5">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
             <div>
               <p className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400">Reminders</p>
               <h3 className="mt-0.5 text-lg font-black text-slate-950 dark:text-white">{isToday ? "Focus for today" : `${selectedMeta?.day}'s plan`}</h3>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex w-full items-center justify-between gap-1 sm:w-auto sm:justify-start">
               <CreateReminderDialog compact initialDate={selectedDay} triggerLabel="Plan this day" />
               {!expanded ? <Link href="/agenda" className="inline-flex min-h-10 items-center gap-1 rounded-xl px-3 text-xs font-bold text-teal-700 hover:bg-teal-50 dark:text-teal-300 dark:hover:bg-teal-950/30">Full agenda <ArrowRight className="h-3.5 w-3.5" aria-hidden /></Link> : null}
             </div>
@@ -164,6 +173,15 @@ export function DashboardFollowupWidgets({ expanded = false }: { expanded?: bool
           </div>
         </div>
       </div>
+      <AgendaCalendarDialog
+        open={calendarOpen}
+        selectedDay={selectedDay}
+        reminders={reminders}
+        overdue={overdue}
+        visits={data?.upcomingVisits ?? []}
+        onClose={() => setCalendarOpen(false)}
+        onSelectDay={setSelectedDay}
+      />
     </section>
   );
 }
