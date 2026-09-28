@@ -160,7 +160,7 @@ export function DashboardCommandCenter({ name, stats, loading, className }: Dash
       <div className="glass-command-reflect pointer-events-none absolute inset-0 rounded-[inherit]" aria-hidden />
       <div className="glass-hero-noise pointer-events-none absolute inset-0 opacity-[0.2]" aria-hidden />
 
-      <motion.div className="relative flex flex-col gap-4 p-4 sm:p-5 lg:p-6">
+      <motion.div className="dashboard-command-content relative flex flex-col gap-4 p-4 sm:p-5 lg:p-6">
         {/* Status rail — workspace label + greeting + actions */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:gap-4">
           <div className="min-w-0 space-y-1.5 lg:space-y-2">

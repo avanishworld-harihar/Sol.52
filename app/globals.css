@@ -90,6 +90,78 @@
   }
 }
 
+/* Dashboard Phase 4 — persistent density, keyboard focus, and dark contrast. */
+.workspace-dashboard[data-layout-ready="false"] .dashboard-customize-zone {
+  visibility: hidden;
+}
+
+.workspace-dashboard[data-layout-ready="false"] :is(
+  .dashboard-zone-command,
+  .dashboard-zone-agenda,
+  .dashboard-zone-attention,
+  .dashboard-zone-insights,
+  .dashboard-zone-secondary,
+  .dashboard-zone-tertiary
+) {
+  visibility: hidden;
+}
+
+.workspace-dashboard,
+.workspace-dashboard .dashboard-command-content,
+.workspace-dashboard .cc-actions-panel,
+.workspace-dashboard .glass-panel-premium,
+.workspace-dashboard .glass-surface {
+  transition-property: gap, padding, margin, border-color, background-color, box-shadow;
+  transition-duration: 180ms;
+  transition-timing-function: ease-out;
+}
+
+.workspace-dashboard[data-dashboard-density="compact"] > div {
+  gap: 0.7rem;
+}
+
+.workspace-dashboard[data-dashboard-density="compact"] .dashboard-command-content {
+  gap: 0.7rem;
+  padding: 0.8rem;
+}
+
+.workspace-dashboard[data-dashboard-density="compact"] .cc-actions-panel,
+.workspace-dashboard[data-dashboard-density="compact"] .dashboard-zone-insights .glass-panel-premium,
+.workspace-dashboard[data-dashboard-density="compact"] .dashboard-zone-tertiary .glass-panel-premium {
+  padding: 0.75rem;
+}
+
+.workspace-dashboard[data-dashboard-density="compact"] .dashboard-zone-agenda > section > div > div {
+  padding: 0.8rem;
+}
+
+.workspace-dashboard[data-dashboard-density="compact"] .dashboard-zone-secondary .grid,
+.workspace-dashboard[data-dashboard-density="compact"] .dashboard-zone-attention .grid {
+  gap: 0.65rem;
+}
+
+.workspace-dashboard :is(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid rgb(13 148 136 / 0.9);
+  outline-offset: 2px;
+}
+
+.dark .workspace-dashboard .text-slate-400,
+.dark .workspace-dashboard .dark\:text-slate-400 {
+  color: rgb(173 183 194);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace-dashboard,
+  .workspace-dashboard *,
+  .workspace-dashboard *::before,
+  .workspace-dashboard *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
 .mesh-gradient-bg {
   transition: background-color var(--ss-theme-duration) var(--ss-theme-easing);
   background-color: #e4edf6;

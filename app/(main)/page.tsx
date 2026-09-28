@@ -8,6 +8,7 @@ import { DashboardFollowupWidgets } from "@/components/dashboard-followup-widget
 import { duplicateSheetExtrasFromT, quickQuoteLabelsFromT } from "@/lib/proposal-hub-i18n";
 import { QuickQuoteLauncher } from "@/components/proposals/quick-quote-launcher";
 import { DashboardSectionTitle } from "@/components/dashboard-section-title";
+import { DashboardCustomizeMenu } from "@/components/dashboard-customize-menu";
 import { OfflineDataNotice } from "@/components/offline-data-notice";
 import { GlassProjectCard, type GlassProjectSummary } from "@/components/glass-project-card";
 import { Button } from "@/components/ui/button";
@@ -44,7 +45,14 @@ import { AlertTriangle, ArrowRight, ChevronDown, Loader2, LocateFixed, MapPin, W
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import { buildMetricTrendLines, writeTrendBaseline, type MetricTrendLines } from "@/lib/dashboard-trends";
 import { useLanguage } from "@/lib/language-context";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  DEFAULT_DASHBOARD_LAYOUT,
+  readDashboardLayout,
+  writeDashboardLayout,
+  type DashboardLayoutPreferences,
+  type DashboardSectionId,
+} from "@/lib/dashboard-layout-preferences";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 
 const dashboardStagger = {
   visible: { opacity: 1 },
@@ -74,9 +82,9 @@ const dashboardItem = {
 const INSTALLER_SETUP_DISMISSED_KEY = "sol52.dashboard.installer-setup-dismissed";
 
 function DashboardStaggerRoot({ animate, children }: { animate: boolean; children: ReactNode }) {
-  if (!animate) return <div className="space-y-4 sm:space-y-5">{children}</div>;
+  if (!animate) return <div className="flex flex-col gap-4 sm:gap-5">{children}</div>;
   return (
-    <motion.div initial="hidden" animate="show" variants={dashboardStagger} className="space-y-4 sm:space-y-5">
+    <motion.div initial="hidden" animate="show" variants={dashboardStagger} className="flex flex-col gap-4 sm:gap-5">
       {children}
     </motion.div>
   );
@@ -87,33 +95,35 @@ function DashboardItem({
   children,
   as = "div",
   className,
+  style,
   "aria-live": ariaLive
 }: {
   animate: boolean;
   children: ReactNode;
   as?: "div" | "p";
   className?: string;
+  style?: CSSProperties;
   "aria-live"?: "polite" | "assertive" | "off";
 }) {
   if (!animate) {
     if (as === "p") {
       return (
-        <p className={className} aria-live={ariaLive}>
+        <p className={className} style={style} aria-live={ariaLive}>
           {children}
         </p>
       );
     }
-    return <div className={className}>{children}</div>;
+    return <div className={className} style={style}>{children}</div>;
   }
   if (as === "p") {
     return (
-      <motion.p variants={dashboardItem} className={className} aria-live={ariaLive}>
+      <motion.p layout variants={dashboardItem} className={className} style={style} aria-live={ariaLive}>
         {children}
       </motion.p>
     );
   }
   return (
-    <motion.div variants={dashboardItem} className={className}>
+    <motion.div layout variants={dashboardItem} className={className} style={style}>
       {children}
     </motion.div>
   );
@@ -142,6 +152,27 @@ function DashboardPageContent() {
   const [metricTrends, setMetricTrends] = useState<MetricTrendLines | null>(null);
   /** Only true "finger-first" pointers skip stagger — keeps entrance motion on mouse / hybrid laptops. */
   const [isPointerCoarse, setIsPointerCoarse] = useState(false);
+  const [layoutPreferences, setLayoutPreferences] = useState<DashboardLayoutPreferences>(DEFAULT_DASHBOARD_LAYOUT);
+  const [layoutHydrated, setLayoutHydrated] = useState(false);
+
+  useEffect(() => {
+    setLayoutPreferences(readDashboardLayout());
+    setLayoutHydrated(true);
+  }, []);
+
+  const updateLayoutPreferences = useCallback((next: DashboardLayoutPreferences) => {
+    setLayoutPreferences(next);
+    writeDashboardLayout(next);
+  }, []);
+
+  const sectionVisible = useCallback(
+    (id: DashboardSectionId) => !layoutPreferences.hidden.includes(id),
+    [layoutPreferences.hidden]
+  );
+  const sectionOrder = useCallback(
+    (id: DashboardSectionId) => layoutPreferences.order.indexOf(id),
+    [layoutPreferences.order]
+  );
 
   const detectRegionFromDevice = useCallback(async () => {
     setLocationPhase("locating");
@@ -342,22 +373,26 @@ function DashboardPageContent() {
   }
 
   return (
-    <div className="workspace-dashboard">
+    <div className="workspace-dashboard" data-dashboard-density={layoutPreferences.density} data-layout-ready={layoutHydrated ? "true" : "false"}>
     <DashboardStaggerRoot animate={shouldAnimateDashboard}>
-        <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-greeting">
+        <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-greeting" style={{ order: -20 }}>
           <DashboardCommandCenter name={greetingName} stats={stats} loading={showMetricSkeleton} />
         </DashboardItem>
 
-        <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-command cc-hero-zone">
+        <DashboardItem animate={shouldAnimateDashboard} className="dashboard-customize-zone" style={{ order: -10 }}>
+          <DashboardCustomizeMenu value={layoutPreferences} onChange={updateLayoutPreferences} />
+        </DashboardItem>
+
+        {sectionVisible("priorities") ? <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-command cc-hero-zone" style={{ order: sectionOrder("priorities") }}>
           <CrmCommandCenter compact />
-        </DashboardItem>
+        </DashboardItem> : null}
 
-        <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-agenda">
+        {sectionVisible("agenda") ? <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-agenda" style={{ order: sectionOrder("agenda") }}>
           <DashboardFollowupWidgets />
-        </DashboardItem>
+        </DashboardItem> : null}
 
-        {stats && (stats.pendingPayments > 0 || attentionProjects.length > 0) && (
-          <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-attention">
+        {sectionVisible("attention") && stats && (stats.pendingPayments > 0 || attentionProjects.length > 0) && (
+          <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-attention" style={{ order: sectionOrder("attention") }}>
             <DashboardSectionTitle tier="quiet">Needs attention</DashboardSectionTitle>
             <div className="mt-1.5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {stats.pendingPayments > 0 && (
@@ -406,7 +441,7 @@ function DashboardPageContent() {
           </DashboardItem>
         )}
 
-        <DashboardItem animate={shouldAnimateDashboard}>
+        <DashboardItem animate={shouldAnimateDashboard} style={{ order: 20 }}>
           <OfflineDataNotice
             show={!online && data !== undefined}
             cacheAgeMs={getDashboardCacheAgeMs()}
@@ -415,7 +450,7 @@ function DashboardPageContent() {
         </DashboardItem>
 
         {error && data === undefined && (
-          <DashboardItem animate={shouldAnimateDashboard}>
+          <DashboardItem animate={shouldAnimateDashboard} style={{ order: 21 }}>
             <Card className="border-amber-200/90 bg-amber-50/90 backdrop-blur-sm">
               <CardContent className="p-4 text-sm font-semibold leading-snug text-amber-950">
                 {(error as Error).message ?? t("dashboard_errorLoad")} {t("dashboard_errorConnect")}
@@ -425,7 +460,7 @@ function DashboardPageContent() {
         )}
 
         {regionHydrated && !installerSaved && !installerSetupDismissed && (
-          <DashboardItem animate={shouldAnimateDashboard}>
+          <DashboardItem animate={shouldAnimateDashboard} style={{ order: 22 }}>
             <Card className="overflow-hidden border-teal-200/80 bg-gradient-to-r from-white via-teal-50/65 to-cyan-50/60 shadow-sm dark:border-teal-500/25 dark:from-[#0c1017] dark:via-teal-950/20 dark:to-cyan-950/15">
               <CardContent className="p-3 sm:p-4">
                 <div className="flex items-center gap-3">
@@ -518,7 +553,7 @@ function DashboardPageContent() {
         )}
 
         {regionHydrated && installerSaved && (
-          <DashboardItem animate={shouldAnimateDashboard}>
+          <DashboardItem animate={shouldAnimateDashboard} style={{ order: 23 }}>
             <Link
               href="/more"
               className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-solar-200/80 bg-solar-50/80 px-3 py-1.5 text-xs font-semibold text-solar-800 backdrop-blur-sm transition hover:border-solar-300 hover:bg-solar-100/80 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200"
@@ -539,19 +574,20 @@ function DashboardPageContent() {
             as="p"
             className="text-center text-[10px] font-semibold text-indigo-500/90 dark:text-muted-foreground sm:text-xs"
             aria-live="polite"
+            style={{ order: 24 }}
           >
             {t("actions_refreshing")}
           </DashboardItem>
         )}
 
-        <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-insights">
+        {sectionVisible("insights") ? <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-insights" style={{ order: sectionOrder("insights") }}>
           <div className="ws-zone-surface">
             <DashboardSectionTitle>{t("dashboard_operationalInsights")}</DashboardSectionTitle>
             <DashboardOperationalInsights stats={stats} trends={metricTrends} loading={showMetricSkeleton} />
           </div>
-        </DashboardItem>
+        </DashboardItem> : null}
 
-        <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-secondary">
+        {sectionVisible("projects") ? <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-secondary" style={{ order: sectionOrder("projects") }}>
           <div className="mb-1.5 flex items-center justify-between gap-2">
             <DashboardSectionTitle tier="quiet">{t("dashboard_projectActivity")}</DashboardSectionTitle>
             <Link
@@ -572,9 +608,9 @@ function DashboardPageContent() {
               <CardContent className="p-4 text-sm font-semibold text-slate-700">No active projects yet.</CardContent>
             </Card>
           )}
-        </DashboardItem>
+        </DashboardItem> : null}
 
-        <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-tertiary">
+        {sectionVisible("quick-actions") ? <DashboardItem animate={shouldAnimateDashboard} className="dashboard-zone-tertiary" style={{ order: sectionOrder("quick-actions") }}>
           <QuickQuoteLauncher
             className="mb-4"
             labels={quickQuoteLabelsFromT(t)}
@@ -586,7 +622,7 @@ function DashboardPageContent() {
             </p>
             <DashboardQuickActions />
           </div>
-        </DashboardItem>
+        </DashboardItem> : null}
       </DashboardStaggerRoot>
     </div>
   );
