@@ -1,11 +1,20 @@
 export const DASHBOARD_SECTION_IDS = [
+  "agenda",
+  "priorities",
+  "attention",
+  "insights",
+  "projects",
+  "quick-actions",
+] as const;
+
+const LEGACY_DASHBOARD_SECTION_ORDER: DashboardSectionId[] = [
   "priorities",
   "agenda",
   "attention",
   "insights",
   "projects",
   "quick-actions",
-] as const;
+];
 
 export type DashboardSectionId = (typeof DASHBOARD_SECTION_IDS)[number];
 export type DashboardDensity = "comfortable" | "compact";
@@ -40,7 +49,10 @@ function isSectionId(value: unknown): value is DashboardSectionId {
 export function normalizeDashboardLayout(value: unknown): DashboardLayoutPreferences {
   if (!value || typeof value !== "object") return DEFAULT_DASHBOARD_LAYOUT;
   const raw = value as Partial<DashboardLayoutPreferences>;
-  const savedOrder = Array.isArray(raw.order) ? raw.order.filter(isSectionId) : [];
+  const parsedOrder = Array.isArray(raw.order) ? raw.order.filter(isSectionId) : [];
+  const savedOrder = parsedOrder.join("|") === LEGACY_DASHBOARD_SECTION_ORDER.join("|")
+    ? [...DASHBOARD_SECTION_IDS]
+    : parsedOrder;
   const order = [
     ...savedOrder.filter((id, index) => savedOrder.indexOf(id) === index),
     ...DASHBOARD_SECTION_IDS.filter((id) => !savedOrder.includes(id)),
