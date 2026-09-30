@@ -148,18 +148,21 @@ export function CustomerWorkspacePane({
     leadId ? `/api/customers/${leadId}/reminders` : null,
     () => fetchLeadReminders(leadId as string)
   );
-  const { data: notes = [], mutate: mutateNotes } = useSWR<LeadNote[]>(
-    leadId ? `/api/customers/${leadId}/notes` : null,
+  const { data: notesData, mutate: mutateNotes, isLoading: notesLoading } = useSWR<LeadNote[]>(
+    leadId && activeTab === "notes" ? `/api/customers/${leadId}/notes` : null,
     () => fetchLeadNotes(leadId as string)
   );
-  const { data: visits = [], mutate: mutateVisits } = useSWR<LeadVisit[]>(
-    leadId ? `/api/customers/${leadId}/visits` : null,
+  const { data: visitsData, mutate: mutateVisits, isLoading: visitsLoading } = useSWR<LeadVisit[]>(
+    leadId && activeTab === "visits" ? `/api/customers/${leadId}/visits` : null,
     () => fetchLeadVisits(leadId as string)
   );
-  const { data: proposals = [] } = useSWR<Record<string, unknown>[]>(
-    leadId ? `/api/customers/${leadId}/proposals` : null,
+  const { data: proposalsData, isLoading: proposalsLoading } = useSWR<Record<string, unknown>[]>(
+    leadId && activeTab === "proposals" ? `/api/customers/${leadId}/proposals` : null,
     () => fetchLeadProposals(leadId as string)
   );
+  const notes = notesData ?? [];
+  const visits = visitsData ?? [];
+  const proposals = proposalsData ?? [];
 
   useEffect(() => {
     setTimelineVisibleCount(14);
@@ -172,11 +175,11 @@ export function CustomerWorkspacePane({
     () => ({
       timeline: timeline.length,
       reminders: reminders.length,
-      notes: notes.length,
-      visits: visits.length,
-      proposals: proposals.length,
+      notes: notesData?.length ?? null,
+      visits: visitsData?.length ?? null,
+      proposals: proposalsData?.length ?? null,
     }),
-    [timeline.length, reminders.length, notes.length, visits.length, proposals.length]
+    [timeline.length, reminders.length, notesData?.length, visitsData?.length, proposalsData?.length]
   );
 
   const timelineGroups = useMemo(() => {
@@ -568,7 +571,7 @@ export function CustomerWorkspacePane({
               ["proposals", "Proposals"],
             ] as [FollowupTab, string][]).map(([tab, label]) => (
               <button key={tab} type="button" onClick={() => setActiveTab(tab)} className={cn("rounded-lg px-3 py-2 text-[11px] font-bold", activeTab === tab ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900" : "bg-slate-100 text-slate-700 dark:bg-white/10 dark:text-slate-300")}>
-                {label} ({tabCounts[tab]})
+                {label}{tabCounts[tab] == null ? "" : ` (${tabCounts[tab]})`}
               </button>
             ))}
           </div>
@@ -631,6 +634,7 @@ export function CustomerWorkspacePane({
           {activeTab === "notes" ? (
             <div className="space-y-2">
               <p className="text-[11px] text-slate-500">Voice note + Apple Pencil sketch hooks are ready via `voice_ref` and `sketch_ref`.</p>
+              {notesLoading ? <p className="text-xs font-semibold text-slate-400">Loading notes…</p> : null}
               {noteImagePreviewUrls.length > 0 ? (
                 <div className="grid grid-cols-2 gap-2">
                   {noteImagePreviewUrls.map((url) => (
@@ -657,6 +661,7 @@ export function CustomerWorkspacePane({
                 <button type="button" onClick={() => void addVisitOutcome("interested")} className="rounded-lg border border-sky-300 bg-sky-50 px-2 py-2 text-[11px] font-bold text-sky-700">Interested</button>
                 <button type="button" onClick={() => void addVisitOutcome("callback_later")} className="rounded-lg border border-violet-300 bg-violet-50 px-2 py-2 text-[11px] font-bold text-violet-700">Callback later</button>
               </div>
+              {visitsLoading ? <p className="text-xs font-semibold text-slate-400">Loading visits…</p> : null}
               {visits.map((v) => (
                 <p key={v.id} className="rounded-lg border border-slate-200/80 px-2 py-1.5 text-xs dark:border-white/10">
                   {formatCrmDateTime(v.scheduled_at)} · {v.visit_status} {v.location ? `· ${v.location}` : ""}
@@ -667,7 +672,8 @@ export function CustomerWorkspacePane({
 
           {activeTab === "proposals" ? (
             <div className="space-y-1.5">
-              {proposals.length === 0 ? <p className="text-xs text-slate-500">No proposals linked yet.</p> : null}
+              {proposalsLoading ? <p className="text-xs font-semibold text-slate-400">Loading proposals…</p> : null}
+              {!proposalsLoading && proposals.length === 0 ? <p className="text-xs text-slate-500">No proposals linked yet.</p> : null}
               {proposals.map((p) => {
                 const id = String(p.id ?? "");
                 return (

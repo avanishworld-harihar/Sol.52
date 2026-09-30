@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { CustomersLeadList } from "@/components/customers-lead-list";
-import { CustomerWorkspacePane } from "@/components/customer-workspace-pane";
 import { WorkflowLifecycleStrip } from "@/components/workflow-lifecycle-strip";
 import { FloatingLabelInput, StaticLabelSelect } from "@/components/ui/floating-label-input";
 import { HelpHint } from "@/components/ui/help-hint";
@@ -54,7 +54,7 @@ import { LEAD_CONNECTION_TYPE_OPTIONS } from "@/lib/lead-connection-types";
 import type { CustomerLead } from "@/lib/types";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import type { FormEvent } from "react";
-import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
 import useSWR, { useSWRConfig } from "swr";
@@ -62,6 +62,18 @@ import { AlarmClock, CalendarCheck2, CalendarClock, Check, ChevronRight, Plus, S
 
 /** Above `#ss-bottom-nav-portal` (9999) so lead sheet footer stays tappable on mobile. */
 const LEAD_MODAL_Z = "z-[10060]";
+
+const CustomerWorkspacePane = dynamic(
+  () => import("@/components/customer-workspace-pane").then((module) => module.CustomerWorkspacePane),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full items-center justify-center rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#0c1017]">
+        <p className="text-sm font-bold text-slate-500">Loading customer workspace…</p>
+      </div>
+    )
+  }
+);
 
 type LeadModal = "none" | "add" | "edit";
 type StageFilter = "all" | "leads" | "proposal-sent" | "active-projects";
@@ -151,6 +163,7 @@ function CustomersPageContent() {
   const [followupFilter, setFollowupFilter] = useState<FollowupFilter>(() => resolveFollowupFilter(searchParams.get("callback")));
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get("q") ?? "");
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
+  const customerDrawerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     setStageFilter(resolveStageFilter(searchParams.get("stage")));
@@ -169,6 +182,32 @@ function CustomersPageContent() {
     const query = params.toString();
     router.replace(query ? `/customers?${query}` : "/customers", { scroll: false });
   }, [followupFilter, router, searchParams, searchQuery]);
+
+  const closeCustomerDrawer = useCallback(() => {
+    setSelectedLeadId(null);
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("customer");
+    const query = params.toString();
+    router.replace(query ? `/customers?${query}` : "/customers", { scroll: false });
+  }, [router, searchParams]);
+
+  const openCustomer = useCallback((leadId: string) => {
+    if (typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches) {
+      setSelectedLeadId(leadId);
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("customer", leadId);
+      router.push(`/customers?${params.toString()}`, { scroll: false });
+      return;
+    }
+    router.push(`/customers/${encodeURIComponent(leadId)}`);
+  }, [router, searchParams]);
+
+  const clearListFilters = useCallback(() => {
+    setSearchQuery("");
+    setStageFilter("all");
+    setFollowupFilter("all");
+    updateListUrl("all", "", "all");
+  }, [updateListUrl]);
 
   const customers = useMemo(() => {
     let list = allCustomers;
@@ -254,19 +293,67 @@ function CustomersPageContent() {
   }, [allCustomers]);
 
   const selectedCustomer = useMemo(
-    () => customers.find((customer) => customer.id === selectedLeadId) ?? customers[0] ?? null,
-    [customers, selectedLeadId]
+    () => allCustomers.find((customer) => customer.id === selectedLeadId) ?? null,
+    [allCustomers, selectedLeadId]
   );
+  const customerFromUrl = searchParams.get("customer")?.trim() ?? "";
 
   useEffect(() => {
-    if (customers.length === 0) {
+    if (data !== undefined && selectedLeadId && !allCustomers.some((customer) => customer.id === selectedLeadId)) {
+      setSelectedLeadId(null);
+    }
+  }, [allCustomers, data, selectedLeadId]);
+
+  useEffect(() => {
+    if (!customerFromUrl) {
       setSelectedLeadId(null);
       return;
     }
-    if (!selectedLeadId || !customers.some((customer) => customer.id === selectedLeadId)) {
-      setSelectedLeadId(customers[0]!.id);
+    if (typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches) {
+      setSelectedLeadId(customerFromUrl);
     }
-  }, [customers, selectedLeadId]);
+  }, [customerFromUrl]);
+
+  useEffect(() => {
+    if (!selectedCustomer) return;
+    const desktopQuery = window.matchMedia("(min-width: 1024px)");
+    if (!desktopQuery.matches) {
+      setSelectedLeadId(null);
+      return;
+    }
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeCustomerDrawer();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = customerDrawerRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (!focusable?.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    const closeBelowDesktop = (event: MediaQueryListEvent) => {
+      if (!event.matches) closeCustomerDrawer();
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    desktopQuery.addEventListener("change", closeBelowDesktop);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+      desktopQuery.removeEventListener("change", closeBelowDesktop);
+    };
+  }, [closeCustomerDrawer, selectedCustomer]);
 
   const newLeadCallbackPreview = useMemo(() => {
     if (!scheduleOnCreate) return null;
@@ -906,7 +993,7 @@ function CustomersPageContent() {
 
         <WorkspaceStaggerItem>
           <div className="space-y-3">
-            <div className="sticky top-16 z-30 -mx-1 rounded-2xl border border-slate-200/90 bg-white/95 p-2 shadow-[0_10px_28px_-18px_rgba(15,23,42,0.45)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0c1017]/95 sm:static sm:mx-0 sm:p-3 sm:shadow-[0_10px_35px_-24px_rgba(15,23,42,0.32)]">
+            <div className="relative z-10 rounded-2xl border border-slate-200/90 bg-white/90 p-2 shadow-[0_10px_28px_-18px_rgba(15,23,42,0.35)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0c1017]/90 sm:p-3">
               <div className="flex items-center gap-2">
                 <div className="relative flex min-w-0 flex-1 items-center">
                   <Search className="pointer-events-none absolute left-3.5 h-4 w-4 text-slate-400" aria-hidden strokeWidth={2.25} />
@@ -944,20 +1031,20 @@ function CustomersPageContent() {
             </div>
 
             <div className="rounded-2xl border border-slate-200/80 bg-white/85 p-3 shadow-[0_10px_35px_-24px_rgba(15,23,42,0.32)] backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.035] sm:p-4">
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Follow-up filters">
-                <button type="button" aria-pressed={followupFilter === "scheduled"} onClick={() => { const next = followupFilter === "scheduled" ? "all" : "scheduled"; setFollowupFilter(next); updateListUrl(stageFilter, searchQuery, next); }} className={cn("group rounded-xl bg-teal-50 px-2.5 py-2.5 text-left text-teal-800 transition hover:bg-teal-100 dark:bg-teal-950/30 dark:text-teal-200 dark:hover:bg-teal-950/50", followupFilter === "scheduled" && "ring-2 ring-teal-500 ring-offset-1 dark:ring-offset-slate-950")}>
+              <div className="flex snap-x gap-2 overflow-x-auto pb-1 sm:grid sm:grid-cols-4 sm:overflow-visible sm:pb-0" aria-label="Follow-up filters">
+                <button type="button" aria-pressed={followupFilter === "scheduled"} onClick={() => { const next = followupFilter === "scheduled" ? "all" : "scheduled"; setFollowupFilter(next); updateListUrl(stageFilter, searchQuery, next); }} className={cn("group min-w-[8.25rem] flex-1 snap-start rounded-xl bg-teal-50 px-2.5 py-2.5 text-left text-teal-800 transition hover:bg-teal-100 sm:min-w-0 dark:bg-teal-950/30 dark:text-teal-200 dark:hover:bg-teal-950/50", followupFilter === "scheduled" && "ring-2 ring-teal-500 ring-offset-1 dark:ring-offset-slate-950")}>
                   <p className="flex items-center gap-1 text-[9px] font-extrabold uppercase tracking-wide" title="Customers with a pending follow-up"><CalendarCheck2 className="h-3 w-3" /> Scheduled</p>
                   <p className="mt-0.5 flex items-center justify-between text-lg font-black tabular-nums">{followupCounts.scheduled}<ChevronRight className="h-3.5 w-3.5 opacity-50 transition group-hover:translate-x-0.5" /></p>
                 </button>
-                <button type="button" aria-pressed={followupFilter === "today"} onClick={() => { const next = followupFilter === "today" ? "all" : "today"; setFollowupFilter(next); updateListUrl(stageFilter, searchQuery, next); }} className={cn("group rounded-xl bg-amber-50 px-2.5 py-2.5 text-left text-amber-900 transition hover:bg-amber-100 dark:bg-amber-950/30 dark:text-amber-100 dark:hover:bg-amber-950/50", followupFilter === "today" && "ring-2 ring-amber-500 ring-offset-1 dark:ring-offset-slate-950")}>
+                <button type="button" aria-pressed={followupFilter === "today"} onClick={() => { const next = followupFilter === "today" ? "all" : "today"; setFollowupFilter(next); updateListUrl(stageFilter, searchQuery, next); }} className={cn("group min-w-[8.25rem] flex-1 snap-start rounded-xl bg-amber-50 px-2.5 py-2.5 text-left text-amber-900 transition hover:bg-amber-100 sm:min-w-0 dark:bg-amber-950/30 dark:text-amber-100 dark:hover:bg-amber-950/50", followupFilter === "today" && "ring-2 ring-amber-500 ring-offset-1 dark:ring-offset-slate-950")}>
                   <p className="flex items-center gap-1 text-[9px] font-extrabold uppercase tracking-wide"><AlarmClock className="h-3 w-3" /> Today</p>
                   <p className="mt-0.5 flex items-center justify-between text-lg font-black tabular-nums">{followupCounts.today}<ChevronRight className="h-3.5 w-3.5 opacity-50 transition group-hover:translate-x-0.5" /></p>
                 </button>
-                <button type="button" aria-pressed={followupFilter === "overdue"} onClick={() => { const next = followupFilter === "overdue" ? "all" : "overdue"; setFollowupFilter(next); updateListUrl(stageFilter, searchQuery, next); }} className={cn("group rounded-xl bg-rose-50 px-2.5 py-2.5 text-left text-rose-800 transition hover:bg-rose-100 dark:bg-rose-950/30 dark:text-rose-200 dark:hover:bg-rose-950/50", followupFilter === "overdue" && "ring-2 ring-rose-500 ring-offset-1 dark:ring-offset-slate-950")}>
+                <button type="button" aria-pressed={followupFilter === "overdue"} onClick={() => { const next = followupFilter === "overdue" ? "all" : "overdue"; setFollowupFilter(next); updateListUrl(stageFilter, searchQuery, next); }} className={cn("group min-w-[8.25rem] flex-1 snap-start rounded-xl bg-rose-50 px-2.5 py-2.5 text-left text-rose-800 transition hover:bg-rose-100 sm:min-w-0 dark:bg-rose-950/30 dark:text-rose-200 dark:hover:bg-rose-950/50", followupFilter === "overdue" && "ring-2 ring-rose-500 ring-offset-1 dark:ring-offset-slate-950")}>
                   <p className="text-[9px] font-extrabold uppercase tracking-wide">Overdue</p>
                   <p className="mt-0.5 flex items-center justify-between text-lg font-black tabular-nums">{followupCounts.overdue}<ChevronRight className="h-3.5 w-3.5 opacity-50 transition group-hover:translate-x-0.5" /></p>
                 </button>
-                <button type="button" aria-pressed={followupFilter === "unscheduled"} onClick={() => { const next = followupFilter === "unscheduled" ? "all" : "unscheduled"; setFollowupFilter(next); updateListUrl(stageFilter, searchQuery, next); }} className={cn("group rounded-xl bg-slate-100 px-2.5 py-2.5 text-left text-slate-700 transition hover:bg-slate-200 dark:bg-white/[0.07] dark:text-slate-200 dark:hover:bg-white/[0.1]", followupFilter === "unscheduled" && "ring-2 ring-slate-500 ring-offset-1 dark:ring-offset-slate-950")}>
+                <button type="button" aria-pressed={followupFilter === "unscheduled"} onClick={() => { const next = followupFilter === "unscheduled" ? "all" : "unscheduled"; setFollowupFilter(next); updateListUrl(stageFilter, searchQuery, next); }} className={cn("group min-w-[8.25rem] flex-1 snap-start rounded-xl bg-slate-100 px-2.5 py-2.5 text-left text-slate-700 transition hover:bg-slate-200 sm:min-w-0 dark:bg-white/[0.07] dark:text-slate-200 dark:hover:bg-white/[0.1]", followupFilter === "unscheduled" && "ring-2 ring-slate-500 ring-offset-1 dark:ring-offset-slate-950")}>
                   <p className="text-[9px] font-extrabold uppercase tracking-wide">No callback</p>
                   <p className="mt-0.5 flex items-center justify-between text-lg font-black tabular-nums">{followupCounts.unscheduled}<Plus className="h-3.5 w-3.5 opacity-50 transition group-hover:scale-110" /></p>
                 </button>
@@ -968,6 +1055,7 @@ function CustomersPageContent() {
                   <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-slate-400">Customer pipeline</p>
                   <p className="mt-0.5 text-xs font-semibold text-slate-600 dark:text-slate-300">
                     Showing <span className="font-black text-slate-900 dark:text-white">{customers.length}</span> of {allCustomers.length}
+                    <span className="hidden lg:inline"> · Click a customer to open details</span>
                   </p>
                 </div>
                 <Link href="/agenda#priority-queue" className="shrink-0 text-[11px] font-extrabold text-teal-700 hover:underline dark:text-teal-300">
@@ -1010,30 +1098,55 @@ function CustomersPageContent() {
               </div>
             </div>
 
-            <div className="grid min-w-0 gap-3 md:grid-cols-[minmax(0,0.92fr)_minmax(20rem,1.08fr)] xl:grid-cols-[minmax(24rem,0.8fr)_minmax(28rem,1.2fr)]">
-              <div className="min-w-0">
-                <CustomersLeadList
-                  customers={customers}
-                  loading={showListSkeleton}
-                  onAddLead={openAddLead}
-                  onStatusChange={handleStatusChange}
-                  onEditLead={(c) => void openEditLeadFresh(c)}
-                  onDeleteLead={(c) => setDeleteTarget(c)}
-                  selectedLeadId={selectedCustomer?.id ?? null}
-                  onSelectLead={setSelectedLeadId}
-                  compactWorkspace
-                />
-              </div>
-              <aside className="sticky top-20 hidden h-[calc(100dvh-6rem)] min-h-[36rem] min-w-0 md:block">
-                <CustomerWorkspacePane
-                  customer={selectedCustomer}
-                  onStatusChange={handleStatusChange}
-                />
-              </aside>
-            </div>
+            <CustomersLeadList
+              customers={customers}
+              loading={showListSkeleton}
+              onAddLead={openAddLead}
+              emptyTitle={allCustomers.length > 0 ? "No matching customers" : undefined}
+              emptyDescription={allCustomers.length > 0 ? "Search ya filters change karke customer queue dobara dekhein." : undefined}
+              onClearFilters={allCustomers.length > 0 && (Boolean(searchQuery.trim()) || stageFilter !== "all" || followupFilter !== "all") ? clearListFilters : undefined}
+              onStatusChange={handleStatusChange}
+              onEditLead={(c) => void openEditLeadFresh(c)}
+              onDeleteLead={(c) => setDeleteTarget(c)}
+              selectedLeadId={selectedCustomer?.id ?? null}
+              onSelectLead={openCustomer}
+            />
           </div>
         </WorkspaceStaggerItem>
       </WorkspacePage>
+
+      {selectedCustomer ? (
+        <div className="fixed inset-0 z-[10040] hidden items-stretch justify-end lg:flex" role="presentation">
+          <button
+            type="button"
+            className="absolute inset-0 cursor-default bg-slate-950/30 backdrop-blur-[1px]"
+            aria-label="Close customer details"
+            onClick={closeCustomerDrawer}
+          />
+          <aside
+            ref={customerDrawerRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${selectedCustomer.name} customer details`}
+            className="relative z-[1] h-full w-[min(42rem,46vw)] min-w-[30rem] border-l border-slate-200/90 bg-white p-3 shadow-[-24px_0_70px_-30px_rgba(15,23,42,0.45)] dark:border-white/10 dark:bg-[#080c12]"
+          >
+            <button
+              type="button"
+              autoFocus
+              onClick={closeCustomerDrawer}
+              className="absolute right-5 top-5 z-50 flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white/95 text-slate-500 shadow-sm transition hover:bg-slate-100 hover:text-slate-900 dark:border-white/10 dark:bg-slate-900/95 dark:text-slate-300 dark:hover:bg-slate-800"
+              aria-label="Close customer details"
+              title="Close (Esc)"
+            >
+              <X className="h-4 w-4" aria-hidden />
+            </button>
+            <CustomerWorkspacePane
+              customer={selectedCustomer}
+              onStatusChange={handleStatusChange}
+            />
+          </aside>
+        </div>
+      ) : null}
 
       {leadModal !== "none" &&
         leadModalPortalReady &&

@@ -342,7 +342,11 @@ export function CustomersLeadList({
   onEditLead,
   onDeleteLead,
   onAddLead,
+  emptyTitle,
+  emptyDescription,
+  onClearFilters,
   compactWorkspace = false,
+  selectOnDesktopOnly = false,
   selectedLeadId,
   onSelectLead
 }: {
@@ -357,8 +361,13 @@ export function CustomersLeadList({
   onEditLead?: (customer: CustomerLead) => void;
   onDeleteLead?: (customer: CustomerLead) => void;
   onAddLead?: () => void;
+  emptyTitle?: string;
+  emptyDescription?: string;
+  onClearFilters?: () => void;
   /** Tablet/desktop split view keeps the compact card queue instead of the wide table. */
   compactWorkspace?: boolean;
+  /** Keep phone/tablet cards navigational while desktop table rows open a detail drawer. */
+  selectOnDesktopOnly?: boolean;
   /** Tablet split-pane: highlights row and syncs right workspace. */
   selectedLeadId?: string | null;
   onSelectLead?: (leadId: string) => void;
@@ -366,6 +375,7 @@ export function CustomersLeadList({
   const { locale, t } = useLanguage();
   const showHeader = !loading && customers.length > 0;
   const installerName = getInstallerBrandName();
+  const mobileSelectable = Boolean(onSelectLead && !selectOnDesktopOnly);
   const [followMap, setFollowMap] = useState<Record<string, number>>({});
   const [scheduleTarget, setScheduleTarget] = useState<CustomerLead | null>(null);
 
@@ -404,7 +414,13 @@ export function CustomersLeadList({
     <div className="space-y-4">
       {!loading && customers.length === 0 ? (
         <div className="px-0.5 py-1">
-          <CustomersLeadListEmpty t={t} onAddLead={onAddLead} />
+          <CustomersLeadListEmpty
+            t={t}
+            onAddLead={onAddLead}
+            title={emptyTitle}
+            description={emptyDescription}
+            onClearFilters={onClearFilters}
+          />
         </div>
       ) : null}
 
@@ -458,23 +474,23 @@ export function CustomersLeadList({
                   key={`m-${customer.id}`}
                   className={cn(
                     "relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-3.5 shadow-[0_4px_20px_-8px_rgba(15,23,42,0.12)] transition dark:border-white/10 dark:bg-[#0c1017]",
-                    onSelectLead && "cursor-pointer hover:border-teal-300 hover:shadow-md dark:hover:border-teal-500/40",
-                    onSelectLead && selectedLeadId === customer.id && "border-teal-400 ring-2 ring-teal-400/20 dark:border-teal-500",
+                    mobileSelectable && "cursor-pointer hover:border-teal-300 hover:shadow-md dark:hover:border-teal-500/40",
+                    mobileSelectable && selectedLeadId === customer.id && "border-teal-400 ring-2 ring-teal-400/20 dark:border-teal-500",
                     activeProject && "border-l-[4px] border-l-indigo-500 bg-indigo-50/25 dark:border-l-indigo-400 dark:bg-indigo-950/25"
                   )}
                   onClick={(event) => {
-                    if (!onSelectLead) return;
+                    if (!mobileSelectable || !onSelectLead) return;
                     if ((event.target as HTMLElement).closest("a, button, select, label")) return;
                     onSelectLead(customer.id);
                   }}
-                  onKeyDown={onSelectLead ? (event) => {
+                  onKeyDown={mobileSelectable && onSelectLead ? (event) => {
                     if (event.key === "Enter" || event.key === " ") {
                       event.preventDefault();
                       onSelectLead(customer.id);
                     }
                   } : undefined}
-                  role={onSelectLead ? "button" : undefined}
-                  tabIndex={onSelectLead ? 0 : undefined}
+                  role={mobileSelectable ? "button" : undefined}
+                  tabIndex={mobileSelectable ? 0 : undefined}
                 >
                   {canMutateLead ? (
                     <LeadRowActions
@@ -645,6 +661,7 @@ export function CustomersLeadList({
                     className={cn(
                       "group/row relative grid grid-cols-12 items-center gap-4 px-5 py-3.5 transition-all duration-200",
                       "hover:bg-slate-50/90 dark:hover:bg-white/[0.025]",
+                      onSelectLead && "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal-500/60",
                       activeProject && "bg-indigo-50/40 dark:bg-indigo-950/20",
                       onSelectLead && selectedLeadId === customer.id &&
                         "bg-teal-50/60 ring-1 ring-inset ring-teal-400/30 dark:bg-teal-950/25 dark:ring-teal-400/20"
@@ -843,19 +860,33 @@ export function CustomersLeadList({
 
 export function CustomersLeadListEmpty({
   t,
-  onAddLead
+  onAddLead,
+  title,
+  description,
+  onClearFilters
 }: {
   t: (key: string) => string;
   onAddLead?: () => void;
+  title?: string;
+  description?: string;
+  onClearFilters?: () => void;
 }) {
   return (
     <div className="flex flex-col items-center justify-center rounded-2xl border-[0.5px] border-dashed border-brand-200/80 bg-gradient-to-b from-white/50 to-indigo-50/30 px-6 py-10 text-center shadow-[0_12px_36px_rgba(11,34,64,0.08)] backdrop-blur-sm sm:py-12">
       <span className="flex h-14 w-14 items-center justify-center rounded-2xl border-[0.5px] border-white/60 bg-white/80 text-brand-600 shadow-inner ring-1 ring-brand-100">
         <Users className="h-7 w-7" strokeWidth={2} aria-hidden />
       </span>
-      <p className="mt-4 text-base font-extrabold text-brand-900">{t("customers_emptyList")}</p>
-      <p className="mt-1 max-w-sm text-sm font-medium leading-relaxed text-slate-600">{t("customers_emptySub")}</p>
-      {onAddLead ? (
+      <p className="mt-4 text-base font-extrabold text-brand-900">{title ?? t("customers_emptyList")}</p>
+      <p className="mt-1 max-w-sm text-sm font-medium leading-relaxed text-slate-600">{description ?? t("customers_emptySub")}</p>
+      {onClearFilters ? (
+        <button
+          type="button"
+          onClick={onClearFilters}
+          className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 active:scale-[0.98]"
+        >
+          Clear search & filters
+        </button>
+      ) : onAddLead ? (
         <button
           type="button"
           onClick={onAddLead}
