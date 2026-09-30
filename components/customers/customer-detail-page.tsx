@@ -384,7 +384,7 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
   const badge = LEAD_STATUS_BADGE[statusKey];
 
   return (
-    <div className="workspace-page workspace-page--customers mx-auto max-w-3xl space-y-4 px-3 pb-20 pt-4 sm:px-4">
+    <div className="workspace-page workspace-page--customers mx-auto max-w-[88rem] space-y-4 px-3 pb-20 pt-4 sm:px-4 lg:px-6">
 
       {/* ── back nav ── */}
       <div className="flex items-center gap-3">
@@ -394,7 +394,7 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
           className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm touch-manipulation hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden />
-          CRM
+          All customers
         </button>
         <span
           className={cn(
@@ -593,6 +593,8 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
         </p>
       </SectionCard>
 
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.65fr)] lg:items-start">
+        <div className="min-w-0 space-y-4">
       {/* ── 2. Activity Timeline ── */}
       <SectionCard
         title="Activity Timeline"
@@ -843,6 +845,10 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
         )}
       </SectionCard>
 
+        </div>
+
+        <div className="min-w-0 space-y-4 lg:sticky lg:top-4">
+
       {/* ── 4. Smart callbacks ── */}
       <SectionCard
         title="Smart callbacks"
@@ -918,6 +924,8 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
       <SectionCard title="Documents" icon={FolderOpen}>
         <CustomerDocumentsHub customerId={leadId} />
       </SectionCard>
+        </div>
+      </div>
 
       <ScheduleCallbackSheet
         open={scheduleOpen}

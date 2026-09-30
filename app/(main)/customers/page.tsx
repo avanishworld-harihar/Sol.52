@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { CustomersLeadList } from "@/components/customers-lead-list";
 import { WorkflowLifecycleStrip } from "@/components/workflow-lifecycle-strip";
 import { FloatingLabelInput, StaticLabelSelect } from "@/components/ui/floating-label-input";
@@ -54,7 +53,7 @@ import { LEAD_CONNECTION_TYPE_OPTIONS } from "@/lib/lead-connection-types";
 import type { CustomerLead } from "@/lib/types";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import type { FormEvent } from "react";
-import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
 import useSWR, { useSWRConfig } from "swr";
@@ -62,18 +61,6 @@ import { AlarmClock, CalendarCheck2, CalendarClock, Check, ChevronRight, Plus, S
 
 /** Above `#ss-bottom-nav-portal` (9999) so lead sheet footer stays tappable on mobile. */
 const LEAD_MODAL_Z = "z-[10060]";
-
-const CustomerWorkspacePane = dynamic(
-  () => import("@/components/customer-workspace-pane").then((module) => module.CustomerWorkspacePane),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex h-full items-center justify-center rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#0c1017]">
-        <p className="text-sm font-bold text-slate-500">Loading customer workspace…</p>
-      </div>
-    )
-  }
-);
 
 type LeadModal = "none" | "add" | "edit";
 type StageFilter = "all" | "leads" | "proposal-sent" | "active-projects";
@@ -162,8 +149,6 @@ function CustomersPageContent() {
   const [stageFilter, setStageFilter] = useState<StageFilter>(() => resolveStageFilter(searchParams.get("stage")));
   const [followupFilter, setFollowupFilter] = useState<FollowupFilter>(() => resolveFollowupFilter(searchParams.get("callback")));
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get("q") ?? "");
-  const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
-  const customerDrawerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     setStageFilter(resolveStageFilter(searchParams.get("stage")));
@@ -183,24 +168,9 @@ function CustomersPageContent() {
     router.replace(query ? `/customers?${query}` : "/customers", { scroll: false });
   }, [followupFilter, router, searchParams, searchQuery]);
 
-  const closeCustomerDrawer = useCallback(() => {
-    setSelectedLeadId(null);
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("customer");
-    const query = params.toString();
-    router.replace(query ? `/customers?${query}` : "/customers", { scroll: false });
-  }, [router, searchParams]);
-
   const openCustomer = useCallback((leadId: string) => {
-    if (typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches) {
-      setSelectedLeadId(leadId);
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("customer", leadId);
-      router.push(`/customers?${params.toString()}`, { scroll: false });
-      return;
-    }
     router.push(`/customers/${encodeURIComponent(leadId)}`);
-  }, [router, searchParams]);
+  }, [router]);
 
   const clearListFilters = useCallback(() => {
     setSearchQuery("");
@@ -292,68 +262,12 @@ function CustomersPageContent() {
     );
   }, [allCustomers]);
 
-  const selectedCustomer = useMemo(
-    () => allCustomers.find((customer) => customer.id === selectedLeadId) ?? null,
-    [allCustomers, selectedLeadId]
-  );
-  const customerFromUrl = searchParams.get("customer")?.trim() ?? "";
+  const legacyCustomerId = searchParams.get("customer")?.trim() ?? "";
 
   useEffect(() => {
-    if (data !== undefined && selectedLeadId && !allCustomers.some((customer) => customer.id === selectedLeadId)) {
-      setSelectedLeadId(null);
-    }
-  }, [allCustomers, data, selectedLeadId]);
-
-  useEffect(() => {
-    if (!customerFromUrl) {
-      setSelectedLeadId(null);
-      return;
-    }
-    if (typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches) {
-      setSelectedLeadId(customerFromUrl);
-    }
-  }, [customerFromUrl]);
-
-  useEffect(() => {
-    if (!selectedCustomer) return;
-    const desktopQuery = window.matchMedia("(min-width: 1024px)");
-    if (!desktopQuery.matches) {
-      setSelectedLeadId(null);
-      return;
-    }
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        closeCustomerDrawer();
-        return;
-      }
-      if (event.key !== "Tab") return;
-      const focusable = customerDrawerRef.current?.querySelectorAll<HTMLElement>(
-        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-      );
-      if (!focusable?.length) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-    const closeBelowDesktop = (event: MediaQueryListEvent) => {
-      if (!event.matches) closeCustomerDrawer();
-    };
-    window.addEventListener("keydown", closeOnEscape);
-    desktopQuery.addEventListener("change", closeBelowDesktop);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", closeOnEscape);
-      desktopQuery.removeEventListener("change", closeBelowDesktop);
-    };
-  }, [closeCustomerDrawer, selectedCustomer]);
+    if (!legacyCustomerId) return;
+    router.replace(`/customers/${encodeURIComponent(legacyCustomerId)}`);
+  }, [legacyCustomerId, router]);
 
   const newLeadCallbackPreview = useMemo(() => {
     if (!scheduleOnCreate) return null;
@@ -1108,45 +1022,11 @@ function CustomersPageContent() {
               onStatusChange={handleStatusChange}
               onEditLead={(c) => void openEditLeadFresh(c)}
               onDeleteLead={(c) => setDeleteTarget(c)}
-              selectedLeadId={selectedCustomer?.id ?? null}
               onSelectLead={openCustomer}
             />
           </div>
         </WorkspaceStaggerItem>
       </WorkspacePage>
-
-      {selectedCustomer ? (
-        <div className="fixed inset-0 z-[10040] hidden items-stretch justify-end lg:flex" role="presentation">
-          <button
-            type="button"
-            className="absolute inset-0 cursor-default bg-slate-950/30 backdrop-blur-[1px]"
-            aria-label="Close customer details"
-            onClick={closeCustomerDrawer}
-          />
-          <aside
-            ref={customerDrawerRef}
-            role="dialog"
-            aria-modal="true"
-            aria-label={`${selectedCustomer.name} customer details`}
-            className="relative z-[1] h-full w-[min(42rem,46vw)] min-w-[30rem] border-l border-slate-200/90 bg-white p-3 shadow-[-24px_0_70px_-30px_rgba(15,23,42,0.45)] dark:border-white/10 dark:bg-[#080c12]"
-          >
-            <button
-              type="button"
-              autoFocus
-              onClick={closeCustomerDrawer}
-              className="absolute right-5 top-5 z-50 flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white/95 text-slate-500 shadow-sm transition hover:bg-slate-100 hover:text-slate-900 dark:border-white/10 dark:bg-slate-900/95 dark:text-slate-300 dark:hover:bg-slate-800"
-              aria-label="Close customer details"
-              title="Close (Esc)"
-            >
-              <X className="h-4 w-4" aria-hidden />
-            </button>
-            <CustomerWorkspacePane
-              customer={selectedCustomer}
-              onStatusChange={handleStatusChange}
-            />
-          </aside>
-        </div>
-      ) : null}
 
       {leadModal !== "none" &&
         leadModalPortalReady &&
