@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { Building2, MapPin, MessageCircle, Pencil, Phone, PhoneCall, Trash2, Users, Wifi } from "lucide-react";
+import { Building2, CalendarPlus2, ChevronRight, MapPin, MessageCircle, Pencil, Phone, PhoneCall, Plus, Trash2, Users, Wifi } from "lucide-react";
 
 import type { CustomerLead } from "@/lib/types";
 import { formatPipelineDisplayName } from "@/lib/supabase";
@@ -24,7 +24,7 @@ import { readLeadFollowUpMap, recordLeadFollowUp } from "@/lib/lead-followup-sto
 import { normalizeSource, SOURCE_META, isLeadStale } from "@/lib/lead-source";
 import { resolveCustomerCommercialCta } from "@/lib/customer-crm-cta";
 import { formatCrmDateTime, formatCrmShortDate } from "@/lib/crm-datetime";
-import { CustomerCallbackChip } from "@/components/crm/customer-callback-chip";
+import { CallbackStatusBadge, CustomerCallbackChip } from "@/components/crm/customer-callback-chip";
 import { ScheduleCallbackSheet } from "@/components/crm/schedule-callback-sheet";
 
 export type { CustomerLead };
@@ -173,15 +173,19 @@ export function LeadStatusPillSelect({
 
 function LeadMobileCardSkeleton() {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-[#0c1017]">
+    <div className="rounded-2xl border border-slate-200 bg-white p-3.5 dark:border-white/10 dark:bg-[#0c1017]">
       <div className="flex gap-3">
-        <Skeleton className="h-14 w-14 shrink-0 rounded-2xl bg-slate-200/80" />
+        <Skeleton className="h-11 w-11 shrink-0 rounded-xl bg-slate-200/80" />
         <div className="min-w-0 flex-1 space-y-2">
           <Skeleton className="h-5 w-[66%] rounded-md bg-slate-200/80" />
           <Skeleton className="h-4 w-1/2 rounded-md bg-slate-200/60" />
-          <Skeleton className="h-10 w-full rounded-xl bg-slate-200/50" />
         </div>
       </div>
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <Skeleton className="h-12 rounded-xl bg-slate-200/50" />
+        <Skeleton className="h-12 rounded-xl bg-slate-200/50" />
+      </div>
+      <Skeleton className="mt-3 h-11 w-full rounded-xl bg-slate-200/60" />
     </div>
   );
 }
@@ -202,7 +206,7 @@ function LeadRowActions({
   className?: string;
   size?: "md" | "sm";
 }) {
-  const btn = size === "sm" ? "h-7 w-7" : "h-8 w-8";
+  const btn = size === "sm" ? "h-9 w-9" : "h-8 w-8";
   const icon = size === "sm" ? "h-3.5 w-3.5" : "h-3.5 w-3.5";
 
   return (
@@ -337,6 +341,8 @@ export function CustomersLeadList({
   onStatusChange,
   onEditLead,
   onDeleteLead,
+  onAddLead,
+  compactWorkspace = false,
   selectedLeadId,
   onSelectLead
 }: {
@@ -350,6 +356,9 @@ export function CustomersLeadList({
   onStatusChange?: (leadId: string, next: LeadStatusKey) => void;
   onEditLead?: (customer: CustomerLead) => void;
   onDeleteLead?: (customer: CustomerLead) => void;
+  onAddLead?: () => void;
+  /** Tablet/desktop split view keeps the compact card queue instead of the wide table. */
+  compactWorkspace?: boolean;
   /** Tablet split-pane: highlights row and syncs right workspace. */
   selectedLeadId?: string | null;
   onSelectLead?: (leadId: string) => void;
@@ -395,18 +404,18 @@ export function CustomersLeadList({
     <div className="space-y-4">
       {!loading && customers.length === 0 ? (
         <div className="px-0.5 py-1">
-          <CustomersLeadListEmpty t={t} />
+          <CustomersLeadListEmpty t={t} onAddLead={onAddLead} />
         </div>
       ) : null}
 
       {loading ? (
         <>
-          <div className="grid grid-cols-1 gap-3 px-0.5 md:grid-cols-2 lg:hidden">
+          <div className={cn("grid grid-cols-1 gap-3 px-0.5", compactWorkspace ? "md:grid-cols-1" : "md:grid-cols-2 lg:hidden")}>
             {Array.from({ length: 4 }).map((_, i) => (
               <LeadMobileCardSkeleton key={`m-sk-${i}`} />
             ))}
           </div>
-          <div className="hidden overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#0c1017] lg:block">
+          <div className={cn("overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#0c1017]", compactWorkspace ? "hidden" : "hidden lg:block")}>
             {Array.from({ length: 5 }).map((_, i) => (
               <LeadRowSkeleton key={i} />
             ))}
@@ -416,7 +425,7 @@ export function CustomersLeadList({
 
       {!loading && customers.length > 0 ? (
         <>
-          <div className="grid grid-cols-1 gap-3 px-0.5 md:grid-cols-2 lg:hidden">
+          <div className={cn("grid grid-cols-1 gap-3 px-0.5", compactWorkspace ? "md:grid-cols-1" : "md:grid-cols-2 lg:hidden")}>
             {customers.map((customer) => {
               const statusKey = normalizeLeadStatus(customer.status);
               const commercialCta = resolveCustomerCommercialCta(customer);
@@ -448,9 +457,24 @@ export function CustomersLeadList({
                 <article
                   key={`m-${customer.id}`}
                   className={cn(
-                    "relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-4 shadow-[0_4px_20px_-8px_rgba(15,23,42,0.12)] dark:border-white/10 dark:bg-[#0c1017]",
+                    "relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-3.5 shadow-[0_4px_20px_-8px_rgba(15,23,42,0.12)] transition dark:border-white/10 dark:bg-[#0c1017]",
+                    onSelectLead && "cursor-pointer hover:border-teal-300 hover:shadow-md dark:hover:border-teal-500/40",
+                    onSelectLead && selectedLeadId === customer.id && "border-teal-400 ring-2 ring-teal-400/20 dark:border-teal-500",
                     activeProject && "border-l-[4px] border-l-indigo-500 bg-indigo-50/25 dark:border-l-indigo-400 dark:bg-indigo-950/25"
                   )}
+                  onClick={(event) => {
+                    if (!onSelectLead) return;
+                    if ((event.target as HTMLElement).closest("a, button, select, label")) return;
+                    onSelectLead(customer.id);
+                  }}
+                  onKeyDown={onSelectLead ? (event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onSelectLead(customer.id);
+                    }
+                  } : undefined}
+                  role={onSelectLead ? "button" : undefined}
+                  tabIndex={onSelectLead ? 0 : undefined}
                 >
                   {canMutateLead ? (
                     <LeadRowActions
@@ -463,14 +487,14 @@ export function CustomersLeadList({
                     />
                   ) : null}
 
-                  <div className={cn("flex gap-3", canMutateLead ? "pr-12" : "")}>
+                  <div className={cn("flex gap-3", canMutateLead ? "pr-[4.75rem]" : "")}>
                     <LeadAvatar
                       name={customer.name}
                       stale={stale}
                       size="sm"
                     />
                     <div className="min-w-0 flex-1">
-                      <h3 className="truncate pr-1 text-lg font-extrabold leading-tight text-slate-900 dark:text-slate-50">
+                      <h3 className="truncate pr-1 text-base font-extrabold leading-tight text-slate-900 dark:text-slate-50">
                         {displayName}
                       </h3>
                       {customer.household_member_names && customer.household_member_names.length > 0 ? (
@@ -483,24 +507,20 @@ export function CustomersLeadList({
                           WhatsApp contact
                         </p>
                       ) : null}
-                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <p className="mt-1 flex min-w-0 items-center gap-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                        <MapPin className="h-3.5 w-3.5 shrink-0 text-teal-600" aria-hidden />
+                        <span className="truncate">{customer.city}{customer.discom ? ` · ${customer.discom}` : ""}</span>
+                      </p>
+                      <div className="mt-2 flex flex-wrap items-center gap-1.5">
                         <LeadSourceBadge sourceRaw={customer.source} />
                         <span
                           className={cn(
-                            "inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide",
+                            "inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide",
                             stageMeta.className
                           )}
                         >
                           {t(stageMeta.labelKey)}
                         </span>
-                      </div>
-
-                      <div className="mt-3 space-y-3">
-                        <CustomerCallbackChip
-                          dueAt={nextFollowupAt}
-                          title={nextFollowupTitle}
-                          onSchedule={() => setScheduleTarget(customer)}
-                        />
                         {onStatusChange ? (
                           <LeadStatusPillSelect
                             leadId={customer.id}
@@ -516,87 +536,77 @@ export function CustomersLeadList({
                     </div>
                   </div>
 
-                  <dl className="mt-4 space-y-3 rounded-2xl bg-slate-50/90 px-4 py-3.5 text-sm dark:bg-white/[0.05]">
-                    <div className="flex justify-between gap-3">
-                      <dt className="shrink-0 font-semibold text-slate-500 dark:text-slate-400">{t("customers_tableLocation")}</dt>
-                      <dd className="min-w-0 text-right font-semibold text-slate-900 dark:text-slate-100">
-                        <span className="block truncate">{customer.city}</span>
-                        <span className="mt-0.5 block truncate text-xs font-medium text-slate-600 dark:text-slate-400">
-                          {customer.discom}
-                        </span>
-                      </dd>
+                  <div className="mt-3 grid grid-cols-2 gap-2 rounded-xl bg-slate-50/90 p-2.5 dark:bg-white/[0.05]">
+                    <div className="min-w-0">
+                      <p className="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">{t("customers_monthlyBillShort")}</p>
+                      <p className="truncate text-sm font-black tabular-nums text-slate-900 dark:text-slate-50">₹{bill.toLocaleString("en-IN")}</p>
                     </div>
-                    <div className="flex justify-between gap-3 border-t border-slate-200/80 pt-3 dark:border-white/10">
-                      <dt className="shrink-0 font-semibold text-slate-500 dark:text-slate-400">{t("customers_monthlyBillShort")}</dt>
-                      <dd className="text-lg font-black tabular-nums text-slate-900 dark:text-slate-50">
-                        ₹{bill.toLocaleString("en-IN")}
-                      </dd>
+                    <div className="min-w-0 border-l border-slate-200/80 pl-2.5 dark:border-white/10">
+                      <p className="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Last activity</p>
+                      <p className="truncate text-xs font-bold text-slate-700 dark:text-slate-200">{lastActivityLabel}</p>
                     </div>
-                    <div className="flex justify-between gap-3 border-t border-slate-200/80 pt-3 text-xs dark:border-white/10">
-                      <dt className="shrink-0 font-semibold text-slate-500 dark:text-slate-400">Last activity</dt>
-                      <dd className="font-bold text-slate-800 dark:text-slate-200">{lastActivityLabel}</dd>
-                    </div>
-                    {customer.phone ? (
-                      <div className="flex justify-between gap-3 border-t border-slate-200/80 pt-3 dark:border-white/10">
-                        <dt className="shrink-0 font-semibold text-slate-500 dark:text-slate-400">{t("customers_tablePhone")}</dt>
-                        <dd className="min-w-0 max-w-[70%] text-right">
-                          <a
-                            href={`tel:${customer.phone}`}
-                            onClick={() => handlePhoneCall(customer.id)}
-                            className="block break-all text-sm font-bold tabular-nums leading-snug text-indigo-700 underline-offset-2 hover:underline dark:text-indigo-300"
-                          >
-                            {formatLeadPhoneForDisplay(customer.phone)}
-                          </a>
-                        </dd>
-                      </div>
-                    ) : null}
-                  </dl>
+                  </div>
 
-                  <div className="mt-4 flex flex-col gap-2">
-                    {customer.phone || waUrl ? (
-                      <div className="flex w-full min-w-0 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setScheduleTarget(customer)}
+                    disabled={customer.id.startsWith("optimistic-")}
+                    className="mt-2.5 flex min-h-11 w-full items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-left transition hover:border-teal-300 hover:bg-teal-50/60 active:scale-[0.99] disabled:cursor-wait disabled:opacity-65 dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-teal-500/40 dark:hover:bg-teal-950/20"
+                  >
+                    <span className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-lg", nextFollowupAt ? "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300" : "bg-teal-50 text-teal-700 dark:bg-teal-950/40 dark:text-teal-300")}>
+                      <CalendarPlus2 className="h-4 w-4" aria-hidden />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[10px] font-extrabold uppercase tracking-wide text-slate-400">{nextFollowupAt ? "Next callback" : "Callback"}</span>
+                      <span className="block truncate text-xs font-bold text-slate-800 dark:text-slate-100">
+                        {nextFollowupAt ? `${nextFollowupTitle || "Follow-up"} · ${formatCrmDateTime(nextFollowupAt)}` : "Schedule callback"}
+                      </span>
+                    </span>
+                    <CallbackStatusBadge dueAt={nextFollowupAt} title={nextFollowupTitle} compact className="hidden shrink-0 min-[390px]:inline-flex" />
+                    <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" aria-hidden />
+                  </button>
+
+                  <div className="mt-2.5 grid grid-cols-3 gap-2">
                         {customer.phone ? (
                           <a
                             href={`tel:${customer.phone}`}
                             onClick={() => handlePhoneCall(customer.id)}
-                            className="flex min-h-12 min-w-0 flex-1 touch-manipulation items-center justify-center gap-2 rounded-xl bg-indigo-600 px-2 text-sm font-bold text-white shadow-md active:bg-indigo-700 sm:min-h-[3rem] sm:px-3 sm:text-base"
+                            className="flex min-h-11 min-w-0 touch-manipulation items-center justify-center gap-1.5 rounded-xl bg-indigo-600 px-2 text-xs font-bold text-white shadow-sm active:bg-indigo-700"
                             aria-label={t("customers_mobileCall")}
                             title={t("customers_mobileCall")}
                           >
-                            <Phone className="h-5 w-5 shrink-0" strokeWidth={2} aria-hidden />
+                            <Phone className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
                             <span className="truncate">{t("customers_mobileCall")}</span>
                           </a>
-                        ) : null}
+                        ) : <span />}
                         {waUrl ? (
                           <button
                             type="button"
                             onClick={() => openWhatsApp(customer.id, waUrl)}
-                            className="flex min-h-12 min-w-0 flex-1 touch-manipulation items-center justify-center gap-2 rounded-xl border border-emerald-300/90 bg-emerald-50 px-2 text-sm font-bold text-emerald-900 shadow-sm active:bg-emerald-100 dark:border-emerald-500/45 dark:bg-emerald-950/55 dark:text-emerald-100 dark:active:bg-emerald-900/50 sm:min-h-[3rem] sm:px-3"
+                            className="flex min-h-11 min-w-0 touch-manipulation items-center justify-center gap-1.5 rounded-xl border border-emerald-300/90 bg-emerald-50 px-2 text-xs font-bold text-emerald-900 shadow-sm active:bg-emerald-100 dark:border-emerald-500/45 dark:bg-emerald-950/55 dark:text-emerald-100"
                             aria-label={t("customers_whatsappAria")}
                             title={t("customers_whatsappShort")}
                           >
-                            <MessageCircle className="h-5 w-5 shrink-0" strokeWidth={2} aria-hidden />
+                            <MessageCircle className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
                             <span className="truncate">{t("customers_whatsappShort")}</span>
                           </button>
-                        ) : null}
-                      </div>
-                    ) : null}
-                    <Link href={commercialCta.href} className="ss-cta-primary min-h-12 w-full touch-manipulation">
-                      {t(commercialCta.labelKey)}
-                    </Link>
+                        ) : <span />}
                     <Link
                       href={`/customers/${customer.id}`}
-                      className="flex min-h-10 w-full items-center justify-center gap-1.5 rounded-xl border border-teal-200 bg-teal-50/70 px-3 text-xs font-bold text-teal-800 touch-manipulation hover:bg-teal-100 dark:border-teal-500/30 dark:bg-teal-950/30 dark:text-teal-200"
+                      className="flex min-h-11 min-w-0 items-center justify-center gap-1 rounded-xl border border-slate-200 bg-white px-2 text-xs font-bold text-slate-700 touch-manipulation hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-200"
                     >
-                      View profile →
+                      Profile <ChevronRight className="h-3.5 w-3.5" aria-hidden />
                     </Link>
                   </div>
+                  <Link href={commercialCta.href} className="mt-2.5 flex min-h-10 w-full items-center justify-center rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 px-3 text-xs font-extrabold uppercase tracking-wide text-white shadow-sm transition hover:brightness-105 active:scale-[0.99]">
+                    {t(commercialCta.labelKey)}
+                  </Link>
                 </article>
               );
             })}
           </div>
 
-          <div className="hidden overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_8px_30px_-12px_rgba(15,23,42,0.12)] dark:border-white/10 dark:bg-[#0c1017] lg:block">
+          <div className={cn("overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_8px_30px_-12px_rgba(15,23,42,0.12)] dark:border-white/10 dark:bg-[#0c1017]", compactWorkspace ? "hidden" : "hidden lg:block")}>
             {showHeader && (
               <div className="grid grid-cols-12 gap-4 border-b border-slate-200/90 bg-gradient-to-r from-slate-50 to-white px-5 py-3 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:border-white/10 dark:from-[#141a22] dark:to-[#0c1017] dark:text-slate-400">
                 <div className="col-span-5 pl-[3.25rem]">{t("customers_tableLead")}</div>
@@ -831,14 +841,30 @@ export function CustomersLeadList({
   );
 }
 
-export function CustomersLeadListEmpty({ t }: { t: (key: string) => string }) {
+export function CustomersLeadListEmpty({
+  t,
+  onAddLead
+}: {
+  t: (key: string) => string;
+  onAddLead?: () => void;
+}) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-2xl border-[0.5px] border-dashed border-brand-200/80 bg-gradient-to-b from-white/50 to-indigo-50/30 px-6 py-14 text-center shadow-[0_12px_36px_rgba(11,34,64,0.08)] backdrop-blur-sm">
-      <span className="flex h-16 w-16 items-center justify-center rounded-2xl border-[0.5px] border-white/60 bg-white/80 text-brand-600 shadow-inner ring-1 ring-brand-100">
-        <Users className="h-8 w-8" strokeWidth={2} aria-hidden />
+    <div className="flex flex-col items-center justify-center rounded-2xl border-[0.5px] border-dashed border-brand-200/80 bg-gradient-to-b from-white/50 to-indigo-50/30 px-6 py-10 text-center shadow-[0_12px_36px_rgba(11,34,64,0.08)] backdrop-blur-sm sm:py-12">
+      <span className="flex h-14 w-14 items-center justify-center rounded-2xl border-[0.5px] border-white/60 bg-white/80 text-brand-600 shadow-inner ring-1 ring-brand-100">
+        <Users className="h-7 w-7" strokeWidth={2} aria-hidden />
       </span>
       <p className="mt-4 text-base font-extrabold text-brand-900">{t("customers_emptyList")}</p>
       <p className="mt-1 max-w-sm text-sm font-medium leading-relaxed text-slate-600">{t("customers_emptySub")}</p>
+      {onAddLead ? (
+        <button
+          type="button"
+          onClick={onAddLead}
+          className="mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-teal-600 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-teal-700 active:scale-[0.98]"
+        >
+          <Plus className="h-4 w-4" aria-hidden />
+          {t("customers_addLeadCta")}
+        </button>
+      ) : null}
     </div>
   );
 }

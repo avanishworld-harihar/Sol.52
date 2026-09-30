@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { CustomersLeadList } from "@/components/customers-lead-list";
+import { CustomerWorkspacePane } from "@/components/customer-workspace-pane";
 import { WorkflowLifecycleStrip } from "@/components/workflow-lifecycle-strip";
 import { FloatingLabelInput, StaticLabelSelect } from "@/components/ui/floating-label-input";
 import { HelpHint } from "@/components/ui/help-hint";
@@ -28,6 +30,15 @@ import {
 } from "@/lib/lead-status";
 import { LEAD_SURVEY_STATUS_OPTIONS } from "@/lib/proposal-survey-gate";
 import { removeLeadFollowUp } from "@/lib/lead-followup-storage";
+import { createReminder } from "@/lib/followup-client";
+import {
+  QUICK_CALLBACK_PRESETS,
+  CALLBACK_PRESETS,
+  defaultCallbackTitle,
+  resolveCallbackDueAt,
+  type CallbackPresetId
+} from "@/lib/crm-callback-schedule";
+import { formatCrmDateTime } from "@/lib/crm-datetime";
 import { WorkspacePage, WorkspacePageHero, WorkspaceStaggerItem } from "@/components/workspace";
 import { cn } from "@/lib/utils";
 import { INDIAN_STATES_AND_UTS } from "@/lib/indian-states-uts";
@@ -47,16 +58,22 @@ import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useState } 
 import { createPortal } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
 import useSWR, { useSWRConfig } from "swr";
-import { AlarmClock, CalendarCheck2, Search, X } from "lucide-react";
+import { AlarmClock, CalendarCheck2, CalendarClock, Check, ChevronRight, Plus, Search, X } from "lucide-react";
 
 /** Above `#ss-bottom-nav-portal` (9999) so lead sheet footer stays tappable on mobile. */
 const LEAD_MODAL_Z = "z-[10060]";
 
 type LeadModal = "none" | "add" | "edit";
 type StageFilter = "all" | "leads" | "proposal-sent" | "active-projects";
+type FollowupFilter = "all" | "scheduled" | "today" | "overdue" | "unscheduled";
 
 function resolveStageFilter(value: string | null): StageFilter {
   if (value === "leads" || value === "proposal-sent" || value === "active-projects") return value;
+  return "all";
+}
+
+function resolveFollowupFilter(value: string | null): FollowupFilter {
+  if (value === "scheduled" || value === "today" || value === "overdue" || value === "unscheduled") return value;
   return "all";
 }
 
@@ -104,6 +121,10 @@ function CustomersPageContent() {
     location: "",
     connection_type: ""
   });
+  const [scheduleOnCreate, setScheduleOnCreate] = useState(true);
+  const [newLeadCallbackPreset, setNewLeadCallbackPreset] = useState<CallbackPresetId>("next_week");
+  const [newLeadCallbackDate, setNewLeadCallbackDate] = useState("");
+  const [newLeadCallbackTime, setNewLeadCallbackTime] = useState("10:00");
   const { options: leadDiscomOptions, loading: leadDiscomListLoading } = useInstallerDiscoms(form.state);
   const leadDiscomSelectOptions = useMemo(
     () => mergeSavedDiscomOption(form.discom, leadDiscomOptions),
@@ -127,22 +148,27 @@ function CustomersPageContent() {
   const allCustomers = useMemo(() => data ?? [], [data]);
 
   const [stageFilter, setStageFilter] = useState<StageFilter>(() => resolveStageFilter(searchParams.get("stage")));
+  const [followupFilter, setFollowupFilter] = useState<FollowupFilter>(() => resolveFollowupFilter(searchParams.get("callback")));
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get("q") ?? "");
+  const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
 
   useEffect(() => {
     setStageFilter(resolveStageFilter(searchParams.get("stage")));
+    setFollowupFilter(resolveFollowupFilter(searchParams.get("callback")));
     setSearchQuery(searchParams.get("q") ?? "");
   }, [searchParams]);
 
-  const updateListUrl = useCallback((nextStage: StageFilter, nextSearch = searchQuery) => {
+  const updateListUrl = useCallback((nextStage: StageFilter, nextSearch = searchQuery, nextFollowup = followupFilter) => {
     const params = new URLSearchParams(searchParams.toString());
     if (nextStage === "all") params.delete("stage");
     else params.set("stage", nextStage);
     if (nextSearch.trim()) params.set("q", nextSearch.trim());
     else params.delete("q");
+    if (nextFollowup === "all") params.delete("callback");
+    else params.set("callback", nextFollowup);
     const query = params.toString();
     router.replace(query ? `/customers?${query}` : "/customers", { scroll: false });
-  }, [router, searchParams, searchQuery]);
+  }, [followupFilter, router, searchParams, searchQuery]);
 
   const customers = useMemo(() => {
     let list = allCustomers;
@@ -175,9 +201,23 @@ function CustomersPageContent() {
         );
       });
     }
+    if (followupFilter !== "all") {
+      const now = new Date();
+      const todayKey = now.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+      list = list.filter((customer) => {
+        if (!customer.next_followup_at) return followupFilter === "unscheduled";
+        const due = new Date(customer.next_followup_at);
+        if (Number.isNaN(due.getTime())) return followupFilter === "unscheduled";
+        const dueKey = due.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+        if (followupFilter === "scheduled") return true;
+        if (followupFilter === "today") return dueKey === todayKey;
+        if (followupFilter === "overdue") return due.getTime() < now.getTime() && dueKey !== todayKey;
+        return false;
+      });
+    }
     /** Recent proposal / call / edit first — not random created_at order. */
     return sortCustomersByRecency(list);
-  }, [allCustomers, stageFilter, searchQuery]);
+  }, [allCustomers, followupFilter, stageFilter, searchQuery]);
 
   const stageCounts = useMemo(
     () => ({
@@ -194,20 +234,66 @@ function CustomersPageContent() {
     const todayKey = now.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
     return allCustomers.reduce(
       (counts, customer) => {
-        if (!customer.next_followup_at) return counts;
+        if (!customer.next_followup_at) {
+          counts.unscheduled += 1;
+          return counts;
+        }
         const due = new Date(customer.next_followup_at);
-        if (Number.isNaN(due.getTime())) return counts;
+        if (Number.isNaN(due.getTime())) {
+          counts.unscheduled += 1;
+          return counts;
+        }
         counts.scheduled += 1;
         const dueKey = due.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
         if (dueKey === todayKey) counts.today += 1;
         if (due.getTime() < now.getTime() && dueKey !== todayKey) counts.overdue += 1;
         return counts;
       },
-      { scheduled: 0, today: 0, overdue: 0 }
+      { scheduled: 0, today: 0, overdue: 0, unscheduled: 0 }
     );
   }, [allCustomers]);
 
+  const selectedCustomer = useMemo(
+    () => customers.find((customer) => customer.id === selectedLeadId) ?? customers[0] ?? null,
+    [customers, selectedLeadId]
+  );
+
+  useEffect(() => {
+    if (customers.length === 0) {
+      setSelectedLeadId(null);
+      return;
+    }
+    if (!selectedLeadId || !customers.some((customer) => customer.id === selectedLeadId)) {
+      setSelectedLeadId(customers[0]!.id);
+    }
+  }, [customers, selectedLeadId]);
+
+  const newLeadCallbackPreview = useMemo(() => {
+    if (!scheduleOnCreate) return null;
+    try {
+      const dueAt = resolveCallbackDueAt(newLeadCallbackPreset, {
+        customDateOnly: newLeadCallbackDate,
+        customLocal:
+          newLeadCallbackDate && newLeadCallbackTime
+            ? `${newLeadCallbackDate}T${newLeadCallbackTime}`
+            : undefined
+      });
+      return { dueAt, label: formatCrmDateTime(dueAt) };
+    } catch {
+      return null;
+    }
+  }, [newLeadCallbackDate, newLeadCallbackPreset, newLeadCallbackTime, scheduleOnCreate]);
+
   const showListSkeleton = isLoading && data === undefined && !loadError;
+
+  const openAddLead = useCallback(() => {
+    setEditLeadId(null);
+    setScheduleOnCreate(true);
+    setNewLeadCallbackPreset("next_week");
+    setNewLeadCallbackDate("");
+    setNewLeadCallbackTime("10:00");
+    setLeadModal("add");
+  }, []);
 
   useLayoutEffect(() => {
     const boot = readCustomersCache();
@@ -353,6 +439,10 @@ function CustomersPageContent() {
     setEditLeadId(null);
     setError("");
     setShowMoreDetails(false);
+    setScheduleOnCreate(true);
+    setNewLeadCallbackPreset("next_week");
+    setNewLeadCallbackDate("");
+    setNewLeadCallbackTime("10:00");
     const r = readInstallerRegion();
     setForm({
       name: "",
@@ -529,6 +619,33 @@ function CustomersPageContent() {
       return;
     }
 
+    let callbackRequest: { dueAt: string; title: string } | null = null;
+    if (leadModal === "add" && scheduleOnCreate) {
+      if (
+        (newLeadCallbackPreset === "custom_date" || newLeadCallbackPreset === "custom_datetime") &&
+        !newLeadCallbackDate
+      ) {
+        setError("Callback date select karein, ya Schedule callback ko off karein.");
+        return;
+      }
+      try {
+        const dueAt = resolveCallbackDueAt(newLeadCallbackPreset, {
+          customDateOnly: newLeadCallbackDate,
+          customLocal:
+            newLeadCallbackDate && newLeadCallbackTime
+              ? `${newLeadCallbackDate}T${newLeadCallbackTime}`
+              : undefined
+        });
+        callbackRequest = {
+          dueAt,
+          title: defaultCallbackTitle(newLeadCallbackPreset)
+        };
+      } catch {
+        setError("Callback date valid nahi hai. Please dobara select karein.");
+        return;
+      }
+    }
+
     if (leadModal === "edit" && editLeadId) {
       void (async () => {
         try {
@@ -601,7 +718,9 @@ function CustomersPageContent() {
       survey_status: form.survey_status.trim() ? form.survey_status.trim().toLowerCase() : null,
       area: form.area.trim() || undefined,
       location: form.location.trim() || undefined,
-      connection_type: form.connection_type.trim() || undefined
+      connection_type: form.connection_type.trim() || undefined,
+      next_followup_at: callbackRequest?.dueAt ?? null,
+      next_followup_title: callbackRequest?.title ?? null
     };
 
     void mutate((prev) => [optimisticRow, ...(prev ?? [])], { revalidate: false });
@@ -628,7 +747,10 @@ function CustomersPageContent() {
     }
     setLeadModal("none");
     setEditLeadId(null);
-    router.push("/");
+    setScheduleOnCreate(true);
+    setNewLeadCallbackPreset("next_week");
+    setNewLeadCallbackDate("");
+    setNewLeadCallbackTime("10:00");
 
     void (async () => {
       try {
@@ -654,22 +776,63 @@ function CustomersPageContent() {
         if (!result.ok) throw new Error(result.error || "Could not save customer");
 
         const serverRow = result.data as CustomerLead;
+        let savedRow = serverRow;
+        let callbackSaved = false;
+
+        if (callbackRequest) {
+          try {
+            const reminder = await createReminder(serverRow.id, {
+              title: callbackRequest.title,
+              due_at: callbackRequest.dueAt,
+              priority: "medium",
+              followup_type: "call",
+              status: "pending",
+              notes: null,
+              snoozed_until: null
+            });
+            callbackSaved = true;
+            savedRow = {
+              ...serverRow,
+              next_followup_id: reminder.id,
+              next_followup_at: reminder.due_at,
+              next_followup_title: reminder.title
+            };
+            void mutateGlobal("/api/followups/widgets", undefined, { revalidate: true });
+            void mutateGlobal("/api/followups/widgets?view=all", undefined, { revalidate: true });
+            void mutateGlobal("crm-command-center", undefined, { revalidate: true });
+          } catch (callbackError) {
+            toast.error(
+              "Customer saved, callback pending",
+              callbackError instanceof Error ? callbackError.message : "Callback could not be scheduled."
+            );
+          }
+        }
+
         if (result.deduped) {
           /* Same person (channel merge) — refresh existing. */
           await mutate(
-            (prev) => (prev ?? []).filter((c) => c.id !== optimisticId),
+            (prev) => {
+              const withoutOptimistic = (prev ?? []).filter((c) => c.id !== optimisticId);
+              const exists = withoutOptimistic.some((c) => c.id === savedRow.id);
+              const next = exists
+                ? withoutOptimistic.map((c) => (c.id === savedRow.id ? savedRow : c))
+                : [savedRow, ...withoutOptimistic];
+              writeCustomersCache(next);
+              return next;
+            },
             { revalidate: false }
           );
           bumpDashboardLeads(-1);
-          await mutate();
           toast.info(
             "Lead already in CRM",
-            `${serverRow.name} already exists — last touch refreshed.`
+            callbackSaved
+              ? `${serverRow.name} refreshed · callback ${formatCrmDateTime(callbackRequest!.dueAt)}.`
+              : `${serverRow.name} already exists — last touch refreshed.`
           );
         } else {
           await mutate(
             (prev) => {
-              const next = [serverRow, ...(prev ?? []).filter((c) => c.id !== optimisticId)];
+              const next = [savedRow, ...(prev ?? []).filter((c) => c.id !== optimisticId)];
               writeCustomersCache(next);
               touchCustomersSavedAt();
               return next;
@@ -680,10 +843,17 @@ function CustomersPageContent() {
           if (result.householdLinked) {
             toast.success(
               "Family member added",
-              `${payload.name} saved — shares household / WhatsApp with an existing contact.`
+              callbackSaved
+                ? `${payload.name} saved · callback ${formatCrmDateTime(callbackRequest!.dueAt)}.`
+                : `${payload.name} saved — shares household / WhatsApp with an existing contact.`
             );
           } else {
-            toast.success("Customer saved", `${payload.name} has been added to your lead list.`);
+            toast.success(
+              callbackSaved ? "Customer + callback saved" : "Customer saved",
+              callbackSaved
+                ? `${payload.name} · ${formatCrmDateTime(callbackRequest!.dueAt)}`
+                : `${payload.name} has been added to your lead list.`
+            );
           }
         }
       } catch (e) {
@@ -725,10 +895,7 @@ function CustomersPageContent() {
               <button
                 type="button"
                 className="workspace-cta-primary"
-                onClick={() => {
-                  setEditLeadId(null);
-                  setLeadModal("add");
-                }}
+                onClick={openAddLead}
               >
                 {t("customers_addLeadCta")}
               </button>
@@ -739,9 +906,9 @@ function CustomersPageContent() {
 
         <WorkspaceStaggerItem>
           <div className="space-y-3">
-            <div className="rounded-2xl border border-slate-200/80 bg-white/85 p-3 shadow-[0_10px_35px_-24px_rgba(15,23,42,0.32)] backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.035] sm:p-4">
-              <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(18rem,1fr)_auto] lg:items-center">
-                <div className="relative flex items-center">
+            <div className="sticky top-16 z-30 -mx-1 rounded-2xl border border-slate-200/90 bg-white/95 p-2 shadow-[0_10px_28px_-18px_rgba(15,23,42,0.45)] backdrop-blur-xl dark:border-white/10 dark:bg-[#0c1017]/95 sm:static sm:mx-0 sm:p-3 sm:shadow-[0_10px_35px_-24px_rgba(15,23,42,0.32)]">
+              <div className="flex items-center gap-2">
+                <div className="relative flex min-w-0 flex-1 items-center">
                   <Search className="pointer-events-none absolute left-3.5 h-4 w-4 text-slate-400" aria-hidden strokeWidth={2.25} />
                   <input
                     type="search"
@@ -765,22 +932,49 @@ function CustomersPageContent() {
                     </button>
                   ) : null}
                 </div>
-                <div className="grid grid-cols-3 gap-2" aria-label="Follow-up summary">
-                  <div className="rounded-xl bg-teal-50 px-2.5 py-2 text-teal-800 dark:bg-teal-950/30 dark:text-teal-200">
-                    <p className="flex items-center gap-1 text-[9px] font-extrabold uppercase tracking-wide" title="Customers with a pending follow-up"><CalendarCheck2 className="h-3 w-3" /> Scheduled leads</p>
-                    <p className="mt-0.5 text-lg font-black tabular-nums">{followupCounts.scheduled}</p>
-                  </div>
-                  <div className="rounded-xl bg-amber-50 px-2.5 py-2 text-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
-                    <p className="flex items-center gap-1 text-[9px] font-extrabold uppercase tracking-wide"><AlarmClock className="h-3 w-3" /> Today</p>
-                    <p className="mt-0.5 text-lg font-black tabular-nums">{followupCounts.today}</p>
-                  </div>
-                  <div className="rounded-xl bg-rose-50 px-2.5 py-2 text-rose-800 dark:bg-rose-950/30 dark:text-rose-200">
-                    <p className="text-[9px] font-extrabold uppercase tracking-wide">Overdue</p>
-                    <p className="mt-0.5 text-lg font-black tabular-nums">{followupCounts.overdue}</p>
-                  </div>
-                </div>
+                <button
+                  type="button"
+                  onClick={openAddLead}
+                  className="inline-flex h-12 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-teal-600 px-3 text-xs font-extrabold text-white shadow-sm transition hover:bg-teal-700 active:scale-[0.98] sm:px-4 sm:text-sm"
+                >
+                  <Plus className="h-4 w-4" aria-hidden />
+                  <span className="hidden min-[360px]:inline">{t("customers_addLeadCta")}</span>
+                </button>
               </div>
-              <div className="workspace-filter-rail mt-3">
+            </div>
+
+            <div className="rounded-2xl border border-slate-200/80 bg-white/85 p-3 shadow-[0_10px_35px_-24px_rgba(15,23,42,0.32)] backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.035] sm:p-4">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Follow-up filters">
+                <button type="button" aria-pressed={followupFilter === "scheduled"} onClick={() => { const next = followupFilter === "scheduled" ? "all" : "scheduled"; setFollowupFilter(next); updateListUrl(stageFilter, searchQuery, next); }} className={cn("group rounded-xl bg-teal-50 px-2.5 py-2.5 text-left text-teal-800 transition hover:bg-teal-100 dark:bg-teal-950/30 dark:text-teal-200 dark:hover:bg-teal-950/50", followupFilter === "scheduled" && "ring-2 ring-teal-500 ring-offset-1 dark:ring-offset-slate-950")}>
+                  <p className="flex items-center gap-1 text-[9px] font-extrabold uppercase tracking-wide" title="Customers with a pending follow-up"><CalendarCheck2 className="h-3 w-3" /> Scheduled</p>
+                  <p className="mt-0.5 flex items-center justify-between text-lg font-black tabular-nums">{followupCounts.scheduled}<ChevronRight className="h-3.5 w-3.5 opacity-50 transition group-hover:translate-x-0.5" /></p>
+                </button>
+                <button type="button" aria-pressed={followupFilter === "today"} onClick={() => { const next = followupFilter === "today" ? "all" : "today"; setFollowupFilter(next); updateListUrl(stageFilter, searchQuery, next); }} className={cn("group rounded-xl bg-amber-50 px-2.5 py-2.5 text-left text-amber-900 transition hover:bg-amber-100 dark:bg-amber-950/30 dark:text-amber-100 dark:hover:bg-amber-950/50", followupFilter === "today" && "ring-2 ring-amber-500 ring-offset-1 dark:ring-offset-slate-950")}>
+                  <p className="flex items-center gap-1 text-[9px] font-extrabold uppercase tracking-wide"><AlarmClock className="h-3 w-3" /> Today</p>
+                  <p className="mt-0.5 flex items-center justify-between text-lg font-black tabular-nums">{followupCounts.today}<ChevronRight className="h-3.5 w-3.5 opacity-50 transition group-hover:translate-x-0.5" /></p>
+                </button>
+                <button type="button" aria-pressed={followupFilter === "overdue"} onClick={() => { const next = followupFilter === "overdue" ? "all" : "overdue"; setFollowupFilter(next); updateListUrl(stageFilter, searchQuery, next); }} className={cn("group rounded-xl bg-rose-50 px-2.5 py-2.5 text-left text-rose-800 transition hover:bg-rose-100 dark:bg-rose-950/30 dark:text-rose-200 dark:hover:bg-rose-950/50", followupFilter === "overdue" && "ring-2 ring-rose-500 ring-offset-1 dark:ring-offset-slate-950")}>
+                  <p className="text-[9px] font-extrabold uppercase tracking-wide">Overdue</p>
+                  <p className="mt-0.5 flex items-center justify-between text-lg font-black tabular-nums">{followupCounts.overdue}<ChevronRight className="h-3.5 w-3.5 opacity-50 transition group-hover:translate-x-0.5" /></p>
+                </button>
+                <button type="button" aria-pressed={followupFilter === "unscheduled"} onClick={() => { const next = followupFilter === "unscheduled" ? "all" : "unscheduled"; setFollowupFilter(next); updateListUrl(stageFilter, searchQuery, next); }} className={cn("group rounded-xl bg-slate-100 px-2.5 py-2.5 text-left text-slate-700 transition hover:bg-slate-200 dark:bg-white/[0.07] dark:text-slate-200 dark:hover:bg-white/[0.1]", followupFilter === "unscheduled" && "ring-2 ring-slate-500 ring-offset-1 dark:ring-offset-slate-950")}>
+                  <p className="text-[9px] font-extrabold uppercase tracking-wide">No callback</p>
+                  <p className="mt-0.5 flex items-center justify-between text-lg font-black tabular-nums">{followupCounts.unscheduled}<Plus className="h-3.5 w-3.5 opacity-50 transition group-hover:scale-110" /></p>
+                </button>
+              </div>
+
+              <div className="mt-3 flex items-end justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-slate-400">Customer pipeline</p>
+                  <p className="mt-0.5 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                    Showing <span className="font-black text-slate-900 dark:text-white">{customers.length}</span> of {allCustomers.length}
+                  </p>
+                </div>
+                <Link href="/agenda#priority-queue" className="shrink-0 text-[11px] font-extrabold text-teal-700 hover:underline dark:text-teal-300">
+                  Open agenda →
+                </Link>
+              </div>
+              <div className="workspace-filter-rail mt-2.5">
           {(
             [
               { key: "all", label: t("customers_filterAll") },
@@ -816,13 +1010,27 @@ function CustomersPageContent() {
               </div>
             </div>
 
-            <CustomersLeadList
-              customers={customers}
-              loading={showListSkeleton}
-              onStatusChange={handleStatusChange}
-              onEditLead={(c) => void openEditLeadFresh(c)}
-              onDeleteLead={(c) => setDeleteTarget(c)}
-            />
+            <div className="grid min-w-0 gap-3 md:grid-cols-[minmax(0,0.92fr)_minmax(20rem,1.08fr)] xl:grid-cols-[minmax(24rem,0.8fr)_minmax(28rem,1.2fr)]">
+              <div className="min-w-0">
+                <CustomersLeadList
+                  customers={customers}
+                  loading={showListSkeleton}
+                  onAddLead={openAddLead}
+                  onStatusChange={handleStatusChange}
+                  onEditLead={(c) => void openEditLeadFresh(c)}
+                  onDeleteLead={(c) => setDeleteTarget(c)}
+                  selectedLeadId={selectedCustomer?.id ?? null}
+                  onSelectLead={setSelectedLeadId}
+                  compactWorkspace
+                />
+              </div>
+              <aside className="sticky top-20 hidden h-[calc(100dvh-6rem)] min-h-[36rem] min-w-0 md:block">
+                <CustomerWorkspacePane
+                  customer={selectedCustomer}
+                  onStatusChange={handleStatusChange}
+                />
+              </aside>
+            </div>
           </div>
         </WorkspaceStaggerItem>
       </WorkspacePage>
@@ -903,6 +1111,111 @@ function CustomersPageContent() {
                 value={form.monthly_bill}
                 onChange={(e) => setForm((p) => ({ ...p, monthly_bill: e.target.value }))}
               />
+
+              {leadModal === "add" ? (
+                <section className={cn(
+                  "overflow-hidden rounded-2xl border transition-colors",
+                  scheduleOnCreate
+                    ? "border-teal-200 bg-teal-50/55 dark:border-teal-500/30 dark:bg-teal-950/20"
+                    : "border-slate-200 bg-slate-50/70 dark:border-white/10 dark:bg-white/[0.03]"
+                )}>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={scheduleOnCreate}
+                    onClick={() => setScheduleOnCreate((value) => !value)}
+                    className="flex min-h-14 w-full items-center gap-3 px-3.5 py-3 text-left"
+                  >
+                    <span className={cn(
+                      "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
+                      scheduleOnCreate
+                        ? "bg-teal-600 text-white"
+                        : "bg-slate-200 text-slate-500 dark:bg-white/10 dark:text-slate-300"
+                    )}>
+                      <CalendarClock className="h-[18px] w-[18px]" aria-hidden />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-extrabold text-slate-900 dark:text-slate-50">Schedule first callback</span>
+                      <span className="mt-0.5 block text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                        Lead save hote hi agenda me reminder add hoga
+                      </span>
+                    </span>
+                    <span className={cn(
+                      "relative h-6 w-11 shrink-0 rounded-full transition-colors",
+                      scheduleOnCreate ? "bg-teal-600" : "bg-slate-300 dark:bg-slate-600"
+                    )}>
+                      <span className={cn(
+                        "absolute top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-white text-teal-600 shadow-sm transition-transform",
+                        scheduleOnCreate ? "translate-x-5" : "translate-x-0.5"
+                      )}>
+                        {scheduleOnCreate ? <Check className="h-3 w-3" strokeWidth={3} aria-hidden /> : null}
+                      </span>
+                    </span>
+                  </button>
+
+                  {scheduleOnCreate ? (
+                    <div className="border-t border-teal-200/70 px-3.5 pb-3.5 pt-3 dark:border-teal-500/20">
+                      <p className="mb-2 text-[10px] font-extrabold uppercase tracking-[0.13em] text-teal-800/70 dark:text-teal-200/70">When should we call?</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {QUICK_CALLBACK_PRESETS.map((presetId) => {
+                          const preset = CALLBACK_PRESETS.find((item) => item.id === presetId)!;
+                          const isCustomPreset = presetId === "custom_date";
+                          const active = isCustomPreset
+                            ? newLeadCallbackPreset === "custom_date" || newLeadCallbackPreset === "custom_datetime"
+                            : newLeadCallbackPreset === presetId;
+                          return (
+                            <button
+                              key={presetId}
+                              type="button"
+                              onClick={() => setNewLeadCallbackPreset(isCustomPreset ? "custom_datetime" : presetId)}
+                              className={cn(
+                                "min-h-11 rounded-xl border px-3 py-2 text-left transition active:scale-[0.98]",
+                                active
+                                  ? "border-teal-500 bg-white text-teal-900 ring-2 ring-teal-500/15 dark:bg-teal-950/50 dark:text-teal-100"
+                                  : "border-slate-200/90 bg-white/70 text-slate-700 hover:border-teal-300 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-200"
+                              )}
+                            >
+                              <span className="block text-xs font-extrabold">{isCustomPreset ? "Pick date & time" : preset.label}</span>
+                              <span className="mt-0.5 block text-[9px] font-semibold opacity-65">{isCustomPreset ? "Full control" : preset.hint}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {newLeadCallbackPreset === "custom_date" || newLeadCallbackPreset === "custom_datetime" ? (
+                        <div className="mt-2 grid grid-cols-[1fr_7.5rem] gap-2">
+                          <label className="block">
+                            <span className="sr-only">Callback date</span>
+                            <input
+                              type="date"
+                              value={newLeadCallbackDate}
+                              min={new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" })}
+                              onChange={(e) => setNewLeadCallbackDate(e.target.value)}
+                              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-800 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/15 dark:border-white/10 dark:bg-slate-900 dark:text-slate-100"
+                            />
+                          </label>
+                          <label className="block">
+                            <span className="sr-only">Callback time</span>
+                            <input
+                              type="time"
+                              value={newLeadCallbackTime}
+                              onChange={(e) => setNewLeadCallbackTime(e.target.value)}
+                              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-800 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/15 dark:border-white/10 dark:bg-slate-900 dark:text-slate-100"
+                            />
+                          </label>
+                        </div>
+                      ) : null}
+
+                      {newLeadCallbackPreview ? (
+                        <p className="mt-2 flex items-center gap-1.5 text-[11px] font-bold text-teal-800 dark:text-teal-200">
+                          <Check className="h-3.5 w-3.5" aria-hidden />
+                          Agenda: {newLeadCallbackPreview.label}
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </section>
+              ) : null}
 
               {leadModal === "add" && (
                 <button
@@ -1040,7 +1353,11 @@ function CustomersPageContent() {
                   className="w-full min-h-12 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-4 py-3.5 text-sm font-extrabold text-white shadow-[0_14px_30px_-16px_rgba(20,184,166,0.9)] transition-all duration-200 hover:brightness-105 active:scale-[0.99]"
                   type="submit"
                 >
-                  {leadModal === "edit" ? t("customers_saveLeadChanges") : t("actions_saveCustomer")}
+                  {leadModal === "edit"
+                    ? t("customers_saveLeadChanges")
+                    : scheduleOnCreate
+                      ? "Save customer + callback"
+                      : t("actions_saveCustomer")}
                 </button>
               </div>
             </form>

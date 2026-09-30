@@ -13,6 +13,7 @@ import {
   FileText,
   IndianRupee,
   MapPin,
+  MessageCircle,
   NotebookPen,
   Paperclip,
   Phone,
@@ -42,6 +43,7 @@ import {
 import {
   fetchLeadReminders,
   fetchLeadTimeline,
+  logCustomerContact,
   patchReminder,
 } from "@/lib/followup-client";
 import type { FollowupReminder } from "@/lib/followup-types";
@@ -56,6 +58,8 @@ import { buildProposalEditHref } from "@/lib/proposal-edit-url";
 import { quickQuoteLabelsFromT } from "@/lib/proposal-hub-i18n";
 import { useLanguage } from "@/lib/language-context";
 import { useRouter } from "next/navigation";
+import { buildLeadWhatsAppUrl } from "@/lib/whatsapp-lead";
+import { getInstallerBrandName } from "@/lib/installer-brand";
 import {
   crmDatetimeLocalToIso,
   crmNowDatetimeLocal,
@@ -161,12 +165,14 @@ const PRIORITY_META = {
 /* ---------- sub-components ---------- */
 
 function SectionCard({
+  id,
   title,
   icon: Icon,
   children,
   action,
   open = true,
 }: {
+  id?: string;
   title: string;
   icon: typeof Phone;
   children: React.ReactNode;
@@ -175,7 +181,7 @@ function SectionCard({
   open?: boolean;
 }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-white/10 dark:bg-[#0c1017]">
+    <section id={id} className="scroll-mt-24 overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm dark:border-white/10 dark:bg-[#0c1017]">
       <div
         className={cn(
           "flex items-center justify-between px-4 py-3",
@@ -198,7 +204,8 @@ function SectionCard({
 export function CustomerDetailPage({ leadId }: { leadId: string }) {
   const router = useRouter();
   const toast = useToast();
-  const { t } = useLanguage();
+  const { locale, t } = useLanguage();
+  const installerName = getInstallerBrandName();
 
   const quickQuoteLabels = useMemo(() => quickQuoteLabelsFromT(t), [t]);
 
@@ -227,6 +234,9 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
   );
 
   const lead = leadData ?? null;
+  const whatsAppUrl = lead?.phone
+    ? buildLeadWhatsAppUrl(lead.phone, lead.name, installerName, locale)
+    : null;
   const [timelineOpen, setTimelineOpen] = useState(false);
 
   const statusKey = normalizeLeadStatus(lead?.status ?? "new");
@@ -245,6 +255,13 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
   /* ------ Follow-up / callback state ------ */
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [designStudioOpening, setDesignStudioOpening] = useState(false);
+
+  function openLogCall() {
+    setShowLogCall(true);
+    window.requestAnimationFrame(() => {
+      document.getElementById("customer-call-history")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
 
   async function openDesignStudio() {
     if (designStudioOpening) return;
@@ -387,6 +404,57 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
         >
           {badge.label}
         </span>
+      </div>
+
+      {/* Mobile-first action dock — primary CRM actions stay one tap away. */}
+      <div className="sticky top-16 z-30 grid grid-cols-4 gap-2 rounded-2xl border border-slate-200/90 bg-white/95 p-2 shadow-lg backdrop-blur-xl dark:border-white/10 dark:bg-[#0c1017]/95 sm:static sm:shadow-sm">
+        {lead.phone ? (
+          <a
+            href={`tel:${lead.phone}`}
+            onClick={() => void logCustomerContact(leadId, "call")}
+            className="flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-xl bg-indigo-600 px-1 text-[10px] font-extrabold text-white"
+          >
+            <Phone className="h-4 w-4" aria-hidden />
+            Call
+          </a>
+        ) : (
+          <span className="flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl bg-slate-100 text-[10px] font-bold text-slate-400 dark:bg-white/5">
+            <Phone className="h-4 w-4" aria-hidden /> Call
+          </span>
+        )}
+        {whatsAppUrl ? (
+          <button
+            type="button"
+            onClick={() => {
+              void logCustomerContact(leadId, "whatsapp");
+              window.open(whatsAppUrl, "_blank", "noopener,noreferrer");
+            }}
+            className="flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-xl bg-emerald-50 px-1 text-[10px] font-extrabold text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"
+          >
+            <MessageCircle className="h-4 w-4" aria-hidden />
+            WhatsApp
+          </button>
+        ) : (
+          <span className="flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl bg-slate-100 text-[10px] font-bold text-slate-400 dark:bg-white/5">
+            <MessageCircle className="h-4 w-4" aria-hidden /> WhatsApp
+          </span>
+        )}
+        <button
+          type="button"
+          onClick={() => setScheduleOpen(true)}
+          className="flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-xl bg-amber-50 px-1 text-[10px] font-extrabold text-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
+        >
+          <AlarmClock className="h-4 w-4" aria-hidden />
+          Callback
+        </button>
+        <button
+          type="button"
+          onClick={openLogCall}
+          className="flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-xl bg-slate-900 px-1 text-[10px] font-extrabold text-white dark:bg-white dark:text-slate-900"
+        >
+          <NotebookPen className="h-4 w-4" aria-hidden />
+          Log call
+        </button>
       </div>
 
       {/* ── 1. Customer Summary ── */}
@@ -659,13 +727,14 @@ export function CustomerDetailPage({ leadId }: { leadId: string }) {
 
       {/* ── 3. Call History ── */}
       <SectionCard
+        id="customer-call-history"
         title="Call History"
         icon={PhoneCall}
         action={
           <Button
             type="button"
             size="sm"
-            onClick={() => setShowLogCall(true)}
+            onClick={openLogCall}
             className="h-8 gap-1.5 bg-teal-600 text-xs hover:bg-teal-700"
           >
             <Plus className="h-3.5 w-3.5" aria-hidden />

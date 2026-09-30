@@ -418,9 +418,42 @@ export function CustomerWorkspacePane({
   const lastActivityLabel = lastActivityAt
     ? formatCrmDateTime(lastActivityAt)
     : formatLeadLastActivity(customer.last_touched_at, locale);
+  const overdueCount = sortedReminders.filter((reminder) => reminder.status === "pending" && overdueReminderIds.has(reminder.id)).length;
+  const hasPendingReminder = sortedReminders.some((reminder) => reminder.status === "pending");
+  const focusAction = overdueCount > 0
+    ? {
+        eyebrow: `${overdueCount} overdue callback${overdueCount > 1 ? "s" : ""}`,
+        title: "Call and close the loop",
+        detail: "Old callbacks lose momentum. Contact the customer, then complete or snooze the reminder.",
+        tone: "border-rose-200 bg-rose-50/80 text-rose-900 dark:border-rose-500/30 dark:bg-rose-950/25 dark:text-rose-100",
+        kind: "overdue" as const,
+      }
+    : !hasPendingReminder
+      ? {
+          eyebrow: "No next action",
+          title: "Schedule the next callback",
+          detail: "Give this lead a clear follow-up date so it does not disappear from the queue.",
+          tone: "border-amber-200 bg-amber-50/80 text-amber-900 dark:border-amber-500/30 dark:bg-amber-950/25 dark:text-amber-100",
+          kind: "schedule" as const,
+        }
+      : statusKey === "new"
+        ? {
+            eyebrow: "New lead",
+            title: "Make the first contact",
+            detail: "Call now, capture the outcome, and move the lead forward while interest is fresh.",
+            tone: "border-sky-200 bg-sky-50/80 text-sky-900 dark:border-sky-500/30 dark:bg-sky-950/25 dark:text-sky-100",
+            kind: "call" as const,
+          }
+        : {
+            eyebrow: "Next step scheduled",
+            title: "Keep the conversation warm",
+            detail: `Next callback: ${followLabel}`,
+            tone: "border-teal-200 bg-teal-50/80 text-teal-900 dark:border-teal-500/30 dark:bg-teal-950/25 dark:text-teal-100",
+            kind: "ready" as const,
+          };
 
   return (
-    <div className="flex h-full min-h-0 flex-col rounded-2xl border border-slate-200/90 bg-white shadow-sm ring-1 ring-slate-200/40 dark:border-white/10 dark:bg-[#0c1017] dark:ring-white/[0.06]">
+    <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm ring-1 ring-slate-200/40 dark:border-white/10 dark:bg-[#0c1017] dark:ring-white/[0.06]">
       <div className="sticky top-0 z-20 shrink-0 border-b border-slate-100 bg-white/95 px-4 py-3 backdrop-blur-md dark:border-white/10 dark:bg-[#0c1017]/95">
         <p className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">{t("customers_workspaceTitle")}</p>
         <h3 className="mt-1 text-lg font-extrabold text-slate-900 dark:text-slate-50">{customer.name}</h3>
@@ -437,6 +470,38 @@ export function CustomerWorkspacePane({
       </div>
 
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-3 pb-28">
+        <div className={cn("rounded-2xl border p-3.5", focusAction.tone)}>
+          <p className="text-[10px] font-black uppercase tracking-[0.14em] opacity-70">Next best action · {focusAction.eyebrow}</p>
+          <p className="mt-1 text-base font-extrabold">{focusAction.title}</p>
+          <p className="mt-1 text-xs font-medium leading-relaxed opacity-75">{focusAction.detail}</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {(focusAction.kind === "overdue" || focusAction.kind === "call") && customer.phone ? (
+              <a
+                href={`tel:${customer.phone}`}
+                onClick={() => handlePhoneCall(customer.id)}
+                className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl bg-slate-900 px-3 text-xs font-extrabold text-white shadow-sm dark:bg-white dark:text-slate-900"
+              >
+                <Phone className="h-3.5 w-3.5" aria-hidden /> Call now
+              </a>
+            ) : null}
+            {focusAction.kind === "overdue" ? (
+              <button type="button" onClick={() => setActiveTab("reminders")} className="inline-flex min-h-10 items-center justify-center rounded-xl border border-current/20 bg-white/70 px-3 text-xs font-extrabold dark:bg-black/10">
+                Open reminders
+              </button>
+            ) : null}
+            {focusAction.kind === "schedule" ? (
+              <button type="button" onClick={() => setQuickSheet("reminder")} className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl bg-slate-900 px-3 text-xs font-extrabold text-white shadow-sm dark:bg-white dark:text-slate-900">
+                <AlarmClock className="h-3.5 w-3.5" aria-hidden /> Schedule callback
+              </button>
+            ) : null}
+            {focusAction.kind === "ready" ? (
+              <button type="button" onClick={() => setActiveTab("reminders")} className="inline-flex min-h-10 items-center justify-center rounded-xl border border-current/20 bg-white/70 px-3 text-xs font-extrabold dark:bg-black/10">
+                View next callback
+              </button>
+            ) : null}
+          </div>
+        </div>
+
         {customer.phone ? (
           <p className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
             <PhoneCall className="h-4 w-4 shrink-0 text-slate-400" strokeWidth={1.85} aria-hidden />
@@ -635,7 +700,7 @@ export function CustomerWorkspacePane({
       </div>
 
       {quickSheet !== "none" ? (
-        <div className="fixed inset-x-0 bottom-0 z-40 rounded-t-2xl border border-slate-200/80 bg-white p-3 shadow-2xl dark:border-white/10 dark:bg-[#0c1017]">
+        <div className="absolute inset-x-0 bottom-0 z-40 rounded-t-2xl border border-slate-200/80 bg-white p-3 shadow-2xl dark:border-white/10 dark:bg-[#0c1017]">
           <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-slate-300 dark:bg-slate-700" />
           {quickSheet === "reminder" ? (
             <div className="space-y-2">
