@@ -30,6 +30,7 @@ import {
 import { LEAD_SURVEY_STATUS_OPTIONS } from "@/lib/proposal-survey-gate";
 import { removeLeadFollowUp } from "@/lib/lead-followup-storage";
 import { createReminder } from "@/lib/followup-client";
+import type { FollowupReminder } from "@/lib/followup-types";
 import {
   QUICK_CALLBACK_PRESETS,
   CALLBACK_PRESETS,
@@ -124,6 +125,9 @@ function CustomersPageContent() {
   const [newLeadCallbackPreset, setNewLeadCallbackPreset] = useState<CallbackPresetId>("next_week");
   const [newLeadCallbackDate, setNewLeadCallbackDate] = useState("");
   const [newLeadCallbackTime, setNewLeadCallbackTime] = useState("10:00");
+  const [newLeadCallbackNote, setNewLeadCallbackNote] = useState("");
+  const [newLeadCallbackTitle, setNewLeadCallbackTitle] = useState("");
+  const [newLeadCallbackPriority, setNewLeadCallbackPriority] = useState<FollowupReminder["priority"]>("medium");
   const { options: leadDiscomOptions, loading: leadDiscomListLoading } = useInstallerDiscoms(form.state);
   const leadDiscomSelectOptions = useMemo(
     () => mergeSavedDiscomOption(form.discom, leadDiscomOptions),
@@ -284,6 +288,8 @@ function CustomersPageContent() {
       return null;
     }
   }, [newLeadCallbackDate, newLeadCallbackPreset, newLeadCallbackTime, scheduleOnCreate]);
+  const newLeadCallbackResolvedTitle =
+    newLeadCallbackTitle.trim() || defaultCallbackTitle(newLeadCallbackPreset, newLeadCallbackNote);
 
   const showListSkeleton = isLoading && data === undefined && !loadError;
 
@@ -293,6 +299,9 @@ function CustomersPageContent() {
     setNewLeadCallbackPreset("next_week");
     setNewLeadCallbackDate("");
     setNewLeadCallbackTime("10:00");
+    setNewLeadCallbackNote("");
+    setNewLeadCallbackTitle("");
+    setNewLeadCallbackPriority("medium");
     setLeadModal("add");
   }, []);
 
@@ -444,6 +453,9 @@ function CustomersPageContent() {
     setNewLeadCallbackPreset("next_week");
     setNewLeadCallbackDate("");
     setNewLeadCallbackTime("10:00");
+    setNewLeadCallbackNote("");
+    setNewLeadCallbackTitle("");
+    setNewLeadCallbackPriority("medium");
     const r = readInstallerRegion();
     setForm({
       name: "",
@@ -620,7 +632,12 @@ function CustomersPageContent() {
       return;
     }
 
-    let callbackRequest: { dueAt: string; title: string } | null = null;
+    let callbackRequest: {
+      dueAt: string;
+      title: string;
+      notes: string | null;
+      priority: FollowupReminder["priority"];
+    } | null = null;
     if (leadModal === "add" && scheduleOnCreate) {
       if (
         (newLeadCallbackPreset === "custom_date" || newLeadCallbackPreset === "custom_datetime") &&
@@ -639,7 +656,9 @@ function CustomersPageContent() {
         });
         callbackRequest = {
           dueAt,
-          title: defaultCallbackTitle(newLeadCallbackPreset)
+          title: newLeadCallbackResolvedTitle,
+          notes: newLeadCallbackNote.trim() || null,
+          priority: newLeadCallbackPriority
         };
       } catch {
         setError("Callback date valid nahi hai. Please dobara select karein.");
@@ -752,6 +771,9 @@ function CustomersPageContent() {
     setNewLeadCallbackPreset("next_week");
     setNewLeadCallbackDate("");
     setNewLeadCallbackTime("10:00");
+    setNewLeadCallbackNote("");
+    setNewLeadCallbackTitle("");
+    setNewLeadCallbackPriority("medium");
 
     void (async () => {
       try {
@@ -785,10 +807,10 @@ function CustomersPageContent() {
             const reminder = await createReminder(serverRow.id, {
               title: callbackRequest.title,
               due_at: callbackRequest.dueAt,
-              priority: "medium",
+              priority: callbackRequest.priority,
               followup_type: "call",
               status: "pending",
-              notes: null,
+              notes: callbackRequest.notes,
               snoozed_until: null
             });
             callbackSaved = true;
@@ -1198,6 +1220,43 @@ function CustomersPageContent() {
                           </label>
                         </div>
                       ) : null}
+
+                      <div className="mt-3 space-y-3 rounded-xl border border-teal-200/80 bg-white/75 p-3 dark:border-teal-500/20 dark:bg-white/[0.04]">
+                        <FloatingLabelInput
+                          label="Reason / note (optional)"
+                          labelBackgroundClassName={modalLabelBg}
+                          className="h-11 min-h-11 rounded-xl text-sm"
+                          maxLength={500}
+                          value={newLeadCallbackNote}
+                          onChange={(e) => setNewLeadCallbackNote(e.target.value)}
+                        />
+                        <FloatingLabelInput
+                          label="Reminder title (auto if empty)"
+                          labelBackgroundClassName={modalLabelBg}
+                          className="h-11 min-h-11 rounded-xl text-sm"
+                          maxLength={200}
+                          value={newLeadCallbackTitle}
+                          onChange={(e) => setNewLeadCallbackTitle(e.target.value)}
+                        />
+                        <label className="block">
+                          <span className="mb-1.5 block text-[10px] font-extrabold uppercase tracking-[0.13em] text-slate-500 dark:text-slate-400">
+                            Priority
+                          </span>
+                          <select
+                            value={newLeadCallbackPriority}
+                            onChange={(e) => setNewLeadCallbackPriority(e.target.value as FollowupReminder["priority"])}
+                            className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-800 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/15 dark:border-white/10 dark:bg-slate-900 dark:text-slate-100"
+                          >
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                          </select>
+                        </label>
+                        <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                          Saved as: <span className="font-extrabold text-slate-900 dark:text-slate-50">{newLeadCallbackResolvedTitle}</span>
+                        </p>
+                      </div>
 
                       {newLeadCallbackPreview ? (
                         <p className="mt-2 flex items-center gap-1.5 text-[11px] font-bold text-teal-800 dark:text-teal-200">
