@@ -280,6 +280,8 @@ export async function upsertPipelineProject(payload: {
   contract_amount_inr?: number | null;
   /** When omitted on insert, defaults false (hidden until CRM Won). Pass true for manual pipeline create. */
   dashboard_visible?: boolean;
+  record_type?: "operational" | "draft";
+  project_origin?: "legacy" | "manual" | "crm_won" | "design_workspace" | "proposal" | "imported";
 }): Promise<Record<string, unknown> | null> {
   const client = createSupabaseAdmin() ?? supabase;
   if (!client) return null;
@@ -330,15 +332,25 @@ export async function upsertPipelineProject(payload: {
     if (payload.next_action !== undefined) patch.next_action = payload.next_action?.trim() || null;
     if (payload.contract_amount_inr !== undefined) patch.contract_amount_inr = payload.contract_amount_inr;
     if (payload.dashboard_visible !== undefined) patch.dashboard_visible = payload.dashboard_visible;
+    if (payload.record_type !== undefined) patch.record_type = payload.record_type;
+    if (payload.project_origin !== undefined) patch.project_origin = payload.project_origin;
 
-    const { data, error } = await client
-      .from("projects")
-      .update(patch)
-      .eq("id", String(existing.id))
-      .select("*")
-      .single();
-    if (error) throw error;
-    return data as Record<string, unknown>;
+    for (let guard = 0; guard < 5; guard++) {
+      const { data, error } = await client
+        .from("projects")
+        .update(patch)
+        .eq("id", String(existing.id))
+        .select("*")
+        .single();
+      if (!error && data) return data as Record<string, unknown>;
+      const missing = /Could not find the '([^']+)' column/i.exec(error?.message ?? "")?.[1];
+      if (missing && missing in patch) {
+        delete patch[missing];
+        continue;
+      }
+      throw error;
+    }
+    throw new Error("Project update exhausted retries");
   }
 
   const baseRow: Record<string, unknown> = {
@@ -352,6 +364,8 @@ export async function upsertPipelineProject(payload: {
     current_stage: "survey",
     stage_status: "in_progress",
     dashboard_visible: payload.dashboard_visible ?? false,
+    record_type: payload.record_type ?? (payload.dashboard_visible ? "operational" : "draft"),
+    project_origin: payload.project_origin ?? (payload.dashboard_visible ? "manual" : "proposal"),
     updated_at: now,
     ...(payload.next_action !== undefined ? { next_action: payload.next_action?.trim() || null } : {}),
     ...(payload.contract_amount_inr !== undefined ? { contract_amount_inr: payload.contract_amount_inr } : {}),

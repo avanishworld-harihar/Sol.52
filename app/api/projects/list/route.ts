@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { listProjects, repairPreWonProjectVisibility } from "@/lib/project-store";
+import { listProjects } from "@/lib/project-store";
 import { isProjectStageId } from "@/lib/project-stages";
 import { denyIfStrictUnauthenticated, resolveOrgScope } from "@/lib/auth/org-scope";
 
@@ -19,14 +19,13 @@ export async function GET(req: NextRequest) {
 
     const stage = stageParam && isProjectStageId(stageParam) ? stageParam : null;
     const view =
-      viewParam === "hidden" || viewParam === "archived"
-        ? (viewParam as "hidden" | "archived")
+      viewParam === "completed" || viewParam === "drafts" || viewParam === "archived"
+        ? (viewParam as "completed" | "drafts" | "archived")
         : "active";
     const limit = Math.min(200, Math.max(1, Number(limitParam ?? 100)));
     const offset = Math.max(0, Number(offsetParam ?? 0));
 
     const orgId = scope.organizationId;
-    await repairPreWonProjectVisibility();
     const rows = await listProjects({
       organizationId: orgId,
       includeNullOrg: scope.includeUnscopedRows,

@@ -16,7 +16,7 @@ import {
   type ProjectStageStatus,
 } from "@/lib/project-stages";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, ChevronRight, MoreHorizontal } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ChevronRight, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -25,6 +25,7 @@ export function ProjectHubHeader({
   className,
   statusBusy,
   onAdvanceClick,
+  onCompleteClick,
   onStageStatusChange,
   onNmSubstatusChange,
 }: {
@@ -32,6 +33,7 @@ export function ProjectHubHeader({
   className?: string;
   statusBusy?: boolean;
   onAdvanceClick?: () => void;
+  onCompleteClick?: () => void;
   onStageStatusChange?: (status: ProjectStageStatus) => void | Promise<void>;
   onNmSubstatusChange?: (substatus: NmSubstatus) => void | Promise<void>;
 }) {
@@ -86,6 +88,19 @@ export function ProjectHubHeader({
           </div>
 
           <div className="flex shrink-0 items-center gap-1">
+            {project.current_stage !== "completed" ? (
+              <Button
+                type="button"
+                size="sm"
+                disabled={statusBusy}
+                className="h-7 gap-1 bg-emerald-600 px-2 text-[10px] hover:bg-emerald-700 sm:h-9 sm:px-3 sm:text-sm"
+                onClick={onCompleteClick}
+              >
+                <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
+                <span className="max-sm:hidden">Mark complete</span>
+                <span className="sm:hidden">Done</span>
+              </Button>
+            ) : null}
             <Button
               type="button"
               variant="outline"

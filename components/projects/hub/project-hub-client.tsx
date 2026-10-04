@@ -24,6 +24,7 @@ import { projectDisplayName } from "@/lib/project-list-utils";
 import { useShell } from "@/lib/shell-context";
 import {
   advanceProjectStage,
+  completeProject,
   fetchProjectDetail,
   patchProject,
   projectDetailKey,
@@ -52,6 +53,9 @@ export function ProjectHubClient({ projectId }: { projectId: string }) {
   const [activeTab, setActiveTab] = useState<ProjectHubTabId>(resolvedTab);
   const [advanceOpen, setAdvanceOpen] = useState(false);
   const [statusBusy, setStatusBusy] = useState(false);
+  const [completeOpen, setCompleteOpen] = useState(false);
+  const [completionDate, setCompletionDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [completionNote, setCompletionNote] = useState("");
 
   useEffect(() => {
     setActiveTab(resolvedTab);
@@ -158,6 +162,22 @@ export function ProjectHubClient({ projectId }: { projectId: string }) {
     }
   }, [project, projectId, refreshHub, toast]);
 
+  const handleComplete = useCallback(async () => {
+    if (!completionDate) return;
+    setStatusBusy(true);
+    try {
+      const res = await completeProject(projectId, { completionDate, note: completionNote });
+      if (!res.ok) throw new Error(res.error ?? "complete_failed");
+      await refreshHub();
+      setCompleteOpen(false);
+      toast.success("Project completed", "Moved to Completed with a permanent timeline record.");
+    } catch (e) {
+      toast.error("Could not complete project", e instanceof Error ? e.message : "Unknown error");
+    } finally {
+      setStatusBusy(false);
+    }
+  }, [completionDate, completionNote, projectId, refreshHub, toast]);
+
   if (isLoading && !project) {
     return <ProjectHubSkeleton />;
   }
@@ -202,6 +222,7 @@ export function ProjectHubClient({ projectId }: { projectId: string }) {
           project={project}
           statusBusy={statusBusy}
           onAdvanceClick={() => setAdvanceOpen(true)}
+          onCompleteClick={() => setCompleteOpen(true)}
           onStageStatusChange={handleStageStatusChange}
           onNmSubstatusChange={handleNmSubstatusChange}
         />
@@ -238,6 +259,25 @@ export function ProjectHubClient({ projectId }: { projectId: string }) {
         onClose={() => !statusBusy && setAdvanceOpen(false)}
         onConfirm={handleAdvanceConfirm}
       />
+
+      {completeOpen ? (
+        <div className="fixed inset-0 z-[70] flex items-end justify-center bg-slate-950/55 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+          <div className="w-full max-w-md rounded-t-2xl border border-slate-200 bg-white p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl dark:border-white/10 dark:bg-[#0c1017] sm:rounded-2xl">
+            <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">Complete this project</h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Completion is saved in the project timeline. Pending tasks and payments remain visible for follow-up.
+            </p>
+            <label className="mt-4 block text-xs font-bold uppercase tracking-wide text-slate-500">Completion date</label>
+            <input type="date" value={completionDate} onChange={(e) => setCompletionDate(e.target.value)} className="mt-1 h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm dark:border-white/10 dark:bg-white/5" />
+            <label className="mt-3 block text-xs font-bold uppercase tracking-wide text-slate-500">Handover note (optional)</label>
+            <textarea value={completionNote} onChange={(e) => setCompletionNote(e.target.value)} maxLength={500} rows={3} placeholder="Commissioning, handover or pending collection note" className="mt-1 w-full rounded-xl border border-slate-200 bg-white p-3 text-sm dark:border-white/10 dark:bg-white/5" />
+            <div className="mt-5 flex gap-2">
+              <Button variant="outline" className="flex-1" disabled={statusBusy} onClick={() => setCompleteOpen(false)}>Cancel</Button>
+              <Button className="flex-1 bg-emerald-600 hover:bg-emerald-700" disabled={statusBusy || !completionDate} onClick={() => void handleComplete()}>{statusBusy ? "Completing…" : "Complete project"}</Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </WorkspacePage>
   );
 }

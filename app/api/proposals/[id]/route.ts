@@ -148,6 +148,8 @@ async function onProposalApproved(
           install_progress: 20,
           next_action: "Material planning",
           dashboard_visible: true,
+          record_type: "operational",
+          project_origin: "crm_won",
         });
         if (project && typeof project["id"] === "string") {
           projectId = project["id"] as string;

@@ -17,6 +17,7 @@ import type { ProjectPanelLayout } from "@/lib/panel-layout";
 // ---------------------------------------------------------------------------
 
 export const PROJECT_DASHBOARD_STATS_KEY = "/api/projects/dashboard-stats";
+export const PROJECT_VIEW_SUMMARY_KEY = "/api/projects/summary";
 
 export const PROJECT_OUTSTANDING_COLLECTIONS_KEY =
   "/api/projects/dashboard-stats?collections=1";
@@ -164,6 +165,8 @@ export interface ProjectListItem {
   capacity_kw: string | null;
   next_action: string | null;
   dashboard_visible: boolean;
+  record_type: "operational" | "draft";
+  project_origin: "legacy" | "manual" | "crm_won" | "design_workspace" | "proposal" | "imported";
   archived_at: string | null;
   updated_at: string;
   created_at: string;
@@ -180,6 +183,13 @@ export interface ProjectDashboardStats {
   today_installations: number;
   nm_pending: number;
   approval_pending: number;
+}
+
+export interface ProjectViewCounts {
+  active: number;
+  completed: number;
+  drafts: number;
+  archived: number;
 }
 
 export interface OutstandingCollectionRow {
@@ -337,6 +347,11 @@ export async function fetchProjectDashboardStats(): Promise<ProjectDashboardStat
   return res.ok ? (res.data ?? null) : null;
 }
 
+export async function fetchProjectViewCounts(): Promise<ProjectViewCounts | null> {
+  const res = await apiRequest<ProjectViewCounts>(PROJECT_VIEW_SUMMARY_KEY);
+  return res.ok ? (res.data ?? null) : null;
+}
+
 export async function fetchOutstandingCollections(): Promise<ProjectDashboardStatsWithCollections | null> {
   const res = await apiRequest<ProjectDashboardStatsWithCollections>(
     PROJECT_OUTSTANDING_COLLECTIONS_KEY
@@ -424,6 +439,19 @@ export async function advanceProjectStage(
   });
 }
 
+export async function completeProject(
+  projectId: string,
+  payload: { completionDate: string; note?: string | null }
+): Promise<ApiResponse<ProjectListItem>> {
+  return apiRequest<ProjectListItem>(`/api/projects/${projectId}/complete`, {
+    method: "POST",
+    body: JSON.stringify({
+      completion_date: payload.completionDate,
+      note: payload.note?.trim() || null,
+    }),
+  });
+}
+
 export async function patchProject(
   projectId: string,
   patch: Partial<Pick<
@@ -440,6 +468,7 @@ export async function patchProject(
     | "amount_received_inr"
     | "has_subsidy"
     | "dashboard_visible"
+    | "record_type"
   > & { archived_at?: string | null | true }>
 ): Promise<ApiResponse<ProjectListItem>> {
   return apiRequest<ProjectListItem>(`/api/projects/${projectId}`, {

@@ -57,7 +57,7 @@ export function ProjectListTable({
   className,
 }: {
   projects: ProjectListItem[];
-  view?: "active" | "hidden" | "archived";
+  view?: "active" | "completed" | "drafts" | "archived";
   onPatch?: (id: string, patch: ProjectListPatch) => void | Promise<void>;
   onEdit?: (project: ProjectListItem) => void;
   onDelete?: (project: ProjectListItem) => void;
@@ -146,13 +146,13 @@ export function ProjectListTable({
                     <Send className="h-3.5 w-3.5" />
                   </Link>
                 ) : null}
-                {view === "hidden" && onPatch ? (
+                {view === "drafts" && onPatch ? (
                   <button
                     type="button"
                     className="rounded-lg border border-slate-200 px-2 py-1 text-[10px] font-bold"
-                    onClick={() => void onPatch(p.id, { dashboard_visible: true })}
+                    onClick={() => void onPatch(p.id, { record_type: "operational", dashboard_visible: true })}
                   >
-                    Restore
+                    Start project
                   </button>
                 ) : null}
                 {view === "archived" && onPatch ? (

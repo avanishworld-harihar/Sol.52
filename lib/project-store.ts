@@ -22,6 +22,7 @@ import type { ProjectStageId, ProjectStageStatus, NmSubstatus } from "@/lib/proj
 import { logProjectCreated } from "@/lib/project-activity-logger";
 import { getTaskTemplatesForStage } from "@/lib/project-task-templates";
 import { normalizeLeadStatus } from "@/lib/lead-status";
+import { filterOutDemoSeedProjects } from "@/lib/demo-seed-data";
 import {
   computePendingInr,
   countProjectsWithBalance,
@@ -67,6 +68,27 @@ export async function insertProjectAdaptive(
     return { data: null, error: msg || "Project insert failed" };
   }
   return { data: null, error: "Project insert exhausted retries" };
+}
+
+/** Update while gracefully tolerating a not-yet-applied additive migration. */
+export async function updateProjectAdaptive(
+  client: SupabaseClient,
+  id: string,
+  payload: Record<string, unknown>
+): Promise<{ data: Record<string, unknown> | null; error: string | null }> {
+  const attempt = { ...payload };
+  for (let guard = 0; guard < 40 && Object.keys(attempt).length > 0; guard++) {
+    const { data, error } = await client.from("projects").update(attempt).eq("id", id).select("*").single();
+    if (!error && data) return { data: data as Record<string, unknown>, error: null };
+    const message = error?.message ?? "";
+    const missing = missingColumnFromPgError(message);
+    if (missing && missing in attempt) {
+      delete attempt[missing];
+      continue;
+    }
+    return { data: null, error: message || "Project update failed" };
+  }
+  return { data: null, error: "Project update exhausted retries" };
 }
 
 /** Returns the first active organization id, or null if none exists. */
@@ -128,19 +150,16 @@ export async function ensureProjectForWonLead(
       patch.customer_name = contactName;
     }
     if (existing.dashboard_visible === false) patch.dashboard_visible = true;
+    if (existing.record_type !== "operational") patch.record_type = "operational";
+    if (existing.project_origin !== "crm_won") patch.project_origin = "crm_won";
     if (existing.archived_at != null) patch.archived_at = null;
     if (!existing.current_stage) patch.current_stage = "survey";
     if (!existing.stage_status) patch.stage_status = "in_progress";
 
     let row = existing as Record<string, unknown>;
     if (Object.keys(patch).length > 1) {
-      const { data, error } = await client
-        .from("projects")
-        .update(patch)
-        .eq("id", existing.id)
-        .select("*")
-        .single();
-      if (!error && data) row = data as Record<string, unknown>;
+      const { data, error } = await updateProjectAdaptive(client, String(existing.id), patch);
+      if (!error && data) row = data;
     }
 
     const projectId = String(row.id);
@@ -166,6 +185,8 @@ export async function ensureProjectForWonLead(
     has_subsidy: false,
     amount_received_inr: 0,
     dashboard_visible: true,
+    record_type: "operational",
+    project_origin: "crm_won",
     status: "pending",
     install_progress: 0,
     next_action: SITE_SURVEY_NEXT_ACTION,
@@ -243,15 +264,12 @@ export async function ensureDesignProjectForLead(
     /** Do not force visible — stay hidden until Won. */
     if (!existing.current_stage) patch.current_stage = "survey";
     if (!existing.stage_status) patch.stage_status = "in_progress";
+    if (existing.record_type !== "draft") patch.record_type = "draft";
+    if (existing.project_origin !== "design_workspace") patch.project_origin = "design_workspace";
 
     if (Object.keys(patch).length <= 1) return existing as Record<string, unknown>;
 
-    const { data, error } = await client
-      .from("projects")
-      .update(patch)
-      .eq("id", existing.id)
-      .select("*")
-      .single();
+    const { data, error } = await updateProjectAdaptive(client, String(existing.id), patch);
     return (!error && data ? data : existing) as Record<string, unknown>;
   }
 
@@ -266,6 +284,8 @@ export async function ensureDesignProjectForLead(
     amount_received_inr: 0,
     /** Hidden from Projects tab until Won. */
     dashboard_visible: false,
+    record_type: "draft",
+    project_origin: "design_workspace",
     status: "pending",
     install_progress: 0,
     next_action: SITE_SURVEY_NEXT_ACTION,
@@ -524,6 +544,8 @@ export interface ProjectRow {
   capacity_kw: string | null;
   next_action: string | null;
   dashboard_visible: boolean;
+  record_type: "operational" | "draft";
+  project_origin: "legacy" | "manual" | "crm_won" | "design_workspace" | "proposal" | "imported";
   archived_at: string | null;
   created_at: string;
   updated_at: string;
@@ -800,59 +822,54 @@ export async function listProjects(opts: {
   organizationId?: string | null;
   includeNullOrg?: boolean;
   stage?: string | null;
-  view?: "active" | "hidden" | "archived";
+  view?: "active" | "completed" | "drafts" | "archived";
   limit?: number;
   offset?: number;
 }): Promise<ProjectDetailRow[]> {
   const client = db();
   if (!client) return [];
 
-  let query = client.from("projects").select(`
-    *,
-    leads!projects_lead_id_fkey (
-      name,
-      phone,
-      city
-    ),
-    manager:installer_profiles!projects_assigned_manager_id_fkey (
-      display_name,
-      phone
-    ),
-    tech:installer_profiles!projects_assigned_tech_id_fkey (
-      display_name,
-      phone
-    )
-  `);
-
-  if (opts.organizationId) {
-    if (opts.includeNullOrg) {
-      query = query.or(`organization_id.eq.${opts.organizationId},organization_id.is.null`);
-    } else {
-      query = query.eq("organization_id", opts.organizationId);
-    }
-  }
-
-  if (opts.stage) {
-    query = query.eq("current_stage", opts.stage);
-  }
-
   const view = opts.view ?? "active";
-  if (view === "active") {
-    query = query.eq("dashboard_visible", true).is("archived_at", null);
-  } else if (view === "hidden") {
-    query = query.eq("dashboard_visible", false).is("archived_at", null);
-  } else if (view === "archived") {
-    query = query.not("archived_at", "is", null);
+  const runQuery = async (withLifecycle: boolean) => {
+    let query = client.from("projects").select(`
+      *,
+      leads!projects_lead_id_fkey ( name, phone, city ),
+      manager:installer_profiles!projects_assigned_manager_id_fkey ( display_name, phone ),
+      tech:installer_profiles!projects_assigned_tech_id_fkey ( display_name, phone )
+    `);
+    if (opts.organizationId) {
+      query = opts.includeNullOrg
+        ? query.or(`organization_id.eq.${opts.organizationId},organization_id.is.null`)
+        : query.eq("organization_id", opts.organizationId);
+    }
+    if (opts.stage) query = query.eq("current_stage", opts.stage);
+
+    if (view === "active") {
+      if (withLifecycle) query = query.eq("record_type", "operational");
+      query = query.eq("dashboard_visible", true).is("archived_at", null).neq("current_stage", "completed").is("actual_completion", null);
+    } else if (view === "completed") {
+      if (withLifecycle) query = query.eq("record_type", "operational");
+      query = query.is("archived_at", null).or("current_stage.eq.completed,actual_completion.not.is.null");
+    } else if (view === "drafts") {
+      query = withLifecycle
+        ? query.eq("record_type", "draft").is("archived_at", null)
+        : query.eq("dashboard_visible", false).is("archived_at", null).neq("current_stage", "completed").is("actual_completion", null);
+    } else {
+      query = query.not("archived_at", "is", null);
+    }
+    return query.order("updated_at", { ascending: false }).range(
+      opts.offset ?? 0,
+      (opts.offset ?? 0) + (opts.limit ?? 100) - 1
+    );
+  };
+
+  let { data, error } = await runQuery(true);
+  if (error && missingColumnFromPgError(error.message) === "record_type") {
+    ({ data, error } = await runQuery(false));
   }
-
-  query = query
-    .order("updated_at", { ascending: false })
-    .range(opts.offset ?? 0, (opts.offset ?? 0) + (opts.limit ?? 100) - 1);
-
-  const { data, error } = await query;
   if (error || !Array.isArray(data)) return [];
 
-  const rows = data as Record<string, unknown>[];
+  const rows = filterOutDemoSeedProjects(data as Record<string, unknown>[]);
   const leadIds = rows
     .map((row) => (row.lead_id != null ? String(row.lead_id) : ""))
     .filter(Boolean);
@@ -889,6 +906,59 @@ export async function listProjects(opts: {
   });
 }
 
+export interface ProjectViewCounts {
+  active: number;
+  completed: number;
+  drafts: number;
+  archived: number;
+}
+
+/** Lightweight tab counts; avoids downloading every project four times. */
+export async function getProjectViewCounts(
+  organizationId?: string | null
+): Promise<ProjectViewCounts | null> {
+  const client = db();
+  if (!client) return null;
+
+  const base = () => {
+    let q = client.from("projects").select("id", { count: "exact", head: true });
+    if (organizationId) q = q.eq("organization_id", organizationId);
+    return q;
+  };
+
+  const [active, completed, drafts, archived] = await Promise.all([
+    base().eq("record_type", "operational").eq("dashboard_visible", true).is("archived_at", null).neq("current_stage", "completed").is("actual_completion", null),
+    base().eq("record_type", "operational").is("archived_at", null).or("current_stage.eq.completed,actual_completion.not.is.null"),
+    base().eq("record_type", "draft").is("archived_at", null),
+    base().not("archived_at", "is", null),
+  ]);
+
+  if (active.error || completed.error || drafts.error || archived.error) {
+    const missingLifecycle = [active.error, completed.error, drafts.error]
+      .some((error) => error && missingColumnFromPgError(error.message) === "record_type");
+    if (!missingLifecycle) return null;
+    let fallback = client
+      .from("projects")
+      .select("dashboard_visible, archived_at, current_stage, actual_completion, detail, official_name, customer_name, project_code");
+    if (organizationId) fallback = fallback.eq("organization_id", organizationId);
+    const { data, error } = await fallback;
+    if (error || !Array.isArray(data)) return null;
+    const rows = filterOutDemoSeedProjects(data as Record<string, unknown>[]);
+    return {
+      active: rows.filter((p) => !p.archived_at && p.dashboard_visible !== false && p.current_stage !== "completed" && !p.actual_completion).length,
+      completed: rows.filter((p) => !p.archived_at && (p.current_stage === "completed" || p.actual_completion)).length,
+      drafts: rows.filter((p) => !p.archived_at && p.dashboard_visible === false && p.current_stage !== "completed" && !p.actual_completion).length,
+      archived: rows.filter((p) => Boolean(p.archived_at)).length,
+    };
+  }
+  return {
+    active: active.count ?? 0,
+    completed: completed.count ?? 0,
+    drafts: drafts.count ?? 0,
+    archived: archived.count ?? 0,
+  };
+}
+
 /** Dashboard stats aggregate for Phase 3 Operations Dashboard. */
 export async function getProjectDashboardStats(organizationId?: string | null) {
   const client = db();
@@ -897,18 +967,32 @@ export async function getProjectDashboardStats(organizationId?: string | null) {
   let query = client
     .from("projects")
     .select(
-      "id, current_stage, stage_status, target_completion, actual_completion, contract_amount_inr, amount_received_inr, archived_at, dashboard_visible"
+      "id, current_stage, stage_status, target_completion, actual_completion, contract_amount_inr, amount_received_inr, archived_at, dashboard_visible, record_type, detail, official_name, customer_name, project_code"
     )
-    .is("archived_at", null);
+    .is("archived_at", null)
+    .eq("record_type", "operational");
 
   if (organizationId) {
     query = query.eq("organization_id", organizationId);
   }
 
-  const { data, error } = await query;
+  const initialResult = await query;
+  let data: Record<string, unknown>[] | null = initialResult.data as Record<string, unknown>[] | null;
+  let error = initialResult.error;
+  if (error && missingColumnFromPgError(error.message) === "record_type") {
+    let fallback = client
+      .from("projects")
+      .select("id, current_stage, stage_status, target_completion, actual_completion, contract_amount_inr, amount_received_inr, archived_at, dashboard_visible, detail, official_name, customer_name, project_code")
+      .is("archived_at", null)
+      .eq("dashboard_visible", true);
+    if (organizationId) fallback = fallback.eq("organization_id", organizationId);
+    const fallbackResult = await fallback;
+    data = fallbackResult.data as Record<string, unknown>[] | null;
+    error = fallbackResult.error;
+  }
   if (error || !Array.isArray(data)) return null;
 
-  const rows = data as Pick<
+  const rows = filterOutDemoSeedProjects(data as Record<string, unknown>[]) as unknown as Pick<
     ProjectRow,
     | "id"
     | "current_stage"

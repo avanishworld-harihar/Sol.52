@@ -18,6 +18,8 @@
     "test:org-isolation": "node scripts/run-org-isolation-checks.mjs",
     "test:design-studio-phase6": "node scripts/run-design-studio-phase6-tests.mjs && node scripts/run-design-studio-qa-tests.mjs",
     "test:project-pending": "node scripts/run-project-pending-checks.mjs",
+    "test:project-lifecycle": "node scripts/check-project-lifecycle.mjs",
+    "audit:project-lifecycle": "node scripts/audit-project-lifecycle.mjs",
     "guard:marketplace": "node scripts/check-marketplace-guard.cjs",
     "ppt:investment": "node scripts/generate-investment-ppt.cjs",
     "ppt:premium": "node scripts/generate-premium-proposal-ppt.cjs"

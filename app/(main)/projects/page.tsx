@@ -22,8 +22,10 @@ import {
   fetchOutstandingCollections,
   fetchProjectDashboardStats,
   fetchProjectList,
+  fetchProjectViewCounts,
   patchProject,
   PROJECT_DASHBOARD_STATS_KEY,
+  PROJECT_VIEW_SUMMARY_KEY,
   PROJECT_OUTSTANDING_COLLECTIONS_KEY,
   type ProjectListItem,
 } from "@/lib/project-api-client";
@@ -48,7 +50,7 @@ import type { FormEvent } from "react";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 
-type ProjectsView = "active" | "hidden" | "archived";
+type ProjectsView = "active" | "completed" | "drafts" | "archived";
 
 const TAB_DEFS: {
   id: ProjectsView;
@@ -65,11 +67,18 @@ const TAB_DEFS: {
     description: "On the dashboard right now.",
   },
   {
-    id: "hidden",
-    labelKey: "projects_tabHidden",
-    fallback: "Hidden from dashboard",
-    shortLabel: "Hidden",
-    description: "Decluttered from the home dashboard, still in the pipeline.",
+    id: "completed",
+    labelKey: "projects_tabCompleted",
+    fallback: "Completed",
+    shortLabel: "Done",
+    description: "Commissioned projects and their completion history.",
+  },
+  {
+    id: "drafts",
+    labelKey: "projects_tabDrafts",
+    fallback: "Drafts",
+    shortLabel: "Drafts",
+    description: "Pre-sale design and proposal workspaces, not active projects yet.",
   },
   {
     id: "archived",
@@ -81,7 +90,7 @@ const TAB_DEFS: {
 ];
 
 function resolveView(raw: string | null): ProjectsView {
-  if (raw === "hidden" || raw === "archived") return raw;
+  if (raw === "completed" || raw === "drafts" || raw === "archived") return raw;
   return "active";
 }
 
@@ -182,19 +191,9 @@ function ProjectsBoard() {
     }
   );
 
-  const { data: activeRows } = useSWR(
-    buildProjectListUrl({ view: "active" }),
-    fetchProjectList,
-    { revalidateOnFocus: false, dedupingInterval: 30_000 }
-  );
-  const { data: hiddenRows } = useSWR(
-    buildProjectListUrl({ view: "hidden" }),
-    fetchProjectList,
-    { revalidateOnFocus: false, dedupingInterval: 30_000 }
-  );
-  const { data: archivedRows } = useSWR(
-    buildProjectListUrl({ view: "archived" }),
-    fetchProjectList,
+  const { data: viewCounts } = useSWR(
+    PROJECT_VIEW_SUMMARY_KEY,
+    fetchProjectViewCounts,
     { revalidateOnFocus: false, dedupingInterval: 30_000 }
   );
 
@@ -297,9 +296,7 @@ function ProjectsBoard() {
 
   const revalidateAllLists = useCallback(async () => {
     await mutateList();
-    await mutateGlobal(buildProjectListUrl({ view: "active" }));
-    await mutateGlobal(buildProjectListUrl({ view: "hidden" }));
-    await mutateGlobal(buildProjectListUrl({ view: "archived" }));
+    await mutateGlobal(PROJECT_VIEW_SUMMARY_KEY);
     await mutateGlobal(DASHBOARD_STATS_SWR_KEY, undefined, { revalidate: true });
     await mutateGlobal(PROJECT_DASHBOARD_STATS_KEY, undefined, { revalidate: true });
   }, [mutateGlobal, mutateList]);
@@ -314,7 +311,7 @@ function ProjectsBoard() {
         if (patch.dashboard_visible === false && view === "active") return false;
         if (patch.archived_at === true && view !== "archived") return false;
         if (patch.archived_at === null && view === "archived") return false;
-        if (patch.dashboard_visible === true && view === "hidden") return false;
+        if (patch.record_type === "operational" && view === "drafts") return false;
         return true;
       });
 
@@ -324,6 +321,7 @@ function ProjectsBoard() {
       if (patch.dashboard_visible !== undefined) {
         apiPatch.dashboard_visible = patch.dashboard_visible;
       }
+      if (patch.record_type !== undefined) apiPatch.record_type = patch.record_type;
       if (patch.archived_at === true) {
         apiPatch.archived_at = stamp;
       } else if (patch.archived_at !== undefined) {
@@ -339,10 +337,8 @@ function ProjectsBoard() {
 
       await revalidateAllLists();
 
-      if (patch.dashboard_visible === false) {
-        toast.success("Hidden from dashboard", "Find it under Hidden tab anytime.");
-      } else if (patch.dashboard_visible === true) {
-        toast.success("Restored to dashboard", "Project is back on the home view.");
+      if (patch.record_type === "operational") {
+        toast.success("Project started", "Draft converted into the active delivery pipeline.");
       }
       if (patch.archived_at === true) {
         toast.success("Archived", "Project moved to Archived. Restore anytime.");
@@ -412,9 +408,10 @@ function ProjectsBoard() {
   }
 
   const counts: Record<ProjectsView, number> = {
-    active: activeRows?.length ?? 0,
-    hidden: hiddenRows?.length ?? 0,
-    archived: archivedRows?.length ?? 0,
+    active: viewCounts?.active ?? (view === "active" ? data?.length ?? 0 : 0),
+    completed: viewCounts?.completed ?? (view === "completed" ? data?.length ?? 0 : 0),
+    drafts: viewCounts?.drafts ?? (view === "drafts" ? data?.length ?? 0 : 0),
+    archived: viewCounts?.archived ?? (view === "archived" ? data?.length ?? 0 : 0),
   };
 
   const activeTabDef = TAB_DEFS.find((tab) => tab.id === view) ?? TAB_DEFS[0];
@@ -445,7 +442,7 @@ function ProjectsBoard() {
           )}
           <ProjectOpsDashboard
             stats={opsStats}
-            projects={activeRows}
+            projects={view === "active" ? data : undefined}
             loading={opsStatsLoading}
             onPendingCollectionClick={() => setCollectionsOpen(true)}
           />
@@ -535,8 +532,10 @@ function ProjectsBoard() {
             title={
               view === "active"
                 ? t("projects_pipelineEmpty")
-                : view === "hidden"
-                  ? t("projects_hiddenEmpty")
+                : view === "completed"
+                  ? "No completed projects yet"
+                  : view === "drafts"
+                    ? "No draft workspaces"
                   : t("projects_archivedEmpty")
             }
           />

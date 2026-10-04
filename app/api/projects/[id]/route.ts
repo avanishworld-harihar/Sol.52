@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createSupabaseAdmin } from "@/lib/supabase-admin";
 import { supabase } from "@/lib/supabase";
-import { getProjectDetail } from "@/lib/project-store";
+import { getProjectDetail, updateProjectAdaptive } from "@/lib/project-store";
 import { logProjectActivity } from "@/lib/project-activity-logger";
 import { isProjectStageId, isProjectStageStatus, isNmSubstatus } from "@/lib/project-stages";
 import { denyIfCrossOrg, denyIfStrictUnauthenticated, resolveOrgScope } from "@/lib/auth/org-scope";
@@ -107,6 +107,7 @@ const patchSchema = z
     next_action: z.string().max(200).optional().nullable(),
     install_progress: z.number().int().min(0).max(100).optional(),
     dashboard_visible: z.boolean().optional(),
+    record_type: z.enum(["operational", "draft"]).optional(),
     archived_at: z
       .union([z.string().datetime().nullable(), z.literal(true)])
       .optional(),
@@ -159,15 +160,10 @@ export async function PATCH(req: NextRequest, ctx: RouteCtx) {
       }
     }
 
-    const { data, error } = await client
-      .from("projects")
-      .update(update)
-      .eq("id", id)
-      .select("*")
-      .maybeSingle();
+    const { data, error } = await updateProjectAdaptive(client, id, update);
 
     if (error) {
-      return NextResponse.json({ ok: false, error: error.message }, { status: 400 });
+      return NextResponse.json({ ok: false, error }, { status: 400 });
     }
     if (!data) {
       return NextResponse.json({ ok: false, error: "project_not_found" }, { status: 404 });

@@ -11,7 +11,7 @@ import {
   batchNextFollowups,
   batchLastActivities,
 } from "@/lib/supabase";
-import { syncWonLeadProjects, isWonLeadStatus } from "@/lib/project-store";
+import { isWonLeadStatus } from "@/lib/project-store";
 import { processInboundLead } from "@/lib/inbound-leads";
 import { appendActivityEvent } from "@/lib/followup-store";
 import type { CustomerLead } from "@/lib/types";
@@ -207,11 +207,6 @@ export async function GET(req: NextRequest) {
     scheduleCustomerRepairs();
 
     void (async () => {
-      try {
-        await syncWonLeadProjects();
-      } catch (err) {
-        console.warn("[customers GET] syncWonLeadProjects:", err);
-      }
       try {
         await syncLeadsFromActiveProjects();
       } catch (err) {

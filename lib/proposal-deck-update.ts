@@ -210,6 +210,8 @@ export async function updateProposalDeckFromBody(
         install_progress: 10,
         next_action: SITE_SURVEY_NEXT_ACTION,
         dashboard_visible: false,
+        record_type: "draft",
+        project_origin: "proposal",
       });
     } catch {
       /* ignore */

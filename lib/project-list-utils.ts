@@ -155,7 +155,7 @@ export function applyProjectListPipeline(
 }
 
 export function buildProjectListUrl(opts: {
-  view?: "active" | "hidden" | "archived";
+  view?: "active" | "completed" | "drafts" | "archived";
   stage?: string | null;
   limit?: number;
 }): string {

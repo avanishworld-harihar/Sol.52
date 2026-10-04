@@ -67,6 +67,8 @@ export async function POST(req: NextRequest) {
       has_subsidy: false,
       amount_received_inr: 0,
       dashboard_visible: parsed.dashboard_visible ?? true,
+      record_type: "operational",
+      project_origin: "manual",
       status: "pending",
       install_progress: 0,
       updated_at: now,

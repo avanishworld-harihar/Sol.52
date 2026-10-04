@@ -9,13 +9,14 @@ import { projectDisplayName } from "@/lib/project-list-utils";
 import { buildProposalEditHref } from "@/lib/proposal-edit-url";
 import { formatInrCompact } from "@/lib/proposal-hub-insights";
 import { cn } from "@/lib/utils";
-import { Archive, ArchiveRestore, Eye, EyeOff, Send } from "lucide-react";
+import { Archive, ArchiveRestore, Eye, Send } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 
 export type ProjectListPatch = {
   dashboard_visible?: boolean;
+  record_type?: "operational" | "draft";
   archived_at?: string | null | true;
 };
 
@@ -84,7 +85,7 @@ export function ProjectListCard({
   className,
 }: {
   project: ProjectListItem;
-  view: "active" | "hidden" | "archived";
+  view: "active" | "completed" | "drafts" | "archived";
   onPatch?: (id: string, patch: ProjectListPatch) => void | Promise<void>;
   onEdit?: (project: ProjectListItem) => void;
   onDelete?: (project: ProjectListItem) => void;
@@ -172,6 +173,11 @@ export function ProjectListCard({
               {locationLine}
             </p>
           ) : null}
+          {view === "completed" && project.actual_completion ? (
+            <p className="mt-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 sm:text-xs">
+              Completed {new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(new Date(`${project.actual_completion}T00:00:00`))}
+            </p>
+          ) : null}
         </div>
       </div>
 
@@ -205,15 +211,14 @@ export function ProjectListCard({
 
       {view !== "active" && onPatch ? (
         <div className="mt-1.5 flex gap-1 border-t border-slate-100 pt-1.5 dark:border-white/[0.06] sm:mt-3 sm:gap-2 sm:pt-3">
-          {view === "hidden" ? (
+          {view === "drafts" ? (
             <button
               type="button"
               className={actionBtnClass}
-              onClick={() => void onPatch(project.id, { dashboard_visible: true })}
+              onClick={() => void onPatch(project.id, { record_type: "operational", dashboard_visible: true })}
             >
               <Eye className="h-3 w-3 shrink-0" />
-              <span className="truncate sm:hidden">{t("projects_kanbanShowDash")}</span>
-              <span className="hidden sm:inline">{t("projects_kanbanShowDash")}</span>
+              <span className="truncate">Start project</span>
             </button>
           ) : null}
           {view === "archived" ? (
@@ -229,17 +234,8 @@ export function ProjectListCard({
         </div>
       ) : null}
 
-      {view === "active" && onPatch ? (
+      {(view === "active" || view === "completed") && onPatch ? (
         <div className="mt-1.5 flex gap-1 border-t border-slate-100 pt-1.5 dark:border-white/[0.06] sm:mt-3 sm:gap-2 sm:pt-3">
-          <button
-            type="button"
-            className={actionBtnClass}
-            onClick={() => void onPatch(project.id, { dashboard_visible: false })}
-          >
-            <EyeOff className="h-3 w-3 shrink-0" aria-hidden />
-            <span className="truncate max-sm:text-[9px]">Hide</span>
-            <span className="hidden sm:inline">Hide from dashboard</span>
-          </button>
           <button
             type="button"
             className={actionBtnClass}

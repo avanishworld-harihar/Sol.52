@@ -2,6 +2,11 @@
 
 create extension if not exists pg_trgm;
 
+-- Some production databases predate CRM v2 migration 012. Keep this index
+-- migration independently runnable instead of failing on the optional column.
+alter table public.leads
+  add column if not exists last_touched_at timestamptz;
+
 create index if not exists idx_leads_org_created
   on public.leads (organization_id, created_at desc);
 

@@ -4,6 +4,7 @@
  */
 
 export const DEMO_DETAIL_MARKERS = [
+  "ui-preview-demo",
   "phase3a2-seed",
   "Phase 3A-4 Step",
   "stage advance demo",
@@ -17,6 +18,10 @@ export const DEMO_DETAIL_MARKERS = [
 ] as const;
 
 export const DEMO_OFFICIAL_NAMES = [
+  "[Preview] Priya Mehta — 3kW Rooftop",
+  "[Preview] Sunita Devi — 5kW Home",
+  "[Preview] Kumar Traders — 10kW Commercial",
+  "[Preview] Green Valley — 25kW Society",
   "Ravi Sharma — 5kW Rooftop",
   "Green Valley Apartments — 25kW",
   "Patel Industries — 50kW",
@@ -54,10 +59,12 @@ export function isDemoSeedProject(row: Record<string, unknown>, demoLeadIds?: Se
   if (DEMO_DETAIL_MARKERS.some((m) => detail.includes(m))) return true;
 
   const name = String(row.official_name ?? row.customer_name ?? "");
+  if (name.startsWith("[Preview]")) return true;
   if (DEMO_OFFICIAL_NAMES.some((n) => name === n || name.startsWith(n))) return true;
   if (name === "Ravi Sharma" || name.startsWith("Ravi Sharma —")) return true;
 
   const code = String(row.project_code ?? "");
+  if (/^UIPREV-/i.test(code)) return true;
   if (/^SOL-\d{6}-00[123]$/.test(code)) return true;
   if (code === "SOL-HUB-S3") return true;
 

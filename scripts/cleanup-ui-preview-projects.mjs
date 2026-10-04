@@ -3,11 +3,12 @@
  * Run: node scripts/cleanup-ui-preview-projects.mjs
  * Dry run: node scripts/cleanup-ui-preview-projects.mjs --dry-run
  */
-import { readFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 
 const TAG = "ui-preview-demo";
-const DRY_RUN = process.argv.includes("--dry-run");
+const APPLY = process.argv.includes("--apply");
+const DRY_RUN = !APPLY;
 
 function loadEnvLocal() {
   try {
@@ -72,6 +73,13 @@ async function main() {
 
   console.log(DRY_RUN ? "[dry-run]" : "[delete]", "preview projects:", previewProjects.length);
 
+  if (!DRY_RUN && previewProjects.length > 0) {
+    mkdirSync("scripts/backups", { recursive: true });
+    const backupPath = `scripts/backups/ui-preview-cleanup-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
+    writeFileSync(backupPath, JSON.stringify({ created_at: new Date().toISOString(), projects: previewProjects }, null, 2));
+    console.log("backup:", backupPath);
+  }
+
   if (!DRY_RUN) {
     for (const p of previewProjects) {
       const { error } = await admin.from("projects").delete().eq("id", p.id);
@@ -97,6 +105,13 @@ async function main() {
   );
 
   console.log(DRY_RUN ? "[dry-run]" : "[delete]", "preview customers:", previewLeads.length);
+
+  if (!DRY_RUN && previewLeads.length > 0) {
+    mkdirSync("scripts/backups", { recursive: true });
+    const backupPath = `scripts/backups/ui-preview-leads-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
+    writeFileSync(backupPath, JSON.stringify({ created_at: new Date().toISOString(), leads: previewLeads }, null, 2));
+    console.log("backup:", backupPath);
+  }
 
   if (!DRY_RUN) {
     for (const l of previewLeads) {
