@@ -2,19 +2,20 @@
 
 import Link from "next/link";
 import { CustomersLeadList } from "@/components/customers-lead-list";
+import { CustomerSalesInsights } from "@/components/customers/customer-sales-insights";
+import { CustomerFocusPlan } from "@/components/customers/customer-focus-plan";
 import { WorkflowLifecycleStrip } from "@/components/workflow-lifecycle-strip";
 import { FloatingLabelInput, StaticLabelSelect } from "@/components/ui/floating-label-input";
 import { HelpHint } from "@/components/ui/help-hint";
 import { useToast } from "@/components/ui/toast-center";
 import {
   CUSTOMERS_SWR_KEY,
-  fetchCustomers,
+  fetchCustomerPage,
   getCustomersCacheAgeMs,
-  readCustomersCache,
+  runCustomerBulkAction,
   touchCustomersSavedAt,
-  writeCustomersCache
+  type CustomerPagePayload
 } from "@/lib/customers-client";
-import { sortCustomersByRecency } from "@/lib/customers-map";
 import {
   DASHBOARD_STATS_SWR_KEY,
   type DashboardStatsPayload
@@ -52,13 +53,15 @@ import {
 import { useLanguage } from "@/lib/language-context";
 import { LEAD_CONNECTION_TYPE_OPTIONS } from "@/lib/lead-connection-types";
 import type { CustomerLead } from "@/lib/types";
+import { CUSTOMER_INSIGHTS_SWR_KEY } from "@/lib/customer-insights-client";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import type { FormEvent } from "react";
-import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter, useSearchParams } from "next/navigation";
-import useSWR, { useSWRConfig } from "swr";
-import { AlarmClock, CalendarCheck2, CalendarClock, Check, ChevronRight, Plus, Search, X } from "lucide-react";
+import { useSWRConfig } from "swr";
+import useSWRInfinite from "swr/infinite";
+import { AlarmClock, CalendarCheck2, CalendarClock, Check, ChevronRight, ListChecks, Loader2, Plus, Search, X } from "lucide-react";
 
 /** Above `#ss-bottom-nav-portal` (9999) so lead sheet footer stays tappable on mobile. */
 const LEAD_MODAL_Z = "z-[10060]";
@@ -66,6 +69,20 @@ const LEAD_MODAL_Z = "z-[10060]";
 type LeadModal = "none" | "add" | "edit";
 type StageFilter = "all" | "leads" | "proposal-sent" | "active-projects";
 type FollowupFilter = "all" | "scheduled" | "today" | "overdue" | "unscheduled";
+type SmartView = "all" | "today" | "overdue" | "no-action" | "new" | "proposal-followup" | "hot" | "dormant" | "won";
+type CustomerSort = "recent" | "newest" | "oldest" | "bill-high" | "name";
+
+const SMART_VIEWS: ReadonlyArray<{ id: SmartView; label: string; hint: string }> = [
+  { id: "all", label: "All work", hint: "Complete queue" },
+  { id: "today", label: "Today", hint: "Callbacks due today" },
+  { id: "overdue", label: "Overdue", hint: "Needs attention" },
+  { id: "no-action", label: "No next action", hint: "Schedule follow-up" },
+  { id: "new", label: "New leads", hint: "First contact" },
+  { id: "proposal-followup", label: "Proposal follow-up", hint: "Move decisions" },
+  { id: "hot", label: "Hot leads", hint: "High intent/value" },
+  { id: "dormant", label: "Dormant", hint: "14+ days quiet" },
+  { id: "won", label: "Won", hint: "Project handoff" },
+];
 
 function resolveStageFilter(value: string | null): StageFilter {
   if (value === "leads" || value === "proposal-sent" || value === "active-projects") return value;
@@ -75,6 +92,14 @@ function resolveStageFilter(value: string | null): StageFilter {
 function resolveFollowupFilter(value: string | null): FollowupFilter {
   if (value === "scheduled" || value === "today" || value === "overdue" || value === "unscheduled") return value;
   return "all";
+}
+
+function resolveSmartView(value: string | null): SmartView {
+  return SMART_VIEWS.some((view) => view.id === value) ? value as SmartView : "all";
+}
+
+function resolveCustomerSort(value: string | null): CustomerSort {
+  return value === "newest" || value === "oldest" || value === "bill-high" || value === "name" ? value : "recent";
 }
 
 function CustomersPageContent() {
@@ -139,28 +164,138 @@ function CustomersPageContent() {
     "h-12 rounded-xl border-slate-200 bg-white text-sm font-medium text-slate-800 focus:border-teal-500 focus:ring-teal-200/70 dark:border-white/10 dark:bg-[#0c1017] dark:text-slate-100";
   const modalLabelBg = "bg-white dark:bg-[#161B22]";
 
-  const { data, error: loadError, isLoading, mutate } = useSWR<CustomerLead[]>(CUSTOMERS_SWR_KEY, fetchCustomers, {
-    dedupingInterval: 25_000,
-    /** After web proposal in another tab, returning here should show `proposal-sent` + green CTA. */
-    revalidateOnFocus: true,
-    revalidateOnReconnect: true,
-    keepPreviousData: true,
-    onSuccess: (list) => writeCustomersCache(list)
-  });
-
-  const allCustomers = useMemo(() => data ?? [], [data]);
-
   const [stageFilter, setStageFilter] = useState<StageFilter>(() => resolveStageFilter(searchParams.get("stage")));
   const [followupFilter, setFollowupFilter] = useState<FollowupFilter>(() => resolveFollowupFilter(searchParams.get("callback")));
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get("q") ?? "");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
+  const [smartView, setSmartView] = useState<SmartView>(() => resolveSmartView(searchParams.get("view")));
+  const [customerSort, setCustomerSort] = useState<CustomerSort>(() => resolveCustomerSort(searchParams.get("sort")));
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(() => new Set());
+  const [bulkAction, setBulkAction] = useState("callback:next_week");
+  const [bulkActionBusy, setBulkActionBusy] = useState(false);
+  const restoredSmartViewRef = useRef(false);
 
   useEffect(() => {
     setStageFilter(resolveStageFilter(searchParams.get("stage")));
     setFollowupFilter(resolveFollowupFilter(searchParams.get("callback")));
     setSearchQuery(searchParams.get("q") ?? "");
+    setSmartView(resolveSmartView(searchParams.get("view")));
+    setCustomerSort(resolveCustomerSort(searchParams.get("sort")));
   }, [searchParams]);
 
-  const updateListUrl = useCallback((nextStage: StageFilter, nextSearch = searchQuery, nextFollowup = followupFilter) => {
+  useEffect(() => {
+    if (restoredSmartViewRef.current) return;
+    restoredSmartViewRef.current = true;
+    if (searchParams.has("view")) return;
+    try {
+      const saved = resolveSmartView(window.localStorage.getItem("sol52_customer_smart_view"));
+      if (saved !== "all") setSmartView(saved);
+    } catch {
+      /* localStorage can be unavailable in private browsing */
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedSearchQuery(searchQuery.trim()), 300);
+    return () => window.clearTimeout(timer);
+  }, [searchQuery]);
+
+  const getCustomerPageKey = useCallback((pageIndex: number, previousPage: CustomerPagePayload | null) => {
+    if (previousPage && !previousPage.pagination.hasMore) return null;
+    const params = new URLSearchParams({ view: "page", limit: "40" });
+    if (debouncedSearchQuery) params.set("q", debouncedSearchQuery);
+    if (stageFilter !== "all") params.set("stage", stageFilter);
+    if (followupFilter !== "all") params.set("callback", followupFilter);
+    if (smartView !== "all") params.set("smart", smartView);
+    if (customerSort !== "recent") params.set("sort", customerSort);
+    if (pageIndex > 0 && previousPage?.pagination.nextCursor) {
+      params.set("cursor", previousPage.pagination.nextCursor);
+    }
+    return `/api/customers?${params.toString()}`;
+  }, [customerSort, debouncedSearchQuery, followupFilter, smartView, stageFilter]);
+
+  const {
+    data: customerPages,
+    error: loadError,
+    isLoading,
+    isValidating,
+    size: customerPageCount,
+    setSize: setCustomerPageCount,
+    mutate: mutateCustomerPages,
+  } = useSWRInfinite<CustomerPagePayload>(getCustomerPageKey, fetchCustomerPage, {
+    dedupingInterval: 20_000,
+    keepPreviousData: true,
+    revalidateFirstPage: true,
+    revalidateOnFocus: true,
+    revalidateOnReconnect: true,
+    persistSize: false,
+  });
+
+  const allCustomers = useMemo(() => {
+    const seen = new Set<string>();
+    const rows: CustomerLead[] = [];
+    for (const page of customerPages ?? []) {
+      for (const customer of page.data) {
+        if (seen.has(customer.id)) continue;
+        seen.add(customer.id);
+        rows.push(customer);
+      }
+    }
+    return rows;
+  }, [customerPages]);
+  const data = customerPages ? allCustomers : undefined;
+  const lastCustomerPage = customerPages?.[customerPages.length - 1];
+  const hasMoreCustomers = Boolean(lastCustomerPage?.pagination.hasMore);
+  const customerResultTotal = lastCustomerPage?.pagination.total ?? customerPages?.[0]?.pagination.total ?? null;
+
+  /** Compatibility wrapper for existing optimistic list mutations. */
+  const mutate = useCallback(async (
+    update?: CustomerLead[] | ((current?: CustomerLead[]) => CustomerLead[]),
+    options?: { revalidate?: boolean }
+  ) => {
+    if (update === undefined) {
+      await mutateCustomerPages();
+      return;
+    }
+    await mutateCustomerPages((pages) => {
+      if (!pages?.length) return pages;
+      const current = pages.flatMap((page) => page.data);
+      const nextRaw = typeof update === "function" ? update(current) : update;
+      const seen = new Set<string>();
+      const next = nextRaw.filter((customer) => {
+        if (seen.has(customer.id)) return false;
+        seen.add(customer.id);
+        return true;
+      });
+      const delta = next.length - current.length;
+      let offset = 0;
+      return pages.map((page, index) => {
+        const remaining = next.length - offset;
+        const targetSize = index === pages.length - 1
+          ? remaining
+          : page.data.length + (index === 0 && delta > 0 ? delta : 0);
+        const pageRows = next.slice(offset, offset + Math.max(0, targetSize));
+        offset += pageRows.length;
+        return {
+          ...page,
+          data: pageRows,
+          pagination: {
+            ...page.pagination,
+            total: page.pagination.total == null ? null : Math.max(0, page.pagination.total + delta),
+          },
+        };
+      });
+    }, { revalidate: options?.revalidate ?? true });
+  }, [mutateCustomerPages]);
+
+  const updateListUrl = useCallback((
+    nextStage: StageFilter,
+    nextSearch = searchQuery,
+    nextFollowup = followupFilter,
+    nextSmartView = smartView,
+    nextSort = customerSort
+  ) => {
     const params = new URLSearchParams(searchParams.toString());
     if (nextStage === "all") params.delete("stage");
     else params.set("stage", nextStage);
@@ -168,9 +303,25 @@ function CustomersPageContent() {
     else params.delete("q");
     if (nextFollowup === "all") params.delete("callback");
     else params.set("callback", nextFollowup);
+    if (nextSmartView === "all") params.delete("view");
+    else params.set("view", nextSmartView);
+    if (nextSort === "recent") params.delete("sort");
+    else params.set("sort", nextSort);
     const query = params.toString();
     router.replace(query ? `/customers?${query}` : "/customers", { scroll: false });
-  }, [followupFilter, router, searchParams, searchQuery]);
+  }, [customerSort, followupFilter, router, searchParams, searchQuery, smartView]);
+
+  const applySmartView = useCallback((next: SmartView) => {
+    setSmartView(next);
+    setStageFilter("all");
+    setFollowupFilter("all");
+    try {
+      window.localStorage.setItem("sol52_customer_smart_view", next);
+    } catch {
+      /* optional preference only */
+    }
+    updateListUrl("all", searchQuery, "all", next, customerSort);
+  }, [customerSort, searchQuery, updateListUrl]);
 
   const openCustomer = useCallback((leadId: string) => {
     router.push(`/customers/${encodeURIComponent(leadId)}`);
@@ -180,67 +331,118 @@ function CustomersPageContent() {
     setSearchQuery("");
     setStageFilter("all");
     setFollowupFilter("all");
-    updateListUrl("all", "", "all");
+    setSmartView("all");
+    setCustomerSort("recent");
+    updateListUrl("all", "", "all", "all", "recent");
   }, [updateListUrl]);
 
-  const customers = useMemo(() => {
-    let list = allCustomers;
-    if (stageFilter === "leads") {
-      list = list.filter((c) => (c.customer_stage ?? "lead") === "lead");
-    } else if (stageFilter === "proposal-sent") {
-      list = list.filter((c) => normalizeLeadStatus(c.status) === "proposal-sent");
-    } else if (stageFilter === "active-projects") {
-      list = list.filter((c) => (c.customer_stage ?? "lead") === "active-project");
-    }
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      const qDigits = q.replace(/\D/g, "");
-      list = list.filter((c) => {
-        const name = c.name.toLowerCase();
-        const city = c.city.toLowerCase();
-        const location = (c.location ?? "").toLowerCase();
-        const consumer = (c.consumer_name ?? "").toLowerCase();
-        const phone = (c.phone ?? "").toLowerCase();
-        const phoneDigits = (c.phone ?? "").replace(/\D/g, "");
-        const household = (c.household_member_names ?? []).join(" ").toLowerCase();
-        return (
-          name.includes(q) ||
-          city.includes(q) ||
-          location.includes(q) ||
-          consumer.includes(q) ||
-          phone.includes(q) ||
-          household.includes(q) ||
-          (qDigits.length >= 4 && phoneDigits.includes(qDigits))
-        );
-      });
-    }
-    if (followupFilter !== "all") {
-      const now = new Date();
-      const todayKey = now.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
-      list = list.filter((customer) => {
-        if (!customer.next_followup_at) return followupFilter === "unscheduled";
-        const due = new Date(customer.next_followup_at);
-        if (Number.isNaN(due.getTime())) return followupFilter === "unscheduled";
-        const dueKey = due.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
-        if (followupFilter === "scheduled") return true;
-        if (followupFilter === "today") return dueKey === todayKey;
-        if (followupFilter === "overdue") return due.getTime() < now.getTime() && dueKey !== todayKey;
-        return false;
-      });
-    }
-    /** Recent proposal / call / edit first — not random created_at order. */
-    return sortCustomersByRecency(list);
-  }, [allCustomers, followupFilter, stageFilter, searchQuery]);
+  const customers = allCustomers;
 
-  const stageCounts = useMemo(
-    () => ({
+  const toggleLeadSelection = useCallback((leadId: string) => {
+    setSelectedLeadIds((current) => {
+      const next = new Set(current);
+      if (next.has(leadId)) next.delete(leadId);
+      else if (next.size < 50) next.add(leadId);
+      else toast.info("Selection limit reached", "Update up to 50 customers in one safe batch.");
+      return next;
+    });
+  }, [toast]);
+
+  const toggleAllLoadedCustomers = useCallback(() => {
+    const visibleIds = customers.map((customer) => customer.id);
+    const allSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedLeadIds.has(id));
+    if (allSelected) {
+      setSelectedLeadIds((current) => {
+        const next = new Set(current);
+        visibleIds.forEach((id) => next.delete(id));
+        return next;
+      });
+      return;
+    }
+    const nextIds = visibleIds.slice(0, 50);
+    setSelectedLeadIds(new Set(nextIds));
+    if (visibleIds.length > 50) {
+      toast.info("First 50 selected", "Run the action, then select the remaining customers.");
+    }
+  }, [customers, selectedLeadIds, toast]);
+
+  const closeBulkSelection = useCallback(() => {
+    if (bulkActionBusy) return;
+    setSelectionMode(false);
+    setSelectedLeadIds(new Set());
+  }, [bulkActionBusy]);
+
+  useEffect(() => {
+    // A selection belongs to the queue where it was made. Never keep hidden
+    // customers selected after the operator changes search or filters.
+    setSelectionMode(false);
+    setSelectedLeadIds(new Set());
+  }, [customerSort, debouncedSearchQuery, followupFilter, smartView, stageFilter]);
+
+  const applyBulkAction = useCallback(async () => {
+    const leadIds = [...selectedLeadIds];
+    if (leadIds.length === 0) {
+      toast.info("Select customers", "Choose at least one customer before applying an action.");
+      return;
+    }
+
+    const [kind, value] = bulkAction.split(":", 2);
+    if (kind === "status" && value === "won") {
+      const confirmed = window.confirm(`Mark ${leadIds.length} customer${leadIds.length === 1 ? "" : "s"} as Won? This can create project handoffs.`);
+      if (!confirmed) return;
+    }
+
+    setBulkActionBusy(true);
+    try {
+      const result = kind === "status"
+        ? await runCustomerBulkAction({ action: "status", leadIds, status: value })
+        : await runCustomerBulkAction({
+            action: "callback",
+            leadIds,
+            dueAt: resolveCallbackDueAt(value as CallbackPresetId),
+            title: defaultCallbackTitle(value as CallbackPresetId),
+            notes: "Scheduled from the customer bulk action.",
+            priority: "medium",
+          });
+
+      await mutateCustomerPages();
+      void mutateGlobal(CUSTOMER_INSIGHTS_SWR_KEY, undefined, { revalidate: true });
+      void mutateGlobal("/api/followups/widgets", undefined, { revalidate: true });
+      void mutateGlobal("/api/followups/widgets?view=all", undefined, { revalidate: true });
+      void mutateGlobal("crm-command-center", undefined, { revalidate: true });
+      if (kind === "status") {
+        void mutateGlobal(DASHBOARD_STATS_SWR_KEY, undefined, { revalidate: true });
+      }
+
+      if (result.failed > 0) {
+        const failedIds = result.results.filter((item) => !item.ok).map((item) => item.leadId);
+        setSelectedLeadIds(new Set(failedIds));
+        toast.error("Some customers were not updated", `${result.succeeded} updated · ${result.failed} need retry.`);
+      } else {
+        setSelectedLeadIds(new Set());
+        setSelectionMode(false);
+        toast.success(
+          kind === "status" ? "Pipeline updated" : "Callbacks scheduled",
+          `${result.succeeded} customer${result.succeeded === 1 ? "" : "s"} updated successfully.`
+        );
+      }
+    } catch (bulkError) {
+      toast.error("Bulk action failed", bulkError instanceof Error ? bulkError.message : "Please try again.");
+    } finally {
+      setBulkActionBusy(false);
+    }
+  }, [bulkAction, mutateCustomerPages, mutateGlobal, selectedLeadIds, toast]);
+
+  const stageCounts = useMemo(() => {
+    const counts = {
       all: allCustomers.length,
       leads: allCustomers.filter((c) => (c.customer_stage ?? "lead") === "lead").length,
       "proposal-sent": allCustomers.filter((c) => normalizeLeadStatus(c.status) === "proposal-sent").length,
       "active-projects": allCustomers.filter((c) => (c.customer_stage ?? "lead") === "active-project").length
-    }),
-    [allCustomers]
-  );
+    };
+    if (customerResultTotal != null) counts[stageFilter] = customerResultTotal;
+    return counts;
+  }, [allCustomers, customerResultTotal, stageFilter]);
 
   const followupCounts = useMemo(() => {
     const now = new Date();
@@ -265,6 +467,10 @@ function CustomersPageContent() {
       { scheduled: 0, today: 0, overdue: 0, unscheduled: 0 }
     );
   }, [allCustomers]);
+  const formatLoadedCount = useCallback(
+    (count: number, exact = false) => (hasMoreCustomers && !exact ? `${count}+` : String(count)),
+    [hasMoreCustomers]
+  );
 
   const legacyCustomerId = searchParams.get("customer")?.trim() ?? "";
 
@@ -292,6 +498,7 @@ function CustomersPageContent() {
     newLeadCallbackTitle.trim() || defaultCallbackTitle(newLeadCallbackPreset, newLeadCallbackNote);
 
   const showListSkeleton = isLoading && data === undefined && !loadError;
+  const isLoadingMoreCustomers = isValidating && Boolean(customerPages) && customerPages!.length < customerPageCount;
 
   const openAddLead = useCallback(() => {
     setEditLeadId(null);
@@ -304,11 +511,6 @@ function CustomersPageContent() {
     setNewLeadCallbackPriority("medium");
     setLeadModal("add");
   }, []);
-
-  useLayoutEffect(() => {
-    const boot = readCustomersCache();
-    if (boot !== undefined) void mutate(boot, { revalidate: true });
-  }, [mutate]);
 
   useEffect(() => {
     setLeadModal(openFromQuery ? "add" : "none");
@@ -408,12 +610,12 @@ function CustomersPageContent() {
                 ? { ...c, ...(j.data ?? {}), status: savedStatus }
                 : c
             );
-            writeCustomersCache(nextList);
             return nextList;
           },
           { revalidate: false }
         );
         await mutateGlobal(DASHBOARD_STATS_SWR_KEY, undefined, { revalidate: true });
+        void mutateGlobal(CUSTOMER_INSIGHTS_SWR_KEY, undefined, { revalidate: true });
         toast.success("Pipeline updated", `Moved to ${LEAD_STATUS_OPTIONS.find((o) => o.value === next)?.label ?? next}.`);
       } catch (e) {
         await mutate((current) => {
@@ -509,11 +711,9 @@ function CustomersPageContent() {
           if (ix >= 0) {
             const next = [...list];
             next[ix] = updated;
-            writeCustomersCache(next);
             return next;
           }
           const next = [updated, ...list];
-          writeCustomersCache(next);
           return next;
         },
         { revalidate: false }
@@ -586,6 +786,7 @@ function CustomersPageContent() {
       await mutate();
       bumpDashboardLeads(-1);
       await mutateGlobal(DASHBOARD_STATS_SWR_KEY, undefined, { revalidate: true });
+      void mutateGlobal(CUSTOMER_INSIGHTS_SWR_KEY, undefined, { revalidate: true });
       toast.success(t("customers_leadDeleted"), t("customers_leadDeletedSub"));
     } catch (e) {
       await mutate(prev, { revalidate: false });
@@ -718,6 +919,7 @@ function CustomersPageContent() {
           void mutate(undefined, { revalidate: true });
           void mutateGlobal(CUSTOMERS_SWR_KEY, undefined, { revalidate: true });
           void mutateGlobal(DASHBOARD_STATS_SWR_KEY, undefined, { revalidate: true });
+          void mutateGlobal(CUSTOMER_INSIGHTS_SWR_KEY, undefined, { revalidate: true });
         } catch (e) {
           toast.error(t("customers_leadUpdateFailed"), e instanceof Error ? e.message : "Please try again.");
         }
@@ -840,7 +1042,6 @@ function CustomersPageContent() {
               const next = exists
                 ? withoutOptimistic.map((c) => (c.id === savedRow.id ? savedRow : c))
                 : [savedRow, ...withoutOptimistic];
-              writeCustomersCache(next);
               return next;
             },
             { revalidate: false }
@@ -856,13 +1057,13 @@ function CustomersPageContent() {
           await mutate(
             (prev) => {
               const next = [savedRow, ...(prev ?? []).filter((c) => c.id !== optimisticId)];
-              writeCustomersCache(next);
               touchCustomersSavedAt();
               return next;
             },
             { revalidate: false }
           );
           await mutateGlobal(DASHBOARD_STATS_SWR_KEY, undefined, { revalidate: true });
+          void mutateGlobal(CUSTOMER_INSIGHTS_SWR_KEY, undefined, { revalidate: true });
           if (result.householdLinked) {
             toast.success(
               "Family member added",
@@ -966,23 +1167,76 @@ function CustomersPageContent() {
               </div>
             </div>
 
+            <section className="rounded-2xl border border-slate-200/80 bg-white/85 p-3 shadow-[0_10px_35px_-24px_rgba(15,23,42,0.28)] backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.035] sm:p-4" aria-labelledby="sales-queues-title">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p id="sales-queues-title" className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-teal-700 dark:text-teal-300">Sales queues</p>
+                  <p className="mt-0.5 text-xs font-semibold text-slate-500 dark:text-slate-400">Choose the work that needs attention now.</p>
+                </div>
+                <label className="shrink-0">
+                  <span className="sr-only">Sort customers</span>
+                  <select
+                    value={customerSort}
+                    onChange={(event) => {
+                      const next = resolveCustomerSort(event.target.value);
+                      setCustomerSort(next);
+                      updateListUrl(stageFilter, searchQuery, followupFilter, smartView, next);
+                    }}
+                    className="h-10 max-w-[9.75rem] rounded-xl border border-slate-200 bg-white px-3 text-xs font-extrabold text-slate-700 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/15 dark:border-white/10 dark:bg-slate-900 dark:text-slate-200 sm:max-w-none"
+                  >
+                    <option value="recent">Recently active</option>
+                    <option value="newest">Newest first</option>
+                    <option value="oldest">Oldest first</option>
+                    <option value="bill-high">Highest bill</option>
+                    <option value="name">Name A–Z</option>
+                  </select>
+                </label>
+              </div>
+              <div className="mt-3 flex snap-x gap-2 overflow-x-auto pb-1" aria-label="Smart customer views">
+                {SMART_VIEWS.map((view) => {
+                  const active = smartView === view.id;
+                  return (
+                    <button
+                      key={view.id}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => applySmartView(view.id)}
+                      className={cn(
+                        "min-w-max snap-start rounded-xl border px-3 py-2 text-left transition",
+                        active
+                          ? "border-slate-900 bg-slate-900 text-white shadow-sm dark:border-white dark:bg-white dark:text-slate-900"
+                          : "border-slate-200 bg-white text-slate-700 hover:border-teal-300 hover:bg-teal-50/60 dark:border-white/10 dark:bg-white/[0.03] dark:text-slate-200 dark:hover:border-teal-500/40 dark:hover:bg-teal-950/20"
+                      )}
+                    >
+                      <span className="block text-xs font-extrabold">{view.label}</span>
+                      <span className={cn("mt-0.5 block text-[9px] font-semibold", active ? "text-white/65 dark:text-slate-500" : "text-slate-400")}>{view.hint}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            <CustomerSalesInsights />
+
+            <CustomerFocusPlan />
+
             <div className="rounded-2xl border border-slate-200/80 bg-white/85 p-3 shadow-[0_10px_35px_-24px_rgba(15,23,42,0.32)] backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.035] sm:p-4">
               <div className="flex snap-x gap-2 overflow-x-auto pb-1 sm:grid sm:grid-cols-4 sm:overflow-visible sm:pb-0" aria-label="Follow-up filters">
-                <button type="button" aria-pressed={followupFilter === "scheduled"} onClick={() => { const next = followupFilter === "scheduled" ? "all" : "scheduled"; setFollowupFilter(next); updateListUrl(stageFilter, searchQuery, next); }} className={cn("group min-w-[8.25rem] flex-1 snap-start rounded-xl bg-teal-50 px-2.5 py-2.5 text-left text-teal-800 transition hover:bg-teal-100 sm:min-w-0 dark:bg-teal-950/30 dark:text-teal-200 dark:hover:bg-teal-950/50", followupFilter === "scheduled" && "ring-2 ring-teal-500 ring-offset-1 dark:ring-offset-slate-950")}>
+                <button type="button" aria-pressed={followupFilter === "scheduled" && smartView === "all"} onClick={() => { const next = followupFilter === "scheduled" && smartView === "all" ? "all" : "scheduled"; setSmartView("all"); setFollowupFilter(next); updateListUrl(stageFilter, searchQuery, next, "all"); }} className={cn("group min-w-[8.25rem] flex-1 snap-start rounded-xl bg-teal-50 px-2.5 py-2.5 text-left text-teal-800 transition hover:bg-teal-100 sm:min-w-0 dark:bg-teal-950/30 dark:text-teal-200 dark:hover:bg-teal-950/50", followupFilter === "scheduled" && smartView === "all" && "ring-2 ring-teal-500 ring-offset-1 dark:ring-offset-slate-950")}>
                   <p className="flex items-center gap-1 text-[9px] font-extrabold uppercase tracking-wide" title="Customers with a pending follow-up"><CalendarCheck2 className="h-3 w-3" /> Scheduled</p>
-                  <p className="mt-0.5 flex items-center justify-between text-lg font-black tabular-nums">{followupCounts.scheduled}<ChevronRight className="h-3.5 w-3.5 opacity-50 transition group-hover:translate-x-0.5" /></p>
+                  <p className="mt-0.5 flex items-center justify-between text-lg font-black tabular-nums">{formatLoadedCount(followupCounts.scheduled)}<ChevronRight className="h-3.5 w-3.5 opacity-50 transition group-hover:translate-x-0.5" /></p>
                 </button>
-                <button type="button" aria-pressed={followupFilter === "today"} onClick={() => { const next = followupFilter === "today" ? "all" : "today"; setFollowupFilter(next); updateListUrl(stageFilter, searchQuery, next); }} className={cn("group min-w-[8.25rem] flex-1 snap-start rounded-xl bg-amber-50 px-2.5 py-2.5 text-left text-amber-900 transition hover:bg-amber-100 sm:min-w-0 dark:bg-amber-950/30 dark:text-amber-100 dark:hover:bg-amber-950/50", followupFilter === "today" && "ring-2 ring-amber-500 ring-offset-1 dark:ring-offset-slate-950")}>
+                <button type="button" aria-pressed={followupFilter === "today" && smartView === "all"} onClick={() => { const next = followupFilter === "today" && smartView === "all" ? "all" : "today"; setSmartView("all"); setFollowupFilter(next); updateListUrl(stageFilter, searchQuery, next, "all"); }} className={cn("group min-w-[8.25rem] flex-1 snap-start rounded-xl bg-amber-50 px-2.5 py-2.5 text-left text-amber-900 transition hover:bg-amber-100 sm:min-w-0 dark:bg-amber-950/30 dark:text-amber-100 dark:hover:bg-amber-950/50", followupFilter === "today" && smartView === "all" && "ring-2 ring-amber-500 ring-offset-1 dark:ring-offset-slate-950")}>
                   <p className="flex items-center gap-1 text-[9px] font-extrabold uppercase tracking-wide"><AlarmClock className="h-3 w-3" /> Today</p>
-                  <p className="mt-0.5 flex items-center justify-between text-lg font-black tabular-nums">{followupCounts.today}<ChevronRight className="h-3.5 w-3.5 opacity-50 transition group-hover:translate-x-0.5" /></p>
+                  <p className="mt-0.5 flex items-center justify-between text-lg font-black tabular-nums">{formatLoadedCount(followupCounts.today)}<ChevronRight className="h-3.5 w-3.5 opacity-50 transition group-hover:translate-x-0.5" /></p>
                 </button>
-                <button type="button" aria-pressed={followupFilter === "overdue"} onClick={() => { const next = followupFilter === "overdue" ? "all" : "overdue"; setFollowupFilter(next); updateListUrl(stageFilter, searchQuery, next); }} className={cn("group min-w-[8.25rem] flex-1 snap-start rounded-xl bg-rose-50 px-2.5 py-2.5 text-left text-rose-800 transition hover:bg-rose-100 sm:min-w-0 dark:bg-rose-950/30 dark:text-rose-200 dark:hover:bg-rose-950/50", followupFilter === "overdue" && "ring-2 ring-rose-500 ring-offset-1 dark:ring-offset-slate-950")}>
+                <button type="button" aria-pressed={followupFilter === "overdue" && smartView === "all"} onClick={() => { const next = followupFilter === "overdue" && smartView === "all" ? "all" : "overdue"; setSmartView("all"); setFollowupFilter(next); updateListUrl(stageFilter, searchQuery, next, "all"); }} className={cn("group min-w-[8.25rem] flex-1 snap-start rounded-xl bg-rose-50 px-2.5 py-2.5 text-left text-rose-800 transition hover:bg-rose-100 sm:min-w-0 dark:bg-rose-950/30 dark:text-rose-200 dark:hover:bg-rose-950/50", followupFilter === "overdue" && smartView === "all" && "ring-2 ring-rose-500 ring-offset-1 dark:ring-offset-slate-950")}>
                   <p className="text-[9px] font-extrabold uppercase tracking-wide">Overdue</p>
-                  <p className="mt-0.5 flex items-center justify-between text-lg font-black tabular-nums">{followupCounts.overdue}<ChevronRight className="h-3.5 w-3.5 opacity-50 transition group-hover:translate-x-0.5" /></p>
+                  <p className="mt-0.5 flex items-center justify-between text-lg font-black tabular-nums">{formatLoadedCount(followupCounts.overdue)}<ChevronRight className="h-3.5 w-3.5 opacity-50 transition group-hover:translate-x-0.5" /></p>
                 </button>
-                <button type="button" aria-pressed={followupFilter === "unscheduled"} onClick={() => { const next = followupFilter === "unscheduled" ? "all" : "unscheduled"; setFollowupFilter(next); updateListUrl(stageFilter, searchQuery, next); }} className={cn("group min-w-[8.25rem] flex-1 snap-start rounded-xl bg-slate-100 px-2.5 py-2.5 text-left text-slate-700 transition hover:bg-slate-200 sm:min-w-0 dark:bg-white/[0.07] dark:text-slate-200 dark:hover:bg-white/[0.1]", followupFilter === "unscheduled" && "ring-2 ring-slate-500 ring-offset-1 dark:ring-offset-slate-950")}>
+                <button type="button" aria-pressed={followupFilter === "unscheduled" && smartView === "all"} onClick={() => { const next = followupFilter === "unscheduled" && smartView === "all" ? "all" : "unscheduled"; setSmartView("all"); setFollowupFilter(next); updateListUrl(stageFilter, searchQuery, next, "all"); }} className={cn("group min-w-[8.25rem] flex-1 snap-start rounded-xl bg-slate-100 px-2.5 py-2.5 text-left text-slate-700 transition hover:bg-slate-200 sm:min-w-0 dark:bg-white/[0.07] dark:text-slate-200 dark:hover:bg-white/[0.1]", followupFilter === "unscheduled" && smartView === "all" && "ring-2 ring-slate-500 ring-offset-1 dark:ring-offset-slate-950")}>
                   <p className="text-[9px] font-extrabold uppercase tracking-wide">No callback</p>
-                  <p className="mt-0.5 flex items-center justify-between text-lg font-black tabular-nums">{followupCounts.unscheduled}<Plus className="h-3.5 w-3.5 opacity-50 transition group-hover:scale-110" /></p>
+                  <p className="mt-0.5 flex items-center justify-between text-lg font-black tabular-nums">{formatLoadedCount(followupCounts.unscheduled)}<Plus className="h-3.5 w-3.5 opacity-50 transition group-hover:scale-110" /></p>
                 </button>
               </div>
 
@@ -990,13 +1244,33 @@ function CustomersPageContent() {
                 <div className="min-w-0">
                   <p className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-slate-400">Customer pipeline</p>
                   <p className="mt-0.5 text-xs font-semibold text-slate-600 dark:text-slate-300">
-                    Showing <span className="font-black text-slate-900 dark:text-white">{customers.length}</span> of {allCustomers.length}
+                    Showing <span className="font-black text-slate-900 dark:text-white">{customers.length}</span>
+                    {customerResultTotal != null ? <> of {customerResultTotal}</> : null}
                     <span className="hidden lg:inline"> · Click a customer to open details</span>
                   </p>
                 </div>
-                <Link href="/agenda#priority-queue" className="shrink-0 text-[11px] font-extrabold text-teal-700 hover:underline dark:text-teal-300">
-                  Open agenda →
-                </Link>
+                <div className="flex shrink-0 items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (selectionMode) closeBulkSelection();
+                      else setSelectionMode(true);
+                    }}
+                    disabled={bulkActionBusy || customers.length === 0}
+                    className={cn(
+                      "inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-[11px] font-extrabold transition disabled:opacity-50",
+                      selectionMode
+                        ? "border-slate-300 bg-slate-100 text-slate-700 dark:border-white/15 dark:bg-white/10 dark:text-slate-100"
+                        : "border-teal-200 bg-teal-50 text-teal-800 hover:bg-teal-100 dark:border-teal-500/30 dark:bg-teal-950/30 dark:text-teal-200"
+                    )}
+                  >
+                    <ListChecks className="h-3.5 w-3.5" aria-hidden />
+                    {selectionMode ? "Cancel" : "Select"}
+                  </button>
+                  <Link href="/agenda#priority-queue" className="hidden text-[11px] font-extrabold text-teal-700 hover:underline dark:text-teal-300 sm:inline">
+                    Open agenda →
+                  </Link>
+                </div>
               </div>
               <div className="workspace-filter-rail mt-2.5">
           {(
@@ -1012,7 +1286,7 @@ function CustomersPageContent() {
               <button
                 key={opt.key}
                 type="button"
-                onClick={() => { setStageFilter(opt.key); updateListUrl(opt.key); }}
+                onClick={() => { setSmartView("all"); setStageFilter(opt.key); updateListUrl(opt.key, searchQuery, followupFilter, "all"); }}
                 className={cn(
                   "workspace-filter-pill",
                   isActive ? "workspace-filter-pill--active" : "workspace-filter-pill--idle"
@@ -1026,7 +1300,7 @@ function CustomersPageContent() {
                     isActive ? "bg-white/20 text-white" : "bg-slate-200/80 text-slate-700"
                   )}
                 >
-                  {stageCounts[opt.key]}
+                  {formatLoadedCount(stageCounts[opt.key], isActive && customerResultTotal != null)}
                 </span>
               </button>
             );
@@ -1034,18 +1308,92 @@ function CustomersPageContent() {
               </div>
             </div>
 
+            {selectionMode ? (
+              <section className="rounded-2xl border border-teal-200 bg-gradient-to-r from-teal-50 to-cyan-50 p-3 shadow-[0_10px_28px_-20px_rgba(13,148,136,0.5)] dark:border-teal-500/30 dark:from-teal-950/45 dark:to-cyan-950/35 sm:p-4" aria-label="Bulk customer actions">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="flex items-center justify-between gap-3 lg:justify-start">
+                    <div>
+                      <p className="text-sm font-black text-slate-900 dark:text-white">
+                        {selectedLeadIds.size} selected
+                      </p>
+                      <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">Maximum 50 customers per action</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={toggleAllLoadedCustomers}
+                      disabled={bulkActionBusy}
+                      className="h-9 rounded-lg border border-teal-200 bg-white px-3 text-[11px] font-extrabold text-teal-800 transition hover:bg-teal-100 disabled:opacity-50 dark:border-teal-500/30 dark:bg-white/5 dark:text-teal-200"
+                    >
+                      {customers.length > 0 && customers.every((customer) => selectedLeadIds.has(customer.id)) ? "Clear loaded" : "Select loaded"}
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 sm:flex sm:items-center">
+                    <label className="min-w-0">
+                      <span className="sr-only">Choose bulk action</span>
+                      <select
+                        value={bulkAction}
+                        onChange={(event) => setBulkAction(event.target.value)}
+                        disabled={bulkActionBusy}
+                        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs font-extrabold text-slate-700 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/15 disabled:opacity-60 dark:border-white/10 dark:bg-slate-900 dark:text-slate-100 sm:w-[15rem]"
+                      >
+                        <optgroup label="Schedule callback">
+                          <option value="callback:tomorrow">Tomorrow · 10 AM</option>
+                          <option value="callback:next_week">Next week · 10 AM</option>
+                          <option value="callback:in_3_months">In 3 months</option>
+                          <option value="callback:in_5_months">In 5 months</option>
+                        </optgroup>
+                        <optgroup label="Change pipeline stage">
+                          {LEAD_STATUS_OPTIONS.map((option) => (
+                            <option key={option.value} value={`status:${option.value}`}>{option.label}</option>
+                          ))}
+                        </optgroup>
+                      </select>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => void applyBulkAction()}
+                      disabled={bulkActionBusy || selectedLeadIds.size === 0}
+                      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 text-xs font-extrabold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-45 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+                    >
+                      {bulkActionBusy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Check className="h-4 w-4" aria-hidden />}
+                      {bulkActionBusy ? "Applying…" : "Apply"}
+                    </button>
+                  </div>
+                </div>
+              </section>
+            ) : null}
+
             <CustomersLeadList
               customers={customers}
               loading={showListSkeleton}
               onAddLead={openAddLead}
               emptyTitle={allCustomers.length > 0 ? "No matching customers" : undefined}
               emptyDescription={allCustomers.length > 0 ? "Search ya filters change karke customer queue dobara dekhein." : undefined}
-              onClearFilters={allCustomers.length > 0 && (Boolean(searchQuery.trim()) || stageFilter !== "all" || followupFilter !== "all") ? clearListFilters : undefined}
+              onClearFilters={allCustomers.length > 0 && (Boolean(searchQuery.trim()) || stageFilter !== "all" || followupFilter !== "all" || smartView !== "all" || customerSort !== "recent") ? clearListFilters : undefined}
               onStatusChange={handleStatusChange}
               onEditLead={(c) => void openEditLeadFresh(c)}
               onDeleteLead={(c) => setDeleteTarget(c)}
               onSelectLead={openCustomer}
+              selectionMode={selectionMode}
+              selectedLeadIds={selectedLeadIds}
+              onToggleSelection={toggleLeadSelection}
+              onToggleAll={toggleAllLoadedCustomers}
             />
+
+            {hasMoreCustomers ? (
+              <div className="flex justify-center pt-1">
+                <button
+                  type="button"
+                  onClick={() => void setCustomerPageCount((count) => count + 1)}
+                  disabled={isLoadingMoreCustomers}
+                  className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-extrabold text-slate-700 shadow-sm transition hover:border-teal-300 hover:bg-teal-50 hover:text-teal-800 disabled:cursor-wait disabled:opacity-60 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-200 dark:hover:border-teal-500/40 dark:hover:bg-teal-950/20"
+                >
+                  {isLoadingMoreCustomers ? "Loading customers…" : "Load more customers"}
+                </button>
+              </div>
+            ) : customers.length > 0 ? (
+              <p className="pt-1 text-center text-[11px] font-semibold text-slate-400">All matching customers loaded</p>
+            ) : null}
           </div>
         </WorkspaceStaggerItem>
       </WorkspacePage>

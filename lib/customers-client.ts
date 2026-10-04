@@ -2,6 +2,50 @@ import type { CustomerLead } from "@/lib/types";
 
 export const CUSTOMERS_SWR_KEY = "/api/customers";
 
+export type CustomerPagePayload = {
+  data: CustomerLead[];
+  pagination: {
+    nextCursor: string | null;
+    hasMore: boolean;
+    total: number | null;
+  };
+};
+
+export type CustomerBulkAction =
+  | { action: "status"; leadIds: string[]; status: string }
+  | {
+      action: "callback";
+      leadIds: string[];
+      dueAt: string;
+      title: string;
+      notes?: string | null;
+      priority?: "low" | "medium" | "high" | "urgent";
+    };
+
+export type CustomerBulkResult = {
+  succeeded: number;
+  failed: number;
+  results: Array<{ leadId: string; ok: boolean; error?: string }>;
+};
+
+export async function runCustomerBulkAction(payload: CustomerBulkAction): Promise<CustomerBulkResult> {
+  const response = await fetch("/api/customers/bulk", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const json = (await response.json()) as {
+    ok?: boolean;
+    partial?: boolean;
+    data?: CustomerBulkResult;
+    error?: string;
+  };
+  if (!response.ok || (!json.ok && !json.partial) || !json.data) {
+    throw new Error(json.error || "Bulk action failed.");
+  }
+  return json.data;
+}
+
 const STORAGE_KEY = "ss_v1_customers_list";
 const SAVED_AT_KEY = "ss_v1_customers_saved_at";
 
@@ -74,6 +118,39 @@ export async function fetchCustomers(path: string): Promise<CustomerLead[]> {
   } catch {
     if (cached !== undefined) return cached;
     throw new Error("No saved customer list yet. Open Customers online once to cache leads.");
+  }
+}
+
+/** Fetch one lightweight CRM page; SWR Infinite keeps prior pages on screen. */
+export async function fetchCustomerPage(path: string): Promise<CustomerPagePayload> {
+  try {
+    const response = await fetch(path, { method: "GET", cache: "no-store" });
+    const payload = (await response.json()) as {
+      ok?: boolean;
+      data?: CustomerLead[];
+      pagination?: CustomerPagePayload["pagination"];
+      error?: string;
+    };
+    if (!response.ok || !payload.ok || !Array.isArray(payload.data) || !payload.pagination) {
+      throw new Error(payload.error || "Could not load customers");
+    }
+    return { data: payload.data, pagination: payload.pagination };
+  } catch (error) {
+    const cached = readCustomersCache();
+    if (!cached) throw error;
+    const url = new URL(path, "http://local");
+    const offset = Math.max(0, Number(url.searchParams.get("cursor") ?? 0) || 0);
+    const limit = Math.max(1, Number(url.searchParams.get("limit") ?? 40) || 40);
+    const data = cached.slice(offset, offset + limit);
+    const nextOffset = offset + data.length;
+    return {
+      data,
+      pagination: {
+        nextCursor: nextOffset < cached.length ? String(nextOffset) : null,
+        hasMore: nextOffset < cached.length,
+        total: cached.length,
+      },
+    };
   }
 }
 

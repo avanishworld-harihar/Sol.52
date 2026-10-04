@@ -401,6 +401,160 @@ export async function listCustomers(opts?: {
   return filterOutDemoSeedLeads(rows);
 }
 
+export type CustomerInsightRow = {
+  id: string;
+  name: string;
+  city: string | null;
+  phone: string | null;
+  status: string | null;
+  monthly_bill: number | null;
+  last_touched_at: string | null;
+  created_at: string | null;
+  source: string | null;
+};
+
+/**
+ * Narrow CRM analytics read. It intentionally avoids `select('*')` and all
+ * proposal/activity decoration so the Phase 4 overview stays cheap even when
+ * the customer list grows into thousands of rows.
+ */
+export async function listCustomerInsightRows(opts?: {
+  organizationId?: string | null;
+  includeNullOrg?: boolean;
+}): Promise<CustomerInsightRow[]> {
+  const client = createSupabaseAdmin() ?? supabase;
+  if (!client) return [];
+  const leadsTable = await resolveLeadsTable();
+  if (!leadsTable) return [];
+
+  const pageSize = 1_000;
+  const maxRows = 20_000;
+  let offset = 0;
+  const rows: Record<string, unknown>[] = [];
+  while (rows.length < maxRows) {
+    let query = client
+      .from(leadsTable)
+      .select("id,name,city,phone,status,monthly_bill,last_touched_at,created_at,source")
+      .order("created_at", { ascending: false })
+      .range(offset, offset + pageSize - 1);
+    if (opts?.organizationId) {
+      query = opts.includeNullOrg
+        ? query.or(`organization_id.eq.${opts.organizationId},organization_id.is.null`)
+        : query.eq("organization_id", opts.organizationId);
+    }
+    const { data, error } = await query;
+    if (error) throw error;
+    const chunk = (data ?? []) as Record<string, unknown>[];
+    rows.push(...chunk);
+    if (chunk.length < pageSize) break;
+    offset += pageSize;
+  }
+
+  return filterOutDemoSeedLeads(rows).map((row) => ({
+    id: String(row.id ?? ""),
+    name: String(row.name ?? ""),
+    city: row.city == null ? null : String(row.city),
+    phone: row.phone == null ? null : String(row.phone),
+    status: row.status == null ? null : String(row.status),
+    monthly_bill: row.monthly_bill == null ? null : Number(row.monthly_bill),
+    last_touched_at: row.last_touched_at == null ? null : String(row.last_touched_at),
+    created_at: row.created_at == null ? null : String(row.created_at),
+    source: row.source == null ? null : String(row.source),
+  }));
+}
+
+export type CustomerPageQuery = {
+  organizationId?: string | null;
+  includeNullOrg?: boolean;
+  search?: string;
+  stage?: "all" | "leads" | "proposal-sent" | "active-projects";
+  smartView?: "all" | "today" | "overdue" | "no-action" | "new" | "proposal-followup" | "hot" | "dormant" | "won";
+  sort?: "recent" | "newest" | "oldest" | "bill-high" | "name";
+  offset?: number;
+  limit?: number;
+};
+
+/**
+ * Lightweight customer-list query. Unlike `listCustomers`, this only reads the
+ * requested page and lets the API decorate that small set with CRM summaries.
+ */
+export async function listCustomersPage(opts: CustomerPageQuery): Promise<{
+  rows: Record<string, unknown>[];
+  total: number;
+}> {
+  const client = createSupabaseAdmin() ?? supabase;
+  if (!client) return { rows: [], total: 0 };
+  const leadsTable = await resolveLeadsTable();
+  if (!leadsTable) return { rows: [], total: 0 };
+
+  const limit = Math.max(1, Math.min(100, Math.floor(opts.limit ?? 40)));
+  const offset = Math.max(0, Math.floor(opts.offset ?? 0));
+  let query = client.from(leadsTable).select("*", { count: "exact" });
+
+  if (opts.organizationId) {
+    query = opts.includeNullOrg
+      ? query.or(`organization_id.eq.${opts.organizationId},organization_id.is.null`)
+      : query.eq("organization_id", opts.organizationId);
+  }
+
+  if (opts.stage === "active-projects") {
+    query = query.eq("status", "won");
+  } else if (opts.stage === "proposal-sent") {
+    query = query.in("status", ["proposal-sent", "proposal_sent", "proposalsent"]);
+  } else if (opts.stage === "leads") {
+    query = query.neq("status", "won");
+  }
+
+  if (opts.smartView === "new") {
+    query = query.in("status", ["new", "lead"]);
+  } else if (opts.smartView === "hot") {
+    query = query.neq("status", "won").or("status.eq.proposal-sent,status.eq.proposal_sent,monthly_bill.gte.5000");
+  } else if (opts.smartView === "dormant") {
+    const cutoff = new Date(Date.now() - 14 * 86_400_000).toISOString();
+    query = query.or(`last_touched_at.lt.${cutoff},and(last_touched_at.is.null,created_at.lt.${cutoff})`);
+  }
+
+  const search = (opts.search ?? "")
+    .replace(/[,%_()]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 100);
+  if (search) {
+    const needle = `*${search}*`;
+    query = query.or(
+      ["name", "consumer_name", "city", "location", "phone", "consumer_id"]
+        .map((column) => `${column}.ilike.${needle}`)
+        .join(",")
+    );
+  }
+
+
+  switch (opts.sort) {
+    case "newest":
+      query = query.order("created_at", { ascending: false });
+      break;
+    case "oldest":
+      query = query.order("created_at", { ascending: true });
+      break;
+    case "bill-high":
+      query = query.order("monthly_bill", { ascending: false }).order("created_at", { ascending: false });
+      break;
+    case "name":
+      query = query.order("name", { ascending: true }).order("created_at", { ascending: false });
+      break;
+    default:
+      query = query
+        .order("last_touched_at", { ascending: false, nullsFirst: false })
+        .order("created_at", { ascending: false });
+  }
+  query = query.range(offset, offset + limit - 1);
+
+  const { data, error, count } = await query;
+  if (error) throw error;
+  const rows = filterOutDemoSeedLeads((data ?? []) as Record<string, unknown>[]);
+  return { rows, total: Math.max(rows.length, count ?? 0) };
+}
+
 /** Latest proposal id per lead (for CRM → commercial hand-off). */
 export async function mapLeadIdsToLatestProposalIds(leadIds: string[]): Promise<Record<string, string>> {
   const uniq = [...new Set(leadIds.map((id) => id.trim()).filter(Boolean))];

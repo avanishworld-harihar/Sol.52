@@ -19,6 +19,7 @@ import { formatCrmDateTime } from "@/lib/crm-datetime";
 import { cn } from "@/lib/utils";
 import { useSWRConfig } from "swr";
 import { CUSTOMERS_SWR_KEY } from "@/lib/customers-client";
+import { CUSTOMER_INSIGHTS_SWR_KEY } from "@/lib/customer-insights-client";
 import type { CustomerLead } from "@/lib/types";
 import type { WidgetPayload, WidgetReminder } from "@/components/dashboard-followup-widgets";
 
@@ -134,6 +135,8 @@ export function ScheduleCallbackSheet({
     void Promise.allSettled([
       mutate(`/api/customers/${encodeURIComponent(leadId)}/reminders`),
       mutate(CUSTOMERS_SWR_KEY),
+      mutate(CUSTOMER_INSIGHTS_SWR_KEY),
+      mutate((key) => typeof key === "string" && key.startsWith("/api/customers?") && key.includes("view=page")),
       mutate("/api/followups/widgets"),
       mutate("/api/followups/widgets?view=all"),
       mutate("crm-command-center"),

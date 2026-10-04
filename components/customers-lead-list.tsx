@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { Building2, CalendarPlus2, ChevronRight, MapPin, MessageCircle, Pencil, Phone, PhoneCall, Plus, Trash2, Users, Wifi } from "lucide-react";
+import { Building2, CalendarPlus2, Check, ChevronRight, MapPin, MessageCircle, Pencil, Phone, PhoneCall, Plus, Target, Trash2, Users, Wifi } from "lucide-react";
 
 import type { CustomerLead } from "@/lib/types";
 import { formatPipelineDisplayName } from "@/lib/supabase";
@@ -335,6 +335,39 @@ export function formatLeadLastActivity(iso: string | null | undefined, locale: s
   return formatCrmShortDate(iso, locale);
 }
 
+function resolveNextBestAction(customer: CustomerLead): { label: string; className: string } {
+  const status = normalizeLeadStatus(customer.status);
+  if (customer.next_followup_at) {
+    const due = new Date(customer.next_followup_at);
+    if (!Number.isNaN(due.getTime())) {
+      const now = new Date();
+      const todayKey = now.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+      const dueKey = due.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+      if (due.getTime() < now.getTime() && dueKey !== todayKey) {
+        return { label: "Call overdue lead", className: "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-500/30 dark:bg-rose-950/30 dark:text-rose-200" };
+      }
+      if (dueKey === todayKey) {
+        return { label: "Complete today’s callback", className: "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-500/30 dark:bg-amber-950/30 dark:text-amber-100" };
+      }
+      return { label: `Callback ${formatCrmShortDate(customer.next_followup_at, "en-IN")}`, className: "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-500/30 dark:bg-sky-950/30 dark:text-sky-200" };
+    }
+  }
+  if (status === "new") return { label: "Make first contact", className: "border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-500/30 dark:bg-violet-950/30 dark:text-violet-200" };
+  if (status === "proposal-sent") return { label: "Follow up proposal", className: "border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-950/30 dark:text-indigo-200" };
+  if (status === "won") return { label: "Review project handoff", className: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-950/30 dark:text-emerald-200" };
+  return { label: "Schedule next action", className: "border-slate-200 bg-slate-50 text-slate-700 dark:border-white/10 dark:bg-white/[0.05] dark:text-slate-200" };
+}
+
+function NextBestAction({ customer }: { customer: CustomerLead }) {
+  const action = resolveNextBestAction(customer);
+  return (
+    <span className={cn("inline-flex max-w-full items-center gap-1.5 rounded-lg border px-2 py-1 text-[10px] font-extrabold", action.className)}>
+      <Target className="h-3 w-3 shrink-0" aria-hidden />
+      <span className="truncate">Next: {action.label}</span>
+    </span>
+  );
+}
+
 export function CustomersLeadList({
   customers,
   loading,
@@ -348,7 +381,11 @@ export function CustomersLeadList({
   compactWorkspace = false,
   selectOnDesktopOnly = false,
   selectedLeadId,
-  onSelectLead
+  onSelectLead,
+  selectionMode = false,
+  selectedLeadIds,
+  onToggleSelection,
+  onToggleAll
 }: {
   customers: CustomerLead[];
   loading: boolean;
@@ -371,11 +408,17 @@ export function CustomersLeadList({
   /** Tablet split-pane: highlights row and syncs right workspace. */
   selectedLeadId?: string | null;
   onSelectLead?: (leadId: string) => void;
+  /** Phase 3: controlled multi-select for fast bulk CRM actions. */
+  selectionMode?: boolean;
+  selectedLeadIds?: ReadonlySet<string>;
+  onToggleSelection?: (leadId: string) => void;
+  onToggleAll?: () => void;
 }) {
   const { locale, t } = useLanguage();
   const showHeader = !loading && customers.length > 0;
   const installerName = getInstallerBrandName();
-  const mobileSelectable = Boolean(onSelectLead && !selectOnDesktopOnly);
+  const mobileSelectable = Boolean(selectionMode || (onSelectLead && !selectOnDesktopOnly));
+  const allVisibleSelected = customers.length > 0 && customers.every((customer) => selectedLeadIds?.has(customer.id));
   const [followMap, setFollowMap] = useState<Record<string, number>>({});
   const [scheduleTarget, setScheduleTarget] = useState<CustomerLead | null>(null);
 
@@ -476,23 +519,26 @@ export function CustomersLeadList({
                     "relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-3.5 shadow-[0_4px_20px_-8px_rgba(15,23,42,0.12)] transition dark:border-white/10 dark:bg-[#0c1017]",
                     mobileSelectable && "cursor-pointer hover:border-teal-300 hover:shadow-md dark:hover:border-teal-500/40",
                     mobileSelectable && selectedLeadId === customer.id && "border-teal-400 ring-2 ring-teal-400/20 dark:border-teal-500",
+                    selectionMode && selectedLeadIds?.has(customer.id) && "border-teal-400 bg-teal-50/50 ring-2 ring-teal-400/20 dark:border-teal-500 dark:bg-teal-950/25",
                     activeProject && "border-l-[4px] border-l-indigo-500 bg-indigo-50/25 dark:border-l-indigo-400 dark:bg-indigo-950/25"
                   )}
                   onClick={(event) => {
-                    if (!mobileSelectable || !onSelectLead) return;
+                    if (!mobileSelectable) return;
                     if ((event.target as HTMLElement).closest("a, button, select, label")) return;
-                    onSelectLead(customer.id);
+                    if (selectionMode && onToggleSelection) onToggleSelection(customer.id);
+                    else onSelectLead?.(customer.id);
                   }}
-                  onKeyDown={mobileSelectable && onSelectLead ? (event) => {
+                  onKeyDown={mobileSelectable ? (event) => {
                     if (event.key === "Enter" || event.key === " ") {
                       event.preventDefault();
-                      onSelectLead(customer.id);
+                      if (selectionMode && onToggleSelection) onToggleSelection(customer.id);
+                      else onSelectLead?.(customer.id);
                     }
                   } : undefined}
                   role={mobileSelectable ? "button" : undefined}
                   tabIndex={mobileSelectable ? 0 : undefined}
                 >
-                  {canMutateLead ? (
+                  {canMutateLead && !selectionMode ? (
                     <LeadRowActions
                       className="absolute right-2 top-2 z-10"
                       size="sm"
@@ -503,7 +549,24 @@ export function CustomersLeadList({
                     />
                   ) : null}
 
-                  <div className={cn("flex gap-3", canMutateLead ? "pr-[4.75rem]" : "")}>
+                  <div className={cn("flex gap-3", canMutateLead && !selectionMode ? "pr-[4.75rem]" : "")}>
+                    {selectionMode ? (
+                      <button
+                        type="button"
+                        role="checkbox"
+                        aria-checked={Boolean(selectedLeadIds?.has(customer.id))}
+                        aria-label={`${selectedLeadIds?.has(customer.id) ? "Deselect" : "Select"} ${customer.name}`}
+                        onClick={() => onToggleSelection?.(customer.id)}
+                        className={cn(
+                          "mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition",
+                          selectedLeadIds?.has(customer.id)
+                            ? "border-teal-600 bg-teal-600 text-white"
+                            : "border-slate-300 bg-white text-transparent dark:border-white/20 dark:bg-white/5"
+                        )}
+                      >
+                        <Check className="h-4 w-4" strokeWidth={3} />
+                      </button>
+                    ) : null}
                     <LeadAvatar
                       name={customer.name}
                       stale={stale}
@@ -582,6 +645,10 @@ export function CustomersLeadList({
                     <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" aria-hidden />
                   </button>
 
+                  <div className="mt-2 flex min-w-0">
+                    <NextBestAction customer={customer} />
+                  </div>
+
                   <div className="mt-2.5 grid grid-cols-3 gap-2">
                         {customer.phone ? (
                           <a
@@ -625,7 +692,26 @@ export function CustomersLeadList({
           <div className={cn("overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_8px_30px_-12px_rgba(15,23,42,0.12)] dark:border-white/10 dark:bg-[#0c1017]", compactWorkspace ? "hidden" : "hidden lg:block")}>
             {showHeader && (
               <div className="grid grid-cols-12 gap-4 border-b border-slate-200/90 bg-gradient-to-r from-slate-50 to-white px-5 py-3 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:border-white/10 dark:from-[#141a22] dark:to-[#0c1017] dark:text-slate-400">
-                <div className="col-span-5 pl-[3.25rem]">{t("customers_tableLead")}</div>
+                <div className="col-span-5 flex items-center gap-3">
+                  {selectionMode ? (
+                    <button
+                      type="button"
+                      role="checkbox"
+                      aria-checked={allVisibleSelected}
+                      aria-label={allVisibleSelected ? "Deselect all loaded customers" : "Select all loaded customers"}
+                      onClick={onToggleAll}
+                      className={cn(
+                        "flex h-6 w-6 items-center justify-center rounded-md border transition",
+                        allVisibleSelected
+                          ? "border-teal-600 bg-teal-600 text-white"
+                          : "border-slate-300 bg-white text-transparent dark:border-white/20 dark:bg-white/5"
+                      )}
+                    >
+                      <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                    </button>
+                  ) : <span className="w-9" />}
+                  <span>{t("customers_tableLead")}</span>
+                </div>
                 <div className="col-span-3">{t("customers_tableLocation")}</div>
                 <div className="col-span-2">{t("customers_tableBill")}</div>
                 <div className="col-span-2 text-right">{t("customers_tablePipeline")}</div>
@@ -661,22 +747,26 @@ export function CustomersLeadList({
                     className={cn(
                       "group/row relative grid grid-cols-12 items-center gap-4 px-5 py-3.5 transition-all duration-200",
                       "hover:bg-slate-50/90 dark:hover:bg-white/[0.025]",
-                      onSelectLead && "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal-500/60",
+                      (onSelectLead || selectionMode) && "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal-500/60",
                       activeProject && "bg-indigo-50/40 dark:bg-indigo-950/20",
+                      selectionMode && selectedLeadIds?.has(customer.id) &&
+                        "bg-teal-50/75 ring-1 ring-inset ring-teal-400/35 dark:bg-teal-950/30 dark:ring-teal-400/25",
                       onSelectLead && selectedLeadId === customer.id &&
                         "bg-teal-50/60 ring-1 ring-inset ring-teal-400/30 dark:bg-teal-950/25 dark:ring-teal-400/20"
                     )}
                     onClick={(e) => {
-                      if (!onSelectLead) return;
+                      if (!onSelectLead && !selectionMode) return;
                       if ((e.target as HTMLElement).closest("a, button, select, label")) return;
-                      onSelectLead(customer.id);
+                      if (selectionMode && onToggleSelection) onToggleSelection(customer.id);
+                      else onSelectLead?.(customer.id);
                     }}
                     onKeyDown={
-                      onSelectLead
+                      onSelectLead || selectionMode
                         ? (e) => {
                             if (e.key === "Enter" || e.key === " ") {
                               e.preventDefault();
-                              onSelectLead(customer.id);
+                              if (selectionMode && onToggleSelection) onToggleSelection(customer.id);
+                              else onSelectLead?.(customer.id);
                             }
                           }
                         : undefined
@@ -695,6 +785,23 @@ export function CustomersLeadList({
 
                     <div className="col-span-5 min-w-0">
                       <div className="flex items-start gap-3">
+                        {selectionMode ? (
+                          <button
+                            type="button"
+                            role="checkbox"
+                            aria-checked={Boolean(selectedLeadIds?.has(customer.id))}
+                            aria-label={`${selectedLeadIds?.has(customer.id) ? "Deselect" : "Select"} ${customer.name}`}
+                            onClick={() => onToggleSelection?.(customer.id)}
+                            className={cn(
+                              "mt-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition",
+                              selectedLeadIds?.has(customer.id)
+                                ? "border-teal-600 bg-teal-600 text-white"
+                                : "border-slate-300 bg-white text-transparent dark:border-white/20 dark:bg-white/5"
+                            )}
+                          >
+                            <Check className="h-4 w-4" strokeWidth={3} />
+                          </button>
+                        ) : null}
                         <LeadAvatar name={customer.name} stale={stale} size="sm" />
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -725,6 +832,7 @@ export function CustomersLeadList({
                               variant="compact"
                               onSchedule={() => setScheduleTarget(customer)}
                             />
+                            <NextBestAction customer={customer} />
                             {stale ? (
                               <span className="text-[9px] font-bold uppercase tracking-wider text-amber-600">
                                 Stale · 14+ days
@@ -805,7 +913,7 @@ export function CustomersLeadList({
                     </div>
 
                     <div className="col-span-2 flex flex-col items-end gap-2">
-                      {canMutateLead ? (
+                      {canMutateLead && !selectionMode ? (
                         <LeadRowActions
                           size="sm"
                           onEdit={onEditLead ? () => onEditLead(customer) : undefined}
