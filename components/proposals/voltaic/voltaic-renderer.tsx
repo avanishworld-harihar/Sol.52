@@ -56,6 +56,7 @@ const MONTH_FACTORS = [
 ];
 const MONTH_KEYS_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const MONTH_KEYS_HI = ["जन", "फर", "मार्च", "अप्रै", "मई", "जून", "जुल", "अग", "सित", "अक्तू", "नव", "दिस"];
+const VOLTAIC_PAYMENT_PCTS = [40, 30, 15, 15] as const;
 
 function readStoredLang(): VoltaicLang {
   if (typeof window === "undefined") return "en";
@@ -212,6 +213,20 @@ export function VoltaicRenderer({
       ),
     [lang, identity.amcYears, data.economics.grossInr, summary?.grossSystemCost]
   );
+
+  const paymentRows = useMemo(() => {
+    const source = data.execution.payments.slice(0, VOLTAIC_PAYMENT_PCTS.length);
+    const paymentBase = source.reduce((sum, row) => sum + row.amountInr, 0);
+
+    return source.map((row, index) => {
+      const pct = VOLTAIC_PAYMENT_PCTS[index];
+      return {
+        ...row,
+        pctLabel: `${pct}%`,
+        amountInr: Math.round((paymentBase * pct) / 100),
+      };
+    });
+  }, [data.execution.payments]);
 
   const totalSheets = showBill ? 15 : 14;
   let sheetNo = 0;
@@ -1053,7 +1068,7 @@ export function VoltaicRenderer({
               <span className={styles.blockLabel}>{c.exec.payTitle}</span>
               <table className={styles.dataTable}>
                 <tbody>
-                  {data.execution.payments.map((p) => (
+                  {paymentRows.map((p) => (
                     <tr key={p.label} className={p.isTotal ? styles.rowTotal : undefined}>
                       <td>{p.label}</td>
                       <td className={styles.num}>{p.pctLabel}</td>

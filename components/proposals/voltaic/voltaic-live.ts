@@ -438,7 +438,7 @@ export function voltaicMajorBom(
           spec: hi
             ? `हॉट-डिप गैल्वनाइज़्ड MS · ≥80 µm कोटिंग · ${design.modulesPerString}-अप टेबल`
             : `Hot-dip galvanized MS · ≥80 µm coating · ${design.modulesPerString}-up tables`,
-          qty: `${Math.max(1, Math.ceil(opts.panelCount / 4))} ${hi ? "सेट" : "sets"}`,
+          qty: hi ? "आवश्यकतानुसार" : "As per requirement",
           standard: "IS 875 Part 3 · IS 4759 galvanizing",
           warranty: structure.warranty || (hi ? "10 वर्ष" : "10 yr"),
           note: hi
@@ -450,7 +450,7 @@ export function voltaicMajorBom(
           item: hi ? "बेस प्लेट और केमिकल एंकर" : "Base plate & chemical anchor",
           make: "Hilti / Fischer",
           spec: hi ? "M12 एंकर · SS 304 फास्टनर" : "M12 anchor · SS 304 fasteners",
-          qty: `${Math.max(4, Math.ceil(opts.panelCount / 2)) * 2} ${hi ? "नग" : "nos"}`,
+          qty: hi ? "आवश्यकतानुसार" : "As per requirement",
           standard: "ETA approved anchor",
           warranty: hi ? "स्ट्रक्चर के साथ" : "With structure",
           note: hi
@@ -472,12 +472,6 @@ export function voltaicBalanceBom(
   const wireMake = opts.wireMake?.trim() || "Polycab / Havells";
   const dcRun = cables.find((c) => c.ref === "DC-1");
   const acRun = cables.find((c) => c.ref === "AC-2");
-  const dcTotalM = cables
-    .filter((c) => c.ref.startsWith("DC"))
-    .reduce((sum, c) => sum + c.lengthM * 2, 0);
-  const acTotalM = cables
-    .filter((c) => c.ref.startsWith("AC"))
-    .reduce((sum, c) => sum + c.lengthM, 0);
 
   return [
     {
@@ -489,7 +483,7 @@ export function voltaicBalanceBom(
           item: hi ? "DC सोलर केबल" : "DC solar cable",
           make: wireMake,
           spec: `${dcRun?.sizeSqMm ?? 4} mm² · 1.5 kV DC · ${hi ? "UV स्थिर, XLPE" : "UV-stable XLPE"}`,
-          qty: `${Math.round(dcTotalM)} m`,
+          qty: hi ? "आवश्यकतानुसार" : "As per requirement",
           standard: "TUV 2PfG 1169 / IEC 62930",
           warranty: hi ? "25 वर्ष सेवा जीवन" : "25 yr service life",
           note: hi
@@ -501,7 +495,7 @@ export function voltaicBalanceBom(
           item: hi ? "AC केबल" : "AC cable",
           make: wireMake,
           spec: `${acRun?.sizeSqMm ?? 4} mm² · ${acRun?.cores ?? "3C + E"} · FRLS`,
-          qty: `${Math.round(acTotalM)} m`,
+          qty: hi ? "आवश्यकतानुसार" : "As per requirement",
           standard: "IS 694 · IS 7098",
           warranty: hi ? "25 वर्ष सेवा जीवन" : "25 yr service life",
         },
@@ -510,7 +504,7 @@ export function voltaicBalanceBom(
           item: hi ? "MC4 कनेक्टर जोड़े" : "MC4 connector pairs",
           make: "Stäubli / Amphenol",
           spec: hi ? "IP68 · 1.5 kV DC · 30 A" : "IP68 · 1.5 kV DC · 30 A",
-          qty: `${design.stringCount * 2 + 2} ${hi ? "जोड़े" : "pairs"}`,
+          qty: hi ? "आवश्यकतानुसार" : "As per requirement",
           standard: "IEC 62852",
           warranty: hi ? "10 वर्ष" : "10 yr",
           note: hi
@@ -522,7 +516,7 @@ export function voltaicBalanceBom(
           item: hi ? "केबल टाई, ग्लैंड, कंड्यूट" : "Cable ties, glands & conduit",
           make: "Hensel / Comet",
           spec: hi ? "UV-प्रतिरोधी टाई · IP68 ग्लैंड · 25 mm PVC कंड्यूट" : "UV-resistant ties · IP68 glands · 25 mm PVC conduit",
-          qty: `1 ${hi ? "लॉट" : "lot"}`,
+          qty: hi ? "आवश्यकतानुसार" : "As per requirement",
           standard: "IS 9537",
           warranty: "—",
         },
@@ -556,23 +550,11 @@ export function voltaicBalanceBom(
           warranty: hi ? "5 वर्ष" : "5 yr",
         },
         {
-          ref: "40.3",
-          item: hi ? "DC आइसोलेटर" : "DC isolator",
-          make: "Santon / Salzer",
-          spec: `1000 V DC · ${Math.max(16, Math.ceil(design.stringIscA * 1.25))} A · ${hi ? "लॉक करने योग्य" : "lockable"}`,
-          qty: `${design.stringCount} ${hi ? "नग" : "nos"}`,
-          standard: "IEC 60947-3",
-          warranty: hi ? "5 वर्ष" : "5 yr",
-          note: hi
-            ? "मेंटेनेंस के दौरान ऐरे को सुरक्षित रूप से अलग करने के लिए"
-            : "Lets the array be safely isolated for maintenance without touching the grid side",
-        },
-        {
           ref: "40.4",
           item: hi ? "सर्ज प्रोटेक्शन (SPD)" : "Surge protection (SPD)",
           make: "Phoenix / Citel",
           spec: hi ? "Type II · DC व AC दोनों तरफ" : "Type II · both DC and AC side",
-          qty: `2 ${hi ? "सेट" : "sets"}`,
+          qty: `1 ${hi ? "सेट" : "set"}`,
           standard: "IEC 61643",
           warranty: hi ? "5 वर्ष" : "5 yr",
         },
@@ -587,7 +569,7 @@ export function voltaicBalanceBom(
           item: hi ? "कॉपर-बॉन्डेड अर्थ इलेक्ट्रोड" : "Copper-bonded earth electrode",
           make: "Ashlok / JMV",
           spec: hi ? "17.2 mm × 3 m · बैकफिल कंपाउंड सहित" : "17.2 mm × 3 m · with backfill compound",
-          qty: `2 ${hi ? "पिट" : "pits"}`,
+          qty: `3 ${hi ? "पिट" : "pits"}`,
           standard: "IS 3043 · IEC 62561",
           warranty: hi ? "10 वर्ष" : "10 yr",
           note: hi
@@ -602,56 +584,6 @@ export function voltaicBalanceBom(
           qty: `1 ${hi ? "नग" : "no"}`,
           standard: "IS/IEC 62305",
           warranty: hi ? "10 वर्ष" : "10 yr",
-        },
-        {
-          ref: "50.3",
-          item: hi ? "अर्थिंग स्ट्रिप और लग" : "Earthing strip & lugs",
-          make: "Dowells",
-          spec: hi ? "25 × 3 mm GI स्ट्रिप · टिन्ड कॉपर लग" : "25 × 3 mm GI strip · tinned copper lugs",
-          qty: `1 ${hi ? "लॉट" : "lot"}`,
-          standard: "IS 3043",
-          warranty: "—",
-        },
-      ],
-    },
-    {
-      code: "60",
-      title: hi ? "मीटरिंग, मॉनिटरिंग और दस्तावेज़" : "Metering, monitoring & documentation",
-      lines: [
-        {
-          ref: "60.1",
-          item: hi ? "बाइ-डायरेक्शनल नेट मीटर" : "Bi-directional net meter",
-          make: "DISCOM approved",
-          spec: opts.threePhase ? "3Φ · Class 1.0" : "1Φ · Class 1.0",
-          qty: `1 ${hi ? "नग" : "no"}`,
-          standard: "IS 16444 · state SERC",
-          warranty: hi ? "DISCOM के अनुसार" : "Per DISCOM",
-          note: hi
-            ? "आवेदन, निरीक्षण और मीटर लगवाने तक की पूरी प्रक्रिया हम संभालते हैं"
-            : "We handle the full application, inspection and meter installation process",
-        },
-        {
-          ref: "60.2",
-          item: hi ? "मॉनिटरिंग (Wi-Fi डोंगल / ऐप)" : "Monitoring (Wi-Fi dongle / app)",
-          make: "Inverter OEM",
-          spec: hi ? "प्रति-स्ट्रिंग जनरेशन · अलर्ट" : "Per-string generation · fault alerts",
-          qty: `1 ${hi ? "नग" : "no"}`,
-          standard: "—",
-          warranty: hi ? "इन्वर्टर के साथ" : "With inverter",
-        },
-        {
-          ref: "60.3",
-          item: hi ? "लेबल, साइनेज और ड्रॉइंग सेट" : "Labels, signage & drawing set",
-          make: "—",
-          spec: hi
-            ? "DC/AC चेतावनी लेबल · SLD · अर्थिंग टेस्ट रिपोर्ट"
-            : "DC/AC warning labels · SLD · earthing test report",
-          qty: `1 ${hi ? "सेट" : "set"}`,
-          standard: "IS/IEC 62446",
-          warranty: "—",
-          note: hi
-            ? "हैंडओवर पर पूरा दस्तावेज़ सेट — भविष्य में कोई भी इलेक्ट्रीशियन सिस्टम समझ सकता है"
-            : "A complete document set at handover, so any electrician can understand the system later",
         },
       ],
     },
