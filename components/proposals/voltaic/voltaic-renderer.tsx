@@ -29,7 +29,6 @@ import {
   resolveVoltaicEquipmentMakes,
   voltaicBalanceBom,
   voltaicMajorBom,
-  VOLTAIC_INVERTER_MAX_DC_V,
   VOLTAIC_MAX_CELL_TEMP_C,
   VOLTAIC_MIN_CELL_TEMP_C,
   VOLTAIC_VOC_TEMP_COEFF,
@@ -132,6 +131,43 @@ export function VoltaicRenderer({
   const annualUnits = data.closing.annualUnits || eng.metrics.annualGenUnits;
   const showBill = data.bill.hasData && data.bill.months.length > 0;
 
+  const projections = useMemo(() => {
+    const escalation = 0.06;
+    const degradation = 0.0055;
+    const annualSaving = Math.max(0, data.economics.monthlySavingsInr * 12);
+    let cumulativeSaving = 0;
+    let lifetimeUnits = 0;
+    let paybackYears = 0;
+    const wealthJourney = Array.from({ length: 25 }, (_, index) => {
+      const year = index + 1;
+      const generationFactor = Math.pow(1 - degradation, index);
+      const annualInr = annualSaving * generationFactor * Math.pow(1 + escalation, index);
+      cumulativeSaving += annualInr;
+      lifetimeUnits += annualUnits * generationFactor;
+      if (!paybackYears && cumulativeSaving >= data.economics.netInr && annualInr > 0) {
+        const before = cumulativeSaving - annualInr;
+        paybackYears = index + (data.economics.netInr - before) / annualInr;
+      }
+      return {
+        year,
+        cumulativeInr: Math.round(cumulativeSaving),
+        annualInr: Math.round(annualInr),
+        isPayback: false,
+      };
+    });
+    const resolvedPayback = paybackYears || data.economics.paybackYears;
+    for (const point of wealthJourney) {
+      point.isPayback = resolvedPayback > 0 && Math.abs(point.year - resolvedPayback) < 0.51;
+    }
+    return {
+      wealthJourney,
+      paybackYears: resolvedPayback,
+      lifetimeProfitInr: Math.max(0, Math.round(cumulativeSaving - data.economics.netInr)),
+      lifetimeUnits: Math.round(lifetimeUnits),
+      co2Tons: Math.round((lifetimeUnits * 0.82) / 1000),
+    };
+  }, [annualUnits, data.economics.monthlySavingsInr, data.economics.netInr, data.economics.paybackYears]);
+
   const dateLabel = useMemo(() => {
     const raw = data.meta.generatedAt ? new Date(data.meta.generatedAt) : new Date();
     return raw.toLocaleDateString(isHi ? "hi-IN" : "en-IN", {
@@ -172,8 +208,11 @@ export function VoltaicRenderer({
         panelCount: eng.metrics.panelCount,
         isHi,
         wireMake: makes.wire,
+        acdbMake: makes.acdb,
+        dcdbMake: makes.dcdb,
+        spdMake: makes.spd,
       }),
-    [eng, isHi, makes.wire]
+    [eng, isHi, makes]
   );
 
   const brandCatalog =
@@ -406,7 +445,7 @@ export function VoltaicRenderer({
               </div>
               <div className={styles.coverStat}>
                 <span className={styles.coverStatVal}>
-                  {data.economics.paybackYears > 0 ? data.economics.paybackYears.toFixed(1) : "—"}
+                  {projections.paybackYears > 0 ? projections.paybackYears.toFixed(1) : "—"}
                 </span>
                 <span className={styles.coverStatUnit}>{c.econ.yrs}</span>
                 <span className={styles.coverStatLabel}>{c.cover.payback}</span>
@@ -447,11 +486,11 @@ export function VoltaicRenderer({
           <div className={styles.whyChart}>
             <VoltaicCaption
               label={c.econ.projTitle}
-              right={data.economics.paybackYears > 0 ? `${c.econ.breakEven} ${data.economics.paybackYears.toFixed(1)} ${c.econ.yrs}` : undefined}
+              right={projections.paybackYears > 0 ? `${c.econ.breakEven} ${projections.paybackYears.toFixed(1)} ${c.econ.yrs}` : undefined}
             />
             <WealthChart
-              points={data.economics.wealthJourney}
-              paybackYears={data.economics.paybackYears}
+              points={projections.wealthJourney}
+              paybackYears={projections.paybackYears}
               breakEvenLabel={c.econ.breakEven}
             />
             <p className={styles.pageNote}>{c.econ.projNote}</p>
@@ -533,7 +572,11 @@ export function VoltaicRenderer({
             <span className={styles.moneyOp}>−</span>
             <div className={`${styles.moneyCell} ${styles.moneyCellSub}`}>
               <span className={styles.moneyLabel}>{c.econ.subsidy}</span>
-              <span className={styles.moneyVal}>{formatInr(data.economics.subsidyInr)}</span>
+              <span className={styles.moneyVal}>
+                {data.economics.subsidyInr > 0
+                  ? formatInr(data.economics.subsidyInr)
+                  : isHi ? "शामिल नहीं" : "Not included"}
+              </span>
             </div>
             <span className={styles.moneyOp}>=</span>
             <div className={`${styles.moneyCell} ${styles.moneyCellNet}`}>
@@ -549,15 +592,15 @@ export function VoltaicRenderer({
             </div>
             <div className={styles.kpi}>
               <span className={styles.kpiVal}>
-                {data.economics.paybackYears > 0
-                  ? `${data.economics.paybackYears.toFixed(1)} ${c.econ.yrs}`
+                {projections.paybackYears > 0
+                  ? `${projections.paybackYears.toFixed(1)} ${c.econ.yrs}`
                   : "—"}
               </span>
               <span className={styles.kpiLabel}>{c.econ.payback}</span>
             </div>
             <div className={styles.kpi}>
               <span className={styles.kpiVal}>
-                {formatInrCompact(data.economics.lifetimeProfitInr)}
+                {formatInrCompact(projections.lifetimeProfitInr)}
               </span>
               <span className={styles.kpiLabel}>{c.econ.lifetime}</span>
             </div>
@@ -744,7 +787,7 @@ export function VoltaicRenderer({
                   </tr>
                   <tr>
                     <td>{c.elec.params.maxDc}</td>
-                    <td className={styles.num}>{VOLTAIC_INVERTER_MAX_DC_V} V</td>
+                    <td className={styles.num}>{d.inverterMaxDcV} V</td>
                   </tr>
                   <tr className={styles.rowHighlight}>
                     <td>{c.elec.params.perString}</td>
@@ -837,7 +880,7 @@ export function VoltaicRenderer({
                   </tr>
                   <tr>
                     <td>{c.bom.ds.eff}</td>
-                    <td className={styles.num}>≥ 21%</td>
+                    <td className={styles.num}>≈ {d.moduleEfficiencyPct}%</td>
                   </tr>
                   <tr>
                     <td>{c.bom.ds.degradation}</td>
@@ -845,7 +888,7 @@ export function VoltaicRenderer({
                   </tr>
                   <tr>
                     <td>{c.bom.ds.cells}</td>
-                    <td className={styles.num}>144 half-cut</td>
+                    <td className={styles.num}>{d.moduleCells}</td>
                   </tr>
                 </tbody>
               </table>
@@ -865,7 +908,7 @@ export function VoltaicRenderer({
                   </tr>
                   <tr>
                     <td>{c.bom.ds.mppt}</td>
-                    <td className={styles.num}>{d.mpptCount}</td>
+                    <td className={styles.num}>≥ {d.mpptCount} · {isHi ? "अंतिम OEM अनुसार" : "per final OEM"}</td>
                   </tr>
                   <tr>
                     <td>{c.bom.ds.mpptRange}</td>
@@ -875,7 +918,7 @@ export function VoltaicRenderer({
                   </tr>
                   <tr>
                     <td>{c.bom.ds.maxDc}</td>
-                    <td className={styles.num}>{VOLTAIC_INVERTER_MAX_DC_V} V</td>
+                    <td className={styles.num}>{d.inverterMaxDcV} V</td>
                   </tr>
                   <tr>
                     <td>{c.bom.ds.peakEff}</td>
@@ -891,7 +934,7 @@ export function VoltaicRenderer({
                   </tr>
                   <tr>
                     <td>{c.bom.ds.monitoring}</td>
-                    <td className={styles.num}>Wi-Fi · per-string</td>
+                    <td className={styles.num}>{isHi ? "Wi-Fi / पोर्टल · OEM अनुसार" : "Wi-Fi / portal · as per OEM"}</td>
                   </tr>
                 </tbody>
               </table>
@@ -1024,7 +1067,10 @@ export function VoltaicRenderer({
                 value={`${eng.metrics.specificYieldKwhPerKwp} kWh/kWp`}
               />
               <Spec label={c.gen.basis.degradation} value="≤ 0.55 %/yr" />
-              <Spec label={c.gen.basis.coverage} value={`${eng.metrics.loadCoveragePct}%`} />
+              <Spec
+                label={c.gen.basis.coverage}
+                value={showBill ? `${eng.metrics.loadCoveragePct}%` : (isHi ? "बिल डेटा आवश्यक" : "Bill data required")}
+              />
             </div>
           </div>
         </VoltaicSheet>
@@ -1034,15 +1080,15 @@ export function VoltaicRenderer({
           <VoltaicHead title={c.impact.title} note={c.impact.note} />
           <div className={styles.impactRow}>
             <div className={styles.impactCard}>
-              <span className={styles.impactVal}>{Math.round(data.impact.co2Tons)}</span>
+              <span className={styles.impactVal}>{projections.co2Tons}</span>
               <span className={styles.impactUnit}>{c.impact.tons}</span>
               <span className={styles.impactLabel}>{c.impact.co2}</span>
             </div>
             <div className={styles.impactCard}>
               <span className={styles.impactVal}>
-                {data.impact.treesEquivalent.toLocaleString("en-IN")}
+                {(projections.lifetimeUnits / 1000).toFixed(0)}
               </span>
-              <span className={styles.impactUnit}>&nbsp;</span>
+              <span className={styles.impactUnit}>MWh</span>
               <span className={styles.impactLabel}>{c.impact.trees}</span>
             </div>
           </div>
@@ -1229,8 +1275,8 @@ export function VoltaicRenderer({
               </div>
               <div>
                 <span className={styles.closeStatVal}>
-                  {data.closing.lifetimeWealthInr > 0
-                    ? formatInrCompact(data.closing.lifetimeWealthInr)
+                  {projections.lifetimeProfitInr > 0
+                    ? formatInrCompact(projections.lifetimeProfitInr)
                     : "—"}
                 </span>
                 <span className={styles.closeStatLabel}>{c.closing.wealth}</span>

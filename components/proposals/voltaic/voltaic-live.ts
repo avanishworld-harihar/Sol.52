@@ -27,21 +27,45 @@ export type VoltaicLang = "en" | "hi";
  * per-watt model tracks real datasheets closely enough for a design summary.
  * Values are presented as indicative and confirmed against the final datasheet.
  */
-const CELL_VOC_V = 0.755; // per cell at STC
-const CELLS_PER_MODULE = 144; // 72 half-cut pairs
 const VOC_TEMP_COEFF_PCT_PER_C = -0.27;
 const MIN_CELL_TEMP_C = 2; // cold winter morning, worst case for Voc
 const MAX_CELL_TEMP_C = 70; // hot roof, worst case for Vmp
 
-/** Residential string inverters clamp DC input here. */
-const INVERTER_MAX_DC_V = 550;
-const INVERTER_MPPT_MIN_V = 120;
+/**
+ * Indicative module envelope used only until the final make/model datasheet is
+ * approved. Half-cut cell count is not the number of cells in electrical
+ * series, so multiplying 144 by a cell voltage (the old model) overstated Voc
+ * by more than 2× on modern high-current modules.
+ */
+function moduleElectricalEnvelope(panelWatt: number) {
+  if (panelWatt >= 650) {
+    return { vocV: 47.6, vmpV: 39.8, cells: "132 half-cut", areaM2: 3.12, efficiencyPct: 22.4 };
+  }
+  if (panelWatt >= 560) {
+    return { vocV: 51.8, vmpV: 43.4, cells: "144 half-cut", areaM2: 2.58, efficiencyPct: 22.1 };
+  }
+  if (panelWatt >= 500) {
+    return { vocV: 49.8, vmpV: 41.8, cells: "144 half-cut", areaM2: 2.58, efficiencyPct: 21.3 };
+  }
+  return { vocV: 41.8, vmpV: 35.0, cells: "108 half-cut", areaM2: 2.0, efficiencyPct: 20.8 };
+}
+
+function inverterDcEnvelope(systemKw: number) {
+  return systemKw > 10
+    ? { maxDcV: 1100, mpptMinV: 180 }
+    : { maxDcV: 600, mpptMinV: 120 };
+}
 
 export type VoltaicStringDesign = {
   moduleVocV: number;
   moduleVmpV: number;
   moduleIscA: number;
   moduleImpA: number;
+  moduleCells: string;
+  moduleEfficiencyPct: number;
+  moduleAreaM2: number;
+  inverterMaxDcV: number;
+  inverterMpptMinV: number;
   /** Voc at the coldest expected cell temperature — sets the string ceiling. */
   vocColdV: number;
   /** Vmp at the hottest expected cell temperature — sets the string floor. */
@@ -61,10 +85,13 @@ export type VoltaicStringDesign = {
 
 export function voltaicStringDesign(
   panelCount: number,
-  panelWatt: number
+  panelWatt: number,
+  systemKw = 5
 ): VoltaicStringDesign {
-  const moduleVocV = Math.round(CELL_VOC_V * CELLS_PER_MODULE * 10) / 10;
-  const moduleVmpV = Math.round(moduleVocV * 0.83 * 10) / 10;
+  const module = moduleElectricalEnvelope(panelWatt);
+  const inverter = inverterDcEnvelope(systemKw);
+  const moduleVocV = module.vocV;
+  const moduleVmpV = module.vmpV;
   const moduleImpA = Math.round((panelWatt / moduleVmpV) * 10) / 10;
   const moduleIscA = Math.round(moduleImpA * 1.06 * 10) / 10;
 
@@ -73,8 +100,8 @@ export function voltaicStringDesign(
   const vocColdV = Math.round(moduleVocV * coldFactor * 10) / 10;
   const vmpHotV = Math.round(moduleVmpV * hotFactor * 10) / 10;
 
-  const maxModulesPerString = Math.max(1, Math.floor(INVERTER_MAX_DC_V / vocColdV));
-  const minModulesPerString = Math.max(1, Math.ceil(INVERTER_MPPT_MIN_V / vmpHotV));
+  const maxModulesPerString = Math.max(1, Math.floor(inverter.maxDcV / vocColdV));
+  const minModulesPerString = Math.max(1, Math.ceil(inverter.mpptMinV / vmpHotV));
 
   const count = Math.max(1, panelCount);
   let modulesPerString = Math.min(maxModulesPerString, count);
@@ -97,6 +124,11 @@ export function voltaicStringDesign(
     moduleVmpV,
     moduleIscA,
     moduleImpA,
+    moduleCells: module.cells,
+    moduleEfficiencyPct: module.efficiencyPct,
+    moduleAreaM2: module.areaM2,
+    inverterMaxDcV: inverter.maxDcV,
+    inverterMpptMinV: inverter.mpptMinV,
     vocColdV,
     vmpHotV,
     maxModulesPerString,
@@ -108,11 +140,10 @@ export function voltaicStringDesign(
     stringVmpV,
     stringIscA: moduleIscA,
     mpptCount: stringCount > 1 ? 2 : 1,
-    headroomPct: Math.round((1 - stringVocColdV / INVERTER_MAX_DC_V) * 100),
+    headroomPct: Math.round((1 - stringVocColdV / inverter.maxDcV) * 100),
   };
 }
 
-export const VOLTAIC_INVERTER_MAX_DC_V = INVERTER_MAX_DC_V;
 export const VOLTAIC_MIN_CELL_TEMP_C = MIN_CELL_TEMP_C;
 export const VOLTAIC_MAX_CELL_TEMP_C = MAX_CELL_TEMP_C;
 export const VOLTAIC_VOC_TEMP_COEFF = VOC_TEMP_COEFF_PCT_PER_C;
@@ -172,7 +203,7 @@ export function voltaicCableSchedule(
     Math.round(
       ((opts.systemKw * 1000) / (acVolts * (opts.threePhase ? 1.732 : 1) * 0.98)) * 10
     ) / 10;
-  const acSize = acCurrent > 32 ? 10 : acCurrent > 24 ? 6 : 4;
+  const acSize = acCurrent > 63 ? 25 : acCurrent > 40 ? 16 : acCurrent > 32 ? 10 : acCurrent > 24 ? 6 : 4;
 
   return [
     {
@@ -195,12 +226,12 @@ export function voltaicCableSchedule(
       ref: "DC-2",
       from: "DCDB",
       to: "Inverter MPPT",
-      cores: `2 × 1C`,
+      cores: `2 × 1C / MPPT`,
       sizeSqMm: opts.dcSqMm,
       lengthM: 3,
-      currentA: design.stringIscA * design.stringCount,
+      currentA: design.stringIscA,
       voltageDropPct: dcVoltageDropPct(
-        design.stringIscA * design.stringCount,
+        design.stringIscA,
         3,
         opts.dcSqMm,
         design.stringVmpV
@@ -277,6 +308,7 @@ export type VoltaicStructuralCase = {
 
 export function voltaicStructuralCase(opts: {
   panelCount: number;
+  moduleAreaM2: number;
   tiltDeg: number;
   isHi: boolean;
 }): VoltaicStructuralCase {
@@ -284,7 +316,7 @@ export function voltaicStructuralCase(opts: {
   const windMs = windSpeedKmph / 3.6;
   /* q = 0.6 Vz² (N/m²), IS 875 Part 3 */
   const designWindPressurePa = Math.round(0.6 * windMs * windMs);
-  const moduleAreaM2 = 2.28; // ~2278 × 1134 mm
+  const moduleAreaM2 = opts.moduleAreaM2;
   const arrayAreaM2 = Math.round(opts.panelCount * moduleAreaM2 * 10) / 10;
   /* Net uplift coefficient ~1.2 on a tilted rooftop array. */
   const upliftPerModuleN = Math.round(
@@ -301,7 +333,7 @@ export function voltaicStructuralCase(opts: {
       ? "रासायनिक एंकर के साथ RCC पर बोल्टेड बेस प्लेट"
       : "Bolted base plate on RCC with chemical anchors",
     rowPitchM:
-      Math.round((moduleAreaM2 / 2.28) * (1.13 * Math.cos((opts.tiltDeg * Math.PI) / 180) + 0.9) * 100) /
+      Math.round(Math.sqrt(moduleAreaM2 / 2.28) * (1.13 * Math.cos((opts.tiltDeg * Math.PI) / 180) + 0.9) * 100) /
       100,
     clearanceMm: 300,
     tiltDeg: opts.tiltDeg,
@@ -346,9 +378,12 @@ export type VoltaicEquipmentMakes = {
   panel: string;
   inverter: string;
   wire: string;
+  acdb: string;
+  dcdb: string;
+  spd: string;
 };
 
-/** Panel / inverter / wire makes from Proposal Builder, then BOM snapshot. */
+/** Equipment makes from Proposal Builder/BOM snapshot. No fabricated OEM fallback. */
 export function resolveVoltaicEquipmentMakes(
   data: ProposalData,
   pptInput?: PremiumProposalPptInput | null
@@ -357,6 +392,8 @@ export function resolveVoltaicEquipmentMakes(
   const panelBom = brandOf(data, /panel|module/i, "");
   const inverterBom = brandOf(data, /inverter/i, "");
   const cableBom = brandOf(data, /cable|wire|cabling/i, "");
+  const safetyBom = brandOf(data, /acdb|dcdb|distribution box|ac\s*\/\s*dc/i, "");
+  const spdBom = brandOf(data, /surge|spd/i, "");
 
   const panel = cfg
     ? resolveProposalPanelBrand(cfg, panelBom.brand || "Tier-1")
@@ -368,7 +405,16 @@ export function resolveVoltaicEquipmentMakes(
     ? wireBrandsLabel(cfg.pricing, cableBom.brand || "Polycab")
     : cableBom.brand || "Polycab / Havells";
 
-  return { panel, inverter, wire };
+  const approvedMake = "Final approved make";
+  const safety = safetyBom.brand || approvedMake;
+  return {
+    panel,
+    inverter,
+    wire,
+    acdb: safety,
+    dcdb: safety,
+    spd: spdBom.brand || safety,
+  };
 }
 
 /**
@@ -466,7 +512,15 @@ export function voltaicMajorBom(
 export function voltaicBalanceBom(
   design: VoltaicStringDesign,
   cables: VoltaicCableRun[],
-  opts: { threePhase: boolean; panelCount: number; isHi: boolean; wireMake?: string }
+  opts: {
+    threePhase: boolean;
+    panelCount: number;
+    isHi: boolean;
+    wireMake?: string;
+    acdbMake?: string;
+    dcdbMake?: string;
+    spdMake?: string;
+  }
 ): VoltaicBomGroup[] {
   const hi = opts.isHi;
   const wireMake = opts.wireMake?.trim() || "Polycab / Havells";
@@ -529,8 +583,8 @@ export function voltaicBalanceBom(
         {
           ref: "40.1",
           item: "DCDB",
-          make: "Hensel / Elmex",
-          spec: `${design.stringCount} ${hi ? "स्ट्रिंग इनपुट" : "string input"} · ${hi ? "फ्यूज़" : "gPV fuse"} + Type II SPD · IP65`,
+          make: opts.dcdbMake?.trim() || (hi ? "अंतिम स्वीकृत ब्रांड" : "Final approved make"),
+          spec: `${design.stringCount} ${hi ? "स्ट्रिंग इनपुट" : "string input"} · ${hi ? "gPV फ्यूज़ + लॉक करने योग्य DC आइसोलेटर + Type II SPD" : "gPV fuse + lockable DC isolator + Type II SPD"} · IP65`,
           qty: `1 ${hi ? "नग" : "no"}`,
           standard: "IEC 61439 · IEC 61643-31",
           warranty: hi ? "5 वर्ष" : "5 yr",
@@ -541,19 +595,19 @@ export function voltaicBalanceBom(
         {
           ref: "40.2",
           item: "ACDB",
-          make: "Schneider / Legrand",
+          make: opts.acdbMake?.trim() || (hi ? "अंतिम स्वीकृत ब्रांड" : "Final approved make"),
           spec: opts.threePhase
             ? `4P MCB + Type II SPD · IP65`
             : `DP MCB + Type II SPD · IP65`,
           qty: `1 ${hi ? "नग" : "no"}`,
-          standard: "IEC 61439 · IS 8828",
+          standard: "IEC 61439 · IEC 60898-1",
           warranty: hi ? "5 वर्ष" : "5 yr",
         },
         {
           ref: "40.4",
           item: hi ? "सर्ज प्रोटेक्शन (SPD)" : "Surge protection (SPD)",
-          make: "Phoenix / Citel",
-          spec: hi ? "Type II · DC व AC दोनों तरफ" : "Type II · both DC and AC side",
+          make: opts.spdMake?.trim() || (hi ? "अंतिम स्वीकृत ब्रांड" : "Final approved make"),
+          spec: hi ? "समन्वित Type II SPD सेट · DCDB और ACDB में एकीकृत" : "Coordinated Type II SPD set · integrated in DCDB and ACDB",
           qty: `1 ${hi ? "सेट" : "set"}`,
           standard: "IEC 61643",
           warranty: hi ? "5 वर्ष" : "5 yr",
@@ -573,14 +627,14 @@ export function voltaicBalanceBom(
           standard: "IS 3043 · IEC 62561",
           warranty: hi ? "10 वर्ष" : "10 yr",
           note: hi
-            ? "ऐरे और इन्वर्टर के लिए अलग-अलग पिट; मापी गई प्रतिरोधकता ≤1 Ω रिपोर्ट की जाती है"
-            : "Separate pits for array and inverter; measured resistance ≤1 Ω is reported at handover",
+            ? "अलग पिट: (1) ऐरे/DC, (2) इन्वर्टर/AC, (3) लाइटनिंग; बॉन्डिंग कंडक्टर व लग्स सहित; मापी गई प्रतिरोधकता हैंडओवर पर रिपोर्ट होगी"
+            : "Dedicated pits for (1) array/DC, (2) inverter/AC and (3) lightning; bonding conductor and lugs included; measured resistance reported at handover",
         },
         {
           ref: "50.2",
           item: hi ? "लाइटनिंग अरेस्टर" : "Lightning arrester",
           make: "JMV / Ashlok",
-          spec: hi ? "ESE / स्पाइक टाइप · छत पर सबसे ऊँचे बिंदु पर" : "ESE / spike type · at the highest roof point",
+          spec: hi ? "एयर-टर्मिनेशन सिस्टम · अंतिम जोखिम आकलन के अनुसार" : "Air-termination system · as per final lightning-risk assessment",
           qty: `1 ${hi ? "नग" : "no"}`,
           standard: "IS/IEC 62305",
           warranty: hi ? "10 वर्ष" : "10 yr",
@@ -699,9 +753,10 @@ export function buildVoltaicEngineering(
     siteLat: pptInput?.residentialTechnicalSpecs?.mounting?.siteLat,
   });
 
-  const design = voltaicStringDesign(panelCount, panelWatt);
+  const design = voltaicStringDesign(panelCount, panelWatt, systemKw);
   const layout = pptInput?.residentialTechnicalSpecs?.layout;
   const threePhase =
+    systemKw > 3 ||
     pptInput?.residentialConfig?.pricing?.connectionPhase === "three_phase" ||
     /three/i.test(pptInput?.customerProfile?.phase ?? "");
   const dcRunM = layout?.dcRunLengthM ?? 15;
@@ -723,7 +778,7 @@ export function buildVoltaicEngineering(
       dcSqMm,
       threePhase,
     }),
-    structural: voltaicStructuralCase({ panelCount, tiltDeg, isHi }),
+    structural: voltaicStructuralCase({ panelCount, moduleAreaM2: design.moduleAreaM2, tiltDeg, isHi }),
     tests: voltaicCommissioningTests(design, isHi),
     threePhase,
     dcRunM,

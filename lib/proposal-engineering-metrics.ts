@@ -35,12 +35,16 @@ export function computeResidentialEngineeringMetrics(
     acCapacityKw > 0 ? Math.round((dcCapacityKwp / acCapacityKw) * 100) / 100 : 1.1;
   const annualGenUnits = summary.annualGen;
   const specificYieldKwhPerKwp =
-    acCapacityKw > 0 ? Math.round(annualGenUnits / acCapacityKw) : 0;
+    dcCapacityKwp > 0 ? Math.round(annualGenUnits / dcCapacityKwp) : 0;
   const capacityFactorPct =
     acCapacityKw > 0
       ? Math.round((annualGenUnits / (acCapacityKw * 8760)) * 100 * 10) / 10
       : 0;
   const performanceRatioPct = 75;
+  const peakSunHours =
+    dcCapacityKwp > 0
+      ? Math.round((annualGenUnits / (dcCapacityKwp * 365 * (performanceRatioPct / 100))) * 10) / 10
+      : 0;
 
   const geo = resolveSiteLatitude(opts?.location, opts?.state);
   const siteLat = opts?.siteLat ?? geo.lat;
@@ -53,7 +57,7 @@ export function computeResidentialEngineeringMetrics(
     performanceRatioPct,
     capacityFactorPct,
     specificYieldKwhPerKwp,
-    peakSunHours: 5.0,
+    peakSunHours,
     annualGenUnits,
     loadCoveragePct: Math.round(summary.coverage),
     panelWatt,

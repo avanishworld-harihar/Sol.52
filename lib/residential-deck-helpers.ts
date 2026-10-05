@@ -313,7 +313,7 @@ export function buildResidentialBomFromConfig(
     lineBrand("inverter") ||
     inverterBrandsLabel(config.inverterBrandOptions, defaultBrands.inverter);
   const structureBrand = lineBrand("structure") || defaultBrands.mounting;
-  const safetyBrand = lineBrand("acdb_dcdb") || "Havells / Phoenix";
+  const safetyBrand = lineBrand("acdb_dcdb") || "Final approved make";
   const wire = wireBrandsLabel(config.pricing);
   const installerDesk = opts?.installerName?.trim()
     ? `${opts.installerName.trim()} Service Desk`

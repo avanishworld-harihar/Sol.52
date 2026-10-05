@@ -147,8 +147,8 @@ export function getVoltaicCopy(lang: VoltaicLang) {
       yearLabel: (y: number) => (hi ? `${y}-वर्ष ऋण` : `${y}-Year loan`),
       projTitle: hi ? "25 वर्ष की संचयी बचत" : "Cumulative saving over 25 years",
       projNote: hi
-        ? "6% वार्षिक टैरिफ वृद्धि मानकर। पेबैक के बाद हर यूनिट शुद्ध लाभ है।"
-        : "Assumes 6% annual tariff escalation. After payback, every unit is net gain.",
+        ? "6% वार्षिक टैरिफ वृद्धि और 0.55% उत्पादन ह्रास मानकर; O&M, उपकरण बदलने और फाइनेंस लागत को छोड़कर।"
+        : "Assumes 6% annual tariff escalation and 0.55% generation degradation; excludes O&M, replacement and finance costs.",
       breakEven: hi ? "पेबैक" : "Payback",
       brandCompare: hi ? "ब्रांड तुलना" : "Brand comparison",
       brandTrack: hi ? "ट्रैक" : "Track",
@@ -279,7 +279,7 @@ export function getVoltaicCopy(lang: VoltaicLang) {
         inverter: hi ? "इन्वर्टर" : "Inverter",
         acdb: "ACDB",
         mcb: "MCB",
-        rcd: "RCD",
+        rcd: "SPD",
         meter: hi ? "नेट मीटर" : "Net meter",
         grid: hi ? "ग्रिड" : "Grid",
         loads: hi ? "घर का लोड" : "House loads",
@@ -417,11 +417,11 @@ export function getVoltaicCopy(lang: VoltaicLang) {
       sheet: hi ? "पर्यावरणीय प्रभाव" : "Environmental impact",
       title: hi ? "25 वर्षों में आपका योगदान।" : "What this adds up to in 25 years.",
       co2: hi ? "CO₂ रोका गया" : "CO₂ avoided",
-      trees: hi ? "पेड़ों के बराबर" : "Equivalent trees",
+      trees: hi ? "25-वर्ष स्वच्छ ऊर्जा" : "25-year clean energy",
       tons: hi ? "टन" : "tonnes",
       note: hi
-        ? "भारतीय ग्रिड के औसत उत्सर्जन गुणांक पर आधारित।"
-        : "Based on the average emission factor of the Indian grid.",
+        ? "0.82 kg CO₂/kWh और 0.55% वार्षिक उत्पादन ह्रास पर आधारित अनुमान।"
+        : "Estimated using 0.82 kg CO₂/kWh and 0.55% annual generation degradation.",
     },
 
     exec: {
@@ -464,8 +464,8 @@ export function getVoltaicCopy(lang: VoltaicLang) {
       title1: hi ? "काम शुरू करने के" : "Ready when",
       title2: hi ? "लिए तैयार।" : "you are.",
       lead: hi
-        ? "इस डोज़ियर की हर संख्या आपकी छत और आपके बिल से निकली है। मंज़ूरी मिलते ही सर्वे की तारीख तय कर देते हैं।"
-        : "Every number in this dossier came from your roof and your bill. Say the word and we lock a survey date.",
+        ? "उपलब्ध ग्राहक डेटा और स्पष्ट डिज़ाइन मान्यताओं से तैयार। अंतिम साइट सर्वे और स्वीकृत डेटाशीट के बाद डिज़ाइन फ्रीज़ होगा।"
+        : "Prepared from the available customer data and stated design assumptions. The design is frozen after the final site survey and approved datasheets.",
       units: hi ? "यूनिट / वर्ष" : "units / year",
       saved: hi ? "बचत / वर्ष" : "saved / year",
       wealth: hi ? "25-वर्ष लाभ" : "25-year gain",
