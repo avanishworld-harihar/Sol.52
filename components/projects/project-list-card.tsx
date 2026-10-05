@@ -9,7 +9,8 @@ import { projectDisplayName } from "@/lib/project-list-utils";
 import { buildProposalEditHref } from "@/lib/proposal-edit-url";
 import { formatInrCompact } from "@/lib/proposal-hub-insights";
 import { cn } from "@/lib/utils";
-import { Archive, ArchiveRestore, Eye, Send } from "lucide-react";
+import { getProjectIntelligence } from "@/lib/project-intelligence";
+import { Archive, ArchiveRestore, Eye, MessageCircle, Phone, Send } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
@@ -94,6 +95,7 @@ export function ProjectListCard({
   const { t } = useLanguage();
   const router = useRouter();
   const name = projectDisplayName(project);
+  const intelligence = getProjectIntelligence(project);
   const pending =
     project.contract_amount_inr != null
       ? Math.max(0, project.contract_amount_inr - (project.amount_received_inr ?? 0))
@@ -131,6 +133,28 @@ export function ProjectListCard({
               </h3>
             </div>
             <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
+              {project.lead_phone ? (
+                <>
+                  <a
+                    href={`tel:${project.lead_phone.replace(/\s/g, "")}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 text-indigo-600 dark:border-white/15 dark:text-indigo-300 sm:h-8 sm:w-8"
+                    aria-label={`Call ${name}`}
+                  >
+                    <Phone className="h-3.5 w-3.5" />
+                  </a>
+                  <a
+                    href={`https://wa.me/${project.lead_phone.replace(/\D/g, "")}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-950/20 dark:text-emerald-300 sm:h-8 sm:w-8"
+                    aria-label={`WhatsApp ${name}`}
+                  >
+                    <MessageCircle className="h-3.5 w-3.5" />
+                  </a>
+                </>
+              ) : null}
               {project.lead_id ? (
                 <Link
                   href={buildProposalEditHref({
@@ -176,6 +200,16 @@ export function ProjectListCard({
           {view === "completed" && project.actual_completion ? (
             <p className="mt-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 sm:text-xs">
               Completed {new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(new Date(`${project.actual_completion}T00:00:00`))}
+            </p>
+          ) : null}
+          {project.next_action?.trim() ? (
+            <p className="mt-1 truncate text-[10px] font-semibold text-slate-600 dark:text-slate-300 sm:text-xs">
+              Next: {project.next_action}
+            </p>
+          ) : null}
+          {intelligence.priority !== "normal" ? (
+            <p className="mt-1 truncate text-[9px] font-bold text-amber-700 dark:text-amber-300 sm:text-[11px]" title={intelligence.reasons.join(" · ")}>
+              {intelligence.headline}: {intelligence.reasons[0]}
             </p>
           ) : null}
         </div>

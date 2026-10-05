@@ -75,6 +75,34 @@ export function ProjectListFiltersBar({
       ? `${totalCount} project${totalCount === 1 ? "" : "s"}`
       : `${filteredCount} of ${totalCount} projects`;
 
+  const quickViews = [
+    { label: "All active", active: filters.stage === "all" && filters.health === "all", patch: { stage: "all", health: "all", sort: "updated_at", sortDir: "desc", page: 1 } as Partial<ProjectListFilters> },
+    { label: "Needs attention", active: filters.health === "delayed", patch: { health: "delayed", stage: "all", page: 1 } as Partial<ProjectListFilters> },
+    { label: "Blocked", active: filters.health === "blocked", patch: { health: "blocked", stage: "all", page: 1 } as Partial<ProjectListFilters> },
+    { label: "Installations", active: filters.stage === "installation", patch: { stage: "installation", health: "all", page: 1 } as Partial<ProjectListFilters> },
+    { label: "Due first", active: filters.sort === "target_completion" && filters.sortDir === "asc", patch: { sort: "target_completion", sortDir: "asc", page: 1 } as Partial<ProjectListFilters> },
+  ];
+
+  const quickViewRail = (
+    <div className="flex gap-1.5 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {quickViews.map((item) => (
+        <button
+          key={item.label}
+          type="button"
+          onClick={() => onChange(item.patch)}
+          className={cn(
+            "min-h-[30px] shrink-0 rounded-full border px-3 text-[10px] font-bold transition sm:text-xs",
+            item.active
+              ? "border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900"
+              : "border-slate-200 bg-slate-50 text-slate-600 hover:border-teal-300 hover:text-teal-700 dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-300"
+          )}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  );
+
   const advancedFilters = (
     <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
       <FilterSelect
@@ -145,6 +173,7 @@ export function ProjectListFiltersBar({
     >
       {/* Mobile: search + collapsible filters */}
       <div className="space-y-1 sm:hidden">
+        {quickViewRail}
         <div className="relative min-w-0">
           <Search className="pointer-events-none absolute left-2 top-1/2 z-10 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
           <FloatingLabelInput
@@ -192,6 +221,7 @@ export function ProjectListFiltersBar({
 
       {/* Desktop / tablet: search on top, filters in one row below */}
       <div className="hidden space-y-3 sm:block">
+        {quickViewRail}
         <div className="relative min-w-0 w-full">
           <Search className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <FloatingLabelInput

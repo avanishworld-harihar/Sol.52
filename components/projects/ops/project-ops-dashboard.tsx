@@ -6,6 +6,7 @@ import { ProjectOpsPaymentsDue } from "@/components/projects/ops/project-ops-pay
 import { ProjectOpsDashboardSkeleton } from "@/components/projects/ops/project-ops-dashboard-skeleton";
 import { ProjectOpsStageBreakdown } from "@/components/projects/ops/project-ops-stage-breakdown";
 import { ProjectOpsUrgentList } from "@/components/projects/ops/project-ops-urgent-list";
+import { ProjectOpsReports } from "@/components/projects/ops/project-ops-reports";
 import type { ProjectDashboardStats, ProjectListItem } from "@/lib/project-api-client";
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
@@ -38,6 +39,7 @@ function OpsDashboardBody({
         <ProjectOpsUrgentList projects={projects} className="lg:col-span-6" />
         <ProjectOpsPaymentsDue projects={projects} className="lg:col-span-6" />
       </div>
+      <ProjectOpsReports />
     </section>
   );
 }

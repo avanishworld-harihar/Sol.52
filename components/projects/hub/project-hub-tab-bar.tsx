@@ -9,6 +9,8 @@ import {
   MessageSquare,
   PenTool,
   Ruler,
+  WalletCards,
+  Workflow,
 } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -16,6 +18,8 @@ export const PROJECT_HUB_TAB_IDS = [
   "overview",
   "survey",
   "design",
+  "execution",
+  "finance",
   "tasks",
   "documents",
   "timeline",
@@ -32,6 +36,8 @@ const TAB_CONFIG: {
   { id: "overview", label: "Overview", icon: <LayoutGrid className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> },
   { id: "survey", label: "Survey", icon: <Ruler className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> },
   { id: "design", label: "Design", icon: <PenTool className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> },
+  { id: "execution", label: "Execution", icon: <Workflow className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> },
+  { id: "finance", label: "Finance", icon: <WalletCards className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> },
   { id: "tasks", label: "Tasks", icon: <ClipboardList className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> },
   { id: "documents", label: "Docs", icon: <FolderOpen className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> },
   { id: "timeline", label: "Timeline", icon: <FileText className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> },

@@ -18,6 +18,7 @@ import type { ProjectPanelLayout } from "@/lib/panel-layout";
 
 export const PROJECT_DASHBOARD_STATS_KEY = "/api/projects/dashboard-stats";
 export const PROJECT_VIEW_SUMMARY_KEY = "/api/projects/summary";
+export const PROJECT_REPORTS_KEY = "/api/projects/reports";
 
 export const PROJECT_OUTSTANDING_COLLECTIONS_KEY =
   "/api/projects/dashboard-stats?collections=1";
@@ -129,6 +130,10 @@ export interface ProjectListItem {
   start_date: string | null;
   target_completion: string | null;
   actual_completion: string | null;
+  discom_application_no: string | null;
+  nm_application_date: string | null;
+  meter_serial_no: string | null;
+  nm_activation_date: string | null;
   assigned_manager_id: string | null;
   assigned_tech_id: string | null;
   site_address: string | null;
@@ -183,6 +188,11 @@ export interface ProjectDashboardStats {
   today_installations: number;
   nm_pending: number;
   approval_pending: number;
+  at_risk: number;
+  due_this_week: number;
+  no_next_action: number;
+  unassigned: number;
+  completed_this_month: number;
 }
 
 export interface ProjectViewCounts {
@@ -190,6 +200,21 @@ export interface ProjectViewCounts {
   completed: number;
   drafts: number;
   archived: number;
+}
+
+export interface ProjectReports {
+  completed_this_month: number;
+  completed_capacity_kw: number;
+  average_cycle_days: number | null;
+  stale_projects: number;
+  manager_workload: Array<{ name: string; count: number }>;
+}
+
+export interface ProjectListPage {
+  items: ProjectListItem[];
+  total: number;
+  totalPages: number;
+  page: number;
 }
 
 export interface OutstandingCollectionRow {
@@ -352,6 +377,11 @@ export async function fetchProjectViewCounts(): Promise<ProjectViewCounts | null
   return res.ok ? (res.data ?? null) : null;
 }
 
+export async function fetchProjectReports(): Promise<ProjectReports | null> {
+  const res = await apiRequest<ProjectReports>(PROJECT_REPORTS_KEY);
+  return res.ok ? (res.data ?? null) : null;
+}
+
 export async function fetchOutstandingCollections(): Promise<ProjectDashboardStatsWithCollections | null> {
   const res = await apiRequest<ProjectDashboardStatsWithCollections>(
     PROJECT_OUTSTANDING_COLLECTIONS_KEY
@@ -364,6 +394,13 @@ export async function fetchProjectList(
 ): Promise<ProjectListItem[]> {
   const res = await apiRequest<ProjectListItem[]>(url);
   return res.ok ? (res.data ?? []) : [];
+}
+
+export async function fetchProjectListPage(url: string): Promise<ProjectListPage> {
+  const res = await apiRequest<ProjectListPage>(url);
+  return res.ok && res.data
+    ? res.data
+    : { items: [], total: 0, totalPages: 1, page: 1 };
 }
 
 export async function fetchProjectDetail(url: string): Promise<ProjectListItem | null> {

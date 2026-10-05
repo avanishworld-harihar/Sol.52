@@ -49,6 +49,7 @@ function db() {
 
 const postSchema = z.object({
   created_by_id: z.string().uuid().optional().nullable(),
+  force: z.boolean().optional().default(false),
 });
 
 export async function POST(req: NextRequest, ctx: RouteCtx) {
@@ -82,6 +83,23 @@ export async function POST(req: NextRequest, ctx: RouteCtx) {
         { ok: false, error: "project_already_completed" },
         { status: 400 }
       );
+    }
+
+    if (!parsed.force) {
+      const { data: blockers } = await client
+        .from("project_tasks")
+        .select("id, title")
+        .eq("project_id", id)
+        .eq("stage", currentStage)
+        .eq("is_blocking", true)
+        .neq("status", "done")
+        .limit(10);
+      if (blockers?.length) {
+        return NextResponse.json(
+          { ok: false, error: `Complete blocking tasks first: ${blockers.map((task) => task.title).join(", ")}`, data: { blockers } },
+          { status: 409 }
+        );
+      }
     }
 
     const now = new Date().toISOString();

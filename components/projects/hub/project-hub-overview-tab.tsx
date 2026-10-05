@@ -20,6 +20,7 @@ import { buildProposalEditHref } from "@/lib/proposal-edit-url";
 import type { ReactNode } from "react";
 import { ProjectContractValueForm, ProjectReceivedAmountForm } from "@/components/projects/hub/project-contract-value-form";
 import { ProjectHubOverviewDocuments } from "@/components/projects/hub/project-hub-overview-documents";
+import { ProjectIntelligenceCard } from "@/components/projects/hub/project-intelligence-card";
 
 const ROOF_LABELS: Record<string, string> = {
   rcc: "RCC",
@@ -118,6 +119,7 @@ export function ProjectHubOverviewTab({ project }: { project: ProjectListItem })
       aria-labelledby="project-hub-tab-overview"
       className="space-y-4"
     >
+      <ProjectIntelligenceCard project={project} />
       {(project.lead_id || project.lead_name) && (
         <Card className="page-lite-item border-slate-200/90 dark:border-white/10">
           <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">

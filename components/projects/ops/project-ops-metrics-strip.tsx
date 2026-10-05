@@ -4,12 +4,14 @@ import type { ProjectDashboardStats } from "@/lib/project-api-client";
 import { formatInrCompact } from "@/lib/proposal-hub-insights";
 import { cn } from "@/lib/utils";
 import {
-  CircleDollarSign,
   ClipboardCheck,
   HardHat,
   Layers,
   Zap,
   Gauge,
+  AlertTriangle,
+  CalendarClock,
+  UserRoundX,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -120,18 +122,35 @@ export function ProjectOpsMetricsStrip({
       href: "/projects?stage=net_metering",
     },
     {
-      key: "pipeline",
-      label: "Pipeline value",
-      value: formatInrCompact(stats?.total_pipeline_value_inr ?? 0),
-      icon: CircleDollarSign,
-      tone: "teal" as const,
+      key: "risk",
+      label: "Needs attention",
+      value: String(stats?.at_risk ?? 0),
+      icon: AlertTriangle,
+      tone: "rose" as const,
+      href: "/projects?health=delayed",
+    },
+    {
+      key: "due",
+      label: "Due this week",
+      value: String(stats?.due_this_week ?? 0),
+      icon: CalendarClock,
+      tone: "amber" as const,
+      href: "/projects?sort=target_completion&dir=asc",
+    },
+    {
+      key: "unassigned",
+      label: "Unassigned",
+      value: String(stats?.unassigned ?? 0),
+      icon: UserRoundX,
+      tone: "purple" as const,
+      href: "/projects?view=active",
     },
     {
       key: "pending",
       label: "Pending collection",
       value: formatInrCompact(stats?.total_pending_inr ?? 0),
       icon: Gauge,
-      tone: "rose" as const,
+      tone: "teal" as const,
     },
   ];
 

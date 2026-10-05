@@ -74,7 +74,7 @@ export function ProjectListTable({
         className
       )}
     >
-      <div className="grid grid-cols-12 gap-4 border-b border-slate-200/90 bg-gradient-to-r from-slate-50 to-white px-5 py-3 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 dark:border-white/10 dark:from-[#141a22] dark:to-[#0c1017] dark:text-slate-400">
+      <div className="sticky top-[3.75rem] z-20 grid grid-cols-12 gap-4 border-b border-slate-200/90 bg-gradient-to-r from-slate-50 to-white px-5 py-3 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500 shadow-sm dark:border-white/10 dark:from-[#141a22] dark:to-[#0c1017] dark:text-slate-400">
         <div className="col-span-4 pl-[3.25rem]">Project</div>
         <div className="col-span-2">Stage</div>
         <div className="col-span-2">Health</div>

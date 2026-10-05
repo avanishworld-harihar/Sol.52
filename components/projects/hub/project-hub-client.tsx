@@ -9,6 +9,8 @@ import { ProjectHubDesignTab } from "@/components/projects/hub/project-hub-desig
 import { ProjectHubSurveyTab } from "@/components/projects/hub/project-hub-survey-tab";
 import { ProjectHubTasksTab } from "@/components/projects/hub/project-hub-tasks-tab";
 import { ProjectHubTimelineTab } from "@/components/projects/hub/project-hub-timeline-tab";
+import { ProjectHubFinanceTab } from "@/components/projects/hub/project-hub-finance-tab";
+import { ProjectHubExecutionTab } from "@/components/projects/hub/project-hub-execution-tab";
 import { ProjectHubSkeleton } from "@/components/projects/hub/project-hub-skeleton";
 import {
   ProjectHubTabBar,
@@ -240,6 +242,8 @@ export function ProjectHubClient({ projectId }: { projectId: string }) {
         {activeTab === "design" ? (
           <ProjectHubDesignTab project={project} enabled />
         ) : null}
+        {activeTab === "execution" ? <ProjectHubExecutionTab project={project} onOpenTasks={() => handleTabChange("tasks")} /> : null}
+        {activeTab === "finance" ? <ProjectHubFinanceTab project={project} /> : null}
         {activeTab === "tasks" ? <ProjectHubTasksTab project={project} enabled /> : null}
         {activeTab === "documents" ? (
           <ProjectHubDocumentsTab project={project} enabled />

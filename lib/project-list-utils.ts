@@ -158,10 +158,24 @@ export function buildProjectListUrl(opts: {
   view?: "active" | "completed" | "drafts" | "archived";
   stage?: string | null;
   limit?: number;
+  paged?: boolean;
+  search?: string;
+  health?: ProjectHealth | "all";
+  sort?: ProjectSortKey;
+  sortDir?: ProjectSortDir;
+  page?: number;
+  pageSize?: number;
 }): string {
   const params = new URLSearchParams();
   if (opts.view && opts.view !== "active") params.set("view", opts.view);
   if (opts.stage) params.set("stage", opts.stage);
+  if (opts.paged) params.set("paged", "1");
+  if (opts.search?.trim()) params.set("q", opts.search.trim());
+  if (opts.health && opts.health !== "all") params.set("health", opts.health);
+  if (opts.sort) params.set("sort", opts.sort);
+  if (opts.sortDir) params.set("dir", opts.sortDir);
+  if (opts.page && opts.page > 1) params.set("page", String(opts.page));
+  if (opts.pageSize) params.set("pageSize", String(opts.pageSize));
   params.set("limit", String(opts.limit ?? 200));
   const qs = params.toString();
   return qs ? `/api/projects/list?${qs}` : "/api/projects/list";

@@ -967,7 +967,7 @@ export async function getProjectDashboardStats(organizationId?: string | null) {
   let query = client
     .from("projects")
     .select(
-      "id, current_stage, stage_status, target_completion, actual_completion, contract_amount_inr, amount_received_inr, archived_at, dashboard_visible, record_type, detail, official_name, customer_name, project_code"
+      "id, current_stage, stage_status, target_completion, actual_completion, start_date, contract_amount_inr, amount_received_inr, archived_at, dashboard_visible, record_type, detail, official_name, customer_name, project_code, next_action, assigned_manager_id"
     )
     .is("archived_at", null)
     .eq("record_type", "operational");
@@ -982,7 +982,7 @@ export async function getProjectDashboardStats(organizationId?: string | null) {
   if (error && missingColumnFromPgError(error.message) === "record_type") {
     let fallback = client
       .from("projects")
-      .select("id, current_stage, stage_status, target_completion, actual_completion, contract_amount_inr, amount_received_inr, archived_at, dashboard_visible, detail, official_name, customer_name, project_code")
+      .select("id, current_stage, stage_status, target_completion, actual_completion, start_date, contract_amount_inr, amount_received_inr, archived_at, dashboard_visible, detail, official_name, customer_name, project_code, next_action, assigned_manager_id")
       .is("archived_at", null)
       .eq("dashboard_visible", true);
     if (organizationId) fallback = fallback.eq("organization_id", organizationId);
@@ -992,7 +992,7 @@ export async function getProjectDashboardStats(organizationId?: string | null) {
   }
   if (error || !Array.isArray(data)) return null;
 
-  const rows = filterOutDemoSeedProjects(data as Record<string, unknown>[]) as unknown as Pick<
+  const allRows = filterOutDemoSeedProjects(data as Record<string, unknown>[]) as unknown as Pick<
     ProjectRow,
     | "id"
     | "current_stage"
@@ -1003,7 +1003,14 @@ export async function getProjectDashboardStats(organizationId?: string | null) {
     | "amount_received_inr"
     | "archived_at"
     | "dashboard_visible"
+    | "next_action"
+    | "assigned_manager_id"
+    | "start_date"
   >[];
+
+  const rows = allRows.filter(
+    (row) => row.current_stage !== "completed" && row.actual_completion == null
+  );
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -1020,6 +1027,9 @@ export async function getProjectDashboardStats(organizationId?: string | null) {
   let todaysInstallations = 0;
   let nmPending = 0;
   let approvalPending = 0;
+  let dueThisWeek = 0;
+  let noNextAction = 0;
+  let unassigned = 0;
 
   const financialRows = rows.map((row) => ({
     stored_contract_amount_inr: row.contract_amount_inr,
@@ -1046,7 +1056,22 @@ export async function getProjectDashboardStats(organizationId?: string | null) {
     }
     if (row.current_stage === "net_metering") nmPending++;
     if (row.current_stage === "approval") approvalPending++;
+    if (!row.next_action?.trim()) noNextAction++;
+    if (!row.assigned_manager_id) unassigned++;
+    if (row.target_completion) {
+      const due = new Date(row.target_completion);
+      due.setHours(0, 0, 0, 0);
+      const days = Math.floor((due.getTime() - today.getTime()) / 86400000);
+      if (days >= 0 && days <= 7) dueThisWeek++;
+    }
   }
+
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  const completedThisMonth = allRows.filter((row) => {
+    if (!row.actual_completion) return false;
+    const completed = new Date(row.actual_completion);
+    return !Number.isNaN(completed.getTime()) && completed >= monthStart;
+  }).length;
 
   const totalPending = sumPendingInr(financialRows);
   const projectsWithBalance = countProjectsWithBalance(financialRows);
@@ -1062,6 +1087,11 @@ export async function getProjectDashboardStats(organizationId?: string | null) {
     today_installations: todaysInstallations,
     nm_pending: nmPending,
     approval_pending: approvalPending,
+    at_risk: (healthCounts.blocked ?? 0) + (healthCounts.delayed ?? 0),
+    due_this_week: dueThisWeek,
+    no_next_action: noNextAction,
+    unassigned,
+    completed_this_month: completedThisMonth,
   };
 }
 

@@ -21,7 +21,7 @@ import { useLanguage } from "@/lib/language-context";
 import {
   fetchOutstandingCollections,
   fetchProjectDashboardStats,
-  fetchProjectList,
+  fetchProjectListPage,
   fetchProjectViewCounts,
   patchProject,
   PROJECT_DASHBOARD_STATS_KEY,
@@ -31,7 +31,6 @@ import {
 } from "@/lib/project-api-client";
 import { DASHBOARD_STATS_SWR_KEY } from "@/lib/dashboard-stats-client";
 import {
-  applyProjectListPipeline,
   buildProjectListUrl,
   DEFAULT_LIST_FILTERS,
   type ProjectListFilters,
@@ -178,11 +177,18 @@ function ProjectsBoard() {
   const listUrl = buildProjectListUrl({
     view,
     stage: filters.stage !== "all" ? filters.stage : null,
+    paged: true,
+    search: filters.search,
+    health: filters.health,
+    sort: filters.sort,
+    sortDir: filters.sortDir,
+    page: filters.page,
+    pageSize: filters.pageSize,
   });
 
   const { data, error, isLoading, mutate: mutateList } = useSWR(
     listUrl,
-    fetchProjectList,
+    fetchProjectListPage,
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: true,
@@ -209,10 +215,7 @@ function ProjectsBoard() {
     { revalidateOnFocus: false, dedupingInterval: 10_000 }
   );
 
-  const listPipeline = useMemo(() => {
-    const rows = data ?? [];
-    return applyProjectListPipeline(rows, filters);
-  }, [data, filters]);
+  const listRows = data?.items ?? [];
 
   const updateFilters = useCallback(
     (patch: Partial<ProjectListFilters>) => {
@@ -303,10 +306,11 @@ function ProjectsBoard() {
 
   const handlePatch = useCallback(
     async (id: string, patch: ProjectListPatch) => {
-      const before = data ?? [];
+      const before = data;
+      const beforeRows = before?.items ?? [];
       const stamp = new Date().toISOString();
 
-      const optimistic = before.filter((row) => {
+      const optimistic = beforeRows.filter((row) => {
         if (row.id !== id) return true;
         if (patch.dashboard_visible === false && view === "active") return false;
         if (patch.archived_at === true && view !== "archived") return false;
@@ -315,7 +319,7 @@ function ProjectsBoard() {
         return true;
       });
 
-      void mutateList(optimistic, { revalidate: false });
+      if (before) void mutateList({ ...before, items: optimistic, total: Math.max(0, before.total - (optimistic.length < beforeRows.length ? 1 : 0)) }, { revalidate: false });
 
       const apiPatch: Parameters<typeof patchProject>[1] = {};
       if (patch.dashboard_visible !== undefined) {
@@ -352,9 +356,10 @@ function ProjectsBoard() {
   async function confirmDeleteProject() {
     if (!deleteProjectTarget) return;
     const id = deleteProjectTarget.id;
-    const prev = data ?? [];
+    const prev = data;
+    const prevRows = prev?.items ?? [];
     setDeleteProjectTarget(null);
-    void mutateList(prev.filter((r) => r.id !== id), { revalidate: false });
+    if (prev) void mutateList({ ...prev, items: prevRows.filter((r) => r.id !== id), total: Math.max(0, prev.total - 1) }, { revalidate: false });
     try {
       const r = await fetch(`/api/pipeline/${id}`, { method: "DELETE" });
       const j = (await r.json()) as { ok?: boolean; error?: string };
@@ -408,15 +413,15 @@ function ProjectsBoard() {
   }
 
   const counts: Record<ProjectsView, number> = {
-    active: viewCounts?.active ?? (view === "active" ? data?.length ?? 0 : 0),
-    completed: viewCounts?.completed ?? (view === "completed" ? data?.length ?? 0 : 0),
-    drafts: viewCounts?.drafts ?? (view === "drafts" ? data?.length ?? 0 : 0),
-    archived: viewCounts?.archived ?? (view === "archived" ? data?.length ?? 0 : 0),
+    active: viewCounts?.active ?? (view === "active" ? data?.total ?? 0 : 0),
+    completed: viewCounts?.completed ?? (view === "completed" ? data?.total ?? 0 : 0),
+    drafts: viewCounts?.drafts ?? (view === "drafts" ? data?.total ?? 0 : 0),
+    archived: viewCounts?.archived ?? (view === "archived" ? data?.total ?? 0 : 0),
   };
 
   const activeTabDef = TAB_DEFS.find((tab) => tab.id === view) ?? TAB_DEFS[0];
-  const showEmpty = !isLoading && !error && listPipeline.items.length === 0;
-  const hasRawData = (data?.length ?? 0) > 0;
+  const showEmpty = !isLoading && !error && listRows.length === 0;
+  const hasRawData = (data?.total ?? 0) > 0;
 
   return (
     <>
@@ -442,7 +447,7 @@ function ProjectsBoard() {
           )}
           <ProjectOpsDashboard
             stats={opsStats}
-            projects={view === "active" ? data : undefined}
+            projects={view === "active" ? listRows : undefined}
             loading={opsStatsLoading}
             onPendingCollectionClick={() => setCollectionsOpen(true)}
           />
@@ -501,8 +506,8 @@ function ProjectsBoard() {
         <ProjectListFiltersBar
           filters={filters}
           onChange={updateFilters}
-          totalCount={data?.length ?? 0}
-          filteredCount={listPipeline.filtered.length}
+          totalCount={viewCounts?.[view] ?? data?.total ?? 0}
+          filteredCount={data?.total ?? 0}
         />
 
         {error ? (
@@ -548,17 +553,17 @@ function ProjectsBoard() {
           />
         ) : null}
 
-        {!isLoading && listPipeline.items.length > 0 ? (
+        {!isLoading && listRows.length > 0 ? (
           <>
             <ProjectListTable
-              projects={listPipeline.items}
+              projects={listRows}
               view={view}
               onPatch={handlePatch}
               onEdit={openProjectCardEdit}
               onDelete={setDeleteProjectTarget}
             />
             <div className="page-lite-item space-y-1.5 max-sm:space-y-1 lg:hidden sm:space-y-3">
-              {listPipeline.items.map((project) => (
+              {listRows.map((project) => (
                 <ProjectListCard
                   key={project.id}
                   project={project}
@@ -570,9 +575,9 @@ function ProjectsBoard() {
               ))}
             </div>
             <ProjectListPagination
-              page={listPipeline.page}
-              totalPages={listPipeline.totalPages}
-              total={listPipeline.filtered.length}
+              page={data?.page ?? 1}
+              totalPages={data?.totalPages ?? 1}
+              total={data?.total ?? 0}
               onPageChange={(page) => updateFilters({ page })}
             />
           </>
