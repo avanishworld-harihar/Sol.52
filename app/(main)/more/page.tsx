@@ -12,6 +12,7 @@ import {
 import { readProposalBrandingSettings } from "@/lib/proposal-branding-settings";
 import { BrandProposalsSettingsPanel } from "@/components/settings/brand-proposals-settings-panel";
 import { MoreDesignPanelCatalogGroup } from "@/components/settings/more-design-panel-catalog-group";
+import { MoreEquipmentLibraryGroup } from "@/components/settings/more-equipment-library-group";
 import { MoreRateCardGroup } from "@/components/settings/more-rate-card-group";
 import { ProposalTemplateSettingsPanel } from "@/components/settings/proposal-template-settings-panel";
 import { AccountSessionCard } from "@/components/settings/account-session-card";
@@ -431,6 +432,8 @@ export default function MorePage() {
         </MoreGroup>
 
         {isCompanyAdmin || !appSession?.signedIn ? <MoreRateCardGroup /> : null}
+
+        <MoreEquipmentLibraryGroup />
 
         <MoreDesignPanelCatalogGroup />
 

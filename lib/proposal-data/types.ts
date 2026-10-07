@@ -125,6 +125,8 @@ export type ProposalData = {
   bom: ProposalBomItem[];
   engineering: {
     metrics: ProposalMetric[];
+    /** Shared immutable equipment/string design consumed by every preset. */
+    equipment?: import("@/lib/equipment-engineering").EquipmentEngineeringSnapshot;
     tiltDeg?: number;
     tiltNote?: string;
     cityLabel?: string;

@@ -21,9 +21,9 @@ import {
 } from "@/components/proposal/blocks/proposal-block-utils";
 import { ProposalJourneySection } from "@/components/proposal/proposal-journey";
 
-type Props = Pick<BlockRenderContext, "summary" | "lang" | "D" | "darkMode">;
+type Props = Pick<BlockRenderContext, "summary" | "pptInput" | "lang" | "D" | "darkMode">;
 
-export function BlockEngineeringRationale({ summary, lang, darkMode }: Props) {
+export function BlockEngineeringRationale({ summary, pptInput, lang, darkMode }: Props) {
   const isHi = lang === "hi";
   const dark = darkMode;
 
@@ -34,15 +34,18 @@ export function BlockEngineeringRationale({ summary, lang, darkMode }: Props) {
     : "Key engineering parameters used in system design and sizing";
 
   // Computed metrics
+  const equipment = pptInput.equipmentEngineeringSnapshot;
   const systemKwp = summary.systemKw;
-  const panelWatt = 540;
-  const panelCount = summary.panels;
-  const dcCapacityKwp = (panelCount * panelWatt) / 1000;
-  const dcAcRatio = dcCapacityKwp > 0 ? (dcCapacityKwp / systemKwp).toFixed(2) : "—";
+  const panelWatt = equipment?.module.watt ?? summary.panelWatt ?? 540;
+  const panelCount = equipment?.moduleCount ?? summary.panels;
+  const dcCapacityKwp = equipment?.actualDcKw ?? (panelCount * panelWatt) / 1000;
+  const dcAcRatio = equipment?.dcAcRatio.toFixed(2) ??
+    (dcCapacityKwp > 0 ? (dcCapacityKwp / systemKwp).toFixed(2) : "—");
   const yieldHours = systemKwp > 0 ? Math.round((summary.annualGen / systemKwp) * 10) / 10 : 0;
   const capacityFactor = Math.round((summary.annualGen / (systemKwp * 8760)) * 100 * 10) / 10;
   const performanceRatio = 78; // typical India on-grid PR
-  const panelEfficiency = Math.round((panelWatt / 1.96) / 10) / 10; // ~21.4% for 540W on ~1.96m²
+  const panelEfficiency = equipment?.module.efficiencyPct ??
+    Math.round((panelWatt / 1.96) / 10) / 10;
 
   const engMetrics = [
     {

@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/equipment-library/sync",
+      "schedule": "17 2 * * *"
+    }
+  ]
+}

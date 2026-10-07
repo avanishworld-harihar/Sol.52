@@ -8,6 +8,7 @@ import {
   ensureBrandCatalog,
 } from "@/lib/residential-brand-catalog";
 import { wireBrandDisplayName } from "@/lib/residential-deck-helpers";
+import type { EquipmentLibrary } from "@/lib/equipment-library";
 import {
   addInverterPresetToCatalog,
   addWirePresetToCatalog,
@@ -28,8 +29,8 @@ import {
   WIRE_PROPOSAL_BRAND_MAX,
 } from "@/lib/residential-requirements-schema";
 import { cn } from "@/lib/utils";
-import { Cable, Cpu, Plus, ShieldCheck, Sun, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { Cable, Cpu, DatabaseZap, Plus, ShieldCheck, Sun, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 type Props = {
   config: ResidentialProposalConfig;
@@ -92,6 +93,25 @@ export function ResidentialEquipmentBrandsSection({ config, onChange, isCommerci
   const [newWire, setNewWire] = useState("");
   const [addingPanel, setAddingPanel] = useState(false);
   const [newPanel, setNewPanel] = useState("");
+  const [equipmentLibrary, setEquipmentLibrary] = useState<EquipmentLibrary | null>(null);
+  const [equipmentLibraryError, setEquipmentLibraryError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/equipment-library", { cache: "no-store" })
+      .then((response) => response.json() as Promise<{ ok: boolean; data?: EquipmentLibrary; error?: string }>)
+      .then((payload) => {
+        if (!active) return;
+        if (!payload.ok || !payload.data) throw new Error(payload.error || "Library unavailable");
+        setEquipmentLibrary(payload.data);
+      })
+      .catch((reason) => {
+        if (active) setEquipmentLibraryError(reason instanceof Error ? reason.message : "Library unavailable");
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const activeChip = isCommercial
     ? "border-indigo-500 bg-indigo-600 text-white"
@@ -392,6 +412,109 @@ export function ResidentialEquipmentBrandsSection({ config, onChange, isCommerci
             ))}
           </ul>
         ) : null}
+      </div>
+
+      <div>
+        <SectionTitle
+          icon={DatabaseZap}
+          title="Engineering design basis"
+          hint="Choose exact models when available. Auto mode stays visibly indicative until a verified datasheet is present."
+        />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="space-y-1.5 text-xs font-bold text-slate-700 dark:text-slate-300">
+            Exact module model
+            <select
+              value={config.equipmentSelection?.moduleCatalogId ?? ""}
+              onChange={(event) => {
+                const selected = equipmentLibrary?.modules.find((entry) => entry.id === event.target.value);
+                emit({
+                  ...config,
+                  solar: selected
+                    ? { ...solar, brand: selected.manufacturer, watt: selected.watt }
+                    : solar,
+                  panelBrandOptions: selected
+                    ? [
+                        { brand: selected.manufacturer },
+                        ...panelOpts.filter(
+                          (entry) => entry.brand.toLowerCase() !== selected.manufacturer.toLowerCase()
+                        ),
+                      ]
+                    : panelOpts,
+                  equipmentSelection: {
+                    ...config.equipmentSelection,
+                    moduleCatalogId: selected?.id,
+                    moduleModel: selected?.model,
+                  },
+                });
+              }}
+              className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-900 dark:border-white/15 dark:bg-slate-950 dark:text-white"
+            >
+              <option value="">Auto match by brand + watt</option>
+              {(equipmentLibrary?.modules ?? []).map((entry) => (
+                <option key={entry.id} value={entry.id}>
+                  {entry.manufacturer} {entry.model} · {entry.watt} W · {entry.verification.replace("_", " ")}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="space-y-1.5 text-xs font-bold text-slate-700 dark:text-slate-300">
+            Exact inverter model
+            <select
+              value={config.equipmentSelection?.inverterCatalogId ?? ""}
+              onChange={(event) => {
+                const selected = equipmentLibrary?.inverters.find((entry) => entry.id === event.target.value);
+                emit({
+                  ...config,
+                  inverterBrandOptions: selected
+                    ? [
+                        { brand: selected.manufacturer },
+                        ...invOpts.filter(
+                          (entry) => entry.brand.toLowerCase() !== selected.manufacturer.toLowerCase()
+                        ),
+                      ]
+                    : invOpts,
+                  equipmentSelection: {
+                    ...config.equipmentSelection,
+                    inverterCatalogId: selected?.id,
+                    inverterModel: selected?.model,
+                  },
+                });
+              }}
+              className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-900 dark:border-white/15 dark:bg-slate-950 dark:text-white"
+            >
+              <option value="">Auto match by brand + capacity</option>
+              {(equipmentLibrary?.inverters ?? []).map((entry) => (
+                <option key={entry.id} value={entry.id}>
+                  {entry.manufacturer} {entry.model} · {entry.ratedAcKw} kW · {entry.phase.replace("_", " ")} · {entry.verification.replace("_", " ")}
+                </option>
+              ))}
+            </select>
+          </label>
+          <FloatingLabelInput
+            label="Target DC/AC ratio"
+            type="number"
+            min="1"
+            max="2"
+            step="0.01"
+            value={config.equipmentSelection?.targetDcAcRatio ?? 1.1}
+            onChange={(event) =>
+              patch({
+                equipmentSelection: {
+                  ...config.equipmentSelection,
+                  targetDcAcRatio: Math.max(1, Math.min(2, Number(event.target.value) || 1.1)),
+                },
+              })
+            }
+            className="h-10 rounded-lg text-sm font-semibold"
+          />
+        </div>
+        <p className="mt-2 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+          {equipmentLibraryError
+            ? `${equipmentLibraryError}. Auto design-envelope calculation will be used.`
+            : equipmentLibrary
+              ? `Library revision ${equipmentLibrary.revision}. Proposal creation freezes the selected datasheet and string calculation for audit safety.`
+              : "Loading the online equipment library…"}
+        </p>
       </div>
 
       <div>

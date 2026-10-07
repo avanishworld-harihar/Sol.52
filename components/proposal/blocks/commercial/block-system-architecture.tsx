@@ -43,13 +43,19 @@ type Props = { ctx: CommercialCtx };
 export function BlockSystemArchitecture({ ctx }: Props) {
   const { summary, dcCapacityKwp, dcAcRatio, lang, pptInput } = ctx;
   const isHi = lang === "hi";
+  const equipment = pptInput.equipmentEngineeringSnapshot;
 
-  const { panelWatt, moduleCount, panelSpecLabel } = resolveCommercialPanelSpec(
+  const fallbackPanel = resolveCommercialPanelSpec(
     summary.systemKw,
     pptInput.commercialConfig,
     summary
   );
-  const stringsCount = Math.ceil(moduleCount / 14);
+  const panelWatt = equipment?.module.watt ?? fallbackPanel.panelWatt;
+  const moduleCount = equipment?.moduleCount ?? fallbackPanel.moduleCount;
+  const panelSpecLabel = equipment
+    ? `${equipment.module.manufacturer} ${equipment.module.model} · ${panelWatt} Wp`
+    : fallbackPanel.panelSpecLabel;
+  const stringsCount = equipment?.stringCount ?? Math.ceil(moduleCount / 14);
   const inverterQty = commercialInverterQuantity(summary.systemKw);
   const inverterUnitKw = commercialInverterUnitKw(summary.systemKw);
   const earthingCount = commercialEarthingElectrodeCount(summary.systemKw);
@@ -95,14 +101,14 @@ export function BlockSystemArchitecture({ ctx }: Props) {
     {
       component: isHi ? "सौर पैनल" : "Solar PV Modules",
       spec: panelSpecLabel,
-      brand: summary.brands.panel || "Tier-1 ALMM-listed",
+      brand: equipment?.module.manufacturer || summary.brands.panel || "Tier-1 ALMM-listed",
       qty: `${moduleCount} nos`,
       warranty: "25 yr linear power",
     },
     {
       component: isHi ? "स्ट्रिंग इन्वर्टर" : "String Inverter",
       spec: `${inverterUnitKw} kW Grid-Tie, IP65`,
-      brand: summary.brands.inverter || "IEC-62109 certified",
+      brand: equipment?.inverter.manufacturer || summary.brands.inverter || "IEC-62109 certified",
       qty: `${inverterQty} nos`,
       warranty: "5 yr standard",
     },

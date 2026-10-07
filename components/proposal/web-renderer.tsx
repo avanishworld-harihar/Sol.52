@@ -433,6 +433,7 @@ export function renderBlockByKey(
       return (
         <BlockEngineeringRationale
           summary={summary}
+          pptInput={ctx.pptInput}
           lang={lang}
           D={D}
           darkMode={darkMode}

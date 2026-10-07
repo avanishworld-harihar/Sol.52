@@ -8,6 +8,7 @@ import { resolveInstallerNameForProposal } from "@/lib/proposal-branding-setting
 import { enrichBomTechnicalRows } from "@/lib/proposal-bom-technical-detail";
 import type { ProposalData } from "@/lib/proposal-data/types";
 import { buildWealthJourney } from "@/lib/proposal-data/build-wealth-journey";
+import { buildProposalEquipmentSnapshot } from "@/lib/proposal-equipment-snapshot";
 
 const SUMMER_INDICES = new Set([3, 4, 5, 6]);
 const PAYMENT_PCTS = ["25%", "50%", "20%", "5%"] as const;
@@ -148,6 +149,9 @@ export function buildProposalData(
     (r) => r.name.toLowerCase().includes("panel") || r.name.toLowerCase().includes("module")
   );
   const inverter = bom.find((r) => r.name.toLowerCase().includes("inverter"));
+  const equipment =
+    pptInput.equipmentEngineeringSnapshot ??
+    buildProposalEquipmentSnapshot(pptInput, summary, undefined, options.generatedAt);
 
   return {
     meta: {
@@ -200,6 +204,7 @@ export function buildProposalData(
     },
     bom,
     engineering: {
+      equipment,
       metrics: [
         { label: "System size", value: `${summary.systemKw} kW` },
         { label: "Annual generation", value: `${summary.annualGen.toLocaleString("en-IN")} units` },

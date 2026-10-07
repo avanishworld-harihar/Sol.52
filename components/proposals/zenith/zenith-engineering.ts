@@ -57,8 +57,10 @@ export function buildZenithEngineeringModel(
   const city = data.engineering.cityLabel?.trim() || data.meta.locationLine.split(",")[0]?.trim() || "";
   const tilt = data.engineering.tiltDeg ?? 20;
   const annualGen = annualUnits(data);
-  const dcRatio = 1.04;
-  const dcKwp = acKw > 0 ? Math.round(acKw * dcRatio * 100) / 100 : 0;
+  const sharedEquipment = data.engineering.equipment;
+  const dcRatio = sharedEquipment?.dcAcRatio ?? 1.04;
+  const dcKwp =
+    sharedEquipment?.actualDcKw ?? (acKw > 0 ? Math.round(acKw * dcRatio * 100) / 100 : 0);
 
   const panelItem = bomHint(data, /panel|module/i);
   const inverterItem = bomHint(data, /inverter/i);
@@ -66,8 +68,8 @@ export function buildZenithEngineeringModel(
   const protectionItem = bomHint(data, /protect|acdb|dcdb|meter/i);
 
   const parsedPanel = panelItem?.spec ? parsePanelSpec(panelItem.spec) : null;
-  let panelCount = parsedPanel?.count ?? 0;
-  const panelWatt = parsedPanel?.watt ?? 540;
+  let panelCount = sharedEquipment?.moduleCount ?? parsedPanel?.count ?? 0;
+  const panelWatt = sharedEquipment?.module.watt ?? parsedPanel?.watt ?? 540;
   if (panelCount <= 0 && dcKwp > 0 && panelWatt > 0) {
     panelCount = Math.round((dcKwp * 1000) / panelWatt);
   }
@@ -75,7 +77,9 @@ export function buildZenithEngineeringModel(
   const yieldKwh = specificYieldKwhPerKwp(annualGen, acKw);
   const prPct =
     yieldKwh > 0 ? Math.min(82, Math.max(72, Math.round((yieldKwh / 1700) * 100))) : 75;
-  const stringCount = panelCount > 0 ? Math.max(1, Math.ceil(panelCount / 12)) : acKw > 0 ? 2 : 0;
+  const stringCount =
+    sharedEquipment?.stringCount ??
+    (panelCount > 0 ? Math.max(1, Math.ceil(panelCount / 12)) : acKw > 0 ? 2 : 0);
   const inverterSpec = inverterItem?.spec?.trim() || (acKw > 0 ? `${acKw} kW grid-tie` : "—");
 
   const headlineMetrics: ZenithEngRow[] =
@@ -134,8 +138,8 @@ export function buildZenithEngineeringModel(
       value:
         stringCount > 0 && panelCount > 0
           ? hi
-            ? `~${stringCount} स्ट्रिंग · MPPT-अनुकूल`
-            : `~${stringCount} strings · MPPT-balanced`
+            ? `${stringCount} स्ट्रिंग · ${sharedEquipment?.stringSizes.join("+") || "MPPT-अनुकूल"}`
+            : `${stringCount} strings · ${sharedEquipment?.stringSizes.join("+") || "MPPT-balanced"}`
           : "—",
     },
     {

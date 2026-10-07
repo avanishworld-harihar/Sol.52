@@ -238,15 +238,19 @@ export function CanvasProposalRenderer({
   const panelConfigMatch = panelDetailText.match(
     /(\d+)\s*(?:×|x)\s*(\d{3,4})\s*Wp/i
   );
-  const panelWatt = panelConfigMatch ? Number(panelConfigMatch[2]) : 580;
-  const panelCount = panelConfigMatch
+  const equipment = eng.equipment;
+  const panelWatt = equipment?.module.watt ?? (panelConfigMatch ? Number(panelConfigMatch[2]) : 580);
+  const panelCount = equipment?.moduleCount ?? (panelConfigMatch
     ? Number(panelConfigMatch[1])
     : systemKwNum > 0
       ? Math.ceil((systemKwNum * 1000) / panelWatt)
-      : 0;
+      : 0);
   const dcArrayKwp =
-    panelCount > 0 ? (panelCount * panelWatt) / 1000 : 0;
-  const requiredRoofAreaM2 = panelCount > 0 ? Math.round(panelCount * 2.2) : 0;
+    equipment?.actualDcKw ?? (panelCount > 0 ? (panelCount * panelWatt) / 1000 : 0);
+  const moduleAreaM2 = equipment?.module.widthMm && equipment.module.heightMm
+    ? (equipment.module.widthMm * equipment.module.heightMm) / 1_000_000
+    : 2.2;
+  const requiredRoofAreaM2 = panelCount > 0 ? Math.round(panelCount * moduleAreaM2) : 0;
   const effectiveSavingPerUnit =
     generationUnits > 0 && yearOneSavings > 0
       ? yearOneSavings / generationUnits

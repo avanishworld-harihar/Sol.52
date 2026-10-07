@@ -21,6 +21,8 @@ import { bumpLeadStatus, upsertPipelineProject } from "@/lib/supabase";
 import { appendActivityEvent } from "@/lib/followup-store";
 import { createProposal, listRecentProposals } from "@/lib/proposals-store";
 import type { MonthlyUnits } from "@/lib/types";
+import { getEquipmentLibrary } from "@/lib/equipment-library-store";
+import { buildProposalEquipmentSnapshot } from "@/lib/proposal-equipment-snapshot";
 
 const SITE_SURVEY_NEXT_ACTION = "Site survey pending";
 
@@ -152,7 +154,7 @@ export async function POST(req: NextRequest) {
 
     const { salesPremiumStyle: rawSalesPremiumStyle, ...proposalFields } = payload;
 
-    const pptInput: PremiumProposalPptInput = {
+    const basePptInput: PremiumProposalPptInput = {
       ...proposalFields,
       monthlyUnits: payload.monthlyUnits as MonthlyUnits,
       monthlyAuditOverrides: auditOverrides,
@@ -160,7 +162,16 @@ export async function POST(req: NextRequest) {
         ? { salesPremiumStyle: normalizeSalesPremiumStyle(rawSalesPremiumStyle) }
         : {}),
     };
-    const summary = summarizeProposalDeck(pptInput);
+    const summary = summarizeProposalDeck(basePptInput);
+    const equipmentLibrary = await getEquipmentLibrary();
+    const pptInput: PremiumProposalPptInput = {
+      ...basePptInput,
+      equipmentEngineeringSnapshot: buildProposalEquipmentSnapshot(
+        basePptInput,
+        summary,
+        equipmentLibrary
+      ),
+    };
 
     const scope = await resolveOrgScope(req);
     const denied = denyIfStrictUnauthenticated(scope);

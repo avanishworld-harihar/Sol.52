@@ -229,6 +229,13 @@ export type PremiumProposalPptInput = {
   /** Shared kW plant catalog snapshot — residential + commercial turnkey (More → Rate card). */
   sharedPlantCatalog?: import("@/lib/residential-requirements-schema").ResidentialBrandCatalog | null;
 
+  /**
+   * Frozen exact-equipment engineering result. New proposals persist this so
+   * every visual preset renders identical module/string/MPPT numbers even when
+   * the online equipment library is updated later.
+   */
+  equipmentEngineeringSnapshot?: import("@/lib/equipment-engineering").EquipmentEngineeringSnapshot | null;
+
   /** Central rate card vs prices locked on this proposal only. */
   pricingSource?: "rate_card" | "customer_override";
 

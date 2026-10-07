@@ -148,6 +148,45 @@ export const VOLTAIC_MIN_CELL_TEMP_C = MIN_CELL_TEMP_C;
 export const VOLTAIC_MAX_CELL_TEMP_C = MAX_CELL_TEMP_C;
 export const VOLTAIC_VOC_TEMP_COEFF = VOC_TEMP_COEFF_PCT_PER_C;
 
+function voltaicDesignFromSharedEquipment(
+  snapshot: NonNullable<ProposalData["engineering"]["equipment"]>
+): VoltaicStringDesign {
+  const maxStringSize = snapshot.stringSizes.length
+    ? Math.max(...snapshot.stringSizes)
+    : Math.max(1, snapshot.moduleCount);
+  const lastStringSize = snapshot.stringSizes.at(-1) ?? maxStringSize;
+  const moduleAreaM2 =
+    snapshot.module.widthMm && snapshot.module.heightMm
+      ? Math.round((snapshot.module.widthMm * snapshot.module.heightMm) / 100_000) / 10
+      : moduleElectricalEnvelope(snapshot.module.watt).areaM2;
+  return {
+    moduleVocV: snapshot.module.vocV,
+    moduleVmpV: snapshot.module.vmpV,
+    moduleIscA: snapshot.module.iscA,
+    moduleImpA: snapshot.module.impA,
+    moduleCells: snapshot.module.cells ?? "Datasheet value pending",
+    moduleEfficiencyPct:
+      snapshot.module.efficiencyPct ?? moduleElectricalEnvelope(snapshot.module.watt).efficiencyPct,
+    moduleAreaM2,
+    inverterMaxDcV: snapshot.inverter.maxDcVoltageV,
+    inverterMpptMinV: snapshot.inverter.mpptMinV,
+    vocColdV: snapshot.moduleVocColdV,
+    vmpHotV: snapshot.moduleVmpHotV,
+    maxModulesPerString: snapshot.maxModulesPerString,
+    minModulesPerString: snapshot.minModulesPerString,
+    modulesPerString: maxStringSize,
+    stringCount: snapshot.stringCount,
+    remainderModules: lastStringSize,
+    stringVocColdV: snapshot.maxStringVocColdV,
+    stringVmpV: Math.round(snapshot.module.vmpV * maxStringSize),
+    stringIscA: snapshot.module.iscA,
+    mpptCount: Math.min(snapshot.inverter.mpptCount, Math.max(1, snapshot.stringCount)),
+    headroomPct: Math.round(
+      (1 - snapshot.maxStringVocColdV / snapshot.inverter.maxDcVoltageV) * 100
+    ),
+  };
+}
+
 /* ── Cable schedule ──────────────────────────────────────────────────── */
 
 export type VoltaicCableRun = {
@@ -750,10 +789,17 @@ export function buildVoltaicEngineering(
   lang: VoltaicLang
 ): VoltaicEngineeringModel {
   const isHi = lang === "hi";
-  const panelWatt = summary?.panelWatt ?? pptInput?.residentialConfig?.solar?.watt ?? 540;
+  const sharedEquipment = data.engineering.equipment;
+  const panelWatt =
+    sharedEquipment?.module.watt ??
+    summary?.panelWatt ??
+    pptInput?.residentialConfig?.solar?.watt ??
+    540;
   const systemKw = data.meta.systemKw || summary?.systemKw || 0;
   const panelCount =
-    summary?.panels ?? Math.max(1, Math.ceil((systemKw * 1000 * 1.15) / panelWatt));
+    sharedEquipment?.moduleCount ??
+    summary?.panels ??
+    Math.max(1, Math.ceil((systemKw * 1000 * 1.15) / panelWatt));
 
   const fallbackSummary = {
     systemKw,
@@ -769,7 +815,9 @@ export function buildVoltaicEngineering(
     siteLat: pptInput?.residentialTechnicalSpecs?.mounting?.siteLat,
   });
 
-  const design = voltaicStringDesign(panelCount, panelWatt, systemKw);
+  const design = sharedEquipment
+    ? voltaicDesignFromSharedEquipment(sharedEquipment)
+    : voltaicStringDesign(panelCount, panelWatt, systemKw);
   const layout = pptInput?.residentialTechnicalSpecs?.layout;
   const threePhase =
     systemKw > 3 ||

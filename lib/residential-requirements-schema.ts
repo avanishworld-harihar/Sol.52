@@ -80,6 +80,15 @@ export const residentialProtectionBrandsSchema = z.object({
   dcdb: z.string().max(80).optional(),
 });
 
+/** Exact catalog models used as the engineering design basis. */
+export const residentialEquipmentSelectionSchema = z.object({
+  moduleCatalogId: z.string().max(120).optional(),
+  moduleModel: z.string().max(160).optional(),
+  inverterCatalogId: z.string().max(120).optional(),
+  inverterModel: z.string().max(160).optional(),
+  targetDcAcRatio: z.number().min(1).max(2).optional(),
+});
+
 /** Legacy ids `polycab` / `havells` or custom installer-added names. */
 export const residentialWireBrandSchema = z.string().min(1).max(80);
 
@@ -175,6 +184,8 @@ export const residentialProposalConfigSchema = z.object({
   inverterBrandOptions: z.array(residentialBrandOptionSchema).max(32).optional(),
   /** Separate ACDB and DCDB makes shown in the technical proposal. */
   protectionBrands: residentialProtectionBrandsSchema.optional(),
+  /** Exact module + inverter models selected from the online engineering library. */
+  equipmentSelection: residentialEquipmentSelectionSchema.optional(),
   /** Per-brand DCR + Non-DCR kW tier catalog (manual plant gross per row). */
   brandCatalog: residentialBrandCatalogSchema.optional(),
   /** Side-by-side Non-DCR vs DCR gross prices (shared kW rows) for web proposal */
@@ -199,6 +210,7 @@ export type ResidentialConnectionPhase = z.infer<typeof residentialConnectionPha
 export type ResidentialPhaseSurcharge = z.infer<typeof residentialPhaseSurchargeSchema>;
 export type ResidentialBrandOption = z.infer<typeof residentialBrandOptionSchema>;
 export type ResidentialProtectionBrands = z.infer<typeof residentialProtectionBrandsSchema>;
+export type ResidentialEquipmentSelection = z.infer<typeof residentialEquipmentSelectionSchema>;
 export type ResidentialWireBrand = z.infer<typeof residentialWireBrandSchema>;
 export type ResidentialTrackCompareTier = z.infer<typeof residentialTrackCompareTierSchema>;
 export type ResidentialTrackCompare = z.infer<typeof residentialTrackCompareSchema>;
