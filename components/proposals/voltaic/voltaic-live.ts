@@ -572,7 +572,7 @@ export function voltaicBalanceBom(
         {
           ref: "30.3",
           item: hi ? "MC4 कनेक्टर जोड़े" : "MC4 connector pairs",
-          make: "Stäubli / Amphenol",
+          make: "Ningbo",
           spec: hi ? "IP68 · 1.5 kV DC · 30 A" : "IP68 · 1.5 kV DC · 30 A",
           qty: hi ? "आवश्यकतानुसार" : "As per requirement",
           standard: "IEC 62852",
@@ -637,7 +637,7 @@ export function voltaicBalanceBom(
         {
           ref: "50.1",
           item: hi ? "कॉपर-बॉन्डेड अर्थ इलेक्ट्रोड" : "Copper-bonded earth electrode",
-          make: "Ashlok / JMV",
+          make: "Reputed Indian Make",
           spec: hi ? "17.2 mm × 3 m · बैकफिल कंपाउंड सहित" : "17.2 mm × 3 m · with backfill compound",
           qty: `3 ${hi ? "पिट" : "pits"}`,
           standard: "IS 3043 · IEC 62561",
@@ -649,7 +649,7 @@ export function voltaicBalanceBom(
         {
           ref: "50.2",
           item: hi ? "लाइटनिंग अरेस्टर" : "Lightning arrester",
-          make: "JMV / Ashlok",
+          make: "Conventional Type",
           spec: hi ? "एयर-टर्मिनेशन सिस्टम · अंतिम जोखिम आकलन के अनुसार" : "Air-termination system · as per final lightning-risk assessment",
           qty: `1 ${hi ? "नग" : "no"}`,
           standard: "IS/IEC 62305",
