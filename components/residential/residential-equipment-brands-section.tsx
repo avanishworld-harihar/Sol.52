@@ -28,7 +28,7 @@ import {
   WIRE_PROPOSAL_BRAND_MAX,
 } from "@/lib/residential-requirements-schema";
 import { cn } from "@/lib/utils";
-import { Cable, Cpu, Plus, Sun, Trash2 } from "lucide-react";
+import { Cable, Cpu, Plus, ShieldCheck, Sun, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 type Props = {
@@ -392,6 +392,52 @@ export function ResidentialEquipmentBrandsSection({ config, onChange, isCommerci
             ))}
           </ul>
         ) : null}
+      </div>
+
+      <div>
+        <SectionTitle
+          icon={ShieldCheck}
+          title="ACDB / DCDB brands"
+          hint="Enter each distribution-box make separately. These exact values appear in the BOM."
+        />
+        <div className="grid gap-2 sm:grid-cols-2">
+          <FloatingLabelInput
+            label="DCDB brand"
+            value={config.protectionBrands?.dcdb ?? ""}
+            onChange={(e) =>
+              patch({
+                protectionBrands: {
+                  ...config.protectionBrands,
+                  dcdb: e.target.value,
+                },
+              })
+            }
+            className="h-10 rounded-lg text-sm font-semibold"
+          />
+          <FloatingLabelInput
+            label="ACDB brand"
+            value={config.protectionBrands?.acdb ?? ""}
+            onChange={(e) =>
+              patch({
+                protectionBrands: {
+                  ...config.protectionBrands,
+                  acdb: e.target.value,
+                },
+              })
+            }
+            className="h-10 rounded-lg text-sm font-semibold"
+          />
+        </div>
+        <p className="mt-2 text-xs font-medium text-slate-600 dark:text-slate-400">
+          On proposal: DCDB —{" "}
+          <span className="font-bold text-slate-900 dark:text-white">
+            {config.protectionBrands?.dcdb?.trim() || "Final approved make"}
+          </span>{" "}
+          · ACDB —{" "}
+          <span className="font-bold text-slate-900 dark:text-white">
+            {config.protectionBrands?.acdb?.trim() || "Final approved make"}
+          </span>
+        </p>
       </div>
 
       <div>

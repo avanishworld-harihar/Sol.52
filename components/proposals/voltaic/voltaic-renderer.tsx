@@ -653,6 +653,10 @@ export function VoltaicRenderer({
                   <Spec label={c.econ.equipPanel} value={makes.panel} />
                   <Spec label={c.econ.equipInverter} value={makes.inverter} />
                   <Spec label={c.econ.equipWire} value={makes.wire} />
+                  <Spec
+                    label={c.econ.equipProtection}
+                    value={`ACDB: ${makes.acdb} · DCDB: ${makes.dcdb}`}
+                  />
                 </div>
               </div>
             </div>
@@ -663,6 +667,10 @@ export function VoltaicRenderer({
                 <Spec label={c.econ.equipPanel} value={makes.panel} />
                 <Spec label={c.econ.equipInverter} value={makes.inverter} />
                 <Spec label={c.econ.equipWire} value={makes.wire} />
+                <Spec
+                  label={c.econ.equipProtection}
+                  value={`ACDB: ${makes.acdb} · DCDB: ${makes.dcdb}`}
+                />
               </div>
             </div>
           )}

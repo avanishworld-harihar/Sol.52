@@ -383,6 +383,15 @@ export type VoltaicEquipmentMakes = {
   spd: string;
 };
 
+function parseProtectionMakes(brand: string): { acdb?: string; dcdb?: string } {
+  const clean = brand.trim();
+  if (!clean) return {};
+  const dcdb = clean.match(/\bDCDB\s*[:—-]\s*(.*?)(?=\s*[·|]\s*ACDB\b|$)/i)?.[1]?.trim();
+  const acdb = clean.match(/\bACDB\s*[:—-]\s*(.*?)(?=\s*[·|]\s*DCDB\b|$)/i)?.[1]?.trim();
+  if (acdb || dcdb) return { acdb, dcdb };
+  return { acdb: clean, dcdb: clean };
+}
+
 /** Equipment makes from Proposal Builder/BOM snapshot. No fabricated OEM fallback. */
 export function resolveVoltaicEquipmentMakes(
   data: ProposalData,
@@ -392,8 +401,11 @@ export function resolveVoltaicEquipmentMakes(
   const panelBom = brandOf(data, /panel|module/i, "");
   const inverterBom = brandOf(data, /inverter/i, "");
   const cableBom = brandOf(data, /cable|wire|cabling/i, "");
-  const safetyBom = brandOf(data, /acdb|dcdb|distribution box|ac\s*\/\s*dc/i, "");
-  const spdBom = brandOf(data, /surge|spd/i, "");
+  const safetyBom = brandOf(
+    data,
+    /acdb|dcdb|distribution box|ac\s*\/\s*dc|protection|safety|switchgear/i,
+    ""
+  );
 
   const panel = cfg
     ? resolveProposalPanelBrand(cfg, panelBom.brand || "Tier-1")
@@ -406,14 +418,18 @@ export function resolveVoltaicEquipmentMakes(
     : cableBom.brand || "Polycab / Havells";
 
   const approvedMake = "Final approved make";
-  const safety = safetyBom.brand || approvedMake;
+  const legacyProtection = parseProtectionMakes(safetyBom.brand);
+  const acdb =
+    cfg?.protectionBrands?.acdb?.trim() || legacyProtection.acdb || approvedMake;
+  const dcdb =
+    cfg?.protectionBrands?.dcdb?.trim() || legacyProtection.dcdb || approvedMake;
   return {
     panel,
     inverter,
     wire,
-    acdb: safety,
-    dcdb: safety,
-    spd: spdBom.brand || safety,
+    acdb,
+    dcdb,
+    spd: "As specified with selected DB assemblies",
   };
 }
 

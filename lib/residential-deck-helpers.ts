@@ -313,7 +313,12 @@ export function buildResidentialBomFromConfig(
     lineBrand("inverter") ||
     inverterBrandsLabel(config.inverterBrandOptions, defaultBrands.inverter);
   const structureBrand = lineBrand("structure") || defaultBrands.mounting;
-  const safetyBrand = lineBrand("acdb_dcdb") || "Final approved make";
+  const combinedSafetyBrand = lineBrand("acdb_dcdb") || "";
+  const dcdbBrand =
+    config.protectionBrands?.dcdb?.trim() || combinedSafetyBrand || "Final approved make";
+  const acdbBrand =
+    config.protectionBrands?.acdb?.trim() || combinedSafetyBrand || "Final approved make";
+  const safetyBrand = `DCDB: ${dcdbBrand} · ACDB: ${acdbBrand}`;
   const wire = wireBrandsLabel(config.pricing);
   const installerDesk = opts?.installerName?.trim()
     ? `${opts.installerName.trim()} Service Desk`

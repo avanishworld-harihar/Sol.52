@@ -74,6 +74,12 @@ export const residentialBrandOptionSchema = z.object({
   brandId: z.string().max(40).optional(),
 });
 
+/** Distinct distribution-box makes selected in Proposal Builder. */
+export const residentialProtectionBrandsSchema = z.object({
+  acdb: z.string().max(80).optional(),
+  dcdb: z.string().max(80).optional(),
+});
+
 /** Legacy ids `polycab` / `havells` or custom installer-added names. */
 export const residentialWireBrandSchema = z.string().min(1).max(80);
 
@@ -109,6 +115,7 @@ export const residentialBrandCatalogSchema = z.object({
       panelBrandOptions: z.array(residentialBrandOptionSchema).max(32).optional(),
       inverterBrandOptions: z.array(residentialBrandOptionSchema).max(32).optional(),
       wireBrandOptions: z.array(residentialWireBrandSchema).max(32).optional(),
+      protectionBrands: residentialProtectionBrandsSchema.optional(),
       moduleWatt: z.number().int().min(100).max(900).optional(),
       panelTechnology: z.string().max(80).optional(),
       panelTrack: residentialPanelTrackSchema.optional(),
@@ -166,6 +173,8 @@ export const residentialProposalConfigSchema = z.object({
   panelBrandOptions: z.array(residentialBrandOptionSchema).max(32).optional(),
   /** Inverter brands on proposal — no fixed cap (installer presets + selections). */
   inverterBrandOptions: z.array(residentialBrandOptionSchema).max(32).optional(),
+  /** Separate ACDB and DCDB makes shown in the technical proposal. */
+  protectionBrands: residentialProtectionBrandsSchema.optional(),
   /** Per-brand DCR + Non-DCR kW tier catalog (manual plant gross per row). */
   brandCatalog: residentialBrandCatalogSchema.optional(),
   /** Side-by-side Non-DCR vs DCR gross prices (shared kW rows) for web proposal */
@@ -189,6 +198,7 @@ export type ResidentialDiscount = z.infer<typeof residentialDiscountSchema>;
 export type ResidentialConnectionPhase = z.infer<typeof residentialConnectionPhaseSchema>;
 export type ResidentialPhaseSurcharge = z.infer<typeof residentialPhaseSurchargeSchema>;
 export type ResidentialBrandOption = z.infer<typeof residentialBrandOptionSchema>;
+export type ResidentialProtectionBrands = z.infer<typeof residentialProtectionBrandsSchema>;
 export type ResidentialWireBrand = z.infer<typeof residentialWireBrandSchema>;
 export type ResidentialTrackCompareTier = z.infer<typeof residentialTrackCompareTierSchema>;
 export type ResidentialTrackCompare = z.infer<typeof residentialTrackCompareSchema>;

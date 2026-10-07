@@ -162,6 +162,7 @@ export function getVoltaicCopy(lang: VoltaicLang) {
       equipPanel: hi ? "पैनल" : "Panels",
       equipInverter: hi ? "इन्वर्टर" : "Inverter",
       equipWire: hi ? "DC / AC केबल" : "DC / AC cable",
+      equipProtection: hi ? "ACDB / DCDB" : "ACDB / DCDB",
     },
 
     bill: {

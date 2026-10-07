@@ -105,6 +105,18 @@ export function extractEquipmentDefaults(config: ResidentialProposalConfig): Ins
     ...(panelBrandOptions?.length ? { panelBrandOptions } : {}),
     ...(inverterBrandOptions?.length ? { inverterBrandOptions } : {}),
     ...(wireBrandOptions.length ? { wireBrandOptions } : {}),
+    ...(base.protectionBrands?.acdb?.trim() || base.protectionBrands?.dcdb?.trim()
+      ? {
+          protectionBrands: {
+            ...(base.protectionBrands.acdb?.trim()
+              ? { acdb: base.protectionBrands.acdb.trim() }
+              : {}),
+            ...(base.protectionBrands.dcdb?.trim()
+              ? { dcdb: base.protectionBrands.dcdb.trim() }
+              : {}),
+          },
+        }
+      : {}),
     moduleWatt: base.solar.watt,
     panelTechnology: pricing.panelTechnology ?? base.solar.technology,
     panelTrack: base.solar.panelTrack,
@@ -137,6 +149,9 @@ export function applyEquipmentDefaults(
     const wireBrandOptions = [...defaults.wireBrandOptions] as ResidentialWireBrand[];
     pricing.wireBrandOptions = wireBrandOptions;
     pricing.wireBrand = wireBrandOptions[0] ?? pricing.wireBrand;
+  }
+  if (defaults.protectionBrands) {
+    next.protectionBrands = { ...defaults.protectionBrands };
   }
   if (defaults.panelTechnology?.trim()) {
     pricing.panelTechnology = defaults.panelTechnology;
