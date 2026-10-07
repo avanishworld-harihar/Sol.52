@@ -88,10 +88,10 @@ export function voltaicStringDesign(
   panelWatt: number,
   systemKw = 5
 ): VoltaicStringDesign {
-  const module = moduleElectricalEnvelope(panelWatt);
+  const moduleEnvelope = moduleElectricalEnvelope(panelWatt);
   const inverter = inverterDcEnvelope(systemKw);
-  const moduleVocV = module.vocV;
-  const moduleVmpV = module.vmpV;
+  const moduleVocV = moduleEnvelope.vocV;
+  const moduleVmpV = moduleEnvelope.vmpV;
   const moduleImpA = Math.round((panelWatt / moduleVmpV) * 10) / 10;
   const moduleIscA = Math.round(moduleImpA * 1.06 * 10) / 10;
 
@@ -124,9 +124,9 @@ export function voltaicStringDesign(
     moduleVmpV,
     moduleIscA,
     moduleImpA,
-    moduleCells: module.cells,
-    moduleEfficiencyPct: module.efficiencyPct,
-    moduleAreaM2: module.areaM2,
+    moduleCells: moduleEnvelope.cells,
+    moduleEfficiencyPct: moduleEnvelope.efficiencyPct,
+    moduleAreaM2: moduleEnvelope.areaM2,
     inverterMaxDcV: inverter.maxDcV,
     inverterMpptMinV: inverter.mpptMinV,
     vocColdV,
