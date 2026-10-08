@@ -1,33 +1,19 @@
 "use client";
 
 import type { ProposalData } from "@/lib/proposal-data";
-import { formatInr } from "@/components/proposals/_shared/formatters";
 import styles from "./Sienna.module.css";
 import { SiennaSheet } from "./sienna-brand";
 import { useSiennaLang } from "./sienna-lang-context";
-import {
-  siennaAnnualSavings,
-  siennaBillMonths,
-  siennaMonthlyBill,
-  siennaMonthlySavings,
-  siennaYearlyBill,
-} from "./sienna-live";
 
-function money(value: number): string {
-  if (!(value > 0)) return "—";
-  return formatInr(value);
+function auditInr(value: number): string {
+  const rounded = Math.round(value || 0);
+  const absolute = Math.abs(rounded).toLocaleString("en-IN");
+  return rounded < 0 ? `−₹${absolute}` : `₹${absolute}`;
 }
 
 export function SiennaAudit({ data }: { data: ProposalData }) {
   const { copy } = useSiennaLang();
-  const yearlyBill = siennaYearlyBill(data);
-  const monthlyBill = siennaMonthlyBill(data);
-  const monthlySave = siennaMonthlySavings(data);
-  const yearlySave = siennaAnnualSavings(data);
-  const coverPct = data.bill.solarSavingsPct;
-  const months = siennaBillMonths(data);
-  const barHeights = months.map((m) => (m.barHeightPct > 0 ? m.barHeightPct : m.netInr));
-  const maxBar = Math.max(...barHeights, 1);
+  const months = (data.bill.months ?? []).slice(0, 12);
 
   return (
     <SiennaSheet data={data} page="02 / 09" chapter={copy.spine.bill}>
@@ -35,40 +21,36 @@ export function SiennaAudit({ data }: { data: ProposalData }) {
       <h1 className={styles.displayTitle}>{copy.audit.title}</h1>
       <p className={styles.lead}>{copy.audit.lead}</p>
 
-      <div className={styles.auditTwin}>
-        <article className={styles.auditPane}>
-          <span className={styles.auditPaneLabel}>{copy.audit.today}</span>
-          <strong className={styles.auditPaneValue}>{money(yearlyBill)}</strong>
-          <span className={styles.auditPaneHint}>
-            {yearlyBill > 0 ? copy.audit.todayHint(money(monthlyBill)) : copy.audit.todayEmpty}
-          </span>
-        </article>
-        <article className={`${styles.auditPane} ${styles.auditPaneKeep}`}>
-          <span className={styles.auditPaneLabel}>{copy.audit.keep}</span>
-          <strong className={styles.auditPaneValue}>
-            {monthlySave > 0 ? `+${formatInr(monthlySave)}` : "—"}
+      <div className={styles.auditMetrics}>
+        <article className={`${styles.auditMetric} ${styles.auditMetricWarn}`}>
+          <strong>
+            {data.bill.summerTrapPct > 0
+              ? `+${Math.round(data.bill.summerTrapPct)}%`
+              : "—"}
           </strong>
-          <span className={styles.auditPaneHint}>
-            {yearlySave > 0 ? copy.audit.keepHint(money(yearlySave)) : copy.audit.keepEmpty}
-          </span>
+          <span>{copy.audit.summerIncrease}</span>
+          <small>{copy.audit.summerHint}</small>
         </article>
-      </div>
-
-      <div className={styles.auditCover}>
-        <div className={styles.auditCoverLabel}>{copy.audit.cover}</div>
-        <div className={styles.auditCoverValue}>
-          {coverPct > 0 ? `~${coverPct}%` : "—"}
-        </div>
-        {coverPct > 0 ? null : <p className={styles.note}>{copy.audit.coverEmpty}</p>}
+        <article className={styles.auditMetric}>
+          <strong>{data.bill.fixedChargesDisplay || "—"}</strong>
+          <span>{copy.audit.fixedLiability}</span>
+          <small>{copy.audit.fixedHint}</small>
+        </article>
+        <article className={`${styles.auditMetric} ${styles.auditMetricPositive}`}>
+          <strong>
+            {data.bill.solarSavingsPct > 0
+              ? `${Math.round(data.bill.solarSavingsPct)}%`
+              : "—"}
+          </strong>
+          <span>{copy.audit.solarSavings}</span>
+          <small>{copy.audit.solarHint}</small>
+        </article>
       </div>
 
       {months.length > 0 ? (
-        <div>
-          <p className={`${styles.kicker} ${styles.monthKicker}`}>
-            {copy.audit.months}
-          </p>
+        <>
           <div className={styles.monthRail}>
-            {months.map((month, i) => (
+            {months.map((month) => (
               <div key={month.label} className={styles.monthTick}>
                 <div className={styles.monthStem}>
                   <div
@@ -76,7 +58,7 @@ export function SiennaAudit({ data }: { data: ProposalData }) {
                       month.isSummerPeak ? ` ${styles.monthFillPeak}` : ""
                     }`}
                     style={{
-                      height: `${Math.max(8, Math.round((barHeights[i] / maxBar) * 100))}%`,
+                      height: `${Math.max(8, month.barHeightPct)}%`,
                     }}
                   />
                 </div>
@@ -84,16 +66,56 @@ export function SiennaAudit({ data }: { data: ProposalData }) {
               </div>
             ))}
           </div>
-        </div>
+
+          <div className={styles.auditTableWrap}>
+            <table className={styles.auditTable}>
+              <colgroup>
+                <col style={{ width: "16%" }} />
+                <col style={{ width: "13%" }} />
+                <col style={{ width: "18%" }} />
+                <col style={{ width: "17%" }} />
+                <col style={{ width: "17%" }} />
+                <col style={{ width: "19%" }} />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>{copy.audit.month}</th>
+                  <th>{copy.audit.units}</th>
+                  <th>{copy.audit.energy}</th>
+                  <th>{copy.audit.fixed}</th>
+                  <th>{copy.audit.duty}</th>
+                  <th>{copy.audit.netBill}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {months.map((month) => (
+                  <tr key={month.label}>
+                    <td>{month.label}</td>
+                    <td>{month.units.toLocaleString("en-IN")}</td>
+                    <td>{auditInr(month.energyInr)}</td>
+                    <td>{auditInr(month.fixedInr)}</td>
+                    <td>{auditInr(month.dutyInr)}</td>
+                    <td className={month.isSummerPeak ? styles.auditNetPeak : undefined}>
+                      {auditInr(month.netInr)}
+                    </td>
+                  </tr>
+                ))}
+                <tr className={styles.auditTotal}>
+                  <td>{copy.audit.total}</td>
+                  <td>{data.bill.totals.units.toLocaleString("en-IN")}</td>
+                  <td>{auditInr(data.bill.totals.energyInr)}</td>
+                  <td>{auditInr(data.bill.totals.fixedInr)}</td>
+                  <td>{auditInr(data.bill.totals.dutyInr)}</td>
+                  <td>{auditInr(data.bill.totals.netInr)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p className={styles.auditFootnote}>{copy.audit.footnote}</p>
+        </>
       ) : (
         <p className={styles.note}>{copy.audit.monthsEmpty}</p>
       )}
-
-      <p className={styles.note}>
-        {monthlySave > 0
-          ? copy.audit.readSave(formatInr(monthlySave))
-          : copy.audit.readEmpty}
-      </p>
     </SiennaSheet>
   );
 }

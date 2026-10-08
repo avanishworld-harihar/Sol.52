@@ -1620,6 +1620,123 @@
   margin-top: 4px;
 }
 
+.billAuditMetrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid rgba(6, 78, 59, 0.16);
+  background: #fff;
+  margin-bottom: 12px;
+}
+
+.billAuditMetric {
+  min-width: 0;
+  padding: 11px 12px 10px;
+  border-right: 1px solid rgba(6, 78, 59, 0.12);
+}
+
+.billAuditMetric:last-child {
+  border-right: 0;
+}
+
+.billAuditMetric strong,
+.billAuditMetric span,
+.billAuditMetric small {
+  display: block;
+}
+
+.billAuditMetric strong {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.55rem;
+  line-height: 1;
+  color: #064e3b;
+  margin-bottom: 5px;
+}
+
+.billAuditMetricWarn strong {
+  color: #b45309;
+}
+
+.billAuditMetricPositive strong {
+  color: #047857;
+}
+
+.billAuditMetric span {
+  color: #1c1917;
+  font-size: 0.64rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.billAuditMetric small {
+  color: #78716c;
+  font-size: 0.54rem;
+  line-height: 1.25;
+  margin-top: 3px;
+}
+
+.billAuditTableWrap {
+  border: 1px solid rgba(6, 78, 59, 0.16);
+  background: #fff;
+}
+
+.billAuditTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-variant-numeric: tabular-nums;
+}
+
+.billAuditTable th,
+.billAuditTable td {
+  padding: 4px 5px;
+  border-bottom: 1px solid rgba(6, 78, 59, 0.1);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.billAuditTable th {
+  background: #064e3b;
+  color: #f5f0e8;
+  font-size: 0.49rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.billAuditTable td {
+  color: #44403c;
+  font-size: 0.57rem;
+}
+
+.billAuditTable th:first-child,
+.billAuditTable td:first-child {
+  text-align: left;
+}
+
+.billAuditTable td:first-child {
+  color: #064e3b;
+  font-weight: 700;
+}
+
+.billAuditNetPeak {
+  color: #b45309 !important;
+  font-weight: 800;
+}
+
+.billAuditTotal td {
+  background: rgba(212, 175, 55, 0.14);
+  color: #064e3b;
+  font-weight: 800;
+  border-bottom: 0;
+}
+
+.billAuditFootnote {
+  margin: 7px 0 0;
+  color: #78716c;
+  font-size: 0.52rem;
+  line-height: 1.35;
+}
+
 .impactStrip {
   margin-top: auto;
   display: grid;
@@ -1713,6 +1830,27 @@
     height: auto;
     grid-template-columns: repeat(6, minmax(0, 1fr));
     height: 90px;
+  }
+
+  .billAuditMetrics {
+    grid-template-columns: 1fr;
+  }
+
+  .billAuditMetric {
+    border-right: 0;
+    border-bottom: 1px solid rgba(6, 78, 59, 0.12);
+  }
+
+  .billAuditMetric:last-child {
+    border-bottom: 0;
+  }
+
+  .billAuditTableWrap {
+    overflow-x: auto;
+  }
+
+  .billAuditTable {
+    min-width: 560px;
   }
 
   .techBento,

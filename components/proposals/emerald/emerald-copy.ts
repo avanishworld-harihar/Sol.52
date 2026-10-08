@@ -287,6 +287,22 @@ export function getEmeraldCopy(lang: EmeraldLang) {
       monthlySavings: hi ? "अनुमानित मासिक बचत" : "Estimated monthly savings",
       unitsWord: (n: string) => (hi ? `${n} यूनिट` : `${n} Units`),
       monthUse: hi ? "मासिक उपयोग" : "Monthly use",
+      summerIncrease: hi ? "गर्मी में बिल वृद्धि" : "Summer bill increase",
+      summerHint: hi ? "पीक महीनों का असर" : "Impact of peak months",
+      fixedLiability: hi ? "वार्षिक फिक्स्ड देनदारी" : "Annual fixed liability",
+      fixedHint: hi ? "उपयोग से स्वतंत्र" : "Independent of usage",
+      solarSavings: hi ? "अनुमानित सोलर बचत" : "Estimated solar savings",
+      solarHint: hi ? "ऊर्जा बिल में संभावित कमी" : "Potential energy-bill reduction",
+      month: hi ? "माह" : "Month",
+      units: hi ? "यूनिट" : "Units",
+      energy: hi ? "ऊर्जा" : "Energy",
+      fixed: hi ? "फिक्स्ड" : "Fixed",
+      duty: hi ? "ड्यूटी" : "Duty",
+      netBill: hi ? "कुल बिल" : "Net bill",
+      total: hi ? "कुल" : "Total",
+      footnote: hi
+        ? "ऊर्जा शुल्क खपत के साथ बदलता है; फिक्स्ड शुल्क उपयोग कम होने पर भी जारी रह सकता है। ड्यूटी और कुल राशि उपलब्ध बिल डेटा से ली गई है।"
+        : "Energy charges vary with consumption; fixed charges may continue even when usage falls. Duty and totals are taken from the available bill data.",
     },
     forecast: {
       sidebarTitle: hi ? ["सालाना", "उत्पादन।"] : ["Yearly", "Output."],

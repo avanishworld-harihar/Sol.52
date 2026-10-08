@@ -1,12 +1,11 @@
 "use client";
 
 /**
- * Emerald Signature — current grid bill vs post-solar savings.
- * Rendered only when the proposal has live bill data.
+ * Emerald Signature — 12-month electricity-bill audit.
+ * Preset-local implementation; intentionally does not depend on Golden styles.
  */
 
 import type { ProposalData } from "@/lib/proposal-data";
-import { formatInr } from "@/components/proposals/_shared/formatters";
 import { useEmeraldLang } from "./emerald-lang-context";
 import styles from "./Emerald.module.css";
 
@@ -15,38 +14,15 @@ export type EmeraldBillAuditProps = {
   folio: string;
 };
 
-function dashOr(value: string, ok: boolean): string {
-  return ok ? value : "—";
+function auditInr(value: number): string {
+  const rounded = Math.round(value || 0);
+  const absolute = Math.abs(rounded).toLocaleString("en-IN");
+  return rounded < 0 ? `−₹${absolute}` : `₹${absolute}`;
 }
 
 export function EmeraldBillAudit({ data, folio }: EmeraldBillAuditProps) {
   const { copy } = useEmeraldLang();
-  const months = (data.bill.months ?? []).filter(
-    (m) => m.units > 0 || m.netInr > 0
-  );
-  const unitsFromMonths = months.reduce((s, m) => s + (m.units || 0), 0);
-  const unitsTotal =
-    unitsFromMonths > 0 ? unitsFromMonths : data.bill.totals?.units || 0;
-  const yearlyFromLedger = data.bill.yearlyBillInr > 0;
-  const billTotal = yearlyFromLedger
-    ? data.bill.yearlyBillInr
-    : months.reduce((s, m) => s + (m.netInr || 0), 0) ||
-      data.bill.totals?.netInr ||
-      0;
-  const monthCount = Math.max(months.length, yearlyFromLedger ? 12 : 1);
-  const avgUnits =
-    unitsTotal > 0
-      ? Math.round(unitsTotal / (months.length > 0 ? months.length : 12))
-      : 0;
-  const monthlyBill = billTotal > 0 ? Math.round(billTotal / monthCount) : 0;
-  const tariff = avgUnits > 0 && monthlyBill > 0 ? monthlyBill / avgUnits : 0;
-  const annualBill = yearlyFromLedger
-    ? Math.round(billTotal)
-    : monthlyBill > 0
-      ? monthlyBill * 12
-      : 0;
-  const monthlySavings = data.economics.monthlySavingsInr;
-  const maxBar = Math.max(...months.map((m) => m.barHeightPct || 0), 1);
+  const months = (data.bill.months ?? []).slice(0, 12);
 
   return (
     <section className={styles.a4Page}>
@@ -85,7 +61,7 @@ export function EmeraldBillAudit({ data, folio }: EmeraldBillAuditProps) {
                       month.isSummerPeak ? ` ${styles.billBarPeak}` : ""
                     }`}
                     style={{
-                      height: `${Math.max(8, Math.round((month.barHeightPct / maxBar) * 100))}%`,
+                      height: `${Math.max(8, month.barHeightPct)}%`,
                     }}
                   />
                 </div>
@@ -95,51 +71,78 @@ export function EmeraldBillAudit({ data, folio }: EmeraldBillAuditProps) {
           </div>
         ) : null}
 
-        <div className={styles.auditCard}>
-          <h4 className={styles.auditHeader}>{copy.bill.currentCost}</h4>
-
-          <div className={styles.auditRow}>
-            <span className={styles.auditLabel}>{copy.bill.avgUse}</span>
-            <span className={styles.auditValue}>
-              {dashOr(
-                copy.bill.unitsWord(avgUnits.toLocaleString("en-IN")),
-                avgUnits > 0
-              )}
-            </span>
-          </div>
-          <div className={styles.auditRow}>
-            <span className={styles.auditLabel}>{copy.bill.avgRate}</span>
-            <span className={styles.auditValue}>
-              {dashOr(`₹ ${tariff.toFixed(2)}`, tariff > 0)}
-            </span>
-          </div>
-          <div className={styles.auditRow}>
-            <span className={styles.auditLabel}>{copy.bill.monthlyBill}</span>
-            <span className={styles.auditValue}>
-              {dashOr(formatInr(monthlyBill), monthlyBill > 0)}
-            </span>
-          </div>
-          <div className={styles.auditRow}>
-            <span className={styles.auditLabel}>{copy.bill.yearlyBill}</span>
-            <span className={`${styles.auditValue} ${styles.auditValueWarn}`}>
-              {dashOr(formatInr(annualBill), annualBill > 0)}
-            </span>
-          </div>
-
-          <div className={styles.auditHighlight}>
-            <div>
-              <span className={styles.auditHighlightKicker}>
-                {copy.bill.afterSolar}
-              </span>
-              <span className={styles.auditHighlightTitle}>
-                {copy.bill.monthlySavings}
-              </span>
-            </div>
-            <span className={styles.auditHighlightValue}>
-              {monthlySavings > 0 ? `+${formatInr(monthlySavings)}` : "—"}
-            </span>
-          </div>
+        <div className={styles.billAuditMetrics}>
+          <article className={`${styles.billAuditMetric} ${styles.billAuditMetricWarn}`}>
+            <strong>
+              {data.bill.summerTrapPct > 0
+                ? `+${Math.round(data.bill.summerTrapPct)}%`
+                : "—"}
+            </strong>
+            <span>{copy.bill.summerIncrease}</span>
+            <small>{copy.bill.summerHint}</small>
+          </article>
+          <article className={styles.billAuditMetric}>
+            <strong>{data.bill.fixedChargesDisplay || "—"}</strong>
+            <span>{copy.bill.fixedLiability}</span>
+            <small>{copy.bill.fixedHint}</small>
+          </article>
+          <article className={`${styles.billAuditMetric} ${styles.billAuditMetricPositive}`}>
+            <strong>
+              {data.bill.solarSavingsPct > 0
+                ? `${Math.round(data.bill.solarSavingsPct)}%`
+                : "—"}
+            </strong>
+            <span>{copy.bill.solarSavings}</span>
+            <small>{copy.bill.solarHint}</small>
+          </article>
         </div>
+
+        <div className={styles.billAuditTableWrap}>
+          <table className={styles.billAuditTable}>
+            <colgroup>
+              <col style={{ width: "16%" }} />
+              <col style={{ width: "13%" }} />
+              <col style={{ width: "18%" }} />
+              <col style={{ width: "17%" }} />
+              <col style={{ width: "17%" }} />
+              <col style={{ width: "19%" }} />
+            </colgroup>
+            <thead>
+              <tr>
+                <th>{copy.bill.month}</th>
+                <th>{copy.bill.units}</th>
+                <th>{copy.bill.energy}</th>
+                <th>{copy.bill.fixed}</th>
+                <th>{copy.bill.duty}</th>
+                <th>{copy.bill.netBill}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {months.map((month) => (
+                <tr key={month.label}>
+                  <td>{month.label}</td>
+                  <td>{month.units.toLocaleString("en-IN")}</td>
+                  <td>{auditInr(month.energyInr)}</td>
+                  <td>{auditInr(month.fixedInr)}</td>
+                  <td>{auditInr(month.dutyInr)}</td>
+                  <td className={month.isSummerPeak ? styles.billAuditNetPeak : undefined}>
+                    {auditInr(month.netInr)}
+                  </td>
+                </tr>
+              ))}
+              <tr className={styles.billAuditTotal}>
+                <td>{copy.bill.total}</td>
+                <td>{data.bill.totals.units.toLocaleString("en-IN")}</td>
+                <td>{auditInr(data.bill.totals.energyInr)}</td>
+                <td>{auditInr(data.bill.totals.fixedInr)}</td>
+                <td>{auditInr(data.bill.totals.dutyInr)}</td>
+                <td>{auditInr(data.bill.totals.netInr)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p className={styles.billAuditFootnote}>{copy.bill.footnote}</p>
       </div>
     </section>
   );

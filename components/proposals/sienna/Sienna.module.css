@@ -682,6 +682,124 @@
   color: var(--sn-muted);
 }
 
+.auditMetrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--sn-line);
+  background: var(--sn-card);
+  margin-top: 8px;
+}
+
+.auditMetric {
+  min-width: 0;
+  padding: 10px 11px 9px;
+  border-right: 1px solid var(--sn-line);
+}
+
+.auditMetric:last-child {
+  border-right: 0;
+}
+
+.auditMetric strong,
+.auditMetric span,
+.auditMetric small {
+  display: block;
+}
+
+.auditMetric strong {
+  font-family: var(--sn-serif);
+  font-size: 1.45rem;
+  line-height: 1;
+  color: var(--sn-indigo);
+  margin-bottom: 5px;
+}
+
+.auditMetricWarn strong {
+  color: var(--sn-laterite);
+}
+
+.auditMetricPositive strong {
+  color: var(--sn-olive);
+}
+
+.auditMetric span {
+  color: var(--sn-ink);
+  font-size: 0.6rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.auditMetric small {
+  color: var(--sn-muted);
+  font-size: 0.52rem;
+  line-height: 1.25;
+  margin-top: 3px;
+}
+
+.auditTableWrap {
+  margin-top: 10px;
+  border: 1px solid var(--sn-line);
+  background: var(--sn-card);
+}
+
+.auditTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-variant-numeric: tabular-nums;
+}
+
+.auditTable th,
+.auditTable td {
+  padding: 4px 5px;
+  border-bottom: 1px solid var(--sn-line);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.auditTable th {
+  background: var(--sn-indigo);
+  color: var(--sn-paper);
+  font-size: 0.47rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.auditTable td {
+  color: var(--sn-body);
+  font-size: 0.55rem;
+}
+
+.auditTable th:first-child,
+.auditTable td:first-child {
+  text-align: left;
+}
+
+.auditTable td:first-child {
+  color: var(--sn-laterite);
+  font-weight: 800;
+}
+
+.auditNetPeak {
+  color: var(--sn-laterite) !important;
+  font-weight: 800;
+}
+
+.auditTotal td {
+  background: var(--sn-bone);
+  color: var(--sn-ink);
+  font-weight: 800;
+  border-bottom: 0;
+}
+
+.auditFootnote {
+  margin: 6px 0 0;
+  font-size: 0.5rem;
+  line-height: 1.35;
+  color: var(--sn-muted);
+}
+
 .note {
   margin: 14px 0 0;
   font-size: 0.82rem;
@@ -1705,6 +1823,7 @@
   }
 
   .auditTwin,
+  .auditMetrics,
   .drawingMeta,
   .clauseGrid,
   .outlayPair,
@@ -1712,5 +1831,22 @@
   .insightGrid,
   .yieldRail {
     grid-template-columns: 1fr;
+  }
+
+  .auditMetric {
+    border-right: 0;
+    border-bottom: 1px solid var(--sn-line);
+  }
+
+  .auditMetric:last-child {
+    border-bottom: 0;
+  }
+
+  .auditTableWrap {
+    overflow-x: auto;
+  }
+
+  .auditTable {
+    min-width: 560px;
   }
 }

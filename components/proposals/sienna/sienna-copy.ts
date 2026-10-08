@@ -81,6 +81,22 @@ export function getSiennaCopy(lang: SiennaLang) {
         ? "Coverage तब जब bill और saving दोनों file पर हों।"
         : "Coverage appears when bill and saving are both on file.",
       months: hi ? "Bill के महीने" : "Months on the bill",
+      summerIncrease: hi ? "गर्मी में bill वृद्धि" : "Summer bill increase",
+      summerHint: hi ? "Peak महीनों का असर" : "Impact of peak months",
+      fixedLiability: hi ? "साल की fixed देनदारी" : "Annual fixed liability",
+      fixedHint: hi ? "कम उपयोग पर भी जारी" : "Continues even with low use",
+      solarSavings: hi ? "अनुमानित solar बचत" : "Estimated solar savings",
+      solarHint: hi ? "Energy bill में संभावित कमी" : "Potential energy-bill reduction",
+      month: hi ? "माह" : "Month",
+      units: hi ? "यूनिट" : "Units",
+      energy: hi ? "ऊर्जा" : "Energy",
+      fixed: hi ? "फिक्स्ड" : "Fixed",
+      duty: hi ? "ड्यूटी" : "Duty",
+      netBill: hi ? "कुल bill" : "Net bill",
+      total: hi ? "कुल" : "Total",
+      footnote: hi
+        ? "ऊर्जा शुल्क खपत के साथ बदलता है; fixed शुल्क उपयोग कम होने पर भी जारी रह सकता है। Duty और कुल राशि उपलब्ध bill data से ली गई है।"
+        : "Energy charges vary with consumption; fixed charges may continue even when usage falls. Duty and totals are taken from the available bill data.",
       monthsEmpty: hi
         ? "महीने तब दिखेंगे जब bill months file पर हों।"
         : "Months appear when bill months are on file.",
