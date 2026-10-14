@@ -20,7 +20,7 @@ import { fmtCompactK } from "@/lib/executive-premium-editorial/format";
 import type { ExecutivePremiumEditorialModel } from "@/lib/executive-premium-editorial/types";
 
 const SUMMER_INDICES = new Set([3, 4, 5, 6]);
-const PAYMENT_PCTS = ["25%", "50%", "20%", "5%"] as const;
+const PAYMENT_PCTS = ["40%", "30%", "15%", "15%"] as const;
 
 function locationLine(pptInput: PremiumProposalPptInput): string {
   const city = (pptInput.location ?? "").trim().split(",")[0]?.trim();

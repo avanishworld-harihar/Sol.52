@@ -55,7 +55,7 @@ export type LuxeNoirRendererProps = {
   installerLogoUrl?: string | null;
 };
 
-const DEFAULT_PAYMENT_PCTS = [25, 50, 20, 5] as const;
+const DEFAULT_PAYMENT_PCTS = [40, 30, 15, 15] as const;
 
 function A4Page({
   pageLabel,

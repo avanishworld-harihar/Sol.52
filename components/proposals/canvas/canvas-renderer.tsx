@@ -250,7 +250,7 @@ export function CanvasProposalRenderer({
   const moduleAreaM2 = equipment?.module.widthMm && equipment.module.heightMm
     ? (equipment.module.widthMm * equipment.module.heightMm) / 1_000_000
     : 2.2;
-  const requiredRoofAreaM2 = panelCount > 0 ? Math.round(panelCount * moduleAreaM2) : 0;
+  const requiredRoofAreaM2 = panelCount > 0 ? Math.ceil(panelCount * moduleAreaM2 * 1.2) : 0;
   const effectiveSavingPerUnit =
     generationUnits > 0 && yearOneSavings > 0
       ? yearOneSavings / generationUnits
@@ -260,15 +260,16 @@ export function CanvasProposalRenderer({
     eng.metrics.find((m) => /tilt/i.test(m.label))?.value?.trim() || "20°";
   const tiltDisplay = /°/.test(tiltMetric) ? tiltMetric : `${tiltMetric}°`;
 
-  const protectionItem = bom.find((b) =>
-    /acdb|dcdb|protection|safety/i.test(`${b.name} ${b.spec}`)
-  );
-  const protectionBrand =
-    protectionItem?.brand?.trim() || "Havells / Phoenix";
-  const protectionWarranty =
-    protectionItem?.warranty?.trim() || (isHi ? "5 वर्ष" : "5 yr");
+  const dcdbItem = bom.find((b) => /\bdcdb\b|dc distribution/i.test(`${b.name} ${b.spec}`));
+  const acdbItem = bom.find((b) => /\bacdb\b|ac distribution/i.test(`${b.name} ${b.spec}`));
+  const dcdbBrand = dcdbItem?.brand?.trim() || (isHi ? "अंतिम स्वीकृत मेक" : "Final approved make");
+  const acdbBrand = acdbItem?.brand?.trim() || (isHi ? "अंतिम स्वीकृत मेक" : "Final approved make");
+  const dcdbWarranty = dcdbItem?.warranty?.trim() || (isHi ? "OEM अनुसार" : "As per OEM");
+  const acdbWarranty = acdbItem?.warranty?.trim() || (isHi ? "OEM अनुसार" : "As per OEM");
+  const panelWarrantyHighlight = warranty.highlights.find((item) => /panel|module/i.test(item.label));
+  const inverterWarrantyHighlight = warranty.highlights.find((item) => /inverter/i.test(item.label));
 
-  const DEFAULT_PAYMENT_PCTS = [25, 50, 20, 5] as const;
+  const DEFAULT_PAYMENT_PCTS = [40, 30, 15, 15] as const;
   const DEFAULT_PAYMENT_TITLES = isHi
     ? [
         "Advance (बुकिंग)",
@@ -524,6 +525,26 @@ export function CanvasProposalRenderer({
                     tone="positive"
                   />
                 </EvidenceGrid>
+                {equipment ? (
+                  <EvidenceGrid cols={3}>
+                    <EvidenceCard
+                      title={isHi ? "मॉड्यूल डेटाशीट" : "Module Datasheet"}
+                      value={`${equipment.module.manufacturer} ${equipment.module.model}`}
+                      insight={`${equipment.module.watt} Wp · ${equipment.module.verification.replace("_", " ")}`}
+                    />
+                    <EvidenceCard
+                      title={isHi ? "इन्वर्टर डेटाशीट" : "Inverter Datasheet"}
+                      value={`${equipment.inverter.manufacturer} ${equipment.inverter.model}`}
+                      insight={`${equipment.inverter.ratedAcKw} kW · ${equipment.inverter.mpptCount} MPPT`}
+                    />
+                    <EvidenceCard
+                      title={isHi ? "स्ट्रिंग योजना" : "String Plan"}
+                      value={`${equipment.stringCount} · ${equipment.stringSizes.join(" + ")}`}
+                      insight={equipment.status === "verified" ? "Datasheet verified" : "Engineering verification required"}
+                      tone={equipment.status === "verified" ? "positive" : undefined}
+                    />
+                  </EvidenceGrid>
+                ) : null}
                 <ExpertInsights
                   fill
                   title={c.pages.requirementInsightTitle}
@@ -728,15 +749,15 @@ export function CanvasProposalRenderer({
         <PageShell {...foot("06 / 12")}>
           <PageHeader title={c.pages.hardware} lead={c.pages.hardwareLead} />
           <PageBody>
-            <HardwareTrustGrid products={resolveHardwareTrustProducts(bom)} />
+            <HardwareTrustGrid products={resolveHardwareTrustProducts(bom, equipment)} />
             <div className={styles.evidenceGrid}>
               <div className={styles.techItem}>
                 <span>{isHi ? "DCDB · DC डिस्ट्रीब्यूशन बॉक्स" : "DCDB · DC Distribution Box"}</span>
                 <strong>{isHi ? "फ्यूज़ + Type II SPD" : "Fuse + Type II SPD"}</strong>
                 <small>
                   {isHi
-                    ? `पैनल से इन्वर्टर तक DC साइड को सर्ज व ओवर-करंट से बचाता है। ${protectionBrand} · ${protectionWarranty}`
-                    : `Protects the DC side (panels → inverter) from surges & over-current. ${protectionBrand} · ${protectionWarranty}`}
+                    ? `पैनल से इन्वर्टर तक DC साइड को सर्ज व ओवर-करंट से बचाता है। ${dcdbBrand} · ${dcdbWarranty}`
+                    : `Protects the DC side (panels → inverter) from surges & over-current. ${dcdbBrand} · ${dcdbWarranty}`}
                 </small>
               </div>
               <div className={styles.techItem}>
@@ -744,15 +765,17 @@ export function CanvasProposalRenderer({
                 <strong>{isHi ? "MCB/MCCB + Type II SPD" : "MCB/MCCB + Type II SPD"}</strong>
                 <small>
                   {isHi
-                    ? "इन्वर्टर से ग्रिड तक AC साइड की सुरक्षा — आइसोलेशन, अर्थिंग (≤1Ω, IS 3043) और लाइटनिंग प्रोटेक्शन सहित।"
-                    : "Protects the AC side (inverter → grid) with isolation, copper earthing (≤1Ω, IS 3043) & lightning protection."}
+                    ? `इन्वर्टर से ग्रिड तक AC साइड की सुरक्षा और Type II SPD। ${acdbBrand} · ${acdbWarranty}`
+                    : `Protects the AC side (inverter → grid) with isolation and Type II SPD. ${acdbBrand} · ${acdbWarranty}`}
                 </small>
               </div>
             </div>
             <EvidenceGrid>
               <EvidenceCard
                 title={isHi ? "मॉड्यूल वारंटी" : "Module warranty"}
-                value="30 yr"
+                value={panelWarrantyHighlight
+                  ? `${panelWarrantyHighlight.value} ${panelWarrantyHighlight.unit}`
+                  : (isHi ? "OEM अनुसार" : "As per OEM")}
                 insight={
                   isHi
                     ? "प्रदर्शन वारंटी उपज गिरावट को सीमित रखती है।"
@@ -762,7 +785,9 @@ export function CanvasProposalRenderer({
               />
               <EvidenceCard
                 title={isHi ? "इन्वर्टर वारंटी" : "Inverter warranty"}
-                value="10 yr"
+                value={inverterWarrantyHighlight
+                  ? `${inverterWarrantyHighlight.value} ${inverterWarrantyHighlight.unit}`
+                  : (isHi ? "OEM अनुसार" : "As per OEM")}
                 insight={
                   isHi
                     ? "डुअल MPPT छाया में भी ट्रैकिंग बनाए रखता है।"
@@ -873,12 +898,19 @@ export function CanvasProposalRenderer({
           <PageBody>
             <EngineeringBlueprint
               systemKw={systemKwNum > 0 ? systemKwNum : 5}
+              equipment={equipment}
               tiltDeg={
                 Number.parseFloat(String(tiltDisplay).replace(/[^\d.]/g, "")) || 20
               }
               locationHint={location || undefined}
               isHi={isHi}
-              insightBody={c.pages.engInsightBody}
+              insightBody={
+                equipment
+                  ? isHi
+                    ? `${equipment.moduleCount} × ${equipment.module.watt} Wp मॉड्यूल को ${equipment.stringCount} स्ट्रिंग (${equipment.stringSizes.join(" + ")}) में रखा गया है। ${equipment.maxStringVocColdV} V cold Voc और ${equipment.minStringVmpHotV} V hot Vmp चयनित ${equipment.inverter.model} की सीमा के विरुद्ध जाँचे गए हैं।`
+                    : `${equipment.moduleCount} × ${equipment.module.watt} Wp modules are arranged as ${equipment.stringCount} ${equipment.stringCount === 1 ? "string" : "strings"} (${equipment.stringSizes.join(" + ")}). Cold Voc ${equipment.maxStringVocColdV} V and hot Vmp ${equipment.minStringVmpHotV} V are checked against the selected ${equipment.inverter.model} limits.`
+                  : c.pages.engInsightBody
+              }
             />
           </PageBody>
         </PageShell>

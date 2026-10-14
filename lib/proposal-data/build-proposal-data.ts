@@ -11,7 +11,7 @@ import { buildWealthJourney } from "@/lib/proposal-data/build-wealth-journey";
 import { buildProposalEquipmentSnapshot } from "@/lib/proposal-equipment-snapshot";
 
 const SUMMER_INDICES = new Set([3, 4, 5, 6]);
-const PAYMENT_PCTS = ["25%", "50%", "20%", "5%"] as const;
+const PAYMENT_PCTS = ["40%", "30%", "15%", "15%"] as const;
 
 const DEFAULT_STEPS = [
   { title: "Site Survey", description: "Roof assessment and load verification." },

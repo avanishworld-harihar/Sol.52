@@ -290,7 +290,7 @@ export function buildEmiTable(
 }
 
 // ---------------------------------------------------------------------------
-// Payment terms — 25 / 50 / 20 / 5 default.
+// Payment terms — 40 / 30 / 15 / 15 default.
 // ---------------------------------------------------------------------------
 
 export type PaymentMilestone = {
@@ -301,10 +301,10 @@ export type PaymentMilestone = {
 };
 
 export const DEFAULT_PAYMENT_TERMS = [
-  { step: 1, pct: 25, key: "advance" as const },
-  { step: 2, pct: 50, key: "material" as const },
-  { step: 3, pct: 20, key: "installation" as const },
-  { step: 4, pct: 5, key: "commissioning" as const }
+  { step: 1, pct: 40, key: "advance" as const },
+  { step: 2, pct: 30, key: "material" as const },
+  { step: 3, pct: 15, key: "installation" as const },
+  { step: 4, pct: 15, key: "commissioning" as const }
 ];
 
 export function buildPaymentMilestones(grossInr: number): PaymentMilestone[] {

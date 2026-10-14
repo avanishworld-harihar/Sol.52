@@ -11,6 +11,7 @@ import type {
   ProposalBomItem,
   ProposalWealthPoint,
 } from "@/lib/proposal-data";
+import type { EquipmentEngineeringSnapshot } from "@/lib/equipment-engineering";
 import { buildWealthJourney } from "@/lib/proposal-data/build-wealth-journey";
 import { resolveHardwareImageSrc } from "./hardware-assets";
 import styles from "./canvas.module.css";
@@ -19,7 +20,7 @@ export { resolveHardwareImageSrc } from "./hardware-assets";
 
 /* ── CoverPage — Page 01 Magazine Cover ──────────────────────── */
 
-const CANVAS_COVER_PHOTO = "/assets/proposals/canvas-cover-solar-home.jpg";
+const CANVAS_COVER_PHOTO = "/assets/proposals/canvas-cover-luxury-solar-garden-v3.png";
 
 export type CoverPageProps = {
   brandName: string;
@@ -1064,33 +1065,36 @@ export type HardwareTrustProduct = {
 
 const DEFAULT_TRUST_PRODUCTS: HardwareTrustProduct[] = [
   {
-    imageSrc: "/assets/waaree-panel.png",
-    badge: "30 Year Performance",
-    title: "Waaree TOPCon N-Type",
-    body: "22%+ efficiency — highest yield in MP heat.",
-    brand: "Waaree",
-    alt: "Waaree solar panel",
+    imageSrc: "/assets/hardware/panel.png",
+    badge: "As per OEM",
+    title: "Selected PV Module",
+    body: "Exact make, model and warranty are taken from the approved equipment schedule.",
+    brand: "Final approved make",
+    alt: "Selected solar panel",
   },
   {
-    imageSrc: "/assets/havells-inverter.png",
-    badge: "10 Year Warranty",
-    title: "Havells String Inverter",
-    body: "Dual MPPT trackers for maximum shading resilience.",
-    brand: "Havells",
-    alt: "Havells inverter",
+    imageSrc: "/assets/hardware/inverter.png",
+    badge: "As per OEM",
+    title: "Selected String Inverter",
+    body: "MPPT count and electrical limits follow the approved exact model datasheet.",
+    brand: "Final approved make",
+    alt: "Selected solar inverter",
   },
 ];
 
 export function resolveHardwareTrustProducts(
-  bom: ProposalBomItem[]
+  bom: ProposalBomItem[],
+  equipment?: EquipmentEngineeringSnapshot
 ): HardwareTrustProduct[] {
   const panel = bom.find((b) => /module|panel|solar/i.test(`${b.name} ${b.brand}`));
   const inverter = bom.find((b) => /inverter|mppt/i.test(`${b.name} ${b.brand}`));
 
-  if (!panel && !inverter) return DEFAULT_TRUST_PRODUCTS;
+  if (!panel && !inverter && !equipment) return DEFAULT_TRUST_PRODUCTS;
 
-  const panelBrand = panel?.brand?.trim() || "Waaree";
-  const inverterBrand = inverter?.brand?.trim() || "Havells";
+  const panelBrand =
+    equipment?.module.manufacturer || panel?.brand?.trim().split(/\s*\/\s*|\s*,\s*/)[0] || "Panel";
+  const inverterBrand =
+    equipment?.inverter.manufacturer || inverter?.brand?.trim().split(/\s*\/\s*|\s*,\s*/)[0] || "Inverter";
 
   const panelCard: HardwareTrustProduct = {
     imageSrc: /waaree/i.test(panelBrand)
@@ -1098,15 +1102,17 @@ export function resolveHardwareTrustProducts(
       : panel
         ? resolveHardwareImageSrc(panel)
         : "/assets/waaree-panel.png",
-    badge: panel?.warranty?.trim() || "30 Year Performance",
-    title: /waaree/i.test(panelBrand)
-      ? "Waaree TOPCon N-Type"
+    badge: panel?.warranty?.trim() || "As per OEM",
+    title: equipment
+      ? `${equipment.module.manufacturer} ${equipment.module.model}`
       : [panelBrand, panel?.name].filter(Boolean).join(" · "),
     body:
-      panel?.technicalPoints?.[0] ||
+      (equipment
+        ? `${equipment.module.watt} Wp · ${equipment.module.technology || "PV module"} · ${equipment.module.verification.replace("_", " ")}`
+        : panel?.technicalPoints?.[0]) ||
       panel?.description ||
       DEFAULT_TRUST_PRODUCTS[0]!.body,
-    brand: panelBrand.split(/\s+/)[0] || "Panel",
+    brand: panelBrand,
     alt: "Panel",
   };
 
@@ -1116,15 +1122,17 @@ export function resolveHardwareTrustProducts(
       : inverter
         ? resolveHardwareImageSrc(inverter)
         : "/assets/havells-inverter.png",
-    badge: inverter?.warranty?.trim() || "10 Year Warranty",
-    title: /havells/i.test(inverterBrand)
-      ? "Havells String Inverter"
+    badge: inverter?.warranty?.trim() || "As per OEM",
+    title: equipment
+      ? `${equipment.inverter.manufacturer} ${equipment.inverter.model}`
       : [inverterBrand, inverter?.name].filter(Boolean).join(" · "),
     body:
-      inverter?.technicalPoints?.[0] ||
+      (equipment
+        ? `${equipment.inverter.ratedAcKw} kW · ${equipment.inverter.mpptCount} MPPT · ${equipment.inverter.phase.replace("_", " ")}`
+        : inverter?.technicalPoints?.[0]) ||
       inverter?.description ||
       DEFAULT_TRUST_PRODUCTS[1]!.body,
-    brand: inverterBrand.split(/\s+/)[0] || "Inverter",
+    brand: inverterBrand,
     alt: "Inverter",
   };
 
@@ -1215,6 +1223,7 @@ export function ExpertInsights({
 
 export type EngineeringBlueprintProps = {
   systemKw: number;
+  equipment?: EquipmentEngineeringSnapshot;
   tiltDeg?: number;
   locationHint?: string;
   insightBody: string;
@@ -1229,26 +1238,37 @@ const MAX_VISUAL_PANELS = 24;
 
 export function EngineeringBlueprint({
   systemKw,
+  equipment,
   tiltDeg = 20,
   locationHint,
   insightBody,
   title,
   isHi = false,
 }: EngineeringBlueprintProps) {
-  const size = Number.isFinite(systemKw) && systemKw > 0 ? systemKw : 5;
-  const panelCount = Math.max(1, Math.ceil((size * 1000) / PANEL_WATT));
+  const size = equipment?.targetAcKw ?? (Number.isFinite(systemKw) && systemKw > 0 ? systemKw : 5);
+  const panelWatt = equipment?.module.watt ?? PANEL_WATT;
+  const panelCount = equipment?.moduleCount ?? Math.max(1, Math.ceil((size * 1000) / panelWatt));
   const visualPanels = Math.min(panelCount, MAX_VISUAL_PANELS);
-  const roofArea = panelCount * M2_PER_PANEL;
-  const dcKw = (panelCount * PANEL_WATT) / 1000;
-  const dcAcRatio = size > 0 ? (dcKw / size).toFixed(2) : "1.04";
+  const moduleAreaM2 = equipment?.module.widthMm && equipment.module.heightMm
+    ? (equipment.module.widthMm * equipment.module.heightMm) / 1_000_000
+    : M2_PER_PANEL;
+  const roofArea = panelCount * moduleAreaM2 * 1.2;
+  const dcKw = equipment?.actualDcKw ?? (panelCount * panelWatt) / 1000;
+  const dcAcRatio = (equipment?.dcAcRatio ?? (size > 0 ? dcKw / size : 0)).toFixed(2);
+  const stringSizes = equipment?.stringSizes ?? [];
+  const stringPlan = stringSizes.length > 0 ? stringSizes.join(" + ") : "Pending final inverter";
+  const designStatus = equipment?.status === "verified"
+    ? (isHi ? "डेटाशीट सत्यापित" : "Datasheet verified")
+    : equipment?.status === "invalid"
+      ? (isHi ? "इंजीनियरिंग समीक्षा आवश्यक" : "Engineering review required")
+      : (isHi ? "संकेतात्मक - सटीक मॉडल सत्यापित करें" : "Indicative - verify exact model");
   const heading =
     title ||
     (isHi
       ? "इंजीनियरिंग ब्लूप्रिंट (System Architecture)"
       : "Engineering Blueprint (System Architecture)");
   const locLine =
-    locationHint?.trim() ||
-    (isHi ? "~24.5° N (मध्य प्रदेश)" : "~24.5° N (Madhya Pradesh)");
+    locationHint?.trim() || (isHi ? "साइट सर्वे पर पुष्टि" : "Confirm during site survey");
 
   return (
     <div className={styles.canvasTheme}>
@@ -1298,12 +1318,12 @@ export function EngineeringBlueprint({
           <h3>{isHi ? "साइट और छत मेट्रिक्स" : "Site & Roof Metrics"}</h3>
           <div className={styles.techDataList}>
             <div className={styles.techItem}>
-              <span>{isHi ? "अक्षांश (लोकेशन)" : "Latitude (Location)"}</span>
+              <span>{isHi ? "साइट लोकेशन" : "Site Location"}</span>
               <strong>{locLine}</strong>
               <small>
                 {isHi
-                  ? "सूर्य प्रकाश कैप्चर कोण को अनुकूल बनाता है।"
-                  : "Optimizes the angle of sunlight capture."}
+                  ? "सटीक अक्षांश, अज़ीमुथ और छाया साइट सर्वे में सत्यापित होंगे।"
+                  : "Latitude, azimuth and shade are verified during the site survey."}
               </small>
             </div>
             <div className={styles.techItem}>
@@ -1311,17 +1331,21 @@ export function EngineeringBlueprint({
               <strong>~{Math.round(roofArea)} m²</strong>
               <small>
                 {isHi
-                  ? `${panelCount} × ~${M2_PER_PANEL} m²/मॉड्यूल (पैनल + रखरखाव गलियारा अनुमान)। साइट सर्वे पर अंतिम।`
-                  : `${panelCount} × ~${M2_PER_PANEL} m²/module (panel + walkway estimate). Final after site survey.`}
+                  ? `${panelCount} मॉड्यूल · वास्तविक मॉड्यूल क्षेत्र + 20% सर्विस क्लियरेंस। साइट सर्वे पर अंतिम।`
+                  : `${panelCount} modules · physical module area + 20% service clearance. Final after site survey.`}
               </small>
             </div>
             <div className={styles.techItem}>
-              <span>{isHi ? "शैडो टॉलरेंस" : "Shadow Tolerance"}</span>
-              <strong>{isHi ? "डुअल MPPT ट्रैकिंग" : "Dual MPPT Tracking"}</strong>
+              <span>{isHi ? "स्ट्रिंग और MPPT योजना" : "String & MPPT Plan"}</span>
+              <strong>
+                {equipment
+                  ? `${equipment.stringCount} ${isHi ? "स्ट्रिंग" : equipment.stringCount === 1 ? "string" : "strings"} · ${stringPlan}`
+                  : isHi ? "अंतिम इन्वर्टर पर लंबित" : "Pending final inverter"}
+              </strong>
               <small>
-                {isHi
-                  ? "बादलों में भी इन्वर्टर गतिशील रूप से समायोजित होता है।"
-                  : "Inverter adjusts dynamically to passing clouds."}
+                {equipment
+                  ? `${equipment.mpptAllocation.length}/${equipment.inverter.mpptCount} MPPT used · ${equipment.maxStringVocColdV} V cold Voc · ${equipment.minStringVmpHotV} V hot Vmp`
+                  : isHi ? "मॉडल चुनने के बाद MPPT और वोल्टेज सत्यापन होगा।" : "MPPT and voltage checks run after exact model selection."}
               </small>
             </div>
           </div>
@@ -1333,14 +1357,14 @@ export function EngineeringBlueprint({
       </h3>
       <div className={styles.advancedSpecsGrid}>
         <div className={styles.engSpecCard}>
-          <div className={styles.engSpecValue}>{size} kW AC</div>
+          <div className={styles.engSpecValue}>{equipment?.inverter.ratedAcKw ?? size} kW AC</div>
           <div className={styles.engSpecLabel}>
             {isHi ? "इन्वर्टर क्षमता" : "Inverter Capacity"}
           </div>
           <div className={styles.engSpecDesc}>
             {isHi
-              ? "घर के ग्रिड तक पहुँचने वाली अधिकतम शक्ति।"
-              : "Max power delivered to your home grid."}
+              ? `${equipment?.inverter.manufacturer ?? "चयनित"} ${equipment?.inverter.model ?? "इन्वर्टर"}`
+              : `${equipment?.inverter.manufacturer ?? "Selected"} ${equipment?.inverter.model ?? "inverter"}`}
           </div>
         </div>
         <div className={styles.engSpecCard}>
@@ -1352,19 +1376,23 @@ export function EngineeringBlueprint({
           </div>
           <div className={styles.engSpecDesc}>
             {isHi
-              ? `${panelCount} × ${PANEL_WATT} Wp TOPCon N-Type मॉड्यूल।`
-              : `${panelCount} × ${PANEL_WATT} Wp TOPCon N-Type modules.`}
+              ? `${panelCount} × ${panelWatt} Wp · ${equipment?.module.model ?? "चयनित मॉड्यूल"}`
+              : `${panelCount} × ${panelWatt} Wp · ${equipment?.module.model ?? "selected module"}`}
           </div>
         </div>
         <div className={styles.engSpecCard}>
-          <div className={styles.engSpecValue}>~75%</div>
+          <div className={styles.engSpecValue}>
+            {equipment
+              ? `${equipment.stringCount} ${equipment.stringCount === 1 ? "string" : "strings"}`
+              : "Pending"}
+          </div>
           <div className={styles.engSpecLabel}>
-            {isHi ? "परफॉर्मेंस रेशियो (PR)" : "Performance Ratio (PR)"}
+            {isHi ? "इलेक्ट्रिकल स्ट्रिंग डिज़ाइन" : "Electrical String Design"}
           </div>
           <div className={styles.engSpecDesc}>
-            {isHi
-              ? "तापमान और ग्रिड हानि के बाद सिस्टम दक्षता।"
-              : "System efficiency after temp & grid losses."}
+            {equipment
+              ? `${stringPlan} modules · max ${equipment.maxInputCurrentPerMpptA} A/MPPT`
+              : isHi ? "सटीक डेटाशीट चयन आवश्यक।" : "Exact datasheet selection required."}
           </div>
         </div>
         <div className={styles.engSpecCard}>
@@ -1373,9 +1401,7 @@ export function EngineeringBlueprint({
             {isHi ? "DC/AC अनुपात" : "DC/AC Ratio"}
           </div>
           <div className={styles.engSpecDesc}>
-            {isHi
-              ? "सुबह/शाम की उपज के लिए सुरक्षित ओवर-पैनेलिंग।"
-              : "Safely over-paneled for better morning/evening yield."}
+            {designStatus}
           </div>
         </div>
       </div>

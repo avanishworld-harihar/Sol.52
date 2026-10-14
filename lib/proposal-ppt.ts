@@ -703,7 +703,7 @@ export function summarizeProposalDeck(input: PremiumProposalPptInput): ProposalD
   const tenuresYears = finance.tenuresYears && finance.tenuresYears.length > 0 ? finance.tenuresYears : [3, 5, 7];
   const emi = buildEmiTable(netCost, interestRatePct, tenuresYears);
 
-  const paymentMilestones = buildPaymentMilestones(netCost);
+  const paymentMilestones = buildPaymentMilestones(grossSystemCost);
   const amcOptions = buildAmcOptions(grossSystemCost, lang);
   const baseCompany = defaultCompanyProfile(lang);
   const companyProfile: CompanyProfile = resolvedCompanyProfileForLang(
