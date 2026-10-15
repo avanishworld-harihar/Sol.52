@@ -52,7 +52,9 @@ export function MoreEquipmentLibraryGroup() {
 
   const entries = library ? [...library.modules, ...library.inverters] : [];
   const verified = entries.filter((entry) => entry.verification === "verified").length;
-  const review = entries.filter((entry) => entry.verification === "review_required").length;
+  const review = library?.sources.filter((source) => source.status === "review_required").length ?? 0;
+  const failedSources = library?.sources.filter((source) => source.status === "fetch_failed").length ?? 0;
+  const healthySources = library?.sources.filter((source) => source.status === "current").length ?? 0;
 
   return (
     <details
@@ -123,6 +125,23 @@ export function MoreEquipmentLibraryGroup() {
               </div>
             </div>
 
+            <div className="grid gap-2 sm:grid-cols-3">
+              <div className="rounded-xl border border-slate-200 p-3 text-xs dark:border-white/10">
+                <p className="font-extrabold uppercase tracking-wide text-slate-500">Official sources</p>
+                <p className="mt-1 font-bold text-slate-900 dark:text-white">
+                  {healthySources} current · {failedSources} failed
+                </p>
+              </div>
+              <div className="rounded-xl border border-slate-200 p-3 text-xs dark:border-white/10">
+                <p className="font-extrabold uppercase tracking-wide text-slate-500">Update policy</p>
+                <p className="mt-1 font-bold text-slate-900 dark:text-white">Extract → quarantine → approve</p>
+              </div>
+              <div className="rounded-xl border border-slate-200 p-3 text-xs dark:border-white/10">
+                <p className="font-extrabold uppercase tracking-wide text-slate-500">Proposal safety</p>
+                <p className="mt-1 font-bold text-slate-900 dark:text-white">Immutable engineering snapshot</p>
+              </div>
+            </div>
+
             <div className="space-y-2">
               {entries.map((entry) => (
                 <div key={entry.id} className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-3 py-2.5 dark:border-white/10">
@@ -140,6 +159,41 @@ export function MoreEquipmentLibraryGroup() {
                 </div>
               ))}
             </div>
+
+            {library.sources.some((source) => source.status !== "current") ? (
+              <div className="space-y-2">
+                <p className="text-[10px] font-extrabold uppercase tracking-wide text-slate-500">
+                  Source attention
+                </p>
+                {library.sources
+                  .filter((source) => source.status !== "current")
+                  .map((source) => (
+                    <div
+                      key={source.equipmentId}
+                      className="rounded-xl border border-amber-200 bg-amber-50/70 p-3 dark:border-amber-900/40 dark:bg-amber-950/20"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-xs font-bold text-amber-950 dark:text-amber-100">
+                            {source.equipmentId}
+                          </p>
+                          <p className="mt-1 text-[11px] leading-relaxed text-amber-800 dark:text-amber-200">
+                            {source.message || source.status.replace("_", " ")}
+                          </p>
+                          {source.candidate ? (
+                            <p className="mt-1 text-[10px] font-semibold text-amber-700 dark:text-amber-300">
+                              Candidate confidence {Math.round(source.candidate.confidence * 100)}% · {source.candidate.changedFields.join(", ")}
+                            </p>
+                          ) : null}
+                        </div>
+                        <span className="shrink-0 text-[10px] font-extrabold uppercase tracking-wide text-amber-700 dark:text-amber-300">
+                          {source.status.replace("_", " ")}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            ) : null}
 
             <p className="text-[11px] text-slate-500">
               Revision {library.revision} · Last internet check: {library.lastSyncedAt ? new Date(library.lastSyncedAt).toLocaleString() : "pending first scheduled sync"}

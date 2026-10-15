@@ -86,7 +86,7 @@ export function BlockCapacityScenarios({ summary, lang, darkMode, commercialConf
                   <Row label={isHi ? "वार्षिक उत्पादन" : "Annual generation"} value={`${m.annualGenKwh.toLocaleString("en-IN")} kWh`} />
                   <Row label={isHi ? "वार्षिक बचत" : "Annual saving"} value={inr(m.annualSavingInr)} />
                   <Row label={isHi ? "पेबैक" : "Payback"} value={`${m.paybackYears} yr`} />
-                  <Row label={isHi ? "छत क्षेत्र (अनु.)" : "Roof area (est.)"} value={`~${m.roofAreaSqmApprox} m²`} />
+                  <Row label={isHi ? "छत क्षेत्र (अनु.)" : "Roof area (est.)"} value={`~${Math.round(m.roofAreaSqmApprox * 10.7639).toLocaleString("en-IN")} sq ft (${m.roofAreaSqmApprox} m²)`} />
                 </dl>
               </BlockPanel>
             </motion.div>

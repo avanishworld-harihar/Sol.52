@@ -5,12 +5,19 @@ import {
   type EquipmentLibrary,
   type EquipmentSourceState,
 } from "@/lib/equipment-library";
+import {
+  EQUIPMENT_DATASHEET_PARSER_VERSION,
+  extractPdfText,
+  parseInverterDatasheetText,
+  parseModuleDatasheetText,
+} from "@/lib/equipment-datasheet-parser";
+import { inverterProfileSchema, pvModuleProfileSchema } from "@/lib/equipment-engineering";
 
 type OfficialSource = {
   equipmentId: string;
   kind: "module" | "inverter";
   url: string;
-  parser: "waaree_product_html" | "official_datasheet_watch";
+  parser: "waaree_product_html" | "official_datasheet_extract" | "official_datasheet_watch";
 };
 
 /** Curated manufacturer-owned sources only. Never accept arbitrary URLs here. */
@@ -45,7 +52,7 @@ function sourcesForLibrary(library: EquipmentLibrary): OfficialSource[] {
       equipmentId: entry.id,
       kind: "module",
       url: entry.source.url,
-      parser: "official_datasheet_watch",
+      parser: "official_datasheet_extract",
     });
   });
   library.inverters.forEach((entry) => {
@@ -54,10 +61,15 @@ function sourcesForLibrary(library: EquipmentLibrary): OfficialSource[] {
       equipmentId: entry.id,
       kind: "inverter",
       url: entry.source.url,
-      parser: "official_datasheet_watch",
+      parser: "official_datasheet_extract",
     });
   });
   return [...sources.values()];
+}
+
+function different(a: unknown, b: unknown): boolean {
+  if (typeof a === "number" && typeof b === "number") return Math.abs(a - b) > 0.001;
+  return a !== b;
 }
 
 function hash(bytes: ArrayBuffer): string {
@@ -126,23 +138,46 @@ export async function syncOfficialEquipmentLibrary(
   let library = equipmentLibrarySchema.parse(current);
   const checkedAt = new Date().toISOString();
   const states: EquipmentSourceState[] = [];
+  const downloads = new Map<string, Promise<ArrayBuffer>>();
+  const extractedText = new Map<string, Promise<string>>();
 
-  for (const source of sourcesForLibrary(library)) {
-    const previous = library.sources.find((entry) => entry.equipmentId === source.equipmentId);
-    try {
-      const response = await fetch(source.url, {
+  function download(url: string): Promise<ArrayBuffer> {
+    const existing = downloads.get(url);
+    if (existing) return existing;
+    const pending = (async () => {
+      const response = await fetch(url, {
         cache: "no-store",
         redirect: "follow",
         signal: AbortSignal.timeout(25_000),
-        headers: { "User-Agent": "Sol52-Equipment-Library/1.0" },
+        headers: { "User-Agent": "Sol52-Equipment-Library/1.1" },
       });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const bytes = await response.arrayBuffer();
       if (bytes.byteLength < 100 || bytes.byteLength > 20_000_000) {
         throw new Error("Unexpected source size");
       }
+      return bytes;
+    })();
+    downloads.set(url, pending);
+    return pending;
+  }
+
+  function pdfText(url: string, bytes: ArrayBuffer): Promise<string> {
+    const existing = extractedText.get(url);
+    if (existing) return existing;
+    const pending = extractPdfText(bytes.slice(0));
+    extractedText.set(url, pending);
+    return pending;
+  }
+
+  for (const source of sourcesForLibrary(library)) {
+    const previous = library.sources.find((entry) => entry.equipmentId === source.equipmentId);
+    try {
+      const bytes = await download(source.url);
       const contentHash = hash(bytes);
       const changed = Boolean(previous?.contentHash && previous.contentHash !== contentHash);
+      let candidate: EquipmentSourceState["candidate"];
+      let extractedFields: string[] | undefined;
 
       if (source.parser === "waaree_product_html") {
         library = updateWaareeProductHtml(
@@ -153,27 +188,60 @@ export async function syncOfficialEquipmentLibrary(
           contentHash
         );
       } else if (changed) {
-        library = {
-          ...library,
-          modules: library.modules.map((entry) =>
-            source.kind === "module" && entry.id === source.equipmentId
-              ? {
-                  ...entry,
-                  verification: "review_required" as const,
-                  source: { ...entry.source, checkedAt, contentHash },
-                }
-              : entry
-          ),
-          inverters: library.inverters.map((entry) =>
-            source.kind === "inverter" && entry.id === source.equipmentId
-              ? {
-                  ...entry,
-                  verification: "review_required" as const,
-                  source: { ...entry.source, checkedAt, contentHash },
-                }
-              : entry
-          ),
-        };
+        if (source.parser === "official_datasheet_extract") {
+          const text = await pdfText(source.url, bytes);
+          if (source.kind === "module") {
+            const current = library.modules.find((entry) => entry.id === source.equipmentId);
+            if (current) {
+              const extraction = parseModuleDatasheetText(text, current);
+              extractedFields = extraction.fields;
+              const changedFields = extraction.fields.filter((field) =>
+                different(current[field as keyof typeof current], extraction.patch[field])
+              );
+              if (changedFields.length > 0 && extraction.confidence >= 0.55) {
+                const profile = pvModuleProfileSchema.parse({
+                  ...current,
+                  ...extraction.patch,
+                  revision: current.revision + 1,
+                  verification: "review_required",
+                  source: { ...current.source, checkedAt, contentHash },
+                });
+                candidate = {
+                  kind: "module",
+                  confidence: extraction.confidence,
+                  extractedAt: checkedAt,
+                  changedFields,
+                  profile,
+                };
+              }
+            }
+          } else {
+            const current = library.inverters.find((entry) => entry.id === source.equipmentId);
+            if (current) {
+              const extraction = parseInverterDatasheetText(text, current);
+              extractedFields = extraction.fields;
+              const changedFields = extraction.fields.filter((field) =>
+                different(current[field as keyof typeof current], extraction.patch[field])
+              );
+              if (changedFields.length > 0 && extraction.confidence >= 0.55) {
+                const profile = inverterProfileSchema.parse({
+                  ...current,
+                  ...extraction.patch,
+                  revision: current.revision + 1,
+                  verification: "review_required",
+                  source: { ...current.source, checkedAt, contentHash },
+                });
+                candidate = {
+                  kind: "inverter",
+                  confidence: extraction.confidence,
+                  extractedAt: checkedAt,
+                  changedFields,
+                  profile,
+                };
+              }
+            }
+          }
+        }
       } else {
         library = {
           ...library,
@@ -195,11 +263,16 @@ export async function syncOfficialEquipmentLibrary(
         url: source.url,
         checkedAt,
         contentHash,
-        status: changed && source.parser === "official_datasheet_watch" ? "review_required" : "current",
+        status: changed && source.parser !== "waaree_product_html" ? "review_required" : "current",
         message:
-          changed && source.parser === "official_datasheet_watch"
-            ? "Official datasheet changed; electrical revision quarantined for review."
+          changed && source.parser !== "waaree_product_html"
+            ? candidate
+              ? `Official datasheet changed; ${candidate.changedFields.length} extracted engineering field(s) quarantined for approval.`
+              : "Official datasheet changed; no high-confidence electrical revision was auto-applied."
             : undefined,
+        parserVersion: source.parser === "official_datasheet_extract" ? EQUIPMENT_DATASHEET_PARSER_VERSION : undefined,
+        extractedFields,
+        candidate,
       });
     } catch (error) {
       states.push({

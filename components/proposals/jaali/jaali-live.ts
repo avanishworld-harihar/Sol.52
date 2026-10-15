@@ -738,7 +738,7 @@ export function jaaliSqFtFromM2(m2: number): number {
 export function formatJaaliAreaM2(m2: number): string {
   if (!(m2 > 0)) return "—";
   const sqft = jaaliSqFtFromM2(m2);
-  return `${m2} m² · ${sqft.toLocaleString("en-IN")} sq ft`;
+  return `${sqft.toLocaleString("en-IN")} sq ft · ${m2} m²`;
 }
 
 function jaaliParseMetricNumber(data: ProposalData, match: RegExp): number {
@@ -1044,7 +1044,10 @@ export function jaaliEngineeringModel(
 ): JaaliEngineeringModel {
   const acKw = Number(data.meta.systemKw) || 0;
   const annual = jaaliAnnualUnits(data);
-  const { count, watt } = jaaliParsePanelArray(data);
+  const parsedArray = jaaliParsePanelArray(data);
+  const sharedEquipment = data.engineering.equipment;
+  const count = sharedEquipment?.moduleCount ?? parsedArray.count;
+  const watt = sharedEquipment?.module.watt ?? parsedArray.watt;
   const dcKwp = count > 0 && watt > 0 ? Math.round(((count * watt) / 1000) * 100) / 100 : 0;
   const dcAcRatio = acKw > 0 && dcKwp > 0 ? Math.round((dcKwp / acKw) * 100) / 100 : 0;
   const specificYield = acKw > 0 && annual > 0 ? Math.round(annual / acKw) : 0;
@@ -1072,7 +1075,9 @@ export function jaaliEngineeringModel(
   }
 
   const visualPanelCount = Math.min(Math.max(0, count), JAALI_MAX_VISUAL_PANELS);
-  const roofAreaM2 = count > 0 ? Math.round(count * JAALI_M2_PER_PANEL) : 0;
+  const moduleAreaM2 = sharedEquipment?.moduleAreaM2 || JAALI_M2_PER_PANEL;
+  const roofAreaM2 = sharedEquipment?.requiredRoofAreaM2 ??
+    (count > 0 ? Math.round(count * moduleAreaM2 * 1.2) : 0);
   const cable = jaaliLiveCable(data, pptInput);
   const rowSpacingRaw = Number(pptInput?.residentialTechnicalSpecs?.mounting?.rowSpacingM);
   const rowSpacingM = Number.isFinite(rowSpacingRaw) && rowSpacingRaw > 0 ? rowSpacingRaw : 0;
@@ -1091,8 +1096,8 @@ export function jaaliEngineeringModel(
     siteLatLabel,
     roofAreaM2,
     roofAreaLabel: formatJaaliAreaM2(roofAreaM2),
-    m2PerPanel: JAALI_M2_PER_PANEL,
-    m2PerPanelLabel: formatJaaliAreaM2(JAALI_M2_PER_PANEL),
+    m2PerPanel: moduleAreaM2,
+    m2PerPanelLabel: formatJaaliAreaM2(moduleAreaM2),
     performanceRatioPct: acKw > 0 ? 75 : 0,
     peakSunHours: loc ? 5 : 0,
     specificYield,

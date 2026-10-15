@@ -738,7 +738,7 @@ export function khadiSqFtFromM2(m2: number): number {
 export function formatKhadiAreaM2(m2: number): string {
   if (!(m2 > 0)) return "—";
   const sqft = khadiSqFtFromM2(m2);
-  return `~${m2} m² (~${sqft.toLocaleString("en-IN")} sq ft)`;
+  return `~${sqft.toLocaleString("en-IN")} sq ft (${m2} m²)`;
 }
 
 function khadiParseMetricNumber(data: ProposalData, match: RegExp): number {
@@ -974,7 +974,10 @@ export function khadiEngineeringModel(
 ): KhadiEngineeringModel {
   const acKw = Number(data.meta.systemKw) || 0;
   const annual = khadiAnnualUnits(data);
-  const { count, watt } = khadiParsePanelArray(data);
+  const parsedArray = khadiParsePanelArray(data);
+  const sharedEquipment = data.engineering.equipment;
+  const count = sharedEquipment?.moduleCount ?? parsedArray.count;
+  const watt = sharedEquipment?.module.watt ?? parsedArray.watt;
   const dcKwp = count > 0 && watt > 0 ? Math.round(((count * watt) / 1000) * 100) / 100 : 0;
   const dcAcRatio = acKw > 0 && dcKwp > 0 ? Math.round((dcKwp / acKw) * 100) / 100 : 0;
   const specificYield = acKw > 0 && annual > 0 ? Math.round(annual / acKw) : 0;
@@ -1002,7 +1005,9 @@ export function khadiEngineeringModel(
   }
 
   const visualPanelCount = Math.min(Math.max(0, count), KHADI_MAX_VISUAL_PANELS);
-  const roofAreaM2 = count > 0 ? Math.round(count * KHADI_M2_PER_PANEL) : 0;
+  const moduleAreaM2 = sharedEquipment?.moduleAreaM2 || KHADI_M2_PER_PANEL;
+  const roofAreaM2 = sharedEquipment?.requiredRoofAreaM2 ??
+    (count > 0 ? Math.round(count * moduleAreaM2 * 1.2) : 0);
   const cable = khadiLiveCable(data, pptInput);
   const rowSpacingRaw = Number(pptInput?.residentialTechnicalSpecs?.mounting?.rowSpacingM);
   const rowSpacingM = Number.isFinite(rowSpacingRaw) && rowSpacingRaw > 0 ? rowSpacingRaw : 0;
@@ -1021,8 +1026,8 @@ export function khadiEngineeringModel(
     siteLatLabel,
     roofAreaM2,
     roofAreaLabel: formatKhadiAreaM2(roofAreaM2),
-    m2PerPanel: KHADI_M2_PER_PANEL,
-    m2PerPanelLabel: formatKhadiAreaM2(KHADI_M2_PER_PANEL),
+    m2PerPanel: moduleAreaM2,
+    m2PerPanelLabel: formatKhadiAreaM2(moduleAreaM2),
     performanceRatioPct: acKw > 0 ? 75 : 0,
     peakSunHours: loc ? 5 : 0,
     specificYield,

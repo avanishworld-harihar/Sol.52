@@ -1249,10 +1249,9 @@ export function EngineeringBlueprint({
   const panelWatt = equipment?.module.watt ?? PANEL_WATT;
   const panelCount = equipment?.moduleCount ?? Math.max(1, Math.ceil((size * 1000) / panelWatt));
   const visualPanels = Math.min(panelCount, MAX_VISUAL_PANELS);
-  const moduleAreaM2 = equipment?.module.widthMm && equipment.module.heightMm
-    ? (equipment.module.widthMm * equipment.module.heightMm) / 1_000_000
-    : M2_PER_PANEL;
-  const roofArea = panelCount * moduleAreaM2 * 1.2;
+  const moduleAreaM2 = equipment?.moduleAreaM2 || M2_PER_PANEL;
+  const roofArea = equipment?.requiredRoofAreaM2 ?? panelCount * moduleAreaM2 * 1.2;
+  const roofAreaSqFt = equipment?.requiredRoofAreaSqFt ?? Math.round(roofArea * 10.7639);
   const dcKw = equipment?.actualDcKw ?? (panelCount * panelWatt) / 1000;
   const dcAcRatio = (equipment?.dcAcRatio ?? (size > 0 ? dcKw / size : 0)).toFixed(2);
   const stringSizes = equipment?.stringSizes ?? [];
@@ -1328,7 +1327,9 @@ export function EngineeringBlueprint({
             </div>
             <div className={styles.techItem}>
               <span>{isHi ? "आवश्यक छत क्षेत्र" : "Required Roof Area"}</span>
-              <strong>~{Math.round(roofArea)} m²</strong>
+              <strong>
+                ~{roofAreaSqFt.toLocaleString("en-IN")} sq ft ({Math.round(roofArea)} m²)
+              </strong>
               <small>
                 {isHi
                   ? `${panelCount} मॉड्यूल · वास्तविक मॉड्यूल क्षेत्र + 20% सर्विस क्लियरेंस। साइट सर्वे पर अंतिम।`

@@ -164,13 +164,30 @@ export async function POST(req: NextRequest) {
     };
     const summary = summarizeProposalDeck(basePptInput);
     const equipmentLibrary = await getEquipmentLibrary();
+    const equipmentEngineeringSnapshot = buildProposalEquipmentSnapshot(
+      basePptInput,
+      summary,
+      equipmentLibrary
+    );
+    if (equipmentEngineeringSnapshot.status === "invalid") {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Selected module and inverter combination is electrically invalid.",
+          code: "equipment_engineering_invalid",
+          details: {
+            errors: equipmentEngineeringSnapshot.errors,
+            warnings: equipmentEngineeringSnapshot.warnings,
+            module: `${equipmentEngineeringSnapshot.module.manufacturer} ${equipmentEngineeringSnapshot.module.model}`,
+            inverter: `${equipmentEngineeringSnapshot.inverter.manufacturer} ${equipmentEngineeringSnapshot.inverter.model}`,
+          },
+        },
+        { status: 422 }
+      );
+    }
     const pptInput: PremiumProposalPptInput = {
       ...basePptInput,
-      equipmentEngineeringSnapshot: buildProposalEquipmentSnapshot(
-        basePptInput,
-        summary,
-        equipmentLibrary
-      ),
+      equipmentEngineeringSnapshot,
     };
 
     const scope = await resolveOrgScope(req);
@@ -238,6 +255,10 @@ export async function POST(req: NextRequest) {
               : payload.presetId === "commercial_executive"
                 ? "Commercial proposal could not be saved. Apply migration 065_restore_commercial_executive_preset.sql in Supabase, then retry."
                 : "Proposal could not be saved to the database.",
+          equipmentEngineering: {
+            status: equipmentEngineeringSnapshot.status,
+            warnings: equipmentEngineeringSnapshot.warnings,
+          },
         },
         { status: 503 }
       );
@@ -330,6 +351,10 @@ export async function POST(req: NextRequest) {
         summary: responseSummary,
         projectId,
         leadStatus: payload.leadId ? "proposal-sent" : null,
+        equipmentEngineering: {
+          status: equipmentEngineeringSnapshot.status,
+          warnings: equipmentEngineeringSnapshot.warnings,
+        },
       },
       { status: 200 }
     );

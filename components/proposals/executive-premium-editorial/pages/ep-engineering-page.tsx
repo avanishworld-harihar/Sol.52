@@ -23,7 +23,7 @@ export function EpEngineeringPage({ data }: Props) {
     },
     {
       label: e.roofArea,
-      value: `~${data.roof_area_m2} m²`,
+      value: `~${data.roof_area_sqft.toLocaleString("en-IN")} sq ft (${data.roof_area_m2} m²)`,
       caption: e.roofAreaCaption(data.panel_count, data.m2_per_panel),
     },
     {

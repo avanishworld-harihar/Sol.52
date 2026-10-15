@@ -1,6 +1,9 @@
 import { z } from "zod";
 
-export const EQUIPMENT_ENGINE_VERSION = "1.0.0";
+export const EQUIPMENT_ENGINE_VERSION = "1.1.0";
+
+export const SQ_FT_PER_SQ_M = 10.7639;
+export const DEFAULT_ROOF_CLEARANCE_FACTOR = 1.2;
 
 const sourceMetaSchema = z.object({
   url: z.string().url().optional(),
@@ -78,6 +81,10 @@ export type EquipmentEngineeringSnapshot = {
   maxParallelStringsPerMppt: number;
   maxInputCurrentPerMpptA: number;
   maxShortCircuitCurrentPerMpptA: number;
+  moduleAreaM2: number;
+  roofClearanceFactor: number;
+  requiredRoofAreaM2: number;
+  requiredRoofAreaSqFt: number;
   warnings: string[];
   errors: string[];
 };
@@ -191,6 +198,14 @@ export function calculateEquipmentEngineering(input: {
   const minStringSize = stringSizes.length ? Math.min(...stringSizes) : 0;
   const maxStringVocColdV = round(maxStringSize * moduleVocColdV, 1);
   const minStringVmpHotV = round(minStringSize * moduleVmpHotV, 1);
+  const moduleAreaM2 =
+    moduleProfile.widthMm && moduleProfile.heightMm
+      ? round((moduleProfile.widthMm * moduleProfile.heightMm) / 1_000_000, 3)
+      : 0;
+  const roofClearanceFactor = DEFAULT_ROOF_CLEARANCE_FACTOR;
+  const requiredRoofAreaM2 =
+    moduleAreaM2 > 0 ? round(moduleCount * moduleAreaM2 * roofClearanceFactor, 1) : 0;
+  const requiredRoofAreaSqFt = round(requiredRoofAreaM2 * SQ_FT_PER_SQ_M, 0);
 
   if (moduleProfile.verification !== "verified") {
     warnings.push("Module electrical values are an indicative design envelope; select a verified model datasheet.");
@@ -232,6 +247,10 @@ export function calculateEquipmentEngineering(input: {
     maxParallelStringsPerMppt,
     maxInputCurrentPerMpptA,
     maxShortCircuitCurrentPerMpptA,
+    moduleAreaM2,
+    roofClearanceFactor,
+    requiredRoofAreaM2,
+    requiredRoofAreaSqFt,
     warnings,
     errors,
   };

@@ -1,7 +1,7 @@
 "use client";
 
 import { BatteryCharging, LayoutGrid, Sun, Zap } from "lucide-react";
-import type { ProposalDeckSummary } from "@/lib/proposal-ppt";
+import type { PremiumProposalPptInput, ProposalDeckSummary } from "@/lib/proposal-ppt";
 import type { ProposalDict, ProposalLang } from "@/lib/proposal-i18n";
 import { AuroraEyebrow, AuroraPageShell, AuroraTitle } from "./aurora-primitives";
 
@@ -9,6 +9,7 @@ type Props = {
   summary: ProposalDeckSummary;
   lang: ProposalLang;
   D: ProposalDict;
+  pptInput?: PremiumProposalPptInput;
 };
 
 const FLOW_STEPS = [
@@ -18,14 +19,15 @@ const FLOW_STEPS = [
   { id: "grid", icon: LayoutGrid, label: "Grid / net meter", labelHi: "ग्रिड / नेट मीटर" },
 ];
 
-export function AuroraTechnicalSummary({ summary, lang }: Props) {
+export function AuroraTechnicalSummary({ summary, lang, pptInput }: Props) {
   const isHi = lang === "hi";
   const panelBrand = summary.brands?.panel ?? summary.panelBrand ?? "—";
   const inverterBrand = summary.brands?.inverter ?? "—";
-  const roofAreaSqFt = Math.round(summary.systemKw * 100);
+  const equipment = pptInput?.equipmentEngineeringSnapshot;
+  const roofAreaSqFt = equipment?.requiredRoofAreaSqFt ?? Math.round(summary.systemKw * 100);
 
   const tiles = [
-    { icon: Sun, label: isHi ? "सोलर पैनल" : "Solar panels", value: `${summary.panels}`, sub: `${summary.panelWatt ?? 540}W · ${panelBrand}` },
+    { icon: Sun, label: isHi ? "सोलर पैनल" : "Solar panels", value: `${equipment?.moduleCount ?? summary.panels}`, sub: `${equipment?.module.watt ?? summary.panelWatt ?? 540}W · ${panelBrand}` },
     { icon: Zap, label: isHi ? "इन्वर्टर" : "Inverter", value: `${summary.systemKw} kW`, sub: `On-grid · ${inverterBrand}` },
     { icon: BatteryCharging, label: isHi ? "वार्षिक उत्पादन" : "Annual generation", value: summary.annualGen.toLocaleString("en-IN"), sub: isHi ? "इकाई/वर्ष" : "units/year" },
     { icon: LayoutGrid, label: isHi ? "छत क्षेत्र" : "Rooftop area", value: `~${roofAreaSqFt}`, sub: isHi ? "वर्ग फुट" : "sq ft approx." },

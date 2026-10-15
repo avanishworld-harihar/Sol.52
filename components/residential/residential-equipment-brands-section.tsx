@@ -8,7 +8,12 @@ import {
   ensureBrandCatalog,
 } from "@/lib/residential-brand-catalog";
 import { wireBrandDisplayName } from "@/lib/residential-deck-helpers";
-import type { EquipmentLibrary } from "@/lib/equipment-library";
+import {
+  resolveInverterProfile,
+  resolveModuleProfile,
+  type EquipmentLibrary,
+} from "@/lib/equipment-library";
+import { calculateEquipmentEngineering } from "@/lib/equipment-engineering";
 import {
   addInverterPresetToCatalog,
   addWirePresetToCatalog,
@@ -30,7 +35,7 @@ import {
 } from "@/lib/residential-requirements-schema";
 import { cn } from "@/lib/utils";
 import { Cable, Cpu, DatabaseZap, Plus, ShieldCheck, Sun, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Props = {
   config: ResidentialProposalConfig;
@@ -95,6 +100,43 @@ export function ResidentialEquipmentBrandsSection({ config, onChange, isCommerci
   const [newPanel, setNewPanel] = useState("");
   const [equipmentLibrary, setEquipmentLibrary] = useState<EquipmentLibrary | null>(null);
   const [equipmentLibraryError, setEquipmentLibraryError] = useState("");
+
+  const liveEngineering = useMemo(() => {
+    if (!equipmentLibrary) return null;
+    const moduleProfile = resolveModuleProfile(equipmentLibrary, {
+      catalogId: config.equipmentSelection?.moduleCatalogId,
+      manufacturer: solar.brand,
+      model: config.equipmentSelection?.moduleModel,
+      watt: solar.watt,
+    });
+    const inverter = resolveInverterProfile(equipmentLibrary, {
+      catalogId: config.equipmentSelection?.inverterCatalogId,
+      manufacturer: config.inverterBrandOptions?.[0]?.brand,
+      model: config.equipmentSelection?.inverterModel,
+      ratedAcKw: solar.plantCapacityKw,
+      phase: pricing.connectionPhase,
+    });
+    return calculateEquipmentEngineering({
+      targetAcKw: solar.plantCapacityKw,
+      targetDcAcRatio: config.equipmentSelection?.targetDcAcRatio,
+      moduleCountOverride: solar.moduleCountOverride,
+      module: moduleProfile,
+      inverter,
+    });
+  }, [
+    config.equipmentSelection?.inverterCatalogId,
+    config.equipmentSelection?.inverterModel,
+    config.equipmentSelection?.moduleCatalogId,
+    config.equipmentSelection?.moduleModel,
+    config.equipmentSelection?.targetDcAcRatio,
+    equipmentLibrary,
+    config.inverterBrandOptions,
+    pricing.connectionPhase,
+    solar.brand,
+    solar.moduleCountOverride,
+    solar.plantCapacityKw,
+    solar.watt,
+  ]);
 
   useEffect(() => {
     let active = true;
@@ -515,6 +557,47 @@ export function ResidentialEquipmentBrandsSection({ config, onChange, isCommerci
               ? `Library revision ${equipmentLibrary.revision}. Proposal creation freezes the selected datasheet and string calculation for audit safety.`
               : "Loading the online equipment library…"}
         </p>
+        {liveEngineering ? (
+          <div
+            className={cn(
+              "mt-3 rounded-xl border p-3",
+              liveEngineering.status === "verified"
+                ? "border-emerald-200 bg-emerald-50/70 dark:border-emerald-900/40 dark:bg-emerald-950/20"
+                : liveEngineering.status === "invalid"
+                  ? "border-red-200 bg-red-50/70 dark:border-red-900/40 dark:bg-red-950/20"
+                  : "border-amber-200 bg-amber-50/70 dark:border-amber-900/40 dark:bg-amber-950/20"
+            )}
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs font-extrabold uppercase tracking-wide text-slate-700 dark:text-slate-200">
+                Live engineering · {liveEngineering.status}
+              </p>
+              <p className="text-xs font-bold text-slate-900 dark:text-white">
+                {liveEngineering.moduleCount} modules · {liveEngineering.actualDcKw.toFixed(2)} kWp · DC/AC {liveEngineering.dcAcRatio.toFixed(2)}
+              </p>
+            </div>
+            <div className="mt-2 grid gap-2 text-[11px] sm:grid-cols-3">
+              <p>
+                <span className="font-bold">Strings:</span>{" "}
+                {liveEngineering.stringSizes.length > 0 ? liveEngineering.stringSizes.join(" + ") : "invalid"}
+              </p>
+              <p>
+                <span className="font-bold">Cold Voc:</span> {liveEngineering.maxStringVocColdV} V
+              </p>
+              <p>
+                <span className="font-bold">Roof:</span>{" "}
+                {liveEngineering.requiredRoofAreaSqFt > 0
+                  ? `${liveEngineering.requiredRoofAreaSqFt.toLocaleString("en-IN")} sq ft (${liveEngineering.requiredRoofAreaM2} m²) incl. service clearance`
+                  : "exact module dimensions required"}
+              </p>
+            </div>
+            {[...liveEngineering.errors, ...liveEngineering.warnings].length > 0 ? (
+              <p className="mt-2 text-[11px] font-semibold leading-relaxed text-slate-700 dark:text-slate-300">
+                {[...liveEngineering.errors, ...liveEngineering.warnings].join(" ")}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
       </div>
 
       <div>

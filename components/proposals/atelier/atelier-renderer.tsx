@@ -411,13 +411,9 @@ export function AtelierRenderer({
   })();
   const panelCount = equipment?.moduleCount ??
     (systemKw > 0 ? Math.ceil((systemKw * 1000) / panelWp) : 9);
-  /** India rooftop rule-of-thumb incl. walkways: ~100 sq ft per kWp, scaled to panel Wp. */
-  const roofSqftPerKwp = 100;
   const dcKwp = equipment?.actualDcKw ?? (panelCount * panelWp) / 1000;
-  const roofAreaSqft = Math.max(
-    1,
-    Math.ceil(dcKwp * roofSqftPerKwp)
-  );
+  const roofAreaSqft = equipment?.requiredRoofAreaSqFt ??
+    Math.max(1, Math.ceil(dcKwp * 100));
   const sqftPerPanel = Math.max(
     1,
     Math.round(roofAreaSqft / Math.max(1, panelCount))

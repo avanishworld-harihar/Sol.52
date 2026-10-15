@@ -39,8 +39,15 @@ export function buildEditorialEngineeringModel(
     siteLat: specs?.mounting?.siteLat,
   });
   const tiltDeg = specs?.mounting?.actualTiltDeg ?? metrics.tiltDeg;
-  const panelCount = Math.max(1, metrics.panelCount || Math.ceil((metrics.acCapacityKw * 1000) / metrics.panelWatt));
-  const roofAreaM2 = Math.round(panelCount * M2_PER_PANEL);
+  const equipment = pptInput.equipmentEngineeringSnapshot;
+  const panelCount = Math.max(
+    1,
+    equipment?.moduleCount ??
+      (metrics.panelCount || Math.ceil((metrics.acCapacityKw * 1000) / metrics.panelWatt))
+  );
+  const moduleAreaM2 = equipment?.moduleAreaM2 || M2_PER_PANEL;
+  const roofAreaM2 = equipment?.requiredRoofAreaM2 ?? Math.round(panelCount * moduleAreaM2 * 1.2);
+  const roofAreaSqFt = equipment?.requiredRoofAreaSqFt ?? Math.round(roofAreaM2 * 10.7639);
 
   return {
     // Compact yield-only rows — capacity/PR/ratio/latitude live in blueprint UI (no duplicate annual gen).
@@ -67,13 +74,14 @@ export function buildEditorialEngineeringModel(
       detail: p.detail,
     })),
     panel_count: panelCount,
-    panel_watt: metrics.panelWatt,
+    panel_watt: equipment?.module.watt ?? metrics.panelWatt,
     visual_panel_count: Math.min(panelCount, MAX_VISUAL_PANELS),
     panel_image_url: resolvePanelImageUrl(summary),
     azimuth_deg: 180,
     site_lat_label: `~${metrics.siteLat.toFixed(1)}° N (${metrics.cityLabel})`,
     roof_area_m2: roofAreaM2,
-    m2_per_panel: M2_PER_PANEL,
+    roof_area_sqft: roofAreaSqFt,
+    m2_per_panel: moduleAreaM2,
     ac_kw: metrics.acCapacityKw,
     dc_kwp: metrics.dcCapacityKwp,
     dc_ac_ratio: metrics.dcAcRatio,

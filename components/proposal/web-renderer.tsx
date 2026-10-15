@@ -560,6 +560,7 @@ export function renderBlockByKey(
           summary={summary}
           lang={lang}
           D={D}
+          pptInput={ctx.pptInput}
         />
       );
 

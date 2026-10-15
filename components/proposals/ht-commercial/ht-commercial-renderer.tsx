@@ -111,9 +111,13 @@ export function HtCommercialProposalRenderer({
     0
   );
 
-  // Space & engineering (pre-survey estimates, ~580 Wp modules)
-  const panelCount = systemKw > 0 ? Math.ceil((systemKw * 1000) / 580) : 0;
-  const rccAreaM2 = systemKw > 0 ? Math.round(systemKw * 10) : 0;
+  // Space & engineering comes from the same frozen equipment snapshot as every preset.
+  const equipment = data.engineering.equipment;
+  const panelWatt = equipment?.module.watt ?? 580;
+  const panelCount = equipment?.moduleCount ??
+    (systemKw > 0 ? Math.ceil((systemKw * 1000) / panelWatt) : 0);
+  const rccAreaM2 = equipment?.requiredRoofAreaM2 ??
+    (systemKw > 0 ? Math.round(systemKw * 10) : 0);
   const shedAreaM2 = systemKw > 0 ? Math.round(systemKw * 6) : 0;
   const toSqft = (m2: number) => Math.round(m2 * 10.764).toLocaleString("en-IN");
 
@@ -325,7 +329,7 @@ export function HtCommercialProposalRenderer({
               <div>
                 <span>{c.space.areaLabel}</span>
                 <strong>
-                  {rccAreaM2 > 0 ? `${rccAreaM2.toLocaleString("en-IN")} m² (~${toSqft(rccAreaM2)} sq.ft)` : "—"}
+                  {rccAreaM2 > 0 ? `~${toSqft(rccAreaM2)} sq ft (${rccAreaM2.toLocaleString("en-IN")} m²)` : "—"}
                 </strong>
                 <small>{c.space.perKwRcc}</small>
               </div>
@@ -350,7 +354,7 @@ export function HtCommercialProposalRenderer({
               <div>
                 <span>{c.space.areaLabel}</span>
                 <strong>
-                  {shedAreaM2 > 0 ? `${shedAreaM2.toLocaleString("en-IN")} m² (~${toSqft(shedAreaM2)} sq.ft)` : "—"}
+                  {shedAreaM2 > 0 ? `~${toSqft(shedAreaM2)} sq ft (${shedAreaM2.toLocaleString("en-IN")} m²)` : "—"}
                 </strong>
                 <small>{c.space.perKwShed}</small>
               </div>

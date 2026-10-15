@@ -171,7 +171,7 @@ export function CommercialCapacityScenariosPanel({
                 <MetricReadonly label="Net (catalog)" value={inr(m.netCostInr)} />
                 <MetricReadonly label="Annual saving" value={inr(m.annualSavingInr)} />
                 <MetricReadonly label="Payback" value={`${m.paybackYears} yr`} />
-                <MetricReadonly label="Roof ~" value={`${m.roofAreaSqmApprox} m²`} />
+                <MetricReadonly label="Roof ~" value={`${Math.round(m.roofAreaSqmApprox * 10.7639).toLocaleString("en-IN")} sq ft (${m.roofAreaSqmApprox} m²)`} />
               </div>
             </div>
           );

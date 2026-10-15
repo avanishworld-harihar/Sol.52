@@ -734,11 +734,11 @@ export function siennaSqFtFromM2(m2: number): number {
   return Math.round(m2 * SIENNA_M2_TO_SQFT);
 }
 
-/** e.g. ~18 m² (~194 sq ft). Empty when area is missing — never invents a roof size. */
+/** Square feet is the customer-facing primary unit; metric stays as a secondary reference. */
 export function formatSiennaAreaM2(m2: number): string {
   if (!(m2 > 0)) return "—";
   const sqft = siennaSqFtFromM2(m2);
-  return `~${m2} m² (~${sqft.toLocaleString("en-IN")} sq ft)`;
+  return `~${sqft.toLocaleString("en-IN")} sq ft (${m2} m²)`;
 }
 
 function siennaParseMetricNumber(data: ProposalData, match: RegExp): number {
@@ -974,7 +974,10 @@ export function siennaEngineeringModel(
 ): SiennaEngineeringModel {
   const acKw = Number(data.meta.systemKw) || 0;
   const annual = siennaAnnualUnits(data);
-  const { count, watt } = siennaParsePanelArray(data);
+  const parsedArray = siennaParsePanelArray(data);
+  const sharedEquipment = data.engineering.equipment;
+  const count = sharedEquipment?.moduleCount ?? parsedArray.count;
+  const watt = sharedEquipment?.module.watt ?? parsedArray.watt;
   const dcKwp = count > 0 && watt > 0 ? Math.round(((count * watt) / 1000) * 100) / 100 : 0;
   const dcAcRatio = acKw > 0 && dcKwp > 0 ? Math.round((dcKwp / acKw) * 100) / 100 : 0;
   const specificYield = acKw > 0 && annual > 0 ? Math.round(annual / acKw) : 0;
@@ -1002,7 +1005,9 @@ export function siennaEngineeringModel(
   }
 
   const visualPanelCount = Math.min(Math.max(0, count), SIENNA_MAX_VISUAL_PANELS);
-  const roofAreaM2 = count > 0 ? Math.round(count * SIENNA_M2_PER_PANEL) : 0;
+  const moduleAreaM2 = sharedEquipment?.moduleAreaM2 || SIENNA_M2_PER_PANEL;
+  const roofAreaM2 = sharedEquipment?.requiredRoofAreaM2 ??
+    (count > 0 ? Math.round(count * moduleAreaM2 * 1.2) : 0);
   const cable = siennaLiveCable(data, pptInput);
   const rowSpacingRaw = Number(pptInput?.residentialTechnicalSpecs?.mounting?.rowSpacingM);
   const rowSpacingM = Number.isFinite(rowSpacingRaw) && rowSpacingRaw > 0 ? rowSpacingRaw : 0;
@@ -1021,8 +1026,8 @@ export function siennaEngineeringModel(
     siteLatLabel,
     roofAreaM2,
     roofAreaLabel: formatSiennaAreaM2(roofAreaM2),
-    m2PerPanel: SIENNA_M2_PER_PANEL,
-    m2PerPanelLabel: formatSiennaAreaM2(SIENNA_M2_PER_PANEL),
+    m2PerPanel: moduleAreaM2,
+    m2PerPanelLabel: formatSiennaAreaM2(moduleAreaM2),
     performanceRatioPct: acKw > 0 ? 75 : 0,
     peakSunHours: loc ? 5 : 0,
     specificYield,

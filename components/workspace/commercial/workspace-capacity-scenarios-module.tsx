@@ -147,7 +147,7 @@ export function WorkspaceCapacityScenariosModule({ systemKw, summary, config, on
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 <MetricPill label="Net cost" value={inr(m.netCostInr)} />
                 <MetricPill label="Annual gen" value={`${m.annualGenKwh.toLocaleString("en-IN")} kWh`} />
-                <MetricPill label="Roof ~" value={`${m.roofAreaSqmApprox} m²`} />
+                <MetricPill label="Roof ~" value={`${Math.round(m.roofAreaSqmApprox * 10.7639).toLocaleString("en-IN")} sq ft (${m.roofAreaSqmApprox} m²)`} />
                 <MetricPill label="Payback" value={`${m.paybackYears} yrs`} />
               </div>
             </div>

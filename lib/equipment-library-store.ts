@@ -13,6 +13,19 @@ type LibraryRow = {
   updated_at: string;
 };
 
+function withBuiltInDefaults(library: EquipmentLibrary): EquipmentLibrary {
+  const modules = new Map(BUILT_IN_EQUIPMENT_LIBRARY.modules.map((entry) => [entry.id, entry]));
+  const inverters = new Map(BUILT_IN_EQUIPMENT_LIBRARY.inverters.map((entry) => [entry.id, entry]));
+  // Persisted/reviewed revisions always win over application defaults.
+  library.modules.forEach((entry) => modules.set(entry.id, entry));
+  library.inverters.forEach((entry) => inverters.set(entry.id, entry));
+  return equipmentLibrarySchema.parse({
+    ...library,
+    modules: [...modules.values()],
+    inverters: [...inverters.values()],
+  });
+}
+
 export async function getEquipmentLibrary(): Promise<EquipmentLibrary> {
   const client = createSupabaseAdmin();
   if (!client) return BUILT_IN_EQUIPMENT_LIBRARY;
@@ -26,7 +39,7 @@ export async function getEquipmentLibrary(): Promise<EquipmentLibrary> {
     return BUILT_IN_EQUIPMENT_LIBRARY;
   }
   const parsed = equipmentLibrarySchema.safeParse((data as LibraryRow).catalog);
-  return parsed.success ? parsed.data : BUILT_IN_EQUIPMENT_LIBRARY;
+  return parsed.success ? withBuiltInDefaults(parsed.data) : BUILT_IN_EQUIPMENT_LIBRARY;
 }
 
 export async function saveEquipmentLibrary(library: EquipmentLibrary): Promise<boolean> {

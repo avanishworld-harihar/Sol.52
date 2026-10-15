@@ -100,6 +100,7 @@ export type EditorialEngineeringModel = {
   azimuth_deg: number;
   site_lat_label: string;
   roof_area_m2: number;
+  roof_area_sqft: number;
   m2_per_panel: number;
   ac_kw: number;
   dc_kwp: number;

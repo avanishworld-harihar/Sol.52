@@ -247,10 +247,11 @@ export function CanvasProposalRenderer({
       : 0);
   const dcArrayKwp =
     equipment?.actualDcKw ?? (panelCount > 0 ? (panelCount * panelWatt) / 1000 : 0);
-  const moduleAreaM2 = equipment?.module.widthMm && equipment.module.heightMm
-    ? (equipment.module.widthMm * equipment.module.heightMm) / 1_000_000
-    : 2.2;
-  const requiredRoofAreaM2 = panelCount > 0 ? Math.ceil(panelCount * moduleAreaM2 * 1.2) : 0;
+  const moduleAreaM2 = equipment?.moduleAreaM2 || 2.2;
+  const requiredRoofAreaM2 = equipment?.requiredRoofAreaM2 ??
+    (panelCount > 0 ? Math.ceil(panelCount * moduleAreaM2 * 1.2) : 0);
+  const requiredRoofAreaSqFt = equipment?.requiredRoofAreaSqFt ??
+    Math.round(requiredRoofAreaM2 * 10.7639);
   const effectiveSavingPerUnit =
     generationUnits > 0 && yearOneSavings > 0
       ? yearOneSavings / generationUnits
@@ -520,7 +521,9 @@ export function CanvasProposalRenderer({
                   <EvidenceCard
                     title={isHi ? "अनुमानित छत क्षेत्र" : "Estimated Roof Area"}
                     value={
-                      requiredRoofAreaM2 > 0 ? `~${requiredRoofAreaM2} m²` : "—"
+                      requiredRoofAreaSqFt > 0
+                        ? `~${requiredRoofAreaSqFt.toLocaleString("en-IN")} sq ft (${requiredRoofAreaM2} m²)`
+                        : "—"
                     }
                     tone="positive"
                   />
