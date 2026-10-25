@@ -16,6 +16,16 @@ export function isComplimentaryExpired(sub: OrganizationSubscription): boolean {
   return new Date(sub.expires_at).getTime() < Date.now();
 }
 
+export function isPastDueGraceExpired(sub: OrganizationSubscription, now = Date.now()): boolean {
+  if (sub.status !== "past_due") return false;
+  const configured = Number(process.env.BILLING_PAST_DUE_GRACE_DAYS ?? 7);
+  const graceDays = Number.isFinite(configured) ? Math.max(0, Math.min(30, configured)) : 7;
+  const anchor = sub.current_period_end || sub.updated_at;
+  const anchorMs = new Date(anchor).getTime();
+  if (!Number.isFinite(anchorMs)) return false;
+  return anchorMs + graceDays * 86_400_000 < now;
+}
+
 async function expireComplimentaryAccess(
   organizationId: string,
   sub: OrganizationSubscription

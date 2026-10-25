@@ -70,6 +70,8 @@ function plan(code: PlanCode, name: string, maxProposals: number | null, feature
     features: parsePlanFeatures(features),
     is_active: true,
     sort_order: 0,
+    provider_plan_id_monthly: null,
+    provider_plan_id_yearly: null,
   };
 }
 
@@ -85,6 +87,11 @@ function sub(planRow: SubscriptionPlan, extra?: Partial<OrganizationSubscription
     current_period_start: null,
     current_period_end: null,
     cancel_at_period_end: false,
+    billing_interval: "monthly",
+    provider: null,
+    provider_subscription_id: null,
+    provider_customer_id: null,
+    provider_latest_payment_id: null,
     is_complimentary: extra?.is_complimentary === true,
     expires_at: extra?.expires_at ?? null,
     granted_by: extra?.granted_by ?? null,

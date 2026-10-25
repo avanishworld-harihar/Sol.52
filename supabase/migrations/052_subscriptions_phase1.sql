@@ -24,32 +24,67 @@ CREATE TABLE IF NOT EXISTS public.subscription_plans (
   updated_at        timestamptz NOT NULL DEFAULT now()
 );
 
+-- Legacy SOL.52 databases already have a subscription_plans table whose `id`
+-- is integer. CREATE TABLE IF NOT EXISTS leaves that table untouched, so add the
+-- Phase 1 catalog columns independently instead of assuming the fresh UUID shape.
+ALTER TABLE public.subscription_plans
+  ADD COLUMN IF NOT EXISTS code text,
+  ADD COLUMN IF NOT EXISTS name text,
+  ADD COLUMN IF NOT EXISTS price_inr_monthly integer NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS price_inr_yearly integer NULL,
+  ADD COLUMN IF NOT EXISTS max_users integer NOT NULL DEFAULT 1,
+  ADD COLUMN IF NOT EXISTS max_proposals_per_month integer NULL,
+  ADD COLUMN IF NOT EXISTS features jsonb NOT NULL DEFAULT '{}'::jsonb,
+  ADD COLUMN IF NOT EXISTS is_active boolean NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS sort_order integer NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now(),
+  ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
+
+CREATE UNIQUE INDEX IF NOT EXISTS subscription_plans_code_unique
+  ON public.subscription_plans (code);
+
 COMMENT ON TABLE public.subscription_plans IS
   'Billing plan catalog — Trial, Starter, Pro, Business. Payment gateway links in Phase 2.';
 
 -- ── Active subscription per org (one row per org; history in billing_events) ─
-CREATE TABLE IF NOT EXISTS public.organization_subscriptions (
-  id                    uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
-  organization_id       uuid        NOT NULL UNIQUE
-                                      REFERENCES public.organizations (id) ON DELETE CASCADE,
-  plan_id               uuid        NOT NULL
-                                      REFERENCES public.subscription_plans (id),
-  status                text        NOT NULL DEFAULT 'trialing'
-                                      CHECK (status IN (
-                                        'trialing', 'active', 'past_due',
-                                        'cancelled'
-                                      )),
-  trial_ends_at         timestamptz NULL,
-  trial_proposals_used  integer     NOT NULL DEFAULT 0,
-  current_period_start  timestamptz NULL,
-  current_period_end    timestamptz NULL,
-  provider              text        NULL,
-  provider_subscription_id text     NULL,
-  provider_customer_id  text        NULL,
-  cancel_at_period_end  boolean     NOT NULL DEFAULT false,
-  created_at            timestamptz NOT NULL DEFAULT now(),
-  updated_at            timestamptz NOT NULL DEFAULT now()
-);
+DO $$
+DECLARE
+  plan_pk_type text;
+BEGIN
+  IF to_regclass('public.organization_subscriptions') IS NULL THEN
+    SELECT format_type(a.atttypid, a.atttypmod)
+      INTO plan_pk_type
+    FROM pg_attribute a
+    WHERE a.attrelid = 'public.subscription_plans'::regclass
+      AND a.attname = 'id'
+      AND NOT a.attisdropped;
+
+    IF plan_pk_type IS NULL THEN
+      RAISE EXCEPTION 'subscription_plans.id is missing';
+    END IF;
+
+    EXECUTE format($create$
+      CREATE TABLE public.organization_subscriptions (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        organization_id uuid NOT NULL UNIQUE
+          REFERENCES public.organizations (id) ON DELETE CASCADE,
+        plan_id %s NOT NULL REFERENCES public.subscription_plans (id),
+        status text NOT NULL DEFAULT 'trialing'
+          CHECK (status IN ('trialing', 'active', 'past_due', 'cancelled')),
+        trial_ends_at timestamptz NULL,
+        trial_proposals_used integer NOT NULL DEFAULT 0,
+        current_period_start timestamptz NULL,
+        current_period_end timestamptz NULL,
+        provider text NULL,
+        provider_subscription_id text NULL,
+        provider_customer_id text NULL,
+        cancel_at_period_end boolean NOT NULL DEFAULT false,
+        created_at timestamptz NOT NULL DEFAULT now(),
+        updated_at timestamptz NOT NULL DEFAULT now()
+      )
+    $create$, plan_pk_type);
+  END IF;
+END $$;
 
 CREATE INDEX IF NOT EXISTS organization_subscriptions_org_idx
   ON public.organization_subscriptions (organization_id);

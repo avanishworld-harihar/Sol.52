@@ -31,7 +31,16 @@ function isBillingEnforced(): boolean {
   return true;
 }
 
-import { getActiveOrgSubscription, applySubscriptionExpiry, isTrialExpired } from "@/lib/billing/subscription-lifecycle";
+function isBillingFailureClosed(): boolean {
+  return (process.env.BILLING_FAILURE_MODE ?? "open").trim().toLowerCase() === "closed";
+}
+
+import {
+  getActiveOrgSubscription,
+  applySubscriptionExpiry,
+  isPastDueGraceExpired,
+  isTrialExpired,
+} from "@/lib/billing/subscription-lifecycle";
 function isThemeAllowed(
   sub: OrganizationSubscription,
   themeKey: ResidentialThemeKey
@@ -191,7 +200,16 @@ export async function assertCanCreateProposal(input: {
   identity?: TrialIdentityInput;
 }): Promise<OrganizationSubscription | null> {
   if (!input.organizationId) return null;
-  if (!(await isBillingAvailable()) || !isBillingEnforced()) return null;
+  if (!isBillingEnforced()) return null;
+  if (!(await isBillingAvailable())) {
+    if (isBillingFailureClosed()) {
+      throw new BillingEntitlementError(
+        "billing_unavailable",
+        "Billing verification is temporarily unavailable. Please try again shortly."
+      );
+    }
+    return null;
+  }
 
   let sub = (await resolveOrgBilling(input.organizationId, input.identity)) ?? null;
   if (!sub) {
@@ -201,6 +219,12 @@ export async function assertCanCreateProposal(input: {
     }
   }
   if (!sub) {
+    if (isBillingFailureClosed()) {
+      throw new BillingEntitlementError(
+        "billing_unavailable",
+        "We could not verify this organization’s subscription. Please try again shortly."
+      );
+    }
     console.warn(
       "[billing] no subscription for org %s — allowing proposal (billing row missing or upsert failed)",
       input.organizationId
@@ -212,6 +236,13 @@ export async function assertCanCreateProposal(input: {
     throw new BillingEntitlementError(
       "no_subscription",
       "Subscription is inactive. Upgrade to continue creating proposals."
+    );
+  }
+
+  if (isPastDueGraceExpired(sub)) {
+    throw new BillingEntitlementError(
+      "no_subscription",
+      "Subscription payment is overdue and the grace period has ended. Update billing to continue."
     );
   }
 

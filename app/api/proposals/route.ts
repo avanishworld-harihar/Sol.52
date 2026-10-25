@@ -219,7 +219,7 @@ export async function POST(req: NextRequest) {
             code: billingErr.code,
             details: billingErr.details ?? null,
           },
-          { status: 402 }
+          { status: billingErr.code === "billing_unavailable" ? 503 : 402 }
         );
       }
       throw billingErr;

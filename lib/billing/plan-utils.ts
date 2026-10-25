@@ -51,6 +51,8 @@ export function mapPlanRow(row: Record<string, unknown>): SubscriptionPlan {
     features: parsePlanFeatures(row.features),
     is_active: row.is_active !== false,
     sort_order: n(row.sort_order),
+    provider_plan_id_monthly: row.provider_plan_id_monthly ? String(row.provider_plan_id_monthly) : null,
+    provider_plan_id_yearly: row.provider_plan_id_yearly ? String(row.provider_plan_id_yearly) : null,
   };
 }
 

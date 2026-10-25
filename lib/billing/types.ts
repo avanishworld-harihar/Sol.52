@@ -1,6 +1,7 @@
 /** Sol.52 billing — Phase 1 types (no payment gateway). */
 
 export type PlanCode = "trial" | "starter" | "pro" | "business";
+export type BillingInterval = "monthly" | "yearly";
 
 export type SubscriptionStatus =
   | "trialing"
@@ -52,6 +53,8 @@ export type SubscriptionPlan = {
   features: PlanFeatures;
   is_active: boolean;
   sort_order: number;
+  provider_plan_id_monthly: string | null;
+  provider_plan_id_yearly: string | null;
 };
 
 export type OrganizationSubscription = {
@@ -65,6 +68,11 @@ export type OrganizationSubscription = {
   current_period_start: string | null;
   current_period_end: string | null;
   cancel_at_period_end: boolean;
+  billing_interval: BillingInterval;
+  provider: string | null;
+  provider_subscription_id: string | null;
+  provider_customer_id: string | null;
+  provider_latest_payment_id: string | null;
   is_complimentary: boolean;
   expires_at: string | null;
   granted_by: string | null;
@@ -89,6 +97,7 @@ export type TrialIdentityInput = {
 };
 
 export type BillingEntitlementCode =
+  | "billing_unavailable"
   | "proposal_limit_reached"
   | "trial_expired"
   | "theme_not_allowed"

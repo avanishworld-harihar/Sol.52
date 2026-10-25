@@ -3,6 +3,8 @@ import { getOrgSubscription, listSubscriptionPlans } from "@/lib/billing/subscri
 import type { OrganizationSubscription, PlanCode, SubscriptionStatus } from "@/lib/billing/types";
 import { getActiveOrgSubscription } from "@/lib/billing/subscription-lifecycle";
 import { isBillingAvailable } from "@/lib/billing/entitlements";
+import { isRazorpayCheckoutConfigured } from "@/lib/billing/razorpay";
+import type { BillingInterval } from "@/lib/billing/types";
 
 export type OrgUsageSummary = {
   available: boolean;
@@ -23,6 +25,8 @@ export type OrgUsageSummary = {
   complimentaryExpiresAt: string | null;
   complimentaryGrantedBy: string | null;
   complimentaryReason: string | null;
+  billingInterval: BillingInterval | null;
+  currentPeriodEnd: string | null;
   /** Plan gates for Design Studio / SLD packs (outside proposal). Soft-default true when billing off. */
   designStudioEnabled: boolean;
   sldEnabled: boolean;
@@ -30,7 +34,10 @@ export type OrgUsageSummary = {
     code: PlanCode;
     name: string;
     price_inr_monthly: number;
+    price_inr_yearly: number | null;
     tagline: string;
+    monthlyCheckoutEnabled: boolean;
+    yearlyCheckoutEnabled: boolean;
   }>;
 };
 
@@ -167,6 +174,8 @@ export async function buildOrgUsageSummary(organizationId: string): Promise<OrgU
       complimentaryExpiresAt: null,
       complimentaryGrantedBy: null,
       complimentaryReason: null,
+      billingInterval: null,
+      currentPeriodEnd: null,
       designStudioEnabled: true,
       sldEnabled: true,
       upgradePlans: [],
@@ -178,13 +187,17 @@ export async function buildOrgUsageSummary(organizationId: string): Promise<OrgU
     listSubscriptionPlans(),
   ]);
 
+  const currentRank = sub && sub.status !== "cancelled" ? sub.plan.sort_order : 0;
   const upgradePlans = allPlans
-    .filter((p) => p.code !== "trial" && p.price_inr_monthly > 0)
+    .filter((p) => p.code !== "trial" && p.price_inr_monthly > 0 && p.sort_order > currentRank)
     .map((p) => ({
       code: p.code,
       name: p.name,
       price_inr_monthly: p.price_inr_monthly,
+      price_inr_yearly: p.price_inr_yearly,
       tagline: UPGRADE_TAGLINES[p.code] ?? "",
+      monthlyCheckoutEnabled: isRazorpayCheckoutConfigured(p, "monthly"),
+      yearlyCheckoutEnabled: isRazorpayCheckoutConfigured(p, "yearly"),
     }));
 
   if (!sub || sub.status === "cancelled") {
@@ -209,6 +222,8 @@ export async function buildOrgUsageSummary(organizationId: string): Promise<OrgU
       complimentaryExpiresAt: null,
       complimentaryGrantedBy: null,
       complimentaryReason: null,
+      billingInterval: null,
+      currentPeriodEnd: null,
       designStudioEnabled: false,
       sldEnabled: false,
       upgradePlans,
@@ -242,11 +257,13 @@ export async function buildOrgUsageSummary(organizationId: string): Promise<OrgU
     proposalsLimitLabel: limitLabel,
     isUnlimited,
     showDaysLeft: (isTrial && daysLeft != null) || (sub.is_complimentary && complimentaryDaysLeft != null),
-    showUpgrade: sub.plan.code === "trial" || sub.plan.code === "starter",
+    showUpgrade: upgradePlans.length > 0,
     isComplimentary: sub.is_complimentary,
     complimentaryExpiresAt: sub.expires_at,
     complimentaryGrantedBy: sub.granted_by,
     complimentaryReason: sub.granted_reason,
+    billingInterval: sub.billing_interval,
+    currentPeriodEnd: sub.current_period_end,
     designStudioEnabled: sub.plan.features.design_studio === true,
     sldEnabled: sub.plan.features.sld === true,
     upgradePlans,
