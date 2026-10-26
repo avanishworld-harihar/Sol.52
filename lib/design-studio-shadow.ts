@@ -10,6 +10,7 @@
 
 import area from "@turf/area";
 import destination from "@turf/destination";
+import difference from "@turf/difference";
 import intersect from "@turf/intersect";
 import { featureCollection, polygon } from "@turf/helpers";
 import type { Feature, Polygon as GeoPolygon, MultiPolygon } from "geojson";
@@ -118,23 +119,10 @@ export type SunPose = {
  */
 export function sunPoseAt(date: Date, latitudeDeg: number, longitudeDeg: number): SunPose {
   const pos = SunCalc.getPosition(date, latitudeDeg, longitudeDeg);
-  // Guard: if a bundler ever resolved classic v1 (radians), altitude is typically |x|≤π/2
-  // while real solar altitude in degrees for India daytime is usually > 2°. Prefer degrees
-  // whenever |altitude| > π/2 (impossible for radians) OR |azimuth| > π (v2 bearings).
-  const altitudeLooksDegrees = Math.abs(pos.altitude) > Math.PI / 2 + 0.01;
-  const azimuthLooksDegrees = Math.abs(pos.azimuth) > Math.PI + 0.01;
-  const useDegrees = altitudeLooksDegrees || azimuthLooksDegrees;
-
-  let altitudeDeg: number;
-  let sunBearingDeg: number;
-  if (useDegrees) {
-    altitudeDeg = pos.altitude;
-    sunBearingDeg = ((pos.azimuth % 360) + 360) % 360;
-  } else {
-    // Classic SunCalc v1 fallback
-    altitudeDeg = (pos.altitude * 180) / Math.PI;
-    sunBearingDeg = (((pos.azimuth * 180) / Math.PI + 180) % 360 + 360) % 360;
-  }
+  // SunCalc v2 (locked dependency) returns degrees and north-based clockwise
+  // azimuth. Runtime unit guessing was ambiguous near the horizon/north.
+  const altitudeDeg = pos.altitude;
+  const sunBearingDeg = ((pos.azimuth % 360) + 360) % 360;
   const shadowBearingDeg = (sunBearingDeg + 180) % 360;
   return { altitudeDeg, sunBearingDeg, shadowBearingDeg };
 }
@@ -391,15 +379,24 @@ export function analyzePanelShadows(opts: {
 
     let shadedSqm = 0;
     if (shadows.length > 0) {
+      let unshaded: Feature<GeoPolygon | MultiPolygon> | null = feat;
       for (const shadow of shadows) {
+        if (!unshaded) break;
         try {
-          const hit = intersect(featureCollection([feat, shadow]));
-          if (hit) shadedSqm += area(hit);
+          // Subtract sequentially so overlapping obstruction shadows are counted
+          // once. Summing intersections overestimated shade where lobes overlap.
+          const hit = intersect(featureCollection([unshaded, shadow]));
+          if (!hit) continue;
+          const remainder = difference(featureCollection([unshaded, shadow]));
+          unshaded = remainder?.geometry
+            ? (remainder as Feature<GeoPolygon | MultiPolygon>)
+            : null;
         } catch {
-          // ignore topology failures
+          // Fail closed for this shadow: retain the last valid unshaded shape.
         }
       }
-      shadedSqm = Math.min(panelArea, shadedSqm);
+      const unshadedSqm = unshaded ? Math.max(0, area(unshaded)) : 0;
+      shadedSqm = Math.min(panelArea, Math.max(0, panelArea - unshadedSqm));
     }
 
     const shadeFraction = Math.min(1, Math.max(0, shadedSqm / panelArea));
@@ -411,10 +408,7 @@ export function analyzePanelShadows(opts: {
     });
   }
 
-  const meanShadeFraction =
-    panelShades.length === 0
-      ? 0
-      : panelShades.reduce((s, p) => s + p.shadeFraction, 0) / panelShades.length;
+  const meanShadeFraction = totalSqm > 0 ? 1 - freeSqm / totalSqm : 0;
 
   return {
     sampleAt: date,

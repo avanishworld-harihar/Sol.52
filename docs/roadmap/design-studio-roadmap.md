@@ -3,7 +3,7 @@
 | Field | Value |
 |-------|-------|
 | **Status** | Phases 1–6 core complete — reserved engines (roof type + safety) shipped light |
-| **Last Updated** | 2026-07-26 |
+| **Last Updated** | 2026-10-26 |
 | **Canonical architecture (FROZEN)** | [`docs/architecture/design-studio-architecture.md`](../architecture/design-studio-architecture.md) |
 
 > **This is the only place where future ideas, future phases, and future enhancements are added.**
@@ -19,6 +19,11 @@
 
 > **Product lock (2026-07-21):** Design + SLD stay **outside** the customer proposal. Separate pack
 > share links only — see `.cursor/rules/design-sld-separate-from-proposal.mdc`.
+
+> **2.5D planning record (2026-10-26):** A reviewed, implementation-ready blueprint is saved at
+> [`design-studio-2-5d-plan.md`](design-studio-2-5d-plan.md). Its status is **planned, not approved
+> for implementation**. Existing 2D quality work may proceed independently; starting 2.5D requires
+> a new explicit product-owner command and an approved architecture v1.2 update.
 
 ---
 

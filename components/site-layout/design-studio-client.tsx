@@ -1598,6 +1598,9 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       return;
     }
     const selectedSet = new Set(selectedPanelIds);
+    // Cell separators are decorative. Thousands of Google Maps Polyline
+    // instances make selection/drag noticeably laggy on large commercial roofs.
+    const showPanelCellDetails = placedPanels.length <= 400;
     panelPolygonsRef.current = placedPanels.map((panel, panelIndex) => {
       const selected = selectedSet.has(panel.id);
       const path = panel.footprint_geojson.coordinates[0]
@@ -1641,18 +1644,20 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
         zIndex: selected ? PANEL_Z_INDEX_SELECTED : PANEL_Z_INDEX,
       });
 
-      for (const linePath of panelCellLinePaths(path)) {
-        panelCellLinesRef.current.push(
-          new google.maps.Polyline({
-            map: mapRef.current!,
-            path: linePath,
-            clickable: false,
-            strokeColor: selected ? "#60a5fa" : "#334155",
-            strokeOpacity: selected ? 0.55 : 0.4,
-            strokeWeight: 0.7,
-            zIndex: selected ? PANEL_Z_INDEX_SELECTED + 1 : PANEL_Z_INDEX + 1,
-          })
-        );
+      if (showPanelCellDetails) {
+        for (const linePath of panelCellLinePaths(path)) {
+          panelCellLinesRef.current.push(
+            new google.maps.Polyline({
+              map: mapRef.current!,
+              path: linePath,
+              clickable: false,
+              strokeColor: selected ? "#60a5fa" : "#334155",
+              strokeOpacity: selected ? 0.55 : 0.4,
+              strokeWeight: 0.7,
+              zIndex: selected ? PANEL_Z_INDEX_SELECTED + 1 : PANEL_Z_INDEX + 1,
+            })
+          );
+        }
       }
 
       const pathFromFootprint = (footprint: PlacedPanel["footprint_geojson"]) =>
@@ -2110,7 +2115,12 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
   ]);
 
   const annualShadeLoss = useMemo(() => {
-    if (!yieldEstimate || placedPanels.length === 0) return null;
+    // This is the heaviest synchronous analysis in the editor. Keep normal
+    // panel move/select interactions smooth and calculate only when its output
+    // is visible or required by the design pack.
+    if ((!shadowEnabled && !designPackOpen) || !yieldEstimate || placedPanels.length === 0) {
+      return null;
+    }
     return estimateAnnualShadeLoss({
       panels: placedPanels,
       obstructions: state.obstructions,
@@ -2119,7 +2129,15 @@ export function DesignStudioClient({ projectId }: { projectId: string }) {
       plantRoofHeightAglFt: plantRoofHeightFt,
       unshadedAnnualKwh: yieldEstimate.annualKwh,
     });
-  }, [center, placedPanels, plantRoofHeightFt, state.obstructions, yieldEstimate]);
+  }, [
+    center,
+    designPackOpen,
+    placedPanels,
+    plantRoofHeightFt,
+    shadowEnabled,
+    state.obstructions,
+    yieldEstimate,
+  ]);
 
   const activeShadowPreset = useMemo(
     () => SHADOW_SOLSTICE_PRESETS.find((item) => item.id === shadowPresetId) ?? null,

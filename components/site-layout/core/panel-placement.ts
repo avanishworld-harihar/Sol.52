@@ -1,7 +1,6 @@
 import area from "@turf/area";
 import bbox from "@turf/bbox";
 import booleanDisjoint from "@turf/boolean-disjoint";
-import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import buffer from "@turf/buffer";
 import circle from "@turf/circle";
 import destination from "@turf/destination";
@@ -132,16 +131,18 @@ function subtractObstructions(
   buildable: Buildable,
   obstructions: SiteObstruction[],
   clearanceFt: number
-): Buildable {
+): Buildable | null {
   let next = buildable;
   for (const obstruction of obstructions) {
     const hole = obstructionCircle(obstruction, clearanceFt);
     if (!hole) continue;
     try {
       const cut = difference(featureCollection([next, hole]));
-      if (cut?.geometry) next = cut as Buildable;
+      if (!cut?.geometry) return null;
+      next = cut as Buildable;
     } catch {
-      // Keep previous buildable if difference fails.
+      // Fail closed: ignoring a keep-out would silently place panels in it.
+      return null;
     }
   }
   return next;
@@ -149,7 +150,8 @@ function subtractObstructions(
 
 /**
  * One buildable polygon per roof section (same index order).
- * Falls back to the raw roof section if setback erosion fails.
+ * Fails closed when setback erosion/topology fails; silently dropping a
+ * requested safety setback would produce an unsafe layout.
  */
 export function buildBuildablePolygons(
   roof: RoofGeometry,
@@ -168,9 +170,10 @@ export function buildBuildablePolygons(
     if (setbackM > 0) {
       try {
         const eroded = buffer(feature, -setbackM, { units: "meters" }) as Buildable | null;
-        if (eroded?.geometry) buildable = eroded;
+        if (!eroded?.geometry) return null;
+        buildable = eroded;
       } catch {
-        buildable = feature;
+        return null;
       }
     }
 
@@ -480,15 +483,16 @@ export function footprintInsideBuildable(
   footprint: RoofPolygon,
   buildable: PanelBuildablePolygon
 ): boolean {
-  const ring = footprint.coordinates[0]?.slice(0, -1) ?? [];
-  if (ring.length < 3) return false;
-  // Require every corner + center inside. More reliable than booleanContains on curved buffers.
-  const centerLng = ring.reduce((sum, p) => sum + p[0]!, 0) / ring.length;
-  const centerLat = ring.reduce((sum, p) => sum + p[1]!, 0) / ring.length;
-  const samples: number[][] = [...ring, [centerLng, centerLat]];
-  return samples.every((coord) =>
-    booleanPointInPolygon(point(coord as [number, number]), buildable)
-  );
+  try {
+    const candidate = polygon(footprint.coordinates);
+    // A panel is contained only when subtracting the buildable geometry leaves
+    // no outside remainder. This catches an edge crossing a concave notch even
+    // when sampled corners happen to be inside.
+    const outside = difference(featureCollection([candidate, buildable]));
+    return !outside?.geometry;
+  } catch {
+    return false;
+  }
 }
 
 function footprintOverlapsPreserve(
@@ -641,7 +645,7 @@ export function autoPackPanels(input: AutoPackInput): AutoPackResult {
   const preservePanels = (input.preservePanels ?? []).filter((panel) => panel.is_locked);
   const wattage = Math.max(1, input.panelSpec.wattage);
 
-  let { panels: packed, buildables } = packAllSections({
+  const { panels: initialPacked, buildables } = packAllSections({
     roof: input.roof,
     obstructions: input.obstructions,
     panelSpec: input.panelSpec,
@@ -653,22 +657,9 @@ export function autoPackPanels(input: AutoPackInput): AutoPackResult {
     preservePanels,
   });
 
-  // If setback was too aggressive for this roof size, retry once with 0 setback.
-  if (packed.length === preservePanels.length && setbackFt > 0) {
-    const retry = packAllSections({
-      roof: input.roof,
-      obstructions: input.obstructions,
-      panelSpec: input.panelSpec,
-      orientation: input.orientation,
-      setbackFt: 0,
-      clearanceFt,
-      panelGapMm,
-      rowPitchM,
-      preservePanels,
-    });
-    packed = retry.panels;
-    buildables = retry.buildables;
-  }
+  // Never weaken the requested setback implicitly. If nothing fits, return the
+  // preserved panels and let the installer deliberately change the setting.
+  let packed = initialPacked;
 
   const maxPanelCount = packed.length;
   const maxDcCapacityKw = (maxPanelCount * wattage) / 1_000;
